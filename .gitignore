@@ -1,3 +1,6 @@
+# LDmicro outputs .gitignore
+*.hex
+
 # WINDOWS .gitignore
 Thumbs.db
 
@@ -7,26 +10,26 @@ Thumbs.db
 *.lo
 *.o
 *.obj
-
+#
 # Precompiled Headers
 *.gch
 *.pch
-
+#
 # Compiled Dynamic libraries
 *.so
 *.dylib
 *.dll
-
+#
 # Fortran module files
 *.mod
-
+#
 # Compiled Static libraries
 *.lai
 *.la
 *.a
 *.lib
-
+#
 # Executables
-#*.exe
+*.exe
 *.out
 *.app
