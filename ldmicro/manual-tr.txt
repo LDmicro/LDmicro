@@ -1,0 +1,790 @@
+
+KULLANIM KÝTAPÇIÐI
+==================
+LDMicro desteklenen MicroChip PIC16 ve Atmel AVR mikrokontrolcüler için 
+gerekli kodu üretir. Bu iþ için kullanýlabilecek deðiþik programlar vardýr.
+Örneðin BASIC, C, assembler gibi. Bu programlar kendi dillerinde yazýlmýþ
+programlarý iþlemcilerde çalýþabilecek dosyalar haline getirirler.
+
+PLC'de kullanýlan dillerden biri  ladder diyagramýdýr. Aþaðýda LDMicro ile
+yazýlmýþ basit bir program görülmektedir.
+
+   ||                                                                    ||
+   ||    Xbutton1           Tdon           Rchatter           Yred       ||
+ 1 ||-------]/[---------[TON 1.000 s]-+-------]/[--------------( )-------||
+   ||                                 |                                  ||
+   ||    Xbutton2           Tdof      |                                  ||
+   ||-------]/[---------[TOF 2.000 s]-+                                  ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||    Rchatter            Ton             Tnew           Rchatter     ||
+ 2 ||-------]/[---------[TON 1.000 s]----[TOF 1.000 s]---------( )-------||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||------[END]---------------------------------------------------------||
+   ||                                                                    ||
+   ||                                                                    ||
+
+(TON=turn-on gecikme; TOF-turn-off gecikme. --] [-- giriþler, diðer bir 
+deyiþle kontaklardýr. --( )-- ise çýkýþlardýr. Bunlar bir rölenin bobini 
+gibi davranýrlar. Ladder diyagramý ile ilgili bol miktarda kaynak internet
+üzerinde bulunmaktadýr. Burada LDMicro'ya has özelliklerden bahsedeceðiz.
+
+LDmicro ladder diyagramýný PIC16 veya AVR koduna çevirir. Aþaðýda desteklenen
+iþlemcilerin listesi bulunmaktadýr:
+    * PIC16F877
+    * PIC16F628
+    * PIC16F876 (denenmedi)
+    * PIC16F88 (denenmedi)
+    * PIC16F819 (denenmedi)
+    * PIC16F887 (denenmedi)
+    * PIC16F886 (denenmedi)
+    * ATmega128
+    * ATmega64
+    * ATmega162 (denenmedi)
+    * ATmega32 (denenmedi)
+    * ATmega16 (denenmedi)
+    * ATmega8 (denenmedi)
+
+Aslýnda daha fazla PIC16 ve AVR iþlemci desteklenebilir. Ancak test ettiklerim
+ve desteklediðini düþündüklerimi yazdým. Örneðin PIC16F648 ile PIC16F628 
+arasýnda fazla bir fark bulunmamaktadýr. Eðer bir iþlemcinin desteklenmesini
+istiyorsanýz ve bana bildirirseniz ilgilenirim.
+
+LDMicro ile ladder diyagramýný çizebilir, devrenizi denemek için gerçek zamanlý 
+simülasyon yapabilirsiniz. Programýnýzýn çalýþtýðýndan eminseniz programdaki 
+giriþ ve çýkýþlara mikrokontrolörün bacaklarýný atarsýnýz. Ýþlemci bacaklarý 
+belli olduktan sonra programýnýzý derleyebilirsiniz. Derleme sonucunda oluþan
+dosya .hex dosyasýdýr. Bu dosyayý PIC/AVR programlayýcý ile iþlemcinize kaydedersiniz.
+PIC/AVR ile uðraþanlar konuya yabancý deðildir.
+
+
+LDMicro ticari PLC programlarý gibi tasarlanmýþtýr. Bazý eksiklikler vardýr. 
+Kitapçýðý dikkatlice okumanýzý tavsiye ederim. Kullaným esnasýnda PLC ve 
+PIC/AVR hakkýnda temel bilgilere sahip olduðunuz düþünülmüþtür.
+
+DÝÐER AMAÇLAR
+==================
+
+ANSI C kodunu oluþturmak mümkündür. C derleyicisi olan herhangi bir
+iþlemci için bu özellikten faydalanabilirsiniz. Ancak çalýþtýrmak için 
+gerekli dosyalarý siz saðlamalýsýnýz. Yani, LDMicro sadece PlcCycle()
+isimli fonksiyonu üretir. Her döngüde PlcCycle fonksiyonunu çaðýrmak, ve
+PlcCycle() fonksiyonunun çaðýrdýðý dijital giriþi yazma/okuma vs gibi
+G/Ç fonksiyonlarý sizin yapmanýz gereken iþlemlerdir.
+Oluþturulan kodu incelerseniz faydalý olur.
+
+KOMUT SATIRI SEÇENEKLERÝ
+========================
+
+Normal þartlarda ldmicro.exe komut satýrýndan seçenek almadan çalýþýr.
+LDMicro'ya komut satýrýndan dosya ismi verebilirsiniz. Örneðin;komut
+satýrýndan 'ldmicro.exe asd.ld' yazarsanýz bu dosya açýlmaya çalýþýrlýr.
+Dosya varsa açýlýr. Yoksa hata mesajý alýrsýnýz. Ýsterseniz .ld uzantýsýný
+ldmicro.exe ile iliþkilendirirseniz .ld uzantýlý bir dosyayý çift týklattýðýnýzda
+bu dosya otomatik olarak açýlýr. Bkz. Klasör Seçenekleri (Windows).
+
+`ldmicro.exe /c src.ld dest.hex', þeklinde kullanýlýrsa  src.ld derlenir
+ve hazýrlanan derleme dest.hex dosyasýna kaydedilir. Ýþlem bitince LDMicro kapanýr.
+Oluþabilecek tüm mesajlar konsoldan görünür.
+
+TEMEL BÝLGÝLER
+==============
+
+LDMicro açýldýðýnda boþ bir program ile baþlar. Varolan bir dosya ile baþlatýrsanýz
+bu program açýlýr. LDMicro kendi dosya biçimini kullandýðýndan diðer dosya
+biçimlerinden dosyalarý açamazsýnýz.
+
+Boþ bir dosya ile baþlarsanýz ekranda bir tane boþ satýr görürsünüz. Bu satýra
+komutlarý ekleyebilir, satýr sayýsýný artýrabilirsiniz. Satýrlara Rung denilir.
+Örneðin; Komutlar->Kontak Ekle diyerek bir kontak ekleyebilirsiniz. Bu kontaða
+'Xnew' ismi verilir. 'X' bu kontaðýn iþlemcinin bacaðýna denk geldiðini gösterir.
+Bu kontaða derlemeden önce isim vermeli ve mikrokontrolörün bir bacaðý ile
+eþleþtirmelisiniz. Eþleþtirme iþlemi içinde önce iþlemciyi seçmelisiniz.
+Elemanlarýn ilk harfi o elemanýn ne olduðu ile ilgilidir. Örnekler:
+
+    * Xname -- mikrokontrolördeki bir giriþ bacaðý
+    * Yname -- mikrokontrolördeki bir çýkýþ bacaðý
+    * Rname -- `dahili röle': hafýzada bir bit.
+    * Tname -- zamanlayýcý; turn-on, turn-off yada retentive 
+    * Cname -- sayýcý, yukarý yada aþaðý sayýcý
+    * Aname -- A/D çeviriciden okunan bir tamsayý deðer
+    * name  -- genel deðiþken (tamsayý)
+
+Ýstediðiniz ismi seçebilirsiniz. Seçilen bir isim nerede kullanýlýrsa
+kullanýlsýn ayný yere denk gelir. Örnekler; bir satýrda Xasd kullandýðýnýzda
+bir baþka satýrda Xasd kullanýrsanýz ayný deðere sahiptirler. 
+Bazen bu mecburi olarak kullanýlmaktadýr. Ancak bazý durumlarda hatalý olabilir.
+Mesela bir (TON) Turn-On Gecikmeye Tgec ismini verdikten sonra bir (TOF)
+Turn_Off gecikme devresine de Tgec ismini verirseniz hata yapmýþ olursunuz.
+Dikkat ederseniz yaptýðýnýz bir mantýk hatasýdýr. Her gecikme devresi kendi
+hafýzasýna sahip olmalýdýr. Ama Tgec (TON) turn-on gecikme  devresini sýfýrlamak
+için kullanýlan RES komutunda Tgec ismini kullanmak gerekmektedir.
+
+Deðiþken isimleri harfleri, sayýlarý, alt çizgileri ihtiva edebilir.
+(_). Deðiþken isimleri sayý ile baþlamamalýdýr. Deðiþken isimleri büyük-küçük harf duyarlýdýr.
+Örneðin; TGec ve Tgec ayný zamanlayýcýlar deðildir.
+
+
+Genel deðiþkenlerle ilgili komutlar (MOV, ADD, EQU vs) herhangi bir
+isimdeki deðiþkenlerle çalýþýr. Bunun anlamý bu komutlar zamanlayýcýlar
+ve sayýcýlarla çalýþýr. Zaman zaman bu faydalý olabilir. Örneðin; bir 
+zamanlayýcýnýn deðeri ile ilgili bir karþýlaþtýrma yapabilirsiniz.
+
+Deðiþkenler hr zaman için 16 bit tamsayýdýr. -32768 ile 32767 arasýnda
+bir deðere sahip olabilirler. Her zaman için iþaretlidir. (+ ve - deðere
+sahip olabilirler) Onluk sayý sisteminde sayý kullanabilirsiniz. Týrnak
+arasýna koyarak ('A', 'z' gibi) ASCII karakterler kullanabilirsiniz.
+
+Ekranýn alt tarafýndaki kýsýmda kullanýlan tüm elemanlarýn bir listesi görünür.
+Bu liste program  tarafýndan otomatik olarak oluþturulur ve kendiliðinden
+güncelleþtirilir. Sadece 'Xname', 'Yname', 'Aname' elemanlarý için
+mikrokontrolörün bacak numaralarý belirtilmelidir. Önce Ayarlar->Ýþlemci Seçimi
+menüsünden iþlemciyi seçiniz. Daha sonra G/Ç uçlarýný çift týklatarak açýlan
+pencereden seçiminizi yapýnýz.
+
+Komut ekleyerek veya çýkararak programýnýzý deðiþtirebilirsiniz. Programdaki
+kursör eleman eklenecek yeri veya hakkýnda iþlem yapýlacak elemaný göstermek
+amacýyla yanýp söner. Elemanlar arasýnda <Tab> tuþu ile gezinebilirsiniz. Yada
+elemaný fare ile týklatarak iþlem yapýlacak elemaný seçebilirsiniz. Kursör elemanýn
+solunda, saðýnda, altýnda ve üstünde olabilir. Solunda ve saðýnda olduðunda
+ekleme yaptýðýnýzda eklenen eleman o tarafa eklenir. Üstünde ve altýnda iken
+eleman eklerseniz eklenen eleman seçili elemana paralel olarak eklenir.
+Bazý iþlemleri yapamazsýnýz. Örneðin bir bobinin saðýna eleman ekleyemezsiniz.
+LDMicro buna izin vermeyecektir.
+
+Program boþ bir satýrla baþlar. Kendiniz alta ve üste satýr ekleyerek dilediðiniz
+gibi diyagramýnýzý oluþturabilirsiniz. Yukarýda bahsedildiði gibi alt devreler
+oluþturabilirsiniz.
+
+Programýnýz yazdýðýnýzda simülasyon yapabilir, .hex dosyasýný oluþturabilirsiniz.
+
+SÝMÜLASYON
+==========
+
+Simülasyon moduna geçmek için Simülasyon->Simülasyon modu menüsünü týklatabilir,
+yada <Ctrl+M> tuþ kombinasyonuna basabilirsiniz. Simülasyon modunda program
+farklý bir görüntü alýr. Kursör görünmez olur. Enerji alan yerler ve elemanlar
+parlak kýrmýzý, enerji almayan yerler ve elemanlar gri görünür. Boþluk tuþuna
+basarak bir çevrim ilerleyebilir yada menüden Simülasyon->Gerçek Zamanlý Simülasyonu Baþlat
+diyerek (veya <Ctrl+R>) devamlý bir çevrim baþlatabilirsiniz. Ladder diyagramýnýn
+çalýþmasýna göre gerçek zamanlý olarak elemanlar ve yollar program tarafýndan deðiþtirilir.
+
+Giriþ elemanlarýnýn durumunu çift týklatarak deðiþtirebilirsiniz. Mesela, 'Xname'
+kontaðýný çift týklatýranýz açýktan kapalýya veya kapalýdan açýða geçiþ yapar.
+
+DERLEME
+=======
+
+Ladder diyagramýnýn yapýlmasýndaki amaç iþlemciye yüklenecek .hex dosyasýnýn
+oluþturulmasýdýr. Buna 'derleme' denir. Derlemeden önce þu aþamalar tamamlanmalýdýr:
+ 1- Ýþlemci seçilmelidir. Ayarlar->Ýþlemci Seçimi menüsünden yapýlýr.
+ 2- G/Ç uçlarýnýn mikrokontrolördeki hangi bacaklara baðlanacaðý seçilmelidir.
+    Elemanýn üzerine çift týklanýr ve çýkan listeden seçim yapýlýr.
+ 3- Çevrim süresi tanýmlanmalýdýr. Ayarlar->Ýþlemci Ayarlarý menüsünden yapýlýr.
+	Bu süre iþlemcinin çalýþtýðý frekansa baðlýdýr. Çoðu uygulamalar için 10ms
+	uygun bir seçimdir. Ayný yerden kristal frekansýný ayarlamayý unutmayýnýz.
+
+Artýk kodu üretebilirsiniz. Derle->Derle yada Derle->Farklý Derle seçeneklerinden
+birini kullanacaksýnýz. Aradaki fark Kaydet ve Farklý Kaydet ile aynýdýr. Sonuçta
+Intel IHEX dosyanýz programýnýzda hata yoksa üretilecektir. Programýnýzda hata varsa
+uyarý alýrsýnýz.
+
+Progamlayýcýnýz ile bu dosyayý iþlemcinize yüklemelisiniz. Buradaki en önemli nokta
+iþlemcinin konfigürasyon bitlerinin ayarlanmasýdýr. PIC16 iþlemciler için gerekli 
+ayar bilgileri hex dosyasýna kaydedildiðinden programlayýcýnýz bu ayarlarý algýlayacaktýr.
+Ancak AVR iþlemciler için gerekli ayarlarý siz yapmalýsýnýz.
+
+KOMUTLAR ve ELEMANLAR
+=====================
+
+> KONTAK, NORMALDE AÇIK         Xname           Rname          Yname
+                             ----] [----     ----] [----    ----] [----
+
+    Normalde açýk bir anahtar gibi davranýr. Komutu kontrol eden sinyal 0 ise 
+	çýkýþýndaki sinyalde 0 olur. Eðer kontrol eden sinyal 1 olursa çýkýþý da 1
+	olur ve çýkýþa baðlý bobin aktif olur. Bu kontak iþlemci bacaðýndan alýnan
+	bir giriþ, çýkýþ bacaðý yada dahili bir röle olabilir.
+
+
+> KONTAK, NORMALDE KAPALI       Xname           Rname          Yname
+                             ----]/[----     ----]/[----    ----]/[----
+
+    Normalde kapalý bir anahtar gibi davranýr. Komutun kontrol eden sinyal 0 ise
+	çýkýþý 1 olur. Eðer kontrol eden sinyal 1 olursa çýkýþý 0 olur ve çýkýþa
+	baðlý elemanlar pasif olur. Normalde çýkýþa gerilim verilir, ancak bu kontaðý 
+	kontrol eden sinyal 1 olursa kontaðýn çýkýþýnda gerilim olmaz. Bu kontak 
+	iþlemci bacaðýndan alýnan bir giriþ, çýkýþ bacaðý yada dahili bir röle olabilir
+
+
+> BOBÝN, NORMAL                 Rname           Yname
+                             ----( )----     ----( )----
+
+    Elemana giren sinyal 0 ise dahili röle yada çýkýþ bacaðý 0 yapýlýr.
+	Elemana giren sinyal 1 ise dahili röle yada çýkýþ bacaðý 1 yapýlýr.
+	Bobine	giriþ deðiþkeni atamak mantýksýzdýr. Bu eleman bir satýrda
+	saðdaki en son eleman olmalýdýr.
+
+
+> BOBÝN, TERSLENMÝÞ             Rname           Yname
+                             ----(/)----     ----(/)----
+
+    Elemana giren sinyal 0 ise dahili röle yada çýkýþ bacaðý 1 yapýlýr.
+	Elemana giren sinyal 1 ise dahili röle yada çýkýþ bacaðý 0 yapýlýr.
+	Bobine	giriþ deðiþkeni atamak mantýksýzdýr. Bu eleman bir satýrda
+	saðdaki en son eleman olmalýdýr. Normal bobinin tersi çalýþýr.
+	
+
+> BOBÝN, SET                   Rname           Yname
+                             ----(S)----     ----(S)----
+
+   	Elemana giren sinyal 1 ise dahili röle yada çýkýþ bacaðý 1 yapýlýr.
+	Diðer durumlarda bu bobinin durumunda bir deðiþiklik olmaz. Bu komut
+	bobinin durumunu sadece 0'dan 1'e çevirir. Bu nedenle çoðunlukla
+	BOBÝN-RESET ile beraber çalýþýr. Bu eleman bir satýrda saðdaki en
+	son eleman olmalýdýr.
+
+
+> BOBÝN, RESET                 Rname           Yname
+                             ----(R)----     ----(R)----
+
+   	Elemana giren sinyal 1 ise dahili röle yada çýkýþ bacaðý 0 yapýlýr.
+	Diðer durumlarda bu bobinin durumunda bir deðiþiklik olmaz. Bu komut
+	bobinin durumunu sadece 1'dEn 0'a çevirir. Bu nedenle çoðunlukla
+	BOBÝN-SET ile beraber çalýþýr. Bu eleman bir satýrda saðdaki en
+	son eleman olmalýdýr.
+
+
+> TURN-ON GECÝKME               Tdon 
+                           -[TON 1.000 s]-
+
+    Bir zamanlayýcýdýr. Giriþindeki sinyal 0'dan 1'e geçerse ayarlanan
+	süre kadar sürede çýkýþ 0 olarak kalýr, süre bitince çýkýþý 1 olur. 
+    Giriþindeki sinyal 1'den 0'a geçerse çýkýþ hemen 0 olur.
+	Giriþi 0 olduðu zaman zamanlayýcý sýfýrlanýr. Ayrýca; ayarlanan süre
+	boyunca giriþ 1 olarak kalmalýdýr.
+
+    Zamanlayýcý 0'dan baþlayarak her çevrim süresinde 1 artarak sayar.
+	Sayý ayarlanan süreye eþit yada büyükse çýkýþ 1 olur. Zamanlayýcý
+	deðiþkeni üzerinde iþlem yapmak mümkündür. (Örneðin MOV komutu ile)
+
+
+> TURN-OFF GECÝKME               Tdoff 
+                           -[TOF 1.000 s]-
+
+    Bir zamanlayýcýdýr. Giriþindeki sinyal 1'den 0'a geçerse ayarlanan
+	süre kadar sürede çýkýþ 1 olarak kalýr, süre bitince çýkýþý 0 olur. 
+    Giriþindeki sinyal 0'dan 1'e geçerse çýkýþ hemen 1 olur.
+	Giriþi 0'dan 1'e geçtiðinde zamanlayýcý sýfýrlanýr. Ayrýca; ayarlanan
+	süre boyunca giriþ 0 olarak kalmalýdýr.
+
+    Zamanlayýcý 0'dan baþlayarak her çevrim süresinde 1 artarak sayar.
+	Sayý ayarlanan süreye eþit yada büyükse çýkýþ 1 olur. Zamanlayýcý
+	deðiþkeni üzerinde iþlem yapmak mümkündür. (Örneðin MOV komutu ile)
+
+
+> SÜRE SAYAN TURN-ON GECÝKME        Trto  
+                               -[RTO 1.000 s]-
+
+	Bu zamanlayýcý giriþindeki sinyalin ne kadar süre ile 1 olduðunu
+	ölçer. Ayaralanan süre boyunca giriþ 1 ise çýkýþý 1 olur. Aksi halde
+	çýkýþý 0 olur. Ayarlanan süre devamlý olmasý gerekmez. Örneðin; süre 
+	1 saniyeye ayarlanmýþsa ve giriþ önce 0.6 sn 1 olmuþsa, sonra 2.0 sn
+	boyunca 0 olmuþsa daha sonra 0.4 sn boyunca giriþ tekrar 1 olursa
+	0.6 + 0.4 = 1sn olduðundan çýkýþ 1 olur. Çýkýþ 1 olduktan sonra
+	giriþ 0 olsa dahi çýkýþ 0'a dönmez. Bu nedenle zamanlayýcý RES reset
+	komutu ile resetlenmelidir.
+
+    Zamanlayýcý 0'dan baþlayarak her çevrim süresinde 1 artarak sayar.
+	Sayý ayarlanan süreye eþit yada büyükse çýkýþ 1 olur. Zamanlayýcý
+	deðiþkeni üzerinde iþlem yapmak mümkündür. (Örneðin MOV komutu ile)
+
+
+> RESET (SAYICI SIFIRLAMASI)     Trto             Citems
+                             ----{RES}----     ----{RES}----
+
+    Bu komut bir zamanlayýcý veya sayýcýyý sýfýrlar. TON ve TOF zamanlayýcý
+	komutlarý kendiliðinden sýfýrlandýðýndan bu komuta ihtiyaç duymazlar.
+	RTO zamanlayýcýsý ve CTU/CTD sayýcýlarý kendiliðinden sýfýrlanmadýðýndan
+	sýfýrlanmalarý için kullanýcý tarafýndan bu komutile sýfýrlanmasý
+	gerekir. Bu komutun giriþi 1 olduðunda sayýcý/zamanlayýcý sýfýrlanýr.
+	Bu komut bir satýrýn saðýndaki son komut olmalýdýr.
+
+
+> YÜKSELEN KENAR                 _
+                           --[OSR_/ ]--
+
+    Bu komutun çýkýþý normalde 0'dýr. Bu komutun çýkýþýnýn 1 olabilmesi
+	için bir önceki çevrimde giriþinin 0 þimdiki çevrimde giriþinin 1 
+	olmasý gerekir. Komutun çýkýþý bir çevrimlik bir pals üretir.
+	Bu komut bir sinyalin yükselen kenarýnda bir tetikleme gereken
+	uygulamalarda faydalýdýr.
+	
+
+> DÜÞEN KENAR                    _
+                           --[OSF \_]--
+
+    Bu komutun çýkýþý normalde 0'dýr. Bu komutun çýkýþýnýn 1 olabilmesi
+	için bir önceki çevrimde giriþinin 1 þimdiki çevrimde giriþinin 0 
+	olmasý gerekir. Komutun çýkýþý bir çevrimlik bir pals üretir.
+	Bu komut bir sinyalin düþen kenarýnda bir tetikleme gereken
+	uygulamalarda faydalýdýr.
+
+
+> KISA DEVRE, AÇIK DEVRE
+                           ----+----+----      ----+     +----
+
+    Kýsa devrenin çýkýþý her zaman giriþinin aynýsýdýr.
+	Açýk devrenin çýkýþý her zaman 0'dýr. Bildiðimiz açýk/kýsa devrenin
+	aynýsýdýr. Genellikle hata aramada kullanýlýrlar.
+
+> ANA KONTROL RÖLESÝ
+                           -{MASTER RLY}-
+
+    Normalde her satýrýn ilk giriþi 1'dir. Birden fazla satýrýn tek bir þart ile 
+	kontrol edilmesi gerektiðinde paralel baðlantý yapmak gerekir. Bu ise zordur.
+	Bu iþlemi kolayca yapabilmek için ana kontrol rölesini kullanabiliriz.
+	Ana kontrol rölesi eklendiðinde kendisinden sonraki satýrlar bu röleye baðlý
+	hale gelir. Böylece; birden fazla satýr tek bir þart ile kontrolü saðlanýr.
+	Bir ana kontrol rölesi kendisinden sonra gelen ikinci bir ana kontrol
+	rölesine kadar devam eder. Diðer bir deyiþle birinci ana kontrol rölesi
+	baþlangýcý ikincisi ise bitiþi temsil eder. Ana kontrol rölesi kullandýktan
+	sonra iþlevini bitirmek için ikinci bir ana kontrol rölesi eklemelisiniz.
+
+> MOVE                      {destvar :=  }      {Tret :=     }
+                           -{ 123     MOV}-    -{ srcvar  MOV}-
+
+    Giriþi 1 olduðunda verilen sabit sayýyý (123 gibi) yada verilen deðiþkenin
+	içeriðini (srcvar) belirtilen deðiþkene (destvar) atar. Giriþ 0 ise herhangi
+	bir iþlem olmaz. Bu komut ile zamanlayýcý ve sayýcýlar da dahil olmak üzere
+	tüm deðiþkenlere deðer atayabilirsiniz. Örneðin Tsay zamanlayýcýsýna MOVE ile
+	0 atamak ile RES ile sýfýrlamak ayný sonucu doðurur. Bu komut bir satýrýn
+	saðýndaki en son komut olmalýdýr.
+
+> MATEMATÝK ÝÞLEMLER         {ADD  kay  :=}       {SUB  Ccnt :=}
+                            -{ 'a' + 10   }-     -{ Ccnt - 10  }-
+
+>                            {MUL  dest :=}       {DIV  dv :=  }
+                            -{ var * -990 }-     -{ dv / -10000}-
+
+    Bu komutun giriþi doðru ise belirtilen hedef deðiþkenine verilen matematik
+	iþlemin sonucunu kaydeder. Ýþlenen bilgi zamanlayýcý ve sayýcýlar dahil
+	olmak üzere deðiþkenler yada sabit sayýlar olabilir. Ýþlenen bilgi 16 bit
+	iþaretli sayýdýr. Her çevrimde iþlemin yeniden yapýldýðý unutulmamalýdýr.
+	Örneðin artýrma yada eksiltme yapýyorsanýz yükselen yada düþen kenar
+	kullanmanýz gerekebilir. Bölme (DIV) virgülden sonrasýný keser. Örneðin;
+	8 / 3 = 2 olur. Bu komut bir satýrýn saðýndaki en son komut olmalýdýr.
+
+
+> KARÞILAÞTIRMA         [var ==]        [var >]        [1 >=]
+                       -[ var2 ]-      -[ 1   ]-      -[ Ton]-
+
+>                       [var /=]       [-4 <   ]       [1 <=]
+                       -[ var2 ]-     -[ vartwo]-     -[ Cup]-
+
+    Deðiþik karþýlaþtýrma komutlarý vardýr. Bu komutlarýn giriþi doðru (1)
+	ve verilen þart da doðru ise çýkýþlarý 1 olur.
+
+
+> SAYICI                       Cname          Cname
+                           --[CTU >=5]--  --[CTD >=5]--
+
+    Sayýcýlar giriþlerinin 0'dan 1'e her geçiþinde yani yükselen kenarýnda
+	deðerlerini 1 artýrýr (CTU) yada eksiltirler (CTD). Verilen þart doðru ise
+	çýkýþlarý aktif (1) olur. CTU ve CTD sayýcýlarýna ayný ismi erebilirsiniz.
+	Böylece ayný sayýcýyý artýrmýþ yada eksiltmiþ olursunuz. RES komutu sayýcýlarý
+	sýfýrlar. Sayýcýlar ile genel deðiþkenlerle kullandýðýnýz komutlarý kullanabilirsiniz.
+
+
+> DAÝRESEL SAYICI              Cname
+                           --{CTC 0:7}--
+
+    Normal yukarý sayýcýdan farký belirtilen limite ulaþýnca sayýcý tekrar 0'dan baþlar
+    Örneðin sayýcý 0, 1, 2, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 2,.... þeklinde
+	sayabilir. Yani bir dizi sayýcý olarak düþünülebilir. CTC sayýcýlar giriþlerinin
+	yükselen kenarýnda deðer deðiþtirirler. Bu komut bir satýrýn saðýndaki
+	en son komut olmalýdýr.
+    
+
+> SHIFT REGISTER            {SHIFT REG   }
+                           -{ reg0..3    }-
+
+    Bir dizi deðiþken ile beraber çalýþýr. Ýsim olarak reg verdiðinizi ve aþama 
+	sayýsýný 3 olarak tanýmladýysanýz reg0, reg1, reg2 deðikenleri ile çalýþýrsýnýz.
+	Kaydedicinin giriþi reg0 olur. Giriþin her yükselen kenarýnda deðerler kaydedicide
+	bir saða kayar. Mesela; `reg2 := reg1'. and `reg1 := reg0'. `reg0' deðiþmez.
+	Geniþ bir kaydedici hafýzada çok yer kaplar.
+	Bu komut bir satýrýn saðýndaki en son komut olmalýdýr.
+
+
+> DEÐER TABLOSU             {dest :=     }
+                           -{ LUT[i]     }-
+
+    Deðer tablosu sýralanmýþ n adet deðer içeren bir tablodur. Giriþi doðru olduðunda
+	`dest' tamsayý deðiþkeni `i' tamsayý deðiþkenine karþýlýk gelen deðeri alýr. Sýra
+	0'dan baþlar. bu nedenle `i' 0 ile (n-1) arasýnda olabilir. `i' bu deðerler 
+	arasýnda deðilse komutun ne yapacaðý tanýmlý deðildir.
+	Bu komut bir satýrýn saðýndaki en son komut olmalýdýr.
+
+
+> PIECEWISE LINEAR TABLE    {yvar :=     }
+                           -{ PWL[xvar]  }-
+
+    Bir matris tablo olarak düþünülebilir. Bir deðere baðlý olarak deðerin önceden
+	belirlenen bir baþka deðer ile deðiþtirilmesi içi oluþturulan bir tablodur.
+	Bu bir eðri oluþturmak, sensörden alýnan deðere göre çýkýþta baþka bir eðri
+	oluþturmak gibi amaçlar için kullanýlabilir.
+
+    Farzedelimki x tamsayý giriþ deðerini y tamsayý çýkýþ deðerine yaklaþtýrmak 
+	istiyoruz. Deðerlerin belirli noktalarda olduðunu biliyoruz. Örneðin;
+
+        f(0)   = 2
+        f(5)   = 10
+        f(10)  = 50
+        f(100) = 100
+
+    Bu þu noktalarýn eðride olduðunu gösterir:
+
+        (x0, y0)   = (  0,   2)
+        (x1, y1)   = (  5,  10)
+        (x2, y2)   = ( 10,  50)
+        (x3, y3)   = (100, 100)
+
+    Dört deðeri parçalý lineer tabloya gireriz. Komut, xvar'ýn deðerine bakarak
+	yvar'a deðer verir. Örneðin, yukarýdaki örneðe bakarak, xvar = 10 ise
+	yvar = 50 olur.
+    
+	Tabloya kayýtlý iki deðerin arasýnda bir deðer verirseniz verilen deðer de
+	alýnmasý gereken iki deðerin arasýnda uygun gelen yerde bir deðer olur.
+	Mesela; xvar=55 yazarsanýz yvar=75 olur. (Tablodaki deðerler (10,50) ve
+	(100,100) olduðuna göre). 55, 10 ve 100 deðerlerinin ortasýndadýr. Bu
+	nedenle 55 ve 75 deðerlerinin ortasý olan 75 deðeri alýnýr.
+	
+	Deðerler x koordinatýnda artan deðerler olarak yazýlmalýdýr. 16 bit tamsayý
+	kullanan bazý deðerler için arama tablosu üzerinde matematik iþlemler
+	gerçekleþmeyebilir. Bu durumda LDMicro sizi uyaracaktýr. Örneðin aþaðýdaki
+	tablo bir hata oluþturacaktýr:
+
+        (x0, y0)    = (  0,   0)
+        (x1, y1)    = (300, 300)
+
+    Bu tip hatalarý noktalar arsýnda ara deðerler oluþturarak giderebilirsiniz.
+	Örneðin aþaðýdaki tablo yukarýdakinin aynýsý olmasýna raðmen hata 
+	oluþturmayacaktýr.
+    
+        (x0, y0)    = (  0,   0)
+        (x1, y1)    = (150, 150)
+        (x2, y2)    = (300, 300)
+
+    Genelde 5 yada 6 noktadan daha fazla deðer kullanmak gerekmeyecektir.
+	Daha fazla nokta demek daha fazla kod ve daha yavaþ çalýþma demektir.
+	En fazla 10 nokta oluþturabilirsiniz. xvar deðiþkenine x koordinatýnda
+	tablonun en yüksek deðerinden daha büyük bir deðer girmenin ve en düþük
+	deðerinden daha küçük bir deðer girmenin sonucu tanýmlý deðildir.
+	Bu komut bir satýrýn saðýndaki en son komut olmalýdýr.
+
+> A/D ÇEVÝRÝCÝDEN OKUMA        Aname
+                           --{READ ADC}--
+
+    LDmicro A/D  çeviriciden deðer okumak için gerekli kodlarý desteklediði
+	iþlemciler için oluþturabilir. Komutun giriþi 1 olduðunda A/D çeviriciden 
+	deðer okunur ve okunan deðer `Aname' deðiþkenine aktarýlýr. Bu deðiþken
+	üzerinde genel deðiþkenlerle kullanýlabilen iþlemler kullanýlabilir.
+	(büyük, küçük, büyük yada eþit gibi). Bu deðiþkene iþlemcinin bacaklarýndan
+	uygun biri tanýmlanmalýdýr. Komutun giriþi 0 ise `Aname'deðiþkeninde bir
+	deðiþiklik olmaz.
+    
+    Þu an desteklenen iþlemciler için; 0 Volt için ADC'den okunan deðer 0, 
+	Vdd (besleme gerilimi) deðerine eþit gerilim deðeri için ADC'den okunan deðer
+	1023 olmaktadýr. AVR kullanýyorsanýz AREF ucunu Vdd besleme gerilimine 
+	baðlayýnýz.
+	
+	Aritmetik iþlemler ADC deðiþkeni için kullanýlabilir. Ayrýca bacak tanýmlarken
+	ADC olmayan bacaklarýn tanýmlanmasýný LDMicro engelleyecektir.
+	Bu komut bir satýrýn saðýndaki en son komut olmalýdýr.
+
+	> PWM PALS GENÝÞLÝÐÝ AYARI      duty_cycle
+                             -{PWM 32.8 kHz}-
+
+    LDmicro desteklediði mikrokontrolörler için gerekli PWM kodlarýný üretebilir.
+    Bu komutun giriþi doðru (1) olduðunda PWM sinyalinin pals geniþliði duty_cycle
+	deðiþkeninin deðerine ayarlanýr. Bu deðer 0 ile 100 arasýnda deðiþir. Pals
+	geniþliði yüzde olarak ayarlanýr. Bir periyot 100 birim kabul edilirse bu
+	geniþliðin yüzde kaçýnýn palsi oluþturacaðý ayarlanýr. 0 periyodun tümü sýfýr
+	100 ise periyodun tamamý 1 olsun anlamýna gelir. 10 deðeri palsin %10'u 1 geri
+	kalan %90'ý sýfýr olsun anlamýna gelir.
+
+    PWM frekansýný ayarlayabilirsiniz. Verilen deðer Hz olarak verilir.
+    Verdiðiniz frekans kesinlikle ayarlanabilir olmalýdýr. LDMicro verdiðiniz deðeri
+	olabilecek en yakýn deðerle deðiþtirir. Yüksek hýzlarda doðruluk azalýr.
+    
+	Bu komut bir satýrýn saðýndaki en son komut olmalýdýr.
+    Periyodun süresinin ölçülebilmesi için iþlemcinin zamanlayýcýlarýnýn bir tanesi
+	kullanýlýr. Bu nedenle PWM en az iki tane zamanlayýcýsý olan iþlemcilerde kullanýlýr.
+	PWM PIC16 iþlemcilerde CCP2'yi, AVR'lerde ise OC2'yi kullanýr.
+
+
+> EEPROMDA SAKLA             saved_var
+                           --{PERSIST}--
+
+    Bu komut ile belirtilen deðiþkenin EEPROM'da saklanmasý gereken bir deðiþken olduðunu
+	belirmiþ olursunuz. Komutun giriþi doðru ise belirtilen deðiþkenin içeriði EEPROM'a
+	kaydedilir. Enerji kesildiðinde kaybolmamasý istenen deðerler için bu komut kullanýlýr.
+	Deðiþkenin içeriði gerilim geldiðinde tekrar EEPROM'dan yüklenir. Ayrýca;
+	deðiþkenin içeriði her deðiþtiðinde yeni deðer tekrar EEPROM'a kaydedilir.
+	Ayrýca bir iþlem yapýlmasý gerekmez.
+	Bu komut bir satýrýn saðýndaki en son komut olmalýdýr.
+
+************************
+> UART (SERÝ BÝLGÝ) AL          var
+                           --{UART RECV}--
+
+    LDmicro belirli iþlemciler için gerekli UART kodlarýný üretebilir. AVR iþlemcilerde
+	sadece UART1 (UART0) deðil) desteklenmektedir. Ýletiþim hýzý (baudrate) ayarlarýný 
+	Ayarlar->Ýþlemci Ayarlarý menüsünden yapmalýsýnýz. Hýz kristal frekansýna baðlý olup,
+	bazý hýzlar desteklenmeyebilir. Bu durumda LDMicro sizi uyaracaktýr. 
+    
+    Bu komutun giriþi yanlýþsa herhangi bir iþlem yapýlmaz. Doðru ise UART'dan 1 karakter
+	alýnmaya çalýþýlýr. Okuma yapýlamaz ise komutun çýkýþý yanlýþ (0) olur. Karakter
+	okunursa okunan karakter `var' deðiþkeninde saklanýr ve komutun çýkýþý doðru (1) olur.
+	Çýkýþýn doðru olmasý sadece bir PLC çevrimi sürer.
+
+
+> UART (SERÝ BÝLGÝ) GÖNDER      var
+                           --{UART SEND}--
+
+    LDmicro belirli iþlemciler için gerekli UART kodlarýný üretebilir. AVR iþlemcilerde
+	sadece UART1 (UART0) deðil) desteklenmektedir. Ýletiþim hýzý (baudrate) ayarlarýný 
+	Ayarlar->Ýþlemci Ayarlarý menüsünden yapmalýsýnýz. Hýz kristal frekansýna baðlý olup,
+	bazý hýzlar desteklenmeyebilir. Bu durumda LDMicro sizi uyaracaktýr.
+	
+    Bu komutun giriþi yanlýþsa herhangi bir iþlem yapýlmaz. Doðru ise UART'dan 1 karakter
+	gönderilir. Gönderilecek karakter gönderme iþleminden önce `var' deðiþkeninde saklý
+	olmalýdýr. Komutun çýkýþý UART meþgulse (bir karakterin gönderildiði sürece)
+	doðru (1) olur. Aksi halde yanlýþ olur.
+	Çýkýþýn doðru olmasý sadece bir PLC çevrimi sürer.
+	
+	Karakterin gönderilmesi belirli bir zaman alýr. Bu nedenle baþka bir karakter
+	göndermeden önce önceki karakterin gönderildiðini kontrol ediniz veya gönderme
+	iþlemlerinin arasýna geikme ekleyiniz. Komutun giriþini sadece çýkýþ yanlýþ
+	(UART meþgul deðilse)ise doðru yapýnýz.
+
+    Bu komut yerine biçimlendirilmiþ kelime komutunu (bir sonraki komut) inceleyiniz.
+	Biçimlendirilmiþ kelime komutunun kullanýmý daha kolaydýr. Ýstediðiniz iþlemleri
+	daha rahat gerçekleþtirebilirsiniz.
+
+
+> UART ÜZERÝNDEN BÝÇÝMLENDÝRÝLMÝÞ KELÝME             var
+                                            -{"Pressure: \3\r\n"}-
+
+    LDmicro belirli iþlemciler için gerekli UART kodlarýný üretebilir. AVR iþlemcilerde
+	sadece UART1 (UART0) deðil) desteklenmektedir. Ýletiþim hýzý (baudrate) ayarlarýný 
+	Ayarlar->Ýþlemci Ayarlarý menüsünden yapmalýsýnýz. Hýz kristal frekansýna baðlý olup,
+	bazý hýzlar desteklenmeyebilir. Bu durumda LDMicro sizi uyaracaktýr.
+
+    Bu komutun giriþi yanlýþtan doðruya geçerse (yükselen kenar) ise seri port üzerinden
+	tüm kelimeyi gönderir. Eðer kelime `\3' özel kodunu içeriyorsa dizi içeriði 
+	`var' deðiþkenin içeriði otomatik olarak kelimeye (string) çevrilerek`var'
+	deðiþkeninin içeriði ile deðiþtirilir. Deðiþkenin uzunluðu 3 karakter olacak þekilde
+	deðiþtirilir. Mesela; `var' deðiþkeninin içeriði 35 ise kelime 35 rakamýnýn baþýna bir
+	adet boþul eklenerek `Pressure:  35\r\n' haline getirilir. Veya `var'deðiþkeninin
+	içeriði 1453 ise yapýlacak iþlem belli olmaz. Bu durumda `\4' kullanmak gerekebilir.
+
+    Deðiþken negatif bir sayý olabilecekse `\-3d' (veya `\-4d') gibi uygun bir deðer
+	kullanmalýsýnýz. Bu durumda LDMicro negatif sayýlarýn önüne eksi iþareti, pozitif sayýlarýn
+	önüne ise bir boþluk karakteri yerleþtirecektir.
+
+    Ayný anda birkaç iþlem tanýmlanýrsa, yada UART ile ilgili iþlemler birbirine
+	karýþýk hale getirilirse programýn davranýþý belirli olmayacaktýr. Bu nedenle
+	dikkatli olmalýsýnýz.
+
+    Kullanýlabilecek özel karakterler (escape kodlarý) þunlardýr:
+        * \r   -- satýr baþýna geç
+        * \n   -- yeni satýr
+        * \f   -- kaðýdý ilerlet (formfeed)
+        * \b   -- bir karakter geri gel (backspace)
+        * \xAB -- ASCII karakter kodu 0xAB (hex)
+
+    Bu komutun çýkýþý bilgi gönderiyorken doðru diðer durumlarda yanlýþ olur.
+    Bu komut program hafýzasýnda çok yer kaplar.
+
+
+MATEMATÝKSEL ÝÞLEMLER ÝLE ÝLGÝLÝ BÝLGÝ
+======================================
+
+Unutmayýn ki, LDMicro 16-bit tamsayý matematik komutlarýna sahiptir.
+Bu iþlemlerde kullanýlan deðerler ve hesaplamanýn sonucu -32768 ile
+32767 arasýnda bir tamsayý olabilir.
+
+Mesela y = (1/x)*1200 formülünü hesaplamaya çalýþalým. x 1 ile 20
+arasýnda bir sayýdýr. Bu durumda y 1200 ile 60 arasýnda olur. Bu sayý
+16-bit bir tamsayý sýnýrlarý içindedir. Ladder diyagramýmýzý yazalým.
+Önce bölelim, sonra çarpma iþlemini yapalým:
+
+   ||         {DIV  temp  :=}          ||
+   ||---------{ 1 / x       }----------||
+   ||                                  ||
+   ||          {MUL  y  :=  }          ||
+   ||----------{ temp * 1200}----------||
+   ||                                  ||
+
+Yada bölmeyi doðrudan yapalým:
+
+   ||           {DIV  y  :=}           ||
+   ||-----------{ 1200 / x }-----------||
+
+Matematiksel olarak iki iþlem aynýd sonucu vermelidir. Ama birinci iþlem
+yanlýþ sonuç verecektir. (y=0 olur). Bu hata `temp' deðiþkeninin 1'den
+küçük sonuç vermesindendir.Mesela x = 3 iken (1 / x) = 0.333 olur. Ama
+0.333 bir tamsayý deðildir. Bu nedenle sonuç 0 olur. Ýkinci adýmda ise
+y = temp * 1200 = 0 olur. Ýkinci þekilde ise bölen bir tamsayý olduðundan
+sonuç doðru çýkacaktýr.
+
+Ýþlemlerinizde bir sorun varsa dikkatle kontrol ediniz. Ayrýca sonucun
+baþa dönmemesine de dikkat ediniz. Mesela 32767 + 1 = -32768 olur.
+32767 sýnýrý aþýlmýþ olacaktýr. 
+
+Hesaplamalarýnýzda mantýksal deðiþimler yaparak doðru sonuçlar elde edebilirsiniz.
+Örneðin; y = 1.8*x ise formülünüzü y = (9/5)*x þeklinde yazýnýz.(1.8 = 9/5)
+y = (9*x)/5 þeklindeki bir kod sonucu daha tutarlý hale getirecektir.
+performing the multiplication first:
+
+   ||         {MUL  temp  :=}          ||
+   ||---------{ x * 9       }----------||
+   ||                                  ||
+   ||           {DIV  y  :=}           ||
+   ||-----------{ temp / 5 }-----------||
+
+
+KODALAMA ÞEKLÝ
+==============
+
+Programýn saðladýðý kolaylýklardan faydalanýn. Mesela:
+
+   ||       Xa               Ya        ||
+ 1 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||       Xb               Yb        ||
+   ||-------] [------+-------( )-------||
+   ||                |                 ||
+   ||                |       Yc        ||
+   ||                +-------( )-------||
+   ||                                  ||
+
+yazmak aþaðýdakinden daha kolay olacaktýr.
+
+   ||       Xa               Ya        ||
+ 1 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||       Xb               Yb        ||
+ 2 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||       Xb               Yc        ||
+ 3 ||-------] [--------------( )-------||
+   ||                                  ||
+
+                  *                 *                  *
+
+Yazdýðýnýz kodlarýn sonuçlarýna dikkat ediniz. Aþaðýdaki satýrlarda
+mantýksýz bir programlama yapýlmýþtýr. Çünkü hem Xa hemde Xb ayný
+anda doðru olabilir.
+
+   ||       Xa         {v  :=       }  ||
+ 1 ||-------] [--------{ 12      MOV}--||
+   ||                                  ||
+   ||       Xb         {v  :=       }  ||
+   ||-------] [--------{ 23      MOV}--||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||      [v >]             Yc        ||
+ 2 ||------[ 15]-------------( )-------||
+   ||                                  ||
+
+Aþaðýdaki satýrlar yukarda bahsi geçen tarzdadýr. Ancak yapýlan
+iþlem 4-bit binary sayý tamsayýya çevrilmektedir.
+
+   ||                                   {v  :=       }  ||
+ 3 ||-----------------------------------{ 0       MOV}--||
+   ||                                                   ||
+   ||       Xb0                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 1    }-----------||
+   ||                                                   ||
+   ||       Xb1                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 2    }-----------||
+   ||                                                   ||
+   ||       Xb2                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 4    }-----------||
+   ||                                                   ||
+   ||       Xb3                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 8    }-----------||
+   ||                                                   ||
+
+
+HATALAR (BUG)
+=============
+
+LDmicro tarafýndan üretilen kodlar çok verimli kodlar deðildir. Yavaþ çalýþan
+ve hafýzada fazla yer kaplayan kodlar olabilirler. Buna raðmen orta büyüklükte
+bir PIC veya AVR küçük bir PLC'nin yaptýðý iþi yapar. Bu nedenle diðer sorunlar
+yer yer gözardý edlebilir.
+
+Deðiþken isimleri çok uzun olmamalýdýr. 
+
+Programýnýz yada kullandýðýnýz hafýza seçtiðiniz iþlemcinin sahip olduðundan
+büyükse LDMicro hata vermeyebilir. Dikkat etmezseniz programýnýz hatalý çalýþacaktýr.
+
+Bulduðunuz hatalarý yazara bildiriniz.
+
+Teþekkürler:
+    * Marcelo Solano, Windows 98'deki UI problemini bildirdiði için,
+    * Serge V. Polubarjev, PIC16F628 iþlemcisi seçildiðinde RA3:0'ýn çalýþmadýðý
+	  ve nasýl düzelteceðimi bildirdiði için,
+    * Maxim Ibragimov, ATmega16 ve ATmega162 iþlemcileri test ettikleri, problemleri
+	  bulduklarý ve bildirdikleri için,
+    * Bill Kishonti, sýfýra bölüm hatasý olduðunda simülasyonun çöktüðünü bildirdikleri
+	  için,
+    * Mohamed Tayae, PIC16F628 iþlemcisinde EEPROM'da saklanmasý gereken deðiþkenlerin
+	  aslýnda saklanmadýðýný bildirdiði için,
+    * David Rothwell, kullanýcý arayüzündeki birkaç problemi ve "Metin Dosyasý Olarak Kaydet"
+	  fonksiyonundaki problemi bildirdiði için.
+
+
+KOPYALAMA VE KULLANIM ÞARTLARI
+==============================
+
+LDMICRO TARAFINDAN ÜRETÝLEN KODU ÝNSAN HAYATI VE ÝNSAN HAYATINI ETKÝLEYEBÝLECEK
+PROJELERDE KULLANMAYINIZ. LDMICRO PROGRAMCISI LDMICRO'NUN KENDÝNDEN VE LDMICRO
+ÝLE ÜRETÝLEN KODDAN KAYNAKLANAN HÝÇBÝR PROBLEM ÝÇÝN SORUMLULUK KABUL ETMEMEKTEDÝR.
+
+Bu program ücretsiz bir program olup, dilediðiniz gibi daðýtabilirsiniz,
+kaynak kodda deðiþiklik yapabilirsiniz. Programýn kullanýmý Free Software Foundation
+tarafýndan yazýlan GNU General Public License (version 3 ve sonrasý)þartlarýna baðlýdýr.
+
+Program faydalý olmasý ümidiyle daðýtýlmýþtýr. Ancak hiçbir garanti verilmemektedir.
+Detaylar için  GNU General Public License içeriðine bakýnýz.
+
+Söz konusu sözleþmenin bir kopyasý bu programla beraber gelmiþ olmasý gerekmektedir.
+Gelmediyse <http://www.gnu.org/licenses/> adresinde bulabilirsiniz.
+
+
+Jonathan Westhues
+
+Rijswijk      -- Dec 2004
+Waterloo ON   -- Jun, Jul 2005
+Cambridge MA  -- Sep, Dec 2005
+                 Feb, Mar 2006
+                 Feb 2007
+
+Email: user jwesthues, at host cq.cx
+
+Türkçe Versiyon : <http://tekelektirik.com/public/ldmicro.rar>

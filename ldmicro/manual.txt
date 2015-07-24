@@ -1,0 +1,969 @@
+
+INTRODUCTION
+============
+
+LDmicro generates native code for certain Microchip PIC16 and Atmel AVR
+microcontrollers. Usually software for these microcontrollers is written
+in a programming language like assembler, C, or BASIC. A program in one
+of these languages comprises a list of statements. These languages are
+powerful and well-suited to the architecture of the processor, which
+internally executes a list of instructions.
+
+PLCs, on the other hand, are often programmed in `ladder logic.' A simple
+program might look like this:
+
+   ||                                                                    ||
+   ||    Xbutton1           Tdon           Rchatter           Yred       ||
+ 1 ||-------]/[---------[TON 1.000 s]-+-------]/[--------------( )-------||
+   ||                                 |                                  ||
+   ||    Xbutton2           Tdof      |                                  ||
+   ||-------]/[---------[TOF 2.000 s]-+                                  ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||    Rchatter            Ton             Tnew           Rchatter     ||
+ 2 ||-------]/[---------[TON 1.000 s]----[TOF 1.000 s]---------( )-------||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||------[END]---------------------------------------------------------||
+   ||                                                                    ||
+   ||                                                                    ||
+
+(TON is a turn-on delay; TOF is a turn-off delay. The --] [-- statements
+are inputs, which behave sort of like the contacts on a relay. The
+--( )-- statements are outputs, which behave sort of like the coil of a
+relay. Many good references for ladder logic are available on the Internet
+and elsewhere; details specific to this implementation are given below.)
+
+A number of differences are apparent:
+
+    * The program is presented in graphical format, not as a textual list
+      of statements. Many people will initially find this easier to
+      understand.
+
+    * At the most basic level, programs look like circuit diagrams, with
+      relay contacts (inputs) and coils (outputs). This is intuitive to
+      programmers with knowledge of electric circuit theory.
+
+    * The ladder logic compiler takes care of what gets calculated
+      where. You do not have to write code to determine when the outputs
+      have to get recalculated based on a change in the inputs or a
+      timer event, and you do not have to specify the order in which
+      these calculations must take place; the PLC tools do that for you.
+
+LDmicro compiles ladder logic to PIC16 or AVR code. The following
+processors are supported:
+    * PIC16F877
+    * PIC16F628
+    * PIC16F876 (untested)
+    * PIC16F88 (untested)
+    * PIC16F819 (untested)
+    * PIC16F887 (untested)
+    * PIC16F886 (untested)
+    * ATmega128
+    * ATmega64
+    * ATmega162 (untested)
+    * ATmega32 (untested)
+    * ATmega16 (untested)
+    * ATmega8 (untested)
+
+It would be easy to support more AVR or PIC16 chips, but I do not have
+any way to test them. If you need one in particular then contact me and
+I will see what I can do.
+
+Using LDmicro, you can draw a ladder diagram for your program. You can
+simulate the logic in real time on your PC. Then when you are convinced
+that it is correct you can assign pins on the microcontroller to the
+program inputs and outputs. Once you have assigned the pins, you can
+compile PIC or AVR code for your program. The compiler output is a .hex
+file that you can program into your microcontroller using any PIC/AVR
+programmer.
+
+LDmicro is designed to be somewhat similar to most commercial PLC
+programming systems. There are some exceptions, and a lot of things
+aren't standard in industry anyways. Carefully read the description
+of each instruction, even if it looks familiar. This document assumes
+basic knowledge of ladder logic and of the structure of PLC software
+(the execution cycle: read inputs, compute, write outputs).
+
+
+ADDITIONAL TARGETS
+==================
+
+It is also possible to generate ANSI C code. You could use this with any
+processor for which you have a C compiler, but you are responsible for
+supplying the runtime. That means that LDmicro just generates source
+for a function PlcCycle(). You are responsible for calling PlcCycle
+every cycle time, and you are responsible for implementing all the I/O
+(read/write digital input, etc.) functions that the PlcCycle() calls. See
+the comments in the generated source for more details.
+
+Finally, LDmicro can generate processor-independent bytecode for a
+virtual machine designed to run ladder logic code. I have provided a
+sample implementation of the interpreter/VM, written in fairly portable
+C. This target will work for just about any platform, as long as you
+can supply your own VM. This might be useful for applications where you
+wish to use ladder logic as a `scripting language' to customize a larger
+program. See the comments in the sample interpreter for details.
+
+
+COMMAND LINE OPTIONS
+====================
+
+ldmicro.exe is typically run with no command line options. That means
+that you can just make a shortcut to the program, or save it to your
+desktop and double-click the icon when you want to run it, and then you
+can do everything from within the GUI.
+
+If LDmicro is passed a single filename on the command line
+(e.g. `ldmicro.exe asd.ld'), then LDmicro will try to open `asd.ld',
+if it exists. An error is produced if `asd.ld' does not exist. This
+means that you can associate ldmicro.exe with .ld files, so that it runs
+automatically when you double-click a .ld file.
+
+If LDmicro is passed command line arguments in the form
+`ldmicro.exe /c src.ld dest.hex', then it tries to compile `src.ld',
+and save the output as `dest.hex'. LDmicro exits after compiling,
+whether the compile was successful or not. Any messages are printed
+to the console. This mode is useful only when running LDmicro from the
+command line.
+
+
+BASICS
+======
+
+If you run LDmicro with no arguments then it starts with an empty
+program. If you run LDmicro with the name of a ladder program (xxx.ld)
+on the command line then it will try to load that program at startup.
+LDmicro uses its own internal format for the program; it cannot import
+logic from any other tool.
+
+If you did not load an existing program then you will be given a program
+with one empty rung. You could add an instruction to it; for example
+you could add a set of contacts (Instruction -> Insert Contacts) named
+`Xnew'. `X' means that the contacts will be tied to an input pin on the
+microcontroller. You could assign a pin to it later, after choosing a
+microcontroller and renaming the contacts. The first letter of a name
+indicates what kind of object it is.  For example:
+
+    * Xname -- tied to an input pin on the microcontroller
+    * Yname -- tied to an output pin on the microcontroller
+    * Rname -- `internal relay': a bit in memory
+    * Tname -- a timer; turn-on delay, turn-off delay, or retentive
+    * Cname -- a counter, either count-up or count-down
+    * Aname -- an integer read from an A/D converter
+    * name  -- a general-purpose (integer) variable
+
+Choose the rest of the name so that it describes what the object does,
+and so that it is unique within the program. The same name always refers
+to the same object within the program. For example, it would be an error
+to have a turn-on delay (TON) called `Tdelay' and a turn-off delay (TOF)
+called `Tdelay' in the same program, since each counter needs its own
+memory. On the other hand, it would be correct to have a retentive timer
+(RTO) called `Tdelay' and a reset instruction (RES) associated with
+`Tdelay', since it that case you want both instructions to work with
+the same timer.
+
+Variable names can consist of letters, numbers, and underscores
+(_). A variable name must not start with a number. Variable names are
+case-sensitive.
+
+The general variable instructions (MOV, ADD, EQU, etc.) can work on
+variables with any name. This means that they can access timer and
+counter accumulators. This may sometimes be useful; for example, you
+could check if the count of a timer is in a particular range.
+
+Variables are always 16 bit integers. This means that they can go
+from -32768 to 32767. Variables are always treated as signed. You can
+specify literals as normal decimal numbers (0, 1234, -56). You can also
+specify ASCII character values ('A', 'z') by putting the character in
+single-quotes. You can use an ASCII character code in most places that
+you could use a decimal number.
+
+At the bottom of the screen you will see a list of all the objects in
+the program. This list is automatically generated from the program;
+there is no need to keep it up to date by hand. Most objects do not
+need any configuration. `Xname', `Yname', and `Aname' objects must be
+assigned to a pin on the microcontroller, however. First choose which
+microcontroller you are using (Settings -> Microcontroller). Then assign
+your I/O pins by double-clicking them on the list.
+
+You can modify the program by inserting or deleting instructions. The
+cursor in the program display blinks to indicate the currently selected
+instruction and the current insertion point. If it is not blinking then
+press <Tab> or click on an instruction. Now you can delete the current
+instruction, or you can insert a new instruction to the right or left
+(in series with) or above or below (in parallel with) the selected
+instruction. Some operations are not allowed. For example, no instructions
+are allowed to the right of a coil.
+
+The program starts with just one rung. You can add more rungs by selecting
+Insert Rung Before/After in the Logic menu. You could get the same effect
+by placing many complicated subcircuits in parallel within one rung,
+but it is more clear to use multiple rungs.
+
+Once you have written a program, you can test it in simulation, and then
+you can compile it to a HEX file for the target microcontroller.
+
+
+SIMULATION
+==========
+
+To enter simulation mode, choose Simulate -> Simulation Mode or press
+<Ctrl+M>. The program is shown differently in simulation mode. There is
+no longer a cursor. The instructions that are energized show up bright
+red; the instructions that are not appear greyed. Press the space bar to
+run the PLC one cycle. To cycle continuously in real time, choose
+Simulate -> Start Real-Time Simulation, or press <Ctrl+R>. The display of
+the program will be updated in real time as the program state changes.
+
+You can set the state of the inputs to the program by double-clicking
+them in the list at the bottom of the screen, or by double-clicking an
+`Xname' contacts instruction in the program. If you change the state of
+an input pin then that change will not be reflected in how the program
+is displayed until the PLC cycles; this will happen automatically if
+you are running a real time simulation, or when you press the space bar.
+
+
+COMPILING TO NATIVE CODE
+========================
+
+Ultimately the point is to generate a .hex file that you can program
+into your microcontroller. First you must select the part number of the
+microcontroller, under the Settings -> Microcontroller menu. Then you
+must assign an I/O pin to each `Xname' or `Yname' object. Do this by
+double-clicking the object name in the list at the bottom of the screen.
+A dialog will pop up where you can choose an unallocated pin from a list.
+
+Then you must choose the cycle time that you will run with, and you must
+tell the compiler what clock speed the micro will be running at. These
+are set under the Settings -> MCU Parameters... menu. In general you
+should not need to change the cycle time; 10 ms is a good value for most
+applications. Type in the frequency of the crystal that you will use
+with the microcontroller (or the ceramic resonator, etc.) and click okay.
+
+Now you can generate code from your program. Choose Compile -> Compile,
+or Compile -> Compile As... if you have previously compiled this program
+and you want to specify a different output file name. If there are no
+errors then LDmicro will generate an Intel IHEX file ready for
+programming into your chip.
+
+Use whatever programming software and hardware you have to load the hex
+file into the microcontroller. Remember to set the configuration bits
+(fuses)! For PIC16 processors, the configuration bits are included in the
+hex file, and most programming software will look there automatically.
+For AVR processors you must set the configuration bits by hand.
+
+
+INSTRUCTIONS REFERENCE
+======================
+
+> CONTACT, NORMALLY OPEN        Xname           Rname          Yname
+                             ----] [----     ----] [----    ----] [----
+
+    If the signal going into the instruction is false, then the output
+    signal is false. If the signal going into the instruction is true,
+    then the output signal is true if and only if the given input pin,
+    output pin, or internal relay is true, else it is false. This
+    instruction can examine the state of an input pin, an output pin,
+    or an internal relay.
+
+
+> CONTACT, NORMALLY CLOSED      Xname           Rname          Yname
+                             ----]/[----     ----]/[----    ----]/[----
+
+    If the signal going into the instruction is false, then the output
+    signal is false. If the signal going into the instruction is true,
+    then the output signal is true if and only if the given input pin,
+    output pin, or internal relay is false, else it is false. This
+    instruction can examine the state of an input pin, an output pin,
+    or an internal relay. This is the opposite of a normally open contact.
+
+
+> COIL, NORMAL                  Rname           Yname
+                             ----( )----     ----( )----
+
+    If the signal going into the instruction is false, then the given
+    internal relay or output pin is cleared false. If the signal going
+    into this instruction is true, then the given internal relay or output
+    pin is set true. It is not meaningful to assign an input variable to a
+    coil. This instruction must be the rightmost instruction in its rung.
+
+
+> COIL, NEGATED                 Rname           Yname
+                             ----(/)----     ----(/)----
+
+    If the signal going into the instruction is true, then the given
+    internal relay or output pin is cleared false. If the signal going
+    into this instruction is false, then the given internal relay or
+    output pin is set true. It is not meaningful to assign an input
+    variable to a coil.  This is the opposite of a normal coil. This
+    instruction must be the rightmost instruction in its rung.
+
+
+> COIL, SET-ONLY                Rname           Yname
+                             ----(S)----     ----(S)----
+
+    If the signal going into the instruction is true, then the given
+    internal relay or output pin is set true. Otherwise the internal
+    relay or output pin state is not changed. This instruction can only
+    change the state of a coil from false to true, so it is typically
+    used in combination with a reset-only coil. This instruction must
+    be the rightmost instruction in its rung.
+
+
+> COIL, RESET-ONLY              Rname           Yname
+                             ----(R)----     ----(R)----
+
+    If the signal going into the instruction is true, then the given
+    internal relay or output pin is cleared false. Otherwise the
+    internal relay or output pin state is not changed. This instruction
+    instruction can only change the state of a coil from true to false,
+    so it is typically used in combination with a set-only coil. This
+    instruction must be the rightmost instruction in its rung.
+
+
+> TURN-ON DELAY                 Tdon 
+                           -[TON 1.000 s]-
+
+    When the signal going into the instruction goes from false to true,
+    the output signal stays false for 1.000 s before going true. When the
+    signal going into the instruction goes from true to false, the output
+    signal goes false immediately. The timer is reset every time the input
+    goes false; the input must stay true for 1000 consecutive milliseconds
+    before the output will go true. The delay is configurable.
+
+    The `Tname' variable counts up from zero in units of scan times. The
+    TON instruction outputs true when the counter variable is greater
+    than or equal to the given delay. It is possible to manipulate the
+    counter variable elsewhere, for example with a MOV instruction.
+
+
+> TURN-OFF DELAY                Tdoff 
+                           -[TOF 1.000 s]-
+
+    When the signal going into the instruction goes from true to false,
+    the output signal stays true for 1.000 s before going false. When
+    the signal going into the instruction goes from false to true,
+    the output signal goes true immediately. The timer is reset every
+    time the input goes false; the input must stay false for 1000
+    consecutive milliseconds before the output will go false. The delay
+    is configurable.
+
+    The `Tname' variable counts up from zero in units of scan times. The
+    TON instruction outputs true when the counter variable is greater
+    than or equal to the given delay. It is possible to manipulate the
+    counter variable elsewhere, for example with a MOV instruction.
+
+
+> RETENTIVE TIMER               Trto  
+                           -[RTO 1.000 s]-
+
+    This instruction keeps track of how long its input has been true. If
+    its input has been true for at least 1.000 s, then the output is
+    true. Otherwise the output is false. The input need not have been
+    true for 1000 consecutive milliseconds; if the input goes true
+    for 0.6 s, then false for 2.0 s, and then true for 0.4 s, then the
+    output will go true. After the output goes true it will stay true
+    even after the input goes false, as long as the input has been true
+    for longer than 1.000 s. This timer must therefore be reset manually,
+    using the reset instruction.
+
+    The `Tname' variable counts up from zero in units of scan times. The
+    TON instruction outputs true when the counter variable is greater
+    than or equal to the given delay. It is possible to manipulate the
+    counter variable elsewhere, for example with a MOV instruction.
+
+
+> RESET                        Trto             Citems
+                           ----{RES}----     ----{RES}----
+
+    This instruction resets a timer or a counter. TON and TOF timers are
+    automatically reset when their input goes false or true, so RES is
+    not required for these timers. RTO timers and CTU/CTD counters are
+    not reset automatically, so they must be reset by hand using a RES
+    instruction. When the input is true, the counter or timer is reset;
+    when the input is false, no action is taken. This instruction must
+    be the rightmost instruction in its rung.
+
+
+> ONE-SHOT RISING                  _
+                           --[OSR_/ ]--
+
+    This instruction normally outputs false. If the instruction's input
+    is true during this scan and it was false during the previous scan
+    then the output is true. It therefore generates a pulse one scan
+    wide on each rising edge of its input signal. This instruction is
+    useful if you want to trigger events off the rising edge of a signal.
+
+
+> ONE-SHOT FALLING               _
+                           --[OSF \_]--
+
+    This instruction normally outputs false. If the instruction's input
+    is false during this scan and it was true during the previous scan
+    then the output is true. It therefore generates a pulse one scan
+    wide on each falling edge of its input signal. This instruction is
+    useful if you want to trigger events off the falling edge of a signal.
+
+
+> SHORT CIRCUIT, OPEN CIRCUIT
+                           ----+----+----      ----+     +----
+
+    The output condition of a short-circuit is always equal to its
+    input condition. The output condition of an open-circuit is always
+    false. These are mostly useful for debugging.
+
+
+> MASTER CONTROL RELAY
+                           -{MASTER RLY}-
+
+    By default, the rung-in condition of every rung is true. If a master
+    control relay instruction is executed with a rung-in condition of
+    false, then the rung-in condition for all following rungs becomes
+    false. This will continue until the next master control relay
+    instruction is reached (regardless of the rung-in condition of that
+    instruction). These instructions must therefore be used in pairs:
+    one to (maybe conditionally) start the possibly-disabled section,
+    and one to end it.
+
+
+> MOVE                      {destvar :=  }      {Tret :=     }
+                           -{ 123     MOV}-    -{ srcvar  MOV}-
+
+    When the input to this instruction is true, it sets the given
+    destination variable equal to the given source variable or
+    constant. When the input to this instruction is false nothing
+    happens. You can assign to any variable with the move instruction;
+    this includes timer and counter state variables, which can be
+    distinguished by the leading `T' or `C'. For example, an instruction
+    moving 0 into `Tretentive' is equivalent to a reset (RES) instruction
+    for that timer. This instruction must be the rightmost instruction
+    in its rung.
+
+
+> ARITHMETIC OPERATION       {ADD  kay  :=}       {SUB  Ccnt :=}
+                            -{ 'a' + 10   }-     -{ Ccnt - 10  }-
+
+>                            {MUL  dest :=}       {DIV  dv :=  }
+                            -{ var * -990 }-     -{ dv / -10000}-
+
+    When the input to this instruction is true, it sets the given
+    destination variable equal to the given expression. The operands
+    can be either variables (including timer and counter variables)
+    or constants. These instructions use 16 bit signed math. Remember
+    that the result is evaluated every cycle when the input condition
+    true. If you are incrementing or decrementing a variable (i.e. if
+    the destination variable is also one of the operands) then you
+    probably don't want that; typically you would use a one-shot so that
+    it is evaluated only on the rising or falling edge of the input
+    condition. Divide truncates; 8 / 3 = 2. This instruction must be
+    the rightmost instruction in its rung.
+
+
+> COMPARE               [var ==]        [var >]        [1 >=]
+                       -[ var2 ]-      -[ 1   ]-      -[ Ton]-
+
+>                       [var /=]       [-4 <   ]       [1 <=]
+                       -[ var2 ]-     -[ vartwo]-     -[ Cup]-
+
+    If the input to this instruction is false then the output is false. If
+    the input is true then the output is true if and only if the given
+    condition is true. This instruction can be used to compare (equals,
+    is greater than, is greater than or equal to, does not equal,
+    is less than, is less than or equal to) a variable to a variable,
+    or to compare a variable to a 16-bit signed constant.
+
+
+> COUNTER                      Cname          Cname
+                           --[CTU >=5]--  --[CTD >=5]--
+
+    A counter increments (CTU, count up) or decrements (CTD, count
+    down) the associated count on every rising edge of the rung input
+    condition (i.e. what the rung input condition goes from false to
+    true). The output condition from the counter is true if the counter
+    variable is greater than or equal to 5, and false otherwise. The
+    rung output condition may be true even if the input condition is
+    false; it only depends on the counter variable. You can have CTU
+    and CTD instructions with the same name, in order to increment and
+    decrement the same counter. The RES instruction can reset a counter,
+    or you can perform general variable operations on the count variable.
+
+
+> CIRCULAR COUNTER             Cname
+                           --{CTC 0:7}--
+
+    A circular counter works like a normal CTU counter, except that
+    after reaching its upper limit, it resets its counter variable
+    back to 0. For example, the counter shown above would count 0, 1,
+    2, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 2,.... This is useful in
+    combination with conditional statements on the variable `Cname';
+    you can use this like a sequencer. CTC counters clock on the rising
+    edge of the rung input condition condition. This instruction must
+    be the rightmost instruction in its rung.
+
+
+> SHIFT REGISTER            {SHIFT REG   }
+                           -{ reg0..3    }-
+
+    A shift register is associated with a set of variables. For example,
+    this shift register is associated with the variables `reg0', `reg1',
+    `reg2', and `reg3'. The input to the shift register is `reg0'. On
+    every rising edge of the rung-in condition, the shift register will
+    shift right. That means that it assigns `reg3 := reg2', `reg2 :=
+    reg1'. and `reg1 := reg0'. `reg0' is left unchanged. A large shift
+    register can easily consume a lot of memory. This instruction must
+    be the rightmost instruction in its rung.
+
+
+> LOOK-UP TABLE             {dest :=     }
+                           -{ LUT[i]     }-
+
+    A look-up table is an ordered set of n values. When the rung-in
+    condition is true, the integer variable `dest' is set equal to the
+    entry in the lookup table corresponding to the integer variable
+    `i'. The index starts from zero, so `i' must be between 0 and
+    (n-1). The behaviour of this instruction is not defined if the
+    index is outside this range. This instruction must be the rightmost
+    instruction in its rung.
+
+
+> PIECEWISE LINEAR TABLE    {yvar :=     }
+                           -{ PWL[xvar]  }-
+
+    This is a good way to approximate a complicated function or
+    curve. It might, for example, be useful if you are trying to apply
+    a calibration curve to convert a raw output voltage from a sensor
+    into more convenient units.
+
+    Assume that you are trying to approximate a function that converts
+    an integer input variable, x, to an integer output variable, y. You
+    know the function at several points; for example, you might know that
+
+        f(0)   = 2
+        f(5)   = 10
+        f(10)  = 50
+        f(100) = 100
+
+    This means that the points
+
+        (x0, y0)   = (  0,   2)
+        (x1, y1)   = (  5,  10)
+        (x2, y2)   = ( 10,  50)
+        (x3, y3)   = (100, 100)
+
+    lie on that curve. You can enter those 4 points into a table
+    associated with the piecewise linear instruction. The piecewise linear
+    instruction will look at the value of xvar, and set the value of
+    yvar. It will set yvar in such a way that the piecewise linear curve
+    will pass through all of the points that you give it; for example,
+    if you set xvar = 10, then the instruction will set yvar = 50.
+
+    If you give the instruction a value of xvar that lies between two
+    of the values of x for which you have given it points, then the
+    instruction will set yvar so that (xvar, yvar) lies on the straight
+    line connecting those two points in the table.  For example, xvar =
+    55 gives an output of yvar = 75. (The two points in the table are
+    (10, 50) and (100, 100). 55 is half-way between 10 and 100, and 75
+    is half-way between 50 and 100, so (55, 75) lies on the line that
+    connects those two points.)
+
+    The points must be specified in ascending order by x coordinate. It
+    may not be possible to perform mathematical operations required for
+    certain look-up tables using 16-bit integer math; if this is the
+    case, then LDmicro will warn you. For example, this look up table
+    will produce an error:
+
+        (x0, y0)    = (  0,   0)
+        (x1, y1)    = (300, 300)
+
+    You can fix these errors by making the distance between points in
+    the table smaller. For example, this table is equivalent to the one
+    given above, and it does not produce an error:
+
+        (x0, y0)    = (  0,   0)
+        (x1, y1)    = (150, 150)
+        (x2, y2)    = (300, 300)
+
+    It should hardly ever be necessary to use more than five or six
+    points. Adding more points makes your code larger and slower to
+    execute. The behaviour if you pass a value of `xvar' greater than
+    the greatest x coordinate in the table or less than the smallest x
+    coordinate in the table is undefined. This instruction must be the
+    rightmost instruction in its rung.
+
+
+> A/D CONVERTER READ           Aname
+                           --{READ ADC}--
+
+    LDmicro can generate code to use the A/D converters built in to
+    certain microcontrollers. If the input condition to this instruction
+    is true, then a single sample from the A/D converter is acquired and
+    stored in the variable `Aname'. This variable can subsequently be
+    manipulated with general variable operations (less than, greater than,
+    arithmetic, and so on). Assign a pin to the `Axxx' variable in the
+    same way that you would assign a pin to a digital input or output,
+    by double-clicking it in the list at the bottom of the screen. If
+    the input condition to this rung is false then the variable `Aname'
+    is left unchanged.
+
+    For all currently-supported devices, 0 volts input corresponds to
+    an ADC reading of 0, and an input equal to Vdd (the supply voltage)
+    corresponds to an ADC reading of 1023. If you are using an AVR, then
+    connect AREF to Vdd. You can use arithmetic operations to scale the
+    reading to more convenient units afterwards, but remember that you
+    are using integer math. In general not all pins will be available
+    for use with the A/D converter. The software will not allow you to
+    assign non-A/D pins to an analog input. This instruction must be
+    the rightmost instruction in its rung.
+
+
+> SET PWM DUTY CYCLE          duty_cycle
+                           -{PWM 32.8 kHz}-
+
+    LDmicro can generate code to use the PWM peripheral built in to
+    certain microcontrollers. If the input condition to this instruction
+    is true, then the duty cycle of the PWM peripheral is set to the
+    value of the variable duty_cycle. The duty cycle must be a number
+    between 0 and 100; 0 corresponds to always low, and 100 corresponds to
+    always high. (If you are familiar with how the PWM peripheral works,
+    then notice that that means that LDmicro automatically scales the
+    duty cycle variable from percent to PWM clock periods.)
+
+    You can specify the target PWM frequency, in Hz. The frequency that
+    you specify might not be exactly achievable, depending on how it
+    divides into the microcontroller's clock frequency. LDmicro will
+    choose the closest achievable frequency; if the error is large then
+    it will warn you. Faster speeds may sacrifice resolution.
+
+    This instruction must be the rightmost instruction in its rung.
+    The ladder logic runtime consumes one timer to measure the cycle
+    time. That means that PWM is only available on microcontrollers
+    with at least two suitable timers. PWM uses pin CCP2 (not CCP1)
+    on PIC16 chips and OC2 (not OC1A) on AVRs.
+
+
+> MAKE PERSISTENT            saved_var
+                           --{PERSIST}--
+
+    When the rung-in condition of this instruction is true, it causes the
+    specified integer variable to be automatically saved to EEPROM. That
+    means that its value will persist, even when the micro loses
+    power. There is no need to explicitly save the variable to EEPROM;
+    that will happen automatically, whenever the variable changes. The
+    variable is automatically loaded from EEPROM after power-on reset. If
+    a variable that changes frequently is made persistent, then the
+    EEPROM in your micro may wear out very quickly, because it is only
+    good for a limited (~100 000) number of writes. When the rung-in
+    condition is false, nothing happens. This instruction must be the
+    rightmost instruction in its rung.
+
+
+> UART (SERIAL) RECEIVE          var
+                           --{UART RECV}--
+
+    LDmicro can generate code to use the UART built in to certain
+    microcontrollers. On AVRs with multiple UARTs only UART1 (not
+    UART0) is supported. Configure the baud rate using Settings -> MCU
+    Parameters. Certain baud rates may not be achievable with certain
+    crystal frequencies; LDmicro will warn you if this is the case.
+
+    If the input condition to this instruction is false, then nothing
+    happens. If the input condition is true then this instruction tries
+    to receive a single character from the UART. If no character is read
+    then the output condition is false. If a character is read then its
+    ASCII value is stored in `var', and the output condition is true
+    for a single PLC cycle.
+
+
+> UART (SERIAL) SEND             var
+                           --{UART SEND}--
+
+    LDmicro can generate code to use the UARTs built in to certain
+    microcontrollers. On AVRS with multiple UARTs only UART1 (not
+    UART0) is supported. Configure the baud rate using Settings -> MCU
+    Parameters. Certain baud rates may not be achievable with certain
+    crystal frequencies; LDmicro will warn you if this is the case.
+
+    If the input condition to this instruction is false, then nothing
+    happens. If the input condition is true then this instruction writes
+    a single character to the UART. The ASCII value of the character to
+    send must previously have been stored in `var'. The output condition
+    of the rung is true if the UART is busy (currently transmitting a
+    character), and false otherwise.
+
+    Remember that characters take some time to transmit. Check the output
+    condition of this instruction to ensure that the first character has
+    been transmitted before trying to send a second character, or use
+    a timer to insert a delay between characters. You must only bring
+    the input condition true (try to send a character) when the output
+    condition is false (UART is not busy).
+
+    Investigate the formatted string instruction (next) before using this
+    instruction. The formatted string instruction is much easier to use,
+    and it is almost certainly capable of doing what you want.
+
+
+> FORMATTED STRING OVER UART                var
+                                   -{"Pressure: \3\r\n"}-
+
+    LDmicro can generate code to use the UARTs built in to certain
+    microcontrollers. On AVRS with multiple UARTs only UART1 (not
+    UART0) is supported. Configure the baud rate using Settings -> MCU
+    Parameters. Certain baud rates may not be achievable with certain
+    crystal frequencies; LDmicro will warn you if this is the case.
+
+    When the rung-in condition for this instruction goes from false to
+    true, it starts to send an entire string over the serial port. If
+    the string contains the special sequence `\3', then that sequence
+    will be replaced with the value of `var', which is automatically
+    converted into a string. The variable will be formatted to take
+    exactly 3 characters; for example, if `var' is equal to 35, then
+    the exact string printed will be `Pressure:  35\r\n' (note the extra
+    space). If instead `var' were equal to 1432, then the behaviour would
+    be undefined, because 1432 has more than three digits. In that case
+    it would be necessary to use `\4' instead.
+
+    If the variable might be negative, then use `\-3d' (or `\-4d'
+    etc.) instead. That will cause LDmicro to print a leading space for
+    positive numbers, and a leading minus sign for negative numbers.
+
+    If multiple formatted string instructions are energized at once
+    (or if one is energized before another completes), or if these
+    instructions are intermixed with the UART TX instructions, then the
+    behaviour is undefined.
+
+    It is also possible to use this instruction to output a fixed string,
+    without interpolating an integer variable's value into the text that
+    is sent over serial. In that case simply do not include the special
+    escape sequence.
+
+    Use `\\' for a literal backslash. In addition to the escape sequence
+    for interpolating an integer variable, the following control
+    characters are available:
+        * \r   -- carriage return
+        * \n   -- newline
+        * \f   -- formfeed
+        * \b   -- backspace
+        * \xAB -- character with ASCII value 0xAB (hex)
+
+    The rung-out condition of this instruction is true while it is
+    transmitting data, else false. This instruction consumes a very
+    large amount of program memory, so it should be used sparingly. The
+    present implementation is not efficient, but a better one will
+    require modifications to all the back-ends.
+
+
+A NOTE ON USING MATH
+====================
+
+Remember that LDmicro performs only 16-bit integer math. That means
+that the final result of any calculation that you perform must be an
+integer between -32768 and 32767. It also mean that the intermediate
+results of your calculation must all be within that range.
+
+For example, let us say that you wanted to calculate y = (1/x)*1200,
+where x is between 1 and 20. Then y goes between 1200 and 60, which
+fits into a 16-bit integer, so it is at least in theory possible to
+perform the calculation. There are two ways that you might code this:
+you can perform the reciprocal, and then multiply:
+
+   ||         {DIV  temp  :=}          ||
+   ||---------{ 1 / x       }----------||
+   ||                                  ||
+   ||          {MUL  y  :=  }          ||
+   ||----------{ temp * 1200}----------||
+   ||                                  ||
+
+Or you could just do the division directly, in a single step:
+
+   ||           {DIV  y  :=}           ||
+   ||-----------{ 1200 / x }-----------||
+
+Mathematically, these two are equivalent; but if you try them, then you
+will find that the first one gives an incorrect result of y = 0. That
+is because the variable `temp' underflows. For example, when x = 3,
+(1 / x) = 0.333, but that is not an integer; the division operation
+approximates this as temp = 0. Then y = temp * 1200 = 0. In the second
+case there is no intermediate result to underflow, so everything works.
+
+If you are seeing problems with your math, then check intermediate
+results for underflow (or overflow, which `wraps around'; for example,
+32767 + 1 = -32768). When possible, choose units that put values in
+a range of -100 to 100.
+
+When you need to scale a variable by some factor, do it using a multiply
+and a divide. For example, to scale y = 1.8*x, calculate y = (9/5)*x
+(which is the same, since 1.8 = 9/5), and code this as y = (9*x)/5,
+performing the multiplication first:
+
+   ||         {MUL  temp  :=}          ||
+   ||---------{ x * 9       }----------||
+   ||                                  ||
+   ||           {DIV  y  :=}           ||
+   ||-----------{ temp / 5 }-----------||
+
+This works for all x < (32767 / 9), or x < 3640. For larger values of x,
+the variable `temp' would overflow. There is a similar lower limit on x.
+
+
+CODING STYLE
+============
+
+I allow multiple coils in parallel in a single rung. This means that
+you can do things like this:
+
+   ||       Xa               Ya        ||
+ 1 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||       Xb               Yb        ||
+   ||-------] [------+-------( )-------||
+   ||                |                 ||
+   ||                |       Yc        ||
+   ||                +-------( )-------||
+   ||                                  ||
+
+Instead of this:
+
+   ||       Xa               Ya        ||
+ 1 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||       Xb               Yb        ||
+ 2 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||       Xb               Yc        ||
+ 3 ||-------] [--------------( )-------||
+   ||                                  ||
+
+This means that in theory you could write any program as one giant rung,
+and there is no need to use multiple rungs at all. In practice that
+would be a bad idea, because as rungs become more complex they become
+more difficult to edit without deleting and redrawing a lot of logic.
+
+Still, it is often a good idea to group related logic together as a single
+rung. This generates nearly identical code to if you made separate rungs,
+but it shows that they are related when you look at them on the ladder
+diagram.
+
+                  *                 *                  *
+
+In general, it is considered poor form to write code in such a way that
+its output depends on the order of the rungs. For example, this code
+isn't very good if both Xa and Xb might ever be true:
+
+   ||       Xa         {v  :=       }  ||
+ 1 ||-------] [--------{ 12      MOV}--||
+   ||                                  ||
+   ||       Xb         {v  :=       }  ||
+   ||-------] [--------{ 23      MOV}--||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||      [v >]             Yc        ||
+ 2 ||------[ 15]-------------( )-------||
+   ||                                  ||
+
+I will break this rule if in doing so I can make a piece of code
+significantly more compact, though. For example, here is how I would
+convert a 4-bit binary quantity on Xb3:0 into an integer:
+
+   ||                                   {v  :=       }  ||
+ 3 ||-----------------------------------{ 0       MOV}--||
+   ||                                                   ||
+   ||       Xb0                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 1    }-----------||
+   ||                                                   ||
+   ||       Xb1                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 2    }-----------||
+   ||                                                   ||
+   ||       Xb2                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 4    }-----------||
+   ||                                                   ||
+   ||       Xb3                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 8    }-----------||
+   ||                                                   ||
+
+If the MOV statement were moved to the bottom of the rung instead of the
+top, then the value of v when it is read elsewhere in the program would
+be 0. The output of this code therefore depends on the order in which
+the instructions are evaluated. Considering how cumbersome it would be
+to code this any other way, I accept that.
+
+
+BUGS
+====
+
+LDmicro does not generate very efficient code; it is slow to execute, and
+wasteful of flash and RAM. In spite of this, a mid-sized PIC or AVR can
+do everything that a small PLC can, so this does not bother me very much.
+
+The maximum length of variable names is highly limited. This is so that
+they fit nicely onto the ladder diagram, so I don't see a good solution
+to that.
+
+If your program is too big for the time, program memory, or data memory
+constraints of the device that you have chosen then you probably won't
+get an error. It will just screw up somewhere.
+
+Careless programming in the file load/save routines probably makes it
+possible to crash or execute arbitrary code given a corrupt or malicious
+.ld file.
+
+Please report additional bugs or feature requests to the author.
+
+Thanks to:
+    * Marcelo Solano, for reporting a UI bug under Win98
+    * Serge V. Polubarjev, for not only noticing that RA3:0 on the
+      PIC16F628 didn't work but also telling me how to fix it
+    * Maxim Ibragimov, for reporting and diagnosing major problems
+      with the till-then-untested ATmega16 and ATmega162 targets
+    * Bill Kishonti, for reporting that the simulator crashed when the
+      ladder logic program divided by zero
+    * Mohamed Tayae, for reporting that persistent variables were broken
+      on the PIC16F628
+    * David Rothwell, for reporting several user interface bugs and a
+      problem with the "Export as Text" function
+
+
+COPYING, AND DISCLAIMER
+=======================
+
+DO NOT USE CODE GENERATED BY LDMICRO IN APPLICATIONS WHERE SOFTWARE
+FAILURE COULD RESULT IN DANGER TO HUMAN LIFE OR DAMAGE TO PROPERTY. THE
+AUTHOR ASSUMES NO LIABILITY FOR ANY DAMAGES RESULTING FROM THE OPERATION
+OF LDMICRO OR CODE GENERATED BY LDMICRO.
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+Jonathan Westhues
+
+Rijswijk      -- Dec 2004
+Waterloo ON   -- Jun, Jul 2005
+Cambridge MA  -- Sep, Dec 2005
+                 Feb, Mar 2006
+                 Feb 2007
+Seattle WA    -- Feb 2009
+
+Email: user jwesthues, at host cq.cx
+
+

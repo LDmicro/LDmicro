@@ -1,0 +1,1 @@
+@perl run-tests.pl

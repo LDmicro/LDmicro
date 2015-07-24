@@ -1,0 +1,137 @@
+
+LDMICRO INTERNALS
+=================
+
+This document describes LDmicro's internal structure. I intend it as a
+quick reference for my own use.
+
+
+ADDING A NEW ELEM_XXX LADDER INSTRUCTION
+========================================
+
+It is necessary to make changes in the following places:
+
+    * ldmicro.h     -- add the new ELEM_XXX #define
+                    -- add the new MNU_XXX for the menu to add it
+                    -- add any necessary data structures to ElemLeaf
+                    -- add prototypes for newly created extern functions
+                    -- if it is a leaf (it almost certainly is), to
+                       CASE_LEAF
+
+    * maincontrols. -- add the code to create the menu
+      cpp           -- add the code to enable/disable the menu when we
+                       go from `edit' to `simulate' mode
+
+    * iolist.cpp    -- add to routines that build the I/O list; even if
+                       it does not affect the I/O list, it must be added
+                       to the case statement in ExtractNamesFromCircuit,
+                       so that it explicitly does nothing
+
+    * draw.cpp      -- routines to draw the element on the ladder diagram
+
+    * loadsave.cpp  -- routines to load and save the element to the
+                       xxx.ld file
+
+    * intcode.cpp   -- routines to generate intermediate code from the
+                       instruction
+
+    * schematic.cpp -- WhatCanWeDoFromCursorAndTopology, update the 
+                       enabled state of the menus (what can be inserted
+                       above/below/left/right, etc.) based on selection
+                    -- EditSelectedElement, self-explanatory
+
+    * ldmicro.cpp   -- typically menu/keyboard handlers to call the
+                       AddXXX function to insert the element
+
+    * circuit.cpp   -- the new AddXXX function, to add the element at the
+                       cursor point
+
+    * simulate.cpp  -- CheckVariableNamesCircuit, the design rules check
+                       to ensure that e.g. same Tname isn't used with
+                       two timers
+
+    * xxxdialog.cpp -- an `edit element' dialog if necessary, somewhere
+                       (most likely to be simpledialog.cpp, using that)
+
+
+REPRESENTATION OF THE PROGRAM
+=============================
+
+(adapted from an email message, so the tone's a little odd, sorry)
+
+A ladder program can be thought of as a series-parallel network. Each
+rung is a series circuit; this circuit contains either leaf elements
+(like contacts, coils, etc.), or parallel circuits. The parallel circuits
+contain either leaf elements or series subcircuits. If you look at a
+.ld file in a text editor then you can see that I chose to represent
+the program in this way.
+
+This representation makes the compiler a relatively simple problem.
+Imagine that you wish to write a routine to evaluate a circuit. This
+routine will take as an input the circuit's rung-in condition, and
+provide as an output its rung-out. For a circuit consisting of a single
+leaf element this is straightforward; if you look at the Allen Bradley
+documentation then you will see that this is actually how they specify
+their instructions. For example, the rung-out condition of a set of
+contacts is false if either its rung-in condition is false or the input
+corresponding to the set of contacts is false. Let us say that for a
+leaf element L, the output
+
+    Rout = L(Rin).
+
+If that element is a set of contacts named `Xin,' then
+
+    L(Rin) := Rin && (Xin is HIGH).
+    
+(I will use && for AND, and || for OR.)
+
+Next we must figure out how to compile a series circuit, for example (left 
+to right), sub-circuits A, B, and C in series. In that case, the rung-in 
+condition for A is the rung-in condition for the circuit. Then the rung-in 
+condition for B is the rung-out condition for B, the rung-in condition for C 
+is the rung-out condition for B, and the rung-out condition for the whole 
+circuit is the rung-out condition for C. So if the whole series circuit is 
+X, then
+    
+    X(Rin) := C(B(A(Rin))).
+
+Notice that the series circuit is not defined in terms of a boolean AND.
+That would work if you just had contacts, but for ops like TOF, whose
+rung-out can be true when their rung-ins are false, it breaks down.
+
+For a parallel circuit, for example sub-circuits A, B, and C in parallel,
+the rung-in condition for each of the sub-circuits is the rung-in
+condition for the whole circuit, and the rung-out condition is true if
+at least one of the rung-out conditions of the subcircuits is true. So
+if the whole parallel circuit is Y, then
+
+    Y(Rin) := A(Rin) || B(Rin) || C(Rin).
+
+For the series or parallel circuits, the sub-circuits A, B, or C need not
+be leaf elements; they could be parallel or series circuits themselves. In
+that case you would have to apply the appropriate definition, maybe
+recursively (you could have a series circuit that contains a parallel
+circuit that contains another parallel circuit). Once you have written
+the program in that form, as cascaded and OR'd simple functions, any
+textbook in compilers can tell you what to do with it, if it is not
+obvious already.
+
+As I said, though, there are many implementation details. For example,
+I currently support five different targets: PIC16, AVR, ANSI C code,
+interpretable byte code, and the simulator. To reduce the amount of work
+that I must do, I have a simple intermediate representation, with only
+a couple dozen ops. The ladder logic is compiled to intermediate code,
+and the intermediate code is then compiled to whatever I need by the
+appropriate back end. This intermediate code is designed to be as simple
+and as easy to compile as possible, to minimize the time required for me
+to maintain five back ends. That is one of the major reasons why LDmicro
+generates poor code; a more expressive intcode would make it possible
+to write better back ends, but at the cost of implementation time.
+
+If you would like to see how I compile ladder logic to a procedural 
+language, then I would suggest that you look at the code generated by the 
+ANSI C back end.
+
+
+Jonathan Westhues, Mar 2006, Oct 2007
+

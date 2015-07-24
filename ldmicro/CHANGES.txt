@@ -1,0 +1,182 @@
+
+== Release 2.2
+
+    * Fix a problem with the ANSI C target when the program had bit and
+      integer variables with the same name. Note that this changes the
+      names of the symbols in the generated C program; so a system that
+      uses "magic variables" with this target for I/O must be updated
+      to use the new names.
+
+    * Fix a subtle bug in the PIC16 add and subtract routines, where 
+      operations of the form B = A - B could fail.
+
+    * The piecewise linear tables were broken for the AVRs; fix that.
+
+== Release 2.1
+
+    * For the AVR UARTs, poll UDRE instead of TXC. The formatted string op
+      was broken on some targets, should now be fixed.
+
+    * Don't draw selected op in bold font; that looks ugly under Vista.
+
+== Release 2.0
+    
+    * Add PIC16F886 and PIC16F887 targets.
+
+    * Fix display bug in the list to select an I/O pin.
+
+    * Fix bug where PIC16 UART locks up forever after a framing error when
+      the cycle time is faster than one byte time.
+
+    * Fix bug where PIC16 outputs could briefly glitch high at startup.
+
+    * Clear PCLATH in PIC16 boot vector, since some bootloaders expect that.
+
+== Release 1.9
+
+    * Modify PIC16 boot vectors to work with many bootloaders.
+
+== Release 1.8
+
+    * Fix modification of a constant string that blew up in new MSVC++
+      compiler.
+
+    * Add Italian, Turkish, Portuguese.
+
+== Release 1.7
+
+    * Make the source compile with latest version of MSVC++; overloaded
+      functions behave a bit differently.
+
+    * Recover from (and ignore) UART errors on the PIC16 target, instead
+      of getting stuck forever.
+
+    * Whenever contacts bound to an output pin (Yfoo) were edited, they
+      reverted to an input pin (Xfoo); now fixed.
+
+    * Don't abort on too-wide program; instead display nice message.
+
+    * It was possible (by adding and deleting contacts/coils with the
+      same name) to end up with two bit variables bound to the same
+      physical I/O pin; now fixed.
+
+    * File -> Open was correct, but Ctrl+O failed to ask about unsaved
+      changes before opening requested file; now both are correct.
+
+    * Add Spanish user interface strings.
+
+== Release 1.6
+
+    * Internationalize the user interface strings; we now have versions
+      in English, French, and German.
+
+    * First source release, under the GPLv3.
+
+== Release 1.5
+
+    * Add untested support for ATmega32.
+
+    * Remove annoying lag in user interface when editing large (hundreds
+      of ops) programs
+
+== Release 1.4
+
+    * Fix a terrible bug in the target for the ATmega8; because there is
+      no PORTA/DDRA/PINA, I broke an assumption in my code and failed
+      to set up the port directions.
+
+== Release 1.3
+
+    * Timer delays are represented as a signed 32-bit integer count
+      of microseconds. If the user provides a delay >= 2**31 us, then
+      show an error instead of just letting things wrap.
+
+    * Change the start-up behaviour of TOF timers. Previously they would
+      start from a count of zero, so they would be on (independent of
+      rung-in) until they counted themselves off. Now they start out
+      at full count (as if rung-in has been low for a very long time),
+      so rung-out is low until rung-in goes high.
+
+== Release 1.2
+
+    * Add an untested target for the ATmega8
+
+    * Add a special instruction to simplify piecewise linear tables
+
+    * Fix some user interface bugs: it was possible to drag the top of the
+      I/O list so high that you couldn't grab it again, and there were
+      some cases in which the pin number associated with UART and PWM
+      variables was not displayed
+
+== Release 1.1
+
+    * Fix persistent variables, which were broken for the PIC16F628
+
+== Release 1.0
+
+    * Fix bug in which the filename that appears in the title bar of the
+      main window failed to get updated when opening/saving a file using
+      the keyboard shortcuts (Ctrl+O/+S)
+
+    * Fix simulation crash when the ladder logic program divides by zero
+
+    * Fix jumpy scrolling on programs with many rungs of logic when the
+      cursor is off-screen
+
+== Release 0.9
+
+    * Fix bug with formatted string op on the AVR
+    * Fix previously-untested ATmega16 and ATmega162 targets, which were
+      completely broken
+
+=== Release 0.8
+
+    * Fix PORTA on the PIC16F819 (came up assigned to ADCs, of course)
+
+=== Release 0.7
+
+    * Support arbitrary character (\xAB) escapes in formatted string op
+    * Fix a bug in which the title bar of the main window was not updated
+
+=== Release 0.6
+
+    * Add formatted text output over serial (e.g. to an LCD or a PC)
+    * Add ability to make variables persistent (i.e. auto-saved in EEPROM)
+    * Add look-up table instructions
+    * Fix a bug with the PORTE pins on some AVRs
+    * Fix miscellaneous user interface bugs
+
+=== Release 0.5
+
+    * Interpretable byte code target
+    * Shift register and master control relay instructions
+
+=== Release 0.4
+
+    * Make ADCs work on the AVRs
+
+=== Release 0.3
+
+    * Support serial for AVR
+    * Support PWM for PIC16 and AVR
+    * Show program filename in title bar of main window
+    * Untested support for PIC16F88, F819, F876
+    * Generate ANSI C code from ladder diagram
+
+=== Release 0.2
+
+    * Support serial communications (using UART), PIC16 only
+    * Support ADC reads, PIC16 only
+    * Simulation environment for ADC and serial
+    * Support ASCII character constant ('a') literals
+    * Fix PORTA pins in PIC16F628 (should assign as GPIO, not to comparator)
+    * Make file open/save dialogs work under Win98
+    * Fix PORTA/PORTE pins in PIC16F877 (should assign as GPIO, not to ADC)
+    * Add ability to comment your program
+    * Fix bug when a relative filename is given on the command line and
+      the `Compile As' dialog is later used to specify a destination in
+      a different directory
+
+=== Release 0.1
+    
+    Initial release

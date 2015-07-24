@@ -1,0 +1,1017 @@
+INTRODUCTION
+============
+
+LDmicro génére du code natif pour certains microcontroleurs Microchip
+PIC16F et Atmel AVR. Usuellement les programmes de developpement pour ces
+microcontrolleurs sont écrits dans des langages comme l'assembleur , le
+C ou le Basic. Un programme qui utilise un de ces langages est une suite
+de commandes. Ces programmes sont puissants et adaptés à l'architecture
+des processeurs, qui de façon interne exécutent une liste d'instructions.
+
+Les API (Automates Programmables Industriels, PLC en anglais, SPS en
+allemand) utilisent une autre voie et sont programmés en Langage à
+Contacts (ou LADDER). Un programme simple est représenté comme ceci :
+
+
+   ||                                                                    ||
+   ||    Xbutton1           Tdon           Rchatter           Yred       ||
+ 1 ||-------]/[---------[TON 1.000 s]-+-------]/[--------------( )-------||
+   ||                                 |                                  ||
+   ||    Xbutton2           Tdof      |                                  ||
+   ||-------]/[---------[TOF 2.000 s]-+                                  ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||    Rchatter            Ton             Tnew           Rchatter     ||
+ 2 ||-------]/[---------[TON 1.000 s]----[TOF 1.000 s]---------( )-------||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||------[END]---------------------------------------------------------||
+   ||                                                                    ||
+   ||                                                                    ||
+
+(TON est une tempo travail; TOF est une tempo repos. les commandes --] [-- 
+représentent des Entrées, qui peuvent être des contacts de relais. Les 
+commandes --( )-- sont des Sorties, qui peuvent représenter des bobines de 
+relais. Beaucoup de références de programmes de langage à contacts (LADDER) 
+existent sur Internet et sont à quelques détails près, identiques à 
+l'implémentation représentée ci-dessus.
+
+Un certain nombre de différences apparaissent entre les programmes en
+langage évolués ( C, Basic, Etc..) et les programmes pour API:
+
+    * Le programme est représenté dans un format graphique, et non
+      comme une liste de commandes en format texte. Beaucoup de personnes
+      trouve cela plus facile à comprendre.
+
+    * Au niveau de base, le programme apparait comme un diagramme
+      de circuit avec des contacts de relais (Entrées) et des bobines
+      (Sorties). Ceci est intuitif pour les programmeurs qui connaissent
+      la théorie des circuits électriques.
+
+    * Le compilateur de langage à contacts vérifie tout ceci lors
+      de la compilation. Vous n'avez pas à écrire de code quand une
+      Sortie est remplacée et est remise en Entrée ou si une temporisation
+      est modifiée, vous n'avez pas non plus à spécifier l'ordre où les
+      calculs doivent être effectués. L'outil API (PLC) s'occupe de cela
+      pour vous.
+
+
+LDmicro compile le langage à contact (ladder) en code pour PIC16F ou
+AVR. Les processeurs suivants sont supportés:
+
+    * PIC16F877
+    * PIC16F628
+    * PIC16F876 (non testé)
+    * PIC16F88  (non testé)
+    * PIC16F819 (non testé)
+    * PIC16F887 (non testé)
+    * PIC16F886 (non testé)
+    * ATmega128
+    * ATmega64
+    * ATmega162 (non testé)
+    * ATmega32  (non testé)
+    * ATmega16  (non testé)
+    * ATmega8   (non testé)
+
+Il doit être facile de supporter d'autres PIC ou AVR, mais je n'est
+aucun moyen pour les tester. Si vous en voulez un en particulier faites
+moi parvenir votre demande et je verrai ce que je peux faire.
+
+En utilisant LDmicro, vous dessinez un diagramme à contacts pour votre
+programme. Vous pouvez simuler le fonctionnement logique en temps réel sur
+votre PC. Quand vous êtes convaincu que le fonctionnement est correct,
+vous pouvez affecter les broches du microcontroleur pour les Entrées et
+Sorties, ensuite vous compilez votre programmeen code AVR ou PIC. Le
+fichier de sortie du compilateur est un fichier .HEX que vous devrez
+mettre dans le microcontroleur en utilisant un programmateur pour PIC
+ou AVR.
+
+
+LDmicro est conçu pour être similaire à la majorité des API commerciaux.
+Il y a quelques exceptions, et une partie des possibilités n'est
+pas standard avec le matériel industriel. Lire attentivement la
+description de chaque instruction même si elle parait familière. Ce
+document considère que vous avez une connaisance de base du langage à
+contact et de la structure des logiciels pour automates programmables.
+Cycle d'exécution : Lecture des Entrées -> Calculs -> Ecriture des Sorties
+
+
+CIBLES ADDITIONNELLES 
+=====================
+
+Il est aussi possible de générer du code ANSI C . Vous pouvez utiliser
+ceci pour n'importe quel processeur dont vous avez un compilateur C,
+mais le runtime est de votre responsabilité. LDmicro gérére uniquement
+le source pour le cycle de l'API. Vous êtes responsable de l'appel de
+chaque séquence du cycle et de l'implémentation de toutes les Entrées
+/ Sorties (Lecture/Ecriture des Entrées digitales, etc ...). Voir les
+commentaires dans le code source pour plus de détails.
+
+Finalement, LDmicro peut générer un code byte indépendant du processeur
+pour une machine virtuelle prévue pour faire fonctionner ce type de code.
+J'ai prévu un exemple simple d'implémentation d'un interpréteur /VM
+écrit en code C le plus portable possible.  La cible fonctionne juste sur
+quelques plateformes ou vous pouvez prévoir votre VM. Ceci peut être utile
+pour des applications ou vous pouvez utiliser le languages à contacts
+comme du langage script pour customiser un programme important. Voir
+les commentaires dans l'exemple pour les détails.
+
+
+OPTIONS LIGNE DE COMMANDE
+=========================
+
+LDmicro.exe fonctionne normallement sans options de ligne de commande.
+Vous pouvez faire un raccourci vers le programme et le sauvegarder sur
+l'écran , il suffit alors de faire un double clic pour le faire démarrer
+et vous vous retrouvez ainsi dans l'interface utilisateur.
+
+Si un nom de fichier est passé en ligne de de commande de LDmicro, (ex:
+`ldmicro.exe asd.ld'), alors LDmicro va essayer d'ouvrir `asd.ld', si
+il existe. Une erreur se produira si `asd.ld' n'existe pas. Vous avez
+la possibilité d'associer LDmicro avec les fichiers d'extention .ld.
+Ceci permet à LDmicro de démarrer automatiquement lors d'un double clic
+sur un fichier  xxx.ld.
+
+Si les arguments de la ligne de commande sont passés sous la forme:
+`ldmicro.exe /c src.ld dest.hex', LDmicro compilera le programme`src.ld',
+et sauvegardera le fichier compilé sous`dest.hex'. Après compilation
+LDmicro se termine, que la compilation soit correcte ou pas. Aucun
+message n'est affiché sur la console. Ce mode est pratique uniquement
+lorsque vous exécutez LDmicro en ligne de commande.
+
+
+BASES
+=====
+
+Si vous exécutez LDmicro sans arguments de ligne de commande, il démarre
+avec un programme vide. Si vous démarrer avec le nom d'un programme
+langage à contacts (xxx.ld) en ligne de commande, il va essayer de
+charger le programme au démarrage. LDmicro utilise son format interne
+pour le programme , il ne peut pas importer de programmes édités par
+d'autres outils.
+
+Si vous ne chargez pas un programme existant, LDmicro démarre en insérant
+une ligne vide. Vous pouvez ajouter les instructions pour votre programme:
+par exemple ajouter un jeu de contacts (Instruction -> Insérer Contact)
+qui sera nommé `Xnew'. `X' désigne un contact qui peut être lié à une
+broche d'entrée du microcontroleur, vous pouvez affecter la broche pour
+ce contact plus tard après avoir choisi le microcontroleur et renommé
+les contacts. La première lettre indique de quel type de composants il
+s'agit par exemple :
+
+    * Xnom  -- Relié à une broche d'entrée du microcontroleur
+    * Ynom  -- Relié à une broche de sortie du microcontroleur
+    * Rnom  -- `Relais interne': un bit en mémoire
+    * Tnom  -- Temporisation; Tempo travail, tempo repos, ou totalisatrice
+    * Cnom  -- Compteur, Compteur ou décompteur
+    * Anom  -- Un entier lu sur un comvertisseur A/D 
+    * nom   -- Variable générique (Entier : Integer)
+
+Choisir le reste du nom pour décrire l'utilisation de ce que fait cet
+objet et qui doit être unique dans tout le programme. Un même nom doit
+toujours se référer au même objet dans le programme en entier.Par
+exemple , vous aurez une erreur si vous utilisez une tempo travail
+(TON) appellée TDelai et une tempo repos (TOF) appellée aussi TDelai
+dans le même programme, le comptage effectué par ces tempo utilisera le
+même emplacement en mémoire, mais il est acceptable d'avoir une tempo
+sauvegardée (RTO) Tdelai même nom avec une instruction de RES, dans ce
+cas l'instruction fonctionne avec le même timer.
+
+Les noms de variables peuvent être des lettres, chiffres ou le
+caractère _.  Un nom de variable ne doit pas commencer par un chiffre.
+Les noms de variables sont sensibles à la casse (majuscule/minuscules).
+
+Les instructions de manipulation de variables (MOV, ADD, EQU,
+etc.) peuvent travailler avec des variables de n'importe quel nom. Elles
+peuvent avoir accès aux accumulateurs des temporisations ou des
+compteurs. Cela peut quelquefois être très utile, par exemple si vous
+voulez contrôler la valeur d'un compteur ou d'une temporisation dans
+une ligne particulière.
+
+Les variables sont toujours des entiers 16 bits. Leur valeur peut
+donc être comprise entre -32768 et 32767 inclus. Les variables sont
+toujours signées.  Vous pouvez les spécifier de façon littérale comme
+des nombres décimaux normaux (0, 1234, -56), vous pouvez aussi les
+spécifier en caractères ASCII ('A', 'z') en mettant le caractère entre
+des guillemets simples. Vous pouvez utiliser un caractère ASCII dans la
+majorité des endroits où vous pouvez utiliser les nombres décimaux.
+
+En bas de l'écran, vous pouvez voir la liste de tous les objets
+utilisés dans votre programme. La liste est automatiquement générée
+à partir du programme.  La majorité des objets ne necessitent aucune
+configuration. Seuls : les objets `Xnom', `Ynom', and `Anom' doivent être
+affectés à une broche du micro La première chose à faire est de choisir
+la microcontroleur utilisé : Paramères -> Microcontroleur ensuite vous
+affectez les broches en faisant un double clic dans la liste.
+
+Vous pouvez modifier le programme en insérant ou supprimant des
+instructions.  Le curseur clignote dans la programme pour indiquer
+l'instruction courante sélectionnée et le point d'insertion. S'il ne
+clignote pas pressez <Tab> ou cliquer sur une instruction, ou vous
+pouvez insérer une nouvelle instruction à la droite ou à la gauche
+(en série avec), ou au dessous ou au dessus (en parallèle avec) de
+l'instruction sélectionnée. Quelques opérations ne sont pas permises ,
+par exemple aucune instruction permise à droite de la bobine.
+
+Le programme démarre avec uniquement une ligne. Vous pouvez ajouter
+plusieurs lignes en sélectionnant Insertion -> Ligne avant ou après
+dans le menu. Vous pouvez faire un circuit complexe en plaçant plusieurs
+branches en parallèle ou en série avec une ligne, mais il est plus clair
+de faire plusieurs lignes.
+
+Une fois votre programme écrit, vous pouvez le tester par simulation,
+et le compiler dans un fichier HEX pour le microcontroleur de destination.
+
+SIMULATION
+==========
+
+Pour entrer dans la mode simulation choisir Simulation -> Simuler
+ou presser <Ctrl+M> le programme est affiché différemment en mode
+simulation. Les instructions activées sont affichées en rouge vif, les
+instructions qui ne le sont pas sont affichées en grisé. Appuyer sur la
+barre d'espace pour démarrer l'API pour 1 cycle. Pour faire fonctionner
+continuellement en temps réel choisir Simulation ->Démarrer la simulation
+en temps réel ou presser <Ctrl+R> L'affichage du programme est mise à
+jour en temps réel en fonction des changements d'état des entrées.
+
+Vous pouvez valider l'état des entrées du programme en faisant un
+double clic sur l'entrée dans la liste au bas de l'écran, ou sur le
+contact `Xnom' de l'instruction dans le programme, pour avoir le reflet
+automatiquement de la validation d'une entrée dans le programme, il
+faut que le programme soit en cycle.(le démarrer par <Ctrl+R> ou barre
+d'espace pour un seul cycle).
+
+COMPILER EN CODE NATIF
+======================
+
+Le point final est de générer un fichier .HEX qui sera programmé dans le
+microcontroleur que vous avez choisi par Paramètres -> Microcontroleur
+Vous devez affecter les broches d'entrées sorties pour chaque 'Xnom'
+et 'Ynom'. Vous pouvez faire cela en faisant un double clic sur la nom
+de l'objet dans la liste au bas de l'écran. Une boite de dialogue vous
+demande de choisir une des broches non affectées dans la liste.
+
+Vous devez aussi choisir la temps de cycle que voulez utiliser pour
+votre application, vous devez aussi choisir la fréquence d'horloge du
+processeur.  Faire Paramètres -> Paramètres MCU dans le menu. En général,
+le temps de cycle peut être laissé à la valeur par défaut (10 ms) qui est
+une bonne valeur pour la majorité des applications. Indiquer la fréquence
+du quartz utilisé (ou du résonateur céramique ou autres..) et cliquer OK.
+
+Maintenant vous pouvez créer le fichier pour intégrer dans le
+microcontroleur. Choisir  Compilation -> Compiler, ou compiler sous...
+Si vous avez précédemment compilé votre programme, vous pouvez spécifier
+un nom différent de fichier de sortie. Si votre programme ne comporte
+pas d'erreur (lié à la structure du programme), LDmicro génére un fichier
+IHEX prêt à être programmé dans le chip.
+
+Utilisez votre logiciel et matériel de programmation habituel pour
+charger le fichier HEX dans la microcontroleur. Vérifiez et validez
+les bits de configuration (fuses), pour les processeurs PIC16Fxxx ces
+bits sont inclus dans le fichier HEX, et la majorité des logiciels de
+programmation les valident automatiquement, pour les processeurs AVR ,
+vous devez le faire manuellement.
+
+REFERENCE DES INSTRUCTIONS 
+==========================
+
+> CONTACT, NORMALLEMENT OUVERT  Xnom            Rnom          Ynom
+                            ----] [----     ----] [----    ----] [----
+
+    Si le signal arrivant à cette instruction est FAUX (0) le signal
+    de sortie est aussi faux (0), s'il est vrai , il sera aussi vrai
+    en sortie si et uniquement si la broche d'Entrée ou de Sortie
+    ou de Relais interne est vraie, sinon l'instruction sera fausse.
+    Cette instruction peut vérifier l'état d'une broche d'entrée, d'une
+    broche de sortie ou d'un relais interne
+
+ 
+> CONTACT, NORMALLEMENT FERME    Xnom            Rnom          Ynom
+                             ----]/[----     ----]/[----    ----]/[----
+
+    Si le signal arrivant à cette instruction est FAUX (0) le signal
+    de sortie est vrai (1), s'il est vrai , il sera faux en sortie .
+    Cette instruction peut vérifier l'état d'une broche d'entrée, d'une
+    broche de sortie ou d'un relais interne. Fonctionne en opposition
+    par rapport au contact normallement ouvert.
+
+
+> BOBINE, NORMALE                Rnom           Ynom
+                             ----( )----     ----( )----
+
+    Si le signal arrivant à cette instruction est faux, alors le relais 
+    interne ou la broche de sortie est faux (mise à zéro). Si le signal
+    arrivant à cette instruction est vrai(1), alors le relais interne ou
+    la broche de sortie est validée (mise à 1). Il n'est pas important
+    d'affecter une variable à une bobine.
+    Cette instruction est placée le plus à droite dans une séquence.
+    
+
+> BOBINE, INVERSE                Rnom         Ynom
+                             ----(/)----     ----(/)----
+
+    Si le signal arrivant à cette instruction est vrai, alors le relais 
+    interne ou la broche de sortie est faux (mise à zéro). Si le signal
+    arrivant à cette instruction est faux(0), alors le relais interne ou
+    la broche de sortie est validée (mise à 1). Il n'est pas important 
+    d'affecter une variable à une bobine.
+    Cette instruction est placée le plus à droite dans une séquence.
+
+
+> BOBINE, ACCROCHAGE             Rnom           Ynom
+                             ----(S)----     ----(S)----
+
+    Si le signal arrivant à cette instruction est vrai, alors le
+    relais interne ou la broche de sortie est validée (mise à 1). Cette
+    instruction permet de changer l'état d'un relais ou d'une sortie :
+    uniquement passe à vrai, ou reste vrai si elle était déjà à 1,
+    elle est typiquement utilisée en combinaison avec une Bobine REMISE
+    A ZERO.
+    Cette instruction est placée le plus à droite dans une séquence.
+
+
+> BOBINE, REMISE A ZERO          Rnom           Ynom
+                             ----(R)----     ----(R)----
+
+    Si le signal arrivant à cette instruction est vrai, alors le relais 
+    interne ou la sortie est mise à zéro (0), si elle était déjà à 0, 
+    il n'y a aucun changement, cette instruction change l'état d'une 
+    sortie uniquement si elle était à 1, cette instruction fonctionne en 
+    combinaison avec l'instruction ci-dessus Bobine à ACCROCHAGE.
+    Cette instruction est placée le plus à droite dans une séquence.
+
+
+> TEMPORISATION TRAVAIL         Tdon 
+                           -[TON 1.000 s]-
+
+    Quand la signal arrivant à cette instruction passe de faux à vrai
+    (0 à 1), le signal de sortie attend 1.000 seconde avant de passer
+    à 1. Quand le signal de commande de cette instruction passe ZERO,
+    le signal de sortie passe immédiatement à zéro. La tempo est remise
+    à zéro à chaque fois que l'entrée repasse à zéro. L'entrée doit être
+    maintenue vraie à 1 pendant au moins 1000 millisecondes consécutives
+    avant que la sortie  ne devienne vraie. le délai est configurable.
+
+    La variable `Tnom' compte depuis zéro en unités de temps de scan.
+    L'instruction Ton devient vraie en sortie quand la variable du
+    compteur est plus grande ou égale au delai fixé. Il est possible
+    de manipuler la variable du compteur en dehors, par exemple par une
+    instruction MOVE.
+
+
+> TEMPORISATION REPOS           Tdoff 
+                           -[TOF 1.000 s]-
+
+    Quand le signal qui arrive à l'instruction passe de l'état vrai
+    (1) à l'état faux (0), la sortie attend 1.000 s avant de dévenir
+    faux (0) Quand le signal arrivant à l'instruction passe de l'état
+    faux à l'état vrai, le signal passe à vrai immédiatement. La
+    temporisation est remise à zéro à chaque fois que l'entrée devient
+    fausse. L'entrée doit être maintenue à l'état faux pendant au moins
+    1000 ms consécutives avant que la sortie ne passe à l'état faux. La
+    temporisation est configurable.
+
+    La variable `Tname' compte depuis zéro en unités de temps de scan.
+    L'instruction Ton devient vraie en sortie quand la variable du
+    compteur est plus grande ou égale au delai fixé. Il est possible
+    de manipuler la variable du compteur en dehors, par exemple par une
+    instruction MOVE.
+
+
+> TEMPORISATION TOTALISATRICE           Trto  
+                                   -[RTO 1.000 s]-
+
+    Cette instruction prend en compte le temps que l'entrée a été à l'état
+    vrai (1). Si l'entrée a été vraie pendant au moins 1.000s la sortie
+    devient vraie (1).L'entrée n'a pas besoin d'être vraie pendant 1000 ms
+    consécutives. Si l'entrée est vraie pendant 0.6 seconde puis fausse
+    pendant 2.0 secondes et ensuite vraie pendant 0.4 seconde, la sortie
+    va devenir vraie. Après être passé à l'état vrai, la sortie reste
+    vraie quelque soit la commande de l'instruction. La temporisation
+    doit être remise à zéro par une instruction de RES (reset).
+
+    La variable `Tnom' compte depuis zéro en unités de temps de scan.
+    L'instruction Ton devient vraie en sortie quand la variable du
+    compteur est plus grande ou égale au delai fixé. Il est possible
+    de manipuler la variable du compteur en dehors, par exemple par une
+    instruction MOVE.
+
+
+> RES Remise à Zéro             Trto             Citems
+                           ----{RES}----     ----{RES}----
+
+    Cette instruction fait un remise à zéro d'une temporisation ou d'un
+    compteur. Les tempos TON et TOF sont automatiquement remisent à zéro
+    lorsque leurs entrées deviennent respectivement fausses ou vraies,
+    RES n'est pas donc pas nécessaire pour ces tempos. Les tempos RTO
+    et les compteurs décompteurs CTU / CTD ne sont pas remis à zéro
+    automatiquement, il faut donc utiliser cette instruction. Lorsque
+    l'entrée est vraie , le compteur ou la temporisation est remis à
+    zéro. Si l'entrée reste à zéro, aucune action n'est prise.
+    Cette instruction est placée le plus à droite dans une séquence.
+
+
+> FRONT MONTANT                    _
+                           --[OSR_/ ]--
+
+    La sortie de cette instruction est normallement fausse. Si
+    l'instruction d'entrée est vraie pendant ce scan et qu'elle était
+    fausse pendant le scan précédent alors la sortie devient vraie. Elle
+    génére une impulsion à chaque front montant du signal d'entrée. Cette
+    instruction est utile si vous voulez intercepter le front montant
+    du signal.
+
+
+> FRONT DESCENDANT               _
+                           --[OSF \_]--
+
+    La sortie de cette instruction est normallement fausse. Si
+    l'instruction d'entrée est fausse (0) pendant ce scan et qu'elle
+    était vraie (1) pendant le scan précédent alors la sortie devient
+    vraie. Elle génére une impulsion à chaque front descendant du signal
+    d'entrée. Cette instruction est utile si vous voulez intercepter le
+    front descendant d'un signal.
+
+
+> COURT CIRCUIT (SHUNT), CIRCUIT OUVERT
+                           ----+----+----      ----+     +----
+
+    Une instruction shunt donne en sortie une condition qui est toujours 
+    égale à la condition d'entrée. Une instruction Circuit Ouvert donne 
+    toujours une valeur fausse en sortie.
+    Ces instructions sont en général utilisées en phase de test.
+
+
+> RELAIS DE CONTROLE MAITRE
+                           -{MASTER RLY}-
+
+    Par défaut, la condition d'entrée d'une ligne est toujours vraie. Si
+    une instruction Relais de contrôle maitre est exécutée avec une
+    valeur d'entrée fausse, alors toutes les lignes suivantes deviendront
+    fausses. Ceci va continuer jusqu'à la rencontre de la prochaine
+    instruction relais de contrôle maitre qui annule l'instruction de
+    départ. Ces instructions doivent toujours être utilisées par paires:
+    une pour commencer (qui peut être sous condition) qui commence la
+    partie déactivée et une pour la terminer.
+
+
+> MOUVOIR                   {destvar :=  }      {Tret :=     }
+                           -{ 123     MOV}-    -{ srcvar  MOV}-
+
+    Lorsque l'entrée de cette instruction est vraie, elle va mettre la
+    variable de destination à une valeur égale à la variable source ou à
+    la constante source. Quand l'entrée de cette instruction est fausse
+    rien ne se passe. Vous pouvez affecter n'importe quelle variable
+    à une instruction de déplacement, ceci inclu l'état de variables
+    compteurs ou temporisateurs qui se distinguent par l'entête T ou
+    C. Par exemple mettre 0 dans Tsauvegardé équivaut à faire une RES
+    de la temporisation.  Cette instruction doit être complétement à
+    droite dans une séquence.
+
+
+> OPERATIONS ARITHMETIQUES   {ADD  kay  :=}       {SUB  Ccnt :=}
+                            -{ 'a' + 10   }-     -{ Ccnt - 10  }-
+
+>                            {MUL  dest :=}       {DIV  dv :=  }
+                            -{ var * -990 }-     -{ dv / -10000}-
+
+    Quand l'entrée de cette instruction est vraie, elle place en
+    destination la variable égale à l'expression calculée. Les opérandes
+    peuvent être des variables (en incluant les variables compteurs et
+    tempos) ou des constantes. Ces instructions utilisent des valeurs 16
+    bits signées. Il faut se souvenir que le résultat est évalué à chaque
+    cycle tant que la condition d'entrée est vraie. Si vous incrémentez
+    ou décrémentez une variable (si la variable de destination est
+    aussi une des opérandes), le résultat ne sera pas celui escompté,
+    il faut utiliser typiquement un front montant ou descendant de la
+    condition d'entrée qui ne sera évalué qu'une seule fois. La valeur
+    est tronquée à la valeur entière.  Cette instruction doit être
+    complétement à droite dans une séquence.
+
+
+> COMPARER              [var ==]        [var >]        [1 >=]
+                       -[ var2 ]-      -[ 1   ]-      -[ Ton]-
+
+>                       [var /=]       [-4 <   ]       [1 <=]
+                       -[ var2 ]-     -[ vartwo]-     -[ Cup]-
+
+    Si l'entrée de cette instruction est fausse alors la sortie est
+    fausse.  Si l'entrée est vraie, alors la sortie sera vraie si et
+    uniquement si la condition de sortie est vraie. Cette instruction
+    est utilisée pour comparer (Egalité, plus grand que,plus grand ou
+    égal à, inégal, plus petit que, plus petit ou égal à) une variable à
+    une autre variable, ou pour comparer une variable avec une constante
+    16 bits signée.
+
+
+> COMPTEUR DECOMPTEUR          Cnom           Cnom
+                           --[CTU >=5]--  --[CTD >=5]--
+
+    Un compteur incrémente ( Compteur CTU, count up) ou décrémente
+    (Décompteur CTD, count down) une variable à chaque front montant de
+    la ligne en condition d'entrée (CAD quand la signal passe de l'état
+    0 à l'état 1. La condition de sortie du compteur est vraie si la
+    variable du compteur est égale ou plus grande que 5 (dans l'exemple),
+    et faux sinon. La condition de sortie de la ligne peut être vraie,
+    même si la condition d'entrée est fausse, cela dépend uniquement de la
+    valeur de la variable du compteur. Vous pouvez avoir un compteur ou
+    un décompteur avec le même nom, qui vont incréménter ou decrémenter
+    une variable.  L'instruction Remise à Zéro permet de resetter un
+    compteur (remettre à zéro), il est possible de modifier par des
+    opérations les variables des compteurs décompteurs.
+
+
+> COMPTEUR CYCLIQUE             Cnom
+                           --{CTC 0:7}--
+
+    Un compteur cyclique fonctionne comme un compteur normal
+    CTU, exception faite, lorsque le compteur arrive à sa
+    limite supérieure, la variable du compteur revient à 0. dans
+    l'exemple la valeur du compteur évolue de la façon suivante :
+    0,1,2,4,5,6,7,0,1,2,3,4,5,6,7,0,1,3,4,5,etc. Ceci est très pratique
+    en conbinaison avec des intructions conditionnelles sur la variable
+    Cnom. On peut utiliser ceci comme un séquenceur, l'horloge du compteur
+    CTC est validée par la condition d'entrée associée à une instruction
+    de front montant.
+    Cette instruction doit être complétement à droite dans une séquence.
+    
+
+> REGISTRE A DECALAGE       {SHIFT REG   }
+                           -{ reg0..3    }-
+
+    Un registre à décalage est associé avec un jeu de variables. Le
+    registre à décalage de l'exemple donné est associé avec les
+    variables`reg0', `reg1', `reg2', and `reg3'. L'entrée du registre à
+    décalage est `reg0'. A chaque front montant de la condition d'entrée
+    de la ligne, le registre à décalage va décaler d'une position à
+    droite. Ce qui donne `reg3 := reg2', `reg2 := reg1'. et `reg1 :=
+    reg0'.`reg0' est à gauche sans changement. Un registre à décalage
+    de plusieurs éléments peut consommer beaucoup de place en mémoire.
+    Cette instruction doit être complétement à droite dans une séquence.
+
+
+> TABLEAU INDEXE            {dest :=     }
+                           -{ LUT[i]     }-
+
+    Un tableau indexé et un groupe ordonné de n valeurs Quand la condition
+    d'entrée est vraie, la variable entière `dest' est mise à la valeur
+    correspondand à l'index i du tableau. L'index est compris entre 0 et
+    (n-1). Le comportement de cette instruction est indéfini si l'index
+    est en dehors du tableau
+    Cette instruction doit être complétement à droite dans une séquence.
+
+
+> TABLEAU ELEMENTS LINEAIRES {yvar :=     }
+                            -{ PWL[xvar]  }-
+
+    C'est une bonne méthode pour évaluer de façon approximative une
+    fonction compliquée ou une courbe. Très pratique par exemple pour
+    appliquer une courbe de calibration pour linéariser tension de sortie
+    d'un capteur dans une unité convenable.
+
+    Supposez que vous essayez de faire une fonction pour convertir une
+    variable d'entrée entière, x, en une variable de sortie entière, y,
+    vous connaissez la fonction en différents points, par exemple vous
+    connaissez :
+
+        f(0)   = 2
+        f(5)   = 10
+        f(10)  = 50
+        f(100) = 100
+
+    Ceci donne les points
+
+        (x0, y0)   = (  0,   2)
+        (x1, y1)   = (  5,  10)
+        (x2, y2)   = ( 10,  50)
+        (x3, y3)   = (100, 100)
+
+    liés à cette courbe. Vous pouvez entrer ces 4 points dans un
+    tableau associé à l'instruction tableau d'éléments linéaires. Cette
+    instruction regarde la valeur de xvar et fixe la valeur de yvar
+    correspondante. Par exemple si vous mettez xvar = 10 , l'instruction
+    validera yvar = 50.
+
+    Si vous mettez une instruction avec une valeur xvar entre deux valeurs
+    de x du tableau (et par conséquence aussi de yvar). Une moyenne
+    proportionnelle entre les deux valeurs , précédente et suivante de
+    xvar et de la valeur liée yvar, est effectuée. Par exemple xvar =
+    55 donne en sortie yvar = 75 Les deux points xvar (10.50) et yvar
+    (50,75) , 55 est la moyenne entre 10 et 100 et 75 est la moyenne
+    entre 50 et 100, donc (55,75) sont liés ensemble par une ligne de
+    connection qui connecte ces deux points.
+
+    Ces points doivent être spécifiés dans l'ordre ascendant des
+    coordonnées x.  Il peut être impossible de faire certaines opérations
+    mathématiques nécessaires pour certains tableaux, utilisant des
+    entiers 16 bits. Dans ce LDmicro va provoquer une alarme. Ce tableau
+    va provoquer une erreur :
+
+        (x0, y0)    = (  0,   0)
+        (x1, y1)    = (300, 300)
+
+    Vous pouvez supprimer ces erreurs en diminuant l'écart entre les
+    points du tableau, par exemple ce tableau est équivalent à celui ci
+    dessus , mais ne provoque pas d'erreur:
+
+        (x0, y0)    = (  0,   0)
+        (x1, y1)    = (150, 150)
+        (x2, y2)    = (300, 300)
+
+    Il n'est pratiquement jamais nécessaire d'utiliser plus de 5 ou
+    6 points.  Ajouter des points augmente la taille du code et diminue
+    sa vitesse d'exécution. Le comportement, si vous passez une valeur
+    à xvar plus grande que la plus grande valeur du tableau , ou plus
+    petit que la plus petite valeur, est indéfini.
+    Cette instruction doit être complétement à droite dans une séquence.
+
+
+> LECTURE CONVERTISSEUR A/D    Anom
+                           --{READ ADC}--
+
+    LDmicro peut générer du code pour utiliser les convertisseurs A/D
+    contenus dans certains microcontroleurs. Si la condition d'entrée
+    de l'instruction est vraie, alors une acquisition du convertisseur
+    A/D est éffectuée et stockée dans la variable Anom. Cette variable
+    peut être par la suite traitée comme les autres variables par les
+    différentes opérations arithmétiques ou autres. Vous devez affecter
+    une broche du micro à la variable Anom de la même façon que pour
+    les entrées et sorties digitales par un double clic dans la list
+    affichée au bas de l'écran. Si la condition d'entrée de la séquence
+    est fausse la variable Anom reste inchangée.
+
+    Pour tous les circuits supportés actuellement, 0 volt en entrée
+    correspond à une lecture ADC de 0, et une valeur égale à VDD (la
+    tension d'alimentation ) correspond à une lecture ADC de 1023. Si
+    vous utilisez un circuit AVR, vous devez connecter Aref à VDD.
+
+    Vous pouvez utiliser les opérations arithmétiques pour mettre à 
+    l'échelle les lectures effectuées dans l'unité qui vous est la plus 
+    appropriée. Mais souvenez vous que tous les calculs sont faits en 
+    utilisant les entiers.
+
+    En général, toutes les broches ne sont pas utilisables pour les 
+    lecture de convertisseur A/D. Le logiciel ne vous permet pas 
+    d'affecter une broche non A/D pour une entrée convertisseur.
+    Cette instruction doit être complétement à droite dans une séquence.
+
+
+> FIXER RAPPORT CYCLE PWM    duty_cycle
+                           -{PWM 32.8 kHz}-
+
+    LDmicro peut générer du code pour utiliser les périphériques PWM
+    contenus dans certains microcontroleurs. Si la condition d'entrée
+    de cette instruction est vraie, le rapport de cycle du périphérique
+    PWM va être fixé à la valeur de la variable Rapport de cycle PWM.
+    Le rapport de cycle est un nombre compris entre 0 (toujours au
+    niveau bas) et 100 (toujours au niveau haut). Si vous connaissez la
+    manière dont les périphériques fonctionnent vous noterez que LDmicro
+    met automatiquement à l'échelle la variable du rapport de cycle en
+    pourcentage de la période d'horloge PWM.
+
+    Vous pouvez spécifier la fréquence de sortie PWM, en Hertz. Le
+    fréquence que vous spécifiez peut ne pas être exactement accomplie, en
+    fonction des divisions de la fréquence d'horloge du microcontroleur,
+    LDmicro va choisir une fréquence approchée. Si l'erreur est trop
+    importante, il vous avertit.Les vitesses rapides sont au détriment
+    de la résolution. Cette instruction doit être complétement à droite
+    dans une séquence.
+
+    Le runtime du language à contacts consomme un timers (du micro) pour
+    le temps de cycle, ce qui fait que le PWM est uniquement possible
+    avec des microcontroleurs ayant au moins deux timers utilisables.
+    PWM utilise CCP2 (pas CCP1) sur les PIC16F et OC2(pas OC1) sur les
+    Atmel AVR.
+
+> METTRE PERSISTANT          saved_var
+                           --{PERSIST}--
+
+    Quand la condition d'entrée de cette instruction est vraie, la
+    variable entière spécifiée va être automatiquement sauvegardée en
+    EEPROM, ce qui fait que cette valeur persiste même après une coupure
+    de l'alimentation du micro. Il n'y a pas à spécifier ou elle doit
+    être sauvegardée en EEPROM, ceci est fait automatiquement, jusqu'a
+    ce quelle change à nouveau.  La variable est automatiquement chargée
+    à partir de l'EEPROM suite à un reset à la mise sous tension.
+
+    Si une variables, mise persistante, change fréquemment, l'EEPROM de
+    votre micro peut être détruite très rapidement, Le nombre de cycles
+    d'écriture dans l'EEPROM est limité à environ 100 000 cycles Quand
+    la condition est fausse, rien n'apparait. Cette instruction doit
+    être complétement à droite dans une séquence.
+
+
+> RECEPTION UART (SERIE)         var
+                           --{UART RECV}--
+
+    LDmicro peut générer du code pour utiliser l'UART, existant dans
+    certains microcontroleurs. Sur les AVR, avec de multiples UART,
+    uniquement l'UART1 est utilisable (pas l'UART0). Configurer la
+    vitesse en utilisant -> Paramètres -> Paramètres MCU. Toutes les
+    vitesses de liaison ne sont pas utilisables avec tous les quartz de
+    toutyes les fréquences. Ldmicro vous avertit dans ce cas.
+
+    Si la condition d'entrée de cette instruction est fausse, rien ne se
+    passe. Si la condition d'entrée est vraie, elle essaie de recevoir
+    un caractère en provenance de l'UART. Si aucun caractère n'est lu
+    alors la condition de sortie devient fausse. Si un caractère est
+    lu la valeur ASCII est stockée dans 'var' et la condition de sortie
+    est vraie pour un seul cycle API.
+
+
+> EMMISION UART (SERIE)          var
+                           --{UART SEND}--
+
+    LDmicro peut générer du code pour utiliser l'UART, existant dans 
+    certains microcontroleurs. Sur les AVR, avec de multiples UART, 
+    uniquement l'UART1 est utilisable (pas l'UART0). Configurer la 
+    vitesse en utilisant -> Paramètres -> Paramètres MCU. Toutes les 
+    vitesses de liaison ne sont pas utilisables avec tous les quartz 
+    de toutyes les fréquences. Ldmicro vous avertit dans ce cas.
+
+    Si la condition d'entrée de cette instruction est fausse, rien ne
+    se passe. Si la condition d'entrée est vraie alors cette instruction
+    écrit un seul caractère vers l'UART. La valeur ASCII du caractère à
+    transmettre doit avoir été stocké dans 'var' par avance. La condition
+    de sortie de la séquence est vraie, si l'UART est occupée (en cours
+    de transmission d'un caractère), et fausse sinon.
+
+    Rappelez vous que les caractères mettent un certain temps pour être
+    transmis. Vérifiez la condition de sortie de cette instruction pour
+    vous assurer que le premier caractère à bien été transmis, avant
+    d'essayer d'envoyer un second caractère, ou utiliser une temporisation
+    pour insérer un délai entre caractères; Vous devez uniquement vérifier
+    que la condition d'entrée est vraie (essayez de transmettre un
+    caractère) quand la condition de sortie est fausse(UART non occuppée).
+
+    Regardez l'instruction Chaine formattée(juste après) avant d'utiliser
+    cette instruction, elle est plus simple à utiliser, et dans la
+    majorité des cas, est capable de faire ce dont on a besoin.
+
+
+> CHAINE FORMATTEE SUR UART                var
+                                   -{"Pression: \3\r\n"}-
+
+    LDmicro peut générer du code pour utiliser l'UART, existant dans 
+    certains microcontroleurs. Sur les AVR, avec de multiples UART, 
+    uniquement l'UART1 est utilisable (pas l'UART0). Configurer la 
+    vitesse en utilisant -> Paramètres -> Paramètres MCU. Toutes les 
+    vitesses de liaison ne sont pas utilisables avec tous les quartz 
+    de toutyes les fréquences. Ldmicro vous avertit dans ce cas.
+
+    Quand la condition d'entrée de cette instruction passe de faux à vrai,
+    elle commence à envoyer une chaine compléte vers le port série. Si
+    la chaine comporte la séquence spéciale '3', alors cette séquence
+    va être remplacée par la valeur de 'var', qui est automatiquement
+    converti en une chaine. La variable va être formattée pour prendre
+    exactement trois caractères; par exemple si var = 35, la chaine
+    exacte qui va être "imprimée" sera 'Pression:  35\r\n' (notez les
+    espaces supplémentaires). Si au lieu de cela var = 1432 , la sortie
+    est indéfinie parceque 1432 comporte plus de 3 digits. Dans ce cas
+    vous devez nécessairement utiliser '\4' à la place.
+
+    Si la variable peut être négative, alors utilisez '\-3d' (ou `\-4d'
+    etc.) à la place. Ceci oblige LDmicro à imprimer un espace d'entête
+    pour les nombres positifs et un signe moins d'entête pour les chiffres
+    négatifs.
+
+    Si de multiples instructions de chaines formattées sont activées au
+    même moment (ou si une est activée avant de finir la précédente)
+    ou si ces instructions sont imbriquées avec des instructions TX
+    (transmission), le comportement est indéfini.
+
+    Il est aussi possible d'utiliser cette instruction pour sortie une
+    chaine fixe, sans l'intervention d'une variable en valeur entière
+    dans le texte qui est envoyée sur la ligne série. Dans ce cas,
+    simplement ne pas inclure de séquence spéciale Escape.
+
+    Utiliser `\\' pour l'anti-slash. en addition à une séquence escape 
+    pour intervenir sue une variables entière, les caractères de 
+    contrôles suivants sont utilisables :
+    
+        * \r   -- retour en début de ligne
+        * \n   -- nouvelle ligne
+        * \f   -- saut de page
+        * \b   -- retour arrière
+        * \xAB -- caractère avec valeur ASCII  0xAB (hex)
+
+    La condition de sortie de cette instruction est vraie quand elle
+    transmet des données, sinon elle est fausse. Cette instruction
+    consomme une grande quantité de mémoire, elle doit être utilisée
+    avec modération. L'implémentation présente n'est pas efficace, mais
+    une meilleure implémentation demanderait une modification de tout
+    le reste.
+
+NOTE CONCERNANT LES MATHS
+=========================
+
+Souvenez vous que LDmicro travaille uniquement en mathématiques entiers
+16 bits. Ce qui fait que le résultat final de même que tous les calculs
+mêmes intermédiaires seront compris entre -32768 et 32767.
+
+Par exemple, si vous voulez calculer y = (1/x)*1200,ou x est compris
+entre 1 et 20, ce qui donne un résultat entre 1200 et 60,le résultat est
+bien à l'intérieur d'un entier 16 bits, il doit donc être théoriquement
+possible de faire le calcul. Nous pouvons faire le calcul de deux façons
+d'abord faire 1/x et ensuite la multiplication:
+
+   ||         {DIV  temp  :=}          ||
+   ||---------{ 1 / x       }----------||
+   ||                                  ||
+   ||          {MUL  y  :=  }          ||
+   ||----------{ temp * 1200}----------||
+   ||                                  ||
+
+Ou uniquement faire simplement la division en une seule ligne :
+
+   ||           {DIV  y  :=}           ||
+   ||-----------{ 1200 / x }-----------||
+
+Mathématiquement c'est identique, la première donne y = 0 , c'est à dire
+une mauvais résultat, si nous prenons par exemple x = 3 , 1/x = 0.333 mais
+comme il s'agit d'un entier, la valeur pour Temp est de 0 et 0*1200 = 0 
+donc résultat faux.Dans le deuxième cas, il n'y a pas de résultat 
+intermédiaire et le résultat est correct dans tous les cas.
+
+Si vous trouvez un problème avec vos calculs mathématiques, vérifiez les
+résultats intermédiaires, si il n'y a pas de dépassement de capacités par
+rapports aux valeurs entières. (par exemple 32767 + 1 = -32768). Quand
+cela est possible essayer de choisir des valeurs entre -100 et 100.
+
+Vous pouvez utiliser un certain facteur de multiplication ou division pour 
+mettre à l'echelle les variables lors de calculs par exemple : pour mettre
+mettre à l'echelle y = 1.8*x , il est possible de faire y =(9/5)*x 
+(9/5 = 1.8) et coder ainsi y = (9*x)/5 en faisant d'abord la multiplication
+
+   ||         {MUL  temp  :=}          ||
+   ||---------{ x * 9       }----------||
+   ||                                  ||
+   ||           {DIV  y  :=}           ||
+   ||-----------{ temp / 5 }-----------||
+
+Ceci fonctionne tant que  x < (32767 / 9), or x < 3640. Pour les grandes 
+valeurs de x,la variable `temp' va se mettre en dépassement. Ceci est 
+similaire vers la limite basse de x.
+
+
+STYLE DE CODIFICATION
+=====================
+
+Il est permis d'avoir plusieurs bobines en parallèle, contrôlées par
+une simple ligne comme ci-dessous :
+
+   ||       Xa               Ya        ||
+ 1 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||       Xb               Yb        ||
+   ||-------] [------+-------( )-------||
+   ||                |                 ||
+   ||                |       Yc        ||
+   ||                +-------( )-------||
+   ||                                  ||
+
+à la place de ceci :
+
+   ||       Xa               Ya        ||
+ 1 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||       Xb               Yb        ||
+ 2 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||       Xb               Yc        ||
+ 3 ||-------] [--------------( )-------||
+   ||                                  ||
+
+Il est permis théoriquement d'écrire un programme avec une séquence très
+importante et de ne pas utiliser plusieurs lignes pour la faire. En
+pratique c'est une mauvaise idée, à cause de la compléxité que cela
+peut engendrer et plus difficile à éditer sans effacer et redessiner un
+certain nombre d'éléments de logique.
+
+Néanmoins, c'est une bonne idée de regrouper différents éléments d'un bloc
+logique dans une seule séquence. Le code généré est identique dans les
+deux cas, et vous pouvez voir ce que fait la séquence dans le diagramme
+à contacts.
+
+                  *                 *                  *
+
+En général, il est considéré comme mauvais d'écrire du code dont la
+sortie dépend de l'ordre d'exécution. Exemple : ce code n'est pas très
+bon lorsque xa et xb sont vrai en même temps :
+
+   ||       Xa         {v  :=       }  ||
+ 1 ||-------] [--------{ 12      MOV}--||
+   ||                                  ||
+   ||       Xb         {v  :=       }  ||
+   ||-------] [--------{ 23      MOV}--||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||      [v >]             Yc        ||
+ 2 ||------[ 15]-------------( )-------||
+   ||                                  ||
+
+Ci-dessous un exemple pour convertir 4 bits Xb3:0 en un entier :
+
+   ||                                   {v  :=       }  ||
+ 3 ||-----------------------------------{ 0       MOV}--||
+   ||                                                   ||
+   ||       Xb0                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 1    }-----------||
+   ||                                                   ||
+   ||       Xb1                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 2    }-----------||
+   ||                                                   ||
+   ||       Xb2                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 4    }-----------||
+   ||                                                   ||
+   ||       Xb3                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 8    }-----------||
+   ||                                                   ||
+
+Si l'instruction MOV est déplacée en dessous des instructions ADD, la
+valeur de la variable v, quand elle est lue autrepart dans le programme,
+serait toujours 0. La sortie du code dépend alors de l'ordre d'évaluations
+des instructions. Ce serait possible de modifier ce code pour éviter cela,
+mais le code deviendrait très encombrant.
+
+DEFAUTS
+=======
+
+LDmicro ne génére pas un code très efficace; il est lent à exécuter et
+il est gourmand en Flash et RAM. Un PIC milieu de gamme ou un AVR peut
+tout de même faire ce qu'un petit automate peut faire.
+
+La longueur maximum des noms de variables est très limitée, ceci pour
+être intégrée correctement dans le diagramme logique, je ne vois pas de
+solution satisfaisante pour solutionner ce problème.
+
+Si votre programme est trop important, vitesse exécution, mémoire
+programme ou contraintes de mémoire de données pour le processeur que vous
+avez choisi, il n'indiquera probablement pas d'erreur. Il se blocquera
+simplement quelque part.
+
+Si vous êtes programmeur négligent dans les sauvegardes et les
+chargements, il est possible qu'un crash se produise ou exécute un code
+arbitraire corrompu ou un mauvais fichier .ld .
+
+SVP, faire un rapport sur les bogues et les demandes de modifications.
+
+Thanks to:
+    * Marcelo Solano, for reporting a UI bug under Win98
+    * Serge V. Polubarjev, for not only noticing that RA3:0 on the
+      PIC16F628 didn't work but also telling me how to fix it
+    * Maxim Ibragimov, for reporting and diagnosing major problems
+      with the till-then-untested ATmega16 and ATmega162 targets
+    * Bill Kishonti, for reporting that the simulator crashed when the
+      ladder logic program divided by zero
+    * Mohamed Tayae, for reporting that persistent variables were broken
+      on the PIC16F628
+    * David Rothwell, for reporting several user interface bugs and a
+      problem with the "Export as Text" function
+
+Particular thanks to Marcel Vaufleury, for this translation (of both
+the manual and the program's user interface) into French.
+
+
+COPYING, AND DISCLAIMER
+=======================
+
+DO NOT USE CODE GENERATED BY LDMICRO IN APPLICATIONS WHERE SOFTWARE
+FAILURE COULD RESULT IN DANGER TO HUMAN LIFE OR DAMAGE TO PROPERTY. THE
+AUTHOR ASSUMES NO LIABILITY FOR ANY DAMAGES RESULTING FROM THE OPERATION
+OF LDMICRO OR CODE GENERATED BY LDMICRO.
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+Jonathan Westhues
+
+Rijswijk      -- Dec 2004
+Waterloo ON   -- Jun, Jul 2005
+Cambridge MA  -- Sep, Dec 2005
+                 Feb, Mar 2006
+
+Email: user jwesthues, at host cq.cx
+
+
