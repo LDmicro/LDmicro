@@ -1,4 +1,7 @@
-# C++.gitignore
+# WINDOWS .gitignore
+Thumbs.db
+
+# C++ .gitignore
 # Compiled Object files
 *.slo
 *.lo
@@ -24,6 +27,6 @@
 *.lib
 
 # Executables
-*.exe
+#*.exe
 *.out
 *.app
