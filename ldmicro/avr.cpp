@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -589,13 +589,16 @@ static void ConfigureTimer1(int cycleTimeMicroseconds)
         case 1024: csn = 5; break;
         default: oops();
     }
-    
+
     WriteMemory(REG_TCCR1B, (1<<3) | csn); // WGM13=0, WGM12=1
 
     // `the high byte must be written before the low byte'
     WriteMemory(REG_OCR1AH, (countsPerCycle - 1) >> 8);
     WriteMemory(REG_OCR1AL, (countsPerCycle - 1) & 0xff);
-    
+
+    /*
+    Bug .. no interupt for timer1 need..
+
     // Okay, so many AVRs have a register called TIFR, but the meaning of
     // the bits in that register varies from device to device...
     if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega162 40-PDIP")==0) {
@@ -603,6 +606,7 @@ static void ConfigureTimer1(int cycleTimeMicroseconds)
     } else {
         WriteMemory(REG_TIMSK, (1 << 4));
     }
+    */
 }
 
 //-----------------------------------------------------------------------------
@@ -644,7 +648,7 @@ static void WriteRuntime(void)
     Instruction(OP_BRNE, loopZero, 0);
     Instruction(OP_TST, 19, 0);
     Instruction(OP_BRNE, loopZero, 0);
-    
+
 
     // set up I/O pins
     BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
@@ -669,7 +673,7 @@ static void WriteRuntime(void)
             ComplainAboutBaudRateError(divisor, actual, percentErr);
         }
         if(divisor > 4095) ComplainAboutBaudRateOverflow();
-        
+
         WriteMemory(REG_UBRRH, divisor >> 8);
         WriteMemory(REG_UBRRL, divisor & 0xff);
         WriteMemory(REG_UCSRB, (1 << 4) | (1 << 3)); // RXEN, TXEN
@@ -774,7 +778,7 @@ static void CallSubroutine(DWORD addr)
 // Compile the intermediate code to AVR native code.
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate(void)
-{   
+{
     DWORD addr, addr2;
     int bit, bit2;
     DWORD addrl, addrh;
@@ -783,7 +787,7 @@ static void CompileFromIntermediate(void)
     for(; IntPc < IntCodeLen; IntPc++) {
         IntOp *a = &IntCode[IntPc];
         switch(a->op) {
-            case INT_SET_BIT:   
+            case INT_SET_BIT:
                 MemForSingleBit(a->name1, FALSE, &addr, &bit);
                 SetBit(addr, bit);
                 break;
@@ -923,7 +927,7 @@ static void CompileFromIntermediate(void)
 
                 CallSubroutine(DivideAddress);
                 DivideUsed = TRUE;
-                
+
                 MemForVariable(a->name1, &addrl, &addrh);
 
                 LoadXAddr(addrl);
@@ -970,7 +974,7 @@ static void CompileFromIntermediate(void)
             case INT_SET_PWM: {
                 int target = atoi(a->name2);
 
-                // PWM frequency is 
+                // PWM frequency is
                 //   target = xtal/(256*prescale)
                 // so not a lot of room for accurate frequency here
 
@@ -987,7 +991,7 @@ static void CompileFromIntermediate(void)
                         bestPrescale = prescale;
                         bestFreq = freq;
                     }
-                    
+
                     if(prescale == 1) {
                         prescale = 8;
                     } else if(prescale == 8) {
@@ -1038,7 +1042,7 @@ static void CompileFromIntermediate(void)
                     case 1024: cs = 5; break;
                     default: oops(); break;
                 }
-    
+
                 // fast PWM mode, non-inverted operation, given prescale
                 WriteMemory(REG_TCCR2, (1 << 6) | (1 << 3) | (1 << 5) | cs);
 
@@ -1128,11 +1132,11 @@ static void CompileFromIntermediate(void)
                 Instruction(OP_LDI, 16, 0x06);
                 Instruction(OP_ST_X, 16, 0);
                 break;
-            
+
             case INT_READ_ADC: {
                 MemForVariable(a->name1, &addrl, &addrh);
 
-                WriteMemory(REG_ADMUX, 
+                WriteMemory(REG_ADMUX,
                     (0 << 6) |              // AREF, internal Vref odd
                     (0 << 5) |              // right-adjusted
                     MuxForAdcVariable(a->name1));
@@ -1145,12 +1149,12 @@ static void CompileFromIntermediate(void)
                     if((1 << j) > divisor) break;
                 }
 
-                BYTE adcsra = 
+                BYTE adcsra =
                     (1 << 7) |              // ADC enabled
                     (0 << 5) |              // not free running
                     (0 << 3) |              // no interrupt enabled
                     j;                      // prescaler setup
-            
+
                 WriteMemory(REG_ADCSRA, adcsra);
                 WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << 6)));
 
@@ -1197,7 +1201,7 @@ static void CompileFromIntermediate(void)
             case INT_UART_RECV: {
                 MemForVariable(a->name1, &addrl, &addrh);
                 MemForSingleBit(a->name2, TRUE, &addr, &bit);
-        
+
                 ClearBit(addr, bit);
 
                 DWORD noChar = AllocFwdAddr();
@@ -1209,7 +1213,7 @@ static void CompileFromIntermediate(void)
                 Instruction(OP_LD_X, 16, 0);
                 LoadXAddr(addrl);
                 Instruction(OP_ST_X, 16, 0);
-                
+
                 LoadXAddr(addrh);
                 Instruction(OP_LDI, 16, 0);
                 Instruction(OP_ST_X, 16, 0);
