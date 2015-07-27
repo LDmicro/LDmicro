@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -33,6 +33,7 @@
 #include "ldmicro.h"
 #include "freeze.h"
 #include "mcutable.h"
+#include "..\GIT_HOOKS\git_commit.h"
 
 HINSTANCE   Instance;
 HWND        MainWindow;
@@ -175,18 +176,18 @@ static void CompileProgram(BOOL compileAs)
     if(Prog.mcu == NULL) {
         Error(_("Must choose a target microcontroller before compiling."));
         return;
-    } 
+    }
 
     if(UartFunctionUsed() && Prog.mcu->uartNeeds.rxPin == 0) {
         Error(_("UART function used but not supported for this micro."));
         return;
     }
-    
+
     if(PwmFunctionUsed() && Prog.mcu->pwmNeedsPin == 0) {
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
-  
+
     switch(Prog.mcu->whichIsa) {
         case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
         case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
@@ -210,7 +211,7 @@ BOOL CheckSaveUserCancels(void)
         return FALSE;
     }
 
-    int r = MessageBox(MainWindow, 
+    int r = MessageBox(MainWindow,
         _("The program has changed since it was last saved.\r\n\r\n"
         "Do you want to save the changes?"), "LDmicro",
         MB_YESNOCANCEL | MB_ICONWARNING);
@@ -300,7 +301,7 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
             switch(wParam) {
                 case WM_MOUSEMOVE: {
                     int dy = MouseY - mhs->pt.y;
-                   
+
                     IoListHeight += dy;
                     if(IoListHeight < 50) IoListHeight = 50;
                     MouseY = mhs->pt.y;
@@ -431,11 +432,11 @@ static void ProcessMenu(int code)
         case MNU_INSERT_LUT:
             CHANGING_PROGRAM(AddLookUpTable());
             break;
-        
+
         case MNU_INSERT_PWL:
             CHANGING_PROGRAM(AddPiecewiseLinear());
             break;
-        
+
         case MNU_INSERT_FMTD_STR:
             CHANGING_PROGRAM(AddFormattedString());
             break;
@@ -491,10 +492,10 @@ math:
             case MNU_INSERT_GEQ: elem = ELEM_GEQ; goto cmp;
             case MNU_INSERT_LES: elem = ELEM_LES; goto cmp;
             case MNU_INSERT_LEQ: elem = ELEM_LEQ; goto cmp;
-cmp:    
+cmp:
                 CHANGING_PROGRAM(AddCmp(elem));
                 break;
-        } 
+        }
 
         case MNU_MAKE_NORMAL:
             CHANGING_PROGRAM(MakeNormalSelected());
@@ -578,6 +579,13 @@ cmp:
 
         case MNU_ABOUT:
             ShowHelpDialog(TRUE);
+            break;
+
+        case MNU_RELEASE:
+            char str[1000];
+            sprintf(str,"Tag: %s\n\n%s\n\nSHA-1: %s", git_commit_tag, git_commit_date, git_commit_str);
+            MessageBox(MainWindow, str, _("Release"),
+                MB_OK | MB_ICONINFORMATION);
             break;
     }
 }
@@ -782,7 +790,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         if(CheckSaveUserCancels()) break;
                         if(!ProgramChangedNotSaved) {
-                            int r = MessageBox(MainWindow, 
+                            int r = MessageBox(MainWindow,
                                 _("Start new program?"),
                                 "LDmicro", MB_YESNO | MB_DEFBUTTON2 |
                                 MB_ICONQUESTION);
@@ -952,7 +960,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             } else {
                 SetCursor(LoadCursor(NULL, IDC_ARROW));
             }
-            
+
             break;
         }
         case WM_MOUSEWHEEL: {
@@ -1099,10 +1107,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     ShowWindow(MainWindow, SW_SHOW);
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
-    
+
     if(strlen(lpCmdLine) > 0) {
         char line[MAX_PATH];
-        if(*lpCmdLine == '"') { 
+        if(*lpCmdLine == '"') {
             strcpy(line, lpCmdLine+1);
         } else {
             strcpy(line, lpCmdLine);

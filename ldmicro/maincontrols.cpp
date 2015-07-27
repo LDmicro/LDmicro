@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -76,14 +76,14 @@ void MakeMainWindowControls(void)
     } while(0)
     IoList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, "", WS_CHILD |
         LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP |
-        LVS_SINGLESEL | WS_CLIPSIBLINGS, 
+        LVS_SINGLESEL | WS_CLIPSIBLINGS,
         12, 25, 300, 300, MainWindow, NULL, Instance, NULL);
     ListView_SetExtendedListViewStyle(IoList, LVS_EX_FULLROWSELECT);
 
     int typeWidth = 85;
     int pinWidth = 100;
     int portWidth = 90;
-    
+
     LV_ADD_COLUMN(IoList, LV_IO_NAME,  250,       _("Name"));
     LV_ADD_COLUMN(IoList, LV_IO_TYPE,  typeWidth, _("Type"));
     LV_ADD_COLUMN(IoList, LV_IO_STATE, 100,       _("State"));
@@ -91,10 +91,10 @@ void MakeMainWindowControls(void)
     LV_ADD_COLUMN(IoList, LV_IO_PORT,  portWidth, _("MCU Port"));
 
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
-        SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS, 
+        SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
         100, 100, 100, 100, MainWindow, NULL, Instance, NULL);
     VertScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
-        SBS_VERT | SBS_LEFTALIGN | WS_VISIBLE | WS_CLIPSIBLINGS, 
+        SBS_VERT | SBS_LEFTALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
         200, 100, 100, 100, MainWindow, NULL, Instance, NULL);
     RECT scroll;
     GetWindowRect(HorizScrollBar, &scroll);
@@ -102,7 +102,7 @@ void MakeMainWindowControls(void)
     GetWindowRect(VertScrollBar, &scroll);
     ScrollWidth = scroll.right - scroll.left;
 
-    StatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
+    StatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
         "LDmicro started", MainWindow, 0);
     int edges[] = { 250, 370, -1 };
     SendMessage(StatusBar, SB_SETPARTS, 3, (LPARAM)edges);
@@ -347,10 +347,10 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters..."));
     ProcessorMenu = CreatePopupMenu();
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-        AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i, 
+        AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
             SupportedMcus[i].mcuName);
     }
-    AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i, 
+    AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
         _("(no microcontroller)"));
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu,
         _("&Microcontroller"));
@@ -372,6 +372,7 @@ HMENU MakeMainWindowMenus(void)
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
     AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
+    AppendMenu(help, MF_STRING, MNU_RELEASE, _("Release.."));
 
     TopMenu = CreateMenu();
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)FileMenu, _("&File"));
@@ -382,7 +383,7 @@ HMENU MakeMainWindowMenus(void)
         _("&Instruction"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)SimulateMenu,
         _("Si&mulate"));
-    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)compile, 
+    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)compile,
         _("&Compile"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)help, _("&Help"));
 
@@ -672,7 +673,7 @@ void ToggleSimulationMode(void)
         EnableMenuItem(TopMenu, 2, MF_GRAYED | MF_BYPOSITION);
         EnableMenuItem(TopMenu, 3, MF_GRAYED | MF_BYPOSITION);
         EnableMenuItem(TopMenu, 5, MF_GRAYED | MF_BYPOSITION);
-    
+
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_CHECKED);
 
         ClearSimulationData();
