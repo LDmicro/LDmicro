@@ -4,13 +4,13 @@
 # The file in which we will write a commit.
 file="git_commit.h"
 file_def=`echo $file|tr . _`
-echo "#ifndef $file_def" > $file
-echo "#define $file_def" >> $file
-echo "static const char *git_commit_tag = \""`git tag -n1`"\";" >> $file
-echo "static const char *git_commit_date = \""`git log --pretty="Date: %ai" -n1`"\";" >> $file
-echo "static const char *git_commit_str = \""`git log --pretty=oneline -n1`"\";" >> $file
-echo "#endif" >> $file
+echo "#ifndef $file_def" > LDMICRO\$file
+echo "#define $file_def" >> LDMICRO\$file
+echo "static const char *git_commit_tag = \""`git tag -n1`"\";" >> LDMICRO\$file
+echo "static const char *git_commit_date = \""`git log --pretty="Date: %ai" -n1`"\";" >> LDMICRO\$file
+echo "static const char *git_commit_str = \""`git log --pretty=oneline -n1`"\";" >> LDMICRO\$file
+echo "#endif" >> LDMICRO\$file
 
 # A message that that all successful.
-echo "--- Git commit is written to $file 'git_commit.h' ---"
+echo "--- Git commit is written to $file ---"
 echo "--- !!! NOW PLEASE RECOMPILE YOUR PROJECT TO TAKE EFFECT !!! ---"

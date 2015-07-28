@@ -33,7 +33,7 @@
 #include "ldmicro.h"
 #include "freeze.h"
 #include "mcutable.h"
-#include "..\GIT_HOOKS\git_commit.h"
+#include "git_commit.h"
 
 HINSTANCE   Instance;
 HWND        MainWindow;
