@@ -12,5 +12,5 @@ echo "static const char *git_commit_str = \""`git log --pretty=oneline -n1`"\";"
 echo "#endif" >> $file
 
 # A message that that all successful.
-echo "--- Git commit is written to $file 'git_commit.h' ---"
+echo "--- Git commit is written to $file ---"
 echo "--- !!! NOW PLEASE RECOMPILE YOUR PROJECT TO TAKE EFFECT !!! ---"
