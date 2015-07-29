@@ -40,14 +40,14 @@ HELPOBJ  = $(OBJDIR)\helptext.obj
 LIBS = user32.lib gdi32.lib comctl32.lib advapi32.lib
 
 all: $(OBJDIR)/ldmicro.exe $(OBJDIR)/ldinterpret.exe
-    @copy $(OBJDIR)\ldmicro.exe .
-    @copy $(OBJDIR)\ldinterpret.exe .
+    @cp $(OBJDIR)/ldmicro.exe .
+    @cp $(OBJDIR)/ldinterpret.exe .
     @cd reg
     rem @go.bat
     @cd ..
 
 clean:
-    del /f /q obj
+    rm -f obj/*
 
 lang.cpp: $(OBJDIR)/lang-tables.h
 
@@ -62,7 +62,7 @@ $(OBJDIR)/ldmicro.exe: $(LDOBJS) $(FREEZE) $(HELPOBJ) $(OBJDIR)/ldmicro.res
 
 $(OBJDIR)/ldmicro.res: ldmicro.rc ldmicro.ico
     @rc ldmicro.rc
-    @copy ldmicro.res $(OBJDIR)
+    @mv ldmicro.res $(OBJDIR)
 
 $(LDOBJS): $(@B).cpp $(HEADERS)
     @$(CC) $(CFLAGS) $(DEFINES) -c -Fo$(OBJDIR)/$(@B).obj $(@B).cpp
