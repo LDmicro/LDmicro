@@ -38,3 +38,9 @@ Thumbs.db
 #A program database
 *.pdb
 /.project
+/ldmicro/lang-sort
+/ldmicro/obj
+/ldmicro/build
+/ldmicro/git_commit.h
+/ldmicro/lang.txt
+/ldmicro/ldmicro.RES

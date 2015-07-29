@@ -49,7 +49,7 @@ static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
 {
     if(msg == WM_CHAR) {
         if(!(isalpha(wParam) || isdigit(wParam) || wParam == '_' ||
-            wParam == '\b' || wParam == '-' || wParam == '\''))
+            wParam == '\b' || wParam == '-' || wParam == '\'' || wParam == '@'))
         {
             return 0;
         }
@@ -283,6 +283,51 @@ void ShowCounterDialog(int which, int *maxV, char *name)
     ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, dests);
     *maxV = atoi(maxS);
 }
+// Special function
+void ShowSFRDialog(int which, char *op1, char *op2)
+{
+   char *title;
+    char *l2;
+    switch(which) {
+        case ELEM_RSFR:
+            title = _("Read From SFR");
+            l2 = "read";
+            break;
+
+        case ELEM_WSFR:
+            title = _("Write To SFR");
+            l2 = "write";
+            break;
+
+        case ELEM_SSFR:
+            title = _("Set Bit In SFR");
+            l2 = "set bit";
+            break;
+
+        case ELEM_CSFR:
+            title = _("Clear Bit In SFR");
+            l2 = "clear bit";
+            break;
+
+        case ELEM_TSFR:
+            title = _("Test if Bit Set In SFR");
+            l2 = "test bit";
+            break;
+
+		case ELEM_T_C_SFR:
+            title = _("Test if Bit Clear In SFR");
+            l2 = "test bit";
+            break;
+
+        default:
+            oops();
+    }
+    char *labels[] = { _("SFR position:"), l2 };
+    char *dests[] = { op1, op2 };
+    ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests);
+}
+
+// Special function
 
 void ShowCmpDialog(int which, char *op1, char *op2)
 {
@@ -412,6 +457,21 @@ void ShowFormattedStringDialog(char *var, char *string)
         0x1, 0x3, dests);
     NoCheckingOnBox[0] = FALSE;
     NoCheckingOnBox[1] = FALSE;
+}
+
+
+void ShowStringDialog(char * dest, char *var, char *string)
+{
+    char *labels[] = { _("Dest:"), _("Variable:"), _("String:") };
+    char *dests[] = { dest, var, string };
+    NoCheckingOnBox[0] = TRUE;
+    NoCheckingOnBox[1] = TRUE;
+    NoCheckingOnBox[2] = TRUE;
+    ShowSimpleDialog(_("Formatted String"), 3, labels, 0x0,
+        0x1, 0x3, dests);
+    NoCheckingOnBox[0] = FALSE;
+    NoCheckingOnBox[1] = FALSE;
+    NoCheckingOnBox[2] = FALSE;
 }
 
 void ShowPersistDialog(char *var)

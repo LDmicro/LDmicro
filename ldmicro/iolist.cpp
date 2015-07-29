@@ -2,24 +2,24 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
 //
 // Routines to maintain the processor I/O list. Whenever the user changes the
 // name of an element, rebuild the I/O list from the PLC program, so that new
-// assigned names are automatically reflected in the I/O list. Also keep a 
+// assigned names are automatically reflected in the I/O list. Also keep a
 // list of old I/Os that have been deleted, so that if the user deletes a
 // a name and then recreates it the associated settings (e.g. pin number)
 // will not be forgotten. Also the dialog box for assigning I/O pins.
@@ -58,11 +58,13 @@ static HWND AnalogSliderTrackbar;
 static BOOL AnalogSliderDone;
 static BOOL AnalogSliderCancel;
 
+static BOOL CheckForConstant(char * String);
+
 
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
 //-----------------------------------------------------------------------------
-static void AppendIo(char *name, int type)
+static void AppendIo(char *name, int type, int pinAssig)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -78,10 +80,14 @@ static void AppendIo(char *name, int type)
     }
     if(i < MAX_IO) {
         Prog.io.assignment[i].type = type;
-        Prog.io.assignment[i].pin = NO_PIN_ASSIGNED;
+        Prog.io.assignment[i].pin = pinAssig;
         strcpy(Prog.io.assignment[i].name, name);
         (Prog.io.count)++;
     }
+}
+static void AppendIo(char *name, int type)
+{
+    AppendIo(name, type, NO_PIN_ASSIGNED);
 }
 
 //-----------------------------------------------------------------------------
@@ -181,6 +187,9 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_MOVE:
+            if (CheckForConstant(l->d.move.src) == FALSE) {
+                AppendIo(l->d.move.src, IO_TYPE_GENERAL);
+            }
             AppendIo(l->d.move.dest, IO_TYPE_GENERAL);
             break;
 
@@ -188,7 +197,22 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+            if (CheckForConstant(l->d.math.op1) == FALSE) {
+                AppendIo(l->d.math.op1, IO_TYPE_GENERAL);
+            }
+            if (CheckForConstant(l->d.math.op2) == FALSE) {
+                AppendIo(l->d.math.op2, IO_TYPE_GENERAL);
+            }
             AppendIo(l->d.math.dest, IO_TYPE_GENERAL);
+            break;
+
+        case ELEM_STRING:
+            if(strlen(l->d.fmtdStr.dest) > 0) {
+                AppendIo(l->d.fmtdStr.dest, IO_TYPE_GENERAL);
+            }
+            if(strlen(l->d.fmtdStr.var) > 0) {
+                AppendIo(l->d.fmtdStr.var, IO_TYPE_GENERAL);
+            }
             break;
 
         case ELEM_FORMATTED_STRING:
@@ -237,6 +261,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL);
             break;
 
+        case ELEM_PERSIST:
+            AppendIo(l->d.persist.var, IO_TYPE_PERSIST);
+            break;
+
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_SHORT:
@@ -251,16 +279,23 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_LES:
         case ELEM_LEQ:
         case ELEM_RES:
-        case ELEM_PERSIST:
+        case ELEM_RSFR:
+        case ELEM_WSFR:
+        case ELEM_SSFR:
+        case ELEM_CSFR:
+        case ELEM_TSFR:
+        case ELEM_T_C_SFR:
+
+        case ELEM_PADDING:
             break;
 
         default:
-            oops();
+            ooops("which=%d",which);
     }
 }
 
 //-----------------------------------------------------------------------------
-// Compare function to qsort() the I/O list. Group by type, then 
+// Compare function to qsort() the I/O list. Group by type, then
 // alphabetically within each section.
 //-----------------------------------------------------------------------------
 static int CompareIo(const void *av, const void *bv)
@@ -298,7 +333,7 @@ int GenerateIoList(int prevSel)
         // forget important things
         IoSeenPreviouslyCount = 0;
     }
-    
+
     // remember the pin assignments
     for(i = 0; i < Prog.io.count; i++) {
         AppendIoSeenPreviously(Prog.io.assignment[i].name,
@@ -317,7 +352,7 @@ int GenerateIoList(int prevSel)
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
             for(j = 0; j < IoSeenPreviouslyCount; j++) {
-                if(strcmp(Prog.io.assignment[i].name, 
+                if(strcmp(Prog.io.assignment[i].name,
                     IoSeenPreviously[j].name)==0)
                 {
                     Prog.io.assignment[i].pin = IoSeenPreviously[j].pin;
@@ -458,13 +493,13 @@ void ShowAnalogSliderPopup(char *name)
         top = r.bottom - 110;
     }
     if(top < 0) top = 0;
-    
+
     AnalogSliderMain = CreateWindowClient(0, "LDmicroAnalogSlider", "I/O Pin",
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
         left, top, 30, 100, NULL, NULL, Instance, NULL);
 
     AnalogSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
-        TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE, 
+        TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE,
         0, 0, 30, 100, AnalogSliderMain, NULL, Instance, NULL);
     SendMessage(AnalogSliderTrackbar, TBM_SETRANGE, FALSE,
         MAKELONG(0, maxVal));
@@ -587,12 +622,12 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        6, 325, 95, 23, IoDialog, NULL, Instance, NULL); 
+        6, 325, 95, 23, IoDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        6, 356, 95, 23, IoDialog, NULL, Instance, NULL); 
+        6, 356, 95, 23, IoDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 }
 
@@ -619,7 +654,12 @@ void ShowIoDialog(int item)
         return;
     }
 
-    if(Prog.io.assignment[item].name[0] != 'X' && 
+    if(Prog.mcu->whichIsa == ISA_NETZER) {
+        Error(_("Can't specify I/O assignment for Netzer!"));
+        return;
+    }
+
+    if(Prog.io.assignment[item].name[0] != 'X' &&
        Prog.io.assignment[item].name[0] != 'Y' &&
        Prog.io.assignment[item].name[0] != 'A')
     {
@@ -670,7 +710,7 @@ void ShowIoDialog(int item)
             goto cant_use_this_io;
         }
 
-        if(PwmFunctionUsed() && 
+        if(PwmFunctionUsed() &&
             Prog.mcu->pinInfo[i].pin == Prog.mcu->pwmNeedsPin)
         {
             goto cant_use_this_io;
@@ -778,7 +818,8 @@ void IoListProc(NMHDR *h)
                     // Don't confuse people by displaying bogus pin assignments
                     // for the C target.
                     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-                                    Prog.mcu->whichIsa == ISA_INTERPRETED) )
+                                    Prog.mcu->whichIsa == ISA_INTERPRETED ||
+                                    Prog.mcu->whichIsa == ISA_NETZER) )
                     {
                         strcpy(i->item.pszText, "");
                         break;
@@ -852,8 +893,8 @@ void IoListProc(NMHDR *h)
                 }
 
                 case LV_IO_STATE: {
-                    if(InSimulationMode) {
                         char *name = Prog.io.assignment[item].name;
+                    if(InSimulationMode || IsUsedVariable(name)) {
                         DescribeForIoList(name, i->item.pszText);
                     } else {
                         strcpy(i->item.pszText, "");
@@ -883,3 +924,34 @@ void IoListProc(NMHDR *h)
         }
     }
 }
+
+//-----------------------------------------------------------------------------
+// Is an expression that could be either a variable name or a number a number?
+//-----------------------------------------------------------------------------
+static BOOL IsNumber(char *str)
+{
+    if((*str == '-') && isdigit(str[1]) || isdigit(*str)) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+static BOOL CheckForConstant(char * String)
+{
+    return IsNumber(String);
+
+    errno = 0;
+    char* p = String;
+    unsigned long test = strtol(String, &p, 10);
+    if ((errno != 0) || (String == p) || (*p != 0))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+//-----------------------------------------------------------------------------

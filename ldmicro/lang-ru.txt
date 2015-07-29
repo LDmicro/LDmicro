@@ -1,0 +1,879 @@
+"  Name                       | Type               | Pin | Port\n"
+"  Имя                        | Тип                | Пин | Порт\n"
+
+"  Name                       | Type               | Pin\n"
+"  Name                       | Type               | Pin\n"
+
+" - (not yet saved)"
+" - (пока не сохранено)"
+
+"!!!too long!!!"
+"!!!слишком велико!!!"
+
+"%s=%d out of range: -32768 to 32767 inclusive."
+"%s=%d превышает предел: от -32768 до 32767 включительно."
+
+"&About..."
+"&О LDmicro..."
+
+"&Compile"
+"&Компиляция"
+
+"&Compile\tF5"
+"&Компилировать\tF5"
+
+"&Copy Rung's\tCtrl+C or Ctrl+Insert"
+"&Копировать Ступень(ни)\tCtrl+C or Ctrl+Insert"
+
+"&Delete Selected Element\tDel"
+"&Удалить Выбранный Элемент\tDel"
+
+"&Edit"
+"&Редактировать"
+
+"&Export As Text...\tCtrl+E"
+"&Экспортировать в Текст...\tCtrl+E"
+
+"&File"
+"&Файл"
+
+"&Halt Simulation\tCtrl+H"
+"&Стоп Симуляции\tCtrl+H"
+
+"&Help"
+"&Помощь"
+
+"&Insert Clear Bit In SFR"
+"Вставить Очистить бит в SFR"
+
+"&Insert Read From SFR"
+"Вставить Чтение из SFR"
+
+"&Insert Set Bit In SFR"
+"Вставить Установить бит в SFR"
+
+"&Insert Test If Bit Clear in SFR"
+"Вставить Тест очищен ли бит в SFR"
+
+"&Insert Test If Bit Set in SFR"
+"Вставить Тест установлен ли бит в SFR"
+
+"&Insert Write To SFR"
+"Вставить Запись в SFR"
+
+"&Instruction"
+"&Инструкции"
+
+"&MCU Parameters..."
+"&Параметры Процессора..."
+
+"&Manual...\tF1"
+"&Руководство...\tF1"
+
+"&Microcontroller"
+"&Микроконтроллер"
+
+"&New\tCtrl+N"
+"&Создать\tCtrl+N"
+
+"&Open...\tCtrl+O"
+"&Открыть...\tCtrl+O"
+
+"&Paste Rung's\tCtrl+V or Shift+Insert"
+"Вст&авить Ступень(ни)\tCtrl+V or Shift+Insert"
+
+"&Redo\tCtrl+Y"
+"&Повторить\tCtrl+Y"
+
+"&Save\tCtrl+S"
+"&Сохранить\tCtrl+S"
+
+"&Settings"
+"&Установки"
+
+"&Special Function for AVR"
+"Специальные функции AVR"
+
+"&Special Function"
+"&Специальные функции"
+
+"&Undo\tCtrl+Z or Alt+Backspace"
+"&Оменить\tCtrl+Z or Alt+Backspace"
+
+"'Closed' if:"
+"'Замкнут' если:"
+
+"( ) Normal"
+"( ) Норма"
+
+"(/) Negated"
+"(/) Инверсия"
+
+"(R) Reset-Only"
+"(R) Сброс"
+
+"(S) Set-Only"
+"(S) Установ"
+
+"(no microcontroller)"
+"(нет микроконтроллера)"
+
+"(no pin)"
+"(нет пина)"
+
+"(not assigned)"
+"(не назначено)"
+
+"--add comment here--"
+"--добавьте сюда комментарий--"
+
+"<PWM needs!>"
+"<Нужен PWM!>"
+
+"<UART needs!>"
+"<Нужен UART!>"
+
+"<corrupt!>"
+"<повреждено!>"
+
+"<no PWM!>"
+"<нет PWM!>"
+
+"<no UART!>"
+"<нет UART!>"
+
+"<not an I/O!>"
+"<Это не I/O!>"
+
+"ANSI C target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
+"Целевой процессор ANSI C не поддерживает периферию (UART, ЦАП, EEPROM). Пропускаем эту инструкцию."
+
+"Add"
+"Сложить"
+
+"Assign:"
+"Назначено:"
+
+"Bad escape '\\%c'"
+"Неправильный манипулятор '\\%c'"
+
+"Bad escape: correct form is \\xAB."
+"Неправильный манипулятор: Правильно \\xAB."
+
+"Bad use of quotes: <%s>"
+"Не правильно использованы кавычки: <%s>"
+
+"Ca&t Rung's\tCtrl+X or Shift+Del"
+"&Вырезать Ступень(ни)\tCtrl+X or Shift+Del"
+
+"Can only assign pin number to input/output pins (Xname or Yname or Aname)."
+"Могу назначить пин только к выводам I/O (Xname или Yname или Aname)."
+
+"Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code."
+"Не могу определить назначение I/O для ANSI C цели; Компилируйте и смотрите сгенерированный исходник."
+
+"Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."
+"Не могу определить назначение I/O для интерпретатора цели; Смотрите комментарии в реализации интерпретируемого кода."
+
+"Cancel"
+"Отмена"
+
+"Cannot delete rung; program must have at least one rung."
+"Не могу удалить ступень, программа должна состоять хотя бы из одной ступени."
+
+"Circular Counter"
+"Циклический счетчик"
+
+"Clear Bit In SFR"
+"Clear Bit In SFR"
+
+"Coil"
+"Реле"
+
+"Comment"
+"Комментарий"
+
+"Compile &As..."
+"Компилировать &Как..."
+
+"Compile Successful"
+"Компиляция успешна"
+
+"Compile To"
+"Компилировать"
+
+"Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
+"Компиляция успешна. Исходный код С в '%s'.\r\n\r\nЭто не полная С программа. Вам необходимо обеспечить ран-тайм окружение и все процедуры I/O. Смотрите комментарии в исходниках с пояснениями, как это сделать."
+
+"Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
+"Компиляция успешна. Запись IHEX для AVR в '%s'.\r\n\r\nПомните о правильной установке конфигурации (фьюзов) процессора. Это не производится автоматически."
+
+"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\nUsed %d/%d words of program flash (chip %d%% full)."
+"Компилирование завершено успешно. Записан IHEX в PIC16 '%s'.\r\n\r\nСлово конфигурации (фьюз) должно соответствовать выбранному типу осциллятора, BOD разрешен, LVP запрещен, PWRT разрешен, защита кода от модификации и считывания снята.\r\n\r\nИспользовано %d/%d слов(words) флеш-памяти программ (Микросхема %d%% заполнена)."
+
+"Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
+"Компиляция успешна. Интерпретируемый код записан в '%s'.\r\n\r\nВероятно Вам необходимо адаптировать интерпретатор для вашего приложения. Смотрите документацию"
+
+"Constant %d out of range: -32768 to 32767 inclusive."
+"Константа %d превышает предел: от -32768 до 32767 включительно."
+
+"Contacts"
+"Контакты"
+
+"Couldn't open '%s'."
+"Не могу открыть '%s'."
+
+"Couldn't open '%s'\n"
+"Не могу открыть '%s'\n"
+
+"Couldn't open file '%s'"
+"Не могу открыть файл '%s'"
+
+"Couldn't write to '%s'"
+"Не могу записать в '%s'."
+
+"Couldn't write to '%s'."
+"Не могу записать в '%s'."
+
+"Count Down"
+"Счетчик -"
+
+"Count Up"
+"Счетчик +"
+
+"Count:"
+"Число:"
+
+"Counter"
+"Счетчик"
+
+"Cycle time too fast; increase cycle time, or use faster crystal."
+"Время цикла слишком мало. Увеличьте время цикла или выберите более быстрый кварц."
+
+"Cycle time too slow; decrease cycle time, or use slower crystal."
+"Время цикла слишком велико. Уменьшите время цикла или выберите более медленный кварц."
+
+"D&elete Rung\tShift+Del"
+"Удалить Ступень\tShift+Del"
+
+"Delay (ms):"
+"Задержка (ms):"
+
+"Delay cannot be zero or negative."
+"Задержка не может быть нулевой или отрицательной."
+
+"Delay too long; maximum is 2**31 us."
+"Задержка слишком велика. Максимум  2**31 us."
+
+"Destination:"
+"Цель:"
+
+"Divide"
+"Разделить"
+
+"Division by zero; halting simulation"
+"Деление на ноль. Останов симулятора."
+
+"Dup&licate Selected Rung\tCtrl+F6"
+"Дублировать Выбранную Ступень\tCtrl+F6"
+
+"Duty cycle var:"
+"Скважность %:"
+
+"E&xit"
+"&Выход"
+
+"Edit table of ASCII values like a string"
+"Редактировать таблицу ASCII знач. как строку"
+
+"Empty row; delete it or add instructions before compiling."
+"Пустые строки. Удалите или добавьте инструкции перед компиляцией."
+
+"Empty textbox; not permitted."
+"Пустой текст. Не допустимо."
+
+"Error"
+"Ошибка"
+
+"Export As Text"
+"Экспорт в Текст"
+
+"File format error; perhaps this program is for a newer version of LDmicro?"
+"Ошибка формата файла. Возможно программа от новой версии LDmicro?"
+
+"Formatted String Over UART"
+"Форматированная строка через UART"
+
+"Frequency (Hz):"
+"Частота (Hz):"
+
+"I/O Pin Assignment"
+"Назначение Пинов I/O"
+
+"I/O Pin"
+"I/O Пин"
+
+"INT input"
+"INT input"
+
+"If Equals"
+"Если Равны"
+
+"If Greater Than or Equal To"
+"Если Больше или Равны"
+
+"If Greater Than"
+"Если Больше"
+
+"If Less Than or Equal To"
+"Если Меньше или Равны"
+
+"If Less Than"
+"Если Меньше"
+
+"If Not Equals"
+"Если Не Равны"
+
+"Index:"
+"Индекс:"
+
+"Input pin"
+"Вход"
+
+"Insert &Contacts\tC"
+"Вставить &Контакт\tC"
+
+"Insert &UART Receive"
+"Вставить Получить из &UART"
+
+"Insert &UART Send"
+"Вставить Послать в &UART"
+
+"Insert -+        +- Open-Circuit"
+"Вставить -+        +- Разрыв"
+
+"Insert -+------+- Short-Circuit"
+"Вставить -+------+- Перемычку"
+
+"Insert A/D Converter Read\tP"
+"Вставить Чтение из АЦП\tP"
+
+"Insert ADD (16-bit Integer Add)\t+"
+"Вставить Сумму (ADD) (16-bit Суммирование)\t+"
+
+"Insert CT&C (Count Circular)\tJ"
+"Вставить CT&C (Циклический Счетчик)\tJ"
+
+"Insert CT&D (Count Down)\tI"
+"Вставить CT&D (Счетчик -)\tI"
+
+"Insert CT&U (Count Up)\tU"
+"Вставить CT&U (Счетчик +)\tU"
+
+"Insert Co&mment\t;"
+"Вставить Ко&мментарий\t;"
+
+"Insert Coi&l\tL"
+"Вставить Реле\tL"
+
+"Insert DIV (16-bit Integer Divide)\tD"
+"Вставить Деление (DIV) (16-bit Деление)\tD"
+
+"Insert EQU (Compare for Equals)\t="
+"Вставить EQU (Компаратор Равенства)\t="
+
+"Insert Formatted String Over UART"
+"Вставить Форматированную Строку через UART"
+
+"Insert Formatted String"
+"Вставить Форматированную Строку"
+
+"Insert GEQ (Compare for Greater Than or Equal)\t."
+"Вставить GEQ (Компаратор Больше или Равно)\t."
+
+"Insert GRT (Compare for Greater Than)\t>"
+"Вставить GRT (Компаратор Больше)\t>"
+
+"Insert LEQ (Compare for Less Than or Equal)\t,"
+"Вставить LEQ (Компаратор Меньше или Равно)\t,"
+
+"Insert LES (Compare for Less Than)\t<"
+"Вставить LES (Компаратор Меньше)\t<"
+
+"Insert Look-Up Table"
+"Вставить Таблицу Просмотра"
+
+"Insert MOV (Move)\tM"
+"Вставить Присвоение (MOV)\tM"
+
+"Insert MUL (16-bit Integer Multiply)\t*"
+"Вставить Умножение (MUL) (16-bit Умножение)\t*"
+
+"Insert Make Persistent"
+"Вставить Запоминаемую Переменную"
+
+"Insert Master Control Break"
+"Вставить Мастер-Прерывание"
+
+"Insert Master Control Relay"
+"Вставить Мастер-Реле"
+
+"Insert NEQ (Compare for Not Equals)\t!"
+"Вставить NEQ (Компаратор Не Равенства)\t!"
+
+"Insert OSC (Oscillator f=1/(2*cycle time))"
+"Вставить OSC (Мультивибратор f=1/(2*cycle time))"
+
+"Insert OSF (One Shot Falling)\t&\\ "
+"Вставить OSF (Одновибратор по Спаду)\t&\\"
+
+"Insert OSR (One Shot Rising)\t&/"
+"Вставить OSR (Одновибратор по Нарастанию)\t&/"
+
+"Insert Piecewise Linear"
+"Вставить Таблицу Аппроксимации"
+
+"Insert R&ES (Counter/RTO Reset)\tE"
+"Вставить R&ES (Сброс RTO/Счетчика)\tE"
+
+"Insert R&TO (Retentive Delayed Turn On)\tT"
+"Вставить R&TO (Сохраняемый Таймер задержки на ВКЛ.)\tT"
+
+"Insert Rung &After\tShift+V"
+"Вставить Ступень Посл&е\tShift+V"
+
+"Insert Rung &Before\tShift+6"
+"Вставить Ступень &Перед\tShift+6"
+
+"Insert SUB (16-bit Integer Subtract)\t-"
+"Вставить Разность (SUB) (16-bit Разность)\t-"
+
+"Insert Set PWM Output"
+"Вставить PWM Выход"
+
+"Insert Shift Register"
+"Вставить Регистр Сдвига"
+
+"Insert T&ON (Delayed Turn On)\tO"
+"Вставить T&ON (Таймер задержки на ВКЛ.)\tO"
+
+"Insert TO&F (Delayed Turn Off)\tF"
+"Вставить TO&F (Таймер задержки на ВЫКЛ.)\tF"
+
+"Internal Relay"
+"Внутр. Реле"
+
+"Internal error relating to PIC paging; make program smaller or reshuffle it."
+"Внутрення ошибка связанная со страничным режимом PIC. Сделайте программу меньше или оптимизируйте схему"
+
+"Internal limit exceeded (number of vars)"
+"Внутренний лимит исчерпан (кол.-во переменных)"
+
+"Internal relay '%s' never assigned; add its coil somewhere."
+"Внутреннее реле '%s'и его контакты, никогда не будет назначено."
+
+"LDmicro - Program Editor"
+"LDmicro – Редактор Программы"
+
+"LDmicro - Simulation (Running)"
+"LDmicro - Симуляция (Запущена)"
+
+"LDmicro - Simulation (Stopped)"
+"LDmicro - Симуляция (Остановлена)"
+
+"LDmicro Error"
+"Ошибка LDmicro"
+
+"LDmicro Warning"
+"LDmicro Warning"
+
+"Look-Up Table"
+"Таблица Просмотра"
+
+"MCU Crystal Frequency (MHz):"
+"Тактовая частота MCU (MHz):"
+
+"MCU Port"
+"Порт MCU"
+
+"Make &Negated\tN"
+"Сделать Инверсным\tN"
+
+"Make &Reset-Only\tR"
+"Сделать Только Сброс\tR"
+
+"Make &Set-Only\tS"
+"Сделать Только Установ\tS"
+
+"Make Norm&al\tA"
+"Сделать Нормальным\tA"
+
+"Make Persistent"
+"Сделать Запоминаемой"
+
+"Math instruction: '%s' not a valid destination."
+"Арифметическая инструкция: '%s'не правильная цель назначения."
+
+"Max value:"
+"Максимальное значение:"
+
+"Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."
+"Микроконтроллер '%s' не поддерживается.\r\n\r\nПереключаемся по умолчанию на <нет микроконтроллера>."
+
+"Move Selected Rung &Down\tAlt+Down"
+"Переместить Выбранную Ступень ВНИ&З\tAlt+Down"
+
+"Move Selected Rung &Up\tAlt+Up"
+"Переместить Выбранную Ступень &ВВЕРХ\tAlt+Up"
+
+"Move instruction: '%s' not a valid destination."
+"Инструкция перемещения: '%s' не правильная цель назначения."
+
+"Move"
+"Присвоение"
+
+"Multiple escapes (\\0-9) present in format string, not allowed."
+"Множество манипуляторов строки (\\0-9) находятся в форматированной строке, недопустимо."
+
+"Multiply"
+"Умножить"
+
+"Must assign pins for all ADC inputs (name '%s')."
+"Должны быть назначены пины для всех АЦП входов (Name '%s')."
+
+"Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."
+"Необходимо назначить пины для всего I/O.\r\n\r\n'%s' не назначено."
+
+"Must choose a target microcontroller before compiling."
+"Необходимо выбрать целевой микроконтроллер перед компиляцией."
+
+"Name"
+"Имя"
+
+"Name:"
+"Имя:"
+
+"No ADC or ADC not supported for selected micro."
+"АЦП и ЦАП не поддерживаются выбранным процессором."
+
+"No ADC or ADC not supported for this micro."
+"АЦП и ЦАП не поддерживаются выбранным процессором."
+
+"No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
+"Микроконтроллер не выбран. Выберите микроконтроллер прежде чем назначать пины I/O.\r\n\r\nВыберите микроконтроллер в меню Установок и попробуйте снова."
+
+"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"Не используются инструкции последовательного порта (UART Send/UART Receive). Добавьте их в программу, перед установкой скорости порта.\r\n\r\n"
+
+"No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
+"Переменная не интерполируется в отформатированную строку, но указана. Включите в строку манипулятор наподобие: '\\-3', или оставьте имя переменной пустым."
+
+"Not a reasonable size for a shift register."
+"Ошибочный размер сдвигового регистра."
+
+"Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details."
+"Численные проблемы с таблицей аппроксимации. Или уменьшите размер таблицы, или расположите элементы таблицы ближе друг к другу.\r\n\r\nСмотрите файл помощи."
+
+"OK"
+"OK"
+
+"Open Text in notepad\tF3"
+"Открыть Текст в notepad\tF3"
+
+"Open ld in notepad\tF4"
+"Открыть ld в notepad\tF4"
+
+"Open pl in notepad\tF6"
+"Открыть pl в notepad\tF6"
+
+"Out of memory; simplify program or choose microcontroller with more memory."
+"Исчерпана память, упростите программу или выберите микроконтроллер с большим количеством памяти."
+
+"Output pin"
+"Выход"
+
+"PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
+"Целевой процессор PASCAL не поддерживает периферию (UART, ЦАП, EEPROM). Пропускаем эту инструкцию."
+
+"PLC Configuration"
+"Конфигурация ПЛК"
+
+"PLC Cycle Time (ms):"
+"Время цикла ПЛК (ms):"
+
+"PWM frequency too fast."
+"Частота PWM слишком большая."
+
+"PWM frequency too slow."
+"Частота PWM слишком маленькая."
+
+"PWM function used but not supported for this micro."
+"Функция PWM используется, но не поддерживается этим микроконтроллером."
+
+"PWM in use; pin %d reserved for that."
+"PWM используется. Пин %d зарезервирован для этого."
+
+"PWM out"
+"PWM Выход"
+
+"Paste Rung's &Into Rung\tAlt+Insert"
+"Вставить Ступень(ни) вн&утрь Ступени\tAlt+Insert"
+
+"Piecewise Linear Table"
+"Таблица Аппроксимации"
+
+"Piecewise linear lookup table with zero elements!"
+"Таблица аппроксимации с нулевыми элементами!"
+
+"Pin on MCU"
+"Пин MCU"
+
+"Pin on Processor"
+"Пин MCU"
+
+"Please select a micro with a UART.\r\n\r\n"
+"Пожалуйста выберите процессор с UART.\r\n\r\n"
+
+"Points:"
+"Пункты:"
+
+"RTO: variable can only be used for RES elsewhere"
+"RTO: переменная может быть использована только для RES (сброса) где-либо"
+
+"Read A/D Converter"
+"Чтение АЦП преобразователя"
+
+"Read From SFR"
+"Read From SFR"
+
+"Read SFR instruction: '%s' not a valid destination."
+"Read SFR instruction: '%s' not a valid destination."
+
+"Receive from UART"
+"Получить из UART"
+
+"Release"
+"Release"
+
+"Release.."
+"Release.."
+
+"Rename I/O from default name ('%s') before assigning MCU pin."
+"Переименуйте I/O с имени по умолчанию ('%s') перед назначением пинов MCU."
+
+"Reset"
+"Сброс"
+
+"Retentive Turn-On Delay"
+"Сохраняемая Задержка ВКЛ"
+
+"SFR position:"
+"SFR position:"
+
+"Save &As..."
+"Сохранить &как..."
+
+"Send to UART"
+"Послать в UART"
+
+"Serial (UART) will use pins %d and %d.\r\n"
+"Последовательный порт (UART) использует Пины %d и %d.\r\n"
+
+"Set Bit In SFR"
+"Set Bit In SFR"
+
+"Set PWM Duty Cycle"
+"Настройка параметров PWM"
+
+"Shift Register"
+"Сдвиговый Регистр"
+
+"Si&mulate"
+"&Cимуляция"
+
+"Si&mulation Mode\tCtrl+M"
+"Режим Симуляции\tCtrl+M"
+
+"Single &Cycle\tSpace"
+"Один &Цикл\tПробел"
+
+"Source"
+"Источник"
+
+"Source:"
+"Источник:"
+
+"Stages:"
+"Ступеней:"
+
+"Start &Real-Time Simulation\tCtrl+R"
+"Старт &Ран-Тайм Симуляции\tCtrl+R"
+
+"Start new program?"
+"Начать новую программу?"
+
+"State"
+"Статус"
+
+"String:"
+"Строка:"
+
+"Subtract"
+"Вычесть"
+
+"TOF: variable cannot be used elsewhere"
+"TOF: переменная не может быть использована где-либо"
+
+"TON: variable cannot be used elsewhere"
+"TON: переменная не может быть использована где-либо"
+
+"Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
+"Частота PWM %d Hz, ближайшая достижимая %d Hz (Предупреждение, >5%% ошибка)."
+
+"Test if Bit Clear In SFR"
+"Test if Bit Clear In SFR"
+
+"Test if Bit Set In SFR"
+"Test if Bit Set In SFR"
+
+"The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal."
+"Время рантайм-цикла 'ПЛК', генерируемое LDmicro конфигурируется пользователем. Очень короткое время цикла может быть не достижимо в силу ограничения скорости процессора, или перегрузки узлов процессора. Обычно принятое время цикла от 10 ms до 100ms.\r\n\r\nКомпилятор должен знать какой частоты кварц Вы выбрали, чтобы конвертировать тактовую частоту процессора в секунды. Обычно это кварц от 4 до 20 MHz; Определите максимально допустимую частоту процессора которого Вы используете, прежде чем устанавливать частоту кварца в схеме."
+
+"The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
+"Программа изменена со времени последнего сохранения.\r\n\r\nСохранить изменения?"
+
+"Timer period too long (max 32767 times cycle time); use a slower cycle time."
+"Timer period too long (max 32767 times cycle time); use a slower cycle time."
+
+"Timer period too long (max 32767 times cycle time); use a slower cycle time.\r\n%s=%.3f ms=%d cycles of PLC"
+"Время периода слишком велико (макс. 32767 * время цикла ПЛК). Используйте более медленный цикл времени ПЛК.\r\n%s=%.3f ms=%d циклов ПЛК"
+
+"Timer period too short (needs faster cycle time)."
+"Время периода слишком мало(необходим более быстрый цикл времени ПЛК)."
+
+"Timer"
+"Таймер"
+
+"Too many elements in subcircuit!"
+"Слишком много элементов в фрагменте!"
+
+"Too many rungs!"
+"Слишком много ступеней!"
+
+"True if > "
+"Истина eсли > "
+
+"True if >= "
+"Истина eсли >= "
+
+"True if >= :"
+"True if >= :"
+
+"Turn-Off Delay"
+"Задержка ВЫКЛ."
+
+"Turn-On Delay"
+"Задержка ВКЛ."
+
+"Type"
+"Тип"
+
+"UART Baud Rate (bps):"
+"Скорость UART (bps):"
+
+"UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken."
+"UART генератор скорости передачи. Делитель =%d фактически=%.4f для %.2f%% ошибки.\r\n\r\nСлишком много. Попробуйте другую скорости передачи (вероятно более медленную), или подберите другой кварц подходящий под множество скоростей(например 3.6864MHz, 14.7456MHz).\r\n\r\nКод все равно будет сгенерирован, но последовательный обмен будет ненадежен или полность испорчен."
+
+"UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken."
+"UART генератор скорости передачи: слишком медленно, делитель переполнен. Используйте более медленный кварц или увеличьте скорость передачи UART.\r\n\r\nКод все равно будет сгенерирован, но последовательный обмен будет полность испорчен."
+
+"UART function used but not supported for this micro."
+"Функция UART используется, но не поддерживается этим микроконтроллером."
+
+"UART in use; pins %d and %d reserved for that."
+"UART используется. Пины %d и %d зарезервированы для этого."
+
+"UART rx"
+"UART rx"
+
+"UART tx"
+"UART tx"
+
+"Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for interpretable target."
+"Неподдерживаемый операнд (что-то из АЦП, PWM, UART, EEPROM, SFR..) для интерпретируемого процессора."
+
+"Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
+"Переменная '%s' не назначена командой MOV, ADD или др.\r\n\r\nЭто, вероятно, ошибка программирования. Теперь она всегда будет равна нулю."
+
+"Variable for '%s' incorrectly assigned: %s."
+"Переменная для '%s' некорректно назначена: %s."
+
+"Variable is interpolated into formatted string, but none is specified."
+"Переменная интерполируется в отформатированную строку, но не указана."
+
+"Variable:"
+"Переменная:"
+
+"Write To SFR"
+"Write To SFR"
+
+"Zero baud rate not possible."
+"Нулевая Скорость UART не допустима"
+
+"Zero cycle time not valid; resetting to 10 ms."
+"Нулевое время цикла не допустимо. Cброс до 10 ms."
+
+"\n\nI/O ASSIGNMENT:\n\n"
+"\n\nНазначение I/O:\n\n"
+
+"adc input"
+"АЦП Вход"
+
+"counter"
+"Cчетчик"
+
+"cycle time %.2f ms"
+"Время цикла %.2f ms"
+
+"digital in"
+"Цифр. Вход"
+
+"digital out"
+"Цифр. Выход"
+
+"general var"
+"Общая переменная"
+
+"int. relay"
+"Внутр. реле"
+
+"is set := :"
+"Источник:"
+
+"modified"
+"изменено"
+
+"no MCU selected"
+"Процессор не выбран"
+
+"processor clock %.4f MHz"
+"Частота процессора %.4f MHz"
+
+"retentive timer"
+"Сохран. Таймер"
+
+"saved var"
+"Запомин. переменная"
+
+"turn-off delay"
+"Задержка ВЫКЛ."
+
+"turn-on delay"
+"Задержка ВКЛ."
+
+"x values in piecewise linear table must be strictly increasing."
+"x значения в таблице аппроксимации должны быть строго возрастающими."
+
+"|/| Negated"
+"|/| Инверсный"
+

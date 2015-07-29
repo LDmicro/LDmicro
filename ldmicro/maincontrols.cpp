@@ -46,6 +46,7 @@ static HMENU        InstructionMenu;
 static HMENU        ProcessorMenu;
 static HMENU        SimulateMenu;
 static HMENU        TopMenu;
+static HMENU        SpecialFunction;
 
 // listview used to maintain the list of I/O pins with symbolic names, plus
 // the internal relay too
@@ -203,6 +204,13 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STR, t);
+
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SFR, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SFW, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SSFB, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_csFB, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_TSFB, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_T_C_SFB, t);
 }
 
 //-----------------------------------------------------------------------------
@@ -235,7 +243,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(FileMenu, MF_STRING,   MNU_EXIT,   _("E&xit"));
 
     EditMenu = CreatePopupMenu();
-    AppendMenu(EditMenu, MF_STRING, MNU_UNDO, _("&Undo\tCtrl+Z"));
+    AppendMenu(EditMenu, MF_STRING, MNU_UNDO, _("&Undo\tCtrl+Z or Alt+Backspace"));
     AppendMenu(EditMenu, MF_STRING, MNU_REDO, _("&Redo\tCtrl+Y"));
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
@@ -243,9 +251,9 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
         _("Insert Rung &After\tShift+V"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_UP,
-        _("Move Selected Rung &Up\tShift+Up"));
+        _("Move Selected Rung &Up\tAlt+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
-        _("Move Selected Rung &Down\tShift+Down"));
+        _("Move Selected Rung &Down\tAlt+Down"));
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
         _("&Delete Selected Element\tDel"));
@@ -262,7 +270,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSR,
         _("Insert OSR (One Shot Rising)\t&/"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSF,
-        _("Insert OSF (One Shot Falling)\t&\\"));
+        _("Insert OSF (One Shot Falling)\t&\\ "));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TON,
         _("Insert T&ON (Delayed Turn On)\tO"));
@@ -281,7 +289,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEQ,
-        _("Insert NEQ (Compare for Not Equals)"));
+        _("Insert NEQ (Compare for Not Equals)\t!"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GRT,
         _("Insert GRT (Compare for Greater Than)\t>"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GEQ,
@@ -292,9 +300,9 @@ HMENU MakeMainWindowMenus(void)
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OPEN,
-        _("Insert Open-Circuit"));
+        _("Insert -+        +- Open-Circuit"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHORT,
-        _("Insert Short-Circuit"));
+        _("Insert -+------+- Short-Circuit"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
@@ -342,6 +350,17 @@ HMENU MakeMainWindowMenus(void)
         _("Make &Set-Only\tS"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_RESET_ONLY,
         _("Make &Reset-Only\tR"));
+
+    // Special function menu
+    SpecialFunction = CreatePopupMenu();
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFR, _("&Insert Read From SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFW, _("&Insert Write To SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SSFB, _("&Insert Set Bit In SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_csFB, _("&Insert Clear Bit In SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_TSFB, _("&Insert Test If Bit Set in SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB, _("&Insert Test If Bit Clear in SFR"));
+
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction,_("&Special Function"));
 
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters..."));
@@ -572,6 +591,7 @@ void RefreshControlsToSettings(void)
     SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
+        Prog.mcu->whichIsa == ISA_NETZER ||
         Prog.mcu->whichIsa == ISA_INTERPRETED))
     {
         strcpy(buf, "");

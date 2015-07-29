@@ -45,7 +45,7 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
 {
     if(msg == WM_CHAR) {
         if(!(isalpha(wParam) || isdigit(wParam) || wParam == '_' ||
-            wParam == '\b'))
+            wParam == '\b' || wParam == '@'))
         {
             return 0;
         }

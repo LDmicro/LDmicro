@@ -101,7 +101,16 @@ typedef signed long SDWORD;
 #define MNU_MAKE_RESET_ONLY     0x45
 #define MNU_INSERT_PWL          0x46
 
+#define MNU_INSERT_SFR          0x47    // special function register read
+#define MNU_INSERT_SFW          0x48    // special function register write
+#define MNU_INSERT_SSFB         0x49    // set bit in special function register
+#define MNU_INSERT_csFB         0x4a    // clear bit in special function register
+#define MNU_INSERT_TSFB         0x4b    // test if bit is set in special function register
+#define MNU_INSERT_T_C_SFB      0x4c    // test if bit is clear in special function register
+
+#define MNU_INSERT_STRING       0x4d
 #define MNU_MCU_SETTINGS        0x50
+#define MNU_SPEC_FUNCTION       0x51
 #define MNU_PROCESSOR_0         0xa0
 
 #define MNU_SIMULATION_MODE     0x60
@@ -133,7 +142,7 @@ typedef signed long SDWORD;
 // parallel subcircuits. A parallel subcircuit contains elements or series
 // subcircuits. An element is a set of contacts (possibly negated) or a coil.
 
-#define MAX_ELEMENTS_IN_SUBCKT  16
+#define MAX_ELEMENTS_IN_SUBCKT  64
 
 #define ELEM_PLACEHOLDER        0x01
 #define ELEM_SERIES_SUBCKT      0x02
@@ -176,6 +185,18 @@ typedef signed long SDWORD;
 #define ELEM_PERSIST            0x30
 #define ELEM_PIECEWISE_LINEAR   0x31
 
+#define ELEM_RSFR               0x32    // Element read from SFR
+#define ELEM_WSFR               0x33    // Element write to  SFR
+#define ELEM_SSFR               0x34    // Element set bit in SFR
+#define ELEM_CSFR               0x35    // Element clear bit in SFR
+#define ELEM_TSFR               0x36    // Element test if set bit in SFR
+#define ELEM_T_C_SFR            0x37    // Element test if clear bit in SFR
+
+
+
+
+#define ELEM_STRING             0x3f
+
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
         case ELEM_COMMENT: \
@@ -190,6 +211,12 @@ typedef signed long SDWORD;
         case ELEM_RES: \
         case ELEM_ONE_SHOT_RISING: \
         case ELEM_ONE_SHOT_FALLING: \
+        case ELEM_RSFR: \
+        case ELEM_WSFR: \
+        case ELEM_SSFR: \
+        case ELEM_CSFR: \
+        case ELEM_TSFR: \
+        case ELEM_T_C_SFR: \
         case ELEM_EQU: \
         case ELEM_NEQ: \
         case ELEM_GRT: \
@@ -211,12 +238,14 @@ typedef signed long SDWORD;
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
+        case ELEM_STRING: \
         case ELEM_FORMATTED_STRING: \
         case ELEM_PERSIST:
 
 #define MAX_NAME_LEN                128
 #define MAX_COMMENT_LEN             384
-#define MAX_LOOK_UP_TABLE_LEN        60
+#define MAX_LOOK_UP_TABLE_LEN        64
+#define MAX_SHIFT_REGISTER_STAGES   256
 
 typedef struct ElemSubckParallelTag ElemSubcktParallel;
 
@@ -300,6 +329,7 @@ typedef struct ElemPiecewiseLinearTag {
 } ElemPiecewiseLinear;
 
 typedef struct ElemFormattedStringTag {
+    char    dest[MAX_NAME_LEN];
     char    var[MAX_NAME_LEN];
     char    string[MAX_LOOK_UP_TABLE_LEN];
 } ElemFormattedString;
@@ -327,7 +357,7 @@ typedef struct ElemLeafTag {
         ElemCmp             cmp;
         ElemCounter         counter;
         ElemReadAdc         readAdc;
-        ElemSetPwmTag       setPwm;
+        ElemSetPwm          setPwm;
         ElemUart            uart;
         ElemShiftRegister   shiftRegister;
         ElemFormattedString fmtdStr;
@@ -367,6 +397,7 @@ typedef struct PlcProgramSingleIoTag {
     char        name[MAX_NAME_LEN];
 #define IO_TYPE_PENDING         0
 
+/*
 #define IO_TYPE_DIG_INPUT       1
 #define IO_TYPE_DIG_OUTPUT      2
 #define IO_TYPE_READ_ADC        3
@@ -379,6 +410,22 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_RTO             10
 #define IO_TYPE_COUNTER         11
 #define IO_TYPE_GENERAL         12
+*/
+/*need for sort in IOlist*/
+#define IO_TYPE_GENERAL         1
+#define IO_TYPE_PERSIST         2
+#define IO_TYPE_RTO             3
+#define IO_TYPE_COUNTER         4
+#define IO_TYPE_DIG_INPUT       5
+#define IO_TYPE_INT_INPUT       6
+#define IO_TYPE_DIG_OUTPUT      7
+#define IO_TYPE_READ_ADC        8
+#define IO_TYPE_UART_TX         9
+#define IO_TYPE_UART_RX         10
+#define IO_TYPE_PWM_OUTPUT      11
+#define IO_TYPE_INTERNAL_RELAY  12
+#define IO_TYPE_TON             13
+#define IO_TYPE_TOF             14
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -391,11 +438,12 @@ typedef struct PlcProgramTag {
         int                 count;
     }           io;
     McuIoInfo  *mcu;
-    int         cycleTime;
-    int         mcuClock;
-    int         baudRate;
+    char        LDversion[512];
+    int         cycleTime; //us
+    int         mcuClock;  //Hz
+    int         baudRate;  //Hz
 
-#define MAX_RUNGS 99
+#define MAX_RUNGS 1000
     ElemSubcktSeries *rungs[MAX_RUNGS];
     BOOL              rungPowered[MAX_RUNGS];
     int               numRungs;
@@ -456,6 +504,7 @@ typedef struct McuIoPinInfoTag {
     char    port;
     int     bit;
     int     pin;
+    char    pinName[MAX_NAME_LEN];
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -467,8 +516,10 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_PIC16           0x01
 #define ISA_ANSIC           0x02
 #define ISA_INTERPRETED     0x03
+#define ISA_AVR1            0x04
+#define ISA_NETZER          0x05
 
-#define MAX_IO_PORTS        10
+#define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
 
 typedef struct McuIoInfoTag {
@@ -495,15 +546,27 @@ typedef struct McuIoInfoTag {
     int              whichIsa;
     BOOL             avrUseIjmp;
     DWORD            configurationWord;
+    struct {
+        int             int0; // The pin can serve as an External Interrupt source 0.
+        //int           pol0PinB; // The pin can polling in QuadEncod routines.
+        // PinA and PinB should be in the same register.
+        int             int1; // The pin can serve as an External Interrupt source 1.
+        //int           pol1PinB; // The pin can polling in QuadEncod routines.
+        // PinA and PinB should be in the same register.
+    }                IntNeeds;
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 15
-
+#define NUM_SUPPORTED_MCUS 27
 
 //-----------------------------------------------
 // Function prototypes
 
 // ldmicro.cpp
+#define CHANGING_PROGRAM(x) { \
+        UndoRemember(); \
+        x; \
+        ProgramChanged(); \
+    }
 void ProgramChanged(void);
 void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
@@ -587,8 +650,8 @@ void WhatCanWeDoFromCursorAndTopology(void);
 BOOL FindSelected(int *gx, int *gy);
 void MoveCursorNear(int gx, int gy);
 
-#define DISPLAY_MATRIX_X_SIZE 16
-#define DISPLAY_MATRIX_Y_SIZE 512
+#define DISPLAY_MATRIX_X_SIZE 256
+#define DISPLAY_MATRIX_Y_SIZE 2048
 extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
@@ -622,6 +685,7 @@ void AddMasterRelay(void);
 void AddLookUpTable(void);
 void AddPiecewiseLinear(void);
 void AddFormattedString(void);
+void AddString(void);
 void DeleteSelectedFromProgram(void);
 void DeleteSelectedRung(void);
 void InsertRung(BOOL afterCursor);
@@ -670,9 +734,11 @@ void ShowSetPwmDialog(char *name, int *targetFreq);
 void ShowPersistDialog(char *var);
 void ShowUartDialog(int which, char *name);
 void ShowCmpDialog(int which, char *op1, char *op2);
+void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
+void ShowStringDialog(char * dest, char *var, char *string);
 void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
@@ -682,6 +748,18 @@ void ShowConfDialog(void);
 void ShowHelpDialog(BOOL about);
 
 // miscutil.cpp
+#ifndef round
+#define round(r)   ((r) < (LONG_MIN-0.5) || (r) > (LONG_MAX+0.5) ?\
+    (r):\
+    ((r) >= 0.0) ? ((r) + 0.5) : ((r) - 0.5))
+#endif
+
+#define ooops(...) { \
+        dbp("bad at %d %s\n", __LINE__, __FILE__); \
+        dbp(__VA_ARGS__); \
+        Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
+        exit(1); \
+    }
 #define oops() { \
         dbp("bad at %d %s\n", __LINE__, __FILE__); \
         Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
@@ -705,6 +783,7 @@ void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str);
 extern BOOL RunningInBatchMode;
+extern BOOL RunningInTestMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 extern HWND OkButton;
@@ -726,6 +805,7 @@ void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
 void DestroyUartSimulationWindow(void);
 void ShowUartSimulationWindow(void);
+DWORD IsUsedVariable(char *name);
 extern BOOL InSimulationMode;
 extern BOOL SimulateRedrawAfterNextCycle;
 
@@ -752,7 +832,9 @@ void CompilePic16(char *outFile);
 void CompileAvr(char *outFile);
 // ansic.cpp
 void CompileAnsiC(char *outFile);
-// interpreted.c
+// interpreted.cpp
 void CompileInterpreted(char *outFile);
+// netzer.cpp
+void CompileNetzer(char *outFile);
 
 #endif

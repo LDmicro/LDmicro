@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -56,9 +56,12 @@ void IntDumpListing(char *outFile)
 
         if(IntCode[i].op == INT_END_IF) indent--;
         if(IntCode[i].op == INT_ELSE) indent--;
-    
-        fprintf(f, "%3d:", i);
+        if(indent < 0) indent = 0;
+
+        if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
+        fprintf(f, "%4d:", i);
         int j;
+        if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
         for(j = 0; j < indent; j++) fprintf(f, "    ");
 
         switch(IntCode[i].op) {
@@ -121,7 +124,7 @@ void IntDumpListing(char *outFile)
             case INT_EEPROM_BUSY_CHECK:
                 fprintf(f, "set bit '%s' if EEPROM busy", IntCode[i].name1);
                 break;
-            
+
             case INT_EEPROM_READ:
                 fprintf(f, "read EEPROM[%d,%d+1] into '%s'",
                     IntCode[i].literal, IntCode[i].literal, IntCode[i].name1);
@@ -138,7 +141,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_UART_RECV:
-                fprintf(f, "uart recv int '%s', have? into '%s'", 
+                fprintf(f, "uart recv int '%s', have? into '%s'",
                     IntCode[i].name1, IntCode[i].name2);
                 break;
 
@@ -181,9 +184,64 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "# %s", IntCode[i].name1);
                 break;
 
+            // Special function
+            case INT_READ_SFR_LITERAL:
+            case INT_WRITE_SFR_LITERAL:
+            case INT_SET_SFR_LITERAL:
+            case INT_CLEAR_SFR_LITERAL:
+            case INT_TEST_SFR_LITERAL:
+
+            case INT_READ_SFR_VARIABLE:
+            case INT_WRITE_SFR_VARIABLE:
+            case INT_SET_SFR_VARIABLE:
+            case INT_CLEAR_SFR_VARIABLE:
+            case INT_TEST_SFR_VARIABLE:
+
+            case INT_WRITE_SFR_LITERAL_L:
+            case INT_WRITE_SFR_VARIABLE_L:
+
+            case INT_SET_SFR_LITERAL_L:
+            case INT_SET_SFR_VARIABLE_L:
+
+            case INT_CLEAR_SFR_LITERAL_L:
+            case INT_CLEAR_SFR_VARIABLE_L:
+
+            case INT_TEST_SFR_LITERAL_L:
+            case INT_TEST_SFR_VARIABLE_L:
+
+            case INT_TEST_C_SFR_LITERAL:
+            case INT_TEST_C_SFR_VARIABLE:
+            case INT_TEST_C_SFR_LITERAL_L:
+            case INT_TEST_C_SFR_VARIABLE_L:
+                switch(IntCode[i].op) {
+                    case INT_TEST_SFR_LITERAL_L:
+                    case INT_TEST_SFR_VARIABLE_L:
+
+                    case INT_TEST_C_SFR_LITERAL:
+                    case INT_TEST_C_SFR_VARIABLE:
+                    case INT_TEST_C_SFR_LITERAL_L:
+                    case INT_TEST_C_SFR_VARIABLE_L:
+                        fprintf(f, "if ");
+
+                }
+                fprintf(f, "SFR %d %s %s %s %d %d",IntCode[i].op, IntCode[i].name1, IntCode[i].name2, IntCode[i].name3, IntCode[i].literal, IntCode[i].literal2);
+                switch(IntCode[i].op) {
+                    case INT_TEST_SFR_LITERAL_L:
+                    case INT_TEST_SFR_VARIABLE_L:
+
+                    case INT_TEST_C_SFR_LITERAL:
+                    case INT_TEST_C_SFR_VARIABLE:
+                    case INT_TEST_C_SFR_LITERAL_L:
+                    case INT_TEST_C_SFR_VARIABLE_L:
+                        indent++;
+                }
+                break;
+            // Special function
+
             default:
-                oops();
+                ooops("IntCode[i].op=%d",IntCode[i].op);
         }
+        if(IntCode[i].op != INT_SIMULATE_NODE_STATE)
         fprintf(f, "\n");
         fflush(f);
     }
@@ -234,34 +292,43 @@ static void GenSymFormattedString(char *dest)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void Op(int op, char *name1, char *name2, char *name3, SWORD lit)
+static void Op(int op, char *name1, char *name2, char *name3, SWORD lit, SWORD lit2)
 {
     IntCode[IntCodeLen].op = op;
     if(name1) strcpy(IntCode[IntCodeLen].name1, name1);
     if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
     if(name3) strcpy(IntCode[IntCodeLen].name3, name3);
     IntCode[IntCodeLen].literal = lit;
+    IntCode[IntCodeLen].literal2 = lit2;
     IntCodeLen++;
+}
+static void Op(int op, char *name1, char *name2, char *name3, SWORD lit)
+{
+    Op(op, name1, name2, name3, lit, 0);
 }
 static void Op(int op, char *name1, char *name2, SWORD lit)
 {
-    Op(op, name1, name2, NULL, lit);
+    Op(op, name1, name2, NULL, lit, 0);
+}
+static void Op(int op, char *name1, SWORD lit, SWORD lit2)
+{
+    Op(op, name1, NULL, NULL, lit, lit2);
 }
 static void Op(int op, char *name1, SWORD lit)
 {
-    Op(op, name1, NULL, NULL, lit);
+    Op(op, name1, NULL, NULL, lit, 0);
 }
 static void Op(int op, char *name1, char *name2)
 {
-    Op(op, name1, name2, NULL, 0);
+    Op(op, name1, name2, NULL, 0, 0);
 }
 static void Op(int op, char *name1)
 {
-    Op(op, name1, NULL, NULL, 0);
+    Op(op, name1, NULL, NULL, 0, 0);
 }
 static void Op(int op)
 {
-    Op(op, NULL, NULL, NULL, 0);
+    Op(op, NULL, NULL, NULL, 0, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -390,7 +457,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
         case ELEM_SERIES_SUBCKT: {
             int i;
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            
+
             Comment("start series [");
             for(i = 0; i < s->count; i++) {
                 IntCodeFromCircuit(s->contents[i].which, s->contents[i].d.any,
@@ -424,7 +491,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             }
             Op(INT_COPY_BIT_TO_BIT, stateInOut, parOut);
             Comment("] finish parallel");
-            
+
             break;
         }
         case ELEM_CONTACTS: {
@@ -513,7 +580,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             Op(INT_END_IF);
             Op(INT_SET_BIT, antiGlitchName);
-            
+
             Op(INT_IF_BIT_CLEAR, stateInOut);
 
             Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
@@ -558,7 +625,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_IF_BIT_CLEAR, storeName);
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 1);
                     Op(INT_SET_VARIABLE_SUBTRACT, l->d.counter.name,
-                        l->d.counter.name, "$scratch", 0);
+                        l->d.counter.name, "$scratch", 0, 0);
                 Op(INT_END_IF);
             Op(INT_END_IF);
             Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
@@ -589,6 +656,122 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
             break;
         }
+        // Special Function
+        case ELEM_RSFR:
+            if(IsNumber(l->d.move.dest)) {
+                Error(_("Read SFR instruction: '%s' not a valid destination."),
+                    l->d.move.dest);
+                CompileError();
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+            if(IsNumber(l->d.move.src)) {
+                Op(INT_READ_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
+            } else {
+                Op(INT_READ_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+            }
+            Op(INT_END_IF);
+            break;
+        case ELEM_WSFR:
+            Op(INT_IF_BIT_SET, stateInOut);
+            if(IsNumber(l->d.move.dest)) {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_WRITE_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+                } else {
+                    Op(INT_WRITE_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
+                }
+            }
+            else {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_WRITE_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                } else {
+                    Op(INT_WRITE_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+                }
+            }
+            Op(INT_END_IF);
+            break;
+        case ELEM_SSFR:
+            Op(INT_IF_BIT_SET, stateInOut);
+            if(IsNumber(l->d.move.dest)) {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_SET_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+                } else {
+                    Op(INT_SET_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
+                }
+            }
+            else {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_SET_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                } else {
+                    Op(INT_SET_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+                }
+            }
+            Op(INT_END_IF);
+            break;
+        case ELEM_CSFR:
+            Op(INT_IF_BIT_SET, stateInOut);
+            if(IsNumber(l->d.move.dest)) {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_CLEAR_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+                } else {
+                    Op(INT_CLEAR_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
+                }
+            }
+            else {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_CLEAR_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                } else {
+                    Op(INT_CLEAR_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+                }
+            }
+            Op(INT_END_IF);
+            break;
+        case ELEM_TSFR: {
+             if(IsNumber(l->d.move.dest)) {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_TEST_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+                    Op(INT_ELSE);
+                } else {
+                    Op(INT_TEST_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
+                    Op(INT_ELSE);
+                }
+            }
+            else {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_TEST_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                    Op(INT_ELSE);
+                } else {
+                    Op(INT_TEST_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+                    Op(INT_ELSE);
+                }
+            }
+            Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
+            break;
+        }
+        case ELEM_T_C_SFR: {
+             if(IsNumber(l->d.move.dest)) {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_TEST_C_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+                    Op(INT_ELSE);
+                } else {
+                    Op(INT_TEST_C_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
+                    Op(INT_ELSE);
+                }
+            }
+            else {
+                if(IsNumber(l->d.move.src)) {
+                    Op(INT_TEST_C_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                    Op(INT_ELSE);
+                } else {
+                    Op(INT_TEST_C_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+                    Op(INT_ELSE);
+                }
+            }
+            Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
+            break;
+        }
+        // Special function
         case ELEM_GRT:
         case ELEM_GEQ:
         case ELEM_LES:
@@ -597,7 +780,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
         case ELEM_EQU: {
             char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch");
             char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
-            
+
             if(which == ELEM_GRT) {
                 Op(INT_IF_VARIABLE_GRT_VARIABLE, op1, op2);
                 Op(INT_ELSE);
@@ -633,7 +816,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
         case ELEM_ONE_SHOT_FALLING: {
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName);
-        
+
             Op(INT_COPY_BIT_TO_BIT, "$scratch", stateInOut);
 
             Op(INT_IF_BIT_CLEAR, stateInOut);
@@ -661,6 +844,13 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src,
                     0);
             }
+            Op(INT_END_IF);
+            break;
+        }
+
+        case ELEM_STRING: {
+            Op(INT_IF_BIT_SET, stateInOut);
+            Op(INT_WRITE_STRING, l->d.fmtdStr.dest, l->d.fmtdStr.var, l->d.fmtdStr.string, 0);
             Op(INT_END_IF);
             break;
         }
@@ -700,7 +890,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
                 // While running, continuously compare the EEPROM copy of
                 // the variable against the RAM one; if they are different,
-                // write the RAM one to EEPROM. 
+                // write the RAM one to EEPROM.
                 Op(INT_CLEAR_BIT, "$scratch");
                 Op(INT_EEPROM_BUSY_CHECK, "$scratch");
                 Op(INT_IF_BIT_CLEAR, "$scratch");
@@ -830,7 +1020,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 // and this is the best form in which to keep it, numerically
                 // speaking, because you can always fix numerical problems
                 // by moving the PWL points closer together.
-               
+
                 // Check for numerical problems, and fail if we have them.
                 if((thisDx*thisDy) >= 32767 || (thisDx*thisDy) <= -32768) {
                     Error(_("Numerical problem with piecewise linear lookup "
@@ -845,7 +1035,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_IF_VARIABLE_LES_LITERAL, t->index, t->vals[i*2]+1);
                     Op(INT_SET_BIT, "$scratch");
                 Op(INT_END_IF);
-                
+
                 Op(INT_IF_BIT_SET, "$scratch");
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->vals[(i-1)*2]);
                 Op(INT_SET_VARIABLE_SUBTRACT, "$scratch", t->index,
@@ -1034,7 +1224,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                     if(digit == 0) {
                         Op(INT_SET_BIT, isLeadingZero);
                     }
-                    
+
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch",
                         TenToThe((digits-digit)-1));
                     Op(INT_SET_VARIABLE_DIVIDE, "$scratch2", convertState,
@@ -1072,7 +1262,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                         Op(INT_SET_BIT, "$scratch");
                     Op(INT_END_IF);
                     Op(INT_IF_BIT_SET, "$scratch");
-                       
+
                         // Also do the `absolute value' calculation while
                         // we're at it.
                         Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
@@ -1090,7 +1280,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                     // just another character
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                     Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", seqScratch);
-                        Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", 
+                        Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2",
                             outputChars[i]);
                     Op(INT_END_IF);
                 }
@@ -1102,7 +1292,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_UART_SEND, "$scratch2", "$scratch");
                 Op(INT_INCREMENT_VARIABLE, seq);
             Op(INT_END_IF);
-    
+
             // Rung-out state: true if we're still running, else false
             Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_IF_VARIABLE_LES_LITERAL, seq, steps);
@@ -1150,7 +1340,7 @@ BOOL GenerateIntermediateCode(void)
     // The EEPROM addresses for the `Make Persistent' op are assigned at
     // int code generation time.
     EepromAddrFree = 0;
-    
+
     IntCodeLen = 0;
     memset(IntCode, 0, sizeof(IntCode));
 
@@ -1162,7 +1352,7 @@ BOOL GenerateIntermediateCode(void)
 
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
-        if(Prog.rungs[i]->count == 1 && 
+        if(Prog.rungs[i]->count == 1 &&
             Prog.rungs[i]->contents[0].which == ELEM_COMMENT)
         {
             // nothing to do for this one

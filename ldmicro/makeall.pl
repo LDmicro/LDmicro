@@ -5,7 +5,7 @@ sub SYS { system($_[0]); }
 SYS("rm -rf build");
 SYS("mkdir build");
 
-for $f qw(DE ES FR IT PT TR) {
+for $f qw(DE ES FR IT PT TR RU JA EN) {
     SYS("nmake clean");
     SYS("nmake D=LDLANG_$f");
     $fl = lc($f);

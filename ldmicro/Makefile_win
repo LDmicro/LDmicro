@@ -61,7 +61,7 @@ $(OBJDIR)/ldmicro.exe: $(LDOBJS) $(FREEZE) $(HELPOBJ) $(OBJDIR)/ldmicro.res
     @$(CC) $(DEFINES) $(CFLAGS) -Fe$(OBJDIR)/ldmicro.exe $(LDOBJS) $(FREEZE) $(HELPOBJ) $(OBJDIR)/ldmicro.res $(LIBS)
 
 $(OBJDIR)/ldmicro.res: ldmicro.rc ldmicro.ico
-    @rc ldmicro.rc
+	@rc ldmicro.rc
     @copy ldmicro.res $(OBJDIR)
 
 $(LDOBJS): $(@B).cpp $(HEADERS)
