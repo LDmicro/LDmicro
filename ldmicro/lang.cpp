@@ -62,6 +62,10 @@ char *_(char *in)
     l = &LangTr;
 #elif defined(LDLANG_PT)
     l = &LangPt;
+#elif defined(LDLANG_JA)
+    l = &LangJa;
+#elif defined(LDLANG_RU)
+    l = &LangRu;
 #else
 #   error "Unrecognized language!"
 #endif
