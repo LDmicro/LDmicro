@@ -147,10 +147,25 @@ static void IncrementVariable(char *name)
     for(i = 0; i < VariablesCount; i++) {
         if(strcmp(Variables[i].name, name)==0) {
             (Variables[i].val)++;
+            //dbp("%s++==%d", name, Variables[i].val);
             return;
         }
     }
-    oops();
+    ooops(name);
+}
+
+//-----------------------------------------------------------------------------
+static void DecrementVariable(char *name)
+{
+    int i;
+    for(i = 0; i < VariablesCount; i++) {
+        if(strcmp(Variables[i].name, name)==0) {
+            (Variables[i].val)--;
+            //dbp("%s--==%d", name, Variables[i].val);
+            return;
+        }
+    }
+    ooops(name);
 }
 
 //-----------------------------------------------------------------------------
@@ -218,6 +233,19 @@ SWORD GetAdcShadow(char *name)
     return 0;
 }
 
+//-----------------------------------------------------------------------------
+DWORD IsUsedVariable(char *name)
+{
+    int i;
+    for(i = 0; i < VariablesCount; i++) {
+        if(strcmp(Variables[i].name, name)==0) {
+            break;
+        }
+    }
+    if(i >= MAX_IO) return 0;
+
+    return Variables[i].usedFlags;
+}
 //-----------------------------------------------------------------------------
 // Mark how a variable is used; a series of flags that we can OR together,
 // then we can check to make sure that only valid combinations have been used
@@ -393,6 +421,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_PERSIST:
+        case ELEM_STRING:
         case ELEM_FORMATTED_STRING:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
@@ -411,6 +440,11 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
+        case ELEM_RSFR:
+        case ELEM_WSFR:
+        case ELEM_SSFR:
+        case ELEM_CSFR:
+        case ELEM_TSFR:
             break;
 
         default:
@@ -523,6 +557,30 @@ static void SimulateIntCode(void)
                     NeedRedraw = TRUE;
                 }
                 SetSimulationVariable(a->name1, a->literal);
+                break;
+
+			case  INT_READ_SFR_LITERAL:
+			case  INT_WRITE_SFR_LITERAL:
+			case  INT_SET_SFR_LITERAL:
+			case  INT_CLEAR_SFR_LITERAL:
+			case  INT_TEST_SFR_LITERAL:
+			case  INT_READ_SFR_VARIABLE:
+			case  INT_WRITE_SFR_VARIABLE:
+			case  INT_SET_SFR_VARIABLE:
+			case  INT_CLEAR_SFR_VARIABLE:
+			case  INT_TEST_SFR_VARIABLE:
+			case  INT_TEST_C_SFR_LITERAL:
+			case  INT_WRITE_SFR_LITERAL_L:
+			case  INT_WRITE_SFR_VARIABLE_L:
+			case  INT_SET_SFR_LITERAL_L:
+			case  INT_SET_SFR_VARIABLE_L:
+			case  INT_CLEAR_SFR_LITERAL_L:
+			case  INT_CLEAR_SFR_VARIABLE_L:
+			case  INT_TEST_SFR_LITERAL_L:
+			case  INT_TEST_SFR_VARIABLE_L:
+			case  INT_TEST_C_SFR_VARIABLE:
+			case  INT_TEST_C_SFR_LITERAL_L:
+			case  INT_TEST_C_SFR_VARIABLE_L:
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:

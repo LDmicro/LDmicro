@@ -23,6 +23,206 @@
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
+// AT90USB647( AT90USB646 should also work but I do not have hardware to test ).
+McuIoPinInfo AvrAT90USB647_64TQFPIoPinInfo[] = {
+    { 'E',  6,  1  },
+    { 'E',  7,  2  },
+
+    { 'E',  3,  9 },
+
+    { 'B',  0, 10 },
+    { 'B',  1, 11 },
+    { 'B',  2, 12 },
+    { 'B',  3, 13 },
+    { 'B',  4, 14 },
+    { 'B',  5, 15 },
+    { 'B',  6, 16 },
+    { 'B',  7, 17 },
+
+    { 'E',  4, 18 },
+    { 'E',  5, 19 },
+
+    { 'D',  0, 25 },
+    { 'D',  1, 26 },
+    { 'D',  2, 27 },
+    { 'D',  3, 28 },
+    { 'D',  4, 29 },
+    { 'D',  5, 30 },
+    { 'D',  6, 31 },
+    { 'D',  7, 32 },
+
+    { 'E',  0, 33 },
+    { 'E',  1, 34 },
+
+    { 'C',  0, 35 },
+    { 'C',  1, 36 },
+    { 'C',  2, 37 },
+    { 'C',  3, 38 },
+    { 'C',  4, 39 },
+    { 'C',  5, 40 },
+    { 'C',  6, 41 },
+    { 'C',  7, 42 },
+
+    { 'E',  2, 43 },
+
+    { 'A',  7, 44 },
+    { 'A',  6, 45 },
+    { 'A',  5, 46 },
+    { 'A',  4, 47 },
+    { 'A',  3, 48 },
+    { 'A',  2, 49 },
+    { 'A',  1, 50 },
+    { 'A',  0, 51 },
+
+    { 'F',  7, 54 },
+    { 'F',  6, 55 },
+    { 'F',  5, 56 },
+    { 'F',  4, 57 },
+    { 'F',  3, 58 },
+    { 'F',  2, 59 },
+    { 'F',  1, 60 },
+    { 'F',  0, 61 },
+};
+
+McuAdcPinInfo AvrAT90USB647_64TQFPAdcPinInfo[] = {
+    { 61, 0x00 },
+    { 60, 0x01 },
+    { 59, 0x02 },
+    { 58, 0x03 },
+    { 57, 0x04 },
+    { 56, 0x05 },
+    { 55, 0x06 },
+    { 54, 0x07 },
+};
+
+//-----------------------------------------------------------------------------
+// ATmega2560
+
+McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
+    { 'G',  5,  1 },
+
+    { 'E',  0,  2 },
+    { 'E',  1,  3 },
+    { 'E',  2,  4 },
+    { 'E',  3,  5 },
+    { 'E',  4,  6 },
+    { 'E',  5,  7 },
+    { 'E',  6,  8 },
+    { 'E',  7,  9 },
+
+    { 'H',  0, 12 },
+    { 'H',  1, 13 },
+    { 'H',  2, 14 },
+    { 'H',  3, 15 },
+    { 'H',  4, 16 },
+    { 'H',  5, 17 },
+    { 'H',  6, 18 },
+
+    { 'B',  0, 19 },
+    { 'B',  1, 20 },
+    { 'B',  2, 21 },
+    { 'B',  3, 22 },
+    { 'B',  4, 23 },
+    { 'B',  5, 24 },
+    { 'B',  6, 25 },
+    { 'B',  7, 26 },
+
+    { 'H',  7, 27 },
+
+    { 'G',  3, 28 },
+    { 'G',  4, 29 },
+
+    { 'L',  0, 35 },
+    { 'L',  1, 36 },
+    { 'L',  2, 37 },
+    { 'L',  3, 38 },
+    { 'L',  4, 39 },
+    { 'L',  5, 40 },
+    { 'L',  6, 41 },
+    { 'L',  7, 42 },
+
+    { 'D',  0, 43 },
+    { 'D',  1, 44 },
+    { 'D',  2, 45 },
+    { 'D',  3, 46 },
+    { 'D',  4, 47 },
+    { 'D',  5, 48 },
+    { 'D',  6, 49 },
+    { 'D',  7, 50 },
+
+    { 'G',  0, 51 },
+    { 'G',  1, 52 },
+
+    { 'C',  0, 53 },
+    { 'C',  1, 54 },
+    { 'C',  2, 55 },
+    { 'C',  3, 56 },
+    { 'C',  4, 57 },
+    { 'C',  5, 58 },
+    { 'C',  6, 59 },
+    { 'C',  7, 60 },
+
+    { 'J',  0, 63 },
+    { 'J',  1, 64 },
+    { 'J',  2, 65 },
+    { 'J',  3, 66 },
+    { 'J',  4, 67 },
+    { 'J',  5, 68 },
+    { 'J',  6, 69 },
+
+    { 'G',  2, 70 },
+
+    { 'A',  7, 71 },
+    { 'A',  6, 72 },
+    { 'A',  5, 73 },
+    { 'A',  4, 74 },
+    { 'A',  3, 75 },
+    { 'A',  2, 76 },
+    { 'A',  1, 77 },
+    { 'A',  0, 78 },
+
+    { 'J',  7, 79 },
+
+    { 'K',  7, 82 },
+    { 'K',  6, 83 },
+    { 'K',  5, 84 },
+    { 'K',  4, 85 },
+    { 'K',  3, 86 },
+    { 'K',  2, 87 },
+    { 'K',  1, 88 },
+    { 'K',  0, 89 },
+
+    { 'F',  7, 90 },
+    { 'F',  6, 91 },
+    { 'F',  5, 92 },
+    { 'F',  4, 93 },
+    { 'F',  3, 94 },
+    { 'F',  2, 95 },
+    { 'F',  1, 96 },
+    { 'F',  0, 97 },
+
+};
+
+McuAdcPinInfo AvrAtmega2560_100TQFPAdcPinInfo[] = {
+    { 97, 0x00 },
+    { 96, 0x01 },
+    { 95, 0x02 },
+    { 94, 0x03 },
+    { 93, 0x04 },
+    { 92, 0x05 },
+    { 91, 0x06 },
+    { 90, 0x07 },
+    { 89, 0x08 },
+    { 88, 0x09 },
+    { 87, 0x0A },
+    { 86, 0x0B },
+    { 85, 0x0C },
+    { 84, 0x0D },
+    { 83, 0x0E },
+    { 82, 0x0F },
+};
+
+//-----------------------------------------------------------------------------
 // ATmega128 or ATmega64
 
 McuIoPinInfo AvrAtmega128_64TQFPIoPinInfo[] = {
@@ -194,7 +394,7 @@ McuAdcPinInfo AvrAtmega16or32AdcPinInfo[] = {
 
 
 //-----------------------------------------------------------------------------
-// ATmega8
+// ATmega8 PDIP-28
 
 McuIoPinInfo AvrAtmega8IoPinInfo[] = {
     { 'D',  0,  2 },
@@ -229,6 +429,95 @@ McuAdcPinInfo AvrAtmega8AdcPinInfo[] = {
 };
 
 
+//-----------------------------------------------------------------------------
+// ATmega8 TQFP-32
+
+McuIoPinInfo AvrAtmega8IoPinInfoTQFP[] = {
+    { 'D',  0, 30, "PD0 (RXD)" }, // {char port;  int bit;  int pin;}
+    { 'D',  1, 31, "PD1 (TXD)" },
+    { 'D',  2, 32, "PD2 (INT0)" },
+    { 'D',  3,  1, "PD3 (INT1)" },
+    { 'D',  4,  2, "PD4 (XCK / T0)" },
+    { 'D',  5,  9, "PD5 (T1)" },
+    { 'D',  6, 10, "PD6 (AIN0)" },
+    { 'D',  7, 11, "PD7 (AIN1)" },
+    { 'B',  0, 12, "PB0 (ICP1)" },
+    { 'B',  1, 13, "PB1 (OC1A)" },
+    { 'B',  2, 14, "PB2 (SS / OC1B)" },
+    { 'B',  3, 15, "PB3 (MOSI / OC2)" },
+    { 'B',  4, 16, "PB4 (MISO)" },
+    { 'B',  5, 17, "PB5 (SCK)" },
+    { 'B',  6,  7, "PB6 (XTAL1 / TOSC1)" },
+    { 'B',  7,  8, "PB7 (XTAL2 / TOSC2)" },
+    { 'C',  0, 23, "PC0 (ADC0)" },
+    { 'C',  1, 24, "PC1 (ADC1)" },
+    { 'C',  2, 25, "PC2 (ADC2)" },
+    { 'C',  3, 26, "PC3 (ADC3)" },
+    { 'C',  4, 27, "PC4 (ADC4 / SDA)" },
+    { 'C',  5, 28, "PC5 (ADC5 / SCL)" },
+    { 'C',  6, 29, "PC6 (RESET)" },
+};
+
+McuAdcPinInfo AvrAtmega8AdcPinInfoTQFP[] = {
+    { 23, 0x00 }, // ADC0 {int pin;   BYTE muxRegValue;}
+    { 24, 0x01 },
+    { 25, 0x02 },
+    { 26, 0x03 },
+    { 27, 0x04 },
+    { 28, 0x05 }, // ADC5
+    { 19, 0x06 },
+    { 22, 0x07 }, // ADC7
+};
+
+
+//-----------------------------------------------------------------------------
+// ATmega164 or ATmega324 or ATmega644 or ATmega1264
+
+McuIoPinInfo AvrAtmega164IoPinInfo[] = {
+    { 'B',  0,  1 },
+    { 'B',  1,  2 },
+    { 'B',  2,  3 },
+    { 'B',  3,  4 },
+    { 'B',  4,  5 },
+    { 'B',  5,  6 },
+    { 'B',  6,  7 },
+    { 'B',  7,  8 },
+    { 'D',  0, 14 },
+    { 'D',  1, 15 },
+    { 'D',  2, 16 },
+    { 'D',  3, 17 },
+    { 'D',  4, 18 },
+    { 'D',  5, 19 },
+    { 'D',  6, 20 },
+    { 'D',  7, 21 },
+    { 'C',  0, 22 },
+    { 'C',  1, 23 },
+    { 'C',  2, 24 },
+    { 'C',  3, 25 },
+    { 'C',  4, 26 },
+    { 'C',  5, 27 },
+    { 'C',  6, 28 },
+    { 'C',  7, 29 },
+    { 'A',  7, 33 },
+    { 'A',  6, 34 },
+    { 'A',  5, 35 },
+    { 'A',  4, 36 },
+    { 'A',  3, 37 },
+    { 'A',  2, 38 },
+    { 'A',  1, 39 },
+    { 'A',  0, 40 },
+};
+
+McuAdcPinInfo AvrAtmega164AdcPinInfo[] = {
+    { 40, 0x00 },
+    { 39, 0x01 },
+    { 38, 0x02 },
+    { 37, 0x03 },
+    { 36, 0x04 },
+    { 35, 0x05 },
+    { 34, 0x06 },
+    { 33, 0x07 },
+};
 //-----------------------------------------------------------------------------
 // A variety of 18-pin PICs that share the same digital IO assignment.
 
@@ -462,6 +751,44 @@ McuAdcPinInfo Pic16f886AdcPinInfo[] = {
 
 McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
     {
+        "Atmel AVR AT90USB647 64-TQFP",
+        'P',
+        { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F }, // PINx
+        { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x31 }, // PORTx
+        { 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30 }, // DDRx
+        64*1024,
+        { { 0x100, 4096 } },
+        AvrAT90USB647_64TQFPIoPinInfo,
+        arraylen(AvrAT90USB647_64TQFPIoPinInfo),
+        AvrAT90USB647_64TQFPAdcPinInfo,
+        arraylen(AvrAT90USB647_64TQFPAdcPinInfo),
+        1023,
+        { 27, 28 },
+        17,
+        ISA_AVR,
+        TRUE,
+        0
+    },
+    {
+        "Atmel AVR ATmega2560 100-TQFP",
+        'P',
+        { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0x103, 0x106, 0x109 }, // PINx
+        { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0x105, 0x108, 0x10B }, // PORTx
+        { 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33, 0x101, 0x104, 0x107, 0x10A }, // DDRx
+        128*1024,
+        { { 0x200, 8192 } },
+        AvrAtmega2560_100TQFPIoPinInfo,
+        arraylen(AvrAtmega2560_100TQFPIoPinInfo),
+        AvrAtmega2560_100TQFPAdcPinInfo,
+        arraylen(AvrAtmega2560_100TQFPAdcPinInfo),
+        1023,
+        { 2 , 3 },
+        23,
+        ISA_AVR1,
+        TRUE,
+        0
+    },
+    {
         "Atmel AVR ATmega128 64-TQFP",
         'P',
         { 0x39, 0x36, 0x33, 0x30, 0x21, 0x20, 0x63 }, // PINx
@@ -513,7 +840,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         0,
         0,
         { 0, 0 },
-        0,
+        2,
         ISA_AVR,
         TRUE,
         0
@@ -532,7 +859,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         arraylen(AvrAtmega16or32AdcPinInfo),
         1023,
         { 14, 15 },
-        0,
+        21,
         ISA_AVR,
         TRUE,
         0
@@ -551,10 +878,30 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         arraylen(AvrAtmega16or32AdcPinInfo),
         1023,
         { 14, 15 },
-        0,
+        21,
         ISA_AVR,
         TRUE,
         0
+    },
+    {
+        "Atmel AVR ATmega8 32-TQFP",         //char            *mcuName;
+        'P',                                 //char             portPrefix;
+        { 0xff, 0x36, 0x33, 0x30 }, // PINx  //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
+        { 0xff, 0x38, 0x35, 0x32 }, // PORTx //DWORD            outputRegs[MAX_IO_PORTS];
+        { 0xff, 0x37, 0x34, 0x31 }, // DDRx  //DWORD            dirRegs[MAX_IO_PORTS];
+        4*1024,                              //DWORD            flashWords;
+        { { 0x60, 1024 } },                  //{DWORD start; int len;} ram[MAX_RAM_SECTIONS];
+        AvrAtmega8IoPinInfoTQFP,             //McuIoPinInfo    *pinInfo;
+        arraylen(AvrAtmega8IoPinInfoTQFP),   //int              pinCount;
+        AvrAtmega8AdcPinInfoTQFP,            //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrAtmega8AdcPinInfoTQFP),  //int              adcCount;
+        1023,                                //int              adcMax;
+        { 30, 31 },                          //{int rxPin; int txPin;} uartNeeds;
+        15,//PB3-OC2                         //int              pwmNeedsPin;
+        ISA_AVR,                             //int              whichIsa;
+        TRUE,                                //BOOL             avrUseIjmp;
+        0,                                   //DWORD            configurationWord;
+        { 32, 1 } // INT0, INT1              //int int0PinA; int int1PinA;} QuadEncodNeeds;
     },
     {
         "Atmel AVR ATmega8 28-PDIP",
@@ -572,6 +919,158 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 2, 3 },
         17,
         ISA_AVR,
+        TRUE,
+        0
+    },
+    {
+        "Atmel AVR ATmega48 28-PDIP",
+        'P',
+        { 0xff, 0x23, 0x26, 0x29 }, // PINx
+        { 0xff, 0x25, 0x28, 0x2B }, // PORTx
+        { 0xff, 0x24, 0x27, 0x2A }, // DDRx
+        2*1024,
+        { { 0x100, 512 } },
+        AvrAtmega8IoPinInfo,
+        arraylen(AvrAtmega8IoPinInfo),
+        AvrAtmega8AdcPinInfo,
+        arraylen(AvrAtmega8AdcPinInfo),
+        1023,
+        { 2, 3 },
+        17,
+        ISA_AVR1,
+        TRUE,
+        0
+    },
+    {
+        "Atmel AVR ATmega88 28-PDIP",
+        'P',
+        { 0xff, 0x23, 0x26, 0x29 }, // PINx
+        { 0xff, 0x25, 0x28, 0x2B }, // PORTx
+        { 0xff, 0x24, 0x27, 0x2A }, // DDRx
+        4*1024,
+        { { 0x100, 1024 } },
+        AvrAtmega8IoPinInfo,
+        arraylen(AvrAtmega8IoPinInfo),
+        AvrAtmega8AdcPinInfo,
+        arraylen(AvrAtmega8AdcPinInfo),
+        1023,
+        { 2, 3 },
+        17,
+        ISA_AVR1,
+        TRUE,
+        0
+    },
+    {
+        "Atmel AVR ATmega168 28-PDIP",
+        'P',
+        { 0xff, 0x23, 0x26, 0x29 }, // PINx
+        { 0xff, 0x25, 0x28, 0x2B }, // PORTx
+        { 0xff, 0x24, 0x27, 0x2A }, // DDRx
+        8*1024,
+        { { 0x100, 1024 } },
+        AvrAtmega8IoPinInfo,
+        arraylen(AvrAtmega8IoPinInfo),
+        AvrAtmega8AdcPinInfo,
+        arraylen(AvrAtmega8AdcPinInfo),
+        1023,
+        { 2, 3 },
+        17,
+        ISA_AVR1,
+        TRUE,
+        0
+    },
+    {
+        "Atmel AVR ATmega328 28-PDIP",
+        'P',
+        { 0xff, 0x23, 0x26, 0x29 }, // PINx
+        { 0xff, 0x25, 0x28, 0x2B }, // PORTx
+        { 0xff, 0x24, 0x27, 0x2A }, // DDRx
+        16*1024,
+        { { 0x100, 2048 } },
+        AvrAtmega8IoPinInfo,
+        arraylen(AvrAtmega8IoPinInfo),
+        AvrAtmega8AdcPinInfo,
+        arraylen(AvrAtmega8AdcPinInfo),
+        1023,
+        { 2, 3 },
+        17,
+        ISA_AVR1,
+        TRUE,
+        0
+    },
+    {
+        "Atmel AVR ATmega164 40-PDIP",
+        'P',
+        { 0x20, 0x23, 0x26, 0x29 }, // PINx
+        { 0x22, 0x25, 0x28, 0x2B }, // PORTx
+        { 0x21, 0x24, 0x27, 0x2A }, // DDRx
+        8*1024,
+        { { 0x100, 1024 } },
+        AvrAtmega164IoPinInfo,
+        arraylen(AvrAtmega164IoPinInfo),
+        AvrAtmega164AdcPinInfo,
+        arraylen(AvrAtmega164AdcPinInfo),
+        1023,
+        { 14, 15 },
+        21,
+        ISA_AVR1,
+        TRUE,
+        0
+    },
+    {
+        "Atmel AVR ATmega324 40-PDIP",
+        'P',
+        { 0x20, 0x23, 0x26, 0x29 }, // PINx
+        { 0x22, 0x25, 0x28, 0x2B }, // PORTx
+        { 0x21, 0x24, 0x27, 0x2A }, // DDRx
+        16*1024,
+        { { 0x100, 2048 } },
+        AvrAtmega164IoPinInfo,
+        arraylen(AvrAtmega164IoPinInfo),
+        AvrAtmega164AdcPinInfo,
+        arraylen(AvrAtmega164AdcPinInfo),
+        1023,
+        { 14, 15 },
+        21,
+        ISA_AVR1,
+        TRUE,
+        0
+    },
+    {
+        "Atmel AVR ATmega644 40-PDIP",
+        'P',
+        { 0x20, 0x23, 0x26, 0x29 }, // PINx
+        { 0x22, 0x25, 0x28, 0x2B }, // PORTx
+        { 0x21, 0x24, 0x27, 0x2A }, // DDRx
+        32*1024,
+        { { 0x100, 4096 } },
+        AvrAtmega164IoPinInfo,
+        arraylen(AvrAtmega164IoPinInfo),
+        AvrAtmega164AdcPinInfo,
+        arraylen(AvrAtmega164AdcPinInfo),
+        1023,
+        { 14, 15 },
+        21,
+        ISA_AVR1,
+        TRUE,
+        0
+    },
+    {
+        "Atmel AVR ATmega1284 40-PDIP",
+        'P',
+        { 0x20, 0x23, 0x26, 0x29 }, // PINx
+        { 0x22, 0x25, 0x28, 0x2B }, // PORTx
+        { 0x21, 0x24, 0x27, 0x2A }, // DDRx
+        64*1024,
+        { { 0x100, 16384 } },
+        AvrAtmega164IoPinInfo,
+        arraylen(AvrAtmega164IoPinInfo),
+        AvrAtmega164AdcPinInfo,
+        arraylen(AvrAtmega164AdcPinInfo),
+        1023,
+        { 14, 15 },
+        21,
+        ISA_AVR1,
         TRUE,
         0
     },
@@ -798,6 +1297,25 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 0, 0 },
         0,
         ISA_INTERPRETED,
+        FALSE,
+        0x00
+    },
+    {
+        "Netzer Byte Code",
+        'R',
+        { 0x00 },
+        { 0x00 },
+        { 0x00 },
+        0,
+        { { 0x00, 0 } },
+        NULL,
+        0,
+        NULL,
+        0,
+        0,
+        { 0, 0 },
+        0,
+        ISA_NETZER,
         FALSE,
         0x00
     }

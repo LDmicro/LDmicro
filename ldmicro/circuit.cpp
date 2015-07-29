@@ -2,23 +2,23 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
 //
 // Routines for modifying the circuit: add a particular element at a
-// particular point, delete the selected element, etc. 
+// particular point, delete the selected element, etc.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include <windows.h>
@@ -115,7 +115,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 case SELECTED_ABOVE: {
                     ElemSubcktParallel *p = AllocSubcktParallel();
                     p->count = 2;
-    
+
                     int t;
                     t = (Selected->selectedState == SELECTED_ABOVE) ? 0 : 1;
                     p->contents[t].which = newWhich;
@@ -123,7 +123,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     t = (Selected->selectedState == SELECTED_ABOVE) ? 1 : 0;
                     p->contents[t].which = s->contents[i].which;
                     p->contents[t].d.any = s->contents[i].d.any;
-                    
+
                     s->contents[i].which = ELEM_PARALLEL_SUBCKT;
                     s->contents[i].d.parallel = p;
                     break;
@@ -175,7 +175,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 case SELECTED_RIGHT: {
                     ElemSubcktSeries *s = AllocSubcktSeries();
                     s->count = 2;
-    
+
                     int t;
                     t = (Selected->selectedState == SELECTED_LEFT) ? 0 : 1;
                     s->contents[t].which = newWhich;
@@ -183,7 +183,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     t = (Selected->selectedState == SELECTED_LEFT) ? 1 : 0;
                     s->contents[t].which = p->contents[i].which;
                     s->contents[t].d.any = p->contents[i].d.any;
-                    
+
                     p->contents[i].which = ELEM_SERIES_SUBCKT;
                     p->contents[i].d.series = s;
                     break;
@@ -307,6 +307,16 @@ void AddFormattedString(void)
     strcpy(t->d.fmtdStr.string, "value: \\3\\r\\n");
     AddLeaf(ELEM_FORMATTED_STRING, t);
 }
+void AddString(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.fmtdStr.dest, "dest");
+    strcpy(t->d.fmtdStr.var, "var");
+    strcpy(t->d.fmtdStr.string, "string");
+    AddLeaf(ELEM_STRING, t);
+}
 void AddLookUpTable(void)
 {
     if(!CanInsertEnd) return;
@@ -358,7 +368,7 @@ void AddCmp(int which)
 }
 void AddCounter(int which)
 {
-    if(which == ELEM_CTC) {    
+    if(which == ELEM_CTC) {
         if(!CanInsertEnd) return;
     } else {
         if(!CanInsertOther) return;
@@ -489,7 +499,7 @@ static BOOL CollapseUnnecessarySubckts(int which, void *any)
             }
             break;
         }
-        
+
         default:
             oops();
             break;
@@ -506,7 +516,7 @@ static BOOL CollapseUnnecessarySubckts(int which, void *any)
 // removed the element.
 //-----------------------------------------------------------------------------
 static BOOL DeleteSelectedFromSubckt(int which, void *any)
-{   
+{
     ok();
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -570,7 +580,7 @@ void DeleteSelectedFromProgram(void)
     int i = RungContainingSelected();
     if(i < 0) return;
 
-    if(Prog.rungs[i]->count == 1 && 
+    if(Prog.rungs[i]->count == 1 &&
         Prog.rungs[i]->contents[0].which != ELEM_PARALLEL_SUBCKT)
     {
         Prog.rungs[i]->contents[0].which = ELEM_PLACEHOLDER;
@@ -674,7 +684,7 @@ static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++) {
-                if(ContainsElem(p->contents[i].which, p->contents[i].d.any, 
+                if(ContainsElem(p->contents[i].which, p->contents[i].d.any,
                     seek))
                 {
                     return TRUE;
@@ -727,7 +737,7 @@ void DeleteSelectedRung(void)
 
     FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     Prog.numRungs--;
-    memmove(&Prog.rungs[i], &Prog.rungs[i+1], 
+    memmove(&Prog.rungs[i], &Prog.rungs[i+1],
         (Prog.numRungs - i)*sizeof(Prog.rungs[0]));
 
     if(foundCursor) MoveCursorNear(gx, gy);
@@ -760,7 +770,7 @@ void InsertRung(BOOL afterCursor)
         Error(_("Too many rungs!"));
         return;
     }
-    
+
     int i = RungContainingSelected();
     if(i < 0) return;
 
@@ -818,6 +828,7 @@ void NewProgram(void)
 
     Prog.numRungs = 1;
     Prog.rungs[0] = AllocEmptyRung();
+    //Prog.mcu = &SupportedMcus[NUM_SUPPORTED_MCUS-1];
 }
 
 //-----------------------------------------------------------------------------
@@ -940,7 +951,7 @@ BOOL PwmFunctionUsed(void)
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SET_PWM, 
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SET_PWM,
             -1, -1))
         {
             return TRUE;

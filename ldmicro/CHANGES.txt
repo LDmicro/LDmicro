@@ -1,3 +1,38 @@
+== Release 3.0.0
+    * Unofficial support:
+         Repository: https://github.com/LDmicro/LDmicro
+         Email:      LDmicro.GitHub@gmail.com
+
+    * Add Japanese translation from https://github.com/snipsnipsnip/ldmicro-jp
+    * Add Russin translation from http://www.vga-avr.narod.ru/,
+         Email:maxxir@rambler.ru
+    * Add SFR function for AVR MCU from http://cq.cx/ladder-forum.pl
+         by Dzairo, Email : dsevc@post.sk, sevc@post.sk
+    * Add Netser Ethernet interface Project
+         http://www.mobacon.de/wiki/doku.php/en/netzer/index
+         from https://github.com/mobacon/ldmicro/commits/netzer
+
+== Release 2.3
+    * Fix problem with PWM pin for ATmega16,ATmega32
+    * Add new MCU : ATmega164,ATmega324,ATmega664,ATmega1284 in
+      DIP40 package need test PERSIST - not working in ATmega16 or 32
+
+    * from http://cq.cx/ladder-forum.pl?action=viewthread&parent=3895
+      Here are some news in LD micro. I add to LD micro this new MCU:
+      ATmega164,324,644,1284 in DIP40 package. I test all hardware: PWM,ADC,UART
+      work good.. Only one function not working : PERSIST Pls MPG add here some
+      easy example for ATmega32 to test it (this is original code what I not
+      change) and if will working then I try test with ATmega644. I try code
+      after power up MCU to set PWM from variable in EEprom.
+
+      Ehm.... but in Source code (original ) are some bugs what I find. 1.for
+      avr MCU is setting Interupt bit for timer1 . not need it 2.in mcutable.h
+      MCU PWM pin is 0 for mega16,32 then Idd corect pin in DIP40 this pin is 21
+      (OC2). This pin is used for mega164,324,664,1284 .. test it and work good.
+
+      Please MPG check PERSIST function or send to me any example how to use it
+      .
+      I try add another MCU to LDmicro ATmega48,88,168,328 also..
 
 == Release 2.2
 
@@ -7,7 +42,7 @@
       uses "magic variables" with this target for I/O must be updated
       to use the new names.
 
-    * Fix a subtle bug in the PIC16 add and subtract routines, where 
+    * Fix a subtle bug in the PIC16 add and subtract routines, where
       operations of the form B = A - B could fail.
 
     * The piecewise linear tables were broken for the AVRs; fix that.
@@ -20,7 +55,7 @@
     * Don't draw selected op in bold font; that looks ugly under Vista.
 
 == Release 2.0
-    
+
     * Add PIC16F886 and PIC16F887 targets.
 
     * Fix display bug in the list to select an I/O pin.
@@ -178,5 +213,5 @@
       a different directory
 
 === Release 0.1
-    
+
     Initial release

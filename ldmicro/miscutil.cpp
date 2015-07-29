@@ -30,6 +30,9 @@
 // interactively vs. in batch (command-line) mode.
 BOOL RunningInBatchMode = FALSE;
 
+// We are in test mode.
+BOOL RunningInTestMode = FALSE;
+
 // Allocate memory on a local heap
 HANDLE MainHeap;
 
@@ -81,6 +84,7 @@ BOOL AttachConsoleDynamic(DWORD base)
 
 //-----------------------------------------------------------------------------
 // For error messages to the user; printf-like, to a message box.
+// For warning messages use ' ' in *str[0], see avr.cpp INT_SET_NPULSE.
 //-----------------------------------------------------------------------------
 void Error(char *str, ...)
 {
@@ -104,6 +108,9 @@ void Error(char *str, ...)
         WriteFile(h, str, strlen(str), &written, NULL);
     } else {
         HWND h = GetForegroundWindow();
+        if(buf[0]==' ')
+            MessageBox(h, &buf[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
+        else
         MessageBox(h, buf, _("LDmicro Error"), MB_OK | MB_ICONERROR);
     }
 }
@@ -319,6 +326,7 @@ void MakeDialogBoxClass(void)
 char *IoTypeToString(int ioType)
 {
     switch(ioType) {
+        case IO_TYPE_INT_INPUT:         return _("INT input");
         case IO_TYPE_DIG_INPUT:         return _("digital in"); 
         case IO_TYPE_DIG_OUTPUT:        return _("digital out"); 
         case IO_TYPE_INTERNAL_RELAY:    return _("int. relay"); 
@@ -330,6 +338,7 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_RTO:               return _("retentive timer"); 
         case IO_TYPE_COUNTER:           return _("counter"); 
         case IO_TYPE_GENERAL:           return _("general var"); 
+        case IO_TYPE_PERSIST:           return _("saved var");
         case IO_TYPE_READ_ADC:          return _("adc input"); 
         default:                        return _("<corrupt!>");
     }

@@ -97,8 +97,15 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_LEQ:
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
+        case ELEM_RSFR:
+        case ELEM_WSFR:
+        case ELEM_SSFR:
+        case ELEM_CSFR:
+        case ELEM_TSFR:
+        case ELEM_T_C_SFR:
             return 1;
 
+        case ELEM_STRING:
         case ELEM_FORMATTED_STRING:
             return 2;
 
@@ -679,6 +686,48 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         {
             char *s;
+            case ELEM_RSFR:
+                s = "Read"; goto sfrcmp;
+            case ELEM_WSFR:
+                s = "Write"; goto sfrcmp;
+            case ELEM_SSFR:
+                s = "Sbit"; goto sfrcmp;
+            case ELEM_CSFR:
+                s = "Cbit"; goto sfrcmp;
+            case ELEM_TSFR:
+                s = "BitS"; goto sfrcmp;
+            case ELEM_T_C_SFR:
+                s = "BitC"; goto sfrcmp;
+sfrcmp:
+                char s1[POS_WIDTH+10], s2[POS_WIDTH+10];
+                int l1, l2, lmax;
+
+                l1 = 2 + 1 + strlen(s) + strlen(leaf->d.cmp.op1);
+                l2 = 2 + 1 + strlen(leaf->d.cmp.op2);
+                lmax = max(l1, l2);
+
+                if(lmax < POS_WIDTH) {
+                    memset(s1, ' ', sizeof(s1));
+                    s1[0] = '?';
+                    s1[lmax-1] = '?';
+                    s1[lmax] = '\0';
+                    strcpy(s2, s1);
+                    memcpy(s1+1, leaf->d.cmp.op1, strlen(leaf->d.cmp.op1));
+                    memcpy(s1+strlen(leaf->d.cmp.op1)+2, s, strlen(s));
+                    memcpy(s2+2, leaf->d.cmp.op2, strlen(leaf->d.cmp.op2));
+                } else {
+                    strcpy(s1, "");
+                    strcpy(s2, TOO_LONG);
+                }
+
+                CenterWithSpaces(*cx, *cy, s1, poweredAfter, FALSE);
+                CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
+
+                *cx += POS_WIDTH;
+                break;
+        }
+        {
+            char *s;
             case ELEM_EQU:
                 s = "=="; goto cmp;
             case ELEM_NEQ:
@@ -793,6 +842,33 @@ cmp:
             *cx += POS_WIDTH;
             break;
         }
+        case ELEM_STRING: {
+            // Careful, string could be longer than fits in our space.
+            char str[POS_WIDTH];
+            memset(str, 0, sizeof(str));
+            char *srcStr = leaf->d.fmtdStr.string;
+            memcpy(str, srcStr, min(strlen(srcStr), POS_WIDTH-5));
+
+            char var[POS_WIDTH];
+            memset(var, 0, sizeof(var));
+            char *varStr = leaf->d.fmtdStr.var;
+            memcpy(var, varStr, min(strlen(varStr), POS_WIDTH-5));
+         
+            char bot[100];
+            sprintf(bot, "{\"%s\", %s}", str, var);
+
+            int extra = 2*POS_WIDTH - strlen(leaf->d.fmtdStr.dest);
+            PoweredText(poweredAfter);
+            NameText();
+            DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1,
+                leaf->d.fmtdStr.dest);
+            BodyText();
+
+            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter,
+                2*POS_WIDTH);
+            *cx += 2*POS_WIDTH;
+            break;
+        }
         case ELEM_FORMATTED_STRING: {
             // Careful, string could be longer than fits in our space.
             char str[POS_WIDTH*2];
@@ -852,6 +928,7 @@ cmp:
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        case ELEM_STRING:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx-1, gy);
             DisplayMatrix[gx-1][gy] = leaf;

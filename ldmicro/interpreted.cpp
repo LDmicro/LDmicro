@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -195,6 +195,29 @@ finishIf:
                 // Don't care; ignore, and don't generate an instruction.
                 continue;
 
+            case  INT_READ_SFR_LITERAL:
+            case  INT_WRITE_SFR_LITERAL:
+            case  INT_SET_SFR_LITERAL:
+            case  INT_CLEAR_SFR_LITERAL:
+            case  INT_TEST_SFR_LITERAL:
+            case  INT_READ_SFR_VARIABLE:
+            case  INT_WRITE_SFR_VARIABLE:
+            case  INT_SET_SFR_VARIABLE:
+            case  INT_CLEAR_SFR_VARIABLE:
+            case  INT_TEST_SFR_VARIABLE:
+            case  INT_TEST_C_SFR_LITERAL:
+            case  INT_WRITE_SFR_LITERAL_L:
+            case  INT_WRITE_SFR_VARIABLE_L:
+            case  INT_SET_SFR_LITERAL_L:
+            case  INT_SET_SFR_VARIABLE_L:
+            case  INT_CLEAR_SFR_LITERAL_L:
+            case  INT_CLEAR_SFR_VARIABLE_L:
+            case  INT_TEST_SFR_LITERAL_L:
+            case  INT_TEST_SFR_VARIABLE_L:
+            case  INT_TEST_C_SFR_VARIABLE:
+            case  INT_TEST_C_SFR_LITERAL_L:
+            case  INT_TEST_C_SFR_VARIABLE_L:
+
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
@@ -203,12 +226,12 @@ finishIf:
             case INT_UART_SEND:
             case INT_UART_RECV:
             default:
-                Error(_("Unsupported op (anything ADC, PWM, UART, EEPROM) for "
+                Error(_("Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for "
                     "interpretable target."));
                 fclose(f);
                 return;
         }
-        
+
         memcpy(&OutProg[outPc], &op, sizeof(op));
         outPc++;
     }
