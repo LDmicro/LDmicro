@@ -58,6 +58,7 @@ static HWND AnalogSliderTrackbar;
 static BOOL AnalogSliderDone;
 static BOOL AnalogSliderCancel;
 
+static BOOL CheckForNumber(char * String);
 
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
@@ -181,7 +182,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_MOVE:
-            if (CheckForConstant(l->d.move.src) == FALSE) {
+            if (CheckForNumber(l->d.move.src) == FALSE) {
                 AppendIo(l->d.move.src, IO_TYPE_GENERAL);
             }
             AppendIo(l->d.move.dest, IO_TYPE_GENERAL);
@@ -191,10 +192,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
-            if (CheckForConstant(l->d.math.op1) == FALSE) {
+            if (CheckForNumber(l->d.math.op1) == FALSE) {
                 AppendIo(l->d.math.op1, IO_TYPE_GENERAL);
             }
-            if (CheckForConstant(l->d.math.op2) == FALSE) {
+            if (CheckForNumber(l->d.math.op2) == FALSE) {
                 AppendIo(l->d.math.op2, IO_TYPE_GENERAL);
             }
             AppendIo(l->d.math.dest, IO_TYPE_GENERAL);
@@ -942,7 +943,7 @@ static BOOL IsNumber(char *str)
 
 //-----------------------------------------------------------------------------
 
-static BOOL CheckForConstant(char * String)
+static BOOL CheckForNumber(char * String)
 {
     return IsNumber(String);
 
