@@ -64,7 +64,7 @@ static char *AboutText[] = {
 "",
 "    http://cq.cx/ladder.pl",
 "",
-"Copyright 2005-2010 Jonathan Westhues",
+"Copyright 2005-2016 Jonathan Westhues",
 "Email: user jwesthues, at host cq.cx",
 "",
 "Netzer extension by Sven Schlender (c) 2012",

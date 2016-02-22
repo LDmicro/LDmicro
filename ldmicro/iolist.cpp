@@ -58,13 +58,11 @@ static HWND AnalogSliderTrackbar;
 static BOOL AnalogSliderDone;
 static BOOL AnalogSliderCancel;
 
-static BOOL CheckForConstant(char * String);
-
 
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
 //-----------------------------------------------------------------------------
-static void AppendIo(char *name, int type, int pinAssig)
+static void AppendIo(char *name, int type)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -80,14 +78,10 @@ static void AppendIo(char *name, int type, int pinAssig)
     }
     if(i < MAX_IO) {
         Prog.io.assignment[i].type = type;
-        Prog.io.assignment[i].pin = pinAssig;
+        Prog.io.assignment[i].pin = NO_PIN_ASSIGNED;
         strcpy(Prog.io.assignment[i].name, name);
         (Prog.io.count)++;
     }
-}
-static void AppendIo(char *name, int type)
-{
-    AppendIo(name, type, NO_PIN_ASSIGNED);
 }
 
 //-----------------------------------------------------------------------------
@@ -261,10 +255,6 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL);
             break;
 
-        case ELEM_PERSIST:
-            AppendIo(l->d.persist.var, IO_TYPE_PERSIST);
-            break;
-
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_SHORT:
@@ -287,6 +277,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_T_C_SFR:
 
         case ELEM_PADDING:
+            break;
+
+        case ELEM_PERSIST:
+            AppendIo(l->d.persist.var, IO_TYPE_PERSIST);
             break;
 
         default:
@@ -812,6 +806,15 @@ void IoListProc(NMHDR *h)
     switch(h->code) {
         case LVN_GETDISPINFO: {
             NMLVDISPINFO *i = (NMLVDISPINFO *)h;
+            if(!((i->item.mask & LVIF_TEXT) &&
+                 (i->item.pszText) &&
+                 (i->item.cchTextMax > 200)))
+            {
+                // This test didn't used to be present, and Windows 10 now
+                // sends an LVN_GETDISPINFO that fails it, which would
+                // otherwise cause us to write to a null pointer.
+                break;
+            }
             int item = i->item.iItem;
             switch(i->item.iSubItem) {
                 case LV_IO_PIN:
@@ -893,7 +896,7 @@ void IoListProc(NMHDR *h)
                 }
 
                 case LV_IO_STATE: {
-                        char *name = Prog.io.assignment[item].name;
+                    char *name = Prog.io.assignment[item].name;
                     if(InSimulationMode || IsUsedVariable(name)) {
                         DescribeForIoList(name, i->item.pszText);
                     } else {

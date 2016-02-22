@@ -313,8 +313,8 @@ void AddString(void)
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.fmtdStr.dest, "dest");
+    strcpy(t->d.fmtdStr.string, "fmtstring");
     strcpy(t->d.fmtdStr.var, "var");
-    strcpy(t->d.fmtdStr.string, "string");
     AddLeaf(ELEM_STRING, t);
 }
 void AddLookUpTable(void)
@@ -828,7 +828,6 @@ void NewProgram(void)
 
     Prog.numRungs = 1;
     Prog.rungs[0] = AllocEmptyRung();
-    //Prog.mcu = &SupportedMcus[NUM_SUPPORTED_MCUS-1];
 }
 
 //-----------------------------------------------------------------------------

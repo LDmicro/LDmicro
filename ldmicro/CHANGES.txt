@@ -17,7 +17,7 @@
     * Add new MCU : ATmega164,ATmega324,ATmega664,ATmega1284 in
       DIP40 package need test PERSIST - not working in ATmega16 or 32
 
-    * from http://cq.cx/ladder-forum.pl?action=viewthread&parent=3895
+    * News... (by Dzairo) from http://cq.cx/ladder-forum.pl?action=viewthread&parent=3895
       Here are some news in LD micro. I add to LD micro this new MCU:
       ATmega164,324,644,1284 in DIP40 package. I test all hardware: PWM,ADC,UART
       work good.. Only one function not working : PERSIST Pls MPG add here some
@@ -33,6 +33,12 @@
       Please MPG check PERSIST function or send to me any example how to use it
       .
       I try add another MCU to LDmicro ATmega48,88,168,328 also..
+
+== Release 2.3
+
+    * Fix buffer overrun or write to null pointer if Windows sends an
+      LVN_GETDISPINFO without a valid item.pszText, which happens now
+      under Win10.
 
 == Release 2.2
 

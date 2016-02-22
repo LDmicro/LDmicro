@@ -7,8 +7,7 @@ rem @SET PROGECT=
 @if exist ldmicro.exe goto DEL_LDMICRO
 
 @rem @nmake clean
-@rem @nmake D=LDLANG_EN %*
-@rem @nmake D=LDLANG_JA %*
-@nmake D=LDLANG_RU %*
+@rem @nmake D=LDLANG_RU %*
+@nmake D=LDLANG_EN %*
 
 @if exist ldmicro.exe start ldmicro.exe %PROGECT%
