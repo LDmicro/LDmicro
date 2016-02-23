@@ -15,6 +15,9 @@
                                                             input
       I think that these symbols would be more understandable for beginners.
 
+    * Changed ANSI_CHARSET to DEFAULT_CHARSET. This will correctly display
+      the national characters in the comments on the screen.
+
 == Release 3.0.0
     * Unofficial support:
          Repository: https://github.com/LDmicro/LDmicro
