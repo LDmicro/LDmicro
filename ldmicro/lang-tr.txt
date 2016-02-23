@@ -394,11 +394,11 @@
 "Insert NEQ (Compare for Not Equals)\t!"
 "NEQ ekle (Farklýlýk Kontrolü)\t!"
 
-"Insert OSF (One Shot Falling)\t&\\ "
-"OSF ekle (Düþen Kenar)\t&\\"
+"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
+"\\_OSF/\\_ ekle (Düþen Kenar)\t&\\"
 
-"Insert OSR (One Shot Rising)\t&/"
-"OSR ekle (Yükselen Kenar)\t&/"
+"Insert _/OSR/\\_ (One Shot Rising)\t&/"
+"_/OSR/\\_ ekle (Yükselen Kenar)\t&/"
 
 "Insert Piecewise Linear"
 "Parçalý Lineer ekle"

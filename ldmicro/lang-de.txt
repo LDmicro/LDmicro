@@ -403,11 +403,11 @@
 "Insert NEQ (Compare for Not Equals)\t!"
 "NEQ einfügen (Vergleich auf ungleich)\t!"
 
-"Insert OSF (One Shot Falling)\t&\\ "
-"OSF einfügen (Fallende Flanke)\t&\\"
+"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
+"\\_OSF/\\_ einfügen (Fallende Flanke)\t&\\"
 
-"Insert OSR (One Shot Rising)\t&/"
-"OSR einfügen (Steigende Flanke)\t&/"
+"Insert _/OSR/\\_ (One Shot Rising)\t&/"
+"_/OSR/\\_ einfügen (Steigende Flanke)\t&/"
 
 "Insert Piecewise Linear"
 "Näherungs-Linear-Tabelle einfügen"

@@ -421,14 +421,14 @@
 "Insert NEQ (Compare for Not Equals)\t!"
 "Вставить NEQ (Компаратор Не Равенства)\t!"
 
-"Insert OSC (Oscillator f=1/(2*cycle time))"
-"Вставить OSC (Мультивибратор f=1/(2*cycle time))"
+"Insert OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"
+"Вставить OSC/\\_/\\_ (Мультивибратор F=1/(2*Tcycle))"
 
-"Insert OSF (One Shot Falling)\t&\\ "
-"Вставить OSF (Одновибратор по Спаду)\t&\\"
+"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
+"Вставить \\_OSF/\\_ (Одновибратор по Спаду)\t&\\"
 
-"Insert OSR (One Shot Rising)\t&/"
-"Вставить OSR (Одновибратор по Нарастанию)\t&/"
+"Insert _/OSR/\\_ (One Shot Rising)\t&/"
+"Вставить _/OSR/\\_ (Одновибратор по Нарастанию)\t&/"
 
 "Insert Piecewise Linear"
 "Вставить Таблицу Аппроксимации"

@@ -394,11 +394,11 @@
 "Insert NEQ (Compare for Not Equals)\t!"
 "Insertar NEQ (Comparador si NO Igual)\t!"
 
-"Insert OSF (One Shot Falling)\t&\\ "
-"Insertar OSF (Flanco de Bajada)\t&\\"
+"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
+"Insertar \\_OSF/\\_ (Flanco de Bajada)\t&\\"
 
-"Insert OSR (One Shot Rising)\t&/"
-"Insertar OSR (Flanco de Subida)\t&/"
+"Insert _/OSR/\\_ (One Shot Rising)\t&/"
+"Insertar _/OSR/\\_ (Flanco de Subida)\t&/"
 
 "Insert Piecewise Linear"
 "Insertar Linealización por Segmentos"

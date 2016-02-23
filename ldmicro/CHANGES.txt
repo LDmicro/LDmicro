@@ -1,3 +1,20 @@
+== Release 3.0.1
+                                                            this is
+                                                            input
+                                                            v
+                                              _              _    _
+    * Changed symbol ONE-SHOT RISING  --[OSR_/ ]--  to  --[_/ OSR/ \_]--
+                                                                  ^
+                                                                  this is
+                                                                  output
+                                                                  v
+                                            _              _      _
+    * Changed symbol ONE-SHOT FALLING --[OSF \_]--  to  --[ \_OSF/ \_]--
+                                                            ^
+                                                            this is
+                                                            input
+      I think that these symbols would be more understandable for beginners.
+
 == Release 3.0.0
     * Unofficial support:
          Repository: https://github.com/LDmicro/LDmicro
@@ -12,7 +29,9 @@
          http://www.mobacon.de/wiki/doku.php/en/netzer/index
          from https://github.com/mobacon/ldmicro/commits/netzer
 
-== Release 2.3
+== Release 2.3 sfr  by http://cq.cx/ladder-forum.pl
+      LDmicro_experimental_sfr02
+== Release 2.3  by http://cq.cx/ladder-forum.pl
     * Fix problem with PWM pin for ATmega16,ATmega32
     * Add new MCU : ATmega164,ATmega324,ATmega664,ATmega1284 in
       DIP40 package need test PERSIST - not working in ATmega16 or 32
@@ -30,8 +49,6 @@
       MCU PWM pin is 0 for mega16,32 then Idd corect pin in DIP40 this pin is 21
       (OC2). This pin is used for mega164,324,664,1284 .. test it and work good.
 
-      Please MPG check PERSIST function or send to me any example how to use it
-      .
       I try add another MCU to LDmicro ATmega48,88,168,328 also..
 
 == Release 2.3
