@@ -1163,6 +1163,8 @@ static void CompileFromIntermediate(BOOL topLevel)
             case INT_ELSE:
                 return;
 
+            case INT_WRITE_STRING:
+                Error(_("Unsupported operation for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
             case INT_COMMENT:
                 break;

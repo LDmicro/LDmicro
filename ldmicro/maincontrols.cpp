@@ -46,6 +46,8 @@ static HMENU        InstructionMenu;
 static HMENU        ProcessorMenu;
 static HMENU        SimulateMenu;
 static HMENU        TopMenu;
+static HMENU        SpecialFunction;
+static HMENU        DisplayMenu;
 
 // listview used to maintain the list of I/O pins with symbolic names, plus
 // the internal relay too
@@ -203,6 +205,13 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STR, t);
+
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SFR, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SFW, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SSFB, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_csFB, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_TSFB, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_T_C_SFB, t);
 }
 
 //-----------------------------------------------------------------------------
@@ -229,13 +238,14 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,   _("&Save\tCtrl+S"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,_("Save &As..."));
     AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
-    AppendMenu(FileMenu, MF_STRING,   MNU_EXPORT,
-        _("&Export As Text...\tCtrl+E"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_EXPORT,      _("&Export As Text...\tCtrl+E"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_TXT, _("Open Text in notepad\tF3"));
+
     AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
     AppendMenu(FileMenu, MF_STRING,   MNU_EXIT,   _("E&xit"));
 
     EditMenu = CreatePopupMenu();
-    AppendMenu(EditMenu, MF_STRING, MNU_UNDO, _("&Undo\tCtrl+Z"));
+    AppendMenu(EditMenu, MF_STRING, MNU_UNDO, _("&Undo\tCtrl+Z or Alt+Backspace"));
     AppendMenu(EditMenu, MF_STRING, MNU_REDO, _("&Redo\tCtrl+Y"));
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
@@ -243,14 +253,41 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
         _("Insert Rung &After\tShift+V"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_UP,
-        _("Move Selected Rung &Up\tShift+Up"));
+        _("Move Selected Rung &Up\tAlt+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
-        _("Move Selected Rung &Down\tShift+Down"));
+        _("Move Selected Rung &Down\tAlt+Down"));
+    AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN,
+        _("TODO: Dup&licate Selected Rung\tCtrl+F6"));
+    AppendMenu(EditMenu, MF_STRING, MNU_CAT_RUNG,
+        _("TODO: Ca&t Rung's\tCtrl+X or Shift+Del"));
+    AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG,
+        _("TODO: &Copy Rung's\tCtrl+C or Ctrl+Insert"));
+    AppendMenu(EditMenu, MF_STRING, MNU_COPY_ELEM,
+        _("TODO: &Copy Selected Element\tInsert"));
+    AppendMenu(EditMenu, MF_STRING, MNU_PASTE_RUNG,
+        _("TODO: &Paste Rung's\tCtrl+V or Shift+Insert"));
+    AppendMenu(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG,
+        _("TODO: Paste Rung's &Into Rung\tAlt+Insert"));
+
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
         _("&Delete Selected Element\tDel"));
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_RUNG,
         _("D&elete Rung\tShift+Del"));
+
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_UP,
+        _("TODO: Scroll Up\tCtrl+Up"));
+    AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_DOWN,
+        _("TODO: Scroll Down\tCtrl+Down"));
+    AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_PgUP,
+        _("TODO: Scroll PgUp\tCtrl+PgUp"));
+    AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_PgDOWN,
+        _("TODO: Scroll PgDown\tCtrl+PgDown"));
+    AppendMenu(EditMenu, MF_STRING, MNU_ROLL_HOME,
+        _("TODO: Roll Home\tCtrl+Home"));
+    AppendMenu(EditMenu, MF_STRING, MNU_ROLL_END,
+        _("TODO: Roll End\tCtrl+End"));
 
     InstructionMenu = CreatePopupMenu();
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COMMENT,
@@ -258,11 +295,31 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
         _("Insert &Contacts\tC"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
+        _("Insert Coi&l\tL"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSR,
-        _("Insert OSR (One Shot Rising)\t&/"));
+        _("Insert _/OSR/\\_ (One Shot Rising)\t&/"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSF,
-        _("Insert OSF (One Shot Falling)\t&\\"));
+        _("Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSC,
+        _("TODO: Insert OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
+
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NPULSE,     _("TODO: Insert N PULSE"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PULSER,     _("TODO: Insert PULSER"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STEPPER,    _("TODO: Insert STEPPER"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("TODO: Insert N PULSE OFF"));
+
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("TODO: Insert QUAD ENCOD"));
+    DisplayMenu = CreatePopupMenu();
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG,           _("TODO: Insert char to 7 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG,           _("TODO: Insert char to 9 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG,          _("TODO: Insert char to 14 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("TODO: Insert char to 16 SEGMENT converter"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu,_("&Display"));
+
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TON,
         _("Insert T&ON (Delayed Turn On)\tO"));
@@ -277,11 +334,15 @@ HMENU MakeMainWindowMenus(void)
         _("Insert CT&D (Count Down)\tI"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTC,
         _("Insert CT&C (Count Circular)\tJ"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTR,
+        _("TODO: Insert CT&R (Count Circular Reversive)\tK"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RES,
+        _("Insert R&ES (Counter/RTO Reset)\tE"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEQ,
-        _("Insert NEQ (Compare for Not Equals)"));
+        _("Insert NEQ (Compare for Not Equals)\t!"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GRT,
         _("Insert GRT (Compare for Greater Than)\t>"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GEQ,
@@ -292,16 +353,11 @@ HMENU MakeMainWindowMenus(void)
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OPEN,
-        _("Insert Open-Circuit"));
+        _("Insert -+        +- Open-Circuit"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHORT,
-        _("Insert Short-Circuit"));
+        _("Insert -+------+- Short-Circuit"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
-        _("Insert Coi&l\tL"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RES,
-        _("Insert R&ES (Counter/RTO Reset)\tE"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOV,
         _("Insert MOV (Move)\tM"));
@@ -313,6 +369,20 @@ HMENU MakeMainWindowMenus(void)
         _("Insert MUL (16-bit Integer Multiply)\t*"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_DIV,
         _("Insert DIV (16-bit Integer Divide)\tD"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOD,_("TODO: Insert MOD (Integer Divide Remainder)"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEG,_("TODO: Insert NEG (Integer Negate)"));
+
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_AND,_("TODO: Insert bitwise AND"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OR ,_("TODO: Insert bitwise OR     |"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_XOR,_("TODO: Insert bitwise XOR  ^"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NOT,_("TODO: Insert bitwise NOT  ~"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHL,_("TODO: Insert SHL << arithmetic,logic shift to the left"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHR,_("TODO: Insert SHR >> arithmetic shift to the right"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SR0,_("TODO: Insert SR0 >> logic shift to the right"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_ROL,_("TODO: Insert ROL cyclic shift to the left"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_ROR,_("TODO: Insert ROR cyclic shift to the right"));
+
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHIFT_REG,
         _("Insert Shift Register"));
@@ -320,20 +390,39 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Look-Up Table"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWL,
         _("Insert Piecewise Linear"));
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STRING,
+        _("TODO: Insert Formatted String"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_UDRE,
+        _("TODO: Insert &UART UDRE"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STR,
         _("Insert Formatted String Over UART"));
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
         _("Insert &UART Send"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
         _("Insert &UART Receive"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM,
         _("Insert Set PWM Output"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
+        _("TODO: Insert Set Software PWM Output (AVR136 Application Note) TODO 5hours=$100"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWM_OFF,
+        _("TODO: Insert PWM OFF"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,
         _("Insert A/D Converter Read\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
         _("Insert Make Persistent"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    // Special function menu
+    SpecialFunction = CreatePopupMenu();
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFR, _("&Insert Read From SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFW, _("&Insert Write To SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SSFB, _("&Insert Set Bit In SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_csFB, _("&Insert Clear Bit In SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_TSFB, _("&Insert Test If Bit Set in SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB, _("&Insert Test If Bit Clear in SFR"));
+
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction,_("&Special Function for AVR"));
+
     AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_NORMAL,
         _("Make Norm&al\tA"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_NEGATE,
@@ -368,6 +457,12 @@ HMENU MakeMainWindowMenus(void)
     compile = CreatePopupMenu();
     AppendMenu(compile, MF_STRING, MNU_COMPILE, _("&Compile\tF5"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_AS, _("Compile &As..."));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,    _("TODO: Compile HEX->ASM"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ASM,     _("TODO: Compile ASM->HEX"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,   _("Compile ANSIC"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL,  _("TODO: Compile PASCAL"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("TODO: Compile ARDUINO"));
+    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,       _("TODO: Call flash.bat\tF6"));
 
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
@@ -572,6 +667,7 @@ void RefreshControlsToSettings(void)
     SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
+        Prog.mcu->whichIsa == ISA_NETZER ||
         Prog.mcu->whichIsa == ISA_INTERPRETED))
     {
         strcpy(buf, "");

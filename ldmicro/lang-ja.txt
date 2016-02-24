@@ -1,38 +1,38 @@
 "  Name                       | Type               | Pin\n"
-"  İsim                       | Tipi               | Bacak\n"
+"  –¼‘O                       | í—Ş               | ƒsƒ“\n"
 
 " - (not yet saved)"
-" - (değişiklikler kaydedilmedi)"
+" *–¢•Û‘¶*"
 
 "!!!too long!!!"
-"!!!çok uzun!!"
+"!!!’·‚·‚¬‚Ü‚·!!!"
 
 "&About..."
-"&Bilgi..."
+"ƒo[ƒWƒ‡ƒ“î•ñ(&A)..."
 
 "&Compile"
-"&Derle"
+"ƒRƒ“ƒpƒCƒ‹(&C)"
 
 "&Compile\tF5"
-"&Derle\tF5"
+"ƒRƒ“ƒpƒCƒ‹(&C)\tF5"
 
 "&Delete Selected Element\tDel"
-"&Seçili Elemanı Sil\tDel"
+"—v‘f‚ğíœ(&D)\tDel"
 
 "&Edit"
-"&Düzen"
+"•ÒW(&E)"
 
 "&Export As Text...\tCtrl+E"
-"&Metin Dosyası Olarak Kaydet\tCtrl+E"
+"ƒeƒLƒXƒg‚Åo—Í(&E)...\tCtrl+E"
 
 "&File"
-"&Dosya"
+"ƒtƒ@ƒCƒ‹(&F)"
 
 "&Halt Simulation\tCtrl+H"
-"Simülasyonu Durdur\tCtrl+H"
+"ƒŠƒAƒ‹ƒ^ƒCƒ€ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“’â~(&H)\tCtrl+H"
 
 "&Help"
-"&Yardım"
+"ƒwƒ‹ƒv(&H)"
 
 "&Insert Clear Bit In SFR"
 "&Insert Clear Bit In SFR"
@@ -53,550 +53,550 @@
 "&Insert Write To SFR"
 
 "&Instruction"
-"K&omutlar"
+"–½—ß(&I)"
 
 "&MCU Parameters..."
-"&İşlemci Ayarları..."
+"ƒ}ƒCƒRƒ“İ’è(&M)..."
 
 "&Manual...\tF1"
-"&Kitapçık...\tF1"
+"ƒ}ƒjƒ…ƒAƒ‹(&M)...\tF1"
 
 "&Microcontroller"
-"İşlemci Seçimi"
+"ƒ^[ƒQƒbƒgƒ}ƒCƒRƒ“(&M)"
 
 "&New\tCtrl+N"
-"&Yeni Dosya\tCtrl+N"
+"V‹Kì¬(&N)\tCtrl+N"
 
 "&Open...\tCtrl+O"
-"&Dosya Aç\tCtrl+O"
+"ŠJ‚­(&O)...\tCtrl+O"
 
 "&Redo\tCtrl+Y"
-"&Değişikliği Tekrarla\tCtrl+Y"
+"‚â‚è’¼‚µ(&R)\tCtrl+Y"
 
 "&Save\tCtrl+S"
-"&Dosyayı Kaydet\tCtrl+S"
+"•Û‘¶(&S)\tCtrl+S"
 
 "&Settings"
-"&Ayarlar"
+"İ’è(&S)"
 
 "&Special Function"
 "&Special Function"
 
 "&Undo\tCtrl+Z or Alt+Backspace"
-"Değişikliği Geri Al\tCtrl+Z or Alt+Backspace"
+"Œ³‚É–ß‚·(&U)\tCtrl+Z or Alt+Backspace"
 
 "'Closed' if:"
-"'Kapalı' Eğer:"
+"‚à‚µ"
 
 "( ) Normal"
-"( ) Normal"
+"( ) ’Êí"
 
 "(/) Negated"
-"(/) Terslenmiş"
+"(/) ”½“]"
 
 "(R) Reset-Only"
-"(R) Reset"
+"(R) ƒŠƒZƒbƒg‚Ì‚İ"
 
 "(S) Set-Only"
-"(S) Set"
+"(S) ƒZƒbƒg‚Ì‚İ"
 
 "(no microcontroller)"
-"(işlemci yok)"
+"(ƒ}ƒCƒRƒ“‚È‚µ)"
 
 "(no pin)"
-"(Bacak Yok)"
+"(ƒsƒ“‚È‚µ)"
 
 "(not assigned)"
-"(tanımlı değil)"
+"(–¢Š„‚è“–‚Ä)"
 
 "--add comment here--"
-"--aciklamanizi buraya ekleyiniz--"
+"--comment--"
 
 "<PWM needs!>"
-"<PWM gerekli!>"
+"<PWM needs!>"
 
 "<UART needs!>"
-"<UART gerekli!>"
+"<UART needs!>"
 
 "<corrupt!>"
-"<bozuk>"
+"<•s³!>"
 
 "<no PWM!>"
-"<PWM Yok!>"
+"<PWM‚È‚µ!>"
 
 "<no UART!>"
-"<UART Yok!>"
+"<UART‚È‚µ!>"
 
 "<not an I/O!>"
-"<G/Ç değil>"
+"<IO‚Å‚Í‚ ‚è‚Ü‚¹‚ñ!>"
 
 "ANSI C target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
-"ANSI C hedef özellikleri desteklemiyor.(UART, ADC, EEPROM). İlgili komutlar işlenmeyecek."
+"ANSI C‚Å‚Íg‚¦‚È‚¢–½—ß‚ª‚ ‚è‚Ü‚· (ADC, PWM, UART, EEPROM)B‚±‚ê‚ç‚Ì–½—ß‚Í–³‹‚µ‚ÄƒRƒ“ƒpƒCƒ‹‚µ‚Ü‚·B"
 
 "Add"
-"Topla"
+"‰ÁZ"
 
 "Assign:"
-"Değeri:"
+"‘ã“ü:"
 
 "Bad escape '\\%c'"
-"Yanlış ESC komutu '\\%c'"
+"ƒGƒXƒP[ƒv‚Ì‘®‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñF '\\%c'"
 
 "Bad escape: correct form is \\xAB."
-"Yanlış ESC komutu: doğru şekil = \\xAB."
+"ƒGƒXƒP[ƒv‚Ì‘®‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñB—á: \\xAB"
 
 "Bad use of quotes: <%s>"
-"Tırnaklar yanlış kullanılmış: <%s>"
+"ˆø—p•„‚ª•s³: <%s>"
 
 "Can only assign pin number to input/output pins (Xname or Yname or Aname)."
-"Sadece giriş/çıkış uçları için bacak tanımlaması yapılabilir. (XName veya YName veya AName)."
+"ƒsƒ“”Ô†‚ğİ’è‚Å‚«‚é‚Ì‚ÍIOƒsƒ“‚Ì‚İ‚Å‚·(–¼‘O‚ªX, Y, A‚Ån‚Ü‚é•¨)B"
 
 "Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code."
-"ANSI C hedef için G/Ç tanımlaması yapılamadı. Dosyayı derleyerek oluşturulan kaynak kodundaki yorumları inceleyiniz."
+"ANSI C‚ªƒ^[ƒQƒbƒg‚Ìê‡IOƒsƒ“Š„‚è“–‚Ä‚Í‚Å‚«‚Ü‚¹‚ñBƒ\[ƒX’†‚ÌƒRƒƒ“ƒg‚ğŠm”F‚µ‚Ä‚­‚¾‚³‚¢B"
 
 "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."
-"Hedef için G/Ç tanımı yapılamadı. Derleyicinin kullanım kitapçığını inceleyiniz."
+"ƒCƒ“ƒ^ƒvƒŠƒ^‚ªƒ^[ƒQƒbƒg‚Ìê‡IOƒsƒ“Š„‚è“–‚Ä‚Í‚Å‚«‚Ü‚¹‚ñBƒCƒ“ƒ^ƒvƒŠƒ^‚ÌÀ‘•—á‚É‚ ‚éƒRƒƒ“ƒg‚ğ‚²——‚­‚¾‚³‚¢B"
 
 "Cancel"
-"Vazgeç"
+"ƒLƒƒƒ“ƒZƒ‹"
 
 "Cannot delete rung; program must have at least one rung."
-"Bu satır silinemez. Programda en az bir tane satır (Rung) olmalıdır."
+"ƒvƒƒOƒ‰ƒ€’†‚ÉÅ’á1‚Â‚Íƒ‰ƒ“ƒO‚ª•K—v‚Å‚·Bƒ‰ƒ“ƒO‚ğíœ‚Å‚«‚Ü‚¹‚ñB"
 
 "Circular Counter"
-"Dairesel Sayıcı"
+"zŠÂƒJƒEƒ“ƒ^"
 
 "Clear Bit In SFR"
 "Clear Bit In SFR"
 
 "Coil"
-"Bobin"
+"ƒRƒCƒ‹"
 
 "Comment"
-"Açıklama"
+"ƒRƒƒ“ƒg"
 
 "Compile &As..."
-"Farklı Derle..."
+"–¼‘O‚ğ‚Â‚¯‚ÄƒRƒ“ƒpƒCƒ‹(&A)..."
 
 "Compile Successful"
-"Derleme Başarılı"
+"ƒRƒ“ƒpƒCƒ‹¬Œ÷"
 
 "Compile To"
-"Derlenecek Yer"
+"ƒRƒ“ƒpƒCƒ‹æ: "
 
 "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
-"Derleme başarıyla tamamlandı. C kaynak kodu '%s' dosyasına yazıldı.\r\n\r\nBu dosya tam bir C dosyası değildir. G/Ç rutinlerini kendiniz sağlamalısınız. Dosyayı incelemeniz faydalı olacaktır."
+"ƒRƒ“ƒpƒCƒ‹¬Œ÷BCƒ\[ƒXƒR[ƒh‚ğ '%s' ‚Éo—Í‚µ‚Ü‚µ‚½B\r\n\r\no—Í‚ÍŠ®‘S‚ÈCƒvƒƒOƒ‰ƒ€‚Å‚Í‚ ‚è‚Ü‚¹‚ñBƒ‰ƒ“ƒ^ƒCƒ€‚âIOƒ‹[ƒ`ƒ“‚Æ‚Æ‚à‚ÉƒRƒ“ƒpƒCƒ‹‚·‚é•K—v‚ª‚ ‚è‚Ü‚·BÚ‚µ‚­‚Íƒ\[ƒX’†‚ÌƒRƒƒ“ƒg‚ğQÆ‚µ‚Ä‰º‚³‚¢B"
 
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
-"Derleme başarılı. AVR için derlenen '%s' IHEX dosyasına kaydedildi.\r\n\r\n MİB konfigürasyonunu ayarlamayı unutmayın. Bu işlem otomatik olarak yapılmamaktadır."
+"ƒRƒ“ƒpƒCƒ‹¬Œ÷BAVR—p‚ÌIHEXƒtƒ@ƒCƒ‹‚ğ '%s' ‚Éo—Í‚µ‚Ü‚µ‚½B\r\n\r\nƒvƒƒZƒbƒT‚Ìİ’è(ƒqƒ…[ƒY)‚ğ–Y‚ê‚¸‚É’²®‚µ‚Ä‰º‚³‚¢B"
 
 "Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\nUsed %d/%d words of program flash (chip %d%% full)."
-"Derleme başarıyla yapıldı; PIC16 için IHEX dosyası '%s' dosyasına kaydedildi.\r\n\r\nAyarlar: (PIC konfigürasyonu) kristal osilatör, BOD aktif, LVP pasif, PWRT aktif, tüm kod koruması kapalı.\r\n\r\nPIC hafızasının %d/%d kelimesi kullanıldı. (Hafıza %d%% dolu)."
+"ƒRƒ“ƒpƒCƒ‹¬Œ÷BPIC16—p‚ÌIHEXƒtƒ@ƒCƒ‹‚ğ '%s' ‚Éo—Í‚µ‚Ü‚µ‚½B\r\n\r\nİ’èƒ[ƒh(ƒqƒ…[ƒY)‚Í…»”­UqABOD—LŒøALVP–³ŒøAPWRT—LŒøAƒR[ƒh•ÛŒì–³Œø‚Æ‚µ‚Ä‚¢‚Ü‚·B\r\n\r\nƒtƒ‰ƒbƒVƒ…‚Ì‚¤‚¿ %d/%d ƒ[ƒh (%d%%) ‚ğg‚¢‚Ü‚µ‚½B"
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
-"Derleme başarıyla tamamlandı. Kod '%s' dosyasına yazıldı.\r\n\r\nDerleyiciyi uygulamanıza göre değiştirmeniz gerekebilir. Geniş bilgi için LDMicro belgelerine başvurabilirsiniz."
+"ƒRƒ“ƒpƒCƒ‹¬Œ÷BƒCƒ“ƒ^ƒvƒŠƒ^—pƒR[ƒh‚ğ '%s' ‚Éo—Í‚µ‚Ü‚µ‚½B\r\n\r\nƒCƒ“ƒ^ƒvƒŠƒ^‚Ìİ’è‚ğ‡‚í‚¹‚ÄŠm”F‚µ‚Ä‰º‚³‚¢BÚ‚µ‚­‚Íƒwƒ‹ƒv‚ğ‚²——‚­‚¾‚³‚¢B"
 
 "Constant %d out of range: -32768 to 32767 inclusive."
-"%d sabiti aralığın dışında: -32768 ile 32767 arasında olmalıdır."
+"’è” %d ‚ª”ÍˆÍŠO‚Å‚·: ’l‚Ì”ÍˆÍ‚Í -32768 ` 32767 (•Â‹æŠÔ)‚Å‚·B"
 
 "Contacts"
-"Kontak"
+"Ú“_"
 
 "Couldn't open '%s'."
-"'%s' dosyasına kayıt yapılamıyor."
+"'%s' ‚ğŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½B"
 
 "Couldn't open '%s'\n"
-"'%s' dosyası açılamadı\n"
+"'%s' ‚ğŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½\n"
 
 "Couldn't open file '%s'"
-"'%s' dosyası açılamadı."
+"ƒtƒ@ƒCƒ‹ '%s' ‚ğŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½"
 
 "Couldn't write to '%s'"
-"'%s' dosyasına kayıt yapılamıyor."
+"'%s' ‚É‘‚«‚ß‚Ü‚¹‚ñ‚Å‚µ‚½"
 
 "Couldn't write to '%s'."
-"'%s' dosyasına yazılamadı."
+"'%s' ‚É‘‚«‚ß‚Ü‚¹‚ñ‚Å‚µ‚½"
 
 "Count Down"
-"Aşağı Say"
+"ƒ_ƒEƒ“ƒJƒEƒ“ƒ^"
 
 "Count Up"
-"Yukarı Say"
+"ƒAƒbƒvƒJƒEƒ“ƒ^"
 
 "Count:"
-"Adet:"
+"’·‚³:"
 
 "Counter"
-"Sayıcı"
+"ƒJƒEƒ“ƒ^"
 
 "Cycle time too fast; increase cycle time, or use faster crystal."
-"Çevrim süresi çok kısa. Süreyi yada kristal frekansını artırınız."
+"ƒTƒCƒNƒ‹ŠÔ‚ª‘‚·‚¬‚Ü‚·BƒTƒCƒNƒ‹ŠÔ‚ğ‘‚â‚·‚©A‚æ‚è‘‚¢…»‚ğg‚Á‚Ä‰º‚³‚¢B"
 
 "Cycle time too slow; decrease cycle time, or use slower crystal."
-"Çevrim süresi çok uzun. Süreyi yada kristal frekansını azaltınız.."
+"ƒTƒCƒNƒ‹ŠÔ‚ª’x‚·‚¬‚Ü‚·BƒTƒCƒNƒ‹ŠÔ‚ğŒ¸‚ç‚·‚©A‚æ‚è’x‚¢…»‚ğg‚Á‚Ä‰º‚³‚¢B"
 
 "D&elete Rung\tShift+Del"
-"Seçili Satırı Sil\tShift+Del"
+"ƒ‰ƒ“ƒO‚ğíœ(&E)\tShift+Del"
 
 "Delay (ms):"
-"Gecikme (ms):"
+"’x‰„ (ms):"
 
 "Delay cannot be zero or negative."
-"Gecikme sıfır yada eksi değer olamaz."
+"’x‰„‚Í³‚Ì’l‚Å‚ ‚é•K—v‚ª‚ ‚è‚Ü‚·B"
 
 "Delay too long; maximum is 2**31 us."
-"Gecikme çok fazla. En fazla 2**31 us olabilir."
+"’x‰„‚ª’·‰ß‚¬‚Ü‚·BÅ‘å 2**31 us‚Å‚·"
 
 "Destination:"
-"Hedef:"
+"æ:"
 
 "Divide"
-"Böl"
+"œZ"
 
 "Division by zero; halting simulation"
-"Sıfıra bölüm; Simülasyon durduruldu."
+"ƒ[ƒœZƒGƒ‰[BƒVƒ~ƒ…ƒŒ[ƒ^‚ğ’â~‚µ‚Ü‚·"
 
 "Duty cycle var:"
-"Pals Genişliği Değeri:"
+"ƒfƒ…[ƒeƒB”ä:"
 
 "E&xit"
-"Çıkış"
+"I—¹(&X)"
 
 "Edit table of ASCII values like a string"
-"ASCII değer tablosunu karakter dizisi gibi düzenle."
+"ASCII•¶š”z—ñ‚Æ‚µ‚Ä•ÒW"
 
 "Empty row; delete it or add instructions before compiling."
-"Satır boş; Satırı silmeli yada komut eklemelisiniz."
+"‹ó‚Ìƒ‰ƒ“ƒO‚ª‚ ‚è‚Ü‚·BƒRƒ“ƒpƒCƒ‹‚Ì‚½‚ß‚É‚Íƒ‰ƒ“ƒO‚ğíœ‚·‚é‚©A–½—ß‚ğ’Ç‰Á‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
 
 "Empty textbox; not permitted."
-"Yazı kutusu boş olamaz"
-
-"Error"
-"Hata"
+"ƒeƒLƒXƒgƒ{ƒbƒNƒX‚ª‹ó‚Å‚·B"
 
 "Export As Text"
-"Yazı dosyası olarak ver"
+"ƒeƒLƒXƒg‚Åo—Í"
 
 "File format error; perhaps this program is for a newer version of LDmicro?"
-"Dosya biçimi hatası. Açmaya çalıştığınız dosya ya LDMicro dosyası değil yada yeni bir sürüm ile yazılmış."
+"ƒtƒ@ƒCƒ‹Œ`®ƒGƒ‰[BV‚µ‚¢LDmicro‚Ìƒtƒ@ƒCƒ‹‚©‚à‚µ‚ê‚Ü‚¹‚ñB"
 
 "Formatted String Over UART"
-"UART Üzerinden Biçimlendirilmiş Karakter Dizisi"
+"UART‘®o—Í"
 
 "Frequency (Hz):"
-"Frekans (Hz):"
+"ü”g” (Hz):"
 
 "I/O Pin Assignment"
-"G/Ç Bacak Tanımı"
+"IOƒsƒ“Š„‚è“–‚Ä"
 
 "I/O Pin"
-"G/Ç Bacakları"
+"I/Oƒsƒ“"
 
 "INT input"
 "INT input"
 
 "If Equals"
-"Eşitse"
+"’l"
 
 "If Greater Than or Equal To"
-"Büyük yada Eşitse"
+"’l†"
 
 "If Greater Than"
-"Büyükse"
+"’l„"
 
 "If Less Than or Equal To"
-"Küçük yada Eşitse"
+"’l…"
 
 "If Less Than"
-"Küçükse"
+"’lƒ"
 
 "If Not Equals"
-"Eşit Değilse"
+"’lI"
 
 "Index:"
-"Liste:"
+"“Yš:"
 
 "Input pin"
-"Giriş Bacağı"
+"“ü—Íƒsƒ“"
 
 "Insert &Contacts\tC"
-"Kontak Eekle\tC"
+"--] [-- Ú“_\t&C"
 
 "Insert &UART Receive"
-"&UART'dan Alma ekle"
+"--{UART RECV}-- &UARTóM"
 
 "Insert &UART Send"
-"&UART'dan Gönderme ekle"
+"--{UART SEND}-- &UART‘—M"
 
 "Insert -+        +- Open-Circuit"
-"Açık -+        +- Devre ekle"
+"--+     +-- ŠJ•ú, ŠJ‰ñ˜H"
 
 "Insert -+------+- Short-Circuit"
-"Kapalı -+------+- Devre ekle"
+"--+---+-- ’Z—, •Â‰ñ˜H"
 
 "Insert A/D Converter Read\tP"
-"A/D Çeviriciden Oku ekle\tP"
+"--{READ ADC}-- ƒAƒiƒƒO“ü—Í“Ç‚İæ‚è\tP"
 
 "Insert ADD (16-bit Integer Add)\t+"
-"ADD (16 bit Toplama)ekle\t+"
+"--{ + }-- ADD ‰ÁZ\t+"
 
 "Insert CT&C (Count Circular)\tJ"
-"CT&C ekle (Döngüsel Sayıcı)\tJ"
+"--{CT&C 0:0}-- zŠÂƒJƒEƒ“ƒ^\tJ"
 
 "Insert CT&D (Count Down)\tI"
-"CT&D ekle (Aşağı Sayıcı)\tI"
+"--[CT&D >=0]-- ƒ_ƒEƒ“ƒJƒEƒ“ƒ^\tI"
 
 "Insert CT&U (Count Up)\tU"
-"CT&U ekle (Yukarı Sayıcı)\tU"
+"--[CT&U >=0]-- ƒAƒbƒvƒJƒEƒ“ƒ^\tU"
 
 "Insert Co&mment\t;"
-"Açıklama Ekle\t;"
+"; -- ƒRƒƒ“ƒg --(&M)\t;"
 
 "Insert Coi&l\tL"
-"Bobin ek&le\tL"
+"--(  )-- ƒRƒCƒ‹\t&L"
 
 "Insert DIV (16-bit Integer Divide)\tD"
-"DIV (16 bit bölme) ekle\tD"
+"--{ / }-- DIV œZ\tD"
 
 "Insert EQU (Compare for Equals)\t="
-"EQU ekle (Eşitlik Kontrolü)\t="
+"--[ == ]-- EQU “™’l”äŠr\t="
 
 "Insert Formatted String Over UART"
-"UART Üzerinden Biçimlendirilmiş Kelime Ekle"
+"--{\"value: \\3\\r\\n\"}-- UART‘®‘—M"
 
 "Insert GEQ (Compare for Greater Than or Equal)\t."
-"GEQ ekle (Büyük yada Eşit Kontrolü)\t."
+"--[ => ]-- GEQ ˆÈã”äŠr†\t."
 
 "Insert GRT (Compare for Greater Than)\t>"
-"GRT ekle (Büyük  Kontrolü)\t>"
+"--[  > ]-- GRT ’´‰ß”äŠr„\t>"
 
 "Insert LEQ (Compare for Less Than or Equal)\t,"
-"LEQ ekle (Küçük yada Eşit Kontrolü)\t,"
+"--[ <= ]-- LEQ ˆÈ‰º”äŠr…\t,"
 
 "Insert LES (Compare for Less Than)\t<"
-"LES ekle (Küçük Kontrolü)\t<"
+"--[ <  ]-- LES –¢–”äŠrƒ\t<"
 
 "Insert Look-Up Table"
-"Değer Tablosu ekle"
+"--{LUT}-- ƒ‹ƒbƒNƒAƒbƒvƒe[ƒuƒ‹"
 
 "Insert MOV (Move)\tM"
-"MOV (Taşı) ekle\tM"
+"--{ := }-- MOV ‘ã“ü, “]‘—\tM"
 
 "Insert MUL (16-bit Integer Multiply)\t*"
-"MUL (16 bit çarpma) ekle\t*"
+"--{ * }-- MUL æZ\t*"
 
 "Insert Make Persistent"
-"EPROM'da Sakla ekle"
+"--{PERSIST}-- ‰i‘±•Ï”"
 
 "Insert Master Control Relay"
-"Ana Kontrol Rölesi ekle"
+"--{MASTER RLY}-- ƒ}ƒXƒ^ƒRƒ“ƒgƒ[ƒ‹ƒŠƒŒ["
 
 "Insert NEQ (Compare for Not Equals)\t!"
-"NEQ ekle (Farklılık Kontrolü)\t!"
+"--[ /= ]-- NEQ ”ñ“™’l”äŠrI"
 
 "Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
-"\\_OSF/\\_ ekle (Düşen Kenar)\t&\\"
+"--[\\OSF/\\_ P|Q]-- —§‚¿‰º‚ª‚è”÷•ª, ‰º~ƒpƒ‹ƒX\t&\\"
 
 "Insert _/OSR/\\_ (One Shot Rising)\t&/"
-"_/OSR/\\_ ekle (Yükselen Kenar)\t&/"
+"--[_/OSR/\\_ Q|P]-- —§‚¿ã‚ª‚è”÷•ª, ã¸ƒpƒ‹ƒX\t&/"
 
 "Insert Piecewise Linear"
-"Parçalı Lineer ekle"
+"--{PWL}-- üŒ`˜A‘z”z—ñ"
 
 "Insert R&ES (Counter/RTO Reset)\tE"
-"R&ES ekle (RTO/Sayıcı Sıfırlaması)\tE"
+"--{R&ES}-- ƒJƒEƒ“ƒ^/ƒ^ƒCƒ}[ƒŠƒZƒbƒg\tE"
 
 "Insert R&TO (Retentive Delayed Turn On)\tT"
-"R&TO ekle (Süre Sayan Turn-On Gecikme)\tT"
+"--[R&TO 100.0ms]-- ÏZƒ^ƒCƒ}\tT"
 
 "Insert Rung &After\tShift+V"
-"Alt kısma satır (Rung) ekle\tShift+V"
+"Œã‚Éƒ‰ƒ“ƒO‚ğ‘}“ü(&A)\tShift+V"
 
 "Insert Rung &Before\tShift+6"
-"Üst kısma satır (Rung) ekle\tShift+6"
+"‘O‚Éƒ‰ƒ“ƒO‚ğ‘}“ü(&B)\tShift+6"
 
 "Insert SUB (16-bit Integer Subtract)\t-"
-"SUB (16 bit çıkarma) ekle\t-"
+"--{ - }-- SUB Œ¸Z\t"
 
 "Insert Set PWM Output"
-"PWM Çıkışı Akit Et ekle"
+"--{PWM 1.00 kHz}-- PWMƒfƒ…[ƒeƒB”äİ’è"
 
 "Insert Shift Register"
-"Shift Register ekle"
+"--{REG}-- ƒVƒtƒgƒŒƒWƒXƒ^"
 
 "Insert T&ON (Delayed Turn On)\tO"
-"T&ON ekle (Turn-On Gecikme)\tO"
+"--[T&ON 100.0ms]-- ƒIƒ“ƒ^ƒCƒ}\tO"
 
 "Insert TO&F (Delayed Turn Off)\tF"
-"T&OF ekle (Turn-Off Gecikme)\tF"
+"--[TO&F 100.0ms]-- ƒIƒtƒ^ƒCƒ}\tF"
 
 "Internal Relay"
-"Dahili Röle"
+"“à•”ƒŠƒŒ["
 
 "Internal error relating to PIC paging; make program smaller or reshuffle it."
-"PIC sayfalaması ile ilgili dahili hata oluştu. Programı kısaltınız yada değiştiriniz."
+"PICƒy[ƒWƒ“ƒO‚Å“à•”ƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½BƒvƒƒOƒ‰ƒ€‚ğ¬‚³‚­‚·‚é‚©ƒVƒƒƒbƒtƒ‹‚µ‚Ä‰º‚³‚¢B"
 
 "Internal limit exceeded (number of vars)"
-"Dahili sınır aşıldı (Değişken Sayısı)"
+"•Ï”“à•”—e—ÊƒI[ƒo["
 
 "Internal relay '%s' never assigned; add its coil somewhere."
-"'%s' dahili rölesine değer verilmedi, Bu röle için bir bobin ekleyiniz."
+"“à•”ƒŠƒŒ[ '%s' ‚É‘Î‰‚·‚éƒRƒCƒ‹‚ª‚ ‚è‚Ü‚¹‚ñB‚Ç‚±‚©‚É”z’u‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
 
 "LDmicro - Program Editor"
-"LDmicro – Program Editörü "
+"LDmicro - ƒGƒfƒBƒ^"
 
 "LDmicro - Simulation (Running)"
-"LDmicro - Simülasyon (Çalışıyor)"
+"LDmicro - ƒVƒ~ƒ…ƒŒ[ƒ^ (Às’†)"
 
 "LDmicro - Simulation (Stopped)"
-"LDmicro - Simülasyon (Durduruldu)"
+"LDmicro - ƒVƒ~ƒ…ƒŒ[ƒ^ (’â~’†)"
 
 "LDmicro Error"
-"LDmicro Hatası"
+"LDmicroƒGƒ‰["
 
 "LDmicro Warning"
 "LDmicro Warning"
 
 "Look-Up Table"
-"Arama Tablosu"
+"ƒ‹ƒbƒNƒAƒbƒvƒe[ƒuƒ‹"
 
 "MCU Crystal Frequency (MHz):"
-"Kristal Frekansı (MHz):"
+"“®ìü”g” (MHz):"
 
 "MCU Port"
-"İşlemci Portu"
+"ƒ|[ƒg–¼"
 
 "Make &Negated\tN"
-"Terslenmiş Yap\tN"
+"--(/)-- ”½“]ƒRƒCƒ‹‚É•ÏX(&N)\tN"
 
 "Make &Reset-Only\tR"
-"Reset Yap\tR"
+"--(R)-- ƒŠƒZƒbƒgƒRƒCƒ‹‚É•ÏX(&R)\tR"
 
 "Make &Set-Only\tS"
-"Set Yap\tS"
+"--(S)-- ƒZƒbƒgƒRƒCƒ‹‚É•ÏX(&S)\tS"
 
 "Make Norm&al\tA"
-"Normale Çevir\tA"
+"--( )-- ’ÊíƒRƒCƒ‹‚É•ÏX(&A)\tA"
 
 "Make Persistent"
-"EEPROM'da Sakla"
+"‰i‘±•Ï”"
 
 "Math instruction: '%s' not a valid destination."
-"Matematik Komutu: '%s'geçerli bir hedef adresi değil."
+"ŒvZ(Math)–½—ß: ƒfƒXƒeƒBƒl[ƒVƒ‡ƒ“ '%s' ‚ª•s–¾‚Å‚·B"
 
 "Max value:"
-"En Yüksek Değer:"
+"Max value:"
 
 "Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."
-"'%s' desteklenen bir işlemci değil.\r\n\r\nİşlemci ayarı işlemci yok şeklinde değiştirilmiştir."
+"ƒ}ƒCƒRƒ“ '%s' ‚É‚Í‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB\r\n\r\n–¢‘I‘ğ‚Ìó‘Ô‚ÉƒŠƒZƒbƒg‚µ‚Ü‚·B"
 
 "Move Selected Rung &Down\tAlt+Down"
-"Seçili satırı alta taşı\tAlt+Down"
+"‰º‚Éƒ‰ƒ“ƒO‚ğˆÚ“®(&D)\tAlt+Down"
 
 "Move Selected Rung &Up\tAlt+Up"
-"Seçili satırı üste taşı\tAlt+Up"
+"ã‚Éƒ‰ƒ“ƒO‚ğˆÚ“®(&U)\tAlt+Up"
 
 "Move instruction: '%s' not a valid destination."
-"Taşıma Komutu: '%s' geçerli bir hedef adresi değil."
+"ˆÚ“®(Move)–½—ß: ƒfƒXƒeƒBƒl[ƒVƒ‡ƒ“ '%s' ‚ª•s–¾‚Å‚·B"
 
 "Move"
-"Taşı"
+"‘ã“ü"
 
 "Multiple escapes (\\0-9) present in format string, not allowed."
-"Biçimli karakter dizisinde birden çok escape kodu var(\\0-9)."
+"‘®•¶š—ñ‚ÉƒGƒXƒP[ƒv (\\0-9) ‚ğ•¡”‚¨‚­‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB"
 
 "Multiply"
-"Çarp"
+"æZ"
 
 "Must assign pins for all ADC inputs (name '%s')."
-"Tüm ADC girişlerinin bacakları belirtilmelidir (ADC '%s')."
+"ADC“ü—Í‚Ìƒsƒ“‚ğ‘S‚Äİ’è‚·‚é•K—v‚ª‚ ‚è‚Ü‚· (–¼‘O: '%s')."
 
 "Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."
-"Tüm G/Ç uçları için bacaklar belirtilmelidir.\r\n\r\n'%s' ucuna değer verilmemiş."
+"IOƒsƒ“‚ğ‘S‚Äİ’è‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B\r\n\r\n'%s' ‚ÉŠ„‚è“–‚Ä‚ª‚ ‚è‚Ü‚¹‚ñB"
 
 "Must choose a target microcontroller before compiling."
-"Derlemeden önce işlemci seçilmelidir."
+"ƒRƒ“ƒpƒCƒ‹‚É‚Íƒ^[ƒQƒbƒg‚Ìƒ}ƒCƒRƒ“‚ğİ’è‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
 
 "Name"
-"İsim"
+"•Ï”–¼"
 
 "Name:"
-"İsim:"
+"–¼:"
 
 "No ADC or ADC not supported for selected micro."
-"Bu işlemcide ADC yok yada ADC desteklenmiyor."
+"‚»‚Ìƒ}ƒCƒRƒ“‚ÍAD•ÏŠ·‚É‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB"
 
 "No ADC or ADC not supported for this micro."
-"Bu işlemcide ADC yok yada ADC desteklenmiyor."
+"‚±‚Ìƒ}ƒCƒRƒ“‚ÍAD•ÏŠ·‚É‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB"
 
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
-"İşlemci seçmediniz.\r\n\r\n G/Ç uçlarını seçmeden önce Ayarlar menüsünden işlemci seçiniz."
+"IOƒsƒ“‚ğg‚¤‚É‚Í[İ’è]ƒƒjƒ…[‚©‚çƒ}ƒCƒRƒ“‚Ìí—Ş‚ğİ’è‚µ‚Ä‰º‚³‚¢B"
 
 "No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
-"Seri iletişim komutu kullanmadınız. Hızı ayarlamadan önce komut kullanmalısınız.\r\n\r\n"
+"ƒVƒŠƒAƒ‹ (UART‘—M/UARTóM) ‚ğg‚¤‚Æƒ{[ƒŒ[ƒg‚ğİ’è‚Å‚«‚é‚æ‚¤‚É‚È‚è‚Ü‚·B\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
-"Biçimlendirilmiş karakter kümesine değişken atanmamış ama değişken ismi belirtilmiş. Ya değişken ismini belirtiniz yada '\\-3' gibi bir değer veriniz.."
+"‘®•¶š—ñ‚É•Ï”‚ª‚È‚¢‚Ì‚É•Ï”‚ªw’è‚³‚ê‚Ä‚¢‚Ü‚·B'\\-3' ‚Ì‚æ‚¤‚É–„‚ß‚Ş‚©A•Ï”–¼‚ğ‹ó‚É‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
 
 "Not a reasonable size for a shift register."
-"Shift Register için kabul edilebilir değer değil."
+"ƒVƒtƒgƒŒƒWƒXƒ^‚ÌƒTƒCƒY‚ª•s“KØ‚Å‚·B"
 
 "Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details."
-"Parçalı doğrusal arama tablosunda sayısal hata.\r\n\r\nDetaylar için yardım menüsünü inceleyiniz."
+"üŒ`˜A‘z”z—ñ‚Ì”’l‚Å–â‘è‚ª‚ ‚è‚Ü‚·B•\‚ÌƒTƒCƒY‚ğ¬‚³‚­‚·‚é‚©A“_‚Æ“_‚ÌŠÔŠu‚ğ‹·‚­‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B\r\n\r\nÚ‚µ‚­‚Íƒwƒ‹ƒv‚ğ‚²——‚­‚¾‚³‚¢B"
 
 "OK"
-"Tamam"
+"OK"
 
 "Out of memory; simplify program or choose microcontroller with more memory."
-"İŞlemci hafızası doldu; Programı kısaltınız yada daha yüksek hafızası olan bir işlemci seçiniz."
+"ƒƒ‚ƒŠ—e—Ê‚ªˆê”t‚Å‚·B‚æ‚è‘å—e—Ê‚Ìƒ}ƒCƒRƒ“‚ğg‚¤‚©AƒvƒƒOƒ‰ƒ€‚ğ’Pƒ‚É‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
 
 "Output pin"
-"Çıkış Bacağı"
+"o—Íƒsƒ“"
 
 "PLC Configuration"
-"PLC Ayarları"
+"ƒ}ƒCƒRƒ“İ’è"
 
 "PLC Cycle Time (ms):"
-"Çevrim Süresi (ms):"
+"ƒTƒCƒNƒ‹ŠÔ (ms):"
 
 "PWM frequency too fast."
-"PWM frekansı çok hızlı."
+"PWMü”g”‚ª‘‚·‚¬‚Ü‚·"
 
 "PWM frequency too slow."
-"PWM frekansı çok yavaş."
+"PWMü”g”‚ª’x‚·‚¬‚Ü‚·"
 
 "PWM function used but not supported for this micro."
-"Komut kullanmışsınız, ancak PWM işlemleri bu işlemci için desteklenmiyor."
+"‚±‚Ìƒ}ƒCƒRƒ“‚ÍPWM‚É‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB"
 
 "PWM in use; pin %d reserved for that."
-"PWM Kullanımda; %d bacağı bunun için ayrılmıştır. Siz kullanamazsınız.."
+"%d ”Ôƒsƒ“‚ÍPWM‚Ég‚í‚ê‚Ä‚¢‚Ü‚·B"
 
 "PWM out"
-"PWM Çıkışı"
+"PWM out"
+
+"PWMo—Í"
+"PWMo—Í"
 
 "Piecewise Linear Table"
-"Parçalı Lineer Tablo"
+"üŒ`˜A‘z”z—ñ"
 
 "Piecewise linear lookup table with zero elements!"
-"Parçalı doğrusal arama tablosunda değer yok!"
+"üŒ`˜A‘z”z—ñ‚ª‹ó‚Å‚·!"
 
 "Pin on MCU"
-"MİB Bacağı"
+"ƒsƒ“‚Éo—Í"
 
 "Pin on Processor"
-"İşlemci Bacak No"
+"ƒsƒ“”Ô†"
 
 "Please select a micro with a UART.\r\n\r\n"
-"Lütfen UART olan bir MİB seçiniz.\r\n\r\n"
+"UART‘Î‰‚Ìƒ}ƒCƒRƒ“‚ğ‘I‚ñ‚Å‰º‚³‚¢B\r\n\r\n"
 
 "Points:"
-"Değer Sayısı:"
+"ƒGƒ“ƒgƒŠ”:"
 
 "RTO: variable can only be used for RES elsewhere"
-"RTO: Değişken sadece RES için kullanılabilir"
+"RTO (ÏZƒ^ƒCƒ}): RESET ˆÈŠO‚Ì‘¼‚ÌêŠ‚Åg‚¤‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"
 
 "Read A/D Converter"
-"A/D Çeviriciyi Oku"
+"AD•ÏŠ·“Ç‚İ‚İ"
 
 "Read From SFR"
 "Read From SFR"
@@ -605,7 +605,7 @@
 "Read SFR instruction: '%s' not a valid destination."
 
 "Receive from UART"
-"UART'dan bilgi al"
+"UARTóM"
 
 "Release"
 "Release"
@@ -614,76 +614,76 @@
 "Release.."
 
 "Rename I/O from default name ('%s') before assigning MCU pin."
-"('%s') öntanımlı isimdir. MİB bacağı tanımlamadan önce bu ismi değiştiriniz."
+"ƒsƒ“‚ğŠ„‚è“–‚Ä‚é‘O‚ÉA•Ï”‚É–¼‘O‚ğ‚Â‚¯‚é•K—v‚ª‚ ‚è‚Ü‚·B\r\nƒfƒtƒHƒ‹ƒg‚Ì '%s' ‚©‚ç•ÏX‚µ‚Ä‚­‚¾‚³‚¢B"
 
 "Reset"
-"Reset"
+"ƒŠƒZƒbƒg"
 
 "Retentive Turn-On Delay"
-"Değeri Saklanan Turn-On Gecikme"
+"Retentive Turn-On Delay"
 
 "SFR position:"
 "SFR position:"
 
 "Save &As..."
-"Dosyayı Farklı Kaydet"
+"–¼‘O‚ğ•t‚¯‚Ä•Û‘¶(&A)..."
 
 "Send to UART"
-"UART'dan bilgi gönder"
+"UART‘—M"
 
 "Serial (UART) will use pins %d and %d.\r\n"
-"Seri iletişim için (UART) %d ve %d bacakları kullanılacaktır.\r\n\"
+"ƒVƒŠƒAƒ‹ƒ|[ƒg (UART) —p‚É %d ”Ôƒsƒ“‚Æ %d ”Ôƒsƒ“‚ğg‚¢‚Ü‚·B\r\n"
 
 "Set Bit In SFR"
 "Set Bit In SFR"
 
 "Set PWM Duty Cycle"
-"PWM Pals Genişliği Değeri"
+"PWMƒfƒ…[ƒeƒB”äİ’è"
 
 "Shift Register"
-"Shift Register"
+"ƒVƒtƒgƒŒƒWƒXƒ^"
 
 "Si&mulate"
-"Si&mülasyon"
+"ƒVƒ~ƒ…ƒŒ[ƒ^(&M)"
 
 "Si&mulation Mode\tCtrl+M"
-"Si&mülasyon Modu\tCtrl+M"
+"ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ƒ‚[ƒh(&M)\tCtrl+M"
 
 "Single &Cycle\tSpace"
-"Satır Satır Simülasyon\tEspace"
+"1ƒTƒCƒNƒ‹i‚ß‚é(&C)\tSpace"
 
 "Source"
-"Kaynak"
+"ƒ\[ƒX"
 
 "Source:"
-"Kaynak:"
+"Œ³:"
 
 "Stages:"
-"Aşamalar:"
+"ƒXƒe[ƒW”:"
 
 "Start &Real-Time Simulation\tCtrl+R"
-"Ge&rçek Zamanlı Simülasyonu Başlat\tCtrl+R"
+"ƒŠƒAƒ‹ƒ^ƒCƒ€ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ŠJn(&R)\tCtrl+R"
 
 "Start new program?"
-"Yeni dosya oluşturulsun mu?"
+"ƒvƒƒOƒ‰ƒ€‚ğV‹Kì¬‚µ‚Ü‚·‚©H"
 
 "State"
-"Durum/Değer"
+"ó‘Ô"
 
 "String:"
-"Karakter Dizisi:"
+"•¶š—ñ:"
 
 "Subtract"
-"Çıkar"
+"Œ¸Z"
 
 "TOF: variable cannot be used elsewhere"
-"TOF: Değişken başka bir yerde kullanılamaz"
+"TOF (ƒIƒtƒ^ƒCƒ}): ‘¼‚ÌŠ‚Å•Ï”‚ğg‚¤‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"
 
 "TON: variable cannot be used elsewhere"
-"TON: Değişken başka bir yerde kullanılamaz"
+"TON (ƒIƒ“ƒ^ƒCƒ}): ‘¼‚ÌŠ‚Å•Ï”‚ğg‚¤‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"
 
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
-"Hedef frekans %d Hz, bu değere en yakın olası değer %d Hz (Uyarı, >5%% hatası)."
+"İ’èü”g”‚Ì %d Hz ‚ÉÅ‚à‹ß‚¢ %d Hz ‚Éİ’è‚µ‚Ü‚· (’ˆÓ: >5%% ‚ÌŒë·)"
 
 "Test if Bit Clear In SFR"
 "Test if Bit Clear In SFR"
@@ -692,52 +692,55 @@
 "Test if Bit Set In SFR"
 
 "The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal."
-"PLC için LDMicro tarafından verilen çevrim süresi kullanıcı tarafından değiştirilebilir. Çok kısa süreler işlemcinin hızından kaynaklanan sebeplerden dolayı verilemeyebilir. 10ms ile 100ms arasındaki değerler çevrim süresi için genellikle uygun değerlerdir.\r\n\r\n.LDMicro kullanılan kristalin hızını bilmelidir. Bu değer program içerisinde kullanılır. Bilindiği üzere genellikle 4MHz ile 20MHz arasında değere sahip kristaller kullanılmaktadır. Kullandığınız kristalin değerini ayarlamalısınız."
+"LDmicro‚Ì¶¬‚·‚éPLCƒ‰ƒ“ƒ^ƒCƒ€‚ÌƒTƒCƒNƒ‹ŠÔ‚Íƒ†[ƒU‚ª’²®‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B’Z‚·‚¬‚é‚ÆƒvƒƒZƒbƒT‚Ì‘¬“x‚ª‘«‚è‚È‚­‚È‚Á‚½‚èA’·‚·‚¬‚é‚ÆƒI[ƒo[ƒtƒ[‚ğ‹N‚±‚·‹°‚ê‚ª‚ ‚è‚Ü‚·BÀ—p“I‚È”ÍˆÍ‚Í 10ms ` 100ms ‚Å‚µ‚å‚¤B\r\nƒNƒƒbƒNüŠú‚ÆÀŠÔ‚ğ•ÏŠ·‚·‚é‚½‚ß‚É“®ìü”g”‚Ìİ’è‚ª•K—v‚Å‚·B‚±‚ê‚Í’Êí‚Í 4MHz ` 20MHz ’ö“x‚Å‚·Bƒf[ƒ^ƒV[ƒg‚ÅÅ‘åƒNƒƒbƒN‘¬“x‚ğŠm”F‚µ‚Ä‚¨‚­‚±‚Æ‚ğ‚¨‚·‚·‚ß‚µ‚Ü‚·B."
 
 "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
-"Dosyada değişiklik yaptınız.\r\n\r\n Kaydetmek ister misiniz?"
+"•ÏX‚ğ•Û‘¶‚µ‚Ü‚·‚©H"
 
 "Timer period too long (max 32767 times cycle time); use a slower cycle time."
-"Zamanlayıcı peryodu çok kısa(en fazla. çevrim süresinin 32767 katı olabilir); çevrim süresini düşürünüz."
+"ƒ^ƒCƒ}[üŠú‚ª’·‚·‚¬‚Ü‚·B(Å‘å 32767 ~ ƒTƒCƒNƒ‹ŠÔ)BƒTƒCƒNƒ‹ŠÔ‚ğ’x‚­‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
 
 "Timer period too short (needs faster cycle time)."
-"Zamanlayıcı peryodu çok kısa (daha yüksek çevrim süresi gerekli)."
+"ƒ^ƒCƒ}[üŠú‚ª’Z‚·‚¬‚Ü‚·BƒTƒCƒNƒ‹ŠÔ‚ğ‘‚­‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
 
 "Timer"
-"Zamanlayıcı"
+"ƒ^ƒCƒ}"
 
 "Too many elements in subcircuit!"
-"Alt devrede çok fazla eleman var!"
+"x‰ñ˜H‚Ì—v‘f‚ª‘½‚·‚¬‚Ü‚·!"
 
 "Too many rungs!"
-"Satır sayısı (Rung) fazla!"
+"ƒ‰ƒ“ƒO‚ª‘½‚·‚¬‚Ü‚·!"
 
 "True if >= :"
-"Doğru Eğer >= :"
+"True if >= :"
+
+"True if >=:"
+"True if >=:"
 
 "Turn-Off Delay"
-"Turn-Off Gecikme Devresi"
+"Turn-Off Delay"
 
 "Turn-On Delay"
-"Turn-On Gecikme Devresi"
+"Turn-On Delay"
 
 "Type"
-"Tipi"
+"í—Ş"
 
 "UART Baud Rate (bps):"
-"UART Baud Rate (bps):"
+"UARTƒ{[ƒŒ[ƒg (bps):"
 
 "UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken."
-"UART Hız Hesaplayıcısı: Bölen=%d Gerçekte=%.4f (%.2f%% hata payı ile).\r\n\r\nBu değer çok yüksektir. Değişik bir değer denemelisiniz yada kristal frekansını sık kullanılan ve bu değerlere bölünebilen bir değer seçiniz. (Mesela 3.6864MHz, 14.7456MHz gibi).\r\n\r\nHer durumda kod oluşturulacaktır; ancak seri iletişim düzgün çalışmayabilir yada tamamen durabilir."
+"UARTƒ{[ƒŒ[ƒgŒvZŠí: •ª•ê=%d Œ‹‰Ê=%.4f Œë·=%.2f%%\r\n\r\nŒë·‚ª‘å‚«‚·‚¬‚Ü‚·Bƒ{[ƒŒ[ƒg‚ğ‰º‚°‚é‚©AŠ„‚è‚â‚·‚¢ü”g”‚Ì…»‚ğg‚Á‚Ä‰º‚³‚¢(3.6864 MHz, 14.7456 MHz ‚È‚Ç)B\r\n\r\nƒR[ƒh‚Ì¶¬‚Í‰Â”\‚Å‚·‚ªAƒVƒŠƒAƒ‹’ÊM‚ª•sˆÀ’è‚É‚È‚é‹°‚ê‚ª‚ ‚è‚Ü‚·B"
 
 "UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken."
-"UART Hız Hesaplayıcısı: Hız çok düşük. Bu nedenle bölen taşma yapıyor. Ya kristal frekansını düşürünüz yada hızı (baudrate) artırınız.\r\n\r\nHer durumda kod oluşturulacaktır; ancak seri iletişim düzgün çalışmayabilir yada tamamen durabilir."
+"UARTƒ{[ƒŒ[ƒgŒvZŠí: ‘¬“x‚ª‘«‚è‚Ü‚¹‚ñB•ª•ê‚ªƒI[ƒo[ƒtƒ[‚µ‚Ü‚µ‚½B‚æ‚è’x‚¢…»‚ğg‚¤‚©ƒ{[ƒŒ[ƒg‚ğã‚°‚Ä‰º‚³‚¢B\r\n\r\nƒR[ƒh‚Ì¶¬‚Í‰Â”\‚Å‚·‚ªAƒVƒŠƒAƒ‹’ÊM‚ª•sˆÀ’è‚É‚È‚é‹°‚ê‚ª‚ ‚è‚Ü‚·B"
 
 "UART function used but not supported for this micro."
-"Komut kullanmışsınız, ancak UART işlemleri bu işlemci için desteklenmiyor."
+"‚±‚Ìƒ}ƒCƒRƒ“‚ÍUART‚É‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB"
 
 "UART in use; pins %d and %d reserved for that."
-"UART Kullanımda; %d ve %d bacakları bunun için kullanılmaktadır. Siz kullanamazsınız."
+"%d ”Ôƒsƒ“‚Æ %d ”Ôƒsƒ“‚ÍUART‚Ég‚í‚ê‚Ä‚¢‚Ü‚·B"
 
 "UART rx"
 "UART rx"
@@ -746,77 +749,77 @@
 "UART tx"
 
 "Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for interpretable target."
-"Komut desteklenmiyor. (ADC, PWM, UART, EEPROM, SFR.. ile ilgili komutlardan herhangi biri)"
+"ƒCƒ“ƒ^ƒvƒŠƒ^‚Ì‘Î‰‚µ‚È‚¢–½—ß‚ª‚ ‚è‚Ü‚· (ADC, PWM, UART, EEPROM, SFR..)B"
 
 "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
-"'%s' değer atanmamış.Örneğin, MOV, ADD komutları ile değer atanabilir.\r\n\r\nMuhtemelen bu bir programlama hatasıdır. Bu nedenle değişkenin değeri 0 olarak kullanılacaktır."
+"•Ï” '%s' ‚ÉMOV‚âADD‚È‚Ç‚Ì‘ã“ü‚ª‚ ‚è‚Ü‚¹‚ñB\r\n\r\n‚¨‚»‚ç‚­‚±‚ê‚ÍƒvƒƒOƒ‰ƒ€ƒ~ƒX‚Å‚·Bƒ[ƒ‚ÅŒÅ’è‚µ‚Ü‚·B"
 
 "Variable for '%s' incorrectly assigned: %s."
-"'%s' için değişken hatalı atanmış: %s."
+"'%s' ‚É•Ï” '%s' ‚ª•s“KØ‚ÉŠ„‚è“–‚Ä‚ç‚ê‚Ä‚¢‚Ü‚·B"
 
 "Variable is interpolated into formatted string, but none is specified."
-"Biçimlendirilmiş karakter kümesine değişken tanımlanmış ama hiç belirtilmemiş."
+"•Ï”‚Í‘®•¶š—ñ‚É–„‚ß‚Ş•Ï”‚ªw’è‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB"
 
 "Variable:"
-"Değişken:"
+"•Ï”:"
 
 "Write To SFR"
 "Write To SFR"
 
 "Zero baud rate not possible."
-"İletişim hızı (Baudrate) sıfır olamaz."
+"ƒ{[ƒŒ[ƒg‚ğƒ[ƒ‚É‚Í‚Å‚«‚Ü‚¹‚ñB"
 
 "Zero cycle time not valid; resetting to 10 ms."
-"Çevrim süresi sıfır olamaz. 10ms olarak değiştirildi."
+"ƒTƒCƒNƒ‹ŠÔ‚ğƒ[ƒ‚É‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB10 ms‚ÉƒŠƒZƒbƒg‚µ‚Ü‚·B"
 
 "\n\nI/O ASSIGNMENT:\n\n"
-"\n\nG/Ç TANIMI:\n\n"
+"\n\nIOŠ„‚è“–‚Ä:\n\n"
 
 "adc input"
-"ADC Girişi"
+"AD•ÏŠ·’l"
 
 "counter"
-"Sayıcı"
+"ƒJƒEƒ“ƒ^"
 
 "cycle time %.2f ms"
-"çevrim süresi %.2f ms"
+"üŠú %.2f ms"
 
 "digital in"
-"Dijital Giriş"
+"“ü—Í"
 
 "digital out"
-"Dijital Çıkış"
+"o—Í"
 
 "general var"
-"Genel Değişken"
+"”Ä—p•Ï”"
 
 "int. relay"
-"Dahili Röle"
+"“à•”ƒŠƒŒ["
 
 "is set := :"
-"Verilen Değer := :"
+"•Ï”:"
 
 "no MCU selected"
-"İşlemci Seçilmedi"
+"ƒ^[ƒQƒbƒgƒ}ƒCƒRƒ“–¢İ’è"
 
 "processor clock %.4f MHz"
-"işlemci frekansı %.4f MHz"
+"ƒNƒƒbƒN %.4f MHz"
 
 "retentive timer"
-"değeri saklanan zamanlayıcı"
+"ÏZƒ^ƒCƒ}"
 
 "saved var"
 "saved var"
 
 "turn-off delay"
-"Turn-Off Gecikme"
+"ƒIƒtƒ^ƒCƒ}"
 
 "turn-on delay"
-"Turn-On Gecikme"
+"ƒIƒ“ƒ^ƒCƒ}"
 
 "x values in piecewise linear table must be strictly increasing."
-"Parçalı doğrusal arama tablosundaki x değerleri artan sıralamalı olmalı."
+"üŒ`˜A‘z”z—ñ‚Ìx’l‚Í’P’²‘‰Á‚Å‚ ‚é•K—v‚ª‚ ‚è‚Ü‚·B"
 
 "|/| Negated"
-"|/| Terslenmiş"
+"|/| ”½“]"
 

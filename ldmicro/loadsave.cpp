@@ -130,6 +130,18 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         l->d.math.op2)==3)
     {
         *which = ELEM_DIV;
+    } else if(sscanf(line, "RSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+        *which = ELEM_RSFR;
+    } else if(sscanf(line, "WSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+        *which = ELEM_WSFR;
+    } else if(sscanf(line, "SSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+        *which = ELEM_SSFR;
+    } else if(sscanf(line, "CSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+        *which = ELEM_CSFR;
+    } else if(sscanf(line, "TSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+        *which = ELEM_TSFR;
+    } else if(sscanf(line, "TCSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+        *which = ELEM_T_C_SFR;
     } else if(sscanf(line, "EQU %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
         *which = ELEM_EQU;
     } else if(sscanf(line, "NEQ %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
@@ -178,6 +190,33 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
+    } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var, 
+        &x)==3)
+    {
+        if(strcmp(l->d.fmtdStr.dest, "(none)")==0) {
+            strcpy(l->d.fmtdStr.dest, "");
+        }
+        if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
+            strcpy(l->d.fmtdStr.var, "");
+        }
+
+        char *p = line;
+        int i;
+        for(i = 0; i < 4; i++) {
+            while(!isspace(*p)) p++;
+            while( isspace(*p)) p++;
+        }
+        for(i = 0; i < x; i++) {
+            l->d.fmtdStr.string[i] = atoi(p);
+            if(l->d.fmtdStr.string[i] < 32) {
+                l->d.fmtdStr.string[i] = 'X';
+            }
+            while(!isspace(*p) && *p) p++;
+            while( isspace(*p) && *p) p++;
+        }
+        l->d.fmtdStr.string[i] = '\0';
+
+        *which = ELEM_STRING;
     } else if(sscanf(line, "LOOK_UP_TABLE %s %s %d %d", l->d.lookUpTable.dest,
         l->d.lookUpTable.index, &(l->d.lookUpTable.count),
         &(l->d.lookUpTable.editAsString))==4)
@@ -498,6 +537,18 @@ math:
                 l->d.math.op2);
             break;
 
+		// Special function
+        case ELEM_RSFR: s = "RSFR"; goto sfrcmp;
+        case ELEM_WSFR: s = "WSFR"; goto sfrcmp;
+        case ELEM_SSFR: s = "SSFR"; goto sfrcmp;
+        case ELEM_CSFR: s = "CSFR"; goto sfrcmp;
+        case ELEM_TSFR: s = "TSFR"; goto sfrcmp;
+        case ELEM_T_C_SFR: s = "TCSFR"; goto sfrcmp;
+sfrcmp:
+            fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
+            break;
+		// Special function
+
         case ELEM_EQU: s = "EQU"; goto cmp;
         case ELEM_NEQ: s = "NEQ"; goto cmp;
         case ELEM_GRT: s = "GRT"; goto cmp;
@@ -537,6 +588,26 @@ cmp:
             fprintf(f, "PERSIST %s\n", l->d.persist.var);
             break;
 
+        case ELEM_STRING: {
+            int i;
+            fprintf(f, "STRING ");
+            if(*(l->d.fmtdStr.dest)) {
+                fprintf(f, "%s", l->d.fmtdStr.dest);
+            } else {
+                fprintf(f, "(none)");
+            }
+            if(*(l->d.fmtdStr.var)) {
+                fprintf(f, " %s", l->d.fmtdStr.var);
+            } else {
+                fprintf(f, " (none)");
+            }
+            fprintf(f, " %d", strlen(l->d.fmtdStr.string));
+            for(i = 0; i < (int)strlen(l->d.fmtdStr.string); i++) {
+                fprintf(f, " %d", l->d.fmtdStr.string[i]);
+            }
+            fprintf(f, "\n");
+            break;
+        }
         case ELEM_FORMATTED_STRING: {
             int i;
             fprintf(f, "FORMATTED_STRING ");

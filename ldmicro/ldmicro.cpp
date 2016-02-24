@@ -33,12 +33,13 @@
 #include "ldmicro.h"
 #include "freeze.h"
 #include "mcutable.h"
-#include "..\GIT_HOOKS\git_commit.h"
+#include "git_commit.h"
 
 HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
 
+char ExePath[MAX_PATH];
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
 static HHOOK       MouseHookHandle;
@@ -93,6 +94,27 @@ static BOOL SaveAsDialog(void)
 }
 
 //-----------------------------------------------------------------------------
+char *SetExt(char *dest, const char *src, const char *ext)
+{
+    char *c;
+    if(strlen(src))
+        strcpy(dest, src);
+    if(strlen(dest)) {
+        c = strrchr(dest,'.');
+        if(c)
+            c[0] = '\0';
+    };
+    if(!strlen(dest))
+        strcat(dest, "new");
+
+    if(strlen(ext))
+        if(!strchr(ext,'.'))
+            strcat(dest, ".");
+
+    return strcat(dest, ext);
+}
+
+//-----------------------------------------------------------------------------
 // Get a filename with a common dialog box and then export the program as
 // an ASCII art drawing.
 //-----------------------------------------------------------------------------
@@ -102,6 +124,7 @@ static void ExportDialog(void)
     OPENFILENAME ofn;
 
     exportFile[0] = '\0';
+    SetExt(exportFile, CurrentSaveFile, "txt");
 
     memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
@@ -153,7 +176,8 @@ static void CompileProgram(BOOL compileAs)
         if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
             ofn.lpstrFilter = C_PATTERN;
             ofn.lpstrDefExt = "c";
-        } else if(Prog.mcu && Prog.mcu->whichIsa == ISA_INTERPRETED) {
+        } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED || 
+                               Prog.mcu->whichIsa == ISA_NETZER)) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
         } else {
@@ -193,6 +217,7 @@ static void CompileProgram(BOOL compileAs)
         case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
         case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
         case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
+        case ISA_NETZER:        CompileNetzer(CurrentCompileFile); break;
 
         default: oops();
     }
@@ -321,6 +346,33 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
 }
 
 //-----------------------------------------------------------------------------
+static void isErr(int Err)
+{
+  char *s;
+  switch(Err){
+    case 0:s="The system is out of memory or resources"; break;
+    case ERROR_BAD_FORMAT:s="The .exe file is invalid"; break;
+    case ERROR_FILE_NOT_FOUND:s="The specified file was not found"; break;
+    case ERROR_PATH_NOT_FOUND:s="The specified path was not found"; break;
+    default:s="Ok"; break;
+  }
+  //dbp("Error: %d %s",Err,s);
+}
+
+//-----------------------------------------------------------------------------
+static void notepad(char *name, char *ext)
+{
+    char s[MAX_PATH]="";
+    char r[MAX_PATH];
+
+    s[0] = '\0';
+    SetExt(s, name, ext);
+    sprintf(r,"""%snotepad.bat %s""",ExePath,s);
+
+    //_execl("notepad.exe",s);
+    isErr(WinExec(r, 1/*SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/));
+}
+//-----------------------------------------------------------------------------
 // Handle a selection from the menu bar of the main window.
 //-----------------------------------------------------------------------------
 static void ProcessMenu(int code)
@@ -366,6 +418,10 @@ static void ProcessMenu(int code)
 
         case MNU_EXPORT:
             ExportDialog();
+            break;
+
+        case MNU_NOTEPAD_TXT:
+            notepad(CurrentSaveFile, "txt");
             break;
 
         case MNU_EXIT:
@@ -441,6 +497,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddFormattedString());
             break;
 
+        case MNU_INSERT_STRING:
+            CHANGING_PROGRAM(AddString());
+            break;
+
         case MNU_INSERT_OSR:
             CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
             break;
@@ -484,6 +544,21 @@ math:
                 break;
         }
 
+		// Special function register
+        {
+            int esfr;
+            case MNU_INSERT_SFR: esfr = ELEM_RSFR; goto jcmp;
+            case MNU_INSERT_SFW: esfr = ELEM_WSFR; goto jcmp;
+            case MNU_INSERT_SSFB: esfr = ELEM_SSFR; goto jcmp;
+            case MNU_INSERT_csFB: esfr = ELEM_CSFR; goto jcmp;
+            case MNU_INSERT_TSFB: esfr = ELEM_TSFR; goto jcmp;
+            case MNU_INSERT_T_C_SFB: esfr = ELEM_T_C_SFR; goto jcmp;
+jcmp:    
+                CHANGING_PROGRAM(AddCmp(esfr));
+                break;
+        } 
+		// Special function register
+		
         {
             int elem;
             case MNU_INSERT_EQU: elem = ELEM_EQU; goto cmp;
@@ -583,7 +658,9 @@ cmp:
 
         case MNU_RELEASE:
             char str[1000];
-            sprintf(str,"Tag: %s\n\n%s\n\nSHA-1: %s", git_commit_tag, git_commit_date, git_commit_str);
+            sprintf(str,"Tag: %s\n\n%s\n\nSHA-1: %s\n\n"
+                "Compiled: " __TIME__ " " __DATE__ ".",
+                git_commit_tag, git_commit_date, git_commit_str);
             MessageBox(MainWindow, str, _("Release"),
                 MB_OK | MB_ICONINFORMATION);
             break;
@@ -1036,11 +1113,178 @@ static BOOL MakeWindowClass()
 }
 
 //-----------------------------------------------------------------------------
+
+static LPSTR _getNextCommandLineArgument(LPSTR lpBuffer)
+{
+    BOOL argFound = FALSE;
+    while(*lpBuffer)
+    {
+        if (isspace(*lpBuffer))
+        {
+            argFound = FALSE;
+
+        }
+        else if ((*lpBuffer == '-') || (*lpBuffer == '/'))
+        {
+            argFound = TRUE;
+        }
+        else if (argFound)
+        {
+            return lpBuffer;
+        }
+
+        lpBuffer++;
+    }
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+
+static LPSTR _getNextPositionalArgument(LPSTR lpBuffer)
+{
+    BOOL argFound = FALSE;
+    while(*lpBuffer)
+    {
+        if (isspace(*lpBuffer))
+        {
+            argFound = TRUE;
+        }
+        else if ((*lpBuffer == '-') || (*lpBuffer == '/'))
+        {
+            argFound = FALSE;
+        }
+        else if (argFound)
+        {
+            return lpBuffer;
+        }
+        lpBuffer++;
+    }
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+
+static char * _removeWhitespace(char * pBuffer)
+{
+    // Check from left:
+    char * pStart = pBuffer;
+    while(*pBuffer)
+    {
+        if (isspace(*pBuffer) || *pBuffer == '"' || *pBuffer == '\'')
+        {
+            pStart++;
+        }
+        else
+        {
+            break;
+        }
+
+        pBuffer++;
+    }
+
+    if (*pBuffer == 0)
+    {
+        // No alphanumeric characters in this string.
+        return NULL;
+    }
+
+
+    // Check from right.
+    {
+        int len = strlen(pBuffer);
+        char * pEnd = &pBuffer[len-1];
+
+        while(pEnd > pStart)
+        {
+            if (isspace(*pEnd) || *pEnd == '"' || *pEnd == '\'')
+            {
+                *pEnd = 0;
+            }
+            else
+            {
+                break;
+            }
+
+            pEnd--;
+        }
+    }
+
+    if (strlen(pStart) == 0)
+    {
+        return NULL;
+    }
+
+    return pStart;
+}
+
+//-----------------------------------------------------------------------------
+
+static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
+{
+    // Parse for command line arguments.
+    LPSTR lpArgs = lpCmdLine;
+
+    while(1)
+    {
+        lpArgs = _getNextCommandLineArgument(lpArgs);
+
+        if(lpArgs == NULL)
+        {
+            break;
+        }
+        if(*lpArgs == 'c')
+        {
+            RunningInBatchMode = TRUE;
+        }
+        if(*lpArgs == 't')
+        {
+            RunningInTestMode = TRUE;
+        }
+    }
+
+
+
+    // Parse for positional arguments (first is source, second destination):
+    *pSource = NULL;
+    *pDest = NULL;
+
+    lpCmdLine = _getNextPositionalArgument(lpCmdLine);
+
+    if(lpCmdLine)
+    {
+        *pSource = lpCmdLine;
+        lpCmdLine = _getNextPositionalArgument(lpCmdLine);
+
+        if(lpCmdLine)
+        {
+            lpCmdLine[-1] = 0;  // Close source string.
+            *pDest = lpCmdLine;
+            *pDest = _removeWhitespace(*pDest);
+        }
+
+        *pSource = _removeWhitespace(*pSource);
+    }
+}
+
+char *ExtractFilePath(char *buffer)
+{
+    char *c;
+    if(strlen(buffer)) {
+        c = strrchr(buffer,'\\');
+        c[1] = '\0';
+    };
+    return buffer;
+}
+
+//-----------------------------------------------------------------------------
 // Entry point into the program.
 //-----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, INT nCmdShow)
 {
+    GetModuleFileName(hInstance,ExePath,MAX_PATH);
+    ExtractFilePath(ExePath);
+
     Instance = hInstance;
 
     MainHeap = HeapCreate(0, 1024*64, 0);

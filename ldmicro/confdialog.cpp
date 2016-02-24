@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -66,7 +66,7 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static void MakeControls(void)
 {
-    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Cycle Time (ms):"),
+    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("PLC Cycle Time (ms):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 13, 145, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
@@ -77,7 +77,7 @@ static void MakeControls(void)
     NiceFont(CycleTextbox);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC,
-        _("Crystal Frequency (MHz):"),
+        _("MCU Crystal Frequency (MHz):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         0, 43, 150, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
@@ -97,13 +97,14 @@ static void MakeControls(void)
         155, 72, 85, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(BaudTextbox);
 
-    if(!UartFunctionUsed()) {   
+    if(!UartFunctionUsed()) {
         EnableWindow(BaudTextbox, FALSE);
         EnableWindow(textLabel3, FALSE);
     }
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-        Prog.mcu->whichIsa == ISA_INTERPRETED)) 
+        Prog.mcu->whichIsa == ISA_INTERPRETED ||
+        Prog.mcu->whichIsa == ISA_NETZER)) 
     {
         EnableWindow(CrystalTextbox, FALSE);
         EnableWindow(textLabel2, FALSE);
@@ -111,12 +112,12 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        258, 11, 70, 23, ConfDialog, NULL, Instance, NULL); 
+        258, 11, 70, 23, ConfDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        258, 41, 70, 23, ConfDialog, NULL, Instance, NULL); 
+        258, 41, 70, 23, ConfDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 
     char explanation[1024] = "";
@@ -124,7 +125,7 @@ static void MakeControls(void)
     if(UartFunctionUsed()) {
         if(Prog.mcu && Prog.mcu->uartNeeds.rxPin != 0) {
             sprintf(explanation,
-                _("Serial (UART) will use pins %d and %d.\r\n\r\n"),
+                _("Serial (UART) will use pins %d and %d.\r\n"),
                 Prog.mcu->uartNeeds.rxPin, Prog.mcu->uartNeeds.txPin);
         } else {
             strcpy(explanation,
@@ -132,7 +133,7 @@ static void MakeControls(void)
         }
     } else {
         strcpy(explanation, _("No serial instructions (UART Send/UART Receive) "
-            "are in use; add one to program before setting baud rate.\r\n\r\n") 
+            "are in use; add one to program before setting baud rate.\r\n\r\n")
         );
     }
 
@@ -170,13 +171,13 @@ static void MakeControls(void)
     SetWindowPos(ConfDialog, NULL, 0, 0, 344, nh, SWP_NOMOVE);
 
 
-    PrevCycleProc = SetWindowLongPtr(CycleTextbox, GWLP_WNDPROC, 
+    PrevCycleProc = SetWindowLongPtr(CycleTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNumberProc);
 
-    PrevCrystalProc = SetWindowLongPtr(CrystalTextbox, GWLP_WNDPROC, 
+    PrevCrystalProc = SetWindowLongPtr(CrystalTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNumberProc);
 
-    PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC, 
+    PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNumberProc);
 }
 
@@ -188,7 +189,7 @@ void ShowConfDialog(void)
         100, 100, 0, 0, NULL, NULL, Instance, NULL);
 
     MakeControls();
-   
+
     char buf[16];
     sprintf(buf, "%.1f", (Prog.cycleTime / 1000.0));
     SendMessage(CycleTextbox, WM_SETTEXT, 0, (LPARAM)buf);

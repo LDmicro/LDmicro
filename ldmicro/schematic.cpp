@@ -429,6 +429,18 @@ void EditSelectedElement(void)
                 Selected->d.counter.name);
             break;
 
+		// Special function
+        case ELEM_RSFR:
+        case ELEM_WSFR:
+        case ELEM_SSFR:
+        case ELEM_CSFR:
+        case ELEM_TSFR:
+        case ELEM_T_C_SFR:
+            ShowSFRDialog(SelectedWhich, Selected->d.cmp.op1,
+                Selected->d.cmp.op2);
+            break;
+		// Special function
+
         case ELEM_EQU:
         case ELEM_NEQ:
         case ELEM_GRT:
@@ -476,6 +488,10 @@ void EditSelectedElement(void)
         case ELEM_SHIFT_REGISTER:
             ShowShiftRegisterDialog(Selected->d.shiftRegister.name,
                 &(Selected->d.shiftRegister.stages));
+            break;
+        case ELEM_STRING:
+            ShowStringDialog(Selected->d.fmtdStr.dest, Selected->d.fmtdStr.var,
+                Selected->d.fmtdStr.string);
             break;
 
         case ELEM_FORMATTED_STRING:

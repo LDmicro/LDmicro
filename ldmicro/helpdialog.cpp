@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -35,6 +35,8 @@ extern char *HelpText[];
 extern char *HelpTextDe[];
 extern char *HelpTextFr[];
 extern char *HelpTextTr[];
+extern char *HelpTextJa[];
+extern char *HelpTextRu[];
 
 static char *AboutText[] = {
 "",
@@ -62,10 +64,14 @@ static char *AboutText[] = {
 "",
 "    http://cq.cx/ladder.pl",
 "",
-"Copyright 2005-2010 Jonathan Westhues",
-"Release 2.2, built " __TIME__ " " __DATE__ ".",
-"",
+"Copyright 2005-2016 Jonathan Westhues",
 "Email: user jwesthues, at host cq.cx",
+"",
+"Netzer extension by Sven Schlender (c) 2012",
+"",
+"Unofficial support:",
+"   Repository: https://github.com/LDmicro/LDmicro",
+"   Email:      LDmicro.GitHub@gmail.com",
 "",
 NULL
 };
@@ -82,6 +88,10 @@ static char **Text[] = {
     HelpTextFr,
 #elif defined(LDLANG_TR)
     HelpTextTr,
+#elif defined(LDLANG_JA)
+    HelpTextJa,
+#elif defined(LDLANG_RU)
+    HelpTextRu,
 #else
 #   error "Bad language"
 #endif
@@ -105,7 +115,7 @@ static void SizeRichEdit(int a)
     RECT r;
     GetClientRect(HelpDialog[a], &r);
 
-    SetWindowPos(RichEdit[a], HWND_TOP, 6, 3, r.right - 6, 
+    SetWindowPos(RichEdit[a], HWND_TOP, 6, 3, r.right - 6,
         RICH_EDIT_HEIGHT(r.bottom), 0);
 }
 
@@ -192,7 +202,7 @@ static void MakeControls(int a)
             SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE,
                 (LPARAM)copy);
             SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
-            
+
             // Special case if there's nothing except title on the line
             if(!justHeading) {
                 copy[j] = ' ';
@@ -238,7 +248,7 @@ static LRESULT CALLBACK HelpProc(HWND hwnd, UINT msg, WPARAM wParam,
         case WM_KEYDOWN:
             SetFocus(RichEdit[a]);
             break;
-    
+
         case WM_DESTROY:
         case WM_CLOSE:
             HelpWindowOpen[a] = FALSE;
@@ -289,9 +299,9 @@ void ShowHelpDialog(BOOL about)
     HelpDialog[a] = CreateWindowEx(0, "LDmicroHelp", s,
         WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
         WS_SIZEBOX,
-        100, 100, 650, 300+10*FONT_HEIGHT, NULL, NULL, Instance, NULL);
+        100, 100, 650 +50, (about ? 20 : 300)+ 300+10*FONT_HEIGHT, NULL, NULL, Instance, NULL);
     MakeControls(a);
-   
+
     ShowWindow(HelpDialog[a], TRUE);
     SetFocus(RichEdit[a]);
 
@@ -303,6 +313,6 @@ void ShowHelpDialog(BOOL about)
 
     GetWindowRect(HelpDialog[a], &r);
     Resizing(&r, WMSZ_TOP);
-    SetWindowPos(HelpDialog[a], HWND_TOP, r.left, r.top, r.right - r.left, 
+    SetWindowPos(HelpDialog[a], HWND_TOP, r.left, r.top, r.right - r.left,
         r.bottom - r.top, 0);
 }

@@ -154,6 +154,31 @@ static void GenerateDeclarations(FILE *f)
                 intVar2 = IntCode[i].name2;
                 break;
 
+			case  INT_READ_SFR_LITERAL:
+			case  INT_WRITE_SFR_LITERAL:
+			case  INT_SET_SFR_LITERAL:
+			case  INT_CLEAR_SFR_LITERAL:
+			case  INT_TEST_SFR_LITERAL:
+			case  INT_READ_SFR_VARIABLE:
+			case  INT_WRITE_SFR_VARIABLE:
+			case  INT_SET_SFR_VARIABLE:
+			case  INT_CLEAR_SFR_VARIABLE:
+			case  INT_TEST_SFR_VARIABLE:
+			case  INT_TEST_C_SFR_LITERAL:
+			case  INT_WRITE_SFR_LITERAL_L:
+			case  INT_WRITE_SFR_VARIABLE_L:
+			case  INT_SET_SFR_LITERAL_L:
+			case  INT_SET_SFR_VARIABLE_L:
+			case  INT_CLEAR_SFR_LITERAL_L:
+			case  INT_CLEAR_SFR_VARIABLE_L:
+			case  INT_TEST_SFR_LITERAL_L:
+			case  INT_TEST_SFR_VARIABLE_L:
+			case  INT_TEST_C_SFR_VARIABLE:
+			case  INT_TEST_C_SFR_LITERAL_L:
+			case  INT_TEST_C_SFR_VARIABLE_L:
+                break;
+
+
             case INT_SET_VARIABLE_DIVIDE:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_SUBTRACT:
@@ -197,6 +222,7 @@ static void GenerateDeclarations(FILE *f)
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
+            case INT_WRITE_STRING:
                 break;
 
             default:
@@ -328,17 +354,67 @@ static void GenerateAnsiC(FILE *f)
                 }
                 break;
 
+			case  INT_READ_SFR_LITERAL:
+			case  INT_READ_SFR_VARIABLE:
+				fprintf(f, "/* Read from SFR */\n");
+                break;
+			case  INT_WRITE_SFR_LITERAL:
+			case  INT_WRITE_SFR_VARIABLE:
+			case  INT_WRITE_SFR_LITERAL_L:
+			case  INT_WRITE_SFR_VARIABLE_L:
+				fprintf(f, "/* Write to SFR */\n");
+                break;
+			case  INT_SET_SFR_LITERAL:
+			case  INT_SET_SFR_VARIABLE:
+			case  INT_SET_SFR_LITERAL_L:
+			case  INT_SET_SFR_VARIABLE_L:
+				fprintf(f, "/* Set bit in SFR */\n");
+                break;
+			case  INT_CLEAR_SFR_LITERAL:
+			case  INT_CLEAR_SFR_VARIABLE:
+			case  INT_CLEAR_SFR_LITERAL_L:
+			case  INT_CLEAR_SFR_VARIABLE_L:
+				fprintf(f, "/* Clear bit in SFR */\n");
+                break;
+			case  INT_TEST_SFR_LITERAL:
+			case  INT_TEST_SFR_VARIABLE:
+			case  INT_TEST_SFR_LITERAL_L:
+			case  INT_TEST_SFR_VARIABLE_L:
+				fprintf(f, "/* Test if bit Set in SFR */\n");
+                break;
+			case  INT_TEST_C_SFR_LITERAL:
+			case  INT_TEST_C_SFR_VARIABLE:
+			case  INT_TEST_C_SFR_LITERAL_L:
+			case  INT_TEST_C_SFR_VARIABLE_L:
+				fprintf(f, "/* Test if bit Clear in SFR */\n");
+                break;
+
             case INT_EEPROM_BUSY_CHECK:
+				fprintf(f, "/* EEprom busy check */\n");
+                break;
             case INT_EEPROM_READ:
+				fprintf(f, "/* EEprom read */\n");
+                break;
             case INT_EEPROM_WRITE:
+				fprintf(f, "/* EEprom write */\n");
+                break;
             case INT_READ_ADC:
+				fprintf(f, "/* Read ADC */\n");
+                break;
             case INT_SET_PWM:
+				fprintf(f, "/* Set PWM */\n");
+                break;
             case INT_UART_RECV:
+				fprintf(f, "/* UART Received */\n");
+                break;
             case INT_UART_SEND:
+				fprintf(f, "/* UART Send */\n");
+                break;
+
+            case INT_WRITE_STRING:
                 Error(_("ANSI C target does not support peripherals "
                     "(UART, PWM, ADC, EEPROM). Skipping that instruction."));
                 break;
-
             default:
                 oops();
         }

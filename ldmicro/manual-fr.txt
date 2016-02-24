@@ -413,8 +413,8 @@ REFERENCE DES INSTRUCTIONS
     Cette instruction est placée le plus à droite dans une séquence.
 
 
-> FRONT MONTANT                    _
-                           --[OSR_/ ]--
+> FRONT MONTANT                 _    _
+                           --[_/ OSR/ \_]--
 
     La sortie de cette instruction est normallement fausse. Si
     l'instruction d'entrée est vraie pendant ce scan et qu'elle était
@@ -424,8 +424,8 @@ REFERENCE DES INSTRUCTIONS
     du signal.
 
 
-> FRONT DESCENDANT               _
-                           --[OSF \_]--
+> FRONT DESCENDANT            _      _
+                           --[ \_OSF/ \_]--
 
     La sortie de cette instruction est normallement fausse. Si
     l'instruction d'entrée est fausse (0) pendant ce scan et qu'elle

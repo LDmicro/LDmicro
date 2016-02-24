@@ -10,7 +10,13 @@ for $manual (<manual*txt>) {
     if($manual eq 'manual.txt') {
         $name = "HelpText";
         # Some languages don't have translated manuals yet, so use English
-        $ifdef = "#if defined(LDLANG_EN) || defined(LDLANG_ES) || defined(LDLANG_IT) || " .
+        $ifdef = "#if defined(LDLANG_EN) || " .
+                     "defined(LDLANG_ES) || " .
+                     "defined(LDLANG_IT) || " .
+                     "defined(LDLANG_JA) || " .
+                     "defined(LDLANG_FR) || " .
+                     "defined(LDLANG_TR) || " .
+                     "defined(LDLANG_RU) || " .
                      "defined(LDLANG_PT)";
     } elsif($manual =~ /manual-(.)(.)\.txt/) {
         $p = uc($1) . lc($2);

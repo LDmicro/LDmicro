@@ -52,6 +52,14 @@ typedef signed long SDWORD;
 #define MNU_EXPORT              0x05
 #define MNU_EXIT                0x06
 
+#define MNU_NOTEPAD_LD          0x0700
+#define MNU_NOTEPAD_PL          0x0701
+#define MNU_NOTEPAD_ASM         0x0702
+#define MNU_NOTEPAD_C           0x0703
+#define MNU_NOTEPAD_H           0x0704
+#define MNU_NOTEPAD_PAS         0x0705
+#define MNU_NOTEPAD_TXT         0x070F
+
 #define MNU_UNDO                0x10
 #define MNU_REDO                0x11
 #define MNU_PUSH_RUNG_UP        0x12
@@ -60,6 +68,20 @@ typedef signed long SDWORD;
 #define MNU_INSERT_RUNG_AFTER   0x15
 #define MNU_DELETE_ELEMENT      0x16
 #define MNU_DELETE_RUNG         0x17
+
+#define MNU_CAT_RUNG            0x1801
+#define MNU_COPY_RUNG_DOWN      0x1802
+#define MNU_COPY_RUNG           0x1803
+#define MNU_COPY_ELEM           0x1804
+#define MNU_PASTE_RUNG          0x1805
+#define MNU_PASTE_INTO_RUNG     0x1806
+
+#define MNU_SCROLL_DOWN         0x1901
+#define MNU_SCROLL_UP           0x1902
+#define MNU_SCROLL_PgDOWN       0x1903
+#define MNU_SCROLL_PgUP         0x1904
+#define MNU_ROLL_HOME           0x1905
+#define MNU_ROLL_END            0x1906
 
 #define MNU_INSERT_COMMENT      0x20
 #define MNU_INSERT_CONTACTS     0x21
@@ -73,13 +95,26 @@ typedef signed long SDWORD;
 #define MNU_INSERT_CTU          0x29
 #define MNU_INSERT_CTD          0x2a
 #define MNU_INSERT_CTC          0x2b
+#define MNU_INSERT_CTR          0x2b01
 #define MNU_INSERT_ADD          0x2c
 #define MNU_INSERT_SUB          0x2d
 #define MNU_INSERT_MUL          0x2e
 #define MNU_INSERT_DIV          0x2f
+#define MNU_INSERT_MOD          0x2f01
+#define MNU_INSERT_AND          0x2f02
+#define MNU_INSERT_OR           0x2f03
+#define MNU_INSERT_XOR          0x2f04
+#define MNU_INSERT_NOT          0x2f05
+#define MNU_INSERT_NEG          0x2f06
+#define MNU_INSERT_SHL          0x2f07
+#define MNU_INSERT_SHR          0x2f08
+#define MNU_INSERT_SR0          0x2f09
+#define MNU_INSERT_ROL          0x2f0a
+#define MNU_INSERT_ROR          0x2f0b
 #define MNU_INSERT_MOV          0x30
 #define MNU_INSERT_READ_ADC     0x31
 #define MNU_INSERT_SET_PWM      0x32
+#define MNU_INSERT_SET_PWM_SOFT 0x3201
 #define MNU_INSERT_UART_SEND    0x33
 #define MNU_INSERT_UART_RECV    0x34
 #define MNU_INSERT_EQU          0x35
@@ -101,7 +136,27 @@ typedef signed long SDWORD;
 #define MNU_MAKE_RESET_ONLY     0x45
 #define MNU_INSERT_PWL          0x46
 
+#define MNU_INSERT_SFR          0x47    // special function register read
+#define MNU_INSERT_SFW          0x48    // special function register write
+#define MNU_INSERT_SSFB         0x49    // set bit in special function register
+#define MNU_INSERT_csFB         0x4a    // clear bit in special function register
+#define MNU_INSERT_TSFB         0x4b    // test if bit is set in special function register
+#define MNU_INSERT_T_C_SFB      0x4c    // test if bit is clear in special function register
+
+#define MNU_INSERT_STRING       0x4d
+#define MNU_INSERT_OSC          0x4f01
+#define MNU_INSERT_STEPPER      0x4f02
+#define MNU_INSERT_PULSER       0x4f03
+#define MNU_INSERT_NPULSE       0x4f04
+#define MNU_INSERT_NPULSE_OFF   0x4f05
+#define MNU_INSERT_PWM_OFF      0x4f06
+#define MNU_INSERT_PWM_OFF_SOFT 0x4f07
+#define MNU_INSERT_UART_UDRE    0x4f08
+#define MNU_INSERT_QUAD_ENCOD   0x4f09
+#define MNU_INSERT_MASTER_BREAK 0x4f0a
+
 #define MNU_MCU_SETTINGS        0x50
+#define MNU_SPEC_FUNCTION       0x51
 #define MNU_PROCESSOR_0         0xa0
 
 #define MNU_SIMULATION_MODE     0x60
@@ -109,8 +164,19 @@ typedef signed long SDWORD;
 #define MNU_STOP_SIMULATION     0x62
 #define MNU_SINGLE_CYCLE        0x63
 
+#define MNU_INSERT_7SEG         0x6507
+#define MNU_INSERT_9SEG         0x6509
+#define MNU_INSERT_14SEG        0x6514
+#define MNU_INSERT_16SEG        0x6516
+
 #define MNU_COMPILE             0x70
 #define MNU_COMPILE_AS          0x71
+#define MNU_COMPILE_ANSIC       0x72
+#define MNU_COMPILE_IHEX        0x73
+#define MNU_COMPILE_ASM         0x74
+#define MNU_COMPILE_PASCAL      0x75
+#define MNU_COMPILE_ARDUINO     0x76
+#define MNU_FLASH_BAT           0x7F
 
 #define MNU_MANUAL              0x80
 #define MNU_ABOUT               0x81
@@ -133,7 +199,7 @@ typedef signed long SDWORD;
 // parallel subcircuits. A parallel subcircuit contains elements or series
 // subcircuits. An element is a set of contacts (possibly negated) or a coil.
 
-#define MAX_ELEMENTS_IN_SUBCKT  16
+#define MAX_ELEMENTS_IN_SUBCKT  64
 
 #define ELEM_PLACEHOLDER        0x01
 #define ELEM_SERIES_SUBCKT      0x02
@@ -154,6 +220,17 @@ typedef signed long SDWORD;
 #define ELEM_SUB                0x1a
 #define ELEM_MUL                0x1b
 #define ELEM_DIV                0x1c
+#define ELEM_MOD                0x1c01
+#define ELEM_AND                0x1c02
+#define ELEM_OR                 0x1c03
+#define ELEM_XOR                0x1c04
+#define ELEM_NOT                0x1c05
+#define ELEM_NEG                0x1c06
+#define ELEM_SHL                0x1c07
+#define ELEM_SHR                0x1c08
+#define ELEM_SR0                0x1c09
+#define ELEM_ROL                0x1c0a
+#define ELEM_ROR                0x1c0b
 #define ELEM_EQU                0x1d
 #define ELEM_NEQ                0x1e
 #define ELEM_GRT                0x1f
@@ -163,10 +240,12 @@ typedef signed long SDWORD;
 #define ELEM_CTU                0x23
 #define ELEM_CTD                0x24
 #define ELEM_CTC                0x25
+#define ELEM_CTR                0x2501
 #define ELEM_SHORT              0x26
 #define ELEM_OPEN               0x27
 #define ELEM_READ_ADC           0x28
 #define ELEM_SET_PWM            0x29
+#define ELEM_SET_PWM_SOFT       0x2901
 #define ELEM_UART_RECV          0x2a
 #define ELEM_UART_SEND          0x2b
 #define ELEM_MASTER_RELAY       0x2c
@@ -175,6 +254,33 @@ typedef signed long SDWORD;
 #define ELEM_FORMATTED_STRING   0x2f
 #define ELEM_PERSIST            0x30
 #define ELEM_PIECEWISE_LINEAR   0x31
+
+#define ELEM_RSFR               0x32    // Element read from SFR
+#define ELEM_WSFR               0x33    // Element write to  SFR
+#define ELEM_SSFR               0x34    // Element set bit in SFR
+#define ELEM_CSFR               0x35    // Element clear bit in SFR
+#define ELEM_TSFR               0x36    // Element test if set bit in SFR
+#define ELEM_T_C_SFR            0x37    // Element test if clear bit in SFR
+
+
+
+
+#define ELEM_STRING             0x3f
+#define ELEM_MASTER_BREAK       0x4000
+#define ELEM_OSC                0x4001
+#define ELEM_STEPPER            0x4002   //
+#define ELEM_PULSER             0x4003   //
+#define ELEM_NPULSE             0x4004   // N pulse generator use timer0 for generate meander
+#define ELEM_NPULSE_OFF         0x4005
+#define ELEM_PWM_OFF            0x4006
+#define ELEM_PWM_OFF_SOFT       0x4007
+#define ELEM_UART_UDRE          0x4008
+#define ELEM_QUAD_ENCOD         0x4009
+
+#define ELEM_7SEG               0x7007
+#define ELEM_9SEG               0x7009
+#define ELEM_14SEG              0x7014
+#define ELEM_16SEG              0x7016
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -187,36 +293,72 @@ typedef signed long SDWORD;
         case ELEM_CTD: \
         case ELEM_CTU: \
         case ELEM_CTC: \
+        case ELEM_CTR: \
         case ELEM_RES: \
         case ELEM_ONE_SHOT_RISING: \
         case ELEM_ONE_SHOT_FALLING: \
+        case ELEM_OSC: \
+        case ELEM_STEPPER: \
+        case ELEM_PULSER: \
+        case ELEM_NPULSE: \
+        case ELEM_NPULSE_OFF: \
+        case ELEM_PWM_OFF: \
+        case ELEM_PWM_OFF_SOFT: \
+        case ELEM_RSFR: \
+        case ELEM_WSFR: \
+        case ELEM_SSFR: \
+        case ELEM_CSFR: \
+        case ELEM_TSFR: \
+        case ELEM_T_C_SFR: \
+        case ELEM_7SEG: \
+        case ELEM_9SEG: \
+        case ELEM_14SEG: \
+        case ELEM_16SEG: \
         case ELEM_EQU: \
         case ELEM_NEQ: \
         case ELEM_GRT: \
         case ELEM_GEQ: \
         case ELEM_LES: \
         case ELEM_LEQ: \
+        case ELEM_SHL: \
+        case ELEM_SHR: \
+        case ELEM_SR0: \
+        case ELEM_ROL: \
+        case ELEM_ROR: \
+        case ELEM_AND: \
+        case ELEM_OR: \
+        case ELEM_XOR: \
+        case ELEM_NOT: \
+        case ELEM_NEG: \
         case ELEM_ADD: \
         case ELEM_SUB: \
         case ELEM_MUL: \
         case ELEM_DIV: \
+        case ELEM_MOD: \
         case ELEM_MOVE: \
         case ELEM_SHORT: \
         case ELEM_OPEN: \
         case ELEM_READ_ADC: \
         case ELEM_SET_PWM: \
+        case ELEM_SET_PWM_SOFT: \
+        case ELEM_QUAD_ENCOD: \
+        case ELEM_UART_UDRE: \
         case ELEM_UART_SEND: \
         case ELEM_UART_RECV: \
         case ELEM_MASTER_RELAY: \
+        case ELEM_MASTER_BREAK: \
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
+        case ELEM_STRING: \
         case ELEM_FORMATTED_STRING: \
         case ELEM_PERSIST:
 
 #define MAX_NAME_LEN                128
 #define MAX_COMMENT_LEN             384
-#define MAX_LOOK_UP_TABLE_LEN        60
+#define MAX_LOOK_UP_TABLE_LEN        64
+#define MAX_SHIFT_REGISTER_STAGES   256
+#define MAX_STRING_LEN              256
 
 typedef struct ElemSubckParallelTag ElemSubcktParallel;
 
@@ -238,7 +380,7 @@ typedef struct ElemCoilTag {
 
 typedef struct ElemTimeTag {
     char    name[MAX_NAME_LEN];
-    int     delay;
+    int     delay; // us
 } ElemTimer;
 
 typedef struct ElemResetTag {
@@ -300,6 +442,7 @@ typedef struct ElemPiecewiseLinearTag {
 } ElemPiecewiseLinear;
 
 typedef struct ElemFormattedStringTag {
+    char    dest[MAX_NAME_LEN];
     char    var[MAX_NAME_LEN];
     char    string[MAX_LOOK_UP_TABLE_LEN];
 } ElemFormattedString;
@@ -327,7 +470,7 @@ typedef struct ElemLeafTag {
         ElemCmp             cmp;
         ElemCounter         counter;
         ElemReadAdc         readAdc;
-        ElemSetPwmTag       setPwm;
+        ElemSetPwm          setPwm;
         ElemUart            uart;
         ElemShiftRegister   shiftRegister;
         ElemFormattedString fmtdStr;
@@ -367,6 +510,7 @@ typedef struct PlcProgramSingleIoTag {
     char        name[MAX_NAME_LEN];
 #define IO_TYPE_PENDING         0
 
+/*
 #define IO_TYPE_DIG_INPUT       1
 #define IO_TYPE_DIG_OUTPUT      2
 #define IO_TYPE_READ_ADC        3
@@ -379,6 +523,23 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_RTO             10
 #define IO_TYPE_COUNTER         11
 #define IO_TYPE_GENERAL         12
+*/
+/*More convenient sort order in IOlist*/
+#define IO_TYPE_GENERAL         1
+#define IO_TYPE_PERSIST         2
+#define IO_TYPE_STRING          3
+#define IO_TYPE_RTO             4
+#define IO_TYPE_COUNTER         5
+#define IO_TYPE_INT_INPUT       6
+#define IO_TYPE_DIG_INPUT       7
+#define IO_TYPE_DIG_OUTPUT      8
+#define IO_TYPE_READ_ADC        9
+#define IO_TYPE_UART_TX         10
+#define IO_TYPE_UART_RX         11
+#define IO_TYPE_PWM_OUTPUT      12
+#define IO_TYPE_INTERNAL_RELAY  13
+#define IO_TYPE_TON             14
+#define IO_TYPE_TOF             15
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -391,11 +552,12 @@ typedef struct PlcProgramTag {
         int                 count;
     }           io;
     McuIoInfo  *mcu;
-    int         cycleTime;
-    int         mcuClock;
-    int         baudRate;
+    char        LDversion[512];
+    int         cycleTime; //us
+    int         mcuClock;  //Hz
+    int         baudRate;  //Hz
 
-#define MAX_RUNGS 99
+#define MAX_RUNGS 1000
     ElemSubcktSeries *rungs[MAX_RUNGS];
     BOOL              rungPowered[MAX_RUNGS];
     int               numRungs;
@@ -456,6 +618,7 @@ typedef struct McuIoPinInfoTag {
     char    port;
     int     bit;
     int     pin;
+    char    pinName[MAX_NAME_LEN];
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -467,8 +630,10 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_PIC16           0x01
 #define ISA_ANSIC           0x02
 #define ISA_INTERPRETED     0x03
+#define ISA_AVR1            0x04
+#define ISA_NETZER          0x05
 
-#define MAX_IO_PORTS        10
+#define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
 
 typedef struct McuIoInfoTag {
@@ -495,15 +660,27 @@ typedef struct McuIoInfoTag {
     int              whichIsa;
     BOOL             avrUseIjmp;
     DWORD            configurationWord;
+    struct {
+        int             int0; // The pin can serve as an External Interrupt source 0.
+        //int           pol0PinB; // The pin can polling in QuadEncod routines.
+        // PinA and PinB should be in the same register.
+        int             int1; // The pin can serve as an External Interrupt source 1.
+        //int           pol1PinB; // The pin can polling in QuadEncod routines.
+        // PinA and PinB should be in the same register.
+    }                IntNeeds;
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 15
-
+#define NUM_SUPPORTED_MCUS 27
 
 //-----------------------------------------------
 // Function prototypes
 
 // ldmicro.cpp
+#define CHANGING_PROGRAM(x) { \
+        UndoRemember(); \
+        x; \
+        ProgramChanged(); \
+    }
 void ProgramChanged(void);
 void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
@@ -587,8 +764,8 @@ void WhatCanWeDoFromCursorAndTopology(void);
 BOOL FindSelected(int *gx, int *gy);
 void MoveCursorNear(int gx, int gy);
 
-#define DISPLAY_MATRIX_X_SIZE 16
-#define DISPLAY_MATRIX_Y_SIZE 512
+#define DISPLAY_MATRIX_X_SIZE 256
+#define DISPLAY_MATRIX_Y_SIZE 2048
 extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
@@ -622,6 +799,7 @@ void AddMasterRelay(void);
 void AddLookUpTable(void);
 void AddPiecewiseLinear(void);
 void AddFormattedString(void);
+void AddString(void);
 void DeleteSelectedFromProgram(void);
 void DeleteSelectedRung(void);
 void InsertRung(BOOL afterCursor);
@@ -670,9 +848,11 @@ void ShowSetPwmDialog(char *name, int *targetFreq);
 void ShowPersistDialog(char *var);
 void ShowUartDialog(int which, char *name);
 void ShowCmpDialog(int which, char *op1, char *op2);
+void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
+void ShowStringDialog(char * dest, char *var, char *string);
 void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
@@ -682,6 +862,18 @@ void ShowConfDialog(void);
 void ShowHelpDialog(BOOL about);
 
 // miscutil.cpp
+#ifndef round
+#define round(r)   ((r) < (LONG_MIN-0.5) || (r) > (LONG_MAX+0.5) ?\
+    (r):\
+    ((r) >= 0.0) ? ((r) + 0.5) : ((r) - 0.5))
+#endif
+
+#define ooops(...) { \
+        dbp("bad at %d %s\n", __LINE__, __FILE__); \
+        dbp(__VA_ARGS__); \
+        Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
+        exit(1); \
+    }
 #define oops() { \
         dbp("bad at %d %s\n", __LINE__, __FILE__); \
         Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
@@ -705,6 +897,7 @@ void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str);
 extern BOOL RunningInBatchMode;
+extern BOOL RunningInTestMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 extern HWND OkButton;
@@ -726,6 +919,7 @@ void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
 void DestroyUartSimulationWindow(void);
 void ShowUartSimulationWindow(void);
+DWORD IsUsedVariable(char *name);
 extern BOOL InSimulationMode;
 extern BOOL SimulateRedrawAfterNextCycle;
 
@@ -752,7 +946,9 @@ void CompilePic16(char *outFile);
 void CompileAvr(char *outFile);
 // ansic.cpp
 void CompileAnsiC(char *outFile);
-// interpreted.c
+// interpreted.cpp
 void CompileInterpreted(char *outFile);
+// netzer.cpp
+void CompileNetzer(char *outFile);
 
 #endif
