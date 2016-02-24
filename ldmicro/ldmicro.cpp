@@ -39,6 +39,7 @@ HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
 
+char ExePath[MAX_PATH];
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
 static HHOOK       MouseHookHandle;
@@ -93,6 +94,27 @@ static BOOL SaveAsDialog(void)
 }
 
 //-----------------------------------------------------------------------------
+char *SetExt(char *dest, const char *src, const char *ext)
+{
+    char *c;
+    if(strlen(src))
+        strcpy(dest, src);
+    if(strlen(dest)) {
+        c = strrchr(dest,'.');
+        if(c)
+            c[0] = '\0';
+    };
+    if(!strlen(dest))
+        strcat(dest, "new");
+
+    if(strlen(ext))
+        if(!strchr(ext,'.'))
+            strcat(dest, ".");
+
+    return strcat(dest, ext);
+}
+
+//-----------------------------------------------------------------------------
 // Get a filename with a common dialog box and then export the program as
 // an ASCII art drawing.
 //-----------------------------------------------------------------------------
@@ -102,6 +124,7 @@ static void ExportDialog(void)
     OPENFILENAME ofn;
 
     exportFile[0] = '\0';
+    SetExt(exportFile, CurrentSaveFile, "txt");
 
     memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
@@ -323,6 +346,33 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
 }
 
 //-----------------------------------------------------------------------------
+static void isErr(int Err)
+{
+  char *s;
+  switch(Err){
+    case 0:s="The system is out of memory or resources"; break;
+    case ERROR_BAD_FORMAT:s="The .exe file is invalid"; break;
+    case ERROR_FILE_NOT_FOUND:s="The specified file was not found"; break;
+    case ERROR_PATH_NOT_FOUND:s="The specified path was not found"; break;
+    default:s="Ok"; break;
+  }
+  //dbp("Error: %d %s",Err,s);
+}
+
+//-----------------------------------------------------------------------------
+static void notepad(char *name, char *ext)
+{
+    char s[MAX_PATH]="";
+    char r[MAX_PATH];
+
+    s[0] = '\0';
+    SetExt(s, name, ext);
+    sprintf(r,"""%snotepad.bat %s""",ExePath,s);
+
+    //_execl("notepad.exe",s);
+    isErr(WinExec(r, 1/*SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/));
+}
+//-----------------------------------------------------------------------------
 // Handle a selection from the menu bar of the main window.
 //-----------------------------------------------------------------------------
 static void ProcessMenu(int code)
@@ -368,6 +418,10 @@ static void ProcessMenu(int code)
 
         case MNU_EXPORT:
             ExportDialog();
+            break;
+
+        case MNU_NOTEPAD_TXT:
+            notepad(CurrentSaveFile, "txt");
             break;
 
         case MNU_EXIT:
@@ -1228,6 +1282,9 @@ char *ExtractFilePath(char *buffer)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, INT nCmdShow)
 {
+    GetModuleFileName(hInstance,ExePath,MAX_PATH);
+    ExtractFilePath(ExePath);
+
     Instance = hInstance;
 
     MainHeap = HeapCreate(0, 1024*64, 0);

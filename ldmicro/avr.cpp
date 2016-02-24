@@ -220,26 +220,13 @@ static int EepromHighByteWaitingBit;
 // Some useful registers, unfortunately many of which are in different places
 // on different AVRs! I consider this a terrible design choice by Atmel.
 static DWORD REG_TIMSK  = -1;
-static BYTE      OCIE1A = -1;// Timer/Counter1, Output Compare A Match Interrupt Enable
+static BYTE      OCIE1A = -1; // Timer/Counter1, Output Compare A Match Interrupt Enable
 static BYTE      TOIE1  = -1; // Timer/Counter1 Overflow Interrupt Enable
 static BYTE      TOIE0  = -1; // Timer/Counter0 Overflow Interrupt Enable
-
 static DWORD REG_TIFR   = -1;
 static BYTE      OCF1A  = -1; // Timer/Counter1, Output Compare A Match Flag
 static BYTE      TOV1   = -1; // Timer/Counter1 Overflow Flag
 static BYTE      TOV0   = -1; // Timer/Counter0 Overflow Flag
-//#define REG_OCR1AH  0x4b
-//#define REG_OCR1AL  0x4a
-//#define REG_TCCR1A  0x4f
-//#define REG_TCCR1B  0x4e
-
-#define REG_SREG    0x5f
-#define REG_SPH     0x5e
-#define REG_SPL     0x5d
-#define REG_ADMUX   0x27
-#define REG_ADCSRA  0x26
-#define REG_ADCL    0x24
-#define REG_ADCH    0x25
 
 static DWORD REG_OCR1AH = -1;
 static DWORD REG_OCR1AL = -1;
@@ -249,6 +236,15 @@ static DWORD REG_TCCR1B = -1;
 #define          WGM12     3
 #define          WGM11     1
 #define          WGM10     0
+
+#define REG_SREG    0x5f
+#define REG_SPH     0x5e
+#define REG_SPL     0x5d
+#define REG_ADMUX   0x27
+#define REG_ADCSRA  0x26
+#define REG_ADCL    0x24
+#define REG_ADCH    0x25
+
 static DWORD REG_UBRRH  = -1;
 static DWORD REG_UBRRL  = -1;
 static DWORD REG_UCSRC  = -1;
@@ -2067,13 +2063,13 @@ void CompileAvr(char *outFile)
         REG_TCCR1B  = 0x4E;
 
         REG_TIMSK = 0x59;
-        REG_TIFR = 0x58;
-        REG_UCSRC   = 0x40;
+        REG_TIFR  = 0x58;
+        REG_UCSRC = 0x40;
         REG_UBRRH = 0x40;
         REG_UBRRL = 0x29;
         REG_UCSRB = 0x2a;
         REG_UCSRA = 0x2b;
-        REG_UDR = 0x2c;
+        REG_UDR   = 0x2c;
     } else
     if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega2560 ") ||
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega48 ") ||
@@ -2109,13 +2105,13 @@ void CompileAvr(char *outFile)
         REG_TCCR1B  = 0x4E;
 
         REG_TIMSK = 0x57;
-        REG_TIFR = 0x56;
+        REG_TIFR  = 0x56;
         REG_UBRRH = 0x98;
         REG_UBRRL = 0x99;
         REG_UCSRB = 0x9a;
         REG_UCSRA = 0x9b;
-        REG_UCSRC   = 0x9d;
-        REG_UDR = 0x9c;
+        REG_UDR   = 0x9c;
+        REG_UCSRC = 0x9d;
     } else oops();
     //***********************************************************************
 

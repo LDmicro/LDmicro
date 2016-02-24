@@ -391,11 +391,11 @@
 "Insert NEQ (Compare for Not Equals)\t!"
 "--[ /= ]-- NEQ 非等値比較！＝"
 
-"Insert OSF (One Shot Falling)\t&\\ "
-"--[OSF ￣|＿]-- 立ち下がり微分, 下降時パルス\t&\\"
+"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
+"--[\\OSF/\\_ ￣|＿]-- 立ち下がり微分, 下降時パルス\t&\\"
 
-"Insert OSR (One Shot Rising)\t&/"
-"--[OSR ＿|￣]-- 立ち上がり微分, 上昇時パルス\t&/"
+"Insert _/OSR/\\_ (One Shot Rising)\t&/"
+"--[_/OSR/\\_ ＿|￣]-- 立ち上がり微分, 上昇時パルス\t&/"
 
 "Insert Piecewise Linear"
 "--{PWL}-- 線形連想配列"

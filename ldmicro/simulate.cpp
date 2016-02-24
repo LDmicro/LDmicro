@@ -147,7 +147,6 @@ static void IncrementVariable(char *name)
     for(i = 0; i < VariablesCount; i++) {
         if(strcmp(Variables[i].name, name)==0) {
             (Variables[i].val)++;
-            //dbp("%s++==%d", name, Variables[i].val);
             return;
         }
     }
@@ -161,7 +160,6 @@ static void DecrementVariable(char *name)
     for(i = 0; i < VariablesCount; i++) {
         if(strcmp(Variables[i].name, name)==0) {
             (Variables[i].val)--;
-            //dbp("%s--==%d", name, Variables[i].val);
             return;
         }
     }

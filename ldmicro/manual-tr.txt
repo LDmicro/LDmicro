@@ -313,8 +313,8 @@ KOMUTLAR ve ELEMANLAR
     Bu komut bir satýrýn saðýndaki son komut olmalýdýr.
 
 
-> YÜKSELEN KENAR                 _
-                           --[OSR_/ ]--
+> YÜKSELEN KENAR                _    _
+                           --[_/ OSR/ \_]--
 
     Bu komutun çýkýþý normalde 0'dýr. Bu komutun çýkýþýnýn 1 olabilmesi
     için bir önceki çevrimde giriþinin 0 þimdiki çevrimde giriþinin 1
@@ -323,8 +323,8 @@ KOMUTLAR ve ELEMANLAR
     uygulamalarda faydalýdýr.
 
 
-> DÜÞEN KENAR                    _
-                           --[OSF \_]--
+> DÜÞEN KENAR                 _      _
+                           --[ \_OSF/ \_]--
 
     Bu komutun çýkýþý normalde 0'dýr. Bu komutun çýkýþýnýn 1 olabilmesi
     için bir önceki çevrimde giriþinin 1 þimdiki çevrimde giriþinin 0

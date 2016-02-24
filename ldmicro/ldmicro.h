@@ -52,6 +52,14 @@ typedef signed long SDWORD;
 #define MNU_EXPORT              0x05
 #define MNU_EXIT                0x06
 
+#define MNU_NOTEPAD_LD          0x0700
+#define MNU_NOTEPAD_PL          0x0701
+#define MNU_NOTEPAD_ASM         0x0702
+#define MNU_NOTEPAD_C           0x0703
+#define MNU_NOTEPAD_H           0x0704
+#define MNU_NOTEPAD_PAS         0x0705
+#define MNU_NOTEPAD_TXT         0x070F
+
 #define MNU_UNDO                0x10
 #define MNU_REDO                0x11
 #define MNU_PUSH_RUNG_UP        0x12
@@ -60,6 +68,20 @@ typedef signed long SDWORD;
 #define MNU_INSERT_RUNG_AFTER   0x15
 #define MNU_DELETE_ELEMENT      0x16
 #define MNU_DELETE_RUNG         0x17
+
+#define MNU_CAT_RUNG            0x1801
+#define MNU_COPY_RUNG_DOWN      0x1802
+#define MNU_COPY_RUNG           0x1803
+#define MNU_COPY_ELEM           0x1804
+#define MNU_PASTE_RUNG          0x1805
+#define MNU_PASTE_INTO_RUNG     0x1806
+
+#define MNU_SCROLL_DOWN         0x1901
+#define MNU_SCROLL_UP           0x1902
+#define MNU_SCROLL_PgDOWN       0x1903
+#define MNU_SCROLL_PgUP         0x1904
+#define MNU_ROLL_HOME           0x1905
+#define MNU_ROLL_END            0x1906
 
 #define MNU_INSERT_COMMENT      0x20
 #define MNU_INSERT_CONTACTS     0x21
@@ -73,13 +95,26 @@ typedef signed long SDWORD;
 #define MNU_INSERT_CTU          0x29
 #define MNU_INSERT_CTD          0x2a
 #define MNU_INSERT_CTC          0x2b
+#define MNU_INSERT_CTR          0x2b01
 #define MNU_INSERT_ADD          0x2c
 #define MNU_INSERT_SUB          0x2d
 #define MNU_INSERT_MUL          0x2e
 #define MNU_INSERT_DIV          0x2f
+#define MNU_INSERT_MOD          0x2f01
+#define MNU_INSERT_AND          0x2f02
+#define MNU_INSERT_OR           0x2f03
+#define MNU_INSERT_XOR          0x2f04
+#define MNU_INSERT_NOT          0x2f05
+#define MNU_INSERT_NEG          0x2f06
+#define MNU_INSERT_SHL          0x2f07
+#define MNU_INSERT_SHR          0x2f08
+#define MNU_INSERT_SR0          0x2f09
+#define MNU_INSERT_ROL          0x2f0a
+#define MNU_INSERT_ROR          0x2f0b
 #define MNU_INSERT_MOV          0x30
 #define MNU_INSERT_READ_ADC     0x31
 #define MNU_INSERT_SET_PWM      0x32
+#define MNU_INSERT_SET_PWM_SOFT 0x3201
 #define MNU_INSERT_UART_SEND    0x33
 #define MNU_INSERT_UART_RECV    0x34
 #define MNU_INSERT_EQU          0x35
@@ -109,6 +144,17 @@ typedef signed long SDWORD;
 #define MNU_INSERT_T_C_SFB      0x4c    // test if bit is clear in special function register
 
 #define MNU_INSERT_STRING       0x4d
+#define MNU_INSERT_OSC          0x4f01
+#define MNU_INSERT_STEPPER      0x4f02
+#define MNU_INSERT_PULSER       0x4f03
+#define MNU_INSERT_NPULSE       0x4f04
+#define MNU_INSERT_NPULSE_OFF   0x4f05
+#define MNU_INSERT_PWM_OFF      0x4f06
+#define MNU_INSERT_PWM_OFF_SOFT 0x4f07
+#define MNU_INSERT_UART_UDRE    0x4f08
+#define MNU_INSERT_QUAD_ENCOD   0x4f09
+#define MNU_INSERT_MASTER_BREAK 0x4f0a
+
 #define MNU_MCU_SETTINGS        0x50
 #define MNU_SPEC_FUNCTION       0x51
 #define MNU_PROCESSOR_0         0xa0
@@ -118,8 +164,19 @@ typedef signed long SDWORD;
 #define MNU_STOP_SIMULATION     0x62
 #define MNU_SINGLE_CYCLE        0x63
 
+#define MNU_INSERT_7SEG         0x6507
+#define MNU_INSERT_9SEG         0x6509
+#define MNU_INSERT_14SEG        0x6514
+#define MNU_INSERT_16SEG        0x6516
+
 #define MNU_COMPILE             0x70
 #define MNU_COMPILE_AS          0x71
+#define MNU_COMPILE_ANSIC       0x72
+#define MNU_COMPILE_IHEX        0x73
+#define MNU_COMPILE_ASM         0x74
+#define MNU_COMPILE_PASCAL      0x75
+#define MNU_COMPILE_ARDUINO     0x76
+#define MNU_FLASH_BAT           0x7F
 
 #define MNU_MANUAL              0x80
 #define MNU_ABOUT               0x81
@@ -163,6 +220,17 @@ typedef signed long SDWORD;
 #define ELEM_SUB                0x1a
 #define ELEM_MUL                0x1b
 #define ELEM_DIV                0x1c
+#define ELEM_MOD                0x1c01
+#define ELEM_AND                0x1c02
+#define ELEM_OR                 0x1c03
+#define ELEM_XOR                0x1c04
+#define ELEM_NOT                0x1c05
+#define ELEM_NEG                0x1c06
+#define ELEM_SHL                0x1c07
+#define ELEM_SHR                0x1c08
+#define ELEM_SR0                0x1c09
+#define ELEM_ROL                0x1c0a
+#define ELEM_ROR                0x1c0b
 #define ELEM_EQU                0x1d
 #define ELEM_NEQ                0x1e
 #define ELEM_GRT                0x1f
@@ -172,10 +240,12 @@ typedef signed long SDWORD;
 #define ELEM_CTU                0x23
 #define ELEM_CTD                0x24
 #define ELEM_CTC                0x25
+#define ELEM_CTR                0x2501
 #define ELEM_SHORT              0x26
 #define ELEM_OPEN               0x27
 #define ELEM_READ_ADC           0x28
 #define ELEM_SET_PWM            0x29
+#define ELEM_SET_PWM_SOFT       0x2901
 #define ELEM_UART_RECV          0x2a
 #define ELEM_UART_SEND          0x2b
 #define ELEM_MASTER_RELAY       0x2c
@@ -196,6 +266,21 @@ typedef signed long SDWORD;
 
 
 #define ELEM_STRING             0x3f
+#define ELEM_MASTER_BREAK       0x4000
+#define ELEM_OSC                0x4001
+#define ELEM_STEPPER            0x4002   //
+#define ELEM_PULSER             0x4003   //
+#define ELEM_NPULSE             0x4004   // N pulse generator use timer0 for generate meander
+#define ELEM_NPULSE_OFF         0x4005
+#define ELEM_PWM_OFF            0x4006
+#define ELEM_PWM_OFF_SOFT       0x4007
+#define ELEM_UART_UDRE          0x4008
+#define ELEM_QUAD_ENCOD         0x4009
+
+#define ELEM_7SEG               0x7007
+#define ELEM_9SEG               0x7009
+#define ELEM_14SEG              0x7014
+#define ELEM_16SEG              0x7016
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -208,33 +293,60 @@ typedef signed long SDWORD;
         case ELEM_CTD: \
         case ELEM_CTU: \
         case ELEM_CTC: \
+        case ELEM_CTR: \
         case ELEM_RES: \
         case ELEM_ONE_SHOT_RISING: \
         case ELEM_ONE_SHOT_FALLING: \
+        case ELEM_OSC: \
+        case ELEM_STEPPER: \
+        case ELEM_PULSER: \
+        case ELEM_NPULSE: \
+        case ELEM_NPULSE_OFF: \
+        case ELEM_PWM_OFF: \
+        case ELEM_PWM_OFF_SOFT: \
         case ELEM_RSFR: \
         case ELEM_WSFR: \
         case ELEM_SSFR: \
         case ELEM_CSFR: \
         case ELEM_TSFR: \
         case ELEM_T_C_SFR: \
+        case ELEM_7SEG: \
+        case ELEM_9SEG: \
+        case ELEM_14SEG: \
+        case ELEM_16SEG: \
         case ELEM_EQU: \
         case ELEM_NEQ: \
         case ELEM_GRT: \
         case ELEM_GEQ: \
         case ELEM_LES: \
         case ELEM_LEQ: \
+        case ELEM_SHL: \
+        case ELEM_SHR: \
+        case ELEM_SR0: \
+        case ELEM_ROL: \
+        case ELEM_ROR: \
+        case ELEM_AND: \
+        case ELEM_OR: \
+        case ELEM_XOR: \
+        case ELEM_NOT: \
+        case ELEM_NEG: \
         case ELEM_ADD: \
         case ELEM_SUB: \
         case ELEM_MUL: \
         case ELEM_DIV: \
+        case ELEM_MOD: \
         case ELEM_MOVE: \
         case ELEM_SHORT: \
         case ELEM_OPEN: \
         case ELEM_READ_ADC: \
         case ELEM_SET_PWM: \
+        case ELEM_SET_PWM_SOFT: \
+        case ELEM_QUAD_ENCOD: \
+        case ELEM_UART_UDRE: \
         case ELEM_UART_SEND: \
         case ELEM_UART_RECV: \
         case ELEM_MASTER_RELAY: \
+        case ELEM_MASTER_BREAK: \
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
@@ -246,6 +358,7 @@ typedef signed long SDWORD;
 #define MAX_COMMENT_LEN             384
 #define MAX_LOOK_UP_TABLE_LEN        64
 #define MAX_SHIFT_REGISTER_STAGES   256
+#define MAX_STRING_LEN              256
 
 typedef struct ElemSubckParallelTag ElemSubcktParallel;
 
@@ -267,7 +380,7 @@ typedef struct ElemCoilTag {
 
 typedef struct ElemTimeTag {
     char    name[MAX_NAME_LEN];
-    int     delay;
+    int     delay; // us
 } ElemTimer;
 
 typedef struct ElemResetTag {
@@ -411,21 +524,22 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_COUNTER         11
 #define IO_TYPE_GENERAL         12
 */
-/*need for sort in IOlist*/
+/*More convenient sort order in IOlist*/
 #define IO_TYPE_GENERAL         1
 #define IO_TYPE_PERSIST         2
-#define IO_TYPE_RTO             3
-#define IO_TYPE_COUNTER         4
-#define IO_TYPE_DIG_INPUT       5
+#define IO_TYPE_STRING          3
+#define IO_TYPE_RTO             4
+#define IO_TYPE_COUNTER         5
 #define IO_TYPE_INT_INPUT       6
-#define IO_TYPE_DIG_OUTPUT      7
-#define IO_TYPE_READ_ADC        8
-#define IO_TYPE_UART_TX         9
-#define IO_TYPE_UART_RX         10
-#define IO_TYPE_PWM_OUTPUT      11
-#define IO_TYPE_INTERNAL_RELAY  12
-#define IO_TYPE_TON             13
-#define IO_TYPE_TOF             14
+#define IO_TYPE_DIG_INPUT       7
+#define IO_TYPE_DIG_OUTPUT      8
+#define IO_TYPE_READ_ADC        9
+#define IO_TYPE_UART_TX         10
+#define IO_TYPE_UART_RX         11
+#define IO_TYPE_PWM_OUTPUT      12
+#define IO_TYPE_INTERNAL_RELAY  13
+#define IO_TYPE_TON             14
+#define IO_TYPE_TOF             15
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;

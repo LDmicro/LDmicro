@@ -394,11 +394,11 @@
 "Insert NEQ (Compare for Not Equals)\t!"
 "Inserire NEQ (Compara per Diverso)\t!"
 
-"Insert OSF (One Shot Falling)\t&\\ "
-"Inserire PULSDW (Fronte di discesa)\t&\\"
+"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
+"Inserire \\_PULSDW/\\_ (Fronte di discesa)\t&\\"
 
-"Insert OSR (One Shot Rising)\t&/"
-"Inserire PULSUP (Fronte di salita)\t&/"
+"Insert _/OSR/\\_ (One Shot Rising)\t&/"
+"Inserire _/PULSUP/\\_ (Fronte di salita)\t&/"
 
 "Insert Piecewise Linear"
 "Inserire Tavola di Elementi Lineari"

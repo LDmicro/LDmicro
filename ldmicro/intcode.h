@@ -34,19 +34,42 @@
 #define INT_SET_VARIABLE_TO_LITERAL              4
 #define INT_SET_VARIABLE_TO_VARIABLE             5   
 #define INT_INCREMENT_VARIABLE                   6
+#define INT_DECREMENT_VARIABLE                   6001
 #define INT_SET_VARIABLE_ADD                     7
 #define INT_SET_VARIABLE_SUBTRACT                8
 #define INT_SET_VARIABLE_MULTIPLY                9
 #define INT_SET_VARIABLE_DIVIDE                 10
+#define INT_SET_VARIABLE_MOD                    1001
+
+#define INT_COPY_VAR_BIT_TO_VAR_BIT             1002
+#define INT_FLASH_INIT                          1003
+#define INT_FLASH_READ                          1004
+#define INT_RAM_READ                            1005
 
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12
 #define INT_UART_SEND                           13
 #define INT_UART_RECV                           14
+#define INT_UART_UDRE                           1401
 #define INT_EEPROM_BUSY_CHECK                   15
+#define INT_EEPROM_INIT                         1601
 #define INT_EEPROM_READ                         16
 #define INT_EEPROM_WRITE                        17
-#define INT_WRITE_STRING                        21
+#define INT_EEPROM_WRITE_BYTE                   18
+
+#define INT_WRITE_STRING                        21 // sprintf()
+#define INT_PRINT_STRING                        22 // printf() out to console 
+
+#define INT_SET_VARIABLE_AND                    30
+#define INT_SET_VARIABLE_OR                     31
+#define INT_SET_VARIABLE_XOR                    32
+#define INT_SET_VARIABLE_NOT                    33
+#define INT_SET_VARIABLE_NEG                    34 // a = -a
+#define INT_SET_VARIABLE_SHL                    35
+#define INT_SET_VARIABLE_SHR                    36
+#define INT_SET_VARIABLE_SR0                    361
+#define INT_SET_VARIABLE_ROL                    37
+#define INT_SET_VARIABLE_ROR                    38
 
 //#define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_GROUP_BEGIN                      40
@@ -102,6 +125,15 @@
 #define INT_TEST_C_SFR_VARIABLE_L               82
 // Special function
 
+#define INT_OFF_PWM                            2001
+#define INT_SET_NPULSE                         2002
+#define INT_OFF_NPULSE                         2003
+#define INT_QUAD_ENCOD                         2004
+
+#define INT_AllocKnownAddr                     2020
+#define INT_AllocFwdAddr                       2021
+#define INT_FwdAddrIsNow                       2022
+#define INT_GotoRung                           2023
 
 #define INT_ELSE                                60 + 100
 #define INT_END_IF                              61 + 100
@@ -131,3 +163,22 @@
 
 
 #endif
+
+/*                               exclusive  Shift   Shift
+Language    NOT     AND     OR      OR      left    right
+C/‘++,
+Java,
+C#, Ruby    ~       &       |       ^       <<      >>
+
+Pascal      not     and     or      xor     shl     shr
+
+PL/I        INOT    IAND    IOR     IEOR
+
+The bitwise complement is equal to the two's complement
+of the value minus one. If two's complement arithmetic is used, then
+    NOT x = -x - 1.
+
+http://en.wikipedia.org/wiki/Bitwise_operation
+http://en.wikipedia.org/wiki/Two%27s_complement
+*/
+

@@ -441,8 +441,8 @@ werden. Wenn der Eingang ‘wahr’ ist, so wird der Timer oder Zähler
 rückgesetzt; wenn der Eingang ‘unwahr’ ist, so erfolgt keine Aktion.
 Diese Anweisung muss ganz rechts im Netzwerk stehen.
 
-                                               _
-> ONE-SHOT RISING, STEIGENDE FLANKE    --[OSR_/  ]--
+                                            _    _
+> ONE-SHOT RISING, STEIGENDE FLANKE    --[_/ OSR/ \_]--
 
 Diese Anweisung wird normalerweise ‘unwahr’ ausgewiesen. Wenn der Eingang
 der Anweisung während des momentanen Zyklus ‘wahr’ ist und während des
@@ -451,8 +451,8 @@ Anweisung bei jeder steigenden Flanke einen Impuls für einen Zyklus.
 Diese Anweisung ist hilfreich, wenn Sie Ereignisse an der steigenden
 Flanke eines Signals auslösen wollen.
 
-                                             _
-> ONE-SHOT FALLING, FALLENDE FLANKE    --[OSF \_  ]--
+                                          _      _
+> ONE-SHOT FALLING, FALLENDE FLANKE    --[ \_OSF/ \_]--
 
 Diese Anweisung wird normalerweise ‘unwahr’ ausgewiesen. Wenn der Eingang
 der Anweisung während des momentanen Zyklus ‘unwahr’ ist und während des

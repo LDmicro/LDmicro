@@ -625,7 +625,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_IF_BIT_CLEAR, storeName);
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 1);
                     Op(INT_SET_VARIABLE_SUBTRACT, l->d.counter.name,
-                        l->d.counter.name, "$scratch", 0, 0);
+                        l->d.counter.name, "$scratch", 0);
                 Op(INT_END_IF);
             Op(INT_END_IF);
             Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
@@ -1081,8 +1081,13 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
             // This is a table of characters to transmit, as a function of the
             // sequencer position (though we might have a hole in the middle
-            // for the variable output)
-            char outputChars[MAX_LOOK_UP_TABLE_LEN];
+            // for the variable output); positive is an unsigned character,
+            // negative is special flag values
+            enum {
+                OUTPUT_DIGIT = -1,
+                OUTPUT_SIGN = -2,
+            };
+            int outputChars[MAX_LOOK_UP_TABLE_LEN];
 
             BOOL mustDoMinus = FALSE;
 
@@ -1107,7 +1112,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                     p++;
                     if(*p == '-') {
                         mustDoMinus = TRUE;
-                        outputChars[steps++] = 1;
+                        outputChars[steps++] = OUTPUT_SIGN;
                         p++;
                     }
                     if(!isdigit(*p) || (*p - '0') > 5 || *p == '0') {
@@ -1118,7 +1123,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                     digits = (*p - '0');
                     int i;
                     for(i = 0; i < digits; i++) {
-                        outputChars[steps++] = 0;
+                        outputChars[steps++] = OUTPUT_DIGIT;
                     }
                 } else if(*p == '\\') {
                     p++;
@@ -1150,7 +1155,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                             break;
                     }
                 } else {
-                    outputChars[steps++] = *p;
+                    outputChars[steps++] = (unsigned char)*p;
                 }
                 if(*p) p++;
             }
@@ -1203,7 +1208,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             int i;
             int digit = 0;
             for(i = 0; i < steps; i++) {
-                if(outputChars[i] == 0) {
+                if(outputChars[i] == OUTPUT_DIGIT) {
                     // Note gross hack to work around limit of range for
                     // AVR brne op, which is +/- 64 instructions.
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
@@ -1253,7 +1258,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                     Op(INT_END_IF);
 
                     digit++;
-                } else if(outputChars[i] == 1) {
+                } else if(outputChars[i] == OUTPUT_SIGN) {
                     // do the minus; ugliness to get around the BRNE jump
                     // size limit, though
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);

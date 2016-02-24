@@ -782,11 +782,11 @@ cmp:
         case ELEM_ONE_SHOT_FALLING: {
             char *s1, *s2;
             if(which == ELEM_ONE_SHOT_RISING) {
-                s1 = "      _ ";
-                s2 = "[\x01OSR\x02_/ ]";
+                s1 = "    _    _    ";
+                s2 = "[_/ \x01OSR\x02/ \\_]";
             } else if(which == ELEM_ONE_SHOT_FALLING) {
-                s1 = "    _   ";
-                s2 = "[\x01OSF\x02 \\_]";
+                s1 = "  _      _    ";
+                s2 = "[ \\_\x01OSF\x02/ \\_]";
             } else oops();
 
             CenterWithSpaces(*cx, *cy, s1, poweredAfter, FALSE);

@@ -388,8 +388,8 @@ INSTRUCTIONS REFERENCE
     be the rightmost instruction in its rung.
 
 
-> ONE-SHOT RISING                  _
-                           --[OSR_/ ]--
+> ONE-SHOT RISING               _    _
+                           --[_/ OSR/ \_]--
 
     This instruction normally outputs false. If the instruction's input
     is true during this scan and it was false during the previous scan
@@ -398,8 +398,8 @@ INSTRUCTIONS REFERENCE
     useful if you want to trigger events off the rising edge of a signal.
 
 
-> ONE-SHOT FALLING               _
-                           --[OSF \_]--
+> ONE-SHOT FALLING            _      _
+                           --[ \_OSF/ \_]--
 
     This instruction normally outputs false. If the instruction's input
     is false during this scan and it was true during the previous scan
@@ -641,7 +641,7 @@ INSTRUCTIONS REFERENCE
     The ladder logic runtime consumes one timer to measure the cycle
     time. That means that PWM is only available on microcontrollers
     with at least two suitable timers. PWM uses pin CCP2 (not CCP1)
-    on PIC16 chips and OC2 (not OC1A) on AVRs.
+    on PIC16 chips and OC1B (not OC1A) on AVRs.
 
 
 > MAKE PERSISTENT            saved_var
