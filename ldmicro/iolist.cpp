@@ -34,7 +34,7 @@
 
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list
-#define MAX_IO_SEEN_PREVIOUSLY 512
+#define MAX_IO_SEEN_PREVIOUSLY 1024
 static struct {
     char    name[MAX_NAME_LEN];
     int     type;
