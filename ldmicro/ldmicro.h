@@ -262,9 +262,6 @@ typedef signed long SDWORD;
 #define ELEM_TSFR               0x36    // Element test if set bit in SFR
 #define ELEM_T_C_SFR            0x37    // Element test if clear bit in SFR
 
-
-
-
 #define ELEM_STRING             0x3f
 #define ELEM_MASTER_BREAK       0x4000
 #define ELEM_OSC                0x4001
@@ -545,19 +542,19 @@ typedef struct PlcProgramSingleIoTag {
     int         pin;
 } PlcProgramSingleIo;
 
-#define MAX_IO  512
+#define MAX_IO 1024
 typedef struct PlcProgramTag {
     struct {
         PlcProgramSingleIo  assignment[MAX_IO];
         int                 count;
     }           io;
     McuIoInfo  *mcu;
-    char        LDversion[512];
     int         cycleTime; //us
     int         mcuClock;  //Hz
     int         baudRate;  //Hz
+    char        LDversion[512];
 
-#define MAX_RUNGS 1000
+#define MAX_RUNGS 9999
     ElemSubcktSeries *rungs[MAX_RUNGS];
     BOOL              rungPowered[MAX_RUNGS];
     int               numRungs;
