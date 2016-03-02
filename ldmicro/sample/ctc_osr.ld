@@ -1,0 +1,26 @@
+LDmicro0.1
+CYCLE=1000
+CRYSTAL=4000000
+BAUD=2400
+
+IO LIST
+END
+
+PROGRAM
+RUNG
+    CONTACTS Rnew 0
+    PARALLEL
+        TON Tnew 1000000
+        SERIES
+            OPEN
+            SHORT
+        END
+    END
+    COIL Rnew 1 0 0
+END
+RUNG
+    CONTACTS Rnew 0
+    CTC Css 59
+    CTC Cmm 59
+    CTC Chh 23
+END

@@ -368,11 +368,11 @@ void AddCmp(int which)
 }
 void AddCounter(int which)
 {
-    if(which == ELEM_CTC) {
-        if(!CanInsertEnd) return;
-    } else {
+//  if(which == ELEM_CTC) {
+//      if(!CanInsertEnd) return;
+//  } else {
         if(!CanInsertOther) return;
-    }
+//  }
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.counter.name, "Cnew");
