@@ -87,6 +87,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_RTO:
         case ELEM_CTU:
         case ELEM_CTD:
+        case ELEM_CTC: // as Leaf
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_EQU:
@@ -129,7 +130,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
             len = (len + 7 + (POS_WIDTH-1)) / POS_WIDTH;
             return max(ColsAvailable, len);
         }
-        case ELEM_CTC:
+//      case ELEM_CTC: // as End
         case ELEM_RES:
         case ELEM_COIL:
         case ELEM_MOVE:
@@ -422,6 +423,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
     }
 
     switch(which) {
+        /* //moved to DrawLeaf
         case ELEM_CTC: {
             char buf[256];
             ElemCounter *c = &leaf->d.counter;
@@ -431,6 +433,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
             break;
         }
+        */
         case ELEM_RES: {
             ElemReset *r = &leaf->d.reset;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
@@ -793,6 +796,17 @@ cmp:
             CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
+            break;
+        }
+        case ELEM_CTC: { // moved from DrawEndOfLine
+            char buf[256];
+            ElemCounter *c = &leaf->d.counter;
+            sprintf(buf, "{\x01""CTC\x02 0:%d}", c->max);
+
+            CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
+
+            *cx += POS_WIDTH; // added
             break;
         }
         case ELEM_CTU:

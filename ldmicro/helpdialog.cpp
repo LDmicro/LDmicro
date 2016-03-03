@@ -65,13 +65,16 @@ static char *AboutText[] = {
 "    http://cq.cx/ladder.pl",
 "",
 "Copyright 2005-2016 Jonathan Westhues",
-"Email: user jwesthues, at host cq.cx",
+"    Email: user jwesthues, at host cq.cx",
 "",
 "Netzer extension by Sven Schlender (c) 2012",
+"    http://www.mobacon.de/wiki/doku.php/en/netzer/index",
 "",
 "Unofficial support:",
-"   Repository: https://github.com/LDmicro/LDmicro",
-"   Email:      LDmicro.GitHub@gmail.com",
+"    Repository: https://github.com/LDmicro/LDmicro",
+"    Email:      LDmicro.GitHub@gmail.com",
+"",
+"Release 3.1.0, built " __TIME__ " " __DATE__ ".",
 "",
 NULL
 };
@@ -299,7 +302,7 @@ void ShowHelpDialog(BOOL about)
     HelpDialog[a] = CreateWindowEx(0, "LDmicroHelp", s,
         WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
         WS_SIZEBOX,
-        100, 100, 650 +50, (about ? 20 : 300)+ 300+10*FONT_HEIGHT, NULL, NULL, Instance, NULL);
+        100, 100, 650 +50, (about ? 80 : 300)+ 300+10*FONT_HEIGHT, NULL, NULL, Instance, NULL);
     MakeControls(a);
 
     ShowWindow(HelpDialog[a], TRUE);

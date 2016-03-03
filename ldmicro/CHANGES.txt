@@ -1,3 +1,14 @@
+== Release 3.1.0
+    * Move an element CTC count from EndOFRung to LeafOfRung.
+      After the counter overflow CTC generate OSR at its output.
+      Format of LD file will not changed.
+      Not need changes for old LD program 
+      in this LDmicro realese (backward-compatible).
+      Demo ctc_osr.ld added to SAMPLES directory.
+    
+    TODO: It is necessary to reflect the new features of CTC 
+          into manual.txt by native English speakers.
+
 == Release 3.0.1
                                                             this is
                                                             input
@@ -17,6 +28,8 @@
 
     * Changed ANSI_CHARSET to DEFAULT_CHARSET. This will correctly display
       the national characters in the comments on the screen.
+
+    * Increase MAX_IO from 512 to 1024.
 
 == Release 3.0.0
     * Unofficial support:

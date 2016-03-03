@@ -643,17 +643,22 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             GenSymOneShot(storeName);
 
             Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_CLEAR_BIT, stateInOut);
                 Op(INT_IF_BIT_CLEAR, storeName);
+                    Op(INT_SET_BIT, storeName); // This line1
                     Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
                     Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name,
                         l->d.counter.max+1);
                     Op(INT_ELSE);
                         Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name,
                             (SWORD)0);
+                        Op(INT_SET_BIT, stateInOut); // overload impulse
                     Op(INT_END_IF);
                 Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, storeName); // This line2
             Op(INT_END_IF);
-            Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
+//          Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut); // This line3 equivalently line1 + line2
             break;
         }
         // Special Function
@@ -803,17 +808,35 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             break;
         }
         case ELEM_ONE_SHOT_RISING: {
+            /*
+                     ___
+            INPUT __/
+                     _
+            OUTPUT__/ \_
+
+                    | |
+                     Tcycle
+            */
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName);
 
             Op(INT_COPY_BIT_TO_BIT, "$scratch", stateInOut);
             Op(INT_IF_BIT_SET, storeName);
-            Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             Op(INT_COPY_BIT_TO_BIT, storeName, "$scratch");
             break;
         }
         case ELEM_ONE_SHOT_FALLING: {
+            /*
+                  __
+            INPUT   \___
+                     _
+            OUTPUT__/ \_
+
+                    | |
+                     Tcycle
+            */
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName);
 

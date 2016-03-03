@@ -714,6 +714,21 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 1;
         }
 
+        #define VK_ALT VK_MENU
+        case WM_SYSKEYDOWN: {
+            switch(wParam) {
+                case VK_BACK:
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        UndoUndo();
+                        return 1;
+                    }
+                break;
+
+                default:
+                    return DefWindowProc(hwnd, msg, wParam, lParam);
+            }
+        }
+
         case WM_KEYDOWN: {
             if(wParam == 'M') {
                 if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {

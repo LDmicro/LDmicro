@@ -112,6 +112,9 @@ typedef signed long SDWORD;
 #define MNU_INSERT_ROL          0x2f0a
 #define MNU_INSERT_ROR          0x2f0b
 #define MNU_INSERT_MOV          0x30
+#define MNU_INSERT_BIN2BCD      0x3001
+#define MNU_INSERT_BCD2BIN      0x3002
+#define MNU_INSERT_SWAP         0x3003
 #define MNU_INSERT_READ_ADC     0x31
 #define MNU_INSERT_SET_PWM      0x32
 #define MNU_INSERT_SET_PWM_SOFT 0x3201
@@ -216,6 +219,9 @@ typedef signed long SDWORD;
 #define ELEM_ONE_SHOT_RISING    0x16
 #define ELEM_ONE_SHOT_FALLING   0x17
 #define ELEM_MOVE               0x18
+#define ELEM_BIN2BCD            0x1801
+#define ELEM_BCD2BIN            0x1802
+#define ELEM_SWAP               0x1803
 #define ELEM_ADD                0x19
 #define ELEM_SUB                0x1a
 #define ELEM_MUL                0x1b
@@ -332,6 +338,9 @@ typedef signed long SDWORD;
         case ELEM_MUL: \
         case ELEM_DIV: \
         case ELEM_MOD: \
+        case ELEM_BIN2BCD: \
+        case ELEM_BCD2BIN: \
+        case ELEM_SWAP: \
         case ELEM_MOVE: \
         case ELEM_SHORT: \
         case ELEM_OPEN: \
