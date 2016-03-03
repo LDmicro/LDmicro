@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -123,6 +123,30 @@ void SelectElement(int gx, int gy, int state)
 }
 
 //-----------------------------------------------------------------------------
+// Returnn TRUE if this instruction(element) must be the
+// rightmost instruction in its rung.
+//-----------------------------------------------------------------------------
+BOOL EndOfRungElem(int Which)
+{
+    if( Which == ELEM_COIL ||
+        Which == ELEM_RES ||
+        Which == ELEM_ADD ||
+        Which == ELEM_SUB ||
+        Which == ELEM_MUL ||
+        Which == ELEM_DIV ||
+        Which == ELEM_READ_ADC ||
+        Which == ELEM_SET_PWM ||
+        Which == ELEM_MASTER_RELAY ||
+        Which == ELEM_SHIFT_REGISTER ||
+        Which == ELEM_LOOK_UP_TABLE ||
+        Which == ELEM_PIECEWISE_LINEAR ||
+        Which == ELEM_PERSIST ||
+        Which == ELEM_MOVE)
+      return TRUE;
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
 // Must be called every time the cursor moves or the cursor stays the same
 // but the circuit topology changes under it. Determines what we are allowed
 // to do: where coils can be added, etc.
@@ -150,22 +174,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
     CanInsertEnd = FALSE;
     CanInsertOther = TRUE;
 
-    if(Selected && 
-        (SelectedWhich == ELEM_COIL ||
-         SelectedWhich == ELEM_RES ||
-         SelectedWhich == ELEM_ADD ||
-         SelectedWhich == ELEM_SUB ||
-         SelectedWhich == ELEM_MUL ||
-         SelectedWhich == ELEM_DIV ||
-         SelectedWhich == ELEM_CTC ||
-         SelectedWhich == ELEM_READ_ADC ||
-         SelectedWhich == ELEM_SET_PWM ||
-         SelectedWhich == ELEM_MASTER_RELAY ||
-         SelectedWhich == ELEM_SHIFT_REGISTER ||
-         SelectedWhich == ELEM_LOOK_UP_TABLE ||
-         SelectedWhich == ELEM_PIECEWISE_LINEAR ||
-         SelectedWhich == ELEM_PERSIST ||
-         SelectedWhich == ELEM_MOVE))
+    if(Selected && EndOfRungElem(SelectedWhich))
     {
         if(SelectedWhich == ELEM_COIL) {
             canNegate = TRUE;
@@ -184,7 +193,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
             CanInsertOther = FALSE;
         }
     } else if(Selected) {
-        if(Selected->selectedState == SELECTED_RIGHT || 
+        if(Selected->selectedState == SELECTED_RIGHT ||
             SelectedWhich == ELEM_PLACEHOLDER)
         {
             CanInsertEnd = ItemIsLastInCircuit(Selected);
@@ -256,7 +265,7 @@ BOOL MoveCursorTopLeft(void)
     // cursor in a position that would force us to scroll to put it in to
     // view.)
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-        for(j = ScrollYOffset; 
+        for(j = ScrollYOffset;
             j < DISPLAY_MATRIX_Y_SIZE && j < (ScrollYOffset+16); j++)
         {
             if(VALID_LEAF(DisplayMatrix[i][j])) {
@@ -305,7 +314,7 @@ void MoveCursorKeyboard(int keyCode)
             int i, j;
             if(FindSelected(&i, &j)) {
                 i--;
-                while(i >= 0 && (!VALID_LEAF(DisplayMatrix[i][j]) || 
+                while(i >= 0 && (!VALID_LEAF(DisplayMatrix[i][j]) ||
                     (DisplayMatrix[i][j] == Selected)))
                 {
                     i--;
@@ -328,7 +337,7 @@ void MoveCursorKeyboard(int keyCode)
             int i, j;
             if(FindSelected(&i, &j)) {
                 i++;
-                while(i < DISPLAY_MATRIX_X_SIZE && 
+                while(i < DISPLAY_MATRIX_X_SIZE &&
                     !VALID_LEAF(DisplayMatrix[i][j]))
                 {
                     i++;
@@ -373,7 +382,7 @@ void MoveCursorKeyboard(int keyCode)
             int i, j;
             if(FindSelected(&i, &j)) {
                 j++;
-                while(j < DISPLAY_MATRIX_Y_SIZE && 
+                while(j < DISPLAY_MATRIX_Y_SIZE &&
                     !VALID_LEAF(DisplayMatrix[i][j]))
                 {
                     j++;
@@ -429,7 +438,7 @@ void EditSelectedElement(void)
                 Selected->d.counter.name);
             break;
 
-		// Special function
+        // Special function
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
@@ -439,7 +448,7 @@ void EditSelectedElement(void)
             ShowSFRDialog(SelectedWhich, Selected->d.cmp.op1,
                 Selected->d.cmp.op2);
             break;
-		// Special function
+        // Special function
 
         case ELEM_EQU:
         case ELEM_NEQ:
@@ -455,7 +464,7 @@ void EditSelectedElement(void)
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
-            ShowMathDialog(SelectedWhich, Selected->d.math.dest, 
+            ShowMathDialog(SelectedWhich, Selected->d.math.dest,
                 Selected->d.math.op1, Selected->d.math.op2);
             break;
 
@@ -533,7 +542,7 @@ void EditElementMouseDoubleclick(int x, int y)
             char *name = l->d.contacts.name;
             if(name[0] == 'X') {
                 SimulationToggleContact(name);
-            } 
+            }
         } else if(l && DisplayMatrixWhich[gx][gy] == ELEM_READ_ADC) {
             ShowAnalogSliderPopup(l->d.readAdc.name);
         }
@@ -588,7 +597,7 @@ void MoveCursorMouseClick(int x, int y)
                 dleft += POS_WIDTH*FONT_WIDTH;
                 extra = 2;
             }
-            if((gx < (DISPLAY_MATRIX_X_SIZE-1)) && 
+            if((gx < (DISPLAY_MATRIX_X_SIZE-1)) &&
                 (DisplayMatrix[gx+1][gy] == DisplayMatrix[gx][gy]))
             {
                 dright += POS_WIDTH*FONT_WIDTH;
