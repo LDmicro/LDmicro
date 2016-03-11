@@ -2,7 +2,7 @@
 
 $t = '';
 
-for $file (sort <lang-*.txt>) {
+for $file (sort <lang-??.txt>) {
     open(IN, $file);
 
     $name = $file;
@@ -10,7 +10,7 @@ for $file (sort <lang-*.txt>) {
     $name =~ s#(.)#uc($1)#e;
     $name =~ s#\.txt##;
     $nameUc = uc($name);
-    
+
     print "#ifdef LDLANG_$nameUc\n";
     print "static LangTable Lang${name}Table[] = {\n";
 
@@ -33,7 +33,7 @@ for $file (sort <lang-*.txt>) {
         } else {
             $translated = $_;
 
-            print "    { $toTranslate, $translated },\n";
+            print "{$toTranslate,$translated},\n";
             $engl = 1;
         }
     }

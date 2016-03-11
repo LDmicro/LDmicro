@@ -1155,6 +1155,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                         case 'n': outputChars[steps++] = '\n'; break;
                         case 'b': outputChars[steps++] = '\b'; break;
                         case 'f': outputChars[steps++] = '\f'; break;
+                        case 't': outputChars[steps++] = '\t'; break;
+                        case 'v': outputChars[steps++] = '\v'; break;
+                        case 'a': outputChars[steps++] = '\a'; break;
                         case '\\': outputChars[steps++] = '\\'; break;
                         case 'x': {
                             int h, l;

@@ -998,24 +998,70 @@ void DestroyUartSimulationWindow(void)
 //-----------------------------------------------------------------------------
 // Append a received character to the terminal buffer.
 //-----------------------------------------------------------------------------
+static SDWORD bPrev = 0;
 static void AppendToUartSimulationTextControl(BYTE b)
 {
-    char append[5];
+    char append[50];
 
     if((isalnum(b) || strchr("[]{};':\",.<>/?`~ !@#$%^&*()-=_+|", b) ||
-        b == '\r' || b == '\n') && b != '\0')
+           b == '\r' || b == '\n' || b == '\b' || b == '\f' || b == '\t' || b == '\v' || b == '\a') && b != '\0')
     {
-        append[0] = b;
+          append[0] = (char)b;
         append[1] = '\0';
     } else {
         sprintf(append, "\\x%02x", b);
     }
 
 #define MAX_SCROLLBACK 256
-    char buf[MAX_SCROLLBACK];
+    char buf[MAX_SCROLLBACK] = "";
 
-    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
+    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)(sizeof(buf)-1),
         (LPARAM)buf);
+
+    // vvv // This patch only for simulation mode and for WC_EDIT control.
+    // Compared with Windows HyperTerminal and Putty.
+    if(b == '\f') {
+        // form feed as erase buf
+        buf[0] = '\0';
+        append[0] = '\0';
+    } else if(b == '\v') {
+        // vertical tab VT as LF in HyperTerminal and Putty,
+        // but in simulation window "\r\n" more like as HyperTerminal and Putty.
+        strcpy(append, "\r\n");
+    } else if(b == '\b') {
+        if(strlen(buf)>0)  {
+            // backspace delete last char
+            buf[strlen(buf)-1] = '\0';
+            append[0] = '\0';
+        }
+    } else if(b == '\r') {
+        if(strlen(buf)>0) {
+          if(buf[strlen(buf)-1] == '\n') {
+              // LF CR -> CR LF
+              // "\n\r" -> "\r\n"
+              buf[strlen(buf)-1] = '\0';
+              strcpy(append, "\r\n");
+              b = '\0';
+          } else {
+              append[0] = '\0'; // Now, at current cycle, '\r' is suppressed.
+          }
+        }
+    }
+
+    char *s;
+
+    if(bPrev == '\r') {  // Now, at the next cycle, '\r' is activated.
+      if(strlen(buf)>0) {
+        if(b == '\n') {
+            strcpy(append, "\r\n");
+            b = '\0';
+        } else if(s=strrchr(buf,'\n')) {
+            s[1] = '\0';
+        }
+      }
+    }
+    bPrev = b;
+    // ^^^ // This patch only for simulation mode and for WC_EDIT control.
 
     int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
     if(overBy > 0) {

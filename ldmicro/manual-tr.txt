@@ -605,6 +605,9 @@ KOMUTLAR ve ELEMANLAR
         * \n   -- yeni satýr
         * \f   -- kaðýdý ilerlet (formfeed)
         * \b   -- bir karakter geri gel (backspace)
+        * \t   -- horizontal tab
+        * \v   -- vertical tab
+        * \a   -- alert
         * \xAB -- ASCII karakter kodu 0xAB (hex)
 
     Bu komutun çýkýþý bilgi gönderiyorken doðru diðer durumlarda yanlýþ olur.

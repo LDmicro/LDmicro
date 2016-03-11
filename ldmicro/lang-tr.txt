@@ -79,11 +79,14 @@
 "&Settings"
 "&Ayarlar"
 
-"&Special Function"
-"&Special Function"
+"&Special Function for AVR"
+"&Special Function for AVR"
 
 "&Undo\tCtrl+Z or Alt+Backspace"
-"Deðiþikliði Geri Al\tCtrl+Z or Alt+Backspace"
+"&Undo\tCtrl+Z or Alt+Backspace"
+
+"&Undo\tCtrl+Z"
+"Deðiþikliði Geri Al\tCtrl+Z"
 
 "'Closed' if:"
 "'Kapalý' Eðer:"
@@ -148,11 +151,17 @@
 "Bad use of quotes: <%s>"
 "Týrnaklar yanlýþ kullanýlmýþ: <%s>"
 
+"Bitwise"
+"Bitwise"
+
 "Can only assign pin number to input/output pins (Xname or Yname or Aname)."
 "Sadece giriþ/çýkýþ uçlarý için bacak tanýmlamasý yapýlabilir. (XName veya YName veya AName)."
 
 "Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code."
 "ANSI C hedef için G/Ç tanýmlamasý yapýlamadý. Dosyayý derleyerek oluþturulan kaynak kodundaki yorumlarý inceleyiniz."
+
+"Can't specify I/O assignment for Netzer!"
+"Can't specify I/O assignment for Netzer!"
 
 "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."
 "Hedef için G/Ç tanýmý yapýlamadý. Derleyicinin kullaným kitapçýðýný inceleyiniz."
@@ -178,11 +187,17 @@
 "Compile &As..."
 "Farklý Derle..."
 
+"Compile ANSIC"
+"Compile ANSIC"
+
 "Compile Successful"
 "Derleme Baþarýlý"
 
 "Compile To"
 "Derlenecek Yer"
+
+"Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."
+"Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."
 
 "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
 "Derleme baþarýyla tamamlandý. C kaynak kodu '%s' dosyasýna yazýldý.\r\n\r\nBu dosya tam bir C dosyasý deðildir. G/Ç rutinlerini kendiniz saðlamalýsýnýz. Dosyayý incelemeniz faydalý olacaktýr."
@@ -229,6 +244,12 @@
 "Counter"
 "Sayýcý"
 
+"Crystal Frequency (MHz):"
+"Kristal Frekansý (MHz):"
+
+"Cycle Time (ms):"
+"Çevrim Süresi (ms):"
+
 "Cycle time too fast; increase cycle time, or use faster crystal."
 "Çevrim süresi çok kýsa. Süreyi yada kristal frekansýný artýrýnýz."
 
@@ -247,8 +268,17 @@
 "Delay too long; maximum is 2**31 us."
 "Gecikme çok fazla. En fazla 2**31 us olabilir."
 
+"Dest variable of write string instruction must be located at IO register."
+"Dest variable of write string instruction must be located at IO register."
+
+"Dest:"
+"Dest:"
+
 "Destination:"
 "Hedef:"
+
+"Display"
+"Display"
 
 "Divide"
 "Böl"
@@ -282,6 +312,9 @@
 
 "Formatted String Over UART"
 "UART Üzerinden Biçimlendirilmiþ Karakter Dizisi"
+
+"Formatted String"
+"Formatted String"
 
 "Frequency (Hz):"
 "Frekans (Hz):"
@@ -329,10 +362,10 @@
 "&UART'dan Gönderme ekle"
 
 "Insert -+        +- Open-Circuit"
-"Açýk -+        +- Devre ekle"
+"Insert -+        +- Open-Circuit"
 
 "Insert -+------+- Short-Circuit"
-"Kapalý -+------+- Devre ekle"
+"Insert -+------+- Short-Circuit"
 
 "Insert A/D Converter Read\tP"
 "A/D Çeviriciden Oku ekle\tP"
@@ -388,17 +421,26 @@
 "Insert Make Persistent"
 "EPROM'da Sakla ekle"
 
+"Insert Master Control Break"
+"Insert Master Control Break"
+
 "Insert Master Control Relay"
 "Ana Kontrol Rölesi ekle"
 
+"Insert NEQ (Compare for Not Equals)"
+"NEQ ekle (Farklýlýk Kontrolü)"
+
 "Insert NEQ (Compare for Not Equals)\t!"
-"NEQ ekle (Farklýlýk Kontrolü)\t!"
+"Insert NEQ (Compare for Not Equals)\t!"
 
-"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
-"\\_OSF/\\_ ekle (Düþen Kenar)\t&\\"
+"Insert OSF (One Shot Falling)\t&\\"
+"OSF ekle (Düþen Kenar)\t&\\"
 
-"Insert _/OSR/\\_ (One Shot Rising)\t&/"
-"_/OSR/\\_ ekle (Yükselen Kenar)\t&/"
+"Insert OSR (One Shot Rising)\t&/"
+"OSR ekle (Yükselen Kenar)\t&/"
+
+"Insert Open-Circuit"
+"Açýk Devre ekle"
 
 "Insert Piecewise Linear"
 "Parçalý Lineer ekle"
@@ -424,11 +466,20 @@
 "Insert Shift Register"
 "Shift Register ekle"
 
+"Insert Short-Circuit"
+"Kapalý Devre ekle"
+
 "Insert T&ON (Delayed Turn On)\tO"
 "T&ON ekle (Turn-On Gecikme)\tO"
 
 "Insert TO&F (Delayed Turn Off)\tF"
 "T&OF ekle (Turn-Off Gecikme)\tF"
+
+"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
+"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
+
+"Insert _/OSR/\\_ (One Shot Rising)\t&/"
+"Insert _/OSR/\\_ (One Shot Rising)\t&/"
 
 "Internal Relay"
 "Dahili Röle"
@@ -461,7 +512,7 @@
 "Arama Tablosu"
 
 "MCU Crystal Frequency (MHz):"
-"Kristal Frekansý (MHz):"
+"MCU Crystal Frequency (MHz):"
 
 "MCU Port"
 "Ýþlemci Portu"
@@ -487,14 +538,23 @@
 "Max value:"
 "En Yüksek Deðer:"
 
+"Maximal one format placeholder is allowed in write string instruction."
+"Maximal one format placeholder is allowed in write string instruction."
+
 "Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."
 "'%s' desteklenen bir iþlemci deðil.\r\n\r\nÝþlemci ayarý iþlemci yok þeklinde deðiþtirilmiþtir."
 
 "Move Selected Rung &Down\tAlt+Down"
-"Seçili satýrý alta taþý\tAlt+Down"
+"Move Selected Rung &Down\tAlt+Down"
+
+"Move Selected Rung &Down\tShift+Down"
+"Seçili satýrý alta taþý\tShift+Down"
 
 "Move Selected Rung &Up\tAlt+Up"
-"Seçili satýrý üste taþý\tAlt+Up"
+"Move Selected Rung &Up\tAlt+Up"
+
+"Move Selected Rung &Up\tShift+Up"
+"Seçili satýrý üste taþý\tShift+Up"
 
 "Move instruction: '%s' not a valid destination."
 "Taþýma Komutu: '%s' geçerli bir hedef adresi deðil."
@@ -532,6 +592,9 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "Ýþlemci seçmediniz.\r\n\r\n G/Ç uçlarýný seçmeden önce Ayarlar menüsünden iþlemci seçiniz."
 
+"No opcodes found."
+"No opcodes found."
+
 "No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Seri iletiþim komutu kullanmadýnýz. Hýzý ayarlamadan önce komut kullanmalýsýnýz.\r\n\r\n"
 
@@ -547,6 +610,9 @@
 "OK"
 "Tamam"
 
+"Open Text in notepad\tF3"
+"Open Text in notepad\tF3"
+
 "Out of memory; simplify program or choose microcontroller with more memory."
 "ÝÞlemci hafýzasý doldu; Programý kýsaltýnýz yada daha yüksek hafýzasý olan bir iþlemci seçiniz."
 
@@ -557,7 +623,7 @@
 "PLC Ayarlarý"
 
 "PLC Cycle Time (ms):"
-"Çevrim Süresi (ms):"
+"PLC Cycle Time (ms):"
 
 "PWM frequency too fast."
 "PWM frekansý çok hýzlý."
@@ -592,6 +658,9 @@
 "Points:"
 "Deðer Sayýsý:"
 
+"Pulse"
+"Pulse"
+
 "RTO: variable can only be used for RES elsewhere"
 "RTO: Deðiþken sadece RES için kullanýlabilir"
 
@@ -610,8 +679,8 @@
 "Release"
 "Release"
 
-"Release.."
-"Release.."
+"Release..."
+"Release..."
 
 "Rename I/O from default name ('%s') before assigning MCU pin."
 "('%s') öntanýmlý isimdir. MÝB bacaðý tanýmlamadan önce bu ismi deðiþtiriniz."
@@ -632,7 +701,10 @@
 "UART'dan bilgi gönder"
 
 "Serial (UART) will use pins %d and %d.\r\n"
-"Seri iletiþim için (UART) %d ve %d bacaklarý kullanýlacaktýr.\r\n\"
+"Serial (UART) will use pins %d and %d.\r\n"
+
+"Serial (UART) will use pins %d and %d.\r\n\r\n"
+"Seri iletiþim için (UART) %d ve %d bacaklarý kullanýlacaktýr.\r\n\r\n"
 
 "Set Bit In SFR"
 "Set Bit In SFR"
@@ -676,6 +748,144 @@
 "Subtract"
 "Çýkar"
 
+"TODO: &Copy Rung's\tCtrl+C or Ctrl+Insert"
+"TODO: &Copy Rung's\tCtrl+C or Ctrl+Insert"
+
+"TODO: &Copy Selected Element\tInsert"
+"TODO: &Copy Selected Element\tInsert"
+
+"TODO: &Paste Rung's\tCtrl+V or Shift+Insert"
+"TODO: &Paste Rung's\tCtrl+V or Shift+Insert"
+
+"TODO: Ca&t Rung's\tCtrl+X or Shift+Del"
+"TODO: Ca&t Rung's\tCtrl+X or Shift+Del"
+
+"TODO: Call flash.bat\tF6"
+"TODO: Call flash.bat\tF6"
+
+"TODO: Compile ARDUINO"
+"TODO: Compile ARDUINO"
+
+"TODO: Compile ASM->HEX"
+"TODO: Compile ASM->HEX"
+
+"TODO: Compile HEX->ASM"
+"TODO: Compile HEX->ASM"
+
+"TODO: Compile PASCAL"
+"TODO: Compile PASCAL"
+
+"TODO: Dup&licate Selected Rung\tCtrl+F6"
+"TODO: Dup&licate Selected Rung\tCtrl+F6"
+
+"TODO: Insert &UART UDRE"
+"TODO: Insert &UART UDRE"
+
+"TODO: Insert BCD2BIN"
+"TODO: Insert BCD2BIN"
+
+"TODO: Insert BIN2BCD"
+"TODO: Insert BIN2BCD"
+
+"TODO: Insert CT&R (Count Circular Reversive)\tK"
+"TODO: Insert CT&R (Count Circular Reversive)\tK"
+
+"TODO: Insert Formatted String"
+"TODO: Insert Formatted String"
+
+"TODO: Insert MOD (Integer Divide Remainder)"
+"TODO: Insert MOD (Integer Divide Remainder)"
+
+"TODO: Insert N PULSE OFF"
+"TODO: Insert N PULSE OFF"
+
+"TODO: Insert N PULSE"
+"TODO: Insert N PULSE"
+
+"TODO: Insert NEG (Integer Negate)"
+"TODO: Insert NEG (Integer Negate)"
+
+"TODO: Insert OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"
+"TODO: Insert OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"
+
+"TODO: Insert PULSER"
+"TODO: Insert PULSER"
+
+"TODO: Insert PWM OFF"
+"TODO: Insert PWM OFF"
+
+"TODO: Insert QUAD ENCOD"
+"TODO: Insert QUAD ENCOD"
+
+"TODO: Insert ROL cyclic shift to the left"
+"TODO: Insert ROL cyclic shift to the left"
+
+"TODO: Insert ROR cyclic shift to the right"
+"TODO: Insert ROR cyclic shift to the right"
+
+"TODO: Insert SHL << arithmetic,logic shift to the left"
+"TODO: Insert SHL << arithmetic,logic shift to the left"
+
+"TODO: Insert SHR >> arithmetic shift to the right"
+"TODO: Insert SHR >> arithmetic shift to the right"
+
+"TODO: Insert SR0 >> logic shift to the right"
+"TODO: Insert SR0 >> logic shift to the right"
+
+"TODO: Insert STEPPER"
+"TODO: Insert STEPPER"
+
+"TODO: Insert SWAP"
+"TODO: Insert SWAP"
+
+"TODO: Insert Set Software PWM Output (AVR136 Application Note)"
+"TODO: Insert Set Software PWM Output (AVR136 Application Note)"
+
+"TODO: Insert bitwise AND"
+"TODO: Insert bitwise AND"
+
+"TODO: Insert bitwise NOT  ~"
+"TODO: Insert bitwise NOT  ~"
+
+"TODO: Insert bitwise OR     |"
+"TODO: Insert bitwise OR     |"
+
+"TODO: Insert bitwise XOR  ^"
+"TODO: Insert bitwise XOR  ^"
+
+"TODO: Insert char to 14 SEGMENT converter"
+"TODO: Insert char to 14 SEGMENT converter"
+
+"TODO: Insert char to 16 SEGMENT converter"
+"TODO: Insert char to 16 SEGMENT converter"
+
+"TODO: Insert char to 7 SEGMENT converter"
+"TODO: Insert char to 7 SEGMENT converter"
+
+"TODO: Insert char to 9 SEGMENT converter"
+"TODO: Insert char to 9 SEGMENT converter"
+
+"TODO: Paste Rung's &Into Rung\tAlt+Insert"
+"TODO: Paste Rung's &Into Rung\tAlt+Insert"
+
+"TODO: Roll End\tCtrl+End"
+"TODO: Roll End\tCtrl+End"
+
+"TODO: Roll Home\tCtrl+Home"
+"TODO: Roll Home\tCtrl+Home"
+
+"TODO: Scroll Down\tCtrl+Down"
+"TODO: Scroll Down\tCtrl+Down"
+
+"TODO: Scroll PgDown\tCtrl+PgDown"
+"TODO: Scroll PgDown\tCtrl+PgDown"
+
+"TODO: Scroll PgUp\tCtrl+PgUp"
+"TODO: Scroll PgUp\tCtrl+PgUp"
+
+"TODO: Scroll Up\tCtrl+Up"
+"TODO: Scroll Up\tCtrl+Up"
+
 "TOF: variable cannot be used elsewhere"
 "TOF: Deðiþken baþka bir yerde kullanýlamaz"
 
@@ -683,7 +893,10 @@
 "TON: Deðiþken baþka bir yerde kullanýlamaz"
 
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
-"Hedef frekans %d Hz, bu deðere en yakýn olasý deðer %d Hz (Uyarý, >5%% hatasý)."
+"Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
+
+"Target frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
+"Hedef frekans %d Hz, bu deðere en yakýn olasý deðer %d Hz (Uyarý, >5% hatasý)."
 
 "Test if Bit Clear In SFR"
 "Test if Bit Clear In SFR"
@@ -745,8 +958,17 @@
 "UART tx"
 "UART tx"
 
+"Unsupported op (anything ADC, PWM, UART, EEPROM) for Netzer target."
+"Unsupported op (anything ADC, PWM, UART, EEPROM) for Netzer target."
+
+"Unsupported op (anything ADC, PWM, UART, EEPROM) for interpretable target."
+"Komut desteklenmiyor. (ADC, PWM, UART, EEPROM ile ilgili komutlardan herhangi biri)"
+
 "Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for interpretable target."
-"Komut desteklenmiyor. (ADC, PWM, UART, EEPROM, SFR.. ile ilgili komutlardan herhangi biri)"
+"Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for interpretable target."
+
+"Unsupported operation for target, skipped."
+"Unsupported operation for target, skipped."
 
 "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
 "'%s' deðer atanmamýþ.Örneðin, MOV, ADD komutlarý ile deðer atanabilir.\r\n\r\nMuhtemelen bu bir programlama hatasýdýr. Bu nedenle deðiþkenin deðeri 0 olarak kullanýlacaktýr."
