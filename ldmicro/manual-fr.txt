@@ -795,6 +795,9 @@ REFERENCE DES INSTRUCTIONS
         * \n   -- nouvelle ligne
         * \f   -- saut de page
         * \b   -- retour arrière
+        * \t   -- horizontal tab
+        * \v   -- vertical tab
+        * \a   -- alert
         * \xAB -- caractère avec valeur ASCII  0xAB (hex)
 
     La condition de sortie de cette instruction est vraie quand elle

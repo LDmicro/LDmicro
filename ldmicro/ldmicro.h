@@ -558,9 +558,9 @@ typedef struct PlcProgramTag {
         int                 count;
     }           io;
     McuIoInfo  *mcu;
-    int         cycleTime; //us
-    int         mcuClock;  //Hz
-    int         baudRate;  //Hz
+    int         cycleTime; // us
+    int         mcuClock;  // Hz
+    int         baudRate;  // Hz
     char        LDversion[512];
 
 #define MAX_RUNGS 9999
@@ -636,7 +636,7 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_PIC16           0x01
 #define ISA_ANSIC           0x02
 #define ISA_INTERPRETED     0x03
-#define ISA_AVR1            0x04
+#define ISA_AVR1            ISA_AVR // 0x04
 #define ISA_NETZER          0x05
 
 #define MAX_IO_PORTS        13
@@ -645,7 +645,7 @@ typedef struct McuAdcPinInfoTag {
 typedef struct McuIoInfoTag {
     char            *mcuName;
     char             portPrefix;
-    DWORD            inputRegs[MAX_IO_PORTS];         // a is 0, j is 9
+    DWORD            inputRegs[MAX_IO_PORTS];         // A is 0, J is 9
     DWORD            outputRegs[MAX_IO_PORTS];
     DWORD            dirRegs[MAX_IO_PORTS];
     DWORD            flashWords;

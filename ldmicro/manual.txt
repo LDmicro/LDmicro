@@ -746,6 +746,9 @@ INSTRUCTIONS REFERENCE
         * \n   -- newline
         * \f   -- formfeed
         * \b   -- backspace
+        * \t   -- horizontal tab
+        * \v   -- vertical tab
+        * \a   -- alert
         * \xAB -- character with ASCII value 0xAB (hex)
 
     The rung-out condition of this instruction is true while it is

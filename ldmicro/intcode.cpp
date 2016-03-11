@@ -1155,6 +1155,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                         case 'n': outputChars[steps++] = '\n'; break;
                         case 'b': outputChars[steps++] = '\b'; break;
                         case 'f': outputChars[steps++] = '\f'; break;
+                        case 't': outputChars[steps++] = '\t'; break;
+                        case 'v': outputChars[steps++] = '\v'; break;
+                        case 'a': outputChars[steps++] = '\a'; break;
                         case '\\': outputChars[steps++] = '\\'; break;
                         case 'x': {
                             int h, l;
@@ -1198,9 +1201,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             char oneShot[MAX_NAME_LEN];
             GenSymOneShot(oneShot);
 
+            // If no a one shot, that no Sending and no 'still running' in Rung-out state.
+            char doSend[MAX_NAME_LEN];
+            GenSymFormattedString(doSend);
+
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_IF_BIT_CLEAR, oneShot);
                     Op(INT_SET_VARIABLE_TO_LITERAL, seq, (SWORD)0);
+                    Op(INT_SET_BIT, doSend);
                 Op(INT_END_IF);
             Op(INT_END_IF);
             Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
@@ -1221,10 +1229,13 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
             Op(INT_END_IF);
 
-            Op(INT_CLEAR_BIT, "$scratch");
-            Op(INT_UART_SEND, "$scratch", "$scratch");
-            Op(INT_IF_BIT_SET, "$scratch");
-                Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
+            Op(INT_IF_BIT_SET, doSend);
+                // Now check UART busy.
+                Op(INT_CLEAR_BIT, "$scratch");
+                Op(INT_UART_SEND, "$scratch", "$scratch");
+                Op(INT_IF_BIT_SET, "$scratch");
+                    Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
+                Op(INT_END_IF);
             Op(INT_END_IF);
 
             // So we transmit this cycle, so check out which character.
@@ -1316,15 +1327,21 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
             Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SWORD)0);
             Op(INT_ELSE);
+              Op(INT_IF_BIT_SET, doSend);
                 Op(INT_SET_BIT, "$scratch");
                 Op(INT_UART_SEND, "$scratch2", "$scratch");
                 Op(INT_INCREMENT_VARIABLE, seq);
+              Op(INT_END_IF);
             Op(INT_END_IF);
 
             // Rung-out state: true if we're still running, else false
             Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_IF_VARIABLE_LES_LITERAL, seq, steps);
+              Op(INT_IF_BIT_SET, doSend);
                 Op(INT_SET_BIT, stateInOut);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+                Op(INT_CLEAR_BIT, doSend);
             Op(INT_END_IF);
             break;
         }
