@@ -512,7 +512,7 @@ HMENU MakeMainWindowMenus(void)
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
     AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
-    AppendMenu(help, MF_STRING, MNU_RELEASE, _("Release.."));
+    AppendMenu(help, MF_STRING, MNU_RELEASE, _("Release..."));
 
     TopMenu = CreateMenu();
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)FileMenu, _("&File"));

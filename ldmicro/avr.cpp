@@ -41,10 +41,10 @@
 #define BIT6 6
 #define BIT7 7
 
-#define r0 0
-#define r1 1
+#define r0 0 // used muls
+#define r1 1 // used muls
 #define r2 2 // used in MultiplyRoutine
-#define r3 3 // used in CopyBit, XorBit, etc.
+#define r3 3 // used in CopyBit, XorBit, _SWAP etc.
 
 #define r5 5
 #define r7 7 // used as Sign Register (BIT7) in DivideRoutine
@@ -55,6 +55,8 @@
 #define r12 12
 #define r13 13
 
+#define r14 14
+#define r15 15
 #define r16 16 //used as op2
 #define r17 17
 #define r18 18
@@ -69,13 +71,14 @@
 #define r25 25 // used in WriteMemory macro, CopyBit, SetBit, IfBitClear, etc.
 //      r25    // used as Loop counter in MultiplyRoutine, DivideRoutine, etc.
 
-#define r26 26
+#define r26 26 // X
 #define r27 27
-#define r28 28
+#define r28 28 // Y
 #define r29 29
-#define r30 30
+#define r30 30 // Z
 #define r31 31
 
+/* Pointer definition   */
 #define rX  r26
 #define Xlo r26
 #define Xhi r27
@@ -119,16 +122,25 @@ typedef enum AvrOpTag {
     OP_INC,
     OP_LDI,
     OP_LD_X,
-    OP_LD_XP,/*+*/
-    OP_LD_XS,/*-*/
+    OP_LD_XP,  /*post increment X+*/
+    OP_LD_XS,  /*-X pre decrement*/
     OP_LD_Y,
-    OP_LD_YP,/*+*/
-    OP_LD_YS,/*-*/
+    OP_LD_YP,  /*post increment Y+*/
+    OP_LD_YS,  /*-Y pre decrement*/
+    OP_LDD_Y,  // Y+q
     OP_LD_Z,
-    OP_LD_ZP,/*+*/
-    OP_LD_ZS,/*-*/
+    OP_LD_ZP,  /*post increment Z+*/
+    OP_LD_ZS,  /*-Z pre decrement*/
+    OP_LDD_Z,  // Z+q
+    OP_LPM_0Z,/* R0 <- (Z)*/
+    OP_LPM_Z, /* Rd <- (Z)*/
+    OP_LPM_ZP,/* Rd <- (Z++) post incterment */
+    OP_DB, // one byte in flash word, hi byte = 0!
+    OP_DB2,// two bytes in flash word
+    OP_DW, // word in flash word
     OP_MOV,
     OP_MOVW,
+    OP_SWAP,
     OP_RCALL,
     OP_RET,
     OP_RETI,
@@ -219,11 +231,13 @@ static int EepromHighByteWaitingBit;
 
 // Some useful registers, unfortunately many of which are in different places
 // on different AVRs! I consider this a terrible design choice by Atmel.
-static DWORD REG_TIMSK  = -1;
+//static DWORD REG_TIMSK  = -1;
 static BYTE      OCIE1A = -1; // Timer/Counter1, Output Compare A Match Interrupt Enable
 static BYTE      TOIE1  = -1; // Timer/Counter1 Overflow Interrupt Enable
 static BYTE      TOIE0  = -1; // Timer/Counter0 Overflow Interrupt Enable
-static DWORD REG_TIFR   = -1;
+
+static DWORD REG_TIFR1  = -1;
+static DWORD REG_TIFR0  = -1;
 static BYTE      OCF1A  = -1; // Timer/Counter1, Output Compare A Match Flag
 static BYTE      TOV1   = -1; // Timer/Counter1 Overflow Flag
 static BYTE      TOV0   = -1; // Timer/Counter0 Overflow Flag
@@ -288,7 +302,7 @@ static DWORD REG_UDR = -1;
 #define TWSR    0x21
 #define TWBR    0x20
 /*
-// I2C support for atmega48,88,168,328,164,324,644,1284,2560
+// I2C support for atmega48,88,168,328, 164,324,644,1284,2560
 #define TWAMR   0xBD
 #define TWCR    0xBC
 #define TWDR    0xBB
@@ -957,20 +971,11 @@ static void WriteRuntime(void)
     // and now the generated PLC code will follow
     BeginningOfCycleAddr = AvrProgWriteP;
 
-    // Okay, so many AVRs have a register called TIFR, but the meaning of
-    // the bits in that register varies from device to device...
-    int tifrBitForOCF1A;
-    if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega162 40-PDIP")==0) {
-        tifrBitForOCF1A = 6;
-    } else {
-        tifrBitForOCF1A = 4;
-    }
-
     DWORD now = AvrProgWriteP;
-    IfBitClear(REG_TIFR, tifrBitForOCF1A);
+    IfBitClear(REG_TIFR1, OCF1A);
     Instruction(OP_RJMP, now, 0);
 
-    SetBit(REG_TIFR, tifrBitForOCF1A);
+    SetBit(REG_TIFR1, OCF1A);
 
     Instruction(OP_WDR, 0, 0);
 }
@@ -1886,74 +1891,26 @@ void CompileAvr(char *outFile)
         return;
     }
 
-    REG_MCUCR = 0x55;
+  //REG_MCUCR = 0x55;
         ISC11 = BIT3;
         ISC10 = BIT2;
         ISC01 = BIT1;
         ISC00 = BIT0;
 
-    REG_GICR  = 0x5B;
+  //REG_GICR  = 0x5B;
         INT1  = BIT7;
         INT0  = BIT6;
 
-    REG_GIFR  = 0x5A;
+  //REG_GIFR  = 0x5A;
         INTF1 = BIT7;
         INTF0 = BIT6;
 
-    //***********************************************************************
-    // Okay, so many AVRs have a register called TIFR, but the meaning of
-    // the bits in that register varies from device to device...
-    if(strstr(Prog.mcu->mcuName, " AT90USB646 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB647 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB1286 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB162 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB82 ")
-    ){//TIFR bits
-        OCF1A  = BIT1;
-        TOV0   = BIT0;
-      //TIFR1  bits
-        TOV1   = BIT0;
-      //TIMSK  bits
-        OCIE1A = BIT1;
-        TOIE1  = BIT0;
-        TOIE0  = BIT0;
-    } else
-    if(strstr(Prog.mcu->mcuName, " ATmega161 ")
-    || strstr(Prog.mcu->mcuName, " ATmega162 ")
-    || strstr(Prog.mcu->mcuName, " ATmega8515 ")
-    ){//TIFR bits
-        TOV1   = BIT7;
-        OCF1A  = BIT6;
-        TOV0   = BIT1;
-      //TIMSK  bits
-        OCIE1A = BIT6;
-        TOIE1  = BIT7;
-        TOIE0  = BIT1;
-    } else
-    if(strstr(Prog.mcu->mcuName, " ATmega103 ")
-    || strstr(Prog.mcu->mcuName, " ATmega16 ")
-    || strstr(Prog.mcu->mcuName, " ATmega163 ")
-    || strstr(Prog.mcu->mcuName, " ATmega128 ")
-    || strstr(Prog.mcu->mcuName, " ATmega32 ")
-    || strstr(Prog.mcu->mcuName, " ATmega323 ")
-    || strstr(Prog.mcu->mcuName, " ATmega64 ")
-    || strstr(Prog.mcu->mcuName, " ATmega8 ")
-    || strstr(Prog.mcu->mcuName, " ATmega8535 ")
-    ){//TIFR bits
-        OCF1A  = BIT4;
-        TOV1   = BIT2;
-        TOV0   = BIT0;
-      //TIMSK bits
-        OCIE1A = BIT4;
-        TOIE1  = BIT2;
-        TOIE0  = BIT0;
-    } else oops();
-    //dbp("OCF1A=%d",OCF1A);
     //***********************************************************************
     // Interrupt Vectors Table
     if(strstr(Prog.mcu->mcuName, " AT90USB646 ")
     || strstr(Prog.mcu->mcuName, " AT90USB647 ")
     || strstr(Prog.mcu->mcuName, " AT90USB1286 ")
+    || strstr(Prog.mcu->mcuName, " AT90USB1287 ")
     ){
         Int0Addr        = 1;
         Int1Addr        = 2;
@@ -1961,8 +1918,8 @@ void CompileAvr(char *outFile)
         Timer0OvfAddr   = 23;
         Timer1CompAAddr = 17;
     } else
-    if(strstr(Prog.mcu->mcuName, " AT90USB162 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB82 ")
+    if(strstr(Prog.mcu->mcuName, " AT90USB82 ")
+    || strstr(Prog.mcu->mcuName, " AT90USB162 ")
     ){
         Int0Addr        = 1;
         Int1Addr        = 2;
@@ -1998,8 +1955,21 @@ void CompileAvr(char *outFile)
         Timer0OvfAddr   = 0x0012;
         Timer1CompAAddr = 0x000C;
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega128 ")
-    || strstr(Prog.mcu->mcuName, " ATmega64 ")
+    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega48 ") ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega88 ") ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega168 ") ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega328 ")
+    ){
+        REG_GICR  = 0x3D; // EIMSK
+            INT1  = BIT1;
+            INT0  = BIT0;
+
+        REG_GIFR  = 0x3C; // EIFR
+            INTF1 = BIT1;
+            INTF0 = BIT0;
+    } else
+    if(strstr(Prog.mcu->mcuName, " ATmega64 ")
+    || strstr(Prog.mcu->mcuName, " ATmega128 ")
     ){
         Int0Addr        = 2;
         Int1Addr        = 4;
@@ -2030,27 +2000,204 @@ void CompileAvr(char *outFile)
         Timer1OvfAddr   = 0x0008;
         Timer0OvfAddr   = 0x0009;
         Timer1CompAAddr = 0x0006;
-    } else oops();
+    }; // else oops();
+
+    //***********************************************************************
+    // Okay, so many AVRs have a register called TIFR, but the meaning of
+    // the bits in that register varies from device to device...
+
+    // TODO: move bits down to regs defs
+    if(strstr(Prog.mcu->mcuName, " AT90USB82 ")
+    || strstr(Prog.mcu->mcuName, " AT90USB162 ")
+    ){//TIFR bits
+        OCF1A  = BIT1;
+        TOV0   = BIT0;
+      //TIFR1  bits
+        TOV1   = BIT0;
+      //TIMSK  bits
+        OCIE1A = BIT1;
+        TOIE1  = BIT0;
+        TOIE0  = BIT0;
+    } else
+    if(strstr(Prog.mcu->mcuName, " ATmega103 ")
+    || strstr(Prog.mcu->mcuName, " ATmega163 ")
+    || strstr(Prog.mcu->mcuName, " ATmega323 ")
+    || strstr(Prog.mcu->mcuName, " ATmega8535 ")
+    ){//TIFR bits
+        OCF1A  = BIT4;
+        TOV1   = BIT2;
+        TOV0   = BIT0;
+      //TIMSK bits
+        OCIE1A = BIT4;
+        TOIE1  = BIT2;
+        TOIE0  = BIT0;
+    } else
+    if(strstr(Prog.mcu->mcuName, " ATmega161 ")
+    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega162 ")
+    || strstr(Prog.mcu->mcuName, " ATmega8515 ")
+    ){//TIFR bits
+        TOV1   = BIT7;
+        OCF1A  = BIT6;
+        TOV0   = BIT1;
+      //TIMSK  bits
+        TOIE1  = BIT7;
+        OCIE1A = BIT6;
+        TOIE0  = BIT1;
+    } else
+    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega16 ")
+    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega32 ")
+    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega8 ")
+    ){//TIFR bits
+        OCF1A  = BIT4;
+        TOV1   = BIT2;
+        TOV0   = BIT0;
+      //TIMSK bits
+        OCIE1A = BIT4;
+        TOIE1  = BIT2;
+        TOIE0  = BIT0;
+    }; // else oops();
+
     //***********************************************************************
     // Here we must set up the addresses of some registers that for some
     // stupid reason move around from AVR to AVR.
-    if(strstr(Prog.mcu->mcuName, "Atmel AVR AT90USB647 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB646 ")
+    if(strstr(Prog.mcu->mcuName, " AT90USB646 ")
+    || strstr(Prog.mcu->mcuName, " AT90USB647 ")
     || strstr(Prog.mcu->mcuName, " AT90USB1286 ")
+    || strstr(Prog.mcu->mcuName, " AT90USB1287 ")
     ){
         REG_OCR1AH  = 0x89;
         REG_OCR1AL  = 0x88;
         REG_TCCR1A  = 0x80;
         REG_TCCR1B  = 0x81;
 
-        REG_TIMSK   = 0x6F;
-        REG_TIFR    = 0x36;
+//      REG_TIMSK   = 0x6F;
+            OCIE1A  = BIT1;
+            TOIE1   = BIT0;
+            TOIE0   = BIT0;
+        REG_TIFR1   = 0x36;
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+        REG_TIFR0   = 0x35;
+            TOV0    = BIT0;
+        REG_UDR     = 0xCE;
         REG_UBRRH   = 0xCD;
         REG_UBRRL   = 0xCC;
         REG_UCSRC   = 0xCA;
         REG_UCSRB   = 0xC9;
         REG_UCSRA   = 0xC8;
-        REG_UDR     = 0xCE;
+    } else
+    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega48 ") ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega88 ") ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega168 ") ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega328 ")
+    ){
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1A  = 0x80;
+        REG_TCCR1B  = 0x81;
+
+//      REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIFR1   = 0x36;
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+        REG_TIFR0   = 0x35;
+            TOV0    = BIT0;
+
+        REG_UDR     = 0xC6;   // UDR0
+        REG_UBRRH   = 0xC5;   // UBRR0H
+        REG_UBRRL   = 0xC4;   // UBRR0L
+        REG_UCSRC   = 0xC2;   // UCSR0C
+        REG_UCSRB   = 0xC1;   // UCSR0B
+        REG_UCSRA   = 0xC0;   // UCSR0A
+    } else
+    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega164 ") ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega324 ") ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega644 ")
+    ){
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+//      REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIFR1   = 0x36;
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+        REG_TIFR0   = 0x35;
+            TOV0    = BIT0;
+
+        REG_UDR     = 0xC6;   // UDR0
+        REG_UBRRH   = 0xC5;   // UBRR0H
+        REG_UBRRL   = 0xC4;   // UBRR0L
+        REG_UCSRC   = 0xC2;   // UCSR0C
+        REG_UCSRB   = 0xC1;   // UCSR0B
+        REG_UCSRA   = 0xC0;   // UCSR0A
+    } else
+    if(strstr(Prog.mcu->mcuName, " ATmega640 ") ||
+       strstr(Prog.mcu->mcuName, " ATmega1280 ") ||
+       strstr(Prog.mcu->mcuName, " ATmega1281 ") ||
+       strstr(Prog.mcu->mcuName, " ATmega2560 ") ||
+       strstr(Prog.mcu->mcuName, " ATmega2561 ")
+    ){
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+//      REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIFR1   = 0x36;
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+        REG_TIFR0   = 0x35;
+            TOV0    = BIT0;
+
+        REG_UDR     = 0xC6;   // UDR0
+        REG_UBRRH   = 0xC5;   // UBRR0H
+        REG_UBRRL   = 0xC4;   // UBRR0L
+        REG_UCSRC   = 0xC2;   // UCSR0C
+        REG_UCSRB   = 0xC1;   // UCSR0B
+        REG_UCSRA   = 0xC0;   // UCSR0A
+    } else
+    if(strstr(Prog.mcu->mcuName, " ATmega164 ") ||
+       strstr(Prog.mcu->mcuName, " ATmega324 ") ||
+       strstr(Prog.mcu->mcuName, " ATmega644 ") ||
+       strstr(Prog.mcu->mcuName, " ATmega1284 ")
+    ){
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+//      REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIFR1   = 0x36;
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+        REG_TIFR0   = 0x35;
+            TOV0    = BIT0;
+
+        REG_UDR     = 0xC6;   // UDR0
+        REG_UBRRH   = 0xC5;   // UBRR0H
+        REG_UBRRL   = 0xC4;   // UBRR0L
+        REG_UCSRC   = 0xC2;   // UCSR0C
+        REG_UCSRB   = 0xC1;   // UCSR0B
+        REG_UCSRA   = 0xC0;   // UCSR0A
+    } else
+    if(strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega103 ")
+    ){
+        REG_OCR1AH  = 0x4B;
+        REG_OCR1AL  = 0x4A;
+        REG_TCCR1A  = 0x4F;
+        REG_TCCR1B  = 0x4E;
+
+//      REG_TIMSK = 0x57;
+        REG_TIFR1 = 0x56; // TIFR
+        REG_TIFR0 = 0x56; // TIFR
+//      REG_UBRRH = 0x98;
+        REG_UBRRL = 0x29; // UBRR
+        REG_UCSRB = 0x2a; // UCR
+        REG_UCSRA = 0x2b; // USR
+        REG_UDR   = 0x2c;
+//      REG_UCSRC = 0x9d;
     } else
     if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega16 ") ||
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega32 ") ||
@@ -2062,8 +2209,9 @@ void CompileAvr(char *outFile)
         REG_TCCR1A  = 0x4F;
         REG_TCCR1B  = 0x4E;
 
-        REG_TIMSK = 0x59;
-        REG_TIFR  = 0x58;
+//      REG_TIMSK = 0x59;
+        REG_TIFR0 = 0x58;
+        REG_TIFR1 = 0x58;
         REG_UCSRC = 0x40;
         REG_UBRRH = 0x40;
         REG_UBRRL = 0x29;
@@ -2071,32 +2219,7 @@ void CompileAvr(char *outFile)
         REG_UCSRA = 0x2b;
         REG_UDR   = 0x2c;
     } else
-    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega2560 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega48 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega88 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega164 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega168 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega324 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega328 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega644 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega1284 ")
-    ){
-        REG_OCR1AH  = 0x4B;
-        REG_OCR1AL  = 0x4A;
-        REG_TCCR1A  = 0x4F;
-        REG_TCCR1B  = 0x4E;
-
-        REG_TIMSK   = 0x6F;   // TIMSK1
-        REG_TIFR    = 0x36;   // TIFR1
-        REG_UBRRH   = 0xC5;   // UBRR0H
-        REG_UBRRL   = 0xC4;   // UBRR0L
-        REG_UCSRC   = 0xC2;   // UCSR0C
-        REG_UCSRB   = 0xC1;   // UCSR0B
-        REG_UCSRA   = 0xC0;   // UCSR0A
-        REG_UDR     = 0xC6;   // UDR0
-    } else
     if(strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega64 ") ||
-       strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega103 ") ||
        strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega128 ")
     ){
         REG_OCR1AH  = 0x4B;
@@ -2104,15 +2227,35 @@ void CompileAvr(char *outFile)
         REG_TCCR1A  = 0x4F;
         REG_TCCR1B  = 0x4E;
 
-        REG_TIMSK = 0x57;
-        REG_TIFR  = 0x56;
-        REG_UBRRH = 0x98;
-        REG_UBRRL = 0x99;
-        REG_UCSRB = 0x9a;
-        REG_UCSRA = 0x9b;
-        REG_UDR   = 0x9c;
-        REG_UCSRC = 0x9d;
+//      REG_TIMSK   = 0x57;
+            OCIE1A  = BIT4;
+            TOIE1   = BIT2;
+            TOIE0   = BIT0;
+        REG_TIFR1   = 0x56; // TIFR
+        REG_TIFR0   = 0x56; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+            TOV0    = BIT0;
+        REG_UBRRH   = 0x98; // UBRR1H
+        REG_UBRRL   = 0x99; // UBRR1L
+        REG_UCSRB   = 0x9a; // UCSR1B
+        REG_UCSRA   = 0x9b; // UCSR1A
+        REG_UDR     = 0x9c; // UDR1
+        REG_UCSRC   = 0x9d; // UCSR1C
     } else oops();
+    //***********************************************************************
+/*
+    if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega16 40-PDIP")==0  ||
+       strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega32 40-PDIP")==0 ||
+       strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega162 40-PDIP")==0 ||
+       strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega8 28-PDIP")==0)
+    {
+    } else {
+    if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega128 64-TQFP")==0 ||
+       strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega64 64-TQFP")==0)
+    {
+    }
+*/
     //***********************************************************************
 
     WipeMemory();
