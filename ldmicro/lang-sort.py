@@ -98,7 +98,7 @@ def sortByA0(A):
     return A[0]
 
 for filename in listdir('./'):
-    if 'lang-' == filename[0:5] and '.txt' == (filename[-4:]):
+    if 'lang-' == filename[0:5] and '.txt' == (filename[7:]):
         # sorting translations files
         print('sorting: ./'+filename+' to ./lang-sort/'+filename)
 

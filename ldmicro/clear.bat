@@ -10,3 +10,6 @@ del ldmicro.tmp
 del ldmicro.exe
 del ldmicro.res
 del ldinterpret.exe
+del aaa
+md BAK
+move  *.bak BAK

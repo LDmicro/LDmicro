@@ -203,12 +203,12 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     if(!didCancel) {
         for(i = 0; i < boxes; i++) {
             if(NoCheckingOnBox[i]) {
-                char get[64];
-                SendMessage(Textboxes[i], WM_GETTEXT, 60, (LPARAM)get);
+                char get[MAX_NAME_LEN];
+                SendMessage(Textboxes[i], WM_GETTEXT, (MAX_NAME_LEN-1), (LPARAM)get);
                 strcpy(dests[i], get);
             } else {
-                char get[20];
-                SendMessage(Textboxes[i], WM_GETTEXT, 15, (LPARAM)get);
+                char get[MAX_NAME_LEN];
+                SendMessage(Textboxes[i], WM_GETTEXT, (MAX_NAME_LEN-1), (LPARAM)get);
 
                 if( (!strchr(get, '\'')) ||
                         (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
@@ -244,7 +244,7 @@ void ShowTimerDialog(int which, int *delay, char *name)
     char *labels[] = { _("Name:"), _("Delay (ms):") };
 
     char delBuf[16];
-    char nameBuf[16];
+    char nameBuf[MAX_NAME_LEN];
     sprintf(delBuf, "%.3f", (*delay / 1000.0));
     strcpy(nameBuf, name+1);
     char *dests[] = { nameBuf, delBuf };
@@ -336,12 +336,12 @@ void ShowCmpDialog(int which, char *op1, char *op2)
     switch(which) {
         case ELEM_EQU:
             title = _("If Equals");
-            l2 = "= :";
+            l2 = "== :";
             break;
 
         case ELEM_NEQ:
             title = _("If Not Equals");
-            l2 = "/= :";
+            l2 = "!= :";
             break;
 
         case ELEM_GRT:
@@ -443,7 +443,7 @@ void ShowShiftRegisterDialog(char *name, int *stages)
 
     if(*stages <= 0 || *stages >= 200) {
         Error(_("Not a reasonable size for a shift register."));
-        *stages = 1;
+        *stages = 8;
     }
 }
 

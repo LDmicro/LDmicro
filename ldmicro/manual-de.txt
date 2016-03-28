@@ -828,6 +828,9 @@ Variablen, sind die folgenden Steuerungszeichen erhältlich:
         * \n   -- new line             Zeilenwechsel
         * \f   -- form feed            Formularvorschub
         * \b   -- backspace            Rücksetzen
+        * \t   -- horizontal tab
+        * \v   -- vertical tab
+        * \a   -- alert
         * \xAB -- character with ASCII value 0xAB (hex)
                -- Schriftzeichen mit ASCII-Wert 0xAB (hex)
 

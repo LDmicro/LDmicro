@@ -116,7 +116,7 @@ void SelectElement(int gx, int gy, int state)
     }
 
     ok();
-    Selected->selectedState = state;
+    if(Selected) Selected->selectedState = state;
     ok();
 
     WhatCanWeDoFromCursorAndTopology();
@@ -541,6 +541,9 @@ void EditElementMouseDoubleclick(int x, int y)
         if(l && DisplayMatrixWhich[gx][gy] == ELEM_CONTACTS) {
             char *name = l->d.contacts.name;
             if(name[0] == 'X') {
+                SimulationToggleContact(name);
+            }
+            else if(name[0] == 'R') {
                 SimulationToggleContact(name);
             }
         } else if(l && DisplayMatrixWhich[gx][gy] == ELEM_READ_ADC) {

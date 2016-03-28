@@ -415,7 +415,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
         // Are we in table mode? In that case watch the (user-editable) count
         // field, and use that to determine how many textboxes to show.
         char buf[20];
-        SendMessage(CountTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)buf);
+        SendMessage(CountTextbox, WM_GETTEXT, (WPARAM)(sizeof(buf)-1), (LPARAM)buf);
         if(atoi(buf) != count && !asString) {
             count = atoi(buf);
             if(count < 0 || count > 32) {
@@ -430,7 +430,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
         // and use that to update the (read-only) count field.
         if(asString) {
             char scratch[1024];
-            SendMessage(StringTextbox, WM_GETTEXT, (WPARAM)sizeof(scratch),
+            SendMessage(StringTextbox, WM_GETTEXT, (WPARAM)(sizeof(scratch)-1),
                 (LPARAM)scratch);
             if(strcmp(scratch, PrevTableAsString)!=0) {
                 if(StringToValuesCache(scratch, &count)) {
