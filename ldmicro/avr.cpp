@@ -2135,16 +2135,13 @@ static void CompileFromIntermediate(void)
             }
             case INT_UART_SEND_BUSY: {
                 MemForSingleBit(a->name1, TRUE, &addr, &bit);
-                ClearBit(addr, bit);
+                ClearBit(addr, bit); // UART ready
                 DWORD dontSet = AllocFwdAddr();
                 IfBitSet(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty
                 Instruction(OP_RJMP, dontSet, 0);
                 SetBit(addr, bit); // Set UART busy
                 FwdAddrIsNow(dontSet);
 
-                break;
-            }
-            case INT_UART_RECV_AVAIL: {
                 break;
             }
             case INT_UART_SEND: {
@@ -2169,6 +2166,11 @@ static void CompileFromIntermediate(void)
                 SetBit(addr, bit); // Set UART busy
                 FwdAddrIsNow(dontSet);
 
+                break;
+            }
+            case INT_UART_RECV_AVAIL: {
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
+                SetBit(addr, bit); // Set // TODO
                 break;
             }
             case INT_UART_RECV: {
