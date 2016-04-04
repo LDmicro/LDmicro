@@ -55,10 +55,12 @@
 
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12
+#define INT_UART_SEND_BUSY                      1301
 #define INT_UART_SEND                           13
+#define INT_UART_RECV_AVAIL                     1401
 #define INT_UART_RECV                           14
 #ifdef NEW_FEATURE
-#define INT_UART_UDRE                           1401
+#define INT_UART_UDRE                           1301
 #endif
 #define INT_EEPROM_BUSY_CHECK                   15
 #ifdef NEW_FEATURE
@@ -176,11 +178,16 @@
         SWORD       literal;
         SWORD       literal2;
         BOOL       *poweredAfter;
+        int         rung;        //this IntOp located in rung,
+        int         which;       //this IntOp refers to the ELEM_<which>
+        char        f[MAX_PATH]; //in .c source file name
+        int         l;           //and line in file
     } IntOp;
 
     #define MAX_INT_OPS     (1024*16)
     extern IntOp IntCode[MAX_INT_OPS];
     extern int IntCodeLen;
+    extern int ProgWriteP;
 #endif
 
 #endif

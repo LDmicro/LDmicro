@@ -182,7 +182,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
         } else {
             name[0] = 'Y';
         }
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)(MAX_NAME_LEN-1), (LPARAM)(name+1));
 
         if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             *negated = FALSE;

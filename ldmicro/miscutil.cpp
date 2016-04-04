@@ -59,7 +59,7 @@ void dbp(char *str, ...)
     va_start(f, str);
     vsprintf(buf, str, f);
     OutputDebugString(buf);
-    OutputDebugString("\n");
+//  OutputDebugString("\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -92,6 +92,7 @@ void Error(char *str, ...)
     char buf[1024];
     va_start(f, str);
     vsprintf(buf, str, f);
+    dbp(buf);
     if(RunningInBatchMode) {
         AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
         HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);

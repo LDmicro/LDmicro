@@ -253,7 +253,16 @@ int ProgCountWidestRow(void)
     ColsAvailable = colsTemp;
     return max;
 }
-
+//-----------------------------------------------------------------------------
+int ProgCountRows(void)
+{
+    int totalHeight = 0;
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+    }
+    return totalHeight;
+}
 //-----------------------------------------------------------------------------
 // Draw a vertical wire one leaf element unit high up from (cx, cy), where cx
 // and cy are in charcter units.
