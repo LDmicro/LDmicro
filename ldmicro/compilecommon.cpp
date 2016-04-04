@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -55,15 +55,27 @@ static int      NextBitwiseAllocBit;
 static int      MemOffset;
 
 //-----------------------------------------------------------------------------
+static void ClrInternalData(void)
+{
+    MemOffset = 0;
+//  VariableCount = 0;
+    int i;
+    for(i = 0; i < VariableCount; i++) {
+        Variables[i].addrl = 0;
+        Variables[i].addrh = 0;
+    }
+}
+//-----------------------------------------------------------------------------
 // Forget what memory has been allocated on the target, so we start from
 // everything free.
 //-----------------------------------------------------------------------------
 void AllocStart(void)
 {
     NextBitwiseAllocAddr = NO_MEMORY;
-    MemOffset = 0;
     InternalRelayCount = 0;
+    ClrInternalData();
     VariableCount = 0;
+    ClrSimulationData();
 }
 
 //-----------------------------------------------------------------------------
@@ -148,6 +160,7 @@ static void MemForPin(char *name, DWORD *addr, int *bit, BOOL asInput)
 //-----------------------------------------------------------------------------
 BYTE MuxForAdcVariable(char *name)
 {
+    int res = 0;
     int i;
     for(i = 0; i < Prog.io.count; i++) {
         if(strcmp(Prog.io.assignment[i].name, name)==0)
@@ -155,9 +168,10 @@ BYTE MuxForAdcVariable(char *name)
     }
     if(i >= Prog.io.count) oops();
 
+    if(Prog.mcu) {
     int j;
     for(j = 0; j < Prog.mcu->adcCount; j++) {
-        if(Prog.mcu->adcInfo[j].pin == Prog.io.assignment[i].pin) { 
+        if(Prog.mcu->adcInfo[j].pin == Prog.io.assignment[i].pin) {
             break;
         }
     }
@@ -165,8 +179,10 @@ BYTE MuxForAdcVariable(char *name)
         Error(_("Must assign pins for all ADC inputs (name '%s')."), name);
         CompileError();
     }
+        res = Prog.mcu->adcInfo[j].muxRegValue;
+    }
 
-    return Prog.mcu->adcInfo[j].muxRegValue;
+    return res;
 }
 
 //-----------------------------------------------------------------------------
@@ -192,6 +208,11 @@ void MemForVariable(char *name, DWORD *addrl, DWORD *addrh)
     *addrl = Variables[i].addrl;
     *addrh = Variables[i].addrh;
 }
+int SizeOfVar(char *name)
+{
+    return 2;
+}
+
 
 //-----------------------------------------------------------------------------
 // Allocate or retrieve the bit of memory assigned to an internal relay or
@@ -205,7 +226,7 @@ static void MemForBitInternal(char *name, DWORD *addr, int *bit, BOOL writeTo)
             break;
     }
     if(i >= MAX_IO) {
-        Error(_("Internal limit exceeded (number of vars)"));
+        Error(_("Internal limit exceeded (number of relay)"));
         CompileError();
     }
     if(i == InternalRelayCount) {
@@ -253,6 +274,7 @@ void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit)
 //-----------------------------------------------------------------------------
 // Retrieve the bit to write to set the state of an output.
 //-----------------------------------------------------------------------------
+/*
 void MemForCoil(char *name, DWORD *addr, int *bit)
 {
     switch(name[0]) {
@@ -269,7 +291,7 @@ void MemForCoil(char *name, DWORD *addr, int *bit)
             break;
     }
 }
-
+*/
 //-----------------------------------------------------------------------------
 // Do any post-compilation sanity checks necessary.
 //-----------------------------------------------------------------------------
@@ -281,7 +303,7 @@ void MemCheckForErrorsPostCompile(void)
             Error(
                _("Internal relay '%s' never assigned; add its coil somewhere."),
                 InternalRelays[i].name);
-            CompileError();
+            //CompileError();
         }
     }
 }
@@ -304,7 +326,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput)
         int pin = Prog.io.assignment[i].pin;
 
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
+           Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT)
         {
             int j;
             for(j = 0; j < Prog.mcu->pinCount; j++) {

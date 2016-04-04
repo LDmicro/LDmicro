@@ -347,6 +347,20 @@ void AddMove(void)
     strcpy(t->d.move.src, "src");
     AddLeaf(ELEM_MOVE, t);
 }
+void AddSfr(int which)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.cmp.op1, "sfr");
+    if(which == ELEM_WSFR)
+       strcpy(t->d.cmp.op2, "srs");
+    else if(which == ELEM_RSFR)
+       strcpy(t->d.cmp.op2, "dest");
+    else
+       strcpy(t->d.cmp.op2, "1");
+    AddLeaf(which, t);
+}
 void AddMath(int which)
 {
     if(!CanInsertEnd) return;
@@ -421,7 +435,7 @@ void AddPersist(void)
 // TRUE if it or a child made any changes, and for completeness must be
 // called iteratively on the root till it doesn't do anything.
 //-----------------------------------------------------------------------------
-static BOOL CollapseUnnecessarySubckts(int which, void *any)
+BOOL CollapseUnnecessarySubckts(int which, void *any)
 {
     BOOL modified = FALSE;
 
@@ -654,10 +668,11 @@ void FreeEntireProgram(void)
     for(i = 0; i < Prog.numRungs; i++) {
         FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
+    memset(Prog.rungSelected,' ',sizeof(Prog.rungSelected));
     Prog.numRungs = 0;
     Prog.cycleTime = 10000;
-    Prog.mcuClock = 4000000;
-    Prog.baudRate = 2400;
+    Prog.mcuClock = 16000000;
+    Prog.baudRate = 9600;
     Prog.io.count = 0;
     Prog.mcu = NULL;
 }
@@ -951,6 +966,19 @@ BOOL PwmFunctionUsed(void)
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SET_PWM,
+            -1, -1))
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+//-----------------------------------------------------------------------------
+BOOL EepromFunctionUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_PERSIST,
             -1, -1))
         {
             return TRUE;

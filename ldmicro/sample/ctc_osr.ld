@@ -32,5 +32,5 @@ RUNG
     CTC Cdays 364
 END
 RUNG
-    COMMENT by LDmicro.GitHub@gmail.com
+    COMMENT Any questions to LDmicro.GitHub@gmail.com
 END

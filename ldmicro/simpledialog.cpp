@@ -263,6 +263,16 @@ void ShowTimerDialog(int which, int *delay, char *name)
     }
 }
 
+//-----------------------------------------------------------------------------
+// Report an error if a var doesn't fit in 8-16-24 bits.
+//-----------------------------------------------------------------------------
+void CheckVarInRange(char *name, SDWORD v)
+{
+        if(v < -32768 || v > 32767)
+            Error(_("Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
+}
+
+//-----------------------------------------------------------------------------
 void ShowCounterDialog(int which, int *maxV, char *name)
 {
     char *title;
@@ -291,7 +301,7 @@ void ShowSFRDialog(int which, char *op1, char *op2)
     switch(which) {
         case ELEM_RSFR:
             title = _("Read From SFR");
-            l2 = "read";
+            l2 = "read to";
             break;
 
         case ELEM_WSFR:
@@ -459,6 +469,16 @@ void ShowFormattedStringDialog(char *var, char *string)
     NoCheckingOnBox[1] = FALSE;
 }
 
+char *strDelSpace(char *dest, char *src)
+{
+    char *s = src;
+    int i = 0;
+    for(; *s; s++)
+        if(!isspace(*s))
+            dest[i++] = *s;
+    dest[i] = '\0';
+    return dest;
+}
 
 void ShowStringDialog(char * dest, char *var, char *string)
 {

@@ -25,8 +25,17 @@
 #define __LDMICRO_H
 
 #include <setjmp.h>
+#include <stdio.h>
+#include <windows.h>
+#include <stdlib.h>
+#include <errno.h>
+
+#include "current_function.hpp"
+
 typedef signed short SWORD;
 typedef signed long SDWORD;
+
+#define _BV(bit) (1 << (bit))
 
 //-----------------------------------------------
 // `Configuration options.'
@@ -179,7 +188,9 @@ typedef signed long SDWORD;
 #define MNU_COMPILE_ASM         0x74
 #define MNU_COMPILE_PASCAL      0x75
 #define MNU_COMPILE_ARDUINO     0x76
-#define MNU_FLASH_BAT           0x7F
+#define MNU_COMPILE_CAVR        0x77
+#define MNU_FLASH_BAT           0x7E
+#define MNU_READ_BAT            0x7F
 
 #define MNU_MANUAL              0x80
 #define MNU_ABOUT               0x81
@@ -567,6 +578,9 @@ typedef struct PlcProgramTag {
     ElemSubcktSeries *rungs[MAX_RUNGS];
     BOOL              rungPowered[MAX_RUNGS];
     int               numRungs;
+    char              rungSelected[MAX_RUNGS];
+    DWORD             OpsInRung[MAX_RUNGS];
+    DWORD             HexInRung[MAX_RUNGS];
 } PlcProgram;
 
 //-----------------------------------------------
@@ -615,6 +629,21 @@ typedef struct SyntaxHighlightingColoursTag {
 extern SyntaxHighlightingColours HighlightColours;
 
 //-----------------------------------------------
+//See Atmel AVR Instruction set inheritance table
+//https://en.wikipedia.org/wiki/Atmel_AVR_instruction_set#Instruction_set_inheritance
+typedef enum AvrFamilyTag {
+    NOT_AVR,
+    MinimalCore,
+    ClassicCore8K,
+    ClassicCore128K,
+    EnhancedCore8K,
+    EnhancedCore128K,
+    EnhancedCore4M,
+    XMEGAcore,
+    ReducedCore
+} AvrFamily;
+
+//-----------------------------------------------
 // Processor definitions. These tables tell us where to find the I/Os on
 // a processor, what bit in what register goes with what pin, etc. There
 // is one master SupportedMcus table, which contains entries for each
@@ -638,6 +667,9 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_INTERPRETED     0x03
 #define ISA_AVR1            ISA_AVR // 0x04
 #define ISA_NETZER          0x05
+#define ISA_PASCAL          0x06
+#define ISA_ARDUINO         0x07
+#define ISA_CAVR            0x08
 
 #define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
@@ -664,7 +696,8 @@ typedef struct McuIoInfoTag {
     }                uartNeeds;
     int              pwmNeedsPin;
     int              whichIsa;
-    BOOL             avrUseIjmp;
+    AvrFamily        Family;         // BOOL             avrUseIjmp;
+    
     DWORD            configurationWord;
     struct {
         int             int0; // The pin can serve as an External Interrupt source 0.
@@ -699,12 +732,17 @@ extern HDC Hdc;
 extern PlcProgram Prog;
 extern char CurrentSaveFile[MAX_PATH];
 extern char CurrentCompileFile[MAX_PATH];
-extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
+extern McuIoInfo SupportedMcus[]; // NUM_SUPPORTED_MCUS
 // memory debugging, because I often get careless; ok() will check that the
 // heap used for all the program storage is not yet corrupt, and oops() if
 // it is
 void CheckHeap(char *file, int line);
 #define ok() CheckHeap(__FILE__, __LINE__)
+char *ExtractFilePath(char *buffer);
+char *ExtractFileName(char *src); // with .ext
+char *GetFileName(char *dest, char *src); // without .ext
+char *SetExt(char *dest, const char *src, const char *ext);
+extern char CurrentLdPath[MAX_PATH];
 
 // maincontrols.cpp
 void MakeMainWindowControls(void);
@@ -727,6 +765,7 @@ extern int IoListHeight;
 
 // draw.cpp
 int ProgCountWidestRow(void);
+int ProgCountRows(void);
 int CountHeightOfElement(int which, void *elem);
 BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore);
 void DrawEndRung(int cx, int cy);
@@ -766,6 +805,9 @@ void MakeNormalSelected(void);
 void NegateSelected(void);
 void ForgetFromGrid(void *p);
 void ForgetEverything(void);
+BOOL EndOfRungElem(int Which);
+BOOL CanChangeOutputElem(int Which);
+BOOL StaySameElem(int Which);
 void WhatCanWeDoFromCursorAndTopology(void);
 BOOL FindSelected(int *gx, int *gy);
 void MoveCursorNear(int gx, int gy);
@@ -791,6 +833,7 @@ void AddCoil(void);
 void AddContact(void);
 void AddEmpty(int which);
 void AddMove(void);
+void AddSfr(int which);
 void AddMath(int which);
 void AddCmp(int which);
 void AddReset(void);
@@ -808,11 +851,13 @@ void AddFormattedString(void);
 void AddString(void);
 void DeleteSelectedFromProgram(void);
 void DeleteSelectedRung(void);
+BOOL CollapseUnnecessarySubckts(int which, void *any);
 void InsertRung(BOOL afterCursor);
 int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
 BOOL UartFunctionUsed(void);
 BOOL PwmFunctionUsed(void);
+BOOL EepromFunctionUsed(void);
 void PushRungUp(void);
 void PushRungDown(void);
 void NewProgram(void);
@@ -830,6 +875,11 @@ BOOL CanUndo(void);
 // loadsave.cpp
 BOOL LoadProjectFromFile(char *filename);
 BOOL SaveProjectToFile(char *filename);
+void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung);
+ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
+char *strspace(char *str);
+char *strspacer(char *str);
+char *FrmStrToStr(char *dest, char *src);
 
 // iolist.cpp
 int GenerateIoList(int prevSel);
@@ -846,6 +896,7 @@ void ShowContactsDialog(BOOL *negated, char *name);
 // coildialog.cpp
 void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name);
 // simpledialog.cpp
+void CheckVarInRange(char *name, SDWORD v);
 void ShowTimerDialog(int which, int *delay, char *name);
 void ShowCounterDialog(int which, int *count, char *name);
 void ShowMoveDialog(char *dest, char *src);
@@ -874,6 +925,15 @@ void ShowHelpDialog(BOOL about);
     ((r) >= 0.0) ? ((r) + 0.5) : ((r) - 0.5))
 #endif
 
+#define doLOG
+#ifdef doLOG
+#define LOG(EXP) dbp( #EXP " at %d in %s %s %s", __LINE__, __FILE__, __TIME__, BOOST_CURRENT_FUNCTION);
+#else
+#define LOG(EXP)
+#endif
+
+#define stringer(exp) #exp // see C Stringizing Operator (#)
+
 #define ooops(...) { \
         dbp("bad at %d %s\n", __LINE__, __FILE__); \
         dbp(__VA_ARGS__); \
@@ -885,6 +945,24 @@ void ShowHelpDialog(BOOL about);
         Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
         exit(1); \
     }
+#define dodbp
+#ifdef dodbp
+#define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
+
+#define dbps(EXP) dbp( #EXP "='%s'", EXP);
+#define dbpd(EXP) dbp( #EXP "=%d", EXP);
+#define dbpx(EXP) dbp( #EXP "=0x%x", EXP);
+#define dbph dbpx
+#define dbpf(EXP) dbp( #EXP "=%f", EXP);
+#else
+#define WARN_IF(EXP)
+
+#define dbps(EXP)
+#define dbpd(EXP)
+#define dbpx(EXP)
+#define dbpf(EXP)
+#endif
+
 void dbp(char *str, ...);
 void Error(char *str, ...);
 void *CheckMalloc(size_t n);
@@ -918,7 +996,9 @@ char *_(char *in);
 void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void StartSimulationTimer(void);
-void ClearSimulationData(void);
+BOOL ClearSimulationData(void);
+void ClrSimulationData(void);
+void CheckVariableNames(void);
 void DescribeForIoList(char *name, char *out);
 void SimulationToggleContact(char *name);
 void SetAdcShadow(char *name, SWORD val);
@@ -937,6 +1017,7 @@ void MemForVariable(char *name, DWORD *addrl, DWORD *addrh);
 BYTE MuxForAdcVariable(char *name);
 void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile(void);
+int SizeOfVar(char *name);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);
@@ -944,13 +1025,17 @@ void ComplainAboutBaudRateOverflow(void);
 extern jmp_buf CompileErrorBuf;
 
 // intcode.cpp
+extern int rungNow;
 void IntDumpListing(char *outFile);
 BOOL GenerateIntermediateCode(void);
+BOOL CheckForNumber(char *str);
+int TenToThe(int x);
 // pic16.cpp
 void CompilePic16(char *outFile);
 // avr.cpp
 void CompileAvr(char *outFile);
 // ansic.cpp
+void CompileAnsiC(char *outFile, int compile_ISA);
 void CompileAnsiC(char *outFile);
 // interpreted.cpp
 void CompileInterpreted(char *outFile);

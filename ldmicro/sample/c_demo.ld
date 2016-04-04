@@ -6,21 +6,28 @@ BAUD=9600
 IO LIST
     Xled at 32
     YTEMP_HI at 14
-    YUpdate at 12
+    YUpdate at 17
     Ycycle2 at 27
     ADCvalue at 26
 END
 
 PROGRAM
 RUNG
-    COMMENT Try compile as C for ARDUINO or AVR hex.\r\n1) You can change 'saved' in EEPROM with PERSITS via UART RECV.
+    COMMENT Try compile as AVR hex or C for ARDUINO.\r\n
 END
 RUNG
-    OSR
-    MOVE saved 32
+    COMMENT \r\n1) You can change 'saved' in EEPROM with PERSITS via UART RECV.
 END
 RUNG
     PERSIST saved
+END
+RUNG
+    OSR
+    PARALLEL
+        EQU saved 0
+        EQU saved 0xffff
+    END
+    MOVE saved '1'
 END
 RUNG
     UART_RECV saved
@@ -36,7 +43,7 @@ RUNG
     COIL Ycycle2 0 0 0
 END
 RUNG
-    COMMENT \r\n3) ADC input changes PWM duty on output.
+    COMMENT 3) ADC input changes PWM duty on output.\r\nMemo: PWM sets only once after reset.
 END
 RUNG
     READ_ADC ADCvalue
@@ -44,7 +51,7 @@ END
 RUNG
 END
 RUNG
-    DIV PWMduty ADCvalue 8
+    DIV PWMduty ADCvalue 16
 END
 RUNG
     SET_PWM PWMduty 1000
@@ -74,24 +81,30 @@ RUNG
             COIL YTEMP_HI 0 0 1
         END
         SERIES
-            CONTACTS Rbusy 0
+            EQU display 0
             FORMATTED_STRING ADCvalue 11 65 68 67 118 97 108 117 101 61 92 52
-            COIL Rbusy1 0 0 0
+            PARALLEL
+                MOVE display 1
+                SERIES
+                    OSF
+                    MOVE display 2
+                END
+            END
         END
     END
 END
 RUNG
-    CONTACTS Rbusy1 0
-    OSF
+    EQU display 2
     FORMATTED_STRING PWMduty 11 32 80 87 77 100 117 116 121 61 92 52
-    COIL Rbusy2 0 0 0
-END
-RUNG
-    CONTACTS Rbusy2 0
     OSF
-    FORMATTED_STRING saved 13 32 115 97 118 101 100 61 92 52 92 114 92 110
-    COIL Rbusy 1 0 0
+    MOVE display 3
 END
 RUNG
-    COMMENT \r\nby Ihor Nehrutsa, any questions to LDmicro.GitHub@gmail.com, March 2016
+    EQU display 3
+    FORMATTED_STRING saved 13 32 115 97 118 101 100 61 92 52 92 114 92 110
+    OSF
+    MOVE display 0
+END
+RUNG
+    COMMENT by Ihor Nehrutsa, any questions to LDmicro.GitHub@gmail.com, March 2016.\r\nTested at ATmega328p on the Arduino Nano.
 END

@@ -41,14 +41,14 @@
 #define BIT6 6
 #define BIT7 7
 
-#define r0 0 // used muls
-#define r1 1 // used muls
+#define r0 0 // used muls. Don't use elsewhere!!!
+#define r1 1 // used muls. Don't use elsewhere!!!
 #define r2 2 // used in MultiplyRoutine
 #define r3 3 // used in CopyBit, XorBit, _SWAP etc.
 
 #define r5 5
 #define r7 7 // used as Sign Register (BIT7) in DivideRoutine
-#define r9 9 // used ONLY in QuadEncodInterrupt to save REG_SREG
+#define r9 9 // used ONLY in QuadEncodInterrupt to save REG_SREG. Don't use elsewhere!!!
 
 #define r10 10 //used as op1 copy in MultiplyRoutine24
 #define r11 11
@@ -58,14 +58,14 @@
 #define r14 14
 #define r15 15
 #define r16 16 //used as op2
-#define r17 17
-#define r18 18
-#define r19 19
+#define r17 17 //...
+#define r18 18 //...
+#define r19 19 //used as op2+3
 
 #define r20 20 //used as op1 and result
-#define r21 21
-#define r22 22
-#define r23 23
+#define r21 21 //...
+#define r22 22 //...
+#define r23 23 //used as op1+3 and result+3
 
 #define r24 24
 #define r25 25 // used in WriteMemory macro, CopyBit, SetBit, IfBitClear, etc.
@@ -73,12 +73,19 @@
 
 #define r26 26 // X
 #define r27 27
-#define r28 28 // Y
+#define r28 28 // Y used as pointer to op2
 #define r29 29
-#define r30 30 // Z
+#define r30 30 // Z used as pointer to op1 and result
 #define r31 31
 
 /* Pointer definition   */
+#define XL      r26
+#define XH      r27
+#define YL      r28
+#define YH      r29
+#define ZL      r30
+#define ZH      r31
+
 #define rX  r26
 #define Xlo r26
 #define Xhi r27
@@ -190,19 +197,32 @@ typedef enum AvrOpTag {
     OP_POP,
     OP_CLI,
     OP_SEI,
-    OP_NOP
+    OP_NOP,
+    OP_COMMENT
 } AvrOp;
-#define OP_XOR OP_EOR
 
 typedef struct AvrInstructionTag {
     AvrOp       op;
     DWORD       arg1;
     DWORD       arg2;
+    char        comment[MAX_COMMENT_LEN];
+    int         rung;  // This AvrInstruction located in Prog.rungs[rung] LD
+    int         IntPc; // This AvrInstruction located in IntCode[IntPc]
 } AvrInstruction;
 
 #define MAX_PROGRAM_LEN 128*1024
 static AvrInstruction AvrProg[MAX_PROGRAM_LEN];
 static DWORD AvrProgWriteP;
+
+static int IntPcNow = -INT_MAX; //must be static
+
+typedef struct RungAddrTag {
+    DWORD   KnownAddr; // Addres to jump to the start of rung abowe the current in LD
+    DWORD   FwdAddr;   // Addres to jump to the start of rung below the current in LD
+} RungAddr;
+RungAddr AddrOfRungN[MAX_RUNGS];
+
+#define OP_XOR OP_EOR
 
 // For yet unresolved references in jumps
 static DWORD FwdAddrCount;
@@ -231,6 +251,7 @@ static int EepromHighByteWaitingBit;
 
 // Some useful registers, unfortunately many of which are in different places
 // on different AVRs! I consider this a terrible design choice by Atmel.
+// '-1' means not defined.
 //static DWORD REG_TIMSK  = -1;
 static BYTE      OCIE1A = -1; // Timer/Counter1, Output Compare A Match Interrupt Enable
 static BYTE      TOIE1  = -1; // Timer/Counter1 Overflow Interrupt Enable
@@ -241,6 +262,31 @@ static DWORD REG_TIFR0  = -1;
 static BYTE      OCF1A  = -1; // Timer/Counter1, Output Compare A Match Flag
 static BYTE      TOV1   = -1; // Timer/Counter1 Overflow Flag
 static BYTE      TOV0   = -1; // Timer/Counter0 Overflow Flag
+//#define REG_OCR1AH  0x4b
+//#define REG_OCR1AL  0x4a
+//#define REG_TCCR1A  0x4f
+//#define REG_TCCR1B  0x4e
+
+#define REG_SREG    0x5f
+#define     SREG_C  0
+#define     SREG_Z  1
+#define     SREG_N  2
+#define     SREG_V  3
+#define     SREG_S  4
+#define     SREG_H  5
+#define     SREG_T  6
+#define     SREG_I  7
+#define REG_SPH     0x5e
+#define REG_SPL     0x5d
+
+static DWORD REG_ADMUX  = 0x27;
+static DWORD REG_ADCSRA = 0x26;
+#define          ADEN     BIT7
+#define          ADSC     BIT6
+#define          ADFR     BIT5 // ADATE
+#define          ADIE     BIT3
+static DWORD REG_ADCH   = 0x25;
+static DWORD REG_ADCL   = 0x24;
 
 static DWORD REG_OCR1AH = -1;
 static DWORD REG_OCR1AL = -1;
@@ -250,19 +296,12 @@ static DWORD REG_TCCR1B = -1;
 #define          WGM12     3
 #define          WGM11     1
 #define          WGM10     0
-
-#define REG_SREG    0x5f
-#define REG_SPH     0x5e
-#define REG_SPL     0x5d
-#define REG_ADMUX   0x27
-#define REG_ADCSRA  0x26
-#define REG_ADCL    0x24
-#define REG_ADCH    0x25
-
 static DWORD REG_UBRRH  = -1;
 static DWORD REG_UBRRL  = -1;
 static DWORD REG_UCSRC  = -1;
 static DWORD REG_UCSRB  = -1;
+#define          RXEN   BIT4
+#define          TXEN   BIT3
 static DWORD REG_UCSRA  = -1;
 #define      RXC  BIT7 // USART Receive Complete
                        // This flag bit is set when there are unread data
@@ -281,17 +320,30 @@ static DWORD REG_UDR = -1;
 #define REG_TCNT0   0x52
 
 #define REG_WDTCR   0x41
-#define REG_OCR2    0x43
-#define REG_TCCR2   0x45
+#define     WDCE    BIT4
+#define     WDE     BIT3
+#define     WDP2    BIT2
+#define     WDP1    BIT1
+#define     WDP0    BIT0
 
-#define REG_EEARH   0x3f
-#define REG_EEARL   0x3e
-#define REG_EEDR    0x3d
-#define REG_EECR    0x3c
-#define     EECR_EERE   BIT0
-#define     EECR_EEWE   BIT1
-#define     EECR_EEMWE  BIT2
-#define     EECR_EERIE  BIT3
+//#define REG_OCR2    0x43
+//#define REG_TCCR2   0x45
+static DWORD REG_OCR2   = 0x43; //-1;
+static DWORD REG_TCCR2  = 0x45; //-1;
+static DWORD REG_TCCR2B = -1;
+static BYTE      WGM20  = BIT6;
+static BYTE      WGM21  = BIT3;
+static BYTE      COM21  = BIT5;
+static BYTE      COM20  = BIT4;
+
+static DWORD REG_EEARH     = 0x3f;
+static DWORD REG_EEARL     = 0x3e;
+static DWORD REG_EEDR      = 0x3d;
+static DWORD REG_EECR      = 0x3c;
+#define          EERE   BIT0
+#define          EEWE   BIT1
+#define          EEMWE  BIT2
+#define          EERIE  BIT3
 
 #define IOREG(sfr) (sfr - 0x20)
 
@@ -302,7 +354,7 @@ static DWORD REG_UDR = -1;
 #define TWSR    0x21
 #define TWBR    0x20
 /*
-// I2C support for atmega48,88,168,328, 164,324,644,1284,2560
+// I2C support for atmega48,88,168,328,164,324,644,1284,2560
 #define TWAMR   0xBD
 #define TWCR    0xBC
 #define TWDR    0xBB
@@ -367,22 +419,51 @@ static void WipeMemory(void)
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void Instruction(AvrOp op, DWORD arg1, DWORD arg2)
+static void Instruction(AvrOp op, DWORD arg1, DWORD arg2, char *comment)
 {
     if(AvrProg[AvrProgWriteP].op != OP_VACANT) oops();
 
     AvrProg[AvrProgWriteP].op = op;
     AvrProg[AvrProgWriteP].arg1 = arg1;
     AvrProg[AvrProgWriteP].arg2 = arg2;
+    if(comment) strcpy(AvrProg[AvrProgWriteP].comment, comment);
+    AvrProg[AvrProgWriteP].rung = rungNow;
+    AvrProg[AvrProgWriteP].IntPc = IntPcNow;
     AvrProgWriteP++;
 }
+
+static void Instruction(AvrOp op, DWORD arg1, DWORD arg2)
+{
+    Instruction(op, arg1, arg2, NULL);
+}
+
 static void Instruction(AvrOp op, DWORD arg1)
 {
     Instruction(op, arg1, 0);
 }
+
 static void Instruction(AvrOp op)
 {
     Instruction(op, 0, 0);
+}
+
+static void Instruction(AvrOp op, char *comment)
+{
+    Instruction(op, 0, 0, NULL);
+}
+
+//-----------------------------------------------------------------------------
+// printf-like comment function
+//-----------------------------------------------------------------------------
+static void Comment(char *str, ...)
+{
+    if(strlen(str)>=MAX_COMMENT_LEN)
+      str[MAX_COMMENT_LEN-1]='\0';
+    va_list f;
+    char buf[MAX_COMMENT_LEN];
+    va_start(f, str);
+    vsprintf(buf, str, f);
+    Instruction(OP_COMMENT, buf);
 }
 
 //-----------------------------------------------------------------------------
@@ -443,241 +524,351 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive) if( (v<LowerRangeInclusive) || (v > UpperRangeInclusive) ) ooops("v=%d [%d..%d]", v, LowerRangeInclusive, UpperRangeInclusive)
     switch(op) {
-        case OP_ASR:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (9 << 12) | (2 << 9) | (arg1 << 4) | 5;
+    case OP_COMMENT:
+        CHECK(arg1, 0); CHECK(arg2, 0);
+        return 0;
 
-        case OP_ROR:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (9 << 12) | (2 << 9) | (arg1 << 4) | 7;
+    case OP_NOP:
+        CHECK(arg1, 0); CHECK(arg2, 0);
+        return 0;
 
-        case OP_ADD:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (3 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_ASR:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x9000 | (2 << 9) | (arg1 << 4) | 5;
 
-        case OP_ADC:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (7 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_ROR:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (9 << 12) | (2 << 9) | (arg1 << 4) | 7;
 
-        case OP_EOR:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (9 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_ADD:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (3 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_SUB:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (6 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_ADC:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (7 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_SBC:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (2 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_ADIW:
+        if(!((arg1==24)||(arg1==26)||(arg1==28)||(arg1==30))) oops();
+        CHECK2(arg2, 0, 64);
+        return 0x9600 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) |
+            (arg2 & 0x0f);
 
-        case OP_CP:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (5 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_SBIW:
+        if(!((arg1==24)||(arg1==26)||(arg1==28)||(arg1==30))) oops();
+        CHECK2(arg2, 0, 64);
+        return 0x9700 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) |
+            (arg2 & 0x0f);
 
-        case OP_CPC:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (1 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_EOR:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (9 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_COM:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (9 << 12) | (2 << 9) | (arg1 << 4);
+    case OP_CLR:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (9 << 10) | ((arg1 & 0x10) << 5) | (arg1 << 4) |
+            (arg1 & 0x0f);
 
-        case OP_SBR:
-            CHECK(arg1, 5); CHECK(arg2, 8);
-            if(!(arg1 & 0x10)) oops();
-            arg1 &= ~0x10;
-            return (6 << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_SER:
+        CHECK2(arg1,16,31);
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        if((arg1<16) || (31<arg1)) oops();
+        return 0xEF0F | (arg1 << 4);
 
-        case OP_CBR:
-            CHECK(arg1, 5); CHECK(arg2, 8);
-            if(!(arg1 & 0x10)) oops();
-            arg1 &= ~0x10;
-            arg2 = ~arg2;
-            return (7 << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_SUB:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (6 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_INC:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (0x4a << 9) | (arg1 << 4) | 3;
+    case OP_SBC:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (2 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_DEC:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (0x4a << 9) | (arg1 << 4) | 10;
+    case OP_CP:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (5 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_SUBI:
-            CHECK(arg1, 5); CHECK(arg2, 8);
-            if(!(arg1 & 0x10)) oops();
-            arg1 &= ~0x10;
-            return (5 << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_CPC:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (1 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_SBCI:
-            CHECK(arg1, 5); CHECK(arg2, 8);
-            if(!(arg1 & 0x10)) oops();
-            arg1 &= ~0x10;
-            return (4 << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_CPI:
+        CHECK2(arg1,16,31); CHECK(arg2, 8);
+        return 0x3000 | ((arg2 & 0xF0) << 4) | ((arg1 & 0x0F) << 4) |
+            (arg2 & 0x0F);
 
-        case OP_TST:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (8 << 10) | ((arg1 & 0x10) << 4) | ((arg1 & 0x10) << 5) |
-                ((arg1 & 0xf) << 4) | (arg1 & 0xf);
+    case OP_COM:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (9 << 12) | (2 << 9) | (arg1 << 4);
 
-        case OP_SEC:
-            CHECK(arg1, 0); CHECK(arg2, 0);
-            return 0x9408;
+    case OP_SBR:
+        CHECK(arg1, 5); CHECK(arg2, 8);
+        if(!(arg1 & 0x10)) oops();
+        arg1 &= ~0x10;
+        return (6 << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_CLC:
-            CHECK(arg1, 0); CHECK(arg2, 0);
-            return 0x9488;
+    case OP_CBR:
+        CHECK(arg1, 5); CHECK(arg2, 8);
+        if(!(arg1 & 0x10)) oops();
+        arg1 &= ~0x10;
+        arg2 = ~arg2;
+        return (7 << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_IJMP:
-            CHECK(arg1, 0); CHECK(arg2, 0);
-            return 0x9409;
+    case OP_INC:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (0x4a << 9) | (arg1 << 4) | 3;
 
-        case OP_ICALL:
-            CHECK(arg1, 0); CHECK(arg2, 0);
-            return 0x9509;
+    case OP_DEC:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (0x4a << 9) | (arg1 << 4) | 10;
 
-        case OP_RJMP:
-            CHECK(arg2, 0);
-            arg1 = arg1 - addrAt - 1;
-            if(((int)arg1) > 2047 || ((int)arg1) < -2048) oops();
-            arg1 &= (4096-1);
-            return (12 << 12) | arg1;
+    case OP_SUBI:
+        CHECK(arg1, 5); CHECK(arg2, 8);
+        if(!(arg1 & 0x10)) oops();
+        arg1 &= ~0x10;
+        return (5 << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_RCALL:
-            CHECK(arg2, 0);
-            arg1 = arg1 - addrAt - 1;
-            if(((int)arg1) > 2047 || ((int)arg1) < -2048) oops();
-            arg1 &= (4096-1);
-            return (13 << 12) | arg1;
+    case OP_SBCI:
+        CHECK(arg1, 5); CHECK(arg2, 8);
+        if(!(arg1 & 0x10)) oops();
+        arg1 &= ~0x10;
+        return (4 << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_RETI:
-            return 0x9518;
+    case OP_TST:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (8 << 10) | ((arg1 & 0x10) << 4) | ((arg1 & 0x10) << 5) |
+            ((arg1 & 0xf) << 4) | (arg1 & 0xf);
 
-        case OP_RET:
-            return 0x9508;
+    case OP_SEC:
+        CHECK(arg1, 0); CHECK(arg2, 0);
+        return 0x9408;
 
-        case OP_SBRC:
-            CHECK(arg1, 5); CHECK(arg2, 3);
-            return (0x7e << 9) | (arg1 << 4) | arg2;
+    case OP_CLC:
+        CHECK(arg1, 0); CHECK(arg2, 0);
+        return 0x9488;
 
-        case OP_SBRS:
-            CHECK(arg1, 5); CHECK(arg2, 3);
-            return (0x7f << 9) | (arg1 << 4) | arg2;
+    case OP_IJMP:
+        CHECK(arg1, 0); CHECK(arg2, 0);
+        return 0x9409;
 
-        case OP_BREQ:
-            CHECK(arg2, 0);
-            arg1 = arg1 - addrAt - 1;
-            if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
-            arg1 &= (128-1);
-            return (0xf << 12) | (arg1 << 3) | 1;
+    case OP_ICALL:
+        CHECK(arg1, 0); CHECK(arg2, 0);
+        return 0x9509;
 
-        case OP_BRNE:
-            CHECK(arg2, 0);
-            arg1 = arg1 - addrAt - 1;
-            if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
-            arg1 &= (128-1);
-            return (0xf << 12) | (1 << 10) | (arg1 << 3) | 1;
+    case OP_RJMP:
+        CHECK(arg2, 0);
+        arg1 = arg1 - addrAt - 1;
+        if(((int)arg1) > 2047 || ((int)arg1) < -2048) oops();
+        arg1 &= (4096-1);
+        return (12 << 12) | arg1;
 
-        case OP_BRLO:
-            CHECK(arg2, 0);
-            arg1 = arg1 - addrAt - 1;
-            if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
-            arg1 &= (128-1);
-            return (0xf << 12) | (arg1 << 3);
+    case OP_RCALL:
+        CHECK(arg2, 0);
+        arg1 = arg1 - addrAt - 1;
+        if(((int)arg1) > 2047 || ((int)arg1) < -2048) oops();
+        arg1 &= (4096-1);
+        return (13 << 12) | arg1;
 
-        case OP_BRGE:
-            CHECK(arg2, 0);
-            arg1 = arg1 - addrAt - 1;
-            if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
-            arg1 &= (128-1);
-            return (0xf << 12) | (1 << 10) | (arg1 << 3) | 4;
+    case OP_RETI:
+        return 0x9518;
 
-        case OP_BRLT:
-            CHECK(arg2, 0);
-            arg1 = arg1 - addrAt - 1;
-            if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
-            arg1 &= (128-1);
-            return (0xf << 12) | (arg1 << 3) | 4;
+    case OP_RET:
+        return 0x9508;
 
-        case OP_BRCC:
-            CHECK(arg2, 0);
-            arg1 = arg1 - addrAt - 1;
-            if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
-            arg1 &= (128-1);
-            return (0xf << 12) | (1 << 10) | (arg1 << 3);
+    case OP_SBRC:
+        CHECK(arg1, 5); CHECK(arg2, 3);
+        return (0x7e << 9) | (arg1 << 4) | arg2;
 
-        case OP_BRCS:
-            CHECK(arg2, 0);
-            arg1 = arg1 - addrAt - 1;
-            if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
-            arg1 &= (128-1);
-            return (0xf << 12) | (arg1 << 3);
+    case OP_SBRS:
+        CHECK(arg1, 5); CHECK(arg2, 3);
+        return (0x7f << 9) | (arg1 << 4) | arg2;
 
-        case OP_MOV:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (0xb << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_BREQ:
+        CHECK(arg2, 0);
+        arg1 = arg1 - addrAt - 1;
+        if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
+        arg1 &= (128-1);
+        return (0xf << 12) | (arg1 << 3) | 1;
 
-        case OP_LDI:
-            CHECK(arg1, 5); CHECK(arg2, 8);
-            if(!(arg1 & 0x10)) oops();
-            arg1 &= ~0x10;
-            return (0xe << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_BRNE:
+        CHECK(arg2, 0);
+        arg1 = arg1 - addrAt - 1;
+        if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
+        arg1 &= (128-1);
+        return (0xf << 12) | (1 << 10) | (arg1 << 3) | 1;
 
-        case OP_LD_X:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (9 << 12) | (arg1 << 4) | 12;
+    case OP_BRLO:
+        CHECK(arg2, 0);
+        arg1 = arg1 - addrAt - 1;
+        if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
+        arg1 &= (128-1);
+        return (0xf << 12) | (arg1 << 3);
 
-        case OP_LD_XP:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (9 << 12) | (arg1 << 4) | 13;
+    case OP_BRGE:
+        CHECK(arg2, 0);
+        arg1 = arg1 - addrAt - 1;
+        if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
+        arg1 &= (128-1);
+        return (0xf << 12) | (1 << 10) | (arg1 << 3) | 4;
 
-        case OP_LD_XS:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (9 << 12) | (arg1 << 4) | 14;
+    case OP_BRLT:
+        CHECK(arg2, 0);
+        arg1 = arg1 - addrAt - 1;
+        if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
+        arg1 &= (128-1);
+        return (0xf << 12) | (arg1 << 3) | 4;
 
-        case OP_ST_X:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (0x49 << 9) | (arg1 << 4) | 12;
+    case OP_BRCC:
+        CHECK(arg2, 0);
+        arg1 = arg1 - addrAt - 1;
+        if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
+        arg1 &= (128-1);
+        return (0xf << 12) | (1 << 10) | (arg1 << 3);
 
-        case OP_ST_XP:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (0x49 << 9) | (arg1 << 4) | 13;
+    case OP_BRCS:
+        CHECK(arg2, 0);
+        arg1 = arg1 - addrAt - 1;
+        if(((int)arg1) > 63 || ((int)arg1) < -64) oops();
+        arg1 &= (128-1);
+        return (0xf << 12) | (arg1 << 3);
 
-        case OP_ST_XS:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            return (0x49 << 9) | (arg1 << 4) | 14;
+    case OP_MOV:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (0xb << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_WDR:
-            CHECK(arg1, 0); CHECK(arg2, 0);
-            return 0x95a8;
+    case OP_LDI:
+        CHECK(arg1, 5); CHECK(arg2, 8);
+        if(!(arg1 & 0x10)) oops();
+        arg1 &= ~0x10;
+        return (0xe << 12) | ((arg2 & 0xf0) << 4) | (arg1 << 4) |
+            (arg2 & 0x0f);
 
-        case OP_AND:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (0x8 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_LD_X:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (9 << 12) | (arg1 << 4) | 12;
 
-        case OP_OR:
-            CHECK(arg1, 5); CHECK(arg2, 5);
-            return (0xA << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
-                (arg2 & 0x0f);
+    case OP_LD_XP:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (9 << 12) | (arg1 << 4) | 13;
 
-        default:
-            oops();
-            break;
+    case OP_LD_XS:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (9 << 12) | (arg1 << 4) | 14;
+    case OP_LD_Y:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x8000 | (arg1 << 4) |  8;
+
+    case OP_LD_YP:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x9000 | (arg1 << 4) |  9;
+
+    case OP_LD_YS:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x9000 | (arg1 << 4) | 10;
+
+    case OP_LDD_Y:
+        CHECK(arg1, 5); CHECK(arg2, 6);
+        return 0x8008 | (arg1 << 4) | ((arg2 & 0x20) << 8) | ((arg2 & 0x18) << 7) | (arg2 & 0x7);
+
+    case OP_LD_Z:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x8000 | (arg1 << 4) |  0;
+
+    case OP_LD_ZP:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x9000 | (arg1 << 4) |  1;
+
+    case OP_LD_ZS:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x9000 | (arg1 << 4) |  2;
+
+    case OP_LDD_Z:
+        CHECK(arg1, 5); CHECK(arg2, 6);
+        return 0x8000 | (arg1 << 4) | ((arg2 & 0x20) << 8) | ((arg2 & 0x18) << 7) | (arg2 & 0x7);
+
+    case OP_LPM_0Z:
+        CHECK(arg1, 0); CHECK(arg2, 0);
+        return 0x95C8;
+
+    case OP_LPM_Z:
+        CHECK2(arg1, 0, 31); CHECK(arg2, 0);
+        return (0x9004) | (arg1 << 4);
+
+    case OP_LPM_ZP:
+        CHECK2(arg1, 0, 31); CHECK(arg2, 0);
+        return (0x9005) | (arg1 << 4);
+
+    case OP_ST_X:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (0x49 << 9) | (arg1 << 4) | 12;
+
+    case OP_ST_XP:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (0x49 << 9) | (arg1 << 4) | 13;
+
+    case OP_ST_XS:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return (0x49 << 9) | (arg1 << 4) | 14;
+    case OP_ST_Y:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x8200 | (arg1 << 4) |  8;
+
+    case OP_ST_YP:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x9200 | (arg1 << 4) |  9;
+
+    case OP_ST_YS:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x9200 | (arg1 << 4) | 10;
+
+    case OP_ST_Z:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x8200 | (arg1 << 4) |  0;
+
+    case OP_ST_ZP:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x9200 | (arg1 << 4) |  1;
+
+    case OP_ST_ZS:
+        CHECK(arg1, 5); CHECK(arg2, 0);
+        return 0x9200 | (arg1 << 4) |  2;
+
+    case OP_WDR:
+        CHECK(arg1, 0); CHECK(arg2, 0);
+        return 0x95a8;
+
+    case OP_ANDI:
+        CHECK2(arg1,16,31); CHECK(arg2, 8);
+        return 0x7000 | ((arg2 & 0xF0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0x0F);
+
+    case OP_ORI:
+        CHECK2(arg1,16,31); CHECK(arg2, 8);
+        return 0x6000 | ((arg2 & 0xF0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0x0F);
+
+    case OP_AND:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (0x8 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
+
+    case OP_OR:
+        CHECK(arg1, 5); CHECK(arg2, 5);
+        return (0xA << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
+            (arg2 & 0x0f);
+
+    default:
+        oops();
+        break;
     }
 }
 
@@ -716,6 +907,10 @@ static void WriteHexFile(FILE *f)
 
     // end of file record
     fprintf(f, ":00000001FF\n");
+    if((Prog.mcu->flashWords) && (AvrProgWriteP >= Prog.mcu->flashWords)) {
+        Error(_(" Flash program memory size %d is exceed limit %d words\nfor %s."), AvrProgWriteP, Prog.mcu->flashWords, Prog.mcu->mcuName);
+    }
+    dbp(_("%d(0x%X) is flash program memory size,\n%d(0x%X) words is limit for\n%s."), AvrProgWriteP, AvrProgWriteP, Prog.mcu->flashWords, Prog.mcu->flashWords, Prog.mcu->mcuName);
 }
 
 //-----------------------------------------------------------------------------
@@ -723,84 +918,196 @@ static void WriteHexFile(FILE *f)
 // have to update all of it.
 //-----------------------------------------------------------------------------
 static void LoadXAddr(DWORD addr)
+//used rX; Opcodes: 2
 {
-    Instruction(OP_LDI, 27, (addr >> 8));
-    Instruction(OP_LDI, 26, (addr & 0xff));
+    Instruction(OP_LDI, 26, (addr & 0xff)); // X-register Low Byte
+    Instruction(OP_LDI, 27, (addr >> 8));   // X-register High Byte
+}
+
+static void LoadYAddr(DWORD addr)
+//used rY; Opcodes: 2
+{
+    Instruction(OP_LDI, 28, (addr & 0xff)); // Y-register Low Byte
+    Instruction(OP_LDI, 29, (addr >> 8));   // Y-register High Byte
+}
+
+static void LoadZAddr(DWORD addr)
+//used ZL; Opcodes: 2
+{
+    Instruction(OP_LDI, 30, (addr & 0xff)); // Z-register Low Byte
+    Instruction(OP_LDI, 31, (addr >> 8));   // Z-register High Byte
 }
 
 //-----------------------------------------------------------------------------
-// Generate code to write an 8-bit value to a particular register.
+// Generate code to write/read an 8-bit value to a particular register.
 //-----------------------------------------------------------------------------
 static void WriteMemory(DWORD addr, BYTE val)
+//used ZL, r25; Opcodes: 4
 {
-    LoadXAddr(addr);
-    // load r16 with the data
-    Instruction(OP_LDI, 16, val);
+    if(addr <= 0) {
+        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped!"), val); //see TODO
+        return;
+    }
+    LoadZAddr(addr);
+    // load r25 with the data
+    Instruction(OP_LDI, r25, val);
     // do the store
-    Instruction(OP_ST_X, 16, 0);
+    Instruction(OP_ST_ZP, r25);
 }
-
+//-----------------------------------------------------------------------------
+// Use only after WriteMemory()
+//-----------------------------------------------------------------------------
+static void WriteMemoryNextAddr(BYTE val)
+//used ZL, r25; Opcodes: 2
+{
+    // load r25 with the data
+    Instruction(OP_LDI, r25, val);
+    // do the store
+    Instruction(OP_ST_ZP, r25);
+}
+//-----------------------------------------------------------------------------
+static void WriteRegToIO(DWORD addr, BYTE reg)
+//   used ZL; Opcodes: 3
+//or used   ; Opcodes: 1
+{
+    if(addr <= 0) {
+        Error(_("Zero memory addres not allowed!\nWriteRegToIO skiped.")); //see TODO
+        return;
+    }
+    if(reg < 0) {
+        Error(_("Registers less zero not allowed!\nWriteRegToIO skiped.")); //see TODO
+        return;
+    }
+    #ifdef USE_IO_REGISTERS
+    Instruction(OP_OUT, IOREG(addr), reg);
+    #else
+    LoadZAddr(addr);
+    Instruction(OP_ST_Z, reg);
+    #endif
+}
+//-----------------------------------------------------------------------------
+static void ReadIoToReg(BYTE reg, DWORD addr)
+//   used ZL; Opcodes: 3
+//or used   ; Opcodes: 1
+{
+    if(addr <= 0) {
+        Error(_("Zero memory addres not allowed!\nReadIoToReg skiped.")); //see TODO
+        return;
+    }
+    if(reg < 0) {
+        Error(_("Registers less zero not allowed!\nReadIoToReg skiped.")); //see TODO
+        return;
+    }
+    #ifdef USE_IO_REGISTERS
+    Instruction(OP_IN, reg, IOREG(addr));
+    #else
+    LoadZAddr(addr);
+    Instruction(OP_LD_Z, reg);
+    #endif
+}
 //-----------------------------------------------------------------------------
 // Copy just one bit from one place to another.
 //-----------------------------------------------------------------------------
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
-    LoadXAddr(addrSrc); Instruction(OP_LD_X, 16, 0);
-    LoadXAddr(addrDest); Instruction(OP_LD_X, 17, 0);
-    Instruction(OP_SBRS, 16, bitSrc);
-    Instruction(OP_CBR, 17, (1 << bitDest));
-    Instruction(OP_SBRC, 16, bitSrc);
-    Instruction(OP_SBR, 17, (1 << bitDest));
-
-    Instruction(OP_ST_X, 17, 0);
+//used ZL, r25, r3; Opcodes: 11
+    LoadZAddr(addrSrc);  Instruction(OP_LD_Z, r3);
+    LoadZAddr(addrDest); Instruction(OP_LD_Z, r25);
+    Instruction(OP_SBRS, r3, bitSrc);
+    Instruction(OP_CBR, r25, (1 << bitDest));
+    Instruction(OP_SBRC, r3, bitSrc);
+    Instruction(OP_SBR, r25, (1 << bitDest));
+    Instruction(OP_ST_Z, r25);
+/*
+//used ZL, r25; Opcodes: 9
+    LoadZAddr(addrSrc);  Instruction(OP_LD_Z, r25);
+    Instruction(OP_BST, r25, bitSrc);
+    LoadZAddr(addrDest); Instruction(OP_LD_Z, r25);
+    Instruction(OP_BLD, r25, bitDest);
+    Instruction(OP_ST_Z, r25);
+*/
 }
 
 //-----------------------------------------------------------------------------
 // Execute the next instruction only if the specified bit of the specified
 // memory location is clear (i.e. skip if set).
 //-----------------------------------------------------------------------------
-static void IfBitClear(DWORD addr, int bit)
+static void IfBitClear(DWORD addr, int bit, BYTE reg)
 {
-    LoadXAddr(addr);
-    Instruction(OP_LD_X, 16, 0);
-    Instruction(OP_SBRS, 16, bit);
+    LoadZAddr(addr);
+    Instruction(OP_LD_Z, reg);
+    Instruction(OP_SBRS, reg, bit);
+}
+static void IfBitClear(DWORD addr, int bit)
+//used ZL, r25; Opcodes: 4 // bit in [0..7]
+{
+    IfBitClear(addr, bit, r25);
 }
 
+#ifdef USE_IO_REGISTERS
+static void IfBitClearIO(BYTE reg, int bit)
+{
+    Instruction(OP_SBIS, IOREG(reg), bit);
+}
+#endif
 //-----------------------------------------------------------------------------
 // Execute the next instruction only if the specified bit of the specified
 // memory location is set (i.e. skip if clear).
 //-----------------------------------------------------------------------------
 static void IfBitSet(DWORD addr, int bit)
+//used ZL, r25 // bit in [0..7]
 {
-    LoadXAddr(addr);
-    Instruction(OP_LD_X, 16, 0);
-    Instruction(OP_SBRC, 16, bit);
+    LoadZAddr(addr);
+    Instruction(OP_LD_Z, r25);
+    Instruction(OP_SBRC, r25, bit);
 }
 
+#ifdef USE_IO_REGISTERS
+static void IfBitSetIO(BYTE reg, int bit)
+{
+    Instruction(OP_SBIC, IOREG(reg), bit);
+}
+#endif
 //-----------------------------------------------------------------------------
 // Set a given bit in an arbitrary (not necessarily I/O memory) location in
 // memory.
 //-----------------------------------------------------------------------------
 static void SetBit(DWORD addr, int bit)
+//used ZL, r25 // Opcodes: 5
 {
-    LoadXAddr(addr);
-    Instruction(OP_LD_X, 16, 0);
-    Instruction(OP_SBR, 16, (1 << bit));
-    Instruction(OP_ST_X, 16, 0);
+    LoadZAddr(addr);
+    Instruction(OP_LD_Z, r25);
+    Instruction(OP_SBR, r25, (1 << bit));
+    Instruction(OP_ST_Z, r25);
 }
 
+#ifdef USE_IO_REGISTERS
+static void SetBitIO(BYTE reg, int bit)
+// Opcodes: 1
+{
+    Instruction(OP_SBI, IOREG(reg), bit);
+}
+#endif
 //-----------------------------------------------------------------------------
 // Clear a given bit in an arbitrary (not necessarily I/O memory) location in
 // memory.
 //-----------------------------------------------------------------------------
 static void ClearBit(DWORD addr, int bit)
+//used ZL, r25; Opcodes: 5
 {
-    LoadXAddr(addr);
-    Instruction(OP_LD_X, 16, 0);
-    Instruction(OP_CBR, 16, (1 << bit));
-    Instruction(OP_ST_X, 16, 0);
+    LoadZAddr(addr);
+    Instruction(OP_LD_Z, r25);
+    Instruction(OP_CBR, r25, (1 << bit));
+    Instruction(OP_ST_Z, r25);
 }
 
+#ifdef USE_IO_REGISTERS
+static void ClearBitIO(BYTE reg, int bit)
+// Opcodes: 1
+{
+    Instruction(OP_CBI, IOREG(reg), bit);
+}
+#endif
 //-----------------------------------------------------------------------------
 // Configure AVR 16-bit Timer1 to do the timing for us.
 //-----------------------------------------------------------------------------
@@ -880,6 +1187,8 @@ static void WriteRuntime(void)
         Instruction(OP_RETI, 0, 0);
 
     FwdAddrIsNow(resetVector);
+    Comment("Interrupt table end.");
+    Comment("It is ResetVector");
 
     // set up the stack, which we use only when we jump to multiply/divide
     // routine
@@ -905,7 +1214,7 @@ static void WriteRuntime(void)
     Instruction(OP_BRNE, loopZero, 0);
 
 
-    // set up I/O pins
+    Comment("Set up I/O pins");
     BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
     BuildDirectionRegisters(isInput, isOutput);
 
@@ -922,7 +1231,7 @@ static void WriteRuntime(void)
         int divisor = (Prog.mcuClock + Prog.baudRate*8)/(Prog.baudRate*16) - 1;
 
         double actual = Prog.mcuClock/(16.0*(divisor+1));
-        double percentErr = 100*(actual - Prog.baudRate)/Prog.baudRate;
+        double percentErr = 100.0*(actual - Prog.baudRate)/Prog.baudRate;
 
         if(fabs(percentErr) > 2) {
             ComplainAboutBaudRateError(divisor, actual, percentErr);
@@ -931,7 +1240,7 @@ static void WriteRuntime(void)
 
         WriteMemory(REG_UBRRH, divisor >> 8);
         WriteMemory(REG_UBRRL, divisor & 0xff);
-        WriteMemory(REG_UCSRB, (1 << 4) | (1 << 3)); // RXEN, TXEN
+        WriteMemory(REG_UCSRB, (1 << RXEN) | (1 << TXEN));
 
         for(i = 0; i < Prog.mcu->pinCount; i++) {
             if(Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.txPin) {
@@ -944,6 +1253,7 @@ static void WriteRuntime(void)
     }
 
     if(PwmFunctionUsed()) {
+        Comment("PwmFunctionUsed");
         for(i = 0; i < Prog.mcu->pinCount; i++) {
             if(Prog.mcu->pinInfo[i].pin == Prog.mcu->pwmNeedsPin) {
                 McuIoPinInfo *iop = &(Prog.mcu->pinInfo[i]);
@@ -954,6 +1264,7 @@ static void WriteRuntime(void)
         if(i == Prog.mcu->pinCount) oops();
     }
 
+    Comment("Turn on the pull-ups, and drive the outputs low to start");
     for(i = 0; Prog.mcu->dirRegs[i] != 0; i++) {
         if(Prog.mcu->dirRegs[i] == 0xff && Prog.mcu->outputRegs[i] == 0xff) {
             // skip this one, dummy entry for MCUs with I/O ports not
@@ -965,19 +1276,24 @@ static void WriteRuntime(void)
         }
     }
 
+    Comment("ConfigureTimerForPlcCycle");
 
     ConfigureTimer1(Prog.cycleTime);
 
-    // and now the generated PLC code will follow
+    Comment("and now the generated PLC code will follow");
+    Comment("Begin Of PLC Cycle");
     BeginningOfCycleAddr = AvrProgWriteP;
 
-    DWORD now = AvrProgWriteP;
+
     IfBitClear(REG_TIFR1, OCF1A);
-    Instruction(OP_RJMP, now, 0);
+    Instruction(OP_RJMP, BeginningOfCycleAddr); // Ladder cycle timing on Timer1/Counter
+
 
     SetBit(REG_TIFR1, OCF1A);
+    //To clean a bit in the register TIFR need write 1 in the corresponding bit!
 
-    Instruction(OP_WDR, 0, 0);
+    //Comment("Watchdog reset");
+    //Instruction(OP_WDR, 0, 0); // moved to the end of PLC cycle
 }
 
 //-----------------------------------------------------------------------------
@@ -989,9 +1305,11 @@ static void WriteRuntime(void)
 static void CompileIfBody(DWORD condFalse)
 {
     IntPc++;
+    IntPcNow = IntPc;
     CompileFromIntermediate();
     if(IntCode[IntPc].op == INT_ELSE) {
         IntPc++;
+        IntPcNow = IntPc;
         DWORD endBlock = AllocFwdAddr();
         Instruction(OP_RJMP, endBlock, 0);
 
@@ -1002,7 +1320,7 @@ static void CompileIfBody(DWORD condFalse)
         FwdAddrIsNow(condFalse);
     }
 
-    if(IntCode[IntPc].op != INT_END_IF) oops();
+    if(IntCode[IntPc].op != INT_END_IF) ooops("INT_%d", IntCode[IntPc].op);
 }
 
 //-----------------------------------------------------------------------------
@@ -1010,10 +1328,11 @@ static void CompileIfBody(DWORD condFalse)
 // the processor supports or requires.
 //-----------------------------------------------------------------------------
 static void CallSubroutine(DWORD addr)
+//used ZL
 {
-    if(Prog.mcu->avrUseIjmp) {
-        Instruction(OP_LDI, 30, FWD_LO(addr));
-        Instruction(OP_LDI, 31, FWD_HI(addr));
+    if(Prog.mcu->Family >= ClassicCore8K) {
+        Instruction(OP_LDI, ZL, FWD_LO(addr));
+        Instruction(OP_LDI, ZH, FWD_HI(addr));
         Instruction(OP_ICALL, 0, 0);
     } else {
         Instruction(OP_RCALL, addr, 0);
@@ -1021,6 +1340,73 @@ static void CallSubroutine(DWORD addr)
 }
 
 //-----------------------------------------------------------------------------
+static void CopyLiteralToRegs(int reg, int literal, int sov)
+{
+    Instruction(OP_LDI, reg, (literal & 0xff));
+    Instruction(OP_LDI, reg+1, (literal >> 8) & 0xff);
+}
+//-----------------------------------------------------------------------------
+static void CopyVarToRegs(int reg, char *var, int sovRegs)
+{
+    DWORD addrl, addrh;
+    int sov = SizeOfVar(var);
+    if(sov != sovRegs)
+      dbp("reg=%d sovRegs=%d <- var=%s sov=%d",reg,sovRegs,var,sov);
+
+    MemForVariable(var, &addrl, &addrh);
+    LoadXAddr(addrl);
+
+    Instruction(OP_LD_XP, reg);
+    if(sovRegs >= 2) {
+        if(sov >= 2)
+            Instruction(OP_LD_XP, reg+1);
+        else {
+            Instruction(OP_LDI, reg+1, 0);
+            Instruction(OP_SBRC, reg, BIT7);
+            Instruction(OP_LDI, reg+1, 0xff);
+        }
+    }
+    if(sovRegs >= 3) {
+        if(sov >= 3)
+            Instruction(OP_LD_XP, reg+2);
+        else {
+            Instruction(OP_LDI, reg+2, 0);
+            Instruction(OP_SBRC, reg+1, BIT7);
+            Instruction(OP_LDI, reg+2, 0xff);
+        }
+    }
+}
+//-----------------------------------------------------------------------------
+static void CopyRegsToVar(char *var, int reg, int sovRegs)
+{
+    DWORD addrl, addrh;
+    int sov = SizeOfVar(var);
+    if(sov != sovRegs)
+      dbp("var=%s sov=%d <- reg=%d sovRegs=%d",var,sov,reg,sovRegs);
+
+    MemForVariable(var, &addrl, &addrh);
+    LoadXAddr(addrl);
+
+    Instruction(OP_ST_XP, reg);
+    if(sov >= 2) {
+        if(sovRegs >= 2)
+            Instruction(OP_ST_XP, reg+1);
+        else {
+            Instruction(OP_LDI, reg+1, 0);
+            Instruction(OP_SBRC, reg, BIT7);
+            Instruction(OP_LDI, reg+1, 0xff);
+        }
+    }
+    if(sov >= 3) {
+        if(sovRegs >= 3)
+            Instruction(OP_ST_XP, reg+2);
+        else {
+            Instruction(OP_LDI, reg+2, 0);
+            Instruction(OP_SBRC, reg+1, BIT7);
+            Instruction(OP_LDI, reg+2, 0xff);
+        }
+    }
+}
 // Compile the intermediate code to AVR native code.
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate(void)
@@ -1031,7 +1417,9 @@ static void CompileFromIntermediate(void)
     DWORD addrl2, addrh2;
 
     for(; IntPc < IntCodeLen; IntPc++) {
+        IntPcNow = IntPc;
         IntOp *a = &IntCode[IntPc];
+        rungNow = a->rung;
         switch(a->op) {
             case INT_SET_BIT:
                 MemForSingleBit(a->name1, FALSE, &addr, &bit);
@@ -1058,8 +1446,8 @@ static void CompileFromIntermediate(void)
             case INT_INCREMENT_VARIABLE: {
                 MemForVariable(a->name1, &addrl, &addrh);
                 LoadXAddr(addrl);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_LD_XP, 16, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_LD_X, 17, 0);
                 // increment
                 Instruction(OP_INC, 16, 0);
@@ -1068,8 +1456,8 @@ static void CompileFromIntermediate(void)
                 Instruction(OP_INC, 17, 0);
                 FwdAddrIsNow(noCarry);
                 // X is still addrh
-                Instruction(OP_ST_X, 17, 0);
-                LoadXAddr(addrl);
+                Instruction(OP_ST_XS, 17, 0);
+                //LoadXAddr(addrl);
                 Instruction(OP_ST_X, 16, 0);
                 break;
             }
@@ -1094,8 +1482,8 @@ static void CompileFromIntermediate(void)
 
                 MemForVariable(a->name1, &addrl, &addrh);
                 LoadXAddr(addrl);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_LD_XP, 16, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_LD_X, 17, 0);
 
                 Instruction(OP_LDI, 18, (a->literal & 0xff));
@@ -1114,13 +1502,13 @@ static void CompileFromIntermediate(void)
 
                 MemForVariable(a->name1, &addrl, &addrh);
                 LoadXAddr(addrl);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_LD_XP, 16, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_LD_X, 17, 0);
                 MemForVariable(a->name2, &addrl, &addrh);
                 LoadXAddr(addrl);
-                Instruction(OP_LD_X, 18, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_LD_XP, 18, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_LD_X, 19, 0);
 
                 if(a->op == INT_IF_VARIABLE_EQUALS_VARIABLE) {
@@ -1153,8 +1541,8 @@ static void CompileFromIntermediate(void)
                 MemForVariable(a->name1, &addrl, &addrh);
                 MemForVariable(a->name2, &addrl2, &addrh2);
                 LoadXAddr(addrl);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_LD_XP, 16, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_LD_X, 17, 0);
                 Instruction(OP_MOV, 26, 16);
                 Instruction(OP_MOV, 27, 17);
@@ -1174,8 +1562,8 @@ static void CompileFromIntermediate(void)
             case INT_WRITE_SFR_VARIABLE_L: {
                 MemForVariable(a->name1, &addrl, &addrh);
                 LoadXAddr(addrl);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_LD_XP, 16, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_LD_X, 17, 0);
                 Instruction(OP_MOV, 26, 16);
                 Instruction(OP_MOV, 27, 17);
@@ -1196,8 +1584,8 @@ static void CompileFromIntermediate(void)
                 MemForVariable(a->name1, &addrl, &addrh);
                 MemForVariable(a->name2, &addrl2, &addrh2);
                 LoadXAddr(addrl);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_LD_XP, 16, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_LD_X, 17, 0);
                 LoadXAddr(addrl2);
                 Instruction(OP_LD_X, 15, 0);
@@ -1465,13 +1853,13 @@ static void CompileFromIntermediate(void)
                 MemForVariable(a->name3, &addrl2, &addrh2);
 
                 LoadXAddr(addrl2);
-                Instruction(OP_LD_X, 18, 0);
-                LoadXAddr(addrh2);
+                Instruction(OP_LD_XP, 18, 0);
+                //LoadXAddr(addrh2);
                 Instruction(OP_LD_X, 19, 0);
 
                 LoadXAddr(addrl);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_LD_XP, 16, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_LD_X, 17, 0);
 
                 CallSubroutine(DivideAddress);
@@ -1480,8 +1868,8 @@ static void CompileFromIntermediate(void)
                 MemForVariable(a->name1, &addrl, &addrh);
 
                 LoadXAddr(addrl);
-                Instruction(OP_ST_X, 16, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_ST_XP, 16, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_ST_X, 17, 0);
                 break;
 
@@ -1492,13 +1880,13 @@ static void CompileFromIntermediate(void)
                 MemForVariable(a->name3, &addrl2, &addrh2);
 
                 LoadXAddr(addrl);
-                Instruction(OP_LD_X, 18, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_LD_XP, 18, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_LD_X, 19, 0);
 
                 LoadXAddr(addrl2);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrh2);
+                Instruction(OP_LD_XP, 16, 0);
+                //LoadXAddr(addrh2);
                 Instruction(OP_LD_X, 17, 0);
 
                 if(a->op == INT_SET_VARIABLE_ADD) {
@@ -1515,8 +1903,8 @@ static void CompileFromIntermediate(void)
                 MemForVariable(a->name1, &addrl, &addrh);
 
                 LoadXAddr(addrl);
-                Instruction(OP_ST_X, 18, 0);
-                LoadXAddr(addrh);
+                Instruction(OP_ST_XP, 18, 0);
+                //LoadXAddr(addrh);
                 Instruction(OP_ST_X, 19, 0);
                 break;
 
@@ -1524,76 +1912,94 @@ static void CompileFromIntermediate(void)
                 int target = atoi(a->name2);
 
                 // PWM frequency is
-                //   target = xtal/(256*prescale)
+                //   target = xtal/(256*prescaler)
                 // so not a lot of room for accurate frequency here
 
-                int prescale;
-                int bestPrescale;
+                double freq;
+                double bestFreq;
+                int err;
+                int bestPrescaler;
                 int bestError = INT_MAX;
-                int bestFreq;
-                for(prescale = 1;;) {
-                    int freq = (Prog.mcuClock + prescale*128)/(prescale*256);
+                int prescaler;
+                for(prescaler = 1;;) {
+                    //int freq = (Prog.mcuClock + prescaler*128)/(prescaler*256);
+                    freq = (double)Prog.mcuClock/(prescaler*256);
+                    //dbp("prescaler=%d freq=%f", prescaler, freq);
 
-                    int err = abs(freq - target);
+                    err = abs(freq - target);
                     if(err < bestError) {
                         bestError = err;
-                        bestPrescale = prescale;
+                        bestPrescaler = prescaler;
                         bestFreq = freq;
                     }
 
-                    if(prescale == 1) {
-                        prescale = 8;
-                    } else if(prescale == 8) {
-                        prescale = 64;
-                    } else if(prescale == 64) {
-                        prescale = 256;
-                    } else if(prescale == 256) {
-                        prescale = 1024;
-                    } else {
-                        break;
-                    }
+                    if(prescaler == 1) prescaler = 8;
+                    else if(prescaler == 8) prescaler = 32;
+                    else if(prescaler == 32) prescaler = 64;
+                    else if(prescaler == 64) prescaler = 128;
+                    else if(prescaler == 128) prescaler = 256;
+                    else if(prescaler == 256) prescaler = 1024;
+                    else break;
                 }
+                //dbp("bestPrescaler=%d bestFreq=%f", bestPrescaler, bestFreq);
 
-                if(((double)bestError)/target > 0.05) {
-                    Error(_("Target PWM frequency %d Hz, closest achievable is "
-                        "%d Hz (warning, >5%% error)."), target, bestFreq);
-                }
+                if(((double)bestError)/target > 0.05)
+                    Error(_(" Target PWM frequency %.3f Hz, closest achievable is "
+                        "%.3f Hz (warning, >5%% error)."), target, bestFreq);
+
+                BOOL Use100 = TRUE;
+                // Use100 = FALSE; // TODO
+                if(Use100) {
 
                 DivideUsed = TRUE; MultiplyUsed = TRUE;
-                MemForVariable(a->name1, &addrl, &addrh);
-                LoadXAddr(addrl);
-                Instruction(OP_LD_X, 16, 0);
-                Instruction(OP_LDI, 17, 0);
-                Instruction(OP_LDI, 19, 0);
-                Instruction(OP_LDI, 18, 255);
+                    CopyVarToRegs(r20, a->name1, SizeOfVar(a->name1));
+                    CopyLiteralToRegs(r16, 255, SizeOfVar(a->name1));
                 CallSubroutine(MultiplyAddress);
-                Instruction(OP_MOV, 17, 19);
-                Instruction(OP_MOV, 16, 18);
-                Instruction(OP_LDI, 19, 0);
-                Instruction(OP_LDI, 18, 100);
+
+                    Instruction(OP_MOV, 19, 20);
+                    Instruction(OP_MOV, 20, 21);
+                    Instruction(OP_MOV, 21, 22);
+
+                    CopyLiteralToRegs(r22, 100, SizeOfVar(a->name1));
                 CallSubroutine(DivideAddress);
-                LoadXAddr(REG_OCR2);
-                Instruction(OP_ST_X, 16, 0);
+                  //LoadXAddr(REG_OCR2);
+                  //Instruction(OP_ST_X, 19);
+                    WriteRegToIO(REG_OCR2, r19);
+                } else {
+                    CopyVarToRegs(r20, a->name1, SizeOfVar(a->name1));
+                    WriteRegToIO(REG_OCR2, r20);
+                }
 
                 // Setup only happens once
                 MemForSingleBit("$pwm_init", FALSE, &addr, &bit);
                 DWORD skip = AllocFwdAddr();
                 IfBitSet(addr, bit);
-                Instruction(OP_RJMP, skip, 0);
+                Instruction(OP_RJMP, skip);
                 SetBit(addr, bit);
 
-                BYTE cs;
-                switch(bestPrescale) {
+                BYTE cs; // see Timer/Counter2
+                switch(bestPrescaler) {
                     case    1: cs = 1; break;
                     case    8: cs = 2; break;
-                    case   64: cs = 3; break;
-                    case  256: cs = 4; break;
-                    case 1024: cs = 5; break;
+                    case   32: cs = 3; break;
+                    case   64: cs = 4; break;
+                    case  128: cs = 5; break;
+                    case  256: cs = 6; break;
+                    case 1024: cs = 7; break;
                     default: oops(); break;
                 }
-
-                // fast PWM mode, non-inverted operation, given prescale
-                WriteMemory(REG_TCCR2, (1 << 6) | (1 << 3) | (1 << 5) | cs);
+                // fast PWM mode, non-inverting or inverting mode, given prescaler
+                if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega48 ") ||
+                   strstr(Prog.mcu->mcuName, "Atmel AVR ATmega88 ") ||
+                   strstr(Prog.mcu->mcuName, "Atmel AVR ATmega168 ") ||
+                   strstr(Prog.mcu->mcuName, "Atmel AVR ATmega328 ")
+                ){
+                     WriteMemory(REG_TCCR2B, cs);
+                     WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0]=='/' ? (1 << COM20) : 0));
+                } else {
+                     //TODO: test registers and bits define's
+                     WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0]=='/' ? (1 << COM20) : 0) | cs);
+                }
 
                 FwdAddrIsNow(skip);
 
@@ -1604,7 +2010,7 @@ static void CompileFromIntermediate(void)
 
                 DWORD isBusy = AllocFwdAddr();
                 DWORD done = AllocFwdAddr();
-                IfBitSet(REG_EECR, 1);
+                IfBitSet(REG_EECR, EEWE);
                 Instruction(OP_RJMP, isBusy, 0);
 
                 IfBitClear(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
@@ -1631,9 +2037,9 @@ static void CompileFromIntermediate(void)
                 LoadXAddr(REG_EEDR);
                 Instruction(OP_ST_X, 16, 0);
                 LoadXAddr(REG_EECR);
-                Instruction(OP_LDI, 16, 0x04);
+                Instruction(OP_LDI, 16, (1 << EEMWE)); // 0x04
                 Instruction(OP_ST_X, 16, 0);
-                Instruction(OP_LDI, 16, 0x06);
+                Instruction(OP_LDI, 16, (1 << EEMWE) | (1 << EEWE)); // 0x06
                 Instruction(OP_ST_X, 16, 0);
 
                 ClearBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
@@ -1647,9 +2053,9 @@ static void CompileFromIntermediate(void)
                 MemForVariable(a->name1, &addrl, &addrh);
                 int i;
                 for(i = 0; i < 2; i++) {
-                    WriteMemory(REG_EEARH, ((a->literal+i) >> 8));
+                    WriteMemory(REG_EEARH, ((a->literal+i) >> 8) & 0xff);
                     WriteMemory(REG_EEARL, ((a->literal+i) & 0xff));
-                    WriteMemory(REG_EECR, 0x01);
+                    WriteMemory(REG_EECR, 1 << EERE);
                     LoadXAddr(REG_EEDR);
                     Instruction(OP_LD_X, 16, 0);
                     if(i == 0) {
@@ -1669,57 +2075,72 @@ static void CompileFromIntermediate(void)
                 LoadXAddr(EepromHighByte);
                 Instruction(OP_ST_X, 16, 0);
 
-                WriteMemory(REG_EEARH, (a->literal >> 8));
+                WriteMemory(REG_EEARH, (a->literal >> 8) & 0xff);
                 WriteMemory(REG_EEARL, (a->literal & 0xff));
                 LoadXAddr(addrl);
                 Instruction(OP_LD_X, 16, 0);
                 LoadXAddr(REG_EEDR);
                 Instruction(OP_ST_X, 16, 0);
                 LoadXAddr(REG_EECR);
-                Instruction(OP_LDI, 16, 0x04);
+                Instruction(OP_LDI, 16, (1 << EEMWE)); // 0x04
                 Instruction(OP_ST_X, 16, 0);
-                Instruction(OP_LDI, 16, 0x06);
+                Instruction(OP_LDI, 16, (1 << EEMWE) | (1 << EEWE)); // 0x06
                 Instruction(OP_ST_X, 16, 0);
                 break;
 
             case INT_READ_ADC: {
                 MemForVariable(a->name1, &addrl, &addrh);
 
+                int mux = MuxForAdcVariable(a->name1);
+                if(mux > 0x0F)
+                    ooops("mux=0x%x", mux);
                 WriteMemory(REG_ADMUX,
-                    (0 << 6) |              // AREF, internal Vref odd
-                    (0 << 5) |              // right-adjusted
-                    MuxForAdcVariable(a->name1));
+                    (0 << 7) |              // AREF, Internal Vref turned off.
+                    (0 << 6) |              // AREF, Internal Vref turned off.
+                    (0 << 5) |              // result is right adjusted.
+                    mux);
 
                 // target something around 200 kHz for the ADC clock, for
                 // 25/(200k) or 125 us conversion time, reasonable
                 int divisor = (Prog.mcuClock / 200000);
-                int j = 0;
-                for(j = 1; j <= 7; j++) {
-                    if((1 << j) > divisor) break;
+                int adps = 0;
+                for(adps = 1; adps <= 7; adps++) {
+                    if((1 << adps) > divisor) break;
                 }
 
                 BYTE adcsra =
-                    (1 << 7) |              // ADC enabled
-                    (0 << 5) |              // not free running
-                    (0 << 3) |              // no interrupt enabled
-                    j;                      // prescaler setup
+                    (1 << ADEN) |           // ADC enabled
+                    (0 << ADFR) |           // not free running
+                    (0 << ADIE) |           // no interrupt enabled
+                    adps;                   // prescaler setup
 
                 WriteMemory(REG_ADCSRA, adcsra);
-                WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << 6)));
+                WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << ADSC)));
 
                 DWORD waitForFinsh = AvrProgWriteP;
-                IfBitSet(REG_ADCSRA, 6);
-                Instruction(OP_RJMP, waitForFinsh, 0);
+                IfBitSet(REG_ADCSRA, ADSC);
+                Instruction(OP_RJMP, waitForFinsh);
 
                 LoadXAddr(REG_ADCL);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrl);
-                Instruction(OP_ST_X, 16, 0);
+                Instruction(OP_LD_X, 16);
+                LoadYAddr(addrl);
+                Instruction(OP_ST_YP, 16);
 
                 LoadXAddr(REG_ADCH);
-                Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrh);
-                Instruction(OP_ST_X, 16, 0);
+                Instruction(OP_LD_X, 16);
+              //LoadXAddr(addrh);
+                Instruction(OP_ST_YP, 16);
+
+                break;
+            }
+            case INT_UART_SEND_BUSY: {
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
+                ClearBit(addr, bit); // UART ready
+                DWORD dontSet = AllocFwdAddr();
+                IfBitSet(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty
+                Instruction(OP_RJMP, dontSet, 0);
+                SetBit(addr, bit); // Set UART busy
+                FwdAddrIsNow(dontSet);
 
                 break;
             }
@@ -1742,9 +2163,14 @@ static void CompileFromIntermediate(void)
                 DWORD dontSet = AllocFwdAddr();
                 IfBitSet(REG_UCSRA, 5); // UDRE, is 1 when tx buffer is empty
                 Instruction(OP_RJMP, dontSet, 0);
-                SetBit(addr, bit);
+                SetBit(addr, bit); // Set UART busy
                 FwdAddrIsNow(dontSet);
 
+                break;
+            }
+            case INT_UART_RECV_AVAIL: {
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
+                SetBit(addr, bit); // Set // TODO
                 break;
             }
             case INT_UART_RECV: {
@@ -1774,12 +2200,19 @@ static void CompileFromIntermediate(void)
             case INT_ELSE:
                 return;
 
+            case INT_WRITE_STRING:
+                Error(_("Unsupported operation 'INT_WRITE_STRING' for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
+                break;
+
             case INT_COMMENT:
+                if(strlen(a->name1))
+                    Instruction(OP_COMMENT, a->name1);
+                break;
                 break;
 
             default:
-                oops();
+                ooops("INT_%d", a->op);
                 break;
         }
     }
@@ -1791,6 +2224,7 @@ static void CompileFromIntermediate(void)
 //-----------------------------------------------------------------------------
 static void MultiplyRoutine(void)
 {
+    Comment("MultiplyRoutine16");
     FwdAddrIsNow(MultiplyAddress);
 
     DWORD m16s_1;
@@ -1821,6 +2255,7 @@ static void MultiplyRoutine(void)
 //-----------------------------------------------------------------------------
 static void DivideRoutine(void)
 {
+    Comment("DivideRoutine16");
     FwdAddrIsNow(DivideAddress);
 
     DWORD d16s_1 = AllocFwdAddr();
@@ -1880,6 +2315,7 @@ static void DivideRoutine(void)
 //-----------------------------------------------------------------------------
 void CompileAvr(char *outFile)
 {
+    rungNow = -100;
     FILE *f = fopen(outFile, "w");
     if(!f) {
         Error(_("Couldn't open file '%s'"), outFile);
@@ -1967,6 +2403,24 @@ void CompileAvr(char *outFile)
         REG_GIFR  = 0x3C; // EIFR
             INTF1 = BIT1;
             INTF0 = BIT0;
+
+        REG_OCR2   = 0xB3; // OCR2A
+        REG_TCCR2  = 0xB0; // TCCR2A
+            WGM20  = BIT0;
+            WGM21  = BIT1;
+            COM21  = BIT7; // COM2A1
+            COM20  = BIT6; // COM2A0
+        REG_TCCR2B = 0xB1;
+
+        REG_ADMUX  = 0x7C;
+        REG_ADCSRA = 0x7A;
+        REG_ADCH   = 0x79;
+        REG_ADCL   = 0x78;
+
+        REG_EEARH  = 0x42;
+        REG_EEARL  = 0x41;
+        REG_EEDR   = 0x40;
+        REG_EECR   = 0x3F;
     } else
     if(strstr(Prog.mcu->mcuName, " ATmega64 ")
     || strstr(Prog.mcu->mcuName, " ATmega128 ")
@@ -2210,8 +2664,8 @@ void CompileAvr(char *outFile)
         REG_TCCR1B  = 0x4E;
 
 //      REG_TIMSK = 0x59;
-        REG_TIFR0 = 0x58;
         REG_TIFR1 = 0x58;
+        REG_TIFR0 = 0x58;
         REG_UCSRC = 0x40;
         REG_UBRRH = 0x40;
         REG_UBRRL = 0x29;
@@ -2258,35 +2712,63 @@ void CompileAvr(char *outFile)
 */
     //***********************************************************************
 
+    rungNow = -90;
     WipeMemory();
     MultiplyUsed = FALSE;
     MultiplyAddress = AllocFwdAddr();
     DivideUsed = FALSE;
     DivideAddress = AllocFwdAddr();
+    rungNow = -80;
     AllocStart();
 
-    // Where we hold the high byte to program in EEPROM while the low byte
-    // programs.
-    EepromHighByte = AllocOctetRam();
-    AllocBitRam(&EepromHighByteWaitingAddr, &EepromHighByteWaitingBit);
+    rungNow = -70;
+    if(EepromFunctionUsed()) {
+        // Where we hold the high byte to program in EEPROM while the low byte
+        // programs.
+        EepromHighByte = AllocOctetRam();
+        AllocBitRam(&EepromHighByteWaitingAddr, &EepromHighByteWaitingBit);
+    }
 
+    rungNow = -60;
     WriteRuntime();
-    IntPc = 0;
+
+    Comment("CompileFromIntermediate");
+    IntPc = 0; // Ok
     CompileFromIntermediate();
 
-    if(Prog.mcu->avrUseIjmp) {
-        Instruction(OP_LDI, 30, (BeginningOfCycleAddr & 0xff));
-        Instruction(OP_LDI, 31, (BeginningOfCycleAddr >> 8));
+    DWORD i;
+    for(i = 0; i < MAX_RUNGS; i++)
+        Prog.HexInRung[i] = 0;
+    for(i = 0; i < AvrProgWriteP; i++)
+        if((AvrProg[i].rung >= 0)
+        && (AvrProg[i].rung < MAX_RUNGS))
+            Prog.HexInRung[AvrProg[i].rung]++;
+
+    rungNow = -40;
+    Comment("Watchdog reset");
+    Instruction(OP_WDR);
+
+    rungNow = -30;
+    Comment("GOTO next PLC cycle");
+    //GOTO next PLC cycle
+    if(Prog.mcu->Family >= ClassicCore8K) {
+        Instruction(OP_LDI, ZL, (BeginningOfCycleAddr & 0xff));
+        Instruction(OP_LDI, ZH, (BeginningOfCycleAddr >> 8) & 0xff);
         Instruction(OP_IJMP, 0, 0);
     } else {
         Instruction(OP_RJMP, BeginningOfCycleAddr, 0);
     }
+    //Instruction(OP_RJMP, AvrProgWriteP); // as CodeVisionAVR C Compiler
 
-    MemCheckForErrorsPostCompile();
 
     if(MultiplyUsed) MultiplyRoutine();
     if(DivideUsed) DivideRoutine();
 
+    rungNow = -10;
+    MemCheckForErrorsPostCompile();
+    AddrCheckForErrorsPostCompile();
+
+    ProgWriteP = AvrProgWriteP;
     WriteHexFile(f);
     fclose(f);
 

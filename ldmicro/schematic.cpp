@@ -58,11 +58,11 @@ PlcCursor Cursor;
 BOOL FindSelected(int *gx, int *gy)
 {
     if(!Selected) return FALSE;
-
     int i, j;
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
             if(DisplayMatrix[i][j] == Selected) {
+              if(SelectedWhich!=ELEM_COMMENT)
                 while(DisplayMatrix[i+1][j] == Selected) {
                     i++;
                 }
@@ -122,6 +122,68 @@ void SelectElement(int gx, int gy, int state)
     WhatCanWeDoFromCursorAndTopology();
 }
 
+//-----------------------------------------------------------------------------
+BOOL StaySameElem(int Which)
+{
+    if( Which == ELEM_RES ||
+        Which == ELEM_SHL ||
+        Which == ELEM_SHR ||
+        Which == ELEM_SR0 ||
+        Which == ELEM_ROL ||
+        Which == ELEM_ROR ||
+        Which == ELEM_AND ||
+        Which == ELEM_OR  ||
+        Which == ELEM_XOR ||
+        Which == ELEM_NOT ||
+        Which == ELEM_NEG ||
+        Which == ELEM_ADD ||
+        Which == ELEM_SUB ||
+        Which == ELEM_MUL ||
+        Which == ELEM_DIV ||
+        Which == ELEM_MOD ||
+        Which == ELEM_BIN2BCD ||
+        Which == ELEM_BCD2BIN ||
+        Which == ELEM_SWAP ||
+        Which == ELEM_7SEG  ||
+        Which == ELEM_9SEG  ||
+        Which == ELEM_14SEG ||
+        Which == ELEM_16SEG ||
+        Which == ELEM_READ_ADC ||
+        Which == ELEM_SET_PWM ||
+        Which == ELEM_MASTER_RELAY ||
+        Which == ELEM_MASTER_BREAK ||
+        Which == ELEM_SHIFT_REGISTER ||
+        Which == ELEM_LOOK_UP_TABLE ||
+        Which == ELEM_PIECEWISE_LINEAR ||
+        Which == ELEM_PERSIST ||
+        Which == ELEM_MOVE)
+      return TRUE;
+    else
+      return FALSE;
+}
+//-----------------------------------------------------------------------------
+BOOL CanChangeOutputElem(int Which)
+{
+    if( Which == ELEM_COIL ||
+      //Which == ELEM_READ_ADC ||
+/*
+        Which == ELEM_CTU ||
+        Which == ELEM_CTD ||
+        Which == ELEM_CTC ||
+        Which == ELEM_CTR ||
+*/
+        Which == ELEM_SET_PWM ||
+        Which == ELEM_STEPPER ||
+        Which == ELEM_PULSER ||
+        Which == ELEM_NPULSE ||
+        Which == ELEM_MASTER_RELAY ||
+        Which == ELEM_MASTER_BREAK ||
+        Which == ELEM_WSFR ||
+        Which == ELEM_PERSIST)
+      return TRUE;
+    else
+      return FALSE;
+}
 //-----------------------------------------------------------------------------
 // Returnn TRUE if this instruction(element) must be the
 // rightmost instruction in its rung.
@@ -498,6 +560,7 @@ void EditSelectedElement(void)
             ShowShiftRegisterDialog(Selected->d.shiftRegister.name,
                 &(Selected->d.shiftRegister.stages));
             break;
+
         case ELEM_STRING:
             ShowStringDialog(Selected->d.fmtdStr.dest, Selected->d.fmtdStr.var,
                 Selected->d.fmtdStr.string);
