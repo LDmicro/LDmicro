@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -61,6 +61,7 @@ typedef enum Pic16OpTag {
     OP_SUBLW,
     OP_SUBWF,
     OP_XORWF,
+    OP_COMMENT_
 } Pic16Op;
 
 #define DEST_F 1
@@ -75,11 +76,16 @@ typedef struct Pic16InstructionTag {
     Pic16Op     op;
     DWORD       arg1;
     DWORD       arg2;
+    char        comment[MAX_COMMENT_LEN];
+    int         rung;  // This AvrInstruction located in Prog.rungs[rung] LD
+    int         IntPc; // This AvrInstruction located in IntCode[IntPc]
 } Pic16Instruction;
 
 #define MAX_PROGRAM_LEN 128*1024
 static Pic16Instruction PicProg[MAX_PROGRAM_LEN];
 static DWORD PicProgWriteP;
+
+static int IntPcNow = -INT_MAX; //must be static
 
 // Scratch variables, for temporaries
 static DWORD Scratch0;
@@ -128,7 +134,8 @@ static DWORD FwdAddrCount;
 #define REG_CCPR1L    0x15
 #define REG_CCPR1H    0x16
 #define REG_CCP1CON   0x17
-#define REG_CMCON     0x1f
+#define REG_CMCON     0x1f // equ REG_ADCON0
+#define REG_VRCON     0x9f // equ REG_ADCON1
 
 #define REG_TXSTA     0x98
 #define REG_RCSTA     0x18
@@ -147,12 +154,13 @@ static DWORD FwdAddrCount;
 #define REG_PR2       0x92
 
 // These move around from device to device.
-static DWORD REG_EECON1;
-static DWORD REG_EECON2;
-static DWORD REG_EEDATA;
-static DWORD REG_EEADR;
-static DWORD REG_ANSEL;
-static DWORD REG_ANSELH;
+// '-1' means not defined.
+static DWORD REG_EECON1 = -1;
+static DWORD REG_EECON2 = -1;
+static DWORD REG_EEDATA = -1;
+static DWORD REG_EEADR  = -1;
+static DWORD REG_ANSEL  = -1;
+static DWORD REG_ANSELH = -1;
 
 static int IntPc;
 
@@ -180,14 +188,46 @@ static void WipeMemory(void)
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void Instruction(Pic16Op op, DWORD arg1, DWORD arg2)
+static void Instruction(Pic16Op op, DWORD arg1, DWORD arg2, char *comment)
 {
     if(PicProg[PicProgWriteP].op != OP_VACANT) oops();
 
     PicProg[PicProgWriteP].op = op;
     PicProg[PicProgWriteP].arg1 = arg1;
     PicProg[PicProgWriteP].arg2 = arg2;
+    if(comment) strcpy(PicProg[PicProgWriteP].comment, comment);
+    PicProg[PicProgWriteP].rung = rungNow;
+    PicProg[PicProgWriteP].IntPc = IntPcNow;
     PicProgWriteP++;
+}
+
+static void Instruction(Pic16Op op, DWORD arg1, DWORD arg2)
+{
+    Instruction(op, arg1, arg2, NULL);
+}
+
+static void Instruction(Pic16Op op, DWORD arg1)
+{
+    Instruction(op, arg1, 0);
+}
+
+static void Instruction(Pic16Op op, char *comment)
+{
+    Instruction(op, 0, 0, comment);
+}
+
+//-----------------------------------------------------------------------------
+// printf-like comment function
+//-----------------------------------------------------------------------------
+static void Comment(char *str, ...)
+{
+    if(strlen(str)>=MAX_COMMENT_LEN)
+      str[MAX_COMMENT_LEN-1]='\0';
+    va_list f;
+    char buf[MAX_COMMENT_LEN];
+    va_start(f, str);
+    vsprintf(buf, str, f);
+    Instruction(OP_COMMENT_, buf);
 }
 
 //-----------------------------------------------------------------------------
@@ -232,6 +272,22 @@ static void FwdAddrIsNow(DWORD addr)
     if(!seen) oops();
 }
 
+//-----------------------------------------------------------------------------
+static void AddrCheckForErrorsPostCompile()
+{
+    DWORD i;
+    for(i = 0; i < PicProgWriteP; i++) {
+        if(PicProg[i].arg1 & 0x80000000) {
+            Error("Every AllocFwdAddr needs FwdAddrIsNow.");
+            Error("i=%d op=%d arg1=%d arg2=%d rung=%d", i,
+               PicProg[i].op,//Pic,
+               PicProg[i].arg1,
+               PicProg[i].arg2/*,
+               PicProg[i].rung*/);
+            CompileError();
+        }
+    }
+}
 //-----------------------------------------------------------------------------
 // Given an opcode and its operands, assemble the 14-bit instruction for the
 // PIC. Check that the operands do not have more bits set than is meaningful;
@@ -320,6 +376,10 @@ static DWORD Assemble(Pic16Op op, DWORD arg1, DWORD arg2)
             return (1 << 7) | arg1;
 
         case OP_NOP:
+            return 0x0000;
+
+        case OP_COMMENT_:
+            CHECK(arg1, 0); CHECK(arg2, 0);
             return 0x0000;
 
         case OP_RETURN:
@@ -478,9 +538,11 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 static void CompileIfBody(DWORD condFalse)
 {
     IntPc++;
+    IntPcNow = IntPc;
     CompileFromIntermediate(FALSE);
     if(IntCode[IntPc].op == INT_ELSE) {
         IntPc++;
+        IntPcNow = IntPc;
         DWORD endBlock = AllocFwdAddr();
         Instruction(OP_GOTO, endBlock, 0);
 
@@ -510,6 +572,7 @@ static void CompileFromIntermediate(BOOL topLevel)
     DWORD section = 0;
 
     for(; IntPc < IntCodeLen; IntPc++) {
+        IntPcNow = IntPc;
         // Try for a margin of about 400 words, which is a little bit
         // wasteful but considering that the formatted output commands
         // are huge, probably necessary. Of course if we are in our
@@ -531,8 +594,9 @@ static void CompileFromIntermediate(BOOL topLevel)
             // should just work
         }
         IntOp *a = &IntCode[IntPc];
+        rungNow = a->rung;
         switch(a->op) {
-            case INT_SET_BIT:   
+            case INT_SET_BIT:
                 MemForSingleBit(a->name1, FALSE, &addr, &bit);
                 SetBit(addr, bit);
                 break;
@@ -583,7 +647,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 DWORD notTrue = AllocFwdAddr();
                 DWORD isTrue = AllocFwdAddr();
                 DWORD lsbDecides = AllocFwdAddr();
-                
+
                 // V = Rd7*(Rr7')*(R7') + (Rd7')*Rr7*R7 ; but only one of the
                 // product terms can be true, and we know which at compile
                 // time
@@ -748,7 +812,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 
             case INT_SET_VARIABLE_MULTIPLY:
                 MultiplyNeeded = TRUE;
-                
+
                 MemForVariable(a->name1, &addrl, &addrh);
                 MemForVariable(a->name2, &addrl2, &addrh2);
                 MemForVariable(a->name3, &addrl3, &addrh3);
@@ -796,6 +860,23 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Instruction(OP_MOVWF, addrh, 0);
                 break;
 
+            case INT_UART_SEND_BUSY: {
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
+
+                ClearBit(addr, bit);
+
+                DWORD notBusy = AllocFwdAddr();
+                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
+                Instruction(OP_BTFSC, REG_TXSTA ^ 0x80, 1);
+                Instruction(OP_GOTO, notBusy, 0);
+
+                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
+                SetBit(addr, bit);
+
+                FwdAddrIsNow(notBusy);
+                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
+                break;
+            }
             case INT_UART_SEND: {
                 MemForVariable(a->name1, &addrl, &addrh);
                 MemForSingleBit(a->name2, TRUE, &addr, &bit);
@@ -814,7 +895,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
                 Instruction(OP_BTFSC, REG_TXSTA ^ 0x80, 1);
                 Instruction(OP_GOTO, notBusy, 0);
-                
+
                 Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
                 SetBit(addr, bit);
 
@@ -823,12 +904,17 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 break;
             }
+            case INT_UART_RECV_AVAIL: {
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
+                SetBit(addr, bit); // Set // TODO
+                break;
+            }
             case INT_UART_RECV: {
                 MemForVariable(a->name1, &addrl, &addrh);
                 MemForSingleBit(a->name2, TRUE, &addr, &bit);
 
                 ClearBit(addr, bit);
-    
+
                 // If RCIF is still clear, then there's nothing to do; in that
                 // case jump to the end, and leave the rung-out clear.
                 DWORD done = AllocFwdAddr();
@@ -866,7 +952,7 @@ static void CompileFromIntermediate(BOOL topLevel)
             case INT_SET_PWM: {
                 int target = atoi(a->name2);
 
-                // So the PWM frequency is given by 
+                // So the PWM frequency is given by
                 //    target = xtal/(4*prescale*pr2)
                 //    xtal/target = 4*prescale*pr2
                 // and pr2 should be made as large as possible to keep
@@ -979,7 +1065,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 MemForSingleBit(a->name1, FALSE, &addr, &bit);
 
                 WORD m = 0;
-               
+
                 EE_REG_BANKSEL(REG_EECON1);
                 IfBitSet(REG_EECON1 ^ m, 1);
                 Instruction(OP_GOTO, isBusy, 0);
@@ -1126,12 +1212,12 @@ static void CompileFromIntermediate(BOOL topLevel)
                 DWORD wait = PicProgWriteP;
                 Instruction(OP_DECFSZ, Scratch1, DEST_F);
                 Instruction(OP_GOTO, wait, 0);
-                
+
                 SetBit(REG_ADCON0, goPos);
                 DWORD spin = PicProgWriteP;
                 IfBitSet(REG_ADCON0, goPos);
                 Instruction(OP_GOTO, spin, 0);
-                 
+
                 Instruction(OP_MOVF, REG_ADRESH, DEST_W);
                 Instruction(OP_MOVWF, addrh, 0);
 
@@ -1170,7 +1256,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
 
             default:
-                oops();
+                ooops("INT_%d", a->op);
                 break;
         }
         if(((PicProgWriteP >> 11) != section) && topLevel) {
@@ -1245,6 +1331,7 @@ static void ConfigureTimer1(int cycleTimeMicroseconds)
 //-----------------------------------------------------------------------------
 static void WriteMultiplyRoutine(void)
 {
+    Comment("MultiplyRoutine16");
     DWORD result3 = Scratch5;
     DWORD result2 = Scratch4;
     DWORD result1 = Scratch3;
@@ -1299,6 +1386,7 @@ static void WriteMultiplyRoutine(void)
 //-----------------------------------------------------------------------------
 static void WriteDivideRoutine(void)
 {
+    Comment("DivideRoutine16");
     DWORD dividend0 = Scratch0;
     DWORD dividend1 = Scratch1;
 
@@ -1316,7 +1404,7 @@ static void WriteDivideRoutine(void)
     DWORD done = AllocFwdAddr();
     DWORD notNegative = AllocFwdAddr();
     DWORD loop;
-    
+
     FwdAddrIsNow(DivideRoutineAddress);
     Instruction(OP_MOVF, dividend1, DEST_W);
     Instruction(OP_XORWF, divisor1, DEST_W);
@@ -1347,7 +1435,7 @@ static void WriteDivideRoutine(void)
 
     Instruction(OP_MOVLW, 17, 0);
     Instruction(OP_MOVWF, counter, 0);
-    
+
     loop = PicProgWriteP;
     Instruction(OP_RLF, dividend0, DEST_F);
     Instruction(OP_RLF, dividend1, DEST_F);
@@ -1425,7 +1513,7 @@ void CompilePic16(char *outFile)
     Scratch5 = AllocOctetRam();
     Scratch6 = AllocOctetRam();
     Scratch7 = AllocOctetRam();
-   
+
     // Allocate the register used to hold the high byte of the EEPROM word
     // that's queued up to program, plus the bit to indicate that it is
     // valid.
@@ -1537,6 +1625,7 @@ void CompilePic16(char *outFile)
     }
 
     if(PwmFunctionUsed()) {
+        Comment("PwmFunctionUsed");
         // Need to clear TRIS bit corresponding to PWM pin
         int i;
         for(i = 0; i < Prog.mcu->pinCount; i++) {
@@ -1549,6 +1638,7 @@ void CompilePic16(char *outFile)
         if(i == Prog.mcu->pinCount) oops();
     }
 
+    Comment("Turn on the pull-ups, and drive the outputs low to start");
     int i;
     for(i = 0; Prog.mcu->dirRegs[i] != 0; i++) {
         WriteRegister(Prog.mcu->outputRegs[i], 0x00);
@@ -1562,6 +1652,7 @@ void CompilePic16(char *outFile)
             return;
         }
 
+        Comment("UartFunctionUsed. UART setup");
         // So now we should set up the UART. First let us calculate the
         // baud rate; there is so little point in the fast baud rates that
         // I won't even bother, so
@@ -1578,12 +1669,13 @@ void CompilePic16(char *outFile)
             ComplainAboutBaudRateError(divisor, actual, percentErr);
         }
         if(divisor > 255) ComplainAboutBaudRateOverflow();
-        
+
         WriteRegister(REG_SPBRG, divisor);
         WriteRegister(REG_TXSTA, 0x20); // only TXEN set
         WriteRegister(REG_RCSTA, 0x90); // only SPEN, CREN set
     }
 
+    Comment("Begin Of PLC Cycle");
     DWORD top = PicProgWriteP;
 
     IfBitClear(REG_PIR1, 2);
@@ -1591,15 +1683,26 @@ void CompilePic16(char *outFile)
 
     Instruction(OP_BCF, REG_PIR1, 2);
 
-    Instruction(OP_CLRWDT, 0, 0);
     IntPc = 0;
+    Comment("CompileFromIntermediate");
     CompileFromIntermediate(TRUE);
 
-    MemCheckForErrorsPostCompile();
+    for(i = 0; i < MAX_RUNGS; i++)
+        Prog.HexInRung[i] = 0;
+    for(i = 0; i < PicProgWriteP; i++)
+        if((PicProg[i].rung >= 0)
+        && (PicProg[i].rung < MAX_RUNGS))
+            Prog.HexInRung[PicProg[i].rung]++;
 
+    Comment("Watchdog reset");
+    Instruction(OP_CLRWDT, 0, 0); // moved to end of PLC cycle
+
+    Comment("GOTO next PLC cycle");
     // This is probably a big jump, so give it PCLATH.
     Instruction(OP_CLRF, REG_PCLATH, 0);
     Instruction(OP_GOTO, top, 0);
+
+    rungNow = -50;
 
     // Once again, let us make sure not to put stuff on a page boundary
     if((PicProgWriteP >> 11) != ((PicProgWriteP + 150) >> 11)) {
@@ -1613,15 +1716,20 @@ void CompilePic16(char *outFile)
     if(MultiplyNeeded) WriteMultiplyRoutine();
     if(DivideNeeded) WriteDivideRoutine();
 
+    MemCheckForErrorsPostCompile();
+    AddrCheckForErrorsPostCompile();
+
+    ProgWriteP = PicProgWriteP;
+
     WriteHexFile(f);
     fclose(f);
 
     char str[MAX_PATH+500];
     sprintf(str, _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
         "Configuration word (fuses) has been set for crystal oscillator, BOD "
-        "enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\n" 
+        "enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\n"
         "Used %d/%d words of program flash (chip %d%% full)."),
-            outFile, PicProgWriteP, Prog.mcu->flashWords, 
+            outFile, PicProgWriteP, Prog.mcu->flashWords,
             (100*PicProgWriteP)/Prog.mcu->flashWords);
     CompileSuccessfulMessage(str);
 }

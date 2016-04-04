@@ -1,3 +1,38 @@
+== Release 3.2.0
+      The backward compatibility still saved.
+
+    * AVR MCU list sorted in accordance with the Atmel AVR Instruction set inheritance table.
+      https://en.wikipedia.org/wiki/Atmel_AVR_instruction_set#Instruction_set_inheritance
+
+    * Added Number of internal pseudocode operations for each rungs of ladder diagram.
+      It is shown below the rung number.
+      Added Number of MCU's oparations for each rungs of ladder diagram.
+      It is shown below the internal operations number.
+      Save as text exports its too.
+      You can optimise your code size and speed.
+
+    * Added readMcu.bat. You can read MCU memory directly from LDmicro IDE with Ctrl+F6 key.
+      (Now only AVR)
+
+    * Added flashMcu.bat. You can program (flash) MCU directly from LDmicro IDE with F6 key.
+      menu -> Compile -> Call flashMcu.bat F6 is worked for AVR's MCU via AVRDUDE. See
+      https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Using-LDmicro-and-Arduino-board-without-an-Arduino-software.
+      (Now only AVR)
+
+    * Added postCompile.bat. It copies LDmicro output files to another directory.
+      Prepare for Arduino and others software.
+
+    * Added: LDmicro can generate fully functional Arduino C code.
+      EEPROM, UART, ADC, PWM are supported too. See
+      https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Integrate-LDmicro-and-Arduino-software.
+
+    Thanks to:
+      Adam Horcica
+        http://adam.horcica.cz/tools/ladder-gen/
+        http://electronics4dogs.blogspot.cz/2011/07/ldmicro-and-arduino.html
+      Devel
+        http://cq.cx/ladder-forum.pl?action=viewthread&parent=3296
+
 == Release 3.1.1
       The backward compatibility still saved.
 

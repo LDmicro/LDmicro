@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -32,6 +32,11 @@
 
 static char SeenVariables[MAX_IO][MAX_NAME_LEN];
 int SeenVariablesCount;
+
+static FILE *fh;
+static FILE *flh;
+
+static int _compile_ISA;
 
 //-----------------------------------------------------------------------------
 // Have we seen a variable before? If not then no need to generate code for
@@ -68,7 +73,7 @@ static char *MapSym(char *str, int how)
     RetCnt = (RetCnt + 1) & 15;
 
     char *ret = AllRets[RetCnt];
-  
+
     // The namespace for bit and integer variables is distinct.
     char bit_int;
     if(how == ASBIT) {
@@ -94,6 +99,7 @@ static char *MapSym(char *str, int how)
 static void DeclareInt(FILE *f, char *str)
 {
     fprintf(f, "STATIC SWORD %s = 0;\n", str);
+    fprintf(f, "\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -154,28 +160,28 @@ static void GenerateDeclarations(FILE *f)
                 intVar2 = IntCode[i].name2;
                 break;
 
-			case  INT_READ_SFR_LITERAL:
-			case  INT_WRITE_SFR_LITERAL:
-			case  INT_SET_SFR_LITERAL:
-			case  INT_CLEAR_SFR_LITERAL:
-			case  INT_TEST_SFR_LITERAL:
-			case  INT_READ_SFR_VARIABLE:
-			case  INT_WRITE_SFR_VARIABLE:
-			case  INT_SET_SFR_VARIABLE:
-			case  INT_CLEAR_SFR_VARIABLE:
-			case  INT_TEST_SFR_VARIABLE:
-			case  INT_TEST_C_SFR_LITERAL:
-			case  INT_WRITE_SFR_LITERAL_L:
-			case  INT_WRITE_SFR_VARIABLE_L:
-			case  INT_SET_SFR_LITERAL_L:
-			case  INT_SET_SFR_VARIABLE_L:
-			case  INT_CLEAR_SFR_LITERAL_L:
-			case  INT_CLEAR_SFR_VARIABLE_L:
-			case  INT_TEST_SFR_LITERAL_L:
-			case  INT_TEST_SFR_VARIABLE_L:
-			case  INT_TEST_C_SFR_VARIABLE:
-			case  INT_TEST_C_SFR_LITERAL_L:
-			case  INT_TEST_C_SFR_VARIABLE_L:
+            case  INT_READ_SFR_LITERAL:
+            case  INT_WRITE_SFR_LITERAL:
+            case  INT_SET_SFR_LITERAL:
+            case  INT_CLEAR_SFR_LITERAL:
+            case  INT_TEST_SFR_LITERAL:
+            case  INT_READ_SFR_VARIABLE:
+            case  INT_WRITE_SFR_VARIABLE:
+            case  INT_SET_SFR_VARIABLE:
+            case  INT_CLEAR_SFR_VARIABLE:
+            case  INT_TEST_SFR_VARIABLE:
+            case  INT_TEST_C_SFR_LITERAL:
+            case  INT_WRITE_SFR_LITERAL_L:
+            case  INT_WRITE_SFR_VARIABLE_L:
+            case  INT_SET_SFR_LITERAL_L:
+            case  INT_SET_SFR_VARIABLE_L:
+            case  INT_CLEAR_SFR_LITERAL_L:
+            case  INT_CLEAR_SFR_VARIABLE_L:
+            case  INT_TEST_SFR_LITERAL_L:
+            case  INT_TEST_SFR_VARIABLE_L:
+            case  INT_TEST_C_SFR_VARIABLE:
+            case  INT_TEST_C_SFR_LITERAL_L:
+            case  INT_TEST_C_SFR_VARIABLE_L:
                 break;
 
 
@@ -198,6 +204,11 @@ static void GenerateDeclarations(FILE *f)
             case INT_UART_SEND:
                 intVar1 = IntCode[i].name1;
                 bitVar1 = IntCode[i].name2;
+                break;
+
+            case INT_UART_RECV_AVAIL:
+            case INT_UART_SEND_BUSY:
+                bitVar1 = IntCode[i].name1;
                 break;
 
             case INT_IF_BIT_SET:
@@ -226,7 +237,7 @@ static void GenerateDeclarations(FILE *f)
                 break;
 
             default:
-                oops();
+                ooops("INT_%d", IntCode[i].op);
         }
         bitVar1 = MapSym(bitVar1, ASBIT);
         bitVar2 = MapSym(bitVar2, ASBIT);
@@ -245,19 +256,41 @@ static void GenerateDeclarations(FILE *f)
 }
 
 //-----------------------------------------------------------------------------
+// printf-like comment function
+//-----------------------------------------------------------------------------
+static void _Comment(FILE *f, char *str, ...)
+{
+    if(strlen(str)>=MAX_NAME_LEN)
+      str[MAX_NAME_LEN-1]='\0';
+    va_list v;
+    char buf[MAX_NAME_LEN];
+    va_start(v, str);
+    vsprintf(buf, str, v);
+    fprintf(f, "//%s\n", buf);
+}
+#define Comment(str, ...) _Comment(f, str, __VA_ARGS__)
+
+//-----------------------------------------------------------------------------
+static int indent = 1;
+static void doIndent(FILE *f, int i)
+{
+   int j;
+   if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
+   for(j = 0; j < indent; j++) fprintf(f, "    ");
+}
+//-----------------------------------------------------------------------------
 // Actually generate the C source for the program.
 //-----------------------------------------------------------------------------
 static void GenerateAnsiC(FILE *f)
 {
     int i;
-    int indent = 1;
+    indent = 1;
     for(i = 0; i < IntCodeLen; i++) {
 
         if(IntCode[i].op == INT_END_IF) indent--;
         if(IntCode[i].op == INT_ELSE) indent--;
 
-        int j;
-        for(j = 0; j < indent; j++) fprintf(f, "    ");
+        doIndent(f, i);
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -285,18 +318,18 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             {
-                char op;
-                case INT_SET_VARIABLE_ADD: op = '+'; goto arith;
-                case INT_SET_VARIABLE_SUBTRACT: op = '-'; goto arith;
-                case INT_SET_VARIABLE_MULTIPLY: op = '*'; goto arith;
-                case INT_SET_VARIABLE_DIVIDE: op = '/'; goto arith;
-                arith:
-                    fprintf(f, "%s = %s %c %s;\n",
-                        MapSym(IntCode[i].name1, ASINT),
-                        MapSym(IntCode[i].name2, ASINT),
-                        op,
-                        MapSym(IntCode[i].name3, ASINT) );
-                    break;
+            char op;
+            case INT_SET_VARIABLE_ADD: op = '+'; goto arith;
+            case INT_SET_VARIABLE_SUBTRACT: op = '-'; goto arith;
+            case INT_SET_VARIABLE_MULTIPLY: op = '*'; goto arith;
+            case INT_SET_VARIABLE_DIVIDE: op = '/'; goto arith;
+            arith:
+                fprintf(f, "%s = %s %c %s;\n",
+                MapSym(IntCode[i].name1, ASINT),
+                MapSym(IntCode[i].name2, ASINT),
+                op,
+                MapSym(IntCode[i].name3, ASINT) );
+                break;
             }
 
             case INT_INCREMENT_VARIABLE:
@@ -343,78 +376,90 @@ static void GenerateAnsiC(FILE *f)
 
             case INT_SIMULATE_NODE_STATE:
                 // simulation-only
-                fprintf(f, "\n");
+                // fprintf(f, "\n");
                 break;
 
             case INT_COMMENT:
                 if(IntCode[i].name1[0]) {
-                    fprintf(f, "/* %s */\n", IntCode[i].name1);
+                    fprintf(f, "// %s\n", IntCode[i].name1);
                 } else {
                     fprintf(f, "\n");
                 }
                 break;
 
-			case  INT_READ_SFR_LITERAL:
-			case  INT_READ_SFR_VARIABLE:
-				fprintf(f, "/* Read from SFR */\n");
+            case  INT_READ_SFR_LITERAL:
+            case  INT_READ_SFR_VARIABLE:
+                fprintf(f, "#warning // Read from SFR\n");
                 break;
-			case  INT_WRITE_SFR_LITERAL:
-			case  INT_WRITE_SFR_VARIABLE:
-			case  INT_WRITE_SFR_LITERAL_L:
-			case  INT_WRITE_SFR_VARIABLE_L:
-				fprintf(f, "/* Write to SFR */\n");
+            case  INT_WRITE_SFR_LITERAL:
+            case  INT_WRITE_SFR_VARIABLE_L:
+            case  INT_WRITE_SFR_VARIABLE:
+                fprintf(f, "// #warning Write to SFR\n");
                 break;
-			case  INT_SET_SFR_LITERAL:
-			case  INT_SET_SFR_VARIABLE:
-			case  INT_SET_SFR_LITERAL_L:
-			case  INT_SET_SFR_VARIABLE_L:
-				fprintf(f, "/* Set bit in SFR */\n");
+            case  INT_WRITE_SFR_LITERAL_L:
+                fprintf(f, "// #warning Write to SFR\n");
                 break;
-			case  INT_CLEAR_SFR_LITERAL:
-			case  INT_CLEAR_SFR_VARIABLE:
-			case  INT_CLEAR_SFR_LITERAL_L:
-			case  INT_CLEAR_SFR_VARIABLE_L:
-				fprintf(f, "/* Clear bit in SFR */\n");
+            case  INT_SET_SFR_LITERAL:
+            case  INT_SET_SFR_VARIABLE:
+            case  INT_SET_SFR_LITERAL_L:
+            case  INT_SET_SFR_VARIABLE_L:
+                fprintf(f, "#warning // Set bit in SFR\n");
                 break;
-			case  INT_TEST_SFR_LITERAL:
-			case  INT_TEST_SFR_VARIABLE:
-			case  INT_TEST_SFR_LITERAL_L:
-			case  INT_TEST_SFR_VARIABLE_L:
-				fprintf(f, "/* Test if bit Set in SFR */\n");
+            case  INT_CLEAR_SFR_LITERAL:
+            case  INT_CLEAR_SFR_VARIABLE:
+            case  INT_CLEAR_SFR_LITERAL_L:
+            case  INT_CLEAR_SFR_VARIABLE_L:
+                fprintf(f, "#warning // Clear bit in SFR\n");
                 break;
-			case  INT_TEST_C_SFR_LITERAL:
-			case  INT_TEST_C_SFR_VARIABLE:
-			case  INT_TEST_C_SFR_LITERAL_L:
-			case  INT_TEST_C_SFR_VARIABLE_L:
-				fprintf(f, "/* Test if bit Clear in SFR */\n");
+            case  INT_TEST_SFR_LITERAL:
+            case  INT_TEST_SFR_VARIABLE:
+            case  INT_TEST_SFR_LITERAL_L:
+            case  INT_TEST_SFR_VARIABLE_L:
+                fprintf(f, "#warning // Test if bit Set in SFR\n");
+                break;
+            case  INT_TEST_C_SFR_LITERAL:
+            case  INT_TEST_C_SFR_VARIABLE:
+            case  INT_TEST_C_SFR_LITERAL_L:
+            case  INT_TEST_C_SFR_VARIABLE_L:
+                fprintf(f, "#warning // Test if bit Clear in SFR\n");
                 break;
 
-            case INT_EEPROM_BUSY_CHECK:
-				fprintf(f, "/* EEprom busy check */\n");
-                break;
-            case INT_EEPROM_READ:
-				fprintf(f, "/* EEprom read */\n");
-                break;
-            case INT_EEPROM_WRITE:
-				fprintf(f, "/* EEprom write */\n");
-                break;
-            case INT_READ_ADC:
-				fprintf(f, "/* Read ADC */\n");
-                break;
-            case INT_SET_PWM:
-				fprintf(f, "/* Set PWM */\n");
-                break;
             case INT_UART_RECV:
-				fprintf(f, "/* UART Received */\n");
+                fprintf(f, "// UART Received. // %s = UART_Receive();\n",  MapSym(IntCode[i].name1, ASINT) );
                 break;
+
             case INT_UART_SEND:
-				fprintf(f, "/* UART Send */\n");
+                fprintf(f, "// UART Send. // UART_Transmit(%s);\n", MapSym(IntCode[i].name1, ASINT)/*, MapSym(IntCode[i].name2, ASBIT)*/ );
+                break;
+
+            case INT_UART_RECV_AVAIL:
+                fprintf(f, "// %s = UART_Receive_Avail();\n",  MapSym(IntCode[i].name1, ASBIT));
+                break;
+
+            case INT_UART_SEND_BUSY:
+                fprintf(f, "// %s = UART_Transmit_Busy();\n", MapSym(IntCode[i].name1, ASBIT));
                 break;
 
             case INT_WRITE_STRING:
                 Error(_("ANSI C target does not support peripherals "
                     "(UART, PWM, ADC, EEPROM). Skipping that instruction."));
                 break;
+            case INT_EEPROM_BUSY_CHECK:
+                                fprintf(f, "/* EEprom busy check */\n");
+                break;
+            case INT_EEPROM_READ:
+                                fprintf(f, "/* EEprom read */\n");
+                break;
+            case INT_EEPROM_WRITE:
+                                fprintf(f, "/* EEprom write */\n");
+                break;
+            case INT_READ_ADC:
+                                fprintf(f, "/* Read ADC */\n");
+                break;
+            case INT_SET_PWM:
+                                fprintf(f, "/* Set PWM */\n");
+                break;
+
             default:
                 oops();
         }
@@ -423,6 +468,26 @@ static void GenerateAnsiC(FILE *f)
 
 void CompileAnsiC(char *dest)
 {
+     CompileAnsiC(dest, ISA_ANSIC);
+}
+
+void CompileAnsiC(char *dest, int compile_ISA)
+{
+  if(compile_ISA==ISA_ARDUINO) {
+    Error(
+" "
+"This feature of LDmicro is in testing and refinement.\n"
+"1. You can send your LD file at the LDmicro.GitHub@gmail.com\n"
+"and get 4 output files for Arduino, as shown in the example for c_demo\n"
+"https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Integrate-LDmicro-and-Arduino-software.\n"
+"2. You can sponsor development and pay for it. \n"
+"After payment you will get this functionality in a state as is at the time of development \n"
+"and you will be able to generate 4 output files for Arduino for any of your LD files.\n"
+"On the question of payment, please contact LDmicro.GitHub@gmail.com.\n"
+    );
+    return;
+  }
+    _compile_ISA = compile_ISA;
     SeenVariablesCount = 0;
 
     FILE *f = fopen(dest, "w");

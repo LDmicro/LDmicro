@@ -27,6 +27,7 @@
 #include <stdlib.h>
 
 #include "ldmicro.h"
+#include "intcode.h"
 
 void (*DrawChars)(int, int, char *);
 
@@ -206,7 +207,7 @@ int ScreenRowsAvailable(void)
     if(ScrollXOffsetMax == 0) {
         adj = 0;
     } else {
-        adj = 18;
+        adj = GetSystemMetrics(SM_CYHSCROLL); //18;
     }
     return (IoListTop - Y_PADDING - adj) / (POS_HEIGHT*FONT_HEIGHT);
 }
@@ -222,6 +223,11 @@ void PaintWindow(void)
     static HDC BackDc;
     static int BitmapWidth;
 
+    KillTimer(MainWindow, TIMER_BLINK_CURSOR);
+    if (CursorDrawn)
+        BlinkCursor(NULL, 0, NULL, 0); //Hide Cursor
+    CursorDrawn = FALSE;
+
     ok();
 
     RECT r;
@@ -235,8 +241,8 @@ void PaintWindow(void)
         RECT dk;
         GetClientRect(desktop, &dk);
 
-        BitmapWidth = max(2000, dk.right + 300);
-        BackBitmap = CreateCompatibleBitmap(Hdc, BitmapWidth, dk.bottom + 300);
+        BitmapWidth = max(2000 +2096, dk.right + 300 +500);
+        BackBitmap = CreateCompatibleBitmap(Hdc, BitmapWidth, dk.bottom + 300 +500);
         BackDc = CreateCompatibleDC(Hdc);
         SelectObject(BackDc, BackBitmap);
     }
@@ -259,7 +265,9 @@ void PaintWindow(void)
 
     DrawChars = DrawCharsToScreen;
 
-    int i;
+    char str[10] = "";
+    int i,y,yp;
+    int cx = 0;
     int cy = 0;
     int rowsAvailable = ScreenRowsAvailable();
     for(i = 0; i < Prog.numRungs; i++) {
@@ -279,28 +287,42 @@ void PaintWindow(void)
                 HighlightColours.rungNum);
             SelectObject(Hdc, FixedWidthFont);
             int rung = i + 1;
-            int y = Y_PADDING + FONT_HEIGHT*cy;
-            int yp = y + FONT_HEIGHT*(POS_HEIGHT/2) - 
+            y = Y_PADDING + FONT_HEIGHT*cy;
+            yp = y + FONT_HEIGHT*(POS_HEIGHT/2) -
                 POS_HEIGHT*FONT_HEIGHT*ScrollYOffset;
 
-            if(rung < 10) {
-                char r[1] = { rung + '0' };
-                TextOut(Hdc, 8 + FONT_WIDTH, yp, r, 1);
-            } else {
-                char r[2] = { (rung / 10) + '0', (rung % 10) + '0' };
-                TextOut(Hdc, 8, yp, r, 2);
-            }
+            sprintf(str,"%4d", i+1);
+            TextOut(Hdc, 8 - FONT_WIDTH, yp, str, 4);
 
-            int cx = 0;
+            TextOut(Hdc, 8 - FONT_WIDTH, yp , &Prog.rungSelected[i], 1);
+
+            sprintf(str,"%4d",Prog.OpsInRung[i]);
+            TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT, str, 4);
+
+            sprintf(str,"%4d",Prog.HexInRung[i]);
+            TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT * 2, str, 4);
+
+            cx = 0;
             DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, 
                 Prog.rungPowered[i]);
         }
 
         cy += thisHeight;
-        cy += POS_HEIGHT;
+        //cy += POS_HEIGHT; // one empty Rung between Rungs
+        cy += 1; // one empty text line between Rungs
     }
-    cy -= 2;
+    //cy -= 1;
     DrawEndRung(0, cy);
+
+    y = Y_PADDING + FONT_HEIGHT*cy;
+    yp = y + FONT_HEIGHT*(POS_HEIGHT/2) -
+         POS_HEIGHT*FONT_HEIGHT*ScrollYOffset/* - FONT_HEIGHT/2*/;
+    sprintf(str,"%4d", Prog.numRungs);
+    TextOut(Hdc, 8 - FONT_WIDTH, yp, str, 4);
+    sprintf(str,"%4d", IntCodeLen);
+    TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT, str, 4);
+    sprintf(str,"%4d", ProgWriteP);
+    TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT * 2, str, 4);
 
     if(SelectedGxAfterNextPaint >= 0) {
         MoveCursorNear(SelectedGxAfterNextPaint, SelectedGyAfterNextPaint);
@@ -322,14 +344,14 @@ void PaintWindow(void)
     }
 
     // draw the `buses' at either side of the screen
-    r.left = X_PADDING - FONT_WIDTH;
+    r.left = X_PADDING - FONT_WIDTH / 2 - 2;
     r.top = 0;
     r.right = r.left + 4;
     r.bottom = IoListTop;
     FillRect(Hdc, &r, InSimulationMode ? BusLeftBrush : BusBrush);
 
-    r.left += POS_WIDTH*FONT_WIDTH*ColsAvailable + 2;
-    r.right += POS_WIDTH*FONT_WIDTH*ColsAvailable + 2;
+    r.left += POS_WIDTH*FONT_WIDTH*ColsAvailable + 4;
+    r.right += POS_WIDTH*FONT_WIDTH*ColsAvailable + 4;
     FillRect(Hdc, &r, InSimulationMode ? BusRightBus : BusBrush);
  
     CursorDrawn = FALSE;
@@ -340,7 +362,7 @@ void PaintWindow(void)
         KillTimer(MainWindow, TIMER_BLINK_CURSOR);
     } else {
         KillTimer(MainWindow, TIMER_BLINK_CURSOR);
-        BlinkCursor(NULL, 0, NULL, 0);
+        BlinkCursor(NULL, 0, NULL, 0); //Draw Cursor
         SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
     }
 
@@ -442,7 +464,8 @@ void InitForDrawing(void)
 static void DrawCharsToExportBuffer(int cx, int cy, char *str)
 {
     while(*str) {
-        if(*str >= 10) {
+//      if(*str >= 10) {
+        if(WORD(*str) >= 10) { // WORD typecast allow national charset in comments
             ExportBuffer[cy][cx] = *str;
             cx++;
         }
@@ -455,26 +478,24 @@ static void DrawCharsToExportBuffer(int cx, int cy, char *str)
 //-----------------------------------------------------------------------------
 void ExportDrawingAsText(char *file)
 {
+    char sFileTime[512];
     int maxWidth = ProgCountWidestRow();
     ColsAvailable = maxWidth;
 
-    int totalHeight = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-        totalHeight += 1;
-    }
-    totalHeight *= POS_HEIGHT;
-    totalHeight += 3;
+    int totalHeight = ProgCountRows();
+    totalHeight += 1; // EndRung
+    totalHeight *= (POS_HEIGHT);//+1); //+1 for empty line
+    totalHeight += 2; // after EndRung
 
     ExportBuffer = (char **)CheckMalloc(totalHeight * sizeof(char *));
    
-    int l = maxWidth*POS_WIDTH + 8;
+    int l = maxWidth*POS_WIDTH + 9;
+    int i;
     for(i = 0; i < totalHeight; i++) {
         ExportBuffer[i] = (char *)CheckMalloc(l);
         memset(ExportBuffer[i], ' ', l-1);
         ExportBuffer[i][4] = '|';
-        ExportBuffer[i][3] = '|';
+        ExportBuffer[i][5] = '|';
         ExportBuffer[i][l-3] = '|';
         ExportBuffer[i][l-2] = '|';
         ExportBuffer[i][l-1] = '\0';
@@ -482,25 +503,53 @@ void ExportDrawingAsText(char *file)
 
     DrawChars = DrawCharsToExportBuffer;
 
+    char str[10] = "";
+    int cx;
     int cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
-        int cx = 5;
+        cx = 6;
         DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, 
             Prog.rungPowered[i]);
-
+        /*
         if((i + 1) < 10) {
             ExportBuffer[cy+1][1] = '0' + (i + 1);
         } else {
             ExportBuffer[cy+1][1] = '0' + ((i + 1) % 10);
             ExportBuffer[cy+1][0] = '0' + ((i + 1) / 10);
         }
+        */
+        sprintf(str,"%04d", i+1);
+        strncpy(ExportBuffer[cy+1], str, 4);
+
+        if(Prog.OpsInRung[i]) {
+            sprintf(str,"%4d",Prog.OpsInRung[i]);
+            strncpy(ExportBuffer[cy+2], str, 4);
+        }
+
+        if(Prog.HexInRung[i]) {
+            sprintf(str,"%4d",Prog.HexInRung[i]);
+            strncpy(ExportBuffer[cy+3], str, 4);
+        }
 
         cy += POS_HEIGHT*CountHeightOfElement(ELEM_SERIES_SUBCKT,
             Prog.rungs[i]);
-        cy += POS_HEIGHT;
+        //cy += 1; //+1 for empty line
     }
-    cy -= 2;
-    DrawEndRung(5, cy);
+//  cy -= 2;
+    DrawEndRung(6, cy);
+
+    sprintf(str,"%4d", Prog.numRungs);
+    strncpy(ExportBuffer[cy+1], str, 4);
+
+    if(IntCodeLen) {
+        sprintf(str,"%4d", IntCodeLen);
+        strncpy(ExportBuffer[cy+2], str, 4);
+    }
+
+    if(ProgWriteP) {
+        sprintf(str,"%4d", ProgWriteP);
+        strncpy(ExportBuffer[cy+3], str, 4);
+    }
 
     FILE *f = fopen(file, "w");
     if(!f) {
@@ -511,14 +560,14 @@ void ExportDrawingAsText(char *file)
     fprintf(f, "LDmicro export text\n");
 
     if(Prog.mcu) {
-        fprintf(f, "for '%s', %.6f MHz crystal, %.1f ms cycle time\n\n",
+        fprintf(f, "for '%s', %.9g MHz crystal, %.3f ms cycle time\n",
             Prog.mcu->mcuName, Prog.mcuClock/1e6, Prog.cycleTime/1e3);
     } else {
-        fprintf(f, "no MCU assigned, %.6f MHz crystal, %.1f ms cycle time\n\n",
+        fprintf(f, "no MCU assigned, %.9g MHz crystal, %.3f ms cycle time\n",
             Prog.mcuClock/1e6, Prog.cycleTime/1e3);
     }
 
-    fprintf(f, "\nLADDER DIAGRAM:\n\n");
+    fprintf(f, "\nLADDER DIAGRAM:\n");
 
     for(i = 0; i < totalHeight; i++) {
         ExportBuffer[i][4] = '|';
@@ -528,7 +577,7 @@ void ExportDrawingAsText(char *file)
     CheckFree(ExportBuffer);
     ExportBuffer = NULL;
 
-    fprintf(f, _("\n\nI/O ASSIGNMENT:\n\n"));
+    fprintf(f, _("\nI/O ASSIGNMENT:\n"));
     
     fprintf(f, _("  Name                       | Type               | Pin\n"));
     fprintf(f,   " ----------------------------+--------------------+------\n");
@@ -538,7 +587,7 @@ void ExportDrawingAsText(char *file)
 
         PlcProgramSingleIo *io = &Prog.io.assignment[i];
         char *type = IoTypeToString(io->type);
-        char pin[MAX_NAME_LEN];
+        char pin[MAX_NAME_LEN] = "";
 
         PinNumberForIo(pin, io);
 
@@ -562,6 +611,9 @@ void ExportDrawingAsText(char *file)
 //-----------------------------------------------------------------------------
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
 {
+    int totalHeight = ProgCountRows()
+                   + (Prog.numRungs + POS_HEIGHT)/POS_HEIGHT; // one empty text line between Rungs
+    /*
     int totalHeight = 0;
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -569,6 +621,8 @@ void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
         totalHeight++;
     }
     totalHeight += 1; // for the end rung
+
+    */
 
     int totalWidth = ProgCountWidestRow();
 
@@ -596,7 +650,7 @@ void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
     vert->cbSize = sizeof(*vert);
     vert->fMask = SIF_DISABLENOSCROLL | SIF_ALL;
     vert->nMin = 0;
-    vert->nMax = totalHeight - 1;
+    vert->nMax = totalHeight;// - 1;
     vert->nPos = ScrollYOffset;
     vert->nPage = ScreenRowsAvailable();
 
@@ -604,4 +658,6 @@ void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
 
     if(ScrollYOffset > ScrollYOffsetMax) ScrollYOffset = ScrollYOffsetMax;
     if(ScrollYOffset < 0) ScrollYOffset = 0;
+
+    vert->nPos = ScrollYOffset; //???
 }

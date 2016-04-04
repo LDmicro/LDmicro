@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -29,6 +29,88 @@
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 
 //-----------------------------------------------------------------------------
+/*
+simple-escape-sequence: one of
+    \' \" \? \\
+    \a \b \f \n \r \t \v
+*/
+void FrmStrToFile(FILE *f, char *str)
+{
+    char *s = str;
+    for(; *s; s++) {
+        if(*s == '\\') {
+            fprintf(f, "\\\\");
+        } else if(*s == '\n') {//(new line) Moves the active position to the initial position of the next line.
+            fprintf(f, "\\n");
+        } else if(*s == '\r') {//(carriage return) Moves the active position to the initial position of the current line.
+            fprintf(f, "\\r");
+        } else if(*s == '\t') {//(horizontal tab) Moves the active position to the next horizontal tabulation position on the current line.
+            fprintf(f, "\\t");
+        } else if(*s == '\v') {//(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
+            fprintf(f, "\\v");
+        } else if(*s == '\f') {//( form feed) Moves the active position to the initial position at the start of the next logical page.
+            fprintf(f, "\\f");
+        } else if(*s == '\b') {//(backspace) Moves the active position to the previous position on the current line.
+            fprintf(f, "\\b");
+        } else if(*s == '\a') {//(alert) Produces an audible or visible alert without changing the active position.
+            fprintf(f, "\\a");
+        } else {
+            fprintf(f, "%c", *s);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+char *FrmStrToStr(char *dest, char *src)
+{
+    char *s = src;
+    int i = 0;
+    while(*s) {
+        if(*s == '\\') {
+            if(s[1] == 'n') {
+                dest[i++] = '\n';
+                s++;
+            } else if(s[1] == 'r') {
+                dest[i++] = '\r';
+                s++;
+            } else if(s[1] == 't') {
+                dest[i++] = '\t';
+                s++;
+            } else if(s[1] == 'v') {
+                dest[i++] = '\v';
+                s++;
+            } else if(s[1] == 'f') {
+                dest[i++] = '\f';
+                s++;
+            } else if(s[1] == 'b') {
+                dest[i++] = '\b';
+                s++;
+            } else if(s[1] == 'a') {
+                dest[i++] = '\a';
+                s++;
+            } else if(s[1] == '\\') {
+                dest[i++] = '\\';
+                s++;
+            } else {
+                // that is odd
+            }
+        } else {
+            dest[i++] = *s;
+        }
+        s++;
+    }
+    dest[i++] = '\0';
+    return dest;
+}
+//-----------------------------------------------------------------------------
+char *DelNewLine(char *str)
+{
+    //while(str[strlen(str)-1] == '\n')
+    if(str[strlen(str)-1] == '\n')
+        str[strlen(str)-1] = '\0';
+    return str;
+}
+//-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
 // contains a leaf element (coil, contacts, etc.). If so, create an element
 // for and save that in *any and *which, and return TRUE, else return FALSE.
@@ -39,30 +121,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
     int x;
 
     if(memcmp(line, "COMMENT", 7)==0) {
-        char *s = line + 8;
-        int i = 0;
-        while(*s && *s != '\n') {
-            if(*s == '\\') {
-                if(s[1] == 'n') {
-                    l->d.comment.str[i++] = '\n';
-                    s++;
-                } else if(s[1] == 'r') {
-                    l->d.comment.str[i++] = '\r';
-                    s++;
-                } else if(s[1] == '\\') {
-                    l->d.comment.str[i++] = '\\';
-                    s++;
-                } else {
-                    // that is odd
-                }
-            } else {
-                l->d.comment.str[i++] = *s;
-            }
-            s++;
-        }
-        l->d.comment.str[i++] = '\0';
+        FrmStrToStr(l->d.comment.str, &line[8]);
+        DelNewLine(l->d.comment.str);
         *which = ELEM_COMMENT;
-    } else if(sscanf(line, "CONTACTS %s %d", l->d.contacts.name, 
+    } else if(sscanf(line, "CONTACTS %s %d", l->d.contacts.name,
         &l->d.contacts.negated)==2)
     {
         *which = ELEM_CONTACTS;
@@ -156,7 +218,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_LES;
     } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name)==1) {
         *which = ELEM_READ_ADC;
-    } else if(sscanf(line, "SET_PWM %s %d", l->d.setPwm.name, 
+    } else if(sscanf(line, "SET_PWM %s %d", l->d.setPwm.name,
         &(l->d.setPwm.targetFreq))==2)
     {
         *which = ELEM_SET_PWM;
@@ -166,7 +228,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "PERSIST %s", l->d.persist.var)==1) {
         *which = ELEM_PERSIST;
-    } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var, 
+    } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var,
         &x)==2)
     {
         if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
@@ -190,7 +252,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
-    } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var, 
+    } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var,
         &x)==3)
     {
         if(strcmp(l->d.fmtdStr.dest, "(none)")==0) {
@@ -239,7 +301,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
                 p++;
         }
         *which = ELEM_LOOK_UP_TABLE;
-    } else if(sscanf(line, "PIECEWISE_LINEAR %s %s %d", 
+    } else if(sscanf(line, "PIECEWISE_LINEAR %s %s %d",
         l->d.piecewiseLinear.dest, l->d.piecewiseLinear.index,
         &(l->d.piecewiseLinear.count))==3)
     {
@@ -271,6 +333,22 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 }
 
 //-----------------------------------------------------------------------------
+char *strspace(char *str)
+{
+    while(isspace(*str)) str++;
+    return str;
+}
+//-----------------------------------------------------------------------------
+char *strspacer(char *str)
+{
+    int i = strlen(str)-1;
+    while((i>=0) && isspace(str[i])) {
+        str[i] = 0;
+        i--;
+    }
+    return str;
+}
+//-----------------------------------------------------------------------------
 // Load a parallel subcircuit from a file. We look for leaf nodes using
 // LoadLeafFromFile, which we can put directly into the parallel circuit
 // that we're building up, or series subcircuits that we can pass to
@@ -285,11 +363,14 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
 
     ElemSubcktParallel *ret = AllocSubcktParallel();
     int cnt = 0;
-    
+
     for(;;) {
         if(!fgets(line, sizeof(line), f)) return NULL;
+        if(!strlen(strspace(line))) continue;
         char *s = line;
         while(isspace(*s)) s++;
+        //if((*s=='/') && ((++(*s))=='/')) continue;
+        if(*s==';') continue;
 
         if(strcmp(s, "SERIES\n")==0) {
             which = ELEM_SERIES_SUBCKT;
@@ -323,9 +404,10 @@ static ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
 
     ElemSubcktSeries *ret = AllocSubcktSeries();
     int cnt = 0;
-    
+
     for(;;) {
         if(!fgets(line, sizeof(line), f)) return NULL;
+        if(!strlen(strspace(line))) continue;
         char *s = line;
         while(isspace(*s)) s++;
 
@@ -333,7 +415,10 @@ static ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
             which = ELEM_PARALLEL_SUBCKT;
             any = LoadParallelFromFile(f);
             if(!any) return NULL;
-
+        } else if(strcmp(s, "SERIES\n")==0) {
+            which = ELEM_SERIES_SUBCKT;
+            any = LoadSeriesFromFile(f);
+            if(!any) return NULL;
         } else if(LoadLeafFromFile(s, &any, &which)) {
             // got it
         } else if(strcmp(s, "END\n")==0) {
@@ -363,10 +448,14 @@ BOOL LoadProjectFromFile(char *filename)
     FILE *f = fopen(filename, "r");
     if(!f) return FALSE;
 
+    strcpy(CurrentLdPath,filename);
+    ExtractFilePath(CurrentLdPath);
+
     char line[512];
     int crystal, cycle, baud;
 
     while(fgets(line, sizeof(line), f)) {
+        if(!strlen(strspace(line))) continue;
         if(strcmp(line, "IO LIST\n")==0) {
             if(!LoadIoListFromFile(f)) {
                 fclose(f);
@@ -381,10 +470,13 @@ BOOL LoadProjectFromFile(char *filename)
         } else if(memcmp(line, "COMPILED=", 9)==0) {
             line[strlen(line)-1] = '\0';
             strcpy(CurrentCompileFile, line+9);
+        } else if(strcmp(line, "MICRO=\n")==0) {
+            //skip
         } else if(memcmp(line, "MICRO=", 6)==0) {
             line[strlen(line)-1] = '\0';
             int i;
             for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
+              if(SupportedMcus[i].mcuName)
                 if(strcmp(SupportedMcus[i].mcuName, line+6)==0) {
                     Prog.mcu = &SupportedMcus[i];
                     break;
@@ -403,13 +495,23 @@ BOOL LoadProjectFromFile(char *filename)
     int rung;
     for(rung = 0;;) {
         if(!fgets(line, sizeof(line), f)) break;
+        if(!strlen(strspace(line))) continue;
         if(strcmp(line, "RUNG\n")!=0) goto failed;
 
         Prog.rungs[rung] = LoadSeriesFromFile(f);
         if(!Prog.rungs[rung]) goto failed;
         rung++;
+        if(rung >=MAX_RUNGS){
+           Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
+           break;
+        }
     }
     Prog.numRungs = rung;
+
+    for(rung = 0; rung<Prog.numRungs; rung++) {
+        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[rung]))
+            ProgramChanged();
+    }
 
     fclose(f);
     return TRUE;
@@ -419,6 +521,7 @@ failed:
     NewProgram();
     Error(_("File format error; perhaps this program is for a newer version "
             "of LDmicro?"));
+    Error("Error in RUNG %d. See error below %s",rung+1, line);
     return FALSE;
 }
 
@@ -456,18 +559,7 @@ static void SaveElemToFile(FILE *f, int which, void *any, int depth)
 
         case ELEM_COMMENT: {
             fprintf(f, "COMMENT ");
-            char *s = l->d.comment.str;
-            for(; *s; s++) {
-                if(*s == '\\') {
-                    fprintf(f, "\\\\");
-                } else if(*s == '\n') {
-                    fprintf(f, "\\n");
-                } else if(*s == '\r') {
-                    fprintf(f, "\\r");
-                } else {
-                    fprintf(f, "%c", *s);
-                }
-            }
+            FrmStrToFile(f, l->d.comment.str);
             fprintf(f, "\n");
             break;
         }
@@ -482,7 +574,7 @@ static void SaveElemToFile(FILE *f, int which, void *any, int depth)
         case ELEM_MASTER_RELAY:
             fprintf(f, "MASTER_RELAY\n");
             break;
-        
+
         case ELEM_SHIFT_REGISTER:
             fprintf(f, "SHIFT_REGISTER %s %d\n", l->d.shiftRegister.name,
                 l->d.shiftRegister.stages);
@@ -537,7 +629,7 @@ math:
                 l->d.math.op2);
             break;
 
-		// Special function
+                // Special function
         case ELEM_RSFR: s = "RSFR"; goto sfrcmp;
         case ELEM_WSFR: s = "WSFR"; goto sfrcmp;
         case ELEM_SSFR: s = "SSFR"; goto sfrcmp;
@@ -547,7 +639,7 @@ math:
 sfrcmp:
             fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
             break;
-		// Special function
+                // Special function
 
         case ELEM_EQU: s = "EQU"; goto cmp;
         case ELEM_NEQ: s = "NEQ"; goto cmp;
@@ -703,18 +795,19 @@ BOOL SaveProjectToFile(char *filename)
 
     fprintf(f, "\n");
     // list extracted from schematic, but the pin assignments are not
-    fprintf(f, "IO LIST\n", Prog.mcuClock);
+    fprintf(f, "IO LIST\n");
     SaveIoListToFile(f);
-    fprintf(f, "END\n", Prog.mcuClock);
+    fprintf(f, "END\n");
 
-    fprintf(f, "\n", Prog.mcuClock);
-    fprintf(f, "PROGRAM\n", Prog.mcuClock);
+    fprintf(f, "\n");
+    fprintf(f, "PROGRAM\n");
 
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0);
     }
 
+    fflush(f);
     fclose(f);
     return TRUE;
 }
