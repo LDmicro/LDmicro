@@ -2,23 +2,23 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
 //
 // Routines to simulate the logic interactively, for testing purposes. We can
-// simulate in real time, triggering off a Windows timer, or we can 
+// simulate in real time, triggering off a Windows timer, or we can
 // single-cycle it. The GUI acts differently in simulation mode, to show the
 // status of all the signals graphically, show how much time is left on the
 // timers, etc.
@@ -59,7 +59,9 @@ static int AdcShadowsCount;
 #define VAR_FLAG_CTU  0x00000008
 #define VAR_FLAG_CTD  0x00000010
 #define VAR_FLAG_CTC  0x00000020
+#define VAR_FLAG_CTR     0x00000100
 #define VAR_FLAG_RES  0x00000040
+#define VAR_FLAG_TABLE   0x00000200
 #define VAR_FLAG_ANY  0x00000080
 
 #define VAR_FLAG_OTHERWISE_FORGOTTEN  0x80000000
@@ -245,11 +247,74 @@ DWORD IsUsedVariable(char *name)
     return Variables[i].usedFlags;
 }
 //-----------------------------------------------------------------------------
+static char *Check(char *name, DWORD flag, int i)
+{
+    char *s = NULL;
+
+    switch(flag) {
+        case VAR_FLAG_TABLE:
+            if(Variables[i].usedFlags & ~VAR_FLAG_TABLE)
+                s = _("TABLE: variable can be used only with TABLE");
+            break;
+
+        case VAR_FLAG_TOF:
+            if(Variables[i].usedFlags != 0)
+                s = _("TOF: variable cannot be used elsewhere");
+            break;
+
+        case VAR_FLAG_TON:
+            if(Variables[i].usedFlags != 0)
+                s = _("TON: variable cannot be used elsewhere");
+            break;
+
+        #ifdef RES_RTO
+        //It is impossible to manipulate the
+        // counter variable elsewhere, for example with a MOV instruction.
+        case VAR_FLAG_RTO:
+            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
+                s = _("RTO: variable can only be used for RES elsewhere");
+            break;
+        #endif
+
+        #ifndef RES_RTO
+        case VAR_FLAG_RES:
+            if(Variables[i].usedFlags == 0)
+                s = _("RES: Above this rung variable is not assigned to COUNTER or TIMER.\r\n"
+                         "You must assign a variable below");
+            break;
+        #endif
+
+        case VAR_FLAG_CTU:
+        case VAR_FLAG_CTD:
+        case VAR_FLAG_CTC:
+        case VAR_FLAG_CTR:
+        #ifdef RES_RTO
+        case VAR_FLAG_RES:
+        #endif
+        case VAR_FLAG_ANY:
+            break;
+
+        case VAR_FLAG_OTHERWISE_FORGOTTEN:
+            if(name[0] != '$') {
+                Error(_("Variable '%s' not assigned to, e.g. with a "
+                    "MOV statement, an ADD statement, etc.\r\n\r\n"
+                    "This is probably a programming error; now it "
+                    "will always be zero."), name);
+            }
+            break;
+
+        default:
+            oops();
+    }
+    return s;
+}
+//-----------------------------------------------------------------------------
 // Mark how a variable is used; a series of flags that we can OR together,
 // then we can check to make sure that only valid combinations have been used
 // (e.g. just a TON, an RTO with its reset, etc.). Returns NULL for success,
 // else an error string.
 //-----------------------------------------------------------------------------
+static char *rungsUsed = "";
 static char *MarkUsedVariable(char *name, DWORD flag)
 {
     int i;
@@ -267,9 +332,11 @@ static char *MarkUsedVariable(char *name, DWORD flag)
         VariablesCount++;
     }
 
+    char *s = Check(name, flag, i);
+    /*
     switch(flag) {
         case VAR_FLAG_TOF:
-            if(Variables[i].usedFlags != 0) 
+            if(Variables[i].usedFlags != 0)
                 return _("TOF: variable cannot be used elsewhere");
             break;
 
@@ -277,7 +344,7 @@ static char *MarkUsedVariable(char *name, DWORD flag)
             if(Variables[i].usedFlags != 0)
                 return _("TON: variable cannot be used elsewhere");
             break;
-        
+
         case VAR_FLAG_RTO:
             if(Variables[i].usedFlags & ~VAR_FLAG_RES)
                 return _("RTO: variable can only be used for RES elsewhere");
@@ -302,11 +369,21 @@ static char *MarkUsedVariable(char *name, DWORD flag)
         default:
             oops();
     }
+    */
+    if(s) return s;
 
     Variables[i].usedFlags |= flag;
     return NULL;
 }
 
+//-----------------------------------------------------------------------------
+static void CheckMsg(char *name, char *s)
+{
+    if(s) {
+        Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow+1, name, s, rungsUsed);
+        //CompileError();
+    }
+}
 //-----------------------------------------------------------------------------
 // Check for duplicate uses of a single variable. For example, there should
 // not be two TONs with the same name. On the other hand, it would be okay
@@ -316,9 +393,7 @@ static char *MarkUsedVariable(char *name, DWORD flag)
 static void MarkWithCheck(char *name, int flag)
 {
     char *s = MarkUsedVariable(name, flag);
-    if(s) {
-        Error(_("Variable for '%s' incorrectly assigned: %s."), name, s);
-    }
+    CheckMsg(name, s);
 }
 static void CheckVariableNamesCircuit(int which, void *elem)
 {
@@ -346,7 +421,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             }
             break;
         }
-        
+
         case ELEM_RTO:
         case ELEM_TOF:
         case ELEM_TON:
@@ -365,12 +440,15 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
+        case ELEM_CTR:
             if(which == ELEM_CTU)
                 flag = VAR_FLAG_CTU;
             else if(which == ELEM_CTD)
                 flag = VAR_FLAG_CTD;
             else if(which == ELEM_CTC)
                 flag = VAR_FLAG_CTC;
+            else if(which == ELEM_CTR)
+                flag = VAR_FLAG_CTR;
             else oops();
 
             MarkWithCheck(l->d.counter.name, flag);
@@ -449,11 +527,21 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             oops();
     }
 }
-static void CheckVariableNames(void)
+void CheckVariableNames(void)
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
+        rungNow = i; // Ok
         CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+    }
+
+    // reCheck
+    char *s;
+    for(i = 0; i < VariablesCount; i++) {
+        if(Variables[i].usedFlags & VAR_FLAG_TABLE) {
+             s = Check(Variables[i].name, VAR_FLAG_TABLE, i);
+             CheckMsg(Variables[i].name, s);
+        }
     }
 }
 
@@ -557,32 +645,32 @@ static void SimulateIntCode(void)
                 SetSimulationVariable(a->name1, a->literal);
                 break;
 
-			case  INT_READ_SFR_LITERAL:
-			case  INT_WRITE_SFR_LITERAL:
-			case  INT_SET_SFR_LITERAL:
-			case  INT_CLEAR_SFR_LITERAL:
-			case  INT_TEST_SFR_LITERAL:
-			case  INT_READ_SFR_VARIABLE:
-			case  INT_WRITE_SFR_VARIABLE:
-			case  INT_SET_SFR_VARIABLE:
-			case  INT_CLEAR_SFR_VARIABLE:
-			case  INT_TEST_SFR_VARIABLE:
-			case  INT_TEST_C_SFR_LITERAL:
-			case  INT_WRITE_SFR_LITERAL_L:
-			case  INT_WRITE_SFR_VARIABLE_L:
-			case  INT_SET_SFR_LITERAL_L:
-			case  INT_SET_SFR_VARIABLE_L:
-			case  INT_CLEAR_SFR_LITERAL_L:
-			case  INT_CLEAR_SFR_VARIABLE_L:
-			case  INT_TEST_SFR_LITERAL_L:
-			case  INT_TEST_SFR_VARIABLE_L:
-			case  INT_TEST_C_SFR_VARIABLE:
-			case  INT_TEST_C_SFR_LITERAL_L:
-			case  INT_TEST_C_SFR_VARIABLE_L:
+            case  INT_READ_SFR_LITERAL:
+            case  INT_WRITE_SFR_LITERAL:
+            case  INT_SET_SFR_LITERAL:
+            case  INT_CLEAR_SFR_LITERAL:
+            case  INT_TEST_SFR_LITERAL:
+            case  INT_READ_SFR_VARIABLE:
+            case  INT_WRITE_SFR_VARIABLE:
+            case  INT_SET_SFR_VARIABLE:
+            case  INT_CLEAR_SFR_VARIABLE:
+            case  INT_TEST_SFR_VARIABLE:
+            case  INT_TEST_C_SFR_LITERAL:
+            case  INT_WRITE_SFR_LITERAL_L:
+            case  INT_WRITE_SFR_VARIABLE_L:
+            case  INT_SET_SFR_LITERAL_L:
+            case  INT_SET_SFR_VARIABLE_L:
+            case  INT_CLEAR_SFR_LITERAL_L:
+            case  INT_CLEAR_SFR_VARIABLE_L:
+            case  INT_TEST_SFR_LITERAL_L:
+            case  INT_TEST_SFR_VARIABLE_L:
+            case  INT_TEST_C_SFR_VARIABLE:
+            case  INT_TEST_C_SFR_LITERAL_L:
+            case  INT_TEST_C_SFR_VARIABLE_L:
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                if(GetSimulationVariable(a->name1) != 
+                if(GetSimulationVariable(a->name1) !=
                     GetSimulationVariable(a->name2))
                 {
                     NeedRedraw = TRUE;
@@ -698,6 +786,14 @@ math:
                     SetSingleBit(a->name2, TRUE);
                 }
                 break;
+            case INT_UART_SEND_BUSY:{
+                if(SimulateUartTxCountdown == 0) {
+                    SetSingleBit(a->name1, FALSE);
+                } else {
+                    SetSingleBit(a->name1, TRUE);
+                }
+                break;
+            }
 
             case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
@@ -709,13 +805,21 @@ math:
                 }
                 break;
 
+            case INT_UART_RECV_AVAIL:
+                if(QueuedUartCharacter >= 0) {
+                    SetSingleBit(a->name1, TRUE);
+                } else {
+                    SetSingleBit(a->name1, FALSE);
+                }
+                break;
+
             case INT_END_IF:
             case INT_ELSE:
                 return;
 
             case INT_COMMENT:
                 break;
-            
+
             default:
                 oops();
                 break;
@@ -794,9 +898,18 @@ void StartSimulationTimer(void)
 //-----------------------------------------------------------------------------
 // Clear out all the parameters relating to the previous simulation.
 //-----------------------------------------------------------------------------
-void ClearSimulationData(void)
+void ClrSimulationData(void)
 {
-    VariablesCount = 0;
+    int i;
+    for(i = 0; i < VariablesCount; i++) {
+        Variables[i].val = 0;
+        Variables[i].usedFlags = 0;
+    }
+}
+BOOL ClearSimulationData(void)
+{
+//  VariableCount = 0;
+    ClrSimulationData();
     SingleBitItemsCount = 0;
     AdcShadowsCount = 0;
     QueuedUartCharacter = -1;
@@ -808,10 +921,9 @@ void ClearSimulationData(void)
 
     if(!GenerateIntermediateCode()) {
         ToggleSimulationMode();
-        return;
+        return FALSE;
     }
-
-    SimulateOneCycle(TRUE);
+    return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -890,7 +1002,7 @@ static LRESULT CALLBACK UartSimulationProc(HWND hwnd, UINT msg,
 // Intercept WM_CHAR messages that to the terminal simulation window so that
 // we can redirect them to the PLC program.
 //-----------------------------------------------------------------------------
-static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg, 
+static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam)
 {
     if(msg == WM_CHAR) {
@@ -1011,8 +1123,7 @@ static void AppendToUartSimulationTextControl(BYTE b)
     } else {
         sprintf(append, "\\x%02x", b);
     }
-
-#define MAX_SCROLLBACK 256
+#define MAX_SCROLLBACK 0x10000 //256 // 0x10000
     char buf[MAX_SCROLLBACK] = "";
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)(sizeof(buf)-1),
@@ -1072,3 +1183,24 @@ static void AppendToUartSimulationTextControl(BYTE b)
     SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 }
+/*
+------------------------------ ASCII Control Codes ---------------------------
+³Dec Hex Ctl  Name Control Meaning     ³Dec Hex Ctl  Name Control Meaning
+³--- --- ---  ---- ------------------- ³--- --- ---  ---- --------------------
+³  0  00  ^@  NUL  null (end string)   ³ 16  10  ^P  DLE  data line escape
+³  1  01  ^A  SOH  start of heading    ³ 17  11  ^Q  DC1  dev ctrl 1 (X-ON)
+³  2  02  ^B  STX  start of text       ³ 18  12  ^R  DC2  device ctrl 2
+³  3  03  ^C  ETX  end of text         ³ 19  13  ^S  DC3  dev ctrl 3 (X-OFF)
+³  4  04  ^D  EOT  end of transmission ³ 20  14  ^T  DC4  device ctrl 4
+³  5  05  ^E  ENQ  enquiry             ³ 21  15  ^U  NAK  negative acknowledge
+³  6  06  ^F  ACK  acknowledge         ³ 22  16  ^V  SYN  synchronous idle
+³  7  07  ^G  BEL  bell                ³ 23  17  ^W  ETB  end transmit block
+³  8  08  ^H  BS  backspace            ³ 24  18  ^X  CAN  cancel
+³  9  09  ^I  HT  TAB horizontal tab   ³ 25  19  ^Y  EM  end of medium
+³ 10  0a  ^J  LF  line feed            ³ 26  1a  ^Z  SUB  substitute
+³ 11  0b  ^K  VT  vertical tab         ³ 27  1b  ^[  ESC  escape
+³ 12  0c  ^L  FF  form feed            ³ 28  1c  ^\  FS  file separator
+³ 13  0d  ^M  CR  carriage return      ³ 29  1d  ^]  GS  group separator
+³ 14  0e  ^N  SO  shift out            ³ 30  1e  ^^  RS  record separator
+³ 15  0f  ^O  SI  shift in             ³ 31  1f  ^_  US  unit separator
+*/

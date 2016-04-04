@@ -267,8 +267,9 @@ HMENU MakeMainWindowMenus(void)
     FileMenu = CreatePopupMenu();
     AppendMenu(FileMenu, MF_STRING,   MNU_NEW,    _("&New\tCtrl+N"));
     AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,   _("&Open...\tCtrl+O"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,   _("&Save\tCtrl+S"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,_("Save &As..."));
+
     AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
     AppendMenu(FileMenu, MF_STRING,   MNU_EXPORT,      _("&Export As Text...\tCtrl+E"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_TXT, _("Open Text in notepad\tF3"));
@@ -278,7 +279,7 @@ HMENU MakeMainWindowMenus(void)
 
     EditMenu = CreatePopupMenu();
     AppendMenu(EditMenu, MF_STRING, MNU_UNDO, _("&Undo\tCtrl+Z or Alt+Backspace"));
-    AppendMenu(EditMenu, MF_STRING, MNU_REDO, _("&Redo\tCtrl+Y"));
+    AppendMenu(EditMenu, MF_STRING, MNU_REDO, _("&Redo\tCtrl+Y or Alt+Shift+Backspace"));
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
@@ -480,7 +481,12 @@ HMENU MakeMainWindowMenus(void)
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters..."));
     ProcessorMenu = CreatePopupMenu();
+    AvrFamily family = SupportedMcus[0].Family;
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
+        if(family != SupportedMcus[i].Family) {
+            family = SupportedMcus[i].Family ;
+            AppendMenu(ProcessorMenu, MF_SEPARATOR,0,""); //separate AVR MCU family
+        }
         AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
             SupportedMcus[i].mcuName);
     }
@@ -500,14 +506,17 @@ HMENU MakeMainWindowMenus(void)
         _("Single &Cycle\tSpace"));
 
     compile = CreatePopupMenu();
-    AppendMenu(compile, MF_STRING, MNU_COMPILE, _("&Compile\tF5"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_AS, _("Compile &As..."));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,    _("TODO: Compile HEX->ASM"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ASM,     _("TODO: Compile ASM->HEX"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE,         _("&Compile\tF5"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_AS,      _("Compile &As..."));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,    _("Compile HEX"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,   _("Compile ANSIC"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("DONE: Compile C for ARDUINO"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_CAVR,    _("TODO: Compile C for AVR GCC, CodeVisionAVR, IAR AVR"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,    _("TODO: Compile HEX->ASM"));
+//  AppendMenu(compile, MF_STRING, MNU_COMPILE_ASM,     _("TODO: Compile ASM->HEX"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL,  _("TODO: Compile PASCAL"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("TODO: Compile ARDUINO"));
-    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,       _("TODO: Call flash.bat\tF6"));
+    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,       _("Call flashMcu.bat\tF6"));
+    AppendMenu(compile, MF_STRING, MNU_READ_BAT,        _("Call readMcu.bat\tCtrl+F6"));
 
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
@@ -717,7 +726,7 @@ void RefreshControlsToSettings(void)
     {
         strcpy(buf, "");
     } else {
-        sprintf(buf, _("processor clock %.4f MHz"),
+        sprintf(buf, _("processor clock %.9g MHz"),
             (double)Prog.mcuClock/1000000.0);
     }
     SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);

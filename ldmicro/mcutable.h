@@ -97,7 +97,6 @@ McuAdcPinInfo AvrAT90USB647_64TQFPAdcPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // ATmega2560
-
 McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
     { 'G',  5,  1 },
 
@@ -430,9 +429,9 @@ McuAdcPinInfo AvrAtmega8AdcPinInfo[] = {
 
 
 //-----------------------------------------------------------------------------
-// ATmega8 TQFP-32
+// ATmega8 32 pin packages TQFP/QFN/MLF
 
-McuIoPinInfo AvrAtmega8IoPinInfoTQFP[] = {
+McuIoPinInfo AvrAtmega8IoPinInfo32[] = {
     { 'D',  0, 30, "PD0 (RXD)" }, // {char port;  int bit;  int pin;}
     { 'D',  1, 31, "PD1 (TXD)" },
     { 'D',  2, 32, "PD2 (INT0)" },
@@ -443,7 +442,7 @@ McuIoPinInfo AvrAtmega8IoPinInfoTQFP[] = {
     { 'D',  7, 11, "PD7 (AIN1)" },
     { 'B',  0, 12, "PB0 (ICP1)" },
     { 'B',  1, 13, "PB1 (OC1A)" },
-    { 'B',  2, 14, "PB2 (SS / OC1B)" },
+    { 'B',  2, 14, "PB2 (OC1B / SS)" },
     { 'B',  3, 15, "PB3 (MOSI / OC2)" },
     { 'B',  4, 16, "PB4 (MISO)" },
     { 'B',  5, 17, "PB5 (SCK)" },
@@ -458,7 +457,7 @@ McuIoPinInfo AvrAtmega8IoPinInfoTQFP[] = {
     { 'C',  6, 29, "PC6 (RESET)" },
 };
 
-McuAdcPinInfo AvrAtmega8AdcPinInfoTQFP[] = {
+McuAdcPinInfo AvrAtmega8AdcPinInfo32[] = {
     { 23, 0x00 }, // ADC0 {int pin;   BYTE muxRegValue;}
     { 24, 0x01 },
     { 25, 0x02 },
@@ -469,6 +468,11 @@ McuAdcPinInfo AvrAtmega8AdcPinInfoTQFP[] = {
     { 22, 0x07 }, // ADC7
 };
 
+//McuExtIntPinInfo
+int AvrAtmega8ExtIntPinInfo32[] = {
+    32, //INT0
+    1,  //INT1
+};
 
 //-----------------------------------------------------------------------------
 // ATmega164 or ATmega324 or ATmega644 or ATmega1264
@@ -749,26 +753,7 @@ McuAdcPinInfo Pic16f886AdcPinInfo[] = {
 
 #define arraylen(x) (sizeof(x)/sizeof((x)[0]))
 
-McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
-    {
-        "Atmel AVR AT90USB647 64-TQFP",
-        'P',
-        { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F }, // PINx
-        { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x31 }, // PORTx
-        { 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30 }, // DDRx
-        64*1024,
-        { { 0x100, 4096 } },
-        AvrAT90USB647_64TQFPIoPinInfo,
-        arraylen(AvrAT90USB647_64TQFPIoPinInfo),
-        AvrAT90USB647_64TQFPAdcPinInfo,
-        arraylen(AvrAT90USB647_64TQFPAdcPinInfo),
-        1023,
-        { 27, 28 },
-        17,
-        ISA_AVR,
-        TRUE,
-        0
-    },
+McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     {
         "Atmel AVR ATmega2560 100-TQFP",
         'P',
@@ -785,7 +770,26 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 2 , 3 },
         23,
         ISA_AVR1,
-        TRUE,
+        EnhancedCore4M,
+        0
+    },
+    {
+        "Atmel AVR AT90USB647 64-TQFP",
+        'P',
+        { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F }, // PINx
+        { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x31 }, // PORTx
+        { 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30 }, // DDRx
+        64*1024,
+        { { 0x100, 4096 } },
+        AvrAT90USB647_64TQFPIoPinInfo,
+        arraylen(AvrAT90USB647_64TQFPIoPinInfo),
+        AvrAT90USB647_64TQFPAdcPinInfo,
+        arraylen(AvrAT90USB647_64TQFPAdcPinInfo),
+        1023,
+        { 27, 28 },
+        17,
+        ISA_AVR,
+        EnhancedCore128K, //???
         0
     },
     {
@@ -804,7 +808,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 27, 28 },
         17,
         ISA_AVR,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -823,7 +827,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 27, 28 },
         17,
         ISA_AVR,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -842,7 +846,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 0, 0 },
         2, // OC2
         ISA_AVR,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -861,7 +865,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 14, 15 },
         21, // OC2
         ISA_AVR,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -880,46 +884,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 14, 15 },
         21, // OC2
         ISA_AVR,
-        TRUE,
-        0
-    },
-    {
-        "Atmel AVR ATmega8 32-TQFP",         //char            *mcuName;
-        'P',                                 //char             portPrefix;
-        { 0xff, 0x36, 0x33, 0x30 }, // PINx  //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
-        { 0xff, 0x38, 0x35, 0x32 }, // PORTx //DWORD            outputRegs[MAX_IO_PORTS];
-        { 0xff, 0x37, 0x34, 0x31 }, // DDRx  //DWORD            dirRegs[MAX_IO_PORTS];
-        4*1024,                              //DWORD            flashWords;
-        { { 0x60, 1024 } },                  //{DWORD start; int len;} ram[MAX_RAM_SECTIONS];
-        AvrAtmega8IoPinInfoTQFP,             //McuIoPinInfo    *pinInfo;
-        arraylen(AvrAtmega8IoPinInfoTQFP),   //int              pinCount;
-        AvrAtmega8AdcPinInfoTQFP,            //McuAdcPinInfo   *adcInfo;
-        arraylen(AvrAtmega8AdcPinInfoTQFP),  //int              adcCount;
-        1023,                                //int              adcMax;
-        { 30, 31 },                          //{int rxPin; int txPin;} uartNeeds;
-        15,//PB3-OC2                         //int              pwmNeedsPin;
-        ISA_AVR,                             //int              whichIsa;
-        TRUE,                                //BOOL             avrUseIjmp;
-        0,                                   //DWORD            configurationWord;
-        { 32, 1 } // INT0, INT1              //int int0PinA; int int1PinA;} QuadEncodNeeds;
-    },
-    {
-        "Atmel AVR ATmega8 28-PDIP",
-        'P',
-        { 0xff, 0x36, 0x33, 0x30 }, // PINx     (but there is no xxxA)
-        { 0xff, 0x38, 0x35, 0x32 }, // PORTx
-        { 0xff, 0x37, 0x34, 0x31 }, // DDRx
-        4*1024,
-        { { 0x60, 1024 } },
-        AvrAtmega8IoPinInfo,
-        arraylen(AvrAtmega8IoPinInfo),
-        AvrAtmega8AdcPinInfo,
-        arraylen(AvrAtmega8AdcPinInfo),
-        1023,
-        { 2, 3 },
-        17,
-        ISA_AVR,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -938,7 +903,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 2, 3 },
         17,
         ISA_AVR1,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -957,7 +922,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 2, 3 },
         17,
         ISA_AVR1,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -976,7 +941,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 2, 3 },
         17,
         ISA_AVR1,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -995,7 +960,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 2, 3 },
         17,
         ISA_AVR1,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -1014,7 +979,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 14, 15 },
         21,
         ISA_AVR1,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -1033,7 +998,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 14, 15 },
         21,
         ISA_AVR1,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -1052,7 +1017,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 14, 15 },
         21,
         ISA_AVR1,
-        TRUE,
+        EnhancedCore128K,
         0
     },
     {
@@ -1071,7 +1036,48 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 14, 15 },
         21,
         ISA_AVR1,
-        TRUE,
+        EnhancedCore128K,
+        0
+    },
+    {
+        "Atmel AVR ATmega8 32 pin packages", //char            *mcuName;
+        'P',                                 //char             portPrefix;
+        { 0xff, 0x36, 0x33, 0x30 }, // PINx  //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
+        { 0xff, 0x38, 0x35, 0x32 }, // PORTx //DWORD            outputRegs[MAX_IO_PORTS];
+        { 0xff, 0x37, 0x34, 0x31 }, // DDRx  //DWORD            dirRegs[MAX_IO_PORTS];
+        4*1024,                              //DWORD            flashWords;
+        { { 0x60, 1024 } },                  //{DWORD start; int len;} ram[MAX_RAM_SECTIONS];
+        AvrAtmega8IoPinInfo32,               //McuIoPinInfo    *pinInfo;
+        arraylen(AvrAtmega8IoPinInfo32),     //int              pinCount;
+        AvrAtmega8AdcPinInfo32,              //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrAtmega8AdcPinInfo32),    //int              adcCount;
+        1023,                                //int              adcMax;
+        { 30, 31 },                          //{int rxPin; int txPin;} uartNeeds;
+        15,// OC2                            //int              pwmNeedsPin;
+        ISA_AVR,                             //int              whichIsa;
+        EnhancedCore8K,                      //AvrFamily        Family;
+        0,                                   //DWORD            configurationWord;
+//      { 32, 1 }, // INT0, INT1             //int int0PinA; int int1PinA;} QuadEncodNeeds;
+//      AvrAtmega8ExtIntPinInfo32,
+//      arraylen(AvrAtmega8ExtIntPinInfo32),
+    },
+    {
+        "Atmel AVR ATmega8 28-PDIP",
+        'P',
+        { 0xff, 0x36, 0x33, 0x30 }, // PINx     (but there is no xxxA)
+        { 0xff, 0x38, 0x35, 0x32 }, // PORTx
+        { 0xff, 0x37, 0x34, 0x31 }, // DDRx
+        4*1024,
+        { { 0x60, 1024 } },
+        AvrAtmega8IoPinInfo,
+        arraylen(AvrAtmega8IoPinInfo),
+        AvrAtmega8AdcPinInfo,
+        arraylen(AvrAtmega8AdcPinInfo),
+        1023,
+        { 2, 3 },
+        17,
+        ISA_AVR,
+        EnhancedCore8K,
         0
     },
     {
@@ -1090,7 +1096,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 7, 8 },
         0,
         ISA_PIC16,
-        FALSE,
+        NOT_AVR,
         // code protection off, data code protection off, LVP disabled,
         // BOD reset enabled, RA5/nMCLR is RA5, PWRT enabled, WDT disabled,
         // HS oscillator
@@ -1112,7 +1118,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 8, 11 },
         0,
         ISA_PIC16,
-        FALSE,
+        NOT_AVR,
             (1 << 13) |         // CP off
             (1 << 12) |         // CCP on RB2 (doesn't matter)
             (1 << 11) |         // ICD disabled
@@ -1142,7 +1148,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 0, 0 },
         0,
         ISA_PIC16,
-        FALSE,
+        NOT_AVR,
             (1 << 13) | // code protect off
             (1 << 12) | // CCP1 on RB2 (doesn't matter, can't use)
             (1 << 11) | // disable debugger
@@ -1171,7 +1177,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 26, 25 },
         16,
         ISA_PIC16,
-        FALSE,
+        NOT_AVR,
         // code protection off, debug off, flash write off, EE code protection
         // off, LVP disabled, BOD enabled, CP off, PWRT enabled, WDT disabled,
         // HS oscillator
@@ -1193,7 +1199,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 18, 17 },
         12,
         ISA_PIC16,
-        FALSE,
+        NOT_AVR,
         // code protection off, debug off, flash write off, EE code protection
         // off, LVP disabled, BOD enabled, CP off, PWRT enabled, WDT disabled,
         // HS oscillator
@@ -1215,7 +1221,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 26, 25 },
         16,
         ISA_PIC16,
-        FALSE,
+        NOT_AVR,
             (3 << (9+16)) | // flash write protection off
             (0 << (8+16)) | // BOR at 2.1 V
             (1 << 13) |     // ICD disabled
@@ -1247,7 +1253,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 18, 17 },
         12,
         ISA_PIC16,
-        FALSE,
+        NOT_AVR,
             (3 << (9+16)) | // flash write protection off
             (0 << (8+16)) | // BOR at 2.1 V
             (1 << 13) |     // ICD disabled
@@ -1278,7 +1284,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 0, 0 },
         0,
         ISA_ANSIC,
-        FALSE,
+        NOT_AVR,
         0x00
     },
     {
@@ -1297,7 +1303,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 0, 0 },
         0,
         ISA_INTERPRETED,
-        FALSE,
+        NOT_AVR,
         0x00
     },
     {
@@ -1316,7 +1322,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         { 0, 0 },
         0,
         ISA_NETZER,
-        FALSE,
+        NOT_AVR,
         0x00
     }
 };

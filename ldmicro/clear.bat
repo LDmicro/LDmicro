@@ -1,3 +1,6 @@
+md BAK
+move  *.bak BAK
+
 del *.pdb > nul
 del *.log
 del *.obj
@@ -11,5 +14,3 @@ del ldmicro.exe
 del ldmicro.res
 del ldinterpret.exe
 del aaa
-md BAK
-move  *.bak BAK

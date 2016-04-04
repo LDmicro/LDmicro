@@ -58,8 +58,6 @@ static HWND AnalogSliderTrackbar;
 static BOOL AnalogSliderDone;
 static BOOL AnalogSliderCancel;
 
-static BOOL CheckForNumber(char * String);
-
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
 //-----------------------------------------------------------------------------
@@ -379,10 +377,11 @@ int GenerateIoList(int prevSel)
 //-----------------------------------------------------------------------------
 BOOL LoadIoListFromFile(FILE *f)
 {
-    char line[80];
+    char line[MAX_NAME_LEN];
     char name[MAX_NAME_LEN];
     int pin;
     while(fgets(line, sizeof(line), f)) {
+        if(!strlen(strspace(line))) continue;
         if(strcmp(line, "END\n")==0) {
             return TRUE;
         }
@@ -484,22 +483,25 @@ void ShowAnalogSliderPopup(char *name)
     RECT r;
     SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
 
-    if(top + 110 >= r.bottom) {
-        top = r.bottom - 110;
+    if(top + 110  +28 >= r.bottom) {
+        top = r.bottom - 110 -28;
     }
     if(top < 0) top = 0;
 
     AnalogSliderMain = CreateWindowClient(0, "LDmicroAnalogSlider", "I/O Pin",
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
-        left, top, 30, 100, NULL, NULL, Instance, NULL);
+        left, top, 30 +5, 100 +28, NULL, NULL, Instance, NULL);
 
     AnalogSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
         TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE,
-        0, 0, 30, 100, AnalogSliderMain, NULL, Instance, NULL);
+        0, 0, 30 +5, 100 +28, AnalogSliderMain, NULL, Instance, NULL);
     SendMessage(AnalogSliderTrackbar, TBM_SETRANGE, FALSE,
         MAKELONG(0, maxVal));
     SendMessage(AnalogSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1)/8, 0);
     SendMessage(AnalogSliderTrackbar, TBM_SETPOS, TRUE, currentVal);
+
+    SendMessage(AnalogSliderTrackbar, TBM_SETPAGESIZE, 0, 10);
+    SendMessage(AnalogSliderTrackbar, TBM_SETLINESIZE, 0, 1);
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(AnalogSliderMain, TRUE);
@@ -526,7 +528,7 @@ void ShowAnalogSliderPopup(char *name)
             }
         } else if(msg.message == WM_LBUTTONUP) {
             if(v != orig) {
-                AnalogSliderDone = TRUE;
+//                AnalogSliderDone = TRUE; // not allow a kyboard UP DN
             }
         }
         SetAdcShadow(name, v);
@@ -764,7 +766,7 @@ cant_use_this_io:;
 
     if(!DialogCancel) {
         int sel = SendMessage(PinList, LB_GETCURSEL, 0, 0);
-        char pin[16];
+        char pin[MAX_NAME_LEN];
         SendMessage(PinList, LB_GETTEXT, (WPARAM)sel, (LPARAM)pin);
         if(strcmp(pin, _("(no pin)"))==0) {
             int i;
@@ -928,34 +930,3 @@ void IoListProc(NMHDR *h)
         }
     }
 }
-
-//-----------------------------------------------------------------------------
-// Is an expression that could be either a variable name or a number a number?
-//-----------------------------------------------------------------------------
-static BOOL IsNumber(char *str)
-{
-    if((*str == '-') && isdigit(str[1]) || isdigit(*str)) {
-        return TRUE;
-    } else {
-        return FALSE;
-    }
-}
-
-//-----------------------------------------------------------------------------
-
-static BOOL CheckForNumber(char * String)
-{
-    return IsNumber(String);
-
-    errno = 0;
-    char* p = String;
-    unsigned long test = strtol(String, &p, 10);
-    if ((errno != 0) || (String == p) || (*p != 0))
-    {
-        return FALSE;
-    }
-
-    return TRUE;
-}
-
-//-----------------------------------------------------------------------------

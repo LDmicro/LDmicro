@@ -32,5 +32,5 @@ RUNG
   COIL Rready 0 0 0
 END
 RUNG
-  COMMENT \r\nby Ihor Nehrutsa, LDmicro.GitHub@gmail.com, March 2016
+  COMMENT \r\nby Ihor Nehrutsa, Any questions to LDmicro.GitHub@gmail.com, March 2016
 END

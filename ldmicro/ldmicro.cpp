@@ -40,6 +40,8 @@ HWND        MainWindow;
 HDC         Hdc;
 
 char ExePath[MAX_PATH];
+char CurrentLdPath[MAX_PATH];
+
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
 static HHOOK       MouseHookHandle;
@@ -55,6 +57,8 @@ static BOOL ProgramChangedNotSaved = FALSE;
 #define C_PATTERN "C Source Files (*.c)\0*.c\0All Files\0*\0\0"
 #define INTERPRETED_PATTERN \
     "Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
+#define PASCAL_PATTERN "PASCAL Source Files (*.pas)\0*.pas\0All Files\0*\0\0"
+#define ARDUINO_C_PATTERN "ARDUINO C Source Files (*.cpp)\0*.cpp\0All Files\0*\0\0"
 char CurrentCompileFile[MAX_PATH];
 
 #define TXT_PATTERN  "Text Files (*.txt)\0*.txt\0All files\0*\0\0"
@@ -91,6 +95,44 @@ static BOOL SaveAsDialog(void)
         ProgramChangedNotSaved = FALSE;
         return TRUE;
     }
+}
+
+//---------------------------------------------------------------------------
+char *ExtractFilePath(char *dest) // with last backslash
+{
+    char *c;
+    if(strlen(dest)) {
+        c = strrchr(dest,'\\');
+        if(c)
+            c[1] = '\0';
+    };
+    return dest;
+}
+
+//---------------------------------------------------------------------------
+char *ExtractFileName(char *src) // with .ext
+{
+    char *c;
+    if(strlen(src)) {
+        c = strrchr(src,'\\');
+        if(c)
+            return &c[1];
+    }
+    return src;
+}
+
+//---------------------------------------------------------------------------
+char *GetFileName(char *dest, char *src) // without .ext
+{
+    dest[0] = '\0';
+    char *c;
+    strcpy(dest, ExtractFileName(src));
+    if(strlen(dest)) {
+        c = strrchr(dest,'.');
+        if(c)
+            c[0] = '\0';
+    }
+    return dest;
 }
 
 //-----------------------------------------------------------------------------
@@ -161,29 +203,164 @@ static BOOL SaveProgram(void)
 }
 
 //-----------------------------------------------------------------------------
+static void isErr(int Err, char *r)
+{
+  char *s;
+  switch(Err){
+    case 0:s="The system is out of memory or resources"; break;
+    case ERROR_BAD_FORMAT:s="The .exe file is invalid"; break;
+    case ERROR_FILE_NOT_FOUND:s="The specified file was not found"; break;
+    case ERROR_PATH_NOT_FOUND:s="The specified path was not found"; break;
+    default:s=""; break;
+  }
+  if(strlen(s))
+      Error("Error: %d - %s in >%s<",Err, s, r);
+}
+
+//-----------------------------------------------------------------------------
+char *GetIsaName(int ISA)
+{
+    switch(ISA) {
+        case ISA_AVR         : return stringer( ISA_AVR         ) + 4;
+        case ISA_PIC16       : return stringer( ISA_PIC16       ) + 4;
+        case ISA_ANSIC       : return stringer( ISA_ANSIC       ) + 4;
+        case ISA_INTERPRETED : return stringer( ISA_INTERPRETED ) + 4;
+        case ISA_NETZER      : return stringer( ISA_NETZER      ) + 4;
+        case ISA_PASCAL      : return stringer( ISA_PASCAL      ) + 4;
+        case ISA_ARDUINO     : return stringer( ISA_ARDUINO     ) + 4;
+        case ISA_CAVR        : return stringer( ISA_CAVR        ) + 4;
+        default: oops()
+    }
+}
+//-----------------------------------------------------------------------------
+static void flashBat(char *name, int ISA)
+{
+    if(strlen(name) == 0) {
+        Error(_(" Save ld before flash."));
+        return;
+    }
+
+    char s[MAX_PATH];
+    char r[MAX_PATH];
+
+    s[0] = '\0';
+    SetExt(s, name, "");
+    sprintf(r,"\"%sflashMcu.bat\" %s \"%s\"",ExePath,GetIsaName(ISA),s);
+
+    isErr(WinExec(r, SW_SHOWNORMAL), r);
+}
+
+//-----------------------------------------------------------------------------
+static void readBat(char *name, int ISA)
+{
+    if(strlen(name) == 0) {
+        name = "read";
+    }
+
+    char s[MAX_PATH];
+    char r[MAX_PATH];
+
+    s[0] = '\0';
+    SetExt(s, name, "");
+    sprintf(r,"\"%sreadMcu.bat\" %s \"%s\"",ExePath,GetIsaName(ISA),s);
+
+    isErr(WinExec(r, SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/), r);
+}
+
+//-----------------------------------------------------------------------------
+static void notepad(char *name, char *ext)
+{
+    char s[MAX_PATH]="";
+    char r[MAX_PATH];
+
+    s[0] = '\0';
+    SetExt(s, name, ext);
+    sprintf(r,"""%snotepad.bat %s""",ExePath,s);
+
+    //_execl("notepad.exe",s);
+    isErr(WinExec(r, SW_SHOWNORMAL), r);
+}
+//-----------------------------------------------------------------------------
+static void postCompile()
+{
+    char r[MAX_PATH];
+    char onlyName[MAX_PATH];
+
+    strcpy(onlyName, ExtractFileName(CurrentSaveFile));
+    SetExt(onlyName, onlyName, "");
+
+    sprintf(r,"""%spostCompile.bat %s %s""", ExePath, CurrentLdPath, onlyName);
+
+    isErr(WinExec(r, SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/), r);
+}
+
+//-----------------------------------------------------------------------------
 // Compile the program to a hex file for the target micro. Get the output
 // file name if necessary, then call the micro-specific compile routines.
 //-----------------------------------------------------------------------------
-static void CompileProgram(BOOL compileAs)
+static void CompileProgram(BOOL compileAs, int compile_MNU)
 {
-    if(compileAs || strlen(CurrentCompileFile)==0) {
+    if(compile_MNU==MNU_COMPILE){
+        if(strstr(CurrentCompileFile,".cpp"))
+            compile_MNU = MNU_COMPILE_ARDUINO;
+        else if(strstr(CurrentCompileFile,".ino"))
+            compile_MNU = MNU_COMPILE_ARDUINO;
+        else if(strstr(CurrentCompileFile,".c"))
+            compile_MNU = MNU_COMPILE_ANSIC;
+        else if(strstr(CurrentCompileFile,".pas"))
+            compile_MNU = MNU_COMPILE_PASCAL;
+        else
+            compile_MNU = MNU_COMPILE_IHEX;
+    }
+
+    if( compileAs || (strlen(CurrentCompileFile)==0)
+      ||  (compile_MNU==MNU_COMPILE_AS)
+      ||( (compile_MNU==MNU_COMPILE      )  && (!strstr(CurrentCompileFile,".hex")) )
+      ||( (compile_MNU==MNU_COMPILE_IHEX )  && (!strstr(CurrentCompileFile,".hex")) )
+      ||( (compile_MNU==MNU_COMPILE_ANSIC)  && (strlen(strstr(CurrentCompileFile,".c"))!=2) )
+      ||( (compile_MNU==MNU_COMPILE_ARDUINO)&& (!strstr(CurrentCompileFile,".cpp")) )
+      ||( (compile_MNU==MNU_COMPILE_PASCAL) && (!strstr(CurrentCompileFile,".pas")) )
+      ){
+        char *c;
         OPENFILENAME ofn;
 
         memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
         ofn.hInstance = Instance;
         ofn.lpstrTitle = _("Compile To");
-        if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
+        if((compile_MNU==MNU_COMPILE_ANSIC) ||
+           (Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC)) {
             ofn.lpstrFilter = C_PATTERN;
             ofn.lpstrDefExt = "c";
-        } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED || 
+            c = "c";
+        } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
                                Prog.mcu->whichIsa == ISA_NETZER)) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
+            c = "int";
+        } else if((compile_MNU==MNU_COMPILE_PASCAL) ||
+                  (Prog.mcu && Prog.mcu->whichIsa == ISA_PASCAL)) {
+            ofn.lpstrFilter = PASCAL_PATTERN;
+            ofn.lpstrDefExt = "pas";
+            c = "pas";
+        } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
+                  (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
+            ofn.lpstrFilter = ARDUINO_C_PATTERN;
+            ofn.lpstrDefExt = "cpp";
+            c = "cpp";
+        /*
+        } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
+                  (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
+            ofn.lpstrFilter = ARDUINO_PATTERN;
+            ofn.lpstrDefExt = "ino";
+            c = "ino";
+        */
         } else {
             ofn.lpstrFilter = HEX_PATTERN;
             ofn.lpstrDefExt = "hex";
+            c = "hex";
         }
+        SetExt(CurrentCompileFile, CurrentSaveFile, c);
         ofn.lpstrFile = CurrentCompileFile;
         ofn.nMaxFile = sizeof(CurrentCompileFile);
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
@@ -197,30 +374,48 @@ static void CompileProgram(BOOL compileAs)
 
     if(!GenerateIntermediateCode()) return;
 
-    if(Prog.mcu == NULL) {
+    if((Prog.mcu == NULL)
+    && (compile_MNU!=MNU_COMPILE_PASCAL)
+    && (compile_MNU!=MNU_COMPILE_ANSIC)
+    && (compile_MNU!=MNU_COMPILE_ARDUINO)) {
         Error(_("Must choose a target microcontroller before compiling."));
         return;
     }
 
-    if(UartFunctionUsed() && Prog.mcu->uartNeeds.rxPin == 0) {
+    if((UartFunctionUsed() && (Prog.mcu) && Prog.mcu->uartNeeds.rxPin == 0)
+    && (compile_MNU!=MNU_COMPILE_PASCAL)
+    && (compile_MNU!=MNU_COMPILE_ANSIC)
+    && (compile_MNU!=MNU_COMPILE_ARDUINO)) {
         Error(_("UART function used but not supported for this micro."));
         return;
     }
 
-    if(PwmFunctionUsed() && Prog.mcu->pwmNeedsPin == 0) {
+    if((PwmFunctionUsed() && (Prog.mcu) && Prog.mcu->pwmNeedsPin == 0)
+    && (compile_MNU!=MNU_COMPILE_PASCAL)
+    && (compile_MNU!=MNU_COMPILE_ANSIC)
+    && (compile_MNU!=MNU_COMPILE_ARDUINO)) {
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
 
+    if (compile_MNU==MNU_COMPILE_ANSIC)
+      CompileAnsiC(CurrentCompileFile);
+    else if (compile_MNU==MNU_COMPILE_ARDUINO) {
+      CompileAnsiC(CurrentCompileFile, ISA_ARDUINO);
+   } else if (Prog.mcu)
     switch(Prog.mcu->whichIsa) {
         case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
         case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
         case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
         case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
         case ISA_NETZER:        CompileNetzer(CurrentCompileFile); break;
+        case ISA_ARDUINO:       CompileAnsiC(CurrentCompileFile, ISA_ARDUINO); break;
 
         default: oops();
-    }
+    } else oops();
+
+    postCompile();
+
 //    IntDumpListing("t.pl");
 }
 
@@ -305,12 +500,13 @@ void ProgramChanged(void)
     GenerateIoListDontLoseSelection();
     RefreshScrollbars();
 }
+/* moved to ldmicro.h
 #define CHANGING_PROGRAM(x) { \
         UndoRemember(); \
         x; \
         ProgramChanged(); \
     }
-
+*/
 //-----------------------------------------------------------------------------
 // Hook that we install when the user starts dragging the `splitter,' in case
 // they drag it out of the narrow area of the drawn splitter bar. Resize
@@ -345,33 +541,6 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(MouseHookHandle, code, wParam, lParam);
 }
 
-//-----------------------------------------------------------------------------
-static void isErr(int Err)
-{
-  char *s;
-  switch(Err){
-    case 0:s="The system is out of memory or resources"; break;
-    case ERROR_BAD_FORMAT:s="The .exe file is invalid"; break;
-    case ERROR_FILE_NOT_FOUND:s="The specified file was not found"; break;
-    case ERROR_PATH_NOT_FOUND:s="The specified path was not found"; break;
-    default:s="Ok"; break;
-  }
-  //dbp("Error: %d %s",Err,s);
-}
-
-//-----------------------------------------------------------------------------
-static void notepad(char *name, char *ext)
-{
-    char s[MAX_PATH]="";
-    char r[MAX_PATH];
-
-    s[0] = '\0';
-    SetExt(s, name, ext);
-    sprintf(r,"""%snotepad.bat %s""",ExePath,s);
-
-    //_execl("notepad.exe",s);
-    isErr(WinExec(r, 1/*SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/));
-}
 //-----------------------------------------------------------------------------
 // Handle a selection from the menu bar of the main window.
 //-----------------------------------------------------------------------------
@@ -418,6 +587,14 @@ static void ProcessMenu(int code)
 
         case MNU_EXPORT:
             ExportDialog();
+            break;
+
+        case MNU_FLASH_BAT:
+            flashBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
+            break;
+
+        case MNU_READ_BAT:
+            readBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
             break;
 
         case MNU_NOTEPAD_TXT:
@@ -544,7 +721,7 @@ math:
                 break;
         }
 
-		// Special function register
+                // Special function register
         {
             int esfr;
             case MNU_INSERT_SFR: esfr = ELEM_RSFR; goto jcmp;
@@ -553,12 +730,12 @@ math:
             case MNU_INSERT_csFB: esfr = ELEM_CSFR; goto jcmp;
             case MNU_INSERT_TSFB: esfr = ELEM_TSFR; goto jcmp;
             case MNU_INSERT_T_C_SFB: esfr = ELEM_T_C_SFR; goto jcmp;
-jcmp:    
-                CHANGING_PROGRAM(AddCmp(esfr));
+jcmp:
+                CHANGING_PROGRAM(AddSfr(esfr));
                 break;
-        } 
-		// Special function register
-		
+        }
+                // Special function register
+
         {
             int elem;
             case MNU_INSERT_EQU: elem = ELEM_EQU; goto cmp;
@@ -640,12 +817,15 @@ cmp:
             SimulateOneCycle(TRUE);
             break;
 
+        case MNU_COMPILE_ANSIC:
+        case MNU_COMPILE_IHEX:
+        case MNU_COMPILE_ARDUINO:
         case MNU_COMPILE:
-            CompileProgram(FALSE);
+            CompileProgram(FALSE, code);
             break;
 
         case MNU_COMPILE_AS:
-            CompileProgram(TRUE);
+            CompileProgram(TRUE, code);
             break;
 
         case MNU_MANUAL:
@@ -657,7 +837,7 @@ cmp:
             break;
 
         case MNU_RELEASE:
-            char str[1000];
+            char str[1024];
             sprintf(str,"Tag: %s\n\n%s\n\nSHA-1: %s\n\n"
                 "Compiled: " __TIME__ " " __DATE__ ".",
                 git_commit_tag, git_commit_date, git_commit_str);
@@ -718,7 +898,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_SYSKEYDOWN: {
             switch(wParam) {
                 case VK_BACK:
-                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                    if((GetAsyncKeyState(VK_ALT) & 0x8000)
+                    && (GetAsyncKeyState(VK_SHIFT) & 0x8000)) {
+                        UndoRedo();
+                        return 1;
+                    } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
                         UndoUndo();
                         return 1;
                     }
@@ -741,6 +925,16 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
             } else if(wParam == VK_F1) {
                 ShowHelpDialog(FALSE);
+                break;
+            } else if(wParam == VK_F3) {
+                ExportDialog();
+                notepad(CurrentSaveFile, "txt");
+                break;
+            } else if(wParam == VK_F6) {
+                if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
+                    readBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
+                else
+                    flashBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
                 break;
             }
 
@@ -800,7 +994,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             switch(wParam) {
                 case VK_F5:
-                    CompileProgram(FALSE);
+                    CompileProgram(FALSE, MNU_COMPILE);
                     break;
 
                 case VK_UP:
@@ -866,6 +1060,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         ExportDialog();
                     } else {
                         CHANGING_PROGRAM(AddReset());
+                    }
+                    break;
+
+                case VK_F2: {
+                        SaveProgram();
+                        UpdateMainWindowTitleBar();
                     }
                     break;
 
@@ -940,12 +1140,16 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CHANGING_PROGRAM(AddReadAdc());
                     break;
 
+                case '1':
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000)
+                        CHANGING_PROGRAM(AddCmp(ELEM_NEQ)); // !
+                    break;
+
                 case VK_OEM_PLUS:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(AddMath(ELEM_ADD));
-                    } else {
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000)
+                        CHANGING_PROGRAM(AddMath(ELEM_ADD))
+                     else
                         CHANGING_PROGRAM(AddCmp(ELEM_EQU));
-                    }
                     break;
 
                 case VK_OEM_MINUS:
@@ -955,12 +1159,25 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
+                case VK_ADD:
+                    CHANGING_PROGRAM(AddMath(ELEM_ADD));
+                    break;
+
+                case VK_SUBTRACT:
+                    CHANGING_PROGRAM(AddMath(ELEM_SUB));
+                    break;
+
+                case VK_MULTIPLY:
+                        CHANGING_PROGRAM(AddMath(ELEM_MUL));
+                    break;
+
                 case '8':
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(AddMath(ELEM_MUL));
                     }
                     break;
 
+                case VK_DIVIDE:
                 case 'D':
                     CHANGING_PROGRAM(AddMath(ELEM_DIV));
                     break;
@@ -1281,16 +1498,6 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
     }
 }
 
-char *ExtractFilePath(char *buffer)
-{
-    char *c;
-    if(strlen(buffer)) {
-        c = strrchr(buffer,'\\');
-        c[1] = '\0';
-    };
-    return buffer;
-}
-
 //-----------------------------------------------------------------------------
 // Entry point into the program.
 //-----------------------------------------------------------------------------
@@ -1303,6 +1510,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     Instance = hInstance;
 
     MainHeap = HeapCreate(0, 1024*64, 0);
+
+    RunningInBatchMode = FALSE;
 
     MakeWindowClass();
     MakeDialogBoxClass();
@@ -1334,7 +1543,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         RunningInBatchMode = TRUE;
 
         char *err =
-            "Bad command line arguments: run 'ldmicro /c src.ld dest.hex'";
+            "Bad command line arguments: run 'ldmicro /c src.ld dest.ext'";
 
         char *source = lpCmdLine + 2;
         while(isspace(*source)) {
@@ -1357,7 +1566,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         strcpy(CurrentCompileFile, dest);
         GenerateIoList(-1);
-        CompileProgram(FALSE);
+        CompileProgram(FALSE, MNU_COMPILE);
         exit(0);
     }
 
@@ -1376,8 +1585,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         if(strchr(line, '"')) *strchr(line, '"') = '\0';
 
+        if(!strchr(line, '.')) strcat(line, ".ld");
+
         char *s;
         GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
+
         if(!LoadProjectFromFile(CurrentSaveFile)) {
             NewProgram();
             Error(_("Couldn't open '%s'."), CurrentSaveFile);
@@ -1400,6 +1612,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             }
         }
         if(msg.message == WM_KEYDOWN && msg.wParam != VK_UP &&
+            msg.wParam != VK_NEXT && msg.wParam != VK_PRIOR &&
             msg.wParam != VK_DOWN && msg.wParam != VK_RETURN && msg.wParam
             != VK_SHIFT)
         {
