@@ -53,19 +53,20 @@ static struct {
 } AdcShadows[MAX_IO];
 static int AdcShadowsCount;
 
-#define VAR_FLAG_TON  0x00000001
-#define VAR_FLAG_TOF  0x00000002
-#define VAR_FLAG_RTO  0x00000004
-#define VAR_FLAG_CTU  0x00000008
-#define VAR_FLAG_CTD  0x00000010
-#define VAR_FLAG_CTC  0x00000020
+#define VAR_FLAG_TON     0x00000001
+#define VAR_FLAG_TOF     0x00000002
+#define VAR_FLAG_RTO     0x00000004
+#define VAR_FLAG_CTU     0x00000008
+#define VAR_FLAG_CTD     0x00000010
+#define VAR_FLAG_CTC     0x00000020
 #define VAR_FLAG_CTR     0x00000100
-#define VAR_FLAG_RES  0x00000040
+#define VAR_FLAG_RES     0x00000040
 #define VAR_FLAG_TABLE   0x00000200
-#define VAR_FLAG_ANY  0x00000080
+#define VAR_FLAG_ANY     0x00000080
 
 #define VAR_FLAG_OTHERWISE_FORGOTTEN  0x80000000
 
+#define ONLY_RESET_RTO // its original algorithm
 
 // Schematic-drawing code needs to know whether we're in simulation mode or
 // note, as that changes how everything is drawn; also UI code, to disable
@@ -189,6 +190,8 @@ static void SetSimulationVariable(char *name, SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetSimulationVariable(char *name)
 {
+    //if(IsNumber(name))
+    //    return CheckMakeNumber(name);
     int i;
     for(i = 0; i < VariablesCount; i++) {
         if(strcmp(Variables[i].name, name)==0) {
@@ -258,39 +261,41 @@ static char *Check(char *name, DWORD flag, int i)
             break;
 
         case VAR_FLAG_TOF:
-            if(Variables[i].usedFlags != 0)
+            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TOF))
                 s = _("TOF: variable cannot be used elsewhere");
             break;
 
         case VAR_FLAG_TON:
-            if(Variables[i].usedFlags != 0)
+            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TON))
                 s = _("TON: variable cannot be used elsewhere");
             break;
 
-        #ifdef RES_RTO
+        #ifdef ONLY_RESET_RTO
         //It is impossible to manipulate the
         // counter variable elsewhere, for example with a MOV instruction.
         case VAR_FLAG_RTO:
-            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
+            if(Variables[i].usedFlags & ~(VAR_FLAG_RES | VAR_FLAG_RTO))
                 s = _("RTO: variable can only be used for RES elsewhere");
+            break;
+        #else
+        case VAR_FLAG_RTO:
             break;
         #endif
 
-        #ifndef RES_RTO
+        #ifndef ONLY_RESET_RTO
         case VAR_FLAG_RES:
             if(Variables[i].usedFlags == 0)
                 s = _("RES: Above this rung variable is not assigned to COUNTER or TIMER.\r\n"
                          "You must assign a variable below");
             break;
+        #else
+        case VAR_FLAG_RES:
         #endif
 
         case VAR_FLAG_CTU:
         case VAR_FLAG_CTD:
         case VAR_FLAG_CTC:
         case VAR_FLAG_CTR:
-        #ifdef RES_RTO
-        case VAR_FLAG_RES:
-        #endif
         case VAR_FLAG_ANY:
             break;
 
@@ -333,43 +338,6 @@ static char *MarkUsedVariable(char *name, DWORD flag)
     }
 
     char *s = Check(name, flag, i);
-    /*
-    switch(flag) {
-        case VAR_FLAG_TOF:
-            if(Variables[i].usedFlags != 0)
-                return _("TOF: variable cannot be used elsewhere");
-            break;
-
-        case VAR_FLAG_TON:
-            if(Variables[i].usedFlags != 0)
-                return _("TON: variable cannot be used elsewhere");
-            break;
-
-        case VAR_FLAG_RTO:
-            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
-                return _("RTO: variable can only be used for RES elsewhere");
-            break;
-
-        case VAR_FLAG_CTU:
-        case VAR_FLAG_CTD:
-        case VAR_FLAG_CTC:
-        case VAR_FLAG_RES:
-        case VAR_FLAG_ANY:
-            break;
-
-        case VAR_FLAG_OTHERWISE_FORGOTTEN:
-            if(name[0] != '$') {
-                Error(_("Variable '%s' not assigned to, e.g. with a "
-                    "MOV statement, an ADD statement, etc.\r\n\r\n"
-                    "This is probably a programming error; now it "
-                    "will always be zero."), name);
-            }
-            break;
-
-        default:
-            oops();
-    }
-    */
     if(s) return s;
 
     Variables[i].usedFlags |= flag;
@@ -536,13 +504,49 @@ void CheckVariableNames(void)
     }
 
     // reCheck
-    char *s;
-    for(i = 0; i < VariablesCount; i++) {
-        if(Variables[i].usedFlags & VAR_FLAG_TABLE) {
-             s = Check(Variables[i].name, VAR_FLAG_TABLE, i);
-             CheckMsg(Variables[i].name, s);
-        }
-    }
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_TON)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TON, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_TOF)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TOF, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_RTO)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_RTO, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_CTU)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_CTU, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_CTD)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_CTD, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_CTC)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_CTC, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_CTR)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_CTR, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_RES)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_RES, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_TABLE)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TABLE, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_ANY)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_ANY, i));
+
+    for(i = 0; i < VariablesCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_OTHERWISE_FORGOTTEN)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_OTHERWISE_FORGOTTEN, i));
 }
 
 //-----------------------------------------------------------------------------
