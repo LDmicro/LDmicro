@@ -3,6 +3,7 @@
 
     * AVR MCU list sorted in accordance with the Atmel AVR Instruction set inheritance table.
       https://en.wikipedia.org/wiki/Atmel_AVR_instruction_set#Instruction_set_inheritance
+      This simplifies of adding AVR MCU.
 
     * Added Number of internal pseudocode operations for each rungs of ladder diagram.
       It is shown below the rung number.
