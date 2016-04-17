@@ -221,14 +221,14 @@ static void isErr(int Err, char *r)
 char *GetIsaName(int ISA)
 {
     switch(ISA) {
-        case ISA_AVR         : return stringer( ISA_AVR         ) + 4;
-        case ISA_PIC16       : return stringer( ISA_PIC16       ) + 4;
-        case ISA_ANSIC       : return stringer( ISA_ANSIC       ) + 4;
-        case ISA_INTERPRETED : return stringer( ISA_INTERPRETED ) + 4;
-        case ISA_NETZER      : return stringer( ISA_NETZER      ) + 4;
-        case ISA_PASCAL      : return stringer( ISA_PASCAL      ) + 4;
-        case ISA_ARDUINO     : return stringer( ISA_ARDUINO     ) + 4;
-        case ISA_CAVR        : return stringer( ISA_CAVR        ) + 4;
+        case ISA_AVR         : return (char *)stringer( ISA_AVR         ) + 4;
+        case ISA_PIC16       : return (char *)stringer( ISA_PIC16       ) + 4;
+        case ISA_ANSIC       : return (char *)stringer( ISA_ANSIC       ) + 4;
+        case ISA_INTERPRETED : return (char *)stringer( ISA_INTERPRETED ) + 4;
+        case ISA_NETZER      : return (char *)stringer( ISA_NETZER      ) + 4;
+        case ISA_PASCAL      : return (char *)stringer( ISA_PASCAL      ) + 4;
+        case ISA_ARDUINO     : return (char *)stringer( ISA_ARDUINO     ) + 4;
+        case ISA_CAVR        : return (char *)stringer( ISA_CAVR        ) + 4;
         default: oops()
     }
 }
