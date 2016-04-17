@@ -77,6 +77,8 @@ typedef struct {
 BinOp Program[MAX_OPS];
 SWORD Integers[MAX_VARIABLES];
 BYTE Bits[MAX_INTERNAL_RELAYS];
+char *Symbols[MAX_VARIABLES + MAX_INTERNAL_RELAYS];
+char PrintSymbols[MAX_VARIABLES + MAX_INTERNAL_RELAYS][40];
 
 // This are addresses (indices into Integers[] or Bits[]) used so that your
 // C code can get at some of the ladder variables, by remembering the
@@ -107,11 +109,15 @@ int HexDigit(int c)
     }
     return 0;
 }
-void LoadProgram(char *fileName)
+int LoadProgram(char *fileName)
 {
     int pc;
     FILE *f = fopen(fileName, "r");
     char line[80];
+
+	for (int i = 0; i < MAX_VARIABLES + MAX_INTERNAL_RELAYS; i++) {
+		sprintf(PrintSymbols[i], "%03x", i);
+	}
 
     // This is not suitable for untrusted input.
 
@@ -143,17 +149,28 @@ void LoadProgram(char *fileName)
     SpecialAddrForA = -1;
     SpecialAddrForXosc = -1;
     while(fgets(line, sizeof(line), f)) {
-        if(memcmp(line, "a,", 2)==0) {
-            SpecialAddrForA = atoi(line+2);
+		char *s = strtok(line, ", ");
+		char *n = strtok(NULL, ", ");
+
+		if (s[0] != '$' && s[1] != '$' && n) {
+			int index = atoi(n);
+			if (index >= 0 && index < MAX_VARIABLES + MAX_INTERNAL_RELAYS) {
+				Symbols[index] = strdup(s);
+				printf("New symbol %03X: %s\n", index, s);
+				sprintf(PrintSymbols[index], "'%s'", s);
+			}
+		}
+        if(strcmp(s, "a")==0 && n) {
+            SpecialAddrForA = atoi(n);
         }
-        if(memcmp(line, "Xosc,", 5)==0) {
-            SpecialAddrForXosc = atoi(line+5);
+        if(strcmp(s, "Xosc")==0 && n) {
+            SpecialAddrForXosc = atoi(n);
         }
-        if(memcmp(line, "$$cycle", 7)==0) {
-            if(atoi(line + 7) != 10*1000) {
+        if(strcmp(line, "$$cycle")==0 && n) {
+            if(atoi(n) != 10*1000) {
                 fprintf(stderr, "cycle time was not 10 ms when compiled; "
                     "please fix that.\n");
-                exit(-1);
+                return(-1);
             }
         }
     }
@@ -161,10 +178,11 @@ void LoadProgram(char *fileName)
     if(SpecialAddrForA < 0 || SpecialAddrForXosc < 0) {
         fprintf(stderr, "special interface variables 'a' or 'Xosc' not "
             "used in prog.\n");
-        exit(-1);
+        return(-1);
     }
 
     fclose(f);
+	return 0;
 }
 //-----------------------------------------------------------------------------
 
@@ -185,29 +203,33 @@ void Disassemble(void)
 
         switch(Program[pc].op) {
             case INT_SET_BIT:
-                printf("bits[%03x] := 1", p->name1);
+                printf("bits[%s] := 1", PrintSymbols[p->name1]);
                 break;
 
             case INT_CLEAR_BIT:
-                printf("bits[%03x] := 0", p->name1);
+                printf("bits[%s] := 0", PrintSymbols[p->name1]);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                printf("bits[%03x] := bits[%03x]", p->name1, p->name2);
+                printf("bits[%s] := bits[%s]", PrintSymbols[p->name1], PrintSymbols[p->name2]);
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                printf("int16s[%03x] := %d (0x%04x)", p->name1, p->literal,
+                printf("int16s[%s] := %d (0x%04x)", PrintSymbols[p->name1],
                     p->literal);
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                printf("int16s[%03x] := int16s[%03x]", p->name1, p->name2);
+                printf("int16s[%s] := int16s[%s]", PrintSymbols[p->name1], PrintSymbols[p->name2]);
                 break;
 
             case INT_INCREMENT_VARIABLE:
-                printf("(int16s[%03x])++", p->name1);
+                printf("(int16s[%s])++", PrintSymbols[p->name1]);
                 break;
+
+			case INT_SET_PWM:
+				printf("setpwm(%s, %d Hz)", PrintSymbols[p->name1], p->literal);
+				break;
 
             {
                 char c;
@@ -216,27 +238,27 @@ void Disassemble(void)
                 case INT_SET_VARIABLE_MULTIPLY: c = '*'; goto arith;
                 case INT_SET_VARIABLE_DIVIDE: c = '/'; goto arith;
 arith:
-                    printf("int16s[%03x] := int16s[%03x] %c int16s[%03x]",
-                        p->name1, p->name2, c, p->name3);
+                    printf("int16s[%s] := int16s[%s] %c int16s[%s]",
+						PrintSymbols[p->name1], PrintSymbols[p->name2], c, PrintSymbols[p->name3]);
                     break;
             }
 
             case INT_IF_BIT_SET:
-                printf("unless (bits[%03x] set)", p->name1);
+                printf("unless (bits[%s] set)", PrintSymbols[p->name1]);
                 goto cond;
             case INT_IF_BIT_CLEAR:
-                printf("unless (bits[%03x] clear)", p->name1);
+                printf("unless (bits[%s] clear)", PrintSymbols[p->name1]);
                 goto cond;
             case INT_IF_VARIABLE_LES_LITERAL:
-                printf("unless (int16s[%03x] < %d)", p->name1, p->literal);
+                printf("unless (int16s[%s] < %d)", PrintSymbols[p->name1], p->literal);
                 goto cond;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-                printf("unless (int16s[%03x] == int16s[%03x])", p->name1,
-                    p->name2);
+                printf("unless (int16s[%s] == int16s[%s])", PrintSymbols[p->name1],
+					PrintSymbols[p->name2]);
                 goto cond;
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                printf("unless (int16s[%03x] > int16s[%03x])", p->name1,
-                    p->name2);
+                printf("unless (int16s[%s] > int16s[%s])", PrintSymbols[p->name1],
+					PrintSymbols[p->name2]);
                 goto cond;
 cond:
                 printf(" jump %03x+1", p->name3);
@@ -357,9 +379,12 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    LoadProgram(argv[1]);
+    int rc = LoadProgram(argv[1]);
     memset(Integers, 0, sizeof(Integers));
     memset(Bits, 0, sizeof(Bits));
+
+	Disassemble();
+	if (rc) exit(rc);
 
     // 1000 cycles times 10 ms gives 10 seconds execution
     for(i = 0; i < 1000; i++) {

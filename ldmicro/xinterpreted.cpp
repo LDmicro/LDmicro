@@ -148,6 +148,11 @@ void CompileXInterpreted(char *outFile)
                 op.name2 = AddrForVariable(IntCode[ipc].name2);
                 op.name3 = AddrForVariable(IntCode[ipc].name3);
                 break;
+			
+			case INT_SET_PWM:
+				op.name1 = AddrForVariable(IntCode[ipc].name1);
+				op.literal = IntCode[ipc].literal;
+				break;
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
@@ -222,7 +227,6 @@ finishIf:
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
             case INT_READ_ADC:
-            case INT_SET_PWM:
             case INT_UART_SEND:
             case INT_UART_RECV:
             case INT_WRITE_STRING:
