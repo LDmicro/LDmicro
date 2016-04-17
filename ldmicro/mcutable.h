@@ -1306,7 +1306,26 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         NOT_AVR,
         0x00
     },
-    {
+	{
+		"Extended Byte Code",
+		'X',
+		{ 0x00 },
+		{ 0x00 },
+		{ 0x00 },
+			0,
+			{ { 0x00, 0 } },
+			NULL,
+			0,
+			NULL,
+			0,
+			0,
+			{ 0, 0 },
+			0,
+			ISA_XINTERPRETED,
+			NOT_AVR,
+			0x00
+	},
+	{
         "Netzer Byte Code",
         'R',
         { 0x00 },

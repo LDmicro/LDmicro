@@ -225,7 +225,8 @@ char *GetIsaName(int ISA)
         case ISA_PIC16       : return (char *)stringer( ISA_PIC16       ) + 4;
         case ISA_ANSIC       : return (char *)stringer( ISA_ANSIC       ) + 4;
         case ISA_INTERPRETED : return (char *)stringer( ISA_INTERPRETED ) + 4;
-        case ISA_NETZER      : return (char *)stringer( ISA_NETZER      ) + 4;
+		case ISA_XINTERPRETED: return (char *)stringer( ISA_XINTERPRETED) + 4;
+		case ISA_NETZER      : return (char *)stringer( ISA_NETZER      ) + 4;
         case ISA_PASCAL      : return (char *)stringer( ISA_PASCAL      ) + 4;
         case ISA_ARDUINO     : return (char *)stringer( ISA_ARDUINO     ) + 4;
         case ISA_CAVR        : return (char *)stringer( ISA_CAVR        ) + 4;
@@ -334,7 +335,8 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrDefExt = "c";
             c = "c";
         } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
-                               Prog.mcu->whichIsa == ISA_NETZER)) {
+							Prog.mcu->whichIsa == ISA_XINTERPRETED || 
+							Prog.mcu->whichIsa == ISA_NETZER)) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
             c = "int";
@@ -393,7 +395,8 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     if((PwmFunctionUsed() && (Prog.mcu) && Prog.mcu->pwmNeedsPin == 0)
     && (compile_MNU!=MNU_COMPILE_PASCAL)
     && (compile_MNU!=MNU_COMPILE_ANSIC)
-    && (compile_MNU!=MNU_COMPILE_ARDUINO)) {
+    && (compile_MNU!=MNU_COMPILE_ARDUINO)
+    && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
@@ -408,6 +411,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
         case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
         case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
+		case ISA_XINTERPRETED:  CompileXInterpreted(CurrentCompileFile); break;
         case ISA_NETZER:        CompileNetzer(CurrentCompileFile); break;
         case ISA_ARDUINO:       CompileAnsiC(CurrentCompileFile, ISA_ARDUINO); break;
 

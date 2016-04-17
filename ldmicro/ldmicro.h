@@ -670,6 +670,7 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_PASCAL          0x06
 #define ISA_ARDUINO         0x07
 #define ISA_CAVR            0x08
+#define ISA_XINTERPRETED	0x09 // Extender interpeter
 
 #define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
@@ -1039,6 +1040,8 @@ void CompileAnsiC(char *outFile, int compile_ISA);
 void CompileAnsiC(char *outFile);
 // interpreted.cpp
 void CompileInterpreted(char *outFile);
+// xinterpreted.cpp
+void CompileXInterpreted(char *outFile);
 // netzer.cpp
 void CompileNetzer(char *outFile);
 

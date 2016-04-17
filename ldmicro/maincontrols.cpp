@@ -722,7 +722,8 @@ void RefreshControlsToSettings(void)
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
         Prog.mcu->whichIsa == ISA_NETZER ||
-        Prog.mcu->whichIsa == ISA_INTERPRETED))
+        Prog.mcu->whichIsa == ISA_INTERPRETED ||
+		Prog.mcu->whichIsa == ISA_XINTERPRETED))
     {
         strcpy(buf, "");
     } else {

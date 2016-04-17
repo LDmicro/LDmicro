@@ -1104,10 +1104,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
             case ELEM_SET_PWM: {
                 Op(INT_IF_BIT_SET, stateInOut);
-                char line[80];
                 // ugh; need a >16 bit literal though, could be >64 kHz
-                sprintf(line, "%d", l->d.setPwm.targetFreq);
-                Op(INT_SET_PWM, l->d.readAdc.name, line);
+				Op(INT_SET_PWM, l->d.readAdc.name, l->d.setPwm.targetFreq);
                 Op(INT_END_IF);
                 break;
             }
