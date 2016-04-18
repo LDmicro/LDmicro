@@ -29,50 +29,83 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
+#include "xinterpreter.h"
 
-static char Variables[MAX_IO][MAX_NAME_LEN];
-static int VariablesCount;
+static char InternalVariables[MAX_IO][MAX_NAME_LEN];
+static int InternalVariablesCount;
 
 static char InternalRelays[MAX_IO][MAX_NAME_LEN];
 static int InternalRelaysCount;
 
-typedef struct {
-    WORD    op;
-    WORD    name1;
-    WORD    name2;
-    WORD    name3;
-    SWORD   literal;
-} BinOp;
+static BinOp8bits OutProg[MAX_INT_OPS];
 
-static BinOp OutProg[MAX_INT_OPS];
-
-static WORD AddrForInternalRelay(char *name)
+static int CheckRange(int value, char *name)
 {
+	if (value < 0 || -value > 255) {
+		char msg[80];
+		sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
+		Error(msg);
+	}
+
+	return value;
+}
+
+static BYTE GetPinNumber(char *name, BYTE *type)
+{
+	int i;
+	if (type) *type = 0;
+	for (i = 0; i < Prog.io.count; i++) {
+		if (strcmp(Prog.io.assignment[i].name, name) == 0)
+			break;
+	}
+	if (i >= Prog.io.count) return 0;
+
+	int pin = Prog.io.assignment[i].pin;
+	if (type) *type = Prog.io.assignment[i].type;
+	for (i = 0; i < Prog.mcu->pinCount; i++) {
+		if (Prog.mcu->pinInfo[i].pin == pin)
+			return pin;
+	}
+	return 0;
+}
+
+static BYTE AddrForBit(char *name)
+{
+	int pin = GetPinNumber(name, NULL);
+	if (pin) return CheckRange(pin, name);
+
     int i;
     for(i = 0; i < InternalRelaysCount; i++) {
-        if(strcmp(InternalRelays[i], name)==0) {
-            return i;
-        }
+		if (strcmp(InternalRelays[i], name) == 0) break;
     }
-    strcpy(InternalRelays[i], name);
-    InternalRelaysCount++;
-    return i;
+
+	if (i == InternalRelaysCount) {
+		strcpy(InternalRelays[i], name);
+		InternalRelaysCount++;
+	}
+
+	return CheckRange(i + XINTERNAL_OFFSET, name);
 }
 
-static WORD AddrForVariable(char *name)
+static BYTE AddrForVariable(char *name)
 {
-    int i;
-    for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i], name)==0) {
-            return i;
-        }
+	int pin = GetPinNumber(name, NULL);
+	if (pin) return pin;
+	
+	int i;
+    for(i = 0; i < InternalVariablesCount; i++) {
+		if (strcmp(InternalVariables[i], name) == 0) break;
     }
-    strcpy(Variables[i], name);
-    VariablesCount++;
-    return i;
+
+	if (i == InternalVariablesCount) {
+		strcpy(InternalVariables[i], name);
+		InternalVariablesCount++;
+	}
+
+	return CheckRange(i + XINTERNAL_OFFSET, name);
 }
 
-static void Write(FILE *f, BinOp *op)
+static void Write(FILE *f, BinOp8bits *op)
 {
     BYTE *b = (BYTE *)op;
     int i;
@@ -91,13 +124,13 @@ void CompileXInterpreted(char *outFile)
     }
 
     InternalRelaysCount = 0;
-    VariablesCount = 0;
+    InternalVariablesCount = 0;
 
     fprintf(f, "$$LDcode\n");
 
     int ipc;
     int outPc;
-    BinOp op;
+    BinOp8bits op;
 
     // Convert the if/else structures in the intermediate code to absolute
     // conditional jumps, to make life a bit easier for the interpreter.
@@ -118,12 +151,12 @@ void CompileXInterpreted(char *outFile)
         switch(IntCode[ipc].op) {
             case INT_CLEAR_BIT:
             case INT_SET_BIT:
-                op.name1 = AddrForInternalRelay(IntCode[ipc].name1);
+                op.name1 = AddrForBit(IntCode[ipc].name1);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                op.name1 = AddrForInternalRelay(IntCode[ipc].name1);
-                op.name2 = AddrForInternalRelay(IntCode[ipc].name2);
+                op.name1 = AddrForBit(IntCode[ipc].name1);
+                op.name2 = AddrForBit(IntCode[ipc].name2);
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
@@ -154,9 +187,13 @@ void CompileXInterpreted(char *outFile)
 				op.literal = IntCode[ipc].literal;
 				break;
 
+			case INT_READ_ADC:
+				op.name1 = AddrForVariable(IntCode[ipc].name1);
+				break;
+
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
-                op.name1 = AddrForInternalRelay(IntCode[ipc].name1);
+                op.name1 = AddrForBit(IntCode[ipc].name1);
                 goto finishIf;
             case INT_IF_VARIABLE_LES_LITERAL:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
@@ -184,13 +221,13 @@ finishIf:
                 if(ifOpElse[ifDepth] == 0) {
                     // There is no else; if should jump straight to the
                     // instruction after this one if the condition is false.
-                    OutProg[ifOpIf[ifDepth]].name3 = outPc-1;
+                    OutProg[ifOpIf[ifDepth]].name3 = CheckRange(outPc-1 - ifOpIf[ifDepth], "pc");
                 } else {
                     // There is an else clause; if the if is false then jump
                     // just past the else, and if the else is reached then
                     // jump to the endif.
-                    OutProg[ifOpIf[ifDepth]].name3 = ifOpElse[ifDepth];
-                    OutProg[ifOpElse[ifDepth]].name3 = outPc-1;
+                    OutProg[ifOpIf[ifDepth]].name3 = CheckRange(ifOpElse[ifDepth] - ifOpIf[ifDepth], "pc");
+                    OutProg[ifOpElse[ifDepth]].name3 = CheckRange(outPc-1 - ifOpElse[ifDepth], "pc");
                 }
                 // But don't generate an instruction for this.
                 continue;
@@ -226,12 +263,11 @@ finishIf:
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
-            case INT_READ_ADC:
             case INT_UART_SEND:
             case INT_UART_RECV:
             case INT_WRITE_STRING:
             default:
-                Error(_("Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for "
+                Error(_("Unsupported op (anything UART, EEPROM, SFR..) for "
                     "interpretable target."));
                 fclose(f);
                 return;
@@ -249,19 +285,43 @@ finishIf:
     op.op = INT_END_OF_PROGRAM;
     Write(f, &op);
 
-
     fprintf(f, "$$bits\n");
-    for(i = 0; i < InternalRelaysCount; i++) {
-        if(InternalRelays[i][0] != '$') {
-            fprintf(f, "%s,%d\n", InternalRelays[i], i);
-        }
-    }
-    fprintf(f, "$$int16s\n");
-    for(i = 0; i < VariablesCount; i++) {
-        if(Variables[i][0] != '$') {
-            fprintf(f, "%s,%d\n", Variables[i], i);
-        }
-    }
+	for (i = 0; i < InternalRelaysCount; i++) {
+		if (InternalRelays[i][0] == '$') continue;
+		fprintf(f, "%s:%d\n", InternalRelays[i], i);
+	}
+
+	fprintf(f, "$$int16s\n");
+	for (i = 0; i < InternalVariablesCount; i++) {
+		if (InternalVariables[i][0] == '$') continue;
+		fprintf(f, "%s:%d\n", InternalVariables[i], i);
+	}
+
+	fprintf(f, "$$pins\n");
+
+	for (i = 0; i < Prog.io.count; i++) {
+		if (Prog.io.assignment[i].type != IO_TYPE_DIG_INPUT && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT) continue;
+		int pin = Prog.io.assignment[i].pin;
+		for (int j = 0; j < Prog.mcu->pinCount; j++) {
+			if (Prog.mcu->pinInfo[j].pin == pin) {
+				fprintf(f, "%s:%d\n", Prog.mcu->pinInfo[j].pinName, pin);
+				break;
+			}
+		}
+	}
+
+	fprintf(f, "$$pin16s\n");
+
+	for (i = 0; i < Prog.io.count; i++) {
+		if (Prog.io.assignment[i].type != IO_TYPE_READ_ADC && Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT) continue;
+		int pin = Prog.io.assignment[i].pin;
+		for (int j = 0; j < Prog.mcu->pinCount; j++) {
+			if (Prog.mcu->pinInfo[j].pin == pin) {
+				fprintf(f, "%s:%d\n", Prog.mcu->pinInfo[j].pinName, pin);
+				break;
+			}
+		}
+	}
 
     fprintf(f, "$$cycle %d us\n", Prog.cycleTime);
 

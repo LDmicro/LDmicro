@@ -87,12 +87,14 @@ void MakeMainWindowControls(void)
     int typeWidth = 85;
     int pinWidth = 100;
     int portWidth = 90;
+	int pinNameWidth = 90;
 
     LV_ADD_COLUMN(IoList, LV_IO_NAME,  250,       _("Name"));
     LV_ADD_COLUMN(IoList, LV_IO_TYPE,  typeWidth, _("Type"));
     LV_ADD_COLUMN(IoList, LV_IO_STATE, 100,       _("State"));
     LV_ADD_COLUMN(IoList, LV_IO_PIN,   pinWidth,  _("Pin on Processor"));
     LV_ADD_COLUMN(IoList, LV_IO_PORT,  portWidth, _("MCU Port"));
+	LV_ADD_COLUMN(IoList, LV_IO_PINNAME,  pinNameWidth, _("pin Name"));
 
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
@@ -510,6 +512,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(compile, MF_STRING, MNU_COMPILE_AS,      _("Compile &As..."));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,    _("Compile HEX"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,   _("Compile ANSIC"));
+	AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT,	_("Compile Extended Byte Code"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("DONE: Compile C for ARDUINO"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_CAVR,    _("TODO: Compile C for AVR GCC, CodeVisionAVR, IAR AVR"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,    _("TODO: Compile HEX->ASM"));

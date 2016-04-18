@@ -59,6 +59,8 @@ static BOOL ProgramChangedNotSaved = FALSE;
     "Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
 #define PASCAL_PATTERN "PASCAL Source Files (*.pas)\0*.pas\0All Files\0*\0\0"
 #define ARDUINO_C_PATTERN "ARDUINO C Source Files (*.cpp)\0*.cpp\0All Files\0*\0\0"
+#define XINT_PATTERN \
+    "Extended Byte Code Files (*.int)\0*.xint\0All Files\0*\0\0"
 char CurrentCompileFile[MAX_PATH];
 
 #define TXT_PATTERN  "Text Files (*.txt)\0*.txt\0All files\0*\0\0"
@@ -310,7 +312,9 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             compile_MNU = MNU_COMPILE_ANSIC;
         else if(strstr(CurrentCompileFile,".pas"))
             compile_MNU = MNU_COMPILE_PASCAL;
-        else
+		else if (strstr(CurrentCompileFile, ".xint"))
+			compile_MNU = MNU_COMPILE_XINT;
+		else
             compile_MNU = MNU_COMPILE_IHEX;
     }
 
@@ -321,6 +325,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
       ||( (compile_MNU==MNU_COMPILE_ANSIC)  && (strlen(strstr(CurrentCompileFile,".c"))!=2) )
       ||( (compile_MNU==MNU_COMPILE_ARDUINO)&& (!strstr(CurrentCompileFile,".cpp")) )
       ||( (compile_MNU==MNU_COMPILE_PASCAL) && (!strstr(CurrentCompileFile,".pas")) )
+	  || ((compile_MNU==MNU_COMPILE_XINT)   && (!strstr(CurrentCompileFile, ".xint")) )
       ){
         char *c;
         OPENFILENAME ofn;
@@ -345,11 +350,18 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrFilter = PASCAL_PATTERN;
             ofn.lpstrDefExt = "pas";
             c = "pas";
-        } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
-                  (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
-            ofn.lpstrFilter = ARDUINO_C_PATTERN;
-            ofn.lpstrDefExt = "cpp";
-            c = "cpp";
+		}
+		else if ((compile_MNU == MNU_COMPILE_ARDUINO) ||
+			(Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
+			ofn.lpstrFilter = ARDUINO_C_PATTERN;
+			ofn.lpstrDefExt = "cpp";
+			c = "cpp";
+		} 
+		else if ((compile_MNU == MNU_COMPILE_XINT) ||
+			(Prog.mcu && Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
+			ofn.lpstrFilter = XINT_PATTERN;
+			ofn.lpstrDefExt = "xint";
+			c = "xint";
         /*
         } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
@@ -379,8 +391,9 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     if((Prog.mcu == NULL)
     && (compile_MNU!=MNU_COMPILE_PASCAL)
     && (compile_MNU!=MNU_COMPILE_ANSIC)
-    && (compile_MNU!=MNU_COMPILE_ARDUINO)) {
-        Error(_("Must choose a target microcontroller before compiling."));
+    && (compile_MNU!=MNU_COMPILE_ARDUINO)
+	&& (compile_MNU != MNU_COMPILE_XINT)) {
+			Error(_("Must choose a target microcontroller before compiling."));
         return;
     }
 
@@ -396,16 +409,19 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     && (compile_MNU!=MNU_COMPILE_PASCAL)
     && (compile_MNU!=MNU_COMPILE_ANSIC)
     && (compile_MNU!=MNU_COMPILE_ARDUINO)
-    && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
+	&& (compile_MNU != MNU_COMPILE_XINT)
+	&& (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
 
     if (compile_MNU==MNU_COMPILE_ANSIC)
-      CompileAnsiC(CurrentCompileFile);
-    else if (compile_MNU==MNU_COMPILE_ARDUINO) {
-      CompileAnsiC(CurrentCompileFile, ISA_ARDUINO);
-   } else if (Prog.mcu)
+		CompileAnsiC(CurrentCompileFile);
+    else if (compile_MNU==MNU_COMPILE_ARDUINO)
+		CompileAnsiC(CurrentCompileFile, ISA_ARDUINO);
+	else if (compile_MNU == MNU_COMPILE_XINT)
+		CompileXInterpreted(CurrentCompileFile);
+	else if (Prog.mcu)
     switch(Prog.mcu->whichIsa) {
         case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
         case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
@@ -825,6 +841,7 @@ cmp:
         case MNU_COMPILE_IHEX:
         case MNU_COMPILE_ARDUINO:
         case MNU_COMPILE:
+		case MNU_COMPILE_XINT:
             CompileProgram(FALSE, code);
             break;
 

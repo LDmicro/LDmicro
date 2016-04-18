@@ -222,6 +222,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         &(l->d.setPwm.targetFreq))==2)
     {
         *which = ELEM_SET_PWM;
+		if (l->d.setPwm.name[0] != 'P') {	// Fix the name, this case will occur when reading old LD files
+			memmove(l->d.setPwm.name + 1, l->d.setPwm.name, strlen(l->d.setPwm.name)+1);
+			l->d.setPwm.name[0] = 'P';
+		}
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name)==1) {
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name)==1) {

@@ -38,17 +38,19 @@
 #include <ctype.h>
 #include <windows.h>
 
-#define INTCODE_H_CONSTANTS_ONLY
-#include "intcode.h"
-
 typedef unsigned char BYTE;     // 8-bit unsigned
 typedef unsigned short WORD;    // 16-bit unsigned
 typedef signed short SWORD;     // 16-bit signed
 
+#define INTCODE_H_CONSTANTS_ONLY
+
+#include "intcode.h"
+#include "xinterpreter.h"
+
 // Some arbitrary limits on the program and data size
 #define MAX_OPS                 1024
-#define MAX_VARIABLES           128
-#define MAX_INTERNAL_RELAYS     128
+#define MAX_VARIABLES           256
+#define MAX_INTERNAL_RELAYS     256
 
 // This data structure represents a single instruction for the 'virtual
 // machine.' The .op field gives the opcode, and the other fields give
@@ -66,19 +68,14 @@ typedef signed short SWORD;     // 16-bit signed
 // and also to pick out the name <-> address mappings for those variables
 // that you're going to use for your interface out. I will therefore leave
 // that up to you.
-typedef struct {
-    WORD    op;
-    WORD    name1;
-    WORD    name2;
-    WORD    name3;
-    SWORD   literal;
-} BinOp;
 
-BinOp Program[MAX_OPS];
+BinOp8bits Program[MAX_OPS];
+
 SWORD Integers[MAX_VARIABLES];
 BYTE Bits[MAX_INTERNAL_RELAYS];
-char *Symbols[MAX_VARIABLES + MAX_INTERNAL_RELAYS];
-char PrintSymbols[MAX_VARIABLES + MAX_INTERNAL_RELAYS][40];
+
+char IntegersSymbols[MAX_VARIABLES][40];
+char BitsSymbols[MAX_INTERNAL_RELAYS][40];
 
 // This are addresses (indices into Integers[] or Bits[]) used so that your
 // C code can get at some of the ladder variables, by remembering the
@@ -115,8 +112,12 @@ int LoadProgram(char *fileName)
     FILE *f = fopen(fileName, "r");
     char line[80];
 
-	for (int i = 0; i < MAX_VARIABLES + MAX_INTERNAL_RELAYS; i++) {
-		sprintf(PrintSymbols[i], "%03x", i);
+	for (int i = 0; i < MAX_VARIABLES; i++) {
+		sprintf(IntegersSymbols[i], "%d", i);
+	}
+
+	for (int i = 0; i < MAX_INTERNAL_RELAYS; i++) {
+		sprintf(BitsSymbols[i], "%d", i);
 	}
 
     // This is not suitable for untrusted input.
@@ -134,13 +135,13 @@ int LoadProgram(char *fileName)
         BYTE *b;
 
         if(!fgets(line, sizeof(line), f)) BadFormat();
-        if(strcmp(line, "$$bits\n")==0) break;
-        if(strlen(line) != sizeof(BinOp)*2 + 1) BadFormat();
+        if(line[0] == '$') break;
+        if(strlen(line) != sizeof(BinOp8bits)*2 + 1) BadFormat();
 
         t = line;
         b = (BYTE *)&Program[pc];
 
-        for(i = 0; i < sizeof(BinOp); i++) {
+        for(i = 0; i < sizeof(BinOp8bits); i++) {
             b[i] = HexDigit(t[1]) | (HexDigit(t[0]) << 4);
             t += 2;
         }
@@ -148,16 +149,24 @@ int LoadProgram(char *fileName)
 
     SpecialAddrForA = -1;
     SpecialAddrForXosc = -1;
+	char (*sym)[256][40] = &BitsSymbols;
+	int offset = 0;
+
     while(fgets(line, sizeof(line), f)) {
-		char *s = strtok(line, ", ");
-		char *n = strtok(NULL, ", ");
+		static const char *delim = ": \n";
+		char *s = strtok(line, delim);
+		char *n = strtok(NULL, delim);
+
+		if (strcmp(s, "$$int16s") == 0) { sym = &IntegersSymbols; offset = XINTERNAL_OFFSET;}
+		if (strcmp(s, "$$bits") == 0) { sym = &BitsSymbols; offset = XINTERNAL_OFFSET; }
+		if (strcmp(s, "$$pin16s") == 0) { sym = &IntegersSymbols; offset = 0;}
+		if (strcmp(s, "$$pins") == 0) { sym = &BitsSymbols; offset = 0;}
 
 		if (s[0] != '$' && s[1] != '$' && n) {
-			int index = atoi(n);
-			if (index >= 0 && index < MAX_VARIABLES + MAX_INTERNAL_RELAYS) {
-				Symbols[index] = strdup(s);
-				printf("New symbol %03X: %s\n", index, s);
-				sprintf(PrintSymbols[index], "'%s'", s);
+			int index = atoi(n) + offset;
+			if (index >= 0 && index < MAX_VARIABLES) {
+				sprintf((*sym)[index], "'%s'", s);
+				printf("New symbol %0d: %s\n", index, s);
 			}
 		}
         if(strcmp(s, "a")==0 && n) {
@@ -198,37 +207,41 @@ void Disassemble(void)
 {
     int pc;
     for(pc = 0; ; pc++) {
-        BinOp *p = &Program[pc];
+        BinOp8bits *p = &Program[pc];
         printf("%03x: ", pc);
 
         switch(Program[pc].op) {
             case INT_SET_BIT:
-                printf("bits[%s] := 1", PrintSymbols[p->name1]);
+                printf("bits[%s] := 1", BitsSymbols[p->name1]);
                 break;
 
             case INT_CLEAR_BIT:
-                printf("bits[%s] := 0", PrintSymbols[p->name1]);
+                printf("bits[%s] := 0", BitsSymbols[p->name1]);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                printf("bits[%s] := bits[%s]", PrintSymbols[p->name1], PrintSymbols[p->name2]);
+                printf("bits[%s] := bits[%s]", BitsSymbols[p->name1], BitsSymbols[p->name2]);
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                printf("int16s[%s] := %d (0x%04x)", PrintSymbols[p->name1],
+                printf("int16s[%s] := %d (0x%04x)", IntegersSymbols[p->name1],
                     p->literal);
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                printf("int16s[%s] := int16s[%s]", PrintSymbols[p->name1], PrintSymbols[p->name2]);
+                printf("int16s[%s] := int16s[%s]", IntegersSymbols[p->name1], IntegersSymbols[p->name2]);
                 break;
 
             case INT_INCREMENT_VARIABLE:
-                printf("(int16s[%s])++", PrintSymbols[p->name1]);
+                printf("(int16s[%s])++", IntegersSymbols[p->name1]);
                 break;
 
 			case INT_SET_PWM:
-				printf("setpwm(%s, %d Hz)", PrintSymbols[p->name1], p->literal);
+				printf("setpwm(%s, %d Hz)", IntegersSymbols[p->name1], p->literal);
+				break;
+
+			case INT_READ_ADC:
+				printf("readadc(%s)", IntegersSymbols[p->name1]);
 				break;
 
             {
@@ -239,33 +252,33 @@ void Disassemble(void)
                 case INT_SET_VARIABLE_DIVIDE: c = '/'; goto arith;
 arith:
                     printf("int16s[%s] := int16s[%s] %c int16s[%s]",
-						PrintSymbols[p->name1], PrintSymbols[p->name2], c, PrintSymbols[p->name3]);
+						IntegersSymbols[p->name1], IntegersSymbols[p->name2], c, IntegersSymbols[p->name3]);
                     break;
             }
 
             case INT_IF_BIT_SET:
-                printf("unless (bits[%s] set)", PrintSymbols[p->name1]);
+                printf("ifnot (bits[%s] set)", BitsSymbols[p->name1]);
                 goto cond;
             case INT_IF_BIT_CLEAR:
-                printf("unless (bits[%s] clear)", PrintSymbols[p->name1]);
+                printf("ifnot (bits[%s] clear)", BitsSymbols[p->name1]);
                 goto cond;
             case INT_IF_VARIABLE_LES_LITERAL:
-                printf("unless (int16s[%s] < %d)", PrintSymbols[p->name1], p->literal);
+                printf("ifnot (int16s[%s] < %d)", IntegersSymbols[p->name1], p->literal);
                 goto cond;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-                printf("unless (int16s[%s] == int16s[%s])", PrintSymbols[p->name1],
-					PrintSymbols[p->name2]);
+                printf("ifnot (int16s[%s] == int16s[%s])", IntegersSymbols[p->name1],
+					IntegersSymbols[p->name2]);
                 goto cond;
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                printf("unless (int16s[%s] > int16s[%s])", PrintSymbols[p->name1],
-					PrintSymbols[p->name2]);
+                printf("ifnot (int16s[%s] > int16s[%s])", IntegersSymbols[p->name1],
+					IntegersSymbols[p->name2]);
                 goto cond;
 cond:
-                printf(" jump %03x+1", p->name3);
+                printf(" jump %03x", pc + p->name3 + 1);
                 break;
 
             case INT_ELSE:
-                printf("jump %03x+1", p->name3);
+                printf("jump %03x", pc + p->name3 + 1);
                 break;
 
             case INT_END_OF_PROGRAM:
@@ -293,7 +306,7 @@ void InterpretOneCycle(void)
 {
     int pc;
     for(pc = 0; ; pc++) {
-        BinOp *p = &Program[pc];
+        BinOp8bits *p = &Program[pc];
 
         switch(Program[pc].op) {
             case INT_SET_BIT:
@@ -340,27 +353,27 @@ void InterpretOneCycle(void)
                 break;
 
             case INT_IF_BIT_SET:
-                if(!Bits[p->name1]) pc = p->name3;
+                if(!Bits[p->name1]) pc += p->name3;
                 break;
 
             case INT_IF_BIT_CLEAR:
-                if(Bits[p->name1]) pc = p->name3;
+                if(Bits[p->name1]) pc += p->name3;
                 break;
 
             case INT_IF_VARIABLE_LES_LITERAL:
-                if(!(Integers[p->name1] < p->literal)) pc = p->name3;
+                if(!(Integers[p->name1] < p->literal)) pc += p->name3;
                 break;
 
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-                if(!(Integers[p->name1] == Integers[p->name2])) pc = p->name3;
+                if(!(Integers[p->name1] == Integers[p->name2])) pc += p->name3;
                 break;
 
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                if(!(Integers[p->name1] > Integers[p->name2])) pc = p->name3;
+                if(!(Integers[p->name1] > Integers[p->name2])) pc += p->name3;
                 break;
 
             case INT_ELSE:
-                pc = p->name3;
+				pc += p->name3;
                 break;
 
             case INT_END_OF_PROGRAM:

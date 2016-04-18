@@ -158,6 +158,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
                     AppendIo(l->d.contacts.name, IO_TYPE_DIG_INPUT);
                     break;
 
+				case 'P':
+					AppendIo(l->d.contacts.name, IO_TYPE_PWM_OUTPUT);
+					break;
+
                 default:
                     oops();
                     break;
@@ -342,6 +346,7 @@ int GenerateIoList(int prevSel)
     for(i = 0; i < Prog.io.count; i++) {
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
+		   Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
             for(j = 0; j < IoSeenPreviouslyCount; j++) {
@@ -392,6 +397,7 @@ BOOL LoadIoListFromFile(FILE *f)
                 case 'X': type = IO_TYPE_DIG_INPUT; break;
                 case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
                 case 'A': type = IO_TYPE_READ_ADC; break;
+				case 'P': type = IO_TYPE_PWM_OUTPUT; break;
                 default: oops();
             }
             AppendIoSeenPreviously(name, type, pin);
@@ -410,6 +416,7 @@ void SaveIoListToFile(FILE *f)
     for(i = 0; i < Prog.io.count; i++) {
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT  ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
+		   Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
             // Don't internationalize this! It's the file format, not UI.
@@ -614,7 +621,7 @@ static void MakeControls(void)
 
     PinList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
-        LBS_NOTIFY, 6, 18, 95, 320, IoDialog, NULL, Instance, NULL);
+        LBS_NOTIFY, 6, 18, 119, 320, IoDialog, NULL, Instance, NULL);
     FixedFont(PinList);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -658,10 +665,11 @@ void ShowIoDialog(int item)
 
     if(Prog.io.assignment[item].name[0] != 'X' &&
        Prog.io.assignment[item].name[0] != 'Y' &&
-       Prog.io.assignment[item].name[0] != 'A')
+       Prog.io.assignment[item].name[0] != 'A' &&
+	   Prog.io.assignment[item].name[0] != 'P')
     {
         Error(_("Can only assign pin number to input/output pins (Xname or "
-            "Yname or Aname)."));
+            "Yname or Aname or Pname)."));
         return;
     }
 
@@ -685,7 +693,7 @@ void ShowIoDialog(int item)
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
         "LDmicroIo", _("I/O Pin"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 107, 387, NULL, NULL, Instance, NULL);
+        100, 100, 127, 387, NULL, NULL, Instance, NULL);
 
     MakeControls();
 
@@ -707,11 +715,13 @@ void ShowIoDialog(int item)
             goto cant_use_this_io;
         }
 
+#if 0
         if(PwmFunctionUsed() &&
             Prog.mcu->pinInfo[i].pin == Prog.mcu->pwmNeedsPin)
         {
             goto cant_use_this_io;
         }
+#endif
 
         if(Prog.io.assignment[item].name[0] == 'A') {
             for(j = 0; j < Prog.mcu->adcCount; j++) {
@@ -727,13 +737,15 @@ void ShowIoDialog(int item)
 
         char buf[40];
         if(Prog.mcu->pinCount <= 21) {
-            sprintf(buf, "%3d   %c%c%d", Prog.mcu->pinInfo[i].pin,
+            sprintf(buf, "%3d   %c%c%d %s", Prog.mcu->pinInfo[i].pin,
                 Prog.mcu->portPrefix, Prog.mcu->pinInfo[i].port,
-                Prog.mcu->pinInfo[i].bit);
+                Prog.mcu->pinInfo[i].bit, 
+				Prog.mcu->pinInfo[i].pinName ? Prog.mcu->pinInfo[i].pinName : "");
         } else {
-            sprintf(buf, "%3d  %c%c%d", Prog.mcu->pinInfo[i].pin,
+            sprintf(buf, "%3d  %c%c%d %s", Prog.mcu->pinInfo[i].pin,
                 Prog.mcu->portPrefix, Prog.mcu->pinInfo[i].port,
-                Prog.mcu->pinInfo[i].bit);
+                Prog.mcu->pinInfo[i].bit,
+				Prog.mcu->pinInfo[i].pinName ? Prog.mcu->pinInfo[i].pinName : "");
         }
         SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 cant_use_this_io:;
@@ -845,7 +857,8 @@ void IoListProc(NMHDR *h)
                     break;
 
                 case LV_IO_PORT: {
-                    // Don't confuse people by displaying bogus pin assignments
+				case LV_IO_PINNAME:
+					// Don't confuse people by displaying bogus pin assignments
                     // for the C target.
                     if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
                         strcpy(i->item.pszText, "");
@@ -854,7 +867,7 @@ void IoListProc(NMHDR *h)
 
                     int type = Prog.io.assignment[item].type;
                     if(type != IO_TYPE_DIG_INPUT && type != IO_TYPE_DIG_OUTPUT
-                        && type != IO_TYPE_READ_ADC)
+                        && type != IO_TYPE_READ_ADC && type != IO_TYPE_PWM_OUTPUT)
                     {
                         strcpy(i->item.pszText, "");
                         break;
@@ -885,10 +898,15 @@ void IoListProc(NMHDR *h)
                     int j;
                     for(j = 0; j < Prog.mcu->pinCount; j++) {
                         if(Prog.mcu->pinInfo[j].pin == pin) {
-                            sprintf(i->item.pszText, "%c%c%d",
-                                Prog.mcu->portPrefix,
-                                Prog.mcu->pinInfo[j].port,
-                                Prog.mcu->pinInfo[j].bit);
+							if (i->item.iSubItem == LV_IO_PINNAME) {
+								sprintf(i->item.pszText, "%s", Prog.mcu->pinInfo[j].pinName);
+							}
+							else {
+								sprintf(i->item.pszText, "%c%c%d",
+									Prog.mcu->portPrefix,
+									Prog.mcu->pinInfo[j].port,
+									Prog.mcu->pinInfo[j].bit);
+							}
                             break;
                         }
                     }

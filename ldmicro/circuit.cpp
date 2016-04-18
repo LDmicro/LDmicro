@@ -406,7 +406,7 @@ void AddSetPwm(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setPwm.name, "duty_cycle");
+    strcpy(t->d.setPwm.name, "Pnew");
     t->d.setPwm.targetFreq = 1000;
     AddLeaf(ELEM_SET_PWM, t);
 }

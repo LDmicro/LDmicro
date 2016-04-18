@@ -196,12 +196,15 @@ typedef signed long SDWORD;
 #define MNU_ABOUT               0x81
 #define MNU_RELEASE             0x82
 
+#define MNU_COMPILE_XINT        0x83	// Extended interpreter
+
 // Columns within the I/O etc. listview.
 #define LV_IO_NAME              0x00
 #define LV_IO_TYPE              0x01
 #define LV_IO_STATE             0x02
 #define LV_IO_PIN               0x03
 #define LV_IO_PORT              0x04
+#define LV_IO_PINNAME           0x05
 
 // Timer IDs associated with the main window.
 #define TIMER_BLINK_CURSOR      1
@@ -670,7 +673,8 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_PASCAL          0x06
 #define ISA_ARDUINO         0x07
 #define ISA_CAVR            0x08
-#define ISA_XINTERPRETED	0x09 // Extender interpeter
+#define ISA_XINTERPRETED	0x09	// Extended interpeter
+#define ISA_C_MAXI_INTER	0x10	// Controllino Maxi with extended interpreter
 
 #define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
@@ -710,7 +714,7 @@ typedef struct McuIoInfoTag {
     }                IntNeeds;
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 27
+#define NUM_SUPPORTED_MCUS 29
 
 //-----------------------------------------------
 // Function prototypes

@@ -750,6 +750,58 @@ McuAdcPinInfo Pic16f886AdcPinInfo[] = {
     { 26, 0x0d },
 };
 
+//-----------------------------------------------------------------------------
+// Controllino Maxi
+McuIoPinInfo ControllinoMaxiIoPinInfo[] = {
+	{ 'E',  4,  6, "D0" },
+	{ 'E',  5,  7, "D1" },
+	{ 'G',  5,  1, "D2" },
+	{ 'E',  3,  5, "D3" },
+	{ 'H',  3, 15, "D4" },
+	{ 'H',  4, 16, "D5" },
+	{ 'H',  5, 17, "D6" },
+	{ 'H',  6, 18, "D7" },
+	{ 'B',  4, 23, "D8" },
+	{ 'B',  5, 24, "D9" },
+	{ 'B',  6, 25, "D10" },
+	{ 'B',  7, 26, "D11" },
+
+	{ 'C',  6, 59, "R9" },
+	{ 'C',  7, 60, "R8" },
+	{ 'A',  7, 71, "R7" },
+	{ 'A',  6, 72, "R6" },
+	{ 'A',  5, 73, "R5" },
+	{ 'A',  4, 74, "R4" },
+	{ 'A',  3, 75, "R3" },
+	{ 'A',  2, 76, "R2" },
+	{ 'A',  1, 77, "R1" },
+	{ 'A',  0, 78, "R0" },
+
+	{ 'K',  1, 88, "A9" },
+	{ 'K',  0, 89, "A8" },
+
+	{ 'F',  7, 90, "A7" },
+	{ 'F',  6, 91, "A6" },
+	{ 'F',  5, 92, "A5" },
+	{ 'F',  4, 93, "A4" },
+	{ 'F',  3, 94, "A3" },
+	{ 'F',  2, 95, "A2" },
+	{ 'F',  1, 96, "A1" },
+	{ 'F',  0, 97, "A0" },
+};
+
+McuAdcPinInfo ControllinoMaxiAdcPinInfo[] = {
+	{ 97, 0x00 },
+	{ 96, 0x01 },
+	{ 95, 0x02 },
+	{ 94, 0x03 },
+	{ 93, 0x04 },
+	{ 92, 0x05 },
+	{ 91, 0x06 },
+	{ 90, 0x07 },
+	{ 89, 0x08 },
+	{ 88, 0x09 }
+};
 
 #define arraylen(x) (sizeof(x)/sizeof((x)[0]))
 
@@ -1267,8 +1319,27 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (0 <<  4) |     // PWRTE enabled
             (0 <<  3) |     // WDTE disabled
             (2 <<  0)       // HS oscillator
-    },
-    {
+    },	
+	{
+		"Controllino Maxi",
+		'P',
+		{ 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0x103, 0x106, 0x109 }, // PINx
+		{ 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0x105, 0x108, 0x10B }, // PORTx
+		{ 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33, 0x101, 0x104, 0x107, 0x10A }, // DDRx
+			128 * 1024,
+			{ { 0x200, 8192 } },
+			ControllinoMaxiIoPinInfo,
+			arraylen(ControllinoMaxiIoPinInfo),
+			ControllinoMaxiAdcPinInfo,
+			arraylen(ControllinoMaxiAdcPinInfo),
+			1023,
+			{ 2 , 3 },
+			23,
+			ISA_AVR1,
+			EnhancedCore4M,
+			0
+	},
+	{
         "ANSI C Code",
         'x',
         { 0x00 },
@@ -1308,7 +1379,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
 	{
 		"Extended Byte Code",
-		'X',
+		'x',
 		{ 0x00 },
 		{ 0x00 },
 		{ 0x00 },
