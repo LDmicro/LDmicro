@@ -1348,13 +1348,23 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
             // This is a table of characters to transmit, as a function of the
             // sequencer position (though we might have a hole in the middle
-            // for the variable output); positive is an unsigned character,
+            // for the variable output)
+            char outputChars[MAX_LOOK_UP_TABLE_LEN*2];
+
+            // This is a table of flags which was output:
+            // positive is an unsigned character,
             // negative is special flag values
             enum {
+                OUTPUT_UCHAR =  1,
                 OUTPUT_DIGIT = -1,
                 OUTPUT_SIGN = -2,
             };
-            char outputChars[MAX_LOOK_UP_TABLE_LEN*2];
+            char outputWhich[sizeof(outputChars)];
+            // outputWhich is added to be able to send the full unsigned char range
+            // as hexadecimal numbers in formatted string element.
+            // \xFF == -1   and   \xFE == -2  in output string.
+            // Release 2.2 can raise error with formated strings "\0x00" and "\0x01"
+            // Release 2.3 can raise error with formated strings "\0xFF" and "\0xFE"
 
             BOOL mustDoMinus = FALSE;
 
@@ -1379,6 +1389,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                     p++;
                     if(*p == '-') {
                         mustDoMinus = TRUE;
+                        outputWhich[steps  ] = OUTPUT_SIGN;
                         outputChars[steps++] = OUTPUT_SIGN;
                         p++;
                     }
@@ -1390,19 +1401,20 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                     digits = (*p - '0');
                     int i;
                     for(i = 0; i < digits; i++) {
+                        outputWhich[steps  ] = OUTPUT_DIGIT;
                         outputChars[steps++] = OUTPUT_DIGIT;
                     }
                 } else if(*p == '\\') {
                     p++;
                     switch(*p) {
-                        case 'r': outputChars[steps++] = '\r'; break;
-                        case 'n': outputChars[steps++] = '\n'; break;
-                        case 'b': outputChars[steps++] = '\b'; break;
-                        case 'f': outputChars[steps++] = '\f'; break;
-                        case 't': outputChars[steps++] = '\t'; break;
-                        case 'v': outputChars[steps++] = '\v'; break;
-                        case 'a': outputChars[steps++] = '\a'; break;
-                        case '\\': outputChars[steps++] = '\\'; break;
+                        case 'r': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\r'; break;
+                        case 'n': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\n'; break;
+                        case 'b': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\b'; break;
+                        case 'f': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\f'; break;
+                        case 't': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\t'; break;
+                        case 'v': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\v'; break;
+                        case 'a': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\a'; break;
+                        case '\\':outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\\'; break;
                         case 'x': {
                             int h, l;
                             p++;
@@ -1411,6 +1423,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                                 p++;
                                 l = HexDigit(*p);
                                 if(l >= 0) {
+                                    outputWhich[steps  ] = OUTPUT_UCHAR;
                                     outputChars[steps++] = (h << 4) | l;
                                     break;
                                 }
@@ -1425,9 +1438,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                             break;
                     }
                 } else {
-                    outputChars[steps++] = (unsigned char)*p;
+                    outputWhich[steps  ] = OUTPUT_UCHAR;
+                    outputChars[steps++] = *p;
                 }
                 if(*p) p++;
+
+                if(steps >= sizeof(outputChars)) {
+                    oops();
+                }
             }
 
             if(digits >= 0 && (strlen(var) == 0)) {
@@ -1495,7 +1513,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             int i;
             int digit = 0;
             for(i = 0; i < steps; i++) {
-                if(outputChars[i] == OUTPUT_DIGIT) {
+                if(outputWhich[i] == OUTPUT_DIGIT) {
                     // Note gross hack to work around limit of range for
                     // AVR brne op, which is +/- 64 instructions.
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
@@ -1533,19 +1551,19 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                     if(digit != (digits - 1)) {
                         Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch",
                             "$charToUart");
-                            Op(INT_IF_BIT_SET, isLeadingZero);
-                                Op(INT_SET_VARIABLE_TO_LITERAL,
+                          Op(INT_IF_BIT_SET, isLeadingZero);
+                            Op(INT_SET_VARIABLE_TO_LITERAL,
                                 "$charToUart", ' '); // '0' %04d
-                            Op(INT_END_IF);
+                          Op(INT_END_IF);
                         Op(INT_ELSE);
-                            Op(INT_CLEAR_BIT, isLeadingZero);
+                          Op(INT_CLEAR_BIT, isLeadingZero);
                         Op(INT_END_IF);
                     }
 
                     Op(INT_END_IF);
 
                     digit++;
-                } else if(outputChars[i] == OUTPUT_SIGN) {
+                } else if(outputWhich[i] == OUTPUT_SIGN) {
                     // do the minus; ugliness to get around the BRNE jump
                     // size limit, though
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
@@ -1568,14 +1586,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                         Op(INT_END_IF);
 
                     Op(INT_END_IF);
-                } else {
+                } else if(outputWhich[i] == OUTPUT_UCHAR) {
                     // just another character
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                     Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", seqScratch);
                       Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart",
-                            outputChars[i]);
+                          outputChars[i]);
                     Op(INT_END_IF);
-                }
+                } else oops();
             }
 
             Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SWORD)0);
