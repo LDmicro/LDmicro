@@ -30,6 +30,16 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
+//-----------------------------------------------------------------------------
+#define parThis_parOut_optimize
+//-----------------------------------------------------------------------------
+int int_comment_level  = 3;
+//                       0 - no comments
+//                       1 = Release 2.3 comments
+//                       2 - more comments
+//                     * 3 - ELEM_XXX comments added
+//-----------------------------------------------------------------------------
+
 IntOp IntCode[MAX_INT_OPS];
 int IntCodeLen = 0;
 int ProgWriteP = 0;
@@ -62,8 +72,12 @@ void IntDumpListing(char *outFile)
         if(IntCode[i].op == INT_ELSE) indent--;
         if(indent < 0) indent = 0;
 
+        if(int_comment_level == 1) {
+            fprintf(f, "%3d:", i);
+        } else {
         if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
         fprintf(f, "%4d:", i);
+        }
         int j;
         if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
         for(j = 0; j < indent; j++) fprintf(f, "    ");
@@ -255,7 +269,8 @@ void IntDumpListing(char *outFile)
             default:
                 ooops("IntCode[i].op=INT_%d",IntCode[i].op);
         }
-        if(IntCode[i].op != INT_SIMULATE_NODE_STATE)
+        if((int_comment_level == 1)
+        || (IntCode[i].op != INT_SIMULATE_NODE_STATE))
         fprintf(f, "\n");
         fflush(f);
     }
@@ -294,6 +309,9 @@ static void GenSymParOut(char *dest)
 }
 static void GenSymOneShot(char *dest, char *name1, char *name2)
 {
+    if(int_comment_level == 1)
+        sprintf(dest, "$oneShot_%04x", GenSymCountOneShot);
+    else
     sprintf(dest, "$oneShot_%04x_%s_%s", GenSymCountOneShot, name1, name2);
     GenSymCountOneShot++;
 }
@@ -661,26 +679,30 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
             Comment("start parallel [");
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-
             int i;
-            BOOL ExistEnd = FALSE; //FALSE indicates that it is NEED to calculate the parOut
+
+            BOOL ExistEnd;
+            BOOL CanChange;
+            #ifdef parThis_parOut_optimize
+            ExistEnd = FALSE; //FALSE indicates that it is NEED to calculate the parOut
             for(i = 0; i < p->count; i++) {
               if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].d.any)){
                 ExistEnd = TRUE; // TRUE indicates that it is NOT NEED to calculate the parOut
                 break;
               }
             }
-            BOOL CanChange = FALSE; // FALSE indicates that it is NOT NEED to calculate the parThis
+            CanChange = FALSE; // FALSE indicates that it is NOT NEED to calculate the parThis
             for(i = 0; i < p->count; i++) {
               if(!CheckStaySameElem(p->contents[i].which, p->contents[i].d.any)){
                 CanChange = TRUE; // TRUE indicates that it is NEED to calculate the parThis
                 break;
               }
             }
-            /*
+            #else
+            // Return to default algorithm
             CanChange = TRUE;
             ExistEnd = FALSE;
-            */
+            #endif
             if(ExistEnd == FALSE) {
               GenSymParOut(parOut);
 
@@ -690,24 +712,26 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               GenSymParThis(parThis);
             }
             for(i = 0; i < p->count; i++) {
+              #ifdef parThis_parOut_optimize
               if(CheckStaySameElem(p->contents[i].which, p->contents[i].d.any))
-                IntCodeFromCircuit(p->contents[i].which, p->contents[i].d.any,
-                    stateInOut, rung);
-              else {
+                  IntCodeFromCircuit(p->contents[i].which, p->contents[i].d.any, stateInOut, rung);
+              else
+              #endif
+              {
                 Op(INT_COPY_BIT_TO_BIT, parThis, stateInOut);
 
                 IntCodeFromCircuit(p->contents[i].which, p->contents[i].d.any,
                     parThis, rung);
 
                 if(ExistEnd == FALSE) {
-                Op(INT_IF_BIT_SET, parThis);
-                Op(INT_SET_BIT, parOut);
-                Op(INT_END_IF);
-            }
+                  Op(INT_IF_BIT_SET, parThis);
+                  Op(INT_SET_BIT, parOut);
+                  Op(INT_END_IF);
+                }
               }
             }
             if(ExistEnd == FALSE) {
-            Op(INT_COPY_BIT_TO_BIT, stateInOut, parOut);
+              Op(INT_COPY_BIT_TO_BIT, stateInOut, parOut);
             }
             Comment("] finish parallel");
 
@@ -1688,7 +1712,9 @@ BOOL GenerateIntermediateCode(void)
 
     rungNow++;
     BOOL ExistMasterRelay = CheckMasterRelay();
-    //ExistMasterRelay = TRUE; // Comment this for optimisation
+    if(int_comment_level == 1) {
+        ExistMasterRelay = TRUE; // Comment this for optimisation
+    }
     if (ExistMasterRelay)
         Op(INT_SET_BIT, "$mcr");
 
@@ -1708,8 +1734,10 @@ BOOL GenerateIntermediateCode(void)
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
         rungNow = rung;
-        Comment("");
-        Comment("======= START RUNG %d =======", rung+1);
+        if(int_comment_level != 1) {
+            Comment("");
+            Comment("======= START RUNG %d =======", rung+1);
+        }
 
         if(Prog.rungs[rung]->count == 1 &&
             Prog.rungs[rung]->contents[0].which == ELEM_COMMENT)
@@ -1728,9 +1756,15 @@ BOOL GenerateIntermediateCode(void)
                     break;
                 }
             }
-            if(s1) Comment(s1);
-            if(s2) Comment(s2);
+            if(int_comment_level>=2) {
+                if(s1) Comment(s1);
+                if(s2) Comment(s2);
+            }
             continue;
+        }
+        if(int_comment_level == 1) {
+            Comment("");
+            Comment("start rung %d", rung+1);
         }
         if (ExistMasterRelay)
             Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
