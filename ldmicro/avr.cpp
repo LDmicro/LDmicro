@@ -251,17 +251,17 @@ static int EepromHighByteWaitingBit;
 
 // Some useful registers, unfortunately many of which are in different places
 // on different AVRs! I consider this a terrible design choice by Atmel.
-// '-1' means not defined.
-//static DWORD REG_TIMSK  = -1;
-static BYTE      OCIE1A = -1; // Timer/Counter1, Output Compare A Match Interrupt Enable
-static BYTE      TOIE1  = -1; // Timer/Counter1 Overflow Interrupt Enable
-static BYTE      TOIE0  = -1; // Timer/Counter0 Overflow Interrupt Enable
+// 0 means not defined.
+static DWORD REG_TIMSK  = 0;
+static BYTE      OCIE1A = 0; // Timer/Counter1, Output Compare A Match Interrupt Enable
+static BYTE      TOIE1  = 0; // Timer/Counter1 Overflow Interrupt Enable
+static BYTE      TOIE0  = 0; // Timer/Counter0 Overflow Interrupt Enable
 
-static DWORD REG_TIFR1  = -1;
-static DWORD REG_TIFR0  = -1;
-static BYTE      OCF1A  = -1; // Timer/Counter1, Output Compare A Match Flag
-static BYTE      TOV1   = -1; // Timer/Counter1 Overflow Flag
-static BYTE      TOV0   = -1; // Timer/Counter0 Overflow Flag
+static DWORD REG_TIFR1  = 0;
+static DWORD REG_TIFR0  = 0;
+static BYTE      OCF1A  = 0; // Timer/Counter1, Output Compare A Match Flag
+static BYTE      TOV1   = 0; // Timer/Counter1 Overflow Flag
+static BYTE      TOV0   = 0; // Timer/Counter0 Overflow Flag
 //#define REG_OCR1AH  0x4b
 //#define REG_OCR1AL  0x4a
 //#define REG_TCCR1A  0x4f
@@ -288,21 +288,21 @@ static DWORD REG_ADCSRA = 0x26;
 static DWORD REG_ADCH   = 0x25;
 static DWORD REG_ADCL   = 0x24;
 
-static DWORD REG_OCR1AH = -1;
-static DWORD REG_OCR1AL = -1;
-static DWORD REG_TCCR1A = -1;
-static DWORD REG_TCCR1B = -1;
+static DWORD REG_OCR1AH = 0;
+static DWORD REG_OCR1AL = 0;
+static DWORD REG_TCCR1A = 0;
+static DWORD REG_TCCR1B = 0;
 #define          WGM13     4
 #define          WGM12     3
 #define          WGM11     1
 #define          WGM10     0
-static DWORD REG_UBRRH  = -1;
-static DWORD REG_UBRRL  = -1;
-static DWORD REG_UCSRC  = -1;
-static DWORD REG_UCSRB  = -1;
+static DWORD REG_UBRRH  = 0;
+static DWORD REG_UBRRL  = 0;
+static DWORD REG_UCSRC  = 0;
+static DWORD REG_UCSRB  = 0;
 #define          RXEN   BIT4
 #define          TXEN   BIT3
-static DWORD REG_UCSRA  = -1;
+static DWORD REG_UCSRA  = 0;
 #define      RXC  BIT7 // USART Receive Complete
                        // This flag bit is set when there are unread data
                        //   in the receive buffer and
@@ -314,7 +314,7 @@ static DWORD REG_UCSRA  = -1;
 #define      DOR  BIT3 // Data OverRun
 #define      PE   BIT2 // Parity Error
 
-static DWORD REG_UDR = -1;
+static DWORD REG_UDR = 0;
 
 #define REG_TCCR0   0x53
 #define REG_TCNT0   0x52
@@ -328,18 +328,19 @@ static DWORD REG_UDR = -1;
 
 //#define REG_OCR2    0x43
 //#define REG_TCCR2   0x45
-static DWORD REG_OCR2   = 0x43; //-1;
-static DWORD REG_TCCR2  = 0x45; //-1;
-static DWORD REG_TCCR2B = -1;
+// PWM Timer2
+static DWORD REG_OCR2   = 0x43; //0; //TODO: check in datasheets for all MCU's
+static DWORD REG_TCCR2  = 0x45; //
+static DWORD REG_TCCR2B = 0;
 static BYTE      WGM20  = BIT6;
 static BYTE      WGM21  = BIT3;
 static BYTE      COM21  = BIT5;
 static BYTE      COM20  = BIT4;
 
-static DWORD REG_EEARH     = 0x3f;
-static DWORD REG_EEARL     = 0x3e;
-static DWORD REG_EEDR      = 0x3d;
-static DWORD REG_EECR      = 0x3c;
+static DWORD REG_EEARH     = 0x3f; //0; //TODO: check in datasheets for all MCU's
+static DWORD REG_EEARL     = 0x3e; //
+static DWORD REG_EEDR      = 0x3d; //
+static DWORD REG_EECR      = 0x3c; //
 #define          EERE   BIT0
 #define          EEWE   BIT1
 #define          EEMWE  BIT2
@@ -364,36 +365,36 @@ static DWORD REG_EECR      = 0x3c;
 */
 
 // Interrupt Vectors Table
-static DWORD Int0Addr         = -1;
-static DWORD Int1Addr         = -1;
-static DWORD Timer0OvfAddr    = -1;
-static DWORD Timer1OvfAddr    = -1;
-static DWORD Timer1CompAAddr  = -1;
+static DWORD Int0Addr         = 0;
+static DWORD Int1Addr         = 0;
+static DWORD Timer0OvfAddr    = 0;
+static DWORD Timer1OvfAddr    = 0;
+static DWORD Timer1CompAAddr  = 0;
 
 //External Interrupts support
-static DWORD REG_MCUCR = -1;
-static BYTE      ISC00 = -1;
-static BYTE      ISC01 = -1;
-static BYTE      ISC10 = -1;
-static BYTE      ISC11 = -1;
+static DWORD REG_MCUCR = 0;
+static BYTE      ISC00 = 0;
+static BYTE      ISC01 = 0;
+static BYTE      ISC10 = 0;
+static BYTE      ISC11 = 0;
 
-static DWORD REG_GICR  = -1;
-static BYTE      INT1  = -1;
-static BYTE      INT0  = -1;
+static DWORD REG_GICR  = 0;
+static BYTE      INT1  = 0;
+static BYTE      INT0  = 0;
 
-static DWORD REG_GIFR  = -1;
-static BYTE      INTF1 = -1;
-static BYTE      INTF0 = -1;
+static DWORD REG_GIFR  = 0;
+static BYTE      INTF1 = 0;
+static BYTE      INTF0 = 0;
 
 #ifdef USE_TIMER0_AS_LADDER_CYCLE
 //used in PlcCycleTimerOverflowInterrupt for PLC timing
 //static DWORD  PlcCycleTimerOverflowVector;
-static int    tcnt0PlcCycle = -1;
+static int    tcnt0PlcCycle = 0;
 #else
 #endif
 //used in NPulseTimerOverflowInterrupt in ELEM_NPULSE
 static DWORD  NPulseTimerOverflowVector;
-static int    tcntNPulse = -1;
+static int    tcntNPulse = 0;
 static DWORD  NPulseTimerOverflowRegAddr;
 static int    NPulseTimerOverflowBit;
 static DWORD  NPulseTimerOverflowCounter;
@@ -920,6 +921,14 @@ static void WriteHexFile(FILE *f)
 static void LoadXAddr(DWORD addr)
 //used rX; Opcodes: 2
 {
+    if(addr <= 0) {
+        Error(_("Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        //return;
+    }
+    if(addr >  0xffff) {
+        Error(_("Addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        //return;
+    }
     Instruction(OP_LDI, 26, (addr & 0xff)); // X-register Low Byte
     Instruction(OP_LDI, 27, (addr >> 8));   // X-register High Byte
 }
@@ -927,6 +936,14 @@ static void LoadXAddr(DWORD addr)
 static void LoadYAddr(DWORD addr)
 //used rY; Opcodes: 2
 {
+    if(addr <= 0) {
+        Error(_("Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        //return;
+    }
+    if(addr >  0xffff) {
+        Error(_("Addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        //return;
+    }
     Instruction(OP_LDI, 28, (addr & 0xff)); // Y-register Low Byte
     Instruction(OP_LDI, 29, (addr >> 8));   // Y-register High Byte
 }
@@ -934,6 +951,14 @@ static void LoadYAddr(DWORD addr)
 static void LoadZAddr(DWORD addr)
 //used ZL; Opcodes: 2
 {
+    if(addr <= 0) {
+        Error(_("Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        //return;
+    }
+    if(addr >  0xffff) {
+        Error(_("Addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        //return;
+    }
     Instruction(OP_LDI, 30, (addr & 0xff)); // Z-register Low Byte
     Instruction(OP_LDI, 31, (addr >> 8));   // Z-register High Byte
 }
@@ -1912,40 +1937,62 @@ static void CompileFromIntermediate(void)
                 int target = atoi(a->name2);
 
                 // PWM frequency is
-                //   target = xtal/(256*prescaler)
+                //   target = xtal/(256*prescale)
                 // so not a lot of room for accurate frequency here
 
-                double freq;
-                double bestFreq;
-                int err;
-                int bestPrescaler;
+                int prescale;
+                int bestPrescale;
                 int bestError = INT_MAX;
-                int prescaler;
-                for(prescaler = 1;;) {
-                    //int freq = (Prog.mcuClock + prescaler*128)/(prescaler*256);
-                    freq = (double)Prog.mcuClock/(prescaler*256);
-                    //dbp("prescaler=%d freq=%f", prescaler, freq);
+                double bestFreq;
+                double freq;
+                for(prescale = 1;;) {
+                  //int freq = (Prog.mcuClock + prescale*128)/(prescale*256);
+                    freq = (1.0*Prog.mcuClock) / (256.0*prescale);
 
-                    err = abs(freq - target);
+                    int err = abs(freq - target);
                     if(err < bestError) {
                         bestError = err;
-                        bestPrescaler = prescaler;
+                        bestPrescale = prescale;
                         bestFreq = freq;
                     }
-
-                    if(prescaler == 1) prescaler = 8;
-                    else if(prescaler == 8) prescaler = 32;
-                    else if(prescaler == 32) prescaler = 64;
-                    else if(prescaler == 64) prescaler = 128;
-                    else if(prescaler == 128) prescaler = 256;
-                    else if(prescaler == 256) prescaler = 1024;
-                    else break;
+                    //dbp("prescale=%d freq=%f", prescale, freq);
+                    if(REG_TCCR2B > 0) {
+                        if(prescale == 1) {
+                            prescale = 8;
+                        } else if(prescale == 8) {
+                            prescale = 32;
+                        } else if(prescale == 32) {
+                            prescale = 64;
+                        } else if(prescale == 64) {
+                            prescale = 128;
+                        } else if(prescale == 128) {
+                            prescale = 256;
+                        } else if(prescale == 256) {
+                            prescale = 1024;
+                        } else {
+                            break;
+                        }
+                    } else {
+                        if(prescale == 1) {
+                            prescale = 8;
+                        } else if(prescale == 8) {
+                            prescale = 64;
+                        } else if(prescale == 64) {
+                            prescale = 256;
+                        } else if(prescale == 256) {
+                            prescale = 1024;
+                        } else {
+                            break;
+                        }
+                    }
                 }
-                //dbp("bestPrescaler=%d bestFreq=%f", bestPrescaler, bestFreq);
 
-                if(((double)bestError)/target > 0.05)
+                if(((double)bestError)/target > 0.05) {
                     Error(_(" Target PWM frequency %.3f Hz, closest achievable is "
                         "%.3f Hz (warning, >5%% error)."), target, bestFreq);
+                }
+                //dbp("bestPrescale=%d bestFreq=%f", bestPrescale, bestFreq);
+
 
                 BOOL Use100 = TRUE;
                 // Use100 = FALSE; // TODO
@@ -1974,11 +2021,13 @@ static void CompileFromIntermediate(void)
                 MemForSingleBit("$pwm_init", FALSE, &addr, &bit);
                 DWORD skip = AllocFwdAddr();
                 IfBitSet(addr, bit);
-                Instruction(OP_RJMP, skip);
+                Instruction(OP_RJMP, skip, 0);
                 SetBit(addr, bit);
-
-                BYTE cs; // see Timer/Counter2
-                switch(bestPrescaler) {
+                // see Timer/Counter2
+                // fast PWM mode, non-inverting or inverting mode, given prescale
+                BYTE cs;
+                if(REG_TCCR2B) {
+                    switch(bestPrescale) {
                     case    1: cs = 1; break;
                     case    8: cs = 2; break;
                     case   32: cs = 3; break;
@@ -1986,17 +2035,19 @@ static void CompileFromIntermediate(void)
                     case  128: cs = 5; break;
                     case  256: cs = 6; break;
                     case 1024: cs = 7; break;
-                    default: oops(); break;
+                        default: oops();
                 }
-                // fast PWM mode, non-inverting or inverting mode, given prescaler
-                if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega48 ") ||
-                   strstr(Prog.mcu->mcuName, "Atmel AVR ATmega88 ") ||
-                   strstr(Prog.mcu->mcuName, "Atmel AVR ATmega168 ") ||
-                   strstr(Prog.mcu->mcuName, "Atmel AVR ATmega328 ")
-                ){
                      WriteMemory(REG_TCCR2B, cs);
                      WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0]=='/' ? (1 << COM20) : 0));
                 } else {
+                    switch(bestPrescale) {
+                        case    1: cs = 1; break;
+                        case    8: cs = 2; break;
+                        case   64: cs = 3; break;
+                        case  256: cs = 4; break;
+                        case 1024: cs = 5; break;
+                        default: oops();
+                    }
                      //TODO: test registers and bits define's
                      WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0]=='/' ? (1 << COM20) : 0) | cs);
                 }
@@ -2112,7 +2163,7 @@ static void CompileFromIntermediate(void)
                     (1 << ADEN) |           // ADC enabled
                     (0 << ADFR) |           // not free running
                     (0 << ADIE) |           // no interrupt enabled
-                    adps;                   // prescaler setup
+                    adps;                   // prescale setup
 
                 WriteMemory(REG_ADCSRA, adcsra);
                 WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << ADSC)));
@@ -2144,6 +2195,7 @@ static void CompileFromIntermediate(void)
 
                 break;
             }
+
             case INT_UART_SEND: {
                 MemForVariable(a->name1, &addrl, &addrh);
                 MemForSingleBit(a->name2, TRUE, &addr, &bit);
@@ -2403,27 +2455,9 @@ void CompileAvr(char *outFile)
         REG_GIFR  = 0x3C; // EIFR
             INTF1 = BIT1;
             INTF0 = BIT0;
-
-        REG_OCR2   = 0xB3; // OCR2A
-        REG_TCCR2  = 0xB0; // TCCR2A
-            WGM20  = BIT0;
-            WGM21  = BIT1;
-            COM21  = BIT7; // COM2A1
-            COM20  = BIT6; // COM2A0
-        REG_TCCR2B = 0xB1;
-
-        REG_ADMUX  = 0x7C;
-        REG_ADCSRA = 0x7A;
-        REG_ADCH   = 0x79;
-        REG_ADCL   = 0x78;
-
-        REG_EEARH  = 0x42;
-        REG_EEARL  = 0x41;
-        REG_EEDR   = 0x40;
-        REG_EECR   = 0x3F;
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega64 ")
-    || strstr(Prog.mcu->mcuName, " ATmega128 ")
+    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega64 ")
+    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega128 ")
     ){
         Int0Addr        = 2;
         Int1Addr        = 4;
@@ -2460,7 +2494,9 @@ void CompileAvr(char *outFile)
     // Okay, so many AVRs have a register called TIFR, but the meaning of
     // the bits in that register varies from device to device...
 
-    // TODO: move bits down to regs defs
+    //***********************************************************************
+    // Here we must set up the addresses of some registers that for some
+    // stupid reason move around from AVR to AVR.
     if(strstr(Prog.mcu->mcuName, " AT90USB82 ")
     || strstr(Prog.mcu->mcuName, " AT90USB162 ")
     ){//TIFR bits
@@ -2473,47 +2509,6 @@ void CompileAvr(char *outFile)
         TOIE1  = BIT0;
         TOIE0  = BIT0;
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega103 ")
-    || strstr(Prog.mcu->mcuName, " ATmega163 ")
-    || strstr(Prog.mcu->mcuName, " ATmega323 ")
-    || strstr(Prog.mcu->mcuName, " ATmega8535 ")
-    ){//TIFR bits
-        OCF1A  = BIT4;
-        TOV1   = BIT2;
-        TOV0   = BIT0;
-      //TIMSK bits
-        OCIE1A = BIT4;
-        TOIE1  = BIT2;
-        TOIE0  = BIT0;
-    } else
-    if(strstr(Prog.mcu->mcuName, " ATmega161 ")
-    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega162 ")
-    || strstr(Prog.mcu->mcuName, " ATmega8515 ")
-    ){//TIFR bits
-        TOV1   = BIT7;
-        OCF1A  = BIT6;
-        TOV0   = BIT1;
-      //TIMSK  bits
-        TOIE1  = BIT7;
-        OCIE1A = BIT6;
-        TOIE0  = BIT1;
-    } else
-    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega16 ")
-    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega32 ")
-    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega8 ")
-    ){//TIFR bits
-        OCF1A  = BIT4;
-        TOV1   = BIT2;
-        TOV0   = BIT0;
-      //TIMSK bits
-        OCIE1A = BIT4;
-        TOIE1  = BIT2;
-        TOIE0  = BIT0;
-    }; // else oops();
-
-    //***********************************************************************
-    // Here we must set up the addresses of some registers that for some
-    // stupid reason move around from AVR to AVR.
     if(strstr(Prog.mcu->mcuName, " AT90USB646 ")
     || strstr(Prog.mcu->mcuName, " AT90USB647 ")
     || strstr(Prog.mcu->mcuName, " AT90USB1286 ")
@@ -2524,7 +2519,7 @@ void CompileAvr(char *outFile)
         REG_TCCR1A  = 0x80;
         REG_TCCR1B  = 0x81;
 
-//      REG_TIMSK   = 0x6F;
+        REG_TIMSK   = 0x6F;
             OCIE1A  = BIT1;
             TOIE1   = BIT0;
             TOIE0   = BIT0;
@@ -2539,6 +2534,14 @@ void CompileAvr(char *outFile)
         REG_UCSRC   = 0xCA;
         REG_UCSRB   = 0xC9;
         REG_UCSRA   = 0xC8;
+
+        REG_OCR2    = 0xB3;   // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0;   // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7;   // COM2A1
+            COM20   = BIT6;   // COM2A0
     } else
     if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega48 ") ||
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega88 ") ||
@@ -2550,7 +2553,7 @@ void CompileAvr(char *outFile)
         REG_TCCR1A  = 0x80;
         REG_TCCR1B  = 0x81;
 
-//      REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIMSK   = 0x6F;   // TIMSK1
         REG_TIFR1   = 0x36;
             OCF1A   = BIT1;
             TOV1    = BIT0;
@@ -2563,6 +2566,24 @@ void CompileAvr(char *outFile)
         REG_UCSRC   = 0xC2;   // UCSR0C
         REG_UCSRB   = 0xC1;   // UCSR0B
         REG_UCSRA   = 0xC0;   // UCSR0A
+
+        REG_OCR2    = 0xB3;   // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0;   // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7;   // COM2A1
+            COM20   = BIT6;   // COM2A0
+
+        REG_ADMUX   = 0x7C;
+        REG_ADCSRA  = 0x7A;
+        REG_ADCH    = 0x79;
+        REG_ADCL    = 0x78;
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
     } else
     if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega164 ") ||
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega324 ") ||
@@ -2573,7 +2594,7 @@ void CompileAvr(char *outFile)
         REG_TCCR1B  = 0x81;
         REG_TCCR1A  = 0x80;
 
-//      REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIMSK   = 0x6F;   // TIMSK1
         REG_TIFR1   = 0x36;
             OCF1A   = BIT1;
             TOV1    = BIT0;
@@ -2598,7 +2619,7 @@ void CompileAvr(char *outFile)
         REG_TCCR1B  = 0x81;
         REG_TCCR1A  = 0x80;
 
-//      REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIMSK   = 0x6F;   // TIMSK1
         REG_TIFR1   = 0x36;
             OCF1A   = BIT1;
             TOV1    = BIT0;
@@ -2611,6 +2632,14 @@ void CompileAvr(char *outFile)
         REG_UCSRC   = 0xC2;   // UCSR0C
         REG_UCSRB   = 0xC1;   // UCSR0B
         REG_UCSRA   = 0xC0;   // UCSR0A
+
+        REG_OCR2    = 0xB3;   // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0;   // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7;   // COM2A1
+            COM20   = BIT6;   // COM2A0
     } else
     if(strstr(Prog.mcu->mcuName, " ATmega164 ") ||
        strstr(Prog.mcu->mcuName, " ATmega324 ") ||
@@ -2622,7 +2651,7 @@ void CompileAvr(char *outFile)
         REG_TCCR1B  = 0x81;
         REG_TCCR1A  = 0x80;
 
-//      REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIMSK   = 0x6F;   // TIMSK1
         REG_TIFR1   = 0x36;
             OCF1A   = BIT1;
             TOV1    = BIT0;
@@ -2635,6 +2664,26 @@ void CompileAvr(char *outFile)
         REG_UCSRC   = 0xC2;   // UCSR0C
         REG_UCSRB   = 0xC1;   // UCSR0B
         REG_UCSRA   = 0xC0;   // UCSR0A
+
+        REG_OCR2    = 0xB3;   // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0;   // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7;   // COM2A1
+            COM20   = BIT6;   // COM2A0
+    } else
+    if(strstr(Prog.mcu->mcuName, " ATmega163 ")
+    || strstr(Prog.mcu->mcuName, " ATmega323 ")
+    || strstr(Prog.mcu->mcuName, " ATmega8535 ")
+    ){//TIFR bits
+        OCF1A  = BIT4;
+        TOV1   = BIT2;
+        TOV0   = BIT0;
+      //TIMSK bits
+        OCIE1A = BIT4;
+        TOIE1  = BIT2;
+        TOIE0  = BIT0;
     } else
     if(strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega103 ")
     ){
@@ -2643,9 +2692,13 @@ void CompileAvr(char *outFile)
         REG_TCCR1A  = 0x4F;
         REG_TCCR1B  = 0x4E;
 
-//      REG_TIMSK = 0x57;
+        REG_TIMSK   = 0x57;
         REG_TIFR1 = 0x56; // TIFR
         REG_TIFR0 = 0x56; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+            TOV0    = BIT0;
+
 //      REG_UBRRH = 0x98;
         REG_UBRRL = 0x29; // UBRR
         REG_UCSRB = 0x2a; // UCR
@@ -2653,19 +2706,51 @@ void CompileAvr(char *outFile)
         REG_UDR   = 0x2c;
 //      REG_UCSRC = 0x9d;
     } else
-    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega16 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega32 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega162 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega8 ")
+    if(strstr(Prog.mcu->mcuName, " ATmega161 ")
+    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega162 ")
+    || strstr(Prog.mcu->mcuName, " ATmega8515 ")
     ){
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
         REG_TCCR1A  = 0x4F;
         REG_TCCR1B  = 0x4E;
 
-//      REG_TIMSK = 0x59;
-        REG_TIFR1 = 0x58;
-        REG_TIFR0 = 0x58;
+        REG_TIMSK   = 0x59;
+            TOIE1   = BIT7;
+            OCIE1A  = BIT6;
+            TOIE0   = BIT1;
+        REG_TIFR1   = 0x58;  // TIFR
+        REG_TIFR0   = 0x58;  // TIFR
+            TOV1    = BIT7;
+            OCF1A   = BIT6;
+            TOV0    = BIT1;
+
+        REG_UCSRC   = 0x40;
+        REG_UBRRH   = 0x40;
+        REG_UBRRL   = 0x29;
+        REG_UCSRB   = 0x2a;
+        REG_UCSRA   = 0x2b;
+        REG_UDR     = 0x2c;
+    } else
+    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega8 ")  ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega16 ") ||
+       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega32 ")
+    ){
+        REG_OCR1AH  = 0x4B;
+        REG_OCR1AL  = 0x4A;
+        REG_TCCR1A  = 0x4F;
+        REG_TCCR1B  = 0x4E;
+
+        REG_TIMSK   = 0x59;
+            OCIE1A  = BIT4;
+            TOIE1   = BIT2;
+            TOIE0   = BIT0;
+        REG_TIFR1   = 0x58; // TIFR
+        REG_TIFR0   = 0x58; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+            TOV0    = BIT0;
+
         REG_UCSRC = 0x40;
         REG_UBRRH = 0x40;
         REG_UBRRL = 0x29;
@@ -2681,7 +2766,7 @@ void CompileAvr(char *outFile)
         REG_TCCR1A  = 0x4F;
         REG_TCCR1B  = 0x4E;
 
-//      REG_TIMSK   = 0x57;
+        REG_TIMSK   = 0x57;
             OCIE1A  = BIT4;
             TOIE1   = BIT2;
             TOIE0   = BIT0;
@@ -2697,19 +2782,6 @@ void CompileAvr(char *outFile)
         REG_UDR     = 0x9c; // UDR1
         REG_UCSRC   = 0x9d; // UCSR1C
     } else oops();
-    //***********************************************************************
-/*
-    if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega16 40-PDIP")==0  ||
-       strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega32 40-PDIP")==0 ||
-       strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega162 40-PDIP")==0 ||
-       strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega8 28-PDIP")==0)
-    {
-    } else {
-    if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega128 64-TQFP")==0 ||
-       strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega64 64-TQFP")==0)
-    {
-    }
-*/
     //***********************************************************************
 
     rungNow = -90;
@@ -2760,6 +2832,7 @@ void CompileAvr(char *outFile)
     }
     //Instruction(OP_RJMP, AvrProgWriteP); // as CodeVisionAVR C Compiler
 
+    rungNow = -20;
 
     if(MultiplyUsed) MultiplyRoutine();
     if(DivideUsed) DivideRoutine();
@@ -2769,6 +2842,7 @@ void CompileAvr(char *outFile)
     AddrCheckForErrorsPostCompile();
 
     ProgWriteP = AvrProgWriteP;
+    rungNow = -5;
     WriteHexFile(f);
     fclose(f);
 
