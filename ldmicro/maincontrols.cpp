@@ -512,7 +512,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,   _("Compile ANSIC"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("DONE: Compile C for ARDUINO"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_CAVR,    _("TODO: Compile C for AVR GCC, CodeVisionAVR, IAR AVR"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,    _("TODO: Compile HEX->ASM"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEXDONE,_("DONE: Compile HEX->ASM"));
 //  AppendMenu(compile, MF_STRING, MNU_COMPILE_ASM,     _("TODO: Compile ASM->HEX"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL,  _("TODO: Compile PASCAL"));
     AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,       _("Call flashMcu.bat\tF6"));

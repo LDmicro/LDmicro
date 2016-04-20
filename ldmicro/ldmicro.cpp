@@ -824,6 +824,22 @@ cmp:
             CompileProgram(FALSE, code);
             break;
 
+        case MNU_COMPILE_IHEXDONE:
+    Error(
+" "
+"This feature of LDmicro is in testing and refinement.\n"
+"1. You can send your LD file at the LDmicro.GitHub@gmail.com\n"
+"and get asm output file for PIC's MPLAB or WINASM,\n"
+"or AVR's avrasm2 or avrasm32\n"
+"as shown in the example for asm_demo\n"
+"https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Integrate-LDmicro-and-Arduino-software.\n"
+"2. You can sponsor development and pay for it. \n"
+"After payment you will get this functionality in a state as is at the time of development \n"
+"and you will be able to generate asm output files for any of your LD files.\n"
+"On the question of payment, please contact LDmicro.GitHub@gmail.com.\n"
+    );
+            break;
+
         case MNU_COMPILE_AS:
             CompileProgram(TRUE, code);
             break;
