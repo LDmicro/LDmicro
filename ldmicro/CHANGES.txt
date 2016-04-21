@@ -1,4 +1,26 @@
+== Release 3.3.0
+
+      The backward compatibility still saved.
+
+    * Fixed: PWM for AVR rechecked and corrected.
+
+    * Fixed: Now is able to send the full range(0x00..0xff) of unsigned char symbol
+      as hexadecimal numbers in 'Formatted String Over UART' element.
+      Release 3.2.1   raise error with formated strings "\0xFF" and "\0xFE".
+      Release 2.3 can raise error with formated strings "\0xFF" and "\0xFE".
+      Release 2.2 can raise error with formated strings "\0x00" and "\0x01".
+
+    * Added: LDmicro can generate fully functional ASM code
+      for AVR Studio or Microchip MPLAB software.
+      EEPROM, UART, ADC, PWM are supported too. See
+      https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Integrate-LDmicro-and-AVR-Studio-or-PIC-MPLAB-software.
+
+== Release 3.2.1
+
+    * Fixed simulate.cpp error 307.
+
 == Release 3.2.0
+
       The backward compatibility still saved.
 
     * AVR MCU list sorted in accordance with the Atmel AVR Instruction set inheritance table.
@@ -35,6 +57,7 @@
         http://cq.cx/ladder-forum.pl?action=viewthread&parent=3296
 
 == Release 3.1.1
+
       The backward compatibility still saved.
 
     * Fixed internal error at line 222 file 'ldmicro.cpp' (ISA_AVR1).
@@ -54,6 +77,7 @@
       See demo frmt_escape.ld, added to SAMPLES directory.
 
 == Release 3.1.0
+
     * Move an element CTC count from EndOFRung to LeafOfRung.
       After the counter overflow CTC generate OSR at its output.
       Format of LD file will not changed.
@@ -87,6 +111,7 @@
     * Increase MAX_IO from 512 to 1024.
 
 == Release 3.0.0
+
     * Unofficial support:
          Repository: https://github.com/LDmicro/LDmicro
          Email:      LDmicro.GitHub@gmail.com
@@ -101,8 +126,11 @@
          from https://github.com/mobacon/ldmicro/commits/netzer
 
 == Release 2.3 sfr  by http://cq.cx/ladder-forum.pl
+
       LDmicro_experimental_sfr02
+
 == Release 2.3  by http://cq.cx/ladder-forum.pl
+
     * Fix problem with PWM pin for ATmega16,ATmega32
     * Add new MCU : ATmega164,ATmega324,ATmega664,ATmega1284 in
       DIP40 package need test PERSIST - not working in ATmega16 or 32
