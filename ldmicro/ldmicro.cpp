@@ -281,7 +281,7 @@ static void notepad(char *name, char *ext)
     isErr(WinExec(r, SW_SHOWNORMAL), r);
 }
 //-----------------------------------------------------------------------------
-static void postCompile()
+static void postCompile(int ISA)
 {
     char r[MAX_PATH];
     char onlyName[MAX_PATH];
@@ -289,7 +289,7 @@ static void postCompile()
     strcpy(onlyName, ExtractFileName(CurrentSaveFile));
     SetExt(onlyName, onlyName, "");
 
-    sprintf(r,"""%spostCompile.bat %s %s""", ExePath, CurrentLdPath, onlyName);
+    sprintf(r,"""%spostCompile.bat %s %s %s""", ExePath, GetIsaName(ISA), CurrentLdPath, onlyName);
 
     isErr(WinExec(r, SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/), r);
 }
@@ -313,11 +313,19 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             compile_MNU = MNU_COMPILE_IHEX;
     }
 
+    if(strlen(CurrentCompileFile)) {
+        FILE *f = fopen(CurrentCompileFile, "w");
+        if(!f) {
+            Error(_("Couldn't open file '%s'"), CurrentCompileFile);
+            compileAs = TRUE;
+        }
+    }
+
     if( compileAs || (strlen(CurrentCompileFile)==0)
       ||  (compile_MNU==MNU_COMPILE_AS)
       ||( (compile_MNU==MNU_COMPILE      )  && (!strstr(CurrentCompileFile,".hex")) )
       ||( (compile_MNU==MNU_COMPILE_IHEX )  && (!strstr(CurrentCompileFile,".hex")) )
-      ||( (compile_MNU==MNU_COMPILE_ANSIC)  && (strlen(strstr(CurrentCompileFile,".c"))!=2) )
+      ||( (compile_MNU==MNU_COMPILE_ANSIC)  && (!strstr(CurrentCompileFile,".c"  )) )
       ||( (compile_MNU==MNU_COMPILE_ARDUINO)&& (!strstr(CurrentCompileFile,".cpp")) )
       ||( (compile_MNU==MNU_COMPILE_PASCAL) && (!strstr(CurrentCompileFile,".pas")) )
       ){
@@ -414,7 +422,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         default: oops();
     } else oops();
 
-    postCompile();
+    postCompile(Prog.mcu ? Prog.mcu->whichIsa : 0);
 
 //    IntDumpListing("t.pl");
 }
@@ -822,6 +830,22 @@ cmp:
         case MNU_COMPILE_ARDUINO:
         case MNU_COMPILE:
             CompileProgram(FALSE, code);
+            break;
+
+        case MNU_COMPILE_IHEXDONE:
+    Error(
+" "
+"This feature of LDmicro is in testing and refinement.\n"
+"1. You can send your LD file at the LDmicro.GitHub@gmail.com\n"
+"and get asm output file for PIC's MPLAB or WINASM,\n"
+"or AVR Studio or avrasm2 or avrasm32\n"
+"as shown in the example for asm_demo\n"
+"https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Integrate-LDmicro-and-AVR-Studio-or-PIC-MPLAB-software.\n"
+"2. You can sponsor development and pay for it. \n"
+"After payment you will get this functionality in a state as is at the time of development \n"
+"and you will be able to generate asm output files for any of your LD files.\n"
+"On the question of payment, please contact LDmicro.GitHub@gmail.com.\n"
+    );
             break;
 
         case MNU_COMPILE_AS:

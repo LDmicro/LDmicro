@@ -185,6 +185,7 @@ typedef signed long SDWORD;
 #define MNU_COMPILE_AS          0x71
 #define MNU_COMPILE_ANSIC       0x72
 #define MNU_COMPILE_IHEX        0x73
+#define MNU_COMPILE_IHEXDONE    0x7301
 #define MNU_COMPILE_ASM         0x74
 #define MNU_COMPILE_PASCAL      0x75
 #define MNU_COMPILE_ARDUINO     0x76
@@ -697,7 +698,7 @@ typedef struct McuIoInfoTag {
     int              pwmNeedsPin;
     int              whichIsa;
     AvrFamily        Family;         // BOOL             avrUseIjmp;
-    
+
     DWORD            configurationWord;
     struct {
         int             int0; // The pin can serve as an External Interrupt source 0.
