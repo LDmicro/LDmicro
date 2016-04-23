@@ -37,7 +37,7 @@ static int InternalVariablesCount;
 static char InternalRelays[MAX_IO][MAX_NAME_LEN];
 static int InternalRelaysCount;
 
-static BinOp8bits OutProg[MAX_INT_OPS];
+static BYTE OutProg[MAX_INT_OPS];
 
 static int CheckRange(int value, char *name)
 {
@@ -59,14 +59,24 @@ static BYTE GetPinNumber(char *name, BYTE *type)
 			break;
 	}
 	if (i >= Prog.io.count) return 0;
-
-	int pin = Prog.io.assignment[i].pin;
-	if (type) *type = Prog.io.assignment[i].type;
-	for (i = 0; i < Prog.mcu->pinCount; i++) {
-		if (Prog.mcu->pinInfo[i].pin == pin)
-			return pin;
+	
+	switch (Prog.io.assignment[i].type) {
+	case IO_TYPE_DIG_INPUT:
+	case IO_TYPE_DIG_OUTPUT:
+	case IO_TYPE_READ_ADC:
+	case IO_TYPE_PWM_OUTPUT:
+	{
+		int pin = Prog.io.assignment[i].pin;
+		if (type) *type = Prog.io.assignment[i].type;
+		for (i = 0; i < Prog.mcu->pinCount; i++) {
+			if (Prog.mcu->pinInfo[i].pin == pin)
+				return Prog.mcu->pinInfo[i].ArduinoPin;
+		}
+		return 0;
 	}
-	return 0;
+	default:
+		return 0;
+	}
 }
 
 static BYTE AddrForBit(char *name)
@@ -105,16 +115,6 @@ static BYTE AddrForVariable(char *name)
 	return CheckRange(i + XINTERNAL_OFFSET, name);
 }
 
-static void Write(FILE *f, BinOp8bits *op)
-{
-    BYTE *b = (BYTE *)op;
-    int i;
-    for(i = 0; i < sizeof(*op); i++) {
-        fprintf(f, "%02x", b[i]);
-    }
-    fprintf(f, "\n");
-}
-
 void CompileXInterpreted(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
@@ -130,7 +130,6 @@ void CompileXInterpreted(char *outFile)
 
     int ipc;
     int outPc;
-    BinOp8bits op;
 
     // Convert the if/else structures in the intermediate code to absolute
     // conditional jumps, to make life a bit easier for the interpreter.
@@ -145,74 +144,86 @@ void CompileXInterpreted(char *outFile)
 
     outPc = 0;
     for(ipc = 0; ipc < IntCodeLen; ipc++) {
-        memset(&op, 0, sizeof(op));
-        op.op = IntCode[ipc].op;
-
         switch(IntCode[ipc].op) {
             case INT_CLEAR_BIT:
             case INT_SET_BIT:
-                op.name1 = AddrForBit(IntCode[ipc].name1);
+				OutProg[outPc++] = IntCode[ipc].op;
+				OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                op.name1 = AddrForBit(IntCode[ipc].name1);
-                op.name2 = AddrForBit(IntCode[ipc].name2);
+				OutProg[outPc++] = IntCode[ipc].op;
+				OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
+				OutProg[outPc++] = AddrForBit(IntCode[ipc].name2);
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                op.name1 = AddrForVariable(IntCode[ipc].name1);
-                op.literal = IntCode[ipc].literal;
+				OutProg[outPc++] = IntCode[ipc].op;
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+				OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
+				OutProg[outPc++] = IntCode[ipc].literal >> 8;
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                op.name1 = AddrForVariable(IntCode[ipc].name1);
-                op.name2 = AddrForVariable(IntCode[ipc].name2);
+				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
                 break;
 
             case INT_INCREMENT_VARIABLE:
-                op.name1 = AddrForVariable(IntCode[ipc].name1);
+				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
                 break;
 
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_DIVIDE:
-                op.name1 = AddrForVariable(IntCode[ipc].name1);
-                op.name2 = AddrForVariable(IntCode[ipc].name2);
-                op.name3 = AddrForVariable(IntCode[ipc].name3);
+				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name3);
                 break;
 			
 			case INT_SET_PWM:
-				op.name1 = AddrForVariable(IntCode[ipc].name1);
-				op.literal = IntCode[ipc].literal;
+				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+				OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
+				OutProg[outPc++] = IntCode[ipc].literal >> 8;
 				break;
 
 			case INT_READ_ADC:
-				op.name1 = AddrForVariable(IntCode[ipc].name1);
+				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
 				break;
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
-                op.name1 = AddrForBit(IntCode[ipc].name1);
+				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
                 goto finishIf;
             case INT_IF_VARIABLE_LES_LITERAL:
-                op.name1 = AddrForVariable(IntCode[ipc].name1);
-                op.literal = IntCode[ipc].literal;
+				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+				OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
+				OutProg[outPc++] = IntCode[ipc].literal >> 8;
                 goto finishIf;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                op.name1 = AddrForVariable(IntCode[ipc].name1);
-                op.name2 = AddrForVariable(IntCode[ipc].name2);
+				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
                 goto finishIf;
 finishIf:
-                ifOpIf[ifDepth] = outPc;
+                ifOpIf[ifDepth] = outPc++;
                 ifOpElse[ifDepth] = 0;
                 ifDepth++;
                 // jump target will be filled in later
                 break;
 
             case INT_ELSE:
-                ifOpElse[ifDepth-1] = outPc;
+				OutProg[outPc++] = IntCode[ipc].op; 
+				ifOpElse[ifDepth-1] = outPc++;
                 // jump target will be filled in later
                 break;
 
@@ -221,13 +232,13 @@ finishIf:
                 if(ifOpElse[ifDepth] == 0) {
                     // There is no else; if should jump straight to the
                     // instruction after this one if the condition is false.
-                    OutProg[ifOpIf[ifDepth]].name3 = CheckRange(outPc-1 - ifOpIf[ifDepth], "pc");
+                    OutProg[ifOpIf[ifDepth]] = CheckRange(outPc-1 - ifOpIf[ifDepth], "pc");
                 } else {
                     // There is an else clause; if the if is false then jump
                     // just past the else, and if the else is reached then
                     // jump to the endif.
-                    OutProg[ifOpIf[ifDepth]].name3 = CheckRange(ifOpElse[ifDepth] - ifOpIf[ifDepth], "pc");
-                    OutProg[ifOpElse[ifDepth]].name3 = CheckRange(outPc-1 - ifOpElse[ifDepth], "pc");
+                    OutProg[ifOpIf[ifDepth]] = CheckRange(ifOpElse[ifDepth] - ifOpIf[ifDepth], "pc");
+                    OutProg[ifOpElse[ifDepth]]= CheckRange(outPc-1 - ifOpElse[ifDepth], "pc");
                 }
                 // But don't generate an instruction for this.
                 continue;
@@ -272,18 +283,15 @@ finishIf:
                 fclose(f);
                 return;
         }
-
-        memcpy(&OutProg[outPc], &op, sizeof(op));
-        outPc++;
     }
+	
+	OutProg[outPc++] = INT_END_OF_PROGRAM;
 
     int i;
     for(i = 0; i < outPc; i++) {
-        Write(f, &OutProg[i]);
+        fprintf(f, "%02X", OutProg[i]);
+		if ( (i % 16) == 15 || i == outPc-1) fprintf(f, "\n");
     }
-    memset(&op, 0, sizeof(op));
-    op.op = INT_END_OF_PROGRAM;
-    Write(f, &op);
 
     fprintf(f, "$$bits\n");
 	for (i = 0; i < InternalRelaysCount; i++) {
@@ -304,7 +312,7 @@ finishIf:
 		int pin = Prog.io.assignment[i].pin;
 		for (int j = 0; j < Prog.mcu->pinCount; j++) {
 			if (Prog.mcu->pinInfo[j].pin == pin) {
-				fprintf(f, "%s:%d\n", Prog.mcu->pinInfo[j].pinName, pin);
+				fprintf(f, "%s:%d\n", Prog.mcu->pinInfo[j].pinName, Prog.mcu->pinInfo[j].ArduinoPin);
 				break;
 			}
 		}
@@ -317,7 +325,7 @@ finishIf:
 		int pin = Prog.io.assignment[i].pin;
 		for (int j = 0; j < Prog.mcu->pinCount; j++) {
 			if (Prog.mcu->pinInfo[j].pin == pin) {
-				fprintf(f, "%s:%d\n", Prog.mcu->pinInfo[j].pinName, pin);
+				fprintf(f, "%s:%d\n", Prog.mcu->pinInfo[j].pinName, Prog.mcu->pinInfo[j].ArduinoPin);
 				break;
 			}
 		}

@@ -502,6 +502,7 @@ static void OpenDialog(void)
         ProgramChangedNotSaved = FALSE;
         strcpy(CurrentSaveFile, tempSaveFile);
         UndoFlush();
+		strcpy(CurrentCompileFile, "");
     }
 
     GenerateIoListDontLoseSelection();

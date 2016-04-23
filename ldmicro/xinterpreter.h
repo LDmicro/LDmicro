@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 typedef struct {
 	BYTE    op;
 	BYTE    name1;
@@ -7,5 +8,6 @@ typedef struct {
 	BYTE    name3;
 	SWORD   literal;
 } BinOp8bits;
+*/
 
-#define XINTERNAL_OFFSET 128
+#define XINTERNAL_OFFSET 128 // Direct Arduino pin numbers are coded from 0 to XINTERNAL_OFFSET-1, above are local variables

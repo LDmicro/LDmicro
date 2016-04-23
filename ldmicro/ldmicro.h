@@ -657,6 +657,7 @@ typedef struct McuIoPinInfoTag {
     int     bit;
     int     pin;
     char    pinName[MAX_NAME_LEN];
+	int		ArduinoPin;
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
