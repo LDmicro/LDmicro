@@ -88,6 +88,7 @@ void MakeMainWindowControls(void)
     int pinWidth = 100;
     int portWidth = 90;
 	int pinNameWidth = 90;
+	int modbusWidth = 90;
 
     LV_ADD_COLUMN(IoList, LV_IO_NAME,  250,       _("Name"));
     LV_ADD_COLUMN(IoList, LV_IO_TYPE,  typeWidth, _("Type"));
@@ -95,6 +96,7 @@ void MakeMainWindowControls(void)
     LV_ADD_COLUMN(IoList, LV_IO_PIN,   pinWidth,  _("Pin on Processor"));
     LV_ADD_COLUMN(IoList, LV_IO_PORT,  portWidth, _("MCU Port"));
 	LV_ADD_COLUMN(IoList, LV_IO_PINNAME,  pinNameWidth, _("pin Name"));
+	LV_ADD_COLUMN(IoList, LV_IO_MODBUS, modbusWidth, _("Modbus addr"));
 
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,

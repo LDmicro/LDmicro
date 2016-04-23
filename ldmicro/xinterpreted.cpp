@@ -27,21 +27,36 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
+#define _ITERATOR_DEBUG_LEVEL 0
+
+#include <string>
+#include <map>
+using namespace std;
+
 #include "ldmicro.h"
 #include "intcode.h"
 #include "xinterpreter.h"
 
-static char InternalVariables[MAX_IO][MAX_NAME_LEN];
-static int InternalVariablesCount;
+class dictionary : public map<string, int>
+{
+public:
+	int AppendAndGet(string k) 
+	{
+		if (this->find(k) == end()) (*this)[k] = (int)this->size();
+		return (*this)[k];
+	}
+};
 
-static char InternalRelays[MAX_IO][MAX_NAME_LEN];
-static int InternalRelaysCount;
+static dictionary InternalVariables;
+static dictionary InternalRelays;
+static dictionary ModbusRelays;
+static map<string, PlcProgramSingleIo> PlcIos;
 
 static BYTE OutProg[MAX_INT_OPS];
 
 static int CheckRange(int value, char *name)
 {
-	if (value < 0 || -value > 255) {
+	if (value < 0 || value > 255) {
 		char msg[80];
 		sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
 		Error(msg);
@@ -50,69 +65,58 @@ static int CheckRange(int value, char *name)
 	return value;
 }
 
-static BYTE GetPinNumber(char *name, BYTE *type)
+static BYTE GetArduinoPinNumber(PlcProgramSingleIo *io)
 {
-	int i;
-	if (type) *type = 0;
-	for (i = 0; i < Prog.io.count; i++) {
-		if (strcmp(Prog.io.assignment[i].name, name) == 0)
-			break;
+	int pin = io->pin;
+	for (int i = 0; i < Prog.mcu->pinCount; i++) {
+		if (Prog.mcu->pinInfo[i].pin == pin)
+			return Prog.mcu->pinInfo[i].ArduinoPin;
 	}
-	if (i >= Prog.io.count) return 0;
-	
-	switch (Prog.io.assignment[i].type) {
-	case IO_TYPE_DIG_INPUT:
-	case IO_TYPE_DIG_OUTPUT:
-	case IO_TYPE_READ_ADC:
-	case IO_TYPE_PWM_OUTPUT:
-	{
-		int pin = Prog.io.assignment[i].pin;
-		if (type) *type = Prog.io.assignment[i].type;
-		for (i = 0; i < Prog.mcu->pinCount; i++) {
-			if (Prog.mcu->pinInfo[i].pin == pin)
-				return Prog.mcu->pinInfo[i].ArduinoPin;
-		}
-		return 0;
-	}
-	default:
-		return 0;
-	}
+	return 0;
 }
 
 static BYTE AddrForBit(char *name)
 {
-	int pin = GetPinNumber(name, NULL);
-	if (pin) return CheckRange(pin, name);
+	PlcProgramSingleIo io = PlcIos[name];
+	int addr = 0;
 
-    int i;
-    for(i = 0; i < InternalRelaysCount; i++) {
-		if (strcmp(InternalRelays[i], name) == 0) break;
-    }
-
-	if (i == InternalRelaysCount) {
-		strcpy(InternalRelays[i], name);
-		InternalRelaysCount++;
+	switch (io.type) {
+	case IO_TYPE_DIG_INPUT:
+	case IO_TYPE_DIG_OUTPUT:
+		addr = GetArduinoPinNumber(&io);
+		break;
+	case IO_TYPE_MODBUS_COIL:
+	case IO_TYPE_MODBUS_CONTACT:
+		addr = XMODBUS_OFFSET + ModbusRelays.AppendAndGet(name);
+		break;
+	default:
+		addr = XINTERNAL_OFFSET + InternalRelays.AppendAndGet(name);
+		break;
 	}
 
-	return CheckRange(i + XINTERNAL_OFFSET, name);
+	return CheckRange(addr, name);
 }
 
 static BYTE AddrForVariable(char *name)
 {
-	int pin = GetPinNumber(name, NULL);
-	if (pin) return pin;
-	
-	int i;
-    for(i = 0; i < InternalVariablesCount; i++) {
-		if (strcmp(InternalVariables[i], name) == 0) break;
-    }
+	PlcProgramSingleIo io = PlcIos[name];
+	int addr = 0;
 
-	if (i == InternalVariablesCount) {
-		strcpy(InternalVariables[i], name);
-		InternalVariablesCount++;
+	switch (io.type) {
+	case IO_TYPE_PWM_OUTPUT:
+	case IO_TYPE_READ_ADC:
+		addr = GetArduinoPinNumber(&io);
+		break;
+	case IO_TYPE_MODBUS_COIL:
+	case IO_TYPE_MODBUS_CONTACT:
+		addr = XMODBUS_OFFSET + ModbusRelays.AppendAndGet(name);
+		break;
+	default:
+		addr = XINTERNAL_OFFSET + InternalVariables.AppendAndGet(name);
+		break;
 	}
 
-	return CheckRange(i + XINTERNAL_OFFSET, name);
+	return CheckRange(addr, name);
 }
 
 void CompileXInterpreted(char *outFile)
@@ -123,8 +127,15 @@ void CompileXInterpreted(char *outFile)
         return;
     }
 
-    InternalRelaysCount = 0;
-    InternalVariablesCount = 0;
+	InternalRelays.clear();
+	InternalVariables.clear();
+	ModbusRelays.clear();
+
+	// Create a map off io assignment
+	PlcIos.clear();
+	for (int i = 0; i < Prog.io.count; i++) {
+		PlcIos[Prog.io.assignment[i].name] = Prog.io.assignment[i];
+	}
 
     fprintf(f, "$$LDcode\n");
 
@@ -287,27 +298,25 @@ finishIf:
 	
 	OutProg[outPc++] = INT_END_OF_PROGRAM;
 
-    int i;
-    for(i = 0; i < outPc; i++) {
+    for(int i = 0; i < outPc; i++) {
         fprintf(f, "%02X", OutProg[i]);
 		if ( (i % 16) == 15 || i == outPc-1) fprintf(f, "\n");
     }
 
     fprintf(f, "$$bits\n");
-	for (i = 0; i < InternalRelaysCount; i++) {
-		if (InternalRelays[i][0] == '$') continue;
-		fprintf(f, "%s:%d\n", InternalRelays[i], i);
+	for (auto const &ent1 : InternalRelays) {
+		if (ent1.first[0] == '$') continue;
+		fprintf(f, "%s:%d\n", ent1.first.c_str(), ent1.second);
 	}
 
 	fprintf(f, "$$int16s\n");
-	for (i = 0; i < InternalVariablesCount; i++) {
-		if (InternalVariables[i][0] == '$') continue;
-		fprintf(f, "%s:%d\n", InternalVariables[i], i);
+	for (auto const &ent1 : InternalVariables) {
+		if (ent1.first[0] == '$') continue;
+		fprintf(f, "%s:%d\n", ent1.first.c_str(), ent1.second);
 	}
 
 	fprintf(f, "$$pins\n");
-
-	for (i = 0; i < Prog.io.count; i++) {
+	for (int i = 0; i < Prog.io.count; i++) {
 		if (Prog.io.assignment[i].type != IO_TYPE_DIG_INPUT && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT) continue;
 		int pin = Prog.io.assignment[i].pin;
 		for (int j = 0; j < Prog.mcu->pinCount; j++) {
@@ -319,8 +328,7 @@ finishIf:
 	}
 
 	fprintf(f, "$$pin16s\n");
-
-	for (i = 0; i < Prog.io.count; i++) {
+	for (int i = 0; i < Prog.io.count; i++) {
 		if (Prog.io.assignment[i].type != IO_TYPE_READ_ADC && Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT) continue;
 		int pin = Prog.io.assignment[i].pin;
 		for (int j = 0; j < Prog.mcu->pinCount; j++) {
@@ -329,6 +337,12 @@ finishIf:
 				break;
 			}
 		}
+	}
+
+	fprintf(f, "$$modbus_pins\n");
+	for (auto const &ent1 : ModbusRelays) {
+		PlcProgramSingleIo io = PlcIos[ent1.first];
+		fprintf(f, "%s:%d %d:%05d\n", ent1.first.c_str(), ent1.second, io.modbus.Slave, io.modbus.Register);
 	}
 
     fprintf(f, "$$cycle %d us\n", Prog.cycleTime);

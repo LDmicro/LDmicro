@@ -33,6 +33,8 @@ static HWND NegatedCheckbox;
 static HWND SourceInternalRelayRadio;
 static HWND SourceInputPinRadio;
 static HWND SourceOutputPinRadio;
+static HWND SourceModbusContactRadio;
+static HWND SourceModbusCoilRadio;
 static HWND NameTextbox;
 
 static LONG_PTR PrevNameProc;
@@ -58,7 +60,7 @@ static void MakeControls(void)
 {
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Source"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 3, 120, 85, ContactsDialog, NULL, Instance, NULL);
+        7, 3, 120, 125, ContactsDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
     SourceInternalRelayRadio = CreateWindowEx(0, WC_BUTTON, _("Internal Relay"),
@@ -75,6 +77,16 @@ static void MakeControls(void)
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 61, 100, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(SourceOutputPinRadio);
+
+	SourceModbusContactRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus Contact"),
+		WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+		16, 81, 100, 20, ContactsDialog, NULL, Instance, NULL);
+	NiceFont(SourceModbusContactRadio);
+
+	SourceModbusCoilRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus Coil"),
+		WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+		16, 101, 100, 20, ContactsDialog, NULL, Instance, NULL);
+	NiceFont(SourceModbusCoilRadio);
 
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -109,17 +121,31 @@ void ShowContactsDialog(BOOL *negated, char *name)
 {
     ContactsDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Contacts"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 404, 95, NULL, NULL, Instance, NULL);
+        100, 100, 404, 135, NULL, NULL, Instance, NULL);
 
     MakeControls();
    
-    if(name[0] == 'R') {
-        SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
-    } else if(name[0] == 'Y') {
-        SendMessage(SourceOutputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
-    } else {
-        SendMessage(SourceInputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
-    }
+	switch (name[0]) {
+	case 'R':
+		SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
+		break;
+	case 'Y':
+		SendMessage(SourceOutputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
+		break;
+	case 'X':
+		SendMessage(SourceInputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
+		break;
+	case 'I':
+		SendMessage(SourceModbusContactRadio, BM_SETCHECK, BST_CHECKED, 0);
+		break;
+	case 'O':
+		SendMessage(SourceModbusCoilRadio, BM_SETCHECK, BST_CHECKED, 0);
+		break;
+	default:
+		oops();
+		break;
+	}
+
     if(*negated) {
         SendMessage(NegatedCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
@@ -165,7 +191,15 @@ void ShowContactsDialog(BOOL *negated, char *name)
             & BST_CHECKED)
         {
             name[0] = 'X';
-        } else {
+		} else if (SendMessage(SourceModbusContactRadio, BM_GETSTATE, 0, 0)
+			& BST_CHECKED)
+		{
+			name[0] = 'I';
+		} else if (SendMessage(SourceModbusCoilRadio, BM_GETSTATE, 0, 0)
+			& BST_CHECKED)
+		{
+			name[0] = 'O';
+		} else {
             name[0] = 'Y';
         }
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
