@@ -138,7 +138,7 @@ void ShowContactsDialog(BOOL *negated, char *name)
 	case 'I':
 		SendMessage(SourceModbusContactRadio, BM_SETCHECK, BST_CHECKED, 0);
 		break;
-	case 'O':
+	case 'C':
 		SendMessage(SourceModbusCoilRadio, BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	default:
@@ -198,7 +198,7 @@ void ShowContactsDialog(BOOL *negated, char *name)
 		} else if (SendMessage(SourceModbusCoilRadio, BM_GETSTATE, 0, 0)
 			& BST_CHECKED)
 		{
-			name[0] = 'O';
+			name[0] = 'C';
 		} else {
             name[0] = 'Y';
         }
