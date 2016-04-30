@@ -264,7 +264,7 @@ finishIf:
 		fprintf(f, "%2d %10s %2d %2d %2d %05d\n",
 			i, io.name, io.type,
 			GetArduinoPinNumber(io.pin),
-			io.modbus.Slave, io.modbus.Register);
+			io.modbus.Slave, io.modbus.Address);
 	}
 
 	// $$LDcode program_size

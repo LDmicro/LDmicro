@@ -104,9 +104,7 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, ModbusAddr_t m
             if(pin != NO_PIN_ASSIGNED) {
                 IoSeenPreviously[i].pin = pin;
             }
-			if (modbus.Register != 0) {
-				IoSeenPreviously[i].modbus = modbus;
-			}
+			IoSeenPreviously[i].modbus = modbus;
             return;
         }
     }
@@ -123,6 +121,25 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, ModbusAddr_t m
 	IoSeenPreviously[i].modbus = modbus;
     strcpy(IoSeenPreviously[i].name, name);
     IoSeenPreviouslyCount++;
+}
+
+static void AppendIoAutoType(char *name, int default_type)
+{
+	int type;
+
+	switch (name[0]) {
+	case 'X': type = IO_TYPE_DIG_INPUT; break;
+	case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
+	case 'A': type = IO_TYPE_READ_ADC; break;
+	case 'P': type = IO_TYPE_PWM_OUTPUT; break;
+	case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
+	case 'C': type = IO_TYPE_MODBUS_COIL; break;
+	case 'H': type = IO_TYPE_MODBUS_HREG; break;
+	case 'G': type = IO_TYPE_GENERAL; break;
+	default: type = default_type;
+	};
+
+	AppendIo(name, type);
 }
 
 //-----------------------------------------------------------------------------
@@ -213,9 +230,9 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_MOVE:
             if (CheckForNumber(l->d.move.src) == FALSE) {
-                AppendIo(l->d.move.src, IO_TYPE_GENERAL);
+                AppendIoAutoType(l->d.move.src, IO_TYPE_GENERAL);
             }
-            AppendIo(l->d.move.dest, IO_TYPE_GENERAL);
+            AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
             break;
 
         case ELEM_ADD:
@@ -223,12 +240,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_MUL:
         case ELEM_DIV:
             if (CheckForNumber(l->d.math.op1) == FALSE) {
-                AppendIo(l->d.math.op1, IO_TYPE_GENERAL);
+                AppendIoAutoType(l->d.math.op1, IO_TYPE_GENERAL);
             }
             if (CheckForNumber(l->d.math.op2) == FALSE) {
-                AppendIo(l->d.math.op2, IO_TYPE_GENERAL);
+                AppendIoAutoType(l->d.math.op2, IO_TYPE_GENERAL);
             }
-            AppendIo(l->d.math.dest, IO_TYPE_GENERAL);
+            AppendIoAutoType(l->d.math.dest, IO_TYPE_GENERAL);
             break;
 
         case ELEM_STRING:
@@ -377,7 +394,8 @@ int GenerateIoList(int prevSel)
 		   Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
 		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT || 
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL)
+		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
+		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG )
         {
             for(j = 0; j < IoSeenPreviouslyCount; j++) {
                 if(strcmp(Prog.io.assignment[i].name,
@@ -424,7 +442,7 @@ BOOL LoadIoListFromFile(FILE *f)
         }
         // Don't internationalize this! It's the file format, not UI.
 		modbus = { 0, 0 };
-        if(sscanf(line, "    %s at %d %d %d", name, &pin, &modbus.Slave, &modbus.Register)>=2) {
+        if(sscanf(line, "    %s at %d %d %d", name, &pin, &modbus.Slave, &modbus.Address)>=2) {
             int type;
             switch(name[0]) {
                 case 'X': type = IO_TYPE_DIG_INPUT; break;
@@ -433,6 +451,7 @@ BOOL LoadIoListFromFile(FILE *f)
 				case 'P': type = IO_TYPE_PWM_OUTPUT; break;
 				case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
 				case 'C': type = IO_TYPE_MODBUS_COIL; break;
+				case 'H': type = IO_TYPE_MODBUS_HREG; break;
                 default: oops();
             }
             AppendIoSeenPreviously(name, type, pin, modbus);
@@ -454,11 +473,15 @@ void SaveIoListToFile(FILE *f)
 		   Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
 		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT || 
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL)
+		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
+		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG)
         {
             // Don't internationalize this! It's the file format, not UI.
-            fprintf(f, "    %s at %d %d %d\n", Prog.io.assignment[i].name,
-                Prog.io.assignment[i].pin, Prog.io.assignment[i].modbus.Slave, Prog.io.assignment[i].modbus.Register);
+            fprintf(f, "    %s at %d %d %d\n", 
+				Prog.io.assignment[i].name,
+                Prog.io.assignment[i].pin, 
+				Prog.io.assignment[i].modbus.Slave, 
+				Prog.io.assignment[i].modbus.Address);
         }
     }
 }
@@ -894,7 +917,7 @@ void ShowModbusDialog(int item)
 	char txtModbusSlave[10];
 	char txtModbusRegister[20];
 	sprintf(txtModbusSlave, "%d", Prog.io.assignment[item].modbus.Slave);
-	sprintf(txtModbusRegister, "%05d", Prog.io.assignment[item].modbus.Register);
+	sprintf(txtModbusRegister, "%05d", Prog.io.assignment[item].modbus.Address);
 
 	SendMessage(ModbusSlave, WM_SETTEXT, 0, (LPARAM)txtModbusSlave);
 	SendMessage(ModbusRegister, WM_SETTEXT, 0, (LPARAM)txtModbusRegister);
@@ -928,9 +951,9 @@ void ShowModbusDialog(int item)
 		SendMessage(ModbusSlave, WM_GETTEXT, (WPARAM)sizeof(txtModbusSlave), (LPARAM)txtModbusSlave);
 		SendMessage(ModbusRegister, WM_GETTEXT, (WPARAM)sizeof(txtModbusRegister), (LPARAM)txtModbusRegister);
 		Prog.io.assignment[item].modbus.Slave = atoi(txtModbusSlave);
-		Prog.io.assignment[item].modbus.Register = atoi(txtModbusRegister);
+		Prog.io.assignment[item].modbus.Address = atoi(txtModbusRegister);
 	}
-	
+
 	EnableWindow(MainWindow, TRUE);
 	DestroyWindow(IoDialog);
 	return;
@@ -1043,19 +1066,21 @@ void IoListProc(NMHDR *h)
 
 				case LV_IO_MODBUS: {
 					int type = Prog.io.assignment[item].type;
-					if (type != IO_TYPE_MODBUS_COIL && type != IO_TYPE_MODBUS_CONTACT)
+					if (type != IO_TYPE_MODBUS_COIL && 
+						type != IO_TYPE_MODBUS_CONTACT && 
+						type != IO_TYPE_MODBUS_HREG)
 					{
 						strcpy(i->item.pszText, "");
 						break;
 					}
 
-					if (Prog.io.assignment[item].modbus.Register == 0) {
+					if (Prog.io.assignment[item].modbus.Slave == 0) {
 						sprintf(i->item.pszText, _("(not assigned)"));
 					}
 					else {
 						sprintf(i->item.pszText, "%d:%05d",
 							Prog.io.assignment[item].modbus.Slave,
-							Prog.io.assignment[item].modbus.Register);
+							Prog.io.assignment[item].modbus.Address);
 					}
 					break;
 				}
@@ -1091,6 +1116,7 @@ void IoListProc(NMHDR *h)
 				switch (Prog.io.assignment[i->iItem].type) {
 				case IO_TYPE_MODBUS_COIL:
 				case IO_TYPE_MODBUS_CONTACT:
+				case IO_TYPE_MODBUS_HREG:
 					ShowModbusDialog(i->iItem);
 					break;
 				default:

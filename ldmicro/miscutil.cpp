@@ -332,6 +332,7 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_DIG_OUTPUT:        return _("digital out");
 		case IO_TYPE_MODBUS_CONTACT:    return _("modbus contact");
 		case IO_TYPE_MODBUS_COIL  :     return _("modbus coil");
+		case IO_TYPE_MODBUS_HREG:       return _("modbus Hreg");
         case IO_TYPE_INTERNAL_RELAY:    return _("int. relay"); 
         case IO_TYPE_UART_TX:           return _("UART tx"); 
         case IO_TYPE_UART_RX:           return _("UART rx"); 

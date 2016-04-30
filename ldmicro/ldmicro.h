@@ -529,7 +529,7 @@ typedef struct McuIoInfoTag McuIoInfo;
 
 typedef struct ModbusAddr {
 	unsigned char Slave;
-	unsigned short Register;
+	unsigned short Address;
 } ModbusAddr_t;
 
 typedef struct PlcProgramSingleIoTag {
@@ -568,6 +568,7 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_TOF             15
 #define IO_TYPE_MODBUS_CONTACT  16
 #define IO_TYPE_MODBUS_COIL     17
+#define IO_TYPE_MODBUS_HREG     18
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
