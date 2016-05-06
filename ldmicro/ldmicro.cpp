@@ -98,6 +98,17 @@ static BOOL SaveAsDialog(void)
 }
 
 //---------------------------------------------------------------------------
+char *ExtractFileDir(char *dest) // without last backslash
+{
+    char *c;
+    if(strlen(dest)) {
+        c = strrchr(dest,'\\');
+        if(c)
+            *c = '\0';
+    };
+    return dest;
+}
+
 char *ExtractFilePath(char *dest) // with last backslash
 {
     char *c;
@@ -313,7 +324,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             compile_MNU = MNU_COMPILE_IHEX;
     }
 
-    if(strlen(CurrentCompileFile)) {
+    if(!compileAs && strlen(CurrentCompileFile)) {
         FILE *f = fopen(CurrentCompileFile, "w");
         if(!f) {
             Error(_("Couldn't open file '%s'"), CurrentCompileFile);
@@ -328,7 +339,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
       ||( (compile_MNU==MNU_COMPILE_ANSIC)  && (!strstr(CurrentCompileFile,".c"  )) )
       ||( (compile_MNU==MNU_COMPILE_ARDUINO)&& (!strstr(CurrentCompileFile,".cpp")) )
       ||( (compile_MNU==MNU_COMPILE_PASCAL) && (!strstr(CurrentCompileFile,".pas")) )
-      ){
+      ) {
         char *c;
         OPENFILENAME ofn;
 
