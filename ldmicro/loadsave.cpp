@@ -449,7 +449,7 @@ BOOL LoadProjectFromFile(char *filename)
     if(!f) return FALSE;
 
     strcpy(CurrentLdPath,filename);
-    ExtractFilePath(CurrentLdPath);
+    ExtractFileDir(CurrentLdPath);
 
     char line[512];
     int crystal, cycle, baud;
