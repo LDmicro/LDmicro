@@ -739,7 +739,8 @@ extern McuIoInfo SupportedMcus[]; // NUM_SUPPORTED_MCUS
 // it is
 void CheckHeap(char *file, int line);
 #define ok() CheckHeap(__FILE__, __LINE__)
-char *ExtractFilePath(char *buffer);
+char *ExtractFileDir(char *dest);
+char *ExtractFilePath(char *dest);
 char *ExtractFileName(char *src); // with .ext
 char *GetFileName(char *dest, char *src); // without .ext
 char *SetExt(char *dest, const char *src, const char *ext);
@@ -950,11 +951,11 @@ void ShowHelpDialog(BOOL about);
 #ifdef dodbp
 #define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
 
-#define dbps(EXP) dbp( #EXP "='%s'", EXP);
-#define dbpd(EXP) dbp( #EXP "=%d", EXP);
-#define dbpx(EXP) dbp( #EXP "=0x%x", EXP);
+#define dbps(EXP) dbp( #EXP "='%s'", (EXP));
+#define dbpd(EXP) dbp( #EXP "=%d", (EXP));
+#define dbpx(EXP) dbp( #EXP "=0x%x", (EXP));
 #define dbph dbpx
-#define dbpf(EXP) dbp( #EXP "=%f", EXP);
+#define dbpf(EXP) dbp( #EXP "=%f", (EXP));
 #else
 #define WARN_IF(EXP)
 
