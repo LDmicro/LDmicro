@@ -121,11 +121,22 @@ static DWORD FwdAddrCount;
 
 // Some useful registers, which I think are mostly in the same place on
 // all the PIC16... devices.
+
+// Core Registers
 #define REG_INDF      0x00
 #define REG_STATUS    0x03
 #define REG_FSR       0x04
 #define REG_PCLATH    0x0a
 #define REG_INTCON    0x0b
+
+// Bank Select Register instead REG_STATUS(STATUS_RP1,STATUS_RP0)
+#define REG_BSR       0x08
+#define     BSR4      BIT4
+#define     BSR3      BIT3
+#define     BSR2      BIT2
+#define     BSR1      BIT1
+#define     BSR0      BIT0
+
 #define REG_PIR1      0x0c
 #define REG_PIE1      0x8c
 #define REG_TMR1L     0x0e
@@ -154,13 +165,19 @@ static DWORD FwdAddrCount;
 #define REG_PR2       0x92
 
 // These move around from device to device.
-// '-1' means not defined.
-static DWORD REG_EECON1 = -1;
-static DWORD REG_EECON2 = -1;
-static DWORD REG_EEDATA = -1;
-static DWORD REG_EEADR  = -1;
-static DWORD REG_ANSEL  = -1;
-static DWORD REG_ANSELH = -1;
+// 0 means not defined or not exist in MCU.
+// EEPROM Registers
+static DWORD REG_EECON1 = 0;
+static DWORD REG_EECON2 = 0;
+static DWORD REG_EEDATA = 0;
+static DWORD REG_EEADR  = 0;
+
+//Analog Select Register
+static DWORD REG_ANSEL  = 0;
+static DWORD REG_ANSELH = 0;
+
+//
+static DWORD REG_OPTION_REG = 0; //0x81 or 0x181 //0x95
 
 static int IntPc;
 
@@ -172,6 +189,11 @@ static void CompileFromIntermediate(BOOL topLevel);
 static BOOL McuIs(char *str)
 {
     return strcmp(Prog.mcu->mcuName, str) == 0;
+}
+
+static BOOL McuAs(char *str)
+{
+    return strstr(Prog.mcu->mcuName, str) != NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -454,26 +476,48 @@ static void WriteHexFile(FILE *f)
     // Configuration words start at address 0x2007 in program memory; and the
     // hex file addresses are by bytes, not words, so we start at 0x400e.
     // There may be either 16 or 32 bits of conf word, depending on the part.
-    if(McuIs("Microchip PIC16F887 40-PDIP") ||
-       McuIs("Microchip PIC16F886 28-PDIP or 28-SOIC"))
-    {
+    if(McuAs("Microchip PIC16F887 ")
+    || McuAs("Microchip PIC16F886 ")
+    || McuAs(" PIC16F884 ")
+    || McuAs(" PIC16F883 ")
+    || McuAs(" PIC16F882 ")
+    || McuAs("Microchip PIC16F88 ")
+    ) {
         WriteIhex(f, 0x04);
-        WriteIhex(f, 0x40);
+        WriteIhex(f, 0x40); // 0x2007
         WriteIhex(f, 0x0E);
         WriteIhex(f, 0x00);
         WriteIhex(f, (Prog.mcu->configurationWord >>  0) & 0xff);
         WriteIhex(f, (Prog.mcu->configurationWord >>  8) & 0xff);
         WriteIhex(f, (Prog.mcu->configurationWord >> 16) & 0xff);
         WriteIhex(f, (Prog.mcu->configurationWord >> 24) & 0xff);
-    } else {
+    } else
+    if(McuAs(" PIC16F1512 ")
+    || McuAs(" PIC16F1513 ")
+    ) {
+        WriteIhex(f, 0x04);
+        WriteIhex(f, 0x01); // 0x8007 * 2 = 0x01000E
+        WriteIhex(f, 0x00);
+        WriteIhex(f, 0x0E);
+        WriteIhex(f, (Prog.mcu->configurationWord >>  0) & 0xff);
+        WriteIhex(f, (Prog.mcu->configurationWord >>  8) & 0xff);
+        WriteIhex(f, (Prog.mcu->configurationWord >> 16) & 0xff);
+        WriteIhex(f, (Prog.mcu->configurationWord >> 24) & 0xff);
+    } else
+    if(McuAs("Microchip PIC16F628 ")
+    || McuAs("Microchip PIC16F819 ")
+    || McuAs("Microchip PIC16F877 ")
+    || McuAs("Microchip PIC16F876 ")
+    ) {
         if(Prog.mcu->configurationWord & 0xffff0000) oops();
         WriteIhex(f, 0x02);
-        WriteIhex(f, 0x40);
+        WriteIhex(f, 0x40); // 0x2007
         WriteIhex(f, 0x0E);
         WriteIhex(f, 0x00);
         WriteIhex(f, (Prog.mcu->configurationWord >>  0) & 0xff);
         WriteIhex(f, (Prog.mcu->configurationWord >>  8) & 0xff);
-    }
+    } else
+        oops();
     FinishIhex(f);
 
     // end of file record
@@ -1169,8 +1213,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                 }
 
                 int goPos, chsPos;
-                if(McuIs("Microchip PIC16F887 40-PDIP") ||
-                   McuIs("Microchip PIC16F886 28-PDIP or 28-SOIC"))
+                if(McuAs("Microchip PIC16F887 ") ||
+                   McuAs("Microchip PIC16F886 "))
                 {
                     goPos = 1;
                     chsPos = 2;
@@ -1190,15 +1234,19 @@ static void CompileFromIntermediate(BOOL topLevel)
                     (1 << 7) |      // right-justified
                     (0 << 0)        // for now, all analog inputs
                 );
-                if(strcmp(Prog.mcu->mcuName,
-                    "Microchip PIC16F88 18-PDIP or 18-SOIC")==0)
+                if(McuAs("Microchip PIC16F88 "))
                 {
                     WriteRegister(REG_ANSEL, 0x7f);
                 }
-                if(McuIs("Microchip PIC16F887 40-PDIP") ||
-                   McuIs("Microchip PIC16F886 28-PDIP or 28-SOIC"))
+                if(McuAs("Microchip PIC16F887 "))
                 {
                     WriteRegister(REG_ANSEL, 0xff);
+                    WriteRegister(REG_ANSELH, 0x3f);
+                }
+
+                if(McuAs("Microchip PIC16F886 "))
+                {
+                    WriteRegister(REG_ANSEL, 0x1f);
                     WriteRegister(REG_ANSELH, 0x3f);
                 }
 
@@ -1232,13 +1280,12 @@ static void CompileFromIntermediate(BOOL topLevel)
                     (1 << 7) |      // right-justify A/D result
                     (6 << 0)        // all digital inputs
                 );
-                if(strcmp(Prog.mcu->mcuName,
-                    "Microchip PIC16F88 18-PDIP or 18-SOIC")==0)
+                if(McuAs("Microchip PIC16F88 "))
                 {
                     WriteRegister(REG_ANSEL, 0x00);
                 }
-                if(McuIs("Microchip PIC16F887 40-PDIP") ||
-                   McuIs("Microchip PIC16F886 28-PDIP or 28-SOIC"))
+                if(McuAs("Microchip PIC16F887 ") ||
+                   McuAs("Microchip PIC16F886 "))
                 {
                     WriteRegister(REG_ANSEL, 0x00);
                     WriteRegister(REG_ANSELH, 0x00);
@@ -1492,6 +1539,24 @@ static void WriteDivideRoutine(void)
 void CompilePic16(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
+    if(McuAs("Microchip PIC16F628 ")
+    || McuAs("Microchip PIC16F88 " )
+    || McuAs("Microchip PIC16F819 ")
+    || McuAs("Microchip PIC16F877 ")
+    || McuAs("Microchip PIC16F876 ")
+    || McuAs("Microchip PIC16F887 ")
+    || McuAs("Microchip PIC16F886 ")
+    ) {
+        REG_OPTION_REG = 0x81;
+    } else
+    if(McuAs(" PIC16F1512 ")
+    || McuAs(" PIC16F1513 ")
+    || McuAs(" PIC16F1933 ")
+    ) {
+        REG_OPTION_REG = 0x95;
+    } else
+        oops();
+
     if(!f) {
         Error(_("Couldn't open file '%s'"), outFile);
         return;
@@ -1554,49 +1619,65 @@ void CompilePic16(char *outFile)
 
     ConfigureTimer1(Prog.cycleTime);
 
-    // Set up the TRISx registers (direction). 1 means tri-stated (input).
+    Comment("Set up the TRISx registers (direction). 1 means tri-stated (input).");
     BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
     BuildDirectionRegisters(isInput, isOutput);
 
-    if(McuIs("Microchip PIC16F877 40-PDIP") ||
-       McuIs("Microchip PIC16F819 18-PDIP or 18-SOIC") ||
-       McuIs("Microchip PIC16F88 18-PDIP or 18-SOIC") ||
-       McuIs("Microchip PIC16F876 28-PDIP or 28-SOIC") ||
-       McuIs("Microchip PIC16F887 40-PDIP") ||
-       McuIs("Microchip PIC16F886 28-PDIP or 28-SOIC"))
-    {
+    if(McuAs("Microchip PIC16F877 ")
+    || McuAs("Microchip PIC16F819 ")
+    || McuAs("Microchip PIC16F88 " )
+    || McuAs("Microchip PIC16F876 ")
+    || McuAs("Microchip PIC16F887 ")
+    || McuAs("Microchip PIC16F886 ")
+    ) {
         REG_EECON1  = 0x18c;
         REG_EECON2  = 0x18d;
         REG_EEDATA  = 0x10c;
         REG_EEADR   = 0x10d;
-    } else if(McuIs("Microchip PIC16F628 18-PDIP or 18-SOIC")) {
+    } else
+    if(McuAs("Microchip PIC16F628 ")) {
         REG_EECON1  = 0x9c;
         REG_EECON2  = 0x9d;
         REG_EEDATA  = 0x9a;
         REG_EEADR   = 0x9b;
-    } else {
+    } else
+    if(McuAs(" PIC16F1512 ")
+    || McuAs(" PIC16F1513 ")
+    ) {
+       // has not EEPROM
+    } else
         oops();
-    }
 
-    if(McuIs("Microchip PIC16F887 40-PDIP") ||
-       McuIs("Microchip PIC16F886 28-PDIP or 28-SOIC"))
-    {
-        REG_ANSEL = 0x188;
-        REG_ANSELH = 0x189;
-    } else {
-        REG_ANSEL = 0x9b;
-    }
+    if(McuAs("Microchip PIC16F887 ")
+    || McuAs("Microchip PIC16F886 ")
+    ) {
+        REG_ANSEL  = 0x0188;
+        REG_ANSELH = 0x0189;
+    } else
+    if(McuAs("Microchip PIC16F88 ")
+    ) {
+        REG_ANSEL  = 0x009B;
+    } else
+    if(McuAs("Microchip PIC16F628 ")
+    || McuAs("Microchip PIC16F819 ")
+    || McuAs("Microchip PIC16F877 ")
+    || McuAs("Microchip PIC16F876 ")
+    || McuAs(" PIC16F1512 ")
+    ) {
+        // has not
+    } else
+        oops();
 
-    if(strcmp(Prog.mcu->mcuName, "Microchip PIC16F877 40-PDIP")==0) {
+    if(McuAs("Microchip PIC16F877 ")) {
         // This is a nasty special case; one of the extra bits in TRISE
         // enables the PSP, and must be kept clear (set here as will be
         // inverted).
         isOutput[4] |= 0xf8;
     }
 
-    if(strcmp(Prog.mcu->mcuName, "Microchip PIC16F877 40-PDIP")==0 ||
-       strcmp(Prog.mcu->mcuName, "Microchip PIC16F819 18-PDIP or 18-SOIC")==0 ||
-       strcmp(Prog.mcu->mcuName, "Microchip PIC16F876 28-PDIP or 28-SOIC")==0)
+    if(McuAs("Microchip PIC16F877 ") ||
+       McuAs("Microchip PIC16F819 ") ||
+       McuAs("Microchip PIC16F876 "))
     {
         // The GPIOs that can also be A/D inputs default to being A/D
         // inputs, so turn that around
@@ -1606,21 +1687,22 @@ void CompilePic16(char *outFile)
         );
     }
 
-    if(strcmp(Prog.mcu->mcuName, "Microchip PIC16F88 18-PDIP or 18-SOIC")==0) {
+    if(McuAs("Microchip PIC16F88 ")) {
         WriteRegister(REG_ANSEL, 0x00); // all digital inputs
     }
 
-    if(strcmp(Prog.mcu->mcuName, "Microchip PIC16F628 18-PDIP or 18-SOIC")==0) {
+    if(McuAs("Microchip PIC16F628 ")) {
         // This is also a nasty special case; the comparators on the
         // PIC16F628 are enabled by default and need to be disabled, or
         // else the PORTA GPIOs don't work.
         WriteRegister(REG_CMCON, 0x07);
     }
 
-    if(McuIs("Microchip PIC16F887 40-PDIP") ||
-       McuIs("Microchip PIC16F886 28-PDIP or 28-SOIC"))
+    if(McuAs("Microchip PIC16F887 ") ||
+       McuAs("Microchip PIC16F886 "))
     {
         WriteRegister(REG_ANSEL, 0x00);     // all digital inputs
+        Comment("REG_ANSELH");
         WriteRegister(REG_ANSELH, 0x00);    // all digital inputs
     }
 
@@ -1638,8 +1720,11 @@ void CompilePic16(char *outFile)
         if(i == Prog.mcu->pinCount) oops();
     }
 
+    Comment("Clear Bit 7 - PORTs pull-ups are enabled by individual port latch values");
+    WriteRegister(REG_OPTION_REG, 0x7F);
+
     Comment("Turn on the pull-ups, and drive the outputs low to start");
-    int i;
+    DWORD i;
     for(i = 0; Prog.mcu->dirRegs[i] != 0; i++) {
         WriteRegister(Prog.mcu->outputRegs[i], 0x00);
         WriteRegister(Prog.mcu->dirRegs[i], ~isOutput[i]);

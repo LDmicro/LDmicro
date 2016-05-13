@@ -1,3 +1,17 @@
+== Release 3.3.2
+
+    * Fixed: Address of configuration word(s) are checked and corrected on PIC controllers.
+
+    * Fixed: On PIC microcontrollers there is bit 7 on OPTION_REG named
+        _RBPU: PORTB Pull-up Enable bit or
+        _WPUEN: Weak Pull-up Enable bit.
+        Defaut value is 1 = PORTs pull-ups are disabled.
+      Now bit 7 is cleared and pull-ups are enabled.
+
+      Attention: Not all PIC ports have a pull-up resistors.
+      See datasheets of the controller.
+      Use an external resistor, if there is no internal pull-up.
+
 == Release 3.3.1
     
     * Fixed: Error message "Couldn't open file ...." in menu "Compile as"	
