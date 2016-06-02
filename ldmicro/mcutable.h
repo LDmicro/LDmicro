@@ -1321,7 +1321,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (2 <<  0)       // HS oscillator
     },	
 	{
-		"Controllino Maxi",
+		"Controllino Maxi / Ext bytecode",
 		'P',
 		{ 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0x103, 0x106, 0x109 }, // PINx
 		{ 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0x105, 0x108, 0x10B }, // PORTx
@@ -1335,7 +1335,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
 			1023,
 			{ 2 , 3 },
 			23,
-			ISA_AVR1,
+			ISA_XINTERPRETED,
 			EnhancedCore4M,
 			0
 	},

@@ -685,7 +685,6 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_ARDUINO         0x07
 #define ISA_CAVR            0x08
 #define ISA_XINTERPRETED	0x09	// Extended interpeter
-#define ISA_C_MAXI_INTER	0x10	// Controllino Maxi with extended interpreter
 
 #define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5

@@ -60,7 +60,7 @@ static BOOL ProgramChangedNotSaved = FALSE;
 #define PASCAL_PATTERN "PASCAL Source Files (*.pas)\0*.pas\0All Files\0*\0\0"
 #define ARDUINO_C_PATTERN "ARDUINO C Source Files (*.cpp)\0*.cpp\0All Files\0*\0\0"
 #define XINT_PATTERN \
-    "Extended Byte Code Files (*.int)\0*.xint\0All Files\0*\0\0"
+    "Extended Byte Code Files (*.xint)\0*.xint\0All Files\0*\0\0"
 char CurrentCompileFile[MAX_PATH];
 
 #define TXT_PATTERN  "Text Files (*.txt)\0*.txt\0All files\0*\0\0"
@@ -340,12 +340,11 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrDefExt = "c";
             c = "c";
         } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
-							Prog.mcu->whichIsa == ISA_XINTERPRETED || 
 							Prog.mcu->whichIsa == ISA_NETZER)) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
             c = "int";
-        } else if((compile_MNU==MNU_COMPILE_PASCAL) ||
+		} else if((compile_MNU==MNU_COMPILE_PASCAL) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_PASCAL)) {
             ofn.lpstrFilter = PASCAL_PATTERN;
             ofn.lpstrDefExt = "pas";
