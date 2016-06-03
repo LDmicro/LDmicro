@@ -107,6 +107,11 @@ can supply your own VM. This might be useful for applications where you
 wish to use ladder logic as a `scripting language' to customize a larger
 program. See the comments in the sample interpreter for details.
 
+A new "Controllino Maxi / Ext bytecode" target has been added. It generates
+ .xint file interpretable by the LDuino PLC software. Up to now, only
+Controllino Maxi PLC is supported. However, as the bytecode is generic, an
+adaptation to any other PLC or CPU board could be done. See LDuino source code
+for that.
 
 COMMAND LINE OPTIONS
 ====================
@@ -153,6 +158,9 @@ indicates what kind of object it is.  For example:
     * Tname -- a timer; turn-on delay, turn-off delay, or retentive
     * Cname -- a counter, either count-up or count-down
     * Aname -- an integer read from an A/D converter
+    * Mname -- tied to a MODBUS Coil output
+    * Iname -- tied to a MODBUS Discrete input
+    * Hname -- tied to a MODBUS Holding register
     * name  -- a general-purpose (integer) variable
 
 Choose the rest of the name so that it describes what the object does,
