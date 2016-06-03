@@ -133,7 +133,7 @@ static void AppendIoAutoType(char *name, int default_type)
 	case 'A': type = IO_TYPE_READ_ADC; break;
 	case 'P': type = IO_TYPE_PWM_OUTPUT; break;
 	case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
-	case 'C': type = IO_TYPE_MODBUS_COIL; break;
+	case 'M': type = IO_TYPE_MODBUS_COIL; break;
 	case 'H': type = IO_TYPE_MODBUS_HREG; break;
 	case 'G': type = IO_TYPE_GENERAL; break;
 	default: type = default_type;
@@ -191,7 +191,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
 					AppendIo(l->d.contacts.name, IO_TYPE_MODBUS_CONTACT);
 					break;
 				
-				case 'C':
+				case 'M':
 					AppendIo(l->d.contacts.name, IO_TYPE_MODBUS_COIL);
 					break;
 
@@ -209,7 +209,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
 			case 'Y':
 				AppendIo(l->d.coil.name, IO_TYPE_DIG_OUTPUT);
 				break;
-			case 'C':
+			case 'M':
 				AppendIo(l->d.coil.name, IO_TYPE_MODBUS_COIL);
 				break;
 			default:
@@ -450,7 +450,8 @@ BOOL LoadIoListFromFile(FILE *f)
                 case 'A': type = IO_TYPE_READ_ADC; break;
 				case 'P': type = IO_TYPE_PWM_OUTPUT; break;
 				case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
-				case 'C': type = IO_TYPE_MODBUS_COIL; break;
+				case 'M': type = IO_TYPE_MODBUS_COIL; break;
+				case 'C': type = IO_TYPE_COUNTER; break;
 				case 'H': type = IO_TYPE_MODBUS_HREG; break;
                 default: oops();
             }

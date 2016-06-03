@@ -145,7 +145,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
 	case 'Y':
         SendMessage(SourceMcuPinRadio, BM_SETCHECK, BST_CHECKED, 0);
 		break;
-	case 'C':
+	case 'M':
 		SendMessage(SourceModbusRadio, BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	default:
@@ -198,7 +198,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
         } else if (SendMessage(SourceModbusRadio, BM_GETSTATE, 0, 0)
 			& BST_CHECKED)
 		{
-			name[0] = 'C';
+			name[0] = 'M';
 		} else {
 			name[0] = 'Y';
 		}
