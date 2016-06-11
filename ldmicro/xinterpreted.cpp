@@ -29,26 +29,26 @@
 
 #define _ITERATOR_DEBUG_LEVEL 0
 
-#include <string>
-#include <map>
-using namespace std;
-
 #include "ldmicro.h"
 #include "intcode.h"
 
-class dictionary : public map<string, int>
-{
-public:
-	int AppendAndGet(string k)
-	{
-		if (this->find(k) == end()) (*this)[k] = (int)this->size();
-		return (*this)[k];
-	}
-};
-
-static dictionary PlcIos;
-
 static BYTE OutProg[MAX_INT_OPS];
+
+#define MAX_PLCIO 256
+
+static char *PlcIos[MAX_PLCIO];
+static int PlcIos_size = 0;
+
+int PlcIos_AppendAndGet(char *name)
+{
+	for (int i = 0; i < PlcIos_size; i++) {
+		if (strcmp(PlcIos[i], name) ==0) return i;
+	}
+	
+	if (PlcIos_size == MAX_PLCIO) return -1;
+	PlcIos[PlcIos_size++] = name;
+	return PlcIos_size - 1;
+}
 
 static int CheckRange(int value, char *name)
 {
@@ -72,12 +72,12 @@ static BYTE GetArduinoPinNumber(int pin)
 
 static BYTE AddrForBit(char *name)
 {
-	return CheckRange(PlcIos.AppendAndGet(name), name);
+	return CheckRange(PlcIos_AppendAndGet(name), name);
 }
 
 static BYTE AddrForVariable(char *name)
 {
-	return CheckRange(PlcIos.AppendAndGet(name), name);
+	return CheckRange(PlcIos_AppendAndGet(name), name);
 }
 
 void CompileXInterpreted(char *outFile)
@@ -89,9 +89,11 @@ void CompileXInterpreted(char *outFile)
     }
 
 	// Preload physical IOs in the table
+	PlcIos_size = 0;
+
 	for (int i = 0; i < Prog.io.count; i++) {
 		PlcProgramSingleIo io = Prog.io.assignment[i];
-		PlcIos[Prog.io.assignment[i].name] = i;
+		PlcIos[PlcIos_size++] = Prog.io.assignment[i].name;
 	}
 
     int ipc;
@@ -255,12 +257,10 @@ finishIf:
 
 	// Create a map of io and internal variables
 	// $$IO nb_named_IO total_nb_IO
-	fprintf(f, "$$IO %d %d\n", Prog.io.count, PlcIos.size());
-	PlcIos.clear();
+	fprintf(f, "$$IO %d %d\n", Prog.io.count, PlcIos_size);
 
 	for (int i = 0; i < Prog.io.count; i++) {
 		PlcProgramSingleIo io = Prog.io.assignment[i];
-		PlcIos[Prog.io.assignment[i].name] = i;
 		fprintf(f, "%2d %10s %2d %2d %2d %05d\n",
 			i, io.name, io.type,
 			GetArduinoPinNumber(io.pin),
