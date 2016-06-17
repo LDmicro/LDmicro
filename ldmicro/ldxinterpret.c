@@ -1,38 +1,14 @@
 //-----------------------------------------------------------------------------
-// A sample interpreter for the .int files generate by LDmicro. These files
+// A sample interpreter for the .xint files generate by LDmicro. These files
 // represent a ladder logic program for a simple 'virtual machine.' The
 // interpreter must simulate the virtual machine and for proper timing the
 // program must be run over and over, with the period specified when it was
 // compiled (in Settings -> MCU Parameters).
 //
-// This method of running the ladder logic code would be useful if you wanted
-// to embed a ladder logic interpreter inside another program. LDmicro has
-// converted all variables into addresses, for speed of execution. However,
-// the .int file includes the mapping between variable names (same names
-// that the user specifies, that are visible on the ladder diagram) and
-// addresses. You can use this to establish specially-named variables that
-// define the interface between your ladder code and the rest of your program.
+// Frederic RIBLE 2016 (frible@teaser.fr)
+// 
+// Based on ldinterpret.c by Jonathan Westhues
 //
-// In this example, I use this mechanism to print the value of the integer
-// variable 'a' after every cycle, and to generate a square wave with period
-// 2*Tcycle on the input 'Xosc'. That is only for demonstration purposes, of
-// course.
-//
-// In a real application you would need some way to get the information in the
-// .int file into your device; this would be very application-dependent. Then
-// you would need something like the InterpretOneCycle() routine to actually
-// run the code. You can redefine the program and data memory sizes to
-// whatever you think is practical; there are no particular constraints.
-//
-// The disassembler is just for debugging, of course. Note the unintuitive
-// names for the condition ops; the INT_IFs are backwards, and the INT_ELSE
-// is actually an unconditional jump! This is because I reused the names
-// from the intermediate code that LDmicro uses, in which the if/then/else
-// constructs have not yet been resolved into (possibly conditional)
-// absolute jumps. It makes a lot of sense to me, but probably not so much
-// to you; oh well.
-//
-// Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
 #include <stdio.h>
 #include <ctype.h>
@@ -45,7 +21,6 @@ typedef signed short SWORD;     // 16-bit signed
 #define INTCODE_H_CONSTANTS_ONLY
 
 #include "intcode.h"
-#include "xinterpreter.h"
 
 // Some arbitrary limits on the program and data size
 #define MAX_OPS                 1024
@@ -61,7 +36,7 @@ typedef signed short SWORD;     // 16-bit signed
 // .literal then you only have 8-bit literals now (so you can't move
 // 300 into 'var'). If you crunch down .name3 then that limits your code size,
 // because that is the field used to encode the jump addresses.
-// 
+//
 // A more compact encoding is very possible if space is a problem for
 // you. You will probably need some kind of translator regardless, though,
 // to put it in whatever format you're going to pack in flash or whatever,
@@ -74,10 +49,10 @@ BYTE Program[MAX_OPS];
 SWORD Integers[MAX_VARIABLES];
 BYTE Bits[MAX_VARIABLES];
 
-#define READ_BIT(addr) Bits[addr]
-#define WRITE_BIT(addr, value) Bits[addr] = (value)
-#define READ_INT(addr) Integers[addr]
-#define WRITE_INT(addr, value) Integers[addr] = (value)
+#define READ_BIT(addr)           Bits[addr]
+#define WRITE_BIT(addr, value)   Bits[addr] = (value)
+#define READ_INT(addr)           Integers[addr]
+#define WRITE_INT(addr, value)   Integers[addr] = (value)
 
 char Symbols[MAX_VARIABLES][40];
 int line_number = 0;
@@ -93,6 +68,7 @@ void BadFormat(void)
     fprintf(stderr, "Bad program format at line %d.\n", line_number);
     exit(-1);
 }
+
 int HexDigit(int c)
 {
     c = tolower(c);
@@ -109,13 +85,15 @@ int HexDigit(int c)
 int LoadProgram(char *fileName)
 {
     int pc;
+    int i;
+
     FILE *f = fopen(fileName, "r");
     char line[80];
 
-	line_number = 0;
-	for (int i = 0; i < MAX_VARIABLES; i++) {
-		sprintf(Symbols[i], "%d", i);
-	}
+    line_number = 0;
+    for (i = 0; i < MAX_VARIABLES; i++) {
+        sprintf(Symbols[i], "%d", i);
+    }
 
     // This is not suitable for untrusted input.
 
@@ -124,38 +102,42 @@ int LoadProgram(char *fileName)
         exit(-1);
     }
 
-	if (!fgets(line, sizeof(line), f)) BadFormat();
-	line_number++;
-	if (strncmp(line, "$$IO", 4) != 0) BadFormat();
+    if (!fgets(line, sizeof(line), f)) BadFormat();
+    line_number++;
+    if (strncmp(line, "$$IO", 4) != 0) BadFormat();
 
-	while (fgets(line, sizeof(line), f)) {
-		line_number++;
-		if (line[0] == '$') break;
-		int addr;
-		char name[40];
-		int type;
-		int pin;
-		int modbus_slave;
-		int modbus_offset;
-		if (sscanf(line, "%d %s %d %d %d %d", 
-			&addr, name, &type, &pin, &modbus_slave, &modbus_offset) != 6) BadFormat();
-		if (addr < 0 || addr >= MAX_VARIABLES) BadFormat();
-		strcpy(Symbols[addr], name);
-	}
+    while (fgets(line, sizeof(line), f)) {
+        int addr;
+        char name[40];
+        int type;
+        int pin;
+        int modbus_slave;
+        int modbus_offset;
+
+        line_number++;
+        if (line[0] == '$') break;
+
+        if (sscanf(line, "%d %s %d %d %d %d",
+            &addr, name, &type, &pin, &modbus_slave, &modbus_offset) != 6) BadFormat();
+        if (addr < 0 || addr >= MAX_VARIABLES) BadFormat();
+        strcpy(Symbols[addr], name);
+    }
 
     if(strncmp(line, "$$LDcode", 8)!=0) BadFormat();
 
-	pc = 0;
-	while (fgets(line, sizeof(line), f)) {
-		line_number++;
-		if (line[0] == '$') break;
-		for (char *t = line; t[0] >= 32 && t[1] >= 32 ; t += 2) {
+    pc = 0;
+    while (fgets(line, sizeof(line), f)) {
+        char *t;
+
+        line_number++;
+        if (line[0] == '$') break;
+        for (t = line; t[0] >= 32 && t[1] >= 32 ; t += 2) {
             Program[pc++] = HexDigit(t[1]) | (HexDigit(t[0]) << 4);
         }
     }
 
     fclose(f);
-	return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------
 
@@ -170,50 +152,50 @@ int LoadProgram(char *fileName)
 void Disassemble(void)
 {
     int pc;
-	for (pc = 0;;) {
+    for (pc = 0;;) {
         printf("%03x: ", pc);
 
         switch(Program[pc]) {
             case INT_SET_BIT:
                 printf("bits[%s] := 1", Symbols[Program[pc+1]]);
-				pc += 2;
+                pc += 2;
                 break;
 
             case INT_CLEAR_BIT:
                 printf("bits[%s] := 0", Symbols[Program[pc+1]]);
-				pc += 2;
+                pc += 2;
                 break;
 
             case INT_COPY_BIT_TO_BIT:
                 printf("bits[%s] := bits[%s]", Symbols[Program[pc+1]], Symbols[Program[pc+2]]);
-				pc += 3;
+                pc += 3;
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 printf("int16s[%s] := %d", Symbols[Program[pc+1]],
-					Program[pc+2] + (Program[pc+3] << 8));
-				pc += 4;
+                    Program[pc+2] + (Program[pc+3] << 8));
+                pc += 4;
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 printf("int16s[%s] := int16s[%s]", Symbols[Program[pc+1]], Symbols[Program[pc+2]]);
-				pc += 3;
+                pc += 3;
                 break;
 
             case INT_INCREMENT_VARIABLE:
                 printf("(int16s[%s])++", Symbols[Program[pc+1]]);
-				pc += 2;
+                pc += 2;
                 break;
 
-			case INT_SET_PWM:
-				printf("setpwm(%s, %d Hz)", Symbols[Program[pc+1]], Program[pc+2] + (Program[pc+3]<<8));
-				pc += 4;
-				break;
+            case INT_SET_PWM:
+                printf("setpwm(%s, %d Hz)", Symbols[Program[pc+1]], Program[pc+2] + (Program[pc+3]<<8));
+                pc += 4;
+                break;
 
-			case INT_READ_ADC:
-				printf("readadc(%s)", Symbols[Program[pc+1]]);
-				pc += 2;
-				break;
+            case INT_READ_ADC:
+                printf("readadc(%s)", Symbols[Program[pc+1]]);
+                pc += 2;
+                break;
 
             {
                 char c;
@@ -223,39 +205,39 @@ void Disassemble(void)
                 case INT_SET_VARIABLE_DIVIDE: c = '/'; goto arith;
 arith:
                     printf("int16s[%s] := int16s[%s] %c int16s[%s]",
-						Symbols[Program[pc]], Symbols[Program[pc+2]], c, Symbols[Program[pc+3]]);
-					pc += 4;
+                        Symbols[Program[pc]], Symbols[Program[pc+2]], c, Symbols[Program[pc+3]]);
+                    pc += 4;
                     break;
             }
 
             case INT_IF_BIT_SET:
                 printf("ifnot (bits[%s] set)", Symbols[Program[pc+1]]);
-				pc += 2;
+                pc += 2;
                 goto cond;
             case INT_IF_BIT_CLEAR:
                 printf("ifnot (bits[%s] clear)", Symbols[Program[pc+1]]);
-				pc += 2;
+                pc += 2;
                 goto cond;
             case INT_IF_VARIABLE_LES_LITERAL:
                 printf("ifnot (int16s[%s] < %d)", Symbols[Program[pc+1]], Program[pc+2] + (Program[pc+3] << 8));
-				pc += 4;
+                pc += 4;
                 goto cond;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
                 printf("ifnot (int16s[%s] == int16s[%s])", Symbols[Program[pc+1]],Symbols[Program[pc+2]]);
-				pc += 3;
+                pc += 3;
                 goto cond;
             case INT_IF_VARIABLE_GRT_VARIABLE:
                 printf("ifnot (int16s[%s] > int16s[%s])", Symbols[Program[pc+1]], Symbols[Program[pc+2]]);
-				pc += 3;
+                pc += 3;
                 goto cond;
 cond:
                 printf(" jump %03x", pc + Program[pc]+1);
-				pc += 1;
+                pc += 1;
                 break;
 
             case INT_ELSE:
                 printf("jump %03x", pc + Program[pc+1]+2);
-				pc += 2;
+                pc += 2;
                 break;
 
             case INT_END_OF_PROGRAM:
@@ -282,125 +264,126 @@ cond:
 
 void InterpretOneCycle(void)
 {
-	for (int pc = 0;;) {
-		switch (Program[pc]) {
-		case INT_SET_BIT:
-			WRITE_BIT(Program[pc + 1], 1);
-			pc += 2;
-			break;
+    int  pc;
+    for (pc = 0;;) {
+        switch (Program[pc]) {
+        case INT_SET_BIT:
+            WRITE_BIT(Program[pc + 1], 1);
+            pc += 2;
+            break;
 
-		case INT_CLEAR_BIT:
-			WRITE_BIT(Program[pc + 1], 0);
-			pc += 2;
-			break;
+        case INT_CLEAR_BIT:
+            WRITE_BIT(Program[pc + 1], 0);
+            pc += 2;
+            break;
 
-		case INT_COPY_BIT_TO_BIT:
-			WRITE_BIT(Program[pc + 1], READ_BIT(Program[pc + 2]));
-			pc += 3;
-			break;
+        case INT_COPY_BIT_TO_BIT:
+            WRITE_BIT(Program[pc + 1], READ_BIT(Program[pc + 2]));
+            pc += 3;
+            break;
 
-		case INT_SET_VARIABLE_TO_LITERAL:
-			WRITE_INT(Program[pc + 1], Program[pc + 2] + (Program[pc + 3] << 8));
-			pc += 4;
-			break;
+        case INT_SET_VARIABLE_TO_LITERAL:
+            WRITE_INT(Program[pc + 1], Program[pc + 2] + (Program[pc + 3] << 8));
+            pc += 4;
+            break;
 
-		case INT_SET_VARIABLE_TO_VARIABLE:
-			WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]));
-			pc += 3;
-			break;
+        case INT_SET_VARIABLE_TO_VARIABLE:
+            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]));
+            pc += 3;
+            break;
 
-		case INT_INCREMENT_VARIABLE:
-			WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 1]) + 1);
-			pc += 2;
-			break;
+        case INT_INCREMENT_VARIABLE:
+            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 1]) + 1);
+            pc += 2;
+            break;
 
-		case INT_SET_VARIABLE_ADD:
-			WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) + READ_INT(Program[pc + 3]));
-			pc += 4;
-			break;
+        case INT_SET_VARIABLE_ADD:
+            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) + READ_INT(Program[pc + 3]));
+            pc += 4;
+            break;
 
-		case INT_SET_VARIABLE_SUBTRACT:
-			WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) - READ_INT(Program[pc + 3]));
-			pc += 4;
-			break;
+        case INT_SET_VARIABLE_SUBTRACT:
+            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) - READ_INT(Program[pc + 3]));
+            pc += 4;
+            break;
 
-		case INT_SET_VARIABLE_MULTIPLY:
-			WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) * READ_INT(Program[pc + 3]));
-			pc += 4;
-			break;
+        case INT_SET_VARIABLE_MULTIPLY:
+            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) * READ_INT(Program[pc + 3]));
+            pc += 4;
+            break;
 
-		case INT_SET_VARIABLE_DIVIDE:
-			if (READ_INT(Program[pc + 3]) != 0) {
-				WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) / READ_INT(Program[pc + 3]));
-			}
-			pc += 4;
-			break;
+        case INT_SET_VARIABLE_DIVIDE:
+            if (READ_INT(Program[pc + 3]) != 0) {
+                WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) / READ_INT(Program[pc + 3]));
+            }
+            pc += 4;
+            break;
 
-		case INT_SET_PWM:
-			//WRITE_PWM(Program[pc + 1]);	 // PWM frequency is ignored
-			pc += 4;
-			break;
+        case INT_SET_PWM:
+            //WRITE_PWM(Program[pc + 1]);    // PWM frequency is ignored
+            pc += 4;
+            break;
 
-		case INT_READ_ADC:
-			//READ_ADC(Program[pc + 1]);
-			pc += 2;
-			break;
+        case INT_READ_ADC:
+            //READ_ADC(Program[pc + 1]);
+            pc += 2;
+            break;
 
-		case INT_IF_BIT_SET:
-			if (!READ_BIT(Program[pc + 1])) pc += Program[pc + 2];
-			pc += 3;
-			break;
+        case INT_IF_BIT_SET:
+            if (!READ_BIT(Program[pc + 1])) pc += Program[pc + 2];
+            pc += 3;
+            break;
 
-		case INT_IF_BIT_CLEAR:
-			if (READ_BIT(Program[pc + 1])) pc += Program[pc + 2];
-			pc += 3;
-			break;
+        case INT_IF_BIT_CLEAR:
+            if (READ_BIT(Program[pc + 1])) pc += Program[pc + 2];
+            pc += 3;
+            break;
 
-		case INT_IF_VARIABLE_LES_LITERAL:
-			if (!(READ_INT(Program[pc + 1]) < (Program[pc + 2] + (Program[pc + 3] << 8)))) pc += Program[pc + 4];
-			pc += 5;
-			break;
+        case INT_IF_VARIABLE_LES_LITERAL:
+            if (!(READ_INT(Program[pc + 1]) < (Program[pc + 2] + (Program[pc + 3] << 8)))) pc += Program[pc + 4];
+            pc += 5;
+            break;
 
-		case INT_IF_VARIABLE_EQUALS_VARIABLE:
-			if (!(READ_INT(Program[pc + 1]) == READ_INT(Program[pc + 2]))) pc += Program[pc + 3];
-			pc += 4;
-			break;
+        case INT_IF_VARIABLE_EQUALS_VARIABLE:
+            if (!(READ_INT(Program[pc + 1]) == READ_INT(Program[pc + 2]))) pc += Program[pc + 3];
+            pc += 4;
+            break;
 
-		case INT_IF_VARIABLE_GRT_VARIABLE:
-			if (!(READ_INT(Program[pc + 1]) > READ_INT(Program[pc + 2]))) pc += Program[pc + 3];
-			pc += 4;
-			break;
+        case INT_IF_VARIABLE_GRT_VARIABLE:
+            if (!(READ_INT(Program[pc + 1]) > READ_INT(Program[pc + 2]))) pc += Program[pc + 3];
+            pc += 4;
+            break;
 
-		case INT_ELSE:
-			pc += Program[pc + 1];
-			pc += 2;
-			break;
+        case INT_ELSE:
+            pc += Program[pc + 1];
+            pc += 2;
+            break;
 
-		case INT_END_OF_PROGRAM:
-			return;
+        case INT_END_OF_PROGRAM:
+            return;
 
-		default:
-			return;
-		}
-	}
+        default:
+            return;
+        }
+    }
 }
-
 
 int main(int argc, char **argv)
 {
     int i;
+    int rc;
 
     if(argc != 2) {
         fprintf(stderr, "usage: %s xxx.xint\n", argv[0]);
         return -1;
     }
 
-    int rc = LoadProgram(argv[1]);
+    rc = LoadProgram(argv[1]);
     memset(Integers, 0, sizeof(Integers));
     memset(Bits, 0, sizeof(Bits));
 
-	Disassemble();
-	if (rc) exit(rc);
+    Disassemble();
+    if (rc) exit(rc);
 
     // 1000 cycles times 10 ms gives 10 seconds execution
     for(i = 0; i < 1000; i++) {

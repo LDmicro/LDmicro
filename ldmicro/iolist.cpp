@@ -81,7 +81,8 @@ static void AppendIo(char *name, int type)
     if(i < MAX_IO) {
         Prog.io.assignment[i].type = type;
         Prog.io.assignment[i].pin = NO_PIN_ASSIGNED;
-		Prog.io.assignment[i].modbus = { 0, 0 };
+        Prog.io.assignment[i].modbus.Slave = 0;
+        Prog.io.assignment[i].modbus.Address = 0;
         strcpy(Prog.io.assignment[i].name, name);
         (Prog.io.count)++;
     }
@@ -190,7 +191,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
 				case 'I':
 					AppendIo(l->d.contacts.name, IO_TYPE_MODBUS_CONTACT);
 					break;
-				
+
 				case 'M':
 					AppendIo(l->d.contacts.name, IO_TYPE_MODBUS_COIL);
 					break;
@@ -393,7 +394,7 @@ int GenerateIoList(int prevSel)
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
 		   Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT || 
+		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
 		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
 		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG )
         {
@@ -441,8 +442,9 @@ BOOL LoadIoListFromFile(FILE *f)
             return TRUE;
         }
         // Don't internationalize this! It's the file format, not UI.
-		modbus = { 0, 0 };
-        if(sscanf(line, "    %s at %d %d %d", name, &pin, &modbus.Slave, &modbus.Address)>=2) {
+        modbus.Slave = 0;
+        modbus.Address = 0;
+        if(sscanf(line, "    %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address)>=2) {
             int type;
             switch(name[0]) {
                 case 'X': type = IO_TYPE_DIG_INPUT; break;
@@ -473,15 +475,15 @@ void SaveIoListToFile(FILE *f)
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
 		   Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT || 
+		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
 		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
 		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG)
         {
             // Don't internationalize this! It's the file format, not UI.
-            fprintf(f, "    %s at %d %d %d\n", 
+            fprintf(f, "    %s at %d %d %d\n",
 				Prog.io.assignment[i].name,
-                Prog.io.assignment[i].pin, 
-				Prog.io.assignment[i].modbus.Slave, 
+                Prog.io.assignment[i].pin,
+				Prog.io.assignment[i].modbus.Slave,
 				Prog.io.assignment[i].modbus.Address);
         }
     }
@@ -800,7 +802,7 @@ void ShowIoDialog(int item)
         if(Prog.mcu->pinCount <= 21) {
             sprintf(buf, "%3d   %c%c%d %s", Prog.mcu->pinInfo[i].pin,
                 Prog.mcu->portPrefix, Prog.mcu->pinInfo[i].port,
-                Prog.mcu->pinInfo[i].bit, 
+                Prog.mcu->pinInfo[i].bit,
 				Prog.mcu->pinInfo[i].pinName ? Prog.mcu->pinInfo[i].pinName : "");
         } else {
             sprintf(buf, "%3d  %c%c%d %s", Prog.mcu->pinInfo[i].pin,
@@ -904,7 +906,7 @@ static void MakeModbusControls(void)
 	NiceFont(CancelButton);
 }
 
-void ShowModbusDialog(int item) 
+void ShowModbusDialog(int item)
 {
 	MakeWindowClass();
 
@@ -1067,8 +1069,8 @@ void IoListProc(NMHDR *h)
 
 				case LV_IO_MODBUS: {
 					int type = Prog.io.assignment[item].type;
-					if (type != IO_TYPE_MODBUS_COIL && 
-						type != IO_TYPE_MODBUS_CONTACT && 
+					if (type != IO_TYPE_MODBUS_COIL &&
+						type != IO_TYPE_MODBUS_CONTACT &&
 						type != IO_TYPE_MODBUS_HREG)
 					{
 						strcpy(i->item.pszText, "");
