@@ -197,12 +197,16 @@ typedef signed long SDWORD;
 #define MNU_ABOUT               0x81
 #define MNU_RELEASE             0x82
 
+#define MNU_COMPILE_XINT        0x83	// Extended interpreter
+
 // Columns within the I/O etc. listview.
 #define LV_IO_NAME              0x00
 #define LV_IO_TYPE              0x01
 #define LV_IO_STATE             0x02
 #define LV_IO_PIN               0x03
 #define LV_IO_PORT              0x04
+#define LV_IO_PINNAME           0x05
+#define LV_IO_MODBUS            0x06
 
 // Timer IDs associated with the main window.
 #define TIMER_BLINK_CURSOR      1
@@ -524,6 +528,11 @@ typedef struct ElemSubckParallelTag {
 
 typedef struct McuIoInfoTag McuIoInfo;
 
+typedef struct ModbusAddr {
+	unsigned char Slave;
+	unsigned short Address;
+} ModbusAddr_t;
+
 typedef struct PlcProgramSingleIoTag {
     char        name[MAX_NAME_LEN];
 #define IO_TYPE_PENDING         0
@@ -558,9 +567,13 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_INTERNAL_RELAY  13
 #define IO_TYPE_TON             14
 #define IO_TYPE_TOF             15
+#define IO_TYPE_MODBUS_CONTACT  16
+#define IO_TYPE_MODBUS_COIL     17
+#define IO_TYPE_MODBUS_HREG     18
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
+	ModbusAddr modbus;
 } PlcProgramSingleIo;
 
 #define MAX_IO 1024
@@ -655,6 +668,7 @@ typedef struct McuIoPinInfoTag {
     int     bit;
     int     pin;
     char    pinName[MAX_NAME_LEN];
+	int		ArduinoPin;
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -671,6 +685,7 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_PASCAL          0x06
 #define ISA_ARDUINO         0x07
 #define ISA_CAVR            0x08
+#define ISA_XINTERPRETED	0x09	// Extended interpeter
 
 #define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
@@ -710,7 +725,7 @@ typedef struct McuIoInfoTag {
     }                IntNeeds;
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 27
+#define NUM_SUPPORTED_MCUS 29
 
 //-----------------------------------------------
 // Function prototypes
@@ -1041,6 +1056,8 @@ void CompileAnsiC(char *outFile, int compile_ISA);
 void CompileAnsiC(char *outFile);
 // interpreted.cpp
 void CompileInterpreted(char *outFile);
+// xinterpreted.cpp
+void CompileXInterpreted(char *outFile);
 // netzer.cpp
 void CompileNetzer(char *outFile);
 

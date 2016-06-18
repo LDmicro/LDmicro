@@ -402,7 +402,7 @@ void ShowSetPwmDialog(char *name, int *targetFreq)
     sprintf(freq, "%d", *targetFreq);
 
     char *labels[] = { _("Duty cycle var:"), _("Frequency (Hz):") };
-    char *dests[] = { name, freq };
+    char *dests[] = { name+1, freq };
     ShowSimpleDialog(_("Set PWM Duty Cycle"), 2, labels, 0x2, 0x1, 0x1, dests);
 
     *targetFreq = atoi(freq);
