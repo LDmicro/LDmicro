@@ -344,12 +344,8 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
       ||( (compile_MNU==MNU_COMPILE_ANSIC)  && (!strstr(CurrentCompileFile,".c"  )) )
       ||( (compile_MNU==MNU_COMPILE_ARDUINO)&& (!strstr(CurrentCompileFile,".cpp")) )
       ||( (compile_MNU==MNU_COMPILE_PASCAL) && (!strstr(CurrentCompileFile,".pas")) )
-<<<<<<< HEAD
-      ) {
-=======
 	  || ((compile_MNU==MNU_COMPILE_XINT)   && (!strstr(CurrentCompileFile, ".xint")) )
-      ){
->>>>>>> 5df1fe8d62988c88b7457d733b347d24f53d5083
+      ) {
         char *c;
         OPENFILENAME ofn;
 
@@ -363,7 +359,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrDefExt = "c";
             c = "c";
         } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
-							Prog.mcu->whichIsa == ISA_NETZER)) {
+                               Prog.mcu->whichIsa == ISA_NETZER)) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
             c = "int";
@@ -372,14 +368,12 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrFilter = PASCAL_PATTERN;
             ofn.lpstrDefExt = "pas";
             c = "pas";
-		}
-		else if ((compile_MNU == MNU_COMPILE_ARDUINO) ||
+		} else if ((compile_MNU == MNU_COMPILE_ARDUINO) ||
 			(Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
 			ofn.lpstrFilter = ARDUINO_C_PATTERN;
 			ofn.lpstrDefExt = "cpp";
 			c = "cpp";
-		} 
-		else if ((compile_MNU == MNU_COMPILE_XINT) ||
+		} else if ((compile_MNU == MNU_COMPILE_XINT) ||
 			(Prog.mcu && Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
 			ofn.lpstrFilter = XINT_PATTERN;
 			ofn.lpstrDefExt = "xint";
@@ -415,7 +409,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     && (compile_MNU!=MNU_COMPILE_ANSIC)
     && (compile_MNU!=MNU_COMPILE_ARDUINO)
 	&& (compile_MNU != MNU_COMPILE_XINT)) {
-			Error(_("Must choose a target microcontroller before compiling."));
+		Error(_("Must choose a target microcontroller before compiling."));
         return;
     }
 

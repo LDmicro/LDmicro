@@ -573,7 +573,7 @@ typedef struct PlcProgramSingleIoTag {
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
-	ModbusAddr modbus;
+	ModbusAddr  modbus;
 } PlcProgramSingleIo;
 
 #define MAX_IO 1024
