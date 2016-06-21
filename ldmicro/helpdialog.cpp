@@ -74,7 +74,7 @@ static char *AboutText[] = {
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
 "",
-"Release 3.3.1, built " __TIME__ " " __DATE__ ".",
+"Release 3.4.0, built " __TIME__ " " __DATE__ ".",
 "",
 NULL
 };
