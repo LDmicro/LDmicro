@@ -31,6 +31,7 @@ static HWND CoilDialog;
 
 static HWND SourceInternalRelayRadio;
 static HWND SourceMcuPinRadio;
+static HWND SourceModbusRadio;
 static HWND NegatedRadio;
 static HWND NormalRadio;
 static HWND SetOnlyRadio;
@@ -85,7 +86,7 @@ static void MakeControls(void)
 
     HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Source"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        140, 3, 120, 65, CoilDialog, NULL, Instance, NULL);
+        140, 3, 120, 85, CoilDialog, NULL, Instance, NULL);
     NiceFont(grouper2);
 
     SourceInternalRelayRadio = CreateWindowEx(0, WC_BUTTON, _("Internal Relay"),
@@ -98,14 +99,19 @@ static void MakeControls(void)
         149, 41, 100, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(SourceMcuPinRadio); 
 
+	SourceModbusRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus"),
+		WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
+		149, 61, 100, 20, CoilDialog, NULL, Instance, NULL);
+	NiceFont(SourceModbusRadio);
+
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        135, 80, 50, 21, CoilDialog, NULL, Instance, NULL);
+        135, 90, 50, 21, CoilDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 80, 155, 21, CoilDialog, NULL, Instance, NULL);
+        190, 90, 155, 21, CoilDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -132,11 +138,21 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
 
     MakeControls();
    
-    if(name[0] == 'R') {
+    switch (name[0]) {
+	case 'R':
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
-    } else {
+		break;
+	case 'Y':
         SendMessage(SourceMcuPinRadio, BM_SETCHECK, BST_CHECKED, 0);
+		break;
+	case 'M':
+		SendMessage(SourceModbusRadio, BM_SETCHECK, BST_CHECKED, 0);
+		break;
+	default:
+		oops();
+		break;
     }
+
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
     if(*negated) {
         SendMessage(NegatedRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -179,9 +195,14 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
             & BST_CHECKED)
         {
             name[0] = 'R';
-        } else {
-            name[0] = 'Y';
-        }
+        } else if (SendMessage(SourceModbusRadio, BM_GETSTATE, 0, 0)
+			& BST_CHECKED)
+		{
+			name[0] = 'M';
+		} else {
+			name[0] = 'Y';
+		}
+
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)(MAX_NAME_LEN-1), (LPARAM)(name+1));
 
         if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
