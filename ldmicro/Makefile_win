@@ -42,7 +42,7 @@ LIBS = user32.lib gdi32.lib comctl32.lib advapi32.lib
 
 all: $(OBJDIR)/ldmicro.exe $(OBJDIR)/ldinterpret.exe $(OBJDIR)/ldxinterpret.exe
     @copy $(OBJDIR)\ldmicro.exe .
-    @copy $(OBJDIR)\ldinterpret.exe 
+    @copy $(OBJDIR)\ldinterpret.exe .
 	@copy $(OBJDIR)\ldxinterpret.exe .
     @cd reg
     rem @go.bat

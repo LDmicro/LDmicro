@@ -32,6 +32,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\ansic.obj \
            $(OBJDIR)\netzer.obj \
            $(OBJDIR)\interpreted.obj \
+           $(OBJDIR)\xinterpreted.obj \
            $(OBJDIR)\pic16.obj \
            $(OBJDIR)\avr.obj
 
@@ -39,9 +40,10 @@ HELPOBJ  = $(OBJDIR)\helptext.obj
 
 LIBS = user32.lib gdi32.lib comctl32.lib advapi32.lib
 
-all: $(OBJDIR)/ldmicro.exe $(OBJDIR)/ldinterpret.exe
+all: $(OBJDIR)/ldmicro.exe $(OBJDIR)/ldinterpret.exe $(OBJDIR)/ldxinterpret.exe
     @cp $(OBJDIR)/ldmicro.exe .
     @cp $(OBJDIR)/ldinterpret.exe .
+    @cp $(OBJDIR)/ldxinterpret.exe .
     @cd reg
     rem @go.bat
     @cd ..
@@ -56,6 +58,9 @@ $(OBJDIR)/lang-tables.h: lang*.txt
 
 $(OBJDIR)/ldinterpret.exe: ldinterpret.c
     @$(CC) -Fe$(OBJDIR)/ldinterpret.exe $(LIBS) ldinterpret.c
+
+$(OBJDIR)/ldxinterpret.exe: ldxinterpret.c
+    @$(CC) -Fe$(OBJDIR)/ldxinterpret.exe $(LIBS) ldxinterpret.c
 
 $(OBJDIR)/ldmicro.exe: $(LDOBJS) $(FREEZE) $(HELPOBJ) $(OBJDIR)/ldmicro.res
     @$(CC) $(DEFINES) $(CFLAGS) -Fe$(OBJDIR)/ldmicro.exe $(LDOBJS) $(FREEZE) $(HELPOBJ) $(OBJDIR)/ldmicro.res $(LIBS)
