@@ -67,14 +67,17 @@ static char *AboutText[] = {
 "Copyright 2005-2016 Jonathan Westhues",
 "    Email: user jwesthues, at host cq.cx",
 "",
-"Netzer extension by Sven Schlender (c) 2012",
+"Netzer extension by Sven Schlender (C) 2012",
 "    http://www.mobacon.de/wiki/doku.php/en/netzer/index",
+"",
+"Controllino Maxi support 2016",
+"    Frederic Rible <frible@teaser.fr>",
 "",
 "Unofficial support:",
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
 "",
-"Release 3.3.1, built " __TIME__ " " __DATE__ ".",
+"Release 3.4.0, built " __TIME__ " " __DATE__ ".",
 "",
 NULL
 };
@@ -303,7 +306,7 @@ void ShowHelpDialog(BOOL about)
         WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
         WS_MAXIMIZEBOX |
         WS_SIZEBOX,
-        100, 100, 650 +50, (about ? 80 : 300)+ 300+10*FONT_HEIGHT, NULL, NULL, Instance, NULL);
+        100, 100, 650 +50, (about ? 120 : 300)+ 300+10*FONT_HEIGHT, NULL, NULL, Instance, NULL);
     MakeControls(a);
 
     ShowWindow(HelpDialog[a], TRUE);

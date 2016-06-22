@@ -1,6 +1,38 @@
+== Release 3.4.0
+    * Added: This release include fork https://github.com/f1oat/LDmicro.
+
+      Compressed bytecodes, Controllino Maxi support, MODBUS support.
+      http://cq.cx/ladder-forum.pl?action=viewthread&parent=5007
+      MODBUS use RTU over TCP. But that should work also in RS485 mode by
+      linking with the proper Arduino library.
+
+      Announcing LDuino, an Arduino based PLC software compatible with LDmicro
+      http://cq.cx/ladder-forum.pl?action=viewthread&parent=5070
+
+      Controllino is here: http://controllino.biz/
+      This a nice product. Unfortunately the creator got bad reputation on Kickstarter.
+
+      More information you can get from author of Controllino Maxi support in LDmicro:
+      Frederic Rible <frible@teaser.fr>
+
+
+== Release 3.3.2
+
+    * Fixed: Address of configuration word(s) are checked and corrected on PIC controllers.
+
+    * Fixed: On PIC microcontrollers there is bit 7 on OPTION_REG named
+        _RBPU: PORTB Pull-up Enable bit or
+        _WPUEN: Weak Pull-up Enable bit.
+        Defaut value is 1 = PORTs pull-ups are disabled.
+      Now bit 7 is cleared and pull-ups are enabled.
+
+      Attention: Not all PIC ports have a pull-up resistors.
+      See datasheets of the controller.
+      Use an external resistor, if there is no internal pull-up.
+
 == Release 3.3.1
-    
-    * Fixed: Error message "Couldn't open file ...." in menu "Compile as"	
+
+    * Fixed: Error message "Couldn't open file ...." in menu "Compile as"
 
 == Release 3.3.0
 
