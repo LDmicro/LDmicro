@@ -329,7 +329,10 @@ char *IoTypeToString(int ioType)
     switch(ioType) {
         case IO_TYPE_INT_INPUT:         return _("INT input");
         case IO_TYPE_DIG_INPUT:         return _("digital in"); 
-        case IO_TYPE_DIG_OUTPUT:        return _("digital out"); 
+        case IO_TYPE_DIG_OUTPUT:        return _("digital out");
+		case IO_TYPE_MODBUS_CONTACT:    return _("modbus contact");
+		case IO_TYPE_MODBUS_COIL  :     return _("modbus coil");
+		case IO_TYPE_MODBUS_HREG:       return _("modbus Hreg");
         case IO_TYPE_INTERNAL_RELAY:    return _("int. relay"); 
         case IO_TYPE_UART_TX:           return _("UART tx"); 
         case IO_TYPE_UART_RX:           return _("UART rx"); 
@@ -347,7 +350,7 @@ char *IoTypeToString(int ioType)
 
 //-----------------------------------------------------------------------------
 // Get a pin number for a given I/O; for digital ins and outs and analog ins,
-// this is easy, but for PWM and UART this is forced (by what peripherals
+// this is easy, but for UART this is forced (by what peripherals
 // are available) so we look at the characteristics of the MCU that is in
 // use.
 //-----------------------------------------------------------------------------
@@ -362,7 +365,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
         
     int type = io->type;
     if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT
-        || type == IO_TYPE_READ_ADC)
+        || type == IO_TYPE_READ_ADC || type == IO_TYPE_PWM_OUTPUT)
     {
         int pin = io->pin;
         if(pin == NO_PIN_ASSIGNED) {
@@ -383,11 +386,21 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
             sprintf(dest, "%d", Prog.mcu->uartNeeds.rxPin);
         }
     } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu) {
+#if 0
         if(Prog.mcu->pwmNeedsPin == 0) {
             strcpy(dest, _("<no PWM!>"));
         } else {
             sprintf(dest, "%d", Prog.mcu->pwmNeedsPin);
         }
+#else
+		int pin = io->pin;
+		if (pin == NO_PIN_ASSIGNED) {
+			strcpy(dest, _("(not assigned)"));
+		}
+		else {
+			sprintf(dest, "%d", pin);
+		}
+#endif
     } else {
         strcpy(dest, "");
     }

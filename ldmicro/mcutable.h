@@ -750,6 +750,58 @@ McuAdcPinInfo Pic16f886AdcPinInfo[] = {
     { 26, 0x0d },
 };
 
+//-----------------------------------------------------------------------------
+// Controllino Maxi
+McuIoPinInfo ControllinoMaxiIoPinInfo[] = {
+	{ 'E',  4,  6, "D0", 2 },
+	{ 'E',  5,  7, "D1", 3 },
+	{ 'G',  5,  1, "D2", 4 },
+	{ 'E',  3,  5, "D3", 5 },
+	{ 'H',  3, 15, "D4", 6 },
+	{ 'H',  4, 16, "D5", 7 },
+	{ 'H',  5, 17, "D6", 8 },
+	{ 'H',  6, 18, "D7", 9 },
+	{ 'B',  4, 23, "D8", 10 },
+	{ 'B',  5, 24, "D9", 11 },
+	{ 'B',  6, 25, "D10",12 },
+	{ 'B',  7, 26, "D11",13 },
+
+	{ 'A',  0, 78, "R0", 22 },
+	{ 'A',  1, 77, "R1", 23 },
+	{ 'A',  2, 76, "R2", 24 },
+	{ 'A',  3, 75, "R3", 25},
+	{ 'A',  4, 74, "R4", 26 },
+	{ 'A',  5, 73, "R5", 27 },
+	{ 'A',  6, 72, "R6", 28 },
+	{ 'C',  6, 59, "R9", 29 },
+	{ 'A',  7, 71, "R7", 30 },
+	{ 'C',  7, 60, "R8", 31 },
+
+
+	{ 'F',  0, 97, "A0", 54 },
+	{ 'F',  1, 96, "A1", 55 },
+	{ 'F',  2, 95, "A2", 56 },
+	{ 'F',  3, 94, "A3", 57 },
+	{ 'F',  4, 93, "A4", 58 },
+	{ 'F',  5, 92, "A5", 59 },
+	{ 'F',  6, 91, "A6", 60 },
+	{ 'F',  7, 90, "A7", 61 },
+	{ 'K',  0, 89, "A8", 62 },
+	{ 'K',  1, 88, "A9", 63 },
+};
+
+McuAdcPinInfo ControllinoMaxiAdcPinInfo[] = {
+	{ 97, 0x00 },
+	{ 96, 0x01 },
+	{ 95, 0x02 },
+	{ 94, 0x03 },
+	{ 93, 0x04 },
+	{ 92, 0x05 },
+	{ 91, 0x06 },
+	{ 90, 0x07 },
+	{ 89, 0x08 },
+	{ 88, 0x09 }
+};
 
 #define arraylen(x) (sizeof(x)/sizeof((x)[0]))
 
@@ -1267,8 +1319,27 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (0 <<  4) |     // PWRTE enabled
             (0 <<  3) |     // WDTE disabled
             (2 <<  0)       // HS oscillator
-    },
-    {
+    },	
+	{
+		"Controllino Maxi / Ext bytecode",
+		'P',
+		{ 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0x103, 0x106, 0x109 }, // PINx
+		{ 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0x105, 0x108, 0x10B }, // PORTx
+		{ 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33, 0x101, 0x104, 0x107, 0x10A }, // DDRx
+			128 * 1024,
+			{ { 0x200, 8192 } },
+			ControllinoMaxiIoPinInfo,
+			arraylen(ControllinoMaxiIoPinInfo),
+			ControllinoMaxiAdcPinInfo,
+			arraylen(ControllinoMaxiAdcPinInfo),
+			1023,
+			{ 2 , 3 },
+			23,
+			ISA_XINTERPRETED,
+			EnhancedCore4M,
+			0
+	},
+	{
         "ANSI C Code",
         'x',
         { 0x00 },
@@ -1306,7 +1377,26 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         NOT_AVR,
         0x00
     },
-    {
+	{
+		"Extended Byte Code",
+		'x',
+		{ 0x00 },
+		{ 0x00 },
+		{ 0x00 },
+			0,
+			{ { 0x00, 0 } },
+			NULL,
+			0,
+			NULL,
+			0,
+			0,
+			{ 0, 0 },
+			0,
+			ISA_XINTERPRETED,
+			NOT_AVR,
+			0x00
+	},
+	{
         "Netzer Byte Code",
         'R',
         { 0x00 },

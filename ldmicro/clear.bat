@@ -13,4 +13,5 @@ del ldmicro.tmp
 del ldmicro.exe
 del ldmicro.res
 del ldinterpret.exe
+del ldxinterpret.exe
 del aaa
