@@ -67,7 +67,7 @@ static char *AboutText[] = {
 "Copyright 2005-2016 Jonathan Westhues",
 "    Email: user jwesthues, at host cq.cx",
 "",
-"Netzer extension by Sven Schlender (c) 2012",
+"Netzer extension by Sven Schlender (C) 2012",
 "    http://www.mobacon.de/wiki/doku.php/en/netzer/index",
 "",
 "Controllino Maxi support 2016",
