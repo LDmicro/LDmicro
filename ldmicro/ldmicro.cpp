@@ -405,35 +405,35 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     if(!GenerateIntermediateCode()) return;
 
     if((Prog.mcu == NULL)
-    && (compile_MNU!=MNU_COMPILE_PASCAL)
-    && (compile_MNU!=MNU_COMPILE_ANSIC)
-    && (compile_MNU!=MNU_COMPILE_ARDUINO)
+    && (compile_MNU != MNU_COMPILE_PASCAL)
+    && (compile_MNU != MNU_COMPILE_ANSIC)
+    && (compile_MNU != MNU_COMPILE_ARDUINO)
 	&& (compile_MNU != MNU_COMPILE_XINT)) {
 		Error(_("Must choose a target microcontroller before compiling."));
         return;
     }
 
     if((UartFunctionUsed() && (Prog.mcu) && Prog.mcu->uartNeeds.rxPin == 0)
-    && (compile_MNU!=MNU_COMPILE_PASCAL)
-    && (compile_MNU!=MNU_COMPILE_ANSIC)
-    && (compile_MNU!=MNU_COMPILE_ARDUINO)) {
+    && (compile_MNU != MNU_COMPILE_PASCAL)
+    && (compile_MNU != MNU_COMPILE_ANSIC)
+    && (compile_MNU != MNU_COMPILE_ARDUINO)) {
         Error(_("UART function used but not supported for this micro."));
         return;
     }
 
     if((PwmFunctionUsed() && (Prog.mcu) && Prog.mcu->pwmNeedsPin == 0)
-    && (compile_MNU!=MNU_COMPILE_PASCAL)
-    && (compile_MNU!=MNU_COMPILE_ANSIC)
-    && (compile_MNU!=MNU_COMPILE_ARDUINO)
+    && (compile_MNU != MNU_COMPILE_PASCAL)
+    && (compile_MNU != MNU_COMPILE_ANSIC)
+    && (compile_MNU != MNU_COMPILE_ARDUINO)
 	&& (compile_MNU != MNU_COMPILE_XINT)
 	&& (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
 
-    if (compile_MNU==MNU_COMPILE_ANSIC)
+    if (compile_MNU == MNU_COMPILE_ANSIC)
 		CompileAnsiC(CurrentCompileFile);
-    else if (compile_MNU==MNU_COMPILE_ARDUINO)
+    else if (compile_MNU == MNU_COMPILE_ARDUINO)
 		CompileAnsiC(CurrentCompileFile, ISA_ARDUINO);
 	else if (compile_MNU == MNU_COMPILE_XINT)
 		CompileXInterpreted(CurrentCompileFile);
