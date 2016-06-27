@@ -365,7 +365,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
         
     int type = io->type;
     if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT
-        || type == IO_TYPE_READ_ADC || type == IO_TYPE_PWM_OUTPUT)
+        || type == IO_TYPE_READ_ADC)
     {
         int pin = io->pin;
         if(pin == NO_PIN_ASSIGNED) {
@@ -385,14 +385,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
         } else {
             sprintf(dest, "%d", Prog.mcu->uartNeeds.rxPin);
         }
-    } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu) {
-#if 0
-        if(Prog.mcu->pwmNeedsPin == 0) {
-            strcpy(dest, _("<no PWM!>"));
-        } else {
-            sprintf(dest, "%d", Prog.mcu->pwmNeedsPin);
-        }
-#else
+    } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu && (Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
 		int pin = io->pin;
 		if (pin == NO_PIN_ASSIGNED) {
 			strcpy(dest, _("(not assigned)"));
@@ -400,7 +393,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
 		else {
 			sprintf(dest, "%d", pin);
 		}
-#endif
+    } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu) {
+        if(Prog.mcu->pwmNeedsPin == 0) {
+            strcpy(dest, _("<no PWM!>"));
+        } else {
+            sprintf(dest, "%d", Prog.mcu->pwmNeedsPin);
+        }
     } else {
         strcpy(dest, "");
     }
