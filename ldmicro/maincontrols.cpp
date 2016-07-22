@@ -44,10 +44,13 @@ static HMENU        FileMenu;
 static HMENU        EditMenu;
 static HMENU        InstructionMenu;
 static HMENU        ProcessorMenu;
+static HMENU        ProcessorMenu2;
 static HMENU        SimulateMenu;
 static HMENU        TopMenu;
 static HMENU        SpecialFunction;
 static HMENU        DisplayMenu;
+static HMENU        CmpMenu;
+static HMENU        SignedMenu;
 static HMENU        BitwiseMenu;
 static HMENU        PulseMenu;
 
@@ -55,7 +58,8 @@ static HMENU        PulseMenu;
 // the internal relay too
 HWND                IoList;
 static int          IoListSelectionPoint;
-static BOOL         IoListOutOfSync;
+static BOOL         IoListOutOfSync = FALSE;
+char                IoListSelectionName[MAX_NAME_LEN] = "";
 int                 IoListHeight;
 int                 IoListTop;
 
@@ -84,19 +88,21 @@ void MakeMainWindowControls(void)
         12, 25, 300, 300, MainWindow, NULL, Instance, NULL);
     ListView_SetExtendedListViewStyle(IoList, LVS_EX_FULLROWSELECT);
 
-    int typeWidth = 85;
-    int pinWidth = 100;
-    int portWidth = 90;
-	int pinNameWidth = 90;
-	int modbusWidth = 90;
+    int typeWidth = 110;
+    int pinWidth = 70;
+    int portWidth = 60;
+    int pinNameWidth = 140;
+    int modbusWidth = 80;
 
-    LV_ADD_COLUMN(IoList, LV_IO_NAME,  250,       _("Name"));
+    LV_ADD_COLUMN(IoList, LV_IO_NAME,        150,          _("Name"));
     LV_ADD_COLUMN(IoList, LV_IO_TYPE,  typeWidth, _("Type"));
-    LV_ADD_COLUMN(IoList, LV_IO_STATE, 100,       _("State"));
-    LV_ADD_COLUMN(IoList, LV_IO_PIN,   pinWidth,  _("Pin on Processor"));
+    LV_ADD_COLUMN(IoList, LV_IO_STATE, 100 + 50,       _("State"));
+    LV_ADD_COLUMN(IoList, LV_IO_PIN,         pinWidth,     _("Pin on MCU"));
     LV_ADD_COLUMN(IoList, LV_IO_PORT,  portWidth, _("MCU Port"));
-	LV_ADD_COLUMN(IoList, LV_IO_PINNAME,  pinNameWidth, _("pin Name"));
-	LV_ADD_COLUMN(IoList, LV_IO_MODBUS, modbusWidth, _("Modbus addr"));
+    LV_ADD_COLUMN(IoList, LV_IO_PINNAME,  pinNameWidth, _("pin Name"));
+    LV_ADD_COLUMN(IoList, LV_IO_MODBUS, modbusWidth, _("Modbus addr"));
+    LV_ADD_COLUMN(IoList, LV_IO_RAM_ADDRESS, 70,           _("RAM addr"));
+    LV_ADD_COLUMN(IoList, LV_IO_SISE_OF_VAR, 70,           _("Size of var"));
 
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
@@ -112,8 +118,8 @@ void MakeMainWindowControls(void)
 
     StatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
         "LDmicro started", MainWindow, 0);
-    int edges[] = { 250, 370, -1 };
-    SendMessage(StatusBar, SB_SETPARTS, 3, (LPARAM)edges);
+    int edges[] = { 60, 250 + 60, 370 + 130, -1 };
+    SendMessage(StatusBar, SB_SETPARTS, 4, (LPARAM)edges);
 
     ShowWindow(IoList, SW_SHOW);
 }
@@ -193,7 +199,6 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_SR0, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_ROL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_ROR, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_MASTER_BREAK, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_PERSIST, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_READ_ADC, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SET_PWM, t);
@@ -271,6 +276,8 @@ HMENU MakeMainWindowMenus(void)
     FileMenu = CreatePopupMenu();
     AppendMenu(FileMenu, MF_STRING,   MNU_NEW,    _("&New\tCtrl+N"));
     AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,   _("&Open...\tCtrl+O"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_LD,  _("Open ld in notepad\tF4"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tF6"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,_("Save &As..."));
 
@@ -295,17 +302,17 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
         _("Move Selected Rung &Down\tAlt+Down"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN,
-        _("TODO: Dup&licate Selected Rung\tCtrl+F6"));
+        _("Dup&licate Selected Rung\tCtrl+F6"));
     AppendMenu(EditMenu, MF_STRING, MNU_CAT_RUNG,
-        _("TODO: Ca&t Rung's\tCtrl+X or Shift+Del"));
+        _("Ca&t Rung's\tCtrl+X or Shift+Del"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG,
-        _("TODO: &Copy Rung's\tCtrl+C or Ctrl+Insert"));
+        _("&Copy Rung's\tCtrl+C or Ctrl+Insert"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_ELEM,
-        _("TODO: &Copy Selected Element\tInsert"));
+        _("Copy Selected Element\tInsert"));
     AppendMenu(EditMenu, MF_STRING, MNU_PASTE_RUNG,
-        _("TODO: &Paste Rung's\tCtrl+V or Shift+Insert"));
+        _("&Paste Rung's\tCtrl+V or Shift+Insert"));
     AppendMenu(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG,
-        _("TODO: Paste Rung's &Into Rung\tAlt+Insert"));
+        _("Paste Rung's &Into Rung\tAlt+Insert"));
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
@@ -315,17 +322,17 @@ HMENU MakeMainWindowMenus(void)
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_UP,
-        _("TODO: Scroll Up\tCtrl+Up"));
+        _("Scroll Up\tCtrl+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_DOWN,
-        _("TODO: Scroll Down\tCtrl+Down"));
+        _("Scroll Down\tCtrl+Down"));
     AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_PgUP,
-        _("TODO: Scroll PgUp\tCtrl+PgUp"));
+        _("Scroll PgUp\tCtrl+PgUp"));
     AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_PgDOWN,
-        _("TODO: Scroll PgDown\tCtrl+PgDown"));
+        _("Scroll PgDown\tCtrl+PgDown"));
     AppendMenu(EditMenu, MF_STRING, MNU_ROLL_HOME,
-        _("TODO: Roll Home\tCtrl+Home"));
+        _("Roll Home\tCtrl+Home"));
     AppendMenu(EditMenu, MF_STRING, MNU_ROLL_END,
-        _("TODO: Roll End\tCtrl+End"));
+        _("Roll End\tCtrl+End"));
 
     InstructionMenu = CreatePopupMenu();
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COMMENT,
@@ -337,8 +344,6 @@ HMENU MakeMainWindowMenus(void)
         _("Insert -+------+- Short-Circuit"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
-//    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MASTER_BREAK,
-//        _("Insert Master Control Break"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
@@ -359,23 +364,15 @@ HMENU MakeMainWindowMenus(void)
         _("Insert _/OSR/\\_ (One Shot Rising)\t&/"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSF,
         _("Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSC,
+        _("Insert OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
 
     PulseMenu = CreatePopupMenu();
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_OSC,        _("TODO: Insert OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE,     _("TODO: Insert N PULSE"));
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_PULSER,     _("TODO: Insert PULSER"));
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_STEPPER,    _("TODO: Insert STEPPER"));
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("TODO: Insert N PULSE OFF"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu,_("Pulse"));
-
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("TODO: Insert QUAD ENCOD"));
-    DisplayMenu = CreatePopupMenu();
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG,           _("TODO: Insert char to 7 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG,           _("TODO: Insert char to 9 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG,          _("TODO: Insert char to 14 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("TODO: Insert char to 16 SEGMENT converter"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu,_("Display"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu,_("Pulse generators"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TON,
@@ -398,6 +395,7 @@ HMENU MakeMainWindowMenus(void)
         _("Insert R&ES (Counter/RTO Reset)\tE"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+/*
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEQ,
@@ -410,7 +408,23 @@ HMENU MakeMainWindowMenus(void)
         _("Insert LES (Compare for Less Than)\t<"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LEQ,
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
+*/
+    CmpMenu = CreatePopupMenu();
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_EQU,
+        _("Insert EQU (Compare for Equals)\t="));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_NEQ,
+        _("Insert NEQ (Compare for Not Equals)\t!"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_GRT,
+        _("Insert GRT (Compare for Greater Than)\t>"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_GEQ,
+        _("Insert GEQ (Compare for Greater Than or Equal)\t."));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_LES,
+        _("Insert LES (Compare for Less Than)\t<"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_LEQ,
+        _("Insert LEQ (Compare for Less Than or Equal)\t,"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CmpMenu,_("Compare variable"));
 
+/*
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOV,
         _("Insert MOV (Move)\tM"));
@@ -426,6 +440,23 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEG,_("TODO: Insert NEG (Integer Negate)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("TODO: Insert BIN2BCD"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("TODO: Insert BCD2BIN"));
+*/
+    SignedMenu = CreatePopupMenu();
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOV,
+        _("Insert MOV (Move)\tM"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_ADD,
+        _("Insert ADD (16-bit Integer Add)\t+"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SUB,
+        _("Insert SUB (16-bit Integer Subtract)\t-"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MUL,
+        _("Insert MUL (16-bit Integer Multiply)\t*"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_DIV,
+        _("Insert DIV (16-bit Integer Divide)\tD"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD,_("TODO: Insert MOD (Integer Divide Remainder)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG,_("TODO: Insert NEG (Integer Negate)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("TODO: Insert BIN2BCD"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("TODO: Insert BCD2BIN"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SignedMenu,_("Signed variable operations"));
 
     BitwiseMenu = CreatePopupMenu();
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND,_("TODO: Insert bitwise AND"));
@@ -438,7 +469,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL,_("TODO: Insert ROL cyclic shift to the left"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR,_("TODO: Insert ROR cyclic shift to the right"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP,_("TODO: Insert SWAP"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu,_("Bitwise"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu,_("Bitwise variable operations (Unsigned)"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHIFT_REG,
@@ -449,10 +480,6 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Piecewise Linear"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STRING,
-        _("TODO: Insert Formatted String"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_UDRE,
-        _("TODO: Insert &UART UDRE"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STR,
         _("Insert Formatted String Over UART"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
@@ -461,14 +488,27 @@ HMENU MakeMainWindowMenus(void)
         _("Insert &UART Receive"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM,
         _("Insert Set PWM Output"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
-        _("TODO: Insert Set Software PWM Output (AVR136 Application Note)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWM_OFF,
-        _("TODO: Insert PWM OFF"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,
         _("Insert A/D Converter Read\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
         _("Insert Make Persistent"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STRING,
+        _("TODO: Insert Formatted String"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_UDRE,
+        _("TODO: Insert &UART UDRE"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
+        _("TODO: Insert Set Software PWM Output (AVR136 Application Note)"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWM_OFF,
+        _("TODO: Insert PWM OFF"));
+
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("TODO: Insert QUAD ENCOD"));
+    DisplayMenu = CreatePopupMenu();
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG,           _("TODO: Insert char to 7 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG,           _("TODO: Insert char to 9 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG,          _("TODO: Insert char to 14 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("TODO: Insert char to 16 SEGMENT converter"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu,_("Display"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     // Special function menu
@@ -485,11 +525,11 @@ HMENU MakeMainWindowMenus(void)
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters..."));
     ProcessorMenu = CreatePopupMenu();
-    AvrFamily family = SupportedMcus[0].Family;
+    Core core = SupportedMcus[0].core;
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-        if(family != SupportedMcus[i].Family) {
-            family = SupportedMcus[i].Family ;
-            AppendMenu(ProcessorMenu, MF_SEPARATOR,0,""); //separate AVR MCU family
+        if(core != SupportedMcus[i].core) {
+            core = SupportedMcus[i].core ;
+            AppendMenu(ProcessorMenu, MF_SEPARATOR,0,""); //separate AVR MCU core
         }
         AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
             SupportedMcus[i].mcuName);
@@ -499,13 +539,25 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu,
         _("&Microcontroller"));
 
+    ProcessorMenu2 = CreatePopupMenu();
+    AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu2,
+        _("Microcontrollers: TODO and DONE"));
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega32 44-Pin packages");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega328 32-Pin packages");
+    AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC16F1512 - PIC16F1527");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1516 28-Pin SPDIP, SOIC, SSOP");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1527 64-Pin packages");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC16F1933 - PIC16F1947");
+
     SimulateMenu = CreatePopupMenu();
     AppendMenu(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE,
-        _("Si&mulation Mode\tCtrl+M"));
+        _("Si&mulation Mode\tCtrl+M or F7"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION,
-        _("Start &Real-Time Simulation\tCtrl+R"));
+        _("Start &Real-Time Simulation\tCtrl+R or F8"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION,
-        _("&Halt Simulation\tCtrl+H"));
+        _("&Halt Simulation\tCtrl+H or F9"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_SINGLE_CYCLE,
         _("Single &Cycle\tSpace"));
 
@@ -514,12 +566,12 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(compile, MF_STRING, MNU_COMPILE_AS,      _("Compile &As..."));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,    _("Compile HEX"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,   _("Compile ANSIC"));
-	AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT,	_("Compile Extended Byte Code"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT,    _("Compile Extended Byte Code"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("DONE: Compile C for ARDUINO"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_CAVR,    _("TODO: Compile C for AVR GCC, CodeVisionAVR, IAR AVR"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_CAVR,    _("DONE: Compile C for AVR GCC, CodeVisionAVR, IAR AVR"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEXDONE,_("DONE: Compile HEX->ASM"));
 //  AppendMenu(compile, MF_STRING, MNU_COMPILE_ASM,     _("TODO: Compile ASM->HEX"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL,  _("TODO: Compile PASCAL"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL,  _("DONE: Compile PASCAL"));
     AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,       _("Call flashMcu.bat\tF6"));
     AppendMenu(compile, MF_STRING, MNU_READ_BAT,        _("Call readMcu.bat\tCtrl+F6"));
 
@@ -692,6 +744,7 @@ void RefreshControlsToSettings(void)
                 break;
             }
         }
+        IoListSelectionPoint = SendMessage(IoList, LVM_GETNEXTITEM, -1, LVNI_SELECTED);
     }
 
     ListView_DeleteAllItems(IoList);
@@ -709,26 +762,46 @@ void RefreshControlsToSettings(void)
     if(IoListSelectionPoint >= 0) {
         for(i = 0; i < Prog.io.count; i++) {
             ListView_SetItemState(IoList, i, 0, LVIS_SELECTED);
+            ListView_SetItemState(IoList, i, 0, LVIS_FOCUSED);
         }
         ListView_SetItemState(IoList, IoListSelectionPoint, LVIS_SELECTED,
             LVIS_SELECTED);
+        ListView_SetItemState(IoList, IoListSelectionPoint, LVIS_FOCUSED,
+            LVIS_FOCUSED);
         ListView_EnsureVisible(IoList, IoListSelectionPoint, FALSE);
     }
     IoListOutOfSync = FALSE;
 
+    SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_(ProgramChangedNotSaved ? _("modified") : "        " ));
+
     if(Prog.mcu) {
-        SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)Prog.mcu->mcuName);
+        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)Prog.mcu->mcuName);
     } else {
-        SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_("no MCU selected"));
+        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)_("no MCU selected"));
     }
-    char buf[256];
-    sprintf(buf, _("cycle time %.2f ms"), (double)Prog.cycleTime/1000.0);
-    SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+    char buf[1000];
+
+    char Tunits[3];
+    double T=SIprefix(1.0*Prog.cycleTime/1000000, Tunits);
+
+    char Funits[3];
+    double F=SIprefix(1000000.0/Prog.cycleTime, Funits);
+
+    char F2units[3];
+    double F2=SIprefix(1000000.0/Prog.cycleTime/2, F2units);
+
+    char TNunits[3];
+    double TN=SIprefix(1.0*Prog.cycleTime*CyclesCount/1000000, TNunits);
+
+    sprintf(buf, "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss",
+        T,Tunits, F,Funits, F2,F2units, CyclesCount, TN,TNunits);
+    SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-        Prog.mcu->whichIsa == ISA_NETZER ||
-        Prog.mcu->whichIsa == ISA_INTERPRETED ||
-		Prog.mcu->whichIsa == ISA_XINTERPRETED))
+                    Prog.mcu->whichIsa == ISA_NETZER ||
+                    Prog.mcu->whichIsa == ISA_PASCAL ||
+                    Prog.mcu->whichIsa == ISA_INTERPRETED ||
+                    Prog.mcu->whichIsa == ISA_XINTERPRETED))
     {
         strcpy(buf, "");
     } else {
@@ -759,6 +832,7 @@ void RefreshControlsToSettings(void)
 void GenerateIoListDontLoseSelection(void)
 {
     int i;
+    int SaveIoListSelectionPoint = IoListSelectionPoint;
     IoListSelectionPoint = -1;
     for(i = 0; i < Prog.io.count; i++) {
         if(ListView_GetItemState(IoList, i, LVIS_SELECTED)) {
@@ -767,9 +841,15 @@ void GenerateIoListDontLoseSelection(void)
         }
     }
     IoListSelectionPoint = GenerateIoList(IoListSelectionPoint);
+
     // can't just update the listview index; if I/O has been added then the
     // new selection point might be out of range till we refill it
-    IoListOutOfSync = TRUE;
+    if(IoListSelectionPoint >= 0) {
+      if(IoListSelectionPoint != SaveIoListSelectionPoint) {
+          IoListOutOfSync = TRUE;
+          strcpy(IoListSelectionName, Prog.io.assignment[IoListSelectionPoint].name);
+      }
+    }
     RefreshControlsToSettings();
 }
 
@@ -811,7 +891,7 @@ void MainWindowResized(void)
 // Toggle whether we are in simulation mode. A lot of options are only
 // available in one mode or the other.
 //-----------------------------------------------------------------------------
-void ToggleSimulationMode(void)
+void ToggleSimulationMode(BOOL doSimulateOneRung)
 {
     InSimulationMode = !InSimulationMode;
 
@@ -832,7 +912,9 @@ void ToggleSimulationMode(void)
 
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_CHECKED);
 
-        ClearSimulationData();
+        if(ClearSimulationData()) {
+            SimulateOneCycle(TRUE); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
+        }
         // Recheck InSimulationMode, because there could have been a compile
         // error, which would have kicked us out of simulation mode.
         if(UartFunctionUsed() && InSimulationMode) {
@@ -869,6 +951,11 @@ void ToggleSimulationMode(void)
     DrawMenuBar(MainWindow);
     InvalidateRect(MainWindow, NULL, FALSE);
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+}
+
+void ToggleSimulationMode()
+{
+    ToggleSimulationMode(FALSE);
 }
 
 //-----------------------------------------------------------------------------

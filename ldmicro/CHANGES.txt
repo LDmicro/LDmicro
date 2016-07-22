@@ -1,22 +1,4 @@
-== Release 3.4.0
-    * Added: This release include fork https://github.com/f1oat/LDmicro.
-
-      Compressed bytecodes, Controllino Maxi support, MODBUS support.
-      http://cq.cx/ladder-forum.pl?action=viewthread&parent=5007
-      MODBUS use RTU over TCP. But that should work also in RS485 mode by
-      linking with the proper Arduino library.
-
-      Announcing LDuino, an Arduino based PLC software compatible with LDmicro
-      http://cq.cx/ladder-forum.pl?action=viewthread&parent=5070
-
-      Controllino is here: http://controllino.biz/
-      This a nice product. Unfortunately the creator got bad reputation on Kickstarter.
-
-      More information you can get from author of Controllino Maxi support in LDmicro:
-      Frederic Rible <frible@teaser.fr>
-
-
-== Release 3.3.2
+== Release 3.5.0 experimental pre-release
 
     * Fixed: Address of configuration word(s) are checked and corrected on PIC controllers.
 
@@ -29,6 +11,115 @@
       Attention: Not all PIC ports have a pull-up resistors.
       See datasheets of the controller.
       Use an external resistor, if there is no internal pull-up.
+
+    * Modified:
+       Frequency of PWM in Element SET PWM was defined as
+         int     targetFreq;
+       now redefined as
+         char    targetFreq[MAX_NAME_LEN];
+
+       Max value in Element COUNTER and CIRCULAR COUNTER was defined as
+         int     max;
+       now redefined as
+         char    max[MAX_NAME_LEN];
+
+       Now you can use variable as argument of a COUNTER or SET PWM.
+       It allow to create more sophisticated algorithms in LD.
+
+    * You can specify literals as normal decimal numbers (10, 1234, -56).
+      Added:
+      You can specify hexadecimal numbers (0xA, 0x04D2, 0xffc8),
+      octal numbers (0o12, 0o2322, 0o177710),
+      binary numbers (0b1010, 0b10011010010, 0b1111111111001000)
+      in most places that you could use a decimal number.
+
+    * Added: You can replace LD elements in editor mode by pressing SPACE key.
+      For example OSR->OSF->OSR,
+        TON->TOF->RTO->TON ets.
+
+    * Added: Copy-Paste rung's. To select rung's press Shift+Up, Shift+Down,
+      or Ctrl+LeftMouseKey. Then press Ctrl+Insert to write selected rung's
+      into buffer(file ldmicro.tmp). Then in new place press Shift+Insert
+      to insert buffer into LD diagram.
+
+      For copying only one selected element press Insert, and then Alt+Insert
+      to Pasting element in new place.
+
+      Selected rungs marks symbol '*' before rungs number.
+      Buffered rungs marks symbol 'R'.
+      Buffered element marks symbol 'L' if leaf end 'E' if ends element.
+
+      If cursor under the selected element, then buffer will be Pasted
+      below the current rung, otherwise buffer will be Pasted before
+      the current rung.
+
+    * Added: Open LD file in notepad F4. Its allow you rename variables and
+      contacts in notepad. You must use "replace all" in notepad for renaming.
+      Be careful. Recommended to create reserve copy of LD file before editing.
+      Notepad called over notepad.bat and you can change notepad.bat for
+      calling you favorite editor.
+
+    * Added: Display scrolling Up/Down/PgUp/PgDown/Home/End.
+
+    * Modified: Compressed view of LD diagram on display. You can see more
+      in the display without scrolling.
+      ADD, SUB, MUL, DIV redused to one display area on the screen.
+      If variable name more then display area (for example LongNameOfVar),
+      it displayed with symbol '~' as LongNameOf~ and still work.
+
+      ||      Xnew       {LongNameOf~ :=} ||
+      ||-------] [-------{MOV         10}-||
+
+    * Reorganized menu. ProcessorMenu2, CmpMenu, SignedMenu added etc.
+
+    * Added: Used hardware multiplication MUL, MULS, MULSU for AVR's.
+
+    * Added: Used AUTO_BANKING and AUTO_PAGING for PIC's. Its allows to
+      adding new MCUs more simple.
+
+    * International System (SI) prefixes used in many places.
+
+    * In simulation mode You can set normal closed inputs to 1 before simulating.
+      Use symbol '_' after X in contast name.
+      For example:
+      Xcontast1 sets to 0 before simulating. (normal open)
+      Xcontast2 sets to 0 before simulating. (normal open)
+      X_contast3 sets to 1 before simulating. (normal closed)
+      X_contast4 sets to 1 before simulating. (normal closed)
+      This feature applies only in simulation mode,
+      and does not affect hex file in physical device.
+
+    * Added ELEM_OSC oscillator F=1/(2*Tcycle)
+
+    * Added: In 'MCU Configuration' dialog you can select timer 0 or 1 for generating of PLC cycle.
+      This allow use Timer1 for PWM or other features. 
+
+    * Added: In 'MCU Configurations' dialog added YPlcCycleDuty pin.
+      YPlcCycleDuty pin set to 1 at begin and to 0 at end of PLC cycle.
+      You can measure frequency(it must be 1/Tcycle) and duty cycle of PLC.  
+      Unstable frequency or big duty cycle says about long LD programm 
+      and too short PLC cycle.
+
+== Release 3.4.0
+
+    * Added: This release include fork https://github.com/f1oat/LDmicro.
+
+      Compressed bytecodes, Controllino Maxi support, MODBUS support.
+      http://cq.cx/ladder-forum.pl?action=viewthread&parent=5007
+      MODBUS use RTU over TCP. But that should work also in RS485 mode by
+      linking with the proper Arduino library.
+
+      Announcing LDuino, an Arduino based PLC software compatible with LDmicro
+      http://cq.cx/ladder-forum.pl?action=viewthread&parent=5070
+
+      Controllino is here: http://controllino.biz/
+      This a nice product. Unfortunately the creator got bad reputation on Kickstarter.
+      https://www.kickstarter.com/projects/24519005/controllino-plc-arduino-compatible/description
+
+      More information you can get from author of Controllino Maxi support in LDmicro:
+      Frederic Rible <frible@teaser.fr>
+
+      Attention! Not compatible with LDmicro2.3, if modbus contacts used.
 
 == Release 3.3.1
 

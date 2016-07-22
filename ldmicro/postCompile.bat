@@ -54,6 +54,7 @@ goto PROTEUS
 :PROTEUS
 @md  "%2\%3\PROTEUS"
 copy "%2\%3.asm"  "%2\%3\PROTEUS"
+copy "%2\%3.hex"  "%2\%3\PROTEUS"
 rem pause
 goto exit
 ;

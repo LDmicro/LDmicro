@@ -83,6 +83,11 @@ BOOL AttachConsoleDynamic(DWORD base)
 }
 
 //-----------------------------------------------------------------------------
+void doexit(int status)
+{
+    exit(status);
+}
+//-----------------------------------------------------------------------------
 // For error messages to the user; printf-like, to a message box.
 // For warning messages use ' ' in *str[0], see avr.cpp INT_SET_NPULSE.
 //-----------------------------------------------------------------------------
@@ -343,54 +348,205 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_COUNTER:           return _("counter"); 
         case IO_TYPE_GENERAL:           return _("general var"); 
         case IO_TYPE_PERSIST:           return _("saved var");
+        case IO_TYPE_STRING:            return _("string var");
         case IO_TYPE_READ_ADC:          return _("adc input"); 
         default:                        return _("<corrupt!>");
     }
 }
 
 //-----------------------------------------------------------------------------
-// Get a pin number for a given I/O; for digital ins and outs and analog ins,
-// this is easy, but for UART this is forced (by what peripherals
+// Get a pin number, portName, pinName for a given I/O; for digital ins and outs and analog ins,
+// this is easy, but for PWM and UART and interrupts this is forced (by what peripherals
 // are available) so we look at the characteristics of the MCU that is in
 // use.
 //-----------------------------------------------------------------------------
-void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
+void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName)
 {
     if(!dest) return;
 
-    if(!io) {
         strcpy(dest, "");
-        return;
-    }
+    if(portName)
+        strcpy(portName, "");
+    if(pinName)
+        strcpy(pinName, "");
         
+    if(!io) return;
+
     int type = io->type;
+    int pin = io->pin;
+    McuIoPinInfo *iop;
     if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT
-        || type == IO_TYPE_READ_ADC || type == IO_TYPE_PWM_OUTPUT)
+    || type == IO_TYPE_READ_ADC)
     {
-        int pin = io->pin;
         if(pin == NO_PIN_ASSIGNED) {
             strcpy(dest, _("(not assigned)"));
+            if(portName)
+                strcpy(portName, _("(not assigned)"));
+            if(pinName)
+                strcpy(pinName, _("(not assigned)"));
         } else {
             sprintf(dest, "%d", pin);
+            if(portName) {
+                if(UartFunctionUsed() && Prog.mcu) {
+                    if((Prog.mcu->uartNeeds.rxPin == pin) ||
+                       (Prog.mcu->uartNeeds.txPin == pin))
+                    {
+                        strcpy(portName, _("<UART needs!>"));
+                        return;
+                    }
+                }
+                if(PwmFunctionUsed() && Prog.mcu) {
+                    if(Prog.mcu->pwmNeedsPin == pin) {
+                        strcpy(portName, _("<PWM needs!>"));
+                        return;
+                    }
+                }
+                /*
+                if(QuadEncodFunctionUsed() && Prog.mcu) {
+                    if((Prog.mcu->IntNeeds.int0 == pin)
+                    || (Prog.mcu->IntNeeds.int1 == pin) )
+                    {
+                        strcpy(portName, _("<INT needs!>"));
+                        return;
+                    }
+                }
+                */
+                iop = PinInfo(pin);
+                if(iop && Prog.mcu)
+                    sprintf(portName, "%c%c%d",
+                        Prog.mcu->portPrefix, iop->port, iop->bit);
+                else
+                    strcpy(portName, _("<not an I/O!>"));
+            }
+            if(pinName) {
+                if(UartFunctionUsed() && Prog.mcu) {
+                    if((Prog.mcu->uartNeeds.rxPin == pin) ||
+                       (Prog.mcu->uartNeeds.txPin == pin))
+                    {
+                        strcpy(pinName, _("<UART needs!>"));
+                        return;
+                    }
+                }
+                if(PwmFunctionUsed() && Prog.mcu) {
+                    if(Prog.mcu->pwmNeedsPin == pin) {
+                        strcpy(pinName, _("<PWM needs!>"));
+                        return;
+                    }
+                }
+                /*
+                if(QuadEncodFunctionUsed() && Prog.mcu) {
+                    if((Prog.mcu->IntNeeds.int0 == pin)
+                    || (Prog.mcu->IntNeeds.int1 == pin) )
+                    {
+                        strcpy(pinName, _("<INT needs!>"));
+                        return;
+                    }
+                }
+                */
+                iop = PinInfo(pin);
+                if(iop && Prog.mcu) {
+                    if((iop->pinName) && strlen(iop->pinName))
+                      sprintf(pinName, "%s", iop->pinName);
+                } else
+                    strcpy(pinName, _("<not an I/O!>"));
+            }
+        }
+    } else if(type == IO_TYPE_INT_INPUT && Prog.mcu) {
+        if(Prog.mcu->interruptCount == 0) {
+            strcpy(dest, _("<no INTs!>"));
+            if(portName)
+                strcpy(portName, _("<no INTs!>"));
+            if(pinName)
+                strcpy(pinName, _("<no INTs!>"));
+        } else {
+            sprintf(dest, "%d", pin);
+            iop = PinInfo(pin);
+            if(iop) {
+                if(portName) {
+                    sprintf(portName, "%c%c%d",
+                        Prog.mcu->portPrefix, iop->port, iop->bit);
+                if(iop->pinName)
+                    sprintf(pinName, "%s", iop->pinName);
+            } else
+                if(portName)
+                strcpy(portName, _("<not an I/O!>"));
+                if(pinName)
+                strcpy(pinName, _("<not an I/O!>"));
+            }
         }
     } else if(type == IO_TYPE_UART_TX && Prog.mcu) {
         if(Prog.mcu->uartNeeds.txPin == 0) {
             strcpy(dest, _("<no UART!>"));
+            if(portName)
+                strcpy(portName, _("<no UART!>"));
+            if(pinName)
+                strcpy(pinName, _("<no UART!>"));
         } else {
             sprintf(dest, "%d", Prog.mcu->uartNeeds.txPin);
+            iop = PinInfo(Prog.mcu->uartNeeds.txPin);
+            if(iop) {
+                if(portName)
+                    sprintf(portName, "%c%c%d",
+                      Prog.mcu->portPrefix, iop->port, iop->bit);
+                 if(pinName)
+                    if(iop->pinName)
+                        sprintf(pinName, "%s", iop->pinName);
+            } else {
+                if(portName)
+                strcpy(portName, _("<not an I/O!>"));
+                if(pinName)
+                strcpy(pinName, _("<not an I/O!>"));
+            }
         }
     } else if(type == IO_TYPE_UART_RX && Prog.mcu) {
         if(Prog.mcu->uartNeeds.rxPin == 0) {
             strcpy(dest, _("<no UART!>"));
+            if(portName)
+                strcpy(portName, _("<no UART!>"));
+            if(pinName)
+                strcpy(pinName, _("<no UART!>"));
         } else {
             sprintf(dest, "%d", Prog.mcu->uartNeeds.rxPin);
+            iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
+            if(iop) {
+                if(portName)
+                    sprintf(portName, "%c%c%d",
+                      Prog.mcu->portPrefix, iop->port, iop->bit);
+                 if(pinName)
+                    if(iop->pinName)
+                        sprintf(pinName, "%s", iop->pinName);
+            } else {
+                if(portName)
+                strcpy(portName, _("<not an I/O!>"));
+                if(pinName)
+                strcpy(pinName, _("<not an I/O!>"));
+            }
         }
     } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu) {
-#if 0
-        if(Prog.mcu->pwmNeedsPin == 0) {
+#if 1
+        if(Prog.mcu->pwmNeedsPin == 0 || Prog.mcu->pwmCount == 0) {
             strcpy(dest, _("<no PWM!>"));
+            if(portName)
+                strcpy(portName, _("<no PWM!>"));
+            if(pinName)
+                strcpy(pinName, _("<no PWM!>"));
         } else {
-            sprintf(dest, "%d", Prog.mcu->pwmNeedsPin);
+
+            sprintf(dest, "%d", pin);
+            iop = PinInfo(pin);
+            if(iop) {
+                if(portName)
+                    sprintf(portName, "%c%c%d",
+                      Prog.mcu->portPrefix, iop->port, iop->bit);
+                if(pinName)
+                    if(iop->pinName)
+                        sprintf(pinName, "%s", iop->pinName);
+            } else {
+                if(portName)
+                strcpy(portName, _("<not an I/O!>"));
+                if(pinName)
+                strcpy(pinName, _("<not an I/O!>"));
+        }
         }
 #else
 		int pin = io->pin;
@@ -401,7 +557,187 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
 			sprintf(dest, "%d", pin);
 		}
 #endif
-    } else {
-        strcpy(dest, "");
+    //} else if((type == IO_TYPE_STRING)) {
     }
+}
+//-----------------------------------------------------------------------------
+void GetPinName(int pin, char *pinName)
+{
+    sprintf(pinName, "");
+    int i;
+    if(Prog.mcu)
+    if (pin != NO_PIN_ASSIGNED)
+    for(i = 0; i < Prog.mcu->pinCount; i++)
+        if(Prog.mcu->pinInfo[i].pin==pin)
+            if(Prog.mcu && (Prog.mcu->portPrefix == 'L') && (Prog.io.assignment[i].pin))
+                sprintf(pinName, "%s",
+                    PinToName(Prog.io.assignment[i].pin));
+            else
+                if((Prog.mcu->pinInfo[i].pinName) && strlen(Prog.mcu->pinInfo[i].pinName))
+                  sprintf(pinName, "%s", Prog.mcu->pinInfo[i].pinName);
+                else
+                  sprintf(pinName, "%c%c%d",
+                    Prog.mcu->portPrefix,
+                    Prog.mcu->pinInfo[i].port,
+                    Prog.mcu->pinInfo[i].bit);
+}
+
+//-----------------------------------------------------------------------------
+void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
+{
+    PinNumberForIo(dest, io, NULL, NULL);
+}
+
+//-----------------------------------------------------------------------------
+int NameToPin(char *pinName)
+{
+    int i;
+    if(Prog.mcu)
+       for(i = 0; i < Prog.mcu->pinCount; i++)
+           if(strcmp(Prog.mcu->pinInfo[i].pinName,pinName)==0)
+               return Prog.mcu->pinInfo[i].pin;
+    return 0;
+}
+//-----------------------------------------------------------------------------
+char *PinToName(int pin)
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.mcu->pinCount; i++)
+            if(Prog.mcu->pinInfo[i].pin==pin)
+                return Prog.mcu->pinInfo[i].pinName;
+    return "";
+}
+//-----------------------------------------------------------------------------
+McuIoPinInfo *PinInfo(int pin)
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.mcu->pinCount; i++)
+            if(Prog.mcu->pinInfo[i].pin==pin)
+                return &(Prog.mcu->pinInfo[i]);
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+McuIoPinInfo *PinInfoForName(char *name)
+{
+    int i;
+    for(i = 0; i < Prog.io.count; i++)
+        if(strcmp(Prog.io.assignment[i].name, name)==0)
+            return PinInfo(Prog.io.assignment[i].pin);
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+McuPwmPinInfo *PwmPinInfo(int pin)
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.mcu->pwmCount; i++)
+            if(Prog.mcu->pwmInfo[i].pin==pin)
+                return &(Prog.mcu->pwmInfo[i]);
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+McuPwmPinInfo *PwmPinInfoForName(char *name)
+{
+    int i;
+    for(i = 0; i < Prog.io.count; i++)
+        if(strcmp(Prog.io.assignment[i].name, name)==0)
+            return PwmPinInfo(Prog.io.assignment[i].pin);
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+McuAdcPinInfo *AdcPinInfo(int pin)
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.mcu->adcCount; i++)
+            if(Prog.mcu->adcInfo[i].pin==pin)
+                return &(Prog.mcu->adcInfo[i]);
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+McuAdcPinInfo *AdcPinInfoForName(char *name)
+{
+    int i;
+    for(i = 0; i < Prog.io.count; i++)
+        if(strcmp(Prog.io.assignment[i].name, name)==0)
+            return AdcPinInfo(Prog.io.assignment[i].pin);
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+BOOL IsInterruptPin(int pin)
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.mcu->interruptCount; i++)
+            if(Prog.mcu->interruptInfo[i].pin==pin)
+                return TRUE;
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+int ishobdigit(int c)
+{
+    if((isxdigit(c)) || (toupper(c)=='X') || (toupper(c)=='O')/* || (toupper(c)=='B')*/)
+        return 1;
+    return 0;
+}
+//-----------------------------------------------------------------------------
+int isal_num(int c)
+{
+    return isalnum(c) || c == '_';
+}
+//-----------------------------------------------------------------------------
+int isalpha_(int c)
+{
+    return isalpha(c) || c == '_';
+}
+//-----------------------------------------------------------------------------
+int isname(char *name)
+{
+    if(!isalpha_(*name))
+        return 0;
+    char *s = name;
+    while(*s) {
+        if(!isal_num(*s))
+            return 0;
+        s++;
+    }
+    return 1;
+}
+//-----------------------------------------------------------------------------
+
+size_t strlenalnum(const char *str)
+{
+    size_t r=strlen(str);
+    if(r) {
+        while(*str) {
+            if(isdigit(*str) || isalpha(*str))
+                break;
+            str++;
+        }
+        r=strlen(str);
+        while(r) {
+            if(isdigit(str[r-1]) || isalpha(str[r-1]))
+                break;
+            r--;
+        }
+    }
+    return r;
+}
+
+//-----------------------------------------------------------------------------
+void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc)
+{
+    if(Src & (1<<bitSrc))
+        *Dest |= 1 << bitDest;
+    else
+        *Dest &= ~(1 << bitDest);
 }

@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -31,7 +31,7 @@
 
 static HWND SimpleDialog;
 
-#define MAX_BOXES 5
+#define MAX_BOXES 6
 
 static HWND Textboxes[MAX_BOXES];
 static HWND Labels[MAX_BOXES];
@@ -49,7 +49,8 @@ static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
 {
     if(msg == WM_CHAR) {
         if(!(isalpha(wParam) || isdigit(wParam) || wParam == '_' ||
-            wParam == '\b' || wParam == '-' || wParam == '\'' || wParam == '@'))
+            wParam == '@' ||
+            wParam == '\b' || wParam == '-' || wParam == '\''))
         {
             return 0;
         }
@@ -58,11 +59,12 @@ static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     int i;
     for(i = 0; i < MAX_BOXES; i++) {
         if(hwnd == Textboxes[i]) {
-            return CallWindowProc((WNDPROC)PrevAlnumOnlyProc[i], hwnd, msg, 
+            return CallWindowProc((WNDPROC)PrevAlnumOnlyProc[i], hwnd, msg,
                 wParam, lParam);
         }
     }
     oops();
+    return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -72,7 +74,9 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     LPARAM lParam)
 {
     if(msg == WM_CHAR) {
-        if(!(isdigit(wParam) || wParam == '.' || wParam == '\b' 
+        if(!(ishobdigit(wParam) || wParam == '.' || wParam == '\b'
+            || wParam == '\''
+            || wParam == '\\'
             || wParam == '-'))
         {
             return 0;
@@ -82,11 +86,12 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     int i;
     for(i = 0; i < MAX_BOXES; i++) {
         if(hwnd == Textboxes[i]) {
-            return CallWindowProc((WNDPROC)PrevNumOnlyProc[i], hwnd, msg, 
+            return CallWindowProc((WNDPROC)PrevNumOnlyProc[i], hwnd, msg,
                 wParam, lParam);
         }
     }
     oops();
+    return 0;
 }
 
 static void MakeControls(int boxes, char **labels, DWORD fixedFontMask)
@@ -115,14 +120,14 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask)
 
         Labels[i] = CreateWindowEx(0, WC_STATIC, labels[i],
             WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-            (80 + adj) - si.cx - 4, 13 + i*30, si.cx, 21,
+            (80 + adj) - si.cx + 15, 13 + i*30, si.cx, 21,
             SimpleDialog, NULL, Instance, NULL);
         NiceFont(Labels[i]);
 
         Textboxes[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
             WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
             WS_VISIBLE,
-            80 + adj, 12 + 30*i, 120 - adj, 21,
+            80 + 25 + adj, 12 + 30*i, 120 + 535 - adj, 21,
             SimpleDialog, NULL, Instance, NULL);
 
         if(fixedFontMask & (1 << i)) {
@@ -135,12 +140,12 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        218, 11, 70, 23, SimpleDialog, NULL, Instance, NULL); 
+        218 + 550, 11, 70, 23, SimpleDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        218, 41, 70, 23, SimpleDialog, NULL, Instance, NULL); 
+        218 + 550, 41, 70, 23, SimpleDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 }
 
@@ -151,23 +156,23 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
 
     if(boxes > MAX_BOXES) oops();
 
-    SimpleDialog = CreateWindowClient(0, "LDmicroDialog", title, 
+    SimpleDialog = CreateWindowClient(0, "LDmicroDialog", title,
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 304, 15 + 30*(boxes < 2 ? 2 : boxes), NULL, NULL,
+        100, 100, 304 + 550, 15 + 30*(boxes < 2 ? 2 : boxes), NULL, NULL,
         Instance, NULL);
 
     MakeControls(boxes, labels, fixedFontMask);
-  
+
     int i;
     for(i = 0; i < boxes; i++) {
         SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);
 
         if(numOnlyMask & (1 << i)) {
-            PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, 
+            PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC,
                 (LONG_PTR)MyNumOnlyProc);
         }
         if(alnumOnlyMask & (1 << i)) {
-            PrevAlnumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, 
+            PrevAlnumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC,
                 (LONG_PTR)MyAlnumOnlyProc);
         }
     }
@@ -211,6 +216,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
                 SendMessage(Textboxes[i], WM_GETTEXT, (MAX_NAME_LEN-1), (LPARAM)get);
 
                 if( (!strchr(get, '\'')) ||
+                    (get[0] == '\'' && get[3] == '\'' && strlen(get)==4 && get[1] == '\\' ) ||
                         (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
                 {
                     if(strlen(get) == 0) {
@@ -231,16 +237,16 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     return !didCancel;
 }
 
-void ShowTimerDialog(int which, int *delay, char *name)
+void ShowTimerDialog(int which, SDWORD *delay, char *name)
 {
     char *s;
-    switch(which) { 
+    switch(which) {
         case ELEM_TON: s = _("Turn-On Delay"); break;
         case ELEM_TOF: s = _("Turn-Off Delay"); break;
         case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;
         default: oops(); break;
     }
-   
+
     char *labels[] = { _("Name:"), _("Delay (ms):") };
 
     char delBuf[16];
@@ -253,14 +259,55 @@ void ShowTimerDialog(int which, int *delay, char *name)
         name[0] = 'T';
         strcpy(name+1, nameBuf);
         double del = atof(delBuf);
+        long long period = (long long)round(del * 1000 / Prog.cycleTime);// - 1;
+        //                                    - 1 used, because one cycle of the program always runs
+        double maxDelay = 1.0 * ((1 << (SizeOfVar(name)*8-1))-1) * Prog.cycleTime / 1000000; //s
+        if(del <= 0) {
+            Error(_("Delay cannot be zero or negative."));
+        } else if(period  < 1)  {
+            Error(_("'%s' Timer period too short (needs faster cycle time)."),nameBuf);
+        } else if((period >= long long (1 << (SizeOfVar(name)*8-1)))
+                   && (Prog.mcu->portPrefix != 'L')) {
+            Error(_("Timer period too long (max %d times cycle time); use a "
+                "slower cycle time."
+                "\r\nMax Delay=%.3f s"
+                "\r\nT%s=%.3f ms=%d cycles of PLC"),(1 << (SizeOfVar(name)*8-1))-1,maxDelay,nameBuf,del/1000.0,period);
+            *delay = (SDWORD)(1000*del + 0.5);
+        /*
         if(del > 2140000) { // 2**31/1000, don't overflow signed int
             Error(_("Delay too long; maximum is 2**31 us."));
         } else if(del <= 0) {
             Error(_("Delay cannot be zero or negative."));
+        */
         } else {
-            *delay = (int)(1000*del + 0.5);
+            *delay = (SDWORD)(1000*del + 0.5);
         }
     }
+}
+
+//-----------------------------------------------------------------------------
+// Report an error if a constant doesn't fit in 8-16-24 bits.
+//-----------------------------------------------------------------------------
+static void CheckConstantInRange(char *name, char *str, SDWORD v)
+{
+    int sov;
+    if(strlen(name)==0)
+        sov = 3;
+    else if(IsNumber(name)) {
+        sov = byteNeeded(hobatoi(name));
+        name = "$_tmp_Var";
+    } else
+        sov = SizeOfVar(name);
+    if (sov == 1) {
+        if(v < -128 || v > 127)
+            Error(_("Constant %s=%d out of variable '%s' range : -128 to 127 inclusive."), str, v, name);
+    } else if((sov == 2) || (sov == 0)) {
+        if(v < -32768 || v > 32767)
+            Error(_("Constant %s=%d out of variable '%s' range: -32768 to 32767 inclusive."), str, v, name);
+    } else if(sov == 3) {
+        if(v < -8388608 || v > 8388607)
+            Error(_("Constant %s=%d out of variable '%s' range: -8388608 to 8388607 inclusive."), str, v, name);
+    } else ooops("Constant %s Variable '%s' size=%d value=%d", str, name, sov, v);
 }
 
 //-----------------------------------------------------------------------------
@@ -268,12 +315,21 @@ void ShowTimerDialog(int which, int *delay, char *name)
 //-----------------------------------------------------------------------------
 void CheckVarInRange(char *name, SDWORD v)
 {
+    int sov = SizeOfVar(name);
+    if (sov == 1) {
+        if(v < -128 || v > 127)
+            Error(_("Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
+    } else if((sov == 2) || (sov == 0)){
         if(v < -32768 || v > 32767)
             Error(_("Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
+    } else if(sov == 3) {
+        if(v < -8388608 || v > 8388607)
+            Error(_("Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
+    } else ooops("Variable '%s' size=%d value=%d", name, sov, v);
 }
 
 //-----------------------------------------------------------------------------
-void ShowCounterDialog(int which, int *maxV, char *name)
+void ShowCounterDialog(int which, char *maxV, char *name)
 {
     char *title;
 
@@ -281,17 +337,20 @@ void ShowCounterDialog(int which, int *maxV, char *name)
         case ELEM_CTU:  title = _("Count Up"); break;
         case ELEM_CTD:  title = _("Count Down"); break;
         case ELEM_CTC:  title = _("Circular Counter"); break;
+        case ELEM_CTR:  title = _("Circular Counter Reversive"); break;
 
         default: oops();
     }
 
-    char *labels[] = { _("Name:"), (which == ELEM_CTC ? _("Max value:") : 
-        _("True if >= :")) };
-    char maxS[128];
-    sprintf(maxS, "%d", *maxV);
-    char *dests[] = { name+1, maxS };
-    ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, dests);
-    *maxV = atoi(maxS);
+    char *labels[] = { _("Name:"), ((which == ELEM_CTC)||(which == ELEM_CTR) ? _("Max value:") :
+        (which == ELEM_CTU ? _("True if >= :") : _("True if > :"))) };
+    char *dests[] = { name+1, maxV };
+    if(ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests)) {
+      if(IsNumber(maxV)){
+        SDWORD _maxV = hobatoi(maxV);
+        CheckVarInRange(name, _maxV);
+      }
+    }
 }
 // Special function
 void ShowSFRDialog(int which, char *op1, char *op2)
@@ -324,7 +383,7 @@ void ShowSFRDialog(int which, char *op1, char *op2)
             l2 = "test bit";
             break;
 
-		case ELEM_T_C_SFR:
+        case ELEM_T_C_SFR:
             title = _("Test if Bit Clear In SFR");
             l2 = "test bit";
             break;
@@ -334,7 +393,14 @@ void ShowSFRDialog(int which, char *op1, char *op2)
     }
     char *labels[] = { _("SFR position:"), l2 };
     char *dests[] = { op1, op2 };
-    ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests);
+    if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)) {
+        if(which==ELEM_RSFR) {
+            if(IsNumber(op2)) {
+                Error(_("Read SFR instruction: '%s' not a valid destination."),
+                    op2);
+            }
+        }
+    }
 }
 
 // Special function
@@ -379,14 +445,35 @@ void ShowCmpDialog(int which, char *op1, char *op2)
     }
     char *labels[] = { _("'Closed' if:"), l2 };
     char *dests[] = { op1, op2 };
-    ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests);
+    if(ShowSimpleDialog(title, 2, labels, 0, 0x7, 0x7, dests)){
+        if(IsNumber(op1))
+            CheckConstantInRange(op2, op1, hobatoi(op1));
+        if(IsNumber(op2))
+            CheckConstantInRange(op1, op2, hobatoi(op2));
+    };
 }
 
-void ShowMoveDialog(char *dest, char *src)
+void ShowMoveDialog(int which, char *dest, char *src)
 {
-    char *labels[] = { _("Destination:"), _("Source:") };
+    char *title;
+    switch(which) {
+        case ELEM_MOVE    : title = _("Move"); break;
+        case ELEM_BIN2BCD : title = _("Convert BIN to unpacked BCD"); break;
+        case ELEM_BCD2BIN : title = _("Convert unpacked BCD to BIN"); break;
+        case ELEM_SWAP    : title = _("Swap source and assign to destination"); break;
+        default: oops();
+    }
+    char *labels[] = { _("Destination:="), _("Source:") };
     char *dests[] = { dest, src };
-    ShowSimpleDialog(_("Move"), 2, labels, 0, 0x3, 0x3, dests);
+//  if(ShowSimpleDialog(_("Move"), 2, labels, 0, 0x3, 0x3, dests)){
+    if(ShowSimpleDialog(title, 2, labels, 0, 0, 0x3, dests)){
+        if(IsNumber(dest)) {
+            Error(_("Move instruction: '%s' not a valid destination."),
+                dest);
+        }
+        if(IsNumber(src))
+            CheckConstantInRange(dest, src, hobatoi(src));
+    }
 }
 
 void ShowReadAdcDialog(char *name)
@@ -396,16 +483,29 @@ void ShowReadAdcDialog(char *name)
     ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
 }
 
-void ShowSetPwmDialog(char *name, int *targetFreq)
+void ShowSetPwmDialog(void *e)
 {
-    char freq[100];
-    sprintf(freq, "%d", *targetFreq);
+    ElemSetPwm *s = (ElemSetPwm *)e;
+    char *name          = s->name;
+    char *duty_cycle    = s->duty_cycle;
+    char *targetFreq    = s->targetFreq;
+    char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):")};
+    char *dests[] = { name+1, duty_cycle, targetFreq};
 
-    char *labels[] = { _("Duty cycle var:"), _("Frequency (Hz):") };
-    char *dests[] = { name+1, freq };
-    ShowSimpleDialog(_("Set PWM Duty Cycle"), 2, labels, 0x2, 0x1, 0x1, dests);
+    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 3, labels, 0x2, 0x7, 0x7, dests)) {
+        //TODO: check the available range
+        double freq = hobatoi(targetFreq);
+        if(freq < 0)
+            Error(_("'%s' freq < 0"), targetFreq);
+        if(freq > Prog.mcuClock)
+            Error(_("'%s' freq > %d"), targetFreq, Prog.mcuClock);
 
-    *targetFreq = atoi(freq);
+        double duty = atof(duty_cycle);
+        if(duty < 0.0)
+            Error(_("'%s' duty < 0"), duty_cycle);
+        if(duty > 100.0)
+            Error(_("'%s' duty > 100"), duty_cycle, Prog.mcuClock);
+    }
 }
 
 void ShowUartDialog(int which, char *name)
@@ -422,22 +522,124 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
 {
     char *l2, *title;
     if(which == ELEM_ADD) {
-        l2 = "+ :";
+        l2 = "+ Operand2:";
         title = _("Add");
     } else if(which == ELEM_SUB) {
-        l2 = "- :";
+        l2 = "- Operand2:";
         title = _("Subtract");
     } else if(which == ELEM_MUL) {
-        l2 = "* :";
+        l2 = "* Operand2:";
         title = _("Multiply");
     } else if(which == ELEM_DIV) {
-        l2 = "/ :";
+        l2 = "/ Operand2:";
         title = _("Divide");
+    } else if(which == ELEM_MOD) {
+        l2 = "% Operand2:";
+        title = _("Divide Remainder");
+    } else if(which == ELEM_SHL) {
+        l2 = "<< Operand2:";
+        title = _("SHL");
+    } else if(which == ELEM_SHR) {
+        l2 = ">> Operand2:";
+        title = _("SHR");
+    } else if(which == ELEM_SR0) {
+        l2 = ">> Operand2:";
+        title = _("SR0");
+    } else if(which == ELEM_ROL) {
+        l2 = "rol Operand2:";
+        title = _("ROL");
+    } else if(which == ELEM_ROR) {
+        l2 = "ror Operand2:";
+        title = _("ROR");
+    } else if(which == ELEM_AND) {
+        l2 = "&& Operand2:";
+        title = _("AND");
+    } else if(which == ELEM_OR) {
+        l2 = "| Operand2:";
+        title = _("OR");
+    } else if(which == ELEM_XOR) {
+        l2 = "^ Operand2:";
+        title = _("XOR");
+    } else if(which == ELEM_NOT) {
+        l2 = "~ Operand1:";
+        title = _("NOT");
+    } else if(which == ELEM_NEG) {
+        l2 = "- Operand1:";
+        title = _("NEG");
     } else oops();
 
-    char *labels[] = { _("Destination:"), _("is set := :"), l2 };
+    NoCheckingOnBox[2] = TRUE; 
+    BOOL b;
+    if((which == ELEM_NOT)
+    || (which == ELEM_NEG)) {
+        char *labels[] = { _("Destination:="), l2 };
+        char *dests[] = { dest, op1};
+        b=ShowSimpleDialog(title, 2, labels, 0, 0x7, 0x7, dests);
+    } else {
+        char *labels[] = { _("Destination:="), _("Operand1:"), l2 };
     char *dests[] = { dest, op1, op2 };
-    ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests);
+        b=ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests);
+    }
+    NoCheckingOnBox[2] = FALSE;
+    if(b){
+        if(IsNumber(dest)) {
+            Error(_("Math instruction: '%s' not a valid destination."), dest);
+        }
+        if(IsNumber(op1))
+            CheckConstantInRange(dest, op1, hobatoi(op1));
+        if(IsNumber(op2)){
+            CheckConstantInRange(dest, op2, hobatoi(op2));
+            if((which == ELEM_SHL) || (which == ELEM_SHR) || (which == ELEM_SR0)
+            || (which == ELEM_ROL) || (which == ELEM_ROR)) {
+                if((hobatoi(op2)<0) || (BITS_OF_LD_VAR<hobatoi(op2))){
+                    Error(_("Shift constant %s=%d out of range: 0 to %d inclusive."), op2, hobatoi(op2), BITS_OF_LD_VAR);
+                }
+            }
+        }
+    }
+}
+
+void ShowStepperDialog(int which, void *e)
+{
+}
+
+void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
+{
+    int sov=SizeOfVar(io->name);
+    char sovStr[20];
+    sprintf(sovStr, "%d", sov);
+
+    SDWORD val;
+    char valStr[MAX_STRING_LEN];
+    if(io->type == IO_TYPE_STRING){
+        strcpy(valStr,GetSimulationStr(io->name));
+    } else {
+        val = GetSimulationVariable(io->name, TRUE);
+        sprintf(valStr, "%d", val);
+    }
+
+    char s[MAX_NAME_LEN];
+    sprintf(s, _("Set variable '%s'"), io->name);
+
+    char *labels[] = { _("SizeOfVar:"), _("Simulation value:")};
+    char *dests[] = { sovStr, valStr };
+    if(ShowSimpleDialog(s, 2, labels, 0x2, 0x1, 0x3, dests)) {
+       sov = hobatoi(sovStr);
+       sov = 2;
+       if((sov <= 0)
+       ||((io->type != IO_TYPE_STRING) && (sov>3)) ){
+           Error(_("Not a reasonable size for a variable."));
+       } else {
+           SetSizeOfVar(io->name, sov);
+       }
+
+       if(io->type == IO_TYPE_STRING){
+           SetSimulationStr(io->name, valStr);
+       } else {
+          val = hobatoi(valStr);
+          SetSimulationVariable(io->name, val);
+       }
+    }
 }
 
 void ShowShiftRegisterDialog(char *name, int *stages)
@@ -447,11 +649,11 @@ void ShowShiftRegisterDialog(char *name, int *stages)
 
     char *labels[] = { _("Name:"), _("Stages:") };
     char *dests[] = { name, stagesStr };
-    ShowSimpleDialog(_("Shift Register"), 2, labels, 0x2, 0x1, 0x1, dests);
+    ShowSimpleDialog(_("Shift Register"), 2, labels, 0x2, 0x1, 0x3, dests);
 
-    *stages = atoi(stagesStr);
+    *stages = hobatoi(stagesStr);
 
-    if(*stages <= 0 || *stages >= 200) {
+    if(*stages <= 0 || *stages >= MAX_SHIFT_REGISTER_STAGES-1) {
         Error(_("Not a reasonable size for a shift register."));
         *stages = 8;
     }

@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -40,7 +40,7 @@ int SelectedGyAfterNextPaint = -1;
 // changes, but the cursor should stay where it was.
 BOOL ScrollSelectedIntoViewAfterNextPaint;
 
-// Buffer that we write to when exporting (drawing) diagram to a text file. 
+// Buffer that we write to when exporting (drawing) diagram to a text file.
 // Dynamically allocated so that we're at least slightly efficient.
 static char **ExportBuffer;
 
@@ -101,6 +101,10 @@ void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
     PatBlt(Hdc, c.left, c.top, c.width, c.height, PATINVERT);
     CursorDrawn = !CursorDrawn;
     ReleaseDC(MainWindow, Hdc);
+
+    if(strlen(CurrentSaveFile)) {
+      tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -136,7 +140,7 @@ static void DrawCharsToScreen(int cx, int cy, char *str)
             }
             if(*str == ']' || *str == '}') inBrace--;
         } else if((
-            (isdigit(*str) && (firstTime || isspace(str[-1]) 
+            (isdigit(*str) && (firstTime || isspace(str[-1])
                 || str[-1] == ':' || str[-1] == '[')) ||
             (*str == '-' && isdigit(str[1]))) && hiOk && !inComment)
         {
@@ -183,7 +187,7 @@ static void DrawCharsToScreen(int cx, int cy, char *str)
 }
 
 //-----------------------------------------------------------------------------
-// Total number of columns that we can display in the given amount of 
+// Total number of columns that we can display in the given amount of
 // window area. Need to leave some slop on the right for the scrollbar, of
 // course.
 //-----------------------------------------------------------------------------
@@ -196,7 +200,7 @@ int ScreenColsAvailable(void)
 }
 
 //-----------------------------------------------------------------------------
-// Total number of columns that we can display in the given amount of 
+// Total number of columns that we can display in the given amount of
 // window area. Need to leave some slop on the right for the scrollbar, of
 // course, and extra slop at the bottom for the horiz scrollbar if it is
 // shown.
@@ -209,7 +213,7 @@ int ScreenRowsAvailable(void)
     } else {
         adj = GetSystemMetrics(SM_CYHSCROLL); //18;
     }
-    return (IoListTop - Y_PADDING - adj) / (POS_HEIGHT*FONT_HEIGHT);
+    return (IoListTop - Y_PADDING - adj + FONT_HEIGHT) / (POS_HEIGHT*FONT_HEIGHT);
 }
 
 //-----------------------------------------------------------------------------
@@ -253,7 +257,7 @@ void PaintWindow(void)
     fi.left = 0; fi.top = 0;
     fi.right = BitmapWidth; fi.bottom = bh;
     FillRect(Hdc, &fi, InSimulationMode ? SimBgBrush : BgBrush);
-    
+
     // now figure out how we should draw the ladder logic
     ColsAvailable = ProgCountWidestRow();
     if(ColsAvailable < ScreenColsAvailable()) {
@@ -291,7 +295,7 @@ void PaintWindow(void)
             yp = y + FONT_HEIGHT*(POS_HEIGHT/2) -
                 POS_HEIGHT*FONT_HEIGHT*ScrollYOffset;
 
-            sprintf(str,"%4d", i+1);
+            sprintf(str,"%04d", i+1);
             TextOut(Hdc, 8 - FONT_WIDTH, yp, str, 4);
 
             TextOut(Hdc, 8 - FONT_WIDTH, yp , &Prog.rungSelected[i], 1);
@@ -303,13 +307,13 @@ void PaintWindow(void)
             TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT * 2, str, 4);
 
             cx = 0;
-            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, 
+            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy,
                 Prog.rungPowered[i]);
         }
 
         cy += thisHeight;
-        //cy += POS_HEIGHT; // one empty Rung between Rungs
-        cy += 1; // one empty text line between Rungs
+        //cy += POS_HEIGHT; // OR one empty Rung between Rungs
+        cy += 1; // OR one empty text line between Rungs
     }
     //cy -= 1;
     DrawEndRung(0, cy);
@@ -325,7 +329,8 @@ void PaintWindow(void)
     TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT * 2, str, 4);
 
     if(SelectedGxAfterNextPaint >= 0) {
-        MoveCursorNear(SelectedGxAfterNextPaint, SelectedGyAfterNextPaint);
+        int gx=SelectedGxAfterNextPaint, gy=SelectedGyAfterNextPaint;
+        MoveCursorNear(&gx, &gy);
         InvalidateRect(MainWindow, NULL, FALSE);
         SelectedGxAfterNextPaint = -1;
         SelectedGyAfterNextPaint = -1;
@@ -346,14 +351,14 @@ void PaintWindow(void)
     // draw the `buses' at either side of the screen
     r.left = X_PADDING - FONT_WIDTH / 2 - 2;
     r.top = 0;
-    r.right = r.left + 4;
+    r.right = r.left + 3;
     r.bottom = IoListTop;
     FillRect(Hdc, &r, InSimulationMode ? BusLeftBrush : BusBrush);
 
     r.left += POS_WIDTH*FONT_WIDTH*ColsAvailable + 4;
     r.right += POS_WIDTH*FONT_WIDTH*ColsAvailable + 4;
     FillRect(Hdc, &r, InSimulationMode ? BusRightBus : BusBrush);
- 
+
     CursorDrawn = FALSE;
 
     BitBlt(paintDc, 0, 0, bw, bh, BackDc, ScrollXOffset, 0, SRCCOPY);
@@ -474,6 +479,76 @@ static void DrawCharsToExportBuffer(int cx, int cy, char *str)
 }
 
 //-----------------------------------------------------------------------------
+BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
+{
+    FILETIME ftCreate, ftAccess;
+
+    HANDLE hFile = CreateFile(FileName,
+                   GENERIC_READ,
+                   FILE_SHARE_READ,
+                   NULL,
+                   OPEN_EXISTING,
+                   FILE_ATTRIBUTE_NORMAL,
+                   NULL);
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        Error("Could not open file %s (error %d)\n", FileName, GetLastError());
+        return FALSE;
+    }
+    BOOL b = GetFileTime(hFile, &ftCreate, &ftAccess, ftWrite);
+    CloseHandle(hFile);
+    return b;
+}
+
+//-----------------------------------------------------------------------------
+// Возвращаемое значение - в случае успеха TRUE, иначе FALSE
+// hFile - дескриптор файла
+// lpszString - указатель на буфер для строки
+
+BOOL GetLastWriteTime(HANDLE hFile, char *lpszString)
+{
+    FILETIME ftCreate, ftAccess, ftWrite;
+    SYSTEMTIME stUTC, stLocal;
+
+    // Получаем времена файла.
+    if (!GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite))
+        return FALSE;
+
+    // Преобразуем время последнего изменения в локальное время.
+    FileTimeToSystemTime(&ftWrite, &stUTC);
+    SystemTimeToTzSpecificLocalTime(NULL, &stUTC, &stLocal);
+
+    // Составляем строку с датой и временем.
+    sprintf(lpszString, "%02d/%02d/%d %02d:%02d:%02d",
+        stLocal.wDay, stLocal.wMonth, stLocal.wYear,
+        stLocal.wHour, stLocal.wMinute, stLocal.wSecond); // wMilliseconds
+
+    return TRUE;
+}
+
+//-----------------------------------------------------------------------------
+BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
+{
+    sFileTime[0]=0;
+
+    HANDLE hFile = CreateFile(FileName,   // открываемый файл
+                   GENERIC_READ,          // открываем для чтения
+                   FILE_SHARE_READ,       // для совместного чтения
+                   NULL,                  // защита по умолчанию
+                   OPEN_EXISTING,         // только существующий файл
+                   FILE_ATTRIBUTE_NORMAL, // обычный файл
+                   NULL);                 // атрибутов шаблона нет
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        Error("Could not open file %s (error %d)\n", FileName, GetLastError());
+        return FALSE;
+    }
+    BOOL b = GetLastWriteTime(hFile, sFileTime);
+    CloseHandle(hFile);
+    return b;
+}
+
+//-----------------------------------------------------------------------------
 // Export a text drawing of the ladder logic program to a file.
 //-----------------------------------------------------------------------------
 void ExportDrawingAsText(char *file)
@@ -488,7 +563,7 @@ void ExportDrawingAsText(char *file)
     totalHeight += 2; // after EndRung
 
     ExportBuffer = (char **)CheckMalloc(totalHeight * sizeof(char *));
-   
+
     int l = maxWidth*POS_WIDTH + 9;
     int i;
     for(i = 0; i < totalHeight; i++) {
@@ -508,7 +583,7 @@ void ExportDrawingAsText(char *file)
     int cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
         cx = 6;
-        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, 
+        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy,
             Prog.rungPowered[i]);
         /*
         if((i + 1) < 10) {
@@ -557,7 +632,10 @@ void ExportDrawingAsText(char *file)
         return;
     }
 
-    fprintf(f, "LDmicro export text\n");
+    sGetLastWriteTime(CurrentSaveFile, sFileTime);
+
+    fprintf(f, "LDmicro export text.\n");
+    fprintf(f, "Source file: %s from %s\n", CurrentSaveFile, sFileTime);
 
     if(Prog.mcu) {
         fprintf(f, "for '%s', %.9g MHz crystal, %.3f ms cycle time\n",
@@ -578,9 +656,9 @@ void ExportDrawingAsText(char *file)
     ExportBuffer = NULL;
 
     fprintf(f, _("\nI/O ASSIGNMENT:\n"));
-    
-    fprintf(f, _("  Name                       | Type               | Pin\n"));
-    fprintf(f,   " ----------------------------+--------------------+------\n");
+
+    fprintf(f, _("  Name                       | Type               | Pin | Port | Pin name\n"));
+    fprintf(f,   " ----------------------------+--------------------+-----+------+-----------\n");
     for(i = 0; i < Prog.io.count; i++) {
         char b[1024];
         memset(b, '\0', sizeof(b));
@@ -588,11 +666,13 @@ void ExportDrawingAsText(char *file)
         PlcProgramSingleIo *io = &Prog.io.assignment[i];
         char *type = IoTypeToString(io->type);
         char pin[MAX_NAME_LEN] = "";
+        char portName[MAX_NAME_LEN] = "";
+        char pinName[MAX_NAME_LEN] = "";
 
-        PinNumberForIo(pin, io);
+            PinNumberForIo(pin, io, portName, pinName);
 
-        sprintf(b, "                             |                    | %s\n",
-            pin);
+        sprintf(b, "                             |                    | %3s | %4s | %s\n",
+            pin, portName, pinName);
 
         memcpy(b+2, io->name, strlen(io->name));
         memcpy(b+31, type, strlen(type));

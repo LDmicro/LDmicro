@@ -29,11 +29,15 @@
 #include <commdlg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <shellapi.h>
 
 #include "ldmicro.h"
 #include "freeze.h"
 #include "mcutable.h"
 #include "git_commit.h"
+#include "intcode.h"
+#include "locale.h"
 
 HINSTANCE   Instance;
 HWND        MainWindow;
@@ -51,7 +55,10 @@ static int         MouseY;
 #define LDMICRO_PATTERN "LDmicro Ladder Logic Programs (*.ld)\0*.ld\0" \
                      "All files\0*\0\0"
 char CurrentSaveFile[MAX_PATH];
-static BOOL ProgramChangedNotSaved = FALSE;
+BOOL ProgramChangedNotSaved = FALSE;
+
+ULONGLONG PrevWriteTime = 0;
+ULONGLONG LastWriteTime = 0;
 
 #define HEX_PATTERN  "Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0"
 #define C_PATTERN "C Source Files (*.c)\0*.c\0All Files\0*\0\0"
@@ -95,6 +102,7 @@ static BOOL SaveAsDialog(void)
         return FALSE;
     } else {
         ProgramChangedNotSaved = FALSE;
+        RefreshControlsToSettings();
         return TRUE;
     }
 }
@@ -208,6 +216,7 @@ static BOOL SaveProgram(void)
             return FALSE;
         } else {
             ProgramChangedNotSaved = FALSE;
+            RefreshControlsToSettings();
             return TRUE;
         }
     } else {
@@ -231,6 +240,12 @@ static void isErr(int Err, char *r)
 }
 
 //-----------------------------------------------------------------------------
+static int Execute(char *r)
+{
+   return WinExec(r, SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/);
+}
+
+//-----------------------------------------------------------------------------
 char *GetIsaName(int ISA)
 {
     switch(ISA) {
@@ -238,12 +253,12 @@ char *GetIsaName(int ISA)
         case ISA_PIC16       : return (char *)stringer( ISA_PIC16       ) + 4;
         case ISA_ANSIC       : return (char *)stringer( ISA_ANSIC       ) + 4;
         case ISA_INTERPRETED : return (char *)stringer( ISA_INTERPRETED ) + 4;
-		case ISA_XINTERPRETED: return (char *)stringer( ISA_XINTERPRETED) + 4;
-		case ISA_NETZER      : return (char *)stringer( ISA_NETZER      ) + 4;
+        case ISA_XINTERPRETED: return (char *)stringer( ISA_XINTERPRETED) + 4;
+        case ISA_NETZER      : return (char *)stringer( ISA_NETZER      ) + 4;
         case ISA_PASCAL      : return (char *)stringer( ISA_PASCAL      ) + 4;
         case ISA_ARDUINO     : return (char *)stringer( ISA_ARDUINO     ) + 4;
         case ISA_CAVR        : return (char *)stringer( ISA_CAVR        ) + 4;
-        default: oops()
+        default              : oops(); return NULL;
     }
 }
 //-----------------------------------------------------------------------------
@@ -261,7 +276,7 @@ static void flashBat(char *name, int ISA)
     SetExt(s, name, "");
     sprintf(r,"\"%sflashMcu.bat\" %s \"%s\"",ExePath,GetIsaName(ISA),s);
 
-    isErr(WinExec(r, SW_SHOWNORMAL), r);
+    isErr(Execute(r), r);
 }
 
 //-----------------------------------------------------------------------------
@@ -278,7 +293,7 @@ static void readBat(char *name, int ISA)
     SetExt(s, name, "");
     sprintf(r,"\"%sreadMcu.bat\" %s \"%s\"",ExePath,GetIsaName(ISA),s);
 
-    isErr(WinExec(r, SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/), r);
+    isErr(Execute(r), r);
 }
 
 //-----------------------------------------------------------------------------
@@ -291,8 +306,7 @@ static void notepad(char *name, char *ext)
     SetExt(s, name, ext);
     sprintf(r,"""%snotepad.bat %s""",ExePath,s);
 
-    //_execl("notepad.exe",s);
-    isErr(WinExec(r, SW_SHOWNORMAL), r);
+    isErr(Execute(r), r);
 }
 //-----------------------------------------------------------------------------
 static void postCompile(int ISA)
@@ -305,7 +319,7 @@ static void postCompile(int ISA)
 
     sprintf(r,"""%spostCompile.bat %s %s %s""", ExePath, GetIsaName(ISA), CurrentLdPath, onlyName);
 
-    isErr(WinExec(r, SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/), r);
+    isErr(Execute(r), r);
 }
 
 //-----------------------------------------------------------------------------
@@ -323,9 +337,9 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             compile_MNU = MNU_COMPILE_ANSIC;
         else if(strstr(CurrentCompileFile,".pas"))
             compile_MNU = MNU_COMPILE_PASCAL;
-		else if (strstr(CurrentCompileFile, ".xint"))
-			compile_MNU = MNU_COMPILE_XINT;
-		else
+        else if (strstr(CurrentCompileFile, ".xint"))
+            compile_MNU = MNU_COMPILE_XINT;
+        else
             compile_MNU = MNU_COMPILE_IHEX;
     }
 
@@ -344,7 +358,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
       ||( (compile_MNU==MNU_COMPILE_ANSIC)  && (!strstr(CurrentCompileFile,".c"  )) )
       ||( (compile_MNU==MNU_COMPILE_ARDUINO)&& (!strstr(CurrentCompileFile,".cpp")) )
       ||( (compile_MNU==MNU_COMPILE_PASCAL) && (!strstr(CurrentCompileFile,".pas")) )
-	  || ((compile_MNU==MNU_COMPILE_XINT)   && (!strstr(CurrentCompileFile, ".xint")) )
+      || ((compile_MNU==MNU_COMPILE_XINT)   && (!strstr(CurrentCompileFile, ".xint")) )
       ) {
         char *c;
         OPENFILENAME ofn;
@@ -363,21 +377,21 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
             c = "int";
-		} else if((compile_MNU==MNU_COMPILE_PASCAL) ||
+        } else if ((compile_MNU == MNU_COMPILE_XINT) ||
+            (Prog.mcu && Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
+            ofn.lpstrFilter = XINT_PATTERN;
+            ofn.lpstrDefExt = "xint";
+            c = "xint";
+        } else if((compile_MNU==MNU_COMPILE_PASCAL) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_PASCAL)) {
             ofn.lpstrFilter = PASCAL_PATTERN;
             ofn.lpstrDefExt = "pas";
             c = "pas";
-		} else if ((compile_MNU == MNU_COMPILE_ARDUINO) ||
-			(Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
-			ofn.lpstrFilter = ARDUINO_C_PATTERN;
-			ofn.lpstrDefExt = "cpp";
-			c = "cpp";
-		} else if ((compile_MNU == MNU_COMPILE_XINT) ||
-			(Prog.mcu && Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
-			ofn.lpstrFilter = XINT_PATTERN;
-			ofn.lpstrDefExt = "xint";
-			c = "xint";
+        } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
+            (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
+            ofn.lpstrFilter = ARDUINO_C_PATTERN;
+            ofn.lpstrDefExt = "cpp";
+            c = "cpp";
         /*
         } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
@@ -408,8 +422,8 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     && (compile_MNU!=MNU_COMPILE_PASCAL)
     && (compile_MNU!=MNU_COMPILE_ANSIC)
     && (compile_MNU!=MNU_COMPILE_ARDUINO)
-	&& (compile_MNU != MNU_COMPILE_XINT)) {
-		Error(_("Must choose a target microcontroller before compiling."));
+    && (compile_MNU != MNU_COMPILE_XINT)) {
+        Error(_("Must choose a target microcontroller before compiling."));
         return;
     }
 
@@ -425,25 +439,25 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     && (compile_MNU!=MNU_COMPILE_PASCAL)
     && (compile_MNU!=MNU_COMPILE_ANSIC)
     && (compile_MNU!=MNU_COMPILE_ARDUINO)
-	&& (compile_MNU != MNU_COMPILE_XINT)
-	&& (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
+    && (compile_MNU != MNU_COMPILE_XINT)
+    && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
 
     if (compile_MNU==MNU_COMPILE_ANSIC)
-		CompileAnsiC(CurrentCompileFile);
+        CompileAnsiC(CurrentCompileFile);
     else if (compile_MNU==MNU_COMPILE_ARDUINO)
-		CompileAnsiC(CurrentCompileFile, ISA_ARDUINO);
-	else if (compile_MNU == MNU_COMPILE_XINT)
-		CompileXInterpreted(CurrentCompileFile);
-	else if (Prog.mcu)
+        CompileAnsiC(CurrentCompileFile, ISA_ARDUINO);
+    else if (compile_MNU == MNU_COMPILE_XINT)
+        CompileXInterpreted(CurrentCompileFile);
+    else if (Prog.mcu)
     switch(Prog.mcu->whichIsa) {
         case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
         case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
         case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
         case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
-		case ISA_XINTERPRETED:  CompileXInterpreted(CurrentCompileFile); break;
+        case ISA_XINTERPRETED:  CompileXInterpreted(CurrentCompileFile); break;
         case ISA_NETZER:        CompileNetzer(CurrentCompileFile); break;
         case ISA_ARDUINO:       CompileAnsiC(CurrentCompileFile, ISA_ARDUINO); break;
 
@@ -453,6 +467,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     postCompile(Prog.mcu ? Prog.mcu->whichIsa : 0);
 
 //    IntDumpListing("t.pl");
+    RefreshControlsToSettings();
 }
 
 //-----------------------------------------------------------------------------
@@ -486,6 +501,7 @@ BOOL CheckSaveUserCancels(void)
 
         default:
             oops();
+            return FALSE;
     }
 }
 
@@ -516,9 +532,10 @@ static void OpenDialog(void)
         CurrentSaveFile[0] = '\0';
     } else {
         ProgramChangedNotSaved = FALSE;
+        RefreshControlsToSettings();
         strcpy(CurrentSaveFile, tempSaveFile);
         UndoFlush();
-		strcpy(CurrentCompileFile, "");
+        strcpy(CurrentCompileFile, "");
     }
 
     GenerateIoListDontLoseSelection();
@@ -638,6 +655,15 @@ static void ProcessMenu(int code)
             notepad(CurrentSaveFile, "txt");
             break;
 
+        case MNU_NOTEPAD_LD:
+            if(CheckSaveUserCancels()) break;
+            notepad(CurrentSaveFile, "ld");
+            break;
+
+        case MNU_NOTEPAD_PL:
+            notepad(CurrentSaveFile, "pl");
+            break;
+
         case MNU_EXIT:
             if(CheckSaveUserCancels()) break;
             PostQuitMessage(0);
@@ -721,6 +747,10 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_OSF:
             CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
+            break;
+
+        case MNU_INSERT_OSC:
+            CHANGING_PROGRAM(AddEmpty(ELEM_OSC));
             break;
 
         case MNU_INSERT_MOV:
@@ -819,7 +849,32 @@ cmp:
             break;
 
         case MNU_DELETE_RUNG:
-            CHANGING_PROGRAM(DeleteSelectedRung());
+          //CHANGING_PROGRAM(DeleteSelectedRung());
+            CHANGING_PROGRAM(CatRung());
+            break;
+
+        case MNU_SCROLL_DOWN:
+            ScrollDown();
+            break;
+
+        case MNU_SCROLL_UP:
+            ScrollUp();
+            break;
+
+        case MNU_SCROLL_PgDOWN:
+            ScrollPgDown();
+            break;
+
+        case MNU_SCROLL_PgUP:
+            ScrollPgUp();
+            break;
+
+        case MNU_ROLL_HOME:
+            RollHome();
+            break;
+
+        case MNU_ROLL_END:
+            RollEnd();
             break;
 
         case MNU_PUSH_RUNG_UP:
@@ -828,6 +883,26 @@ cmp:
 
         case MNU_PUSH_RUNG_DOWN:
             CHANGING_PROGRAM(PushRungDown());
+            break;
+
+        case MNU_COPY_RUNG_DOWN:
+            CHANGING_PROGRAM(CopyRungDown());
+            break;
+
+        case MNU_CAT_RUNG:
+            CHANGING_PROGRAM(CatRung());
+            break;
+
+        case MNU_COPY_RUNG:
+            CHANGING_PROGRAM(CopyRung());
+            break;
+
+        case MNU_PASTE_RUNG:
+            CHANGING_PROGRAM(PasteRung(0));
+            break;
+
+        case MNU_PASTE_INTO_RUNG:
+            CHANGING_PROGRAM(PasteRung(1));
             break;
 
         case MNU_DELETE_ELEMENT:
@@ -858,7 +933,7 @@ cmp:
         case MNU_COMPILE_IHEX:
         case MNU_COMPILE_ARDUINO:
         case MNU_COMPILE:
-		case MNU_COMPILE_XINT:
+        case MNU_COMPILE_XINT:
             CompileProgram(FALSE, code);
             break;
 
@@ -902,10 +977,201 @@ cmp:
 }
 
 //-----------------------------------------------------------------------------
+void ScrollUp()
+{
+    if(ScrollYOffset > 0)
+        ScrollYOffset--;
+    RefreshScrollbars();
+    InvalidateRect(MainWindow, NULL, FALSE);
+
+    int gx=0, gy=0;
+    if (!InSimulationMode && FindSelected(&gx, &gy)) {
+      if (gy>ScrollYOffset+ScreenRowsAvailable()-1) {
+        gy=ScrollYOffset+ScreenRowsAvailable()-1;
+        MoveCursorNear(&gx, &gy);
+      }
+    }
+}
+//-----------------------------------------------------------------------------
+void ScrollDown()
+{
+    if(ScrollYOffset < ScrollYOffsetMax)
+        ScrollYOffset++;
+    RefreshScrollbars();
+    InvalidateRect(MainWindow, NULL, FALSE);
+
+    int gx=0, gy=0;
+    if (!InSimulationMode && FindSelected(&gx, &gy)) {
+      if (gy<ScrollYOffset) {
+        gy=ScrollYOffset;
+        MoveCursorNear(&gx, &gy);
+      }
+    }
+}
+//-----------------------------------------------------------------------------
+void ScrollPgUp()
+{
+    int gx=0, gy=0;
+    FindSelected(&gx, &gy);
+
+    ScrollYOffset = 0;
+    RefreshScrollbars();
+    InvalidateRect(MainWindow, NULL, FALSE);
+
+    SelectedGxAfterNextPaint = gx;
+    SelectedGyAfterNextPaint = 0;
+}
+//-----------------------------------------------------------------------------
+void ScrollPgDown()
+{
+    int gx=0, gy=0;
+    FindSelected(&gx, &gy);
+
+    ScrollYOffset = ScrollYOffsetMax;
+    RefreshScrollbars();
+    InvalidateRect(MainWindow, NULL, FALSE);
+
+    SelectedGxAfterNextPaint = gx;
+    SelectedGyAfterNextPaint = ProgCountRows()-1;
+}
+//-----------------------------------------------------------------------------
+void RollHome()
+{
+    /*
+    ScrollYOffset = 0;
+    RefreshScrollbars();
+    InvalidateRect(MainWindow, NULL, FALSE);
+
+    SelectElement(0, 0, SELECTED_BELOW);
+    */
+    int gx=0, gy=0;
+    if (FindSelected(&gx, &gy)) {
+      gy=ScrollYOffset;
+      MoveCursorNear(&gx, &gy);
+    }
+}
+//-----------------------------------------------------------------------------
+void RollEnd()
+{
+    /*
+    ScrollYOffset = ScrollYOffsetMax;
+    RefreshScrollbars();
+    InvalidateRect(MainWindow, NULL, FALSE);
+
+    SelectedGxAfterNextPaint = 0;
+    SelectedGyAfterNextPaint = ProgCountRows()-1;
+    */
+    int gx=0, gy=0;
+    if (FindSelected(&gx, &gy)) {
+      gy=ScrollYOffset+ScreenRowsAvailable()-1;
+      MoveCursorNear(&gx, &gy);
+    }
+}
+//-----------------------------------------------------------------------------
+void TestSelections(UINT msg, int rung1)
+{
+    int rung2;
+    if(SelectedGyAfterNextPaint>=0)
+        rung2 = SelectedGyAfterNextPaint;
+    else
+        rung2 = RungContainingSelected();
+
+    //dbp("%d %d %d", rung1, rung2, SelectedGyAfterNextPaint);
+
+    int i;
+    switch (msg) {
+        case WM_LBUTTONDOWN: {
+            if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                 if((rung1 >= 0) && (rung2 >= 0)/* && (rung1 != rung2)*/) {
+                      if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000))
+                         for(i = 0; i < Prog.numRungs; i++)
+                             if(Prog.rungSelected[i] == '*')// != 2)
+                                 Prog.rungSelected[i] = ' ';
+                      int d = (rung2 < rung1) ? -1 : +1;
+                      for(i = rung1; ; i += d) {
+                         Prog.rungSelected[i] = '*';
+                         if(i==rung2)
+                             break;
+                      }
+                 }
+            } else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                 if(/*(rung1 < 0) && */(rung2 >= 0)) {
+                      if(Prog.rungSelected[rung2]==' ')
+                          Prog.rungSelected[rung2] = '*';
+                      else
+                          Prog.rungSelected[rung2] = ' ';
+                 }
+            } else {
+                for(i = 0; i < Prog.numRungs; i++)
+                    if(Prog.rungSelected[i] == '*') //!= 2)
+                        Prog.rungSelected[i] = ' ';
+            }
+            break;
+        }
+        case WM_KEYDOWN: {
+            //switch(wParam) {
+            //}
+            if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                 if((rung1 >= 0) && (rung2 >= 0) && (rung1 != rung2)) {
+                      int i;
+                      /*
+                      if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000))
+                         for(i = 0; i < Prog.numRungs; i++)
+                             Prog.rungSelected[i] = ' ';
+                      */
+                      int d = (rung2 < rung1) ? -1 : +1;
+                      for(i = rung1; ; i += d) {
+                         Prog.rungSelected[i] = '*';
+                         if(i==rung2)
+                             break;
+                      }
+                 }
+            } else {
+                for(i = 0; i < Prog.numRungs; i++)
+                    if(Prog.rungSelected[i] == '*') //!= 2)
+                        Prog.rungSelected[i] = ' ';
+            }
+            break;
+        }
+    }
+}
+//-----------------------------------------------------------------------------
 // WndProc for MainWindow.
 //-----------------------------------------------------------------------------
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    int rung1;
+
+    if(strlen(CurrentSaveFile)) {
+        if((LastWriteTime & PrevWriteTime)
+        && (LastWriteTime != PrevWriteTime)) {
+           tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
+           PrevWriteTime = LastWriteTime;
+
+           char buf[1024];
+           sprintf(buf, _("File '%s' modified by another application.\r\n"
+               "Its disk timestamp is newer then the editor one.\n"
+               "Reload from disk?"), CurrentSaveFile);
+           int r = MessageBox(MainWindow,
+               buf, "LDmicro",
+               MB_YESNO | MB_ICONWARNING);
+           switch(r) {
+               case IDYES:
+                   if(!LoadProjectFromFile(CurrentSaveFile)) {
+                       Error(_("Couldn't reload '%s'."), CurrentSaveFile);
+                   } else {
+                       ProgramChangedNotSaved = FALSE;
+                       RefreshControlsToSettings();
+
+                       GenerateIoListDontLoseSelection();
+                       RefreshScrollbars();
+                   }
+                   break;
+               default:
+                   break;
+           }
+        }
+    }
     switch (msg) {
         case WM_ERASEBKGND:
             break;
@@ -951,6 +1217,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         #define VK_ALT VK_MENU
         case WM_SYSKEYDOWN: {
             switch(wParam) {
+                case VK_F5:
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        notepad(CurrentSaveFile, "pl");;
+                        return 1;
+                    }
+                break;
+
                 case VK_BACK:
                     if((GetAsyncKeyState(VK_ALT) & 0x8000)
                     && (GetAsyncKeyState(VK_SHIFT) & 0x8000)) {
@@ -960,6 +1233,35 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         UndoUndo();
                         return 1;
                     }
+                break;
+
+                case VK_DOWN:
+                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                    CHANGING_PROGRAM(PushRungDown());
+                    return 1;
+                  }
+                break;
+
+                case VK_UP:
+                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                    CHANGING_PROGRAM(PushRungUp());
+                    return 1;
+                  }
+                break;
+
+                case VK_DELETE:
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        CHANGING_PROGRAM(CopyElem());
+                        CHANGING_PROGRAM(DeleteSelectedFromProgram());
+                        return 1;
+                    }
+                    break;
+
+                case VK_INSERT:
+                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                    CHANGING_PROGRAM(PasteRung(1));
+                    return 1;
+                  }
                 break;
 
                 default:
@@ -973,6 +1275,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     ToggleSimulationMode();
                     break;
                 }
+            } else if(wParam == VK_F7) {
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
+                        ToggleSimulationMode(TRUE);
+                    else
+                        ToggleSimulationMode();
+                    break;
             } else if(wParam == VK_TAB) {
                 SetFocus(IoList);
                 BlinkCursor(0, 0, 0, 0);
@@ -984,6 +1292,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 ExportDialog();
                 notepad(CurrentSaveFile, "txt");
                 break;
+            } else if(wParam == VK_F4) {
+                if(CheckSaveUserCancels()) break;
+                notepad(CurrentSaveFile, "ld");
+                break;
             } else if(wParam == VK_F6) {
                 if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
                     readBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
@@ -992,15 +1304,152 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
             }
 
+                switch(wParam) {
+                    case VK_DOWN:
+                  if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
+                    ScrollDown();
+                  } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                    CHANGING_PROGRAM(PushRungDown());
+                  } else {
+                    rung1 = RungContainingSelected();
+                    MoveCursorKeyboard(wParam);
+                    TestSelections(msg,rung1);
+                  }
+                        break;
+
+                    case VK_UP:
+                  if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
+                    ScrollUp();
+                  } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                    CHANGING_PROGRAM(PushRungUp());
+                  } else {
+                    rung1 = RungContainingSelected();
+                    MoveCursorKeyboard(wParam);
+                    TestSelections(msg,rung1);
+                  }
+                        break;
+
+                    case VK_LEFT:
+                  if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
+                        ScrollXOffset -= FONT_WIDTH;
+                        if(ScrollXOffset < 0) ScrollXOffset = 0;
+                        RefreshScrollbars();
+                        InvalidateRect(MainWindow, NULL, FALSE);
+                  } else {
+                    MoveCursorKeyboard(wParam);
+                  }
+                        break;
+
+                    case VK_RIGHT:
+                  if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
+                        ScrollXOffset += FONT_WIDTH;
+                        if(ScrollXOffset >= ScrollXOffsetMax)
+                            ScrollXOffset = ScrollXOffsetMax;
+                        RefreshScrollbars();
+                        InvalidateRect(MainWindow, NULL, FALSE);
+                  } else {
+                    MoveCursorKeyboard(wParam);
+                  }
+                        break;
+
+                case VK_HOME:
+                  if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                    RollHome();
+                  } else {
+                    int gx=0, gy=0;
+                    if (FindSelected(&gx, &gy)) {
+                        gx=0;
+                        MoveCursorNear(&gx, &gy);
+                        SelectElement(gx, gy, SELECTED_RIGHT);
+                    }
+                }
+                break;
+
+                case VK_END:
+                  if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                    RollEnd();
+                  } else {
+                    int gx=0, gy=0;
+                    if (FindSelected(&gx, &gy)) {
+                        gx=ColsAvailable;
+                        MoveCursorNear(&gx, &gy);
+                        SelectElement(gx, gy, SELECTED_LEFT);
+                    }
+            }
+                  break;
+
+                case VK_PRIOR:
+                  rung1 = RungContainingSelected();
+                  if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                    ScrollPgUp();
+                  } else {
+                    int gx=0, gy=0;
+                    FindSelected(&gx, &gy);
+
+                    if(ScrollYOffset-ScreenRowsAvailable()-1 > 0) {
+                        ScrollYOffset-=ScreenRowsAvailable()-1;
+                    } else {
+                        ScrollYOffset=0;
+                    }
+                    RefreshScrollbars();
+                    InvalidateRect(MainWindow, NULL, FALSE);
+
+                    if(gy-ScreenRowsAvailable()-1 > 0) {
+                        gy-=ScreenRowsAvailable()-1;
+                    } else {
+                        gy=0;
+                    }
+                    SelectedGxAfterNextPaint = gx;
+                    SelectedGyAfterNextPaint = gy;
+                  }
+                  TestSelections(msg,rung1);
+                    break;
+
+                case VK_NEXT:
+                  rung1 = RungContainingSelected();
+                  if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                    ScrollPgDown();
+                    } else {
+                    int gx=0, gy=0;
+                    FindSelected(&gx, &gy);
+
+                    if(ScrollYOffset+ScreenRowsAvailable()-1 < ScrollYOffsetMax) {
+                        ScrollYOffset+=ScreenRowsAvailable()-1;
+                    } else {
+                      ScrollYOffset = ScrollYOffsetMax;
+                    }
+                    RefreshScrollbars();
+                    InvalidateRect(MainWindow, NULL, FALSE);
+
+                    if(gy+ScreenRowsAvailable()-1 < ProgCountRows()-1) {
+                        gy+=ScreenRowsAvailable()-1;
+                    } else {
+                        gy=ProgCountRows()-1;
+                    }
+                    SelectedGxAfterNextPaint = gx;
+                    SelectedGyAfterNextPaint = gy;
+                  }
+                  TestSelections(msg,rung1);
+                    break;
+            }
+
             if(InSimulationMode) {
                 switch(wParam) {
                     case ' ':
                         SimulateOneCycle(TRUE);
                         break;
 
+                    case VK_F8:
+                        StartSimulation();
+                    break;
+
                     case 'R':
                         if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
                             StartSimulation();
+                        break;
+
+                    case VK_F9:
+                        StopSimulation();
                         break;
 
                     case 'H':
@@ -1008,36 +1457,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             StopSimulation();
                         break;
 
-                    case VK_DOWN:
-                        if(ScrollYOffset < ScrollYOffsetMax)
-                            ScrollYOffset++;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
-                        break;
-
-                    case VK_UP:
-                        if(ScrollYOffset > 0)
-                            ScrollYOffset--;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
-                        break;
-
-                    case VK_LEFT:
-                        ScrollXOffset -= FONT_WIDTH;
-                        if(ScrollXOffset < 0) ScrollXOffset = 0;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
-                        break;
-
-                    case VK_RIGHT:
-                        ScrollXOffset += FONT_WIDTH;
-                        if(ScrollXOffset >= ScrollXOffsetMax)
-                            ScrollXOffset = ScrollXOffsetMax;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
-                        break;
-
-                    case VK_RETURN:
+                case VK_RETURN:
                     case VK_ESCAPE:
                         ToggleSimulationMode();
                         break;
@@ -1051,25 +1471,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CompileProgram(FALSE, MNU_COMPILE);
                     break;
 
-                case VK_UP:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(PushRungUp());
-                    } else {
-                        MoveCursorKeyboard(wParam);
-                    }
-                    break;
-
-                case VK_DOWN:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(PushRungDown());
-                    } else {
-                        MoveCursorKeyboard(wParam);
-                    }
-                    break;
-
-                case VK_RIGHT:
-                case VK_LEFT:
-                    MoveCursorKeyboard(wParam);
+                case VK_SPACE:
+                    CHANGING_PROGRAM(ReplaceSelectedElement());
                     break;
 
                 case VK_RETURN:
@@ -1078,7 +1481,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 case VK_DELETE:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(DeleteSelectedRung());
+                      //CHANGING_PROGRAM(DeleteSelectedRung());
+                        CHANGING_PROGRAM(CatRung());
                     } else {
                         CHANGING_PROGRAM(DeleteSelectedFromProgram());
                     }
@@ -1088,12 +1492,26 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CHANGING_PROGRAM(AddComment(_("--add comment here--")));
                     break;
 
+                case VK_INSERT:
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                        CHANGING_PROGRAM(PasteRung(0));
+                    } else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        CHANGING_PROGRAM(CopyRung());
+                    } else
+                      CHANGING_PROGRAM(CopyElem());
+                    break;
+
                 case 'C':
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        CHANGING_PROGRAM(CopyRung());
+                    } else {
                     CHANGING_PROGRAM(AddContact());
+                    }
                     break;
 
                 // TODO: rather country-specific here
                 case VK_OEM_2:
+                //case VK_DIVIDE: // use to ELEM_DIV
                     CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
                     break;
 
@@ -1253,7 +1671,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case 'V':
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        CHANGING_PROGRAM(PasteRung(0));
+                    } else if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(InsertRung(TRUE));
                     }
                     break;
@@ -1273,6 +1693,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case 'Y':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         UndoRedo();
+                    }
+                    break;
+
+                case 'X':
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        CHANGING_PROGRAM(CatRung());
                     }
                     break;
 
@@ -1308,8 +1734,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 MouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL,
                         (HOOKPROC)MouseHook, Instance, 0);
             }
-            if(!InSimulationMode) MoveCursorMouseClick(x, y);
-
+            if(!InSimulationMode) {
+                rung1 = RungContainingSelected();
+                MoveCursorMouseClick(x, y);
+                TestSelections(msg,rung1);
+            }
             SetFocus(MainWindow);
             InvalidateRect(MainWindow, NULL, FALSE);
             break;
@@ -1361,6 +1790,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_CLOSE:
         case WM_DESTROY:
+            WipeIntMemory();
             if(CheckSaveUserCancels()) break;
 
             PostQuitMessage(0);
@@ -1552,12 +1982,89 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
     }
 }
 
+//---------------------------------------------------------------------------
+void abortHandler( int signum )
+{
+    // associate each signal with a signal name string.
+    const char* name = NULL;
+    switch( signum )
+    {
+    case SIGABRT: name = "SIGABRT";  break;
+    case SIGSEGV: name = "SIGSEGV";  break;
+  //case SIGBUS:  name = "SIGBUS";   break;
+    case SIGILL:  name = "SIGILL";   break;
+    case SIGFPE:  name = "SIGFPE";   break;
+    case SIGINT:  name = "SIGINT";   break;
+    case SIGTERM: name = "SIGTERM";  break;
+    }
+
+    // Notify the user which signal was caught. We use printf, because this is the
+    // most basic output function. Once you get a crash, it is possible that more
+    // complex output systems like streams and the like may be corrupted. So we
+    // make the most basic call possible to the lowest level, most
+    // standard print function.
+    if ( name )
+       dbp("Caught signal %d (%s)\n", signum, name );
+    else
+       dbp("Caught signal %d\n", signum );
+
+    // Dump a stack trace.
+    // This is the function we will be implementing next.
+    //printStackTrace();
+
+    // If you caught one of the above signals, it is likely you just
+    // want to quit your program right now.
+    exit( signum );
+}
+
+//-----------------------------------------------------------------------------
+void KxStackTrace()
+{
+    signal( SIGABRT, abortHandler );
+    signal( SIGSEGV, abortHandler );
+  //signal( SIGBUS,  abortHandler );
+    signal( SIGILL,  abortHandler );
+    signal( SIGFPE,  abortHandler );
+    signal( SIGINT,  abortHandler );
+    signal( SIGTERM, abortHandler );
+}
+
+//-----------------------------------------------------------------------------
+void CheckPwmPins()
+{
+    int i,j;
+    for(i = 0; i < NUM_SUPPORTED_MCUS ; i++) {
+       for(j = 0; j < SupportedMcus[i].pwmCount ; j++) {
+           if(!SupportedMcus[i].pwmNeedsPin && SupportedMcus[i].pwmCount) {
+               dbpd(SupportedMcus[i].pwmNeedsPin)
+               dbpd(arraylen(PicPwmPinInfo18_))
+               ooops("1 %s", SupportedMcus[i].mcuName)
+           }
+           else if(SupportedMcus[i].pwmNeedsPin)
+               if(SupportedMcus[i].pwmNeedsPin == SupportedMcus[i].pwmInfo[j].pin)
+                    break;
+       }
+       if(SupportedMcus[i].pwmCount)
+           if(j >= SupportedMcus[i].pwmCount)
+               ooops("2 %s", SupportedMcus[i].mcuName)
+       }
+}
+
 //-----------------------------------------------------------------------------
 // Entry point into the program.
 //-----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, INT nCmdShow)
 {
+  if((NUM_SUPPORTED_MCUS) != arraylen(SupportedMcus)) {
+      Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, arraylen(SupportedMcus));
+      oops();
+  }
+
+    CheckPwmPins();
+
+  try
+  {
     GetModuleFileName(hInstance,ExePath,MAX_PATH);
     ExtractFilePath(ExePath);
 
@@ -1565,6 +2072,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     MainHeap = HeapCreate(0, 1024*64, 0);
 
+    setlocale(LC_ALL,"");
     RunningInBatchMode = FALSE;
 
     MakeWindowClass();
@@ -1603,25 +2111,66 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         while(isspace(*source)) {
             source++;
         }
-        if(*source == '\0') { Error(err); exit(-1); }
+        if(*source == '\0') { Error(err); doexit(EXIT_FAILURE); }
         char *dest = source;
         while(!isspace(*dest) && *dest) {
             dest++;
         }
-        if(*dest == '\0') { Error(err); exit(-1); }
+        if(*dest == '\0') { Error(err); doexit(EXIT_FAILURE); }
         *dest = '\0'; dest++;
         while(isspace(*dest)) {
             dest++;
         }
-        if(*dest == '\0') { Error(err); exit(-1); }
+        if(*dest == '\0') { Error(err); doexit(EXIT_FAILURE); }
         if(!LoadProjectFromFile(source)) {
             Error("Couldn't open '%s', running non-interactively.", source);
-            exit(-1);
+            doexit(EXIT_FAILURE);
         }
         strcpy(CurrentCompileFile, dest);
         GenerateIoList(-1);
         CompileProgram(FALSE, MNU_COMPILE);
-        exit(0);
+        doexit(EXIT_SUCCESS);
+    }
+    if(memcmp(lpCmdLine, "/t", 2)==0) {
+        RunningInBatchMode = TRUE;
+
+        char exportFile[MAX_PATH];
+
+        char *err =
+            "Bad command line arguments: run 'ldmicro /t src.ld [dest.txt]'";
+
+        char *source = lpCmdLine + 2;
+        while(isspace(*source)) {
+            source++;
+        }
+        if(*source == '\0') { Error(err); doexit(EXIT_FAILURE); }
+
+        char *dest = source;
+        while(!isspace(*dest) && *dest) {
+            dest++;
+        }
+        *dest = '\0';
+        if(!LoadProjectFromFile(source)) {
+            Error("Couldn't open '%s', running non-interactively.", source);
+            doexit(EXIT_FAILURE);
+        }
+        strcpy(CurrentSaveFile,source);
+        char *s;
+        GetFullPathName(source, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
+
+        dest++;
+        while(isspace(*dest)) {
+            dest++;
+        }
+        if(*dest != '\0') {
+          strcpy(exportFile, dest);
+        } else {
+          exportFile[0] = '\0';
+          SetExt(exportFile, source, "txt");
+        }
+        GenerateIoList(-1);
+        ExportDrawingAsText(exportFile);
+        doexit(EXIT_SUCCESS);
     }
 
     // We are running interactively, or we would already have exited. We
@@ -1682,4 +2231,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     FreezeDWORD(IoListHeight);
 
     return 0;
+  }
+  catch(...)
+  {
+      abortHandler(EXCEPTION_EXECUTE_HANDLER);
+  };
 }

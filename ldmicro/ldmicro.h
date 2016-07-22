@@ -38,6 +38,10 @@ typedef signed long SDWORD;
 #define _BV(bit) (1 << (bit))
 
 //-----------------------------------------------
+#define BYTES_OF_LD_VAR 2
+#define BITS_OF_LD_VAR (BYTES_OF_LD_VAR * 8)
+#define PLC_CLOCK_MIN 250 //500 //
+//-----------------------------------------------
 // `Configuration options.'
 
 // The library that I use to do registry stuff.
@@ -165,11 +169,11 @@ typedef signed long SDWORD;
 #define MNU_INSERT_PWM_OFF_SOFT 0x4f07
 #define MNU_INSERT_UART_UDRE    0x4f08
 #define MNU_INSERT_QUAD_ENCOD   0x4f09
-#define MNU_INSERT_MASTER_BREAK 0x4f0a
 
 #define MNU_MCU_SETTINGS        0x50
 #define MNU_SPEC_FUNCTION       0x51
 #define MNU_PROCESSOR_0         0xa0
+#define MNU_PROCESSOR_NEW       0xa001
 
 #define MNU_SIMULATION_MODE     0x60
 #define MNU_START_SIMULATION    0x61
@@ -197,7 +201,7 @@ typedef signed long SDWORD;
 #define MNU_ABOUT               0x81
 #define MNU_RELEASE             0x82
 
-#define MNU_COMPILE_XINT        0x83	// Extended interpreter
+#define MNU_COMPILE_XINT        0x83    // Extended interpreter
 
 // Columns within the I/O etc. listview.
 #define LV_IO_NAME              0x00
@@ -207,6 +211,8 @@ typedef signed long SDWORD;
 #define LV_IO_PORT              0x04
 #define LV_IO_PINNAME           0x05
 #define LV_IO_MODBUS            0x06
+#define LV_IO_RAM_ADDRESS       0x07
+#define LV_IO_SISE_OF_VAR       0x08
 
 // Timer IDs associated with the main window.
 #define TIMER_BLINK_CURSOR      1
@@ -285,7 +291,6 @@ typedef signed long SDWORD;
 #define ELEM_T_C_SFR            0x37    // Element test if clear bit in SFR
 
 #define ELEM_STRING             0x3f
-#define ELEM_MASTER_BREAK       0x4000
 #define ELEM_OSC                0x4001
 #define ELEM_STEPPER            0x4002   //
 #define ELEM_PULSER             0x4003   //
@@ -368,7 +373,6 @@ typedef signed long SDWORD;
         case ELEM_UART_SEND: \
         case ELEM_UART_RECV: \
         case ELEM_MASTER_RELAY: \
-        case ELEM_MASTER_BREAK: \
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
@@ -402,7 +406,7 @@ typedef struct ElemCoilTag {
 
 typedef struct ElemTimeTag {
     char    name[MAX_NAME_LEN];
-    int     delay; // us
+    SDWORD  delay; // us
 } ElemTimer;
 
 typedef struct ElemResetTag {
@@ -413,6 +417,11 @@ typedef struct ElemMoveTag {
     char    src[MAX_NAME_LEN];
     char    dest[MAX_NAME_LEN];
 } ElemMove;
+
+typedef struct ElemSfrTag {
+    char    sfr[MAX_NAME_LEN];
+    char    op[MAX_NAME_LEN];
+} ElemSfr;
 
 typedef struct ElemMathTag {
     char    op1[MAX_NAME_LEN];
@@ -425,9 +434,14 @@ typedef struct ElemCmpTag {
     char    op2[MAX_NAME_LEN];
 } ElemCmp;
 
+typedef struct ElemGOTOTag {
+    char    doGOTO[MAX_NAME_LEN];
+    char    rungGOTO[MAX_NAME_LEN];
+} ElemGOTO;
+
 typedef struct ElemCounterTag {
     char    name[MAX_NAME_LEN];
-    int     max;
+    char    max[MAX_NAME_LEN];
 } ElemCounter;
 
 typedef struct ElemReadAdcTag {
@@ -435,8 +449,9 @@ typedef struct ElemReadAdcTag {
 } ElemReadAdc;
 
 typedef struct ElemSetPwmTag {
-    char    name[MAX_NAME_LEN];
-    int     targetFreq;
+    char    duty_cycle[MAX_NAME_LEN];
+    char    targetFreq[MAX_NAME_LEN];
+    char    name[MAX_NAME_LEN]; // for IO pin
 } ElemSetPwm;
 
 typedef struct ElemUartTag {
@@ -451,16 +466,16 @@ typedef struct ElemShiftRegisterTag {
 typedef struct ElemLookUpTableTag {
     char    dest[MAX_NAME_LEN];
     char    index[MAX_NAME_LEN];
-    int     count;
+    int     count; // Table size
     BOOL    editAsString;
-    SWORD   vals[MAX_LOOK_UP_TABLE_LEN];
+    SDWORD   vals[MAX_LOOK_UP_TABLE_LEN];
 } ElemLookUpTable;
 
 typedef struct ElemPiecewiseLinearTag {
     char    dest[MAX_NAME_LEN];
     char    index[MAX_NAME_LEN];
     int     count;
-    SWORD   vals[MAX_LOOK_UP_TABLE_LEN];
+    SDWORD   vals[MAX_LOOK_UP_TABLE_LEN];
 } ElemPiecewiseLinear;
 
 typedef struct ElemFormattedStringTag {
@@ -490,6 +505,7 @@ typedef struct ElemLeafTag {
         ElemMove            move;
         ElemMath            math;
         ElemCmp             cmp;
+        ElemSfr             sfr;
         ElemCounter         counter;
         ElemReadAdc         readAdc;
         ElemSetPwm          setPwm;
@@ -508,6 +524,7 @@ typedef struct ElemSubcktSeriesTag {
         union {
             void                   *any;
             ElemSubcktParallel     *parallel;
+            ElemSubcktSeriesTag    *series; // used in the Copy-Paste command
             ElemLeaf               *leaf;
         } d;
     } contents[MAX_ELEMENTS_IN_SUBCKT];
@@ -529,8 +546,8 @@ typedef struct ElemSubckParallelTag {
 typedef struct McuIoInfoTag McuIoInfo;
 
 typedef struct ModbusAddr {
-	unsigned char Slave;
-	unsigned short Address;
+    unsigned char Slave;
+    unsigned short Address;
 } ModbusAddr_t;
 
 typedef struct PlcProgramSingleIoTag {
@@ -573,7 +590,7 @@ typedef struct PlcProgramSingleIoTag {
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
-	ModbusAddr  modbus;
+    ModbusAddr  modbus;
 } PlcProgramSingleIo;
 
 #define MAX_IO 1024
@@ -583,7 +600,10 @@ typedef struct PlcProgramTag {
         int                 count;
     }           io;
     McuIoInfo  *mcu;
-    int         cycleTime; // us
+    long long int cycleTime; // us
+    int           cycleTimer; // 1 or 0
+#define YPlcCycleDuty "YPlcCycleDuty"
+    int           cycleDuty; //if TRUE, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
     int         mcuClock;  // Hz
     int         baudRate;  // Hz
     char        LDversion[512];
@@ -645,8 +665,13 @@ extern SyntaxHighlightingColours HighlightColours;
 //-----------------------------------------------
 //See Atmel AVR Instruction set inheritance table
 //https://en.wikipedia.org/wiki/Atmel_AVR_instruction_set#Instruction_set_inheritance
-typedef enum AvrFamilyTag {
-    NOT_AVR,
+//and
+//PIC instruction listings
+//https://en.wikipedia.org/wiki/PIC_instruction_listings
+typedef enum CoreTag {
+    NOTHING,
+
+    AVRcores,
     MinimalCore,
     ClassicCore8K,
     ClassicCore128K,
@@ -654,8 +679,16 @@ typedef enum AvrFamilyTag {
     EnhancedCore128K,
     EnhancedCore4M,
     XMEGAcore,
-    ReducedCore
-} AvrFamily;
+    ReducedCore,
+
+    PICcores,
+    BaselineCore12bit,
+    ELANclones13bit,
+    MidrangeCore14bit, // The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
+    EnhancedMidrangeCore14bit,
+    PIC18HighEndCore16bit,
+    PIC24_dsPICcore16bit
+} Core;
 
 //-----------------------------------------------
 // Processor definitions. These tables tell us where to find the I/Os on
@@ -668,7 +701,7 @@ typedef struct McuIoPinInfoTag {
     int     bit;
     int     pin;
     char    pinName[MAX_NAME_LEN];
-	int		ArduinoPin;
+    int     ArduinoPin;
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -676,7 +709,28 @@ typedef struct McuAdcPinInfoTag {
     BYTE    muxRegValue;
 } McuAdcPinInfo;
 
-#define ISA_AVR             0x00
+typedef struct McuPwmPinInfoTag {
+    int     pin;
+    int     timer;
+//for AVR's
+    BYTE    maxCS; // can be only 5 or 7 for AVR
+    ////////////// n = 0...5
+    /////////////// x = A or B
+    DWORD   REG_OCRnxL; // or REG_OCRn          // Output Compare Register Low byte
+    DWORD   REG_OCRnxH; // or 0, if not exist   // Output Compare Register High byte
+    DWORD   REG_TCCRnA; // or REG_TCCRn         // Timer/Counter Control Register/s
+    BYTE        COMnx1;                         // bit COMnx1 or COMn1 for REG_TCCRnA
+    BYTE        COMnx0;                         // bit COMnx0 or COMn0 for REG_TCCRnA
+    BYTE        WGMa  ; //                      // mask WGM3:0 for REG_TCCRnA if need
+    DWORD   REG_TCCRnB; // or 0, if not exist   // Timer/Counter Control Registers
+    BYTE        WGMb  ; //                      // mask WGM3:0 for REG_TCCRnB if need
+} McuPwmPinInfo, *PMcuPwmPinInfo;
+
+typedef struct McuInterruptPinInfoTag {
+    int     pin;
+} McuInterruptPinInfo;
+
+#define ISA_AVR             0x04
 #define ISA_PIC16           0x01
 #define ISA_ANSIC           0x02
 #define ISA_INTERPRETED     0x03
@@ -685,13 +739,15 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_PASCAL          0x06
 #define ISA_ARDUINO         0x07
 #define ISA_CAVR            0x08
-#define ISA_XINTERPRETED	0x09	// Extended interpeter
+#define ISA_XINTERPRETED    0x09    // Extended interpeter
 
 #define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
 
 typedef struct McuIoInfoTag {
     char            *mcuName;
+    char            *mcuList;
+    char            *mcuInc;
     char             portPrefix;
     DWORD            inputRegs[MAX_IO_PORTS];         // A is 0, J is 9
     DWORD            outputRegs[MAX_IO_PORTS];
@@ -712,9 +768,10 @@ typedef struct McuIoInfoTag {
     }                uartNeeds;
     int              pwmNeedsPin;
     int              whichIsa;
-    AvrFamily        Family;         // BOOL             avrUseIjmp;
-
+    Core             core;
+    int              pins;
     DWORD            configurationWord;
+/*
     struct {
         int             int0; // The pin can serve as an External Interrupt source 0.
         //int           pol0PinB; // The pin can polling in QuadEncod routines.
@@ -723,6 +780,13 @@ typedef struct McuIoInfoTag {
         //int           pol1PinB; // The pin can polling in QuadEncod routines.
         // PinA and PinB should be in the same register.
     }                IntNeeds;
+    McuInterruptPinInfo InterruptInfo;
+*/
+    McuPwmPinInfo   *pwmInfo;
+    int              pwmCount;
+
+    McuInterruptPinInfo *interruptInfo;
+    int                  interruptCount;
 } McuIoInfo;
 
 #define NUM_SUPPORTED_MCUS 29
@@ -736,6 +800,7 @@ typedef struct McuIoInfoTag {
         x; \
         ProgramChanged(); \
     }
+extern BOOL ProgramChangedNotSaved;
 void ProgramChanged(void);
 void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
@@ -754,6 +819,14 @@ extern McuIoInfo SupportedMcus[]; // NUM_SUPPORTED_MCUS
 // it is
 void CheckHeap(char *file, int line);
 #define ok() CheckHeap(__FILE__, __LINE__)
+extern ULONGLONG PrevWriteTime;
+extern ULONGLONG LastWriteTime;
+void ScrollDown();
+void ScrollPgDown();
+void ScrollUp();
+void ScrollPgUp();
+void RollHome();
+void RollEnd();
 char *ExtractFileDir(char *dest);
 char *ExtractFilePath(char *dest);
 char *ExtractFileName(char *src); // with .ext
@@ -769,6 +842,7 @@ void HscrollProc(WPARAM wParam);
 void GenerateIoListDontLoseSelection(void);
 void RefreshControlsToSettings(void);
 void MainWindowResized(void);
+void ToggleSimulationMode(BOOL doSimulateOneRung);
 void ToggleSimulationMode(void);
 void StopSimulation(void);
 void StartSimulation(void);
@@ -779,6 +853,7 @@ extern BOOL NeedHoriz;
 extern HWND IoList;
 extern int IoListTop;
 extern int IoListHeight;
+extern char IoListSelectionName[MAX_NAME_LEN];
 
 // draw.cpp
 int ProgCountWidestRow(void);
@@ -794,6 +869,7 @@ extern BOOL ThisHighlighted;
 extern void (*DrawChars)(int, int, char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow(void);
+BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
 void ExportDrawingAsText(char *file);
 void InitForDrawing(void);
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
@@ -816,6 +892,7 @@ void MoveCursorMouseClick(int x, int y);
 BOOL MoveCursorTopLeft(void);
 void EditElementMouseDoubleclick(int x, int y);
 void EditSelectedElement(void);
+BOOL ReplaceSelectedElement(void);
 void MakeResetOnlySelected(void);
 void MakeSetOnlySelected(void);
 void MakeNormalSelected(void);
@@ -827,7 +904,7 @@ BOOL CanChangeOutputElem(int Which);
 BOOL StaySameElem(int Which);
 void WhatCanWeDoFromCursorAndTopology(void);
 BOOL FindSelected(int *gx, int *gy);
-void MoveCursorNear(int gx, int gy);
+BOOL MoveCursorNear(int *gx, int *gy);
 
 #define DISPLAY_MATRIX_X_SIZE 256
 #define DISPLAY_MATRIX_Y_SIZE 2048
@@ -873,10 +950,15 @@ void InsertRung(BOOL afterCursor);
 int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
 BOOL UartFunctionUsed(void);
-BOOL PwmFunctionUsed(void);
+int PwmFunctionUsed(void);
 BOOL EepromFunctionUsed(void);
 void PushRungUp(void);
 void PushRungDown(void);
+void CopyRungDown(void);
+void CatRung(void);
+void CopyRung(void);
+void CopyElem(void);
+void PasteRung(int PasteTo);
 void NewProgram(void);
 ElemLeaf *AllocLeaf(void);
 ElemSubcktSeries *AllocSubcktSeries(void);
@@ -888,6 +970,7 @@ void UndoRedo(void);
 void UndoRemember(void);
 void UndoFlush(void);
 BOOL CanUndo(void);
+BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
 
 // loadsave.cpp
 BOOL LoadProjectFromFile(char *filename);
@@ -914,11 +997,11 @@ void ShowContactsDialog(BOOL *negated, char *name);
 void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name);
 // simpledialog.cpp
 void CheckVarInRange(char *name, SDWORD v);
-void ShowTimerDialog(int which, int *delay, char *name);
-void ShowCounterDialog(int which, int *count, char *name);
-void ShowMoveDialog(char *dest, char *src);
+void ShowTimerDialog(int which, SDWORD *delay, char *name);
+void ShowCounterDialog(int which, char *maxV, char *name);
+void ShowMoveDialog(int which, char *dest, char *src);
 void ShowReadAdcDialog(char *name);
-void ShowSetPwmDialog(char *name, int *targetFreq);
+void ShowSetPwmDialog(void *e);
 void ShowPersistDialog(char *var);
 void ShowUartDialog(int which, char *name);
 void ShowCmpDialog(int which, char *op1, char *op2);
@@ -930,8 +1013,18 @@ void ShowStringDialog(char * dest, char *var, char *string);
 void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
+int ishobdigit(int c);
+#define isxobdigit ishobdigit
+int isalpha_(int c);
+int isal_num(int c);
+int isname(char *name);
+double hobatof(char *str);
+SDWORD hobatoi(char *str);
+void ShowSizeOfVarDialog(PlcProgramSingleIo *io);
+
 // confdialog.cpp
 void ShowConfDialog(void);
+
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
 
@@ -949,18 +1042,26 @@ void ShowHelpDialog(BOOL about);
 #define LOG(EXP)
 #endif
 
-#define stringer(exp) #exp // see C Stringizing Operator (#)
+// see C Stringizing Operator (#)
+#define stringer(exp) #exp
+#define useless(exp) stringer(exp)
+//#define BIT0 0
+// stringer(BIT0) // ==  "BIT0"
+// useless(BIT0)  // == "0"
 
 #define ooops(...) { \
+        dbp("rungNow=%d", rungNow); \
         dbp("bad at %d %s\n", __LINE__, __FILE__); \
         dbp(__VA_ARGS__); \
+        Error(__VA_ARGS__); \
         Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
-        exit(1); \
+        doexit(EXIT_FAILURE); \
     }
 #define oops() { \
+        dbp("rungNow=%d", rungNow); \
         dbp("bad at %d %s\n", __LINE__, __FILE__); \
         Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
-        exit(1); \
+        doexit(EXIT_FAILURE); \
     }
 #define dodbp
 #ifdef dodbp
@@ -968,6 +1069,8 @@ void ShowHelpDialog(BOOL about);
 
 #define dbps(EXP) dbp( #EXP "='%s'", (EXP));
 #define dbpd(EXP) dbp( #EXP "=%d", (EXP));
+#define dbpld(EXP)  dbp( #EXP "=%Ld", (EXP));
+#define dbplld(EXP) dbp( #EXP "=%LLd", (EXP));
 #define dbpx(EXP) dbp( #EXP "=0x%x", (EXP));
 #define dbph dbpx
 #define dbpf(EXP) dbp( #EXP "=%f", (EXP));
@@ -980,6 +1083,7 @@ void ShowHelpDialog(BOOL about);
 #define dbpf(EXP)
 #endif
 
+void doexit(int status);
 void dbp(char *str, ...);
 void Error(char *str, ...);
 void *CheckMalloc(size_t n);
@@ -990,6 +1094,17 @@ void WriteIhex(FILE *f, BYTE b);
 void FinishIhex(FILE *f);
 char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
+void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
+void GetPinName(int pin, char *pinName);
+char *PinToName(int pin);
+int NameToPin(char *pinName);
+McuIoPinInfo *PinInfo(int pin);
+McuIoPinInfo *PinInfoForName(char *name);
+McuPwmPinInfo *PwmPinInfo(int pin);
+McuPwmPinInfo *PwmPinInfoForName(char *name);
+McuAdcPinInfo *AdcPinInfo(int pin);
+McuAdcPinInfo *AdcPinInfoForName(char *name);
+BOOL IsInterruptPin(int pin);
 HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
@@ -1005,6 +1120,9 @@ extern HWND OkButton;
 extern HWND CancelButton;
 extern BOOL DialogDone;
 extern BOOL DialogCancel;
+BOOL IsNumber(char *str);
+size_t strlenalnum(const char *str);
+void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 
 // lang.cpp
 char *_(char *in);
@@ -1016,7 +1134,7 @@ void StartSimulationTimer(void);
 BOOL ClearSimulationData(void);
 void ClrSimulationData(void);
 void CheckVariableNames(void);
-void DescribeForIoList(char *name, char *out);
+void DescribeForIoList(char *name, int type, char *out);
 void SimulationToggleContact(char *name);
 void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
@@ -1025,31 +1143,262 @@ void ShowUartSimulationWindow(void);
 DWORD IsUsedVariable(char *name);
 extern BOOL InSimulationMode;
 extern BOOL SimulateRedrawAfterNextCycle;
+extern DWORD CyclesCount;
+void SetSimulationVariable(char *name, SDWORD val);
+SDWORD GetSimulationVariable(char *name, BOOL forIoList);
+SDWORD GetSimulationVariable(char *name);
+void SetSimulationStr(char *name, char *val);
+char *GetSimulationStr(char *name);
+
+// Assignment of the `variables,' used for timers, counters, arithmetic, and
+// other more general things. Allocate 2 octets (16 bits) per.
+// Allocate 1 octets for  8-bits variables.
+// Allocate 3 octets for  24-bits variables.
+typedef  struct VariablesListTag {
+    // vvv from compilecommon.cpp
+    char    name[MAX_NAME_LEN];
+    DWORD   addrl;
+    DWORD   addrh;      // obsolete
+    int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
+    int     SizeOfVar;  // SizeOfVar can be less then Allocated
+    // ^^^ from compilecommon.cpp
+    int     type;       // see PlcProgramSingleIo
+    // vvv from simulate.cpp
+//  SDWORD  val;        // value in simulation mode.
+//  char    valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
+//  DWORD   usedFlags;  // in simulation mode.
+//  int     initedRung; // Variable inited in rung.
+//  DWORD   initedOp;   // Variable inited in Op number.
+//  char    rungs[MAX_COMMENT_LEN]; // Rungs, where variable is used.
+    // ^^^ from simulate.cpp
+} VariablesList;
+
+#define USE_IO_REGISTERS 1 // 0-NO, 1-YES // USE IO REGISTERS in AVR
+//#define USE_LDS_STS
+// not complete; just what I need
+typedef enum AvrOpTag {
+    OP_VACANT,
+    OP_NOP,
+    OP_COMMENT,
+    OP_COMMENTINT,
+    OP_ADC,
+    OP_ADD,
+    OP_ADIW,
+    OP_SBIW,
+    OP_ASR,
+    OP_BRCC,
+    OP_BRCS,
+    OP_BREQ,
+    OP_BRGE,
+    OP_BRLO,
+    OP_BRLT,
+    OP_BRNE,
+    OP_BRMI,
+    OP_CBR,
+    OP_CLC,
+    OP_CLR,
+    OP_SER,
+    OP_COM,
+    OP_CP,
+    OP_CPC,
+    OP_CPI,
+    OP_DEC,
+    OP_EOR,
+    OP_ICALL,
+    OP_IJMP,
+    OP_INC,
+    OP_LDI,
+    OP_LD_X,
+    OP_LD_XP,  // post increment X+
+    OP_LD_XS,  // -X pre decrement
+    OP_LD_Y,
+    OP_LD_YP,  // post increment Y+
+    OP_LD_YS,  // -Y pre decrement
+    OP_LDD_Y,  //  Y+q
+    OP_LD_Z,
+    OP_LD_ZP,  // post increment Z+
+    OP_LD_ZS,  // -Z pre decrement
+    OP_LDD_Z,  // Z+q
+    OP_LPM_0Z, // R0 <- (Z)
+    OP_LPM_Z,  // Rd <- (Z)
+    OP_LPM_ZP, // Rd <- (Z++) post incterment
+    OP_DB,     // one byte in flash word, hi byte = 0!
+    OP_DB2,    // two bytes in flash word
+    OP_DW,     // word in flash word
+    OP_MOV,
+    OP_MOVW,
+    OP_SWAP,
+    #if USE_IO_REGISTERS == 1
+    OP_IN,
+    OP_OUT,
+    OP_SBI,
+    OP_CBI,
+    OP_SBIC,
+    OP_SBIS,
+    #endif
+    OP_RCALL,
+    OP_RET,
+    OP_RETI,
+    OP_RJMP,
+    OP_ROR,
+    OP_ROL,
+    OP_LSL,
+    OP_LSR,
+    OP_SEC,
+    OP_SBC,
+    OP_SBCI,
+    OP_SBR,
+    OP_SBRC,
+    OP_SBRS,
+    OP_ST_X,
+    OP_ST_XP, // +
+    OP_ST_XS, // -
+    OP_ST_Y,
+    OP_ST_YP, // +
+    OP_ST_YS, // -
+//  OP_STD_Y, // Y+q // Notes: 1. This instruction is not available in all devices. Refer to the device specific instruction set summary.
+    OP_ST_Z,
+    OP_ST_ZP, // +
+    OP_ST_ZS, // -
+//  OP_STD_Z, // Z+q // Notes: 1. This instruction is not available in all devices. Refer to the device specific instruction set summary.
+    OP_SUB,
+    OP_SUBI,
+    OP_TST,
+    OP_WDR,
+    OP_AND,
+    OP_ANDI,
+    OP_OR,
+    OP_ORI,
+    OP_CPSE,
+    OP_BLD,
+    OP_BST,
+    #ifdef USE_MUL
+    OP_MUL,
+    OP_MULS,
+    OP_MULSU,
+    #endif
+    OP_PUSH,
+    OP_POP,
+    OP_CLI,
+    OP_SEI,
+} AvrOp;
+
+// not complete; just what I need
+typedef enum Pic16OpTag {
+    OP_VACANT_,
+    OP_NOP_,
+    OP_COMMENT_,
+    OP_COMMENT_INT,
+    OP_ADDWF,
+    OP_ANDWF,
+    OP_CALL,
+    OP_BSF,
+    OP_BCF,
+    OP_BTFSC,
+    OP_BTFSS,
+    OP_GOTO,
+    OP_CLRF,
+    OP_CLRWDT,
+    OP_COMF,
+    OP_DECF,
+    OP_DECFSZ,
+    OP_INCF,
+    OP_INCFSZ,
+    OP_IORLW,
+    OP_IORWF,
+    OP_MOVLW,
+    OP_MOVF,
+    OP_MOVWF,
+    OP_RETFIE,
+    OP_RETURN,
+    OP_RLF,
+    OP_RRF,
+    OP_SUBLW,
+    OP_SUBWF,
+    OP_XORWF,
+    OP_MOVLB,
+    OP_MOVLP
+} PicOp;
+
+typedef struct PicAvrInstructionTag {
+    PicOp       opPic;
+    AvrOp       opAvr;
+    DWORD       arg1;
+    DWORD       arg2;
+    DWORD       arg1orig;     //
+    DWORD       bank;         // this operation opPic executed inside this bank which now or previously selected
+    DWORD       bankFuture;   // this bank wiil be selected in future opPic or now
+    DWORD       PCLATH;       // this operation opPic will executed with this PCLATH which now or previously selected
+    BOOL        label;
+    DWORD       address;      // original address before correcting the adresses in array of opPic operations
+    char        commentInt[MAX_COMMENT_LEN];
+    char        commentAsm[MAX_COMMENT_LEN];
+    char        arg1name[MAX_NAME_LEN];
+    char        arg2name[MAX_NAME_LEN];
+    int         rung;  // This Instruction located in Prog.rungs[rung] LD
+    int         IntPc; // This Instruction located in IntCode[IntPc]
+    int         l;           // line in source file
+    char        f[MAX_PATH]; // source file name
+} PicAvrInstruction;
 
 // compilecommon.cpp
+extern int VariableCount;
+void PrintVariables(FILE *f);
+DWORD isVarUsed(char *name);
+int isVarInited(char *name);
+int isPinAssigned(char *name);
 void AllocStart(void);
 DWORD AllocOctetRam(void);
 void AllocBitRam(DWORD *addr, int *bit);
 void MemForVariable(char *name, DWORD *addrl, DWORD *addrh);
+int MemForVariable(char *name, DWORD *addrl);
 BYTE MuxForAdcVariable(char *name);
+int SingleBitAssigned(char *name);
 void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile(void);
+int SetSizeOfVar(char *name, int sizeOfVar);
 int SizeOfVar(char *name);
+int AllocOfVar(char *name);
+int TestByteNeeded(int count, SDWORD *vals);
+int byteNeeded(SDWORD i);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);
 #define CompileError() longjmp(CompileErrorBuf, 1)
 extern jmp_buf CompileErrorBuf;
+double SIprefix(double val, char* prefix, int en_1_2);
+double SIprefix(double val, char* prefix);
+int GetVariableType(char *name);
+int SetVariableType(char *name, int type);
 
 // intcode.cpp
+extern int int_comment_level;
+extern int asm_comment_level;
+extern int asm_discover_names;
 extern int rungNow;
 void IntDumpListing(char *outFile);
 BOOL GenerateIntermediateCode(void);
+BOOL CheckEndOfRungElem(int which, void *elem);
+BOOL CheckLeafElem(int which, void *elem);
+SDWORD CheckMakeNumber(char *str);
+void WipeIntMemory(void);
 BOOL CheckForNumber(char *str);
 int TenToThe(int x);
+BOOL MultiplyRoutineUsed(void);
+BOOL DivideRoutineUsed(void);
+void GenSymOneShot(char *dest, char *name1, char *name2);
+
 // pic16.cpp
 void CompilePic16(char *outFile);
+BOOL McuAs(char *str);
 // avr.cpp
+extern DWORD AvrProgWriteP;
+BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,\
+    int *prescaler,\
+    int *sc,\
+    int *divider,\
+    int *cycleTimeMin,\
+    int *cycleTimeMax);
 void CompileAvr(char *outFile);
 // ansic.cpp
 void CompileAnsiC(char *outFile, int compile_ISA);

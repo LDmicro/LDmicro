@@ -39,7 +39,7 @@ static struct {
     char    name[MAX_NAME_LEN];
     int     type;
     int     pin;
-	ModbusAddr_t modbus;
+    ModbusAddr_t modbus;
 } IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
 static int IoSeenPreviouslyCount;
 
@@ -66,6 +66,9 @@ static BOOL AnalogSliderCancel;
 //-----------------------------------------------------------------------------
 static void AppendIo(char *name, int type)
 {
+    if(!name || !strlen(name))
+        return;
+    SetVariableType(name, type);
     int i;
     for(i = 0; i < Prog.io.count; i++) {
         if(strcmp(Prog.io.assignment[i].name, name)==0) {
@@ -105,7 +108,7 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, ModbusAddr_t m
             if(pin != NO_PIN_ASSIGNED) {
                 IoSeenPreviously[i].pin = pin;
             }
-			IoSeenPreviously[i].modbus = modbus;
+            IoSeenPreviously[i].modbus = modbus;
             return;
         }
     }
@@ -119,28 +122,28 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, ModbusAddr_t m
     i = IoSeenPreviouslyCount;
     IoSeenPreviously[i].type = type;
     IoSeenPreviously[i].pin = pin;
-	IoSeenPreviously[i].modbus = modbus;
+    IoSeenPreviously[i].modbus = modbus;
     strcpy(IoSeenPreviously[i].name, name);
     IoSeenPreviouslyCount++;
 }
 
 static void AppendIoAutoType(char *name, int default_type)
 {
-	int type;
+    int type;
 
-	switch (name[0]) {
-	case 'X': type = IO_TYPE_DIG_INPUT; break;
-	case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
-	case 'A': type = IO_TYPE_READ_ADC; break;
-	case 'P': type = IO_TYPE_PWM_OUTPUT; break;
-	case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
-	case 'M': type = IO_TYPE_MODBUS_COIL; break;
-	case 'H': type = IO_TYPE_MODBUS_HREG; break;
-	case 'G': type = IO_TYPE_GENERAL; break;
-	default: type = default_type;
-	};
+    switch (name[0]) {
+    case 'X': type = IO_TYPE_DIG_INPUT; break;
+    case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
+    case 'A': type = IO_TYPE_READ_ADC; break;
+    case 'P': type = IO_TYPE_PWM_OUTPUT; break;
+    case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
+    case 'M': type = IO_TYPE_MODBUS_COIL; break;
+    case 'H': type = IO_TYPE_MODBUS_HREG; break;
+    case 'G': type = IO_TYPE_GENERAL; break;
+    default: type = default_type;
+    };
 
-	AppendIo(name, type);
+    AppendIo(name, type);
 }
 
 //-----------------------------------------------------------------------------
@@ -184,17 +187,17 @@ static void ExtractNamesFromCircuit(int which, void *any)
                     AppendIo(l->d.contacts.name, IO_TYPE_DIG_INPUT);
                     break;
 
-				case 'P':
-					AppendIo(l->d.contacts.name, IO_TYPE_PWM_OUTPUT);
-					break;
+                case 'P':
+                    AppendIo(l->d.contacts.name, IO_TYPE_PWM_OUTPUT);
+                    break;
 
-				case 'I':
-					AppendIo(l->d.contacts.name, IO_TYPE_MODBUS_CONTACT);
-					break;
+                case 'I':
+                    AppendIo(l->d.contacts.name, IO_TYPE_MODBUS_CONTACT);
+                    break;
 
-				case 'M':
-					AppendIo(l->d.contacts.name, IO_TYPE_MODBUS_COIL);
-					break;
+                case 'M':
+                    AppendIo(l->d.contacts.name, IO_TYPE_MODBUS_COIL);
+                    break;
 
                 default:
                     oops();
@@ -203,21 +206,21 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_COIL:
-			switch (l->d.contacts.name[0]) {
-			case 'R':
-				AppendIo(l->d.coil.name, IO_TYPE_INTERNAL_RELAY);
-				break;
-			case 'Y':
-				AppendIo(l->d.coil.name, IO_TYPE_DIG_OUTPUT);
-				break;
-			case 'M':
-				AppendIo(l->d.coil.name, IO_TYPE_MODBUS_COIL);
-				break;
-			default:
-				oops();
-				break;
-			}
-			break;
+            switch (l->d.contacts.name[0]) {
+            case 'R':
+                AppendIo(l->d.coil.name, IO_TYPE_INTERNAL_RELAY);
+                break;
+            case 'Y':
+                AppendIo(l->d.coil.name, IO_TYPE_DIG_OUTPUT);
+                break;
+            case 'M':
+                AppendIo(l->d.coil.name, IO_TYPE_MODBUS_COIL);
+                break;
+            default:
+                oops();
+                break;
+            }
+            break;
 
         case ELEM_TON:
         case ELEM_TOF:
@@ -274,11 +277,13 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_SET_PWM:
             AppendIo(l->d.setPwm.name, IO_TYPE_PWM_OUTPUT);
+            AppendIo(l->d.setPwm.duty_cycle, IO_TYPE_GENERAL);
             break;
 
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
+        case ELEM_CTR:
             AppendIo(l->d.counter.name, IO_TYPE_COUNTER);
             break;
 
@@ -311,6 +316,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_MASTER_RELAY:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
+        case ELEM_OSC:
         case ELEM_EQU:
         case ELEM_NEQ:
         case ELEM_GRT:
@@ -353,6 +359,23 @@ static int CompareIo(const void *av, const void *bv)
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
 
+    if((a->type == IO_TYPE_DIG_INPUT)
+     ||(a->type == IO_TYPE_DIG_OUTPUT)
+     ||(a->type == IO_TYPE_INT_INPUT)
+     ||(a->type == IO_TYPE_READ_ADC)) {
+
+        char PinName[MAX_NAME_LEN] = "";
+        char apin[MAX_NAME_LEN] = "";
+        char bpin[MAX_NAME_LEN] = "";
+        char aPortName[MAX_NAME_LEN] = "";
+        char bPortName[MAX_NAME_LEN] = "";
+
+        PinNumberForIo(apin, a, aPortName, PinName);
+        PinNumberForIo(bpin, b, bPortName, PinName);
+
+        return strcmp(aPortName, bPortName);
+    }
+
     return strcmp(a->name, b->name);
 }
 
@@ -388,22 +411,25 @@ int GenerateIoList(int prevSel)
     for(i = 0; i < Prog.numRungs; i++) {
         ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
-
+    if(Prog.cycleDuty) {
+        AppendIo(YPlcCycleDuty, IO_TYPE_DIG_OUTPUT);
+    }
     for(i = 0; i < Prog.io.count; i++) {
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_INT_INPUT ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
-		   Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG )
+           Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG ||
+           Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
             for(j = 0; j < IoSeenPreviouslyCount; j++) {
                 if(strcmp(Prog.io.assignment[i].name,
                     IoSeenPreviously[j].name)==0)
                 {
-					Prog.io.assignment[i].pin = IoSeenPreviously[j].pin;
-					Prog.io.assignment[i].modbus = IoSeenPreviously[j].modbus;
+                    Prog.io.assignment[i].pin = IoSeenPreviously[j].pin;
+                    Prog.io.assignment[i].modbus = IoSeenPreviously[j].modbus;
                     break;
                 }
             }
@@ -415,9 +441,13 @@ int GenerateIoList(int prevSel)
 
     if(prevSel >= 0) {
         for(i = 0; i < Prog.io.count; i++) {
+            if (strlen(IoListSelectionName)) {
+               if(strcmp(Prog.io.assignment[i].name, IoListSelectionName)==0)
+                   return i;
+            } else
             if(strcmp(Prog.io.assignment[i].name, selName)==0)
-                break;
-        }
+            return i;
+    }
         if(i < Prog.io.count)
             return i;
     }
@@ -435,7 +465,7 @@ BOOL LoadIoListFromFile(FILE *f)
     char line[MAX_NAME_LEN];
     char name[MAX_NAME_LEN];
     int pin;
-	ModbusAddr_t modbus;
+    ModbusAddr_t modbus;
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line))) continue;
         if(strcmp(line, "END\n")==0) {
@@ -450,11 +480,11 @@ BOOL LoadIoListFromFile(FILE *f)
                 case 'X': type = IO_TYPE_DIG_INPUT; break;
                 case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
                 case 'A': type = IO_TYPE_READ_ADC; break;
-				case 'P': type = IO_TYPE_PWM_OUTPUT; break;
-				case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
-				case 'M': type = IO_TYPE_MODBUS_COIL; break;
-				case 'C': type = IO_TYPE_COUNTER; break;
-				case 'H': type = IO_TYPE_MODBUS_HREG; break;
+                case 'P': type = IO_TYPE_PWM_OUTPUT; break;
+                case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
+                case 'M': type = IO_TYPE_MODBUS_COIL; break;
+                case 'C': type = IO_TYPE_COUNTER; break;
+                case 'H': type = IO_TYPE_MODBUS_HREG; break;
                 default: oops();
             }
             AppendIoSeenPreviously(name, type, pin, modbus);
@@ -473,18 +503,19 @@ void SaveIoListToFile(FILE *f)
     for(i = 0; i < Prog.io.count; i++) {
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT  ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
-		   Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
-		   Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG)
+           Prog.io.assignment[i].type == IO_TYPE_INT_INPUT  ||
+           Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG ||
+           Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
             // Don't internationalize this! It's the file format, not UI.
             fprintf(f, "    %s at %d %d %d\n",
-				Prog.io.assignment[i].name,
+                Prog.io.assignment[i].name,
                 Prog.io.assignment[i].pin,
-				Prog.io.assignment[i].modbus.Slave,
-				Prog.io.assignment[i].modbus.Address);
+                Prog.io.assignment[i].modbus.Slave,
+                Prog.io.assignment[i].modbus.Address);
         }
     }
 }
@@ -598,7 +629,7 @@ void ShowAnalogSliderPopup(char *name)
             }
         } else if(msg.message == WM_LBUTTONUP) {
             if(v != orig) {
-//                AnalogSliderDone = TRUE; // not allow a kyboard UP DN
+// //            AnalogSliderDone = TRUE; // this line not allow a kyboard UP DN
             }
         }
         SetAdcShadow(name, v);
@@ -675,6 +706,8 @@ static BOOL MakeWindowClass()
     return RegisterClassEx(&wc);
 }
 
+#define AddX 200
+#define AddY 50
 static void MakeControls(void)
 {
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Assign:"),
@@ -684,34 +717,43 @@ static void MakeControls(void)
 
     PinList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
-        LBS_NOTIFY, 6, 18, 119, 320, IoDialog, NULL, Instance, NULL);
+        LBS_NOTIFY, 6, 18, 95+AddX, 320+AddY, IoDialog, NULL, Instance, NULL);
     FixedFont(PinList);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        6, 325, 95, 23, IoDialog, NULL, Instance, NULL);
+        6, 325+AddY+4, 95, 23, IoDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        6, 356, 95, 23, IoDialog, NULL, Instance, NULL);
+        6, 356+AddY+2, 95, 23, IoDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 }
 
+//-----------------------------------------------------------------------------
 void ShowIoDialog(int item)
 {
+    int type = Prog.io.assignment[item].type;
+    switch(type) {
+        case IO_TYPE_GENERAL:
+        case IO_TYPE_PERSIST:
+        case IO_TYPE_STRING:
+        case IO_TYPE_RTO:
+        case IO_TYPE_COUNTER:
+        case IO_TYPE_UART_TX:
+        case IO_TYPE_UART_RX:
+        case IO_TYPE_TON:
+        case IO_TYPE_TOF:
+            ShowSizeOfVarDialog(&Prog.io.assignment[item]);
+            return;
+    }
     if(!Prog.mcu) {
         MessageBox(MainWindow,
             _("No microcontroller has been selected. You must select a "
             "microcontroller before you can assign I/O pins.\r\n\r\n"
             "Select a microcontroller under the Settings menu and try "
             "again."), _("I/O Pin Assignment"), MB_OK | MB_ICONWARNING);
-        return;
-    }
-
-    if(Prog.mcu->whichIsa == ISA_ANSIC) {
-        Error(_("Can't specify I/O assignment for ANSI C target; compile and "
-            "see comments in generated source code."));
         return;
     }
 
@@ -729,15 +771,20 @@ void ShowIoDialog(int item)
     if(Prog.io.assignment[item].name[0] != 'X' &&
        Prog.io.assignment[item].name[0] != 'Y' &&
        Prog.io.assignment[item].name[0] != 'A' &&
-	   Prog.io.assignment[item].name[0] != 'P')
+       Prog.io.assignment[item].name[0] != 'P')
     {
         Error(_("Can only assign pin number to input/output pins (Xname or "
             "Yname or Aname or Pname)."));
         return;
     }
 
-    if(Prog.io.assignment[item].name[0] == 'A' && Prog.mcu->adcCount == 0) {
+    if((Prog.io.assignment[item].type == IO_TYPE_READ_ADC) && (Prog.mcu->adcCount == 0)) {
         Error(_("No ADC or ADC not supported for this micro."));
+        return;
+    }
+
+    if((Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) && (Prog.mcu->pwmCount == 0) && (Prog.mcu->pwmNeedsPin == 0)) {
+        Error(_("No PWM or PWM not supported for this MCU."));
         return;
     }
 
@@ -756,14 +803,16 @@ void ShowIoDialog(int item)
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
         "LDmicroIo", _("I/O Pin"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 127, 387, NULL, NULL, Instance, NULL);
+        100, 100, 106+AddX, 387+AddY, NULL, NULL, Instance, NULL);
 
     MakeControls();
 
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
+    int Index = 0;
+    char buf[MAX_NAME_LEN];
+    int j;
     int i;
     for(i = 0; i < Prog.mcu->pinCount; i++) {
-        int j;
         for(j = 0; j < Prog.io.count; j++) {
             if(j == item) continue;
             if(Prog.io.assignment[j].pin == Prog.mcu->pinInfo[i].pin) {
@@ -785,38 +834,66 @@ void ShowIoDialog(int item)
             goto cant_use_this_io;
         }
 #endif
+        int type = Prog.io.assignment[item].type;
+        if((type == IO_TYPE_INT_INPUT) && (!IsInterruptPin(Prog.mcu->pinInfo[i].pin)))
+            goto cant_use_this_io;
 
-        if(Prog.io.assignment[item].name[0] == 'A') {
-            for(j = 0; j < Prog.mcu->adcCount; j++) {
+        if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
+            McuAdcPinInfo *iop = AdcPinInfo(Prog.mcu->pinInfo[i].pin);
+            if(iop)
+                ; // okay; we know how to connect it up to the ADC
+            else
+                goto cant_use_this_io;
+
+        }
+        if(Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) {
+            McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu->pinInfo[i].pin);
+            if((iop)&&(iop->timer != Prog.cycleTimer))
+                ; // okay; we know how to connect it up to the PWM
+            else
+                goto cant_use_this_io;
+
+        }
+
+        char pinName[MAX_NAME_LEN];
+        GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
+        sprintf(buf, "%3d  %s", Prog.mcu->pinInfo[i].pin, pinName);
+
+        if(Prog.mcu->pinInfo[i].pin == Prog.io.assignment[item].pin) {
+            Index = SendMessage(PinList, LB_GETCOUNT, 0, 0);
+            if(Index == LB_ERR) Index = 0;
+        };
+
+        SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+cant_use_this_io:;
+    }
+
+    for(j = 0; j < Prog.mcu->adcCount; j++) {
+      //if(Prog.io.assignment[item].name[0] == 'A') {
+        if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
+            for(i = 0; i < Prog.mcu->pinCount; i++) {
                 if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) {
                     // okay; we know how to connect it up to the ADC
-                    break;
+                    // break;
+                    goto cant_use_this_io_adc;
                 }
             }
             if(j == Prog.mcu->adcCount) {
-                goto cant_use_this_io;
+                goto cant_use_this_io_adc;
+            } else {
+                sprintf(buf, "%3d  ADC%d", Prog.mcu->adcInfo[j].pin,
+                    Prog.mcu->adcInfo[j].muxRegValue);
             }
+            SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
         }
-
-        char buf[40];
-        if(Prog.mcu->pinCount <= 21) {
-            sprintf(buf, "%3d   %c%c%d %s", Prog.mcu->pinInfo[i].pin,
-                Prog.mcu->portPrefix, Prog.mcu->pinInfo[i].port,
-                Prog.mcu->pinInfo[i].bit,
-				Prog.mcu->pinInfo[i].pinName ? Prog.mcu->pinInfo[i].pinName : "");
-        } else {
-            sprintf(buf, "%3d  %c%c%d %s", Prog.mcu->pinInfo[i].pin,
-                Prog.mcu->portPrefix, Prog.mcu->pinInfo[i].port,
-                Prog.mcu->pinInfo[i].bit,
-				Prog.mcu->pinInfo[i].pinName ? Prog.mcu->pinInfo[i].pinName : "");
-        }
-        SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
-cant_use_this_io:;
+    cant_use_this_io_adc:;
     }
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(IoDialog, TRUE);
     SetFocus(PinList);
+
+    SendMessage(PinList, LB_SETCURSEL, (WPARAM)Index, 0);
 
     MSG msg;
     DWORD ret;
@@ -870,96 +947,99 @@ cant_use_this_io:;
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(IoDialog);
+    SetFocus(IoList);
+    strcpy(IoListSelectionName, Prog.io.assignment[item].name);
     return;
 }
 
+//-----------------------------------------------------------------------------
 static void MakeModbusControls(void)
 {
-	HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Slave ID:"),
-		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-		6, 1, 70, 21, IoDialog, NULL, Instance, NULL);
-	NiceFont(textLabel2);
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Slave ID:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        6, 1, 70, 21, IoDialog, NULL, Instance, NULL);
+    NiceFont(textLabel2);
 
-	ModbusSlave = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-		WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-		80, 1, 30, 21, IoDialog, NULL, Instance, NULL);
-	FixedFont(ModbusSlave);
+    ModbusSlave = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        80, 1, 30, 21, IoDialog, NULL, Instance, NULL);
+    FixedFont(ModbusSlave);
 
-	HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Register:"),
-		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-		6, 24, 70, 21, IoDialog, NULL, Instance, NULL);
-	NiceFont(textLabel3);
+    HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Register:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        6, 24, 70, 21, IoDialog, NULL, Instance, NULL);
+    NiceFont(textLabel3);
 
-	ModbusRegister = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-		WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-		80, 24, 80, 21, IoDialog, NULL, Instance, NULL);
-	FixedFont(ModbusRegister);
+    ModbusRegister = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        80, 24, 80, 21, IoDialog, NULL, Instance, NULL);
+    FixedFont(ModbusRegister);
 
-	OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
-		WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-		6, 48, 50, 23, IoDialog, NULL, Instance, NULL);
-	NiceFont(OkButton);
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
+        6, 48, 50, 23, IoDialog, NULL, Instance, NULL);
+    NiceFont(OkButton);
 
-	CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
-		WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-		56, 48, 50, 23, IoDialog, NULL, Instance, NULL);
-	NiceFont(CancelButton);
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        56, 48, 50, 23, IoDialog, NULL, Instance, NULL);
+    NiceFont(CancelButton);
 }
 
 void ShowModbusDialog(int item)
 {
-	MakeWindowClass();
+    MakeWindowClass();
 
-	IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
-		"LDmicroIo", _("Modbus Address"),
-		WS_OVERLAPPED | WS_SYSMENU,
-		100, 100, 170, 80, NULL, NULL, Instance, NULL);
+    IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
+        "LDmicroIo", _("Modbus Address"),
+        WS_OVERLAPPED | WS_SYSMENU,
+        100, 100, 170, 80, NULL, NULL, Instance, NULL);
 
-	MakeModbusControls();
+    MakeModbusControls();
 
-	char txtModbusSlave[10];
-	char txtModbusRegister[20];
-	sprintf(txtModbusSlave, "%d", Prog.io.assignment[item].modbus.Slave);
-	sprintf(txtModbusRegister, "%05d", Prog.io.assignment[item].modbus.Address);
+    char txtModbusSlave[10];
+    char txtModbusRegister[20];
+    sprintf(txtModbusSlave, "%d", Prog.io.assignment[item].modbus.Slave);
+    sprintf(txtModbusRegister, "%05d", Prog.io.assignment[item].modbus.Address);
 
-	SendMessage(ModbusSlave, WM_SETTEXT, 0, (LPARAM)txtModbusSlave);
-	SendMessage(ModbusRegister, WM_SETTEXT, 0, (LPARAM)txtModbusRegister);
+    SendMessage(ModbusSlave, WM_SETTEXT, 0, (LPARAM)txtModbusSlave);
+    SendMessage(ModbusRegister, WM_SETTEXT, 0, (LPARAM)txtModbusRegister);
 
-	EnableWindow(MainWindow, FALSE);
-	ShowWindow(IoDialog, TRUE);
+    EnableWindow(MainWindow, FALSE);
+    ShowWindow(IoDialog, TRUE);
 
-	MSG msg;
-	DWORD ret;
-	DialogDone = FALSE;
-	DialogCancel = FALSE;
-	while ((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
-		if (msg.message == WM_KEYDOWN) {
-			if (msg.wParam == VK_RETURN) {
-				DialogDone = TRUE;
-				break;
-			}
-			else if (msg.wParam == VK_ESCAPE) {
-				DialogDone = TRUE;
-				DialogCancel = TRUE;
-				break;
-			}
-		}
+    MSG msg;
+    DWORD ret;
+    DialogDone = FALSE;
+    DialogCancel = FALSE;
+    while ((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+        if (msg.message == WM_KEYDOWN) {
+            if (msg.wParam == VK_RETURN) {
+                DialogDone = TRUE;
+                break;
+            }
+            else if (msg.wParam == VK_ESCAPE) {
+                DialogDone = TRUE;
+                DialogCancel = TRUE;
+                break;
+            }
+        }
 
-		if (IsDialogMessage(IoDialog, &msg)) continue;
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
+        if (IsDialogMessage(IoDialog, &msg)) continue;
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
 
-	if (!DialogCancel) {
-		SendMessage(ModbusSlave, WM_GETTEXT, (WPARAM)sizeof(txtModbusSlave), (LPARAM)txtModbusSlave);
-		SendMessage(ModbusRegister, WM_GETTEXT, (WPARAM)sizeof(txtModbusRegister), (LPARAM)txtModbusRegister);
-		Prog.io.assignment[item].modbus.Slave = atoi(txtModbusSlave);
-		Prog.io.assignment[item].modbus.Address = atoi(txtModbusRegister);
-	}
+    if (!DialogCancel) {
+        SendMessage(ModbusSlave, WM_GETTEXT, (WPARAM)sizeof(txtModbusSlave), (LPARAM)txtModbusSlave);
+        SendMessage(ModbusRegister, WM_GETTEXT, (WPARAM)sizeof(txtModbusRegister), (LPARAM)txtModbusRegister);
+        Prog.io.assignment[item].modbus.Slave = atoi(txtModbusSlave);
+        Prog.io.assignment[item].modbus.Address = atoi(txtModbusRegister);
+    }
 
-	EnableWindow(MainWindow, TRUE);
-	DestroyWindow(IoDialog);
-	return;
+    EnableWindow(MainWindow, TRUE);
+    DestroyWindow(IoDialog);
+    return;
 }
 //-----------------------------------------------------------------------------
 // Called in response to a notify for the listview. Handles click, text-edit
@@ -981,14 +1061,17 @@ void IoListProc(NMHDR *h)
                 // otherwise cause us to write to a null pointer.
                 break;
             }
+            strcpy(i->item.pszText, "");
             int item = i->item.iItem;
+            char *name = Prog.io.assignment[item].name;
+            int   type = Prog.io.assignment[item].type;
             switch(i->item.iSubItem) {
                 case LV_IO_PIN:
                     // Don't confuse people by displaying bogus pin assignments
-                    // for the C target.
-                    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-                                    Prog.mcu->whichIsa == ISA_INTERPRETED ||
-                                    Prog.mcu->whichIsa == ISA_NETZER) )
+                    // for the target.
+                    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_NETZER ||
+                                    Prog.mcu->whichIsa == ISA_XINTERPRETED ||
+                                    Prog.mcu->whichIsa == ISA_INTERPRETED) )
                     {
                         strcpy(i->item.pszText, "");
                         break;
@@ -1003,97 +1086,94 @@ void IoListProc(NMHDR *h)
                     strcpy(i->item.pszText, s);
                     break;
                 }
+
                 case LV_IO_NAME:
                     strcpy(i->item.pszText, Prog.io.assignment[item].name);
                     break;
 
-                case LV_IO_PORT: {
-				case LV_IO_PINNAME:
-					// Don't confuse people by displaying bogus pin assignments
-                    // for the C target.
-                    if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
-                        strcpy(i->item.pszText, "");
-                        break;
-                    }
+                case LV_IO_RAM_ADDRESS: {
+                    DWORD addr = 0;
+                    int bit = 0;
+                    if((type == IO_TYPE_GENERAL)
+                    || (type == IO_TYPE_PERSIST)
+                    || (type == IO_TYPE_STRING)
+                    || (type == IO_TYPE_RTO)
+                    || (type == IO_TYPE_TON)
+                    || (type == IO_TYPE_TOF)
+                    || (type == IO_TYPE_COUNTER)
+                    ) {
+                        if(!InSimulationMode && AllocOfVar(name)) {
+                            MemForVariable(name, &addr);
+                            sprintf(i->item.pszText, "0x%x", addr);
+                        }
+                    } else
+                    if((type == IO_TYPE_DIG_INPUT)
+                    || (type == IO_TYPE_DIG_OUTPUT)
+                    || (type == IO_TYPE_INTERNAL_RELAY)
+                    ) {
+                        if(!InSimulationMode) {
+                            if(SingleBitAssigned(name))
+                                MemForSingleBit(name, TRUE, &addr, &bit);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                        } 
+                    } 
+                    break;
+                }
 
-                    int type = Prog.io.assignment[item].type;
-                    if(type != IO_TYPE_DIG_INPUT && type != IO_TYPE_DIG_OUTPUT
-                        && type != IO_TYPE_READ_ADC && type != IO_TYPE_PWM_OUTPUT)
+                case LV_IO_SISE_OF_VAR:
+                    if((type==IO_TYPE_GENERAL         )
+                    || (type==IO_TYPE_PERSIST         )
+                    || (type==IO_TYPE_STRING          )
+                    || (type==IO_TYPE_RTO             )
+                    || (type==IO_TYPE_COUNTER         )
+                    || (type==IO_TYPE_UART_TX         )
+                    || (type==IO_TYPE_UART_RX         )
+                    || (type==IO_TYPE_TON             )
+                    || (type==IO_TYPE_TOF             )){
+                        sprintf(i->item.pszText, "%d  bytes", SizeOfVar(name));
+                    }
+                    break;
+
+                case LV_IO_PORT: {
+                case LV_IO_PINNAME:
+                    char pin[MAX_NAME_LEN];
+                    char poptName[MAX_NAME_LEN];
+                    char pinName[MAX_NAME_LEN];
+                    PinNumberForIo(pin,
+                        &(Prog.io.assignment[item]), poptName, pinName);
+                    if(i->item.iSubItem == LV_IO_PORT)
+                        strcpy(i->item.pszText, poptName);
+                    else
+                        strcpy(i->item.pszText, pinName);
+                    break;
+                }
+
+                case LV_IO_STATE: {
+                    if(TRUE || InSimulationMode) {
+                        DescribeForIoList(name, type, i->item.pszText);
+                    } else {
+                        strcpy(i->item.pszText, "");
+                    }
+                    break;
+                }
+
+                case LV_IO_MODBUS: {
+                    if (type != IO_TYPE_MODBUS_COIL &&
+                        type != IO_TYPE_MODBUS_CONTACT &&
+                        type != IO_TYPE_MODBUS_HREG)
                     {
                         strcpy(i->item.pszText, "");
                         break;
                     }
 
-                    int pin = Prog.io.assignment[item].pin;
-                    if(pin == NO_PIN_ASSIGNED || !Prog.mcu) {
-                        strcpy(i->item.pszText, "");
-                        break;
+                    if (Prog.io.assignment[item].modbus.Slave == 0) {
+                        sprintf(i->item.pszText, _("(not assigned)"));
                     }
-
-                    if(UartFunctionUsed() && Prog.mcu) {
-                        if((Prog.mcu->uartNeeds.rxPin == pin) ||
-                           (Prog.mcu->uartNeeds.txPin == pin))
-                        {
-                            strcpy(i->item.pszText, _("<UART needs!>"));
-                            break;
-                        }
-                    }
-
-                    if(PwmFunctionUsed() && Prog.mcu) {
-                        if(Prog.mcu->pwmNeedsPin == pin) {
-                            strcpy(i->item.pszText, _("<PWM needs!>"));
-                            break;
-                        }
-                    }
-
-                    int j;
-                    for(j = 0; j < Prog.mcu->pinCount; j++) {
-                        if(Prog.mcu->pinInfo[j].pin == pin) {
-							if (i->item.iSubItem == LV_IO_PINNAME) {
-								sprintf(i->item.pszText, "%s", Prog.mcu->pinInfo[j].pinName);
-							}
-							else {
-								sprintf(i->item.pszText, "%c%c%d",
-									Prog.mcu->portPrefix,
-									Prog.mcu->pinInfo[j].port,
-									Prog.mcu->pinInfo[j].bit);
-							}
-                            break;
-                        }
-                    }
-                    if(j == Prog.mcu->pinCount) {
-                        sprintf(i->item.pszText, _("<not an I/O!>"));
-                    }
-                    break;
-                }
-
-				case LV_IO_MODBUS: {
-					int type = Prog.io.assignment[item].type;
-					if (type != IO_TYPE_MODBUS_COIL &&
-						type != IO_TYPE_MODBUS_CONTACT &&
-						type != IO_TYPE_MODBUS_HREG)
-					{
-						strcpy(i->item.pszText, "");
-						break;
-					}
-
-					if (Prog.io.assignment[item].modbus.Slave == 0) {
-						sprintf(i->item.pszText, _("(not assigned)"));
-					}
-					else {
-						sprintf(i->item.pszText, "%d:%05d",
-							Prog.io.assignment[item].modbus.Slave,
-							Prog.io.assignment[item].modbus.Address);
-					}
-					break;
-				}
-
-                case LV_IO_STATE: {
-                    char *name = Prog.io.assignment[item].name;
-                    if(InSimulationMode || IsUsedVariable(name)) {
-                        DescribeForIoList(name, i->item.pszText);
-                    } else {
-                        strcpy(i->item.pszText, "");
+                    else {
+                        sprintf(i->item.pszText, "%d:%05d",
+                            Prog.io.assignment[item].modbus.Slave,
+                            Prog.io.assignment[item].modbus.Address);
                     }
                     break;
                 }
@@ -1103,29 +1183,45 @@ void IoListProc(NMHDR *h)
         }
         case LVN_ITEMACTIVATE: {
             NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
-            if(InSimulationMode) {
                 char *name = Prog.io.assignment[i->iItem].name;
-				switch (Prog.io.assignment[i->iItem].type) {
-				case IO_TYPE_DIG_INPUT:
-				case IO_TYPE_MODBUS_CONTACT:
-                    SimulationToggleContact(name);
-					break;
-				case IO_TYPE_READ_ADC:
-                    ShowAnalogSliderPopup(name);
-					break;
+            int   type = Prog.io.assignment[i->iItem].type;
+            if(InSimulationMode) {
+                switch (type) {
+                    case IO_TYPE_STRING:
+                    case IO_TYPE_GENERAL:
+                    case IO_TYPE_PERSIST:
+                    case IO_TYPE_RTO:
+                    case IO_TYPE_COUNTER:
+                case IO_TYPE_READ_ADC:
+                    case IO_TYPE_UART_TX:
+                    case IO_TYPE_UART_RX:
+                    case IO_TYPE_PWM_OUTPUT:
+                    case IO_TYPE_TON:
+                    case IO_TYPE_TOF: {
+                        ShowIoDialog(i->iItem);
+                        ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+                    break;
+                }
+                    default: {
+                        if(name[0] == 'X') {
+                            SimulationToggleContact(name);
+                        } else if(type == IO_TYPE_READ_ADC) {
+                            ShowAnalogSliderPopup(name);
+                        }
+                    }
                 }
             } else {
                 UndoRemember();
-				switch (Prog.io.assignment[i->iItem].type) {
-				case IO_TYPE_MODBUS_COIL:
-				case IO_TYPE_MODBUS_CONTACT:
-				case IO_TYPE_MODBUS_HREG:
-					ShowModbusDialog(i->iItem);
-					break;
-				default:
-					ShowIoDialog(i->iItem);
-					break;
-				}
+                switch (type) {
+                case IO_TYPE_MODBUS_COIL:
+                case IO_TYPE_MODBUS_CONTACT:
+                case IO_TYPE_MODBUS_HREG:
+                    ShowModbusDialog(i->iItem);
+                    break;
+                default:
+                    ShowIoDialog(i->iItem);
+                    break;
+                }
                 ProgramChanged();
                 InvalidateRect(MainWindow, NULL, FALSE);
             }

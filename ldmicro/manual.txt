@@ -158,6 +158,7 @@ indicates what kind of object it is.  For example:
     * Tname -- a timer; turn-on delay, turn-off delay, or retentive
     * Cname -- a counter, either count-up or count-down
     * Aname -- an integer read from an A/D converter
+    * Pname -- tied to an PWM output pin on the microcontroller
     * Mname -- tied to a MODBUS Coil output
     * Iname -- tied to a MODBUS Discrete input
     * Hname -- tied to a MODBUS Holding register
@@ -184,10 +185,14 @@ could check if the count of a timer is in a particular range.
 
 Variables are always 16 bit integers. This means that they can go
 from -32768 to 32767. Variables are always treated as signed. You can
-specify literals as normal decimal numbers (0, 1234, -56). You can also
+specify literals as normal decimal numbers (10, 1234, -56). You can also
 specify ASCII character values ('A', 'z') by putting the character in
 single-quotes. You can use an ASCII character code in most places that
 you could use a decimal number.
+You can use hexadecimal numbers (0xA, 0x04D2, 0xffc8),
+octal numbers (0o12, 0o2322, 0o177710),
+binary numbers (0b1010, 0b10011010010, 0b1111111111001000)
+in most places that you could use a decimal number.
 
 At the bottom of the screen you will see a list of all the objects in
 the program. This list is automatically generated from the program;
@@ -332,7 +337,7 @@ INSTRUCTIONS REFERENCE
     instruction must be the rightmost instruction in its rung.
 
 
-> TURN-ON DELAY                 Tdon 
+> TURN-ON DELAY                 Tdon
                            -[TON 1.000 s]-
 
     When the signal going into the instruction goes from false to true,
@@ -348,7 +353,7 @@ INSTRUCTIONS REFERENCE
     counter variable elsewhere, for example with a MOV instruction.
 
 
-> TURN-OFF DELAY                Tdoff 
+> TURN-OFF DELAY                Tdoff
                            -[TOF 1.000 s]-
 
     When the signal going into the instruction goes from true to false,
@@ -365,7 +370,7 @@ INSTRUCTIONS REFERENCE
     counter variable elsewhere, for example with a MOV instruction.
 
 
-> RETENTIVE TIMER               Trto  
+> RETENTIVE TIMER               Trto
                            -[RTO 1.000 s]-
 
     This instruction keeps track of how long its input has been true. If
@@ -766,6 +771,28 @@ INSTRUCTIONS REFERENCE
     require modifications to all the back-ends.
 
 
+> FORMATTED STRING                          dest
+                                       -{"string", var}-
+
+    For targets like Netzer with already present printf implementations
+    this instruction can be used.
+
+    When the rung-in condition for this instruction goes from false to
+    true, it starts to process the string with printf and writes the result
+    to the given dest register.
+
+    It completly embeds the given string into the resulting image.
+
+    The given variable can be any register from the program. It is
+    used as placeholder for printf. The printf function accesses
+    the register if any printf style placeholder (i.e. %d) is found.
+
+    Dest is a register where the result is written to. This should
+    be the top entry of a fifo or circular buffer.
+
+    The rung-out condition of this instruction is always true.
+
+
 A NOTE ON USING MATH
 ====================
 
@@ -908,6 +935,11 @@ be 0. The output of this code therefore depends on the order in which
 the instructions are evaluated. Considering how cumbersome it would be
 to code this any other way, I accept that.
 
+ABBREVIATIONS
+=============
+PLC - programmable logic controller.
+PWM - pulse width modulation.
+ADC - analog-to-digital converter.
 
 BUGS
 ====
