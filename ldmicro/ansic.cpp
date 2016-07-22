@@ -63,6 +63,7 @@ static BOOL SeenVariable(char *name)
 //-----------------------------------------------------------------------------
 #define ASBIT 1
 #define ASINT 2
+#define ASSTR 3
 static char *MapSym(char *str, int how)
 {
     if(!str) return NULL;
@@ -80,6 +81,8 @@ static char *MapSym(char *str, int how)
         bit_int = 'b';
     } else if(how == ASINT) {
         bit_int = 'i';
+    } else if(how == ASSTR) {
+        bit_int = 's';
     } else {
         oops();
     }

@@ -26,7 +26,7 @@
 
 #include "ldmicro.h"
 
-static ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
+ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 
 //-----------------------------------------------------------------------------
 /*
@@ -148,6 +148,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_ONE_SHOT_RISING;
     } else if(memcmp(line, "OSF", 3)==0) {
         *which = ELEM_ONE_SHOT_FALLING;
+    } else if(memcmp(line, "OSC", 3)==0) {
+        *which = ELEM_OSC;
     } else if((sscanf(line, "TON %s %d", l->d.timer.name,
         &l->d.timer.delay)==2))
     {
@@ -160,16 +162,16 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         &l->d.timer.delay)==2))
     {
         *which = ELEM_RTO;
-    } else if((sscanf(line, "CTD %s %d", l->d.counter.name,
-        &l->d.counter.max)==2))
+    } else if((sscanf(line, "CTD %s %s", l->d.counter.name,
+        l->d.counter.max)==2))
     {
         *which = ELEM_CTD;
-    } else if((sscanf(line, "CTU %s %d", l->d.counter.name,
-        &l->d.counter.max)==2))
+    } else if((sscanf(line, "CTU %s %s", l->d.counter.name,
+        l->d.counter.max)==2))
     {
         *which = ELEM_CTU;
-    } else if((sscanf(line, "CTC %s %d", l->d.counter.name,
-        &l->d.counter.max)==2))
+    } else if((sscanf(line, "CTC %s %s", l->d.counter.name,
+        l->d.counter.max)==2))
     {
         *which = ELEM_CTC;
     } else if(sscanf(line, "RES %s", l->d.reset.name)==1) {
@@ -218,14 +220,14 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_LES;
     } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name)==1) {
         *which = ELEM_READ_ADC;
-    } else if(sscanf(line, "SET_PWM %s %d", l->d.setPwm.name,
-        &(l->d.setPwm.targetFreq))==2)
+    } else if(sscanf(line, "SET_PWM %s %s %s", l->d.setPwm.duty_cycle,
+        l->d.setPwm.targetFreq, l->d.setPwm.name)==3)
     {
         *which = ELEM_SET_PWM;
-		if (l->d.setPwm.name[0] != 'P') {	// Fix the name, this case will occur when reading old LD files
-			memmove(l->d.setPwm.name + 1, l->d.setPwm.name, strlen(l->d.setPwm.name)+1);
-			l->d.setPwm.name[0] = 'P';
-		}
+    } else if(sscanf(line, "SET_PWM %s %s", l->d.setPwm.duty_cycle,
+        l->d.setPwm.targetFreq)==2)
+    {
+        *which = ELEM_SET_PWM;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name)==1) {
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name)==1) {
@@ -333,6 +335,12 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         return FALSE;
     }
     *any = l;
+    if(*which == ELEM_SET_PWM) {
+        if (l->d.setPwm.name[0] != 'P') {   // Fix the name, this case will occur when reading old LD files
+            memmove(l->d.setPwm.name + 1, l->d.setPwm.name, strlen(l->d.setPwm.name)+1);
+            l->d.setPwm.name[0] = 'P';
+        }
+    }
     return TRUE;
 }
 
@@ -400,7 +408,7 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
 // Same as LoadParallelFromFile, but for a series subcircuit. Thus builds
 // a series circuit out of parallel circuits and leaf elements.
 //-----------------------------------------------------------------------------
-static ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
+ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
 {
     char line[512];
     void *any;
@@ -457,6 +465,7 @@ BOOL LoadProjectFromFile(char *filename)
 
     char line[512];
     int crystal, cycle, baud;
+    int cycleTimer, cycleDuty;
 
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line))) continue;
@@ -467,8 +476,15 @@ BOOL LoadProjectFromFile(char *filename)
             }
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
-        } else if(sscanf(line, "CYCLE=%d", &cycle)) {
+        } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d", &cycle, &cycleTimer, &cycleDuty)==3) {
             Prog.cycleTime = cycle;
+            if((cycleTimer!=0)&&(cycleTimer!=1)) cycleTimer = 1;
+            Prog.cycleTimer = cycleTimer;
+            Prog.cycleDuty = cycleDuty;
+        } else if(sscanf(line, "CYCLE=%lld", &cycle)) {
+            Prog.cycleTime = cycle;
+            Prog.cycleTimer = 1;
+            Prog.cycleDuty = 0;
         } else if(sscanf(line, "BAUD=%d", &baud)) {
             Prog.baudRate = baud;
         } else if(memcmp(line, "COMPILED=", 9)==0) {
@@ -496,11 +512,11 @@ BOOL LoadProjectFromFile(char *filename)
     }
     if(strcmp(line, "PROGRAM\n") != 0) goto failed;
 
-    int rung;
+    int rung = -2;
     for(rung = 0;;) {
         if(!fgets(line, sizeof(line), f)) break;
         if(!strlen(strspace(line))) continue;
-        if(strcmp(line, "RUNG\n")!=0) goto failed;
+        if(strstr("RUNG", line)!=0) goto failed;
 
         Prog.rungs[rung] = LoadSeriesFromFile(f);
         if(!Prog.rungs[rung]) goto failed;
@@ -518,6 +534,8 @@ BOOL LoadProjectFromFile(char *filename)
     }
 
     fclose(f);
+    tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
+    PrevWriteTime = LastWriteTime;
     return TRUE;
 
 failed:
@@ -549,7 +567,7 @@ static void Indent(FILE *f, int depth)
 // output the SERIES/END delimiters. This is because the root is delimited
 // by RUNG/END markers output elsewhere.
 //-----------------------------------------------------------------------------
-static void SaveElemToFile(FILE *f, int which, void *any, int depth)
+void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 {
     ElemLeaf *l = (ElemLeaf *)any;
     char *s;
@@ -613,7 +631,7 @@ timer:
             s = "CTC"; goto counter;
 
 counter:
-            fprintf(f, "%s %s %d\n", s, l->d.counter.name, l->d.counter.max);
+            fprintf(f, "%s %s %s\n", s, l->d.counter.name, l->d.counter.max);
             break;
 
         case ELEM_RES:
@@ -663,13 +681,21 @@ cmp:
             fprintf(f, "OSF\n");
             break;
 
+        case ELEM_OSC:
+            fprintf(f, "OSC\n");
+            break;
+
         case ELEM_READ_ADC:
             fprintf(f, "READ_ADC %s\n", l->d.readAdc.name);
             break;
 
         case ELEM_SET_PWM:
-            fprintf(f, "SET_PWM %s %d\n", l->d.setPwm.name,
-                l->d.setPwm.targetFreq);
+            fprintf(f, "SET_PWM %s %s %s\n", l->d.setPwm.duty_cycle,
+                l->d.setPwm.targetFreq, l->d.setPwm.name);
+            break;
+
+        case ELEM_PWM_OFF:
+            fprintf(f, "PWM_OFF\n");
             break;
 
         case ELEM_UART_RECV:
@@ -751,7 +777,7 @@ cmp:
             }
             for(i = 0; i < s->count; i++) {
                 SaveElemToFile(f, s->contents[i].which, s->contents[i].d.any,
-                    depth+1);
+                    depth+1, rung);
             }
             Indent(f, depth);
             fprintf(f, "END\n");
@@ -764,7 +790,7 @@ cmp:
             fprintf(f, "PARALLEL\n");
             for(i = 0; i < s->count; i++) {
                 SaveElemToFile(f, s->contents[i].which, s->contents[i].d.any,
-                    depth+1);
+                    depth+1, rung);
             }
             Indent(f, depth);
             fprintf(f, "END\n");
@@ -772,7 +798,7 @@ cmp:
         }
 
         default:
-            oops();
+            ooops("ELEM_0x%x",which);
             break;
     }
 }
@@ -790,9 +816,9 @@ BOOL SaveProjectToFile(char *filename)
     if(Prog.mcu) {
         fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
     }
-    fprintf(f, "CYCLE=%d\n", Prog.cycleTime);
-    fprintf(f, "CRYSTAL=%d\n", Prog.mcuClock);
-    fprintf(f, "BAUD=%d\n", Prog.baudRate);
+    fprintf(f, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d\n", Prog.cycleTime, Prog.cycleTimer, Prog.cycleDuty);
+    fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
+    fprintf(f, "BAUD=%d Hz\n", Prog.baudRate);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }
@@ -808,10 +834,13 @@ BOOL SaveProjectToFile(char *filename)
 
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
-        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0);
+        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i+1);
     }
 
     fflush(f);
     fclose(f);
+
+    tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
+    PrevWriteTime = LastWriteTime;
     return TRUE;
 }

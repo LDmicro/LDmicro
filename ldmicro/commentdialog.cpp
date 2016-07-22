@@ -31,32 +31,35 @@ static HWND CommentDialog;
 
 static HWND CommentTextbox;
 
-static void MakeControls(void)
+static void MakeControls(RECT r)
 {
     CommentTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE |
         ES_MULTILINE | ES_WANTRETURN,
-        7, 10, 600, 38, CommentDialog, NULL, Instance, NULL);
+        7, 10, r.right-137, 38, CommentDialog, NULL, Instance, NULL);
     FixedFont(CommentTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        620,  6, 70, 23, CommentDialog, NULL, Instance, NULL); 
+        r.right-120,  6, 70, 23, CommentDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        620, 36, 70, 23, CommentDialog, NULL, Instance, NULL); 
+        r.right-120, 36, 70, 23, CommentDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 }
 
 void ShowCommentDialog(char *comment)
 {
+    RECT r;
+    GetClientRect(MainWindow, &r);
+
     CommentDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Comment"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 700, 65, NULL, NULL, Instance, NULL);
+        r.left+20, 100, r.right-r.left-40, 65, NULL, NULL, Instance, NULL);
 
-    MakeControls();
+    MakeControls(r);
    
     SendMessage(CommentTextbox, WM_SETTEXT, 0, (LPARAM)comment);
 

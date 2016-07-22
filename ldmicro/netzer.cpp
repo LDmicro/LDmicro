@@ -52,7 +52,7 @@ typedef struct {
     WORD    name1;
     WORD    name2;
     WORD    name3;
-    SWORD   literal;
+    SDWORD   literal;
 } BinOp;
 
 static BinOp OutProg[MAX_INT_OPS];

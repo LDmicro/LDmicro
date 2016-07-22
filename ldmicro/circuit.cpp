@@ -27,9 +27,6 @@
 
 #include "ldmicro.h"
 
-
-static ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
-
 //-----------------------------------------------------------------------------
 // Convenience routines for allocating frequently-used data structures.
 //-----------------------------------------------------------------------------
@@ -390,7 +387,8 @@ void AddCounter(int which)
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.counter.name, "Cnew");
-    t->d.counter.max = 0;
+    strcpy(t->d.counter.max, which == ELEM_CTD ? "-10" : "10");
+
     AddLeaf(which, t);
 }
 void AddReadAdc(void)
@@ -398,16 +396,22 @@ void AddReadAdc(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readAdc.name, "Anew");
+    strcpy(t->d.readAdc.name, "ADCnew");
     AddLeaf(ELEM_READ_ADC, t);
 }
 void AddSetPwm(void)
 {
     if(!CanInsertEnd) return;
-
+/*
+    if(PwmFunctionUsed()) {
+      Error(_("Can use only one PWM on timer2."));
+      return;
+    }
+*/
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setPwm.name, "Pnew");
-    t->d.setPwm.targetFreq = 1000;
+    strcpy(t->d.setPwm.name, "PWMnew");
+    strcpy(t->d.setPwm.duty_cycle, "duty_cycle");
+    strcpy(t->d.setPwm.targetFreq, "1000");
     AddLeaf(ELEM_SET_PWM, t);
 }
 void AddUart(int which)
@@ -444,7 +448,7 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
-            for(i = 0; i < s->count; i++) {
+            for(i = (s->count-1); i >= 0 ; i--) {
                 if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
                     ElemSubcktParallel *p = s->contents[i].d.parallel;
                     if(p->count == 1) {
@@ -465,13 +469,34 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
                         }
                         CheckFree(p);
                         modified = TRUE;
+                    } else if(p->count == 0) {
+                        memmove(&s->contents[i],
+                            &s->contents[i+1],
+                            (s->count - i - 1)*sizeof(s->contents[0]));
+                        s->count -= 1;
+                        CheckFree(p);
+                        modified = TRUE;
                     } else {
-                        if(CollapseUnnecessarySubckts(ELEM_PARALLEL_SUBCKT,
+                        while(CollapseUnnecessarySubckts(ELEM_PARALLEL_SUBCKT,
                             s->contents[i].d.parallel))
                         {
                             modified = TRUE;
                         }
                     }
+                } else if(s->contents[i].which == ELEM_SERIES_SUBCKT) {
+                     // move up level
+                     ElemSubcktSeries *s2 = s->contents[i].d.series;
+                     if((s->count + s2->count) < MAX_ELEMENTS_IN_SUBCKT) {
+                            memmove(&s->contents[i+s2->count],
+                                &s->contents[i+1],
+                                (s->count-i-1)*sizeof(s->contents[0]));
+                            memcpy(&s->contents[i],
+                                &s2->contents[0],
+                                (s2->count)*sizeof(s->contents[0]));
+                            s->count += s2->count-1;
+                            CheckFree(s2);
+                            modified = TRUE;
+                     }
                 }
                 // else a leaf, not a problem
             }
@@ -480,7 +505,7 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
-            for(i = 0; i < p->count; i++) {
+            for(i = (p->count-1); i >= 0; i--) {
                 if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
                     ElemSubcktSeries *s = p->contents[i].d.series;
                     if(s->count == 1) {
@@ -501,8 +526,15 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
                         }
                         CheckFree(s);
                         modified = TRUE;
+                    } else if(s->count == 0) {
+                        memmove(&p->contents[i],
+                            &p->contents[i+1],
+                            (p->count - i - 1)*sizeof(p->contents[0]));
+                        p->count -= 1;
+                        CheckFree(s);
+                        modified = TRUE;
                     } else {
-                        if(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT,
+                        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT,
                             p->contents[i].d.series))
                         {
                             modified = TRUE;
@@ -585,6 +617,43 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
 }
 
 //-----------------------------------------------------------------------------
+static BOOL DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToDelete, BOOL IsEnd)
+{
+    ok();
+    BOOL res = false;
+    switch(anyWhich) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+            for(i = (s->count-1); i >= 0; i--)
+                DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,anyToDelete,s->contents[i].which, s->contents[i].d.any, IsEnd);
+            break;
+        }
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int i;
+            for(i = (p->count-1); i >= 0; i--)
+                DeleteAnyFromSubckt(ELEM_PARALLEL_SUBCKT,anyToDelete,p->contents[i].which, p->contents[i].d.any, IsEnd);
+            break;
+        }
+        default:
+            if(EndOfRungElem(anyWhich)==IsEnd)
+            if(Selected != anyToDelete) {
+                ElemLeaf *saveSelected = Selected;
+                Selected=(ElemLeaf *)anyToDelete; // HOOK
+                if(res = DeleteSelectedFromSubckt(which, any)) {
+                    while(CollapseUnnecessarySubckts(which, any))
+                        ;
+                    //dbp("DeleteAny %d", IsEnd);
+                }
+                Selected = saveSelected; // RESTORE
+            }
+            break;
+    }
+    return res;
+}
+
+//-----------------------------------------------------------------------------
 // Delete the selected item from the program. Just call
 // DeleteSelectedFromSubckt on every rung till we find it.
 //-----------------------------------------------------------------------------
@@ -614,7 +683,7 @@ void DeleteSelectedFromProgram(void)
         while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[i]))
             ;
         WhatCanWeDoFromCursorAndTopology();
-        MoveCursorNear(gx, gy);
+        MoveCursorNear(&gx, &gy);
         return;
     }
 }
@@ -712,8 +781,11 @@ static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
                 return TRUE;
             break;
 
+        case ELEM_PADDING:
+            break;
+
         default:
-            oops();
+            ooops("which=%d",which);
     }
     return FALSE;
 }
@@ -734,11 +806,26 @@ int RungContainingSelected(void)
 }
 
 //-----------------------------------------------------------------------------
+// Delete the rung i
+//-----------------------------------------------------------------------------
+void DeleteRungI(int i)
+{
+    if(i < 0) return;
+
+    FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+    (Prog.numRungs)--;
+    memmove(&Prog.rungs[i], &Prog.rungs[i+1],
+        (Prog.numRungs - i)*sizeof(Prog.rungs[0]));
+    memmove(&Prog.rungSelected[i], &Prog.rungSelected[i+1],
+        (Prog.numRungs - i)*sizeof(Prog.rungSelected[0]));
+}
+
+//-----------------------------------------------------------------------------
 // Delete the rung that contains the cursor.
 //-----------------------------------------------------------------------------
 void DeleteSelectedRung(void)
 {
-    if(Prog.numRungs == 1) {
+    if(Prog.numRungs <= 1) {
         Error(_("Cannot delete rung; program must have at least one rung."));
         return;
     }
@@ -750,12 +837,9 @@ void DeleteSelectedRung(void)
     int i = RungContainingSelected();
     if(i < 0) return;
 
-    FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-    Prog.numRungs--;
-    memmove(&Prog.rungs[i], &Prog.rungs[i+1],
-        (Prog.numRungs - i)*sizeof(Prog.rungs[0]));
+    DeleteRungI(i);
 
-    if(foundCursor) MoveCursorNear(gx, gy);
+    if(foundCursor) MoveCursorNear(&gx, &gy);
 
     WhatCanWeDoFromCursorAndTopology();
 }
@@ -777,6 +861,26 @@ static ElemSubcktSeries *AllocEmptyRung(void)
 }
 
 //-----------------------------------------------------------------------------
+// Insert a rung before rung i.
+//-----------------------------------------------------------------------------
+void InsertRungI(int i)
+{
+    if(i < 0) return;
+
+    if(Prog.numRungs >= (MAX_RUNGS - 1)) {
+        Error(_("Too many rungs!"));
+        return;
+    }
+
+    memmove(&Prog.rungs[i+1], &Prog.rungs[i],
+        (Prog.numRungs - i)*sizeof(Prog.rungs[0]));
+    memmove(&Prog.rungSelected[i+1], &Prog.rungSelected[i],
+        (Prog.numRungs - i)*sizeof(Prog.rungSelected[0]));
+    Prog.rungs[i] = AllocEmptyRung();
+    (Prog.numRungs)++;
+}
+
+//-----------------------------------------------------------------------------
 // Insert a rung either before or after the rung that contains the cursor.
 //-----------------------------------------------------------------------------
 void InsertRung(BOOL afterCursor)
@@ -790,10 +894,7 @@ void InsertRung(BOOL afterCursor)
     if(i < 0) return;
 
     if(afterCursor) i++;
-    memmove(&Prog.rungs[i+1], &Prog.rungs[i],
-        (Prog.numRungs - i)*sizeof(Prog.rungs[0]));
-    Prog.rungs[i] = AllocEmptyRung();
-    (Prog.numRungs)++;
+    InsertRungI(i);
 
     WhatCanWeDoFromCursorAndTopology();
 }
@@ -904,7 +1005,7 @@ BOOL ItemIsLastInCircuit(ElemLeaf *item)
 // Returns TRUE if the subcircuit contains any of the given instruction
 // types (ELEM_....), else FALSE.
 //-----------------------------------------------------------------------------
-static BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
+BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
 {
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -939,7 +1040,32 @@ static BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
     }
     return FALSE;
 }
-
+//-----------------------------------------------------------------------------
+// Returns number of the given instruction
+// types (ELEM_....) in the subcircuit.
+//-----------------------------------------------------------------------------
+int CountWhich(int which, void *any, int seek1)
+{
+  int n = 0;
+  int i;
+  switch(which) {
+    case ELEM_PARALLEL_SUBCKT: {
+      ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+      for(i = 0; i < p->count; i++)
+        n+=CountWhich(p->contents[i].which, p->contents[i].d.any, seek1);
+    }
+    case ELEM_SERIES_SUBCKT: {
+      ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+      for(i = 0; i < s->count; i++)
+        n+=CountWhich(s->contents[i].which, s->contents[i].d.any, seek1);
+    }
+    default:
+      if(which == seek1)
+        n++;
+  }
+  return n;
+}
+/* function moved to intcode.cpp
 //-----------------------------------------------------------------------------
 // Are either of the UART functions (send or recv) used? Need to know this
 // to know whether we must receive their pins.
@@ -948,29 +1074,43 @@ BOOL UartFunctionUsed(void)
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
+        ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_UART_UDRE, -1, -1)))
         {
             return TRUE;
         }
     }
     return FALSE;
 }
-
+*/
 //-----------------------------------------------------------------------------
 // Is the PWM function used? Need to know this to know whether we must reserve
 // the pin.
 //-----------------------------------------------------------------------------
-BOOL PwmFunctionUsed(void)
+int PwmFunctionUsed(void)
 {
+    int n = 0;
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SET_PWM,
             -1, -1))
         {
-            return TRUE;
+            n++;
         }
     }
+    return n;
+}
+//-----------------------------------------------------------------------------
+int QuadEncodFunctionUsed(void)
+{
+    int n = 0;
+    return n;
+}
+//-----------------------------------------------------------------------------
+BOOL NPulseFunctionUsed(void)
+{
     return FALSE;
 }
 //-----------------------------------------------------------------------------
@@ -985,4 +1125,219 @@ BOOL EepromFunctionUsed(void)
         }
     }
     return FALSE;
+}
+//-----------------------------------------------------------------------------
+// copy the selected rung temporar, InsertRung and
+// save in the new rung temp
+//-----------------------------------------------------------------------------
+char *CLP="ldmicro.tmp";
+void CopyRungDown(void)
+{
+    int i = RungContainingSelected();
+    char line[512];
+    ElemSubcktSeries *temp = Prog.rungs[i];
+
+    //FILE *f = fopen(CLP, "w+TD");
+    FILE *f = fopen(CLP, "w+");
+    if(!f) {
+        Error(_("Couldn't open file '%s'"), CLP);
+        return;
+    }
+    //fprintf(f, "RUNG\n");
+    SaveElemToFile(f, ELEM_SERIES_SUBCKT, temp, 0, i);
+    //fprintf(f, "END\n");
+
+    rewind(f);
+    fgets(line,sizeof(line),f);
+    if(strstr(line, "RUNG"))
+    if(temp=LoadSeriesFromFile(f)) {
+        InsertRung(true);
+        Prog.rungs[i+1] = temp;
+    }
+    fclose(f);
+
+    WhatCanWeDoFromCursorAndTopology();
+    ScrollSelectedIntoViewAfterNextPaint = TRUE;
+}
+
+//-----------------------------------------------------------------------------
+void CatRung(void)
+{
+    int i;
+
+    FILE *f = fopen(CLP, "w+");
+    if(!f) {
+        Error(_("Couldn't open file '%s'"), CLP);
+        return;
+    }
+    int SelN = 0;
+    for(i = 0; i < Prog.numRungs; i++)
+        if(Prog.rungSelected[i] == '*')
+            SelN++;
+    if(!SelN){
+         i = RungContainingSelected();
+         if(i >= 0)
+             Prog.rungSelected[i] = '*';
+    }
+    for(i = (Prog.numRungs-1); i >= 0 ; i--)
+    if(Prog.rungSelected[i]=='*') {
+        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
+        DeleteRungI(i);
+    }
+    fclose(f);
+
+    WhatCanWeDoFromCursorAndTopology();
+    //ScrollSelectedIntoViewAfterNextPaint = TRUE;
+}
+
+//-----------------------------------------------------------------------------
+void CopyRung(void)
+{
+    FILE *f = fopen(CLP, "w+");
+    if(!f) {
+        Error(_("Couldn't open file '%s'"), CLP);
+        return;
+    }
+    int i;
+    int SelN = 0;
+    for(i = 0; i < Prog.numRungs; i++)
+        if(Prog.rungSelected[i] == '*')
+            SelN++;
+    if(!SelN){
+         i = RungContainingSelected();
+         if(i >= 0)
+             Prog.rungSelected[i] = '*';
+    }
+    for(i = 0; i < Prog.numRungs; i++)
+    if(Prog.rungSelected[i] > '*') {
+        Prog.rungSelected[i] = ' ';
+    } else if(Prog.rungSelected[i] == '*') {
+        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
+        Prog.rungSelected[i] = 'R';
+    }
+    fclose(f);
+}
+
+//-----------------------------------------------------------------------------
+void CopyElem(void)
+{
+    if(!Selected)
+      return;
+
+    FILE *f = fopen(CLP, "w+");
+    if(!f) {
+        Error(_("Couldn't open file '%s'"), CLP);
+        return;
+    }
+    int i;
+    int SelN = 0;
+    for(i = 0; i < Prog.numRungs; i++)
+        if(Prog.rungSelected[i] == '*')
+            SelN++;
+    if(!SelN){
+         i = RungContainingSelected();
+         if(i >= 0)
+             Prog.rungSelected[i] = '*';
+    }
+    for(i = 0; i < Prog.numRungs; i++)
+    if(Prog.rungSelected[i] > '*') {
+        Prog.rungSelected[i] = ' ';
+    } else if(Prog.rungSelected[i] == '*') {
+        fprintf(f, "RUNG\n");
+        SaveElemToFile(f, SelectedWhich, Selected, 0, 0);
+        fprintf(f, "END\n");
+        if(EndOfRungElem(SelectedWhich))
+            Prog.rungSelected[i] = 'E';
+        else
+            Prog.rungSelected[i] = 'L';
+    }
+
+    fclose(f);
+}
+
+//-----------------------------------------------------------------------------
+void PasteRung(int PasteInTo)
+{
+    if(!(CanInsertEnd || CanInsertOther))
+        return;
+    int j = RungContainingSelected();
+    if(j < 0) j = 0;
+
+    if(Selected && (Selected->selectedState == SELECTED_BELOW)) {
+        j++;
+    }
+
+    ElemSubcktSeries *temp;
+
+    FILE *f = fopen(CLP, "r");
+    if(!f) {
+        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("You must Select rungs, then Copy or Cut, then Paste."));
+        return;
+    }
+    int i;
+    char line[512];
+    int rung;
+
+    for(rung = 0; rung == 0;) {
+        if(!fgets(line, sizeof(line), f)) break;
+        if(strstr(line,"RUNG"))
+        if(temp=LoadSeriesFromFile(f)) {
+            if(SelectedWhich == ELEM_PLACEHOLDER) {
+                // CheckFree(Prog.rungs[j]->contents[0].d.leaf); // ???
+                Prog.rungs[j] = temp;
+                rung = 1;
+            } else if(PasteInTo==0) {
+                //insert rungs from file
+                InsertRungI(j);
+                Prog.rungs[j] = temp;
+                j++;
+            } else if(PasteInTo==1) {
+                if(j>=Prog.numRungs)
+                    j = Prog.numRungs - 1;
+                //insert rung INTO series
+                BOOL doCollapse;
+                if(Selected && (Selected->selectedState != SELECTED_NONE)) {
+                    if(!EndOfRungElem(SelectedWhich)||(Selected->selectedState == SELECTED_LEFT))
+                      if(!ItemIsLastInCircuit(Selected)
+                      ||(Selected->selectedState == SELECTED_LEFT)) {
+                          doCollapse = false;
+                          for(i = temp->count-1; i >= 0 ; i--) {
+                              if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT, temp,
+                                  temp->contents[i].which, temp->contents[i].d.any, true))
+                                  doCollapse = true;
+                          }
+                          if(doCollapse)
+                          while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, temp));
+                      }
+                    if(EndOfRungElem(SelectedWhich)
+                    && CanInsertEnd
+                    &&((Selected->selectedState == SELECTED_BELOW)
+                    || (Selected->selectedState == SELECTED_ABOVE))) {
+                        doCollapse = false;
+                        for(i = temp->count-1; i >= 0 ; i--) {
+                            if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT, temp,
+                                temp->contents[i].which, temp->contents[i].d.any, false))
+                                doCollapse = true;
+                        }
+                        if(doCollapse)
+                        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, temp));
+                    }
+                    if(temp->count>0)
+                      if(AddLeaf(ELEM_SERIES_SUBCKT, (ElemLeaf *)temp)) {
+                        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[j])) {
+                            ProgramChanged();
+                        }
+                    }
+                }
+            } else oops();
+        }
+    }
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(Prog.rungSelected[i] != ' ')
+            Prog.rungSelected[i] = ' ';
+    }
+    fclose(f);
+
+    WhatCanWeDoFromCursorAndTopology();
 }

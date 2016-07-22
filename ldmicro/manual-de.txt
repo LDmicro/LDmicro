@@ -842,6 +842,29 @@ eine bessere würde Änderungen an sämtlichen Ausläufern des Programms
 benötigen.
 
 
+> FORMATIERTE ZEICHENFOLGE                   dest
+                                       -{"Zeichenkette", var}-
+
+Für Zielplattformen (z.B. Netzer) auf denen bereits ein printf
+verfügbar ist, kann dieser Befehl verwendet werden.
+
+Wenn der Eingangszustand des Netzwerks für diese Anweisung von ‘unwahr’
+auf ‘wahr’ übergeht, so beginnt diese die Zeichenfolge mittels printf
+zu bearbeiten und gibt sie auf der Zielvariablen aus.
+
+Die Zeichenkette wird vollständig in das Kompilat eingebettet. Es gelten
+die Formatierungsregeln von printf.
+
+Die Variable kann eine beliebige Variable aus dem Programmbereich
+sein. Die printf Funktion der Zielplatform wird auf sie zugreifen,
+sobald ein Platzhalter in der Zeichenkette gefunden wird (z.B. %d).
+
+Dest ist ein Register, auf das das Ergebnis geschrieben wird. Das sollte
+das obere Ende eines Ringpuffers oder FiFo-Speichers sein.
+d des Netzwerks dieser Anweisung ist ‘wahr’,
+Der Ausgangszustand des Netzwerks dieser Anweisung ist immer ‘wahr’,
+
+
 EIN HINWEIS ZUR VERWENDUNG DER MATHEMATIK
 =========================================
 

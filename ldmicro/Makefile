@@ -38,7 +38,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
 
 HELPOBJ  = $(OBJDIR)\helptext.obj
 
-LIBS = user32.lib gdi32.lib comctl32.lib advapi32.lib
+LIBS = user32.lib gdi32.lib comctl32.lib advapi32.lib shell32.lib
 
 all: $(OBJDIR)/ldmicro.exe $(OBJDIR)/ldinterpret.exe $(OBJDIR)/ldxinterpret.exe
     @copy $(OBJDIR)\ldmicro.exe .

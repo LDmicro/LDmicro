@@ -60,7 +60,7 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
     LPARAM lParam)
 {
     if(msg == WM_CHAR) {
-        if(!(isdigit(wParam) || wParam == '\b' || wParam == '-')) {
+        if(!(ishobdigit(wParam) || wParam == '\b' || wParam == '-')) {
             return 0;
         }
     }
@@ -196,7 +196,7 @@ static void DestroyLutControls(void)
         for(i = 0; i < WasCount; i++) {
             char buf[20];
             SendMessage(ValuesTextbox[i], WM_GETTEXT, (WPARAM)16, (LPARAM)buf);
-            ValuesCache[i] = atoi(buf);
+            ValuesCache[i] = hobatoi(buf);
         }
     }
 

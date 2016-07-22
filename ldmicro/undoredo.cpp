@@ -87,7 +87,7 @@ static void *DeepCopy(int which, void *any)
         }
         default:
             oops();
-            break;
+            return 0;
     }
 }
 

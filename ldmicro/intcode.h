@@ -89,7 +89,6 @@
 #endif
 
 #define INT_IF_GROUP_BEGIN                      40
-#ifdef NEW_FEATURE
 #ifdef USE_CMP
 #define INT_IF_VARIABLE_LES_VARIABLE            40
 #define INT_IF_VARIABLE_NEQ_VARIABLE            41
@@ -97,7 +96,6 @@
 #define INT_IF_VARIABLE_GEQ_LITERAL             43
 #define INT_IF_VARIABLE_EQU_LITERAL             44
 #define INT_IF_VARIABLE_NEQ_LITERAL             45
-#endif
 #endif
 
 //#define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
@@ -112,39 +110,49 @@
 #define INT_IF_BITS_SET_IN_VAR                  57
 #define INT_IF_BITS_CLEAR_IN_VAR                58
 #endif
-
-#define INT_IF_GROUP_END                        60
+#ifdef NEW_CMP
+#define INT_IF_EQU                              60
+#define INT_IF_NEQ                              61
+#define INT_IF_LES                              62
+#define INT_IF_GRT                              63
+#define INT_IF_LEQ                              64
+#define INT_IF_GEQ                              65
+#endif
+#define INT_IF_GROUP_END                        70
 #define INT_IF_GROUP(x) (((x) >= INT_IF_GROUP_BEGIN) && ((x) <= INT_IF_GROUP_END))
+
+#define INT_ELSE                                60 + 100
+#define INT_END_IF                              61 + 100
 //
 // Special function
-#define INT_READ_SFR_LITERAL                    61
-#define INT_WRITE_SFR_LITERAL                   62
-#define INT_SET_SFR_LITERAL                     63
-#define INT_CLEAR_SFR_LITERAL                   64
-#define INT_TEST_SFR_LITERAL                    65
+#define INT_READ_SFR_LITERAL                    1061
+#define INT_WRITE_SFR_LITERAL                   1062
+#define INT_SET_SFR_LITERAL                     1063
+#define INT_CLEAR_SFR_LITERAL                   1064
+#define INT_TEST_SFR_LITERAL                    1065
 
-#define INT_READ_SFR_VARIABLE                   66
-#define INT_WRITE_SFR_VARIABLE                  67
-#define INT_SET_SFR_VARIABLE                    68
-#define INT_CLEAR_SFR_VARIABLE                  69
-#define INT_TEST_SFR_VARIABLE                   70
+#define INT_READ_SFR_VARIABLE                   1066
+#define INT_WRITE_SFR_VARIABLE                  1067
+#define INT_SET_SFR_VARIABLE                    1068
+#define INT_CLEAR_SFR_VARIABLE                  1069
+#define INT_TEST_SFR_VARIABLE                   1070
 
-#define INT_WRITE_SFR_LITERAL_L                 71
-#define INT_WRITE_SFR_VARIABLE_L                72
+#define INT_WRITE_SFR_LITERAL_L                 1071
+#define INT_WRITE_SFR_VARIABLE_L                1072
 
-#define INT_SET_SFR_LITERAL_L                   73
-#define INT_SET_SFR_VARIABLE_L                  74
+#define INT_SET_SFR_LITERAL_L                   1073
+#define INT_SET_SFR_VARIABLE_L                  1074
 
-#define INT_CLEAR_SFR_LITERAL_L                 75
-#define INT_CLEAR_SFR_VARIABLE_L                76
+#define INT_CLEAR_SFR_LITERAL_L                 1075
+#define INT_CLEAR_SFR_VARIABLE_L                1076
 
-#define INT_TEST_SFR_LITERAL_L                  77
-#define INT_TEST_SFR_VARIABLE_L                 78
+#define INT_TEST_SFR_LITERAL_L                  1077
+#define INT_TEST_SFR_VARIABLE_L                 1078
 
-#define INT_TEST_C_SFR_LITERAL                  79
-#define INT_TEST_C_SFR_VARIABLE                 80
-#define INT_TEST_C_SFR_LITERAL_L                81
-#define INT_TEST_C_SFR_VARIABLE_L               82
+#define INT_TEST_C_SFR_LITERAL                  1079
+#define INT_TEST_C_SFR_VARIABLE                 1080
+#define INT_TEST_C_SFR_LITERAL_L                1081
+#define INT_TEST_C_SFR_VARIABLE_L               1082
 // Special function
 
 #ifdef NEW_FEATURE
@@ -159,8 +167,6 @@
 #define INT_GotoRung                           2023
 #endif
 
-#define INT_ELSE                                60 + 100
-#define INT_END_IF                              61 + 100
 
 #define INT_SIMULATE_NODE_STATE                 80 + 100
 
@@ -175,8 +181,8 @@
         char        name1[MAX_NAME_LEN];
         char        name2[MAX_NAME_LEN];
         char        name3[MAX_NAME_LEN];
-        SWORD       literal;
-        SWORD       literal2;
+        SDWORD      literal;
+        SDWORD      literal2;
         BOOL       *poweredAfter;
         int         rung;        //this IntOp located in rung,
         int         which;       //this IntOp refers to the ELEM_<which>
