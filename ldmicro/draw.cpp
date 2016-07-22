@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -45,8 +45,8 @@ BOOL ThisHighlighted;
 #define TOO_LONG _("!!!too long!!!")
 
 #define DM_BOUNDS(gx, gy) { \
-        if((gx) >= DISPLAY_MATRIX_X_SIZE || (gx) < 0) oops(); \
-        if((gy) >= DISPLAY_MATRIX_Y_SIZE || (gy) < 0) oops(); \
+        if((gx) >= DISPLAY_MATRIX_X_SIZE || (gx) < 0) ooops("DISPLAY_MATRIX_X_SIZE gx=%d", gx); \
+        if((gy) >= DISPLAY_MATRIX_Y_SIZE || (gy) < 0) ooops("DISPLAY_MATRIX_Y_SIZE gy=%d", gy); \
     }
 
 //-----------------------------------------------------------------------------
@@ -78,6 +78,7 @@ static BOOL CheckBoundsUndoIfFails(int gx, int gy)
 static int CountWidthOfElement(int which, void *elem, int soFar)
 {
     switch(which) {
+        case ELEM_PADDING:
         case ELEM_PLACEHOLDER:
         case ELEM_OPEN:
         case ELEM_SHORT:
@@ -88,8 +89,10 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC: // as Leaf
+        case ELEM_CTR:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
+        case ELEM_OSC:
         case ELEM_EQU:
         case ELEM_NEQ:
         case ELEM_GRT:
@@ -98,14 +101,26 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_LEQ:
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
+        case ELEM_UART_UDRE:
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
         case ELEM_CSFR:
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
+        case ELEM_BIN2BCD:
+        case ELEM_BCD2BIN:
+        case ELEM_SWAP:
+        case ELEM_7SEG:
+        case ELEM_9SEG:
+        case ELEM_14SEG:
+        case ELEM_16SEG:
             return 1;
 
+        case ELEM_QUAD_ENCOD:
+        case ELEM_NPULSE:
+        case ELEM_PULSER:
+        case ELEM_STEPPER:
         case ELEM_STRING:
         case ELEM_FORMATTED_STRING:
             return 2;
@@ -134,12 +149,16 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_RES:
         case ELEM_COIL:
         case ELEM_MOVE:
+        case ELEM_NOT:
+        case ELEM_NEG:
         case ELEM_SHIFT_REGISTER:
         case ELEM_LOOK_UP_TABLE:
         case ELEM_PIECEWISE_LINEAR:
         case ELEM_MASTER_RELAY:
         case ELEM_READ_ADC:
         case ELEM_SET_PWM:
+        case ELEM_PWM_OFF:
+        case ELEM_NPULSE_OFF:
         case ELEM_PERSIST:
             if(ColsAvailable - soFar > 1) {
                 return ColsAvailable - soFar;
@@ -147,14 +166,23 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
                 return 1;
             }
 
+        case ELEM_ROL:
+        case ELEM_ROR:
+        case ELEM_SHL:
+        case ELEM_SHR:
+        case ELEM_SR0:
+        case ELEM_AND:
+        case ELEM_OR :
+        case ELEM_XOR:
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
-            if(ColsAvailable - soFar > 2) {
+        case ELEM_MOD:
+            if(ColsAvailable - soFar > 1) {
                 return ColsAvailable - soFar;
             } else {
-                return 2;
+                return 1;
             }
 
         case ELEM_SERIES_SUBCKT: {
@@ -186,6 +214,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
 
         default:
             oops();
+            return 0;
     }
 }
 
@@ -231,6 +260,7 @@ int CountHeightOfElement(int which, void *elem)
 
         default:
             oops();
+            return 0;
     }
 }
 
@@ -323,12 +353,24 @@ static int FormattedStrlen(char *str)
 {
     int l = 0;
     while(*str) {
-        if(*str > 10) {
+        //if(*str > 10) {
+        if(WORD(*str) >= 10) { // WORD typecast allow national charset in comments
             l++;
         }
         str++;
     }
     return l;
+}
+
+//-----------------------------------------------------------------------------
+static void CenterWithSpacesWidth(int cx, int cy, char *str, BOOL powered,
+    BOOL isName, int totalWidth)
+{
+    int extra = totalWidth - FormattedStrlen(str);
+    PoweredText(powered);
+    if(isName) NameText();
+    DrawChars(cx + (extra/2), cy + (POS_HEIGHT/2) - 1, str);
+    if(isName) BodyText();
 }
 
 //-----------------------------------------------------------------------------
@@ -338,11 +380,7 @@ static int FormattedStrlen(char *str)
 static void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
     BOOL isName)
 {
-    int extra = POS_WIDTH - FormattedStrlen(str);
-    PoweredText(powered);
-    if(isName) NameText();
-    DrawChars(cx + (extra/2), cy + (POS_HEIGHT/2) - 1, str);
-    if(isName) BodyText();
+    CenterWithSpacesWidth(cx, cy, str, powered, isName, POS_WIDTH);
 }
 
 //-----------------------------------------------------------------------------
@@ -379,23 +417,139 @@ static void CenterWithWires(int cx, int cy, char *str, BOOL before, BOOL after)
 }
 
 //-----------------------------------------------------------------------------
+#define BUF_LEN 256
+static char *formatWidth(char *buf, size_t totalWidth, char *str1, char *leftStr, char *centerStr, char *rightStr, char *str5)
+{
+   if(totalWidth>=POS_WIDTH)
+       totalWidth--;
+
+   // FULL lengths with unvisible
+   size_t L1 = strlen(str1);
+   size_t Ll = strlen(leftStr);
+   size_t Lc = strlen(centerStr);
+   size_t Lr = strlen(rightStr);
+   size_t L5 = strlen(str5);
+
+   // visible lengths
+   size_t l1 = FormattedStrlen(str1);
+   size_t ll = FormattedStrlen(leftStr);
+   size_t lc = FormattedStrlen(centerStr);
+   size_t lr = FormattedStrlen(rightStr);
+   size_t l5 = FormattedStrlen(str5);
+   /*
+   // unvisible lengths
+   int ul = Ll - ll;
+   int uc = Lc - lc;
+   int ur = Lr - lr;
+   */
+   size_t space1 = 0;
+   size_t space2 = 0;
+
+   size_t tilda1 = 0;
+   size_t tilda2 = 0;
+   size_t tilda3 = 0;
+
+   if(totalWidth < (l1+ll+lc+lr+l5)) {
+       //dbp("1 %d %d %d", Ll,Lc,Lr);
+       if       ((ll>lc) && (ll>lr)) {
+           Ll = totalWidth - (l1+lc+lr+l5);
+       } else if((lc>ll) && (lc>lr)) {
+           Lc = totalWidth - (l1+ll+lr+l5);
+       } else if((lr>ll) && (lr>lc)) {
+           Lr = totalWidth - (l1+ll+lc+l5);
+       } else {
+           Lc = totalWidth - (l1+ll+lr+l5);
+       }
+       //dbp("2 %d %d %d", Ll,Lc,Lr);
+   } else {
+       space2 = (totalWidth - (l1+ll+lc+lr+l5)) / 2;
+       space1 = totalWidth - (l1+ll+lc+lr+l5) - space2;
+   }
+
+   buf[0] = '\0';
+   int bufLen = 0;
+
+   if(L1) {
+       strncat(buf, str1, L1);
+       bufLen += L1;
+       buf[bufLen] = '\0';
+   }
+
+   if(Ll) {
+       strncat(buf, leftStr, Ll);
+       bufLen += Ll;
+       buf[bufLen] = '\0';
+       if(Ll < strlen(leftStr)) buf[bufLen-1] = '~';
+   }
+
+   if(space1) {
+       strncat(buf,"                                                ",space1);
+       bufLen += space1;
+       buf[bufLen] = '\0';
+   }
+
+   if(Lc) {
+       strncat(buf, centerStr, Lc);
+       bufLen += Lc;
+       buf[bufLen] = '\0';
+       if(Lc < strlen(centerStr)) buf[bufLen-1] = '~';
+   }
+
+   if(space2) {
+       strncat(buf,"                                                ",space2);
+       bufLen += space2;
+       buf[bufLen] = '\0';
+   }
+
+   if(Lr) {
+       strncat(buf, rightStr, Lr);
+       bufLen += Lr;
+       buf[bufLen] = '\0';
+       if(Lr < strlen(rightStr)) buf[bufLen-1] = '~';
+   }
+
+   if(L5) {
+       strncat(buf, str5, L5);
+       bufLen += L5;
+       buf[bufLen] = '\0';
+   }
+
+// if(totalWidth==POS_WIDTH-1)
+//    //dbp("buf %d %d %d >%s<", Ll, ll, Ll-ll, buf);
+
+   return buf;
+}
+
+//-----------------------------------------------------------------------------
 // Draw an end of line element (coil, RES, MOV, etc.). Special things about
 // an end of line element: we must right-justify it.
 //-----------------------------------------------------------------------------
 static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
     BOOL poweredBefore)
 {
+    if(!EndOfRungElem(which)) {
+        ooops("which=%d",which);
+    }
     int cx0 = *cx, cy0 = *cy;
 
     BOOL poweredAfter = leaf->poweredAfter;
 
     int thisWidth;
     switch(which) {
+        case ELEM_ROL:
+        case ELEM_ROR:
+        case ELEM_SHL:
+        case ELEM_SHR:
+        case ELEM_SR0:
+        case ELEM_AND:
+        case ELEM_OR:
+        case ELEM_XOR:
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
-            thisWidth = 2;
+        case ELEM_MOD:
+            thisWidth = 1;
             break;
 
         default:
@@ -431,6 +585,11 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         ThisHighlighted = FALSE;
     }
 
+    static char top[BUF_LEN];
+    static char bot[BUF_LEN];
+    static char s1[BUF_LEN];
+    static char s2[BUF_LEN];
+    static char s3[BUF_LEN];
     switch(which) {
         /* //moved to DrawLeaf
         case ELEM_CTC: {
@@ -445,59 +604,47 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         */
         case ELEM_RES: {
             ElemReset *r = &leaf->d.reset;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            sprintf(s2,"%s",r->name);
+            CenterWithSpaces(*cx, *cy, formatWidth(top,POS_WIDTH,"","",s2,"",""), poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{RES}", poweredBefore, poweredAfter);
             break;
         }
         case ELEM_READ_ADC: {
             ElemReadAdc *r = &leaf->d.readAdc;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            sprintf(s2,"%s",r->name);
+            CenterWithSpaces(*cx, *cy, formatWidth(top,POS_WIDTH,"","",s2,"",""), poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{READ ADC}", poweredBefore,
                 poweredAfter);
             break;
         }
+        case ELEM_PWM_OFF:
+            CenterWithWires(*cx, *cy, "{PWM OFF}", poweredBefore, poweredAfter);
+            break;
+        case ELEM_NPULSE_OFF:
+            CenterWithWires(*cx, *cy, "{NPULSE OFF}", poweredBefore, poweredAfter);
+            break;
         case ELEM_SET_PWM: {
             ElemSetPwm *s = &leaf->d.setPwm;
-            CenterWithSpaces(*cx, *cy, s->name, poweredAfter, TRUE);
-            char l[50];
-            if(s->targetFreq >= 100000) {
-                sprintf(l, "{PWM %d kHz}", (s->targetFreq+500)/1000);
-            } else if(s->targetFreq >= 10000) {
-                sprintf(l, "{PWM %.1f kHz}", s->targetFreq/1000.0);
-            } else if(s->targetFreq >= 1000) {
-                sprintf(l, "{PWM %.2f kHz}", s->targetFreq/1000.0);
-            } else {
-                sprintf(l, "{PWM %d Hz}", s->targetFreq);
-            }
-            CenterWithWires(*cx, *cy, l, poweredBefore,
-                poweredAfter);
+            double s_targetFreq = SIprefix(hobatoi(s->targetFreq),s1);
+            sprintf(s2, "%.6g %sHz", s_targetFreq, s1);
+
+            formatWidth(top, POS_WIDTH, "", s->duty_cycle, " ", s2,"");
+            formatWidth(bot, POS_WIDTH, "{", "PWM", " ", s->name, "}");
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
         case ELEM_PERSIST:
-            CenterWithSpaces(*cx, *cy, leaf->d.persist.var, poweredAfter, TRUE);
+            sprintf(s2,"%s",leaf->d.persist.var);
+            CenterWithSpaces(*cx, *cy, formatWidth(top,POS_WIDTH,"","",s2,"",""), poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{PERSIST}", poweredBefore, poweredAfter);
             break;
 
         case ELEM_MOVE: {
-            char top[256];
-            char bot[256];
             ElemMove *m = &leaf->d.move;
-
-            if((strlen(m->dest) > (POS_WIDTH - 9)) ||
-               (strlen(m->src) > (POS_WIDTH - 9)))
-            {
-                CenterWithWires(*cx, *cy, TOO_LONG, poweredBefore,
-                    poweredAfter);
-                break;
-            }
-
-            strcpy(top, "{            }");
-            memcpy(top+1, m->dest, strlen(m->dest));
-            top[strlen(m->dest) + 3] = ':';
-            top[strlen(m->dest) + 4] = '=';
-
-            strcpy(bot, "{         \x01MOV\x02}");
-            memcpy(bot+2, m->src, strlen(m->src));
+            formatWidth(top,POS_WIDTH, "{","","",m->dest," :=}");
+            formatWidth(bot,POS_WIDTH,"{\x01MOV\x02 ","","",m->src,"}");
 
             CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
@@ -509,131 +656,101 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
 
         case ELEM_SHIFT_REGISTER: {
-            char bot[MAX_NAME_LEN+20];
-            memset(bot, ' ', sizeof(bot));
-            bot[0] = '{';
-            sprintf(bot+2, "%s0..%d", leaf->d.shiftRegister.name,
-                leaf->d.shiftRegister.stages-1);
-            bot[strlen(bot)] = ' ';
-            bot[13] = '}';
-            bot[14] = '\0';
-            CenterWithSpaces(*cx, *cy, "{\x01SHIFT REG\x02   }",
-                poweredAfter, FALSE);
+            sprintf(s2, "%s", leaf->d.shiftRegister.name);
+            sprintf(s3, "0..%d", leaf->d.shiftRegister.stages-1);
+
+            int len = min(POS_WIDTH,max(1+9+1,
+                                        1+strlen(s1)+strlen(s2)));
+
+            formatWidth(top,len,"{","\x01SHIFT REG\x02","","","}");
+            formatWidth(bot,len,"{",s2,"",s3,"}");
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
         case ELEM_PIECEWISE_LINEAR:
         case ELEM_LOOK_UP_TABLE: {
-            char top[MAX_NAME_LEN+20], bot[MAX_NAME_LEN+20];
-            char *dest, *index, *str;
+            char *name, *dest, *index, *str;
             if(which == ELEM_PIECEWISE_LINEAR) {
+                str = "PWL";
+                //name = leaf->d.piecewiseLinear.name;
                 dest = leaf->d.piecewiseLinear.dest;
                 index = leaf->d.piecewiseLinear.index;
-                str = "PWL";
             } else {
+                str = "LUT";
+                //name = leaf->d.lookUpTable.name;
                 dest = leaf->d.lookUpTable.dest;
                 index = leaf->d.lookUpTable.index;
-                str = "LUT";
             }
-            memset(top, ' ', sizeof(top));
-            top[0] = '{';
-            sprintf(top+2, "%s :=", dest);
-            top[strlen(top)] = ' ';
-            top[13] = '}';
-            top[14] = '\0';
+            sprintf(s2,"%s",dest);
+            formatWidth(top,POS_WIDTH,"{",s2,"",""," :=}");
+            sprintf(s2,"\x01%s\x02[%s", str, index);
+            formatWidth(bot,POS_WIDTH,"{",s2,"","","]}");
+
             CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
-            memset(bot, ' ', sizeof(bot));
-            bot[0] = '{';
-            sprintf(bot+2, " %s[%s]", str, index);
-            bot[strlen(bot)] = ' ';
-            bot[13] = '}';
-            bot[14] = '\0';
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
         case ELEM_COIL: {
-            char buf[4];
             ElemCoil *c = &leaf->d.coil;
 
-            buf[0] = '(';
-            if(c->negated) {
-                buf[1] = '/';
-            } else if(c->setOnly) {
-                buf[1] = 'S';
-            } else if(c->resetOnly) {
-                buf[1] = 'R';
-            } else {
-                buf[1] = ' ';
-            }
-            buf[2] = ')';
-            buf[3] = '\0';
+            sprintf(top,"%s",c->name);
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, TRUE);
 
-            CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
+            bot[0] = '(';
+            if(c->negated) {
+                bot[1] = '/';
+            } else if(c->setOnly) {
+                bot[1] = 'S';
+            } else if(c->resetOnly) {
+                bot[1] = 'R';
+            } else {
+                bot[1] = ' ';
+            }
+            bot[2] = ')';
+            bot[3] = '\0';
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
-        case ELEM_DIV:
-        case ELEM_MUL:
-        case ELEM_SUB:
-        case ELEM_ADD: {
-            char top[POS_WIDTH*2-3+2];
-            char bot[POS_WIDTH*2-3];
+        char *s;
+        char *z;
+        case ELEM_ROL: s = "\x01""ROL\x02"; z="rol"; goto math;
+        case ELEM_ROR: s = "\x01""ROR\x02"; z="ror"; goto math;
+        case ELEM_SHL: s = "\x01""SHL\x02"; z="<<"; goto math;
+        case ELEM_SHR: s = "\x01""SHR\x02"; z=">>"; goto math;
+        case ELEM_SR0: s = "\x01""SR0\x02"; z="sr0"; goto math;
+        case ELEM_AND: s = "\x01""AND\x02"; z="&";  goto math;
+        case ELEM_OR : s = "\x01""OR\x02" ; z="|";  goto math;
+        case ELEM_XOR: s = "\x01""XOR\x02"; z="^";  goto math;
+        case ELEM_NOT: s = "\x01""NOT\x02"; z="~";  goto math;
+        case ELEM_NEG: s = "\x01""NEG\x02"; z="-";  goto math;
+        case ELEM_DIV: s = "\x01""DIV\x02"; z="/";  goto math;
+        case ELEM_MOD: s = "\x01""MOD\x02"; z="%";  goto math;
+        case ELEM_MUL: s = "\x01""MUL\x02"; z="*";  goto math;
+        case ELEM_SUB: s = "\x01""SUB\x02"; z="-";  goto math;
+        case ELEM_ADD: s = "\x01""ADD\x02"; z="+";  goto math;
+math:   {
+            int w = ((which==ELEM_NOT) || (which==ELEM_NEG))? 1 : 1;
+            sprintf(s1,"%s ",s);
+            sprintf(s2,"%s",leaf->d.math.dest);
+            formatWidth(top,w*POS_WIDTH,"{",s1,"",s2," :=}");
+            if((which==ELEM_NOT) || (which==ELEM_NEG)) {
+//            sprintf(s2,"%s %s",z,leaf->d.math.op1);
+              formatWidth(bot,POS_WIDTH,"{","",z,leaf->d.math.op1,"}");
+            } else {
+//            sprintf(s2,"%s %s %s",leaf->d.math.op1,z,leaf->d.math.op2);
+              formatWidth(bot,/*2**/POS_WIDTH,"{",leaf->d.math.op1,z,leaf->d.math.op2,"}");
+            }
+            CenterWithSpacesWidth(*cx, *cy, top, poweredAfter, TRUE, w*POS_WIDTH);
+            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, w*POS_WIDTH);
 
-            memset(top, ' ', sizeof(top)-1);
-            top[0] = '{';
-
-            memset(bot, ' ', sizeof(bot)-1);
-            bot[0] = '{';
-
-            int lt = 1;
-            if(which == ELEM_ADD) {
-                memcpy(top+lt, "\x01""ADD\x02", 5);
-            } else if(which == ELEM_SUB) {
-                memcpy(top+lt, "\x01SUB\x02", 5);
-            } else if(which == ELEM_MUL) {
-                memcpy(top+lt, "\x01MUL\x02", 5);
-            } else if(which == ELEM_DIV) {
-                memcpy(top+lt, "\x01""DIV\x02", 5);
-            } else oops();
-
-            lt += 7;
-            memcpy(top+lt, leaf->d.math.dest, strlen(leaf->d.math.dest));
-            lt += strlen(leaf->d.math.dest) + 2;
-            top[lt++] = ':';
-            top[lt++] = '=';
-
-            int lb = 2;
-            memcpy(bot+lb, leaf->d.math.op1, strlen(leaf->d.math.op1));
-            lb += strlen(leaf->d.math.op1) + 1;
-            if(which == ELEM_ADD) {
-                bot[lb++] = '+';
-            } else if(which == ELEM_SUB) {
-                bot[lb++] = '-';
-            } else if(which == ELEM_MUL) {
-                bot[lb++] = '*';
-            } else if(which == ELEM_DIV) {
-                bot[lb++] = '/';
-            } else oops();
-            lb++;
-            memcpy(bot+lb, leaf->d.math.op2, strlen(leaf->d.math.op2));
-            lb += strlen(leaf->d.math.op2);
-
-            int l = max(lb, lt - 2);
-            top[l+2] = '}'; top[l+3] = '\0';
-            bot[l] = '}'; bot[l+1] = '\0';
-
-            int extra = 2*POS_WIDTH - FormattedStrlen(top);
-            PoweredText(poweredAfter);
-            DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1, top);
-            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter,
-                2*POS_WIDTH);
-
-            *cx += POS_WIDTH;
+            *cx += (w-1)*POS_WIDTH;
 
             break;
         }
         default:
-            oops();
+            ooops("which=%d cx0=%d *cx=%d cy0=%d *cy=%d",which, cx0, *cx, cy0, *cy);
             break;
     }
 
@@ -649,8 +766,16 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
     BOOL poweredBefore)
 {
+//  if(EndOfRungElem(which))
+//      ooops("which=%d",which);
     int cx0 = *cx, cy0 = *cy;
     BOOL poweredAfter = leaf->poweredAfter;
+
+    static char top[BUF_LEN];
+    static char bot[BUF_LEN];
+    static char s1[BUF_LEN];
+    static char s2[BUF_LEN];
+    static char s3[BUF_LEN];
 
     switch(which) {
         case ELEM_COMMENT: {
@@ -682,16 +807,15 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
         }
         case ELEM_CONTACTS: {
-            char buf[4];
             ElemContacts *c = &leaf->d.contacts;
 
-            buf[0] = ']';
-            buf[1] = c->negated ? '/' : ' ';
-            buf[2] = '[';
-            buf[3] = '\0';
+            bot[0] = ']';
+            bot[1] = c->negated ? '/' : ' ';
+            bot[2] = '[';
+            bot[3] = '\0';
 
-            CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, formatWidth(top,POS_WIDTH,"","",c->name,"",""), poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
             break;
@@ -707,11 +831,10 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             case ELEM_CSFR:
                 s = "Cbit"; goto sfrcmp;
             case ELEM_TSFR:
-                s = "BitS"; goto sfrcmp;
+                s = "IsBitS"; goto sfrcmp;
             case ELEM_T_C_SFR:
-                s = "BitC"; goto sfrcmp;
+                s = "IsBitC"; goto sfrcmp;
 sfrcmp:
-                char s1[POS_WIDTH+10], s2[POS_WIDTH+10];
                 int l1, l2, lmax;
 
                 l1 = 2 + 1 + strlen(s) + strlen(leaf->d.cmp.op1);
@@ -743,7 +866,7 @@ sfrcmp:
             case ELEM_EQU:
                 s = "=="; goto cmp;
             case ELEM_NEQ:
-                s = "/="; goto cmp;
+                s = "!="; goto cmp;
             case ELEM_GRT:
                 s = ">"; goto cmp;
             case ELEM_GEQ:
@@ -753,29 +876,17 @@ sfrcmp:
             case ELEM_LEQ:
                 s = "<="; goto cmp;
 cmp:
-                char s1[POS_WIDTH+10], s2[POS_WIDTH+10];
-                int l1, l2, lmax;
+                int len = min(POS_WIDTH,max(1+strlen(leaf->d.cmp.op1)+1+strlen(s)+1,
+                                            1+strlen(leaf->d.cmp.op2)+1));
 
-                l1 = 2 + 1 + strlen(s) + strlen(leaf->d.cmp.op1);
-                l2 = 2 + 1 + strlen(leaf->d.cmp.op2);
-                lmax = max(l1, l2);
+                sprintf(s1,"%s", leaf->d.cmp.op1);
+                sprintf(s2,"%s", leaf->d.cmp.op2);
+                sprintf(s3,"\x01 %s\x02",s);
 
-                if(lmax < POS_WIDTH) {
-                    memset(s1, ' ', sizeof(s1));
-                    s1[0] = '[';
-                    s1[lmax-1] = ']';
-                    s1[lmax] = '\0';
-                    strcpy(s2, s1);
-                    memcpy(s1+1, leaf->d.cmp.op1, strlen(leaf->d.cmp.op1));
-                    memcpy(s1+strlen(leaf->d.cmp.op1)+2, s, strlen(s));
-                    memcpy(s2+2, leaf->d.cmp.op2, strlen(leaf->d.cmp.op2));
-                } else {
-                    strcpy(s1, "");
-                    strcpy(s2, TOO_LONG);
-                }
-
-                CenterWithSpaces(*cx, *cy, s1, poweredAfter, FALSE);
-                CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
+                formatWidth(top,len,"[",s1,"",s3,"]");
+                formatWidth(bot,len,"[",s2,"","","]");
+                CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+                CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
                 *cx += POS_WIDTH;
                 break;
@@ -807,10 +918,21 @@ cmp:
             *cx += POS_WIDTH;
             break;
         }
+        case ELEM_OSC: {
+            char *s1, *s2;
+            s1 = "      _   _ ";
+            s2 = "[\x01OSC\x02_/ \\_/ ]";
+
+            CenterWithSpaces(*cx, *cy, s1, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
+
+            *cx += POS_WIDTH;
+            break;
+        }
         case ELEM_CTC: { // moved from DrawEndOfLine
             char buf[256];
             ElemCounter *c = &leaf->d.counter;
-            sprintf(buf, "{\x01""CTC\x02 0:%d}", c->max);
+            sprintf(buf, "{\x01""CTC\x02 0:%s}", c->max);
 
             CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
@@ -827,12 +949,15 @@ cmp:
                 s = "\x01""CTD\x02";
             else oops();
 
-            char buf[256];
             ElemCounter *c = &leaf->d.counter;
-            sprintf(buf, "[%s >=%d]", s, c->max);
+            sprintf(s2,"%s",c->name);
+            CenterWithSpaces(*cx, *cy, formatWidth(top,POS_WIDTH,"","",s2,"",""), poweredAfter, TRUE);
 
-            CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
+            if(which == ELEM_CTD)
+                sprintf(bot, "[%s>%s]", s, c->max);
+            else
+                sprintf(bot, "[%s>=%s]", s, c->max);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
             break;
@@ -849,49 +974,36 @@ cmp:
                 s = "\x01RTO\x02";
             else oops();
 
-            char buf[256];
             ElemTimer *t = &leaf->d.timer;
             if(t->delay >= 1000*1000) {
-                sprintf(buf, "[%s %.3f s]", s, t->delay/1000000.0);
+                sprintf(bot, "[%s %.6g s]", s, t->delay/1000000.0);
             } else if(t->delay >= 100*1000) {
-                sprintf(buf, "[%s %.1f ms]", s, t->delay/1000.0);
+                sprintf(bot, "{%s %.6g ms}", s, t->delay/1000.0);
             } else {
-                sprintf(buf, "[%s %.2f ms]", s, t->delay/1000.0);
+                sprintf(bot, "[%s %.6g ms]", s, t->delay/1000.0);
             }
-
-            CenterWithSpaces(*cx, *cy, t->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
+            sprintf(s2,"%s",t->name);
+            CenterWithSpaces(*cx, *cy, s2, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
             break;
         }
         case ELEM_STRING: {
             // Careful, string could be longer than fits in our space.
-            char str[POS_WIDTH];
-            memset(str, 0, sizeof(str));
-            char *srcStr = leaf->d.fmtdStr.string;
-            memcpy(str, srcStr, min(strlen(srcStr), POS_WIDTH-5));
+            sprintf(s1,"%s",leaf->d.fmtdStr.dest);
+            formatWidth(top,2*POS_WIDTH,"{","",s1,""," :=}");
 
-            char var[POS_WIDTH];
-            memset(var, 0, sizeof(var));
-            char *varStr = leaf->d.fmtdStr.var;
-            memcpy(var, varStr, min(strlen(varStr), POS_WIDTH-5));
-         
-            char bot[100];
-            sprintf(bot, "{\"%s\", %s}", str, var);
+            sprintf(s1,"\"%s\",",leaf->d.fmtdStr.string);
+            sprintf(s2,"%s",leaf->d.fmtdStr.var);
+            formatWidth(bot,2*POS_WIDTH,"{",s1,"",s2,"}");
 
-            int extra = 2*POS_WIDTH - strlen(leaf->d.fmtdStr.dest);
-            PoweredText(poweredAfter);
-            NameText();
-            DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1,
-                leaf->d.fmtdStr.dest);
-            BodyText();
-
-            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter,
-                2*POS_WIDTH);
+            CenterWithSpacesWidth(*cx, *cy, top, poweredBefore, TRUE, 2*POS_WIDTH);
+            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2*POS_WIDTH);
             *cx += 2*POS_WIDTH;
             break;
         }
+
         case ELEM_FORMATTED_STRING: {
             // Careful, string could be longer than fits in our space.
             char str[POS_WIDTH*2];
@@ -899,14 +1011,12 @@ cmp:
             char *srcStr = leaf->d.fmtdStr.string;
             memcpy(str, srcStr, min(strlen(srcStr), POS_WIDTH*2 - 7));
 
-            char bot[100];
             sprintf(bot, "{\"%s\"}", str);
 
-            int extra = 2*POS_WIDTH - strlen(leaf->d.fmtdStr.var);
             PoweredText(poweredAfter);
             NameText();
-            DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1,
-                leaf->d.fmtdStr.var);
+            DrawChars(*cx, *cy + (POS_HEIGHT/2) - 1,
+                formatWidth(top,2*POS_WIDTH,"","",leaf->d.fmtdStr.var,"",""));
             BodyText();
 
             CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter,
@@ -919,7 +1029,9 @@ cmp:
             CenterWithWires(*cx, *cy,
                 (which == ELEM_UART_RECV) ? "{UART RECV}" : "{UART SEND}",
                 poweredBefore, poweredAfter);
-            CenterWithSpaces(*cx, *cy, leaf->d.uart.name, poweredAfter, TRUE);
+
+            sprintf(s2,"%s",leaf->d.uart.name);
+            CenterWithSpaces(*cx, *cy, formatWidth(top,POS_WIDTH,"","",s2,"",""), poweredAfter, TRUE);
             *cx += POS_WIDTH;
             break;
 
@@ -947,10 +1059,16 @@ cmp:
 
     int xadj = 0;
     switch(which) {
+        /*
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        */
+        case ELEM_QUAD_ENCOD:
+        case ELEM_NPULSE:
+        case ELEM_PULSER:
+        case ELEM_STEPPER:
         case ELEM_STRING:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx-1, gy);
@@ -977,14 +1095,14 @@ cmp:
     }
     switch(leaf->selectedState) {
         case SELECTED_LEFT:
-            Cursor.left = x0 + FONT_WIDTH - 4 - xadj;
+            Cursor.left = x0 + FONT_WIDTH - 8 - xadj;
             Cursor.top = y0 - FONT_HEIGHT/2;
             Cursor.width = 2;
             Cursor.height = POS_HEIGHT*FONT_HEIGHT;
             break;
 
         case SELECTED_RIGHT:
-            Cursor.left = x0 + (POS_WIDTH-1)*FONT_WIDTH - 5;
+            Cursor.left = x0 + (POS_WIDTH-1)*FONT_WIDTH - 2;
             Cursor.top = y0 - FONT_HEIGHT/2;
             Cursor.width = 2;
             Cursor.height = POS_HEIGHT*FONT_HEIGHT;
@@ -992,7 +1110,7 @@ cmp:
 
         case SELECTED_ABOVE:
             Cursor.left = x0 + FONT_WIDTH/2 - xadj;
-            Cursor.top = y0 - 2;
+            Cursor.top = y0 - 3;
             Cursor.width = (POS_WIDTH-2)*FONT_WIDTH + xadj;
             Cursor.height = 2;
             break;
@@ -1004,7 +1122,7 @@ cmp:
             Cursor.width = (POS_WIDTH-2)*(FONT_WIDTH) + xadj;
             Cursor.height = 2;
             break;
-
+  
         default:
             break;
     }
@@ -1139,7 +1257,6 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
             poweredAfter = DrawLeaf(which, leaf, cx, cy, poweredBefore);
             break;
     }
-
 
     NormText();
     return poweredAfter;

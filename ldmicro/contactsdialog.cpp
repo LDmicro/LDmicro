@@ -124,7 +124,7 @@ void ShowContactsDialog(BOOL *negated, char *name)
         100, 100, 404, 135, NULL, NULL, Instance, NULL);
 
     MakeControls();
-   
+  
 	switch (name[0]) {
 	case 'R':
 		SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -202,7 +202,7 @@ void ShowContactsDialog(BOOL *negated, char *name)
 		} else {
             name[0] = 'Y';
         }
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)(MAX_NAME_LEN-1), (LPARAM)(name+1));
     }
 
     EnableWindow(MainWindow, TRUE);

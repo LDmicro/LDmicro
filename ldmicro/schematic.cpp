@@ -151,7 +151,6 @@ BOOL StaySameElem(int Which)
         Which == ELEM_READ_ADC ||
         Which == ELEM_SET_PWM ||
         Which == ELEM_MASTER_RELAY ||
-        Which == ELEM_MASTER_BREAK ||
         Which == ELEM_SHIFT_REGISTER ||
         Which == ELEM_LOOK_UP_TABLE ||
         Which == ELEM_PIECEWISE_LINEAR ||
@@ -177,7 +176,6 @@ BOOL CanChangeOutputElem(int Which)
         Which == ELEM_PULSER ||
         Which == ELEM_NPULSE ||
         Which == ELEM_MASTER_RELAY ||
-        Which == ELEM_MASTER_BREAK ||
         Which == ELEM_WSFR ||
         Which == ELEM_PERSIST)
       return TRUE;
@@ -192,12 +190,25 @@ BOOL EndOfRungElem(int Which)
 {
     if( Which == ELEM_COIL ||
         Which == ELEM_RES ||
+        Which == ELEM_SHL ||
+        Which == ELEM_SHR ||
+        Which == ELEM_SR0 ||
+        Which == ELEM_ROL ||
+        Which == ELEM_ROR ||
+        Which == ELEM_AND ||
+        Which == ELEM_OR  ||
+        Which == ELEM_XOR ||
+        Which == ELEM_NOT ||
+        Which == ELEM_NEG ||
+        Which == ELEM_MOD ||
         Which == ELEM_ADD ||
         Which == ELEM_SUB ||
         Which == ELEM_MUL ||
         Which == ELEM_DIV ||
         Which == ELEM_READ_ADC ||
         Which == ELEM_SET_PWM ||
+        Which == ELEM_PWM_OFF ||
+        Which == ELEM_NPULSE_OFF ||
         Which == ELEM_MASTER_RELAY ||
         Which == ELEM_SHIFT_REGISTER ||
         Which == ELEM_LOOK_UP_TABLE ||
@@ -463,6 +474,131 @@ void MoveCursorKeyboard(int keyCode)
 }
 
 //-----------------------------------------------------------------------------
+static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
+{
+    int newWhich;
+    switch(which) {
+        // group 1 of suitable elements
+        case ELEM_SHORT: newWhich = ELEM_OPEN; break;
+        case ELEM_OPEN: newWhich = ELEM_SHORT; break;
+        // group 2 of suitable elements, etc.
+        case ELEM_ONE_SHOT_RISING: newWhich = ELEM_ONE_SHOT_FALLING; break;
+        case ELEM_ONE_SHOT_FALLING: newWhich = ELEM_ONE_SHOT_RISING; break;
+        //
+        case ELEM_TON: newWhich = ELEM_TOF; break;
+        case ELEM_TOF: newWhich = ELEM_RTO; break;
+        case ELEM_RTO: newWhich = ELEM_TON; break;
+        //
+        case ELEM_EQU: newWhich = ELEM_NEQ; break;
+        case ELEM_NEQ: newWhich = ELEM_GEQ; break;
+        case ELEM_GEQ: newWhich = ELEM_GRT; break;
+        case ELEM_GRT: newWhich = ELEM_LES; break;
+        case ELEM_LES: newWhich = ELEM_LEQ; break;
+        case ELEM_LEQ: newWhich = ELEM_EQU; break;
+        //
+        case ELEM_BIN2BCD: newWhich = ELEM_BCD2BIN; break;
+        case ELEM_BCD2BIN: newWhich = ELEM_BIN2BCD; break;
+        //
+        case ELEM_CTU: newWhich = ELEM_CTD; break;
+        case ELEM_CTD: newWhich = ELEM_CTC; break;
+        case ELEM_CTC: newWhich = ELEM_CTR; break;
+        case ELEM_CTR: newWhich = ELEM_CTU; break;
+        //
+        case ELEM_RSFR: newWhich = ELEM_WSFR; break;
+        case ELEM_WSFR: newWhich = ELEM_RSFR; break;
+        case ELEM_SSFR: newWhich = ELEM_CSFR; break;
+        case ELEM_CSFR: newWhich = ELEM_SSFR; break;
+        case ELEM_TSFR: newWhich = ELEM_T_C_SFR; break;
+        case ELEM_T_C_SFR: newWhich = ELEM_TSFR; break;
+        //
+        case ELEM_AND: newWhich = ELEM_OR ; break;
+        case ELEM_OR : newWhich = ELEM_XOR; break;
+        case ELEM_XOR: newWhich = ELEM_AND; break;
+        //
+        case ELEM_NOT: newWhich = ELEM_NEG; break;
+        case ELEM_NEG: newWhich = ELEM_NOT; break;
+        //
+        case ELEM_SHL: newWhich = ELEM_SHR; break;
+        case ELEM_SHR: newWhich = ELEM_SR0; break;
+        case ELEM_SR0: newWhich = ELEM_ROL; break;
+        case ELEM_ROL: newWhich = ELEM_ROR; break;
+        case ELEM_ROR: newWhich = ELEM_SHL; break;
+        //
+        case ELEM_ADD: newWhich = ELEM_SUB; break;
+        case ELEM_SUB: newWhich = ELEM_MUL; break;
+        case ELEM_MUL: newWhich = ELEM_DIV; break;
+        case ELEM_DIV: newWhich = ELEM_MOD; break;
+        case ELEM_MOD: newWhich = ELEM_ADD; break;
+        //
+//      case : newWhich = ; break;
+        default: newWhich = 0;
+    }
+    if(newWhich) {
+        if(whichWhere == ELEM_SERIES_SUBCKT) {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)where;
+            s->contents[index].which = newWhich;
+        } else {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)where;
+            p->contents[index].which = newWhich;
+        }
+        SelectedWhich = newWhich;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+static BOOL ReplaceElem(int which, void *any, ElemLeaf *seek,
+                        int whichWhere, void *where, int index)
+{
+    switch(which) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+            for(i = 0; i < s->count; i++)
+                if(ReplaceElem(s->contents[i].which, s->contents[i].d.any,
+                               seek, ELEM_SERIES_SUBCKT, s, i))
+                    return TRUE;
+            break;
+        }
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int i;
+            for(i = 0; i < p->count; i++)
+                if(ReplaceElem(p->contents[i].which, p->contents[i].d.any,
+                               seek, ELEM_PARALLEL_SUBCKT, p, i))
+                    return TRUE;
+            break;
+        }
+        CASE_LEAF
+            if(any == seek)
+                return doReplaceElem(which, whichWhere, where, index);
+            break;
+
+        case ELEM_PADDING:
+            break;
+
+        default:
+            ooops("which=%d",which);
+    }
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+// Replace the selected element on a suitable element at the cursor position.
+//-----------------------------------------------------------------------------
+BOOL ReplaceSelectedElement(void)
+{
+    if(!Selected/* || Selected->selectedState == SELECTED_NONE*/) return FALSE;
+
+    int i;
+    for(i = 0; i < Prog.numRungs; i++)
+        if(ReplaceElem(ELEM_SERIES_SUBCKT, Prog.rungs[i], Selected, 0, 0, 0))
+            return TRUE;
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
 // Edit the selected element. Pop up the appropriate modal dialog box to do
 // this.
 //-----------------------------------------------------------------------------
@@ -493,10 +629,11 @@ void EditSelectedElement(void)
                 Selected->d.timer.name);
             break;
 
+        case ELEM_CTR:
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
-            ShowCounterDialog(SelectedWhich, &(Selected->d.counter.max),
+            ShowCounterDialog(SelectedWhich, Selected->d.counter.max,
                 Selected->d.counter.name);
             break;
 
@@ -507,8 +644,8 @@ void EditSelectedElement(void)
         case ELEM_CSFR:
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
-            ShowSFRDialog(SelectedWhich, Selected->d.cmp.op1,
-                Selected->d.cmp.op2);
+            ShowSFRDialog(SelectedWhich, Selected->d.sfr.sfr,
+                Selected->d.sfr.op);
             break;
         // Special function
 
@@ -526,6 +663,17 @@ void EditSelectedElement(void)
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        case ELEM_MOD:
+        case ELEM_SHL:
+        case ELEM_SHR:
+        case ELEM_SR0:
+        case ELEM_ROL:
+        case ELEM_ROR:
+        case ELEM_AND:
+        case ELEM_OR :
+        case ELEM_XOR:
+        case ELEM_NOT:
+        case ELEM_NEG:
             ShowMathDialog(SelectedWhich, Selected->d.math.dest,
                 Selected->d.math.op1, Selected->d.math.op2);
             break;
@@ -534,13 +682,15 @@ void EditSelectedElement(void)
             ShowResetDialog(Selected->d.reset.name);
             break;
 
+        case ELEM_BIN2BCD:
+        case ELEM_BCD2BIN:
+        case ELEM_SWAP:
         case ELEM_MOVE:
-            ShowMoveDialog(Selected->d.move.dest, Selected->d.move.src);
+            ShowMoveDialog(SelectedWhich, Selected->d.move.dest, Selected->d.move.src);
             break;
 
         case ELEM_SET_PWM:
-            ShowSetPwmDialog(Selected->d.setPwm.name,
-                &(Selected->d.setPwm.targetFreq));
+            ShowSetPwmDialog(&Selected->d);
             break;
 
         case ELEM_READ_ADC:
@@ -592,6 +742,7 @@ void EditElementMouseDoubleclick(int x, int y)
 {
     x += ScrollXOffset;
 
+//  y -= FONT_HEIGHT;
     y += FONT_HEIGHT/2;
 
     int gx = (x - X_PADDING)/(POS_WIDTH*FONT_WIDTH);
@@ -698,33 +849,40 @@ void MoveCursorMouseClick(int x, int y)
 // Place the cursor as near to the given point on the grid as possible. Used
 // after deleting an element, for example.
 //-----------------------------------------------------------------------------
-void MoveCursorNear(int gx, int gy)
+BOOL MoveCursorNear(int *gx, int *gy)
 {
     int out = 0;
 
+    if(*gx < DISPLAY_MATRIX_X_SIZE) {
+        if(VALID_LEAF(DisplayMatrix[*gx][*gy])) {
+            SelectElement(*gx, *gy, SELECTED_BELOW);
+            return FindSelected(&*gx, &*gy);
+        }
+    }
+
     for(out = 0; out < 8; out++) {
-        if(gx - out >= 0) {
-            if(VALID_LEAF(DisplayMatrix[gx-out][gy])) {
-                SelectElement(gx-out, gy, SELECTED_RIGHT);
-                return;
+        if(*gx - out >= 0) {
+            if(VALID_LEAF(DisplayMatrix[*gx-out][*gy])) {
+                SelectElement(*gx-out, *gy, SELECTED_RIGHT);
+                return FindSelected(&*gx, &*gy);
             }
         }
-        if(gx + out < DISPLAY_MATRIX_X_SIZE) {
-            if(VALID_LEAF(DisplayMatrix[gx+out][gy])) {
-                SelectElement(gx+out, gy, SELECTED_LEFT);
-                return;
+        if(*gx + out < DISPLAY_MATRIX_X_SIZE) {
+            if(VALID_LEAF(DisplayMatrix[*gx+out][*gy])) {
+                SelectElement(*gx+out, *gy, SELECTED_LEFT);
+                return FindSelected(&*gx, &*gy);
             }
         }
-        if(gy - out >= 0) {
-            if(VALID_LEAF(DisplayMatrix[gx][gy-out])) {
-                SelectElement(gx, gy-out, SELECTED_BELOW);
-                return;
+        if(*gy - out >= 0) {
+            if(VALID_LEAF(DisplayMatrix[*gx][*gy-out])) {
+                SelectElement(*gx, *gy-out, SELECTED_BELOW);
+                return FindSelected(&*gx, &*gy);
             }
         }
-        if(gy + out < DISPLAY_MATRIX_Y_SIZE) {
-            if(VALID_LEAF(DisplayMatrix[gx][gy+out])) {
-                SelectElement(gx, gy+out, SELECTED_ABOVE);
-                return;
+        if(*gy + out < DISPLAY_MATRIX_Y_SIZE) {
+            if(VALID_LEAF(DisplayMatrix[*gx][*gy+out])) {
+                SelectElement(*gx, *gy+out, SELECTED_ABOVE);
+                return FindSelected(&*gx, &*gy);
             }
         }
 
@@ -732,17 +890,20 @@ void MoveCursorNear(int gx, int gy)
             // Now see if we have a straight shot to the right; might be far
             // if we have to go up to a coil or other end of line element.
             int across;
-            for(across = 1; gx+across < DISPLAY_MATRIX_X_SIZE; across++) {
-                if(VALID_LEAF(DisplayMatrix[gx+across][gy])) {
-                    SelectElement(gx+across, gy, SELECTED_LEFT);
-                    return;
+            for(across = 1; *gx+across < DISPLAY_MATRIX_X_SIZE; across++) {
+                if(VALID_LEAF(DisplayMatrix[*gx+across][*gy])) {
+                    SelectElement(*gx+across, *gy, SELECTED_LEFT);
+                    return FindSelected(&*gx, &*gy);
                 }
-                if(!DisplayMatrix[gx+across][gy]) break;
+                if(!DisplayMatrix[*gx+across][*gy]) break;
             }
         }
     }
 
-    MoveCursorTopLeft();
+    //MoveCursorTopLeft();
+    int tgx=*gx, tgy=*gy;
+    BOOL f=FindSelected(&tgx, &tgy);
+    return f;
 }
 
 //-----------------------------------------------------------------------------

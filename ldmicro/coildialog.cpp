@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -97,12 +97,12 @@ static void MakeControls(void)
     SourceMcuPinRadio = CreateWindowEx(0, WC_BUTTON, _("Pin on MCU"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
         149, 41, 100, 20, CoilDialog, NULL, Instance, NULL);
-    NiceFont(SourceMcuPinRadio); 
+    NiceFont(SourceMcuPinRadio);
 
-	SourceModbusRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus"),
-		WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
-		149, 61, 100, 20, CoilDialog, NULL, Instance, NULL);
-	NiceFont(SourceModbusRadio);
+    SourceModbusRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
+        149, 61, 100, 20, CoilDialog, NULL, Instance, NULL);
+    NiceFont(SourceModbusRadio);
 
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -116,15 +116,15 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        276, 10, 70, 23, CoilDialog, NULL, Instance, NULL); 
+        276, 10, 70, 23, CoilDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        276, 40, 70, 23, CoilDialog, NULL, Instance, NULL); 
+        276, 40, 70, 23, CoilDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 
-    PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, 
+    PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNameProc);
 }
 
@@ -137,20 +137,20 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
     GetClientRect(CoilDialog, &r);
 
     MakeControls();
-   
+
     switch (name[0]) {
-	case 'R':
+    case 'R':
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
-		break;
-	case 'Y':
+        break;
+    case 'Y':
         SendMessage(SourceMcuPinRadio, BM_SETCHECK, BST_CHECKED, 0);
-		break;
-	case 'M':
-		SendMessage(SourceModbusRadio, BM_SETCHECK, BST_CHECKED, 0);
-		break;
-	default:
-		oops();
-		break;
+        break;
+    case 'M':
+        SendMessage(SourceModbusRadio, BM_SETCHECK, BST_CHECKED, 0);
+        break;
+    default:
+        oops();
+        break;
     }
 
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
@@ -196,12 +196,12 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
         {
             name[0] = 'R';
         } else if (SendMessage(SourceModbusRadio, BM_GETSTATE, 0, 0)
-			& BST_CHECKED)
-		{
-			name[0] = 'M';
-		} else {
-			name[0] = 'Y';
-		}
+            & BST_CHECKED)
+        {
+            name[0] = 'M';
+        } else {
+            name[0] = 'Y';
+        }
 
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)(MAX_NAME_LEN-1), (LPARAM)(name+1));
 

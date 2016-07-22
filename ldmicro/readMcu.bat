@@ -7,6 +7,7 @@ if "%1" == "PIC16" goto PIC16
 if "%1" == "" goto pauses
 goto NOT_SUPPOTED
 
+@rem =======================================================================
 :AVR
 @rem Set up avrdude.exe path. It may be:
 @rem SET AVRDUDE_PATH=D:\WinAVR\bin\
@@ -28,6 +29,7 @@ SET AVRDUDE_PART_ID=m328p
 %AVRDUDE_PATH%avrdude.exe -y -c %AVRDUDE_PROGRAMMER_ID% -F -p %AVRDUDE_PART_ID% -U signature:r:%2_signature.hex:r
 @echo ERRORLEVEL=%ERRORLEVEL%
 if ERRORLEVEL==1 goto pauses
+
 @rem read flash.
 %AVRDUDE_PATH%avrdude.exe -y -c %AVRDUDE_PROGRAMMER_ID% -F -p %AVRDUDE_PART_ID% -U flash:r:%2_flash.hex:i
 @rem read eeprom.
@@ -43,14 +45,17 @@ if ERRORLEVEL==1 goto pauses
 %AVRDUDE_PATH%avrdude.exe -y -c %AVRDUDE_PROGRAMMER_ID% -F -p %AVRDUDE_PART_ID% -U lock:r:%2_lock.hex:r
 goto exit
 
+@rem =======================================================================
 :PIC16
 @echo You can write own command for read PIC's.
 pause
 goto exit
 
+@rem =======================================================================
 :NOT_SUPPOTED
 @echo You can write own command for '%1'.
 
+@rem =======================================================================
 :pauses
 @echo USE:
 @echo "readMcu.bat AVR|PIC16|ANSIC|INTERPRETED|NETZER|PASCAL|ARDUINO|CAVR"

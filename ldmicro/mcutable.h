@@ -410,12 +410,15 @@ McuIoPinInfo AvrAtmega8IoPinInfo[] = {
     { 'B',  3, 17 },
     { 'B',  4, 18 },
     { 'B',  5, 19 },
+//  { 'B',  6,  9 }, //TOSC1
+//  { 'B',  7, 10 }, //TOSC2
     { 'C',  0, 23 },
     { 'C',  1, 24 },
     { 'C',  2, 25 },
     { 'C',  3, 26 },
     { 'C',  4, 27 },
     { 'C',  5, 28 },
+//  { 'C',  6,  1 }, //_RESET
 };
 
 McuAdcPinInfo AvrAtmega8AdcPinInfo[] = {
@@ -429,7 +432,7 @@ McuAdcPinInfo AvrAtmega8AdcPinInfo[] = {
 
 
 //-----------------------------------------------------------------------------
-// ATmega8 32 pin packages TQFP/QFN/MLF
+// ATmega8 32-Pin packages TQFP/QFN/MLF
 
 McuIoPinInfo AvrAtmega8IoPinInfo32[] = {
     { 'D',  0, 30, "PD0 (RXD)" }, // {char port;  int bit;  int pin;}
@@ -472,6 +475,94 @@ McuAdcPinInfo AvrAtmega8AdcPinInfo32[] = {
 int AvrAtmega8ExtIntPinInfo32[] = {
     32, //INT0
     1,  //INT1
+};
+
+//-----------------------------------------------------------------------------
+McuPwmPinInfo AvrAtmegaPwmPinInfo28_[] = {
+    { 17, 2 },
+};
+
+McuPwmPinInfo AvrAtmegaPwmPinInfo32_[] = {
+////     ti max REG_   REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+//  { 13, 1, 5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x00 }, // OC1A // Phase Correct PWM
+//  { 14, 1, 5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x00 }, // OC1B // Phase Correct PWM
+//  { 15, 2, 7, 0x43,  0   ,  0x45,  5,     4,     0x40, 0   ,  0    }, // OC2  // Phase Correct PWM
+    {  0, 0, 5, 0   ,  0x52,  0x53,  0,     0,        0, 0   ,  0    }, // Timer0
+    { 13, 1, 5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 }, // OC1A // Fast PWM
+    { 14, 1, 5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 }, // OC1B // Fast PWM
+    { 15, 2, 7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    }, // OC2  // Fast PWM
+};
+
+McuPwmPinInfo AvrAtmegaPwmPinInfo40_[] = {
+    { 21, 2 },
+};
+
+McuPwmPinInfo AvrAtmega162PwmPinInfo40_[] = {
+    {  2, 2 },
+};
+
+McuPwmPinInfo AvrAtmegaPwmPinInfo44_[] = {
+    { 16, 2 },
+};
+
+McuPwmPinInfo AvrAtmegaPwmPinInfo64_[] = {
+    { 17, 2 },
+};
+
+McuPwmPinInfo AvrAtmegaPwmPinInfo100_[] = {
+    { 23, 2 },
+};
+
+McuPwmPinInfo AvrAtmegaPwmPinInfo32[] = {
+/*
+   maxCS     (No prescaling)
+   WGMa      WGM00   WGM10    WGM20
+   WGMb      WGM02   WGM12    WGM22
+*/
+////     ti max REG_   REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+    { 10, 0, 5, 0x47,  0,     0x44,  7,     6,     3,    0x45,  0    }, // OC0A // Fast PWM
+    {  9, 0, 5, 0x48,  0,     0x44,  5,     4,     3,    0x45,  0    }, // OC0B
+    { 13, 1, 5, 0x88,  0x89,  0x80,  7,     6,     1,    0x81,  0x08 }, // OC1A
+    { 14, 1, 5, 0x8A,  0x8B,  0x80,  5,     4,     1,    0x81,  0x08 }, // OC1B
+    { 15, 2, 7, 0xB3,  0,     0xB0,  7,     6,     3,    0xB1,  0    }, // OC2A
+    {  1, 2, 7, 0xB4,  0,     0xB0,  5,     4,     3,    0xB1,  0    }, // OC2B
+};
+
+// PIC's
+McuPwmPinInfo PicPwmPinInfo18_[] = {
+    {    },
+};
+
+McuPwmPinInfo PicPwmPinInfo28_[] = {
+////     ti
+//// pin mer
+    { 12, 2},
+    { 13, 1},
+};
+
+McuPwmPinInfo PicPwmPinInfo40_[] = {
+    { 16, 2 },
+};
+
+McuPwmPinInfo PicPwmPinInfo64_[] = {
+    { 29, 2 },
+};
+
+/*
+McuPwmPinInfo PicPwmPinInfo44_[] = {
+    { 15, 2 },
+};
+
+McuPwmPinInfo PicPwmPinInfo100_[] = {
+    { 15, 2 },
+};
+*/
+//McuExtIntPinInfo
+int AvrAtmega328ExtIntPinInfo32[] = {
+    32, //INT0
+    1   //INT1
 };
 
 //-----------------------------------------------------------------------------
@@ -615,8 +706,8 @@ McuAdcPinInfo Pic16f877AdcPinInfo[] = {
 
 
 //-----------------------------------------------------------------------------
-// PIC16F876
-
+// PIC16F876, PIC16F873 28-PIn PDIP, SOIC
+// used Pic28Pin_SPDIP_SOIC_SSOP
 McuIoPinInfo Pic16f876IoPinInfo[] = {
     { 'A', 0,  2 },
     { 'A', 1,  3 },
@@ -652,7 +743,7 @@ McuAdcPinInfo Pic16f876AdcPinInfo[] = {
 
 
 //-----------------------------------------------------------------------------
-// PIC16F887
+// PIC16F887, PIC16F884
 
 McuIoPinInfo Pic16f887IoPinInfo[] = {
     { 'A',  0,  2 },
@@ -664,6 +755,7 @@ McuIoPinInfo Pic16f887IoPinInfo[] = {
     { 'E',  0,  8 },
     { 'E',  1,  9 },
     { 'E',  2, 10 },
+//  { 'E',  3,  1 }, //_MCLR
     { 'C',  0, 15 },
     { 'C',  1, 16 },
     { 'C',  2, 17 },
@@ -709,31 +801,41 @@ McuAdcPinInfo Pic16f887AdcPinInfo[] = {
 
 
 //-----------------------------------------------------------------------------
-// PIC16F886
+// 28-Pin PDIP, SOIC, SSOP
+// PIC16F876,  PIC16F873
+// PIC16F886,  PIC16F883, PIC16F882
+// PIC16F1512, PIC16F1513
+// PIC16F1516, PIC16F1518
 
-McuIoPinInfo Pic16f886IoPinInfo[] = {
-    { 'A', 0,  2 },
-    { 'A', 1,  3 },
-    { 'A', 2,  4 },
-    { 'A', 3,  5 },
-    { 'A', 4,  6 },
-    { 'A', 5,  7 },
-    { 'C', 0, 11 },
-    { 'C', 1, 12 },
-    { 'C', 2, 13 },
-    { 'C', 3, 14 },
-    { 'C', 4, 15 },
-    { 'C', 5, 16 },
-    { 'C', 6, 17 },
-    { 'C', 7, 18 },
-    { 'B', 0, 21 },
-    { 'B', 1, 22 },
-    { 'B', 2, 23 },
-    { 'B', 3, 24 },
-    { 'B', 4, 25 },
-    { 'B', 5, 26 },
-    { 'B', 6, 27 },
-    { 'B', 7, 28 },
+McuIoPinInfo Pic28Pin_SPDIP_SOIC_SSOP[] = {
+//  { 'E', 3,  1, "RE3/_MCLR/VPP" },
+    { 'A', 0,  2, "RA0/AN0/ULPWU/C12IN0-" },
+    { 'A', 1,  3, "RA1/AN1/C12IN1-" },
+    { 'A', 2,  4, "RA2/AN2/VREF-/CVREF/C2IN+" },
+    { 'A', 3,  5, "RA3/AN3/VREF+/C1IN+" },
+    { 'A', 4,  6, "RA4/T0CKI/C1OUT" },
+    { 'A', 5,  7, "RA5/AN4/_SS/C2OUT" },
+//  {          8, "Vss" },
+//  { 'A', 7,  9, "OSC2/CLKOUT" },
+//  { 'A', 6, 10, "OSC1/CLKIN " },
+    { 'C', 0, 11, "RC0/T1OSO/T1CKI" },
+    { 'C', 1, 12, "RC1/T1OSI/CCP2" },
+    { 'C', 2, 13, "RC2/P1A/CCP1" },
+    { 'C', 3, 14, "RC3/SCK/SCL" },
+    { 'C', 4, 15, "RC4/SDI/SDA" },
+    { 'C', 5, 16, "RC5/SDO" },
+    { 'C', 6, 17, "RC6/TX/CK" },
+    { 'C', 7, 18, "RC7/RX/DT" },
+//  {         19, "Vss" },
+//  {         20, "Vdd" },
+    { 'B', 0, 21, "RB0/AN12/INT" },
+    { 'B', 1, 22, "RB1/AN10/P1C/C12IN3-" },
+    { 'B', 2, 23, "RB2/AN8/P1B" },
+    { 'B', 3, 24, "RB3/AN9/PGM/C12IN2-" },
+    { 'B', 4, 25, "RB4/AN11/P1D" },
+    { 'B', 5, 26, "RB5/AN13/_T1G" },
+    { 'B', 6, 27, "RB6/ICSPCLK" },
+    { 'B', 7, 28, "RB7/ICSPDAT" }
 };
 
 McuAdcPinInfo Pic16f886AdcPinInfo[] = {
@@ -753,54 +855,75 @@ McuAdcPinInfo Pic16f886AdcPinInfo[] = {
 //-----------------------------------------------------------------------------
 // Controllino Maxi
 McuIoPinInfo ControllinoMaxiIoPinInfo[] = {
-	{ 'E',  4,  6, "D0", 2 },
-	{ 'E',  5,  7, "D1", 3 },
-	{ 'G',  5,  1, "D2", 4 },
-	{ 'E',  3,  5, "D3", 5 },
-	{ 'H',  3, 15, "D4", 6 },
-	{ 'H',  4, 16, "D5", 7 },
-	{ 'H',  5, 17, "D6", 8 },
-	{ 'H',  6, 18, "D7", 9 },
-	{ 'B',  4, 23, "D8", 10 },
-	{ 'B',  5, 24, "D9", 11 },
-	{ 'B',  6, 25, "D10",12 },
-	{ 'B',  7, 26, "D11",13 },
+//   port bit pin pinName ArduinoPin
+    { 'E',  4,  6, "D0", 2 },
+    { 'E',  5,  7, "D1", 3 },
+    { 'G',  5,  1, "D2", 4 },
+    { 'E',  3,  5, "D3", 5 },
+    { 'H',  3, 15, "D4", 6 },
+    { 'H',  4, 16, "D5", 7 },
+    { 'H',  5, 17, "D6", 8 },
+    { 'H',  6, 18, "D7", 9 },
+    { 'B',  4, 23, "D8", 10 },
+    { 'B',  5, 24, "D9", 11 },
+    { 'B',  6, 25, "D10",12 },
+    { 'B',  7, 26, "D11",13 },
 
-	{ 'A',  0, 78, "R0", 22 },
-	{ 'A',  1, 77, "R1", 23 },
-	{ 'A',  2, 76, "R2", 24 },
-	{ 'A',  3, 75, "R3", 25},
-	{ 'A',  4, 74, "R4", 26 },
-	{ 'A',  5, 73, "R5", 27 },
-	{ 'A',  6, 72, "R6", 28 },
-	{ 'C',  6, 59, "R9", 29 },
-	{ 'A',  7, 71, "R7", 30 },
-	{ 'C',  7, 60, "R8", 31 },
+    { 'A',  0, 78, "R0", 22 },
+    { 'A',  1, 77, "R1", 23 },
+    { 'A',  2, 76, "R2", 24 },
+    { 'A',  3, 75, "R3", 25},
+    { 'A',  4, 74, "R4", 26 },
+    { 'A',  5, 73, "R5", 27 },
+    { 'A',  6, 72, "R6", 28 },
+    { 'C',  6, 59, "R9", 29 },
+    { 'A',  7, 71, "R7", 30 },
+    { 'C',  7, 60, "R8", 31 },
 
-
-	{ 'F',  0, 97, "A0", 54 },
-	{ 'F',  1, 96, "A1", 55 },
-	{ 'F',  2, 95, "A2", 56 },
-	{ 'F',  3, 94, "A3", 57 },
-	{ 'F',  4, 93, "A4", 58 },
-	{ 'F',  5, 92, "A5", 59 },
-	{ 'F',  6, 91, "A6", 60 },
-	{ 'F',  7, 90, "A7", 61 },
-	{ 'K',  0, 89, "A8", 62 },
-	{ 'K',  1, 88, "A9", 63 },
+    { 'F',  0, 97, "A0", 54 },
+    { 'F',  1, 96, "A1", 55 },
+    { 'F',  2, 95, "A2", 56 },
+    { 'F',  3, 94, "A3", 57 },
+    { 'F',  4, 93, "A4", 58 },
+    { 'F',  5, 92, "A5", 59 },
+    { 'F',  6, 91, "A6", 60 },
+    { 'F',  7, 90, "A7", 61 },
+    { 'K',  0, 89, "A8", 62 },
+    { 'K',  1, 88, "A9", 63 },
 };
 
 McuAdcPinInfo ControllinoMaxiAdcPinInfo[] = {
-	{ 97, 0x00 },
-	{ 96, 0x01 },
-	{ 95, 0x02 },
-	{ 94, 0x03 },
-	{ 93, 0x04 },
-	{ 92, 0x05 },
-	{ 91, 0x06 },
-	{ 90, 0x07 },
-	{ 89, 0x08 },
-	{ 88, 0x09 }
+    { 97, 0x00 },
+    { 96, 0x01 },
+    { 95, 0x02 },
+    { 94, 0x03 },
+    { 93, 0x04 },
+    { 92, 0x05 },
+    { 91, 0x06 },
+    { 90, 0x07 },
+    { 89, 0x08 },
+    { 88, 0x09 }
+};
+
+McuPwmPinInfo ControllinoMaxiPwmPinInfo[] = {
+////ATmega2560
+////     ti
+//// pin mer
+    {  1, 0 },
+    { 24, 1 },
+    { 25, 1 },
+    { 26, 1 },
+    { 18, 2 },
+    { 23, 2 },
+    {  5, 3 },
+    {  6, 3 },
+    {  7, 3 },
+    { 15, 4 },
+    { 16, 4 },
+    { 17, 4 },
+    { 38, 5 },
+    { 39, 5 },
+    { 40, 5 },
 };
 
 #define arraylen(x) (sizeof(x)/sizeof((x)[0]))
@@ -808,6 +931,8 @@ McuAdcPinInfo ControllinoMaxiAdcPinInfo[] = {
 McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     {
         "Atmel AVR ATmega2560 100-TQFP",
+        "",
+        "",
         'P',
         { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0x103, 0x106, 0x109 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0x105, 0x108, 0x10B }, // PORTx
@@ -823,10 +948,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         23,
         ISA_AVR1,
         EnhancedCore4M,
-        0
+        100,
+        0,
+        AvrAtmegaPwmPinInfo100_,
+        arraylen(AvrAtmegaPwmPinInfo100_)
     },
     {
         "Atmel AVR AT90USB647 64-TQFP",
+        "",
+        "",
         'P',
         { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F }, // PINx
         { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x31 }, // PORTx
@@ -842,10 +972,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         17,
         ISA_AVR,
         EnhancedCore128K, //???
-        0
+        64,
+        0,
+        AvrAtmegaPwmPinInfo64_,
+        arraylen(AvrAtmegaPwmPinInfo64_)
     },
     {
         "Atmel AVR ATmega128 64-TQFP",
+        "",
+        "",
         'P',
         { 0x39, 0x36, 0x33, 0x30, 0x21, 0x20, 0x63 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32, 0x23, 0x62, 0x65 }, // PORTx
@@ -861,10 +996,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         17,
         ISA_AVR,
         EnhancedCore128K,
-        0
+        64,
+        0,
+        AvrAtmegaPwmPinInfo64_,
+        arraylen(AvrAtmegaPwmPinInfo64_)
     },
     {
         "Atmel AVR ATmega64 64-TQFP",
+        "",
+        "",
         'P',
         { 0x39, 0x36, 0x33, 0x30, 0x21, 0x20, 0x63 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32, 0x23, 0x62, 0x65 }, // PORTx
@@ -880,10 +1020,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         17,
         ISA_AVR,
         EnhancedCore128K,
-        0
+        64,
+        0,
+        AvrAtmegaPwmPinInfo64_,
+        arraylen(AvrAtmegaPwmPinInfo64_)
     },
     {
         "Atmel AVR ATmega162 40-PDIP",
+        "",
+        "",
         'P',
         { 0x39, 0x36, 0x33, 0x30, 0x25 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32, 0x27 }, // PORTx
@@ -899,10 +1044,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         2, // OC2
         ISA_AVR,
         EnhancedCore128K,
-        0
+        40,
+        0,
+        AvrAtmega162PwmPinInfo40_,
+        arraylen(AvrAtmega162PwmPinInfo40_)
     },
     {
         "Atmel AVR ATmega32 40-PDIP",
+        "ATmega32",
+        "m32def",
         'P',
         { 0x39, 0x36, 0x33, 0x30 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32 }, // PORTx
@@ -918,10 +1068,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         21, // OC2
         ISA_AVR,
         EnhancedCore128K,
-        0
+        40,
+        0,
+        AvrAtmegaPwmPinInfo40_,
+        arraylen(AvrAtmegaPwmPinInfo40_)
     },
     {
         "Atmel AVR ATmega16 40-PDIP",
+        "",
+        "",
         'P',
         { 0x39, 0x36, 0x33, 0x30 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32 }, // PORTx
@@ -937,10 +1092,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         21, // OC2
         ISA_AVR,
         EnhancedCore128K,
-        0
+        40,
+        0,
+        AvrAtmegaPwmPinInfo40_,
+        arraylen(AvrAtmegaPwmPinInfo40_)
     },
     {
         "Atmel AVR ATmega48 28-PDIP",
+        "",
+        "",
         'P',
         { 0xff, 0x23, 0x26, 0x29 }, // PINx
         { 0xff, 0x25, 0x28, 0x2B }, // PORTx
@@ -956,10 +1116,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         17,
         ISA_AVR1,
         EnhancedCore128K,
-        0
+        28,
+        0,
+        AvrAtmegaPwmPinInfo28_,
+        arraylen(AvrAtmegaPwmPinInfo28_)
     },
     {
         "Atmel AVR ATmega88 28-PDIP",
+        "",
+        "",
         'P',
         { 0xff, 0x23, 0x26, 0x29 }, // PINx
         { 0xff, 0x25, 0x28, 0x2B }, // PORTx
@@ -975,10 +1140,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         17,
         ISA_AVR1,
         EnhancedCore128K,
-        0
+        28,
+        0,
+        AvrAtmegaPwmPinInfo28_,
+        arraylen(AvrAtmegaPwmPinInfo28_)
     },
     {
         "Atmel AVR ATmega168 28-PDIP",
+        "",
+        "",
         'P',
         { 0xff, 0x23, 0x26, 0x29 }, // PINx
         { 0xff, 0x25, 0x28, 0x2B }, // PORTx
@@ -994,10 +1164,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         17,
         ISA_AVR1,
         EnhancedCore128K,
-        0
+        28,
+        0,
+        AvrAtmegaPwmPinInfo28_,
+        arraylen(AvrAtmegaPwmPinInfo28_)
     },
     {
         "Atmel AVR ATmega328 28-PDIP",
+        "ATmega328",
+        "m328def",
         'P',
         { 0xff, 0x23, 0x26, 0x29 }, // PINx
         { 0xff, 0x25, 0x28, 0x2B }, // PORTx
@@ -1013,10 +1188,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         17,
         ISA_AVR1,
         EnhancedCore128K,
-        0
+        28,
+        0,
+        AvrAtmegaPwmPinInfo28_,
+        arraylen(AvrAtmegaPwmPinInfo28_)
     },
     {
         "Atmel AVR ATmega164 40-PDIP",
+        "",
+        "",
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -1032,10 +1212,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         21,
         ISA_AVR1,
         EnhancedCore128K,
-        0
+        40,
+        0,
+        AvrAtmegaPwmPinInfo40_,
+        arraylen(AvrAtmegaPwmPinInfo40_)
     },
     {
         "Atmel AVR ATmega324 40-PDIP",
+        "",
+        "",
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -1051,10 +1236,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         21,
         ISA_AVR1,
         EnhancedCore128K,
-        0
+        40,
+        0,
+        AvrAtmegaPwmPinInfo40_,
+        arraylen(AvrAtmegaPwmPinInfo40_)
     },
     {
         "Atmel AVR ATmega644 40-PDIP",
+        "",
+        "",
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -1070,10 +1260,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         21,
         ISA_AVR1,
         EnhancedCore128K,
-        0
+        40,
+        0,
+        AvrAtmegaPwmPinInfo40_,
+        arraylen(AvrAtmegaPwmPinInfo40_)
     },
     {
         "Atmel AVR ATmega1284 40-PDIP",
+        "",
+        "",
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -1089,10 +1284,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         21,
         ISA_AVR1,
         EnhancedCore128K,
-        0
+        40,
+        0,
+        AvrAtmegaPwmPinInfo40_,
+        arraylen(AvrAtmegaPwmPinInfo40_)
     },
     {
-        "Atmel AVR ATmega8 32 pin packages", //char            *mcuName;
+        "Atmel AVR ATmega8 32-Pin packages", //char            *mcuName;
+        "ATmega8",
+        "M8DEF", // "iom8"
         'P',                                 //char             portPrefix;
         { 0xff, 0x36, 0x33, 0x30 }, // PINx  //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
         { 0xff, 0x38, 0x35, 0x32 }, // PORTx //DWORD            outputRegs[MAX_IO_PORTS];
@@ -1109,12 +1309,17 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         ISA_AVR,                             //int              whichIsa;
         EnhancedCore8K,                      //AvrFamily        Family;
         0,                                   //DWORD            configurationWord;
+        32,
 //      { 32, 1 }, // INT0, INT1             //int int0PinA; int int1PinA;} QuadEncodNeeds;
 //      AvrAtmega8ExtIntPinInfo32,
 //      arraylen(AvrAtmega8ExtIntPinInfo32),
+        AvrAtmegaPwmPinInfo32_,
+        arraylen(AvrAtmegaPwmPinInfo32_)
     },
     {
         "Atmel AVR ATmega8 28-PDIP",
+        "ATmega8",
+        "M8DEF",
         'P',
         { 0xff, 0x36, 0x33, 0x30 }, // PINx     (but there is no xxxA)
         { 0xff, 0x38, 0x35, 0x32 }, // PORTx
@@ -1130,10 +1335,15 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         17,
         ISA_AVR,
         EnhancedCore8K,
-        0
+        28,
+        0,
+        AvrAtmegaPwmPinInfo28_,
+        arraylen(AvrAtmegaPwmPinInfo28_)
     },
     {
         "Microchip PIC16F628 18-PDIP or 18-SOIC",
+        "PIC16F628",
+        "P16F628",
         'R',
         { 0x05, 0x06 }, // PORTx
         { 0x05, 0x06 }, // PORTx
@@ -1148,14 +1358,19 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 7, 8 },
         0,
         ISA_PIC16,
-        NOT_AVR,
+        MidrangeCore14bit,
+        18,
         // code protection off, data code protection off, LVP disabled,
         // BOD reset enabled, RA5/nMCLR is RA5, PWRT enabled, WDT disabled,
         // HS oscillator
-        0x3f62
+        0x3f62,
+        NULL,
+        0
     },
     {
         "Microchip PIC16F88 18-PDIP or 18-SOIC",
+        "PIC16F88",
+        "P16F88",
         'R',
         { 0x05, 0x06 }, // PORTx
         { 0x05, 0x06 }, // PORTx
@@ -1170,7 +1385,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 8, 11 },
         0,
         ISA_PIC16,
-        NOT_AVR,
+        MidrangeCore14bit,
+        18,
             (1 << 13) |         // CP off
             (1 << 12) |         // CCP on RB2 (doesn't matter)
             (1 << 11) |         // ICD disabled
@@ -1183,9 +1399,13 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (0 <<  3) |         // PWRT enabled
             (0 <<  2) |         // WDT disabled
             (2 <<  0),          // HS oscillator
+        NULL,
+        0
     },
     {
         "Microchip PIC16F819 18-PDIP or 18-SOIC",
+        "PIC16F819",
+        "P16F819",
         'R',
         { 0x05, 0x06 }, // PORTx
         { 0x05, 0x06 }, // PORTx
@@ -1200,7 +1420,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0, 0 },
         0,
         ISA_PIC16,
-        NOT_AVR,
+        MidrangeCore14bit,
+        18,
             (1 << 13) | // code protect off
             (1 << 12) | // CCP1 on RB2 (doesn't matter, can't use)
             (1 << 11) | // disable debugger
@@ -1212,9 +1433,13 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (0 <<  3) | // PWRTE enabled
             (0 <<  2) | // WDT disabled
             (2 <<  0),  // HS oscillator
+        NULL,
+        0
     },
     {
         "Microchip PIC16F877 40-PDIP",
+        "PIC16F877",
+        "P16F877",
         'R',
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
@@ -1229,36 +1454,46 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 26, 25 },
         16,
         ISA_PIC16,
-        NOT_AVR,
+        MidrangeCore14bit,
+        40,
         // code protection off, debug off, flash write off, EE code protection
         // off, LVP disabled, BOD enabled, CP off, PWRT enabled, WDT disabled,
         // HS oscillator
-        0x3f72
+        0x3f72,
+        PicPwmPinInfo40_,
+        arraylen(PicPwmPinInfo40_)
     },
     {
         "Microchip PIC16F876 28-PDIP or 28-SOIC",
+        "PIC16F876",
+        "P16F876",
         'R',
         { 0x05, 0x06, 0x07 }, // PORTx
         { 0x05, 0x06, 0x07 }, // PORTx
         { 0x85, 0x86, 0x87 }, // TRISx
         8*1024,
         { { 0x20, 96 }, { 0xa0, 80 }, { 0x110, 96 }, { 0x190, 96 } },
-        Pic16f876IoPinInfo,
-        arraylen(Pic16f876IoPinInfo),
+        Pic28Pin_SPDIP_SOIC_SSOP,
+        arraylen(Pic28Pin_SPDIP_SOIC_SSOP),
         Pic16f876AdcPinInfo,
         arraylen(Pic16f876AdcPinInfo),
         1023,
         { 18, 17 },
         12,
         ISA_PIC16,
-        NOT_AVR,
+        MidrangeCore14bit,
+        28,
         // code protection off, debug off, flash write off, EE code protection
         // off, LVP disabled, BOD enabled, CP off, PWRT enabled, WDT disabled,
         // HS oscillator
-        0x3f72
+        0x3f72,
+        PicPwmPinInfo28_,
+        arraylen(PicPwmPinInfo28_)
     },
     {
         "Microchip PIC16F887 40-PDIP",
+        "PIC16F887",
+        "P16F887",
         'R',
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
@@ -1273,7 +1508,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 26, 25 },
         16,
         ISA_PIC16,
-        NOT_AVR,
+        MidrangeCore14bit,
+        40,
             (3 << (9+16)) | // flash write protection off
             (0 << (8+16)) | // BOR at 2.1 V
             (1 << 13) |     // ICD disabled
@@ -1286,26 +1522,31 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (1 <<  5) |     // nMCLR enabled
             (0 <<  4) |     // PWRTE enabled
             (0 <<  3) |     // WDTE disabled
-            (2 <<  0)       // HS oscillator
+            (2 <<  0),      // HS oscillator
+        PicPwmPinInfo40_,
+        arraylen(PicPwmPinInfo40_)
 
     },
     {
         "Microchip PIC16F886 28-PDIP or 28-SOIC",
+        "PIC16F886",
+        "P16F886",
         'R',
-        { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
-        { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
-        { 0x85, 0x86, 0x87, 0x88, 0x89 }, // TRISx
+        { 0x05, 0x06, 0x07/*, 0xff, 0x09 */}, // PORTx = A B C E
+        { 0x05, 0x06, 0x07/*, 0xff, 0x09 */}, // PORTx
+        { 0x85, 0x86, 0x87/*, 0xff, 0x89 */}, // TRISx
         8*1024,
         { { 0x20, 96 }, { 0xa0, 80 }, { 0x120, 80 }, { 0x1a0, 80 } },
-        Pic16f886IoPinInfo,
-        arraylen(Pic16f886IoPinInfo),
+        Pic28Pin_SPDIP_SOIC_SSOP,
+        arraylen(Pic28Pin_SPDIP_SOIC_SSOP),
         Pic16f886AdcPinInfo,
         arraylen(Pic16f886AdcPinInfo),
         1023,
         { 18, 17 },
         12,
         ISA_PIC16,
-        NOT_AVR,
+        MidrangeCore14bit,
+        28,
             (3 << (9+16)) | // flash write protection off
             (0 << (8+16)) | // BOR at 2.1 V
             (1 << 13) |     // ICD disabled
@@ -1318,29 +1559,38 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (1 <<  5) |     // nMCLR enabled
             (0 <<  4) |     // PWRTE enabled
             (0 <<  3) |     // WDTE disabled
-            (2 <<  0)       // HS oscillator
-    },	
-	{
-		"Controllino Maxi / Ext bytecode",
-		'P',
-		{ 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0x103, 0x106, 0x109 }, // PINx
-		{ 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0x105, 0x108, 0x10B }, // PORTx
-		{ 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33, 0x101, 0x104, 0x107, 0x10A }, // DDRx
-			128 * 1024,
-			{ { 0x200, 8192 } },
-			ControllinoMaxiIoPinInfo,
-			arraylen(ControllinoMaxiIoPinInfo),
-			ControllinoMaxiAdcPinInfo,
-			arraylen(ControllinoMaxiAdcPinInfo),
-			1023,
-			{ 2 , 3 },
-			23,
-			ISA_XINTERPRETED,
-			EnhancedCore4M,
-			0
-	},
-	{
+            (2 <<  0),      // HS oscillator
+        PicPwmPinInfo28_,
+        arraylen(PicPwmPinInfo28_)
+    },
+    {
+        "Controllino Maxi / Ext bytecode",
+        "",
+        "",
+        'P',
+        { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0x103, 0x106, 0x109 }, // PINx
+        { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0x105, 0x108, 0x10B }, // PORTx
+        { 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33, 0x101, 0x104, 0x107, 0x10A }, // DDRx
+        128 * 1024,
+        { { 0x200, 8192 } },
+        ControllinoMaxiIoPinInfo,
+        arraylen(ControllinoMaxiIoPinInfo),
+        ControllinoMaxiAdcPinInfo,
+        arraylen(ControllinoMaxiAdcPinInfo),
+        1023,
+        { 2 , 3 },
+        23,
+        ISA_XINTERPRETED,
+        EnhancedCore4M,
+        100,
+        0,
+        ControllinoMaxiPwmPinInfo,
+        arraylen(ControllinoMaxiPwmPinInfo),
+    },
+    {
         "ANSI C Code",
+        "",
+        "",
         'x',
         { 0x00 },
         { 0x00 },
@@ -1355,11 +1605,13 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0, 0 },
         0,
         ISA_ANSIC,
-        NOT_AVR,
+        NOTHING,
         0x00
     },
     {
         "Interpretable Byte Code",
+        "",
+        "",
         'x',
         { 0x00 },
         { 0x00 },
@@ -1374,30 +1626,34 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0, 0 },
         0,
         ISA_INTERPRETED,
-        NOT_AVR,
+        NOTHING,
         0x00
     },
-	{
-		"Extended Byte Code",
-		'x',
-		{ 0x00 },
-		{ 0x00 },
-		{ 0x00 },
-			0,
-			{ { 0x00, 0 } },
-			NULL,
-			0,
-			NULL,
-			0,
-			0,
-			{ 0, 0 },
-			0,
-			ISA_XINTERPRETED,
-			NOT_AVR,
-			0x00
-	},
-	{
+    {
+        "Extended Byte Code",
+        "",
+        "",
+        'x',
+        { 0x00 },
+        { 0x00 },
+        { 0x00 },
+            0,
+            { { 0x00, 0 } },
+            NULL,
+            0,
+            NULL,
+            0,
+            0,
+            { 0, 0 },
+            0,
+            ISA_XINTERPRETED,
+            NOTHING,
+            0x00
+    },
+    {
         "Netzer Byte Code",
+        "",
+        "",
         'R',
         { 0x00 },
         { 0x00 },
@@ -1412,7 +1668,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0, 0 },
         0,
         ISA_NETZER,
-        NOT_AVR,
+        NOTHING,
+
         0x00
     }
 };

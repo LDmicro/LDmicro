@@ -30,21 +30,49 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
+#define NEW_ONE_SHOT
+//#define DEFAULT_PARALLEL_ALGORITHM
+//#define DEFAULT_COIL_ALGORITHM
+
 //-----------------------------------------------------------------------------
-#define parThis_parOut_optimize
-//-----------------------------------------------------------------------------
+#ifdef DEFAULT_PARALLEL_ALGORITHM
+int int_comment_level  = 3;
+#else
 int int_comment_level  = 3;
 //                       0 - no comments
 //                       1 = Release 2.3 comments
 //                       2 - more comments
 //                     * 3 - ELEM_XXX comments added
+#endif
+//-----------------------------------------------------------------------------
+int asm_comment_level  = 2;
+//                       0- no comment
+//                       1- intenal comments if exist
+//                     * 2- args
+//                       3- + RUNG number in source.ld
+//                       4-    -//-        and  pic16.cpp or avr.cpp line number
+//                       5     -//-                      -//-        and intcode.cpp line number
+//for example
+//-----------------------------------------------------------------------------
+int asm_discover_names = 0;
+//                       0- no discover
+//                       1- discover name if posible
+//                     * 2-     -//- and add dec value
+//                       3- replace name if posible
+//                       4-     -//- and add dec value
+//for example
+//                       0- l_0009:     bcf  0xa,    4
+//                       1- l_0009:     bcf  0xa,    4 ; REG_PCLATH
+//                       2- l_0009:     bcf  0xa,    4 ; REG_PCLATH ; 10
+//                       3- l_0009:     bcf  REG_PCLATH,     4 ; 0xa
+//                       4- l_0009:     bcf  REG_PCLATH,     4 ; 0xa ; 10
 //-----------------------------------------------------------------------------
 
 IntOp IntCode[MAX_INT_OPS];
 int IntCodeLen = 0;
 int ProgWriteP = 0;
 int rungNow = -INT_MAX;
-static int whichNow = -INT_MAX;
+static int whichNow = INT_MAX;
 
 static DWORD GenSymCountParThis;
 static DWORD GenSymCountParOut;
@@ -52,7 +80,16 @@ static DWORD GenSymCountOneShot;
 static DWORD GenSymCountFormattedString;
 static DWORD GenSymCountStepper;
 
-static WORD EepromAddrFree;
+static DWORD EepromAddrFree;
+
+//-----------------------------------------------------------------------------
+static void CheckConstantInRange(SDWORD v)
+{
+    if(v < -0x800000 || v > 0x7FffFF) {
+        Error(_("Constant %d out of range: %d to %d inclusive."), v, -0x800000, 0x7FffFF);
+        CompileError();
+    }
+}
 
 //-----------------------------------------------------------------------------
 // Pretty-print the intermediate code to a file, for debugging purposes.
@@ -70,16 +107,16 @@ void IntDumpListing(char *outFile)
 
         if(IntCode[i].op == INT_END_IF) indent--;
         if(IntCode[i].op == INT_ELSE) indent--;
-        if(indent < 0) indent = 0;
 
         if(int_comment_level == 1) {
             fprintf(f, "%3d:", i);
         } else {
+            if(indent < 0) indent = 0;
         if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
         fprintf(f, "%4d:", i);
         }
         int j;
-        if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
+        if((int_comment_level == 1) || (IntCode[i].op != INT_SIMULATE_NODE_STATE))
         for(j = 0; j < indent; j++) fprintf(f, "    ");
 
         switch(IntCode[i].op) {
@@ -135,24 +172,42 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_PWM:
-                fprintf(f, "set pwm '%s' %s Hz", IntCode[i].name1,
-                    IntCode[i].name2);
+                fprintf(f, "set pwm '%s' %s Hz out %s", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
                 fprintf(f, "set bit '%s' if EEPROM busy", IntCode[i].name1);
                 break;
 
-            case INT_EEPROM_READ:
+            case INT_EEPROM_READ:{
+                int sov = SizeOfVar(IntCode[i].name2);
+                if(sov == 1)
+                    fprintf(f, "read EEPROM[%d] into '%s'",
+                        IntCode[i].literal, IntCode[i].name1);
+                else if(sov == 2)
                 fprintf(f, "read EEPROM[%d,%d+1] into '%s'",
                     IntCode[i].literal, IntCode[i].literal, IntCode[i].name1);
+                else if(sov == 3)
+                    fprintf(f, "read EEPROM[%d,%d+1,%d+2] into '%s'",
+                        IntCode[i].literal, IntCode[i].literal, IntCode[i].literal, IntCode[i].name1);
+                else oops();
                 break;
-
-            case INT_EEPROM_WRITE:
+            }
+            case INT_EEPROM_WRITE:{
+                int sov = SizeOfVar(IntCode[i].name1);
+                if(sov == 1)
+                    fprintf(f, "write '%s' into EEPROM[%d]",
+                        IntCode[i].name1, IntCode[i].literal);
+                else if(sov == 2)
                 fprintf(f, "write '%s' into EEPROM[%d,%d+1]",
                     IntCode[i].name1, IntCode[i].literal, IntCode[i].literal);
+                else if(sov == 3)
+                    fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2]",
+                        IntCode[i].name1, IntCode[i].literal, IntCode[i].literal, IntCode[i].literal);
+                else oops();
                 break;
-
+            }
             case INT_UART_SEND:
                 fprintf(f, "uart send from '%s', done? into '%s'",
                     IntCode[i].name1, IntCode[i].name2);
@@ -269,8 +324,7 @@ void IntDumpListing(char *outFile)
             default:
                 ooops("IntCode[i].op=INT_%d",IntCode[i].op);
         }
-        if((int_comment_level == 1)
-        || (IntCode[i].op != INT_SIMULATE_NODE_STATE))
+        if((int_comment_level == 1) || (IntCode[i].op != INT_SIMULATE_NODE_STATE))
         fprintf(f, "\n");
         fflush(f);
     }
@@ -307,12 +361,12 @@ static void GenSymParOut(char *dest)
     sprintf(dest, "$parOut_%04x", GenSymCountParOut);
     GenSymCountParOut++;
 }
-static void GenSymOneShot(char *dest, char *name1, char *name2)
+void GenSymOneShot(char *dest, char *name1, char *name2)
 {
     if(int_comment_level == 1)
         sprintf(dest, "$oneShot_%04x", GenSymCountOneShot);
     else
-    sprintf(dest, "$oneShot_%04x_%s_%s", GenSymCountOneShot, name1, name2);
+        sprintf(dest, "$oneShot_%04x_%s_%s", GenSymCountOneShot, name1, name2);
     GenSymCountOneShot++;
 }
 static void GenSymOneShot(char *dest)
@@ -337,7 +391,8 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void Op(int op, char *name1, char *name2, char *name3, SWORD lit, SWORD lit2)
+
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2)
 {
     IntCode[IntCodeLen].op = op;
     if(name1) strcpy(IntCode[IntCodeLen].name1, name1);
@@ -347,41 +402,58 @@ static void Op(int op, char *name1, char *name2, char *name3, SWORD lit, SWORD l
     IntCode[IntCodeLen].literal2 = lit2;
     IntCode[IntCodeLen].rung = rungNow;
     IntCode[IntCodeLen].which = whichNow;
+    IntCode[IntCodeLen].l = l;
+    strcpy(IntCode[IntCodeLen].f, f);
     IntCodeLen++;
     if(IntCodeLen >= MAX_INT_OPS) {
         Error(_("Internal limit exceeded (MAX_INT_OPS)"));
         CompileError();
     }
 }
-static void Op(int op, char *name1, char *name2, char *name3, SWORD lit)
-{
-    Op(op, name1, name2, name3, lit, 0);
-}
-static void Op(int op, char *name1, char *name2, SWORD lit)
-{
-    Op(op, name1, name2, NULL, lit, 0);
-}
-static void Op(int op, char *name1, SWORD lit, SWORD lit2)
-{
-    Op(op, name1, NULL, NULL, lit, lit2);
-}
-static void Op(int op, char *name1, SWORD lit)
-{
-    Op(op, name1, NULL, NULL, lit, 0);
-}
-static void Op(int op, char *name1, char *name2)
-{
-    Op(op, name1, name2, NULL, 0, 0);
-}
-static void Op(int op, char *name1)
-{
-    Op(op, name1, NULL, NULL, 0, 0);
-}
-static void Op(int op)
-{
-    Op(op, NULL, NULL, NULL, 0, 0);
-}
 
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, SDWORD lit)
+{
+    _Op(l, f, args, op, name1, name2, NULL, NULL, NULL, NULL, lit, 0);
+}
+static void _Op(int l, char *f, char *args, int op, char *name1, SDWORD lit)
+{
+    _Op(l, f, args, op, name1, NULL, NULL, NULL, NULL, NULL, lit, 0);
+}
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2)
+{
+    _Op(l, f, args, op, name1, name2, NULL, NULL, NULL, NULL, 0, 0);
+}
+static void _Op(int l, char *f, char *args, int op, char *name1)
+{
+    _Op(l, f, args, op, name1, NULL, NULL, NULL, NULL, NULL, 0, 0);
+}
+static void _Op(int l, char *f, char *args, int op)
+{
+    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0);
+}
+//
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit)
+{
+    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, 0);
+}
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3)
+{
+    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, 0, 0);
+}
+//
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2)
+{
+    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, lit2);
+}
+//
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4)
+{
+    _Op(l, f, args, op, name1, name2, name3, name4, NULL, NULL, 0, 0);
+}
+//
+
+// And use macro for bugtracking
+#define Op(...) _Op(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
 // Compile the instruction that the simulator uses to keep track of which
 // nodes are energized (so that it can display which branches of the circuit
@@ -404,35 +476,52 @@ static void SimState(BOOL *b, char *name)
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void Comment(char *str, ...)
+static void _Comment(int l, char *f, char *str, ...)
 {
+  if(int_comment_level) {
     if(strlen(str)>=MAX_NAME_LEN)
       str[MAX_NAME_LEN-1]='\0';
-    va_list f;
+    va_list v;
     char buf[MAX_NAME_LEN];
-    va_start(f, str);
-    vsprintf(buf, str, f);
-    Op(INT_COMMENT, buf);
+    va_start(v, str);
+    vsprintf(buf, str, v);
+    _Op(l, f, NULL, INT_COMMENT, buf);
+  }
 }
+
+static void _Comment(int l, char *f, int level, char *str, ...)
+{
+  if(int_comment_level && (int_comment_level >= level)) {
+    if(strlen(str)>=MAX_NAME_LEN)
+      str[MAX_NAME_LEN-1]='\0';
+    va_list v;
+    char buf[MAX_NAME_LEN];
+    va_start(v, str);
+    vsprintf(buf, str, v);
+    _Op(l, f, NULL, INT_COMMENT, buf);
+}
+}
+
+#define Comment(...) _Comment(__LINE__, __FILE__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 // Calculate the period in scan units from the period in microseconds, and
 // raise an error if the given period is unachievable.
 //-----------------------------------------------------------------------------
-static int TimerPeriod(ElemLeaf *l)
+static SDWORD TimerPeriod(ElemLeaf *l)
 {
-    int period = (l->d.timer.delay / Prog.cycleTime) - 1;
-
+    SDWORD period = (l->d.timer.delay / Prog.cycleTime) - 1;
+    //                                                  - 1 used, because one cycle of the program always runs
     if(period < 1)  {
-        Error(_("Timer period too short (needs faster cycle time)."));
+        Error(_("'%s' Timer period too short (needs faster cycle time)."),l->d.timer.name);
         CompileError();
     }
     if(period >= (1 << 15)) {
         Error(_("Timer period too long (max 32767 times cycle time); use a "
-            "slower cycle time."));
+            "slower cycle time."
+            "\r\nTimer %s=%.3f ms needs %d cycles of PLC"),l->d.timer.name,l->d.timer.delay/1000.0,period);
         CompileError();
     }
-
     return period;
 }
 
@@ -508,39 +597,65 @@ BOOL CheckForNumber(char * str)
 }
 
 //-----------------------------------------------------------------------------
-// Report an error if a constant doesn't fit in 16 bits.
-//-----------------------------------------------------------------------------
-void CheckConstantInRange(int v)
+double hobatof(char *str)
 {
-    if(v < -32768 || v > 32767) {
-        Error(_("Constant %d out of range: -32768 to 32767 inclusive."), v);
-        CompileError();
+    return atof(str);
+}
+//-----------------------------------------------------------------------------
+SDWORD hobatoi(char *str)
+{
+    long  val;
+    char *start_ptr = str;
+    while(isspace(*start_ptr))
+        start_ptr++;
+    if(*start_ptr == '\'') {
+        char dest[MAX_NAME_LEN];
+        FrmStrToStr(dest, start_ptr);
+        if( (strlen(dest) > 3) || (dest[0]!='\'') || (dest[2]!='\'') ) {
+            Error("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!", str);
+        }
+        val = dest[1];
+    } else {
+       while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+')
+           start_ptr++;
+       int radix = 0; //auto detect
+       if(*start_ptr == '0')
+            if(toupper(start_ptr[1]) == 'B')
+                radix = 2;
+            else if(toupper(start_ptr[1]) == 'O')
+                radix = 8;
+       char *end_ptr = NULL;
+       // errno = 0;
+       val = strtol(str, &end_ptr, radix);
+       if(*end_ptr) {
+           Error("Conversion error the\n'%s' string into number %d at\n'%s' position.", str, val, end_ptr);
+       }
+       if((val == LONG_MAX || val == LONG_MIN) && errno == ERANGE) {
+           Error("Conversion overflow error the string\n'%s' into number %d.", str, val);
     }
+}
+    return val;
 }
 
 //-----------------------------------------------------------------------------
-// Try to turn a string into a 16-bit constant, and raise an error if
+// Try to turn a string into a constant, and raise an error if
 // something bad happens when we do so (e.g. out of range).
 //-----------------------------------------------------------------------------
-SWORD CheckMakeNumber(char *str)
+SDWORD CheckMakeNumber(char *str)
 {
-    int val;
+    SDWORD val;
 
-    if(*str == '\'') {
-        val = str[1];
-    } else {
-        val = atoi(str);
-    }
+    val = hobatoi(str);
 
     CheckConstantInRange(val);
 
-    return (SWORD)val;
+    return (SDWORD)val;
 }
 
 //-----------------------------------------------------------------------------
 // Return an integer power of ten.
 //-----------------------------------------------------------------------------
-static int TenToThe(int x)
+int TenToThe(int x)
 {
     int i;
     int r = 1;
@@ -638,7 +753,7 @@ static BOOL CheckCanChangeOutputElem(int which, void *elem)
 void OpSetVar(char *op1, char *op2)
 {
     if(IsNumber(op2))
-      Op(INT_SET_VARIABLE_TO_LITERAL, op1, (SDWORD)atoi(op2));
+      Op(INT_SET_VARIABLE_TO_LITERAL, op1, (SDWORD)hobatoi(op2));
     else
       Op(INT_SET_VARIABLE_TO_VARIABLE, op1, op2);
 }
@@ -656,10 +771,14 @@ static char *VarFromExpr(char *expr, char *tempName)
         return expr;
     }
 }
+#define PULSE \
+    Op(INT_SET_BIT, l->d.stepper.coil); \
+    Op(INT_CLEAR_BIT, l->d.stepper.coil);
+
 static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 {
-    ElemLeaf *l = (ElemLeaf *)any;
     whichNow = which;
+    ElemLeaf *l = (ElemLeaf *)any;
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             int i;
@@ -679,27 +798,25 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
             Comment("start parallel [");
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int i;
 
-            BOOL ExistEnd;
-            BOOL CanChange;
-            #ifdef parThis_parOut_optimize
-            ExistEnd = FALSE; //FALSE indicates that it is NEED to calculate the parOut
+            int i;
+            BOOL ExistEnd = FALSE; //FALSE indicates that it is NEED to calculate the parOut
             for(i = 0; i < p->count; i++) {
               if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].d.any)){
                 ExistEnd = TRUE; // TRUE indicates that it is NOT NEED to calculate the parOut
                 break;
               }
             }
-            CanChange = FALSE; // FALSE indicates that it is NOT NEED to calculate the parThis
+            BOOL CanChange = FALSE; // FALSE indicates that it is NOT NEED to calculate the parThis
             for(i = 0; i < p->count; i++) {
               if(!CheckStaySameElem(p->contents[i].which, p->contents[i].d.any)){
                 CanChange = TRUE; // TRUE indicates that it is NEED to calculate the parThis
                 break;
               }
             }
-            #else
-            // Return to default algorithm
+
+            #ifdef DEFAULT_PARALLEL_ALGORITHM
+            // Return to default ELEM_PARALLEL_SUBCKT algorithm
             CanChange = TRUE;
             ExistEnd = FALSE;
             #endif
@@ -712,9 +829,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               GenSymParThis(parThis);
             }
             for(i = 0; i < p->count; i++) {
-              #ifdef parThis_parOut_optimize
+              #ifndef DEFAULT_PARALLEL_ALGORITHM
               if(CheckStaySameElem(p->contents[i].which, p->contents[i].d.any))
-                  IntCodeFromCircuit(p->contents[i].which, p->contents[i].d.any, stateInOut, rung);
+                IntCodeFromCircuit(p->contents[i].which, p->contents[i].d.any,
+                    stateInOut, rung);
               else
               #endif
               {
@@ -738,6 +856,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         case ELEM_CONTACTS: {
+            Comment(3, "ELEM_CONTACTS");
             if(l->d.contacts.negated) {
                 Op(INT_IF_BIT_SET, l->d.contacts.name);
             } else {
@@ -748,6 +867,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         case ELEM_COIL: {
+            Comment(3, "ELEM_COIL");
+            #ifdef DEFAULT_COIL_ALGORITHM
             if(l->d.coil.negated) {
                 Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_CLEAR_BIT, l->d.contacts.name);
@@ -765,10 +886,41 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             } else {
                 Op(INT_COPY_BIT_TO_BIT, l->d.contacts.name, stateInOut);
             }
+              #else
+              //Load SAMPLE\coil_s_r_n.ld into LDmicto.exe.
+              //Switch Xnew1, Xnew2, Xnew3 and see end of rungs.
+              // variant 0 display a state of stateInOut and not a ELEM_COIL. Not good.
+              // variant 1 display a state of a ELEM_COIL. So so.
+              // variant 2 is redundant in hex code. Better then variant 0.
+              // variant 3 is equivalent variant 2. Best.
+            if(l->d.coil.negated) {
+                Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_CLEAR_BIT, l->d.contacts.name);
+                Op(INT_ELSE);
+                Op(INT_SET_BIT, l->d.contacts.name);
+                Op(INT_END_IF);
+                SimState(&(l->poweredAfter), l->d.contacts.name); // variant 3
+            } else if(l->d.coil.setOnly) {
+                Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_SET_BIT, l->d.contacts.name);
+                Op(INT_END_IF);
+                SimState(&(l->poweredAfter), l->d.contacts.name); // variant 3
+            } else if(l->d.coil.resetOnly) {
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_CLEAR_BIT, l->d.contacts.name);
+                  SimState(&(l->poweredAfter), l->d.contacts.name); // variant 3
+                Op(INT_END_IF);
+                SimState(&(l->poweredAfter), l->d.contacts.name); // variant 3
+            } else {
+                Op(INT_COPY_BIT_TO_BIT, l->d.contacts.name, stateInOut);
+                SimState(&(l->poweredAfter), stateInOut); // variant 3
+            }
+              #endif
             break;
         }
         case ELEM_RTO: {
-            int period = TimerPeriod(l);
+            Comment(3, "ELEM_RTO");
+            SDWORD period = TimerPeriod(l);
 
             Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
 
@@ -786,13 +938,15 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         case ELEM_RES:
+            Comment(3, "ELEM_RES");
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
             Op(INT_END_IF);
             break;
 
         case ELEM_TON: {
-            int period = TimerPeriod(l);
+            Comment(3, "ELEM_TON");
+            SDWORD period = TimerPeriod(l);
 
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
@@ -800,13 +954,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             Op(INT_ELSE);
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
             Op(INT_END_IF);
 
             break;
         }
         case ELEM_TOF: {
-            int period = TimerPeriod(l);
+            Comment(3, "ELEM_TOF");
+            SDWORD period = TimerPeriod(l);
 
             // All variables start at zero by default, so by default the
             // TOF timer would start out with its output forced HIGH, until
@@ -820,34 +975,37 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_SET_BIT, antiGlitchName);
 
             Op(INT_IF_BIT_CLEAR, stateInOut);
-
-            Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-
+              Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
             Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
             Op(INT_SET_BIT, stateInOut);
             Op(INT_END_IF);
 
             Op(INT_ELSE);
-
-            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name);
-
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
             Op(INT_END_IF);
             break;
         }
         case ELEM_CTU: {
-            CheckConstantInRange(l->d.counter.max);
+            Comment(3, "ELEM_CTU");
+            CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.max));
             char storeName[MAX_NAME_LEN];
-            GenSymOneShot(storeName);
+            GenSymOneShot(storeName, "CTU", l->d.counter.name);
 
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_IF_BIT_CLEAR, storeName);
+                Op(INT_SET_BIT, storeName);
                     Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
                 Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, storeName);
             Op(INT_END_IF);
-            Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
+          //Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
 
-            Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name,
-                l->d.counter.max);
+            if(IsNumber(l->d.counter.max)){
+              Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max));
+            } else {
+              Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.max, l->d.counter.name);
+            }
                 Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_ELSE);
                 Op(INT_SET_BIT, stateInOut);
@@ -855,52 +1013,173 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         case ELEM_CTD: {
-            CheckConstantInRange(l->d.counter.max);
+            Comment(3, "ELEM_CTD");
+            CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.max));
             char storeName[MAX_NAME_LEN];
-            GenSymOneShot(storeName);
+            GenSymOneShot(storeName, "CTD", l->d.counter.name);
 
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_IF_BIT_CLEAR, storeName);
+                    Op(INT_SET_BIT, storeName);
+                    #ifdef NEW_FEATURE
+                    Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
+                    #else
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 1);
                     Op(INT_SET_VARIABLE_SUBTRACT, l->d.counter.name,
-                        l->d.counter.name, "$scratch", 0);
+                        l->d.counter.name, "$scratch");
+                    #endif
                 Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, storeName);
             Op(INT_END_IF);
-            Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
+          //Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
 
-            Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name,
-                l->d.counter.max);
+            //dbp("%s %s", l->d.counter.name, l->d.counter.max);
+            if(IsNumber(l->d.counter.max)){
+              Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max) + 1);
+                // переход 1->0 будет на заданном пределе
                 Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_ELSE);
                 Op(INT_SET_BIT, stateInOut);
             Op(INT_END_IF);
+            } else {
+              Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.name, l->d.counter.max);
+                Op(INT_SET_BIT, stateInOut);
+              Op(INT_ELSE);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_END_IF);
+            }
             break;
         }
-        case ELEM_CTC: {
+/*
+        case ELEM_CTR: {
+            Comment(3, "ELEM_CTR");
+            #ifdef NEW_FEATURE
+            CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.min));
+            CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.max));
             char storeName[MAX_NAME_LEN];
-            GenSymOneShot(storeName);
+            GenSymOneShot(storeName, "CTR", l->d.counter.name);
+            char storeInit[MAX_NAME_LEN];
+            GenSymOneShot(storeInit, "CTRinit", l->d.counter.name);
 
+            Op(INT_IF_BIT_CLEAR, storeInit);
+              Op(INT_SET_BIT, storeInit);
+              if(IsNumber(l->d.counter.max)){
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max));
+              } else {
+                Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.counter.name, l->d.counter.max);
+              }
+            Op(INT_END_IF);
+
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_CLEAR_BIT, stateInOut);
+
+              Op(INT_IF_BIT_CLEAR, storeName);
+                Op(INT_SET_BIT, storeName);
+                Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
+
+              if(IsNumber(l->d.counter.min)){
+                #ifdef USE_CMP
+                Op(INT_IF_VARIABLE_GEQ_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.min));
+                Op(INT_ELSE);
+                #else
+                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.min));
+                #endif
+              } else {
+                #ifdef USE_CMP
+                Op(INT_IF_VARIABLE_LES_VARIABLE, l->d.counter.name, l->d.counter.min);
+                #else
+                Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.min, l->d.counter.name);
+                #endif
+              }
+                  if(IsNumber(l->d.counter.max)){
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max));
+                  } else {
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.counter.name, l->d.counter.max);
+                  }
+                  Op(INT_SET_BIT, stateInOut); // overload impulse
+                Op(INT_END_IF);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, storeName);
+            Op(INT_END_IF);
+            #endif
+            break;
+        }
+*/
+        case ELEM_CTC: {
+            Comment(3, "ELEM_CTC");
+            CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.max));
+            char storeName[MAX_NAME_LEN];
+            GenSymOneShot(storeName, "CTC", l->d.counter.name);
+            char storeInit[MAX_NAME_LEN];
+            GenSymOneShot(storeInit, "CTCinit", l->d.counter.name);
+
+            Op(INT_IF_BIT_CLEAR, storeInit);
+              Op(INT_SET_BIT, storeInit);
+            Op(INT_END_IF);
+
+            #ifdef NEW_ONE_SHOT
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_CLEAR_BIT, stateInOut);
                 Op(INT_IF_BIT_CLEAR, storeName);
                     Op(INT_SET_BIT, storeName); // This line1
                     Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
-                    Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name,
-                        l->d.counter.max+1);
+
+              if(IsNumber(l->d.counter.max)){
+                #ifndef USE_CMP
+                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max)+1);
                     Op(INT_ELSE);
-                        Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name,
-                            (SWORD)0);
-                        Op(INT_SET_BIT, stateInOut); // overload impulse
+                #else
+                Op(INT_IF_VARIABLE_GEQ_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max)+1);
+                #endif
+              } else {
+                Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.name, l->d.counter.max);
+              }
+                      Op(INT_SET_BIT, stateInOut); // overload impulse
                     Op(INT_END_IF);
                 Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, storeName); // This line2
             Op(INT_END_IF);
 //          Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut); // This line3 equivalently line1 + line2
+
+            #else
+            Op(INT_COPY_BIT_TO_BIT, "$scratch", stateInOut);
+            Op(INT_IF_BIT_SET, stateInOut);
+
+                //Op(INT_SET_BIT, "$scratch2");
+                //Op(INT_UART_SEND, l->d.counter.name, "$scratch2");
+
+              Op(INT_IF_BIT_CLEAR, storeInit);
+                Op(INT_SET_BIT, storeInit);
+              Op(INT_END_IF);
+
+              Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_IF_BIT_CLEAR, storeName);
+                Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+
+              if(IsNumber(l->d.counter.max)){
+                #ifdef USE_CMP
+                Op(INT_IF_VARIABLE_GEQ_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max)+1);
+                #else
+                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max)+1);
+                Op(INT_ELSE);
+                #endif
+                } else {
+                Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.name, l->d.counter.max);
+                }
+                  Op(INT_SET_BIT, stateInOut);
+                Op(INT_END_IF);
+              Op(INT_END_IF);
+            Op(INT_END_IF);
+            Op(INT_COPY_BIT_TO_BIT, storeName, "$scratch");
+            #endif
             break;
         }
         // Special Function
         case ELEM_RSFR:
+            Comment(3, "ELEM_RSFR");
             if(IsNumber(l->d.move.dest)) {
                 Error(_("Read SFR instruction: '%s' not a valid destination."),
                     l->d.move.dest);
@@ -908,31 +1187,37 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
+                if(!IsNumber(l->d.move.dest)) {
+                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                }
                 Op(INT_READ_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
             } else {
-                Op(INT_READ_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+                Op(INT_READ_SFR_VARIABLE, l->d.move.src, l->d.move.dest);
             }
             Op(INT_END_IF);
             break;
         case ELEM_WSFR:
+            Comment(3, "ELEM_WSFR");
             Op(INT_IF_BIT_SET, stateInOut);
-            if(IsNumber(l->d.move.dest)) {
-                if(IsNumber(l->d.move.src)) {
-                    Op(INT_WRITE_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+            if(IsNumber(l->d.sfr.op)) {
+                if(IsNumber(l->d.sfr.sfr)) {
+                    Op(INT_WRITE_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.sfr.sfr), CheckMakeNumber(l->d.sfr.op));
                 } else {
-                    Op(INT_WRITE_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
+                    Op(INT_WRITE_SFR_VARIABLE_L,l->d.sfr.sfr, CheckMakeNumber(l->d.sfr.op));
                 }
             }
             else {
-                if(IsNumber(l->d.move.src)) {
-                    Op(INT_WRITE_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                if(IsNumber(l->d.sfr.sfr)) {
+                    CheckVarInRange(l->d.sfr.op, CheckMakeNumber(l->d.sfr.sfr));
+                    Op(INT_WRITE_SFR_LITERAL, l->d.sfr.op, CheckMakeNumber(l->d.sfr.sfr));
                 } else {
-                    Op(INT_WRITE_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+                    Op(INT_WRITE_SFR_VARIABLE, l->d.sfr.sfr, l->d.sfr.op);
                 }
             }
             Op(INT_END_IF);
             break;
         case ELEM_SSFR:
+            Comment(3, "ELEM_SSFR");
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.dest)) {
                 if(IsNumber(l->d.move.src)) {
@@ -943,14 +1228,16 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             else {
                 if(IsNumber(l->d.move.src)) {
+                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
                     Op(INT_SET_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
                 } else {
-                    Op(INT_SET_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+                    Op(INT_SET_SFR_VARIABLE, l->d.move.src, l->d.move.dest);
                 }
             }
             Op(INT_END_IF);
             break;
         case ELEM_CSFR:
+            Comment(3, "ELEM_CSFR");
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.dest)) {
                 if(IsNumber(l->d.move.src)) {
@@ -961,67 +1248,70 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             else {
                 if(IsNumber(l->d.move.src)) {
+                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
                     Op(INT_CLEAR_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
                 } else {
-                    Op(INT_CLEAR_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
+                    Op(INT_CLEAR_SFR_VARIABLE, l->d.move.src, l->d.move.dest);
                 }
             }
             Op(INT_END_IF);
             break;
         case ELEM_TSFR: {
-             if(IsNumber(l->d.move.dest)) {
+            Comment(3, "ELEM_TSFR");
+            if(IsNumber(l->d.move.dest)) {
                 if(IsNumber(l->d.move.src)) {
                     Op(INT_TEST_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
-                    Op(INT_ELSE);
                 } else {
                     Op(INT_TEST_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
-                    Op(INT_ELSE);
                 }
             }
             else {
                 if(IsNumber(l->d.move.src)) {
+                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
                     Op(INT_TEST_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
-                    Op(INT_ELSE);
                 } else {
-                    Op(INT_TEST_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
-                    Op(INT_ELSE);
+                    Op(INT_TEST_SFR_VARIABLE, l->d.move.src, l->d.move.dest);
                 }
             }
-            Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
         }
         case ELEM_T_C_SFR: {
-             if(IsNumber(l->d.move.dest)) {
+            Comment(3, "ELEM_T_C_SFR");
+            if(IsNumber(l->d.move.dest)) {
                 if(IsNumber(l->d.move.src)) {
                     Op(INT_TEST_C_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
-                    Op(INT_ELSE);
                 } else {
                     Op(INT_TEST_C_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
-                    Op(INT_ELSE);
                 }
             }
             else {
                 if(IsNumber(l->d.move.src)) {
                     Op(INT_TEST_C_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
-                    Op(INT_ELSE);
                 } else {
-                    Op(INT_TEST_C_SFR_VARIABLE, l->d.move.src, l->d.move.dest,0);
-                    Op(INT_ELSE);
+                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                    Op(INT_TEST_C_SFR_VARIABLE, l->d.move.src, l->d.move.dest);
                 }
             }
-            Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
         }
         // Special function
-        case ELEM_GRT:
-        case ELEM_GEQ:
-        case ELEM_LES:
-        case ELEM_LEQ:
-        case ELEM_NEQ:
-        case ELEM_EQU: {
-            char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch");
+        case ELEM_GRT: Comment(3, "ELEM_GRT"); goto cmp;
+        case ELEM_GEQ: Comment(3, "ELEM_GEQ"); goto cmp;
+        case ELEM_LES: Comment(3, "ELEM_LES"); goto cmp;
+        case ELEM_LEQ: Comment(3, "ELEM_LEQ"); goto cmp;
+        case ELEM_NEQ: Comment(3, "ELEM_NEQ"); goto cmp;
+        case ELEM_EQU: Comment(3, "ELEM_EQU"); goto cmp;
+        cmp: {
+            #ifdef USE_CMP
+            #endif
+            {
+            char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch1");
             char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
 
             if(which == ELEM_GRT) {
@@ -1040,12 +1330,17 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             } else if(which == ELEM_NEQ) {
                 Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
             } else oops();
-
-            Op(INT_CLEAR_BIT, stateInOut);
+            }
+              Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
+           #ifdef NEW_FEATURE
+
+           #endif
             break;
         }
+
         case ELEM_ONE_SHOT_RISING: {
+            Comment(3, "ELEM_ONE_SHOT_RISING");
             /*
                      ___
             INPUT __/
@@ -1056,16 +1351,29 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                      Tcycle
             */
             char storeName[MAX_NAME_LEN];
-            GenSymOneShot(storeName);
+            GenSymOneShot(storeName, "ONE_SHOT_RISING", "");
 
+            #ifndef NEW_ONE_SHOT
             Op(INT_COPY_BIT_TO_BIT, "$scratch", stateInOut);
             Op(INT_IF_BIT_SET, storeName);
               Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             Op(INT_COPY_BIT_TO_BIT, storeName, "$scratch");
+            #else
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_IF_BIT_SET, storeName);
+                Op(INT_CLEAR_BIT, stateInOut); // impulse
+              Op(INT_ELSE);
+                Op(INT_SET_BIT, storeName);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, storeName);
+            Op(INT_END_IF);
+            #endif
             break;
         }
         case ELEM_ONE_SHOT_FALLING: {
+            Comment(3, "ELEM_ONE_SHOT_FALLING");
             /*
                   __
             INPUT   \___
@@ -1076,8 +1384,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                      Tcycle
             */
             char storeName[MAX_NAME_LEN];
-            GenSymOneShot(storeName);
+            GenSymOneShot(storeName, "ONE_SHOT_FALLING", "");
 
+            #ifndef NEW_ONE_SHOT
             Op(INT_COPY_BIT_TO_BIT, "$scratch", stateInOut);
 
             Op(INT_IF_BIT_CLEAR, stateInOut);
@@ -1089,9 +1398,47 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
 
             Op(INT_COPY_BIT_TO_BIT, storeName, "$scratch");
+            #else
+            Op(INT_IF_BIT_CLEAR, stateInOut);
+              Op(INT_IF_BIT_SET, storeName);
+                Op(INT_CLEAR_BIT, storeName);
+                Op(INT_SET_BIT, stateInOut); // impulse
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_SET_BIT, storeName);
+              Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
+            #endif
+            break;
+        }
+        case ELEM_OSC: {
+            Comment(3, "ELEM_OSC");
+            /*
+                     ________
+            INPUT __/        \__
+                     _   _
+            OUTPUT__/ \_/ \_/\__
+
+                    | | | | |
+                     Tcycle
+            */
+            char storeName[MAX_NAME_LEN];
+            GenSymOneShot(storeName, "OSC", "");
+
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_IF_BIT_SET, storeName);
+                Op(INT_CLEAR_BIT, storeName);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_ELSE);
+                Op(INT_SET_BIT, storeName);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, storeName);
+            Op(INT_END_IF);
             break;
         }
         case ELEM_MOVE: {
+            Comment(3, "ELEM_MOVE");
             if(IsNumber(l->d.move.dest)) {
                 Error(_("Move instruction: '%s' not a valid destination."),
                     l->d.move.dest);
@@ -1100,19 +1447,19 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
                 CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest,
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, l->d.move.src,
                     CheckMakeNumber(l->d.move.src));
             } else {
-                Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src,
-                    0);
+                Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
             }
             Op(INT_END_IF);
             break;
         }
 
         case ELEM_STRING: {
+            Comment(3, "ELEM_STRING");
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_WRITE_STRING, l->d.fmtdStr.dest, l->d.fmtdStr.var, l->d.fmtdStr.string, 0);
+                Op(INT_WRITE_STRING, l->d.fmtdStr.dest, l->d.fmtdStr.string, l->d.fmtdStr.var);
             Op(INT_END_IF);
             break;
         }
@@ -1121,21 +1468,26 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         // most of the highly specific work
         {
             case ELEM_READ_ADC:
+                Comment(3, "ELEM_READ_ADC");
                 Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_READ_ADC, l->d.readAdc.name);
                 Op(INT_END_IF);
                 break;
 
             case ELEM_SET_PWM: {
+                Comment(3, "ELEM_SET_PWM");
                 Op(INT_IF_BIT_SET, stateInOut);
-                char line[80];
                 // ugh; need a >16 bit literal though, could be >64 kHz
-                sprintf(line, "%d", l->d.setPwm.targetFreq);
-                Op(INT_SET_PWM, l->d.readAdc.name, line);
+                  Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name);
                 Op(INT_END_IF);
                 break;
             }
+
+            #ifdef NEW_FEATURE
+            #endif
+
             case ELEM_PERSIST: {
+              Comment(3, "ELEM_PERSIST");
                 Op(INT_IF_BIT_SET, stateInOut);
 
                 // At startup, get the persistent variable from flash.
@@ -1166,56 +1518,68 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
                 Op(INT_END_IF);
 
-                EepromAddrFree += 2;
+              EepromAddrFree += SizeOfVar(l->d.persist.var);
                 break;
             }
             case ELEM_UART_SEND:
+                Comment(3, "ELEM_UART_SEND");
                 // Why in this place do not controlled stateInOut, as in the ELEM_UART_RECV ?
                 // 1. It's need in Simulation Mode.
                 // 2. It's need for Arduino.
                 Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_UART_SEND, l->d.uart.name, stateInOut);
+                  Op(INT_UART_SEND, l->d.uart.name, stateInOut); // stateInOut not needed.
                 Op(INT_END_IF);
                 break;
 
             case ELEM_UART_RECV:
+                Comment(3, "ELEM_UART_RECV");
                 Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_UART_RECV, l->d.uart.name, stateInOut);
                 Op(INT_END_IF);
                 break;
-        }
 
-        case ELEM_ADD:
-        case ELEM_SUB:
-        case ELEM_MUL:
-        case ELEM_DIV: {
+        }
+        {
+        int intOp;
+        case ELEM_ADD: intOp = INT_SET_VARIABLE_ADD;      Comment(3, "ELEM_ADD"); goto math;
+        case ELEM_SUB: intOp = INT_SET_VARIABLE_SUBTRACT; Comment(3, "ELEM_SUB"); goto math;
+        case ELEM_MUL: intOp = INT_SET_VARIABLE_MULTIPLY; Comment(3, "ELEM_MUL"); goto math;
+        case ELEM_DIV: intOp = INT_SET_VARIABLE_DIVIDE;   Comment(3, "ELEM_DIV"); goto math;
+math:   {
             if(IsNumber(l->d.math.dest)) {
                 Error(_("Math instruction: '%s' not a valid destination."),
                     l->d.math.dest);
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
+            char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
 
-            char *op1 = VarFromExpr(l->d.math.op1, "$scratch");
+            if((intOp == INT_SET_VARIABLE_ADD)
+            &&(int_comment_level != 1)
+            &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
+            &&(strcmp(l->d.math.op2,"1")==0)){
+                Op(INT_INCREMENT_VARIABLE, l->d.math.dest);
+            } else if((intOp == INT_SET_VARIABLE_ADD)
+            &&(strcmp(l->d.math.dest,l->d.math.op2)==0)
+            &&(strcmp(l->d.math.op1,"1")==0)){
+                Op(INT_INCREMENT_VARIABLE, l->d.math.dest);
+            } else {
             char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
-
-            int intOp;
-            if(which == ELEM_ADD) {
-                intOp = INT_SET_VARIABLE_ADD;
-            } else if(which == ELEM_SUB) {
-                intOp = INT_SET_VARIABLE_SUBTRACT;
-            } else if(which == ELEM_MUL) {
-                intOp = INT_SET_VARIABLE_MULTIPLY;
-            } else if(which == ELEM_DIV) {
-                intOp = INT_SET_VARIABLE_DIVIDE;
-            } else oops();
-
-            Op(intOp, l->d.math.dest, op1, op2, 0);
-
+                if((which == ELEM_SHL) || (which == ELEM_SHR) || (which == ELEM_SR0)
+                || (which == ELEM_ROL) || (which == ELEM_ROR)) {
+                    if((hobatoi(l->d.math.op2)<0) || (BITS_OF_LD_VAR<hobatoi(l->d.math.op2))){
+                        Error(_("Shift constant %s=%d out of range: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), BITS_OF_LD_VAR);
+                        CompileError();
+                    }
+                }
+                Op(intOp, l->d.math.dest, op1, op2);
+            }
             Op(INT_END_IF);
             break;
         }
+        }
         case ELEM_MASTER_RELAY:
+            Comment(3, "ELEM_MASTER_RELAY");
             // Tricky: must set the master control relay if we reach this
             // instruction while the master control relay is cleared, because
             // otherwise there is no good way for it to ever become set
@@ -1228,8 +1592,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
 
         case ELEM_SHIFT_REGISTER: {
+            Comment(3, "ELEM_SHIFT_REGISTER");
             char storeName[MAX_NAME_LEN];
-            GenSymOneShot(storeName);
+            GenSymOneShot(storeName, "SHIFT_REGISTER", l->d.shiftRegister.name);
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_IF_BIT_CLEAR, storeName);
                     int i;
@@ -1245,6 +1610,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         case ELEM_LOOK_UP_TABLE: {
+            Comment(3, "ELEM_LOOK_UP_TABLE");
             // God this is stupid; but it will have to do, at least until I
             // add new int code instructions for this.
             int i;
@@ -1260,6 +1626,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         case ELEM_PIECEWISE_LINEAR: {
+            Comment(3, "ELEM_PIECEWISE_LINEAR");
             // This one is not so obvious; we have to decide how best to
             // perform the linear interpolation, using our 16-bit fixed
             // point math.
@@ -1305,23 +1672,22 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
                 Op(INT_IF_BIT_SET, "$scratch");
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->vals[(i-1)*2]);
-                Op(INT_SET_VARIABLE_SUBTRACT, "$scratch", t->index,
-                    "$scratch", 0);
+                Op(INT_SET_VARIABLE_SUBTRACT, "$scratch", t->index, "$scratch");
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", thisDx);
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3", thisDy);
-                Op(INT_SET_VARIABLE_MULTIPLY, t->dest, "$scratch", "$scratch3",
-                    0);
-                Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, "$scratch2", 0);
+                Op(INT_SET_VARIABLE_MULTIPLY, t->dest, "$scratch", "$scratch3");
+                Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, "$scratch2");
 
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch",
                     t->vals[(i-1)*2 + 1]);
-                Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, "$scratch", 0);
+                Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, "$scratch");
                 Op(INT_END_IF);
             }
             Op(INT_END_IF);
             break;
         }
         case ELEM_FORMATTED_STRING: {
+            Comment(3, "ELEM_FORMATTED_STRING");
             // Okay, this one is terrible and ineffcient, and it's a huge pain
             // to implement, but people want it a lot. The hard part is that
             // we have to let the PLC keep cycling, of course, and also that
@@ -1470,7 +1836,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_IF_BIT_CLEAR, oneShot);
                     Op(INT_SET_BIT, oneShot); //v2
-                    Op(INT_SET_VARIABLE_TO_LITERAL, seq, (SWORD)0);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, seq, (SDWORD)0);
                     Op(INT_SET_BIT, doSend);
                 Op(INT_END_IF);
             Op(INT_ELSE); //v2
@@ -1538,14 +1904,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch",
                         TenToThe((digits-digit)-1));
                     Op(INT_SET_VARIABLE_DIVIDE, "$charToUart", convertState,
-                        "$scratch", 0);
+                        "$scratch");
                     Op(INT_SET_VARIABLE_MULTIPLY, "$scratch", "$scratch",
-                        "$charToUart", 0);
+                        "$charToUart");
                     Op(INT_SET_VARIABLE_SUBTRACT, convertState,
-                        convertState, "$scratch", 0);
+                        convertState, "$scratch");
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", '0');
                     Op(INT_SET_VARIABLE_ADD, "$charToUart", "$charToUart",
-                        "$scratch", 0);
+                        "$scratch");
 
                     // Suppress all but the last leading zero.
                     if(digit != (digits - 1)) {
@@ -1577,12 +1943,11 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                         // we're at it.
                         Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
                         Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' ');
-                        Op(INT_IF_VARIABLE_LES_LITERAL, var, (SWORD)0);
+                        Op(INT_IF_VARIABLE_LES_LITERAL, var, (SDWORD)0);
                             Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", '-');
-                            Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch",
-                                (SWORD)0);
+                            Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch");
                             Op(INT_SET_VARIABLE_SUBTRACT, convertState,
-                                "$scratch", var, 0);
+                                "$scratch", var);
                         Op(INT_END_IF);
 
                     Op(INT_END_IF);
@@ -1596,7 +1961,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 } else oops();
             }
 
-            Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SWORD)0);
+            Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SDWORD)0);
             Op(INT_ELSE);
               Op(INT_IF_BIT_SET, doSend);
                 Op(INT_SET_BIT, "$scratch");
@@ -1617,6 +1982,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         case ELEM_OPEN:
+            Comment(3, "ELEM_OPEN");
             Op(INT_CLEAR_BIT, stateInOut);
             break;
 
@@ -1624,18 +1990,23 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             // goes straight through
             break;
 
-        case ELEM_PLACEHOLDER:
+        case ELEM_PLACEHOLDER: {
+            //Comment(3, "ELEM_PLACEHOLDER");
             Error(
               _("Empty row; delete it or add instructions before compiling."));
             CompileError();
             break;
-
+        }
         default:
             ooops("ELEM_0x%X", which);
             break;
     }
 
-    if(which != ELEM_SERIES_SUBCKT && which != ELEM_PARALLEL_SUBCKT) {
+    if(which != ELEM_SERIES_SUBCKT && which != ELEM_PARALLEL_SUBCKT
+    #ifndef DEFAULT_COIL_ALGORITHM
+    && which != ELEM_COIL // is a special case, see above
+    #endif
+    ) {
         // then it is a leaf; let the simulator know which leaf it
         // should be updating for display purposes
         SimState(&(l->poweredAfter), stateInOut);
@@ -1708,8 +2079,6 @@ BOOL GenerateIntermediateCode(void)
     if(setjmp(CompileErrorBuf) != 0) {
         return FALSE;
     }
-    //ProgramChangedNotSaved = TRUE;
-
     GenSymCountParThis = 0;
     GenSymCountParOut = 0;
     GenSymCountOneShot = 0;
@@ -1721,8 +2090,9 @@ BOOL GenerateIntermediateCode(void)
     EepromAddrFree = 0;
 
     rungNow = -100;//INT_MAX;
+    whichNow = INT_MAX;
 
-    WipeIntMemory   ();
+    WipeIntMemory();
 
     AllocStart();
 
@@ -1731,7 +2101,7 @@ BOOL GenerateIntermediateCode(void)
     rungNow++;
     BOOL ExistMasterRelay = CheckMasterRelay();
     if(int_comment_level == 1) {
-        ExistMasterRelay = TRUE; // Comment this for optimisation
+        // ExistMasterRelay = TRUE; // Comment this for optimisation
     }
     if (ExistMasterRelay)
         Op(INT_SET_BIT, "$mcr");
@@ -1743,6 +2113,7 @@ BOOL GenerateIntermediateCode(void)
     int rung;
     for(rung = 0; rung <= Prog.numRungs; rung++) {
         rungNow = rung;
+        whichNow = INT_MAX;
         Prog.OpsInRung[rung] = 0;
         Prog.HexInRung[rung] = 0;
         #ifdef NEW_FEATURE
@@ -1752,12 +2123,13 @@ BOOL GenerateIntermediateCode(void)
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
         rungNow = rung;
+        whichNow = INT_MAX;
         if(int_comment_level != 1) {
             Comment("");
             Comment("======= START RUNG %d =======", rung+1);
         }
 
-        if(Prog.rungs[rung]->count == 1 &&
+        if(Prog.rungs[rung]->count >= 1 &&
             Prog.rungs[rung]->contents[0].which == ELEM_COMMENT)
         {
             // nothing to do for this one
@@ -1812,4 +2184,68 @@ BOOL GenerateIntermediateCode(void)
         SetExt(CurrentPlFile, CurrentSaveFile, ".pl");
     IntDumpListing(CurrentPlFile);
     return TRUE;
+}
+
+//-----------------------------------------------------------------------------
+// Are either of the UART functions (send or recv) used? Need to know this
+// to know whether we must receive their pins.
+//-----------------------------------------------------------------------------
+BOOL UartFunctionUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++)
+        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
+        ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_UART_UDRE, -1, -1))) {
+            //dbp("UartFunctionUsed TRUE Prog.numRungs=%d", Prog.numRungs);
+            return TRUE;
+        }
+
+    for(i = 0; i < IntCodeLen; i++){
+        if((IntCode[i].op == INT_UART_SEND)
+        #ifdef NEW_FEATURE
+        || (IntCode[i].op == INT_UART_UDRE)
+        #endif
+        || (IntCode[i].op == INT_UART_RECV)) {
+            //dbp("UartFunctionUsed TRUE IntCodeLen=%d", IntCodeLen);
+            return TRUE;
+        }
+    }
+    //dbp("UartFunctionUsed FALSE IntCodeLen=%d", IntCodeLen);
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+// Are either of the MultiplyRoutine functions used?
+//-----------------------------------------------------------------------------
+BOOL MultiplyRoutineUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++)
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_MUL, ELEM_SET_PWM, -1))
+            return TRUE;
+
+    for(i = 0; i < IntCodeLen; i++)
+        if(IntCode[i].op == INT_SET_VARIABLE_MULTIPLY)
+            return TRUE;
+
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+// Are either of the DivideRoutine functions used?
+//-----------------------------------------------------------------------------
+BOOL DivideRoutineUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++)
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DIV, ELEM_SET_PWM, -1))
+            return TRUE;
+
+    for(i = 0; i < IntCodeLen; i++)
+        if(IntCode[i].op == INT_SET_VARIABLE_DIVIDE)
+            return TRUE;
+
+    return FALSE;
 }
