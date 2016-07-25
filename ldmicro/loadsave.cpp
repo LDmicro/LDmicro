@@ -645,6 +645,8 @@ timer:
             s = "CTD"; goto counter;
         case ELEM_CTC:
             s = "CTC"; goto counter;
+        case ELEM_CTR:
+            s = "CTR"; goto counter;
 
 counter:
 

@@ -999,7 +999,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name);
 // simpledialog.cpp
 void CheckVarInRange(char *name, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name);
-void ShowCounterDialog(int which, char *maxV, char *name);
+void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
 void ShowMoveDialog(int which, char *dest, char *src);
 void ShowReadAdcDialog(char *name);
 void ShowSetPwmDialog(void *e);
