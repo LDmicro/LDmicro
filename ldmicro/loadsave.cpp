@@ -162,17 +162,33 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         &l->d.timer.delay)==2))
     {
         *which = ELEM_RTO;
+
+    } else if((sscanf(line, "CTR %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
+        *which = ELEM_CTR;
+
+    } else if((sscanf(line, "CTC %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
+        *which = ELEM_CTC;
+
+    } else if((sscanf(line, "CTU %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
+        *which = ELEM_CTU;
+
+    } else if((sscanf(line, "CTD %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
+        *which = ELEM_CTD;
+
     } else if((sscanf(line, "CTD %s %s", l->d.counter.name,
         l->d.counter.max)==2))
     {
+        strcpy(l->d.counter.init,"0");
         *which = ELEM_CTD;
     } else if((sscanf(line, "CTU %s %s", l->d.counter.name,
         l->d.counter.max)==2))
     {
+        strcpy(l->d.counter.init,"0");
         *which = ELEM_CTU;
     } else if((sscanf(line, "CTC %s %s", l->d.counter.name,
         l->d.counter.max)==2))
     {
+        strcpy(l->d.counter.init,"0");
         *which = ELEM_CTC;
     } else if(sscanf(line, "RES %s", l->d.reset.name)==1) {
         *which = ELEM_RES;
@@ -631,7 +647,8 @@ timer:
             s = "CTC"; goto counter;
 
 counter:
-            fprintf(f, "%s %s %s\n", s, l->d.counter.name, l->d.counter.max);
+
+            fprintf(f, "%s %s %s %s\n", s, l->d.counter.name, l->d.counter.max, l->d.counter.init);
             break;
 
         case ELEM_RES:

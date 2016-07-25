@@ -633,7 +633,7 @@ void EditSelectedElement(void)
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
-            ShowCounterDialog(SelectedWhich, Selected->d.counter.max,
+            ShowCounterDialog(SelectedWhich, Selected->d.counter.init, Selected->d.counter.max,
                 Selected->d.counter.name);
             break;
 

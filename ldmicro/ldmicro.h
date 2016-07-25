@@ -442,6 +442,7 @@ typedef struct ElemGOTOTag {
 typedef struct ElemCounterTag {
     char    name[MAX_NAME_LEN];
     char    max[MAX_NAME_LEN];
+    char    init[MAX_NAME_LEN];
 } ElemCounter;
 
 typedef struct ElemReadAdcTag {

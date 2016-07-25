@@ -2,6 +2,18 @@
 
     * Fixed: Timer0 as PLC cycle in AVR's corrected.
 
+    * Added: CTR reversive counter added.
+      It like CTC but with decrement counting inside.
+
+      Added 'Init' value in CTU,CTD,CTC,CTR counters.
+      CTU,CTC counter start from 'Init' and count up to 'Max' value.
+      CTC generate overflow impulse when Counter==Max.
+
+      CTD,CTR counter start from 'Init' and count down to 'Min' value.
+      CTR generate overflow impulse when Counter==Min.
+
+      See LDmicro\SAMPLE\ctu_ctd_ctc.ld
+
 == Release 3.5.0 experimental pre-release
 
     * Fixed: Address of configuration word(s) are checked and corrected on PIC controllers.
