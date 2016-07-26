@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -55,7 +55,7 @@ HFONT MyFixedFont;
 void dbp(char *str, ...)
 {
     va_list f;
-    char buf[1024];
+    char buf[1024*8];
     va_start(f, str);
     vsprintf(buf, str, f);
     OutputDebugString(buf);
@@ -117,7 +117,7 @@ void Error(char *str, ...)
         if(buf[0]==' ')
             MessageBox(h, &buf[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
         else
-        MessageBox(h, buf, _("LDmicro Error"), MB_OK | MB_ICONERROR);
+            MessageBox(h, buf, _("LDmicro Error"), MB_OK | MB_ICONERROR);
     }
 }
 
@@ -230,7 +230,7 @@ HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
     GetClientRect(h, &r);
     width = width - (r.right - width);
     height = height - (r.bottom - height);
-    
+
     SetWindowPos(h, HWND_TOP, x, y, width, height, 0);
 
     return h;
@@ -333,23 +333,23 @@ char *IoTypeToString(int ioType)
 {
     switch(ioType) {
         case IO_TYPE_INT_INPUT:         return _("INT input");
-        case IO_TYPE_DIG_INPUT:         return _("digital in"); 
+        case IO_TYPE_DIG_INPUT:         return _("digital in");
         case IO_TYPE_DIG_OUTPUT:        return _("digital out");
-		case IO_TYPE_MODBUS_CONTACT:    return _("modbus contact");
-		case IO_TYPE_MODBUS_COIL  :     return _("modbus coil");
-		case IO_TYPE_MODBUS_HREG:       return _("modbus Hreg");
-        case IO_TYPE_INTERNAL_RELAY:    return _("int. relay"); 
-        case IO_TYPE_UART_TX:           return _("UART tx"); 
-        case IO_TYPE_UART_RX:           return _("UART rx"); 
-        case IO_TYPE_PWM_OUTPUT:        return _("PWM out"); 
-        case IO_TYPE_TON:               return _("turn-on delay"); 
-        case IO_TYPE_TOF:               return _("turn-off delay"); 
-        case IO_TYPE_RTO:               return _("retentive timer"); 
-        case IO_TYPE_COUNTER:           return _("counter"); 
-        case IO_TYPE_GENERAL:           return _("general var"); 
+        case IO_TYPE_MODBUS_CONTACT:    return _("modbus contact");
+        case IO_TYPE_MODBUS_COIL  :     return _("modbus coil");
+        case IO_TYPE_MODBUS_HREG:       return _("modbus Hreg");
+        case IO_TYPE_INTERNAL_RELAY:    return _("int. relay");
+        case IO_TYPE_UART_TX:           return _("UART tx");
+        case IO_TYPE_UART_RX:           return _("UART rx");
+        case IO_TYPE_PWM_OUTPUT:        return _("PWM out");
+        case IO_TYPE_TON:               return _("turn-on delay");
+        case IO_TYPE_TOF:               return _("turn-off delay");
+        case IO_TYPE_RTO:               return _("retentive timer");
+        case IO_TYPE_COUNTER:           return _("counter");
+        case IO_TYPE_GENERAL:           return _("general var");
         case IO_TYPE_PERSIST:           return _("saved var");
         case IO_TYPE_STRING:            return _("string var");
-        case IO_TYPE_READ_ADC:          return _("adc input"); 
+        case IO_TYPE_READ_ADC:          return _("adc input");
         default:                        return _("<corrupt!>");
     }
 }
@@ -364,12 +364,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
 {
     if(!dest) return;
 
-        strcpy(dest, "");
+    strcpy(dest, "");
     if(portName)
         strcpy(portName, "");
     if(pinName)
         strcpy(pinName, "");
-        
+
     if(!io) return;
 
     int type = io->type;
@@ -469,9 +469,9 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     sprintf(pinName, "%s", iop->pinName);
             } else
                 if(portName)
-                strcpy(portName, _("<not an I/O!>"));
+                    strcpy(portName, _("<not an I/O!>"));
                 if(pinName)
-                strcpy(pinName, _("<not an I/O!>"));
+                    strcpy(pinName, _("<not an I/O!>"));
             }
         }
     } else if(type == IO_TYPE_UART_TX && Prog.mcu) {
@@ -493,9 +493,9 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                         sprintf(pinName, "%s", iop->pinName);
             } else {
                 if(portName)
-                strcpy(portName, _("<not an I/O!>"));
+                    strcpy(portName, _("<not an I/O!>"));
                 if(pinName)
-                strcpy(pinName, _("<not an I/O!>"));
+                    strcpy(pinName, _("<not an I/O!>"));
             }
         }
     } else if(type == IO_TYPE_UART_RX && Prog.mcu) {
@@ -517,9 +517,9 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                         sprintf(pinName, "%s", iop->pinName);
             } else {
                 if(portName)
-                strcpy(portName, _("<not an I/O!>"));
+                    strcpy(portName, _("<not an I/O!>"));
                 if(pinName)
-                strcpy(pinName, _("<not an I/O!>"));
+                    strcpy(pinName, _("<not an I/O!>"));
             }
         }
     } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu) {
@@ -543,19 +543,19 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                         sprintf(pinName, "%s", iop->pinName);
             } else {
                 if(portName)
-                strcpy(portName, _("<not an I/O!>"));
+                    strcpy(portName, _("<not an I/O!>"));
                 if(pinName)
-                strcpy(pinName, _("<not an I/O!>"));
-        }
+                    strcpy(pinName, _("<not an I/O!>"));
+            }
         }
 #else
-		int pin = io->pin;
-		if (pin == NO_PIN_ASSIGNED) {
-			strcpy(dest, _("(not assigned)"));
-		}
-		else {
-			sprintf(dest, "%d", pin);
-		}
+        int pin = io->pin;
+        if (pin == NO_PIN_ASSIGNED) {
+            strcpy(dest, _("(not assigned)"));
+        }
+        else {
+            sprintf(dest, "%d", pin);
+        }
 #endif
     //} else if((type == IO_TYPE_STRING)) {
     }

@@ -2,6 +2,10 @@
 
     * Fixed: Timer0 as PLC cycle in AVR's corrected.
 
+    * Fixed: If try to change settings for MCU-Parameters,
+      the 'ldmicro-de.exe' gets busy forever
+      and eats up windows memory.
+
     * Added: CTR reversive counter added.
       It like CTC but with decrement counting inside.
 
