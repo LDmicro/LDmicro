@@ -1341,7 +1341,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         }
 
         if(strlen(PicProg[i].commentInt)) {
-
+            fprintf(fAsm, "    ; %s\n", PicProg[i].commentInt);
         }
 
         if(strlen(sAsm)) {
@@ -1355,45 +1355,70 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
               #endif
             }
 
+            #if ASM_LABEL > 0
+            if(PicProg[i].label || (ASM_LABEL == 2))
+                fprintf(fAsm, "l_%04x: %s", i, sAsm);
+            else
+                fprintf(fAsm, "        %s",    sAsm);
+            #else
+                fprintf(fAsm, "        %s",    sAsm);
+            #endif
 
+            if(asm_comment_level >= 3) {
+                fprintf(fAsm, "\t");
+                if(1 || (prevRung != PicProg[i].rung)) {
+                    fprintf(fAsm, " ; rung=%d", PicProg[i].rung+1);
+                    prevRung = PicProg[i].rung;
+                 } else {
+                    fprintf(fAsm, " \t");
+                 }
+            }
 
-          if(asm_comment_level >= 3) {
-              fprintf(fAsm, "\t");
-              if(1 || (prevRung != PicProg[i].rung)) {
-                  fprintf(fAsm, " ; rung=%d", PicProg[i].rung+1);
-                  prevRung = PicProg[i].rung;
-               } else {
-                  fprintf(fAsm, " \t");
-               }
-          }
+            if(asm_comment_level >= 4) {
+                if(1 || (prevL != PicProg[i].l)) {
+                   fprintf(fAsm, " ; line %d in %s",
+                       PicProg[i].l,
+                       PicProg[i].f
+                       );
+                    prevL = PicProg[i].l;
+                 }
+            }
 
-          if(asm_comment_level >= 4) {
-              if(1 || (prevL != PicProg[i].l)) {
-                 fprintf(fAsm, " ; line %d in %s",
-                     PicProg[i].l,
-                     PicProg[i].f
-                     );
-                  prevL = PicProg[i].l;
-               }
-          }
-
-          if(asm_comment_level >= 5) {
-            if((PicProg[i].IntPc >= 0) && (PicProg[i].IntPc < IntCodeLen)) {
-              fprintf(fAsm, "\t");
-              if(IntCode[PicProg[i].IntPc].which != INT_MAX) {
-                  fprintf(fAsm, " ; ELEM_0x%X",
-                      IntCode[PicProg[i].IntPc].which);
-              }
-              if(1 || (prevIntPcL != IntCode[PicProg[i].IntPc].l)) {
-                  fprintf(fAsm, " ; line %d in %s",
-                      IntCode[PicProg[i].IntPc].l,
-                      IntCode[PicProg[i].IntPc].f);
-                  prevIntPcL = IntCode[PicProg[i].IntPc].l;
+            if(asm_comment_level >= 5) {
+              if((PicProg[i].IntPc >= 0) && (PicProg[i].IntPc < IntCodeLen)) {
+                fprintf(fAsm, "\t");
+                if(IntCode[PicProg[i].IntPc].which != INT_MAX) {
+                    fprintf(fAsm, " ; ELEM_0x%X",
+                        IntCode[PicProg[i].IntPc].which);
+                }
+                if(1 || (prevIntPcL != IntCode[PicProg[i].IntPc].l)) {
+                    fprintf(fAsm, " ; line %d in %s",
+                        IntCode[PicProg[i].IntPc].l,
+                        IntCode[PicProg[i].IntPc].f);
+                    prevIntPcL = IntCode[PicProg[i].IntPc].l;
+                }
               }
             }
-          }
 
-        }
+
+            if(asm_comment_level >= 2)
+              if(strlen(PicProg[i].commentAsm)) {
+                  fprintf(fAsm, " ; %s", PicProg[i].commentAsm);
+              }
+
+            if(asm_comment_level >= 2)
+              if(strlen(PicProg[i].arg1name)) {
+                  fprintf(fAsm, " ;; %s", PicProg[i].arg1name);
+              }
+
+            if(asm_comment_level >= 2)
+              if(strlen(PicProg[i].arg2name)) {
+                  fprintf(fAsm, " ;;; %s", PicProg[i].arg2name);
+              }
+
+            fprintf(fAsm, "\n");
+        } else
+            Error("op=%d=0x%X", PicProg[i].opPic, PicProg[i].opPic);
     }
 
     StartIhex(f);
@@ -2500,16 +2525,16 @@ static void CompileFromIntermediate(BOOL topLevel)
                     adcsPos = 6; // in REG_ADCON0
                     WriteRegister(REG_ADCON0,
                          (adcs << adcsPos) |
-                     (MuxForAdcVariable(a->name1) << chsPos) |
-                     (0 << goPos) |  // don't start yet
-                                     // bit 1 unimplemented
+                         (MuxForAdcVariable(a->name1) << chsPos) |
+                         (0 << goPos) |  // don't start yet
+                                         // bit 1 unimplemented
                          (1 << 0)        // A/D peripheral on
-                );
+                    );
 
-                WriteRegister(REG_ADCON1,
-                    (1 << 7) |      // right-justified
-                    (0 << 0)        // for now, all analog inputs
-                );
+                    WriteRegister(REG_ADCON1,
+                        (1 << 7) |      // right-justified
+                        (0 << 0)        // for now, all analog inputs
+                    );
                 } else oops();
                 if(McuAs("Microchip PIC16F88 "))
                 {

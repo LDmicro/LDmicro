@@ -260,18 +260,26 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
         strcpy(name+1, nameBuf);
         double del = atof(delBuf);
         long long period = (long long)round(del * 1000 / Prog.cycleTime);// - 1;
-        //                                    - 1 used, because one cycle of the program always runs
-        double maxDelay = 1.0 * ((1 << (SizeOfVar(name)*8-1))-1) * Prog.cycleTime / 1000000; //s
         if(del <= 0) {
             Error(_("Delay cannot be zero or negative."));
         } else if(period  < 1)  {
-            Error(_("'%s' Timer period too short (needs faster cycle time)."),nameBuf);
+            char *s1 = _("Timer period too short (needs faster cycle time).");
+            char s2[1024];
+            sprintf(s2, _("Timer '%s'=%.3f ms."), name, del);
+            char s3[1024];
+            sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
+            char *s4 = _("Not available");
+            Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
         } else if((period >= long long (1 << (SizeOfVar(name)*8-1)))
                    && (Prog.mcu->portPrefix != 'L')) {
-            Error(_("Timer period too long (max %d times cycle time); use a "
-                "slower cycle time."
-                "\r\nMax Delay=%.3f s"
-                "\r\nT%s=%.3f ms=%d cycles of PLC"),(1 << (SizeOfVar(name)*8-1))-1,maxDelay,nameBuf,del/1000.0,period);
+            char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
+                "slower cycle time.");
+            char s2[1024];
+            sprintf(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del/1000, period);
+            double maxDelay = 1.0 * ((1 << (SizeOfVar(name)*8-1))-1) * Prog.cycleTime / 1000000; //s
+            char s3[1024];
+            sprintf(s3, _("Maximum available timer period = %.3f s."), maxDelay);
+            Error("%s\r\n%s\r\n%s", s1, s2, s3);
             *delay = (SDWORD)(1000*del + 0.5);
         /*
         if(del > 2140000) { // 2**31/1000, don't overflow signed int
@@ -329,23 +337,29 @@ void CheckVarInRange(char *name, SDWORD v)
 }
 
 //-----------------------------------------------------------------------------
-void ShowCounterDialog(int which, char *maxV, char *name)
+void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
 {
     char *title;
-
     switch(which) {
         case ELEM_CTU:  title = _("Count Up"); break;
         case ELEM_CTD:  title = _("Count Down"); break;
         case ELEM_CTC:  title = _("Circular Counter"); break;
         case ELEM_CTR:  title = _("Circular Counter Reversive"); break;
-
         default: oops();
     }
 
-    char *labels[] = { _("Name:"), ((which == ELEM_CTC)||(which == ELEM_CTR) ? _("Max value:") :
-        (which == ELEM_CTU ? _("True if >= :") : _("True if > :"))) };
-    char *dests[] = { name+1, maxV };
+    char *labels[] = { _("Name:"),
+//     ((which == ELEM_CTC)||(which == ELEM_CTU) ? _("Start value:") : _("Max value:")),
+       _("Start value:"),
+       (((which == ELEM_CTC) ? _("Max value:") :
+        (which == ELEM_CTR) ? _("Min value:") :
+        (which == ELEM_CTU ? _("True if >= :") : _("True if > :")))) };
+    char *dests[] = { name+1, minV, maxV };
     if(ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests)) {
+      if(IsNumber(minV)){
+        SDWORD _minV = hobatoi(minV);
+        CheckVarInRange(name, _minV);
+      }
       if(IsNumber(maxV)){
         SDWORD _maxV = hobatoi(maxV);
         CheckVarInRange(name, _maxV);
@@ -355,7 +369,7 @@ void ShowCounterDialog(int which, char *maxV, char *name)
 // Special function
 void ShowSFRDialog(int which, char *op1, char *op2)
 {
-   char *title;
+    char *title;
     char *l2;
     switch(which) {
         case ELEM_RSFR:
@@ -443,8 +457,8 @@ void ShowCmpDialog(int which, char *op1, char *op2)
         default:
             oops();
     }
-    char *labels[] = { _("'Closed' if:"), l2 };
-    char *dests[] = { op1, op2 };
+    char *labels[] = { _("'Closed' if:"), l2};
+    char *dests[] = { op1, op2};
     if(ShowSimpleDialog(title, 2, labels, 0, 0x7, 0x7, dests)){
         if(IsNumber(op1))
             CheckConstantInRange(op2, op1, hobatoi(op1));
