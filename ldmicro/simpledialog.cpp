@@ -260,18 +260,26 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
         strcpy(name+1, nameBuf);
         double del = atof(delBuf);
         long long period = (long long)round(del * 1000 / Prog.cycleTime);// - 1;
-        //                                    - 1 used, because one cycle of the program always runs
-        double maxDelay = 1.0 * ((1 << (SizeOfVar(name)*8-1))-1) * Prog.cycleTime / 1000000; //s
         if(del <= 0) {
             Error(_("Delay cannot be zero or negative."));
         } else if(period  < 1)  {
-            Error(_("'%s' Timer period too short (needs faster cycle time)."),nameBuf);
+            char *s1 = _("Timer period too short (needs faster cycle time).");
+            char s2[1024];
+            sprintf(s2, _("Timer '%s'=%.3f ms."), name, del);
+            char s3[1024];
+            sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
+            char *s4 = _("Not available");
+            Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
         } else if((period >= long long (1 << (SizeOfVar(name)*8-1)))
                    && (Prog.mcu->portPrefix != 'L')) {
-            Error(_("Timer period too long (max %d times cycle time); use a "
-                "slower cycle time."
-                "\r\nMax Delay=%.3f s"
-                "\r\nT%s=%.3f ms=%d cycles of PLC"),(1 << (SizeOfVar(name)*8-1))-1,maxDelay,nameBuf,del/1000.0,period);
+            char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
+                "slower cycle time.");
+            char s2[1024];
+            sprintf(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del/1000, period);
+            double maxDelay = 1.0 * ((1 << (SizeOfVar(name)*8-1))-1) * Prog.cycleTime / 1000000; //s
+            char s3[1024];
+            sprintf(s3, _("Maximum available timer period = %.3f s."), maxDelay);
+            Error("%s\r\n%s\r\n%s", s1, s2, s3);
             *delay = (SDWORD)(1000*del + 0.5);
         /*
         if(del > 2140000) { // 2**31/1000, don't overflow signed int

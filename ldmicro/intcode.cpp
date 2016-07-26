@@ -510,16 +510,25 @@ static void _Comment(int l, char *f, int level, char *str, ...)
 //-----------------------------------------------------------------------------
 static SDWORD TimerPeriod(ElemLeaf *l)
 {
-    SDWORD period = (l->d.timer.delay / Prog.cycleTime) - 1;
-    //                                                  - 1 used, because one cycle of the program always runs
+    SDWORD period = (l->d.timer.delay / Prog.cycleTime);// - 1;
     if(period < 1)  {
-        Error(_("'%s' Timer period too short (needs faster cycle time)."),l->d.timer.name);
+        char *s1 = _("Timer period too short (needs faster cycle time).");
+        char s2[1024];
+        sprintf(s2, _("Timer '%s'=%.3f ms."), l->d.timer.name, 1.0*l->d.timer.delay/1000);
+        char s3[1024];
+        sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
+        Error("%s\n\r%s\r\n%s", s1, s2, s3);
         CompileError();
     }
     if(period >= (1 << 15)) {
-        Error(_("Timer period too long (max 32767 times cycle time); use a "
-            "slower cycle time."
-            "\r\nTimer %s=%.3f ms needs %d cycles of PLC"),l->d.timer.name,l->d.timer.delay/1000.0,period);
+        char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
+            "slower cycle time.");
+        char s2[1024];
+        sprintf(s2, _("Timer '%s'=%.3f ms needs %d PLC cycle times."), l->d.timer.name, 1.0*l->d.timer.delay/1000, period);
+        double maxDelay = 1.0 * ((1 << (SizeOfVar(l->d.timer.name)*8-1))-1) * Prog.cycleTime / 1000000; //s
+        char s3[1024];
+        sprintf(s3, _("Maximum available timer period = %.3f s."), maxDelay);
+        Error("%s\r\n%s\r\n%s", s1, s2, s3);
         CompileError();
     }
     return period;
@@ -976,8 +985,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
               Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
+                Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
-              Op(INT_CLEAR_BIT, stateInOut);
 
             Op(INT_ELSE);
 
@@ -999,12 +1008,17 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             SDWORD period = TimerPeriod(l);
 
             Op(INT_IF_BIT_SET, stateInOut);
+
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
+
             Op(INT_ELSE);
+
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+
             Op(INT_END_IF);
 
             break;
@@ -1025,13 +1039,17 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_SET_BIT, antiGlitchName);
 
             Op(INT_IF_BIT_CLEAR, stateInOut);
+
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
                 Op(INT_SET_BIT, stateInOut);
               Op(INT_END_IF);
 
             Op(INT_ELSE);
+
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+
             Op(INT_END_IF);
             break;
         }
