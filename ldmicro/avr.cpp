@@ -27,7 +27,6 @@
                       // * 1 - only if GOTO or CALL operations need a label
                       //   2 - always, all line is labeled
 
-#define USE_TIMER0_AS_LADDER_CYCLE // Timer1 as PLC Cycle sourse is obsolete
 #define USE_MUL
 
 #include <windows.h>
@@ -247,10 +246,10 @@ static DWORD REG_ADCH   = 0x25;
 static DWORD REG_ADCL   = 0x24;
 
 // PWM Timer1
-static DWORD REG_OCR1AH = 0;
-static DWORD REG_OCR1AL = 0;
-static DWORD REG_TCCR1A = 0;
-static DWORD REG_TCCR1B = 0;
+static DWORD REG_OCR1AH = 0; // 0x4b
+static DWORD REG_OCR1AL = 0; // 0x4a
+static DWORD REG_TCCR1A = 0; // 0x4f
+static DWORD REG_TCCR1B = 0; // 0x4e
 #define          WGM13     4
 #define          WGM12     3
 #define          WGM11     1
@@ -280,8 +279,8 @@ static DWORD REG_UCSRA  = 0;
 
 static DWORD REG_UDR = 0;
 
-#define REG_TCCR0   0x53
-#define REG_TCNT0   0x52
+static DWORD REG_TCCR0  = 0;   //0x53
+static DWORD REG_TCNT0  = 0;   //0x52
 
 #define REG_WDTCR   0x41
 #define     WDCE    BIT4
@@ -290,8 +289,6 @@ static DWORD REG_UDR = 0;
 #define     WDP1    BIT1
 #define     WDP0    BIT0
 
-//#define REG_OCR2    0x43
-//#define REG_TCCR2   0x45
 // PWM Timer2
 static DWORD REG_OCR2   = 0x43; //0; //TODO: check in datasheets for all MCU's
 static DWORD REG_TCCR2  = 0x45; // TCCR2A
@@ -396,7 +393,9 @@ static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1, DWORD
     if(args) {
         if(strlen(AvrProg[AvrProgWriteP].commentAsm))
              strncat(AvrProg[AvrProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncat(AvrProg[AvrProgWriteP].commentAsm, "(", MAX_COMMENT_LEN);
         strncat(AvrProg[AvrProgWriteP].commentAsm, args, MAX_COMMENT_LEN);
+        strncat(AvrProg[AvrProgWriteP].commentAsm, ")", MAX_COMMENT_LEN);
     }
     if(comment) {
         if(strlen(AvrProg[AvrProgWriteP].commentAsm))
@@ -452,6 +451,14 @@ static void _SetInstruction(int l, char *f, char *args, DWORD Addr, AvrOp op, DW
     AvrProg[Addr].opAvr = op;
     AvrProg[Addr].arg1 = arg1;
     AvrProg[Addr].arg2 = arg2;
+
+    if(args) {
+        if(strlen(AvrProg[Addr].commentAsm))
+             strncat(AvrProg[Addr].commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncat(AvrProg[Addr].commentAsm, "(", MAX_COMMENT_LEN);
+        strncat(AvrProg[Addr].commentAsm, args, MAX_COMMENT_LEN);
+        strncat(AvrProg[Addr].commentAsm, ")", MAX_COMMENT_LEN);
+    }
     AvrProg[Addr].rung = rungNow;
     AvrProg[Addr].IntPc = IntPcNow;
     AvrProg[Addr].l = l;
@@ -500,7 +507,7 @@ static void FwdAddrIsNow(DWORD addr)
 
     DWORD i;
     for(i = 0; i < AvrProgWriteP; i++) {
-        if(AvrProg[i].arg1 == addr) {
+        if(AvrProg[i].arg1 == addr) { // Its a FWD addr
             AvrProg[i].arg1 = AvrProgWriteP;
         } else if(AvrProg[i].arg2 == FWD_LO(addr)) {
             AvrProg[i].arg2 = (AvrProgWriteP & 0xff);
@@ -684,11 +691,13 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
         return 0x9488;
 
     case OP_IJMP:
-        CHECK(arg1, 0); CHECK(arg2, 0);
+        //CHECK(arg1, 0); // arg1 used for label
+        CHECK(arg2, 0);
         return 0x9409;
 
     case OP_ICALL:
-        CHECK(arg1, 0); CHECK(arg2, 0);
+        //CHECK(arg1, 0); // arg1 used for label
+        CHECK(arg2, 0);
         return 0x9509;
 
     case OP_RJMP:
@@ -1928,12 +1937,6 @@ static void WriteRuntime(void)
     for(i = 0; i < 34; i++)
         Instruction(OP_RETI);
     Comment("Interrupt table end.");
-
-    if(Prog.cycleTimer == 0) {
-//      PlcCycleTimerOverflowVector = AllocFwdAddr();
-        PlcCycleTimerOverflowInterrupt();
-        SetInstruction(Timer0OvfAddr,OP_RCALL,PlcCycleTimerOverflowVector,0);
-    }
 
     FwdAddrIsNow(resetVector);
     Comment("It is ResetVector");
@@ -3911,9 +3914,14 @@ void CompileAvr(char *outFile)
     //***********************************************************************
     // Here we must set up the addresses of some registers that for some
     // stupid reason move around from AVR to AVR.
+    /*
     if(strstr(Prog.mcu->mcuName, " AT90USB82 ")
     || strstr(Prog.mcu->mcuName, " AT90USB162 ")
-    ){//TIFR bits
+    ){
+        REG_TCCR0  = 0x45
+        REG_TCNT0  = 0x46
+
+      //TIFR bits
         OCF1A  = BIT1;
         TOV0   = BIT0;
       //TIFR1  bits
@@ -3923,11 +3931,15 @@ void CompileAvr(char *outFile)
         TOIE1  = BIT0;
         TOIE0  = BIT0;
     } else
+    */
     if(strstr(Prog.mcu->mcuName, " AT90USB646 ")
     || strstr(Prog.mcu->mcuName, " AT90USB647 ")
     || strstr(Prog.mcu->mcuName, " AT90USB1286 ")
     || strstr(Prog.mcu->mcuName, " AT90USB1287 ")
     ){
+        REG_TCCR0  = 0x45;
+        REG_TCNT0  = 0x46;
+
         REG_OCR1AH  = 0x89;
         REG_OCR1AL  = 0x88;
         REG_TCCR1A  = 0x80;
@@ -3963,6 +3975,9 @@ void CompileAvr(char *outFile)
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega168 ") ||
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega328 ")
     ){
+        REG_TCCR0  = 0x45;
+        REG_TCNT0  = 0x46;
+
         REG_OCR1AH  = 0x89;
         REG_OCR1AL  = 0x88;
         REG_TCCR1A  = 0x80;
@@ -4005,6 +4020,9 @@ void CompileAvr(char *outFile)
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega324 ") ||
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega644 ")
     ){
+        REG_TCCR0  = 0x45;
+        REG_TCNT0  = 0x46;
+
         REG_OCR1AH  = 0x89;
         REG_OCR1AL  = 0x88;
         REG_TCCR1B  = 0x81;
@@ -4030,6 +4048,9 @@ void CompileAvr(char *outFile)
        strstr(Prog.mcu->mcuName, " ATmega2560 ") ||
        strstr(Prog.mcu->mcuName, " ATmega2561 ")
     ){
+        REG_TCCR0  = 0x45;
+        REG_TCNT0  = 0x46;
+
         REG_OCR1AH  = 0x89;
         REG_OCR1AL  = 0x88;
         REG_TCCR1B  = 0x81;
@@ -4062,6 +4083,9 @@ void CompileAvr(char *outFile)
        strstr(Prog.mcu->mcuName, " ATmega644 ") ||
        strstr(Prog.mcu->mcuName, " ATmega1284 ")
     ){
+        REG_TCCR0  = 0x45;
+        REG_TCNT0  = 0x46;
+
         REG_OCR1AH  = 0x89;
         REG_OCR1AL  = 0x88;
         REG_TCCR1B  = 0x81;
@@ -4089,10 +4113,15 @@ void CompileAvr(char *outFile)
             COM21   = BIT7;   // COM2A1
             COM20   = BIT6;   // COM2A0
     } else
+    /*
     if(strstr(Prog.mcu->mcuName, " ATmega163 ")
     || strstr(Prog.mcu->mcuName, " ATmega323 ")
     || strstr(Prog.mcu->mcuName, " ATmega8535 ")
-    ){//TIFR bits
+    ){
+      //REG_TCCR0  = 0x45
+      //REG_TCNT0  = 0x46
+
+      //TIFR bits
         OCF1A  = BIT4;
         TOV1   = BIT2;
         TOV0   = BIT0;
@@ -4103,6 +4132,9 @@ void CompileAvr(char *outFile)
     } else
     if(strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega103 ")
     ){
+      //REG_TCCR0  = 0x45
+      //REG_TCNT0  = 0x46
+
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
         REG_TCCR1A  = 0x4F;
@@ -4122,10 +4154,14 @@ void CompileAvr(char *outFile)
         REG_UDR   = 0x2c;
 //      REG_UCSRC = 0x9d;
     } else
+    */
     if(strstr(Prog.mcu->mcuName, " ATmega161 ")
     || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega162 ")
     || strstr(Prog.mcu->mcuName, " ATmega8515 ")
     ){
+        REG_TCCR0  = 0x53;
+        REG_TCNT0  = 0x52;
+
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
         REG_TCCR1A  = 0x4F;
@@ -4152,6 +4188,9 @@ void CompileAvr(char *outFile)
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega16 ") ||
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega32 ")
     ){
+        REG_TCCR0  = 0x53;
+        REG_TCNT0  = 0x52;
+
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
         REG_TCCR1A  = 0x4F;
@@ -4177,6 +4216,9 @@ void CompileAvr(char *outFile)
     if(strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega64 ") ||
        strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega128 ")
     ){
+        REG_TCCR0  = 0x53;
+        REG_TCNT0  = 0x52;
+
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
         REG_TCCR1A  = 0x4F;
@@ -4255,11 +4297,11 @@ void CompileAvr(char *outFile)
     if(Prog.mcu->core >= ClassicCore8K) {
         Instruction(OP_LDI, ZL, (BeginningOfCycleAddr & 0xff));
         Instruction(OP_LDI, ZH, (BeginningOfCycleAddr >> 8) & 0xff);
-        Instruction(OP_IJMP, 0, 0);
+        Instruction(OP_IJMP, BeginningOfCycleAddr, 0);
     } else {
         Instruction(OP_RJMP, BeginningOfCycleAddr, 0);
     }
-    Instruction(OP_RJMP, AvrProgWriteP); // as CodeVisionAVR C Compiler
+
 
     rungNow = -20;
 
@@ -4272,7 +4314,7 @@ void CompileAvr(char *outFile)
     if(MultiplyUsed24) MultiplyRoutine24();
     if(DivideUsed24) DivideRoutine24();
 
-    Instruction(OP_RJMP, AvrProgWriteP); // for label
+    Instruction(OP_RJMP, AvrProgWriteP); // as CodeVisionAVR C Compiler // for label
 
     rungNow = -10;
     MemCheckForErrorsPostCompile();

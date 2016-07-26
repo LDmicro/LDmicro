@@ -139,8 +139,8 @@ static void MakeControls(void)
         268 + 210, 41, 70, 23, ConfDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 
-    char txt[1024] = "";
-    char explanation[1024] = "";
+    char txt[1024*4] = "";
+    char explanation[1024*4] = "";
 
     int cycleTimeMin;
     int cycleTimeMax;
@@ -157,7 +157,6 @@ static void MakeControls(void)
             &divider,
             &cycleTimeMin,
             &cycleTimeMax);
-
 
         double _cycleTimeMin = SIprefix(1.0*cycleTimeMin/1e6,s1);
         double _cycleTimeMax = SIprefix(1.0*cycleTimeMax/1e6,s2);

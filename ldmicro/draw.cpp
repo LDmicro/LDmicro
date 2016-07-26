@@ -929,15 +929,33 @@ cmp:
             *cx += POS_WIDTH;
             break;
         }
-        case ELEM_CTC: { // moved from DrawEndOfLine
-            char buf[256];
+
+        case ELEM_CTR:
+        case ELEM_CTC: {
+            char *s;
+            if(which == ELEM_CTC)
+                s = "\x01""CTC\x02 ";
+            else if(which == ELEM_CTR)
+                s = "\x01""CTR\x02 ";
+            else oops();
+
             ElemCounter *c = &leaf->d.counter;
-            sprintf(buf, "{\x01""CTC\x02 0:%s}", c->max);
+            sprintf(s2,"%s",c->name);
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH,"","",s2,"",""), poweredAfter, TRUE);
 
-            CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
+            sprintf(s1, "%s:%s", c->init, c->max);
+            int l = strlen(s1);
+            if(l > POS_WIDTH-7)
+                l = POS_WIDTH-7;
+            formatWidth(s2,l,"","",s1,"","");
 
-            *cx += POS_WIDTH; // added
+            if(which == ELEM_CTC)
+                sprintf(bot, "[\x01""CTC\x02 %s]", s2);
+            else
+                sprintf(bot, "[\x01""CTR\x02 %s]", s2);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+
+            *cx += POS_WIDTH;
             break;
         }
         case ELEM_CTU:
@@ -950,13 +968,22 @@ cmp:
             else oops();
 
             ElemCounter *c = &leaf->d.counter;
-            sprintf(s2,"%s",c->name);
+            sprintf(s2,"%s:%s",c->name, c->init);
             CenterWithSpaces(*cx, *cy, formatWidth(top,POS_WIDTH,"","",s2,"",""), poweredAfter, TRUE);
 
+            int l = strlen(c->max);
+            if(which == ELEM_CTD) {
+              if(l > POS_WIDTH-7)
+                  l = POS_WIDTH-7;
+            } else {
+              if(l > POS_WIDTH-8)
+                  l = POS_WIDTH-8;
+            }
+            formatWidth(s2,l,"","",c->max,"","");
             if(which == ELEM_CTD)
-                sprintf(bot, "[%s>%s]", s, c->max);
+                sprintf(bot, "[%s>%s]", s, s2);
             else
-                sprintf(bot, "[%s>=%s]", s, c->max);
+                sprintf(bot, "[%s>=%s]", s, s2);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;

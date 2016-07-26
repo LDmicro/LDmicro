@@ -1,3 +1,23 @@
+== Release 3.5.1
+
+    * Fixed: Timer0 as PLC cycle in AVR's corrected.
+
+    * Fixed: If try to change settings for MCU-Parameters,
+      the 'ldmicro-de.exe' gets busy forever
+      and eats up windows memory.
+
+    * Added: CTR reversive counter added.
+      It like CTC but with decrement counting inside.
+
+      Added 'Init' value in CTU,CTD,CTC,CTR counters.
+      CTU,CTC counter start from 'Init' and count up to 'Max' value.
+      CTC generate overflow impulse when Counter==Max.
+
+      CTD,CTR counter start from 'Init' and count down to 'Min' value.
+      CTR generate overflow impulse when Counter==Min.
+
+      See LDmicro\SAMPLE\ctu_ctd_ctc.ld
+
 == Release 3.5.0 experimental pre-release
 
     * Fixed: Address of configuration word(s) are checked and corrected on PIC controllers.
@@ -92,16 +112,13 @@
     * Added ELEM_OSC oscillator F=1/(2*Tcycle)
 
     * Added: In 'MCU Configuration' dialog you can select timer 0 or 1 for generating of PLC cycle.
-      This allow use Timer1 for PWM or other features. 
+      This allow use Timer1 for PWM or other features.
 
     * Added: In 'MCU Configurations' dialog added YPlcCycleDuty pin.
       YPlcCycleDuty pin set to 1 at begin and to 0 at end of PLC cycle.
-      You can measure frequency(it must be 1/Tcycle) and duty cycle of PLC.  
-      Unstable frequency or big duty cycle says about long LD programm 
+      You can measure frequency(it must be 1/Tcycle) and duty cycle of PLC.
+      Unstable frequency or big duty cycle says about long LD programm
       and too short PLC cycle.
-
-== Release 3.4.1
-    * Bugfix: PWM frequency error fixed.
 
 == Release 3.4.0
 
