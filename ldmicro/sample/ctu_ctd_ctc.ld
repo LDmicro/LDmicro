@@ -1,103 +1,58 @@
 LDmicro0.1
-CYCLE=10000 us at Timer1, YPlcCycleDuty:0
-CRYSTAL=4000000 Hz
-BAUD=2400 Hz
+MICRO=Atmel AVR ATmega8 28-PDIP
+CYCLE=1000
+CRYSTAL=16000000
+BAUD=2400
+COMPILED=D:\LDs\CTU_CTD_CTC\ctu_ctd_ctc.hex
+
+IO LIST
+    Ymeandr at 19
+    Ynew0 at 18
+    Ynew1 at 24
+    Ynew2 at 25
+    Ynew3 at 23
+END
 
 PROGRAM
 RUNG
-  CONTACTS Rnew1 1
-  COIL Rnew1 0 0 0
+    OSR
+    MOVE Cnew2 9
 END
 RUNG
-  PARALLEL
-    MOVE var5 5
-    MOVE var_5 -5
-    MOVE var0 0
-    MOVE var10 10
-    MOVE var_10 -10
-  END
+    CONTACTS Ymeandr 1
+    COIL Ymeandr 0 0 0
 END
 RUNG
-  CONTACTS Rnew1 0
-  PARALLEL
-    SERIES
-      CTU Cnew1 5 0
-      COIL Ynew1 0 0 0
-    END
-    SERIES
-      CTU Cnew1_ var5 0
-      COIL Ynew1_ 0 0 0
-    END
-    SERIES
-      CTU Cnew1__ 10 5
-      COIL Ynew1__ 0 0 0
-    END
-    SERIES
-      CTU Cnew1___ var10 var5
-      COIL Ynew1___ 0 0 0
-    END
-  END
+    CONTACTS Ynew0 1
+    COIL Ynew0 0 0 0
 END
 RUNG
-  CONTACTS Rnew1 0
-  PARALLEL
-    SERIES
-      CTD Cnew2 -5 0
-      COIL Ynew2 0 0 0
+    CONTACTS Ynew0 0
+    CTU Cnew1 5
+    PARALLEL
+        COIL Ynew1 0 0 0
+        RES Cnew1
     END
-    SERIES
-      CTD Cnew2_ var_5 0
-      COIL Ynew2_ 0 0 0
-    END
-    SERIES
-      CTD Cnew2__ -10 -5
-      COIL Ynew2__ 0 0 0
-    END
-    SERIES
-      CTD Cnew2___ var_10 var_5
-      COIL Ynew2___ 0 0 0
-    END
-  END
 END
 RUNG
-  CONTACTS Rnew1 0
-  PARALLEL
-    SERIES
-      CTC Cnew3 5 0
-      COIL Ynew3 0 0 0
+    CONTACTS Ynew0 0
+    CTD Cnew2 5
+    PARALLEL
+        COIL Ynew2 0 0 0
+        SERIES
+            OSF
+            MOVE Cnew2 9
+        END
     END
-    SERIES
-      CTC Cnew3_ var5 var0
-      COIL Ynew3_ 0 0 0
-    END
-    SERIES
-      CTC Cnew3__ 10 5
-      COIL Ynew3__ 0 0 0
-    END
-    SERIES
-      CTC Cnew3___ var10 var5
-      COIL Ynew3___ 0 0 0
-    END
-  END
 END
 RUNG
-  CONTACTS Rnew1 0
-  PARALLEL
-    SERIES
-      CTR Cnew4 -5 0
-      COIL Ynew4 0 0 0
+    CONTACTS Ynew0 0
+    CTC Cnew3 5
+END
+RUNG
+    EQU Cnew3 5
+    PARALLEL
+        COIL Ynew3 0 0 0
+        RES Cnew3
     END
-    SERIES
-      CTR Cnew4_ var_5 var0
-      COIL Ynew4_ 0 0 0
-    END
-    SERIES
-      CTR Cnew4__ -10 -5
-      COIL Ynew4__ 0 0 0
-    END
-    SERIES
-      CTR Cnew4___ var_10 var_5
-      COIL Ynew4___ 0 0 0
-    END
-  END
 END
