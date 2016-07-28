@@ -37,8 +37,8 @@
 #define INT_SET_BIN2BCD                          5001
 #define INT_SET_BCD2BIN                          5002
 #define INT_SET_SWAP                             5003
-#define INT_DECREMENT_VARIABLE                   6001
 #endif
+#define INT_DECREMENT_VARIABLE                   6001
 #define INT_INCREMENT_VARIABLE                   6
 #define INT_SET_VARIABLE_ADD                     7
 #define INT_SET_VARIABLE_SUBTRACT                8

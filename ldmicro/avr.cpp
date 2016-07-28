@@ -2405,18 +2405,16 @@ static void CompileFromIntermediate(void)
 
             case INT_INCREMENT_VARIABLE: {
                 sov = SizeOfVar(a->name1);
-                MemForVariable(a->name1, &addrl, &addrh);
-                Increment(addrl,sov);
+                MemForVariable(a->name1, &addr);
+                Increment(addr,sov);
                 break;
             }
-            #ifdef NEW_FEATURE
             case INT_DECREMENT_VARIABLE: {
                 sov = SizeOfVar(a->name1);
-                MemForVariable(a->name1, &addrl);
-                Decrement(addrl,sov);
+                MemForVariable(a->name1, &addr);
+                Decrement(addr,sov);
                 break;
             }
-            #endif
             case INT_IF_BIT_SET: {
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, TRUE, &addr, &bit);

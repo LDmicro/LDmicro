@@ -841,6 +841,7 @@ HMENU MakeMainWindowMenus(void);
 void VscrollProc(WPARAM wParam);
 void HscrollProc(WPARAM wParam);
 void GenerateIoListDontLoseSelection(void);
+void RefreshStatusBar(void);
 void RefreshControlsToSettings(void);
 void MainWindowResized(void);
 void ToggleSimulationMode(BOOL doSimulateOneRung);

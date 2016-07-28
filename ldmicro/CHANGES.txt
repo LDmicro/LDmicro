@@ -16,7 +16,32 @@
       CTD,CTR counter start from 'Init' and count down to 'Min' value.
       CTR generate overflow impulse when Counter==Min.
 
-      See LDmicro\SAMPLE\ctu_ctd_ctc.ld
+      Attention! You may need to correct the previous versions of the program containing CTD counter!
+      For example:
+               Counter:0  1   2   3   4   5
+                          _   _   _   _   _
+      CTU >= 5   Input: _/ \_/ \_/ \_/ \_/ \
+                                          ___
+                Output: _________________/
+
+      The output CTU counter is true if the counter variable is
+      GREATER than 5 or EQUAL to 5, and false otherwise.
+
+    * Modified: In CTD '>=' condition changed to '>'.
+
+               Counter:0 -1  -2  -3  -4  -5
+                          _   _   _   _   _
+      CTD > -5   Input: _/ \_/ \_/ \_/ \_/ \
+                        _________________
+                Output:                  \___
+
+      The output CTU counter is true if the counter variable is
+      GREATER than 5, and false otherwise.
+
+      This modification leads to a symmetric switching of outputs
+      when CTU=5 and CTD=-5.
+
+      See LDmicro\SAMPLE\ctu_ctd_ctc_ctd.ld
 
 == Release 3.5.0 experimental pre-release
 

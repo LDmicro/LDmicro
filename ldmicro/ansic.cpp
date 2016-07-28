@@ -197,10 +197,20 @@ static void GenerateDeclarations(FILE *f)
                 intVar3 = IntCode[i].name3;
                 break;
 
+            case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
-            case INT_READ_ADC:
-            case INT_SET_PWM:
                 intVar1 = IntCode[i].name1;
+                break;
+
+            case INT_SET_PWM:
+                {
+                bitVar1 = IntCode[i].name1;
+                intVar1 = IntCode[i].name2;
+                break;
+                }
+            case INT_READ_ADC:
+                intVar1 = IntCode[i].name1;
+                bitVar1 = IntCode[i].name1;
                 break;
 
             case INT_UART_RECV:
@@ -337,6 +347,10 @@ static void GenerateAnsiC(FILE *f)
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "%s++;\n", MapSym(IntCode[i].name1, ASINT));
+                break;
+
+            case INT_DECREMENT_VARIABLE:
+                fprintf(f, "%s--;\n", MapSym(IntCode[i].name1, ASINT));
                 break;
 
             case INT_IF_BIT_SET:
