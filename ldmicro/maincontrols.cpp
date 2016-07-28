@@ -727,6 +727,49 @@ void HscrollProc(WPARAM wParam)
 }
 
 //-----------------------------------------------------------------------------
+void RefreshStatusBar(void)
+{
+    SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_(ProgramChangedNotSaved ? _("modified") : "        " ));
+
+    if(Prog.mcu) {
+        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)Prog.mcu->mcuName);
+    } else {
+        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)_("no MCU selected"));
+    }
+    char buf[1000];
+
+    char Tunits[3];
+    double T=SIprefix(1.0*Prog.cycleTime/1000000, Tunits);
+
+    char Funits[3];
+    double F=SIprefix(1000000.0/Prog.cycleTime, Funits);
+
+    char F2units[3];
+    double F2=SIprefix(1000000.0/Prog.cycleTime/2, F2units);
+
+    char TNunits[3];
+    double TN=SIprefix(1.0*Prog.cycleTime*CyclesCount/1000000, TNunits);
+
+    sprintf(buf, "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss",
+        T,Tunits, F,Funits, F2,F2units, CyclesCount, TN,TNunits);
+    SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
+
+    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
+                    Prog.mcu->whichIsa == ISA_NETZER ||
+                    Prog.mcu->whichIsa == ISA_PASCAL ||
+                    Prog.mcu->whichIsa == ISA_INTERPRETED ||
+                    Prog.mcu->whichIsa == ISA_XINTERPRETED))
+    {
+        strcpy(buf, "");
+    } else {
+        sprintf(buf, _("processor clock %.9g MHz"),
+            (double)Prog.mcuClock/1000000.0);
+    }
+    SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);
+
+}
+
+//-----------------------------------------------------------------------------
 // Cause the status bar and the list view to be in sync with the actual data
 // structures describing the settings and the I/O configuration. Listview
 // does callbacks to get the strings it displays, so it just needs to know
@@ -772,43 +815,7 @@ void RefreshControlsToSettings(void)
     }
     IoListOutOfSync = FALSE;
 
-    SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_(ProgramChangedNotSaved ? _("modified") : "        " ));
-
-    if(Prog.mcu) {
-        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)Prog.mcu->mcuName);
-    } else {
-        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)_("no MCU selected"));
-    }
-    char buf[1000];
-
-    char Tunits[3];
-    double T=SIprefix(1.0*Prog.cycleTime/1000000, Tunits);
-
-    char Funits[3];
-    double F=SIprefix(1000000.0/Prog.cycleTime, Funits);
-
-    char F2units[3];
-    double F2=SIprefix(1000000.0/Prog.cycleTime/2, F2units);
-
-    char TNunits[3];
-    double TN=SIprefix(1.0*Prog.cycleTime*CyclesCount/1000000, TNunits);
-
-    sprintf(buf, "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss",
-        T,Tunits, F,Funits, F2,F2units, CyclesCount, TN,TNunits);
-    SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
-
-    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-                    Prog.mcu->whichIsa == ISA_NETZER ||
-                    Prog.mcu->whichIsa == ISA_PASCAL ||
-                    Prog.mcu->whichIsa == ISA_INTERPRETED ||
-                    Prog.mcu->whichIsa == ISA_XINTERPRETED))
-    {
-        strcpy(buf, "");
-    } else {
-        sprintf(buf, _("processor clock %.9g MHz"),
-            (double)Prog.mcuClock/1000000.0);
-    }
-    SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);
+    RefreshStatusBar();
 
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
         if(&SupportedMcus[i] == Prog.mcu) {
