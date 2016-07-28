@@ -136,6 +136,7 @@ void CompileInterpreted(char *outFile)
                 op.name2 = AddrForVariable(IntCode[ipc].name2);
                 break;
 
+            case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 break;

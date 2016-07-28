@@ -190,18 +190,18 @@ static DWORD FwdAddrCount;
 // These move around from device to device.
 // 0 means not defined(error!) or not exist in MCU.
 // EEPROM Registers
-static DWORD REG_EECON1 = 0;
-static DWORD REG_EECON2 = 0;
-static DWORD REG_EEDATA = 0;
-static DWORD REG_EEADR  = 0;
+static DWORD REG_EECON1  = 0;
+static DWORD REG_EECON2  = 0;
+static DWORD REG_EEDATA  = 0;
+static DWORD REG_EEADR   = 0;
 static DWORD REG_EEDATL  = 0;
 static DWORD REG_EEDATH  = 0;
 static DWORD REG_EEADRL  = 0;
 static DWORD REG_EEADRH  = 0;
 
 //Analog Select Register
-static DWORD REG_ANSEL  = 0;
-static DWORD REG_ANSELH = 0;
+static DWORD REG_ANSEL   = 0;
+static DWORD REG_ANSELH  = 0;
 
 static DWORD REG_ANSELA  = 0;
 static DWORD REG_ANSELB  = 0;
@@ -1094,7 +1094,7 @@ static void BankCheckForErrorsPostCompile()
                 Error("i=%d op=%d arg1=%d arg2=%d bank=%x arg1orig=%d commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%d l=%d file=%s",
                    i,
                    PicProg[i].opPic,
-               PicProg[i].arg1,
+                   PicProg[i].arg1,
                    PicProg[i].arg2,
                    PicProg[i].bank,
                    PicProg[i].arg1orig,
@@ -1417,8 +1417,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
               }
 
             fprintf(fAsm, "\n");
-        } else
-            Error("op=%d=0x%X", PicProg[i].opPic, PicProg[i].opPic);
+        }
     }
 
     StartIhex(f);
@@ -1681,6 +1680,7 @@ static void CompileFromIntermediate(BOOL topLevel)
     DWORD addrl, addrh;
     DWORD addrl2, addrh2;
     DWORD addrl3, addrh3;
+    int sov;
     char comment[MAX_NAME_LEN];
 
     // Keep track of which 2k section we are using. When it looks like we
@@ -1731,19 +1731,62 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr);
                 sprintf(comment, "%s=%s==0x%X", a->name1, a->name2, a->literal); //name2 is setted in ELEM_MOVE intcode.pp
-                WriteRegister(addrl, BYTE(a->literal & 0xff), comment);
-                WriteRegister(addrh, BYTE(a->literal >> 8));
+                sov = SizeOfVar(a->name1);
+                if(sov >= 1) {
+                  WriteRegister(addr, BYTE(a->literal & 0xff), comment);
+                  if(sov >= 2) {
+                    WriteRegister(addr+1, BYTE((a->literal >> 8) & 0xff));
+                    if(sov >= 3) {
+                      WriteRegister(addr+2, BYTE((a->literal >> 16) & 0xff));
+                      if(sov == 4) {
+                        WriteRegister(addr+3, BYTE((a->literal >> 24) & 0xff));
+                      } else if(sov > 4) oops();
+                    }
+                  }
+                } else oops();
                 break;
 
             case INT_INCREMENT_VARIABLE: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                DWORD noCarry = AllocFwdAddr();
-                Instruction(OP_INCFSZ, addrl, DEST_F, a->name1);
-                Instruction(OP_GOTO, noCarry, 0);
-                Instruction(OP_INCF, addrh, DEST_F);
-                FwdAddrIsNow(noCarry);
+                MemForVariable(a->name1, &addr);
+                sov = SizeOfVar(a->name1);
+                if(sov >= 1) {
+                  Instruction(OP_INCF, addr, DEST_F, a->name1);
+                  if(sov >= 2) {
+                    IfBitSet(REG_STATUS, STATUS_Z);
+                    Instruction(OP_INCF, addr+1, DEST_F);
+                    if(sov >= 3) {
+                      IfBitSet(REG_STATUS, STATUS_Z);
+                      Instruction(OP_INCF, addr+2, DEST_F);
+                      if(sov == 4) {
+                        IfBitSet(REG_STATUS, STATUS_Z);
+                        Instruction(OP_INCF, addr+3, DEST_F);
+                      } else if(sov > 4) oops();
+                    }
+                  }
+                } else oops();
+                break;
+            }
+            case INT_DECREMENT_VARIABLE: {
+                MemForVariable(a->name1, &addr);
+                sov = SizeOfVar(a->name1);
+                if(sov >= 1) {
+                  Instruction(OP_MOVLW, 1);
+                  Instruction(OP_SUBWF, addr, DEST_F, a->name1);
+                  if(sov >= 2) {
+                    IfBitSet(REG_STATUS, STATUS_C);
+                    Instruction(OP_SUBWF, addr+1, DEST_F);
+                    if(sov >= 3) {
+                      IfBitSet(REG_STATUS, STATUS_C);
+                      Instruction(OP_SUBWF, addr+2, DEST_F);
+                      if(sov == 4) {
+                        IfBitSet(REG_STATUS, STATUS_C);
+                        Instruction(OP_SUBWF, addr+3, DEST_F);
+                      } else if(sov > 4) oops();
+                    }
+                  }
+                } else oops();
                 break;
             }
             case INT_IF_BIT_SET: {

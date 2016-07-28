@@ -316,6 +316,7 @@ static void locateRegister(void)
                 AddrForRelay(IntCode[ipc].name2);
                 break;
 
+            case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
             case INT_SET_VARIABLE_TO_LITERAL:
             case INT_IF_VARIABLE_LES_LITERAL:
@@ -415,6 +416,7 @@ int GenerateIntOpcodes(void)
                 op.name2 = AddrForVariable(IntCode[ipc].name2);
                 break;
 
+            case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 break;
@@ -771,18 +773,36 @@ static void setVariableToVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NUL
 
 static void incrementVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
 {
-	if (Op->name1 & MAPPED_TO_IO)
-	{
-		if (f) fprintf(f, "%c%c", OP_INCREMENT_VARIABLE_IO,
-			getIOAddress(Op->name1));
-	}
-	else
-	{
-		if (f) fprintf(f, "%c%c", OP_INCREMENT_VARIABLE,
-			getInternalIntegerAddress(Op->name1));
-	}
-	pMeta->BytesConsumed += 2;
-	pMeta->Opcodes += 1;	// One opcode generated.
+    if (Op->name1 & MAPPED_TO_IO)
+    {
+        if (f) fprintf(f, "%c%c", OP_INCREMENT_VARIABLE_IO,
+            getIOAddress(Op->name1));
+    }
+    else
+    {
+        if (f) fprintf(f, "%c%c", OP_INCREMENT_VARIABLE,
+            getInternalIntegerAddress(Op->name1));
+    }
+    pMeta->BytesConsumed += 2;
+    pMeta->Opcodes += 1;    // One opcode generated.
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static void decrementVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+{
+    if (Op->name1 & MAPPED_TO_IO)
+    {
+        if (f) fprintf(f, "%c%c", OP_DECREMENT_VARIABLE_IO,
+            getIOAddress(Op->name1));
+    }
+    else
+    {
+        if (f) fprintf(f, "%c%c", OP_DECREMENT_VARIABLE,
+            getInternalIntegerAddress(Op->name1));
+    }
+    pMeta->BytesConsumed += 2;
+    pMeta->Opcodes += 1;    // One opcode generated.
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1127,6 +1147,10 @@ static void generateNetzerOpcodes(BinOp * Program, int MaxLabel,
 
             case INT_INCREMENT_VARIABLE:
                 incrementVariable(&Program[idx], pOpcodeMeta, f);
+                break;
+
+            case INT_DECREMENT_VARIABLE:
+                decrementVariable(&Program[idx], pOpcodeMeta, f);
                 break;
 
             case INT_SET_VARIABLE_ADD:

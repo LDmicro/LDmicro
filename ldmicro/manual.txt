@@ -399,7 +399,8 @@ INSTRUCTIONS REFERENCE
     instruction. When the input is true, the counter or timer is reset;
     when the input is false, no action is taken. This instruction must
     be the rightmost instruction in its rung.
-
+    Note! RES resets only numeric counter inside RTO, CTU/CTD,
+    not their outputs!
 
 > ONE-SHOT RISING               _    _
                            --[_/ OSR/ \_]--

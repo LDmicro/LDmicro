@@ -135,7 +135,7 @@ static void AppendIoAutoType(char *name, int default_type)
     case 'X': type = IO_TYPE_DIG_INPUT; break;
     case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
     case 'A': type = IO_TYPE_READ_ADC; break;
-    case 'P': type = IO_TYPE_PWM_OUTPUT; break;
+  //case 'P': type = IO_TYPE_PWM_OUTPUT; break;
     case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
     case 'M': type = IO_TYPE_MODBUS_COIL; break;
     case 'H': type = IO_TYPE_MODBUS_HREG; break;
@@ -358,24 +358,26 @@ static int CompareIo(const void *av, const void *bv)
 
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
+/*
+    if(a->pin != NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) {
+        if((a->type == IO_TYPE_DIG_INPUT)
+         ||(a->type == IO_TYPE_DIG_OUTPUT)
+         ||(a->type == IO_TYPE_INT_INPUT)
+         ||(a->type == IO_TYPE_READ_ADC)) {
 
-    if((a->type == IO_TYPE_DIG_INPUT)
-     ||(a->type == IO_TYPE_DIG_OUTPUT)
-     ||(a->type == IO_TYPE_INT_INPUT)
-     ||(a->type == IO_TYPE_READ_ADC)) {
+            char PinName[MAX_NAME_LEN] = "";
+            char apin[MAX_NAME_LEN] = "";
+            char bpin[MAX_NAME_LEN] = "";
+            char aPortName[MAX_NAME_LEN] = "";
+            char bPortName[MAX_NAME_LEN] = "";
 
-        char PinName[MAX_NAME_LEN] = "";
-        char apin[MAX_NAME_LEN] = "";
-        char bpin[MAX_NAME_LEN] = "";
-        char aPortName[MAX_NAME_LEN] = "";
-        char bPortName[MAX_NAME_LEN] = "";
+            PinNumberForIo(apin, a, aPortName, PinName);
+            PinNumberForIo(bpin, b, bPortName, PinName);
 
-        PinNumberForIo(apin, a, aPortName, PinName);
-        PinNumberForIo(bpin, b, bPortName, PinName);
-
-        return strcmp(aPortName, bPortName);
+            return strcmp(aPortName, bPortName);
+        }
     }
-
+*/
     return strcmp(a->name, b->name);
 }
 

@@ -36,7 +36,7 @@
 
 //-----------------------------------------------------------------------------
 #ifdef DEFAULT_PARALLEL_ALGORITHM
-int int_comment_level  = 3;
+int int_comment_level  = 1;
 #else
 int int_comment_level  = 3;
 //                       0 - no comments
@@ -174,6 +174,10 @@ void IntDumpListing(char *outFile)
             case INT_SET_PWM:
                 fprintf(f, "set pwm '%s' %s Hz out %s", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
+                break;
+
+            case INT_DECREMENT_VARIABLE:
+                fprintf(f, "decrement '%s'", IntCode[i].name1);
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
@@ -1112,13 +1116,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_IF_BIT_CLEAR, storeName);
                     Op(INT_SET_BIT, storeName);
-                    #ifdef NEW_FEATURE
                     Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
-                    #else
-                    Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 1);
-                    Op(INT_SET_VARIABLE_SUBTRACT, l->d.counter.name,
-                        l->d.counter.name, "$scratch");
-                    #endif
                 Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, storeName);
@@ -1165,13 +1163,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
               Op(INT_IF_BIT_CLEAR, storeName);
                 Op(INT_SET_BIT, storeName);
-                #ifdef NEW_FEATURE
                 Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
-                #else
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 1);
-                Op(INT_SET_VARIABLE_SUBTRACT, l->d.counter.name,
-                    l->d.counter.name, "$scratch");
-                #endif
 
               //Use max as min, and init as max
               // -5 --> -10
@@ -1632,8 +1624,12 @@ math:   {
             }
             Op(INT_IF_BIT_SET, stateInOut);
             char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
-
-            if((intOp == INT_SET_VARIABLE_ADD)
+            if((intOp == INT_SET_VARIABLE_SUBTRACT)
+            &&(int_comment_level != 1)
+            &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
+            &&(strcmp(l->d.math.op2,"1")==0)){
+                Op(INT_DECREMENT_VARIABLE, l->d.math.dest);
+            } else if((intOp == INT_SET_VARIABLE_ADD)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
             &&(strcmp(l->d.math.op2,"1")==0)){

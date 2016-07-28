@@ -138,8 +138,9 @@ void CompileXInterpreted(char *outFile)
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
                 break;
 
+            case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
-				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = IntCode[ipc].op;
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
                 break;
 
@@ -147,38 +148,38 @@ void CompileXInterpreted(char *outFile)
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_DIVIDE:
-				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = IntCode[ipc].op;
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name3);
                 break;
-			
+
 			case INT_SET_PWM:
-				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = IntCode[ipc].op;
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
 				OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
 				OutProg[outPc++] = IntCode[ipc].literal >> 8;
 				break;
 
 			case INT_READ_ADC:
-				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = IntCode[ipc].op;
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
 				break;
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
-				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = IntCode[ipc].op;
 				OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
                 goto finishIf;
             case INT_IF_VARIABLE_LES_LITERAL:
-				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = IntCode[ipc].op;
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
 				OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
 				OutProg[outPc++] = IntCode[ipc].literal >> 8;
                 goto finishIf;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
-				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = IntCode[ipc].op;
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
 				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
                 goto finishIf;
@@ -190,7 +191,7 @@ finishIf:
                 break;
 
             case INT_ELSE:
-				OutProg[outPc++] = IntCode[ipc].op; 
+				OutProg[outPc++] = IntCode[ipc].op;
 				ifOpElse[ifDepth-1] = outPc++;
                 // jump target will be filled in later
                 break;
@@ -252,7 +253,7 @@ finishIf:
                 return;
         }
     }
-	
+
 	OutProg[outPc++] = INT_END_OF_PROGRAM;
 
 	// Create a map of io and internal variables

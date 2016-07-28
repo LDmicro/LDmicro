@@ -905,12 +905,10 @@ static void SimulateIntCode(void)
                 IncrementVariable(a->name1);
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_DECREMENT_VARIABLE:
                 GetSimulationVariable(a->name1);
                 DecrementVariable(a->name1);
                 break;
-            #endif
             {
                 SDWORD v;
                 case INT_SET_VARIABLE_ADD:
@@ -1102,9 +1100,9 @@ void SimulateOneCycle(BOOL forceRefresh)
     if(NeedRedraw || SimulateRedrawAfterNextCycle || forceRefresh) {
         InvalidateRect(MainWindow, NULL, FALSE);
         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+        RefreshStatusBar();
     }
 
-    RefreshControlsToSettings();
     SimulateRedrawAfterNextCycle = FALSE;
     if(NeedRedraw) SimulateRedrawAfterNextCycle = TRUE;
 
