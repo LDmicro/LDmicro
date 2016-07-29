@@ -304,6 +304,8 @@ HMENU MakeMainWindowMenus(void)
         _("Move Selected Rung &Up\tAlt+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
         _("Move Selected Rung &Down\tAlt+Down"));
+
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN,
         _("Dup&licate Selected Rung\tCtrl+D"));
     AppendMenu(EditMenu, MF_STRING, MNU_CAT_RUNG,
@@ -315,7 +317,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_STRING, MNU_PASTE_RUNG,
         _("&Paste Rung's\tCtrl+V or Shift+Insert"));
     AppendMenu(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG,
-        _("Paste Rung's &Into Rung\tAlt+Insert"));
+        _("Paste Rung's/Element &Into Rung\tAlt+Insert"));
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
