@@ -278,7 +278,9 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(FileMenu, MF_STRING,   MNU_NEW,    _("&New\tCtrl+N"));
     AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,   _("&Open...\tCtrl+O"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_LD,  _("Open ld in notepad\tF4"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tF6"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_HEX, _("Open hex in notepad\tAlt+F6"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tAlt+F5"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_EXPLORE_DIR, _("Explore ld directory"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,_("Save &As..."));
 
@@ -295,15 +297,15 @@ HMENU MakeMainWindowMenus(void)
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
-        _("Insert Rung &Before\tShift+6"));
+        _("Insert Rung &Before\tShift+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
-        _("Insert Rung &After\tShift+V"));
+        _("Insert Rung &After\tShift+Dn"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_UP,
         _("Move Selected Rung &Up\tAlt+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
         _("Move Selected Rung &Down\tAlt+Down"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN,
-        _("Dup&licate Selected Rung\tCtrl+F6"));
+        _("Dup&licate Selected Rung\tCtrl+D"));
     AppendMenu(EditMenu, MF_STRING, MNU_CAT_RUNG,
         _("Ca&t Rung's\tCtrl+X or Shift+Del"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG,
@@ -581,6 +583,8 @@ HMENU MakeMainWindowMenus(void)
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
     AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
+    AppendMenu(help, MF_STRING, MNU_FORUM, _("LDmicro Forum..."));
+    AppendMenu(help, MF_STRING, MNU_EMAIL, _("E-mail..."));
     AppendMenu(help, MF_STRING, MNU_RELEASE, _("Release..."));
 
     TopMenu = CreateMenu();

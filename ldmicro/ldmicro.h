@@ -68,10 +68,12 @@ typedef signed long SDWORD;
 #define MNU_NOTEPAD_LD          0x0700
 #define MNU_NOTEPAD_PL          0x0701
 #define MNU_NOTEPAD_ASM         0x0702
-#define MNU_NOTEPAD_C           0x0703
-#define MNU_NOTEPAD_H           0x0704
-#define MNU_NOTEPAD_PAS         0x0705
+#define MNU_NOTEPAD_HEX         0x0703
+#define MNU_NOTEPAD_C           0x0704
+#define MNU_NOTEPAD_H           0x0705
+#define MNU_NOTEPAD_PAS         0x0706
 #define MNU_NOTEPAD_TXT         0x070F
+#define MNU_EXPLORE_DIR         0x0780
 
 #define MNU_UNDO                0x10
 #define MNU_REDO                0x11
@@ -200,6 +202,10 @@ typedef signed long SDWORD;
 
 #define MNU_MANUAL              0x80
 #define MNU_ABOUT               0x81
+#define MNU_FORUM               0x8101
+#define MNU_WIKI                0x8102
+#define MNU_LAST_RELEASE        0x8103
+#define MNU_EMAIL               0x8104
 #define MNU_RELEASE             0x82
 
 #define MNU_COMPILE_XINT        0x83    // Extended interpreter
@@ -592,6 +598,8 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_MODBUS_CONTACT  17
 #define IO_TYPE_MODBUS_COIL     18
 #define IO_TYPE_MODBUS_HREG     19
+#define IO_TYPE_PORT_INPUT      20 // 8bit PORT for in data  - McuIoInfo.inputRegs
+#define IO_TYPE_PORT_OUTPUT     21 // 8bit PORT for out data - McuIoInfo.oututRegs
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -864,6 +872,7 @@ extern char IoListSelectionName[MAX_NAME_LEN];
 // draw.cpp
 int ProgCountWidestRow(void);
 int ProgCountRows(void);
+extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
 BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore);
 void DrawEndRung(int cx, int cy);
