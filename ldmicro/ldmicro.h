@@ -1367,6 +1367,7 @@ int SizeOfVar(char *name);
 int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(SDWORD i);
+void SaveVarListToFile(FILE *f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);

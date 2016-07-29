@@ -1287,7 +1287,6 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
 
         default:
             ooops("0x%X", op);
-            break;
             return 0;
     }
 }
