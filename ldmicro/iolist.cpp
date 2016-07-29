@@ -222,10 +222,16 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
             break;
 
+        case ELEM_TCY:
+            AppendIo(l->d.timer.name, IO_TYPE_TCY);
+            break;
+
         case ELEM_TON:
+            AppendIo(l->d.timer.name, IO_TYPE_TON);
+            break;
+
         case ELEM_TOF:
-            AppendIo(l->d.timer.name, which == ELEM_TON ?  IO_TYPE_TON :
-                IO_TYPE_TOF);
+            AppendIo(l->d.timer.name, IO_TYPE_TOF);
             break;
 
         case ELEM_RTO:
@@ -745,6 +751,7 @@ void ShowIoDialog(int item)
         case IO_TYPE_COUNTER:
         case IO_TYPE_UART_TX:
         case IO_TYPE_UART_RX:
+        case IO_TYPE_TCY:
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
             ShowSizeOfVarDialog(&Prog.io.assignment[item]);
@@ -1100,6 +1107,7 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_PERSIST)
                     || (type == IO_TYPE_STRING)
                     || (type == IO_TYPE_RTO)
+                    || (type == IO_TYPE_TCY)
                     || (type == IO_TYPE_TON)
                     || (type == IO_TYPE_TOF)
                     || (type == IO_TYPE_COUNTER)
@@ -1131,6 +1139,7 @@ void IoListProc(NMHDR *h)
                     || (type==IO_TYPE_COUNTER         )
                     || (type==IO_TYPE_UART_TX         )
                     || (type==IO_TYPE_UART_RX         )
+                    || (type == IO_TYPE_TCY             )
                     || (type==IO_TYPE_TON             )
                     || (type==IO_TYPE_TOF             )){
                         sprintf(i->item.pszText, "%d  bytes", SizeOfVar(name));
@@ -1198,9 +1207,11 @@ void IoListProc(NMHDR *h)
                     case IO_TYPE_UART_TX:
                     case IO_TYPE_UART_RX:
                     case IO_TYPE_PWM_OUTPUT:
+                    case IO_TYPE_TCY:
                     case IO_TYPE_TON:
                     case IO_TYPE_TOF: {
                         ShowIoDialog(i->iItem);
+                        InvalidateRect(MainWindow, NULL, FALSE);
                         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
                     break;
                 }

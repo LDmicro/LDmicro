@@ -681,6 +681,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddCoil());
             break;
 
+        case MNU_INSERT_TCY:
+            CHANGING_PROGRAM(AddTimer(ELEM_TCY));
+            break;
+
         case MNU_INSERT_TON:
             CHANGING_PROGRAM(AddTimer(ELEM_TON));
             break;
@@ -703,6 +707,10 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_CTC:
             CHANGING_PROGRAM(AddCounter(ELEM_CTC));
+            break;
+
+        case MNU_INSERT_CTR:
+            CHANGING_PROGRAM(AddCounter(ELEM_CTR));
             break;
 
         case MNU_INSERT_RES:
@@ -1602,6 +1610,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 case 'J':
                     CHANGING_PROGRAM(AddCounter(ELEM_CTC));
+                    break;
+
+                case 'K':
+                    CHANGING_PROGRAM(AddCounter(ELEM_CTR));
                     break;
 
                 case 'M':

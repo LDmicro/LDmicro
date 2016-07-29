@@ -99,6 +99,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_COMMENT      0x20
 #define MNU_INSERT_CONTACTS     0x21
 #define MNU_INSERT_COIL         0x22
+#define MNU_INSERT_TCY          0x2301
 #define MNU_INSERT_TON          0x23
 #define MNU_INSERT_TOF          0x24
 #define MNU_INSERT_RTO          0x25
@@ -234,6 +235,7 @@ typedef signed long SDWORD;
 
 #define ELEM_CONTACTS           0x10
 #define ELEM_COIL               0x11
+#define ELEM_TCY                0x1201
 #define ELEM_TON                0x12
 #define ELEM_TOF                0x13
 #define ELEM_RTO                0x14
@@ -311,6 +313,7 @@ typedef signed long SDWORD;
         case ELEM_COMMENT: \
         case ELEM_COIL: \
         case ELEM_CONTACTS: \
+        case ELEM_TCY: \
         case ELEM_TON: \
         case ELEM_TOF: \
         case ELEM_RTO: \
@@ -583,11 +586,12 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_UART_RX         11
 #define IO_TYPE_PWM_OUTPUT      12
 #define IO_TYPE_INTERNAL_RELAY  13
-#define IO_TYPE_TON             14
-#define IO_TYPE_TOF             15
-#define IO_TYPE_MODBUS_CONTACT  16
-#define IO_TYPE_MODBUS_COIL     17
-#define IO_TYPE_MODBUS_HREG     18
+#define IO_TYPE_TCY             14
+#define IO_TYPE_TON             15
+#define IO_TYPE_TOF             16
+#define IO_TYPE_MODBUS_CONTACT  17
+#define IO_TYPE_MODBUS_COIL     18
+#define IO_TYPE_MODBUS_HREG     19
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;

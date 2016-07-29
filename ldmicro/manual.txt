@@ -389,6 +389,15 @@ INSTRUCTIONS REFERENCE
     counter variable elsewhere, for example with a MOV instruction.
 
 
+> CYCLIC TIMER                Tmeander
+                           -[TCY 500 ms]-
+
+    If input signal is true, this instruction produce meander with
+    period 1 s and frequency 1 Hz. If the signal going into
+    the instruction is false, then the output signal is false.
+    If Tmeander value = PLC cycle time, the TCY is equal to OSC.
+
+
 > RESET                        Trto             Citems
                            ----{RES}----     ----{RES}----
 
@@ -420,6 +429,18 @@ INSTRUCTIONS REFERENCE
     then the output is true. It therefore generates a pulse one scan
     wide on each falling edge of its input signal. This instruction is
     useful if you want to trigger events off the falling edge of a signal.
+
+
+> OSCILLATOR                       _   _
+                           --[ OSC/ \_/ \_]--
+
+                             F=1/(2*Tcycle)
+                            _   _   _   _   _
+                    _______/ \_/ \_/ \_/ \_/ \_______
+
+    If input signal is true, this instruction produce meander with
+    period (2*PLC cycle time). If the signal going into
+    the instruction is false, then the output signal is false.
 
 
 > SHORT CIRCUIT, OPEN CIRCUIT
@@ -491,13 +512,13 @@ INSTRUCTIONS REFERENCE
 
 
 > COUNTER                      Cname          Cname
-                           --[CTU >=5]--  --[CTD >=5]--
+                           --[CTU >= 5]--  --[CTD > -5]--
 
     A counter increments (CTU, count up) or decrements (CTD, count
     down) the associated count on every rising edge of the rung input
     condition (i.e. what the rung input condition goes from false to
     true). The output condition from the counter is true if the counter
-    variable is greater than or equal to 5, and false otherwise. The
+    variable CTU >= 5 (CTD > -5), and false otherwise. The
     rung output condition may be true even if the input condition is
     false; it only depends on the counter variable. You can have CTU
     and CTD instructions with the same name, in order to increment and

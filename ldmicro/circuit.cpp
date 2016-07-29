@@ -387,7 +387,20 @@ void AddCounter(int which)
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.counter.name, "Cnew");
-    strcpy(t->d.counter.max, which == ELEM_CTD ? "-10" : "10");
+    switch(which) {
+        case ELEM_CTU:
+            strcpy(t->d.counter.max, "10");
+            break;
+        case ELEM_CTD:
+            strcpy(t->d.counter.max, "-10");
+            break;
+        case ELEM_CTC:
+            strcpy(t->d.counter.max, "9");
+            break;
+        case ELEM_CTR:
+            strcpy(t->d.counter.max, "-9");
+            break;
+    }
     strcpy(t->d.counter.init, "0");
 
     AddLeaf(which, t);

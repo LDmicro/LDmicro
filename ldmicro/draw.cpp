@@ -83,6 +83,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_OPEN:
         case ELEM_SHORT:
         case ELEM_CONTACTS:
+        case ELEM_TCY:
         case ELEM_TON:
         case ELEM_TOF:
         case ELEM_RTO:
@@ -989,6 +990,7 @@ cmp:
             *cx += POS_WIDTH;
             break;
         }
+        case ELEM_TCY:
         case ELEM_RTO:
         case ELEM_TON:
         case ELEM_TOF: {
@@ -999,6 +1001,8 @@ cmp:
                 s = "\x01TOF\x02";
             else if(which == ELEM_RTO)
                 s = "\x01RTO\x02";
+            else if(which == ELEM_TCY)
+                s = "\x01TCY\x02";
             else oops();
 
             ElemTimer *t = &leaf->d.timer;

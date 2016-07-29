@@ -213,6 +213,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_BIN2BCD, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_BCD2BIN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SWAP, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_TCY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TON, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TOF, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OSR, t);
@@ -381,6 +382,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert TO&F (Delayed Turn Off)\tF"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTO,
         _("Insert R&TO (Retentive Delayed Turn On)\tT"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TCY,
+        _("Insert TCY (Cyclic On/Off)"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,

@@ -150,6 +150,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_ONE_SHOT_FALLING;
     } else if(memcmp(line, "OSC", 3)==0) {
         *which = ELEM_OSC;
+    } else if((sscanf(line, "TCY %s %d", l->d.timer.name,
+        &l->d.timer.delay)==2))
+    {
+        *which = ELEM_TCY;
     } else if((sscanf(line, "TON %s %d", l->d.timer.name,
         &l->d.timer.delay)==2))
     {
@@ -628,6 +632,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                 l->d.coil.setOnly, l->d.coil.resetOnly);
             break;
 
+        case ELEM_TCY:
+            s = "TCY"; goto timer;
         case ELEM_TON:
             s = "TON"; goto timer;
         case ELEM_TOF:

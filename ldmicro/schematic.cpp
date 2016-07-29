@@ -487,7 +487,8 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         //
         case ELEM_TON: newWhich = ELEM_TOF; break;
         case ELEM_TOF: newWhich = ELEM_RTO; break;
-        case ELEM_RTO: newWhich = ELEM_TON; break;
+        case ELEM_RTO: newWhich = ELEM_TCY; break;
+        case ELEM_TCY: newWhich = ELEM_TON; break;
         //
         case ELEM_EQU: newWhich = ELEM_NEQ; break;
         case ELEM_NEQ: newWhich = ELEM_GEQ; break;
@@ -622,6 +623,7 @@ void EditSelectedElement(void)
                 Selected->d.coil.name);
             break;
 
+        case ELEM_TCY:
         case ELEM_TON:
         case ELEM_TOF:
         case ELEM_RTO:
