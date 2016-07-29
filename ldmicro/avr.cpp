@@ -1421,6 +1421,7 @@ static void WriteMemory(DWORD addr, BYTE val)
 static void WriteMemoryNextAddr(BYTE val)
 //used ZL, r25; Opcodes: 2
 {
+    // Z was setted in WriteMemory()
     // load r25 with the data
     Instruction(OP_LDI, r25, val);
     // do the store
@@ -2401,6 +2402,8 @@ static void CompileFromIntermediate(void)
                   WriteMemoryNextAddr(BYTE((a->literal >> 8) & 0xff));
                 if(sov >= 3)
                   WriteMemoryNextAddr(BYTE((a->literal >> 16) & 0xff));
+                if(sov >= 4)
+                  WriteMemoryNextAddr(BYTE((a->literal >> 24) & 0xff));
                 break;
 
             case INT_INCREMENT_VARIABLE: {
