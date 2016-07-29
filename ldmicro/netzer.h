@@ -44,7 +44,7 @@ typedef struct NetzerMetaInformationTag
     MetaFlags   Flags;
     BYTE    ProjectID; /// Dedicated for given project.
     WORD    Opcodes;
-    WORD    CycleTime;
+    DWORD   CycleTime;
     DWORD   TimeStamp;
     BYTE    ProjectnameLength;
 //  BYTE    Projectname[];

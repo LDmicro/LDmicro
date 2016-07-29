@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -47,7 +47,7 @@ static HWND ValuesTextbox[MAX_LOOK_UP_TABLE_LEN];
 static LONG_PTR PrevValuesProc[MAX_LOOK_UP_TABLE_LEN];
 static HWND ValuesLabel[MAX_LOOK_UP_TABLE_LEN];
 
-static SWORD ValuesCache[MAX_LOOK_UP_TABLE_LEN];
+static SDWORD ValuesCache[MAX_LOOK_UP_TABLE_LEN];
 
 static LONG_PTR PrevDestProc;
 static LONG_PTR PrevIndexProc;
@@ -64,7 +64,7 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
             return 0;
         }
     }
-    
+
     WNDPROC w;
     int i;
     for(i = 0; i < MAX_LOOK_UP_TABLE_LEN; i++) {
@@ -155,7 +155,7 @@ static void MakeFixedControls(BOOL forPwl)
     NiceFont(CountTextbox);
 
     if(!forPwl) {
-        AsStringCheckbox = CreateWindowEx(0, WC_BUTTON, 
+        AsStringCheckbox = CreateWindowEx(0, WC_BUTTON,
             _("Edit table of ASCII values like a string"), WS_CHILD |
                 WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_AUTOCHECKBOX,
             10, 100, 300, 21, LutDialog, NULL, Instance, NULL);
@@ -164,25 +164,25 @@ static void MakeFixedControls(BOOL forPwl)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        231, 10, 70, 23, LutDialog, NULL, Instance, NULL); 
+        231, 10, 70, 23, LutDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        231, 40, 70, 23, LutDialog, NULL, Instance, NULL); 
+        231, 40, 70, 23, LutDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 
-    PrevDestProc = SetWindowLongPtr(DestTextbox, GWLP_WNDPROC, 
+    PrevDestProc = SetWindowLongPtr(DestTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNameProc);
-    PrevIndexProc = SetWindowLongPtr(IndexTextbox, GWLP_WNDPROC, 
+    PrevIndexProc = SetWindowLongPtr(IndexTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNameProc);
-    PrevCountProc = SetWindowLongPtr(CountTextbox, GWLP_WNDPROC, 
+    PrevCountProc = SetWindowLongPtr(CountTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyDigitsProc);
 }
 
 //-----------------------------------------------------------------------------
 // Destroy all of the controls so that we can start anew. This is necessary
-// because if the size of the LUT changes, or if the user switches from 
+// because if the size of the LUT changes, or if the user switches from
 // table entry to string entry, we must completely reconfigure the dialog.
 //-----------------------------------------------------------------------------
 static void DestroyLutControls(void)
@@ -253,7 +253,7 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
         }
         str[j++] = '\0';
         StringTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, str,
-            WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | 
+            WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
                 WS_VISIBLE,
             10, 130, 294, 21, LutDialog, NULL, Instance, NULL);
         FixedFont(StringTextbox);
@@ -372,7 +372,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
         100, 100, 320, 375, NULL, NULL, Instance, NULL);
     MakeFixedControls(FALSE);
     MakeLutControls(asString, count, FALSE);
-  
+
     // Set up the controls to reflect the initial configuration.
     SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(t->dest));
     SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(t->index));
@@ -497,7 +497,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
         100, 100, 320, 375, NULL, NULL, Instance, NULL);
     MakeFixedControls(TRUE);
     MakeLutControls(FALSE, count*2, TRUE);
-  
+
     // Set up the controls to reflect the initial configuration.
     SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(t->dest));
     SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(t->index));

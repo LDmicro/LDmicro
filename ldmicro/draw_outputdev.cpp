@@ -211,7 +211,7 @@ int ScreenRowsAvailable(void)
     if(ScrollXOffsetMax == 0) {
         adj = 0;
     } else {
-        adj = GetSystemMetrics(SM_CYHSCROLL); //18;
+        adj = GetSystemMetrics(SM_CYHSCROLL); // 18;
     }
     return (IoListTop - Y_PADDING - adj + FONT_HEIGHT) / (POS_HEIGHT*FONT_HEIGHT);
 }
@@ -312,10 +312,9 @@ void PaintWindow(void)
         }
 
         cy += thisHeight;
-        //cy += POS_HEIGHT; // OR one empty Rung between Rungs
-        cy += 1; // OR one empty text line between Rungs
+//      cy += POS_HEIGHT; // OR one empty Rung between Rungs
+// // //cy += 1;          // OR one empty text line between Rungs
     }
-    //cy -= 1;
     DrawEndRung(0, cy);
 
     y = Y_PADDING + FONT_HEIGHT*cy;
@@ -559,8 +558,10 @@ void ExportDrawingAsText(char *file)
 
     int totalHeight = ProgCountRows();
     totalHeight += 1; // EndRung
-    totalHeight *= (POS_HEIGHT);//+1); //+1 for empty line
-    totalHeight += 2; // after EndRung
+    totalHeight *= POS_HEIGHT;
+    totalHeight += Prog.numRungs; // for one empty line between rungs
+    totalHeight += 2; // after EndRung for # of int and # of AVR/PIC
+    //totalHeight is Ok!
 
     ExportBuffer = (char **)CheckMalloc(totalHeight * sizeof(char *));
 
@@ -608,9 +609,8 @@ void ExportDrawingAsText(char *file)
 
         cy += POS_HEIGHT*CountHeightOfElement(ELEM_SERIES_SUBCKT,
             Prog.rungs[i]);
-        //cy += 1; //+1 for empty line
+        cy += 1; //+1 for one empty line
     }
-//  cy -= 2;
     DrawEndRung(6, cy);
 
     sprintf(str,"%4d", Prog.numRungs);
@@ -679,6 +679,9 @@ void ExportDrawingAsText(char *file)
         fprintf(f, "%s", b);
     }
 
+    fprintf(f, "\nVAR LIST:\n");
+    SaveVarListToFile(f);
+
     fclose(f);
 
     // we may have trashed the grid tables a bit; a repaint will fix that
@@ -689,19 +692,21 @@ void ExportDrawingAsText(char *file)
 // Determine the settings of the vertical and (if needed) horizontal
 // scrollbars used to scroll our view of the program.
 //-----------------------------------------------------------------------------
+int totalHeightScrollbars = 0;
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
 {
-    int totalHeight = ProgCountRows()
-                   + (Prog.numRungs + POS_HEIGHT)/POS_HEIGHT; // one empty text line between Rungs
+    totalHeightScrollbars = ProgCountRows();
+// // //           + (Prog.numRungs + 0) / POS_HEIGHT // one empty text line between Rungs
+//                 + (Prog.numRungs + POS_HEIGHT/2) / POS_HEIGHT // one empty text line between Rungs
+//                 + 1; // for the end rung
     /*
     int totalHeight = 0;
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-        totalHeight++;
+        totalHeight++; //  for the empty rung between rungs
     }
     totalHeight += 1; // for the end rung
-
     */
 
     int totalWidth = ProgCountWidestRow();
@@ -730,7 +735,7 @@ void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
     vert->cbSize = sizeof(*vert);
     vert->fMask = SIF_DISABLENOSCROLL | SIF_ALL;
     vert->nMin = 0;
-    vert->nMax = totalHeight;// - 1;
+    vert->nMax = totalHeightScrollbars;// - 1;
     vert->nPos = ScrollYOffset;
     vert->nPage = ScreenRowsAvailable();
 

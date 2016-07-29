@@ -103,7 +103,7 @@ DWORD AllocOctetRam(void)
     if(MemOffset >= Prog.mcu->ram[0].len) {
         Error(_("Out of memory; simplify program or choose "
             "microcontroller with more memory."));
-            CompileError();
+        CompileError();
     }
 
     MemOffset++;
@@ -155,25 +155,25 @@ static void MemForPin(char *name, DWORD *addr, int *bit, BOOL asInput)
     *bit = -1;
     if(Prog.mcu) {
         /*
-    int pin = Prog.io.assignment[i].pin;
-    for(i = 0; i < Prog.mcu->pinCount; i++) {
-        if(Prog.mcu->pinInfo[i].pin == pin)
-            break;
-    }
+        int pin = Prog.io.assignment[i].pin;
+        for(i = 0; i < Prog.mcu->pinCount; i++) {
+            if(Prog.mcu->pinInfo[i].pin == pin)
+                break;
+        }
 
-    if(i >= Prog.mcu->pinCount) {
-        Error(_("Must assign pins for all I/O.\r\n\r\n"
-            "'%s' is not assigned."), name);
+        if(i >= Prog.mcu->pinCount) {
+            Error(_("Must assign pins for all I/O.\r\n\r\n"
+                "'%s' is not assigned."), name);
             //CompileError();
         } else {
-    McuIoPinInfo *iop = &Prog.mcu->pinInfo[i];
+            McuIoPinInfo *iop = &Prog.mcu->pinInfo[i];
 
-    if(asInput) {
-        *addr = Prog.mcu->inputRegs[iop->port - 'A'];
-    } else {
-        *addr = Prog.mcu->outputRegs[iop->port - 'A'];
-    }
-    *bit = iop->bit;
+            if(asInput) {
+                *addr = Prog.mcu->inputRegs[iop->port - 'A'];
+            } else {
+                *addr = Prog.mcu->outputRegs[iop->port - 'A'];
+            }
+            *bit = iop->bit;
         }
         */
         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
@@ -229,16 +229,16 @@ BYTE MuxForAdcVariable(char *name)
     if(i >= Prog.io.count) oops();
 
     if(Prog.mcu) {
-    int j;
-    for(j = 0; j < Prog.mcu->adcCount; j++) {
-        if(Prog.mcu->adcInfo[j].pin == Prog.io.assignment[i].pin) {
-            break;
+        int j;
+        for(j = 0; j < Prog.mcu->adcCount; j++) {
+            if(Prog.mcu->adcInfo[j].pin == Prog.io.assignment[i].pin) {
+                break;
+            }
         }
-    }
-    if(j == Prog.mcu->adcCount) {
-        Error(_("Must assign pins for all ADC inputs (name '%s')."), name);
-        CompileError();
-    }
+        if(j == Prog.mcu->adcCount) {
+            Error(_("Must assign pins for all ADC inputs (name '%s')."), name);
+            CompileError();
+        }
         res = Prog.mcu->adcInfo[j].muxRegValue;
     }
 
@@ -404,9 +404,26 @@ static int CompareIo(const void *av, const void *bv)
 }
 
 //-----------------------------------------------------------------------------
+void SaveVarListToFile(FILE *f)
+{
+    qsort(Variables, VariableCount, sizeof(Variables[0]),
+        CompareIo);
 
+    int i;
+    for(i = 0; i < VariableCount; i++)
+      if((Variables[i].type != IO_TYPE_INT_INPUT)
+      && (Variables[i].type != IO_TYPE_DIG_INPUT)
+      && (Variables[i].type != IO_TYPE_DIG_OUTPUT)
+      && (Variables[i].type != IO_TYPE_INTERNAL_RELAY))
+    if(Variables[i].name[0] != '$') {
+          fprintf(f, "  %3d bytes %s %s\n",
+            SizeOfVar(Variables[i].name),
+            Variables[i].name,
+           (Variables[i].Allocated?"":"\tNow not used !!!"));
+        }
+}
 
-
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // Allocate or retrieve the bit of memory assigned to an internal relay or
 // other thing that requires a single bit of storage.
@@ -597,7 +614,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError)
                     "'%s' is not assigned."),
                     Prog.io.assignment[i].name);
                 if(raiseError)
-                CompileError();
+                    CompileError();
             }
 
             if(usedUart &&
@@ -607,20 +624,20 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError)
                 Error(_("UART in use; pins %d and %d reserved for that."),
                     Prog.mcu->uartNeeds.rxPin, Prog.mcu->uartNeeds.txPin);
                 if(raiseError)
-                CompileError();
+                    CompileError();
             }
             /*
             if(usedPwm && pin == Prog.mcu->pwmNeedsPin) {
                 Error(_("PWM in use; pin %d reserved for that."),
                     Prog.mcu->pwmNeedsPin);
                 if(raiseError)
-                CompileError();
+                    CompileError();
             }
             */
           }
         }
-        }
     }
+}
 
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput)
 {

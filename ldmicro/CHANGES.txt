@@ -1,4 +1,8 @@
-== Release 3.5.3 
+== Release 3.5.3
+
+    * Remuved lines between rungs.
+      It fix troubles to set the cursor in the instruction with mouse.
+      If you need a delimiter between rungs, you can use an empty comment.
 
     * Fixed: Attention! TON, TOF, RTO timers in LDmicro v2.3 are shorter than
       those specified in the LD file. They shorter at one PLC cycle time.
@@ -35,6 +39,8 @@
       Yf_pulse - is pulse at falling edge of meander.
       Frequency is 10 Hz. Width of pulse is a PLC cycle time.
 
+    * PIC optimization. WriteRegister(reg, 0) replaced CLRF, reg.
+
 == Release 3.5.2 experimental
 
     * Fixed: Some user interface bug.
@@ -59,7 +65,7 @@
       CTD,CTR counter start from 'Init' and count down to 'Min' value.
       CTR generate overflow impulse when Counter==Min.
 
-      Attention! You may need to correct the previous versions of the program containing CTD counter!
+    * Attention! You may need to correct the previous versions of the program containing CTD counter!
       For example:
                Counter:0  1   2   3   4   5
                           _   _   _   _   _

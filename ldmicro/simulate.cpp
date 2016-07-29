@@ -450,7 +450,6 @@ static void CheckVariableNamesCircuit(int which, void *elem)
     ElemLeaf *l = (ElemLeaf *)elem;
     char *name = NULL;
     DWORD flag;
-    char str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
