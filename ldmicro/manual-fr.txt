@@ -507,7 +507,7 @@ REFERENCE DES INSTRUCTIONS
 
 
 > COMPTEUR DECOMPTEUR          Cnom           Cnom
-                           --[CTU >=5]--  --[CTD >=5]--
+                           --[CTU >= 5]--  --[CTD > -5]--
 
     Un compteur incrémente ( Compteur CTU, count up) ou décrémente
     (Décompteur CTD, count down) une variable à chaque front montant de

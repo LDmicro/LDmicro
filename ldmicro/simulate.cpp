@@ -62,13 +62,14 @@ static int AdcShadowsCount;
 #define VAR_FLAG_TON     0x00000001
 #define VAR_FLAG_TOF     0x00000002
 #define VAR_FLAG_RTO     0x00000004
-#define VAR_FLAG_CTU     0x00000008
-#define VAR_FLAG_CTD     0x00000010
-#define VAR_FLAG_CTC     0x00000020
-#define VAR_FLAG_CTR     0x00000100
-#define VAR_FLAG_RES     0x00000040
+#define VAR_FLAG_TCY     0x00000008
+#define VAR_FLAG_CTU     0x00000010
+#define VAR_FLAG_CTD     0x00000020
+#define VAR_FLAG_CTC     0x00000040
+#define VAR_FLAG_CTR     0x00000080
+#define VAR_FLAG_RES     0x00000100
 #define VAR_FLAG_TABLE   0x00000200
-#define VAR_FLAG_ANY     0x00000080
+#define VAR_FLAG_ANY     0x00008000
 
 #define VAR_FLAG_OTHERWISE_FORGOTTEN  0x80000000
 
@@ -333,6 +334,11 @@ static char *Check(char *name, DWORD flag, int i)
                 s = _("TON: variable cannot be used elsewhere");
             break;
 
+        case VAR_FLAG_TCY:
+            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TCY))
+                s = _("TCY: variable cannot be used elsewhere");
+            break;
+
         #ifdef ONLY_RESET_RTO
         //It is impossible to manipulate the
         // counter variable elsewhere, for example with a MOV instruction.
@@ -444,7 +450,6 @@ static void CheckVariableNamesCircuit(int which, void *elem)
     ElemLeaf *l = (ElemLeaf *)elem;
     char *name = NULL;
     DWORD flag;
-    char str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -470,12 +475,15 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_RTO:
         case ELEM_TOF:
         case ELEM_TON:
+        case ELEM_TCY:
             if(which == ELEM_RTO)
                 flag = VAR_FLAG_RTO;
             else if(which == ELEM_TOF)
                 flag = VAR_FLAG_TOF;
             else if(which == ELEM_TON)
                 flag = VAR_FLAG_TON;
+            else if(which == ELEM_TCY)
+                flag = VAR_FLAG_TCY;
             else oops();
 
             MarkWithCheck(l->d.timer.name, flag);
@@ -598,6 +606,10 @@ void CheckVariableNames(void)
 
     // reCheck
     for(i = 0; i < VariableCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_TCY)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TCY, i));
+
+    for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TON)
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TON, i));
 
@@ -680,6 +692,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_RTO:
         case ELEM_TOF:
         case ELEM_TON:
+        case ELEM_TCY:
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
@@ -1244,6 +1257,7 @@ void DescribeForIoList(char *name, int type, char *out)
             sprintf(out, "\"%s\"", GetSimulationStr(name));
             break;
 
+        case IO_TYPE_TCY:
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
         case IO_TYPE_RTO: {

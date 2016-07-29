@@ -532,7 +532,7 @@ Variablen oder eine Variable mit einer 16-Bitzeichen-Konstanten.
 
 
 > ZÄHLER        CName          CName
-              --[CTU >=5]--  --[CTD >=5]—
+              --[CTU >= 5]--  --[CTD > -5]--
 
 Ein Zähler inkrementiert (CTU, aufwärtszählen) oder dekrementiert
 (CTD, abwärtszählen) die bezogene Zählung bei jeder steigenden Flanke

@@ -342,6 +342,7 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_UART_TX:           return _("UART tx");
         case IO_TYPE_UART_RX:           return _("UART rx");
         case IO_TYPE_PWM_OUTPUT:        return _("PWM out");
+        case IO_TYPE_TCY:               return _("cyclic on/off");
         case IO_TYPE_TON:               return _("turn-on delay");
         case IO_TYPE_TOF:               return _("turn-off delay");
         case IO_TYPE_RTO:               return _("retentive timer");

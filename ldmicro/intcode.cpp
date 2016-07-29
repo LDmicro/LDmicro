@@ -1006,7 +1006,32 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
             Op(INT_END_IF);
             break;
+        case ELEM_TCY: {
+            Comment(3, "ELEM_TCY");
+            SDWORD period = TimerPeriod(l)-1;
 
+            char store[MAX_NAME_LEN];
+            GenSymOneShot(store, "TCY", l->d.timer.name);
+
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+                Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
+              Op(INT_ELSE);
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+                Op(INT_IF_BIT_CLEAR, store);
+                  Op(INT_SET_BIT, store);
+                Op(INT_ELSE);
+                  Op(INT_CLEAR_BIT, store);
+               Op(INT_END_IF);
+              Op(INT_END_IF);
+              Op(INT_IF_BIT_CLEAR, store);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+            Op(INT_END_IF);
+            break;
+        }
         case ELEM_TON: {
             Comment(3, "ELEM_TON");
             SDWORD period = TimerPeriod(l);
@@ -1139,7 +1164,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             break;
         }
-        //#ifdef NEW_FEATURE
+        
         case ELEM_CTR: {
             Comment(3, "ELEM_CTR");
             if(IsNumber(l->d.counter.max))
@@ -1191,7 +1216,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
             break;
         }
-        //#endif
+        
         case ELEM_CTC: {
             Comment(3, "ELEM_CTC");
             if(IsNumber(l->d.counter.max))

@@ -62,7 +62,7 @@ BOOL FindSelected(int *gx, int *gy)
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
             if(DisplayMatrix[i][j] == Selected) {
-              if(SelectedWhich!=ELEM_COMMENT)
+              if(SelectedWhich != ELEM_COMMENT)
                 while(DisplayMatrix[i+1][j] == Selected) {
                     i++;
                 }
@@ -487,7 +487,8 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         //
         case ELEM_TON: newWhich = ELEM_TOF; break;
         case ELEM_TOF: newWhich = ELEM_RTO; break;
-        case ELEM_RTO: newWhich = ELEM_TON; break;
+        case ELEM_RTO: newWhich = ELEM_TCY; break;
+        case ELEM_TCY: newWhich = ELEM_TON; break;
         //
         case ELEM_EQU: newWhich = ELEM_NEQ; break;
         case ELEM_NEQ: newWhich = ELEM_GEQ; break;
@@ -622,6 +623,7 @@ void EditSelectedElement(void)
                 Selected->d.coil.name);
             break;
 
+        case ELEM_TCY:
         case ELEM_TON:
         case ELEM_TOF:
         case ELEM_RTO:
@@ -742,7 +744,6 @@ void EditElementMouseDoubleclick(int x, int y)
 {
     x += ScrollXOffset;
 
-//  y -= FONT_HEIGHT;
     y += FONT_HEIGHT/2;
 
     int gx = (x - X_PADDING)/(POS_WIDTH*FONT_WIDTH);
@@ -788,6 +789,31 @@ void MoveCursorMouseClick(int x, int y)
     int gx = gx0;
     int gy = gy0 + ScrollYOffset;
 
+    int dognail = 0;
+
+    if(!VALID_LEAF(DisplayMatrix[gx][gy])) {
+        int dyUp = 0;
+        int dyDn = 0;
+        while ( (gy-dyUp > 0) && (!VALID_LEAF(DisplayMatrix[gx][gy-dyUp])) ) {
+            dyUp++;
+        }
+        while ( (gy+dyDn < DISPLAY_MATRIX_Y_SIZE-1) && (!VALID_LEAF(DisplayMatrix[gx][gy+dyDn])) ) {
+            dyDn++;
+        }
+        // a dog-nail
+        if(dyDn<dyUp) {
+            if(VALID_LEAF(DisplayMatrix[gx][gy+dyDn])) {
+                gy += dyDn;
+                dognail = SELECTED_ABOVE;
+            }
+        } else {
+            if(VALID_LEAF(DisplayMatrix[gx][gy-dyUp])) {
+                gy -= dyUp;
+                dognail = SELECTED_BELOW;
+            }
+        }
+    }
+
     if(VALID_LEAF(DisplayMatrix[gx][gy])) {
         int i, j;
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
@@ -829,7 +855,9 @@ void MoveCursorMouseClick(int x, int y)
 
         int state;
         if(abs(decideY) > abs(decideX)) {
-            if(decideY > 0) {
+            if(dognail) {
+                state = dognail;
+            } else if(decideY > 0) {
                 state = SELECTED_BELOW;
             } else {
                 state = SELECTED_ABOVE;

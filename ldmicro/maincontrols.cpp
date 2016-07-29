@@ -213,6 +213,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_BIN2BCD, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_BCD2BIN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SWAP, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_TCY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TON, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TOF, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OSR, t);
@@ -277,7 +278,9 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(FileMenu, MF_STRING,   MNU_NEW,    _("&New\tCtrl+N"));
     AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,   _("&Open...\tCtrl+O"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_LD,  _("Open ld in notepad\tF4"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tF6"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_HEX, _("Open hex in notepad\tAlt+F6"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tAlt+F5"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_EXPLORE_DIR, _("Explore ld directory"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,_("Save &As..."));
 
@@ -294,15 +297,17 @@ HMENU MakeMainWindowMenus(void)
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
-        _("Insert Rung &Before\tShift+6"));
+        _("Insert Rung &Before\tShift+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
-        _("Insert Rung &After\tShift+V"));
+        _("Insert Rung &After\tShift+Dn"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_UP,
         _("Move Selected Rung &Up\tAlt+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
         _("Move Selected Rung &Down\tAlt+Down"));
+
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN,
-        _("Dup&licate Selected Rung\tCtrl+F6"));
+        _("Dup&licate Selected Rung\tCtrl+D"));
     AppendMenu(EditMenu, MF_STRING, MNU_CAT_RUNG,
         _("Ca&t Rung's\tCtrl+X or Shift+Del"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG,
@@ -312,7 +317,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_STRING, MNU_PASTE_RUNG,
         _("&Paste Rung's\tCtrl+V or Shift+Insert"));
     AppendMenu(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG,
-        _("Paste Rung's &Into Rung\tAlt+Insert"));
+        _("Paste Rung's/Element &Into Rung\tAlt+Insert"));
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
@@ -381,6 +386,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert TO&F (Delayed Turn Off)\tF"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTO,
         _("Insert R&TO (Retentive Delayed Turn On)\tT"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TCY,
+        _("Insert TCY (Cyclic On/Off)"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
@@ -578,6 +585,8 @@ HMENU MakeMainWindowMenus(void)
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
     AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
+    AppendMenu(help, MF_STRING, MNU_FORUM, _("LDmicro Forum..."));
+    AppendMenu(help, MF_STRING, MNU_EMAIL, _("E-mail..."));
     AppendMenu(help, MF_STRING, MNU_RELEASE, _("Release..."));
 
     TopMenu = CreateMenu();

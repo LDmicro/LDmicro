@@ -389,7 +389,7 @@ KOMUTLAR ve ELEMANLAR
 
 
 > SAYICI                       Cname          Cname
-                           --[CTU >=5]--  --[CTD >=5]--
+                           --[CTU >= 5]--  --[CTD > -5]--
 
     Sayýcýlar giriþlerinin 0'dan 1'e her geçiþinde yani yükselen kenarýnda
     deðerlerini 1 artýrýr (CTU) yada eksiltirler (CTD). Verilen þart doðru ise

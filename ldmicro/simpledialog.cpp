@@ -241,6 +241,7 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
 {
     char *s;
     switch(which) {
+        case ELEM_TCY: s = _("Cyclic On/Off"); break;
         case ELEM_TON: s = _("Turn-On Delay"); break;
         case ELEM_TOF: s = _("Turn-Off Delay"); break;
         case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;

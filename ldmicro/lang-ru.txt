@@ -743,10 +743,7 @@
 "Программа изменена со времени последнего сохранения.\r\n\r\nСохранить изменения?"
 
 "Timer period too long (max 32767 times cycle time); use a slower cycle time."
-"Timer period too long (max 32767 times cycle time); use a slower cycle time."
-
-"Timer period too long (max 32767 times cycle time); use a slower cycle time.\r\n%s=%.3f ms=%d cycles of PLC"
-"Время периода слишком велико (макс. 32767 * время цикла ПЛК). Используйте более медленный цикл времени ПЛК.\r\n%s=%.3f ms=%d циклов ПЛК"
+"Время периода слишком велико (макс. 32767 * T цикла ПЛК). Используйте более медленный цикл времени ПЛК."
 
 "Timer period too short (needs faster cycle time)."
 "Время периода слишком мало(необходим более быстрый цикл времени ПЛК)."

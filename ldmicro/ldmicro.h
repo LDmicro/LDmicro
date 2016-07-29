@@ -68,10 +68,12 @@ typedef signed long SDWORD;
 #define MNU_NOTEPAD_LD          0x0700
 #define MNU_NOTEPAD_PL          0x0701
 #define MNU_NOTEPAD_ASM         0x0702
-#define MNU_NOTEPAD_C           0x0703
-#define MNU_NOTEPAD_H           0x0704
-#define MNU_NOTEPAD_PAS         0x0705
+#define MNU_NOTEPAD_HEX         0x0703
+#define MNU_NOTEPAD_C           0x0704
+#define MNU_NOTEPAD_H           0x0705
+#define MNU_NOTEPAD_PAS         0x0706
 #define MNU_NOTEPAD_TXT         0x070F
+#define MNU_EXPLORE_DIR         0x0780
 
 #define MNU_UNDO                0x10
 #define MNU_REDO                0x11
@@ -99,6 +101,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_COMMENT      0x20
 #define MNU_INSERT_CONTACTS     0x21
 #define MNU_INSERT_COIL         0x22
+#define MNU_INSERT_TCY          0x2301
 #define MNU_INSERT_TON          0x23
 #define MNU_INSERT_TOF          0x24
 #define MNU_INSERT_RTO          0x25
@@ -199,6 +202,10 @@ typedef signed long SDWORD;
 
 #define MNU_MANUAL              0x80
 #define MNU_ABOUT               0x81
+#define MNU_FORUM               0x8101
+#define MNU_WIKI                0x8102
+#define MNU_LAST_RELEASE        0x8103
+#define MNU_EMAIL               0x8104
 #define MNU_RELEASE             0x82
 
 #define MNU_COMPILE_XINT        0x83    // Extended interpreter
@@ -234,6 +241,7 @@ typedef signed long SDWORD;
 
 #define ELEM_CONTACTS           0x10
 #define ELEM_COIL               0x11
+#define ELEM_TCY                0x1201
 #define ELEM_TON                0x12
 #define ELEM_TOF                0x13
 #define ELEM_RTO                0x14
@@ -311,6 +319,7 @@ typedef signed long SDWORD;
         case ELEM_COMMENT: \
         case ELEM_COIL: \
         case ELEM_CONTACTS: \
+        case ELEM_TCY: \
         case ELEM_TON: \
         case ELEM_TOF: \
         case ELEM_RTO: \
@@ -583,11 +592,14 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_UART_RX         11
 #define IO_TYPE_PWM_OUTPUT      12
 #define IO_TYPE_INTERNAL_RELAY  13
-#define IO_TYPE_TON             14
-#define IO_TYPE_TOF             15
-#define IO_TYPE_MODBUS_CONTACT  16
-#define IO_TYPE_MODBUS_COIL     17
-#define IO_TYPE_MODBUS_HREG     18
+#define IO_TYPE_TCY             14
+#define IO_TYPE_TON             15
+#define IO_TYPE_TOF             16
+#define IO_TYPE_MODBUS_CONTACT  17
+#define IO_TYPE_MODBUS_COIL     18
+#define IO_TYPE_MODBUS_HREG     19
+#define IO_TYPE_PORT_INPUT      20 // 8bit PORT for in data  - McuIoInfo.inputRegs
+#define IO_TYPE_PORT_OUTPUT     21 // 8bit PORT for out data - McuIoInfo.oututRegs
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -860,6 +872,7 @@ extern char IoListSelectionName[MAX_NAME_LEN];
 // draw.cpp
 int ProgCountWidestRow(void);
 int ProgCountRows(void);
+extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
 BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore);
 void DrawEndRung(int cx, int cy);
@@ -1363,6 +1376,7 @@ int SizeOfVar(char *name);
 int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(SDWORD i);
+void SaveVarListToFile(FILE *f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);

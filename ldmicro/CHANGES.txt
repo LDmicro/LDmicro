@@ -1,3 +1,52 @@
+== Release 3.5.3
+
+    * Remuved lines between rungs.
+      It fix troubles to set the cursor in the instruction with mouse.
+      If you need a delimiter between rungs, you can use an empty comment.
+
+    * Fixed: Attention! TON, TOF, RTO timers in LDmicro v2.3 are shorter than
+      those specified in the LD file. They shorter at one PLC cycle time.
+
+      If PLC cycle time is 20 ms and contact bounce about 20 ms you can
+      project schema like this. With anti contact bounce 40 ms.
+      But in fact it was 20 ms.
+    ||                                                                  ||
+    ||     Xstart       Tanti_bounce1        _    _          Rwork      ||
+    ||-------] [---------[TON 40 ms]------[_/ OSR/ \_]--------(S)-------||
+    ||                                                                  ||
+    ||      Xstop       Tanti_bounce2      _      _          Rwork      ||
+    ||-------]/[---------[TOF 40 ms]------[ \_OSF/ \_]--------(R)-------||
+    ||                                                                  ||
+      Now TON, TOF, RTO produce delays as specified in LD file.
+      In this case it 40 ms.
+
+    * Added: Specially for generating cyclic signals with a predetermined
+      period and frequency added Cyclic Timer TCY.
+    ||                                                                  ||
+    ||      Rwork          Tmeandr                          Ymeander    ||
+    ||-------] [---------[TCY 50 ms]---+----------------------( )-------||
+    ||                                 |                                ||
+    ||                                 |     _    _        Yr_pulse     ||
+    ||                                 +--[_/ OSR/ \_]--------( )-------||
+    ||                                 |                                ||
+    ||                                 |   _      _        Yf_pulse     ||
+    ||                                 +--[ \_OSF/ \_]--------( )-------||
+    ||                                                                  ||
+      If input signal is true, TCY produce meander with period 100 ms and
+      frequency 10 Hz. If the signal going into the instruction is false,
+      then the output signal is false.
+      Yr_pulse - is pulse at rising edge of meander.
+      Yf_pulse - is pulse at falling edge of meander.
+      Frequency is 10 Hz. Width of pulse is a PLC cycle time.
+
+    * PIC optimization. WriteRegister(reg, 0) replaced CLRF, reg.
+
+== Release 3.5.2 experimental
+
+    * Fixed: Some user interface bug.
+
+    * Added: INT_DECREMENT_VARIABLE internal oparation.
+
 == Release 3.5.1
 
     * Fixed: Timer0 as PLC cycle in AVR's corrected.
@@ -16,7 +65,7 @@
       CTD,CTR counter start from 'Init' and count down to 'Min' value.
       CTR generate overflow impulse when Counter==Min.
 
-      Attention! You may need to correct the previous versions of the program containing CTD counter!
+    * Attention! You may need to correct the previous versions of the program containing CTD counter!
       For example:
                Counter:0  1   2   3   4   5
                           _   _   _   _   _

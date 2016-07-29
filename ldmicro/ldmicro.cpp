@@ -439,8 +439,8 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     && (compile_MNU != MNU_COMPILE_PASCAL)
     && (compile_MNU != MNU_COMPILE_ANSIC)
     && (compile_MNU != MNU_COMPILE_ARDUINO)
-	&& (compile_MNU != MNU_COMPILE_XINT)
-	&& (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
+    && (compile_MNU != MNU_COMPILE_XINT)
+    && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
@@ -655,6 +655,10 @@ static void ProcessMenu(int code)
             notepad(CurrentSaveFile, "txt");
             break;
 
+        case MNU_NOTEPAD_HEX:
+            notepad(CurrentSaveFile, "hex");
+            break;
+
         case MNU_NOTEPAD_LD:
             if(CheckSaveUserCancels()) break;
             notepad(CurrentSaveFile, "ld");
@@ -681,6 +685,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddCoil());
             break;
 
+        case MNU_INSERT_TCY:
+            CHANGING_PROGRAM(AddTimer(ELEM_TCY));
+            break;
+
         case MNU_INSERT_TON:
             CHANGING_PROGRAM(AddTimer(ELEM_TON));
             break;
@@ -703,6 +711,10 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_CTC:
             CHANGING_PROGRAM(AddCounter(ELEM_CTC));
+            break;
+
+        case MNU_INSERT_CTR:
+            CHANGING_PROGRAM(AddCounter(ELEM_CTR));
             break;
 
         case MNU_INSERT_RES:
@@ -965,6 +977,20 @@ cmp:
             ShowHelpDialog(TRUE);
             break;
 
+        case MNU_FORUM:
+            ShellExecute(0,"open","http://cq.cx/ladder-forum.pl",NULL,NULL,SW_SHOWNORMAL);
+            break;
+
+        case MNU_EMAIL:
+            ShellExecute(0,"open","mailto:LDmicro.GitHub@gmail.com",NULL,NULL,SW_SHOWNORMAL);
+            break;
+
+        case MNU_EXPLORE_DIR:
+            ////ShellExecute(0, "open", CurrentLdPath, NULL, NULL, SW_SHOWNORMAL);
+            ShellExecute(0, "explore", CurrentLdPath, NULL, NULL, SW_SHOWNORMAL);
+            //ShellExecute(0, "find", CurrentLdPath, NULL, NULL, 0);
+            break;
+
         case MNU_RELEASE:
             char str[1024];
             sprintf(str,"Tag: %s\n\n%s\n\nSHA-1: %s\n\n"
@@ -1032,7 +1058,7 @@ void ScrollPgDown()
     InvalidateRect(MainWindow, NULL, FALSE);
 
     SelectedGxAfterNextPaint = gx;
-    SelectedGyAfterNextPaint = ProgCountRows()-1;
+    SelectedGyAfterNextPaint = totalHeightScrollbars-1;
 }
 //-----------------------------------------------------------------------------
 void RollHome()
@@ -1059,7 +1085,7 @@ void RollEnd()
     InvalidateRect(MainWindow, NULL, FALSE);
 
     SelectedGxAfterNextPaint = 0;
-    SelectedGyAfterNextPaint = ProgCountRows()-1;
+    SelectedGyAfterNextPaint = totalHeightScrollbars-1;
     */
     int gx=0, gy=0;
     if (FindSelected(&gx, &gy)) {
@@ -1224,6 +1250,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                 break;
 
+                case VK_F6:
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        notepad(CurrentSaveFile, "hex");
+                        return 1;
+                    }
+                break;
+
                 case VK_BACK:
                     if((GetAsyncKeyState(VK_ALT) & 0x8000)
                     && (GetAsyncKeyState(VK_SHIFT) & 0x8000)) {
@@ -1310,6 +1343,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     ScrollDown();
                   } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
                     CHANGING_PROGRAM(PushRungDown());
+                  } else  if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                    CHANGING_PROGRAM(InsertRung(TRUE));
                   } else {
                     rung1 = RungContainingSelected();
                     MoveCursorKeyboard(wParam);
@@ -1322,6 +1357,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     ScrollUp();
                   } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
                     CHANGING_PROGRAM(PushRungUp());
+                  } else  if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                    CHANGING_PROGRAM(InsertRung(FALSE));
                   } else {
                     rung1 = RungContainingSelected();
                     MoveCursorKeyboard(wParam);
@@ -1421,10 +1458,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     RefreshScrollbars();
                     InvalidateRect(MainWindow, NULL, FALSE);
 
-                    if(gy+ScreenRowsAvailable()-1 < ProgCountRows()-1) {
+                    if(gy+ScreenRowsAvailable()-1 < totalHeightScrollbars-1) {
                         gy+=ScreenRowsAvailable()-1;
                     } else {
-                        gy=ProgCountRows()-1;
+                        gy=totalHeightScrollbars-1;
                     }
                     SelectedGxAfterNextPaint = gx;
                     SelectedGyAfterNextPaint = gy;
@@ -1604,6 +1641,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CHANGING_PROGRAM(AddCounter(ELEM_CTC));
                     break;
 
+                case 'K':
+                    CHANGING_PROGRAM(AddCounter(ELEM_CTR));
+                    break;
+
                 case 'M':
                     CHANGING_PROGRAM(AddMove());
                     break;
@@ -1649,8 +1690,15 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
-                case VK_DIVIDE:
                 case 'D':
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        CHANGING_PROGRAM(CopyRungDown());
+                    } else {
+                        CHANGING_PROGRAM(AddMath(ELEM_DIV));
+                    }
+                    break;
+
+                case VK_DIVIDE:
                     CHANGING_PROGRAM(AddMath(ELEM_DIV));
                     break;
 
@@ -1673,14 +1721,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case 'V':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         CHANGING_PROGRAM(PasteRung(0));
-                    } else if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(InsertRung(TRUE));
-                    }
-                    break;
-
-                case '6':
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(InsertRung(FALSE));
                     }
                     break;
 
