@@ -1488,14 +1488,20 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 static void _WriteRegister(int l, char *f, char *args, DWORD reg, BYTE val, char *comment)
 {
     #ifdef AUTO_BANKING
-    _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
-    _Instruction(l, f, args, OP_MOVWF, reg, 0, comment);
+    if(val) {
+        _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
+        _Instruction(l, f, args, OP_MOVWF, reg, 0, comment);
+    } else
+        _Instruction(l, f, args, OP_CLRF, reg, 0, comment);
     #else
     if(reg & 0x080) Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
     if(reg & 0x100) Instruction(OP_BSF, REG_STATUS, STATUS_RP1);
 
-    _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
-    _Instruction(l, f, args, OP_MOVWF, (reg & 0x7f), 0, comment);
+    if(val) {
+        _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
+        _Instruction(l, f, args, OP_MOVWF, (reg & 0x7f), 0, comment);
+    } else
+        _Instruction(l, f, args, OP_CLRF, reg, 0, comment);
 
     if(reg & 0x080) Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
     if(reg & 0x100) Instruction(OP_BCF, REG_STATUS, STATUS_RP1);

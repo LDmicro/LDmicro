@@ -1421,6 +1421,7 @@ static void WriteMemory(DWORD addr, BYTE val)
 static void WriteMemoryNextAddr(BYTE val)
 //used ZL, r25; Opcodes: 2
 {
+    // Z was setted in WriteMemory()
     // load r25 with the data
     Instruction(OP_LDI, r25, val);
     // do the store
@@ -2393,14 +2394,26 @@ static void CompileFromIntermediate(void)
                 CopyBit(addr, bit, addr2, bit2, a->name1, a->name2);
                 break;
 
+            #ifdef NEW_FEATURE
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                break;
+            #endif
+
             case INT_SET_VARIABLE_TO_LITERAL:
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr);
                 sov = SizeOfVar(a->name1);
-                WriteMemory(addrl, BYTE(a->literal & 0xff), a->name1, a->name2);
-                if(sov >= 2)
-                  WriteMemoryNextAddr(BYTE((a->literal >> 8) & 0xff));
-                if(sov >= 3)
-                  WriteMemoryNextAddr(BYTE((a->literal >> 16) & 0xff));
+                if(sov >= 1) {
+                  WriteMemory(addr, BYTE(a->literal & 0xff), a->name1, a->name2);
+                  if(sov >= 2) {
+                    WriteMemoryNextAddr(BYTE((a->literal >> 8) & 0xff));
+                    if(sov >= 3) {
+                      WriteMemoryNextAddr(BYTE((a->literal >> 16) & 0xff));
+                      if(sov == 4) {
+                        WriteMemoryNextAddr(BYTE((a->literal >> 24) & 0xff));
+                      } else if(sov > 4) oops();
+                    }
+                  }
+                } else oops();
                 break;
 
             case INT_INCREMENT_VARIABLE: {
