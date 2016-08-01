@@ -295,16 +295,23 @@ void PaintWindow(void)
             yp = y + FONT_HEIGHT*(POS_HEIGHT/2) -
                 POS_HEIGHT*FONT_HEIGHT*ScrollYOffset;
 
+            TextOut(Hdc, 8 - FONT_WIDTH, yp , &Prog.rungSelected[i], 1);
+
+            COLORREF prev = GetTextColor(Hdc);
+            SetTextColor(Hdc, HighlightColours.def);
+
             sprintf(str,"%04d", i+1);
             TextOut(Hdc, 8 - FONT_WIDTH, yp, str, 4);
 
-            TextOut(Hdc, 8 - FONT_WIDTH, yp , &Prog.rungSelected[i], 1);
+            SetTextColor(Hdc, HighlightColours.rungNum);
 
             sprintf(str,"%4d",Prog.OpsInRung[i]);
             TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT, str, 4);
 
             sprintf(str,"%4d",Prog.HexInRung[i]);
             TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT * 2, str, 4);
+
+            SetTextColor(Hdc, prev);
 
             cx = 0;
             DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy,
@@ -320,12 +327,21 @@ void PaintWindow(void)
     y = Y_PADDING + FONT_HEIGHT*cy;
     yp = y + FONT_HEIGHT*(POS_HEIGHT/2) -
          POS_HEIGHT*FONT_HEIGHT*ScrollYOffset/* - FONT_HEIGHT/2*/;
+
+    COLORREF prev = GetTextColor(Hdc);
+    SetTextColor(Hdc, HighlightColours.def);
+
     sprintf(str,"%4d", Prog.numRungs);
     TextOut(Hdc, 8 - FONT_WIDTH, yp, str, 4);
+
+    SetTextColor(Hdc, HighlightColours.rungNum);
+
     sprintf(str,"%4d", IntCodeLen);
     TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT, str, 4);
     sprintf(str,"%4d", ProgWriteP);
     TextOut(Hdc, 8 - FONT_WIDTH, yp + FONT_HEIGHT * 2, str, 4);
+
+    SetTextColor(Hdc, prev);
 
     if(SelectedGxAfterNextPaint >= 0) {
         int gx=SelectedGxAfterNextPaint, gy=SelectedGyAfterNextPaint;

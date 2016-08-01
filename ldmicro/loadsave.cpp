@@ -198,6 +198,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_RES;
     } else if(sscanf(line, "MOVE %s %s", l->d.move.dest, l->d.move.src)==2) {
         *which = ELEM_MOVE;
+    } else if(sscanf(line, "MOD %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+        *which = ELEM_MOD;
     } else if(sscanf(line, "ADD %s %s %s", l->d.math.dest, l->d.math.op1,
         l->d.math.op2)==3)
     {
@@ -667,6 +669,7 @@ counter:
             fprintf(f, "MOVE %s %s\n", l->d.move.dest, l->d.move.src);
             break;
 
+        case ELEM_MOD: s = "MOD"; goto math;
         case ELEM_ADD: s = "ADD"; goto math;
         case ELEM_SUB: s = "SUB"; goto math;
         case ELEM_MUL: s = "MUL"; goto math;

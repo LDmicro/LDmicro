@@ -245,6 +245,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
             break;
 
+        case ELEM_MOD:
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
@@ -1126,8 +1127,8 @@ void IoListProc(NMHDR *h)
                                 MemForSingleBit(name, TRUE, &addr, &bit);
                             if(addr)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
-                        } 
-                    } 
+                        }
+                    }
                     break;
                 }
 
