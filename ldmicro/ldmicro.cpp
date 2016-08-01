@@ -392,13 +392,6 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrFilter = ARDUINO_C_PATTERN;
             ofn.lpstrDefExt = "cpp";
             c = "cpp";
-        /*
-        } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
-                  (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
-            ofn.lpstrFilter = ARDUINO_PATTERN;
-            ofn.lpstrDefExt = "ino";
-            c = "ino";
-        */
         } else {
             ofn.lpstrFilter = HEX_PATTERN;
             ofn.lpstrDefExt = "hex";
@@ -901,6 +894,16 @@ cmp:
             CHANGING_PROGRAM(CopyRungDown());
             break;
 
+        case MNU_SELECT_RUNG: {
+            int i = RungContainingSelected();
+            if(i >= 0)
+                if(Prog.rungSelected[i] == ' ')
+                    Prog.rungSelected[i] = '*';
+                else
+                    Prog.rungSelected[i] = ' ';
+            break;
+
+        }
         case MNU_CAT_RUNG:
             CHANGING_PROGRAM(CatRung());
             break;
@@ -1063,13 +1066,6 @@ void ScrollPgDown()
 //-----------------------------------------------------------------------------
 void RollHome()
 {
-    /*
-    ScrollYOffset = 0;
-    RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
-
-    SelectElement(0, 0, SELECTED_BELOW);
-    */
     int gx=0, gy=0;
     if (FindSelected(&gx, &gy)) {
       gy=ScrollYOffset;
@@ -1079,14 +1075,6 @@ void RollHome()
 //-----------------------------------------------------------------------------
 void RollEnd()
 {
-    /*
-    ScrollYOffset = ScrollYOffsetMax;
-    RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
-
-    SelectedGxAfterNextPaint = 0;
-    SelectedGyAfterNextPaint = totalHeightScrollbars-1;
-    */
     int gx=0, gy=0;
     if (FindSelected(&gx, &gy)) {
       gy=ScrollYOffset+ScreenRowsAvailable()-1;
@@ -1102,16 +1090,14 @@ void TestSelections(UINT msg, int rung1)
     else
         rung2 = RungContainingSelected();
 
-    //dbp("%d %d %d", rung1, rung2, SelectedGyAfterNextPaint);
-
     int i;
     switch (msg) {
         case WM_LBUTTONDOWN: {
             if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                 if((rung1 >= 0) && (rung2 >= 0)/* && (rung1 != rung2)*/) {
+                 if((rung1 >= 0) && (rung2 >= 0)) {
                       if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000))
                          for(i = 0; i < Prog.numRungs; i++)
-                             if(Prog.rungSelected[i] == '*')// != 2)
+                             if(Prog.rungSelected[i] == '*')
                                  Prog.rungSelected[i] = ' ';
                       int d = (rung2 < rung1) ? -1 : +1;
                       for(i = rung1; ; i += d) {
@@ -1121,7 +1107,7 @@ void TestSelections(UINT msg, int rung1)
                       }
                  }
             } else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                 if(/*(rung1 < 0) && */(rung2 >= 0)) {
+                 if((rung2 >= 0)) {
                       if(Prog.rungSelected[rung2]==' ')
                           Prog.rungSelected[rung2] = '*';
                       else
@@ -1129,7 +1115,7 @@ void TestSelections(UINT msg, int rung1)
                  }
             } else {
                 for(i = 0; i < Prog.numRungs; i++)
-                    if(Prog.rungSelected[i] == '*') //!= 2)
+                    if(Prog.rungSelected[i] == '*')
                         Prog.rungSelected[i] = ' ';
             }
             break;
@@ -1138,13 +1124,8 @@ void TestSelections(UINT msg, int rung1)
             //switch(wParam) {
             //}
             if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                 if((rung1 >= 0) && (rung2 >= 0) && (rung1 != rung2)) {
+                 if((rung1 >= 0) && (rung2 >= 0)) {
                       int i;
-                      /*
-                      if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000))
-                         for(i = 0; i < Prog.numRungs; i++)
-                             Prog.rungSelected[i] = ' ';
-                      */
                       int d = (rung2 < rung1) ? -1 : +1;
                       for(i = rung1; ; i += d) {
                          Prog.rungSelected[i] = '*';
@@ -1154,7 +1135,7 @@ void TestSelections(UINT msg, int rung1)
                  }
             } else {
                 for(i = 0; i < Prog.numRungs; i++)
-                    if(Prog.rungSelected[i] == '*') //!= 2)
+                    if(Prog.rungSelected[i] == '*')
                         Prog.rungSelected[i] = ' ';
             }
             break;
@@ -1341,10 +1322,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     case VK_DOWN:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
                     ScrollDown();
-                  } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                    CHANGING_PROGRAM(PushRungDown());
-                  } else  if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                    CHANGING_PROGRAM(InsertRung(TRUE));
+//                } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+//                  CHANGING_PROGRAM(PushRungDown());
                   } else {
                     rung1 = RungContainingSelected();
                     MoveCursorKeyboard(wParam);
@@ -1355,10 +1334,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     case VK_UP:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
                     ScrollUp();
-                  } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                    CHANGING_PROGRAM(PushRungUp());
-                  } else  if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                    CHANGING_PROGRAM(InsertRung(FALSE));
+//                } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+//                  CHANGING_PROGRAM(PushRungUp());
                   } else {
                     rung1 = RungContainingSelected();
                     MoveCursorKeyboard(wParam);
@@ -1721,6 +1698,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case 'V':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         CHANGING_PROGRAM(PasteRung(0));
+                    } else if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                        CHANGING_PROGRAM(InsertRung(TRUE));
+                    }
+                    break;
+
+                case '6':
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                        CHANGING_PROGRAM(InsertRung(FALSE));
                     }
                     break;
 

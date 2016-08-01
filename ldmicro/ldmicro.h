@@ -84,6 +84,7 @@ typedef signed long SDWORD;
 #define MNU_DELETE_ELEMENT      0x16
 #define MNU_DELETE_RUNG         0x17
 
+#define MNU_SELECT_RUNG         0x1800
 #define MNU_CAT_RUNG            0x1801
 #define MNU_COPY_RUNG_DOWN      0x1802
 #define MNU_COPY_RUNG           0x1803
@@ -640,7 +641,7 @@ typedef struct PlcProgramTag {
 #define POS_HEIGHT  3
 
 // offset from the top left of the window at which we start drawing, in pixels
-#define X_PADDING    35
+#define X_PADDING    35 + FONT_WIDTH
 #define Y_PADDING    14
 
 typedef struct PlcCursorTag {

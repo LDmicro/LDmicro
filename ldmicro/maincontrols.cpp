@@ -297,9 +297,9 @@ HMENU MakeMainWindowMenus(void)
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
-        _("Insert Rung &Before\tShift+Up"));
+        _("Insert Rung &Before\tShift+6"));
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
-        _("Insert Rung &After\tShift+Dn"));
+        _("Insert Rung &After\tShift+V"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_UP,
         _("Move Selected Rung &Up\tAlt+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
@@ -308,6 +308,8 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN,
         _("Dup&licate Selected Rung\tCtrl+D"));
+    AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG,
+        _("Select Rung's\tShift+Up or Shift+Dn"));
     AppendMenu(EditMenu, MF_STRING, MNU_CAT_RUNG,
         _("Ca&t Rung's\tCtrl+X or Shift+Del"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG,
