@@ -123,7 +123,6 @@ int isVarInited(char *name)
         }
     }
     if(i >= VariableCount) return -1;
-    if(i >= MAX_IO) return -1;
     return Variables[i].initedRung;
 }
 //-----------------------------------------------------------------------------
@@ -404,12 +403,10 @@ static char *MarkUsedVariable(char *name, DWORD flag)
         strcpy(Variables[i].name, name);
         Variables[i].usedFlags = 0;
         Variables[i].val = 0;
-        Variables[i].initedRung = rungNow;
+        Variables[i].initedRung = -1;
         strcpy(Variables[i].usedRungs,"");
         VariableCount++;
     }
-    if(Variables[i].initedRung < 0)
-        Variables[i].initedRung = rungNow;
 
     char srungNow[MAX_NAME_LEN];
     sprintf(srungNow," %d ",rungNow+1);
@@ -423,6 +420,29 @@ static char *MarkUsedVariable(char *name, DWORD flag)
 
     Variables[i].usedFlags |= flag;
     return NULL;
+}
+
+void MarkInitedVariable(char *name)
+{
+    int i;
+    for(i = 0; i < VariableCount; i++) {
+        if(strcmp(Variables[i].name, name)==0) {
+            break;
+        }
+    }
+    if(i >= MAX_IO) oops();
+
+    if(i == VariableCount) {
+        strcpy(Variables[i].name, name);
+        Variables[i].usedFlags = 0;
+        Variables[i].val = 0;
+        Variables[i].initedRung = -1; //rungNow;
+        //Variables[i].initedOp = opNow;
+        strcpy(Variables[i].usedRungs,"");
+        VariableCount++;
+    }
+    if(Variables[i].initedRung < 0)
+        Variables[i].initedRung = rungNow;
 }
 
 //-----------------------------------------------------------------------------
@@ -450,6 +470,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
     ElemLeaf *l = (ElemLeaf *)elem;
     char *name = NULL;
     DWORD flag;
+    char str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -539,6 +560,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_MOD:
         case ELEM_SHL:
         case ELEM_SHR:
+        case ELEM_SR0:
         case ELEM_ROL:
         case ELEM_ROR:
         case ELEM_AND:
@@ -707,6 +729,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_READ_ADC:
         case ELEM_SHL:
         case ELEM_SHR:
+        case ELEM_SR0:
         case ELEM_ROL:
         case ELEM_ROR:
         case ELEM_AND:
@@ -754,6 +777,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_CSFR:
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
+        case ELEM_BUS:
         case ELEM_7SEG:
         case ELEM_9SEG:
         case ELEM_14SEG:
@@ -873,7 +897,7 @@ static void SimulateIntCode(void)
                 SetSimulationVariable(a->name1, a->literal);
                 break;
 
-            case  INT_READ_SFR_LITERAL:
+            case INT_READ_SFR_LITERAL:
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 break;
 
@@ -1257,6 +1281,10 @@ void DescribeForIoList(char *name, int type, char *out)
             sprintf(out, "\"%s\"", GetSimulationStr(name));
             break;
 
+        case IO_TYPE_TABLE: {
+            sprintf(out, "");
+            break;
+        }
         case IO_TYPE_TCY:
         case IO_TYPE_TON:
         case IO_TYPE_TOF:

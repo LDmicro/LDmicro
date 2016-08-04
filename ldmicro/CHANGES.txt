@@ -1,3 +1,7 @@
+== Release 3.5.4
+
+    * CheckConstantInRange allow value from 0x0000 to 0xFFFF
+
 == Release 3.5.3
 
     * Remuved lines between rungs.

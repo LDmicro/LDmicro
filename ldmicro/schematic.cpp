@@ -144,6 +144,7 @@ BOOL StaySameElem(int Which)
         Which == ELEM_BIN2BCD ||
         Which == ELEM_BCD2BIN ||
         Which == ELEM_SWAP ||
+        Which == ELEM_BUS  ||
         Which == ELEM_7SEG  ||
         Which == ELEM_9SEG  ||
         Which == ELEM_14SEG ||
@@ -190,16 +191,6 @@ BOOL EndOfRungElem(int Which)
 {
     if( Which == ELEM_COIL ||
         Which == ELEM_RES ||
-        Which == ELEM_SHL ||
-        Which == ELEM_SHR ||
-        Which == ELEM_SR0 ||
-        Which == ELEM_ROL ||
-        Which == ELEM_ROR ||
-        Which == ELEM_AND ||
-        Which == ELEM_OR  ||
-        Which == ELEM_XOR ||
-        Which == ELEM_NOT ||
-        Which == ELEM_NEG ||
         Which == ELEM_MOD ||
         Which == ELEM_ADD ||
         Which == ELEM_SUB ||

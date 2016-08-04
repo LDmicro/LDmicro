@@ -388,7 +388,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrDefExt = "pas";
             c = "pas";
         } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
-            (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
+                  (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
             ofn.lpstrFilter = ARDUINO_C_PATTERN;
             ofn.lpstrDefExt = "cpp";
             c = "cpp";
@@ -793,7 +793,7 @@ math:
                 break;
         }
 
-                // Special function register
+        // Special function register
         {
             int esfr;
             case MNU_INSERT_SFR: esfr = ELEM_RSFR; goto jcmp;
@@ -806,7 +806,7 @@ jcmp:
                 CHANGING_PROGRAM(AddSfr(esfr));
                 break;
         }
-                // Special function register
+        // Special function register
 
         {
             int elem;
@@ -995,6 +995,7 @@ cmp:
             break;
 
         case MNU_RELEASE:
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/releases",NULL,NULL,SW_SHOWNORMAL);
             char str[1024];
             sprintf(str,"Tag: %s\n\n%s\n\nSHA-1: %s\n\n"
                 "Compiled: " __TIME__ " " __DATE__ ".",
@@ -1152,8 +1153,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if(strlen(CurrentSaveFile)) {
         if((LastWriteTime & PrevWriteTime)
         && (LastWriteTime != PrevWriteTime)) {
-           tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
-           PrevWriteTime = LastWriteTime;
+             tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
+             PrevWriteTime = LastWriteTime;
 
            char buf[1024];
            sprintf(buf, _("File '%s' modified by another application.\r\n"
@@ -1318,20 +1319,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
             }
 
-                switch(wParam) {
-                    case VK_DOWN:
+            switch(wParam) {
+                case VK_DOWN:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
                     ScrollDown();
-//                } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-//                  CHANGING_PROGRAM(PushRungDown());
                   } else {
                     rung1 = RungContainingSelected();
                     MoveCursorKeyboard(wParam);
                     TestSelections(msg,rung1);
                   }
-                        break;
+                  break;
 
-                    case VK_UP:
+                case VK_UP:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
                     ScrollUp();
 //                } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
@@ -1341,30 +1340,30 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     MoveCursorKeyboard(wParam);
                     TestSelections(msg,rung1);
                   }
-                        break;
+                  break;
 
-                    case VK_LEFT:
+                case VK_LEFT:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
-                        ScrollXOffset -= FONT_WIDTH;
-                        if(ScrollXOffset < 0) ScrollXOffset = 0;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
+                    ScrollXOffset -= FONT_WIDTH;
+                    if(ScrollXOffset < 0) ScrollXOffset = 0;
+                    RefreshScrollbars();
+                    InvalidateRect(MainWindow, NULL, FALSE);
                   } else {
                     MoveCursorKeyboard(wParam);
                   }
-                        break;
+                  break;
 
-                    case VK_RIGHT:
+                case VK_RIGHT:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
-                        ScrollXOffset += FONT_WIDTH;
-                        if(ScrollXOffset >= ScrollXOffsetMax)
-                            ScrollXOffset = ScrollXOffsetMax;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
+                    ScrollXOffset += FONT_WIDTH;
+                    if(ScrollXOffset >= ScrollXOffsetMax)
+                        ScrollXOffset = ScrollXOffsetMax;
+                    RefreshScrollbars();
+                    InvalidateRect(MainWindow, NULL, FALSE);
                   } else {
                     MoveCursorKeyboard(wParam);
                   }
-                        break;
+                  break;
 
                 case VK_HOME:
                   if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
@@ -1376,8 +1375,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         MoveCursorNear(&gx, &gy);
                         SelectElement(gx, gy, SELECTED_RIGHT);
                     }
-                }
-                break;
+                  }
+                  break;
 
                 case VK_END:
                   if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
@@ -1389,7 +1388,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         MoveCursorNear(&gx, &gy);
                         SelectElement(gx, gy, SELECTED_LEFT);
                     }
-            }
+                  }
                   break;
 
                 case VK_PRIOR:
@@ -1417,13 +1416,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     SelectedGyAfterNextPaint = gy;
                   }
                   TestSelections(msg,rung1);
-                    break;
+                  break;
 
                 case VK_NEXT:
                   rung1 = RungContainingSelected();
                   if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                     ScrollPgDown();
-                    } else {
+                  } else {
                     int gx=0, gy=0;
                     FindSelected(&gx, &gy);
 
@@ -1444,7 +1443,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     SelectedGyAfterNextPaint = gy;
                   }
                   TestSelections(msg,rung1);
-                    break;
+                  break;
             }
 
             if(InSimulationMode) {
@@ -1455,7 +1454,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                     case VK_F8:
                         StartSimulation();
-                    break;
+                        break;
 
                     case 'R':
                         if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
@@ -1471,7 +1470,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             StopSimulation();
                         break;
 
-                case VK_RETURN:
+                    case VK_RETURN:
                     case VK_ESCAPE:
                         ToggleSimulationMode();
                         break;
@@ -1490,7 +1489,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case VK_RETURN:
-                    CHANGING_PROGRAM(EditSelectedElement());
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                      CHANGING_PROGRAM(AddEmpty(ELEM_OPEN));
+                    } else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                      CHANGING_PROGRAM(AddEmpty(ELEM_SHORT));
+                    } else {
+                      CHANGING_PROGRAM(EditSelectedElement());
+                    }
                     break;
 
                 case VK_DELETE:
@@ -1519,7 +1524,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         CHANGING_PROGRAM(CopyRung());
                     } else {
-                    CHANGING_PROGRAM(AddContact());
+                        CHANGING_PROGRAM(AddContact());
                     }
                     break;
 
@@ -2081,10 +2086,10 @@ void CheckPwmPins()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, INT nCmdShow)
 {
-  if((NUM_SUPPORTED_MCUS) != arraylen(SupportedMcus)) {
-      Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, arraylen(SupportedMcus));
-      oops();
-  }
+    if((NUM_SUPPORTED_MCUS) != arraylen(SupportedMcus)) {
+        Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, arraylen(SupportedMcus));
+        oops();
+    }
 
     CheckPwmPins();
 

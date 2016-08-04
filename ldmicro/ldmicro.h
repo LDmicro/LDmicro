@@ -184,6 +184,7 @@ typedef signed long SDWORD;
 #define MNU_STOP_SIMULATION     0x62
 #define MNU_SINGLE_CYCLE        0x63
 
+#define MNU_INSERT_BUS          0x6501
 #define MNU_INSERT_7SEG         0x6507
 #define MNU_INSERT_9SEG         0x6509
 #define MNU_INSERT_14SEG        0x6514
@@ -310,6 +311,7 @@ typedef signed long SDWORD;
 #define ELEM_UART_UDRE          0x4008
 #define ELEM_QUAD_ENCOD         0x4009
 
+#define ELEM_BUS                0x7001
 #define ELEM_7SEG               0x7007
 #define ELEM_9SEG               0x7009
 #define ELEM_14SEG              0x7014
@@ -344,6 +346,7 @@ typedef signed long SDWORD;
         case ELEM_CSFR: \
         case ELEM_TSFR: \
         case ELEM_T_C_SFR: \
+        case ELEM_BUS: \
         case ELEM_7SEG: \
         case ELEM_9SEG: \
         case ELEM_14SEG: \
@@ -479,20 +482,20 @@ typedef struct ElemLookUpTableTag {
     char    index[MAX_NAME_LEN];
     int     count; // Table size
     BOOL    editAsString;
-    SDWORD   vals[MAX_LOOK_UP_TABLE_LEN];
+    SDWORD  vals[MAX_LOOK_UP_TABLE_LEN];
 } ElemLookUpTable;
 
 typedef struct ElemPiecewiseLinearTag {
     char    dest[MAX_NAME_LEN];
     char    index[MAX_NAME_LEN];
     int     count;
-    SDWORD   vals[MAX_LOOK_UP_TABLE_LEN];
+    SDWORD  vals[MAX_LOOK_UP_TABLE_LEN];
 } ElemPiecewiseLinear;
 
 typedef struct ElemFormattedStringTag {
     char    dest[MAX_NAME_LEN];
     char    var[MAX_NAME_LEN];
-    char    string[MAX_LOOK_UP_TABLE_LEN];
+    char    string[MAX_STRING_LEN];
 } ElemFormattedString;
 
 typedef struct ElemPerisistTag {
@@ -582,7 +585,6 @@ typedef struct PlcProgramSingleIoTag {
 /*More convenient sort order in IOlist*/
 #define IO_TYPE_GENERAL         1
 #define IO_TYPE_PERSIST         2
-#define IO_TYPE_STRING          3
 #define IO_TYPE_RTO             4
 #define IO_TYPE_COUNTER         5
 #define IO_TYPE_INT_INPUT       6
@@ -601,6 +603,8 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_MODBUS_HREG     19
 #define IO_TYPE_PORT_INPUT      20 // 8bit PORT for in data  - McuIoInfo.inputRegs
 #define IO_TYPE_PORT_OUTPUT     21 // 8bit PORT for out data - McuIoInfo.oututRegs
+#define IO_TYPE_STRING          22
+#define IO_TYPE_TABLE           23
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -612,15 +616,15 @@ typedef struct PlcProgramTag {
     struct {
         PlcProgramSingleIo  assignment[MAX_IO];
         int                 count;
-    }           io;
-    McuIoInfo  *mcu;
+    }             io;
+    McuIoInfo    *mcu;
     long long int cycleTime; // us
     int           cycleTimer; // 1 or 0
 #define YPlcCycleDuty "YPlcCycleDuty"
     int           cycleDuty; //if TRUE, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
-    int         mcuClock;  // Hz
-    int         baudRate;  // Hz
-    char        LDversion[512];
+    int           mcuClock;  // Hz
+    int           baudRate;  // Hz
+    char          LDversion[512];
 
 #define MAX_RUNGS 9999
     ElemSubcktSeries *rungs[MAX_RUNGS];
@@ -1012,7 +1016,7 @@ void ShowContactsDialog(BOOL *negated, char *name);
 // coildialog.cpp
 void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name);
 // simpledialog.cpp
-void CheckVarInRange(char *name, SDWORD v);
+void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name);
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
 void ShowMoveDialog(int which, char *dest, char *src);
@@ -1083,13 +1087,13 @@ void ShowHelpDialog(BOOL about);
 #ifdef dodbp
 #define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
 
-#define dbps(EXP) dbp( #EXP "='%s'", (EXP));
-#define dbpd(EXP) dbp( #EXP "=%d", (EXP));
+#define dbps(EXP)   dbp( #EXP "='%s'", (EXP));
+#define dbpd(EXP)   dbp( #EXP "=%d", (EXP));
 #define dbpld(EXP)  dbp( #EXP "=%Ld", (EXP));
 #define dbplld(EXP) dbp( #EXP "=%LLd", (EXP));
-#define dbpx(EXP) dbp( #EXP "=0x%x", (EXP));
+#define dbpx(EXP)   dbp( #EXP "=0x%x", (EXP));
 #define dbph dbpx
-#define dbpf(EXP) dbp( #EXP "=%f", (EXP));
+#define dbpf(EXP)   dbp( #EXP "=%f", (EXP));
 #else
 #define WARN_IF(EXP)
 
@@ -1144,6 +1148,7 @@ void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 char *_(char *in);
 
 // simulate.cpp
+void MarkInitedVariable(char *name);
 void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void StartSimulationTimer(void);
@@ -1404,6 +1409,7 @@ int TenToThe(int x);
 BOOL MultiplyRoutineUsed(void);
 BOOL DivideRoutineUsed(void);
 void GenSymOneShot(char *dest, char *name1, char *name2);
+int getradix(char *str);
 
 // pic16.cpp
 void CompilePic16(char *outFile);
