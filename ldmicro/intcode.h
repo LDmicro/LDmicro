@@ -60,7 +60,7 @@
 #define INT_UART_RECV_AVAIL                     1401
 #define INT_UART_RECV                           14
 #ifdef NEW_FEATURE
-#define INT_UART_UDRE                           1301
+#define INT_UART_UDRE                           1302
 #endif
 #define INT_EEPROM_BUSY_CHECK                   15
 #ifdef NEW_FEATURE

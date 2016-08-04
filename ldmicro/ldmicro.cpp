@@ -388,17 +388,10 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrDefExt = "pas";
             c = "pas";
         } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
-            (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
+                  (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
             ofn.lpstrFilter = ARDUINO_C_PATTERN;
             ofn.lpstrDefExt = "cpp";
             c = "cpp";
-        /*
-        } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
-                  (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
-            ofn.lpstrFilter = ARDUINO_PATTERN;
-            ofn.lpstrDefExt = "ino";
-            c = "ino";
-        */
         } else {
             ofn.lpstrFilter = HEX_PATTERN;
             ofn.lpstrDefExt = "hex";
@@ -800,7 +793,7 @@ math:
                 break;
         }
 
-                // Special function register
+        // Special function register
         {
             int esfr;
             case MNU_INSERT_SFR: esfr = ELEM_RSFR; goto jcmp;
@@ -813,7 +806,7 @@ jcmp:
                 CHANGING_PROGRAM(AddSfr(esfr));
                 break;
         }
-                // Special function register
+        // Special function register
 
         {
             int elem;
@@ -901,6 +894,16 @@ cmp:
             CHANGING_PROGRAM(CopyRungDown());
             break;
 
+        case MNU_SELECT_RUNG: {
+            int i = RungContainingSelected();
+            if(i >= 0)
+                if(Prog.rungSelected[i] == ' ')
+                    Prog.rungSelected[i] = '*';
+                else
+                    Prog.rungSelected[i] = ' ';
+            break;
+
+        }
         case MNU_CAT_RUNG:
             CHANGING_PROGRAM(CatRung());
             break;
@@ -992,6 +995,7 @@ cmp:
             break;
 
         case MNU_RELEASE:
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/releases",NULL,NULL,SW_SHOWNORMAL);
             char str[1024];
             sprintf(str,"Tag: %s\n\n%s\n\nSHA-1: %s\n\n"
                 "Compiled: " __TIME__ " " __DATE__ ".",
@@ -1063,13 +1067,6 @@ void ScrollPgDown()
 //-----------------------------------------------------------------------------
 void RollHome()
 {
-    /*
-    ScrollYOffset = 0;
-    RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
-
-    SelectElement(0, 0, SELECTED_BELOW);
-    */
     int gx=0, gy=0;
     if (FindSelected(&gx, &gy)) {
       gy=ScrollYOffset;
@@ -1079,14 +1076,6 @@ void RollHome()
 //-----------------------------------------------------------------------------
 void RollEnd()
 {
-    /*
-    ScrollYOffset = ScrollYOffsetMax;
-    RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
-
-    SelectedGxAfterNextPaint = 0;
-    SelectedGyAfterNextPaint = totalHeightScrollbars-1;
-    */
     int gx=0, gy=0;
     if (FindSelected(&gx, &gy)) {
       gy=ScrollYOffset+ScreenRowsAvailable()-1;
@@ -1102,16 +1091,14 @@ void TestSelections(UINT msg, int rung1)
     else
         rung2 = RungContainingSelected();
 
-    //dbp("%d %d %d", rung1, rung2, SelectedGyAfterNextPaint);
-
     int i;
     switch (msg) {
         case WM_LBUTTONDOWN: {
             if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                 if((rung1 >= 0) && (rung2 >= 0)/* && (rung1 != rung2)*/) {
+                 if((rung1 >= 0) && (rung2 >= 0)) {
                       if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000))
                          for(i = 0; i < Prog.numRungs; i++)
-                             if(Prog.rungSelected[i] == '*')// != 2)
+                             if(Prog.rungSelected[i] == '*')
                                  Prog.rungSelected[i] = ' ';
                       int d = (rung2 < rung1) ? -1 : +1;
                       for(i = rung1; ; i += d) {
@@ -1121,7 +1108,7 @@ void TestSelections(UINT msg, int rung1)
                       }
                  }
             } else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                 if(/*(rung1 < 0) && */(rung2 >= 0)) {
+                 if((rung2 >= 0)) {
                       if(Prog.rungSelected[rung2]==' ')
                           Prog.rungSelected[rung2] = '*';
                       else
@@ -1129,7 +1116,7 @@ void TestSelections(UINT msg, int rung1)
                  }
             } else {
                 for(i = 0; i < Prog.numRungs; i++)
-                    if(Prog.rungSelected[i] == '*') //!= 2)
+                    if(Prog.rungSelected[i] == '*')
                         Prog.rungSelected[i] = ' ';
             }
             break;
@@ -1138,13 +1125,8 @@ void TestSelections(UINT msg, int rung1)
             //switch(wParam) {
             //}
             if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                 if((rung1 >= 0) && (rung2 >= 0) && (rung1 != rung2)) {
+                 if((rung1 >= 0) && (rung2 >= 0)) {
                       int i;
-                      /*
-                      if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000))
-                         for(i = 0; i < Prog.numRungs; i++)
-                             Prog.rungSelected[i] = ' ';
-                      */
                       int d = (rung2 < rung1) ? -1 : +1;
                       for(i = rung1; ; i += d) {
                          Prog.rungSelected[i] = '*';
@@ -1154,7 +1136,7 @@ void TestSelections(UINT msg, int rung1)
                  }
             } else {
                 for(i = 0; i < Prog.numRungs; i++)
-                    if(Prog.rungSelected[i] == '*') //!= 2)
+                    if(Prog.rungSelected[i] == '*')
                         Prog.rungSelected[i] = ' ';
             }
             break;
@@ -1171,8 +1153,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if(strlen(CurrentSaveFile)) {
         if((LastWriteTime & PrevWriteTime)
         && (LastWriteTime != PrevWriteTime)) {
-           tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
-           PrevWriteTime = LastWriteTime;
+             tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
+             PrevWriteTime = LastWriteTime;
 
            char buf[1024];
            sprintf(buf, _("File '%s' modified by another application.\r\n"
@@ -1337,57 +1319,51 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
             }
 
-                switch(wParam) {
-                    case VK_DOWN:
+            switch(wParam) {
+                case VK_DOWN:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
                     ScrollDown();
-                  } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                    CHANGING_PROGRAM(PushRungDown());
-                  } else  if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                    CHANGING_PROGRAM(InsertRung(TRUE));
                   } else {
                     rung1 = RungContainingSelected();
                     MoveCursorKeyboard(wParam);
                     TestSelections(msg,rung1);
                   }
-                        break;
+                  break;
 
-                    case VK_UP:
+                case VK_UP:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
                     ScrollUp();
-                  } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                    CHANGING_PROGRAM(PushRungUp());
-                  } else  if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                    CHANGING_PROGRAM(InsertRung(FALSE));
+//                } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+//                  CHANGING_PROGRAM(PushRungUp());
                   } else {
                     rung1 = RungContainingSelected();
                     MoveCursorKeyboard(wParam);
                     TestSelections(msg,rung1);
                   }
-                        break;
+                  break;
 
-                    case VK_LEFT:
+                case VK_LEFT:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
-                        ScrollXOffset -= FONT_WIDTH;
-                        if(ScrollXOffset < 0) ScrollXOffset = 0;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
+                    ScrollXOffset -= FONT_WIDTH;
+                    if(ScrollXOffset < 0) ScrollXOffset = 0;
+                    RefreshScrollbars();
+                    InvalidateRect(MainWindow, NULL, FALSE);
                   } else {
                     MoveCursorKeyboard(wParam);
                   }
-                        break;
+                  break;
 
-                    case VK_RIGHT:
+                case VK_RIGHT:
                   if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
-                        ScrollXOffset += FONT_WIDTH;
-                        if(ScrollXOffset >= ScrollXOffsetMax)
-                            ScrollXOffset = ScrollXOffsetMax;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
+                    ScrollXOffset += FONT_WIDTH;
+                    if(ScrollXOffset >= ScrollXOffsetMax)
+                        ScrollXOffset = ScrollXOffsetMax;
+                    RefreshScrollbars();
+                    InvalidateRect(MainWindow, NULL, FALSE);
                   } else {
                     MoveCursorKeyboard(wParam);
                   }
-                        break;
+                  break;
 
                 case VK_HOME:
                   if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
@@ -1399,8 +1375,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         MoveCursorNear(&gx, &gy);
                         SelectElement(gx, gy, SELECTED_RIGHT);
                     }
-                }
-                break;
+                  }
+                  break;
 
                 case VK_END:
                   if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
@@ -1412,7 +1388,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         MoveCursorNear(&gx, &gy);
                         SelectElement(gx, gy, SELECTED_LEFT);
                     }
-            }
+                  }
                   break;
 
                 case VK_PRIOR:
@@ -1440,13 +1416,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     SelectedGyAfterNextPaint = gy;
                   }
                   TestSelections(msg,rung1);
-                    break;
+                  break;
 
                 case VK_NEXT:
                   rung1 = RungContainingSelected();
                   if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                     ScrollPgDown();
-                    } else {
+                  } else {
                     int gx=0, gy=0;
                     FindSelected(&gx, &gy);
 
@@ -1467,7 +1443,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     SelectedGyAfterNextPaint = gy;
                   }
                   TestSelections(msg,rung1);
-                    break;
+                  break;
             }
 
             if(InSimulationMode) {
@@ -1478,7 +1454,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                     case VK_F8:
                         StartSimulation();
-                    break;
+                        break;
 
                     case 'R':
                         if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
@@ -1494,7 +1470,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             StopSimulation();
                         break;
 
-                case VK_RETURN:
+                    case VK_RETURN:
                     case VK_ESCAPE:
                         ToggleSimulationMode();
                         break;
@@ -1513,7 +1489,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case VK_RETURN:
-                    CHANGING_PROGRAM(EditSelectedElement());
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                      CHANGING_PROGRAM(AddEmpty(ELEM_OPEN));
+                    } else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                      CHANGING_PROGRAM(AddEmpty(ELEM_SHORT));
+                    } else {
+                      CHANGING_PROGRAM(EditSelectedElement());
+                    }
                     break;
 
                 case VK_DELETE:
@@ -1542,7 +1524,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         CHANGING_PROGRAM(CopyRung());
                     } else {
-                    CHANGING_PROGRAM(AddContact());
+                        CHANGING_PROGRAM(AddContact());
                     }
                     break;
 
@@ -1721,6 +1703,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case 'V':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         CHANGING_PROGRAM(PasteRung(0));
+                    } else if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                        CHANGING_PROGRAM(InsertRung(TRUE));
+                    }
+                    break;
+
+                case '6':
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                        CHANGING_PROGRAM(InsertRung(FALSE));
                     }
                     break;
 
@@ -2096,10 +2086,10 @@ void CheckPwmPins()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, INT nCmdShow)
 {
-  if((NUM_SUPPORTED_MCUS) != arraylen(SupportedMcus)) {
-      Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, arraylen(SupportedMcus));
-      oops();
-  }
+    if((NUM_SUPPORTED_MCUS) != arraylen(SupportedMcus)) {
+        Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, arraylen(SupportedMcus));
+        oops();
+    }
 
     CheckPwmPins();
 

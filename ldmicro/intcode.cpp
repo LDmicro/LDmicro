@@ -395,7 +395,6 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2)
 {
     IntCode[IntCodeLen].op = op;
@@ -615,8 +614,33 @@ double hobatof(char *str)
     return atof(str);
 }
 //-----------------------------------------------------------------------------
+int getradix(char *str)
+{
+    int radix = 0;
+    char *start_ptr = str;
+    while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+')
+        start_ptr++;
+    if     ((start_ptr[0] != '0') && isdigit(start_ptr[0]))
+        radix = 10;
+    else if((start_ptr[0] == '0') && (strlen(start_ptr) == 1))
+        radix = 10;
+    else if((start_ptr[0] == '0') && isdigit(start_ptr[1]))
+        radix = 8;
+    else if((start_ptr[0] == '0') && (toupper(start_ptr[1]) == 'O'))
+        radix = 8;
+    else if((start_ptr[0] == '0') && (toupper(start_ptr[1]) == 'B'))
+        radix = 2;
+    else if((start_ptr[0] == '0') && (toupper(start_ptr[1]) == 'X'))
+        radix = 16;
+    if(!radix) {
+        ooops("'%s'\r\n'%s'", str, start_ptr);
+    }
+    return radix;
+}
+//-----------------------------------------------------------------------------
 SDWORD hobatoi(char *str)
 {
+    int sign = 1;
     long  val;
     char *start_ptr = str;
     while(isspace(*start_ptr))
@@ -629,8 +653,11 @@ SDWORD hobatoi(char *str)
         }
         val = dest[1];
     } else {
-       while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+')
+       while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+') {
+           if(*start_ptr == '-')
+               sign = -1;
            start_ptr++;
+       }
        int radix = 0; //auto detect
        if(*start_ptr == '0')
             if(toupper(start_ptr[1]) == 'B')
@@ -647,7 +674,7 @@ SDWORD hobatoi(char *str)
            Error("Conversion overflow error the string\n'%s' into number %d.", str, val);
        }
     }
-    return val;
+    return sign * val;
 }
 
 //-----------------------------------------------------------------------------
@@ -768,31 +795,35 @@ void OpSetVar(char *op1, char *op2)
       Op(INT_SET_VARIABLE_TO_VARIABLE, op1, op2);
 }
 //-----------------------------------------------------------------------------
-static void InitVarsCircuit(int which, void *elem)
+static void InitVarsCircuit(int which, void *elem, int *n)
 {
     ElemLeaf *l = (ElemLeaf *)elem;
     switch(which) {
-        int i;
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            int i;
             for(i = 0; i < s->count; i++)
-                InitVarsCircuit(s->contents[i].which, s->contents[i].d.any);
+                InitVarsCircuit(s->contents[i].which, s->contents[i].d.any, n);
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            int i;
             for(i = 0; i < p->count; i++)
-                InitVarsCircuit(p->contents[i].which, p->contents[i].d.any);
+                InitVarsCircuit(p->contents[i].which, p->contents[i].d.any, n);
             break;
         }
         case ELEM_CTR:
         case ELEM_CTC:
         case ELEM_CTU:
         case ELEM_CTD: {
-            if(IsNumber(l->d.counter.init)){
-                int i = CheckMakeNumber(l->d.counter.init);
-                if(i != 0)
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, i);
+            if(IsNumber(l->d.counter.init)) {
+                int init = CheckMakeNumber(l->d.counter.init);
+                if(init != 0)
+                    if(n)
+                        *n++;
+                    else
+                        Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, init);
             }
             break;
         }
@@ -804,16 +835,82 @@ static void InitVarsCircuit(int which, void *elem)
 //-----------------------------------------------------------------------------
 static void InitVars(void)
 {
-    Comment("INIT_VARS");
-    char storeInit[MAX_NAME_LEN];
-    GenSymOneShot(storeInit, "INIT", "VARS");
-    Op(INT_IF_BIT_CLEAR, storeInit);
-      Op(INT_SET_BIT, storeInit);
+    int n = 0;
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], &n);
+    }
+    if(n) {
+      Comment("INIT_VARS");
+      char storeInit[MAX_NAME_LEN];
+      GenSymOneShot(storeInit, "INIT", "VARS");
+      Op(INT_IF_BIT_CLEAR, storeInit);
+        Op(INT_SET_BIT, storeInit);
+        for(i = 0; i < Prog.numRungs; i++) {
+            rungNow = i;
+            InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], NULL);
+        }
+      Op(INT_END_IF);
+    }
+}
+
+//-----------------------------------------------------------------------------
+static void InitTablesCircuit(int which, void *elem)
+{
+#ifdef NEW_FEATURE
+    int sovElement = 0;
+    ElemLeaf *l = (ElemLeaf *)elem;
+    switch(which) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            int i;
+            for(i = 0; i < s->count; i++)
+                InitTablesCircuit(s->contents[i].which, s->contents[i].d.any);
+            break;
+        }
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            int i;
+            for(i = 0; i < p->count; i++)
+                InitTablesCircuit(p->contents[i].which, p->contents[i].d.any);
+            break;
+        }
+        {
+        char *nameTable;
+        case ELEM_7SEG:  nameTable = "char7seg";  goto xseg;
+        case ELEM_9SEG:  nameTable = "char9seg";  goto xseg;
+        case ELEM_14SEG: nameTable = "char14seg"; goto xseg;
+        case ELEM_16SEG: nameTable = "char16seg"; goto xseg;
+        xseg:
+            if(!IsNumber(l->d.segments.src)) {
+                        sovElement = 1;
+                        if((isVarInited(nameTable) < 0)) {
+                            Op(INT_FLASH_INIT,nameTable,NULL,NULL, LEN7SEG, sovElement, char7seg);
+                            MarkInitedVariable(nameTable);
+                        } else {
+                            Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable, LEN7SEG);
+                        }
+
+            }
+            break;
+        }
+        default:
+            break;
+    }
+#endif
+}
+
+//-----------------------------------------------------------------------------
+static void InitTables(void)
+{
+#ifdef NEW_FEATURE
+    Comment("INIT_TABLES");
       int i;
       for(i = 0; i < Prog.numRungs; i++) {
-          InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+          rungNow = i;
+          InitTablesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
       }
-    Op(INT_END_IF);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1085,10 +1182,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_CTU: {
             Comment(3, "ELEM_CTU");
             if(IsNumber(l->d.counter.max))
-                CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.max));
+                CheckVarInRange(l->d.counter.name, l->d.counter.max, CheckMakeNumber(l->d.counter.max));
             char storeInit[MAX_NAME_LEN];
             if(IsNumber(l->d.counter.init)) {
-                CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.init));
+                CheckVarInRange(l->d.counter.name, l->d.counter.init, CheckMakeNumber(l->d.counter.init));
                 //inited in InitVar()
             } else {
                 GenSymOneShot(storeInit, "CTU_INIT", l->d.counter.name);
@@ -1123,10 +1220,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_CTD: {
             Comment(3, "ELEM_CTD");
             if(IsNumber(l->d.counter.max))
-                CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.max));
+                CheckVarInRange(l->d.counter.name, l->d.counter.max, CheckMakeNumber(l->d.counter.max));
             char storeInit[MAX_NAME_LEN];
             if(IsNumber(l->d.counter.init)) {
-                CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.init));
+                CheckVarInRange(l->d.counter.name, l->d.counter.init, CheckMakeNumber(l->d.counter.init));
                 //inited in InitVar()
             } else {
                 GenSymOneShot(storeInit, "CTD_INIT", l->d.counter.name);
@@ -1164,14 +1261,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             break;
         }
-        
+
         case ELEM_CTR: {
             Comment(3, "ELEM_CTR");
             if(IsNumber(l->d.counter.max))
-                CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.max));
+                CheckVarInRange(l->d.counter.name, l->d.counter.max, CheckMakeNumber(l->d.counter.max));
             char storeInit[MAX_NAME_LEN];
             if(IsNumber(l->d.counter.init)) {
-                CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.init));
+                CheckVarInRange(l->d.counter.name, l->d.counter.init, CheckMakeNumber(l->d.counter.init));
                 //inited in InitVar()
             } else {
                 GenSymOneShot(storeInit, "CTR_INIT", l->d.counter.name);
@@ -1216,14 +1313,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
             break;
         }
-        
+
         case ELEM_CTC: {
             Comment(3, "ELEM_CTC");
             if(IsNumber(l->d.counter.max))
-                CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.max));
+                CheckVarInRange(l->d.counter.name, l->d.counter.max, CheckMakeNumber(l->d.counter.max));
             char storeInit[MAX_NAME_LEN];
             if(IsNumber(l->d.counter.init)) {
-                CheckVarInRange(l->d.counter.name, CheckMakeNumber(l->d.counter.init));
+                CheckVarInRange(l->d.counter.name, l->d.counter.init, CheckMakeNumber(l->d.counter.init));
                 //inited in InitVar()
             } else {
                 GenSymOneShot(storeInit, "CTC_INIT", l->d.counter.name);
@@ -1277,7 +1374,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
                 if(!IsNumber(l->d.move.dest)) {
-                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                    CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
                 }
                 Op(INT_READ_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
             } else {
@@ -1297,7 +1394,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             else {
                 if(IsNumber(l->d.sfr.sfr)) {
-                    CheckVarInRange(l->d.sfr.op, CheckMakeNumber(l->d.sfr.sfr));
+                    CheckVarInRange(l->d.sfr.op, l->d.sfr.sfr, CheckMakeNumber(l->d.sfr.sfr));
                     Op(INT_WRITE_SFR_LITERAL, l->d.sfr.op, CheckMakeNumber(l->d.sfr.sfr));
                 } else {
                     Op(INT_WRITE_SFR_VARIABLE, l->d.sfr.sfr, l->d.sfr.op);
@@ -1317,7 +1414,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             else {
                 if(IsNumber(l->d.move.src)) {
-                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                    CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
                     Op(INT_SET_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
                 } else {
                     Op(INT_SET_SFR_VARIABLE, l->d.move.src, l->d.move.dest);
@@ -1337,7 +1434,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             else {
                 if(IsNumber(l->d.move.src)) {
-                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                    CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
                     Op(INT_CLEAR_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
                 } else {
                     Op(INT_CLEAR_SFR_VARIABLE, l->d.move.src, l->d.move.dest);
@@ -1356,7 +1453,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             else {
                 if(IsNumber(l->d.move.src)) {
-                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                    CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
                     Op(INT_TEST_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
                 } else {
                     Op(INT_TEST_SFR_VARIABLE, l->d.move.src, l->d.move.dest);
@@ -1380,7 +1477,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 if(IsNumber(l->d.move.src)) {
                     Op(INT_TEST_C_SFR_LITERAL, l->d.move.dest, CheckMakeNumber(l->d.move.src));
                 } else {
-                    CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                    CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
                     Op(INT_TEST_C_SFR_VARIABLE, l->d.move.src, l->d.move.dest);
                 }
             }
@@ -1529,10 +1626,21 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_7SEG:
         case ELEM_9SEG:
         case ELEM_14SEG:
-        case ELEM_16SEG:{
-
+        case ELEM_16SEG:
+        {
             break;
         }
+
+
+        case ELEM_STEPPER: {
+            Comment(3, "ELEM_STEPPER");
+            break;
+        }
+        case ELEM_PULSER: {
+            Comment(3, "ELEM_PULSER");
+            break;
+        }
+
         case ELEM_MOVE: {
             Comment(3, "ELEM_MOVE");
             if(IsNumber(l->d.move.dest)) {
@@ -1542,7 +1650,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
-                CheckVarInRange(l->d.move.dest, CheckMakeNumber(l->d.move.src));
+                CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, l->d.move.src,
                     CheckMakeNumber(l->d.move.src));
             } else {
@@ -1551,7 +1659,6 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
             break;
         }
-
         case ELEM_STRING: {
             Comment(3, "ELEM_STRING");
             Op(INT_IF_BIT_SET, stateInOut);
@@ -1699,7 +1806,7 @@ math:   {
                 Op(INT_IF_BIT_CLEAR, storeName);
                     int i;
                     for(i = (l->d.shiftRegister.stages-2); i >= 0; i--) {
-                        char dest[MAX_NAME_LEN+10], src[MAX_NAME_LEN+10];
+                        char dest[MAX_NAME_LEN], src[MAX_NAME_LEN];
                         sprintf(src, "%s%d", l->d.shiftRegister.name, i);
                         sprintf(dest, "%s%d", l->d.shiftRegister.name, i+1);
                         Op(INT_SET_VARIABLE_TO_VARIABLE, dest, src);

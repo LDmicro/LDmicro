@@ -350,7 +350,10 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_GENERAL:           return _("general var");
         case IO_TYPE_PERSIST:           return _("saved var");
         case IO_TYPE_STRING:            return _("string var");
+        case IO_TYPE_TABLE:             return _("table in flash");
         case IO_TYPE_READ_ADC:          return _("adc input");
+        case IO_TYPE_PORT_INPUT:        return _("PORT input");
+        case IO_TYPE_PORT_OUTPUT:       return _("PORT output");
         default:                        return _("<corrupt!>");
     }
 }
