@@ -299,6 +299,10 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
 //-----------------------------------------------------------------------------
 static void CheckConstantInRange(char *name, char *str, SDWORD v)
 {
+    SDWORD val = hobatoi(str);
+    if(val != v) oops();
+    int radix = getradix(str);
+
     int sov;
     if(strlen(name)==0)
         sov = 3;
@@ -308,32 +312,48 @@ static void CheckConstantInRange(char *name, char *str, SDWORD v)
     } else
         sov = SizeOfVar(name);
     if (sov == 1) {
-        if(v < -128 || v > 127)
+        if((v < -128 || v > 127) && (radix == 10))
             Error(_("Constant %s=%d out of variable '%s' range : -128 to 127 inclusive."), str, v, name);
+        else if((v < 0 || v > 0xff) && (radix != 10))
+            Error(_("Constant %s=%d out of variable '%s' range : 0 to 255 inclusive."), str, v, name);
     } else if((sov == 2) || (sov == 0)) {
-        if(v < -32768 || v > 32767)
+        if((v < -32768 || v > 32767) && (radix == 10))
             Error(_("Constant %s=%d out of variable '%s' range: -32768 to 32767 inclusive."), str, v, name);
+        else if((v < 0 || v > 0xffff) && (radix != 10))
+            Error(_("Constant %s=%d out of variable '%s' range : 0 to 65535 inclusive."), str, v, name);
     } else if(sov == 3) {
-        if(v < -8388608 || v > 8388607)
+        if((v < -8388608 || v > 8388607) && (radix == 10))
             Error(_("Constant %s=%d out of variable '%s' range: -8388608 to 8388607 inclusive."), str, v, name);
+        else if((v < 0 || v > 0xffffff) && (radix != 10))
+            Error(_("Constant %s=%d out of variable '%s' range : 0 to 16777215 inclusive."), str, v, name);
     } else ooops("Constant %s Variable '%s' size=%d value=%d", str, name, sov, v);
 }
 
 //-----------------------------------------------------------------------------
 // Report an error if a var doesn't fit in 8-16-24 bits.
 //-----------------------------------------------------------------------------
-void CheckVarInRange(char *name, SDWORD v)
+void CheckVarInRange(char *name, char *str, SDWORD v)
 {
+    SDWORD val = hobatoi(str);
+    if(val != v) oops();
+    int radix = getradix(str);
+
     int sov = SizeOfVar(name);
     if (sov == 1) {
-        if(v < -128 || v > 127)
+        if((v < -128 || v > 127) && (radix == 10))
             Error(_("Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
+        else if((v < 0 || v > 0xff) && (radix != 10))
+            Error(_("Variable %s=%d out range : 0 to 255 inclusive."), str, v, name);
     } else if((sov == 2) || (sov == 0)){
-        if(v < -32768 || v > 32767)
+        if((v < -32768 || v > 32767) && (radix == 10))
             Error(_("Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
+        else if((v < 0 || v > 0xffff) && (radix != 10))
+            Error(_("Variable %s=%d out range : 0 to 65535 inclusive."), str, v, name);
     } else if(sov == 3) {
-        if(v < -8388608 || v > 8388607)
+        if((v < -8388608 || v > 8388607) && (radix == 10))
             Error(_("Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
+        else if((v < 0 || v > 0xffffff) && (radix != 10))
+            Error(_("Variable %s=%d out range : 0 to 16777215 inclusive."), str, v, name);
     } else ooops("Variable '%s' size=%d value=%d", name, sov, v);
 }
 
@@ -359,11 +379,11 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
     if(ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests)) {
       if(IsNumber(minV)){
         SDWORD _minV = hobatoi(minV);
-        CheckVarInRange(name, _minV);
+        CheckVarInRange(name, minV, _minV);
       }
       if(IsNumber(maxV)){
         SDWORD _maxV = hobatoi(maxV);
-        CheckVarInRange(name, _maxV);
+        CheckVarInRange(name, maxV, _maxV);
       }
     }
 }
@@ -583,7 +603,7 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
         title = _("NEG");
     } else oops();
 
-    NoCheckingOnBox[2] = TRUE; 
+    NoCheckingOnBox[2] = TRUE;
     BOOL b;
     if((which == ELEM_NOT)
     || (which == ELEM_NEG)) {
@@ -592,7 +612,7 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
         b=ShowSimpleDialog(title, 2, labels, 0, 0x7, 0x7, dests);
     } else {
         char *labels[] = { _("Destination:="), _("Operand1:"), l2 };
-    char *dests[] = { dest, op1, op2 };
+        char *dests[] = { dest, op1, op2 };
         b=ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests);
     }
     NoCheckingOnBox[2] = FALSE;

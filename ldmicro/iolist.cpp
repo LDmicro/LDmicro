@@ -245,13 +245,17 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
             break;
 
+
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        case ELEM_MOD:
             if (CheckForNumber(l->d.math.op1) == FALSE) {
                 AppendIoAutoType(l->d.math.op1, IO_TYPE_GENERAL);
             }
+            if (which != ELEM_NOT)
+            if (which != ELEM_NEG)
             if (CheckForNumber(l->d.math.op2) == FALSE) {
                 AppendIoAutoType(l->d.math.op2, IO_TYPE_GENERAL);
             }
@@ -453,9 +457,9 @@ int GenerateIoList(int prevSel)
                if(strcmp(Prog.io.assignment[i].name, IoListSelectionName)==0)
                    return i;
             } else
-            if(strcmp(Prog.io.assignment[i].name, selName)==0)
-            return i;
-    }
+                if(strcmp(Prog.io.assignment[i].name, selName)==0)
+                    return i;
+        }
         if(i < Prog.io.count)
             return i;
     }
@@ -874,7 +878,7 @@ void ShowIoDialog(int item)
         };
 
         SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
-cant_use_this_io:;
+    cant_use_this_io:;
     }
 
     for(j = 0; j < Prog.mcu->adcCount; j++) {
@@ -1103,6 +1107,15 @@ void IoListProc(NMHDR *h)
                 case LV_IO_RAM_ADDRESS: {
                     DWORD addr = 0;
                     int bit = 0;
+                    if((type == IO_TYPE_PORT_INPUT      )
+                    || (type == IO_TYPE_PORT_OUTPUT     )
+                    ) {
+                        MemForVariable(name, &addr);
+                        if(addr)
+                            sprintf(i->item.pszText, "0x%x", addr);
+                         else
+                            sprintf(i->item.pszText, "Not a PORT!");
+                    } else
                     if((type == IO_TYPE_GENERAL)
                     || (type == IO_TYPE_PERSIST)
                     || (type == IO_TYPE_STRING)
@@ -1126,22 +1139,22 @@ void IoListProc(NMHDR *h)
                                 MemForSingleBit(name, TRUE, &addr, &bit);
                             if(addr)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
-                        } 
-                    } 
+                        }
+                    }
                     break;
                 }
 
                 case LV_IO_SISE_OF_VAR:
-                    if((type==IO_TYPE_GENERAL         )
-                    || (type==IO_TYPE_PERSIST         )
-                    || (type==IO_TYPE_STRING          )
-                    || (type==IO_TYPE_RTO             )
-                    || (type==IO_TYPE_COUNTER         )
-                    || (type==IO_TYPE_UART_TX         )
-                    || (type==IO_TYPE_UART_RX         )
+                    if((type == IO_TYPE_GENERAL         )
+                    || (type == IO_TYPE_PERSIST         )
+                    || (type == IO_TYPE_STRING          )
+                    || (type == IO_TYPE_RTO             )
+                    || (type == IO_TYPE_COUNTER         )
+                    || (type == IO_TYPE_UART_TX         )
+                    || (type == IO_TYPE_UART_RX         )
                     || (type == IO_TYPE_TCY             )
-                    || (type==IO_TYPE_TON             )
-                    || (type==IO_TYPE_TOF             )){
+                    || (type == IO_TYPE_TON             )
+                    || (type == IO_TYPE_TOF             )){
                         sprintf(i->item.pszText, "%d  bytes", SizeOfVar(name));
                     }
                     break;
@@ -1194,7 +1207,7 @@ void IoListProc(NMHDR *h)
         }
         case LVN_ITEMACTIVATE: {
             NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
-                char *name = Prog.io.assignment[i->iItem].name;
+            char *name = Prog.io.assignment[i->iItem].name;
             int   type = Prog.io.assignment[i->iItem].type;
             if(InSimulationMode) {
                 switch (type) {
@@ -1203,7 +1216,7 @@ void IoListProc(NMHDR *h)
                     case IO_TYPE_PERSIST:
                     case IO_TYPE_RTO:
                     case IO_TYPE_COUNTER:
-                case IO_TYPE_READ_ADC:
+                    case IO_TYPE_READ_ADC:
                     case IO_TYPE_UART_TX:
                     case IO_TYPE_UART_RX:
                     case IO_TYPE_PWM_OUTPUT:
@@ -1213,8 +1226,8 @@ void IoListProc(NMHDR *h)
                         ShowIoDialog(i->iItem);
                         InvalidateRect(MainWindow, NULL, FALSE);
                         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
-                    break;
-                }
+                        break;
+                    }
                     default: {
                         if(name[0] == 'X') {
                             SimulationToggleContact(name);
