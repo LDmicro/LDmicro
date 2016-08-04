@@ -1,8 +1,12 @@
-== Release 3.5.4
+== Release 3.5.4 experimental
 
-    * CheckConstantInRange allow value from 0x0000 to 0xFFFF
+    * Highlight rungs number.
 
-== Release 3.5.3
+    * Added menu Select Rung's.
+
+    * Allow constant value from 0x0000 to 0xFFFF in hexadecimal.
+
+== Release 3.5.3 experimental
 
     * Remuved lines between rungs.
       It fix troubles to set the cursor in the instruction with mouse.
@@ -51,7 +55,7 @@
 
     * Added: INT_DECREMENT_VARIABLE internal oparation.
 
-== Release 3.5.1
+== Release 3.5.1 experimental
 
     * Fixed: Timer0 as PLC cycle in AVR's corrected.
 
