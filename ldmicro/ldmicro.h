@@ -566,26 +566,10 @@ typedef struct ModbusAddr {
 
 typedef struct PlcProgramSingleIoTag {
     char        name[MAX_NAME_LEN];
-#define IO_TYPE_PENDING         0
-
-/*
-#define IO_TYPE_DIG_INPUT       1
-#define IO_TYPE_DIG_OUTPUT      2
-#define IO_TYPE_READ_ADC        3
-#define IO_TYPE_UART_TX         4
-#define IO_TYPE_UART_RX         5
-#define IO_TYPE_PWM_OUTPUT      6
-#define IO_TYPE_INTERNAL_RELAY  7
-#define IO_TYPE_TON             8
-#define IO_TYPE_TOF             9
-#define IO_TYPE_RTO             10
-#define IO_TYPE_COUNTER         11
-#define IO_TYPE_GENERAL         12
-*/
 /*More convenient sort order in IOlist*/
+#define IO_TYPE_PENDING         0
 #define IO_TYPE_GENERAL         1
 #define IO_TYPE_PERSIST         2
-#define IO_TYPE_RTO             4
 #define IO_TYPE_COUNTER         5
 #define IO_TYPE_INT_INPUT       6
 #define IO_TYPE_DIG_INPUT       7
@@ -596,15 +580,16 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_PWM_OUTPUT      12
 #define IO_TYPE_INTERNAL_RELAY  13
 #define IO_TYPE_TCY             14
-#define IO_TYPE_TON             15
-#define IO_TYPE_TOF             16
-#define IO_TYPE_MODBUS_CONTACT  17
-#define IO_TYPE_MODBUS_COIL     18
-#define IO_TYPE_MODBUS_HREG     19
-#define IO_TYPE_PORT_INPUT      20 // 8bit PORT for in data  - McuIoInfo.inputRegs
-#define IO_TYPE_PORT_OUTPUT     21 // 8bit PORT for out data - McuIoInfo.oututRegs
-#define IO_TYPE_STRING          22
-#define IO_TYPE_TABLE           23
+#define IO_TYPE_RTO             15
+#define IO_TYPE_TON             16
+#define IO_TYPE_TOF             17
+#define IO_TYPE_MODBUS_CONTACT  18
+#define IO_TYPE_MODBUS_COIL     19
+#define IO_TYPE_MODBUS_HREG     20
+#define IO_TYPE_PORT_INPUT      21 // 8bit PORT for in data  - McuIoInfo.inputRegs
+#define IO_TYPE_PORT_OUTPUT     22 // 8bit PORT for out data - McuIoInfo.oututRegs
+#define IO_TYPE_STRING          23
+#define IO_TYPE_TABLE           24
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;

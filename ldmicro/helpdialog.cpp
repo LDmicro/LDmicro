@@ -99,7 +99,7 @@ static char **Text[] = {
 #elif defined(LDLANG_RU)
     HelpTextRu,
 #else
-#   error "Bad language"
+    #error "Bad language"
 #endif
 
     // Let's always keep the about text in English.

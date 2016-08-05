@@ -632,6 +632,8 @@ int getradix(char *str)
         radix = 2;
     else if((start_ptr[0] == '0') && (toupper(start_ptr[1]) == 'X'))
         radix = 16;
+    else if(start_ptr[0] == '\'')
+        radix = -1;
     if(!radix) {
         ooops("'%s'\r\n'%s'", str, start_ptr);
     }
@@ -640,7 +642,6 @@ int getradix(char *str)
 //-----------------------------------------------------------------------------
 SDWORD hobatoi(char *str)
 {
-    int sign = 1;
     long  val;
     char *start_ptr = str;
     while(isspace(*start_ptr))
@@ -654,8 +655,6 @@ SDWORD hobatoi(char *str)
         val = dest[1];
     } else {
        while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+') {
-           if(*start_ptr == '-')
-               sign = -1;
            start_ptr++;
        }
        int radix = 0; //auto detect
@@ -674,7 +673,7 @@ SDWORD hobatoi(char *str)
            Error("Conversion overflow error the string\n'%s' into number %d.", str, val);
        }
     }
-    return sign * val;
+    return val;
 }
 
 //-----------------------------------------------------------------------------
@@ -1497,8 +1496,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             #ifdef USE_CMP
             #endif
             {
-            char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch1");
-            char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
+              char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch1");
+              char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
 
             if(which == ELEM_GRT) {
                 Op(INT_IF_VARIABLE_GRT_VARIABLE, op1, op2);

@@ -1156,29 +1156,29 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
              tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
              PrevWriteTime = LastWriteTime;
 
-           char buf[1024];
-           sprintf(buf, _("File '%s' modified by another application.\r\n"
-               "Its disk timestamp is newer then the editor one.\n"
-               "Reload from disk?"), CurrentSaveFile);
-           int r = MessageBox(MainWindow,
-               buf, "LDmicro",
-               MB_YESNO | MB_ICONWARNING);
-           switch(r) {
-               case IDYES:
-                   if(!LoadProjectFromFile(CurrentSaveFile)) {
-                       Error(_("Couldn't reload '%s'."), CurrentSaveFile);
-                   } else {
-                       ProgramChangedNotSaved = FALSE;
-                       RefreshControlsToSettings();
+             char buf[1024];
+             sprintf(buf, _("File '%s' modified by another application.\r\n"
+                 "Its disk timestamp is newer then the editor one.\n"
+                 "Reload from disk?"), CurrentSaveFile);
+             int r = MessageBox(MainWindow,
+                 buf, "LDmicro",
+                 MB_YESNO | MB_ICONWARNING);
+             switch(r) {
+                 case IDYES:
+                     if(!LoadProjectFromFile(CurrentSaveFile)) {
+                         Error(_("Couldn't reload '%s'."), CurrentSaveFile);
+                     } else {
+                         ProgramChangedNotSaved = FALSE;
+                         RefreshControlsToSettings();
 
-                       GenerateIoListDontLoseSelection();
-                       RefreshScrollbars();
-                   }
-                   break;
-               default:
-                   break;
-           }
-        }
+                         GenerateIoListDontLoseSelection();
+                         RefreshScrollbars();
+                     }
+                     break;
+                 default:
+                     break;
+             }
+          }
     }
     switch (msg) {
         case WM_ERASEBKGND:
