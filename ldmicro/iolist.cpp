@@ -1110,11 +1110,13 @@ void IoListProc(NMHDR *h)
                     if((type == IO_TYPE_PORT_INPUT      )
                     || (type == IO_TYPE_PORT_OUTPUT     )
                     ) {
-                        MemForVariable(name, &addr);
-                        if(addr)
-                            sprintf(i->item.pszText, "0x%x", addr);
-                         else
-                            sprintf(i->item.pszText, "Not a PORT!");
+                        if(!InSimulationMode) {
+                            MemForVariable(name, &addr);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%x", addr);
+                             else
+                                sprintf(i->item.pszText, "Not a PORT!");
+                        }
                     } else
                     if((type == IO_TYPE_GENERAL)
                     || (type == IO_TYPE_PERSIST)
@@ -1135,7 +1137,7 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_INTERNAL_RELAY)
                     ) {
                         if(!InSimulationMode) {
-                            if(SingleBitAssigned(name))
+                            if(SingleBitAssigned(name) || (type == IO_TYPE_INTERNAL_RELAY))
                                 MemForSingleBit(name, TRUE, &addr, &bit);
                             if(addr)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
@@ -1147,15 +1149,28 @@ void IoListProc(NMHDR *h)
                 case LV_IO_SISE_OF_VAR:
                     if((type == IO_TYPE_GENERAL         )
                     || (type == IO_TYPE_PERSIST         )
+                    || (type == IO_TYPE_PORT_INPUT      )
+                    || (type == IO_TYPE_PORT_OUTPUT     )
                     || (type == IO_TYPE_STRING          )
                     || (type == IO_TYPE_RTO             )
                     || (type == IO_TYPE_COUNTER         )
                     || (type == IO_TYPE_UART_TX         )
                     || (type == IO_TYPE_UART_RX         )
+                    || (type == IO_TYPE_TABLE           )
                     || (type == IO_TYPE_TCY             )
                     || (type == IO_TYPE_TON             )
-                    || (type == IO_TYPE_TOF             )){
-                        sprintf(i->item.pszText, "%d  bytes", SizeOfVar(name));
+                    || (type == IO_TYPE_TOF             )) {
+                        int sov = SizeOfVar(name);
+                        sprintf(i->item.pszText, sov==1 ? "%d byte" : "%d bytes", sov);
+                    } else
+                    if((type == IO_TYPE_DIG_INPUT)
+                    || (type == IO_TYPE_DIG_OUTPUT)
+                    || (type == IO_TYPE_INTERNAL_RELAY)
+                    || (type == IO_TYPE_UART_TX)
+                    || (type == IO_TYPE_UART_RX)
+                    || (type == IO_TYPE_READ_ADC)
+                    || (type == IO_TYPE_PWM_OUTPUT)) {
+                        sprintf(i->item.pszText, "1 bit");
                     }
                     break;
 

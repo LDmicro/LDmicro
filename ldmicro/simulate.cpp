@@ -1384,6 +1384,44 @@ static LRESULT CALLBACK UartSimulationProc(HWND hwnd, UINT msg,
 static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam)
 {
+    switch (msg) {
+        case WM_KEYDOWN:
+            // vvv copy-paste from ldmicro.cpp
+            if(InSimulationMode) {
+                switch(wParam) {
+//                  key ' ',Enter-VK_RETURN must be available for simulation input
+//                  case ' ':
+//                      SimulateOneCycle(TRUE);
+//                      break;
+
+                    case VK_F8:
+                        StartSimulation();
+                        break;
+
+                    case 'R':
+                        if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
+                            StartSimulation();
+                        break;
+
+                    case VK_F9:
+                        StopSimulation();
+                        break;
+
+                    case 'H':
+                        if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
+                            StopSimulation();
+                        break;
+
+//                  case VK_RETURN:
+                    case VK_ESCAPE:
+                        ToggleSimulationMode();
+                        break;
+                }
+                break;
+            }
+            // ^^^
+    }
+
     if(msg == WM_CHAR) {
         QueuedUartCharacter = (BYTE)wParam;
         return 0;
@@ -1433,7 +1471,8 @@ void ShowUartSimulationWindow(void)
 
     UartSimulationWindow = CreateWindowClient(WS_EX_TOOLWINDOW |
         WS_EX_APPWINDOW, "LDmicroUartSimulationWindow",
-        "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX,
+        "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX
+        | WS_MAXIMIZEBOX | WS_MINIMIZEBOX,
         TerminalX, TerminalY, TerminalW, TerminalH,
         NULL, NULL, Instance, NULL);
 
@@ -1501,7 +1540,7 @@ static void AppendToUartSimulationTextControl(BYTE b)
     if((isalnum(b) || strchr("[]{};':\",.<>/?`~ !@#$%^&*()-=_+|", b) ||
            b == '\r' || b == '\n' || b == '\b' || b == '\f' || b == '\t' || b == '\v' || b == '\a') && b != '\0')
     {
-          append[0] = (char)b;
+        append[0] = (char)b;
         append[1] = '\0';
     } else {
         sprintf(append, "\\x%02x", b);
@@ -1552,8 +1591,12 @@ static void AppendToUartSimulationTextControl(BYTE b)
         if(b == '\n') {
             strcpy(append, "\r\n");
             b = '\0';
-        } else if(s=strrchr(buf,'\n')) {
-            s[1] = '\0';
+        } else {
+            if(s=strrchr(buf,'\n')) {
+                s[1] = '\0';
+            } else {
+                buf[0] = '\0';
+            }
         }
       }
     }
@@ -1571,22 +1614,22 @@ static void AppendToUartSimulationTextControl(BYTE b)
 }
 /*
 ------------------------------ ASCII Control Codes ---------------------------
-³Dec Hex Ctl  Name Control Meaning     ³Dec Hex Ctl  Name Control Meaning
-³--- --- ---  ---- ------------------- ³--- --- ---  ---- --------------------
-³  0  00  ^@  NUL  null (end string)   ³ 16  10  ^P  DLE  data line escape
-³  1  01  ^A  SOH  start of heading    ³ 17  11  ^Q  DC1  dev ctrl 1 (X-ON)
-³  2  02  ^B  STX  start of text       ³ 18  12  ^R  DC2  device ctrl 2
-³  3  03  ^C  ETX  end of text         ³ 19  13  ^S  DC3  dev ctrl 3 (X-OFF)
-³  4  04  ^D  EOT  end of transmission ³ 20  14  ^T  DC4  device ctrl 4
-³  5  05  ^E  ENQ  enquiry             ³ 21  15  ^U  NAK  negative acknowledge
-³  6  06  ^F  ACK  acknowledge         ³ 22  16  ^V  SYN  synchronous idle
-³  7  07  ^G  BEL  bell                ³ 23  17  ^W  ETB  end transmit block
-³  8  08  ^H  BS  backspace            ³ 24  18  ^X  CAN  cancel
-³  9  09  ^I  HT  TAB horizontal tab   ³ 25  19  ^Y  EM  end of medium
-³ 10  0a  ^J  LF  line feed            ³ 26  1a  ^Z  SUB  substitute
-³ 11  0b  ^K  VT  vertical tab         ³ 27  1b  ^[  ESC  escape
-³ 12  0c  ^L  FF  form feed            ³ 28  1c  ^\  FS  file separator
-³ 13  0d  ^M  CR  carriage return      ³ 29  1d  ^]  GS  group separator
-³ 14  0e  ^N  SO  shift out            ³ 30  1e  ^^  RS  record separator
-³ 15  0f  ^O  SI  shift in             ³ 31  1f  ^_  US  unit separator
+|Dec Hex Ctl  Name Control Meaning      |Dec Hex Ctl  Name Control Meaning
+|--- --- ---  ---- -------------------  |--- --- ---  ---- --------------------
+|  0  00  ^@  NUL  null (end string)    | 16  10  ^P  DLE  data line escape
+|  1  01  ^A  SOH  start of heading     | 17  11  ^Q  DC1  dev ctrl 1 (X-ON)
+|  2  02  ^B  STX  start of text        | 18  12  ^R  DC2  device ctrl 2
+|  3  03  ^C  ETX  end of text          | 19  13  ^S  DC3  dev ctrl 3 (X-OFF)
+|  4  04  ^D  EOT  end of transmission  | 20  14  ^T  DC4  device ctrl 4
+|  5  05  ^E  ENQ  enquiry              | 21  15  ^U  NAK  negative acknowledge
+|  6  06  ^F  ACK  acknowledge          | 22  16  ^V  SYN  synchronous idle
+|  7  07  ^G  BEL  bell               \a| 23  17  ^W  ETB  end transmit block
+|  8  08  ^H  BS   backspace          \b| 24  18  ^X  CAN  cancel
+|  9  09  ^I  HT   TAB horizontal tab \t| 25  19  ^Y  EM   end of medium
+| 10  0a  ^J  LF   line feed          \n| 26  1a  ^Z  SUB  substitute
+| 11  0b  ^K  VT   vertical tab       \v| 27  1b  ^[  ESC  escape
+| 12  0c  ^L  FF   form feed          \f| 28  1c  ^\  FS   file separator
+| 13  0d  ^M  CR   carriage return    \r| 29  1d  ^]  GS   group separator
+| 14  0e  ^N  SO   shift out            | 30  1e  ^^  RS   record separator
+| 15  0f  ^O  SI   shift in             | 31  1f  ^_  US   unit separator
 */

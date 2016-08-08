@@ -100,6 +100,8 @@ void AllocStart(void)
 //-----------------------------------------------------------------------------
 DWORD AllocOctetRam(void)
 {
+    if(!Prog.mcu)
+        return 0;
     if(MemOffset >= Prog.mcu->ram[0].len) {
         Error(_("Out of memory; simplify program or choose "
             "microcontroller with more memory."));

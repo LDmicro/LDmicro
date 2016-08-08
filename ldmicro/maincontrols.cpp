@@ -100,9 +100,9 @@ void MakeMainWindowControls(void)
     LV_ADD_COLUMN(IoList, LV_IO_PIN,         pinWidth,     _("Pin on MCU"));
     LV_ADD_COLUMN(IoList, LV_IO_PORT,        portWidth,    _("MCU Port"));
     LV_ADD_COLUMN(IoList, LV_IO_PINNAME,     pinNameWidth, _("Pin Name"));
+    LV_ADD_COLUMN(IoList, LV_IO_RAM_ADDRESS, 75,           _("RAM addr"));
+    LV_ADD_COLUMN(IoList, LV_IO_SISE_OF_VAR, 60,           _("Size"));
     LV_ADD_COLUMN(IoList, LV_IO_MODBUS,      modbusWidth,  _("Modbus addr"));
-    LV_ADD_COLUMN(IoList, LV_IO_RAM_ADDRESS, 70,           _("RAM addr"));
-    LV_ADD_COLUMN(IoList, LV_IO_SISE_OF_VAR, 70,           _("Size of var"));
 
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
