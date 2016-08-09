@@ -438,26 +438,28 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         return;
     }
 
-    if (compile_MNU==MNU_COMPILE_ANSIC)
+    if (compile_MNU==MNU_COMPILE_ANSIC) {
         CompileAnsiC(CurrentCompileFile);
-    else if (compile_MNU==MNU_COMPILE_ARDUINO)
+        postCompile(ISA_ANSIC);
+    } else if (compile_MNU==MNU_COMPILE_ARDUINO) {
         CompileAnsiC(CurrentCompileFile, ISA_ARDUINO);
-    else if (compile_MNU == MNU_COMPILE_XINT)
+        postCompile(ISA_ARDUINO);
+    } else if (compile_MNU == MNU_COMPILE_XINT) {
         CompileXInterpreted(CurrentCompileFile);
-    else if (Prog.mcu)
-    switch(Prog.mcu->whichIsa) {
-        case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
-        case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
-        case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
-        case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
-        case ISA_XINTERPRETED:  CompileXInterpreted(CurrentCompileFile); break;
-        case ISA_NETZER:        CompileNetzer(CurrentCompileFile); break;
-        case ISA_ARDUINO:       CompileAnsiC(CurrentCompileFile, ISA_ARDUINO); break;
-
-        default: oops();
+        postCompile(ISA_XINTERPRETED);
+    } else if (Prog.mcu) {
+        switch(Prog.mcu->whichIsa) {
+            case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
+            case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
+            case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
+            case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
+            case ISA_XINTERPRETED:  CompileXInterpreted(CurrentCompileFile); break;
+            case ISA_NETZER:        CompileNetzer(CurrentCompileFile); break;
+            case ISA_ARDUINO:       CompileAnsiC(CurrentCompileFile, ISA_ARDUINO); break;
+            default: ooops("0x%X", Prog.mcu->whichIsa);
+        }
+        postCompile(Prog.mcu->whichIsa);
     } else oops();
-
-    postCompile(Prog.mcu ? Prog.mcu->whichIsa : 0);
 
 //    IntDumpListing("t.pl");
     RefreshControlsToSettings();
@@ -762,8 +764,48 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddMove());
             break;
 
+        case MNU_INSERT_BIN2BCD:
+            CHANGING_PROGRAM(AddBcd(ELEM_BIN2BCD));
+            break;
+
+        case MNU_INSERT_BCD2BIN:
+            CHANGING_PROGRAM(AddBcd(ELEM_BCD2BIN));
+            break;
+
+        case MNU_INSERT_SWAP:
+            CHANGING_PROGRAM(AddBcd(ELEM_SWAP));
+            break;
+
+        case MNU_INSERT_BUS:
+            CHANGING_PROGRAM(AddBus(ELEM_BUS));
+            break;
+
+        case MNU_INSERT_7SEG:
+            CHANGING_PROGRAM(AddSegments(ELEM_7SEG));
+            break;
+
+        case MNU_INSERT_9SEG:
+            CHANGING_PROGRAM(AddSegments(ELEM_9SEG));
+            break;
+
+        case MNU_INSERT_14SEG:
+            CHANGING_PROGRAM(AddSegments(ELEM_14SEG));
+            break;
+
+        case MNU_INSERT_16SEG:
+            CHANGING_PROGRAM(AddSegments(ELEM_16SEG));
+            break;
+
         case MNU_INSERT_SET_PWM:
             CHANGING_PROGRAM(AddSetPwm());
+            break;
+
+        case MNU_INSERT_PWM_OFF:
+            CHANGING_PROGRAM(AddEmpty(ELEM_PWM_OFF));
+            break;
+
+        case MNU_INSERT_NPULSE_OFF:
+            CHANGING_PROGRAM(AddEmpty(ELEM_NPULSE_OFF));
             break;
 
         case MNU_INSERT_READ_ADC:
@@ -788,6 +830,17 @@ static void ProcessMenu(int code)
             case MNU_INSERT_SUB: elem = ELEM_SUB; goto math;
             case MNU_INSERT_MUL: elem = ELEM_MUL; goto math;
             case MNU_INSERT_DIV: elem = ELEM_DIV; goto math;
+            case MNU_INSERT_MOD: elem = ELEM_MOD; goto math;
+            case MNU_INSERT_AND: elem = ELEM_AND; goto math;
+            case MNU_INSERT_OR : elem = ELEM_OR ; goto math;
+            case MNU_INSERT_XOR: elem = ELEM_XOR; goto math;
+            case MNU_INSERT_NOT: elem = ELEM_NOT; goto math;
+            case MNU_INSERT_NEG: elem = ELEM_NEG; goto math;
+            case MNU_INSERT_SHL: elem = ELEM_SHL; goto math;
+            case MNU_INSERT_SHR: elem = ELEM_SHR; goto math;
+            case MNU_INSERT_SR0: elem = ELEM_SR0; goto math;
+            case MNU_INSERT_ROL: elem = ELEM_ROL; goto math;
+            case MNU_INSERT_ROR: elem = ELEM_ROR; goto math;
 math:
                 CHANGING_PROGRAM(AddMath(elem));
                 break;
@@ -820,6 +873,22 @@ cmp:
                 CHANGING_PROGRAM(AddCmp(elem));
                 break;
         }
+
+        case MNU_INSERT_STEPPER:
+                CHANGING_PROGRAM(AddStepper());
+                break;
+
+        case MNU_INSERT_PULSER:
+                CHANGING_PROGRAM(AddPulser());
+                break;
+
+        case MNU_INSERT_NPULSE:
+                CHANGING_PROGRAM(AddNPulse());
+                break;
+
+        case MNU_INSERT_QUAD_ENCOD:
+                CHANGING_PROGRAM(AddQuadEncod());
+                break;
 
         case MNU_MAKE_NORMAL:
             CHANGING_PROGRAM(MakeNormalSelected());

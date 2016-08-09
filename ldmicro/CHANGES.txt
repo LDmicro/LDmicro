@@ -1,3 +1,28 @@
+== Release 3.6.0 experimental
+
+    * Added: SAMPLE\swatch1.ld - Stopwatch1 over UART.
+    https://github.com/LDmicro/LDmicro/wiki/Stopwatch1-over-UART
+
+    * New: Variable name that begins with symbol '#' like
+      #PINA, #PINB, #PINC, ... treated as input port.
+      Operation -{ MOV dest, #PINA }- directly assigns 8-bit value from the hardware
+      pins of the port A to the variable 'dest'.
+
+      Variable name that begins with symbol '#' like
+      #PORTA, #PORTB, #PORTC, ... now treated as output port.
+      Operation -{ MOV #PINA, dest }- writes 8-bit value from
+      the variable 'dest' directly to the hardware pins of port A.
+      Note: The output mode pins of the port is not set automatically. You
+      must set it with operations COIL YPA0..7 (YRA0..7).
+
+    * Added: AND, OR, XOR, NOT, SWAP, NEG,
+      SHL, SHR, SR0, ROL, ROR,
+      7SEG, 9SEG, 14SEG, 16SEG, BUS, BIN2BCD, BCD2BIN operations.
+    You can only load, save, add, edit this elements. No simulation. No compile.
+
+    * Added: SAMPLE\swatch2.ld - Stopwatch2 with 7 segments LED displays.
+    https://github.com/LDmicro/LDmicro/wiki/Stopwatch2-with-7-segments-LED-displays
+
 == Release 3.5.4 experimental
 
     * Highlight rungs number.

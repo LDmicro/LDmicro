@@ -35,6 +35,7 @@
 typedef signed short SWORD;
 typedef signed long SDWORD;
 
+#include "accel.h"
 #define _BV(bit) (1 << (bit))
 
 //-----------------------------------------------
@@ -427,8 +428,8 @@ typedef struct ElemResetTag {
 } ElemReset;
 
 typedef struct ElemMoveTag {
-    char    src[MAX_NAME_LEN];
     char    dest[MAX_NAME_LEN];
+    char    src[MAX_NAME_LEN];
 } ElemMove;
 
 typedef struct ElemSfrTag {
@@ -436,10 +437,27 @@ typedef struct ElemSfrTag {
     char    op[MAX_NAME_LEN];
 } ElemSfr;
 
+#define COMMON_CATHODE ('C')
+#define COMMON_ANODE   ('A')
+#define PCBbit_LEN 17
+
+typedef struct ElemSegmentsTag {
+    char    dest[MAX_NAME_LEN];
+    char    src[MAX_NAME_LEN];
+    char    common;
+    int     which;
+} ElemSegments;
+
+typedef struct ElemBusTag {
+    char    dest[MAX_NAME_LEN];
+    char    src[MAX_NAME_LEN];
+    int     PCBbit[PCBbit_LEN];
+} ElemBus;
+
 typedef struct ElemMathTag {
+    char    dest[MAX_NAME_LEN];
     char    op1[MAX_NAME_LEN];
     char    op2[MAX_NAME_LEN];
-    char    dest[MAX_NAME_LEN];
 } ElemMath;
 
 typedef struct ElemCmpTag {
@@ -458,6 +476,38 @@ typedef struct ElemCounterTag {
     char    init[MAX_NAME_LEN];
 } ElemCounter;
 
+typedef struct ResStepsTag {
+    ElemAccel *T;
+    int n;
+    int Psum;
+    int shrt; // mult = 2 ^ shrt
+    int sovElement;
+} ResSteps;
+
+typedef struct ElemStepperTag {
+    char    name[MAX_NAME_LEN]; // step counter down from counter limit to 0
+    char    max[MAX_NAME_LEN];  // step counter limit
+    char    P[MAX_NAME_LEN];
+    int     nSize;              // Table size:
+    int     n;                  // real accelaration/decelaratin table size
+    int     graph;
+    char    coil[MAX_NAME_LEN]; // short pulse on this pin
+} ElemStepper;
+
+typedef struct ElemPulserTag {
+    char    counter[MAX_NAME_LEN];
+    char    P1[MAX_NAME_LEN];
+    char    P0[MAX_NAME_LEN];
+    char    accel[MAX_NAME_LEN];
+    char    busy[MAX_NAME_LEN];
+} ElemPulser;
+
+typedef struct ElemNPulseTag {
+    char    counter[MAX_NAME_LEN];
+    char    targetFreq[MAX_NAME_LEN];
+    char    coil[MAX_NAME_LEN];
+} ElemNPulse;
+
 typedef struct ElemReadAdcTag {
     char    name[MAX_NAME_LEN];
 } ElemReadAdc;
@@ -467,6 +517,15 @@ typedef struct ElemSetPwmTag {
     char    targetFreq[MAX_NAME_LEN];
     char    name[MAX_NAME_LEN]; // for IO pin
 } ElemSetPwm;
+
+typedef struct ElemQuadEncodTag {
+    char    counter[MAX_NAME_LEN];
+    int     int01; // inputA
+    char    contactA[MAX_NAME_LEN]; // inputA
+    char    contactB[MAX_NAME_LEN]; // inputB
+    char    contactZ[MAX_NAME_LEN]; // inputZ
+    char    zero[MAX_NAME_LEN];
+} ElemQuadEncod;
 
 typedef struct ElemUartTag {
     char    name[MAX_NAME_LEN];
@@ -520,6 +579,12 @@ typedef struct ElemLeafTag {
         ElemMath            math;
         ElemCmp             cmp;
         ElemSfr             sfr;
+        ElemBus             bus;
+        ElemSegments        segments;
+        ElemStepper         stepper;
+        ElemPulser          pulser;
+        ElemNPulse          Npulse;
+        ElemQuadEncod       QuadEncod;
         ElemCounter         counter;
         ElemReadAdc         readAdc;
         ElemSetPwm          setPwm;
@@ -932,6 +997,13 @@ void AddCoil(void);
 void AddContact(void);
 void AddEmpty(int which);
 void AddMove(void);
+void AddBus(int which);
+void AddBcd(int which);
+void AddSegments(int which);
+void AddStepper(void);
+void AddPulser(void);
+void AddNPulse(void);
+void AddQuadEncod(void);
 void AddSfr(int which);
 void AddMath(int which);
 void AddCmp(int which);
@@ -1012,6 +1084,13 @@ void ShowUartDialog(int which, char *name);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
+//void CalcSteps(ElemStepper *s, ResSteps *r);
+void ShowStepperDialog(int which, void *e);
+void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy);
+void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil);
+void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, char *contactB, char *contactZ, char *error);
+void ShowSegmentsDialog(ElemLeaf *l);
+void ShowBusDialog(ElemLeaf *l);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
 void ShowStringDialog(char * dest, char *var, char *string);
@@ -1148,7 +1227,7 @@ void DestroyUartSimulationWindow(void);
 void ShowUartSimulationWindow(void);
 DWORD IsUsedVariable(char *name);
 extern BOOL InSimulationMode;
-extern BOOL SimulateRedrawAfterNextCycle;
+//extern BOOL SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
 void SetSimulationVariable(char *name, SDWORD val);
 SDWORD GetSimulationVariable(char *name, BOOL forIoList);
@@ -1368,6 +1447,7 @@ int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(SDWORD i);
 void SaveVarListToFile(FILE *f);
+BOOL LoadVarListFromFile(FILE *f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);

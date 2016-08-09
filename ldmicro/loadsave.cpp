@@ -150,6 +150,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_ONE_SHOT_FALLING;
     } else if(memcmp(line, "OSC", 3)==0) {
         *which = ELEM_OSC;
+    } else if(memcmp(line, "NPULSE_OFF",10)==0) {
+        *which = ELEM_NPULSE_OFF;
+    } else if(memcmp(line, "PWM_OFF",7)==0) {
+        *which = ELEM_PWM_OFF;
     } else if((sscanf(line, "TCY %s %d", l->d.timer.name,
         &l->d.timer.delay)==2))
     {
@@ -194,13 +198,85 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
     {
         strcpy(l->d.counter.init,"0");
         *which = ELEM_CTC;
+
     } else if(sscanf(line, "RES %s", l->d.reset.name)==1) {
         *which = ELEM_RES;
 
     } else if(sscanf(line, "MOVE %s %s", l->d.move.dest, l->d.move.src)==2) {
         *which = ELEM_MOVE;
+
+    } else if(sscanf(line, "BIN2BCD %s %s", l->d.move.dest, l->d.move.src)==2) {
+        *which = ELEM_BIN2BCD;
+
+    } else if(sscanf(line, "BCD2BIN %s %s", l->d.move.dest, l->d.move.src)==2) {
+        *which = ELEM_BCD2BIN;
+
+    } else if(sscanf(line, "SWAP %s %s", l->d.move.dest, l->d.move.src)==2) {
+        *which = ELEM_SWAP;
+
+    } else if(sscanf(line, "BUS %s %s %d %d %d %d %d %d %d %d\n", l->d.bus.dest, l->d.bus.src,
+                           &l->d.bus.PCBbit[7],
+                           &l->d.bus.PCBbit[6],
+                           &l->d.bus.PCBbit[5],
+                           &l->d.bus.PCBbit[4],
+                           &l->d.bus.PCBbit[3],
+                           &l->d.bus.PCBbit[2],
+                           &l->d.bus.PCBbit[1],
+                           &l->d.bus.PCBbit[0])==(2+8)) {
+        *which = ELEM_BUS;
+
+    } else if(sscanf(line, "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+        l->d.segments.which = ELEM_7SEG;
+        *which = ELEM_7SEG;
+
+    } else if(sscanf(line, "9SEGMENTS %d %s %s\n", &l->d.segments.common, l->d.segments.dest, l->d.segments.src)==3) {
+        l->d.segments.which = ELEM_9SEG;
+        *which = ELEM_9SEG;
+
+    } else if(sscanf(line, "14SEGMENTS %d %s %s\n", &l->d.segments.common, l->d.segments.dest, l->d.segments.src)==3) {
+        l->d.segments.which = ELEM_14SEG;
+        *which = ELEM_14SEG;
+
+    } else if(sscanf(line, "16SEGMENTS %d %s %s\n", &l->d.segments.common, l->d.segments.dest, l->d.segments.src)==3) {
+        l->d.segments.which = ELEM_16SEG;
+        *which = ELEM_16SEG;
+
+    } else if(sscanf(line, "STEPPER %s %s %s %d %d %s", l->d.stepper.name, l->d.stepper.max, l->d.stepper.P, &l->d.stepper.nSize, &l->d.stepper.graph, l->d.stepper.coil)==6) {
+        *which = ELEM_STEPPER;
+    } else if(sscanf(line, "PULSER %s %s %s %s %s", l->d.pulser.P1, l->d.pulser.P0, l->d.pulser.accel, l->d.pulser.counter, l->d.pulser.busy)==5) {
+        *which = ELEM_PULSER;
+    } else if(sscanf(line, "NPULSE %s %s %s", l->d.Npulse.counter, l->d.Npulse.targetFreq, l->d.Npulse.coil)==3) {
+        *which = ELEM_NPULSE;
+    } else if(sscanf(line, "QUAD_ENCOD %s %d %s %s |%s |%s", l->d.QuadEncod.counter, &l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB, l->d.QuadEncod.contactZ, l->d.QuadEncod.zero)==6) {
+        *which = ELEM_QUAD_ENCOD;
+    } else if(sscanf(line, "QUAD_ENCOD %s %d %s %s | |%s", l->d.QuadEncod.counter, &l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB, l->d.QuadEncod.zero)==5) {
+        *which = ELEM_QUAD_ENCOD;
+    } else if(sscanf(line, "QUAD_ENCOD %s %d %s %s |%s |", l->d.QuadEncod.counter, &l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB, l->d.QuadEncod.contactZ)==5) {
+        *which = ELEM_QUAD_ENCOD;
+    } else if(sscanf(line, "QUAD_ENCOD %s %d %s %s", l->d.QuadEncod.counter, &l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB)==4) {
+        *which = ELEM_QUAD_ENCOD;
     } else if(sscanf(line, "MOD %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
         *which = ELEM_MOD;
+    } else if(sscanf(line, "SHL %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+        *which = ELEM_SHL;
+    } else if(sscanf(line, "SHR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+        *which = ELEM_SHR;
+    } else if(sscanf(line, "SR0 %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+        *which = ELEM_SR0;
+    } else if(sscanf(line, "ROL %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+        *which = ELEM_ROL;
+    } else if(sscanf(line, "ROR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+        *which = ELEM_ROR;
+    } else if(sscanf(line, "AND %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+        *which = ELEM_AND;
+    } else if(sscanf(line, "OR %s %s %s",  l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+        *which = ELEM_OR;
+    } else if(sscanf(line, "XOR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+        *which = ELEM_XOR;
+    } else if(sscanf(line, "NOT %s %s", l->d.math.dest, l->d.math.op1)==2) {
+        *which = ELEM_NOT;
+    } else if(sscanf(line, "NEG %s %s", l->d.math.dest, l->d.math.op1)==2) {
+        *which = ELEM_NEG;
     } else if(sscanf(line, "ADD %s %s %s", l->d.math.dest, l->d.math.op1,
         l->d.math.op2)==3)
     {
@@ -499,6 +575,14 @@ BOOL LoadProjectFromFile(char *filename)
                 fclose(f);
                 return FALSE;
             }
+        } else if(strcmp(line, "VAR LIST\n")==0) {
+            if(!LoadVarListFromFile(f)) {
+                fclose(f);
+                return FALSE;
+            }
+        } else if(sscanf(line, "LDmicro%s", &Prog.LDversion)) {
+            if (strcmp(Prog.LDversion,"0.1")!=0)
+                strcpy(Prog.LDversion,"0.2");
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
         } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d", &cycle, &cycleTimer, &cycleDuty)==3) {
@@ -645,8 +729,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             s = "TOF"; goto timer;
         case ELEM_RTO:
             s = "RTO"; goto timer;
-
-timer:
+        timer:
             fprintf(f, "%s %s %d\n", s, l->d.timer.name, l->d.timer.delay);
             break;
 
@@ -658,10 +741,28 @@ timer:
             s = "CTC"; goto counter;
         case ELEM_CTR:
             s = "CTR"; goto counter;
-
-counter:
-
+        counter:
             fprintf(f, "%s %s %s %s\n", s, l->d.counter.name, l->d.counter.max, l->d.counter.init);
+            break;
+
+        case ELEM_STEPPER:
+            fprintf(f, "STEPPER %s %s %s %d %d %s\n", l->d.stepper.name, l->d.stepper.max, l->d.stepper.P, l->d.stepper.nSize, l->d.stepper.graph, l->d.stepper.coil);
+            break;
+
+        case ELEM_PULSER:
+            fprintf(f, "PULSER %s %s %s %s %s\n", l->d.pulser.P1, l->d.pulser.P0, l->d.pulser.accel, l->d.pulser.counter, l->d.pulser.busy);
+            break;
+
+        case ELEM_NPULSE:
+            fprintf(f, "NPULSE %s %s %s\n", l->d.Npulse.counter, l->d.Npulse.targetFreq, l->d.Npulse.coil);
+            break;
+
+        case ELEM_QUAD_ENCOD:
+            fprintf(f, "QUAD_ENCOD %s %d %s %s |%s |%s\n", l->d.QuadEncod.counter, l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB, l->d.QuadEncod.contactZ, l->d.QuadEncod.zero);
+            break;
+
+        case ELEM_NPULSE_OFF:
+            fprintf(f, "NPULSE_OFF\n");
             break;
 
         case ELEM_RES:
@@ -672,12 +773,63 @@ counter:
             fprintf(f, "MOVE %s %s\n", l->d.move.dest, l->d.move.src);
             break;
 
+        case ELEM_BIN2BCD:
+            fprintf(f, "BIN2BCD %s %s\n", l->d.move.dest, l->d.move.src);
+            break;
+
+        case ELEM_BCD2BIN:
+            fprintf(f, "BCD2BIN %s %s\n", l->d.move.dest, l->d.move.src);
+            break;
+
+        case ELEM_SWAP:
+            fprintf(f, "SWAP %s %s\n", l->d.move.dest, l->d.move.src);
+            break;
+
+        case ELEM_BUS: {
+            fprintf(f, "BUS %s %s", l->d.bus.dest, l->d.bus.src);
+            int i;
+            for(i=7; i>=0; i--)
+                fprintf(f, " %d", l->d.bus.PCBbit[i]);
+            fprintf(f, "\n");
+            break;
+        }
+        case ELEM_7SEG: {
+            fprintf(f, "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
+            break;
+        }
+        case ELEM_9SEG:
+            fprintf(f, "9SEGMENTS %d %s %s\n", l->d.segments.common, l->d.segments.dest, l->d.segments.src);
+            break;
+
+        case ELEM_14SEG:
+            fprintf(f, "14SEGMENTS %d %s %s\n", l->d.segments.common, l->d.segments.dest, l->d.segments.src);
+            break;
+
+        case ELEM_16SEG:
+            fprintf(f, "16SEGMENTS %d %s %s\n", l->d.segments.common, l->d.segments.dest, l->d.segments.src);
+            break;
+
+        case ELEM_NOT: s = "NOT";
+            fprintf(f, "%s %s %s\n", s, l->d.math.dest, l->d.math.op1);
+            break;
+        case ELEM_NEG: s = "NEG";
+            fprintf(f, "%s %s %s\n", s, l->d.math.dest, l->d.math.op1);
+            break;
+
+        case ELEM_ROL: s = "ROL"; goto math;
+        case ELEM_ROR: s = "ROR"; goto math;
+        case ELEM_SHL: s = "SHL"; goto math;
+        case ELEM_SHR: s = "SHR"; goto math;
+        case ELEM_SR0: s = "SR0"; goto math;
+        case ELEM_AND: s = "AND"; goto math;
+        case ELEM_OR : s = "OR" ; goto math;
+        case ELEM_XOR: s = "XOR"; goto math;
         case ELEM_MOD: s = "MOD"; goto math;
         case ELEM_ADD: s = "ADD"; goto math;
         case ELEM_SUB: s = "SUB"; goto math;
         case ELEM_MUL: s = "MUL"; goto math;
         case ELEM_DIV: s = "DIV"; goto math;
-math:
+        math:
             fprintf(f, "%s %s %s %s\n", s, l->d.math.dest, l->d.math.op1,
                 l->d.math.op2);
             break;
@@ -689,7 +841,7 @@ math:
         case ELEM_CSFR: s = "CSFR"; goto sfrcmp;
         case ELEM_TSFR: s = "TSFR"; goto sfrcmp;
         case ELEM_T_C_SFR: s = "TCSFR"; goto sfrcmp;
-sfrcmp:
+        sfrcmp:
             fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
             break;
         // Special function
@@ -700,7 +852,7 @@ sfrcmp:
         case ELEM_GEQ: s = "GEQ"; goto cmp;
         case ELEM_LES: s = "LES"; goto cmp;
         case ELEM_LEQ: s = "LEQ"; goto cmp;
-cmp:
+        cmp:
             fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
             break;
 
@@ -802,7 +954,10 @@ cmp:
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
             if(depth == 0) {
+              if (strcmp(Prog.LDversion,"0.1")==0)
                 fprintf(f, "RUNG\n");
+              else
+                fprintf(f, "RUNG %d\n", rung);
             } else {
                 fprintf(f, "SERIES\n");
             }
@@ -843,7 +998,7 @@ BOOL SaveProjectToFile(char *filename)
     FILE *f = fopen(filename, "w");
     if(!f) return FALSE;
 
-    fprintf(f, "LDmicro0.1\n");
+    fprintf(f, "LDmicro%s\n",Prog.LDversion);
     if(Prog.mcu) {
         fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
     }
@@ -852,6 +1007,13 @@ BOOL SaveProjectToFile(char *filename)
     fprintf(f, "BAUD=%d Hz\n", Prog.baudRate);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
+    }
+
+    if (strcmp(Prog.LDversion,"0.1")!=0) {
+        fprintf(f, "\n");
+        fprintf(f, "VAR LIST\n");
+        SaveVarListToFile(f);
+        fprintf(f, "END\n");
     }
 
     fprintf(f, "\n");

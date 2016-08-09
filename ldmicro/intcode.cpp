@@ -133,6 +133,9 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2);
                 break;
 
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                break;
+
             case INT_SET_VARIABLE_TO_LITERAL:
                 fprintf(f, "let var '%s' := %d", IntCode[i].name1,
                     IntCode[i].literal);
@@ -141,6 +144,45 @@ void IntDumpListing(char *outFile)
             case INT_SET_VARIABLE_TO_VARIABLE:
                 fprintf(f, "let var '%s' := '%s'", IntCode[i].name1,
                     IntCode[i].name2);
+                break;
+
+            case INT_SET_BIN2BCD:
+                break;
+
+            case INT_SET_BCD2BIN:
+                break;
+
+            case INT_SET_SWAP:
+                break;
+
+            case INT_SET_VARIABLE_ROL:
+                break;
+
+            case INT_SET_VARIABLE_ROR:
+                break;
+
+            case INT_SET_VARIABLE_SHL:
+                break;
+
+            case INT_SET_VARIABLE_SHR:
+                break;
+
+            case INT_SET_VARIABLE_SR0:
+                break;
+
+            case INT_SET_VARIABLE_AND:
+                break;
+
+            case INT_SET_VARIABLE_OR:
+                break;
+
+            case INT_SET_VARIABLE_XOR:
+                break;
+
+            case INT_SET_VARIABLE_NEG:
+                break;
+
+            case INT_SET_VARIABLE_NOT:
                 break;
 
             case INT_SET_VARIABLE_ADD:
@@ -163,6 +205,9 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2, IntCode[i].name3);
                 break;
 
+            case INT_SET_VARIABLE_MOD:
+                break;
+
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1);
                 break;
@@ -178,6 +223,18 @@ void IntDumpListing(char *outFile)
 
             case INT_DECREMENT_VARIABLE:
                 fprintf(f, "decrement '%s'", IntCode[i].name1);
+                break;
+
+            case INT_QUAD_ENCOD:
+                break;
+
+            case INT_SET_NPULSE:
+                break;
+
+            case INT_OFF_NPULSE:
+                break;
+
+            case INT_OFF_PWM:
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
@@ -1658,6 +1715,22 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
             break;
         }
+
+        case ELEM_BUS: {
+            break;
+        }
+        case ELEM_BIN2BCD: {
+            break;
+        }
+
+        case ELEM_BCD2BIN: {
+            break;
+        }
+
+        case ELEM_SWAP: {
+            break;
+        }
+
         case ELEM_STRING: {
             Comment(3, "ELEM_STRING");
             Op(INT_IF_BIT_SET, stateInOut);
@@ -1685,8 +1758,21 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 break;
             }
 
-            #ifdef NEW_FEATURE
-            #endif
+            case ELEM_NPULSE: {
+                break;
+            }
+
+            case ELEM_NPULSE_OFF: {
+                break;
+            }
+
+            case ELEM_PWM_OFF: {
+                break;
+            }
+
+            case ELEM_QUAD_ENCOD: {
+                break;
+            }
 
             case ELEM_PERSIST: {
               Comment(3, "ELEM_PERSIST");
@@ -1743,6 +1829,18 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         }
         {
         int intOp;
+        case ELEM_SHL:
+        case ELEM_SHR:
+        case ELEM_SR0:
+        case ELEM_ROL:
+        case ELEM_ROR:
+        case ELEM_AND:
+        case ELEM_OR:
+        case ELEM_XOR:
+        case ELEM_NOT:
+        case ELEM_NEG:
+        case ELEM_MOD: 
+            break;
         case ELEM_ADD: intOp = INT_SET_VARIABLE_ADD;      Comment(3, "ELEM_ADD"); goto math;
         case ELEM_SUB: intOp = INT_SET_VARIABLE_SUBTRACT; Comment(3, "ELEM_SUB"); goto math;
         case ELEM_MUL: intOp = INT_SET_VARIABLE_MULTIPLY; Comment(3, "ELEM_MUL"); goto math;
@@ -1755,6 +1853,10 @@ math:   {
             }
             Op(INT_IF_BIT_SET, stateInOut);
             char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
+            if((intOp == INT_SET_VARIABLE_NOT)
+            || (intOp == INT_SET_VARIABLE_NEG)){
+                Op(intOp, l->d.math.dest, op1);
+            } else
             if((intOp == INT_SET_VARIABLE_SUBTRACT)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)

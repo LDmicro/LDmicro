@@ -498,8 +498,8 @@ void ShowMoveDialog(int which, char *dest, char *src)
     char *title;
     switch(which) {
         case ELEM_MOVE    : title = _("Move"); break;
-        case ELEM_BIN2BCD : title = _("Convert BIN to unpacked BCD"); break;
-        case ELEM_BCD2BIN : title = _("Convert unpacked BCD to BIN"); break;
+        case ELEM_BIN2BCD : title = _("Convert BIN to packed BCD"); break;
+        case ELEM_BCD2BIN : title = _("Convert packed BCD to BIN"); break;
         case ELEM_SWAP    : title = _("Swap source and assign to destination"); break;
         default: oops();
     }
@@ -513,6 +513,89 @@ void ShowMoveDialog(int which, char *dest, char *src)
         }
         if(IsNumber(src))
             CheckConstantInRange(dest, src, hobatoi(src));
+    }
+}
+
+void ShowBusDialog(ElemLeaf *l)
+{
+    ElemBus *s = &(l->d.bus);
+    char *title = _("BUS tracer");
+
+    char busStr[100];
+    char PCBbitStr[100];
+    char PCBbitStr2[10];
+    strcpy(busStr, "|");
+    strcpy(PCBbitStr, "|");
+    int i;
+
+        for(i=7; i>=0; i--) {
+            sprintf(PCBbitStr2, "%2d|", s->PCBbit[i]);
+            strcat(PCBbitStr, PCBbitStr2);
+            strcat(busStr, PCBbitStr2);
+        }
+
+    char *labels[] = { _("Destination:"), _("Source:"), _("Destination bits:"), _("Source bits:") };
+    char *dests[] = { s->dest, busStr, s->src, PCBbitStr};
+    if(ShowSimpleDialog(title, 4, labels, 0, 0x3, 0x1f, dests)){
+        if(IsNumber(s->dest)) {
+            Error(_("Bus instruction: '%s' not a valid destination."),
+                s->dest);
+        }
+        if(IsNumber(s->src)) {
+            Error(_("Bus instruction: '%s' not a valid source."),
+                s->src);
+        }
+
+        if(sscanf(PCBbitStr,"|%d|%d|%d|%d|%d|%d|%d|%d|",
+             &l->d.bus.PCBbit[7],
+             &l->d.bus.PCBbit[6],
+             &l->d.bus.PCBbit[5],
+             &l->d.bus.PCBbit[4],
+             &l->d.bus.PCBbit[3],
+             &l->d.bus.PCBbit[2],
+             &l->d.bus.PCBbit[1],
+             &l->d.bus.PCBbit[0])==8) {
+        } else {
+        }
+    }
+}
+
+void ShowSegmentsDialog(ElemLeaf *l)
+{
+    ElemSegments *s = &(l->d.segments);
+    char common[10];
+    sprintf(common, "%c", s->common);
+    char *s1;
+    switch(s->which) {
+        case ELEM_7SEG:
+                s1 = "7";
+                break;
+        case ELEM_9SEG:
+                s1 = "9";
+                break;
+        case ELEM_14SEG:
+                s1 = "14";
+                break;
+        case ELEM_16SEG:
+                s1 = "16";
+                break;
+        default: oops();
+    }
+    char *labels[] = { _("Destination:"), _("Source:"), _("Common:Cathode|Anode:")};
+    char *dests[] = { s->dest, s->src, common};
+    char s2[50];
+    sprintf(s2,_("Convert char to %s Segments"), s1);
+    if(ShowSimpleDialog(s2, 3, labels, 0, 0x3, 0x1f, dests)){
+        if(IsNumber(s->dest)) {
+            Error(_("Segments instruction: '%s' not a valid destination."),
+                s->dest);
+        }
+        if(IsNumber(s->src))
+            CheckConstantInRange(s->dest, s->src, hobatoi(s->src));
+        if((common[0]=='A') || (common[0]=='a'))
+            s->common = 'A';
+        else
+            s->common = 'C';
     }
 }
 
@@ -639,8 +722,275 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
     }
 }
 
+void CalcSteps(ElemStepper *s, ResSteps *r)
+{
+    memset(&(*r),0,sizeof(ResSteps));
+
+    FILE *f;
+
+    double massa=1;
+    double k;
+    int nSize = s->nSize;
+    int graph = s->graph;
+
+    int P = 0;
+    if(IsNumber(s->P)){
+        P = hobatoi(s->P);
+    };
+
+    int max = 0;
+    if(IsNumber(s->max)){
+        max = hobatoi(s->max);
+    };
+
+    f = fopen("acceleration_deceleration.txt", "w");
+/*
+    if(graph==1){
+      k = kProp(nSize);
+      makeAccelTable(f, max, P, nSize, &r->T,
+      "v=k*t  a=const  s=k*t^2/2  e=m*v^2/2",
+      1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
+      &Proportional,1, &tsProp,k, &vProp,k, &aProp,k, &eFv, massa);
+    }else if(graph==2){
+      k = kSqrt2(nSize);
+      makeAccelTable(f, max, P, nSize, &r->T,
+      "v=k*sqrt(t)  a=k/(2*t^(1/2))  s=k*t^(3/2)/(3/2)  e=m*v^2/2",
+      1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
+      &Proportional,1, &tsSqrt2,k, &vSqrt2,k, &aSqrt2,k, &eFv, massa);
+    }else if(graph==3){
+      k = kSqrt3(nSize);
+      makeAccelTable(f, max, P, nSize, &r->T,
+      "v=k*t^(1/3)  a=k/(3*t^(2/3))  s=k*t^(4/3)/(4/3)  e=m*v^2/2",
+      1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
+      &Proportional,1, &tsSqrt3,k, &vSqrt3,k, &aSqrt3,k, &eFv, massa);
+    }else if(graph==4){
+      k = k2(nSize);
+      makeAccelTable(f, max, P, nSize, &r->T,
+      "v=k*t^2  a=k*2*t  s=k*t^3/3  e=m*v^2/2",
+      1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
+      &Proportional,1, &ts2,k, &v2,k, &a2,k, &eFv, massa);
+    }else if(graph==5){
+      k = ksS(nSize);
+      makeAccelTable(f, max, P, nSize, &r->T,
+      "v=k*t^2  a=k*2*t  s=k*t^3/3  s=i  e=m*v^2/2",
+      2, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
+      &Proportional,1.0, &tsS,k, &vS,k, &aS,k, &eFv, massa);
+    }else if(graph==6){
+      k = ktS(nSize);
+      makeAccelTable(f, max, P, nSize, &r->T,
+      "v=k*t^2  a=k*2*t  s=k*t^3/3  t=i  e=m*v^2/2",
+      2, 1, &r->n, &r->Psum, &r->shrt, &r->sovElement,
+      &stS,k, &Proportional,1, &vS,k, &aS,k, &eFv, massa);
+    } else {
+      fprintf(f,"Generates %d steps without acceleration/deceleration.", s->max);
+    }
+*/
+    fclose(f);
+
+    s->n = r->n;
+}
+
 void ShowStepperDialog(int which, void *e)
 {
+    ElemStepper *s = (ElemStepper *)e;
+    char *name = s->name;
+    char *P    = s->P   ;
+    char *max  = s->max ;
+    char *coil = s->coil;
+
+    char *title;
+    title = _("Stepper");
+    char *labels[] = { _("Name:"),  _("Counter:"), _("P:"), _("Table size:"),  _("graph:"), _("Pulse to:")};
+    char sgraph[128];
+    sprintf(sgraph, "%d", s->graph);
+    char snSize[128];
+    sprintf(snSize, "%d", s->nSize);
+    char *dests[] = { name, max, P, snSize, sgraph, coil+1};
+    if(ShowSimpleDialog(title, 6, labels, 0, 0x7, 0x3f, dests)) {
+        s->graph = hobatoi(sgraph);
+        s->nSize = hobatoi(snSize);
+
+        char str[MAX_NAME_LEN];
+        if(IsNumber(max)) {
+            sprintf(str, "C%s%s", s->name, "Dec");
+            CheckConstantInRange(str, max, hobatoi(max));
+        }
+        if(IsNumber(P)) {
+            sprintf(str, "C%s%s", s->name, "P");
+            CheckConstantInRange(str, P, hobatoi(P));
+        }
+        if(coil[0]!='Y')
+            Error(_("Pulse to: '%s' you must set to output pin 'Y%s' or to internal relay 'R%s'."), coil, coil, coil);
+
+        if(IsNumber(P)){
+            double Pt=1.0*Prog.cycleTime*hobatoi(P)/1000000.0;
+            char Punits[3];
+            double _Pt=SIprefix(Pt, Punits);
+
+            double F=1000000.0/Prog.cycleTime/hobatoi(P);
+            char Funits[3];
+            double _F=SIprefix(F, Funits);
+
+            char str[1000];
+            sprintf(str, "Pmin=%.3f %ss, Fmax=%.3f %sHz", _Pt, Punits, _F, Funits);
+
+            int count=hobatoi(max);
+
+            ResSteps r;
+            //memset(&r,0,sizeof(r));
+            if(IsNumber(max) && (s->graph)){
+                CalcSteps(s, &r);
+
+                double _Psum=SIprefix(Pt*r.Psum, Punits);
+                sprintf(str, "%s\n\nAcceleration/Deceleration time=%.3f %ss", str, _Psum, Punits);
+
+                CheckFree(r.T);
+            }
+
+            if(IsNumber(max)){
+                double Tfull;
+                double _Tfull;
+                char Tunits[3];
+                if(r.n){
+                    if(count > (r.n-1)*2)
+                        Tfull=Pt*(count-(r.n-1)*2)+Pt*r.Psum*2.0;
+                    else
+                        Tfull=Pt*r.Psum*2.0;
+
+                    _Tfull=SIprefix(Tfull, Tunits);
+                    sprintf(str, "%s\n\nWork time=%.3f %ss", str, _Tfull, Tunits);
+                }
+                _Tfull=SIprefix(Pt*count, Tunits);
+                sprintf(str, "%s\n\nTime without accel/decel=%.3f %ss", str, _Tfull, Tunits);
+            }
+
+            MessageBox(MainWindow, str, _("Stepper information"),
+                MB_OK | MB_ICONINFORMATION);
+        }
+    };
+}
+
+void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy)
+{
+    char *title;
+    title = _("Pulser");
+
+    char *labels[] = { _("Counter:"), _("P1:"), _("P0:"), _("Accel.:"), _("Busy to:")};
+    char *dests[] = { counter, P1, P0, accel, busy};
+    if(ShowSimpleDialog(title, 5, labels, 0, 0x7, 0x1f, dests)) {
+        if(IsNumber(P1))
+            CheckConstantInRange("", P1,hobatoi(P1));
+        if(IsNumber(P0))
+            CheckConstantInRange("", P0,hobatoi(P0));
+        if(IsNumber(accel))
+            CheckConstantInRange("", accel,hobatoi(accel));
+        if(IsNumber(counter))
+            CheckConstantInRange("", counter,hobatoi(counter));
+        if((busy[0]!='Y') && (busy[0]!='R'))
+            Error(_("Busy to: '%s' you must set to internal relay 'R%s' or to output pin 'Y%s'."), busy, busy, busy);
+
+        if(IsNumber(P1) && IsNumber(P0)){
+            double P1t=(double)Prog.cycleTime*hobatoi(P1)/1000.0;
+            double P0t=(double)Prog.cycleTime*hobatoi(P0)/1000.0;
+            double P=P1t+P0t;
+            char *Punits =  _("ms");
+
+            double F=1000000.0/Prog.cycleTime/(hobatoi(P1)+hobatoi(P0));
+            char *Funits;
+            if (F<1000.0)
+                Funits = _("Hz");
+            else {
+                F=F/1000.0;
+                Funits = _("kHz");
+            }
+            char str[1000];
+            sprintf(str, "P1=%.3f %s, P0=%.3f %s, F=%.3f %s", P1t, Punits, P0t, Punits, F, Funits);
+
+            int count;
+            if(IsNumber(counter))
+                count=hobatoi(counter);
+            double Ta=0;
+            int N=0;
+            int Na=0;
+            if(IsNumber(accel)){
+                int a=hobatoi(accel);
+                int i,mina,maxa;
+                if(a>1){
+                    mina=hobatoi(P1)+hobatoi(P0);
+                    maxa=mina*a;
+                    if(!IsNumber(counter))
+                        count= mina+maxa;
+
+                    for(i=maxa;(i>mina) && (N<count);i--){
+                      Na+=i;
+                      N++;
+                      if(hobatoi(P1) != hobatoi(P0)) i--;
+                    }
+                    Ta=(double)Prog.cycleTime*Na/1000.0;
+                    //sprintf(str, "%s\n\nAcceleration time %d cycles=%.3f %s", str, Na, Ta, Punits);
+                    sprintf(str, "%s\n\nAcceleration time=%.3f %s", str, Ta, Punits);
+                }
+            }
+
+            if(IsNumber(counter)){
+                double Tfull;
+                if(count>N)
+                    Tfull=P*(count-N)+Ta;
+                else
+                    Tfull=Ta;
+
+                char *Tunits;
+                if(Tfull<1000.0)
+                    Tunits = _("ms");
+                else {
+                    Tfull/=1000.0;
+                    Tunits = _("s");
+                }
+                sprintf(str, "%s\n\nWork time=%.3f %s", str, Tfull, Tunits);
+            }
+            MessageBox(MainWindow, str, _("Pulser information"),
+                MB_OK | MB_ICONINFORMATION);
+        }
+    };
+}
+
+void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
+{
+    char *labels[] = { _("Counter var:"), _("Frequency (Hz):"), "Pulse to:"};
+    char *dests[] = { counter, targetFreq, coil};
+    if(ShowSimpleDialog(_("Set N Pulse Cycle"), 3, labels, 0x2, 0x1, 0x7, dests)) {
+        //TODO: check the available range
+        double freq = hobatoi(targetFreq);
+        if(freq < 0)
+            Error(_("'%s' freq < 0"), targetFreq);
+        if(freq > 1000000.0)
+            Error(_("'%s' freq > 100000"), targetFreq);
+    }
+}
+
+void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, char *contactB, char *contactZ, char *error)
+{
+    char title[100];
+    sprintf(title, _("Quad Encod%d"), *int01);
+
+    char _int01[100];
+    sprintf(_int01, "%d", *int01);
+
+    char *labels[] = { _("Counter var:"), _("Input A INTs:"), _("Input A:"), _("Input B:"), _("Input Z:"), _("Output Zero(Counter==0):")};
+    char *dests[] = { counter, _int01, contactA, contactB, contactZ, error};
+{};
+    NoCheckingOnBox[4] = TRUE;
+    NoCheckingOnBox[5] = TRUE;
+    if(ShowSimpleDialog(title, 6, labels, 0x2, 0x1, 0x3f, dests)) {
+        //TODO: check the available range
+        *int01 = hobatoi(_int01);
+        if(Prog.mcu)
+        if((*int01<0)||(Prog.mcu->interruptCount<=*int01))
+            Error(_("Can select only INTs pin."));
+
+    }
+    NoCheckingOnBox[4] = FALSE;
+    NoCheckingOnBox[5] = FALSE;
 }
 
 void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
