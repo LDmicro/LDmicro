@@ -470,7 +470,6 @@ static void CheckVariableNamesCircuit(int which, void *elem)
     ElemLeaf *l = (ElemLeaf *)elem;
     char *name = NULL;
     DWORD flag;
-    char str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -537,6 +536,30 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
 
+        case ELEM_NPULSE_OFF:
+        case ELEM_PWM_OFF:
+            break;
+
+        case ELEM_QUAD_ENCOD:
+        case ELEM_NPULSE:
+        case ELEM_PULSER:
+        case ELEM_STEPPER:
+            break;
+
+        case ELEM_BIN2BCD:
+        case ELEM_BCD2BIN:
+        case ELEM_SWAP:
+        case ELEM_BUS:
+            break;
+
+        char *s;
+        case ELEM_7SEG:  s = "char7seg"; goto xseg;
+        case ELEM_9SEG:  s = "char9seg"; goto xseg;
+        case ELEM_14SEG: s = "char14seg"; goto xseg;
+        case ELEM_16SEG: s = "char16seg"; goto xseg;
+        xseg:
+            break;
+
         case ELEM_LOOK_UP_TABLE:
             MarkWithCheck(l->d.lookUpTable.dest, VAR_FLAG_ANY);
             if(!IsNumber(l->d.lookUpTable.index))
@@ -586,8 +609,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_STRING:
-        case ELEM_PERSIST:
         case ELEM_FORMATTED_STRING:
+        case ELEM_PERSIST:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
         case ELEM_UART_SEND:
@@ -888,6 +911,9 @@ static void SimulateIntCode(void)
                 SetSingleBit(a->name1, SingleBitOn(a->name2));
                 break;
 
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                break;
+
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(GetSimulationVariable(a->name1) !=
                     a->literal && a->name1[0] != '$')
@@ -927,6 +953,18 @@ static void SimulateIntCode(void)
             case  INT_TEST_C_SFR_VARIABLE_L:
                 break;
 
+            case INT_SET_BIN2BCD: {
+                break;
+            }
+
+            case INT_SET_BCD2BIN: {
+                break;
+            }
+
+            case INT_SET_SWAP: {
+                break;
+            }
+
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(GetSimulationVariable(a->name1) !=
                     GetSimulationVariable(a->name2))
@@ -948,6 +986,26 @@ static void SimulateIntCode(void)
                 break;
             {
                 SDWORD v;
+                case INT_SET_VARIABLE_ROL:
+                    goto math;
+                case INT_SET_VARIABLE_ROR:
+                    goto math;
+                case INT_SET_VARIABLE_SR0:
+                    goto math;
+                case INT_SET_VARIABLE_SHL:
+                    goto math;
+                case INT_SET_VARIABLE_SHR:
+                    goto math;
+                case INT_SET_VARIABLE_AND:
+                    goto math;
+                case INT_SET_VARIABLE_OR:
+                    goto math;
+                case INT_SET_VARIABLE_XOR:
+                    goto math;
+                case INT_SET_VARIABLE_NOT:
+                    goto math;
+                case INT_SET_VARIABLE_NEG:
+                    goto math;
                 case INT_SET_VARIABLE_ADD:
                     v = GetSimulationVariable(a->name2) +
                         GetSimulationVariable(a->name3);
@@ -959,6 +1017,8 @@ static void SimulateIntCode(void)
                 case INT_SET_VARIABLE_MULTIPLY:
                     v = GetSimulationVariable(a->name2) *
                         GetSimulationVariable(a->name3);
+                    goto math;
+                case INT_SET_VARIABLE_MOD:
                     goto math;
                 case INT_SET_VARIABLE_DIVIDE:
                     if(GetSimulationVariable(a->name3) != 0) {
@@ -1015,6 +1075,8 @@ math:
                     IF_BODY
                 break;
 
+            case INT_QUAD_ENCOD:
+            case INT_SET_NPULSE:
             case INT_SET_PWM:
                 // Dummy call will cause a warning if no one ever assigned
                 // to that variable.
@@ -1053,14 +1115,14 @@ math:
                     SetSingleBit(a->name2, TRUE);
                 }
                 break;
-            case INT_UART_SEND_BUSY:{
+
+            case INT_UART_SEND_BUSY:
                 if(SimulateUartTxCountdown == 0) {
                     SetSingleBit(a->name1, FALSE);
                 } else {
                     SetSingleBit(a->name1, TRUE);
                 }
                 break;
-            }
 
             case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {

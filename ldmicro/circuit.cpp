@@ -344,6 +344,95 @@ void AddMove(void)
     strcpy(t->d.move.src, "src");
     AddLeaf(ELEM_MOVE, t);
 }
+void AddBcd(int which)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.move.dest, "dest");
+    strcpy(t->d.move.src, "src");
+    AddLeaf(which, t);
+}
+void AddSegments(int which)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.segments.dest, "dest");
+    strcpy(t->d.segments.src, "src");
+    t->d.segments.common = 'C';
+    t->d.segments.which = which;
+    AddLeaf(which, t);
+}
+void AddBus(int which)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.bus.dest, "dest");
+    strcpy(t->d.bus.src, "src");
+    int i;
+    for(i=0; i<PCBbit_LEN; i++)
+        t->d.bus.PCBbit[i] = i;
+    AddLeaf(which, t);
+}
+void AddStepper(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.stepper.name, "step");
+    strcpy(t->d.stepper.max, "stepMax");
+    strcpy(t->d.stepper.P, "P");
+    t->d.stepper.nSize = 100;
+    t->d.stepper.n = 0;
+    t->d.stepper.graph = 1;
+    strcpy(t->d.stepper.coil, "Ystep");
+    AddLeaf(ELEM_STEPPER, t);
+}
+void AddPulser(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.pulser.P1, "P1");
+    strcpy(t->d.pulser.P0, "P0");
+    strcpy(t->d.pulser.accel, "accel");
+    strcpy(t->d.pulser.counter, "counter");
+    strcpy(t->d.pulser.busy, "Rbusy");
+    AddLeaf(ELEM_PULSER, t);
+}
+void AddNPulse(void)
+{
+    if(!CanInsertOther) return;
+    if(NPulseFunctionUsed()) {
+      Error(_("Can use only one N PULSE element on timer0."));
+      return;
+    }
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.Npulse.counter, "counter");
+    strcpy(t->d.Npulse.targetFreq, "1000");
+    strcpy(t->d.Npulse.coil, "YNpulse");
+    AddLeaf(ELEM_NPULSE, t);
+}
+void AddQuadEncod(void)
+{
+    if(!CanInsertOther) return;
+    int n = QuadEncodFunctionUsed();
+    if(n > Prog.mcu->interruptCount) {
+      Error(_("Can use only %d INTs on this MCU."), Prog.mcu->interruptCount);
+      return;
+    }
+    ElemLeaf *t = AllocLeaf();
+    t->d.QuadEncod.int01 = n;
+    sprintf(t->d.QuadEncod.counter, "qCount%d", n);
+    sprintf(t->d.QuadEncod.contactA, "IqA%d", n);
+    sprintf(t->d.QuadEncod.contactB, "XqB%d", n);
+    sprintf(t->d.QuadEncod.contactZ, "XqZ%d", n);
+    sprintf(t->d.QuadEncod.zero, "YqZero%d", n);
+    AddLeaf(ELEM_QUAD_ENCOD, t);
+}
 void AddSfr(int which)
 {
     if(!CanInsertEnd) return;
@@ -360,12 +449,23 @@ void AddSfr(int which)
 }
 void AddMath(int which)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsertEnd && EndOfRungElem(which)) return;
+    if(!CanInsertOther && !EndOfRungElem(which)) return;
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.math.dest, "dest");
     strcpy(t->d.math.op1, "src");
     strcpy(t->d.math.op2, "1");
+    AddLeaf(which, t);
+}
+void AddBitOps(int which)
+{
+    if(!CanInsertEnd && EndOfRungElem(which)) return;
+    if(!CanInsertOther && !EndOfRungElem(which)) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.move.dest, "var");
+    strcpy(t->d.move.src, "bit");
     AddLeaf(which, t);
 }
 void AddCmp(int which)
@@ -1120,11 +1220,22 @@ int PwmFunctionUsed(void)
 int QuadEncodFunctionUsed(void)
 {
     int n = 0;
+    int i;
+    for(i = 0; i < Prog.numRungs; i++)
+        n+=CountWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_QUAD_ENCOD);
     return n;
 }
 //-----------------------------------------------------------------------------
 BOOL NPulseFunctionUsed(void)
 {
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_NPULSE,
+            -1, -1))
+        {
+            return TRUE;
+        }
+    }
     return FALSE;
 }
 //-----------------------------------------------------------------------------
@@ -1254,17 +1365,17 @@ void CopyElem(void)
              Prog.rungSelected[i] = '*';
     }
     for(i = 0; i < Prog.numRungs; i++)
-    if(Prog.rungSelected[i] > '*') {
-        Prog.rungSelected[i] = ' ';
-    } else if(Prog.rungSelected[i] == '*') {
-        fprintf(f, "RUNG\n");
-        SaveElemToFile(f, SelectedWhich, Selected, 0, 0);
-        fprintf(f, "END\n");
-        if(EndOfRungElem(SelectedWhich))
-            Prog.rungSelected[i] = 'E';
-        else
-            Prog.rungSelected[i] = 'L';
-    }
+        if(Prog.rungSelected[i] > '*') {
+            Prog.rungSelected[i] = ' ';
+        } else if(Prog.rungSelected[i] == '*') {
+            fprintf(f, "RUNG\n");
+            SaveElemToFile(f, SelectedWhich, Selected, 0, 0);
+            fprintf(f, "END\n");
+            if(EndOfRungElem(SelectedWhich))
+                Prog.rungSelected[i] = 'E';
+            else
+                Prog.rungSelected[i] = 'L';
+        }
 
     fclose(f);
 }
