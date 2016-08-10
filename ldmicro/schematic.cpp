@@ -126,6 +126,8 @@ void SelectElement(int gx, int gy, int state)
 BOOL StaySameElem(int Which)
 {
     if( Which == ELEM_RES ||
+        Which == ELEM_SET_BIT ||
+        Which == ELEM_CLEAR_BIT ||
         Which == ELEM_SHL ||
         Which == ELEM_SHR ||
         Which == ELEM_SR0 ||
@@ -510,6 +512,12 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_NOT: newWhich = ELEM_NEG; break;
         case ELEM_NEG: newWhich = ELEM_NOT; break;
         //
+        case ELEM_IF_BIT_SET: newWhich = ELEM_IF_BIT_CLEAR; break;
+        case ELEM_IF_BIT_CLEAR: newWhich = ELEM_IF_BIT_SET; break;
+        //
+        case ELEM_SET_BIT: newWhich = ELEM_CLEAR_BIT; break;
+        case ELEM_CLEAR_BIT: newWhich = ELEM_SET_BIT; break;
+        //
         case ELEM_SHL: newWhich = ELEM_SHR; break;
         case ELEM_SHR: newWhich = ELEM_SR0; break;
         case ELEM_SR0: newWhich = ELEM_ROL; break;
@@ -642,6 +650,13 @@ void EditSelectedElement(void)
             break;
         // Special function
 
+        case ELEM_IF_BIT_SET  :
+        case ELEM_IF_BIT_CLEAR:
+        case ELEM_SET_BIT  :
+        case ELEM_CLEAR_BIT:
+            ShowVarBitDialog(SelectedWhich, Selected->d.move.dest, Selected->d.move.src);
+            break;
+
         case ELEM_EQU:
         case ELEM_NEQ:
         case ELEM_GRT:
@@ -669,6 +684,33 @@ void EditSelectedElement(void)
         case ELEM_NEG:
             ShowMathDialog(SelectedWhich, Selected->d.math.dest,
                 Selected->d.math.op1, Selected->d.math.op2);
+            break;
+
+        case ELEM_STEPPER:
+            ShowStepperDialog(SelectedWhich, &Selected->d);
+            break;
+
+        case ELEM_PULSER:
+            ShowPulserDialog(SelectedWhich, Selected->d.pulser.P1, Selected->d.pulser.P0, Selected->d.pulser.accel, Selected->d.pulser.counter, Selected->d.pulser.busy);
+            break;
+
+        case ELEM_NPULSE:
+            ShowNPulseDialog(SelectedWhich, Selected->d.Npulse.counter, Selected->d.Npulse.targetFreq, Selected->d.Npulse.coil);
+            break;
+
+        case ELEM_QUAD_ENCOD:
+            ShowQuadEncodDialog(SelectedWhich, Selected->d.QuadEncod.counter, &(Selected->d.QuadEncod.int01), Selected->d.QuadEncod.contactA, Selected->d.QuadEncod.contactB, Selected->d.QuadEncod.contactZ, Selected->d.QuadEncod.zero);
+            break;
+
+        case ELEM_7SEG:
+        case ELEM_9SEG:
+        case ELEM_14SEG:
+        case ELEM_16SEG:
+            ShowSegmentsDialog(Selected);
+            break;
+
+        case ELEM_BUS:
+            ShowBusDialog(Selected);
             break;
 
         case ELEM_RES:

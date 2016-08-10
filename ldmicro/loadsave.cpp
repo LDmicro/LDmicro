@@ -293,6 +293,16 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         l->d.math.op2)==3)
     {
         *which = ELEM_DIV;
+
+    } else if(sscanf(line, "SET_BIT %s %s", l->d.move.dest, l->d.move.src)==2) {
+        *which = ELEM_SET_BIT;
+    } else if(sscanf(line, "CLEAR_BIT %s %s", l->d.move.dest, l->d.move.src)==2) {
+        *which = ELEM_CLEAR_BIT;
+    } else if(sscanf(line, "IF_BIT_SET %s %s", l->d.move.dest, l->d.move.src)==2) {
+        *which = ELEM_IF_BIT_SET;
+    } else if(sscanf(line, "IF_BIT_CLEAR %s %s", l->d.move.dest, l->d.move.src)==2) {
+        *which = ELEM_IF_BIT_CLEAR;
+
     } else if(sscanf(line, "RSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
         *which = ELEM_RSFR;
     } else if(sscanf(line, "WSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
@@ -809,11 +819,12 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "16SEGMENTS %d %s %s\n", l->d.segments.common, l->d.segments.dest, l->d.segments.src);
             break;
 
-        case ELEM_NOT: s = "NOT";
-            fprintf(f, "%s %s %s\n", s, l->d.math.dest, l->d.math.op1);
+        case ELEM_NOT:
+            fprintf(f, "NOT %s %s\n", l->d.math.dest, l->d.math.op1);
             break;
-        case ELEM_NEG: s = "NEG";
-            fprintf(f, "%s %s %s\n", s, l->d.math.dest, l->d.math.op1);
+
+        case ELEM_NEG:
+            fprintf(f, "NEG %s %s\n", l->d.math.dest, l->d.math.op1);
             break;
 
         case ELEM_ROL: s = "ROL"; goto math;
@@ -832,6 +843,22 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         math:
             fprintf(f, "%s %s %s %s\n", s, l->d.math.dest, l->d.math.op1,
                 l->d.math.op2);
+            break;
+
+        case ELEM_SET_BIT:
+            fprintf(f, "SET_BIT %s %s\n", l->d.move.dest, l->d.move.src);
+            break;
+
+        case ELEM_CLEAR_BIT:
+            fprintf(f, "CLEAR_BIT %s %s\n", l->d.move.dest, l->d.move.src);
+            break;
+
+        case ELEM_IF_BIT_SET:
+            fprintf(f, "IF_BIT_SET %s %s\n", l->d.move.dest, l->d.move.src);
+            break;
+
+        case ELEM_IF_BIT_CLEAR:
+            fprintf(f, "IF_BIT_CLEAR %s %s\n", l->d.move.dest, l->d.move.src);
             break;
 
         // Special function

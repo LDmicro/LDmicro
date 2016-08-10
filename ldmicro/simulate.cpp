@@ -1005,6 +1005,7 @@ static void SimulateIntCode(void)
                 case INT_SET_VARIABLE_NOT:
                     goto math;
                 case INT_SET_VARIABLE_NEG:
+                    goto math;
                 case INT_SET_VARIABLE_ADD:
                     v = GetSimulationVariable(a->name2) +
                         GetSimulationVariable(a->name3);
@@ -1016,6 +1017,8 @@ static void SimulateIntCode(void)
                 case INT_SET_VARIABLE_MULTIPLY:
                     v = GetSimulationVariable(a->name2) *
                         GetSimulationVariable(a->name3);
+                    goto math;
+                case INT_SET_VARIABLE_MOD:
                     goto math;
                 case INT_SET_VARIABLE_DIVIDE:
                     if(GetSimulationVariable(a->name3) != 0) {

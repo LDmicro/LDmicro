@@ -125,6 +125,10 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_AND:
         case ELEM_OR :
         case ELEM_XOR:
+        case ELEM_SET_BIT     :
+        case ELEM_CLEAR_BIT   :
+        case ELEM_IF_BIT_SET  :
+        case ELEM_IF_BIT_CLEAR:
             return 1;
 
         case ELEM_QUAD_ENCOD:
@@ -856,6 +860,43 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
         }
       }
+
+        {
+        char *s;
+
+        case ELEM_SET_BIT     : s = "\x01""SetBit\x02 "; goto bits;
+        case ELEM_CLEAR_BIT   : s = "\x01""ClrBit\x02 "; goto bits;
+        bits:
+            ElemMove *m = &leaf->d.move;
+
+            formatWidth(top, POS_WIDTH, "{","","",m->dest,"}");
+            formatWidth(bot, POS_WIDTH, "{",s,"",m->src,"}");
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+
+            *cx += POS_WIDTH;
+            break;
+        }
+
+        {
+        char *s;
+
+        case ELEM_IF_BIT_SET  : s = "\x01""IfBitSet\x02 "; goto ifbits;
+        case ELEM_IF_BIT_CLEAR: s = "\x01""IfBitClr\x02 "; goto ifbits;
+        ifbits:
+            ElemMove *m = &leaf->d.move;
+
+            formatWidth(top, POS_WIDTH, "[","","",m->dest,"]");
+            formatWidth(bot, POS_WIDTH, "[",s,"",m->src,"]");
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+
+            *cx += POS_WIDTH;
+            break;
+        }
+
         case ELEM_SWAP: {
             ElemMove *m = &leaf->d.move;
             formatWidth(top, POS_WIDTH, "{","","",m->dest,":=}");

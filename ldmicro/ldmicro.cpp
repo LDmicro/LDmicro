@@ -826,6 +826,17 @@ static void ProcessMenu(int code)
 
         {
             int elem;
+            case MNU_INSERT_SET_BIT      : elem = ELEM_SET_BIT     ; goto bit_ops;
+            case MNU_INSERT_CLEAR_BIT    : elem = ELEM_CLEAR_BIT   ; goto bit_ops;
+            case MNU_INSERT_IF_BIT_SET   : elem = ELEM_IF_BIT_SET  ; goto bit_ops;
+            case MNU_INSERT_IF_BIT_CLEAR : elem = ELEM_IF_BIT_CLEAR; goto bit_ops;
+bit_ops:
+                CHANGING_PROGRAM(AddBitOps(elem));
+                break;
+        }
+
+        {
+            int elem;
             case MNU_INSERT_ADD: elem = ELEM_ADD; goto math;
             case MNU_INSERT_SUB: elem = ELEM_SUB; goto math;
             case MNU_INSERT_MUL: elem = ELEM_MUL; goto math;
@@ -1598,12 +1609,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 // TODO: rather country-specific here
-                case VK_OEM_2:
                 //case VK_DIVIDE: // use to ELEM_DIV
+                case VK_OEM_2:
+                //case '/':
                     CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
                     break;
 
                 case VK_OEM_5:
+                //case '\\':
                     CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
                     break;
 

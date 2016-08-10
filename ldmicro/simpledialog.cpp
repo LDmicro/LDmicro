@@ -355,7 +355,7 @@ void CheckVarInRange(char *name, char *str, SDWORD v)
         else if((v < 0 || v > 0xffffff) && (radix != 10))
             Error(_("Variable %s=0x%X out range : 0 to 0xffFFFF inclusive."), str, v, name);
     } else if(sov == 4) {
-        if((v < -2147483648 || v > 2147483647) && (radix == 10))
+        if((v < -2147483648LL || v > 2147483647LL) && (radix == 10))
             Error(_("Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."), name, v);
         else if((v < 0 || v > 0xffffFFFF) && (radix != 10))
             Error(_("Variable %s=0x%X out range : 0 to 0xffffFFFF inclusive."), str, v, name);
@@ -491,6 +491,22 @@ void ShowCmpDialog(int which, char *op1, char *op2)
         if(IsNumber(op2))
             CheckConstantInRange(op1, op2, hobatoi(op2));
     };
+}
+
+void ShowVarBitDialog(int which, char *dest, char *src)
+{
+    char *title;
+    switch(which) {
+        case ELEM_IF_BIT_SET   : title = _("If bit set"); break;
+        case ELEM_IF_BIT_CLEAR : title = _("If bit clear"); break;
+        case ELEM_SET_BIT      : title = _("Set bit"); break;
+        case ELEM_CLEAR_BIT    : title = _("Clear bit"); break;
+        default: oops();
+    }
+    char *labels[] = { _("Variable:"), _("Bit # [0..15]:") };
+    char *dests[] = { dest, src };
+    if(ShowSimpleDialog(title, 2, labels, 0, 0, 0x3, dests)){
+    }
 }
 
 void ShowMoveDialog(int which, char *dest, char *src)

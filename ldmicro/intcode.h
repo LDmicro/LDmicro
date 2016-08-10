@@ -74,6 +74,8 @@
 #ifdef NEW_FEATURE
 #define INT_PRINT_STRING                        22 // printf() out to console
 #endif
+#define INT_VARIABLE_SET_BIT                    25
+#define INT_VARIABLE_CLEAR_BIT                  26
 
 #define INT_SET_VARIABLE_AND                    30
 #define INT_SET_VARIABLE_OR                     31
@@ -95,6 +97,8 @@
 #define INT_IF_VARIABLE_EQU_LITERAL             44
 #define INT_IF_VARIABLE_NEQ_LITERAL             45
 #endif
+#define INT_IF_VARIABLE_BIT_SET                 48
+#define INT_IF_VARIABLE_BIT_CLEAR               49
 
 //#define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50

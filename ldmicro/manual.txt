@@ -193,6 +193,10 @@ You can use hexadecimal numbers (0xA, 0x04D2, 0xffc8),
 octal numbers (0o12, 0o2322, 0o177710),
 binary numbers (0b1010, 0b10011010010, 0b1111111111001000)
 in most places that you could use a decimal number.
+LDmicro used the C prefixes:
+0x__ or 0X__ for hexadecimal numbers with 1234567890ABCDEF digits
+0o__ or 0O__ or 0__ octal numbers with 01234567 digits
+0b__ or 0B__ for binary numbers with 01 digits.
 
 At the bottom of the screen you will see a list of all the objects in
 the program. This list is automatically generated from the program;
@@ -778,8 +782,8 @@ INSTRUCTIONS REFERENCE
     for interpolating an integer variable, the following control
     characters are available:
         * \r   -- carriage return
-        * \n   -- newline
-        * \f   -- formfeed
+        * \n   -- new line
+        * \f   -- form feed
         * \b   -- backspace
         * \t   -- horizontal tab
         * \v   -- vertical tab
@@ -962,6 +966,7 @@ ABBREVIATIONS
 PLC - programmable logic controller.
 PWM - pulse width modulation.
 ADC - analog-to-digital converter.
+PCB - printed circuit board
 
 BUGS
 ====

@@ -147,6 +147,44 @@ static void AppendIoAutoType(char *name, int default_type)
     AppendIo(name, type);
 }
 
+static void AppendIoAutoTypePortGeneral(char *name)
+{
+    if(name[0] == '#')
+        AppendIo(name, IO_TYPE_PORT_OUTPUT);
+    else
+        AppendIoAutoType(name, IO_TYPE_GENERAL);
+}
+
+static void AppendIoAutoTypePinGeneral(char *name)
+{
+    if(name[0] == '#')
+        AppendIo(name, IO_TYPE_PORT_INPUT);
+    else
+        AppendIoAutoType(name, IO_TYPE_GENERAL);
+}
+
+//-----------------------------------------------------------------------------
+/*
+static void ExtractPortsFromMcu()
+{
+    char str[MAX_NAME_LEN];
+    if(Prog.mcu) {
+        int i;
+        for(i=0; i<MAX_IO_PORTS; i++) {
+            if((Prog.mcu->inputRegs[i] != 0) && (Prog.mcu->inputRegs[i] != 0xff)) {
+                 sprintf(str,"%s%c", "#PIN", 'A'+i);
+                 AppendIo(str, IO_TYPE_PORT_INPUT);
+
+            }
+            if((Prog.mcu->outputRegs[i] != 0) && (Prog.mcu->outputRegs[i] != 0xff)) {
+                 sprintf(str,"%s%c", "#PORT", 'A'+i);
+                 AppendIo(str, IO_TYPE_PORT_OUTPUT);
+
+            }
+        }
+    }
+}
+*/
 //-----------------------------------------------------------------------------
 // Walk a subcircuit, calling ourselves recursively and extracting all the
 // I/O names out of it.
@@ -331,16 +369,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_SWAP:
         case ELEM_BUS:
         case ELEM_MOVE:
-            if (CheckForNumber(l->d.move.src) == FALSE) {
-                if(l->d.move.src[0] == '#')
-                    AppendIoAutoType(l->d.move.src, IO_TYPE_PORT_INPUT);
-                else
-                    AppendIoAutoType(l->d.move.src, IO_TYPE_GENERAL);
+            AppendIoAutoTypePortGeneral(l->d.move.dest);
+            /*
+            if(CheckForNumber(l->d.move.src) == FALSE) {
+                AppendIoAutoTypePinGeneral(l->d.move.src); // not need ???
             }
-            if(l->d.move.dest[0] == '#')
-                AppendIoAutoType(l->d.move.dest, IO_TYPE_PORT_OUTPUT);
-            else
-                AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
+            */
             break;
         {
         int n;
@@ -350,14 +384,26 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_14SEG:nameTable = "char14seg"; n = LEN14SEG; goto xseg;
         case ELEM_16SEG:nameTable = "char16seg"; n = LEN16SEG; goto xseg;
         xseg:
+            AppendIoAutoTypePortGeneral(l->d.segments.dest);
+            /*
             if (CheckForNumber(l->d.segments.src) == FALSE) {
                 AppendIo(l->d.segments.src, IO_TYPE_GENERAL); // not need ???
             }
-            AppendIo(l->d.segments.dest, IO_TYPE_GENERAL);
+            */
             AppendIo(nameTable, IO_TYPE_TABLE);
             SetSizeOfVar(nameTable, n);
             break;
         }
+
+        case ELEM_SET_BIT     :
+        case ELEM_CLEAR_BIT   :
+            AppendIoAutoTypePortGeneral(l->d.move.dest);
+            break;
+
+        case ELEM_IF_BIT_SET  :
+        case ELEM_IF_BIT_CLEAR:
+            AppendIoAutoTypePinGeneral(l->d.move.dest);
+            break;
 
         case ELEM_SHL:
         case ELEM_SHR:

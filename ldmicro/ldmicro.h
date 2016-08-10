@@ -119,6 +119,8 @@ typedef signed long SDWORD;
 #define MNU_INSERT_MUL          0x2e
 #define MNU_INSERT_DIV          0x2f
 #define MNU_INSERT_MOD          0x2f01
+#define MNU_INSERT_SET_BIT      0x2f81
+#define MNU_INSERT_CLEAR_BIT    0x2f82
 #define MNU_INSERT_AND          0x2f02
 #define MNU_INSERT_OR           0x2f03
 #define MNU_INSERT_XOR          0x2f04
@@ -144,6 +146,8 @@ typedef signed long SDWORD;
 #define MNU_INSERT_GEQ          0x38
 #define MNU_INSERT_LES          0x39
 #define MNU_INSERT_LEQ          0x3a
+#define MNU_INSERT_IF_BIT_SET   0x3a01
+#define MNU_INSERT_IF_BIT_CLEAR 0x3a02
 #define MNU_INSERT_OPEN         0x3b
 #define MNU_INSERT_SHORT        0x3c
 #define MNU_INSERT_MASTER_RLY   0x3d
@@ -260,22 +264,31 @@ typedef signed long SDWORD;
 #define ELEM_MUL                0x1b
 #define ELEM_DIV                0x1c
 #define ELEM_MOD                0x1c01
-#define ELEM_AND                0x1c02
-#define ELEM_OR                 0x1c03
-#define ELEM_XOR                0x1c04
-#define ELEM_NOT                0x1c05
-#define ELEM_NEG                0x1c06
-#define ELEM_SHL                0x1c07
-#define ELEM_SHR                0x1c08
-#define ELEM_SR0                0x1c09
-#define ELEM_ROL                0x1c0a
-#define ELEM_ROR                0x1c0b
+
+#define ELEM_SET_BIT            0x1c81
+#define ELEM_CLEAR_BIT          0x1c82
+
+#define ELEM_AND                0x1c41
+#define ELEM_OR                 0x1c42
+#define ELEM_XOR                0x1c43
+#define ELEM_NOT                0x1c44
+#define ELEM_NEG                0x1c45
+
+#define ELEM_SHL                0x1c21
+#define ELEM_SHR                0x1c22
+#define ELEM_SR0                0x1c23
+#define ELEM_ROL                0x1c24
+#define ELEM_ROR                0x1c25
+
 #define ELEM_EQU                0x1d
 #define ELEM_NEQ                0x1e
 #define ELEM_GRT                0x1f
 #define ELEM_GEQ                0x20
 #define ELEM_LES                0x21
 #define ELEM_LEQ                0x22
+#define ELEM_IF_BIT_SET         0x2201
+#define ELEM_IF_BIT_CLEAR       0x2202
+
 #define ELEM_CTU                0x23
 #define ELEM_CTD                0x24
 #define ELEM_CTC                0x25
@@ -358,6 +371,10 @@ typedef signed long SDWORD;
         case ELEM_GEQ: \
         case ELEM_LES: \
         case ELEM_LEQ: \
+        case ELEM_IF_BIT_SET: \
+        case ELEM_IF_BIT_CLEAR: \
+        case ELEM_SET_BIT: \
+        case ELEM_CLEAR_BIT: \
         case ELEM_SHL: \
         case ELEM_SHR: \
         case ELEM_SR0: \
@@ -1005,6 +1022,7 @@ void AddPulser(void);
 void AddNPulse(void);
 void AddQuadEncod(void);
 void AddSfr(int which);
+void AddBitOps(int which);
 void AddMath(int which);
 void AddCmp(int which);
 void AddReset(void);
@@ -1028,6 +1046,8 @@ int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
 BOOL UartFunctionUsed(void);
 int PwmFunctionUsed(void);
+BOOL QuadEncodFunctionUsed(void);
+BOOL NPulseFunctionUsed(void);
 BOOL EepromFunctionUsed(void);
 void PushRungUp(void);
 void PushRungDown(void);
@@ -1076,6 +1096,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name);
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name);
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
+void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);
 void ShowReadAdcDialog(char *name);
 void ShowSetPwmDialog(void *e);
