@@ -1497,6 +1497,8 @@ static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
 // characters that you type go into UART RECV instruction and whatever
 // the program puts into UART SEND shows up as text.
 //-----------------------------------------------------------------------------
+#define MAX_SCROLLBACK 0x10000 //256 // 0x10000
+static char buf[MAX_SCROLLBACK] = "";
 void ShowUartSimulationWindow(void)
 {
     WNDCLASSEX wc;
@@ -1555,6 +1557,9 @@ void ShowUartSimulationWindow(void)
     PrevTextProc = SetWindowLongPtr(UartSimulationTextControl,
         GWLP_WNDPROC, (LONG_PTR)UartSimulationTextProc);
 
+    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+
     ShowWindow(UartSimulationWindow, TRUE);
     SetFocus(MainWindow);
 }
@@ -1609,9 +1614,6 @@ static void AppendToUartSimulationTextControl(BYTE b)
     }
 
     if(fUART) fprintf(fUART, "%s", append);
-
-#define MAX_SCROLLBACK 0x10000 //256 // 0x10000
-    char buf[MAX_SCROLLBACK] = "";
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)(sizeof(buf)-1),
         (LPARAM)buf);
@@ -1670,6 +1672,7 @@ static void AppendToUartSimulationTextControl(BYTE b)
         memmove(buf, buf + overBy, strlen(buf));
     }
     strcat(buf, append);
+
 
     SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);

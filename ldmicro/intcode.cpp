@@ -2249,13 +2249,14 @@ math:   {
 
                         // Also do the `absolute value' calculation while
                         // we're at it.
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
                         Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' ');
                         Op(INT_IF_VARIABLE_LES_LITERAL, var, (SDWORD)0);
                             Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", '-');
-                            Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch");
+                            Op(INT_SET_VARIABLE_TO_LITERAL, convertState, (SDWORD)0);
                             Op(INT_SET_VARIABLE_SUBTRACT, convertState,
-                                "$scratch", var);
+                                convertState, var);
+                        Op(INT_ELSE);
+                            Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
                         Op(INT_END_IF);
 
                     Op(INT_END_IF);

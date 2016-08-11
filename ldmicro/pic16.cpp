@@ -1780,13 +1780,17 @@ static void CompileFromIntermediate(BOOL topLevel)
                   Instruction(OP_MOVLW, 1);
                   Instruction(OP_SUBWF, addr, DEST_F, a->name1);
                   if(sov >= 2) {
-                    IfBitSet(REG_STATUS, STATUS_C);
+                    //IfBitSet(REG_STATUS, STATUS_C); BORROW !!!
+                    /* Note: For borrow, the polarity is reversed.
+                    A subtraction is executed by adding the two's
+                    complement of the second operand. */
+                    IfBitClear(REG_STATUS, STATUS_C);
                     Instruction(OP_SUBWF, addr+1, DEST_F);
                     if(sov >= 3) {
-                      IfBitSet(REG_STATUS, STATUS_C);
+                      IfBitClear(REG_STATUS, STATUS_C);
                       Instruction(OP_SUBWF, addr+2, DEST_F);
                       if(sov == 4) {
-                        IfBitSet(REG_STATUS, STATUS_C);
+                        IfBitClear(REG_STATUS, STATUS_C);
                         Instruction(OP_SUBWF, addr+3, DEST_F);
                       } else if(sov > 4) oops();
                     }
