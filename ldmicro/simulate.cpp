@@ -586,6 +586,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SR0:
         case ELEM_ROL:
         case ELEM_ROR:
+        case ELEM_SET_BIT:
+        case ELEM_CLEAR_BIT:
         case ELEM_AND:
         case ELEM_OR :
         case ELEM_XOR:
@@ -609,7 +611,9 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_STRING:
-        case ELEM_FORMATTED_STRING:
+        case ELEM_FORMATTED_STRING: {
+            break;
+        }
         case ELEM_PERSIST:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
@@ -629,6 +633,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
+        case ELEM_IF_BIT_SET:
+        case ELEM_IF_BIT_CLEAR:
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
@@ -637,7 +643,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         default:
-            oops();
+            ooops("ELEM_0x%X", which);
     }
 }
 //-----------------------------------------------------------------------------
@@ -755,6 +761,8 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_SR0:
         case ELEM_ROL:
         case ELEM_ROR:
+        case ELEM_SET_BIT:
+        case ELEM_CLEAR_BIT:
         case ELEM_AND:
         case ELEM_OR :
         case ELEM_XOR:
@@ -794,6 +802,8 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
+        case ELEM_IF_BIT_SET:
+        case ELEM_IF_BIT_CLEAR:
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
@@ -1149,6 +1159,31 @@ math:
             case INT_COMMENT:
                 break;
 
+            #ifdef NEW_FEATURE
+            case INT_AllocKnownAddr:
+            case INT_AllocFwdAddr:
+            case INT_FwdAddrIsNow:
+            case INT_GotoRung:
+                break;
+
+            case INT_PRINT_STRING:
+                break;
+            #endif
+
+            case INT_WRITE_STRING: {
+                break;
+            }
+            #ifdef NEW_FEATURE
+            case INT_FLASH_INIT:
+                break;
+
+            case INT_FLASH_READ:{
+                break;
+
+            case INT_RAM_READ:{
+                break;
+            #endif
+
             default:
                 ooops("op=%d",a->op);
                 break;
@@ -1497,6 +1532,8 @@ static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
 // characters that you type go into UART RECV instruction and whatever
 // the program puts into UART SEND shows up as text.
 //-----------------------------------------------------------------------------
+#define MAX_SCROLLBACK 0x10000 //256 // 0x10000
+static char buf[MAX_SCROLLBACK] = "";
 void ShowUartSimulationWindow(void)
 {
     WNDCLASSEX wc;
@@ -1555,6 +1592,9 @@ void ShowUartSimulationWindow(void)
     PrevTextProc = SetWindowLongPtr(UartSimulationTextControl,
         GWLP_WNDPROC, (LONG_PTR)UartSimulationTextProc);
 
+    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+
     ShowWindow(UartSimulationWindow, TRUE);
     SetFocus(MainWindow);
 }
@@ -1609,9 +1649,6 @@ static void AppendToUartSimulationTextControl(BYTE b)
     }
 
     if(fUART) fprintf(fUART, "%s", append);
-
-#define MAX_SCROLLBACK 0x10000 //256 // 0x10000
-    char buf[MAX_SCROLLBACK] = "";
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)(sizeof(buf)-1),
         (LPARAM)buf);
@@ -1670,6 +1707,7 @@ static void AppendToUartSimulationTextControl(BYTE b)
         memmove(buf, buf + overBy, strlen(buf));
     }
     strcat(buf, append);
+
 
     SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);

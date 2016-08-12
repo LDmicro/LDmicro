@@ -1,5 +1,21 @@
 == Release 4.0.0 experimental
 
+    * Fixed: CTD down counter in releases from v3.5.2 to v3.5.4 has critical
+      decrement error. INT_DECREMENT_VARIABLE in PIC's MCU has a bug.
+      Note: For BORROW flag, the polarity is reversed a CARRY-OUT flag.
+      A subtraction is executed by adding the two's complement of the second
+      operand.
+
+    * Fixed: Fragment from forum:
+      ...
+      I loaded the 'hello.ld' and started simulation,
+      then the 'H' of the 1st 'Hello' is dropped...
+      ...
+      Yes, first symbol dropped in UART simulation window.
+      In hardware will be full text.
+      Now all text printed in UART simulation window.
+      SAMPLE\hello.ld added.
+
     * New: Variable name that begins with symbol '#' like
       #PINA, #PINB, #PINC, ... treated as input port.
       Operation -{ MOV dest, #PINA }- directly assigns 8-bit value from the hardware
@@ -100,13 +116,17 @@
 
     * Added:
       Negative NEG, signed variable a = -a.
-      Negative -{NEG a}- is the optimized equivalent to -{SUB 0, a}-
+      Negative -{NEG a}- is the optimized equivalent to -{SUB a:= 0 - a}-
 
-    !!! You can only load, save, add, edit this elements.
-    !!! No simulation. No compile code at output.
+    ! Attention:
+    ! You can only add, edit, save, load this elements marked 'EDIT:' in menu.
+    ! No simulation. No compile code at output.
 
     * Added: SAMPLE\swatch2.ld - Stopwatch2 with 7 segments LED displays.
       https://github.com/LDmicro/LDmicro/wiki/Stopwatch2-with-7-segments-LED-displays
+
+    * Added: SAMPLE\7Segments.ttf. Install 7Segments.ttf in Windows\Fonts
+      and view 7Segments.doc.
 
     * Added: SAMPLE\swatch1.ld - Stopwatch1 over UART.
       https://github.com/LDmicro/LDmicro/wiki/Stopwatch1-over-UART

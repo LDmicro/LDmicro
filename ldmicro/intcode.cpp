@@ -1581,6 +1581,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
           break;
         }
 
+        case ELEM_IF_BIT_SET:
+        case ELEM_IF_BIT_CLEAR:
+          break;
+
         case ELEM_ONE_SHOT_RISING: {
             Comment(3, "ELEM_ONE_SHOT_RISING");
             /*
@@ -1827,6 +1831,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 break;
 
         }
+        case ELEM_SET_BIT:
+        case ELEM_CLEAR_BIT:
+                break;
         {
         int intOp;
         case ELEM_SHL:
@@ -1839,7 +1846,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_XOR:
         case ELEM_NOT:
         case ELEM_NEG:
-        case ELEM_MOD: 
+        case ELEM_MOD:
             break;
         case ELEM_ADD: intOp = INT_SET_VARIABLE_ADD;      Comment(3, "ELEM_ADD"); goto math;
         case ELEM_SUB: intOp = INT_SET_VARIABLE_SUBTRACT; Comment(3, "ELEM_SUB"); goto math;
@@ -2249,13 +2256,14 @@ math:   {
 
                         // Also do the `absolute value' calculation while
                         // we're at it.
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
                         Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' ');
                         Op(INT_IF_VARIABLE_LES_LITERAL, var, (SDWORD)0);
                             Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", '-');
-                            Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch");
+                            Op(INT_SET_VARIABLE_TO_LITERAL, convertState, (SDWORD)0);
                             Op(INT_SET_VARIABLE_SUBTRACT, convertState,
-                                "$scratch", var);
+                                convertState, var);
+                        Op(INT_ELSE);
+                            Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
                         Op(INT_END_IF);
 
                     Op(INT_END_IF);

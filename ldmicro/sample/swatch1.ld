@@ -1,15 +1,15 @@
 LDmicro0.1
-MICRO=Atmel AVR ATmega328 32-Pin packages
+MICRO=Microchip PIC16F877 40-PDIP
 CYCLE=1000 us at Timer0, YPlcCycleDuty:1
 CRYSTAL=16000000 Hz
 BAUD=9600 Hz
 COMPILED=D:\LDs\SWATCH1\swatch1.hex
 
 IO LIST
-    X_StartStopContinue at 2 0 0
-    X_StopZero at 1 0 0
-    YPlcCycleDuty at 16 0 0
-    Yp5 at 17 0 0
+    X_StartStopContinue at 33 0 0
+    X_StopZero at 34 0 0
+    Y1s at 35 0 0
+    YPlcCycleDuty at 18 0 0
 END
 
 PROGRAM
@@ -89,10 +89,11 @@ RUNG
   END
 END
 RUNG
-  COMMENT hh:mm:ss.s100\r\nhours:minutes:seconds.hundredths of second
+  OSR  
+  MOVE CState 1
 END
 RUNG
-  MOVE CState 1
+  COMMENT hh:mm:ss.s100\r\nhours:minutes:seconds.hundredths of second
 END
 RUNG
   EQU CState 1
@@ -133,7 +134,7 @@ RUNG
 END
 RUNG
   LES Cs100 50
-  COIL Yp5 0 0 0
+  COIL Y1s 0 0 0
 END
 RUNG
   COMMENT by Ihor Nehrutsa, LDmicro.GitHub@gmail.com, February 2016

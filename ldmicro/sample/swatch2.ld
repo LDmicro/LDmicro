@@ -1,4 +1,4 @@
-LDmicro v0.2
+LDmicro0.2
 MICRO=Atmel AVR ATmega328 32-Pin packages
 CYCLE=1000 us at Timer0, YPlcCycleDuty:0
 CRYSTAL=16000000 Hz
