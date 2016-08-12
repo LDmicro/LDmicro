@@ -389,7 +389,7 @@
 "--{MASTER RLY}-- マスタコントロールリレー"
 
 "Insert NEQ (Compare for Not Equals)\t!"
-"--[ /= ]-- NEQ 非等値比較！＝"
+"--[ != ]-- NEQ 非等値比較！＝"
 
 "Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
 "--[\\OSF/\\_ ￣|＿]-- 立ち下がり微分, 下降時パルス\t&\\"

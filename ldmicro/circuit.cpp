@@ -419,10 +419,13 @@ void AddNPulse(void)
 void AddQuadEncod(void)
 {
     if(!CanInsertOther) return;
-    int n = QuadEncodFunctionUsed();
-    if(n > Prog.mcu->interruptCount) {
-      Error(_("Can use only %d INTs on this MCU."), Prog.mcu->interruptCount);
-      return;
+    int n = 0;
+    if(Prog.mcu) {
+        n = QuadEncodFunctionUsed();
+        if(n > Prog.mcu->interruptCount) {
+          Error(_("Can use only %d INTs on this MCU."), Prog.mcu->interruptCount);
+          return;
+        }
     }
     ElemLeaf *t = AllocLeaf();
     t->d.QuadEncod.int01 = n;
