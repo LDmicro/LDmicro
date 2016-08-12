@@ -31,6 +31,7 @@
 #include <stdlib.h>
 
 #include "ldmicro.h"
+#include "display.h"
 
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list
@@ -146,6 +147,44 @@ static void AppendIoAutoType(char *name, int default_type)
     AppendIo(name, type);
 }
 
+static void AppendIoAutoTypePortGeneral(char *name)
+{
+    if(name[0] == '#')
+        AppendIo(name, IO_TYPE_PORT_OUTPUT);
+    else
+        AppendIoAutoType(name, IO_TYPE_GENERAL);
+}
+
+static void AppendIoAutoTypePinGeneral(char *name)
+{
+    if(name[0] == '#')
+        AppendIo(name, IO_TYPE_PORT_INPUT);
+    else
+        AppendIoAutoType(name, IO_TYPE_GENERAL);
+}
+
+//-----------------------------------------------------------------------------
+/*
+static void ExtractPortsFromMcu()
+{
+    char str[MAX_NAME_LEN];
+    if(Prog.mcu) {
+        int i;
+        for(i=0; i<MAX_IO_PORTS; i++) {
+            if((Prog.mcu->inputRegs[i] != 0) && (Prog.mcu->inputRegs[i] != 0xff)) {
+                 sprintf(str,"%s%c", "#PIN", 'A'+i);
+                 AppendIo(str, IO_TYPE_PORT_INPUT);
+
+            }
+            if((Prog.mcu->outputRegs[i] != 0) && (Prog.mcu->outputRegs[i] != 0xff)) {
+                 sprintf(str,"%s%c", "#PORT", 'A'+i);
+                 AppendIo(str, IO_TYPE_PORT_OUTPUT);
+
+            }
+        }
+    }
+}
+*/
 //-----------------------------------------------------------------------------
 // Walk a subcircuit, calling ourselves recursively and extracting all the
 // I/O names out of it.
@@ -222,6 +261,93 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
             break;
 
+        case ELEM_QUAD_ENCOD:
+            switch(l->d.QuadEncod.contactA[0]) {
+                case 'I':
+                    AppendIo(l->d.QuadEncod.contactA, IO_TYPE_INT_INPUT);
+                    break;
+                default:
+                    Error(_("Connect QUAD ENCOD input A to INTs input pin IqAn."));
+                    break;
+            }
+            switch(l->d.QuadEncod.contactB[0]) {
+                case 'X':
+                    AppendIo(l->d.QuadEncod.contactB, IO_TYPE_DIG_INPUT);
+                    break;
+                default:
+                    Error(_("Connect QUAD ENCOD input B to input pin XqBn."));
+                    break;
+            }
+            if(strlen(l->d.QuadEncod.contactZ)>0)
+            switch(l->d.QuadEncod.contactZ[0]) {
+                case 'X':
+                    AppendIo(l->d.QuadEncod.contactZ, IO_TYPE_DIG_INPUT);
+                    break;
+                default:
+                    Error(_("Connect QUAD ENCOD input Z to input pin XqZn."));
+                    break;
+            }
+            if(strlen(l->d.QuadEncod.zero)>0)
+            switch(l->d.QuadEncod.zero[0]) {
+                case 'Y':
+                    AppendIo(l->d.QuadEncod.zero, IO_TYPE_DIG_OUTPUT);
+                    break;
+                default:
+                    Error(_("Connect QUAD ENCOD zero flag to output pin YsomeName."));
+                    break;
+            }
+            break;
+
+        case ELEM_NPULSE:
+            AppendIo(l->d.Npulse.counter, IO_TYPE_GENERAL);
+            switch(l->d.Npulse.coil[0]) {
+                case 'Y':
+                    AppendIo(l->d.Npulse.coil, IO_TYPE_DIG_OUTPUT);
+                    break;
+                default:
+                    Error(_("Connect NPULSE to output pin YsomeName."));
+                    break;
+            }
+            break;
+
+        case ELEM_STEPPER:
+            char str[MAX_NAME_LEN];
+            sprintf(str, "C%s%s", l->d.stepper.name, "Dec");
+            AppendIo(str, IO_TYPE_COUNTER);
+
+            if(IsNumber(l->d.stepper.P)&&(CheckMakeNumber(l->d.stepper.P)>1)
+            ||(l->d.stepper.graph>0)//&&(l->d.stepper.n>1)
+            ||(!IsNumber(l->d.stepper.P))){
+                sprintf(str, "C%s%s", l->d.stepper.name, "Inc");
+                AppendIo(str, IO_TYPE_COUNTER);
+
+                sprintf(str, "C%s%s", l->d.stepper.name, "P");
+                AppendIo(str, IO_TYPE_COUNTER);
+            }
+            switch(l->d.stepper.coil[0]) {
+                case 'Y':
+                    AppendIo(l->d.stepper.coil, IO_TYPE_DIG_OUTPUT);
+                    break;
+                default:
+                    Error(_("Connect STEPPER coil to output pin YsomeName."));
+                    break;
+            }
+            break;
+
+        case ELEM_PULSER:
+            switch(l->d.pulser.busy[0]) {
+                case 'R':
+                    AppendIo(l->d.pulser.busy, IO_TYPE_INTERNAL_RELAY);
+                    break;
+                case 'Y':
+                    AppendIo(l->d.pulser.busy, IO_TYPE_DIG_OUTPUT);
+                    break;
+                default:
+                    Error(_("Connect PULSER busy flag to output pin YsomeName or internal relay RsomeName."));
+                    break;
+            }
+            break;
+
         case ELEM_TCY:
             AppendIo(l->d.timer.name, IO_TYPE_TCY);
             break;
@@ -238,14 +364,57 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.timer.name, IO_TYPE_RTO);
             break;
 
+        case ELEM_BIN2BCD:
+        case ELEM_BCD2BIN:
+        case ELEM_SWAP:
+        case ELEM_BUS:
         case ELEM_MOVE:
-            if (CheckForNumber(l->d.move.src) == FALSE) {
-                AppendIoAutoType(l->d.move.src, IO_TYPE_GENERAL);
+            AppendIoAutoTypePortGeneral(l->d.move.dest);
+            /*
+            if(CheckForNumber(l->d.move.src) == FALSE) {
+                AppendIoAutoTypePinGeneral(l->d.move.src); // not need ???
             }
-            AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
+            */
+            break;
+        {
+        int n;
+        char *nameTable;
+        case ELEM_7SEG: nameTable = "char7seg";  n = LEN7SEG;  goto xseg;
+        case ELEM_9SEG: nameTable = "char9seg";  n = LEN9SEG;  goto xseg;
+        case ELEM_14SEG:nameTable = "char14seg"; n = LEN14SEG; goto xseg;
+        case ELEM_16SEG:nameTable = "char16seg"; n = LEN16SEG; goto xseg;
+        xseg:
+            AppendIoAutoTypePortGeneral(l->d.segments.dest);
+            /*
+            if (CheckForNumber(l->d.segments.src) == FALSE) {
+                AppendIo(l->d.segments.src, IO_TYPE_GENERAL); // not need ???
+            }
+            */
+            AppendIo(nameTable, IO_TYPE_TABLE);
+            SetSizeOfVar(nameTable, n);
+            break;
+        }
+
+        case ELEM_SET_BIT     :
+        case ELEM_CLEAR_BIT   :
+            AppendIoAutoTypePortGeneral(l->d.move.dest);
             break;
 
+        case ELEM_IF_BIT_SET  :
+        case ELEM_IF_BIT_CLEAR:
+            AppendIoAutoTypePinGeneral(l->d.move.dest);
+            break;
 
+        case ELEM_SHL:
+        case ELEM_SHR:
+        case ELEM_SR0:
+        case ELEM_ROL:
+        case ELEM_ROR:
+        case ELEM_AND:
+        case ELEM_OR:
+        case ELEM_XOR:
+        case ELEM_NEG:
+        case ELEM_NOT:
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
@@ -340,6 +509,9 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_CSFR:
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
+        case ELEM_PWM_OFF:
+        case ELEM_NPULSE_OFF:
+            break;
 
         case ELEM_PADDING:
             break;
@@ -1110,11 +1282,13 @@ void IoListProc(NMHDR *h)
                     if((type == IO_TYPE_PORT_INPUT      )
                     || (type == IO_TYPE_PORT_OUTPUT     )
                     ) {
-                        MemForVariable(name, &addr);
-                        if(addr)
-                            sprintf(i->item.pszText, "0x%x", addr);
-                         else
-                            sprintf(i->item.pszText, "Not a PORT!");
+                        if(!InSimulationMode) {
+                            MemForVariable(name, &addr);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%x", addr);
+                             else
+                                sprintf(i->item.pszText, "");
+                        }
                     } else
                     if((type == IO_TYPE_GENERAL)
                     || (type == IO_TYPE_PERSIST)
@@ -1130,9 +1304,16 @@ void IoListProc(NMHDR *h)
                             sprintf(i->item.pszText, "0x%x", addr);
                         }
                     } else
+                    if((type == IO_TYPE_INTERNAL_RELAY)
+                    ) {
+                        if(!InSimulationMode) {
+                            MemForSingleBit(name, TRUE, &addr, &bit);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                        }
+                    } else
                     if((type == IO_TYPE_DIG_INPUT)
                     || (type == IO_TYPE_DIG_OUTPUT)
-                    || (type == IO_TYPE_INTERNAL_RELAY)
                     ) {
                         if(!InSimulationMode) {
                             if(SingleBitAssigned(name))
@@ -1147,15 +1328,28 @@ void IoListProc(NMHDR *h)
                 case LV_IO_SISE_OF_VAR:
                     if((type == IO_TYPE_GENERAL         )
                     || (type == IO_TYPE_PERSIST         )
+                    || (type == IO_TYPE_PORT_INPUT      )
+                    || (type == IO_TYPE_PORT_OUTPUT     )
                     || (type == IO_TYPE_STRING          )
                     || (type == IO_TYPE_RTO             )
                     || (type == IO_TYPE_COUNTER         )
                     || (type == IO_TYPE_UART_TX         )
                     || (type == IO_TYPE_UART_RX         )
+                    || (type == IO_TYPE_TABLE           )
                     || (type == IO_TYPE_TCY             )
                     || (type == IO_TYPE_TON             )
-                    || (type == IO_TYPE_TOF             )){
-                        sprintf(i->item.pszText, "%d  bytes", SizeOfVar(name));
+                    || (type == IO_TYPE_TOF             )) {
+                        int sov = SizeOfVar(name);
+                        sprintf(i->item.pszText, sov==1 ? "%d byte" : "%d bytes", sov);
+                    } else
+                    if((type == IO_TYPE_DIG_INPUT)
+                    || (type == IO_TYPE_DIG_OUTPUT)
+                    || (type == IO_TYPE_INTERNAL_RELAY)
+                    || (type == IO_TYPE_UART_TX)
+                    || (type == IO_TYPE_UART_RX)
+                    || (type == IO_TYPE_READ_ADC)
+                    || (type == IO_TYPE_PWM_OUTPUT)) {
+                        sprintf(i->item.pszText, "1 bit");
                     }
                     break;
 

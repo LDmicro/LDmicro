@@ -470,7 +470,6 @@ static void CheckVariableNamesCircuit(int which, void *elem)
     ElemLeaf *l = (ElemLeaf *)elem;
     char *name = NULL;
     DWORD flag;
-    char str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -537,6 +536,30 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
 
+        case ELEM_NPULSE_OFF:
+        case ELEM_PWM_OFF:
+            break;
+
+        case ELEM_QUAD_ENCOD:
+        case ELEM_NPULSE:
+        case ELEM_PULSER:
+        case ELEM_STEPPER:
+            break;
+
+        case ELEM_BIN2BCD:
+        case ELEM_BCD2BIN:
+        case ELEM_SWAP:
+        case ELEM_BUS:
+            break;
+
+        char *s;
+        case ELEM_7SEG:  s = "char7seg"; goto xseg;
+        case ELEM_9SEG:  s = "char9seg"; goto xseg;
+        case ELEM_14SEG: s = "char14seg"; goto xseg;
+        case ELEM_16SEG: s = "char16seg"; goto xseg;
+        xseg:
+            break;
+
         case ELEM_LOOK_UP_TABLE:
             MarkWithCheck(l->d.lookUpTable.dest, VAR_FLAG_ANY);
             if(!IsNumber(l->d.lookUpTable.index))
@@ -563,6 +586,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SR0:
         case ELEM_ROL:
         case ELEM_ROR:
+        case ELEM_SET_BIT:
+        case ELEM_CLEAR_BIT:
         case ELEM_AND:
         case ELEM_OR :
         case ELEM_XOR:
@@ -586,8 +611,10 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_STRING:
+        case ELEM_FORMATTED_STRING: {
+            break;
+        }
         case ELEM_PERSIST:
-        case ELEM_FORMATTED_STRING:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
         case ELEM_UART_SEND:
@@ -606,6 +633,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
+        case ELEM_IF_BIT_SET:
+        case ELEM_IF_BIT_CLEAR:
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
@@ -614,7 +643,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         default:
-            oops();
+            ooops("ELEM_0x%X", which);
     }
 }
 //-----------------------------------------------------------------------------
@@ -732,6 +761,8 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_SR0:
         case ELEM_ROL:
         case ELEM_ROR:
+        case ELEM_SET_BIT:
+        case ELEM_CLEAR_BIT:
         case ELEM_AND:
         case ELEM_OR :
         case ELEM_XOR:
@@ -771,6 +802,8 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
+        case ELEM_IF_BIT_SET:
+        case ELEM_IF_BIT_CLEAR:
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
@@ -888,6 +921,9 @@ static void SimulateIntCode(void)
                 SetSingleBit(a->name1, SingleBitOn(a->name2));
                 break;
 
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                break;
+
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(GetSimulationVariable(a->name1) !=
                     a->literal && a->name1[0] != '$')
@@ -927,6 +963,18 @@ static void SimulateIntCode(void)
             case  INT_TEST_C_SFR_VARIABLE_L:
                 break;
 
+            case INT_SET_BIN2BCD: {
+                break;
+            }
+
+            case INT_SET_BCD2BIN: {
+                break;
+            }
+
+            case INT_SET_SWAP: {
+                break;
+            }
+
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(GetSimulationVariable(a->name1) !=
                     GetSimulationVariable(a->name2))
@@ -948,6 +996,26 @@ static void SimulateIntCode(void)
                 break;
             {
                 SDWORD v;
+                case INT_SET_VARIABLE_ROL:
+                    goto math;
+                case INT_SET_VARIABLE_ROR:
+                    goto math;
+                case INT_SET_VARIABLE_SR0:
+                    goto math;
+                case INT_SET_VARIABLE_SHL:
+                    goto math;
+                case INT_SET_VARIABLE_SHR:
+                    goto math;
+                case INT_SET_VARIABLE_AND:
+                    goto math;
+                case INT_SET_VARIABLE_OR:
+                    goto math;
+                case INT_SET_VARIABLE_XOR:
+                    goto math;
+                case INT_SET_VARIABLE_NOT:
+                    goto math;
+                case INT_SET_VARIABLE_NEG:
+                    goto math;
                 case INT_SET_VARIABLE_ADD:
                     v = GetSimulationVariable(a->name2) +
                         GetSimulationVariable(a->name3);
@@ -959,6 +1027,8 @@ static void SimulateIntCode(void)
                 case INT_SET_VARIABLE_MULTIPLY:
                     v = GetSimulationVariable(a->name2) *
                         GetSimulationVariable(a->name3);
+                    goto math;
+                case INT_SET_VARIABLE_MOD:
                     goto math;
                 case INT_SET_VARIABLE_DIVIDE:
                     if(GetSimulationVariable(a->name3) != 0) {
@@ -1015,6 +1085,8 @@ math:
                     IF_BODY
                 break;
 
+            case INT_QUAD_ENCOD:
+            case INT_SET_NPULSE:
             case INT_SET_PWM:
                 // Dummy call will cause a warning if no one ever assigned
                 // to that variable.
@@ -1053,14 +1125,14 @@ math:
                     SetSingleBit(a->name2, TRUE);
                 }
                 break;
-            case INT_UART_SEND_BUSY:{
+
+            case INT_UART_SEND_BUSY:
                 if(SimulateUartTxCountdown == 0) {
                     SetSingleBit(a->name1, FALSE);
                 } else {
                     SetSingleBit(a->name1, TRUE);
                 }
                 break;
-            }
 
             case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
@@ -1086,6 +1158,31 @@ math:
 
             case INT_COMMENT:
                 break;
+
+            #ifdef NEW_FEATURE
+            case INT_AllocKnownAddr:
+            case INT_AllocFwdAddr:
+            case INT_FwdAddrIsNow:
+            case INT_GotoRung:
+                break;
+
+            case INT_PRINT_STRING:
+                break;
+            #endif
+
+            case INT_WRITE_STRING: {
+                break;
+            }
+            #ifdef NEW_FEATURE
+            case INT_FLASH_INIT:
+                break;
+
+            case INT_FLASH_READ:{
+                break;
+
+            case INT_RAM_READ:{
+                break;
+            #endif
 
             default:
                 ooops("op=%d",a->op);
@@ -1384,6 +1481,44 @@ static LRESULT CALLBACK UartSimulationProc(HWND hwnd, UINT msg,
 static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam)
 {
+    switch (msg) {
+        case WM_KEYDOWN:
+            // vvv copy-paste from ldmicro.cpp
+            if(InSimulationMode) {
+                switch(wParam) {
+//                  key ' ',Enter-VK_RETURN must be available for simulation input
+//                  case ' ':
+//                      SimulateOneCycle(TRUE);
+//                      break;
+
+                    case VK_F8:
+                        StartSimulation();
+                        break;
+
+                    case 'R':
+                        if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
+                            StartSimulation();
+                        break;
+
+                    case VK_F9:
+                        StopSimulation();
+                        break;
+
+                    case 'H':
+                        if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
+                            StopSimulation();
+                        break;
+
+//                  case VK_RETURN:
+                    case VK_ESCAPE:
+                        ToggleSimulationMode();
+                        break;
+                }
+                break;
+            }
+            // ^^^
+    }
+
     if(msg == WM_CHAR) {
         QueuedUartCharacter = (BYTE)wParam;
         return 0;
@@ -1397,6 +1532,8 @@ static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
 // characters that you type go into UART RECV instruction and whatever
 // the program puts into UART SEND shows up as text.
 //-----------------------------------------------------------------------------
+#define MAX_SCROLLBACK 0x10000 //256 // 0x10000
+static char buf[MAX_SCROLLBACK] = "";
 void ShowUartSimulationWindow(void)
 {
     WNDCLASSEX wc;
@@ -1433,7 +1570,8 @@ void ShowUartSimulationWindow(void)
 
     UartSimulationWindow = CreateWindowClient(WS_EX_TOOLWINDOW |
         WS_EX_APPWINDOW, "LDmicroUartSimulationWindow",
-        "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX,
+        "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX
+        | WS_MAXIMIZEBOX | WS_MINIMIZEBOX,
         TerminalX, TerminalY, TerminalW, TerminalH,
         NULL, NULL, Instance, NULL);
 
@@ -1453,6 +1591,9 @@ void ShowUartSimulationWindow(void)
 
     PrevTextProc = SetWindowLongPtr(UartSimulationTextControl,
         GWLP_WNDPROC, (LONG_PTR)UartSimulationTextProc);
+
+    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 
     ShowWindow(UartSimulationWindow, TRUE);
     SetFocus(MainWindow);
@@ -1501,16 +1642,13 @@ static void AppendToUartSimulationTextControl(BYTE b)
     if((isalnum(b) || strchr("[]{};':\",.<>/?`~ !@#$%^&*()-=_+|", b) ||
            b == '\r' || b == '\n' || b == '\b' || b == '\f' || b == '\t' || b == '\v' || b == '\a') && b != '\0')
     {
-          append[0] = (char)b;
+        append[0] = (char)b;
         append[1] = '\0';
     } else {
         sprintf(append, "\\x%02x", b);
     }
 
     if(fUART) fprintf(fUART, "%s", append);
-
-#define MAX_SCROLLBACK 0x10000 //256 // 0x10000
-    char buf[MAX_SCROLLBACK] = "";
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)(sizeof(buf)-1),
         (LPARAM)buf);
@@ -1552,8 +1690,12 @@ static void AppendToUartSimulationTextControl(BYTE b)
         if(b == '\n') {
             strcpy(append, "\r\n");
             b = '\0';
-        } else if(s=strrchr(buf,'\n')) {
-            s[1] = '\0';
+        } else {
+            if(s=strrchr(buf,'\n')) {
+                s[1] = '\0';
+            } else {
+                buf[0] = '\0';
+            }
         }
       }
     }
@@ -1566,27 +1708,28 @@ static void AppendToUartSimulationTextControl(BYTE b)
     }
     strcat(buf, append);
 
+
     SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 }
 /*
 ------------------------------ ASCII Control Codes ---------------------------
-³Dec Hex Ctl  Name Control Meaning     ³Dec Hex Ctl  Name Control Meaning
-³--- --- ---  ---- ------------------- ³--- --- ---  ---- --------------------
-³  0  00  ^@  NUL  null (end string)   ³ 16  10  ^P  DLE  data line escape
-³  1  01  ^A  SOH  start of heading    ³ 17  11  ^Q  DC1  dev ctrl 1 (X-ON)
-³  2  02  ^B  STX  start of text       ³ 18  12  ^R  DC2  device ctrl 2
-³  3  03  ^C  ETX  end of text         ³ 19  13  ^S  DC3  dev ctrl 3 (X-OFF)
-³  4  04  ^D  EOT  end of transmission ³ 20  14  ^T  DC4  device ctrl 4
-³  5  05  ^E  ENQ  enquiry             ³ 21  15  ^U  NAK  negative acknowledge
-³  6  06  ^F  ACK  acknowledge         ³ 22  16  ^V  SYN  synchronous idle
-³  7  07  ^G  BEL  bell                ³ 23  17  ^W  ETB  end transmit block
-³  8  08  ^H  BS  backspace            ³ 24  18  ^X  CAN  cancel
-³  9  09  ^I  HT  TAB horizontal tab   ³ 25  19  ^Y  EM  end of medium
-³ 10  0a  ^J  LF  line feed            ³ 26  1a  ^Z  SUB  substitute
-³ 11  0b  ^K  VT  vertical tab         ³ 27  1b  ^[  ESC  escape
-³ 12  0c  ^L  FF  form feed            ³ 28  1c  ^\  FS  file separator
-³ 13  0d  ^M  CR  carriage return      ³ 29  1d  ^]  GS  group separator
-³ 14  0e  ^N  SO  shift out            ³ 30  1e  ^^  RS  record separator
-³ 15  0f  ^O  SI  shift in             ³ 31  1f  ^_  US  unit separator
+|Dec Hex Ctl  Name Control Meaning      |Dec Hex Ctl  Name Control Meaning
+|--- --- ---  ---- -------------------  |--- --- ---  ---- --------------------
+|  0  00  ^@  NUL  null (end string)    | 16  10  ^P  DLE  data line escape
+|  1  01  ^A  SOH  start of heading     | 17  11  ^Q  DC1  dev ctrl 1 (X-ON)
+|  2  02  ^B  STX  start of text        | 18  12  ^R  DC2  device ctrl 2
+|  3  03  ^C  ETX  end of text          | 19  13  ^S  DC3  dev ctrl 3 (X-OFF)
+|  4  04  ^D  EOT  end of transmission  | 20  14  ^T  DC4  device ctrl 4
+|  5  05  ^E  ENQ  enquiry              | 21  15  ^U  NAK  negative acknowledge
+|  6  06  ^F  ACK  acknowledge          | 22  16  ^V  SYN  synchronous idle
+|  7  07  ^G  BEL  bell               \a| 23  17  ^W  ETB  end transmit block
+|  8  08  ^H  BS   backspace          \b| 24  18  ^X  CAN  cancel
+|  9  09  ^I  HT   TAB horizontal tab \t| 25  19  ^Y  EM   end of medium
+| 10  0a  ^J  LF   line feed          \n| 26  1a  ^Z  SUB  substitute
+| 11  0b  ^K  VT   vertical tab       \v| 27  1b  ^[  ESC  escape
+| 12  0c  ^L  FF   form feed          \f| 28  1c  ^\  FS   file separator
+| 13  0d  ^M  CR   carriage return    \r| 29  1d  ^]  GS   group separator
+| 14  0e  ^N  SO   shift out            | 30  1e  ^^  RS   record separator
+| 15  0f  ^O  SI   shift in             | 31  1f  ^_  US   unit separator
 */

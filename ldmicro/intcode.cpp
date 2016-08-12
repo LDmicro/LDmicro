@@ -133,6 +133,9 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2);
                 break;
 
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                break;
+
             case INT_SET_VARIABLE_TO_LITERAL:
                 fprintf(f, "let var '%s' := %d", IntCode[i].name1,
                     IntCode[i].literal);
@@ -141,6 +144,45 @@ void IntDumpListing(char *outFile)
             case INT_SET_VARIABLE_TO_VARIABLE:
                 fprintf(f, "let var '%s' := '%s'", IntCode[i].name1,
                     IntCode[i].name2);
+                break;
+
+            case INT_SET_BIN2BCD:
+                break;
+
+            case INT_SET_BCD2BIN:
+                break;
+
+            case INT_SET_SWAP:
+                break;
+
+            case INT_SET_VARIABLE_ROL:
+                break;
+
+            case INT_SET_VARIABLE_ROR:
+                break;
+
+            case INT_SET_VARIABLE_SHL:
+                break;
+
+            case INT_SET_VARIABLE_SHR:
+                break;
+
+            case INT_SET_VARIABLE_SR0:
+                break;
+
+            case INT_SET_VARIABLE_AND:
+                break;
+
+            case INT_SET_VARIABLE_OR:
+                break;
+
+            case INT_SET_VARIABLE_XOR:
+                break;
+
+            case INT_SET_VARIABLE_NEG:
+                break;
+
+            case INT_SET_VARIABLE_NOT:
                 break;
 
             case INT_SET_VARIABLE_ADD:
@@ -163,6 +205,9 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2, IntCode[i].name3);
                 break;
 
+            case INT_SET_VARIABLE_MOD:
+                break;
+
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1);
                 break;
@@ -178,6 +223,18 @@ void IntDumpListing(char *outFile)
 
             case INT_DECREMENT_VARIABLE:
                 fprintf(f, "decrement '%s'", IntCode[i].name1);
+                break;
+
+            case INT_QUAD_ENCOD:
+                break;
+
+            case INT_SET_NPULSE:
+                break;
+
+            case INT_OFF_NPULSE:
+                break;
+
+            case INT_OFF_PWM:
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
@@ -632,6 +689,8 @@ int getradix(char *str)
         radix = 2;
     else if((start_ptr[0] == '0') && (toupper(start_ptr[1]) == 'X'))
         radix = 16;
+    else if(start_ptr[0] == '\'')
+        radix = -1;
     if(!radix) {
         ooops("'%s'\r\n'%s'", str, start_ptr);
     }
@@ -640,7 +699,6 @@ int getradix(char *str)
 //-----------------------------------------------------------------------------
 SDWORD hobatoi(char *str)
 {
-    int sign = 1;
     long  val;
     char *start_ptr = str;
     while(isspace(*start_ptr))
@@ -654,8 +712,6 @@ SDWORD hobatoi(char *str)
         val = dest[1];
     } else {
        while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+') {
-           if(*start_ptr == '-')
-               sign = -1;
            start_ptr++;
        }
        int radix = 0; //auto detect
@@ -674,7 +730,7 @@ SDWORD hobatoi(char *str)
            Error("Conversion overflow error the string\n'%s' into number %d.", str, val);
        }
     }
-    return sign * val;
+    return val;
 }
 
 //-----------------------------------------------------------------------------
@@ -1497,8 +1553,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             #ifdef USE_CMP
             #endif
             {
-            char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch1");
-            char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
+              char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch1");
+              char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
 
             if(which == ELEM_GRT) {
                 Op(INT_IF_VARIABLE_GRT_VARIABLE, op1, op2);
@@ -1524,6 +1580,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
            #endif
           break;
         }
+
+        case ELEM_IF_BIT_SET:
+        case ELEM_IF_BIT_CLEAR:
+          break;
 
         case ELEM_ONE_SHOT_RISING: {
             Comment(3, "ELEM_ONE_SHOT_RISING");
@@ -1659,6 +1719,22 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
             break;
         }
+
+        case ELEM_BUS: {
+            break;
+        }
+        case ELEM_BIN2BCD: {
+            break;
+        }
+
+        case ELEM_BCD2BIN: {
+            break;
+        }
+
+        case ELEM_SWAP: {
+            break;
+        }
+
         case ELEM_STRING: {
             Comment(3, "ELEM_STRING");
             Op(INT_IF_BIT_SET, stateInOut);
@@ -1686,8 +1762,21 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 break;
             }
 
-            #ifdef NEW_FEATURE
-            #endif
+            case ELEM_NPULSE: {
+                break;
+            }
+
+            case ELEM_NPULSE_OFF: {
+                break;
+            }
+
+            case ELEM_PWM_OFF: {
+                break;
+            }
+
+            case ELEM_QUAD_ENCOD: {
+                break;
+            }
 
             case ELEM_PERSIST: {
               Comment(3, "ELEM_PERSIST");
@@ -1742,8 +1831,23 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 break;
 
         }
+        case ELEM_SET_BIT:
+        case ELEM_CLEAR_BIT:
+                break;
         {
         int intOp;
+        case ELEM_SHL:
+        case ELEM_SHR:
+        case ELEM_SR0:
+        case ELEM_ROL:
+        case ELEM_ROR:
+        case ELEM_AND:
+        case ELEM_OR:
+        case ELEM_XOR:
+        case ELEM_NOT:
+        case ELEM_NEG:
+        case ELEM_MOD:
+            break;
         case ELEM_ADD: intOp = INT_SET_VARIABLE_ADD;      Comment(3, "ELEM_ADD"); goto math;
         case ELEM_SUB: intOp = INT_SET_VARIABLE_SUBTRACT; Comment(3, "ELEM_SUB"); goto math;
         case ELEM_MUL: intOp = INT_SET_VARIABLE_MULTIPLY; Comment(3, "ELEM_MUL"); goto math;
@@ -1756,6 +1860,10 @@ math:   {
             }
             Op(INT_IF_BIT_SET, stateInOut);
             char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
+            if((intOp == INT_SET_VARIABLE_NOT)
+            || (intOp == INT_SET_VARIABLE_NEG)){
+                Op(intOp, l->d.math.dest, op1);
+            } else
             if((intOp == INT_SET_VARIABLE_SUBTRACT)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
@@ -2148,13 +2256,14 @@ math:   {
 
                         // Also do the `absolute value' calculation while
                         // we're at it.
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
                         Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' ');
                         Op(INT_IF_VARIABLE_LES_LITERAL, var, (SDWORD)0);
                             Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", '-');
-                            Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch");
+                            Op(INT_SET_VARIABLE_TO_LITERAL, convertState, (SDWORD)0);
                             Op(INT_SET_VARIABLE_SUBTRACT, convertState,
-                                "$scratch", var);
+                                convertState, var);
+                        Op(INT_ELSE);
+                            Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
                         Op(INT_END_IF);
 
                     Op(INT_END_IF);

@@ -100,6 +100,8 @@ void AllocStart(void)
 //-----------------------------------------------------------------------------
 DWORD AllocOctetRam(void)
 {
+    if(!Prog.mcu)
+        return 0;
     if(MemOffset >= Prog.mcu->ram[0].len) {
         Error(_("Out of memory; simplify program or choose "
             "microcontroller with more memory."));
@@ -291,8 +293,13 @@ void MemForVariable(char *name, DWORD *addrl, DWORD *addrh)
     if(i == VariableCount) {
         VariableCount++;
         strcpy(Variables[i].name, name);
-        Variables[i].SizeOfVar = 0;
-        Variables[i].Allocated = 0;
+        if(name[0] == '#') {
+            Variables[i].SizeOfVar = 1;
+            Variables[i].Allocated = 0;
+        } else {
+            Variables[i].SizeOfVar = 0;
+            Variables[i].Allocated = 0;
+        }
     }
     if(addrl) { // Allocate SRAM
 
@@ -353,8 +360,13 @@ int SetVariableType(char *name, int type)
     if(i == VariableCount) {
         VariableCount++;
         strcpy(Variables[i].name, name);
-        Variables[i].SizeOfVar = 0;
-        Variables[i].Allocated = 0;
+        if(name[0] == '#') {
+            Variables[i].SizeOfVar = 1;
+            Variables[i].Allocated = 0;
+        } else {
+            Variables[i].SizeOfVar = 0;
+            Variables[i].Allocated = 0;
+        }
         Variables[i].type = type;
     } else {
         Variables[i].type = type;
@@ -369,7 +381,10 @@ int SetSizeOfVar(char *name, int sizeOfVar)
 
 int SizeOfVar(char *name)
 {
-    return 2;
+     if(name[0] == '#')
+         return 1;
+     else
+         return 2;
 }
 
 int AllocOfVar(char *name)
@@ -424,6 +439,42 @@ void SaveVarListToFile(FILE *f)
 }
 
 //-----------------------------------------------------------------------------
+BOOL LoadVarListFromFile(FILE *f)
+{
+    //ClrInternalData(); // VariableCount = 0;
+    //ClrSimulationData();
+    AllocStart();
+    char line[MAX_NAME_LEN];
+    char name[MAX_NAME_LEN];
+    int  sizeOfVar;
+    BOOL Ok;
+
+    while(fgets(line, sizeof(line), f)) {
+        if(!strlen(strspace(line))) continue;
+        if(strcmp(line, "END\n")==0) {
+            return TRUE;
+        }
+        Ok = FALSE;
+        // Don't internationalize this! It's the file format, not UI.
+        if(sscanf(line, " %s signed %d bit variable ", name, &sizeOfVar)==2) {
+            if(strlen(name)) {
+                SetSizeOfVar(name, sizeOfVar / 8);
+                Ok = TRUE;
+            }
+        }
+        if(sscanf(line, " %d bytes %s ", &sizeOfVar, name)==2) {
+            if(strlen(name)) {
+                SetSizeOfVar(name, sizeOfVar);
+                Ok = TRUE;
+            }
+        }
+        if(!Ok) {
+            Error(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
+            return FALSE;
+        }
+    }
+    return FALSE;
+}
 //-----------------------------------------------------------------------------
 // Allocate or retrieve the bit of memory assigned to an internal relay or
 // other thing that requires a single bit of storage.

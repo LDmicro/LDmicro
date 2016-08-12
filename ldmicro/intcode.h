@@ -33,21 +33,19 @@
 #define INT_COPY_BIT_TO_BIT                      3
 #define INT_SET_VARIABLE_TO_LITERAL              4
 #define INT_SET_VARIABLE_TO_VARIABLE             5
-#ifdef NEW_FEATURE
 #define INT_SET_BIN2BCD                          5001
 #define INT_SET_BCD2BIN                          5002
 #define INT_SET_SWAP                             5003
-#endif
 #define INT_DECREMENT_VARIABLE                   6001
 #define INT_INCREMENT_VARIABLE                   6
 #define INT_SET_VARIABLE_ADD                     7
 #define INT_SET_VARIABLE_SUBTRACT                8
 #define INT_SET_VARIABLE_MULTIPLY                9
 #define INT_SET_VARIABLE_DIVIDE                 10
-#ifdef NEW_FEATURE
 #define INT_SET_VARIABLE_MOD                    1001
 
 #define INT_COPY_VAR_BIT_TO_VAR_BIT             1002
+#ifdef NEW_FEATURE
 #define INT_FLASH_INIT                          1003
 #define INT_FLASH_READ                          1004
 #define INT_RAM_READ                            1005
@@ -75,6 +73,9 @@
 #define INT_WRITE_STRING                        21 // sprintf()
 #ifdef NEW_FEATURE
 #define INT_PRINT_STRING                        22 // printf() out to console
+#endif
+#define INT_VARIABLE_SET_BIT                    25
+#define INT_VARIABLE_CLEAR_BIT                  26
 
 #define INT_SET_VARIABLE_AND                    30
 #define INT_SET_VARIABLE_OR                     31
@@ -86,7 +87,6 @@
 #define INT_SET_VARIABLE_SR0                    361
 #define INT_SET_VARIABLE_ROL                    37
 #define INT_SET_VARIABLE_ROR                    38
-#endif
 
 #define INT_IF_GROUP_BEGIN                      40
 #ifdef USE_CMP
@@ -97,6 +97,8 @@
 #define INT_IF_VARIABLE_EQU_LITERAL             44
 #define INT_IF_VARIABLE_NEQ_LITERAL             45
 #endif
+#define INT_IF_VARIABLE_BIT_SET                 48
+#define INT_IF_VARIABLE_BIT_CLEAR               49
 
 //#define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50
@@ -155,12 +157,12 @@
 #define INT_TEST_C_SFR_VARIABLE_L               1082
 // Special function
 
-#ifdef NEW_FEATURE
 #define INT_OFF_PWM                            2001
 #define INT_SET_NPULSE                         2002
 #define INT_OFF_NPULSE                         2003
 #define INT_QUAD_ENCOD                         2004
 
+#ifdef NEW_FEATURE
 #define INT_AllocKnownAddr                     2020
 #define INT_AllocFwdAddr                       2021
 #define INT_FwdAddrIsNow                       2022

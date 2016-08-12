@@ -1,3 +1,136 @@
+== Release 4.0.0 experimental
+
+    * Fixed: CTD down counter in releases from v3.5.2 to v3.5.4 has critical
+      decrement error. INT_DECREMENT_VARIABLE in PIC's MCU has a bug.
+      Note: For BORROW flag, the polarity is reversed a CARRY-OUT flag.
+      A subtraction is executed by adding the two's complement of the second
+      operand.
+
+    * Fixed: Fragment from forum:
+      ...
+      I loaded the 'hello.ld' and started simulation,
+      then the 'H' of the 1st 'Hello' is dropped...
+      ...
+      Yes, first symbol dropped in UART simulation window.
+      In hardware will be full text.
+      Now all text printed in UART simulation window.
+      SAMPLE\hello.ld added.
+
+    * New: Variable name that begins with symbol '#' like
+      #PINA, #PINB, #PINC, ... treated as input port.
+      Operation -{ MOV dest, #PINA }- directly assigns 8-bit value from the hardware
+      pins of the port A to the variable 'dest'.
+
+      Variable name that begins with symbol '#' like
+      #PORTA, #PORTB, #PORTC, ... now treated as output port.
+      Operation -{ MOV #PINA, dest }- writes 8-bit value from
+      the variable 'dest' directly to the hardware pins of port A.
+      Note: The output mode pins of the port is not set automatically. You
+      must set it with operations COIL YPA0..7 (YRA0..7).
+
+    * Added:
+      Bitwise operation: AND, OR, XOR, NOT.
+      Please read http://en.wikipedia.org/wiki/Bitwise_operation
+
+      Arithmetic shift: SHL, SHR.
+      https://en.wikipedia.org/wiki/Arithmetic_shift
+
+      Logical shift to right SR0.
+      https://en.wikipedia.org/wiki/Logical_shift
+      Logical shift to left is equivalent to SHL arithmetic shift to left.
+
+      Circular shift: ROL, ROR.
+      https://en.wikipedia.org/wiki/Circular_shift
+
+      Bitwise swap nibbles in a byte SWAP.
+      -{SWAP b, a}- If 'a' is 0xA5, then 'b' will be 0x5A.
+      https://en.wikipedia.org/wiki/Nibble
+
+    * Added:
+      Operations with one bit:
+      SetBit - set bit
+      ClrBit - clear bit
+
+      -{SetBit var, bit}- In variable 'var' set bit number 'bit'.
+
+      'Bit' means number of bit, not bit mask. For example,
+      to set bit number 4 in variable 'var'
+                        v
+       Bit numbers:  76543210
+       'var'      :  xxx1xxxx
+                        ^
+      you must write    ^
+          -{SetBit var, 4}-  not  -{SetBit var, 0x10}-
+
+    * Added:
+      IfBitSet - If bit set
+      IfBitClr - If bit clear
+
+      If the input to this instruction is false then the output is false. If
+      the input is true then the output is true if and only if the given
+      condition is true. This instruction can be used to check the state only
+      one bit of the variable.
+      'Bit' means number of bit, not bit mask.
+
+      Operation -{IfBitSet var, 0}- is equivalent condition 'If var is odd'.
+      Operation -{IfBitClr var, 0}- is equivalent condition 'If var is an even'.
+
+    * Added:
+      LED segments displays: 7SEG, 9SEG, 14SEG, 16SEG.
+      https://en.wikipedia.org/wiki/Seven-segment_display
+      https://en.wikipedia.org/wiki/Nine-segment_display
+      https://en.wikipedia.org/wiki/Fourteen-segment_display
+      https://en.wikipedia.org/wiki/Sixteen-segment_display
+
+      7 segments display
+           a
+          --
+       f|    |b
+        |  g |
+          --
+       e|    |c
+        |    |
+          --  .
+           d  DP
+
+      SEGMENT   DP g f e d c b a
+      BIT        7 6 5 4 3 2 1 0
+
+      7SEG associate bit0 to pin A, bit1 to pin B, bit2 to pin C, bit3 to pin B,
+      bit4 to pin D, bit5 to pin E, bit6 to pin F, bit7 to pin DP.
+
+    * Added:
+      Bitwise sofrware bus tracer: BUS.
+      BUS is not a vehicle.
+      BUS means bus conductors on the printed circuit board.
+      When you trace route output pins from the MCU port to 7 segment LED display,
+      you can connect any pin of port to any pin of LED display as you comfortable.
+      Then you must set sofrware mapping transformation for bits. For example
+      SEGMENT   DP g f e d c b a
+      BIT        7 6 4 5 3 2 0 1
+      if b<->a and f<->e.
+
+    * Added:
+      BIN2BCD, BCD2BIN packed operations.
+      https://en.wikipedia.org/wiki/Binary-coded_decimal
+
+    * Added:
+      Negative NEG, signed variable a = -a.
+      Negative -{NEG a}- is the optimized equivalent to -{SUB a:= 0 - a}-
+
+    ! Attention:
+    ! You can only add, edit, save, load this elements marked 'EDIT:' in menu.
+    ! No simulation. No compile code at output.
+
+    * Added: SAMPLE\swatch2.ld - Stopwatch2 with 7 segments LED displays.
+      https://github.com/LDmicro/LDmicro/wiki/Stopwatch2-with-7-segments-LED-displays
+
+    * Added: SAMPLE\7Segments.ttf. Install 7Segments.ttf in Windows\Fonts
+      and view 7Segments.doc.
+
+    * Added: SAMPLE\swatch1.ld - Stopwatch1 over UART.
+      https://github.com/LDmicro/LDmicro/wiki/Stopwatch1-over-UART
+
 == Release 3.5.4 experimental
 
     * Highlight rungs number.

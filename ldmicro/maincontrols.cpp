@@ -100,9 +100,9 @@ void MakeMainWindowControls(void)
     LV_ADD_COLUMN(IoList, LV_IO_PIN,         pinWidth,     _("Pin on MCU"));
     LV_ADD_COLUMN(IoList, LV_IO_PORT,        portWidth,    _("MCU Port"));
     LV_ADD_COLUMN(IoList, LV_IO_PINNAME,     pinNameWidth, _("Pin Name"));
+    LV_ADD_COLUMN(IoList, LV_IO_RAM_ADDRESS, 75,           _("RAM addr"));
+    LV_ADD_COLUMN(IoList, LV_IO_SISE_OF_VAR, 60,           _("Size"));
     LV_ADD_COLUMN(IoList, LV_IO_MODBUS,      modbusWidth,  _("Modbus addr"));
-    LV_ADD_COLUMN(IoList, LV_IO_RAM_ADDRESS, 70,           _("RAM addr"));
-    LV_ADD_COLUMN(IoList, LV_IO_SISE_OF_VAR, 70,           _("Size of var"));
 
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
@@ -200,6 +200,10 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_PWL, t);
 
     t = canInsertOther ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SET_BIT     , t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_CLEAR_BIT   , t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_IF_BIT_SET  , t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_IF_BIT_CLEAR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_AND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OR , t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_XOR, t);
@@ -376,10 +380,10 @@ HMENU MakeMainWindowMenus(void)
         _("Insert OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
 
     PulseMenu = CreatePopupMenu();
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE,     _("TODO: Insert N PULSE"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_PULSER,     _("TODO: Insert PULSER"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_STEPPER,    _("TODO: Insert STEPPER"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("TODO: Insert N PULSE OFF"));
+    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE,     _("EDIT: Insert N PULSE"));
+    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_PULSER,     _("EDIT: Insert PULSER"));
+    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_STEPPER,    _("EDIT: Insert STEPPER"));
+    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("EDIT: Insert N PULSE OFF"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu,_("Pulse generators"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
@@ -400,7 +404,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTC,
         _("Insert CT&C (Count Circular)\tJ"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTR,
-        _("TODO: Insert CT&R (Count Circular Reversive)\tK"));
+        _("Insert CT&R (Count Circular Reversive)\tK"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RES,
         _("Insert R&ES (Counter/RTO Reset)\tE"));
 
@@ -432,6 +436,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert LES (Compare for Less Than)\t<"));
     AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_LEQ,
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_SET,    _("Insert Test If Bit Set"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR,  _("Insert Test If Bit Clear"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CmpMenu,_("Compare variable"));
 
 /*
@@ -462,21 +468,23 @@ HMENU MakeMainWindowMenus(void)
         _("Insert MUL (16-bit Integer Multiply)\t*"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_DIV,
         _("Insert DIV (16-bit Integer Divide)\tD"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD,_("TODO: Insert MOD (Integer Divide Remainder)"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG,_("TODO: Insert NEG (Integer Negate)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD,_("EDIT: Insert MOD (Integer Divide Remainder)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG,_("EDIT: Insert NEG (Integer Negate)"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SignedMenu,_("Signed variable operations"));
 
     BitwiseMenu = CreatePopupMenu();
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND,     _("TODO: Insert bitwise AND"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR ,     _("TODO: Insert bitwise OR     |"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_XOR,     _("TODO: Insert bitwise XOR  ^"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT,     _("TODO: Insert bitwise NOT  ~"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL,     _("TODO: Insert SHL << arithmetic,logic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR,     _("TODO: Insert SHR >> arithmetic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SR0,     _("TODO: Insert SR0 >> logic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL,     _("TODO: Insert ROL cyclic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR,     _("TODO: Insert ROR cyclic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP,    _("TODO: Insert SWAP"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND,     _("EDIT: Insert bitwise AND"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR ,     _("EDIT: Insert bitwise OR     |"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_XOR,     _("EDIT: Insert bitwise XOR  ^"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT,     _("EDIT: Insert bitwise NOT  ~"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL,     _("EDIT: Insert SHL << arithmetic,logic shift to the left"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR,     _("EDIT: Insert SHR >> arithmetic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SR0,     _("EDIT: Insert SR0 >> logic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL,     _("EDIT: Insert ROL cyclic shift to the left"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR,     _("EDIT: Insert ROR cyclic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP,    _("EDIT: Insert SWAP"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT,   _("EDIT: Insert Set Bit #"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("EDIT: Insert Clear Bit #"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu,_("Bitwise variable operations (Unsigned)"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
@@ -502,23 +510,21 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Make Persistent"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STRING,
         _("TODO: Insert Formatted String"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_UDRE,
-        _("TODO: Insert &UART UDRE"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
         _("TODO: Insert Set Software PWM Output (AVR136 Application Note)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWM_OFF,
-        _("TODO: Insert PWM OFF"));
+        _("EDIT: Insert PWM OFF"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("TODO: Insert QUAD ENCOD"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("EDIT: Insert QUAD ENCOD"));
     DisplayMenu = CreatePopupMenu();
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD,        _("Insert BIN2BCD"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN,        _("TODO: Insert BCD2BIN"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS,            _("Insert BUS tracer"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG,           _("DONE: Insert char to 7 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG,           _("TODO: Insert char to 9 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG,          _("TODO: Insert char to 14 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("TODO: Insert char to 16 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD,        _("EDIT: Insert BIN2BCD"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN,        _("EDIT: Insert BCD2BIN"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS,            _("EDIT: Insert BUS tracer"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG,           _("EDIT: Insert char to 7 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG,           _("EDIT: Insert char to 9 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG,          _("EDIT: Insert char to 14 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("EDIT: Insert char to 16 SEGMENT converter"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu,_("Displays"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);

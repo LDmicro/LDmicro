@@ -77,7 +77,7 @@ static char *AboutText[] = {
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
 "",
-"Release 3.5.4 experimental, built " __TIME__ " " __DATE__ ".",
+"Release 4.0.0 experimental, built " __TIME__ " " __DATE__ ".",
 "",
 NULL
 };
@@ -99,7 +99,7 @@ static char **Text[] = {
 #elif defined(LDLANG_RU)
     HelpTextRu,
 #else
-#   error "Bad language"
+    #error "Bad language"
 #endif
 
     // Let's always keep the about text in English.
