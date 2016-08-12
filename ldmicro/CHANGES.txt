@@ -125,6 +125,9 @@
     * Added: SAMPLE\swatch2.ld - Stopwatch2 with 7 segments LED displays.
       https://github.com/LDmicro/LDmicro/wiki/Stopwatch2-with-7-segments-LED-displays
 
+    * Added: SAMPLE\7Segments.ttf. Install 7Segments.ttf in Windows\Fonts
+      and view 7Segments.doc.
+
     * Added: SAMPLE\swatch1.ld - Stopwatch1 over UART.
       https://github.com/LDmicro/LDmicro/wiki/Stopwatch1-over-UART
 

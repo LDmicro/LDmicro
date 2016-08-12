@@ -586,6 +586,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SR0:
         case ELEM_ROL:
         case ELEM_ROR:
+        case ELEM_SET_BIT:
+        case ELEM_CLEAR_BIT:
         case ELEM_AND:
         case ELEM_OR :
         case ELEM_XOR:
@@ -609,7 +611,9 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_STRING:
-        case ELEM_FORMATTED_STRING:
+        case ELEM_FORMATTED_STRING: {
+            break;
+        }
         case ELEM_PERSIST:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
@@ -629,6 +633,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
+        case ELEM_IF_BIT_SET:
+        case ELEM_IF_BIT_CLEAR:
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
@@ -637,7 +643,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         default:
-            oops();
+            ooops("ELEM_0x%X", which);
     }
 }
 //-----------------------------------------------------------------------------
@@ -755,6 +761,8 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_SR0:
         case ELEM_ROL:
         case ELEM_ROR:
+        case ELEM_SET_BIT:
+        case ELEM_CLEAR_BIT:
         case ELEM_AND:
         case ELEM_OR :
         case ELEM_XOR:
@@ -794,6 +802,8 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
+        case ELEM_IF_BIT_SET:
+        case ELEM_IF_BIT_CLEAR:
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
@@ -1148,6 +1158,31 @@ math:
 
             case INT_COMMENT:
                 break;
+
+            #ifdef NEW_FEATURE
+            case INT_AllocKnownAddr:
+            case INT_AllocFwdAddr:
+            case INT_FwdAddrIsNow:
+            case INT_GotoRung:
+                break;
+
+            case INT_PRINT_STRING:
+                break;
+            #endif
+
+            case INT_WRITE_STRING: {
+                break;
+            }
+            #ifdef NEW_FEATURE
+            case INT_FLASH_INIT:
+                break;
+
+            case INT_FLASH_READ:{
+                break;
+
+            case INT_RAM_READ:{
+                break;
+            #endif
 
             default:
                 ooops("op=%d",a->op);
