@@ -315,8 +315,8 @@ HMENU MakeMainWindowMenus(void)
         _("Dup&licate Selected Rung\tCtrl+D"));
     AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG,
         _("Select Rung's\tShift+Up or Shift+Dn"));
-    AppendMenu(EditMenu, MF_STRING, MNU_CAT_RUNG,
-        _("Ca&t Rung's\tCtrl+X or Shift+Del"));
+    AppendMenu(EditMenu, MF_STRING, MNU_CUT_RUNG,
+        _("Cu&t Rung's\tCtrl+X or Shift+Del"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG,
         _("&Copy Rung's\tCtrl+C or Ctrl+Insert"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_ELEM,

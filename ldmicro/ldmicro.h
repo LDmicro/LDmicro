@@ -86,7 +86,7 @@ typedef signed long SDWORD;
 #define MNU_DELETE_RUNG         0x17
 
 #define MNU_SELECT_RUNG         0x1800
-#define MNU_CAT_RUNG            0x1801
+#define MNU_CUT_RUNG            0x1801
 #define MNU_COPY_RUNG_DOWN      0x1802
 #define MNU_COPY_RUNG           0x1803
 #define MNU_COPY_ELEM           0x1804
@@ -1052,7 +1052,7 @@ BOOL EepromFunctionUsed(void);
 void PushRungUp(void);
 void PushRungDown(void);
 void CopyRungDown(void);
-void CatRung(void);
+void CutRung(void);
 void CopyRung(void);
 void CopyElem(void);
 void PasteRung(int PasteTo);

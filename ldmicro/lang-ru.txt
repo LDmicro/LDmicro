@@ -163,7 +163,7 @@
 "Bad use of quotes: <%s>"
 "Не правильно использованы кавычки: <%s>"
 
-"Ca&t Rung's\tCtrl+X or Shift+Del"
+"Cu&t Rung's\tCtrl+X or Shift+Del"
 "&Вырезать Ступень(ни)\tCtrl+X or Shift+Del"
 
 "Can only assign pin number to input/output pins (Xname or Yname or Aname)."

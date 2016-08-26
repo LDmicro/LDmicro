@@ -1289,7 +1289,7 @@ void CopyRungDown(void)
 }
 
 //-----------------------------------------------------------------------------
-void CatRung(void)
+void CutRung(void)
 {
     int i;
 
