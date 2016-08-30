@@ -120,7 +120,7 @@ möchten, um ein größeres Programm anzupassen.  Für weitere Einzelheiten:
 Siehe die Kommentare in dem Beispiel-Interpreter.
 
 
-OPTIONEN DER BEFEHLSZEILEN 
+OPTIONEN DER BEFEHLSZEILEN
 ==========================
 
 ldmicro.exe läuft normalerweise ohne eine Befehlszeilen-Option.
@@ -519,7 +519,7 @@ Diese Anweisungen müssen ganz rechts im Netzwerk stehen.
 > VERGLEICHEN           [var ==]        [var >]        [1 >=]
                        -[ var2 ]-      -[ 1   ]-      -[ Ton]-
 
->                       [var /=]        [-4 <   ]      [1 <=]
+>                       [var !=]        [-4 <   ]      [1 <=]
                        -[ var2 ]-      -[ vartwo]-    -[ Cup]-
 
 Wenn der Eingang dieser Anweisung ‘unwahr’ ist, so ist der Ausgang
@@ -780,7 +780,7 @@ diese Anweisung verwenden. Die “Formatierte Zeichenfolge”- Anweisung
 ist viel einfacher in der Anwendung und fast sicher fähig, das zu tun,
 was Sie beabsichtigen.
 
- 
+
 > FORMATIERTE ZEICHENFOLGE ÜBER UART            var
                                         -{"Druck: \3\r\n"}-
 
@@ -944,7 +944,7 @@ folgt schreiben:
    ||                |       Yc        ||
    ||                +-------( )-------||
    ||                                  ||
- 
+
 Anstatt diesem:
 
    ||       Xa               Ya        ||

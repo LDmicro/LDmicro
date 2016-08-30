@@ -935,7 +935,7 @@ cmp:
 
         case MNU_DELETE_RUNG:
           //CHANGING_PROGRAM(DeleteSelectedRung());
-            CHANGING_PROGRAM(CatRung());
+            CHANGING_PROGRAM(CutRung());
             break;
 
         case MNU_SCROLL_DOWN:
@@ -984,8 +984,8 @@ cmp:
             break;
 
         }
-        case MNU_CAT_RUNG:
-            CHANGING_PROGRAM(CatRung());
+        case MNU_CUT_RUNG:
+            CHANGING_PROGRAM(CutRung());
             break;
 
         case MNU_COPY_RUNG:
@@ -1581,7 +1581,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case VK_DELETE:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                       //CHANGING_PROGRAM(DeleteSelectedRung());
-                        CHANGING_PROGRAM(CatRung());
+                        CHANGING_PROGRAM(CutRung());
                     } else {
                         CHANGING_PROGRAM(DeleteSelectedFromProgram());
                     }
@@ -1810,7 +1810,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 case 'X':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        CHANGING_PROGRAM(CatRung());
+                        CHANGING_PROGRAM(CutRung());
                     }
                     break;
 

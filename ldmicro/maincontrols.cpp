@@ -315,8 +315,8 @@ HMENU MakeMainWindowMenus(void)
         _("Dup&licate Selected Rung\tCtrl+D"));
     AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG,
         _("Select Rung's\tShift+Up or Shift+Dn"));
-    AppendMenu(EditMenu, MF_STRING, MNU_CAT_RUNG,
-        _("Ca&t Rung's\tCtrl+X or Shift+Del"));
+    AppendMenu(EditMenu, MF_STRING, MNU_CUT_RUNG,
+        _("Cu&t Rung's\tCtrl+X or Shift+Del"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG,
         _("&Copy Rung's\tCtrl+C or Ctrl+Insert"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_ELEM,
@@ -436,8 +436,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert LES (Compare for Less Than)\t<"));
     AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_LEQ,
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_SET,    _("Insert Test If Bit Set"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR,  _("Insert Test If Bit Clear"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_SET,    _("EDIT: Insert Test If Bit Set"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR,  _("EDIT: Insert Test If Bit Clear"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CmpMenu,_("Compare variable"));
 
 /*
