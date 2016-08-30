@@ -52,7 +52,6 @@ typedef signed long SDWORD;
 #define FONT_WIDTH   7
 #define FONT_HEIGHT 13
 
-
 //-----------------------------------------------
 // Constants for the GUI. We have drop-down menus, a listview for the I/Os,
 // etc.
@@ -1173,6 +1172,7 @@ void ShowHelpDialog(BOOL about);
 #define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
 
 #define dbps(EXP)   dbp( #EXP "='%s'", (EXP));
+#define dbpc(EXP)   dbp( #EXP "='%c'", (EXP));
 #define dbpd(EXP)   dbp( #EXP "=%d", (EXP));
 #define dbpld(EXP)  dbp( #EXP "=%Ld", (EXP));
 #define dbplld(EXP) dbp( #EXP "=%LLd", (EXP));
@@ -1436,7 +1436,7 @@ typedef struct PicAvrInstructionTag {
     DWORD       bankFuture;   // this bank wiil be selected in future opPic or now
     DWORD       PCLATH;       // this operation opPic will executed with this PCLATH which now or previously selected
     BOOL        label;
-    DWORD       address;      // original address before correcting the adresses in array of opPic operations
+//  DWORD       address;      // original address before correcting the adresses in array of opPic operations
     char        commentInt[MAX_COMMENT_LEN];
     char        commentAsm[MAX_COMMENT_LEN];
     char        arg1name[MAX_NAME_LEN];
@@ -1518,5 +1518,12 @@ void CompileInterpreted(char *outFile);
 void CompileXInterpreted(char *outFile);
 // netzer.cpp
 void CompileNetzer(char *outFile);
+
+typedef struct RungAddrTag {
+    DWORD   KnownAddr; // Addres to jump to the start of rung abowe the current in LD
+    DWORD   FwdAddr;   // Addres to jump to the start of rung below the current in LD
+} RungAddr;
+extern RungAddr AddrOfRungN[MAX_RUNGS];
+
 
 #endif

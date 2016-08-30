@@ -163,13 +163,13 @@ static PicAvrInstruction AvrProg[MAX_PROGRAM_LEN];
 static DWORD AvrProgWriteP;
 
 static int IntPcNow = -INT_MAX; //must be static
-
+/*
 typedef struct RungAddrTag {
     DWORD   KnownAddr; // Addres to jump to the start of rung abowe the current in LD
     DWORD   FwdAddr;   // Addres to jump to the start of rung below the current in LD
 } RungAddr;
 RungAddr AddrOfRungN[MAX_RUNGS];
-
+*/
 #define OP_XOR OP_EOR
 
 // For yet unresolved references in jumps

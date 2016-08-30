@@ -58,15 +58,20 @@ int VariableCount = 0;
 static DWORD    NextBitwiseAllocAddr;
 static int      NextBitwiseAllocBit;
 static int      MemOffset;
+static int      RamSection;
 
 //-----------------------------------------------------------------------------
 void PrintVariables(FILE *f)
 {
     fprintf(f, "\n");
-    fprintf(f, ";|Name          | SizeOfVar | addrl |\n");
+    fprintf(f, ";|Name                          | SizeOfVar | addr        |\n");
+
+    char str[100];
     int i;
     for(i = 0; i < VariableCount; i++) {
-        fprintf(f, ";%s \t %d \t 0x%04x = %d\n", Variables[i].name, Variables[i].SizeOfVar, Variables[i].addrl, Variables[i].addrl);
+        memset(str,0,sizeof(str));
+        memset(str,' ',20-strlen(Variables[i].name));
+        fprintf(f, ";|%s %s \t| %3d       | 0x%04x = %3d|\n", Variables[i].name, str, Variables[i].SizeOfVar, Variables[i].addrl, Variables[i].addrl);
     }
     fprintf(f, "\n");
 }
@@ -74,6 +79,7 @@ void PrintVariables(FILE *f)
 static void ClrInternalData(void)
 {
     MemOffset = 0;
+    RamSection = 0;
 //  VariableCount = 0;
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -98,18 +104,32 @@ void AllocStart(void)
 // Return the address of a previously unused octet of RAM on the target, or
 // signal an error if there is no more available.
 //-----------------------------------------------------------------------------
-DWORD AllocOctetRam(void)
+DWORD AllocOctetRam(int bytes) // The desired number of bytes.
 {
     if(!Prog.mcu)
         return 0;
-    if(MemOffset >= Prog.mcu->ram[0].len) {
-        Error(_("Out of memory; simplify program or choose "
+
+    if((MemOffset + bytes) >= Prog.mcu->ram[RamSection].len) {
+        RamSection++;
+        MemOffset = 0;
+    }
+
+    if((RamSection >= MAX_RAM_SECTIONS)
+    || ((MemOffset + bytes) >= Prog.mcu->ram[RamSection].len)) {
+        char str[1024];
+        sprintf(str,"%s %s", _("RAM:"), _("Out of memory; simplify program or choose "
             "microcontroller with more memory."));
+        Error(str);
         CompileError();
     }
 
-    MemOffset++;
-    return Prog.mcu->ram[0].start + MemOffset - 1;
+    MemOffset += bytes;
+    return Prog.mcu->ram[RamSection].start + MemOffset - bytes;
+}
+
+DWORD AllocOctetRam(void)
+{
+    return AllocOctetRam(1);
 }
 
 //-----------------------------------------------------------------------------
@@ -256,8 +276,9 @@ int byteNeeded(SDWORD i)
         return 2;
     else if((-0x800000<=i) && (i<=0x7FffFF))
         return 3;
-    else
+    else if((-0x80000000<=i) && (i<=0x7FffFFff))
         return 4; // not implamanted for LDmicro
+    else oops();
 }
 //-----------------------------------------------------------------------------
 int TestByteNeeded(int count, SDWORD *vals)
@@ -297,15 +318,15 @@ void MemForVariable(char *name, DWORD *addrl, DWORD *addrh)
             Variables[i].SizeOfVar = 1;
             Variables[i].Allocated = 0;
         } else {
-            Variables[i].SizeOfVar = 0;
+            Variables[i].SizeOfVar = 2;
             Variables[i].Allocated = 0;
         }
     }
     if(addrl) { // Allocate SRAM
 
         if(Variables[i].Allocated == 0) {
-            Variables[i].addrl = AllocOctetRam();
-            Variables[i].addrh = AllocOctetRam();
+            Variables[i].addrl = AllocOctetRam(2);
+            Variables[i].addrh = Variables[i].addrl + 1;
         }
         Variables[i].Allocated = 2;
     }
