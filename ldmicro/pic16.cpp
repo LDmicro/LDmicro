@@ -328,6 +328,7 @@ static int IsCoreRegister(DWORD reg)
     if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         switch(reg) {
             case REG_INDF  :
+            case REG_PCL   :
             case REG_STATUS:
             case REG_FSR   :
             case REG_PCLATH:
@@ -340,6 +341,7 @@ static int IsCoreRegister(DWORD reg)
     } else if(Prog.mcu->core == MidrangeCore14bit) {
         switch(reg) {
             case REG_INDF  :
+            case REG_PCL   :
             case REG_STATUS:
             case REG_FSR   :
             case REG_PCLATH:
@@ -455,7 +457,6 @@ static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD
           if(PicProgWriteP > 0)
             if(IsOperation(PicProg[PicProgWriteP-1].opPic) != OP_SKIP) {
               if(BankSelect(PicProg[arg1].bankFuture, PicProg[PicProgWriteP].bank)) {
-                  //LOG(501)
                }
               // and then GOTO or CALL
             } else {
@@ -466,7 +467,8 @@ static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD
             }
     }
 
-    if(IsOperation(op) >= OP_BANK) {
+    if((IsOperation(op) >= OP_BANK)
+    && (!IsCoreRegister(arg1))) {
        if(PicProgWriteP > 0)
        if(IsOperation(PicProg[PicProgWriteP-1].opPic) == OP_SKIP) {
           if(PicProg[PicProgWriteP-1].bank ^ PicProg[PicProgWriteP].bank) {
@@ -475,11 +477,9 @@ static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD
        }
        if(IS_FWD(PicProg[PicProgWriteP-1].bank)) {
            if(BankSelect(PicProg[PicProgWriteP].bank, PicProg[PicProgWriteP].bank ^ BankMask())) {
-               //LOG(502)
            }
        } else {
            if(BankSelect(arg1, PicProg[PicProgWriteP-1].bank)) {
-               //LOG(503)
            }
        }
        arg1 &= 0x7F;
@@ -596,6 +596,7 @@ static void FwdAddrIsNow(DWORD addr)
     BOOL seen = FALSE;
     DWORD i;
     for(i = 0; i < PicProgWriteP; i++) {
+      if(IsOperation(PicProg[i].opPic) == OP_PAGE) {
         if(PicProg[i].arg1 == addr) {
             #ifndef AUTO_PAGING
             // Insist that they be in the same page, but otherwise assume
@@ -626,6 +627,7 @@ static void FwdAddrIsNow(DWORD addr)
                 bank = FWD(0);
             PicProg[i].arg1 = (PicProgWriteP >> 8);
         }
+      }
     }
     if(!seen) {
          Error("FwdAddrIsNow not found!!! 0x%X", addr);
@@ -1674,6 +1676,71 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
     }
 }
 //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// Alloc RAM for single bit and vars
+//-----------------------------------------------------------------------------
+void AllocBitsVars()
+{
+    DWORD addr;
+    int   bit;
+
+    for(IntPc=0; IntPc < IntCodeLen; IntPc++) {
+        IntPcNow = IntPc;
+        IntOp *a = &IntCode[IntPc];
+        rungNow = a->rung;
+        switch(a->op) {
+            case INT_SET_BIT:
+                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                break;
+
+            case INT_CLEAR_BIT:
+                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                break;
+
+            case INT_COPY_BIT_TO_BIT:
+                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                MemForSingleBit(a->name2, FALSE, &addr, &bit);
+                break;
+
+            case INT_IF_BIT_SET:
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
+                break;
+
+            case INT_IF_BIT_CLEAR:
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
+                break;
+
+            case INT_UART_SEND_BUSY:
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
+                break;
+
+            case INT_UART_SEND:
+                MemForSingleBit(a->name2, TRUE, &addr, &bit);
+                break;
+
+            case INT_UART_RECV_AVAIL:
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
+                break;
+
+            case INT_UART_RECV:
+                MemForSingleBit(a->name2, TRUE, &addr, &bit);
+                break;
+
+            case INT_SET_PWM:
+                char storeName[MAX_NAME_LEN];
+                GenSymOneShot(storeName, "ONE_SHOT_RISING", "pwm_init");
+                MemForSingleBit(storeName, FALSE, &addr, &bit);
+                break;
+
+            case INT_EEPROM_BUSY_CHECK:
+                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                break;
+
+            default:
+                break;
+        }
+    }
+}
 
 //-----------------------------------------------------------------------------
 // Compile the intermediate code to PIC16 native code.
@@ -1737,16 +1804,16 @@ static void CompileFromIntermediate(BOOL topLevel)
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 MemForVariable(a->name1, &addr);
-                sprintf(comment, "%s=%s==0x%X", a->name1, a->name2, a->literal); //name2 is setted in ELEM_MOVE intcode.pp
+                sprintf(comment, "%s=%d==0x%X", a->name1, a->literal, a->literal);
                 sov = SizeOfVar(a->name1);
                 if(sov >= 1) {
                   WriteRegister(addr, BYTE(a->literal & 0xff), comment);
                   if(sov >= 2) {
-                    WriteRegister(addr+1, BYTE((a->literal >> 8) & 0xff));
+                    WriteRegister(addr+1, BYTE((a->literal >> 8) & 0xff), comment);
                     if(sov >= 3) {
-                      WriteRegister(addr+2, BYTE((a->literal >> 16) & 0xff));
+                      WriteRegister(addr+2, BYTE((a->literal >> 16) & 0xff), comment);
                       if(sov == 4) {
-                        WriteRegister(addr+3, BYTE((a->literal >> 24) & 0xff));
+                        WriteRegister(addr+3, BYTE((a->literal >> 24) & 0xff), comment);
                       } else if(sov > 4) oops();
                     }
                   }
@@ -1760,13 +1827,13 @@ static void CompileFromIntermediate(BOOL topLevel)
                   Instruction(OP_INCF, addr, DEST_F, a->name1);
                   if(sov >= 2) {
                     IfBitSet(REG_STATUS, STATUS_Z);
-                    Instruction(OP_INCF, addr+1, DEST_F);
+                    Instruction(OP_INCF, addr+1, DEST_F, a->name1);
                     if(sov >= 3) {
                       IfBitSet(REG_STATUS, STATUS_Z);
-                      Instruction(OP_INCF, addr+2, DEST_F);
+                      Instruction(OP_INCF, addr+2, DEST_F, a->name1);
                       if(sov == 4) {
                         IfBitSet(REG_STATUS, STATUS_Z);
-                        Instruction(OP_INCF, addr+3, DEST_F);
+                        Instruction(OP_INCF, addr+3, DEST_F, a->name1);
                       } else if(sov > 4) oops();
                     }
                   }
@@ -3413,6 +3480,9 @@ void CompilePic16(char *outFile)
     WipeMemory();
 
     AllocStart();
+
+    AllocBitsVars();
+
     Scratch0 = AllocOctetRam();
     Scratch1 = AllocOctetRam();
     Scratch2 = AllocOctetRam();
@@ -3678,16 +3748,16 @@ void CompilePic16(char *outFile)
     Instruction(OP_GOTO, PicProgWriteP); // for label
     MemCheckForErrorsPostCompile();
     AddrCheckForErrorsPostCompile();
+    #ifdef AUTO_BANKING2
+    BankCorrection();
+    #endif
+    BankCheckForErrorsPostCompile();
     #ifdef AUTO_PAGING
     PageCorrection();
     AddrCheckForErrorsPostCompile2();
     #else
     PagePreSet();
     #endif
-    #ifdef AUTO_BANKING2
-    BankCorrection();
-    #endif
-    BankCheckForErrorsPostCompile();
 
     ProgWriteP = PicProgWriteP;
 

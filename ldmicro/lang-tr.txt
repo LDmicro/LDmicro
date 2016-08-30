@@ -757,8 +757,8 @@
 "TODO: &Paste Rung's\tCtrl+V or Shift+Insert"
 "TODO: &Paste Rung's\tCtrl+V or Shift+Insert"
 
-"TODO: Ca&t Rung's\tCtrl+X or Shift+Del"
-"TODO: Ca&t Rung's\tCtrl+X or Shift+Del"
+"TODO: Cu&t Rung's\tCtrl+X or Shift+Del"
+"TODO: Cu&t Rung's\tCtrl+X or Shift+Del"
 
 "TODO: Call flash.bat\tF6"
 "TODO: Call flash.bat\tF6"

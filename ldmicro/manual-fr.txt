@@ -31,11 +31,11 @@ Contacts (ou LADDER). Un programme simple est représenté comme ceci :
    ||                                                                    ||
    ||                                                                    ||
 
-(TON est une tempo travail; TOF est une tempo repos. les commandes --] [-- 
-représentent des Entrées, qui peuvent être des contacts de relais. Les 
-commandes --( )-- sont des Sorties, qui peuvent représenter des bobines de 
-relais. Beaucoup de références de programmes de langage à contacts (LADDER) 
-existent sur Internet et sont à quelques détails près, identiques à 
+(TON est une tempo travail; TOF est une tempo repos. les commandes --] [--
+représentent des Entrées, qui peuvent être des contacts de relais. Les
+commandes --( )-- sont des Sorties, qui peuvent représenter des bobines de
+relais. Beaucoup de références de programmes de langage à contacts (LADDER)
+existent sur Internet et sont à quelques détails près, identiques à
 l'implémentation représentée ci-dessus.
 
 Un certain nombre de différences apparaissent entre les programmes en
@@ -98,7 +98,7 @@ contact et de la structure des logiciels pour automates programmables.
 Cycle d'exécution : Lecture des Entrées -> Calculs -> Ecriture des Sorties
 
 
-CIBLES ADDITIONNELLES 
+CIBLES ADDITIONNELLES
 =====================
 
 Il est aussi possible de générer du code ANSI C . Vous pouvez utiliser
@@ -166,7 +166,7 @@ s'agit par exemple :
     * Rnom  -- `Relais interne': un bit en mémoire
     * Tnom  -- Temporisation; Tempo travail, tempo repos, ou totalisatrice
     * Cnom  -- Compteur, Compteur ou décompteur
-    * Anom  -- Un entier lu sur un comvertisseur A/D 
+    * Anom  -- Un entier lu sur un comvertisseur A/D
     * nom   -- Variable générique (Entier : Integer)
 
 Choisir le reste du nom pour décrire l'utilisation de ce que fait cet
@@ -274,7 +274,7 @@ bits sont inclus dans le fichier HEX, et la majorité des logiciels de
 programmation les valident automatiquement, pour les processeurs AVR ,
 vous devez le faire manuellement.
 
-REFERENCE DES INSTRUCTIONS 
+REFERENCE DES INSTRUCTIONS
 ==========================
 
 > CONTACT, NORMALLEMENT OUVERT  Xnom            Rnom          Ynom
@@ -287,7 +287,7 @@ REFERENCE DES INSTRUCTIONS
     Cette instruction peut vérifier l'état d'une broche d'entrée, d'une
     broche de sortie ou d'un relais interne
 
- 
+
 > CONTACT, NORMALLEMENT FERME    Xnom            Rnom          Ynom
                              ----]/[----     ----]/[----    ----]/[----
 
@@ -301,21 +301,21 @@ REFERENCE DES INSTRUCTIONS
 > BOBINE, NORMALE                Rnom           Ynom
                              ----( )----     ----( )----
 
-    Si le signal arrivant à cette instruction est faux, alors le relais 
+    Si le signal arrivant à cette instruction est faux, alors le relais
     interne ou la broche de sortie est faux (mise à zéro). Si le signal
     arrivant à cette instruction est vrai(1), alors le relais interne ou
     la broche de sortie est validée (mise à 1). Il n'est pas important
     d'affecter une variable à une bobine.
     Cette instruction est placée le plus à droite dans une séquence.
-    
+
 
 > BOBINE, INVERSE                Rnom         Ynom
                              ----(/)----     ----(/)----
 
-    Si le signal arrivant à cette instruction est vrai, alors le relais 
+    Si le signal arrivant à cette instruction est vrai, alors le relais
     interne ou la broche de sortie est faux (mise à zéro). Si le signal
     arrivant à cette instruction est faux(0), alors le relais interne ou
-    la broche de sortie est validée (mise à 1). Il n'est pas important 
+    la broche de sortie est validée (mise à 1). Il n'est pas important
     d'affecter une variable à une bobine.
     Cette instruction est placée le plus à droite dans une séquence.
 
@@ -335,15 +335,15 @@ REFERENCE DES INSTRUCTIONS
 > BOBINE, REMISE A ZERO          Rnom           Ynom
                              ----(R)----     ----(R)----
 
-    Si le signal arrivant à cette instruction est vrai, alors le relais 
-    interne ou la sortie est mise à zéro (0), si elle était déjà à 0, 
-    il n'y a aucun changement, cette instruction change l'état d'une 
-    sortie uniquement si elle était à 1, cette instruction fonctionne en 
+    Si le signal arrivant à cette instruction est vrai, alors le relais
+    interne ou la sortie est mise à zéro (0), si elle était déjà à 0,
+    il n'y a aucun changement, cette instruction change l'état d'une
+    sortie uniquement si elle était à 1, cette instruction fonctionne en
     combinaison avec l'instruction ci-dessus Bobine à ACCROCHAGE.
     Cette instruction est placée le plus à droite dans une séquence.
 
 
-> TEMPORISATION TRAVAIL         Tdon 
+> TEMPORISATION TRAVAIL         Tdon
                            -[TON 1.000 s]-
 
     Quand la signal arrivant à cette instruction passe de faux à vrai
@@ -361,7 +361,7 @@ REFERENCE DES INSTRUCTIONS
     instruction MOVE.
 
 
-> TEMPORISATION REPOS           Tdoff 
+> TEMPORISATION REPOS           Tdoff
                            -[TOF 1.000 s]-
 
     Quand le signal qui arrive à l'instruction passe de l'état vrai
@@ -380,7 +380,7 @@ REFERENCE DES INSTRUCTIONS
     instruction MOVE.
 
 
-> TEMPORISATION TOTALISATRICE           Trto  
+> TEMPORISATION TOTALISATRICE           Trto
                                    -[RTO 1.000 s]-
 
     Cette instruction prend en compte le temps que l'entrée a été à l'état
@@ -438,8 +438,8 @@ REFERENCE DES INSTRUCTIONS
 > COURT CIRCUIT (SHUNT), CIRCUIT OUVERT
                            ----+----+----      ----+     +----
 
-    Une instruction shunt donne en sortie une condition qui est toujours 
-    égale à la condition d'entrée. Une instruction Circuit Ouvert donne 
+    Une instruction shunt donne en sortie une condition qui est toujours
+    égale à la condition d'entrée. Une instruction Circuit Ouvert donne
     toujours une valeur fausse en sortie.
     Ces instructions sont en général utilisées en phase de test.
 
@@ -494,7 +494,7 @@ REFERENCE DES INSTRUCTIONS
 > COMPARER              [var ==]        [var >]        [1 >=]
                        -[ var2 ]-      -[ 1   ]-      -[ Ton]-
 
->                       [var /=]       [-4 <   ]       [1 <=]
+>                       [var !=]       [-4 <   ]       [1 <=]
                        -[ var2 ]-     -[ vartwo]-     -[ Cup]-
 
     Si l'entrée de cette instruction est fausse alors la sortie est
@@ -536,7 +536,7 @@ REFERENCE DES INSTRUCTIONS
     CTC est validée par la condition d'entrée associée à une instruction
     de front montant.
     Cette instruction doit être complétement à droite dans une séquence.
-    
+
 
 > REGISTRE A DECALAGE       {SHIFT REG   }
                            -{ reg0..3    }-
@@ -647,13 +647,13 @@ REFERENCE DES INSTRUCTIONS
     tension d'alimentation ) correspond à une lecture ADC de 1023. Si
     vous utilisez un circuit AVR, vous devez connecter Aref à VDD.
 
-    Vous pouvez utiliser les opérations arithmétiques pour mettre à 
-    l'échelle les lectures effectuées dans l'unité qui vous est la plus 
-    appropriée. Mais souvenez vous que tous les calculs sont faits en 
+    Vous pouvez utiliser les opérations arithmétiques pour mettre à
+    l'échelle les lectures effectuées dans l'unité qui vous est la plus
+    appropriée. Mais souvenez vous que tous les calculs sont faits en
     utilisant les entiers.
 
-    En général, toutes les broches ne sont pas utilisables pour les 
-    lecture de convertisseur A/D. Le logiciel ne vous permet pas 
+    En général, toutes les broches ne sont pas utilisables pour les
+    lecture de convertisseur A/D. Le logiciel ne vous permet pas
     d'affecter une broche non A/D pour une entrée convertisseur.
     Cette instruction doit être complétement à droite dans une séquence.
 
@@ -724,11 +724,11 @@ REFERENCE DES INSTRUCTIONS
 > EMMISION UART (SERIE)          var
                            --{UART SEND}--
 
-    LDmicro peut générer du code pour utiliser l'UART, existant dans 
-    certains microcontroleurs. Sur les AVR, avec de multiples UART, 
-    uniquement l'UART1 est utilisable (pas l'UART0). Configurer la 
-    vitesse en utilisant -> Paramètres -> Paramètres MCU. Toutes les 
-    vitesses de liaison ne sont pas utilisables avec tous les quartz 
+    LDmicro peut générer du code pour utiliser l'UART, existant dans
+    certains microcontroleurs. Sur les AVR, avec de multiples UART,
+    uniquement l'UART1 est utilisable (pas l'UART0). Configurer la
+    vitesse en utilisant -> Paramètres -> Paramètres MCU. Toutes les
+    vitesses de liaison ne sont pas utilisables avec tous les quartz
     de toutyes les fréquences. Ldmicro vous avertit dans ce cas.
 
     Si la condition d'entrée de cette instruction est fausse, rien ne
@@ -754,11 +754,11 @@ REFERENCE DES INSTRUCTIONS
 > CHAINE FORMATTEE SUR UART                var
                                    -{"Pression: \3\r\n"}-
 
-    LDmicro peut générer du code pour utiliser l'UART, existant dans 
-    certains microcontroleurs. Sur les AVR, avec de multiples UART, 
-    uniquement l'UART1 est utilisable (pas l'UART0). Configurer la 
-    vitesse en utilisant -> Paramètres -> Paramètres MCU. Toutes les 
-    vitesses de liaison ne sont pas utilisables avec tous les quartz 
+    LDmicro peut générer du code pour utiliser l'UART, existant dans
+    certains microcontroleurs. Sur les AVR, avec de multiples UART,
+    uniquement l'UART1 est utilisable (pas l'UART0). Configurer la
+    vitesse en utilisant -> Paramètres -> Paramètres MCU. Toutes les
+    vitesses de liaison ne sont pas utilisables avec tous les quartz
     de toutyes les fréquences. Ldmicro vous avertit dans ce cas.
 
     Quand la condition d'entrée de cette instruction passe de faux à vrai,
@@ -787,10 +787,10 @@ REFERENCE DES INSTRUCTIONS
     dans le texte qui est envoyée sur la ligne série. Dans ce cas,
     simplement ne pas inclure de séquence spéciale Escape.
 
-    Utiliser `\\' pour l'anti-slash. en addition à une séquence escape 
-    pour intervenir sue une variables entière, les caractères de 
+    Utiliser `\\' pour l'anti-slash. en addition à une séquence escape
+    pour intervenir sue une variables entière, les caractères de
     contrôles suivants sont utilisables :
-    
+
         * \r   -- retour en début de ligne
         * \n   -- nouvelle ligne
         * \f   -- saut de page
@@ -834,8 +834,8 @@ Ou uniquement faire simplement la division en une seule ligne :
 
 Mathématiquement c'est identique, la première donne y = 0 , c'est à dire
 une mauvais résultat, si nous prenons par exemple x = 3 , 1/x = 0.333 mais
-comme il s'agit d'un entier, la valeur pour Temp est de 0 et 0*1200 = 0 
-donc résultat faux.Dans le deuxième cas, il n'y a pas de résultat 
+comme il s'agit d'un entier, la valeur pour Temp est de 0 et 0*1200 = 0
+donc résultat faux.Dans le deuxième cas, il n'y a pas de résultat
 intermédiaire et le résultat est correct dans tous les cas.
 
 Si vous trouvez un problème avec vos calculs mathématiques, vérifiez les
@@ -843,9 +843,9 @@ résultats intermédiaires, si il n'y a pas de dépassement de capacités par
 rapports aux valeurs entières. (par exemple 32767 + 1 = -32768). Quand
 cela est possible essayer de choisir des valeurs entre -100 et 100.
 
-Vous pouvez utiliser un certain facteur de multiplication ou division pour 
+Vous pouvez utiliser un certain facteur de multiplication ou division pour
 mettre à l'echelle les variables lors de calculs par exemple : pour mettre
-mettre à l'echelle y = 1.8*x , il est possible de faire y =(9/5)*x 
+mettre à l'echelle y = 1.8*x , il est possible de faire y =(9/5)*x
 (9/5 = 1.8) et coder ainsi y = (9*x)/5 en faisant d'abord la multiplication
 
    ||         {MUL  temp  :=}          ||
@@ -854,8 +854,8 @@ mettre à l'echelle y = 1.8*x , il est possible de faire y =(9/5)*x
    ||           {DIV  y  :=}           ||
    ||-----------{ temp / 5 }-----------||
 
-Ceci fonctionne tant que  x < (32767 / 9), or x < 3640. Pour les grandes 
-valeurs de x,la variable `temp' va se mettre en dépassement. Ceci est 
+Ceci fonctionne tant que  x < (32767 / 9), or x < 3640. Pour les grandes
+valeurs de x,la variable `temp' va se mettre en dépassement. Ceci est
 similaire vers la limite basse de x.
 
 

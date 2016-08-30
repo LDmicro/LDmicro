@@ -381,7 +381,7 @@ KOMUTLAR ve ELEMANLAR
 > KARŞILAŞTIRMA         [var ==]        [var >]        [1 >=]
                        -[ var2 ]-      -[ 1   ]-      -[ Ton]-
 
->                       [var /=]       [-4 <   ]       [1 <=]
+>                       [var !=]       [-4 <   ]       [1 <=]
                        -[ var2 ]-     -[ vartwo]-     -[ Cup]-
 
     Değişik karşılaştırma komutları vardır. Bu komutların girişi doğru (1)

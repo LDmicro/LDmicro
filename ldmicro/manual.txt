@@ -197,6 +197,7 @@ LDmicro used the C prefixes:
 0x__ or 0X__ for hexadecimal numbers with 1234567890ABCDEF digits
 0o__ or 0O__ or 0__ octal numbers with 01234567 digits
 0b__ or 0B__ for binary numbers with 01 digits.
+Hexadecimals, binary notation is more comfortable for bitwise oparetions.
 
 At the bottom of the screen you will see a list of all the objects in
 the program. This list is automatically generated from the program;
@@ -485,7 +486,7 @@ INSTRUCTIONS REFERENCE
 > ARITHMETIC OPERATION       {ADD  kay  :=}       {SUB  Ccnt :=}
                             -{ 'a' + 10   }-     -{ Ccnt - 10  }-
 
->                            {MUL  dest :=}       {DIV  dv :=  }
+                             {MUL  dest :=}       {DIV    dv :=}
                             -{ var * -990 }-     -{ dv / -10000}-
 
     When the input to this instruction is true, it sets the given
@@ -497,14 +498,82 @@ INSTRUCTIONS REFERENCE
     the destination variable is also one of the operands) then you
     probably don't want that; typically you would use a one-shot so that
     it is evaluated only on the rising or falling edge of the input
-    condition. Divide truncates; 8 / 3 = 2. This instruction must be
+    condition. Divide truncates; 7 / 3 = 2. This instruction must be
     the rightmost instruction in its rung.
+
+  MODULO                   {MOD     dest:=}
+                          -{src     %    2}-
+
+    Remainder of the division 7 % 3 = 1
+    https://en.wikipedia.org/wiki/Modulo_operation
+
+  NEGATIVE                 {NEG     dest:=}
+                          -{         - src}-
+
+    Negative -{NEG a:= -a}- is the optimized equivalent to -{SUB a:= 0 - a}-
+
+> BITWISE OPERATION          {AND  var1 :=}       {OR   Ccnt :=}
+                            -{var2 & var3 }-     -{ Ccnt | 0o07}-
+
+                             {XOR  dest :=}       {NOT  dv :=  }
+                            -{ var ^ 0xAA }-     -{ ~0b11001100}-
+
+    When the input to this instruction is true, it sets the given
+    destination variable equal to the given expression. The operands
+    can be either variables (including timer and counter variables)
+    or constants. Remember that the result is evaluated every cycle
+    when the input condition true.
+    Please read http://en.wikipedia.org/wiki/Bitwise_operation
+
+
+> ARITHMETIC SHIFT: SHL, SHR.
+    https://en.wikipedia.org/wiki/Arithmetic_shift
+
+> LOGICAL SHIFT TO RIGHT SR0.
+    https://en.wikipedia.org/wiki/Logical_shift
+    Logical shift to left is equivalent to SHL arithmetic shift to left.
+
+> CIRCULAR SHIFT: ROL, ROR.
+    https://en.wikipedia.org/wiki/Circular_shift
+
+                              {SHL  var1 :=}       {SHR   cnt :=}
+                             -{var2 << 2   }-     -{  cnt >>  1 }-
+
+         {SR0  dest :=}       {ROL  dest :=}       {ROR    dv :=}
+        -{var  sr0  3 }-     -{ var rol 4  }-     -{var ror 4   }-
+
+    When the input to this instruction is true, it sets the given
+    destination variable equal to the given expression. The operands
+    can be either variables (including timer and counter variables)
+    or constants. Remember that the result is evaluated every cycle
+    when the input condition true.
+
+
+> OPERATIONS WITH ONE BIT   {           var}       {           var}
+                           -{SetBit     bit}-     -{ClrBit     bit}-
+
+    -{SetBit var, bit}- In variable 'var' set bit number 'bit'.
+    -{ClrBit var, bit}- In variable 'var' clear bit number 'bit'.
+
+    'Bit' means number of bit, not bit mask. For example,
+    to set bit number 4 in variable 'var'
+                      v
+     Bit numbers:  76543210
+     'var'      :  xxx1xxxx
+                      ^
+    you must write    ^
+         {          var}               {             var}
+        -{SetBit      4}-        not  -{SetBit      0x10}-
+
+    and it is equivalent to
+         {OR     var :=}
+        -{   var | 0x10}-
 
 
 > COMPARE               [var ==]        [var >]        [1 >=]
                        -[ var2 ]-      -[ 1   ]-      -[ Ton]-
 
->                       [var /=]       [-4 <   ]       [1 <=]
+                        [var !=]       [-4 <   ]       [1 <=]
                        -[ var2 ]-     -[ vartwo]-     -[ Cup]-
 
     If the input to this instruction is false then the output is false. If
@@ -513,6 +582,19 @@ INSTRUCTIONS REFERENCE
     is greater than, is greater than or equal to, does not equal,
     is less than, is less than or equal to) a variable to a variable,
     or to compare a variable to a 16-bit signed constant.
+
+
+> TEST STATE OF ONE BIT     [           var]       [           var]
+                           -[IfBitSet   bit]-     -[IfBitClr   bit]-
+
+    If the input to this instruction is false then the output is false. If
+    the input is true then the output is true if and only if the given
+    condition is true. This instruction can be used to check the state only
+    one bit of the variable.
+    'Bit' means number of bit, not bit mask.
+
+    Operation -{IfBitSet var, 0}- is equivalent condition 'If var is odd'.
+    Operation -{IfBitClr var, 0}- is equivalent condition 'If var is an even'.
 
 
 > COUNTER                      Cname          Cname
