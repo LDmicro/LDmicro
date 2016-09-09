@@ -1592,6 +1592,7 @@ void ShowUartSimulationWindow(void)
     PrevTextProc = SetWindowLongPtr(UartSimulationTextControl,
         GWLP_WNDPROC, (LONG_PTR)UartSimulationTextProc);
 
+    strcpy(buf, "");
     SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 
