@@ -921,9 +921,6 @@ static void SimulateIntCode(void)
                 SetSingleBit(a->name1, SingleBitOn(a->name2));
                 break;
 
-            case INT_COPY_VAR_BIT_TO_VAR_BIT:
-                break;
-
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(GetSimulationVariable(a->name1) !=
                     a->literal && a->name1[0] != '$')
@@ -1027,8 +1024,6 @@ static void SimulateIntCode(void)
                 case INT_SET_VARIABLE_MULTIPLY:
                     v = GetSimulationVariable(a->name2) *
                         GetSimulationVariable(a->name3);
-                    goto math;
-                case INT_SET_VARIABLE_MOD:
                     goto math;
                 case INT_SET_VARIABLE_DIVIDE:
                     if(GetSimulationVariable(a->name3) != 0) {

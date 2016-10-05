@@ -133,9 +133,6 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2);
                 break;
 
-            case INT_COPY_VAR_BIT_TO_VAR_BIT:
-                break;
-
             case INT_SET_VARIABLE_TO_LITERAL:
                 fprintf(f, "let var '%s' := %d", IntCode[i].name1,
                     IntCode[i].literal);
@@ -203,9 +200,6 @@ void IntDumpListing(char *outFile)
             case INT_SET_VARIABLE_DIVIDE:
                 fprintf(f, "let var '%s' := '%s' / '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
-                break;
-
-            case INT_SET_VARIABLE_MOD:
                 break;
 
             case INT_INCREMENT_VARIABLE:
@@ -875,11 +869,13 @@ static void InitVarsCircuit(int which, void *elem, int *n)
         case ELEM_CTD: {
             if(IsNumber(l->d.counter.init)) {
                 int init = CheckMakeNumber(l->d.counter.init);
-                if(init != 0)
+                if(init != 0) {
                     if(n)
-                        *n++;
-                    else
+                        (*n)++; // counting the number of variables
+                    else {
                         Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, init);
+                    }
+                }
             }
             break;
         }
@@ -1262,11 +1258,12 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_CLEAR_BIT, storeName);
             Op(INT_END_IF);
 
-            if(IsNumber(l->d.counter.max))
+            if(IsNumber(l->d.counter.max)) {
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name,
                   CheckMakeNumber(l->d.counter.max));
-            else
+            } else {
               Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.max, l->d.counter.name);
+            }
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_ELSE);
                 Op(INT_SET_BIT, stateInOut);
@@ -1556,25 +1553,25 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch1");
               char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
 
-            if(which == ELEM_GRT) {
-                Op(INT_IF_VARIABLE_GRT_VARIABLE, op1, op2);
-                Op(INT_ELSE);
-            } else if(which == ELEM_GEQ) {
-                Op(INT_IF_VARIABLE_GRT_VARIABLE, op2, op1);
-            } else if(which == ELEM_LES) {
-                Op(INT_IF_VARIABLE_GRT_VARIABLE, op2, op1);
-                Op(INT_ELSE);
-            } else if(which == ELEM_LEQ) {
-                Op(INT_IF_VARIABLE_GRT_VARIABLE, op1, op2);
-            } else if(which == ELEM_EQU) {
-                Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
-                Op(INT_ELSE);
-            } else if(which == ELEM_NEQ) {
-                Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
-            } else oops();
+              if(which == ELEM_GRT) {
+                  Op(INT_IF_VARIABLE_GRT_VARIABLE, op1, op2);
+                  Op(INT_ELSE);
+              } else if(which == ELEM_GEQ) {
+                  Op(INT_IF_VARIABLE_GRT_VARIABLE, op2, op1);
+              } else if(which == ELEM_LES) {
+                  Op(INT_IF_VARIABLE_GRT_VARIABLE, op2, op1);
+                  Op(INT_ELSE);
+              } else if(which == ELEM_LEQ) {
+                  Op(INT_IF_VARIABLE_GRT_VARIABLE, op1, op2);
+              } else if(which == ELEM_EQU) {
+                  Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
+                  Op(INT_ELSE);
+              } else if(which == ELEM_NEQ) {
+                  Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
+              } else oops();
             }
-              Op(INT_CLEAR_BIT, stateInOut);
-            Op(INT_END_IF);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_END_IF);
            #ifdef NEW_FEATURE
 
            #endif
@@ -1711,7 +1708,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
                 CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, l->d.move.src,
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest,
                     CheckMakeNumber(l->d.move.src));
             } else {
                 Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);

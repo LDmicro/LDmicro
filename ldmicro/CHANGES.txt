@@ -1,6 +1,19 @@
+== Release 4.0.2 experimental
+
+    * Fixed:
+      LDmicro Forum - hex file error
+      http://cq.cx/ladder-forum.pl?action=viewthread&parent=5008
+      LDmicro Forum - 4.01 hex problem
+      http://cq.cx/ladder-forum.pl?action=viewthread&parent=5410
+
+      AUTO_BANKING and AUTO_PAGING version 3 for PIC's.
+
+     * New: It is possible to add PIC10Fxxx - PIC12Fxxx family microcontrollers in LDmicro.
+
 == Release 4.0.1 experimental
 
     * All banks of RAM can be used.
+      Added message about the amount of RAM used.
 
 == Release 4.0.0 experimental
 
@@ -336,6 +349,10 @@
     * Added: In 'MCU Configurations' dialog added YPlcCycleDuty pin.
       YPlcCycleDuty pin set to 1 at begin and to 0 at end of PLC cycle.
       You can measure frequency(it must be 1/Tcycle) and duty cycle of PLC.
+      If your program is too big for the cycle time, then it will work slower
+      than you expected. Communication with the external environment may be
+      destroyed. Cycle time can be unstable.
+      You can monitor stability and duration of cycle time with YPlcCycleDuty pin.
       Unstable frequency or big duty cycle says about long LD programm
       and too short PLC cycle.
 

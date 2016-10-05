@@ -370,11 +370,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_BUS:
         case ELEM_MOVE:
             AppendIoAutoTypePortGeneral(l->d.move.dest);
-            /*
             if(CheckForNumber(l->d.move.src) == FALSE) {
-                AppendIoAutoTypePinGeneral(l->d.move.src); // not need ???
+                // Not need ???
+                // Need if you add only one MOV or get erroneously other src name
+                // then you can see l->d.move.src in IOlist 
+                AppendIoAutoTypePinGeneral(l->d.move.src);
             }
-            */
             break;
         {
         int n;
@@ -464,6 +465,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_CTC:
         case ELEM_CTR:
             AppendIo(l->d.counter.name, IO_TYPE_COUNTER);
+            if(CheckForNumber(l->d.counter.max) == FALSE) {
+                // Not need ??? See ELEM_MOV
+                AppendIoAutoTypePinGeneral(l->d.counter.max);
+            }
             break;
 
         case ELEM_READ_ADC:
@@ -1287,7 +1292,7 @@ void IoListProc(NMHDR *h)
                             if(addr)
                                 sprintf(i->item.pszText, "0x%x", addr);
                              else
-                                sprintf(i->item.pszText, "");
+                                sprintf(i->item.pszText, "Not a PORT!");
                         }
                     } else
                     if((type == IO_TYPE_GENERAL)
