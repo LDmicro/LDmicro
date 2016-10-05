@@ -921,9 +921,6 @@ static void SimulateIntCode(void)
                 SetSingleBit(a->name1, SingleBitOn(a->name2));
                 break;
 
-            case INT_COPY_VAR_BIT_TO_VAR_BIT:
-                break;
-
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(GetSimulationVariable(a->name1) !=
                     a->literal && a->name1[0] != '$')
@@ -1027,8 +1024,6 @@ static void SimulateIntCode(void)
                 case INT_SET_VARIABLE_MULTIPLY:
                     v = GetSimulationVariable(a->name2) *
                         GetSimulationVariable(a->name3);
-                    goto math;
-                case INT_SET_VARIABLE_MOD:
                     goto math;
                 case INT_SET_VARIABLE_DIVIDE:
                     if(GetSimulationVariable(a->name3) != 0) {
@@ -1592,6 +1587,7 @@ void ShowUartSimulationWindow(void)
     PrevTextProc = SetWindowLongPtr(UartSimulationTextControl,
         GWLP_WNDPROC, (LONG_PTR)UartSimulationTextProc);
 
+    strcpy(buf, "");
     SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 

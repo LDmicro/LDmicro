@@ -509,7 +509,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
         _("Insert Make Persistent"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STRING,
-        _("TODO: Insert Formatted String"));
+        _("EDIT: Insert Formatted String"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
         _("TODO: Insert Set Software PWM Output (AVR136 Application Note)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWM_OFF,
@@ -561,6 +561,10 @@ HMENU MakeMainWindowMenus(void)
         _("Microcontrollers: TODO and DONE"));
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega32 44-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega328 32-Pin packages");
+    AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F200/202/204/206 6-SOT");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F220/222 6-SOT");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"TODO: Microchip PIC12Fxxx");
     AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC16F1512 - PIC16F1527");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP");
@@ -938,13 +942,13 @@ void ToggleSimulationMode(BOOL doSimulateOneRung)
 
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_CHECKED);
 
-        if(ClearSimulationData()) {
-            SimulateOneCycle(TRUE); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
-        }
         // Recheck InSimulationMode, because there could have been a compile
         // error, which would have kicked us out of simulation mode.
         if(UartFunctionUsed() && InSimulationMode) {
             ShowUartSimulationWindow();
+        }
+        if(ClearSimulationData()) {
+            SimulateOneCycle(TRUE); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
         }
     } else {
         RealTimeSimulationRunning = FALSE;
