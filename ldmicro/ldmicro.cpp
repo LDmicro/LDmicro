@@ -304,7 +304,7 @@ static void notepad(char *name, char *ext)
 
     s[0] = '\0';
     SetExt(s, name, ext);
-    sprintf(r,"""%snotepad.bat %s""",ExePath,s);
+    sprintf(r,"%snotepad.bat %s",ExePath,s);
 
     isErr(Execute(r), r);
 }
@@ -317,7 +317,7 @@ static void postCompile(int ISA)
     strcpy(onlyName, ExtractFileName(CurrentSaveFile));
     SetExt(onlyName, onlyName, "");
 
-    sprintf(r,"""%spostCompile.bat %s %s %s""", ExePath, GetIsaName(ISA), CurrentLdPath, onlyName);
+    sprintf(r,"%spostCompile.bat %s %s %s", ExePath, GetIsaName(ISA), CurrentLdPath, onlyName);
 
     isErr(Execute(r), r);
 }
@@ -1030,6 +1030,10 @@ cmp:
         case MNU_COMPILE:
         case MNU_COMPILE_XINT:
             CompileProgram(FALSE, code);
+            break;
+
+        case MNU_PROCESSOR_NEW_PIC12:
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Soft-start-and-smooth-stop-of-LED-with-software-PWM",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_COMPILE_IHEXDONE:

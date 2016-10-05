@@ -182,6 +182,7 @@ typedef signed long SDWORD;
 #define MNU_SPEC_FUNCTION       0x51
 #define MNU_PROCESSOR_0         0xa0
 #define MNU_PROCESSOR_NEW       0xa001
+#define MNU_PROCESSOR_NEW_PIC12 0xa002
 
 #define MNU_SIMULATION_MODE     0x60
 #define MNU_START_SIMULATION    0x61
@@ -769,7 +770,7 @@ typedef enum CoreTag {
     BaselineCore12bit,
     ELANclones13bit,
     MidrangeCore14bit, // The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
-    EnhancedMidrangeCore14bit,
+    EnhancedMidrangeCore14bit, // PIC microcontrollers with the Enhanced Mid-Range core are denoted as PIC12F1XXX and PIC16F1XXX
     PIC18HighEndCore16bit,
     PIC24_dsPICcore16bit
 } Core;
@@ -1283,7 +1284,7 @@ typedef  struct VariablesListTag {
 //#define USE_LDS_STS
 // not complete; just what I need
 typedef enum AvrOpTag {
-    OP_VACANT,
+    OP_VACANT, // 0
     OP_NOP,
     OP_COMMENT,
     OP_COMMENTINT,
@@ -1391,7 +1392,7 @@ typedef enum AvrOpTag {
 
 // not complete; just what I need
 typedef enum Pic16OpTag {
-    OP_VACANT_,
+    OP_VACANT_, // 0
     OP_NOP_,
     OP_COMMENT_,
     OP_COMMENT_INT,
@@ -1401,7 +1402,7 @@ typedef enum Pic16OpTag {
     OP_BSF,
     OP_BCF,
     OP_BTFSC,
-    OP_BTFSS,
+    OP_BTFSS, // 10
     OP_GOTO,
     OP_CLRF,
     OP_CLRWDT,
@@ -1411,19 +1412,22 @@ typedef enum Pic16OpTag {
     OP_INCF,
     OP_INCFSZ,
     OP_IORLW,
-    OP_IORWF,
+    OP_IORWF, // 20
     OP_MOVLW,
     OP_MOVF,
     OP_MOVWF,
     OP_RETFIE,
-    OP_RETURN,
+    OP_RETURN, // 25
+    OP_RETLW,
     OP_RLF,
     OP_RRF,
     OP_SUBLW,
-    OP_SUBWF,
+    OP_SUBWF, // 30
     OP_XORWF,
     OP_MOVLB,
-    OP_MOVLP
+    OP_MOVLP,
+    OP_TRIS,
+    OP_OPTION // 35
 } PicOp;
 
 typedef struct PicAvrInstructionTag {
@@ -1432,8 +1436,7 @@ typedef struct PicAvrInstructionTag {
     DWORD       arg1;
     DWORD       arg2;
     DWORD       arg1orig;     //
-    DWORD       bank;         // this operation opPic executed inside this bank which now or previously selected
-    DWORD       bankFuture;   // this bank wiil be selected in future opPic or now
+    DWORD       BANK;         // this operation opPic will executed with this STATUS or BSR registers
     DWORD       PCLATH;       // this operation opPic will executed with this PCLATH which now or previously selected
     BOOL        label;
 //  DWORD       address;      // original address before correcting the adresses in array of opPic operations
@@ -1448,6 +1451,9 @@ typedef struct PicAvrInstructionTag {
 } PicAvrInstruction;
 
 // compilecommon.cpp
+int McuRAM();
+int UsedRAM();
+extern int RamSection;
 extern int VariableCount;
 void PrintVariables(FILE *f);
 DWORD isVarUsed(char *name);
@@ -1461,6 +1467,7 @@ int MemForVariable(char *name, DWORD *addrl);
 BYTE MuxForAdcVariable(char *name);
 int SingleBitAssigned(char *name);
 void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit);
+void MemForSingleBit(char *name, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile(void);
 int SetSizeOfVar(char *name, int sizeOfVar);
 int SizeOfVar(char *name);

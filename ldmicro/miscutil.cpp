@@ -720,7 +720,8 @@ int isname(char *name)
 
 size_t strlenalnum(const char *str)
 {
-    size_t r=strlen(str);
+    size_t r=0;
+    if(str) r=strlen(str);
     if(r) {
         while(*str) {
             if(isdigit(*str) || isalpha(*str))

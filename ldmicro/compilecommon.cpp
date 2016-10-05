@@ -58,20 +58,43 @@ int VariableCount = 0;
 static DWORD    NextBitwiseAllocAddr;
 static int      NextBitwiseAllocBit;
 static int      MemOffset;
-static int      RamSection;
+int             RamSection;
 
 //-----------------------------------------------------------------------------
 void PrintVariables(FILE *f)
 {
-    fprintf(f, "\n");
-    fprintf(f, ";|Name                          | SizeOfVar | addr        |\n");
-
-    char str[100];
     int i;
+    fprintf(f, "\n");
+    fprintf(f, ";|    Name                                                      | Size      | Address      | Bit # |\n");
+
+    fprintf(f, ";|Variables: %d\n", VariableCount);
     for(i = 0; i < VariableCount; i++) {
-        memset(str,0,sizeof(str));
-        memset(str,' ',20-strlen(Variables[i].name));
-        fprintf(f, ";|%s %s \t| %3d       | 0x%04x = %3d|\n", Variables[i].name, str, Variables[i].SizeOfVar, Variables[i].addrl, Variables[i].addrl);
+        if(Variables[i].addrl)
+            fprintf(f, ";|%3d %-50s\t| %3d byte  | 0x%04x = %3d |\n", i, Variables[i].name, Variables[i].SizeOfVar, Variables[i].addrl, Variables[i].addrl);
+        /*
+        else {
+            DWORD addr;
+            int   bit;
+            BOOL forRead;
+            forRead = FALSE;
+            switch(Variables[i].name[0]) {
+                case 'I':
+                case 'X':
+                    forRead = TRUE;
+                    break;
+                default:
+                    break;
+            }
+            MemForSingleBit(Variables[i].name, forRead, &addr, &bit);
+            fprintf(f, ";|%3d %-50s\t| %3d bit   | 0x%04x = %3d | %d     |\n", i, Variables[i].name, 1, addr, addr, bit);
+        }
+        */
+    }
+    fprintf(f, "\n");
+
+    fprintf(f, ";|Internal Relays: %d\n", InternalRelayCount);
+    for(i = 0; i < InternalRelayCount; i++) {
+            fprintf(f, ";|%3d %-50s\t| %3d bit   | 0x%04x = %3d | %d     |\n", i, InternalRelays[i].name, 1, InternalRelays[i].addr, InternalRelays[i].addr, InternalRelays[i].bit);
     }
     fprintf(f, "\n");
 }
@@ -98,6 +121,28 @@ void AllocStart(void)
     InternalRelayCount = 0;
     ClrInternalData();
     ClrSimulationData();
+}
+
+int McuRAM()
+{
+    int n = 0;
+    int i;
+    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
+        n += Prog.mcu->ram[i].len;
+    }
+    return n;
+}
+
+int UsedRAM()
+{
+    int n = 0;
+    int i;
+    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
+        if(i<RamSection)
+             n += Prog.mcu->ram[i].len;
+    }
+    n += MemOffset;
+    return n;
 }
 
 //-----------------------------------------------------------------------------
@@ -329,6 +374,8 @@ void MemForVariable(char *name, DWORD *addrl, DWORD *addrh)
             Variables[i].addrh = Variables[i].addrl + 1;
         }
         Variables[i].Allocated = 2;
+        if(!Variables[i].SizeOfVar)
+            Variables[i].SizeOfVar = 2;
     }
     if(addrl)
         *addrl = Variables[i].addrl;
@@ -532,6 +579,12 @@ static void MemForBitInternal(char *name, DWORD *addr, int *bit, BOOL writeTo)
 //-----------------------------------------------------------------------------
 void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit)
 {
+    if(!(name) || (name && strlen(name) == 0)) {
+        *addr = 0;
+        *bit  = 0;
+        return;
+    }
+
     switch(name[0]) {
         case 'I':
         case 'X':
@@ -549,9 +602,14 @@ void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit)
             break;
 
         default:
-            ooops(">%s<", name);
+            ooops("Unknown name >%s<", name);
             break;
     }
+}
+
+void MemForSingleBit(char *name, DWORD *addr, int *bit)
+{
+    MemForSingleBit(name, FALSE, addr, bit) ;
 }
 
 //-----------------------------------------------------------------------------

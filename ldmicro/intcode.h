@@ -42,10 +42,10 @@
 #define INT_SET_VARIABLE_SUBTRACT                8
 #define INT_SET_VARIABLE_MULTIPLY                9
 #define INT_SET_VARIABLE_DIVIDE                 10
+#ifdef NEW_FEATURE
 #define INT_SET_VARIABLE_MOD                    1001
 
 #define INT_COPY_VAR_BIT_TO_VAR_BIT             1002
-#ifdef NEW_FEATURE
 #define INT_FLASH_INIT                          1003
 #define INT_FLASH_READ                          1004
 #define INT_RAM_READ                            1005

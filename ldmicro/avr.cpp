@@ -190,6 +190,8 @@ static DWORD MultiplyAddress8;
 static BOOL MultiplyUsed8;
 static DWORD MultiplyAddress24;
 static BOOL MultiplyUsed24;
+static DWORD MultiplyAddress32;
+static BOOL MultiplyUsed32;
 // and also divide
 static DWORD DivideAddress;
 static BOOL DivideUsed;
@@ -250,10 +252,10 @@ static DWORD REG_OCR1AH = 0; // 0x4b
 static DWORD REG_OCR1AL = 0; // 0x4a
 static DWORD REG_TCCR1A = 0; // 0x4f
 static DWORD REG_TCCR1B = 0; // 0x4e
-#define          WGM13     4
-#define          WGM12     3
-#define          WGM11     1
-#define          WGM10     0
+#define          WGM13    4
+#define          WGM12    3
+#define          WGM11    1
+#define          WGM10    0
 
 // USART
 static DWORD REG_UBRRH  = 0;
@@ -481,7 +483,7 @@ static void _Comment(char *str, ...)
     va_start(f, str);
     vsprintf(buf, str, f);
     Instruction(OP_COMMENTINT, buf);
-}
+  }
 }
 
 #define Comment(str, ...) _Comment(str, __VA_ARGS__)
@@ -563,7 +565,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
        AvrInstr->l, AvrInstr->f, \
        a->name1, a->l, a->f)
 
-    switch(op) {
+  switch(op) {
     case OP_COMMENT:
         CHECK(arg1, 0); CHECK(arg2, 0);
         return 0;
@@ -1012,7 +1014,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
     default:
         oops();
         return 0;
-    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1512,6 +1514,11 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char
     Instruction(OP_ST_Z, r25, 0, name1);
 }
 
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+{
+    CopyBit(addrDest, bitDest, addrSrc, bitSrc, "", "");
+}
+
 //-----------------------------------------------------------------------------
 // Execute the next instruction only if the specified bit of the specified
 // memory location is clear (i.e. skip if set).
@@ -1523,9 +1530,9 @@ static void IfBitClear(DWORD addr, int bit, BYTE reg)
         Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
-    LoadZAddr(addr);
-    Instruction(OP_LD_Z, reg);
-    Instruction(OP_SBRS, reg, bit);
+        LoadZAddr(addr);
+        Instruction(OP_LD_Z, reg);
+        Instruction(OP_SBRS, reg, bit);
     } else if((addr - __SFR_OFFSET > 0x1F) && (USE_IO_REGISTERS == 1)) {
         #if USE_IO_REGISTERS == 1
         Instruction(OP_IN,   reg, addr - __SFR_OFFSET);
@@ -1553,9 +1560,9 @@ static void IfBitSet(DWORD addr, int bit, BYTE reg)
         Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
-    LoadZAddr(addr);
-    Instruction(OP_LD_Z, r25);
-    Instruction(OP_SBRC, r25, bit);
+        LoadZAddr(addr);
+        Instruction(OP_LD_Z, r25);
+        Instruction(OP_SBRC, r25, bit);
     } else if((addr - __SFR_OFFSET > 0x1F) && (USE_IO_REGISTERS == 1)) {
         #if USE_IO_REGISTERS == 1
         Instruction(OP_IN,   reg, addr - __SFR_OFFSET);
@@ -1645,14 +1652,14 @@ static void PulseBit(DWORD addr, int bit, int reg)
 //used ZL, r25 // Opcodes: 7
 {
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
-    LoadZAddr(addr);
-    Instruction(OP_LD_Z, r25);
+        LoadZAddr(addr);
+        Instruction(OP_LD_Z, r25);
         Instruction(OP_SBR, r25, (1 << bit));
         Instruction(OP_ST_Z, r25);
         nops();
         Instruction(OP_LD_Z, r25); // its more correct wiht volatile vars
-    Instruction(OP_CBR, r25, (1 << bit));
-    Instruction(OP_ST_Z, r25);
+        Instruction(OP_CBR, r25, (1 << bit));
+        Instruction(OP_ST_Z, r25);
     } else if((addr - __SFR_OFFSET > 0x1F) && (USE_IO_REGISTERS == 1)) {
         #if USE_IO_REGISTERS == 1
         Instruction(OP_IN,   reg, addr - __SFR_OFFSET);
@@ -1741,7 +1748,7 @@ BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,
     int *cycleTimeMin,
     int *cycleTimeMax)
 {
-    *cycleTimeMin = int(round(1e6 * PLC_CLOCK_MIN *    1 / Prog.mcuClock))/*+1?*/;
+    *cycleTimeMin = int(round(1e6 * PLC_CLOCK_MIN * 1 / Prog.mcuClock))/*+1?*/;
     //                              ^min_divider    ^min_prescaler
     int max_divider;
     if(Prog.cycleTimer == 0)
@@ -1842,53 +1849,53 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         &cycleTimeMax);
 
     if(Prog.cycleTimer == 0) {
-    tcnt0PlcCycle = 256 - divider/* + CorrectorPlcCycle*/; // TODO
-    if(tcnt0PlcCycle < 0) tcnt0PlcCycle = 0;
-    if(tcnt0PlcCycle > 255) tcnt0PlcCycle = 255;
+        tcnt0PlcCycle = 256 - divider/* + CorrectorPlcCycle*/; // TODO
+        if(tcnt0PlcCycle < 0) tcnt0PlcCycle = 0;
+        if(tcnt0PlcCycle > 255) tcnt0PlcCycle = 255;
 
-    //dbp("divider=%d EQU tcnt0PlcCycle=%d", divider, tcnt0PlcCycle);
+        //dbp("divider=%d EQU tcnt0PlcCycle=%d", divider, tcnt0PlcCycle);
 
-    //Instruction(OP_CLI);
-    Instruction(OP_LDI, r25, tcnt0PlcCycle);
-    WriteRegToIO(REG_TCNT0, r25); // set divider
+        //Instruction(OP_CLI);
+        Instruction(OP_LDI, r25, tcnt0PlcCycle);
+        WriteRegToIO(REG_TCNT0, r25); // set divider
 
-    WriteMemory(REG_TCCR0, cs);   // set prescaler
-    SetBit(REG_TIFR0, TOV0);       // Clear TOV0/ clear pending interrupts
-    //To clean a bit in the register TIFR need write 1 in the corresponding bit!
-    //no interupt for timer0 need..
-    //SetBit(REG_TIMSK, TOIE0);     // Enable Timer/Counter0 Overflow Interrupt
-    //Instruction(OP_SEI);
-    //
+        WriteMemory(REG_TCCR0, cs);   // set prescaler
+        SetBit(REG_TIFR0, TOV0);       // Clear TOV0/ clear pending interrupts
+        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+        //no interupt for timer0 need..
+        //SetBit(REG_TIMSK, TOIE0);     // Enable Timer/Counter0 Overflow Interrupt
+        //Instruction(OP_SEI);
+        //
     } else { // Timer1
-    WriteMemory(REG_TCCR1A, 0x00); // WGM11=0, WGM10=0
+        WriteMemory(REG_TCCR1A, 0x00); // WGM11=0, WGM10=0
 
-    WriteMemory(REG_TCCR1B, (1<<WGM12) | cs); // WGM13 set to 0, WGM12 set to 1
+        WriteMemory(REG_TCCR1B, (1<<WGM12) | cs); // WGM13 set to 0, WGM12 set to 1
 
-    int counter = divider - 1/* + CorrectorPlcCycle*/; // TODO
-    // the counter is less than the divisor at 1
-    if(counter < 0) counter = 0;
-    if(counter > 0xffff) counter = 0xffff;
-    //dbp("divider=%d EQU counter=%d", divider, counter);
+        int counter = divider - 1/* + CorrectorPlcCycle*/; // TODO
+        // the counter is less than the divisor at 1
+        if(counter < 0) counter = 0;
+        if(counter > 0xffff) counter = 0xffff;
+        //dbp("divider=%d EQU counter=%d", divider, counter);
 
-    // `the high byte must be written before the low byte
-    WriteMemory(REG_OCR1AH, (counter >> 8) & 0xff);
-    WriteMemory(REG_OCR1AL,  counter  & 0xff);
+        // `the high byte must be written before the low byte
+        WriteMemory(REG_OCR1AH, (counter >> 8) & 0xff);
+        WriteMemory(REG_OCR1AL,  counter  & 0xff);
 
-    /*
-    Bug .. no interupt for timer1 need..
+        /*
+        Bug .. no interupt for timer1 need..
 
-    // Okay, so many AVRs have a register called TIMSK, but the meaning of
-    // the bits in that register varies from device to device...
-    if(strcmp(Prog.mcu->mcuName, "Atmel AVR AT90USB647 64-TQFP")==0) {
-        WriteMemory(REG_TIMSK, (1 << 1));
-    }
-    else
-    if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega162 40-PDIP")==0) {
-        WriteMemory(REG_TIMSK, (1 << 6));
-    } else {
-        WriteMemory(REG_TIMSK, (1 << 4));
-    }
-    */
+        // Okay, so many AVRs have a register called TIMSK, but the meaning of
+        // the bits in that register varies from device to device...
+        if(strcmp(Prog.mcu->mcuName, "Atmel AVR AT90USB647 64-TQFP")==0) {
+            WriteMemory(REG_TIMSK, (1 << 1));
+        }
+        else
+        if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega162 40-PDIP")==0) {
+            WriteMemory(REG_TIMSK, (1 << 6));
+        } else {
+            WriteMemory(REG_TIMSK, (1 << 4));
+        }
+        */
     }
 }
 
@@ -2053,28 +2060,28 @@ static void WriteRuntime(void)
     BeginningOfCycleAddr = AvrProgWriteP;
 
     if(Prog.cycleTimer == 0) {
-    //IfBitClear(REG_TIFR0, TOV0);
-    LoadZAddr(REG_TIFR0);             //IfBitClear(REG_TIFR0, TOV0);
-    DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
-    Instruction(OP_LD_Z, r25);       //IfBitClear(REG_TIFR0, TOV0);
-    Instruction(OP_SBRS, r25, TOV0); //IfBitClear(REG_TIFR0, TOV0);
-    Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer0/Counter
+        //IfBitClear(REG_TIFR0, TOV0);
+        LoadZAddr(REG_TIFR0);             //IfBitClear(REG_TIFR0, TOV0);
+        DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
+        Instruction(OP_LD_Z, r25);       //IfBitClear(REG_TIFR0, TOV0);
+        Instruction(OP_SBRS, r25, TOV0); //IfBitClear(REG_TIFR0, TOV0);
+        Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer0/Counter
 
-    SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
-    //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+        SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
+        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
 
-    Instruction(OP_LDI, r25, tcnt0PlcCycle /*+1/*?*/); // reload Counter0
-    WriteRegToIO(REG_TCNT0, r25);
+        Instruction(OP_LDI, r25, tcnt0PlcCycle /*+1/*?*/); // reload Counter0
+        WriteRegToIO(REG_TCNT0, r25);
     } else { // Timer1
-    //IfBitClear(REG_TIFR1, OCF1A);
-    LoadZAddr(REG_TIFR1);             //IfBitClear(REG_TIFR1, OCF1A);
-    DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
-    Instruction(OP_LD_Z, r25);        //IfBitClear(REG_TIFR1, OCF1A);
-    Instruction(OP_SBRS, r25, OCF1A); //IfBitClear(REG_TIFR1, OCF1A);
-    Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer1/Counter
+        //IfBitClear(REG_TIFR1, OCF1A);
+        LoadZAddr(REG_TIFR1);             //IfBitClear(REG_TIFR1, OCF1A);
+        DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
+        Instruction(OP_LD_Z, r25);        //IfBitClear(REG_TIFR1, OCF1A);
+        Instruction(OP_SBRS, r25, OCF1A); //IfBitClear(REG_TIFR1, OCF1A);
+        Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer1/Counter
 
-    SetBit(REG_TIFR1, OCF1A);
-    //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+        SetBit(REG_TIFR1, OCF1A);
+        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
     }
 
     if(Prog.cycleDuty) {
@@ -2134,11 +2141,11 @@ static void CallSubroutine(DWORD addr)
 static void CopyLiteralToRegs(int reg, int literal, int sov)
 {
     if(sov >= 1)
-    Instruction(OP_LDI, reg, (literal & 0xff));
+      Instruction(OP_LDI, reg, (literal & 0xff));
     else
       oops();
     if(sov >= 2)
-    Instruction(OP_LDI, reg+1, (literal >> 8) & 0xff);
+      Instruction(OP_LDI, reg+1, (literal >> 8) & 0xff);
     if(sov >= 3)
       Instruction(OP_LDI, reg+2, (literal >> 16) & 0xff);
     if(sov >= 4)
@@ -2471,7 +2478,7 @@ static void CompileFromIntermediate(void)
                   }
                 }
                 if(a->op == INT_IF_VARIABLE_LES_LITERAL)
-                Instruction(OP_BRGE, notTrue, 0);
+                  Instruction(OP_BRGE, notTrue, 0);
                 #ifdef USE_CMP
                 else if(a->op == INT_IF_VARIABLE_GEQ_LITERAL)
                   Instruction(OP_BRLT, notTrue, 0);
@@ -2865,8 +2872,8 @@ static void CompileFromIntermediate(void)
                   CallSubroutine(DivideAddress8);
                   DivideUsed8 = TRUE;
                 } else if(sov == 2) {
-                CallSubroutine(DivideAddress);
-                DivideUsed = TRUE;
+                  CallSubroutine(DivideAddress);
+                  DivideUsed = TRUE;
                 } else if(sov == 3) {
                   CallSubroutine(DivideAddress24);
                   DivideUsed24 = TRUE;
@@ -3121,7 +3128,7 @@ static void CompileFromIntermediate(void)
                         WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0]=='/' ? (1 << COM20) : 0));
                     }
                 } else {
-                     //TODO: test registers and bits define's
+                    //TODO: test registers and bits define's
                     if(iop->COMnx1) {
                         OrMemory(iop->REG_TCCRnA, iop->WGMa | (1 << iop->COMnx1) | (a->name2[0]=='/' ? (1 << iop->COMnx0) : 0) | cs);
                     } else {
@@ -3986,8 +3993,8 @@ void CompileAvr(char *outFile)
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega168 ") ||
        strstr(Prog.mcu->mcuName, "Atmel AVR ATmega328 ")
     ){
-        REG_TCCR0  = 0x45;
-        REG_TCNT0  = 0x46;
+        REG_TCCR0   = 0x45;
+        REG_TCNT0   = 0x46;
 
         REG_OCR1AH  = 0x89;
         REG_OCR1AL  = 0x88;
@@ -4152,18 +4159,18 @@ void CompileAvr(char *outFile)
         REG_TCCR1B  = 0x4E;
 
         REG_TIMSK   = 0x57;
-        REG_TIFR1 = 0x56; // TIFR
-        REG_TIFR0 = 0x56; // TIFR
+        REG_TIFR1   = 0x56; // TIFR
+        REG_TIFR0   = 0x56; // TIFR
             OCF1A   = BIT4;
             TOV1    = BIT2;
             TOV0    = BIT0;
 
-//      REG_UBRRH = 0x98;
-        REG_UBRRL = 0x29; // UBRR
-        REG_UCSRB = 0x2a; // UCR
-        REG_UCSRA = 0x2b; // USR
-        REG_UDR   = 0x2c;
-//      REG_UCSRC = 0x9d;
+//      REG_UBRRH   = 0x98;
+        REG_UBRRL   = 0x29; // UBRR
+        REG_UCSRB   = 0x2a; // UCR
+        REG_UCSRA   = 0x2b; // USR
+        REG_UDR     = 0x2c;
+//      REG_UCSRC   = 0x9d;
     } else
     */
     if(strstr(Prog.mcu->mcuName, " ATmega161 ")
@@ -4217,12 +4224,12 @@ void CompileAvr(char *outFile)
             TOV1    = BIT2;
             TOV0    = BIT0;
 
-        REG_UCSRC = 0x40;
-        REG_UBRRH = 0x40;
-        REG_UBRRL = 0x29;
-        REG_UCSRB = 0x2a;
-        REG_UCSRA = 0x2b;
-        REG_UDR   = 0x2c;
+        REG_UCSRC   = 0x40;
+        REG_UBRRH   = 0x40;
+        REG_UBRRL   = 0x29;
+        REG_UCSRB   = 0x2a;
+        REG_UCSRA   = 0x2b;
+        REG_UDR     = 0x2c;
     } else
     if(strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega64 ") ||
        strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega128 ")
@@ -4348,7 +4355,14 @@ void CompileAvr(char *outFile)
         "\r\n\r\n"
         "Used %d/%d words of program flash (chip %d%% full)."),
          str, AvrProgWriteP, Prog.mcu->flashWords,
-            (100*AvrProgWriteP)/Prog.mcu->flashWords);
+         (100*AvrProgWriteP)/Prog.mcu->flashWords);
 
-    CompileSuccessfulMessage(str2);
+    char str3[MAX_PATH+500];
+    sprintf(str3, _("%s"
+        "\r\n"
+        "Used %d/%d byte of RAM (chip %d%% full)."),
+         str2, UsedRAM(), McuRAM(),
+         (100*UsedRAM())/McuRAM());
+
+    CompileSuccessfulMessage(str3);
 }
