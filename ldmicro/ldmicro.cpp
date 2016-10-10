@@ -1004,6 +1004,15 @@ cmp:
             CHANGING_PROGRAM(DeleteSelectedFromProgram());
             break;
 
+        case MNU_CUT_ELEMENT:
+            CHANGING_PROGRAM(CopyElem());
+            CHANGING_PROGRAM(DeleteSelectedFromProgram());
+            break;
+
+        case MNU_REPLACE_ELEMENT:
+            CHANGING_PROGRAM(ReplaceSelectedElement());
+            break;
+
         case MNU_MCU_SETTINGS:
             CHANGING_PROGRAM(ShowConfDialog());
             break;
@@ -1066,6 +1075,10 @@ cmp:
 
         case MNU_FORUM:
             ShellExecute(0,"open","http://cq.cx/ladder-forum.pl",NULL,NULL,SW_SHOWNORMAL);
+            break;
+
+        case MNU_CHANGES:
+            ShellExecute(0,"open","https://raw.githubusercontent.com/LDmicro/LDmicro/master/ldmicro/CHANGES.txt",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_EMAIL:
@@ -1675,11 +1688,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         CHANGING_PROGRAM(NegateSelected());
                     }
                     break;
-
+                /*
                 case 'A':
                     CHANGING_PROGRAM(MakeNormalSelected());
                     break;
-
+                */
                 case 'T':
                     CHANGING_PROGRAM(AddTimer(ELEM_RTO));
                     break;
@@ -1718,6 +1731,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case 'P':
+                    CHANGING_PROGRAM(AddSetPwm());
+                    break;
+
+                case 'A':
                     CHANGING_PROGRAM(AddReadAdc());
                     break;
 
