@@ -167,7 +167,6 @@ BOOL StaySameElem(int Which)
 BOOL CanChangeOutputElem(int Which)
 {
     if( Which == ELEM_COIL ||
-      //Which == ELEM_READ_ADC ||
 /*
         Which == ELEM_CTU ||
         Which == ELEM_CTD ||
@@ -612,7 +611,7 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_CONTACTS:
-            ShowContactsDialog(&(Selected->d.contacts.negated),
+            ShowContactsDialog(&(Selected->d.contacts.negated),&(Selected->d.contacts.set1),
                 Selected->d.contacts.name);
             break;
 
@@ -972,6 +971,10 @@ BOOL MoveCursorNear(int *gx, int *gy)
 //-----------------------------------------------------------------------------
 void NegateSelected(void)
 {
+    if(Selected->d.contacts.negated) {
+        MakeNormalSelected();
+        return;
+    }
     switch(SelectedWhich) {
         case ELEM_CONTACTS:
             Selected->d.contacts.negated = TRUE;
@@ -994,6 +997,10 @@ void NegateSelected(void)
 //-----------------------------------------------------------------------------
 void MakeNormalSelected(void)
 {
+    if(!Selected->d.contacts.negated) {
+        NegateSelected();
+        return;
+    }
     switch(SelectedWhich) {
         case ELEM_CONTACTS:
             Selected->d.contacts.negated = FALSE;

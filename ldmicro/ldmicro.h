@@ -82,6 +82,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_RUNG_BEFORE  0x14
 #define MNU_INSERT_RUNG_AFTER   0x15
 #define MNU_DELETE_ELEMENT      0x16
+#define MNU_CUT_ELEMENT         0x1601
 #define MNU_DELETE_RUNG         0x17
 
 #define MNU_SELECT_RUNG         0x1800
@@ -91,6 +92,8 @@ typedef signed long SDWORD;
 #define MNU_COPY_ELEM           0x1804
 #define MNU_PASTE_RUNG          0x1805
 #define MNU_PASTE_INTO_RUNG     0x1806
+
+#define MNU_REPLACE_ELEMENT     0x1807
 
 #define MNU_SCROLL_DOWN         0x1901
 #define MNU_SCROLL_UP           0x1902
@@ -213,6 +216,7 @@ typedef signed long SDWORD;
 #define MNU_WIKI                0x8102
 #define MNU_LAST_RELEASE        0x8103
 #define MNU_EMAIL               0x8104
+#define MNU_CHANGES             0x8105
 #define MNU_RELEASE             0x82
 
 #define MNU_COMPILE_XINT        0x83    // Extended interpreter
@@ -240,6 +244,7 @@ typedef signed long SDWORD;
 
 #define MAX_ELEMENTS_IN_SUBCKT  64
 
+#define ELEM_NULL               0x00
 #define ELEM_PLACEHOLDER        0x01
 #define ELEM_SERIES_SUBCKT      0x02
 #define ELEM_PARALLEL_SUBCKT    0x03
@@ -424,8 +429,9 @@ typedef struct ElemCommentTag {
 } ElemComment;
 
 typedef struct ElemContactsTag {
-    char    name[MAX_NAME_LEN];
+    char    name[MAX_NAME_LEN]; // All named "name[]" fields must be in first position in typedef structs!!!
     BOOL    negated;
+    BOOL    set1; // set HI input level before Simnlation mode
 } ElemContacts;
 
 typedef struct ElemCoilTag {
@@ -872,6 +878,11 @@ typedef struct McuIoInfoTag {
 
     McuInterruptPinInfo *interruptInfo;
     int                  interruptCount;
+
+    struct {
+        DWORD            start;
+        int              len;
+    }                rom[MAX_RAM_SECTIONS]; //EEPROM or HEI?
 } McuIoInfo;
 
 #define NUM_SUPPORTED_MCUS 29
@@ -1044,7 +1055,11 @@ BOOL CollapseUnnecessarySubckts(int which, void *any);
 void InsertRung(BOOL afterCursor);
 int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
-BOOL UartFunctionUsed(void);
+int CountWhich(int seek1, int seek2, int seek3, char *name);
+int CountWhich(int seek1, int seek2, char *name);
+int CountWhich(int seek1, char *name);
+int CountWhich(int seek1);
+int AdcFunctionUsed(void);
 int PwmFunctionUsed(void);
 BOOL QuadEncodFunctionUsed(void);
 BOOL NPulseFunctionUsed(void);
@@ -1057,7 +1072,9 @@ void CopyRung(void);
 void CopyElem(void);
 void PasteRung(int PasteTo);
 void NewProgram(void);
-ElemLeaf *AllocLeaf(void);
+//ElemLeaf *AllocLeaf(void);
+#define AllocLeaf() _AllocLeaf(__LINE__, __FILE__)
+ElemLeaf *_AllocLeaf(int l, char *f);
 ElemSubcktSeries *AllocSubcktSeries(void);
 ElemSubcktParallel *AllocSubcktParallel(void);
 void FreeCircuit(int which, void *any);
@@ -1068,6 +1085,7 @@ void UndoRemember(void);
 void UndoFlush(void);
 BOOL CanUndo(void);
 BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
+void RenameSet1(int which, char *name, char *new_name, BOOL set1);
 
 // loadsave.cpp
 BOOL LoadProjectFromFile(char *filename);
@@ -1089,7 +1107,7 @@ void ShowAnalogSliderPopup(char *name);
 // commentdialog.cpp
 void ShowCommentDialog(char *comment);
 // contactsdialog.cpp
-void ShowContactsDialog(BOOL *negated, char *name);
+void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name);
 // coildialog.cpp
 void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name);
 // simpledialog.cpp
@@ -1170,23 +1188,26 @@ void ShowHelpDialog(BOOL about);
     }
 #define dodbp
 #ifdef dodbp
-#define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
+  #define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
 
-#define dbps(EXP)   dbp( #EXP "='%s'", (EXP));
-#define dbpc(EXP)   dbp( #EXP "='%c'", (EXP));
-#define dbpd(EXP)   dbp( #EXP "=%d", (EXP));
-#define dbpld(EXP)  dbp( #EXP "=%Ld", (EXP));
-#define dbplld(EXP) dbp( #EXP "=%LLd", (EXP));
-#define dbpx(EXP)   dbp( #EXP "=0x%x", (EXP));
-#define dbph dbpx
-#define dbpf(EXP)   dbp( #EXP "=%f", (EXP));
+  #define dbp_(EXP)   dbp( #EXP );
+  #define dbps(EXP)   dbp( #EXP "='%s'", (EXP));
+  #define dbpc(EXP)   dbp( #EXP "='%c'", (EXP));
+  #define dbpd(EXP)   dbp( #EXP "=%d", (EXP));
+  #define dbpld(EXP)  dbp( #EXP "=%Ld", (EXP));
+  #define dbplld(EXP) dbp( #EXP "=%LLd", (EXP));
+
+  //#define dbpb(EXP)   dbp( #EXP "=0b%b", (EXP));
+  #define dbpx(EXP)   dbp( #EXP "=0x%X", (EXP));
+  #define dbph dbpx
+  #define dbpf(EXP)   dbp( #EXP "=%f", (EXP));
 #else
-#define WARN_IF(EXP)
+  #define WARN_IF(EXP)
 
-#define dbps(EXP)
-#define dbpd(EXP)
-#define dbpx(EXP)
-#define dbpf(EXP)
+  #define dbps(EXP)
+  #define dbpd(EXP)
+  #define dbpx(EXP)
+  #define dbpf(EXP)
 #endif
 
 void doexit(int status);
@@ -1217,6 +1238,7 @@ HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
 void MakeDialogBoxClass(void);
 void NiceFont(HWND h);
 void FixedFont(HWND h);
+void CompileSuccessfulMessage(char *str, unsigned int uType);
 void CompileSuccessfulMessage(char *str);
 extern BOOL RunningInBatchMode;
 extern BOOL RunningInTestMode;
@@ -1243,11 +1265,11 @@ void ClrSimulationData(void);
 void CheckVariableNames(void);
 void DescribeForIoList(char *name, int type, char *out);
 void SimulationToggleContact(char *name);
+BOOL GetSingleBit(char *name);
 void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
 void DestroyUartSimulationWindow(void);
 void ShowUartSimulationWindow(void);
-DWORD IsUsedVariable(char *name);
 extern BOOL InSimulationMode;
 //extern BOOL SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
@@ -1453,7 +1475,14 @@ typedef struct PicAvrInstructionTag {
 // compilecommon.cpp
 int McuRAM();
 int UsedRAM();
+int McuROM();
+int UsedROM();
+int McuPWM();
+int McuADC();
+int McuUART();
 extern int RamSection;
+extern int RomSection;
+extern DWORD EepromAddrFree;
 extern int VariableCount;
 void PrintVariables(FILE *f);
 DWORD isVarUsed(char *name);
@@ -1495,6 +1524,7 @@ void IntDumpListing(char *outFile);
 BOOL GenerateIntermediateCode(void);
 BOOL CheckEndOfRungElem(int which, void *elem);
 BOOL CheckLeafElem(int which, void *elem);
+BOOL UartFunctionUsed(void);
 SDWORD CheckMakeNumber(char *str);
 void WipeIntMemory(void);
 BOOL CheckForNumber(char *str);

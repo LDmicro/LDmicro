@@ -130,6 +130,9 @@ static void MakeControls(void)
 
 void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
 {
+    char nameSave[MAX_NAME_LEN];
+    strcpy(nameSave, name);
+
     CoilDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Coil"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 359, 115, NULL, NULL, Instance, NULL);
@@ -222,6 +225,21 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
             *negated = FALSE;
             *setOnly = FALSE;
             *resetOnly = TRUE;
+        }
+
+        if(strcmp(name, nameSave)) {
+          int n = CountWhich(ELEM_CONTACTS, ELEM_COIL, nameSave);
+          dbpd(n)
+          if(n >= 1) {
+            BOOL rename = FALSE;
+            char str[1000];
+            sprintf(str, _("Rename the ALL other %d coils/contacts named '%s' to '%s' ?"), n, nameSave, name);
+            rename = IDYES == MessageBox(MainWindow,
+                              str, "LDmicro",
+                              MB_YESNO | MB_ICONQUESTION);
+            if(rename)
+                RenameSet1(ELEM_COIL, nameSave, name, FALSE); // rename and reset
+          }
         }
     }
 

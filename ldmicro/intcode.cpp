@@ -80,7 +80,8 @@ static DWORD GenSymCountOneShot;
 static DWORD GenSymCountFormattedString;
 static DWORD GenSymCountStepper;
 
-static DWORD EepromAddrFree;
+DWORD EepromAddrFree;
+int   RomSection;
 
 //-----------------------------------------------------------------------------
 static void CheckConstantInRange(SDWORD v)
@@ -1198,7 +1199,6 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
 
             Op(INT_END_IF);
-
             break;
         }
         case ELEM_TOF: {

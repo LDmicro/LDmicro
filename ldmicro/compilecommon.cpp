@@ -41,7 +41,7 @@ static struct {
 } InternalRelays[MAX_IO];
 static int InternalRelayCount;
 /*
-VariablesList moved to ldmicro.h
+vvv VariablesList moved to ldmicro.h
 
 // Assignment of the `variables,' used for timers, counters, arithmetic, and
 // other more general things. Allocate 2 octets (16 bits) per.
@@ -50,6 +50,8 @@ static struct {
     DWORD   addrl;
     DWORD   addrh;
 } Variables[MAX_IO];
+
+^^^ VariablesList moved to ldmicro.h
 */
 VariablesList Variables[MAX_IO];
 int VariableCount = 0;
@@ -59,6 +61,101 @@ static DWORD    NextBitwiseAllocAddr;
 static int      NextBitwiseAllocBit;
 static int      MemOffset;
 int             RamSection;
+
+//-----------------------------------------------------------------------------
+int McuPWM()
+{
+    if(!Prog.mcu)
+        return 0;
+
+    int n = 0;
+    if(Prog.mcu->pwmCount) {
+        int i;
+        for(i = 0; i <= Prog.mcu->pwmCount; i++) {
+            if(Prog.mcu->pwmInfo[i].pin)
+                n++;
+        }
+    } else if(Prog.mcu->pwmNeedsPin) {
+        n = 1;
+    }
+    return n;
+}
+
+int McuADC()
+{
+    if(!Prog.mcu)
+        return 0;
+
+    return Prog.mcu->adcCount;
+}
+
+int McuUART()
+{
+    if(!Prog.mcu)
+        return 0;
+
+    int n = 0;
+    if(Prog.mcu->uartNeeds.rxPin && Prog.mcu->uartNeeds.txPin) {
+        n = 1;
+    }
+    return n;
+}
+
+int McuROM()
+{
+    return 1000000; // TODO
+
+    if(!Prog.mcu)
+        return 0;
+
+    int n = 0;
+    int i;
+    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
+        n += Prog.mcu->rom[i].len;
+    }
+    return n;
+}
+
+int UsedROM()
+{
+    if(!Prog.mcu)
+        return 0;
+
+    int n = 0;
+    int i;
+    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
+        if(i<RomSection)
+             n += Prog.mcu->ram[i].len;
+    }
+    return n+EepromAddrFree;
+}
+
+int McuRAM()
+{
+    if(!Prog.mcu)
+        return 0;
+
+    int n = 0;
+    int i;
+    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
+        n += Prog.mcu->ram[i].len;
+    }
+    return n;
+}
+
+int UsedRAM()
+{
+    if(!Prog.mcu)
+        return 0;
+
+    int n = 0;
+    int i;
+    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
+        if(i<RamSection)
+             n += Prog.mcu->ram[i].len;
+    }
+    return n+MemOffset;
+}
 
 //-----------------------------------------------------------------------------
 void PrintVariables(FILE *f)
@@ -121,28 +218,6 @@ void AllocStart(void)
     InternalRelayCount = 0;
     ClrInternalData();
     ClrSimulationData();
-}
-
-int McuRAM()
-{
-    int n = 0;
-    int i;
-    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
-        n += Prog.mcu->ram[i].len;
-    }
-    return n;
-}
-
-int UsedRAM()
-{
-    int n = 0;
-    int i;
-    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
-        if(i<RamSection)
-             n += Prog.mcu->ram[i].len;
-    }
-    n += MemOffset;
-    return n;
 }
 
 //-----------------------------------------------------------------------------
@@ -216,33 +291,11 @@ static void MemForPin(char *name, DWORD *addr, int *bit, BOOL asInput)
     if(i >= Prog.io.count) oops();
 
     if(asInput && Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) oops();
-    if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT) oops();
+    if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT && Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT) oops();
 
     *addr = -1;
     *bit = -1;
     if(Prog.mcu) {
-        /*
-        int pin = Prog.io.assignment[i].pin;
-        for(i = 0; i < Prog.mcu->pinCount; i++) {
-            if(Prog.mcu->pinInfo[i].pin == pin)
-                break;
-        }
-
-        if(i >= Prog.mcu->pinCount) {
-            Error(_("Must assign pins for all I/O.\r\n\r\n"
-                "'%s' is not assigned."), name);
-            //CompileError();
-        } else {
-            McuIoPinInfo *iop = &Prog.mcu->pinInfo[i];
-
-            if(asInput) {
-                *addr = Prog.mcu->inputRegs[iop->port - 'A'];
-            } else {
-                *addr = Prog.mcu->outputRegs[iop->port - 'A'];
-            }
-            *bit = iop->bit;
-        }
-        */
         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
         if(iop) {
             if(asInput) {
@@ -592,6 +645,7 @@ void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit)
             MemForPin(name, addr, bit, TRUE);
             break;
 
+        case 'P':
         case 'Y':
             MemForPin(name, addr, bit, FALSE);
             break;

@@ -543,7 +543,6 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 
     int thisWidth;
     switch(which) {
-
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
@@ -797,11 +796,13 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         case ELEM_CONTACTS: {
             ElemContacts *c = &leaf->d.contacts;
-
+            /*
             bot[0] = ']';
             bot[1] = c->negated ? '/' : ' ';
             bot[2] = '[';
             bot[3] = '\0';
+            */
+            sprintf(bot,"%c]%c[-", ((c->name[0] == 'X') && (c->set1)) ? '^' : '-', c->negated ? '/' : ' ');
 
             CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",c->name,"",""), poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
@@ -831,6 +832,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             *cx += POS_WIDTH;
             break;
         }
+
       {
         char *s;
         char *z;
@@ -853,7 +855,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             } else {
               formatWidth(bot,/*2**/POS_WIDTH, "{",leaf->d.math.op1,z,leaf->d.math.op2,"}");
             }
-            CenterWithSpaces(*cx, *cy, top, poweredAfter, TRUE);
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
