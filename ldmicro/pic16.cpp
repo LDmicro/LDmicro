@@ -967,7 +967,6 @@ static void PagePreSet()
             PicProg[i].PCLATH = PicProg[i-1].PCLATH;
         }
     }
-    //
 
     // Marking the interrupt vector operation as the multi entry point.
     if(Prog.mcu->core != BaselineCore12bit) {
@@ -1005,25 +1004,29 @@ static int PageSelect(DWORD addr, DWORD *PCLATH, DWORD PCLATHnew)
   } else if(Prog.mcu->core == MidrangeCore14bit) {
       if(((*PCLATH) ^ PCLATHnew) & (1 << BIT3)) {
           if(PCLATHnew & (1 << BIT3)) {
-              SetInstruction(addr+n, OP_BSF, REG_PCLATH, BIT3, "PageSel3");
+              SetInstruction(addr+n, OP_BSF, REG_PCLATH, BIT3, "_^ PageSel3");
               *PCLATH |= (1 << BIT3);
           } else {
-              SetInstruction(addr+n, OP_BCF, REG_PCLATH, BIT3, "PageSel4");
+              SetInstruction(addr+n, OP_BCF, REG_PCLATH, BIT3, "_v PageSel4");
               *PCLATH &= ~(1 << BIT3);
           }
           n++;
       }
       if(((*PCLATH) ^ PCLATHnew) & (1 << BIT4)) {
           if(PCLATHnew & (1 << BIT4)) {
-              SetInstruction(addr+n, OP_BSF, REG_PCLATH, BIT4, "PageSel5");
+              SetInstruction(addr+n, OP_BSF, REG_PCLATH, BIT4, "^_ PageSel5");
               *PCLATH |= (1 << BIT4);
           } else {
-              SetInstruction(addr+n, OP_BCF, REG_PCLATH, BIT4, "PageSel6");
+              SetInstruction(addr+n, OP_BCF, REG_PCLATH, BIT4, "v_ PageSel6");
               *PCLATH &= ~(1 << BIT4);
           }
           n++;
       }
   } else oops();
+
+  if(n == 0)
+      *PCLATH = PCLATHnew;
+
   return n;
 }
 
@@ -1056,12 +1059,13 @@ static void PageCorrection()
                 DWORD PicProgArg1 = PicProg[i].arg1;
                 corrected = TRUE;
                 // need to correct PCLATH page
-                int n1, n2, n3, n4; // need n opPic operations for page correcting
+                int n1, n2, n3, m3, n4; // need n opPic operations for page correcting
                 n1 = PageSelectCheck(PCLATHnow, (PicProgArg1   ) >> 8);
                 // we need n1 op's for correcting, but
                 n2 = PageSelectCheck(PCLATHnow, (PicProgArg1+n1) >> 8);
                 // we can need more if after first correction we cross the page boundary
                 n3 = PageSelectCheck(PCLATHnow, (PicProgArg1+n2) >> 8);
+                m3 = max(n1,max(n2,n3));
 
                 int nSkip = 0;
                 DWORD ii = i; // address where we doing insert
@@ -1072,38 +1076,32 @@ static void PageCorrection()
                 }
                 for(j = 0; j < PicProgWriteP; j++) {
                     if(IsOperation(PicProg[j].opPic) <= IS_PAGE)
-                        if(PicProg[j].arg1 > ii) // qqq
-                            PicProg[j].arg1 += n3; // Correcting all target addresses!!!
+                        if(PicProg[j].arg1 > ii)
+                            PicProg[j].arg1 += m3; // Correcting all target addresses!!!
+                }
+                if((PicProgArg1 >> 8) != (PicProg[i].arg1 >> 8)) {
+                    PicProgArg1 = PicProg[i].arg1;
+                }
+                if(IsOperation(PicProg[i].opPic) == IS_CALL) {
+                    PicProg[PicProgArg1].PCLATH = PicProgArg1 >> 8;
                 }
                 for(j = PicProgWriteP-1; j>=ii; j--) {
                     // prepare a place for inserting page correction operations
-                    memcpy(&PicProg[j+n3], &PicProg[j], sizeof(PicProg[0]));
+                    memcpy(&PicProg[j+m3], &PicProg[j], sizeof(PicProg[0]));
                 }
-                for(j = ii; j<(ii+n3); j++) {
-                    PicProg[j].opPic = OP_VACANT_;
+                for(j = ii; j<(ii+m3); j++) {
+                    PicProg[j].opPic = OP_NOP_;
+                    PicProg[j].arg1 = 0;
+                    PicProg[j].arg2 = 0;
                     sprintf(PicProg[j].commentAsm, " PS(0x%02X,0x%02X)", PCLATHnow, PicProgArg1 >> 8);
-//                  dbps(PicProg[j].commentAsm)
-//                  sprintf(PicProg[j].commentInt, "");
                 }
                 // select new page
                 n4 = PageSelect(ii, &PCLATHnow, PicProgArg1 >> 8);
                 PageCorrect(ii, n4+nSkip, PCLATHnow);
 
-                PicProgWriteP += n4; // upsize array length
+                PicProgWriteP += m3; // upsize array length
                 if(!((n1 == n2) && (n2 == n3) && (n3 == n4))) {
-                    dbps("Error")
-                    dbpx(PCLATHnow)
-                    dbpx(i)
-                    dbpx(ii)
-                    dbpx(PicProg[i].PCLATH)
-                    dbpx(PicProg[i].arg1)
-                    dbpd(n1)
-                    dbpd(n2)
-                    dbpd(n3)
-                    dbpd(n4)
-                    dbps("bbb")
-                    corrected = FALSE;
-                    oops()
+                    //oops()
                 }
                 break;
             }
@@ -1117,9 +1115,6 @@ static void PageCorrection()
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
             if( ((PicProg[i].arg1 >> 11) != (PicProg[i].PCLATH >> 3)) ) {
                 // ^target addr^             ^current PCLATH^
-                dbpx(i);
-                dbpx(PicProg[i].PCLATH)
-                dbpx(PicProg[i].arg1 >> 8)
                 oops();
             }
         }
@@ -1134,10 +1129,8 @@ static void AddrCheckForErrorsPostCompile2()
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
             if((PicProg[i].arg1 >> 11) != (PicProg[i].PCLATH >> 3)) {
             //  ^target addr^              ^current PCLATH^
-                dbpx(i)
-                dbpx(PicProg[i].PCLATH >> 3)
-                dbpx(PicProg[i].arg1 >> 11)
                 Error("Page Error.");
+                oops()
             }
         }
     }
@@ -1151,11 +1144,6 @@ static void AddrCheckForErrorsPostCompile()
     for(i = 0; i < PicProgWriteP; i++) {
         if(IS_FWD(PicProg[i].arg1)) {
             Error("Every AllocFwdAddr needs FwdAddrIsNow.");
-            Error("i=%d op=%d arg1=%d arg2=%d rung=%d",
-               i,
-               PicProg[i].opPic,
-               PicProg[i].arg1,
-               PicProg[i].arg2);
             fCompileError(f, fAsm);
         }
     }
@@ -1726,7 +1714,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
             fprintf(fAsm, "\n");
         } else
-            ;;//Error("op=%d=0x%X", PicProg[i].opPic, PicProg[i].opPic);
+            ;;//;;//Error("op=%d=0x%X", PicProg[i].opPic, PicProg[i].opPic);
     }
 
     StartIhex(f);
@@ -1829,7 +1817,6 @@ static void _WriteRegister(int l, char *f, char *args, DWORD reg, BYTE val, char
 
         _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
         _Instruction(l, f, args, OP_MOVWF, (reg & 0x7f), 0, comment);
-
 
     if(reg & 0x080) Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
     if(reg & 0x100) Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
@@ -4176,8 +4163,8 @@ void CompilePic16(char *outFile)
     }
 
     Comment("GOTO next PLC cycle");
-    // This is probably a big jump, so give it PCLATH.
     #ifndef AUTO_PAGING
+    // This is probably a big jump, so give it PCLATH.
     Instruction(OP_CLRF, REG_PCLATH, 0);
     #endif
     Instruction(OP_GOTO, top, 0);
