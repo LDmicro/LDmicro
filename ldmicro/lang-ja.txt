@@ -190,8 +190,11 @@
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
 "コンパイル成功。AVR用のIHEXファイルを '%s' に出力しました。\r\n\r\nプロセッサの設定(ヒューズ)を忘れずに調整して下さい。"
 
-"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\nUsed %d/%d words of program flash (chip %d%% full)."
-"コンパイル成功。PIC16用のIHEXファイルを '%s' に出力しました。\r\n\r\n設定ワード(ヒューズ)は水晶発振子、BOD有効、LVP無効、PWRT有効、コード保護無効としています。\r\n\r\nフラッシュのうち %d/%d ワード (%d%%) を使いました。"
+"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
+"コンパイル成功。PIC16用のIHEXファイルを '%s' に出力しました。\r\n\r\n設定ワード(ヒューズ)は水晶発振子、BOD有効、LVP無効、PWRT有効、コード保護無効としています。"
+
+"Used %d/%d words of program flash (chip %d%% full)."
+"フラッシュのうち %d/%d ワード (%d%%) を使いました。"
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
 "コンパイル成功。インタプリタ用コードを '%s' に出力しました。\r\n\r\nインタプリタの設定を合わせて確認して下さい。詳しくはヘルプをご覧ください。"

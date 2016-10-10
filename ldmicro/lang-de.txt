@@ -190,8 +190,11 @@
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
 "Kompilierung war erfolgreich. IHEX für AVR gespeichert unter '%s'.\r\n\r\n Die Prozessor-Konfigurationsbits müssen richtig gesetzt werden. Dies geschieht nicht automatisch"
 
-"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\nUsed %d/%d words of program flash (chip %d%% full)."
-"Kompilierung war erfolgreich; IHEX für PIC16 gespeichert unter '%s'.\r\n\r\nKonfigurations-Wort (fuse) für Quarz-Oszillator festgelegt, BOD aktiviert, LVP gesperrt, PWRT aktiviert, Verschlüsselungsschutz aus.\r\n\r\nVerwendete %d/%d Worte des Flash-Speichers (Chip %d%% voll)."
+"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
+"Kompilierung war erfolgreich; IHEX für PIC16 gespeichert unter '%s'.\r\n\r\nKonfigurations-Wort (fuse) für Quarz-Oszillator festgelegt, BOD aktiviert, LVP gesperrt, PWRT aktiviert, Verschlüsselungsschutz aus."
+
+"Used %d/%d words of program flash (chip %d%% full)."
+"Verwendete %d/%d Worte des Flash-Speichers (Chip %d%% voll)."
 
 "Compile successful; wrote Netzer code to '%s'."
 "Kompilierung für Netzer war erfolgreich; interpretierbarer Code gespeichert unter '%s'."

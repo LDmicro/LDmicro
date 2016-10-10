@@ -4232,17 +4232,29 @@ void CompilePic16(char *outFile)
     char str[MAX_PATH+500];
     sprintf(str, _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
         "Configuration word (fuses) has been set for crystal oscillator, BOD "
-        "enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\n"
-        "Used %d/%d words of program flash (chip %d%% full)."),
+        "enabled, LVP disabled, PWRT enabled, all code protection off."),
             outFile, PicProgWriteP, Prog.mcu->flashWords,
             (100*PicProgWriteP)/Prog.mcu->flashWords);
 
     char str2[MAX_PATH+500];
-    sprintf(str2, _("%s"
-        "\r\n"
-        "Used %d/%d byte of RAM (chip %d%% full)."),
-         str, UsedRAM(), McuRAM(),
+    sprintf(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
+        PicProgWriteP, Prog.mcu->flashWords,
+        (100*PicProgWriteP)/Prog.mcu->flashWords);
+
+    char str3[MAX_PATH+500];
+    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
+        UsedRAM(), McuRAM(),
          (100*UsedRAM())/McuRAM());
 
-    CompileSuccessfulMessage(str2);
+    char str4[MAX_PATH+500];
+    sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
+
+    if(PicProgWriteP > Prog.mcu->flashWords) {
+        CompileSuccessfulMessage(str4, MB_ICONWARNING);
+        CompileSuccessfulMessage(str2, MB_ICONERROR);
+    } else if(UsedRAM() > McuRAM()) {
+        CompileSuccessfulMessage(str4, MB_ICONWARNING);
+        CompileSuccessfulMessage(str3, MB_ICONERROR);
+    } else
+        CompileSuccessfulMessage(str4);
 }
