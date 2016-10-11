@@ -917,6 +917,10 @@ cmp:
             CHANGING_PROGRAM(MakeResetOnlySelected());
             break;
 
+        case MNU_MAKE_TTRIGGER:
+            CHANGING_PROGRAM(MakeTtriggerSelected());
+            break;
+
         case MNU_UNDO:
             UndoUndo();
             break;
@@ -2169,8 +2173,6 @@ void CheckPwmPins()
     for(i = 0; i < NUM_SUPPORTED_MCUS ; i++) {
        for(j = 0; j < SupportedMcus[i].pwmCount ; j++) {
            if(!SupportedMcus[i].pwmNeedsPin && SupportedMcus[i].pwmCount) {
-               dbpd(SupportedMcus[i].pwmNeedsPin)
-               dbpd(arraylen(PicPwmPinInfo18_))
                ooops("1 %s", SupportedMcus[i].mcuName)
            }
            else if(SupportedMcus[i].pwmNeedsPin)

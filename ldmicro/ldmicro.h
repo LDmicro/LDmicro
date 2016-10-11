@@ -161,6 +161,7 @@ typedef signed long SDWORD;
 #define MNU_NEGATE              0x43
 #define MNU_MAKE_SET_ONLY       0x44
 #define MNU_MAKE_RESET_ONLY     0x45
+#define MNU_MAKE_TTRIGGER       0x4501
 #define MNU_INSERT_PWL          0x46
 
 #define MNU_INSERT_SFR          0x47    // special function register read
@@ -439,6 +440,7 @@ typedef struct ElemCoilTag {
     BOOL    negated;
     BOOL    setOnly;
     BOOL    resetOnly;
+    BOOL    ttrigger;
 } ElemCoil;
 
 typedef struct ElemTimeTag {
@@ -995,6 +997,7 @@ void MakeResetOnlySelected(void);
 void MakeSetOnlySelected(void);
 void MakeNormalSelected(void);
 void NegateSelected(void);
+void MakeTtriggerSelected(void);
 void ForgetFromGrid(void *p);
 void ForgetEverything(void);
 BOOL EndOfRungElem(int Which);
@@ -1109,7 +1112,7 @@ void ShowCommentDialog(char *comment);
 // contactsdialog.cpp
 void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name);
 // coildialog.cpp
-void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name);
+void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigger, char *name);
 // simpledialog.cpp
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name);

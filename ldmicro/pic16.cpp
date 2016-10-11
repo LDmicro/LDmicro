@@ -872,8 +872,6 @@ static void BankCorrection()
             if((!IsCoreRegister(PicProg[i].arg1))
             && (!IsCoreRegister(PicProg[i-1].arg1))) {
                 if(Bank(PicProg[i].arg1) != Bank(PicProg[i-1].arg1)) {
-                    dbp("%3d 0x%X", i-1, PicProg[i-1].opPic, PicProg[i-1].arg1);
-                    dbp("%3d 0x%X", i, PicProg[i].opPic, PicProg[i].arg1);
                     ooops("Bank select error!");
                 }
             }
@@ -896,7 +894,6 @@ static void BankCorrection()
     }
 
     BankCorrection_(0, 0, 0);
-
     for(i = 0; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) >= IS_BANK)
             PicProg[i].arg1 &= ~Bank(PicProg[i].arg1);
@@ -1100,9 +1097,6 @@ static void PageCorrection()
                 PageCorrect(ii, n4+nSkip, PCLATHnow);
 
                 PicProgWriteP += m3; // upsize array length
-                if(!((n1 == n2) && (n2 == n3) && (n3 == n4))) {
-                    //oops()
-                }
                 break;
             }
         }
@@ -1129,8 +1123,7 @@ static void AddrCheckForErrorsPostCompile2()
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
             if((PicProg[i].arg1 >> 11) != (PicProg[i].PCLATH >> 3)) {
             //  ^target addr^              ^current PCLATH^
-                Error("Page Error.");
-                oops()
+                ooops("Page Error.")
             }
         }
     }
@@ -1953,8 +1946,6 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
     int sov = SizeOfVar(var);
     if(sov == 0) oops();
     if(sovRegs == 0) oops();
-    if(sov != sovRegs)
-      dbp("reg=%d sovRegs=%d <- var=%s sov=%d",reg,sovRegs,var,sov);
 
     DWORD addrl, addrh;
     MemForVariable(var, &addrl, &addrh);
@@ -4231,7 +4222,7 @@ void CompilePic16(char *outFile)
     char str3[MAX_PATH+500];
     sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
         UsedRAM(), McuRAM(),
-         (100*UsedRAM())/McuRAM());
+        (100*UsedRAM())/McuRAM());
 
     char str4[MAX_PATH+500];
     sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);

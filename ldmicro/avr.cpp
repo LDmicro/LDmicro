@@ -2156,8 +2156,6 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
 {
     DWORD addrl, addrh;
     int sov = SizeOfVar(var);
-    if(sov != sovRegs)
-      dbp("reg=%d sovRegs=%d <- var=%s sov=%d",reg,sovRegs,var,sov);
 
     MemForVariable(var, &addrl, &addrh);
     LoadXAddr(addrl);
@@ -2187,8 +2185,6 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
 {
     DWORD addrl, addrh;
     int sov = SizeOfVar(var);
-    if(sov != sovRegs)
-      dbp("%d in %s(%s) var=%s sov=%d <- reg=%d sovRegs=%d", l, f, args,  var,sov,reg,sovRegs);
 
     MemForVariable(var, &addrl, &addrh);
     LoadXAddr(addrl);

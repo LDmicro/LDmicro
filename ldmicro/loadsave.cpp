@@ -53,6 +53,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         &l->d.contacts.negated)==2)
     {
         *which = ELEM_CONTACTS;
+    } else if(sscanf(line, "COIL %s %d %d %d %d", l->d.coil.name,
+        &l->d.coil.negated, &l->d.coil.setOnly, &l->d.coil.resetOnly, &l->d.coil.ttrigger)==5)
+    {
+        *which = ELEM_COIL;
     } else if(sscanf(line, "COIL %s %d %d %d", l->d.coil.name,
         &l->d.coil.negated, &l->d.coil.setOnly, &l->d.coil.resetOnly)==4)
     {
@@ -680,8 +684,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_COIL:
-            fprintf(f, "COIL %s %d %d %d\n", l->d.coil.name, l->d.coil.negated,
-                l->d.coil.setOnly, l->d.coil.resetOnly);
+            fprintf(f, "COIL %s %d %d %d %d\n", l->d.coil.name, l->d.coil.negated,
+                l->d.coil.setOnly, l->d.coil.resetOnly, l->d.coil.ttrigger);
             break;
 
         case ELEM_TCY:

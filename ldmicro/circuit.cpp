@@ -255,6 +255,7 @@ void AddCoil(void)
     c->d.coil.negated = FALSE;
     c->d.coil.setOnly = FALSE;
     c->d.coil.resetOnly = FALSE;
+    c->d.coil.ttrigger = FALSE;
 
     AddLeaf(ELEM_COIL, c);
 }

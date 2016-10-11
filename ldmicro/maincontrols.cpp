@@ -170,6 +170,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
         canNormal ? MF_ENABLED : MF_GRAYED);
     EnableMenuItem(InstructionMenu, MNU_MAKE_RESET_ONLY,
         canResetOnly ? MF_ENABLED : MF_GRAYED);
+    EnableMenuItem(InstructionMenu, MNU_MAKE_TTRIGGER,
+        canResetOnly ? MF_ENABLED : MF_GRAYED);
     EnableMenuItem(InstructionMenu, MNU_MAKE_SET_ONLY,
         canSetOnly ? MF_ENABLED : MF_GRAYED);
 
@@ -376,6 +378,8 @@ HMENU MakeMainWindowMenus(void)
         _("Make &Set-Only\tS"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_RESET_ONLY,
         _("Make &Reset-Only\tR"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_TTRIGGER,
+        _("Make T-trigger"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSR,
