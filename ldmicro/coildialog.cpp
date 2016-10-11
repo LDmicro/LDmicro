@@ -36,6 +36,7 @@ static HWND NegatedRadio;
 static HWND NormalRadio;
 static HWND SetOnlyRadio;
 static HWND ResetOnlyRadio;
+static HWND TtriggerRadio;
 static HWND NameTextbox;
 
 static LONG_PTR PrevNameProc;
@@ -61,7 +62,7 @@ static void MakeControls(void)
 {
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Type"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE | WS_TABSTOP,
-        7, 3, 120, 105, CoilDialog, NULL, Instance, NULL);
+        7, 3, 120, 125, CoilDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
     NormalRadio = CreateWindowEx(0, WC_BUTTON, _("( ) Normal"),
@@ -83,6 +84,11 @@ static void MakeControls(void)
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 81, 105, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(ResetOnlyRadio);
+
+    TtriggerRadio = CreateWindowEx(0, WC_BUTTON, _("(T) T-trigger"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        16, 101, 105, 20, CoilDialog, NULL, Instance, NULL);
+    NiceFont(TtriggerRadio);
 
     HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Source"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
@@ -128,11 +134,14 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
-void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
+void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigger, char *name)
 {
+    char nameSave[MAX_NAME_LEN];
+    strcpy(nameSave, name);
+
     CoilDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Coil"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 359, 115, NULL, NULL, Instance, NULL);
+        100, 100, 359, 135, NULL, NULL, Instance, NULL);
     RECT r;
     GetClientRect(CoilDialog, &r);
 
@@ -160,6 +169,8 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
         SendMessage(SetOnlyRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else if(*resetOnly) {
         SendMessage(ResetOnlyRadio, BM_SETCHECK, BST_CHECKED, 0);
+    } else if(*ttrigger) {
+        SendMessage(TtriggerRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
         SendMessage(NormalRadio, BM_SETCHECK, BST_CHECKED, 0);
     }
@@ -209,19 +220,41 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
             *negated = FALSE;
             *setOnly = FALSE;
             *resetOnly = FALSE;
+            *ttrigger = FALSE;
         } else if(SendMessage(NegatedRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             *negated = TRUE;
             *setOnly = FALSE;
             *resetOnly = FALSE;
+            *ttrigger = FALSE;
         } else if(SendMessage(SetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             *negated = FALSE;
             *setOnly = TRUE;
             *resetOnly = FALSE;
-        } else if(SendMessage(ResetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-        {
+            *ttrigger = FALSE;
+        } else if(SendMessage(ResetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             *negated = FALSE;
             *setOnly = FALSE;
             *resetOnly = TRUE;
+            *ttrigger = FALSE;
+        } else if(SendMessage(TtriggerRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+            *negated = FALSE;
+            *setOnly = FALSE;
+            *resetOnly = FALSE;
+            *ttrigger = TRUE;
+        }
+
+        if(strcmp(name, nameSave)) {
+          int n = CountWhich(ELEM_CONTACTS, ELEM_COIL, nameSave);
+          if(n >= 1) {
+            BOOL rename = FALSE;
+            char str[1000];
+            sprintf(str, _("Rename the ALL other %d coils/contacts named '%s' to '%s' ?"), n, nameSave, name);
+            rename = IDYES == MessageBox(MainWindow,
+                              str, "LDmicro",
+                              MB_YESNO | MB_ICONQUESTION);
+            if(rename)
+                RenameSet1(ELEM_COIL, nameSave, name, FALSE); // rename and reset
+          }
         }
     }
 

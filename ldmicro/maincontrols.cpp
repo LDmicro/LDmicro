@@ -170,6 +170,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
         canNormal ? MF_ENABLED : MF_GRAYED);
     EnableMenuItem(InstructionMenu, MNU_MAKE_RESET_ONLY,
         canResetOnly ? MF_ENABLED : MF_GRAYED);
+    EnableMenuItem(InstructionMenu, MNU_MAKE_TTRIGGER,
+        canResetOnly ? MF_ENABLED : MF_GRAYED);
     EnableMenuItem(InstructionMenu, MNU_MAKE_SET_ONLY,
         canSetOnly ? MF_ENABLED : MF_GRAYED);
 
@@ -322,15 +324,21 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_ELEM,
         _("Copy Selected Element\tInsert"));
     AppendMenu(EditMenu, MF_STRING, MNU_PASTE_RUNG,
-        _("&Paste Rung's\tCtrl+V or Shift+Insert"));
+        _("Paste Rung's\tCtrl+V or Shift+Insert"));
     AppendMenu(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG,
         _("Paste Rung's/Element &Into Rung\tAlt+Insert"));
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_STRING, MNU_CUT_ELEMENT,
+        _("Cut Selected Element\tAlt+Del"));
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
         _("&Delete Selected Element\tDel"));
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_RUNG,
         _("D&elete Rung\tShift+Del"));
+
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_STRING, MNU_REPLACE_ELEMENT,
+        _("Replace Selected Element in Group\tSpace"));
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_UP,
@@ -363,13 +371,15 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
         _("Insert Coi&l\tL"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_NORMAL,
-        _("Make Norm&al\tA"));
+        _("Make &Normal\tN"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_NEGATE,
         _("Make &Negated\tN"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_SET_ONLY,
         _("Make &Set-Only\tS"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_RESET_ONLY,
         _("Make &Reset-Only\tR"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_TTRIGGER,
+        _("Make T-trigger"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSR,
@@ -497,21 +507,21 @@ HMENU MakeMainWindowMenus(void)
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STR,
-        _("Insert Formatted String Over UART"));
+        _("Insert Formatted String Over &UART"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
         _("Insert &UART Send"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
         _("Insert &UART Receive"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM,
-        _("Insert Set PWM Output"));
+        _("Insert Set &PWM Output\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,
-        _("Insert A/D Converter Read\tP"));
+        _("Insert &A/D Converter Read\tA"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
         _("Insert Make Persistent"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STRING,
         _("EDIT: Insert Formatted String"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
-        _("TODO: Insert Set Software PWM Output (AVR136 Application Note)"));
+        _("TODO: Insert Set Software &PWM Output (AVR136 Application Note)\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWM_OFF,
         _("EDIT: Insert PWM OFF"));
 
@@ -601,6 +611,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
     AppendMenu(help, MF_STRING, MNU_FORUM, _("LDmicro Forum..."));
     AppendMenu(help, MF_STRING, MNU_EMAIL, _("E-mail..."));
+    AppendMenu(help, MF_STRING, MNU_CHANGES, _("Latest release changes..."));
     AppendMenu(help, MF_STRING, MNU_RELEASE, _("Release..."));
 
     TopMenu = CreateMenu();

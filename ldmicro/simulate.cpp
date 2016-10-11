@@ -174,6 +174,17 @@ static void SetSingleBit(char *name, BOOL state)
     }
 }
 
+BOOL GetSingleBit(char *name)
+{
+    int i;
+    for(i = 0; i < SingleBitItemsCount; i++) {
+        if(strcmp(SingleBitItems[i].name, name)==0) {
+            return SingleBitItems[i].powered;
+        }
+    }
+    return FALSE;
+}
+
 //-----------------------------------------------------------------------------
 // Count a timer up (i.e. increment its associated count by 1). Must already
 // exist in the table.
@@ -734,9 +745,8 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         }
         case ELEM_CONTACTS: {
             if ((l->d.contacts.name[0] == 'X')
-          //&& (l->d.contacts.negated == TRUE )) // ver 1
-            && (l->d.contacts.name[1] == '_' )) // ver 2
-                 SetSingleBit(l->d.contacts.name, TRUE); // Set normal closed inputs to 1 before simulating
+            && (l->d.contacts.set1))
+                 SetSingleBit(l->d.contacts.name, TRUE); // Set HI level inputs before simulating
             break;
         }
 
@@ -1190,11 +1200,18 @@ math:
 // Called by the Windows timer that triggers cycles when we are running
 // in real time.
 //-----------------------------------------------------------------------------
+static int updateWindow = -1;
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 {
     int i;
     for(i = 0; i < CyclesPerTimerTick; i++) {
         SimulateOneCycle(FALSE);
+        if(CyclesPerTimerTick > 1) {
+            if(updateWindow < 0) {
+                updateWindow = CyclesPerTimerTick * rand() / RAND_MAX + (rand() & 1);
+            } else
+                updateWindow--;
+        }
     }
 }
 
@@ -1227,7 +1244,11 @@ void SimulateOneCycle(BOOL forceRefresh)
     CyclesCount++;
 
     if(NeedRedraw || SimulateRedrawAfterNextCycle || forceRefresh) {
-        InvalidateRect(MainWindow, NULL, FALSE);
+        if((updateWindow == 0) && (forceRefresh == FALSE)) {
+            UpdateWindow(MainWindow);
+            updateWindow--;
+        } else
+            InvalidateRect(MainWindow, NULL, FALSE);
         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
         RefreshStatusBar();
     }

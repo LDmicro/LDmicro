@@ -125,7 +125,7 @@ void Error(char *str, ...)
 // A standard format for showing a message that indicates that a compile
 // was successful.
 //-----------------------------------------------------------------------------
-void CompileSuccessfulMessage(char *str)
+void CompileSuccessfulMessage(char *str, unsigned int uType)
 {
     if(RunningInBatchMode) {
         char str[MAX_PATH+100];
@@ -135,12 +135,19 @@ void CompileSuccessfulMessage(char *str)
         HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD written;
         WriteFile(h, str, strlen(str), &written, NULL);
-    } else {
+    } else if (uType == MB_ICONINFORMATION) {
         MessageBox(MainWindow, str, _("Compile Successful"),
-            MB_OK | MB_ICONINFORMATION);
+            MB_OK | uType);
+    } else {
+        MessageBox(MainWindow, str, _("Compile is successful but exceed the memory size !!!"),
+            MB_OK | uType);
     }
 }
 
+void CompileSuccessfulMessage(char *str)
+{
+    CompileSuccessfulMessage(str,MB_ICONINFORMATION);
+}
 //-----------------------------------------------------------------------------
 // Check the consistency of the heap on which all the PLC program stuff is
 // stored.
@@ -528,7 +535,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
         }
     } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu) {
 #if 1
-        if(Prog.mcu->pwmNeedsPin == 0 || Prog.mcu->pwmCount == 0) {
+        if(!McuPWM()) {
             strcpy(dest, _("<no PWM!>"));
             if(portName)
                 strcpy(portName, _("<no PWM!>"));

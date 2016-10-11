@@ -2156,8 +2156,6 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
 {
     DWORD addrl, addrh;
     int sov = SizeOfVar(var);
-    if(sov != sovRegs)
-      dbp("reg=%d sovRegs=%d <- var=%s sov=%d",reg,sovRegs,var,sov);
 
     MemForVariable(var, &addrl, &addrh);
     LoadXAddr(addrl);
@@ -2187,8 +2185,6 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
 {
     DWORD addrl, addrh;
     int sov = SizeOfVar(var);
-    if(sov != sovRegs)
-      dbp("%d in %s(%s) var=%s sov=%d <- reg=%d sovRegs=%d", l, f, args,  var,sov,reg,sovRegs);
 
     MemForVariable(var, &addrl, &addrh);
     LoadXAddr(addrl);
@@ -4351,18 +4347,24 @@ void CompileAvr(char *outFile)
         "This does not happen automatically."), outFile);
 
     char str2[MAX_PATH+500];
-    sprintf(str2, _("%s"
-        "\r\n\r\n"
-        "Used %d/%d words of program flash (chip %d%% full)."),
-         str, AvrProgWriteP, Prog.mcu->flashWords,
+    sprintf(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
+         AvrProgWriteP, Prog.mcu->flashWords,
          (100*AvrProgWriteP)/Prog.mcu->flashWords);
 
     char str3[MAX_PATH+500];
-    sprintf(str3, _("%s"
-        "\r\n"
-        "Used %d/%d byte of RAM (chip %d%% full)."),
-         str2, UsedRAM(), McuRAM(),
+    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
+         UsedRAM(), McuRAM(),
          (100*UsedRAM())/McuRAM());
 
-    CompileSuccessfulMessage(str3);
+    char str4[MAX_PATH+500];
+    sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
+
+    if(AvrProgWriteP > Prog.mcu->flashWords) {
+        CompileSuccessfulMessage(str4, MB_ICONWARNING);
+        CompileSuccessfulMessage(str2, MB_ICONERROR);
+    } else if(UsedRAM() > McuRAM()) {
+        CompileSuccessfulMessage(str4, MB_ICONWARNING);
+        CompileSuccessfulMessage(str3, MB_ICONERROR);
+    } else
+        CompileSuccessfulMessage(str4);
 }

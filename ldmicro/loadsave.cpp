@@ -26,90 +26,11 @@
 
 #include "ldmicro.h"
 
+void FrmStrToFile(FILE *f, char *str);
+char *DelNewLine(char *str);
+
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 
-//-----------------------------------------------------------------------------
-/*
-simple-escape-sequence: one of
-    \' \" \? \\
-    \a \b \f \n \r \t \v
-*/
-void FrmStrToFile(FILE *f, char *str)
-{
-    char *s = str;
-    for(; *s; s++) {
-        if(*s == '\\') {
-            fprintf(f, "\\\\");
-        } else if(*s == '\n') {//(new line) Moves the active position to the initial position of the next line.
-            fprintf(f, "\\n");
-        } else if(*s == '\r') {//(carriage return) Moves the active position to the initial position of the current line.
-            fprintf(f, "\\r");
-        } else if(*s == '\t') {//(horizontal tab) Moves the active position to the next horizontal tabulation position on the current line.
-            fprintf(f, "\\t");
-        } else if(*s == '\v') {//(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
-            fprintf(f, "\\v");
-        } else if(*s == '\f') {//( form feed) Moves the active position to the initial position at the start of the next logical page.
-            fprintf(f, "\\f");
-        } else if(*s == '\b') {//(backspace) Moves the active position to the previous position on the current line.
-            fprintf(f, "\\b");
-        } else if(*s == '\a') {//(alert) Produces an audible or visible alert without changing the active position.
-            fprintf(f, "\\a");
-        } else {
-            fprintf(f, "%c", *s);
-        }
-    }
-}
-
-//-----------------------------------------------------------------------------
-char *FrmStrToStr(char *dest, char *src)
-{
-    char *s = src;
-    int i = 0;
-    while(*s) {
-        if(*s == '\\') {
-            if(s[1] == 'n') {
-                dest[i++] = '\n';
-                s++;
-            } else if(s[1] == 'r') {
-                dest[i++] = '\r';
-                s++;
-            } else if(s[1] == 't') {
-                dest[i++] = '\t';
-                s++;
-            } else if(s[1] == 'v') {
-                dest[i++] = '\v';
-                s++;
-            } else if(s[1] == 'f') {
-                dest[i++] = '\f';
-                s++;
-            } else if(s[1] == 'b') {
-                dest[i++] = '\b';
-                s++;
-            } else if(s[1] == 'a') {
-                dest[i++] = '\a';
-                s++;
-            } else if(s[1] == '\\') {
-                dest[i++] = '\\';
-                s++;
-            } else {
-                // that is odd
-            }
-        } else {
-            dest[i++] = *s;
-        }
-        s++;
-    }
-    dest[i++] = '\0';
-    return dest;
-}
-//-----------------------------------------------------------------------------
-char *DelNewLine(char *str)
-{
-    //while(str[strlen(str)-1] == '\n')
-    if(str[strlen(str)-1] == '\n')
-        str[strlen(str)-1] = '\0';
-    return str;
-}
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
 // contains a leaf element (coil, contacts, etc.). If so, create an element
@@ -124,10 +45,18 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         FrmStrToStr(l->d.comment.str, &line[8]);
         DelNewLine(l->d.comment.str);
         *which = ELEM_COMMENT;
+    } else if(sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name,
+        &l->d.contacts.negated, &l->d.contacts.set1)==3)
+    {
+        *which = ELEM_CONTACTS;
     } else if(sscanf(line, "CONTACTS %s %d", l->d.contacts.name,
         &l->d.contacts.negated)==2)
     {
         *which = ELEM_CONTACTS;
+    } else if(sscanf(line, "COIL %s %d %d %d %d", l->d.coil.name,
+        &l->d.coil.negated, &l->d.coil.setOnly, &l->d.coil.resetOnly, &l->d.coil.ttrigger)==5)
+    {
+        *which = ELEM_COIL;
     } else if(sscanf(line, "COIL %s %d %d %d", l->d.coil.name,
         &l->d.coil.negated, &l->d.coil.setOnly, &l->d.coil.resetOnly)==4)
     {
@@ -367,6 +296,19 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
+    } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string)==2)
+    {
+        int i=strlen("FORMATTED_STRING")+1+strlen(l->d.fmtdStr.var)+1;
+
+        if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
+            strcpy(l->d.fmtdStr.var, "");
+        }
+        FrmStrToStr(l->d.fmtdStr.string, &line[i]);
+        DelNewLine(l->d.fmtdStr.string);
+        if(strcmp(l->d.fmtdStr.string, "(none)")==0) {
+            strcpy(l->d.fmtdStr.string, "");
+        }
+        *which = ELEM_FORMATTED_STRING;
     } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var,
         &x)==3)
     {
@@ -396,6 +338,19 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_STRING;
     } else if(sscanf(line, "STRING %s %s %s", l->d.fmtdStr.dest, l->d.fmtdStr.var, l->d.fmtdStr.string)==3)
     {
+        if(strcmp(l->d.fmtdStr.dest, "(none)")==0) {
+            strcpy(l->d.fmtdStr.dest, "");
+        }
+        if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
+            strcpy(l->d.fmtdStr.var, "");
+        }
+        int i=strlen("STRING")+1+strlen(l->d.fmtdStr.dest)+1+strlen(l->d.fmtdStr.var)+1;
+        FrmStrToStr(l->d.fmtdStr.string, &line[i]);
+        DelNewLine(l->d.fmtdStr.string);
+        if(strcmp(l->d.fmtdStr.string, "(none)")==0) {
+            strcpy(l->d.fmtdStr.string, "");
+        }
+        *which = ELEM_STRING;
     } else if(sscanf(line, "LOOK_UP_TABLE %s %s %d %d", l->d.lookUpTable.dest,
         l->d.lookUpTable.index, &(l->d.lookUpTable.count),
         &(l->d.lookUpTable.editAsString))==4)
@@ -722,13 +677,15 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_CONTACTS:
-            fprintf(f, "CONTACTS %s %d\n", l->d.contacts.name,
-                l->d.contacts.negated);
+            if(l->d.contacts.name[0] != 'X')
+                l->d.contacts.set1 = FALSE;
+            fprintf(f, "CONTACTS %s %d %d\n", l->d.contacts.name,
+                l->d.contacts.negated, l->d.contacts.set1);
             break;
 
         case ELEM_COIL:
-            fprintf(f, "COIL %s %d %d %d\n", l->d.coil.name, l->d.coil.negated,
-                l->d.coil.setOnly, l->d.coil.resetOnly);
+            fprintf(f, "COIL %s %d %d %d %d\n", l->d.coil.name, l->d.coil.negated,
+                l->d.coil.setOnly, l->d.coil.resetOnly, l->d.coil.ttrigger);
             break;
 
         case ELEM_TCY:
@@ -1063,4 +1020,86 @@ BOOL SaveProjectToFile(char *filename)
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
     return TRUE;
+}
+//-----------------------------------------------------------------------------
+/*
+simple-escape-sequence: one of
+    \' \" \? \\
+    \a \b \f \n \r \t \v
+*/
+void FrmStrToFile(FILE *f, char *str)
+{
+    char *s = str;
+    for(; *s; s++) {
+        if(*s == '\\') {
+            fprintf(f, "\\\\");
+        } else if(*s == '\n') {//(new line) Moves the active position to the initial position of the next line.
+            fprintf(f, "\\n");
+        } else if(*s == '\r') {//(carriage return) Moves the active position to the initial position of the current line.
+            fprintf(f, "\\r");
+        } else if(*s == '\t') {//(horizontal tab) Moves the active position to the next horizontal tabulation position on the current line.
+            fprintf(f, "\\t");
+        } else if(*s == '\v') {//(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
+            fprintf(f, "\\v");
+        } else if(*s == '\f') {//( form feed) Moves the active position to the initial position at the start of the next logical page.
+            fprintf(f, "\\f");
+        } else if(*s == '\b') {//(backspace) Moves the active position to the previous position on the current line.
+            fprintf(f, "\\b");
+        } else if(*s == '\a') {//(alert) Produces an audible or visible alert without changing the active position.
+            fprintf(f, "\\a");
+        } else {
+            fprintf(f, "%c", *s);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+char *FrmStrToStr(char *dest, char *src)
+{
+    char *s = src;
+    int i = 0;
+    while(*s) {
+        if(*s == '\\') {
+            if(s[1] == 'n') {
+                dest[i++] = '\n';
+                s++;
+            } else if(s[1] == 'r') {
+                dest[i++] = '\r';
+                s++;
+            } else if(s[1] == 't') {
+                dest[i++] = '\t';
+                s++;
+            } else if(s[1] == 'v') {
+                dest[i++] = '\v';
+                s++;
+            } else if(s[1] == 'f') {
+                dest[i++] = '\f';
+                s++;
+            } else if(s[1] == 'b') {
+                dest[i++] = '\b';
+                s++;
+            } else if(s[1] == 'a') {
+                dest[i++] = '\a';
+                s++;
+            } else if(s[1] == '\\') {
+                dest[i++] = '\\';
+                s++;
+            } else {
+                // that is odd
+            }
+        } else {
+            dest[i++] = *s;
+        }
+        s++;
+    }
+    dest[i++] = '\0';
+    return dest;
+}
+//-----------------------------------------------------------------------------
+char *DelNewLine(char *str)
+{
+    //while(str[strlen(str)-1] == '\n')
+    if(str[strlen(str)-1] == '\n')
+        str[strlen(str)-1] = '\0';
+    return str;
 }
