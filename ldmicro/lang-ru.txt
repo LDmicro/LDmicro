@@ -208,8 +208,14 @@
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
 "Компиляция успешна. Запись IHEX для AVR в '%s'.\r\n\r\nПомните о правильной установке конфигурации (фьюзов) процессора. Это не производится автоматически."
 
-"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\nUsed %d/%d words of program flash (chip %d%% full)."
-"Компилирование завершено успешно. Записан IHEX в PIC16 '%s'.\r\n\r\nСлово конфигурации (фьюз) должно соответствовать выбранному типу осциллятора, BOD разрешен, LVP запрещен, PWRT разрешен, защита кода от модификации и считывания снята.\r\n\r\nИспользовано %d/%d слов(words) флеш-памяти программ (Микросхема %d%% заполнена)."
+"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
+"Компилирование завершено успешно. Записан IHEX в PIC16 '%s'.\r\n\r\nСлово конфигурации (фьюз) должно соответствовать выбранному типу осциллятора, BOD разрешен, LVP запрещен, PWRT разрешен, защита кода от модификации и считывания снята."
+
+"Used %d/%d words of program flash (chip %d%% full)."
+"Использовано %d/%d слов(words) флеш-памяти программ (Микросхема %d%% заполнена)."
+
+"Used %d/%d byte of RAM (chip %d%% full)."
+"Использовано %d/%d байт(byte) ОЗУ (ОЗУ заполнено на %d%%)."
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
 "Компиляция успешна. Интерпретируемый код записан в '%s'.\r\n\r\nВероятно Вам необходимо адаптировать интерпретатор для вашего приложения. Смотрите документацию"

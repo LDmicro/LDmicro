@@ -373,7 +373,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             if(CheckForNumber(l->d.move.src) == FALSE) {
                 // Not need ???
                 // Need if you add only one MOV or get erroneously other src name
-                // then you can see l->d.move.src in IOlist 
+                // then you can see l->d.move.src in IOlist
                 AppendIoAutoTypePinGeneral(l->d.move.src);
             }
             break;
@@ -1037,14 +1037,19 @@ void ShowIoDialog(int item)
 
         }
         if(Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) {
-            McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu->pinInfo[i].pin);
-            if((iop)&&(iop->timer != Prog.cycleTimer))
-                ; // okay; we know how to connect it up to the PWM
-            else
-                goto cant_use_this_io;
-
+            if(Prog.mcu->pwmCount) {
+                McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu->pinInfo[i].pin);
+                if((iop)&&(iop->timer != Prog.cycleTimer))
+                    ; // okay; we know how to connect it up to the PWM
+                else
+                    goto cant_use_this_io;
+            } else {
+                if(Prog.mcu->pwmNeedsPin == Prog.mcu->pinInfo[i].pin)
+                    ; // okay; we know how to connect it up to the PWM
+                else
+                    goto cant_use_this_io;
+            }
         }
-
         char pinName[MAX_NAME_LEN];
         GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
         sprintf(buf, "%3d  %s", Prog.mcu->pinInfo[i].pin, pinName);
@@ -1319,6 +1324,7 @@ void IoListProc(NMHDR *h)
                     } else
                     if((type == IO_TYPE_DIG_INPUT)
                     || (type == IO_TYPE_DIG_OUTPUT)
+                    || (type == IO_TYPE_PWM_OUTPUT)
                     ) {
                         if(!InSimulationMode) {
                             if(SingleBitAssigned(name))

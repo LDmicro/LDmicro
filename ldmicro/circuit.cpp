@@ -30,7 +30,9 @@
 //-----------------------------------------------------------------------------
 // Convenience routines for allocating frequently-used data structures.
 //-----------------------------------------------------------------------------
-ElemLeaf *AllocLeaf(void)
+
+//ElemLeaf *AllocLeaf()
+ElemLeaf *_AllocLeaf(int l, char *f)
 {
     return (ElemLeaf *)CheckMalloc(sizeof(ElemLeaf));
 }
@@ -232,6 +234,7 @@ void AddComment(char *str)
 
     AddLeaf(ELEM_COMMENT, c);
 }
+
 void AddContact(void)
 {
     if(!CanInsertOther) return;
@@ -242,6 +245,7 @@ void AddContact(void)
 
     AddLeaf(ELEM_CONTACTS, c);
 }
+
 void AddCoil(void)
 {
     if(!CanInsertEnd) return;
@@ -251,9 +255,11 @@ void AddCoil(void)
     c->d.coil.negated = FALSE;
     c->d.coil.setOnly = FALSE;
     c->d.coil.resetOnly = FALSE;
+    c->d.coil.ttrigger = FALSE;
 
     AddLeaf(ELEM_COIL, c);
 }
+
 void AddTimer(int which)
 {
     if(!CanInsertOther) return;
@@ -264,6 +270,7 @@ void AddTimer(int which)
 
     AddLeaf(which, t);
 }
+
 void AddEmpty(int which)
 {
     if(!CanInsertOther) return;
@@ -271,6 +278,7 @@ void AddEmpty(int which)
     ElemLeaf *t = AllocLeaf();
     AddLeaf(which, t);
 }
+
 void AddReset(void)
 {
     if(!CanInsertEnd) return;
@@ -279,6 +287,7 @@ void AddReset(void)
     strcpy(t->d.reset.name, "Tnew");
     AddLeaf(ELEM_RES, t);
 }
+
 void AddMasterRelay(void)
 {
     if(!CanInsertEnd) return;
@@ -286,6 +295,7 @@ void AddMasterRelay(void)
     ElemLeaf *t = AllocLeaf();
     AddLeaf(ELEM_MASTER_RELAY, t);
 }
+
 void AddShiftRegister(void)
 {
     if(!CanInsertEnd) return;
@@ -295,6 +305,7 @@ void AddShiftRegister(void)
     t->d.shiftRegister.stages = 7;
     AddLeaf(ELEM_SHIFT_REGISTER, t);
 }
+
 void AddFormattedString(void)
 {
     if(!CanInsertOther) return;
@@ -304,6 +315,7 @@ void AddFormattedString(void)
     strcpy(t->d.fmtdStr.string, "value: \\3\\r\\n");
     AddLeaf(ELEM_FORMATTED_STRING, t);
 }
+
 void AddString(void)
 {
     if(!CanInsertOther) return;
@@ -314,6 +326,7 @@ void AddString(void)
     strcpy(t->d.fmtdStr.var, "var");
     AddLeaf(ELEM_STRING, t);
 }
+
 void AddLookUpTable(void)
 {
     if(!CanInsertEnd) return;
@@ -325,6 +338,7 @@ void AddLookUpTable(void)
     t->d.lookUpTable.editAsString = 0;
     AddLeaf(ELEM_LOOK_UP_TABLE, t);
 }
+
 void AddPiecewiseLinear(void)
 {
     if(!CanInsertEnd) return;
@@ -335,6 +349,7 @@ void AddPiecewiseLinear(void)
     t->d.piecewiseLinear.count = 0;
     AddLeaf(ELEM_PIECEWISE_LINEAR, t);
 }
+
 void AddMove(void)
 {
     if(!CanInsertEnd) return;
@@ -344,6 +359,7 @@ void AddMove(void)
     strcpy(t->d.move.src, "src");
     AddLeaf(ELEM_MOVE, t);
 }
+
 void AddBcd(int which)
 {
     if(!CanInsertOther) return;
@@ -353,6 +369,7 @@ void AddBcd(int which)
     strcpy(t->d.move.src, "src");
     AddLeaf(which, t);
 }
+
 void AddSegments(int which)
 {
     if(!CanInsertOther) return;
@@ -364,6 +381,7 @@ void AddSegments(int which)
     t->d.segments.which = which;
     AddLeaf(which, t);
 }
+
 void AddBus(int which)
 {
     if(!CanInsertOther) return;
@@ -376,6 +394,7 @@ void AddBus(int which)
         t->d.bus.PCBbit[i] = i;
     AddLeaf(which, t);
 }
+
 void AddStepper(void)
 {
     if(!CanInsertOther) return;
@@ -390,6 +409,7 @@ void AddStepper(void)
     strcpy(t->d.stepper.coil, "Ystep");
     AddLeaf(ELEM_STEPPER, t);
 }
+
 void AddPulser(void)
 {
     if(!CanInsertOther) return;
@@ -402,6 +422,7 @@ void AddPulser(void)
     strcpy(t->d.pulser.busy, "Rbusy");
     AddLeaf(ELEM_PULSER, t);
 }
+
 void AddNPulse(void)
 {
     if(!CanInsertOther) return;
@@ -416,6 +437,7 @@ void AddNPulse(void)
     strcpy(t->d.Npulse.coil, "YNpulse");
     AddLeaf(ELEM_NPULSE, t);
 }
+
 void AddQuadEncod(void)
 {
     if(!CanInsertOther) return;
@@ -436,6 +458,7 @@ void AddQuadEncod(void)
     sprintf(t->d.QuadEncod.zero, "YqZero%d", n);
     AddLeaf(ELEM_QUAD_ENCOD, t);
 }
+
 void AddSfr(int which)
 {
     if(!CanInsertEnd) return;
@@ -450,6 +473,7 @@ void AddSfr(int which)
        strcpy(t->d.cmp.op2, "1");
     AddLeaf(which, t);
 }
+
 void AddMath(int which)
 {
     if(!CanInsertEnd && EndOfRungElem(which)) return;
@@ -461,6 +485,7 @@ void AddMath(int which)
     strcpy(t->d.math.op2, "1");
     AddLeaf(which, t);
 }
+
 void AddBitOps(int which)
 {
     if(!CanInsertEnd && EndOfRungElem(which)) return;
@@ -471,6 +496,7 @@ void AddBitOps(int which)
     strcpy(t->d.move.src, "bit");
     AddLeaf(which, t);
 }
+
 void AddCmp(int which)
 {
     if(!CanInsertOther) return;
@@ -480,6 +506,7 @@ void AddCmp(int which)
     strcpy(t->d.cmp.op2, "1");
     AddLeaf(which, t);
 }
+
 void AddCounter(int which)
 {
 //  if(which == ELEM_CTC) {
@@ -508,41 +535,72 @@ void AddCounter(int which)
 
     AddLeaf(which, t);
 }
+
 void AddReadAdc(void)
 {
     if(!CanInsertEnd) return;
 
+    if(Prog.mcu) {
+      if(!McuADC()) {
+        Error(_("No ADC or ADC not supported for selected micro."));
+        return;
+      }
+      if(AdcFunctionUsed() >= McuADC()) {
+        Error(_("No available ADC inputs."));
+        return;
+      }
+    }
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.readAdc.name, "ADCnew");
     AddLeaf(ELEM_READ_ADC, t);
 }
+
 void AddSetPwm(void)
 {
     if(!CanInsertEnd) return;
-/*
-    if(PwmFunctionUsed()) {
-      Error(_("Can use only one PWM on timer2."));
+
+    if(Prog.mcu) {
+      if(!McuPWM()) {
+        Error(_("No PWM or PWM not supported for this MCU."));
       return;
     }
-*/
+      if(PwmFunctionUsed() >= McuPWM()) {
+        Error(_("No available PWM outputs."));
+        return;
+      }
+    }
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.setPwm.name, "PWMnew");
     strcpy(t->d.setPwm.duty_cycle, "duty_cycle");
     strcpy(t->d.setPwm.targetFreq, "1000");
     AddLeaf(ELEM_SET_PWM, t);
 }
+
 void AddUart(int which)
 {
     if(!CanInsertOther) return;
 
+    if(Prog.mcu) {
+      if(!McuUART()) {
+        Error(_("No UART or UART not supported for this MCU."));
+        return;
+      }
+    }
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.uart.name, "char");
     AddLeaf(which, t);
 }
+
 void AddPersist(void)
 {
     if(!CanInsertEnd) return;
 
+    if(Prog.mcu) {
+      if(!McuROM()) {
+        Error(_("No ROM or ROM not supported for this MCU."));
+        return;
+      }
+    }
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.persist.var, "saved");
     AddLeaf(ELEM_PERSIST, t);
@@ -1161,7 +1219,7 @@ BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
 // Returns number of the given instruction
 // types (ELEM_....) in the subcircuit.
 //-----------------------------------------------------------------------------
-int CountWhich(int which, void *any, int seek1)
+static int CountWhich_(int which, void *any, int seek1, int seek2, int seek3, char *name)
 {
   int n = 0;
   int i;
@@ -1169,19 +1227,55 @@ int CountWhich(int which, void *any, int seek1)
     case ELEM_PARALLEL_SUBCKT: {
       ElemSubcktParallel *p = (ElemSubcktParallel *)any;
       for(i = 0; i < p->count; i++)
-        n+=CountWhich(p->contents[i].which, p->contents[i].d.any, seek1);
+        n += CountWhich_(p->contents[i].which, p->contents[i].d.any, seek1, seek2, seek3, name);
+      break;
     }
     case ELEM_SERIES_SUBCKT: {
       ElemSubcktSeries *s = (ElemSubcktSeries *)any;
       for(i = 0; i < s->count; i++)
-        n+=CountWhich(s->contents[i].which, s->contents[i].d.any, seek1);
+        n += CountWhich_(s->contents[i].which, s->contents[i].d.any, seek1, seek2, seek3, name);
+      break;
     }
     default:
-      if(which == seek1)
+      if(which == seek1 || which == seek2 || which == seek3) {
+        if(!name || !strlen(name))
         n++;
+        else {
+          ElemLeaf *leaf = (ElemLeaf *)any;
+          ElemCoil *c = &leaf->d.coil; // !!!
+          if(strcmp(c->name, name)==0)
+            n++;
+        }
+      }
+      break;
   }
   return n;
 }
+
+int CountWhich(int seek1, int seek2, int seek3, char *name)
+{
+    int n = 0;
+    int i;
+    for(i = 0; i < Prog.numRungs; i++)
+        n += CountWhich_(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek1, seek2, seek3, name);
+    return n;
+}
+
+int CountWhich(int seek1, int seek2, char *name)
+{
+    return CountWhich(seek1, seek2, -1, name);
+}
+
+int CountWhich(int seek1, char *name)
+{
+    return CountWhich(seek1, -1, -1, name);
+}
+
+int CountWhich(int seek1)
+{
+    return CountWhich(seek1, -1, -1, NULL);
+}
+
 /* function moved to intcode.cpp
 //-----------------------------------------------------------------------------
 // Are either of the UART functions (send or recv) used? Need to know this
@@ -1206,6 +1300,7 @@ BOOL UartFunctionUsed(void)
 // Is the PWM function used? Need to know this to know whether we must reserve
 // the pin.
 //-----------------------------------------------------------------------------
+/*
 int PwmFunctionUsed(void)
 {
     int n = 0;
@@ -1219,13 +1314,39 @@ int PwmFunctionUsed(void)
     }
     return n;
 }
+/**/
+int PwmFunctionUsed(void)
+{
+     return CountWhich(ELEM_SET_PWM);
+}
+/**/
+//-----------------------------------------------------------------------------
+/*
+int _AdcFunctionUsed(void)
+{
+    int n = 0;
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_READ_ADC,
+            -1, -1))
+        {
+            n++;
+        }
+    }
+    return n;
+}
+*/
+int AdcFunctionUsed(void)
+{
+    return CountWhich(ELEM_READ_ADC);
+}
 //-----------------------------------------------------------------------------
 int QuadEncodFunctionUsed(void)
 {
     int n = 0;
     int i;
     for(i = 0; i < Prog.numRungs; i++)
-        n+=CountWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_QUAD_ENCOD);
+        //n+=CountWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_QUAD_ENCOD);
     return n;
 }
 //-----------------------------------------------------------------------------
@@ -1468,4 +1589,57 @@ void PasteRung(int PasteInTo)
     fclose(f);
 
     WhatCanWeDoFromCursorAndTopology();
+}
+
+//-----------------------------------------------------------------------------
+static void RenameSet1_(int which, void *any, int which_elem, char *name, char *new_name, BOOL set1)
+{
+    switch(which) {
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int i;
+            for(i = 0; i < p->count; i++)
+                RenameSet1_(p->contents[i].which, p->contents[i].d.any, which_elem, name, new_name, set1);
+            break;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+            for(i = 0; i < s->count; i++)
+                RenameSet1_(s->contents[i].which, s->contents[i].d.any, which_elem, name, new_name, set1);
+            break;
+        }
+        case ELEM_COIL: {
+            ElemLeaf *leaf = (ElemLeaf *)any;
+            ElemCoil *c = &leaf->d.coil;
+            if(strcmp(c->name, name)==0) {
+                if(new_name && strlen(new_name))
+                    //if(which_elem == ELEM_COIL) ???
+                    if(new_name[0] == name[0])
+                        strcpy(c->name, new_name);
+            }
+            break;
+        }
+        case ELEM_CONTACTS: {
+            ElemLeaf *leaf = (ElemLeaf *)any;
+            ElemContacts *c = &leaf->d.contacts;
+            if(strcmp(c->name, name)==0) {
+                if(new_name && strlen(new_name))
+                    strcpy(c->name, new_name);
+                if(which == ELEM_CONTACTS)
+                    c->set1 = set1;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+//-----------------------------------------------------------------------------
+void RenameSet1(int which, char *name, char *new_name, BOOL set1)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++)
+        RenameSet1_(ELEM_SERIES_SUBCKT, Prog.rungs[i], which, name, new_name, set1);
 }

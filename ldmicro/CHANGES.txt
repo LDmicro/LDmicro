@@ -1,3 +1,86 @@
+== Release 4.0.3
+
+    * Fixed: The page correction error while the correction is crosses boundary page.
+      AUTO_PAGING version 4 for PIC's.
+
+    * Modified: You can set X input contacts to the HI level before simulating,
+      if in your real hardware device the initial state of X input contacts in HI level.
+      In release 3.5.0 for this feature used symbol '_' after X in contact name.
+      Now for this feature you can use checkbox
+      "Set HI input level before simulation" in contacts dialog.
+      This feature applies only in simulation mode,
+      and does not affect hex file in physical device.
+      This feature refers to MCU inputs, not to the external switches(devices/sources).
+      This feature not refers to negation or normal open NO or
+      normal closed NC contacts of switches.
+      Now you can use symbol '_' in the name to see it better (X_in).
+
+    * Modified: When selected mode is ("Simulation Mode"), and user
+      presses once the Spase key ("Single Cycle"), or hold down pressed the
+      Spase key("Single Cycle" ), then ladder diagram executes one cycle (or
+      repeatedly) and displayed correctly.
+
+      When then select "Start Real-Time Simulation" the ladder diagram is
+      in work, but can displayed in the one same condition. This happens only
+      when the cycle time is less than 10 ms and 10 ms, divided by the cycle
+      time gives an even number, and also 10 ms, divided by the timer time
+      gives an even number.
+
+      There are two causes for this strange behavior.
+
+      1) The LDmicro frame rate in "Real-Time Simulation" mode is 10 ms (100 Hz).
+      I.e. the ladder diagram state is displayed every 10 ms, but not the
+      every one cycle. If every 10 ms LD state is the same, then user sees the
+      same picture on the display. Although LD state chenged inside 10 ms over
+      and over again and go back to the same state.
+
+      2) I tried to show LD state at a random time within the 10 ms frame.
+      But WINAPI InvalidateRect() function works when there are no other
+      messages in the application queue for that window. And the screen is
+      redrawn also through an even number of times and showing the same picture
+      (LD state).
+
+      Now LDmicro used UpdateWindow() at a random time within the 10 ms frame.
+      UpdateWindow() function works without a queue and shows different states
+      of LD on the screen and picture is not "latched".
+
+      Note: The screen refreshes randomly LD state inside 10 ms frame
+      in "Real-Time Simulation" mode.
+
+    * Fixed: RETURN error in MUL,DIV elements in PIC10xxx, PIC12xx microcontroller family.
+
+    * Added element: Added in manual.txt
+
+      Terminology:
+      "Level sensitive" = output(element) controlled by the level of the input.
+      "Edge triggered" = output changes only at the point in time
+      when the input changes from value to the other. Can be positive
+      edge-triggered (0 to 1), or negative edge-triggered (1 to 0).
+      Most elements of LDmicro are "Level sensitive", some elements are
+      "positive edge-triggered".
+
+    > COIL, T-TRIGGER             Rname           Yname
+                               ----(T)----     ----(T)----
+
+      A coil T-trigger is edge-triggered flip-flop (toggle, tip-over, turn over).
+      A coil flip-flop every rising edge of the input condition (i.e.
+      what the input condition goes from false to true).
+      If rising edge detected, then if coil state is false it is sets true.
+      If next rising edge detected then if coil state is true it is sets to false.
+      This instruction must be the rightmost instruction in its rung.
+      You can simply present as a T-trigger with the positive
+      edge-triggered input.
+
+    * Added: MessageBox("Rename the ALL other 'N' contacts/coils named 'Name' to 'NewName' ?")
+      after editing the contacts/coils name.
+
+    * Added: Menu Edit->Cut Selected Element (Alt+Del). Then use  menu
+      Edit->Paste Rung's/Element &Into Rung (Alt+Insert) to insert element
+      in new position.
+
+    * Added: Menu Edit->Replace Selected Element in Group.
+      For example: CTU->CTD->CTC->CTR->...
+
 == Release 4.0.2 experimental
 
     * Fixed:
@@ -8,11 +91,14 @@
 
       AUTO_BANKING and AUTO_PAGING version 3 for PIC's.
 
-     * New: It is possible to add PIC10Fxxx - PIC12Fxxx family microcontrollers in LDmicro.
+    * New: It is possible to add PIC10Fxxx - PIC12Fxxx family microcontrollers in LDmicro.
+
+    * HOW TO: Soft start and smooth stop of LED with software PWM
+      https://github.com/LDmicro/LDm...-stop-of-LED-with-software-PWM
 
 == Release 4.0.1 experimental
 
-    * All banks of RAM can be used.
+    * Fixed: All banks of RAM can be used.
       Added message about the amount of RAM used.
 
 == Release 4.0.0 experimental
@@ -260,7 +346,7 @@
         Defaut value is 1 = PORTs pull-ups are disabled.
       Now bit 7 is cleared and pull-ups are enabled.
 
-      Attention: Not all PIC ports have a pull-up resistors.
+      Attention: Not all PIC's ports have a pull-up resistors.
       See datasheets of the controller.
       Use an external resistor, if there is no internal pull-up.
 
@@ -331,13 +417,15 @@
 
     * International System (SI) prefixes used in many places.
 
-    * In simulation mode You can set normal closed inputs to 1 before simulating.
-      Use symbol '_' after X in contast name.
-      For example:
-      Xcontast1 sets to 0 before simulating. (normal open)
-      Xcontast2 sets to 0 before simulating. (normal open)
-      X_contast3 sets to 1 before simulating. (normal closed)
-      X_contast4 sets to 1 before simulating. (normal closed)
+    * In simulation mode You can set inputs to 1 before simulating.
+  vvv Obsolete!!! See Release 4.0.3 vvvvvvvvvvvvvvvvvvvvvvvvvvvv
+  v   Use symbol '_' after X in contact name.                  v
+  v   For example:                                             v
+  v   Xcontast1 sets to 0 before simulating. (normal open)     v
+  ^   Xcontast2 sets to 0 before simulating. (normal open)     ^
+  ^   X_contast3 sets to 1 before simulating. (normal closed)  ^
+  ^   X_contast4 sets to 1 before simulating. (normal closed)  ^
+  ^^^ Obsolete!!! See Release 4.0.3 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       This feature applies only in simulation mode,
       and does not affect hex file in physical device.
 

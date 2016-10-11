@@ -277,6 +277,14 @@ For AVR processors you must set the configuration bits by hand.
 INSTRUCTIONS REFERENCE
 ======================
 
+    Terminology:
+    "Level sensitive" = output(element) controlled by the level of the input.
+    "Edge triggered" = output changes only at the point in time
+    when the input changes from value to the other. Can be positive
+    edge-triggered (0 to 1), or negative edge-triggered (1 to 0).
+    Most elements of LDmicro are "Level sensitive", some elements are
+    "positive edge-triggered".
+
 > CONTACT, NORMALLY OPEN        Xname           Rname          Yname
                              ----] [----     ----] [----    ----] [----
 
@@ -307,6 +315,7 @@ INSTRUCTIONS REFERENCE
     into this instruction is true, then the given internal relay or output
     pin is set true. It is not meaningful to assign an input variable to a
     coil. This instruction must be the rightmost instruction in its rung.
+    Level sensitive.
 
 
 > COIL, NEGATED                 Rname           Yname
@@ -318,6 +327,7 @@ INSTRUCTIONS REFERENCE
     output pin is set true. It is not meaningful to assign an input
     variable to a coil.  This is the opposite of a normal coil. This
     instruction must be the rightmost instruction in its rung.
+    Level sensitive.
 
 
 > COIL, SET-ONLY                Rname           Yname
@@ -329,6 +339,7 @@ INSTRUCTIONS REFERENCE
     change the state of a coil from false to true, so it is typically
     used in combination with a reset-only coil. This instruction must
     be the rightmost instruction in its rung.
+    You can simply present as a trigger with the SET level sensitive input.
 
 
 > COIL, RESET-ONLY              Rname           Yname
@@ -340,6 +351,20 @@ INSTRUCTIONS REFERENCE
     instruction can only change the state of a coil from true to false,
     so it is typically used in combination with a set-only coil. This
     instruction must be the rightmost instruction in its rung.
+    You can simply present as a trigger with the RESET level sensitive input.
+
+
+> COIL, T-TRIGGER               Rname           Yname
+                             ----(T)----     ----(T)----
+
+    A coil T-trigger is edge-triggered flip-flop (toggle, tip-over, turn over).
+    A coil flip-flop every rising edge of the input condition (i.e.
+    what the input condition goes from false to true).
+    If rising edge detected, then if coil state is false it is sets true.
+    If next rising edge detected then if coil state is true it is sets to false.
+    This instruction must be the rightmost instruction in its rung.
+    You can simply present as a T-trigger with the positive
+    edge-triggered input.
 
 
 > TURN-ON DELAY                 Tdon

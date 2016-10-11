@@ -167,7 +167,6 @@ BOOL StaySameElem(int Which)
 BOOL CanChangeOutputElem(int Which)
 {
     if( Which == ELEM_COIL ||
-      //Which == ELEM_READ_ADC ||
 /*
         Which == ELEM_CTU ||
         Which == ELEM_CTD ||
@@ -220,7 +219,7 @@ BOOL EndOfRungElem(int Which)
 void WhatCanWeDoFromCursorAndTopology(void)
 {
     BOOL canNegate = FALSE, canNormal = FALSE;
-    BOOL canResetOnly = FALSE, canSetOnly = FALSE;
+    BOOL canResetOnly = FALSE, canSetOnly = FALSE, canTtrigger = FALSE;
     BOOL canPushUp = TRUE, canPushDown = TRUE;
 
     BOOL canDelete = TRUE;
@@ -247,6 +246,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
             canNormal = TRUE;
             canResetOnly = TRUE;
             canSetOnly = TRUE;
+            canTtrigger = TRUE;
         }
 
         if(Selected->selectedState == SELECTED_ABOVE ||
@@ -612,13 +612,13 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_CONTACTS:
-            ShowContactsDialog(&(Selected->d.contacts.negated),
+            ShowContactsDialog(&(Selected->d.contacts.negated),&(Selected->d.contacts.set1),
                 Selected->d.contacts.name);
             break;
 
         case ELEM_COIL:
             ShowCoilDialog(&(Selected->d.coil.negated),
-                &(Selected->d.coil.setOnly), &(Selected->d.coil.resetOnly),
+                &(Selected->d.coil.setOnly), &(Selected->d.coil.resetOnly), &(Selected->d.coil.ttrigger),
                 Selected->d.coil.name);
             break;
 
@@ -972,6 +972,10 @@ BOOL MoveCursorNear(int *gx, int *gy)
 //-----------------------------------------------------------------------------
 void NegateSelected(void)
 {
+    if(Selected->d.contacts.negated) {
+        MakeNormalSelected();
+        return;
+    }
     switch(SelectedWhich) {
         case ELEM_CONTACTS:
             Selected->d.contacts.negated = TRUE;
@@ -982,6 +986,7 @@ void NegateSelected(void)
             c->negated = TRUE;
             c->resetOnly = FALSE;
             c->setOnly = FALSE;
+            c->ttrigger = FALSE;
             break;
         }
         default:
@@ -994,6 +999,10 @@ void NegateSelected(void)
 //-----------------------------------------------------------------------------
 void MakeNormalSelected(void)
 {
+    if(!Selected->d.contacts.negated) {
+        NegateSelected();
+        return;
+    }
     switch(SelectedWhich) {
         case ELEM_CONTACTS:
             Selected->d.contacts.negated = FALSE;
@@ -1004,6 +1013,7 @@ void MakeNormalSelected(void)
             c->negated = FALSE;
             c->setOnly = FALSE;
             c->resetOnly = FALSE;
+            c->ttrigger = FALSE;
             break;
         }
         default:
@@ -1022,6 +1032,7 @@ void MakeSetOnlySelected(void)
     c->setOnly = TRUE;
     c->resetOnly = FALSE;
     c->negated = FALSE;
+    c->ttrigger = FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -1035,4 +1046,20 @@ void MakeResetOnlySelected(void)
     c->resetOnly = TRUE;
     c->setOnly = FALSE;
     c->negated = FALSE;
+    c->ttrigger = FALSE;
 }
+
+//-----------------------------------------------------------------------------
+// Make the selected item T-trigger, if it is a coil.
+//-----------------------------------------------------------------------------
+void MakeTtriggerSelected(void)
+{
+    if(SelectedWhich != ELEM_COIL) return;
+
+    ElemCoil *c = &Selected->d.coil;
+    c->ttrigger = TRUE;
+    c->resetOnly = FALSE;
+    c->setOnly = FALSE;
+    c->negated = FALSE;
+}
+

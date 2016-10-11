@@ -205,8 +205,11 @@
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
 "Derleme baþarýlý. AVR için derlenen '%s' IHEX dosyasýna kaydedildi.\r\n\r\n MÝB konfigürasyonunu ayarlamayý unutmayýn. Bu iþlem otomatik olarak yapýlmamaktadýr."
 
-"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\nUsed %d/%d words of program flash (chip %d%% full)."
-"Derleme baþarýyla yapýldý; PIC16 için IHEX dosyasý '%s' dosyasýna kaydedildi.\r\n\r\nAyarlar: (PIC konfigürasyonu) kristal osilatör, BOD aktif, LVP pasif, PWRT aktif, tüm kod korumasý kapalý.\r\n\r\nPIC hafýzasýnýn %d/%d kelimesi kullanýldý. (Hafýza %d%% dolu)."
+"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
+"Derleme baþarýyla yapýldý; PIC16 için IHEX dosyasý '%s' dosyasýna kaydedildi.\r\n\r\nAyarlar: (PIC konfigürasyonu) kristal osilatör, BOD aktif, LVP pasif, PWRT aktif, tüm kod korumasý kapalý."
+
+"Used %d/%d words of program flash (chip %d%% full)."
+"PIC hafýzasýnýn %d/%d kelimesi kullanýldý. (Hafýza %d%% dolu)."
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
 "Derleme baþarýyla tamamlandý. Kod '%s' dosyasýna yazýldý.\r\n\r\nDerleyiciyi uygulamanýza göre deðiþtirmeniz gerekebilir. Geniþ bilgi için LDMicro belgelerine baþvurabilirsiniz."

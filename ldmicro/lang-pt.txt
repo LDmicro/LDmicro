@@ -190,8 +190,11 @@
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
 "Compilação sucedida; se escrito em IHEX para AVR para '%s'.\r\n\r\nLembrar de anotar as configurações (fuses) do micro, corretamente. Isto não acontece automaticamente."
 
-"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\nUsed %d/%d words of program flash (chip %d%% full)."
-"Compilação sucedida; escrito IHEX para PIC16 em '%s'.\r\n\r\nBits de Configuração (fuses) foi estabelecido para o cristal oscilador, BOD ativado, LVP desativado, PWRT ativado, Todos os bits de proteção desativados.\r\n\r\nUsadas %d/%d palavras de programa em flash (Chip %d%% completo)."
+"Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
+"Compilação sucedida; escrito IHEX para PIC16 em '%s'.\r\n\r\nBits de Configuração (fuses) foi estabelecido para o cristal oscilador, BOD ativado, LVP desativado, PWRT ativado, Todos os bits de proteção desativados."
+
+"Used %d/%d words of program flash (chip %d%% full)."
+"Usadas %d/%d palavras de programa em flash (Chip %d%% completo)."
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
 "Compilação sucedida: Código para interpretador escrito para '%s'.\r\n\r\nVocê provavelmente tem que adaptar o interpretador para sua aplicação. Veja a documentação."

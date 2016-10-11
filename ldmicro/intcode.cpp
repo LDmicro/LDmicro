@@ -80,7 +80,8 @@ static DWORD GenSymCountOneShot;
 static DWORD GenSymCountFormattedString;
 static DWORD GenSymCountStepper;
 
-static DWORD EepromAddrFree;
+DWORD EepromAddrFree;
+int   RomSection;
 
 //-----------------------------------------------------------------------------
 static void CheckConstantInRange(SDWORD v)
@@ -1080,20 +1081,20 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             #ifdef DEFAULT_COIL_ALGORITHM
             if(l->d.coil.negated) {
                 Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_CLEAR_BIT, l->d.contacts.name);
+                Op(INT_CLEAR_BIT, l->d.coil.name);
                 Op(INT_ELSE);
-                Op(INT_SET_BIT, l->d.contacts.name);
+                Op(INT_SET_BIT, l->d.coil.name);
                 Op(INT_END_IF);
             } else if(l->d.coil.setOnly) {
                 Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_SET_BIT, l->d.contacts.name);
+                Op(INT_SET_BIT, l->d.coil.name);
                 Op(INT_END_IF);
             } else if(l->d.coil.resetOnly) {
                 Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_CLEAR_BIT, l->d.contacts.name);
+                Op(INT_CLEAR_BIT, l->d.coil.name);
                 Op(INT_END_IF);
             } else {
-                Op(INT_COPY_BIT_TO_BIT, l->d.contacts.name, stateInOut);
+                Op(INT_COPY_BIT_TO_BIT, l->d.coil.name, stateInOut);
             }
               #else
               //Load SAMPLE\coil_s_r_n.ld into LDmicto.exe.
@@ -1104,27 +1105,40 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               // variant 3 is equivalent variant 2. Best.
               if(l->d.coil.negated) {
                   Op(INT_IF_BIT_SET, stateInOut);
-                    Op(INT_CLEAR_BIT, l->d.contacts.name);
-                    //Op(INT_CLEAR_BIT, stateInOut); // variant 2, for poweredAfter in Simulation Mode
+                    Op(INT_CLEAR_BIT, l->d.coil.name);
                   Op(INT_ELSE);
-                    Op(INT_SET_BIT, l->d.contacts.name);
-                    //Op(INT_SET_BIT, stateInOut); // for variant 2, for poweredAfter in Simulation Mode
+                    Op(INT_SET_BIT, l->d.coil.name);
                   Op(INT_END_IF);
-                  SimState(&(l->poweredAfter), l->d.contacts.name); // variant 3
+                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else if(l->d.coil.setOnly) {
                   Op(INT_IF_BIT_SET, stateInOut);
-                    Op(INT_SET_BIT, l->d.contacts.name);
+                    Op(INT_SET_BIT, l->d.coil.name);
                   Op(INT_END_IF);
-                  SimState(&(l->poweredAfter), l->d.contacts.name); // variant 3
+                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else if(l->d.coil.resetOnly) {
                   Op(INT_IF_BIT_SET, stateInOut);
-                    Op(INT_CLEAR_BIT, l->d.contacts.name);
-                    //Op(INT_CLEAR_BIT, stateInOut); // variant 2, for poweredAfter in Simulation Mode
-                    SimState(&(l->poweredAfter), l->d.contacts.name); // variant 3
+                    Op(INT_CLEAR_BIT, l->d.coil.name);
+                    SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
                   Op(INT_END_IF);
-                  SimState(&(l->poweredAfter), l->d.contacts.name); // variant 3
+                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
+              } else if(l->d.coil.ttrigger) {
+                  char storeName[MAX_NAME_LEN];
+                  GenSymOneShot(storeName, "TTRIGGER", l->d.coil.name);
+                  Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_IF_BIT_CLEAR, storeName);
+                      Op(INT_SET_BIT, storeName);
+                      Op(INT_IF_BIT_SET, l->d.coil.name);
+                        Op(INT_CLEAR_BIT, l->d.coil.name);
+                      Op(INT_ELSE);
+                        Op(INT_SET_BIT, l->d.coil.name);
+                      Op(INT_END_IF);
+                    Op(INT_END_IF);
+                  Op(INT_ELSE);
+                    Op(INT_CLEAR_BIT, storeName);
+                  Op(INT_END_IF);
+                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else {
-                  Op(INT_COPY_BIT_TO_BIT, l->d.contacts.name, stateInOut);
+                  Op(INT_COPY_BIT_TO_BIT, l->d.coil.name, stateInOut);
                   SimState(&(l->poweredAfter), stateInOut); // variant 3
               }
               #endif
@@ -1198,7 +1212,6 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
 
             Op(INT_END_IF);
-
             break;
         }
         case ELEM_TOF: {
