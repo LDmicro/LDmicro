@@ -836,6 +836,7 @@ typedef struct McuInterruptPinInfoTag {
 
 #define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
+#define MAX_ROM_SECTIONS    1
 
 typedef struct McuIoInfoTag {
     char            *mcuName;
@@ -884,7 +885,7 @@ typedef struct McuIoInfoTag {
     struct {
         DWORD            start;
         int              len;
-    }                rom[MAX_RAM_SECTIONS]; //EEPROM or HEI?
+    }                rom[MAX_ROM_SECTIONS]; //EEPROM or HEI?
 } McuIoInfo;
 
 #define NUM_SUPPORTED_MCUS 29
@@ -1421,7 +1422,9 @@ typedef enum Pic16OpTag {
     OP_NOP_,
     OP_COMMENT_,
     OP_COMMENT_INT,
+//  OP_ADDLW, // absent in PIC12
     OP_ADDWF,
+    OP_ANDLW,
     OP_ANDWF,
     OP_CALL,
     OP_BSF,
@@ -1446,8 +1449,9 @@ typedef enum Pic16OpTag {
     OP_RETLW,
     OP_RLF,
     OP_RRF,
-    OP_SUBLW,
+//  OP_SUBLW, // absent in PIC12
     OP_SUBWF, // 30
+    OP_XORLW,
     OP_XORWF,
     OP_MOVLB,
     OP_MOVLP,
