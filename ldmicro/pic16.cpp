@@ -426,7 +426,7 @@ static int IsOperation(PicOp op)
         case OP_MOVLP:
         case OP_NOP_:
         case OP_COMMENT_:
-        case OP_SUBLW:
+//      case OP_SUBLW:
         case OP_IORLW:
         case OP_OPTION:
             return IS_ANY_BANK; // not need to change bank
@@ -1351,12 +1351,12 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
             CHECK(arg1, 8); CHECK(arg2, 0);
             discoverName(addrAt, arg1s, arg1comm);
             return 0x3800 | arg1;
-
+/*
         case OP_SUBLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
             discoverName(addrAt, arg1s, arg1comm);
             return 0x1e00 | arg1;
-
+*/
         case OP_SUBWF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverName(addrAt, arg1s, arg1comm);
@@ -1866,6 +1866,9 @@ static void CallWithPclath(DWORD addr)
 /**/
 // http://picprojects.org.uk/projects/pseudoins.htm
 #define skpnc               Instruction(OP_BTFSC,  REG_STATUS, STATUS_C); // Skip on No Carry
+#define skpc                Instruction(OP_BTFSS, REG_STATUS, STATUS_C); // Skip on Carry
+#define skpnz               Instruction(OP_BTFSC, REG_STATUS, STATUS_Z); // Skip on Non Zero
+#define skpz                Instruction(OP_BTFSS, REG_STATUS, STATUS_Z); // Skip on Zero
 
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
@@ -3871,7 +3874,7 @@ void CompilePic16(char *outFile)
 
     AllocStart();
 
-    AllocBitsVars();
+    AllocBitsVars(); // first
 
     Scratch0 = AllocOctetRam();
     Scratch1 = AllocOctetRam();
@@ -3900,15 +3903,16 @@ void CompilePic16(char *outFile)
     // PCLATH is init to 0, but apparently some bootloaders want to see us
     // initialize it again.
     if(Prog.mcu->core != BaselineCore12bit) {
-      Instruction(OP_CLRF, REG_PCLATH);  //0
+      Instruction(OP_BCF, REG_PCLATH, 3); //0 // Select Page 0
+      Instruction(OP_BCF, REG_PCLATH, 4); //1 // Select Page 0
     } else {
-      Instruction(OP_NOP_, 0, 0);        //0
+      Instruction(OP_NOP_);               //0
+      Instruction(OP_NOP_);               //1
     }
-    Instruction(OP_CLRF, REG_STATUS);    //1
+      Instruction(OP_NOP_, 0, 0);         //2
     Comment("GOTO, progStart");
-    Instruction(OP_GOTO, progStart, 0);  //2
+    Instruction(OP_GOTO, progStart, 0);   //3
     if(Prog.mcu->core != BaselineCore12bit) {
-      Instruction(OP_NOP_, 0, 0);        //3
       Instruction(OP_RETFIE, 0, 0);      //4 OR
   //  Instruction(OP_NOP_, 0, 0);        //4 OR
       Instruction(OP_NOP_, 0, 0);        //5
@@ -3924,18 +3928,44 @@ void CompilePic16(char *outFile)
     FwdAddrIsNow(progStart);
 
     Comment("Now zero out the RAM");
+    DWORD progStartBank = 0;
+    Instruction(OP_CLRF, REG_STATUS); // Select Bank 0
+    DWORD zeroMem;
     int i;
+//  for(i = 0; i < MAX_RAM_SECTIONS; i++) {
     for(i = 0; i <= RamSection; i++) {
-        Instruction(OP_MOVLW, Prog.mcu->ram[i].start + 8, 0);
-        Instruction(OP_MOVWF, REG_FSR, 0);
-        Instruction(OP_MOVLW, Prog.mcu->ram[i].len - 8, 0);
-        Instruction(OP_MOVWF, Scratch0, 0);
+      if(Prog.mcu->ram[i].len) {
+        if(Bank(Prog.mcu->ram[i].start) != Bank(Prog.mcu->ram[i].start + Prog.mcu->ram[i].len - 1))
+            ooops("%d", i);
+        if(Prog.mcu->ram[i].len > 256)
+            ooops("%d", i);
 
-        DWORD zeroMem = PicProgWriteP;
-        Instruction(OP_CLRF, REG_INDF, 0);
+        Instruction(OP_MOVLW, (Prog.mcu->ram[i].start + 1) & ~BankMask());
+        // Select bank N
+        if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0080)) {
+            if(Prog.mcu->ram[i].start & 0x0080)
+                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
+            else
+                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
+        }
+        if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0100)) {
+            if(Prog.mcu->ram[i].start & 0x0100)
+                Instruction(OP_BSF, REG_STATUS, STATUS_RP1);
+            else
+                Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
+        }
+        progStartBank = Bank(Prog.mcu->ram[i].start);
+        Instruction(OP_MOVWF, REG_FSR);
+        Instruction(OP_MOVLW, Prog.mcu->ram[i].len - 1);
+        Instruction(OP_MOVWF, Prog.mcu->ram[i].start & ~BankMask());
+
+        zeroMem = PicProgWriteP;
+        Instruction(OP_CLRF, REG_INDF);
         Instruction(OP_INCF, REG_FSR, DEST_F);
-        Instruction(OP_DECFSZ, Scratch0, DEST_F);
-        Instruction(OP_GOTO, zeroMem, 0);
+        Instruction(OP_DECFSZ, Prog.mcu->ram[i].start & ~BankMask(), DEST_F); //  <<<<<<<<
+        Instruction(OP_GOTO, zeroMem);                //                                ^
+//      Instruction(OP_CLRF, Prog.mcu->ram[i].start); // not need, self cleared here >>>^
+      }
     }
 
     #ifndef MOVE_TO_PAGE_0

@@ -110,7 +110,7 @@ int McuROM()
 
     int n = 0;
     int i;
-    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
+    for(i = 0; i < MAX_ROM_SECTIONS; i++) {
         n += Prog.mcu->rom[i].len;
     }
     return n;
@@ -123,9 +123,8 @@ int UsedROM()
 
     int n = 0;
     int i;
-    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
-        if(i<RomSection)
-             n += Prog.mcu->ram[i].len;
+    for(i = 0; i < RomSection; i++) {
+        n += Prog.mcu->rom[i].len;
     }
     return n+EepromAddrFree;
 }
@@ -137,7 +136,7 @@ int McuRAM()
 
     int n = 0;
     int i;
-    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
+    for(i = 0; i < MAX_RAM_SECTIONS; i++) {
         n += Prog.mcu->ram[i].len;
     }
     return n;
@@ -150,8 +149,7 @@ int UsedRAM()
 
     int n = 0;
     int i;
-    for(i = 0; i <= MAX_RAM_SECTIONS; i++) {
-        if(i<RamSection)
+    for(i = 0; i < RamSection; i++) {
              n += Prog.mcu->ram[i].len;
     }
     return n+MemOffset;
@@ -200,6 +198,8 @@ static void ClrInternalData(void)
 {
     MemOffset = 0;
     RamSection = 0;
+    RomSection = 0;
+    EepromAddrFree = 0;
 //  VariableCount = 0;
     int i;
     for(i = 0; i < VariableCount; i++) {
