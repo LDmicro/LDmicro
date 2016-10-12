@@ -1,3 +1,6 @@
+== Release 4.0.4
+    * HotFix: Fixed initialization error of all used banks of PIC's RAM from 4.0.1 version.
+
 == Release 4.0.3
 
     * Fixed: The page correction error while the correction is crosses boundary page.
