@@ -1351,12 +1351,7 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
             CHECK(arg1, 8); CHECK(arg2, 0);
             discoverName(addrAt, arg1s, arg1comm);
             return 0x3800 | arg1;
-/*
-        case OP_SUBLW:
-            CHECK(arg1, 8); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
-            return 0x1e00 | arg1;
-*/
+
         case OP_SUBWF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverName(addrAt, arg1s, arg1comm);
@@ -1865,7 +1860,7 @@ static void CallWithPclath(DWORD addr)
 #define IfBitSet(...)       Instruction(OP_BTFSC, __VA_ARGS__)
 /**/
 // http://picprojects.org.uk/projects/pseudoins.htm
-#define skpnc               Instruction(OP_BTFSC,  REG_STATUS, STATUS_C); // Skip on No Carry
+#define skpnc               Instruction(OP_BTFSC, REG_STATUS, STATUS_C); // Skip on No Carry
 #define skpc                Instruction(OP_BTFSS, REG_STATUS, STATUS_C); // Skip on Carry
 #define skpnz               Instruction(OP_BTFSC, REG_STATUS, STATUS_Z); // Skip on Non Zero
 #define skpz                Instruction(OP_BTFSS, REG_STATUS, STATUS_Z); // Skip on Zero
@@ -1942,6 +1937,8 @@ static void CopyLiteralToRegs(int reg, int literal, int sov)
       Instruction(OP_MOVLW, (literal >> 24) & 0xff);
       Instruction(OP_MOVWF, reg+3);
     }
+    if(sov > 4)
+      oops();
 }
 //-----------------------------------------------------------------------------
 static void CopyVarToRegs(int reg, char *var, int sovRegs)
@@ -3913,11 +3910,11 @@ void CompilePic16(char *outFile)
     Comment("GOTO, progStart");
     Instruction(OP_GOTO, progStart, 0);   //3
     if(Prog.mcu->core != BaselineCore12bit) {
-      Instruction(OP_RETFIE, 0, 0);      //4 OR
-  //  Instruction(OP_NOP_, 0, 0);        //4 OR
-      Instruction(OP_NOP_, 0, 0);        //5
-      Instruction(OP_NOP_, 0, 0);        //6
-      Instruction(OP_NOP_, 0, 0);        //7
+      Instruction(OP_RETFIE, 0, 0);       //4 OR
+  //  Instruction(OP_NOP_, 0, 0);         //4 OR
+      Instruction(OP_NOP_, 0, 0);         //5
+      Instruction(OP_NOP_, 0, 0);         //6
+      Instruction(OP_NOP_, 0, 0);         //7
     }
 
     #ifdef MOVE_TO_PAGE_0
@@ -4064,10 +4061,12 @@ void CompilePic16(char *outFile)
     }
 
     Comment("Turn on the pull-ups, and drive the outputs low to start");
-    for(i = 0; Prog.mcu->dirRegs[i] != 0; i++) {
+    for(i = 0; i < MAX_IO_PORTS; i++) {
+      if(IS_MCU_REG(i))
         WriteRegister(Prog.mcu->outputRegs[i], 0x00);
     }
-    for(i = 0; Prog.mcu->dirRegs[i] != 0; i++) {
+    for(i = 0; i < MAX_IO_PORTS; i++) {
+      if(IS_MCU_REG(i))
         if(Prog.mcu->core == BaselineCore12bit) {
             Instruction(OP_MOVLW, BYTE(~isOutput[i]));
             Instruction(OP_TRIS, Prog.mcu->outputRegs[i]);

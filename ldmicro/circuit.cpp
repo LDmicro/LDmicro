@@ -83,7 +83,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 // If we copy instead of replacing then the DisplayMatrix
                 // tables don't get all messed up.
                 memcpy(s->contents[i].d.leaf, newElem, sizeof(ElemLeaf));
-                s->contents[i].d.leaf->selectedState = SELECTED_LEFT;
+                s->contents[i].d.leaf->selectedState = EndOfRungElem(newWhich) ? SELECTED_LEFT : SELECTED_RIGHT;
                 CheckFree(newElem);
                 s->contents[i].which = newWhich;
                 SelectedWhich = newWhich;
@@ -235,23 +235,33 @@ void AddComment(char *str)
     AddLeaf(ELEM_COMMENT, c);
 }
 
-void AddContact(void)
+void AddContact(int what)
 {
     if(!CanInsertOther) return;
 
     ElemLeaf *c = AllocLeaf();
-    strcpy(c->d.contacts.name, "Xnew");
+    if(what == MNU_INSERT_CONT_RELAY) {
+        strcpy(c->d.contacts.name, "Rnew");
+    } else if(what == MNU_INSERT_CONT_OUTPUT) {
+        strcpy(c->d.contacts.name, "Ynew");
+    } else {
+        strcpy(c->d.contacts.name, "Xnew");
+    }
     c->d.contacts.negated = FALSE;
 
     AddLeaf(ELEM_CONTACTS, c);
 }
 
-void AddCoil(void)
+void AddCoil(int what)
 {
     if(!CanInsertEnd) return;
 
     ElemLeaf *c = AllocLeaf();
-    strcpy(c->d.coil.name, "Ynew");
+    if(what == MNU_INSERT_COIL_RELAY) {
+        strcpy(c->d.coil.name, "Rnew");
+    } else {
+        strcpy(c->d.coil.name, "Ynew");
+    }
     c->d.coil.negated = FALSE;
     c->d.coil.setOnly = FALSE;
     c->d.coil.resetOnly = FALSE;
@@ -325,6 +335,19 @@ void AddString(void)
     strcpy(t->d.fmtdStr.string, "fmtstring");
     strcpy(t->d.fmtdStr.var, "var");
     AddLeaf(ELEM_STRING, t);
+}
+
+void AddPrint(int code)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.fmtdStr.dest, "dest");
+    strcpy(t->d.fmtdStr.string, "fmtString");
+    strcpy(t->d.fmtdStr.var, "varsList");
+    strcpy(t->d.fmtdStr.enable, "RenableIn");
+    strcpy(t->d.fmtdStr.error, "RerrorOut");
+    AddLeaf(code, t);
 }
 
 void AddLookUpTable(void)
@@ -562,15 +585,15 @@ void AddSetPwm(void)
     if(Prog.mcu) {
       if(!McuPWM()) {
         Error(_("No PWM or PWM not supported for this MCU."));
-      return;
-    }
+        return;
+      }
       if(PwmFunctionUsed() >= McuPWM()) {
         Error(_("No available PWM outputs."));
         return;
       }
     }
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setPwm.name, "PWMnew");
+    strcpy(t->d.setPwm.name, "PWMoutpin");
     strcpy(t->d.setPwm.duty_cycle, "duty_cycle");
     strcpy(t->d.setPwm.targetFreq, "1000");
     AddLeaf(ELEM_SET_PWM, t);
@@ -1239,7 +1262,7 @@ static int CountWhich_(int which, void *any, int seek1, int seek2, int seek3, ch
     default:
       if(which == seek1 || which == seek2 || which == seek3) {
         if(!name || !strlen(name))
-        n++;
+          n++;
         else {
           ElemLeaf *leaf = (ElemLeaf *)any;
           ElemCoil *c = &leaf->d.coil; // !!!

@@ -170,7 +170,7 @@ void CheckHeap(char *file, int line)
     LastCallTime = now;
 
     if(!HeapValidate(MainHeap, 0, NULL)) {
-        dbp("file %s line %d", file, line);
+        //dbp("file %s line %d", file, line);
         Error("Noticed memory corruption at file '%s' line %d.", file, line);
         oops();
     }
@@ -356,6 +356,7 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_COUNTER:           return _("counter");
         case IO_TYPE_GENERAL:           return _("general var");
         case IO_TYPE_PERSIST:           return _("saved var");
+        case IO_TYPE_BCD:               return _("BCD var");
         case IO_TYPE_STRING:            return _("string var");
         case IO_TYPE_TABLE:             return _("table in flash");
         case IO_TYPE_READ_ADC:          return _("adc input");
@@ -572,12 +573,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     }
 }
 //-----------------------------------------------------------------------------
-void GetPinName(int pin, char *pinName)
+char *GetPinName(int pin, char *pinName)
 {
     sprintf(pinName, "");
     int i;
     if(Prog.mcu)
-    if (pin != NO_PIN_ASSIGNED)
+    if(pin != NO_PIN_ASSIGNED)
     for(i = 0; i < Prog.mcu->pinCount; i++)
         if(Prog.mcu->pinInfo[i].pin==pin)
             if(Prog.mcu && (Prog.mcu->portPrefix == 'L') && (Prog.io.assignment[i].pin))
@@ -591,6 +592,7 @@ void GetPinName(int pin, char *pinName)
                     Prog.mcu->portPrefix,
                     Prog.mcu->pinInfo[i].port,
                     Prog.mcu->pinInfo[i].bit);
+    return pinName;
 }
 
 //-----------------------------------------------------------------------------
@@ -634,9 +636,10 @@ McuIoPinInfo *PinInfo(int pin)
 McuIoPinInfo *PinInfoForName(char *name)
 {
     int i;
-    for(i = 0; i < Prog.io.count; i++)
-        if(strcmp(Prog.io.assignment[i].name, name)==0)
-            return PinInfo(Prog.io.assignment[i].pin);
+    if(Prog.mcu)
+        for(i = 0; i < Prog.io.count; i++)
+            if(strcmp(Prog.io.assignment[i].name, name)==0)
+                return PinInfo(Prog.io.assignment[i].pin);
     return NULL;
 }
 
@@ -655,9 +658,11 @@ McuPwmPinInfo *PwmPinInfo(int pin)
 McuPwmPinInfo *PwmPinInfoForName(char *name)
 {
     int i;
-    for(i = 0; i < Prog.io.count; i++)
-        if(strcmp(Prog.io.assignment[i].name, name)==0)
-            return PwmPinInfo(Prog.io.assignment[i].pin);
+    if(Prog.mcu)
+        for(i = 0; i < Prog.io.count; i++) {
+            if(strcmp(Prog.io.assignment[i].name, name)==0)
+                return PwmPinInfo(Prog.io.assignment[i].pin);
+        }
     return NULL;
 }
 
@@ -676,9 +681,10 @@ McuAdcPinInfo *AdcPinInfo(int pin)
 McuAdcPinInfo *AdcPinInfoForName(char *name)
 {
     int i;
-    for(i = 0; i < Prog.io.count; i++)
-        if(strcmp(Prog.io.assignment[i].name, name)==0)
-            return AdcPinInfo(Prog.io.assignment[i].pin);
+    if(Prog.mcu)
+        for(i = 0; i < Prog.io.count; i++)
+            if(strcmp(Prog.io.assignment[i].name, name)==0)
+                return AdcPinInfo(Prog.io.assignment[i].pin);
     return NULL;
 }
 
@@ -723,8 +729,8 @@ int isname(char *name)
     }
     return 1;
 }
-//-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
 size_t strlenalnum(const char *str)
 {
     size_t r=0;
@@ -753,3 +759,25 @@ void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc)
     else
         *Dest &= ~(1 << bitDest);
 }
+
+//-----------------------------------------------------------------------------
+char *strDelSpace(char *dest, char *src)
+{
+    char *s;
+    if(src)
+        s = src;
+    else
+        s = dest;
+    int i = 0;
+    for(; *s; s++)
+        if(!isspace(*s))
+            dest[i++] = *s;
+    dest[i] = '\0';
+    return dest;
+}
+
+char *strDelSpace(char *dest)
+{
+    return strDelSpace(dest, NULL);
+}
+

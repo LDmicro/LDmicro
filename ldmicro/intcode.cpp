@@ -145,6 +145,8 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_BIN2BCD:
+                fprintf(f, "let var '%s' = bin2bcd('%s');", IntCode[i].name1,
+                    IntCode[i].name2);
                 break;
 
             case INT_SET_BCD2BIN:

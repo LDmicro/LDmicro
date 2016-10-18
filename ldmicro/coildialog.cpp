@@ -92,22 +92,22 @@ static void MakeControls(void)
 
     HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Source"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        140, 3, 120, 85, CoilDialog, NULL, Instance, NULL);
+        135, 3, 150, 85, CoilDialog, NULL, Instance, NULL);
     NiceFont(grouper2);
 
     SourceInternalRelayRadio = CreateWindowEx(0, WC_BUTTON, _("Internal Relay"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_GROUP | WS_TABSTOP,
-        149, 21, 100, 20, CoilDialog, NULL, Instance, NULL);
+        144, 21, 125, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(SourceInternalRelayRadio);
 
-    SourceMcuPinRadio = CreateWindowEx(0, WC_BUTTON, _("Pin on MCU"),
+    SourceMcuPinRadio = CreateWindowEx(0, WC_BUTTON, _("Output Pin on MCU"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
-        149, 41, 100, 20, CoilDialog, NULL, Instance, NULL);
+        144, 41, 125, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(SourceMcuPinRadio);
 
     SourceModbusRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
-        149, 61, 100, 20, CoilDialog, NULL, Instance, NULL);
+        144, 61, 125, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(SourceModbusRadio);
 
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
@@ -117,17 +117,17 @@ static void MakeControls(void)
 
     NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 90, 155, 21, CoilDialog, NULL, Instance, NULL);
+        190, 90, 175, 21, CoilDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        276, 10, 70, 23, CoilDialog, NULL, Instance, NULL);
+        295, 10, 70, 23, CoilDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        276, 40, 70, 23, CoilDialog, NULL, Instance, NULL);
+        295, 40, 70, 23, CoilDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 
     PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC,
@@ -141,7 +141,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigge
 
     CoilDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Coil"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 359, 135, NULL, NULL, Instance, NULL);
+        100, 100, 375, 135, NULL, NULL, Instance, NULL);
     RECT r;
     GetClientRect(CoilDialog, &r);
 

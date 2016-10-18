@@ -174,8 +174,8 @@ memory. On the other hand, it would be correct to have a retentive timer
 `Tdelay', since it that case you want both instructions to work with
 the same timer.
 
-Variable names can consist of letters, numbers, and underscores
-(_). A variable name must not start with a number. Variable names are
+Variable names can consist of letters, numbers, and underscores '_'.
+A variable name must not start with a number. Variable names are
 case-sensitive.
 
 The general variable instructions (MOV, ADD, EQU, etc.) can work on
@@ -365,6 +365,18 @@ INSTRUCTIONS REFERENCE
     This instruction must be the rightmost instruction in its rung.
     You can simply present as a T-trigger with the positive
     edge-triggered input.
+
+Note: The several coils with the same 'YName' or 'RName' can be mentally
+    represented as a one microchip with multiple inputs and one output.
+    Normal and inverted input are directly transfers the input state (normal or
+    inverted) to the output. R, S, T inputs lock up (latch) the state of output.
+    The T input is positive edge triggered. R, S inputs are level sensitive.
+    If before R, S insert the "OSR: ONE-SHOT RISING" or
+    "OSF: ONE-SHOT FALLING" you get a "positive edge triggered" element.
+    If used only the R and S inputs you get classic RS-trigger.
+    If add T input you get "newest" RST-trigger. May be several R..R inputs,
+    or several S..S inputs. You can use any combination of inputs for one 'YName'
+    or 'RName' coil.
 
 
 > TURN-ON DELAY                 Tdon
@@ -888,12 +900,12 @@ INSTRUCTIONS REFERENCE
     Use `\\' for a literal backslash. In addition to the escape sequence
     for interpolating an integer variable, the following control
     characters are available:
-        * \r   -- carriage return
-        * \n   -- new line
-        * \f   -- form feed
-        * \b   -- backspace
-        * \t   -- horizontal tab
-        * \v   -- vertical tab
+        * \r   -- CR carriage return
+        * \n   -- NL new line
+        * \f   -- FF form feed
+        * \b   -- BS backspace
+        * \t   -- TAB horizontal tab
+        * \v   -- VTAB vertical tab
         * \a   -- alert
         * \xAB -- character with ASCII value 0xAB (hex)
 
