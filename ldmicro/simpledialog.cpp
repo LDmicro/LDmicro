@@ -170,7 +170,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
         if(numOnlyMask & (1 << i)) {
             PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC,
                 (LONG_PTR)MyNumOnlyProc);
-        }
+        } else // numOnlyMask overpower alnumOnlyMask
         if(alnumOnlyMask & (1 << i)) {
             PrevAlnumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC,
                 (LONG_PTR)MyAlnumOnlyProc);
@@ -505,7 +505,7 @@ void ShowVarBitDialog(int which, char *dest, char *src)
     }
     char *labels[] = { _("Variable:"), _("Bit # [0..15]:") };
     char *dests[] = { dest, src };
-    if(ShowSimpleDialog(title, 2, labels, 0, 0, 0x3, dests)){
+    if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)){
     }
 }
 
@@ -521,8 +521,7 @@ void ShowMoveDialog(int which, char *dest, char *src)
     }
     char *labels[] = { _("Destination:="), _("Source:") };
     char *dests[] = { dest, src };
-//  if(ShowSimpleDialog(_("Move"), 2, labels, 0, 0x3, 0x3, dests)){
-    if(ShowSimpleDialog(title, 2, labels, 0, 0, 0x3, dests)){
+    if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)){
         if(IsNumber(dest)) {
             Error(_("Move instruction: '%s' not a valid destination."),
                 dest);
@@ -552,7 +551,7 @@ void ShowBusDialog(ElemLeaf *l)
 
     char *labels[] = { _("Destination:"), _("Source:"), _("Destination bits:"), _("Source bits:") };
     char *dests[] = { s->dest, busStr, s->src, PCBbitStr};
-    if(ShowSimpleDialog(title, 4, labels, 0, 0x3, 0x1f, dests)){
+    if(ShowSimpleDialog(title, 4, labels, 0, 0x3, 0xff, dests)){
         if(IsNumber(s->dest)) {
             Error(_("Bus instruction: '%s' not a valid destination."),
                 s->dest);
@@ -601,7 +600,7 @@ void ShowSegmentsDialog(ElemLeaf *l)
     char *dests[] = { s->dest, s->src, common};
     char s2[50];
     sprintf(s2,_("Convert char to %s Segments"), s1);
-    if(ShowSimpleDialog(s2, 3, labels, 0, 0x3, 0x1f, dests)){
+    if(ShowSimpleDialog(s2, 3, labels, 0, 0x3, 0xff, dests)){
         if(IsNumber(s->dest)) {
             Error(_("Segments instruction: '%s' not a valid destination."),
                 s->dest);
@@ -631,7 +630,7 @@ void ShowSetPwmDialog(void *e)
     char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):")};
     char *dests[] = { name+1, duty_cycle, targetFreq};
 
-    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 3, labels, 0x2, 0x7, 0x7, dests)) {
+    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 3, labels, 0x4, 0x3, 0x7, dests)) {
         //TODO: check the available range
         double freq = hobatoi(targetFreq);
         if(freq < 0)
@@ -653,8 +652,10 @@ void ShowUartDialog(int which, char *name)
         _("Source:") };
     char *dests[] = { name };
 
+    NoCheckingOnBox[0] = TRUE;
     ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") :
-        _("Send to UART"), 1, labels, 0, 0x1, 0x1, dests);
+        _("Send to UART"), 1, labels, 0x0, 0x1, 0x1, dests);
+    NoCheckingOnBox[0] = FALSE;
 }
 
 void ShowMathDialog(int which, char *dest, char *op1, char *op2)
@@ -822,7 +823,7 @@ void ShowStepperDialog(int which, void *e)
     char snSize[128];
     sprintf(snSize, "%d", s->nSize);
     char *dests[] = { name, max, P, snSize, sgraph, coil+1};
-    if(ShowSimpleDialog(title, 6, labels, 0, 0x7, 0x3f, dests)) {
+    if(ShowSimpleDialog(title, 6, labels, 0, 0xff, 0xff, dests)) {
         s->graph = hobatoi(sgraph);
         s->nSize = hobatoi(snSize);
 
@@ -893,7 +894,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
 
     char *labels[] = { _("Counter:"), _("P1:"), _("P0:"), _("Accel.:"), _("Busy to:")};
     char *dests[] = { counter, P1, P0, accel, busy};
-    if(ShowSimpleDialog(title, 5, labels, 0, 0x7, 0x1f, dests)) {
+    if(ShowSimpleDialog(title, 5, labels, 0, 0xff, 0xff, dests)) {
         if(IsNumber(P1))
             CheckConstantInRange("", P1,hobatoi(P1));
         if(IsNumber(P0))
@@ -997,7 +998,7 @@ void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, c
 {};
     NoCheckingOnBox[4] = TRUE;
     NoCheckingOnBox[5] = TRUE;
-    if(ShowSimpleDialog(title, 6, labels, 0x2, 0x1, 0x3f, dests)) {
+    if(ShowSimpleDialog(title, 6, labels, 0x2, 0xff, 0xff, dests)) {
         //TODO: check the available range
         *int01 = hobatoi(_int01);
         if(Prog.mcu)
@@ -1029,11 +1030,13 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
 
     char *labels[] = { _("SizeOfVar:"), _("Simulation value:")};
     char *dests[] = { sovStr, valStr };
-    if(ShowSimpleDialog(s, 2, labels, 0x2, 0x1, 0x3, dests)) {
+    if(ShowSimpleDialog(s, 2, labels, 0x3, 0x0, 0x3, dests)) {
        sov = hobatoi(sovStr);
        sov = 2;
        if((sov <= 0)
-       ||((io->type != IO_TYPE_STRING) && (sov>3)) ){
+       ||((io->type != IO_TYPE_STRING) && (sov>4) && (io->type != IO_TYPE_BCD))
+       ||((io->type == IO_TYPE_BCD) && (sov>10))
+       ){
            Error(_("Not a reasonable size for a variable."));
        } else {
            SetSizeOfVar(io->name, sov);
@@ -1077,29 +1080,59 @@ void ShowFormattedStringDialog(char *var, char *string)
     NoCheckingOnBox[1] = FALSE;
 }
 
-char *strDelSpace(char *dest, char *src)
-{
-    char *s = src;
-    int i = 0;
-    for(; *s; s++)
-        if(!isspace(*s))
-            dest[i++] = *s;
-    dest[i] = '\0';
-    return dest;
-}
-
 void ShowStringDialog(char * dest, char *var, char *string)
 {
-    char *labels[] = { _("Dest:"), _("Variable:"), _("String:") };
-    char *dests[] = { dest, var, string };
+    char *labels[] = { _("Variable list:"), _("Format string:"), _("Dest:") };
+    char *dests[] = { var, string, dest };
     NoCheckingOnBox[0] = TRUE;
     NoCheckingOnBox[1] = TRUE;
     NoCheckingOnBox[2] = TRUE;
     ShowSimpleDialog(_("Formatted String"), 3, labels, 0x0,
-        0x1, 0x3, dests);
+        0x6, 0x7, dests);
     NoCheckingOnBox[0] = FALSE;
     NoCheckingOnBox[1] = FALSE;
     NoCheckingOnBox[2] = FALSE;
+}
+
+void ShowCprintfDialog(int which, void *e)
+{
+    ElemFormattedString *f = (ElemFormattedString *)e;
+    char *var = f->var;
+    char *string = f->string;
+    char *dest = f->dest;
+    char *enable = f->enable;
+    char *error = f->error;
+
+    char *labels[] = { _("Variable list:"), _("Format string:"), _("Dest:"), _("Enable:"), _("Error:") };
+    char *dests[] = { var, string, dest, enable, error };
+    char *s;
+    switch(which) {
+        case ELEM_CPRINTF:      s = "CPRINTF"; goto cprintf;
+        case ELEM_SPRINTF:      s = "SPRINTF"; goto cprintf;
+        case ELEM_FPRINTF:      s = "FPRINTF"; goto cprintf;
+        case ELEM_PRINTF:       s = "PRINTF"; goto cprintf;
+        case ELEM_I2C_CPRINTF:  s = "I2C_PRINTF"; goto cprintf;
+        case ELEM_ISP_CPRINTF:  s = "ISP_PRINTF"; goto cprintf;
+        case ELEM_UART_CPRINTF: s = "UART_PRINTF"; goto cprintf; {
+        cprintf:
+            break;
+        }
+        default: ooops("ELEM_0x%X");
+    }
+    char str[MAX_NAME_LEN];
+    sprintf(str, ("Formatted String over %s"), s);
+    NoCheckingOnBox[0] = TRUE;
+    NoCheckingOnBox[1] = TRUE;
+    NoCheckingOnBox[2] = TRUE;
+    NoCheckingOnBox[3] = TRUE;
+    NoCheckingOnBox[4] = TRUE;
+    ShowSimpleDialog( str, 5, labels, 0x0,
+        0x1c, 0xff, dests);
+    NoCheckingOnBox[0] = FALSE;
+    NoCheckingOnBox[1] = FALSE;
+    NoCheckingOnBox[2] = FALSE;
+    NoCheckingOnBox[3] = FALSE;
+    NoCheckingOnBox[4] = FALSE;
 }
 
 void ShowPersistDialog(char *var)

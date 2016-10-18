@@ -136,6 +136,13 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_PULSER:
         case ELEM_STEPPER:
         case ELEM_STRING:
+        case ELEM_CPRINTF:
+        case ELEM_SPRINTF:
+        case ELEM_FPRINTF:
+        case ELEM_PRINTF:
+        case ELEM_I2C_CPRINTF:
+        case ELEM_ISP_CPRINTF:
+        case ELEM_UART_CPRINTF:
         case ELEM_FORMATTED_STRING:
             return 2;
 
@@ -783,6 +790,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
     static char s1[BUF_LEN];
     static char s2[BUF_LEN];
     static char s3[BUF_LEN];
+    char *s;
 
     switch(which) {
         case ELEM_COMMENT: {
@@ -1301,6 +1309,13 @@ cmp:
         case ELEM_PULSER:
         case ELEM_STEPPER:
         case ELEM_STRING:
+        case ELEM_CPRINTF:
+        case ELEM_SPRINTF:
+        case ELEM_FPRINTF:
+        case ELEM_PRINTF:
+        case ELEM_I2C_CPRINTF:
+        case ELEM_ISP_CPRINTF:
+        case ELEM_UART_CPRINTF:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx-1, gy);
             DisplayMatrix[gx-1][gy] = leaf;

@@ -104,7 +104,10 @@ typedef signed long SDWORD;
 
 #define MNU_INSERT_COMMENT      0x20
 #define MNU_INSERT_CONTACTS     0x21
+#define MNU_INSERT_CONT_RELAY   0x2101
+#define MNU_INSERT_CONT_OUTPUT  0x2102
 #define MNU_INSERT_COIL         0x22
+#define MNU_INSERT_COIL_RELAY   0x2201
 #define MNU_INSERT_TCY          0x2301
 #define MNU_INSERT_TON          0x23
 #define MNU_INSERT_TOF          0x24
@@ -155,7 +158,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_MASTER_RLY   0x3d
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
-#define MNU_INSERT_FMTD_STR     0x40
+#define MNU_INSERT_FMTD_STRING  0x40
 #define MNU_INSERT_PERSIST      0x41
 #define MNU_MAKE_NORMAL         0x42
 #define MNU_NEGATE              0x43
@@ -170,7 +173,15 @@ typedef signed long SDWORD;
 #define MNU_INSERT_csFB         0x4a    // clear bit in special function register
 #define MNU_INSERT_TSFB         0x4b    // test if bit is set in special function register
 #define MNU_INSERT_T_C_SFB      0x4c    // test if bit is clear in special function register
-
+/*
+#define MNU_INSERT_CPRINTF      0x4c01 == ELEM_CPRINTF
+#define MNU_INSERT_SPRINTF      0x4c02
+#define MNU_INSERT_FPRINTF      0x4c03
+#define MNU_INSERT_PRINTF       0x4c04
+#define MNU_INSERT_I2C_CPRINTF  0x4c05
+#define MNU_INSERT_ISP_CPRINTF  0x4c06
+#define MNU_INSERT_UART_CPRINTF 0x4c07
+*/
 #define MNU_INSERT_STRING       0x4d
 #define MNU_INSERT_OSC          0x4f01
 #define MNU_INSERT_STEPPER      0x4f02
@@ -320,6 +331,14 @@ typedef signed long SDWORD;
 #define ELEM_TSFR               0x36    // Element test if set bit in SFR
 #define ELEM_T_C_SFR            0x37    // Element test if clear bit in SFR
 
+#define ELEM_CPRINTF            0x4c01
+#define ELEM_SPRINTF            0x4c02
+#define ELEM_FPRINTF            0x4c03
+#define ELEM_PRINTF             0x4c04
+#define ELEM_I2C_CPRINTF        0x4c05
+#define ELEM_ISP_CPRINTF        0x4c06
+#define ELEM_UART_CPRINTF       0x4c07
+
 #define ELEM_STRING             0x3f
 #define ELEM_OSC                0x4001
 #define ELEM_STEPPER            0x4002   //
@@ -414,6 +433,13 @@ typedef signed long SDWORD;
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
         case ELEM_STRING: \
+        case ELEM_CPRINTF: \
+        case ELEM_SPRINTF: \
+        case ELEM_FPRINTF: \
+        case ELEM_PRINTF: \
+        case ELEM_I2C_CPRINTF: \
+        case ELEM_ISP_CPRINTF: \
+        case ELEM_UART_CPRINTF: \
         case ELEM_FORMATTED_STRING: \
         case ELEM_PERSIST:
 
@@ -577,9 +603,11 @@ typedef struct ElemPiecewiseLinearTag {
 } ElemPiecewiseLinear;
 
 typedef struct ElemFormattedStringTag {
-    char    dest[MAX_NAME_LEN];
-    char    var[MAX_NAME_LEN];
+    char    var[MAX_NAME_LEN]; // also a varsList
     char    string[MAX_STRING_LEN];
+    char    dest[MAX_NAME_LEN]; // also a CHAR
+    char    enable[MAX_NAME_LEN]; // bitVar
+    char    error[MAX_NAME_LEN];  // bitVar
 } ElemFormattedString;
 
 typedef struct ElemPerisistTag {
@@ -657,6 +685,7 @@ typedef struct ModbusAddr {
 typedef struct PlcProgramSingleIoTag {
     char        name[MAX_NAME_LEN];
 /*More convenient sort order in IOlist*/
+#define IO_TYPE_NO              0
 #define IO_TYPE_PENDING         0
 #define IO_TYPE_GENERAL         1
 #define IO_TYPE_PERSIST         2
@@ -678,8 +707,9 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_MODBUS_HREG     20
 #define IO_TYPE_PORT_INPUT      21 // 8bit PORT for in data  - McuIoInfo.inputRegs
 #define IO_TYPE_PORT_OUTPUT     22 // 8bit PORT for out data - McuIoInfo.oututRegs
-#define IO_TYPE_STRING          23
-#define IO_TYPE_TABLE           24
+#define IO_TYPE_BCD             23 // unpacked, max 10 byte
+#define IO_TYPE_STRING          24 // max
+#define IO_TYPE_TABLE           25 // max
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -837,6 +867,8 @@ typedef struct McuInterruptPinInfoTag {
 #define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
 #define MAX_ROM_SECTIONS    1
+
+#define IS_MCU_REG(i) ((Prog.mcu) && (Prog.mcu->inputRegs[i]) && (Prog.mcu->outputRegs[i]) && (Prog.mcu->dirRegs[i]))
 
 typedef struct McuIoInfoTag {
     char            *mcuName;
@@ -1025,8 +1057,8 @@ extern BOOL CanInsertComment;
 
 // circuit.cpp
 void AddTimer(int which);
-void AddCoil(void);
-void AddContact(void);
+void AddCoil(int what);
+void AddContact(int what);
 void AddEmpty(int which);
 void AddMove(void);
 void AddBus(int which);
@@ -1053,6 +1085,7 @@ void AddLookUpTable(void);
 void AddPiecewiseLinear(void);
 void AddFormattedString(void);
 void AddString(void);
+void AddPrint(int code);
 void DeleteSelectedFromProgram(void);
 void DeleteSelectedRung(void);
 BOOL CollapseUnnecessarySubckts(int which, void *any);
@@ -1101,6 +1134,7 @@ char *strspacer(char *str);
 char *FrmStrToStr(char *dest, char *src);
 
 // iolist.cpp
+int IsIoType(int type);
 int GenerateIoList(int prevSel);
 void SaveIoListToFile(FILE *f);
 BOOL LoadIoListFromFile(FILE *f);
@@ -1127,7 +1161,6 @@ void ShowUartDialog(int which, char *name);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
-//void CalcSteps(ElemStepper *s, ResSteps *r);
 void ShowStepperDialog(int which, void *e);
 void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy);
 void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil);
@@ -1137,6 +1170,7 @@ void ShowBusDialog(ElemLeaf *l);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
 void ShowStringDialog(char * dest, char *var, char *string);
+void ShowCprintfDialog(int which, void *e);
 void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
@@ -1226,7 +1260,7 @@ void FinishIhex(FILE *f);
 char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
-void GetPinName(int pin, char *pinName);
+char *GetPinName(int pin, char *pinName);
 char *PinToName(int pin);
 int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
@@ -1255,6 +1289,8 @@ extern BOOL DialogCancel;
 BOOL IsNumber(char *str);
 size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
+char *strDelSpace(char *dest, char *src);
+char *strDelSpace(char *dest);
 
 // lang.cpp
 char *_(char *in);
@@ -1464,11 +1500,10 @@ typedef struct PicAvrInstructionTag {
     AvrOp       opAvr;
     DWORD       arg1;
     DWORD       arg2;
-    DWORD       arg1orig;     //
+    DWORD       arg1orig;
     DWORD       BANK;         // this operation opPic will executed with this STATUS or BSR registers
     DWORD       PCLATH;       // this operation opPic will executed with this PCLATH which now or previously selected
     BOOL        label;
-//  DWORD       address;      // original address before correcting the adresses in array of opPic operations
     char        commentInt[MAX_COMMENT_LEN];
     char        commentAsm[MAX_COMMENT_LEN];
     char        arg1name[MAX_NAME_LEN];

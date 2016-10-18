@@ -63,15 +63,38 @@ static BOOL AnalogSliderDone;
 static BOOL AnalogSliderCancel;
 
 //-----------------------------------------------------------------------------
+// Only this types can connect name to I/O pins.
+//-----------------------------------------------------------------------------
+int IsIoType(int type)
+{
+    if((type == IO_TYPE_INT_INPUT)
+    || (type == IO_TYPE_DIG_INPUT)
+    || (type == IO_TYPE_DIG_OUTPUT)
+    || (type == IO_TYPE_READ_ADC)
+    || (type == IO_TYPE_PWM_OUTPUT)
+//  || (type == IO_TYPE_MODBUS_CONTACT) //???
+//  || (type == IO_TYPE_MODBUS_COIL)    //???
+    || (type == IO_TYPE_UART_TX)
+    || (type == IO_TYPE_UART_RX))
+        return type;
+    return 0;
+}
+//-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
 //-----------------------------------------------------------------------------
-static void AppendIo(char *name, int type)
+static void AppendIo(char *IOname, int type)
 {
-    if(!name || !strlen(name))
+    if(!IOname || !strlen(IOname))
         return;
+    char name[MAX_NAME_LEN];
+    strcpy(name, IOname);
     SetVariableType(name, type);
     int i;
     for(i = 0; i < Prog.io.count; i++) {
+        if((strcmp(Prog.io.assignment[i].name, name)==0)
+        && (Prog.io.assignment[i].type == type))
+            return;
+        /*
         if(strcmp(Prog.io.assignment[i].name, name)==0) {
             if(type != IO_TYPE_GENERAL && Prog.io.assignment[i].type ==
                 IO_TYPE_GENERAL)
@@ -81,6 +104,7 @@ static void AppendIo(char *name, int type)
             // already in there
             return;
         }
+        /**/
     }
     if(i < MAX_IO) {
         Prog.io.assignment[i].type = type;
@@ -143,6 +167,8 @@ static void AppendIoAutoType(char *name, int default_type)
     case 'G': type = IO_TYPE_GENERAL; break;
     default: type = default_type;
     };
+
+    // type = default_type; // rewert
 
     AppendIo(name, type);
 }
@@ -365,7 +391,19 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_BIN2BCD:
+            AppendIo(l->d.move.dest, IO_TYPE_BCD);
+            if(CheckForNumber(l->d.move.src) == FALSE) {
+                AppendIoAutoTypePinGeneral(l->d.move.src);
+            }
+            break;
+
         case ELEM_BCD2BIN:
+            AppendIoAutoTypePinGeneral(l->d.move.dest);
+            if(CheckForNumber(l->d.move.src) == FALSE) {
+            AppendIo(l->d.move.src, IO_TYPE_BCD);
+            }
+            break;
+
         case ELEM_SWAP:
         case ELEM_BUS:
         case ELEM_MOVE:
@@ -434,7 +472,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_STRING:
             if(strlen(l->d.fmtdStr.dest) > 0) {
-                AppendIo(l->d.fmtdStr.dest, IO_TYPE_GENERAL);
+                AppendIo(l->d.fmtdStr.dest, IO_TYPE_STRING);
             }
             if(strlen(l->d.fmtdStr.var) > 0) {
                 AppendIo(l->d.fmtdStr.var, IO_TYPE_GENERAL);
@@ -448,10 +486,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_UART_SEND:
+            AppendIo(l->d.uart.name, IO_TYPE_GENERAL);
             AppendIo(l->d.uart.name, IO_TYPE_UART_TX);
             break;
 
         case ELEM_UART_RECV:
+            AppendIo(l->d.uart.name, IO_TYPE_GENERAL);
             AppendIo(l->d.uart.name, IO_TYPE_UART_RX);
             break;
 
@@ -545,26 +585,6 @@ static int CompareIo(const void *av, const void *bv)
 
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
-/*
-    if(a->pin != NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) {
-        if((a->type == IO_TYPE_DIG_INPUT)
-         ||(a->type == IO_TYPE_DIG_OUTPUT)
-         ||(a->type == IO_TYPE_INT_INPUT)
-         ||(a->type == IO_TYPE_READ_ADC)) {
-
-            char PinName[MAX_NAME_LEN] = "";
-            char apin[MAX_NAME_LEN] = "";
-            char bpin[MAX_NAME_LEN] = "";
-            char aPortName[MAX_NAME_LEN] = "";
-            char bPortName[MAX_NAME_LEN] = "";
-
-            PinNumberForIo(apin, a, aPortName, PinName);
-            PinNumberForIo(bpin, b, bPortName, PinName);
-
-            return strcmp(aPortName, bPortName);
-        }
-    }
-*/
     return strcmp(a->name, b->name);
 }
 
@@ -690,6 +710,11 @@ void SaveIoListToFile(FILE *f)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
+        if((strcmp(Prog.LDversion,"0.1")==0)
+        && (Prog.io.assignment[i].name[0] != 'X')
+        && (Prog.io.assignment[i].name[0] != 'Y')
+        && (Prog.io.assignment[i].name[0] != 'A'))
+            continue;
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT  ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_INT_INPUT  ||
@@ -927,6 +952,7 @@ void ShowIoDialog(int item)
     switch(type) {
         case IO_TYPE_GENERAL:
         case IO_TYPE_PERSIST:
+        case IO_TYPE_BCD:
         case IO_TYPE_STRING:
         case IO_TYPE_RTO:
         case IO_TYPE_COUNTER:
@@ -1341,6 +1367,7 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_PERSIST         )
                     || (type == IO_TYPE_PORT_INPUT      )
                     || (type == IO_TYPE_PORT_OUTPUT     )
+                    || (type == IO_TYPE_BCD             )
                     || (type == IO_TYPE_STRING          )
                     || (type == IO_TYPE_RTO             )
                     || (type == IO_TYPE_COUNTER         )

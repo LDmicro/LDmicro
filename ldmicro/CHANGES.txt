@@ -1,5 +1,33 @@
+== Release 4.0.5
+
+    * Fixed: Bug with J,K,L ports addreses at ATMega2560.
+      Bug with addreses of ADC at ATMega2560. Tested in Proteus.
+      asm_demo_mega2560.zip contains LD, asm, hex, Proteus7 model. See end of the page:
+      https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Integrate-LDmicro-and-AVR-Studio-or-PIC-MPLAB-software
+
+    * Added menu and shortcats:
+      "Insert Contacts: Internal Relay       Shift+C"
+      "Insert Contacts: Output pin           Shift+L"
+      "Insert Coil: Internal Relay             Alt+L"
+
+    * Added in manual.txt:
+    Note: The several coils with the same 'YName' or 'RName' can be mentally
+      represented as a one microchip with multiple inputs and one output.
+      Normal and inverted input are directly transfers the input state (normal or
+      inverted) to the output. R, S, T inputs lock up (latch) the state of output.
+      The T input is positive edge triggered. R, S inputs are level sensitive.
+      If before R, S insert the "OSR: ONE-SHOT RISING" or
+      "OSF: ONE-SHOT FALLING" you get a "positive edge triggered" element.
+      If used only the R and S inputs you get classic RS-trigger,
+      that may be with more than two inputs. If add T input you get "newest" RST-trigger.
+      May be several R..R inputs, or several S..S inputs.
+      You can use any combination of inputs for one 'YName' or 'RName' coil.
+      See also COIL, T-TRIGGER in Release 4.0.3.
+
 == Release 4.0.4
+
     * HotFix: Fixed initialization error of all used banks of PIC's RAM from 4.0.1 version.
+      Not recomended to use with PIC's MCU releases 4.0.1 - 4.0.3.
 
 == Release 4.0.3
 
@@ -52,7 +80,8 @@
 
     * Fixed: RETURN error in MUL,DIV elements in PIC10xxx, PIC12xx microcontroller family.
 
-    * Added element: Added in manual.txt
+    * Added element COIL, T-TRIGGER.
+      Added in manual.txt:
 
       Terminology:
       "Level sensitive" = output(element) controlled by the level of the input.

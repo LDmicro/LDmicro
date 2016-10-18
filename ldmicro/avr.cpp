@@ -163,13 +163,9 @@ static PicAvrInstruction AvrProg[MAX_PROGRAM_LEN];
 static DWORD AvrProgWriteP;
 
 static int IntPcNow = -INT_MAX; //must be static
-/*
-typedef struct RungAddrTag {
-    DWORD   KnownAddr; // Addres to jump to the start of rung abowe the current in LD
-    DWORD   FwdAddr;   // Addres to jump to the start of rung below the current in LD
-} RungAddr;
+
 RungAddr AddrOfRungN[MAX_RUNGS];
-*/
+
 #define OP_XOR OP_EOR
 
 // For yet unresolved references in jumps
@@ -237,6 +233,7 @@ static BYTE      TOV0   = 0; // Timer/Counter0 Overflow Flag
 
 static DWORD REG_ADCSRB = 0;
 #define          ACME     BIT6
+#define          MUX5     BIT3
 
 static DWORD REG_ADMUX  = 0x27;
 static DWORD REG_ADCSRA = 0x26;
@@ -2042,7 +2039,7 @@ static void WriteRuntime(void)
 
     Comment("Turn on the pull-ups, and drive the outputs low to start");
     for(i = 0; Prog.mcu->dirRegs[i] != 0; i++) {
-        if(Prog.mcu->dirRegs[i] == 0xff && Prog.mcu->outputRegs[i] == 0xff) {
+        if(!IS_MCU_REG(i)) {
             // skip this one, dummy entry for MCUs with I/O ports not
             // starting from A
         } else {
@@ -3228,10 +3225,15 @@ static void CompileFromIntermediate(void)
 //                  (0 << 6) |              // AREF, Internal Vref turned off.
                     (1 << 6) |              // AVCC as reference with external capacitor 100nF at AREF to GND pin. // Arduino compatible.
                     (0 << 5) |              // result is right adjusted.
-                    mux);
+                    mux & 0x07);
 
-                if(REG_ADCSRB)
+                if(REG_ADCSRB) {
                 WriteMemory(REG_ADCSRB, 0 << ACME);
+                    //ClearBit(REG_ADCSRB, ACME);
+                    if(mux & 0x08) {
+                        SetBit(REG_ADCSRB, MUX5);
+                    }
+                }
 
                 // target something around 200 kHz for the ADC clock, for
                 // 25/(200k) or 125 us conversion time, reasonable
@@ -3341,8 +3343,6 @@ static void CompileFromIntermediate(void)
             case INT_COMMENT:
                 Comment(a->name1);
                 break;
-                break;
-
             default:
                 ooops("INT_%d", a->op);
                 break;
@@ -4083,6 +4083,12 @@ void CompileAvr(char *outFile)
         REG_UCSRC   = 0xC2;   // UCSR0C
         REG_UCSRB   = 0xC1;   // UCSR0B
         REG_UCSRA   = 0xC0;   // UCSR0A
+
+        REG_ADMUX   = 0x7C;
+        REG_ADCSRB  = 0x7B;
+        REG_ADCSRA  = 0x7A;
+        REG_ADCH    = 0x79;
+        REG_ADCL    = 0x78;
 
         REG_OCR2    = 0xB3;   // OCR2A
         REG_TCCR2B  = 0xB1;
