@@ -481,6 +481,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
     ElemLeaf *l = (ElemLeaf *)elem;
     char *name = NULL;
     DWORD flag;
+    char str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -744,7 +745,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
             break;
         }
         case ELEM_CONTACTS: {
-            if ((l->d.contacts.name[0] == 'X')
+            if((l->d.contacts.name[0] == 'X')
             && (l->d.contacts.set1))
                  SetSingleBit(l->d.contacts.name, TRUE); // Set HI level inputs before simulating
             break;
@@ -1171,10 +1172,11 @@ math:
             case INT_GotoRung:
                 break;
 
-            case INT_PRINT_STRING:
+            case INT_PRINTF_STRING:
                 break;
             #endif
 
+            #define SPINTF(buffer, format, args) sprintf(buffer, format, #args);
             case INT_WRITE_STRING: {
                 break;
             }

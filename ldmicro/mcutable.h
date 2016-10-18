@@ -182,7 +182,7 @@ McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
 
     { 'J',  7, 79 },
 
-    { 'K',  7, 82 },
+    { 'K',  7, 82 }, // ADC or I/O
     { 'K',  6, 83 },
     { 'K',  5, 84 },
     { 'K',  4, 85 },
@@ -191,7 +191,7 @@ McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
     { 'K',  1, 88 },
     { 'K',  0, 89 },
 
-    { 'F',  7, 90 },
+    { 'F',  7, 90 }, // ADC or I/O
     { 'F',  6, 91 },
     { 'F',  5, 92 },
     { 'F',  4, 93 },
@@ -802,13 +802,13 @@ McuAdcPinInfo Pic16f887AdcPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // 28-Pin PDIP, SOIC, SSOP
-// PIC16F876,  PIC16F873
 // PIC16F886,  PIC16F883, PIC16F882
 // PIC16F1512, PIC16F1513
 // PIC16F1516, PIC16F1518
 
 McuIoPinInfo Pic28Pin_SPDIP_SOIC_SSOP[] = {
 //  { 'E', 3,  1, "RE3/_MCLR/VPP" },
+
     { 'A', 0,  2, "RA0/AN0/ULPWU/C12IN0-" },
     { 'A', 1,  3, "RA1/AN1/C12IN1-" },
     { 'A', 2,  4, "RA2/AN2/VREF-/CVREF/C2IN+" },
@@ -816,8 +816,8 @@ McuIoPinInfo Pic28Pin_SPDIP_SOIC_SSOP[] = {
     { 'A', 4,  6, "RA4/T0CKI/C1OUT" },
     { 'A', 5,  7, "RA5/AN4/_SS/C2OUT" },
 //  {          8, "Vss" },
-//  { 'A', 7,  9, "OSC2/CLKOUT" },
-//  { 'A', 6, 10, "OSC1/CLKIN " },
+//  { 'A', 7,  9, "RA,OSC2/CLKOUT" },
+//  { 'A', 6, 10, "RA,OSC1/CLKIN " },
     { 'C', 0, 11, "RC0/T1OSO/T1CKI" },
     { 'C', 1, 12, "RC1/T1OSI/CCP2" },
     { 'C', 2, 13, "RC2/P1A/CCP1" },
@@ -931,12 +931,13 @@ McuPwmPinInfo ControllinoMaxiPwmPinInfo[] = {
 McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     {
         "Atmel AVR ATmega2560 100-TQFP",
-        "",
-        "",
+        "ATmega2560",
+        "m2560def",
         'P',
-        { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0x103, 0x106, 0x109 }, // PINx
-        { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0x105, 0x108, 0x10B }, // PORTx
-        { 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33, 0x101, 0x104, 0x107, 0x10A }, // DDRx
+//        A     B     C     D     E     F     G     H      I   J      K      L
+        { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0,  0x103, 0x106, 0x109 },
+        { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0,  0x105, 0x108, 0x10B },
+        { 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33, 0x101, 0,  0x104, 0x107, 0x10A },
         128*1024,
         { { 0x200, 8192 } },
         AvrAtmega2560_100TQFPIoPinInfo,
@@ -1102,9 +1103,9 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "",
         "",
         'P',
-        { 0xff, 0x23, 0x26, 0x29 }, // PINx
-        { 0xff, 0x25, 0x28, 0x2B }, // PORTx
-        { 0xff, 0x24, 0x27, 0x2A }, // DDRx
+        { 0, 0x23, 0x26, 0x29 }, // PINx
+        { 0, 0x25, 0x28, 0x2B }, // PORTx
+        { 0, 0x24, 0x27, 0x2A }, // DDRx
         2*1024,
         { { 0x100, 512 } },
         AvrAtmega8IoPinInfo,
@@ -1126,9 +1127,9 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "",
         "",
         'P',
-        { 0xff, 0x23, 0x26, 0x29 }, // PINx
-        { 0xff, 0x25, 0x28, 0x2B }, // PORTx
-        { 0xff, 0x24, 0x27, 0x2A }, // DDRx
+        { 0, 0x23, 0x26, 0x29 }, // PINx
+        { 0, 0x25, 0x28, 0x2B }, // PORTx
+        { 0, 0x24, 0x27, 0x2A }, // DDRx
         4*1024,
         { { 0x100, 1024 } },
         AvrAtmega8IoPinInfo,
@@ -1150,9 +1151,9 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "",
         "",
         'P',
-        { 0xff, 0x23, 0x26, 0x29 }, // PINx
-        { 0xff, 0x25, 0x28, 0x2B }, // PORTx
-        { 0xff, 0x24, 0x27, 0x2A }, // DDRx
+        { 0, 0x23, 0x26, 0x29 }, // PINx
+        { 0, 0x25, 0x28, 0x2B }, // PORTx
+        { 0, 0x24, 0x27, 0x2A }, // DDRx
         8*1024,
         { { 0x100, 1024 } },
         AvrAtmega8IoPinInfo,
@@ -1174,9 +1175,9 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "ATmega328",
         "m328def",
         'P',
-        { 0xff, 0x23, 0x26, 0x29 }, // PINx
-        { 0xff, 0x25, 0x28, 0x2B }, // PORTx
-        { 0xff, 0x24, 0x27, 0x2A }, // DDRx
+        { 0, 0x23, 0x26, 0x29 }, // PINx
+        { 0, 0x25, 0x28, 0x2B }, // PORTx
+        { 0, 0x24, 0x27, 0x2A }, // DDRx
         16*1024,
         { { 0x100, 2048 } },
         AvrAtmega8IoPinInfo,
@@ -1294,9 +1295,9 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "ATmega8",
         "M8DEF", // "iom8"
         'P',                                 //char             portPrefix;
-        { 0xff, 0x36, 0x33, 0x30 }, // PINx  //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
-        { 0xff, 0x38, 0x35, 0x32 }, // PORTx //DWORD            outputRegs[MAX_IO_PORTS];
-        { 0xff, 0x37, 0x34, 0x31 }, // DDRx  //DWORD            dirRegs[MAX_IO_PORTS];
+        { 0, 0x36, 0x33, 0x30 }, // PINx  //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
+        { 0, 0x38, 0x35, 0x32 }, // PORTx //DWORD            outputRegs[MAX_IO_PORTS];
+        { 0, 0x37, 0x34, 0x31 }, // DDRx  //DWORD            dirRegs[MAX_IO_PORTS];
         4*1024,                              //DWORD            flashWords;
         { { 0x60, 1024 } },                  //{DWORD start; int len;} ram[MAX_RAM_SECTIONS];
         AvrAtmega8IoPinInfo32,               //McuIoPinInfo    *pinInfo;
@@ -1321,9 +1322,9 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "ATmega8",
         "M8DEF",
         'P',
-        { 0xff, 0x36, 0x33, 0x30 }, // PINx     (but there is no xxxA)
-        { 0xff, 0x38, 0x35, 0x32 }, // PORTx
-        { 0xff, 0x37, 0x34, 0x31 }, // DDRx
+        { 0, 0x36, 0x33, 0x30 }, // PINx     (but there is no xxxA)
+        { 0, 0x38, 0x35, 0x32 }, // PORTx
+        { 0, 0x37, 0x34, 0x31 }, // DDRx
         4*1024,
         { { 0x60, 1024 } },
         AvrAtmega8IoPinInfo,
@@ -1473,8 +1474,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x85, 0x86, 0x87 }, // TRISx
         8*1024,
         { { 0x20, 96 }, { 0xa0, 80 }, { 0x110, 96 }, { 0x190, 96 } },
-        Pic28Pin_SPDIP_SOIC_SSOP,
-        arraylen(Pic28Pin_SPDIP_SOIC_SSOP),
+        Pic16f876IoPinInfo,
+        arraylen(Pic16f876IoPinInfo),
         Pic16f876AdcPinInfo,
         arraylen(Pic16f876AdcPinInfo),
         1023,
@@ -1532,9 +1533,9 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "PIC16F886",
         "P16F886",
         'R',
-        { 0x05, 0x06, 0x07/*, 0xff, 0x09 */}, // PORTx = A B C E
-        { 0x05, 0x06, 0x07/*, 0xff, 0x09 */}, // PORTx
-        { 0x85, 0x86, 0x87/*, 0xff, 0x89 */}, // TRISx
+        { 0x05, 0x06, 0x07, 0, 0x09 }, // PORTx = A B C E
+        { 0x05, 0x06, 0x07, 0, 0x09 }, // PORTx
+        { 0x85, 0x86, 0x87, 0, 0x89 }, // TRISx
         8*1024,
         { { 0x20, 96 }, { 0xa0, 80 }, { 0x120, 80 }, { 0x1a0, 80 } },
         Pic28Pin_SPDIP_SOIC_SSOP,

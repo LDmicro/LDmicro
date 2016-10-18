@@ -26,8 +26,17 @@
 
 #include "ldmicro.h"
 
-void FrmStrToFile(FILE *f, char *str);
-char *DelNewLine(char *str);
+char *FrmStrToStr(char *dest);
+//void FrmStrToFile(FILE *f, char *str);
+char *DelNL(char *str);
+char *DelLastNL(char *str);
+
+typedef enum FRMTTag {
+    FRMT_COMMENT,
+    FRMT_01,
+    FRMT_x20
+} FRMT;
+char *StrToFrmStr(char *dest, char *str, FRMT frmt);
 
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 
@@ -43,7 +52,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 
     if(memcmp(line, "COMMENT", 7)==0) {
         FrmStrToStr(l->d.comment.str, &line[8]);
-        DelNewLine(l->d.comment.str);
+        DelLastNL(l->d.comment.str);
         *which = ELEM_COMMENT;
     } else if(sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name,
         &l->d.contacts.negated, &l->d.contacts.set1)==3)
@@ -304,7 +313,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
             strcpy(l->d.fmtdStr.var, "");
         }
         FrmStrToStr(l->d.fmtdStr.string, &line[i]);
-        DelNewLine(l->d.fmtdStr.string);
+        DelNL(l->d.fmtdStr.string);
         if(strcmp(l->d.fmtdStr.string, "(none)")==0) {
             strcpy(l->d.fmtdStr.string, "");
         }
@@ -346,7 +355,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         }
         int i=strlen("STRING")+1+strlen(l->d.fmtdStr.dest)+1+strlen(l->d.fmtdStr.var)+1;
         FrmStrToStr(l->d.fmtdStr.string, &line[i]);
-        DelNewLine(l->d.fmtdStr.string);
+        DelNL(l->d.fmtdStr.string);
         if(strcmp(l->d.fmtdStr.string, "(none)")==0) {
             strcpy(l->d.fmtdStr.string, "");
         }
@@ -405,6 +414,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         if (l->d.setPwm.name[0] != 'P') {   // Fix the name, this case will occur when reading old LD files
             memmove(l->d.setPwm.name + 1, l->d.setPwm.name, strlen(l->d.setPwm.name)+1);
             l->d.setPwm.name[0] = 'P';
+        }
+        char *s;
+        if(s = strchr(l->d.setPwm.targetFreq,'.')) {
+           *s = '\0';
         }
     }
     return TRUE;
@@ -645,6 +658,10 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 {
     ElemLeaf *l = (ElemLeaf *)any;
     char *s;
+    char str1[1024];
+    char str2[1024];
+    char str3[1024];
+    char str4[1024];
 
     Indent(f, depth);
 
@@ -654,9 +671,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_COMMENT: {
-            fprintf(f, "COMMENT ");
-            FrmStrToFile(f, l->d.comment.str);
-            fprintf(f, "\n");
+            fprintf(f, "COMMENT %s\n", StrToFrmStr(str1, l->d.comment.str, FRMT_COMMENT));
             break;
         }
         case ELEM_OPEN:
@@ -877,6 +892,22 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "PERSIST %s\n", l->d.persist.var);
             break;
 
+        case ELEM_CPRINTF:      s = "CPRINTF"; goto cprintf;
+        case ELEM_SPRINTF:      s = "SPRINTF"; goto cprintf;
+        case ELEM_FPRINTF:      s = "FPRINTF"; goto cprintf;
+        case ELEM_PRINTF:       s = "PRINTF"; goto cprintf;
+        case ELEM_I2C_CPRINTF:  s = "I2C_PRINTF"; goto cprintf;
+        case ELEM_ISP_CPRINTF:  s = "ISP_PRINTF"; goto cprintf;
+        case ELEM_UART_CPRINTF: s = "UART_PRINTF"; goto cprintf; {
+        cprintf:
+            fprintf(f, "%s %s %s %s %s %s\n", s,
+                StrToFrmStr(str1, l->d.fmtdStr.var, FRMT_x20),
+                StrToFrmStr(str2, l->d.fmtdStr.string, FRMT_x20),
+                l->d.fmtdStr.dest,
+                StrToFrmStr(str3, l->d.fmtdStr.enable, FRMT_x20), //may be (none)
+                StrToFrmStr(str4, l->d.fmtdStr.error, FRMT_x20)); //may be (none)
+            break;
+        }
         case ELEM_STRING: {
             int i;
             fprintf(f, "STRING ");
@@ -1026,13 +1057,26 @@ BOOL SaveProjectToFile(char *filename)
 simple-escape-sequence: one of
     \' \" \? \\
     \a \b \f \n \r \t \v
-*/
 void FrmStrToFile(FILE *f, char *str)
 {
     char *s = str;
     for(; *s; s++) {
-        if(*s == '\\') {
+        if(*s == '\'') {
+            fprintf(f, "\\\'");
+        } else if(*s == '\"') {
+            fprintf(f, "\\\"");
+        } else if(*s == '\?') {
+            fprintf(f, "\\\?");
+        } else if(*s == '\\') {
             fprintf(f, "\\\\");
+        } else if(*s == ' ') {
+            fprintf(f, "\x20");
+        } else if(*s == '\a') {//(alert) Produces an audible or visible alert without changing the active position.
+            fprintf(f, "\\a");
+        } else if(*s == '\b') {//(backspace) Moves the active position to the previous position on the current line.
+            fprintf(f, "\\b");
+        } else if(*s == '\f') {//( form feed) Moves the active position to the initial position at the start of the next logical page.
+            fprintf(f, "\\f");
         } else if(*s == '\n') {//(new line) Moves the active position to the initial position of the next line.
             fprintf(f, "\\n");
         } else if(*s == '\r') {//(carriage return) Moves the active position to the initial position of the current line.
@@ -1041,26 +1085,110 @@ void FrmStrToFile(FILE *f, char *str)
             fprintf(f, "\\t");
         } else if(*s == '\v') {//(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
             fprintf(f, "\\v");
-        } else if(*s == '\f') {//( form feed) Moves the active position to the initial position at the start of the next logical page.
-            fprintf(f, "\\f");
-        } else if(*s == '\b') {//(backspace) Moves the active position to the previous position on the current line.
-            fprintf(f, "\\b");
-        } else if(*s == '\a') {//(alert) Produces an audible or visible alert without changing the active position.
-            fprintf(f, "\\a");
         } else {
             fprintf(f, "%c", *s);
         }
     }
 }
+*/
+
+//---------------------------------------------------------------------------
+char *StrToFrmStr(char *dest, char *src, FRMT frmt)
+{
+    if((src == NULL) || (strlen(src) == 0)) {
+        strcpy(dest, " (none)");
+        return dest;
+    }
+
+    strcpy(dest, "");
+    int i;
+    if((frmt == FRMT_01) && (strcmp(Prog.LDversion,"0.1")==0)) {
+        char str[1024];
+        sprintf(str, " %d", strlen(src));
+        strcat(dest, str);
+        for(i = 0; i < (int)strlen(src); i++) {
+            sprintf(str, " %d", src[i]);
+            strcat(dest, str);
+        }
+    } else {
+        for(i = 0; i < (int)strlen(src); i++) {
+            if((frmt == FRMT_x20) && (src[i] == ' ')) {
+                strcat(dest, "\\x20");
+//          } else if(src[i] == '\'') {
+//              strcat(dest, "\\\'");
+//          } else if(src[i] == '\"') {
+//              strcat(dest, "\\\"");
+//          } else if(src[i] == '\?') {
+//              strcat(dest, "\\\?");
+            } else if(src[i] == '\\') {
+                strcat(dest, "\\\\");
+            } else if(src[i] == '\a') { //(alert) Produces an audible or visible alert without changing the active position.
+                strcat(dest, "\\a");
+            } else if(src[i] == '\b') { //(backspace) Moves the active position to the previous position on the current line.
+                strcat(dest, "\\b");
+            } else if(src[i] == '\f') { //(form feed) Moves the active position to the initial position at the start of the next logical page.
+                strcat(dest, "\\f");
+            } else if(src[i] == '\n') { //(new line) Moves the active position to the initial position of the next line.
+                strcat(dest, "\\n");
+            } else if(src[i] == '\r') { //(carriage return) Moves the active position to the initial position of the current line.
+                strcat(dest, "\\r");
+            } else if(src[i] == '\t') { //(horizontal tab) Moves the active position to the next horizontal tabulation position on the current line.
+                strcat(dest, "\\t");
+            } else if(src[i] == '\v') { //(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
+                strcat(dest, "\\v");
+            } else {
+                strncat(dest, &src[i], 1);
+            }
+        }
+    }
+    return dest;
+}
 
 //-----------------------------------------------------------------------------
 char *FrmStrToStr(char *dest, char *src)
 {
-    char *s = src;
+    char *s;
+    if(src)
+        s = src;
+    else
+        s = dest;
+
+    if(strcmp(s, "(none)")==0) {
+        strcpy(dest, "");
+        return dest;
+    }
+
     int i = 0;
     while(*s) {
         if(*s == '\\') {
-            if(s[1] == 'n') {
+            if((s[1] == 'x') && (s[2] == '2') && (s[3] == '0')) {
+                dest[i++] = ' ';
+                s += 3;
+            } else if((s[1] == '\\') && (s[2] == 'x') && (s[3] == '2') && (s[4] == '0')) {
+                dest[i++] = ' ';
+                s += 4;
+            } else if(s[1] == '\'') {
+                dest[i++] = '\'';
+                s++;
+            } else if(s[1] == '\"') {
+                dest[i++] = '\"';
+                s++;
+            } else if(s[1] == '\?') {
+                dest[i++] = '\?';
+                s++;
+            } else if(s[1] == '\\') {
+                dest[i++] = '\\';
+                s++;
+            } else if(s[1] == 'a') {
+                dest[i++] = '\a';
+                s++;
+            } else if(s[1] == 'b') {
+                dest[i++] = '\b';
+                s++;
+            } else if(s[1] == 'f') {
+                dest[i++] = '\f';
+                s++;
+            } else if(s[1] == 'n') {
                 dest[i++] = '\n';
                 s++;
             } else if(s[1] == 'r') {
@@ -1072,20 +1200,9 @@ char *FrmStrToStr(char *dest, char *src)
             } else if(s[1] == 'v') {
                 dest[i++] = '\v';
                 s++;
-            } else if(s[1] == 'f') {
-                dest[i++] = '\f';
-                s++;
-            } else if(s[1] == 'b') {
-                dest[i++] = '\b';
-                s++;
-            } else if(s[1] == 'a') {
-                dest[i++] = '\a';
-                s++;
-            } else if(s[1] == '\\') {
-                dest[i++] = '\\';
-                s++;
             } else {
                 // that is odd
+                dest[i++] = *s;
             }
         } else {
             dest[i++] = *s;
@@ -1095,10 +1212,27 @@ char *FrmStrToStr(char *dest, char *src)
     dest[i++] = '\0';
     return dest;
 }
-//-----------------------------------------------------------------------------
-char *DelNewLine(char *str)
+
+char *FrmStrToStr(char *dest)
 {
-    //while(str[strlen(str)-1] == '\n')
+    return FrmStrToStr(dest, NULL);
+}
+//-----------------------------------------------------------------------------
+char *DelNL(char *str)
+{
+    char *s = str;
+    int i = 0;
+    while(*s) {
+        if(*s != '\n')
+            str[i++] = *s;
+        s++;
+    }
+    str[i++] = '\0';
+    return str;
+}
+//-----------------------------------------------------------------------------
+char *DelLastNL(char *str)
+{
     if(str[strlen(str)-1] == '\n')
         str[strlen(str)-1] = '\0';
     return str;

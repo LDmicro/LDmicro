@@ -225,6 +225,15 @@ static BOOL SaveProgram(void)
 }
 
 //-----------------------------------------------------------------------------
+bool ExistFile(const char *name)
+{
+    if(FILE *file = fopen(name, "r")) {
+        fclose(file);
+        return true;
+    }
+    return false;
+}
+
 static void isErr(int Err, char *r)
 {
   char *s;
@@ -236,7 +245,7 @@ static void isErr(int Err, char *r)
     default:s=""; break;
   }
   if(strlen(s))
-      Error("Error: %d - %s in >%s<",Err, s, r);
+      Error("Error: %d - %s in command line:\n\n%s",Err, s, r);
 }
 
 //-----------------------------------------------------------------------------
@@ -261,16 +270,17 @@ char *GetIsaName(int ISA)
         default              : oops(); return NULL;
     }
 }
+
 //-----------------------------------------------------------------------------
 static void flashBat(char *name, int ISA)
 {
+    char s[MAX_PATH];
+    char r[MAX_PATH];
+
     if(strlen(name) == 0) {
         Error(_(" Save ld before flash."));
         return;
     }
-
-    char s[MAX_PATH];
-    char r[MAX_PATH];
 
     s[0] = '\0';
     SetExt(s, name, "");
@@ -282,12 +292,12 @@ static void flashBat(char *name, int ISA)
 //-----------------------------------------------------------------------------
 static void readBat(char *name, int ISA)
 {
+    char s[MAX_PATH];
+    char r[MAX_PATH];
+
     if(strlen(name) == 0) {
         name = "read";
     }
-
-    char s[MAX_PATH];
-    char r[MAX_PATH];
 
     s[0] = '\0';
     SetExt(s, name, "");
@@ -308,11 +318,16 @@ static void notepad(char *name, char *ext)
 
     isErr(Execute(r), r);
 }
+
 //-----------------------------------------------------------------------------
 static void postCompile(int ISA)
 {
     char r[MAX_PATH];
     char onlyName[MAX_PATH];
+
+    sprintf(r,"%spostCompile.bat", ExePath);
+    if(!ExistFile(r))
+        return;
 
     strcpy(onlyName, ExtractFileName(CurrentSaveFile));
     SetExt(onlyName, onlyName, "");
@@ -343,9 +358,11 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             compile_MNU = MNU_COMPILE_IHEX;
     }
 
+    IsOpenAnable:
     if(!compileAs && strlen(CurrentCompileFile)) {
-        FILE *f = fopen(CurrentCompileFile, "w");
-        if(!f) {
+        if(FILE *f = fopen(CurrentCompileFile, "w")) {
+            fclose(f);
+        } else {
             Error(_("Couldn't open file '%s'"), CurrentCompileFile);
             compileAs = TRUE;
         }
@@ -407,6 +424,8 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
 
         // hex output filename is stored in the .ld file
         ProgramChangedNotSaved = TRUE;
+        compileAs = FALSE;
+        goto IsOpenAnable;
     }
 
     if(!GenerateIntermediateCode()) return;
@@ -673,11 +692,14 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_CONTACTS:
-            CHANGING_PROGRAM(AddContact());
+        case MNU_INSERT_CONT_RELAY:
+        case MNU_INSERT_CONT_OUTPUT:
+            CHANGING_PROGRAM(AddContact(code));
             break;
 
         case MNU_INSERT_COIL:
-            CHANGING_PROGRAM(AddCoil());
+        case MNU_INSERT_COIL_RELAY:
+            CHANGING_PROGRAM(AddCoil(code));
             break;
 
         case MNU_INSERT_TCY:
@@ -740,12 +762,22 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddPiecewiseLinear());
             break;
 
-        case MNU_INSERT_FMTD_STR:
+        case MNU_INSERT_FMTD_STRING:
             CHANGING_PROGRAM(AddFormattedString());
             break;
 
         case MNU_INSERT_STRING:
             CHANGING_PROGRAM(AddString());
+            break;
+
+        case ELEM_CPRINTF:
+        case ELEM_SPRINTF:
+        case ELEM_FPRINTF:
+        case ELEM_PRINTF:
+        case ELEM_I2C_CPRINTF:
+        case ELEM_ISP_CPRINTF:
+        case ELEM_UART_CPRINTF:
+            CHANGING_PROGRAM(AddPrint(code));
             break;
 
         case MNU_INSERT_OSR:
@@ -1052,7 +1084,7 @@ cmp:
         case MNU_COMPILE_IHEXDONE:
     Error(
 " "
-"This feature of LDmicro is in testing and refinement.\n"
+"This functionality of LDmicro is in testing and refinement.\n"
 "1. You can send your LD file at the LDmicro.GitHub@gmail.com\n"
 "and get asm output file for PIC's MPLAB or WINASM,\n"
 "or AVR Studio or avrasm2 or avrasm32\n"
@@ -1380,6 +1412,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                   }
                 break;
 
+                case 'L':
+                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        CHANGING_PROGRAM(AddCoil(MNU_INSERT_COIL_RELAY))
+                    return 1;
+                  }
+                break;
+
                 default:
                     return DefWindowProc(hwnd, msg, wParam, lParam);
             }
@@ -1624,8 +1663,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case 'C':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         CHANGING_PROGRAM(CopyRung());
+                    } else if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                        CHANGING_PROGRAM(AddContact(MNU_INSERT_CONT_RELAY));
                     } else {
-                        CHANGING_PROGRAM(AddContact());
+                        CHANGING_PROGRAM(AddContact(MNU_INSERT_CONTACTS));
                     }
                     break;
 
@@ -1642,7 +1683,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case 'L':
-                    CHANGING_PROGRAM(AddCoil());
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000)
+                        CHANGING_PROGRAM(AddContact(MNU_INSERT_CONT_OUTPUT))
+                    else
+                        CHANGING_PROGRAM(AddCoil(MNU_INSERT_COIL));
                     break;
 
                 case 'R':

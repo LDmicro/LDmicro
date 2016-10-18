@@ -184,6 +184,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     int t;
     t = canInsertEnd ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(InstructionMenu, MNU_INSERT_COIL, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_COIL_RELAY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_RES, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_MOV, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_ADD, t);
@@ -231,6 +232,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_QUAD_ENCOD, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_RTO, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CONTACTS, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_CONT_RELAY, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_CONT_OUTPUT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CTU, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CTD, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CTC, t);
@@ -247,7 +250,14 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_UDRE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STR, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STRING, t);
+    EnableMenuItem(InstructionMenu, ELEM_CPRINTF      , t);
+    EnableMenuItem(InstructionMenu, ELEM_SPRINTF      , t);
+    EnableMenuItem(InstructionMenu, ELEM_FPRINTF      , t);
+    EnableMenuItem(InstructionMenu, ELEM_PRINTF       , t);
+    EnableMenuItem(InstructionMenu, ELEM_I2C_CPRINTF  , t);
+    EnableMenuItem(InstructionMenu, ELEM_ISP_CPRINTF  , t);
+    EnableMenuItem(InstructionMenu, ELEM_UART_CPRINTF , t);
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFW, t);
@@ -367,9 +377,15 @@ HMENU MakeMainWindowMenus(void)
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
-        _("Insert &Contacts\tC"));
+        _("Insert &Contacts: Input Pin\tC"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_RELAY,
+        _("Insert Contacts: Internal Relay\tShift+C"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_OUTPUT,
+        _("Insert Contacts: Output pin\tShift+L"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
-        _("Insert Coi&l\tL"));
+        _("Insert Coi&l: Output Pin\tL"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL_RELAY,
+        _("Insert Coil: Internal Relay\tAlt+L"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_NORMAL,
         _("Make &Normal\tN"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_NEGATE,
@@ -506,7 +522,7 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Piecewise Linear"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STR,
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STRING,
         _("Insert Formatted String Over &UART"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
         _("Insert &UART Send"));

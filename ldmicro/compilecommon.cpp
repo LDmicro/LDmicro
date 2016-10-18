@@ -490,6 +490,7 @@ int SetVariableType(char *name, int type)
         }
         Variables[i].type = type;
     } else {
+        if(Variables[i].type == IO_TYPE_PENDING)
         Variables[i].type = type;
     }
     return type;
@@ -547,10 +548,7 @@ void SaveVarListToFile(FILE *f)
 
     int i;
     for(i = 0; i < VariableCount; i++)
-      if((Variables[i].type != IO_TYPE_INT_INPUT)
-      && (Variables[i].type != IO_TYPE_DIG_INPUT)
-      && (Variables[i].type != IO_TYPE_DIG_OUTPUT)
-      && (Variables[i].type != IO_TYPE_INTERNAL_RELAY))
+      if(!IsIoType(Variables[i].type))
     if(Variables[i].name[0] != '$') {
           fprintf(f, "  %3d bytes %s %s\n",
             SizeOfVar(Variables[i].name),

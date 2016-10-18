@@ -70,9 +70,11 @@
 #define INT_EEPROM_WRITE_BYTE                   18
 #endif
 
-#define INT_WRITE_STRING                        21 // sprintf()
+#define INT_WRITE_STRING                        21 // netzer
+#define INT_SPRINTF_STRING                      22 // sprintf()
+#define INT_CPRINTF                             2201
 #ifdef NEW_FEATURE
-#define INT_PRINT_STRING                        22 // printf() out to console
+#define INT_PRINTF_STRING                       23 // printf() out to console
 #endif
 #define INT_VARIABLE_SET_BIT                    25
 #define INT_VARIABLE_CLEAR_BIT                  26
