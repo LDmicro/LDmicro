@@ -368,7 +368,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         }
     }
 
-    if( compileAs || (strlen(CurrentCompileFile)==0)
+    if(compileAs || (strlen(CurrentCompileFile)==0)
       ||  (compile_MNU==MNU_COMPILE_AS)
       ||( (compile_MNU==MNU_COMPILE      )  && (!strstr(CurrentCompileFile,".hex")) )
       ||( (compile_MNU==MNU_COMPILE_IHEX )  && (!strstr(CurrentCompileFile,".hex")) )
@@ -425,6 +425,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         // hex output filename is stored in the .ld file
         ProgramChangedNotSaved = TRUE;
         compileAs = FALSE;
+        compile_MNU = 0;
         goto IsOpenAnable;
     }
 
@@ -1358,6 +1359,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         #define VK_ALT VK_MENU
         case WM_SYSKEYDOWN: {
             switch(wParam) {
+                case VK_F3:
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        notepad(CurrentSaveFile, "asm");
+                        return 1;
+                    }
+                break;
+
                 case VK_F5:
                     if(GetAsyncKeyState(VK_ALT) & 0x8000) {
                         notepad(CurrentSaveFile, "pl");;
@@ -1368,6 +1376,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case VK_F6:
                     if(GetAsyncKeyState(VK_ALT) & 0x8000) {
                         notepad(CurrentSaveFile, "hex");
+                        return 1;
+                    }
+                break;
+
+                case VK_F7:
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        notepad("acceleration_deceleration", "txt");;
                         return 1;
                     }
                 break;

@@ -414,7 +414,7 @@ static char *MarkUsedVariable(char *name, DWORD flag)
         strcpy(Variables[i].name, name);
         Variables[i].usedFlags = 0;
         Variables[i].val = 0;
-        Variables[i].initedRung = -1;
+        Variables[i].initedRung = -1; //rungNow;
         strcpy(Variables[i].usedRungs,"");
         VariableCount++;
     }
@@ -1328,68 +1328,18 @@ SDWORD SDWORD3(SDWORD v)
 //-----------------------------------------------------------------------------
 void DescribeForIoList(char *name, int type, char *out)
 {
-/*
-    switch(name[0]) {
-        case 'R':
-        case 'I':
-        case 'X':
-        case 'Y':
-            sprintf(out, "%d", SingleBitOn(name));
-            break;
-
-        case 'T': {
-            SDWORD v = GetSimulationVariable(name, TRUE);
-            double dtms = v *
-                (Prog.cycleTime / 1000.0);
-            int sov = SizeOfVar(name);
-            if(dtms < 1000) {
-              if(sov == 1)
-                sprintf(out, "0x%02x = %d = %.6g ms", v, v, dtms);
-              else if(sov == 2)
-                sprintf(out, "0x%04x = %d = %.6g ms", v, v, dtms);
-              else if(sov == 3)
-                sprintf(out, "0x%06x = %d = %.6g ms", v, v, dtms);
-              else if(sov == 4)
-                sprintf(out, "0x%08x = %d = %.6g ms", v, v, dtms);
-              else oops();
-            } else {
-              if(sov == 1)
-                sprintf(out, "0x%02x = %d = %.6g s", v, v, dtms / 1000);
-              else if(sov == 2)
-                sprintf(out, "0x%04x = %d = %.6g s", v, v, dtms / 1000);
-              else if(sov == 3)
-                sprintf(out, "0x%06x = %d = %.6g s", v, v, dtms / 1000);
-              else if(sov == 4)
-                sprintf(out, "0x%08x = %d = %.6g s", v, v, dtms / 1000);
-              else oops();
-            }
-            break;
-        }
-        default: {
-            SDWORD v = GetSimulationVariable(name, TRUE);
-            int sov = SizeOfVar(name);
-            if(sov == 1)
-              sprintf(out, "0x%02x = %d", v, v);
-            else if(sov == 2)
-              sprintf(out, "0x%04x = %d", v, v);
-            else if(sov == 3)
-              sprintf(out, "0x%06x = %d", v, v);
-            else if(sov == 4)
-              sprintf(out, "0x%08x = %d", v, v);
-            else {
-              sprintf(out, "0x%x = %d", v, v);
-              //ooops("%s", name);
-            }
-            break;
-        }
-    }
-*/
     switch(type) {
         case IO_TYPE_INT_INPUT:
         case IO_TYPE_DIG_INPUT:
         case IO_TYPE_DIG_OUTPUT:
         case IO_TYPE_INTERNAL_RELAY:
+        case IO_TYPE_MODBUS_COIL:
+        case IO_TYPE_MODBUS_CONTACT:
             sprintf(out, "%d", SingleBitOn(name));
+            break;
+
+        case IO_TYPE_PWM_OUTPUT:
+            sprintf(out, "PWM");
             break;
 
         case IO_TYPE_STRING:

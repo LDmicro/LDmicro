@@ -1,3 +1,11 @@
+== Release 4.0.6
+
+    * Fixed: "Save as.." cyclic bug.
+
+    * Fixed: Restored behavior: to get ADC slider double-click in IO list in Simulation mode.
+      Also ADC slider by double-clicking on the item "READ ADC" in LD editing window in Simulation mode.
+      Right mouse button closes the ADC slider.
+
 == Release 4.0.5
 
     * Fixed: Bug with J,K,L ports addreses at ATMega2560.

@@ -788,10 +788,8 @@ void EditElementMouseDoubleclick(int x, int y)
         ElemLeaf *l = DisplayMatrix[gx][gy];
         if(l && DisplayMatrixWhich[gx][gy] == ELEM_CONTACTS) {
             char *name = l->d.contacts.name;
-            if(name[0] == 'X') {
-                SimulationToggleContact(name);
-            }
-            else if(name[0] == 'R') {
+            if((name[0] != 'Y')
+            && (name[0] != 'M')) {
                 SimulationToggleContact(name);
             }
         } else if(l && DisplayMatrixWhich[gx][gy] == ELEM_READ_ADC) {
