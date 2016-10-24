@@ -1028,8 +1028,20 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
     char s[MAX_NAME_LEN];
     sprintf(s, _("Set variable '%s'"), io->name);
 
-    char *labels[] = { _("SizeOfVar:"), _("Simulation value:")};
-    char *dests[] = { sovStr, valStr };
+    char *labels[2];
+    char *dests[2];
+
+    if(InSimulationMode) {
+        labels[0] = _("Simulation value:");
+        labels[1] = _("SizeOfVar:");
+        dests[0] = valStr;
+        dests[1] = sovStr;
+    } else {
+        labels[0] = _("SizeOfVar:");
+        labels[1] = _("Simulation value:");
+        dests[0] = sovStr;
+        dests[1] = valStr;
+    }
     if(ShowSimpleDialog(s, 2, labels, 0x3, 0x0, 0x3, dests)) {
        sov = hobatoi(sovStr);
        sov = 2;

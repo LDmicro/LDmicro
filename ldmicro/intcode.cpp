@@ -721,10 +721,12 @@ SDWORD hobatoi(char *str)
        // errno = 0;
        val = strtol(str, &end_ptr, radix);
        if(*end_ptr) {
-           Error("Conversion error the\n'%s' string into number %d at\n'%s' position.", str, val, end_ptr);
+//         val = 0;
+//         Error("Conversion error the\n'%s' string into number %d at\n'%s' position.", str, val, end_ptr);
        }
        if((val == LONG_MAX || val == LONG_MIN) && errno == ERANGE) {
-           Error("Conversion overflow error the string\n'%s' into number %d.", str, val);
+//         val = 0;
+//         Error("Conversion overflow error the string\n'%s' into number %d.", str, val);
        }
     }
     return val;
@@ -2446,9 +2448,6 @@ BOOL GenerateIntermediateCode(void)
         whichNow = INT_MAX;
         Prog.OpsInRung[rung] = 0;
         Prog.HexInRung[rung] = 0;
-        #ifdef NEW_FEATURE
-        Op(INT_AllocFwdAddr, NULL, NULL, NULL, (SDWORD)rung);
-        #endif
     }
 
     for(rung = 0; rung < Prog.numRungs; rung++) {

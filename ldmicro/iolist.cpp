@@ -841,10 +841,12 @@ void ShowAnalogSliderPopup(char *name)
                 AnalogSliderCancel = TRUE;
                 break;
             }
-        } else if(msg.message == WM_LBUTTONUP) {
-            if(v != orig) {
+// //   } else if(msg.message == WM_LBUTTONUP) {
+// //       if(v != orig) {
 // //            AnalogSliderDone = TRUE; // this line not allow a kyboard UP DN
-            }
+// //       }
+        } else if(msg.message == WM_RBUTTONDOWN) {
+            AnalogSliderDone = TRUE;
         }
         SetAdcShadow(name, v);
 
@@ -950,6 +952,8 @@ void ShowIoDialog(int item)
 {
     int type = Prog.io.assignment[item].type;
     switch(type) {
+        case IO_TYPE_PORT_INPUT :
+        case IO_TYPE_PORT_OUTPUT:
         case IO_TYPE_GENERAL:
         case IO_TYPE_PERSIST:
         case IO_TYPE_BCD:
@@ -1385,9 +1389,15 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_INTERNAL_RELAY)
                     || (type == IO_TYPE_UART_TX)
                     || (type == IO_TYPE_UART_RX)
-                    || (type == IO_TYPE_READ_ADC)
-                    || (type == IO_TYPE_PWM_OUTPUT)) {
+                    || (type == IO_TYPE_MODBUS_COIL)
+                    || (type == IO_TYPE_MODBUS_CONTACT)) {
                         sprintf(i->item.pszText, "1 bit");
+                    } else
+                    if(type == IO_TYPE_PWM_OUTPUT) {
+                        sprintf(i->item.pszText, "1 pin");
+                    } else
+                    if(type == IO_TYPE_READ_ADC) {
+                        sprintf(i->item.pszText, "1 pin/2 bytes");
                     }
                     break;
 
@@ -1448,10 +1458,10 @@ void IoListProc(NMHDR *h)
                     case IO_TYPE_PERSIST:
                     case IO_TYPE_RTO:
                     case IO_TYPE_COUNTER:
-                    case IO_TYPE_READ_ADC:
                     case IO_TYPE_UART_TX:
                     case IO_TYPE_UART_RX:
-                    case IO_TYPE_PWM_OUTPUT:
+                    case IO_TYPE_PORT_INPUT:
+                    case IO_TYPE_PORT_OUTPUT:
                     case IO_TYPE_TCY:
                     case IO_TYPE_TON:
                     case IO_TYPE_TOF: {
@@ -1460,12 +1470,18 @@ void IoListProc(NMHDR *h)
                         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
                         break;
                     }
-                    default: {
-                        if(name[0] == 'X') {
+                    case IO_TYPE_READ_ADC: {
+                        ShowAnalogSliderPopup(name);
+                        break;
+                    }
+                    case IO_TYPE_DIG_INPUT:
+                    case IO_TYPE_INTERNAL_RELAY:
+                    case IO_TYPE_MODBUS_CONTACT: {
                             SimulationToggleContact(name);
-                        } else if(type == IO_TYPE_READ_ADC) {
-                            ShowAnalogSliderPopup(name);
+                        break;
                         }
+                    default: {
+
                     }
                 }
             } else {

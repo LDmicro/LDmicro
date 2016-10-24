@@ -445,10 +445,6 @@ static int IsOperation(PicOp op)
 }
 
 //-----------------------------------------------------------------------------
-// And use macro for bugtracking
-#define Instruction(...) _Instruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
-
-//-----------------------------------------------------------------------------
 // Store an instruction at the next spot in program memory.  Error condition
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
@@ -505,6 +501,9 @@ static void _Instruction(int l, char *f, char *args, PicOp op)
 {
     _Instruction(l, f, args, op, 0, 0, NULL);
 }
+
+// And use macro for bugtracking
+#define Instruction(...) _Instruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2, char *comment)
@@ -597,11 +596,6 @@ static void FwdAddrIsNow(DWORD addr)
         } else if(PicProg[i].arg1 == FWD_HI(addr)) {
             PicProg[i].arg1 = (PicProgWriteP >> 8);
         }
-    }
-    if(!seen) {
-         Error("FwdAddrIsNow not found!!! 0x%X", addr);
-         strcpy(PicProg[i].commentInt, "FwdAddrIsNow not found!!!");
-         ooops("0x%X=%d",addr,addr);
     }
 }
 
@@ -1749,6 +1743,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs("Microchip PIC16F819 ")
     || McuAs("Microchip PIC16F877 ")
     || McuAs("Microchip PIC16F876 ")
+    || McuAs(" PIC16F874 ")
+    || McuAs(" PIC16F873 ")
+    || McuAs(" PIC16F72 ")
     ) {
         if(Prog.mcu->configurationWord & 0xffff0000) oops();
         WriteIhex(f, 0x02);
@@ -1797,14 +1794,24 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 static void _WriteRegister(int l, char *f, char *args, DWORD reg, BYTE val, char *comment)
 {
     #ifdef AUTO_BANKING
+    //if(val) {
         _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
         _Instruction(l, f, args, OP_MOVWF, reg, 0, comment);
+    //} else
+    //    vvv Z Status Affected !!!
+    //    _Instruction(l, f, args, OP_CLRF, reg, 0, comment);
+    //    ^^^ Z Status Affected !!!
     #else
     if(reg & 0x080) Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
     if(reg & 0x100) Instruction(OP_BSF, REG_STATUS, STATUS_RP1);
 
+    //if(val) {
         _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
         _Instruction(l, f, args, OP_MOVWF, (reg & 0x7f), 0, comment);
+    //} else
+    //    vvv Z Status Affected !!!
+    //    _Instruction(l, f, args, OP_CLRF, (reg & 0x7f), 0, comment);
+    //    ^^^ Z Status Affected !!!
 
     if(reg & 0x080) Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
     if(reg & 0x100) Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
@@ -2516,14 +2523,16 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
             }
             case INT_SET_PWM: {
-                int timer = -1;
+            //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, &l->d.setPwm.invertingMode);
+                //dbps("INT_SET_PWM")
+                int timer = 0xFFFF;
                 McuIoPinInfo *iop = PinInfoForName(a->name3);
                 if(iop) {
                     McuPwmPinInfo *ioPWM = PwmPinInfo(iop->pin);
                     if(ioPWM)
                         timer = ioPWM->timer;
                 }
-                if(timer < 0) oops();
+                if(timer == 0xFFFF) oops();
                 int target = hobatoi(a->name2);
 
                 // Timer2
@@ -2636,12 +2645,11 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 Instruction(OP_MOVF, Scratch0, DEST_W);
 
-                if(timer == 2)
-                    Instruction(OP_MOVWF, REG_CCPR2L, 0);
-                else if(timer == 1)
+                if((timer == 1) || McuAs(" PIC16F72 "))
                     Instruction(OP_MOVWF, REG_CCPR1L, 0);
+                else if(timer == 2)
+                    Instruction(OP_MOVWF, REG_CCPR2L, 0);
                 else oops();
-
 
                 // Only need to do the setup stuff once
                 //MemForSingleBit("$pwm_init", FALSE, &addr, &bit);
@@ -2658,8 +2666,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                 // Set up the CCP2 and TMR2 peripherals.
                 WriteRegister(REG_PR2, pr2plus1 - 1);
                 //                              - 1 // Ok
-                if(timer == 2) {
-                    WriteRegister(REG_CCP2CON, 0x0c); // PWM mode, ignore LSbs
+                if(McuAs(" PIC16F72 ")) {
+                    WriteRegister(REG_CCP1CON, 0x0c); // PWM mode, ignore LSbs
 
                     BYTE t2con = (1 << 2); // timer 2 on
                     if(prescale == 1)
@@ -2669,6 +2677,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     else if(prescale == 16)
                         t2con |= 2;
                     else oops();
+
                     WriteRegister(REG_T2CON, t2con);
                 } else if(timer == 1) {
                     WriteRegister(REG_CCP1CON, 0x0c); // PWM mode, ignore LSbs
@@ -2686,6 +2695,18 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                     t1con = (t1con<<T1CKPS0) | (1 << TMR1ON); // timer 1 on
                     WriteRegister(REG_T1CON, t1con);
+                } else if(timer == 2) {
+                    WriteRegister(REG_CCP2CON, 0x0c); // PWM mode, ignore LSbs
+
+                    BYTE t2con = (1 << 2); // timer 2 on
+                    if(prescale == 1)
+                        t2con |= 0;
+                    else if(prescale == 4)
+                        t2con |= 1;
+                    else if(prescale == 16)
+                        t2con |= 2;
+                    else oops();
+                    WriteRegister(REG_T2CON, t2con);
                 } else oops();
 
                 FwdAddrIsNow(skip);
@@ -2902,6 +2923,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 || McuAs(" PIC16F876 ")
                 || McuAs(" PIC16F877 ")
                 || McuAs(" PIC16F88 ")
+                || McuAs(" PIC16F72 ")
                 ) {
                      goPos = 2;
                     chsPos = 3;
@@ -2946,6 +2968,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 || McuAs(" PIC16F876 ")
                 || McuAs(" PIC16F877 ")
                 || McuAs(" PIC16F88 ")
+                || McuAs(" PIC16F72 ")
                 || McuAs(" PIC16F882 ")
                 || McuAs(" PIC16F883 ")
                 || McuAs(" PIC16F884 ")
@@ -2993,8 +3016,10 @@ static void CompileFromIntermediate(BOOL topLevel)
                 IfBitSet(REG_ADCON0, goPos);
                 Instruction(OP_GOTO, spin, 0);
 
-                Instruction(OP_MOVF, REG_ADRESH, DEST_W);
-                Instruction(OP_MOVWF, addrh, 0);
+                if(REG_ADRESH) {
+                    Instruction(OP_MOVF, REG_ADRESH, DEST_W);
+                    Instruction(OP_MOVWF, addrh);
+                }
 
                 #ifdef AUTO_BANKING
                 Instruction(OP_MOVF, REG_ADRESL, DEST_W);
@@ -3003,7 +3028,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Instruction(OP_MOVF, REG_ADRESL ^ 0x80, DEST_W);
                 Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
                 #endif
-                Instruction(OP_MOVWF, addrl, 0);
+                Instruction(OP_MOVWF, addrl);
 
                 // hook those pins back up to the digital inputs in case
                 // some of them are used that way
@@ -3456,6 +3481,7 @@ void CompilePic16(char *outFile)
     || McuAs("Microchip PIC16F876 ")
     || McuAs("Microchip PIC16F887 ")
     || McuAs("Microchip PIC16F886 ")
+    || McuAs(" PIC16F72 ")
     ) {
         REG_PIR1    = 0x0c;
         REG_TMR1L   = 0x0e;
@@ -3505,6 +3531,7 @@ void CompilePic16(char *outFile)
     || McuAs("Microchip PIC16F876 ")
     || McuAs("Microchip PIC16F887 ")
     || McuAs("Microchip PIC16F886 ")
+    || McuAs(" PIC16F72 ")
     || McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
     || McuAs(" PIC16F1516 ")
@@ -3558,6 +3585,7 @@ void CompilePic16(char *outFile)
     } else
     if(McuAs(" PIC10F")
     || McuAs(" PIC12F")
+    || McuAs(" PIC16F72 ")
     ) {
         // has not
     } else
@@ -3572,6 +3600,13 @@ void CompilePic16(char *outFile)
     ) {
         REG_ADRESH   = 0x1e;
         REG_ADRESL   = 0x9e;
+        REG_ADCON0   = 0x1f;
+        REG_ADCON1   = 0x9f;
+    } else
+    if(McuAs(" PIC16F72 " )
+    ) {
+        REG_ADRESH   = 0;
+        REG_ADRESL   = 0x1e;
         REG_ADCON0   = 0x1f;
         REG_ADCON1   = 0x9f;
     } else
@@ -3627,6 +3662,7 @@ void CompilePic16(char *outFile)
     if(McuAs("Microchip PIC16F628 ")
     || McuAs("Microchip PIC16F88 " )
     || McuAs("Microchip PIC16F819 ")
+    || McuAs(" PIC16F72 ")
     ) {
         // has not
     } else
@@ -3644,6 +3680,7 @@ void CompilePic16(char *outFile)
     || McuAs("Microchip PIC16F876 ")
     || McuAs("Microchip PIC16F887 ")
     || McuAs("Microchip PIC16F886 ")
+    || McuAs(" PIC16F72 ")
     ) {
         REG_T2CON   = 0x12;
         REG_PR2     = 0x92;
@@ -3681,6 +3718,7 @@ void CompilePic16(char *outFile)
     || McuAs("Microchip PIC16F884 ")
     || McuAs("Microchip PIC16F883 ")
     || McuAs("Microchip PIC16F882 ")
+    || McuAs(" PIC16F72 ")
     ) {
         REG_TMR0       = 0x01;
         REG_OPTION_REG = 0x81;
@@ -3748,6 +3786,7 @@ void CompilePic16(char *outFile)
     } else
     if(McuAs(" PIC10F")
     || McuAs(" PIC12F")
+    || McuAs(" PIC16F72 ")
     ) {
         // has not
     } else
@@ -3993,14 +4032,15 @@ void CompilePic16(char *outFile)
 
     if(McuAs("Microchip PIC16F877 ") ||
        McuAs("Microchip PIC16F819 ") ||
-       McuAs("Microchip PIC16F876 "))
-    {
+       McuAs("Microchip PIC16F876 ")) {
         // The GPIOs that can also be A/D inputs default to being A/D
         // inputs, so turn that around
         WriteRegister(REG_ADCON1,
             (1 << 7) |      // right-justify A/D result
             (6 << 0)        // all digital inputs
         );
+    } else if(McuAs(" PIC16F72 ")) {
+        WriteRegister(REG_ADCON1, 0x7); // all digital inputs
     }
 
     if(McuAs("Microchip PIC16F88 ")) {
