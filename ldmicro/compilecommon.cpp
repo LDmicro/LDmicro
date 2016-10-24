@@ -150,7 +150,7 @@ int UsedRAM()
     int n = 0;
     int i;
     for(i = 0; i < RamSection; i++) {
-             n += Prog.mcu->ram[i].len;
+        n += Prog.mcu->ram[i].len;
     }
     return n+MemOffset;
 }
@@ -491,7 +491,7 @@ int SetVariableType(char *name, int type)
         Variables[i].type = type;
     } else {
         if(Variables[i].type == IO_TYPE_PENDING)
-        Variables[i].type = type;
+            Variables[i].type = type;
     }
     return type;
 }
@@ -506,7 +506,7 @@ int SizeOfVar(char *name)
      if(name[0] == '#')
          return 1;
      else
-         return 2;
+        return 2;
 }
 
 int AllocOfVar(char *name)
@@ -549,7 +549,7 @@ void SaveVarListToFile(FILE *f)
     int i;
     for(i = 0; i < VariableCount; i++)
       if(!IsIoType(Variables[i].type))
-    if(Variables[i].name[0] != '$') {
+        if(Variables[i].name[0] != '$') {
           fprintf(f, "  %3d bytes %s %s\n",
             SizeOfVar(Variables[i].name),
             Variables[i].name,

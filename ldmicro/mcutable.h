@@ -535,7 +535,13 @@ McuPwmPinInfo PicPwmPinInfo18_[] = {
     {    },
 };
 
-McuPwmPinInfo PicPwmPinInfo28_[] = {
+McuPwmPinInfo PicPwmPinInfo28_1[] = {
+////     ti
+//// pin mer
+    { 13, 2},
+};
+
+McuPwmPinInfo PicPwmPinInfo28_2[] = {
 ////     ti
 //// pin mer
     { 12, 2},
@@ -707,7 +713,6 @@ McuAdcPinInfo Pic16f877AdcPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // PIC16F876, PIC16F873 28-PIn PDIP, SOIC
-// used Pic28Pin_SPDIP_SOIC_SSOP
 McuIoPinInfo Pic16f876IoPinInfo[] = {
     { 'A', 0,  2 },
     { 'A', 1,  3 },
@@ -1488,8 +1493,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         // off, LVP disabled, BOD enabled, CP off, PWRT enabled, WDT disabled,
         // HS oscillator
         0x3f72,
-        PicPwmPinInfo28_,
-        arraylen(PicPwmPinInfo28_)
+        PicPwmPinInfo28_2,
+        arraylen(PicPwmPinInfo28_2)
     },
     {
         "Microchip PIC16F887 40-PDIP",
@@ -1561,8 +1566,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (0 <<  4) |     // PWRTE enabled
             (0 <<  3) |     // WDTE disabled
             (2 <<  0),      // HS oscillator
-        PicPwmPinInfo28_,
-        arraylen(PicPwmPinInfo28_)
+        PicPwmPinInfo28_2,
+        arraylen(PicPwmPinInfo28_2)
     },
     {
         "Controllino Maxi / Ext bytecode",
