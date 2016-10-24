@@ -379,7 +379,8 @@ static char *Check(char *name, DWORD flag, int i)
             break;
 
         case VAR_FLAG_OTHERWISE_FORGOTTEN:
-            if(name[0] != '$') {
+            if((name[0] != '$')
+            && (name[0] != '#')) {
                 Error(_("Variable '%s' not assigned to, e.g. with a "
                     "MOV statement, an ADD statement, etc.\r\n\r\n"
                     "This is probably a programming error; now it "

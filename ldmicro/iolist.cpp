@@ -952,6 +952,8 @@ void ShowIoDialog(int item)
 {
     int type = Prog.io.assignment[item].type;
     switch(type) {
+        case IO_TYPE_PORT_INPUT :
+        case IO_TYPE_PORT_OUTPUT:
         case IO_TYPE_GENERAL:
         case IO_TYPE_PERSIST:
         case IO_TYPE_BCD:
@@ -1458,6 +1460,8 @@ void IoListProc(NMHDR *h)
                     case IO_TYPE_COUNTER:
                     case IO_TYPE_UART_TX:
                     case IO_TYPE_UART_RX:
+                    case IO_TYPE_PORT_INPUT:
+                    case IO_TYPE_PORT_OUTPUT:
                     case IO_TYPE_TCY:
                     case IO_TYPE_TON:
                     case IO_TYPE_TOF: {
