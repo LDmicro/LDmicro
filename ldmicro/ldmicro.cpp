@@ -852,6 +852,14 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddUart(ELEM_UART_RECV));
             break;
 
+        case MNU_INSERT_UART_SEND_BUSY:
+            CHANGING_PROGRAM(AddUart(ELEM_UART_SEND_BUSY));
+            break;
+
+        case MNU_INSERT_UART_RECV_AVAIL:
+            CHANGING_PROGRAM(AddUart(ELEM_UART_RECV_AVAIL));
+            break;
+
         case MNU_INSERT_PERSIST:
             CHANGING_PROGRAM(AddPersist());
             break;
