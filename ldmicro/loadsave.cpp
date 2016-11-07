@@ -381,6 +381,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
             while(isspace(*p) && *p)
                 p++;
         }
+        strcpy(l->d.lookUpTable.name, DelLastNL(p));
         *which = ELEM_LOOK_UP_TABLE;
     } else if(sscanf(line, "PIECEWISE_LINEAR %s %s %d",
         l->d.piecewiseLinear.dest, l->d.piecewiseLinear.index,
@@ -951,6 +952,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             for(i = 0; i < l->d.lookUpTable.count; i++) {
                 fprintf(f, " %d", l->d.lookUpTable.vals[i]);
             }
+            fprintf(f, " %s", l->d.lookUpTable.name);
             fprintf(f, "\n");
             break;
         }
