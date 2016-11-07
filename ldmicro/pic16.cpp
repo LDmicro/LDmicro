@@ -30,7 +30,6 @@
 #define AUTO_BANKING  //++
 #ifdef AUTO_BANKING
     //#define ASM_COMMENT_BANK //-
-    //#define TEST_AUTO_BANKING //--
 #endif
 
 //http://www.piclist.com/techref/microchip/pages.htm
@@ -229,6 +228,7 @@ static DWORD REG_ANSELG  = 0;
 //
 static DWORD REG_PIR1    = 0; // 0x0c
 #define          RCIF      BIT5
+#define          TXIF      BIT4
 #define          CCP1IF    BIT2
 static DWORD REG_PIE1    = 0; // 0x8c
 
@@ -248,7 +248,13 @@ static DWORD REG_VRCON   = 0; // 0x9f
 
 //USART
 static DWORD REG_TXSTA   = 0; // 0x98
+#define          TXEN      BIT5
+#define          TRMT      BIT1
 static DWORD REG_RCSTA   = 0; // 0x18
+#define          SPEN      BIT7
+#define          CREN      BIT4
+#define          FERR      BIT2
+#define          OERR      BIT1
 static DWORD REG_SPBRG   = 0; // 0x99
 static DWORD REG_TXREG   = 0; // 0x19
 static DWORD REG_RCREG   = 0; // 0x1a
@@ -293,7 +299,7 @@ BOOL McuAs(char *str)
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-static void discoverName(int addrAt, char *arg1s, char *arg1comm)
+static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
 {
 
     arg1s[0] = '\0';
@@ -756,6 +762,7 @@ static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
                     memcpy(&PicProg[j+nAdd], &PicProg[j], sizeof(PicProg[0]));
                 }
                 for(j = ii; j<(ii+nAdd); j++) {
+                    memset(&PicProg[j], sizeof(PicProg[j]), 0);
                     PicProg[j].opPic = OP_VACANT_;
                     sprintf(PicProg[j].commentAsm, " BS(0x%8X,0x%8X)", BB, arg1);
 //                  sprintf(PicProg[j].commentInt, "");
@@ -944,6 +951,9 @@ static void PagePreSet()
             if(PicProg[i-1].opPic == OP_MOVLW) {
                 PicProg[i-1].PCLATH = PicProg[i-1].arg1;
                 PicProg[i].PCLATH = PicProg[i-1].arg1;
+            } else if((PicProg[i-1].opPic == OP_ADDWF) && (PicProg[i-1].arg2 == DEST_W)
+                   && (PicProg[i-2].opPic == OP_MOVLW)) {
+                // used in table
             } else {
                 Error("PagePreSet() error at addr 0x%X", i);
                 oops();
@@ -1081,6 +1091,7 @@ static void PageCorrection()
                     memcpy(&PicProg[j+m3], &PicProg[j], sizeof(PicProg[0]));
                 }
                 for(j = ii; j<(ii+m3); j++) {
+                    memset(&PicProg[j], sizeof(PicProg[j]), 0);
                     PicProg[j].opPic = OP_NOP_;
                     PicProg[j].arg1 = 0;
                     PicProg[j].arg2 = 0;
@@ -1129,6 +1140,7 @@ static void AddrCheckForErrorsPostCompile()
 {
     DWORD i;
     for(i = 0; i < PicProgWriteP; i++) {
+      if(IsOperation(PicProg[i].opPic) <= IS_PAGE)
         if(IS_FWD(PicProg[i].arg1)) {
             Error("Every AllocFwdAddr needs FwdAddrIsNow.");
             fCompileError(f, fAsm);
@@ -1142,7 +1154,10 @@ static void BankCheckForErrorsPostCompile()
     DWORD i;
     for(i = 1; i < PicProgWriteP; i++) {
         if((IsOperation(PicProg[i-1].opPic) == IS_SKIP)
-        && (IsOperation(PicProg[i  ].opPic) == IS_BANK)) {
+        && (IsOperation(PicProg[i  ].opPic) == IS_BANK)
+        && (!IsCoreRegister(PicProg[i-1].arg1orig))
+        && (!IsCoreRegister(PicProg[i  ].arg1orig))
+        ) {
 //      && (IsOperation(PicProg[i  ].opPic) <= IS_SKIP)) {
             if(Bank(PicProg[i-1].arg1orig) ^ Bank(PicProg[i].arg1orig)) {
                 fprintf(fAsm, "    ; Bank Error.\n");
@@ -1206,37 +1221,37 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
     switch(op) {
         case OP_ADDWF:
             CHECK(arg2, 1); CHECK(arg1, 7);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0700 | (arg2 << 7) | arg1;
 
         case OP_ANDWF:
             CHECK(arg2, 1); CHECK(arg1, 7);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0500 | (arg2 << 7) | arg1;
 
         case OP_BSF:
             CHECK(arg2, 3); CHECK(arg1, 7);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x1400 | (arg2 << 7) | arg1;
 
         case OP_BCF:
             CHECK(arg2, 3); CHECK(arg1, 7);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x1000 | (arg2 << 7) | arg1;
 
         case OP_BTFSC:
             CHECK(arg2, 3); CHECK(arg1, 7);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x1800 | (arg2 << 7) | arg1;
 
         case OP_BTFSS:
             CHECK(arg2, 3); CHECK(arg1, 7);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x1c00 | (arg2 << 7) | arg1;
 
         case OP_CLRF:
             CHECK(arg1, 7); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0180 | arg1;
 
         case OP_CLRWDT:
@@ -1245,17 +1260,17 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
 
         case OP_COMF:
             CHECK(arg2, 1); CHECK(arg1, 7);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0900 | (arg2 << 7) | arg1;
 
         case OP_DECF:
             CHECK(arg1, 7); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0300 | (arg2 << 7) | arg1;
 
         case OP_DECFSZ:
             CHECK(arg1, 7); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0b00 | (arg2 << 7) | arg1;
 
         case OP_GOTO: {
@@ -1272,42 +1287,42 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
         }
         case OP_INCF:
             CHECK(arg1, 7); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0a00 | (arg2 << 7) | arg1;
 
         case OP_INCFSZ:
             CHECK(arg1, 7); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0f00 | (arg2 << 7) | arg1;
 
         case OP_IORWF:
             CHECK(arg2, 1); CHECK(arg1, 7);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0400 | (arg2 << 7) | arg1;
 
         case OP_MOVLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x3000 | arg1;
 
         case OP_MOVLB:
             CHECK(arg1, 5); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0020 | arg1;
 
         case OP_MOVLP:
             CHECK(arg1, 7); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x3180 | arg1;
 
         case OP_MOVF:
             CHECK(arg1, 7); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0800 | (arg2 << 7) | arg1;
 
         case OP_MOVWF:
             CHECK(arg1, 7); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0080 | arg1;
 
         case OP_NOP_:
@@ -1320,7 +1335,7 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
 
         case OP_RETLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x3600 | arg1;
 
         case OP_RETURN:
@@ -1333,27 +1348,27 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
 
         case OP_RLF:
             CHECK(arg1, 7); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0d00 | (arg2 << 7) | arg1;
 
         case OP_RRF:
             CHECK(arg1, 7); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0c00 | (arg2 << 7) | arg1;
 
         case OP_IORLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x3800 | arg1;
 
         case OP_SUBWF:
             CHECK(arg1, 7); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0200 | (arg2 << 7) | arg1;
 
         case OP_XORWF:
             CHECK(arg1, 7); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0600 | (arg2 << 7) | arg1;
 
         default:
@@ -1379,37 +1394,37 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
     switch(op) {
         case OP_ADDWF:
             CHECK(arg2, 1); CHECK(arg1, 5);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x1C0 | (arg2 << 5) | arg1;
 
         case OP_ANDWF:
             CHECK(arg2, 1); CHECK(arg1, 5);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x140 | (arg2 << 5) | arg1;
 
         case OP_BCF:
             CHECK(arg2, 3); CHECK(arg1, 5);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x400 | (arg2 << 5) | arg1;
 
         case OP_BSF:
             CHECK(arg2, 3); CHECK(arg1, 5);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x500 | (arg2 << 5) | arg1;
 
         case OP_BTFSC:
             CHECK(arg2, 3); CHECK(arg1, 5);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x600 | (arg2 << 5) | arg1;
 
         case OP_BTFSS:
             CHECK(arg2, 3); CHECK(arg1, 5);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x700 | (arg2 << 5) | arg1;
 
         case OP_CLRF:
             CHECK(arg1, 5); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x060 | arg1;
 
         case OP_CLRWDT:
@@ -1418,17 +1433,17 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
 
         case OP_COMF:
             CHECK(arg2, 1); CHECK(arg1, 5);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x240 | (arg2 << 5) | arg1;
 
         case OP_DECF:
             CHECK(arg1, 5); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0C0 | (arg2 << 5) | arg1;
 
         case OP_DECFSZ:
             CHECK(arg1, 5); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x2C0 | (arg2 << 5) | arg1;
 
         case OP_GOTO: {
@@ -1445,42 +1460,42 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
         }
         case OP_INCF:
             CHECK(arg1, 5); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x280 | (arg2 << 5) | arg1;
 
         case OP_INCFSZ:
             CHECK(arg1, 5); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x3C0 | (arg2 << 5) | arg1;
 
         case OP_IORWF:
             CHECK(arg2, 1); CHECK(arg1, 5);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x100 | (arg2 << 5) | arg1;
 
         case OP_MOVLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0xC00 | arg1;
 /*
         case OP_MOVLB:
             CHECK(arg1, 5); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x020 | arg1;
 
         case OP_MOVLP:
             CHECK(arg1, 5); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x3180 | arg1;
 */
         case OP_MOVF:
             CHECK(arg1, 5); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x200 | (arg2 << 5) | arg1;
 
         case OP_MOVWF:
             CHECK(arg1, 5); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x020 | arg1;
 
         case OP_NOP_:
@@ -1493,51 +1508,43 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
 
         case OP_RETLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x800 | arg1;
-/*
-        case OP_RETURN:
-            CHECK(arg1, 0); CHECK(arg2, 0);
-            return 0x008;
 
-        case OP_RETFIE:
-            CHECK(arg1, 0); CHECK(arg2, 0);
-            return 0x009;
-*/
         case OP_RLF:
             CHECK(arg1, 5); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x340 | (arg2 << 5) | arg1;
 
         case OP_RRF:
             CHECK(arg1, 5); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x300 | (arg2 << 5) | arg1;
 
         case OP_IORLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0xD00 | arg1;
 /*
         case OP_SUBLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x1e00 | arg1;
 */
         case OP_SUBWF:
             CHECK(arg1, 5); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x080 | (arg2 << 5) | arg1;
 
         case OP_XORWF:
             CHECK(arg1, 5); CHECK(arg2, 1);
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x180 | (arg2 << 5) | arg1;
 
         case OP_TRIS:
             CHECK(arg1, 3); CHECK(arg2, 0);
             if( !((arg1==6) || (arg1==7)) ) oops();
-            discoverName(addrAt, arg1s, arg1comm);
+            discoverArgs(addrAt, arg1s, arg1comm);
             return 0x000 | arg1;
 
         case OP_OPTION:
@@ -1874,10 +1881,44 @@ static void CallWithPclath(DWORD addr)
 
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
-    IfBitSet(addrSrc, bitSrc);
-    SetBit(addrDest, bitDest);
-    IfBitClear(addrSrc, bitSrc);
-    ClearBit(addrDest, bitDest);
+    if((Bank(addrDest) == Bank(addrSrc))
+    || IsCoreRegister(addrDest)
+    || IsCoreRegister(addrSrc)) {
+        IfBitSet(addrSrc, bitSrc);
+        SetBit(addrDest, bitDest);
+        IfBitClear(addrSrc, bitSrc);
+        ClearBit(addrDest, bitDest);
+    } else {
+        ClearBit(REG_STATUS, STATUS_DC);
+        IfBitSet(addrSrc, bitSrc);
+        SetBit(REG_STATUS, STATUS_DC);
+
+        IfBitSet(REG_STATUS, STATUS_DC);
+        SetBit(addrDest, bitDest);
+        IfBitClear(REG_STATUS, STATUS_DC);
+        ClearBit(addrDest, bitDest);
+    }
+}
+
+static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+{
+    if((Bank(addrDest) == Bank(addrSrc))
+    || IsCoreRegister(addrDest)
+    || IsCoreRegister(addrSrc)) {
+        IfBitSet(addrSrc, bitSrc);
+        ClearBit(addrDest, bitDest);
+        IfBitClear(addrSrc, bitSrc);
+        SetBit(addrDest, bitDest);
+    } else {
+        ClearBit(REG_STATUS, STATUS_DC);
+        IfBitSet(addrSrc, bitSrc);
+        SetBit(REG_STATUS, STATUS_DC);
+
+        IfBitSet(REG_STATUS, STATUS_DC);
+        ClearBit(addrDest, bitDest);
+        IfBitClear(REG_STATUS, STATUS_DC);
+        SetBit(addrDest, bitDest);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1924,72 +1965,106 @@ static char *VarFromExpr(char *expr, char *tempName, DWORD addr)
     }
 }
 */
+
 //-----------------------------------------------------------------------------
-static void CopyLiteralToRegs(int reg, int literal, int sov)
+static void CopyLiteralToRegs(DWORD addr, int sov, SDWORD literal, char *comment)
 {
-    if(sov >= 1) {
-      Instruction(OP_MOVLW, (literal & 0xff));
-      Instruction(OP_MOVWF, reg);
-    } else
-      oops();
+    // vvv reassurance, check before calling this routine
+    if(sov < 1) ooops(comment);
+    if(sov > 4) ooops(comment);
+    // ^^^ reassurance, check before calling this routine
+    DWORD l1, l2;
+    l1 = (literal & 0xff);
+    Instruction(OP_MOVLW, l1, 0, comment);
+    Instruction(OP_MOVWF, addr, 0, comment);
     if(sov >= 2) {
-      Instruction(OP_MOVLW, (literal >> 8) & 0xff);
-      Instruction(OP_MOVWF, reg+1);
+        l2 = ((literal >> 8) & 0xff);
+        if(l1 != l2)
+            Instruction(OP_MOVLW, l2, 0, comment);
+        Instruction(OP_MOVWF, addr+1, 0, comment);
+
+        if(sov >= 3) {
+            l1 = ((literal >> 16) & 0xff);
+            if(l1 != l2)
+                Instruction(OP_MOVLW, l1, 0, comment);
+            Instruction(OP_MOVWF, addr+2, 0, comment);
+
+            if(sov >= 4) {
+                l2 = ((literal >> 24) & 0xff);
+                if(l1 != l2)
+                    Instruction(OP_MOVLW, l2, 0, comment);
+                Instruction(OP_MOVWF, addr+3, 0, comment);
+            }
+        }
     }
-    if(sov >= 3) {
-      Instruction(OP_MOVLW, (literal >> 16) & 0xff);
-      Instruction(OP_MOVWF, reg+2);
-    }
-    if(sov >= 4) {
-      Instruction(OP_MOVLW, (literal >> 24) & 0xff);
-      Instruction(OP_MOVWF, reg+3);
-    }
-    if(sov > 4)
-      oops();
 }
+
 //-----------------------------------------------------------------------------
-static void CopyVarToRegs(int reg, char *var, int sovRegs)
+static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *name1, char *name2)
 {
-    int sov = SizeOfVar(var);
-    if(sov == 0) oops();
-    if(sovRegs == 0) oops();
+    // vvv reassurance, check before calling this routine
+    if(sov1 < 1) ooops(name1);
+    if(sov1 > 4) ooops(name1);
+    if(sov2 < 1) ooops(name2);
+    if(sov2 > 4) ooops(name2);
+    // ^^^ reassurance, check before calling this routine
 
-    DWORD addrl, addrh;
-    MemForVariable(var, &addrl, &addrh);
+    Instruction(OP_MOVF, addr2, DEST_W, name2);
+    Instruction(OP_MOVWF, addr1, 0, name1);
+    if(sov1 >= 2) {
+      if(sov2 >= sov1) {
+        Instruction(OP_MOVF, addr2+1, DEST_W, name2);
+      } else {
+        Instruction(OP_MOVLW, 0x00);               // Sign propagation
+        Instruction(OP_BTFSC, addr2+sov2-1, BIT7); //
+        Instruction(OP_MOVLW, 0xFF);               //
+      }
+      Instruction(OP_MOVWF, addr1+1, 0, name1);
 
-    Instruction(OP_MOVF, addrl, DEST_W);
-    Instruction(OP_MOVWF, reg);
-    if(sovRegs >= 2) {
-        if(sov >= 2)
-            Instruction(OP_MOVF, addrl+1, DEST_W);
-        else {
-            Instruction(OP_MOVLW, 0x00);
-            Instruction(OP_BTFSC, reg, BIT7);
-            Instruction(OP_MOVLW, 0xff);
+      if(sov1 >= 3) {
+        if(sov2 >= sov1) {
+          Instruction(OP_MOVF, addr2+2, DEST_W, name2);
+        } else {
+          Instruction(OP_MOVLW, 0x00);               // Sign propagation
+          Instruction(OP_BTFSC, addr2+sov2-1, BIT7); //
+          Instruction(OP_MOVLW, 0xFF);               //
         }
-        Instruction(OP_MOVWF, reg+1);
-    }
-    if(sovRegs >= 3) {
-        if(sov >= 3)
-            Instruction(OP_MOVF, addrl+2, DEST_W);
-        else {
-            Instruction(OP_MOVLW, 0x00, 0);
-            Instruction(OP_BTFSC, reg+1, BIT7);
-            Instruction(OP_MOVLW, 0xff);
+        Instruction(OP_MOVWF, addr1+2, 0, name1);
+
+        if(sov1 >= 4) {
+          if(sov2 >= sov1) {
+            Instruction(OP_MOVF, addr2+3, DEST_W, name2);
+          } else {
+            Instruction(OP_MOVLW, 0x00);               // Sign propagation
+            Instruction(OP_BTFSC, addr2+sov2-1, BIT7); //
+            Instruction(OP_MOVLW, 0xFF);               //
+          }
+          Instruction(OP_MOVWF, addr1+3, 0, name1);
         }
-        Instruction(OP_MOVWF, reg+2);
-    }
-    if(sovRegs >= 4) {
-        if(sov >= 4)
-            Instruction(OP_MOVF, addrl+3, DEST_W);
-        else {
-            Instruction(OP_MOVLW, 0x00, 0);
-            Instruction(OP_BTFSC, reg+2, BIT7);
-            Instruction(OP_MOVLW, 0xff);
-        }
-        Instruction(OP_MOVWF, reg+3);
+      }
     }
 }
+
+//-----------------------------------------------------------------------------
+static void CopyArgToReg(DWORD *addr1, int sov1, char *name)
+{
+    int sov2 = SizeOfVar(name);
+
+    if(IsNumber(name)) {
+        CopyLiteralToRegs(*addr1, sov1, hobatoi(name), name);
+    } else {
+        DWORD addr2;
+        MemForVariable(name, &addr2);
+
+        if(sov1 > sov2) {
+            CopyRegsToRegs(*addr1, sov1, addr2, sov2, "$", name);
+        } else { // sov2 == sov1
+            *addr1 = addr2;
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // Alloc RAM for single bit and vars
@@ -2025,20 +2100,20 @@ void AllocBitsVars()
                 MemForSingleBit(a->name1, TRUE, &addr, &bit);
                 break;
 
-            case INT_UART_SEND_BUSY:
-                MemForSingleBit(a->name1, TRUE, &addr, &bit);
-                break;
-
             case INT_UART_SEND:
                 MemForSingleBit(a->name2, TRUE, &addr, &bit);
                 break;
 
-            case INT_UART_RECV_AVAIL:
+            case INT_UART_RECV:
+                MemForSingleBit(a->name2, TRUE, &addr, &bit);
+                break;
+
+            case INT_UART_SEND_BUSY:
                 MemForSingleBit(a->name1, TRUE, &addr, &bit);
                 break;
 
-            case INT_UART_RECV:
-                MemForSingleBit(a->name2, TRUE, &addr, &bit);
+            case INT_UART_RECV_AVAIL:
+                MemForSingleBit(a->name1, TRUE, &addr, &bit);
                 break;
 
             case INT_SET_PWM:

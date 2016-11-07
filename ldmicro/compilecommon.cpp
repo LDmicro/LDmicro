@@ -160,12 +160,12 @@ void PrintVariables(FILE *f)
 {
     int i;
     fprintf(f, "\n");
-    fprintf(f, ";|    Name                                                      | Size      | Address      | Bit # |\n");
+    fprintf(f, ";|  # | Name                                                    | Size      | Address      | Bit # |\n");
 
     fprintf(f, ";|Variables: %d\n", VariableCount);
     for(i = 0; i < VariableCount; i++) {
         if(Variables[i].addrl)
-            fprintf(f, ";|%3d %-50s\t| %3d byte  | 0x%04x = %3d |\n", i, Variables[i].name, Variables[i].SizeOfVar, Variables[i].addrl, Variables[i].addrl);
+            fprintf(f, ";|%3d | %-50s\t| %3d byte  | 0x%04x       |\n", i, Variables[i].name, Variables[i].SizeOfVar, Variables[i].addrl);
         /*
         else {
             DWORD addr;
@@ -189,7 +189,7 @@ void PrintVariables(FILE *f)
 
     fprintf(f, ";|Internal Relays: %d\n", InternalRelayCount);
     for(i = 0; i < InternalRelayCount; i++) {
-            fprintf(f, ";|%3d %-50s\t| %3d bit   | 0x%04x = %3d | %d     |\n", i, InternalRelays[i].name, 1, InternalRelays[i].addr, InternalRelays[i].addr, InternalRelays[i].bit);
+            fprintf(f, ";|%3d | %-50s\t| %3d bit   | 0x%04x       | %d     |\n", i, InternalRelays[i].name, 1, InternalRelays[i].addr, InternalRelays[i].bit);
     }
     fprintf(f, "\n");
 }
@@ -205,7 +205,6 @@ static void ClrInternalData(void)
     for(i = 0; i < VariableCount; i++) {
         Variables[i].Allocated = 0;
         Variables[i].addrl = 0;
-        Variables[i].addrh = 0;
     }
 }
 //-----------------------------------------------------------------------------
@@ -311,6 +310,25 @@ static void MemForPin(char *name, DWORD *addr, int *bit, BOOL asInput)
     }
 }
 
+void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput)
+{
+    *addr = -1;
+    *bit = -1;
+    if(Prog.mcu) {
+        McuIoPinInfo *iop = PinInfo(pin);
+        if(iop) {
+            if(asInput) {
+                *addr = Prog.mcu->inputRegs[iop->port - 'A'];
+            } else {
+                *addr = Prog.mcu->outputRegs[iop->port - 'A'];
+            }
+            *bit = iop->bit;
+        } else {
+            Error(_("Not described pin %d "), pin);
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 int SingleBitAssigned(char *name)
 {
@@ -368,15 +386,17 @@ BYTE MuxForAdcVariable(char *name)
 //-----------------------------------------------------------------------------
 int byteNeeded(SDWORD i)
 {
-    if((-0x80<=i) && (i<=0x7f))
+
+    if((-128<=i) && (i<=127))
         return 1;
-    else if((-0x8000<=i) && (i<=0x7FFF))
+    else if((-32768<=i) && (i<=32767))
         return 2;
-    else if((-0x800000<=i) && (i<=0x7FffFF))
+    else if((-8388608<=i) && (i<=8388607))
         return 3;
-    else if((-0x80000000<=i) && (i<=0x7FffFFff))
-        return 4; // not implamanted for LDmicro
+    else if((-2147483648LL<=i) && (i<=2147483647))
+        return 4; // not FULLY implamanted for LDmicro
     else oops();
+    return 0;
 }
 //-----------------------------------------------------------------------------
 int TestByteNeeded(int count, SDWORD *vals)
@@ -436,17 +456,45 @@ void MemForVariable(char *name, DWORD *addrl, DWORD *addrh)
         *addrh = Variables[i].addrh;
 }
 
-int MemForVariable(char *name, DWORD *addrl)
+int MemForVariable(char *name, DWORD *addr)
 {
-    MemForVariable(name, addrl, NULL);
+    MemForVariable(name, addr, 0);
     return 2;
+}
+
+//-----------------------------------------------------------------------------
+int MemOfVar(char *name, DWORD *addr)
+{
+    DWORD addrh;
+    MemForVariable(name, addr, &addrh); //get WORD memory for pointer to LPM
+    return SizeOfVar(name); //and return size of element of table in flash memory
+}
+
+int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
+{
+    DWORD addrh;
+    MemForVariable(name, &addr, &addrh); //allocate WORD memory for pointer to LPM
+    return SetSizeOfVar(name, sizeOfVar); //and set size of element of table in flash memory
+}
+//-----------------------------------------------------------------------------
+int SetSizeOfVar(char *name, int sizeOfVar)
+{
+    return 2;
+}
+
+int SizeOfVar(char *name)
+{
+     if(name[0] == '#')
+         return 1;
+     else
+        return 2;
 }
 
 //-----------------------------------------------------------------------------
 int GetVariableType(char *name)
 {
     if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow);
+        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
         CompileError();
     }
 
@@ -467,7 +515,7 @@ int GetVariableType(char *name)
 int SetVariableType(char *name, int type)
 {
     if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow);
+        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
         CompileError();
     }
     int i;
@@ -480,6 +528,7 @@ int SetVariableType(char *name, int type)
     }
     if(i == VariableCount) {
         VariableCount++;
+        memset(&Variables[i], sizeof(Variables[i]), 0);
         strcpy(Variables[i].name, name);
         if(name[0] == '#') {
             Variables[i].SizeOfVar = 1;
@@ -496,23 +545,11 @@ int SetVariableType(char *name, int type)
     return type;
 }
 //-----------------------------------------------------------------------------
-int SetSizeOfVar(char *name, int sizeOfVar)
-{
-    return 2;
-}
-
-int SizeOfVar(char *name)
-{
-     if(name[0] == '#')
-         return 1;
-     else
-        return 2;
-}
 
 int AllocOfVar(char *name)
 {
     if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow);
+        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
         CompileError();
     }
 
@@ -529,6 +566,7 @@ int AllocOfVar(char *name)
     }
     return 0;
 }
+
 //-----------------------------------------------------------------------------
 // Compare function to qsort() the I/O list.
 //-----------------------------------------------------------------------------
@@ -548,13 +586,14 @@ void SaveVarListToFile(FILE *f)
 
     int i;
     for(i = 0; i < VariableCount; i++)
-      if(!IsIoType(Variables[i].type))
-        if(Variables[i].name[0] != '$') {
+      if(!IsIoType(Variables[i].type)
+      && (Variables[i].type != IO_TYPE_INTERNAL_RELAY)
+      && (Variables[i].name[0] != '$')) {
           fprintf(f, "  %3d bytes %s %s\n",
-            SizeOfVar(Variables[i].name),
-            Variables[i].name,
-           (Variables[i].Allocated?"":"\tNow not used !!!"));
-        }
+              SizeOfVar(Variables[i].name),
+              Variables[i].name,
+              Variables[i].Allocated ? "" : "\tNow not used !!!");
+      }
 }
 
 //-----------------------------------------------------------------------------

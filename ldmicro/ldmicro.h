@@ -143,8 +143,10 @@ typedef signed long SDWORD;
 #define MNU_INSERT_READ_ADC     0x31
 #define MNU_INSERT_SET_PWM      0x32
 #define MNU_INSERT_SET_PWM_SOFT 0x3201
-#define MNU_INSERT_UART_SEND    0x33
-#define MNU_INSERT_UART_RECV    0x34
+#define MNU_INSERT_UART_SEND         0x33
+#define MNU_INSERT_UART_SEND_BUSY    0x3301
+#define MNU_INSERT_UART_RECV         0x34
+#define MNU_INSERT_UART_RECV_AVAIL   0x3401
 #define MNU_INSERT_EQU          0x35
 #define MNU_INSERT_NEQ          0x36
 #define MNU_INSERT_GRT          0x37
@@ -190,7 +192,6 @@ typedef signed long SDWORD;
 #define MNU_INSERT_NPULSE_OFF   0x4f05
 #define MNU_INSERT_PWM_OFF      0x4f06
 #define MNU_INSERT_PWM_OFF_SOFT 0x4f07
-#define MNU_INSERT_UART_UDRE    0x4f08
 #define MNU_INSERT_QUAD_ENCOD   0x4f09
 
 #define MNU_MCU_SETTINGS        0x50
@@ -240,9 +241,9 @@ typedef signed long SDWORD;
 #define LV_IO_PIN               0x03
 #define LV_IO_PORT              0x04
 #define LV_IO_PINNAME           0x05
-#define LV_IO_MODBUS            0x06
-#define LV_IO_RAM_ADDRESS       0x07
-#define LV_IO_SISE_OF_VAR       0x08
+#define LV_IO_RAM_ADDRESS       0x06
+#define LV_IO_SISE_OF_VAR       0x07
+#define LV_IO_MODBUS            0x08
 
 // Timer IDs associated with the main window.
 #define TIMER_BLINK_CURSOR      1
@@ -316,7 +317,9 @@ typedef signed long SDWORD;
 #define ELEM_SET_PWM            0x29
 #define ELEM_SET_PWM_SOFT       0x2901
 #define ELEM_UART_RECV          0x2a
+#define ELEM_UART_RECV_AVAIL    0x2a01
 #define ELEM_UART_SEND          0x2b
+#define ELEM_UART_SEND_BUSY     0x2b01
 #define ELEM_MASTER_RELAY       0x2c
 #define ELEM_SHIFT_REGISTER     0x2d
 #define ELEM_LOOK_UP_TABLE      0x2e
@@ -347,7 +350,6 @@ typedef signed long SDWORD;
 #define ELEM_NPULSE_OFF         0x4005
 #define ELEM_PWM_OFF            0x4006
 #define ELEM_PWM_OFF_SOFT       0x4007
-#define ELEM_UART_UDRE          0x4008
 #define ELEM_QUAD_ENCOD         0x4009
 
 #define ELEM_BUS                0x7001
@@ -425,9 +427,10 @@ typedef signed long SDWORD;
         case ELEM_SET_PWM: \
         case ELEM_SET_PWM_SOFT: \
         case ELEM_QUAD_ENCOD: \
-        case ELEM_UART_UDRE: \
         case ELEM_UART_SEND: \
+        case ELEM_UART_SEND_BUSY: \
         case ELEM_UART_RECV: \
+        case ELEM_UART_RECV_AVAIL: \
         case ELEM_MASTER_RELAY: \
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
@@ -709,7 +712,8 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_PORT_OUTPUT     22 // 8bit PORT for out data - McuIoInfo.oututRegs
 #define IO_TYPE_BCD             23 // unpacked, max 10 byte
 #define IO_TYPE_STRING          24 // max
-#define IO_TYPE_TABLE           25 // max
+#define IO_TYPE_TABLE_IN_FLASH  25 // max limited (size of flsh - progSize)
+#define IO_TYPE_VAL_IN_FLASH    26 //
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -1356,7 +1360,7 @@ typedef enum AvrOpTag {
     OP_SBIW,
     OP_ASR,
     OP_BRCC,
-    OP_BRCS,
+    OP_BRCS, // 10
     OP_BREQ,
     OP_BRGE,
     OP_BRLO,
@@ -1366,7 +1370,7 @@ typedef enum AvrOpTag {
     OP_CBR,
     OP_CLC,
     OP_CLR,
-    OP_SER,
+    OP_SER, // 20
     OP_COM,
     OP_CP,
     OP_CPC,
@@ -1376,7 +1380,7 @@ typedef enum AvrOpTag {
     OP_ICALL,
     OP_IJMP,
     OP_INC,
-    OP_LDI,
+    OP_LDI, // 30
     OP_LD_X,
     OP_LD_XP,  // post increment X+
     OP_LD_XS,  // -X pre decrement
@@ -1386,17 +1390,17 @@ typedef enum AvrOpTag {
     OP_LDD_Y,  //  Y+q
     OP_LD_Z,
     OP_LD_ZP,  // post increment Z+
-    OP_LD_ZS,  // -Z pre decrement
+    OP_LD_ZS,  // -Z pre decrement // 40
     OP_LDD_Z,  // Z+q
     OP_LPM_0Z, // R0 <- (Z)
     OP_LPM_Z,  // Rd <- (Z)
     OP_LPM_ZP, // Rd <- (Z++) post incterment
-    OP_DB,     // one byte in flash word, hi byte = 0!
+    OP_DB,     // one byte in flash word, hi byte = 0! // 45
     OP_DB2,    // two bytes in flash word
     OP_DW,     // word in flash word
     OP_MOV,
     OP_MOVW,
-    OP_SWAP,
+    OP_SWAP, // 50
     #if USE_IO_REGISTERS == 1
     OP_IN,
     OP_OUT,
@@ -1409,7 +1413,7 @@ typedef enum AvrOpTag {
     OP_RET,
     OP_RETI,
     OP_RJMP,
-    OP_ROR,
+    OP_ROR,  // 60
     OP_ROL,
     OP_LSL,
     OP_LSR,
@@ -1419,7 +1423,7 @@ typedef enum AvrOpTag {
     OP_SBR,
     OP_SBRC,
     OP_SBRS,
-    OP_ST_X,
+    OP_ST_X, // 70
     OP_ST_XP, // +
     OP_ST_XS, // -
     OP_ST_Y,
@@ -1430,7 +1434,7 @@ typedef enum AvrOpTag {
     OP_ST_ZP, // +
     OP_ST_ZS, // -
 //  OP_STD_Z, // Z+q // Notes: 1. This instruction is not available in all devices. Refer to the device specific instruction set summary.
-    OP_SUB,
+    OP_SUB, //80
     OP_SUBI,
     OP_TST,
     OP_WDR,
@@ -1465,8 +1469,8 @@ typedef enum Pic16OpTag {
     OP_CALL,
     OP_BSF,
     OP_BCF,
-    OP_BTFSC,
-    OP_BTFSS, // 10
+    OP_BTFSC, // 10
+    OP_BTFSS,
     OP_GOTO,
     OP_CLRF,
     OP_CLRWDT,
@@ -1475,13 +1479,13 @@ typedef enum Pic16OpTag {
     OP_DECFSZ,
     OP_INCF,
     OP_INCFSZ,
-    OP_IORLW,
-    OP_IORWF, // 20
+    OP_IORLW, // 20
+    OP_IORWF,
     OP_MOVLW,
     OP_MOVF,
     OP_MOVWF,
-    OP_RETFIE,
-    OP_RETURN, // 25
+    OP_RETFIE, // 25
+    OP_RETURN,
     OP_RETLW,
     OP_RLF,
     OP_RRF,
@@ -1491,8 +1495,8 @@ typedef enum Pic16OpTag {
     OP_XORWF,
     OP_MOVLB,
     OP_MOVLP,
-    OP_TRIS,
-    OP_OPTION // 35
+    OP_TRIS,  // 35
+    OP_OPTION
 } PicOp;
 
 typedef struct PicAvrInstructionTag {
@@ -1535,8 +1539,10 @@ DWORD AllocOctetRam(void);
 void AllocBitRam(DWORD *addr, int *bit);
 void MemForVariable(char *name, DWORD *addrl, DWORD *addrh);
 int MemForVariable(char *name, DWORD *addrl);
+int MemOfVar(char *name, DWORD *addr);
 BYTE MuxForAdcVariable(char *name);
 int SingleBitAssigned(char *name);
+void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput);
 void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit);
 void MemForSingleBit(char *name, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile(void);
