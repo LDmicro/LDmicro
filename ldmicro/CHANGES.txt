@@ -1,3 +1,15 @@
+== Release 4.0.7
+    * HotFix: Bug in releases 4.0.5 - 4.0.6 with AVR ports ottputs.
+
+    * Added: Atmega2560 can genarate 12 hardware PWM's.
+
+      HOW TO: Two three phase sine wave based on the hardware PWM
+      https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Two-three-phase-sine-wave-based-on-the-hardware-PWM
+
+    * New: Added elements
+      UART SEND: Is busy ? Output is 1 when send data currently present in the transmit buffer.
+      UART RECV: Is avail ? Output is 1 when there are unread data in the receive buffer.
+
 == Release 4.0.6
 
     * Fixed: "Save as.." cyclic bug.

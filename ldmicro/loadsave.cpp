@@ -275,6 +275,12 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         l->d.setPwm.targetFreq)==2)
     {
         *which = ELEM_SET_PWM;
+    } else if(memcmp(line, "UART_RECV_AVAIL", 15)==0) {
+        *which = ELEM_UART_RECV_AVAIL;
+    } else if(memcmp(line, "UART_SEND_BUSY", 14)==0) {
+        *which = ELEM_UART_SEND_BUSY;
+    } else if(memcmp(line, "UART_UDRE", 9)==0) {
+        *which = ELEM_UART_SEND_BUSY;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name)==1) {
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name)==1) {
@@ -375,7 +381,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         }
         // Then copy over the look-up table entries.
         for(i = 0; i < l->d.lookUpTable.count; i++) {
-            l->d.lookUpTable.vals[i] = atoi(p);
+            l->d.lookUpTable.vals[i] = hobatoi(p);
             while((!isspace(*p)) && *p)
                 p++;
             while(isspace(*p) && *p)
@@ -397,12 +403,13 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         }
         // Then copy over the piecewise linear points.
         for(i = 0; i < l->d.piecewiseLinear.count*2; i++) {
-            l->d.piecewiseLinear.vals[i] = atoi(p);
+            l->d.piecewiseLinear.vals[i] = hobatoi(p);
             while((!isspace(*p)) && *p)
                 p++;
             while(isspace(*p) && *p)
                 p++;
         }
+//      sscanf(p, "%s", l->d.piecewiseLinear.name);
         *which = ELEM_PIECEWISE_LINEAR;
     } else {
         // that's odd; nothing matched
@@ -662,6 +669,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
     char str2[1024];
     char str3[1024];
     char str4[1024];
+    char str5[1024];
 
     Indent(f, depth);
 
@@ -886,6 +894,14 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
         case ELEM_UART_SEND:
             fprintf(f, "UART_SEND %s\n", l->d.uart.name);
+            break;
+
+        case ELEM_UART_SEND_BUSY:
+            fprintf(f, "UART_SEND_BUSY\n");
+            break;
+
+        case ELEM_UART_RECV_AVAIL:
+            fprintf(f, "UART_RECV_AVAIL\n");
             break;
 
         case ELEM_PERSIST:

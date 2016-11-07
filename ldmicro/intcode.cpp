@@ -451,6 +451,7 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2)
 {
+    memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = op;
     if(name1) strcpy(IntCode[IntCodeLen].name1, name1);
     if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
@@ -518,6 +519,7 @@ static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, ch
 //-----------------------------------------------------------------------------
 static void SimState(BOOL *b, char *name)
 {
+    memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = INT_SIMULATE_NODE_STATE;
     strcpy(IntCode[IntCodeLen].name1, name);
     IntCode[IntCodeLen].poweredAfter = b;
@@ -898,7 +900,7 @@ static void InitVars(void)
         InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], &n);
     }
     if(n) {
-      Comment("INIT_VARS");
+      Comment("INIT VARS");
       char storeInit[MAX_NAME_LEN];
       GenSymOneShot(storeInit, "INIT", "VARS");
       Op(INT_IF_BIT_CLEAR, storeInit);
@@ -911,10 +913,10 @@ static void InitVars(void)
     }
 }
 
+#ifdef TABLE_IN_FLASH
 //-----------------------------------------------------------------------------
 static void InitTablesCircuit(int which, void *elem)
 {
-#ifdef NEW_FEATURE
     int sovElement = 0;
     ElemLeaf *l = (ElemLeaf *)elem;
     switch(which) {
@@ -930,6 +932,27 @@ static void InitTablesCircuit(int which, void *elem)
             int i;
             for(i = 0; i < p->count; i++)
                 InitTablesCircuit(p->contents[i].which, p->contents[i].d.any);
+            break;
+        }
+        case ELEM_LOOK_UP_TABLE:
+        case ELEM_PIECEWISE_LINEAR: {
+            ElemLookUpTable *t = &(l->d.lookUpTable);
+
+            char nameTable[MAX_NAME_LEN];
+            sprintf(nameTable, "%s%s", t->name,""); // "LutElement");
+
+            int sovElement;
+
+            if((isVarInited(nameTable) < 0)
+            || (isVarInited(nameTable)==rungNow)) {
+                sovElement =  TestByteNeeded(t->count, t->vals);
+                Op(INT_FLASH_INIT, nameTable, NULL, NULL, t->count, sovElement, t->vals);
+            } else {
+                sovElement = SizeOfVar(nameTable);
+                if(sovElement < 1)
+                    sovElement = 1;
+                Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable);
+            }
             break;
         }
         {
@@ -954,22 +977,21 @@ static void InitTablesCircuit(int which, void *elem)
         default:
             break;
     }
-#endif
 }
 
 //-----------------------------------------------------------------------------
 static void InitTables(void)
 {
-#ifdef NEW_FEATURE
-    Comment("INIT_TABLES");
-      int i;
-      for(i = 0; i < Prog.numRungs; i++) {
-          rungNow = i;
-          InitTablesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-      }
-#endif
+    if(TablesUsed()) {
+        Comment("INIT TABLES");
+        int i;
+        for(i = 0; i < Prog.numRungs; i++) {
+            rungNow = i;
+            InitTablesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        }
+    }
 }
-
+#endif
 //-----------------------------------------------------------------------------
 // Compile code to evaluate the given bit of ladder logic. The rung input
 // state is in stateInOut before calling and will be in stateInOut after
@@ -2522,26 +2544,21 @@ BOOL GenerateIntermediateCode(void)
 BOOL UartFunctionUsed(void)
 {
     int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
         ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_UART_UDRE, -1, -1))) {
-            //dbp("UartFunctionUsed TRUE Prog.numRungs=%d", Prog.numRungs);
+            ELEM_UART_SEND_BUSY, ELEM_UART_RECV_AVAIL, -1)))
             return TRUE;
-        }
-
-    for(i = 0; i < IntCodeLen; i++){
-        if((IntCode[i].op == INT_UART_SEND)
-        #ifdef NEW_FEATURE
-        || (IntCode[i].op == INT_UART_UDRE)
-        #endif
-        || (IntCode[i].op == INT_UART_RECV)) {
-            //dbp("UartFunctionUsed TRUE IntCodeLen=%d", IntCodeLen);
-            return TRUE;
-        }
     }
-    //dbp("UartFunctionUsed FALSE IntCodeLen=%d", IntCodeLen);
+
+    for(i = 0; i < IntCodeLen; i++) {
+        if((IntCode[i].op == INT_UART_SEND)
+        || (IntCode[i].op == INT_UART_SEND_BUSY)
+        || (IntCode[i].op == INT_UART_RECV_AVAIL)
+        || (IntCode[i].op == INT_UART_RECV))
+            return TRUE;
+    }
     return FALSE;
 }
 

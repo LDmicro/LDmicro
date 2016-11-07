@@ -233,7 +233,6 @@ bool ExistFile(const char *name)
     }
     return false;
 }
-
 static void isErr(int Err, char *r)
 {
   char *s;
@@ -853,6 +852,14 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddUart(ELEM_UART_RECV));
             break;
 
+        case MNU_INSERT_UART_SEND_BUSY:
+            CHANGING_PROGRAM(AddUart(ELEM_UART_SEND_BUSY));
+            break;
+
+        case MNU_INSERT_UART_RECV_AVAIL:
+            CHANGING_PROGRAM(AddUart(ELEM_UART_RECV_AVAIL));
+            break;
+
         case MNU_INSERT_PERSIST:
             CHANGING_PROGRAM(AddPersist());
             break;
@@ -1131,9 +1138,9 @@ cmp:
         case MNU_RELEASE:
             ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/releases",NULL,NULL,SW_SHOWNORMAL);
             char str[1024];
-            sprintf(str,"Tag: %s\n\n%s\n\nSHA-1: %s\n\n"
+            sprintf(str,"Date: %s\n\nSHA-1: %s\n\n"
                 "Compiled: " __TIME__ " " __DATE__ ".",
-                git_commit_tag, git_commit_date, git_commit_str);
+                git_commit_date, git_commit_str);
             MessageBox(MainWindow, str, _("Release"),
                 MB_OK | MB_ICONINFORMATION);
             break;

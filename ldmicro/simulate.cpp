@@ -631,6 +631,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
         case ELEM_UART_SEND:
+        case ELEM_UART_SEND_BUSY:
+        case ELEM_UART_RECV_AVAIL:
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_OPEN:
@@ -785,6 +787,9 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_MUL:
         case ELEM_DIV:
         case ELEM_MOD:
+        case ELEM_UART_RECV_AVAIL:
+        case ELEM_UART_SEND_BUSY:
+        case ELEM_UART_SEND:
         case ELEM_UART_RECV:
         case ELEM_SHIFT_REGISTER:
         case ELEM_PERSIST:
@@ -792,8 +797,6 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_STRING:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
-        case ELEM_UART_UDRE:
-        case ELEM_UART_SEND:
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_OPEN:
@@ -1181,14 +1184,48 @@ math:
             case INT_WRITE_STRING: {
                 break;
             }
-            #ifdef NEW_FEATURE
+            #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:
+                if(!GetSimulationVariable(a->name1)) {
+                    SetSimulationVariable(a->name1, (SDWORD)&(a->data[0]));
+                }
                 break;
 
             case INT_FLASH_READ:{
+                SDWORD *adata;
+                adata = (SDWORD *)GetSimulationVariable(a->name1);
+                int index = GetSimulationVariable(a->name3);
+                if((index<0)||(a->literal+1<index)) {
+                    if(a->literal3 != index) {
+                        Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name1, a->literal+1);
+                        a->literal3 = a->literal; // side effect: побочный эффект !!!
+                        index = a->literal;
+                    }
+                }
+                SDWORD d = adata[index];
+                if(GetSimulationVariable(a->name2) != d) {
+                    SetSimulationVariable(a->name2, d);
+                    NeedRedraw = TRUE;
+                }
+                }
                 break;
 
             case INT_RAM_READ:{
+                int index = GetSimulationVariable(a->name3);
+                if((index<0)||(a->literal<=index)) {
+                    if(a->literal3 != index) {
+                        Error("Index=%d out of range for string %s[%d]", index, a->name1, a->literal);
+                        a->literal3 = a->literal; // side effect: побочный эффект !!!
+                        index = a->literal;
+                    }
+                }
+                //dbps(GetSimulationStr(a->name1))
+                char d = GetSimulationStr(a->name1)[index];
+                if(GetSimulationVariable(a->name2) != d) {
+                    SetSimulationVariable(a->name2, d);
+                    NeedRedraw = TRUE;
+                }
+                }
                 break;
             #endif
 
@@ -1347,7 +1384,8 @@ void DescribeForIoList(char *name, int type, char *out)
             sprintf(out, "\"%s\"", GetSimulationStr(name));
             break;
 
-        case IO_TYPE_TABLE: {
+        case IO_TYPE_VAL_IN_FLASH:
+        case IO_TYPE_TABLE_IN_FLASH: {
             sprintf(out, "");
             break;
         }
@@ -1395,7 +1433,6 @@ void DescribeForIoList(char *name, int type, char *out)
               sprintf(out, "0x%08x = %d", v, v);
             else {
               sprintf(out, "0x%x = %d", v, v);
-              ooops("%s", name);
             }
             break;
         }

@@ -100,7 +100,7 @@ void MakeMainWindowControls(void)
     LV_ADD_COLUMN(IoList, LV_IO_PIN,         pinWidth,     _("Pin on MCU"));
     LV_ADD_COLUMN(IoList, LV_IO_PORT,        portWidth,    _("MCU Port"));
     LV_ADD_COLUMN(IoList, LV_IO_PINNAME,     pinNameWidth, _("Pin Name"));
-    LV_ADD_COLUMN(IoList, LV_IO_RAM_ADDRESS, 75,           _("RAM addr"));
+    LV_ADD_COLUMN(IoList, LV_IO_RAM_ADDRESS, 75,           _("Address"));
     LV_ADD_COLUMN(IoList, LV_IO_SISE_OF_VAR, 60,           _("Size"));
     LV_ADD_COLUMN(IoList, LV_IO_MODBUS,      modbusWidth,  _("Modbus addr"));
 
@@ -248,7 +248,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_OPEN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_UDRE, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND_BUSY, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV_AVAIL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STRING, t);
     EnableMenuItem(InstructionMenu, ELEM_CPRINTF      , t);
@@ -528,6 +529,10 @@ HMENU MakeMainWindowMenus(void)
         _("Insert &UART Send"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
         _("Insert &UART Receive"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND_BUSY,
+        _("Insert &UART SEND: Is busy ?"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL,
+        _("Insert &UART RECV: Is available ?"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM,
         _("Insert Set &PWM Output\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,

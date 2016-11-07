@@ -98,33 +98,33 @@ McuAdcPinInfo AvrAT90USB647_64TQFPAdcPinInfo[] = {
 //-----------------------------------------------------------------------------
 // ATmega2560
 McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
-    { 'G',  5,  1 },
+    { 'G',  5,  1, "PG5/OC0B" },
 
     { 'E',  0,  2 },
     { 'E',  1,  3 },
     { 'E',  2,  4 },
-    { 'E',  3,  5 },
-    { 'E',  4,  6 },
-    { 'E',  5,  7 },
+    { 'E',  3,  5, "PE3/OC3A/AIN1" },
+    { 'E',  4,  6, "PE4/OC3B/INT4" },
+    { 'E',  5,  7, "PE5/OC3C/INT5" },
     { 'E',  6,  8 },
     { 'E',  7,  9 },
 
     { 'H',  0, 12 },
     { 'H',  1, 13 },
     { 'H',  2, 14 },
-    { 'H',  3, 15 },
-    { 'H',  4, 16 },
-    { 'H',  5, 17 },
-    { 'H',  6, 18 },
+    { 'H',  3, 15, "PH3/OC4A" },
+    { 'H',  4, 16, "PH4/OC4B" },
+    { 'H',  5, 17, "PH5/OC4C" },
+    { 'H',  6, 18, "PH6/OC2B" },
 
     { 'B',  0, 19 },
     { 'B',  1, 20 },
     { 'B',  2, 21 },
     { 'B',  3, 22 },
-    { 'B',  4, 23 },
-    { 'B',  5, 24 },
-    { 'B',  6, 25 },
-    { 'B',  7, 26 },
+    { 'B',  4, 23, "PB4/OC2A/PCINT4" },
+    { 'B',  5, 24, "PB5/OC1A/PCINT5" },
+    { 'B',  6, 25, "PB6/OC1B/PCINT6" },
+    { 'B',  7, 26, "PB7/OC1C/OC0A/PCINT7" },
 
     { 'H',  7, 27 },
 
@@ -134,9 +134,9 @@ McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
     { 'L',  0, 35 },
     { 'L',  1, 36 },
     { 'L',  2, 37 },
-    { 'L',  3, 38 },
-    { 'L',  4, 39 },
-    { 'L',  5, 40 },
+    { 'L',  3, 38, "PL3/OC5A" },
+    { 'L',  4, 39, "PL4/OC5B" },
+    { 'L',  5, 40, "PL5/OC5C" },
     { 'L',  6, 41 },
     { 'L',  7, 42 },
 
@@ -489,9 +489,30 @@ McuPwmPinInfo AvrAtmegaPwmPinInfo32_[] = {
 //  { 14, 1, 5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x00 }, // OC1B // Phase Correct PWM
 //  { 15, 2, 7, 0x43,  0   ,  0x45,  5,     4,     0x40, 0   ,  0    }, // OC2  // Phase Correct PWM
     {  0, 0, 5, 0   ,  0x52,  0x53,  0,     0,        0, 0   ,  0    }, // Timer0
-    { 13, 1, 5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 }, // OC1A // Fast PWM
-    { 14, 1, 5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 }, // OC1B // Fast PWM
+    { 13, 1, 5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 }, // OC1A // Fast PWM 8-bit
+    { 14, 1, 5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 }, // OC1B // Fast PWM 8-bit
     { 15, 2, 7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    }, // OC2  // Fast PWM
+};
+
+McuPwmPinInfo AvrAtmega2560PwmPinInfo[] = {
+////     ti max REG_    REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer CS OCRnxL  OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+//  { 26, 0,  5, 0x47,  0,     0x44,  7,     6,        1, 0x45,  0x08 }, // OC0A
+    {  1, 0,  5, 0x48,  0,     0x44,  5,     4,        2, 0x45,  0x08 }, // OC0B
+    { 24, 1,  5, 0x88,  0x89,  0x80,  7,     6,        1, 0x81,  0x08 }, // OC1A
+    { 25, 1,  5, 0x8A,  0x8B,  0x80,  5,     4,        1, 0x81,  0x08 }, // OC1B
+    { 26, 1,  5, 0x8C,  0x8D,  0x80,  3,     2,        1, 0x81,  0x08 }, // OC1C
+    { 23, 2,  5, 0xB3,  0,     0xB0,  7,     6,        1, 0xB1,  0x08 }, // OC2A
+    { 18, 2,  5, 0xB4,  0,     0xB0,  5,     4,        2, 0xB1,  0x08 }, // OC2B
+    {  5, 3,  5, 0x98,  0x99,  0x90,  7,     6,        1, 0x91,  0x08 }, // OC3A
+    {  6, 3,  5, 0x9A,  0x9B,  0x90,  5,     4,        1, 0x91,  0x08 }, // OC3B
+    {  7, 3,  5, 0x9C,  0x9D,  0x90,  3,     2,        1, 0x91,  0x08 }, // OC3C
+    { 15, 4,  5, 0xA8,  0xA9,  0xA0,  7,     6,        1, 0xA1,  0x08 }, // OC4A
+    { 16, 4,  5, 0xAA,  0xAB,  0xA0,  5,     4,        1, 0xA1,  0x08 }, // OC4B
+    { 17, 4,  5, 0xAC,  0xAD,  0xA0,  3,     2,        1, 0xA1,  0x08 }, // OC4C
+//  { 38, 5,  5, 0x128, 0x129, 0x120, 7,     6,        1, 0x121, 0x08 }, // OC5A ???
+//  { 39, 5,  5, 0x12A, 0x12B, 0x120, 5,     4,        1, 0x121, 0x08 }, // OC5B
+//  { 40, 5,  5, 0x12C, 0x12D, 0x120, 3,     2,        1, 0x121, 0x08 }, // OC5C
 };
 
 McuPwmPinInfo AvrAtmegaPwmPinInfo40_[] = {
@@ -956,8 +977,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         EnhancedCore4M,
         100,
         0,
-        AvrAtmegaPwmPinInfo100_,
-        arraylen(AvrAtmegaPwmPinInfo100_)
+        AvrAtmega2560PwmPinInfo,
+        arraylen(AvrAtmega2560PwmPinInfo)
     },
     {
         "Atmel AVR AT90USB647 64-TQFP",

@@ -265,16 +265,23 @@ static DWORD REG_UCSRB  = 0;
 #define          RXEN   BIT4
 #define          TXEN   BIT3
 static DWORD REG_UCSRA  = 0;
-#define      RXC  BIT7 // USART Receive Complete
-                       // This flag bit is set when there are unread data
-                       //   in the receive buffer and
-                       //   cleared when the receive buffer is empty.
-#define      TXC  BIT6 // USART Transmit Complete
-#define      UDRE BIT5 // bit is 1 when tx buffer is empty
+#define          RXC    BIT7 // USART Receive Complete
+                        // This flag bit is set when there are unread data
+                        //   in the receive buffer and
+                        //   cleared when the receive buffer is empty.
+#define          TXC    BIT6 // USART Transmit Complete
+/*
+This flag bit is set when the entire frame in the Transmit Shift Register
+has been shifted out and there are no new data currently present in the
+transmit buffer (UDR). The TXC Flag bit is automatically cleared
+when a transmit complete interrupt is executed, or it can be cleared
+by writing a one to its bit location.
+*/
+#define          UDRE   BIT5 // bit is 1 when tx buffer is empty
 
-#define      FE   BIT4 // Frame Error
-#define      DOR  BIT3 // Data OverRun
-#define      PE   BIT2 // Parity Error
+#define          FE     BIT4 // Frame Error
+#define          DOR    BIT3 // Data OverRun
+#define          PE     BIT2 // Parity Error
 
 static DWORD REG_UDR = 0;
 
@@ -517,10 +524,79 @@ static void FwdAddrIsNow(DWORD addr)
 }
 
 //-----------------------------------------------------------------------------
+#define IS_SKIP        2
+#define IS_BANK        1
+#define IS_ANY_BANK    0
+#define IS_RETS       -1
+#define IS_PAGE       -2
+#define IS_GOTO       -2
+#define IS_CALL       -3
+
+static int IsOperation(AvrOp op)
+{
+    switch(op) {
+/*
+        case OP_BTFSC:
+        case OP_BTFSS:
+        case OP_DECFSZ:
+        case OP_INCFSZ:
+            return OP_SKIP; // can need to change bank
+        case OP_ADDWF:
+        case OP_ANDWF:
+        case OP_BSF:
+        case OP_BCF:
+        case OP_CLRF:
+        case OP_COMF:
+        case OP_DECF:
+        case OP_INCF:
+        case OP_IORWF:
+        case OP_MOVF:
+        case OP_MOVWF:
+        case OP_RLF:
+        case OP_RRF:
+        case OP_SUBWF:
+        case OP_XORWF:
+            return OP_BANK; // can need to change bank
+        case OP_CLRWDT:
+        case OP_MOVLW:
+        case OP_MOVLB:
+        case OP_MOVLP:
+        case OP_NOP_:
+        case OP_COMMENT_:
+        case OP_SUBLW:
+        case OP_IORLW:
+            return 0;       // not need to change bank
+        case OP_RETURN:
+        case OP_RETFIE:
+            return OP_RET;  // not need to change bank
+        case OP_GOTO:
+*/
+        case OP_BREQ:
+        case OP_BRNE:
+        case OP_BRLO:
+        case OP_BRGE:
+        case OP_BRLT:
+        case OP_BRCC:
+        case OP_BRCS:
+        case OP_BRMI:
+            return IS_PAGE;
+        case OP_IJMP:
+        case OP_RJMP:
+            return IS_GOTO; // can need to change page
+        case OP_ICALL:
+        case OP_RCALL:
+            return IS_CALL; // can need to change page
+        default:
+            return 0;
+    }
+}
+
+//-----------------------------------------------------------------------------
 static void AddrCheckForErrorsPostCompile()
 {
     DWORD i;
     for(i = 0; i < AvrProgWriteP; i++) {
+      if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE) {
         if(AvrProg[i].arg1 & 0x80000000) {
             Error("Every AllocFwdAddr needs FwdAddrIsNow.");
             Error("i=%d op=%d arg1=%d arg2=%d rung=%d", i,
@@ -530,6 +606,7 @@ static void AddrCheckForErrorsPostCompile()
                AvrProg[i].rung+1);
             CompileError();
         }
+      }
     }
 }
 
@@ -997,84 +1074,21 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
         return 0x9478;
 
     case OP_DB:
-        CHECK2(arg1, 0, 255); CHECK(arg2, 0);
-        return arg1;
+        CHECK2(BYTE(arg1), 0, 255); CHECK(arg2, 0);
+        return BYTE(arg1);
 
     case OP_DB2:
-        CHECK2(arg1, 0, 255); CHECK2(arg2, 0, 255);
-        return (arg2 << 8) | arg1;
+        CHECK2(BYTE(arg1), 0, 255); CHECK2(BYTE(arg2), 0, 255);
+        return (BYTE(arg2) << 8) | BYTE(arg1);
 
     case OP_DW:
-        CHECK2(arg1, 0, 0xffff); CHECK(arg2, 0);
-        return arg1;
+        CHECK2(WORD(arg1), 0, 0xffff); CHECK(arg2, 0);
+        return WORD(arg1);
 
     default:
-        oops();
+        ooops("OP_%d", op);
         return 0;
   }
-}
-
-//-----------------------------------------------------------------------------
-#define OP_SKIP    2
-#define OP_BANK    1
-#define OP_RETS   -1
-#define OP_PAGE   -2
-
-static int IsOperation(AvrOp op)
-{
-    switch(op) {
-/*
-        case OP_BTFSC:
-        case OP_BTFSS:
-        case OP_DECFSZ:
-        case OP_INCFSZ:
-            return OP_SKIP; // can need to change bank
-        case OP_ADDWF:
-        case OP_ANDWF:
-        case OP_BSF:
-        case OP_BCF:
-        case OP_CLRF:
-        case OP_COMF:
-        case OP_DECF:
-        case OP_INCF:
-        case OP_IORWF:
-        case OP_MOVF:
-        case OP_MOVWF:
-        case OP_RLF:
-        case OP_RRF:
-        case OP_SUBWF:
-        case OP_XORWF:
-            return OP_BANK; // can need to change bank
-        case OP_CLRWDT:
-        case OP_MOVLW:
-        case OP_MOVLB:
-        case OP_MOVLP:
-        case OP_NOP_:
-        case OP_COMMENT_:
-        case OP_SUBLW:
-        case OP_IORLW:
-            return 0;       // not need to change bank
-        case OP_RETURN:
-        case OP_RETFIE:
-            return OP_RET;  // not need to change bank
-        case OP_GOTO:
-*/
-        case OP_BREQ:
-        case OP_BRNE:
-        case OP_BRLO:
-        case OP_BRGE:
-        case OP_BRLT:
-        case OP_BRCC:
-        case OP_BRCS:
-        case OP_BRMI:
-        case OP_IJMP:
-        case OP_RJMP:
-        case OP_ICALL:
-        case OP_RCALL:
-            return OP_PAGE;
-        default:
-            return 0;
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1095,7 +1109,7 @@ static void WriteHexFile(FILE *f)
     }
 
     for(i = 0; i < AvrProgWriteP; i++) {
-        if(IsOperation(AvrProg[i].opAvr) == OP_PAGE)
+        if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE)
             AvrProg[AvrProg[i].arg1].label = TRUE;
     }
 
@@ -1132,8 +1146,8 @@ static void WriteHexFile(FILE *f)
 // Make sure that the given address is loaded in the X register; might not
 // have to update all of it.
 //-----------------------------------------------------------------------------
-static void LoadXAddr(DWORD addr)
-//used rX; Opcodes: 2
+static void LoadXAddr(DWORD addr, char *comment)
+//used X; Opcodes: 2
 {
     if(addr <= 0) {
         Error(_("Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
@@ -1143,12 +1157,17 @@ static void LoadXAddr(DWORD addr)
         Error(_("Addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
         //return;
     }
-    Instruction(OP_LDI, 26, (addr & 0xff)); // X-register Low Byte
-    Instruction(OP_LDI, 27, (addr >> 8));   // X-register High Byte
+    Instruction(OP_LDI, XL, (addr & 0xff), comment); // X-register Low Byte
+    Instruction(OP_LDI, XH, (addr >> 8));            // X-register High Byte
+}
+
+static void LoadXAddr(DWORD addr)
+{
+    LoadXAddr(addr, NULL);
 }
 
 static void LoadYAddr(DWORD addr)
-//used rY; Opcodes: 2
+//used Y; Opcodes: 2
 {
     if(addr <= 0) {
         Error(_("Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
@@ -1158,12 +1177,12 @@ static void LoadYAddr(DWORD addr)
         Error(_("Addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
-    Instruction(OP_LDI, 28, (addr & 0xff)); // Y-register Low Byte
-    Instruction(OP_LDI, 29, (addr >> 8));   // Y-register High Byte
+    Instruction(OP_LDI, YL, (addr & 0xff)); // Y-register Low Byte
+    Instruction(OP_LDI, YH, (addr >> 8));   // Y-register High Byte
 }
 
-static void LoadZAddr(DWORD addr)
-//used ZL; Opcodes: 2
+static void LoadZAddr(DWORD addr, char *comment)
+//used Z; Opcodes: 2
 {
     if(addr <= 0) {
         Error(_("Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
@@ -1173,8 +1192,13 @@ static void LoadZAddr(DWORD addr)
         Error(_("Addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
         //return;
     }
-    Instruction(OP_LDI, 30, (addr & 0xff)); // Z-register Low Byte
-    Instruction(OP_LDI, 31, (addr >> 8));   // Z-register High Byte
+    Instruction(OP_LDI, ZL, (addr & 0xff), comment); // Z-register Low Byte
+    Instruction(OP_LDI, ZH, (addr >> 8));            // Z-register High Byte
+}
+
+static void LoadZAddr(DWORD addr)
+{
+    LoadZAddr(addr, NULL);
 }
 
 //See WinAVR\avr\include\avr\sfr_defs.h
@@ -1396,26 +1420,42 @@ static void LOAD(int reg, DWORD addr)
 //-----------------------------------------------------------------------------
 // Generate code to write/read an 8-bit value to a particular register.
 //-----------------------------------------------------------------------------
-static void WriteMemory(DWORD addr, BYTE val, char *name1, char *literal)
+#define WriteMemory(...) _WriteMemory(#__VA_ARGS__, __VA_ARGS__)
+
+static void _WriteMemory(char *args, DWORD addr, BYTE val, char *name, SDWORD literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped!"), val); //see TODO
+        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
         return;
     }
-    LoadZAddr(addr);
+    char s[1024];
+    sprintf(s, "(%s)", args);
+    LoadZAddr(addr, s);
+    char lit[1024];
+    sprintf(lit, "0x%X=%d", literal, literal);
     // load r25 with the data
-    Instruction(OP_LDI, r25, val, literal);
+    Instruction(OP_LDI, r25, val, lit);
     // do the store
-    Instruction(OP_ST_ZP, r25, 0, name1); // _ZP need for WriteMemoryNextAddr
+    Instruction(OP_ST_ZP, r25, 0, name); // OP_.._ZP need for WriteMemoryNextAddr
 }
 
-static void WriteMemory(DWORD addr, BYTE val)
+static void _WriteMemory(char *args, DWORD addr, BYTE val, char *name)
 {
-    WriteMemory(addr, val, NULL, NULL);
+    _WriteMemory(args, addr, val, name, NULL);
+}
+
+static void _WriteMemory(char *args, DWORD addr, BYTE val, SDWORD literal)
+{
+    _WriteMemory(args, addr, val, NULL, literal);
+}
+
+static void _WriteMemory(char *args, DWORD addr, BYTE val)
+{
+    _WriteMemory(args, addr, val, NULL, NULL);
 }
 //-----------------------------------------------------------------------------
-// Use only after WriteMemory()
+// Use only after WriteMemory() !!!
 //-----------------------------------------------------------------------------
 static void WriteMemoryNextAddr(BYTE val)
 //used ZL, r25; Opcodes: 2
@@ -1426,6 +1466,40 @@ static void WriteMemoryNextAddr(BYTE val)
     // do the store
     Instruction(OP_ST_ZP, r25);
 }
+
+//-----------------------------------------------------------------------------
+static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, char *name)
+{
+    // vvv reassurance, check before calling this routine
+    if(sov < 1) ooops(name);
+    if(sov > 4) ooops(name);
+    // ^^^ reassurance, check before calling this routine
+    DWORD l1, l2;
+
+    l1 = (literal & 0xff);
+    WriteMemory(addr, BYTE(l1), name, literal);
+    if(sov >= 2) {
+        l2 = ((literal >> 8) & 0xff);
+        if(l1 != l2)
+            Instruction(OP_LDI, r25, l2);
+        Instruction(OP_ST_ZP, r25);
+
+        if(sov >= 3) {
+            l1 = ((literal >> 16) & 0xff);
+            if(l1 != l2)
+                Instruction(OP_LDI, r25, l1);
+            Instruction(OP_ST_ZP, r25);
+
+            if(sov == 4) {
+                l2 = ((literal >> 24) & 0xff);
+                if(l1 != l2)
+                    Instruction(OP_LDI, r25, l2);
+                Instruction(OP_ST_ZP, r25);
+            }
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
@@ -1501,6 +1575,7 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 //-----------------------------------------------------------------------------
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *name1,  char *name2)
 {
+/*
 //used ZL, r25, r3; Opcodes: 11
     LoadZAddr(addrSrc);  Instruction(OP_LD_Z, r3, 0, name2);
     LoadZAddr(addrDest); Instruction(OP_LD_Z, r25, 0, name1);
@@ -1509,6 +1584,14 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char
     Instruction(OP_SBRC, r3, bitSrc);
     Instruction(OP_SBR, r25, (1 << bitDest));
     Instruction(OP_ST_Z, r25, 0, name1);
+/**/
+//used ZL, r25; Opcodes: 9
+    LoadZAddr(addrSrc);  Instruction(OP_LD_Z, r25);
+    Instruction(OP_BST, r25, bitSrc);
+    LoadZAddr(addrDest); Instruction(OP_LD_Z, r25);
+    Instruction(OP_BLD, r25, bitDest);
+    Instruction(OP_ST_Z, r25);
+/**/
 }
 
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
@@ -1516,6 +1599,38 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, "", "");
 }
 
+//-----------------------------------------------------------------------------
+static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *name1,  char *name2)
+{
+//used ZL, r25, r3; Opcodes: 11
+    LoadZAddr(addrSrc);  Instruction(OP_LD_Z, r3, 0, name2);
+    LoadZAddr(addrDest); Instruction(OP_LD_Z, r25, 0, name1);
+    Instruction(OP_SBRS, r3, bitSrc);
+    Instruction(OP_SBR, r25, (1 << bitDest));
+    Instruction(OP_SBRC, r3, bitSrc);
+    Instruction(OP_CBR, r25, (1 << bitDest));
+    Instruction(OP_ST_Z, r25, 0, name1);
+}
+
+static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+{
+    XorCopyBit(addrDest, bitDest, addrSrc, bitSrc, "", "");
+}
+
+//-----------------------------------------------------------------------------
+static void GetUartSendBusy(DWORD addr, int bit)
+{
+    /*
+    ClearBit(addr, bit); // UART ready
+    DWORD dontSet = AllocFwdAddr();
+    IfBitSet(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty
+    Instruction(OP_RJMP, dontSet, 0);
+    SetBit(addr, bit); // Set UART busy
+    FwdAddrIsNow(dontSet);
+    */
+//  XorCopyBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
+    XorCopyBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty
+}
 //-----------------------------------------------------------------------------
 // Execute the next instruction only if the specified bit of the specified
 // memory location is clear (i.e. skip if set).
@@ -1944,15 +2059,15 @@ static void WriteRuntime(void)
     Comment("Interrupt table end.");
 
     FwdAddrIsNow(resetVector);
-    Comment("It is ResetVector");
+    Comment("This is Reset Vector");
 
     Comment("Watchdog on");
     Instruction(OP_WDR);
 
     Comment("Set up the stack, which we use only when we jump to multiply/divide routine");
     WORD topOfMemory = (WORD)Prog.mcu->ram[0].start + Prog.mcu->ram[0].len - 1;
-    WriteMemory(REG_SPH, topOfMemory >> 8);
-    WriteMemory(REG_SPL, topOfMemory & 0xff);
+    WriteMemory(REG_SPH, topOfMemory >> 8, topOfMemory);
+    WriteMemory(REG_SPL, topOfMemory & 0xff, topOfMemory);
 
     Comment("Zero out the memory used for timers, internal relays, etc.");
     LoadXAddr(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len);
@@ -2038,14 +2153,14 @@ static void WriteRuntime(void)
     */
 
     Comment("Turn on the pull-ups, and drive the outputs low to start");
-    for(i = 0; Prog.mcu->dirRegs[i] != 0; i++) {
+    for(i = 0; i < MAX_IO_PORTS; i++) {
         if(!IS_MCU_REG(i)) {
             // skip this one, dummy entry for MCUs with I/O ports not
             // starting from A
         } else {
-            WriteMemory(Prog.mcu->dirRegs[i], isOutput[i]);
-            // turn on the pull-ups, and drive the outputs low to start
             WriteMemory(Prog.mcu->outputRegs[i], isInput[i]);
+            // turn on the pull-ups, and drive the outputs low to start
+            WriteMemory(Prog.mcu->dirRegs[i], isOutput[i]);
         }
     }
 
@@ -2135,12 +2250,13 @@ static void CallSubroutine(DWORD addr)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyLiteralToRegs(int reg, int literal, int sov)
+static void CopyLiteralToRegs(int reg, int literal, int sov, char *comment)
 {
+    if(sov < 1) oops();
+    if(sov > 4) oops();
+
     if(sov >= 1)
-      Instruction(OP_LDI, reg, (literal & 0xff));
-    else
-      oops();
+      Instruction(OP_LDI, reg, (literal & 0xff), comment);
     if(sov >= 2)
       Instruction(OP_LDI, reg+1, (literal >> 8) & 0xff);
     if(sov >= 3)
@@ -2148,14 +2264,22 @@ static void CopyLiteralToRegs(int reg, int literal, int sov)
     if(sov >= 4)
       Instruction(OP_LDI, reg+3, (literal >> 24) & 0xff);
 }
+
+static void CopyLiteralToRegs(int reg, int literal, int sov)
+{
+    CopyLiteralToRegs(reg, literal, sov, NULL);
+}
+
 //-----------------------------------------------------------------------------
 static void CopyVarToRegs(int reg, char *var, int sovRegs)
 {
-    DWORD addrl, addrh;
+    DWORD addr;
     int sov = SizeOfVar(var);
+    if(sov != sovRegs)
+      dbp("reg=%d sovRegs=%d <- var=%s sov=%d",reg,sovRegs,var,sov);
 
-    MemForVariable(var, &addrl, &addrh);
-    LoadXAddr(addrl);
+    MemForVariable(var, &addr);
+    LoadXAddr(addr, var);
 
     Instruction(OP_LD_XP, reg);
     if(sovRegs >= 2) {
@@ -2180,11 +2304,13 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
 //-----------------------------------------------------------------------------
 static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int sovRegs)
 {
-    DWORD addrl, addrh;
+    DWORD addr;
     int sov = SizeOfVar(var);
+    if(sov != sovRegs)
+      dbp("%d in %s(%s) var=%s sov=%d <- reg=%d sovRegs=%d", l, f, args,  var,sov,reg,sovRegs);
 
-    MemForVariable(var, &addrl, &addrh);
-    LoadXAddr(addrl);
+    MemForVariable(var, &addr);
+    LoadXAddr(addr, var);
 
     Instruction(OP_ST_XP, reg);
     if(sov >= 2) {
@@ -2403,7 +2529,7 @@ static void CompileFromIntermediate(void)
                 MemForVariable(a->name1, &addr);
                 sov = SizeOfVar(a->name1);
                 if(sov >= 1) {
-                  WriteMemory(addr, BYTE(a->literal & 0xff), a->name1, a->name2);
+                  WriteMemory(addr, BYTE(a->literal & 0xff), a->name1);
                   if(sov >= 2) {
                     WriteMemoryNextAddr(BYTE((a->literal >> 8) & 0xff));
                     if(sov >= 3) {

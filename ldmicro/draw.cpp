@@ -101,8 +101,9 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_LES:
         case ELEM_LEQ:
         case ELEM_UART_RECV:
+        case ELEM_UART_RECV_AVAIL:
         case ELEM_UART_SEND:
-        case ELEM_UART_UDRE:
+        case ELEM_UART_SEND_BUSY:
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
@@ -467,31 +468,20 @@ static char *formatWidth(char *buf, size_t totalWidth, char *str1, char *leftStr
    size_t lc = FormattedStrlen(centerStr);
    size_t lr = FormattedStrlen(rightStr);
    size_t l5 = FormattedStrlen(str5);
-   /*
-   // unvisible lengths
-   int ul = Ll - ll;
-   int uc = Lc - lc;
-   int ur = Lr - lr;
-   */
+
    size_t space1 = 0;
    size_t space2 = 0;
 
-   size_t tilda1 = 0;
-   size_t tilda2 = 0;
-   size_t tilda3 = 0;
-
    if(totalWidth < (l1+ll+lc+lr+l5)) {
-       //dbp("1 %d %d %d", Ll,Lc,Lr);
        if       ((ll>lc) && (ll>lr)) {
-           Ll = totalWidth - (l1+lc+lr+l5);
+           Ll = totalWidth - (l1+lc+lr+l5) + (Ll-ll);
        } else if((lc>ll) && (lc>lr)) {
-           Lc = totalWidth - (l1+ll+lr+l5);
+           Lc = totalWidth - (l1+ll+lr+l5) + (Lc-lc);
        } else if((lr>ll) && (lr>lc)) {
-           Lr = totalWidth - (l1+ll+lc+l5);
+           Lr = totalWidth - (l1+ll+lc+l5) + (Lr-lr);
        } else {
-           Lc = totalWidth - (l1+ll+lr+l5);
+           Lc = totalWidth - (l1+ll+lr+l5) + (Lc-lc);
        }
-       //dbp("2 %d %d %d", Ll,Lc,Lr);
    } else {
        space2 = (totalWidth - (l1+ll+lc+lr+l5)) / 2;
        space1 = totalWidth - (l1+ll+lc+lr+l5) - space2;
@@ -1238,6 +1228,18 @@ cmp:
 
             sprintf(s2,"%s",leaf->d.uart.name);
             CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",s2,"",""), poweredAfter, TRUE);
+            *cx += POS_WIDTH;
+            break;
+
+        case ELEM_UART_SEND_BUSY:
+            CenterWithSpaces(*cx, *cy," Is busy ? ", poweredAfter, FALSE);
+            CenterWithWires (*cx, *cy,"[UART SEND]", poweredBefore, poweredAfter);
+            *cx += POS_WIDTH;
+            break;
+
+        case ELEM_UART_RECV_AVAIL:
+            CenterWithSpaces(*cx, *cy," Is avail ?", poweredAfter, FALSE);
+            CenterWithWires (*cx, *cy,"[UART RECV]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
 

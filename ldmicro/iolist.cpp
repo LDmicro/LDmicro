@@ -219,6 +219,8 @@ static void ExtractNamesFromCircuit(int which, void *any)
 {
     ElemLeaf *l = (ElemLeaf *)any;
 
+    char str[MAX_NAME_LEN];
+
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
@@ -429,8 +431,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 AppendIo(l->d.segments.src, IO_TYPE_GENERAL); // not need ???
             }
             */
-            AppendIo(nameTable, IO_TYPE_TABLE);
             SetSizeOfVar(nameTable, n);
+            AppendIo(nameTable, IO_TYPE_TABLE_IN_FLASH);
+
+            sprintf(str, "%s[0]", nameTable);
+            SetSizeOfVar(str, 1);
+            AppendIo(str, IO_TYPE_VAL_IN_FLASH);
             break;
         }
 
@@ -518,17 +524,25 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_SHIFT_REGISTER: {
             int i;
             for(i = 0; i < l->d.shiftRegister.stages; i++) {
-                char str[MAX_NAME_LEN+10];
                 sprintf(str, "%s%d", l->d.shiftRegister.name, i);
                 AppendIo(str, IO_TYPE_GENERAL);
             }
             break;
         }
+        case ELEM_LOOK_UP_TABLE: {
+            /*
+            SetSizeOfVar(l->d.lookUpTable.name, l->d.lookUpTable.count);
+            AppendIo(l->d.lookUpTable.name, IO_TYPE_TABLE_IN_FLASH);
 
-        case ELEM_LOOK_UP_TABLE:
+            sprintf(str, "%s[0]", l->d.lookUpTable.name);
+            int sovElement = TestByteNeeded(l->d.lookUpTable.count, l->d.lookUpTable.vals);
+            SetSizeOfVar(str, sovElement);
+            AppendIo(str, IO_TYPE_VAL_IN_FLASH);
+            */
             AppendIo(l->d.lookUpTable.dest, IO_TYPE_GENERAL);
+            AppendIo(l->d.lookUpTable.index, IO_TYPE_GENERAL);
             break;
-
+        }
         case ELEM_PIECEWISE_LINEAR:
             AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL);
             break;
@@ -541,6 +555,8 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_OSC:
+        case ELEM_UART_SEND_BUSY:
+        case ELEM_UART_RECV_AVAIL:
         case ELEM_EQU:
         case ELEM_NEQ:
         case ELEM_GRT:
@@ -1291,6 +1307,25 @@ void IoListProc(NMHDR *h)
             char *name = Prog.io.assignment[item].name;
             int   type = Prog.io.assignment[item].type;
             switch(i->item.iSubItem) {
+                case LV_IO_NAME:
+                    strcpy(i->item.pszText, Prog.io.assignment[item].name);
+                    break;
+
+                case LV_IO_TYPE: {
+                    char *s = IoTypeToString(Prog.io.assignment[item].type);
+                    strcpy(i->item.pszText, s);
+                    break;
+                }
+
+                case LV_IO_STATE: {
+                    if(TRUE || InSimulationMode) {
+                        DescribeForIoList(name, type, i->item.pszText);
+                    } else {
+                        strcpy(i->item.pszText, "");
+                    }
+                    break;
+                }
+
                 case LV_IO_PIN:
                     // Don't confuse people by displaying bogus pin assignments
                     // for the target.
@@ -1306,103 +1341,8 @@ void IoListProc(NMHDR *h)
                         &(Prog.io.assignment[item]));
                     break;
 
-                case LV_IO_TYPE: {
-                    char *s = IoTypeToString(Prog.io.assignment[item].type);
-                    strcpy(i->item.pszText, s);
-                    break;
-                }
-
-                case LV_IO_NAME:
-                    strcpy(i->item.pszText, Prog.io.assignment[item].name);
-                    break;
-
-                case LV_IO_RAM_ADDRESS: {
-                    DWORD addr = 0;
-                    int bit = 0;
-                    if((type == IO_TYPE_PORT_INPUT      )
-                    || (type == IO_TYPE_PORT_OUTPUT     )
-                    ) {
-                        if(!InSimulationMode) {
-                            MemForVariable(name, &addr);
-                            if(addr)
-                                sprintf(i->item.pszText, "0x%x", addr);
-                             else
-                                sprintf(i->item.pszText, "Not a PORT!");
-                        }
-                    } else
-                    if((type == IO_TYPE_GENERAL)
-                    || (type == IO_TYPE_PERSIST)
-                    || (type == IO_TYPE_STRING)
-                    || (type == IO_TYPE_RTO)
-                    || (type == IO_TYPE_TCY)
-                    || (type == IO_TYPE_TON)
-                    || (type == IO_TYPE_TOF)
-                    || (type == IO_TYPE_COUNTER)
-                    ) {
-                        if(!InSimulationMode && AllocOfVar(name)) {
-                            MemForVariable(name, &addr);
-                            sprintf(i->item.pszText, "0x%x", addr);
-                        }
-                    } else
-                    if((type == IO_TYPE_INTERNAL_RELAY)
-                    ) {
-                        if(!InSimulationMode) {
-                            MemForSingleBit(name, TRUE, &addr, &bit);
-                            if(addr)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
-                        }
-                    } else
-                    if((type == IO_TYPE_DIG_INPUT)
-                    || (type == IO_TYPE_DIG_OUTPUT)
-                    || (type == IO_TYPE_PWM_OUTPUT)
-                    ) {
-                        if(!InSimulationMode) {
-                            if(SingleBitAssigned(name))
-                                MemForSingleBit(name, TRUE, &addr, &bit);
-                            if(addr)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
-                        }
-                    }
-                    break;
-                }
-
-                case LV_IO_SISE_OF_VAR:
-                    if((type == IO_TYPE_GENERAL         )
-                    || (type == IO_TYPE_PERSIST         )
-                    || (type == IO_TYPE_PORT_INPUT      )
-                    || (type == IO_TYPE_PORT_OUTPUT     )
-                    || (type == IO_TYPE_BCD             )
-                    || (type == IO_TYPE_STRING          )
-                    || (type == IO_TYPE_RTO             )
-                    || (type == IO_TYPE_COUNTER         )
-                    || (type == IO_TYPE_UART_TX         )
-                    || (type == IO_TYPE_UART_RX         )
-                    || (type == IO_TYPE_TABLE           )
-                    || (type == IO_TYPE_TCY             )
-                    || (type == IO_TYPE_TON             )
-                    || (type == IO_TYPE_TOF             )) {
-                        int sov = SizeOfVar(name);
-                        sprintf(i->item.pszText, sov==1 ? "%d byte" : "%d bytes", sov);
-                    } else
-                    if((type == IO_TYPE_DIG_INPUT)
-                    || (type == IO_TYPE_DIG_OUTPUT)
-                    || (type == IO_TYPE_INTERNAL_RELAY)
-                    || (type == IO_TYPE_UART_TX)
-                    || (type == IO_TYPE_UART_RX)
-                    || (type == IO_TYPE_MODBUS_COIL)
-                    || (type == IO_TYPE_MODBUS_CONTACT)) {
-                        sprintf(i->item.pszText, "1 bit");
-                    } else
-                    if(type == IO_TYPE_PWM_OUTPUT) {
-                        sprintf(i->item.pszText, "1 pin");
-                    } else
-                    if(type == IO_TYPE_READ_ADC) {
-                        sprintf(i->item.pszText, "1 pin/2 bytes");
-                    }
-                    break;
-
-                case LV_IO_PORT: {
-                case LV_IO_PINNAME:
+                case LV_IO_PORT:
+                case LV_IO_PINNAME: {
                     char pin[MAX_NAME_LEN];
                     char poptName[MAX_NAME_LEN];
                     char pinName[MAX_NAME_LEN];
@@ -1412,15 +1352,6 @@ void IoListProc(NMHDR *h)
                         strcpy(i->item.pszText, poptName);
                     else
                         strcpy(i->item.pszText, pinName);
-                    break;
-                }
-
-                case LV_IO_STATE: {
-                    if(TRUE || InSimulationMode) {
-                        DescribeForIoList(name, type, i->item.pszText);
-                    } else {
-                        strcpy(i->item.pszText, "");
-                    }
                     break;
                 }
 
@@ -1443,6 +1374,104 @@ void IoListProc(NMHDR *h)
                     }
                     break;
                 }
+
+                case LV_IO_RAM_ADDRESS: {
+                    DWORD addr = 0;
+                    int bit = 0;
+                    if((type == IO_TYPE_PORT_INPUT      )
+                    || (type == IO_TYPE_PORT_OUTPUT     )
+                    ) {
+                            MemForVariable(name, &addr);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%x", addr);
+                             else
+                                sprintf(i->item.pszText, "Not a PORT!");
+                    } else
+                    if((type == IO_TYPE_GENERAL)
+                    || (type == IO_TYPE_PERSIST)
+                    || (type == IO_TYPE_STRING)
+                    || (type == IO_TYPE_RTO)
+                    || (type == IO_TYPE_TCY)
+                    || (type == IO_TYPE_TON)
+                    || (type == IO_TYPE_TOF)
+                    || (type == IO_TYPE_COUNTER)
+                    ) {
+                            MemForVariable(name, &addr);
+                            sprintf(i->item.pszText, "0x%x", addr);
+                    } else
+                    if((type == IO_TYPE_INTERNAL_RELAY)
+                    ) {
+                            MemForSingleBit(name, TRUE, &addr, &bit);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                    } else
+                    if (type == IO_TYPE_UART_TX) {
+                        if(Prog.mcu) {
+                            AddrBitForPin(Prog.mcu->uartNeeds.txPin, &addr, &bit, FALSE);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                        }
+                    } else
+                    if (type == IO_TYPE_UART_RX) {
+                        if(Prog.mcu) {
+                            AddrBitForPin(Prog.mcu->uartNeeds.rxPin, &addr, &bit, TRUE);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                        }
+                    } else
+                    if (type == IO_TYPE_TABLE_IN_FLASH) {
+                        MemOfVar(name, &addr);
+                        if(addr)
+                            sprintf(i->item.pszText, "0x%x", addr);
+                    } else
+                    if((type == IO_TYPE_DIG_INPUT)
+                    || (type == IO_TYPE_DIG_OUTPUT)
+                    || (type == IO_TYPE_PWM_OUTPUT)
+                    ) {
+                            if(SingleBitAssigned(name))
+                                MemForSingleBit(name, TRUE, &addr, &bit);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                    }
+                    break;
+                }
+
+                case LV_IO_SISE_OF_VAR:
+                    if((type == IO_TYPE_GENERAL         )
+                    || (type == IO_TYPE_PERSIST         )
+                    || (type == IO_TYPE_PORT_INPUT      )
+                    || (type == IO_TYPE_PORT_OUTPUT     )
+                    || (type == IO_TYPE_BCD             )
+                    || (type == IO_TYPE_STRING          )
+                    || (type == IO_TYPE_RTO             )
+                    || (type == IO_TYPE_COUNTER         )
+                    || (type == IO_TYPE_VAL_IN_FLASH    )
+                    || (type == IO_TYPE_TCY             )
+                    || (type == IO_TYPE_TON             )
+                    || (type == IO_TYPE_TOF             )) {
+                        int sov = SizeOfVar(name);
+                        sprintf(i->item.pszText, sov==1 ? "%d byte" : "%d bytes", sov);
+                    } else
+                    if (type == IO_TYPE_TABLE_IN_FLASH) {
+                        int sov = MemOfVar(name, NULL); // ok
+                        sprintf(i->item.pszText, sov==1 ? "%d elem" : "%d elem's", sov);
+                    } else
+                    if((type == IO_TYPE_DIG_INPUT)
+                    || (type == IO_TYPE_DIG_OUTPUT)
+                    || (type == IO_TYPE_INTERNAL_RELAY)
+                    || (type == IO_TYPE_UART_TX)
+                    || (type == IO_TYPE_UART_RX)
+                    || (type == IO_TYPE_MODBUS_COIL)
+                    || (type == IO_TYPE_MODBUS_CONTACT)) {
+                        sprintf(i->item.pszText, "1 bit");
+                    } else
+                    if(type == IO_TYPE_PWM_OUTPUT) {
+                        sprintf(i->item.pszText, "1 pin");
+                    } else
+                    if(type == IO_TYPE_READ_ADC) {
+                        sprintf(i->item.pszText, "1 pin/2 bytes");
+                    }
+                    break;
 
             }
             break;
