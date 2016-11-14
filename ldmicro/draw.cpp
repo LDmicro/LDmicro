@@ -103,7 +103,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_UART_RECV:
         case ELEM_UART_RECV_AVAIL:
         case ELEM_UART_SEND:
-        case ELEM_UART_SEND_BUSY:
+        case ELEM_UART_SEND_READY:
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
@@ -1231,14 +1231,14 @@ cmp:
             *cx += POS_WIDTH;
             break;
 
-        case ELEM_UART_SEND_BUSY:
-            CenterWithSpaces(*cx, *cy," Is busy ? ", poweredAfter, FALSE);
+        case ELEM_UART_SEND_READY:
+            CenterWithSpaces(*cx, *cy," Is ready? ", poweredAfter, FALSE);
             CenterWithWires (*cx, *cy,"[UART SEND]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
 
         case ELEM_UART_RECV_AVAIL:
-            CenterWithSpaces(*cx, *cy," Is avail ?", poweredAfter, FALSE);
+            CenterWithSpaces(*cx, *cy," Is avail? ", poweredAfter, FALSE);
             CenterWithWires (*cx, *cy,"[UART RECV]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;

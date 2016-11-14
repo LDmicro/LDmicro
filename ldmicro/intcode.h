@@ -42,10 +42,13 @@
 #define INT_SET_VARIABLE_SUBTRACT                8
 #define INT_SET_VARIABLE_MULTIPLY                9
 #define INT_SET_VARIABLE_DIVIDE                 10
+
 #ifdef NEW_FEATURE
 #define INT_SET_VARIABLE_MOD                    1001
-
 #define INT_COPY_VAR_BIT_TO_VAR_BIT             1002
+#endif
+
+#ifdef TABLE_IN_FLASH
 #define INT_FLASH_INIT                          1003
 #define INT_FLASH_READ                          1004
 #define INT_RAM_READ                            1005
@@ -54,7 +57,7 @@
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12
 #define INT_UART_SEND                           13
-#define INT_UART_SEND_BUSY                      1301
+#define INT_UART_SEND_READY                     1301
 #define INT_UART_RECV                           14
 #define INT_UART_RECV_AVAIL                     1401
 #define INT_EEPROM_BUSY_CHECK                   15

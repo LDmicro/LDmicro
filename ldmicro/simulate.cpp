@@ -335,18 +335,21 @@ static char *Check(char *name, DWORD flag, int i)
             break;
 
         case VAR_FLAG_TOF:
-            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TOF))
+            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TOF) && (Variables[i].usedFlags != VAR_FLAG_RES)) {
                 s = _("TOF: variable cannot be used elsewhere");
+            }
             break;
 
         case VAR_FLAG_TON:
-            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TON))
+            if(Variables[i].usedFlags & ~(VAR_FLAG_TON | VAR_FLAG_RES)) {
                 s = _("TON: variable cannot be used elsewhere");
+            }
             break;
 
         case VAR_FLAG_TCY:
-            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TCY))
+            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TCY) && (Variables[i].usedFlags != VAR_FLAG_RES)) {
                 s = _("TCY: variable cannot be used elsewhere");
+            }
             break;
 
         #ifdef ONLY_RESET_RTO
@@ -631,7 +634,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
         case ELEM_UART_SEND:
-        case ELEM_UART_SEND_BUSY:
+        case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
@@ -788,7 +791,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_DIV:
         case ELEM_MOD:
         case ELEM_UART_RECV_AVAIL:
-        case ELEM_UART_SEND_BUSY:
+        case ELEM_UART_SEND_READY:
         case ELEM_UART_SEND:
         case ELEM_UART_RECV:
         case ELEM_SHIFT_REGISTER:
@@ -1135,12 +1138,11 @@ math:
                     SetSingleBit(a->name2, TRUE);
                 }
                 break;
-
-            case INT_UART_SEND_BUSY:
+            case INT_UART_SEND_READY:
                 if(SimulateUartTxCountdown == 0) {
-                    SetSingleBit(a->name1, FALSE);
-                } else {
                     SetSingleBit(a->name1, TRUE);
+                } else {
+                    SetSingleBit(a->name1, FALSE);
                 }
                 break;
 

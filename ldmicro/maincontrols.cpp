@@ -248,7 +248,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_OPEN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND_BUSY, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND_READY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV_AVAIL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STRING, t);
@@ -297,6 +297,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,        _("&Open...\tCtrl+O"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_LD,  _("Open ld in notepad\tF4"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_HEX, _("Open hex in notepad\tAlt+F6"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_ASM, _("Open asm in notepad\tAlt+F3"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tAlt+F5"));
     AppendMenu(FileMenu, MF_STRING,   MNU_EXPLORE_DIR, _("Explore ld directory"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
@@ -529,10 +530,10 @@ HMENU MakeMainWindowMenus(void)
         _("Insert &UART Send"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
         _("Insert &UART Receive"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND_BUSY,
-        _("Insert &UART SEND: Is busy ?"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND_READY,
+        _("Insert &UART Send: Is ready to send ?"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL,
-        _("Insert &UART RECV: Is available ?"));
+        _("Insert &UART Receive: Is data available ?"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM,
         _("Insert Set &PWM Output\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,
@@ -595,7 +596,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F200/202/204/206 6-SOT");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F220/222 6-SOT");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"TODO: Microchip PIC12Fxxx");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC12Fxxx");
     AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC16F1512 - PIC16F1527");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP");
@@ -628,6 +629,7 @@ HMENU MakeMainWindowMenus(void)
 
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
+    AppendMenu(help, MF_STRING, MNU_HOW, _("HOW TO:..."));
     AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
     AppendMenu(help, MF_STRING, MNU_FORUM, _("LDmicro Forum..."));
     AppendMenu(help, MF_STRING, MNU_EMAIL, _("E-mail..."));

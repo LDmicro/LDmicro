@@ -144,7 +144,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_SET_PWM      0x32
 #define MNU_INSERT_SET_PWM_SOFT 0x3201
 #define MNU_INSERT_UART_SEND         0x33
-#define MNU_INSERT_UART_SEND_BUSY    0x3301
+#define MNU_INSERT_UART_SEND_READY   0x3301
 #define MNU_INSERT_UART_RECV         0x34
 #define MNU_INSERT_UART_RECV_AVAIL   0x3401
 #define MNU_INSERT_EQU          0x35
@@ -225,6 +225,7 @@ typedef signed long SDWORD;
 
 #define MNU_MANUAL              0x80
 #define MNU_ABOUT               0x81
+#define MNU_HOW                 0x8100
 #define MNU_FORUM               0x8101
 #define MNU_WIKI                0x8102
 #define MNU_LAST_RELEASE        0x8103
@@ -319,7 +320,7 @@ typedef signed long SDWORD;
 #define ELEM_UART_RECV          0x2a
 #define ELEM_UART_RECV_AVAIL    0x2a01
 #define ELEM_UART_SEND          0x2b
-#define ELEM_UART_SEND_BUSY     0x2b01
+#define ELEM_UART_SEND_READY    0x2b01
 #define ELEM_MASTER_RELAY       0x2c
 #define ELEM_SHIFT_REGISTER     0x2d
 #define ELEM_LOOK_UP_TABLE      0x2e
@@ -428,7 +429,7 @@ typedef signed long SDWORD;
         case ELEM_SET_PWM_SOFT: \
         case ELEM_QUAD_ENCOD: \
         case ELEM_UART_SEND: \
-        case ELEM_UART_SEND_BUSY: \
+        case ELEM_UART_SEND_READY: \
         case ELEM_UART_RECV: \
         case ELEM_UART_RECV_AVAIL: \
         case ELEM_MASTER_RELAY: \
@@ -924,7 +925,7 @@ typedef struct McuIoInfoTag {
     }                rom[MAX_ROM_SECTIONS]; //EEPROM or HEI?
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 29
+#define NUM_SUPPORTED_MCUS 30 // 29
 
 //-----------------------------------------------
 // Function prototypes
@@ -1331,7 +1332,7 @@ typedef  struct VariablesListTag {
     // vvv from compilecommon.cpp
     char    name[MAX_NAME_LEN];
     DWORD   addrl;
-    DWORD   addrh;      // obsolete
+//  DWORD   addrh;      // obsolete
     int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
     int     SizeOfVar;  // SizeOfVar can be less then Allocated
     // ^^^ from compilecommon.cpp
@@ -1347,7 +1348,7 @@ typedef  struct VariablesListTag {
 } VariablesList;
 
 #define USE_IO_REGISTERS 1 // 0-NO, 1-YES // USE IO REGISTERS in AVR
-//#define USE_LDS_STS
+// // #define USE_LDS_STS
 // not complete; just what I need
 typedef enum AvrOpTag {
     OP_VACANT, // 0
@@ -1401,6 +1402,51 @@ typedef enum AvrOpTag {
     OP_MOV,
     OP_MOVW,
     OP_SWAP, // 50
+    OP_RCALL,
+    OP_RET,
+    OP_RETI,
+    OP_RJMP,
+    OP_ROR,
+    OP_ROL,
+    OP_LSL,
+    OP_LSR,
+    OP_SEC,
+    OP_SBC,  // 60
+    OP_SBCI,
+    OP_SBR,
+    OP_SBRC,
+    OP_SBRS,
+    OP_ST_X,
+    OP_ST_XP, // +
+    OP_ST_XS, // -
+    OP_ST_Y,
+    OP_ST_YP, // +
+    OP_ST_YS, // - // 70
+//  OP_STD_Y, // Y+q // Notes: 1. This instruction is not available in all devices. Refer to the device specific instruction set summary.
+    OP_ST_Z,
+    OP_ST_ZP, // +
+    OP_ST_ZS, // -
+//  OP_STD_Z, // Z+q // Notes: 1. This instruction is not available in all devices. Refer to the device specific instruction set summary.
+    OP_SUB,
+    OP_SUBI,
+    OP_TST,
+    OP_WDR,
+    OP_AND,
+    OP_ANDI,
+    OP_OR,  //80
+    OP_ORI,
+    OP_CPSE,
+    OP_BLD,
+    OP_BST,
+    OP_PUSH,
+    OP_POP,
+    OP_CLI,
+    OP_SEI, // 88
+    #ifdef USE_MUL
+    OP_MUL,
+    OP_MULS,
+    OP_MULSU,
+    #endif
     #if USE_IO_REGISTERS == 1
     OP_IN,
     OP_OUT,
@@ -1409,51 +1455,6 @@ typedef enum AvrOpTag {
     OP_SBIC,
     OP_SBIS,
     #endif
-    OP_RCALL,
-    OP_RET,
-    OP_RETI,
-    OP_RJMP,
-    OP_ROR,  // 60
-    OP_ROL,
-    OP_LSL,
-    OP_LSR,
-    OP_SEC,
-    OP_SBC,
-    OP_SBCI,
-    OP_SBR,
-    OP_SBRC,
-    OP_SBRS,
-    OP_ST_X, // 70
-    OP_ST_XP, // +
-    OP_ST_XS, // -
-    OP_ST_Y,
-    OP_ST_YP, // +
-    OP_ST_YS, // -
-//  OP_STD_Y, // Y+q // Notes: 1. This instruction is not available in all devices. Refer to the device specific instruction set summary.
-    OP_ST_Z,
-    OP_ST_ZP, // +
-    OP_ST_ZS, // -
-//  OP_STD_Z, // Z+q // Notes: 1. This instruction is not available in all devices. Refer to the device specific instruction set summary.
-    OP_SUB, //80
-    OP_SUBI,
-    OP_TST,
-    OP_WDR,
-    OP_AND,
-    OP_ANDI,
-    OP_OR,
-    OP_ORI,
-    OP_CPSE,
-    OP_BLD,
-    OP_BST,
-    #ifdef USE_MUL
-    OP_MUL,
-    OP_MULS,
-    OP_MULSU,
-    #endif
-    OP_PUSH,
-    OP_POP,
-    OP_CLI,
-    OP_SEI,
 } AvrOp;
 
 // not complete; just what I need
@@ -1537,8 +1538,8 @@ int isPinAssigned(char *name);
 void AllocStart(void);
 DWORD AllocOctetRam(void);
 void AllocBitRam(DWORD *addr, int *bit);
-void MemForVariable(char *name, DWORD *addrl, DWORD *addrh);
-int MemForVariable(char *name, DWORD *addrl);
+int MemForVariable(char *name, DWORD *addr);
+int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
 int MemOfVar(char *name, DWORD *addr);
 BYTE MuxForAdcVariable(char *name);
 int SingleBitAssigned(char *name);
@@ -1573,6 +1574,7 @@ BOOL GenerateIntermediateCode(void);
 BOOL CheckEndOfRungElem(int which, void *elem);
 BOOL CheckLeafElem(int which, void *elem);
 BOOL UartFunctionUsed(void);
+BOOL Bin32BcdRoutineUsed(void);
 SDWORD CheckMakeNumber(char *str);
 void WipeIntMemory(void);
 BOOL CheckForNumber(char *str);

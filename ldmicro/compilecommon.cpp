@@ -398,6 +398,7 @@ int byteNeeded(SDWORD i)
     else oops();
     return 0;
 }
+
 //-----------------------------------------------------------------------------
 int TestByteNeeded(int count, SDWORD *vals)
 {
@@ -411,17 +412,22 @@ int TestByteNeeded(int count, SDWORD *vals)
     return res;
 }
 //-----------------------------------------------------------------------------
-// Allocate the two octets (16-bit count) for a variable, used for a variety
-// of purposes.
+// Allocate 1,2,3 or 4 byte for a variable, used for a variety of purposes.
 //-----------------------------------------------------------------------------
-void MemForVariable(char *name, DWORD *addrl, DWORD *addrh)
+int MemForVariable(char *name, DWORD *addrl, int sizeOfVar)
 {
+    if(!name) oops();
     if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow);
+        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
         CompileError();
     }
 
     int i;
+    for(i = 0; i < VariableCount; i++) {
+        if((Variables[i].type == IO_TYPE_TABLE_IN_FLASH)
+        || (Variables[i].type == IO_TYPE_VAL_IN_FLASH))
+            Variables[i].Allocated = Variables[i].SizeOfVar;
+    }
     for(i = 0; i < VariableCount; i++) {
         if(strcmp(name, Variables[i].name)==0) break;
     }
@@ -431,63 +437,148 @@ void MemForVariable(char *name, DWORD *addrl, DWORD *addrh)
     }
     if(i == VariableCount) {
         VariableCount++;
+        memset(&Variables[i], sizeof(Variables[i]), 0);
         strcpy(Variables[i].name, name);
         if(name[0] == '#') {
             Variables[i].SizeOfVar = 1;
-            Variables[i].Allocated = 0;
-        } else {
-            Variables[i].SizeOfVar = 2;
-            Variables[i].Allocated = 0;
         }
     }
-    if(addrl) { // Allocate SRAM
+    if(sizeOfVar < 0) { // get addr, get size
+      if(addrl)
+          *addrl = Variables[i].addrl;
 
-        if(Variables[i].Allocated == 0) {
-            Variables[i].addrl = AllocOctetRam(2);
-            Variables[i].addrh = Variables[i].addrl + 1;
+    } else if(sizeOfVar > 0) { // set size, set addr
+        if(Variables[i].SizeOfVar == sizeOfVar) {
+            // not need
+        } else if(Variables[i].Allocated==0) {
+            //dbp("Size %d set to %d for var '%s'", Variables[i].SizeOfVar, sizeOfVar, name);
+            Variables[i].SizeOfVar = sizeOfVar;
+        } else {
+            if(Variables[i].Allocated >= sizeOfVar) {
+               if(Variables[i].Allocated > sizeOfVar)
+                   Error(_(" You can decrease size of variable '%s' to %d bit in LD file."), name, sizeOfVar*8);
+               //dbp("Size of var '%s'(%d) set to %d", name, Variables[i].SizeOfVar, sizeOfVar);
+               Variables[i].SizeOfVar = sizeOfVar;
+            } else {
+               Error(_("Can not increase size of variable '%s' to %d bit.\nYou must increase size of variable in LD file!"), name, sizeOfVar*8);
+               //CompileError();
+            }
         }
-        Variables[i].Allocated = 2;
-        if(!Variables[i].SizeOfVar)
-            Variables[i].SizeOfVar = 2;
+        if(addrl) {
+            Variables[i].addrl = *addrl;
+        }
+    } else { // if(sizeOfVar == 0) // if(addrl) { Allocate SRAM }
+        if(name[0] == '#') {
+             DWORD addr = 0xff;
+             int j = name[strlen(name)-1] - 'A';
+             if((j>=0) && (j<MAX_IO_PORTS)) {
+                 if((strstr(name, "#PORT")) && (strlen(name) == 6)) { //#PORTx
+                     if(IS_MCU_REG(j)) {
+                         addr = Prog.mcu->outputRegs[j];
+                     }
+                 }
+                 if((strstr(name, "#PIN")) && (strlen(name) == 5)) { //#PINx
+                     if(IS_MCU_REG(j)) {
+                         addr = Prog.mcu->inputRegs[j];
+                     }
+                 }
+             }
+             if((addr == 0xff) || (addr == 0)) {
+                 dbps("Not a PORT/PIN");
+                 //Error("Not a PORT/PIN");
+             } else {
+                 if(Variables[i].Allocated == 0) {
+                     Variables[i].addrl = addr;
+                 }
+                 Variables[i].Allocated = 1;
+             }
+        } else {
+          if((sizeOfVar<1) || (sizeOfVar>4)) {
+              sizeOfVar = Variables[i].SizeOfVar;
+          }
+          if((sizeOfVar<1) || (sizeOfVar>4)) {
+              sizeOfVar = 2;
+          }
+          if(sizeOfVar<1) {
+              Error(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name, sizeOfVar);
+              sizeOfVar=1;
+          } else if(sizeOfVar>4) {
+              Error(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name, sizeOfVar);
+              sizeOfVar=4;
+          }
+          if(Variables[i].SizeOfVar != sizeOfVar) {
+              if(!Variables[i].SizeOfVar)
+                  Variables[i].SizeOfVar = sizeOfVar;
+              else {
+                  // Error("no Resize %s %d %d", name, Variables[i].SizeOfVar, sizeOfVar);
+              }
+          }
+          if(addrl) {
+              if(Variables[i].Allocated == 0) {
+                  if(sizeOfVar == 1) {
+                      Variables[i].addrl = AllocOctetRam();
+                  } else if(sizeOfVar == 2) {
+                      Variables[i].addrl = AllocOctetRam(2);
+                  } else if(sizeOfVar == 3) {
+                      Variables[i].addrl = AllocOctetRam(3);
+                  } else if(sizeOfVar == 4) {
+                      Variables[i].addrl = AllocOctetRam(4);
+                  } else {
+                      Error(_("Var '%s' not allocated %d."), name, sizeOfVar);
+                      CompileError();
+                  }
+                  Variables[i].Allocated = sizeOfVar;
+
+                  if(Variables[i].SizeOfVar < sizeOfVar) {
+                    //dbp("Err: Allocated '%s', upsize %d set to %d", name, Variables[i].SizeOfVar, sizeOfVar);
+                    //STACKWALKER
+                  }
+
+              } else if(Variables[i].Allocated != sizeOfVar) {
+                  Error(" Variable '%s' already allocated as signed %d bit", Variables[i].name, Variables[i].Allocated*8);
+                  //CompileError();
+              }
+          }
+      }
+      if(addrl) *addrl = Variables[i].addrl;
     }
-    if(addrl)
-        *addrl = Variables[i].addrl;
-    if(addrh)
-        *addrh = Variables[i].addrh;
+    return Variables[i].SizeOfVar;
 }
 
 int MemForVariable(char *name, DWORD *addr)
 {
-    MemForVariable(name, addr, 0);
-    return 2;
+    return MemForVariable(name, addr, 0);
 }
 
 //-----------------------------------------------------------------------------
 int MemOfVar(char *name, DWORD *addr)
 {
-    DWORD addrh;
-    MemForVariable(name, addr, &addrh); //get WORD memory for pointer to LPM
+    MemForVariable(name, addr, -1); //get WORD memory for pointer to LPM
     return SizeOfVar(name); //and return size of element of table in flash memory
 }
 
 int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 {
-    DWORD addrh;
-    MemForVariable(name, &addr, &addrh); //allocate WORD memory for pointer to LPM
+    MemForVariable(name, &addr, sizeOfVar); //allocate WORD memory for pointer to LPM
     return SetSizeOfVar(name, sizeOfVar); //and set size of element of table in flash memory
 }
+
 //-----------------------------------------------------------------------------
 int SetSizeOfVar(char *name, int sizeOfVar)
 {
-    return 2;
+    if((sizeOfVar<1)) {
+        Error(_("Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
+        sizeOfVar = 2;
+    }
+    return MemForVariable(name, NULL, sizeOfVar);
 }
 
 int SizeOfVar(char *name)
 {
-     if(name[0] == '#')
-         return 1;
+     if(IsNumber(name))
+         return byteNeeded(hobatoi(name));
      else
-        return 2;
+         return MemForVariable(name, NULL, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -589,10 +680,10 @@ void SaveVarListToFile(FILE *f)
       if(!IsIoType(Variables[i].type)
       && (Variables[i].type != IO_TYPE_INTERNAL_RELAY)
       && (Variables[i].name[0] != '$')) {
-          fprintf(f, "  %3d bytes %s %s\n",
+          fprintf(f, "  %3d bytes %s%s\n",
               SizeOfVar(Variables[i].name),
               Variables[i].name,
-              Variables[i].Allocated ? "" : "\tNow not used !!!");
+              Variables[i].Allocated ? "" : " \tNow not used !!!");
       }
 }
 

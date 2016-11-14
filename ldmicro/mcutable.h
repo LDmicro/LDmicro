@@ -478,6 +478,45 @@ int AvrAtmega8ExtIntPinInfo32[] = {
 };
 
 //-----------------------------------------------------------------------------
+// ATmega328 32-Pin packages TQFP/QFN/MLF
+
+McuIoPinInfo AvrAtmega328IoPinInfo32[] = {
+    { 'D',  0, 30, "PD0 (RXD / PCINT16)" }, // {char port;  int bit;  int pin; char name[]}
+    { 'D',  1, 31, "PD1 (TXD / PCINT17)" },
+    { 'D',  2, 32, "PD2 (INT0 / PCINT18)" },
+    { 'D',  3,  1, "PD3 (INT1 / OC2B / PCINT19)" },
+    { 'D',  4,  2, "PD4 (XCK / T0 / PCINT20)" },
+    { 'D',  5,  9, "PD5 (T1 / OC0B / PCINT21)" },
+    { 'D',  6, 10, "PD6 (AIN0 / OC0A / PCINT22)" },
+    { 'D',  7, 11, "PD7 (AIN1 / PCINT23)" },
+    { 'B',  0, 12, "PB0 (ICP1 / CLKO / PCINT0)" },
+    { 'B',  1, 13, "PB1 (OC1A / PCINT1)" },
+    { 'B',  2, 14, "PB2 (OC1B / SS / PCINT2)" },
+    { 'B',  3, 15, "PB3 (MOSI / OC2A / PCINT3)" },
+    { 'B',  4, 16, "PB4 (MISO / PCINT4)" },
+    { 'B',  5, 17, "PB5 (SCK / PCINT5)" },
+    { 'B',  6,  7, "PB6 (XTAL1 / TOSC1 / PCINT6)" },
+    { 'B',  7,  8, "PB7 (XTAL2 / TOSC2 / PCINT7)" },
+    { 'C',  0, 23, "PC0 (ADC0 / PCINT8)" },
+    { 'C',  1, 24, "PC1 (ADC1 / PCINT9)" },
+    { 'C',  2, 25, "PC2 (ADC2 / PCINT10)" },
+    { 'C',  3, 26, "PC3 (ADC3 / PCINT11)" },
+    { 'C',  4, 27, "PC4 (ADC4 / SDA / PCINT12)" },
+    { 'C',  5, 28, "PC5 (ADC5 / SCL / PCINT13)" },
+    { 'C',  6, 29, "PC6 (RESET / PCINT14)" }
+};
+
+McuAdcPinInfo AvrAtmega328AdcPinInfo32[] = {
+    { 23, 0x00 }, // ADC0 {int pin;   BYTE muxRegValue;}
+    { 24, 0x01 },
+    { 25, 0x02 },
+    { 26, 0x03 },
+    { 27, 0x04 },
+    { 28, 0x05 }, // ADC5
+    { 19, 0x06 },
+    { 22, 0x07 }  // ADC7
+};
+
 McuPwmPinInfo AvrAtmegaPwmPinInfo28_[] = {
     { 17, 2 },
 };
@@ -1220,6 +1259,30 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         AvrAtmegaPwmPinInfo28_,
         arraylen(AvrAtmegaPwmPinInfo28_)
     },
+    {
+        "Atmel AVR ATmega328 32-Pin packages",//char            *mcuName;
+        "ATmega328",
+        "m328def", // avrasm2.exe
+        'P',                                  //char             portPrefix;
+        { 0, 0x23, 0x26, 0x29 }, // PINx   //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
+        { 0, 0x25, 0x28, 0x2B }, // PORTx  //DWORD            outputRegs[MAX_IO_PORTS];
+        { 0, 0x24, 0x27, 0x2A }, // DDRx   //DWORD            dirRegs[MAX_IO_PORTS];
+        16*1024,                              //DWORD            flashWords;
+        { { 0x100, 2048 } },                  //{DWORD start; int len;} ram[MAX_RAM_SECTIONS];
+        AvrAtmega328IoPinInfo32,              //McuIoPinInfo    *pinInfo;
+        arraylen(AvrAtmega328IoPinInfo32),    //int              pinCount;
+        AvrAtmega328AdcPinInfo32,             //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrAtmega328AdcPinInfo32),   //int              adcCount;
+        1023,                                 //int              adcMax;
+        { 30, 31 },                           //{int rxPin; int txPin;} uartNeeds;
+        15,                                   //int              pwmNeedsPin;
+        ISA_AVR1,                             //int              whichIsa;
+        EnhancedCore128K,                     //AvrFamily        Family;
+        32,
+        0,                                    //DWORD            configurationWord;
+        AvrAtmegaPwmPinInfo32,                //McuPwmPinInfo   *pwmInfo;
+        arraylen(AvrAtmegaPwmPinInfo32)       //int              pwmCount;
+    },                                        //int int0PinA; int int1PinA;} QuadEncodNeeds;
     {
         "Atmel AVR ATmega164 40-PDIP",
         "",
