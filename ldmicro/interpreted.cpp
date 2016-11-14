@@ -226,7 +226,7 @@ finishIf:
             case INT_SET_PWM:
             case INT_UART_SEND:
             case INT_UART_RECV:
-            case INT_UART_SEND_BUSY:
+            case INT_UART_SEND_READY:
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:

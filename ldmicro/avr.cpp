@@ -880,6 +880,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
     case OP_LD_XS:
         CHECK(arg1, 5); CHECK(arg2, 0);
         return 0x9000 | (arg1 << 4) | 14;
+
     case OP_LD_Y:
         CHECK(arg1, 5); CHECK(arg2, 0);
         return 0x8000 | (arg1 << 4) |  8;
@@ -1041,14 +1042,6 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
         return 0x9800 | (arg1 << 3) | arg2;
 
-    case OP_BST:
-        CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
-        return 0xFA00 | (arg1 << 4) | arg2;
-
-    case OP_BLD:
-        CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
-        return 0xF800 | (arg1 << 4) | arg2;
-
     case OP_SBIC:
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
         return 0x9900 | (arg1 << 3) | arg2;
@@ -1057,6 +1050,14 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
         return 0x9b00 | (arg1 << 3) | arg2;
     #endif
+    case OP_BST:
+        CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
+        return 0xFA00 | (arg1 << 4) | arg2;
+
+    case OP_BLD:
+        CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
+        return 0xF800 | (arg1 << 4) | arg2;
+
     case OP_PUSH:
         CHECK2(arg1, 0, 31); CHECK(arg2, 0);
         return (0x920F) | (arg1 << 4);
@@ -1225,7 +1226,7 @@ static void SETB(DWORD addr, int bit, int reg, char *name)
         LoadZAddr(addr);
         Instruction(OP_LD_Z, reg, 0, name);
         #endif
-        Instruction(OP_SBR,  reg, (1<<bit));
+        Instruction(OP_SBR,  reg, 1 << bit);
         #ifdef USE_LDS_STS
         Instruction(OP_STS,  addr, reg);
         #else
@@ -1234,7 +1235,7 @@ static void SETB(DWORD addr, int bit, int reg, char *name)
     } else if((addr - __SFR_OFFSET > 0x1F) && (USE_IO_REGISTERS == 1)) {
         #if USE_IO_REGISTERS == 1
         Instruction(OP_IN,   reg, addr - __SFR_OFFSET, name);
-        Instruction(OP_SBR,  reg, (1<<bit));
+        Instruction(OP_SBR,  reg, 1 << bit);
         Instruction(OP_OUT,  addr - __SFR_OFFSET, reg);
         #endif
     } else if(USE_IO_REGISTERS == 1) {
@@ -1266,7 +1267,7 @@ static void CLRB(DWORD addr, int bit, int reg, char *name)
         LoadZAddr(addr);
         Instruction(OP_LD_Z, reg, 0, name );
         #endif
-        Instruction(OP_CBR,  reg, (1<<bit));
+        Instruction(OP_CBR,  reg, 1 << bit);
         #ifdef USE_LDS_STS
         Instruction(OP_STS,  addr, reg);
         #else
@@ -1275,7 +1276,7 @@ static void CLRB(DWORD addr, int bit, int reg, char *name)
     } else if((addr - __SFR_OFFSET > 0x1F) && (USE_IO_REGISTERS == 1)) {
         #if USE_IO_REGISTERS == 1
         Instruction(OP_IN,   reg, addr - __SFR_OFFSET, name);
-        Instruction(OP_CBR,  reg, (1<<bit));
+        Instruction(OP_CBR,  reg, 1 << bit);
         Instruction(OP_OUT,  addr - __SFR_OFFSET, reg);
         #endif
     } else if(USE_IO_REGISTERS == 1) {
@@ -1575,22 +1576,34 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 //-----------------------------------------------------------------------------
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *name1,  char *name2)
 {
+    if((addrDest == addrSrc) && (bitDest == bitSrc)) oops();
+    char s[10];
+    char d[10];
+    sprintf(s, "BIT%d", bitSrc);
+    sprintf(d, "BIT%d", bitDest);
 /*
 //used ZL, r25, r3; Opcodes: 11
-    LoadZAddr(addrSrc);  Instruction(OP_LD_Z, r3, 0, name2);
-    LoadZAddr(addrDest); Instruction(OP_LD_Z, r25, 0, name1);
-    Instruction(OP_SBRS, r3, bitSrc);
-    Instruction(OP_CBR, r25, (1 << bitDest));
-    Instruction(OP_SBRC, r3, bitSrc);
-    Instruction(OP_SBR, r25, (1 << bitDest));
+    LoadZAddr(addrSrc);
+    Instruction(OP_LD_Z, r3, 0, name2);
+    if(addrDest != addrSrc)
+      LoadZAddr(addrDest);
+    Instruction(OP_LD_Z, r25, 0, name1);
+    Instruction(OP_SBRS, r3, bitSrc, s);
+    Instruction(OP_CBR, r25, 1 << bitDest, d);
+    Instruction(OP_SBRC, r3, bitSrc, s);
+    Instruction(OP_SBR, r25, 1 << bitDest, d);
     Instruction(OP_ST_Z, r25, 0, name1);
 /**/
 //used ZL, r25; Opcodes: 9
-    LoadZAddr(addrSrc);  Instruction(OP_LD_Z, r25);
-    Instruction(OP_BST, r25, bitSrc);
-    LoadZAddr(addrDest); Instruction(OP_LD_Z, r25);
-    Instruction(OP_BLD, r25, bitDest);
-    Instruction(OP_ST_Z, r25);
+    LoadZAddr(addrSrc);
+    Instruction(OP_LD_Z, r25, 0, name2);
+    Instruction(OP_BST, r25, bitSrc, s);
+    if(addrDest != addrSrc) {
+      LoadZAddr(addrDest);
+      Instruction(OP_LD_Z, r25);
+    }
+    Instruction(OP_BLD, r25, bitDest, d);
+    Instruction(OP_ST_Z, r25, 0, name1);
 /**/
 }
 
@@ -1602,13 +1615,21 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 //-----------------------------------------------------------------------------
 static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *name1,  char *name2)
 {
+    if((addrDest == addrSrc) && (bitDest == bitSrc)) oops();
+    char s[10];
+    char d[10];
+    sprintf(s, "BIT%d", bitSrc);
+    sprintf(d, "BIT%d", bitDest);
 //used ZL, r25, r3; Opcodes: 11
-    LoadZAddr(addrSrc);  Instruction(OP_LD_Z, r3, 0, name2);
-    LoadZAddr(addrDest); Instruction(OP_LD_Z, r25, 0, name1);
-    Instruction(OP_SBRS, r3, bitSrc);
-    Instruction(OP_SBR, r25, (1 << bitDest));
-    Instruction(OP_SBRC, r3, bitSrc);
-    Instruction(OP_CBR, r25, (1 << bitDest));
+    LoadZAddr(addrSrc);
+    Instruction(OP_LD_Z, r3, 0, name2);
+    if(addrDest != addrSrc)
+      LoadZAddr(addrDest);
+    Instruction(OP_LD_Z, r25, 0, name1);
+    Instruction(OP_SBRS, r3, bitSrc, s);
+    Instruction(OP_SBR, r25, 1 << bitDest, d);
+    Instruction(OP_SBRC, r3, bitSrc, s);
+    Instruction(OP_CBR, r25, 1 << bitDest, d);
     Instruction(OP_ST_Z, r25, 0, name1);
 }
 
@@ -1618,77 +1639,89 @@ static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 }
 
 //-----------------------------------------------------------------------------
-static void GetUartSendBusy(DWORD addr, int bit)
+static void GetUartSendReady(DWORD addr, int bit)
 {
     /*
     ClearBit(addr, bit); // UART ready
     DWORD dontSet = AllocFwdAddr();
     IfBitSet(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty
-    Instruction(OP_RJMP, dontSet, 0);
+    Instruction(OP_RJMP, dontSet);
     SetBit(addr, bit); // Set UART busy
     FwdAddrIsNow(dontSet);
     */
-//  XorCopyBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
-    XorCopyBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty
+//  CopyBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
+    CopyBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty and ready
 }
 //-----------------------------------------------------------------------------
 // Execute the next instruction only if the specified bit of the specified
 // memory location is clear (i.e. skip if set).
 //-----------------------------------------------------------------------------
-static void IfBitClear(DWORD addr, int bit, BYTE reg)
+static void IfBitClear(DWORD addr, int bit, BYTE reg, char *name)
 //used ZL, r25 // bit in [0..7]
 {
+    char b[10];
+    sprintf(b, "BIT%d", bit);
     if(bit > 7) {
         Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         LoadZAddr(addr);
-        Instruction(OP_LD_Z, reg);
-        Instruction(OP_SBRS, reg, bit);
+        Instruction(OP_LD_Z, reg, 0, name);
+        Instruction(OP_SBRS, reg, bit ,b);
     } else if((addr - __SFR_OFFSET > 0x1F) && (USE_IO_REGISTERS == 1)) {
         #if USE_IO_REGISTERS == 1
-        Instruction(OP_IN,   reg, addr - __SFR_OFFSET);
-        Instruction(OP_SBRS, reg, bit);
+        Instruction(OP_IN,   reg, addr - __SFR_OFFSET, name);
+        Instruction(OP_SBRS, reg, bit ,b);
         #endif
     } else if(USE_IO_REGISTERS == 1) {
         #if USE_IO_REGISTERS == 1
-        Instruction(OP_SBIS, addr - __SFR_OFFSET, bit);
+        Instruction(OP_SBIS, addr - __SFR_OFFSET, 0, name);
         #endif
     } else oops()
 }
+static void IfBitClear(DWORD addr, int bit, char *name)
+{
+    IfBitClear(addr, bit, r25, name);
+}
 static void IfBitClear(DWORD addr, int bit)
 {
-    IfBitClear(addr, bit, r25);
+    IfBitClear(addr, bit, r25, NULL);
 }
 
 //-----------------------------------------------------------------------------
 // Execute the next instruction only if the specified bit of the specified
 // memory location is set (i.e. skip if clear).
 //-----------------------------------------------------------------------------
-static void IfBitSet(DWORD addr, int bit, BYTE reg)
+static void IfBitSet(DWORD addr, int bit, BYTE reg, char *name)
 //used ZL, r25 // bit in [0..7]
 {
+    char b[10];
+    sprintf(b, "BIT%d", bit);
     if(bit > 7) {
         Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         LoadZAddr(addr);
-        Instruction(OP_LD_Z, r25);
-        Instruction(OP_SBRC, r25, bit);
+        Instruction(OP_LD_Z, r25, 0, name);
+        Instruction(OP_SBRC, r25, bit ,b);
     } else if((addr - __SFR_OFFSET > 0x1F) && (USE_IO_REGISTERS == 1)) {
         #if USE_IO_REGISTERS == 1
-        Instruction(OP_IN,   reg, addr - __SFR_OFFSET);
-        Instruction(OP_SBRC, reg, bit);
+        Instruction(OP_IN,   reg, addr - __SFR_OFFSET, name);
+        Instruction(OP_SBRC, reg, bit ,b);
         #endif
     } else if(USE_IO_REGISTERS == 1) {
         #if USE_IO_REGISTERS == 1
-        Instruction(OP_SBIC, addr - __SFR_OFFSET, bit);
+        Instruction(OP_SBIC, addr - __SFR_OFFSET, bit, name);
         #endif
     } else oops()
 }
+static void IfBitSet(DWORD addr, int bit, char *name)
+{
+    IfBitSet(addr, bit, r25, name);
+}
 static void IfBitSet(DWORD addr, int bit)
 {
-    IfBitSet(addr, bit, r25);
+    IfBitSet(addr, bit, r25, NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -1702,7 +1735,7 @@ static void SetBit(DWORD addr, int bit, char *name)
 
 //  LoadZAddr(addr);
 //  Instruction(OP_LD_Z, r25);
-//  Instruction(OP_SBR, r25, (1 << bit));
+//  Instruction(OP_SBR, r25, 1 << bit);
 //  Instruction(OP_ST_Z, r25);
 
     SETB(addr, bit, name);
@@ -1725,13 +1758,14 @@ static void ClearBit(DWORD addr, int bit)
 
 //  LoadZAddr(addr);
 //  Instruction(OP_LD_Z, r25);
-//  Instruction(OP_CBR, r25, (1 << bit));
+//  Instruction(OP_CBR, r25, 1 << bit);
 //  Instruction(OP_ST_Z, r25);
 
     CLRB(addr, bit);
 }
 */
 #define ClearBit(...)         CLRB(__VA_ARGS__)
+
 //-----------------------------------------------------------------------------
 BOOL TstAddrBitReg(DWORD addr, int bit, int reg)
 {
@@ -1766,20 +1800,20 @@ static void PulseBit(DWORD addr, int bit, int reg)
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         LoadZAddr(addr);
         Instruction(OP_LD_Z, r25);
-        Instruction(OP_SBR, r25, (1 << bit));
+        Instruction(OP_SBR, r25, 1 << bit);
         Instruction(OP_ST_Z, r25);
         nops();
         Instruction(OP_LD_Z, r25); // its more correct wiht volatile vars
-        Instruction(OP_CBR, r25, (1 << bit));
+        Instruction(OP_CBR, r25, 1 << bit);
         Instruction(OP_ST_Z, r25);
     } else if((addr - __SFR_OFFSET > 0x1F) && (USE_IO_REGISTERS == 1)) {
         #if USE_IO_REGISTERS == 1
         Instruction(OP_IN,   reg, addr - __SFR_OFFSET);
-        Instruction(OP_SBR,  reg, (1<<bit));
+        Instruction(OP_SBR,  reg, 1 << bit);
         Instruction(OP_OUT,  addr - __SFR_OFFSET, reg);
         nops();
         Instruction(OP_IN,   reg, addr - __SFR_OFFSET); // its more correct wiht volatile vars
-        Instruction(OP_CBR,  reg, (1<<bit));
+        Instruction(OP_CBR,  reg, 1 << bit);
         Instruction(OP_OUT,  addr - __SFR_OFFSET, reg);
         #endif
     } else if(USE_IO_REGISTERS == 1) {
@@ -2120,6 +2154,8 @@ static void WriteRuntime(void)
 
         // UCSRC initial Value frame format: 8 data, parity - none, 1 stop bit.
         // Not need to set.
+//      WriteMemory(REG_UCSRC, (1 << URSEL) | (3 << UCSZ0));
+//      WriteMemory(REG_UCSRC,                (3 << UCSZ0));
 
         /*
         for(i = 0; i < Prog.mcu->pinCount; i++) {
@@ -2306,8 +2342,6 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
 {
     DWORD addr;
     int sov = SizeOfVar(var);
-    if(sov != sovRegs)
-      dbp("%d in %s(%s) var=%s sov=%d <- reg=%d sovRegs=%d", l, f, args,  var,sov,reg,sovRegs);
 
     MemForVariable(var, &addr);
     LoadXAddr(addr, var);
@@ -2491,13 +2525,13 @@ is described in an article available on line at http://www.parallax.com/dl/docs/
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate(void)
 {
-    DWORD addr, addr2;
-    int bit, bit2;
-    DWORD addrl, addrh;
-    DWORD addrl2, addrh2;
-    int sov = 2;
-    int sov1= 2;
-    int sov2= 2;
+    DWORD addr = 0, addr1 = 0, addr2 = 0, addr4 = 0;
+    int   bit = -1, bit1 = -1, bit2 = -1, bit4 = -1;
+    DWORD addrl = 0;
+    DWORD addrl2 = 0;
+    int sov = -1;
+    int sov1= -1;
+    int sov2= -1;
 
     for(; IntPc < IntCodeLen; IntPc++) {
         IntPcNow = IntPc;
@@ -2505,19 +2539,19 @@ static void CompileFromIntermediate(void)
         rungNow = a->rung;
         switch(a->op) {
             case INT_SET_BIT:
-                MemForSingleBit(a->name1, FALSE, &addr, &bit);
-                SetBit(addr, bit, a->name1);
+                MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
+                SetBit(addr1, bit1, a->name1);
                 break;
 
             case INT_CLEAR_BIT:
-                MemForSingleBit(a->name1, FALSE, &addr, &bit);
-                ClearBit(addr, bit, a->name1);
+                MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
+                ClearBit(addr1, bit1, a->name1);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
                 MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
-                CopyBit(addr, bit, addr2, bit2, a->name1, a->name2);
+                CopyBit(addr1, bit1, addr2, bit2, a->name1, a->name2);
                 break;
 
             #ifdef NEW_FEATURE
@@ -2526,46 +2560,35 @@ static void CompileFromIntermediate(void)
             #endif
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                MemForVariable(a->name1, &addr);
-                sov = SizeOfVar(a->name1);
-                if(sov >= 1) {
-                  WriteMemory(addr, BYTE(a->literal & 0xff), a->name1);
-                  if(sov >= 2) {
-                    WriteMemoryNextAddr(BYTE((a->literal >> 8) & 0xff));
-                    if(sov >= 3) {
-                      WriteMemoryNextAddr(BYTE((a->literal >> 16) & 0xff));
-                      if(sov == 4) {
-                        WriteMemoryNextAddr(BYTE((a->literal >> 24) & 0xff));
-                      } else if(sov > 4) oops();
-                    }
-                  }
-                } else oops();
+                MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+                WriteLiteralToMemory(addr1, sov1, a->literal, a->name1);
                 break;
 
             case INT_INCREMENT_VARIABLE: {
-                sov = SizeOfVar(a->name1);
-                MemForVariable(a->name1, &addr);
-                Increment(addr,sov);
+                sov1 = SizeOfVar(a->name1);
+                MemForVariable(a->name1, &addr1);
+                Increment(addr1,sov1);
                 break;
             }
             case INT_DECREMENT_VARIABLE: {
-                sov = SizeOfVar(a->name1);
-                MemForVariable(a->name1, &addr);
-                Decrement(addr,sov);
+                sov1 = SizeOfVar(a->name1);
+                MemForVariable(a->name1, &addr1);
+                Decrement(addr1,sov1);
                 break;
             }
             case INT_IF_BIT_SET: {
                 DWORD condFalse = AllocFwdAddr();
-                MemForSingleBit(a->name1, TRUE, &addr, &bit);
-                IfBitClear(addr, bit);
+                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                IfBitClear(addr1, bit1, (char *)a->name1);
                 Instruction(OP_RJMP, condFalse);
                 CompileIfBody(condFalse);
                 break;
             }
             case INT_IF_BIT_CLEAR: {
                 DWORD condFalse = AllocFwdAddr();
-                MemForSingleBit(a->name1, TRUE, &addr, &bit);
-                IfBitSet(addr, bit);
+                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                IfBitSet(addr1, bit1, (char *)a->name1);
                 Instruction(OP_RJMP, condFalse);
                 CompileIfBody(condFalse);
                 break;
@@ -2578,19 +2601,19 @@ static void CompileFromIntermediate(void)
             case INT_IF_VARIABLE_LES_LITERAL: {
                 DWORD notTrue = AllocFwdAddr();
 
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 20, (a->literal & 0xff));
-                LoadXAddr(addrl);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16);
                 Instruction(OP_CP, 16, 20);
 
-                sov = SizeOfVar(a->name1);
-                if(sov >= 2) {
+                sov1 = SizeOfVar(a->name1);
+                if(sov1 >= 2) {
                   Instruction(OP_LDI, 21, (a->literal >> 8) & 0xff);
                   Instruction(OP_LD_XP, 17);
                   Instruction(OP_CPC, 17, 21);
 
-                  if(sov >= 3) {
+                  if(sov1 >= 3) {
                     Instruction(OP_LDI, 22, (a->literal >> 16) & 0xff);
                     Instruction(OP_LD_XP, 18);
                     Instruction(OP_CPC, 18, 22);
@@ -2654,13 +2677,13 @@ static void CompileFromIntermediate(void)
                 if(IsNumber(a->name1)){
                   CopyLiteralToRegs(r20, hobatoi(a->name1), sov);
                 } else {
-                  MemForVariable(a->name1, &addrl, &addrh);
+                  //MemForVariable(a->name1, &addr1);
                   CopyVarToRegs(r20, a->name1, sov);
                 }
                 if(IsNumber(a->name2)){
                   CopyLiteralToRegs(r16, hobatoi(a->name2), sov);
                 } else {
-                  MemForVariable(a->name2, &addrl, &addrh);
+                  //MemForVariable(a->name2, &addrl, &addrh);
                   CopyVarToRegs(r16, a->name2, sov);
                 }
 
@@ -2685,27 +2708,27 @@ static void CompileFromIntermediate(void)
 
             // Sepcial function
             case INT_READ_SFR_LITERAL: {
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
                 Instruction(OP_LDI, 27, (a->literal >> 8));
                 Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrl);
+                LoadXAddr(addr1);
                 Instruction(OP_ST_X, 16, 0);
                 break;
             }
             case INT_READ_SFR_VARIABLE: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                MemForVariable(a->name2, &addrl2, &addrh2);
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 28, 0); //Y-register
                 Instruction(OP_LD_X, 29, 0);
                 Instruction(OP_LD_Y, 16, 0);
-                LoadXAddr(addrl2);
+                LoadXAddr(addr2);
                 Instruction(OP_ST_X, 16, 0); //8
                 break;
             }
             case INT_WRITE_SFR_LITERAL_L: {
-              //MemForVariable(a->name1, &addrl, &addrh); // name not used
+              //MemForVariable(a->name1, &addr1); // name not used
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff)); //op
                 Instruction(OP_LDI, 26, (a->literal & 0xff)); //sfr
                 Instruction(OP_LDI, 27, (a->literal >> 8));   //sfr
@@ -2719,8 +2742,8 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_WRITE_SFR_LITERAL: {
-                MemForVariable(a->name1, &addrl, &addrh); //op
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1); //op
+                LoadXAddr(addr1);
                 Instruction(OP_LD_X, 15, 0);
                 Instruction(OP_LDI, 26, (a->literal & 0xff)); //sfr
                 Instruction(OP_LDI, 27, (a->literal >> 8));
@@ -2729,14 +2752,14 @@ static void CompileFromIntermediate(void)
             }
             case INT_WRITE_SFR_VARIABLE: {
                 CopyVarToRegs(ZL, a->name1, 2); //sfr
-                MemForVariable(a->name2, &addrl2, &addrh2); //op
-                LoadXAddr(addrl2);
+                MemForVariable(a->name2, &addr2); //op
+                LoadXAddr(addr2);
                 Instruction(OP_LD_X, 15, 0);
                 Instruction(OP_ST_Z, 15, 0);
                 break;
             }
             case INT_SET_SFR_LITERAL_L: {
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
                 Instruction(OP_LDI, 27, (a->literal >> 8));
@@ -2746,8 +2769,8 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_SET_SFR_VARIABLE_L: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
                 Instruction(OP_LD_XP, 17, 0);
                 Instruction(OP_MOV, 26, 16);
@@ -2759,8 +2782,8 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_SET_SFR_LITERAL: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
                 Instruction(OP_LDI, 27, (a->literal >> 8));
@@ -2770,11 +2793,11 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_SET_SFR_VARIABLE: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                MemForVariable(a->name2, &addrl2, &addrh2);
-                LoadXAddr(addrl2);
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+                LoadXAddr(addr2);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
-                LoadXAddr(addrl);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
                 Instruction(OP_LD_XP, 17, 0);
                 Instruction(OP_MOV, 26, 16);
@@ -2785,7 +2808,7 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_CLEAR_SFR_LITERAL_L: {
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
                 Instruction(OP_LDI, 27, (a->literal >> 8));
@@ -2796,8 +2819,8 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_CLEAR_SFR_VARIABLE_L: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
                 Instruction(OP_LD_XP, 17, 0);
                 Instruction(OP_MOV, 26, 16);
@@ -2810,8 +2833,8 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_CLEAR_SFR_LITERAL: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
                 Instruction(OP_LDI, 27, (a->literal >> 8));
@@ -2822,11 +2845,11 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_CLEAR_SFR_VARIABLE: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                MemForVariable(a->name2, &addrl2, &addrh2);
-                LoadXAddr(addrl2);
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+                LoadXAddr(addr2);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
-                LoadXAddr(addrl);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
                 Instruction(OP_LD_XP, 17, 0);
                 Instruction(OP_MOV, 26, 16);
@@ -2839,7 +2862,7 @@ static void CompileFromIntermediate(void)
             }
             case INT_TEST_SFR_LITERAL_L: {
                 DWORD notTrue = AllocFwdAddr();
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
                 Instruction(OP_LDI, 27, (a->literal >> 8));
@@ -2853,8 +2876,8 @@ static void CompileFromIntermediate(void)
             }
             case INT_TEST_SFR_VARIABLE_L: {
                 DWORD notTrue = AllocFwdAddr();
-                MemForVariable(a->name1, &addrl, &addrh);
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
                 Instruction(OP_LD_XP, 17, 0);
                 Instruction(OP_MOV, 26, 16);
@@ -2870,8 +2893,8 @@ static void CompileFromIntermediate(void)
             }
             case INT_TEST_SFR_LITERAL: {
                 DWORD notTrue = AllocFwdAddr();
-                MemForVariable(a->name1, &addrl, &addrh);
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
                 Instruction(OP_LDI, 27, (a->literal >> 8));
@@ -2885,11 +2908,11 @@ static void CompileFromIntermediate(void)
             }
             case INT_TEST_SFR_VARIABLE: {
                 DWORD notTrue = AllocFwdAddr();
-                MemForVariable(a->name1, &addrl, &addrh);
-                MemForVariable(a->name2, &addrl2, &addrh2);
-                LoadXAddr(addrl2);
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+                LoadXAddr(addr2);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
-                LoadXAddr(addrl);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
                 Instruction(OP_LD_XP, 17, 0);
                 Instruction(OP_MOV, 26, 16);
@@ -2904,7 +2927,7 @@ static void CompileFromIntermediate(void)
             }
             case INT_TEST_C_SFR_LITERAL_L: {
                 DWORD notTrue = AllocFwdAddr();
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
                 Instruction(OP_LDI, 27, (a->literal >> 8));
@@ -2919,8 +2942,8 @@ static void CompileFromIntermediate(void)
             }
             case INT_TEST_C_SFR_VARIABLE_L: {
                 DWORD notTrue = AllocFwdAddr();
-                MemForVariable(a->name1, &addrl, &addrh);
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
                 Instruction(OP_LD_XP, 17, 0);
                 Instruction(OP_MOV, 26, 16);
@@ -2937,8 +2960,8 @@ static void CompileFromIntermediate(void)
             }
             case INT_TEST_C_SFR_LITERAL: {
                 DWORD notTrue = AllocFwdAddr();
-                MemForVariable(a->name1, &addrl, &addrh);
-                LoadXAddr(addrl);
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
                 Instruction(OP_LDI, 27, (a->literal >> 8));
@@ -2953,11 +2976,11 @@ static void CompileFromIntermediate(void)
             }
             case INT_TEST_C_SFR_VARIABLE: {
                 DWORD notTrue = AllocFwdAddr();
-                MemForVariable(a->name1, &addrl, &addrh);
-                MemForVariable(a->name2, &addrl2, &addrh2);
-                LoadXAddr(addrl2);
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+                LoadXAddr(addr2);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
-                LoadXAddr(addrl);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
                 Instruction(OP_LD_XP, 17, 0);
                 Instruction(OP_MOV, 26, 16);
@@ -3010,14 +3033,17 @@ static void CompileFromIntermediate(void)
                 if(sov == 1) {
                     CallSubroutine(MultiplyAddress8);
                     MultiplyUsed8 = TRUE;
+                    sov1 = min(2, SizeOfVar(a->name1));
                 } else if(sov == 2)  {
                     CallSubroutine(MultiplyAddress);
                     MultiplyUsed = TRUE;
+                    sov1 = min(4, SizeOfVar(a->name1));
                 } else if(sov == 3) {
                     CallSubroutine(MultiplyAddress24);
                     MultiplyUsed24 = TRUE;
+                    sov1 = min(6, SizeOfVar(a->name1));
                 } else oops()
-                CopyRegsToVar(a->name1, r20, sov);
+                CopyRegsToVar(a->name1, r20, sov1);
                 break;
 
             #ifdef NEW_FEATURE
@@ -3207,7 +3233,6 @@ static void CompileFromIntermediate(void)
                     CopyVarToRegs(r20, a->name1, SizeOfVar(a->name1));
                     CopyLiteralToRegs(r16, 255, SizeOfVar(a->name1)); // Fast PWM
                   //CopyLiteralToRegs(r16, 510, SizeOfVar(a->name1)); // Phase Correct PWM
-
                     CallSubroutine(MultiplyAddress);
 
                     Instruction(OP_MOV, 19, 20);
@@ -3220,7 +3245,6 @@ static void CompileFromIntermediate(void)
                 } else {
                     CopyVarToRegs(r19, a->name1, SizeOfVar(a->name1));
                 }
-
                 if(iop->REG_OCRnxH)
                   WriteRegToIO(iop->REG_OCRnxH, r20); // first HIGH
                 WriteRegToIO(iop->REG_OCRnxL, r19);   // then LOW
@@ -3230,6 +3254,8 @@ static void CompileFromIntermediate(void)
 
                 char storeName[MAX_NAME_LEN];
                 GenSymOneShot(storeName, "ONE_SHOT_RISING", "pwm_init");
+                DWORD addr;
+                int bit;
                 MemForSingleBit(storeName, FALSE, &addr, &bit);
 
                 DWORD skip = AllocFwdAddr();
@@ -3302,7 +3328,7 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_EEPROM_READ: {
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr1);
                 int i;
                 for(i = 0; i < 2; i++) {
                     WriteMemory(REG_EEARH, BYTE((a->literal+i) >> 8) & 0xff);
@@ -3311,25 +3337,25 @@ static void CompileFromIntermediate(void)
                     LoadXAddr(REG_EEDR);
                     Instruction(OP_LD_X, 16, 0);
                     if(i == 0) {
-                        LoadXAddr(addrl);
+                        LoadXAddr(addr1);
                     } else {
-                        LoadXAddr(addrh);
+                        LoadXAddr(addr1+1);
                     }
                     Instruction(OP_ST_X, 16, 0);
                 }
                 break;
             }
             case INT_EEPROM_WRITE:
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr1);
                 SetBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
-                LoadXAddr(addrh);
+                LoadXAddr(addr1+1);
                 Instruction(OP_LD_X, 16, 0);
                 LoadXAddr(EepromHighByte);
                 Instruction(OP_ST_X, 16, 0);
 
                 WriteMemory(REG_EEARH, BYTE(a->literal >> 8) & 0xff);
                 WriteMemory(REG_EEARL, BYTE(a->literal & 0xff));
-                LoadXAddr(addrl);
+                LoadXAddr(addr1);
                 Instruction(OP_LD_X, 16, 0);
                 LoadXAddr(REG_EEDR);
                 Instruction(OP_ST_X, 16, 0);
@@ -3341,7 +3367,7 @@ static void CompileFromIntermediate(void)
                 break;
 
             case INT_READ_ADC: {
-                MemForVariable(a->name1, &addrl, &addrh);
+                MemForVariable(a->name1, &addr1);
 
                 BYTE mux = MuxForAdcVariable(a->name1);
                 if(mux > 0x0F)
@@ -3354,7 +3380,7 @@ static void CompileFromIntermediate(void)
                     mux & 0x07);
 
                 if(REG_ADCSRB) {
-                WriteMemory(REG_ADCSRB, 0 << ACME);
+                    WriteMemory(REG_ADCSRB, 0 << ACME);
                     //ClearBit(REG_ADCSRB, ACME);
                     if(mux & 0x08) {
                         SetBit(REG_ADCSRB, MUX5);
@@ -3383,7 +3409,7 @@ static void CompileFromIntermediate(void)
 
                 LoadXAddr(REG_ADCL);
                 Instruction(OP_LD_X, 16);
-                LoadYAddr(addrl);
+                LoadYAddr(addr1);
                 Instruction(OP_ST_YP, 16);
 
                 LoadXAddr(REG_ADCH);
@@ -3393,64 +3419,52 @@ static void CompileFromIntermediate(void)
 
                 break;
             }
-            case INT_UART_SEND_BUSY: {
-                MemForSingleBit(a->name1, TRUE, &addr, &bit);
-                ClearBit(addr, bit); // UART ready
-                DWORD dontSet = AllocFwdAddr();
-                IfBitSet(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty
-                Instruction(OP_RJMP, dontSet, 0);
-                SetBit(addr, bit); // Set UART busy
-                FwdAddrIsNow(dontSet);
-
+            case INT_UART_SEND_READY: {
+                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                GetUartSendReady(addr1, bit1);
+                break;
+            }
+            case INT_UART_RECV_AVAIL: {
+                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
 
             case INT_UART_SEND: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                MemForSingleBit(a->name2, TRUE, &addr, &bit);
+                MemForVariable(a->name1, &addr1);
+                MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
 
                 DWORD noSend = AllocFwdAddr();
-                IfBitClear(addr, bit);
-                Instruction(OP_RJMP, noSend, 0);
+                IfBitClear(addr2, bit2);
+                Instruction(OP_RJMP, noSend);
 
-                LoadXAddr(addrl);
-                Instruction(OP_LD_X, 16, 0);
+                LoadXAddr(addr1);
+                Instruction(OP_LD_X, r16);
                 LoadXAddr(REG_UDR);
-                Instruction(OP_ST_X, 16, 0);
+                Instruction(OP_ST_X, r16);
 
                 FwdAddrIsNow(noSend);
 
-                ClearBit(addr, bit);
-                DWORD dontSet = AllocFwdAddr();
-                IfBitSet(REG_UCSRA, 5); // UDRE, is 1 when tx buffer is empty
-                Instruction(OP_RJMP, dontSet, 0);
-                SetBit(addr, bit); // Set UART busy
-                FwdAddrIsNow(dontSet);
-
-                break;
-            }
-            case INT_UART_RECV_AVAIL: {
-                MemForSingleBit(a->name1, TRUE, &addr, &bit);
-                SetBit(addr, bit); // Set // TODO
+                XorCopyBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
                 break;
             }
             case INT_UART_RECV: {
-                MemForVariable(a->name1, &addrl, &addrh);
-                MemForSingleBit(a->name2, TRUE, &addr, &bit);
+                MemForVariable(a->name1, &addr1);
+                MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
 
-                ClearBit(addr, bit);
+                ClearBit(addr2, bit2);
 
                 DWORD noChar = AllocFwdAddr();
-                IfBitClear(REG_UCSRA, 7);
+                IfBitClear(REG_UCSRA, RXC);
                 Instruction(OP_RJMP, noChar, 0);
 
-                SetBit(addr, bit);
+                SetBit(addr2, bit2);
                 LoadXAddr(REG_UDR);
                 Instruction(OP_LD_X, 16, 0);
-                LoadXAddr(addrl);
+                LoadXAddr(addr1);
                 Instruction(OP_ST_X, 16, 0);
 
-                LoadXAddr(addrh);
+                LoadXAddr(addr1+1);
                 Instruction(OP_LDI, 16, 0);
                 Instruction(OP_ST_X, 16, 0);
 

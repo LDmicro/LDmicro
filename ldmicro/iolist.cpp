@@ -555,7 +555,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_OSC:
-        case ELEM_UART_SEND_BUSY:
+        case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
         case ELEM_EQU:
         case ELEM_NEQ:
@@ -1443,9 +1443,9 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_PORT_OUTPUT     )
                     || (type == IO_TYPE_BCD             )
                     || (type == IO_TYPE_STRING          )
-                    || (type == IO_TYPE_RTO             )
                     || (type == IO_TYPE_COUNTER         )
                     || (type == IO_TYPE_VAL_IN_FLASH    )
+                    || (type == IO_TYPE_RTO             )
                     || (type == IO_TYPE_TCY             )
                     || (type == IO_TYPE_TON             )
                     || (type == IO_TYPE_TOF             )) {

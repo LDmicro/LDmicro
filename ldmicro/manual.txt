@@ -863,6 +863,20 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     and it is almost certainly capable of doing what you want.
 
 
+> UART SEND: Is ready ?       Is ready?
+                           --[UART SEND]--
+
+    Input condition is not taken into view.
+    Output is 1 when transmit buffer is empty and ready to loading new data.
+
+
+> UART RECV: Is avail ?       Is avail?
+                           --[UART RECV]--
+
+    Input condition is not taken into view.
+    Output is 1 when there are unread data in the receive buffer.
+
+
 > FORMATTED STRING OVER UART                var
                                    -{"Pressure: \3\r\n"}-
 

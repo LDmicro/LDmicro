@@ -277,10 +277,12 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_SET_PWM;
     } else if(memcmp(line, "UART_RECV_AVAIL", 15)==0) {
         *which = ELEM_UART_RECV_AVAIL;
+    } else if(memcmp(line, "UART_SEND_READY", 15)==0) {
+        *which = ELEM_UART_SEND_READY;
     } else if(memcmp(line, "UART_SEND_BUSY", 14)==0) {
-        *which = ELEM_UART_SEND_BUSY;
+        *which = ELEM_UART_SEND_READY;
     } else if(memcmp(line, "UART_UDRE", 9)==0) {
-        *which = ELEM_UART_SEND_BUSY;
+        *which = ELEM_UART_SEND_READY;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name)==1) {
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name)==1) {
@@ -896,8 +898,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "UART_SEND %s\n", l->d.uart.name);
             break;
 
-        case ELEM_UART_SEND_BUSY:
-            fprintf(f, "UART_SEND_BUSY\n");
+        case ELEM_UART_SEND_READY:
+            fprintf(f, "UART_SEND_READY\n");
             break;
 
         case ELEM_UART_RECV_AVAIL:
@@ -988,7 +990,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
               if (strcmp(Prog.LDversion,"0.1")==0)
                 fprintf(f, "RUNG\n");
               else
-                fprintf(f, "RUNG %d\n", rung);
+              //fprintf(f, "RUNG %d\n", rung);
+                fprintf(f, "RUNG\n");
             } else {
                 fprintf(f, "SERIES\n");
             }
