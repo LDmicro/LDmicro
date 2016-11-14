@@ -925,7 +925,7 @@ typedef struct McuIoInfoTag {
     }                rom[MAX_ROM_SECTIONS]; //EEPROM or HEI?
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 30 // 29
+#define NUM_SUPPORTED_MCUS 29
 
 //-----------------------------------------------
 // Function prototypes
