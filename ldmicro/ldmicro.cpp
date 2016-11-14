@@ -233,6 +233,30 @@ bool ExistFile(const char *name)
     }
     return false;
 }
+//-----------------------------------------------------------------------------
+long int fsize(FILE *fp)
+{
+    long int prev=ftell(fp);
+    fseek(fp, 0L, SEEK_END);
+    long int sz=ftell(fp);
+    fseek(fp,prev,SEEK_SET); //go back to where we were
+    return sz;
+}
+
+long int fsize(char *filename)
+{
+    FILE *fp;
+    fp=fopen(filename,"rb");
+    if(fp==NULL) {
+        return 0;
+    }
+    fseek(fp, 0L, SEEK_END);
+    long int sz=ftell(fp);
+    fclose(fp);
+    return sz;
+}
+
+//-----------------------------------------------------------------------------
 static void isErr(int Err, char *r)
 {
   char *s;
@@ -321,6 +345,14 @@ static void notepad(char *name, char *ext)
 //-----------------------------------------------------------------------------
 static void postCompile(int ISA)
 {
+    if(!ExistFile(CurrentCompileFile))
+        return;
+
+    if(!fsize(CurrentCompileFile)) {
+        remove(CurrentCompileFile);
+        return;
+    }
+
     char r[MAX_PATH];
     char onlyName[MAX_PATH];
 
@@ -361,6 +393,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     if(!compileAs && strlen(CurrentCompileFile)) {
         if(FILE *f = fopen(CurrentCompileFile, "w")) {
             fclose(f);
+            remove(CurrentCompileFile);
         } else {
             Error(_("Couldn't open file '%s'"), CurrentCompileFile);
             compileAs = TRUE;
@@ -673,6 +706,22 @@ static void ProcessMenu(int code)
             notepad(CurrentSaveFile, "hex");
             break;
 
+        case MNU_NOTEPAD_ASM:
+            notepad(CurrentSaveFile, "asm");
+            break;
+
+        case MNU_NOTEPAD_C:
+            notepad(CurrentSaveFile, "c");
+            break;
+
+        case MNU_NOTEPAD_H:
+            notepad(CurrentSaveFile, "h");
+            break;
+
+        case MNU_NOTEPAD_PAS:
+            notepad(CurrentSaveFile, "pas");
+            break;
+
         case MNU_NOTEPAD_LD:
             if(CheckSaveUserCancels()) break;
             notepad(CurrentSaveFile, "ld");
@@ -852,8 +901,8 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddUart(ELEM_UART_RECV));
             break;
 
-        case MNU_INSERT_UART_SEND_BUSY:
-            CHANGING_PROGRAM(AddUart(ELEM_UART_SEND_BUSY));
+        case MNU_INSERT_UART_SEND_READY:
+            CHANGING_PROGRAM(AddUart(ELEM_UART_SEND_READY));
             break;
 
         case MNU_INSERT_UART_RECV_AVAIL:
@@ -1089,6 +1138,10 @@ cmp:
             ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Soft-start-and-smooth-stop-of-LED-with-software-PWM",NULL,NULL,SW_SHOWNORMAL);
             break;
 
+        case MNU_PROCESSOR_NEW:
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE",NULL,NULL,SW_SHOWNORMAL);
+            break;
+
         case MNU_COMPILE_IHEXDONE:
     Error(
 " "
@@ -1115,6 +1168,10 @@ cmp:
 
         case MNU_ABOUT:
             ShowHelpDialog(TRUE);
+            break;
+
+        case MNU_HOW:
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_FORUM:

@@ -271,8 +271,8 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name1, IntCode[i].name2);
                 break;
 
-            case INT_UART_SEND_BUSY:
-                fprintf(f, "'%s' = is uart busy to send ?",
+            case INT_UART_SEND_READY:
+                fprintf(f, "'%s' = is uart ready to send ?",
                     IntCode[i].name1);
                 break;
 
@@ -963,14 +963,13 @@ static void InitTablesCircuit(int which, void *elem)
         case ELEM_16SEG: nameTable = "char16seg"; goto xseg;
         xseg:
             if(!IsNumber(l->d.segments.src)) {
-                        sovElement = 1;
-                        if((isVarInited(nameTable) < 0)) {
-                            Op(INT_FLASH_INIT,nameTable,NULL,NULL, LEN7SEG, sovElement, char7seg);
-                            MarkInitedVariable(nameTable);
-                        } else {
-                            Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable, LEN7SEG);
-                        }
-
+                 sovElement = 1;
+                 if((isVarInited(nameTable) < 0)) {
+                     Op(INT_FLASH_INIT,nameTable,NULL,NULL, LEN7SEG, sovElement, char7seg);
+                     MarkInitedVariable(nameTable);
+                 } else {
+                     Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable, LEN7SEG);
+                 }
             }
             break;
         }
@@ -1251,14 +1250,13 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             char antiGlitchName[MAX_NAME_LEN];
             sprintf(antiGlitchName, "$%s_antiglitch", l->d.timer.name);
             Op(INT_IF_BIT_CLEAR, antiGlitchName);
+              Op(INT_SET_BIT, antiGlitchName);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             Op(INT_END_IF);
-            Op(INT_SET_BIT, antiGlitchName);
 
             Op(INT_IF_BIT_CLEAR, stateInOut);
 
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
                 Op(INT_SET_BIT, stateInOut);
               Op(INT_END_IF);
@@ -1759,6 +1757,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_BUS: {
             break;
         }
+
         case ELEM_BIN2BCD: {
             break;
         }
@@ -1866,6 +1865,19 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 Op(INT_END_IF);
                 break;
 
+            case ELEM_UART_RECV_AVAIL:
+                Comment(3, "ELEM_UART_RECV_AVAIL");
+                //Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_UART_RECV_AVAIL, stateInOut);
+                //Op(INT_END_IF);
+                break;
+
+            case ELEM_UART_SEND_READY:
+                Comment(3, "ELEM_UART_SEND_READY");
+                //Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_UART_SEND_READY, stateInOut);
+                //Op(INT_END_IF);
+                break;
         }
         case ELEM_SET_BIT:
         case ELEM_CLEAR_BIT:
@@ -1960,6 +1972,7 @@ math:   {
             Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
             break;
         }
+
         case ELEM_LOOK_UP_TABLE: {
             Comment(3, "ELEM_LOOK_UP_TABLE");
             // God this is stupid; but it will have to do, at least until I
@@ -1976,6 +1989,7 @@ math:   {
             Op(INT_END_IF);
             break;
         }
+
         case ELEM_PIECEWISE_LINEAR: {
             Comment(3, "ELEM_PIECEWISE_LINEAR");
             // This one is not so obvious; we have to decide how best to
@@ -2220,8 +2234,8 @@ math:   {
                     Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
                 Op(INT_END_IF);
                 */
-                Op(INT_UART_SEND_BUSY, "$scratch");
-                Op(INT_IF_BIT_SET, "$scratch");
+                Op(INT_UART_SEND_READY, "$scratch");
+                Op(INT_IF_BIT_CLEAR, "$scratch");
                     Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
                 Op(INT_END_IF);
             Op(INT_END_IF);
@@ -2548,19 +2562,37 @@ BOOL UartFunctionUsed(void)
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
         ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_UART_SEND_BUSY, ELEM_UART_RECV_AVAIL, -1)))
+            ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
             return TRUE;
     }
 
     for(i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_SEND)
-        || (IntCode[i].op == INT_UART_SEND_BUSY)
+        || (IntCode[i].op == INT_UART_SEND_READY)
         || (IntCode[i].op == INT_UART_RECV_AVAIL)
         || (IntCode[i].op == INT_UART_RECV))
             return TRUE;
     }
     return FALSE;
 }
+
+//-----------------------------------------------------------------------------
+BOOL Bin32BcdRoutineUsed(void)
+{
+    int i;
+    for(i = 0; i < IntCodeLen; i++){
+        if((IntCode[i].op == INT_SET_BIN2BCD)
+        #ifdef NEW_FEATURE
+        //|| (IntCode[i].op == INT_UART_SEND_READY)
+        #endif
+        ) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+
 
 //-----------------------------------------------------------------------------
 // Are either of the MultiplyRoutine functions used?

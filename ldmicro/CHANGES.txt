@@ -1,14 +1,33 @@
+== Release 4.0.8
+
+    * Fixed: AUTO_PAGING version 4.1 for PIC's.
+
+    * Fixed: HEX is not created if a compilation error occurs.
+
+    * HOW TO: Two three phase sine wave based on the hardware PWM
+      https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Two-three-phase-sine-wave-based-on-the-hardware-PWM
+
+    * HOW TO: RF (315MHz, 418MHz, 433MHz, 915MHz) modules with PIC's and AVR's
+      https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-RF-(315MHz,-418MHz,-433MHz,-915MHz)-modules-with-PIC's-and-AVR's
+
+    * New: Added elements
+      UART SEND: Is ready ? Output is 1 when transmit buffer is empty and ready to loading new data.
+      UART RECV: Is avail ? Output is 1 when there are unread data in the receive buffer.
+
+0009|| ; Rung 10 and 11 are equivalent.                                 ||
+    ||                                                                  ||
+    ||    Is ready?           char                                      ||
+0010||---[UART SEND]------{UART SEND}---                                ||
+    ||                                                                  ||
+    ||      Rbusy            char                            Rbusy      ||
+0011||-------]/[----------{UART SEND}-------------------------( )-------||
+    ||                                                                  ||
+
 == Release 4.0.7
+
     * HotFix: Bug in releases 4.0.5 - 4.0.6 with AVR ports ottputs.
 
     * Added: Atmega2560 can genarate 12 hardware PWM's.
-
-      HOW TO: Two three phase sine wave based on the hardware PWM
-      https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Two-three-phase-sine-wave-based-on-the-hardware-PWM
-
-    * New: Added elements
-      UART SEND: Is busy ? Output is 1 when send data currently present in the transmit buffer.
-      UART RECV: Is avail ? Output is 1 when there are unread data in the receive buffer.
 
 == Release 4.0.6
 

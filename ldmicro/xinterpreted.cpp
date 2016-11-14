@@ -41,43 +41,43 @@ static int PlcIos_size = 0;
 
 int PlcIos_AppendAndGet(char *name)
 {
-	for (int i = 0; i < PlcIos_size; i++) {
-		if (strcmp(PlcIos[i], name) ==0) return i;
-	}
-	
-	if (PlcIos_size == MAX_PLCIO) return -1;
-	PlcIos[PlcIos_size++] = name;
-	return PlcIos_size - 1;
+    for (int i = 0; i < PlcIos_size; i++) {
+        if (strcmp(PlcIos[i], name) ==0) return i;
+    }
+
+    if (PlcIos_size == MAX_PLCIO) return -1;
+    PlcIos[PlcIos_size++] = name;
+    return PlcIos_size - 1;
 }
 
 static int CheckRange(int value, char *name)
 {
-	if (value < 0 || value > 255) {
-		char msg[80];
-		sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
-		Error(msg);
-	}
+    if (value < 0 || value > 255) {
+        char msg[80];
+        sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
+        Error(msg);
+    }
 
-	return value;
+    return value;
 }
 
 static BYTE GetArduinoPinNumber(int pin)
 {
-	for (int i = 0; i < Prog.mcu->pinCount; i++) {
-		if (Prog.mcu->pinInfo[i].pin == pin)
-			return Prog.mcu->pinInfo[i].ArduinoPin;
-	}
-	return 0;
+    for (int i = 0; i < Prog.mcu->pinCount; i++) {
+        if (Prog.mcu->pinInfo[i].pin == pin)
+            return Prog.mcu->pinInfo[i].ArduinoPin;
+    }
+    return 0;
 }
 
 static BYTE AddrForBit(char *name)
 {
-	return CheckRange(PlcIos_AppendAndGet(name), name);
+    return CheckRange(PlcIos_AppendAndGet(name), name);
 }
 
 static BYTE AddrForVariable(char *name)
 {
-	return CheckRange(PlcIos_AppendAndGet(name), name);
+    return CheckRange(PlcIos_AppendAndGet(name), name);
 }
 
 void CompileXInterpreted(char *outFile)
@@ -88,13 +88,13 @@ void CompileXInterpreted(char *outFile)
         return;
     }
 
-	// Preload physical IOs in the table
-	PlcIos_size = 0;
+    // Preload physical IOs in the table
+    PlcIos_size = 0;
 
-	for (int i = 0; i < Prog.io.count; i++) {
-		PlcProgramSingleIo io = Prog.io.assignment[i];
-		PlcIos[PlcIos_size++] = Prog.io.assignment[i].name;
-	}
+    for (int i = 0; i < Prog.io.count; i++) {
+        PlcProgramSingleIo io = Prog.io.assignment[i];
+        PlcIos[PlcIos_size++] = Prog.io.assignment[i].name;
+    }
 
     int ipc;
     int outPc;
@@ -115,73 +115,73 @@ void CompileXInterpreted(char *outFile)
         switch(IntCode[ipc].op) {
             case INT_CLEAR_BIT:
             case INT_SET_BIT:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
-				OutProg[outPc++] = AddrForBit(IntCode[ipc].name2);
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
+                OutProg[outPc++] = AddrForBit(IntCode[ipc].name2);
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-				OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
-				OutProg[outPc++] = IntCode[ipc].literal >> 8;
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
+                OutProg[outPc++] = IntCode[ipc].literal >> 8;
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-				OutProg[outPc++] = IntCode[ipc].op; 
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
                 break;
 
             case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
                 break;
 
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_DIVIDE:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name3);
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name3);
                 break;
 
-			case INT_SET_PWM:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-				OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
-				OutProg[outPc++] = IntCode[ipc].literal >> 8;
-				break;
+            case INT_SET_PWM:
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
+                OutProg[outPc++] = IntCode[ipc].literal >> 8;
+                break;
 
-			case INT_READ_ADC:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-				break;
+            case INT_READ_ADC:
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                break;
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
                 goto finishIf;
             case INT_IF_VARIABLE_LES_LITERAL:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-				OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
-				OutProg[outPc++] = IntCode[ipc].literal >> 8;
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
+                OutProg[outPc++] = IntCode[ipc].literal >> 8;
                 goto finishIf;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
-				OutProg[outPc++] = IntCode[ipc].op;
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-				OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
+                OutProg[outPc++] = IntCode[ipc].op;
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
                 goto finishIf;
 finishIf:
                 ifOpIf[ifDepth] = outPc++;
@@ -191,8 +191,8 @@ finishIf:
                 break;
 
             case INT_ELSE:
-				OutProg[outPc++] = IntCode[ipc].op;
-				ifOpElse[ifDepth-1] = outPc++;
+                OutProg[outPc++] = IntCode[ipc].op;
+                ifOpElse[ifDepth-1] = outPc++;
                 // jump target will be filled in later
                 break;
 
@@ -245,6 +245,8 @@ finishIf:
             case INT_EEPROM_WRITE:
             case INT_UART_SEND:
             case INT_UART_RECV:
+            case INT_UART_SEND_READY:
+            case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
                 Error(_("Unsupported op (anything UART, EEPROM, SFR..) for "
@@ -254,30 +256,30 @@ finishIf:
         }
     }
 
-	OutProg[outPc++] = INT_END_OF_PROGRAM;
+    OutProg[outPc++] = INT_END_OF_PROGRAM;
 
-	// Create a map of io and internal variables
-	// $$IO nb_named_IO total_nb_IO
-	fprintf(f, "$$IO %d %d\n", Prog.io.count, PlcIos_size);
+    // Create a map of io and internal variables
+    // $$IO nb_named_IO total_nb_IO
+    fprintf(f, "$$IO %d %d\n", Prog.io.count, PlcIos_size);
 
-	for (int i = 0; i < Prog.io.count; i++) {
-		PlcProgramSingleIo io = Prog.io.assignment[i];
-		fprintf(f, "%2d %10s %2d %2d %2d %05d\n",
-			i, io.name, io.type,
-			GetArduinoPinNumber(io.pin),
-			io.modbus.Slave, io.modbus.Address);
-	}
+    for (int i = 0; i < Prog.io.count; i++) {
+        PlcProgramSingleIo io = Prog.io.assignment[i];
+        fprintf(f, "%2d %10s %2d %2d %2d %05d\n",
+            i, io.name, io.type,
+            GetArduinoPinNumber(io.pin),
+            io.modbus.Slave, io.modbus.Address);
+    }
 
-	// $$LDcode program_size
-	fprintf(f, "$$LDcode %d\n", outPc);
+    // $$LDcode program_size
+    fprintf(f, "$$LDcode %d\n", outPc);
     for(int i = 0; i < outPc; i++) {
         fprintf(f, "%02X", OutProg[i]);
-		if ( (i % 16) == 15 || i == outPc-1) fprintf(f, "\n");
+        if ( (i % 16) == 15 || i == outPc-1) fprintf(f, "\n");
     }
 
     fprintf(f, "$$cycle %d us\n", Prog.cycleTime);
 
-	fclose(f);
+    fclose(f);
 
     char str[MAX_PATH+500];
     sprintf(str,

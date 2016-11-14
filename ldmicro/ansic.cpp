@@ -220,7 +220,7 @@ static void GenerateDeclarations(FILE *f)
                 break;
 
             case INT_UART_RECV_AVAIL:
-            case INT_UART_SEND_BUSY:
+            case INT_UART_SEND_READY:
                 bitVar1 = IntCode[i].name1;
                 break;
 
@@ -451,10 +451,12 @@ static void GenerateAnsiC(FILE *f)
 
             case INT_UART_RECV_AVAIL:
                 fprintf(f, "// %s = UART_Receive_Avail();\n",  MapSym(IntCode[i].name1, ASBIT));
+                indent++;
                 break;
 
-            case INT_UART_SEND_BUSY:
-                fprintf(f, "// %s = UART_Transmit_Busy();\n", MapSym(IntCode[i].name1, ASBIT));
+            case INT_UART_SEND_READY:
+                fprintf(f, "// %s = UART_Transmit_Ready();\n", MapSym(IntCode[i].name1, ASBIT));
+                indent++;
                 break;
 
             case INT_WRITE_STRING:

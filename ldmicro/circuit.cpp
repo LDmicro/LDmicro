@@ -1299,6 +1299,22 @@ int CountWhich(int seek1)
     return CountWhich(seek1, -1, -1, NULL);
 }
 
+BOOL TablesUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
+        || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
+        || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_14SEG, ELEM_16SEG, -1))
+        ) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
 /* function moved to intcode.cpp
 //-----------------------------------------------------------------------------
 // Are either of the UART functions (send or recv) used? Need to know this
@@ -1311,7 +1327,7 @@ BOOL UartFunctionUsed(void)
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
         ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_UART_UDRE, -1, -1)))
+            ELEM_UART_SEND_READY, -1, -1)))
         {
             return TRUE;
         }

@@ -568,7 +568,7 @@ finishIf:
             case INT_UART_SEND:
             case INT_UART_RECV:
             case INT_UART_RECV_AVAIL:
-            case INT_UART_SEND_BUSY:
+            case INT_UART_SEND_READY:
             default:
                 Error(_("Unsupported op (anything ADC, PWM, UART, EEPROM) for "
                     "Netzer target."));
