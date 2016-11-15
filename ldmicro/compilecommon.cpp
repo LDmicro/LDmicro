@@ -228,6 +228,9 @@ DWORD AllocOctetRam(int bytes) // The desired number of bytes.
     if(!Prog.mcu)
         return 0;
 
+    if(Prog.mcu->whichIsa > ISA_HARDWARE)
+        return 0;
+
     if((MemOffset + bytes) >= Prog.mcu->ram[RamSection].len) {
         RamSection++;
         MemOffset = 0;

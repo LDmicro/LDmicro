@@ -974,14 +974,17 @@ void ShowIoDialog(int item)
         case IO_TYPE_PERSIST:
         case IO_TYPE_BCD:
         case IO_TYPE_STRING:
-        case IO_TYPE_RTO:
         case IO_TYPE_COUNTER:
         case IO_TYPE_UART_TX:
         case IO_TYPE_UART_RX:
         case IO_TYPE_TCY:
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
+        case IO_TYPE_RTO:
             ShowSizeOfVarDialog(&Prog.io.assignment[item]);
+            return;
+        case IO_TYPE_INTERNAL_RELAY:
+            // nothing;
             return;
     }
     if(!Prog.mcu) {
@@ -990,6 +993,27 @@ void ShowIoDialog(int item)
             "microcontroller before you can assign I/O pins.\r\n\r\n"
             "Select a microcontroller under the Settings menu and try "
             "again."), _("I/O Pin Assignment"), MB_OK | MB_ICONWARNING);
+        return;
+    }
+
+    if(Prog.mcu->whichIsa > ISA_HARDWARE) {
+        if(Prog.io.assignment[item].pin) {
+            int i;
+            for(i = 0; i < IoSeenPreviouslyCount; i++) {
+                if(strcmp(IoSeenPreviously[i].name,
+                    Prog.io.assignment[item].name)==0)
+                {
+                    IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
+                }
+            }
+            Prog.io.assignment[item].pin = NO_PIN_ASSIGNED;
+            return;
+        }
+    }
+
+    if(Prog.mcu->whichIsa == ISA_ANSIC) {
+        Error(_("Can't specify I/O assignment for ANSI C target; compile and "
+            "see comments in generated source code."));
         return;
     }
 
@@ -1327,6 +1351,8 @@ void IoListProc(NMHDR *h)
                 }
 
                 case LV_IO_PIN:
+                case LV_IO_PORT:
+                case LV_IO_PINNAME: {
                     // Don't confuse people by displaying bogus pin assignments
                     // for the target.
                     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_NETZER ||
@@ -1336,21 +1362,15 @@ void IoListProc(NMHDR *h)
                         strcpy(i->item.pszText, "");
                         break;
                     }
-
-                    PinNumberForIo(i->item.pszText,
-                        &(Prog.io.assignment[item]));
-                    break;
-
-                case LV_IO_PORT:
-                case LV_IO_PINNAME: {
-                    char pin[MAX_NAME_LEN];
                     char poptName[MAX_NAME_LEN];
                     char pinName[MAX_NAME_LEN];
-                    PinNumberForIo(pin,
+
+                    PinNumberForIo(i->item.pszText, // i->item.iSubItem == LV_IO_PIN
                         &(Prog.io.assignment[item]), poptName, pinName);
+
                     if(i->item.iSubItem == LV_IO_PORT)
                         strcpy(i->item.pszText, poptName);
-                    else
+                    else if(i->item.iSubItem == LV_IO_PINNAME)
                         strcpy(i->item.pszText, pinName);
                     break;
                 }

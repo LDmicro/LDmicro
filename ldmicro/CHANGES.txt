@@ -1,3 +1,9 @@
+== Release 4.0.10
+
+    * Fixed: EEPROM reading 'Empty variable name' message.
+
+    * Fixed: Messagae "RAM: Out of memory; ...") for non hardware MCU.
+
 == Release 4.0.9
 
     * Fixed: AUTO_PAGING version 4.1 for PIC's.

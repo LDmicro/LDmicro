@@ -1289,8 +1289,9 @@ void SimulateOneCycle(BOOL forceRefresh)
         if((updateWindow == 0) && (forceRefresh == FALSE)) {
             UpdateWindow(MainWindow);
             updateWindow--;
-        } else
+        } else {
             InvalidateRect(MainWindow, NULL, FALSE);
+        }
         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
         RefreshStatusBar();
     }

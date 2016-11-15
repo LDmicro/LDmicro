@@ -858,11 +858,12 @@ typedef struct McuInterruptPinInfoTag {
     int     pin;
 } McuInterruptPinInfo;
 
-#define ISA_AVR             0x04
 #define ISA_PIC16           0x01
-#define ISA_ANSIC           0x02
-#define ISA_INTERPRETED     0x03
-#define ISA_AVR1            ISA_AVR // 0x04
+#define ISA_AVR             0x02
+#define ISA_AVR1            ISA_AVR
+#define ISA_HARDWARE        ISA_AVR
+#define ISA_ANSIC           0x03
+#define ISA_INTERPRETED     0x04
 #define ISA_NETZER          0x05
 #define ISA_PASCAL          0x06
 #define ISA_ARDUINO         0x07
@@ -969,6 +970,8 @@ char *ExtractFileName(char *src); // with .ext
 char *GetFileName(char *dest, char *src); // without .ext
 char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
+long int fsize(FILE *fp);
+long int fsize(char filename);
 
 // maincontrols.cpp
 void MakeMainWindowControls(void);

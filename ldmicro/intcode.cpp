@@ -239,7 +239,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_EEPROM_READ:{
-                int sov = SizeOfVar(IntCode[i].name2);
+                int sov = SizeOfVar(IntCode[i].name1);
                 if(sov == 1)
                     fprintf(f, "read EEPROM[%d] into '%s'",
                         IntCode[i].literal, IntCode[i].name1);
@@ -249,6 +249,9 @@ void IntDumpListing(char *outFile)
                 else if(sov == 3)
                     fprintf(f, "read EEPROM[%d,%d+1,%d+2] into '%s'",
                         IntCode[i].literal, IntCode[i].literal, IntCode[i].literal, IntCode[i].name1);
+                else if(sov == 4)
+                    fprintf(f, "read EEPROM[%d,%d+1,%d+2,%d+3] into '%s'",
+                        IntCode[i].literal, IntCode[i].literal, IntCode[i].literal, IntCode[i].literal, IntCode[i].name1);
                 else oops();
                 break;
             }
@@ -263,6 +266,9 @@ void IntDumpListing(char *outFile)
                 else if(sov == 3)
                     fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2]",
                         IntCode[i].name1, IntCode[i].literal, IntCode[i].literal, IntCode[i].literal);
+                else if(sov == 4)
+                    fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2,%d+3]",
+                        IntCode[i].name1, IntCode[i].literal, IntCode[i].literal, IntCode[i].literal, IntCode[i].literal);
                 else oops();
                 break;
             }
