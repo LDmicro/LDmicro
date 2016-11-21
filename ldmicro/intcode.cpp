@@ -239,7 +239,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_EEPROM_READ:{
-                int sov = SizeOfVar(IntCode[i].name2);
+                int sov = SizeOfVar(IntCode[i].name1);
                 if(sov == 1)
                     fprintf(f, "read EEPROM[%d] into '%s'",
                         IntCode[i].literal, IntCode[i].name1);
@@ -249,6 +249,9 @@ void IntDumpListing(char *outFile)
                 else if(sov == 3)
                     fprintf(f, "read EEPROM[%d,%d+1,%d+2] into '%s'",
                         IntCode[i].literal, IntCode[i].literal, IntCode[i].literal, IntCode[i].name1);
+                else if(sov == 4)
+                    fprintf(f, "read EEPROM[%d,%d+1,%d+2,%d+3] into '%s'",
+                        IntCode[i].literal, IntCode[i].literal, IntCode[i].literal, IntCode[i].literal, IntCode[i].name1);
                 else oops();
                 break;
             }
@@ -263,6 +266,9 @@ void IntDumpListing(char *outFile)
                 else if(sov == 3)
                     fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2]",
                         IntCode[i].name1, IntCode[i].literal, IntCode[i].literal, IntCode[i].literal);
+                else if(sov == 4)
+                    fprintf(f, "write '%s' into EEPROM[%d,%d+1,%d+2,%d+3]",
+                        IntCode[i].name1, IntCode[i].literal, IntCode[i].literal, IntCode[i].literal, IntCode[i].literal);
                 else oops();
                 break;
             }
@@ -1767,6 +1773,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         }
 
         case ELEM_SWAP: {
+            Comment(3, "ELEM_SWAP");
             break;
         }
 
@@ -1827,19 +1834,23 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                         Op(INT_SET_BIT, isInit);
                         Op(INT_EEPROM_READ, l->d.persist.var, EepromAddrFree);
                     Op(INT_END_IF);
-                Op(INT_END_IF);
-
-                // While running, continuously compare the EEPROM copy of
-                // the variable against the RAM one; if they are different,
-                // write the RAM one to EEPROM.
-                Op(INT_CLEAR_BIT, "$scratch");
-                Op(INT_EEPROM_BUSY_CHECK, "$scratch");
-                Op(INT_IF_BIT_CLEAR, "$scratch");
-                    Op(INT_EEPROM_READ, "$scratch", EepromAddrFree);
-                    Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch",
-                        l->d.persist.var);
-                    Op(INT_ELSE);
-                        Op(INT_EEPROM_WRITE, l->d.persist.var, EepromAddrFree);
+                Op(INT_ELSE);
+                    // While running, continuously compare the EEPROM copy of
+                    // the variable against the RAM one; if they are different,
+                    // write the RAM one to EEPROM.
+                    Op(INT_CLEAR_BIT, "$scratch");
+                    Op(INT_EEPROM_BUSY_CHECK, "$scratch");
+                    Op(INT_IF_BIT_CLEAR, "$scratch");
+                        Op(INT_EEPROM_READ, "$tmpVar24bit", EepromAddrFree);
+                        #ifdef USE_CMP
+                        Op(INT_IF_VARIABLE_NEQ_VARIABLE, "$tmpVar24bit", l->d.persist.var);
+                        #else
+                        Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$tmpVar24bit",
+                            l->d.persist.var);
+                        Op(INT_ELSE);
+                        #endif
+                            Op(INT_EEPROM_WRITE, l->d.persist.var, EepromAddrFree);
+                        Op(INT_END_IF);
                     Op(INT_END_IF);
                 Op(INT_END_IF);
 

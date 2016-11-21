@@ -88,6 +88,16 @@ static void AppendIo(char *IOname, int type)
         return;
     char name[MAX_NAME_LEN];
     strcpy(name, IOname);
+
+    if(name[0] == '#') {
+       if(strspn(IOname, "#PORT") == 5)
+           type = IO_TYPE_PORT_OUTPUT;
+       else if(strspn(IOname, "#PIN") == 4)
+           type = IO_TYPE_PORT_INPUT;
+       else
+           type = IO_TYPE_MCU_REG;
+    }
+
     SetVariableType(name, type);
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -173,44 +183,6 @@ static void AppendIoAutoType(char *name, int default_type)
     AppendIo(name, type);
 }
 
-static void AppendIoAutoTypePortGeneral(char *name)
-{
-    if(name[0] == '#')
-        AppendIo(name, IO_TYPE_PORT_OUTPUT);
-    else
-        AppendIoAutoType(name, IO_TYPE_GENERAL);
-}
-
-static void AppendIoAutoTypePinGeneral(char *name)
-{
-    if(name[0] == '#')
-        AppendIo(name, IO_TYPE_PORT_INPUT);
-    else
-        AppendIoAutoType(name, IO_TYPE_GENERAL);
-}
-
-//-----------------------------------------------------------------------------
-/*
-static void ExtractPortsFromMcu()
-{
-    char str[MAX_NAME_LEN];
-    if(Prog.mcu) {
-        int i;
-        for(i=0; i<MAX_IO_PORTS; i++) {
-            if((Prog.mcu->inputRegs[i] != 0) && (Prog.mcu->inputRegs[i] != 0xff)) {
-                 sprintf(str,"%s%c", "#PIN", 'A'+i);
-                 AppendIo(str, IO_TYPE_PORT_INPUT);
-
-            }
-            if((Prog.mcu->outputRegs[i] != 0) && (Prog.mcu->outputRegs[i] != 0xff)) {
-                 sprintf(str,"%s%c", "#PORT", 'A'+i);
-                 AppendIo(str, IO_TYPE_PORT_OUTPUT);
-
-            }
-        }
-    }
-}
-*/
 //-----------------------------------------------------------------------------
 // Walk a subcircuit, calling ourselves recursively and extracting all the
 // I/O names out of it.
@@ -395,27 +367,29 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_BIN2BCD:
             AppendIo(l->d.move.dest, IO_TYPE_BCD);
             if(CheckForNumber(l->d.move.src) == FALSE) {
-                AppendIoAutoTypePinGeneral(l->d.move.src);
+                AppendIo(l->d.move.src, IO_TYPE_GENERAL);
             }
             break;
 
         case ELEM_BCD2BIN:
-            AppendIoAutoTypePinGeneral(l->d.move.dest);
+            AppendIo(l->d.move.dest, IO_TYPE_GENERAL);
             if(CheckForNumber(l->d.move.src) == FALSE) {
-            AppendIo(l->d.move.src, IO_TYPE_BCD);
+                AppendIo(l->d.move.src, IO_TYPE_BCD);
             }
             break;
 
         case ELEM_SWAP:
         case ELEM_BUS:
         case ELEM_MOVE:
-            AppendIoAutoTypePortGeneral(l->d.move.dest);
+            AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
+            /*
             if(CheckForNumber(l->d.move.src) == FALSE) {
                 // Not need ???
                 // Need if you add only one MOV or get erroneously other src name
                 // then you can see l->d.move.src in IOlist
-                AppendIoAutoTypePinGeneral(l->d.move.src);
+                AppendIoAutoType(l->d.move.src, IO_TYPE_GENERAL);
             }
+            */
             break;
         {
         int n;
@@ -425,7 +399,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_14SEG:nameTable = "char14seg"; n = LEN14SEG; goto xseg;
         case ELEM_16SEG:nameTable = "char16seg"; n = LEN16SEG; goto xseg;
         xseg:
-            AppendIoAutoTypePortGeneral(l->d.segments.dest);
+            AppendIoAutoType(l->d.segments.dest, IO_TYPE_GENERAL);
             /*
             if (CheckForNumber(l->d.segments.src) == FALSE) {
                 AppendIo(l->d.segments.src, IO_TYPE_GENERAL); // not need ???
@@ -442,12 +416,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_SET_BIT     :
         case ELEM_CLEAR_BIT   :
-            AppendIoAutoTypePortGeneral(l->d.move.dest);
             break;
 
         case ELEM_IF_BIT_SET  :
         case ELEM_IF_BIT_CLEAR:
-            AppendIoAutoTypePinGeneral(l->d.move.dest);
             break;
 
         case ELEM_SHL:
@@ -513,7 +485,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.counter.name, IO_TYPE_COUNTER);
             if(CheckForNumber(l->d.counter.max) == FALSE) {
                 // Not need ??? See ELEM_MOV
-                AppendIoAutoTypePinGeneral(l->d.counter.max);
+                AppendIoAutoType(l->d.counter.max, IO_TYPE_GENERAL);
             }
             break;
 
@@ -970,18 +942,23 @@ void ShowIoDialog(int item)
     switch(type) {
         case IO_TYPE_PORT_INPUT :
         case IO_TYPE_PORT_OUTPUT:
+        case IO_TYPE_MCU_REG:
+// //       return; // used for set value of port
         case IO_TYPE_GENERAL:
         case IO_TYPE_PERSIST:
         case IO_TYPE_BCD:
         case IO_TYPE_STRING:
-        case IO_TYPE_RTO:
         case IO_TYPE_COUNTER:
         case IO_TYPE_UART_TX:
         case IO_TYPE_UART_RX:
         case IO_TYPE_TCY:
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
+        case IO_TYPE_RTO:
             ShowSizeOfVarDialog(&Prog.io.assignment[item]);
+            return;
+        case IO_TYPE_INTERNAL_RELAY:
+            // nothing;
             return;
     }
     if(!Prog.mcu) {
@@ -990,6 +967,27 @@ void ShowIoDialog(int item)
             "microcontroller before you can assign I/O pins.\r\n\r\n"
             "Select a microcontroller under the Settings menu and try "
             "again."), _("I/O Pin Assignment"), MB_OK | MB_ICONWARNING);
+        return;
+    }
+
+    if(Prog.mcu->whichIsa > ISA_HARDWARE) {
+        if(Prog.io.assignment[item].pin) {
+            int i;
+            for(i = 0; i < IoSeenPreviouslyCount; i++) {
+                if(strcmp(IoSeenPreviously[i].name,
+                    Prog.io.assignment[item].name)==0)
+                {
+                    IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
+                }
+            }
+            Prog.io.assignment[item].pin = NO_PIN_ASSIGNED;
+            return;
+        }
+    }
+
+    if(Prog.mcu->whichIsa == ISA_ANSIC) {
+        Error(_("Can't specify I/O assignment for ANSI C target; compile and "
+            "see comments in generated source code."));
         return;
     }
 
@@ -1327,6 +1325,10 @@ void IoListProc(NMHDR *h)
                 }
 
                 case LV_IO_PIN:
+                case LV_IO_PORT:
+                case LV_IO_PINNAME: {
+                    if(!Prog.mcu)
+                         break;
                     // Don't confuse people by displaying bogus pin assignments
                     // for the target.
                     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_NETZER ||
@@ -1336,21 +1338,15 @@ void IoListProc(NMHDR *h)
                         strcpy(i->item.pszText, "");
                         break;
                     }
-
-                    PinNumberForIo(i->item.pszText,
-                        &(Prog.io.assignment[item]));
-                    break;
-
-                case LV_IO_PORT:
-                case LV_IO_PINNAME: {
-                    char pin[MAX_NAME_LEN];
                     char poptName[MAX_NAME_LEN];
                     char pinName[MAX_NAME_LEN];
-                    PinNumberForIo(pin,
+
+                    PinNumberForIo(i->item.pszText, // i->item.iSubItem == LV_IO_PIN
                         &(Prog.io.assignment[item]), poptName, pinName);
+
                     if(i->item.iSubItem == LV_IO_PORT)
                         strcpy(i->item.pszText, poptName);
-                    else
+                    else if(i->item.iSubItem == LV_IO_PINNAME)
                         strcpy(i->item.pszText, pinName);
                     break;
                 }
@@ -1376,10 +1372,13 @@ void IoListProc(NMHDR *h)
                 }
 
                 case LV_IO_RAM_ADDRESS: {
+                    if(!Prog.mcu)
+                         break;
                     DWORD addr = 0;
                     int bit = 0;
-                    if((type == IO_TYPE_PORT_INPUT      )
-                    || (type == IO_TYPE_PORT_OUTPUT     )
+                    if((type == IO_TYPE_PORT_INPUT)
+                    || (type == IO_TYPE_PORT_OUTPUT)
+                    || (type == IO_TYPE_MCU_REG)
                     ) {
                             MemForVariable(name, &addr);
                             if(addr)
@@ -1397,7 +1396,8 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_COUNTER)
                     ) {
                             MemForVariable(name, &addr);
-                            sprintf(i->item.pszText, "0x%x", addr);
+                            if(addr)
+                                sprintf(i->item.pszText, "0x%x", addr);
                     } else
                     if((type == IO_TYPE_INTERNAL_RELAY)
                     ) {
@@ -1441,6 +1441,7 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_PERSIST         )
                     || (type == IO_TYPE_PORT_INPUT      )
                     || (type == IO_TYPE_PORT_OUTPUT     )
+                    || (type == IO_TYPE_MCU_REG         )
                     || (type == IO_TYPE_BCD             )
                     || (type == IO_TYPE_STRING          )
                     || (type == IO_TYPE_COUNTER         )
@@ -1491,6 +1492,7 @@ void IoListProc(NMHDR *h)
                     case IO_TYPE_UART_RX:
                     case IO_TYPE_PORT_INPUT:
                     case IO_TYPE_PORT_OUTPUT:
+                    case IO_TYPE_MCU_REG:
                     case IO_TYPE_TCY:
                     case IO_TYPE_TON:
                     case IO_TYPE_TOF: {

@@ -363,6 +363,7 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_READ_ADC:          return _("adc input");
         case IO_TYPE_PORT_INPUT:        return _("PORT input");
         case IO_TYPE_PORT_OUTPUT:       return _("PORT output");
+        case IO_TYPE_MCU_REG:           return _("MCU register");
         default:                        return _("<corrupt!>");
     }
 }
@@ -383,6 +384,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     if(pinName)
         strcpy(pinName, "");
 
+    if(!Prog.mcu) return;
     if(!io) return;
 
     int type = io->type;
@@ -393,10 +395,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     {
         if(pin == NO_PIN_ASSIGNED) {
             strcpy(dest, _("(not assigned)"));
+            /*
             if(portName)
                 strcpy(portName, _("(not assigned)"));
             if(pinName)
                 strcpy(pinName, _("(not assigned)"));
+            */
         } else {
             sprintf(dest, "%d", pin);
             if(portName) {
@@ -467,10 +471,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     } else if(type == IO_TYPE_INT_INPUT && Prog.mcu) {
         if(Prog.mcu->interruptCount == 0) {
             strcpy(dest, _("<no INTs!>"));
+            /*
             if(portName)
                 strcpy(portName, _("<no INTs!>"));
             if(pinName)
                 strcpy(pinName, _("<no INTs!>"));
+            */
         } else {
             sprintf(dest, "%d", pin);
             iop = PinInfo(pin);
@@ -481,8 +487,10 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 if(iop->pinName)
                     sprintf(pinName, "%s", iop->pinName);
             } else
+                /*
                 if(portName)
                     strcpy(portName, _("<not an I/O!>"));
+                */
                 if(pinName)
                     strcpy(pinName, _("<not an I/O!>"));
             }
@@ -490,10 +498,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     } else if(type == IO_TYPE_UART_TX && Prog.mcu) {
         if(Prog.mcu->uartNeeds.txPin == 0) {
             strcpy(dest, _("<no UART!>"));
+            /*
             if(portName)
                 strcpy(portName, _("<no UART!>"));
             if(pinName)
                 strcpy(pinName, _("<no UART!>"));
+            */
         } else {
             sprintf(dest, "%d", Prog.mcu->uartNeeds.txPin);
             iop = PinInfo(Prog.mcu->uartNeeds.txPin);
@@ -505,8 +515,10 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     if(iop->pinName)
                         sprintf(pinName, "%s", iop->pinName);
             } else {
+                /*
                 if(portName)
                     strcpy(portName, _("<not an I/O!>"));
+                */
                 if(pinName)
                     strcpy(pinName, _("<not an I/O!>"));
             }
@@ -514,10 +526,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     } else if(type == IO_TYPE_UART_RX && Prog.mcu) {
         if(Prog.mcu->uartNeeds.rxPin == 0) {
             strcpy(dest, _("<no UART!>"));
+            /*
             if(portName)
                 strcpy(portName, _("<no UART!>"));
             if(pinName)
                 strcpy(pinName, _("<no UART!>"));
+            */
         } else {
             sprintf(dest, "%d", Prog.mcu->uartNeeds.rxPin);
             iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
@@ -529,8 +543,10 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     if(iop->pinName)
                         sprintf(pinName, "%s", iop->pinName);
             } else {
+                /*
                 if(portName)
                     strcpy(portName, _("<not an I/O!>"));
+                */
                 if(pinName)
                     strcpy(pinName, _("<not an I/O!>"));
             }
@@ -539,12 +555,13 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
 #if 1
         if(!McuPWM()) {
             strcpy(dest, _("<no PWM!>"));
+            /*
             if(portName)
                 strcpy(portName, _("<no PWM!>"));
             if(pinName)
                 strcpy(pinName, _("<no PWM!>"));
+            */
         } else {
-
             sprintf(dest, "%d", pin);
             iop = PinInfo(pin);
             if(iop) {
@@ -555,8 +572,10 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     if(iop->pinName)
                         sprintf(pinName, "%s", iop->pinName);
             } else {
+                /*
                 if(portName)
                     strcpy(portName, _("<not an I/O!>"));
+                */
                 if(pinName)
                     strcpy(pinName, _("<not an I/O!>"));
             }
@@ -782,3 +801,30 @@ char *strDelSpace(char *dest)
     return strDelSpace(dest, NULL);
 }
 
+char *strncpyn(char *s1, const char *s2, size_t n)
+{
+    if(!s1) oops();
+    if(s2) {
+        if(strlen(s2) < n) {
+            strcpy(s1, s2);
+        } else {
+            strncpy(s1, s2, n-1);
+            s1[n] = '\0';
+        }
+    }
+    return s1;
+}
+
+char *strncatn(char *s1, const char *s2, size_t n)
+{
+    if(!s1) oops();
+    if(s2) {
+        if((strlen(s1) + strlen(s2)) < n) {
+            strcat(s1, s2);
+        } else {
+            strncat(s1, s2, n-1-strlen(s1));
+            s1[n] = '\0';
+        }
+    }
+    return s1;
+}
