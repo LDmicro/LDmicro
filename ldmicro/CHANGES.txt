@@ -1,3 +1,25 @@
+== Release 4.0.A
+
+    * Fixed: EEPROM reading 'Empty variable name' message.
+
+    * Fixed: Messagae "RAM: Out of memory; ...") for non hardware MCU.
+
+    * New: Variable name that begins with symbol '#' like
+      #TRISA, #TRISB, #TRISC, ... treated as data direction register of corresponding ports
+      #PORTA, #PORTB, #PORTC, ...
+
+      Operation -{ MOV #TRISA, dest }- writes 8-bit value from
+      the variable 'dest' to the direction register of PORTA.
+
+      Setting a TRISx bit (= 1) will make the corresponding PORTx pin
+      an input (i.e., put the corresponding output driver in a Hi-Impedance mode).
+      Clearing a TRISx bit (= 0) will make the corresponding PORTx pin an output
+      (i.e., put the contents of the output latch on the selected pin).
+      Value of TRISx registers on MCU after RESET usually is 0b11111111(0xFF).
+
+    * HOW TO: Stopwatch4 over serial 7 segment LED displays
+      https://github.com/LDmicro/LDmicro/wiki/Stopwatch4-over-serial-7-segment-LED-displays
+
 == Release 4.0.9
 
     * Fixed: AUTO_PAGING version 4.1 for PIC's.
@@ -197,10 +219,11 @@
 
       Variable name that begins with symbol '#' like
       #PORTA, #PORTB, #PORTC, ... now treated as output port.
-      Operation -{ MOV #PINA, dest }- writes 8-bit value from
-      the variable 'dest' directly to the hardware pins of port A.
+      Operation -{ MOV #PORTA, src }- writes 8-bit value from
+      the variable 'src' directly to the hardware pins of port A.
       Note: The output mode pins of the port is not set automatically. You
-      must set it with operations COIL YPA0..7 (YRA0..7).
+      must set it with operations COIL(YPA0..7) or
+      with operations -{ MOV #TRISA, 0xFF }- .
 
     * Added:
       Bitwise operation: AND, OR, XOR, NOT.

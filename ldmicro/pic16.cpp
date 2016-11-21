@@ -129,6 +129,7 @@ static DWORD PicProgWriteP;
 static int IntPcNow = -INT_MAX; //must be static
 
 // Scratch variables, for temporaries
+static DWORD ScratchS;
 static DWORD Scratch0;
 static DWORD Scratch1;
 static DWORD Scratch2;
@@ -253,7 +254,7 @@ static DWORD REG_VRCON   = 0; // 0x9f
 //USART
 static DWORD REG_TXSTA   = 0; // 0x98
 #define          TXEN      BIT5
-#define          TRMT      BIT1 //1 = TSR empty = ready, 0 = TSR full
+#define          TRMT      BIT1 //1 is TSR empty, ready; 0 is TSR full
 static DWORD REG_RCSTA   = 0; // 0x18
 #define          SPEN      BIT7
 #define          CREN      BIT4
@@ -428,6 +429,7 @@ static int IsOperation(PicOp op)
         case OP_RRF:
         case OP_SUBWF:
         case OP_XORWF:
+        case OP_SWAPF:
         case OP_TRIS:
             return IS_BANK; // can need to change bank
         case OP_CLRWDT:
@@ -489,8 +491,8 @@ static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD
     if(op == OP_COMMENT_INT){
         if(comment) {
             if(strlen(PicProg[PicProgWriteP].commentInt))
-                strncat(PicProg[PicProgWriteP].commentInt, "\n    ; ", MAX_COMMENT_LEN);
-            strncat(PicProg[PicProgWriteP].commentInt, comment, MAX_COMMENT_LEN);
+                strncatn(PicProg[PicProgWriteP].commentInt, "\n    ; ", MAX_COMMENT_LEN);
+            strncatn(PicProg[PicProgWriteP].commentInt, comment, MAX_COMMENT_LEN);
         }
         return;
     }
@@ -502,7 +504,6 @@ static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD
         if((!IsCoreRegister(PicProg[PicProgWriteP-1].arg1))
         && (!IsCoreRegister(arg1))) {
             if(Bank(PicProg[PicProgWriteP-1].arg1) != Bank(arg1)) {
-                LOG(11)
                 PicOp op_ = PicProg[PicProgWriteP-1].opPic;
                 DWORD arg1_ = PicProg[PicProgWriteP-1].arg1;
                 DWORD arg2_ = PicProg[PicProgWriteP-1].arg2;
@@ -537,15 +538,15 @@ static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD
 
     if(args) {
         if(strlen(PicProg[PicProgWriteP].commentAsm))
-             strncat(PicProg[PicProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncat(PicProg[PicProgWriteP].commentAsm, "(", MAX_COMMENT_LEN);
-        strncat(PicProg[PicProgWriteP].commentAsm, args, MAX_COMMENT_LEN);
-        strncat(PicProg[PicProgWriteP].commentAsm, ")", MAX_COMMENT_LEN);
+            strncatn(PicProg[PicProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(PicProg[PicProgWriteP].commentAsm, "(", MAX_COMMENT_LEN);
+        strncatn(PicProg[PicProgWriteP].commentAsm, args, MAX_COMMENT_LEN);
+        strncatn(PicProg[PicProgWriteP].commentAsm, ")", MAX_COMMENT_LEN);
     }
     if(comment) {
         if(strlen(PicProg[PicProgWriteP].commentAsm))
-             strncat(PicProg[PicProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncat(PicProg[PicProgWriteP].commentAsm, comment, MAX_COMMENT_LEN);
+            strncatn(PicProg[PicProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(PicProg[PicProgWriteP].commentAsm, comment, MAX_COMMENT_LEN);
     }
     PicProg[PicProgWriteP].rung = rungNow;
     PicProg[PicProgWriteP].IntPc = IntPcNow;
@@ -579,8 +580,8 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DW
 
     if(comment) {
         if(strlen(PicProg[PicProgWriteP].commentAsm))
-             strncat(PicProg[PicProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncat(PicProg[PicProgWriteP].commentAsm, comment, MAX_COMMENT_LEN);
+            strncatn(PicProg[PicProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(PicProg[PicProgWriteP].commentAsm, comment, MAX_COMMENT_LEN);
     }
 
     _Instruction(l, f, args, op, arg1, arg2);
@@ -1396,7 +1397,7 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
             return 0x0000;
 
         case OP_RETLW:
-            CHECK2(arg1, -128, 127); CHECK(arg2, 0);
+            CHECK(BYTE(arg1), 8); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
             return 0x3400 | BYTE(arg1);
 
@@ -1432,6 +1433,11 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0600 | (arg2 << 7) | arg1;
+
+        case OP_SWAPF:
+            CHECK(arg1, 7); CHECK(arg2, 1);
+            discoverArgs(addrAt, arg1s, arg1comm);
+            return 0x0E00 | (arg2 << 7) | arg1;
 
         default:
             ooops("OP_%d", op);
@@ -1597,6 +1603,11 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
             return 0x180 | (arg2 << 5) | arg1;
+
+        case OP_SWAPF:
+            CHECK(arg1, 5); CHECK(arg2, 1);
+            discoverArgs(addrAt, arg1s, arg1comm);
+            return 0x380 | (arg2 << 5) | arg1;
 
         case OP_TRIS:
             CHECK(arg1, 3); CHECK(arg2, 0);
@@ -1917,11 +1928,45 @@ static void CallWithPclath(DWORD addr)
     #endif
 }
 
+static BOOL IsOutput(DWORD addr)
+{
+    int i;
+    for(i = 0; i < MAX_IO_PORTS; i++)
+        if(Prog.mcu->outputRegs[i] == addr)
+            return TRUE;
+    return FALSE;
+}
+
+static BOOL IsInput(DWORD addr)
+{
+    int i;
+    for(i = 0; i < MAX_IO_PORTS; i++)
+        if(Prog.mcu->inputRegs[i] == addr)
+            return TRUE;
+    return FALSE;
+}
+
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
-    if((Bank(addrDest) == Bank(addrSrc))
+/*
+    // With possibility of "jitter" on destination pin.
+    // Don't use for outputs pins.
+    ClearBit(addrDest, bitDest);
+    IfBitSet(addrSrc, bitSrc);
+    SetBit(addrDest, bitDest);
+*/
+/*
+    // With possibility of error due to change in value on external source pin
+    IfBitSet(addrSrc, bitSrc);
+    SetBit(addrDest, bitDest);
+    IfBitClear(addrSrc, bitSrc);
+    ClearBit(addrDest, bitDest);
+*/
+    // No "jitter", No "input" error
+    if( (!IsOutput(addrDest))
+    &&((Bank(addrDest) == Bank(addrSrc))
     || IsCoreRegister(addrDest)
-    || IsCoreRegister(addrSrc)) {
+    || IsCoreRegister(addrSrc)) ) {
         IfBitSet(addrSrc, bitSrc);
         SetBit(addrDest, bitDest);
         IfBitClear(addrSrc, bitSrc);
@@ -2054,7 +2099,7 @@ static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *n
         Instruction(OP_MOVF, addr2+1, DEST_W, name2);
       } else {
         Instruction(OP_MOVLW, 0x00);               // Sign propagation
-        Instruction(OP_BTFSC, addr2+sov2-1, BIT7); //
+        Instruction(OP_BTFSC, addr1+sov1-1, BIT7); //
         Instruction(OP_MOVLW, 0xFF);               //
       }
       Instruction(OP_MOVWF, addr1+1, 0, name1);
@@ -2064,7 +2109,7 @@ static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *n
           Instruction(OP_MOVF, addr2+2, DEST_W, name2);
         } else {
           Instruction(OP_MOVLW, 0x00);               // Sign propagation
-          Instruction(OP_BTFSC, addr2+sov2-1, BIT7); //
+          Instruction(OP_BTFSC, addr1+sov1-1, BIT7); //
           Instruction(OP_MOVLW, 0xFF);               //
         }
         Instruction(OP_MOVWF, addr1+2, 0, name1);
@@ -2074,7 +2119,7 @@ static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *n
             Instruction(OP_MOVF, addr2+3, DEST_W, name2);
           } else {
             Instruction(OP_MOVLW, 0x00);               // Sign propagation
-            Instruction(OP_BTFSC, addr2+sov2-1, BIT7); //
+            Instruction(OP_BTFSC, addr1+sov1-1, BIT7); //
             Instruction(OP_MOVLW, 0xFF);               //
           }
           Instruction(OP_MOVWF, addr1+3, 0, name1);
@@ -2084,21 +2129,15 @@ static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *n
 }
 
 //-----------------------------------------------------------------------------
-static void CopyArgToReg(DWORD *addr1, int sov1, char *name)
+static void CopyArgToReg(DWORD addr1, int sov1, char *name)
 {
-    int sov2 = SizeOfVar(name);
-
     if(IsNumber(name)) {
-        CopyLiteralToRegs(*addr1, sov1, hobatoi(name), name);
+        CopyLiteralToRegs(addr1, sov1, hobatoi(name), name);
     } else {
+        int sov2 = SizeOfVar(name);
         DWORD addr2;
         MemForVariable(name, &addr2);
-
-        if(sov1 > sov2) {
-            CopyRegsToRegs(*addr1, sov1, addr2, sov2, "$", name);
-        } else { // sov2 == sov1
-            *addr1 = addr2;
-        }
+        CopyRegsToRegs(addr1, sov1, addr2, sov2, "$", name);
     }
 }
 
@@ -2290,6 +2329,23 @@ static void Increment(DWORD addr, int sov, char *name)
       }
     }
   }
+}
+
+static void VariableAdd(DWORD addr1, DWORD addr2, DWORD addr3, int sov)
+// ScratchS used !!!
+{
+  Instruction(OP_MOVF, addr2, DEST_W/*, a->name2*/);
+  Instruction(OP_ADDWF, addr3, DEST_W/*, a->name3*/);
+  Instruction(OP_MOVWF, addr1/*, 0, a->name1*/);
+  ClearBit(ScratchS, STATUS_C);
+  IfBitSet(REG_STATUS, STATUS_C);
+  SetBit(ScratchS, STATUS_C);
+
+  Instruction(OP_MOVF, addr2+1, DEST_W);
+  Instruction(OP_ADDWF, addr3+1, DEST_W);
+  Instruction(OP_MOVWF, addr1+1, 0);
+  IfBitSet(ScratchS, STATUS_C);
+  Instruction(OP_INCF, addr1+1, DEST_F);
 }
 
 //-----------------------------------------------------------------------------
@@ -2566,18 +2622,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 MemForVariable(a->name2, &addr2);
                 MemForVariable(a->name3, &addr3);
 
-                Instruction(OP_MOVF, addr2, DEST_W, a->name2);
-                Instruction(OP_ADDWF, addr3, DEST_W, a->name3);
-                Instruction(OP_MOVWF, addr1, 0, a->name1);
-                ClearBit(Scratch0, 0);
-                IfBitSet(REG_STATUS, STATUS_C);
-                SetBit(Scratch0, 0);
-
-                Instruction(OP_MOVF, addr2+1, DEST_W);
-                Instruction(OP_ADDWF, addr3+1, DEST_W);
-                Instruction(OP_MOVWF, addr1+1, 0);
-                IfBitSet(Scratch0, 0);
-                Instruction(OP_INCF, addr1+1, DEST_F);
+                VariableAdd(addr1, addr2, addr3, 2);
                 break;
 
             case INT_SET_VARIABLE_SUBTRACT:
@@ -4139,6 +4184,7 @@ void CompilePic16(char *outFile)
 
     AllocBitsVars(); // first
 
+    ScratchS = AllocOctetRam(); // REG_STATUS
     Scratch0 = AllocOctetRam();
     Scratch1 = AllocOctetRam();
     Scratch2 = AllocOctetRam();

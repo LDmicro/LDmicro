@@ -1140,9 +1140,9 @@ math:
                 break;
             case INT_UART_SEND_READY:
                 if(SimulateUartTxCountdown == 0) {
-                    SetSingleBit(a->name1, TRUE);
+                    SetSingleBit(a->name1, TRUE); // ready
                 } else {
-                    SetSingleBit(a->name1, FALSE);
+                    SetSingleBit(a->name1, FALSE); // not ready
                 }
                 break;
 
@@ -1289,8 +1289,9 @@ void SimulateOneCycle(BOOL forceRefresh)
         if((updateWindow == 0) && (forceRefresh == FALSE)) {
             UpdateWindow(MainWindow);
             updateWindow--;
-        } else
+        } else {
             InvalidateRect(MainWindow, NULL, FALSE);
+        }
         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
         RefreshStatusBar();
     }

@@ -385,8 +385,8 @@ static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1, DWORD
     if(op == OP_COMMENTINT){
         if(comment) {
             if(strlen(AvrProg[AvrProgWriteP].commentInt))
-                strncat(AvrProg[AvrProgWriteP].commentInt, "\n\t; ", MAX_COMMENT_LEN);
-            strncat(AvrProg[AvrProgWriteP].commentInt, comment, MAX_COMMENT_LEN);
+                strncatn(AvrProg[AvrProgWriteP].commentInt, "\n\t; ", MAX_COMMENT_LEN);
+            strncatn(AvrProg[AvrProgWriteP].commentInt, comment, MAX_COMMENT_LEN);
         }
         return;
     }
@@ -398,15 +398,15 @@ static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1, DWORD
     AvrProg[AvrProgWriteP].arg2 = arg2;
     if(args) {
         if(strlen(AvrProg[AvrProgWriteP].commentAsm))
-             strncat(AvrProg[AvrProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncat(AvrProg[AvrProgWriteP].commentAsm, "(", MAX_COMMENT_LEN);
-        strncat(AvrProg[AvrProgWriteP].commentAsm, args, MAX_COMMENT_LEN);
-        strncat(AvrProg[AvrProgWriteP].commentAsm, ")", MAX_COMMENT_LEN);
+            strncatn(AvrProg[AvrProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(AvrProg[AvrProgWriteP].commentAsm, "(", MAX_COMMENT_LEN);
+        strncatn(AvrProg[AvrProgWriteP].commentAsm, args, MAX_COMMENT_LEN);
+        strncatn(AvrProg[AvrProgWriteP].commentAsm, ")", MAX_COMMENT_LEN);
     }
     if(comment) {
         if(strlen(AvrProg[AvrProgWriteP].commentAsm))
-             strncat(AvrProg[AvrProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncat(AvrProg[AvrProgWriteP].commentAsm, comment, MAX_COMMENT_LEN);
+            strncatn(AvrProg[AvrProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(AvrProg[AvrProgWriteP].commentAsm, comment, MAX_COMMENT_LEN);
     }
     AvrProg[AvrProgWriteP].rung = rungNow;
     AvrProg[AvrProgWriteP].IntPc = IntPcNow;
@@ -442,33 +442,33 @@ static void _Instruction(int l, char *f, char *args, AvrOp op, char *comment)
 // And use macro for bugtracking
 #define Instruction(...) _Instruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
-static void _SetInstruction(int l, char *f, char *args, DWORD Addr, AvrOp op, DWORD arg1, DWORD arg2)
+static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DWORD arg1, DWORD arg2)
 //for setiing interrupt vector
 {
-    if(Addr == 0) {
+    if(addr == 0) {
         Error(_("Direct Addr error"));
         CompileError();
     }
-    if(Addr >= MAX_PROGRAM_LEN) {
+    if(addr >= MAX_PROGRAM_LEN) {
         Error(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
         CompileError();
     }
     //vvv  same
-    AvrProg[Addr].opAvr = op;
-    AvrProg[Addr].arg1 = arg1;
-    AvrProg[Addr].arg2 = arg2;
+    AvrProg[addr].opAvr = op;
+    AvrProg[addr].arg1 = arg1;
+    AvrProg[addr].arg2 = arg2;
 
     if(args) {
-        if(strlen(AvrProg[Addr].commentAsm))
-             strncat(AvrProg[Addr].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncat(AvrProg[Addr].commentAsm, "(", MAX_COMMENT_LEN);
-        strncat(AvrProg[Addr].commentAsm, args, MAX_COMMENT_LEN);
-        strncat(AvrProg[Addr].commentAsm, ")", MAX_COMMENT_LEN);
+        if(strlen(AvrProg[addr].commentAsm))
+            strncatn(AvrProg[addr].commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(AvrProg[addr].commentAsm, "(", MAX_COMMENT_LEN);
+        strncatn(AvrProg[addr].commentAsm, args, MAX_COMMENT_LEN);
+        strncatn(AvrProg[addr].commentAsm, ")", MAX_COMMENT_LEN);
     }
-    AvrProg[Addr].rung = rungNow;
-    AvrProg[Addr].IntPc = IntPcNow;
-    AvrProg[Addr].l = l;
-    strcpy(AvrProg[Addr].f, f);
+    AvrProg[addr].rung = rungNow;
+    AvrProg[addr].IntPc = IntPcNow;
+    AvrProg[addr].l = l;
+    strcpy(AvrProg[addr].f, f);
     //^^^ same
 }
 
