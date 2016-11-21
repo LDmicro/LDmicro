@@ -319,8 +319,10 @@ typedef signed long SDWORD;
 #define ELEM_SET_PWM_SOFT       0x2901
 #define ELEM_UART_RECV          0x2a
 #define ELEM_UART_RECV_AVAIL    0x2a01
+#define RUartRecvErrorFlag     "RUartRecvErrorFlag"
 #define ELEM_UART_SEND          0x2b
 #define ELEM_UART_SEND_READY    0x2b01
+#define RUartSendErrorFlag     "RUartSendErrorFlag"
 #define ELEM_MASTER_RELAY       0x2c
 #define ELEM_SHIFT_REGISTER     0x2d
 #define ELEM_LOOK_UP_TABLE      0x2e
@@ -711,10 +713,11 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_MODBUS_HREG     20
 #define IO_TYPE_PORT_INPUT      21 // 8bit PORT for in data  - McuIoInfo.inputRegs
 #define IO_TYPE_PORT_OUTPUT     22 // 8bit PORT for out data - McuIoInfo.oututRegs
-#define IO_TYPE_BCD             23 // unpacked, max 10 byte
-#define IO_TYPE_STRING          24 // max
-#define IO_TYPE_TABLE_IN_FLASH  25 // max limited (size of flsh - progSize)
-#define IO_TYPE_VAL_IN_FLASH    26 //
+#define IO_TYPE_MCU_REG         23 // 8bit register in/out data as McuIoInfo.dirRegs
+#define IO_TYPE_BCD             24 // unpacked, max 10 byte
+#define IO_TYPE_STRING          25 // max
+#define IO_TYPE_TABLE_IN_FLASH  26 // max limited (size of flsh - progSize)
+#define IO_TYPE_VAL_IN_FLASH    27 //
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -1299,6 +1302,8 @@ size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 char *strDelSpace(char *dest, char *src);
 char *strDelSpace(char *dest);
+char *strncpyn(char *s1, const char *s2, size_t n);
+char *strncatn(char *s1, const char *s2, size_t n);
 
 // lang.cpp
 char *_(char *in);
@@ -1497,9 +1502,10 @@ typedef enum Pic16OpTag {
     OP_SUBWF, // 30
     OP_XORLW,
     OP_XORWF,
+    OP_SWAPF,
     OP_MOVLB,
-    OP_MOVLP,
-    OP_TRIS,  // 35
+    OP_MOVLP, // 35
+    OP_TRIS,
     OP_OPTION
 } PicOp;
 
@@ -1512,8 +1518,8 @@ typedef struct PicAvrInstructionTag {
     DWORD       BANK;         // this operation opPic will executed with this STATUS or BSR registers
     DWORD       PCLATH;       // this operation opPic will executed with this PCLATH which now or previously selected
     BOOL        label;
-    char        commentInt[MAX_COMMENT_LEN];
-    char        commentAsm[MAX_COMMENT_LEN];
+    char        commentInt[MAX_COMMENT_LEN]; // before op
+    char        commentAsm[MAX_COMMENT_LEN]; // after op
     char        arg1name[MAX_NAME_LEN];
     char        arg2name[MAX_NAME_LEN];
     int         rung;  // This Instruction located in Prog.rungs[rung] LD
@@ -1558,6 +1564,7 @@ int byteNeeded(SDWORD i);
 void SaveVarListToFile(FILE *f);
 BOOL LoadVarListFromFile(FILE *f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput);
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);
 #define CompileError() longjmp(CompileErrorBuf, 1)
@@ -1576,7 +1583,13 @@ void IntDumpListing(char *outFile);
 BOOL GenerateIntermediateCode(void);
 BOOL CheckEndOfRungElem(int which, void *elem);
 BOOL CheckLeafElem(int which, void *elem);
+extern DWORD addrRUartRecvErrorFlag;
+extern int    bitRUartRecvErrorFlag;
+extern DWORD addrRUartSendErrorFlag;
+extern int    bitRUartSendErrorFlag;
 BOOL UartFunctionUsed(void);
+BOOL UartRecvUsed(void);
+BOOL UartSendUsed(void);
 BOOL Bin32BcdRoutineUsed(void);
 SDWORD CheckMakeNumber(char *str);
 void WipeIntMemory(void);

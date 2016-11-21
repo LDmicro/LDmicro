@@ -164,6 +164,15 @@ indicates what kind of object it is.  For example:
     * Hname -- tied to a MODBUS Holding register
     * name  -- a general-purpose (integer) variable
 
+    Variable name that begins with symbol '#' like
+    #PORTA, #PORTB, #PORTC, ... treated as output hardware port.
+    Variable name that begins with symbol '#' like
+    #PINA, #PINB, #PINC, ... treated as input hardware port.
+    Variable name that begins with symbol '#' like
+    #TRISA, #TRISB, #TRISC, ... treated as data direction register of corresponding ports
+    #PORTA, #PORTB, #PORTC, ...
+    Note: Address PORTn and PINn are equals for PIC's.
+
 Choose the rest of the name so that it describes what the object does,
 and so that it is unique within the program. The same name always refers
 to the same object within the program. For example, it would be an error

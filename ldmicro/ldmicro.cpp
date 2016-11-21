@@ -350,6 +350,18 @@ static void postCompile(int ISA)
 
     if(!fsize(CurrentCompileFile)) {
         remove(CurrentCompileFile);
+
+        if(strstr(CurrentCompileFile,".hex")) {
+            char outFile[MAX_PATH];
+            SetExt(outFile, CurrentCompileFile, ".asm");
+            remove(outFile);
+        }
+        if(strstr(CurrentCompileFile,".c")) {
+            char outFile[MAX_PATH];
+            SetExt(outFile, CurrentCompileFile, ".h");
+            remove(outFile);
+          //remove("ladder.h_");
+        }
         return;
     }
 
@@ -374,7 +386,7 @@ static void postCompile(int ISA)
 //-----------------------------------------------------------------------------
 static void CompileProgram(BOOL compileAs, int compile_MNU)
 {
-    if(compile_MNU==MNU_COMPILE){
+    if(compile_MNU == MNU_COMPILE){
         if(strstr(CurrentCompileFile,".cpp"))
             compile_MNU = MNU_COMPILE_ARDUINO;
         else if(strstr(CurrentCompileFile,".ino"))
@@ -391,6 +403,13 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
 
     IsOpenAnable:
     if(!compileAs && strlen(CurrentCompileFile)) {
+      if( (compile_MNU == MNU_COMPILE      )  && strstr(CurrentCompileFile,".hex")
+      ||  (compile_MNU == MNU_COMPILE_IHEX )  && strstr(CurrentCompileFile,".hex")
+      ||  (compile_MNU == MNU_COMPILE_ANSIC)  && strstr(CurrentCompileFile,".c"  )
+      ||  (compile_MNU == MNU_COMPILE_ARDUINO)&& strstr(CurrentCompileFile,".cpp")
+      ||  (compile_MNU == MNU_COMPILE_PASCAL) && strstr(CurrentCompileFile,".pas")
+      ||  (compile_MNU == MNU_COMPILE_XINT)   && strstr(CurrentCompileFile, ".xint")
+      ) {
         if(FILE *f = fopen(CurrentCompileFile, "w")) {
             fclose(f);
             remove(CurrentCompileFile);
@@ -398,16 +417,17 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             Error(_("Couldn't open file '%s'"), CurrentCompileFile);
             compileAs = TRUE;
         }
+      }
     }
 
     if(compileAs || (strlen(CurrentCompileFile)==0)
-      ||  (compile_MNU==MNU_COMPILE_AS)
-      ||( (compile_MNU==MNU_COMPILE      )  && (!strstr(CurrentCompileFile,".hex")) )
-      ||( (compile_MNU==MNU_COMPILE_IHEX )  && (!strstr(CurrentCompileFile,".hex")) )
-      ||( (compile_MNU==MNU_COMPILE_ANSIC)  && (!strstr(CurrentCompileFile,".c"  )) )
-      ||( (compile_MNU==MNU_COMPILE_ARDUINO)&& (!strstr(CurrentCompileFile,".cpp")) )
-      ||( (compile_MNU==MNU_COMPILE_PASCAL) && (!strstr(CurrentCompileFile,".pas")) )
-      || ((compile_MNU==MNU_COMPILE_XINT)   && (!strstr(CurrentCompileFile, ".xint")) )
+      ||  (compile_MNU == MNU_COMPILE_AS)
+      ||( (compile_MNU == MNU_COMPILE      )  && (!strstr(CurrentCompileFile,".hex")) )
+      ||( (compile_MNU == MNU_COMPILE_IHEX )  && (!strstr(CurrentCompileFile,".hex")) )
+      ||( (compile_MNU == MNU_COMPILE_ANSIC)  && (!strstr(CurrentCompileFile,".c"  )) )
+      ||( (compile_MNU == MNU_COMPILE_ARDUINO)&& (!strstr(CurrentCompileFile,".cpp")) )
+      ||( (compile_MNU == MNU_COMPILE_PASCAL) && (!strstr(CurrentCompileFile,".pas")) )
+      ||( (compile_MNU == MNU_COMPILE_XINT)   && (!strstr(CurrentCompileFile, ".xint")) )
       ) {
         char *c;
         OPENFILENAME ofn;
@@ -416,7 +436,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         ofn.lStructSize = sizeof(ofn);
         ofn.hInstance = Instance;
         ofn.lpstrTitle = _("Compile To");
-        if((compile_MNU==MNU_COMPILE_ANSIC) ||
+        if((compile_MNU == MNU_COMPILE_ANSIC) ||
            (Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC)) {
             ofn.lpstrFilter = C_PATTERN;
             ofn.lpstrDefExt = "c";
@@ -431,12 +451,12 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrFilter = XINT_PATTERN;
             ofn.lpstrDefExt = "xint";
             c = "xint";
-        } else if((compile_MNU==MNU_COMPILE_PASCAL) ||
+        } else if((compile_MNU == MNU_COMPILE_PASCAL) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_PASCAL)) {
             ofn.lpstrFilter = PASCAL_PATTERN;
             ofn.lpstrDefExt = "pas";
             c = "pas";
-        } else if((compile_MNU==MNU_COMPILE_ARDUINO) ||
+        } else if((compile_MNU == MNU_COMPILE_ARDUINO) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
             ofn.lpstrFilter = ARDUINO_C_PATTERN;
             ofn.lpstrDefExt = "cpp";
@@ -445,6 +465,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrFilter = HEX_PATTERN;
             ofn.lpstrDefExt = "hex";
             c = "hex";
+            compile_MNU = MNU_COMPILE_IHEX;
         }
         SetExt(CurrentCompileFile, CurrentSaveFile, c);
         ofn.lpstrFile = CurrentCompileFile;
@@ -457,16 +478,15 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         // hex output filename is stored in the .ld file
         ProgramChangedNotSaved = TRUE;
         compileAs = FALSE;
-        compile_MNU = 0;
         goto IsOpenAnable;
     }
 
     if(!GenerateIntermediateCode()) return;
 
     if((Prog.mcu == NULL)
-    && (compile_MNU!=MNU_COMPILE_PASCAL)
-    && (compile_MNU!=MNU_COMPILE_ANSIC)
-    && (compile_MNU!=MNU_COMPILE_ARDUINO)
+    && (compile_MNU != MNU_COMPILE_PASCAL)
+    && (compile_MNU != MNU_COMPILE_ANSIC)
+    && (compile_MNU != MNU_COMPILE_ARDUINO)
     && (compile_MNU != MNU_COMPILE_XINT)) {
         Error(_("Must choose a target microcontroller before compiling."));
         return;
@@ -490,10 +510,10 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         return;
     }
 
-    if (compile_MNU==MNU_COMPILE_ANSIC) {
+    if (compile_MNU == MNU_COMPILE_ANSIC) {
         CompileAnsiC(CurrentCompileFile);
         postCompile(ISA_ANSIC);
-    } else if (compile_MNU==MNU_COMPILE_ARDUINO) {
+    } else if (compile_MNU == MNU_COMPILE_ARDUINO) {
         CompileAnsiC(CurrentCompileFile, ISA_ARDUINO);
         postCompile(ISA_ARDUINO);
     } else if (compile_MNU == MNU_COMPILE_XINT) {

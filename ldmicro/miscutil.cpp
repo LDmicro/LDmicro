@@ -363,6 +363,7 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_READ_ADC:          return _("adc input");
         case IO_TYPE_PORT_INPUT:        return _("PORT input");
         case IO_TYPE_PORT_OUTPUT:       return _("PORT output");
+        case IO_TYPE_MCU_REG:           return _("MCU register");
         default:                        return _("<corrupt!>");
     }
 }
@@ -383,6 +384,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     if(pinName)
         strcpy(pinName, "");
 
+    if(!Prog.mcu) return;
     if(!io) return;
 
     int type = io->type;
@@ -799,3 +801,30 @@ char *strDelSpace(char *dest)
     return strDelSpace(dest, NULL);
 }
 
+char *strncpyn(char *s1, const char *s2, size_t n)
+{
+    if(!s1) oops();
+    if(s2) {
+        if(strlen(s2) < n) {
+            strcpy(s1, s2);
+        } else {
+            strncpy(s1, s2, n-1);
+            s1[n] = '\0';
+        }
+    }
+    return s1;
+}
+
+char *strncatn(char *s1, const char *s2, size_t n)
+{
+    if(!s1) oops();
+    if(s2) {
+        if((strlen(s1) + strlen(s2)) < n) {
+            strcat(s1, s2);
+        } else {
+            strncat(s1, s2, n-1-strlen(s1));
+            s1[n] = '\0';
+        }
+    }
+    return s1;
+}

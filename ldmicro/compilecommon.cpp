@@ -309,6 +309,7 @@ static void MemForPin(char *name, DWORD *addr, int *bit, BOOL asInput)
         } else {
             Error(_("Must assign pins for all I/O.\r\n\r\n"
                 "'%s' is not assigned."), name);
+            CompileError();
         }
     }
 }
@@ -327,7 +328,8 @@ void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput)
             }
             *bit = iop->bit;
         } else {
-            Error(_("Not described pin %d "), pin);
+            if(pin)
+                Error(_("Not described pin %d "), pin);
         }
     }
 }
@@ -475,14 +477,19 @@ int MemForVariable(char *name, DWORD *addrl, int sizeOfVar)
              DWORD addr = 0xff;
              int j = name[strlen(name)-1] - 'A';
              if((j>=0) && (j<MAX_IO_PORTS)) {
-                 if((strstr(name, "#PORT")) && (strlen(name) == 6)) { //#PORTx
+                 if((strstr(name, "#PORT")) && (strlen(name) == 6)) { // #PORTx
                      if(IS_MCU_REG(j)) {
                          addr = Prog.mcu->outputRegs[j];
                      }
                  }
-                 if((strstr(name, "#PIN")) && (strlen(name) == 5)) { //#PINx
+                 if((strstr(name, "#PIN")) && (strlen(name) == 5)) { // #PINx
                      if(IS_MCU_REG(j)) {
                          addr = Prog.mcu->inputRegs[j];
+                     }
+                 }
+                 if((strstr(name, "#TRIS")) && (strlen(name) == 6)) { // #TRISx
+                     if(IS_MCU_REG(j)) {
+                         addr = Prog.mcu->dirRegs[j];
                      }
                  }
              }
