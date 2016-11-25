@@ -2585,6 +2585,38 @@ BOOL UartFunctionUsed(void)
     return FALSE;
 }
 
+BOOL UartRecvUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_UART_RECV, -1, -1))
+            return TRUE;
+    }
+
+    for(i = 0; i < IntCodeLen; i++) {
+        if(IntCode[i].op == INT_UART_RECV)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL UartSendUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_UART_SEND, ELEM_FORMATTED_STRING, -1))
+            return TRUE;
+    }
+
+    for(i = 0; i < IntCodeLen; i++) {
+        if(IntCode[i].op == INT_UART_SEND)
+            return TRUE;
+    }
+    return FALSE;
+}
+
 //-----------------------------------------------------------------------------
 BOOL Bin32BcdRoutineUsed(void)
 {
