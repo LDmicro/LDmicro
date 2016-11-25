@@ -301,6 +301,8 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tAlt+F5"));
     AppendMenu(FileMenu, MF_STRING,   MNU_EXPLORE_DIR, _("Explore ld directory"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_01,     _("Save LDmicro0.1 file format v2.3 compatible"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_02,     _("Save LDmicro0.2 file format"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,     _("Save &As..."));
 
     AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
@@ -964,6 +966,8 @@ void ToggleSimulationMode(BOOL doSimulateOneRung)
 
         EnableMenuItem(FileMenu, MNU_OPEN, MF_GRAYED);
         EnableMenuItem(FileMenu, MNU_SAVE, MF_GRAYED);
+        EnableMenuItem(FileMenu, MNU_SAVE_01, MF_GRAYED);
+        EnableMenuItem(FileMenu, MNU_SAVE_02, MF_GRAYED);
         EnableMenuItem(FileMenu, MNU_SAVE_AS, MF_GRAYED);
         EnableMenuItem(FileMenu, MNU_NEW, MF_GRAYED);
         EnableMenuItem(FileMenu, MNU_EXPORT, MF_GRAYED);
@@ -993,6 +997,8 @@ void ToggleSimulationMode(BOOL doSimulateOneRung)
 
         EnableMenuItem(FileMenu, MNU_OPEN, MF_ENABLED);
         EnableMenuItem(FileMenu, MNU_SAVE, MF_ENABLED);
+        EnableMenuItem(FileMenu, MNU_SAVE_01, MF_ENABLED);
+        EnableMenuItem(FileMenu, MNU_SAVE_02, MF_ENABLED);
         EnableMenuItem(FileMenu, MNU_SAVE_AS, MF_ENABLED);
         EnableMenuItem(FileMenu, MNU_NEW, MF_ENABLED);
         EnableMenuItem(FileMenu, MNU_EXPORT, MF_ENABLED);

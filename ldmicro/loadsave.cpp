@@ -1027,8 +1027,13 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 // Save the program in memory to the given file. Returns TRUE for success,
 // FALSE otherwise.
 //-----------------------------------------------------------------------------
-BOOL SaveProjectToFile(char *filename)
+BOOL SaveProjectToFile(char *filename, int code)
 {
+    if(code == MNU_SAVE_02)
+        strcpy(Prog.LDversion,"0.2");
+    else if(code == MNU_SAVE_01)
+        strcpy(Prog.LDversion,"0.1");
+
     FILE *f = fopen(filename, "w");
     if(!f) return FALSE;
 

@@ -171,7 +171,7 @@ static void AppendIoAutoType(char *name, int default_type)
     case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
     case 'A': type = IO_TYPE_READ_ADC; break;
   //case 'P': type = IO_TYPE_PWM_OUTPUT; break;
-    case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
+  //case 'I': type = IO_TYPE_MODBUS_CONTACT; break; // conflict if IO_TYPE_GENERAL variable start with 'I'
     case 'M': type = IO_TYPE_MODBUS_COIL; break;
     case 'H': type = IO_TYPE_MODBUS_HREG; break;
     case 'G': type = IO_TYPE_GENERAL; break;
@@ -1381,7 +1381,7 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_MCU_REG)
                     ) {
                             MemForVariable(name, &addr);
-                            if(addr)
+                            if(addr > 0)
                                 sprintf(i->item.pszText, "0x%x", addr);
                              else
                                 sprintf(i->item.pszText, "Not a PORT!");
@@ -1396,32 +1396,32 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_COUNTER)
                     ) {
                             MemForVariable(name, &addr);
-                            if(addr)
+                            if(addr > 0)
                                 sprintf(i->item.pszText, "0x%x", addr);
                     } else
                     if((type == IO_TYPE_INTERNAL_RELAY)
                     ) {
                             MemForSingleBit(name, TRUE, &addr, &bit);
-                            if(addr)
+                            if(addr > 0 && bit > 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                     } else
                     if (type == IO_TYPE_UART_TX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.txPin, &addr, &bit, FALSE);
-                            if(addr)
+                            if(addr > 0 && bit > 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                         }
                     } else
                     if (type == IO_TYPE_UART_RX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.rxPin, &addr, &bit, TRUE);
-                            if(addr)
+                            if(addr > 0 && bit > 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                         }
                     } else
                     if (type == IO_TYPE_TABLE_IN_FLASH) {
                         MemOfVar(name, &addr);
-                        if(addr)
+                        if(addr > 0)
                             sprintf(i->item.pszText, "0x%x", addr);
                     } else
                     if((type == IO_TYPE_DIG_INPUT)
@@ -1430,7 +1430,7 @@ void IoListProc(NMHDR *h)
                     ) {
                             if(SingleBitAssigned(name))
                                 MemForSingleBit(name, TRUE, &addr, &bit);
-                            if(addr)
+                            if(addr > 0 && bit > 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                     }
                     break;
