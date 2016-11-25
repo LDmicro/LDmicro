@@ -1140,18 +1140,18 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                   Op(INT_ELSE);
                     Op(INT_SET_BIT, l->d.coil.name);
                   Op(INT_END_IF);
-                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
+//                SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else if(l->d.coil.setOnly) {
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_SET_BIT, l->d.coil.name);
                   Op(INT_END_IF);
-                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
+//                SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else if(l->d.coil.resetOnly) {
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_CLEAR_BIT, l->d.coil.name);
-                    SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
+//                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
                   Op(INT_END_IF);
-                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
+//                SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else if(l->d.coil.ttrigger) {
                   char storeName[MAX_NAME_LEN];
                   GenSymOneShot(storeName, "TTRIGGER", l->d.coil.name);
@@ -1167,10 +1167,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                   Op(INT_ELSE);
                     Op(INT_CLEAR_BIT, storeName);
                   Op(INT_END_IF);
-                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
+//                SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else {
                   Op(INT_COPY_BIT_TO_BIT, l->d.coil.name, stateInOut);
-                  SimState(&(l->poweredAfter), stateInOut); // variant 3
+//                SimState(&(l->poweredAfter), stateInOut); // variant 3
               }
               #endif
           break;
@@ -2380,9 +2380,9 @@ math:   {
     }
 
     if(which != ELEM_SERIES_SUBCKT && which != ELEM_PARALLEL_SUBCKT
-    #ifndef DEFAULT_COIL_ALGORITHM
-    && which != ELEM_COIL // is a special case, see above
-    #endif
+//  #ifndef DEFAULT_COIL_ALGORITHM
+//  && which != ELEM_COIL // is a special case, see above
+//  #endif
     ) {
         // then it is a leaf; let the simulator know which leaf it
         // should be updating for display purposes
@@ -2399,8 +2399,8 @@ static BOOL CheckMasterCircuit(int which, void *elem)
             int i;
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             for(i = 0; i < s->count; i++) {
-                CheckMasterCircuit(s->contents[i].which,
-                    s->contents[i].d.any);
+                if(CheckMasterCircuit(s->contents[i].which, s->contents[i].d.any))
+                    return TRUE;
             }
             break;
         }
@@ -2409,8 +2409,8 @@ static BOOL CheckMasterCircuit(int which, void *elem)
             int i;
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(i = 0; i < p->count; i++) {
-                CheckMasterCircuit(p->contents[i].which,
-                    p->contents[i].d.any);
+                if(CheckMasterCircuit(p->contents[i].which, p->contents[i].d.any))
+                    return TRUE;
             }
             break;
         }
@@ -2536,9 +2536,7 @@ BOOL GenerateIntermediateCode(void)
             Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
         else
             Op(INT_SET_BIT, "$rung_top");
-
         SimState(&(Prog.rungPowered[rung]), "$rung_top");
-
         IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[rung], "$rung_top", rung);
     }
     rungNow++;
@@ -2582,6 +2580,38 @@ BOOL UartFunctionUsed(void)
         || (IntCode[i].op == INT_UART_SEND_READY)
         || (IntCode[i].op == INT_UART_RECV_AVAIL)
         || (IntCode[i].op == INT_UART_RECV))
+            return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL UartRecvUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_UART_RECV, -1, -1))
+            return TRUE;
+    }
+
+    for(i = 0; i < IntCodeLen; i++) {
+        if(IntCode[i].op == INT_UART_RECV)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL UartSendUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_UART_SEND, ELEM_FORMATTED_STRING, -1))
+            return TRUE;
+    }
+
+    for(i = 0; i < IntCodeLen; i++) {
+        if(IntCode[i].op == INT_UART_SEND)
             return TRUE;
     }
     return FALSE;

@@ -61,6 +61,8 @@ typedef signed long SDWORD;
 #define MNU_NEW                 0x01
 #define MNU_OPEN                0x02
 #define MNU_SAVE                0x03
+#define MNU_SAVE_01             0x0301
+#define MNU_SAVE_02             0x0302
 #define MNU_SAVE_AS             0x04
 #define MNU_EXPORT              0x05
 #define MNU_EXIT                0x06
@@ -220,6 +222,8 @@ typedef signed long SDWORD;
 #define MNU_COMPILE_PASCAL      0x75
 #define MNU_COMPILE_ARDUINO     0x76
 #define MNU_COMPILE_CAVR        0x77
+#define MNU_COMPILE_XINT        0x78    // Extended interpreter
+
 #define MNU_FLASH_BAT           0x7E
 #define MNU_READ_BAT            0x7F
 
@@ -232,8 +236,6 @@ typedef signed long SDWORD;
 #define MNU_EMAIL               0x8104
 #define MNU_CHANGES             0x8105
 #define MNU_RELEASE             0x82
-
-#define MNU_COMPILE_XINT        0x83    // Extended interpreter
 
 // Columns within the I/O etc. listview.
 #define LV_IO_NAME              0x00
@@ -1137,7 +1139,7 @@ void RenameSet1(int which, char *name, char *new_name, BOOL set1);
 
 // loadsave.cpp
 BOOL LoadProjectFromFile(char *filename);
-BOOL SaveProjectToFile(char *filename);
+BOOL SaveProjectToFile(char *filename, int code);
 void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung);
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 char *strspace(char *str);

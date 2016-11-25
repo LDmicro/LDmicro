@@ -97,7 +97,7 @@ static BOOL SaveAsDialog(void)
     if(!GetSaveFileName(&ofn))
         return FALSE;
 
-    if(!SaveProjectToFile(CurrentSaveFile)) {
+    if(!SaveProjectToFile(CurrentSaveFile, MNU_SAVE)) {
         Error(_("Couldn't write to '%s'."), CurrentSaveFile);
         return FALSE;
     } else {
@@ -208,10 +208,10 @@ static void ExportDialog(void)
 // If we already have a filename, save the program to that. Otherwise same
 // as Save As. Returns TRUE if it worked, else returns FALSE.
 //-----------------------------------------------------------------------------
-static BOOL SaveProgram(void)
+static BOOL SaveProgram(int code)
 {
     if(strlen(CurrentSaveFile)) {
-        if(!SaveProjectToFile(CurrentSaveFile)) {
+        if(!SaveProjectToFile(CurrentSaveFile, code)) {
             Error(_("Couldn't write to '%s'."), CurrentSaveFile);
             return FALSE;
         } else {
@@ -441,6 +441,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrFilter = C_PATTERN;
             ofn.lpstrDefExt = "c";
             c = "c";
+            compile_MNU = MNU_COMPILE_ANSIC;
         } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
                                Prog.mcu->whichIsa == ISA_NETZER)) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
@@ -451,16 +452,19 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
             ofn.lpstrFilter = XINT_PATTERN;
             ofn.lpstrDefExt = "xint";
             c = "xint";
+            compile_MNU = MNU_COMPILE_XINT;
         } else if((compile_MNU == MNU_COMPILE_PASCAL) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_PASCAL)) {
             ofn.lpstrFilter = PASCAL_PATTERN;
             ofn.lpstrDefExt = "pas";
             c = "pas";
+            compile_MNU = MNU_COMPILE_PASCAL;
         } else if((compile_MNU == MNU_COMPILE_ARDUINO) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
             ofn.lpstrFilter = ARDUINO_C_PATTERN;
             ofn.lpstrDefExt = "cpp";
             c = "cpp";
+            compile_MNU = MNU_COMPILE_ARDUINO;
         } else {
             ofn.lpstrFilter = HEX_PATTERN;
             ofn.lpstrDefExt = "hex";
@@ -555,7 +559,7 @@ BOOL CheckSaveUserCancels(void)
         MB_YESNOCANCEL | MB_ICONWARNING);
     switch(r) {
         case IDYES:
-            if(SaveProgram())
+            if(SaveProgram(MNU_SAVE))
                 return FALSE;
             else
                 return TRUE;
@@ -697,7 +701,9 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_SAVE:
-            SaveProgram();
+        case MNU_SAVE_01:
+        case MNU_SAVE_02:
+            SaveProgram(code);
             UpdateMainWindowTitleBar();
             break;
 
@@ -1801,14 +1807,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case VK_F2: {
-                        SaveProgram();
+                        SaveProgram(MNU_SAVE);
                         UpdateMainWindowTitleBar();
                     }
                     break;
 
                 case 'S':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        SaveProgram();
+                        SaveProgram(MNU_SAVE);
                         UpdateMainWindowTitleBar();
                     } else {
                         CHANGING_PROGRAM(MakeSetOnlySelected());

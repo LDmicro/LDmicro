@@ -1,3 +1,19 @@
+== Release 4.0.B
+
+    * Added: PWM CCP1 on Timer1 module for PIC16F877, PIC16F887.
+
+    * Added: Menu->File->Save LDmicro0.1 file format v2.3 compatible
+                       ->Save LDmicro0.2 file format
+
+      LDmicro saves new LD files in LDmicro0.2 file format.
+      LDmicro does not change the format of the previously created LD files.
+      You can convert file format with this menu.
+
+    * Fixed: MASTER CONTROL RELAY
+      SAMPLE\MasterRelay-Test.ld added.
+
+    * Fixed: "Save as.." cyclic bug.
+
 == Release 4.0.A
 
     * Fixed: EEPROM reading 'Empty variable name' message.

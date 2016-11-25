@@ -1003,11 +1003,13 @@ static void SimulateIntCode(void)
             case INT_INCREMENT_VARIABLE:
                 GetSimulationVariable(a->name1);
                 IncrementVariable(a->name1);
+                NeedRedraw = TRUE;
                 break;
 
             case INT_DECREMENT_VARIABLE:
                 GetSimulationVariable(a->name1);
                 DecrementVariable(a->name1);
+                NeedRedraw = TRUE;
                 break;
             {
                 SDWORD v;
