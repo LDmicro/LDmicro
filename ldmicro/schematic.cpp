@@ -476,7 +476,8 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_OPEN: newWhich = ELEM_SHORT; break;
         // group 2 of suitable elements, etc.
         case ELEM_ONE_SHOT_RISING: newWhich = ELEM_ONE_SHOT_FALLING; break;
-        case ELEM_ONE_SHOT_FALLING: newWhich = ELEM_ONE_SHOT_RISING; break;
+        case ELEM_ONE_SHOT_FALLING: newWhich = ELEM_OSC; break;
+        case ELEM_OSC: newWhich = ELEM_ONE_SHOT_RISING; break;
         //
         case ELEM_TON: newWhich = ELEM_TOF; break;
         case ELEM_TOF: newWhich = ELEM_RTO; break;
@@ -529,6 +530,11 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_MUL: newWhich = ELEM_DIV; break;
         case ELEM_DIV: newWhich = ELEM_MOD; break;
         case ELEM_MOD: newWhich = ELEM_ADD; break;
+        //
+        case ELEM_7SEG : newWhich = ELEM_9SEG ; break;
+        case ELEM_9SEG : newWhich = ELEM_14SEG; break;
+        case ELEM_14SEG: newWhich = ELEM_16SEG; break;
+        case ELEM_16SEG: newWhich = ELEM_7SEG ; break;
         //
 //      case : newWhich = ; break;
         default: newWhich = 0;

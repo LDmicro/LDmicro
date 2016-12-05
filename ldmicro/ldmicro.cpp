@@ -337,7 +337,7 @@ static void notepad(char *name, char *ext)
 
     s[0] = '\0';
     SetExt(s, name, ext);
-    sprintf(r,"%snotepad.bat %s",ExePath,s);
+    sprintf(r,"\"%snotepad.bat\" \"%s\"",ExePath,s);
 
     isErr(Execute(r), r);
 }
@@ -375,8 +375,7 @@ static void postCompile(int ISA)
     strcpy(onlyName, ExtractFileName(CurrentSaveFile));
     SetExt(onlyName, onlyName, "");
 
-    sprintf(r,"%spostCompile.bat %s %s %s", ExePath, GetIsaName(ISA), CurrentLdPath, onlyName);
-
+    sprintf(r,"\"%spostCompile.bat\" %s \"%s\" \"%s\"", ExePath, GetIsaName(ISA), CurrentLdPath, onlyName);
     isErr(Execute(r), r);
 }
 

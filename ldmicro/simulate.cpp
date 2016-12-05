@@ -577,12 +577,16 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_LOOK_UP_TABLE:
+            sprintf(str, "%s%s", l->d.lookUpTable.name,""); // "LutElement");
+            MarkWithCheck(str, VAR_FLAG_TABLE);
             MarkWithCheck(l->d.lookUpTable.dest, VAR_FLAG_ANY);
             if(!IsNumber(l->d.lookUpTable.index))
               MarkWithCheck(l->d.lookUpTable.index, VAR_FLAG_ANY);
             break;
 
         case ELEM_PIECEWISE_LINEAR:
+            sprintf(str, "%s%s", l->d.piecewiseLinear.name,""); // "LutElement");
+            MarkWithCheck(str, VAR_FLAG_TABLE);
             MarkWithCheck(l->d.piecewiseLinear.dest, VAR_FLAG_ANY);
             if(!IsNumber(l->d.lookUpTable.index))
               MarkWithCheck(l->d.lookUpTable.index, VAR_FLAG_ANY); // not tested
@@ -1197,18 +1201,18 @@ math:
 
             case INT_FLASH_READ:{
                 SDWORD *adata;
-                adata = (SDWORD *)GetSimulationVariable(a->name1);
+                adata = (SDWORD *)GetSimulationVariable(a->name2);
                 int index = GetSimulationVariable(a->name3);
                 if((index<0)||(a->literal+1<index)) {
                     if(a->literal3 != index) {
-                        Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name1, a->literal+1);
+                        Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2, a->literal+1);
                         a->literal3 = a->literal; // side effect: побочный эффект !!!
                         index = a->literal;
                     }
                 }
                 SDWORD d = adata[index];
-                if(GetSimulationVariable(a->name2) != d) {
-                    SetSimulationVariable(a->name2, d);
+                if(GetSimulationVariable(a->name1) != d) {
+                    SetSimulationVariable(a->name1, d);
                     NeedRedraw = TRUE;
                 }
                 }

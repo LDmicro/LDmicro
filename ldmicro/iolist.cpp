@@ -392,12 +392,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
             */
             break;
         {
-        int n;
+        int n, n0;
         char *nameTable;
-        case ELEM_7SEG: nameTable = "char7seg";  n = LEN7SEG;  goto xseg;
-        case ELEM_9SEG: nameTable = "char9seg";  n = LEN9SEG;  goto xseg;
-        case ELEM_14SEG:nameTable = "char14seg"; n = LEN14SEG; goto xseg;
-        case ELEM_16SEG:nameTable = "char16seg"; n = LEN16SEG; goto xseg;
+        case ELEM_7SEG: nameTable = "char7seg";  n = LEN7SEG;  n0=1; goto xseg;
+        case ELEM_9SEG: nameTable = "char9seg";  n = LEN9SEG;  n0=2; goto xseg;
+        case ELEM_14SEG:nameTable = "char14seg"; n = LEN14SEG; n0=2; goto xseg;
+        case ELEM_16SEG:nameTable = "char16seg"; n = LEN16SEG; n0=3; goto xseg;
         xseg:
             AppendIoAutoType(l->d.segments.dest, IO_TYPE_GENERAL);
             /*
@@ -409,7 +409,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(nameTable, IO_TYPE_TABLE_IN_FLASH);
 
             sprintf(str, "%s[0]", nameTable);
-            SetSizeOfVar(str, 1);
+            SetSizeOfVar(str, n0);
             AppendIo(str, IO_TYPE_VAL_IN_FLASH);
             break;
         }
@@ -502,7 +502,6 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
         }
         case ELEM_LOOK_UP_TABLE: {
-            /*
             SetSizeOfVar(l->d.lookUpTable.name, l->d.lookUpTable.count);
             AppendIo(l->d.lookUpTable.name, IO_TYPE_TABLE_IN_FLASH);
 
@@ -510,7 +509,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             int sovElement = TestByteNeeded(l->d.lookUpTable.count, l->d.lookUpTable.vals);
             SetSizeOfVar(str, sovElement);
             AppendIo(str, IO_TYPE_VAL_IN_FLASH);
-            */
+
             AppendIo(l->d.lookUpTable.dest, IO_TYPE_GENERAL);
             AppendIo(l->d.lookUpTable.index, IO_TYPE_GENERAL);
             break;

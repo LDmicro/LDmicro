@@ -840,9 +840,6 @@ int isPinAssigned(char *name)
                 if(i < Prog.mcu->pinCount)
                     res = 1;
             }
-            if(!res)
-                Error(_("Must assign pins for all I/O.\r\n\r\n"
-                    "'%s' is not assigned."), name);
             break;
         }
 
@@ -890,7 +887,7 @@ void MemCheckForErrorsPostCompile(void)
             Error(
                _("Internal relay '%s' never assigned; add its coil somewhere."),
                 InternalRelays[i].name);
-            //CompileError();
+            CompileError();
         }
     }
 }

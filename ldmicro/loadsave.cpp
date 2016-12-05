@@ -163,19 +163,19 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
                            &l->d.bus.PCBbit[0])==(2+8)) {
         *which = ELEM_BUS;
 
-    } else if(sscanf(line, "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+    } else if(sscanf(line,  "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
 
-    } else if(sscanf(line, "9SEGMENTS %d %s %s\n", &l->d.segments.common, l->d.segments.dest, l->d.segments.src)==3) {
+    } else if(sscanf(line,  "9SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
         l->d.segments.which = ELEM_9SEG;
         *which = ELEM_9SEG;
 
-    } else if(sscanf(line, "14SEGMENTS %d %s %s\n", &l->d.segments.common, l->d.segments.dest, l->d.segments.src)==3) {
+    } else if(sscanf(line, "14SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
         l->d.segments.which = ELEM_14SEG;
         *which = ELEM_14SEG;
 
-    } else if(sscanf(line, "16SEGMENTS %d %s %s\n", &l->d.segments.common, l->d.segments.dest, l->d.segments.src)==3) {
+    } else if(sscanf(line, "16SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
         l->d.segments.which = ELEM_16SEG;
         *which = ELEM_16SEG;
 
@@ -389,6 +389,9 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
             while(isspace(*p) && *p)
                 p++;
         }
+        sscanf(p, "%s", l->d.lookUpTable.name);
+        if(!strlen(l->d.lookUpTable.name))
+            sprintf(l->d.lookUpTable.name, "%s%d", l->d.lookUpTable.dest, l->d.lookUpTable.count);
         *which = ELEM_LOOK_UP_TABLE;
     } else if(sscanf(line, "PIECEWISE_LINEAR %s %s %d",
         l->d.piecewiseLinear.dest, l->d.piecewiseLinear.index,
@@ -411,7 +414,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
             while(isspace(*p) && *p)
                 p++;
         }
-//      sscanf(p, "%s", l->d.piecewiseLinear.name);
+        sscanf(p, "%s", l->d.piecewiseLinear.name);
         *which = ELEM_PIECEWISE_LINEAR;
     } else {
         // that's odd; nothing matched
@@ -785,20 +788,20 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "\n");
             break;
         }
-        case ELEM_7SEG: {
-            fprintf(f, "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
+        case ELEM_7SEG: 
+            fprintf(f,  "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
             break;
-        }
+
         case ELEM_9SEG:
-            fprintf(f, "9SEGMENTS %d %s %s\n", l->d.segments.common, l->d.segments.dest, l->d.segments.src);
+            fprintf(f,  "9SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
             break;
 
         case ELEM_14SEG:
-            fprintf(f, "14SEGMENTS %d %s %s\n", l->d.segments.common, l->d.segments.dest, l->d.segments.src);
+            fprintf(f, "14SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
             break;
 
         case ELEM_16SEG:
-            fprintf(f, "16SEGMENTS %d %s %s\n", l->d.segments.common, l->d.segments.dest, l->d.segments.src);
+            fprintf(f, "16SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
             break;
 
         case ELEM_NOT:
@@ -969,6 +972,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             for(i = 0; i < l->d.lookUpTable.count; i++) {
                 fprintf(f, " %d", l->d.lookUpTable.vals[i]);
             }
+            fprintf(f, " %s", l->d.lookUpTable.name);
             fprintf(f, "\n");
             break;
         }
@@ -979,6 +983,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             for(i = 0; i < l->d.piecewiseLinear.count*2; i++) {
                 fprintf(f, " %d", l->d.piecewiseLinear.vals[i]);
             }
+            fprintf(f, " %s", l->d.piecewiseLinear.name);
             fprintf(f, "\n");
             break;
         }
