@@ -288,6 +288,8 @@ typedef signed long SDWORD;
 
 #define ELEM_SET_BIT            0x1c81
 #define ELEM_CLEAR_BIT          0x1c82
+#define ELEM_COPY_BIT           0x1c83
+#define ELEM_XOR_COPY_BIT       0x1c84
 
 #define ELEM_AND                0x1c41
 #define ELEM_OR                 0x1c42
@@ -407,6 +409,8 @@ typedef signed long SDWORD;
         case ELEM_IF_BIT_CLEAR: \
         case ELEM_SET_BIT: \
         case ELEM_CLEAR_BIT: \
+        case ELEM_COPY_BIT: \
+        case ELEM_XOR_COPY_BIT: \
         case ELEM_SHL: \
         case ELEM_SHR: \
         case ELEM_SR0: \
@@ -452,7 +456,7 @@ typedef signed long SDWORD;
         case ELEM_PERSIST:
 
 #define MAX_NAME_LEN                128
-#define MAX_COMMENT_LEN             384
+#define MAX_COMMENT_LEN             512
 #define MAX_LOOK_UP_TABLE_LEN        64
 #define MAX_SHIFT_REGISTER_STAGES   256
 #define MAX_STRING_LEN              256
@@ -596,6 +600,7 @@ typedef struct ElemShiftRegisterTag {
 } ElemShiftRegister;
 
 typedef struct ElemLookUpTableTag {
+    char    name[MAX_NAME_LEN];
     char    dest[MAX_NAME_LEN];
     char    index[MAX_NAME_LEN];
     int     count; // Table size
@@ -604,6 +609,7 @@ typedef struct ElemLookUpTableTag {
 } ElemLookUpTable;
 
 typedef struct ElemPiecewiseLinearTag {
+    char    name[MAX_NAME_LEN];
     char    dest[MAX_NAME_LEN];
     char    index[MAX_NAME_LEN];
     int     count;
@@ -1114,6 +1120,7 @@ int PwmFunctionUsed(void);
 BOOL QuadEncodFunctionUsed(void);
 BOOL NPulseFunctionUsed(void);
 BOOL EepromFunctionUsed(void);
+BOOL TablesUsed(void);
 void PushRungUp(void);
 void PushRungDown(void);
 void CopyRungDown(void);
@@ -1517,8 +1524,8 @@ typedef struct PicAvrInstructionTag {
     DWORD       arg1;
     DWORD       arg2;
     DWORD       arg1orig;
-    DWORD       BANK;         // this operation opPic will executed with this STATUS or BSR registers
-    DWORD       PCLATH;       // this operation opPic will executed with this PCLATH which now or previously selected
+    DWORD       BANK;   // this operation opPic will executed with this STATUS or BSR registers
+    DWORD       PCLATH; // this operation opPic will executed with this PCLATH which now or previously selected
     BOOL        label;
     char        commentInt[MAX_COMMENT_LEN]; // before op
     char        commentAsm[MAX_COMMENT_LEN]; // after op

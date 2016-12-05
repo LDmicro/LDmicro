@@ -355,6 +355,7 @@ void AddLookUpTable(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.lookUpTable.name, "name");
     strcpy(t->d.lookUpTable.dest, "dest");
     strcpy(t->d.lookUpTable.index, "index");
     t->d.lookUpTable.count = 0;
@@ -367,6 +368,7 @@ void AddPiecewiseLinear(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.piecewiseLinear.name, "name");
     strcpy(t->d.piecewiseLinear.dest, "yvar");
     strcpy(t->d.piecewiseLinear.index, "xvar");
     t->d.piecewiseLinear.count = 0;

@@ -397,6 +397,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
 
     // Set up the controls to reflect the initial configuration.
     SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(t->dest));
+    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(t->name));
     SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(t->index));
     char buf[30];
     sprintf(buf, "%d", t->count);
@@ -408,8 +409,8 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     // And show the window
     EnableWindow(MainWindow, FALSE);
     ShowWindow(LutDialog, TRUE);
-    SetFocus(DestTextbox);
-    SendMessage(DestTextbox, EM_SETSEL, 0, -1);
+    SetFocus(NameTextbox);
+    SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
     char PrevTableAsString[1024] = "";
 
@@ -477,6 +478,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     }
 
     if(!DialogCancel) {
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16/*(MAX_NAME_LEN-1)*/, (LPARAM)(t->name));
         SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)16/*(MAX_NAME_LEN-1)*/, (LPARAM)(t->dest));
         SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)16/*(MAX_NAME_LEN-1)*/, (LPARAM)(t->index));
         DestroyLutControls();
@@ -522,6 +524,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     MakeLutControls(FALSE, count*2, TRUE);
 
     // Set up the controls to reflect the initial configuration.
+    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(t->name));
     SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(t->dest));
     SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(t->index));
     char buf[30];
@@ -531,8 +534,8 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     // And show the window
     EnableWindow(MainWindow, FALSE);
     ShowWindow(LutDialog, TRUE);
-    SetFocus(DestTextbox);
-    SendMessage(DestTextbox, EM_SETSEL, 0, -1);
+    SetFocus(NameTextbox);
+    SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
     MSG msg;
     DWORD ret;
@@ -579,6 +582,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     }
 
     if(!DialogCancel) {
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16/*(MAX_NAME_LEN-1)*/, (LPARAM)(t->name));
         SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)16/*(MAX_NAME_LEN-1)*/, (LPARAM)(t->dest));
         SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)16/*(MAX_NAME_LEN-1)*/, (LPARAM)(t->index));
         DestroyLutControls();

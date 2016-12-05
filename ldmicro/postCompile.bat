@@ -1,8 +1,8 @@
 @echo on
 @rem This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 @echo %1 - Compile target
-@echo %2 - LD path without end backslash
-@echo %3 - LD file name without extentions and path
+@echo %2 - LD path without the end backslash, double quoted
+@echo %3 - LD file name without extentions and path, double quoted
 ;
 rem goto exit
 ;
@@ -11,7 +11,7 @@ rem goto exit
 ;
 @SET DIFF_TOOL="D:\Program Files\WinMerge\WinMergeU.exe"
 ;
-@md "%2\%3"
+@md %2\%3
 ;
 if "%1" == "AVR" goto AVR
 if "%1" == "PIC16" goto PIC16
@@ -27,7 +27,8 @@ goto NOT_SUPPOTED
 @md  "%2\%3\AvrStudio"
 copy "%2\%3.asm"  "%2\%3\AvrStudio"
 @rem -----------------------------------------------------------------------
-
+:VMLAB
+;
 @rem -----------------------------------------------------------------------
 goto PROTEUS
 ;
@@ -35,8 +36,14 @@ goto PROTEUS
 :PIC16
 @rem -----------------------------------------------------------------------
 :MPLAB
-@md  "%2\%3\MPLAB"
-copy "%2\%3.asm"        "%2\%3\MPLAB"
+goto PROTEUS
+
+@md  %2\MPLAB
+copy %2\%3.asm   %2\MPLAB
+goto PROTEUS
+
+@md  %2\%3\MPLAB
+copy %2\%3.asm   %2\%3\MPLAB
 goto PROTEUS
 
 del "%2\%3\MPLAB\%3.hex"
@@ -52,10 +59,16 @@ goto PROTEUS
 ;
 @rem -----------------------------------------------------------------------
 :PROTEUS
-@md  "%2\%3\PROTEUS"
-copy "%2\%3.asm"  "%2\%3\PROTEUS"
-copy "%2\%3.hex"  "%2\%3\PROTEUS"
-rem pause
+rem goto exit
+
+@md  %2\PROTEUS
+copy %2\%3.asm   %2\PROTEUS
+copy %2\%3.hex   %2\PROTEUS
+goto exit
+
+@md  %2\%3\PROTEUS
+copy %2\%3.asm   %2\%3\PROTEUS
+copy %2\%3.hex   %2\%3\PROTEUS
 goto exit
 ;
 @rem =======================================================================

@@ -595,6 +595,9 @@ HMENU MakeMainWindowMenus(void)
         _("Microcontrollers: TODO and DONE"));
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega32 44-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega328 32-Pin packages");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB646");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB1286");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB1287");
     AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F200/202/204/206 6-SOT");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F220/222 6-SOT");
