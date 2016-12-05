@@ -28,6 +28,8 @@
 #ifndef __INTCODE_H
 #define __INTCODE_H
 
+#define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
+
 #define INT_SET_BIT                              1
 #define INT_CLEAR_BIT                            2
 #define INT_COPY_BIT_TO_BIT                      3
@@ -99,8 +101,6 @@
 #define INT_IF_VARIABLE_EQU_LITERAL             44
 #define INT_IF_VARIABLE_NEQ_LITERAL             45
 #endif
-#define INT_IF_VARIABLE_BIT_SET                 48
-#define INT_IF_VARIABLE_BIT_CLEAR               49
 
 //#define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50
@@ -185,8 +185,13 @@
         char        name1[MAX_NAME_LEN];
         char        name2[MAX_NAME_LEN];
         char        name3[MAX_NAME_LEN];
+        char        name4[MAX_NAME_LEN];
+        char        name5[MAX_NAME_LEN];
+        char        name6[MAX_NAME_LEN];
         SDWORD      literal;
         SDWORD      literal2;
+        SDWORD      literal3;    // side effect: internaly used in simulation of INT_FLASH_READ
+        SDWORD     *data;        // for INT_FLASH_INIT
         BOOL       *poweredAfter;
         int         rung;        //this IntOp located in rung,
         int         which;       //this IntOp refers to the ELEM_<which>

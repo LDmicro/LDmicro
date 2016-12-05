@@ -2074,6 +2074,77 @@ static void PlcCycleTimerOverflowInterrupt()
     Instruction(OP_RETI);
 }
 
+#ifdef TABLE_IN_FLASH
+//-----------------------------------------------------------------------------
+static void InitTable(IntOp *a)
+{
+//  DWORD saveAvrProgWriteP = AvrProgWriteP;
+    DWORD addrOfTable = 0;
+    MemOfVar(a->name1, &addrOfTable);
+
+    if(addrOfTable == 0) {
+        Comment("TABLE %s", a->name1);
+        if(AvrProgWriteP % 2)
+            Instruction(OP_NOP);
+        dbpd(AvrProgWriteP % 2)
+        addrOfTable = AvrProgWriteP << 1; //see LPM // data stored in flash
+
+        SetMemForVariable(a->name1, addrOfTable, a->literal);
+
+        int sovElement = a->literal2;
+        //sovElement = 1;
+        int i;
+        if(sovElement == 2) {
+            for(i=0; i < a->literal; i++){
+              //dbp("i=%d %d",i,a->data[i]);
+              Instruction(OP_DW, a->data[i]);
+            }
+        }else if(sovElement == 1) {
+            for(i=0; i < a->literal; i=i+2){
+              //dbp("i=%d %d %d", i, a->data[i], a->data[i+1]);
+              Instruction(OP_DB2, a->data[i], i+1<a->literal?a->data[i+1]:0);
+            }
+            /*
+            for(i=0; i < a->literal; i++){
+              //dbp("i=%d %d", i, a->data[i]);
+              Instruction(OP_DB, a->data[i]); // BAD! Hi byte of flash word is 0!
+            }
+            */
+        }else if(sovElement == 4) {
+            for(i=0; i < a->literal; i++){
+              Instruction(OP_DW, a->data[i]);
+              Instruction(OP_DW, a->data[i]>>16);
+            }
+        }else if(sovElement == 3) {
+            for(i=0; i < a->literal; i=i+2){
+              Instruction(OP_DW, a->data[i]);
+              Instruction(OP_DB2, a->data[i]>>16, (i+1<a->literal?a->data[i+1]:0) & 0xFF);
+              Instruction(OP_DW, (i+1<a->literal?a->data[i+1]:0) >> 8);
+            }
+        }else oops();
+        Comment("TABLE %s END", a->name1);
+    }
+
+//  if((saveAvrProgWriteP >> 11) != (AvrProgWriteP >> 11)) oops();
+}
+
+//-----------------------------------------------------------------------------
+static void InitTables(void)
+{
+    for(IntPc=0; IntPc < IntCodeLen; IntPc++) {
+        IntPcNow = IntPc;
+        IntOp *a = &IntCode[IntPc];
+        rungNow = a->rung;
+        switch(a->op) {
+            case INT_FLASH_INIT:
+                InitTable(a);
+                break;
+            default:
+                break;
+       }
+    }
+}
+#endif
 //-----------------------------------------------------------------------------
 // Write the basic runtime. We set up our reset vector, configure all the
 // I/O pins, then set up the timer that does the cycling. Next instruction
@@ -2091,6 +2162,9 @@ static void WriteRuntime(void)
     for(i = 0; i < 34; i++)
         Instruction(OP_RETI);
     Comment("Interrupt table end.");
+    #ifdef TABLE_IN_FLASH
+    InitTables();
+    #endif
 
     FwdAddrIsNow(resetVector);
     Comment("This is Reset Vector");
@@ -3483,6 +3557,76 @@ static void CompileFromIntermediate(void)
             case INT_COMMENT:
                 Comment(a->name1);
                 break;
+            #ifdef TABLE_IN_FLASH
+            case INT_FLASH_INIT:{
+                DWORD addrOfTable = 0;
+                MemOfVar(a->name1, &addrOfTable);
+
+                if(addrOfTable == 0) {
+                    DWORD SkipData = AllocFwdAddr();
+                    if(Prog.mcu->core >= ClassicCore8K) {
+                        Instruction(OP_LDI, ZL, FWD_LO(SkipData));
+                        Instruction(OP_LDI, ZH, FWD_HI(SkipData));
+                      //Instruction(OP_LDI, ZH, SkipData); //cause error
+                        Instruction(OP_IJMP, SkipData, 0);
+                    } else {
+                        Instruction(OP_RJMP, SkipData, 0);
+                    }
+
+                    InitTable(a);
+
+                    FwdAddrIsNow(SkipData);
+                }
+                break;
+            }
+            case INT_FLASH_READ:{
+                int sovElement = a->literal2;
+                //sovElement = 1;
+                if(IsNumber(a->name3)){
+                  CopyLiteralToRegs(r16, hobatoi(a->name3), 2);
+                } else {
+                  CopyVarToRegs(r16, a->name3, 2);
+                }
+                //Comment("Index in r16:r17");
+
+                if(sovElement==3){
+                  Instruction(OP_MOV, r14, r16);
+                  Instruction(OP_MOV, r15, r17); // Save Index
+                }
+                if(sovElement>=2){
+                  Instruction(OP_LSL, r16);
+                  Instruction(OP_ROL, r17);      // Index := Index * 2
+                }
+                if(sovElement==3){
+                  Instruction(OP_ADD, r16, r14);
+                  Instruction(OP_ADC, r17, r15); // Index := Index * 3
+                }
+                if(sovElement==4){
+                  Instruction(OP_LSL, r16);
+                  Instruction(OP_ROL, r17);      // Index := Index * 4
+                }
+
+                DWORD addrOfTable = 0;
+                MemOfVar(a->name2, &addrOfTable);
+
+                CopyLiteralToRegs(ZL, addrOfTable, 2, "addrOfTable"); // Z = DataAddr
+                //Comment(" Z == DataAddr");
+
+                Instruction(OP_ADD, ZL, r16);
+                Instruction(OP_ADC, ZH, r17); // Z = DataAddr + Index
+                //Comment(" Z == DataAddr + Index");
+
+                Instruction(OP_LPM_ZP, r20);
+                if(sovElement >= 2)
+                  Instruction(OP_LPM_ZP, r21);
+                if(sovElement >= 3)
+                  Instruction(OP_LPM_ZP, r22);
+                if(sovElement >= 4)
+                  Instruction(OP_LPM_ZP, r23);
+                CopyRegsToVar(a->name1, r20, sovElement);
+                break;
+            }
+            #endif
             default:
                 ooops("INT_%d", a->op);
                 break;
@@ -3961,10 +4105,10 @@ void CompileAvr(char *outFile)
 
     //***********************************************************************
     // Interrupt Vectors Table
-    if(strstr(Prog.mcu->mcuName, " AT90USB646 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB647 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB1286 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB1287 ")
+    if(McuAs(" AT90USB646 ")
+    || McuAs(" AT90USB647 ")
+    || McuAs(" AT90USB1286 ")
+    || McuAs(" AT90USB1287 ")
     ){
         Int0Addr        = 1;
         Int1Addr        = 2;
@@ -3972,8 +4116,8 @@ void CompileAvr(char *outFile)
         Timer0OvfAddr   = 23;
         Timer1CompAAddr = 17;
     } else
-    if(strstr(Prog.mcu->mcuName, " AT90USB82 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB162 ")
+    if(McuAs(" AT90USB82 ")
+    || McuAs(" AT90USB162 ")
     ){
         Int0Addr        = 1;
         Int1Addr        = 2;
@@ -3981,10 +4125,10 @@ void CompileAvr(char *outFile)
         Timer0OvfAddr   = 21;
         Timer1CompAAddr = 15;
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega161 ")
-    || strstr(Prog.mcu->mcuName, " ATmega162 ")
-    || strstr(Prog.mcu->mcuName, " ATmega32 ")
-    || strstr(Prog.mcu->mcuName, " ATmega323 ")
+    if(McuAs(" ATmega161 ")
+    || McuAs(" ATmega162 ")
+    || McuAs(" ATmega32 ")
+    || McuAs(" ATmega323 ")
     ){
         Int0Addr        = 2;
         Int1Addr        = 4;
@@ -3992,7 +4136,7 @@ void CompileAvr(char *outFile)
         Timer0OvfAddr   = 0x0016;
         Timer1CompAAddr = 0x000E;
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega103 ")
+    if(McuAs(" ATmega103 ")
     ){
         Int0Addr        = 1;
         Int1Addr        = 2;
@@ -4000,8 +4144,8 @@ void CompileAvr(char *outFile)
         Timer0OvfAddr   = 16;
         Timer1CompAAddr = 12;
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega16 ")
-    || strstr(Prog.mcu->mcuName, " ATmega163 ")
+    if(McuAs(" ATmega16 ")
+    || McuAs(" ATmega163 ")
     ){
         Int0Addr        = 2;
         Int1Addr        = 4;
@@ -4009,10 +4153,10 @@ void CompileAvr(char *outFile)
         Timer0OvfAddr   = 0x0012;
         Timer1CompAAddr = 0x000C;
     } else
-    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega48 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega88 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega168 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega328 ")
+    if(McuAs("Atmel AVR ATmega48 ") ||
+       McuAs("Atmel AVR ATmega88 ") ||
+       McuAs("Atmel AVR ATmega168 ") ||
+       McuAs("Atmel AVR ATmega328 ")
     ){
         Int0Addr        = 1;
         Int1Addr        = 2;
@@ -4027,8 +4171,8 @@ void CompileAvr(char *outFile)
             INTF1 = BIT1;
             INTF0 = BIT0;
     } else
-    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega64 ")
-    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega128 ")
+    if(McuAs("Atmel AVR ATmega64 ")
+    || McuAs("Atmel AVR ATmega128 ")
     ){
         Int0Addr        = 2;
         Int1Addr        = 4;
@@ -4043,7 +4187,7 @@ void CompileAvr(char *outFile)
             INTF1 = BIT1;
             INTF0 = BIT0;
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega8515 ")
+    if(McuAs(" ATmega8515 ")
     ){
         Int0Addr        = 1;
         Int1Addr        = 2;
@@ -4051,8 +4195,8 @@ void CompileAvr(char *outFile)
         Timer0OvfAddr   = 0x0007;
         Timer1CompAAddr = 0x0004;
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega8 ")
-    || strstr(Prog.mcu->mcuName, " ATmega8535 ")
+    if(McuAs(" ATmega8 ")
+    || McuAs(" ATmega8535 ")
     ){
         Int0Addr        = 1;
         Int1Addr        = 2;
@@ -4069,8 +4213,8 @@ void CompileAvr(char *outFile)
     // Here we must set up the addresses of some registers that for some
     // stupid reason move around from AVR to AVR.
     /*
-    if(strstr(Prog.mcu->mcuName, " AT90USB82 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB162 ")
+    if(McuAs(" AT90USB82 ")
+    || McuAs(" AT90USB162 ")
     ){
         REG_TCCR0  = 0x45
         REG_TCNT0  = 0x46
@@ -4086,10 +4230,10 @@ void CompileAvr(char *outFile)
         TOIE0  = BIT0;
     } else
     */
-    if(strstr(Prog.mcu->mcuName, " AT90USB646 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB647 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB1286 ")
-    || strstr(Prog.mcu->mcuName, " AT90USB1287 ")
+    if(McuAs(" AT90USB646 ")
+    || McuAs(" AT90USB647 ")
+    || McuAs(" AT90USB1286 ")
+    || McuAs(" AT90USB1287 ")
     ){
         REG_TCCR0  = 0x45;
         REG_TCNT0  = 0x46;
@@ -4123,11 +4267,16 @@ void CompileAvr(char *outFile)
             WGM21   = BIT1;
             COM21   = BIT7;   // COM2A1
             COM20   = BIT6;   // COM2A0
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
     } else
-    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega48 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega88 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega168 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega328 ")
+    if(McuAs("Atmel AVR ATmega48 ") ||
+       McuAs("Atmel AVR ATmega88 ") ||
+       McuAs("Atmel AVR ATmega168 ") ||
+       McuAs("Atmel AVR ATmega328 ")
     ){
         REG_TCCR0   = 0x45;
         REG_TCNT0   = 0x46;
@@ -4170,9 +4319,10 @@ void CompileAvr(char *outFile)
         REG_EEDR    = 0x40;
         REG_EECR    = 0x3F;
     } else
-    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega164 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega324 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega644 ")
+    if(McuAs("Atmel AVR ATmega164 ") ||
+       McuAs("Atmel AVR ATmega324 ") ||
+       McuAs("Atmel AVR ATmega644 ") ||
+       McuAs("Atmel AVR ATmega1284 ")
     ){
         REG_TCCR0  = 0x45;
         REG_TCNT0  = 0x46;
@@ -4195,12 +4345,17 @@ void CompileAvr(char *outFile)
         REG_UCSRC   = 0xC2;   // UCSR0C
         REG_UCSRB   = 0xC1;   // UCSR0B
         REG_UCSRA   = 0xC0;   // UCSR0A
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega640 ") ||
-       strstr(Prog.mcu->mcuName, " ATmega1280 ") ||
-       strstr(Prog.mcu->mcuName, " ATmega1281 ") ||
-       strstr(Prog.mcu->mcuName, " ATmega2560 ") ||
-       strstr(Prog.mcu->mcuName, " ATmega2561 ")
+    if(McuAs(" ATmega640 ") ||
+       McuAs(" ATmega1280 ") ||
+       McuAs(" ATmega1281 ") ||
+       McuAs(" ATmega2560 ") ||
+       McuAs(" ATmega2561 ")
     ){
         REG_TCCR0  = 0x45;
         REG_TCNT0  = 0x46;
@@ -4238,10 +4393,10 @@ void CompileAvr(char *outFile)
             COM21   = BIT7;   // COM2A1
             COM20   = BIT6;   // COM2A0
     } else
-    if(strstr(Prog.mcu->mcuName, " ATmega164 ") ||
-       strstr(Prog.mcu->mcuName, " ATmega324 ") ||
-       strstr(Prog.mcu->mcuName, " ATmega644 ") ||
-       strstr(Prog.mcu->mcuName, " ATmega1284 ")
+    if(McuAs(" ATmega164 ") ||
+       McuAs(" ATmega324 ") ||
+       McuAs(" ATmega644 ") ||
+       McuAs(" ATmega1284 ")
     ){
         REG_TCCR0  = 0x45;
         REG_TCNT0  = 0x46;
@@ -4274,9 +4429,9 @@ void CompileAvr(char *outFile)
             COM20   = BIT6;   // COM2A0
     } else
     /*
-    if(strstr(Prog.mcu->mcuName, " ATmega163 ")
-    || strstr(Prog.mcu->mcuName, " ATmega323 ")
-    || strstr(Prog.mcu->mcuName, " ATmega8535 ")
+    if(McuAs(" ATmega163 ")
+    || McuAs(" ATmega323 ")
+    || McuAs(" ATmega8535 ")
     ){
       //REG_TCCR0  = 0x45
       //REG_TCNT0  = 0x46
@@ -4290,7 +4445,7 @@ void CompileAvr(char *outFile)
         TOIE1  = BIT2;
         TOIE0  = BIT0;
     } else
-    if(strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega103 ")
+    if(McuAs("Atmel AVR ATmega103 ")
     ){
       //REG_TCCR0  = 0x45
       //REG_TCNT0  = 0x46
@@ -4315,9 +4470,9 @@ void CompileAvr(char *outFile)
 //      REG_UCSRC   = 0x9d;
     } else
     */
-    if(strstr(Prog.mcu->mcuName, " ATmega161 ")
-    || strstr(Prog.mcu->mcuName, "Atmel AVR ATmega162 ")
-    || strstr(Prog.mcu->mcuName, " ATmega8515 ")
+    if(McuAs(" ATmega161 ")
+    || McuAs("Atmel AVR ATmega162 ")
+    || McuAs(" ATmega8515 ")
     ){
         REG_TCCR0  = 0x53;
         REG_TCNT0  = 0x52;
@@ -4344,9 +4499,9 @@ void CompileAvr(char *outFile)
         REG_UCSRA   = 0x2b;
         REG_UDR     = 0x2c;
     } else
-    if(strstr(Prog.mcu->mcuName, "Atmel AVR ATmega8 ")  ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega16 ") ||
-       strstr(Prog.mcu->mcuName, "Atmel AVR ATmega32 ")
+    if(McuAs("Atmel AVR ATmega8 ")  ||
+       McuAs("Atmel AVR ATmega16 ") ||
+       McuAs("Atmel AVR ATmega32 ")
     ){
         REG_TCCR0  = 0x53;
         REG_TCNT0  = 0x52;
@@ -4373,8 +4528,8 @@ void CompileAvr(char *outFile)
         REG_UCSRA   = 0x2b;
         REG_UDR     = 0x2c;
     } else
-    if(strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega64 ") ||
-       strstr(Prog.mcu->mcuName,  "Atmel AVR ATmega128 ")
+    if(McuAs("Atmel AVR ATmega64 ") ||
+       McuAs("Atmel AVR ATmega128 ")
     ){
         REG_TCCR0  = 0x53;
         REG_TCNT0  = 0x52;

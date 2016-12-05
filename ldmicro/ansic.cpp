@@ -96,6 +96,10 @@ static char *MapSym(char *str, int how)
     return ret;
 }
 
+static char *MapSym(char *str)
+{
+    return MapSym(str, ASINT);
+}
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var; easy, a static 16-bit qty.
 //-----------------------------------------------------------------------------
@@ -248,6 +252,14 @@ static void GenerateDeclarations(FILE *f)
             case INT_EEPROM_WRITE:
             case INT_WRITE_STRING:
                 break;
+            #ifdef TABLE_IN_FLASH
+            case INT_FLASH_INIT:
+                break;
+            case INT_RAM_READ:
+            case INT_FLASH_READ:
+                intVar1 = IntCode[i].name1;
+                break;
+            #endif
 
             default:
                 ooops("INT_%d", IntCode[i].op);
@@ -479,10 +491,124 @@ static void GenerateAnsiC(FILE *f)
                                 fprintf(f, "/* Set PWM */\n");
                 break;
 
+            #ifdef TABLE_IN_FLASH
+            case INT_FLASH_INIT: {
+                break;
+            }
+            case INT_FLASH_READ: {
+                if(IsNumber(IntCode[i].name3)) {
+                    fprintf(f, "%s = %d; // %s[%s]\n", MapSym(IntCode[i].name1), IntCode[i].data[CheckMakeNumber(IntCode[i].name3)], MapSym(IntCode[i].name2), IntCode[i].name3);
+                } else {
+                    fprintf(f,"#ifdef __GNUC__\n");
+    doIndent(f, i); fprintf(f, "%s = pgm_read_word(&%s[%s]);\n", MapSym(IntCode[i].name1), MapSym(IntCode[i].name2), MapSym(IntCode[i].name3));
+    doIndent(f, i); fprintf(f,"#else\n");
+    doIndent(f, i); fprintf(f, "%s = %s[%s];\n", MapSym(IntCode[i].name1), MapSym(IntCode[i].name2), MapSym(IntCode[i].name3));
+    doIndent(f, i); fprintf(f,"#endif\n");
+                }
+                break;
+            }
+            case INT_RAM_READ: {
+                if(IsNumber(IntCode[i].name3)) {
+                    fprintf(f, "%s = %s[%d]\n", MapSym(IntCode[i].name1), MapSym(IntCode[i].name2, ASSTR), CheckMakeNumber(IntCode[i].name3));
+                } else {
+                    fprintf(f, "%s = %s[%s];\n", MapSym(IntCode[i].name1), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3));
+                }
+                break;
+            }
+            #endif
             default:
                 oops();
         }
     }
+}
+//-----------------------------------------------------------------------------
+// Actually generate the C source for the datas.
+//-----------------------------------------------------------------------------
+static void GenerateAnsiC_flash_eeprom(FILE *f)
+{
+#ifdef TABLE_IN_FLASH
+    int i;
+    for(i = 0; i < IntCodeLen; i++) {
+        switch(IntCode[i].op) {
+            case INT_FLASH_INIT: {
+                int sovElement = IntCode[i].literal2;
+                char *sovs;
+/*
+CodeVision AVR
+// Pointer to a char string placed in FLASH
+flash char *ptr_to_flash1="This string is placed in FLASH";
+char flash *ptr_to_flash2="This string is also placed in FLASH";
+
+
+// Pointer to a char string placed in EEPROM
+eeprom char *ptr_to_eeprom1="This string is placed in EEPROM";
+char eeprom *ptr_to_eeprom2="This string is also placed in EEPROM";
+*/
+                if(sovElement == 1) {
+                    sovs = "flash unsigned char";
+                } else if(sovElement == 2) {
+                    sovs = "flash unsigned int";
+                } else if(sovElement == 3) {
+                    sovs = "flash unsigned24bit";
+                } else if(sovElement == 4) {
+                    sovs = "flash unsigned long int";
+                } else {
+                    ooops("sovElement=%d", sovElement);
+                }
+                if((isVarInited(IntCode[i].name1) < 0)
+                || 1
+                || (isVarInited(IntCode[i].name1)==rungNow)) {
+                    fprintf(f,"#ifdef __CODEVISIONAVR__\n");
+                    fprintf(f, "%s %s[%d] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
+                    int j;
+                    for(j = 0; j < (IntCode[i].literal-1); j++) {
+                      fprintf(f, "%d, ", IntCode[i].data[j]);
+                    }
+                    fprintf(f, "%d};\n", IntCode[i].data[IntCode[i].literal-1]);
+                    fprintf(f,"#endif\n");
+                }
+                //
+/*
+winavr avr gcc
+
+//const char FlashString[] PROGMEM = "This is a string ";
+*/
+                if(sovElement == 1) {
+                    sovs = "unsigned char";
+                } else if(sovElement == 2) {
+                    sovs = "unsigned int";
+                } else if(sovElement == 3) {
+                    sovs = "unsigned24bit";
+                } else if(sovElement == 4) {
+                    sovs = "unsigned long int";
+                } else {
+                    ooops("sovElement=%d", sovElement);
+                }
+                if((isVarInited(IntCode[i].name1) < 0)
+                || 1
+                || (isVarInited(IntCode[i].name1)==rungNow)) {
+                    fprintf(f,"#ifdef __GNUC__\n");
+                    fprintf(f, "%s %s[%d] PROGMEM = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
+                    int j;
+                    for(j = 0; j < (IntCode[i].literal-1); j++) {
+                      fprintf(f, "%d, ", IntCode[i].data[j]);
+                    }
+                    fprintf(f, "%d};\n", IntCode[i].data[IntCode[i].literal-1]);
+                    fprintf(f,"#endif\n");
+                }
+                break;
+            }
+            #ifdef NEW_FEATURE
+            case INT_EEPROM_INIT: {
+                fprintf(f, "epprom datas;\n");
+                break;
+            }
+            #endif
+            default:{
+            }
+        }
+    }
+#endif
 }
 
 void CompileAnsiC(char *dest)

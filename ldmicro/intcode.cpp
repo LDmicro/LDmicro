@@ -29,6 +29,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
+#include "display.h"
 
 #define NEW_ONE_SHOT
 //#define DEFAULT_PARALLEL_ALGORITHM
@@ -68,9 +69,15 @@ int asm_discover_names = 0;
 //                       4- l_0009:     bcf  REG_PCLATH,     4 ; 0xa ; 10
 //-----------------------------------------------------------------------------
 
+DWORD addrRUartRecvErrorFlag;
+int    bitRUartRecvErrorFlag;
+DWORD addrRUartSendErrorFlag;
+int    bitRUartSendErrorFlag;
+
 IntOp IntCode[MAX_INT_OPS];
 int IntCodeLen = 0;
 int ProgWriteP = 0;
+static SDWORD *Tdata;
 int rungNow = -INT_MAX;
 static int whichNow = INT_MAX;
 
@@ -385,6 +392,33 @@ void IntDumpListing(char *outFile)
                 break;
             // Special function
 
+            #ifdef TABLE_IN_FLASH
+            case INT_FLASH_INIT:
+                fprintf(f, "INIT TABLE signed %d byte %s[%d] := {", IntCode[i].literal2, IntCode[i].name1, IntCode[i].literal);
+                int j;
+                for(j = 0; j < (IntCode[i].literal-1); j++) {
+                  fprintf(f, "%d, ", IntCode[i].data[j]);
+                }
+                fprintf(f, "%d}", IntCode[i].data[IntCode[i].literal-1]);
+                break;
+
+            case INT_RAM_READ:
+                if(IsNumber(IntCode[i].name3)) {
+                    fprintf(f, "let var '%s' := '%s[%d]'", IntCode[i].name2, IntCode[i].name1, CheckMakeNumber(IntCode[i].name3));
+                } else {
+                    fprintf(f, "let var '%s' := '%s[%s]'", IntCode[i].name2, IntCode[i].name1, IntCode[i].name3);
+                }
+                break;
+
+            case INT_FLASH_READ:
+                if(IsNumber(IntCode[i].name3)) {
+                    fprintf(f, "let var '%s' := %d # '%s[%s]'", IntCode[i].name1, IntCode[i].data[hobatoi(IntCode[i].name3)], IntCode[i].name2, IntCode[i].name3);
+                } else {
+                    fprintf(f, "let var '%s' := '%s[%s]'", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
+                }
+                break;
+            #endif
+
             default:
                 ooops("IntCode[i].op=INT_%d",IntCode[i].op);
         }
@@ -455,15 +489,19 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2)
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = op;
     if(name1) strcpy(IntCode[IntCodeLen].name1, name1);
     if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
     if(name3) strcpy(IntCode[IntCodeLen].name3, name3);
+    if(name4) strcpy(IntCode[IntCodeLen].name4, name4);
+    if(name5) strcpy(IntCode[IntCodeLen].name5, name5);
+    if(name6) strcpy(IntCode[IntCodeLen].name6, name6);
     IntCode[IntCodeLen].literal = lit;
     IntCode[IntCodeLen].literal2 = lit2;
+    IntCode[IntCodeLen].data = data;
     IntCode[IntCodeLen].rung = rungNow;
     IntCode[IntCodeLen].which = whichNow;
     IntCode[IntCodeLen].l = l;
@@ -477,44 +515,52 @@ static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, ch
 
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, SDWORD lit)
 {
-    _Op(l, f, args, op, name1, name2, NULL, NULL, NULL, NULL, lit, 0);
+    _Op(l, f, args, op, name1, name2, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op, char *name1, SDWORD lit)
 {
-    _Op(l, f, args, op, name1, NULL, NULL, NULL, NULL, NULL, lit, 0);
+    _Op(l, f, args, op, name1, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2)
 {
-    _Op(l, f, args, op, name1, name2, NULL, NULL, NULL, NULL, 0, 0);
+    _Op(l, f, args, op, name1, name2, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op, char *name1)
 {
-    _Op(l, f, args, op, name1, NULL, NULL, NULL, NULL, NULL, 0, 0);
+    _Op(l, f, args, op, name1, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
+}
+static void _Op(int l, char *f, char *args, int op, SDWORD lit)
+{
+    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op)
 {
-    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0);
+    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
 //
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit)
 {
-    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, 0);
+    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3)
 {
-    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, 0, 0);
+    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, 0, 0, NULL);
 }
 //
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2)
 {
-    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, lit2);
+    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, lit2, NULL);
 }
 //
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4)
 {
-    _Op(l, f, args, op, name1, name2, name3, name4, NULL, NULL, 0, 0);
+    _Op(l, f, args, op, name1, name2, name3, name4, NULL, NULL, 0, 0, NULL);
 }
 //
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2, SDWORD *data)
+{
+    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, lit2, data);
+}
 
 // And use macro for bugtracking
 #define Op(...) _Op(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
@@ -876,6 +922,14 @@ static void InitVarsCircuit(int which, void *elem, int *n)
                 InitVarsCircuit(p->contents[i].which, p->contents[i].d.any, n);
             break;
         }
+        case ELEM_TOF: {
+                    if(n)
+                        (*n)++; // counting the number of variables
+                    else {
+                        Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, l->d.timer.delay);
+                    }
+            break;
+        }
         case ELEM_CTR:
         case ELEM_CTC:
         case ELEM_CTU:
@@ -968,15 +1022,6 @@ static void InitTablesCircuit(int which, void *elem)
         case ELEM_14SEG: nameTable = "char14seg"; goto xseg;
         case ELEM_16SEG: nameTable = "char16seg"; goto xseg;
         xseg:
-            if(!IsNumber(l->d.segments.src)) {
-                 sovElement = 1;
-                 if((isVarInited(nameTable) < 0)) {
-                     Op(INT_FLASH_INIT,nameTable,NULL,NULL, LEN7SEG, sovElement, char7seg);
-                     MarkInitedVariable(nameTable);
-                 } else {
-                     Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable, LEN7SEG);
-                 }
-            }
             break;
         }
         default:
@@ -1622,8 +1667,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         }
 
         case ELEM_IF_BIT_SET:
+            break;
         case ELEM_IF_BIT_CLEAR:
-          break;
+            break;
 
         case ELEM_ONE_SHOT_RISING: {
             Comment(3, "ELEM_ONE_SHOT_RISING");
@@ -1723,15 +1769,17 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
             break;
         }
-        case ELEM_7SEG:
-        case ELEM_9SEG:
-        case ELEM_14SEG:
-        case ELEM_16SEG:
+        {
+        int deg, len;
+        case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  goto xseg;
+        case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  goto xseg;
+        case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); goto xseg;
+        case ELEM_16SEG: Comment(3, stringer(ELEM_16SEG)); goto xseg;
+        xseg:
         {
             break;
         }
-
-
+        }
         case ELEM_STEPPER: {
             Comment(3, "ELEM_STEPPER");
             break;
@@ -1754,7 +1802,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest,
                     CheckMakeNumber(l->d.move.src));
             } else {
-                Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
+//              Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
+               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
             }
             Op(INT_END_IF);
             break;
@@ -1985,6 +2034,20 @@ math:   {
         }
 
         case ELEM_LOOK_UP_TABLE: {
+            #ifdef TABLE_IN_FLASH
+            ElemLookUpTable *t = &(l->d.lookUpTable);
+            Comment(3, "ELEM_LOOK_UP_TABLE %s", t->name);
+
+            char nameTable[MAX_NAME_LEN];
+            sprintf(nameTable, "%s%s", t->name,""); // "LutElement");
+
+            int sovElement;
+            sovElement =  TestByteNeeded(t->count, t->vals);
+
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_FLASH_READ,t->dest,nameTable,t->index,t->count,sovElement,t->vals);
+            Op(INT_END_IF);
+            #else
             Comment(3, "ELEM_LOOK_UP_TABLE");
             // God this is stupid; but it will have to do, at least until I
             // add new int code instructions for this.
@@ -1998,6 +2061,7 @@ math:   {
                 Op(INT_END_IF);
             }
             Op(INT_END_IF);
+            #endif
             break;
         }
 
@@ -2475,6 +2539,9 @@ BOOL GenerateIntermediateCode(void)
 
     CheckVariableNames();
 
+    #ifdef TABLE_IN_FLASH
+    InitTables();
+    #endif
     InitVars();
 
     rungNow++;

@@ -685,22 +685,25 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         case ELEM_PIECEWISE_LINEAR:
         case ELEM_LOOK_UP_TABLE: {
-            char *dest, *index, *str;
+            char *name, *dest, *index, *str;
             if(which == ELEM_PIECEWISE_LINEAR) {
                 str = "PWL";
-                //name = leaf->d.piecewiseLinear.name;
+                name = leaf->d.piecewiseLinear.name;
                 dest = leaf->d.piecewiseLinear.dest;
                 index = leaf->d.piecewiseLinear.index;
             } else {
                 str = "LUT";
-                //name = leaf->d.lookUpTable.name;
+                name = leaf->d.lookUpTable.name;
                 dest = leaf->d.lookUpTable.dest;
                 index = leaf->d.lookUpTable.index;
             }
             sprintf(s2,"%s",dest);
             formatWidth(top, POS_WIDTH, "{",s2,"","",":=}");
-            sprintf(s2,"\x01""%s\x02[%s", str, index);
-            formatWidth(bot, POS_WIDTH, "{",s2,"","","]}");
+
+            sprintf(s1,"\x01""%s\x02 ", str);
+            sprintf(s2,"%s", name);
+            sprintf(s3,"[%s]", index);
+            formatWidth(bot, POS_WIDTH, "{",s1,s2,s3,"}");
 
             CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
