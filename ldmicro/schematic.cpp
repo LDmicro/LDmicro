@@ -154,14 +154,14 @@ BOOL StaySameElem(int Which)
         Which == ELEM_READ_ADC ||
         Which == ELEM_SET_PWM ||
         Which == ELEM_MASTER_RELAY ||
+        Which == ELEM_SLEEP ||
         Which == ELEM_SHIFT_REGISTER ||
         Which == ELEM_LOOK_UP_TABLE ||
         Which == ELEM_PIECEWISE_LINEAR ||
         Which == ELEM_PERSIST ||
         Which == ELEM_MOVE)
       return TRUE;
-    else
-      return FALSE;
+    return FALSE;
 }
 //-----------------------------------------------------------------------------
 BOOL CanChangeOutputElem(int Which)
@@ -202,6 +202,7 @@ BOOL EndOfRungElem(int Which)
         Which == ELEM_PWM_OFF ||
         Which == ELEM_NPULSE_OFF ||
         Which == ELEM_MASTER_RELAY ||
+        Which == ELEM_SLEEP ||
         Which == ELEM_SHIFT_REGISTER ||
         Which == ELEM_LOOK_UP_TABLE ||
         Which == ELEM_PIECEWISE_LINEAR ||

@@ -824,6 +824,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddMasterRelay());
             break;
 
+        case MNU_INSERT_SLEEP:
+            CHANGING_PROGRAM(AddSleep());
+            break;
+
         case MNU_INSERT_SHIFT_REG:
             CHANGING_PROGRAM(AddShiftRegister());
             break;

@@ -396,29 +396,58 @@ McuAdcPinInfo AvrAtmega16or32AdcPinInfo[] = {
 // ATmega8 PDIP-28
 
 McuIoPinInfo AvrAtmega8IoPinInfo[] = {
-    { 'D',  0,  2 },
-    { 'D',  1,  3 },
-    { 'D',  2,  4 },
-    { 'D',  3,  5 },
-    { 'D',  4,  6 },
-    { 'D',  5, 11 },
-    { 'D',  6, 12 },
-    { 'D',  7, 13 },
-    { 'B',  0, 14 },
-    { 'B',  1, 15 },
-    { 'B',  2, 16 },
-    { 'B',  3, 17 },
-    { 'B',  4, 18 },
-    { 'B',  5, 19 },
-//  { 'B',  6,  9 }, //TOSC1
-//  { 'B',  7, 10 }, //TOSC2
-    { 'C',  0, 23 },
-    { 'C',  1, 24 },
-    { 'C',  2, 25 },
-    { 'C',  3, 26 },
-    { 'C',  4, 27 },
-    { 'C',  5, 28 },
-//  { 'C',  6,  1 }, //_RESET
+    { 'D',  0,  2, "PD0 (RXD)" },
+    { 'D',  1,  3, "PD1 (TXD)" },
+    { 'D',  2,  4, "PD2 (INT0)" },
+    { 'D',  3,  5, "PD3 (INT1)" },
+    { 'D',  4,  6, "PD4 (XCK / T0)" },
+    { 'D',  5, 11, "PD5 (T1)" },
+    { 'D',  6, 12, "PD6 (AIN0)" },
+    { 'D',  7, 13, "PD7 (AIN1)" },
+    { 'B',  0, 14, "PB0 (ICP1)" },
+    { 'B',  1, 15, "PB1 (OC1A)" },
+    { 'B',  2, 16, "PB2 (SS / OC1B)" },
+    { 'B',  3, 17, "PB3 (MOSI / OC2)" },
+    { 'B',  4, 18, "PB4 (MISO)" },
+    { 'B',  5, 19, "PB5 (SCK)" },
+//  { 'B',  6,  9, "PB6 (XTAL1 / TOSC1)" },
+//  { 'B',  7, 10, "PB7 (XTAL2 / TOSC2)" },
+    { 'C',  0, 23, "PC0 (ADC0)" },
+    { 'C',  1, 24, "PC1 (ADC1)" },
+    { 'C',  2, 25, "PC2 (ADC2)" },
+    { 'C',  3, 26, "PC3 (ADC3)" },
+    { 'C',  4, 27, "PC4 (ADC4 / SDA)" },
+    { 'C',  5, 28, "PC5 (ADC5 / SCL)" },
+//  { 'C',  6,  1, "PC6 (_RESET)" },
+};
+
+//-----------------------------------------------------------------------------
+// ATmega328 PDIP-28
+
+McuIoPinInfo AvrAtmega328IoPinInfo[] = {
+    { 'D',  0,  2, "PD0 (PCINT16 / RXD)" },
+    { 'D',  1,  3, "PD1 (PCINT17 / TXD)" },
+    { 'D',  2,  4, "PD2 (PCINT18 / INT0)" },
+    { 'D',  3,  5, "PD3 (PCINT19 / OC2B / INT1)" },
+    { 'D',  4,  6, "PD4 (PCINT20 / XCK / T0)" },
+    { 'D',  5, 11, "PD5 (PCINT21 / OC0B / T1)" },
+    { 'D',  6, 12, "PD6 (PCINT22 / OC0A / AIN0)" },
+    { 'D',  7, 13, "PD7 (PCINT23 / AIN1)" },
+    { 'B',  0, 14, "PB0 (PCINT0 / CLKO / ICP1)" },
+    { 'B',  1, 15, "PB1 (OC1A / PCINT1)" },
+    { 'B',  2, 16, "PB2 (SS / OC1B / PCINT2)" },
+    { 'B',  3, 17, "PB3 (MOSI / OC2A / PCINT3)" },
+    { 'B',  4, 18, "PB4 (MISO / PCINT4)" },
+    { 'B',  5, 19, "PB5 (SCK / PCINT5)" },
+//  { 'B',  6,  9, "PB6 (PCINT6 / XTAL1 / TOSC1)" },
+//  { 'B',  7, 10, "PB7 (PCINT7 / XTAL2 / TOSC2)" },
+    { 'C',  0, 23, "PC0 (ADC0 / PCINT8)" },
+    { 'C',  1, 24, "PC1 (ADC1 / PCINT9)" },
+    { 'C',  2, 25, "PC2 (ADC2 / PCINT10)" },
+    { 'C',  3, 26, "PC3 (ADC3 / PCINT11)" },
+    { 'C',  4, 27, "PC4 (ADC4 / SDA / PCINT12)" },
+    { 'C',  5, 28, "PC5 (ADC5 / SCL / PCINT13)" },
+//  { 'C',  6,  1, "PC6 (PCINT14 / _RESET)" }
 };
 
 McuAdcPinInfo AvrAtmega8AdcPinInfo[] = {
@@ -1209,8 +1238,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0, 0x24, 0x27, 0x2A }, // DDRx
         16*1024,
         { { 0x100, 2048 } },
-        AvrAtmega8IoPinInfo,
-        arraylen(AvrAtmega8IoPinInfo),
+        AvrAtmega328IoPinInfo,
+        arraylen(AvrAtmega328IoPinInfo),
         AvrAtmega8AdcPinInfo,
         arraylen(AvrAtmega8AdcPinInfo),
         1023,

@@ -56,6 +56,7 @@
 #define INT_RAM_READ                            1005
 #endif
 
+#define INT_SLEEP                               1099
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12
 #define INT_UART_SEND                           13
