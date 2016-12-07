@@ -160,6 +160,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_OPEN         0x3b
 #define MNU_INSERT_SHORT        0x3c
 #define MNU_INSERT_MASTER_RLY   0x3d
+#define MNU_INSERT_SLEEP        0x3d01
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
 #define MNU_INSERT_FMTD_STRING  0x40
@@ -328,6 +329,7 @@ typedef signed long SDWORD;
 #define ELEM_UART_SEND_READY    0x2b01
 #define RUartSendErrorFlag     "RUartSendErrorFlag"
 #define ELEM_MASTER_RELAY       0x2c
+#define ELEM_SLEEP              0x2c01
 #define ELEM_SHIFT_REGISTER     0x2d
 #define ELEM_LOOK_UP_TABLE      0x2e
 #define ELEM_FORMATTED_STRING   0x2f
@@ -441,6 +443,7 @@ typedef signed long SDWORD;
         case ELEM_UART_RECV: \
         case ELEM_UART_RECV_AVAIL: \
         case ELEM_MASTER_RELAY: \
+        case ELEM_SLEEP: \
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
@@ -1100,6 +1103,7 @@ void AddPersist(void);
 void AddComment(char *text);
 void AddShiftRegister(void);
 void AddMasterRelay(void);
+void AddSleep(void);
 void AddLookUpTable(void);
 void AddPiecewiseLinear(void);
 void AddFormattedString(void);
@@ -1458,7 +1462,8 @@ typedef enum AvrOpTag {
     OP_PUSH,
     OP_POP,
     OP_CLI,
-    OP_SEI, // 88
+    OP_SEI,
+    OP_SLEEP, // 89
     #ifdef USE_MUL
     OP_MUL,
     OP_MULS,
@@ -1515,7 +1520,8 @@ typedef enum Pic16OpTag {
     OP_MOVLB,
     OP_MOVLP, // 35
     OP_TRIS,
-    OP_OPTION
+    OP_OPTION,
+    OP_SLEEP_
 } PicOp;
 
 typedef struct PicAvrInstructionTag {

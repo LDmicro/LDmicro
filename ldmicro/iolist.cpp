@@ -523,6 +523,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_SHORT:
         case ELEM_OPEN:
         case ELEM_MASTER_RELAY:
+        case ELEM_SLEEP:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_OSC:

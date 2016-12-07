@@ -336,8 +336,25 @@ static DWORD Timer0OvfAddr    = 0;
 static DWORD Timer1OvfAddr    = 0;
 static DWORD Timer1CompAAddr  = 0;
 
-//External Interrupts support
-static DWORD REG_MCUCR = 0;
+// Sleep Mode Control Register
+static DWORD REG_SMCR  = 0; // 0x53;
+static BYTE      SE    = 0; // BIT0;
+static BYTE      SM0   = 0; // BIT1;
+
+// Power Reduction Register
+static DWORD REG_PRR   = 0;
+
+// External Interrupt Control Register A
+static DWORD REG_EICRA = 0;
+// External Interrupt Mask Register
+static DWORD REG_EIMSK = 0;
+// External Interrupt Flag Register
+static DWORD REG_EIFR  = 0;
+
+// External Interrupts support
+// MCU Control Register
+static DWORD REG_MCUCR = 0; // 0x55;
+//for others
 static BYTE      ISC00 = 0;
 static BYTE      ISC01 = 0;
 static BYTE      ISC10 = 0;
@@ -647,6 +664,10 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
     case OP_NOP:
         CHECK(arg1, 0); CHECK(arg2, 0);
         return 0;
+
+    case OP_SLEEP:
+        CHECK(arg1, 0); CHECK(arg2, 0);
+        return 0x9588;
 
     case OP_CPSE:
         CHECK(arg1, 5); CHECK(arg2, 5);
@@ -3627,6 +3648,38 @@ static void CompileFromIntermediate(void)
                 break;
             }
             #endif
+            case INT_SLEEP:
+                if(REG_SMCR) {
+                    WriteMemory(REG_SMCR, (0x02<<SM0) | (1<<SE)); //Power-down Sleep Mode, Sleep Enable
+                } else if(REG_MCUCR) {
+                    WriteMemory(REG_MCUCR, (0x02<<SM0) | (1<<SE));
+                } else oops();
+                if(REG_EICRA) {
+                    WriteMemory(REG_EICRA, 0); // configured as a level interrupt
+                }
+                /**/
+                if(REG_EIFR) {
+                    WriteMemory(REG_EIFR, (1<<INTF1) | (1<<INTF0)); // the flag can be cleared by writing a logical one to it
+                } else if(REG_GICR) {
+                    WriteMemory(REG_GICR, (1<<INT1) | (1<<INT0));
+                } else oops();
+                /**/
+                if(REG_EIMSK) {
+                    WriteMemory(REG_EIMSK, (1<<INT1) | (1<<INT0)); // the external pin interrupt is enabled
+                } else if(REG_GICR) {
+                    WriteMemory(REG_GICR, (1<<INT1) | (1<<INT0));
+                } else oops();
+                Instruction(OP_SEI);
+                Instruction(OP_SLEEP);
+                Instruction(OP_CLI);
+                /**/
+                if(REG_EIMSK) {
+                    AndMemory(REG_EIMSK, ~((1<<INT1) | (1<<INT0))); // the external pin interrupt is enabled
+                } else if(REG_GICR) {
+                    AndMemory(REG_GICR, ~((1<<INT1) | (1<<INT0)));
+                } else oops();
+                /**/
+                break;
             default:
                 ooops("INT_%d", a->op);
                 break;
@@ -4089,20 +4142,21 @@ void CompileAvr(char *outFile)
         return;
     }
 
-  //REG_MCUCR = 0x55;
+/*
+    REG_MCUCR = 0x55;
         ISC11 = BIT3;
         ISC10 = BIT2;
         ISC01 = BIT1;
         ISC00 = BIT0;
 
-  //REG_GICR  = 0x5B;
+    REG_GICR  = 0x5B;
         INT1  = BIT7;
         INT0  = BIT6;
 
-  //REG_GIFR  = 0x5A;
+    REG_GIFR  = 0x5A;
         INTF1 = BIT7;
         INTF0 = BIT6;
-
+*/
     //***********************************************************************
     // Interrupt Vectors Table
     if(McuAs(" AT90USB646 ")
@@ -4163,13 +4217,20 @@ void CompileAvr(char *outFile)
         Timer1OvfAddr   = 0x000D;
         Timer0OvfAddr   = 0x0010;
         Timer1CompAAddr = 0x000B;
-        REG_GICR  = 0x3D; // EIMSK
-            INT1  = BIT1;
-            INT0  = BIT0;
 
-        REG_GIFR  = 0x3C; // EIFR
-            INTF1 = BIT1;
-            INTF0 = BIT0;
+        REG_SMCR        = 0x53;
+            SE          = BIT0;
+            SM0         = BIT1;
+
+        REG_EICRA       = 0x69;
+
+        REG_EIMSK       = 0x3D;
+            INT1        = BIT1;
+            INT0        = BIT0;
+
+        REG_EIFR        = 0x3C;
+            INTF1       = BIT1;
+            INTF0       = BIT0;
     } else
     if(McuAs("Atmel AVR ATmega64 ")
     || McuAs("Atmel AVR ATmega128 ")
@@ -4179,11 +4240,12 @@ void CompileAvr(char *outFile)
         Timer1OvfAddr   = 0x001C;
         Timer0OvfAddr   = 0x0020;
         Timer1CompAAddr = 0x0018;
+
         REG_GICR  = 0x59; // EIMSK
             INT1  = BIT1;
             INT0  = BIT0;
 
-        REG_GIFR  = 0x58; // EIFR
+        REG_GIFR  = 0x58; // EIFR ???
             INTF1 = BIT1;
             INTF0 = BIT0;
     } else
@@ -4198,6 +4260,10 @@ void CompileAvr(char *outFile)
     if(McuAs(" ATmega8 ")
     || McuAs(" ATmega8535 ")
     ){
+        REG_MCUCR       = 0x55;
+            SE          = BIT7;
+            SM0         = BIT4;
+
         Int0Addr        = 1;
         Int1Addr        = 2;
         Timer1OvfAddr   = 0x0008;

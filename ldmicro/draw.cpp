@@ -177,6 +177,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_LOOK_UP_TABLE:
         case ELEM_PIECEWISE_LINEAR:
         case ELEM_MASTER_RELAY:
+        case ELEM_SLEEP:
         case ELEM_READ_ADC:
         case ELEM_SET_PWM:
         case ELEM_PWM_OFF:
@@ -666,6 +667,11 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 
         case ELEM_MASTER_RELAY:
             CenterWithWires(*cx, *cy, "{MASTER RLY}", poweredBefore,
+                poweredAfter);
+            break;
+
+        case ELEM_SLEEP:
+            CenterWithWires(*cx, *cy, "{SLEEP}", poweredBefore,
                 poweredAfter);
             break;
 

@@ -298,6 +298,14 @@ void AddReset(void)
     AddLeaf(ELEM_RES, t);
 }
 
+void AddSleep(void)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    AddLeaf(ELEM_SLEEP, t);
+}
+
 void AddMasterRelay(void)
 {
     if(!CanInsertEnd) return;

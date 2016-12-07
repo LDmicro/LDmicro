@@ -637,6 +637,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_PERSIST:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
+        case ELEM_SLEEP:
         case ELEM_UART_SEND:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
@@ -804,6 +805,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_STRING:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
+        case ELEM_SLEEP:
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_OPEN:
@@ -1237,6 +1239,9 @@ math:
                 break;
             #endif
 
+            case INT_SLEEP:
+                break;
+
             default:
                 ooops("op=%d",a->op);
                 break;
@@ -1427,6 +1432,12 @@ void DescribeForIoList(char *name, int type, char *out)
                 sprintf(out, "0x%08x = %d = %.6g s", v, v, dtms / 1000);
               else oops();
             }
+            break;
+        }
+        case IO_TYPE_UART_TX:
+        case IO_TYPE_UART_RX: {
+            SDWORD v = GetSimulationVariable(name, TRUE);
+              sprintf(out, "0x%02x = %d = '%c'", v , v, v);
             break;
         }
         default: {
