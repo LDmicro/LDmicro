@@ -78,6 +78,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_OPEN;
     } else if(memcmp(line, "MASTER_RELAY", 12)==0) {
         *which = ELEM_MASTER_RELAY;
+    } else if(memcmp(line, "SLEEP", 5)==0) {
+        *which = ELEM_SLEEP;
     } else if(sscanf(line, "SHIFT_REGISTER %s %d", l->d.shiftRegister.name,
         &(l->d.shiftRegister.stages))==2)
     {
@@ -699,6 +701,10 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "MASTER_RELAY\n");
             break;
 
+        case ELEM_SLEEP:
+            fprintf(f, "SLEEP\n");
+            break;
+
         case ELEM_SHIFT_REGISTER:
             fprintf(f, "SHIFT_REGISTER %s %d\n", l->d.shiftRegister.name,
                 l->d.shiftRegister.stages);
@@ -788,7 +794,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "\n");
             break;
         }
-        case ELEM_7SEG: 
+        case ELEM_7SEG:
             fprintf(f,  "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
             break;
 

@@ -307,6 +307,10 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "if not '%s' {", IntCode[i].name1); indent++;
                 break;
 
+            case INT_SLEEP:
+                fprintf(f, "SLEEP;");
+                break;
+
             case INT_IF_VARIABLE_LES_LITERAL:
                 fprintf(f, "if '%s' < %d {", IntCode[i].name1,
                     IntCode[i].literal); indent++;
@@ -2001,6 +2005,13 @@ math:   {
             break;
         }
         }
+        case ELEM_SLEEP:
+            Comment(3, "ELEM_SLEEP");
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_SLEEP);
+            Op(INT_END_IF);
+            break;
+
         case ELEM_MASTER_RELAY:
             Comment(3, "ELEM_MASTER_RELAY");
             // Tricky: must set the master control relay if we reach this
