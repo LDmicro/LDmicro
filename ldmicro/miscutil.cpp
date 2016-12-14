@@ -469,7 +469,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             }
         }
     } else if(type == IO_TYPE_INT_INPUT && Prog.mcu) {
-        if(Prog.mcu->interruptCount == 0) {
+        if(Prog.mcu->ExtIntCount == 0) {
             strcpy(dest, _("<no INTs!>"));
             /*
             if(portName)
@@ -709,12 +709,12 @@ McuAdcPinInfo *AdcPinInfoForName(char *name)
 }
 
 //-----------------------------------------------------------------------------
-BOOL IsInterruptPin(int pin)
+BOOL IsExtIntPin(int pin)
 {
     int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.mcu->interruptCount; i++)
-            if(Prog.mcu->interruptInfo[i].pin==pin)
+        for(i = 0; i < Prog.mcu->ExtIntCount; i++)
+            if(Prog.mcu->ExtIntInfo[i].pin==pin)
                 return TRUE;
     return FALSE;
 }

@@ -160,7 +160,7 @@
 #define INT_TEST_C_SFR_VARIABLE_L               1082
 // Special function
 
-#define INT_OFF_PWM                            2001
+#define INT_PWM_OFF                            2001
 #define INT_SET_NPULSE                         2002
 #define INT_OFF_NPULSE                         2003
 #define INT_QUAD_ENCOD                         2004

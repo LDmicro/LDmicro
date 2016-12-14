@@ -475,7 +475,8 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_SET_PWM:
             AppendIo(l->d.setPwm.name, IO_TYPE_PWM_OUTPUT);
-            AppendIo(l->d.setPwm.duty_cycle, IO_TYPE_GENERAL);
+            if(!IsNumber(l->d.setPwm.duty_cycle))
+                AppendIo(l->d.setPwm.duty_cycle, IO_TYPE_GENERAL);
             break;
 
         case ELEM_CTU:
@@ -1069,7 +1070,7 @@ void ShowIoDialog(int item)
         }
 #endif
         int type = Prog.io.assignment[item].type;
-        if((type == IO_TYPE_INT_INPUT) && (!IsInterruptPin(Prog.mcu->pinInfo[i].pin)))
+        if((type == IO_TYPE_INT_INPUT) && (!IsExtIntPin(Prog.mcu->pinInfo[i].pin)))
             goto cant_use_this_io;
 
         if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {

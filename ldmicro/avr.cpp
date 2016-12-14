@@ -336,6 +336,13 @@ static DWORD Timer0OvfAddr    = 0;
 static DWORD Timer1OvfAddr    = 0;
 static DWORD Timer1CompAAddr  = 0;
 
+// General Timer/Counter Control Register
+static DWORD REG_GTCCR = 0;
+#define          PSRASY  BIT1
+// Special Function IO Register
+static DWORD REG_SFIOR = 0;
+static BYTE      PSR2  = -1;
+
 // Sleep Mode Control Register
 static DWORD REG_SMCR  = 0; // 0x53;
 static BYTE      SE    = 0; // BIT0;
@@ -1958,7 +1965,6 @@ BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,
         else if(*prescaler == 256) *prescaler = 1024;
         else break;
     }
-    //dbp("bestPrescaler=%d bestDivider=%d", bestPrescaler, bestDivider);
 
     if(bestPrescaler == 0) {
         *prescaler = 1024;
@@ -3183,18 +3189,40 @@ static void CompileFromIntermediate(void)
                 CopyRegsToVar(a->name1, r20, sov);
                 break;
             }
-            #ifdef NEW_FEATURE
-            case INT_OFF_PWM: {
-                WriteMemory(REG_TCCR2, 0); // No clock source (Timer/Counter2 stopped)
-                MemForSingleBit("$pwm_init", FALSE, &addr, &bit);
-                ClearBit(addr, bit);
+            case INT_PWM_OFF: {
+                McuPwmPinInfo *iop = PwmPinInfoForName(a->name1);
+                if(!iop) {
+                    Error(_("Pin '%s' not a PWM output!"), a->name1);
+                    CompileError();
+                }
+                if(iop->maxCS == 0) {
+                    if(REG_TCCR2B > 0) {
+                        iop->REG_TCCRnB = REG_TCCR2B;
+                        iop->maxCS = 7;
+                    } else {
+                        iop->maxCS = 5;
+                    }
+                    iop->REG_TCCRnA = REG_TCCR2;
+                    iop->REG_OCRnxL = REG_OCR2;
+                }
+
+                // No clock source (Timer/CounterN stopped)
+                if(iop->REG_TCCRnB > 0)
+                    WriteMemory(iop->REG_TCCRnB, 0);
+                else
+                    WriteMemory(iop->REG_TCCRnA, 0);
+
+                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                ClearBit(addr, bit, a->name1);
+
+                char storeName[MAX_NAME_LEN];
+                sprintf(storeName, "$pwm_init_%s", a->name1);
+                MemForSingleBit(storeName, FALSE, &addr, &bit);
+                ClearBit(addr, bit, storeName);
                 break;
             }
-            #endif
-
             case INT_SET_PWM: {
             //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, &l->d.setPwm.invertingMode);
-                double target = hobatoi(a->name2);
                 McuPwmPinInfo *iop = PwmPinInfoForName(a->name3);
                 if(!iop) {
                     Error(_("Pin '%s' not a PWM output!"), a->name3);
@@ -3209,10 +3237,11 @@ static void CompileFromIntermediate(void)
                     }
                     iop->REG_TCCRnA = REG_TCCR2;
 
-                    //if(iop->REG_OCRnxH)
-                    //  iop->REG_OCRnxH = ;
+                    iop->REG_OCRnxH = 0;
                     iop->REG_OCRnxL = REG_OCR2;
                 }
+
+                double target = hobatoi(a->name2);
                 // PWM frequency is
                 //   target = xtal/(256*prescale)
                 // so not a lot of room for accurate frequency here
@@ -3325,20 +3354,23 @@ static void CompileFromIntermediate(void)
                 // Use100 = FALSE; // TODO
                 if(Use100) {
                     DivideUsed = TRUE; MultiplyUsed = TRUE;
-                    CopyVarToRegs(r20, a->name1, SizeOfVar(a->name1));
-                    CopyLiteralToRegs(r16, 255, SizeOfVar(a->name1)); // Fast PWM
-                  //CopyLiteralToRegs(r16, 510, SizeOfVar(a->name1)); // Phase Correct PWM
+                    if(IsNumber(a->name1)){
+                      CopyLiteralToRegs(r20, hobatoi(a->name1), 2);
+                    } else {
+                      CopyVarToRegs(r20, a->name1, 2);
+                    }
+                    CopyLiteralToRegs(r16, 255, 2); // Fast PWM
+
                     CallSubroutine(MultiplyAddress);
 
                     Instruction(OP_MOV, 19, 20);
                     Instruction(OP_MOV, 20, 21);
-                    Instruction(OP_MOV, 21, 22);
 
-                    CopyLiteralToRegs(r22, 100, SizeOfVar(a->name1));
+                    CopyLiteralToRegs(r22, 100, 2);
                     CallSubroutine(DivideAddress);
                     // result in r20:r19
                 } else {
-                    CopyVarToRegs(r19, a->name1, SizeOfVar(a->name1));
+                    CopyVarToRegs(r19, a->name1, 2);
                 }
                 if(iop->REG_OCRnxH)
                   WriteRegToIO(iop->REG_OCRnxH, r20); // first HIGH
@@ -3348,7 +3380,7 @@ static void CompileFromIntermediate(void)
                 //MemForSingleBit("$pwm_init", FALSE, &addr, &bit);
 
                 char storeName[MAX_NAME_LEN];
-                GenSymOneShot(storeName, "ONE_SHOT_RISING", "pwm_init");
+                sprintf(storeName, "$pwm_init_%s", a->name3);
                 DWORD addr;
                 int bit;
                 MemForSingleBit(storeName, FALSE, &addr, &bit);
@@ -3356,13 +3388,22 @@ static void CompileFromIntermediate(void)
                 DWORD skip = AllocFwdAddr();
                 IfBitSet(addr, bit);
                 Instruction(OP_RJMP, skip, 0);
-                SetBit(addr, bit);
+                SetBit(addr, bit, storeName);
+
+                // Prescaler Reset Timer/Counter2
+                if(iop->timer == 2) {
+                    if(REG_SFIOR)
+                        SetBit(REG_SFIOR, PSR2);
+                    else if(REG_GTCCR)
+                        SetBit(REG_GTCCR, PSRASY);
+                }
                 // see Timer/Counter2
                 // fast PWM mode, non-inverting or inverting mode, given prescale
                 if(iop->REG_TCCRnB > 0) {
                     if(iop->COMnx1) {
                         WriteMemory(iop->REG_TCCRnB, iop->WGMb | cs);
-                        OrMemory(iop->REG_TCCRnA, iop->WGMa | (1 << iop->COMnx1) | (a->name2[0]=='/' ? (1 << iop->COMnx0) : 0));
+                        AndMemory(iop->REG_TCCRnA, ~(iop->WGMa | (1 << iop->COMnx1) | (a->name2[0]=='/' ? (1 << iop->COMnx0) : 0)));
+                        OrMemory (iop->REG_TCCRnA,   iop->WGMa | (1 << iop->COMnx1) | (a->name2[0]=='/' ? (1 << iop->COMnx0) : 0));
                     } else {
                         WriteMemory(REG_TCCR2B, cs);
                         WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0]=='/' ? (1 << COM20) : 0));
@@ -3370,7 +3411,7 @@ static void CompileFromIntermediate(void)
                 } else {
                     //TODO: test registers and bits define's
                     if(iop->COMnx1) {
-                        OrMemory(iop->REG_TCCRnA, iop->WGMa | (1 << iop->COMnx1) | (a->name2[0]=='/' ? (1 << iop->COMnx0) : 0) | cs);
+                        WriteMemory(iop->REG_TCCRnA, iop->WGMa | (1 << iop->COMnx1) | (a->name2[0]=='/' ? (1 << iop->COMnx0) : 0) | cs);
                     } else {
                         WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0]=='/' ? (1 << COM20) : 0) | cs);
                     }
@@ -4338,6 +4379,8 @@ void CompileAvr(char *outFile)
         REG_EEARL   = 0x41;
         REG_EEDR    = 0x40;
         REG_EECR    = 0x3F;
+
+        REG_GTCCR   = 0x43;
     } else
     if(McuAs("Atmel AVR ATmega48 ") ||
        McuAs("Atmel AVR ATmega88 ") ||
@@ -4384,6 +4427,8 @@ void CompileAvr(char *outFile)
         REG_EEARL   = 0x41;
         REG_EEDR    = 0x40;
         REG_EECR    = 0x3F;
+
+        REG_GTCCR   = 0x43;
     } else
     if(McuAs("Atmel AVR ATmega164 ") ||
        McuAs("Atmel AVR ATmega324 ") ||
@@ -4416,6 +4461,16 @@ void CompileAvr(char *outFile)
         REG_EEARL   = 0x41;
         REG_EEDR    = 0x40;
         REG_EECR    = 0x3F;
+
+        REG_OCR2    = 0xB3;   // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0;   // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7;   // COM2A1
+            COM20   = BIT6;   // COM2A0
+
+        REG_GTCCR   = 0x43;
     } else
     if(McuAs(" ATmega640 ") ||
        McuAs(" ATmega1280 ") ||
@@ -4458,84 +4513,9 @@ void CompileAvr(char *outFile)
             WGM21   = BIT1;
             COM21   = BIT7;   // COM2A1
             COM20   = BIT6;   // COM2A0
+
+        REG_GTCCR   = 0x43;
     } else
-    if(McuAs(" ATmega164 ") ||
-       McuAs(" ATmega324 ") ||
-       McuAs(" ATmega644 ") ||
-       McuAs(" ATmega1284 ")
-    ){
-        REG_TCCR0  = 0x45;
-        REG_TCNT0  = 0x46;
-
-        REG_OCR1AH  = 0x89;
-        REG_OCR1AL  = 0x88;
-        REG_TCCR1B  = 0x81;
-        REG_TCCR1A  = 0x80;
-
-        REG_TIMSK   = 0x6F;   // TIMSK1
-        REG_TIFR1   = 0x36;
-            OCF1A   = BIT1;
-            TOV1    = BIT0;
-        REG_TIFR0   = 0x35;
-            TOV0    = BIT0;
-
-        REG_UDR     = 0xC6;   // UDR0
-        REG_UBRRH   = 0xC5;   // UBRR0H
-        REG_UBRRL   = 0xC4;   // UBRR0L
-        REG_UCSRC   = 0xC2;   // UCSR0C
-        REG_UCSRB   = 0xC1;   // UCSR0B
-        REG_UCSRA   = 0xC0;   // UCSR0A
-
-        REG_OCR2    = 0xB3;   // OCR2A
-        REG_TCCR2B  = 0xB1;
-        REG_TCCR2   = 0xB0;   // TCCR2A
-            WGM20   = BIT0;
-            WGM21   = BIT1;
-            COM21   = BIT7;   // COM2A1
-            COM20   = BIT6;   // COM2A0
-    } else
-    /*
-    if(McuAs(" ATmega163 ")
-    || McuAs(" ATmega323 ")
-    || McuAs(" ATmega8535 ")
-    ){
-      //REG_TCCR0  = 0x45
-      //REG_TCNT0  = 0x46
-
-      //TIFR bits
-        OCF1A  = BIT4;
-        TOV1   = BIT2;
-        TOV0   = BIT0;
-      //TIMSK bits
-        OCIE1A = BIT4;
-        TOIE1  = BIT2;
-        TOIE0  = BIT0;
-    } else
-    if(McuAs("Atmel AVR ATmega103 ")
-    ){
-      //REG_TCCR0  = 0x45
-      //REG_TCNT0  = 0x46
-
-        REG_OCR1AH  = 0x4B;
-        REG_OCR1AL  = 0x4A;
-        REG_TCCR1A  = 0x4F;
-        REG_TCCR1B  = 0x4E;
-
-        REG_TIMSK   = 0x57;
-        REG_TIFR1   = 0x56; // TIFR
-        REG_TIFR0   = 0x56; // TIFR
-            OCF1A   = BIT4;
-            TOV1    = BIT2;
-            TOV0    = BIT0;
-
-//      REG_UBRRH   = 0x98;
-        REG_UBRRL   = 0x29; // UBRR
-        REG_UCSRB   = 0x2a; // UCR
-        REG_UCSRA   = 0x2b; // USR
-        REG_UDR     = 0x2c;
-//      REG_UCSRC   = 0x9d;
-    } else
-    */
     if(McuAs(" ATmega161 ")
     || McuAs("Atmel AVR ATmega162 ")
     || McuAs(" ATmega8515 ")
@@ -4564,6 +4544,9 @@ void CompileAvr(char *outFile)
         REG_UCSRB   = 0x2a;
         REG_UCSRA   = 0x2b;
         REG_UDR     = 0x2c;
+
+        REG_SFIOR   = 0x50;
+            PSR2    = BIT1;
     } else
     if(McuAs("Atmel AVR ATmega8 ")  ||
        McuAs("Atmel AVR ATmega16 ") ||
@@ -4593,6 +4576,9 @@ void CompileAvr(char *outFile)
         REG_UCSRB   = 0x2a;
         REG_UCSRA   = 0x2b;
         REG_UDR     = 0x2c;
+
+        REG_SFIOR   = 0x50;
+            PSR2    = BIT1;
     } else
     if(McuAs("Atmel AVR ATmega64 ") ||
        McuAs("Atmel AVR ATmega128 ")
@@ -4621,6 +4607,9 @@ void CompileAvr(char *outFile)
         REG_UCSRA   = 0x9b; // UCSR1A
         REG_UDR     = 0x9c; // UDR1
         REG_UCSRC   = 0x9d; // UCSR1C
+
+        REG_SFIOR   = 0x40;
+            PSR2    = BIT0;
     } else oops();
     //***********************************************************************
 
