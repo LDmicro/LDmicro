@@ -221,7 +221,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_PWM:
-                fprintf(f, "set pwm '%s' %s Hz out %s", IntCode[i].name1,
+                fprintf(f, "set pwm '%s' %% %s Hz out '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
                 break;
 
@@ -238,7 +238,8 @@ void IntDumpListing(char *outFile)
             case INT_OFF_NPULSE:
                 break;
 
-            case INT_OFF_PWM:
+            case INT_PWM_OFF:
+                fprintf(f, "pwm off '%s'", IntCode[i].name1);
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
@@ -1246,7 +1247,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_RES:
             Comment(3, "ELEM_RES");
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
+              if(l->d.reset.name[0]=='P')
+                  Op(INT_PWM_OFF, l->d.reset.name);
+              else
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
             Op(INT_END_IF);
             break;
         case ELEM_TCY: {

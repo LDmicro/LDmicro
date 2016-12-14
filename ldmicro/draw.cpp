@@ -618,8 +618,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         */
         case ELEM_RES: {
             ElemReset *r = &leaf->d.reset;
-            sprintf(s2,"%s",r->name);
-            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",s2,"",""), poweredAfter, TRUE);
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",r->name,"",""), poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{RES}", poweredBefore, poweredAfter);
             break;
         }

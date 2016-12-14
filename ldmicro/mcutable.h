@@ -500,15 +500,23 @@ McuAdcPinInfo AvrAtmega8AdcPinInfo32[] = {
     { 22, 0x07 }, // ADC7
 };
 
-//McuExtIntPinInfo
-int AvrAtmega8ExtIntPinInfo32[] = {
-    32, //INT0
-    1,  //INT1
+McuExtIntPinInfo AvrExtIntPinInfo32[] = {
+    { 32 }, // PD2/INT0
+    {  1 }, // PD3/INT1
+};
+
+McuExtIntPinInfo PicExtIntPinInfo40[] = {
+    { 33 }, // RB0/INT
 };
 
 //-----------------------------------------------------------------------------
 McuPwmPinInfo AvrAtmegaPwmPinInfo28_[] = {
-    { 17, 2 },
+////     ti max REG_   REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+    {  0, 0, 5, 0   ,  0x52,  0x53,  0,     0,        0, 0   ,  0    }, // Timer0
+    { 15, 1, 5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 }, // OC1A // Fast PWM 8-bit
+    { 16, 1, 5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 }, // OC1B // Fast PWM 8-bit
+    { 17, 2, 7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    }, // OC2  // Fast PWM
 };
 
 McuPwmPinInfo AvrAtmegaPwmPinInfo32_[] = {
@@ -565,11 +573,6 @@ McuPwmPinInfo AvrAtmegaPwmPinInfo100_[] = {
 };
 
 McuPwmPinInfo AvrAtmegaPwmPinInfo32[] = {
-/*
-   maxCS     (No prescaling)
-   WGMa      WGM00   WGM10    WGM20
-   WGMb      WGM02   WGM12    WGM22
-*/
 ////     ti max REG_   REG_   REG_   bit    bit    mask  REG_   mask
 //// pin mer CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
     { 10, 0, 5, 0x47,  0,     0x44,  7,     6,     3,    0x45,  0    }, // OC0A // Fast PWM
@@ -616,11 +619,6 @@ McuPwmPinInfo PicPwmPinInfo100_[] = {
     { 15, 2 },
 };
 */
-//McuExtIntPinInfo
-int AvrAtmega328ExtIntPinInfo32[] = {
-    32, //INT0
-    1   //INT1
-};
 
 //-----------------------------------------------------------------------------
 // ATmega164 or ATmega324 or ATmega644 or ATmega1264
@@ -1373,7 +1371,9 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
 //      AvrAtmega8ExtIntPinInfo32,
 //      arraylen(AvrAtmega8ExtIntPinInfo32),
         AvrAtmegaPwmPinInfo32_,
-        arraylen(AvrAtmegaPwmPinInfo32_)
+        arraylen(AvrAtmegaPwmPinInfo32_),
+        AvrExtIntPinInfo32,
+        arraylen(AvrExtIntPinInfo32)
     },
     {
         "Atmel AVR ATmega8 28-PDIP",
@@ -1520,7 +1520,9 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         // HS oscillator
         0x3f72,
         PicPwmPinInfo40_,
-        arraylen(PicPwmPinInfo40_)
+        arraylen(PicPwmPinInfo40_),
+        PicExtIntPinInfo40,
+        arraylen(PicExtIntPinInfo40)
     },
     {
         "Microchip PIC16F876 28-PDIP or 28-SOIC",

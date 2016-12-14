@@ -1,8 +1,33 @@
+== Release 4.1.1
+
+    * Fixed: SET PWM Timer1 at PIC. When two CCP modules are in a PWM mode,
+    Timer2 is the time-base for both PWM1 and PWM2 outputs. You must use
+    the same base PWM frequency for both SET PWM DUTY CYCLE elements.
+
+    * Fixed: SET PWM at AVR.
+
+    * New: RESET PWM element.
+    This instruction disable PWM output and set it to low level.
+    Also you can set another PWM base frequency by SET PWM DUTY CYCLE
+    after actuation the RESET PWM.
+
+    https://github.com/LDmicro/LDmicro/wiki/RESET-PWM
+    https://github.com/LDmicro/LDmicro/wiki/LDmicro-PWM
+
+    * New: SLEEP operation is implemented for PIC.
+    Tested only with PIC16F877 in Proteus!!!
+    Wake-up owing to external interrupt on rising edge of RB0/INT pin.
+    SLEEP operation don't affect MCU IO pins and others LDmicro operations.
+
+    * Wiki: Pull-up resistors
+    https://github.com/LDmicro/LDmicro/wiki/Pull-up-resistors
+
 == Release 4.1.0
 
     * New: SLEEP operation is implemented as Power-down Sleep Mode
-    for ATmega48, ATmega88, ATmega168, ATmega328. SLEEP operation don't affect
-    MCU IO pins and others LDmicro operations.
+    for ATmega48, ATmega88, ATmega168, ATmega328.
+    Wake-up owing to external interrupt on rising edge of PD2/INT0, PD3/INT1 pins.
+    SLEEP operation don't affect MCU IO pins and others LDmicro operations.
     SLEEP example https://github.com/LDmicro/LDmicro/wiki/SLEEP-example
 
 == Release 4.0.C

@@ -462,6 +462,15 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     Note! RES resets only numeric counter inside RTO, CTU/CTD,
     not their outputs!
 
+> RESET                         PWM
+                           ----{RES}----
+
+    This instruction disable PWM output and set it to low level.
+    Also you can set another PWM base frequency by SET PWM DUTY CYCLE 
+    after actuation the RESET PWM.
+
+    See SET PWM DUTY CYCLE below.
+
 > ONE-SHOT RISING               _    _
                            --[_/ OSR/ \_]--
 
@@ -810,6 +819,10 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     with at least two suitable timers. PWM uses pin CCP2 (not CCP1)
     on PIC16 chips and OC1B (not OC1A) on AVRs.
 
+    LDmicro V4.x.x allow all hardware PWM. See
+    https://github.com/LDmicro/LDmicro/wiki/LDmicro-PWM
+
+    See RESET PWM upper. 
 
 > MAKE PERSISTENT            saved_var
                            --{PERSIST}--

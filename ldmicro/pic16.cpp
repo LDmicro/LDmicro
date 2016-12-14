@@ -195,7 +195,11 @@ static DWORD FwdAddrCount;
 #define REG_PCLATH    0x0a
 #define REG_INTCON    0x0b
 #define     T0IE      BIT5
+#define     INTE      BIT4 // RB0/INT External Interrupt Enable bit
+#define     RBIE      BIT3 // RB Port Change Interrupt Enable bit
 #define     T0IF      BIT2
+#define     INTF      BIT1 // RB0/INT External Interrupt Flag bit
+#define     RBIF      BIT0 // RB Port Change Interrupt Flag bit
 
 // Bank Select Register instead REG_STATUS(STATUS_RP1,STATUS_RP0)
 #define REG_BSR       0x08
@@ -204,7 +208,6 @@ static DWORD FwdAddrCount;
 #define     BSR2      BIT2
 #define     BSR1      BIT1
 #define     BSR0      BIT0
-
 
 // These move around from device to device.
 // 0 means not defined(error!) or not exist in MCU.
@@ -441,6 +444,7 @@ static int IsOperation(PicOp op)
 //      case OP_SUBLW:
         case OP_IORLW:
         case OP_OPTION:
+        case OP_SLEEP_:
             return IS_ANY_BANK; // not need to change bank
         case OP_RETURN:
         case OP_RETFIE:
@@ -1559,6 +1563,10 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
             discoverArgs(addrAt, arg1s, arg1comm);
             return 0x0E00 | (arg2 << 7) | arg1;
 
+        case OP_SLEEP_:
+            CHECK(arg1, 0); CHECK(arg2, 0);
+            return 0x0063;
+
         default:
             ooops("OP_%d", op);
             return 0;
@@ -1738,6 +1746,10 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
         case OP_OPTION:
             CHECK(arg1, 0); CHECK(arg2, 0);
             return 0x002;
+
+        case OP_SLEEP_:
+            CHECK(arg1, 0); CHECK(arg2, 0);
+            return 0x003;
 
         default:
             ooops("OP_%d", op);
@@ -2409,16 +2421,22 @@ void AllocBitsVars()
                 MemForSingleBit(a->name1, TRUE, &addr, &bit);
                 break;
 
-            case INT_SET_PWM:
+            case INT_PWM_OFF: {
                 char storeName[MAX_NAME_LEN];
-                GenSymOneShot(storeName, "ONE_SHOT_RISING", "pwm_init");
+                sprintf(storeName, "$pwm_init_%s", a->name1);
+                MemForSingleBit(storeName, FALSE, &addr, &bit);
+                break;
+            }
+            case INT_SET_PWM: {
+                char storeName[MAX_NAME_LEN];
+                sprintf(storeName, "$pwm_init_%s", a->name3);
                 MemForSingleBit(storeName, FALSE, &addr, &bit);
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
                 MemForSingleBit(a->name1, FALSE, &addr, &bit);
                 break;
-
+            }
             default:
                 break;
         }
@@ -2985,6 +3003,36 @@ static void CompileFromIntermediate(BOOL topLevel)
                 FwdAddrIsNow(done);
                 break;
             }
+            case INT_PWM_OFF: {
+                int timer = 0xFFFF;
+                McuIoPinInfo *iop = PinInfoForName(a->name1);
+                if(!iop) {
+                    Error(_("Pin '%s' not a PWM output!"), a->name1);
+                    CompileError();
+                }
+                if(iop) {
+                    McuPwmPinInfo *ioPWM = PwmPinInfo(iop->pin);
+                    if(ioPWM)
+                        timer = ioPWM->timer;
+                }
+
+                if(timer == 1)
+                    WriteRegister(REG_CCP1CON, 0);
+                else if(timer == 2)
+                    WriteRegister(REG_CCP2CON, 0);
+                else oops();
+
+                DWORD addr;
+                int bit;
+                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                ClearBit(addr, bit, a->name1);
+
+                char storeName[MAX_NAME_LEN];
+                sprintf(storeName, "$pwm_init_%s", a->name1);
+                MemForSingleBit(storeName, FALSE, &addr, &bit);
+                ClearBit(addr, bit, storeName);
+                break;
+            }
             case INT_SET_PWM: {
             //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, &l->d.setPwm.invertingMode);
                 //dbps("INT_SET_PWM")
@@ -3048,7 +3096,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                         fCompileError(f, fAsm);
                     }
                     if(pr2plus1 >= 256) {
-                      if(timer == 2) {
+                      if((timer == 2)
+                      || (timer == 1)) {
                         if(prescale == 1) {
                             prescale = 4;
                         } else if(prescale == 4) {
@@ -3080,9 +3129,13 @@ static void CompileFromIntermediate(BOOL topLevel)
                 // First scale the input variable from percent to timer units,
                 // with a multiply and then a divide.
                 MultiplyNeeded = TRUE; DivideNeeded = TRUE;
-                MemForVariable(a->name1, &addr1);
-                Instruction(OP_MOVF, addr1, DEST_W);
-                Instruction(OP_MOVWF, Scratch0, 0);
+                if(IsNumber(a->name1)) {
+                    CopyLiteralToRegs(Scratch0, 1, hobatoi(a->name1), a->name1);
+                } else {
+                    MemForVariable(a->name1, &addr1);
+                    Instruction(OP_MOVF, addr1, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0, 0);
+                }
                 Instruction(OP_CLRF, Scratch1, 0);
 
                 Instruction(OP_MOVLW, (pr2plus1 * 1) & 0xff);
@@ -3119,7 +3172,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 DWORD addr;
                 int bit;
                 char storeName[MAX_NAME_LEN];
-                GenSymOneShot(storeName, "ONE_SHOT_RISING", "pwm_init");
+                sprintf(storeName, "$pwm_init_%s", a->name3);
                 MemForSingleBit(storeName, FALSE, &addr, &bit);
 
                 DWORD skip = AllocFwdAddr();
@@ -3144,8 +3197,8 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                     WriteRegister(REG_T2CON, t2con);
                 } else if(timer == 1) {
-                    WriteRegister(REG_CCP1CON, 0x0c); // PWM mode, ignore LSbs
-
+                    WriteRegister(REG_CCP1CON, 0x0c); // 1 PWM mode, ignore LSbs
+                    /*
                     BYTE t1con;
                     if(prescale == 1)
                         t1con = 0;
@@ -3159,6 +3212,17 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                     t1con = (t1con<<T1CKPS0) | (1 << TMR1ON); // timer 1 on
                     WriteRegister(REG_T1CON, t1con);
+                    */
+                    BYTE t2con = (1 << 2); // timer 2 on
+                    if(prescale == 1)
+                        t2con |= 0;
+                    else if(prescale == 4)
+                        t2con |= 1;
+                    else if(prescale == 16)
+                        t2con |= 2;
+                    else oops();
+
+                    WriteRegister(REG_T2CON, t2con);
                 } else if(timer == 2) {
                     WriteRegister(REG_CCP2CON, 0x0c); // PWM mode, ignore LSbs
 
@@ -3593,9 +3657,15 @@ static void CompileFromIntermediate(BOOL topLevel)
             }
             #endif
 
-            default:
-                ooops("INT_%d", a->op);
-                break;
+        case INT_SLEEP:
+            Instruction(OP_BSF, REG_INTCON ,INTE); // Enables the RB0/INT external interrupt
+
+            Instruction(OP_SLEEP_);
+        break;
+
+        default:
+            ooops("INT_%d", a->op);
+            break;
         }
         #ifndef AUTO_PAGING
         if(((PicProgWriteP >> 11) != section) && topLevel) {

@@ -868,9 +868,9 @@ typedef struct McuPwmPinInfoTag {
     BYTE        WGMb  ; //                      // mask WGM3:0 for REG_TCCRnB if need
 } McuPwmPinInfo, *PMcuPwmPinInfo;
 
-typedef struct McuInterruptPinInfoTag {
+typedef struct McuExtIntPinInfoTag {
     int     pin;
-} McuInterruptPinInfo;
+} McuExtIntPinInfo;
 
 #define ISA_PIC16           0x01
 #define ISA_AVR             0x02
@@ -917,22 +917,12 @@ typedef struct McuIoInfoTag {
     Core             core;
     int              pins;
     DWORD            configurationWord;
-/*
-    struct {
-        int             int0; // The pin can serve as an External Interrupt source 0.
-        //int           pol0PinB; // The pin can polling in QuadEncod routines.
-        // PinA and PinB should be in the same register.
-        int             int1; // The pin can serve as an External Interrupt source 1.
-        //int           pol1PinB; // The pin can polling in QuadEncod routines.
-        // PinA and PinB should be in the same register.
-    }                IntNeeds;
-    McuInterruptPinInfo InterruptInfo;
-*/
-    McuPwmPinInfo   *pwmInfo;
-    int              pwmCount;
 
-    McuInterruptPinInfo *interruptInfo;
-    int                  interruptCount;
+    McuPwmPinInfo    *pwmInfo;
+    int               pwmCount;
+
+    McuExtIntPinInfo *ExtIntInfo;
+    int               ExtIntCount;
 
     struct {
         DWORD            start;
@@ -1293,7 +1283,7 @@ McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfoForName(char *name);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
-BOOL IsInterruptPin(int pin);
+BOOL IsExtIntPin(int pin);
 HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
