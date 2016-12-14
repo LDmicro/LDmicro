@@ -1240,6 +1240,7 @@ math:
             #endif
 
             case INT_SLEEP:
+            case INT_PWM_OFF:
                 break;
 
             default:

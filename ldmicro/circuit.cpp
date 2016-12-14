@@ -474,11 +474,12 @@ void AddNPulse(void)
 void AddQuadEncod(void)
 {
     if(!CanInsertOther) return;
+
     int n = 0;
     if(Prog.mcu) {
         n = QuadEncodFunctionUsed();
-        if(n > Prog.mcu->interruptCount) {
-          Error(_("Can use only %d INTs on this MCU."), Prog.mcu->interruptCount);
+        if(n > Prog.mcu->ExtIntCount) {
+          Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
           return;
         }
     }

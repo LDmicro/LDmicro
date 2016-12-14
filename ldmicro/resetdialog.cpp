@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -31,6 +31,7 @@ static HWND ResetDialog;
 
 static HWND TypeTimerRadio;
 static HWND TypeCounterRadio;
+static HWND TypePwmRadio;
 static HWND NameTextbox;
 
 static LONG_PTR PrevNameProc;
@@ -56,7 +57,7 @@ static void MakeControls(void)
 {
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Type"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 3, 120, 65, ResetDialog, NULL, Instance, NULL);
+        7, 3, 120, 85, ResetDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
     TypeTimerRadio = CreateWindowEx(0, WC_BUTTON, _("Timer"),
@@ -68,6 +69,11 @@ static void MakeControls(void)
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 41, 100, 20, ResetDialog, NULL, Instance, NULL);
     NiceFont(TypeCounterRadio);
+
+    TypePwmRadio = CreateWindowEx(0, WC_BUTTON, _("Pwm"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        16, 61, 100, 20, ResetDialog, NULL, Instance, NULL);
+    NiceFont(TypePwmRadio);
 
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -81,15 +87,15 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        321, 10, 70, 23, ResetDialog, NULL, Instance, NULL); 
+        321, 10, 70, 23, ResetDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        321, 40, 70, 23, ResetDialog, NULL, Instance, NULL); 
+        321, 40, 70, 23, ResetDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 
-    PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, 
+    PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNameProc);
 }
 
@@ -97,15 +103,17 @@ void ShowResetDialog(char *name)
 {
     ResetDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Reset"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 404, 75, NULL, NULL, Instance, NULL);
+        100, 100, 404, 95, NULL, NULL, Instance, NULL);
 
     MakeControls();
-   
+
     if(name[0] == 'T') {
         SendMessage(TypeTimerRadio, BM_SETCHECK, BST_CHECKED, 0);
-    } else {
+    } else if(name[0] == 'C') {
         SendMessage(TypeCounterRadio, BM_SETCHECK, BST_CHECKED, 0);
-    }
+    } else if(name[0] == 'P') {
+        SendMessage(TypePwmRadio, BM_SETCHECK, BST_CHECKED, 0);
+    } else oops()
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
 
     EnableWindow(MainWindow, FALSE);
@@ -137,8 +145,10 @@ void ShowResetDialog(char *name)
     if(!DialogCancel) {
         if(SendMessage(TypeTimerRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             name[0] = 'T';
-        } else {
+        } else if(SendMessage(TypeCounterRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             name[0] = 'C';
+        } else {
+            name[0] = 'P';
         }
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)(MAX_NAME_LEN-1), (LPARAM)(name+1));
     }
