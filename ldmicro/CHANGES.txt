@@ -1,3 +1,15 @@
+
+== Release 4.1.2
+
+    * Changed: COIL, CONTACT draw in simulation mode.
+    https://github.com/LDmicro/LDmicro/wiki/CONTACTS-and-COILS
+
+    * Updated: SET PWM Timer1 at PIC's. PIC16F628, PIC16F88, PIC16F819.
+
+    * Updated: SLEEP at PIC's.
+
+    * Fixed: Messages in LOOK-UP TABLE.
+
 == Release 4.1.1
 
     * Fixed: SET PWM Timer1 at PIC. When two CCP modules are in a PWM mode,

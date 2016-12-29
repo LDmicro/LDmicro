@@ -774,6 +774,9 @@ static DWORD notRealocableAddr = 0; // upper range
 #ifdef AUTO_BANKING
 static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
 {
+    if(PicProgWriteP >= Prog.mcu->flashWords)
+        return 0;
+
     int corrected = 0;
     DWORD i, j;
     int nAdd;
@@ -787,7 +790,7 @@ static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
     } else if(PicProg[i].BANK != bank) {
         PicProg[i].BANK = MULTYDEF(0);
     }
-    while(i < PicProgWriteP) {
+    while((i < PicProgWriteP) && (PicProgWriteP < Prog.mcu->flashWords)) {
         if(IS_NOTDEF(PicProg[i].BANK)) {
                 PicProg[i].BANK = PicProg[i-1].BANK;
         }
@@ -849,6 +852,9 @@ static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
         i++;
     }
   if(corrected && (corrected<20)) goto doBankCorrection;
+
+    if(PicProgWriteP >= Prog.mcu->flashWords)
+        Error("Not enough memory for BANK and PAGE áorrection!");
 
     return bank;
 }
@@ -1037,12 +1043,26 @@ static void PagePreSet()
             PicProg[i].PCLATH &= ~NOTDEF(0);
             PicProg[i].PCLATH |= 1 << PicProg[i].arg2;
             PicProg[i].label |= DIR_SET;
+            if( ((PicProg[i-1].opPic == OP_BCF) || (PicProg[i-1].opPic == OP_BSF))
+            && (PicProg[i-1].arg1 == REG_PCLATH)) {
+              PicProg[i-1].PCLATH &= ~NOTDEF(0);
+              PicProg[i-1].PCLATH |= 1 << PicProg[i].arg2;
+              PicProg[i].PCLATH |= PicProg[i-1].PCLATH;
+              PicProg[i-1].label = DIR_SET;
+            }
         } else
         if((PicProg[i].opPic == OP_BCF)
         && (PicProg[i].arg1 == REG_PCLATH)) {
             PicProg[i].PCLATH &= ~NOTDEF(0);
             PicProg[i].PCLATH &= ~(1 << PicProg[i].arg2);
             PicProg[i].label |= DIR_SET;
+            if( ((PicProg[i-1].opPic == OP_BCF) || (PicProg[i-1].opPic == OP_BSF))
+            && (PicProg[i-1].arg1 == REG_PCLATH)) {
+              PicProg[i-1].PCLATH &= ~NOTDEF(0);
+              PicProg[i-1].PCLATH &= ~(1 << PicProg[i].arg2);
+              PicProg[i].PCLATH |= PicProg[i-1].PCLATH;
+              PicProg[i-1].label = DIR_SET;
+            }
         } else
         if((PicProg[i].opPic == OP_MOVWF)
         && (PicProg[i].arg1 == REG_PCLATH)) {
@@ -1228,13 +1248,16 @@ static void PageCorrection()
 {
     static int PageSelLevel = 10;
 
+    if(PicProgWriteP >= Prog.mcu->flashWords)
+        return;
+
     BOOL corrected;
     DWORD i, j;
   doPageCorrection:
     corrected = FALSE;
     PagePreSet();
     i = 0;
-    while(i < PicProgWriteP) {
+    while((i < PicProgWriteP) && (PicProgWriteP < Prog.mcu->flashWords)) {
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
             if(IS_UNDEF(PicProg[i].PCLATH)
             || ((PicProg[i].arg1 >> 11) != (PicProg[i].PCLATH >> 3))) {
@@ -1300,6 +1323,9 @@ static void PageCorrection()
 
 //  if((--PageSelLevel)>0) // // for debuging // <-------- <-------- <-------
     if(corrected) goto doPageCorrection;
+
+    if(PicProgWriteP >= Prog.mcu->flashWords)
+        Error("Not enough memory for PAGE áorrection!");
 }
 
 //-----------------------------------------------------------------------------
@@ -4688,6 +4714,7 @@ void CompilePic16(char *outFile)
         WriteRegister(REG_CMCON, 0x07);
     }
 
+    if(Prog.mcu->pwmNeedsPin) // else in BuildDirectionRegisters()
     if(PwmFunctionUsed()) {
         Comment("PwmFunctionUsed");
         // Need to clear TRIS bit corresponding to PWM pin

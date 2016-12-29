@@ -716,13 +716,13 @@ BOOL LoadVarListFromFile(FILE *f)
         Ok = FALSE;
         // Don't internationalize this! It's the file format, not UI.
         if(sscanf(line, " %s signed %d bit variable ", name, &sizeOfVar)==2) {
-            if(strlen(name)) {
+            if((sizeOfVar>0) && strlen(name)) {
                 SetSizeOfVar(name, sizeOfVar / 8);
                 Ok = TRUE;
             }
         }
         if(sscanf(line, " %d bytes %s ", &sizeOfVar, name)==2) {
-            if(strlen(name)) {
+            if((sizeOfVar>0) && strlen(name)) {
                 SetSizeOfVar(name, sizeOfVar);
                 Ok = TRUE;
             }

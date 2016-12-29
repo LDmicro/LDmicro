@@ -639,6 +639,7 @@ typedef struct ElemPerisistTag {
 typedef struct ElemLeafTag {
     int     selectedState;
     BOOL    poweredAfter;
+    BOOL    workingNow;
     union {
         ElemComment         comment;
         ElemContacts        contacts;

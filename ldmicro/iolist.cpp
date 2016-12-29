@@ -503,12 +503,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
         }
         case ELEM_LOOK_UP_TABLE: {
-            SetSizeOfVar(l->d.lookUpTable.name, l->d.lookUpTable.count);
+            if(l->d.lookUpTable.count>0)
+                SetSizeOfVar(l->d.lookUpTable.name, l->d.lookUpTable.count);
             AppendIo(l->d.lookUpTable.name, IO_TYPE_TABLE_IN_FLASH);
 
             sprintf(str, "%s[0]", l->d.lookUpTable.name);
             int sovElement = TestByteNeeded(l->d.lookUpTable.count, l->d.lookUpTable.vals);
-            SetSizeOfVar(str, sovElement);
+            if(sovElement>0)
+                SetSizeOfVar(str, sovElement);
             AppendIo(str, IO_TYPE_VAL_IN_FLASH);
 
             AppendIo(l->d.lookUpTable.dest, IO_TYPE_GENERAL);
