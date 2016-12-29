@@ -574,12 +574,14 @@ static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, ch
 // nodes are energized (so that it can display which branches of the circuit
 // are energized onscreen). The MCU code generators ignore this, of course.
 //-----------------------------------------------------------------------------
-static void SimState(BOOL *b, char *name)
+static void SimState(BOOL *b, char *name, BOOL *w, char *name2)
 {
     memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = INT_SIMULATE_NODE_STATE;
     strcpy(IntCode[IntCodeLen].name1, name);
     IntCode[IntCodeLen].poweredAfter = b;
+    if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
+    IntCode[IntCodeLen].workingNow = w;
     IntCode[IntCodeLen].rung = rungNow;
     IntCode[IntCodeLen].which = whichNow;
     IntCodeLen++;
@@ -587,6 +589,11 @@ static void SimState(BOOL *b, char *name)
         Error(_("Internal limit exceeded (MAX_INT_OPS)"));
         CompileError();
     }
+}
+
+static void SimState(BOOL *b, char *name)
+{
+    SimState(b, name, NULL, NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -941,13 +948,13 @@ static void InitVarsCircuit(int which, void *elem, int *n)
         case ELEM_CTD: {
             if(IsNumber(l->d.counter.init)) {
                 int init = CheckMakeNumber(l->d.counter.init);
-                if(init != 0) {
+                //if(init != 0) { // need reinit if CTD(c1), CTU(c1)
                     if(n)
                         (*n)++; // counting the number of variables
                     else {
                         Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, init);
                     }
-                }
+                //}
             }
             break;
         }
@@ -1153,8 +1160,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             } else {
               Op(INT_IF_BIT_CLEAR, l->d.contacts.name);
             }
-              Op(INT_CLEAR_BIT, stateInOut);
-            Op(INT_END_IF);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_END_IF);
             break;
         }
         case ELEM_COIL: {
@@ -1177,7 +1184,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             } else {
                 Op(INT_COPY_BIT_TO_BIT, l->d.coil.name, stateInOut);
             }
-              #else
+            #else
               //Load SAMPLE\coil_s_r_n.ld into LDmicto.exe.
               //Switch Xnew1, Xnew2, Xnew3 and see end of rungs.
               // variant 0 display a state of stateInOut and not a ELEM_COIL. Not good.
@@ -1190,18 +1197,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                   Op(INT_ELSE);
                     Op(INT_SET_BIT, l->d.coil.name);
                   Op(INT_END_IF);
-//                SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else if(l->d.coil.setOnly) {
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_SET_BIT, l->d.coil.name);
                   Op(INT_END_IF);
-//                SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else if(l->d.coil.resetOnly) {
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_CLEAR_BIT, l->d.coil.name);
-//                  SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
                   Op(INT_END_IF);
-//                SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else if(l->d.coil.ttrigger) {
                   char storeName[MAX_NAME_LEN];
                   GenSymOneShot(storeName, "TTRIGGER", l->d.coil.name);
@@ -1217,12 +1220,11 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                   Op(INT_ELSE);
                     Op(INT_CLEAR_BIT, storeName);
                   Op(INT_END_IF);
-//                SimState(&(l->poweredAfter), l->d.coil.name); // variant 3
               } else {
                   Op(INT_COPY_BIT_TO_BIT, l->d.coil.name, stateInOut);
-//                SimState(&(l->poweredAfter), stateInOut); // variant 3
               }
-              #endif
+              SimState(&(l->poweredAfter), l->d.coil.name, &(l->workingNow), l->d.coil.name); // variant 6
+            #endif
           break;
         }
         case ELEM_RTO: {
@@ -2457,11 +2459,16 @@ math:   {
             ooops("ELEM_0x%X", which);
             break;
     }
-
+    #ifndef DEFAULT_COIL_ALGORITHM
+    if(which == ELEM_COIL) { // ELEM_COIL is a special case, see above
+        return;
+    }
+    if(which == ELEM_CONTACTS) { // ELEM_CONTACTS is a special case, see above
+        SimState(&(l->poweredAfter), stateInOut, &(l->workingNow), l->d.contacts.name); // variant 5
+        return;
+    }
+    #endif
     if(which != ELEM_SERIES_SUBCKT && which != ELEM_PARALLEL_SUBCKT
-//  #ifndef DEFAULT_COIL_ALGORITHM
-//  && which != ELEM_COIL // is a special case, see above
-//  #endif
     ) {
         // then it is a leaf; let the simulator know which leaf it
         // should be updating for display purposes

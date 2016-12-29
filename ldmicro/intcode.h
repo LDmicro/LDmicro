@@ -194,6 +194,7 @@
         SDWORD      literal3;    // side effect: internaly used in simulation of INT_FLASH_READ
         SDWORD     *data;        // for INT_FLASH_INIT
         BOOL       *poweredAfter;
+        BOOL       *workingNow;
         int         rung;        //this IntOp located in rung,
         int         which;       //this IntOp refers to the ELEM_<which>
         char        f[MAX_PATH]; //in .c source file name

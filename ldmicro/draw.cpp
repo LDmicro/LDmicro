@@ -555,6 +555,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
     int cx0 = *cx, cy0 = *cy;
 
     BOOL poweredAfter = leaf->poweredAfter;
+    BOOL workingNow = leaf->workingNow;
 
     int thisWidth;
     switch(which) {
@@ -718,7 +719,8 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             ElemCoil *c = &leaf->d.coil;
 
             sprintf(top,"%s",c->name);
-            CenterWithSpacesWidth(*cx, *cy, top, poweredBefore, poweredAfter, TRUE, POS_WIDTH, ELEM_COIL);
+//          CenterWithSpacesWidth(*cx, *cy, top, poweredBefore, poweredAfter, TRUE, POS_WIDTH, ELEM_COIL);
+            CenterWithSpacesWidth(*cx, *cy, top, workingNow, poweredAfter, TRUE, POS_WIDTH, ELEM_COIL);
 
             bot[0] = '(';
             if(c->negated) {
@@ -782,6 +784,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
 //      ooops("which=%d",which);
     int cx0 = *cx, cy0 = *cy;
     BOOL poweredAfter = leaf->poweredAfter;
+    BOOL workingNow = leaf->workingNow;
 
     static char top[BUF_LEN];
     static char bot[BUF_LEN];
@@ -827,9 +830,11 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             bot[2] = '[';
             bot[3] = '\0';
             */
-            sprintf(bot,"%c]%c[-", ((c->name[0] == 'X') && (c->set1)) ? '^' : '-', c->negated ? '/' : ' ');
+            formatWidth(top, POS_WIDTH, "","",c->name,"","");
+//          CenterWithSpaces(*cx, *cy, top, poweredAfter, TRUE);
+            CenterWithSpacesWidth(*cx, *cy, top, workingNow, poweredAfter, FALSE, POS_WIDTH, ELEM_COIL);
 
-            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",c->name,"",""), poweredAfter, TRUE);
+            sprintf(bot,"%c]%c[-", ((c->name[0] == 'X') && (c->set1)) ? '^' : '-', c->negated ? '/' : ' ');
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;

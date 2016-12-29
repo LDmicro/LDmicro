@@ -2760,7 +2760,7 @@ static void CompileFromIntermediate(void)
                 } else if(a->op == INT_IF_VARIABLE_GRT_VARIABLE) {
                     // true if op1 > op2
                     // false if op1 <= op2
-                    Instruction(OP_BRGE, notTrue, 0, "aaa3");
+                    Instruction(OP_BRGE, notTrue, 0);
                 } else oops();
                 CompileIfBody(notTrue);
                 break;
