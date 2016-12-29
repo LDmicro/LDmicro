@@ -503,7 +503,7 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         return;
     }
 
-    if((PwmFunctionUsed() && (Prog.mcu) && Prog.mcu->pwmNeedsPin == 0)
+    if((PwmFunctionUsed() && (Prog.mcu) && (Prog.mcu->pwmCount == 0) && Prog.mcu->pwmNeedsPin == 0)
     && (compile_MNU != MNU_COMPILE_PASCAL)
     && (compile_MNU != MNU_COMPILE_ANSIC)
     && (compile_MNU != MNU_COMPILE_ARDUINO)
@@ -2321,6 +2321,7 @@ void KxStackTrace()
 //-----------------------------------------------------------------------------
 void CheckPwmPins()
 {
+return;
     int i,j;
     for(i = 0; i < NUM_SUPPORTED_MCUS ; i++) {
        for(j = 0; j < SupportedMcus[i].pwmCount ; j++) {

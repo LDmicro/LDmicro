@@ -928,9 +928,16 @@ static void SimulateIntCode(void)
         IntOp *a = &IntCode[IntPc];
         switch(a->op) {
             case INT_SIMULATE_NODE_STATE:
-                if(*(a->poweredAfter) != SingleBitOn(a->name1))
-                    NeedRedraw = TRUE;
-                *(a->poweredAfter) = SingleBitOn(a->name1);
+                if(*(a->poweredAfter) != SingleBitOn(a->name1)) {
+                    NeedRedraw = 1;
+                    *(a->poweredAfter) = SingleBitOn(a->name1);
+                }
+
+                if(a->name2 && strlen(a->name2))
+                if(*(a->workingNow) != SingleBitOn(a->name2)) {
+                    NeedRedraw = 1;
+                    *(a->workingNow) = SingleBitOn(a->name2);
+                }
                 break;
 
             case INT_SET_BIT:
@@ -949,7 +956,7 @@ static void SimulateIntCode(void)
                 if(GetSimulationVariable(a->name1) !=
                     a->literal && a->name1[0] != '$')
                 {
-                    NeedRedraw = TRUE;
+                    NeedRedraw = 2;
                 }
                 SetSimulationVariable(a->name1, a->literal);
                 break;
@@ -1000,7 +1007,7 @@ static void SimulateIntCode(void)
                 if(GetSimulationVariable(a->name1) !=
                     GetSimulationVariable(a->name2))
                 {
-                    NeedRedraw = TRUE;
+                    NeedRedraw = 6;
                 }
                 SetSimulationVariable(a->name1,
                     GetSimulationVariable(a->name2));
@@ -1009,13 +1016,13 @@ static void SimulateIntCode(void)
             case INT_INCREMENT_VARIABLE:
                 GetSimulationVariable(a->name1);
                 IncrementVariable(a->name1);
-                NeedRedraw = TRUE;
+                NeedRedraw = 7;
                 break;
 
             case INT_DECREMENT_VARIABLE:
                 GetSimulationVariable(a->name1);
                 DecrementVariable(a->name1);
-                NeedRedraw = TRUE;
+                NeedRedraw = 8;
                 break;
             {
                 SDWORD v;
@@ -1067,7 +1074,7 @@ static void SimulateIntCode(void)
                     goto math;
 math:
                     if(GetSimulationVariable(a->name1) != v) {
-                        NeedRedraw = TRUE;
+                        NeedRedraw = 9;
                         SetSimulationVariable(a->name1, v);
                     }
                     break;
@@ -1215,7 +1222,7 @@ math:
                 SDWORD d = adata[index];
                 if(GetSimulationVariable(a->name1) != d) {
                     SetSimulationVariable(a->name1, d);
-                    NeedRedraw = TRUE;
+                    NeedRedraw = 10;
                 }
                 }
                 break;
@@ -1233,7 +1240,7 @@ math:
                 char d = GetSimulationStr(a->name1)[index];
                 if(GetSimulationVariable(a->name2) != d) {
                     SetSimulationVariable(a->name2, d);
-                    NeedRedraw = TRUE;
+                    NeedRedraw = 11;
                 }
                 }
                 break;
@@ -1305,8 +1312,9 @@ void SimulateOneCycle(BOOL forceRefresh)
             InvalidateRect(MainWindow, NULL, FALSE);
         }
         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
-        RefreshStatusBar();
+
     }
+    RefreshStatusBar();
 
     SimulateRedrawAfterNextCycle = FALSE;
     if(NeedRedraw) SimulateRedrawAfterNextCycle = TRUE;
