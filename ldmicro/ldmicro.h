@@ -830,7 +830,9 @@ typedef enum CoreTag {
     MidrangeCore14bit, // The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
     EnhancedMidrangeCore14bit, // PIC microcontrollers with the Enhanced Mid-Range core are denoted as PIC12F1XXX and PIC16F1XXX
     PIC18HighEndCore16bit,
-    PIC24_dsPICcore16bit
+    PIC24_dsPICcore16bit,
+
+    ESP8266Core,
 } Core;
 
 //-----------------------------------------------
@@ -884,6 +886,7 @@ typedef struct McuExtIntPinInfoTag {
 #define ISA_ARDUINO         0x07
 #define ISA_CAVR            0x08
 #define ISA_XINTERPRETED    0x09    // Extended interpeter
+#define ISA_ESP8266         0x0A
 
 #define MAX_IO_PORTS        13
 #define MAX_RAM_SECTIONS    5
@@ -1281,7 +1284,9 @@ int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
 McuIoPinInfo *PinInfoForName(char *name);
 McuPwmPinInfo *PwmPinInfo(int pin);
+McuPwmPinInfo *PwmPinInfo(int pin, int timer);
 McuPwmPinInfo *PwmPinInfoForName(char *name);
+McuPwmPinInfo *PwmPinInfoForName(char *name, int timer);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
 BOOL IsExtIntPin(int pin);
