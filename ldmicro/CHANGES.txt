@@ -1,3 +1,20 @@
+== Release 4.1.3
+
+    * Fixed: AVR IfBitClear(SBIS) when IO REGISTERS used. This error is critical, but is rare.
+
+    * Done: ATmega32U4, PIC16f72 can be added to LDmicro by your request.
+
+    * Wiki: See ATmega32U4 test at page
+    https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Integrate-LDmicro-and-AVR-Studio-or-PIC-MPLAB-software
+
+    * Wiki: See ATmega32U4 PWM's test based on Timer0,Timer1 and Timer3 at page
+    https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Two-three-phase-sine-wave-based-on-the-hardware-PWM
+
+    * Wiki: See ATmega32U4 SLEEP operation at page
+    https://github.com/LDmicro/LDmicro/wiki/SLEEP-example
+
+    * Wiki: HOW TO: Soft start and smooth stop of LED with hardware PWM
+    https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Soft-start-and-smooth-stop-of-LED-with-hardware-PWM
 
 == Release 4.1.2
 
@@ -258,9 +275,6 @@
       AUTO_BANKING and AUTO_PAGING version 3 for PIC's.
 
     * New: It is possible to add PIC10Fxxx - PIC12Fxxx family microcontrollers in LDmicro.
-
-    * HOW TO: Soft start and smooth stop of LED with software PWM
-      https://github.com/LDmicro/LDm...-stop-of-LED-with-software-PWM
 
 == Release 4.0.1 experimental
 

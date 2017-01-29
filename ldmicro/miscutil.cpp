@@ -675,6 +675,17 @@ McuPwmPinInfo *PwmPinInfo(int pin)
 }
 
 //-----------------------------------------------------------------------------
+McuPwmPinInfo *PwmPinInfo(int pin, int timer) // !=timer !!!
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.mcu->pwmCount; i++)
+            if((Prog.mcu->pwmInfo[i].pin==pin) && (Prog.mcu->pwmInfo[i].timer!=timer))
+                return &(Prog.mcu->pwmInfo[i]);
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
 McuPwmPinInfo *PwmPinInfoForName(char *name)
 {
     int i;
@@ -682,6 +693,18 @@ McuPwmPinInfo *PwmPinInfoForName(char *name)
         for(i = 0; i < Prog.io.count; i++) {
             if(strcmp(Prog.io.assignment[i].name, name)==0)
                 return PwmPinInfo(Prog.io.assignment[i].pin);
+        }
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+McuPwmPinInfo *PwmPinInfoForName(char *name, int timer) // !=timer !!!
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.io.count; i++) {
+            if(strcmp(Prog.io.assignment[i].name, name)==0)
+                return PwmPinInfo(Prog.io.assignment[i].pin, timer);
         }
     return NULL;
 }

@@ -3684,9 +3684,9 @@ static void CompileFromIntermediate(BOOL topLevel)
             #endif
 
         case INT_SLEEP:
-            Instruction(OP_BSF, REG_INTCON ,INTE); // Enables the RB0/INT external interrupt
+        Instruction(OP_BSF, REG_INTCON ,INTE); // Enables the RB0/INT external interrupt
 
-            Instruction(OP_SLEEP_);
+        Instruction(OP_SLEEP_);
         break;
 
         default:

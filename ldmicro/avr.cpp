@@ -257,7 +257,6 @@ static DWORD REG_TCCR1B = 0; // 0x4e
 // USART
 static DWORD REG_UBRRH  = 0;
 static DWORD REG_UBRRL  = 0;
-static DWORD REG_UCSRC  = 0;
 #define          UCSZ0    1
 #define          UCSZ1    2
 #define          URSEL    7
@@ -343,11 +342,6 @@ static DWORD REG_GTCCR = 0;
 static DWORD REG_SFIOR = 0;
 static BYTE      PSR2  = -1;
 
-// Sleep Mode Control Register
-static DWORD REG_SMCR  = 0; // 0x53;
-static BYTE      SE    = 0; // BIT0;
-static BYTE      SM0   = 0; // BIT1;
-
 // Power Reduction Register
 static DWORD REG_PRR   = 0;
 
@@ -357,6 +351,11 @@ static DWORD REG_EICRA = 0;
 static DWORD REG_EIMSK = 0;
 // External Interrupt Flag Register
 static DWORD REG_EIFR  = 0;
+
+// Sleep Mode Control Register
+static DWORD REG_SMCR  = 0; // 0x53;
+static BYTE      SE    = 0; // BIT0; // may be in REG_MCUCR
+static BYTE      SM0   = 0; // BIT1; // may be in REG_MCUCR
 
 // External Interrupts support
 // MCU Control Register
@@ -1703,7 +1702,7 @@ static void IfBitClear(DWORD addr, int bit, BYTE reg, char *name)
         #endif
     } else if(USE_IO_REGISTERS == 1) {
         #if USE_IO_REGISTERS == 1
-        Instruction(OP_SBIS, addr - __SFR_OFFSET, 0, name);
+        Instruction(OP_SBIS, addr - __SFR_OFFSET, bit, name);
         #endif
     } else oops()
 }
@@ -2790,7 +2789,6 @@ static void CompileFromIntermediate(void)
 
                 switch(a->op) {
                     case INT_IF_LEQ: // * op2 - op1
-
                 }
                 switch(a->op) {
                     case INT_IF_LEQ: // *
@@ -3190,7 +3188,7 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_PWM_OFF: {
-                McuPwmPinInfo *iop = PwmPinInfoForName(a->name1);
+                McuPwmPinInfo *iop = PwmPinInfoForName(a->name1, Prog.cycleTimer);
                 if(!iop) {
                     Error(_("Pin '%s' not a PWM output!"), a->name1);
                     CompileError();
@@ -3198,19 +3196,14 @@ static void CompileFromIntermediate(void)
                 if(iop->maxCS == 0) {
                     if(REG_TCCR2B > 0) {
                         iop->REG_TCCRnB = REG_TCCR2B;
-                        iop->maxCS = 7;
-                    } else {
-                        iop->maxCS = 5;
                     }
                     iop->REG_TCCRnA = REG_TCCR2;
-                    iop->REG_OCRnxL = REG_OCR2;
                 }
 
                 // No clock source (Timer/CounterN stopped)
                 if(iop->REG_TCCRnB > 0)
                     WriteMemory(iop->REG_TCCRnB, 0);
-                else
-                    WriteMemory(iop->REG_TCCRnA, 0);
+                WriteMemory(iop->REG_TCCRnA, 0);
 
                 MemForSingleBit(a->name1, FALSE, &addr, &bit);
                 ClearBit(addr, bit, a->name1);
@@ -3223,7 +3216,7 @@ static void CompileFromIntermediate(void)
             }
             case INT_SET_PWM: {
             //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, &l->d.setPwm.invertingMode);
-                McuPwmPinInfo *iop = PwmPinInfoForName(a->name3);
+                McuPwmPinInfo *iop = PwmPinInfoForName(a->name3, Prog.cycleTimer);
                 if(!iop) {
                     Error(_("Pin '%s' not a PWM output!"), a->name3);
                     CompileError();
@@ -3252,7 +3245,7 @@ static void CompileFromIntermediate(void)
                 double bestFreq;
                 double freq;
                 double freqSI;
-                char SI[100];
+                char SI[10];
                 char freqStr[1024]="";
                 for(prescale = 1;;) {
                   //int freq = (Prog.mcuClock + prescale*128)/(prescale*256);
@@ -3267,7 +3260,6 @@ static void CompileFromIntermediate(void)
                         bestPrescale = prescale;
                         bestFreq = freq;
                     }
-                    //dbp("prescale=%d freq=%f", prescale, freq);
                     if(iop->maxCS == 7) {
                         if(prescale == 1) {
                             prescale = 8;
@@ -3281,6 +3273,38 @@ static void CompileFromIntermediate(void)
                             prescale = 256;
                         } else if(prescale == 256) {
                             prescale = 1024;
+                        } else {
+                            break;
+                        }
+                    } else if(iop->maxCS == 15) {
+                        if(prescale == 1) {
+                            prescale = 2;
+                        } else if(prescale == 2) {
+                            prescale = 4;
+                        } else if(prescale == 4) {
+                            prescale = 8;
+                        } else if(prescale == 8) {
+                            prescale = 16;
+                        } else if(prescale == 16) {
+                            prescale = 32;
+                        } else if(prescale == 32) {
+                            prescale = 64;
+                        } else if(prescale == 64) {
+                            prescale = 128;
+                        } else if(prescale == 128) {
+                            prescale = 256;
+                        } else if(prescale == 256) {
+                            prescale = 512;
+                        } else if(prescale == 512) {
+                            prescale = 1024;
+                        } else if(prescale == 1024) {
+                            prescale = 2048;
+                        } else if(prescale == 2048) {
+                            prescale = 4096;
+                        } else if(prescale == 4096) {
+                            prescale = 8192;
+                        } else if(prescale == 8192) {
+                            prescale = 16384;
                         } else {
                             break;
                         }
@@ -3402,7 +3426,7 @@ static void CompileFromIntermediate(void)
                 if(iop->REG_TCCRnB > 0) {
                     if(iop->COMnx1) {
                         WriteMemory(iop->REG_TCCRnB, iop->WGMb | cs);
-                        AndMemory(iop->REG_TCCRnA, ~(iop->WGMa | (1 << iop->COMnx1) | (a->name2[0]=='/' ? (1 << iop->COMnx0) : 0)));
+                        AndMemory(iop->REG_TCCRnA, ~(iop->WGMa | (1 << iop->COMnx1) | (1 << iop->COMnx0)) );
                         OrMemory (iop->REG_TCCRnA,   iop->WGMa | (1 << iop->COMnx1) | (a->name2[0]=='/' ? (1 << iop->COMnx0) : 0));
                     } else {
                         WriteMemory(REG_TCCR2B, cs);
@@ -3711,11 +3735,11 @@ static void CompileFromIntermediate(void)
                     WriteMemory(REG_GICR, (1<<INT1) | (1<<INT0));
                 } else oops();
                 Instruction(OP_SEI);
-                Instruction(OP_SLEEP);
+                Instruction(OP_SLEEP); // stopped here
                 Instruction(OP_CLI);
                 /**/
                 if(REG_EIMSK) {
-                    AndMemory(REG_EIMSK, ~((1<<INT1) | (1<<INT0))); // the external pin interrupt is enabled
+                    AndMemory(REG_EIMSK, ~((1<<INT1) | (1<<INT0))); // the external pin interrupt is disabled
                 } else if(REG_GICR) {
                     AndMemory(REG_GICR, ~((1<<INT1) | (1<<INT0)));
                 } else oops();
@@ -4363,7 +4387,6 @@ void CompileAvr(char *outFile)
         REG_UDR     = 0xCE;
         REG_UBRRH   = 0xCD;
         REG_UBRRL   = 0xCC;
-        REG_UCSRC   = 0xCA;
         REG_UCSRB   = 0xC9;
         REG_UCSRA   = 0xC8;
 
@@ -4405,7 +4428,6 @@ void CompileAvr(char *outFile)
         REG_UDR     = 0xC6;   // UDR0
         REG_UBRRH   = 0xC5;   // UBRR0H
         REG_UBRRL   = 0xC4;   // UBRR0L
-        REG_UCSRC   = 0xC2;   // UCSR0C
         REG_UCSRB   = 0xC1;   // UCSR0B
         REG_UCSRA   = 0xC0;   // UCSR0A
 
@@ -4453,7 +4475,6 @@ void CompileAvr(char *outFile)
         REG_UDR     = 0xC6;   // UDR0
         REG_UBRRH   = 0xC5;   // UBRR0H
         REG_UBRRL   = 0xC4;   // UBRR0L
-        REG_UCSRC   = 0xC2;   // UCSR0C
         REG_UCSRB   = 0xC1;   // UCSR0B
         REG_UCSRA   = 0xC0;   // UCSR0A
 
@@ -4496,7 +4517,6 @@ void CompileAvr(char *outFile)
         REG_UDR     = 0xC6;   // UDR0
         REG_UBRRH   = 0xC5;   // UBRR0H
         REG_UBRRL   = 0xC4;   // UBRR0L
-        REG_UCSRC   = 0xC2;   // UCSR0C
         REG_UCSRB   = 0xC1;   // UCSR0B
         REG_UCSRA   = 0xC0;   // UCSR0A
 
@@ -4538,7 +4558,6 @@ void CompileAvr(char *outFile)
             OCF1A   = BIT6;
             TOV0    = BIT1;
 
-        REG_UCSRC   = 0x40;
         REG_UBRRH   = 0x40;
         REG_UBRRL   = 0x29;
         REG_UCSRB   = 0x2a;
@@ -4570,7 +4589,6 @@ void CompileAvr(char *outFile)
             TOV1    = BIT2;
             TOV0    = BIT0;
 
-        REG_UCSRC   = 0x40;
         REG_UBRRH   = 0x40;
         REG_UBRRL   = 0x29;
         REG_UCSRB   = 0x2a;
@@ -4579,6 +4597,53 @@ void CompileAvr(char *outFile)
 
         REG_SFIOR   = 0x50;
             PSR2    = BIT1;
+    } else
+    if(McuAs(" ATmega16U4 ") ||
+       McuAs(" ATmega32U4 ")
+    ){
+        REG_TCCR0  = 0x45;
+        REG_TCNT0  = 0x46;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1A  = 0x80;
+        REG_TCCR1B  = 0x81;
+
+        REG_TIMSK   = 0x6f;
+            OCIE1A  = BIT1;
+            TOIE1   = BIT0;
+            TOIE0   = BIT0;
+        REG_TIFR1   = 0x36; // TIFR
+        REG_TIFR0   = 0x35; // TIFR
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+            TOV0    = BIT0;
+
+        REG_ADMUX   = 0x7C;
+        REG_ADCSRB  = 0x7B;
+        REG_ADCSRA  = 0x7A;
+        REG_ADCH    = 0x79;
+        REG_ADCL    = 0x78;
+
+        REG_UDR     = 0xCE;
+        REG_UBRRH   = 0xCD;
+        REG_UBRRL   = 0xCC;
+        REG_UCSRB   = 0xC9;
+        REG_UCSRA   = 0xC8;
+
+        REG_SMCR    = 0x53;
+            SE      = BIT0;
+            SM0     = BIT1;
+
+        REG_EICRA   = 0x69;
+
+        REG_EIMSK   = 0x3D;
+            INT1    = BIT1;
+            INT0    = BIT0;
+
+        REG_EIFR    = 0x3C;
+            INTF1   = BIT1;
+            INTF0   = BIT0;
     } else
     if(McuAs("Atmel AVR ATmega64 ") ||
        McuAs("Atmel AVR ATmega128 ")
@@ -4606,7 +4671,6 @@ void CompileAvr(char *outFile)
         REG_UCSRB   = 0x9a; // UCSR1B
         REG_UCSRA   = 0x9b; // UCSR1A
         REG_UDR     = 0x9c; // UDR1
-        REG_UCSRC   = 0x9d; // UCSR1C
 
         REG_SFIOR   = 0x40;
             PSR2    = BIT0;

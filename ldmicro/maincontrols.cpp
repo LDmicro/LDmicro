@@ -549,8 +549,6 @@ HMENU MakeMainWindowMenus(void)
         _("EDIT: Insert Formatted String"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
         _("TODO: Insert Set Software &PWM Output (AVR136 Application Note)\tP"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWM_OFF,
-        _("EDIT: Insert PWM OFF"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("EDIT: Insert QUAD ENCOD"));
@@ -596,6 +594,7 @@ HMENU MakeMainWindowMenus(void)
     ProcessorMenu2 = CreatePopupMenu();
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu2,
         _("Microcontrollers: TODO and DONE"));
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega32U4 44-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega32 44-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega328 32-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB646");
@@ -605,6 +604,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F200/202/204/206 6-SOT");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F220/222 6-SOT");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC12Fxxx");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F72 28-Pin PDIP, SOIC, SSOP");
     AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC16F1512 - PIC16F1527");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP");

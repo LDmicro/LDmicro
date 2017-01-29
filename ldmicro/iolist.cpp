@@ -1085,7 +1085,7 @@ void ShowIoDialog(int item)
         }
         if(Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) {
             if(Prog.mcu->pwmCount) {
-                McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu->pinInfo[i].pin);
+                McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu->pinInfo[i].pin, Prog.cycleTimer);
                 if((iop)&&(iop->timer != Prog.cycleTimer))
                     ; // okay; we know how to connect it up to the PWM
                 else
