@@ -173,9 +173,9 @@ static DWORD FwdAddrCount;
 // As I start to support the paging; it is sometimes necessary to pick
 // out the high vs. low portions of the address, so that the high portion
 // goes in PCLATH, and the low portion is just used for the jump.
-#define FWD_LO(x)    ((x) | 0x20000000)
-#define FWD_HI(x)    ((x) | 0x40000000)
 #define FWD(x)       ((x) | 0x80000000)
+#define FWD_HI(x)    ((x) | 0x40000000)
+#define FWD_LO(x)    ((x) | 0x20000000)
 #define IS_FWD(x)    ((x) & (FWD(0) | FWD_HI(0) | FWD_LO(0)))
 
 #define NOTDEF(x)       ((x) | 0x80000000)
@@ -194,12 +194,14 @@ static DWORD FwdAddrCount;
 #define REG_FSR       0x04
 #define REG_PCLATH    0x0a
 #define REG_INTCON    0x0b
-#define     T0IE      BIT5
-#define     INTE      BIT4 // RB0/INT External Interrupt Enable bit
+#define     GIE       BIT7 // Global Interrupt Enable bit
+#define     PEIE      BIT6 // Peripheral Interrupt Enable bit
+#define     T0IE      BIT5 // TMR0 Overflow Interrupt Enable bit
+#define     INTE      BIT4 // RB0/INT External Interrupt Enable bit // 1 = The RB0/INT external interrupt occurred (must be cleared in software)
 #define     RBIE      BIT3 // RB Port Change Interrupt Enable bit
-#define     T0IF      BIT2
+#define     T0IF      BIT2 // TMR0 Overflow Interrupt Flag bit // 1 = TMR0 register has overflowed (must be cleared in software)
 #define     INTF      BIT1 // RB0/INT External Interrupt Flag bit
-#define     RBIF      BIT0 // RB Port Change Interrupt Flag bit
+#define     RBIF      BIT0 // RB Port Change Interrupt Flag bit // 1 = When at least one of the RB<7:4> pins changes state (must be cleared in software)
 
 // Bank Select Register instead REG_STATUS(STATUS_RP1,STATUS_RP0)
 #define REG_BSR       0x08
@@ -1799,9 +1801,24 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     DWORD soFarStart = 0;
 
     // always start from address 0
-    fprintf(f, ":020000040000FA\n");
+    fprintf(f, ":020000020000FC\n");
+  //fprintf(f, ":020000040000FA\n");
 
+    DWORD ExtendedSegmentAddress = 0;
     DWORD i;
+    if(ExtendedSegmentAddress != (i & ~0x7fff)) {
+  //if(i == 0x8000) {
+  //    fprintf(f, ":020000021000EC\n"); // TT->Record Type -> 02 is Extended Segment Address 0x10000 + 0xffff
+        ExtendedSegmentAddress = (i & ~0x7fff);
+        StartIhex(f);    // ':'->Colon
+        WriteIhex(f, 2); // LL->Record Length
+        WriteIhex(f, 0); // AA->Address as big endian values HI()
+        WriteIhex(f, 0); // AA->Address as big endian values LO()
+        WriteIhex(f, 2); // TT->Record Type -> 02 is Extended Segment Address
+        WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) >> 8));   // AA->Address as big endian values HI()
+        WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) & 0xff)); // AA->Address as big endian values LO()
+        FinishIhex(f);   // CC->Checksum
+    }
     for(i = 0; i < PicProgWriteP; i++) {
         DWORD w;
         if(Prog.mcu->core == BaselineCore12bit)
@@ -1841,16 +1858,16 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             #endif
             #ifdef ASM_PAGESEL
             if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
-              fprintf(fAsm, "        \t pagesel l_%04x\n", PicProg[i].arg1);
+              fprintf(fAsm, "        \t pagesel l_%06x\n", PicProg[i].arg1);
             }
             #endif
 
             #if ASM_LABEL > 0
             if(PicProg[i].label || (ASM_LABEL == 2))
                 if(PicProg[i].label & L_LABEL)
-                    fprintf(fAsm, "L_%04x: %s", i, sAsm);
+                    fprintf(fAsm, "l_%06x: %s", i, sAsm);
                 else
-                    fprintf(fAsm, "i_%04x: %s", i, sAsm);
+                    fprintf(fAsm, "i_%06x: %s", i, sAsm);
             else
                 fprintf(fAsm, "        %s",    sAsm);
             #else
@@ -3877,7 +3894,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
 
         Instruction(OP_CLRF, REG_TMR0);
     } else {
-        // disable interrupt
+        // redisable interrupt
         Instruction(OP_BCF, REG_INTCON ,T0IE);
 
         // enable clock, internal source
@@ -4802,7 +4819,7 @@ void CompilePic16(char *outFile)
             IfBitClear(REG_INTCON ,T0IF);
             Instruction(OP_GOTO, PicProgWriteP - 1, 0);
             Instruction(OP_MOVWF, REG_TMR0);
-            Instruction(OP_BCF, REG_INTCON ,T0IF);
+            Instruction(OP_BCF, REG_INTCON ,T0IF); // must be cleared in software
         }
 
         if(softDivisor > 1) {

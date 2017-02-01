@@ -92,6 +92,8 @@
 #define YH      r29
 #define ZL      r30
 #define ZH      r31
+static DWORD REG_EIND = 0; // EIND:ZH:ZL indirect addres for EICALL, EIJMP
+
 /*
 #define rX  r26
 #define Xlo r26
@@ -172,9 +174,18 @@ RungAddr AddrOfRungN[MAX_RUNGS];
 static DWORD FwdAddrCount;
 
 // Fancier: can specify a forward reference to the high or low octet of a
-// 16-bit address, which is useful for indirect jumps.
-#define FWD_LO(x) ((x) | 0x20000000)
-#define FWD_HI(x) ((x) | 0x40000000)
+// 16-bit or more address, which is useful for indirect jumps.
+//                         0x003fFFFF == 4194303 ==   4M address space
+//                         0x001fFFFF == 2097151 ==   2M address
+//                         0x000fFFFF == 1048575 ==   1M address
+//                         0x0007FFFF ==  524287 == 512K address
+//                         0x0003FFFF ==  262143 == 256K address
+//                         0x0001FFFF ==  131071 == 128K address
+//                         0x0000FFFF ==   65535 ==  65K address
+#define FWD(x)      ((x) | 0x80000000)
+#define FWD_HI(x)   ((x) | 0x40000000)
+#define FWD_LO(x)   ((x) | 0x20000000)
+#define FWD_EIND(x) ((x) | 0x10000000)
 
 // Address to jump to when we finish one PLC cycle
 static DWORD BeginningOfCycleAddr;
@@ -373,7 +384,7 @@ static BYTE      INT0  = 0;
 static DWORD REG_GIFR  = 0;
 static BYTE      INTF1 = 0;
 static BYTE      INTF0 = 0;
-
+//===========================================================================
 //used in NPulseTimerOverflowInterrupt in ELEM_NPULSE
 static DWORD  NPulseTimerOverflowVector;
 static int    tcntNPulse = 0;
@@ -539,9 +550,11 @@ static void FwdAddrIsNow(DWORD addr)
         if(AvrProg[i].arg1 == addr) { // Its a FWD addr
             AvrProg[i].arg1 = AvrProgWriteP;
         } else if(AvrProg[i].arg2 == FWD_LO(addr)) {
-            AvrProg[i].arg2 = (AvrProgWriteP & 0xff);
+            AvrProg[i].arg2 = AvrProgWriteP & 0xff;
         } else if(AvrProg[i].arg2 == FWD_HI(addr)) {
-            AvrProg[i].arg2 = AvrProgWriteP >> 8;
+            AvrProg[i].arg2 = (AvrProgWriteP >> 8) & 0xff;
+        } else if(AvrProg[i].arg2 == FWD_EIND(addr)) {
+            AvrProg[i].arg2 = (AvrProgWriteP >> 16) & 0xff;
         }
     }
 }
@@ -603,9 +616,11 @@ static int IsOperation(AvrOp op)
         case OP_BRCS:
         case OP_BRMI:
             return IS_PAGE;
+        case OP_EIJMP:
         case OP_IJMP:
         case OP_RJMP:
             return IS_GOTO; // can need to change page
+        case OP_EICALL:
         case OP_ICALL:
         case OP_RCALL:
             return IS_CALL; // can need to change page
@@ -798,17 +813,27 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
         CHECK(arg2, 0);
         return 0x9409;
 
+    case OP_EIJMP:
+        //CHECK(arg1, 0); // arg1 used for label
+        CHECK(arg2, 0);
+        return 0x9419;
+
     case OP_ICALL:
         //CHECK(arg1, 0); // arg1 used for label
         CHECK(arg2, 0);
         return 0x9509;
 
+    case OP_EICALL:
+        //CHECK(arg1, 0); // arg1 used for label
+        CHECK(arg2, 0);
+        return 0x9519;
+
     case OP_RJMP:
         CHECK(arg2, 0);
         arg1 = arg1 - addrAt - 1;
-        CHECK2(arg1, -2048, 2047); //$fff !!!
+        CHECK2(arg1, -2048, 2047); // $fff !!!
         if(((int)arg1) > 2047 || ((int)arg1) < -2048) oops();
-        arg1 &= (4096-1);
+        arg1 &= (4096-1); // $fff !!!
         return 0xC000 | arg1;
 
     case OP_RCALL:
@@ -1131,6 +1156,11 @@ static void WriteHexFile(FILE *f)
     int soFarCount = 0;
     DWORD soFarStart = 0;
 
+    // always start from address 0
+    fprintf(f, ":020000020000FC\n");
+  //fprintf(f, ":020000040000FA\n");
+
+    DWORD ExtendedSegmentAddress = 0;
     DWORD i;
     for(i = 0; i < AvrProgWriteP; i++) {
         AvrProg[i].label = FALSE;
@@ -1148,17 +1178,30 @@ static void WriteHexFile(FILE *f)
         soFar[soFarCount++] = (BYTE)(w & 0xff);
         soFar[soFarCount++] = (BYTE)(w >> 8);
 
+        if(ExtendedSegmentAddress != (i & ~0x7fff)) {
+      //if(i == 0x8000) {
+      //    fprintf(f, ":020000021000EC\n"); // TT->Record Type -> 02 is Extended Segment Address 0x10000 + 0xffff
+            ExtendedSegmentAddress = (i & ~0x7fff);
+            StartIhex(f);    // ':'->Colon
+            WriteIhex(f, 2); // LL->Record Length
+            WriteIhex(f, 0); // AA->Address as big endian values HI()
+            WriteIhex(f, 0); // AA->Address as big endian values LO()
+            WriteIhex(f, 2); // TT->Record Type -> 02 is Extended Segment Address
+            WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) >> 8));   // AA->Address as big endian values HI()
+            WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) & 0xff)); // AA->Address as big endian values LO()
+            FinishIhex(f);   // CC->Checksum
+        }
         if(soFarCount >= 0x10 * n || i == (AvrProgWriteP-1)) {
-            StartIhex(f);
-            WriteIhex(f, soFarCount);
-            WriteIhex(f, (BYTE)((soFarStart*2) >> 8));
-            WriteIhex(f, (BYTE)((soFarStart*2) & 0xff));
-            WriteIhex(f, 0x00);
+            StartIhex(f); // ':'->Colon
+            WriteIhex(f, soFarCount); // LL->Record Length
+            WriteIhex(f, (BYTE)((soFarStart*2) >> 8));   // AA->Address as big endian values HI()
+            WriteIhex(f, (BYTE)((soFarStart*2) & 0xff)); // AA->Address as big endian values LO()
+            WriteIhex(f, 0x00); // TT->Record Type -> 00 is Data
             int j;
             for(j = 0; j < soFarCount; j++) {
-                WriteIhex(f, soFar[j]);
+                WriteIhex(f, soFar[j]); // DD->Data
             }
-            FinishIhex(f);
+            FinishIhex(f); // CC->Checksum
             soFarCount = 0;
         }
     }
@@ -1336,7 +1379,7 @@ static void SKBS(DWORD addr, int bit, int reg)
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         #ifdef USE_LDS_STS
-        Instruction(OP_LDS,  reg, addr);
+        Instruction(OP_LDS, reg, addr);
         #else
         LoadZAddr(addr);
         Instruction(OP_LD_Z, reg);
@@ -1366,7 +1409,7 @@ static void SKBC(DWORD addr, int bit, int reg)
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         #ifdef USE_LDS_STS
-        Instruction(OP_LDS,  reg, addr);
+        Instruction(OP_LDS, reg, addr);
         #else
         LoadZAddr(addr);
         Instruction(OP_LD_Z, reg);
@@ -4207,21 +4250,6 @@ void CompileAvr(char *outFile)
         return;
     }
 
-/*
-    REG_MCUCR = 0x55;
-        ISC11 = BIT3;
-        ISC10 = BIT2;
-        ISC01 = BIT1;
-        ISC00 = BIT0;
-
-    REG_GICR  = 0x5B;
-        INT1  = BIT7;
-        INT0  = BIT6;
-
-    REG_GIFR  = 0x5A;
-        INTF1 = BIT7;
-        INTF0 = BIT6;
-*/
     //***********************************************************************
     // Interrupt Vectors Table
     if(McuAs(" AT90USB646 ")

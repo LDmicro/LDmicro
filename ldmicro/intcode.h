@@ -160,25 +160,27 @@
 #define INT_TEST_C_SFR_VARIABLE_L               1082
 // Special function
 
-#define INT_PWM_OFF                            2001
-#define INT_SET_NPULSE                         2002
-#define INT_OFF_NPULSE                         2003
-#define INT_QUAD_ENCOD                         2004
+#define INT_PWM_OFF                             2001
+#define INT_SET_NPULSE                          2002
+#define INT_OFF_NPULSE                          2003
+#define INT_QUAD_ENCOD                          2004
 
 #ifdef NEW_FEATURE
-#define INT_AllocKnownAddr                     2020
-#define INT_AllocFwdAddr                       2021
-#define INT_FwdAddrIsNow                       2022
-#define INT_GotoRung                           2023
+#define INT_AllocKnownAddr                      2020
+#define INT_AllocFwdAddr                        2021
+#define INT_FwdAddrIsNow                        2022
+#define INT_GotoRung                            2023
 #endif
+#define INT_CLRWDT                              2024
+#define INT_LOCK                                2025
 
 
-#define INT_SIMULATE_NODE_STATE                 80 + 100
+#define INT_SIMULATE_NODE_STATE                   80 + 100
 
-#define INT_COMMENT                            100
+#define INT_COMMENT                              100
 
 // Only used for the interpretable code.
-#define INT_END_OF_PROGRAM                     255
+#define INT_END_OF_PROGRAM                       255
 
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
     typedef struct IntOpTag {
@@ -201,7 +203,7 @@
         int         l;           //and line in file
     } IntOp;
 
-    #define MAX_INT_OPS     (1024*16)
+    #define MAX_INT_OPS     (1024*24)
     extern IntOp IntCode[MAX_INT_OPS];
     extern int IntCodeLen;
     extern int ProgWriteP;
