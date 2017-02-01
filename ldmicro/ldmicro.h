@@ -1395,6 +1395,8 @@ typedef enum AvrOpTag {
     OP_CPI,
     OP_DEC,
     OP_EOR,
+    OP_EICALL,
+    OP_EIJMP,
     OP_ICALL,
     OP_IJMP,
     OP_INC,
