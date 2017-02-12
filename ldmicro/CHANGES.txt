@@ -1,7 +1,73 @@
+== Release 4.1.5
+
+    The functionality of this release was developed as a result of discussion on the page
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=6006
+    and gives ability to use the watchdog timer (WDT) on PIC and AVR.
+    See https://en.wikipedia.org/wiki/Watchdog_timer
+
+    There is some difference of WDT in PIC and AVR with respect to LDmicro.
+
+    LDmicro not sets fuses in HEX file for AVR. Remember to set the AVR processor
+    configuration (fuses) correctly using your programmer (eg. AVRISP) and
+    software (eg. AVRDUDE).
+    You can manipulate WTDON to enable/disable watchdog timer. See
+    http://www.engbedded.com/fusecalc
+
+    LDmicro sets CONFIGURATION WORD REGISTERS (CONFIG, CONFIG1, CONFIG2)
+    in HEX file for PIC. WDT is disabled by default.
+    CONFIG bit WDTE: Watchdog Timer Enable bit is setted to 0 = WDT is disabled.
+    But you can enable it with your programmer(eg. PICKIT, USBPICPROG).
+    Also you can enable it inside LDmicro in 'PLC Configurations' dialog using
+    'WDT enable' checkbox (has sense for PIC).
+
+    * New: 'WDT enable' checkbox added in 'PLC Configurations' dialog.
+
+    ALL versions of LDmicro executes CLRWDT command "Watchdog reset"
+    every PLC cycle (at begin of the cycle) regardless WDT enabled or disabled.
+
+    If WDT enabled, the WDT has a nominal time-out period of 16.3 - 18 ms
+    (with no prescaler) or more. So, if you need PLC cycle period more
+    then WDT period you must use CLRWDT command inside PLC cycle.
+
+    * New: CLRWDT element to clear WDT timer implemented.
+
+    * New: LOCK element is implemented. LOCK command is an artificial
+    situation to provocation the WDT reset (if WDT enabled). LOCK command
+    designed as infinite loop. It is deadlock, way to freeze, blockade the
+    program.
+    LOCK command executes goto to the current address, i.e.
+    labelN: goto labelN (label02e7: rjmp label02e7), i.e. infinite loop.
+    LOCK command executes the infinite loop, but WDT can reset the MCU.
+    Only WDT or external reset can unfreeze the program after LOCK command.
+
+    * Updated: SLEEP operation works at all MCU.
+    The SLEEP (Power-down) mode is used for power saving on battery supply.
+
+    PIC: Wake-up from sleep owing to external interrupt on rising edge of RB0/INT pin.
+    PIC10xxxx: Wake-up from sleep on pin change GP0, GP1, GP3.
+    AVR: Wake-up from sleep owing to external interrupt on rising edge of PD2/INT0, PD3/INT1 pins.
+    SLEEP operation don't affect MCU IO pins and others LDmicro operations.
+    Note: SLEEP lengthens the PLC cycle time and timers TON, TOF, RTO, CTY.
+    This can frustrate the plans, break the flow of work.
+
+    * New: In addition to variable name that begins with symbol '#' like
+    #PINA, #PINB, ... treated as 8bit (byte) input port,
+    #PORTA, #PORTB, ... treated as 8bit (byte) output port,
+    #TRISA, #TRISB, ... treated as 8bit (byte) data direction register of corresponding port,
+    added immediate address hardware registers access
+    #0x8E, #5, ...  treated as 8bit the (byte) hardware register with this address.
+    Be careful with writing to the hardware registers.
+    See how to use PCON register (address 0x8E) to determine the cause of
+    the PIC16F628 reset in the next wiki link.
+
+    * Wiki: Addition 3. WDT, LOCK, SLEEP operation is tested at PIC16F628.
+    https://github.com/LDmicro/LDmicro/wiki/SLEEP-example
+
 == Release 4.1.4
 
     * HotFix: Fixed 32K words (64K bytes) 50% flash program memory limit
     of the hex file. Affected ATmega128, ATmega2560, AT90USB647.
+    Don't use this release for PIC.
 
 == Release 4.1.3
 
@@ -617,10 +683,10 @@
 
     * Added ELEM_OSC oscillator F=1/(2*Tcycle)
 
-    * Added: In 'MCU Configuration' dialog you can select timer 0 or 1 for generating of PLC cycle.
+    * Added: In 'PLC Configuration' dialog you can select timer 0 or 1 for generating of PLC cycle.
       This allow use Timer1 for PWM or other features.
 
-    * Added: In 'MCU Configurations' dialog added YPlcCycleDuty pin.
+    * Added: In 'PLC Configurations' dialog added YPlcCycleDuty pin.
       YPlcCycleDuty pin set to 1 at begin and to 0 at end of PLC cycle.
       You can measure frequency(it must be 1/Tcycle) and duty cycle of PLC.
       If your program is too big for the cycle time, then it will work slower

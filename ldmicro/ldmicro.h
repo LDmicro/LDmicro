@@ -161,6 +161,9 @@ typedef signed long SDWORD;
 #define MNU_INSERT_SHORT        0x3c
 #define MNU_INSERT_MASTER_RLY   0x3d
 #define MNU_INSERT_SLEEP        0x3d01
+#define MNU_INSERT_CLRWDT       0x3d02
+#define MNU_INSERT_LOCK         0x3d03
+#define MNU_INSERT_GOTO         0x3d04
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
 #define MNU_INSERT_FMTD_STRING  0x40
@@ -330,6 +333,9 @@ typedef signed long SDWORD;
 #define RUartSendErrorFlag     "RUartSendErrorFlag"
 #define ELEM_MASTER_RELAY       0x2c
 #define ELEM_SLEEP              0x2c01
+#define ELEM_CLRWDT             0x2c02
+#define ELEM_LOCK               0x2c03
+#define ELEM_GOTO               0x2c04
 #define ELEM_SHIFT_REGISTER     0x2d
 #define ELEM_LOOK_UP_TABLE      0x2e
 #define ELEM_FORMATTED_STRING   0x2f
@@ -444,6 +450,9 @@ typedef signed long SDWORD;
         case ELEM_UART_RECV_AVAIL: \
         case ELEM_MASTER_RELAY: \
         case ELEM_SLEEP: \
+        case ELEM_CLRWDT: \
+        case ELEM_LOCK: \
+        case ELEM_GOTO: \
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
@@ -458,8 +467,8 @@ typedef signed long SDWORD;
         case ELEM_FORMATTED_STRING: \
         case ELEM_PERSIST:
 
-#define MAX_NAME_LEN                128
-#define MAX_COMMENT_LEN             512
+#define MAX_NAME_LEN                 64 // 128
+#define MAX_COMMENT_LEN             512 // 384 // 1024
 #define MAX_LOOK_UP_TABLE_LEN        64
 #define MAX_SHIFT_REGISTER_STAGES   256
 #define MAX_STRING_LEN              256
@@ -531,10 +540,10 @@ typedef struct ElemCmpTag {
     char    op2[MAX_NAME_LEN];
 } ElemCmp;
 
-typedef struct ElemGOTOTag {
-    char    doGOTO[MAX_NAME_LEN];
-    char    rungGOTO[MAX_NAME_LEN];
-} ElemGOTO;
+typedef struct ElemGotoTag {
+    char    doGoto[MAX_NAME_LEN];
+    char    rungGoto[MAX_NAME_LEN];
+} ElemGoto;
 
 typedef struct ElemCounterTag {
     char    name[MAX_NAME_LEN];
@@ -649,6 +658,7 @@ typedef struct ElemLeafTag {
         ElemMove            move;
         ElemMath            math;
         ElemCmp             cmp;
+        ElemGoto            doGoto;
         ElemSfr             sfr;
         ElemBus             bus;
         ElemSegments        segments;
@@ -743,10 +753,13 @@ typedef struct PlcProgramTag {
         int                 count;
     }             io;
     McuIoInfo    *mcu;
-    long long int cycleTime; // us
+    long long int cycleTime;  // us
     int           cycleTimer; // 1 or 0
+    BYTE          WDTE;       // only for PIC // Watchdog Timer Enable bit, 1 = WDT enabled
+    BYTE          WDTPSA;     // only for PIC
+    BYTE          OPTION;     // only for PIC10Fxxx
 #define YPlcCycleDuty "YPlcCycleDuty"
-    int           cycleDuty; //if TRUE, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
+    int           cycleDuty; // if TRUE, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
     int           mcuClock;  // Hz
     int           baudRate;  // Hz
     char          LDversion[512];
@@ -888,7 +901,7 @@ typedef struct McuExtIntPinInfoTag {
 #define ISA_XINTERPRETED    0x09    // Extended interpeter
 #define ISA_ESP8266         0x0A
 
-#define MAX_IO_PORTS        13
+#define MAX_IO_PORTS        ('P'-'A'+1)
 #define MAX_RAM_SECTIONS    5
 #define MAX_ROM_SECTIONS    1
 
@@ -920,7 +933,7 @@ typedef struct McuIoInfoTag {
     int              whichIsa;
     Core             core;
     int              pins;
-    DWORD            configurationWord;
+    DWORD            configurationWord; // only PIC
 
     McuPwmPinInfo    *pwmInfo;
     int               pwmCount;
@@ -1098,6 +1111,9 @@ void AddComment(char *text);
 void AddShiftRegister(void);
 void AddMasterRelay(void);
 void AddSleep(void);
+void AddClrWdt(void);
+void AddLock(void);
+void AddGoto(void);
 void AddLookUpTable(void);
 void AddPiecewiseLinear(void);
 void AddFormattedString(void);
@@ -1118,6 +1134,7 @@ int PwmFunctionUsed(void);
 BOOL QuadEncodFunctionUsed(void);
 BOOL NPulseFunctionUsed(void);
 BOOL EepromFunctionUsed(void);
+BOOL SleepFunctionUsed(void);
 BOOL TablesUsed(void);
 void PushRungUp(void);
 void PushRungDown(void);
@@ -1169,6 +1186,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigge
 // simpledialog.cpp
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name);
+void ShowSleepDialog(int which, SDWORD *delay, char *name);
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);

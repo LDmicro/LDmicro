@@ -828,6 +828,18 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddSleep());
             break;
 
+        case MNU_INSERT_CLRWDT:
+            CHANGING_PROGRAM(AddClrWdt());
+            break;
+
+        case MNU_INSERT_LOCK:
+            CHANGING_PROGRAM(AddLock());
+            break;
+
+        case MNU_INSERT_GOTO:
+            CHANGING_PROGRAM(AddGoto());
+            break;
+
         case MNU_INSERT_SHIFT_REG:
             CHANGING_PROGRAM(AddShiftRegister());
             break;

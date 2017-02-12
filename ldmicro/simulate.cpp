@@ -638,6 +638,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
         case ELEM_SLEEP:
+        case ELEM_CLRWDT:
+        case ELEM_LOCK:
         case ELEM_UART_SEND:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
@@ -806,6 +808,8 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
         case ELEM_SLEEP:
+        case ELEM_CLRWDT:
+        case ELEM_LOCK:
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_OPEN:
@@ -1247,6 +1251,8 @@ math:
             #endif
 
             case INT_SLEEP:
+            case INT_CLRWDT:
+            case INT_LOCK:
             case INT_PWM_OFF:
                 break;
 

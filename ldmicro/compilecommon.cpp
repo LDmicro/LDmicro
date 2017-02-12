@@ -475,32 +475,46 @@ int MemForVariable(char *name, DWORD *addrl, int sizeOfVar)
     } else { // if(sizeOfVar == 0) // if(addrl) { Allocate SRAM }
         if(name[0] == '#') {
              DWORD addr = 0xff;
-             int j = name[strlen(name)-1] - 'A';
-             if((j>=0) && (j<MAX_IO_PORTS)) {
-                 if((strstr(name, "#PORT")) && (strlen(name) == 6)) { // #PORTx
-                     if(IS_MCU_REG(j)) {
-                         addr = Prog.mcu->outputRegs[j];
+             if(IsNumber(&name[1])) {
+                 addr = hobatoi(&name[1]);
+
+                 if((addr == 0xff) || (addr == 0)) {
+                     dbps("Not a FSR");
+                     //Error("Not a FSR");
+                 } else {
+                     if(Variables[i].Allocated == 0) {
+                         Variables[i].addrl = addr;
                      }
+                     Variables[i].Allocated = 1;
                  }
-                 if((strstr(name, "#PIN")) && (strlen(name) == 5)) { // #PINx
-                     if(IS_MCU_REG(j)) {
-                         addr = Prog.mcu->inputRegs[j];
-                     }
-                 }
-                 if((strstr(name, "#TRIS")) && (strlen(name) == 6)) { // #TRISx
-                     if(IS_MCU_REG(j)) {
-                         addr = Prog.mcu->dirRegs[j];
-                     }
-                 }
-             }
-             if((addr == 0xff) || (addr == 0)) {
-                 dbps("Not a PORT/PIN");
-                 //Error("Not a PORT/PIN");
              } else {
-                 if(Variables[i].Allocated == 0) {
-                     Variables[i].addrl = addr;
+                 int j = name[strlen(name)-1] - 'A';
+                 if((j>=0) && (j<MAX_IO_PORTS)) {
+                     if((strstr(name, "#PORT")) && (strlen(name) == 6)) { // #PORTx
+                         if(IS_MCU_REG(j)) {
+                             addr = Prog.mcu->outputRegs[j];
+                         }
+                     }
+                     if((strstr(name, "#PIN")) && (strlen(name) == 5)) { // #PINx
+                         if(IS_MCU_REG(j)) {
+                             addr = Prog.mcu->inputRegs[j];
+                         }
+                     }
+                     if((strstr(name, "#TRIS")) && (strlen(name) == 6)) { // #TRISx
+                         if(IS_MCU_REG(j)) {
+                             addr = Prog.mcu->dirRegs[j];
+                         }
+                     }
                  }
-                 Variables[i].Allocated = 1;
+                 if((addr == 0xff) || (addr == 0)) {
+                     dbps("Not a PORT/PIN");
+                     //Error("Not a PORT/PIN");
+                 } else {
+                     if(Variables[i].Allocated == 0) {
+                         Variables[i].addrl = addr;
+                     }
+                     Variables[i].Allocated = 1;
+                 }
              }
         } else {
           if((sizeOfVar<1) || (sizeOfVar>4)) {

@@ -155,13 +155,17 @@ BOOL StaySameElem(int Which)
         Which == ELEM_SET_PWM ||
         Which == ELEM_MASTER_RELAY ||
         Which == ELEM_SLEEP ||
+        Which == ELEM_CLRWDT ||
+        Which == ELEM_LOCK ||
+        Which == ELEM_GOTO ||
         Which == ELEM_SHIFT_REGISTER ||
         Which == ELEM_LOOK_UP_TABLE ||
         Which == ELEM_PIECEWISE_LINEAR ||
         Which == ELEM_PERSIST ||
         Which == ELEM_MOVE)
       return TRUE;
-    return FALSE;
+    else
+      return FALSE;
 }
 //-----------------------------------------------------------------------------
 BOOL CanChangeOutputElem(int Which)
@@ -203,6 +207,9 @@ BOOL EndOfRungElem(int Which)
         Which == ELEM_NPULSE_OFF ||
         Which == ELEM_MASTER_RELAY ||
         Which == ELEM_SLEEP ||
+        Which == ELEM_CLRWDT ||
+        Which == ELEM_LOCK ||
+        Which == ELEM_GOTO ||
         Which == ELEM_SHIFT_REGISTER ||
         Which == ELEM_LOOK_UP_TABLE ||
         Which == ELEM_PIECEWISE_LINEAR ||
@@ -634,6 +641,11 @@ void EditSelectedElement(void)
         case ELEM_TOF:
         case ELEM_RTO:
             ShowTimerDialog(SelectedWhich, &(Selected->d.timer.delay),
+                Selected->d.timer.name);
+            break;
+
+        case ELEM_SLEEP:
+            ShowSleepDialog(SelectedWhich, &(Selected->d.timer.delay),
                 Selected->d.timer.name);
             break;
 

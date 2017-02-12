@@ -199,6 +199,9 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_NPULSE_OFF, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_MASTER_RLY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SLEEP, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_CLRWDT, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_LOCK, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_GOTO, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SHIFT_REG, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_LUT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_PWL, t);
@@ -381,6 +384,10 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Master Control Relay"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SLEEP,
         _("Insert SLEEP"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CLRWDT,
+        _("Insert CLRWDT"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LOCK,
+        _("Insert LOCK"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
@@ -439,7 +446,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTR,
         _("Insert CT&R (Count Circular Reversive)\tK"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RES,
-        _("Insert R&ES (Counter/RTO Reset)\tE"));
+        _("Insert R&ES (Counter/RTO/PWM Reset)\tE"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
 /*
