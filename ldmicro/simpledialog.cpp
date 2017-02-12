@@ -295,6 +295,51 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
     }
 }
 
+void ShowSleepDialog(int which, SDWORD *delay, char *name)
+{
+    char *s;
+    s = _("Sleep Delay");
+
+    char *labels[] = { /*_("Name:"),*/ _("Delay (s):") };
+
+    char delBuf[16];
+    char nameBuf[MAX_NAME_LEN];
+    sprintf(delBuf, "%.3f", (*delay / 1000000.0));
+    strcpy(nameBuf, name+1);
+    char *dests[] = { /*nameBuf,*/ delBuf };
+
+    if(ShowSimpleDialog(s, 1, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
+        name[0] = 'T';
+        strcpy(name+1, nameBuf);
+        double del = atof(delBuf);
+        long long period = (long long)round(del / 1000 / 18); // 18 ms
+        if(del <= 0) {
+            Error(_("Delay cannot be zero or negative."));
+        } else if(period  < 1)  {
+            char *s1 = _("Timer period too short (needs faster cycle time).");
+            char s2[1024];
+            sprintf(s2, _("Timer '%s'=%.3f ms."), name, del);
+            char s3[1024];
+            sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
+            char *s4 = _("Not available");
+            Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
+        } else if((period >= long long (1 << (SizeOfVar(name)*8-1)))
+                   && (Prog.mcu->portPrefix != 'L')) {
+            char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
+                "slower cycle time.");
+            char s2[1024];
+            sprintf(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del/1000, period);
+            double maxDelay = 1.0 * ((1 << (SizeOfVar(name)*8-1))-1) * Prog.cycleTime / 1000000; //s
+            char s3[1024];
+            sprintf(s3, _("Maximum available timer period = %.3f s."), maxDelay);
+            Error("%s\r\n%s\r\n%s", s1, s2, s3);
+            *delay = (SDWORD)(1000000*del + 0.5);
+        } else {
+            *delay = (SDWORD)(1000000*del + 0.5);
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Report an error if a constant doesn't fit in 8-16-24 bits.
 //-----------------------------------------------------------------------------

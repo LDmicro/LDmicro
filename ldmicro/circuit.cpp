@@ -303,7 +303,35 @@ void AddSleep(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.timer.name, "$Tsleep");
+    t->d.timer.delay = 1000000; // 1s
     AddLeaf(ELEM_SLEEP, t);
+}
+
+void AddLock(void)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    AddLeaf(ELEM_LOCK, t);
+}
+
+void AddClrWdt(void)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    AddLeaf(ELEM_CLRWDT, t);
+}
+
+void AddGoto(void)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.doGoto.doGoto, "");
+    strcpy(t->d.doGoto.rungGoto, "");
+    AddLeaf(ELEM_GOTO, t);
 }
 
 void AddMasterRelay(void)
@@ -1418,6 +1446,19 @@ BOOL EepromFunctionUsed(void)
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_PERSIST,
+            -1, -1))
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+//-----------------------------------------------------------------------------
+BOOL SleepFunctionUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SLEEP,
             -1, -1))
         {
             return TRUE;

@@ -312,6 +312,14 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "SLEEP;");
                 break;
 
+            case INT_CLRWDT:
+                fprintf(f, "CLRWDT;");
+                break;
+
+            case INT_LOCK:
+                fprintf(f, "LOCK;");
+                break;
+
             case INT_IF_VARIABLE_LES_LITERAL:
                 fprintf(f, "if '%s' < %d {", IntCode[i].name1,
                     IntCode[i].literal); indent++;
@@ -2015,6 +2023,20 @@ math:   {
             Comment(3, "ELEM_SLEEP");
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SLEEP);
+            Op(INT_END_IF);
+            break;
+
+        case ELEM_CLRWDT:
+            Comment(3, "ELEM_CLRWDT");
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_CLRWDT);
+            Op(INT_END_IF);
+            break;
+
+        case ELEM_LOCK:
+            Comment(3, "ELEM_LOCK");
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_LOCK);
             Op(INT_END_IF);
             break;
 

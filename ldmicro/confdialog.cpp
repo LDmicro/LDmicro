@@ -35,6 +35,7 @@ static HWND CrystalTextbox;
 static HWND CycleTextbox;
 static HWND TimerTextbox;
 static HWND YPlcCycleDutyCheckbox;
+static HWND WDTECheckbox;
 static HWND BaudTextbox;
 
 static LONG_PTR PrevCrystalProc;
@@ -90,8 +91,13 @@ static void MakeControls(void)
 
     YPlcCycleDutyCheckbox = CreateWindowEx(0, WC_BUTTON, _("YPlcCycleDuty"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        370, 12, 95, 20, ConfDialog, NULL, Instance, NULL);
+        370, 12, 100, 20, ConfDialog, NULL, Instance, NULL);
     NiceFont(YPlcCycleDutyCheckbox);
+
+    WDTECheckbox = CreateWindowEx(0, WC_BUTTON, _("WDT enable"),
+        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
+        370, 43, 100, 20, ConfDialog, NULL, Instance, NULL);
+    NiceFont(WDTECheckbox);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC,
         _("MCU Crystal Frequency (MHz):"),
@@ -131,12 +137,12 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        268 + 210, 11, 70, 23, ConfDialog, NULL, Instance, NULL);
+        268 + 215, 11, 70, 23, ConfDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        268 + 210, 41, 70, 23, ConfDialog, NULL, Instance, NULL);
+        268 + 215, 41, 70, 23, ConfDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 
     char txt[1024*4] = "";
@@ -277,6 +283,10 @@ void ShowConfDialog(void)
         SendMessage(YPlcCycleDutyCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
 
+    if(Prog.WDTE) {
+        SendMessage(WDTECheckbox, BM_SETCHECK, BST_CHECKED, 0);
+    }
+
     sprintf(buf, "%.6f", Prog.mcuClock / 1e6); //Hz show as MHz
     SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
@@ -328,6 +338,12 @@ void ShowConfDialog(void)
             Prog.cycleDuty = 1;
         } else {
             Prog.cycleDuty = 0;
+        }
+
+        if(SendMessage(WDTECheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+            Prog.WDTE = 1;
+        } else {
+            Prog.WDTE = 0;
         }
 
         SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),

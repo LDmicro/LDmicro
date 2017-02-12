@@ -173,6 +173,10 @@ indicates what kind of object it is.  For example:
     #PORTA, #PORTB, #PORTC, ...
     Note: Address PORTn and PINn are equals for PIC's.
 
+    The variable name that begins with a '#' character and subsequent a number
+    (commonly a hexadecimal) treated as immediate address of hardware register.
+    Be careful with writing to the hardware registers by immediate address access.
+
 Choose the rest of the name so that it describes what the object does,
 and so that it is unique within the program. The same name always refers
 to the same object within the program. For example, it would be an error
@@ -466,7 +470,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                            ----{RES}----
 
     This instruction disable PWM output and set it to low level.
-    Also you can set another PWM base frequency by SET PWM DUTY CYCLE 
+    Also you can set another PWM base frequency by SET PWM DUTY CYCLE
     after actuation the RESET PWM.
 
     See SET PWM DUTY CYCLE below.
@@ -822,7 +826,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     LDmicro V4.x.x allow all hardware PWM. See
     https://github.com/LDmicro/LDmicro/wiki/LDmicro-PWM
 
-    See RESET PWM upper. 
+    See RESET PWM upper.
 
 > MAKE PERSISTENT            saved_var
                            --{PERSIST}--
@@ -973,6 +977,41 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     The rung-out condition of this instruction is always true.
 
+> CLRWDT
+                           --{CLRWDT}--
+
+    When the rung-in condition of this instruction is true, it causes the
+    clear WDT timer. LDmicro executes CLRWDT command every PLC cycle
+    automatically (at begin of the cycle), so you need adiitional CLRWDT
+    if PLC cycle period more then WDT period if WDT enabled.
+    This instruction must be the rightmost instruction in its rung.
+
+> LOCK
+                           --{LOCK}--
+
+    When the rung-in condition of this instruction is true, it causes the
+    LOCK command. It is an artificial
+    situation to provocation the WDT reset (if WDT enabled). LOCK command
+    designed as infinite loop. It is deadlock, way to freeze, blockade the
+    program.
+    LOCK command executes goto to the current address, i.e.
+    labelN: goto labelN (label02e7: rjmp label02e7), i.e. infinite loop.
+    LOCK command executes the infinite loop, but WDT can reset the MCU.
+    Only WDT or external reset can unfreeze the program after LOCK command.
+
+> SLEEP
+                           --{SLEEP}--
+
+    When the rung-in condition of this instruction is true,
+    the SLEEP (Power-down) mode is setted. It used for power saving
+    on battery supply.
+    PIC: Wake-up from sleep owing to external interrupt on rising edge of RB0/INT pin.
+    PIC10xxxx: Wake-up from sleep on pin change GP0, GP1, GP3.
+    AVR: Wake-up from sleep owing to external interrupt on rising edge of PD2/INT0, PD3/INT1 pins.
+    SLEEP operation don't affect MCU IO pins and others LDmicro operations.
+    Note: SLEEP lengthens the PLC cycle time and timers TON, TOF, RTO, CTY.
+    This can frustrate the plans, break the flow of work.
+    This instruction must be the rightmost instruction in its rung.
 
 A NOTE ON USING MATH
 ====================
