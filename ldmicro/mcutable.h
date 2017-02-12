@@ -679,22 +679,24 @@ McuAdcPinInfo AvrAtmega164AdcPinInfo[] = {
 // A variety of 18-pin PICs that share the same digital IO assignment.
 
 McuIoPinInfo Pic18PinIoInfo[] = {
-    { 'A',  2,  1 },
-    { 'A',  3,  2 },
-    { 'A',  4,  3 },
-    { 'A',  5,  4 },
-    { 'B',  0,  6 },
-    { 'B',  1,  7 },
-    { 'B',  2,  8 },
-    { 'B',  3,  9 },
-    { 'B',  4, 10 },
-    { 'B',  5, 11 },
-    { 'B',  6, 12 },
-    { 'B',  7, 13 },
-    { 'A',  6, 15 },
-    { 'A',  7, 16 },
-    { 'A',  0, 17 },
-    { 'A',  1, 18 },
+    { 'A',  2,  1, "RA2/AN2/VREF" },
+    { 'A',  3,  2, "RA3/AN3/CMP1" },
+    { 'A',  4,  3, "RA4/T0CKI/CMP2" },
+    { 'A',  5,  4, "RA5/_MCLR/VPP" },
+//  { ' ',  0,  5, "VSS" },
+    { 'B',  0,  6, "RB0/INT" },
+    { 'B',  1,  7, "RB1/RX/DT" },
+    { 'B',  2,  8, "RB2/TX/CK" },
+    { 'B',  3,  9, "RB3/CCP1" },
+    { 'B',  4, 10, "RB4" },
+    { 'B',  5, 11, "RB5/PGM" },
+    { 'B',  6, 12, "RB6/T1OSO/T1CKI/PGC" },
+    { 'B',  7, 13, "RB7/T1OSI/PGD" },
+//  { ' ',  0, 14, "VDD" },
+    { 'A',  6, 15, "RA6/OSC2/CLKOUT" },
+    { 'A',  7, 16, "RA7/OSC1/CLKIN" },
+    { 'A',  0, 17, "RA0/AN0" },
+    { 'A',  1, 18, "RA1/AN1" },
 };
 
 McuAdcPinInfo Pic16f819AdcPinInfo[] = {
@@ -1046,6 +1048,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "",
         "",
         'P',
+//        A     B     C     D     E     F     G     H      I   J      K      L
         { 0x39, 0x36, 0x33, 0x30, 0x21, 0x20, 0x63 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32, 0x23, 0x62, 0x65 }, // PORTx
         { 0x3a, 0x37, 0x34, 0x31, 0x22, 0x61, 0x64 }, // DDRx
@@ -1430,17 +1433,18 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         // code protection off, data code protection off, LVP disabled,
         // BOD reset enabled, RA5/nMCLR is RA5, PWRT enabled, WDT disabled,
         // HS oscillator
-        0x3f62,
-            /*
+        //0x3f62,
+            /**/
             (1 << 13) | // code protection off,
-            (1 <<  8) | // data code protection off,
-            (0 <<  7) | // LVP disabled,
-            (1 <<  6) | // BOD reset enabled,
-            (0 <<  5) | // RA5/nMCLR is RA5,
+            (1 <<  8) | // Data memory code protection off,
+            (0 <<  7) | // LVP disabled, RB4/PGM is digital I/O,
+            (1 <<  6) | // BOR reset enabled,
+            (0 <<  5) | // RA5/_MCLR is RA5, RA5 pin function is digital Input,
             (0 <<  3) | // PWRT enabled,
             (0 <<  2) | // WDT disabled,
-            (2 <<  0) | // HS oscillator
-            */
+//          (1 <<  2) | // WDT enabled,
+            (2 <<  0),  // HS oscillator
+            /**/
         PicPwmPinInfo18,
         arraylen(PicPwmPinInfo18),
         PicExtIntPinInfo18,

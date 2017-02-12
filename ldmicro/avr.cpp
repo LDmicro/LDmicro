@@ -356,32 +356,49 @@ static BYTE      PSR2  = -1;
 // Power Reduction Register
 static DWORD REG_PRR   = 0;
 
-// External Interrupt Control Register A
-static DWORD REG_EICRA = 0;
-// External Interrupt Mask Register
-static DWORD REG_EIMSK = 0;
-// External Interrupt Flag Register
-static DWORD REG_EIFR  = 0;
+// Sleep Mode Control Register (redirected) =================================
+static DWORD REG_sleep = 0;  // maybe REG_SMCR or REG_MCUCR !!!
+static BYTE      SE    = -1; // maybe in REG_SMCR or REG_MCUCR !!!
+static BYTE      SM0   = -1; // maybe in REG_SMCR or REG_MCUCR or REG_EMCUCR!!!
+static BYTE      SM1   = -1; // maybe in REG_SMCR or REG_MCUCR !!!
+static BYTE      SM2   = -1; // maybe in REG_SMCR or REG_MCUCR or REG_MCUCSR!!!
 
 // Sleep Mode Control Register
-static DWORD REG_SMCR  = 0; // 0x53;
-static BYTE      SE    = 0; // BIT0; // may be in REG_MCUCR
-static BYTE      SM0   = 0; // BIT1; // may be in REG_MCUCR
+//static DWORD REG_SMCR  = 0; // 0x53;
 
-// External Interrupts support
 // MCU Control Register
-static DWORD REG_MCUCR = 0; // 0x55;
-//for others
-static BYTE      ISC00 = 0;
-static BYTE      ISC01 = 0;
-static BYTE      ISC10 = 0;
-static BYTE      ISC11 = 0;
+//static DWORD REG_MCUCR  = 0; // 0x55;
+static DWORD REG_EMCUCR = 0;
+static DWORD REG_MCUCSR = 0;
 
-static DWORD REG_GICR  = 0;
+// External Interrupts support (redirected) =================================
+static DWORD REG_int_sup = 0; // maybe REG_EICRA or REG_MCUCR !!!
+
+// External Interrupt Control Registers
+//static DWORD REG_EICRB = 0;
+//static DWORD REG_EICRA = 0;
+
+//               Interrupt Sense Control
+static BYTE      ISC11 = BIT3;
+static BYTE      ISC10 = BIT2;
+static BYTE      ISC01 = BIT1;
+static BYTE      ISC00 = BIT0; //maybe in REG_EICRA or REG_MCUCR !!!
+
+// Interrupt Control Register
+static DWORD REG_int_en = 0; // maybe REG_GICR or REG_EIMSK !!!
+//static DWORD REG_GICR  = 0;
+// External Interrupt Mask Register
+//static DWORD REG_EIMSK = 0;
+//               External Interrupt Request Enable
 static BYTE      INT1  = 0;
 static BYTE      INT0  = 0;
 
-static DWORD REG_GIFR  = 0;
+// Interrupt Flag Register
+static DWORD REG_int_flag = 0; // maybe REG_GIFR or REG_EIFR !!!
+//static DWORD REG_GIFR  = 0;
+// External Interrupt Flag Register
+//static DWORD REG_EIFR  = 0;
+//               External Interrupt Flag is cleared when the interrupt routine is executed.
 static BYTE      INTF1 = 0;
 static BYTE      INTF0 = 0;
 //===========================================================================
@@ -1174,10 +1191,6 @@ static void WriteHexFile(FILE *f)
     for(i = 0; i < AvrProgWriteP; i++) {
         DWORD w = Assemble(i, AvrProg[i].opAvr, AvrProg[i].arg1, AvrProg[i].arg2);
 
-        if(soFarCount == 0) soFarStart = i;
-        soFar[soFarCount++] = (BYTE)(w & 0xff);
-        soFar[soFarCount++] = (BYTE)(w >> 8);
-
         if(ExtendedSegmentAddress != (i & ~0x7fff)) {
       //if(i == 0x8000) {
       //    fprintf(f, ":020000021000EC\n"); // TT->Record Type -> 02 is Extended Segment Address 0x10000 + 0xffff
@@ -1191,6 +1204,10 @@ static void WriteHexFile(FILE *f)
             WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) & 0xff)); // AA->Address as big endian values LO()
             FinishIhex(f);   // CC->Checksum
         }
+        if(soFarCount == 0) soFarStart = i;
+        soFar[soFarCount++] = (BYTE)(w & 0xff);
+        soFar[soFarCount++] = (BYTE)(w >> 8);
+
         if(soFarCount >= 0x10 * n || i == (AvrProgWriteP-1)) {
             StartIhex(f); // ':'->Colon
             WriteIhex(f, soFarCount); // LL->Record Length
@@ -3756,37 +3773,69 @@ static void CompileFromIntermediate(void)
                 break;
             }
             #endif
+            case INT_CLRWDT:
+                Instruction(OP_WDR);
+                break;
+            case INT_LOCK:
+                Instruction(OP_RJMP, AvrProgWriteP);
+                break;
             case INT_SLEEP:
-                if(REG_SMCR) {
-                    WriteMemory(REG_SMCR, (0x02<<SM0) | (1<<SE)); //Power-down Sleep Mode, Sleep Enable
-                } else if(REG_MCUCR) {
-                    WriteMemory(REG_MCUCR, (0x02<<SM0) | (1<<SE));
-                } else oops();
-                if(REG_EICRA) {
+                if(REG_MCUCSR)
+                  ClearBit(REG_MCUCSR, SM2); //Power-down Sleep Mode
+                else
+                  ClearBit(REG_sleep, SM2);  //Power-down Sleep Mode
+
+                SetBit(REG_sleep, SM1);      //Power-down Sleep Mode
+
+                if(REG_EMCUCR)
+                  ClearBit(REG_EMCUCR, SM0); //Power-down Sleep Mode
+                else
+                  ClearBit(REG_sleep, SM0);  //Power-down Sleep Mode
+
+                SetBit(REG_sleep, SE);       //Sleep Enable
+
+                /*
+                if(REG_EICRB)
+                    WriteMemory(REG_EICRB, 0); // configured as a level interrupt
+                if(REG_EICRA)
                     WriteMemory(REG_EICRA, 0); // configured as a level interrupt
-                }
-                /**/
+                */
+                Instruction(OP_CLI);
+                ClearBit(REG_int_sup, ISC00); // configured as a level interrupt
+                ClearBit(REG_int_sup, ISC01); // ...
+                ClearBit(REG_int_sup, ISC10); // ...
+                ClearBit(REG_int_sup, ISC11); // configured as a level interrupt
+                /*
                 if(REG_EIFR) {
                     WriteMemory(REG_EIFR, (1<<INTF1) | (1<<INTF0)); // the flag can be cleared by writing a logical one to it
                 } else if(REG_GICR) {
-                    WriteMemory(REG_GICR, (1<<INT1) | (1<<INT0));
+                    WriteMemory(REG_GICR, (1<<INTF1) | (1<<INTF0));
                 } else oops();
-                /**/
+                */
+                SetBit(REG_int_flag, INTF0); // the flag can be cleared by writing a logical one to it
+                SetBit(REG_int_flag, INTF1);
+                /*
                 if(REG_EIMSK) {
                     WriteMemory(REG_EIMSK, (1<<INT1) | (1<<INT0)); // the external pin interrupt is enabled
                 } else if(REG_GICR) {
                     WriteMemory(REG_GICR, (1<<INT1) | (1<<INT0));
                 } else oops();
+                */
+                SetBit(REG_int_en, INT0); // the external pin interrupt is enabled
+                SetBit(REG_int_en, INT1);
+                /**/
                 Instruction(OP_SEI);
                 Instruction(OP_SLEEP); // stopped here
                 Instruction(OP_CLI);
-                /**/
+                /*
                 if(REG_EIMSK) {
                     AndMemory(REG_EIMSK, ~((1<<INT1) | (1<<INT0))); // the external pin interrupt is disabled
                 } else if(REG_GICR) {
                     AndMemory(REG_GICR, ~((1<<INT1) | (1<<INT0)));
                 } else oops();
-                /**/
+                */
+                ClearBit(REG_int_en, INT0); // the external pin interrupt is disabled
+                ClearBit(REG_int_en, INT1);
                 break;
             default:
                 ooops("INT_%d", a->op);
@@ -4310,20 +4359,6 @@ void CompileAvr(char *outFile)
         Timer1OvfAddr   = 0x000D;
         Timer0OvfAddr   = 0x0010;
         Timer1CompAAddr = 0x000B;
-
-        REG_SMCR        = 0x53;
-            SE          = BIT0;
-            SM0         = BIT1;
-
-        REG_EICRA       = 0x69;
-
-        REG_EIMSK       = 0x3D;
-            INT1        = BIT1;
-            INT0        = BIT0;
-
-        REG_EIFR        = 0x3C;
-            INTF1       = BIT1;
-            INTF0       = BIT0;
     } else
     if(McuAs("Atmel AVR ATmega64 ")
     || McuAs("Atmel AVR ATmega128 ")
@@ -4333,14 +4368,6 @@ void CompileAvr(char *outFile)
         Timer1OvfAddr   = 0x001C;
         Timer0OvfAddr   = 0x0020;
         Timer1CompAAddr = 0x0018;
-
-        REG_GICR  = 0x59; // EIMSK
-            INT1  = BIT1;
-            INT0  = BIT0;
-
-        REG_GIFR  = 0x58; // EIFR ???
-            INTF1 = BIT1;
-            INTF0 = BIT0;
     } else
     if(McuAs(" ATmega8515 ")
     ){
@@ -4353,10 +4380,6 @@ void CompileAvr(char *outFile)
     if(McuAs(" ATmega8 ")
     || McuAs(" ATmega8535 ")
     ){
-        REG_MCUCR       = 0x55;
-            SE          = BIT7;
-            SM0         = BIT4;
-
         Int0Addr        = 1;
         Int1Addr        = 2;
         Timer1OvfAddr   = 0x0008;
@@ -4432,199 +4455,25 @@ void CompileAvr(char *outFile)
         REG_EECR    = 0x3F;
 
         REG_GTCCR   = 0x43;
-    } else
-    if(McuAs("Atmel AVR ATmega48 ") ||
-       McuAs("Atmel AVR ATmega88 ") ||
-       McuAs("Atmel AVR ATmega168 ") ||
-       McuAs("Atmel AVR ATmega328 ")
-    ){
-        REG_TCCR0   = 0x45;
-        REG_TCNT0   = 0x46;
 
-        REG_OCR1AH  = 0x89;
-        REG_OCR1AL  = 0x88;
-        REG_TCCR1A  = 0x80;
-        REG_TCCR1B  = 0x81;
+        REG_sleep   = 0x53; // REG_SMCR
+            SE      = BIT0;
+            SM0     = BIT1;
+            SM1     = BIT2;
+            SM2     = BIT3;
 
-        REG_TIMSK   = 0x6F;   // TIMSK1
-        REG_TIFR1   = 0x36;
-            OCF1A   = BIT1;
-            TOV1    = BIT0;
-        REG_TIFR0   = 0x35;
-            TOV0    = BIT0;
+        REG_int_sup = 0x69;
+//      REG_EICRA   = 0x69;
+//      REG_EICRB   = 0x6A;
 
-        REG_UDR     = 0xC6;   // UDR0
-        REG_UBRRH   = 0xC5;   // UBRR0H
-        REG_UBRRL   = 0xC4;   // UBRR0L
-        REG_UCSRB   = 0xC1;   // UCSR0B
-        REG_UCSRA   = 0xC0;   // UCSR0A
+        REG_int_en  = 0x3D; // REG_EIMSK
+            INT1    = BIT1;
+            INT0    = BIT0;
 
-        REG_OCR2    = 0xB3;   // OCR2A
-        REG_TCCR2B  = 0xB1;
-        REG_TCCR2   = 0xB0;   // TCCR2A
-            WGM20   = BIT0;
-            WGM21   = BIT1;
-            COM21   = BIT7;   // COM2A1
-            COM20   = BIT6;   // COM2A0
+        REG_int_flag= 0x3C; // REG_EIFR
+            INTF1   = BIT1;
+            INTF0   = BIT0;
 
-        REG_ADMUX   = 0x7C;
-        REG_ADCSRB  = 0x7B;
-        REG_ADCSRA  = 0x7A;
-        REG_ADCH    = 0x79;
-        REG_ADCL    = 0x78;
-
-        REG_EEARH   = 0x42;
-        REG_EEARL   = 0x41;
-        REG_EEDR    = 0x40;
-        REG_EECR    = 0x3F;
-
-        REG_GTCCR   = 0x43;
-    } else
-    if(McuAs("Atmel AVR ATmega164 ") ||
-       McuAs("Atmel AVR ATmega324 ") ||
-       McuAs("Atmel AVR ATmega644 ") ||
-       McuAs("Atmel AVR ATmega1284 ")
-    ){
-        REG_TCCR0  = 0x45;
-        REG_TCNT0  = 0x46;
-
-        REG_OCR1AH  = 0x89;
-        REG_OCR1AL  = 0x88;
-        REG_TCCR1B  = 0x81;
-        REG_TCCR1A  = 0x80;
-
-        REG_TIMSK   = 0x6F;   // TIMSK1
-        REG_TIFR1   = 0x36;
-            OCF1A   = BIT1;
-            TOV1    = BIT0;
-        REG_TIFR0   = 0x35;
-            TOV0    = BIT0;
-
-        REG_UDR     = 0xC6;   // UDR0
-        REG_UBRRH   = 0xC5;   // UBRR0H
-        REG_UBRRL   = 0xC4;   // UBRR0L
-        REG_UCSRB   = 0xC1;   // UCSR0B
-        REG_UCSRA   = 0xC0;   // UCSR0A
-
-        REG_EEARH   = 0x42;
-        REG_EEARL   = 0x41;
-        REG_EEDR    = 0x40;
-        REG_EECR    = 0x3F;
-
-        REG_OCR2    = 0xB3;   // OCR2A
-        REG_TCCR2B  = 0xB1;
-        REG_TCCR2   = 0xB0;   // TCCR2A
-            WGM20   = BIT0;
-            WGM21   = BIT1;
-            COM21   = BIT7;   // COM2A1
-            COM20   = BIT6;   // COM2A0
-
-        REG_GTCCR   = 0x43;
-    } else
-    if(McuAs(" ATmega640 ") ||
-       McuAs(" ATmega1280 ") ||
-       McuAs(" ATmega1281 ") ||
-       McuAs(" ATmega2560 ") ||
-       McuAs(" ATmega2561 ")
-    ){
-        REG_TCCR0  = 0x45;
-        REG_TCNT0  = 0x46;
-
-        REG_OCR1AH  = 0x89;
-        REG_OCR1AL  = 0x88;
-        REG_TCCR1B  = 0x81;
-        REG_TCCR1A  = 0x80;
-
-        REG_TIMSK   = 0x6F;   // TIMSK1
-        REG_TIFR1   = 0x36;
-            OCF1A   = BIT1;
-            TOV1    = BIT0;
-        REG_TIFR0   = 0x35;
-            TOV0    = BIT0;
-
-        REG_UDR     = 0xC6;   // UDR0
-        REG_UBRRH   = 0xC5;   // UBRR0H
-        REG_UBRRL   = 0xC4;   // UBRR0L
-        REG_UCSRB   = 0xC1;   // UCSR0B
-        REG_UCSRA   = 0xC0;   // UCSR0A
-
-        REG_ADMUX   = 0x7C;
-        REG_ADCSRB  = 0x7B;
-        REG_ADCSRA  = 0x7A;
-        REG_ADCH    = 0x79;
-        REG_ADCL    = 0x78;
-
-        REG_OCR2    = 0xB3;   // OCR2A
-        REG_TCCR2B  = 0xB1;
-        REG_TCCR2   = 0xB0;   // TCCR2A
-            WGM20   = BIT0;
-            WGM21   = BIT1;
-            COM21   = BIT7;   // COM2A1
-            COM20   = BIT6;   // COM2A0
-
-        REG_GTCCR   = 0x43;
-    } else
-    if(McuAs(" ATmega161 ")
-    || McuAs("Atmel AVR ATmega162 ")
-    || McuAs(" ATmega8515 ")
-    ){
-        REG_TCCR0  = 0x53;
-        REG_TCNT0  = 0x52;
-
-        REG_OCR1AH  = 0x4B;
-        REG_OCR1AL  = 0x4A;
-        REG_TCCR1A  = 0x4F;
-        REG_TCCR1B  = 0x4E;
-
-        REG_TIMSK   = 0x59;
-            TOIE1   = BIT7;
-            OCIE1A  = BIT6;
-            TOIE0   = BIT1;
-        REG_TIFR1   = 0x58;  // TIFR
-        REG_TIFR0   = 0x58;  // TIFR
-            TOV1    = BIT7;
-            OCF1A   = BIT6;
-            TOV0    = BIT1;
-
-        REG_UBRRH   = 0x40;
-        REG_UBRRL   = 0x29;
-        REG_UCSRB   = 0x2a;
-        REG_UCSRA   = 0x2b;
-        REG_UDR     = 0x2c;
-
-        REG_SFIOR   = 0x50;
-            PSR2    = BIT1;
-    } else
-    if(McuAs("Atmel AVR ATmega8 ")  ||
-       McuAs("Atmel AVR ATmega16 ") ||
-       McuAs("Atmel AVR ATmega32 ")
-    ){
-        REG_TCCR0  = 0x53;
-        REG_TCNT0  = 0x52;
-
-        REG_OCR1AH  = 0x4B;
-        REG_OCR1AL  = 0x4A;
-        REG_TCCR1A  = 0x4F;
-        REG_TCCR1B  = 0x4E;
-
-        REG_TIMSK   = 0x59;
-            OCIE1A  = BIT4;
-            TOIE1   = BIT2;
-            TOIE0   = BIT0;
-        REG_TIFR1   = 0x58; // TIFR
-        REG_TIFR0   = 0x58; // TIFR
-            OCF1A   = BIT4;
-            TOV1    = BIT2;
-            TOV0    = BIT0;
-
-        REG_UBRRH   = 0x40;
-        REG_UBRRL   = 0x29;
-        REG_UCSRB   = 0x2a;
-        REG_UCSRA   = 0x2b;
-        REG_UDR     = 0x2c;
-
-        REG_SFIOR   = 0x50;
-            PSR2    = BIT1;
     } else
     if(McuAs(" ATmega16U4 ") ||
        McuAs(" ATmega32U4 ")
@@ -4656,28 +4505,374 @@ void CompileAvr(char *outFile)
         REG_UDR     = 0xCE;
         REG_UBRRH   = 0xCD;
         REG_UBRRL   = 0xCC;
+//      REG_UCSRC   = 0xCA;
         REG_UCSRB   = 0xC9;
         REG_UCSRA   = 0xC8;
 
-        REG_SMCR    = 0x53;
+        REG_sleep   = 0x53; // REG_SMCR
             SE      = BIT0;
             SM0     = BIT1;
+            SM1     = BIT2;
+            SM2     = BIT3;
 
-        REG_EICRA   = 0x69;
+        REG_int_sup = 0x69;
+//      REG_EICRA   = 0x69;
+//      REG_EICRB   = 0x6A;
 
-        REG_EIMSK   = 0x3D;
+        REG_int_en  = 0x3D; // REG_EIMSK
             INT1    = BIT1;
             INT0    = BIT0;
 
-        REG_EIFR    = 0x3C;
+        REG_int_flag= 0x3C; // REG_EIFR
             INTF1   = BIT1;
             INTF0   = BIT0;
+
+//      REG_SFIOR   = 0x50;
+//          PSR2    = BIT1;
+
+        REG_EIND    = 0x5C;
+    } else
+    if(McuAs("Atmel AVR ATmega48 ") ||
+       McuAs("Atmel AVR ATmega88 ") ||
+       McuAs("Atmel AVR ATmega168 ") ||
+       McuAs("Atmel AVR ATmega328 ")
+    ){
+        REG_TCCR0   = 0x45;
+        REG_TCNT0   = 0x46;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1A  = 0x80;
+        REG_TCCR1B  = 0x81;
+
+        REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIFR1   = 0x36;
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+        REG_TIFR0   = 0x35;
+            TOV0    = BIT0;
+
+        REG_UDR     = 0xC6;   // UDR0
+        REG_UBRRH   = 0xC5;   // UBRR0H
+        REG_UBRRL   = 0xC4;   // UBRR0L
+//      REG_UCSRC   = 0xC2;   // UCSR0C
+        REG_UCSRB   = 0xC1;   // UCSR0B
+        REG_UCSRA   = 0xC0;   // UCSR0A
+
+        REG_OCR2    = 0xB3;   // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0;   // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7;   // COM2A1
+            COM20   = BIT6;   // COM2A0
+
+        REG_ADMUX   = 0x7C;
+        REG_ADCSRB  = 0x7B;
+        REG_ADCSRA  = 0x7A;
+        REG_ADCH    = 0x79;
+        REG_ADCL    = 0x78;
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
+
+        REG_GTCCR   = 0x43;
+
+        REG_sleep   = 0x53; // REG_SMCR
+            SE      = BIT0;
+            SM0     = BIT1;
+            SM1     = BIT2;
+            SM2     = BIT3;
+
+        REG_int_sup = 0x69; // REG_EICRA
+//      REG_EICRA   = 0x69;
+
+        REG_int_en  = 0x3D; // REG_EIMSK
+            INT1    = BIT1;
+            INT0    = BIT0;
+
+        REG_int_flag= 0x3C; // REG_EIFR
+            INTF1   = BIT1;
+            INTF0   = BIT0;
+
+    } else
+    if(McuAs("Atmel AVR ATmega164 ") ||
+       McuAs("Atmel AVR ATmega324 ") ||
+       McuAs("Atmel AVR ATmega644 ") ||
+       McuAs("Atmel AVR ATmega1284 ")
+    ){
+        REG_TCCR0  = 0x45;
+        REG_TCNT0  = 0x46;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+        REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIFR1   = 0x36;
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+        REG_TIFR0   = 0x35;
+            TOV0    = BIT0;
+
+        REG_UDR     = 0xC6;   // UDR0
+        REG_UBRRH   = 0xC5;   // UBRR0H
+        REG_UBRRL   = 0xC4;   // UBRR0L
+//      REG_UCSRC   = 0xC2;   // UCSR0C
+        REG_UCSRB   = 0xC1;   // UCSR0B
+        REG_UCSRA   = 0xC0;   // UCSR0A
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
+
+        REG_OCR2    = 0xB3;   // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0;   // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7;   // COM2A1
+            COM20   = BIT6;   // COM2A0
+
+        REG_GTCCR   = 0x43;
+
+        REG_sleep   = 0x53; // REG_SMCR
+            SE      = BIT0;
+            SM0     = BIT1;
+            SM1     = BIT2;
+            SM2     = BIT3;
+
+        REG_int_sup = 0x69;
+//      REG_EICRA   = 0x69;
+
+        REG_int_en  = 0x3D; // REG_EIMSK
+            INT1    = BIT1;
+            INT0    = BIT0;
+
+        REG_int_flag= 0x3C; // REG_EIFR
+            INTF1   = BIT1;
+            INTF0   = BIT0;
+
+    } else
+    if(McuAs(" ATmega640 ") ||
+       McuAs(" ATmega1280 ") ||
+       McuAs(" ATmega1281 ") ||
+       McuAs(" ATmega2560 ") ||
+       McuAs(" ATmega2561 ")
+    ){
+        REG_TCCR0  = 0x45;
+        REG_TCNT0  = 0x46;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+        REG_TIMSK   = 0x6F;   // TIMSK1
+        REG_TIFR1   = 0x36;
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+        REG_TIFR0   = 0x35;
+            TOV0    = BIT0;
+
+        REG_UDR     = 0xC6;   // UDR0
+        REG_UBRRH   = 0xC5;   // UBRR0H
+        REG_UBRRL   = 0xC4;   // UBRR0L
+//      REG_UCSRC   = 0xC2;   // UCSR0C
+        REG_UCSRB   = 0xC1;   // UCSR0B
+        REG_UCSRA   = 0xC0;   // UCSR0A
+
+        REG_ADMUX   = 0x7C;
+        REG_ADCSRB  = 0x7B;
+        REG_ADCSRA  = 0x7A;
+        REG_ADCH    = 0x79;
+        REG_ADCL    = 0x78;
+
+        REG_OCR2    = 0xB3;   // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0;   // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7;   // COM2A1
+            COM20   = BIT6;   // COM2A0
+
+        REG_GTCCR   = 0x43;
+
+        REG_sleep   = 0x53; // REG_SMCR
+            SE      = BIT0;
+            SM0     = BIT1;
+            SM1     = BIT2;
+            SM2     = BIT3;
+
+        REG_int_sup = 0x69;
+//      REG_EICRA   = 0x69;
+//      REG_EICRB   = 0x6A;
+
+        REG_int_en  = 0x3D; // REG_EIMSK
+            INT1    = BIT1;
+            INT0    = BIT0;
+
+        REG_int_flag= 0x3C; // REG_EIFR
+            INTF1   = BIT1;
+            INTF0   = BIT0;
+
+        REG_EIND    = 0x5C;
+    } else
+    if(McuAs(" ATmega161 ")
+    || McuAs("Atmel AVR ATmega162 ")
+    || McuAs(" ATmega8515 ")
+    ){
+        REG_TCCR0  = 0x53;
+        REG_TCNT0  = 0x52;
+
+        REG_OCR1AH  = 0x4B;
+        REG_OCR1AL  = 0x4A;
+        REG_TCCR1A  = 0x4F;
+        REG_TCCR1B  = 0x4E;
+
+        REG_TIMSK   = 0x59;
+            TOIE1   = BIT7;
+            OCIE1A  = BIT6;
+            TOIE0   = BIT1;
+        REG_TIFR1   = 0x58;  // TIFR
+        REG_TIFR0   = 0x58;  // TIFR
+            TOV1    = BIT7;
+            OCF1A   = BIT6;
+            TOV0    = BIT1;
+
+//      REG_UCSRC   = 0x40;
+        REG_UBRRH   = 0x40;
+        REG_UBRRL   = 0x29;
+        REG_UCSRB   = 0x2a;
+        REG_UCSRA   = 0x2b;
+        REG_UDR     = 0x2c;
+
+        REG_SFIOR   = 0x50;
+            PSR2    = BIT1;
+
+        REG_sleep   = 0x55; // REG_MCUCR
+            SE      = BIT5;
+            SM1     = BIT4;
+        REG_EMCUCR  = 0x56;
+            SM0     = BIT7;
+        REG_MCUCSR  = 0x54;
+            SM2     = BIT5;
+
+        REG_int_sup = 0x55; // REG_MCUCR
+
+        REG_int_en  = 0x5B; // REG_GICR
+            INT1    = BIT7;
+            INT0    = BIT6;
+
+        REG_int_flag= 0x5A; // REG_GIFR
+            INTF1   = BIT7;
+            INTF0   = BIT6;
+
+    } else
+    if(McuAs("Atmel AVR ATmega8 ")  ||
+       McuAs("Atmel AVR ATmega32 ")
+    ){
+        REG_TCCR0  = 0x53;
+        REG_TCNT0  = 0x52;
+
+        REG_OCR1AH  = 0x4B;
+        REG_OCR1AL  = 0x4A;
+        REG_TCCR1A  = 0x4F;
+        REG_TCCR1B  = 0x4E;
+
+        REG_TIMSK   = 0x59;
+            OCIE1A  = BIT4;
+            TOIE1   = BIT2;
+            TOIE0   = BIT0;
+        REG_TIFR1   = 0x58; // TIFR
+        REG_TIFR0   = 0x58; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+            TOV0    = BIT0;
+
+//      REG_UCSRC   = 0x40;
+        REG_UBRRH   = 0x40;
+        REG_UBRRL   = 0x29;
+        REG_UCSRB   = 0x2a;
+        REG_UCSRA   = 0x2b;
+        REG_UDR     = 0x2c;
+
+        REG_SFIOR   = 0x50;
+            PSR2    = BIT1;
+
+        REG_sleep   = 0x55; // REG_MCUCR
+            SE      = BIT7;
+            SM0     = BIT4;
+            SM1     = BIT5;
+            SM2     = BIT6;
+
+        REG_int_sup = 0x55; // REG_MCUCR
+
+        REG_int_en  = 0x5B; // REG_GICR
+            INT1    = BIT7;
+            INT0    = BIT6;
+
+        REG_int_flag= 0x5A; // REG_GIFR
+            INTF1   = BIT7;
+            INTF0   = BIT6;
+
+    } else
+    if(McuAs("Atmel AVR ATmega16 ")
+    ){
+        REG_TCCR0  = 0x53;
+        REG_TCNT0  = 0x52;
+
+        REG_OCR1AH  = 0x4B;
+        REG_OCR1AL  = 0x4A;
+        REG_TCCR1A  = 0x4F;
+        REG_TCCR1B  = 0x4E;
+
+        REG_TIMSK   = 0x59;
+            OCIE1A  = BIT4;
+            TOIE1   = BIT2;
+            TOIE0   = BIT0;
+        REG_TIFR1   = 0x58; // TIFR
+        REG_TIFR0   = 0x58; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+            TOV0    = BIT0;
+
+//      REG_UCSRC   = 0x40;
+        REG_UBRRH   = 0x40;
+        REG_UBRRL   = 0x29;
+        REG_UCSRB   = 0x2a;
+        REG_UCSRA   = 0x2b;
+        REG_UDR     = 0x2c;
+
+        REG_SFIOR   = 0x50;
+            PSR2    = BIT1;
+
+        REG_sleep   = 0x55; // REG_MCUCR
+            SE      = BIT6;
+            SM0     = BIT4;
+            SM1     = BIT5;
+            SM2     = BIT7;
+
+        REG_int_sup = 0x55; // REG_MCUCR
+
+        REG_int_en  = 0x5B; // REG_GICR
+            INT1    = BIT7;
+            INT0    = BIT6;
+
+        REG_int_flag= 0x5A; // REG_GIFR
+            INTF1   = BIT7;
+            INTF0   = BIT6;
+
     } else
     if(McuAs("Atmel AVR ATmega64 ") ||
        McuAs("Atmel AVR ATmega128 ")
     ){
-        REG_TCCR0  = 0x53;
-        REG_TCNT0  = 0x52;
+        REG_TCCR0   = 0x53;
+        REG_TCNT0   = 0x52;
 
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
@@ -4699,9 +4894,74 @@ void CompileAvr(char *outFile)
         REG_UCSRB   = 0x9a; // UCSR1B
         REG_UCSRA   = 0x9b; // UCSR1A
         REG_UDR     = 0x9c; // UDR1
+//      REG_UCSRC   = 0x9d; // UCSR1C
 
         REG_SFIOR   = 0x40;
             PSR2    = BIT0;
+
+        REG_sleep   = 0x55; // REG_MCUCR
+            SE      = BIT5;
+            SM0     = BIT3;
+            SM1     = BIT4;
+            SM2     = BIT2;
+
+        REG_int_sup = 0x6A;
+//      REG_EICRA   = 0x6A;
+//      REG_EICRB   = 0x5A;
+
+        REG_int_en  = 0x59; // EIMSK
+            INT1    = BIT1;
+            INT0    = BIT0;
+
+        REG_int_flag= 0x58; // EIFR
+            INTF1   = BIT1;
+            INTF0   = BIT0;
+    /*
+    } else
+    if(McuAs(" ATmega163 ")
+    || McuAs(" ATmega323 ")
+    || McuAs(" ATmega8535 ")
+    ){
+        REG_MCUCR       = 0x55;
+            SE          = BIT7;
+            SM0         = BIT4;
+
+      //REG_TCCR0  = 0x45
+      //REG_TCNT0  = 0x46
+
+      //TIFR bits
+        OCF1A  = BIT4;
+        TOV1   = BIT2;
+        TOV0   = BIT0;
+      //TIMSK bits
+        OCIE1A = BIT4;
+        TOIE1  = BIT2;
+        TOIE0  = BIT0;
+    } else
+    if(McuAs("Atmel AVR ATmega103 ")
+    ){
+      //REG_TCCR0  = 0x45
+      //REG_TCNT0  = 0x46
+
+        REG_OCR1AH  = 0x4B;
+        REG_OCR1AL  = 0x4A;
+        REG_TCCR1A  = 0x4F;
+        REG_TCCR1B  = 0x4E;
+
+        REG_TIMSK   = 0x57;
+        REG_TIFR1   = 0x56; // TIFR
+        REG_TIFR0   = 0x56; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+            TOV0    = BIT0;
+
+//      REG_UBRRH   = 0x98;
+        REG_UBRRL   = 0x29; // UBRR
+        REG_UCSRB   = 0x2a; // UCR
+        REG_UCSRA   = 0x2b; // USR
+        REG_UDR     = 0x2c;
+//      REG_UCSRC   = 0x9d;
+    */
     } else oops();
     //***********************************************************************
 
