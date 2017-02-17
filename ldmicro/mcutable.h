@@ -682,8 +682,8 @@ McuIoPinInfo Pic18PinIoInfo[] = {
     { 'A',  2,  1, "RA2/AN2/VREF" },
     { 'A',  3,  2, "RA3/AN3/CMP1" },
     { 'A',  4,  3, "RA4/T0CKI/CMP2" },
-    { 'A',  5,  4, "RA5/_MCLR/VPP" },
-//  { ' ',  0,  5, "VSS" },
+    { 'A',  5,  4, "RA5/_MCLR/VPP" }, // input only
+//  { ' ', -1,  5, "VSS" },
     { 'B',  0,  6, "RB0/INT" },
     { 'B',  1,  7, "RB1/RX/DT" },
     { 'B',  2,  8, "RB2/TX/CK" },
@@ -692,7 +692,7 @@ McuIoPinInfo Pic18PinIoInfo[] = {
     { 'B',  5, 11, "RB5/PGM" },
     { 'B',  6, 12, "RB6/T1OSO/T1CKI/PGC" },
     { 'B',  7, 13, "RB7/T1OSI/PGD" },
-//  { ' ',  0, 14, "VDD" },
+//  { ' ', -1, 14, "VDD" },
     { 'A',  6, 15, "RA6/OSC2/CLKOUT" },
     { 'A',  7, 16, "RA7/OSC1/CLKIN" },
     { 'A',  0, 17, "RA0/AN0" },
@@ -1433,18 +1433,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         // code protection off, data code protection off, LVP disabled,
         // BOD reset enabled, RA5/nMCLR is RA5, PWRT enabled, WDT disabled,
         // HS oscillator
-        //0x3f62,
-            /**/
-            (1 << 13) | // code protection off,
-            (1 <<  8) | // Data memory code protection off,
-            (0 <<  7) | // LVP disabled, RB4/PGM is digital I/O,
-            (1 <<  6) | // BOR reset enabled,
-            (0 <<  5) | // RA5/_MCLR is RA5, RA5 pin function is digital Input,
-            (0 <<  3) | // PWRT enabled,
-            (0 <<  2) | // WDT disabled,
-//          (1 <<  2) | // WDT enabled,
-            (2 <<  0),  // HS oscillator
-            /**/
+        0x3f62,
         PicPwmPinInfo18,
         arraylen(PicPwmPinInfo18),
         PicExtIntPinInfo18,
@@ -1517,7 +1506,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (0 <<  5) | // nMCLR/RA5 is RA5
             (0 <<  3) | // PWRTE enabled
             (0 <<  2) | // WDT disabled
-            (2 <<  0),  // HS oscillator
+//          (1 <<  4) | // 100 = INTRC oscillator; port I/O function on both RA6/OSC2/CLKO pin and RA7/OSC1/CLKI pin
+            (2 <<  0),  // 010 = HS oscillator
         PicPwmPinInfo18,
         arraylen(PicPwmPinInfo18),
         PicExtIntPinInfo18,
