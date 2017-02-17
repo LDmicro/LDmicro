@@ -1968,10 +1968,10 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         WriteIhex(f, 0x40); // 0x2007 * 2 = 0x400E
         WriteIhex(f, 0x0E);
         WriteIhex(f, 0x00);
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  8) & 0xff));
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >> 16) & 0xff));
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >> 24) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >> 16) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >> 24) & 0xff));
     } else
     if(McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
@@ -1988,10 +1988,10 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         WriteIhex(f, 0x01); // 0x8007 * 2 = 0x01000E
         WriteIhex(f, 0x00);
         WriteIhex(f, 0x0E);
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  8) & 0xff));
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >> 16) & 0xff));
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >> 24) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >> 16) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >> 24) & 0xff));
     } else
     if(McuAs("Microchip PIC16F628 ")
     || McuAs("Microchip PIC16F819 ")
@@ -2001,37 +2001,37 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC16F873 ")
     || McuAs(" PIC16F72 ")
     ) {
-        if(Prog.mcu->configurationWord & 0xffff0000) oops();
+        if(Prog.configurationWord & 0xffff0000) oops();
         WriteIhex(f, 0x02);
         WriteIhex(f, 0x40); // 0x2007 * 2 = 0x400E
         WriteIhex(f, 0x0E);
         WriteIhex(f, 0x00);
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  8) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
     } else
     if(McuAs("Microchip PIC10F200 ")
     || McuAs("Microchip PIC10F204 ")
     || McuAs("Microchip PIC10F220 ")
     ) {
-        if(Prog.mcu->configurationWord & 0xffff0000) oops();
+        if(Prog.configurationWord & 0xffff0000) oops();
         WriteIhex(f, 0x02);
         WriteIhex(f, 0x03); // 0x01ff * 2 = 0x03FE
         WriteIhex(f, 0xFE);
         WriteIhex(f, 0x00);
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  8) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
     } else
     if(McuAs("Microchip PIC10F202 ")
     || McuAs("Microchip PIC10F206 ")
     || McuAs("Microchip PIC10F222 ")
     ) {
-        if(Prog.mcu->configurationWord & 0xffff0000) oops();
+        if(Prog.configurationWord & 0xffff0000) oops();
         WriteIhex(f, 0x02);
         WriteIhex(f, 0x07); // 0x03ff * 2 = 0x07FE
         WriteIhex(f, 0xFE);
         WriteIhex(f, 0x00);
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.mcu->configurationWord >>  8) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
     } else
         oops();
     FinishIhex(f);
@@ -3780,7 +3780,7 @@ static void ConfigureTimer1(int cycleTimeMicroseconds)
         double timerPeriod = 1e6 / timerRate; // timer period, us
         countsPerCycle = (int)(cycleTimeMicroseconds / timerPeriod);
 
-        if(countsPerCycle < PLC_CLOCK_MIN * 2) {
+        if(countsPerCycle < (PLC_CLOCK_MIN * 2)) {
             Error(_("Cycle time too fast; increase cycle time, or use faster "
                 "crystal."));
             fCompileError(f, fAsm);
@@ -3796,7 +3796,6 @@ static void ConfigureTimer1(int cycleTimeMicroseconds)
         }
         prescaler *= 2;
     }
-    double Fcycle=1.0*Prog.mcuClock/(4.0*prescaler*countsPerCycle);
 
     WriteRegister(REG_CCPR1L, countsPerCycle & 0xff);
     WriteRegister(REG_CCPR1H, countsPerCycle >> 8);
@@ -3875,8 +3874,8 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
 
     countsPerCycle = prescaler*softDivisor*tmr0;
 
-    if(countsPerCycle < PLC_CLOCK_MIN * 2) {
-        int min_cycleTimeMicroseconds = PLC_CLOCK_MIN * 2 *4 *1000000 / Prog.mcuClock;
+    if(countsPerCycle < (PLC_CLOCK_MIN * 2)) {
+        int min_cycleTimeMicroseconds = (PLC_CLOCK_MIN * 2) *4 *1000000 / Prog.mcuClock;
         char str[1024];
         sprintf(str, _("\n\nMinimum PLC cycle time is %d us."),
             min_cycleTimeMicroseconds);
@@ -3977,6 +3976,37 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
         WriteRegister(addrDivisor,   BYTE(softDivisor & 0xff));
         WriteRegister(addrDivisor+1, BYTE(softDivisor >> 8));
     }
+}
+
+//-----------------------------------------------------------------------------
+// Calc PIC 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
+BOOL CalcPicTimerPlcCycle(long long int cycleTimeMicroseconds,
+    int *cycleTimeMin,
+    int *cycleTimeMax)
+{
+    *cycleTimeMin = int(round(1e6 * (PLC_CLOCK_MIN * 2) * 1 * 4 / Prog.mcuClock ));
+    //                               ^min_divider         ^min_prescaler
+    int max_divider, max_prescaler;
+    if(Prog.cycleTimer == 0) {
+        max_divider = 0x100;
+        max_prescaler = 256;
+    } else {
+        max_divider = 0x10000;
+        max_prescaler = 8;
+    }
+    *cycleTimeMax = int(round(1e6 * max_divider * max_prescaler * 4 / Prog.mcuClock ));
+
+    char txt[1024] = "";
+    if(cycleTimeMicroseconds > *cycleTimeMax) {
+      sprintf(txt,"PLC cycle time more then %.3f ms not valid.", 0.001 * *cycleTimeMax);
+      Error(txt);
+      return FALSE;
+    } else if(cycleTimeMicroseconds < *cycleTimeMin) {
+      sprintf(txt,"PLC cycle time less then %.3f ms not valid.", 0.001 * *cycleTimeMin);
+      Error(txt);
+      return FALSE;
+    }
+    return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -4613,16 +4643,13 @@ void CompilePic16(char *outFile)
     fprintf(fAsm, "; %s is the LDmicro target processor.\n", Prog.mcu->mcuList);
     fprintf(fAsm, "\tLIST    p=%s\n", Prog.mcu->mcuList);
     fprintf(fAsm, "#include ""%s.inc""\n", Prog.mcu->mcuInc);
-    if(Prog.WDTE < 0) oops();
-    if(Prog.WDTE) {
-        Prog.mcu->configurationWord |=  (1 << WDTE);
-    } else {
-        Prog.mcu->configurationWord &= ~(1 << WDTE);
-    }
-    fprintf(fAsm, ".CONFIG = 0x%X\n", Prog.mcu->configurationWord);
-    if(Prog.mcu->configurationWord >> 16) {
-        fprintf(fAsm, ";CONFIG1 WORD= 0x%04X\n", Prog.mcu->configurationWord & 0xffff);
-        fprintf(fAsm, ";CONFIG2 WORD= 0x%04X\n", Prog.mcu->configurationWord >> 16);
+    if(!Prog.configurationWord)
+        Prog.configurationWord = Prog.mcu->configurationWord;
+
+    fprintf(fAsm, ".CONFIG = 0x%X\n", Prog.configurationWord);
+    if(Prog.configurationWord >> 16) {
+        fprintf(fAsm, ";CONFIG1 WORD= 0x%04X\n", Prog.configurationWord & 0xffff);
+        fprintf(fAsm, ";CONFIG2 WORD= 0x%04X\n", Prog.configurationWord >> 16);
     }
     fprintf(fAsm, "\tradix dec\n");
     fprintf(fAsm, "\torg 0\n");

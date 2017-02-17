@@ -1,3 +1,18 @@
+== Release 4.1.6
+
+    * New: 'PIC Configuration Bits:' textbox added in 'PLC Configurations' dialog.
+    See PIC Configuration Bits wiki
+    https://github.com/LDmicro/LDmicro/wiki/PIC-Configuration-Bits
+
+    This allow to select internal oscillator, use oscillator pins as I/O pins,
+    configure _MCLR pin as digital I/O,
+    enable watchdog timer WDT,
+    select code protection, data protection, etc.
+
+    Variable name that begins with symbol '#' like #0x8E, #0x8F,
+    allow users to dynamically toggle the oscillator speed,
+    determine the cause of the processor reset, etc.
+
 == Release 4.1.5
 
     The functionality of this release was developed as a result of discussion on the page
@@ -20,7 +35,10 @@
     Also you can enable it inside LDmicro in 'PLC Configurations' dialog using
     'WDT enable' checkbox (has sense for PIC).
 
-    * New: 'WDT enable' checkbox added in 'PLC Configurations' dialog.
+  vvv Obsolete!!! See Release 4.1.6 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+  v * New: 'WDT enable' checkbox added in 'PLC Configurations' dialog. v
+  ^        Please use 'PIC Configuration Bits:' textbox.               ^
+  ^^^ Obsolete!!! See Release 4.1.6 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     ALL versions of LDmicro executes CLRWDT command "Watchdog reset"
     every PLC cycle (at begin of the cycle) regardless WDT enabled or disabled.

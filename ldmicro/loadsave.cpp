@@ -565,8 +565,11 @@ BOOL LoadProjectFromFile(char *filename)
     ExtractFileDir(CurrentLdPath);
 
     char line[512];
-    int crystal, cycle, baud;
+    long long int cycle;
+    int crystal, baud;
     int cycleTimer, cycleDuty, wdte;
+    long long int configWord = 0;
+    Prog.configurationWord = 0;
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line))) continue;
         if(strcmp(line, "IO LIST\n")==0) {
@@ -584,23 +587,29 @@ BOOL LoadProjectFromFile(char *filename)
                 strcpy(Prog.LDversion,"0.2");
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
+        } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):%llx", &cycle, &cycleTimer, &cycleDuty, &configWord)==4) {
+            Prog.cycleTime = cycle;
+            if((cycleTimer!=0) && (cycleTimer!=1)) cycleTimer = 1;
+            Prog.cycleTimer = cycleTimer;
+            Prog.cycleDuty = cycleDuty;
+            Prog.configurationWord = configWord;
         } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, WDTE:%d", &cycle, &cycleTimer, &cycleDuty, &wdte)==4) {
             Prog.cycleTime = cycle;
             if((cycleTimer!=0) && (cycleTimer!=1)) cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
-            Prog.WDTE = wdte;
+//          Prog.WDTE = wdte;
         } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d", &cycle, &cycleTimer, &cycleDuty)==3) {
             Prog.cycleTime = cycle;
             if((cycleTimer!=0)&&(cycleTimer!=1)) cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
-            Prog.WDTE = 0;
+//          Prog.WDTE = 0;
         } else if(sscanf(line, "CYCLE=%lld", &cycle)) {
             Prog.cycleTime = cycle;
             Prog.cycleTimer = 1;
             Prog.cycleDuty = 0;
-            Prog.WDTE = 0;
+//          Prog.WDTE = 0;
         } else if(sscanf(line, "BAUD=%d", &baud)) {
             Prog.baudRate = baud;
         } else if(memcmp(line, "COMPILED=", 9)==0) {
@@ -691,7 +700,6 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
     char str2[1024];
     char str3[1024];
     char str4[1024];
-    char str5[1024];
 
     Indent(f, depth);
 
@@ -1080,7 +1088,7 @@ BOOL SaveProjectToFile(char *filename, int code)
     if(Prog.mcu) {
         fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
     }
-    fprintf(f, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, WDTE:%d\n", Prog.cycleTime, Prog.cycleTimer, Prog.cycleDuty, Prog.WDTE);
+    fprintf(f, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%X\n", Prog.cycleTime, Prog.cycleTimer, Prog.cycleDuty, Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
     fprintf(f, "BAUD=%d Hz\n", Prog.baudRate);
     if(strlen(CurrentCompileFile) > 0) {

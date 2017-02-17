@@ -755,7 +755,8 @@ typedef struct PlcProgramTag {
     McuIoInfo    *mcu;
     long long int cycleTime;  // us
     int           cycleTimer; // 1 or 0
-    BYTE          WDTE;       // only for PIC // Watchdog Timer Enable bit, 1 = WDT enabled
+    long long int configurationWord; // only PIC
+//  BYTE          WDTE;       // only for PIC // Watchdog Timer Enable bit, 1 = WDT enabled
     BYTE          WDTPSA;     // only for PIC
     BYTE          OPTION;     // only for PIC10Fxxx
 #define YPlcCycleDuty "YPlcCycleDuty"
@@ -1634,6 +1635,9 @@ int getradix(char *str);
 // pic16.cpp
 void CompilePic16(char *outFile);
 BOOL McuAs(char *str);
+BOOL CalcPicTimerPlcCycle(long long int cycleTimeMicroseconds,\
+    int *cycleTimeMin,\
+    int *cycleTimeMax);
 // avr.cpp
 extern DWORD AvrProgWriteP;
 BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,\
