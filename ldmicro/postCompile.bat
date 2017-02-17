@@ -11,7 +11,7 @@ rem goto exit
 ;
 @SET DIFF_TOOL="D:\Program Files\WinMerge\WinMergeU.exe"
 ;
-@md %2\%3
+rem @md %2\%3
 ;
 if "%1" == "AVR" goto AVR
 if "%1" == "PIC16" goto PIC16
@@ -73,11 +73,11 @@ goto exit
 ;
 @rem =======================================================================
 :ARDUINO
-@md  "%2\%3\ARDUINO"
-copy "%2\%3.cpp"      "%2\%3\ARDUINO"
-copy "%2\%3.h"        "%2\%3\ARDUINO"
-copy "%2\%3.ino_"     "%2\%3\ARDUINO"
-copy "%2\ladder.h_"   "%2\%3\ARDUINO"
+@md  "%2\ARDUINO\%3"
+copy "%2\%3.cpp"      "%2\ARDUINO\%3"
+copy "%2\%3.h"        "%2\ARDUINO\%3"
+copy "%2\%3.ino_"     "%2\ARDUINO\%3"
+copy "%2\ladder.h_"   "%2\ARDUINO\%3"
 rem pause
 goto exit
 ;

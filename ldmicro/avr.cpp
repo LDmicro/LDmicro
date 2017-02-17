@@ -2064,7 +2064,6 @@ BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,
 }
 //-----------------------------------------------------------------------------
 // Configure AVR 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-static DWORD  PlcCycleTimerOverflowVector;
 static int    tcnt0PlcCycle = 0;
 static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 {
@@ -2135,8 +2134,6 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 static void PlcCycleTimerOverflowInterrupt()
 {
     Comment("PlcCycleTimerOverflowInterrupt") ;
-  //FwdAddrIsNow(PlcCycleTimerOverflowVector);
-    PlcCycleTimerOverflowVector = AvrProgWriteP;
     //if(tcnt0PlcCycle > 0) {
       Instruction(OP_PUSH, r25);
       Instruction(OP_PUSH, ZL);

@@ -32,13 +32,15 @@
 static HWND ConfDialog;
 
 static HWND CrystalTextbox;
+static HWND ConfigBitsTextbox;
 static HWND CycleTextbox;
 static HWND TimerTextbox;
 static HWND YPlcCycleDutyCheckbox;
-static HWND WDTECheckbox;
+//static HWND WDTECheckbox; // obsolete
 static HWND BaudTextbox;
 
 static LONG_PTR PrevCrystalProc;
+static LONG_PTR PrevConfigBitsProc;
 static LONG_PTR PrevCycleProc;
 static LONG_PTR PrevBaudProc;
 
@@ -57,6 +59,8 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
     LONG_PTR t;
     if(hwnd == CrystalTextbox)
         t = PrevCrystalProc;
+    else if(hwnd == ConfigBitsTextbox)
+        t = PrevConfigBitsProc;
     else if(hwnd == CycleTextbox)
         t = PrevCycleProc;
     else if(hwnd == BaudTextbox)
@@ -91,14 +95,14 @@ static void MakeControls(void)
 
     YPlcCycleDutyCheckbox = CreateWindowEx(0, WC_BUTTON, _("YPlcCycleDuty"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        370, 12, 100, 20, ConfDialog, NULL, Instance, NULL);
+        370, 13, 100, 20, ConfDialog, NULL, Instance, NULL);
     NiceFont(YPlcCycleDutyCheckbox);
-
+/*
     WDTECheckbox = CreateWindowEx(0, WC_BUTTON, _("WDT enable"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         370, 43, 100, 20, ConfDialog, NULL, Instance, NULL);
     NiceFont(WDTECheckbox);
-
+*/
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC,
         _("MCU Crystal Frequency (MHz):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -109,6 +113,17 @@ static void MakeControls(void)
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         185, 42, 75, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(CrystalTextbox);
+
+    HWND textLabel2_ = CreateWindowEx(0, WC_STATIC,
+        _("PIC Configuration Bits:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
+        265, 73, 130, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textLabel2_);
+
+    ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        400, 72, 75, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(ConfigBitsTextbox);
 
     HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("UART Baud Rate (bps):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -135,6 +150,13 @@ static void MakeControls(void)
         EnableWindow(textLabel2, FALSE);
     }
 
+    if(Prog.mcu && (Prog.mcu->whichIsa != ISA_PIC16))
+    {
+        EnableWindow(ConfigBitsTextbox, FALSE);
+        EnableWindow(textLabel2_, FALSE);
+//      EnableWindow(WDTECheckbox, FALSE);
+    }
+
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         268 + 215, 11, 70, 23, ConfDialog, NULL, Instance, NULL);
@@ -148,63 +170,72 @@ static void MakeControls(void)
     char txt[1024*4] = "";
     char explanation[1024*4] = "";
 
+    BOOL b;
     int cycleTimeMin;
     int cycleTimeMax;
-    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_AVR)){
-        int prescaler;
-        int sc;
-        int divider;
-        char s1[3];
-        char s2[3];
-
-        BOOL b=CalcAvrTimerPlcCycle(Prog.cycleTime,
+    int prescaler;
+    int sc;
+    int divider;
+    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_AVR)) {
+        b=CalcAvrTimerPlcCycle(Prog.cycleTime,
             &prescaler,
             &sc,
             &divider,
             &cycleTimeMin,
             &cycleTimeMax);
+    } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PIC16)) {
+        b=CalcPicTimerPlcCycle(Prog.cycleTime,
+            &cycleTimeMin,
+            &cycleTimeMax);
+    }
 
+    if((Prog.mcu && (Prog.mcu->whichIsa == ISA_AVR))
+    || (Prog.mcu && (Prog.mcu->whichIsa == ISA_PIC16))) {
+        char s1[3];
+        char s2[3];
         double _cycleTimeMin = SIprefix(1.0*cycleTimeMin/1e6,s1);
         double _cycleTimeMax = SIprefix(1.0*cycleTimeMax/1e6,s2);
-        sprintf(txt,"Available PLC Cycle Time: min=%.6g %ss, max=%.6g %ss\n",
-            _cycleTimeMin, s1, _cycleTimeMax, s2);
+        sprintf(txt,"Available PLC Cycle Time: min=%.6g %ss, max=%d ms (%.6g %ss)\n",
+            _cycleTimeMin, s1, cycleTimeMax/1000, _cycleTimeMax, s2);
         strcat(explanation,txt);
-      if(b) {
-        double _cycleTimeNow = SIprefix(1.0*prescaler*divider/Prog.mcuClock,s2);
-        sprintf(txt,"Fact PLC Cycle Time=%.6g %ss with clocksPerCycle=%d\n",
-            _cycleTimeNow, s2, prescaler*divider);
-        strcat(explanation,txt);
+        if(b) {
+            if(Prog.mcu && (Prog.mcu->whichIsa == ISA_AVR)) {
+                double _cycleTimeNow = SIprefix(1.0*prescaler*divider/Prog.mcuClock,s2);
+                sprintf(txt,"Fact PLC Cycle Time=%.6g %ss with clocksPerCycle=%d\n",
+                    _cycleTimeNow, s2, prescaler*divider);
+                strcat(explanation,txt);
 
-        sprintf(txt,"MCU PLC Timer%d: prescaler=%d, divider=%d\n",
-            Prog.cycleTimer, prescaler, divider);
-        strcat(explanation,txt);
+                sprintf(txt,"MCU PLC Timer%d: prescaler=%d, divider=%d\n",
+                    Prog.cycleTimer, prescaler, divider);
+                strcat(explanation,txt);
+                sprintf(txt,"\n");
+                strcat(explanation,txt);
+            }
+            double minDelay;
+            minDelay = SIprefix(1.0 * Prog.cycleTime / 1000000, s2); //s
+            sprintf(txt,"TON,TOF,RTO min Delay=%.6g ms (%.6g %ss)\n", 1.0 * Prog.cycleTime / 1000, minDelay, s2);
+            strcat(explanation,txt);
+
+            double maxDelay;
+            maxDelay = SIprefix(1.0 * 0x7f * Prog.cycleTime / 1000000, s2); //s
+            sprintf(txt,"TON,TOF,RTO  8bit max Delay=%.6g %ss\n", maxDelay, s2);
+            strcat(explanation,txt);
+
+            maxDelay = SIprefix(1.0 * 0x7fff * Prog.cycleTime / 1000000, s2); //s
+            sprintf(txt,"TON,TOF,RTO 16bit max Delay=%.6g %ss\n", maxDelay, s2);
+            strcat(explanation,txt);
+
+            maxDelay = SIprefix(1.0 * 0x7fFFff * Prog.cycleTime / 1000000, s2); //s
+            sprintf(txt,"TON,TOF,RTO 24bit max Delay=%.6g %ss\n", maxDelay, s2);
+            strcat(explanation,txt);
+        }
         sprintf(txt,"\n");
         strcat(explanation,txt);
-
-        sprintf(txt,"TON,TOF,RTO min Delay=%.6g ms\n", 1.0 * Prog.cycleTime / 1000);
-        strcat(explanation,txt);
-        double maxDelay;
-        maxDelay = SIprefix(1.0 * 0x7f * Prog.cycleTime / 1000000, s2); //s
-        sprintf(txt,"TON,TOF,RTO  8bit max Delay=%.6g %ss\n", maxDelay, s2);
-        strcat(explanation,txt);
-
-        maxDelay = SIprefix(1.0 * 0x7fff * Prog.cycleTime / 1000000, s2); //s
-        sprintf(txt,"TON,TOF,RTO 16bit max Delay=%.6g %ss\n", maxDelay, s2);
-        strcat(explanation,txt);
-
-        maxDelay = SIprefix(1.0 * 0x7fFFff * Prog.cycleTime / 1000000, s2); //s
-        sprintf(txt,"TON,TOF,RTO 24bit max Delay=%.6g %ss\n", maxDelay, s2);
-        strcat(explanation,txt);
-        sprintf(txt,"\n");
-        strcat(explanation,txt);
-      }
-    } else {
-
     }
     if(UartFunctionUsed()) {
         if(Prog.mcu && Prog.mcu->uartNeeds.rxPin != 0) {
             sprintf(txt,
-                _("Serial (UART) will use pins %d and %d.\r\n"),
+                _("Serial (UART) will use pins %d(RX) and %d(TX).\r\n"),
                 Prog.mcu->uartNeeds.rxPin, Prog.mcu->uartNeeds.txPin);
             strcat(explanation,txt);
             strcat(explanation,
@@ -259,6 +290,9 @@ static void MakeControls(void)
     PrevCrystalProc = SetWindowLongPtr(CrystalTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNumberProc);
 
+    PrevConfigBitsProc = SetWindowLongPtr(ConfigBitsTextbox, GWLP_WNDPROC,
+        (LONG_PTR)MyNumberProc);
+
     PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNumberProc);
 }
@@ -282,13 +316,23 @@ void ShowConfDialog(void)
     if(Prog.cycleDuty) {
         SendMessage(YPlcCycleDutyCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
-
+/*
     if(Prog.WDTE) {
         SendMessage(WDTECheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
-
+*/
     sprintf(buf, "%.6f", Prog.mcuClock / 1e6); //Hz show as MHz
     SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+
+    if(!Prog.configurationWord) {
+        if(Prog.mcu)
+            Prog.configurationWord = Prog.mcu->configurationWord;
+    }
+    sprintf(buf, "");
+    if(Prog.configurationWord) {
+        sprintf(buf, "0x%X", Prog.configurationWord);
+    }
+    SendMessage(ConfigBitsTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     sprintf(buf, "%d", Prog.baudRate);
     SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -339,16 +383,27 @@ void ShowConfDialog(void)
         } else {
             Prog.cycleDuty = 0;
         }
-
+/*
         if(SendMessage(WDTECheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             Prog.WDTE = 1;
         } else {
             Prog.WDTE = 0;
         }
-
+*/
         SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));
         Prog.mcuClock = (int)(1e6*atof(buf) + 0.5);
+
+        SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
+            (LPARAM)(buf));
+
+        if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PIC16)) {
+            Prog.configurationWord = hobatoi(buf);
+            if(!Prog.configurationWord) {
+                Error(_("Zero Configuration Word(s) not valid."));
+                Prog.configurationWord = Prog.mcu->configurationWord;
+            }
+        }
 
         SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));
@@ -378,6 +433,18 @@ void ShowConfDialog(void)
          if(ProgCycleTime <= 0) {
              Error(_("Zero cycle time not valid; resetting to 10 ms."));
              Prog.cycleTime = 10000; //us
+         /*
+         } else if(prescaler*divider < PLC_CLOCK_MIN) {
+           //sprintf(txt,"Cycle time less then %d us not valid; resetting to 10 ms.", cycleTimeMin);
+             sprintf(txt,"Cycle time less then %d us not valid.", cycleTimeMin);
+             Error(txt);
+             //Prog.cycleTime = 10000; //us
+         } else if(divider > 0x10000) {
+           //sprintf(txt,"Cycle time more then %d ms not valid; resetting to 10 ms.", cycleTimeMax/1000);
+             sprintf(txt,"Cycle time more then %d ms not valid.", cycleTimeMax/1000);
+             Error(txt);
+             //Prog.cycleTime = 10000; //us
+         */
          } else
              Prog.cycleTime = ProgCycleTime;
     }
