@@ -60,9 +60,12 @@
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12
 #define INT_UART_SEND                           13
-#define INT_UART_SEND_READY                     1301
+#define INT_UART_SEND1                          1301
+#define INT_UART_SENDn                          1302
+#define INT_UART_SEND_READY                     1303
 #define INT_UART_RECV                           14
-#define INT_UART_RECV_AVAIL                     1401
+#define INT_UART_RECVn                          1401
+#define INT_UART_RECV_AVAIL                     1402
 #define INT_EEPROM_BUSY_CHECK                   15
 #ifdef NEW_FEATURE
 #define INT_EEPROM_INIT                         1601
@@ -87,6 +90,9 @@
 #define INT_SET_VARIABLE_XOR                    32
 #define INT_SET_VARIABLE_NOT                    33
 #define INT_SET_VARIABLE_NEG                    34 // a = -a
+#define INT_SET_VARIABLE_RANDOM                 341
+#define INT_SET_SEED_RANDOM                     342
+#define INT_SET_VARIABLE_ENTROPY                343
 #define INT_SET_VARIABLE_SHL                    35
 #define INT_SET_VARIABLE_SHR                    36
 #define INT_SET_VARIABLE_SR0                    361

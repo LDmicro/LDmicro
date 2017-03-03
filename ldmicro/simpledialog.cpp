@@ -372,6 +372,11 @@ static void CheckConstantInRange(char *name, char *str, SDWORD v)
             Error(_("Constant %s=%d out of variable '%s' range: -8388608 to 8388607 inclusive."), str, v, name);
         else if((v < 0 || v > 0xffffff) && (radix != 10))
             Error(_("Constant %s=%d out of variable '%s' range : 0 to 16777215 inclusive."), str, v, name);
+    } else if(sov == 4) {
+        if((v < -2147483648 || v > 2147483647) && (radix == 10))
+            Error(_("Constant %s=%d out of variable '%s' range: -8388608 to 8388607 inclusive."), str, v, name);
+        else if((DWORD(v) < 0 || DWORD(v) > 0xFFFFffff) && (radix != 10))
+            Error(_("Constant %s=%d out of variable '%s' range : 0 to 4294967295(0xFFFFffff) inclusive."), str, v, name);
     } else ooops("Constant %s Variable '%s' size=%d value=%d", str, name, sov, v);
 }
 
@@ -389,22 +394,22 @@ void CheckVarInRange(char *name, char *str, SDWORD v)
         if((v < -128 || v > 127) && (radix == 10))
             Error(_("Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
         else if((v < 0 || v > 0xff) && (radix != 10))
-            Error(_("Variable %s=0x%X out range : 0 to 0xFF inclusive."), str, v, name);
+            Error(_("Variable %s=0x%X out range: 0 to 0xFF inclusive."), str, v, name);
     } else if((sov == 2) || (sov == 0)){
         if((v < -32768 || v > 32767) && (radix == 10))
             Error(_("Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
         else if((v < 0 || v > 0xffff) && (radix != 10))
-            Error(_("Variable %s=0x%X out range : 0 to 0xFFFF inclusive."), str, v, name);
+            Error(_("Variable %s=0x%X out range: 0 to 0xFFFF inclusive."), str, v, name);
     } else if(sov == 3) {
         if((v < -8388608 || v > 8388607) && (radix == 10))
             Error(_("Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
         else if((v < 0 || v > 0xffffff) && (radix != 10))
-            Error(_("Variable %s=0x%X out range : 0 to 0xffFFFF inclusive."), str, v, name);
+            Error(_("Variable %s=0x%X out range: 0 to 0xffFFFF inclusive."), str, v, name);
     } else if(sov == 4) {
         if((v < -2147483648LL || v > 2147483647LL) && (radix == 10))
             Error(_("Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."), name, v);
-        else if((v < 0 || v > 0xffffFFFF) && (radix != 10))
-            Error(_("Variable %s=0x%X out range : 0 to 0xffffFFFF inclusive."), str, v, name);
+        else if((DWORD(v) < 0 || DWORD(v) > 0xffffFFFF) && (radix != 10))
+            Error(_("Variable %s=0x%X out range: 0 to 0xFFFFFFFF inclusive."), str, v, name);
     } else ooops("Variable '%s' size=%d value=%d", name, sov, v);
 }
 
@@ -559,13 +564,14 @@ void ShowMoveDialog(int which, char *dest, char *src)
 {
     char *title;
     switch(which) {
-        case ELEM_MOVE    : title = _("Move"); break;
-        case ELEM_BIN2BCD : title = _("Convert BIN to packed BCD"); break;
-        case ELEM_BCD2BIN : title = _("Convert packed BCD to BIN"); break;
-        case ELEM_SWAP    : title = _("Swap source and assign to destination"); break;
+        case ELEM_MOVE        : title = _("Move"); break;
+        case ELEM_BIN2BCD     : title = _("Convert BIN to packed BCD"); break;
+        case ELEM_BCD2BIN     : title = _("Convert packed BCD to BIN"); break;
+        case ELEM_SWAP        : title = _("Swap source and assign to destination"); break;
+        case ELEM_SEED_RANDOM : title = _("Seed Random : $seed_..."); break;
         default: oops();
     }
-    char *labels[] = { _("Destination:="), _("Source:") };
+    char *labels[] = { _("Destination:"), _("Source:") };
     char *dests[] = { dest, src };
     if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)){
         if(IsNumber(dest)) {
@@ -665,6 +671,13 @@ void ShowReadAdcDialog(char *name)
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
+}
+
+void ShowRandomDialog(char *name)
+{
+    char *labels[] = { _("Destination:") };
+    char *dests[] = { name };
+    ShowSimpleDialog(_("Random value"), 1, labels, 0, 0x1, 0x1, dests);
 }
 
 void ShowSetPwmDialog(void *e)
@@ -777,8 +790,8 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
             CheckConstantInRange(dest, op2, hobatoi(op2));
             if((which == ELEM_SHL) || (which == ELEM_SHR) || (which == ELEM_SR0)
             || (which == ELEM_ROL) || (which == ELEM_ROR)) {
-                if((hobatoi(op2)<0) || (BITS_OF_LD_VAR<hobatoi(op2))){
-                    Error(_("Shift constant %s=%d out of range: 0 to %d inclusive."), op2, hobatoi(op2), BITS_OF_LD_VAR);
+                if((hobatoi(op2) < 0) || (SizeOfVar(op1)*8 < hobatoi(op2))) {
+                    Error(_("Shift constant %s=%d out of range: 0 to %d inclusive."), op2, hobatoi(op2), SizeOfVar(op1)*8);
                 }
             }
         }

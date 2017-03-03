@@ -277,6 +277,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_LES;
     } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name)==1) {
         *which = ELEM_READ_ADC;
+    } else if(sscanf(line, "RANDOM %s", l->d.readAdc.name)==1) {
+        *which = ELEM_RANDOM;
+    } else if(sscanf(line, "SEED_RANDOM %s %s", l->d.move.dest, l->d.move.src)==2) {
+        *which = ELEM_SEED_RANDOM;
     } else if(sscanf(line, "SET_PWM %s %s %s", l->d.setPwm.duty_cycle,
         l->d.setPwm.targetFreq, l->d.setPwm.name)==3)
     {
@@ -293,8 +297,12 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_UART_SEND_READY;
     } else if(memcmp(line, "UART_UDRE", 9)==0) {
         *which = ELEM_UART_SEND_READY;
+    } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name)==1) {
+        *which = ELEM_UART_RECVn;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name)==1) {
         *which = ELEM_UART_RECV;
+    } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name)==1) {
+        *which = ELEM_UART_SENDn;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name)==1) {
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "PERSIST %s", l->d.persist.var)==1) {
@@ -925,6 +933,14 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "READ_ADC %s\n", l->d.readAdc.name);
             break;
 
+        case ELEM_RANDOM:
+            fprintf(f, "RANDOM %s\n", l->d.readAdc.name);
+            break;
+
+        case ELEM_SEED_RANDOM:
+            fprintf(f, "SEED_RANDOM %s %s\n", l->d.move.dest, l->d.move.src);
+            break;
+
         case ELEM_SET_PWM:
             fprintf(f, "SET_PWM %s %s %s\n", l->d.setPwm.duty_cycle,
                 l->d.setPwm.targetFreq, l->d.setPwm.name);
@@ -940,6 +956,14 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
         case ELEM_UART_SEND:
             fprintf(f, "UART_SEND %s\n", l->d.uart.name);
+            break;
+
+        case ELEM_UART_RECVn:
+            fprintf(f, "UART_RECVn %s\n", l->d.uart.name);
+            break;
+
+        case ELEM_UART_SENDn:
+            fprintf(f, "UART_SENDn %s\n", l->d.uart.name);
             break;
 
         case ELEM_UART_SEND_READY:

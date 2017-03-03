@@ -50,7 +50,7 @@
 
 #define r0 0 // used muls. Don't use elsewhere!!!
 #define r1 1 // used muls. Don't use elsewhere!!!
-#define r2 2 // used in MultiplyRoutine
+#define r2 2 // used in MultiplyRoutine, RANDOM
 #define r3 3 // used in CopyBit, XorBit, _SWAP etc.
 
 #define r5 5
@@ -2493,6 +2493,15 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
             Instruction(OP_LDI, reg+2, 0xff);
         }
     }
+    if(sovRegs >= 4) {
+        if(sov >= 4)
+            Instruction(OP_LD_XP, reg+3);
+        else {
+            Instruction(OP_LDI, reg+3, 0);
+            Instruction(OP_SBRC, reg+2, BIT7);
+            Instruction(OP_LDI, reg+3, 0xff);
+        }
+    }
 }
 //-----------------------------------------------------------------------------
 static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int sovRegs)
@@ -2522,6 +2531,15 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
             Instruction(OP_LDI, reg+2, 0xff);
         }
     }
+    if(sov >= 4) {
+        if(sovRegs >= 4)
+            Instruction(OP_ST_XP, reg+3);
+        else {
+            Instruction(OP_LDI, reg+3, 0);
+            Instruction(OP_SBRC, reg+2, BIT7);
+            Instruction(OP_LDI, reg+3, 0xff);
+        }
+    }
 }
 
 #define CopyRegsToVar(...) _CopyRegsToVar(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
@@ -2544,6 +2562,12 @@ static void Decrement(DWORD addr, int sov)
         Instruction(OP_LD_Z, r25);  // now Z is addr+2 => addrh+1
         Instruction(OP_SUBI, r25, 1);
         Instruction(OP_ST_ZP, r25);
+        if(sov >= 4) {
+          Instruction(OP_BRCC, noCarry);
+          Instruction(OP_LD_Z, r25);  // now Z is addr+3 => addrh+2
+          Instruction(OP_SUBI, r25, 1);
+          Instruction(OP_ST_ZP, r25);
+        }
       }
       FwdAddrIsNow(noCarry); //5 or (6-9) or (6-10-13) instruction
     }
@@ -2575,12 +2599,44 @@ static void Increment(DWORD addr, int sov)
         Instruction(OP_INC, r25);
       //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
         Instruction(OP_ST_ZP, r25);
+        if(sov >= 4) {
+          Instruction(OP_BRNE, noCarry);
+        //Instruction(OP_BRCS, noCarry);
+          Instruction(OP_LD_Z, r25);  // now Z is addr+2 => addrh+1
+          Instruction(OP_INC, r25);
+        //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
+          Instruction(OP_ST_ZP, r25);
+        }
       }
       FwdAddrIsNow(noCarry); //5 or (6-9) or (6-10-13) instruction
     }
     // 5 instructions for 8 bit var;
     // 6 or 9 instructions for 16 bit var;
     // 6 or 10 or 13 instructions for 24 bit var;
+    // ? instructions for 32 bit var;
+}
+//-----------------------------------------------------------------------------
+static void IncrementReg(int reg, int sov)
+{
+    Instruction(OP_INC, reg);
+    if(sov >= 2) {
+      DWORD noCarry = AllocFwdAddr();
+      Instruction(OP_BRNE, noCarry);
+      Instruction(OP_INC, reg+1);
+      if(sov >= 3) {
+        Instruction(OP_BRNE, noCarry);
+        Instruction(OP_INC, reg+2);
+        if(sov >= 4) {
+          Instruction(OP_BRNE, noCarry);
+          Instruction(OP_INC, reg+3);
+        }
+      }
+      FwdAddrIsNow(noCarry);
+    }
+    // 1 instructions for 8 bit reg;
+    // 2 or 3 instructions for 16 bit reg;
+    // 2 or 3 or 5 instructions for 24 bit reg;
+    // 2 or 3 or 5 or 7 instructions for 32 bit reg;
 }
 //-----------------------------------------------------------------------------
 static void IfNotZeroGoto(DWORD addrVar, int sov, DWORD addrGoto)
@@ -2682,8 +2738,8 @@ is described in an article available on line at http://www.parallax.com/dl/docs/
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate(void)
 {
-    DWORD addr = 0, addr1 = 0, addr2 = 0, addr4 = 0;
-    int   bit = -1, bit1 = -1, bit2 = -1, bit4 = -1;
+    DWORD addr = 0, addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
+    int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     DWORD addrl = 0;
     DWORD addrl2 = 0;
     int sov = -1;
@@ -3665,6 +3721,42 @@ static void CompileFromIntermediate(void)
                 XorCopyBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
                 break;
             }
+            case INT_UART_SEND1: {
+                MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+                MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
+                MemForVariable(a->name3, &addr3);
+
+                DWORD noSend = AllocFwdAddr();
+
+                // Little endian byte order
+                // REG_UDR = X[addr1 + sov - 1 - X[addr3]]
+                LoadXAddr(addr1);
+                Instruction(OP_ADIW, XL, sov1 - 1);
+                LoadYAddr(addr3);
+                Instruction(OP_LD_Y, r17);
+                Instruction(OP_SUB,  XL,  r17);
+                Instruction(OP_LDI,  r17, 0);
+                Instruction(OP_SBC,  XH,  r17);
+                /*
+                // Big endian byte order
+                // REG_UDR = X[addr1 + X[addr3]]
+                LoadXAddr(addr1);
+                LoadYAddr(addr3);
+                Instruction(OP_LD_Y, r17);
+                Instruction(OP_ADD,  XL,  r17);
+                Instruction(OP_LDI,  r17, 0);
+                Instruction(OP_ADC,  XH,  r17);
+                /**/
+                Instruction(OP_LD_X, r16);
+                LoadXAddr(REG_UDR);
+                Instruction(OP_ST_X, r16);
+
+                FwdAddrIsNow(noSend);
+
+              //XorCopyBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
+                break;
+            }
             case INT_UART_RECV: {
                 MemForVariable(a->name1, &addr1);
                 MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
@@ -3770,6 +3862,79 @@ static void CompileFromIntermediate(void)
                 break;
             }
             #endif
+            case INT_SET_VARIABLE_RANDOM: {
+                MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+
+                char seedName[MAX_NAME_LEN];
+                sprintf(seedName, "$seed_%s", a->name1);
+                SetSizeOfVar(seedName, 4);
+                MemForVariable(seedName, &addr2);
+                /*
+                DWORD addr;
+                int bit;
+                char storeName[MAX_NAME_LEN];
+                sprintf(storeName, "$seed_init_%s", a->name1);
+                MemForSingleBit(storeName, FALSE, &addr, &bit);
+                */
+
+//https://en.m.wikipedia.org/wiki/Linear_congruential_generator
+// X[n+1] = (a * X[n] + c) mod m
+
+//VMS's MTH$RANDOM, old versions of glibc
+// a = 69069 ( 0x10DCD ) (1 00001101 11001101b)
+// c = 1
+// m = 2^32
+// X = (X * 0x10DCD + 1) % 0x100000000
+//-----------------------------------------------------------------------------
+// 32x24=32 unsigned multiply, code from Atmel app note AVR201.
+//           h:  M:  m:  l
+// seed in r19:r18:r17:r16,
+// a    in r23:r22:r21:r20, r23 == 0, r22 == 1,
+// temp result 4 low bytes goes into r13:r12:r11:r10.
+//-----------------------------------------------------------------------------
+              //CopyLiteralToRegs(r20, 0x10DCD, 4, "a:=69069(0x10DCD)");
+                CopyLiteralToRegs(r20,  0x0DCD, 2, "a:=69069(0x10DCD)");
+                CopyVarToRegs(r16, seedName, 4);
+
+                Instruction(OP_SUB,   r2,  r2);    // zero
+                Instruction(OP_MOVW,  r12, r16);   // r12 = r16 * 2^16
+                //
+                Instruction(OP_MUL,   r16, r20);   //l * l
+                Instruction(OP_MOVW,  r10, r0);
+
+                Instruction(OP_MUL,   r17, r20);   //m * l
+                Instruction(OP_ADD,   r11, r0);
+                Instruction(OP_ADC,   r12, r1);
+                Instruction(OP_ADC,   r13, r2);
+
+                Instruction(OP_MUL  , r18, r20);   //M * l
+                Instruction(OP_ADD,   r12, r0);
+                Instruction(OP_ADC,   r13, r1);
+                Instruction(OP_ADC,   r13, r2);
+
+                Instruction(OP_MUL  , r19, r20);   //h * l
+                Instruction(OP_ADD,   r13, r0);
+                //
+                Instruction(OP_MUL,   r21, r16);   //m * l
+                Instruction(OP_ADD,   r11, r0);
+                Instruction(OP_ADC,   r12, r1);
+                Instruction(OP_ADC,   r13, r2);
+
+                Instruction(OP_MUL,   r21, r17);   //m * m
+                Instruction(OP_ADD,   r12, r0);
+                Instruction(OP_ADC,   r13, r1);
+                Instruction(OP_ADC,   r13, r2);
+
+                Instruction(OP_MUL,   r21, r18);   //m * M
+                Instruction(OP_ADD,   r13, r0);
+                //
+                IncrementReg(r10, 4); // (seedName + 1) % 2^32
+
+                CopyRegsToVar(seedName, r10, 4);
+                CopyRegsToVar(a->name1, r10 + 4 - sov1, sov1); // highest bytes of seed
+                break;
+            }
             case INT_CLRWDT:
                 Instruction(OP_WDR);
                 break;

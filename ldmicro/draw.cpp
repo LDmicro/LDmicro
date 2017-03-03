@@ -101,8 +101,10 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_LES:
         case ELEM_LEQ:
         case ELEM_UART_RECV:
+        case ELEM_UART_RECVn:
         case ELEM_UART_RECV_AVAIL:
         case ELEM_UART_SEND:
+        case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_RSFR:
         case ELEM_WSFR:
@@ -126,6 +128,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_AND:
         case ELEM_OR :
         case ELEM_XOR:
+        case ELEM_RANDOM:
+        case ELEM_SEED_RANDOM:
         case ELEM_SET_BIT     :
         case ELEM_CLEAR_BIT   :
         case ELEM_IF_BIT_SET  :
@@ -1218,6 +1222,23 @@ cmp:
             *cx += POS_WIDTH;
             break;
         }
+        case ELEM_RANDOM:
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",leaf->d.readAdc.name,"",""), poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{RAND}", poweredBefore, poweredAfter);
+            *cx += POS_WIDTH;
+            break;
+
+        case ELEM_SEED_RANDOM: {
+            ElemMove *m = &leaf->d.move;
+            formatWidth(top, POS_WIDTH, "{\x01""SRAND\x02 ","","",m->dest,"}");
+            formatWidth(bot, POS_WIDTH, "{","$seed",":=",m->src,"}");
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+            *cx += POS_WIDTH;
+            break;
+        }
+
         case ELEM_STRING: {
             // Careful, string could be longer than fits in our space.
             sprintf(s1,"%s",leaf->d.fmtdStr.dest);
@@ -1257,6 +1278,17 @@ cmp:
         case ELEM_UART_SEND:
             CenterWithWires(*cx, *cy,
                 (which == ELEM_UART_RECV) ? "{UART RECV}" : "{UART SEND}",
+                poweredBefore, poweredAfter);
+
+            sprintf(s2,"%s",leaf->d.uart.name);
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",s2,"",""), poweredAfter, TRUE);
+            *cx += POS_WIDTH;
+            break;
+
+        case ELEM_UART_RECVn:
+        case ELEM_UART_SENDn:
+            CenterWithWires(*cx, *cy,
+                (which == ELEM_UART_RECVn) ? "{UART RECVn}" : "{UART SENDn}",
                 poweredBefore, poweredAfter);
 
             sprintf(s2,"%s",leaf->d.uart.name);
