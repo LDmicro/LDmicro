@@ -934,12 +934,28 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddReadAdc());
             break;
 
+        case MNU_INSERT_RANDOM:
+            CHANGING_PROGRAM(AddRandom());
+            break;
+
+        case MNU_INSERT_SEED_RANDOM:
+            CHANGING_PROGRAM(AddSeedRandom());
+            break;
+
         case MNU_INSERT_UART_SEND:
             CHANGING_PROGRAM(AddUart(ELEM_UART_SEND));
             break;
 
         case MNU_INSERT_UART_RECV:
             CHANGING_PROGRAM(AddUart(ELEM_UART_RECV));
+            break;
+
+        case MNU_INSERT_UART_SENDn:
+            CHANGING_PROGRAM(AddUart(ELEM_UART_SENDn));
+            break;
+
+        case MNU_INSERT_UART_RECVn:
+            CHANGING_PROGRAM(AddUart(ELEM_UART_RECVn));
             break;
 
         case MNU_INSERT_UART_SEND_READY:

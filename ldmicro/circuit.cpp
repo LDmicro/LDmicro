@@ -487,11 +487,11 @@ void AddPulser(void)
 void AddNPulse(void)
 {
     if(!CanInsertOther) return;
+
     if(NPulseFunctionUsed()) {
       Error(_("Can use only one N PULSE element on timer0."));
       return;
     }
-
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.Npulse.counter, "counter");
     strcpy(t->d.Npulse.targetFreq, "1000");
@@ -598,6 +598,25 @@ void AddCounter(int which)
     AddLeaf(which, t);
 }
 
+void AddSeedRandom(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.move.dest, "Rand");
+    strcpy(t->d.move.src, "newSeed");
+    AddLeaf(ELEM_SEED_RANDOM, t);
+}
+
+void AddRandom(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.readAdc.name, "Rand");
+    AddLeaf(ELEM_RANDOM, t);
+}
+
 void AddReadAdc(void)
 {
     if(!CanInsertEnd) return;
@@ -649,7 +668,11 @@ void AddUart(int which)
       }
     }
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.uart.name, "char");
+    if((which == ELEM_UART_SEND)
+    || (which == ELEM_UART_RECV))
+        strcpy(t->d.uart.name, "char");
+    else
+        strcpy(t->d.uart.name, "var");
     AddLeaf(which, t);
 }
 
@@ -1525,6 +1548,11 @@ void CutRung(void)
         DeleteRungI(i);
     }
     fclose(f);
+
+    if(Prog.numRungs == 0) {
+        Prog.numRungs = 1;
+        Prog.rungs[0] = AllocEmptyRung();
+    }
 
     WhatCanWeDoFromCursorAndTopology();
     //ScrollSelectedIntoViewAfterNextPaint = TRUE;

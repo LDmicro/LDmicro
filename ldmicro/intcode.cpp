@@ -93,10 +93,12 @@ int   RomSection;
 //-----------------------------------------------------------------------------
 static void CheckConstantInRange(SDWORD v)
 {
+    /*
     if(v < -0x800000 || v > 0x7FffFF) {
         Error(_("Constant %d out of range: %d to %d inclusive."), v, -0x800000, 0x7FffFF);
         CompileError();
     }
+    */
 }
 
 //-----------------------------------------------------------------------------
@@ -157,39 +159,63 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_BCD2BIN:
+                fprintf(f, "let var '%s' = bcd2bin('%s');", IntCode[i].name1,
+                    IntCode[i].name2);
                 break;
 
             case INT_SET_SWAP:
+                fprintf(f, "let var '%s' = swap('%s');", IntCode[i].name1,
+                    IntCode[i].name2);
                 break;
 
             case INT_SET_VARIABLE_ROL:
+                fprintf(f, "let var '%s' := '%s' rol '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_ROR:
+                fprintf(f, "let var '%s' := '%s' ror '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_SHL:
+                fprintf(f, "let var '%s' := '%s' << '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_SHR:
+                fprintf(f, "let var '%s' := '%s' >> '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_SR0:
+                fprintf(f, "let var '%s' := '%s' sr0 '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_AND:
+                fprintf(f, "let var '%s' := '%s' & '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_OR:
+                fprintf(f, "let var '%s' := '%s' | '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_XOR:
+                fprintf(f, "let var '%s' := '%s' ^ '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_NEG:
+                fprintf(f, "let var '%s' := - '%s'", IntCode[i].name1,
+                    IntCode[i].name2);
                 break;
 
             case INT_SET_VARIABLE_NOT:
+                fprintf(f, "let var '%s' := ~ '%s'", IntCode[i].name1,
+                    IntCode[i].name2);
                 break;
 
             case INT_SET_VARIABLE_ADD:
@@ -211,13 +237,26 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "let var '%s' := '%s' / '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
                 break;
-
+            /*
+            case INT_SET_VARIABLE_MOD:
+                fprintf(f, "let var '%s' := '%s' % '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
+                break;
+            */
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1);
                 break;
 
             case INT_READ_ADC:
                 fprintf(f, "read adc '%s'", IntCode[i].name1);
+                break;
+
+            case INT_SET_SEED_RANDOM:
+                fprintf(f, "let var '$seed_%s' := '%s'", IntCode[i].name1, IntCode[i].name2);
+                break;
+
+            case INT_SET_VARIABLE_RANDOM:
+                fprintf(f, "let var '%s' := random()", IntCode[i].name1);
                 break;
 
             case INT_SET_PWM:
@@ -230,12 +269,17 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_QUAD_ENCOD:
+                fprintf(f, "QUAD ENCOD %d %s %s %s %s %s", IntCode[i].literal, IntCode[i].name1, IntCode[i].name2,
+                  IntCode[i].name3, IntCode[i].name4, IntCode[i].name5);
                 break;
 
             case INT_SET_NPULSE:
+                fprintf(f, "generate %s pulses %s Hz to %s", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_OFF_NPULSE:
+                fprintf(f, "OFF N PULSE");
                 break;
 
             case INT_PWM_OFF:
@@ -280,6 +324,8 @@ void IntDumpListing(char *outFile)
                 else oops();
                 break;
             }
+            case INT_UART_SEND1:
+            case INT_UART_SENDn:
             case INT_UART_SEND:
                 fprintf(f, "uart send from '%s', done? into '%s'",
                     IntCode[i].name1, IntCode[i].name2);
@@ -290,6 +336,7 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name1);
                 break;
 
+            case INT_UART_RECVn:
             case INT_UART_RECV:
                 fprintf(f, "uart recv int '%s', have? into '%s'",
                     IntCode[i].name1, IntCode[i].name2);
@@ -641,7 +688,7 @@ static void _Comment(int l, char *f, int level, char *str, ...)
 //-----------------------------------------------------------------------------
 static SDWORD TimerPeriod(ElemLeaf *l)
 {
-    SDWORD period = (l->d.timer.delay / Prog.cycleTime);// - 1;
+    SDWORD period = SDWORD(l->d.timer.delay / Prog.cycleTime);// - 1;
     if(period < 1)  {
         char *s1 = _("Timer period too short (needs faster cycle time).");
         char s2[1024];
@@ -770,7 +817,11 @@ int getradix(char *str)
 //-----------------------------------------------------------------------------
 SDWORD hobatoi(char *str)
 {
-    long  val;
+    char s[MAX_NAME_LEN];
+    if(strstr(toupperstr(s, str), "0XFFFFFFFF"))
+        return 0xFFFFFFFF;
+
+    long val;
     char *start_ptr = str;
     while(isspace(*start_ptr))
         start_ptr++;
@@ -791,6 +842,8 @@ SDWORD hobatoi(char *str)
                 radix = 2;
             else if(toupper(start_ptr[1]) == 'O')
                 radix = 8;
+            else if(toupper(start_ptr[1]) == 'X')
+                radix = 16;
        char *end_ptr = NULL;
        // errno = 0;
        val = strtol(str, &end_ptr, radix);
@@ -948,6 +1001,16 @@ static void InitVarsCircuit(int which, void *elem, int *n)
                     else {
                         Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, l->d.timer.delay);
                     }
+            break;
+        }
+        case ELEM_SEED_RANDOM: {
+            char name[MAX_NAME_LEN];
+            sprintf(name, "$seed_%s", l->d.readAdc.name);
+            if(n)
+                (*n)++; // counting the number of variables
+            else {
+                Op(INT_SET_VARIABLE_TO_LITERAL, name, 1);
+            }
             break;
         }
         case ELEM_CTR:
@@ -1817,8 +1880,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
                 CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest,
-                    CheckMakeNumber(l->d.move.src));
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
 //              Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
                _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
@@ -1851,6 +1913,34 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
             break;
         }
+
+        case ELEM_RANDOM:
+            Comment(3, "ELEM_RANDOM");
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_SET_VARIABLE_RANDOM, l->d.readAdc.name);
+            Op(INT_END_IF);
+            break;
+
+        case ELEM_SEED_RANDOM:
+            Comment(3, "ELEM_SEED_RANDOM");
+            char name[MAX_NAME_LEN];
+            sprintf(name, "$seed_%s", l->d.readAdc.name);
+            SetSizeOfVar(name, 4);
+
+            if(IsNumber(l->d.move.dest)) {
+                Error(_("SRAND instruction: '%s' not a valid destination."),
+                    l->d.move.dest);
+                CompileError();
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+            if(IsNumber(l->d.move.src)) {
+                CheckVarInRange(name, l->d.move.src, CheckMakeNumber(l->d.move.src));
+                Op(INT_SET_VARIABLE_TO_LITERAL, name, hobatoi(l->d.move.src));
+            } else {
+                Op(INT_SET_VARIABLE_TO_VARIABLE, name, l->d.move.src);
+            }
+            Op(INT_END_IF);
+            break;
 
         // These ELEM's are highly processor-dependent; the int code op does
         // most of the highly specific work
@@ -1925,6 +2015,41 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
               EepromAddrFree += SizeOfVar(l->d.persist.var);
               break;
+            }
+            case ELEM_UART_SENDn: {
+                Comment(3, "ELEM_UART_SENDn");
+                char store[MAX_NAME_LEN];
+                GenSymOneShot(store, "SENDn", l->d.uart.name);
+                char value[MAX_NAME_LEN];
+                GenSymOneShot(value, "SENDv", l->d.uart.name);
+                int sov = SizeOfVar(l->d.uart.name);
+                SetSizeOfVar(value, sov);
+
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
+                      Op(INT_SET_VARIABLE_TO_LITERAL, store, sov);
+                      Op(INT_SET_VARIABLE_TO_VARIABLE, value, l->d.uart.name);
+                    Op(INT_END_IF);
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+
+                Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
+                Op(INT_ELSE);
+                  Op(INT_UART_SEND_READY, stateInOut);
+                  Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_DECREMENT_VARIABLE, store);
+                   //value = X[value[addr1] + sov - 1 - store[addr3]]
+                    Op(INT_UART_SEND1, value, stateInOut, store);
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+
+                Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
+                  Op(INT_CLEAR_BIT, stateInOut);
+                Op(INT_ELSE);
+                  Op(INT_SET_BIT, stateInOut);
+                Op(INT_END_IF);
+                break;
             }
             case ELEM_UART_SEND:
                 Comment(3, "ELEM_UART_SEND");
@@ -2682,14 +2807,19 @@ BOOL UartFunctionUsed(void)
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
         ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_UART_RECVn, ELEM_UART_SENDn, -1))
+        ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
             return TRUE;
     }
 
     for(i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_SEND)
+        || (IntCode[i].op == INT_UART_SEND1)
+        || (IntCode[i].op == INT_UART_SENDn)
         || (IntCode[i].op == INT_UART_SEND_READY)
         || (IntCode[i].op == INT_UART_RECV_AVAIL)
+        || (IntCode[i].op == INT_UART_RECVn)
         || (IntCode[i].op == INT_UART_RECV))
             return TRUE;
     }
@@ -2701,12 +2831,13 @@ BOOL UartRecvUsed(void)
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_UART_RECV, -1, -1))
+            ELEM_UART_RECV, ELEM_UART_RECVn, -1))
             return TRUE;
     }
 
     for(i = 0; i < IntCodeLen; i++) {
-        if(IntCode[i].op == INT_UART_RECV)
+        if((IntCode[i].op == INT_UART_RECV)
+        || (IntCode[i].op == INT_UART_RECVn))
             return TRUE;
     }
     return FALSE;
@@ -2717,12 +2848,14 @@ BOOL UartSendUsed(void)
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_UART_SEND, ELEM_FORMATTED_STRING, -1))
+            ELEM_UART_SEND, ELEM_UART_SENDn, ELEM_FORMATTED_STRING))
             return TRUE;
     }
 
     for(i = 0; i < IntCodeLen; i++) {
-        if(IntCode[i].op == INT_UART_SEND)
+        if((IntCode[i].op == INT_UART_SEND)
+        || (IntCode[i].op == INT_UART_SEND1)
+        || (IntCode[i].op == INT_UART_SENDn))
             return TRUE;
     }
     return FALSE;

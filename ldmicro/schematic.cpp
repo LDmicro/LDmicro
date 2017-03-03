@@ -138,6 +138,8 @@ BOOL StaySameElem(int Which)
         Which == ELEM_XOR ||
         Which == ELEM_NOT ||
         Which == ELEM_NEG ||
+        Which == ELEM_RANDOM ||
+        Which == ELEM_SEED_RANDOM ||
         Which == ELEM_ADD ||
         Which == ELEM_SUB ||
         Which == ELEM_MUL ||
@@ -507,6 +509,12 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_CTC: newWhich = ELEM_CTR; break;
         case ELEM_CTR: newWhich = ELEM_CTU; break;
         //
+        case ELEM_UART_RECV:  newWhich = ELEM_UART_RECVn; break;
+        case ELEM_UART_RECVn: newWhich = ELEM_UART_RECV;  break;
+        //
+        case ELEM_UART_SEND:  newWhich = ELEM_UART_SENDn; break;
+        case ELEM_UART_SENDn: newWhich = ELEM_UART_SEND;  break;
+        //
         case ELEM_RSFR: newWhich = ELEM_WSFR; break;
         case ELEM_WSFR: newWhich = ELEM_RSFR; break;
         case ELEM_SSFR: newWhich = ELEM_CSFR; break;
@@ -736,6 +744,7 @@ void EditSelectedElement(void)
             ShowResetDialog(Selected->d.reset.name);
             break;
 
+        case ELEM_SEED_RANDOM:
         case ELEM_BIN2BCD:
         case ELEM_BCD2BIN:
         case ELEM_SWAP:
@@ -751,8 +760,14 @@ void EditSelectedElement(void)
             ShowReadAdcDialog(Selected->d.readAdc.name+1);
             break;
 
+        case ELEM_RANDOM:
+            ShowRandomDialog(Selected->d.readAdc.name);
+            break;
+
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
+        case ELEM_UART_RECVn:
+        case ELEM_UART_SENDn:
             ShowUartDialog(SelectedWhich, Selected->d.uart.name);
             break;
 
