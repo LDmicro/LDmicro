@@ -1,3 +1,26 @@
+== Release 4.1.7
+
+    * New: The pseudo-random number generator RAND implemented.
+    RAND element based on linear congruential generator (LCG).
+    See https://en.m.wikipedia.org/wiki/Linear_congruential_generator
+    The generator is defined by the recurrence relation:
+    X[n+1] = (a * X[n] + c) mod m
+    Used constants from the VMS's MTH$RANDOM, old versions of glibc
+    a = 69069 ( 0x10DCD )
+    c = 1
+    m = 2^32
+    X = (X * 0x10DCD + 1) % 0x100000000
+    RAND return the most significant bytes of X.
+
+    * New: RANDS element set seed of RAND. X[n] := newSeed.
+    Press F1 in LDmicro to see the manul.txt.
+
+    * New: UART SENDn element send full size varible via USART in raw binary format.
+    One byte sends per cycle of PLC, like 'FORMATTED STR OVER UART' element.
+
+    * Wiki: LDmicro RANDOM
+    https://github.com/LDmicro/LDmicro/wiki/LDmicro-RANDOM
+
 == Release 4.1.6
 
     * New: 'PIC Configuration Bits:' textbox added in 'PLC Configurations' dialog.
@@ -12,6 +35,8 @@
     Variable name that begins with symbol '#' like #0x8E, #0x8F,
     allow users to dynamically toggle the oscillator speed,
     determine the cause of the processor reset, etc.
+
+    Be careful with the Code/Data Protection bits!
 
 == Release 4.1.5
 

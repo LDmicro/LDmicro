@@ -889,6 +889,17 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     and it is almost certainly capable of doing what you want.
 
 
+> UART (SERIAL) SENDn             var
+                           --{UART SENDn}--
+
+    If the input condition to this instruction is false, then nothing
+    happens. If the input condition is true then this instruction writes
+    a variable to the UART in raw binary format. One byte sends per cycle
+    of PLC, like 'FORMATTED STR OVER UART' element. The output condition
+    of the rung is true if the UART is busy (currently transmitting a
+    variable), and false otherwise.
+
+
 > UART SEND: Is ready ?       Is ready?
                            --[UART SEND]--
 
@@ -1012,6 +1023,61 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     Note: SLEEP lengthens the PLC cycle time and timers TON, TOF, RTO, CTY.
     This can frustrate the plans, break the flow of work.
     This instruction must be the rightmost instruction in its rung.
+
+
+> RAND                        Rand
+                          --{ RAND }--
+
+    The pseudo-random number generator return the number in the full range
+    of 'Rand' variable.
+    When the input to this instruction is true, it sets the given
+    destination variable 'Rand' with the next pseudo-random number calculated
+    by a linear congruential generator (LCG). When the input to this
+    instruction is false nothing happens.
+    See https://en.m.wikipedia.org/wiki/Linear_congruential_generator
+    The generator is defined by the recurrence relation:
+    X[n+1] = (a * X[n] + c) mod m
+    Used constants from the VMS's MTH$RANDOM, old versions of glibc
+    a = 69069 ( 0x10DCD )
+    c = 1
+    m = 2^32
+    X = (X * 0x10DCD + 1) % 0x100000000
+    RAND return the most significant bytes of X.
+    X stored as $seed_Rand 32 bits variable.
+
+
+> SRAND                     {SRAND     Rand}
+                          --{$seed:=newSeed}--
+
+    The pseudo-random number generator is initialized using the argument
+    passed as newSeed.  $seed_Rand := newSeed.
+    When the input to this instruction is true, it sets the given
+    destination variable $seed_Rand equal to the given source variable or
+    constant. When the input to this instruction is false nothing
+    happens.
+    Two different initializations with the same seed will generate the same
+    succession of results in subsequent calls to RAND.
+    If seed is set to 1, the generator 'Rand' is reinitialized to its initial
+    value and produces the same values as before any call to RAND or SRAND.
+    Entropy sources can be ADC, timers, previous RAND saved in EEPROM, etc.
+
+    In this example we have two SEPARATE the pseudo-random number generators LCG.
+    But if the newSeed1 equal the newSeed2 then RAnd1 and Rand2 are equal
+    sequenses of numbers.
+    ||     _    _      {SRAND     Rand1}                       ||
+0001||--[_/ OSR/ \_]---{$seed:=newSeed1}-                      ||
+    ||                                                         ||
+    ||      Rand1                                              ||
+0002||-----{RAND}------                                        ||
+    ||                                                         ||
+    ||                                                         ||
+    ||     _    _      {SRAND     Rand2}                       ||
+0003||--[_/ OSR/ \_]---{$seed:=newSeed2}-                      ||
+    ||                                                         ||
+    ||      Rand2                                              ||
+0004||-----{RAND}------                                        ||
+    ||                                                         ||
+
 
 A NOTE ON USING MATH
 ====================

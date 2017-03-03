@@ -851,3 +851,26 @@ char *strncatn(char *s1, const char *s2, size_t n)
     }
     return s1;
 }
+
+char *toupperstr(char *dest)
+{
+    if(!dest) oops();
+    while(*dest) {
+        dest[0] = toupper(dest[0]);
+        dest++;
+    }
+    return dest;
+}
+
+char *toupperstr(char *dest, const char *src)
+{
+    if(!dest) oops();
+    while(*src) {
+        dest[0] = toupper(src[0]);
+        dest++;
+        src++;
+    }
+    dest[0] = '\0';
+    return dest;
+}
+

@@ -182,7 +182,6 @@ static void AppendIoAutoType(char *name, int default_type)
 
     AppendIo(name, type);
 }
-
 //-----------------------------------------------------------------------------
 // Walk a subcircuit, calling ourselves recursively and extracting all the
 // I/O names out of it.
@@ -378,18 +377,22 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
             break;
 
+        case ELEM_SEED_RANDOM: {
+            sprintf(str, "$seed_%s", l->d.move.dest);
+            AppendIoAutoType(str, IO_TYPE_GENERAL);
+            }
+            break;
+
         case ELEM_SWAP:
         case ELEM_BUS:
         case ELEM_MOVE:
             AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
-            /*
             if(CheckForNumber(l->d.move.src) == FALSE) {
                 // Not need ???
                 // Need if you add only one MOV or get erroneously other src name
                 // then you can see l->d.move.src in IOlist
                 AppendIoAutoType(l->d.move.src, IO_TYPE_GENERAL);
             }
-            */
             break;
         {
         int n, n0;
@@ -463,11 +466,13 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
             break;
 
+        case ELEM_UART_SENDn:
         case ELEM_UART_SEND:
             AppendIo(l->d.uart.name, IO_TYPE_GENERAL);
             AppendIo(l->d.uart.name, IO_TYPE_UART_TX);
             break;
 
+        case ELEM_UART_RECVn:
         case ELEM_UART_RECV:
             AppendIo(l->d.uart.name, IO_TYPE_GENERAL);
             AppendIo(l->d.uart.name, IO_TYPE_UART_RX);
@@ -492,6 +497,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_READ_ADC:
             AppendIo(l->d.readAdc.name, IO_TYPE_READ_ADC);
+            break;
+
+        case ELEM_RANDOM:
+            AppendIo(l->d.readAdc.name, IO_TYPE_GENERAL);
             break;
 
         case ELEM_SHIFT_REGISTER: {

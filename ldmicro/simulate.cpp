@@ -324,6 +324,36 @@ SWORD GetAdcShadow(char *name)
 }
 
 //-----------------------------------------------------------------------------
+//https://en.m.wikipedia.org/wiki/Linear_congruential_generator
+// X[n+1] = (a * X[n] + c) mod m
+//VMS's MTH$RANDOM, old versions of glibc
+// a = 69069 ( 0x10DCD ) (1 00001101 11001101b)
+// c = 1
+// m = 2 ** 32
+static long long seed = 1;
+long long MthRandom()
+{
+//  seed = (seed * 69069 + 1) % 4294967296;
+    seed = (seed * 69069 + 1) & 0xFFffFFff;
+    return seed;
+}
+
+SDWORD GetRandom(char *name)
+{
+    int sov = SizeOfVar(name);
+    long long seed = MthRandom();
+    char seedName[MAX_NAME_LEN];
+    sprintf(seedName, "$seed_%s", name);
+    SetSimulationVariable(seedName, seed);
+    if(sov == 1)
+       return signed char(seed >> (8 * (4 - sov)));
+    else if(sov == 2)
+       return SWORD(seed >> (8 * (4 - sov)));
+    else if(sov >= 3)
+       return SDWORD(seed >> (8 * (4 - sov)));
+}
+
+//-----------------------------------------------------------------------------
 static char *Check(char *name, DWORD flag, int i)
 {
     char *s = NULL;
@@ -613,10 +643,12 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_XOR:
         case ELEM_NOT:
         case ELEM_NEG:
+        case ELEM_RANDOM:
             MarkWithCheck(l->d.math.dest, VAR_FLAG_ANY);
             break;
 
         case ELEM_UART_RECV:
+        case ELEM_UART_RECVn:
             MarkWithCheck(l->d.uart.name, VAR_FLAG_ANY);
             break;
 
@@ -634,6 +666,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_FORMATTED_STRING: {
             break;
         }
+        case ELEM_SEED_RANDOM:
         case ELEM_PERSIST:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
@@ -641,6 +674,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_CLRWDT:
         case ELEM_LOCK:
         case ELEM_UART_SEND:
+        case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
         case ELEM_PLACEHOLDER:
@@ -764,89 +798,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
             break;
         }
 
-        case ELEM_RTO:
-        case ELEM_TOF:
-        case ELEM_TON:
-        case ELEM_TCY:
-        case ELEM_CTU:
-        case ELEM_CTD:
-        case ELEM_CTC:
-        case ELEM_CTR:
-        case ELEM_RES:
-        case ELEM_BIN2BCD:
-        case ELEM_BCD2BIN:
-        case ELEM_SWAP:
-        case ELEM_MOVE:
-        case ELEM_LOOK_UP_TABLE:
-        case ELEM_PIECEWISE_LINEAR:
-        case ELEM_READ_ADC:
-        case ELEM_SHL:
-        case ELEM_SHR:
-        case ELEM_SR0:
-        case ELEM_ROL:
-        case ELEM_ROR:
-        case ELEM_SET_BIT:
-        case ELEM_CLEAR_BIT:
-        case ELEM_AND:
-        case ELEM_OR :
-        case ELEM_XOR:
-        case ELEM_NOT:
-        case ELEM_NEG:
-        case ELEM_ADD:
-        case ELEM_SUB:
-        case ELEM_MUL:
-        case ELEM_DIV:
-        case ELEM_MOD:
-        case ELEM_UART_RECV_AVAIL:
-        case ELEM_UART_SEND_READY:
-        case ELEM_UART_SEND:
-        case ELEM_UART_RECV:
-        case ELEM_SHIFT_REGISTER:
-        case ELEM_PERSIST:
-        case ELEM_FORMATTED_STRING:
-        case ELEM_STRING:
-        case ELEM_SET_PWM:
-        case ELEM_MASTER_RELAY:
-        case ELEM_SLEEP:
-        case ELEM_CLRWDT:
-        case ELEM_LOCK:
-        case ELEM_PLACEHOLDER:
-        case ELEM_COMMENT:
-        case ELEM_OPEN:
-        case ELEM_SHORT:
-        case ELEM_COIL:
-        case ELEM_ONE_SHOT_RISING:
-        case ELEM_ONE_SHOT_FALLING:
-        case ELEM_OSC:
-        case ELEM_STEPPER:
-        case ELEM_PULSER:
-        case ELEM_NPULSE:
-        case ELEM_QUAD_ENCOD:
-        case ELEM_NPULSE_OFF:
-        case ELEM_PWM_OFF:
-        case ELEM_EQU:
-        case ELEM_NEQ:
-        case ELEM_GRT:
-        case ELEM_GEQ:
-        case ELEM_LES:
-        case ELEM_LEQ:
-        case ELEM_IF_BIT_SET:
-        case ELEM_IF_BIT_CLEAR:
-        case ELEM_RSFR:
-        case ELEM_WSFR:
-        case ELEM_SSFR:
-        case ELEM_CSFR:
-        case ELEM_TSFR:
-        case ELEM_T_C_SFR:
-        case ELEM_BUS:
-        case ELEM_7SEG:
-        case ELEM_9SEG:
-        case ELEM_14SEG:
-        case ELEM_16SEG:
-            break;
-
-        default:
-            ooops("ELEM_0x%x", which);
+        default: ;
     }
 }
 
@@ -1050,6 +1002,9 @@ static void SimulateIntCode(void)
                     goto math;
                 case INT_SET_VARIABLE_NEG:
                     goto math;
+                case INT_SET_VARIABLE_RANDOM:
+                    v = GetRandom(a->name1);
+                    goto math;
                 case INT_SET_VARIABLE_ADD:
                     v = GetSimulationVariable(a->name2) +
                         GetSimulationVariable(a->name3);
@@ -1145,16 +1100,17 @@ math:
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 break;
 
+            case INT_UART_SEND1:
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) {
                     SimulateUartTxCountdown = 2;
                     AppendToUartSimulationTextControl(
                         (BYTE)GetSimulationVariable(a->name1));
                 }
-                if(SimulateUartTxCountdown == 0) {
-                    SetSingleBit(a->name2, FALSE);
+                if(SimulateUartTxCountdown > 0) {
+                    SetSingleBit(a->name2, TRUE); // busy
                 } else {
-                    SetSingleBit(a->name2, TRUE);
+                    SetSingleBit(a->name2, FALSE); // not busy
                 }
                 break;
             case INT_UART_SEND_READY:
@@ -1351,6 +1307,7 @@ void StartSimulationTimer(void)
 //-----------------------------------------------------------------------------
 void ClrSimulationData(void)
 {
+    seed = 1;
     int i;
     for(i = 0; i < VariableCount; i++) {
         Variables[i].val = 0;
@@ -1447,12 +1404,6 @@ void DescribeForIoList(char *name, int type, char *out)
                 sprintf(out, "0x%08x = %d = %.6g s", v, v, dtms / 1000);
               else oops();
             }
-            break;
-        }
-        case IO_TYPE_UART_TX:
-        case IO_TYPE_UART_RX: {
-            SDWORD v = GetSimulationVariable(name, TRUE);
-              sprintf(out, "0x%02x = %d = '%c'", v , v, v);
             break;
         }
         default: {

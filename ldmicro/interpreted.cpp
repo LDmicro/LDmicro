@@ -132,12 +132,14 @@ void CompileInterpreted(char *outFile)
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
+            case INT_SET_SEED_RANDOM:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 op.name2 = AddrForVariable(IntCode[ipc].name2);
                 break;
 
             case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
+            case INT_SET_VARIABLE_RANDOM:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 break;
 

@@ -216,6 +216,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_XOR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_NOT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_NEG, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_RANDOM, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SEED_RANDOM, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SHL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SHR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SR0, t);
@@ -252,6 +254,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_OPEN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SENDn, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECVn, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND_READY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV_AVAIL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STRING, t);
@@ -510,6 +514,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert DIV (16-bit Integer Divide)\tD"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD,_("EDIT: Insert MOD (Integer Divide Remainder)"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG,_("EDIT: Insert NEG (Integer Negate)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_RANDOM,_("Insert Random"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SEED_RANDOM,_("Insert Seed of Random"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SignedMenu,_("Signed variable operations"));
 
     BitwiseMenu = CreatePopupMenu();
@@ -542,6 +548,10 @@ HMENU MakeMainWindowMenus(void)
         _("Insert &UART Send"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
         _("Insert &UART Receive"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SENDn,
+        _("Insert &UART SENDn Variable"));
+//  AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECVn,
+//      _("Insert &UART Receive Variable"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND_READY,
         _("Insert &UART Send: Is ready to send ?"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL,

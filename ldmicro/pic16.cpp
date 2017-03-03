@@ -197,6 +197,7 @@ static DWORD FwdAddrCount;
 #define  STATUS_DC    BIT1
 #define  STATUS_C     BIT0
 
+#define REG_FSR       0x04
 // Bank Select Register instead REG_STATUS(STATUS_RP1,STATUS_RP0)
 #define REG_BSR       0x08
 #define     BSR4      BIT4
@@ -205,7 +206,6 @@ static DWORD FwdAddrCount;
 #define     BSR1      BIT1
 #define     BSR0      BIT0
 
-#define REG_FSR       0x04
 #define REG_PCLATH    0x0a
 #define REG_INTCON    0x0b
 #define     GIE       BIT7 // Global Interrupt Enable bit
@@ -220,78 +220,78 @@ static DWORD FwdAddrCount;
 // These move around from device to device.
 // 0 means not defined(error!) or not exist in MCU.
 // EEPROM Registers
-static DWORD REG_EECON1  = 0;
-static DWORD REG_EECON2  = 0;
-static DWORD REG_EEDATA  = 0;
-static DWORD REG_EEADR   = 0;
-static DWORD REG_EEDATL  = 0;
-static DWORD REG_EEDATH  = 0;
-static DWORD REG_EEADRL  = 0;
-static DWORD REG_EEADRH  = 0;
+static DWORD REG_EECON1  = -1;
+static DWORD REG_EECON2  = -1;
+static DWORD REG_EEDATA  = -1;
+static DWORD REG_EEADR   = -1;
+static DWORD REG_EEDATL  = -1;
+static DWORD REG_EEDATH  = -1;
+static DWORD REG_EEADRL  = -1;
+static DWORD REG_EEADRH  = -1;
 
 //Analog Select Register
-static DWORD REG_ANSEL   = 0;
-static DWORD REG_ANSELH  = 0;
+static DWORD REG_ANSEL   = -1;
+static DWORD REG_ANSELH  = -1;
 
-static DWORD REG_ANSELA  = 0;
-static DWORD REG_ANSELB  = 0;
-static DWORD REG_ANSELC  = 0;
-static DWORD REG_ANSELD  = 0;
-static DWORD REG_ANSELE  = 0;
-static DWORD REG_ANSELF  = 0;
-static DWORD REG_ANSELG  = 0;
+static DWORD REG_ANSELA  = -1;
+static DWORD REG_ANSELB  = -1;
+static DWORD REG_ANSELC  = -1;
+static DWORD REG_ANSELD  = -1;
+static DWORD REG_ANSELE  = -1;
+static DWORD REG_ANSELF  = -1;
+static DWORD REG_ANSELG  = -1;
 
 //
-static DWORD REG_PIR1    = 0; // 0x0c
+static DWORD REG_PIR1    = -1; // 0x0c
 #define          RCIF      BIT5
 #define          TXIF      BIT4
 #define          CCP1IF    BIT2
-static DWORD REG_PIE1    = 0; // 0x8c
+static DWORD REG_PIE1    = -1; // 0x8c
 
 //
-static DWORD REG_TMR1L   = 0; // 0x0e
-static DWORD REG_TMR1H   = 0; // 0x0f
-static DWORD REG_T1CON   = 0; // 0x10
+static DWORD REG_TMR1L   = -1; // 0x0e
+static DWORD REG_TMR1H   = -1; // 0x0f
+static DWORD REG_T1CON   = -1; // 0x10
 #define          TMR1ON    BIT0
 #define          T1CKPS0   BIT4
 
-static DWORD REG_T1GCON  = 0; //
-static DWORD REG_CCPR1L  = 0; // 0x15
-static DWORD REG_CCPR1H  = 0; // 0x16
-static DWORD REG_CCP1CON = 0; // 0x17
-static DWORD REG_CMCON   = 0; // 0x1f
-static DWORD REG_VRCON   = 0; // 0x9f
+static DWORD REG_T1GCON  = -1; //
+static DWORD REG_CCPR1L  = -1; // 0x15
+static DWORD REG_CCPR1H  = -1; // 0x16
+static DWORD REG_CCP1CON = -1; // 0x17
+static DWORD REG_CMCON   = -1; // 0x1f
+static DWORD REG_VRCON   = -1; // 0x9f
 
 //USART
-static DWORD REG_TXSTA   = 0; // 0x98
+static DWORD REG_TXSTA   = -1; // 0x98
 #define          TXEN      BIT5
-#define          TRMT      BIT1 //1 is TSR empty, ready; 0 is TSR full
-static DWORD REG_RCSTA   = 0; // 0x18
+#define          TRMT      BIT1// 1 is TSR empty, ready; 0 is TSR full
+static DWORD REG_RCSTA   = -1; // 0x18
 #define          SPEN      BIT7
 #define          CREN      BIT4
 #define          FERR      BIT2
 #define          OERR      BIT1
-static DWORD REG_SPBRG   = 0; // 0x99
-static DWORD REG_TXREG   = 0; // 0x19
-static DWORD REG_RCREG   = 0; // 0x1a
+static DWORD REG_SPBRG   = -1; // 0x99
+static DWORD REG_TXREG   = -1; // 0x19
+static DWORD REG_RCREG   = -1; // 0x1a
 
 //ADC
-static DWORD REG_ADRESH  = 0; // 0x1e
-static DWORD REG_ADRESL  = 0; // 0x9e
-static DWORD REG_ADCON0  = 0; // 0x1f
-static DWORD REG_ADCON1  = 0; // 0x9f
+static DWORD REG_ADRESH  = -1; // 0x1e
+static DWORD REG_ADRESL  = -1; // 0x9e
+static DWORD REG_ADCON0  = -1; // 0x1f
+static DWORD REG_ADCON1  = -1; // 0x9f
 
 //PWM Timer2
-static DWORD REG_T2CON   = 0; // 0x12
-static DWORD REG_CCPR2L  = 0; // 0x1b // Pulse Width
-static DWORD REG_CCP2CON = 0; // 0x1d
+static DWORD REG_T2CON   = -1; // 0x12
+static DWORD REG_CCPR2L  = -1; // 0x1b // Pulse Width
+static DWORD REG_CCP2CON = -1; // 0x1d
 #define          DC2B0     BIT4
 #define          DC2B1     BIT5
-static DWORD REG_PR2     = 0; // 0x92 // Period
+static DWORD REG_PR2     = -1; // 0x92 // Period
 
 //
-static DWORD REG_TMR0    = 0; // 0x01
-static DWORD REG_OPTION  = 0; // 0x81 or 0x181 //0x95
+static DWORD REG_TMR0    = -1; // 0x01
+static DWORD REG_OPTION  = -1; // 0x81 or 0x181 //0x95
 // PIC10F2xx
 #define          _GPWU        BIT7 // Enable Wake-up on Pin Change bit (GP0, GP1, GP3)
 #define          _GPPU        BIT6 // Enable Weak Pull-ups bit (GP0, GP1, GP3)
@@ -456,6 +456,7 @@ static int IsOperation(PicOp op)
         case OP_MOVLP:
         case OP_NOP_:
         case OP_COMMENT_:
+        case OP_COMMENT_INT:
 //      case OP_SUBLW:
         case OP_IORLW:
         case OP_OPTION:
@@ -505,6 +506,13 @@ static int IsOperation(PicOp op)
 //-----------------------------------------------------------------------------
 static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD arg2, char *comment)
 {
+    if(IsOperation(op) >= IS_BANK) {
+        if(arg1 == -1) {
+            Error("%d %s Not inited register!", l, f);
+            oops();
+        }
+    }
+
     if(PicProg[PicProgWriteP].opPic != OP_VACANT_) oops();
 
     if(op == OP_COMMENT_INT){
@@ -1798,6 +1806,12 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
     }
 }
 
+static DWORD Assemble16(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, DWORD arg3)
+//16-Bit Instruction Word for PIC18
+{
+            return 0;
+}
+
 //-----------------------------------------------------------------------------
 // Write an intel IHEX format description of the program assembled so far.
 // This is where we actually do the assembly to binary format.
@@ -1823,8 +1837,8 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         DWORD w;
         if(Prog.mcu->core == BaselineCore12bit)
             w = Assemble12(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2);
-//      else if(Prog.mcu->core == PIC18HighEndCore16bit)
-//          w = Assemble16(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, 1);
+        else if(Prog.mcu->core == PIC18HighEndCore16bit)
+            w = Assemble16(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, 1);
         else
             w = Assemble(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2);
 
@@ -2000,6 +2014,8 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC16F874 ")
     || McuAs(" PIC16F873 ")
     || McuAs(" PIC16F72 ")
+    || McuAs(" PIC12F675 ")
+    || McuAs(" PIC12F683 ")
     ) {
         if(Prog.configurationWord & 0xffff0000) oops();
         WriteIhex(f, 0x02);
@@ -2009,9 +2025,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
         WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
     } else
-    if(McuAs("Microchip PIC10F200 ")
-    || McuAs("Microchip PIC10F204 ")
-    || McuAs("Microchip PIC10F220 ")
+    if(McuAs(" PIC10F200 ")
+    || McuAs(" PIC10F204 ")
+    || McuAs(" PIC10F220 ")
     ) {
         if(Prog.configurationWord & 0xffff0000) oops();
         WriteIhex(f, 0x02);
@@ -2021,9 +2037,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
         WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
     } else
-    if(McuAs("Microchip PIC10F202 ")
-    || McuAs("Microchip PIC10F206 ")
-    || McuAs("Microchip PIC10F222 ")
+    if(McuAs(" PIC10F202 ")
+    || McuAs(" PIC10F206 ")
+    || McuAs(" PIC10F222 ")
     ) {
         if(Prog.configurationWord & 0xffff0000) oops();
         WriteIhex(f, 0x02);
@@ -2325,7 +2341,6 @@ static void CopyArgToReg(DWORD addr1, int sov1, char *name)
         CopyRegsToRegs(addr1, sov1, addr2, sov2, "$", name, TRUE);
     }
 }
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // Binary number in ACb0 = Scratch0..Scratch3.
@@ -2459,6 +2474,8 @@ void AllocBitsVars()
                 MemForSingleBit(a->name1, TRUE, &addr, &bit);
                 break;
 
+            case INT_UART_SEND1:
+            case INT_UART_SENDn:
             case INT_UART_SEND:
                 MemForSingleBit(a->name2, TRUE, &addr, &bit);
                 break;
@@ -2506,6 +2523,7 @@ return;
 
 //-----------------------------------------------------------------------------
 static void Increment(DWORD addr, int sov, char *name)
+// a = a + 1
 {
   Instruction(OP_INCF, addr, DEST_F, name);
   if(sov >= 2) {
@@ -2522,7 +2540,38 @@ static void Increment(DWORD addr, int sov, char *name)
   }
 }
 
+static void Increment(DWORD addr, int sov)
+{
+  Increment(addr, sov, NULL);
+}
+
+static void aplusw(DWORD addr, int sov, char *name)
+// a = a + W
+{
+  Instruction(OP_ADDWF, addr, DEST_F, name);
+  if(sov >= 2) {
+    ClearBit(REG_STATUS, STATUS_Z);
+    IfBitSet(REG_STATUS, STATUS_C);
+    Instruction(OP_INCF, addr+1, DEST_F, name);
+    if(sov >= 3) {
+      IfBitSet(REG_STATUS, STATUS_Z);
+      Instruction(OP_INCF, addr+2, DEST_F, name);
+      if(sov >= 4) {
+        IfBitSet(REG_STATUS, STATUS_Z);
+        Instruction(OP_INCF, addr+3, DEST_F, name);
+      }
+    }
+  }
+}
+
+static void aplusw(DWORD addr, int sov)
+{
+  aplusw(addr, sov, NULL);
+}
+
+
 static void VariableAdd(DWORD addr1, DWORD addr2, DWORD addr3, int sov)
+// addr1 = addr2 + addr3 // original
 // ScratchS used !!!
 {
   Instruction(OP_MOVF, addr2, DEST_W/*, a->name2*/);
@@ -2537,6 +2586,113 @@ static void VariableAdd(DWORD addr1, DWORD addr2, DWORD addr3, int sov)
   Instruction(OP_MOVWF, addr1+1, 0);
   IfBitSet(ScratchS, STATUS_C);
   Instruction(OP_INCF, addr1+1, DEST_F);
+}
+
+static void bplusa(DWORD b, DWORD a, int sov)
+//                   addrb    addra   sovb == sova
+// b = b + a , b - is rewritten
+/*
+For example, for a 32-bit add:
+    movf     a,w ; add byte 0 (LSB)
+    addwf    b,f
+    movf     a+1,w ; add byte 1
+    btfsc    STATUS,C
+    incfsz   a+1,w
+    addwf    b+1,f
+    movf     a+2,w ; add byte 2
+    btfsc    STATUS,C
+    incfsz   a+2,w
+    addwf    b+2,f
+    movf     a+3,w ; add byte 3 (MSB)
+    btfsc    STATUS,C
+    incfsz   a+3,w
+    addwf    b+3,f
+*/
+{
+  Instruction(OP_MOVF, a, DEST_W);
+  Instruction(OP_ADDWF, b, DEST_F);
+  if(sov >= 2) {
+    Instruction(OP_MOVF, a+1, DEST_W);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+    Instruction(OP_INCFSZ, a+1, DEST_W);
+    Instruction(OP_ADDWF, b+1, DEST_F);
+    if(sov >= 3) {
+      Instruction(OP_MOVF, a+2, DEST_W);
+      Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+      Instruction(OP_INCFSZ, a+2, DEST_W);
+      Instruction(OP_ADDWF, b+2, DEST_F);
+      if(sov >= 4) {
+        Instruction(OP_MOVF, a+3, DEST_W);
+        Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+        Instruction(OP_INCFSZ, a+3, DEST_W);
+        Instruction(OP_ADDWF, b+3, DEST_F);
+      }
+    }
+  }
+}
+
+static void bplusa(DWORD b, DWORD a, int sovb, int sova)
+//          bplusa(DWORD addrb, DWORD addra, int sovb)
+// b = b + a , b - is rewritten
+/*
+For example, for a 32-bit add:
+    movf     a,w ; add byte 0 (LSB)
+    addwf    b,f
+    movf     a+1,w ; add byte 1
+    btfsc    STATUS,C
+    incfsz   a+1,w
+    addwf    b+1,f
+    movf     a+2,w ; add byte 2
+    btfsc    STATUS,C
+    incfsz   a+2,w
+    addwf    b+2,f
+    movf     a+3,w ; add byte 3 (MSB)
+    btfsc    STATUS,C
+    incfsz   a+3,w
+    addwf    b+3,f
+*/
+{
+  Instruction(OP_MOVF, a, DEST_W);
+  Instruction(OP_ADDWF, b, DEST_F);
+  if(sovb >= 2) {
+    if(sova >= sovb)
+      Instruction(OP_MOVF, a+1, DEST_W);
+    else
+      Instruction(OP_MOVLW, 0);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+    if(sova >= sovb)
+      Instruction(OP_INCFSZ, a+1, DEST_W);
+    else
+      Instruction(OP_MOVLW, 1);
+    Instruction(OP_ADDWF, b+1, DEST_F);
+    if(sovb >= 3) {
+      Instruction(OP_MOVF, a+2, DEST_W);
+      Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+      Instruction(OP_INCFSZ, a+2, DEST_W);
+      Instruction(OP_ADDWF, b+2, DEST_F);
+      if(sovb >= 4) {
+        Instruction(OP_MOVF, a+3, DEST_W);
+        Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+        Instruction(OP_INCFSZ, a+3, DEST_W);
+        Instruction(OP_ADDWF, b+3, DEST_F);
+      }
+    }
+  }
+}
+
+static void shl(DWORD addr, int sov)
+{
+  Instruction(OP_BCF, REG_STATUS, STATUS_C);
+  Instruction(OP_RLF, addr, DEST_F);
+  if(sov >= 2) {
+    Instruction(OP_RLF, addr+1, DEST_F);
+    if(sov >= 3) {
+      Instruction(OP_RLF, addr+2, DEST_F);
+      if(sov >= 4) {
+        Instruction(OP_RLF, addr+3, DEST_F);
+      }
+    }
+  }
 }
 
 #ifdef TABLE_IN_FLASH
@@ -2809,10 +2965,12 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Instruction(OP_SUBWF, addr2, DEST_W, a->name2);
                 IfBitClear(REG_STATUS, STATUS_Z);
                 Instruction(OP_GOTO, notEqual, 0);
+
                 Instruction(OP_MOVF, addr1+1, DEST_W);
                 Instruction(OP_SUBWF, addr2+1, DEST_W);
                 IfBitClear(REG_STATUS, STATUS_Z);
                 Instruction(OP_GOTO, notEqual, 0);
+
                 CompileIfBody(notEqual);
                 break;
             }
@@ -2965,7 +3123,7 @@ static void CompileFromIntermediate(BOOL topLevel)
             case INT_UART_SEND_READY: {
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 #ifdef AUTO_BANKING
-                CopyBit(addr1, bit1, REG_TXSTA, TRMT);
+                CopyBit(addr1, bit1, REG_TXSTA, TRMT); // 1 is TSR empty, ready; 0 is TSR full
                 #else
                 ClearBit(addr1, bit1);
 
@@ -2980,6 +3138,35 @@ static void CompileFromIntermediate(BOOL topLevel)
                 FwdAddrIsNow(notRedy);
                 Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
                 #endif
+                break;
+            }
+            case INT_UART_SEND1: {
+                MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+                MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
+                MemForVariable(a->name3, &addr3);
+
+                DWORD noSend = AllocFwdAddr();
+
+                // Little endian byte order
+                // REG_TXREG = X[addr1 + sov - 1 - X[addr3]]
+                Instruction(OP_MOVLW, addr1 + sov1 - 1);
+                Instruction(OP_MOVWF, REG_FSR);
+                Instruction(OP_MOVF, addr3, DEST_W);
+                Instruction(OP_SUBWF, REG_FSR, DEST_F);
+                Instruction(OP_MOVF, REG_INDF, DEST_W);
+                Instruction(OP_MOVWF, REG_TXREG);
+                /*
+                // Big endian byte order
+                // REG_TXREG = X[addr1 + X[addr3]]
+                Instruction(OP_MOVLW, addr1);
+                Instruction(OP_MOVWF, REG_FSR);
+                Instruction(OP_MOVF, addr3, DEST_W);
+                Instruction(OP_ADDWF, REG_FSR, DEST_F);
+                Instruction(OP_MOVF, REG_INDF, DEST_W);
+                Instruction(OP_MOVWF, REG_TXREG);
+                /**/
+                FwdAddrIsNow(noSend);
                 break;
             }
             case INT_UART_SEND: {
@@ -3474,6 +3661,58 @@ static void CompileFromIntermediate(BOOL topLevel)
                 #endif
                 break;
             }
+            case INT_SET_VARIABLE_RANDOM: {
+                MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+
+                char seedName[MAX_NAME_LEN];
+                sprintf(seedName, "$seed_%s", a->name1);
+//https://en.m.wikipedia.org/wiki/Linear_congruential_generator
+// X[n+1] = (a * X[n] + c) mod m
+//VMS's MTH$RANDOM, old versions of glibc
+// a = 69069 ( 0x10DCD ) (1 00001101 11001101b)
+//     bits              16        8 7      0
+// (Multipliers: 3 * 7 * 11 * 13 * 23) (Dividers: 1, 3, 7, 11, 13, 21, 23, 33, 39, 69, 77, 91, 143, 161, 231, 253, 273, 299, 429, 483, 759, 897, 1001, 1771, 2093, 3003, 3289, 5313, 6279, 9867, 23023, 69069)
+// c = 1
+// m = 2^32
+// X = (X * 0x10DCD + 1) % 0x100000000
+                SetSizeOfVar(seedName, 4);
+                MemForVariable(seedName, &addr2);
+                CopyRegsToRegs(Scratch1, 4, addr2, 4, "", "", FALSE);
+
+              //bplusa(addr2, Scratch1, 4);     // * bit0 already in result
+                bplusa(addr2 + 1, Scratch1, 3); // * bit8
+                bplusa(addr2 + 2, Scratch1, 2); // * bit16
+
+                shl(Scratch1, 4); //1
+                shl(Scratch1, 4); //2
+                bplusa(addr2, Scratch1, 4);   // * bit2
+                shl(Scratch1, 4); //3
+                bplusa(addr2, Scratch1, 4);   // * bit3
+                shl(Scratch1, 4); //4
+                shl(Scratch1, 4); //5
+                shl(Scratch1, 4); //6
+                bplusa(addr2, Scratch1, 4);   // * bit6
+                shl(Scratch1, 4); //7
+                bplusa(addr2, Scratch1, 4);   // * bit7
+                shl(Scratch1, 4); //8
+              //bplusa(addr2, Scratch1, 4);   // * bit8
+                shl(Scratch1, 4); //9
+                shl(Scratch1, 4); //10
+                bplusa(addr2, Scratch1, 4);   // * bit10
+                shl(Scratch1, 4); //11
+                bplusa(addr2, Scratch1, 4);   // * bit11
+              //shl(Scratch1, 4); //12
+              //shl(Scratch1, 4); //13
+              //shl(Scratch1, 4); //14
+              //shl(Scratch1, 4); //15
+              //shl(Scratch1, 4); //16
+              //bplusa(addr2, Scratch1, 4);   // * bit16
+
+                Increment(addr2, 4, seedName);
+                CopyRegsToRegs(addr1, sov1, addr2 + 4 - sov1, 4, "", "", FALSE);
+                break;
+            }
             case INT_READ_ADC: {
                 BYTE adcs;
 
@@ -3495,6 +3734,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                 || McuAs(" PIC16F1527 ")
                 || McuAs(" PIC16F1933 ")
                 || McuAs(" PIC16F1947 ")
+                || McuAs(" PIC12F675 ")
+                || McuAs(" PIC12F683 ")
                 ) {
                      goPos = 1;
                     chsPos = 2;
@@ -3511,9 +3752,9 @@ static void CompileFromIntermediate(BOOL topLevel)
                     chsPos = 3;
                 } else oops();
                 //
-                if(Prog.mcuClock > 5000000) {
+                if(Prog.mcuClock > 5000000) { // 5 MHz
                     adcs = 2; // 32*Tosc
-                } else if(Prog.mcuClock > 1250000) {
+                } else if(Prog.mcuClock > 1250000) { // 1.25 MHz
                     adcs = 1; // 8*Tosc
                 } else {
                     adcs = 0; // 2*Tosc
@@ -3535,6 +3776,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     WriteRegister(REG_ADCON0,
                          (MuxForAdcVariable(a->name1) << chsPos) |
                          (0 << goPos) |  // don't start yet
+                                         // bit 1 unimplemented
                          (1 << 0)        // A/D peripheral on
                     );
 
@@ -3570,21 +3812,38 @@ static void CompileFromIntermediate(BOOL topLevel)
                         (1 << 7) |      // right-justified
                         (0 << 0)        // for now, all analog inputs
                     );
+                } else
+                if(McuAs(" PIC12F675 ")
+                || McuAs(" PIC12F683 ")
+                ) {
+                    adcsPos = 4; // in REG_ANSEL
+                    WriteRegister(REG_ANSEL,
+                        (adcs << adcsPos) |
+                        (1 << MuxForAdcVariable(a->name1))
+                    );
+
+                    WriteRegister(REG_ADCON0,
+                        (1 << 7) |      // right-justified
+                        (0 << 6) |      // VDD Voltage Reference
+                        (MuxForAdcVariable(a->name1) << chsPos) | // Analog Channel Select bits
+                        (0 << goPos) |  // don't start yet
+                                        // bit 1 unimplemented
+                        (1 << 0)        // A/D peripheral on
+                    );
                 } else oops();
-                if(McuAs("Microchip PIC16F88 "))
-                {
+
+                if(McuAs("Microchip PIC16F88 ")) {
                     WriteRegister(REG_ANSEL, 0x7f);
-                }
+                } else
                 if(McuAs("Microchip PIC16F887 ") ||
-                   McuAs("Microchip PIC16F886 "))
-                {
+                   McuAs("Microchip PIC16F886 ")) {
                     WriteRegister(REG_ANSEL, 0xff);
                     WriteRegister(REG_ANSELH, 0x3f);
                 }
 
                 // need to wait Tacq (about 20 us) for mux, S/H etc. to settle
                 int cyclesToWait = ((Prog.mcuClock / 4) * 20) / 1000000;
-                cyclesToWait /= 3;
+                cyclesToWait /= 3; // division by 3 = (DEC + GOTO) = 3 cycles time
                 if(cyclesToWait < 1) cyclesToWait = 1;
 
                 Instruction(OP_MOVLW, cyclesToWait, 0);
@@ -3593,12 +3852,12 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Instruction(OP_DECFSZ, Scratch1, DEST_F);
                 Instruction(OP_GOTO, wait, 0);
 
-                SetBit(REG_ADCON0, goPos);
+                SetBit(REG_ADCON0, goPos); // starting a A/D conversion
                 DWORD spin = PicProgWriteP;
                 IfBitSet(REG_ADCON0, goPos);
                 Instruction(OP_GOTO, spin, 0);
 
-                if(REG_ADRESH) {
+                if(REG_ADRESH != -1) {
                     Instruction(OP_MOVF, REG_ADRESH, DEST_W);
                     Instruction(OP_MOVWF, addr1+1);
                 }
@@ -3614,19 +3873,32 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 // hook those pins back up to the digital inputs in case
                 // some of them are used that way
-                WriteRegister(REG_ADCON1,
-                    (1 << 7) |      // right-justify A/D result
-                    (6 << 0)        // all digital inputs
-                );
-                if(McuAs("Microchip PIC16F88 "))
-                {
+                if(REG_ADCON1 != -1)
+                    WriteRegister(REG_ADCON1,
+                        (1 << 7) |      // right-justify A/D result
+                        (6 << 0)        // all digital inputs
+                    );
+
+                if(McuAs("Microchip PIC16F88 ")
+//              || McuAs(" PIC12F675 ")
+//              || McuAs(" PIC12F683 ")
+                ) {
+                    #ifdef AUTO_BANKING
+                    Instruction(OP_CLRF, REG_ANSEL);
+                    #else
                     WriteRegister(REG_ANSEL, 0x00);
-                }
-                if(McuAs("Microchip PIC16F887 ") ||
-                   McuAs("Microchip PIC16F886 "))
-                {
+                    #endif
+                } else
+                if(McuAs("Microchip PIC16F887 ")
+                || McuAs("Microchip PIC16F886 ")
+                ) {
+                    #ifdef AUTO_BANKING
+                    Instruction(OP_CLRF, REG_ANSEL);
+                    Instruction(OP_CLRF, REG_ANSELH);
+                    #else
                     WriteRegister(REG_ANSEL, 0x00);
                     WriteRegister(REG_ANSELH, 0x00);
+                    #endif
                 }
                 break;
             }
@@ -3871,6 +4143,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
         }
     }
     double Fcycle=1.0*Prog.mcuClock/(4.0*prescaler*softDivisor*tmr0);
+    double Pcycle=4.0*prescaler*softDivisor*tmr0/(1.0*Prog.mcuClock);
 
     countsPerCycle = prescaler*softDivisor*tmr0;
 
@@ -4218,6 +4491,15 @@ void CompilePic16(char *outFile)
         REG_CCP1CON    = 0x17;
         WDTE           = BIT2;
     } else
+    if(McuAs(         " PIC12F629 ")
+    || McuAs(         " PIC12F675 ")
+    || McuAs(         " PIC12F683 ")
+    ) {
+        REG_PIR1       = 0x0c;
+        REG_TMR1L      = 0x0e;
+        REG_TMR1H      = 0x0f;
+        REG_T1CON      = 0x10;
+    } else
     if(McuAs(         " PIC16F882 ")
     || McuAs(         " PIC16F883 ")
     || McuAs(         " PIC16F884 ")
@@ -4255,13 +4537,12 @@ void CompilePic16(char *outFile)
         WDTE           = BIT4; // WDT enabled while running and disabled in Sleep
     } else
     if(McuAs(" PIC10F")
-    || McuAs(" PIC12F")
     ) {
         // has not
         WDTE           = BIT2;
     } else
         oops();
-
+    //------------------------------------------------------------
     if(McuAs("Microchip PIC16F628 ")
     ) {
         REG_CMCON   = 0x1f;
@@ -4270,12 +4551,19 @@ void CompilePic16(char *outFile)
     ) {
         REG_CMCON   = 0x009C;
     } else
+    if(McuAs(" PIC12F675 ")
+    || McuAs(" PIC12F683 ")
+    ) {
+        REG_CMCON   = 0x19;
+      //REG_IOCA    = 0x96;
+    } else
     if(McuAs("Microchip PIC16F819 ")
     || McuAs("Microchip PIC16F876 ")
     || McuAs("Microchip PIC16F877 ")
     || McuAs("Microchip PIC16F887 ")
     || McuAs("Microchip PIC16F886 ")
     || McuAs(" PIC16F72 ")
+    || McuAs(" PIC12F629 ")
     || McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
     || McuAs(" PIC16F1516 ")
@@ -4290,12 +4578,11 @@ void CompilePic16(char *outFile)
         // has not
     } else
     if(McuAs(" PIC10F")
-    || McuAs(" PIC12F")
     ) {
         // has not
     } else
         oops();
-
+    //------------------------------------------------------------
     if(McuAs("Microchip PIC16F628 ")
     || McuAs("Microchip PIC16F819 ")
     || McuAs("Microchip PIC16F876 ")
@@ -4334,7 +4621,7 @@ void CompilePic16(char *outFile)
         // has not
     } else
         oops();
-
+    //------------------------------------------------------------
     if(McuAs("Microchip PIC16F88 " )
     || McuAs("Microchip PIC16F819 ")
     || McuAs("Microchip PIC16F876 ")
@@ -4349,10 +4636,16 @@ void CompilePic16(char *outFile)
     } else
     if(McuAs(" PIC16F72 " )
     ) {
-        REG_ADRESH   = 0;
         REG_ADRESL   = 0x1e;
         REG_ADCON0   = 0x1f;
         REG_ADCON1   = 0x9f;
+    } else
+    if(McuAs(" PIC12F675 " )
+    || McuAs(" PIC12F683 ")
+    ) {
+        REG_ADRESH   = 0x1e;
+        REG_ADRESL   = 0x9e;
+        REG_ADCON0   = 0x1f;
     } else
     if(McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
@@ -4380,7 +4673,7 @@ void CompilePic16(char *outFile)
         // has not
     } else
         oops();
-
+    //------------------------------------------------------------
     if(McuAs("Microchip PIC16F876 ")
     || McuAs("Microchip PIC16F877 ")
     || McuAs("Microchip PIC16F886 ")
@@ -4416,7 +4709,7 @@ void CompilePic16(char *outFile)
         // has not
     } else
         oops();
-
+    //------------------------------------------------------------
     if(McuAs("Microchip PIC16F628 ")
     || McuAs(         " PIC16F72 ")
     || McuAs("Microchip PIC16F819 ")
@@ -4449,7 +4742,7 @@ void CompilePic16(char *outFile)
         // has not
     } else
         oops();
-
+    //------------------------------------------------------------
     if(McuAs("Microchip PIC16F628 ")
     || McuAs("Microchip PIC16F88 " )
     || McuAs("Microchip PIC16F819 ")
@@ -4463,9 +4756,12 @@ void CompilePic16(char *outFile)
     || McuAs("Microchip PIC16F883 ")
     || McuAs("Microchip PIC16F882 ")
     || McuAs(" PIC16F72 ")
+    || McuAs(" PIC12F629 ")
+    || McuAs(" PIC12F675 ")
+    || McuAs(" PIC12F683 ")
     ) {
         REG_TMR0       = 0x01;
-        REG_OPTION = 0x81;
+        REG_OPTION     = 0x81;
     } else
     if(McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
@@ -4489,7 +4785,7 @@ void CompilePic16(char *outFile)
         WDTE           = BIT2;
     } else
         oops();
-
+    //------------------------------------------------------------
     if(McuAs("Microchip PIC16F877 ")
     || McuAs("Microchip PIC16F819 ")
     || McuAs("Microchip PIC16F88 " )
@@ -4502,11 +4798,14 @@ void CompilePic16(char *outFile)
         REG_EEDATA  = 0x10c;
         REG_EEADR   = 0x10d;
     } else
-    if(McuAs("Microchip PIC16F628 ")) {
-        REG_EECON1  = 0x9c;
-        REG_EECON2  = 0x9d;
+    if(McuAs("Microchip PIC16F628 ")
+    || McuAs(" PIC12F675 ")
+    || McuAs(" PIC12F683 ")
+    ) {
         REG_EEDATA  = 0x9a;
         REG_EEADR   = 0x9b;
+        REG_EECON1  = 0x9c;
+        REG_EECON2  = 0x9d;
     } else
     if(McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
@@ -4530,13 +4829,12 @@ void CompilePic16(char *outFile)
         REG_EEADRH  = 0x192;
     } else
     if(McuAs(" PIC10F")
-    || McuAs(" PIC12F")
     || McuAs(" PIC16F72 ")
     ) {
         // has not
     } else
         oops();
-
+    //------------------------------------------------------------
     if(McuAs("Microchip PIC16F887 ")
     || McuAs("Microchip PIC16F886 ")
     ) {
@@ -4547,6 +4845,11 @@ void CompilePic16(char *outFile)
     ) {
         REG_ANSEL  = 0x009B;
     } else
+    if(McuAs(" PIC12F675 ")
+    || McuAs(" PIC12F683 ")
+    ) {
+        REG_ANSEL  = 0x009F;
+    } else
     if(McuAs("Microchip PIC16F628 ")
     || McuAs("Microchip PIC16F819 ")
     || McuAs("Microchip PIC16F877 ")
@@ -4556,7 +4859,7 @@ void CompilePic16(char *outFile)
     } else {
 //      oops();
     }
-
+    //------------------------------------------------------------
     if(McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
     || McuAs(" PIC16F1516 ")
@@ -4613,7 +4916,7 @@ void CompilePic16(char *outFile)
         REG_ANSELF  = 0x40C;
         REG_ANSELG  = 0x40D;
     }
-
+    //------------------------------------------------------------
     f = fopen(outFile, "w");
     if(!f) {
         Error(_("Couldn't open file '%s'"), outFile);
@@ -4789,9 +5092,11 @@ void CompilePic16(char *outFile)
 //      Instruction(OP_CLRF, Prog.mcu->ram[i].start & ~BankMask()); // not need, self cleared here >>>^
       }
     }
-    Instruction(OP_CLRF, REG_STATUS); // Select Bank 0 and Indirect Bank 0
-    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
-        Instruction(OP_MOVLB, 0);     // Select Bank 0
+    if(Bank(Prog.mcu->ram[RamSection].start)) {
+        Instruction(OP_CLRF, REG_STATUS); // Select Bank 0 and Indirect Bank 0
+        if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+            Instruction(OP_MOVLB, 0);     // Select Bank 0
+        }
     }
 
     BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
@@ -4839,7 +5144,7 @@ void CompilePic16(char *outFile)
             Instruction(OP_MOVF, 0x06, DEST_W);
 
             Instruction(OP_SLEEP_); // stop here
-            // Wake-up on PIC10,12 cause a RESET !
+            // Wake-up on PIC10,12? cause a RESET !
 
             FwdAddrIsNow(notWdtWakeUp);
         }
@@ -4870,31 +5175,43 @@ void CompilePic16(char *outFile)
         WriteRegister(REG_ADCON1, 0x7); // all digital inputs
     }
 
-    if(McuAs("Microchip PIC16F88 ")) {
-        WriteRegister(REG_ANSEL, 0x00); // all digital inputs
+    if(McuAs("Microchip PIC16F88 ")
+    || McuAs(" PIC12F675 ")
+    || McuAs(" PIC12F683 ")
+    ) {
+        Instruction(OP_CLRF, REG_ANSEL);  // all digital inputs
     } else
-    if(McuAs("Microchip PIC16F887 ") ||
-       McuAs("Microchip PIC16F886 "))
-    {
-        WriteRegister(REG_ANSEL,  0x00);    // all digital inputs
-        WriteRegister(REG_ANSELH, 0x00);    // all digital inputs
+    if(McuAs("Microchip PIC16F887 ")
+    || McuAs("Microchip PIC16F886 ")
+    ) {
+        Instruction(OP_CLRF, REG_ANSEL);  // all digital inputs
+        Instruction(OP_CLRF, REG_ANSELH); // all digital inputs
     }
-    if(REG_ANSELA)
+    /*
+    if(REG_ANSEL != -1)
+        Instruction(OP_CLRF, REG_ANSEL);
+    if(REG_ANSELH != -1)
+        Instruction(OP_CLRF, REG_ANSELH);
+    /**/
+    if(REG_ANSELA != -1)
         Instruction(OP_CLRF, REG_ANSELA);
-    if(REG_ANSELB)
+    if(REG_ANSELB != -1)
         Instruction(OP_CLRF, REG_ANSELB);
-    if(REG_ANSELC)
+    if(REG_ANSELC != -1)
         Instruction(OP_CLRF, REG_ANSELC);
-    if(REG_ANSELD)
+    if(REG_ANSELD != -1)
         Instruction(OP_CLRF, REG_ANSELD);
-    if(REG_ANSELE)
+    if(REG_ANSELE != -1)
         Instruction(OP_CLRF, REG_ANSELE);
-    if(REG_ANSELF)
+    if(REG_ANSELF != -1)
         Instruction(OP_CLRF, REG_ANSELF);
-    if(REG_ANSELG)
+    if(REG_ANSELG != -1)
         Instruction(OP_CLRF, REG_ANSELG);
 
-    if(McuAs("Microchip PIC16F628 ")) {
+    if(McuAs("Microchip PIC16F628 ")
+    || McuAs(" PIC12F675 ")
+    || McuAs(" PIC12F683 ")
+    ) {
         // This is also a nasty special case; the comparators on the
         // PIC16F628 are enabled by default and need to be disabled, or
         // else the PORTA GPIOs don't work.

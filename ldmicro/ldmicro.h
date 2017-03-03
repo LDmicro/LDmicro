@@ -133,11 +133,13 @@ typedef signed long SDWORD;
 #define MNU_INSERT_XOR          0x2f04
 #define MNU_INSERT_NOT          0x2f05
 #define MNU_INSERT_NEG          0x2f06
-#define MNU_INSERT_SHL          0x2f07
-#define MNU_INSERT_SHR          0x2f08
-#define MNU_INSERT_SR0          0x2f09
-#define MNU_INSERT_ROL          0x2f0a
-#define MNU_INSERT_ROR          0x2f0b
+#define MNU_INSERT_RANDOM       0x2f07
+#define MNU_INSERT_SEED_RANDOM  0x2f08
+#define MNU_INSERT_SHL          0x2f21
+#define MNU_INSERT_SHR          0x2f22
+#define MNU_INSERT_SR0          0x2f23
+#define MNU_INSERT_ROL          0x2f24
+#define MNU_INSERT_ROR          0x2f25
 #define MNU_INSERT_MOV          0x30
 #define MNU_INSERT_BIN2BCD      0x3001
 #define MNU_INSERT_BCD2BIN      0x3002
@@ -146,9 +148,11 @@ typedef signed long SDWORD;
 #define MNU_INSERT_SET_PWM      0x32
 #define MNU_INSERT_SET_PWM_SOFT 0x3201
 #define MNU_INSERT_UART_SEND         0x33
-#define MNU_INSERT_UART_SEND_READY   0x3301
+#define MNU_INSERT_UART_SENDn        0x3301
+#define MNU_INSERT_UART_SEND_READY   0x3302
 #define MNU_INSERT_UART_RECV         0x34
-#define MNU_INSERT_UART_RECV_AVAIL   0x3401
+#define MNU_INSERT_UART_RECVn        0x3401
+#define MNU_INSERT_UART_RECV_AVAIL   0x3402
 #define MNU_INSERT_EQU          0x35
 #define MNU_INSERT_NEQ          0x36
 #define MNU_INSERT_GRT          0x37
@@ -300,6 +304,8 @@ typedef signed long SDWORD;
 #define ELEM_XOR                0x1c43
 #define ELEM_NOT                0x1c44
 #define ELEM_NEG                0x1c45
+#define ELEM_RANDOM             0x1c46
+#define ELEM_SEED_RANDOM        0x1c47
 
 #define ELEM_SHL                0x1c21
 #define ELEM_SHR                0x1c22
@@ -326,10 +332,12 @@ typedef signed long SDWORD;
 #define ELEM_SET_PWM            0x29
 #define ELEM_SET_PWM_SOFT       0x2901
 #define ELEM_UART_RECV          0x2a
-#define ELEM_UART_RECV_AVAIL    0x2a01
+#define ELEM_UART_RECVn         0x2a01
+#define ELEM_UART_RECV_AVAIL    0x2a02
 #define RUartRecvErrorFlag     "RUartRecvErrorFlag"
 #define ELEM_UART_SEND          0x2b
-#define ELEM_UART_SEND_READY    0x2b01
+#define ELEM_UART_SENDn         0x2b01
+#define ELEM_UART_SEND_READY    0x2b02
 #define RUartSendErrorFlag     "RUartSendErrorFlag"
 #define ELEM_MASTER_RELAY       0x2c
 #define ELEM_SLEEP              0x2c01
@@ -429,6 +437,8 @@ typedef signed long SDWORD;
         case ELEM_XOR: \
         case ELEM_NOT: \
         case ELEM_NEG: \
+        case ELEM_RANDOM: \
+        case ELEM_SEED_RANDOM: \
         case ELEM_ADD: \
         case ELEM_SUB: \
         case ELEM_MUL: \
@@ -445,8 +455,10 @@ typedef signed long SDWORD;
         case ELEM_SET_PWM_SOFT: \
         case ELEM_QUAD_ENCOD: \
         case ELEM_UART_SEND: \
+        case ELEM_UART_SENDn: \
         case ELEM_UART_SEND_READY: \
         case ELEM_UART_RECV: \
+        case ELEM_UART_RECVn: \
         case ELEM_UART_RECV_AVAIL: \
         case ELEM_MASTER_RELAY: \
         case ELEM_SLEEP: \
@@ -718,12 +730,12 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_GENERAL         1
 #define IO_TYPE_PERSIST         2
 #define IO_TYPE_COUNTER         5
-#define IO_TYPE_INT_INPUT       6
-#define IO_TYPE_DIG_INPUT       7
-#define IO_TYPE_DIG_OUTPUT      8
-#define IO_TYPE_READ_ADC        9
-#define IO_TYPE_UART_TX         10
-#define IO_TYPE_UART_RX         11
+#define IO_TYPE_UART_TX         6
+#define IO_TYPE_UART_RX         7
+#define IO_TYPE_INT_INPUT       8
+#define IO_TYPE_DIG_INPUT       9
+#define IO_TYPE_DIG_OUTPUT      10
+#define IO_TYPE_READ_ADC        11
 #define IO_TYPE_PWM_OUTPUT      12
 #define IO_TYPE_INTERNAL_RELAY  13
 #define IO_TYPE_TCY             14
@@ -839,9 +851,9 @@ typedef enum CoreTag {
     ReducedCore,
 
     PICcores,
-    BaselineCore12bit,
+    BaselineCore12bit, // baseline PIC10F, PIC12F5xx, PIC16F5xx.
     ELANclones13bit,
-    MidrangeCore14bit, // The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
+    MidrangeCore14bit, // midrange PIC12F6xx, PIC16Fxx. The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
     EnhancedMidrangeCore14bit, // PIC microcontrollers with the Enhanced Mid-Range core are denoted as PIC12F1XXX and PIC16F1XXX
     PIC18HighEndCore16bit,
     PIC24_dsPICcore16bit,
@@ -1105,6 +1117,8 @@ void AddCmp(int which);
 void AddReset(void);
 void AddCounter(int which);
 void AddReadAdc(void);
+void AddRandom(void);
+void AddSeedRandom(void);
 void AddSetPwm(void);
 void AddUart(int which);
 void AddPersist(void);
@@ -1192,6 +1206,7 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);
 void ShowReadAdcDialog(char *name);
+void ShowRandomDialog(char *name);
 void ShowSetPwmDialog(void *e);
 void ShowPersistDialog(char *var);
 void ShowUartDialog(int which, char *name);
@@ -1332,6 +1347,8 @@ char *strDelSpace(char *dest, char *src);
 char *strDelSpace(char *dest);
 char *strncpyn(char *s1, const char *s2, size_t n);
 char *strncatn(char *s1, const char *s2, size_t n);
+char *toupperstr(char *dest);
+char *toupperstr(char *dest, const char *src);
 
 // lang.cpp
 char *_(char *in);
