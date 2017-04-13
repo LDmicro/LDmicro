@@ -817,7 +817,7 @@ int getradix(char *str)
 //-----------------------------------------------------------------------------
 SDWORD hobatoi(char *str)
 {
-    char s[MAX_NAME_LEN];
+    char s[512];
     if(strstr(toupperstr(s, str), "0XFFFFFFFF"))
         return 0xFFFFFFFF;
 
