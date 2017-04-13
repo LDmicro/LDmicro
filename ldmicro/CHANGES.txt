@@ -1,3 +1,13 @@
+== Release 4.1.8
+
+    * Fixed: LOOK-UP TABLE error in Windows 7 64bit.
+
+    * Fixed: LOOK-UP TABLE index out of range message in simulation.
+
+    * Fixed: MPASM Intel HEX file format used for PIC MCU.
+
+    * Spanish translation updated. Thanks Jose Manuel Ruiz Gutierrez.
+
 == Release 4.1.7
 
     * New: The pseudo-random number generator RAND implemented.

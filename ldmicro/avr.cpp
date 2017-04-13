@@ -2169,7 +2169,6 @@ static void InitTable(IntOp *a)
         Comment("TABLE %s", a->name1);
         if(AvrProgWriteP % 2)
             Instruction(OP_NOP);
-        dbpd(AvrProgWriteP % 2)
         addrOfTable = AvrProgWriteP << 1; //see LPM // data stored in flash
 
         SetMemForVariable(a->name1, addrOfTable, a->literal);

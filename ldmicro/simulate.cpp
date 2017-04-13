@@ -1171,13 +1171,19 @@ math:
             case INT_FLASH_READ:{
                 SDWORD *adata;
                 adata = (SDWORD *)GetSimulationVariable(a->name2);
+                if(adata == NULL) {
+                    Error("TABLE %s is not initialized.", a->name2);
+                    StopSimulation();
+                    ToggleSimulationMode(FALSE);
+                    break;
+                }
                 int index = GetSimulationVariable(a->name3);
-                if((index<0)||(a->literal+1<index)) {
-                    if(a->literal3 != index) {
-                        Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2, a->literal+1);
-                        a->literal3 = a->literal; // side effect: побочный эффект !!!
-                        index = a->literal;
-                    }
+                if((index < 0)||(a->literal <= index)) {
+                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2, a->literal-1);
+                    index = a->literal;
+                    StopSimulation();
+                    ToggleSimulationMode(FALSE);
+                    break;
                 }
                 SDWORD d = adata[index];
                 if(GetSimulationVariable(a->name1) != d) {
@@ -1190,11 +1196,9 @@ math:
             case INT_RAM_READ:{
                 int index = GetSimulationVariable(a->name3);
                 if((index<0)||(a->literal<=index)) {
-                    if(a->literal3 != index) {
                         Error("Index=%d out of range for string %s[%d]", index, a->name1, a->literal);
-                        a->literal3 = a->literal; // side effect: побочный эффект !!!
                         index = a->literal;
-                    }
+                        StopSimulation();
                 }
                 //dbps(GetSimulationStr(a->name1))
                 char d = GetSimulationStr(a->name1)[index];
