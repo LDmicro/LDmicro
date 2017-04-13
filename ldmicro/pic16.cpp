@@ -1848,7 +1848,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             WriteIhex(f, 2); // LL->Record Length
             WriteIhex(f, 0); // AA->Address as big endian values HI()
             WriteIhex(f, 0); // AA->Address as big endian values LO()
-            WriteIhex(f, 2); // TT->Record Type -> 02 is Extended Segment Address
+            WriteIhex(f, 4); // TT->Record Type -> 04 is Extended Linear Address Record
             WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) >> 8));   // AA->Address as big endian values HI()
             WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) & 0xff)); // AA->Address as big endian values LO()
             FinishIhex(f);   // CC->Checksum
@@ -4041,7 +4041,7 @@ executed as a NOP instruction. */
 // that triggers all the ladder logic processing. We will always use 16-bit
 // Timer1, with the prescaler configured appropriately.
 //-----------------------------------------------------------------------------
-static void ConfigureTimer1(int cycleTimeMicroseconds)
+static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 {
     Comment("Configure Timer1");
     int prescaler = 1;
@@ -4128,7 +4128,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
     softDivisor = 1;
     int prescaler = 1;
     long long int countsPerCycle;
-    countsPerCycle =(1.0 * Prog.mcuClock / 4.0) * cycleTimeMicroseconds / 1000000.0;
+    countsPerCycle = long long int((1.0 * Prog.mcuClock / 4.0) * cycleTimeMicroseconds / 1000000.0);
 
     while((prescaler <= 256) && (softDivisor < 0x10000)) {
         tmr0 = (int)(countsPerCycle / (prescaler*softDivisor));
@@ -5045,7 +5045,7 @@ void CompilePic16(char *outFile)
 
     Comment("Now zero out the RAM");
     DWORD progStartBank = 0;
-    int i;
+    DWORD i;
 //  for(i = 0; i < MAX_RAM_SECTIONS; i++) {
     for(i = 0; i <= RamSection; i++) {
       if(Prog.mcu->ram[i].len) {

@@ -815,7 +815,6 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
     static char s1[BUF_LEN];
     static char s2[BUF_LEN];
     static char s3[BUF_LEN];
-    char *s;
 
     switch(which) {
         case ELEM_COMMENT: {

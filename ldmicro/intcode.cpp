@@ -88,7 +88,7 @@ static DWORD GenSymCountFormattedString;
 static DWORD GenSymCountStepper;
 
 DWORD EepromAddrFree;
-int   RomSection;
+DWORD RomSection;
 
 //-----------------------------------------------------------------------------
 static void CheckConstantInRange(SDWORD v)
@@ -1327,8 +1327,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
             break;
         case ELEM_TCY: {
-            Comment(3, "ELEM_TCY");
             SDWORD period = TimerPeriod(l)-1;
+            Comment(3, "ELEM_TCY %s %d ms %d", l->d.timer.name, l->d.timer.delay, period);
 
             char store[MAX_NAME_LEN];
             GenSymOneShot(store, "TCY", l->d.timer.name);
@@ -1851,7 +1851,6 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         {
-        int deg, len;
         case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  goto xseg;
         case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  goto xseg;
         case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); goto xseg;

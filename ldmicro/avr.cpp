@@ -323,7 +323,7 @@ static DWORD REG_EECR      = 0x3c; //
 #define          EEMWE  BIT2
 #define          EERIE  BIT3
 
-// I2C support for atmega8,16,32,64,128
+// I2C support for ATmega8,16,32,64,128
 #define TWCR    0x56
 #define TWDR    0x23
 #define TWAR    0x22
@@ -2011,7 +2011,7 @@ BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,
         //dbp("prescaler=%d divider=%d mul=%d T=%d us", *prescaler, *divider ,*prescaler * *divider, cycleTimeMicrosecondsFact);
 
         if(*divider <= max_divider) {
-            int err = abs(1.0*(cycleTimeMicrosecondsFact - cycleTimeMicroseconds));
+            int err = int(abs(1.0*(cycleTimeMicrosecondsFact - cycleTimeMicroseconds)));
             if((err <= bestError) && (bestDivider < *divider)) {
                 bestError = err;
                 bestPrescaler = *prescaler;
@@ -2093,7 +2093,7 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         WriteMemory(REG_TCCR0, cs);   // set prescaler
         SetBit(REG_TIFR0, TOV0);       // Clear TOV0/ clear pending interrupts
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!
-        //no interupt for timer0 need..
+        //no interupt for timer need..
         //SetBit(REG_TIMSK, TOIE0);     // Enable Timer/Counter0 Overflow Interrupt
         //Instruction(OP_SEI);
         //
@@ -3366,7 +3366,7 @@ static void CompileFromIntermediate(void)
                     freqSI = SIprefix(freq, SI);
                     sprintf(freqStr, "%s%.3f %sHz    ", freqStr, freqSI, SI);
 
-                    int err = abs(freq - target);
+                    int err = int(abs(freq - target));
                     if(err < bestError) {
                         bestError = err;
                         bestPrescale = prescale;

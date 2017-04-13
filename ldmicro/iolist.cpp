@@ -190,8 +190,6 @@ static void ExtractNamesFromCircuit(int which, void *any)
 {
     ElemLeaf *l = (ElemLeaf *)any;
 
-    char str[MAX_NAME_LEN];
-
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
@@ -585,9 +583,10 @@ static int CompareIo(const void *av, const void *bv)
     if(a->type != b->type) {
         return a->type - b->type;
     }
-
+/*
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
+*/
     return strcmp(a->name, b->name);
 }
 

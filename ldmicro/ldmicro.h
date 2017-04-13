@@ -730,12 +730,12 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_GENERAL         1
 #define IO_TYPE_PERSIST         2
 #define IO_TYPE_COUNTER         5
-#define IO_TYPE_UART_TX         6
-#define IO_TYPE_UART_RX         7
-#define IO_TYPE_INT_INPUT       8
-#define IO_TYPE_DIG_INPUT       9
-#define IO_TYPE_DIG_OUTPUT      10
-#define IO_TYPE_READ_ADC        11
+#define IO_TYPE_INT_INPUT       6
+#define IO_TYPE_DIG_INPUT       7
+#define IO_TYPE_DIG_OUTPUT      8
+#define IO_TYPE_READ_ADC        9
+#define IO_TYPE_UART_TX         10
+#define IO_TYPE_UART_RX         11
 #define IO_TYPE_PWM_OUTPUT      12
 #define IO_TYPE_INTERNAL_RELAY  13
 #define IO_TYPE_TCY             14
@@ -858,7 +858,11 @@ typedef enum CoreTag {
     PIC18HighEndCore16bit,
     PIC24_dsPICcore16bit,
 
+    ESPcores,
     ESP8266Core,
+
+    PCcores,
+    PC_LPT_COM,
 } Core;
 
 //-----------------------------------------------
@@ -904,18 +908,19 @@ typedef struct McuExtIntPinInfoTag {
 #define ISA_PIC16           0x01
 #define ISA_AVR             0x02
 #define ISA_AVR1            ISA_AVR
-#define ISA_HARDWARE        ISA_AVR
-#define ISA_ANSIC           0x03
-#define ISA_INTERPRETED     0x04
-#define ISA_NETZER          0x05
-#define ISA_PASCAL          0x06
-#define ISA_ARDUINO         0x07
-#define ISA_CAVR            0x08
-#define ISA_XINTERPRETED    0x09    // Extended interpeter
-#define ISA_ESP8266         0x0A
+#define ISA_PC_LPT_COM      0x03
+#define ISA_HARDWARE        ISA_PC_LPT_COM
+#define ISA_ANSIC           0x04
+#define ISA_INTERPRETED     0x05
+#define ISA_NETZER          0x06
+#define ISA_PASCAL          0x07
+#define ISA_ARDUINO         0x08
+#define ISA_CAVR            0x09
+#define ISA_XINTERPRETED    0x0A    // Extended interpeter
+#define ISA_ESP8266         0x0B
 
 #define MAX_IO_PORTS        ('P'-'A'+1)
-#define MAX_RAM_SECTIONS    5
+#define MAX_RAM_SECTIONS    8
 #define MAX_ROM_SECTIONS    1
 
 #define IS_MCU_REG(i) ((Prog.mcu) && (Prog.mcu->inputRegs[i]) && (Prog.mcu->outputRegs[i]) && (Prog.mcu->dirRegs[i]))
@@ -984,6 +989,7 @@ extern HDC Hdc;
 extern PlcProgram Prog;
 extern char CurrentSaveFile[MAX_PATH];
 extern char CurrentCompileFile[MAX_PATH];
+extern char CurrentCompilePath[MAX_PATH];
 extern McuIoInfo SupportedMcus[]; // NUM_SUPPORTED_MCUS
 // memory debugging, because I often get careless; ok() will check that the
 // heap used for all the program storage is not yet corrupt, and oops() if
@@ -1585,8 +1591,8 @@ int UsedROM();
 int McuPWM();
 int McuADC();
 int McuUART();
-extern int RamSection;
-extern int RomSection;
+extern DWORD RamSection;
+extern DWORD RomSection;
 extern DWORD EepromAddrFree;
 extern int VariableCount;
 void PrintVariables(FILE *f);

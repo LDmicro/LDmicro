@@ -277,7 +277,6 @@ void AddTimer(int which)
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.timer.name, "Tnew");
     t->d.timer.delay = 100000;
-
     AddLeaf(which, t);
 }
 
@@ -1445,9 +1444,6 @@ int AdcFunctionUsed(void)
 int QuadEncodFunctionUsed(void)
 {
     int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
-        //n+=CountWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_QUAD_ENCOD);
     return n;
 }
 //-----------------------------------------------------------------------------

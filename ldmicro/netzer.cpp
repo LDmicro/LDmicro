@@ -1222,7 +1222,7 @@ void CompileNetzer(char *outFile)
         meta.TimeStamp = (DWORD)(rawtime) - TIME_EPOCH;
     }
 
-    meta.CycleTime = Prog.cycleTime / 1000;
+    meta.CycleTime = DWORD(Prog.cycleTime / 1000);
     meta.ProjectnameLength = strlen(projectname);
     meta.Flags.FormatVersion = CURRENT_FORMAT_VERSION;
     meta.Flags.IsCompiled = FALSE;

@@ -106,7 +106,7 @@ static HWND UartSimulationTextControl;
 static LONG_PTR PrevTextProc;
 
 static int QueuedUartCharacter = -1;
-static int SimulateUartTxCountdown = 0;
+static int SimulateUartTxCountdown = 0; // 0 if UART ready to send; 1 if UART busy
 
 static void AppendToUartSimulationTextControl(BYTE b);
 
@@ -330,18 +330,18 @@ SWORD GetAdcShadow(char *name)
 // a = 69069 ( 0x10DCD ) (1 00001101 11001101b)
 // c = 1
 // m = 2 ** 32
-static long long seed = 1;
-long long MthRandom()
+static unsigned long long seed = 1;
+SDWORD MthRandom()
 {
 //  seed = (seed * 69069 + 1) % 4294967296;
-    seed = (seed * 69069 + 1) & 0xFFffFFff;
-    return seed;
+    seed = (seed * 69069 + 1) & 0xFFFFffff;
+    return SDWORD(seed);
 }
 
 SDWORD GetRandom(char *name)
 {
     int sov = SizeOfVar(name);
-    long long seed = MthRandom();
+    SDWORD seed = MthRandom();
     char seedName[MAX_NAME_LEN];
     sprintf(seedName, "$seed_%s", name);
     SetSimulationVariable(seedName, seed);
@@ -351,6 +351,10 @@ SDWORD GetRandom(char *name)
        return SWORD(seed >> (8 * (4 - sov)));
     else if(sov >= 3)
        return SDWORD(seed >> (8 * (4 - sov)));
+    else {
+       oops();
+       return 0;
+    }
 }
 
 //-----------------------------------------------------------------------------
