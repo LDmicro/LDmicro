@@ -635,6 +635,15 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DW
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
+static void _Comment1(char *str)
+{
+  if(asm_comment_level) {
+    if(strlen(str)>=MAX_COMMENT_LEN)
+      str[MAX_COMMENT_LEN-1]='\0';
+    Instruction(OP_COMMENT_INT, 0, 0, str);
+  }
+}
+
 static void Comment(char *str, ...)
 {
   if(asm_comment_level) {
@@ -3983,6 +3992,17 @@ static void CompileFromIntermediate(BOOL topLevel)
             }
             #endif
 
+        case INT_DELAY: {
+            long long us = a->literal;
+            us = us * Prog.mcuClock / 4000000;
+            if(us <= 0 ) us = 1;
+            int i;
+            for(i = 0; i < (us / 2); i++)
+              Instruction(OP_GOTO, PicProgWriteP+1);
+            if(us % 2)
+              Instruction(OP_NOP_);
+            break;
+        }
         case INT_CLRWDT:
             Instruction(OP_CLRWDT);
             break;
@@ -5071,7 +5091,6 @@ void CompilePic16(char *outFile)
                     Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
             }
         }
-
         if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0100)) {
             if(Prog.mcu->ram[i].start & 0x0100)
                 Instruction(OP_BSF, REG_STATUS, STATUS_IRP);
@@ -5150,11 +5169,13 @@ void CompilePic16(char *outFile)
         }
     }
 
-    // Configure PLC Timer near the progStart
-    if(Prog.cycleTimer==0)
-        ConfigureTimer0(Prog.cycleTime);
-    else
-        ConfigureTimer1(Prog.cycleTime);
+    if(Prog.cycleTime != 0) {
+        // Configure PLC Timer near the progStart
+        if(Prog.cycleTimer==0)
+            ConfigureTimer0(Prog.cycleTime);
+        else
+            ConfigureTimer1(Prog.cycleTime);
+    }
     if(McuAs("Microchip PIC16F877 ")) {
         // This is a nasty special case; one of the extra bits in TRISE
         // enables the PSP, and must be kept clear (set here as will be
@@ -5291,62 +5312,64 @@ void CompilePic16(char *outFile)
 //  BankSelect(0xFF, 0);
     Comment("Begin Of PLC Cycle");
     DWORD top = PicProgWriteP;
-    if(Prog.cycleTimer == 0) {
-        if(Prog.mcu->core == BaselineCore12bit) {
-            /*
-            // v1
-            Instruction(OP_MOVLW, tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-//          Instruction(OP_MOVLW, tmr0 - 1); // tested in Proteus - 1) 1kHz}
-            Instruction(OP_SUBWF, REG_TMR0, DEST_W);
-            Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
-            Instruction(OP_GOTO,  top);
-            Instruction(OP_CLRF,  REG_TMR0);
-            */
-            // v2
-            Instruction(OP_MOVF,  REG_TMR0, DEST_W);
-            Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
-            Instruction(OP_GOTO,  top);
-//          Instruction(OP_MOVLW, 256 - tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-//          Instruction(OP_MOVLW, 256 - tmr0 - 1); // tested in Proteus - 1) 992Hz}
-            Instruction(OP_MOVLW, 256 - tmr0 + 1); // tested in Proteus - 1) 992Hz 0=996}
-            Instruction(OP_MOVWF, REG_TMR0);
-        } else {
-            Instruction(OP_MOVLW,  256 - tmr0 + 1); // tested in Proteus {+1} {1ms=1kHz} {0.250ms=4kHz}
-            IfBitClear(REG_INTCON, T0IF);
-            Instruction(OP_GOTO,   PicProgWriteP - 1, 0);
-            Instruction(OP_MOVWF,  REG_TMR0);
-            Instruction(OP_BCF,    REG_INTCON ,T0IF); // must be cleared in software
-        }
+    if(Prog.cycleTime != 0) {
+      if(Prog.cycleTimer == 0) {
+          if(Prog.mcu->core == BaselineCore12bit) {
+              /*
+              // v1
+              Instruction(OP_MOVLW, tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
+  //          Instruction(OP_MOVLW, tmr0 - 1); // tested in Proteus - 1) 1kHz}
+              Instruction(OP_SUBWF, REG_TMR0, DEST_W);
+              Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
+              Instruction(OP_GOTO,  top);
+              Instruction(OP_CLRF,  REG_TMR0);
+              */
+              // v2
+              Instruction(OP_MOVF,  REG_TMR0, DEST_W);
+              Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
+              Instruction(OP_GOTO,  top);
+  //          Instruction(OP_MOVLW, 256 - tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
+  //          Instruction(OP_MOVLW, 256 - tmr0 - 1); // tested in Proteus - 1) 992Hz}
+              Instruction(OP_MOVLW, 256 - tmr0 + 1); // tested in Proteus - 1) 992Hz 0=996}
+              Instruction(OP_MOVWF, REG_TMR0);
+          } else {
+              Instruction(OP_MOVLW,  256 - tmr0 + 1); // tested in Proteus {+1} {1ms=1kHz} {0.250ms=4kHz}
+              IfBitClear(REG_INTCON, T0IF);
+              Instruction(OP_GOTO,   PicProgWriteP - 1, 0);
+              Instruction(OP_MOVWF,  REG_TMR0);
+              Instruction(OP_BCF,    REG_INTCON ,T0IF); // must be cleared in software
+          }
 
-        if(softDivisor > 1) {
-            DWORD yesZero;
-            if(softDivisor > 0xff) {
-                yesZero = AllocFwdAddr();
-            }
-            Instruction(OP_DECFSZ, addrDivisor, DEST_F); // Skip if zero
-            Instruction(OP_GOTO, top);
+          if(softDivisor > 1) {
+              DWORD yesZero;
+              if(softDivisor > 0xff) {
+                  yesZero = AllocFwdAddr();
+              }
+              Instruction(OP_DECFSZ, addrDivisor, DEST_F); // Skip if zero
+              Instruction(OP_GOTO, top);
 
-            if(softDivisor > 0xff) {
-                Instruction(OP_MOVF, addrDivisor+1, DEST_F);
-                Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
-                Instruction(OP_GOTO, yesZero);
-                Instruction(OP_DECF, addrDivisor+1, DEST_F);
-                Instruction(OP_GOTO, top);
-                FwdAddrIsNow(yesZero);
+              if(softDivisor > 0xff) {
+                  Instruction(OP_MOVF, addrDivisor+1, DEST_F);
+                  Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
+                  Instruction(OP_GOTO, yesZero);
+                  Instruction(OP_DECF, addrDivisor+1, DEST_F);
+                  Instruction(OP_GOTO, top);
+                  FwdAddrIsNow(yesZero);
 
-                WriteRegister(addrDivisor+1, BYTE(softDivisor >> 8));
-            }
+                  WriteRegister(addrDivisor+1, BYTE(softDivisor >> 8));
+              }
 
-            WriteRegister(addrDivisor,   BYTE(softDivisor & 0xff));
-        }
-    } else {
-        if(Prog.mcu->core == BaselineCore12bit) {
-            Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
-            fCompileError(f, fAsm);
-        }
-        IfBitClear(REG_PIR1, CCP1IF);
-        Instruction(OP_GOTO, PicProgWriteP - 1, 0);
-        Instruction(OP_BCF, REG_PIR1, CCP1IF);
+              WriteRegister(addrDivisor,   BYTE(softDivisor & 0xff));
+          }
+      } else {
+          if(Prog.mcu->core == BaselineCore12bit) {
+              Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
+              fCompileError(f, fAsm);
+          }
+          IfBitClear(REG_PIR1, CCP1IF);
+          Instruction(OP_GOTO, PicProgWriteP - 1, 0);
+          Instruction(OP_BCF, REG_PIR1, CCP1IF);
+      }
     }
 
     DWORD addrDuty;

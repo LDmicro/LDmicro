@@ -115,6 +115,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_TOF          0x24
 #define MNU_INSERT_RTO          0x25
 #define MNU_INSERT_RES          0x26
+#define MNU_INSERT_TIME2COUNT   0x2601
 #define MNU_INSERT_OSR          0x27
 #define MNU_INSERT_OSF          0x28
 #define MNU_INSERT_CTU          0x29
@@ -168,6 +169,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_CLRWDT       0x3d02
 #define MNU_INSERT_LOCK         0x3d03
 #define MNU_INSERT_GOTO         0x3d04
+#define MNU_INSERT_DELAY        0x3d05
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
 #define MNU_INSERT_FMTD_STRING  0x40
@@ -277,6 +279,7 @@ typedef signed long SDWORD;
 
 #define ELEM_CONTACTS           0x10
 #define ELEM_COIL               0x11
+#define ELEM_TIME2COUNT         0x1202
 #define ELEM_TCY                0x1201
 #define ELEM_TON                0x12
 #define ELEM_TOF                0x13
@@ -344,6 +347,7 @@ typedef signed long SDWORD;
 #define ELEM_CLRWDT             0x2c02
 #define ELEM_LOCK               0x2c03
 #define ELEM_GOTO               0x2c04
+#define ELEM_DELAY              0x2c05
 #define ELEM_SHIFT_REGISTER     0x2d
 #define ELEM_LOOK_UP_TABLE      0x2e
 #define ELEM_FORMATTED_STRING   0x2f
@@ -386,6 +390,7 @@ typedef signed long SDWORD;
         case ELEM_COMMENT: \
         case ELEM_COIL: \
         case ELEM_CONTACTS: \
+        case ELEM_TIME2COUNT: \
         case ELEM_TCY: \
         case ELEM_TON: \
         case ELEM_TOF: \
@@ -465,6 +470,7 @@ typedef signed long SDWORD;
         case ELEM_CLRWDT: \
         case ELEM_LOCK: \
         case ELEM_GOTO: \
+        case ELEM_DELAY: \
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
@@ -1133,6 +1139,7 @@ void AddShiftRegister(void);
 void AddMasterRelay(void);
 void AddSleep(void);
 void AddClrWdt(void);
+void AddDelay(void);
 void AddLock(void);
 void AddGoto(void);
 void AddLookUpTable(void);
@@ -1208,6 +1215,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigge
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name);
 void ShowSleepDialog(int which, SDWORD *delay, char *name);
+void ShowDelayDialog(int which, SDWORD *delay);
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);

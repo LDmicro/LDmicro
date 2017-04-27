@@ -582,6 +582,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.reset.name, VAR_FLAG_RES);
             break;
 
+        case ELEM_TIME2COUNT:
         case ELEM_MOVE:
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
@@ -674,6 +675,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_PERSIST:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
+        case ELEM_DELAY:
         case ELEM_SLEEP:
         case ELEM_CLRWDT:
         case ELEM_LOCK:
@@ -1200,9 +1202,9 @@ math:
             case INT_RAM_READ:{
                 int index = GetSimulationVariable(a->name3);
                 if((index<0)||(a->literal<=index)) {
-                        Error("Index=%d out of range for string %s[%d]", index, a->name1, a->literal);
-                        index = a->literal;
-                        StopSimulation();
+                    Error("Index=%d out of range for string %s[%d]", index, a->name1, a->literal);
+                    index = a->literal;
+                    StopSimulation();
                 }
                 //dbps(GetSimulationStr(a->name1))
                 char d = GetSimulationStr(a->name1)[index];
@@ -1214,6 +1216,7 @@ math:
                 break;
             #endif
 
+            case INT_DELAY:
             case INT_SLEEP:
             case INT_CLRWDT:
             case INT_LOCK:
@@ -1393,23 +1396,23 @@ void DescribeForIoList(char *name, int type, char *out)
             int sov = SizeOfVar(name);
             if(dtms < 1000) {
               if(sov == 1)
-                sprintf(out, "0x%02x = %d = %.6g ms", v & 0xff, v, dtms);
+                sprintf(out, "0x%02X = %d = %.6g ms", v & 0xff, v, dtms);
               else if(sov == 2)
-                sprintf(out, "0x%04x = %d = %.6g ms", v & 0xffff, v, dtms);
+                sprintf(out, "0x%04X = %d = %.6g ms", v & 0xffff, v, dtms);
               else if(sov == 3)
-                sprintf(out, "0x%06x = %d = %.6g ms", v & 0xFFffff, v, dtms);
+                sprintf(out, "0x%06X = %d = %.6g ms", v & 0xFFffff, v, dtms);
               else if(sov == 4)
-                sprintf(out, "0x%08x = %d = %.6g ms", v, v, dtms);
+                sprintf(out, "0x%08X = %d = %.6g ms", v, v, dtms);
               else oops();
             } else {
               if(sov == 1)
-                sprintf(out, "0x%02x = %d = %.6g s", v & 0xff, v, dtms / 1000);
+                sprintf(out, "0x%02X = %d = %.6g s", v & 0xff, v, dtms / 1000);
               else if(sov == 2)
-                sprintf(out, "0x%04x = %d = %.6g s", v & 0xffff, v, dtms / 1000);
+                sprintf(out, "0x%04X = %d = %.6g s", v & 0xffff, v, dtms / 1000);
               else if(sov == 3)
-                sprintf(out, "0x%06x = %d = %.6g s", v & 0xFFffff, v, dtms / 1000);
+                sprintf(out, "0x%06X = %d = %.6g s", v & 0xFFffff, v, dtms / 1000);
               else if(sov == 4)
-                sprintf(out, "0x%08x = %d = %.6g s", v, v, dtms / 1000);
+                sprintf(out, "0x%08X = %d = %.6g s", v, v, dtms / 1000);
               else oops();
             }
             break;
@@ -1418,15 +1421,15 @@ void DescribeForIoList(char *name, int type, char *out)
             SDWORD v = GetSimulationVariable(name, TRUE);
             int sov = SizeOfVar(name);
             if(sov == 1)
-              sprintf(out, "0x%02x = %d = '%c'", v & 0xff, (signed char)v, v & 0xff);
+              sprintf(out, "0x%02X = %d = '%c'", v & 0xff, (signed char)v, v & 0xff);
             else if(sov == 2)
-              sprintf(out, "0x%04x = %d", v & 0xffff, (SWORD)v);
+              sprintf(out, "0x%04X = %d", v & 0xffff, (SWORD)v);
             else if(sov == 3)
-              sprintf(out, "0x%06x = %d", v & 0xFFffff, SDWORD3(v));
+              sprintf(out, "0x%06X = %d", v & 0xFFffff, SDWORD3(v));
             else if(sov == 4)
-              sprintf(out, "0x%08x = %d", v, v);
+              sprintf(out, "0x%08X = %d", v, v);
             else {
-              sprintf(out, "0x%x = %d", v, v);
+              sprintf(out, "0x%X = %d", v, v);
             }
             break;
         }

@@ -157,6 +157,7 @@ BOOL StaySameElem(int Which)
         Which == ELEM_SET_PWM ||
         Which == ELEM_MASTER_RELAY ||
         Which == ELEM_SLEEP ||
+        Which == ELEM_DELAY ||
         Which == ELEM_CLRWDT ||
         Which == ELEM_LOCK ||
         Which == ELEM_GOTO ||
@@ -644,12 +645,17 @@ void EditSelectedElement(void)
                 Selected->d.coil.name);
             break;
 
+        case ELEM_TIME2COUNT:
         case ELEM_TCY:
         case ELEM_TON:
         case ELEM_TOF:
         case ELEM_RTO:
             ShowTimerDialog(SelectedWhich, &(Selected->d.timer.delay),
                 Selected->d.timer.name);
+            break;
+
+        case ELEM_DELAY:
+            ShowDelayDialog(SelectedWhich, &(Selected->d.timer.delay));
             break;
 
         case ELEM_SLEEP:

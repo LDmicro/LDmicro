@@ -226,6 +226,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_BIN2BCD, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_BCD2BIN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SWAP, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_TIME2COUNT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TCY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TON, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TOF, t);
@@ -252,6 +253,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_LEQ, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SHORT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OPEN, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_DELAY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SENDn, t);
@@ -388,6 +390,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Master Control Relay"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SLEEP,
         _("Insert SLEEP"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_DELAY,
+        _("Insert DELAY"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CLRWDT,
         _("Insert CLRWDT"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LOCK,
@@ -399,7 +403,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_RELAY,
         _("Insert Contacts: Internal Relay\tShift+C"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_OUTPUT,
-        _("Insert Contacts: Output pin\tShift+L"));
+        _("Insert Contacts: Output Pin\tShift+L"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
         _("Insert Coi&l: Output Pin\tL"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL_RELAY,
@@ -439,6 +443,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert R&TO (Retentive Delayed Turn On)\tT"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TCY,
         _("Insert TCY (Cyclic On/Off)"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT,
+        _("Insert TIME to COUNTER converter"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
@@ -545,7 +551,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STRING,
         _("Insert Formatted String Over &UART"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
-        _("Insert &UART Send"));
+        _("Insert &UART SEND"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
         _("Insert &UART Receive"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SENDn,

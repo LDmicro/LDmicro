@@ -54,7 +54,7 @@ static int         MouseY;
 // For the open/save dialog boxes
 #define LDMICRO_PATTERN "LDmicro Ladder Logic Programs (*.ld)\0*.ld\0" \
                      "All files\0*\0\0"
-char CurrentSaveFile[MAX_PATH];
+char CurrentSaveFile[MAX_PATH]; // .ld
 BOOL ProgramChangedNotSaved = FALSE;
 
 ULONGLONG PrevWriteTime = 0;
@@ -68,7 +68,8 @@ ULONGLONG LastWriteTime = 0;
 #define ARDUINO_C_PATTERN "ARDUINO C Source Files (*.cpp)\0*.cpp\0All Files\0*\0\0"
 #define XINT_PATTERN \
     "Extended Byte Code Files (*.xint)\0*.xint\0All Files\0*\0\0"
-char CurrentCompileFile[MAX_PATH];
+char CurrentCompileFile[MAX_PATH]; //.hex, .asm, ...
+char CurrentCompilePath[MAX_PATH];
 
 #define TXT_PATTERN  "Text Files (*.txt)\0*.txt\0All files\0*\0\0"
 
@@ -160,7 +161,8 @@ char *GetFileName(char *dest, char *src) // without .ext
 char *SetExt(char *dest, const char *src, const char *ext)
 {
     char *c;
-    if(strlen(src))
+    if(dest != src)
+      if(strlen(src))
         strcpy(dest, src);
     if(strlen(dest)) {
         c = strrchr(dest,'.');
@@ -229,9 +231,9 @@ bool ExistFile(const char *name)
 {
     if(FILE *file = fopen(name, "r")) {
         fclose(file);
-        return true;
+        return TRUE;
     }
-    return false;
+    return FALSE;
 }
 //-----------------------------------------------------------------------------
 long int fsize(FILE *fp)
@@ -478,6 +480,9 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         if(!GetSaveFileName(&ofn))
             return;
 
+        strcpy(CurrentCompilePath,CurrentCompileFile);
+        ExtractFileDir(CurrentCompilePath);
+
         // hex output filename is stored in the .ld file
         ProgramChangedNotSaved = TRUE;
         compileAs = FALSE;
@@ -512,7 +517,6 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
-
     if (compile_MNU == MNU_COMPILE_ANSIC) {
         CompileAnsiC(CurrentCompileFile);
         postCompile(ISA_ANSIC);
@@ -776,6 +780,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddCoil(code));
             break;
 
+        case MNU_INSERT_TIME2COUNT:
+            CHANGING_PROGRAM(AddTimer(ELEM_TIME2COUNT));
+            break;
+
         case MNU_INSERT_TCY:
             CHANGING_PROGRAM(AddTimer(ELEM_TCY));
             break;
@@ -826,6 +834,10 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_SLEEP:
             CHANGING_PROGRAM(AddSleep());
+            break;
+
+        case MNU_INSERT_DELAY:
+            CHANGING_PROGRAM(AddDelay());
             break;
 
         case MNU_INSERT_CLRWDT:
@@ -1754,7 +1766,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
             }
 
-
             switch(wParam) {
                 case VK_F5:
                     CompileProgram(FALSE, MNU_COMPILE);
@@ -2491,7 +2502,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // We are running interactively, or we would already have exited. We
     // can therefore show the window now, and otherwise set up the GUI.
-
     ShowWindow(MainWindow, SW_SHOW);
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
 
@@ -2516,7 +2526,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         UndoFlush();
     }
-
     GenerateIoListDontLoseSelection();
     RefreshScrollbars();
     UpdateMainWindowTitleBar();

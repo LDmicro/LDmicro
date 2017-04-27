@@ -323,6 +323,14 @@ void AddClrWdt(void)
     AddLeaf(ELEM_CLRWDT, t);
 }
 
+void AddDelay(void)
+{
+    if(!CanInsertOther) return;
+    ElemLeaf *t = AllocLeaf();
+    t->d.timer.delay = 1; // 1 us
+    AddLeaf(ELEM_DELAY, t);
+}
+
 void AddGoto(void)
 {
     if(!CanInsertEnd) return;

@@ -188,7 +188,7 @@ static DWORD FwdAddrCount;
 #define FWD_EIND(x) ((x) | 0x10000000)
 
 // Address to jump to when we finish one PLC cycle
-static DWORD BeginningOfCycleAddr;
+static DWORD BeginOfPLCCycle;
 
 // Address of the multiply subroutine, and whether we will have to include it
 static DWORD MultiplyAddress;
@@ -2356,36 +2356,39 @@ static void WriteRuntime(void)
         }
     }
 
-    Comment("ConfigureTimerForPlcCycle");
-    ConfigureTimerForPlcCycle(Prog.cycleTime);
-
+    if(Prog.cycleTime != 0) {
+      Comment("ConfigureTimerForPlcCycle");
+      ConfigureTimerForPlcCycle(Prog.cycleTime);
+    }
   //Comment("and now the generated PLC code will follow");
     Comment("Begin Of PLC Cycle");
-    BeginningOfCycleAddr = AvrProgWriteP;
+    BeginOfPLCCycle = AvrProgWriteP;
 
-    if(Prog.cycleTimer == 0) {
-        //IfBitClear(REG_TIFR0, TOV0);
-        LoadZAddr(REG_TIFR0);             //IfBitClear(REG_TIFR0, TOV0);
-        DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
-        Instruction(OP_LD_Z, r25);       //IfBitClear(REG_TIFR0, TOV0);
-        Instruction(OP_SBRS, r25, TOV0); //IfBitClear(REG_TIFR0, TOV0);
-        Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer0/Counter
+    if(Prog.cycleTime != 0) {
+      if(Prog.cycleTimer == 0) {
+          //IfBitClear(REG_TIFR0, TOV0);
+          LoadZAddr(REG_TIFR0);             //IfBitClear(REG_TIFR0, TOV0);
+          DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
+          Instruction(OP_LD_Z, r25);       //IfBitClear(REG_TIFR0, TOV0);
+          Instruction(OP_SBRS, r25, TOV0); //IfBitClear(REG_TIFR0, TOV0);
+          Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer0/Counter
 
-        SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
-        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+          SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
+          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
 
-        Instruction(OP_LDI, r25, tcnt0PlcCycle /*+1/*?*/); // reload Counter0
-        WriteRegToIO(REG_TCNT0, r25);
-    } else { // Timer1
-        //IfBitClear(REG_TIFR1, OCF1A);
-        LoadZAddr(REG_TIFR1);             //IfBitClear(REG_TIFR1, OCF1A);
-        DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
-        Instruction(OP_LD_Z, r25);        //IfBitClear(REG_TIFR1, OCF1A);
-        Instruction(OP_SBRS, r25, OCF1A); //IfBitClear(REG_TIFR1, OCF1A);
-        Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer1/Counter
+          Instruction(OP_LDI, r25, tcnt0PlcCycle /*+1/*?*/); // reload Counter0
+          WriteRegToIO(REG_TCNT0, r25);
+      } else { // Timer1
+          //IfBitClear(REG_TIFR1, OCF1A);
+          LoadZAddr(REG_TIFR1);             //IfBitClear(REG_TIFR1, OCF1A);
+          DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
+          Instruction(OP_LD_Z, r25);        //IfBitClear(REG_TIFR1, OCF1A);
+          Instruction(OP_SBRS, r25, OCF1A); //IfBitClear(REG_TIFR1, OCF1A);
+          Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer1/Counter
 
-        SetBit(REG_TIFR1, OCF1A);
-        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+          SetBit(REG_TIFR1, OCF1A);
+          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+      }
     }
 
     if(Prog.cycleDuty) {
@@ -3934,6 +3937,17 @@ static void CompileFromIntermediate(void)
                 CopyRegsToVar(a->name1, r10 + 4 - sov1, sov1); // highest bytes of seed
                 break;
             }
+            case INT_DELAY: {
+                long long us = a->literal;
+                us = us * Prog.mcuClock / 1000000;
+                if(us <= 0 ) us = 1;
+                int i;
+                for(i = 0; i < (us / 2); i++)
+                  Instruction(OP_RJMP, AvrProgWriteP+1);
+                if(us % 2)
+                  Instruction(OP_NOP);
+                break;
+            }
             case INT_CLRWDT:
                 Instruction(OP_WDR);
                 break;
@@ -4663,6 +4677,11 @@ void CompileAvr(char *outFile)
         REG_ADCH    = 0x79;
         REG_ADCL    = 0x78;
 
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
+
         REG_UDR     = 0xCE;
         REG_UBRRH   = 0xCD;
         REG_UBRRL   = 0xCC;
@@ -5178,11 +5197,11 @@ void CompileAvr(char *outFile)
     rungNow = -30;
     Comment("GOTO next PLC cycle");
     if(Prog.mcu->core >= ClassicCore8K) {
-        Instruction(OP_LDI, ZL, (BeginningOfCycleAddr & 0xff));
-        Instruction(OP_LDI, ZH, (BeginningOfCycleAddr >> 8) & 0xff);
-        Instruction(OP_IJMP, BeginningOfCycleAddr, 0);
+        Instruction(OP_LDI, ZL, (BeginOfPLCCycle & 0xff));
+        Instruction(OP_LDI, ZH, (BeginOfPLCCycle >> 8) & 0xff);
+        Instruction(OP_IJMP, BeginOfPLCCycle, 0);
     } else {
-        Instruction(OP_RJMP, BeginningOfCycleAddr, 0);
+        Instruction(OP_RJMP, BeginOfPLCCycle, 0);
     }
 
 

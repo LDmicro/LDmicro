@@ -242,6 +242,7 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
 {
     char *s;
     switch(which) {
+        case ELEM_TIME2COUNT: s = _("TIME to COUNTER converter"); break;
         case ELEM_TCY: s = _("Cyclic On/Off"); break;
         case ELEM_TON: s = _("Turn-On Delay"); break;
         case ELEM_TOF: s = _("Turn-Off Delay"); break;
@@ -336,6 +337,27 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
             *delay = (SDWORD)(1000000*del + 0.5);
         } else {
             *delay = (SDWORD)(1000000*del + 0.5);
+        }
+    }
+}
+
+void ShowDelayDialog(int which, SDWORD *delay)
+{
+    char *s;
+    s = _("Delay, us");
+
+    char *labels[] = { _("Delay (us):") };
+
+    char delBuf[16];
+    sprintf(delBuf, "%d", *delay);
+    char *dests[] = { delBuf };
+
+    if(ShowSimpleDialog(s, 1, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
+        SDWORD del = hobatoi(delBuf);
+        if(del <= 0) {
+            Error(_("Delay cannot be zero or negative."));
+        } else {
+            *delay = del;
         }
     }
 }

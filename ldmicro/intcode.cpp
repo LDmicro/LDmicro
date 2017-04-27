@@ -359,6 +359,10 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "SLEEP;");
                 break;
 
+            case INT_DELAY:
+                fprintf(f, "DELAY %d us;", IntCode[i].literal);
+                break;
+
             case INT_CLRWDT:
                 fprintf(f, "CLRWDT;");
                 break;
@@ -654,6 +658,17 @@ static void SimState(BOOL *b, char *name)
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
+static void _Comment1(int l, char *f, char *str)
+{
+ dbps(str)
+  if(int_comment_level) {
+    if(strlen(str)>=MAX_NAME_LEN)
+      str[MAX_NAME_LEN-1]='\0';
+    _Op(l, f, NULL, INT_COMMENT, str);
+  }
+}
+#define Comment1(str) _Comment1(__LINE__, __FILE__, str)
+
 static void _Comment(int l, char *f, char *str, ...)
 {
   if(int_comment_level) {
@@ -688,6 +703,10 @@ static void _Comment(int l, char *f, int level, char *str, ...)
 //-----------------------------------------------------------------------------
 static SDWORD TimerPeriod(ElemLeaf *l)
 {
+    if(Prog.cycleTime <= 0) {
+        Error(" PLC Cycle Time is 0. Timers does not work correctly!");
+        return 0;
+    }
     SDWORD period = SDWORD(l->d.timer.delay / Prog.cycleTime);// - 1;
     if(period < 1)  {
         char *s1 = _("Timer period too short (needs faster cycle time).");
@@ -996,11 +1015,11 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             break;
         }
         case ELEM_TOF: {
-                    if(n)
-                        (*n)++; // counting the number of variables
-                    else {
-                        Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, l->d.timer.delay);
-                    }
+            if(n)
+                (*n)++; // counting the number of variables
+            else {
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, l->d.timer.delay);
+            }
             break;
         }
         case ELEM_SEED_RANDOM: {
@@ -1189,6 +1208,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             CanChange = TRUE;
             ExistEnd = FALSE;
             #endif
+
             if(ExistEnd == FALSE) {
               GenSymParOut(parOut);
 
@@ -1326,6 +1346,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                   Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
             Op(INT_END_IF);
             break;
+        case ELEM_TIME2COUNT: {
+            Comment(3, "ELEM_TIME2COUNT");
+            SDWORD period = TimerPeriod(l);
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+            Op(INT_END_IF);
+            break;
+        }
         case ELEM_TCY: {
             SDWORD period = TimerPeriod(l)-1;
             Comment(3, "ELEM_TCY %s %d ms %d", l->d.timer.name, l->d.timer.delay, period);
@@ -2164,6 +2192,11 @@ math:   {
             Op(INT_END_IF);
             break;
 
+        case ELEM_DELAY:
+            Comment(3, "ELEM_DELAY");
+            Op(INT_DELAY, l->d.timer.delay);
+            break;
+
         case ELEM_MASTER_RELAY:
             Comment(3, "ELEM_MASTER_RELAY");
             // Tricky: must set the master control relay if we reach this
@@ -2758,8 +2791,8 @@ BOOL GenerateIntermediateCode(void)
                 }
             }
             if(int_comment_level>=2) {
-                if(s1) Comment(s1);
-                if(s2) Comment(s2);
+                if(s1) Comment1(s1); // bypass % in comments
+                if(s2) Comment1(s2); // bypass % in comments
             }
             continue;
         }

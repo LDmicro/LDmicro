@@ -179,6 +179,7 @@
 #endif
 #define INT_CLRWDT                              2024
 #define INT_LOCK                                2025
+#define INT_DELAY                               2026
 
 
 #define INT_SIMULATE_NODE_STATE                   80 + 100

@@ -83,6 +83,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_OPEN:
         case ELEM_SHORT:
         case ELEM_CONTACTS:
+        case ELEM_TIME2COUNT:
         case ELEM_TCY:
         case ELEM_TON:
         case ELEM_TOF:
@@ -130,6 +131,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_XOR:
         case ELEM_RANDOM:
         case ELEM_SEED_RANDOM:
+        case ELEM_DELAY :
         case ELEM_SET_BIT     :
         case ELEM_CLEAR_BIT   :
         case ELEM_IF_BIT_SET  :
@@ -1191,6 +1193,7 @@ cmp:
             *cx += POS_WIDTH;
             break;
         }
+        case ELEM_TIME2COUNT:
         case ELEM_TCY:
         case ELEM_RTO:
         case ELEM_TON:
@@ -1204,13 +1207,15 @@ cmp:
                 s = "\x01""RTO\x02";
             else if(which == ELEM_TCY)
                 s = "\x01""TCY\x02";
+            else if(which == ELEM_TIME2COUNT)
+                s = "\x01""T2CNT\x02";
             else oops();
 
             ElemTimer *t = &leaf->d.timer;
             if(t->delay >= 1000*1000) {
                 sprintf(bot, "[%s %.6g s]", s, t->delay/1000000.0);
             } else if(t->delay >= 100*1000) {
-                sprintf(bot, "{%s %.6g ms}", s, t->delay/1000.0);
+                sprintf(bot, "[%s %.6g ms]", s, t->delay/1000.0);
             } else {
                 sprintf(bot, "[%s %.6g ms]", s, t->delay/1000.0);
             }
@@ -1226,6 +1231,15 @@ cmp:
             CenterWithWires(*cx, *cy, "{RAND}", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
+
+        case ELEM_DELAY: {
+            ElemTimer *t = &leaf->d.timer;
+            sprintf(s1, "%d us", t->delay);
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",s1,"",""), poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "[DELAY]", poweredBefore, poweredAfter);
+            *cx += POS_WIDTH;
+            break;
+        }
 
         case ELEM_SEED_RANDOM: {
             ElemMove *m = &leaf->d.move;

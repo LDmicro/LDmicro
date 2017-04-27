@@ -1,3 +1,15 @@
+== Release 4.2.0
+
+    * New: Element TIME to COUNTER converter
+    https://github.com/LDmicro/LDmicro/wiki/TIME-to-COUNTER-converter
+
+    * New: Element DELAY us
+    https://github.com/LDmicro/LDmicro/wiki/DELAY-us
+
+    * New: PLC Cycle Time 0
+    https://github.com/LDmicro/LDmicro/wiki/PLC-Cycle-Time-0
+
+
 == Release 4.1.8
 
     * Fixed: LOOK-UP TABLE error in Windows 7 64bit.
