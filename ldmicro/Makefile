@@ -24,6 +24,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\resetdialog.obj \
            $(OBJDIR)\lutdialog.obj \
            $(OBJDIR)\confdialog.obj \
+           $(OBJDIR)\colorDialog.obj \
            $(OBJDIR)\iolist.obj \
            $(OBJDIR)\miscutil.obj \
            $(OBJDIR)\lang.obj \

@@ -23,7 +23,10 @@ SET AVRDUDE_PROGRAMMER_ID=dapa
 @rem ATmega8=M8
 @rem SET AVRDUDE_PART_ID=m8
 @rem ATmega328P=m328p
-SET AVRDUDE_PART_ID=m328p
+@rem SET AVRDUDE_PART_ID=m328p
+@rem ATmega32U4=m32u4
+SET AVRDUDE_PART_ID=m32u4
+
 
 @rem read signature.
 %AVRDUDE_PATH%avrdude.exe -y -c %AVRDUDE_PROGRAMMER_ID% -F -p %AVRDUDE_PART_ID% -U signature:r:%2_signature.hex:r

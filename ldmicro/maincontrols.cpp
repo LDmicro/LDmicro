@@ -53,6 +53,7 @@ static HMENU        CmpMenu;
 static HMENU        SignedMenu;
 static HMENU        BitwiseMenu;
 static HMENU        PulseMenu;
+static HMENU        SchemeMenu;
 
 // listview used to maintain the list of I/O pins with symbolic names, plus
 // the internal relay too
@@ -202,6 +203,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_CLRWDT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_LOCK, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_GOTO, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_GOSUB, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_RETURN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SHIFT_REG, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_LUT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_PWL, t);
@@ -254,6 +257,9 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_SHORT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OPEN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_DELAY, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_LABEL, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SUBPROG, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_ENDSUB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SENDn, t);
@@ -300,6 +306,7 @@ void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled)
 HMENU MakeMainWindowMenus(void)
 {
     HMENU settings, compile, help;
+    HMENU ConfigMenu;
     int i;
 
     FileMenu = CreatePopupMenu();
@@ -388,14 +395,18 @@ HMENU MakeMainWindowMenus(void)
         _("Insert -+------+- Short-Circuit\tCtrl+Enter"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SLEEP,
-        _("Insert SLEEP"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_DELAY,
-        _("Insert DELAY"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CLRWDT,
-        _("Insert CLRWDT"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LOCK,
-        _("Insert LOCK"));
+
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LABEL, _("Insert LABEL"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GOTO, _("Insert GOTO"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SUBPROG, _("Insert SUBPROG"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB"));
+
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
@@ -658,6 +669,16 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,       _("Call flashMcu.bat\tF6"));
     AppendMenu(compile, MF_STRING, MNU_READ_BAT,        _("Call readMcu.bat\tCtrl+F6"));
 
+    ConfigMenu = CreatePopupMenu();
+    SchemeMenu = CreatePopupMenu();
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK, _("Black scheme"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_WHITE, _("White scheme"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_SYS, _("GetSysColor scheme"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_USER, _("User defined color scheme"));
+    AppendMenu(SchemeMenu, MF_SEPARATOR, 0, "");
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SELECT_COLOR, _("Select colors"));
+    AppendMenu(ConfigMenu, MF_STRING | MF_POPUP, (UINT_PTR)SchemeMenu,_("Select color scheme"));
+
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
     AppendMenu(help, MF_STRING, MNU_HOW, _("HOW TO:..."));
@@ -678,6 +699,7 @@ HMENU MakeMainWindowMenus(void)
         _("Si&mulate"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)compile,
         _("&Compile"));
+    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConfigMenu, _("Config"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)help, _("&Help"));
 
     return TopMenu;
@@ -917,6 +939,9 @@ void RefreshControlsToSettings(void)
     } else {
         CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_UNCHECKED);
     }
+
+    for(i = 0; i <= (MNU_SCHEME_USER & 0xff); i++)
+        CheckMenuItem(SchemeMenu, MNU_SCHEME_BLACK+i, (i == scheme) ? MF_CHECKED : MF_UNCHECKED);
 }
 
 //-----------------------------------------------------------------------------

@@ -70,6 +70,9 @@ static BOOL CursorDrawn;
 // Colours with which to do syntax highlighting, configurable
 SyntaxHighlightingColours HighlightColours;
 
+// 0-Dark, 1-White, 2-GetSysColor, xx-LDmicroUsers, MNU_SCHEME_USER-User
+DWORD scheme = 0;
+
 #define X_RIGHT_PADDING 30
 
 //-----------------------------------------------------------------------------
@@ -141,7 +144,7 @@ static void DrawCharsToScreen(int cx, int cy, char *str)
             if(*str == ']' || *str == '}') inBrace--;
         } else if((
             (isdigit(*str) && (firstTime || isspace(str[-1])
-                || str[-1] == ':' || str[-1] == '[')) ||
+                || str[-1] == ':' || str[-1] == '{' || str[-1] == '[')) ||
             (*str == '-' && isdigit(str[1]))) && hiOk && !inComment)
         {
             prev = GetTextColor(Hdc);
@@ -163,7 +166,7 @@ static void DrawCharsToScreen(int cx, int cy, char *str)
             }
         } else if(*str == '\x03') {
             cx--;
-            if(hiOk) {
+            if(hiOk || InSimulationMode) {
                 prev = GetTextColor(Hdc);
                 SetTextColor(Hdc, HighlightColours.comment);
                 inComment = TRUE;
@@ -396,15 +399,13 @@ void PaintWindow(void)
 // Set up the syntax highlighting colours, according to the currently selected
 // scheme.
 //-----------------------------------------------------------------------------
-static void SetSyntaxHighlightingColours(void)
-{
-    static const SyntaxHighlightingColours Schemes[] = {
-        {
+SyntaxHighlightingColours Schemes[/*MNU_SCHEME_USER & 0xff + 1*/] = {
+    {   // Black color scheme
             RGB(0, 0, 0),           // bg
             RGB(255, 255, 225),     // def
             RGB(255, 110, 90),      // selected
             RGB(255, 150, 90),      // op
-            RGB(255, 255, 100),     // punct
+        RGB(255, 220,  50),     // punct // 255, 255, 100
             RGB(255, 160, 160),     // lit
             RGB(120, 255, 130),     // name
             RGB(130, 130, 130),     // rungNum
@@ -418,11 +419,84 @@ static void SetSyntaxHighlightingColours(void)
             RGB(255, 150, 150),     // simOn
 
             RGB(255, 150, 150),     // simBusLeft
-            RGB(150, 150, 255),     // simBusRight
+        RGB(130, 130, 245),     // simBusRight // 150, 150, 255
         },
-    };
+    {   // White color scheme
+        RGB(238, 238, 238), // background
+        RGB(  0,   0,   0), // default foreground
+//      GetSysColor(COLOR_WINDOW),     // background
+//      GetSysColor(COLOR_WINDOWTEXT), // default foreground
+        RGB(180,   0,  50), // selected element
+        RGB(150,  50,   0), // `op code' (like OSR, OSF, ADD, ...)
+        RGB(  0,   0,   0), // punctuation, like square or curly braces
+        RGB(160,  20,  20), // a literal number
+        RGB(  0, 120,   0), // the name of an item
+        RGB(130, 130, 130), // rung numbers
+        RGB(110, 110, 110), // user-written comment text
 
-    memcpy(&HighlightColours, &Schemes[0], sizeof(Schemes[0]));
+        RGB(128, 128, 128), // the `bus' at the right and left of screen
+
+        RGB(255, 255, 255), // background, simulation mode
+        RGB(130, 130, 130), // rung number, simulation mode
+        RGB( 50, 140,  50), // de-energized element, simulation mode
+        RGB(170,  50,  50), // energzied element, simulation mode
+
+        RGB(255, 150, 150), // the `bus,' can be different colours for
+        RGB(150, 150, 255), // right and left of the screen
+    },
+    {   // Use System Colors in color scheme
+        GetSysColor(COLOR_WINDOW),         // background
+        GetSysColor(COLOR_WINDOWTEXT),     // default foreground
+        RGB(255, 110, 90),                 // selected element
+        RGB(255, 150, 90),      // `op code' (like OSR, OSF, ADD, ...)
+        GetSysColor(COLOR_INFOTEXT),// RGB(255, 255, 100),     // punctuation, like square or curly braces
+        RGB(255, 160, 160),     // a literal number
+        GetSysColor(COLOR_ACTIVECAPTION),     // the name of an item
+        //COLOR_CAPTIONTEXT
+        RGB(130, 130, 130),     // rung numbers
+        GetSysColor(COLOR_GRAYTEXT),     // user-written comment text
+
+        GetSysColor(COLOR_SCROLLBAR),     // the `bus' at the right and left of screen
+
+        RGB(0, 0, 0),           // background, simulation mode
+        RGB(130, 130, 130),     // rung number, simulation mode
+        GetSysColor(COLOR_INACTIVECAPTIONTEXT),   // de-energized element, simulation mode
+        RGB(255, 150, 150),     // energzied element, simulation mode
+
+        RGB(255, 150, 150),     // the `bus,' can be different colours for
+        RGB(150, 150, 255),     // right and left of the screen
+    },
+    {   // User use Black as default color scheme
+        RGB(0, 0, 0),           // bg
+        RGB(255, 255, 225),     // def
+        RGB(255, 110, 90),      // selected
+        RGB(255, 150, 90),      // op
+        RGB(255, 220,  50),     // punct // 255, 255, 100
+        RGB(255, 160, 160),     // lit
+        RGB(120, 255, 130),     // name
+        RGB(130, 130, 130),     // rungNum
+        RGB(130, 130, 245),     // comment
+
+        RGB(255, 255, 255),     // bus
+
+        RGB(0, 0, 0),           // simBg
+        RGB(130, 130, 130),     // simRungNum
+        RGB(100, 130, 130),     // simOff
+        RGB(255, 150, 150),     // simOn
+
+        RGB(255, 150, 150),     // simBusLeft
+        RGB(130, 130, 245),     // simBusRight // 150, 150, 255
+    }
+};
+static void SetSyntaxHighlightingColours(void)
+{
+    if(scheme < 0)
+        oops();
+    if(scheme > (MNU_SCHEME_USER & 0xff))
+        oops();
+    if((sizeof(Schemes)/sizeof(Schemes[0])) != ((MNU_SCHEME_USER & 0xff) + 1))
+        oops();
+    memcpy(&HighlightColours, &Schemes[scheme], sizeof(HighlightColours));
 }
 
 //-----------------------------------------------------------------------------

@@ -2435,7 +2435,7 @@ static void CompileIfBody(DWORD condFalse)
 static void CallSubroutine(DWORD addr)
 //used ZL
 {
-    if(Prog.mcu->core >= ClassicCore8K) {
+    if((Prog.mcu->core >= ClassicCore8K) && (addr > 0xFFF)) {
         Instruction(OP_LDI, ZL, FWD_LO(addr));
         Instruction(OP_LDI, ZH, FWD_HI(addr));
         Instruction(OP_ICALL, 0, 0);
@@ -3794,6 +3794,66 @@ static void CompileFromIntermediate(void)
             case INT_COMMENT:
                 Comment(a->name1);
                 break;
+
+            case INT_AllocKnownAddr:
+                AddrOfRungN[a->literal].KnownAddr = AvrProgWriteP;
+                break;
+
+            case INT_AllocFwdAddr:
+                AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
+                break;
+
+            case INT_FwdAddrIsNow:
+                FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
+                break;
+            case INT_GOTO: {
+                int rung = hobatoi(a->name1);
+                rung = min(rung, Prog.numRungs+1);
+                dbp("INT_GOTO %d 0x%X08 0x%X08", rung, AddrOfRungN[rung].FwdAddr, AddrOfRungN[rung].KnownAddr);
+                dbpd(rungNow)
+                DWORD addr;
+
+                if(rung < 0) {
+                    addr = 0;
+                } else if(rung == 0) {
+                    addr = BeginOfPLCCycle;
+                } else if(rung <= rungNow) {
+                    addr = AddrOfRungN[rung-1].KnownAddr;
+                } else {
+                    addr = AddrOfRungN[rung-1].FwdAddr;
+                }
+                if(rung > rungNow) {
+                    if(Prog.mcu->core >= ClassicCore8K) {
+                        Instruction(OP_LDI, ZL, FWD_LO(addr));
+                        Instruction(OP_LDI, ZH, FWD_HI(addr));
+                        Instruction(OP_IJMP, addr);
+                    } else {
+                        Instruction(OP_RJMP, addr);
+                    }
+                } else {
+                    if(Prog.mcu->core >= ClassicCore8K) {
+                        Instruction(OP_LDI, ZL, addr & 0xff);
+                        Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
+                        Instruction(OP_IJMP, addr);
+                    } else {
+                        Instruction(OP_RJMP, addr);
+                    }
+                }
+                break;
+            }
+            case INT_GOSUB: {
+                int rung = hobatoi(a->name1);
+                if(rung < rungNow) {
+                    CallSubroutine(AddrOfRungN[rung].KnownAddr);
+                } else if(rung > rungNow) {
+                    CallSubroutine(AddrOfRungN[rung].FwdAddr);
+                } else oops();
+                break;
+            }
+            case INT_RETURN:
+                Instruction(OP_RET);
+                break;
+
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:{
                 DWORD addrOfTable = 0;
@@ -4473,6 +4533,8 @@ void CompileAvr(char *outFile)
         fclose(f);
         return;
     }
+
+    Comment("GOTO, progStart");
 
     //***********************************************************************
     // Interrupt Vectors Table

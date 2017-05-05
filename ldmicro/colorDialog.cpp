@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
+// Copyright 2017 Ihor Nehrutsa
 //
 // This file is part of LDmicro.
 //
@@ -17,32 +17,18 @@
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
 //
-// Dialog for setting the overall PLC parameters. Mostly this relates to
-// timing; to set up the timers we need to know the desired cycle time,
-// which is configurable, plus the MCU clock (i.e. crystal frequency).
-// Jonathan Westhues, Nov 2004
+// Dialog for setting the colors of LDmicro.
 //-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <commctrl.h>
+#include <commdlg.h>
 
 #include "ldmicro.h"
 
-static HWND ConfDialog;
-
-static HWND CrystalTextbox;
-static HWND ConfigBitsTextbox;
-static HWND CycleTextbox;
-static HWND TimerTextbox;
-static HWND YPlcCycleDutyCheckbox;
-//static HWND WDTECheckbox; // obsolete
-static HWND BaudTextbox;
-
-static LONG_PTR PrevCrystalProc;
-static LONG_PTR PrevConfigBitsProc;
-static LONG_PTR PrevCycleProc;
-static LONG_PTR PrevBaudProc;
+static HWND ColorDialog;
+static HWND ColorList;
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -50,14 +36,15 @@ static LONG_PTR PrevBaudProc;
 static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
     LPARAM lParam)
 {
+/*
     if(msg == WM_CHAR) {
         if(hwnd == ConfigBitsTextbox) {
             if(!(ishobdigit(wParam) || wParam == '\b'))
                 return 0;
         } else
             if(!(isdigit(wParam) || wParam == '.' || wParam == '\b'))
-            return 0;
-        }
+                return 0;
+    }
 
     LONG_PTR t;
     if(hwnd == CrystalTextbox)
@@ -70,72 +57,78 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
         t = PrevBaudProc;
     else
         oops();
-
-    return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
+*/
+//  return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
 }
 
 static void MakeControls(void)
 {
+    ColorList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
+//      WS_SIZEBOX |
+        LBS_NOTIFY, 10, 10, 455, 240, ColorDialog, NULL, Instance, NULL);
+    FixedFont(ColorList);
+/*
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("PLC Cycle Time (ms):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        1, 13, 180, 21, ConfDialog, NULL, Instance, NULL);
+        1, 13, 180, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     CycleTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        185, 12, 75, 21, ConfDialog, NULL, Instance, NULL);
+        185, 12, 75, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(CycleTextbox);
 
     HWND TimerLabel = CreateWindowEx(0, WC_STATIC, _("Timer0|1:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        255, 13, 70, 21, ConfDialog, NULL, Instance, NULL);
+        255, 13, 70, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(TimerLabel);
 
     TimerTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        330, 12, 25, 21, ConfDialog, NULL, Instance, NULL);
+        330, 12, 25, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(TimerTextbox);
 
     YPlcCycleDutyCheckbox = CreateWindowEx(0, WC_BUTTON, _("YPlcCycleDuty"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        370, 13, 100, 20, ConfDialog, NULL, Instance, NULL);
+        370, 13, 100, 20, ColorDialog, NULL, Instance, NULL);
     NiceFont(YPlcCycleDutyCheckbox);
 /*
     WDTECheckbox = CreateWindowEx(0, WC_BUTTON, _("WDT enable"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        370, 43, 100, 20, ConfDialog, NULL, Instance, NULL);
+        370, 43, 100, 20, ColorDialog, NULL, Instance, NULL);
     NiceFont(WDTECheckbox);
-*/
+
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC,
         _("MCU Crystal Frequency (MHz):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        1, 43, 180, 21, ConfDialog, NULL, Instance, NULL);
+        1, 43, 180, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
     CrystalTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        185, 42, 75, 21, ConfDialog, NULL, Instance, NULL);
+        185, 42, 75, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(CrystalTextbox);
 
     HWND textLabel2_ = CreateWindowEx(0, WC_STATIC,
         _("PIC Configuration Bits:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
-        265, 73, 130, 21, ConfDialog, NULL, Instance, NULL);
+        265, 73, 130, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(textLabel2_);
 
     ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        400, 72, 85, 21, ConfDialog, NULL, Instance, NULL);
+        400, 72, 85, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(ConfigBitsTextbox);
 
     HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("UART Baud Rate (bps):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        1, 73, 180, 21, ConfDialog, NULL, Instance, NULL);
+        1, 73, 180, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(textLabel3);
 
     BaudTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        185, 72, 75, 21, ConfDialog, NULL, Instance, NULL);
+        185, 72, 75, 21, ColorDialog, NULL, Instance, NULL);
     NiceFont(BaudTextbox);
 
     if(!UartFunctionUsed()) {
@@ -159,17 +152,17 @@ static void MakeControls(void)
         EnableWindow(textLabel2_, FALSE);
 //      EnableWindow(WDTECheckbox, FALSE);
     }
-
+*/
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        268 + 215, 11, 70, 23, ConfDialog, NULL, Instance, NULL);
+        480, 10, 70, 23, ColorDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        268 + 215, 41, 70, 23, ConfDialog, NULL, Instance, NULL);
+        480, 40, 70, 23, ColorDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
-
+/*
     char txt[1024*4] = "";
     char explanation[1024*4] = "";
 
@@ -267,7 +260,7 @@ static void MakeControls(void)
 
     HWND textLabel4 = CreateWindowEx(0, WC_STATIC, explanation,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        10, 100, 340 + 200, 800, ConfDialog, NULL, Instance, NULL);
+        10, 100, 340 + 200, 800, ColorDialog, NULL, Instance, NULL);
     NiceFont(textLabel4);
 
     // Measure the explanation string, so that we know how to size our window
@@ -280,12 +273,12 @@ static void MakeControls(void)
                                         DT_LEFT | DT_TOP | DT_WORDBREAK);
     DeleteDC(hdc);
     int h = 104 + tr.bottom + 10 + 20;
-    SetWindowPos(ConfDialog, NULL, 0, 0, w, h, SWP_NOMOVE);
+    SetWindowPos(ColorDialog, NULL, 0, 0, w, h, SWP_NOMOVE);
     // h is the desired client height, but SetWindowPos includes title bar;
     // so fix it up by hand
-    GetClientRect(ConfDialog, &cr);
+    GetClientRect(ColorDialog, &cr);
     int nh = h + (h - (cr.bottom - cr.top));
-    SetWindowPos(ConfDialog, NULL, 0, 0, w, nh, SWP_NOMOVE);
+    SetWindowPos(ColorDialog, NULL, 0, 0, w, nh, SWP_NOMOVE);
 
     PrevCycleProc = SetWindowLongPtr(CycleTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNumberProc);
@@ -298,17 +291,91 @@ static void MakeControls(void)
 
     PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNumberProc);
+*/
 }
 
-void ShowConfDialog(void)
+UINT_PTR CALLBACK CCHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-    // The window's height will be resized later, to fit the explanation text.
-    ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"),
+    //dbpd(uiMsg)
+    return 0;
+}
+
+BOOL ChooseClr(DWORD *rgbCurrent)
+{
+    CHOOSECOLOR cc;
+
+    static COLORREF acrCustClr[16];
+    ZeroMemory(&acrCustClr, sizeof(acrCustClr));
+
+    acrCustClr[ 0] = Schemes[MNU_SCHEME_USER & 0xff].bg         ;
+    acrCustClr[ 1] = Schemes[MNU_SCHEME_USER & 0xff].def        ;
+    acrCustClr[ 2] = Schemes[MNU_SCHEME_USER & 0xff].selected   ;
+    acrCustClr[ 3] = Schemes[MNU_SCHEME_USER & 0xff].op         ;
+    acrCustClr[ 4] = Schemes[MNU_SCHEME_USER & 0xff].punct      ;
+    acrCustClr[ 5] = Schemes[MNU_SCHEME_USER & 0xff].lit        ;
+    acrCustClr[ 6] = Schemes[MNU_SCHEME_USER & 0xff].name       ;
+    acrCustClr[ 7] = Schemes[MNU_SCHEME_USER & 0xff].rungNum    ;
+    acrCustClr[ 8] = Schemes[MNU_SCHEME_USER & 0xff].comment    ;
+    acrCustClr[ 9] = Schemes[MNU_SCHEME_USER & 0xff].bus        ;
+    acrCustClr[10] = Schemes[MNU_SCHEME_USER & 0xff].simBg      ;
+    acrCustClr[11] = Schemes[MNU_SCHEME_USER & 0xff].simRungNum ;
+    acrCustClr[12] = Schemes[MNU_SCHEME_USER & 0xff].simOff     ;
+    acrCustClr[13] = Schemes[MNU_SCHEME_USER & 0xff].simOn      ;
+    acrCustClr[14] = Schemes[MNU_SCHEME_USER & 0xff].simBusLeft ;
+    acrCustClr[15] = Schemes[MNU_SCHEME_USER & 0xff].simBusRight;
+
+    ZeroMemory(&cc, sizeof(CHOOSECOLOR));
+    cc.lStructSize = sizeof(CHOOSECOLOR);
+    cc.hwndOwner = ColorDialog;
+    cc.lpCustColors = (LPDWORD) acrCustClr;
+    cc.rgbResult = *rgbCurrent;
+    cc.Flags = CC_FULLOPEN | CC_RGBINIT /*| CC_ENABLEHOOK*/;
+    // cc.lpfnHook = &CCHookProc;
+
+    if(ChooseColor(&cc)==TRUE) {
+        *rgbCurrent = cc.rgbResult;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void ShowColorDialog(void)
+{
+    DWORD schemeSave;
+    SyntaxHighlightingColours SchemesSave;
+    memcpy(&SchemesSave, &Schemes[MNU_SCHEME_USER & 0xff], sizeof(SchemesSave));
+    memcpy(&Schemes[MNU_SCHEME_USER & 0xff], &HighlightColours, sizeof(SchemesSave));
+    schemeSave = scheme;
+    scheme = MNU_SCHEME_USER & 0xff;
+
+    ColorDialog = CreateWindowClient(0, "LDmicroDialog", _("Select color for:"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 0, 0, NULL, NULL, Instance, NULL);
+        100, 100, 560, 250, NULL, NULL, Instance, NULL);
 
     MakeControls();
+    RECT r;
+//  GetClientRect(ColorList, &r);
+    GetWindowRect(ColorList, &r);
 
+    int Index = 0;
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Background"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Default foreground"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Selected element"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("OpCode (like OSR, ADD, ...)"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Punctuation, like square or curly braces"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Literal number"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Name of an item"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Rung number"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Comment text"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("| The `bus' at the right and left of screen |"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Background, Simulation mode"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Rung number, Simulation mode"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("De-energized element, Simulation mode"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Energzied element, Simulation mode"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("| The `bus' at the left of the screen, Simulation mode"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("The `bus' at the right of the screen |, Simulation mode"));
+
+/*
     char buf[26];
     sprintf(buf, "%.3f", 1.0 * Prog.cycleTime / 1000); //us show as ms
     SendMessage(CycleTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -323,7 +390,7 @@ void ShowConfDialog(void)
     if(Prog.WDTE) {
         SendMessage(WDTECheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
-*/
+*
     sprintf(buf, "%.6f", Prog.mcuClock / 1e6); //Hz show as MHz
     SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
@@ -339,10 +406,12 @@ void ShowConfDialog(void)
 
     sprintf(buf, "%d", Prog.baudRate);
     SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
-
+*/
     EnableWindow(MainWindow, FALSE);
-    ShowWindow(ConfDialog, TRUE);
-    SetFocus(CycleTextbox);
+    ShowWindow(ColorDialog, TRUE);
+    SetFocus(ColorList);
+
+    SendMessage(ColorList, LB_SETCURSEL, (WPARAM)Index, 0);
 
     MSG msg;
     DWORD ret;
@@ -358,14 +427,35 @@ void ShowConfDialog(void)
                 DialogCancel = TRUE;
                 break;
             }
+        } else if(((msg.message == WM_LBUTTONDBLCLK) || (msg.message == WM_RBUTTONDBLCLK)) && PtInRect(&r, msg.pt)) {
+            int sel = SendMessage(ColorList, LB_GETCURSEL, 0, 0);
+            switch(sel) {
+                case  0: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].bg         ); break;
+                case  1: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].def        ); break;
+                case  2: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].selected   ); break;
+                case  3: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].op         ); break;
+                case  4: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].punct      ); break;
+                case  5: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].lit        ); break;
+                case  6: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].name       ); break;
+                case  7: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].rungNum    ); break;
+                case  8: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].comment    ); break;
+                case  9: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].bus        ); break;
+                case 10: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].simBg      ); break;
+                case 11: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].simRungNum ); break;
+                case 12: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].simOff     ); break;
+                case 13: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].simOn      ); break;
+                case 14: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].simBusLeft ); break;
+                case 15: ChooseClr(&Schemes[MNU_SCHEME_USER & 0xff].simBusRight); break;
+                default: oops();
+            }
         }
-
-        if(IsDialogMessage(ConfDialog, &msg)) continue;
+        if(IsDialogMessage(ColorDialog, &msg)) continue;
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 
     if(!DialogCancel) {
+/*
         char buf[26];
         SendMessage(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));
@@ -393,75 +483,13 @@ void ShowConfDialog(void)
             Prog.WDTE = 0;
         }
 */
-        SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
-            (LPARAM)(buf));
-        Prog.mcuClock = (int)(1e6*atof(buf) + 0.5);
-
-        SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
-            (LPARAM)(buf));
-
-        if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PIC16)) {
-            Prog.configurationWord = hobatoi(buf);
-            if(!Prog.configurationWord) {
-                Error(_("Zero Configuration Word(s) not valid."));
-                Prog.configurationWord = Prog.mcu->configurationWord;
-            }
-        }
-
-        SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
-            (LPARAM)(buf));
-        Prog.baudRate = atoi(buf);
-
-        if(Prog.mcuClock <= 0) {
-            Error(_("Zero crystal frequency not valid; resetting to 16 MHz."));
-            Prog.mcuClock = 16000000; //16 MHz
-        }
-
-        int prescaler;
-        int sc;
-        int divider;
-        int cycleTimeMin;
-        int cycleTimeMax;
-        char txt[1024] = "";
-        if(Prog.mcu) {
-          if(Prog.mcu->whichIsa == ISA_AVR) {
-             CalcAvrTimerPlcCycle(ProgCycleTime,
-                 &prescaler,
-                 &sc,
-                 &divider,
-                 &cycleTimeMin,
-                 &cycleTimeMax);
-          } else if(Prog.mcu->whichIsa == ISA_PIC16) {
-             CalcPicTimerPlcCycle(ProgCycleTime,
-                 &cycleTimeMin,
-                 &cycleTimeMax);
-          }
-        }
-
-        if(ProgCycleTime == 0) {
-            Error(_(" A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"));
-            Prog.cycleTime = ProgCycleTime;
-        } else
-        if(ProgCycleTime <= 0) {
-            Error(_("Negative cycle time is not valid; Reset to 10 ms."));
-            Prog.cycleTime = 10000; //us
-        /*
-        } else if(prescaler*divider < PLC_CLOCK_MIN) {
-          //sprintf(txt,"Cycle time less then %d us not valid; resetting to 10 ms.", cycleTimeMin);
-            sprintf(txt,"Cycle time less then %d us not valid.", cycleTimeMin);
-            Error(txt);
-            //Prog.cycleTime = 10000; //us
-        } else if(divider > 0x10000) {
-          //sprintf(txt,"Cycle time more then %d ms not valid; resetting to 10 ms.", cycleTimeMax/1000);
-            sprintf(txt,"Cycle time more then %d ms not valid.", cycleTimeMax/1000);
-            Error(txt);
-            //Prog.cycleTime = 10000; //us
-        */
-        } else
-            Prog.cycleTime = ProgCycleTime;
+        memcpy(&HighlightColours, &Schemes[MNU_SCHEME_USER & 0xff], sizeof(SchemesSave));
+        RefreshControlsToSettings();
+    } else {
+        scheme = schemeSave;
+        memcpy(&Schemes[MNU_SCHEME_USER & 0xff], &SchemesSave, sizeof(SchemesSave));
     }
-
     EnableWindow(MainWindow, TRUE);
-    DestroyWindow(ConfDialog);
+    DestroyWindow(ColorDialog);
     return;
 }

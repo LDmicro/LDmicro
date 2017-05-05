@@ -132,6 +132,9 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_RANDOM:
         case ELEM_SEED_RANDOM:
         case ELEM_DELAY :
+        case ELEM_LABEL:
+        case ELEM_SUBPROG:
+        case ELEM_ENDSUB:
         case ELEM_SET_BIT     :
         case ELEM_CLEAR_BIT   :
         case ELEM_IF_BIT_SET  :
@@ -187,6 +190,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_CLRWDT:
         case ELEM_LOCK:
         case ELEM_GOTO:
+        case ELEM_GOSUB:
+        case ELEM_RETURN:
         case ELEM_READ_ADC:
         case ELEM_SET_PWM:
         case ELEM_PWM_OFF:
@@ -682,23 +687,29 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_SLEEP: {
             sprintf(bot, "{SLEEP}");
 
-            CenterWithWires(*cx, *cy, bot, poweredBefore,
-                poweredAfter);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
         case ELEM_CLRWDT:
-            CenterWithWires(*cx, *cy, "{CLRWDT}", poweredBefore,
-                poweredAfter);
+            CenterWithWires(*cx, *cy, "{CLRWDT}", poweredBefore, poweredAfter);
             break;
 
         case ELEM_LOCK:
-            CenterWithWires(*cx, *cy, "{LOCK}", poweredBefore,
-                poweredAfter);
+            CenterWithWires(*cx, *cy, "{LOCK}", poweredBefore, poweredAfter);
             break;
 
         case ELEM_GOTO:
-            CenterWithWires(*cx, *cy, "{GOTO}", poweredBefore,
-                poweredAfter);
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","", leaf->d.doGoto.rung,"",""), poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{GOTO}", poweredBefore, poweredAfter);
+            break;
+
+        case ELEM_GOSUB:
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","", leaf->d.doGoto.rung,"",""), poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{GOSUB}", poweredBefore, poweredAfter);
+            break;
+
+        case ELEM_RETURN:
+            CenterWithWires(*cx, *cy, "{RETURN}", poweredBefore, poweredAfter);
             break;
 
         case ELEM_SHIFT_REGISTER: {
@@ -857,7 +868,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             */
             formatWidth(top, POS_WIDTH, "","",c->name,"","");
 //          CenterWithSpaces(*cx, *cy, top, poweredAfter, TRUE);
-            CenterWithSpacesWidth(*cx, *cy, top, workingNow, poweredAfter, FALSE, POS_WIDTH, ELEM_COIL);
+            CenterWithSpacesWidth(*cx, *cy, top, workingNow, poweredAfter, TRUE, POS_WIDTH, ELEM_COIL);
 
             sprintf(bot,"%c]%c[-", ((c->name[0] == 'X') && (c->set1)) ? '^' : '-', c->negated ? '/' : ' ');
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
@@ -1026,10 +1037,9 @@ cmp:
 
                 sprintf(s1,"%s", leaf->d.cmp.op1);
                 sprintf(s2,"%s", leaf->d.cmp.op2);
-                sprintf(s3,"\x01""%s\x02",s);
 
-                formatWidth(top,len,"[",s1,"",s3,"]");
-                formatWidth(bot,len,"[",s2,"","","]");
+                formatWidth(top,len,"[",s1,"",s,"]");
+                formatWidth(bot,len,"[","","",s2,"]");
                 CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
                 CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
@@ -1237,6 +1247,27 @@ cmp:
             sprintf(s1, "%d us", t->delay);
             CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",s1,"",""), poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "[DELAY]", poweredBefore, poweredAfter);
+            *cx += POS_WIDTH;
+            break;
+        }
+
+        case ELEM_LABEL: {
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",leaf->d.doGoto.rung,"",""), poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "[LABEL]", poweredBefore, poweredAfter);
+            *cx += POS_WIDTH;
+            break;
+        }
+
+        case ELEM_SUBPROG: {
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",leaf->d.doGoto.rung,"",""), poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "[SUBPROG]", poweredBefore, poweredAfter);
+            *cx += POS_WIDTH;
+            break;
+        }
+
+        case ELEM_ENDSUB: {
+            CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",leaf->d.doGoto.rung,"",""), poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "[ENDSUB]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
         }

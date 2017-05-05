@@ -541,6 +541,11 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_CLRWDT:
         case ELEM_LOCK:
         case ELEM_GOTO:
+        case ELEM_GOSUB:
+        case ELEM_LABEL:
+        case ELEM_SUBPROG:
+        case ELEM_RETURN:
+        case ELEM_ENDSUB:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_OSC:

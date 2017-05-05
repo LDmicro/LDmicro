@@ -587,6 +587,17 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
 
+        case ELEM_GOTO:
+        case ELEM_GOSUB:
+        case ELEM_LABEL:
+        case ELEM_SUBPROG:
+        case ELEM_ENDSUB:
+            MarkWithCheck(l->d.doGoto.rung, VAR_FLAG_ANY);
+            break;
+
+        case ELEM_RETURN:
+            break;
+
         case ELEM_NPULSE_OFF:
         case ELEM_PWM_OFF:
             break;
@@ -1152,13 +1163,15 @@ math:
             case INT_COMMENT:
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
             case INT_FwdAddrIsNow:
-            case INT_GotoRung:
+            case INT_GOTO:
+            case INT_GOSUB:
+            case INT_RETURN:
                 break;
 
+            #ifdef NEW_FEATURE
             case INT_PRINTF_STRING:
                 break;
             #endif

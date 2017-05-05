@@ -122,7 +122,9 @@ void IntDumpListing(char *outFile)
             fprintf(f, "%3d:", i);
         } else {
             if(indent < 0) indent = 0;
-            if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
+            if((IntCode[i].op != INT_SIMULATE_NODE_STATE)
+            && (IntCode[i].op != INT_AllocKnownAddr)
+            && (IntCode[i].op != INT_AllocFwdAddr))
                 fprintf(f, "%4d:", i);
         }
         int j;
@@ -456,6 +458,36 @@ void IntDumpListing(char *outFile)
                 break;
             // Special function
 
+            case INT_AllocKnownAddr:
+                //fprintf(f, "AllocKnownAddr %s %s AddrOfRung%d;", IntCode[i].name1, IntCode[i].name2, IntCode[i].literal+1);
+                break;
+
+            case INT_AllocFwdAddr:
+                //fprintf(f, "AllocFwdAddr AddrOfRung%d",IntCode[i].literal+1);
+                break;
+
+            case INT_FwdAddrIsNow:
+                fprintf(f, "Rung%dlabel:",IntCode[i].literal+1);
+                break;
+
+            case INT_GOTO:
+                if(IsNumber(IntCode[i].name2))
+                    fprintf(f, "GOTO Rung%slabel", IntCode[i].name2);
+                else
+                    fprintf(f, "GOTO %s; #Rung%slabel", IntCode[i].name2, IntCode[i].name1);
+                break;
+
+            case INT_GOSUB:
+                if(IsNumber(IntCode[i].name2))
+                    fprintf(f, "GOSUB Rung%slabel", IntCode[i].name2);
+                else
+                    fprintf(f, "GOSUB %s; #Rung%slabel", IntCode[i].name2, IntCode[i].name1);
+                break;
+
+            case INT_RETURN:
+                fprintf(f, "RETURN");
+                break;
+
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:
                 fprintf(f, "INIT TABLE signed %d byte %s[%d] := {", IntCode[i].literal2, IntCode[i].name1, IntCode[i].literal);
@@ -484,10 +516,15 @@ void IntDumpListing(char *outFile)
             #endif
 
             default:
-                ooops("IntCode[i].op=INT_%d",IntCode[i].op);
+                ooops("INT_%d",IntCode[i].op);
         }
-        if((int_comment_level == 1) || (IntCode[i].op != INT_SIMULATE_NODE_STATE))
+        if((int_comment_level == 1)
+        ||( (IntCode[i].op != INT_SIMULATE_NODE_STATE)
+          &&(IntCode[i].op != INT_AllocKnownAddr)
+          &&(IntCode[i].op != INT_AllocFwdAddr) ) ) {
+            //fprintf(f, " ## INT_%d",IntCode[i].op);
             fprintf(f, "\n");
+        }
         fflush(f);
     }
     fclose(f);
@@ -660,7 +697,6 @@ static void SimState(BOOL *b, char *name)
 //-----------------------------------------------------------------------------
 static void _Comment1(int l, char *f, char *str)
 {
- dbps(str)
   if(int_comment_level) {
     if(strlen(str)>=MAX_NAME_LEN)
       str[MAX_NAME_LEN-1]='\0';
@@ -2195,6 +2231,78 @@ math:   {
         case ELEM_DELAY:
             Comment(3, "ELEM_DELAY");
             Op(INT_DELAY, l->d.timer.delay);
+            break;
+
+        case ELEM_GOTO:
+            Comment(3, "ELEM_GOTO");
+            Op(INT_IF_BIT_SET, stateInOut);
+                if(IsNumber(l->d.doGoto.rung)) {
+                    Op(INT_GOTO, l->d.doGoto.rung, l->d.doGoto.rung);
+                } else {
+                    int r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
+                    char s[100];
+                    sprintf(s,"%d", r+1);
+                    if(r >= 0) {
+                        Op(INT_GOTO, s, l->d.doGoto.rung);
+                    } else {
+                        Error(_("LABEL '%s' not found!"), l->d.doGoto.rung);
+                        CompileError();
+                    }
+                }
+            Op(INT_END_IF);
+            break;
+
+        case ELEM_GOSUB:
+            Comment(3, "ELEM_GOSUB");
+            Op(INT_IF_BIT_SET, stateInOut);
+                if(IsNumber(l->d.doGoto.rung)) {
+                    Op(INT_GOSUB, l->d.doGoto.rung, l->d.doGoto.rung);
+                } else {
+                    int r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+                    char s[100];
+                    sprintf(s,"%d", r+1);
+                    if(r >= 0) {
+                        Op(INT_GOSUB, s, l->d.doGoto.rung);
+                    } else {
+                        Error(_("SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                        CompileError();
+                    }
+                }
+            Op(INT_END_IF);
+            break;
+
+        case ELEM_LABEL:
+            Comment(3, "ELEM_LABEL %s rung %d", l->d.doGoto.rung, rungNow+1);
+            break;
+
+        case ELEM_SUBPROG: {
+            Comment(3, "ELEM_SUBPROG %s rung %d", l->d.doGoto.rung, rungNow+1);
+            int r;
+            if(IsNumber(l->d.doGoto.rung)) {
+              r = hobatoi(l->d.doGoto.rung) - 1;
+            } else {
+              r = FindRung(ELEM_ENDSUB, l->d.doGoto.rung);
+            }
+            char s[100];
+            sprintf(s,"%d", r+1+1);
+            if(r >= 0) {
+                Op(INT_GOTO, s, l->d.doGoto.rung);
+            } else {
+                Error(_("ENDSUB '%s' not found!"), l->d.doGoto.rung);
+                CompileError();
+            }
+            break;
+        }
+        case ELEM_ENDSUB:
+            Comment(3, "ELEM_ENDSUB %s rung %d", l->d.doGoto.rung, rungNow+1);
+            Op(INT_RETURN);
+            break;
+
+        case ELEM_RETURN:
+            Comment(3, "ELEM_RETURN");
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_RETURN);
+            Op(INT_END_IF);
             break;
 
         case ELEM_MASTER_RELAY:

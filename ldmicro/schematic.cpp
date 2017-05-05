@@ -213,6 +213,8 @@ BOOL EndOfRungElem(int Which)
         Which == ELEM_CLRWDT ||
         Which == ELEM_LOCK ||
         Which == ELEM_GOTO ||
+        Which == ELEM_GOSUB ||
+        Which == ELEM_RETURN ||
         Which == ELEM_SHIFT_REGISTER ||
         Which == ELEM_LOOK_UP_TABLE ||
         Which == ELEM_PIECEWISE_LINEAR ||
@@ -764,6 +766,14 @@ void EditSelectedElement(void)
 
         case ELEM_READ_ADC:
             ShowReadAdcDialog(Selected->d.readAdc.name+1);
+            break;
+
+        case ELEM_LABEL:
+        case ELEM_SUBPROG:
+        case ELEM_ENDSUB:
+        case ELEM_GOTO:
+        case ELEM_GOSUB:
+            ShowGotoDialog(SelectedWhich, Selected->d.doGoto.rung);
             break;
 
         case ELEM_RANDOM:

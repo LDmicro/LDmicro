@@ -540,7 +540,6 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         postCompile(Prog.mcu->whichIsa);
     } else oops();
 
-//    IntDumpListing("t.pl");
     RefreshControlsToSettings();
 }
 
@@ -848,8 +847,28 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddLock());
             break;
 
+        case MNU_INSERT_LABEL:
+            CHANGING_PROGRAM(AddGoto(ELEM_LABEL));
+            break;
+
         case MNU_INSERT_GOTO:
-            CHANGING_PROGRAM(AddGoto());
+            CHANGING_PROGRAM(AddGoto(ELEM_GOTO));
+            break;
+
+        case MNU_INSERT_SUBPROG:
+            CHANGING_PROGRAM(AddGoto(ELEM_SUBPROG));
+            break;
+
+        case MNU_INSERT_RETURN:
+            CHANGING_PROGRAM(AddGoto(ELEM_RETURN));
+            break;
+
+        case MNU_INSERT_ENDSUB:
+            CHANGING_PROGRAM(AddGoto(ELEM_ENDSUB));
+            break;
+
+        case MNU_INSERT_GOSUB:
+            CHANGING_PROGRAM(AddGoto(ELEM_GOSUB));
             break;
 
         case MNU_INSERT_SHIFT_REG:
@@ -1233,6 +1252,20 @@ cmp:
 
         case MNU_MANUAL:
             ShowHelpDialog(FALSE);
+            break;
+
+        case MNU_SCHEME_BLACK:
+        case MNU_SCHEME_WHITE:
+        case MNU_SCHEME_SYS:
+        case MNU_SCHEME_USER:
+            scheme = code & 0xff;
+            InitForDrawing();
+            InvalidateRect(MainWindow, NULL, FALSE);
+            RefreshControlsToSettings();
+            break;
+
+        case MNU_SELECT_COLOR:
+            ShowColorDialog();
             break;
 
         case MNU_ABOUT:
@@ -2400,7 +2433,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     MainHeap = HeapCreate(0, 1024*64, 0);
 
     setlocale(LC_ALL,"");
-    RunningInBatchMode = FALSE;
+    //RunningInBatchMode = FALSE;
 
     MakeWindowClass();
     MakeDialogBoxClass();
@@ -2449,6 +2482,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             dest++;
         }
         if(*dest == '\0') { Error(err); doexit(EXIT_FAILURE); }
+        char *l, *r;
+        if((l=strchr(dest, '.')) != (r=strrchr(dest, '.'))) {
+          while(*r) {
+            *l = *r;
+            r++; l++;
+          }
+          *l = '\0';
+        }
         if(!LoadProjectFromFile(source)) {
             Error("Couldn't open '%s', running non-interactively.", source);
             doexit(EXIT_FAILURE);

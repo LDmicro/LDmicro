@@ -116,6 +116,7 @@ typedef struct Pic16InstructionTag {
 #define MAX_PROGRAM_LEN 128*1024
 static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
 static DWORD PicProgWriteP;
+static DWORD BeginOfPLCCycle;
 
 static int IntPcNow = -INT_MAX; //must be static
 
@@ -1983,11 +1984,12 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     if(McuAs("Microchip PIC16F887 ")
     || McuAs("Microchip PIC16F886 ")
     || McuAs("Microchip PIC16F88 ")
+    || McuAs(" PIC16F87 ")
     || McuAs(" PIC16F884 ")
     || McuAs(" PIC16F883 ")
     || McuAs(" PIC16F882 ")
     ) {
-        WriteIhex(f, 0x04);
+        WriteIhex(f, 0x04); // RECLEN 4 bytes
         WriteIhex(f, 0x40); // 0x2007 * 2 = 0x400E
         WriteIhex(f, 0x0E);
         WriteIhex(f, 0x00);
@@ -2007,7 +2009,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
     ) {
-        WriteIhex(f, 0x04);
+        WriteIhex(f, 0x04); // RECLEN 4 bytes
         WriteIhex(f, 0x01); // 0x8007 * 2 = 0x01000E
         WriteIhex(f, 0x00);
         WriteIhex(f, 0x0E);
@@ -2027,7 +2029,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC12F683 ")
     ) {
         if(Prog.configurationWord & 0xffff0000) oops();
-        WriteIhex(f, 0x02);
+        WriteIhex(f, 0x02); // RECLEN 2 bytes
         WriteIhex(f, 0x40); // 0x2007 * 2 = 0x400E
         WriteIhex(f, 0x0E);
         WriteIhex(f, 0x00);
@@ -2039,7 +2041,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC10F220 ")
     ) {
         if(Prog.configurationWord & 0xffff0000) oops();
-        WriteIhex(f, 0x02);
+        WriteIhex(f, 0x02); // RECLEN 2 bytes
         WriteIhex(f, 0x03); // 0x01ff * 2 = 0x03FE
         WriteIhex(f, 0xFE);
         WriteIhex(f, 0x00);
@@ -2051,7 +2053,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC10F222 ")
     ) {
         if(Prog.configurationWord & 0xffff0000) oops();
-        WriteIhex(f, 0x02);
+        WriteIhex(f, 0x02); // RECLEN 2 bytes
         WriteIhex(f, 0x07); // 0x03ff * 2 = 0x07FE
         WriteIhex(f, 0xFE);
         WriteIhex(f, 0x00);
@@ -3924,6 +3926,43 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Comment(a->name1);
                 break;
 
+            case INT_AllocKnownAddr:
+                AddrOfRungN[a->literal].KnownAddr = PicProgWriteP;
+                break;
+
+            case INT_AllocFwdAddr:
+                AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
+                break;
+
+            case INT_FwdAddrIsNow:
+                FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
+            case INT_RETURN:
+                Instruction(OP_RETURN);
+                break;
+
+            case INT_GOTO: {
+                int rung = hobatoi(a->name1);
+                rung = min(rung, Prog.numRungs+1);
+                if(rung < 0) {
+                    Instruction(OP_GOTO, 0);
+                } else if(rung == 0) {
+                    Instruction(OP_GOTO, BeginOfPLCCycle);
+                } else if(rung <= rungNow) {
+                    Instruction(OP_GOTO, AddrOfRungN[rung-1].KnownAddr);
+                } else {
+                    Instruction(OP_GOTO, AddrOfRungN[rung-1].FwdAddr);
+                }
+                break;
+            }
+            case INT_GOSUB: {
+                int rung = hobatoi(a->name1);
+                if(rung < rungNow) {
+                    Instruction(OP_CALL, AddrOfRungN[rung].KnownAddr);
+                } else if(rung > rungNow) {
+                    Instruction(OP_CALL, AddrOfRungN[rung].FwdAddr);
+                } else oops();
+                break;
+            }
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT: {
                  // InitTable(a); // Inited by InitTables()
@@ -5311,7 +5350,7 @@ void CompilePic16(char *outFile)
 //  Comment("Select Bank 0");
 //  BankSelect(0xFF, 0);
     Comment("Begin Of PLC Cycle");
-    DWORD top = PicProgWriteP;
+    BeginOfPLCCycle = PicProgWriteP;
     if(Prog.cycleTime != 0) {
       if(Prog.cycleTimer == 0) {
           if(Prog.mcu->core == BaselineCore12bit) {
@@ -5321,13 +5360,13 @@ void CompilePic16(char *outFile)
   //          Instruction(OP_MOVLW, tmr0 - 1); // tested in Proteus - 1) 1kHz}
               Instruction(OP_SUBWF, REG_TMR0, DEST_W);
               Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
-              Instruction(OP_GOTO,  top);
+              Instruction(OP_GOTO,  BeginOfPLCCycle);
               Instruction(OP_CLRF,  REG_TMR0);
               */
               // v2
               Instruction(OP_MOVF,  REG_TMR0, DEST_W);
               Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
-              Instruction(OP_GOTO,  top);
+              Instruction(OP_GOTO,  BeginOfPLCCycle);
   //          Instruction(OP_MOVLW, 256 - tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
   //          Instruction(OP_MOVLW, 256 - tmr0 - 1); // tested in Proteus - 1) 992Hz}
               Instruction(OP_MOVLW, 256 - tmr0 + 1); // tested in Proteus - 1) 992Hz 0=996}
@@ -5346,14 +5385,14 @@ void CompilePic16(char *outFile)
                   yesZero = AllocFwdAddr();
               }
               Instruction(OP_DECFSZ, addrDivisor, DEST_F); // Skip if zero
-              Instruction(OP_GOTO, top);
+              Instruction(OP_GOTO, BeginOfPLCCycle);
 
               if(softDivisor > 0xff) {
                   Instruction(OP_MOVF, addrDivisor+1, DEST_F);
                   Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
                   Instruction(OP_GOTO, yesZero);
                   Instruction(OP_DECF, addrDivisor+1, DEST_F);
-                  Instruction(OP_GOTO, top);
+                  Instruction(OP_GOTO, BeginOfPLCCycle);
                   FwdAddrIsNow(yesZero);
 
                   WriteRegister(addrDivisor+1, BYTE(softDivisor >> 8));
@@ -5404,7 +5443,7 @@ void CompilePic16(char *outFile)
     // This is probably a big jump, so give it PCLATH.
     Instruction(OP_CLRF, REG_PCLATH, 0);
     #endif
-    Instruction(OP_GOTO, top, 0);
+    Instruction(OP_GOTO, BeginOfPLCCycle, 0);
 
     rungNow = -50;
 

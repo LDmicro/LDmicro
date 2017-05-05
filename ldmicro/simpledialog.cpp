@@ -694,6 +694,38 @@ void ShowReadAdcDialog(char *name)
     ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
 }
 
+void ShowGotoDialog(int which, char *name)
+{
+    char *labels[] = { _("Destination rung(label):") };
+    char *dests[] = { name };
+
+    char *s;
+    switch(which) {
+        case ELEM_GOTO:
+            s = _("Goto rung number or labe namel");
+            labels[1] = _("Destination rung(label):");
+            break;
+        case ELEM_GOSUB:
+            s = _("Call SUBPROG rung number or label name");
+            labels[1] = _("Destination rung(label):");
+            break;
+        case ELEM_LABEL:
+            s = _("Define LABEL name");
+            labels[1] = _("LABEL name:");
+            break;
+        case ELEM_SUBPROG:
+            s = _("Define SUBPROG name");
+            labels[1] = _("SUBPROG name:");
+            break;
+        case ELEM_ENDSUB:
+            s = _("Define ENDSUB name");
+            labels[1] = _("ENDSUB name:");
+            break;
+        default: oops();
+    }
+    ShowSimpleDialog(s, 1, labels, 0, 0x1, 0x1, dests);
+}
+
 void ShowRandomDialog(char *name)
 {
     char *labels[] = { _("Destination:") };

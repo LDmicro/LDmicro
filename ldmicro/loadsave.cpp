@@ -88,8 +88,18 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_CLRWDT;
     } else if(memcmp(line, "LOCK", 4)==0) {
         *which = ELEM_LOCK;
-    } else if(sscanf(line, "GOTO %s %s", l->d.doGoto.doGoto, l->d.doGoto.rungGoto)==2) {
+    } else if(sscanf(line, "GOTO %s", l->d.doGoto.rung)==1) {
         *which = ELEM_GOTO;
+    } else if(sscanf(line, "GOSUB %s", l->d.doGoto.rung)==1) {
+        *which = ELEM_GOSUB;
+    } else if(memcmp(line, "RETURN", 6)==0) {
+        *which = ELEM_RETURN;
+    } else if(sscanf(line, "LABEL %s", l->d.doGoto.rung)==1) {
+        *which = ELEM_LABEL;
+    } else if(sscanf(line, "SUBPROG %s", l->d.doGoto.rung)==1) {
+        *which = ELEM_SUBPROG;
+    } else if(sscanf(line, "ENDSUB %s", l->d.doGoto.rung)==1) {
+        *which = ELEM_ENDSUB;
     } else if(sscanf(line, "SHIFT_REGISTER %s %d", l->d.shiftRegister.name,
         &(l->d.shiftRegister.stages))==2)
     {
@@ -678,6 +688,7 @@ BOOL LoadProjectFromFile(char *filename)
     fclose(f);
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
+    strcpy(CurrentSaveFile, filename);
     return TRUE;
 
 failed:
@@ -757,8 +768,28 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "LOCK\n");
             break;
 
+        case ELEM_RETURN:
+            fprintf(f, "RETURN\n");
+            break;
+
         case ELEM_GOTO:
-            fprintf(f, "GOTO %s %s", l->d.doGoto.doGoto, l->d.doGoto.rungGoto);
+            fprintf(f, "GOTO %s\n", l->d.doGoto.rung);
+            break;
+
+        case ELEM_GOSUB:
+            fprintf(f, "GOSUB %s\n", l->d.doGoto.rung);
+            break;
+
+        case ELEM_LABEL:
+            fprintf(f, "LABEL %s\n", l->d.doGoto.rung);
+            break;
+
+        case ELEM_SUBPROG:
+            fprintf(f, "SUBPROG %s\n", l->d.doGoto.rung);
+            break;
+
+        case ELEM_ENDSUB:
+            fprintf(f, "ENDSUB %s\n", l->d.doGoto.rung);
             break;
 
         case ELEM_SHIFT_REGISTER:
