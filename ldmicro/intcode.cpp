@@ -239,12 +239,14 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "let var '%s' := '%s' / '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
                 break;
+
             /*
             case INT_SET_VARIABLE_MOD:
                 fprintf(f, "let var '%s' := '%s' % '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
                 break;
             */
+
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1);
                 break;
@@ -1481,11 +1483,17 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName, "CTU", l->d.counter.name);
-
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_IF_BIT_CLEAR, storeName);
                 Op(INT_SET_BIT, storeName);
-                Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+                if(IsNumber(l->d.counter.max)) {
+                  Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name,
+                      CheckMakeNumber(l->d.counter.max));
+                } else {
+                  Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.max, l->d.counter.name);
+                }
+                    Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+                  Op(INT_END_IF);
               Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, storeName);
@@ -1805,9 +1813,6 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
-           #ifdef NEW_FEATURE
-
-           #endif
           break;
         }
 
@@ -2871,6 +2876,7 @@ BOOL GenerateIntermediateCode(void)
         whichNow = INT_MAX;
         Prog.OpsInRung[rung] = 0;
         Prog.HexInRung[rung] = 0;
+        Op(INT_AllocFwdAddr, (SDWORD)rung);
     }
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
@@ -2880,6 +2886,8 @@ BOOL GenerateIntermediateCode(void)
             Comment("");
             Comment("======= START RUNG %d =======", rung+1);
         }
+        Op(INT_FwdAddrIsNow, (SDWORD)rung);
+        Op(INT_AllocKnownAddr, (SDWORD)rung);
 
         if(Prog.rungs[rung]->count >= 1 &&
             Prog.rungs[rung]->contents[0].which == ELEM_COMMENT)
@@ -2915,6 +2923,8 @@ BOOL GenerateIntermediateCode(void)
         SimState(&(Prog.rungPowered[rung]), "$rung_top");
         IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[rung], "$rung_top", rung);
     }
+    rungNow++;
+    Op(INT_FwdAddrIsNow, (SDWORD)Prog.numRungs);
     rungNow++;
     //Calculate amount of intermediate codes in rungs
     int i;
@@ -3007,9 +3017,6 @@ BOOL Bin32BcdRoutineUsed(void)
     int i;
     for(i = 0; i < IntCodeLen; i++){
         if((IntCode[i].op == INT_SET_BIN2BCD)
-        #ifdef NEW_FEATURE
-        //|| (IntCode[i].op == INT_UART_SEND_READY)
-        #endif
         ) {
             return TRUE;
         }

@@ -17,9 +17,12 @@
     * New: SUBPROG, RETURN, ENDSUB and GOSUB instruction
     https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-ENDSUB-and-GOSUB-instruction
 
-    * Add: Menu->Config->Select color scheme->Select colors
+    * Add: Menu->Config->Select color scheme->Select user colors
 
-    HOW TO: The AND, OR, XOR logic operations on CONTACTs inputs
+    * Wiki: LDmicro color schemes
+    See https://github.com/LDmicro/LDmicro/wiki/LDmicro-color-schemes
+
+    * Wiki: HOW TO: The AND, OR, XOR logic operations on CONTACTs inputs
     See https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-The-AND,-OR,-XOR-logic-operations-on-CONTACTs-inputs
 
 == Release 4.1.8

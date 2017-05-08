@@ -3936,6 +3936,8 @@ static void CompileFromIntermediate(BOOL topLevel)
 
             case INT_FwdAddrIsNow:
                 FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
+                break;
+
             case INT_RETURN:
                 Instruction(OP_RETURN);
                 break;

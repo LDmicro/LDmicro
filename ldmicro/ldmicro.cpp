@@ -1255,6 +1255,7 @@ cmp:
             break;
 
         case MNU_SCHEME_BLACK:
+        case MNU_SCHEME_BLACK2:
         case MNU_SCHEME_WHITE:
         case MNU_SCHEME_SYS:
         case MNU_SCHEME_USER:

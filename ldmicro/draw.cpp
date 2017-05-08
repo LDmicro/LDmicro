@@ -127,17 +127,17 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_SHR:
         case ELEM_SR0:
         case ELEM_AND:
-        case ELEM_OR :
+        case ELEM_OR:
         case ELEM_XOR:
         case ELEM_RANDOM:
         case ELEM_SEED_RANDOM:
-        case ELEM_DELAY :
+        case ELEM_DELAY:
         case ELEM_LABEL:
         case ELEM_SUBPROG:
         case ELEM_ENDSUB:
-        case ELEM_SET_BIT     :
-        case ELEM_CLEAR_BIT   :
-        case ELEM_IF_BIT_SET  :
+        case ELEM_SET_BIT:
+        case ELEM_CLEAR_BIT:
+        case ELEM_IF_BIT_SET:
         case ELEM_IF_BIT_CLEAR:
             return 1;
 
@@ -329,12 +329,14 @@ int ProgCountRows(void)
 //-----------------------------------------------------------------------------
 static void VerticalWire(int cx, int cy)
 {
+  if(cx>=0) {
     int j;
     for(j = 1; j < POS_HEIGHT; j++) {
         DrawChars(cx, cy + (POS_HEIGHT/2 - j), "|");
     }
     DrawChars(cx, cy + (POS_HEIGHT/2), "+");
     DrawChars(cx, cy + (POS_HEIGHT/2 - POS_HEIGHT), "+");
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1559,7 +1561,7 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
 
                     char buf[256];
                     int j;
-                    for(j = 0; j < POS_WIDTH; j++) {
+                    for(j = 0; j < POS_WIDTH-1; j++) {
                         buf[j] = '-';
                     }
                     buf[j] = '\0';

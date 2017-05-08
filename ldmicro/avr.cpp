@@ -2470,8 +2470,6 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
 {
     DWORD addr;
     int sov = SizeOfVar(var);
-    if(sov != sovRegs)
-      dbp("reg=%d sovRegs=%d <- var=%s sov=%d",reg,sovRegs,var,sov);
 
     MemForVariable(var, &addr);
     LoadXAddr(addr, var);
@@ -3809,8 +3807,6 @@ static void CompileFromIntermediate(void)
             case INT_GOTO: {
                 int rung = hobatoi(a->name1);
                 rung = min(rung, Prog.numRungs+1);
-                dbp("INT_GOTO %d 0x%X08 0x%X08", rung, AddrOfRungN[rung].FwdAddr, AddrOfRungN[rung].KnownAddr);
-                dbpd(rungNow)
                 DWORD addr;
 
                 if(rung < 0) {

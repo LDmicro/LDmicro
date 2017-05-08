@@ -253,9 +253,10 @@ typedef signed long SDWORD;
 #define MNU_RELEASE             0x82
 
 #define MNU_SCHEME_BLACK        0x9000
-#define MNU_SCHEME_WHITE        0x9001
-#define MNU_SCHEME_SYS          0x9002
-#define MNU_SCHEME_USER         0x9003 // This SCHEME number must be the largest !!!
+#define MNU_SCHEME_BLACK2       0x9001
+#define MNU_SCHEME_WHITE        0x9002
+#define MNU_SCHEME_SYS          0x9003
+#define MNU_SCHEME_USER         0x9004 // This SCHEME number must be the largest !!!
 #define MNU_SELECT_COLOR        0x9100
 
 // Columns within the I/O etc. listview.
@@ -1081,6 +1082,7 @@ void PaintWindow(void);
 BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
 void ExportDrawingAsText(char *file);
 void InitForDrawing(void);
+void InitBrushesForDrawing(void);
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
 int ScreenRowsAvailable(void);
 int ScreenColsAvailable(void);
@@ -1320,6 +1322,7 @@ void ShowHelpDialog(BOOL about);
 #define dodbp
 #ifdef dodbp
   #define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
+  #define dbpif(EXP) if (EXP) dbp("Warning: " #EXP "");
 
   #define dbp_(EXP)   dbp( #EXP );
   #define dbps(EXP)   dbp( #EXP "='%s'", (EXP));

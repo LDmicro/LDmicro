@@ -43,6 +43,8 @@ static HWND         StatusBar;
 static HMENU        FileMenu;
 static HMENU        EditMenu;
 static HMENU        InstructionMenu;
+static HMENU        CourseMenu;
+static HMENU        FormatStrMenu;
 static HMENU        ProcessorMenu;
 static HMENU        ProcessorMenu2;
 static HMENU        SimulateMenu;
@@ -388,25 +390,29 @@ HMENU MakeMainWindowMenus(void)
     InstructionMenu = CreatePopupMenu();
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COMMENT,
         _("Insert Co&mment\t;"));
-//  AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OPEN,
+
+    CourseMenu = CreatePopupMenu();
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_OPEN,
         _("Insert -+        +- Open-Circuit\tShift+Enter"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHORT,
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SHORT,
         _("Insert -+------+- Short-Circuit\tCtrl+Enter"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
 
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LABEL, _("Insert LABEL"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GOTO, _("Insert GOTO"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SUBPROG, _("Insert SUBPROG"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB"));
-
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY"));
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LABEL, _("Insert LABEL declaration"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOTO, _("Insert GOTO Label or Rung"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SUBPROG, _("Insert SUBPROG declaration"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB declaration"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB call"));
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CourseMenu,_("Operations that change the course of the program"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
@@ -582,7 +588,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STRING,
         _("EDIT: Insert Formatted String"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
-        _("TODO: Insert Set Software &PWM Output (AVR136 Application Note)\tP"));
+        _("TODO: Insert Software &PWM (AVR136 AppNote)\tP"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("EDIT: Insert QUAD ENCOD"));
@@ -671,12 +677,13 @@ HMENU MakeMainWindowMenus(void)
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();
-    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK, _("Black scheme"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK, _("Black original scheme"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK2, _("Black modified scheme"));
     AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_WHITE, _("White scheme"));
     AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_SYS, _("GetSysColor scheme"));
     AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_USER, _("User defined color scheme"));
     AppendMenu(SchemeMenu, MF_SEPARATOR, 0, "");
-    AppendMenu(SchemeMenu, MF_STRING, MNU_SELECT_COLOR, _("Select colors"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SELECT_COLOR, _("Select user colors"));
     AppendMenu(ConfigMenu, MF_STRING | MF_POPUP, (UINT_PTR)SchemeMenu,_("Select color scheme"));
 
     help = CreatePopupMenu();
