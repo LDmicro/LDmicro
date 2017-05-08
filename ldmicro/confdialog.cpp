@@ -51,10 +51,13 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
     LPARAM lParam)
 {
     if(msg == WM_CHAR) {
-        if(!(isdigit(wParam) || wParam == '.' || wParam == '\b')) {
+        if(hwnd == ConfigBitsTextbox) {
+            if(!(ishobdigit(wParam) || wParam == '\b'))
+                return 0;
+        } else
+            if(!(isdigit(wParam) || wParam == '.' || wParam == '\b'))
             return 0;
         }
-    }
 
     LONG_PTR t;
     if(hwnd == CrystalTextbox)
@@ -122,7 +125,7 @@ static void MakeControls(void)
 
     ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        400, 72, 75, 21, ConfDialog, NULL, Instance, NULL);
+        400, 72, 85, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ConfigBitsTextbox);
 
     HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("UART Baud Rate (bps):"),
@@ -420,33 +423,42 @@ void ShowConfDialog(void)
         int cycleTimeMin;
         int cycleTimeMax;
         char txt[1024] = "";
+        if(Prog.mcu) {
+          if(Prog.mcu->whichIsa == ISA_AVR) {
+             CalcAvrTimerPlcCycle(ProgCycleTime,
+                 &prescaler,
+                 &sc,
+                 &divider,
+                 &cycleTimeMin,
+                 &cycleTimeMax);
+          } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+             CalcPicTimerPlcCycle(ProgCycleTime,
+                 &cycleTimeMin,
+                 &cycleTimeMax);
+          }
+        }
 
-        if(Prog.mcu && (Prog.mcu->whichIsa == ISA_AVR)){
-            CalcAvrTimerPlcCycle(ProgCycleTime,
-                &prescaler,
-                &sc,
-                &divider,
-                &cycleTimeMin,
-                &cycleTimeMax);
-         }
-
-         if(ProgCycleTime <= 0) {
-             Error(_("Zero cycle time not valid; resetting to 10 ms."));
-             Prog.cycleTime = 10000; //us
-         /*
-         } else if(prescaler*divider < PLC_CLOCK_MIN) {
-           //sprintf(txt,"Cycle time less then %d us not valid; resetting to 10 ms.", cycleTimeMin);
-             sprintf(txt,"Cycle time less then %d us not valid.", cycleTimeMin);
-             Error(txt);
-             //Prog.cycleTime = 10000; //us
-         } else if(divider > 0x10000) {
-           //sprintf(txt,"Cycle time more then %d ms not valid; resetting to 10 ms.", cycleTimeMax/1000);
-             sprintf(txt,"Cycle time more then %d ms not valid.", cycleTimeMax/1000);
-             Error(txt);
-             //Prog.cycleTime = 10000; //us
-         */
-         } else
-             Prog.cycleTime = ProgCycleTime;
+        if(ProgCycleTime == 0) {
+            Error(_(" A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"));
+            Prog.cycleTime = ProgCycleTime;
+        } else
+        if(ProgCycleTime <= 0) {
+            Error(_("Negative cycle time is not valid; Reset to 10 ms."));
+            Prog.cycleTime = 10000; //us
+        /*
+        } else if(prescaler*divider < PLC_CLOCK_MIN) {
+          //sprintf(txt,"Cycle time less then %d us not valid; resetting to 10 ms.", cycleTimeMin);
+            sprintf(txt,"Cycle time less then %d us not valid.", cycleTimeMin);
+            Error(txt);
+            //Prog.cycleTime = 10000; //us
+        } else if(divider > 0x10000) {
+          //sprintf(txt,"Cycle time more then %d ms not valid; resetting to 10 ms.", cycleTimeMax/1000);
+            sprintf(txt,"Cycle time more then %d ms not valid.", cycleTimeMax/1000);
+            Error(txt);
+            //Prog.cycleTime = 10000; //us
+        */
+        } else
+            Prog.cycleTime = ProgCycleTime;
     }
 
     EnableWindow(MainWindow, TRUE);

@@ -60,7 +60,7 @@ int VariableCount = 0;
 static DWORD    NextBitwiseAllocAddr;
 static int      NextBitwiseAllocBit;
 static int      MemOffset;
-int             RamSection;
+DWORD           RamSection;
 
 //-----------------------------------------------------------------------------
 int McuPWM()
@@ -109,7 +109,7 @@ int McuROM()
         return 0;
 
     int n = 0;
-    int i;
+    DWORD i;
     for(i = 0; i < MAX_ROM_SECTIONS; i++) {
         n += Prog.mcu->rom[i].len;
     }
@@ -122,7 +122,7 @@ int UsedROM()
         return 0;
 
     int n = 0;
-    int i;
+    DWORD i;
     for(i = 0; i < RomSection; i++) {
         n += Prog.mcu->rom[i].len;
     }
@@ -135,7 +135,7 @@ int McuRAM()
         return 0;
 
     int n = 0;
-    int i;
+    DWORD i;
     for(i = 0; i < MAX_RAM_SECTIONS; i++) {
         n += Prog.mcu->ram[i].len;
     }
@@ -148,7 +148,7 @@ int UsedRAM()
         return 0;
 
     int n = 0;
-    int i;
+    DWORD i;
     for(i = 0; i < RamSection; i++) {
         n += Prog.mcu->ram[i].len;
     }
@@ -165,7 +165,7 @@ void PrintVariables(FILE *f)
     fprintf(f, ";|Variables: %d\n", VariableCount);
     for(i = 0; i < VariableCount; i++) {
         if(Variables[i].addrl)
-            fprintf(f, ";|%3d | %-50s\t| %3d byte  | 0x%04x       |\n", i, Variables[i].name, Variables[i].SizeOfVar, Variables[i].addrl);
+            fprintf(f, ";|%3d | %-50s\t| %3d byte  | 0x%04X       |\n", i, Variables[i].name, Variables[i].SizeOfVar, Variables[i].addrl);
         /*
         else {
             DWORD addr;
@@ -181,7 +181,7 @@ void PrintVariables(FILE *f)
                     break;
             }
             MemForSingleBit(Variables[i].name, forRead, &addr, &bit);
-            fprintf(f, ";|%3d %-50s\t| %3d bit   | 0x%04x = %3d | %d     |\n", i, Variables[i].name, 1, addr, addr, bit);
+            fprintf(f, ";|%3d %-50s\t| %3d bit   | 0x%04X = %3d | %d     |\n", i, Variables[i].name, 1, addr, addr, bit);
         }
         */
     }
@@ -189,7 +189,7 @@ void PrintVariables(FILE *f)
 
     fprintf(f, ";|Internal Relays: %d\n", InternalRelayCount);
     for(i = 0; i < InternalRelayCount; i++) {
-            fprintf(f, ";|%3d | %-50s\t| %3d bit   | 0x%04x       | %d     |\n", i, InternalRelays[i].name, 1, InternalRelays[i].addr, InternalRelays[i].bit);
+            fprintf(f, ";|%3d | %-50s\t| %3d bit   | 0x%04X       | %d     |\n", i, InternalRelays[i].name, 1, InternalRelays[i].addr, InternalRelays[i].bit);
     }
     fprintf(f, "\n");
 }
@@ -416,6 +416,7 @@ int TestByteNeeded(int count, SDWORD *vals)
     }
     return res;
 }
+
 //-----------------------------------------------------------------------------
 // Allocate 1,2,3 or 4 byte for a variable, used for a variety of purposes.
 //-----------------------------------------------------------------------------
@@ -930,7 +931,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError)
         {
             int j;
             for(j = 0; j < Prog.mcu->pinCount; j++) {
-                McuIoPinInfo *iop = &Prog.mcu->pinInfo[j];
+                McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
                 if(iop && (iop->pin == pin)) {
                     if((Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT)
                     || (Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT)) {

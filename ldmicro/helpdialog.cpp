@@ -37,6 +37,7 @@ extern char *HelpTextFr[];
 extern char *HelpTextTr[];
 extern char *HelpTextJa[];
 extern char *HelpTextRu[];
+extern char *HelpTextEs[];
 
 static char *AboutText[] = {
 "",
@@ -77,14 +78,13 @@ static char *AboutText[] = {
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
 "",
-"Release 4.1.7, built " __TIME__ " " __DATE__ ".",
+"Release 4.2.0, built " __TIME__ " " __DATE__ ".",
 "",
 NULL
 };
 
 static char **Text[] = {
 #if defined(LDLANG_EN) || \
-    defined(LDLANG_ES) || \
     defined(LDLANG_IT) || \
     defined(LDLANG_PT)
     HelpText,
@@ -98,6 +98,8 @@ static char **Text[] = {
     HelpTextJa,
 #elif defined(LDLANG_RU)
     HelpTextRu,
+#elif defined(LDLANG_ES)
+    HelpTextEs,
 #else
     #error "Bad language"
 #endif

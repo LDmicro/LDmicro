@@ -153,7 +153,6 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, ModbusAddr_t m
         // things
         IoSeenPreviouslyCount = 0;
     }
-
     i = IoSeenPreviouslyCount;
     IoSeenPreviously[i].type = type;
     IoSeenPreviously[i].pin = pin;
@@ -189,8 +188,6 @@ static void AppendIoAutoType(char *name, int default_type)
 static void ExtractNamesFromCircuit(int which, void *any)
 {
     ElemLeaf *l = (ElemLeaf *)any;
-
-    char str[MAX_NAME_LEN];
 
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -345,6 +342,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
                     Error(_("Connect PULSER busy flag to output pin YsomeName or internal relay RsomeName."));
                     break;
             }
+            break;
+
+        case ELEM_TIME2COUNT:
+            AppendIo(l->d.timer.name, IO_TYPE_GENERAL);
             break;
 
         case ELEM_TCY:
@@ -536,9 +537,15 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_OPEN:
         case ELEM_MASTER_RELAY:
         case ELEM_SLEEP:
+        case ELEM_DELAY:
         case ELEM_CLRWDT:
         case ELEM_LOCK:
         case ELEM_GOTO:
+        case ELEM_GOSUB:
+        case ELEM_LABEL:
+        case ELEM_SUBPROG:
+        case ELEM_RETURN:
+        case ELEM_ENDSUB:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_OSC:
@@ -585,9 +592,10 @@ static int CompareIo(const void *av, const void *bv)
     if(a->type != b->type) {
         return a->type - b->type;
     }
-
+/*
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
+*/
     return strcmp(a->name, b->name);
 }
 
@@ -985,7 +993,8 @@ void ShowIoDialog(int item)
         return;
     }
 
-    if(Prog.mcu->whichIsa > ISA_HARDWARE) {
+  //if(Prog.mcu->whichIsa > ISA_HARDWARE) {
+    if(Prog.mcu->core == NOTHING) {
         if(Prog.io.assignment[item].pin) {
             int i;
             for(i = 0; i < IoSeenPreviouslyCount; i++) {
@@ -1084,29 +1093,32 @@ void ShowIoDialog(int item)
         }
 #endif
         int type = Prog.io.assignment[item].type;
-        if((type == IO_TYPE_INT_INPUT) && (!IsExtIntPin(Prog.mcu->pinInfo[i].pin)))
+        if((type == IO_TYPE_INT_INPUT) && (!IsExtIntPin(Prog.mcu->pinInfo[i].pin))) {
             goto cant_use_this_io;
+        }
 
         if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
             McuAdcPinInfo *iop = AdcPinInfo(Prog.mcu->pinInfo[i].pin);
             if(iop)
                 ; // okay; we know how to connect it up to the ADC
-            else
+            else {
                 goto cant_use_this_io;
-
+            }
         }
         if(Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) {
             if(Prog.mcu->pwmCount) {
                 McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu->pinInfo[i].pin, Prog.cycleTimer);
                 if((iop)&&(iop->timer != Prog.cycleTimer))
                     ; // okay; we know how to connect it up to the PWM
-                else
+                else {
                     goto cant_use_this_io;
+                }
             } else {
                 if(Prog.mcu->pwmNeedsPin == Prog.mcu->pinInfo[i].pin)
                     ; // okay; we know how to connect it up to the PWM
-                else
+                else {
                     goto cant_use_this_io;
+                }
             }
         }
         char pinName[MAX_NAME_LEN];
@@ -1445,7 +1457,7 @@ void IoListProc(NMHDR *h)
                     ) {
                             if(SingleBitAssigned(name))
                                 MemForSingleBit(name, TRUE, &addr, &bit);
-                            if(addr > 0 && bit > 0)
+                            if(addr > 0 && bit >= 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                     }
                     break;

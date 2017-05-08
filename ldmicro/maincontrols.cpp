@@ -43,6 +43,8 @@ static HWND         StatusBar;
 static HMENU        FileMenu;
 static HMENU        EditMenu;
 static HMENU        InstructionMenu;
+static HMENU        CourseMenu;
+static HMENU        FormatStrMenu;
 static HMENU        ProcessorMenu;
 static HMENU        ProcessorMenu2;
 static HMENU        SimulateMenu;
@@ -53,6 +55,7 @@ static HMENU        CmpMenu;
 static HMENU        SignedMenu;
 static HMENU        BitwiseMenu;
 static HMENU        PulseMenu;
+static HMENU        SchemeMenu;
 
 // listview used to maintain the list of I/O pins with symbolic names, plus
 // the internal relay too
@@ -202,6 +205,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_CLRWDT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_LOCK, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_GOTO, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_GOSUB, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_RETURN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SHIFT_REG, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_LUT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_PWL, t);
@@ -226,6 +231,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_BIN2BCD, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_BCD2BIN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SWAP, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_TIME2COUNT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TCY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TON, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TOF, t);
@@ -252,6 +258,10 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_LEQ, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SHORT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OPEN, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_DELAY, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_LABEL, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SUBPROG, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_ENDSUB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SENDn, t);
@@ -298,6 +308,7 @@ void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled)
 HMENU MakeMainWindowMenus(void)
 {
     HMENU settings, compile, help;
+    HMENU ConfigMenu;
     int i;
 
     FileMenu = CreatePopupMenu();
@@ -379,19 +390,29 @@ HMENU MakeMainWindowMenus(void)
     InstructionMenu = CreatePopupMenu();
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COMMENT,
         _("Insert Co&mment\t;"));
-//  AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OPEN,
+
+    CourseMenu = CreatePopupMenu();
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_OPEN,
         _("Insert -+        +- Open-Circuit\tShift+Enter"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHORT,
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SHORT,
         _("Insert -+------+- Short-Circuit\tCtrl+Enter"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SLEEP,
-        _("Insert SLEEP"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CLRWDT,
-        _("Insert CLRWDT"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LOCK,
-        _("Insert LOCK"));
+
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LABEL, _("Insert LABEL declaration"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOTO, _("Insert GOTO Label or Rung"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SUBPROG, _("Insert SUBPROG declaration"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB declaration"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB call"));
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CourseMenu,_("Operations that change the course of the program"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
@@ -399,7 +420,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_RELAY,
         _("Insert Contacts: Internal Relay\tShift+C"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_OUTPUT,
-        _("Insert Contacts: Output pin\tShift+L"));
+        _("Insert Contacts: Output Pin\tShift+L"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
         _("Insert Coi&l: Output Pin\tL"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL_RELAY,
@@ -439,6 +460,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert R&TO (Retentive Delayed Turn On)\tT"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TCY,
         _("Insert TCY (Cyclic On/Off)"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT,
+        _("Insert TIME to COUNTER converter"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
@@ -545,7 +568,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STRING,
         _("Insert Formatted String Over &UART"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
-        _("Insert &UART Send"));
+        _("Insert &UART SEND"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
         _("Insert &UART Receive"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SENDn,
@@ -565,7 +588,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STRING,
         _("EDIT: Insert Formatted String"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
-        _("TODO: Insert Set Software &PWM Output (AVR136 Application Note)\tP"));
+        _("TODO: Insert Software &PWM (AVR136 AppNote)\tP"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("EDIT: Insert QUAD ENCOD"));
@@ -652,6 +675,17 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,       _("Call flashMcu.bat\tF6"));
     AppendMenu(compile, MF_STRING, MNU_READ_BAT,        _("Call readMcu.bat\tCtrl+F6"));
 
+    ConfigMenu = CreatePopupMenu();
+    SchemeMenu = CreatePopupMenu();
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK, _("Black original scheme"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK2, _("Black modified scheme"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_WHITE, _("White scheme"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_SYS, _("GetSysColor scheme"));
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_USER, _("User defined color scheme"));
+    AppendMenu(SchemeMenu, MF_SEPARATOR, 0, "");
+    AppendMenu(SchemeMenu, MF_STRING, MNU_SELECT_COLOR, _("Select user colors"));
+    AppendMenu(ConfigMenu, MF_STRING | MF_POPUP, (UINT_PTR)SchemeMenu,_("Select color scheme"));
+
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
     AppendMenu(help, MF_STRING, MNU_HOW, _("HOW TO:..."));
@@ -672,6 +706,7 @@ HMENU MakeMainWindowMenus(void)
         _("Si&mulate"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)compile,
         _("&Compile"));
+    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConfigMenu, _("Config"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)help, _("&Help"));
 
     return TopMenu;
@@ -911,6 +946,9 @@ void RefreshControlsToSettings(void)
     } else {
         CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_UNCHECKED);
     }
+
+    for(i = 0; i <= (MNU_SCHEME_USER & 0xff); i++)
+        CheckMenuItem(SchemeMenu, MNU_SCHEME_BLACK+i, (i == scheme) ? MF_CHECKED : MF_UNCHECKED);
 }
 
 //-----------------------------------------------------------------------------

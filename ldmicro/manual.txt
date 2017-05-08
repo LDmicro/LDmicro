@@ -87,6 +87,7 @@ of each instruction, even if it looks familiar. This document assumes
 basic knowledge of ladder logic and of the structure of PLC software
 (the execution cycle: read inputs, compute, write outputs).
 
+See https://github.com/LDmicro/LDmicro/wiki/PLC-Cycle-Time-0
 
 ADDITIONAL TARGETS
 ==================
@@ -453,6 +454,14 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     If Tmeander value = PLC cycle time, the TCY is equal to OSC.
 
 
+> TIME to COUNTER converter         Tconst
+                               -[T2CNT 10 ms]-
+
+    The 'TIME to COUNTER converter' instruction convert time in ms to constant
+    value and saves it to Tconst variable to using in counters.
+    See https://github.com/LDmicro/LDmicro/wiki/TIME-to-COUNTER-converter
+
+
 > RESET                        Trto             Citems
                            ----{RES}----     ----{RES}----
 
@@ -475,6 +484,16 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     See SET PWM DUTY CYCLE below.
 
+
+> DELAY                        1 us
+                           ---[DELAY]---
+
+    The DELAY instruction causes a delay in us. DELAY instruction does not
+    use any timers/counters. The NOP and JMP(Current Address+1) instructions
+    are used to make delay.
+    See https://github.com/LDmicro/LDmicro/wiki/DELAY-us
+
+
 > ONE-SHOT RISING               _    _
                            --[_/ OSR/ \_]--
 
@@ -495,6 +514,57 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     useful if you want to trigger events off the falling edge of a signal.
 
 
+                               this is
+                               input signal
+                               v
+                                _     _
+                           --[_/ OSR_/ \_]--
+
+                                     ^
+                                     this is
+                                     output signal
+                                     v
+                              _       _
+                           --[ \_OSF_/ \_]--
+
+                               ^
+                               this is
+                               input signal
+
+
+
+                     logic
+                     level
+                          ^  The duration of the input pulse is five cycles
+                  OSR, OSF|     _________
+                  input   | ___/         \_______
+                          |
+                  OSR     |     _
+                  output  | ___/ \_______________
+                          |
+                  OSF     |               _
+                  output  | _____________/ \_____
+                        --+---------------------------> time
+                          |
+       PLC cycle time beat N+ 0 1 2 3 4 5 6 7 8
+
+
+                     logic
+                     level
+                          ^      Single-cycle input pulse
+                  OSR, OSF|     _
+                  input   | ___/ \_______
+                          |
+                  OSR     |     _
+                  output  | ___/ \_______
+                          |
+                  OSF     |       _
+                  output  | _____/ \_____
+                        --+------------------> time
+                          |
+       PLC cycle time beat N+ 0 1 2 3 4 5 6
+
+
 > OSCILLATOR                       _   _
                            --[ OSC/ \_/ \_]--
 
@@ -512,7 +582,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     The output condition of a short-circuit is always equal to its
     input condition. The output condition of an open-circuit is always
-    false. These are mostly useful for debugging.
+    false. These are mostly useful for debugging, temporary short the
+    circuit or break an electrical circuit.
 
 
 > MASTER CONTROL RELAY
@@ -671,17 +742,28 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     or you can perform general variable operations on the count variable.
 
 
-> CIRCULAR COUNTER             Cname
-                           --{CTC 0:7}--
+> CIRCULAR COUNTER             Cname             Cname
+                           --{CTC 0:7}--     --{CTR 7:0}--
 
     A circular counter works like a normal CTU counter, except that
     after reaching its upper limit, it resets its counter variable
     back to 0. For example, the counter shown above would count 0, 1,
-    2, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 2,.... This is useful in
+    2, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, ... This is useful in
     combination with conditional statements on the variable `Cname';
     you can use this like a sequencer. CTC counters clock on the rising
-    edge of the rung input condition condition. This instruction must
-    be the rightmost instruction in its rung.
+    edge of the rung input condition condition.
+    Obsolete: This instruction must be the rightmost instruction in its rung.
+
+    CTR is reversive circular counter. It like CTC but with decrement
+    counting inside. For example, the counter shown above would count
+    7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, ...
+
+    Added 'Init' value in CTU,CTD,CTC,CTR counters.
+    CTU,CTC counter start from 'Init' and count up to 'Max' value.
+    CTC generate overflow impulse when Counter==Max.
+
+    CTD,CTR counter start from 'Init' and count down to 'Min' value.
+    CTR generate overflow impulse when Counter==Min.
 
 
 > SHIFT REGISTER            {SHIFT REG   }

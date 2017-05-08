@@ -88,7 +88,7 @@ static DWORD GenSymCountFormattedString;
 static DWORD GenSymCountStepper;
 
 DWORD EepromAddrFree;
-int   RomSection;
+DWORD RomSection;
 
 //-----------------------------------------------------------------------------
 static void CheckConstantInRange(SDWORD v)
@@ -122,7 +122,9 @@ void IntDumpListing(char *outFile)
             fprintf(f, "%3d:", i);
         } else {
             if(indent < 0) indent = 0;
-            if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
+            if((IntCode[i].op != INT_SIMULATE_NODE_STATE)
+            && (IntCode[i].op != INT_AllocKnownAddr)
+            && (IntCode[i].op != INT_AllocFwdAddr))
                 fprintf(f, "%4d:", i);
         }
         int j;
@@ -237,12 +239,14 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "let var '%s' := '%s' / '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
                 break;
+
             /*
             case INT_SET_VARIABLE_MOD:
                 fprintf(f, "let var '%s' := '%s' % '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
                 break;
             */
+
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1);
                 break;
@@ -359,6 +363,10 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "SLEEP;");
                 break;
 
+            case INT_DELAY:
+                fprintf(f, "DELAY %d us;", IntCode[i].literal);
+                break;
+
             case INT_CLRWDT:
                 fprintf(f, "CLRWDT;");
                 break;
@@ -452,6 +460,36 @@ void IntDumpListing(char *outFile)
                 break;
             // Special function
 
+            case INT_AllocKnownAddr:
+                //fprintf(f, "AllocKnownAddr %s %s AddrOfRung%d;", IntCode[i].name1, IntCode[i].name2, IntCode[i].literal+1);
+                break;
+
+            case INT_AllocFwdAddr:
+                //fprintf(f, "AllocFwdAddr AddrOfRung%d",IntCode[i].literal+1);
+                break;
+
+            case INT_FwdAddrIsNow:
+                fprintf(f, "Rung%dlabel:",IntCode[i].literal+1);
+                break;
+
+            case INT_GOTO:
+                if(IsNumber(IntCode[i].name2))
+                    fprintf(f, "GOTO Rung%slabel", IntCode[i].name2);
+                else
+                    fprintf(f, "GOTO %s; #Rung%slabel", IntCode[i].name2, IntCode[i].name1);
+                break;
+
+            case INT_GOSUB:
+                if(IsNumber(IntCode[i].name2))
+                    fprintf(f, "GOSUB Rung%slabel", IntCode[i].name2);
+                else
+                    fprintf(f, "GOSUB %s; #Rung%slabel", IntCode[i].name2, IntCode[i].name1);
+                break;
+
+            case INT_RETURN:
+                fprintf(f, "RETURN");
+                break;
+
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:
                 fprintf(f, "INIT TABLE signed %d byte %s[%d] := {", IntCode[i].literal2, IntCode[i].name1, IntCode[i].literal);
@@ -480,10 +518,15 @@ void IntDumpListing(char *outFile)
             #endif
 
             default:
-                ooops("IntCode[i].op=INT_%d",IntCode[i].op);
+                ooops("INT_%d",IntCode[i].op);
         }
-        if((int_comment_level == 1) || (IntCode[i].op != INT_SIMULATE_NODE_STATE))
+        if((int_comment_level == 1)
+        ||( (IntCode[i].op != INT_SIMULATE_NODE_STATE)
+          &&(IntCode[i].op != INT_AllocKnownAddr)
+          &&(IntCode[i].op != INT_AllocFwdAddr) ) ) {
+            //fprintf(f, " ## INT_%d",IntCode[i].op);
             fprintf(f, "\n");
+        }
         fflush(f);
     }
     fclose(f);
@@ -654,6 +697,16 @@ static void SimState(BOOL *b, char *name)
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
+static void _Comment1(int l, char *f, char *str)
+{
+  if(int_comment_level) {
+    if(strlen(str)>=MAX_NAME_LEN)
+      str[MAX_NAME_LEN-1]='\0';
+    _Op(l, f, NULL, INT_COMMENT, str);
+  }
+}
+#define Comment1(str) _Comment1(__LINE__, __FILE__, str)
+
 static void _Comment(int l, char *f, char *str, ...)
 {
   if(int_comment_level) {
@@ -688,6 +741,10 @@ static void _Comment(int l, char *f, int level, char *str, ...)
 //-----------------------------------------------------------------------------
 static SDWORD TimerPeriod(ElemLeaf *l)
 {
+    if(Prog.cycleTime <= 0) {
+        Error(" PLC Cycle Time is 0. Timers does not work correctly!");
+        return 0;
+    }
     SDWORD period = SDWORD(l->d.timer.delay / Prog.cycleTime);// - 1;
     if(period < 1)  {
         char *s1 = _("Timer period too short (needs faster cycle time).");
@@ -996,11 +1053,11 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             break;
         }
         case ELEM_TOF: {
-                    if(n)
-                        (*n)++; // counting the number of variables
-                    else {
-                        Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, l->d.timer.delay);
-                    }
+            if(n)
+                (*n)++; // counting the number of variables
+            else {
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, l->d.timer.delay);
+            }
             break;
         }
         case ELEM_SEED_RANDOM: {
@@ -1189,6 +1246,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             CanChange = TRUE;
             ExistEnd = FALSE;
             #endif
+
             if(ExistEnd == FALSE) {
               GenSymParOut(parOut);
 
@@ -1326,9 +1384,17 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                   Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
             Op(INT_END_IF);
             break;
+        case ELEM_TIME2COUNT: {
+            Comment(3, "ELEM_TIME2COUNT");
+            SDWORD period = TimerPeriod(l);
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+            Op(INT_END_IF);
+            break;
+        }
         case ELEM_TCY: {
-            Comment(3, "ELEM_TCY");
             SDWORD period = TimerPeriod(l)-1;
+            Comment(3, "ELEM_TCY %s %d ms %d", l->d.timer.name, l->d.timer.delay, period);
 
             char store[MAX_NAME_LEN];
             GenSymOneShot(store, "TCY", l->d.timer.name);
@@ -1417,11 +1483,17 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName, "CTU", l->d.counter.name);
-
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_IF_BIT_CLEAR, storeName);
                 Op(INT_SET_BIT, storeName);
-                Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+                if(IsNumber(l->d.counter.max)) {
+                  Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name,
+                      CheckMakeNumber(l->d.counter.max));
+                } else {
+                  Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.max, l->d.counter.name);
+                }
+                    Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+                  Op(INT_END_IF);
               Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, storeName);
@@ -1741,9 +1813,6 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
-           #ifdef NEW_FEATURE
-
-           #endif
           break;
         }
 
@@ -1851,7 +1920,6 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         {
-        int deg, len;
         case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  goto xseg;
         case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  goto xseg;
         case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); goto xseg;
@@ -2162,6 +2230,83 @@ math:   {
             Comment(3, "ELEM_LOCK");
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_LOCK);
+            Op(INT_END_IF);
+            break;
+
+        case ELEM_DELAY:
+            Comment(3, "ELEM_DELAY");
+            Op(INT_DELAY, l->d.timer.delay);
+            break;
+
+        case ELEM_GOTO:
+            Comment(3, "ELEM_GOTO");
+            Op(INT_IF_BIT_SET, stateInOut);
+                if(IsNumber(l->d.doGoto.rung)) {
+                    Op(INT_GOTO, l->d.doGoto.rung, l->d.doGoto.rung);
+                } else {
+                    int r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
+                    char s[100];
+                    sprintf(s,"%d", r+1);
+                    if(r >= 0) {
+                        Op(INT_GOTO, s, l->d.doGoto.rung);
+                    } else {
+                        Error(_("LABEL '%s' not found!"), l->d.doGoto.rung);
+                        CompileError();
+                    }
+                }
+            Op(INT_END_IF);
+            break;
+
+        case ELEM_GOSUB:
+            Comment(3, "ELEM_GOSUB");
+            Op(INT_IF_BIT_SET, stateInOut);
+                if(IsNumber(l->d.doGoto.rung)) {
+                    Op(INT_GOSUB, l->d.doGoto.rung, l->d.doGoto.rung);
+                } else {
+                    int r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+                    char s[100];
+                    sprintf(s,"%d", r+1);
+                    if(r >= 0) {
+                        Op(INT_GOSUB, s, l->d.doGoto.rung);
+                    } else {
+                        Error(_("SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                        CompileError();
+                    }
+                }
+            Op(INT_END_IF);
+            break;
+
+        case ELEM_LABEL:
+            Comment(3, "ELEM_LABEL %s rung %d", l->d.doGoto.rung, rungNow+1);
+            break;
+
+        case ELEM_SUBPROG: {
+            Comment(3, "ELEM_SUBPROG %s rung %d", l->d.doGoto.rung, rungNow+1);
+            int r;
+            if(IsNumber(l->d.doGoto.rung)) {
+              r = hobatoi(l->d.doGoto.rung) - 1;
+            } else {
+              r = FindRung(ELEM_ENDSUB, l->d.doGoto.rung);
+            }
+            char s[100];
+            sprintf(s,"%d", r+1+1);
+            if(r >= 0) {
+                Op(INT_GOTO, s, l->d.doGoto.rung);
+            } else {
+                Error(_("ENDSUB '%s' not found!"), l->d.doGoto.rung);
+                CompileError();
+            }
+            break;
+        }
+        case ELEM_ENDSUB:
+            Comment(3, "ELEM_ENDSUB %s rung %d", l->d.doGoto.rung, rungNow+1);
+            Op(INT_RETURN);
+            break;
+
+        case ELEM_RETURN:
+            Comment(3, "ELEM_RETURN");
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_RETURN);
             Op(INT_END_IF);
             break;
 
@@ -2731,6 +2876,7 @@ BOOL GenerateIntermediateCode(void)
         whichNow = INT_MAX;
         Prog.OpsInRung[rung] = 0;
         Prog.HexInRung[rung] = 0;
+        Op(INT_AllocFwdAddr, (SDWORD)rung);
     }
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
@@ -2740,6 +2886,8 @@ BOOL GenerateIntermediateCode(void)
             Comment("");
             Comment("======= START RUNG %d =======", rung+1);
         }
+        Op(INT_FwdAddrIsNow, (SDWORD)rung);
+        Op(INT_AllocKnownAddr, (SDWORD)rung);
 
         if(Prog.rungs[rung]->count >= 1 &&
             Prog.rungs[rung]->contents[0].which == ELEM_COMMENT)
@@ -2759,8 +2907,8 @@ BOOL GenerateIntermediateCode(void)
                 }
             }
             if(int_comment_level>=2) {
-                if(s1) Comment(s1);
-                if(s2) Comment(s2);
+                if(s1) Comment1(s1); // bypass % in comments
+                if(s2) Comment1(s2); // bypass % in comments
             }
             continue;
         }
@@ -2775,6 +2923,8 @@ BOOL GenerateIntermediateCode(void)
         SimState(&(Prog.rungPowered[rung]), "$rung_top");
         IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[rung], "$rung_top", rung);
     }
+    rungNow++;
+    Op(INT_FwdAddrIsNow, (SDWORD)Prog.numRungs);
     rungNow++;
     //Calculate amount of intermediate codes in rungs
     int i;
@@ -2867,9 +3017,6 @@ BOOL Bin32BcdRoutineUsed(void)
     int i;
     for(i = 0; i < IntCodeLen; i++){
         if((IntCode[i].op == INT_SET_BIN2BCD)
-        #ifdef NEW_FEATURE
-        //|| (IntCode[i].op == INT_UART_SEND_READY)
-        #endif
         ) {
             return TRUE;
         }

@@ -116,6 +116,7 @@ typedef struct Pic16InstructionTag {
 #define MAX_PROGRAM_LEN 128*1024
 static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
 static DWORD PicProgWriteP;
+static DWORD BeginOfPLCCycle;
 
 static int IntPcNow = -INT_MAX; //must be static
 
@@ -635,6 +636,15 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DW
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
+static void _Comment1(char *str)
+{
+  if(asm_comment_level) {
+    if(strlen(str)>=MAX_COMMENT_LEN)
+      str[MAX_COMMENT_LEN-1]='\0';
+    Instruction(OP_COMMENT_INT, 0, 0, str);
+  }
+}
+
 static void Comment(char *str, ...)
 {
   if(asm_comment_level) {
@@ -1848,7 +1858,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             WriteIhex(f, 2); // LL->Record Length
             WriteIhex(f, 0); // AA->Address as big endian values HI()
             WriteIhex(f, 0); // AA->Address as big endian values LO()
-            WriteIhex(f, 2); // TT->Record Type -> 02 is Extended Segment Address
+            WriteIhex(f, 4); // TT->Record Type -> 04 is Extended Linear Address Record
             WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) >> 8));   // AA->Address as big endian values HI()
             WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) & 0xff)); // AA->Address as big endian values LO()
             FinishIhex(f);   // CC->Checksum
@@ -1974,11 +1984,12 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     if(McuAs("Microchip PIC16F887 ")
     || McuAs("Microchip PIC16F886 ")
     || McuAs("Microchip PIC16F88 ")
+    || McuAs(" PIC16F87 ")
     || McuAs(" PIC16F884 ")
     || McuAs(" PIC16F883 ")
     || McuAs(" PIC16F882 ")
     ) {
-        WriteIhex(f, 0x04);
+        WriteIhex(f, 0x04); // RECLEN 4 bytes
         WriteIhex(f, 0x40); // 0x2007 * 2 = 0x400E
         WriteIhex(f, 0x0E);
         WriteIhex(f, 0x00);
@@ -1998,7 +2009,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
     ) {
-        WriteIhex(f, 0x04);
+        WriteIhex(f, 0x04); // RECLEN 4 bytes
         WriteIhex(f, 0x01); // 0x8007 * 2 = 0x01000E
         WriteIhex(f, 0x00);
         WriteIhex(f, 0x0E);
@@ -2018,7 +2029,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC12F683 ")
     ) {
         if(Prog.configurationWord & 0xffff0000) oops();
-        WriteIhex(f, 0x02);
+        WriteIhex(f, 0x02); // RECLEN 2 bytes
         WriteIhex(f, 0x40); // 0x2007 * 2 = 0x400E
         WriteIhex(f, 0x0E);
         WriteIhex(f, 0x00);
@@ -2030,7 +2041,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC10F220 ")
     ) {
         if(Prog.configurationWord & 0xffff0000) oops();
-        WriteIhex(f, 0x02);
+        WriteIhex(f, 0x02); // RECLEN 2 bytes
         WriteIhex(f, 0x03); // 0x01ff * 2 = 0x03FE
         WriteIhex(f, 0xFE);
         WriteIhex(f, 0x00);
@@ -2042,7 +2053,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     || McuAs(" PIC10F222 ")
     ) {
         if(Prog.configurationWord & 0xffff0000) oops();
-        WriteIhex(f, 0x02);
+        WriteIhex(f, 0x02); // RECLEN 2 bytes
         WriteIhex(f, 0x07); // 0x03ff * 2 = 0x07FE
         WriteIhex(f, 0xFE);
         WriteIhex(f, 0x00);
@@ -3915,6 +3926,45 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Comment(a->name1);
                 break;
 
+            case INT_AllocKnownAddr:
+                AddrOfRungN[a->literal].KnownAddr = PicProgWriteP;
+                break;
+
+            case INT_AllocFwdAddr:
+                AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
+                break;
+
+            case INT_FwdAddrIsNow:
+                FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
+                break;
+
+            case INT_RETURN:
+                Instruction(OP_RETURN);
+                break;
+
+            case INT_GOTO: {
+                int rung = hobatoi(a->name1);
+                rung = min(rung, Prog.numRungs+1);
+                if(rung < 0) {
+                    Instruction(OP_GOTO, 0);
+                } else if(rung == 0) {
+                    Instruction(OP_GOTO, BeginOfPLCCycle);
+                } else if(rung <= rungNow) {
+                    Instruction(OP_GOTO, AddrOfRungN[rung-1].KnownAddr);
+                } else {
+                    Instruction(OP_GOTO, AddrOfRungN[rung-1].FwdAddr);
+                }
+                break;
+            }
+            case INT_GOSUB: {
+                int rung = hobatoi(a->name1);
+                if(rung < rungNow) {
+                    Instruction(OP_CALL, AddrOfRungN[rung].KnownAddr);
+                } else if(rung > rungNow) {
+                    Instruction(OP_CALL, AddrOfRungN[rung].FwdAddr);
+                } else oops();
+                break;
+            }
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT: {
                  // InitTable(a); // Inited by InitTables()
@@ -3983,6 +4033,17 @@ static void CompileFromIntermediate(BOOL topLevel)
             }
             #endif
 
+        case INT_DELAY: {
+            long long us = a->literal;
+            us = us * Prog.mcuClock / 4000000;
+            if(us <= 0 ) us = 1;
+            int i;
+            for(i = 0; i < (us / 2); i++)
+              Instruction(OP_GOTO, PicProgWriteP+1);
+            if(us % 2)
+              Instruction(OP_NOP_);
+            break;
+        }
         case INT_CLRWDT:
             Instruction(OP_CLRWDT);
             break;
@@ -4041,7 +4102,7 @@ executed as a NOP instruction. */
 // that triggers all the ladder logic processing. We will always use 16-bit
 // Timer1, with the prescaler configured appropriately.
 //-----------------------------------------------------------------------------
-static void ConfigureTimer1(int cycleTimeMicroseconds)
+static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 {
     Comment("Configure Timer1");
     int prescaler = 1;
@@ -4128,7 +4189,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
     softDivisor = 1;
     int prescaler = 1;
     long long int countsPerCycle;
-    countsPerCycle =(1.0 * Prog.mcuClock / 4.0) * cycleTimeMicroseconds / 1000000.0;
+    countsPerCycle = long long int((1.0 * Prog.mcuClock / 4.0) * cycleTimeMicroseconds / 1000000.0);
 
     while((prescaler <= 256) && (softDivisor < 0x10000)) {
         tmr0 = (int)(countsPerCycle / (prescaler*softDivisor));
@@ -5045,7 +5106,7 @@ void CompilePic16(char *outFile)
 
     Comment("Now zero out the RAM");
     DWORD progStartBank = 0;
-    int i;
+    DWORD i;
 //  for(i = 0; i < MAX_RAM_SECTIONS; i++) {
     for(i = 0; i <= RamSection; i++) {
       if(Prog.mcu->ram[i].len) {
@@ -5071,7 +5132,6 @@ void CompilePic16(char *outFile)
                     Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
             }
         }
-
         if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0100)) {
             if(Prog.mcu->ram[i].start & 0x0100)
                 Instruction(OP_BSF, REG_STATUS, STATUS_IRP);
@@ -5150,11 +5210,13 @@ void CompilePic16(char *outFile)
         }
     }
 
-    // Configure PLC Timer near the progStart
-    if(Prog.cycleTimer==0)
-        ConfigureTimer0(Prog.cycleTime);
-    else
-        ConfigureTimer1(Prog.cycleTime);
+    if(Prog.cycleTime != 0) {
+        // Configure PLC Timer near the progStart
+        if(Prog.cycleTimer==0)
+            ConfigureTimer0(Prog.cycleTime);
+        else
+            ConfigureTimer1(Prog.cycleTime);
+    }
     if(McuAs("Microchip PIC16F877 ")) {
         // This is a nasty special case; one of the extra bits in TRISE
         // enables the PSP, and must be kept clear (set here as will be
@@ -5290,63 +5352,65 @@ void CompilePic16(char *outFile)
 //  Comment("Select Bank 0");
 //  BankSelect(0xFF, 0);
     Comment("Begin Of PLC Cycle");
-    DWORD top = PicProgWriteP;
-    if(Prog.cycleTimer == 0) {
-        if(Prog.mcu->core == BaselineCore12bit) {
-            /*
-            // v1
-            Instruction(OP_MOVLW, tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-//          Instruction(OP_MOVLW, tmr0 - 1); // tested in Proteus - 1) 1kHz}
-            Instruction(OP_SUBWF, REG_TMR0, DEST_W);
-            Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
-            Instruction(OP_GOTO,  top);
-            Instruction(OP_CLRF,  REG_TMR0);
-            */
-            // v2
-            Instruction(OP_MOVF,  REG_TMR0, DEST_W);
-            Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
-            Instruction(OP_GOTO,  top);
-//          Instruction(OP_MOVLW, 256 - tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-//          Instruction(OP_MOVLW, 256 - tmr0 - 1); // tested in Proteus - 1) 992Hz}
-            Instruction(OP_MOVLW, 256 - tmr0 + 1); // tested in Proteus - 1) 992Hz 0=996}
-            Instruction(OP_MOVWF, REG_TMR0);
-        } else {
-            Instruction(OP_MOVLW,  256 - tmr0 + 1); // tested in Proteus {+1} {1ms=1kHz} {0.250ms=4kHz}
-            IfBitClear(REG_INTCON, T0IF);
-            Instruction(OP_GOTO,   PicProgWriteP - 1, 0);
-            Instruction(OP_MOVWF,  REG_TMR0);
-            Instruction(OP_BCF,    REG_INTCON ,T0IF); // must be cleared in software
-        }
+    BeginOfPLCCycle = PicProgWriteP;
+    if(Prog.cycleTime != 0) {
+      if(Prog.cycleTimer == 0) {
+          if(Prog.mcu->core == BaselineCore12bit) {
+              /*
+              // v1
+              Instruction(OP_MOVLW, tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
+  //          Instruction(OP_MOVLW, tmr0 - 1); // tested in Proteus - 1) 1kHz}
+              Instruction(OP_SUBWF, REG_TMR0, DEST_W);
+              Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
+              Instruction(OP_GOTO,  BeginOfPLCCycle);
+              Instruction(OP_CLRF,  REG_TMR0);
+              */
+              // v2
+              Instruction(OP_MOVF,  REG_TMR0, DEST_W);
+              Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
+              Instruction(OP_GOTO,  BeginOfPLCCycle);
+  //          Instruction(OP_MOVLW, 256 - tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
+  //          Instruction(OP_MOVLW, 256 - tmr0 - 1); // tested in Proteus - 1) 992Hz}
+              Instruction(OP_MOVLW, 256 - tmr0 + 1); // tested in Proteus - 1) 992Hz 0=996}
+              Instruction(OP_MOVWF, REG_TMR0);
+          } else {
+              Instruction(OP_MOVLW,  256 - tmr0 + 1); // tested in Proteus {+1} {1ms=1kHz} {0.250ms=4kHz}
+              IfBitClear(REG_INTCON, T0IF);
+              Instruction(OP_GOTO,   PicProgWriteP - 1, 0);
+              Instruction(OP_MOVWF,  REG_TMR0);
+              Instruction(OP_BCF,    REG_INTCON ,T0IF); // must be cleared in software
+          }
 
-        if(softDivisor > 1) {
-            DWORD yesZero;
-            if(softDivisor > 0xff) {
-                yesZero = AllocFwdAddr();
-            }
-            Instruction(OP_DECFSZ, addrDivisor, DEST_F); // Skip if zero
-            Instruction(OP_GOTO, top);
+          if(softDivisor > 1) {
+              DWORD yesZero;
+              if(softDivisor > 0xff) {
+                  yesZero = AllocFwdAddr();
+              }
+              Instruction(OP_DECFSZ, addrDivisor, DEST_F); // Skip if zero
+              Instruction(OP_GOTO, BeginOfPLCCycle);
 
-            if(softDivisor > 0xff) {
-                Instruction(OP_MOVF, addrDivisor+1, DEST_F);
-                Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
-                Instruction(OP_GOTO, yesZero);
-                Instruction(OP_DECF, addrDivisor+1, DEST_F);
-                Instruction(OP_GOTO, top);
-                FwdAddrIsNow(yesZero);
+              if(softDivisor > 0xff) {
+                  Instruction(OP_MOVF, addrDivisor+1, DEST_F);
+                  Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
+                  Instruction(OP_GOTO, yesZero);
+                  Instruction(OP_DECF, addrDivisor+1, DEST_F);
+                  Instruction(OP_GOTO, BeginOfPLCCycle);
+                  FwdAddrIsNow(yesZero);
 
-                WriteRegister(addrDivisor+1, BYTE(softDivisor >> 8));
-            }
+                  WriteRegister(addrDivisor+1, BYTE(softDivisor >> 8));
+              }
 
-            WriteRegister(addrDivisor,   BYTE(softDivisor & 0xff));
-        }
-    } else {
-        if(Prog.mcu->core == BaselineCore12bit) {
-            Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
-            fCompileError(f, fAsm);
-        }
-        IfBitClear(REG_PIR1, CCP1IF);
-        Instruction(OP_GOTO, PicProgWriteP - 1, 0);
-        Instruction(OP_BCF, REG_PIR1, CCP1IF);
+              WriteRegister(addrDivisor,   BYTE(softDivisor & 0xff));
+          }
+      } else {
+          if(Prog.mcu->core == BaselineCore12bit) {
+              Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
+              fCompileError(f, fAsm);
+          }
+          IfBitClear(REG_PIR1, CCP1IF);
+          Instruction(OP_GOTO, PicProgWriteP - 1, 0);
+          Instruction(OP_BCF, REG_PIR1, CCP1IF);
+      }
     }
 
     DWORD addrDuty;
@@ -5381,7 +5445,7 @@ void CompilePic16(char *outFile)
     // This is probably a big jump, so give it PCLATH.
     Instruction(OP_CLRF, REG_PCLATH, 0);
     #endif
-    Instruction(OP_GOTO, top, 0);
+    Instruction(OP_GOTO, BeginOfPLCCycle, 0);
 
     rungNow = -50;
 
