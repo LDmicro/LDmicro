@@ -242,6 +242,7 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
 {
     char *s;
     switch(which) {
+        case ELEM_TIME2COUNT: s = _("TIME to COUNTER converter"); break;
         case ELEM_TCY: s = _("Cyclic On/Off"); break;
         case ELEM_TON: s = _("Turn-On Delay"); break;
         case ELEM_TOF: s = _("Turn-Off Delay"); break;
@@ -340,6 +341,27 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
     }
 }
 
+void ShowDelayDialog(int which, SDWORD *delay)
+{
+    char *s;
+    s = _("Delay, us");
+
+    char *labels[] = { _("Delay (us):") };
+
+    char delBuf[16];
+    sprintf(delBuf, "%d", *delay);
+    char *dests[] = { delBuf };
+
+    if(ShowSimpleDialog(s, 1, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
+        SDWORD del = hobatoi(delBuf);
+        if(del <= 0) {
+            Error(_("Delay cannot be zero or negative."));
+        } else {
+            *delay = del;
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Report an error if a constant doesn't fit in 8-16-24 bits.
 //-----------------------------------------------------------------------------
@@ -373,8 +395,8 @@ static void CheckConstantInRange(char *name, char *str, SDWORD v)
         else if((v < 0 || v > 0xffffff) && (radix != 10))
             Error(_("Constant %s=%d out of variable '%s' range : 0 to 16777215 inclusive."), str, v, name);
     } else if(sov == 4) {
-        if((v < -2147483648 || v > 2147483647) && (radix == 10))
-            Error(_("Constant %s=%d out of variable '%s' range: -8388608 to 8388607 inclusive."), str, v, name);
+        if((v < -2147483648LL || v > 2147483647) && (radix == 10))
+            Error(_("Constant %s=%d out of variable '%s' range: -2147483648 to 2147483647 inclusive."), str, v, name);
         else if((DWORD(v) < 0 || DWORD(v) > 0xFFFFffff) && (radix != 10))
             Error(_("Constant %s=%d out of variable '%s' range : 0 to 4294967295(0xFFFFffff) inclusive."), str, v, name);
     } else ooops("Constant %s Variable '%s' size=%d value=%d", str, name, sov, v);
@@ -493,7 +515,6 @@ void ShowSFRDialog(int which, char *op1, char *op2)
         }
     }
 }
-
 // Special function
 
 void ShowCmpDialog(int which, char *op1, char *op2)
@@ -673,6 +694,38 @@ void ShowReadAdcDialog(char *name)
     ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
 }
 
+void ShowGotoDialog(int which, char *name)
+{
+    char *labels[] = { _("Destination rung(label):") };
+    char *dests[] = { name };
+
+    char *s;
+    switch(which) {
+        case ELEM_GOTO:
+            s = _("Goto rung number or labe namel");
+            labels[1] = _("Destination rung(label):");
+            break;
+        case ELEM_GOSUB:
+            s = _("Call SUBPROG rung number or label name");
+            labels[1] = _("Destination rung(label):");
+            break;
+        case ELEM_LABEL:
+            s = _("Define LABEL name");
+            labels[1] = _("LABEL name:");
+            break;
+        case ELEM_SUBPROG:
+            s = _("Define SUBPROG name");
+            labels[1] = _("SUBPROG name:");
+            break;
+        case ELEM_ENDSUB:
+            s = _("Define ENDSUB name");
+            labels[1] = _("ENDSUB name:");
+            break;
+        default: oops();
+    }
+    ShowSimpleDialog(s, 1, labels, 0, 0x1, 0x1, dests);
+}
+
 void ShowRandomDialog(char *name)
 {
     char *labels[] = { _("Destination:") };
@@ -805,7 +858,6 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
     FILE *f;
 
     double massa=1;
-    double k;
     int nSize = s->nSize;
     int graph = s->graph;
 
@@ -821,6 +873,7 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
 
     f = fopen("acceleration_deceleration.txt", "w");
 /*
+    double k;
     if(graph==1){
       k = kProp(nSize);
       makeAccelTable(f, max, P, nSize, &r->T,

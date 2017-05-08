@@ -1,3 +1,30 @@
+== Release 4.2.0
+
+    * Fixed: PIC Configuration Bits hexadecimals.
+
+    * New: Element TIME to COUNTER converter
+    https://github.com/LDmicro/LDmicro/wiki/TIME-to-COUNTER-converter
+
+    * New: Element DELAY us
+    https://github.com/LDmicro/LDmicro/wiki/DELAY-us
+
+    * New: PLC Cycle Time 0
+    https://github.com/LDmicro/LDmicro/wiki/PLC-Cycle-Time-0
+
+    * New: LABEL and GOTO instruction
+    https://github.com/LDmicro/LDmicro/wiki/GOTO-instruction
+
+    * New: SUBPROG, RETURN, ENDSUB and GOSUB instruction
+    https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-ENDSUB-and-GOSUB-instruction
+
+    * Add: Menu->Config->Select color scheme->Select user colors
+
+    * Wiki: LDmicro color schemes
+    See https://github.com/LDmicro/LDmicro/wiki/LDmicro-color-schemes
+
+    * Wiki: HOW TO: The AND, OR, XOR logic operations on CONTACTs inputs
+    See https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-The-AND,-OR,-XOR-logic-operations-on-CONTACTs-inputs
+
 == Release 4.1.8
 
     * Fixed: LOOK-UP TABLE error in Windows 7 64bit.

@@ -1,5 +1,5 @@
-DEFINES = /D_WIN32_WINNT=0x400 /DISOLATION_AWARE_ENABLED /D_WIN32_IE=0x400 /DWIN32_LEAN_AND_MEAN /DWIN32 /D$(D)
-CFLAGS  = /W3 /nologo -I..\common\win32 /O2 /D_CRT_SECURE_NO_WARNINGS /D_DEBUG /Zi /D_CRT_SECURE_NO_DEPRECATE
+DEFINES = /D_WIN32_WINNT=0x500 /DISOLATION_AWARE_ENABLED /D_WIN32_IE=0x400 /DWIN32_LEAN_AND_MEAN /DWIN32 /D$(D)
+CFLAGS  = /W3 /nologo -I. -I..\common\win32 /O2 /D_CRT_SECURE_NO_WARNINGS /D_DEBUG /Zi /D_CRT_SECURE_NO_DEPRECATE /EHsc
 
 HEADERS = ..\common\win32\freeze.h ldmicro.h mcutable.h intcode.h
 
@@ -24,6 +24,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\resetdialog.obj \
            $(OBJDIR)\lutdialog.obj \
            $(OBJDIR)\confdialog.obj \
+           $(OBJDIR)\colorDialog.obj \
            $(OBJDIR)\iolist.obj \
            $(OBJDIR)\miscutil.obj \
            $(OBJDIR)\lang.obj \
@@ -45,12 +46,13 @@ all: $(OBJDIR)/ldmicro.exe $(OBJDIR)/ldinterpret.exe $(OBJDIR)/ldxinterpret.exe
     @copy $(OBJDIR)\ldmicro.exe .
     @copy $(OBJDIR)\ldinterpret.exe .
     @copy $(OBJDIR)\ldxinterpret.exe .
-	@cd reg
+    @cd reg
     rem @go.bat
     @cd ..
 
 clean:
-    del /f /q obj
+    if not exist $(OBJDIR) mkdir $(OBJDIR)
+    if exist $(OBJDIR) del /f /q $(OBJDIR)
 
 lang.cpp: $(OBJDIR)/lang-tables.h
 

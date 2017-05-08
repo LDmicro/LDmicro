@@ -676,7 +676,7 @@ McuAdcPinInfo AvrAtmega164AdcPinInfo[] = {
     { 33, 0x07 },
 };
 //-----------------------------------------------------------------------------
-// A variety of 18-pin PICs that share the same digital IO assignment.
+// A variety of 18-Pin PICs that share the same digital IO assignment.
 
 McuIoPinInfo Pic18PinIoInfo[] = {
     { 'A',  2,  1, "RA2/AN2/VREF" },
@@ -1419,7 +1419,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x05, 0x06 }, // PORTx
         { 0x85, 0x86 }, // TRISx
         2048,
-        { { 0x20, 96 }, { 0xa0, 80 }, { 0x120, 48 } },
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 48 } },
         Pic18PinIoInfo,
         arraylen(Pic18PinIoInfo),
         NULL,
@@ -1448,7 +1448,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x05, 0x06 }, // PORTx
         { 0x85, 0x86 }, // TRISx
         4096,
-        { { 0x20, 96 }, { 0xa0, 80 }, { 0x120, 48 } },
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 48 } },
         Pic18PinIoInfo,
         arraylen(Pic18PinIoInfo),
         Pic16f88AdcPinInfo,
@@ -1459,6 +1459,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         ISA_PIC16,
         MidrangeCore14bit,
         18,
+//     (0x3fff << 16) |         // CONFIG2
             (1 << 13) |         // CP off
             (1 << 12) |         // CCP on RB2 (doesn't matter)
             (1 << 11) |         // ICD disabled
@@ -1522,7 +1523,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
         { 0x85, 0x86, 0x87, 0x88, 0x89 }, // TRISx
         8*1024,
-        { { 0x20, 96 }, { 0xa0, 80 }, { 0x110, 96 }, { 0x190, 96 } },
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x110, 96 }, { 0x190, 96 } },
         Pic16f877IoPinInfo,
         arraylen(Pic16f877IoPinInfo),
         Pic16f877AdcPinInfo,
@@ -1551,7 +1552,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x05, 0x06, 0x07 }, // PORTx
         { 0x85, 0x86, 0x87 }, // TRISx
         8*1024,
-        { { 0x20, 96 }, { 0xa0, 80 }, { 0x110, 96 }, { 0x190, 96 } },
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x110, 96 }, { 0x190, 96 } },
         Pic16f876IoPinInfo,
         arraylen(Pic16f876IoPinInfo),
         Pic16f876AdcPinInfo,
@@ -1580,7 +1581,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
         { 0x85, 0x86, 0x87, 0x88, 0x89 }, // TRISx
         8*1024,
-        { { 0x20, 96 }, { 0xa0, 80 }, { 0x120, 80 }, { 0x1a0, 80 } },
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 80 }, { 0x1a0, 80 } },
         Pic16f887IoPinInfo,
         arraylen(Pic16f887IoPinInfo),
         Pic16f887AdcPinInfo,
@@ -1618,7 +1619,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x05, 0x06, 0x07, 0, 0x09 }, // PORTx
         { 0x85, 0x86, 0x87, 0, 0x89 }, // TRISx
         8*1024,
-        { { 0x20, 96 }, { 0xa0, 80 }, { 0x120, 80 }, { 0x1a0, 80 } },
+        { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 80 }, { 0x1a0, 80 } },
         Pic28Pin_SPDIP_SOIC_SSOP,
         arraylen(Pic28Pin_SPDIP_SOIC_SSOP),
         Pic16f886AdcPinInfo,

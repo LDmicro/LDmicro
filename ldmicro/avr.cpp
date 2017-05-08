@@ -188,7 +188,7 @@ static DWORD FwdAddrCount;
 #define FWD_EIND(x) ((x) | 0x10000000)
 
 // Address to jump to when we finish one PLC cycle
-static DWORD BeginningOfCycleAddr;
+static DWORD BeginOfPLCCycle;
 
 // Address of the multiply subroutine, and whether we will have to include it
 static DWORD MultiplyAddress;
@@ -323,7 +323,7 @@ static DWORD REG_EECR      = 0x3c; //
 #define          EEMWE  BIT2
 #define          EERIE  BIT3
 
-// I2C support for atmega8,16,32,64,128
+// I2C support for ATmega8,16,32,64,128
 #define TWCR    0x56
 #define TWDR    0x23
 #define TWAR    0x22
@@ -2011,7 +2011,7 @@ BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,
         //dbp("prescaler=%d divider=%d mul=%d T=%d us", *prescaler, *divider ,*prescaler * *divider, cycleTimeMicrosecondsFact);
 
         if(*divider <= max_divider) {
-            int err = abs(1.0*(cycleTimeMicrosecondsFact - cycleTimeMicroseconds));
+            int err = int(abs(1.0*(cycleTimeMicrosecondsFact - cycleTimeMicroseconds)));
             if((err <= bestError) && (bestDivider < *divider)) {
                 bestError = err;
                 bestPrescaler = *prescaler;
@@ -2093,7 +2093,7 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         WriteMemory(REG_TCCR0, cs);   // set prescaler
         SetBit(REG_TIFR0, TOV0);       // Clear TOV0/ clear pending interrupts
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!
-        //no interupt for timer0 need..
+        //no interupt for timer need..
         //SetBit(REG_TIMSK, TOIE0);     // Enable Timer/Counter0 Overflow Interrupt
         //Instruction(OP_SEI);
         //
@@ -2356,36 +2356,39 @@ static void WriteRuntime(void)
         }
     }
 
-    Comment("ConfigureTimerForPlcCycle");
-    ConfigureTimerForPlcCycle(Prog.cycleTime);
-
+    if(Prog.cycleTime != 0) {
+      Comment("ConfigureTimerForPlcCycle");
+      ConfigureTimerForPlcCycle(Prog.cycleTime);
+    }
   //Comment("and now the generated PLC code will follow");
     Comment("Begin Of PLC Cycle");
-    BeginningOfCycleAddr = AvrProgWriteP;
+    BeginOfPLCCycle = AvrProgWriteP;
 
-    if(Prog.cycleTimer == 0) {
-        //IfBitClear(REG_TIFR0, TOV0);
-        LoadZAddr(REG_TIFR0);             //IfBitClear(REG_TIFR0, TOV0);
-        DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
-        Instruction(OP_LD_Z, r25);       //IfBitClear(REG_TIFR0, TOV0);
-        Instruction(OP_SBRS, r25, TOV0); //IfBitClear(REG_TIFR0, TOV0);
-        Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer0/Counter
+    if(Prog.cycleTime != 0) {
+      if(Prog.cycleTimer == 0) {
+          //IfBitClear(REG_TIFR0, TOV0);
+          LoadZAddr(REG_TIFR0);             //IfBitClear(REG_TIFR0, TOV0);
+          DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
+          Instruction(OP_LD_Z, r25);       //IfBitClear(REG_TIFR0, TOV0);
+          Instruction(OP_SBRS, r25, TOV0); //IfBitClear(REG_TIFR0, TOV0);
+          Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer0/Counter
 
-        SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
-        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+          SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
+          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
 
-        Instruction(OP_LDI, r25, tcnt0PlcCycle /*+1/*?*/); // reload Counter0
-        WriteRegToIO(REG_TCNT0, r25);
-    } else { // Timer1
-        //IfBitClear(REG_TIFR1, OCF1A);
-        LoadZAddr(REG_TIFR1);             //IfBitClear(REG_TIFR1, OCF1A);
-        DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
-        Instruction(OP_LD_Z, r25);        //IfBitClear(REG_TIFR1, OCF1A);
-        Instruction(OP_SBRS, r25, OCF1A); //IfBitClear(REG_TIFR1, OCF1A);
-        Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer1/Counter
+          Instruction(OP_LDI, r25, tcnt0PlcCycle /*+1/*?*/); // reload Counter0
+          WriteRegToIO(REG_TCNT0, r25);
+      } else { // Timer1
+          //IfBitClear(REG_TIFR1, OCF1A);
+          LoadZAddr(REG_TIFR1);             //IfBitClear(REG_TIFR1, OCF1A);
+          DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
+          Instruction(OP_LD_Z, r25);        //IfBitClear(REG_TIFR1, OCF1A);
+          Instruction(OP_SBRS, r25, OCF1A); //IfBitClear(REG_TIFR1, OCF1A);
+          Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer1/Counter
 
-        SetBit(REG_TIFR1, OCF1A);
-        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+          SetBit(REG_TIFR1, OCF1A);
+          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+      }
     }
 
     if(Prog.cycleDuty) {
@@ -2432,7 +2435,7 @@ static void CompileIfBody(DWORD condFalse)
 static void CallSubroutine(DWORD addr)
 //used ZL
 {
-    if(Prog.mcu->core >= ClassicCore8K) {
+    if((Prog.mcu->core >= ClassicCore8K) && (addr > 0xFFF)) {
         Instruction(OP_LDI, ZL, FWD_LO(addr));
         Instruction(OP_LDI, ZH, FWD_HI(addr));
         Instruction(OP_ICALL, 0, 0);
@@ -2467,8 +2470,6 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
 {
     DWORD addr;
     int sov = SizeOfVar(var);
-    if(sov != sovRegs)
-      dbp("reg=%d sovRegs=%d <- var=%s sov=%d",reg,sovRegs,var,sov);
 
     MemForVariable(var, &addr);
     LoadXAddr(addr, var);
@@ -3366,7 +3367,7 @@ static void CompileFromIntermediate(void)
                     freqSI = SIprefix(freq, SI);
                     sprintf(freqStr, "%s%.3f %sHz    ", freqStr, freqSI, SI);
 
-                    int err = abs(freq - target);
+                    int err = int(abs(freq - target));
                     if(err < bestError) {
                         bestError = err;
                         bestPrescale = prescale;
@@ -3791,6 +3792,64 @@ static void CompileFromIntermediate(void)
             case INT_COMMENT:
                 Comment(a->name1);
                 break;
+
+            case INT_AllocKnownAddr:
+                AddrOfRungN[a->literal].KnownAddr = AvrProgWriteP;
+                break;
+
+            case INT_AllocFwdAddr:
+                AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
+                break;
+
+            case INT_FwdAddrIsNow:
+                FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
+                break;
+            case INT_GOTO: {
+                int rung = hobatoi(a->name1);
+                rung = min(rung, Prog.numRungs+1);
+                DWORD addr;
+
+                if(rung < 0) {
+                    addr = 0;
+                } else if(rung == 0) {
+                    addr = BeginOfPLCCycle;
+                } else if(rung <= rungNow) {
+                    addr = AddrOfRungN[rung-1].KnownAddr;
+                } else {
+                    addr = AddrOfRungN[rung-1].FwdAddr;
+                }
+                if(rung > rungNow) {
+                    if(Prog.mcu->core >= ClassicCore8K) {
+                        Instruction(OP_LDI, ZL, FWD_LO(addr));
+                        Instruction(OP_LDI, ZH, FWD_HI(addr));
+                        Instruction(OP_IJMP, addr);
+                    } else {
+                        Instruction(OP_RJMP, addr);
+                    }
+                } else {
+                    if(Prog.mcu->core >= ClassicCore8K) {
+                        Instruction(OP_LDI, ZL, addr & 0xff);
+                        Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
+                        Instruction(OP_IJMP, addr);
+                    } else {
+                        Instruction(OP_RJMP, addr);
+                    }
+                }
+                break;
+            }
+            case INT_GOSUB: {
+                int rung = hobatoi(a->name1);
+                if(rung < rungNow) {
+                    CallSubroutine(AddrOfRungN[rung].KnownAddr);
+                } else if(rung > rungNow) {
+                    CallSubroutine(AddrOfRungN[rung].FwdAddr);
+                } else oops();
+                break;
+            }
+            case INT_RETURN:
+                Instruction(OP_RET);
+                break;
+
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:{
                 DWORD addrOfTable = 0;
@@ -3932,6 +3991,17 @@ static void CompileFromIntermediate(void)
 
                 CopyRegsToVar(seedName, r10, 4);
                 CopyRegsToVar(a->name1, r10 + 4 - sov1, sov1); // highest bytes of seed
+                break;
+            }
+            case INT_DELAY: {
+                long long us = a->literal;
+                us = us * Prog.mcuClock / 1000000;
+                if(us <= 0 ) us = 1;
+                int i;
+                for(i = 0; i < (us / 2); i++)
+                  Instruction(OP_RJMP, AvrProgWriteP+1);
+                if(us % 2)
+                  Instruction(OP_NOP);
                 break;
             }
             case INT_CLRWDT:
@@ -4460,6 +4530,8 @@ void CompileAvr(char *outFile)
         return;
     }
 
+    Comment("GOTO, progStart");
+
     //***********************************************************************
     // Interrupt Vectors Table
     if(McuAs(" AT90USB646 ")
@@ -4662,6 +4734,11 @@ void CompileAvr(char *outFile)
         REG_ADCSRA  = 0x7A;
         REG_ADCH    = 0x79;
         REG_ADCL    = 0x78;
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
 
         REG_UDR     = 0xCE;
         REG_UBRRH   = 0xCD;
@@ -5178,11 +5255,11 @@ void CompileAvr(char *outFile)
     rungNow = -30;
     Comment("GOTO next PLC cycle");
     if(Prog.mcu->core >= ClassicCore8K) {
-        Instruction(OP_LDI, ZL, (BeginningOfCycleAddr & 0xff));
-        Instruction(OP_LDI, ZH, (BeginningOfCycleAddr >> 8) & 0xff);
-        Instruction(OP_IJMP, BeginningOfCycleAddr, 0);
+        Instruction(OP_LDI, ZL, (BeginOfPLCCycle & 0xff));
+        Instruction(OP_LDI, ZH, (BeginOfPLCCycle >> 8) & 0xff);
+        Instruction(OP_IJMP, BeginOfPLCCycle, 0);
     } else {
-        Instruction(OP_RJMP, BeginningOfCycleAddr, 0);
+        Instruction(OP_RJMP, BeginOfPLCCycle, 0);
     }
 
 

@@ -21,7 +21,9 @@ SET AVRDUDE_PROGRAMMER_ID=dapa
 @rem ATmega8==m8
 @rem SET AVRDUDE_PART_ID=m8
 @rem ATmega328P==m328p
-SET AVRDUDE_PART_ID=m328p
+@rem SET AVRDUDE_PART_ID=m328p
+@rem ATmega32U4=m32u4
+SET AVRDUDE_PART_ID=m32u4
 
 @rem read eeprom before flashing.
 rem %AVRDUDE_PATH%avrdude.exe -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U eeprom:r:eeprom_read1:r

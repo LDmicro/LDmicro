@@ -115,6 +115,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_TOF          0x24
 #define MNU_INSERT_RTO          0x25
 #define MNU_INSERT_RES          0x26
+#define MNU_INSERT_TIME2COUNT   0x2601
 #define MNU_INSERT_OSR          0x27
 #define MNU_INSERT_OSF          0x28
 #define MNU_INSERT_CTU          0x29
@@ -167,7 +168,13 @@ typedef signed long SDWORD;
 #define MNU_INSERT_SLEEP        0x3d01
 #define MNU_INSERT_CLRWDT       0x3d02
 #define MNU_INSERT_LOCK         0x3d03
-#define MNU_INSERT_GOTO         0x3d04
+#define MNU_INSERT_DELAY        0x3d04
+#define MNU_INSERT_GOTO         0x3d20
+#define MNU_INSERT_LABEL        0x3d21
+#define MNU_INSERT_SUBPROG      0x3d22
+#define MNU_INSERT_ENDSUB       0x3d23
+#define MNU_INSERT_GOSUB        0x3d24
+#define MNU_INSERT_RETURN       0x3d25
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
 #define MNU_INSERT_FMTD_STRING  0x40
@@ -245,6 +252,13 @@ typedef signed long SDWORD;
 #define MNU_CHANGES             0x8105
 #define MNU_RELEASE             0x82
 
+#define MNU_SCHEME_BLACK        0x9000
+#define MNU_SCHEME_BLACK2       0x9001
+#define MNU_SCHEME_WHITE        0x9002
+#define MNU_SCHEME_SYS          0x9003
+#define MNU_SCHEME_USER         0x9004 // This SCHEME number must be the largest !!!
+#define MNU_SELECT_COLOR        0x9100
+
 // Columns within the I/O etc. listview.
 #define LV_IO_NAME              0x00
 #define LV_IO_TYPE              0x01
@@ -277,6 +291,7 @@ typedef signed long SDWORD;
 
 #define ELEM_CONTACTS           0x10
 #define ELEM_COIL               0x11
+#define ELEM_TIME2COUNT         0x1202
 #define ELEM_TCY                0x1201
 #define ELEM_TON                0x12
 #define ELEM_TOF                0x13
@@ -343,7 +358,13 @@ typedef signed long SDWORD;
 #define ELEM_SLEEP              0x2c01
 #define ELEM_CLRWDT             0x2c02
 #define ELEM_LOCK               0x2c03
-#define ELEM_GOTO               0x2c04
+#define ELEM_DELAY              0x2c04
+#define ELEM_LABEL              0x2c20
+#define ELEM_GOTO               0x2c21
+#define ELEM_SUBPROG            0x2c22
+#define ELEM_RETURN             0x2c23
+#define ELEM_ENDSUB             0x2c24
+#define ELEM_GOSUB              0x2c25
 #define ELEM_SHIFT_REGISTER     0x2d
 #define ELEM_LOOK_UP_TABLE      0x2e
 #define ELEM_FORMATTED_STRING   0x2f
@@ -386,6 +407,7 @@ typedef signed long SDWORD;
         case ELEM_COMMENT: \
         case ELEM_COIL: \
         case ELEM_CONTACTS: \
+        case ELEM_TIME2COUNT: \
         case ELEM_TCY: \
         case ELEM_TON: \
         case ELEM_TOF: \
@@ -464,7 +486,13 @@ typedef signed long SDWORD;
         case ELEM_SLEEP: \
         case ELEM_CLRWDT: \
         case ELEM_LOCK: \
+        case ELEM_LABEL: \
         case ELEM_GOTO: \
+        case ELEM_SUBPROG: \
+        case ELEM_RETURN: \
+        case ELEM_ENDSUB: \
+        case ELEM_GOSUB: \
+        case ELEM_DELAY: \
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
@@ -553,8 +581,7 @@ typedef struct ElemCmpTag {
 } ElemCmp;
 
 typedef struct ElemGotoTag {
-    char    doGoto[MAX_NAME_LEN];
-    char    rungGoto[MAX_NAME_LEN];
+    char    rung[MAX_NAME_LEN]; // rung number or rung symbol label
 } ElemGoto;
 
 typedef struct ElemCounterTag {
@@ -730,12 +757,12 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_GENERAL         1
 #define IO_TYPE_PERSIST         2
 #define IO_TYPE_COUNTER         5
-#define IO_TYPE_UART_TX         6
-#define IO_TYPE_UART_RX         7
-#define IO_TYPE_INT_INPUT       8
-#define IO_TYPE_DIG_INPUT       9
-#define IO_TYPE_DIG_OUTPUT      10
-#define IO_TYPE_READ_ADC        11
+#define IO_TYPE_INT_INPUT       6
+#define IO_TYPE_DIG_INPUT       7
+#define IO_TYPE_DIG_OUTPUT      8
+#define IO_TYPE_READ_ADC        9
+#define IO_TYPE_UART_TX         10
+#define IO_TYPE_UART_RX         11
 #define IO_TYPE_PWM_OUTPUT      12
 #define IO_TYPE_INTERNAL_RELAY  13
 #define IO_TYPE_TCY             14
@@ -807,7 +834,7 @@ typedef struct PlcCursorTag {
 } PlcCursor;
 
 //-----------------------------------------------
-// The syntax highlighting style colours; a structure for the palette.
+// The syntax highlighting style colours; a structure for the palette/scheme.
 
 typedef struct SyntaxHighlightingColoursTag {
     COLORREF    bg;             // background
@@ -830,6 +857,8 @@ typedef struct SyntaxHighlightingColoursTag {
     COLORREF    simBusRight;    // right and left of the screen
 } SyntaxHighlightingColours;
 extern SyntaxHighlightingColours HighlightColours;
+extern SyntaxHighlightingColours Schemes[];
+extern DWORD scheme;
 
 //-----------------------------------------------
 //See Atmel AVR Instruction set inheritance table
@@ -858,7 +887,11 @@ typedef enum CoreTag {
     PIC18HighEndCore16bit,
     PIC24_dsPICcore16bit,
 
+    ESPcores,
     ESP8266Core,
+
+    PCcores,
+    PC_LPT_COM,
 } Core;
 
 //-----------------------------------------------
@@ -904,18 +937,19 @@ typedef struct McuExtIntPinInfoTag {
 #define ISA_PIC16           0x01
 #define ISA_AVR             0x02
 #define ISA_AVR1            ISA_AVR
-#define ISA_HARDWARE        ISA_AVR
-#define ISA_ANSIC           0x03
-#define ISA_INTERPRETED     0x04
-#define ISA_NETZER          0x05
-#define ISA_PASCAL          0x06
-#define ISA_ARDUINO         0x07
-#define ISA_CAVR            0x08
-#define ISA_XINTERPRETED    0x09    // Extended interpeter
-#define ISA_ESP8266         0x0A
+#define ISA_PC_LPT_COM      0x03
+#define ISA_HARDWARE        ISA_PC_LPT_COM
+#define ISA_ANSIC           0x04
+#define ISA_INTERPRETED     0x05
+#define ISA_NETZER          0x06
+#define ISA_PASCAL          0x07
+#define ISA_ARDUINO         0x08
+#define ISA_CAVR            0x09
+#define ISA_XINTERPRETED    0x0A    // Extended interpeter
+#define ISA_ESP8266         0x0B
 
 #define MAX_IO_PORTS        ('P'-'A'+1)
-#define MAX_RAM_SECTIONS    5
+#define MAX_RAM_SECTIONS    8
 #define MAX_ROM_SECTIONS    1
 
 #define IS_MCU_REG(i) ((Prog.mcu) && (Prog.mcu->inputRegs[i]) && (Prog.mcu->outputRegs[i]) && (Prog.mcu->dirRegs[i]))
@@ -984,6 +1018,7 @@ extern HDC Hdc;
 extern PlcProgram Prog;
 extern char CurrentSaveFile[MAX_PATH];
 extern char CurrentCompileFile[MAX_PATH];
+extern char CurrentCompilePath[MAX_PATH];
 extern McuIoInfo SupportedMcus[]; // NUM_SUPPORTED_MCUS
 // memory debugging, because I often get careless; ok() will check that the
 // heap used for all the program storage is not yet corrupt, and oops() if
@@ -1047,6 +1082,7 @@ void PaintWindow(void);
 BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
 void ExportDrawingAsText(char *file);
 void InitForDrawing(void);
+void InitBrushesForDrawing(void);
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
 int ScreenRowsAvailable(void);
 int ScreenColsAvailable(void);
@@ -1127,8 +1163,9 @@ void AddShiftRegister(void);
 void AddMasterRelay(void);
 void AddSleep(void);
 void AddClrWdt(void);
+void AddDelay(void);
 void AddLock(void);
-void AddGoto(void);
+void AddGoto(int which);
 void AddLookUpTable(void);
 void AddPiecewiseLinear(void);
 void AddFormattedString(void);
@@ -1140,6 +1177,7 @@ BOOL CollapseUnnecessarySubckts(int which, void *any);
 void InsertRung(BOOL afterCursor);
 int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
+int FindRung(int seek, char *name);
 int CountWhich(int seek1, int seek2, int seek3, char *name);
 int CountWhich(int seek1, int seek2, char *name);
 int CountWhich(int seek1, char *name);
@@ -1202,10 +1240,12 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigge
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name);
 void ShowSleepDialog(int which, SDWORD *delay, char *name);
+void ShowDelayDialog(int which, SDWORD *delay);
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);
 void ShowReadAdcDialog(char *name);
+void ShowGotoDialog(int which, char *name);
 void ShowRandomDialog(char *name);
 void ShowSetPwmDialog(void *e);
 void ShowPersistDialog(char *var);
@@ -1237,6 +1277,9 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io);
 
 // confdialog.cpp
 void ShowConfDialog(void);
+
+// colorDialog.cpp
+void ShowColorDialog(void);
 
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
@@ -1279,6 +1322,7 @@ void ShowHelpDialog(BOOL about);
 #define dodbp
 #ifdef dodbp
   #define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
+  #define dbpif(EXP) if (EXP) dbp("Warning: " #EXP "");
 
   #define dbp_(EXP)   dbp( #EXP );
   #define dbps(EXP)   dbp( #EXP "='%s'", (EXP));
@@ -1585,8 +1629,8 @@ int UsedROM();
 int McuPWM();
 int McuADC();
 int McuUART();
-extern int RamSection;
-extern int RomSection;
+extern DWORD RamSection;
+extern DWORD RomSection;
 extern DWORD EepromAddrFree;
 extern int VariableCount;
 void PrintVariables(FILE *f);

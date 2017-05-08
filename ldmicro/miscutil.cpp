@@ -430,8 +430,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 */
                 iop = PinInfo(pin);
                 if(iop && Prog.mcu)
-                    sprintf(portName, "%c%c%d",
-                        Prog.mcu->portPrefix, iop->port, iop->bit);
+//                  if(Prog.mcu->core == PC_LPT_COM)
+//                      sprintf(portName, "%c%dP%d",
+//                          Prog.mcu->portPrefix, iop->portN, iop->portPin);
+//                  else
+                        sprintf(portName, "%c%c%d",
+                            Prog.mcu->portPrefix, iop->port, iop->bit);
                 else
                     strcpy(portName, _("<not an I/O!>"));
             }
@@ -481,12 +485,12 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             sprintf(dest, "%d", pin);
             iop = PinInfo(pin);
             if(iop) {
-                if(portName) {
+                if(portName)
                     sprintf(portName, "%c%c%d",
                         Prog.mcu->portPrefix, iop->port, iop->bit);
                 if(iop->pinName)
                     sprintf(pinName, "%s", iop->pinName);
-            } else
+            } else {
                 /*
                 if(portName)
                     strcpy(portName, _("<not an I/O!>"));
@@ -865,6 +869,7 @@ char *toupperstr(char *dest)
 char *toupperstr(char *dest, const char *src)
 {
     if(!dest) oops();
+    if(!src) oops();
     while(*src) {
         dest[0] = toupper(src[0]);
         dest++;

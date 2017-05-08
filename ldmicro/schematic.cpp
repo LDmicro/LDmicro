@@ -157,6 +157,7 @@ BOOL StaySameElem(int Which)
         Which == ELEM_SET_PWM ||
         Which == ELEM_MASTER_RELAY ||
         Which == ELEM_SLEEP ||
+        Which == ELEM_DELAY ||
         Which == ELEM_CLRWDT ||
         Which == ELEM_LOCK ||
         Which == ELEM_GOTO ||
@@ -212,6 +213,8 @@ BOOL EndOfRungElem(int Which)
         Which == ELEM_CLRWDT ||
         Which == ELEM_LOCK ||
         Which == ELEM_GOTO ||
+        Which == ELEM_GOSUB ||
+        Which == ELEM_RETURN ||
         Which == ELEM_SHIFT_REGISTER ||
         Which == ELEM_LOOK_UP_TABLE ||
         Which == ELEM_PIECEWISE_LINEAR ||
@@ -644,12 +647,17 @@ void EditSelectedElement(void)
                 Selected->d.coil.name);
             break;
 
+        case ELEM_TIME2COUNT:
         case ELEM_TCY:
         case ELEM_TON:
         case ELEM_TOF:
         case ELEM_RTO:
             ShowTimerDialog(SelectedWhich, &(Selected->d.timer.delay),
                 Selected->d.timer.name);
+            break;
+
+        case ELEM_DELAY:
+            ShowDelayDialog(SelectedWhich, &(Selected->d.timer.delay));
             break;
 
         case ELEM_SLEEP:
@@ -758,6 +766,14 @@ void EditSelectedElement(void)
 
         case ELEM_READ_ADC:
             ShowReadAdcDialog(Selected->d.readAdc.name+1);
+            break;
+
+        case ELEM_LABEL:
+        case ELEM_SUBPROG:
+        case ELEM_ENDSUB:
+        case ELEM_GOTO:
+        case ELEM_GOSUB:
+            ShowGotoDialog(SelectedWhich, Selected->d.doGoto.rung);
             break;
 
         case ELEM_RANDOM:

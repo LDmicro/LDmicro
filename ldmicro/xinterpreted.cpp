@@ -129,7 +129,7 @@ void CompileXInterpreted(char *outFile)
                 OutProg[outPc++] = IntCode[ipc].op;
                 OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
                 OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
-                OutProg[outPc++] = IntCode[ipc].literal >> 8;
+                OutProg[outPc++] =(IntCode[ipc].literal >> 8) & 0xFF;;
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -158,7 +158,7 @@ void CompileXInterpreted(char *outFile)
                 OutProg[outPc++] = IntCode[ipc].op;
                 OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
                 OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
-                OutProg[outPc++] = IntCode[ipc].literal >> 8;
+                OutProg[outPc++] =(IntCode[ipc].literal >> 8) & 0xFF;;
                 break;
 
             case INT_READ_ADC:
@@ -175,7 +175,7 @@ void CompileXInterpreted(char *outFile)
                 OutProg[outPc++] = IntCode[ipc].op;
                 OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
                 OutProg[outPc++] = IntCode[ipc].literal & 0xFF;
-                OutProg[outPc++] = IntCode[ipc].literal >> 8;
+                OutProg[outPc++] =(IntCode[ipc].literal >> 8) & 0xFF;;
                 goto finishIf;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:

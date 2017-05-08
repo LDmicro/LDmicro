@@ -277,7 +277,6 @@ void AddTimer(int which)
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.timer.name, "Tnew");
     t->d.timer.delay = 100000;
-
     AddLeaf(which, t);
 }
 
@@ -324,14 +323,22 @@ void AddClrWdt(void)
     AddLeaf(ELEM_CLRWDT, t);
 }
 
-void AddGoto(void)
+void AddDelay(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsertOther) return;
+    ElemLeaf *t = AllocLeaf();
+    t->d.timer.delay = 1; // 1 us
+    AddLeaf(ELEM_DELAY, t);
+}
+
+void AddGoto(int which)
+{
+    if(!CanInsertEnd && EndOfRungElem(which)) return;
+    if(!CanInsertOther && !EndOfRungElem(which)) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.doGoto.doGoto, "");
-    strcpy(t->d.doGoto.rungGoto, "");
-    AddLeaf(ELEM_GOTO, t);
+    strcpy(t->d.doGoto.rung, "?");
+    AddLeaf(which, t);
 }
 
 void AddMasterRelay(void)
@@ -1300,6 +1307,55 @@ BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
     }
     return FALSE;
 }
+
+//-----------------------------------------------------------------------------
+static BOOL _FindRung(int which, void *any, int seek, char *name)
+{
+    switch(which) {
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int i;
+            for(i = 0; i < p->count; i++)
+                if(_FindRung(p->contents[i].which, p->contents[i].d.any, seek, name))
+                    return TRUE;
+            break;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+            for(i = 0; i < s->count; i++)
+                if(_FindRung(s->contents[i].which, s->contents[i].d.any, seek, name))
+                    return TRUE;
+            break;
+        }
+        case ELEM_SUBPROG:
+        case ELEM_ENDSUB:
+        case ELEM_LABEL: {
+            if(which == seek) {
+                ElemLeaf *leaf = (ElemLeaf *)any;
+                ElemGoto *e = &leaf->d.doGoto;
+                if(strcmp(e->rung, name)==0)
+                    return TRUE;
+            }
+            break;
+        }
+        default:
+            if(which == seek)
+                return TRUE; // ???
+            break;
+    }
+    return FALSE;
+}
+
+int FindRung(int seek, char *name)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++)
+        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek, name))
+            return i;
+    return -1;
+}
+
 //-----------------------------------------------------------------------------
 // Returns number of the given instruction
 // types (ELEM_....) in the subcircuit.
@@ -1445,9 +1501,6 @@ int AdcFunctionUsed(void)
 int QuadEncodFunctionUsed(void)
 {
     int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
-        //n+=CountWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_QUAD_ENCOD);
     return n;
 }
 //-----------------------------------------------------------------------------

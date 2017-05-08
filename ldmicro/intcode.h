@@ -171,15 +171,17 @@
 #define INT_OFF_NPULSE                          2003
 #define INT_QUAD_ENCOD                          2004
 
-#ifdef NEW_FEATURE
+#define INT_CLRWDT                              2010
+#define INT_LOCK                                2011
+#define INT_DELAY                               2012
+
 #define INT_AllocKnownAddr                      2020
 #define INT_AllocFwdAddr                        2021
 #define INT_FwdAddrIsNow                        2022
-#define INT_GotoRung                            2023
-#endif
-#define INT_CLRWDT                              2024
-#define INT_LOCK                                2025
-
+#define INT_LABEL                               2023
+#define INT_GOTO                                2024
+#define INT_GOSUB                               2025
+#define INT_RETURN                              2026
 
 #define INT_SIMULATE_NODE_STATE                   80 + 100
 

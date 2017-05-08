@@ -78,6 +78,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_OPEN;
     } else if(memcmp(line, "MASTER_RELAY", 12)==0) {
         *which = ELEM_MASTER_RELAY;
+    } else if((sscanf(line, "DELAY %d", &l->d.timer.delay)==1)) {
+        *which = ELEM_DELAY;
     } else if((sscanf(line, "SLEEP %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
         *which = ELEM_SLEEP;
     } else if(memcmp(line, "SLEEP", 5)==0) {
@@ -86,8 +88,18 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_CLRWDT;
     } else if(memcmp(line, "LOCK", 4)==0) {
         *which = ELEM_LOCK;
-    } else if(sscanf(line, "GOTO %s %s", l->d.doGoto.doGoto, l->d.doGoto.rungGoto)==2) {
+    } else if(sscanf(line, "GOTO %s", l->d.doGoto.rung)==1) {
         *which = ELEM_GOTO;
+    } else if(sscanf(line, "GOSUB %s", l->d.doGoto.rung)==1) {
+        *which = ELEM_GOSUB;
+    } else if(memcmp(line, "RETURN", 6)==0) {
+        *which = ELEM_RETURN;
+    } else if(sscanf(line, "LABEL %s", l->d.doGoto.rung)==1) {
+        *which = ELEM_LABEL;
+    } else if(sscanf(line, "SUBPROG %s", l->d.doGoto.rung)==1) {
+        *which = ELEM_SUBPROG;
+    } else if(sscanf(line, "ENDSUB %s", l->d.doGoto.rung)==1) {
+        *which = ELEM_ENDSUB;
     } else if(sscanf(line, "SHIFT_REGISTER %s %d", l->d.shiftRegister.name,
         &(l->d.shiftRegister.stages))==2)
     {
@@ -102,6 +114,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_NPULSE_OFF;
     } else if(memcmp(line, "PWM_OFF",7)==0) {
         *which = ELEM_PWM_OFF;
+    } else if((sscanf(line, "TIME2COUNT %s %d", l->d.timer.name,
+        &l->d.timer.delay)==2))
+    {
+        *which = ELEM_TIME2COUNT;
     } else if((sscanf(line, "TCY %s %d", l->d.timer.name,
         &l->d.timer.delay)==2))
     {
@@ -623,6 +639,9 @@ BOOL LoadProjectFromFile(char *filename)
         } else if(memcmp(line, "COMPILED=", 9)==0) {
             line[strlen(line)-1] = '\0';
             strcpy(CurrentCompileFile, line+9);
+
+            strcpy(CurrentCompilePath,CurrentCompileFile);
+            ExtractFileDir(CurrentCompilePath);
         } else if(strcmp(line, "MICRO=\n")==0) {
             //skip
         } else if(memcmp(line, "MICRO=", 6)==0) {
@@ -669,6 +688,7 @@ BOOL LoadProjectFromFile(char *filename)
     fclose(f);
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
+    strcpy(CurrentSaveFile, filename);
     return TRUE;
 
 failed:
@@ -736,6 +756,10 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "SLEEP %s %d\n", l->d.timer.name, l->d.timer.delay);
             break;
 
+        case ELEM_DELAY:
+            fprintf(f, "DELAY %d\n", l->d.timer.delay);
+            break;
+
         case ELEM_CLRWDT:
             fprintf(f, "CLRWDT\n");
             break;
@@ -744,8 +768,28 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "LOCK\n");
             break;
 
+        case ELEM_RETURN:
+            fprintf(f, "RETURN\n");
+            break;
+
         case ELEM_GOTO:
-            fprintf(f, "GOTO %s %s", l->d.doGoto.doGoto, l->d.doGoto.rungGoto);
+            fprintf(f, "GOTO %s\n", l->d.doGoto.rung);
+            break;
+
+        case ELEM_GOSUB:
+            fprintf(f, "GOSUB %s\n", l->d.doGoto.rung);
+            break;
+
+        case ELEM_LABEL:
+            fprintf(f, "LABEL %s\n", l->d.doGoto.rung);
+            break;
+
+        case ELEM_SUBPROG:
+            fprintf(f, "SUBPROG %s\n", l->d.doGoto.rung);
+            break;
+
+        case ELEM_ENDSUB:
+            fprintf(f, "ENDSUB %s\n", l->d.doGoto.rung);
             break;
 
         case ELEM_SHIFT_REGISTER:
@@ -765,6 +809,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                 l->d.coil.setOnly, l->d.coil.resetOnly, l->d.coil.ttrigger);
             break;
 
+        case ELEM_TIME2COUNT:
+            s = "TIME2COUNT"; goto timer;
         case ELEM_TCY:
             s = "TCY"; goto timer;
         case ELEM_TON:
@@ -1061,8 +1107,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
               if (strcmp(Prog.LDversion,"0.1")==0)
                 fprintf(f, "RUNG\n");
               else
-              //fprintf(f, "RUNG %d\n", rung);
-                fprintf(f, "RUNG\n");
+                fprintf(f, "RUNG %d\n", rung);
             } else {
                 fprintf(f, "SERIES\n");
             }
