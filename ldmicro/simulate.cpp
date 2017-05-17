@@ -527,7 +527,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             for(i = 0; i < s->count; i++) {
                 CheckVariableNamesCircuit(s->contents[i].which,
-                    s->contents[i].d.any);
+                    s->contents[i].data.any);
             }
             break;
         }
@@ -537,7 +537,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(i = 0; i < p->count; i++) {
                 CheckVariableNamesCircuit(p->contents[i].which,
-                    p->contents[i].d.any);
+                    p->contents[i].data.any);
             }
             break;
         }
@@ -794,7 +794,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             for(i = 0; i < s->count; i++) {
                 CheckSingleBitNegateCircuit(s->contents[i].which,
-                    s->contents[i].d.any);
+                    s->contents[i].data.any);
             }
             break;
         }
@@ -804,7 +804,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(i = 0; i < p->count; i++) {
                 CheckSingleBitNegateCircuit(p->contents[i].which,
-                    p->contents[i].d.any);
+                    p->contents[i].data.any);
             }
             break;
         }
@@ -853,7 +853,8 @@ static void IfConditionTrue(void)
     } else if(IntCode[IntPc].op == INT_END_IF) {
         return;
     } else {
-        oops();
+        if(!GotoGosubUsed())
+            oops();
     }
 }
 
@@ -885,8 +886,107 @@ static void IfConditionFalse(void)
     } else if(IntCode[IntPc].op == INT_END_IF) {
         return;
     } else {
-        oops();
+        if(!GotoGosubUsed())
+            oops();
     }
+}
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+#define STACK_LEN 8
+static int stack[STACK_LEN];
+static int stackCount = 0;
+//-----------------------------------------------------------------------------
+void PushStack(int IntPc)
+{
+    if(stackCount < STACK_LEN) {
+        stack[stackCount] = IntPc;
+        stackCount++;
+    } else {
+        Error(_("Stack size %d overflow"), STACK_LEN);
+    }
+}
+
+//-----------------------------------------------------------------------------
+int PopStack(void)
+{
+    if(stackCount > 0) {
+        stackCount--;
+        return stack[stackCount];
+    } else {
+        Error(_("Stack size %d underflow"), STACK_LEN);
+        return -1;
+    }
+}
+
+//-----------------------------------------------------------------------------
+int FindOpRung(int op, int rung)
+{
+    int i;
+    for(i = 0; i < IntCodeLen; i++) {
+        if((IntCode[i].op == op) && (IntCode[i].rung == rung)) {
+            //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
+            return i;
+        }
+    }
+    return -1;
+}
+
+//-----------------------------------------------------------------------------
+int FindOpName(int op, char *name1)
+{
+    int i;
+    if(!name1) oops();
+    for(i = 0; i < IntCodeLen; i++) {
+        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
+            //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
+            return i;
+        }
+    }
+    return -1;
+}
+
+//-----------------------------------------------------------------------------
+int FindOpName(int op, char *name1, char *name2)
+{
+    int i;
+    if(!name1) oops();
+    if(!name2) oops();
+    for(i = 0; i < IntCodeLen; i++) {
+        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
+            //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
+            return i;
+        }
+    }
+    return -1;
+}
+
+//-----------------------------------------------------------------------------
+int FindOpNameLast(int op, char *name1)
+{
+    int i;
+    if(!name1) oops();
+    for(i = IntCodeLen-1; i >= 0; i--) {
+        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
+            //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
+            return i;
+        }
+    }
+    return -1;
+}
+
+//-----------------------------------------------------------------------------
+int FindOpNameLast(int op, char *name1, char *name2)
+{
+    int i;
+    if(!name1) oops();
+    if(!name2) oops();
+    for(i = IntCodeLen-1; i >= 0; i--) {
+        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
+            //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
+            return i;
+        }
+    }
+    return -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -898,6 +998,7 @@ static void IfConditionFalse(void)
 static void SimulateIntCode(void)
 {
     for(; IntPc < IntCodeLen; IntPc++) {
+        IntCode[IntPc].simulated = TRUE;
         IntOp *a = &IntCode[IntPc];
         switch(a->op) {
             case INT_SIMULATE_NODE_STATE:
@@ -1048,20 +1149,21 @@ static void SimulateIntCode(void)
                         StopSimulation();
                     }
                     goto math;
-math:
+            math:
                     if(GetSimulationVariable(a->name1) != v) {
                         NeedRedraw = 9;
                         SetSimulationVariable(a->name1, v);
                     }
                     break;
             }
-
-#define IF_BODY \
-    { \
-        IfConditionTrue(); \
-    } else { \
-        IfConditionFalse(); \
-    }
+            //vvv
+            #define IF_BODY \
+                { \
+                    IfConditionTrue(); \
+                } else { \
+                    IfConditionFalse(); \
+                }
+            //^^^
             case INT_IF_BIT_SET:
                 if(SingleBitOn(a->name1))
                     IF_BODY
@@ -1166,9 +1268,31 @@ math:
             case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
             case INT_FwdAddrIsNow:
+                break;
+
             case INT_GOTO:
+                if(a->poweredAfter) {
+                    if(*(a->poweredAfter)) {
+                        IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal/*, a->name1*/);
+                    }
+                }
+                break;
+
             case INT_GOSUB:
+                if(a->poweredAfter) {
+                    if(*(a->poweredAfter)) {
+                        PushStack(IntPc+1);
+                        IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal/*, a->name1*/);
+                    }
+                } 
+                break;
+
             case INT_RETURN:
+                if(a->poweredAfter) {
+                    if(*(a->poweredAfter)) {
+                        IntPc = PopStack();
+                    }
+                }
                 break;
 
             #ifdef NEW_FEATURE
@@ -1287,7 +1411,28 @@ void SimulateOneCycle(BOOL forceRefresh)
     }
 
     IntPc = 0;
+    int i;
+    for(i = 0; i < IntCodeLen; i++) {
+        IntCode[i].simulated = FALSE;
+    }
+    for(i = 0; i < Prog.numRungs; i++) {
+        Prog.rungSimulated[i] = FALSE;
+    }
+
     SimulateIntCode();
+
+    for(i = 0; i < IntCodeLen; i++) {
+        if((IntCode[i].op != INT_AllocFwdAddr)
+        && (IntCode[i].simulated)) {
+            if((IntCode[i].rung >= 0) && (IntCode[i].rung < Prog.numRungs)) {
+                Prog.rungSimulated[IntCode[i].rung] = TRUE;
+            }
+        }
+    }
+    for(i = 0; i < Prog.numRungs; i++) {
+        Prog.rungPowered[i] = Prog.rungSimulated[i];
+    }
+
     CyclesCount++;
 
     if(NeedRedraw || SimulateRedrawAfterNextCycle || forceRefresh) {
@@ -1319,7 +1464,10 @@ void StartSimulationTimer(void)
     int p = (int)(Prog.cycleTime/1000);
     if(p < 5) {
         SetTimer(MainWindow, TIMER_SIMULATE, 10, PlcCycleTimer);
-        CyclesPerTimerTick = (int)(10000 / Prog.cycleTime);
+        if(Prog.cycleTime > 0)
+            CyclesPerTimerTick = (int)(10000 / Prog.cycleTime);
+        else
+            CyclesPerTimerTick = 1;
     } else {
         SetTimer(MainWindow, TIMER_SIMULATE, p, PlcCycleTimer);
         CyclesPerTimerTick = 1;
@@ -1338,9 +1486,10 @@ void ClrSimulationData(void)
         Variables[i].usedFlags = 0;
         Variables[i].initedRung = -1;
         Variables[i].initedOp = 0;
-        strcpy(Variables[i].usedRungs,"");
+        strcpy(Variables[i].usedRungs, "");
     }
 }
+
 BOOL ClearSimulationData(void)
 {
     ClrSimulationData();

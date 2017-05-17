@@ -282,18 +282,21 @@ void WhatCanWeDoFromCursorAndTopology(void)
         canNegate = TRUE;
         canNormal = TRUE;
     }
-    if(SelectedWhich == ELEM_PLACEHOLDER) {
-        // a comment must be the only element in its rung, and it will fill
-        // the rung entirely
-        CanInsertComment = TRUE;
-    } else {
-        CanInsertComment = FALSE;
-    }
     if(SelectedWhich == ELEM_COMMENT) {
         // if there's a comment there already then don't let anything else
         // into the rung
         CanInsertEnd = FALSE;
         CanInsertOther = FALSE;
+    }
+    if(SelectedWhich == ELEM_PLACEHOLDER) {
+        // a comment must be the only element in its rung, and it will fill
+        // the rung entirely
+        CanInsertComment = TRUE;
+    } else {
+        if(CanInsertEnd && Selected && (Selected->selectedState == SELECTED_RIGHT))
+          CanInsertComment = TRUE;
+        else
+          CanInsertComment = FALSE;
     }
     SetMenusEnabled(canNegate, canNormal, canResetOnly, canSetOnly, canDelete,
         CanInsertEnd, CanInsertOther, canPushDown, canPushUp, CanInsertComment);
@@ -389,7 +392,7 @@ void MoveCursorKeyboard(int keyCode)
                 SelectElement(-1, -1, SELECTED_LEFT);
                 break;
             }
-            if(SelectedWhich == ELEM_COMMENT) break;
+            //if(SelectedWhich == ELEM_COMMENT) break;
             int i, j;
             if(FindSelected(&i, &j)) {
                 i--;
@@ -555,6 +558,15 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_14SEG: newWhich = ELEM_16SEG; break;
         case ELEM_16SEG: newWhich = ELEM_7SEG ; break;
         //
+        case ELEM_GOTO: newWhich = ELEM_GOSUB; break;
+        case ELEM_GOSUB: newWhich = ELEM_GOTO; break;
+        //
+        case ELEM_SUBPROG: newWhich = ELEM_LABEL; break;
+        case ELEM_LABEL: newWhich = ELEM_SUBPROG; break;
+        //
+        case ELEM_ENDSUB: newWhich = ELEM_GOTO; break;
+//      case ELEM_GOTO: newWhich = ELEM_ENDSUB; break;
+        //
 //      case : newWhich = ; break;
         default: newWhich = 0;
     }
@@ -581,7 +593,7 @@ static BOOL ReplaceElem(int which, void *any, ElemLeaf *seek,
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
             for(i = 0; i < s->count; i++)
-                if(ReplaceElem(s->contents[i].which, s->contents[i].d.any,
+                if(ReplaceElem(s->contents[i].which, s->contents[i].data.any,
                                seek, ELEM_SERIES_SUBCKT, s, i))
                     return TRUE;
             break;
@@ -590,7 +602,7 @@ static BOOL ReplaceElem(int which, void *any, ElemLeaf *seek,
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++)
-                if(ReplaceElem(p->contents[i].which, p->contents[i].d.any,
+                if(ReplaceElem(p->contents[i].which, p->contents[i].data.any,
                                seek, ELEM_PARALLEL_SUBCKT, p, i))
                     return TRUE;
             break;

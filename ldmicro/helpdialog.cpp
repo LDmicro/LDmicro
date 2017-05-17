@@ -171,7 +171,7 @@ static void MakeControls(int a)
         0, 0, 100, 100, HelpDialog[a], NULL, Instance, NULL);
 
     SendMessage(RichEdit[a], WM_SETFONT, (WPARAM)FixedWidthFont, TRUE);
-    SendMessage(RichEdit[a], EM_SETBKGNDCOLOR, (WPARAM)0, RGB(0, 0, 0));
+    SendMessage(RichEdit[a], EM_SETBKGNDCOLOR, (WPARAM)0, HighlightColours.bg); // RGB(0, 0, 0)
 
     SizeRichEdit(a);
 
@@ -187,9 +187,9 @@ static void MakeControls(int a)
         if((s[0] == '=') ||
            (Text[a][i+1] && Text[a][i+1][0] == '='))
         {
-            cf.crTextColor = RGB(255, 255, 110);
+            cf.crTextColor = HighlightColours.simBusRight; // RGB(255, 255, 110);
         } else if(s[3] == '|' && s[4] == '|') {
-            cf.crTextColor = RGB(255, 110, 255);
+            cf.crTextColor = HighlightColours.lit; // RGB(255, 110, 255);
         } else if(s[0] == '>' || nextSubHead) {
             // Need to make a copy because the strings we are passed aren't
             // mutable.
@@ -204,7 +204,7 @@ static void MakeControls(int a)
             }
             BOOL justHeading = (copy[j] == '\0');
             copy[j] = '\0';
-            cf.crTextColor = RGB(110, 255, 110);
+            cf.crTextColor = HighlightColours.selected; // RGB(110, 255, 110);
             SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION,
                 (LPARAM)&cf);
             SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE,
@@ -216,10 +216,10 @@ static void MakeControls(int a)
                 copy[j] = ' ';
             }
             s += j;
-            cf.crTextColor = RGB(255, 110, 255);
+            cf.crTextColor = HighlightColours.name; // RGB(255, 110, 255);
             nextSubHead = !nextSubHead;
         } else {
-            cf.crTextColor = RGB(255, 255, 255);
+            cf.crTextColor = HighlightColours.def; // RGB(255, 255, 255);
         }
 
         SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
@@ -253,6 +253,9 @@ static LRESULT CALLBACK HelpProc(HWND hwnd, UINT msg, WPARAM wParam,
             break;
 
         case WM_ACTIVATE:
+            SetFocus(RichEdit[a]);
+            break;
+
         case WM_KEYDOWN:
             SetFocus(RichEdit[a]);
             break;

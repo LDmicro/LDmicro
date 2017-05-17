@@ -585,8 +585,7 @@ HMENU MakeMainWindowMenus(void)
         _("Insert &A/D Converter Read\tA"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
         _("Insert Make Persistent"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_STRING,
-        _("EDIT: Insert Formatted String"));
+
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
         _("TODO: Insert Software &PWM (AVR136 AppNote)\tP"));
 
@@ -637,6 +636,8 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega32U4 44-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega32 44-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega328 32-Pin packages");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR ATtiny85");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR ATtinyXXX");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB646");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB1286");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB1287");
@@ -644,6 +645,9 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F200/202/204/206 6-SOT");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F220/222 6-SOT");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC12Fxxx");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC12F629");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC12F675 8-pin packages");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC12F683 8-pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F72 28-Pin PDIP, SOIC, SSOP");
     AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC16F1512 - PIC16F1527");
@@ -853,21 +857,29 @@ void RefreshStatusBar(void)
         SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)_("no MCU selected"));
     }
     char buf[1000];
-
     char Tunits[3];
+    char Funits[3];
+    char F2units[3];
+    char TNunits[3];
+
     double T=SIprefix(1.0*Prog.cycleTime/1000000, Tunits);
 
-    char Funits[3];
-    double F=SIprefix(1000000.0/Prog.cycleTime, Funits);
+    double F=0;
+    double F2=0;
+    if(Prog.cycleTime>0) {
+        F=SIprefix(1000000.0/Prog.cycleTime, Funits);
+        F2=SIprefix(1000000.0/Prog.cycleTime/2, F2units);
+    }
 
-    char F2units[3];
-    double F2=SIprefix(1000000.0/Prog.cycleTime/2, F2units);
-
-    char TNunits[3];
     double TN=SIprefix(1.0*Prog.cycleTime*CyclesCount/1000000, TNunits);
 
-    sprintf(buf, "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss",
-        T,Tunits, F,Funits, F2,F2units, CyclesCount, TN,TNunits);
+    if(Prog.cycleTime>0) {
+        sprintf(buf, "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss",
+            T,Tunits, F,Funits, F2,F2units, CyclesCount, TN,TNunits);
+    } else {
+        sprintf(buf, "Tcycle=%.6g %ss Ncycle=%d T=%.6g %ss",
+            T,Tunits, CyclesCount, TN,TNunits);
+    }
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||

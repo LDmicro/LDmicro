@@ -59,16 +59,15 @@ ElemSubcktParallel *AllocSubcktParallel(void)
 static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
 {
     int i;
-
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(i = 0; i < s->count; i++) {
-                if(s->contents[i].d.any == Selected) {
+                if(s->contents[i].data.any == Selected) {
                     break;
                 }
                 if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
-                    if(AddLeafWorker(ELEM_PARALLEL_SUBCKT, s->contents[i].d.any,
+                    if(AddLeafWorker(ELEM_PARALLEL_SUBCKT, s->contents[i].data.any,
                         newWhich, newElem))
                     {
                         return TRUE;
@@ -82,8 +81,8 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 // so there is no need to consider them anywhere but here.
                 // If we copy instead of replacing then the DisplayMatrix
                 // tables don't get all messed up.
-                memcpy(s->contents[i].d.leaf, newElem, sizeof(ElemLeaf));
-                s->contents[i].d.leaf->selectedState = EndOfRungElem(newWhich) ? SELECTED_LEFT : SELECTED_RIGHT;
+                memcpy(s->contents[i].data.leaf, newElem, sizeof(ElemLeaf));
+                s->contents[i].data.leaf->selectedState = EndOfRungElem(newWhich) ? SELECTED_LEFT : SELECTED_RIGHT;
                 CheckFree(newElem);
                 s->contents[i].which = newWhich;
                 SelectedWhich = newWhich;
@@ -97,7 +96,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 case SELECTED_LEFT:
                     memmove(&s->contents[i+1], &s->contents[i],
                         (s->count - i)*sizeof(s->contents[0]));
-                    s->contents[i].d.leaf = newElem;
+                    s->contents[i].data.leaf = newElem;
                     s->contents[i].which = newWhich;
                     (s->count)++;
                     break;
@@ -105,7 +104,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 case SELECTED_RIGHT:
                     memmove(&s->contents[i+2], &s->contents[i+1],
                         (s->count - i - 1)*sizeof(s->contents[0]));
-                    s->contents[i+1].d.leaf = newElem;
+                    s->contents[i+1].data.leaf = newElem;
                     s->contents[i+1].which = newWhich;
                     (s->count)++;
                     break;
@@ -118,13 +117,13 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     int t;
                     t = (Selected->selectedState == SELECTED_ABOVE) ? 0 : 1;
                     p->contents[t].which = newWhich;
-                    p->contents[t].d.leaf = newElem;
+                    p->contents[t].data.leaf = newElem;
                     t = (Selected->selectedState == SELECTED_ABOVE) ? 1 : 0;
                     p->contents[t].which = s->contents[i].which;
-                    p->contents[t].d.any = s->contents[i].d.any;
+                    p->contents[t].data.any = s->contents[i].data.any;
 
                     s->contents[i].which = ELEM_PARALLEL_SUBCKT;
-                    s->contents[i].d.parallel = p;
+                    s->contents[i].data.parallel = p;
                     break;
                 }
                 default:
@@ -137,11 +136,11 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(i = 0; i < p->count; i++) {
-                if(p->contents[i].d.any == Selected) {
+                if(p->contents[i].data.any == Selected) {
                     break;
                 }
                 if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
-                    if(AddLeafWorker(ELEM_SERIES_SUBCKT, p->contents[i].d.any,
+                    if(AddLeafWorker(ELEM_SERIES_SUBCKT, p->contents[i].data.any,
                         newWhich, newElem))
                     {
                         return TRUE;
@@ -157,7 +156,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 case SELECTED_ABOVE:
                     memmove(&p->contents[i+1], &p->contents[i],
                         (p->count - i)*sizeof(p->contents[0]));
-                    p->contents[i].d.leaf = newElem;
+                    p->contents[i].data.leaf = newElem;
                     p->contents[i].which = newWhich;
                     (p->count)++;
                     break;
@@ -165,7 +164,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 case SELECTED_BELOW:
                     memmove(&p->contents[i+2], &p->contents[i+1],
                         (p->count - i - 1)*sizeof(p->contents[0]));
-                    p->contents[i+1].d.leaf = newElem;
+                    p->contents[i+1].data.leaf = newElem;
                     p->contents[i+1].which = newWhich;
                     (p->count)++;
                     break;
@@ -178,13 +177,13 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     int t;
                     t = (Selected->selectedState == SELECTED_LEFT) ? 0 : 1;
                     s->contents[t].which = newWhich;
-                    s->contents[t].d.leaf = newElem;
+                    s->contents[t].data.leaf = newElem;
                     t = (Selected->selectedState == SELECTED_LEFT) ? 1 : 0;
                     s->contents[t].which = p->contents[i].which;
-                    s->contents[t].d.any = p->contents[i].d.any;
+                    s->contents[t].data.any = p->contents[i].data.any;
 
                     p->contents[i].which = ELEM_SERIES_SUBCKT;
-                    p->contents[i].d.series = s;
+                    p->contents[i].data.series = s;
                     break;
                 }
                 default:
@@ -717,11 +716,11 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
             int i;
             for(i = (s->count-1); i >= 0 ; i--) {
                 if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
-                    ElemSubcktParallel *p = s->contents[i].d.parallel;
+                    ElemSubcktParallel *p = s->contents[i].data.parallel;
                     if(p->count == 1) {
                         if(p->contents[0].which == ELEM_SERIES_SUBCKT) {
                             // merge the two series subcircuits
-                            ElemSubcktSeries *s2 = p->contents[0].d.series;
+                            ElemSubcktSeries *s2 = p->contents[0].data.series;
                             int makeSpaces = s2->count - 1;
                             memmove(&s->contents[i+makeSpaces+1],
                                 &s->contents[i+1],
@@ -732,7 +731,7 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
                             CheckFree(s2);
                         } else {
                             s->contents[i].which = p->contents[0].which;
-                            s->contents[i].d.any = p->contents[0].d.any;
+                            s->contents[i].data.any = p->contents[0].data.any;
                         }
                         CheckFree(p);
                         modified = TRUE;
@@ -745,14 +744,14 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
                         modified = TRUE;
                     } else {
                         while(CollapseUnnecessarySubckts(ELEM_PARALLEL_SUBCKT,
-                            s->contents[i].d.parallel))
+                            s->contents[i].data.parallel))
                         {
                             modified = TRUE;
                         }
                     }
                 } else if(s->contents[i].which == ELEM_SERIES_SUBCKT) {
                      // move up level
-                     ElemSubcktSeries *s2 = s->contents[i].d.series;
+                     ElemSubcktSeries *s2 = s->contents[i].data.series;
                      if((s->count + s2->count) < MAX_ELEMENTS_IN_SUBCKT) {
                             memmove(&s->contents[i+s2->count],
                                 &s->contents[i+1],
@@ -774,11 +773,11 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
             int i;
             for(i = (p->count-1); i >= 0; i--) {
                 if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
-                    ElemSubcktSeries *s = p->contents[i].d.series;
+                    ElemSubcktSeries *s = p->contents[i].data.series;
                     if(s->count == 1) {
                         if(s->contents[0].which == ELEM_PARALLEL_SUBCKT) {
                             // merge the two parallel subcircuits
-                            ElemSubcktParallel *p2 = s->contents[0].d.parallel;
+                            ElemSubcktParallel *p2 = s->contents[0].data.parallel;
                             int makeSpaces = p2->count - 1;
                             memmove(&p->contents[i+makeSpaces+1],
                                 &p->contents[i+1],
@@ -789,7 +788,7 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
                             CheckFree(p2);
                         } else {
                             p->contents[i].which = s->contents[0].which;
-                            p->contents[i].d.any = s->contents[0].d.any;
+                            p->contents[i].data.any = s->contents[0].data.any;
                         }
                         CheckFree(s);
                         modified = TRUE;
@@ -802,7 +801,7 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
                         modified = TRUE;
                     } else {
                         while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT,
-                            p->contents[i].d.series))
+                            p->contents[i].data.series))
                         {
                             modified = TRUE;
                         }
@@ -836,9 +835,9 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
             for(i = 0; i < s->count; i++) {
-                if(s->contents[i].d.any == Selected) {
-                    ForgetFromGrid(s->contents[i].d.any);
-                    CheckFree(s->contents[i].d.any);
+                if(s->contents[i].data.any == Selected) {
+                    ForgetFromGrid(s->contents[i].data.any);
+                    CheckFree(s->contents[i].data.any);
                     memmove(&s->contents[i], &s->contents[i+1],
                         (s->count - i - 1)*sizeof(s->contents[0]));
                     (s->count)--;
@@ -846,7 +845,7 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
                 }
                 if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
                     if(DeleteSelectedFromSubckt(ELEM_PARALLEL_SUBCKT,
-                        s->contents[i].d.any))
+                        s->contents[i].data.any))
                     {
                         return TRUE;
                     }
@@ -858,9 +857,9 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++) {
-                if(p->contents[i].d.any == Selected) {
-                    ForgetFromGrid(p->contents[i].d.any);
-                    CheckFree(p->contents[i].d.any);
+                if(p->contents[i].data.any == Selected) {
+                    ForgetFromGrid(p->contents[i].data.any);
+                    CheckFree(p->contents[i].data.any);
                     memmove(&p->contents[i], &p->contents[i+1],
                         (p->count - i - 1)*sizeof(p->contents[0]));
                     (p->count)--;
@@ -868,7 +867,7 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
                 }
                 if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
                     if(DeleteSelectedFromSubckt(ELEM_SERIES_SUBCKT,
-                        p->contents[i].d.any))
+                        p->contents[i].data.any))
                     {
                         return TRUE;
                     }
@@ -893,14 +892,14 @@ static BOOL DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
             for(i = (s->count-1); i >= 0; i--)
-                DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,anyToDelete,s->contents[i].which, s->contents[i].d.any, IsEnd);
+                DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,anyToDelete,s->contents[i].which, s->contents[i].data.any, IsEnd);
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = (p->count-1); i >= 0; i--)
-                DeleteAnyFromSubckt(ELEM_PARALLEL_SUBCKT,anyToDelete,p->contents[i].which, p->contents[i].d.any, IsEnd);
+                DeleteAnyFromSubckt(ELEM_PARALLEL_SUBCKT,anyToDelete,p->contents[i].which, p->contents[i].data.any, IsEnd);
             break;
         }
         default:
@@ -967,7 +966,7 @@ void FreeCircuit(int which, void *any)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
             for(i = 0; i < s->count; i++) {
-                FreeCircuit(s->contents[i].which, s->contents[i].d.any);
+                FreeCircuit(s->contents[i].which, s->contents[i].data.any);
             }
             CheckFree(s);
             break;
@@ -976,7 +975,7 @@ void FreeCircuit(int which, void *any)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++) {
-                FreeCircuit(p->contents[i].which, p->contents[i].d.any);
+                FreeCircuit(p->contents[i].which, p->contents[i].data.any);
             }
             CheckFree(p);
             break;
@@ -1023,7 +1022,7 @@ static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
             for(i = 0; i < s->count; i++) {
-                if(ContainsElem(s->contents[i].which, s->contents[i].d.any,
+                if(ContainsElem(s->contents[i].which, s->contents[i].data.any,
                     seek))
                 {
                     return TRUE;
@@ -1035,7 +1034,7 @@ static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++) {
-                if(ContainsElem(p->contents[i].which, p->contents[i].d.any,
+                if(ContainsElem(p->contents[i].which, p->contents[i].data.any,
                     seek))
                 {
                     return TRUE;
@@ -1122,7 +1121,7 @@ static ElemSubcktSeries *AllocEmptyRung(void)
     s->count = 1;
     s->contents[0].which = ELEM_PLACEHOLDER;
     ElemLeaf *l = AllocLeaf();
-    s->contents[0].d.leaf = l;
+    s->contents[0].data.leaf = l;
 
     return s;
 }
@@ -1228,7 +1227,7 @@ static void LastInCircuit(int which, void *any, ElemLeaf *seek,
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++) {
-                LastInCircuit(p->contents[i].which, p->contents[i].d.any, seek,
+                LastInCircuit(p->contents[i].which, p->contents[i].data.any, seek,
                     found, andItemAfter);
                 if(*found) return;
             }
@@ -1237,7 +1236,7 @@ static void LastInCircuit(int which, void *any, ElemLeaf *seek,
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             LastInCircuit(s->contents[s->count-1].which,
-                s->contents[s->count-1].d.any, seek, found, andItemAfter);
+                s->contents[s->count-1].data.any, seek, found, andItemAfter);
             break;
         }
         default:
@@ -1272,6 +1271,7 @@ BOOL ItemIsLastInCircuit(ElemLeaf *item)
 // Returns TRUE if the subcircuit contains any of the given instruction
 // types (ELEM_....), else FALSE.
 //-----------------------------------------------------------------------------
+/*
 BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
 {
     switch(which) {
@@ -1279,7 +1279,7 @@ BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++) {
-                if(ContainsWhich(p->contents[i].which, p->contents[i].d.any,
+                if(ContainsWhich(p->contents[i].which, p->contents[i].data.any,
                     seek1, seek2, seek3))
                 {
                     return TRUE;
@@ -1291,7 +1291,7 @@ BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
             for(i = 0; i < s->count; i++) {
-                if(ContainsWhich(s->contents[i].which, s->contents[i].d.any,
+                if(ContainsWhich(s->contents[i].which, s->contents[i].data.any,
                     seek1, seek2, seek3))
                 {
                     return TRUE;
@@ -1308,6 +1308,63 @@ BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
     return FALSE;
 }
 
+BOOL ContainsWhich(int which, void *any, int seek1, int seek2)
+{
+    return ContainsWhich(which, any, seek1, seek2, -1);
+}
+
+BOOL ContainsWhich(int which, void *any, int seek1)
+{
+    return ContainsWhich(which, any, seek1, -1, -1);
+}
+*/
+ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
+{
+    ElemLeaf *l;
+    switch(which) {
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int i;
+            for(i = 0; i < p->count; i++) {
+                if(l = ContainsWhich(p->contents[i].which, p->contents[i].data.any,
+                    seek1, seek2, seek3))
+                {
+                    return l;
+                }
+            }
+            break;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+            for(i = 0; i < s->count; i++) {
+                if(l = ContainsWhich(s->contents[i].which, s->contents[i].data.any,
+                    seek1, seek2, seek3))
+                {
+                    return l;
+                }
+            }
+            break;
+        }
+        default:
+            if(which == seek1 || which == seek2 || which == seek3) {
+                return (ElemLeaf *)any;
+            }
+            break;
+    }
+    return NULL;
+}
+
+ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2)
+{
+    return ContainsWhich(which, any, seek1, seek2, -1);
+}
+
+ElemLeaf *ContainsWhich(int which, void *any, int seek1)
+{
+    return ContainsWhich(which, any, seek1, -1, -1);
+}
+
 //-----------------------------------------------------------------------------
 static BOOL _FindRung(int which, void *any, int seek, char *name)
 {
@@ -1316,7 +1373,7 @@ static BOOL _FindRung(int which, void *any, int seek, char *name)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++)
-                if(_FindRung(p->contents[i].which, p->contents[i].d.any, seek, name))
+                if(_FindRung(p->contents[i].which, p->contents[i].data.any, seek, name))
                     return TRUE;
             break;
         }
@@ -1324,7 +1381,7 @@ static BOOL _FindRung(int which, void *any, int seek, char *name)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
             for(i = 0; i < s->count; i++)
-                if(_FindRung(s->contents[i].which, s->contents[i].d.any, seek, name))
+                if(_FindRung(s->contents[i].which, s->contents[i].data.any, seek, name))
                     return TRUE;
             break;
         }
@@ -1356,6 +1413,15 @@ int FindRung(int seek, char *name)
     return -1;
 }
 
+int FindRungLast(int seek, char *name)
+{
+    int i;
+    for(i = Prog.numRungs-1; i >= 0; i--)
+        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek, name))
+            return i;
+    return -1;
+}
+
 //-----------------------------------------------------------------------------
 // Returns number of the given instruction
 // types (ELEM_....) in the subcircuit.
@@ -1368,13 +1434,13 @@ static int CountWhich_(int which, void *any, int seek1, int seek2, int seek3, ch
     case ELEM_PARALLEL_SUBCKT: {
       ElemSubcktParallel *p = (ElemSubcktParallel *)any;
       for(i = 0; i < p->count; i++)
-        n += CountWhich_(p->contents[i].which, p->contents[i].d.any, seek1, seek2, seek3, name);
+        n += CountWhich_(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3, name);
       break;
     }
     case ELEM_SERIES_SUBCKT: {
       ElemSubcktSeries *s = (ElemSubcktSeries *)any;
       for(i = 0; i < s->count; i++)
-        n += CountWhich_(s->contents[i].which, s->contents[i].d.any, seek1, seek2, seek3, name);
+        n += CountWhich_(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3, name);
       break;
     }
     default:
@@ -1705,7 +1771,6 @@ void PasteRung(int PasteInTo)
         if(strstr(line,"RUNG"))
         if(temp=LoadSeriesFromFile(f)) {
             if(SelectedWhich == ELEM_PLACEHOLDER) {
-                // CheckFree(Prog.rungs[j]->contents[0].d.leaf); // ???
                 Prog.rungs[j] = temp;
                 rung = 1;
             } else if(PasteInTo==0) {
@@ -1717,7 +1782,7 @@ void PasteRung(int PasteInTo)
                 if(j>=Prog.numRungs)
                     j = Prog.numRungs - 1;
                 //insert rung INTO series
-                BOOL doCollapse;
+                BOOL doCollapse = FALSE;
                 if(Selected && (Selected->selectedState != SELECTED_NONE)) {
                     if(!EndOfRungElem(SelectedWhich)||(Selected->selectedState == SELECTED_LEFT))
                       if(!ItemIsLastInCircuit(Selected)
@@ -1725,7 +1790,7 @@ void PasteRung(int PasteInTo)
                           doCollapse = false;
                           for(i = temp->count-1; i >= 0 ; i--) {
                               if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT, temp,
-                                  temp->contents[i].which, temp->contents[i].d.any, true))
+                                  temp->contents[i].which, temp->contents[i].data.any, true))
                                   doCollapse = true;
                           }
                           if(doCollapse)
@@ -1738,17 +1803,18 @@ void PasteRung(int PasteInTo)
                         doCollapse = false;
                         for(i = temp->count-1; i >= 0 ; i--) {
                             if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT, temp,
-                                temp->contents[i].which, temp->contents[i].d.any, false))
+                                temp->contents[i].which, temp->contents[i].data.any, false))
                                 doCollapse = true;
                         }
                         if(doCollapse)
                         while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, temp));
                     }
-                    if(temp->count>0)
+                    if(temp->count>0) {
                       if(AddLeaf(ELEM_SERIES_SUBCKT, (ElemLeaf *)temp)) {
                         while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[j])) {
                             ProgramChanged();
                         }
+                      }
                     }
                 }
             } else oops();
@@ -1771,14 +1837,14 @@ static void RenameSet1_(int which, void *any, int which_elem, char *name, char *
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++)
-                RenameSet1_(p->contents[i].which, p->contents[i].d.any, which_elem, name, new_name, set1);
+                RenameSet1_(p->contents[i].which, p->contents[i].data.any, which_elem, name, new_name, set1);
             break;
         }
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
             for(i = 0; i < s->count; i++)
-                RenameSet1_(s->contents[i].which, s->contents[i].d.any, which_elem, name, new_name, set1);
+                RenameSet1_(s->contents[i].which, s->contents[i].data.any, which_elem, name, new_name, set1);
             break;
         }
         case ELEM_COIL: {

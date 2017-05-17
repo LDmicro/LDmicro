@@ -998,11 +998,12 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Atmel AVR ATmega2560 100-TQFP",
         "ATmega2560",
         "m2560def",
+        "mega2560",
         'P',
 //        A     B     C     D     E     F     G     H      I   J      K      L
-        { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0,  0x103, 0x106, 0x109 },
-        { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0,  0x105, 0x108, 0x10B },
-        { 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33, 0x101, 0,  0x104, 0x107, 0x10A },
+        { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0,  0x103, 0x106, 0x109 }, // PINx  input
+        { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0,  0x105, 0x108, 0x10B }, // PORTx output
+        { 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33, 0x101, 0,  0x104, 0x107, 0x10A }, // DDRx  dir
         128*1024,
         { { 0x200, 8192 } },
         AvrAtmega2560_100TQFPIoPinInfo,
@@ -1021,6 +1022,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
     {
         "Atmel AVR AT90USB647 64-TQFP",
+        "",
         "",
         "",
         'P',
@@ -1045,6 +1047,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
     {
         "Atmel AVR ATmega128 64-TQFP",
+        "",
         "",
         "",
         'P',
@@ -1072,6 +1075,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Atmel AVR ATmega64 64-TQFP",
         "",
         "",
+        "",
         'P',
         { 0x39, 0x36, 0x33, 0x30, 0x21, 0x20, 0x63 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32, 0x23, 0x62, 0x65 }, // PORTx
@@ -1094,6 +1098,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
     {
         "Atmel AVR ATmega162 40-PDIP",
+        "",
         "",
         "",
         'P',
@@ -1120,6 +1125,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Atmel AVR ATmega32 40-PDIP",
         "ATmega32",
         "m32def",
+        "mega32",
         'P',
         { 0x39, 0x36, 0x33, 0x30 }, // PINx
         { 0x3b, 0x38, 0x35, 0x32 }, // PORTx
@@ -1142,6 +1148,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
     {
         "Atmel AVR ATmega16 40-PDIP",
+        "",
         "",
         "",
         'P',
@@ -1168,6 +1175,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Atmel AVR ATmega48 28-PDIP",
         "",
         "",
+        "",
         'P',
         { 0, 0x23, 0x26, 0x29 }, // PINx
         { 0, 0x25, 0x28, 0x2B }, // PORTx
@@ -1190,6 +1198,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
     {
         "Atmel AVR ATmega88 28-PDIP",
+        "",
         "",
         "",
         'P',
@@ -1216,6 +1225,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Atmel AVR ATmega168 28-PDIP",
         "",
         "",
+        "",
         'P',
         { 0, 0x23, 0x26, 0x29 }, // PINx
         { 0, 0x25, 0x28, 0x2B }, // PORTx
@@ -1240,6 +1250,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Atmel AVR ATmega328 28-PDIP",
         "ATmega328",
         "m328def",
+        "mega328",
         'P',
         { 0, 0x23, 0x26, 0x29 }, // PINx
         { 0, 0x25, 0x28, 0x2B }, // PORTx
@@ -1262,6 +1273,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
     {
         "Atmel AVR ATmega164 40-PDIP",
+        "",
         "",
         "",
         'P',
@@ -1288,6 +1300,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Atmel AVR ATmega324 40-PDIP",
         "",
         "",
+        "",
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -1310,6 +1323,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
     {
         "Atmel AVR ATmega644 40-PDIP",
+        "",
         "",
         "",
         'P',
@@ -1336,6 +1350,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Atmel AVR ATmega1284 40-PDIP",
         "",
         "",
+        "",
         'P',
         { 0x20, 0x23, 0x26, 0x29 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B }, // PORTx
@@ -1359,7 +1374,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     {
         "Atmel AVR ATmega8 32-Pin packages", //char            *mcuName;
         "ATmega8",
-        "M8DEF", // "iom8"
+        "m8def", // "iom8"
+        "mega8",
         'P',                                 //char             portPrefix;
         { 0, 0x36, 0x33, 0x30 }, // PINx  //DWORD            inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
         { 0, 0x38, 0x35, 0x32 }, // PORTx //DWORD            outputRegs[MAX_IO_PORTS];
@@ -1388,7 +1404,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     {
         "Atmel AVR ATmega8 28-PDIP",
         "ATmega8",
-        "M8DEF",
+        "m8def",
+        "mega8",
         'P',
         { 0, 0x36, 0x33, 0x30 }, // PINx     (but there is no xxxA)
         { 0, 0x38, 0x35, 0x32 }, // PORTx
@@ -1413,6 +1430,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     {
         "Microchip PIC16F628 18-PDIP or 18-SOIC",
         "PIC16F628",
+        "P16F628",
         "P16F628",
         'R',
         { 0x05, 0x06 }, // PORTx
@@ -1442,6 +1460,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     {
         "Microchip PIC16F88 18-PDIP or 18-SOIC",
         "PIC16F88",
+        "P16F88",
         "P16F88",
         'R',
         { 0x05, 0x06 }, // PORTx
@@ -1481,6 +1500,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Microchip PIC16F819 18-PDIP or 18-SOIC",
         "PIC16F819",
         "P16F819",
+        "P16F819",
         'R',
         { 0x05, 0x06 }, // PORTx
         { 0x05, 0x06 }, // PORTx
@@ -1518,6 +1538,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Microchip PIC16F877 40-PDIP",
         "PIC16F877",
         "P16F877",
+        "P16F877",
         'R',
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
@@ -1547,6 +1568,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Microchip PIC16F876 28-PDIP or 28-SOIC",
         "PIC16F876",
         "P16F876",
+        "P16F876",
         'R',
         { 0x05, 0x06, 0x07 }, // PORTx
         { 0x05, 0x06, 0x07 }, // PORTx
@@ -1575,6 +1597,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     {
         "Microchip PIC16F887 40-PDIP",
         "PIC16F887",
+        "P16F887",
         "P16F887",
         'R',
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
@@ -1613,6 +1636,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     {
         "Microchip PIC16F886 28-PDIP or 28-SOIC",
         "PIC16F886",
+        "P16F886",
         "P16F886",
         'R',
         { 0x05, 0x06, 0x07, 0, 0x09 }, // PORTx = A B C E
@@ -1653,6 +1677,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Controllino Maxi / Ext bytecode",
         "",
         "",
+        "",
         'P',
         { 0x20, 0x23, 0x26, 0x29, 0x2C, 0x2F, 0x32, 0x100, 0x103, 0x106, 0x109 }, // PINx
         { 0x22, 0x25, 0x28, 0x2B, 0x2E, 0x32, 0x34, 0x102, 0x105, 0x108, 0x10B }, // PORTx
@@ -1677,6 +1702,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "ANSI C Code",
         "",
         "",
+        "",
         'x',
         { 0x00 },
         { 0x00 },
@@ -1696,6 +1722,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
     {
         "Interpretable Byte Code",
+        "",
         "",
         "",
         'x',
@@ -1719,6 +1746,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "Extended Byte Code",
         "",
         "",
+        "",
         'x',
         { 0x00 },
         { 0x00 },
@@ -1738,6 +1766,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
     },
     {
         "Netzer Byte Code",
+        "",
         "",
         "",
         'R',

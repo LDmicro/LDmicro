@@ -182,6 +182,7 @@ static DWORD FwdAddrCount;
 //                         0x0003FFFF ==  262143 == 256K address
 //                         0x0001FFFF ==  131071 == 128K address
 //                         0x0000FFFF ==   65535 ==  65K address
+//                         0x00000FFF ==    4095 ==   4K address
 #define FWD(x)      ((x) | 0x80000000)
 #define FWD_HI(x)   ((x) | 0x40000000)
 #define FWD_LO(x)   ((x) | 0x20000000)
@@ -551,7 +552,7 @@ static void _Comment(char *str, ...)
 static DWORD AllocFwdAddr(void)
 {
     FwdAddrCount++;
-    return 0x80000000 | FwdAddrCount;
+    return FWD(FwdAddrCount);
 }
 
 //-----------------------------------------------------------------------------
@@ -560,18 +561,23 @@ static DWORD AllocFwdAddr(void)
 //-----------------------------------------------------------------------------
 static void FwdAddrIsNow(DWORD addr)
 {
-    if(!(addr & 0x80000000)) oops();
+    if(!(addr & FWD(0))) oops();
 
+    WORD seen = 0;
     DWORD i;
     for(i = 0; i < AvrProgWriteP; i++) {
-        if(AvrProg[i].arg1 == addr) { // Its a FWD addr
+        if(AvrProg[i].arg1 == FWD(addr)) { // Its a FWD addr
             AvrProg[i].arg1 = AvrProgWriteP;
+            seen = 0x10;
         } else if(AvrProg[i].arg2 == FWD_LO(addr)) {
             AvrProg[i].arg2 = AvrProgWriteP & 0xff;
+            seen = 0x01;
         } else if(AvrProg[i].arg2 == FWD_HI(addr)) {
             AvrProg[i].arg2 = (AvrProgWriteP >> 8) & 0xff;
+            seen = 0x02;
         } else if(AvrProg[i].arg2 == FWD_EIND(addr)) {
             AvrProg[i].arg2 = (AvrProgWriteP >> 16) & 0xff;
+            seen = 0x04;
         }
     }
 }
@@ -652,7 +658,7 @@ static void AddrCheckForErrorsPostCompile()
     DWORD i;
     for(i = 0; i < AvrProgWriteP; i++) {
       if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE) {
-        if(AvrProg[i].arg1 & 0x80000000) {
+        if(AvrProg[i].arg1 & FWD(0)) {
             Error("Every AllocFwdAddr needs FwdAddrIsNow.");
             Error("i=%d op=%d arg1=%d arg2=%d rung=%d", i,
                AvrProg[i].opAvr,
@@ -1521,7 +1527,7 @@ static void _WriteMemory(char *args, DWORD addr, BYTE val, char *name, SDWORD li
     sprintf(s, "(%s)", args);
     LoadZAddr(addr, s);
     char lit[1024];
-    sprintf(lit, "0x%X=%d", literal, literal);
+    sprintf(lit, "val=%d lit=0x%X=%d", val, literal, literal);
     // load r25 with the data
     Instruction(OP_LDI, r25, val, lit);
     // do the store
@@ -2227,6 +2233,88 @@ static void InitTables(void)
     }
 }
 #endif
+
+//-----------------------------------------------------------------------------
+// Call a subroutine, using either an rcall or an icall depending on what
+// the processor supports or requires.
+//-----------------------------------------------------------------------------
+static void CallSubroutine(DWORD addr)
+//used ZL, r25
+{
+    if(addr & FWD(0)) {
+        if(Prog.mcu->core >= EnhancedCore4M) {
+            Instruction(OP_LDI, ZL, REG_EIND & 0xff); // Z-register Low Byte
+            Instruction(OP_LDI, ZH, (REG_EIND >> 8) & 0xff); // Z-register High Byte
+            // load r25 with the data
+            Instruction(OP_LDI, r25, FWD_EIND(addr));
+            // do the store
+            Instruction(OP_ST_Z, r25, 0);  // 1
+
+            Instruction(OP_LDI, ZL, FWD_LO(addr)); // 2
+            Instruction(OP_LDI, ZH, FWD_HI(addr));
+            Instruction(OP_EICALL);
+        } else if(Prog.mcu->core >= ClassicCore8K) {
+            Instruction(OP_LDI, ZL, FWD_LO(addr));
+            Instruction(OP_LDI, ZH, FWD_HI(addr));
+            Instruction(OP_ICALL);
+        } else {
+            Instruction(OP_RCALL, FWD(addr));
+        }
+    } else {
+        if(addr <= 0xFFF) {
+            Instruction(OP_RCALL, addr);
+        } else if((addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
+            Instruction(OP_LDI, ZL, addr & 0xff);
+            Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
+            Instruction(OP_ICALL);
+        } else if((addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
+            WriteMemory(REG_EIND, (addr >> 16) & 0xff); // 1
+            Instruction(OP_LDI, ZL, addr & 0xff); // 2
+            Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
+            Instruction(OP_EICALL);
+        } else oops();
+    }
+}
+
+//-----------------------------------------------------------------------------
+static void InstructionJMP(DWORD addr)
+//used ZL, r25
+{
+    if(addr & FWD(0)) {
+        if(Prog.mcu->core >= EnhancedCore4M) {
+            Instruction(OP_LDI, ZL, REG_EIND & 0xff); // Z-register Low Byte
+            Instruction(OP_LDI, ZH, (REG_EIND >> 8) & 0xff); // Z-register High Byte
+            // load r25 with the data
+            Instruction(OP_LDI, r25, FWD_EIND(addr));
+            // do the store
+            Instruction(OP_ST_Z, r25, 0);  // 1
+
+            Instruction(OP_LDI, ZL, FWD_LO(addr)); // 2
+            Instruction(OP_LDI, ZH, FWD_HI(addr));
+            Instruction(OP_EIJMP);
+        } else if(Prog.mcu->core >= ClassicCore8K) {
+            Instruction(OP_LDI, ZL, FWD_LO(addr));
+            Instruction(OP_LDI, ZH, FWD_HI(addr));
+            Instruction(OP_IJMP);
+        } else {
+            Instruction(OP_RJMP, FWD(addr));
+        }
+    } else {
+        if(addr <= 0xFFF) {
+            Instruction(OP_RJMP, addr);
+        } else if((addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
+            Instruction(OP_LDI, ZL, addr & 0xff);
+            Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
+            Instruction(OP_IJMP);
+        } else if((addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
+            WriteMemory(REG_EIND, (addr >> 16) & 0xff); // 1
+            Instruction(OP_LDI, ZL, addr & 0xff); // 2
+            Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
+            Instruction(OP_EIJMP);
+        } else oops();
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Write the basic runtime. We set up our reset vector, configure all the
 // I/O pins, then set up the timer that does the cycling. Next instruction
@@ -2240,7 +2328,11 @@ static void WriteRuntime(void)
     DWORD resetVector = AllocFwdAddr();
 
     int i;
+    #ifdef TABLE_IN_FLASH
+    InstructionJMP(resetVector);       // $0000, RESET
+    #else
     Instruction(OP_RJMP, resetVector);       // $0000, RESET
+    #endif
     for(i = 0; i < 34; i++)
         Instruction(OP_RETI);
     Comment("Interrupt table end.");
@@ -2350,9 +2442,9 @@ static void WriteRuntime(void)
             // skip this one, dummy entry for MCUs with I/O ports not
             // starting from A
         } else {
-            WriteMemory(Prog.mcu->outputRegs[i], isInput[i]);
-            // turn on the pull-ups, and drive the outputs low to start
             WriteMemory(Prog.mcu->dirRegs[i], isOutput[i]);
+            // turn on the pull-ups, and drive the outputs low to start
+            WriteMemory(Prog.mcu->outputRegs[i], isInput[i]);
         }
     }
 
@@ -2416,7 +2508,7 @@ static void CompileIfBody(DWORD condFalse)
         IntPc++;
         IntPcNow = IntPc;
         DWORD endBlock = AllocFwdAddr();
-        Instruction(OP_RJMP, endBlock);
+        InstructionJMP(endBlock);
 
         FwdAddrIsNow(condFalse);
         CompileFromIntermediate();
@@ -2426,22 +2518,6 @@ static void CompileIfBody(DWORD condFalse)
     }
 
     if(IntCode[IntPc].op != INT_END_IF) ooops("%d", IntCode[IntPc].op);
-}
-
-//-----------------------------------------------------------------------------
-// Call a subroutine, using either an rcall or an icall depending on what
-// the processor supports or requires.
-//-----------------------------------------------------------------------------
-static void CallSubroutine(DWORD addr)
-//used ZL
-{
-    if((Prog.mcu->core >= ClassicCore8K) && (addr > 0xFFF)) {
-        Instruction(OP_LDI, ZL, FWD_LO(addr));
-        Instruction(OP_LDI, ZH, FWD_HI(addr));
-        Instruction(OP_ICALL, 0, 0);
-    } else {
-        Instruction(OP_RCALL, addr, 0);
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -3804,20 +3880,25 @@ static void CompileFromIntermediate(void)
             case INT_FwdAddrIsNow:
                 FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
                 break;
-            case INT_GOTO: {
-                int rung = hobatoi(a->name1);
-                rung = min(rung, Prog.numRungs+1);
-                DWORD addr;
 
-                if(rung < 0) {
+            case INT_RETURN:
+                Instruction(OP_RET);
+                break;
+
+            case INT_GOTO: {
+                int rung = a->literal;
+                DWORD addr;
+                if(rung < -1) {
                     addr = 0;
-                } else if(rung == 0) {
+                } else if(rung == -1) {
                     addr = BeginOfPLCCycle;
                 } else if(rung <= rungNow) {
-                    addr = AddrOfRungN[rung-1].KnownAddr;
+                    addr = AddrOfRungN[rung].KnownAddr;
                 } else {
-                    addr = AddrOfRungN[rung-1].FwdAddr;
+                    addr = AddrOfRungN[rung].FwdAddr;
                 }
+                InstructionJMP(addr);
+                /*
                 if(rung > rungNow) {
                     if(Prog.mcu->core >= ClassicCore8K) {
                         Instruction(OP_LDI, ZL, FWD_LO(addr));
@@ -3835,10 +3916,11 @@ static void CompileFromIntermediate(void)
                         Instruction(OP_RJMP, addr);
                     }
                 }
+                */
                 break;
             }
             case INT_GOSUB: {
-                int rung = hobatoi(a->name1);
+                int rung = a->literal;
                 if(rung < rungNow) {
                     CallSubroutine(AddrOfRungN[rung].KnownAddr);
                 } else if(rung > rungNow) {
@@ -3846,10 +3928,6 @@ static void CompileFromIntermediate(void)
                 } else oops();
                 break;
             }
-            case INT_RETURN:
-                Instruction(OP_RET);
-                break;
-
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:{
                 DWORD addrOfTable = 0;
@@ -3857,6 +3935,7 @@ static void CompileFromIntermediate(void)
 
                 if(addrOfTable == 0) {
                     DWORD SkipData = AllocFwdAddr();
+                    /*
                     if(Prog.mcu->core >= ClassicCore8K) {
                         Instruction(OP_LDI, ZL, FWD_LO(SkipData));
                         Instruction(OP_LDI, ZH, FWD_HI(SkipData));
@@ -3865,9 +3944,9 @@ static void CompileFromIntermediate(void)
                     } else {
                         Instruction(OP_RJMP, SkipData, 0);
                     }
-
+                    */
+                    InstructionJMP(SkipData);
                     InitTable(a);
-
                     FwdAddrIsNow(SkipData);
                 }
                 break;
@@ -5254,6 +5333,7 @@ void CompileAvr(char *outFile)
 
     rungNow = -30;
     Comment("GOTO next PLC cycle");
+    /*
     if(Prog.mcu->core >= ClassicCore8K) {
         Instruction(OP_LDI, ZL, (BeginOfPLCCycle & 0xff));
         Instruction(OP_LDI, ZH, (BeginOfPLCCycle >> 8) & 0xff);
@@ -5261,7 +5341,8 @@ void CompileAvr(char *outFile)
     } else {
         Instruction(OP_RJMP, BeginOfPLCCycle, 0);
     }
-
+    */
+    InstructionJMP(BeginOfPLCCycle);
 
     rungNow = -20;
 

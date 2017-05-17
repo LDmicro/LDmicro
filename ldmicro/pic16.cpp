@@ -675,7 +675,7 @@ static DWORD AllocFwdAddr(void)
 //-----------------------------------------------------------------------------
 static void FwdAddrIsNow(DWORD addr)
 {
-    if(!(addr & 0x80000000)) oops();
+    if(!(addr & FWD(0))) oops();
 
     BOOL seen = FALSE;
     DWORD i;
@@ -3943,21 +3943,20 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
 
             case INT_GOTO: {
-                int rung = hobatoi(a->name1);
-                rung = min(rung, Prog.numRungs+1);
-                if(rung < 0) {
+                int rung = a->literal;
+                if(rung < -1) {
                     Instruction(OP_GOTO, 0);
-                } else if(rung == 0) {
+                } else if(rung == -1) {
                     Instruction(OP_GOTO, BeginOfPLCCycle);
                 } else if(rung <= rungNow) {
-                    Instruction(OP_GOTO, AddrOfRungN[rung-1].KnownAddr);
+                    Instruction(OP_GOTO, AddrOfRungN[rung].KnownAddr);
                 } else {
-                    Instruction(OP_GOTO, AddrOfRungN[rung-1].FwdAddr);
+                    Instruction(OP_GOTO, AddrOfRungN[rung].FwdAddr);
                 }
                 break;
             }
             case INT_GOSUB: {
-                int rung = hobatoi(a->name1);
+                int rung = a->literal;
                 if(rung < rungNow) {
                     Instruction(OP_CALL, AddrOfRungN[rung].KnownAddr);
                 } else if(rung > rungNow) {

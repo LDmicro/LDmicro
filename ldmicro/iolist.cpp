@@ -189,13 +189,15 @@ static void ExtractNamesFromCircuit(int which, void *any)
 {
     ElemLeaf *l = (ElemLeaf *)any;
 
+    char str[MAX_NAME_LEN];
+
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int i;
             for(i = 0; i < p->count; i++) {
                 ExtractNamesFromCircuit(p->contents[i].which,
-                    p->contents[i].d.any);
+                    p->contents[i].data.any);
             }
             break;
         }
@@ -204,7 +206,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             int i;
             for(i = 0; i < s->count; i++) {
                 ExtractNamesFromCircuit(s->contents[i].which,
-                    s->contents[i].d.any);
+                    s->contents[i].data.any);
             }
             break;
         }
@@ -307,7 +309,6 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_STEPPER:
-            char str[MAX_NAME_LEN];
             sprintf(str, "C%s%s", l->d.stepper.name, "Dec");
             AppendIo(str, IO_TYPE_COUNTER);
 
