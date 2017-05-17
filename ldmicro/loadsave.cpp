@@ -523,7 +523,7 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
             return NULL;
         }
         ret->contents[cnt].which = which;
-        ret->contents[cnt].d.any = any;
+        ret->contents[cnt].data.any = any;
         cnt++;
         if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
     }
@@ -565,7 +565,7 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
             return NULL;
         }
         ret->contents[cnt].which = which;
-        ret->contents[cnt].d.any = any;
+        ret->contents[cnt].data.any = any;
         cnt++;
         if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
     }
@@ -1112,7 +1112,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                 fprintf(f, "SERIES\n");
             }
             for(i = 0; i < s->count; i++) {
-                SaveElemToFile(f, s->contents[i].which, s->contents[i].d.any,
+                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any,
                     depth+1, rung);
             }
             Indent(f, depth);
@@ -1125,7 +1125,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             int i;
             fprintf(f, "PARALLEL\n");
             for(i = 0; i < s->count; i++) {
-                SaveElemToFile(f, s->contents[i].which, s->contents[i].d.any,
+                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any,
                     depth+1, rung);
             }
             Indent(f, depth);

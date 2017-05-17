@@ -18,3 +18,11 @@ foreach $f (qw(DE ES FR IT PT TR RU JA EN)) {
 #SYS("nmake clean");
 #SYS("nmake D=LDLANG_EN");
 SYS("copy ldmicro.exe build\\ldmicro.exe");
+
+SYS("copy COPYING.txt     build");
+SYS("copy CHANGES.txt     build");
+SYS("copy manual*.txt     build");
+SYS("copy notepad.bat     build");
+SYS("copy readmcu.bat     build");
+SYS("copy flashmcu.bat    build");
+SYS("copy postCompile.bat build");

@@ -408,10 +408,10 @@ typedef signed long SDWORD;
         case ELEM_COIL: \
         case ELEM_CONTACTS: \
         case ELEM_TIME2COUNT: \
-        case ELEM_TCY: \
         case ELEM_TON: \
         case ELEM_TOF: \
         case ELEM_RTO: \
+        case ELEM_TCY: \
         case ELEM_CTD: \
         case ELEM_CTU: \
         case ELEM_CTC: \
@@ -451,9 +451,9 @@ typedef signed long SDWORD;
         case ELEM_XOR_COPY_BIT: \
         case ELEM_SHL: \
         case ELEM_SHR: \
-        case ELEM_SR0: \
         case ELEM_ROL: \
         case ELEM_ROR: \
+        case ELEM_SR0: \
         case ELEM_AND: \
         case ELEM_OR: \
         case ELEM_XOR: \
@@ -513,7 +513,8 @@ typedef signed long SDWORD;
 #define MAX_SHIFT_REGISTER_STAGES   256
 #define MAX_STRING_LEN              256
 
-typedef struct ElemSubckParallelTag ElemSubcktParallel;
+typedef struct ElemSubcktParallelTag ElemSubcktParallel;
+typedef struct ElemSubcktSeriesTag ElemSubcktSeries;
 
 typedef struct ElemCommentTag {
     char    str[MAX_COMMENT_LEN];
@@ -714,8 +715,18 @@ typedef struct ElemLeafTag {
         ElemLookUpTable     lookUpTable;
         ElemPiecewiseLinear piecewiseLinear;
         ElemPersist         persist;
-    }       d;
+    } d;
 } ElemLeaf;
+
+typedef struct ElemNodeTag{
+    int     which;
+    union {
+        void                   *any;
+        ElemSubcktParallel     *parallel;
+        ElemSubcktSeries       *series; // used in the Copy-Paste command
+        ElemLeaf               *leaf;
+    } data;
+} ElemNode;
 
 typedef struct ElemSubcktSeriesTag {
     struct {
@@ -725,19 +736,19 @@ typedef struct ElemSubcktSeriesTag {
             ElemSubcktParallel     *parallel;
             ElemSubcktSeriesTag    *series; // used in the Copy-Paste command
             ElemLeaf               *leaf;
-        } d;
+        } data;
     } contents[MAX_ELEMENTS_IN_SUBCKT];
     int count;
 } ElemSubcktSeries;
 
-typedef struct ElemSubckParallelTag {
+typedef struct ElemSubcktParallelTag {
     struct {
         int     which;
         union {
             void                   *any;
             ElemSubcktSeries       *series;
             ElemLeaf               *leaf;
-        } d;
+        } data;
     } contents[MAX_ELEMENTS_IN_SUBCKT];
     int count;
 } ElemSubcktParallel;
@@ -807,11 +818,14 @@ typedef struct PlcProgramTag {
 #define MAX_RUNGS 9999
     ElemSubcktSeries *rungs[MAX_RUNGS];
     BOOL              rungPowered[MAX_RUNGS];
+    BOOL              rungSimulated[MAX_RUNGS];
     int               numRungs;
     char              rungSelected[MAX_RUNGS];
     DWORD             OpsInRung[MAX_RUNGS];
     DWORD             HexInRung[MAX_RUNGS];
 } PlcProgram;
+
+#define RUNG(r)       max(min(r,Prog.numRungs-1),0)
 
 //-----------------------------------------------
 // For actually drawing the ladder logic on screen; constants that determine
@@ -957,7 +971,8 @@ typedef struct McuExtIntPinInfoTag {
 typedef struct McuIoInfoTag {
     char            *mcuName;
     char            *mcuList;
-    char            *mcuInc;
+    char            *mcuInc; // ASM*.INC
+    char            *mcuH;   // C*.H
     char             portPrefix;
     DWORD            inputRegs[MAX_IO_PORTS];         // A is 0, J is 9
     DWORD            outputRegs[MAX_IO_PORTS];
@@ -1069,7 +1084,7 @@ int ProgCountWidestRow(void);
 int ProgCountRows(void);
 extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
-BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore);
+BOOL DrawElement(void *node, int which, void *elem, int *cx, int *cy, BOOL poweredBefore);
 void DrawEndRung(int cx, int cy);
 extern int ColsAvailable;
 extern BOOL SelectionActive;
@@ -1178,6 +1193,7 @@ void InsertRung(BOOL afterCursor);
 int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
 int FindRung(int seek, char *name);
+int FindRungLast(int seek, char *name);
 int CountWhich(int seek1, int seek2, int seek3, char *name);
 int CountWhich(int seek1, int seek2, char *name);
 int CountWhich(int seek1, char *name);
@@ -1209,7 +1225,14 @@ void UndoRedo(void);
 void UndoRemember(void);
 void UndoFlush(void);
 BOOL CanUndo(void);
+/*
 BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
+BOOL ContainsWhich(int which, void *any, int seek1, int seek2);
+BOOL ContainsWhich(int which, void *any, int seek1);
+*/
+ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
+ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2);
+ElemLeaf *ContainsWhich(int which, void *any, int seek1);
 void RenameSet1(int which, char *name, char *new_name, BOOL set1);
 
 // loadsave.cpp
@@ -1420,7 +1443,10 @@ SDWORD GetSimulationVariable(char *name, BOOL forIoList);
 SDWORD GetSimulationVariable(char *name);
 void SetSimulationStr(char *name, char *val);
 char *GetSimulationStr(char *name);
-
+int FindOpName(int op, char *name1);
+int FindOpName(int op, char *name1, char *name2);
+int FindOpNameLast(int op, char *name1);
+int FindOpNameLast(int op, char *name1, char *name2);
 // Assignment of the `variables,' used for timers, counters, arithmetic, and
 // other more general things. Allocate 2 octets (16 bits) per.
 // Allocate 1 octets for  8-bits variables.
@@ -1680,6 +1706,7 @@ extern DWORD addrRUartRecvErrorFlag;
 extern int    bitRUartRecvErrorFlag;
 extern DWORD addrRUartSendErrorFlag;
 extern int    bitRUartSendErrorFlag;
+BOOL GotoGosubUsed(void);
 BOOL UartFunctionUsed(void);
 BOOL UartRecvUsed(void);
 BOOL UartSendUsed(void);

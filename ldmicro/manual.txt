@@ -320,6 +320,8 @@ INSTRUCTIONS REFERENCE
     instruction can examine the state of an input pin, an output pin,
     or an internal relay. This is the opposite of a normally open contact.
 
+    HOW TO: The AND, OR, XOR logic operations on CONTACTs inputs
+    See https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-The-AND,-OR,-XOR-logic-operations-on-CONTACTs-inputs
 
 > COIL, NORMAL                  Rname           Yname
                              ----( )----     ----( )----
@@ -1146,19 +1148,19 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     In this example we have two SEPARATE the pseudo-random number generators LCG.
     But if the newSeed1 equal the newSeed2 then RAnd1 and Rand2 are equal
     sequenses of numbers.
-    ||     _    _      {SRAND     Rand1}                       ||
-0001||--[_/ OSR/ \_]---{$seed:=newSeed1}-                      ||
-    ||                                                         ||
-    ||      Rand1                                              ||
-0002||-----{RAND}------                                        ||
-    ||                                                         ||
-    ||                                                         ||
-    ||     _    _      {SRAND     Rand2}                       ||
-0003||--[_/ OSR/ \_]---{$seed:=newSeed2}-                      ||
-    ||                                                         ||
-    ||      Rand2                                              ||
-0004||-----{RAND}------                                        ||
-    ||                                                         ||
+   ||     _    _      {SRAND     Rand1}                       ||
+ 1 ||--[_/ OSR/ \_]---{$seed:=newSeed1}-                      ||
+   ||                                                         ||
+   ||      Rand1                                              ||
+ 0 ||-----{RAND}------                                        ||
+   ||                                                         ||
+   ||                                                         ||
+   ||     _    _      {SRAND     Rand2}                       ||
+ 0 ||--[_/ OSR/ \_]---{$seed:=newSeed2}-                      ||
+   ||                                                         ||
+   ||      Rand2                                              ||
+ 0 ||-----{RAND}------                                        ||
+   ||                                                         ||
 
 
 A NOTE ON USING MATH

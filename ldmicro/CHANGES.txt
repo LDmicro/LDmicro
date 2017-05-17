@@ -1,3 +1,17 @@
+== Release 4.2.1
+
+    * Fixed: The 'Help' and 'About' dialog boxes are displayed in the selected Color scheme.
+
+    * Fixed: Simulation of the GOTO and GOSUB instructions.
+
+    * Fixed: Pull-Up resistors in ATmega MCU and ANSIC code.    
+
+    * Wiki: SUBPROG, RETURN, ENDSUB and GOSUB, LABEL and GOTO instruction. Part 2
+    https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-RETURN,-ENDSUB-and-GOSUB,-LABEL-and-GOTO-instruction.-Part-2
+
+    SUBPROG, RETURN, ENDSUB and GOSUB, LABEL and GOTO instruction. Part 3    
+    https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-RETURN,-ENDSUB-and-GOSUB,-LABEL-and-GOTO-instruction.-Part-3
+
 == Release 4.2.0
 
     * Fixed: PIC Configuration Bits hexadecimals.
@@ -24,6 +38,8 @@
 
     * Wiki: HOW TO: The AND, OR, XOR logic operations on CONTACTs inputs
     See https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-The-AND,-OR,-XOR-logic-operations-on-CONTACTs-inputs
+
+    * Spanish manual-es.txt added. Thanks Jose Manuel Ruiz Gutierrez.
 
 == Release 4.1.8
 

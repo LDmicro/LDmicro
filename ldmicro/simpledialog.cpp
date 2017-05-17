@@ -262,7 +262,9 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
         name[0] = 'T';
         strcpy(name+1, nameBuf);
         double del = atof(delBuf);
-        long long period = (long long)round(del * 1000 / Prog.cycleTime);// - 1;
+        long long period=0;
+        if(Prog.cycleTime > 0)
+            period = (long long)round(del * 1000 / Prog.cycleTime);// - 1;
         if(del <= 0) {
             Error(_("Delay cannot be zero or negative."));
         } else if(period  < 1)  {

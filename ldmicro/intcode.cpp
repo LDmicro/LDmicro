@@ -79,7 +79,8 @@ int IntCodeLen = 0;
 int ProgWriteP = 0;
 static SDWORD *Tdata;
 int rungNow = -INT_MAX;
-static int whichNow = INT_MAX;
+static int whichNow = -INT_MAX;
+static ElemLeaf *leafNow = NULL;
 
 static DWORD GenSymCountParThis;
 static DWORD GenSymCountParOut;
@@ -108,7 +109,7 @@ void IntDumpListing(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        Error("Couldn't dump intermediate code to '%s'.", outFile);
+        Error(_("Couldn't dump intermediate code to '%s'."), outFile);
     }
 
     int i;
@@ -469,25 +470,25 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_FwdAddrIsNow:
-                fprintf(f, "Rung%dlabel:",IntCode[i].literal+1);
+                fprintf(f, "LabelRung%d: // %s", IntCode[i].literal+1, IntCode[i].name1);
                 break;
 
             case INT_GOTO:
-                if(IsNumber(IntCode[i].name2))
-                    fprintf(f, "GOTO Rung%slabel", IntCode[i].name2);
+                if(IsNumber(IntCode[i].name1))
+                    fprintf(f, "GOTO LabelRung%s; #LabelRung%d", IntCode[i].name1, IntCode[i].literal+1);
                 else
-                    fprintf(f, "GOTO %s; #Rung%slabel", IntCode[i].name2, IntCode[i].name1);
+                    fprintf(f, "GOTO %s; #LabelRung%d", IntCode[i].name1, IntCode[i].literal+1);
                 break;
 
             case INT_GOSUB:
-                if(IsNumber(IntCode[i].name2))
-                    fprintf(f, "GOSUB Rung%slabel", IntCode[i].name2);
+                if(IsNumber(IntCode[i].name1))
+                    fprintf(f, "GOSUB LabelRung%s; #LabelRung%d", IntCode[i].name1, IntCode[i].literal+1, IntCode[i].literal2+1);
                 else
-                    fprintf(f, "GOSUB %s; #Rung%slabel", IntCode[i].name2, IntCode[i].name1);
+                    fprintf(f, "GOSUB %s; #LabelRung%d", IntCode[i].name1, IntCode[i].literal+1, IntCode[i].literal2+1);
                 break;
 
             case INT_RETURN:
-                fprintf(f, "RETURN");
+                fprintf(f, "RETURN // %s", IntCode[i].name1);
                 break;
 
             #ifdef TABLE_IN_FLASH
@@ -592,7 +593,7 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2, SDWORD *data)
+static void _Op(int l, char *f, char *args, int op, BOOL *b, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = op;
@@ -607,6 +608,11 @@ static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, ch
     IntCode[IntCodeLen].data = data;
     IntCode[IntCodeLen].rung = rungNow;
     IntCode[IntCodeLen].which = whichNow;
+    IntCode[IntCodeLen].leaf = leafNow;
+    if(b)
+    IntCode[IntCodeLen].poweredAfter = b;
+    else
+    IntCode[IntCodeLen].poweredAfter = &(leafNow->poweredAfter);
     IntCode[IntCodeLen].l = l;
     strcpy(IntCode[IntCodeLen].f, f);
     IntCodeLen++;
@@ -618,51 +624,50 @@ static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, ch
 
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, SDWORD lit)
 {
-    _Op(l, f, args, op, name1, name2, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op, char *name1, SDWORD lit)
 {
-    _Op(l, f, args, op, name1, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2)
 {
-    _Op(l, f, args, op, name1, name2, NULL, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op, char *name1)
 {
-    _Op(l, f, args, op, name1, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op)
 {
-    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
-//
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit)
 {
-    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, 0, NULL);
 }
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3)
 {
-    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, 0, 0, NULL);
 }
 //
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2)
 {
-    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, lit2, NULL);
+    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, NULL);
 }
 //
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4)
 {
-    _Op(l, f, args, op, name1, name2, name3, name4, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, name2, name3, name4, NULL, NULL, 0, 0, NULL);
 }
 //
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2, SDWORD *data)
 {
-    _Op(l, f, args, op, name1, name2, name3, NULL, NULL, NULL, lit, lit2, data);
+    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, data);
 }
 
 // And use macro for bugtracking
@@ -676,12 +681,13 @@ static void SimState(BOOL *b, char *name, BOOL *w, char *name2)
 {
     memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = INT_SIMULATE_NODE_STATE;
-    strcpy(IntCode[IntCodeLen].name1, name);
     IntCode[IntCodeLen].poweredAfter = b;
-    if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
     IntCode[IntCodeLen].workingNow = w;
+    strcpy(IntCode[IntCodeLen].name1, name);
+    if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
     IntCode[IntCodeLen].rung = rungNow;
     IntCode[IntCodeLen].which = whichNow;
+    IntCode[IntCodeLen].leaf = leafNow;
     IntCodeLen++;
     if(IntCodeLen >= MAX_INT_OPS) {
         Error(_("Internal limit exceeded (MAX_INT_OPS)"));
@@ -743,7 +749,7 @@ static SDWORD TimerPeriod(ElemLeaf *l)
 {
     if(Prog.cycleTime <= 0) {
         Error(" PLC Cycle Time is 0. Timers does not work correctly!");
-        return 0;
+        return 1;
     }
     SDWORD period = SDWORD(l->d.timer.delay / Prog.cycleTime);// - 1;
     if(period < 1)  {
@@ -951,7 +957,7 @@ static BOOL CheckStaySameElem(int which, void *elem)
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             int i;
             for(i = 0; i < s->count; i++) {
-                if(!CheckStaySameElem(s->contents[i].which, s->contents[i].d.any))
+                if(!CheckStaySameElem(s->contents[i].which, s->contents[i].data.any))
                     return FALSE;
             }
             return TRUE;
@@ -960,7 +966,7 @@ static BOOL CheckStaySameElem(int which, void *elem)
             int i;
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(i = 0; i < p->count; i++) {
-                if(!CheckStaySameElem(p->contents[i].which, p->contents[i].d.any))
+                if(!CheckStaySameElem(p->contents[i].which, p->contents[i].data.any))
                      return FALSE;
             }
             return TRUE;
@@ -979,13 +985,13 @@ static BOOL CheckEndOfRungElem(int which, void *elem)
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
 
-            return CheckEndOfRungElem(s->contents[s->count-1].which,s->contents[s->count-1].d.any);
+            return CheckEndOfRungElem(s->contents[s->count-1].which,s->contents[s->count-1].data.any);
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             int i;
             for(i = 0; i < p->count; i++) {
-                if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].d.any))
+                if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].data.any))
                     return TRUE;
             }
             return FALSE;
@@ -1006,7 +1012,7 @@ static BOOL CheckCanChangeOutputElem(int which, void *elem)
 
             int i;
             for(i = 0; i < s->count; i++) {
-                if(CheckCanChangeOutputElem(s->contents[i].which, s->contents[i].d.any))
+                if(CheckCanChangeOutputElem(s->contents[i].which, s->contents[i].data.any))
                     return TRUE;
             }
             return FALSE;
@@ -1015,7 +1021,7 @@ static BOOL CheckCanChangeOutputElem(int which, void *elem)
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             int i;
             for(i = 0; i < p->count; i++) {
-                if(CheckCanChangeOutputElem(p->contents[i].which, p->contents[i].d.any))
+                if(CheckCanChangeOutputElem(p->contents[i].which, p->contents[i].data.any))
                     return TRUE;
             }
             return FALSE;
@@ -1042,14 +1048,14 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             int i;
             for(i = 0; i < s->count; i++)
-                InitVarsCircuit(s->contents[i].which, s->contents[i].d.any, n);
+                InitVarsCircuit(s->contents[i].which, s->contents[i].data.any, n);
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             int i;
             for(i = 0; i < p->count; i++)
-                InitVarsCircuit(p->contents[i].which, p->contents[i].d.any, n);
+                InitVarsCircuit(p->contents[i].which, p->contents[i].data.any, n);
             break;
         }
         case ELEM_TOF: {
@@ -1124,14 +1130,14 @@ static void InitTablesCircuit(int which, void *elem)
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             int i;
             for(i = 0; i < s->count; i++)
-                InitTablesCircuit(s->contents[i].which, s->contents[i].d.any);
+                InitTablesCircuit(s->contents[i].which, s->contents[i].data.any);
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             int i;
             for(i = 0; i < p->count; i++)
-                InitTablesCircuit(p->contents[i].which, p->contents[i].d.any);
+                InitTablesCircuit(p->contents[i].which, p->contents[i].data.any);
             break;
         }
         case ELEM_LOOK_UP_TABLE:
@@ -1204,6 +1210,7 @@ static char *VarFromExpr(char *expr, char *tempName)
 static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 {
     whichNow = which;
+    leafNow = (ElemLeaf *)any;
     ElemLeaf *l = (ElemLeaf *)any;
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -1212,7 +1219,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
             Comment("start series [");
             for(i = 0; i < s->count; i++) {
-                IntCodeFromCircuit(s->contents[i].which, s->contents[i].d.any,
+                IntCodeFromCircuit(s->contents[i].which, s->contents[i].data.any,
                     stateInOut, rung);
             }
             Comment("] finish series");
@@ -1228,14 +1235,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             int i;
             BOOL ExistEnd = FALSE; //FALSE indicates that it is NEED to calculate the parOut
             for(i = 0; i < p->count; i++) {
-              if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].d.any)){
+              if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].data.any)){
                 ExistEnd = TRUE; // TRUE indicates that it is NOT NEED to calculate the parOut
                 break;
               }
             }
             BOOL CanChange = FALSE; // FALSE indicates that it is NOT NEED to calculate the parThis
             for(i = 0; i < p->count; i++) {
-              if(!CheckStaySameElem(p->contents[i].which, p->contents[i].d.any)){
+              if(!CheckStaySameElem(p->contents[i].which, p->contents[i].data.any)){
                 CanChange = TRUE; // TRUE indicates that it is NEED to calculate the parThis
                 break;
               }
@@ -1257,15 +1264,15 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             }
             for(i = 0; i < p->count; i++) {
               #ifndef DEFAULT_PARALLEL_ALGORITHM
-              if(CheckStaySameElem(p->contents[i].which, p->contents[i].d.any))
-                IntCodeFromCircuit(p->contents[i].which, p->contents[i].d.any,
+              if(CheckStaySameElem(p->contents[i].which, p->contents[i].data.any))
+                IntCodeFromCircuit(p->contents[i].which, p->contents[i].data.any,
                     stateInOut, rung);
               else
               #endif
               {
                 Op(INT_COPY_BIT_TO_BIT, parThis, stateInOut);
 
-                IntCodeFromCircuit(p->contents[i].which, p->contents[i].d.any,
+                IntCodeFromCircuit(p->contents[i].which, p->contents[i].data.any,
                     parThis, rung);
 
                 if(ExistEnd == FALSE) {
@@ -1951,21 +1958,24 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
 //              Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
-               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
+               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, NULL, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
             }
             Op(INT_END_IF);
             break;
         }
 
         case ELEM_BUS: {
+              Comment(3, "ELEM_BUS");
             break;
         }
 
         case ELEM_BIN2BCD: {
+            Comment(3, "ELEM_BIN2BCD");
             break;
         }
 
         case ELEM_BCD2BIN: {
+            Comment(3, "ELEM_BCD2BIN");
             break;
         }
 
@@ -2028,20 +2038,23 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 Op(INT_END_IF);
                 break;
             }
-
             case ELEM_NPULSE: {
+                Comment(3, "ELEM_NPULSE");
                 break;
             }
 
             case ELEM_NPULSE_OFF: {
+                Comment(3, "ELEM_NPULSE_OFF");
                 break;
             }
 
             case ELEM_PWM_OFF: {
+                Comment(3, "ELEM_PWM_OFF");
                 break;
             }
 
             case ELEM_QUAD_ENCOD: {
+                Comment(3, "ELEM_QUAD_ENCOD");
                 break;
             }
 
@@ -2238,71 +2251,88 @@ math:   {
             Op(INT_DELAY, l->d.timer.delay);
             break;
 
-        case ELEM_GOTO:
-            Comment(3, "ELEM_GOTO");
+        case ELEM_GOTO: {
+            Comment(3, "ELEM_GOTO %s", l->d.doGoto.rung);
             Op(INT_IF_BIT_SET, stateInOut);
+                int r;
                 if(IsNumber(l->d.doGoto.rung)) {
-                    Op(INT_GOTO, l->d.doGoto.rung, l->d.doGoto.rung);
+                    r = hobatoi(l->d.doGoto.rung);
+                    r = min(r, Prog.numRungs+1) - 1;
                 } else {
-                    int r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
-                    char s[100];
-                    sprintf(s,"%d", r+1);
-                    if(r >= 0) {
-                        Op(INT_GOTO, s, l->d.doGoto.rung);
-                    } else {
-                        Error(_("LABEL '%s' not found!"), l->d.doGoto.rung);
+                    r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
+                    if(r < 0) {
+                        Error(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
                         CompileError();
                     }
                 }
+                Op(INT_GOTO, l->d.doGoto.rung, r);
+                //Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
-
-        case ELEM_GOSUB:
-            Comment(3, "ELEM_GOSUB");
+        }
+        case ELEM_GOSUB: {
+            Comment(3, "ELEM_GOSUB %s", l->d.doGoto.rung);
             Op(INT_IF_BIT_SET, stateInOut);
+                int r;
                 if(IsNumber(l->d.doGoto.rung)) {
-                    Op(INT_GOSUB, l->d.doGoto.rung, l->d.doGoto.rung);
+                    Error(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
+                    CompileError();
+                    r = hobatoi(l->d.doGoto.rung);
+                    r = min(r, Prog.numRungs+1);
                 } else {
-                    int r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
-                    char s[100];
-                    sprintf(s,"%d", r+1);
-                    if(r >= 0) {
-                        Op(INT_GOSUB, s, l->d.doGoto.rung);
-                    } else {
-                        Error(_("SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                    r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+                    if(r < 0) {
+                        Error(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
                         CompileError();
                     }
+                    r++;
                 }
+                Op(INT_GOSUB, l->d.doGoto.rung, r);
             Op(INT_END_IF);
             break;
-
+        }
         case ELEM_LABEL:
-            Comment(3, "ELEM_LABEL %s rung %d", l->d.doGoto.rung, rungNow+1);
+            Comment(3, "ELEM_LABEL %s", l->d.doGoto.rung);
             break;
 
         case ELEM_SUBPROG: {
-            Comment(3, "ELEM_SUBPROG %s rung %d", l->d.doGoto.rung, rungNow+1);
-            int r;
-            if(IsNumber(l->d.doGoto.rung)) {
-              r = hobatoi(l->d.doGoto.rung) - 1;
+            Comment(3, "ELEM_SUBPROG %s", l->d.doGoto.rung);
+            if((Prog.rungs[rungNow]->contents[0].which == ELEM_SUBPROG)
+            && ((Prog.rungs[rungNow]->count == 1)
+            ||  ((Prog.rungs[rungNow]->count == 2)
+            &&   (Prog.rungs[rungNow]->contents[1].which == ELEM_COMMENT)))) {
+                ;//;
             } else {
-              r = FindRung(ELEM_ENDSUB, l->d.doGoto.rung);
+                Error(_("SUBPROG: '%s' declaration must be single inside a rung %d"), l->d.doGoto.rung, rungNow+1);
+                CompileError();
             }
-            char s[100];
-            sprintf(s,"%d", r+1+1);
+            int r = -1;
+            if(!IsNumber(l->d.doGoto.rung)) {
+              r = FindRungLast(ELEM_ENDSUB, l->d.doGoto.rung);
+            }
             if(r >= 0) {
-                Op(INT_GOTO, s, l->d.doGoto.rung);
+                Op(INT_GOTO, l->d.doGoto.rung, "ENDSUB", r+1);
+                Op(INT_AllocKnownAddr, l->d.doGoto.rung, "SUBPROG", rungNow);
             } else {
-                Error(_("ENDSUB '%s' not found!"), l->d.doGoto.rung);
+                Error(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.rung);
                 CompileError();
             }
             break;
         }
-        case ELEM_ENDSUB:
+        case ELEM_ENDSUB: {
             Comment(3, "ELEM_ENDSUB %s rung %d", l->d.doGoto.rung, rungNow+1);
-            Op(INT_RETURN);
+            int r = -1;
+            if(!IsNumber(l->d.doGoto.rung)) {
+              r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+            }
+            if(r >= 0) {
+            } else {
+                Error(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                CompileError();
+            }
+            Op(INT_RETURN, l->d.doGoto.rung, r);
             break;
-
+        }
         case ELEM_RETURN:
             Comment(3, "ELEM_RETURN");
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2738,6 +2768,7 @@ math:   {
 
         case ELEM_SHORT:
             // goes straight through
+            Comment(3, "ELEM_SHORT");    // can comment // need only for debuging to align the lines in pl,asm
             break;
 
         case ELEM_PLACEHOLDER: {
@@ -2745,6 +2776,26 @@ math:   {
             Error(
               _("Empty row; delete it or add instructions before compiling."));
             CompileError();
+            break;
+        }
+        case ELEM_COMMENT: {
+            char s1[MAX_COMMENT_LEN];
+            char *s2;
+            AnsiToOem(l->d.comment.str,s1);
+            s2 = s1;
+            for(; *s2; s2++) {
+                if(*s2 == '\r'){
+                    *s2 = '\0';
+                    s2++;
+                    if(*s2 == '\n')
+                        s2++;
+                    break;
+                }
+            }
+            if(int_comment_level>=2) {
+                if(s1) Comment1(s1); // bypass % in comments
+                if(s2) Comment1(s2); // bypass % in comments
+            }
             break;
         }
         default:
@@ -2777,7 +2828,7 @@ static BOOL CheckMasterCircuit(int which, void *elem)
             int i;
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             for(i = 0; i < s->count; i++) {
-                if(CheckMasterCircuit(s->contents[i].which, s->contents[i].d.any))
+                if(CheckMasterCircuit(s->contents[i].which, s->contents[i].data.any))
                     return TRUE;
             }
             break;
@@ -2787,7 +2838,7 @@ static BOOL CheckMasterCircuit(int which, void *elem)
             int i;
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(i = 0; i < p->count; i++) {
-                if(CheckMasterCircuit(p->contents[i].which, p->contents[i].d.any))
+                if(CheckMasterCircuit(p->contents[i].which, p->contents[i].data.any))
                     return TRUE;
             }
             break;
@@ -2845,7 +2896,8 @@ BOOL GenerateIntermediateCode(void)
     EepromAddrFree = 0;
 
     rungNow = -100;//INT_MAX;
-    whichNow = INT_MAX;
+    whichNow = -INT_MAX;
+    leafNow = NULL;
 
     WipeIntMemory();
 
@@ -2873,7 +2925,8 @@ BOOL GenerateIntermediateCode(void)
     int rung;
     for(rung = 0; rung <= Prog.numRungs; rung++) {
         rungNow = rung;
-        whichNow = INT_MAX;
+        whichNow = -INT_MAX;
+        leafNow = NULL;
         Prog.OpsInRung[rung] = 0;
         Prog.HexInRung[rung] = 0;
         Op(INT_AllocFwdAddr, (SDWORD)rung);
@@ -2881,20 +2934,21 @@ BOOL GenerateIntermediateCode(void)
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
         rungNow = rung;
-        whichNow = INT_MAX;
+        whichNow = -INT_MAX;
+        leafNow = NULL;
         if(int_comment_level != 1) {
             Comment("");
             Comment("======= START RUNG %d =======", rung+1);
         }
-        Op(INT_FwdAddrIsNow, (SDWORD)rung);
         Op(INT_AllocKnownAddr, (SDWORD)rung);
+        Op(INT_FwdAddrIsNow, (SDWORD)rung);
 
-        if(Prog.rungs[rung]->count >= 1 &&
+        if(Prog.rungs[rung]->count > 0 &&
             Prog.rungs[rung]->contents[0].which == ELEM_COMMENT)
         {
             // nothing to do for this one
             // Yes, I do! Push comment into interpretable OP code for C and PASCAL.
-            l=(ElemLeaf *) Prog.rungs[rung]->contents[0].d.any;
+            l=(ElemLeaf *) Prog.rungs[rung]->contents[0].data.any;
             AnsiToOem(l->d.comment.str,s1);
             s2 = s1;
             for(; *s2; s2++) {
@@ -2924,6 +2978,7 @@ BOOL GenerateIntermediateCode(void)
         IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[rung], "$rung_top", rung);
     }
     rungNow++;
+    Op(INT_AllocKnownAddr, (SDWORD)rung);
     Op(INT_FwdAddrIsNow, (SDWORD)Prog.numRungs);
     rungNow++;
     //Calculate amount of intermediate codes in rungs
@@ -2944,6 +2999,18 @@ BOOL GenerateIntermediateCode(void)
         SetExt(CurrentPlFile, CurrentSaveFile, ".pl");
     IntDumpListing(CurrentPlFile);
     return TRUE;
+}
+
+BOOL GotoGosubUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_GOTO, ELEM_GOSUB, -1)
+        )
+            return TRUE;
+    }
+    return FALSE;
 }
 
 //-----------------------------------------------------------------------------
