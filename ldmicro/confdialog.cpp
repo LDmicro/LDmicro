@@ -56,8 +56,8 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
                 return 0;
         } else
             if(!(isdigit(wParam) || wParam == '.' || wParam == '\b'))
-            return 0;
-        }
+                return 0;
+    }
 
     LONG_PTR t;
     if(hwnd == CrystalTextbox)

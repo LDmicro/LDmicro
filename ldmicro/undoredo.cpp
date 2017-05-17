@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -68,8 +68,8 @@ static void *DeepCopy(int which, void *any)
             n->count = s->count;
             for(i = 0; i < s->count; i++) {
                 n->contents[i].which = s->contents[i].which;
-                n->contents[i].d.any = DeepCopy(s->contents[i].which, 
-                    s->contents[i].d.any);
+                n->contents[i].data.any = DeepCopy(s->contents[i].which,
+                    s->contents[i].data.any);
             }
             return n;
         }
@@ -80,8 +80,8 @@ static void *DeepCopy(int which, void *any)
             n->count = p->count;
             for(i = 0; i < p->count; i++) {
                 n->contents[i].which = p->contents[i].which;
-                n->contents[i].d.any = DeepCopy(p->contents[i].which,
-                    p->contents[i].d.any);
+                n->contents[i].data.any = DeepCopy(p->contents[i].which,
+                    p->contents[i].data.any);
             }
             return n;
         }
@@ -198,7 +198,7 @@ void UndoUndo(void)
     } else {
         SetUndoEnabled(FALSE, TRUE);
     }
-    RefreshControlsToSettings(); 
+    RefreshControlsToSettings();
     RefreshScrollbars();
     InvalidateRect(MainWindow, NULL, FALSE);
 }
@@ -221,7 +221,7 @@ void UndoRedo(void)
     } else {
         SetUndoEnabled(TRUE, FALSE);
     }
-    RefreshControlsToSettings(); 
+    RefreshControlsToSettings();
     RefreshScrollbars();
     InvalidateRect(MainWindow, NULL, FALSE);
 }

@@ -157,7 +157,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
             return 2;
 
         case ELEM_COMMENT: {
-            if(soFar != 0) oops();
+            //if(soFar != 0) oops();
 
             ElemLeaf *l = (ElemLeaf *)elem;
             char tbuf[MAX_COMMENT_LEN];
@@ -174,7 +174,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
             }
             // round up, and allow space for lead-in
             len = (len + 7 + (POS_WIDTH-1)) / POS_WIDTH;
-            return max(ColsAvailable, len);
+            return min(ScreenColsAvailable() - soFar, max(ColsAvailable, len));
+            //return max(ColsAvailable, len);
         }
 //      case ELEM_CTC: // as End
         case ELEM_RES:
@@ -221,7 +222,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             for(i = 0; i < s->count; i++) {
                 total += CountWidthOfElement(s->contents[i].which,
-                    s->contents[i].d.any, total+soFar);
+                    s->contents[i].data.any, total+soFar);
             }
             return total;
         }
@@ -233,7 +234,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(i = 0; i < p->count; i++) {
                 int w = CountWidthOfElement(p->contents[i].which,
-                    p->contents[i].d.any, soFar);
+                    p->contents[i].data.any, soFar);
                 if(w > max) {
                     max = w;
                 }
@@ -242,7 +243,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         }
 
         default:
-            oops();
+            ooops("ELEM_0x%X", which);
             return 0;
     }
 }
@@ -267,7 +268,7 @@ int CountHeightOfElement(int which, void *elem)
             ElemSubcktParallel *s = (ElemSubcktParallel *)elem;
             for(i = 0; i < s->count; i++) {
                 total += CountHeightOfElement(s->contents[i].which,
-                    s->contents[i].d.any);
+                    s->contents[i].data.any);
             }
             return total;
         }
@@ -279,7 +280,7 @@ int CountHeightOfElement(int which, void *elem)
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             for(i = 0; i < s->count; i++) {
                 int w = CountHeightOfElement(s->contents[i].which,
-                    s->contents[i].d.any);
+                    s->contents[i].data.any);
                 if(w > max) {
                     max = w;
                 }
@@ -288,7 +289,7 @@ int CountHeightOfElement(int which, void *elem)
         }
 
         default:
-            oops();
+            ooops("ELEM_0x%X", which);
             return 0;
     }
 }
@@ -830,9 +831,11 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
     static char s1[BUF_LEN];
     static char s2[BUF_LEN];
     static char s3[BUF_LEN];
+    char *s;
 
     switch(which) {
         case ELEM_COMMENT: {
+            int maxl = ColsAvailable*POS_WIDTH - *cx - 2;
             char tbuf[MAX_COMMENT_LEN];
             char tlbuf[MAX_COMMENT_LEN+8];
 
@@ -843,15 +846,28 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
                 if(b[-1] == '\r') b[-1] = '\0';
                 *b = '\0';
                 sprintf(tlbuf, "\x03 ; %s\x02", tbuf);
+                if(strlen(tlbuf) > maxl) {
+                   tlbuf[maxl] = '~';
+                   tlbuf[maxl+1] = '\0';
+                }
                 DrawChars(*cx, *cy + (POS_HEIGHT/2) - 1, tlbuf);
                 sprintf(tlbuf, "\x03 ; %s\x02", b+1);
+                if(strlen(tlbuf) > maxl) {
+                   tlbuf[maxl] = '~';
+                   tlbuf[maxl+1] = '\0';
+                }
                 DrawChars(*cx, *cy + (POS_HEIGHT/2), tlbuf);
             } else {
                 sprintf(tlbuf, "\x03 ; %s\x02", tbuf);
+                if(strlen(tlbuf) > maxl) {
+                   tlbuf[maxl] = '~';
+                   tlbuf[maxl+1] = '\0';
+                }
                 DrawChars(*cx, *cy + (POS_HEIGHT/2) - 1, tlbuf);
             }
 
-            *cx += ColsAvailable*POS_WIDTH;
+            //*cx += ColsAvailable*POS_WIDTH;
+            *cx += (maxl + 2);
             break;
         }
         case ELEM_PLACEHOLDER: {
@@ -980,19 +996,13 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         {
             char *s;
-            case ELEM_RSFR:
-                s = "Read"; goto sfrcmp;
-            case ELEM_WSFR:
-                s = "Write"; goto sfrcmp;
-            case ELEM_SSFR:
-                s = "Sbit"; goto sfrcmp;
-            case ELEM_CSFR:
-                s = "Cbit"; goto sfrcmp;
-            case ELEM_TSFR:
-                s = "IsBitS"; goto sfrcmp;
-            case ELEM_T_C_SFR:
-                s = "IsBitC"; goto sfrcmp;
-sfrcmp:
+            case ELEM_RSFR:    s = "Read";   goto sfrcmp;
+            case ELEM_WSFR:    s = "Write";  goto sfrcmp;
+            case ELEM_SSFR:    s = "Sbit";   goto sfrcmp;
+            case ELEM_CSFR:    s = "Cbit";   goto sfrcmp;
+            case ELEM_TSFR:    s = "IsBitS"; goto sfrcmp;
+            case ELEM_T_C_SFR: s = "IsBitC"; goto sfrcmp;
+            sfrcmp:
                 int l1, l2, lmax;
 
                 l1 = 2 + 1 + strlen(s) + strlen(leaf->d.cmp.op1);
@@ -1021,19 +1031,13 @@ sfrcmp:
         }
         {
             char *s;
-            case ELEM_EQU:
-                s = "=="; goto cmp;
-            case ELEM_NEQ:
-                s = "!="; goto cmp;
-            case ELEM_GRT:
-                s = ">"; goto cmp;
-            case ELEM_GEQ:
-                s = ">="; goto cmp;
-            case ELEM_LES:
-                s = "<"; goto cmp;
-            case ELEM_LEQ:
-                s = "<="; goto cmp;
-cmp:
+            case ELEM_EQU: s = "=="; goto cmp;
+            case ELEM_NEQ: s = "!="; goto cmp;
+            case ELEM_GRT: s = ">" ; goto cmp;
+            case ELEM_GEQ: s = ">="; goto cmp;
+            case ELEM_LES: s = "<" ; goto cmp;
+            case ELEM_LEQ: s = "<="; goto cmp;
+            cmp:
                 int len = min(POS_WIDTH,max(1+strlen(leaf->d.cmp.op1)+1+strlen(s)+1,
                                             1+strlen(leaf->d.cmp.op2)+1));
 
@@ -1300,6 +1304,17 @@ cmp:
             break;
         }
 
+        case ELEM_CPRINTF:      s = "CPRN"; goto cprintf;
+        case ELEM_SPRINTF:      s = "SPRN"; goto cprintf;
+        case ELEM_FPRINTF:      s = "FPRN"; goto cprintf;
+        case ELEM_PRINTF:       s = "PRN"; goto cprintf;
+        case ELEM_I2C_CPRINTF:  s = "I2C"; goto cprintf;
+        case ELEM_ISP_CPRINTF:  s = "ISP"; goto cprintf;
+        case ELEM_UART_CPRINTF: s = "UART"; goto cprintf; {
+        cprintf:
+            break;
+        }
+
         case ELEM_FORMATTED_STRING: {
             // Careful, string could be longer than fits in our space.
             char str[POS_WIDTH*2];
@@ -1439,11 +1454,17 @@ cmp:
 
     if(which == ELEM_COMMENT) {
         int i;
+        int len = 0;
         for(i = 0; i < ColsAvailable; i++) {
-            DisplayMatrix[i][gy] = leaf;
-            DisplayMatrixWhich[i][gy] = ELEM_COMMENT;
+            if((DisplayMatrixWhich[i][gy] <= ELEM_PLACEHOLDER)
+            || (DisplayMatrixWhich[i][gy] == ELEM_COMMENT)) {
+                DisplayMatrix[i][gy] = leaf;
+                DisplayMatrixWhich[i][gy] = ELEM_COMMENT;
+                len++;
+            }
         }
-        xadj = (ColsAvailable-1)*POS_WIDTH*FONT_WIDTH;
+        //xadj = (ColsAvailable-1)*POS_WIDTH*FONT_WIDTH;
+        xadj = (len-1)*POS_WIDTH*FONT_WIDTH;
     }
 
     int x0 = X_PADDING + cx0*FONT_WIDTH;
@@ -1454,7 +1475,7 @@ cmp:
     }
     switch(leaf->selectedState) {
         case SELECTED_LEFT:
-            Cursor.left = x0 + FONT_WIDTH - 8 - xadj;
+            Cursor.left = x0 + FONT_WIDTH - 7 - xadj;
             Cursor.top = y0 - FONT_HEIGHT/2;
             Cursor.width = 2;
             Cursor.height = POS_HEIGHT*FONT_HEIGHT;
@@ -1499,18 +1520,20 @@ cmp:
 // element, else FALSE. This is needed to colour all the wires correctly,
 // since the colouring indicates whether a wire is energized.
 //-----------------------------------------------------------------------------
-BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
+BOOL DrawElement(void *node, int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
 {
     BOOL poweredAfter;
 
     int cx0 = *cx, cy0 = *cy;
     ElemLeaf *leaf = (ElemLeaf *)elem;
+    ElemNode *_node = (ElemNode *)node;
+    ElemLeaf *_leaf = (ElemLeaf *)_node->data.any;
 
     SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg :
         HighlightColours.bg);
     NormText();
 
-    if(elem == Selected && !InSimulationMode) {
+    if(leaf == Selected && !InSimulationMode) {
         EmphText();
         ThisHighlighted = TRUE;
     } else {
@@ -1523,8 +1546,8 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             poweredAfter = poweredBefore;
             for(i = 0; i < s->count; i++) {
-                poweredAfter = DrawElement(s->contents[i].which,
-                    s->contents[i].d.any, cx, cy, poweredAfter);
+                poweredAfter = DrawElement(&(s->contents[i]), s->contents[i].which,
+                    s->contents[i].data.any, cx, cy, poweredAfter);
             }
             break;
         }
@@ -1541,8 +1564,8 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
             for(i = 0; i < p->count; i++) {
                 BOOL poweredThis;
 
-                poweredThis = DrawElement(p->contents[i].which,
-                    p->contents[i].d.any, cx, cy, poweredBefore);
+                poweredThis = DrawElement(&(p->contents[i]), p->contents[i].which,
+                    p->contents[i].data.any, cx, cy, poweredBefore);
 
                 if(InSimulationMode) {
                     if(poweredThis) poweredAfter = TRUE;
@@ -1561,7 +1584,7 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
 
                     char buf[256];
                     int j;
-                    for(j = 0; j < POS_WIDTH-1; j++) {
+                    for(j = 0; j < POS_WIDTH; j++) {
                         buf[j] = '-';
                     }
                     buf[j] = '\0';
@@ -1571,7 +1594,7 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
 
                 *cx = cx0;
                 int justDrewHeight = CountHeightOfElement(p->contents[i].which,
-                    p->contents[i].d.any);
+                    p->contents[i].data.any);
                 *cy += POS_HEIGHT*justDrewHeight;
 
                 downBy += justDrewHeight;

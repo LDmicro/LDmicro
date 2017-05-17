@@ -146,6 +146,7 @@ static void GenerateDeclarations(FILE *f)
     for(i = 0; i < IntCodeLen; i++) {
         char *bitVar1 = NULL, *bitVar2 = NULL;
         char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
+        IntOp *a = &IntCode[i];
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -251,7 +252,14 @@ static void GenerateDeclarations(FILE *f)
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
             case INT_WRITE_STRING:
+            case INT_AllocKnownAddr:
+            case INT_AllocFwdAddr:
+            case INT_FwdAddrIsNow:
+            case INT_GOTO:
+            case INT_GOSUB:
+            case INT_RETURN:
                 break;
+
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:
                 break;
@@ -262,7 +270,7 @@ static void GenerateDeclarations(FILE *f)
             #endif
 
             default:
-                ooops("INT_%d", IntCode[i].op);
+                ooops("INT_%d",a->op);
         }
         bitVar1 = MapSym(bitVar1, ASBIT);
         bitVar2 = MapSym(bitVar2, ASBIT);
@@ -300,17 +308,19 @@ static int indent = 1;
 static void doIndent(FILE *f, int i)
 {
    int j;
-   if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
-   for(j = 0; j < indent; j++) fprintf(f, "    ");
+   if((IntCode[i].op != INT_SIMULATE_NODE_STATE)
+   && (IntCode[i].op != INT_AllocKnownAddr) //
+   && (IntCode[i].op != INT_AllocFwdAddr))
+       for(j = 0; j < indent; j++) fprintf(f, "    ");
 }
 //-----------------------------------------------------------------------------
 // Actually generate the C source for the program.
 //-----------------------------------------------------------------------------
-static void GenerateAnsiC(FILE *f)
+static void GenerateAnsiC(FILE *f, int begin, int end)
 {
-    int i;
     indent = 1;
-    for(i = 0; i < IntCodeLen; i++) {
+    int i;
+    for(i = begin; i <= end; i++) {
 
         if(IntCode[i].op == INT_END_IF) indent--;
         if(IntCode[i].op == INT_ELSE) indent--;
@@ -454,20 +464,20 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_UART_RECV:
-                fprintf(f, "// UART Received. // %s = UART_Receive();\n",  MapSym(IntCode[i].name1, ASINT) );
+                    fprintf(f, "%s = UART_Receive();\n",  MapSym(IntCode[i].name1, ASINT) );
                 break;
 
             case INT_UART_SEND:
-                fprintf(f, "// UART Send. // UART_Transmit(%s);\n", MapSym(IntCode[i].name1, ASINT)/*, MapSym(IntCode[i].name2, ASBIT)*/ );
+                fprintf(f, "UART_Transmit(%s);\n", MapSym(IntCode[i].name1, ASINT)/*, MapSym(IntCode[i].name2, ASBIT)*/ );
                 break;
 
             case INT_UART_RECV_AVAIL:
-                fprintf(f, "// %s = UART_Receive_Avail();\n",  MapSym(IntCode[i].name1, ASBIT));
+                fprintf(f, "%s = UART_Receive_Avail();\n",  MapSym(IntCode[i].name1, ASBIT));
                 indent++;
                 break;
 
             case INT_UART_SEND_READY:
-                fprintf(f, "// %s = UART_Transmit_Ready();\n", MapSym(IntCode[i].name1, ASBIT));
+                fprintf(f, "%s = UART_Transmit_Ready();\n", MapSym(IntCode[i].name1, ASBIT));
                 indent++;
                 break;
 
@@ -489,6 +499,33 @@ static void GenerateAnsiC(FILE *f)
                 break;
             case INT_SET_PWM:
                                 fprintf(f, "/* Set PWM */\n");
+                break;
+
+            case INT_AllocFwdAddr:
+                //fprintf(f, "#warning INT_%d\n", IntCode[i].op);
+                break;
+            case INT_AllocKnownAddr:
+                if(IntCode[i].name1)
+                    fprintf(f, "//KnownAddr Rung%d %s %s\n", IntCode[i].literal+1, IntCode[i].name2, IntCode[i].name1);
+                else
+                    fprintf(f, "//KnownAddr Rung%d\n", IntCode[i].literal+1);
+                if(strcmp(IntCode[i].name2,"SUBPROG") == 0) {
+                    int skip = FindOpNameLast(INT_RETURN, IntCode[i].name1);
+                    if(skip <= i) oops();
+                    i = skip;
+                }
+                break;
+            case INT_FwdAddrIsNow:
+                fprintf(f, "LabelRung%d:;\n", IntCode[i].literal+1);
+                break;
+            case INT_GOTO:
+                fprintf(f, "goto LabelRung%d; // %s\n", IntCode[i].literal+1, IntCode[i].name1);
+                break;
+            case INT_GOSUB:
+                fprintf(f, "Call_SUBPROG_%s(); // LabelRung%d\n", IntCode[i].name1, IntCode[i].literal+1);
+                break;
+            case INT_RETURN:
+                fprintf(f, "return;\n", IntCode[i].name1);
                 break;
 
             #ifdef TABLE_IN_FLASH
@@ -517,10 +554,31 @@ static void GenerateAnsiC(FILE *f)
             }
             #endif
             default:
-                oops();
+                ooops("INT_%d", IntCode[i].op);
         }
     }
 }
+//-----------------------------------------------------------------------------
+static void GenerateSUBPROG(FILE *f)
+{
+    int i;
+    for(i = 0; i < IntCodeLen; i++) {
+        switch(IntCode[i].op) {
+            case INT_GOSUB: {
+                fprintf(f, "\n");
+                fprintf(f, "void Call_SUBPROG_%s() // LabelRung%d\n", IntCode[i].name1, IntCode[i].literal+1);
+                fprintf(f, "{\n");
+                int indentSave = indent;
+                indent = 1;
+                GenerateAnsiC(f, FindOpName(INT_AllocKnownAddr, IntCode[i].name1, "SUBPROG")+1,
+                                 FindOpNameLast(INT_RETURN, IntCode[i].name1));
+                indent = indentSave;
+                fprintf(f, "}\n");
+            }
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Actually generate the C source for the datas.
 //-----------------------------------------------------------------------------
@@ -588,13 +646,13 @@ winavr avr gcc
                 || 1
                 || (isVarInited(IntCode[i].name1)==rungNow)) {
                     fprintf(f,"#ifdef __GNUC__\n");
-                    fprintf(f, "%s %s[%d] PROGMEM = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
+                    fprintf(f, "const %s %s[%d] PROGMEM = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
                     int j;
                     for(j = 0; j < (IntCode[i].literal-1); j++) {
                       fprintf(f, "%d, ", IntCode[i].data[j]);
                     }
                     fprintf(f, "%d};\n", IntCode[i].data[IntCode[i].literal-1]);
-                    fprintf(f,"#endif\n");
+                    fprintf(f,"#endif\n\n");
                 }
                 break;
             }
@@ -642,9 +700,9 @@ void CompileAnsiC(char *dest, int compile_ISA)
     }
 
     fprintf(f,
-"/* This is auto-generated code from LDmicro. Do not edit this file! Go\n"
-"   back to the ladder diagram source for changes in the logic, and make\n"
-"   any C additions either in ladder.h or in additional .c files linked\n"
+"/* This is auto-generated C code from LDmicro. Do not edit this file! Go\n"
+"   back to the LDmicro ladder diagram source for changes in the ladder logic, and make\n"
+"   any C additions either in ladder.h or in additional .c or .h files linked\n"
 "   against this one. */\n"
 "\n"
 "/* You must provide ladder.h; there you must provide:\n"
@@ -656,6 +714,7 @@ void CompileAnsiC(char *dest, int compile_ISA)
 "   I/O functions are all declared extern.)\n"
 "\n"
 "   See the generated source code (below) for function names. */\n"
+"\n"
 "#include \"ladder.h\"\n"
 "\n"
 "/* Define EXTERN_EVERYTHING in ladder.h if you want all symbols extern.\n"
@@ -688,20 +747,68 @@ void CompileAnsiC(char *dest, int compile_ISA)
 
     // now generate declarations for all variables
     GenerateDeclarations(f);
+    GenerateAnsiC_flash_eeprom(f);
+    GenerateSUBPROG(f);
 
+    if(UartFunctionUsed()) {
+    fprintf(f,
+"void UART_Transmit(unsigned char data) // AVR\n"
+"{ // Wait for empty transmit buffer\n"
+"  while ( !( UCSRA & (1<<UDRE)) );\n"
+"  // Put data into buffer, sends the data\n"
+"  UDR = data;\n"
+"}\n"
+"\n"
+"unsigned char UART_Receive(void) // AVR\n"
+"{ // Wait for data to be received\n"
+"  while ( !(UCSRA & (1<<RXC)) );\n"
+"  // Get and return received data from buffer\n"
+"  return UDR;\n"
+"}\n"
+"\n");
+    }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
     fprintf(f,
 "\n"
-"\n"
 "/* Call this function once per PLC cycle. You are responsible for calling\n"
-"   it at the interval that you specified in the MCU configuration when you\n"
+"   it at the interval that you specified in the LDmicro MCU configuration when you\n"
 "   generated this code. */\n"
 "void PlcCycle(void)\n"
 "{\n"
-        );
-
-    GenerateAnsiC(f);
-
+    );
+    GenerateAnsiC(f, 0, IntCodeLen-1);
     fprintf(f, "}\n");
+//---------------------------------------------------------------------------
+
+    fprintf(f,
+"\n"
+"void setupPlc(void)\n"
+"{\n"
+    );
+
+    Comment("Set up I/O pins");
+
+    Comment("Turn on the pull-ups, and drive the outputs low to start");
+
+    if(UartFunctionUsed()) {
+      Comment("Set up UART");
+    }
+
+    fprintf(f,
+"//Initialise PLC cycle timer here.\n"
+"//Watchdog on\n"
+"}\n"
+    );
+
+    fprintf(f,
+"int main(void)\n"
+"{\n"
+"    setupPlc();\n"
+"    return 0;\n"
+"}\n"
+    );
+
     fclose(f);
 
     char str[MAX_PATH+500];

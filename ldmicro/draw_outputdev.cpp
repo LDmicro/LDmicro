@@ -318,7 +318,7 @@ void PaintWindow(void)
             SetTextColor(Hdc, prev);
 
             cx = 0;
-            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy,
+            DrawElement(Prog.rungs[i], ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy,
                 Prog.rungPowered[i]);
         }
 
@@ -420,7 +420,7 @@ SyntaxHighlightingColours Schemes[/*MNU_SCHEME_USER & 0xff + 1*/] = {
         RGB(150, 150, 255),     // simBusRight
     },
     {   // Black color scheme modified
-        RGB( 32,  32,  32),     // (0, 0, 0)       // bg
+        RGB( 16,  16,  16),     // (0, 0, 0)       // bg
         RGB(255, 255, 225),     // (255, 255, 225) // def
         RGB(255, 128, 128),     // (255, 110,  90) // selected
         RGB(255, 153,  85),     // (255, 150,  90) // op
@@ -692,7 +692,7 @@ void ExportDrawingAsText(char *file)
     int cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
         cx = 6;
-        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy,
+        DrawElement(Prog.rungs[i], ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy,
             Prog.rungPowered[i]);
         /*
         if((i + 1) < 10) {

@@ -301,7 +301,6 @@ static void flashBat(char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
-
     if(strlen(name) == 0) {
         Error(_(" Save ld before flash."));
         return;
@@ -319,7 +318,6 @@ static void readBat(char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
-
     if(strlen(name) == 0) {
         name = "read";
     }
@@ -336,7 +334,6 @@ static void notepad(char *name, char *ext)
 {
     char s[MAX_PATH]="";
     char r[MAX_PATH];
-
     s[0] = '\0';
     SetExt(s, name, ext);
     sprintf(r,"\"%snotepad.bat\" \"%s\"",ExePath,s);
@@ -1597,6 +1594,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case 'L':
                   if(GetAsyncKeyState(VK_ALT) & 0x8000) {
                         CHANGING_PROGRAM(AddCoil(MNU_INSERT_COIL_RELAY))
+                    return 1;
+                  }
+                break;
+
+                case 'X':
+                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        SendMessage(hwnd, WM_CLOSE, 0, 0);
                     return 1;
                   }
                 break;

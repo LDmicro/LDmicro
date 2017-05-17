@@ -205,10 +205,12 @@
         SDWORD     *data;        // for INT_FLASH_INIT
         BOOL       *poweredAfter;
         BOOL       *workingNow;
-        int         rung;        //this IntOp located in rung,
-        int         which;       //this IntOp refers to the ELEM_<which>
+        int         rung;        //= rungNow  //this IntOp located in rung,
+        int         which;       //= whichNow //this IntOp refers to the ELEM_<which>
+        ElemLeaf   *leaf;        //= leafNow  //
         char        f[MAX_PATH]; //in .c source file name
         int         l;           //and line in file
+        BOOL        simulated;
     } IntOp;
 
     #define MAX_INT_OPS     (1024*24)

@@ -8,6 +8,7 @@ OBJDIR = obj
 FREEZE   = $(OBJDIR)\freeze.obj
 
 LDOBJS   = $(OBJDIR)\ldmicro.obj \
+           $(OBJDIR)\intcode.obj \
            $(OBJDIR)\maincontrols.obj \
            $(OBJDIR)\helpdialog.obj \
            $(OBJDIR)\schematic.obj \
@@ -28,7 +29,6 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\iolist.obj \
            $(OBJDIR)\miscutil.obj \
            $(OBJDIR)\lang.obj \
-           $(OBJDIR)\intcode.obj \
            $(OBJDIR)\compilecommon.obj \
            $(OBJDIR)\ansic.obj \
            $(OBJDIR)\netzer.obj \

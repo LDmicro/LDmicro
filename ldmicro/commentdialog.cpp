@@ -2,17 +2,17 @@
 // Copyright 2007 Jonathan Westhues
 //
 // This file is part of LDmicro.
-// 
+//
 // LDmicro is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // LDmicro is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
@@ -60,7 +60,7 @@ void ShowCommentDialog(char *comment)
         r.left+20, 100, r.right-r.left-40, 65, NULL, NULL, Instance, NULL);
 
     MakeControls(r);
-   
+
     SendMessage(CommentTextbox, WM_SETTEXT, 0, (LPARAM)comment);
 
     EnableWindow(MainWindow, FALSE);
@@ -77,6 +77,11 @@ void ShowCommentDialog(char *comment)
             if(msg.wParam == VK_TAB && GetFocus() == CommentTextbox) {
                 SetFocus(OkButton);
                 continue;
+            } else if(msg.wParam == VK_RETURN) {
+                if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                     DialogDone = TRUE;
+                     break;
+                 }
             } else if(msg.wParam == VK_ESCAPE) {
                 DialogDone = TRUE;
                 DialogCancel = TRUE;
