@@ -40,7 +40,7 @@ Thumbs.db
 /.project
 /ldmicro/lang-sort
 /ldmicro/obj
-/ldmicro/build
+/ldmicro/build*
 /ldmicro/git_commit.h
 /ldmicro/lang.txt
 /ldmicro/ldmicro.RES
