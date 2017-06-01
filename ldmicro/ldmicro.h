@@ -37,6 +37,7 @@ typedef signed long SDWORD;
 
 #include "accel.h"
 #define _BV(bit) (1 << (bit))
+#define arraylen(x) (sizeof(x)/sizeof((x)[0]))
 
 //-----------------------------------------------
 #define BYTES_OF_LD_VAR 2
@@ -230,13 +231,20 @@ typedef signed long SDWORD;
 
 #define MNU_COMPILE             0x70
 #define MNU_COMPILE_AS          0x71
-#define MNU_COMPILE_ANSIC       0x72
+#define MNU_COMPILE_ANSIC           0x7200
+#define MNU_COMPILE_HI_TECH_C       0x7201
+#define MNU_COMPILE_CCS_PIC_C       0x7202
+#define MNU_COMPILE_GNUC            0x7241 // AVR-GCC // Atmel AVR Toolchain // WinAVR
+#define MNU_COMPILE_CODEVISIONAVR   0x7242
+#define MNU_COMPILE_IMAGECRAFT      0x7243
+#define MNU_COMPILE_IAR             0x7244
+#define MNU_COMPILE_lastC           0x7244
+#define MNU_COMPILE_ARDUINO         0x7281
 #define MNU_COMPILE_IHEX        0x73
 #define MNU_COMPILE_IHEXDONE    0x7301
 #define MNU_COMPILE_ASM         0x74
 #define MNU_COMPILE_PASCAL      0x75
-#define MNU_COMPILE_ARDUINO     0x76
-#define MNU_COMPILE_CAVR        0x77
+#define MNU_COMPILE_INT         0x77    // Interpreter
 #define MNU_COMPILE_XINT        0x78    // Extended interpreter
 
 #define MNU_FLASH_BAT           0x7E
@@ -252,11 +260,9 @@ typedef signed long SDWORD;
 #define MNU_CHANGES             0x8105
 #define MNU_RELEASE             0x82
 
-#define MNU_SCHEME_BLACK        0x9000
-#define MNU_SCHEME_BLACK2       0x9001
-#define MNU_SCHEME_WHITE        0x9002
-#define MNU_SCHEME_SYS          0x9003
-#define MNU_SCHEME_USER         0x9004 // This SCHEME number must be the largest !!!
+#define MNU_SCHEME_BLACK        0x9000 // Must be a first
+#define NUM_SUPPORTED_SCHEMES   6      // ...
+#define MNU_SCHEME_USER         MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES-1 // This SCHEME number must be the largest !!!
 #define MNU_SELECT_COLOR        0x9100
 
 // Columns within the I/O etc. listview.
@@ -851,6 +857,7 @@ typedef struct PlcCursorTag {
 // The syntax highlighting style colours; a structure for the palette/scheme.
 
 typedef struct SyntaxHighlightingColoursTag {
+    char        sName[MAX_NAME_LEN];
     COLORREF    bg;             // background
     COLORREF    def;            // default foreground
     COLORREF    selected;       // selected element
@@ -860,7 +867,6 @@ typedef struct SyntaxHighlightingColoursTag {
     COLORREF    name;           // the name of an item
     COLORREF    rungNum;        // rung numbers
     COLORREF    comment;        // user-written comment text
-
     COLORREF    bus;            // the `bus' at the right and left of screen
 
     COLORREF    simBg;          // background, simulation mode
@@ -871,7 +877,7 @@ typedef struct SyntaxHighlightingColoursTag {
     COLORREF    simBusRight;    // right and left of the screen
 } SyntaxHighlightingColours;
 extern SyntaxHighlightingColours HighlightColours;
-extern SyntaxHighlightingColours Schemes[];
+extern SyntaxHighlightingColours Schemes[NUM_SUPPORTED_SCHEMES];
 extern DWORD scheme;
 
 //-----------------------------------------------
@@ -950,15 +956,11 @@ typedef struct McuExtIntPinInfoTag {
 
 #define ISA_PIC16           0x01
 #define ISA_AVR             0x02
-#define ISA_AVR1            ISA_AVR
 #define ISA_PC_LPT_COM      0x03
 #define ISA_HARDWARE        ISA_PC_LPT_COM
-#define ISA_ANSIC           0x04
 #define ISA_INTERPRETED     0x05
 #define ISA_NETZER          0x06
 #define ISA_PASCAL          0x07
-#define ISA_ARDUINO         0x08
-#define ISA_CAVR            0x09
 #define ISA_XINTERPRETED    0x0A    // Extended interpeter
 #define ISA_ESP8266         0x0B
 
@@ -971,8 +973,9 @@ typedef struct McuExtIntPinInfoTag {
 typedef struct McuIoInfoTag {
     char            *mcuName;
     char            *mcuList;
-    char            *mcuInc; // ASM*.INC
-    char            *mcuH;   // C*.H
+    char            *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
+    char            *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
+    char            *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
     char             portPrefix;
     DWORD            inputRegs[MAX_IO_PORTS];         // A is 0, J is 9
     DWORD            outputRegs[MAX_IO_PORTS];
@@ -1009,7 +1012,7 @@ typedef struct McuIoInfoTag {
     }                rom[MAX_ROM_SECTIONS]; //EEPROM or HEI?
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 29
+#define NUM_SUPPORTED_MCUS 25
 
 //-----------------------------------------------
 // Function prototypes
@@ -1056,6 +1059,8 @@ char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
 long int fsize(char filename);
+char *GetMnuName(int MNU);
+int GetMnu(char *MNU_name);
 
 // maincontrols.cpp
 void MakeMainWindowControls(void);
@@ -1204,6 +1209,7 @@ BOOL QuadEncodFunctionUsed(void);
 BOOL NPulseFunctionUsed(void);
 BOOL EepromFunctionUsed(void);
 BOOL SleepFunctionUsed(void);
+BOOL DelayUsed(void);
 BOOL TablesUsed(void);
 void PushRungUp(void);
 void PushRungDown(void);
@@ -1331,7 +1337,6 @@ void ShowHelpDialog(BOOL about);
 #define ooops(...) { \
         dbp("rungNow=%d", rungNow); \
         dbp("bad at %d %s\n", __LINE__, __FILE__); \
-        dbp(__VA_ARGS__); \
         Error(__VA_ARGS__); \
         Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
         doexit(EXIT_FAILURE); \
@@ -1628,6 +1633,19 @@ typedef enum Pic16OpTag {
     OP_SLEEP_
 } PicOp;
 
+typedef struct PlcTimerDataTag {
+    long long int countsPerCycle;
+    int tmr; //value of TMR0 or TMR1
+    int prescaler;
+    int PS;
+    int softDivisor;
+    DWORD softDivisorAddr;
+    double Fcycle; // actually
+    double Pcycle;
+} PlcTimerData;
+
+extern PlcTimerData plcTmr;
+
 typedef struct PicAvrInstructionTag {
     PicOp       opPic;
     AvrOp       opAvr;
@@ -1721,6 +1739,8 @@ void GenSymOneShot(char *dest, char *name1, char *name2);
 int getradix(char *str);
 
 // pic16.cpp
+int PicTimer1Prescaler(long long int cycleTimeMicroseconds);
+int PicTimer0Prescaler(long long int cycleTimeMicroseconds);
 void CompilePic16(char *outFile);
 BOOL McuAs(char *str);
 BOOL CalcPicTimerPlcCycle(long long int cycleTimeMicroseconds,\
@@ -1736,7 +1756,8 @@ BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,\
     int *cycleTimeMax);
 void CompileAvr(char *outFile);
 // ansic.cpp
-void CompileAnsiC(char *outFile, int compile_ISA);
+extern int compile_MNU;
+void CompileAnsiC(char *outFile, int ISA, int MNU);
 void CompileAnsiC(char *outFile);
 // interpreted.cpp
 void CompileInterpreted(char *outFile);
