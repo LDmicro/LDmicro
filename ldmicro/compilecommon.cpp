@@ -725,7 +725,7 @@ BOOL LoadVarListFromFile(FILE *f)
 
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line))) continue;
-        if(strcmp(line, "END\n")==0) {
+        if(strcmp(line, "END")==0) {
             return TRUE;
         }
         Ok = FALSE;
@@ -970,6 +970,21 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError)
             */
           }
         }
+    }
+    if(McuAs("Microchip PIC16F877 ")) {
+        // This is a nasty special case; one of the extra bits in TRISE
+        // enables the PSP, and must be kept clear (set here as will be
+        // inverted).
+        isOutput[4] |= 0xf8; // TRISE
+    }
+    if(PwmFunctionUsed())
+    if(Prog.mcu->pwmNeedsPin) {
+        // Comment("PwmFunctionUsed");
+        // Need to clear TRIS bit corresponding to PWM pin
+        McuIoPinInfo *iop = PinInfo(Prog.mcu->uartNeeds.txPin);
+        if(iop)
+            isOutput[iop->port - 'A'] |= (1 << iop->bit);
+        else oops();
     }
 }
 

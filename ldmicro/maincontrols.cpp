@@ -625,6 +625,7 @@ HMENU MakeMainWindowMenus(void)
         AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
             SupportedMcus[i].mcuName);
     }
+    AppendMenu(ProcessorMenu, MF_SEPARATOR,0,"");
     AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
         _("(no microcontroller)"));
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu,
@@ -667,25 +668,31 @@ HMENU MakeMainWindowMenus(void)
         _("Single &Cycle\tSpace"));
 
     compile = CreatePopupMenu();
-    AppendMenu(compile, MF_STRING, MNU_COMPILE,         _("&Compile\tF5"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_AS,      _("Compile &As..."));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,    _("Compile HEX"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,   _("Compile ANSIC"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT,    _("Compile Extended Byte Code"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("DONE: Compile C for ARDUINO"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_CAVR,    _("DONE: Compile C for AVR GCC, CodeVisionAVR, IAR AVR"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEXDONE,_("DONE: Compile HEX->ASM"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL,  _("DONE: Compile PASCAL"));
-    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,       _("Call flashMcu.bat\tF6"));
-    AppendMenu(compile, MF_STRING, MNU_READ_BAT,        _("Call readMcu.bat\tCtrl+F6"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE,               _("&Compile\tF5"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_AS,            _("Compile &As..."));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,          _("Compile HEX"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEXDONE,      _("DONE: Compile HEX->ASM"));
+    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,         _("Compile ANSIC"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_HI_TECH_C,     _("DONE: Compile HI-TECH C for PIC"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_CCS_PIC_C,     _("DONE: Compile CCS C for PIC"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_GNUC,          _("DONE: Compile AVR-GCC, Atmel AVR Toolchain, WinAVR"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_CODEVISIONAVR, _("DONE: Compile CodeVisionAVR C"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO,       _("DONE: Compile C for ARDUINO"));
+    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("DONE: Compile PASCAL"));
+    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_INT,    _("Compile Interpretable Byte Code"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT,   _("Compile Interpretable Extended Byte Code"));
+    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,      _("Call flashMcu.bat\tF6"));
+    AppendMenu(compile, MF_STRING, MNU_READ_BAT,       _("Call readMcu.bat\tCtrl+F6"));
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();
-    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK, _("Black original scheme"));
-    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK2, _("Black modified scheme"));
-    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_WHITE, _("White scheme"));
-    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_SYS, _("GetSysColor scheme"));
-    AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_USER, _("User defined color scheme"));
+    for(i = 0; i < NUM_SUPPORTED_SCHEMES; i++) {
+      AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK+i, Schemes[i].sName);
+    }
     AppendMenu(SchemeMenu, MF_SEPARATOR, 0, "");
     AppendMenu(SchemeMenu, MF_STRING, MNU_SELECT_COLOR, _("Select user colors"));
     AppendMenu(ConfigMenu, MF_STRING | MF_POPUP, (UINT_PTR)SchemeMenu,_("Select color scheme"));
@@ -882,8 +889,7 @@ void RefreshStatusBar(void)
     }
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 
-    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-                    Prog.mcu->whichIsa == ISA_NETZER ||
+    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_NETZER ||
                     Prog.mcu->whichIsa == ISA_PASCAL ||
                     Prog.mcu->whichIsa == ISA_INTERPRETED ||
                     Prog.mcu->whichIsa == ISA_XINTERPRETED))
@@ -959,7 +965,7 @@ void RefreshControlsToSettings(void)
         CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_UNCHECKED);
     }
 
-    for(i = 0; i <= (MNU_SCHEME_USER & 0xff); i++)
+    for(i = 0; i < NUM_SUPPORTED_SCHEMES; i++)
         CheckMenuItem(SchemeMenu, MNU_SCHEME_BLACK+i, (i == scheme) ? MF_CHECKED : MF_UNCHECKED);
 }
 

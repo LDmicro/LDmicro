@@ -88,7 +88,16 @@ static void AppendIo(char *IOname, int type)
         return;
     char name[MAX_NAME_LEN];
     strcpy(name, IOname);
-
+    if(!IsNumber(IOname)) {
+        char *c;
+        while(c=strchr(IOname, '-'))
+            *c = '_';
+        if(!strstr(name, IOname)) {
+            Error(_(" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"), name, IOname);
+            strcpy(name, IOname);
+            ProgramChangedNotSaved = TRUE;
+        }
+    }
     if(name[0] == '#') {
        if(strspn(IOname, "#PORT") == 5)
            type = IO_TYPE_PORT_OUTPUT;
@@ -689,12 +698,12 @@ BOOL LoadIoListFromFile(FILE *f)
     ModbusAddr_t modbus;
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line))) continue;
-        if(strcmp(line, "END\n")==0) {
+        if(strcmp(line, "END")==0) {
             return TRUE;
         }
-        // Don't internationalize this! It's the file format, not UI.
         modbus.Slave = 0;
         modbus.Address = 0;
+        // Don't internationalize this! It's the file format, not UI.
         if(sscanf(line, "    %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address)>=2) {
             int type;
             switch(name[0]) {
@@ -1009,13 +1018,13 @@ void ShowIoDialog(int item)
             return;
         }
     }
-
+    /*
     if(Prog.mcu->whichIsa == ISA_ANSIC) {
         Error(_("Can't specify I/O assignment for ANSI C target; compile and "
             "see comments in generated source code."));
         return;
     }
-
+    */
     if(Prog.mcu->whichIsa == ISA_INTERPRETED) {
         Error(_("Can't specify I/O assignment for interpretable target; see "
             "comments in reference implementation of interpreter."));

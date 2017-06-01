@@ -2261,13 +2261,13 @@ static void CallSubroutine(DWORD addr)
             Instruction(OP_RCALL, FWD(addr));
         }
     } else {
-        if(addr <= 0xFFF) {
+        if((-2048 <= (addr-AvrProgWriteP-1)) && ((addr-AvrProgWriteP-1) <= 2047)) {
             Instruction(OP_RCALL, addr);
-        } else if((addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
+        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_ICALL);
-        } else if((addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
+        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
             WriteMemory(REG_EIND, (addr >> 16) & 0xff); // 1
             Instruction(OP_LDI, ZL, addr & 0xff); // 2
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
@@ -2300,13 +2300,13 @@ static void InstructionJMP(DWORD addr)
             Instruction(OP_RJMP, FWD(addr));
         }
     } else {
-        if(addr <= 0xFFF) {
+        if((-2048 <= (addr-AvrProgWriteP-1)) && ((addr-AvrProgWriteP-1) <= 2047)) {
             Instruction(OP_RJMP, addr);
-        } else if((addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
+        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_IJMP);
-        } else if((addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
+        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
             WriteMemory(REG_EIND, (addr >> 16) & 0xff); // 1
             Instruction(OP_LDI, ZL, addr & 0xff); // 2
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
@@ -2399,42 +2399,7 @@ static void WriteRuntime(void)
         WriteMemory(REG_UBRRH, divisor >> 8);
         WriteMemory(REG_UBRRL, divisor & 0xff);
         WriteMemory(REG_UCSRB, (1 << RXEN) | (1 << TXEN));
-
-        // UCSRC initial Value frame format: 8 data, parity - none, 1 stop bit.
-        // Not need to set.
-//      WriteMemory(REG_UCSRC, (1 << URSEL) | (3 << UCSZ0));
-//      WriteMemory(REG_UCSRC,                (3 << UCSZ0));
-
-        /*
-        for(i = 0; i < Prog.mcu->pinCount; i++) {
-            if(Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.txPin) {
-                McuIoPinInfo *iop = &(Prog.mcu->pinInfo[i]);
-                isOutput[iop->port - 'A'] |= (1 << iop->bit);
-                break;
-            }
-        }
-        if(i == Prog.mcu->pinCount) oops();
-        */
-        McuIoPinInfo *iop = PinInfo(Prog.mcu->uartNeeds.txPin);
-        if(iop)
-            isOutput[iop->port - 'A'] |= (1 << iop->bit);
-        else oops();
     }
-
-    /*
-    // All PWM outputs setted in BuildDirectionRegisters
-    if(PwmFunctionUsed()) {
-        Comment("PwmFunctionUsed");
-        for(i = 0; i < Prog.mcu->pinCount; i++) {
-            if(Prog.mcu->pinInfo[i].pin == Prog.mcu->pwmNeedsPin) {
-                McuIoPinInfo *iop = &(Prog.mcu->pinInfo[i]);
-                isOutput[iop->port - 'A'] |= (1 << iop->bit);
-                break;
-            }
-        }
-        if(i == Prog.mcu->pinCount) oops();
-    }
-    */
 
     Comment("Turn on the pull-ups, and drive the outputs low to start");
     for(i = 0; i < MAX_IO_PORTS; i++) {
@@ -5311,6 +5276,7 @@ void CompileAvr(char *outFile)
     }
 
     rungNow = -50;
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     WriteRuntime();
 
     Comment("CompileFromIntermediate BEGIN");

@@ -143,8 +143,7 @@ static void MakeControls(void)
         EnableWindow(textLabel3, FALSE);
     }
 
-    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-                    Prog.mcu->whichIsa == ISA_INTERPRETED ||
+    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
                     Prog.mcu->whichIsa == ISA_XINTERPRETED ||
                     Prog.mcu->whichIsa == ISA_PASCAL ||
                     Prog.mcu->whichIsa == ISA_NETZER))

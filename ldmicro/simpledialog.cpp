@@ -743,7 +743,6 @@ void ShowSetPwmDialog(void *e)
     char *targetFreq    = s->targetFreq;
     char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):")};
     char *dests[] = { name+1, duty_cycle, targetFreq};
-
     if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 3, labels, 0x4, 0x3, 0x7, dests)) {
         //TODO: check the available range
         double freq = hobatoi(targetFreq);

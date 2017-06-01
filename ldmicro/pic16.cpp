@@ -4097,6 +4097,64 @@ executed as a NOP instruction. */
 }
 
 //-----------------------------------------------------------------------------
+PlcTimerData plcTmr;
+
+int PicTimer1Prescaler(long long int cycleTimeMicroseconds)
+{
+    /*
+    */
+    plcTmr.countsPerCycle = long long int(Prog.mcuClock) / 4 * cycleTimeMicroseconds / 1000000;
+    plcTmr.softDivisor = 1;
+    plcTmr.prescaler = 1;
+    while((plcTmr.prescaler <= 8) && (plcTmr.softDivisor < 0x100)) {
+        plcTmr.tmr = int(plcTmr.countsPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
+        if(plcTmr.tmr > 0xFFFF) {
+            if(plcTmr.prescaler < 8) {
+                plcTmr.prescaler *= 2;
+            } else {
+                plcTmr.softDivisor *= 2;
+            }
+        } else {
+            break;
+        }
+    }
+    plcTmr.countsPerCycle = plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr;
+
+    if(plcTmr.countsPerCycle < (PLC_CLOCK_MIN * 2)) {
+        int min_cycleTimeMicroseconds = (PLC_CLOCK_MIN * 2) *4 *1000000 / Prog.mcuClock;
+        char str[1024];
+        sprintf(str, _("\n\nMinimum PLC cycle time is %d us."),
+            min_cycleTimeMicroseconds);
+        Error("%s%s",
+            _("Cycle time too fast; increase cycle time, or use faster "
+            "crystal."),str);
+        return -1;
+    }
+    if(plcTmr.softDivisor > 0x10000) {
+        double max_cycleTimeSeconds = 1.0 * 0x100 * 8 * 0x10000 * 4 / Prog.mcuClock;
+        char str[1024];
+        sprintf(str, _("\n\nMaximum PLC cycle time is %.3f s."),
+            max_cycleTimeSeconds);
+        Error("%s%s",
+            _("Cycle time too slow; decrease cycle time, or use slower "
+            "crystal."),str);
+        return -2;
+    }
+    plcTmr.PS = 0x00;
+    // set up prescaler
+    if(plcTmr.prescaler == 1)        plcTmr.PS |= 0x00;
+    else if(plcTmr.prescaler == 2)   plcTmr.PS |= 0x10;
+    else if(plcTmr.prescaler == 4)   plcTmr.PS |= 0x20;
+    else if(plcTmr.prescaler == 8)   plcTmr.PS |= 0x30;
+    else oops();
+    // enable clock, internal source
+    plcTmr.PS |= 0x01;
+    plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
+    plcTmr.Pcycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
 // Configure Timer1 and Ccp1 to generate the periodic `cycle' interrupt
 // that triggers all the ladder logic processing. We will always use 16-bit
 // Timer1, with the prescaler configured appropriately.
@@ -4104,47 +4162,17 @@ executed as a NOP instruction. */
 static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 {
     Comment("Configure Timer1");
-    int prescaler = 1;
-    int countsPerCycle;
-
-    while(prescaler < 16) {
-        int timerRate = (Prog.mcuClock / (4*prescaler)); // hertz
-        double timerPeriod = 1e6 / timerRate; // timer period, us
-        countsPerCycle = (int)(cycleTimeMicroseconds / timerPeriod);
-
-        if(countsPerCycle < (PLC_CLOCK_MIN * 2)) {
-            Error(_("Cycle time too fast; increase cycle time, or use faster "
-                "crystal."));
-            fCompileError(f, fAsm);
-        } else if(countsPerCycle > 0xffff) {
-            if(prescaler >= 8) {
-                Error(
-                    _("Cycle time too slow; decrease cycle time, or use slower "
-                    "crystal."));
-                fCompileError(f, fAsm);
-            }
-        } else {
-            break;
-        }
-        prescaler *= 2;
+    int err = PicTimer1Prescaler(cycleTimeMicroseconds);
+    if(err < 0) {
+        fCompileError(f, fAsm);
     }
-
-    WriteRegister(REG_CCPR1L, countsPerCycle & 0xff);
-    WriteRegister(REG_CCPR1H, countsPerCycle >> 8);
+    WriteRegister(REG_CCPR1L, plcTmr.tmr & 0xff);
+    WriteRegister(REG_CCPR1H, plcTmr.tmr >> 8);
 
     WriteRegister(REG_TMR1L, 0);
     WriteRegister(REG_TMR1H, 0);
 
-    BYTE t1con = 0;
-    // set up prescaler
-    if(prescaler == 1)        t1con |= 0x00;
-    else if(prescaler == 2)   t1con |= 0x10;
-    else if(prescaler == 4)   t1con |= 0x20;
-    else if(prescaler == 8)   t1con |= 0x30;
-    else oops();
-    // enable clock, internal source
-    t1con |= 0x01;
-    WriteRegister(REG_T1CON, t1con);
+    WriteRegister(REG_T1CON, plcTmr.PS);
 
     if(McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
@@ -4167,9 +4195,62 @@ static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 }
 
 //-----------------------------------------------------------------------------
-static int softDivisor; // 1..0xFFFF
-static DWORD addrDivisor;
-static int tmr0;
+int PicTimer0Prescaler(long long int cycleTimeMicroseconds)
+{
+    plcTmr.countsPerCycle = long long int(Prog.mcuClock) / 4 * cycleTimeMicroseconds / 1000000;
+    plcTmr.softDivisor = 1;
+    plcTmr.prescaler = 1;
+    plcTmr.PS = 0;
+    while((plcTmr.prescaler <= 256) && (plcTmr.softDivisor < 0x10000)) {
+        plcTmr.tmr = int(plcTmr.countsPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
+        if(plcTmr.tmr > 255) {
+            if(plcTmr.prescaler < 256) {
+                plcTmr.prescaler *= 2;
+            } else {
+                plcTmr.softDivisor *= 2;
+            }
+        } else {
+            break;
+        }
+    }
+    plcTmr.countsPerCycle = plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr;
+
+    if(plcTmr.countsPerCycle < (PLC_CLOCK_MIN * 2)) {
+        int min_cycleTimeMicroseconds = (PLC_CLOCK_MIN * 2) *4 *1000000 / Prog.mcuClock;
+        char str[1024];
+        sprintf(str, _("\n\nMinimum PLC cycle time is %d us."),
+            min_cycleTimeMicroseconds);
+        Error("%s%s",
+            _("Cycle time too fast; increase cycle time, or use faster "
+            "crystal."),str);
+        return -1;
+    }
+    if(plcTmr.softDivisor > 0x10000) {
+        double max_cycleTimeSeconds = 1.0 * 0x100 * 0x10000 * 0x100 * 4 /* * 1000000*/ / Prog.mcuClock;
+        char str[1024];
+        sprintf(str, _("\n\nMaximum PLC cycle time is %.3f s."),
+            max_cycleTimeSeconds);
+        Error("%s%s",
+            _("Cycle time too slow; decrease cycle time, or use slower "
+            "crystal."),str);
+        return -2;
+    }
+    // set up prescaler
+    if     (plcTmr.prescaler ==   1)   plcTmr.PS = 0x07; // wdt 2.3s
+    else if(plcTmr.prescaler ==   2)   plcTmr.PS = 0x00;
+    else if(plcTmr.prescaler ==   4)   plcTmr.PS = 0x01;
+    else if(plcTmr.prescaler ==   8)   plcTmr.PS = 0x02;
+    else if(plcTmr.prescaler ==  16)   plcTmr.PS = 0x03;
+    else if(plcTmr.prescaler ==  32)   plcTmr.PS = 0x04;
+    else if(plcTmr.prescaler ==  64)   plcTmr.PS = 0x05;
+    else if(plcTmr.prescaler == 128)   plcTmr.PS = 0x06;
+    else if(plcTmr.prescaler == 256)   plcTmr.PS = 0x07;
+    else oops();
+    plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
+    plcTmr.Pcycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
+    return 0;
+}
+//-----------------------------------------------------------------------------
 static void ConfigureTimer0(long long int cycleTimeMicroseconds)
 {
     Comment("Configure Timer0");
@@ -4185,64 +4266,12 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
 
 //  countsPerCycle = (Fosc/4) * (cycleTimeMicroseconds/1e6)
 //  countsPerCycle = prescaler*softDivisor*TMR0
-    softDivisor = 1;
-    int prescaler = 1;
-    long long int countsPerCycle;
-    countsPerCycle = long long int((1.0 * Prog.mcuClock / 4.0) * cycleTimeMicroseconds / 1000000.0);
-
-    while((prescaler <= 256) && (softDivisor < 0x10000)) {
-        tmr0 = (int)(countsPerCycle / (prescaler*softDivisor));
-        if(tmr0 > 255) {
-            if(prescaler < 256) {
-                prescaler *= 2;
-            } else {
-                softDivisor *= 2;
-            }
-        } else {
-            break;
-        }
-    }
-    double Fcycle=1.0*Prog.mcuClock/(4.0*prescaler*softDivisor*tmr0);
-    double Pcycle=4.0*prescaler*softDivisor*tmr0/(1.0*Prog.mcuClock);
-
-    countsPerCycle = prescaler*softDivisor*tmr0;
-
-    if(countsPerCycle < (PLC_CLOCK_MIN * 2)) {
-        int min_cycleTimeMicroseconds = (PLC_CLOCK_MIN * 2) *4 *1000000 / Prog.mcuClock;
-        char str[1024];
-        sprintf(str, _("\n\nMinimum PLC cycle time is %d us."),
-            min_cycleTimeMicroseconds);
-        Error("%s%s",
-            _("Cycle time too fast; increase cycle time, or use faster "
-            "crystal."),str);
+    int err = PicTimer0Prescaler(cycleTimeMicroseconds);
+    if(err < 0) {
         fCompileError(f, fAsm);
     }
-    if(softDivisor > 0x10000) {
-        double max_cycleTimeSeconds = 1.0 * 0x100 * 0x10000 * 0x100 * 4 /* * 1000000*/ / Prog.mcuClock;
-        char str[1024];
-        sprintf(str, _("\n\nMaximum PLC cycle time is %.3f s."),
-            max_cycleTimeSeconds);
-        Error("%s%s",
-            _("Cycle time too slow; decrease cycle time, or use slower "
-            "crystal."),str);
-        fCompileError(f, fAsm);
-    }
-
-    BYTE PS = 0;
-    // set up prescaler
-    if     (prescaler ==   1)   PS = 0x08;
-    else if(prescaler ==   2)   PS = 0x00;
-    else if(prescaler ==   4)   PS = 0x01;
-    else if(prescaler ==   8)   PS = 0x02;
-    else if(prescaler ==  16)   PS = 0x03;
-    else if(prescaler ==  32)   PS = 0x04;
-    else if(prescaler ==  64)   PS = 0x05;
-    else if(prescaler == 128)   PS = 0x06;
-    else if(prescaler == 256)   PS = 0x07;
-    else oops();
-
     if(Prog.mcu->core == BaselineCore12bit) {
-        if(prescaler == 1) {
+        if(plcTmr.prescaler == 1) {
             //CHANGING PRESCALER(TIMER0 -> WDT)
             Instruction(OP_CLRWDT);             // Clear WDT, not a prescaler !
             Instruction(OP_CLRF, REG_TMR0);     // Clear TMR0 and prescaler
@@ -4264,12 +4293,12 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
             // Select TMR0, new prescale value and clock source
             Prog.OPTION &=~(1 << PSA);
             Prog.OPTION &=~0x07;
-            Prog.OPTION |= PS;
+            Prog.OPTION |= plcTmr.PS;
             Instruction(OP_MOVLW, Prog.OPTION); // Set prescale to PS
             Instruction(OP_OPTION);
         }
 
-        Instruction(OP_MOVLW, 256 - tmr0 + 22); // init first PLC cycle
+        Instruction(OP_MOVLW, 256 - plcTmr.tmr + 22); // init first PLC cycle
         Instruction(OP_MOVWF, REG_TMR0);
     } else {
         // redisable interrupt
@@ -4278,7 +4307,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
         // enable clock, internal source
         Instruction(OP_BCF, REG_OPTION, T0CS);
 
-        if(prescaler == 1) {
+        if(plcTmr.prescaler == 1) {
             //CHANGING PRESCALER(TIMER0 -> WDT)
             Instruction(OP_CLRWDT);                   // Clear WDT
             Instruction(OP_CLRF, REG_TMR0);           // Clear TMR0 and prescaler
@@ -4293,21 +4322,21 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
             Instruction(OP_CLRWDT);                    // Clear WDT and prescaler
             Instruction(OP_MOVLW, 0xF0);               // Mask TMR0 select and
             Instruction(OP_ANDWF, REG_OPTION, DEST_W); // prescaler bits
-            Instruction(OP_IORLW, PS);                 // Set prescale to PS
+            Instruction(OP_IORLW, plcTmr.PS);          // Set prescale to PS
             Instruction(OP_MOVWF, REG_OPTION);
-
+//          Instruction(OP_BCF, REG_OPTION, PSA);      // Set prescaler to TMR0
         }
 
-        Instruction(OP_MOVLW, 256 - tmr0);
+        Instruction(OP_MOVLW, 256 - plcTmr.tmr);
         Instruction(OP_MOVWF, REG_TMR0);
     }
 
-    if(softDivisor > 1) {
-        MemForVariable("$softDivisor", &addrDivisor);
-        //dbpx(addrDivisor)
-        //dbpx(addrDivisor+1)
-        WriteRegister(addrDivisor,   BYTE(softDivisor & 0xff));
-        WriteRegister(addrDivisor+1, BYTE(softDivisor >> 8));
+    if(plcTmr.softDivisor > 1) {
+        MemForVariable("$softDivisor", &plcTmr.softDivisorAddr);
+        //dbpx(softDivisorAddr)
+        //dbpx(softDivisorAddr+1)
+        WriteRegister(plcTmr.softDivisorAddr,   BYTE(plcTmr.softDivisor & 0xff));
+        WriteRegister(plcTmr.softDivisorAddr+1, BYTE(plcTmr.softDivisor >> 8));
     }
 }
 
@@ -4319,16 +4348,17 @@ BOOL CalcPicTimerPlcCycle(long long int cycleTimeMicroseconds,
 {
     *cycleTimeMin = int(round(1e6 * (PLC_CLOCK_MIN * 2) * 1 * 4 / Prog.mcuClock ));
     //                               ^min_divider         ^min_prescaler
-    int max_divider, max_prescaler;
+    int max_divider, max_prescaler, softDivisor;
     if(Prog.cycleTimer == 0) {
         max_divider = 0x100;
         max_prescaler = 256;
+        softDivisor = 0x10000; // 4294967296
     } else {
         max_divider = 0x10000;
         max_prescaler = 8;
+        softDivisor = 0x100;   //  134217728
     }
-    *cycleTimeMax = int(round(1e6 * max_divider * max_prescaler * 4 / Prog.mcuClock ));
-
+    *cycleTimeMax = int(round(1e6 * max_divider * max_prescaler * softDivisor * 4 / Prog.mcuClock ));
     char txt[1024] = "";
     if(cycleTimeMicroseconds > *cycleTimeMax) {
       sprintf(txt,"PLC cycle time more then %.3f ms not valid.", 0.001 * *cycleTimeMax);
@@ -5216,13 +5246,6 @@ void CompilePic16(char *outFile)
         else
             ConfigureTimer1(Prog.cycleTime);
     }
-    if(McuAs("Microchip PIC16F877 ")) {
-        // This is a nasty special case; one of the extra bits in TRISE
-        // enables the PSP, and must be kept clear (set here as will be
-        // inverted).
-        isOutput[4] |= 0xf8;
-    }
-
     if(McuAs("Microchip PIC16F877 ") ||
        McuAs("Microchip PIC16F819 ") ||
        McuAs("Microchip PIC16F876 ")) {
@@ -5279,22 +5302,8 @@ void CompilePic16(char *outFile)
         WriteRegister(REG_CMCON, 0x07);
     }
 
-    if(Prog.mcu->pwmNeedsPin) // else in BuildDirectionRegisters()
-    if(PwmFunctionUsed()) {
-        Comment("PwmFunctionUsed");
-        // Need to clear TRIS bit corresponding to PWM pin
-        int i;
-        for(i = 0; i < Prog.mcu->pinCount; i++) {
-            if(Prog.mcu->pinInfo[i].pin == Prog.mcu->pwmNeedsPin) {
-                McuIoPinInfo *iop = &(Prog.mcu->pinInfo[i]);
-                isOutput[iop->port - 'A'] |= (1 << iop->bit);
-                break;
-            }
-        }
-        if(i == Prog.mcu->pinCount) oops();
-    }
-
     if(Prog.mcu->core == BaselineCore12bit) {
+        ; //
     } else {
         Comment("Set up the TRISx registers (direction). 1 means tri-stated (input), 0-output and drive the outputs low to start");
         for(i = 0; i < MAX_IO_PORTS; i++) {
@@ -5357,8 +5366,8 @@ void CompilePic16(char *outFile)
           if(Prog.mcu->core == BaselineCore12bit) {
               /*
               // v1
-              Instruction(OP_MOVLW, tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-  //          Instruction(OP_MOVLW, tmr0 - 1); // tested in Proteus - 1) 1kHz}
+              Instruction(OP_MOVLW, plcTmr.tmr - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
+  //          Instruction(OP_MOVLW, plcTmr.tmr - 1); // tested in Proteus - 1) 1kHz}
               Instruction(OP_SUBWF, REG_TMR0, DEST_W);
               Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
               Instruction(OP_GOTO,  BeginOfPLCCycle);
@@ -5368,38 +5377,39 @@ void CompilePic16(char *outFile)
               Instruction(OP_MOVF,  REG_TMR0, DEST_W);
               Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
               Instruction(OP_GOTO,  BeginOfPLCCycle);
-  //          Instruction(OP_MOVLW, 256 - tmr0 - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-  //          Instruction(OP_MOVLW, 256 - tmr0 - 1); // tested in Proteus - 1) 992Hz}
-              Instruction(OP_MOVLW, 256 - tmr0 + 1); // tested in Proteus - 1) 992Hz 0=996}
+  //          Instruction(OP_MOVLW, 256 - plcTmr.tmr - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
+  //          Instruction(OP_MOVLW, 256 - plcTmr.tmr - 1); // tested in Proteus - 1) 992Hz}
+              Instruction(OP_MOVLW, 256 - plcTmr.tmr + 1); // tested in Proteus - 1) 992Hz 0=996}
               Instruction(OP_MOVWF, REG_TMR0);
           } else {
-              Instruction(OP_MOVLW,  256 - tmr0 + 1); // tested in Proteus {+1} {1ms=1kHz} {0.250ms=4kHz}
+              Instruction(OP_MOVLW,  256 - plcTmr.tmr + 1); // tested in Proteus {+1} {1ms=1kHz} {0.250ms=4kHz}
               IfBitClear(REG_INTCON, T0IF);
-              Instruction(OP_GOTO,   PicProgWriteP - 1, 0);
-              Instruction(OP_MOVWF,  REG_TMR0);
+              Instruction(OP_GOTO,   PicProgWriteP - 1);
+              //Instruction(OP_MOVWF,  REG_TMR0); // 3999 // 7920 = 8kHz = 0.125ms
+              Instruction(OP_ADDWF,  REG_TMR0, DEST_F); // 4012 //7967 = 8kHz = 0.125ms
               Instruction(OP_BCF,    REG_INTCON ,T0IF); // must be cleared in software
           }
 
-          if(softDivisor > 1) {
+          if(plcTmr.softDivisor > 1) {
               DWORD yesZero;
-              if(softDivisor > 0xff) {
+              if(plcTmr.softDivisor > 0xff) {
                   yesZero = AllocFwdAddr();
               }
-              Instruction(OP_DECFSZ, addrDivisor, DEST_F); // Skip if zero
+              Instruction(OP_DECFSZ, plcTmr.softDivisorAddr, DEST_F); // Skip if zero
               Instruction(OP_GOTO, BeginOfPLCCycle);
 
-              if(softDivisor > 0xff) {
-                  Instruction(OP_MOVF, addrDivisor+1, DEST_F);
+              if(plcTmr.softDivisor > 0xff) {
+                  Instruction(OP_MOVF, plcTmr.softDivisorAddr+1, DEST_F);
                   Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
                   Instruction(OP_GOTO, yesZero);
-                  Instruction(OP_DECF, addrDivisor+1, DEST_F);
+                  Instruction(OP_DECF, plcTmr.softDivisorAddr+1, DEST_F);
                   Instruction(OP_GOTO, BeginOfPLCCycle);
                   FwdAddrIsNow(yesZero);
 
-                  WriteRegister(addrDivisor+1, BYTE(softDivisor >> 8));
+                  WriteRegister(plcTmr.softDivisorAddr+1, BYTE(plcTmr.softDivisor >> 8));
               }
 
-              WriteRegister(addrDivisor,   BYTE(softDivisor & 0xff));
+              WriteRegister(plcTmr.softDivisorAddr,   BYTE(plcTmr.softDivisor & 0xff));
           }
       } else {
           if(Prog.mcu->core == BaselineCore12bit) {
@@ -5407,7 +5417,7 @@ void CompilePic16(char *outFile)
               fCompileError(f, fAsm);
           }
           IfBitClear(REG_PIR1, CCP1IF);
-          Instruction(OP_GOTO, PicProgWriteP - 1, 0);
+          Instruction(OP_GOTO, PicProgWriteP - 1);
           Instruction(OP_BCF, REG_PIR1, CCP1IF);
       }
     }

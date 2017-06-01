@@ -104,6 +104,7 @@ static BOOL SaveAsDialog(void)
     } else {
         ProgramChangedNotSaved = FALSE;
         RefreshControlsToSettings();
+        strcpy(CurrentCompileFile, "");
         return TRUE;
     }
 }
@@ -283,17 +284,46 @@ static int Execute(char *r)
 char *GetIsaName(int ISA)
 {
     switch(ISA) {
-        case ISA_AVR         : return (char *)stringer( ISA_AVR         ) + 4;
-        case ISA_PIC16       : return (char *)stringer( ISA_PIC16       ) + 4;
-        case ISA_ANSIC       : return (char *)stringer( ISA_ANSIC       ) + 4;
-        case ISA_INTERPRETED : return (char *)stringer( ISA_INTERPRETED ) + 4;
-        case ISA_XINTERPRETED: return (char *)stringer( ISA_XINTERPRETED) + 4;
-        case ISA_NETZER      : return (char *)stringer( ISA_NETZER      ) + 4;
-        case ISA_PASCAL      : return (char *)stringer( ISA_PASCAL      ) + 4;
-        case ISA_ARDUINO     : return (char *)stringer( ISA_ARDUINO     ) + 4;
-        case ISA_CAVR        : return (char *)stringer( ISA_CAVR        ) + 4;
-        default              : oops(); return NULL;
+        case ISA_AVR          : return (char *)stringer( ISA_AVR          ) + 4;
+        case ISA_PIC16        : return (char *)stringer( ISA_PIC16        ) + 4;
+      //case ISA_ANSIC        : return (char *)stringer( ISA_ANSIC        ) + 4;
+        case ISA_INTERPRETED  : return (char *)stringer( ISA_INTERPRETED  ) + 4;
+        case ISA_XINTERPRETED : return (char *)stringer( ISA_XINTERPRETED ) + 4;
+        case ISA_NETZER       : return (char *)stringer( ISA_NETZER       ) + 4;
+        case ISA_PASCAL       : return (char *)stringer( ISA_PASCAL       ) + 4;
+      //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
+      //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
+        default               : oops(); return NULL;
     }
+}
+
+//-----------------------------------------------------------------------------
+char *GetMnuName(int MNU)
+{
+    switch(MNU) {
+        case MNU_COMPILE_ANSIC         : return (char *)stringer(MNU_COMPILE_ANSIC) + 12;
+        case MNU_COMPILE_HI_TECH_C     : return (char *)stringer(MNU_COMPILE_HI_TECH_C) + 12;
+        case MNU_COMPILE_CCS_PIC_C     : return (char *)stringer(MNU_COMPILE_CCS_PIC_C) + 12;
+        case MNU_COMPILE_GNUC          : return (char *)stringer(MNU_COMPILE_GNUC) + 12;
+        case MNU_COMPILE_CODEVISIONAVR : return (char *)stringer(MNU_COMPILE_CODEVISIONAVR) + 12;
+        case MNU_COMPILE_IMAGECRAFT    : return (char *)stringer(MNU_COMPILE_IMAGECRAFT) + 12;
+        case MNU_COMPILE_IAR           : return (char *)stringer(MNU_COMPILE_IAR) + 12;
+        case MNU_COMPILE_ARDUINO       : return (char *)stringer(MNU_COMPILE_ARDUINO) + 12;
+        default                        : return "";
+    }
+}
+
+//-----------------------------------------------------------------------------
+int GetMnu(char *MNU_name)
+{
+    if(!strlen(MNU_name)) return -1;
+    if(strstr("MNU_COMPILE_ANSIC",         MNU_name)) return MNU_COMPILE_ANSIC;
+    if(strstr("MNU_COMPILE_HI_TECH_C",     MNU_name)) return MNU_COMPILE_HI_TECH_C;
+    if(strstr("MNU_COMPILE_CCS_PIC_C",     MNU_name)) return MNU_COMPILE_CCS_PIC_C;
+    if(strstr("MNU_COMPILE_GNUC",          MNU_name)) return MNU_COMPILE_GNUC;
+    if(strstr("MNU_COMPILE_CODEVISIONAVR", MNU_name)) return MNU_COMPILE_CODEVISIONAVR;
+    if(strstr("MNU_COMPILE_ARDUINO",       MNU_name)) return MNU_COMPILE_ARDUINO;
+    return -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -342,7 +372,7 @@ static void notepad(char *name, char *ext)
 }
 
 //-----------------------------------------------------------------------------
-static void postCompile(int ISA)
+static void postCompile(char *MNU)
 {
     if(!ExistFile(CurrentCompileFile))
         return;
@@ -374,7 +404,11 @@ static void postCompile(int ISA)
     strcpy(onlyName, ExtractFileName(CurrentSaveFile));
     SetExt(onlyName, onlyName, "");
 
-    sprintf(r,"\"%spostCompile.bat\" %s \"%s\" \"%s\"", ExePath, GetIsaName(ISA), CurrentLdPath, onlyName);
+    char *ISA = "_NULL_";
+    if(Prog.mcu)
+        ISA = GetIsaName(Prog.mcu->whichIsa);
+
+    sprintf(r,"\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentLdPath, onlyName);
     isErr(Execute(r), r);
 }
 
@@ -382,51 +416,42 @@ static void postCompile(int ISA)
 // Compile the program to a hex file for the target micro. Get the output
 // file name if necessary, then call the micro-specific compile routines.
 //-----------------------------------------------------------------------------
-static void CompileProgram(BOOL compileAs, int compile_MNU)
+static void CompileProgram(BOOL compileAs, int MNU)
 {
-    if(compile_MNU == MNU_COMPILE){
-        if(strstr(CurrentCompileFile,".cpp"))
-            compile_MNU = MNU_COMPILE_ARDUINO;
-        else if(strstr(CurrentCompileFile,".ino"))
-            compile_MNU = MNU_COMPILE_ARDUINO;
-        else if(strstr(CurrentCompileFile,".c"))
-            compile_MNU = MNU_COMPILE_ANSIC;
-        else if(strstr(CurrentCompileFile,".pas"))
-            compile_MNU = MNU_COMPILE_PASCAL;
-        else if (strstr(CurrentCompileFile, ".xint"))
-            compile_MNU = MNU_COMPILE_XINT;
-        else
-            compile_MNU = MNU_COMPILE_IHEX;
-    }
+    if((MNU == MNU_COMPILE) && (compile_MNU > 0))
+        MNU = compile_MNU;
 
     IsOpenAnable:
     if(!compileAs && strlen(CurrentCompileFile)) {
-      if( (compile_MNU == MNU_COMPILE      )  && strstr(CurrentCompileFile,".hex")
-      ||  (compile_MNU == MNU_COMPILE_IHEX )  && strstr(CurrentCompileFile,".hex")
-      ||  (compile_MNU == MNU_COMPILE_ANSIC)  && strstr(CurrentCompileFile,".c"  )
-      ||  (compile_MNU == MNU_COMPILE_ARDUINO)&& strstr(CurrentCompileFile,".cpp")
-      ||  (compile_MNU == MNU_COMPILE_PASCAL) && strstr(CurrentCompileFile,".pas")
-      ||  (compile_MNU == MNU_COMPILE_XINT)   && strstr(CurrentCompileFile, ".xint")
+      if((MNU == MNU_COMPILE)         && strstr(CurrentCompileFile,".hex") // && (compile_MNU <= 0)
+      || (MNU == MNU_COMPILE_IHEX)    && strstr(CurrentCompileFile,".hex")
+      || (MNU == MNU_COMPILE_ANSIC)   && strstr(CurrentCompileFile,".c"  )
+      || (MNU == MNU_COMPILE_ARDUINO) && strstr(CurrentCompileFile,".cpp")
+      || (MNU == MNU_COMPILE_PASCAL)  && strstr(CurrentCompileFile,".pas")
+      || (MNU == MNU_COMPILE_INT)     && strstr(CurrentCompileFile,".int")
+      || (MNU == MNU_COMPILE_XINT)    && strstr(CurrentCompileFile,".xint")
       ) {
         if(FILE *f = fopen(CurrentCompileFile, "w")) {
             fclose(f);
             remove(CurrentCompileFile);
         } else {
-            Error(_("Couldn't open file '%s'"), CurrentCompileFile);
             compileAs = TRUE;
+            Error(_("Couldn't OPEN file '%s'"), CurrentCompileFile);
         }
       }
     }
 
-    if(compileAs || (strlen(CurrentCompileFile)==0)
-      ||  (compile_MNU == MNU_COMPILE_AS)
-      ||( (compile_MNU == MNU_COMPILE      )  && (!strstr(CurrentCompileFile,".hex")) )
-      ||( (compile_MNU == MNU_COMPILE_IHEX )  && (!strstr(CurrentCompileFile,".hex")) )
-      ||( (compile_MNU == MNU_COMPILE_ANSIC)  && (!strstr(CurrentCompileFile,".c"  )) )
-      ||( (compile_MNU == MNU_COMPILE_ARDUINO)&& (!strstr(CurrentCompileFile,".cpp")) )
-      ||( (compile_MNU == MNU_COMPILE_PASCAL) && (!strstr(CurrentCompileFile,".pas")) )
-      ||( (compile_MNU == MNU_COMPILE_XINT)   && (!strstr(CurrentCompileFile, ".xint")) )
-      ) {
+    if(compileAs
+    ||(MNU == MNU_COMPILE_AS)
+    ||(strlen(CurrentCompileFile)==0)
+    ||(MNU == MNU_COMPILE)         && (!strstr(CurrentCompileFile,".hex"))
+    ||(MNU == MNU_COMPILE_IHEX)    && (!strstr(CurrentCompileFile,".hex"))
+    ||(MNU >= MNU_COMPILE_ANSIC)   && (!strstr(CurrentCompileFile,".c"  )) && (MNU <= MNU_COMPILE_lastC)
+    ||(MNU == MNU_COMPILE_ARDUINO) && (!strstr(CurrentCompileFile,".cpp"))
+    ||(MNU == MNU_COMPILE_PASCAL)  && (!strstr(CurrentCompileFile,".pas"))
+    ||(MNU == MNU_COMPILE_INT)     && (!strstr(CurrentCompileFile,".int"))
+    ||(MNU == MNU_COMPILE_XINT)    && (!strstr(CurrentCompileFile,".xint"))
+    ) {
         char *c;
         OPENFILENAME ofn;
 
@@ -434,31 +459,31 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
         ofn.lStructSize = sizeof(ofn);
         ofn.hInstance = Instance;
         ofn.lpstrTitle = _("Compile To");
-        if((compile_MNU == MNU_COMPILE_ANSIC) ||
-           (Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC)) {
+        if((MNU >= MNU_COMPILE_ANSIC)
+        && (MNU <= MNU_COMPILE_lastC)) {
             ofn.lpstrFilter = C_PATTERN;
             ofn.lpstrDefExt = "c";
             c = "c";
-            compile_MNU = MNU_COMPILE_ANSIC;
+          //compile_MNU = MNU;
         } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
                                Prog.mcu->whichIsa == ISA_NETZER)) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
             c = "int";
-        } else if ((compile_MNU == MNU_COMPILE_XINT) ||
+            compile_MNU = MNU_COMPILE_INT;
+        } else if ((MNU == MNU_COMPILE_XINT) ||
             (Prog.mcu && Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
             ofn.lpstrFilter = XINT_PATTERN;
             ofn.lpstrDefExt = "xint";
             c = "xint";
             compile_MNU = MNU_COMPILE_XINT;
-        } else if((compile_MNU == MNU_COMPILE_PASCAL) ||
+        } else if((MNU == MNU_COMPILE_PASCAL) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_PASCAL)) {
             ofn.lpstrFilter = PASCAL_PATTERN;
             ofn.lpstrDefExt = "pas";
             c = "pas";
             compile_MNU = MNU_COMPILE_PASCAL;
-        } else if((compile_MNU == MNU_COMPILE_ARDUINO) ||
-                  (Prog.mcu && Prog.mcu->whichIsa == ISA_ARDUINO)) {
+        } else if(MNU == MNU_COMPILE_ARDUINO) {
             ofn.lpstrFilter = ARDUINO_C_PATTERN;
             ofn.lpstrDefExt = "cpp";
             c = "cpp";
@@ -489,52 +514,56 @@ static void CompileProgram(BOOL compileAs, int compile_MNU)
     if(!GenerateIntermediateCode()) return;
 
     if((Prog.mcu == NULL)
-    && (compile_MNU != MNU_COMPILE_PASCAL)
-    && (compile_MNU != MNU_COMPILE_ANSIC)
-    && (compile_MNU != MNU_COMPILE_ARDUINO)
-    && (compile_MNU != MNU_COMPILE_XINT)) {
+    && (MNU != MNU_COMPILE_PASCAL)
+    && (MNU != MNU_COMPILE_ANSIC)
+    && (MNU != MNU_COMPILE_ARDUINO)
+    && (MNU != MNU_COMPILE_XINT)) {
         Error(_("Must choose a target microcontroller before compiling."));
         return;
     }
 
     if((UartFunctionUsed() && (Prog.mcu) && Prog.mcu->uartNeeds.rxPin == 0)
-    && (compile_MNU != MNU_COMPILE_PASCAL)
-    && (compile_MNU != MNU_COMPILE_ANSIC)
-    && (compile_MNU != MNU_COMPILE_ARDUINO)) {
+    && (MNU != MNU_COMPILE_PASCAL)
+    && (MNU != MNU_COMPILE_ANSIC)
+    && (MNU != MNU_COMPILE_ARDUINO)) {
         Error(_("UART function used but not supported for this micro."));
         return;
     }
 
     if((PwmFunctionUsed() && (Prog.mcu) && (Prog.mcu->pwmCount == 0) && Prog.mcu->pwmNeedsPin == 0)
-    && (compile_MNU != MNU_COMPILE_PASCAL)
-    && (compile_MNU != MNU_COMPILE_ANSIC)
-    && (compile_MNU != MNU_COMPILE_ARDUINO)
-    && (compile_MNU != MNU_COMPILE_XINT)
+    && (MNU != MNU_COMPILE_PASCAL)
+    && (MNU != MNU_COMPILE_ANSIC)
+    && (MNU != MNU_COMPILE_ARDUINO)
+    && (MNU != MNU_COMPILE_XINT)
     && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
-    if (compile_MNU == MNU_COMPILE_ANSIC) {
-        CompileAnsiC(CurrentCompileFile);
-        postCompile(ISA_ANSIC);
-    } else if (compile_MNU == MNU_COMPILE_ARDUINO) {
-        CompileAnsiC(CurrentCompileFile, ISA_ARDUINO);
-        postCompile(ISA_ARDUINO);
-    } else if (compile_MNU == MNU_COMPILE_XINT) {
+    if((MNU >= MNU_COMPILE_ANSIC)
+    && (MNU <= MNU_COMPILE_lastC)) {
+        CompileAnsiC(CurrentCompileFile, 0/*ISA_ANSIC*/, MNU);
+        postCompile("ANSIC");
+    } else if (MNU == MNU_COMPILE_ARDUINO) {
+        CompileAnsiC(CurrentCompileFile, 0/*ISA_ARDUINO*/, MNU);
+        postCompile("ARDUINO");
+    } else if (MNU == MNU_COMPILE_INT) {
         CompileXInterpreted(CurrentCompileFile);
-        postCompile(ISA_XINTERPRETED);
+        postCompile("INTERPRETED");
+    } else if (MNU == MNU_COMPILE_XINT) {
+        CompileXInterpreted(CurrentCompileFile);
+        postCompile("XINTERPRETED");
     } else if (Prog.mcu) {
         switch(Prog.mcu->whichIsa) {
             case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
             case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
-            case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
+          //case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
             case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
             case ISA_XINTERPRETED:  CompileXInterpreted(CurrentCompileFile); break;
             case ISA_NETZER:        CompileNetzer(CurrentCompileFile); break;
-            case ISA_ARDUINO:       CompileAnsiC(CurrentCompileFile, ISA_ARDUINO); break;
+          //case ISA_ARDUINO:       CompileAnsiC(CurrentCompileFile, ISA_ARDUINO, MNU_COMPILE_ARDUINO); break;
             default: ooops("0x%X", Prog.mcu->whichIsa);
         }
-        postCompile(Prog.mcu->whichIsa);
+        postCompile(GetIsaName(Prog.mcu->whichIsa));
     } else oops();
 
     RefreshControlsToSettings();
@@ -679,6 +708,14 @@ static void ProcessMenu(int code)
     if(code == MNU_PROCESSOR_0+NUM_SUPPORTED_MCUS) {
         Prog.mcu = NULL;
         strcpy(CurrentCompileFile, "");
+        RefreshControlsToSettings();
+        return;
+    }
+    if((code >= MNU_SCHEME_BLACK)
+    && (code < MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES)) {
+        scheme = code & 0xff;
+        InitForDrawing();
+        InvalidateRect(MainWindow, NULL, FALSE);
         RefreshControlsToSettings();
         return;
     }
@@ -1211,10 +1248,17 @@ cmp:
             SimulateOneCycle(TRUE);
             break;
 
+        case MNU_COMPILE:
         case MNU_COMPILE_ANSIC:
+        case MNU_COMPILE_HI_TECH_C:
+        case MNU_COMPILE_CCS_PIC_C:
+        case MNU_COMPILE_GNUC:
+        case MNU_COMPILE_CODEVISIONAVR:
+        case MNU_COMPILE_IMAGECRAFT:
+        case MNU_COMPILE_IAR:
         case MNU_COMPILE_IHEX:
         case MNU_COMPILE_ARDUINO:
-        case MNU_COMPILE:
+        case MNU_COMPILE_INT:
         case MNU_COMPILE_XINT:
             CompileProgram(FALSE, code);
             break;
@@ -1249,17 +1293,6 @@ cmp:
 
         case MNU_MANUAL:
             ShowHelpDialog(FALSE);
-            break;
-
-        case MNU_SCHEME_BLACK:
-        case MNU_SCHEME_BLACK2:
-        case MNU_SCHEME_WHITE:
-        case MNU_SCHEME_SYS:
-        case MNU_SCHEME_USER:
-            scheme = code & 0xff;
-            InitForDrawing();
-            InvalidateRect(MainWindow, NULL, FALSE);
-            RefreshControlsToSettings();
             break;
 
         case MNU_SELECT_COLOR:
@@ -2421,8 +2454,13 @@ return;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, INT nCmdShow)
 {
-    if((NUM_SUPPORTED_MCUS) != arraylen(SupportedMcus)) {
+    if(NUM_SUPPORTED_MCUS != arraylen(SupportedMcus)) {
         Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, arraylen(SupportedMcus));
+        oops();
+    }
+
+    if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
+        Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
         oops();
     }
 
@@ -2501,7 +2539,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         strcpy(CurrentCompileFile, dest);
         GenerateIoList(-1);
-        CompileProgram(FALSE, MNU_COMPILE);
+        CompileProgram(FALSE, compile_MNU);
         doexit(EXIT_SUCCESS);
     }
     if(memcmp(lpCmdLine, "/t", 2)==0) {
