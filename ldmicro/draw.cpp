@@ -835,7 +835,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
 
     switch(which) {
         case ELEM_COMMENT: {
-            int maxl = ColsAvailable*POS_WIDTH - *cx - 2;
+            size_t maxl = ColsAvailable*POS_WIDTH - *cx - 2;
             char tbuf[MAX_COMMENT_LEN];
             char tlbuf[MAX_COMMENT_LEN+8];
 
@@ -1453,8 +1453,8 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
     }
 
     if(which == ELEM_COMMENT) {
-        int i;
         int len = 0;
+        int i;
         for(i = 0; i < ColsAvailable; i++) {
             if((DisplayMatrixWhich[i][gy] <= ELEM_PLACEHOLDER)
             || (DisplayMatrixWhich[i][gy] == ELEM_COMMENT)) {

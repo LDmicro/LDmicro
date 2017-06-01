@@ -36,7 +36,9 @@ int SeenVariablesCount;
 static FILE *fh;
 static FILE *flh;
 
-static int _compile_ISA;
+static int compile_ISA = -1;
+static int mcu_ISA = -1;
+int compile_MNU = -1;
 
 //-----------------------------------------------------------------------------
 // Have we seen a variable before? If not then no need to generate code for
@@ -88,7 +90,9 @@ static char *MapSym(char *str, int how)
     }
 
     // User and internal symbols are distinguished.
-    if(*str == '$') {
+    if(IsNumber(str))
+        sprintf(ret, "%s", str);
+    else if(*str == '$') {
         sprintf(ret, "I_%c_%s", bit_int, str+1);
     } else {
         sprintf(ret, "U_%c_%s", bit_int, str);
@@ -101,9 +105,9 @@ static char *MapSym(char *str)
     return MapSym(str, ASINT);
 }
 //-----------------------------------------------------------------------------
-// Generate a declaration for an integer var; easy, a static 16-bit qty.
+// Generate a declaration for an integer var; easy, a static.
 //-----------------------------------------------------------------------------
-static void DeclareInt(FILE *f, char *str)
+static void DeclareInt(FILE *f, char *str, int sov)
 {
     fprintf(f, "STATIC SWORD %s = 0;\n", str);
     fprintf(f, "\n");
@@ -114,6 +118,8 @@ static void DeclareInt(FILE *f, char *str)
 // internal relay. An internal relay is just a BOOL variable, but for an
 // input or an output someone else must provide read/write functions.
 //-----------------------------------------------------------------------------
+static int ArduinoDigitalPin = 0;
+static int ArduinoAnalogPin = 0;
 static void DeclareBit(FILE *f, char *str)
 {
     // The mapped symbol has the form U_b_{X,Y,R}name, so look at character
@@ -142,24 +148,38 @@ static void DeclareBit(FILE *f, char *str)
 //-----------------------------------------------------------------------------
 static void GenerateDeclarations(FILE *f)
 {
+    DWORD addr, addr2;
+    int bit, bit2;
+
     int i;
     for(i = 0; i < IntCodeLen; i++) {
         char *bitVar1 = NULL, *bitVar2 = NULL;
         char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
+        char *adcVar1 = NULL;
+        char *strVar1 = NULL;
+        int sov1, sov2, sov3;
+
+        addr=0;  bit=0;
+        addr2=0; bit2=0;
+
         IntOp *a = &IntCode[i];
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
             case INT_CLEAR_BIT:
+                isPinAssigned(a->name1);
                 bitVar1 = IntCode[i].name1;
                 break;
 
             case INT_COPY_BIT_TO_BIT:
+                isPinAssigned(a->name1);
+                isPinAssigned(a->name2);
                 bitVar1 = IntCode[i].name1;
                 bitVar2 = IntCode[i].name2;
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
+            case INT_SET_VARIABLE_RANDOM:
                 intVar1 = IntCode[i].name1;
                 break;
 
@@ -208,11 +228,12 @@ static void GenerateDeclarations(FILE *f)
                 break;
 
             case INT_SET_PWM:
-                {
-                bitVar1 = IntCode[i].name1;
-                intVar1 = IntCode[i].name2;
+                intVar1 = IntCode[i].name1;
+                if(!IsNumber(IntCode[i].name2))
+                  intVar2 = IntCode[i].name2;
+                bitVar1 = IntCode[i].name3;
                 break;
-                }
+
             case INT_READ_ADC:
                 intVar1 = IntCode[i].name1;
                 bitVar1 = IntCode[i].name1;
@@ -231,6 +252,7 @@ static void GenerateDeclarations(FILE *f)
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
+                isPinAssigned(a->name1);
                 bitVar1 = IntCode[i].name1;
                 break;
 
@@ -247,10 +269,21 @@ static void GenerateDeclarations(FILE *f)
             case INT_END_IF:
             case INT_ELSE:
             case INT_COMMENT:
+            case INT_DELAY:
+            case INT_LOCK:
+            case INT_CLRWDT:
             case INT_SIMULATE_NODE_STATE:
+                break;
+
             case INT_EEPROM_BUSY_CHECK:
+                bitVar1 = IntCode[i].name1;
+                break;
+
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
+                intVar1 = IntCode[i].name1;
+                break;
+
             case INT_WRITE_STRING:
             case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
@@ -275,6 +308,10 @@ static void GenerateDeclarations(FILE *f)
         bitVar1 = MapSym(bitVar1, ASBIT);
         bitVar2 = MapSym(bitVar2, ASBIT);
 
+        if(intVar1) sov1 = SizeOfVar(intVar1);
+        if(intVar2) sov2 = SizeOfVar(intVar2);
+        if(intVar3) sov3 = SizeOfVar(intVar3);
+
         intVar1 = MapSym(intVar1, ASINT);
         intVar2 = MapSym(intVar2, ASINT);
         intVar3 = MapSym(intVar3, ASINT);
@@ -282,9 +319,9 @@ static void GenerateDeclarations(FILE *f)
         if(bitVar1 && !SeenVariable(bitVar1)) DeclareBit(f, bitVar1);
         if(bitVar2 && !SeenVariable(bitVar2)) DeclareBit(f, bitVar2);
 
-        if(intVar1 && !SeenVariable(intVar1)) DeclareInt(f, intVar1);
-        if(intVar2 && !SeenVariable(intVar2)) DeclareInt(f, intVar2);
-        if(intVar3 && !SeenVariable(intVar3)) DeclareInt(f, intVar3);
+        if(intVar1 && !SeenVariable(intVar1)) DeclareInt(f, intVar1, sov1);
+        if(intVar2 && !SeenVariable(intVar2)) DeclareInt(f, intVar2, sov2);
+        if(intVar3 && !SeenVariable(intVar3)) DeclareInt(f, intVar3, sov3);
     }
 }
 
@@ -318,6 +355,7 @@ static void doIndent(FILE *f, int i)
 //-----------------------------------------------------------------------------
 static void GenerateAnsiC(FILE *f, int begin, int end)
 {
+    int lock_label = 0;
     indent = 1;
     int i;
     for(i = begin; i <= end; i++) {
@@ -329,11 +367,19 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
-                fprintf(f, "Write_%s(1);\n", MapSym(IntCode[i].name1, ASBIT));
+                if((IntCode[i].name1[0] != '$')
+                && (IntCode[i].name1[0] != 'R'))
+                  fprintf(f, "Write_%s_1();\n", MapSym(IntCode[i].name1, ASBIT));
+                else
+                  fprintf(f, "Write_%s(1);\n", MapSym(IntCode[i].name1, ASBIT));
                 break;
 
             case INT_CLEAR_BIT:
-                fprintf(f, "Write_%s(0);\n", MapSym(IntCode[i].name1, ASBIT));
+                if((IntCode[i].name1[0] != '$')
+                && (IntCode[i].name1[0] != 'R'))
+                  fprintf(f, "Write_%s_0();\n", MapSym(IntCode[i].name1, ASBIT));
+                else
+                  fprintf(f, "Write_%s(0);\n", MapSym(IntCode[i].name1, ASBIT));
                 break;
 
             case INT_COPY_BIT_TO_BIT:
@@ -505,10 +551,12 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 //fprintf(f, "#warning INT_%d\n", IntCode[i].op);
                 break;
             case INT_AllocKnownAddr:
+                /*
                 if(IntCode[i].name1)
                     fprintf(f, "//KnownAddr Rung%d %s %s\n", IntCode[i].literal+1, IntCode[i].name2, IntCode[i].name1);
                 else
                     fprintf(f, "//KnownAddr Rung%d\n", IntCode[i].literal+1);
+                */
                 if(strcmp(IntCode[i].name2,"SUBPROG") == 0) {
                     int skip = FindOpNameLast(INT_RETURN, IntCode[i].name1);
                     if(skip <= i) oops();
@@ -671,12 +719,17 @@ winavr avr gcc
 
 void CompileAnsiC(char *dest)
 {
-     CompileAnsiC(dest, ISA_ANSIC);
+     CompileAnsiC(dest, 0, MNU_COMPILE_ANSIC);
 }
 
-void CompileAnsiC(char *dest, int compile_ISA)
+void CompileAnsiC(char *dest, int ISA, int MNU)
 {
-  if(compile_ISA==ISA_ARDUINO) {
+    compile_ISA = ISA;
+    if(Prog.mcu)
+        mcu_ISA = Prog.mcu->whichIsa;
+    if(MNU > 0)
+        compile_MNU = MNU;
+    if(compile_MNU == MNU_COMPILE_ARDUINO) {
     Error(
 " "
 "This feature of LDmicro is in testing and refinement.\n"
@@ -690,7 +743,7 @@ void CompileAnsiC(char *dest, int compile_ISA)
     );
     return;
   }
-    _compile_ISA = compile_ISA;
+    compile_ISA = ISA;
     SeenVariablesCount = 0;
 
     FILE *f = fopen(dest, "w");

@@ -360,38 +360,28 @@ SDWORD GetRandom(char *name)
 //-----------------------------------------------------------------------------
 static char *Check(char *name, DWORD flag, int i)
 {
-    char *s = NULL;
-
     switch(flag) {
-        case VAR_FLAG_TABLE:
-            if(Variables[i].usedFlags & ~VAR_FLAG_TABLE)
-                s = _("TABLE: variable can be used only with TABLE");
-            break;
-
         case VAR_FLAG_TOF:
-            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TOF) && (Variables[i].usedFlags != VAR_FLAG_RES)) {
-                s = _("TOF: variable cannot be used elsewhere");
-            }
+            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
+                return _("TOF: variable cannot be used elsewhere");
             break;
 
         case VAR_FLAG_TON:
-            if(Variables[i].usedFlags & ~(VAR_FLAG_TON | VAR_FLAG_RES)) {
-                s = _("TON: variable cannot be used elsewhere");
-            }
+            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
+                return _("TON: variable cannot be used elsewhere");
             break;
 
         case VAR_FLAG_TCY:
-            if((Variables[i].usedFlags) && (Variables[i].usedFlags != VAR_FLAG_TCY) && (Variables[i].usedFlags != VAR_FLAG_RES)) {
-                s = _("TCY: variable cannot be used elsewhere");
-            }
+            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
+                return _("TCY: variable cannot be used elsewhere");
             break;
 
         #ifdef ONLY_RESET_RTO
         //It is impossible to manipulate the
         // counter variable elsewhere, for example with a MOV instruction.
         case VAR_FLAG_RTO:
-            if(Variables[i].usedFlags & ~(VAR_FLAG_RES | VAR_FLAG_RTO))
-                s = _("RTO: variable can only be used for RES elsewhere");
+            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
+                return _("RTO: variable can only be used for RES elsewhere");
             break;
         #else
         case VAR_FLAG_RTO:
@@ -401,7 +391,7 @@ static char *Check(char *name, DWORD flag, int i)
         #ifndef ONLY_RESET_RTO
         case VAR_FLAG_RES:
             if(Variables[i].usedFlags == 0)
-                s = _("RES: Above this rung variable is not assigned to COUNTER or TIMER.\r\n"
+                return _("RES: Above this rung variable is not assigned to COUNTER or TIMER.\r\n"
                          "You must assign a variable below");
             break;
         #else
@@ -413,6 +403,11 @@ static char *Check(char *name, DWORD flag, int i)
         case VAR_FLAG_CTC:
         case VAR_FLAG_CTR:
         case VAR_FLAG_ANY:
+            break;
+
+        case VAR_FLAG_TABLE:
+            if(Variables[i].usedFlags & ~VAR_FLAG_TABLE)
+                return _("TABLE: variable can be used only with TABLE");
             break;
 
         case VAR_FLAG_OTHERWISE_FORGOTTEN:
@@ -428,7 +423,7 @@ static char *Check(char *name, DWORD flag, int i)
         default:
             oops();
     }
-    return s;
+    return NULL;
 }
 //-----------------------------------------------------------------------------
 // Mark how a variable is used; a series of flags that we can OR together,
@@ -452,13 +447,13 @@ static char *MarkUsedVariable(char *name, DWORD flag)
         strcpy(Variables[i].name, name);
         Variables[i].usedFlags = 0;
         Variables[i].val = 0;
-        Variables[i].initedRung = -1; //rungNow;
+        Variables[i].initedRung = -2; //rungNow;
         strcpy(Variables[i].usedRungs,"");
         VariableCount++;
     }
 
     char srungNow[MAX_NAME_LEN];
-    sprintf(srungNow," %d ",rungNow+1);
+    sprintf(srungNow,"%d ",rungNow+1);
     if(!strstr(Variables[i].usedRungs, srungNow))
         strcat(Variables[i].usedRungs, srungNow);
 
@@ -467,6 +462,8 @@ static char *MarkUsedVariable(char *name, DWORD flag)
     char *s = Check(name, flag, i);
     if(s) return s;
 
+    if(Variables[i].initedRung < 0)
+        Variables[i].initedRung = rungNow;
     Variables[i].usedFlags |= flag;
     return NULL;
 }
@@ -485,7 +482,7 @@ void MarkInitedVariable(char *name)
         strcpy(Variables[i].name, name);
         Variables[i].usedFlags = 0;
         Variables[i].val = 0;
-        Variables[i].initedRung = -1; //rungNow;
+        Variables[i].initedRung = -2; //rungNow;
         //Variables[i].initedOp = opNow;
         strcpy(Variables[i].usedRungs,"");
         VariableCount++;
@@ -499,7 +496,6 @@ static void CheckMsg(char *name, char *s)
 {
     if(s) {
         Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow+1, name, s, rungsUsed);
-        //CompileError();
     }
 }
 //-----------------------------------------------------------------------------
@@ -730,8 +726,16 @@ void CheckVariableNames(void)
         rungNow = i; // Ok
         CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
-
     // reCheck
+
+    for(i = 0; i < VariableCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_RES)
+        if((Variables[i].usedFlags & ~VAR_FLAG_RES) == 0)
+             Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."), Variables[i].initedRung+1, Variables[i].name,
+                   _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\n"
+                          "You must assign a variable."));
+    return;
+
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TCY)
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TCY, i));
@@ -763,10 +767,6 @@ void CheckVariableNames(void)
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_CTR)
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_CTR, i));
-
-    for(i = 0; i < VariableCount; i++)
-        if(Variables[i].usedFlags & VAR_FLAG_RES)
-             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_RES, i));
 
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TABLE)
@@ -1484,7 +1484,7 @@ void ClrSimulationData(void)
     for(i = 0; i < VariableCount; i++) {
         Variables[i].val = 0;
         Variables[i].usedFlags = 0;
-        Variables[i].initedRung = -1;
+        Variables[i].initedRung = -2;
         Variables[i].initedOp = 0;
         strcpy(Variables[i].usedRungs, "");
     }

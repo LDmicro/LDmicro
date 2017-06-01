@@ -537,7 +537,7 @@ KOMUTLAR ve ELEMANLAR
     Ayrýca bir iþlem yapýlmasý gerekmez.
     Bu komut bir satýrýn saðýndaki en son komut olmalýdýr.
 
-************************
+                        
 > UART (SERÝ BÝLGÝ) AL          var
                            --{UART RECV}--
 

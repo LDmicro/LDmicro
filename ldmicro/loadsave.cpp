@@ -178,7 +178,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "SWAP %s %s", l->d.move.dest, l->d.move.src)==2) {
         *which = ELEM_SWAP;
 
-    } else if(sscanf(line, "BUS %s %s %d %d %d %d %d %d %d %d\n", l->d.bus.dest, l->d.bus.src,
+    } else if(sscanf(line, "BUS %s %s %d %d %d %d %d %d %d %d", l->d.bus.dest, l->d.bus.src,
                            &l->d.bus.PCBbit[7],
                            &l->d.bus.PCBbit[6],
                            &l->d.bus.PCBbit[5],
@@ -189,19 +189,19 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
                            &l->d.bus.PCBbit[0])==(2+8)) {
         *which = ELEM_BUS;
 
-    } else if(sscanf(line,  "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+    } else if(sscanf(line,  "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
 
-    } else if(sscanf(line,  "9SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+    } else if(sscanf(line,  "9SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
         l->d.segments.which = ELEM_9SEG;
         *which = ELEM_9SEG;
 
-    } else if(sscanf(line, "14SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+    } else if(sscanf(line, "14SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
         l->d.segments.which = ELEM_14SEG;
         *which = ELEM_14SEG;
 
-    } else if(sscanf(line, "16SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+    } else if(sscanf(line, "16SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
         l->d.segments.which = ELEM_16SEG;
         *which = ELEM_16SEG;
 
@@ -473,6 +473,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 char *strspace(char *str)
 {
     while(isspace(*str)) str++;
+    while(isspace(str[strlen(str)-1]))
+        str[strlen(str)-1] = '\0';
     return str;
 }
 //-----------------------------------------------------------------------------
@@ -509,14 +511,14 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
         //if((*s=='/') && ((++(*s))=='/')) continue;
         if(*s==';') continue;
 
-        if(strcmp(s, "SERIES\n")==0) {
+        if(strcmp(s, "SERIES")==0) {
             which = ELEM_SERIES_SUBCKT;
             any = LoadSeriesFromFile(f);
             if(!any) return NULL;
 
         } else if(LoadLeafFromFile(s, &any, &which)) {
             // got it
-        } else if(strcmp(s, "END\n")==0) {
+        } else if(strcmp(s, "END")==0) {
             ret->count = cnt;
             return ret;
         } else {
@@ -547,18 +549,18 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
         if(!strlen(strspace(line))) continue;
         char *s = line;
         while(isspace(*s)) s++;
-
-        if(strcmp(s, "PARALLEL\n")==0) {
+        if(*s==';') continue; // NOT for release
+        if(strcmp(s, "PARALLEL")==0) {
             which = ELEM_PARALLEL_SUBCKT;
             any = LoadParallelFromFile(f);
             if(!any) return NULL;
-        } else if(strcmp(s, "SERIES\n")==0) {
+        } else if(strcmp(s, "SERIES")==0) {
             which = ELEM_SERIES_SUBCKT;
             any = LoadSeriesFromFile(f);
             if(!any) return NULL;
         } else if(LoadLeafFromFile(s, &any, &which)) {
             // got it
-        } else if(strcmp(s, "END\n")==0) {
+        } else if(strcmp(s, "END")==0) {
             ret->count = cnt;
             return ret;
         } else {
@@ -596,12 +598,12 @@ BOOL LoadProjectFromFile(char *filename)
     Prog.configurationWord = 0;
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line))) continue;
-        if(strcmp(line, "IO LIST\n")==0) {
+        if(strcmp(line, "IO LIST")==0) {
             if(!LoadIoListFromFile(f)) {
                 fclose(f);
                 return FALSE;
             }
-        } else if(strcmp(line, "VAR LIST\n")==0) {
+        } else if(strcmp(line, "VAR LIST")==0) {
             if(!LoadVarListFromFile(f)) {
                 fclose(f);
                 return FALSE;
@@ -637,15 +639,16 @@ BOOL LoadProjectFromFile(char *filename)
         } else if(sscanf(line, "BAUD=%d", &baud)) {
             Prog.baudRate = baud;
         } else if(memcmp(line, "COMPILED=", 9)==0) {
-            line[strlen(line)-1] = '\0';
             strcpy(CurrentCompileFile, line+9);
 
             strcpy(CurrentCompilePath,CurrentCompileFile);
             ExtractFileDir(CurrentCompilePath);
-        } else if(strcmp(line, "MICRO=\n")==0) {
-            //skip
+        } else if(memcmp(line, "COMPILER=", 9)==0) {
+            int i = GetMnu(line+9);
+            if(i > 0)
+                compile_MNU = i;
         } else if(memcmp(line, "MICRO=", 6)==0) {
-            line[strlen(line)-1] = '\0';
+          if(strlen(line) > 6) {
             int i;
             for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
               if(SupportedMcus[i].mcuName)
@@ -658,11 +661,12 @@ BOOL LoadProjectFromFile(char *filename)
                 Error(_("Microcontroller '%s' not supported.\r\n\r\n"
                     "Defaulting to no selected MCU."), line+6);
             }
-        } else if(strcmp(line, "PROGRAM\n")==0) {
+          }
+        } else if(strcmp(line, "PROGRAM")==0) {
             break;
         }
     }
-    if(strcmp(line, "PROGRAM\n") != 0) goto failed;
+    if(strcmp(line, "PROGRAM") != 0) goto failed;
 
     int rung = -2;
     for(rung = 0;;) {
@@ -1163,8 +1167,10 @@ BOOL SaveProjectToFile(char *filename, int code)
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }
-
     if (strcmp(Prog.LDversion,"0.1")!=0) {
+        if(compile_MNU > 0)
+            fprintf(f, "COMPILER=%s\n", GetMnuName(compile_MNU));
+
         fprintf(f, "\n");
         fprintf(f, "VAR LIST\n");
         SaveVarListToFile(f);
