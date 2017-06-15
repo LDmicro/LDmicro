@@ -85,6 +85,12 @@ BOOL AttachConsoleDynamic(DWORD base)
 //-----------------------------------------------------------------------------
 void doexit(int status)
 {
+    if(status != EXIT_SUCCESS){
+       Error("Please, open new issue at\n"
+             "https://github.com/LDmicro/LDmicro/issues/new\n"
+             "or send bug report to\n"
+             "LDmicroGitHub@gmail.com");
+    }
     exit(status);
 }
 //-----------------------------------------------------------------------------
@@ -430,10 +436,10 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 */
                 iop = PinInfo(pin);
                 if(iop && Prog.mcu)
-//                  if(Prog.mcu->core == PC_LPT_COM)
-//                      sprintf(portName, "%c%dP%d",
-//                          Prog.mcu->portPrefix, iop->portN, iop->portPin);
-//                  else
+                    if(Prog.mcu->core == PC_LPT_COM)
+                    ;//  sprintf(portName, "%c%dP%d",
+                     //      Prog.mcu->portPrefix, iop->portN, iop->portPin);
+                    else
                         sprintf(portName, "%c%c%d",
                             Prog.mcu->portPrefix, iop->port, iop->bit);
                 else
@@ -570,9 +576,25 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             iop = PinInfo(pin);
             if(iop) {
                 if(portName)
+                    if(UartFunctionUsed() && Prog.mcu) {
+                        if((Prog.mcu->uartNeeds.rxPin == pin) ||
+                           (Prog.mcu->uartNeeds.txPin == pin))
+                        {
+                            strcpy(portName, _("<UART needs!>"));
+                            return;
+                        }
+                    }
                     sprintf(portName, "%c%c%d",
                       Prog.mcu->portPrefix, iop->port, iop->bit);
                 if(pinName)
+                    if(UartFunctionUsed() && Prog.mcu) {
+                        if((Prog.mcu->uartNeeds.rxPin == pin) ||
+                           (Prog.mcu->uartNeeds.txPin == pin))
+                        {
+                            strcpy(pinName, _("<UART needs!>"));
+                            return;
+                        }
+                    }
                     if(iop->pinName)
                         sprintf(pinName, "%s", iop->pinName);
             } else {
@@ -596,6 +618,32 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     //} else if((type == IO_TYPE_STRING)) {
     }
 }
+
+//-----------------------------------------------------------------------------
+static int ComparePin(const void *av, const void *bv)
+{
+    McuIoPinInfo *a = (McuIoPinInfo *)av;
+    McuIoPinInfo *b = (McuIoPinInfo *)bv;
+    char sa[MAX_NAME_LEN];
+    char sb[MAX_NAME_LEN];
+    if(strlen(a->pinName))
+        strcpy(sa, a->pinName);
+    else
+        sprintf(sa, "%c%c%d", Prog.mcu->portPrefix, a->port, a->bit);
+    if(strlen(b->pinName))
+        strcpy(sb, b->pinName);
+    else
+        sprintf(sb, "%c%c%d", Prog.mcu->portPrefix, b->port, b->bit);
+    return strcmp(sa, sb);
+}
+
+void SetMcu(McuIoInfo *mcu)
+{
+    Prog.mcu = mcu;
+    if(mcu)
+        qsort(Prog.mcu->pinInfo, Prog.mcu->pinCount, sizeof(McuIoPinInfo), ComparePin);
+}
+
 //-----------------------------------------------------------------------------
 char *GetPinName(int pin, char *pinName)
 {

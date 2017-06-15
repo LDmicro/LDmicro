@@ -38,15 +38,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-
-#define BIT0 0
-#define BIT1 1
-#define BIT2 2
-#define BIT3 3
-#define BIT4 4
-#define BIT5 5
-#define BIT6 6
-#define BIT7 7
+#include "bits.h"
 
 #define r0 0 // used muls. Don't use elsewhere!!!
 #define r1 1 // used muls. Don't use elsewhere!!!
@@ -221,15 +213,16 @@ static DWORD EepromHighBytesCounter;
 // on different AVRs! I consider this a terrible design choice by Atmel.
 // 0 means not defined.
 static DWORD REG_TIMSK  = 0;
-static BYTE      OCIE1A = 0; // Timer/Counter1, Output Compare A Match Interrupt Enable
-static BYTE      TOIE1  = 0; // Timer/Counter1 Overflow Interrupt Enable
-static BYTE      TOIE0  = 0; // Timer/Counter0 Overflow Interrupt Enable
+static BYTE      OCIE1A = -1; // Timer/Counter1, Output Compare A Match Interrupt Enable
+static BYTE      TOIE1  = -1; // Timer/Counter1 Overflow Interrupt Enable
+static BYTE      TOIE0  = -1; // Timer/Counter0 Overflow Interrupt Enable
 
 static DWORD REG_TIFR1  = 0;
+static BYTE      OCF1A  = -1; // Timer/Counter1, Output Compare A Match Flag
+static BYTE      TOV1   = -1; // Timer/Counter1 Overflow Flag
 static DWORD REG_TIFR0  = 0;
-static BYTE      OCF1A  = 0; // Timer/Counter1, Output Compare A Match Flag
-static BYTE      TOV1   = 0; // Timer/Counter1 Overflow Flag
-static BYTE      TOV0   = 0; // Timer/Counter0 Overflow Flag
+static BYTE      OCF0A  = -1; // Timer/Counter0, Output Compare A Match Flag
+static BYTE      TOV0   = -1; // Timer/Counter0 Overflow Flag
 
 #define REG_SREG    0x5f
 #define     SREG_C  0
@@ -243,28 +236,17 @@ static BYTE      TOV0   = 0; // Timer/Counter0 Overflow Flag
 #define REG_SPH     0x5e
 #define REG_SPL     0x5d
 
-static DWORD REG_ADCSRB = 0;
-#define          ACME     BIT6
-#define          MUX5     BIT3
-
-static DWORD REG_ADMUX  = 0x27;
-static DWORD REG_ADCSRA = 0x26;
+static DWORD REG_ADMUX  = 0;
+static DWORD REG_ADCSRA = 0;
 #define          ADEN     BIT7
 #define          ADSC     BIT6
 #define          ADFR     BIT5 // ADATE
 #define          ADIE     BIT3
-static DWORD REG_ADCH   = 0x25;
-static DWORD REG_ADCL   = 0x24;
-
-// PWM Timer1
-static DWORD REG_OCR1AH = 0; // 0x4b
-static DWORD REG_OCR1AL = 0; // 0x4a
-static DWORD REG_TCCR1A = 0; // 0x4f
-static DWORD REG_TCCR1B = 0; // 0x4e
-#define          WGM13    4
-#define          WGM12    3
-#define          WGM11    1
-#define          WGM10    0
+static DWORD REG_ADCSRB = 0;
+#define          ACME     BIT6
+#define          MUX5     BIT3
+static DWORD REG_ADCH   = 0;
+static DWORD REG_ADCL   = 0;
 
 // USART
 static DWORD REG_UBRRH  = 0;
@@ -296,29 +278,51 @@ by writing a one to its bit location.
 
 static DWORD REG_UDR = 0;
 
-static DWORD REG_TCCR0  = 0;   //0x53
-static DWORD REG_TCNT0  = 0;   //0x52
+// WDT
+static DWORD REG_WDTCR  = 0; // 0x41 or 0x60
+#define          WDP3    BIT5
+#define          WDCE    BIT4
+#define          WDE     BIT3
+#define          WDP2    BIT2
+#define          WDP1    BIT1
+#define          WDP0    BIT0
 
-#define REG_WDTCR   0x41
-#define     WDCE    BIT4
-#define     WDE     BIT3
-#define     WDP2    BIT2
-#define     WDP1    BIT1
-#define     WDP0    BIT0
+// Timer1
+static DWORD REG_OCR1AH = 0; // 0x4b
+static DWORD REG_OCR1AL = 0; // 0x4a
+static DWORD REG_TCCR1A = 0; // 0x4f
+static DWORD REG_TCCR1B = 0; // 0x4e
+#define          WGM13    4
+#define          WGM12    3
+#define          WGM11    1
+#define          WGM10    0
 
-// PWM Timer2
-static DWORD REG_OCR2   = 0x43; //0; //TODO: check in datasheets for all MCU's
-static DWORD REG_TCCR2  = 0x45; // TCCR2A
+// Timer0
+static DWORD REG_TCCR0A = 0;    //
+static BYTE      WGM00  = -1;   // 0 or 6 or not
+static BYTE      WGM01  = -1;   // 1 or 3 or not
+static DWORD REG_TCCR0B = 0;    // TCCR0 // cs
+//static BYTE      WGM02  = -1; // 3 or not // always = 0
+//static BYTE      WGM03  = -1; // not
+static DWORD REG_TCNT0  = 0;    //
+static DWORD REG_OCR0A  = 0;    //
+
+// Timer2
+static DWORD REG_OCR2   = 0;
+static DWORD REG_TCCR2  = 0; // TCCR2A
 static DWORD REG_TCCR2B = 0;
-static BYTE      WGM20  = BIT6;
-static BYTE      WGM21  = BIT3;
+static BYTE      WGM20  = -1;
+static BYTE      WGM21  = -1;
+static BYTE      WGM22  = -1;
+static BYTE      WGM23  = -1;
 static BYTE      COM21  = BIT5;
 static BYTE      COM20  = BIT4;
 
-static DWORD REG_EEARH     = 0x3f; //0; //TODO: check in datasheets for all MCU's
-static DWORD REG_EEARL     = 0x3e; //
-static DWORD REG_EEDR      = 0x3d; //
-static DWORD REG_EECR      = 0x3c; //
+//EEPROM
+static DWORD REG_EEARH     = 0;
+static DWORD REG_EEARL     = 0;
+static DWORD REG_EEDR      = 0;
+static DWORD REG_EECR      = 0;
 #define          EERE   BIT0
 #define          EEWE   BIT1
 #define          EEMWE  BIT2
@@ -391,8 +395,8 @@ static DWORD REG_int_en = 0; // maybe REG_GICR or REG_EIMSK !!!
 // External Interrupt Mask Register
 //static DWORD REG_EIMSK = 0;
 //               External Interrupt Request Enable
-static BYTE      INT1  = 0;
-static BYTE      INT0  = 0;
+static BYTE      INT1  = -1;
+static BYTE      INT0  = -1;
 
 // Interrupt Flag Register
 static DWORD REG_int_flag = 0; // maybe REG_GIFR or REG_EIFR !!!
@@ -400,8 +404,8 @@ static DWORD REG_int_flag = 0; // maybe REG_GIFR or REG_EIFR !!!
 // External Interrupt Flag Register
 //static DWORD REG_EIFR  = 0;
 //               External Interrupt Flag is cleared when the interrupt routine is executed.
-static BYTE      INTF1 = 0;
-static BYTE      INTF0 = 0;
+static BYTE      INTF1 = -1;
+static BYTE      INTF0 = -1;
 //===========================================================================
 //used in NPulseTimerOverflowInterrupt in ELEM_NPULSE
 static DWORD  NPulseTimerOverflowVector;
@@ -1208,7 +1212,7 @@ static void WriteHexFile(FILE *f)
             WriteIhex(f, 2); // TT->Record Type -> 02 is Extended Segment Address
             WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) >> 8));   // AA->Address as big endian values HI()
             WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) & 0xff)); // AA->Address as big endian values LO()
-            FinishIhex(f);   // CC->Checksum
+            FinishIhex(f); // CC->Checksum
         }
         if(soFarCount == 0) soFarStart = i;
         soFar[soFarCount++] = (BYTE)(w & 0xff);
@@ -1304,7 +1308,6 @@ static void LoadZAddr(DWORD addr)
 ;*********************************************************
 ;*  BIT access anywhere in IO or lower $FF of data space
 ;*  SETB - SET Bit in IO of data space
-;*  CLRB - CLeaR Bit in IO of data space
 ;*********************************************************
 */
 static void SETB(DWORD addr, int bit, int reg, char *name)
@@ -1348,6 +1351,12 @@ static void SETB(DWORD addr, int bit)
     SETB(addr, bit, r25, NULL);
 }
 
+/*
+;*********************************************************
+;*  BIT access anywhere in IO or lower $FF of data space
+;*  CLRB - CLeaR Bit in IO of data space
+;*********************************************************
+*/
 static void CLRB(DWORD addr, int bit, int reg, char *name)
 {
     if(bit > 7) {
@@ -1392,11 +1401,12 @@ static void CLRB(DWORD addr, int bit)
 ;*********************************************************
 ;*  Bit test anywhere in IO or in lower $FF of data space
 ;*  SKBS : SKip if Bit Set
-;*  SKBC : SKip if Bit Cleared
+;*  RETURN: Used Instruction Word
 ;*********************************************************
 */
-static void SKBS(DWORD addr, int bit, int reg)
+static DWORD SKBS(DWORD addr, int bit, int reg)
 {
+    DWORD i = AvrProgWriteP;
     if(bit > 7) {
         Error(_("Only values 0-7 allowed for Bit parameter"));
     }
@@ -1417,16 +1427,24 @@ static void SKBS(DWORD addr, int bit, int reg)
         #if USE_IO_REGISTERS == 1
         Instruction(OP_SBIS, addr - __SFR_OFFSET, bit);
         #endif
-    } else oops()
+    } else oops();
+    return AvrProgWriteP - i;
 }
 
-static void SKBS(DWORD addr, int bit)
+static DWORD SKBS(DWORD addr, int bit)
 {
-    SKBS(addr, bit, r25);
+    return SKBS(addr, bit, r25);
 }
 
-static void SKBC(DWORD addr, int bit, int reg)
+/*
+;*********************************************************
+;*  Bit test anywhere in IO or in lower $FF of data space
+;*  SKBC : SKip if Bit Cleared
+;*********************************************************
+*/
+static DWORD SKBC(DWORD addr, int bit, int reg)
 {
+    DWORD i = AvrProgWriteP;
     if(bit > 7) {
         Error(_("Only values 0-7 allowed for Bit parameter"));
     }
@@ -1448,11 +1466,12 @@ static void SKBC(DWORD addr, int bit, int reg)
         Instruction(OP_SBIC, addr - __SFR_OFFSET, bit);
         #endif
     } else oops()
+    return AvrProgWriteP - i;
 }
 
-static void SKBC(DWORD addr, int bit)
+static DWORD SKBC(DWORD addr, int bit)
 {
-    SKBC(addr, bit, r25);
+    return SKBC(addr, bit, r25);
 }
 
 /*
@@ -1484,6 +1503,15 @@ static void STORE(DWORD addr, int reg)
         Instruction(OP_OUT, addr - __SFR_OFFSET, reg);
         #endif
     } else oops()
+}
+
+static void STOREval(DWORD addr, BYTE val)
+//used ZL, r25; Opcodes: 2 or 4
+{
+    // load r25 with the data
+    Instruction(OP_LDI, r25, val);
+    // do the store
+    STORE(addr, r25); // not a OP_ST_ZP !
 }
 
 static void LOAD(int reg, DWORD addr)
@@ -1562,6 +1590,32 @@ static void WriteMemoryNextAddr(BYTE val)
 }
 
 //-----------------------------------------------------------------------------
+static void WriteMemoryStillAddr(DWORD addr, BYTE val)
+//used ZL, r25; Opcodes: 4
+{
+    if(addr <= 0) {
+        Error(_("Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
+        return;
+    }
+    LoadZAddr(addr);
+    // load r25 with the data
+    Instruction(OP_LDI, r25, val);
+    // do the store
+    Instruction(OP_ST_Z, r25); // not a OP_ST_ZP !
+}
+
+//-----------------------------------------------------------------------------
+static void WriteMemoryCurrAddr(BYTE val)
+//used ZL, r25; Opcodes: 2
+{
+    // Z was setted in WriteMemory() or WriteMemoryStillAddr()
+    // load r25 with the data
+    Instruction(OP_LDI, r25, val);
+    // do the store
+    Instruction(OP_ST_Z, r25); // not a OP_ST_ZP !
+}
+
+//-----------------------------------------------------------------------------
 static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, char *name)
 {
     // vvv reassurance, check before calling this routine
@@ -1606,7 +1660,7 @@ static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
     Instruction(OP_LD_Z, r25);
     Instruction(OP_ORI, r25, val, literal);
     // do the store
-    Instruction(OP_ST_ZP, r25, 0, name1);
+    Instruction(OP_ST_Z, r25, 0, name1); // not a OP_ST_ZP !
 }
 
 static void OrMemory(DWORD addr, BYTE val)
@@ -1625,7 +1679,7 @@ static void AndMemory(DWORD addr, BYTE val, char *name1, char *literal)
     Instruction(OP_LD_Z, r25);
     Instruction(OP_ANDI, r25, val, literal);
     // do the store
-    Instruction(OP_ST_ZP, r25, 0, name1);
+    Instruction(OP_ST_Z, r25, 0, name1); // not a OP_ST_ZP !
 }
 
 static void AndMemory(DWORD addr, BYTE val)
@@ -1928,11 +1982,11 @@ static void PulseBit(DWORD addr, int bit)
 // or   AVR 16-bit Timer1 to do the timing for NPulse generator.
 static BOOL CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int *bestDivider, int *bestError, double *bestTarget)
 {
-    int max_divider;
+    int max_tmr;
     if(Prog.cycleTimer == 0)
-        max_divider = 0x10000; // used Timer1 for NPulse
+        max_tmr = 0x10000; // used Timer1 for NPulse
     else
-        max_divider = 0x100; // used Timer0 for NPulse
+        max_tmr = 0x100; // used Timer0 for NPulse
     // frequency (HZ) is
     // target = mcuClock / (divider * prescaler)
     // divider = mcuClock / (target * prescaler)
@@ -1951,7 +2005,7 @@ static BOOL CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int 
 
         err = (int)abs(freq - target);
         if((err <= *bestError) && (*bestDivider < divider)) {
-            if(divider <= max_divider) {
+            if(divider <= max_tmr) {
                 *bestError = err;
                 *bestPrescaler = prescaler;
                 *bestDivider = divider;
@@ -1980,89 +2034,169 @@ return TRUE;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // Calc AVR 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,
-    int *prescaler,
-    int *cs,
-    int *divider,
-    int *cycleTimeMin,
-    int *cycleTimeMax)
+BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds)
 {
-    *cycleTimeMin = int(round(1e6 * PLC_CLOCK_MIN * 1 / Prog.mcuClock))/*+1?*/;
-    //                              ^min_divider    ^min_prescaler
-    int max_divider;
-    if(Prog.cycleTimer == 0)
-        max_divider = 0x100;
-    else
-        max_divider = 0x10000;
-    *cycleTimeMax = int(round(1e6 * max_divider * 1024 / Prog.mcuClock));
-    //                                            ^max_prescaler
-
+    //memset(plcTmr, 0, sizeof(plcTmr));
+    plcTmr.softDivisor = 1;
+    plcTmr.prescaler = 1;
+    plcTmr.cs = 0;
+    plcTmr.cycleTimeMin = (int)floor(1e6 * PLC_CLOCK_MIN * 1 / Prog.mcuClock + 0.5);
+    //                                     ^min_divider    ^min_prescaler
+    long int max_tmr, max_prescaler, max_softDivisor;
+    if(Prog.cycleTimer == 0) {
+        max_tmr = 0xFF;//+1;
+        max_prescaler = 1024; // 1,8,64,256,1024
+        max_softDivisor = 0xFFFF; // 1..0xFFFF
+    } else {
+        max_tmr = 0xFFFF;//+1;
+        max_prescaler = 1024; // 1,8,64,256,1024
+        max_softDivisor = 0xFF; // 1..0xFF
+    }
+    plcTmr.cycleTimeMax = (long long int)floor(1e6 * max_tmr * max_prescaler * max_softDivisor / Prog.mcuClock + 0.5);
+#if 0
     long long int cycleTimeMicrosecondsFact;
     int bestPrescaler = 0;
-    int bestDivider = -INT_MAX;
+    int bestTmr = -INT_MAX;
     int bestError = INT_MAX;
-    *prescaler = 1;
-    for(*prescaler = 1;;) {
-        int timerRate = (Prog.mcuClock / *prescaler); // hertz
+    for(;;) {
+        int timerRate = (Prog.mcuClock / plcTmr.prescaler); // hertz
         double timerPeriod = 1e6 / timerRate; // timer period, us
-        //*divider = int(cycleTimeMicroseconds / timerPeriod); //
-        //dbp("0 prescaler=%d divider=%d mul=%d", *prescaler, *divider ,*prescaler * *divider);
-        //*divider = int(round(cycleTimeMicroseconds / timerPeriod));
-        //dbp("1 prescaler=%d divider=%d mul=%d", *prescaler, *divider ,*prescaler * *divider);
-        *divider = int(round((double)cycleTimeMicroseconds * Prog.mcuClock / (*prescaler * 1e6)));
-        //dbp("1 prescaler=%d divider=%d mul=%d", *prescaler, *divider ,*prescaler * *divider);
+        //plcTmr.tmr = int(cycleTimeMicroseconds / timerPeriod); //
+        //dbp("0 prescaler=%d divider=%d mul=%d", plcTmr.prescaler, plcTmr.tmr ,plcTmr.prescaler * plcTmr.tmr);
+        //plcTmr.tmr = int(round(cycleTimeMicroseconds / timerPeriod));
+        //dbp("1 prescaler=%d divider=%d mul=%d", plcTmr.prescaler, plcTmr.tmr ,plcTmr.prescaler * plcTmr.tmr);
+        plcTmr.tmr = (int)floor((double)cycleTimeMicroseconds * Prog.mcuClock / (plcTmr.prescaler * plcTmr.softDivisor * 1e6) + 0.5);
+        //dbp("1 prescaler=%d divider=%d mul=%d", plcTmr.prescaler, plcTmr.tmr ,plcTmr.prescaler * plcTmr.tmr);
 
-        cycleTimeMicrosecondsFact = (long long int)(round(1e6 * (*prescaler * *divider) / Prog.mcuClock));
+        cycleTimeMicrosecondsFact = (long long int)floor(1e6 * (plcTmr.prescaler * plcTmr.tmr) / Prog.mcuClock + 0.5);
 
-        //dbp("prescaler=%d divider=%d mul=%d T=%d us", *prescaler, *divider ,*prescaler * *divider, cycleTimeMicrosecondsFact);
+        //dbp("prescaler=%d divider=%d mul=%d T=%d us", plcTmr.prescaler, plcTmr.tmr ,plcTmr.prescaler * plcTmr.tmr, cycleTimeMicrosecondsFact);
 
-        if(*divider <= max_divider) {
+        if(plcTmr.tmr <= max_tmr) {
             int err = int(abs(1.0*(cycleTimeMicrosecondsFact - cycleTimeMicroseconds)));
-            if((err <= bestError) && (bestDivider < *divider)) {
+            if((err <= bestError) && (bestTmr < plcTmr.tmr)) {
                 bestError = err;
-                bestPrescaler = *prescaler;
-                bestDivider = *divider;
+                bestPrescaler = plcTmr.prescaler;
+                bestTmr = plcTmr.tmr;
             }
         }
-        if(*prescaler == 1) *prescaler = 8;
-        else if(*prescaler == 8) *prescaler = 64;
-        else if(*prescaler == 64) *prescaler = 256;
-        else if(*prescaler == 256) *prescaler = 1024;
-        else break;
+        if(plcTmr.prescaler == 1) plcTmr.prescaler = 8;
+        else if(plcTmr.prescaler == 8) plcTmr.prescaler = 64;
+        else if(plcTmr.prescaler == 64) plcTmr.prescaler = 256;
+        else if(plcTmr.prescaler == 256) plcTmr.prescaler = 1024;
+        else if(plcTmr.softDivisor < max_softDivisor) {
+            plcTmr.softDivisor++;
+            plcTmr.prescaler = 1;
+        } else break;
     }
-
     if(bestPrescaler == 0) {
-        *prescaler = 1024;
-        *divider = max_divider;
+        plcTmr.prescaler = 1024;
+        plcTmr.tmr = max_tmr;
     } else {
-        *prescaler = bestPrescaler;
-        *divider = bestDivider;
+        plcTmr.prescaler = bestPrescaler;
+        plcTmr.tmr = bestTmr;
     }
+#else
+    plcTmr.ticksPerCycle = (long long int)floor(1.0 * Prog.mcuClock * cycleTimeMicroseconds / 1000000 + 0.5);
+    long int bestTmr = LONG_MIN;
+    long int bestPrescaler = LONG_MAX;
+    long int bestSoftDivisor;
+    long long int bestErr = LLONG_MAX;
+    long long int err;
+    if(0) {
+        while(plcTmr.prescaler <= max_prescaler) {
+            for(plcTmr.tmr = max_tmr; plcTmr.tmr >= 1; plcTmr.tmr--) {
+                err = plcTmr.ticksPerCycle - plcTmr.tmr * plcTmr.prescaler;
+                if(err < 0) err = -err;
+                if((bestErr > err)
+                ||((bestErr == err) && (bestTmr < plcTmr.tmr))
+                ) {
+                   bestErr = err;
+                   bestPrescaler = plcTmr.prescaler;
+                   bestTmr = plcTmr.tmr;
+                }
+            }
+            if(plcTmr.prescaler == 1) plcTmr.prescaler = 8;
+            else if(plcTmr.prescaler == 8) plcTmr.prescaler = 64;
+            else if(plcTmr.prescaler == 64) plcTmr.prescaler = 256;
+            else if(plcTmr.prescaler == 256) plcTmr.prescaler = 1024;
+            else break;
+        }
+        plcTmr.prescaler = bestPrescaler;
+        plcTmr.tmr = bestTmr;
+        dbp("_%9d%10d%10d%10lld", plcTmr.softDivisor, plcTmr.prescaler, plcTmr.tmr, bestErr);
+    } else {
+        #if 1
+        while(plcTmr.softDivisor <= max_softDivisor) {
+            plcTmr.prescaler = max_prescaler;
+            while(plcTmr.prescaler >= 1) {
+                for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
+                    err = plcTmr.ticksPerCycle - long long int (plcTmr.tmr) * plcTmr.prescaler * plcTmr.softDivisor;
+                    if(err < 0) err = -err;
 
-    switch(*prescaler) {
-        case    1: *cs = 1; break;
-        case    8: *cs = 2; break;
-        case   64: *cs = 3; break;
-        case  256: *cs = 4; break;
-        case 1024: *cs = 5; break;
-        default: ooops("*prescaler=%d",*prescaler);
+                    if((bestErr > err)
+                    ||((bestErr == err) && (bestPrescaler < plcTmr.prescaler))
+                    ) {
+                         bestErr = err;
+                         bestSoftDivisor = plcTmr.softDivisor;
+                         bestPrescaler = plcTmr.prescaler;
+                         bestTmr = plcTmr.tmr;
+                         if(err == 0) goto err0;
+                    }
+                }
+                if(plcTmr.prescaler == 1) break;
+                else if(plcTmr.prescaler == 8) plcTmr.prescaler = 1;
+                else if(plcTmr.prescaler == 64) plcTmr.prescaler = 8;
+                else if(plcTmr.prescaler == 256) plcTmr.prescaler = 64;
+                else if(plcTmr.prescaler == 1024) plcTmr.prescaler = 256;
+                else oops();
+            }
+            if(plcTmr.softDivisor == max_softDivisor) break;
+            plcTmr.softDivisor++;
+        }
+        err0:
+        plcTmr.softDivisor = bestSoftDivisor;
+        plcTmr.prescaler = bestPrescaler;
+        plcTmr.tmr = bestTmr;
+        #else
+        while((plcTmr.prescaler <= max_prescaler) && (plcTmr.softDivisor <= max_softDivisor)) {
+            plcTmr.tmr = int(plcTmr.ticksPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
+
+            if((plcTmr.ticksPerCycle / plcTmr.prescaler / plcTmr.softDivisor) > max_tmr) {
+                if(plcTmr.prescaler < max_prescaler) {
+                    if(plcTmr.prescaler == 1) plcTmr.prescaler = 8;
+                    else if(plcTmr.prescaler == 8) plcTmr.prescaler = 64;
+                    else if(plcTmr.prescaler == 64) plcTmr.prescaler = 256;
+                    else if(plcTmr.prescaler == 256) plcTmr.prescaler = 1024;
+                } else {
+                    plcTmr.prescaler = 1;
+                    plcTmr.softDivisor++;
+                }
+            } else {
+                break;
+            }
+        }
+        #endif
+    }
+#endif
+    plcTmr.Fcycle=1.0*Prog.mcuClock/(1.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
+    plcTmr.TCycle=1.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
+    switch(plcTmr.prescaler) {
+        case    1: plcTmr.cs = 1; break;
+        case    8: plcTmr.cs = 2; break;
+        case   64: plcTmr.cs = 3; break;
+        case  256: plcTmr.cs = 4; break;
+        case 1024: plcTmr.cs = 5; break;
+        default: ooops("plcTmr.prescaler=%d",plcTmr.prescaler);
     }
 
     char txt[1024] = "";
-    if(bestPrescaler == 0) {
-      sprintf(txt,"PLC cycle time more then %d ms not valid.", *cycleTimeMax/1000);
+    if(plcTmr.tmr > max_tmr) {
+      sprintf(txt,"PLC cycle time more then %d ms not valid.", plcTmr.cycleTimeMax/1000);
       Error(txt);
       return FALSE;
-    } else if(bestDivider <=0) {
-      sprintf(txt,"Divider %d us not valid.", bestDivider);
-      Error(txt);
-      return FALSE;
-    } else if(*divider > max_divider) {
-      sprintf(txt,"PLC cycle time more then %d ms not valid.", *cycleTimeMax/1000);
-      Error(txt);
-      return FALSE;
-    } else if((*prescaler * *divider) < PLC_CLOCK_MIN) {
-      sprintf(txt,"PLC cycle time less then %d us not valid.", *cycleTimeMin);
+    } else if((plcTmr.prescaler * plcTmr.tmr) < PLC_CLOCK_MIN) {
+      sprintf(txt,"PLC cycle time less then %d us not valid.", plcTmr.cycleTimeMin);
       Error(txt);
       return FALSE;
     }
@@ -2070,54 +2204,44 @@ BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,
 }
 //-----------------------------------------------------------------------------
 // Configure AVR 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-static int    tcnt0PlcCycle = 0;
+//static DWORD  PlcCycleTimerOverflowVector;
+static long int tcnt0PlcCycle = 0;
 static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 {
-    int prescaler;
-    int cs;
-    int divider;
-    int cycleTimeMin;
-    int cycleTimeMax;
-    CalcAvrTimerPlcCycle(cycleTimeMicroseconds,
-        &prescaler,
-        &cs,
-        &divider,
-        &cycleTimeMin,
-        &cycleTimeMax);
+    CalcAvrPlcCycle(cycleTimeMicroseconds);
 
     if(Prog.cycleTimer == 0) {
-        tcnt0PlcCycle = 256 - divider/* + CorrectorPlcCycle*/; // TODO
+      if((WGM01  == -1)) { // ATmega8
+        tcnt0PlcCycle = 256 - plcTmr.tmr + 0; // + 0 DONE 1000Hz
         if(tcnt0PlcCycle < 0) tcnt0PlcCycle = 0;
         if(tcnt0PlcCycle > 255) tcnt0PlcCycle = 255;
 
-        //dbp("divider=%d EQU tcnt0PlcCycle=%d", divider, tcnt0PlcCycle);
-
-        //Instruction(OP_CLI);
         Instruction(OP_LDI, r25, tcnt0PlcCycle);
         WriteRegToIO(REG_TCNT0, r25); // set divider
 
-        WriteMemory(REG_TCCR0, cs);   // set prescaler
+        WriteMemory(REG_TCCR0B, plcTmr.cs); // set prescaler
         SetBit(REG_TIFR0, TOV0);       // Clear TOV0/ clear pending interrupts
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!
-        //no interupt for timer need..
-        //SetBit(REG_TIMSK, TOIE0);     // Enable Timer/Counter0 Overflow Interrupt
-        //Instruction(OP_SEI);
-        //
-    } else { // Timer1
-        WriteMemory(REG_TCCR1A, 0x00); // WGM11=0, WGM10=0
+      } else {
+        WriteMemory(REG_TCCR0A, (1<<WGM11)); // WGM11=1, WGM10=0 // CTC mode
+        WriteMemory(REG_TCCR0B, plcTmr.cs & 0xff); // WGM12=0 // CTC mode
 
-        WriteMemory(REG_TCCR1B, (1<<WGM12) | cs); // WGM13 set to 0, WGM12 set to 1
-
-        int counter = divider - 1/* + CorrectorPlcCycle*/; // TODO
+        long int counter = plcTmr.tmr - 1; // -1 DONE 1000Hz
         // the counter is less than the divisor at 1
-        if(counter < 0) counter = 0;
-        if(counter > 0xffff) counter = 0xffff;
-        //dbp("divider=%d EQU counter=%d", divider, counter);
 
-        // `the high byte must be written before the low byte
+        WriteMemory(REG_OCR0A,  counter & 0xff);
+      }
+    } else { // Timer1
+        WriteMemory(REG_TCCR1A, 0x00); // WGM11=0, WGM10=0 // CTC mode
+        WriteMemory(REG_TCCR1B, ((1<<WGM12) | plcTmr.cs) & 0xff); // WGM13=0, WGM12=1 // CTC mode
+
+        long int counter = plcTmr.tmr - 1; // -1 DONE 1000Hz
+        // the counter is less than the divisor at 1
+        // ArduinoMega2560 has an error: 2000Hz instead 1000Hz !!!
+
+        // the high byte must be written before the low byte
         WriteMemory(REG_OCR1AH, (counter >> 8) & 0xff);
-        WriteMemory(REG_OCR1AL,  counter  & 0xff);
-
+        WriteMemory(REG_OCR1AL, counter & 0xff);
         /*
         Bug .. no interupt for timer1 need..
 
@@ -2137,6 +2261,7 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 }
 
 //-----------------------------------------------------------------------------
+/*
 static void PlcCycleTimerOverflowInterrupt()
 {
     Comment("PlcCycleTimerOverflowInterrupt") ;
@@ -2162,7 +2287,7 @@ static void PlcCycleTimerOverflowInterrupt()
     //}
     Instruction(OP_RETI);
 }
-
+*/
 #ifdef TABLE_IN_FLASH
 //-----------------------------------------------------------------------------
 static void InitTable(IntOp *a)
@@ -2252,11 +2377,11 @@ static void CallSubroutine(DWORD addr)
 
             Instruction(OP_LDI, ZL, FWD_LO(addr)); // 2
             Instruction(OP_LDI, ZH, FWD_HI(addr));
-            Instruction(OP_EICALL);
+            Instruction(OP_EICALL, FWD(addr)); // arg1 used for label
         } else if(Prog.mcu->core >= ClassicCore8K) {
             Instruction(OP_LDI, ZL, FWD_LO(addr));
             Instruction(OP_LDI, ZH, FWD_HI(addr));
-            Instruction(OP_ICALL);
+            Instruction(OP_ICALL, FWD(addr)); // arg1 used for label
         } else {
             Instruction(OP_RCALL, FWD(addr));
         }
@@ -2266,12 +2391,12 @@ static void CallSubroutine(DWORD addr)
         } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
-            Instruction(OP_ICALL);
+            Instruction(OP_ICALL, addr); // arg1 used for label
         } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
-            WriteMemory(REG_EIND, (addr >> 16) & 0xff); // 1
+            WriteMemory(REG_EIND, (BYTE)(addr >> 16) & 0xff); // 1
             Instruction(OP_LDI, ZL, addr & 0xff); // 2
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
-            Instruction(OP_EICALL);
+            Instruction(OP_EICALL, addr); // arg1 used for label
         } else oops();
     }
 }
@@ -2291,11 +2416,11 @@ static void InstructionJMP(DWORD addr)
 
             Instruction(OP_LDI, ZL, FWD_LO(addr)); // 2
             Instruction(OP_LDI, ZH, FWD_HI(addr));
-            Instruction(OP_EIJMP);
+            Instruction(OP_EIJMP, FWD(addr)); // arg1 used for label
         } else if(Prog.mcu->core >= ClassicCore8K) {
             Instruction(OP_LDI, ZL, FWD_LO(addr));
             Instruction(OP_LDI, ZH, FWD_HI(addr));
-            Instruction(OP_IJMP);
+            Instruction(OP_IJMP, FWD(addr)); // arg1 used for label
         } else {
             Instruction(OP_RJMP, FWD(addr));
         }
@@ -2305,157 +2430,14 @@ static void InstructionJMP(DWORD addr)
         } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
-            Instruction(OP_IJMP);
+            Instruction(OP_IJMP, addr); // arg1 used for label
         } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
-            WriteMemory(REG_EIND, (addr >> 16) & 0xff); // 1
+            WriteMemory(REG_EIND, (BYTE)(addr >> 16) & 0xff); // 1
             Instruction(OP_LDI, ZL, addr & 0xff); // 2
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
-            Instruction(OP_EIJMP);
+            Instruction(OP_EIJMP, addr); // arg1 used for label
         } else oops();
     }
-}
-
-//-----------------------------------------------------------------------------
-// Write the basic runtime. We set up our reset vector, configure all the
-// I/O pins, then set up the timer that does the cycling. Next instruction
-// written after calling WriteRuntime should be first instruction of the
-// timer loop (i.e. the PLC logic cycle).
-//-----------------------------------------------------------------------------
-static DWORD addrDuty;
-static int   bitDuty;
-static void WriteRuntime(void)
-{
-    DWORD resetVector = AllocFwdAddr();
-
-    int i;
-    #ifdef TABLE_IN_FLASH
-    InstructionJMP(resetVector);       // $0000, RESET
-    #else
-    Instruction(OP_RJMP, resetVector);       // $0000, RESET
-    #endif
-    for(i = 0; i < 34; i++)
-        Instruction(OP_RETI);
-    Comment("Interrupt table end.");
-    #ifdef TABLE_IN_FLASH
-    InitTables();
-    #endif
-
-    FwdAddrIsNow(resetVector);
-    Comment("This is Reset Vector");
-
-    Comment("Watchdog on");
-    Instruction(OP_WDR);
-
-    Comment("Set up the stack, which we use only when we jump to multiply/divide routine");
-    WORD topOfMemory = (WORD)Prog.mcu->ram[0].start + Prog.mcu->ram[0].len - 1;
-    WriteMemory(REG_SPH, topOfMemory >> 8, topOfMemory);
-    WriteMemory(REG_SPL, topOfMemory & 0xff, topOfMemory);
-
-    Comment("Zero out the memory used for timers, internal relays, etc.");
-    LoadXAddr(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len);
-    Instruction(OP_LDI, 16, 0);
-    Instruction(OP_LDI, r24, (Prog.mcu->ram[0].len) & 0xff);
-    Instruction(OP_LDI, r25, (Prog.mcu->ram[0].len) >> 8);
-
-    DWORD loopZero = AvrProgWriteP;
-//  Instruction(OP_SUBI, 26, 1);
-//  Instruction(OP_SBCI, 27, 0);
-//  Instruction(OP_ST_X, 16);
-    Instruction(OP_ST_XS, 16);
-//  Instruction(OP_SUBI, 18, 1);
-//  Instruction(OP_SBCI, 19, 0);
-//  Instruction(OP_TST, 18, 0);
-//  Instruction(OP_BRNE, loopZero, 0);
-//  Instruction(OP_TST, 19, 0);
-//  Instruction(OP_BRNE, loopZero, 0);
-    Instruction(OP_SBIW, r24, 1);
-    Instruction(OP_BRNE, loopZero);
-
-    Comment("Set up I/O pins");
-    BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
-    BuildDirectionRegisters(isInput, isOutput);
-
-    if(UartFunctionUsed()) {
-        if(Prog.baudRate == 0) {
-            Error(_("Zero baud rate not possible."));
-            return;
-        }
-
-        Comment("UartFunctionUsed. UART setup");
-        // bps = Fosc/(16*(X+1))
-        // bps*16*(X + 1) = Fosc
-        // X = Fosc/(bps*16)-1
-        // and round, don't truncate
-        int divisor = (Prog.mcuClock + Prog.baudRate*8)/(Prog.baudRate*16) - 1;
-
-        double actual = Prog.mcuClock/(16.0*(divisor+1));
-        double percentErr = 100.0*(actual - Prog.baudRate)/Prog.baudRate;
-
-        if(fabs(percentErr) > 2) {
-            ComplainAboutBaudRateError(divisor, actual, percentErr);
-        }
-        if(divisor > 4095) ComplainAboutBaudRateOverflow();
-
-        WriteMemory(REG_UBRRH, divisor >> 8);
-        WriteMemory(REG_UBRRL, divisor & 0xff);
-        WriteMemory(REG_UCSRB, (1 << RXEN) | (1 << TXEN));
-    }
-
-    Comment("Turn on the pull-ups, and drive the outputs low to start");
-    for(i = 0; i < MAX_IO_PORTS; i++) {
-        if(!IS_MCU_REG(i)) {
-            // skip this one, dummy entry for MCUs with I/O ports not
-            // starting from A
-        } else {
-            WriteMemory(Prog.mcu->dirRegs[i], isOutput[i]);
-            // turn on the pull-ups, and drive the outputs low to start
-            WriteMemory(Prog.mcu->outputRegs[i], isInput[i]);
-        }
-    }
-
-    if(Prog.cycleTime != 0) {
-      Comment("ConfigureTimerForPlcCycle");
-      ConfigureTimerForPlcCycle(Prog.cycleTime);
-    }
-  //Comment("and now the generated PLC code will follow");
-    Comment("Begin Of PLC Cycle");
-    BeginOfPLCCycle = AvrProgWriteP;
-
-    if(Prog.cycleTime != 0) {
-      if(Prog.cycleTimer == 0) {
-          //IfBitClear(REG_TIFR0, TOV0);
-          LoadZAddr(REG_TIFR0);             //IfBitClear(REG_TIFR0, TOV0);
-          DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
-          Instruction(OP_LD_Z, r25);       //IfBitClear(REG_TIFR0, TOV0);
-          Instruction(OP_SBRS, r25, TOV0); //IfBitClear(REG_TIFR0, TOV0);
-          Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer0/Counter
-
-          SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
-          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
-
-          Instruction(OP_LDI, r25, tcnt0PlcCycle /*+1/*?*/); // reload Counter0
-          WriteRegToIO(REG_TCNT0, r25);
-      } else { // Timer1
-          //IfBitClear(REG_TIFR1, OCF1A);
-          LoadZAddr(REG_TIFR1);             //IfBitClear(REG_TIFR1, OCF1A);
-          DWORD BeginningOfCycleAddr2 = AvrProgWriteP;
-          Instruction(OP_LD_Z, r25);        //IfBitClear(REG_TIFR1, OCF1A);
-          Instruction(OP_SBRS, r25, OCF1A); //IfBitClear(REG_TIFR1, OCF1A);
-          Instruction(OP_RJMP, BeginningOfCycleAddr2); // Ladder cycle timing on Timer1/Counter
-
-          SetBit(REG_TIFR1, OCF1A);
-          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
-      }
-    }
-
-    if(Prog.cycleDuty) {
-        Comment("SetBit YPlcCycleDuty");
-        MemForSingleBit(YPlcCycleDuty, FALSE, &addrDuty, &bitDuty);
-        SetBit(addrDuty, bitDuty);
-    }
-
-    Comment("Watchdog reset");
-    Instruction(OP_WDR, 0, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -2700,6 +2682,160 @@ static void IfNotZeroGoto(DWORD addrVar, int sov, DWORD addrGoto)
     }
 }
 //-----------------------------------------------------------------------------
+// Write the basic runtime. We set up our reset vector, configure all the
+// I/O pins, then set up the timer that does the cycling. Next instruction
+// written after calling WriteRuntime should be first instruction of the
+// timer loop (i.e. the PLC logic cycle).
+//-----------------------------------------------------------------------------
+static DWORD addrDuty;
+static int   bitDuty;
+static void WriteRuntime(void)
+{
+    DWORD resetVector = AllocFwdAddr();
+
+    int i;
+    #ifdef TABLE_IN_FLASH
+    InstructionJMP(resetVector);       // $0000, RESET
+    #else
+    Instruction(OP_RJMP, resetVector);       // $0000, RESET
+    #endif
+    for(i = 0; i < 34; i++)
+        Instruction(OP_RETI);
+    Comment("Interrupt table end.");
+    #ifdef TABLE_IN_FLASH
+    InitTables();
+    #endif
+
+    FwdAddrIsNow(resetVector);
+    Comment("This is Reset Vector"); // 1
+    if(Prog.cycleTime != 0) { // 2
+      Comment("ConfigureTimerForPlcCycle");
+      ConfigureTimerForPlcCycle(Prog.cycleTime);
+    }
+    Comment("Watchdog on"); // 3
+    Instruction(OP_CLI);
+    Instruction(OP_WDR);
+    STOREval(REG_WDTCR, (1<<WDCE) | (1<<WDE));
+    Comment("- Got only four cycles to set the new values from here! -");
+    WriteMemoryCurrAddr((1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s
+    Instruction(OP_SEI);
+
+    Comment("Set up the stack, which we use only when we jump to multiply/divide routine"); // 4
+    WORD topOfMemory = (WORD)Prog.mcu->ram[0].start + Prog.mcu->ram[0].len - 1;
+    WriteMemory(REG_SPH, topOfMemory >> 8, topOfMemory);
+    WriteMemory(REG_SPL, topOfMemory & 0xff, topOfMemory);
+
+    Comment("Zero out the memory used for timers, internal relays, etc."); // 5
+    LoadXAddr(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len);
+    Instruction(OP_LDI, 16, 0);
+    Instruction(OP_LDI, r24, (Prog.mcu->ram[0].len) & 0xff);
+    Instruction(OP_LDI, r25, (Prog.mcu->ram[0].len) >> 8);
+
+    DWORD loopZero = AvrProgWriteP;
+//  Instruction(OP_SUBI, 26, 1);
+//  Instruction(OP_SBCI, 27, 0);
+//  Instruction(OP_ST_X, 16);
+    Instruction(OP_ST_XS, 16);
+//  Instruction(OP_SUBI, 18, 1);
+//  Instruction(OP_SBCI, 19, 0);
+//  Instruction(OP_TST, 18, 0);
+//  Instruction(OP_BRNE, loopZero, 0);
+//  Instruction(OP_TST, 19, 0);
+//  Instruction(OP_BRNE, loopZero, 0);
+    Instruction(OP_SBIW, r24, 1);
+    Instruction(OP_BRNE, loopZero);
+
+    if(plcTmr.softDivisor > 1) { // RAM used, after zero out // 5
+        Comment("Configure PLC Timer softDivisor");
+        MemForVariable("$softDivisor", &plcTmr.softDivisorAddr);
+        WriteLiteralToMemory(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+    }
+
+    Comment("Set up I/O pins"); // 6
+    BYTE isInput[MAX_IO_PORTS], isAnsel[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
+    BuildDirectionRegisters(isInput, isAnsel, isOutput);
+
+    if(UartFunctionUsed()) {
+        if(Prog.baudRate == 0) {
+            Error(_("Zero baud rate not possible."));
+            return;
+        }
+
+        Comment("UartFunctionUsed. UART setup");
+        // bps = Fosc/(16*(X+1))
+        // bps*16*(X + 1) = Fosc
+        // X = Fosc/(bps*16)-1
+        // and round, don't truncate
+        int divisor = (Prog.mcuClock + Prog.baudRate*8)/(Prog.baudRate*16) - 1;
+
+        double actual = Prog.mcuClock/(16.0*(divisor+1));
+        double percentErr = 100.0*(actual - Prog.baudRate)/Prog.baudRate;
+
+        if(fabs(percentErr) > 2) {
+            ComplainAboutBaudRateError(divisor, actual, percentErr);
+        }
+        if(divisor > 4095) ComplainAboutBaudRateOverflow();
+
+        WriteMemory(REG_UBRRH, divisor >> 8);
+        WriteMemory(REG_UBRRL, divisor & 0xff);
+        WriteMemory(REG_UCSRB, (1 << RXEN) | (1 << TXEN));
+    }
+
+    Comment("Turn on the pull-ups, and drive the outputs low to start");
+    for(i = 0; i < MAX_IO_PORTS; i++) {
+        if(!IS_MCU_REG(i)) {
+            // skip this one, dummy entry for MCUs with I/O ports not
+            // starting from A
+        } else {
+            WriteMemory(Prog.mcu->dirRegs[i], isOutput[i]);
+            // turn on the pull-ups, and drive the outputs low to start
+            WriteMemory(Prog.mcu->outputRegs[i], isInput[i]);
+        }
+    }
+  //Comment("and now the generated PLC code will follow");
+    Comment("Begin Of PLC Cycle");
+    BeginOfPLCCycle = AvrProgWriteP;
+    if(Prog.cycleTime != 0) {
+      // ConfigureTimerForPlcCycle
+      if(Prog.cycleTimer == 0) {
+        if((WGM01  == -1)) { // ATmega8
+          DWORD i=SKBS(REG_TIFR0, TOV0);
+          Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer0/Counter
+
+          SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
+          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+
+          STOREval(REG_TCNT0, tcnt0PlcCycle + 0); // + 0 DONE // reload Counter0
+        } else {
+          DWORD i=SKBS(REG_TIFR0, OCF0A);
+          Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer0/Counter
+
+          SetBit(REG_TIFR0, OCF0A);
+          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+        }
+      } else { // Timer1
+
+          DWORD i=SKBS(REG_TIFR1, OCF1A);
+          Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer1/Counter
+
+          SetBit(REG_TIFR1, OCF1A);
+          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+      }
+      Comment("Watchdog reset");
+      Instruction(OP_WDR);
+    } else {
+        Comment("Watchdog reset");
+        Instruction(OP_WDR);
+    }
+
+    if(Prog.cycleDuty) {
+        Comment("SetBit YPlcCycleDuty");
+        MemForSingleBit(YPlcCycleDuty, FALSE, &addrDuty, &bitDuty);
+        SetBit(addrDuty, bitDuty);
+    }
+}
+
+//-----------------------------------------------------------------------------
 /*
 HLC2705
 LS7184
@@ -2773,7 +2909,6 @@ The algorithm is from Scott Edwards, in Nuts&Volts Vol 1 Oct. 1995 (Basic Stamp 
 is described in an article available on line at http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
 */
 
-
 //-----------------------------------------------------------------------------
 // Compile the intermediate code to AVR native code.
 //-----------------------------------------------------------------------------
@@ -2781,11 +2916,7 @@ static void CompileFromIntermediate(void)
 {
     DWORD addr = 0, addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
     int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
-    DWORD addrl = 0;
-    DWORD addrl2 = 0;
-    int sov = -1;
-    int sov1= -1;
-    int sov2= -1;
+    int   sov = -1, sov1 = -1, sov2 = -1, sov12 = -1, sov23 = -1;
 
     for(; IntPc < IntCodeLen; IntPc++) {
         IntPcNow = IntPc;
@@ -3800,23 +3931,25 @@ static void CompileFromIntermediate(void)
             }
             case INT_UART_RECV: {
                 MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
                 MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
 
                 ClearBit(addr2, bit2);
 
                 DWORD noChar = AllocFwdAddr();
                 IfBitClear(REG_UCSRA, RXC);
-                Instruction(OP_RJMP, noChar, 0);
+                Instruction(OP_RJMP, noChar);
 
                 SetBit(addr2, bit2);
                 LoadXAddr(REG_UDR);
-                Instruction(OP_LD_X, 16, 0);
+                Instruction(OP_LD_X, r16);
                 LoadXAddr(addr1);
-                Instruction(OP_ST_X, 16, 0);
+                Instruction(OP_ST_XP, r16);
 
-                LoadXAddr(addr1+1);
-                Instruction(OP_LDI, 16, 0);
-                Instruction(OP_ST_X, 16, 0);
+                Instruction(OP_LDI, r16, 0);
+                int i;
+                for(i = 1; i < sov1; i++)
+                  Instruction(OP_ST_XP, r16);
 
                 FwdAddrIsNow(noChar);
                 break;
@@ -3863,25 +3996,6 @@ static void CompileFromIntermediate(void)
                     addr = AddrOfRungN[rung].FwdAddr;
                 }
                 InstructionJMP(addr);
-                /*
-                if(rung > rungNow) {
-                    if(Prog.mcu->core >= ClassicCore8K) {
-                        Instruction(OP_LDI, ZL, FWD_LO(addr));
-                        Instruction(OP_LDI, ZH, FWD_HI(addr));
-                        Instruction(OP_IJMP, addr);
-                    } else {
-                        Instruction(OP_RJMP, addr);
-                    }
-                } else {
-                    if(Prog.mcu->core >= ClassicCore8K) {
-                        Instruction(OP_LDI, ZL, addr & 0xff);
-                        Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
-                        Instruction(OP_IJMP, addr);
-                    } else {
-                        Instruction(OP_RJMP, addr);
-                    }
-                }
-                */
                 break;
             }
             case INT_GOSUB: {
@@ -3900,16 +4014,6 @@ static void CompileFromIntermediate(void)
 
                 if(addrOfTable == 0) {
                     DWORD SkipData = AllocFwdAddr();
-                    /*
-                    if(Prog.mcu->core >= ClassicCore8K) {
-                        Instruction(OP_LDI, ZL, FWD_LO(SkipData));
-                        Instruction(OP_LDI, ZH, FWD_HI(SkipData));
-                      //Instruction(OP_LDI, ZH, SkipData); //cause error
-                        Instruction(OP_IJMP, SkipData, 0);
-                    } else {
-                        Instruction(OP_RJMP, SkipData, 0);
-                    }
-                    */
                     InstructionJMP(SkipData);
                     InitTable(a);
                     FwdAddrIsNow(SkipData);
@@ -4675,7 +4779,9 @@ void CompileAvr(char *outFile)
     if(McuAs(" AT90USB82 ")
     || McuAs(" AT90USB162 ")
     ){
-        REG_TCCR0  = 0x45
+        REG_TCCR0B = 0x45
+            WGM00   = BIT;
+            WGM01   = BIT;
         REG_TCNT0  = 0x46
 
       //TIFR bits
@@ -4694,42 +4800,57 @@ void CompileAvr(char *outFile)
     || McuAs(" AT90USB1286 ")
     || McuAs(" AT90USB1287 ")
     ){
-        REG_TCCR0  = 0x45;
-        REG_TCNT0  = 0x46;
+        REG_OCR0A   = 0x47;
+        REG_TCCR0A  = 0x44;
+        REG_TCCR0B  = 0x45;
+            WGM00   = BIT0;
+            WGM01   = BIT1;
+        REG_TCNT0   = 0x46;
 
-        REG_OCR1AH  = 0x89;
-        REG_OCR1AL  = 0x88;
-        REG_TCCR1A  = 0x80;
-        REG_TCCR1B  = 0x81;
-
-        REG_TIMSK   = 0x6F;
-            OCIE1A  = BIT1;
-            TOIE1   = BIT0;
-            TOIE0   = BIT0;
         REG_TIFR1   = 0x36;
             OCF1A   = BIT1;
             TOV1    = BIT0;
         REG_TIFR0   = 0x35;
+            OCF0A   = BIT1;
             TOV0    = BIT0;
 
-        REG_UDR     = 0xCE;
-        REG_UBRRH   = 0xCD;
-        REG_UBRRL   = 0xCC;
-        REG_UCSRB   = 0xC9;
-        REG_UCSRA   = 0xC8;
-
-        REG_OCR2    = 0xB3;   // OCR2A
+        REG_OCR2    = 0xB3; // OCR2A
         REG_TCCR2B  = 0xB1;
-        REG_TCCR2   = 0xB0;   // TCCR2A
+        REG_TCCR2   = 0xB0; // TCCR2A
             WGM20   = BIT0;
             WGM21   = BIT1;
-            COM21   = BIT7;   // COM2A1
-            COM20   = BIT6;   // COM2A0
+            COM21   = BIT7; // COM2A1
+            COM20   = BIT6; // COM2A0
 
         REG_EEARH   = 0x42;
         REG_EEARL   = 0x41;
         REG_EEDR    = 0x40;
         REG_EECR    = 0x3F;
+
+        REG_ADMUX   = 0x7C;
+        REG_ADCSRB  = 0x7B;
+        REG_ADCSRA  = 0x7A;
+        REG_ADCH    = 0x79;
+        REG_ADCL    = 0x78;
+
+        REG_WDTCR   = 0x60;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+        REG_TIMSK   = 0x6F;
+            OCIE1A  = BIT1;
+            TOIE1   = BIT0;
+            TOIE0   = BIT0;
+
+        REG_UDR     = 0xCE;
+        REG_UBRRH   = 0xCD;
+        REG_UBRRL   = 0xCC;
+//      REG_UCSRC   = 0xCA;
+        REG_UCSRB   = 0xC9;
+        REG_UCSRA   = 0xC8;
 
         REG_GTCCR   = 0x43;
 
@@ -4755,23 +4876,24 @@ void CompileAvr(char *outFile)
     if(McuAs(" ATmega16U4 ") ||
        McuAs(" ATmega32U4 ")
     ){
-        REG_TCCR0  = 0x45;
-        REG_TCNT0  = 0x46;
+        REG_OCR0A   = 0x47;
+        REG_TCCR0A  = 0x44;
+        REG_TCCR0B  = 0x45;
+            WGM00   = BIT0;
+            WGM01   = BIT1;
+        REG_TCNT0   = 0x46;
 
-        REG_OCR1AH  = 0x89;
-        REG_OCR1AL  = 0x88;
-        REG_TCCR1A  = 0x80;
-        REG_TCCR1B  = 0x81;
-
-        REG_TIMSK   = 0x6f;
-            OCIE1A  = BIT1;
-            TOIE1   = BIT0;
-            TOIE0   = BIT0;
         REG_TIFR1   = 0x36; // TIFR
-        REG_TIFR0   = 0x35; // TIFR
             OCF1A   = BIT1;
             TOV1    = BIT0;
+        REG_TIFR0   = 0x35; // TIFR
+            OCF0A   = BIT1;
             TOV0    = BIT0;
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
 
         REG_ADMUX   = 0x7C;
         REG_ADCSRB  = 0x7B;
@@ -4779,10 +4901,17 @@ void CompileAvr(char *outFile)
         REG_ADCH    = 0x79;
         REG_ADCL    = 0x78;
 
-        REG_EEARH   = 0x42;
-        REG_EEARL   = 0x41;
-        REG_EEDR    = 0x40;
-        REG_EECR    = 0x3F;
+        REG_WDTCR   = 0x60;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+        REG_TIMSK   = 0x6f;
+            OCIE1A  = BIT1;
+            TOIE1   = BIT0;
+            TOIE0   = BIT0;
 
         REG_UDR     = 0xCE;
         REG_UBRRH   = 0xCD;
@@ -4819,35 +4948,32 @@ void CompileAvr(char *outFile)
        McuAs("Atmel AVR ATmega168 ") ||
        McuAs("Atmel AVR ATmega328 ")
     ){
-        REG_TCCR0   = 0x45;
+        REG_OCR0A   = 0x47;
+        REG_TCCR0A  = 0x44;
+        REG_TCCR0B  = 0x45;
+            WGM00   = BIT0;
+            WGM01   = BIT1;
         REG_TCNT0   = 0x46;
 
-        REG_OCR1AH  = 0x89;
-        REG_OCR1AL  = 0x88;
-        REG_TCCR1A  = 0x80;
-        REG_TCCR1B  = 0x81;
-
-        REG_TIMSK   = 0x6F;   // TIMSK1
         REG_TIFR1   = 0x36;
             OCF1A   = BIT1;
             TOV1    = BIT0;
         REG_TIFR0   = 0x35;
+            OCF0A   = BIT1;
             TOV0    = BIT0;
 
-        REG_UDR     = 0xC6;   // UDR0
-        REG_UBRRH   = 0xC5;   // UBRR0H
-        REG_UBRRL   = 0xC4;   // UBRR0L
-//      REG_UCSRC   = 0xC2;   // UCSR0C
-        REG_UCSRB   = 0xC1;   // UCSR0B
-        REG_UCSRA   = 0xC0;   // UCSR0A
-
-        REG_OCR2    = 0xB3;   // OCR2A
+        REG_OCR2    = 0xB3; // OCR2A
         REG_TCCR2B  = 0xB1;
-        REG_TCCR2   = 0xB0;   // TCCR2A
+        REG_TCCR2   = 0xB0; // TCCR2A
             WGM20   = BIT0;
             WGM21   = BIT1;
-            COM21   = BIT7;   // COM2A1
-            COM20   = BIT6;   // COM2A0
+            COM21   = BIT7; // COM2A1
+            COM20   = BIT6; // COM2A0
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
 
         REG_ADMUX   = 0x7C;
         REG_ADCSRB  = 0x7B;
@@ -4855,10 +4981,21 @@ void CompileAvr(char *outFile)
         REG_ADCH    = 0x79;
         REG_ADCL    = 0x78;
 
-        REG_EEARH   = 0x42;
-        REG_EEARL   = 0x41;
-        REG_EEDR    = 0x40;
-        REG_EECR    = 0x3F;
+        REG_WDTCR   = 0x60;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+        REG_TIMSK   = 0x6F; // TIMSK1
+
+        REG_UDR     = 0xC6; // UDR0
+        REG_UBRRH   = 0xC5; // UBRR0H
+        REG_UBRRL   = 0xC4; // UBRR0L
+//      REG_UCSRC   = 0xC2; // UCSR0C
+        REG_UCSRB   = 0xC1; // UCSR0B
+        REG_UCSRA   = 0xC0; // UCSR0A
 
         REG_GTCCR   = 0x43;
 
@@ -4885,40 +5022,54 @@ void CompileAvr(char *outFile)
        McuAs("Atmel AVR ATmega644 ") ||
        McuAs("Atmel AVR ATmega1284 ")
     ){
-        REG_TCCR0  = 0x45;
-        REG_TCNT0  = 0x46;
+        REG_OCR0A   = 0x47;
+        REG_TCCR0A  = 0x44;
+        REG_TCCR0B  = 0x45;
+            WGM00   = BIT0;
+            WGM01   = BIT1;
+        REG_TCNT0   = 0x46;
 
-        REG_OCR1AH  = 0x89;
-        REG_OCR1AL  = 0x88;
-        REG_TCCR1B  = 0x81;
-        REG_TCCR1A  = 0x80;
-
-        REG_TIMSK   = 0x6F;   // TIMSK1
         REG_TIFR1   = 0x36;
             OCF1A   = BIT1;
             TOV1    = BIT0;
         REG_TIFR0   = 0x35;
+            OCF0A   = BIT1;
             TOV0    = BIT0;
 
-        REG_UDR     = 0xC6;   // UDR0
-        REG_UBRRH   = 0xC5;   // UBRR0H
-        REG_UBRRL   = 0xC4;   // UBRR0L
-//      REG_UCSRC   = 0xC2;   // UCSR0C
-        REG_UCSRB   = 0xC1;   // UCSR0B
-        REG_UCSRA   = 0xC0;   // UCSR0A
+        REG_OCR2    = 0xB3; // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0; // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7; // COM2A1
+            COM20   = BIT6; // COM2A0
 
         REG_EEARH   = 0x42;
         REG_EEARL   = 0x41;
         REG_EEDR    = 0x40;
         REG_EECR    = 0x3F;
 
-        REG_OCR2    = 0xB3;   // OCR2A
-        REG_TCCR2B  = 0xB1;
-        REG_TCCR2   = 0xB0;   // TCCR2A
-            WGM20   = BIT0;
-            WGM21   = BIT1;
-            COM21   = BIT7;   // COM2A1
-            COM20   = BIT6;   // COM2A0
+        REG_ADMUX   = 0x7C;
+        REG_ADCSRB  = 0x7B;
+        REG_ADCSRA  = 0x7A;
+        REG_ADCH    = 0x79;
+        REG_ADCL    = 0x78;
+
+        REG_WDTCR   = 0x60;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+        REG_TIMSK   = 0x6F; // TIMSK1
+
+        REG_UDR     = 0xC6; // UDR0
+        REG_UBRRH   = 0xC5; // UBRR0H
+        REG_UBRRL   = 0xC4; // UBRR0L
+//      REG_UCSRC   = 0xC2; // UCSR0C
+        REG_UCSRB   = 0xC1; // UCSR0B
+        REG_UCSRA   = 0xC0; // UCSR0A
 
         REG_GTCCR   = 0x43;
 
@@ -4946,27 +5097,32 @@ void CompileAvr(char *outFile)
        McuAs(" ATmega2560 ") ||
        McuAs(" ATmega2561 ")
     ){
-        REG_TCCR0  = 0x45;
-        REG_TCNT0  = 0x46;
+        REG_OCR0A   = 0x47;
+        REG_TCCR0A  = 0x44;
+        REG_TCCR0B  = 0x45;
+            WGM00   = BIT0;
+            WGM01   = BIT1;
+        REG_TCNT0   = 0x46;
 
-        REG_OCR1AH  = 0x89;
-        REG_OCR1AL  = 0x88;
-        REG_TCCR1B  = 0x81;
-        REG_TCCR1A  = 0x80;
-
-        REG_TIMSK   = 0x6F;   // TIMSK1
         REG_TIFR1   = 0x36;
             OCF1A   = BIT1;
             TOV1    = BIT0;
         REG_TIFR0   = 0x35;
+            OCF0A   = BIT1;
             TOV0    = BIT0;
 
-        REG_UDR     = 0xC6;   // UDR0
-        REG_UBRRH   = 0xC5;   // UBRR0H
-        REG_UBRRL   = 0xC4;   // UBRR0L
-//      REG_UCSRC   = 0xC2;   // UCSR0C
-        REG_UCSRB   = 0xC1;   // UCSR0B
-        REG_UCSRA   = 0xC0;   // UCSR0A
+        REG_OCR2    = 0xB3; // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0; // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7; // COM2A1
+            COM20   = BIT6; // COM2A0
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
 
         REG_ADMUX   = 0x7C;
         REG_ADCSRB  = 0x7B;
@@ -4974,13 +5130,21 @@ void CompileAvr(char *outFile)
         REG_ADCH    = 0x79;
         REG_ADCL    = 0x78;
 
-        REG_OCR2    = 0xB3;   // OCR2A
-        REG_TCCR2B  = 0xB1;
-        REG_TCCR2   = 0xB0;   // TCCR2A
-            WGM20   = BIT0;
-            WGM21   = BIT1;
-            COM21   = BIT7;   // COM2A1
-            COM20   = BIT6;   // COM2A0
+        REG_WDTCR   = 0x60;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+        REG_TIMSK   = 0x6F; // TIMSK1
+
+        REG_UDR     = 0xC6; // UDR0
+        REG_UBRRH   = 0xC5; // UBRR0H
+        REG_UBRRL   = 0xC4; // UBRR0L
+//      REG_UCSRC   = 0xC2; // UCSR0C
+        REG_UCSRB   = 0xC1; // UCSR0B
+        REG_UCSRA   = 0xC0; // UCSR0A
 
         REG_GTCCR   = 0x43;
 
@@ -5008,8 +5172,45 @@ void CompileAvr(char *outFile)
     || McuAs("Atmel AVR ATmega162 ")
     || McuAs(" ATmega8515 ")
     ){
-        REG_TCCR0  = 0x53;
-        REG_TCNT0  = 0x52;
+        REG_OCR0A   = 0x51;  // OCR0
+        REG_TCCR0A  = 0x53;  // TCCR0
+        REG_TCCR0B  = 0x53;  // TCCR0
+            WGM00   = BIT6;
+            WGM01   = BIT3;
+        REG_TCNT0   = 0x52;
+
+        REG_TIFR1   = 0x58;  // TIFR
+            OCF1A   = BIT6;
+            TOV1    = BIT7;
+        REG_TIFR0   = 0x58;  // TIFR
+            OCF0A   = BIT0;
+            TOV0    = BIT1;
+
+      if(McuAs(" ATmega161 ")
+      || McuAs("Atmel AVR ATmega162 ")
+      ){
+        REG_OCR2    = 0x43;
+      //REG_TCCR2B  = 0;
+        REG_TCCR2   = 0x45;
+            WGM20   = BIT6;
+            WGM21   = BIT3;
+            COM21   = BIT5;
+            COM20   = BIT4;
+      }
+
+        REG_EEARH   = 0x3F;
+        REG_EEARL   = 0x3E;
+        REG_EEDR    = 0x3D;
+        REG_EECR    = 0x3C;
+
+        /*
+        REG_ADMUX   = 0; // No ADC
+        REG_ADCSRA  = 0;
+    ////REG_ADCSRB  = 0;
+        REG_ADCH    = 0;
+        REG_ADCL    = 0;
+        */
+        REG_WDTCR   = 0x41;
 
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
@@ -5020,11 +5221,6 @@ void CompileAvr(char *outFile)
             TOIE1   = BIT7;
             OCIE1A  = BIT6;
             TOIE0   = BIT1;
-        REG_TIFR1   = 0x58;  // TIFR
-        REG_TIFR0   = 0x58;  // TIFR
-            TOV1    = BIT7;
-            OCF1A   = BIT6;
-            TOV0    = BIT1;
 
 //      REG_UCSRC   = 0x40;
         REG_UBRRH   = 0x40;
@@ -5058,8 +5254,43 @@ void CompileAvr(char *outFile)
     if(McuAs("Atmel AVR ATmega8 ")  ||
        McuAs("Atmel AVR ATmega32 ")
     ){
-        REG_TCCR0  = 0x53;
-        REG_TCNT0  = 0x52;
+        REG_OCR0A   = 0x51;  // OCR0
+        REG_TCCR0A  = 0x53; // TCCR0
+        REG_TCCR0B  = 0x53; // TCCR0
+        if(McuAs("Atmel AVR ATmega32 ")
+        ){
+            WGM00   = BIT6;
+            WGM01   = BIT3;
+        }
+        REG_TCNT0   = 0x52;
+
+        REG_TIFR1   = 0x58; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+        REG_TIFR0   = 0x58; // TIFR
+            OCF0A   = BIT1;
+            TOV0    = BIT0;
+
+        REG_OCR2    = 0x43;
+      //REG_TCCR2B  = 0;
+        REG_TCCR2   = 0x45;
+            WGM20   = BIT6;
+            WGM21   = BIT3;
+            COM21   = BIT5;
+            COM20   = BIT4;
+
+        REG_EEARH   = 0x3F;
+        REG_EEARL   = 0x3E;
+        REG_EEDR    = 0x3D;
+        REG_EECR    = 0x3C;
+
+        REG_ADMUX   = 0x27;
+        REG_ADCSRA  = 0x26;
+    ////REG_ADCSRB  = 0;
+        REG_ADCH    = 0x25;
+        REG_ADCL    = 0x24;
+
+        REG_WDTCR   = 0x41;
 
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
@@ -5070,11 +5301,6 @@ void CompileAvr(char *outFile)
             OCIE1A  = BIT4;
             TOIE1   = BIT2;
             TOIE0   = BIT0;
-        REG_TIFR1   = 0x58; // TIFR
-        REG_TIFR0   = 0x58; // TIFR
-            OCF1A   = BIT4;
-            TOV1    = BIT2;
-            TOV0    = BIT0;
 
 //      REG_UCSRC   = 0x40;
         REG_UBRRH   = 0x40;
@@ -5105,8 +5331,40 @@ void CompileAvr(char *outFile)
     } else
     if(McuAs("Atmel AVR ATmega16 ")
     ){
-        REG_TCCR0  = 0x53;
-        REG_TCNT0  = 0x52;
+        REG_OCR0A   = 0x51;  // OCR0
+        REG_TCCR0A  = 0x53; // TCCR0
+        REG_TCCR0B  = 0x53; // TCCR0
+            WGM00   = BIT6;
+            WGM01   = BIT3;
+        REG_TCNT0   = 0x52;
+
+        REG_TIFR1   = 0x58; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+        REG_TIFR0   = 0x58; // TIFR
+            OCF0A   = BIT1;
+            TOV0    = BIT0;
+
+        REG_OCR2    = 0x43;
+      //REG_TCCR2B  = 0;
+        REG_TCCR2   = 0x45;
+            WGM20   = BIT6;
+            WGM21   = BIT3;
+            COM21   = BIT5;
+            COM20   = BIT4;
+
+        REG_EEARH   = 0x3F;
+        REG_EEARL   = 0x3E;
+        REG_EEDR    = 0x3D;
+        REG_EECR    = 0x3C;
+
+        REG_ADMUX   = 0x27;
+        REG_ADCSRA  = 0x26;
+    ////REG_ADCSRB  = 0;
+        REG_ADCH    = 0x25;
+        REG_ADCL    = 0x24;
+
+        REG_WDTCR   = 0x41;
 
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
@@ -5117,11 +5375,6 @@ void CompileAvr(char *outFile)
             OCIE1A  = BIT4;
             TOIE1   = BIT2;
             TOIE0   = BIT0;
-        REG_TIFR1   = 0x58; // TIFR
-        REG_TIFR0   = 0x58; // TIFR
-            OCF1A   = BIT4;
-            TOV1    = BIT2;
-            TOV0    = BIT0;
 
 //      REG_UCSRC   = 0x40;
         REG_UBRRH   = 0x40;
@@ -5153,8 +5406,40 @@ void CompileAvr(char *outFile)
     if(McuAs("Atmel AVR ATmega64 ") ||
        McuAs("Atmel AVR ATmega128 ")
     ){
-        REG_TCCR0   = 0x53;
+        REG_OCR0A   = 0x51;  // OCR0
+        REG_TCCR0A  = 0x53; // TCCR0
+        REG_TCCR0B  = 0x53; // TCCR0
+            WGM00   = BIT6;
+            WGM01   = BIT3;
         REG_TCNT0   = 0x52;
+
+        REG_TIFR1   = 0x56; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+        REG_TIFR0   = 0x56; // TIFR
+            OCF0A   = BIT1;
+            TOV0    = BIT0;
+
+        REG_OCR2    = 0x43;
+      //REG_TCCR2B  = 0;
+        REG_TCCR2   = 0x45;
+            WGM20   = BIT6;
+            WGM21   = BIT3;
+            COM21   = BIT5;
+            COM20   = BIT4;
+
+        REG_EEARH   = 0x3F;
+        REG_EEARL   = 0x3E;
+        REG_EEDR    = 0x3D;
+        REG_EECR    = 0x3C;
+
+        REG_ADMUX   = 0x27;
+        REG_ADCSRA  = 0x26;
+    ////REG_ADCSRB  = 0x8E; // only ATmega64
+        REG_ADCH    = 0x25;
+        REG_ADCL    = 0x24;
+
+        REG_WDTCR   = 0x41;
 
         REG_OCR1AH  = 0x4B;
         REG_OCR1AL  = 0x4A;
@@ -5165,11 +5450,6 @@ void CompileAvr(char *outFile)
             OCIE1A  = BIT4;
             TOIE1   = BIT2;
             TOIE0   = BIT0;
-        REG_TIFR1   = 0x56; // TIFR
-        REG_TIFR0   = 0x56; // TIFR
-            OCF1A   = BIT4;
-            TOV1    = BIT2;
-            TOV0    = BIT0;
 
         REG_UBRRH   = 0x98; // UBRR1H
         REG_UBRRL   = 0x99; // UBRR1L
@@ -5198,6 +5478,76 @@ void CompileAvr(char *outFile)
         REG_int_flag= 0x58; // EIFR
             INTF1   = BIT1;
             INTF0   = BIT0;
+    } else
+    if(McuAs(" ATtiny85 ")
+    ){
+        REG_OCR0A   = 0x49;
+        REG_TCCR0A  = 0x4A;
+        REG_TCCR0B  = 0x53;
+            WGM00   = BIT0;
+            WGM01   = BIT1;
+        REG_TCNT0   = 0x52;
+
+        REG_TIFR1   = 0x36;
+            OCF1A   = BIT1;
+            TOV1    = BIT0;
+        REG_TIFR0   = 0x35;
+            OCF0A   = BIT1;
+            TOV0    = BIT0;
+
+        REG_OCR2    = 0xB3; // OCR2A
+        REG_TCCR2B  = 0xB1;
+        REG_TCCR2   = 0xB0; // TCCR2A
+            WGM20   = BIT0;
+            WGM21   = BIT1;
+            COM21   = BIT7; // COM2A1
+            COM20   = BIT6; // COM2A0
+
+        REG_EEARH   = 0x42;
+        REG_EEARL   = 0x41;
+        REG_EEDR    = 0x40;
+        REG_EECR    = 0x3F;
+
+        REG_ADMUX   = 0x7C;
+        REG_ADCSRB  = 0x7B;
+        REG_ADCSRA  = 0x7A;
+        REG_ADCH    = 0x79;
+        REG_ADCL    = 0x78;
+
+        REG_WDTCR   = 0x60;
+
+        REG_OCR1AH  = 0x89;
+        REG_OCR1AL  = 0x88;
+        REG_TCCR1B  = 0x81;
+        REG_TCCR1A  = 0x80;
+
+        REG_TIMSK   = 0x6F; // TIMSK1
+
+        REG_UDR     = 0xC6; // UDR0
+        REG_UBRRH   = 0xC5; // UBRR0H
+        REG_UBRRL   = 0xC4; // UBRR0L
+//      REG_UCSRC   = 0xC2; // UCSR0C
+        REG_UCSRB   = 0xC1; // UCSR0B
+        REG_UCSRA   = 0xC0; // UCSR0A
+
+        REG_GTCCR   = 0x43;
+
+        REG_sleep   = 0x53; // REG_SMCR
+            SE      = BIT0;
+            SM0     = BIT1;
+            SM1     = BIT2;
+            SM2     = BIT3;
+
+        REG_int_sup = 0x69;
+//      REG_EICRA   = 0x69;
+
+        REG_int_en  = 0x3D; // REG_EIMSK
+            INT1    = BIT1;
+            INT0    = BIT0;
+
+        REG_int_flag= 0x3C; // REG_EIFR
+            INTF1   = BIT1;
+            INTF0   = BIT0;
     /*
     } else
     if(McuAs(" ATmega163 ")
@@ -5209,6 +5559,8 @@ void CompileAvr(char *outFile)
             SM0         = BIT4;
 
       //REG_TCCR0  = 0x45
+            WGM00   = BIT;
+            WGM01   = BIT;
       //REG_TCNT0  = 0x46
 
       //TIFR bits
@@ -5223,6 +5575,8 @@ void CompileAvr(char *outFile)
     if(McuAs("Atmel AVR ATmega103 ")
     ){
       //REG_TCCR0  = 0x45
+            WGM00   = BIT;
+            WGM01   = BIT;
       //REG_TCNT0  = 0x46
 
         REG_OCR1AH  = 0x4B;
@@ -5271,10 +5625,12 @@ void CompileAvr(char *outFile)
     if(EepromFunctionUsed()) {
         // Where we hold the high byte to program in EEPROM while the low byte
         // programs.
-        EepromHighByte = AllocOctetRam();
+        // Allocate 2 bytes needed for 24 bit integers variables.
+        EepromHighByte = AllocOctetRam();  // 16 bit integer high byte or 24 bit integer middle byte.
+        AllocateNextByte = AllocOctetRam(); // 24 bit integer high byte.
+        EepromHighBytesCounter = AllocOctetRam();
         AllocBitRam(&EepromHighByteWaitingAddr, &EepromHighByteWaitingBit);
     }
-
     rungNow = -50;
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     WriteRuntime();

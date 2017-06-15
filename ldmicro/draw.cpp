@@ -258,6 +258,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
 int CountHeightOfElement(int which, void *elem)
 {
     switch(which) {
+        //case ELEM_PADDING:
         CASE_LEAF
             return 1;
 

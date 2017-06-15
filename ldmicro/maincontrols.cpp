@@ -317,6 +317,8 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_LD,  _("Open ld in notepad\tF4"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_HEX, _("Open hex in notepad\tAlt+F6"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_ASM, _("Open asm in notepad\tAlt+F3"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_C,   _("Open c in notepad"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_H,   _("Open h in notepad"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tAlt+F5"));
     AppendMenu(FileMenu, MF_STRING,   MNU_EXPLORE_DIR, _("Explore ld directory"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
@@ -329,7 +331,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_TXT, _("Open Text in notepad\tF3"));
 
     AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
-    AppendMenu(FileMenu, MF_STRING,   MNU_EXIT,   _("E&xit"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_EXIT,   _("E&xit\tAlt+X"));
 
     EditMenu = CreatePopupMenu();
     AppendMenu(EditMenu, MF_STRING, MNU_UNDO, _("&Undo\tCtrl+Z or Alt+Backspace"));
@@ -614,7 +616,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction,_("&Special Function for AVR"));
 
     settings = CreatePopupMenu();
-    AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters..."));
+    AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
     ProcessorMenu = CreatePopupMenu();
     Core core = SupportedMcus[0].core;
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
@@ -674,11 +676,14 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEXDONE,      _("DONE: Compile HEX->ASM"));
     AppendMenu(compile, MF_SEPARATOR, 0, NULL);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,         _("Compile ANSIC"));
+    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_HI_TECH_C,     _("DONE: Compile HI-TECH C for PIC"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_CCS_PIC_C,     _("DONE: Compile CCS C for PIC"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_GNUC,          _("DONE: Compile AVR-GCC, Atmel AVR Toolchain, WinAVR"));
+    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_GNUC,          _("DONE: Compile AVR-GCC, Atmel AVR Toolchain, WinAVR C"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_CODEVISIONAVR, _("DONE: Compile CodeVisionAVR C"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO,       _("DONE: Compile C for ARDUINO"));
+    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO,       _("DONE: Compile Sketch for ARDUINO"));
     AppendMenu(compile, MF_SEPARATOR, 0, NULL);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("DONE: Compile PASCAL"));
     AppendMenu(compile, MF_SEPARATOR, 0, NULL);
@@ -701,10 +706,11 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
     AppendMenu(help, MF_STRING, MNU_HOW, _("HOW TO:..."));
     AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
-    AppendMenu(help, MF_STRING, MNU_FORUM, _("LDmicro Forum..."));
-    AppendMenu(help, MF_STRING, MNU_EMAIL, _("E-mail..."));
+    AppendMenu(help, MF_STRING, MNU_RELEASE, _("Releases..."));
     AppendMenu(help, MF_STRING, MNU_CHANGES, _("Latest release changes..."));
-    AppendMenu(help, MF_STRING, MNU_RELEASE, _("Release..."));
+    AppendMenu(help, MF_STRING, MNU_FORUM, _("LDmicro Forum..."));
+    AppendMenu(help, MF_STRING, MNU_ISSUE, _("Create new issue..."));
+    AppendMenu(help, MF_STRING, MNU_EMAIL, _("E-mail..."));
 
     TopMenu = CreateMenu();
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)FileMenu, _("&File"));

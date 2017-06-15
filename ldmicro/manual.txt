@@ -599,6 +599,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     instruction). These instructions must therefore be used in pairs:
     one to (maybe conditionally) start the possibly-disabled section,
     and one to end it.
+    https://github.com/LDmicro/LDmicro/wiki/MASTER-CONTROL-RELAY
 
 
 > MOVE                      {destvar :=  }      {Tret :=     }

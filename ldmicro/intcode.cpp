@@ -1824,8 +1824,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         }
 
         case ELEM_IF_BIT_SET:
+            Comment(3, "ELEM_IF_BIT_SET");
             break;
         case ELEM_IF_BIT_CLEAR:
+            Comment(3, "ELEM_IF_BIT_CLEAR");
             break;
 
         case ELEM_ONE_SHOT_RISING: {
@@ -2164,7 +2166,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 break;
         }
         case ELEM_SET_BIT:
+                Comment(3, "ELEM_SET_BIT");
         case ELEM_CLEAR_BIT:
+                Comment(3, "ELEM_CLEAR_BIT");
                 break;
         {
         int intOp;

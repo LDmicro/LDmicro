@@ -154,5 +154,6 @@ void ShowResetDialog(char *name)
     }
 
     EnableWindow(MainWindow, TRUE);
+    SetFocus(MainWindow);
     DestroyWindow(ResetDialog);
 }

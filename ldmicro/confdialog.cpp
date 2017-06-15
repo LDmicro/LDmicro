@@ -36,7 +36,6 @@ static HWND ConfigBitsTextbox;
 static HWND CycleTextbox;
 static HWND TimerTextbox;
 static HWND YPlcCycleDutyCheckbox;
-//static HWND WDTECheckbox; // obsolete
 static HWND BaudTextbox;
 
 static LONG_PTR PrevCrystalProc;
@@ -100,12 +99,7 @@ static void MakeControls(void)
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         370, 13, 100, 20, ConfDialog, NULL, Instance, NULL);
     NiceFont(YPlcCycleDutyCheckbox);
-/*
-    WDTECheckbox = CreateWindowEx(0, WC_BUTTON, _("WDT enable"),
-        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        370, 43, 100, 20, ConfDialog, NULL, Instance, NULL);
-    NiceFont(WDTECheckbox);
-*/
+
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC,
         _("MCU Crystal Frequency (MHz):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -172,65 +166,55 @@ static void MakeControls(void)
     char txt[1024*4] = "";
     char explanation[1024*4] = "";
 
-    BOOL b;
-    int cycleTimeMin;
-    int cycleTimeMax;
-    int prescaler;
-    int sc;
-    int divider;
-    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_AVR)) {
-        b=CalcAvrTimerPlcCycle(Prog.cycleTime,
-            &prescaler,
-            &sc,
-            &divider,
-            &cycleTimeMin,
-            &cycleTimeMax);
-    } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PIC16)) {
-        b=CalcPicTimerPlcCycle(Prog.cycleTime,
-            &cycleTimeMin,
-            &cycleTimeMax);
-    }
-
-    if((Prog.mcu && (Prog.mcu->whichIsa == ISA_AVR))
-    || (Prog.mcu && (Prog.mcu->whichIsa == ISA_PIC16))) {
-        char s1[3];
-        char s2[3];
-        double _cycleTimeMin = SIprefix(1.0*cycleTimeMin/1e6,s1);
-        double _cycleTimeMax = SIprefix(1.0*cycleTimeMax/1e6,s2);
-        sprintf(txt,"Available PLC Cycle Time: min=%.6g %ss, max=%d ms (%.6g %ss)\n",
-            _cycleTimeMin, s1, cycleTimeMax/1000, _cycleTimeMax, s2);
+    BOOL b = FALSE;
+    if(Prog.mcu) {
+        if(Prog.mcu->whichIsa == ISA_AVR) {
+            b=CalcAvrPlcCycle(Prog.cycleTime);
+        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+            b=CalcPicPlcCycle(Prog.cycleTime);
+        }
+        char s1[100];
+        char s2[100];
+        double _cycleTimeMin = SIprefix(1.0*plcTmr.cycleTimeMin/1e6,s1);
+        double _cycleTimeMax = SIprefix(1.0*plcTmr.cycleTimeMax/1e6,s2);
+        sprintf(txt,"Available PLC Cycle Time: min=%.6g %ss, max=%lld ms (%.6g %ss)\n",
+            _cycleTimeMin, s1, plcTmr.cycleTimeMax/1000, _cycleTimeMax, s2);
         strcat(explanation,txt);
         if(b) {
-            if(Prog.mcu && (Prog.mcu->whichIsa == ISA_AVR)) {
-                double _cycleTimeNow = SIprefix(1.0*prescaler*divider/Prog.mcuClock,s2);
-                sprintf(txt,"Fact PLC Cycle Time=%.6g %ss with clocksPerCycle=%d\n",
-                    _cycleTimeNow, s2, prescaler*divider);
-                strcat(explanation,txt);
-
-                sprintf(txt,"MCU PLC Timer%d: prescaler=%d, divider=%d\n",
-                    Prog.cycleTimer, prescaler, divider);
-                strcat(explanation,txt);
-                sprintf(txt,"\n");
-                strcat(explanation,txt);
-            }
-            double minDelay;
-            minDelay = SIprefix(1.0 * Prog.cycleTime / 1000000, s2); //s
-            sprintf(txt,"TON,TOF,RTO min Delay=%.6g ms (%.6g %ss)\n", 1.0 * Prog.cycleTime / 1000, minDelay, s2);
+            sprintf(txt,"MCU PLC Timer%d: TMR%d=%d, prescaler=%d, softDivisor=%d\n",
+                Prog.cycleTimer, Prog.cycleTimer, plcTmr.tmr, plcTmr.prescaler, plcTmr.softDivisor);
             strcat(explanation,txt);
 
-            double maxDelay;
-            maxDelay = SIprefix(1.0 * 0x7f * Prog.cycleTime / 1000000, s2); //s
-            sprintf(txt,"TON,TOF,RTO  8bit max Delay=%.6g %ss\n", maxDelay, s2);
+            sprintf(txt,"%030lld=TicksPerCycle\n%030lld=In fact\n",
+                plcTmr.ticksPerCycle, long long int(plcTmr.prescaler) * long long int(plcTmr.softDivisor) * long long int(plcTmr.tmr));
             strcat(explanation,txt);
 
-            maxDelay = SIprefix(1.0 * 0x7fff * Prog.cycleTime / 1000000, s2); //s
-            sprintf(txt,"TON,TOF,RTO 16bit max Delay=%.6g %ss\n", maxDelay, s2);
-            strcat(explanation,txt);
-
-            maxDelay = SIprefix(1.0 * 0x7fFFff * Prog.cycleTime / 1000000, s2); //s
-            sprintf(txt,"TON,TOF,RTO 24bit max Delay=%.6g %ss\n", maxDelay, s2);
+            double _TCycle = SIprefix(1.0*plcTmr.TCycle,s1);
+            double _Fcycle = SIprefix(1.0*plcTmr.Fcycle,s2);
+            sprintf(txt,_("In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, TCycle deviation=%f%%\n"), _TCycle, s1, _Fcycle, s2, (1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime);
             strcat(explanation,txt);
         }
+        sprintf(txt,"\n");
+        strcat(explanation,txt);
+
+        double minDelay;
+        minDelay = SIprefix(1.0 * Prog.cycleTime / 1000000, s2); //s
+        sprintf(txt,"TON,TOF,RTO min Delay=%.6g ms (%.6g %ss)\n", 1.0 * Prog.cycleTime / 1000, minDelay, s2);
+        strcat(explanation,txt);
+
+        double maxDelay;
+        maxDelay = SIprefix(1.0 * 0x7f * Prog.cycleTime / 1000000, s2); //s
+        sprintf(txt,"TON,TOF,RTO  8bit max Delay=%.6g %ss\n", maxDelay, s2);
+        strcat(explanation,txt);
+
+        maxDelay = SIprefix(1.0 * 0x7fff * Prog.cycleTime / 1000000, s2); //s
+        sprintf(txt,"TON,TOF,RTO 16bit max Delay=%.6g %ss\n", maxDelay, s2);
+        strcat(explanation,txt);
+
+        maxDelay = SIprefix(1.0 * 0x7fFFff * Prog.cycleTime / 1000000, s2); //s
+        sprintf(txt,"TON,TOF,RTO 24bit max Delay=%.6g %ss\n", maxDelay, s2);
+        strcat(explanation,txt);
+
         sprintf(txt,"\n");
         strcat(explanation,txt);
     }
@@ -318,11 +302,7 @@ void ShowConfDialog(void)
     if(Prog.cycleDuty) {
         SendMessage(YPlcCycleDutyCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
-/*
-    if(Prog.WDTE) {
-        SendMessage(WDTECheckbox, BM_SETCHECK, BST_CHECKED, 0);
-    }
-*/
+
     sprintf(buf, "%.6f", Prog.mcuClock / 1e6); //Hz show as MHz
     SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
@@ -385,13 +365,6 @@ void ShowConfDialog(void)
         } else {
             Prog.cycleDuty = 0;
         }
-/*
-        if(SendMessage(WDTECheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            Prog.WDTE = 1;
-        } else {
-            Prog.WDTE = 0;
-        }
-*/
         SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));
         Prog.mcuClock = (int)(1e6*atof(buf) + 0.5);
@@ -416,24 +389,12 @@ void ShowConfDialog(void)
             Prog.mcuClock = 16000000; //16 MHz
         }
 
-        int prescaler;
-        int sc;
-        int divider;
-        int cycleTimeMin;
-        int cycleTimeMax;
         char txt[1024] = "";
         if(Prog.mcu) {
           if(Prog.mcu->whichIsa == ISA_AVR) {
-             CalcAvrTimerPlcCycle(ProgCycleTime,
-                 &prescaler,
-                 &sc,
-                 &divider,
-                 &cycleTimeMin,
-                 &cycleTimeMax);
+             CalcAvrPlcCycle(ProgCycleTime);
           } else if(Prog.mcu->whichIsa == ISA_PIC16) {
-             CalcPicTimerPlcCycle(ProgCycleTime,
-                 &cycleTimeMin,
-                 &cycleTimeMax);
+             CalcPicPlcCycle(ProgCycleTime);
           }
         }
 
@@ -444,23 +405,12 @@ void ShowConfDialog(void)
         if(ProgCycleTime <= 0) {
             Error(_("Negative cycle time is not valid; Reset to 10 ms."));
             Prog.cycleTime = 10000; //us
-        /*
-        } else if(prescaler*divider < PLC_CLOCK_MIN) {
-          //sprintf(txt,"Cycle time less then %d us not valid; resetting to 10 ms.", cycleTimeMin);
-            sprintf(txt,"Cycle time less then %d us not valid.", cycleTimeMin);
-            Error(txt);
-            //Prog.cycleTime = 10000; //us
-        } else if(divider > 0x10000) {
-          //sprintf(txt,"Cycle time more then %d ms not valid; resetting to 10 ms.", cycleTimeMax/1000);
-            sprintf(txt,"Cycle time more then %d ms not valid.", cycleTimeMax/1000);
-            Error(txt);
-            //Prog.cycleTime = 10000; //us
-        */
         } else
             Prog.cycleTime = ProgCycleTime;
     }
 
     EnableWindow(MainWindow, TRUE);
+    SetFocus(MainWindow);
     DestroyWindow(ConfDialog);
     return;
 }

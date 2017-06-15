@@ -1174,6 +1174,20 @@ static void SimulateIntCode(void)
                     IF_BODY
                 break;
 
+            #ifdef NEW_FEATURE
+            case INT_IF_BIT_SET_IN_VAR:
+                break;
+
+            case INT_IF_BIT_CLEAR_IN_VAR:
+                break;
+
+            case INT_IF_BITS_SET_IN_VAR:
+                break;
+
+            case INT_IF_BITS_CLEAR_IN_VAR:
+                break;
+            #endif
+
             case INT_IF_VARIABLE_LES_LITERAL:
                 if(GetSimulationVariable(a->name1) < a->literal)
                     IF_BODY
@@ -1284,7 +1298,7 @@ static void SimulateIntCode(void)
                         PushStack(IntPc+1);
                         IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal/*, a->name1*/);
                     }
-                } 
+                }
                 break;
 
             case INT_RETURN:

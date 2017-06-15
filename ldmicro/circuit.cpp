@@ -1009,7 +1009,7 @@ void FreeEntireProgram(void)
     Prog.mcuClock = 16000000;
     Prog.baudRate = 9600;
     Prog.io.count = 0;
-    Prog.mcu = NULL;
+    SetMcu(NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -1483,6 +1483,19 @@ int CountWhich(int seek1)
     return CountWhich(seek1, -1, -1, NULL);
 }
 
+BOOL DelayUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_DELAY, -1, -1))
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 BOOL TablesUsed(void)
 {
     int i;
@@ -1745,12 +1758,15 @@ void CopyElem(void)
 //-----------------------------------------------------------------------------
 void PasteRung(int PasteInTo)
 {
-    if(!(CanInsertEnd || CanInsertOther))
+    if(PasteInTo)
+      if(!(CanInsertEnd || CanInsertOther))
         return;
+
     int j = RungContainingSelected();
     if(j < 0) j = 0;
 
-    if(Selected && (Selected->selectedState == SELECTED_BELOW)) {
+    if(PasteInTo==0)
+    if(Selected && ((Selected->selectedState == SELECTED_BELOW) || (Selected->selectedState == SELECTED_RIGHT))) {
         j++;
     }
 

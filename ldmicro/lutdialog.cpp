@@ -493,6 +493,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     }
 
     EnableWindow(MainWindow, TRUE);
+    SetFocus(MainWindow);
     DestroyWindow(LutDialog);
 }
 
@@ -596,5 +597,6 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     }
 
     EnableWindow(MainWindow, TRUE);
+    SetFocus(MainWindow);
     DestroyWindow(LutDialog);
 }
