@@ -768,6 +768,10 @@ void ExportDrawingAsText(char *file)
     fprintf(f, "LDmicro export text.\n");
     fprintf(f, "Source file: %s from %s\n", CurrentSaveFile, sFileTime);
 
+    if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM))
+        fprintf(f, "for '%s', %.3f ms cycle time\n",
+            Prog.mcu->mcuName, Prog.cycleTime/1e3);
+    else
     if(Prog.mcu) {
         fprintf(f, "for '%s', %.9g MHz crystal, %.3f ms cycle time\n",
             Prog.mcu->mcuName, Prog.mcuClock/1e6, Prog.cycleTime/1e3);
@@ -800,6 +804,9 @@ void ExportDrawingAsText(char *file)
         char portName[MAX_NAME_LEN] = "";
         char pinName[MAX_NAME_LEN] = "";
 
+        if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM) && (io->pin != NO_PIN_ASSIGNED))
+            sprintf(pin, "%s", PinToName(io->pin));
+        else
             PinNumberForIo(pin, io, portName, pinName);
 
         sprintf(b, "                             |                    | %3s | %4s | %s\n",

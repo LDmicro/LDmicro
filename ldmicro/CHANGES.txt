@@ -1,7 +1,12 @@
 == Release 4.2.2
 
+    * HotFix: Addressing error when writing the PIC CONFIGURATION WORD's to the .hex file.
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=6371&tt=1497477735
+
     * HotFix: AVR RJMP, RCALL
     https://github.com/LDmicro/LDmicro/issues/29
+
+    * Reengineering: PLC cycle timer more accurate and more longer.
 
     * Fixed: The character '-' is replaced by the character '_' in the variable names.
 
@@ -10,6 +15,12 @@
 
     * Added: White color scheme Mark
     http://cq.cx/ladder-forum.pl?action=viewthread&parent=6257&tt=1496129518
+
+    * Wiki: How to count the resets áaused by WDT (Atmel AVR)
+    https://github.com/LDmicro/LDmicro/wiki/How-to-count-the-resets-caused-by-WDT
+
+    * Wiki: MASTER CONTROL RELAY
+    https://github.com/LDmicro/LDmicro/wiki/MASTER-CONTROL-RELAY
 
 == Release 4.2.1
 

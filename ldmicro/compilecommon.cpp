@@ -391,7 +391,6 @@ BYTE MuxForAdcVariable(char *name)
 //-----------------------------------------------------------------------------
 int byteNeeded(SDWORD i)
 {
-
     if((-128<=i) && (i<=127))
         return 1;
     else if((-32768<=i) && (i<=32767))
@@ -912,9 +911,10 @@ void MemCheckForErrorsPostCompile(void)
 // outputs, and pack that in 8-bit format as we will need to write to the
 // TRIS or DDR registers. ADC pins are neither inputs nor outputs.
 //-----------------------------------------------------------------------------
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError)
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL raiseError)
 {
     memset(isOutput, 0x00, MAX_IO_PORTS);
+    memset(isAnsel, 0x00, MAX_IO_PORTS);
     memset(isInput, 0x00, MAX_IO_PORTS);
 
     BOOL usedUart = UartFunctionUsed();
@@ -922,19 +922,34 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError)
 
     int i;
     for(i = 0; i < Prog.io.count; i++) {
-        int pin = Prog.io.assignment[i].pin;
+        int pin  = Prog.io.assignment[i].pin;
+        int type = Prog.io.assignment[i].type;
 
-        if(Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_INT_INPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT)
-        {
+        if(type == IO_TYPE_READ_ADC) {
             int j;
             for(j = 0; j < Prog.mcu->pinCount; j++) {
                 McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
                 if(iop && (iop->pin == pin)) {
-                    if((Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT)
-                    || (Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT)) {
+                    if(type == IO_TYPE_READ_ADC){
+                        isAnsel[iop->port - 'A'] |= (1 << iop->bit);
+                    }
+                    break;
+                }
+            }
+        }
+
+        if(type == IO_TYPE_DIG_OUTPUT
+        || type == IO_TYPE_PWM_OUTPUT
+        || type == IO_TYPE_INT_INPUT
+        || type == IO_TYPE_DIG_INPUT
+        ) {
+            int j;
+            for(j = 0; j < Prog.mcu->pinCount; j++) {
+                McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
+                if(iop && (iop->pin == pin)) {
+                    if((type == IO_TYPE_DIG_OUTPUT)
+                    || (type == IO_TYPE_PWM_OUTPUT)
+                    ) {
                         isOutput[iop->port - 'A'] |= (1 << iop->bit);
                     } else {
                         isInput[iop->port - 'A'] |= (1 << iop->bit);
@@ -942,34 +957,38 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError)
                     break;
                 }
             }
-          if(Prog.mcu && raiseError) {
-            if(j >= Prog.mcu->pinCount) {
-                Error(_("Must assign pins for all I/O.\r\n\r\n"
-                    "'%s' is not assigned."),
-                    Prog.io.assignment[i].name);
-                if(raiseError)
-                    CompileError();
-            }
 
-            if(usedUart &&
-                (pin == Prog.mcu->uartNeeds.rxPin ||
-                 pin == Prog.mcu->uartNeeds.txPin))
-            {
-                Error(_("UART in use; pins %d and %d reserved for that."),
-                    Prog.mcu->uartNeeds.rxPin, Prog.mcu->uartNeeds.txPin);
-                if(raiseError)
-                    CompileError();
+            if(Prog.mcu && raiseError) {
+                if(j >= Prog.mcu->pinCount) {
+                    Error(_("Must assign pins for all I/O.\r\n\r\n"
+                        "'%s' is not assigned."),
+                        Prog.io.assignment[i].name);
+                    if(raiseError)
+                        CompileError();
+                }
+
+                if(usedUart && (pin == Prog.mcu->uartNeeds.rxPin
+                             || pin == Prog.mcu->uartNeeds.txPin)
+                ) {
+                    Error(_("UART in use; pins %d and %d reserved for that."),
+                        Prog.mcu->uartNeeds.rxPin, Prog.mcu->uartNeeds.txPin);
+                    if(raiseError)
+                        CompileError();
+                }
             }
-            /*
-            if(usedPwm && pin == Prog.mcu->pwmNeedsPin) {
-                Error(_("PWM in use; pin %d reserved for that."),
-                    Prog.mcu->pwmNeedsPin);
-                if(raiseError)
-                    CompileError();
-            }
-            */
-          }
         }
+    }
+    if(usedUart && Prog.mcu) {
+        McuIoPinInfo *iop;
+        iop = PinInfo(Prog.mcu->uartNeeds.txPin);
+        if(iop)
+            isOutput[iop->port - 'A'] |= (1 << iop->bit);
+        else oops();
+
+        iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
+        if(iop)
+            isInput[iop->port - 'A'] |= (1 << iop->bit);
+        else oops();
     }
     if(McuAs("Microchip PIC16F877 ")) {
         // This is a nasty special case; one of the extra bits in TRISE
@@ -977,20 +996,11 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError)
         // inverted).
         isOutput[4] |= 0xf8; // TRISE
     }
-    if(PwmFunctionUsed())
-    if(Prog.mcu->pwmNeedsPin) {
-        // Comment("PwmFunctionUsed");
-        // Need to clear TRIS bit corresponding to PWM pin
-        McuIoPinInfo *iop = PinInfo(Prog.mcu->uartNeeds.txPin);
-        if(iop)
-            isOutput[iop->port - 'A'] |= (1 << iop->bit);
-        else oops();
-    }
 }
 
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput)
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)
 {
-    BuildDirectionRegisters(isInput, isOutput, TRUE);
+    BuildDirectionRegisters(isInput, isAnsel, isOutput, TRUE);
 }
 
 //-----------------------------------------------------------------------------
@@ -1107,15 +1117,15 @@ double SIprefix(double val, char* prefix, int en_1_2)
     } else if(val < 1e-3) {
         strcpy(prefix,"u");
         return val * 1e3 * 1e3;
-/*
-    } else if((val <= 1e-2)&&(en_1_2)) {
+/**/
+    } else if((val <= 1e-2) && en_1_2) {
         strcpy(prefix,"c");
         return val * 1e2;
-    } else if((val <= 1e-1)&&(en_1_2)) {
+    } else if((val <= 1e-1) && en_1_2) {
         strcpy(prefix,"d");
         return val * 1e1;
-*/
-    } else if(val < 1) {
+/**/
+    } else if(val < 1.0) {
         strcpy(prefix,"m");           //10 ms= 0.010 s
         return val * 1e3;
     } else {

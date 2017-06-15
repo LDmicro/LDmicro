@@ -100,6 +100,7 @@ void ShowCommentDialog(char *comment)
     }
 
     EnableWindow(MainWindow, TRUE);
+    SetFocus(MainWindow);
     DestroyWindow(CommentDialog);
     return;
 }

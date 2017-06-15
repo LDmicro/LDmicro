@@ -33,6 +33,10 @@
 #define INT_SET_BIT                              1
 #define INT_CLEAR_BIT                            2
 #define INT_COPY_BIT_TO_BIT                      3
+#define INT_VARIABLE_SET_BIT                     3001
+#define INT_VARIABLE_CLEAR_BIT                   3002
+#define INT_VARIABLE_SET_BITS                    3006
+#define INT_VARIABLE_CLEAR_BITS                  3007
 #define INT_SET_VARIABLE_TO_LITERAL              4
 #define INT_SET_VARIABLE_TO_VARIABLE             5
 #define INT_SET_BIN2BCD                          5001
@@ -82,8 +86,6 @@
 #ifdef NEW_FEATURE
 #define INT_PRINTF_STRING                       23 // printf() out to console
 #endif
-#define INT_VARIABLE_SET_BIT                    25
-#define INT_VARIABLE_CLEAR_BIT                  26
 
 #define INT_SET_VARIABLE_AND                    30
 #define INT_SET_VARIABLE_OR                     31

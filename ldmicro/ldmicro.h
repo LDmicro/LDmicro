@@ -258,6 +258,7 @@ typedef signed long SDWORD;
 #define MNU_LAST_RELEASE        0x8103
 #define MNU_EMAIL               0x8104
 #define MNU_CHANGES             0x8105
+#define MNU_ISSUE               0x8106
 #define MNU_RELEASE             0x82
 
 #define MNU_SCHEME_BLACK        0x9000 // Must be a first
@@ -554,6 +555,11 @@ typedef struct ElemMoveTag {
     char    src[MAX_NAME_LEN];
 } ElemMove;
 
+typedef struct ElemCmpTag {
+    char    op1[MAX_NAME_LEN];
+    char    op2[MAX_NAME_LEN];
+} ElemCmp;
+
 typedef struct ElemSfrTag {
     char    sfr[MAX_NAME_LEN];
     char    op[MAX_NAME_LEN];
@@ -581,11 +587,6 @@ typedef struct ElemMathTag {
     char    op1[MAX_NAME_LEN];
     char    op2[MAX_NAME_LEN];
 } ElemMath;
-
-typedef struct ElemCmpTag {
-    char    op1[MAX_NAME_LEN];
-    char    op2[MAX_NAME_LEN];
-} ElemCmp;
 
 typedef struct ElemGotoTag {
     char    rung[MAX_NAME_LEN]; // rung number or rung symbol label
@@ -1350,14 +1351,14 @@ void ShowHelpDialog(BOOL about);
 #define dodbp
 #ifdef dodbp
   #define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
-  #define dbpif(EXP) if (EXP) dbp("Warning: " #EXP "");
+  #define dbpif(EXP)   if (EXP) dbp("Warning: " #EXP "");
 
   #define dbp_(EXP)   dbp( #EXP );
   #define dbps(EXP)   dbp( #EXP "='%s'", (EXP));
   #define dbpc(EXP)   dbp( #EXP "='%c'", (EXP));
   #define dbpd(EXP)   dbp( #EXP "=%d", (EXP));
-  #define dbpld(EXP)  dbp( #EXP "=%Ld", (EXP));
-  #define dbplld(EXP) dbp( #EXP "=%LLd", (EXP));
+  #define dbpld(EXP)  dbp( #EXP "=%ld", (EXP));
+  #define dbplld(EXP) dbp( #EXP "=%lld", (EXP));
 
   //#define dbpb(EXP)   dbp( #EXP "=0b%b", (EXP));
   #define dbpx(EXP)   dbp( #EXP "=0x%X", (EXP));
@@ -1386,6 +1387,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
 char *GetPinName(int pin, char *pinName);
 char *PinToName(int pin);
+void SetMcu(McuIoInfo *mcu);
 int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
 McuIoPinInfo *PinInfoForName(char *name);
@@ -1634,14 +1636,17 @@ typedef enum Pic16OpTag {
 } PicOp;
 
 typedef struct PlcTimerDataTag {
-    long long int countsPerCycle;
-    int tmr; //value of TMR0 or TMR1
-    int prescaler;
-    int PS;
-    int softDivisor;
+    long long int ticksPerCycle; // ticks of the System Clock per PLC Cycle Time // mcuClock * PLCcycleTime
+    long int tmr; //value of TMR0 or TMR1
+    long int prescaler;
+    int PS; // PIC
+    int cs; // AVR
+    long int softDivisor; // Overflow Count
     DWORD softDivisorAddr;
-    double Fcycle; // actually
-    double Pcycle;
+    double TCycle; // s,  actually
+    double Fcycle; // Hz, actually
+    int cycleTimeMin; //
+    long long int cycleTimeMax; //
 } PlcTimerData;
 
 extern PlcTimerData plcTmr;
@@ -1684,6 +1689,7 @@ int isPinAssigned(char *name);
 void AllocStart(void);
 DWORD AllocOctetRam(void);
 void AllocBitRam(DWORD *addr, int *bit);
+int MemForVariable(char *name, DWORD *addrl, int sizeOfVar);
 int MemForVariable(char *name, DWORD *addr);
 int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
 int MemOfVar(char *name, DWORD *addr);
@@ -1700,8 +1706,8 @@ int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(SDWORD i);
 void SaveVarListToFile(FILE *f);
 BOOL LoadVarListFromFile(FILE *f);
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput);
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput, BOOL raiseError);
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL raiseError);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);
 #define CompileError() longjmp(CompileErrorBuf, 1)
@@ -1739,21 +1745,11 @@ void GenSymOneShot(char *dest, char *name1, char *name2);
 int getradix(char *str);
 
 // pic16.cpp
-int PicTimer1Prescaler(long long int cycleTimeMicroseconds);
-int PicTimer0Prescaler(long long int cycleTimeMicroseconds);
 void CompilePic16(char *outFile);
 BOOL McuAs(char *str);
-BOOL CalcPicTimerPlcCycle(long long int cycleTimeMicroseconds,\
-    int *cycleTimeMin,\
-    int *cycleTimeMax);
+BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds);
 // avr.cpp
-extern DWORD AvrProgWriteP;
-BOOL CalcAvrTimerPlcCycle(long long int cycleTimeMicroseconds,\
-    int *prescaler,\
-    int *sc,\
-    int *divider,\
-    int *cycleTimeMin,\
-    int *cycleTimeMax);
+BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds);
 void CompileAvr(char *outFile);
 // ansic.cpp
 extern int compile_MNU;

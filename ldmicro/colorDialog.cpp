@@ -363,6 +363,7 @@ void ShowColorDialog(void)
     InitForDrawing();
     InvalidateRect(MainWindow, NULL, FALSE);
     EnableWindow(MainWindow, TRUE);
+    SetFocus(MainWindow);
     DestroyWindow(ColorDialog);
     return;
 }

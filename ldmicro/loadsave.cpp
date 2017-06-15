@@ -52,7 +52,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 
     if(memcmp(line, "COMMENT", 7)==0) {
         FrmStrToStr(l->d.comment.str, &line[8]);
-        DelLastNL(l->d.comment.str);
+
         *which = ELEM_COMMENT;
     } else if(sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name,
         &l->d.contacts.negated, &l->d.contacts.set1)==3)
@@ -653,7 +653,7 @@ BOOL LoadProjectFromFile(char *filename)
             for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
               if(SupportedMcus[i].mcuName)
                 if(strcmp(SupportedMcus[i].mcuName, line+6)==0) {
-                    Prog.mcu = &SupportedMcus[i];
+                    SetMcu(&SupportedMcus[i]);
                     break;
                 }
             }
@@ -672,7 +672,7 @@ BOOL LoadProjectFromFile(char *filename)
     for(rung = 0;;) {
         if(!fgets(line, sizeof(line), f)) break;
         if(!strlen(strspace(line))) continue;
-        if(strstr("RUNG", line)!=0) goto failed;
+        if(strstr(line,"RUNG")==0) goto failed;
 
         Prog.rungs[rung] = LoadSeriesFromFile(f);
         if(!Prog.rungs[rung]) goto failed;
