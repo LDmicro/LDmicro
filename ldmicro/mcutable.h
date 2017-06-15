@@ -517,6 +517,10 @@ McuExtIntPinInfo PicExtIntPinInfo6[] = {
     {    }, //
 };
 
+McuExtIntPinInfo PicExtIntPinInfo14[] = {
+    { 11 }, // INT
+};
+
 McuExtIntPinInfo PicExtIntPinInfo18[] = {
     {  6 }, // RB0/INT
 };
@@ -689,24 +693,24 @@ McuIoPinInfo Pic18PinIoInfo[] = {
     { 'A',  2,  1, "RA2/AN2/VREF" },
     { 'A',  3,  2, "RA3/AN3/CMP1" },
     { 'A',  4,  3, "RA4/T0CKI/CMP2" },
-    { 'A',  5,  4, "RA5/_MCLR/VPP" }, // input only
-//  { ' ', -1,  5, "VSS" },
+    { 'A',  5,  4, "RA5/_MCLR/Vpp" }, // input only
+//  { ' ', -1,  5, "Vss" },
     { 'B',  0,  6, "RB0/INT" },
     { 'B',  1,  7, "RB1/RX/DT" },
     { 'B',  2,  8, "RB2/TX/CK" },
     { 'B',  3,  9, "RB3/CCP1" },
     { 'B',  4, 10, "RB4" },
-    { 'B',  5, 11, "RB5/PGM" },
-    { 'B',  6, 12, "RB6/T1OSO/T1CKI/PGC" },
-    { 'B',  7, 13, "RB7/T1OSI/PGD" },
-//  { ' ', -1, 14, "VDD" },
+    { 'B',  5, 11, "RB5" },
+    { 'B',  6, 12, "RB6" },
+    { 'B',  7, 13, "RB7" },
+//  { ' ', -1, 14, "Vdd" },
     { 'A',  6, 15, "RA6/OSC2/CLKOUT" },
     { 'A',  7, 16, "RA7/OSC1/CLKIN" },
     { 'A',  0, 17, "RA0/AN0" },
     { 'A',  1, 18, "RA1/AN1" },
 };
 
-McuAdcPinInfo Pic16f819AdcPinInfo[] = {
+McuAdcPinInfo Pic16F819AdcPinInfo[] = {
     {  1, 0x02 },
     {  2, 0x03 },
     {  3, 0x04 },
@@ -714,7 +718,7 @@ McuAdcPinInfo Pic16f819AdcPinInfo[] = {
     { 18, 0x01 },
 };
 
-McuAdcPinInfo Pic16f88AdcPinInfo[] = {
+McuAdcPinInfo Pic16F88AdcPinInfo[] = {
     {  1, 0x02 },
     {  2, 0x03 },
     {  3, 0x04 },
@@ -728,7 +732,7 @@ McuAdcPinInfo Pic16f88AdcPinInfo[] = {
 //-----------------------------------------------------------------------------
 // PIC16F877, PIC16F874
 
-McuIoPinInfo Pic16f877IoPinInfo[] = {
+McuIoPinInfo Pic16F877IoPinInfo[] = {
     { 'A',  0,  2, "RA0/AN0" },
     { 'A',  1,  3, "RA1/AN1" },
     { 'A',  2,  4, "RA2/AN2/VREF-" },
@@ -738,7 +742,7 @@ McuIoPinInfo Pic16f877IoPinInfo[] = {
     { 'E',  0,  8, "RE0/_RD/AN5" },
     { 'E',  1,  9, "RE1/_WR/AN6" },
     { 'E',  2, 10, "RE2/_CS/AN7" },
-//  {           1, "_MCLR/VPP" },
+//  {           1, "_MCLR/Vpp" },
     { 'C',  0, 15, "RC0/T1OSO/T1CKI" },
     { 'C',  1, 16, "RC1/T1OSI/CCP2" },
     { 'C',  2, 17, "RC2/CCP1" },
@@ -758,14 +762,14 @@ McuIoPinInfo Pic16f877IoPinInfo[] = {
     { 'B',  0, 33, "RB0/INT" },
     { 'B',  1, 34, "RB1" },
     { 'B',  2, 35, "RB2" },
-    { 'B',  3, 36, "RB3/PGM" },
+    { 'B',  3, 36, "RB3" },
     { 'B',  4, 37, "RB4" },
     { 'B',  5, 38, "RB5" },
-    { 'B',  6, 39, "RB6/PGC" },
-    { 'B',  7, 40, "RB7/PGD" }
+    { 'B',  6, 39, "RB6" },
+    { 'B',  7, 40, "RB7" }
 };
 
-McuAdcPinInfo Pic16f877AdcPinInfo[] = {
+McuAdcPinInfo Pic16F877AdcPinInfo[] = {
     {  2,   0x00 },
     {  3,   0x01 },
     {  4,   0x02 },
@@ -781,7 +785,7 @@ McuAdcPinInfo Pic16f877AdcPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // PIC16F876, PIC16F873 28-Pin PDIP, SOIC
-McuIoPinInfo Pic16f876IoPinInfo[] = {
+McuIoPinInfo Pic16F876IoPinInfo[] = {
     { 'A', 0,  2 },
     { 'A', 1,  3 },
     { 'A', 2,  4 },
@@ -806,7 +810,7 @@ McuIoPinInfo Pic16f876IoPinInfo[] = {
     { 'B', 7, 28 },
 };
 
-McuAdcPinInfo Pic16f876AdcPinInfo[] = {
+McuAdcPinInfo Pic16F876AdcPinInfo[] = {
     {  2, 0x00 },
     {  3, 0x01 },
     {  4, 0x02 },
@@ -817,7 +821,7 @@ McuAdcPinInfo Pic16f876AdcPinInfo[] = {
 //-----------------------------------------------------------------------------
 // PIC16F887, PIC16F884
 
-McuIoPinInfo Pic16f887IoPinInfo[] = {
+McuIoPinInfo Pic16F887IoPinInfo[] = {
     { 'A',  0,  2, "RA0/AN0/ULPWU/C12IN0-" },
     { 'A',  1,  3, "RA1/AN1/C12IN1-" },
     { 'A',  2,  4, "RA2/AN2/VREF-/CVREF/C2IN+" },
@@ -827,7 +831,7 @@ McuIoPinInfo Pic16f887IoPinInfo[] = {
     { 'E',  0,  8, "RE0/AN5" },
     { 'E',  1,  9, "RE1/AN6" },
     { 'E',  2, 10, "RE2/AN7" },
-//  { 'E',  3,  1, "RE3/MCLR/VPP" },
+//  { 'E',  3,  1, "RE3/MCLR/Vpp" },
 //  { 'A',  7, 13, "RA7/OSC1/CLKIN" },
 //  { 'A',  6, 14, "RA6/OSC2/CLKOUT" },
     { 'C',  0, 15, "RC0/T1OSO/T1CKI" },
@@ -849,14 +853,14 @@ McuIoPinInfo Pic16f887IoPinInfo[] = {
     { 'B',  0, 33, "RB0/AN12/INT" },
     { 'B',  1, 34, "RB1/AN10/C12IN3-" },
     { 'B',  2, 35, "RB2/AN8" },
-    { 'B',  3, 36, "RB3/AN9/PGM/C12IN2-" },
+    { 'B',  3, 36, "RB3/AN9/C12IN2-" },
     { 'B',  4, 37, "RB4/AN11" },
     { 'B',  5, 38, "RB5/AN13/_T1G" },
     { 'B',  6, 39, "RB6/ICSPCLK" },
     { 'B',  7, 40, "RB7/ICSPDAT" }
 };
 
-McuAdcPinInfo Pic16f887AdcPinInfo[] = {
+McuAdcPinInfo Pic16F887AdcPinInfo[] = {
     {  2,   0x00 },
     {  3,   0x01 },
     {  4,   0x02 },
@@ -881,7 +885,7 @@ McuAdcPinInfo Pic16f887AdcPinInfo[] = {
 // PIC16F1516, PIC16F1518
 
 McuIoPinInfo Pic28Pin_SPDIP_SOIC_SSOP[] = {
-//  { 'E', 3,  1, "RE3/_MCLR/VPP" },
+//  { 'E', 3,  1, "RE3/_MCLR/Vpp" },
 
     { 'A', 0,  2, "RA0/AN0/ULPWU/C12IN0-" },
     { 'A', 1,  3, "RA1/AN1/C12IN1-" },
@@ -905,14 +909,14 @@ McuIoPinInfo Pic28Pin_SPDIP_SOIC_SSOP[] = {
     { 'B', 0, 21, "RB0/AN12/INT" },
     { 'B', 1, 22, "RB1/AN10/P1C/C12IN3-" },
     { 'B', 2, 23, "RB2/AN8/P1B" },
-    { 'B', 3, 24, "RB3/AN9/PGM/C12IN2-" },
+    { 'B', 3, 24, "RB3/AN9/C12IN2-" },
     { 'B', 4, 25, "RB4/AN11/P1D" },
     { 'B', 5, 26, "RB5/AN13/_T1G" },
     { 'B', 6, 27, "RB6/ICSPCLK" },
     { 'B', 7, 28, "RB7/ICSPDAT" }
 };
 
-McuAdcPinInfo Pic16f886AdcPinInfo[] = {
+McuAdcPinInfo Pic16F886AdcPinInfo[] = {
     {  2, 0x00 },
     {  3, 0x01 },
     {  4, 0x02 },
@@ -1514,8 +1518,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 48 } },
         Pic18PinIoInfo,
         arraylen(Pic18PinIoInfo),
-        Pic16f88AdcPinInfo,
-        arraylen(Pic16f88AdcPinInfo),
+        Pic16F88AdcPinInfo,
+        arraylen(Pic16F88AdcPinInfo),
         1023,
         { 8, 11 },
         0,
@@ -1554,8 +1558,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { { 0x20, 96 } },
         Pic18PinIoInfo,
         arraylen(Pic18PinIoInfo),
-        Pic16f819AdcPinInfo,
-        arraylen(Pic16f819AdcPinInfo),
+        Pic16F819AdcPinInfo,
+        arraylen(Pic16F819AdcPinInfo),
         1023,
         { 0, 0 },
         0,
@@ -1584,17 +1588,17 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         "PIC16F877",
         "P16F877",
         "16F877",
-        "pic16f877",
+        "pic16F877",
         'R',
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
         { 0x05, 0x06, 0x07, 0x08, 0x09 }, // PORTx
         { 0x85, 0x86, 0x87, 0x88, 0x89 }, // TRISx
         8*1024,
         { { 0x20, 96 }, { 0xA0, 80 }, { 0x110, 96 }, { 0x190, 96 } },
-        Pic16f877IoPinInfo,
-        arraylen(Pic16f877IoPinInfo),
-        Pic16f877AdcPinInfo,
-        arraylen(Pic16f877AdcPinInfo),
+        Pic16F877IoPinInfo,
+        arraylen(Pic16F877IoPinInfo),
+        Pic16F877AdcPinInfo,
+        arraylen(Pic16F877AdcPinInfo),
         1023,
         { 26, 25 },
         16,
@@ -1622,10 +1626,10 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x85, 0x86, 0x87 }, // TRISx
         8*1024,
         { { 0x20, 96 }, { 0xA0, 80 }, { 0x110, 96 }, { 0x190, 96 } },
-        Pic16f876IoPinInfo,
-        arraylen(Pic16f876IoPinInfo),
-        Pic16f876AdcPinInfo,
-        arraylen(Pic16f876AdcPinInfo),
+        Pic16F876IoPinInfo,
+        arraylen(Pic16F876IoPinInfo),
+        Pic16F876AdcPinInfo,
+        arraylen(Pic16F876AdcPinInfo),
         1023,
         { 18, 17 },
         12,
@@ -1653,10 +1657,10 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x85, 0x86, 0x87, 0x88, 0x89 }, // TRISx
         8*1024,
         { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 80 }, { 0x1a0, 80 } },
-        Pic16f887IoPinInfo,
-        arraylen(Pic16f887IoPinInfo),
-        Pic16f887AdcPinInfo,
-        arraylen(Pic16f887AdcPinInfo),
+        Pic16F887IoPinInfo,
+        arraylen(Pic16F887IoPinInfo),
+        Pic16F887AdcPinInfo,
+        arraylen(Pic16F887AdcPinInfo),
         1023,
         { 26, 25 },
         16,
@@ -1695,8 +1699,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 80 }, { 0x1a0, 80 } },
         Pic28Pin_SPDIP_SOIC_SSOP,
         arraylen(Pic28Pin_SPDIP_SOIC_SSOP),
-        Pic16f886AdcPinInfo,
-        arraylen(Pic16f886AdcPinInfo),
+        Pic16F886AdcPinInfo,
+        arraylen(Pic16F886AdcPinInfo),
         1023,
         { 18, 17 },
         12,

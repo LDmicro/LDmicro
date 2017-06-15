@@ -119,7 +119,7 @@ static void MakeControls(void)
         325, 40, 70, 23, ContactsDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 
-    PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, 
+    PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNameProc);
 }
 
@@ -255,6 +255,7 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
     }
 
     EnableWindow(MainWindow, TRUE);
+    SetFocus(MainWindow);
     DestroyWindow(ContactsDialog);
     return;
 }

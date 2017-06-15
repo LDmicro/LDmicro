@@ -472,6 +472,15 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 break;
 
+            case INT_LOCK:
+                lock_label++;
+                fprintf(f, "lock_label%d: goto lock_label%d;\n", lock_label, lock_label);
+                break;
+
+            case INT_DELAY:
+                fprintf(f,"  delayMicroseconds(%d);\n", IntCode[i].literal);
+                break;
+
             case  INT_READ_SFR_LITERAL:
             case  INT_READ_SFR_VARIABLE:
                 fprintf(f, "#warning // Read from SFR\n");

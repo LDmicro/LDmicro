@@ -377,38 +377,46 @@ static void postCompile(char *MNU)
     if(!ExistFile(CurrentCompileFile))
         return;
 
+    char onlyName[MAX_PATH];
+    strcpy(onlyName, ExtractFileName(CurrentCompileFile));
+    SetExt(onlyName, onlyName, "");
+
+    char outFile[MAX_PATH];
+
     if(!fsize(CurrentCompileFile)) {
         remove(CurrentCompileFile);
-
         if(strstr(CurrentCompileFile,".hex")) {
-            char outFile[MAX_PATH];
-            SetExt(outFile, CurrentCompileFile, ".asm");
+            sprintf(outFile, "%s%s%s", CurrentCompilePath, onlyName, ".asm");
             remove(outFile);
         }
         if(strstr(CurrentCompileFile,".c")) {
-            char outFile[MAX_PATH];
-            SetExt(outFile, CurrentCompileFile, ".h");
+            sprintf(outFile, "%s%s%s", CurrentCompilePath, onlyName, ".h");
             remove(outFile);
-          //remove("ladder.h_");
+            sprintf(outFile, "%s%s", CurrentCompilePath, "ladder.h_");
+            remove(outFile);
+        }
+        if(strstr(CurrentCompileFile,".cpp")) {
+            sprintf(outFile, "%s%s%s", CurrentCompilePath, onlyName, ".h");
+            remove(outFile);
+            sprintf(outFile, "%s%s%s", CurrentCompilePath, onlyName, ".ino_");
+            remove(outFile);
+            sprintf(outFile, "%s%s", CurrentCompilePath, "ladder.h_");
+            remove(outFile);
         }
         return;
     }
 
     char r[MAX_PATH];
-    char onlyName[MAX_PATH];
 
     sprintf(r,"%spostCompile.bat", ExePath);
     if(!ExistFile(r))
         return;
 
-    strcpy(onlyName, ExtractFileName(CurrentSaveFile));
-    SetExt(onlyName, onlyName, "");
-
     char *ISA = "_NULL_";
     if(Prog.mcu)
         ISA = GetIsaName(Prog.mcu->whichIsa);
 
-    sprintf(r,"\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentLdPath, onlyName);
+    sprintf(r,"\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentCompilePath, onlyName);
     isErr(Execute(r), r);
 }
 
@@ -420,6 +428,46 @@ static void CompileProgram(BOOL compileAs, int MNU)
 {
     if((MNU == MNU_COMPILE) && (compile_MNU > 0))
         MNU = compile_MNU;
+
+    if(MNU == MNU_COMPILE_ARDUINO) {
+        char onlyName[MAX_PATH];
+        strcpy(onlyName, ExtractFileName(CurrentSaveFile));
+        SetExt(onlyName, onlyName, "");
+
+        if(strchr(onlyName, ' ')) {
+            strcpy(CurrentCompileFile, "");
+            ProgramChangedNotSaved = TRUE;
+            Error(_("ARDUINO: Space ' ' not allowed in '%s'\nRename file!"), CurrentSaveFile);
+            return;
+        }
+        if(strchr(onlyName, '.')) {
+            strcpy(CurrentCompileFile, "");
+            ProgramChangedNotSaved = TRUE;
+            Error(_("ARDUINO: Dot '.' not allowed in '%s'\nRename file!"), CurrentSaveFile);
+            return;
+        }
+        if(IsNumber(onlyName)) {
+            strcpy(CurrentCompileFile, "");
+            ProgramChangedNotSaved = TRUE;
+            Error(_("ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"), onlyName[0], onlyName);
+            return;
+        }
+
+        strcpy(onlyName, ExtractFileName(CurrentCompileFile));
+        SetExt(onlyName, onlyName, "");
+        if(strchr(onlyName, ' ')) {
+            strcpy(CurrentCompileFile, "");
+            ProgramChangedNotSaved = TRUE;
+        }
+        if(strchr(onlyName, '.')) {
+            strcpy(CurrentCompileFile, "");
+            ProgramChangedNotSaved = TRUE;
+        }
+        if(IsNumber(onlyName)) {
+            strcpy(CurrentCompileFile, "");
+            ProgramChangedNotSaved = TRUE;
+        }
+    }
 
     IsOpenAnable:
     if(!compileAs && strlen(CurrentCompileFile)) {
@@ -701,14 +749,16 @@ static void ProcessMenu(int code)
 {
     if(code >= MNU_PROCESSOR_0 && code < MNU_PROCESSOR_0+NUM_SUPPORTED_MCUS) {
         strcpy(CurrentCompileFile, "");
-        Prog.mcu = &SupportedMcus[code - MNU_PROCESSOR_0];
+        SetMcu(&SupportedMcus[code - MNU_PROCESSOR_0]);
         RefreshControlsToSettings();
+        ProgramChangedNotSaved = TRUE;
         return;
     }
     if(code == MNU_PROCESSOR_0+NUM_SUPPORTED_MCUS) {
-        Prog.mcu = NULL;
+        SetMcu(NULL);
         strcpy(CurrentCompileFile, "");
         RefreshControlsToSettings();
+        ProgramChangedNotSaved = TRUE;
         return;
     }
     if((code >= MNU_SCHEME_BLACK)
@@ -1315,6 +1365,10 @@ cmp:
             ShellExecute(0,"open","https://raw.githubusercontent.com/LDmicro/LDmicro/master/ldmicro/CHANGES.txt",NULL,NULL,SW_SHOWNORMAL);
             break;
 
+        case MNU_ISSUE:
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/issues/new",NULL,NULL,SW_SHOWNORMAL);
+            break;
+
         case MNU_EMAIL:
             ShellExecute(0,"open","mailto:LDmicro.GitHub@gmail.com",NULL,NULL,SW_SHOWNORMAL);
             break;
@@ -1839,7 +1893,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             switch(wParam) {
                 case VK_F5:
-                    CompileProgram(FALSE, MNU_COMPILE);
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                      CHANGING_PROGRAM(ShowConfDialog());
+                    } else {
+                      CompileProgram(FALSE, MNU_COMPILE);
+                    }
                     break;
 
                 case VK_SPACE:

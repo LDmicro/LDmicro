@@ -390,7 +390,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_SEED_RANDOM: {
             sprintf(str, "$seed_%s", l->d.move.dest);
-            AppendIoAutoType(str, IO_TYPE_GENERAL);
+            AppendIo(str, IO_TYPE_GENERAL);
             }
             break;
 
@@ -694,6 +694,7 @@ BOOL LoadIoListFromFile(FILE *f)
 {
     char line[MAX_NAME_LEN];
     char name[MAX_NAME_LEN];
+    char pinName[MAX_NAME_LEN];
     int pin;
     ModbusAddr_t modbus;
     while(fgets(line, sizeof(line), f)) {
@@ -703,20 +704,26 @@ BOOL LoadIoListFromFile(FILE *f)
         }
         modbus.Slave = 0;
         modbus.Address = 0;
+        int type = 0;
+        switch(strspace(line)[0]) {
+          //case 'I': type = IO_TYPE_INT_INPUT; break;
+            case 'X': type = IO_TYPE_DIG_INPUT; break;
+            case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
+            case 'A': type = IO_TYPE_READ_ADC; break;
+            case 'P': type = IO_TYPE_PWM_OUTPUT; break;
+            case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
+            case 'M': type = IO_TYPE_MODBUS_COIL; break;
+            case 'C': type = IO_TYPE_COUNTER; break;
+            case 'H': type = IO_TYPE_MODBUS_HREG; break;
+            default: oops();
+        }
         // Don't internationalize this! It's the file format, not UI.
-        if(sscanf(line, "    %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address)>=2) {
-            int type;
-            switch(name[0]) {
-                case 'X': type = IO_TYPE_DIG_INPUT; break;
-                case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
-                case 'A': type = IO_TYPE_READ_ADC; break;
-                case 'P': type = IO_TYPE_PWM_OUTPUT; break;
-                case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
-                case 'M': type = IO_TYPE_MODBUS_COIL; break;
-                case 'C': type = IO_TYPE_COUNTER; break;
-                case 'H': type = IO_TYPE_MODBUS_HREG; break;
-                default: oops();
-            }
+        if(sscanf(line, " %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address)>=2) {
+            AppendIoSeenPreviously(name, type, pin, modbus);
+        // Don't internationalize this! It's the file format, not UI.
+        } else if(sscanf(line, " %s at %s", name, pinName)==2) {
+            // PC ports
+            pin=NameToPin(pinName);
             AppendIoSeenPreviously(name, type, pin, modbus);
         }
     }
@@ -729,13 +736,8 @@ BOOL LoadIoListFromFile(FILE *f)
 //-----------------------------------------------------------------------------
 void SaveIoListToFile(FILE *f)
 {
-    int i;
+    int i, j1=0, j2=0;
     for(i = 0; i < Prog.io.count; i++) {
-        if((strcmp(Prog.LDversion,"0.1")==0)
-        && (Prog.io.assignment[i].name[0] != 'X')
-        && (Prog.io.assignment[i].name[0] != 'Y')
-        && (Prog.io.assignment[i].name[0] != 'A'))
-            continue;
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT  ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_INT_INPUT  ||
@@ -745,13 +747,27 @@ void SaveIoListToFile(FILE *f)
            Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
+            j1++;
+            if((strcmp(Prog.LDversion,"0.1")==0)
+            && (Prog.io.assignment[i].name[0] != 'X')
+            && (Prog.io.assignment[i].name[0] != 'Y')
+            && (Prog.io.assignment[i].name[0] != 'A'))
+                continue;
+            j2++;
             // Don't internationalize this! It's the file format, not UI.
-            fprintf(f, "    %s at %d %d %d\n",
-                Prog.io.assignment[i].name,
-                Prog.io.assignment[i].pin,
-                Prog.io.assignment[i].modbus.Slave,
-                Prog.io.assignment[i].modbus.Address);
+            if(Prog.mcu && (Prog.mcu->portPrefix == 'L') && (Prog.io.assignment[i].pin))
+                fprintf(f, "    %s at %s\n", Prog.io.assignment[i].name,
+                    PinToName(Prog.io.assignment[i].pin));
+            else if(TRUE || (Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT))
+                fprintf(f, "    %s at %d %d %d\n",
+                    Prog.io.assignment[i].name,
+                    Prog.io.assignment[i].pin,
+                    Prog.io.assignment[i].modbus.Slave,
+                    Prog.io.assignment[i].modbus.Address);
         }
+    }
+    if(j1 != j2) {
+        Error(" %s%s", "Not all I/O pins are saved! Use menu:\n", _("File->Save LDmicro0.2 file format"));
     }
 }
 
@@ -881,6 +897,7 @@ void ShowAnalogSliderPopup(char *name)
     }
 
     EnableWindow(MainWindow, TRUE);
+    SetFocus(MainWindow);
     DestroyWindow(AnalogSliderMain);
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }
@@ -1314,6 +1331,7 @@ void ShowModbusDialog(int item)
     }
 
     EnableWindow(MainWindow, TRUE);
+    SetFocus(MainWindow);
     DestroyWindow(IoDialog);
     return;
 }
@@ -1456,6 +1474,17 @@ void IoListProc(NMHDR *h)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                         }
                     } else
+                    if(type == IO_TYPE_READ_ADC) {
+                        if(Prog.mcu) {
+                            McuIoPinInfo *iop;
+                            iop = PinInfoForName(name);
+                            if(iop) {
+                                AddrBitForPin(iop->pin, &addr, &bit, TRUE);
+                                if(addr > 0 && bit > 0)
+                                    sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                            }
+                        }
+                    }
                     if (type == IO_TYPE_TABLE_IN_FLASH) {
                         MemOfVar(name, &addr);
                         if(addr > 0)
@@ -1497,11 +1526,13 @@ void IoListProc(NMHDR *h)
                     if((type == IO_TYPE_DIG_INPUT)
                     || (type == IO_TYPE_DIG_OUTPUT)
                     || (type == IO_TYPE_INTERNAL_RELAY)
-                    || (type == IO_TYPE_UART_TX)
-                    || (type == IO_TYPE_UART_RX)
                     || (type == IO_TYPE_MODBUS_COIL)
                     || (type == IO_TYPE_MODBUS_CONTACT)) {
                         sprintf(i->item.pszText, "1 bit");
+                    } else
+                    if((type == IO_TYPE_UART_TX)
+                    || (type == IO_TYPE_UART_RX)) {
+                        sprintf(i->item.pszText, "1 pin/1 byte");
                     } else
                     if(type == IO_TYPE_PWM_OUTPUT) {
                         sprintf(i->item.pszText, "1 pin");

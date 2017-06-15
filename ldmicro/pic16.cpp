@@ -176,6 +176,7 @@ static DWORD FwdAddrCount;
 #define IS_MULTYDEF(x)  ((x) & MULTYDEF(0))
 #define IS_UNDEF(x)     ((x) & (NOTDEF(0) | MULTYDEF(0)))
 
+//-----------------------------------------------------------------------------
 // Some useful registers, which I think are mostly in the same place on
 // all the PIC16... devices.
 
@@ -218,6 +219,8 @@ static DWORD FwdAddrCount;
 #define     INTF      BIT1 // RB0/INT External Interrupt Flag bit
 #define     RBIF      BIT0 // RB Port Change Interrupt Flag bit // 1 = When at least one of the RB<7:4> pins changes state (must be cleared in software)
 
+//static DWORD REG_IOCA    = -1; // PIC12 INTERRUPT-ON-CHANGE port register
+
 // These move around from device to device.
 // 0 means not defined(error!) or not exist in MCU.
 // EEPROM Registers
@@ -225,10 +228,9 @@ static DWORD REG_EECON1  = -1;
 static DWORD REG_EECON2  = -1;
 static DWORD REG_EEDATA  = -1;
 static DWORD REG_EEADR   = -1;
+static DWORD REG_EEADRH  = -1;
 static DWORD REG_EEDATL  = -1;
 static DWORD REG_EEDATH  = -1;
-static DWORD REG_EEADRL  = -1;
-static DWORD REG_EEADRH  = -1;
 
 //Analog Select Register
 static DWORD REG_ANSEL   = -1;
@@ -243,7 +245,7 @@ static DWORD REG_ANSELF  = -1;
 static DWORD REG_ANSELG  = -1;
 
 //
-static DWORD REG_PIR1    = -1; // 0x0c
+static DWORD REG_PIR1    = -1; // PERIPHERAL INTERRUPT REQUEST REGISTER 1
 #define          RCIF      BIT5
 #define          TXIF      BIT4
 #define          CCP1IF    BIT2
@@ -272,6 +274,7 @@ static DWORD REG_RCSTA   = -1; // 0x18
 #define          CREN      BIT4
 #define          FERR      BIT2
 #define          OERR      BIT1
+static DWORD REG_SPBRGH  = -1; // 0x99
 static DWORD REG_SPBRG   = -1; // 0x99
 static DWORD REG_TXREG   = -1; // 0x19
 static DWORD REG_RCREG   = -1; // 0x1a
@@ -302,7 +305,17 @@ static DWORD REG_OPTION  = -1; // 0x81 or 0x181 //0x95
 #define          T0CS         BIT5
 #define          PSA          BIT3
 
-static int       WDTE    =-1; //
+static int       WDTE    = -1; //
+
+// OSCILLATOR CONTROL REGISTER
+static DWORD REG_OSCON   = -1;
+#define          SCS0         BIT0 //..BIT1
+#define          IRCF0        BIT3 //..BIt6
+#define          SPLLEN       BIT7
+
+static DWORD CONFIG_ADDR1 = -1;
+static DWORD CONFIG_ADDR2 = -1;
+//-----------------------------------------------------------------------------
 
 static int IntPc;
 
@@ -1859,8 +1872,8 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             WriteIhex(f, 0); // AA->Address as big endian values HI()
             WriteIhex(f, 0); // AA->Address as big endian values LO()
             WriteIhex(f, 4); // TT->Record Type -> 04 is Extended Linear Address Record
-            WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) >> 8));   // AA->Address as big endian values HI()
-            WriteIhex(f, (BYTE)((ExtendedSegmentAddress >> 3) & 0xff)); // AA->Address as big endian values LO()
+            WriteIhex(f, (BYTE)(((ExtendedSegmentAddress >> 3) >> 8) & 0xff));   // AA->Address as big endian values HI()
+            WriteIhex(f, (BYTE) ((ExtendedSegmentAddress >> 3) & 0xff)); // AA->Address as big endian values LO()
             FinishIhex(f);   // CC->Checksum
         }
         if(soFarCount == 0) soFarStart = i;
@@ -1872,7 +1885,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             WriteIhex(f, soFarCount);
             WriteIhex(f, (BYTE)((soFarStart*2) >> 8));
             WriteIhex(f, (BYTE)((soFarStart*2) & 0xff));
-            WriteIhex(f, 0x00);
+            WriteIhex(f, 0x00); // RECTYP: '00' Data Record
             int j;
             for(j = 0; j < soFarCount; j++) {
                 WriteIhex(f, soFar[j]);
@@ -1977,92 +1990,45 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             ;;//;;//Error("op=%d=0x%X", PicProg[i].opPic, PicProg[i].opPic);
     }
 
-    StartIhex(f);
+    if(ExtendedSegmentAddress != (CONFIG_ADDR1*2 & ~0xffff)) {
+        ExtendedSegmentAddress = (CONFIG_ADDR1*2 & ~0xffff);
+        StartIhex(f);    // ':'->Colon
+        WriteIhex(f, 2); // LL->Record Length
+        WriteIhex(f, 0); // AA->Address as big endian values HI()
+        WriteIhex(f, 0); // AA->Address as big endian values LO()
+
+        WriteIhex(f, 4); // TT->Record Type -> 04 is Extended Linear Address Record
+        WriteIhex(f, (BYTE) ((ExtendedSegmentAddress >>(16+8)) & 0xff)); // AA->Address as big endian values HI()
+        WriteIhex(f, (BYTE) ((ExtendedSegmentAddress >> 16) & 0xff));    // AA->Address as big endian values LO()
+        FinishIhex(f);   // CC->Checksum
+    }
+
+    if((Prog.configurationWord & ~0xffff) && (CONFIG_ADDR2 == -1))
+        oops();
+
     // Configuration words start at address 0x2007 in program memory; and the
     // hex file addresses are by bytes, not words, so we start at 0x400e.
     // There may be either 16 or 32 bits of conf word, depending on the part.
-    if(McuAs("Microchip PIC16F887 ")
-    || McuAs("Microchip PIC16F886 ")
-    || McuAs("Microchip PIC16F88 ")
-    || McuAs(" PIC16F87 ")
-    || McuAs(" PIC16F884 ")
-    || McuAs(" PIC16F883 ")
-    || McuAs(" PIC16F882 ")
-    ) {
-        WriteIhex(f, 0x04); // RECLEN 4 bytes
-        WriteIhex(f, 0x40); // 0x2007 * 2 = 0x400E
-        WriteIhex(f, 0x0E);
-        WriteIhex(f, 0x00);
-        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >> 16) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >> 24) & 0xff));
-    } else
-    if(McuAs(" PIC16F1512 ")
-    || McuAs(" PIC16F1513 ")
-    || McuAs(" PIC16F1516 ")
-    || McuAs(" PIC16F1517 ")
-    || McuAs(" PIC16F1518 ")
-    || McuAs(" PIC16F1519 ")
-    || McuAs(" PIC16F1526 ")
-    || McuAs(" PIC16F1527 ")
-    || McuAs(" PIC16F1933 ")
-    || McuAs(" PIC16F1947 ")
-    ) {
-        WriteIhex(f, 0x04); // RECLEN 4 bytes
-        WriteIhex(f, 0x01); // 0x8007 * 2 = 0x01000E
-        WriteIhex(f, 0x00);
-        WriteIhex(f, 0x0E);
-        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >> 16) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >> 24) & 0xff));
-    } else
-    if(McuAs("Microchip PIC16F628 ")
-    || McuAs("Microchip PIC16F819 ")
-    || McuAs("Microchip PIC16F877 ")
-    || McuAs("Microchip PIC16F876 ")
-    || McuAs(" PIC16F874 ")
-    || McuAs(" PIC16F873 ")
-    || McuAs(" PIC16F72 ")
-    || McuAs(" PIC12F675 ")
-    || McuAs(" PIC12F683 ")
-    ) {
-        if(Prog.configurationWord & 0xffff0000) oops();
-        WriteIhex(f, 0x02); // RECLEN 2 bytes
-        WriteIhex(f, 0x40); // 0x2007 * 2 = 0x400E
-        WriteIhex(f, 0x0E);
-        WriteIhex(f, 0x00);
-        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
-    } else
-    if(McuAs(" PIC10F200 ")
-    || McuAs(" PIC10F204 ")
-    || McuAs(" PIC10F220 ")
-    ) {
-        if(Prog.configurationWord & 0xffff0000) oops();
-        WriteIhex(f, 0x02); // RECLEN 2 bytes
-        WriteIhex(f, 0x03); // 0x01ff * 2 = 0x03FE
-        WriteIhex(f, 0xFE);
-        WriteIhex(f, 0x00);
-        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
-    } else
-    if(McuAs(" PIC10F202 ")
-    || McuAs(" PIC10F206 ")
-    || McuAs(" PIC10F222 ")
-    ) {
-        if(Prog.configurationWord & 0xffff0000) oops();
-        WriteIhex(f, 0x02); // RECLEN 2 bytes
-        WriteIhex(f, 0x07); // 0x03ff * 2 = 0x07FE
-        WriteIhex(f, 0xFE);
-        WriteIhex(f, 0x00);
-        WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
-    } else
-        oops();
+
+    StartIhex(f);
+    WriteIhex(f, 0x02); // RECLEN 2 bytes
+    WriteIhex(f,((CONFIG_ADDR1 * 2) >> 8) & 0xff);
+    WriteIhex(f, (CONFIG_ADDR1 * 2) & 0xff);
+    WriteIhex(f, 0x00); // RECTYP: '00' Data Record
+    WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
+    WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
     FinishIhex(f);
 
+    if(CONFIG_ADDR2 != -1) {
+        StartIhex(f);    // ':'->Colon
+        WriteIhex(f, 0x02); // RECLEN 2 bytes
+        WriteIhex(f,((CONFIG_ADDR2 * 2) >> 8) & 0xff);
+        WriteIhex(f, (CONFIG_ADDR2 * 2) & 0xff);
+        WriteIhex(f, 0x00); // RECTYP: '00' Data Record
+        WriteIhex(f, BYTE((Prog.configurationWord >> 16) & 0xff));
+        WriteIhex(f, BYTE((Prog.configurationWord >> 24) & 0xff));
+        FinishIhex(f);
+    }
     // end of file record
     fprintf(f, ":00000001FF\n");
 }
@@ -2787,11 +2753,6 @@ static void CompileFromIntermediate(BOOL topLevel)
 {
     DWORD addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
     int   bit1 = -1, bit2 = -1,            bit4 = -1;
-    DWORD addr = 0;
-    int   bit = -1;
-    DWORD addrl  = 0;
-    DWORD addrl2 = 0;
-    DWORD addrl3 = 0;
     int   sov  = -1, sov1 = -1, sov2 = -1, sov3 = -1;
     char comment[MAX_NAME_LEN]="";
 
@@ -3131,26 +3092,6 @@ static void CompileFromIntermediate(BOOL topLevel)
                 }
                 break;
 
-            case INT_UART_SEND_READY: {
-                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
-                #ifdef AUTO_BANKING
-                CopyBit(addr1, bit1, REG_TXSTA, TRMT); // 1 is TSR empty, ready; 0 is TSR full
-                #else
-                ClearBit(addr1, bit1);
-
-                DWORD notReady = AllocFwdAddr();
-                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-                Instruction(OP_BTFSS, REG_TXSTA ^ 0x80, TRMT);
-                Instruction(OP_GOTO, notBusy, 0);
-
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-                SetBit(addr1, bit1);
-
-                FwdAddrIsNow(notRedy);
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-                #endif
-                break;
-            }
             case INT_UART_SEND1: {
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
@@ -3180,8 +3121,9 @@ static void CompileFromIntermediate(BOOL topLevel)
                 FwdAddrIsNow(noSend);
                 break;
             }
-            case INT_UART_SEND: {
+            case -INT_UART_SENDn: {
                 MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
                 MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
 
                 DWORD noSend = AllocFwdAddr();
@@ -3192,8 +3134,48 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Instruction(OP_MOVWF, REG_TXREG);
 
                 FwdAddrIsNow(noSend);
-                #ifdef AUTO_BANKING
+
                 XorCopyBit(addr2, bit2, REG_TXSTA, TRMT); // return as busy
+                break;
+            }
+            case INT_UART_SEND_READY: {
+                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                #ifdef AUTO_BANKING
+                CopyBit(addr1, bit1, REG_TXSTA, TRMT); // TRMT=1 is TSR empty, ready; TRMT=0 is TSR full
+                #else
+                ClearBit(addr1, bit1);
+
+                DWORD notReady = AllocFwdAddr();
+                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
+                Instruction(OP_BTFSS, REG_TXSTA ^ 0x80, TRMT);
+                Instruction(OP_GOTO, notBusy, 0);
+
+                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
+                SetBit(addr1, bit1);
+
+                FwdAddrIsNow(notRedy);
+                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
+                #endif
+                break;
+            }
+            case INT_UART_SEND: {
+                MemForVariable(a->name1, &addr1);
+                MemForSingleBit(a->name2, TRUE, &addr2, &bit2); // output
+
+                DWORD noSend = AllocFwdAddr();
+                IfBitClear(addr2, bit2);
+                Instruction(OP_GOTO, noSend);
+
+                DWORD isBusy = AllocFwdAddr();
+                IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
+                Instruction(OP_GOTO, isBusy); // output stay HI level
+
+                Instruction(OP_MOVF, addr1, DEST_W);
+                Instruction(OP_MOVWF, REG_TXREG);
+
+                FwdAddrIsNow(noSend);
+                #ifdef AUTO_BANKING
+                XorCopyBit(addr2, bit2, REG_TXSTA, TRMT); // return as busy // TRMT=1 if TSR empty, ready; TRMT=0 if TSR full
                 #else
                 ClearBit(addr2, bit2);
 
@@ -3208,6 +3190,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 FwdAddrIsNow(notBusy);
                 Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
                 #endif
+                FwdAddrIsNow(isBusy);
                 break;
             }
             case INT_UART_RECV_AVAIL: {
@@ -3217,6 +3200,7 @@ static void CompileFromIntermediate(BOOL topLevel)
             }
             case INT_UART_RECV: {
                 MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
                 MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
 
                 ClearBit(addr2, bit2);
@@ -3229,8 +3213,10 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 // RCIF is set, so we have a character. Read it now.
                 Instruction(OP_MOVF, REG_RCREG, DEST_W);
-                Instruction(OP_MOVWF, addr1, 0);
-                Instruction(OP_CLRF, addr1+1, 0);
+                Instruction(OP_MOVWF, addr1);
+                int i;
+                for(i = 1; i < sov1; i++)
+                  Instruction(OP_CLRF, addr1+i);
                 // and set rung-out true
                 SetBit(addr2, bit2);
 
@@ -3747,6 +3733,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                 || McuAs(" PIC16F1947 ")
                 || McuAs(" PIC12F675 ")
                 || McuAs(" PIC12F683 ")
+                || McuAs(" PIC16F1824 ")
+                || McuAs(" PIC16F1827 ")
                 ) {
                      goPos = 1;
                     chsPos = 2;
@@ -3782,6 +3770,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                 || McuAs(" PIC16F1527 ")
                 || McuAs(" PIC16F1933 ")
                 || McuAs(" PIC16F1947 ")
+                || McuAs(" PIC16F1824 ")
+                || McuAs(" PIC16F1827 ")
                 ) {
                     adcsPos = 4; // in REG_ADCON1
                     WriteRegister(REG_ADCON0,
@@ -4098,29 +4088,31 @@ executed as a NOP instruction. */
 
 //-----------------------------------------------------------------------------
 PlcTimerData plcTmr;
-
+#if 0
 int PicTimer1Prescaler(long long int cycleTimeMicroseconds)
 {
-    /*
-    */
-    plcTmr.countsPerCycle = long long int(Prog.mcuClock) / 4 * cycleTimeMicroseconds / 1000000;
+    //memset(plcTmr, 0, sizeof(plcTmr));
+    plcTmr.ticksPerCycle = (long long int)floor(1.0 * Prog.mcuClock / 4 * cycleTimeMicroseconds / 1000000 + 0.5);
     plcTmr.softDivisor = 1;
     plcTmr.prescaler = 1;
-    while((plcTmr.prescaler <= 8) && (plcTmr.softDivisor < 0x100)) {
-        plcTmr.tmr = int(plcTmr.countsPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
+    while((plcTmr.prescaler <= 8) && (plcTmr.softDivisor <= 0xFF)) {
+        plcTmr.tmr = int(plcTmr.ticksPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
         if(plcTmr.tmr > 0xFFFF) {
             if(plcTmr.prescaler < 8) {
                 plcTmr.prescaler *= 2;
             } else {
-                plcTmr.softDivisor *= 2;
+                plcTmr.softDivisor += 1;
+                plcTmr.prescaler = 1;
             }
         } else {
             break;
         }
     }
-    plcTmr.countsPerCycle = plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr;
+    plcTmr.ticksPerCycle = plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr;
 
-    if(plcTmr.countsPerCycle < (PLC_CLOCK_MIN * 2)) {
+    plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
+    plcTmr.TCycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
+    if(plcTmr.ticksPerCycle < (PLC_CLOCK_MIN * 2)) {
         int min_cycleTimeMicroseconds = (PLC_CLOCK_MIN * 2) *4 *1000000 / Prog.mcuClock;
         char str[1024];
         sprintf(str, _("\n\nMinimum PLC cycle time is %d us."),
@@ -4130,8 +4122,11 @@ int PicTimer1Prescaler(long long int cycleTimeMicroseconds)
             "crystal."),str);
         return -1;
     }
-    if(plcTmr.softDivisor > 0x10000) {
-        double max_cycleTimeSeconds = 1.0 * 0x100 * 8 * 0x10000 * 4 / Prog.mcuClock;
+    if((plcTmr.softDivisor > 0x8000)
+    || (plcTmr.prescaler > 8)
+    || (plcTmr.tmr > 0x10000)
+    ) {
+        double max_cycleTimeSeconds = 1.0 * 0x8000 * 8 * 0x10000 * 4 / Prog.mcuClock;
         char str[1024];
         sprintf(str, _("\n\nMaximum PLC cycle time is %.3f s."),
             max_cycleTimeSeconds);
@@ -4149,11 +4144,9 @@ int PicTimer1Prescaler(long long int cycleTimeMicroseconds)
     else oops();
     // enable clock, internal source
     plcTmr.PS |= 0x01;
-    plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
-    plcTmr.Pcycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
     return 0;
 }
-
+#endif
 //-----------------------------------------------------------------------------
 // Configure Timer1 and Ccp1 to generate the periodic `cycle' interrupt
 // that triggers all the ladder logic processing. We will always use 16-bit
@@ -4162,12 +4155,9 @@ int PicTimer1Prescaler(long long int cycleTimeMicroseconds)
 static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 {
     Comment("Configure Timer1");
-    int err = PicTimer1Prescaler(cycleTimeMicroseconds);
-    if(err < 0) {
-        fCompileError(f, fAsm);
-    }
-    WriteRegister(REG_CCPR1L, plcTmr.tmr & 0xff);
-    WriteRegister(REG_CCPR1H, plcTmr.tmr >> 8);
+    Instruction(OP_CLRWDT); // Clear WDT and prescaler
+    WriteRegister(REG_CCPR1L, BYTE(plcTmr.tmr & 0xff));
+    WriteRegister(REG_CCPR1H, BYTE(plcTmr.tmr >> 8));
 
     WriteRegister(REG_TMR1L, 0);
     WriteRegister(REG_TMR1H, 0);
@@ -4195,27 +4185,32 @@ static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 }
 
 //-----------------------------------------------------------------------------
+#if 0
 int PicTimer0Prescaler(long long int cycleTimeMicroseconds)
 {
-    plcTmr.countsPerCycle = long long int(Prog.mcuClock) / 4 * cycleTimeMicroseconds / 1000000;
+    //memset(plcTmr, 0, sizeof(plcTmr));
+    plcTmr.ticksPerCycle = long long int(Prog.mcuClock) / 4 * cycleTimeMicroseconds / 1000000;
     plcTmr.softDivisor = 1;
     plcTmr.prescaler = 1;
     plcTmr.PS = 0;
-    while((plcTmr.prescaler <= 256) && (plcTmr.softDivisor < 0x10000)) {
-        plcTmr.tmr = int(plcTmr.countsPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
+    while((plcTmr.prescaler <= 256) && (plcTmr.softDivisor <= 0xFFFF)) {
+        plcTmr.tmr = int(plcTmr.ticksPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
         if(plcTmr.tmr > 255) {
             if(plcTmr.prescaler < 256) {
                 plcTmr.prescaler *= 2;
             } else {
-                plcTmr.softDivisor *= 2;
+                plcTmr.softDivisor += 1;
+                plcTmr.prescaler = 1;
             }
         } else {
             break;
         }
     }
-    plcTmr.countsPerCycle = plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr;
+    plcTmr.ticksPerCycle = plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr;
 
-    if(plcTmr.countsPerCycle < (PLC_CLOCK_MIN * 2)) {
+    plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
+    plcTmr.TCycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
+    if(plcTmr.ticksPerCycle < (PLC_CLOCK_MIN * 2)) {
         int min_cycleTimeMicroseconds = (PLC_CLOCK_MIN * 2) *4 *1000000 / Prog.mcuClock;
         char str[1024];
         sprintf(str, _("\n\nMinimum PLC cycle time is %d us."),
@@ -4235,7 +4230,7 @@ int PicTimer0Prescaler(long long int cycleTimeMicroseconds)
             "crystal."),str);
         return -2;
     }
-    // set up prescaler
+    // SetPrescaler()
     if     (plcTmr.prescaler ==   1)   plcTmr.PS = 0x07; // wdt 2.3s
     else if(plcTmr.prescaler ==   2)   plcTmr.PS = 0x00;
     else if(plcTmr.prescaler ==   4)   plcTmr.PS = 0x01;
@@ -4246,10 +4241,9 @@ int PicTimer0Prescaler(long long int cycleTimeMicroseconds)
     else if(plcTmr.prescaler == 128)   plcTmr.PS = 0x06;
     else if(plcTmr.prescaler == 256)   plcTmr.PS = 0x07;
     else oops();
-    plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
-    plcTmr.Pcycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
     return 0;
 }
+#endif
 //-----------------------------------------------------------------------------
 static void ConfigureTimer0(long long int cycleTimeMicroseconds)
 {
@@ -4264,12 +4258,14 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
 //  Fcycle=1e6/cycleTimeMicroseconds
 //  cycleTimeMicroseconds=(4*prescaler*softDivisor*TMR0)*1e6/Fcycle
 
-//  countsPerCycle = (Fosc/4) * (cycleTimeMicroseconds/1e6)
-//  countsPerCycle = prescaler*softDivisor*TMR0
+//  ticksPerCycle = (Fosc/4) * (cycleTimeMicroseconds/1e6)
+//  ticksPerCycle = prescaler*softDivisor*TMR0
+    /*
     int err = PicTimer0Prescaler(cycleTimeMicroseconds);
     if(err < 0) {
         fCompileError(f, fAsm);
     }
+    */
     if(Prog.mcu->core == BaselineCore12bit) {
         if(plcTmr.prescaler == 1) {
             //CHANGING PRESCALER(TIMER0 -> WDT)
@@ -4330,42 +4326,99 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
         Instruction(OP_MOVLW, 256 - plcTmr.tmr);
         Instruction(OP_MOVWF, REG_TMR0);
     }
-
-    if(plcTmr.softDivisor > 1) {
-        MemForVariable("$softDivisor", &plcTmr.softDivisorAddr);
-        //dbpx(softDivisorAddr)
-        //dbpx(softDivisorAddr+1)
-        WriteRegister(plcTmr.softDivisorAddr,   BYTE(plcTmr.softDivisor & 0xff));
-        WriteRegister(plcTmr.softDivisorAddr+1, BYTE(plcTmr.softDivisor >> 8));
-    }
 }
 
 //-----------------------------------------------------------------------------
-// Calc PIC 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-BOOL CalcPicTimerPlcCycle(long long int cycleTimeMicroseconds,
-    int *cycleTimeMin,
-    int *cycleTimeMax)
+static void SetPrescaler(int tmr)
 {
-    *cycleTimeMin = int(round(1e6 * (PLC_CLOCK_MIN * 2) * 1 * 4 / Prog.mcuClock ));
-    //                               ^min_divider         ^min_prescaler
-    int max_divider, max_prescaler, softDivisor;
+    if(tmr == 0) {
+        // set up prescaler
+        if     (plcTmr.prescaler ==   1)   plcTmr.PS = 0x07; // wdt 2.3s
+        else if(plcTmr.prescaler ==   2)   plcTmr.PS = 0x00;
+        else if(plcTmr.prescaler ==   4)   plcTmr.PS = 0x01;
+        else if(plcTmr.prescaler ==   8)   plcTmr.PS = 0x02;
+        else if(plcTmr.prescaler ==  16)   plcTmr.PS = 0x03;
+        else if(plcTmr.prescaler ==  32)   plcTmr.PS = 0x04;
+        else if(plcTmr.prescaler ==  64)   plcTmr.PS = 0x05;
+        else if(plcTmr.prescaler == 128)   plcTmr.PS = 0x06;
+        else if(plcTmr.prescaler == 256)   plcTmr.PS = 0x07;
+        else oops();
+    } else if(tmr == 1) {
+        plcTmr.PS = 0x00;
+        // set up prescaler
+        if(plcTmr.prescaler == 1)        plcTmr.PS |= 0x00;
+        else if(plcTmr.prescaler == 2)   plcTmr.PS |= 0x10;
+        else if(plcTmr.prescaler == 4)   plcTmr.PS |= 0x20;
+        else if(plcTmr.prescaler == 8)   plcTmr.PS |= 0x30;
+        else oops();
+        // enable clock, internal source
+        plcTmr.PS |= 0x01;
+    } else oops();
+}
+//-----------------------------------------------------------------------------
+// Calc PIC 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
+BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds)
+{
+    //memset(plcTmr, 0, sizeof(plcTmr));
+    plcTmr.ticksPerCycle = (long long int)floor(1.0 * Prog.mcuClock / 4 * cycleTimeMicroseconds / 1000000 + 0.5);
+    plcTmr.softDivisor = 1;
+    plcTmr.prescaler = 1;
+    plcTmr.PS = 0;
+    plcTmr.cycleTimeMin = (int)floor(1e6 * (PLC_CLOCK_MIN * 2) * 1 * 4 / Prog.mcuClock + 0.5);
+    //                                      ^min_divider         ^min_prescaler
+    long int max_tmr, max_prescaler, max_softDivisor;
     if(Prog.cycleTimer == 0) {
-        max_divider = 0x100;
+        max_tmr = 0x100;
         max_prescaler = 256;
-        softDivisor = 0x10000; // 4294967296
+        max_softDivisor = 0xFFFF; // 1..0xFFFF
     } else {
-        max_divider = 0x10000;
+        max_tmr = 0x10000;
         max_prescaler = 8;
-        softDivisor = 0x100;   //  134217728
+        max_softDivisor = 0xFF; // 1..0xFF
     }
-    *cycleTimeMax = int(round(1e6 * max_divider * max_prescaler * softDivisor * 4 / Prog.mcuClock ));
+    plcTmr.cycleTimeMax = (long long int)floor(1.0e6 * max_tmr * max_prescaler * max_softDivisor * 4 / Prog.mcuClock + 0.5);
+
+    long int bestTmr = LONG_MIN;
+    long int bestPrescaler = LONG_MAX;
+    long int bestSoftDivisor;
+    long long int bestErr = LLONG_MAX;
+    long long int err;
+    while(plcTmr.softDivisor <= max_softDivisor) {
+        plcTmr.prescaler = max_prescaler;
+        while(plcTmr.prescaler >= 1) {
+            for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
+                err = plcTmr.ticksPerCycle - long long int (plcTmr.tmr) * plcTmr.prescaler * plcTmr.softDivisor;
+                if(err < 0) err = -err;
+
+                if((bestErr > err)
+                ||((bestErr == err) && (bestPrescaler < plcTmr.prescaler))
+                ) {
+                     bestErr = err;
+                     bestSoftDivisor = plcTmr.softDivisor;
+                     bestPrescaler = plcTmr.prescaler;
+                     bestTmr = plcTmr.tmr;
+                     if(err == 0) goto err0;
+                }
+            }
+            plcTmr.prescaler /= 2;
+        }
+        if(plcTmr.softDivisor == max_softDivisor) break;
+        plcTmr.softDivisor++;
+    }
+    err0:
+    plcTmr.softDivisor = bestSoftDivisor;
+    plcTmr.prescaler = bestPrescaler;
+    plcTmr.tmr = bestTmr;
+    plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
+    plcTmr.TCycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
+    SetPrescaler(Prog.cycleTimer);
     char txt[1024] = "";
-    if(cycleTimeMicroseconds > *cycleTimeMax) {
-      sprintf(txt,"PLC cycle time more then %.3f ms not valid.", 0.001 * *cycleTimeMax);
+    if(cycleTimeMicroseconds > plcTmr.cycleTimeMax) {
+      sprintf(txt,"PLC cycle time more then %.3f ms not valid.", 0.001 * plcTmr.cycleTimeMax);
       Error(txt);
       return FALSE;
-    } else if(cycleTimeMicroseconds < *cycleTimeMin) {
-      sprintf(txt,"PLC cycle time less then %.3f ms not valid.", 0.001 * *cycleTimeMin);
+    } else if(cycleTimeMicroseconds < plcTmr.cycleTimeMin) {
+      sprintf(txt,"PLC cycle time less then %.3f ms not valid.", 0.001 * plcTmr.cycleTimeMin);
       Error(txt);
       return FALSE;
     }
@@ -4615,6 +4668,8 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1527 ")
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         REG_PIR1       = 0x0011;
         REG_TMR1L      = 0x0016;
@@ -4664,6 +4719,8 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1527 ")
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         // has not
     } else
@@ -4674,15 +4731,27 @@ void CompilePic16(char *outFile)
         oops();
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F628 ")
-    || McuAs("Microchip PIC16F819 ")
+    || McuAs("Microchip PIC16F873 ")
+    || McuAs("Microchip PIC16F874 ")
     || McuAs("Microchip PIC16F876 ")
     || McuAs("Microchip PIC16F877 ")
-    || McuAs("Microchip PIC16F886 ")
-    || McuAs("Microchip PIC16F887 ")
     || McuAs("Microchip PIC16F88 " )
     ) {
         REG_TXSTA    = 0x98;
         REG_RCSTA    = 0x18;
+        REG_SPBRG    = 0x99;
+        REG_TXREG    = 0x19;
+        REG_RCREG    = 0x1a;
+    } else
+    if(McuAs(" PIC16F882 ")
+    || McuAs(" PIC16F883 ")
+    || McuAs(" PIC16F884 ")
+    || McuAs(" PIC16F886 ")
+    || McuAs(" PIC16F887 ")
+    ) {
+        REG_TXSTA    = 0x98;
+        REG_RCSTA    = 0x18;
+        REG_SPBRGH   = 0x9A;
         REG_SPBRG    = 0x99;
         REG_TXREG    = 0x19;
         REG_RCREG    = 0x1a;
@@ -4697,9 +4766,12 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1527 ")
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         REG_TXSTA    = 0x019E;
         REG_RCSTA    = 0x019D;
+        REG_SPBRGH   = 0x019C;
         REG_SPBRG    = 0x019B;
         REG_TXREG    = 0x019A;
         REG_RCREG    = 0x0199;
@@ -4747,6 +4819,8 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1527 ")
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         REG_ADRESH   = 0x009C;
         REG_ADRESL   = 0x009B;
@@ -4782,6 +4856,8 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1527 ")
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         REG_CCPR2L  = 0x0298;
         REG_CCP2CON = 0x029A;
@@ -4822,6 +4898,8 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1527 ")
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         REG_T2CON   = 0x001C;
         REG_PR2     = 0x001B;
@@ -4863,6 +4941,8 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1527 ")
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         REG_TMR0       = 0x15;
         REG_OPTION     = 0x95;
@@ -4892,10 +4972,10 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC12F675 ")
     || McuAs(" PIC12F683 ")
     ) {
-        REG_EEDATA  = 0x9a;
-        REG_EEADR   = 0x9b;
         REG_EECON1  = 0x9c;
         REG_EECON2  = 0x9d;
+        REG_EEDATA  = 0x9a;
+        REG_EEADR   = 0x9b;
     } else
     if(McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
@@ -4910,12 +4990,14 @@ void CompilePic16(char *outFile)
     } else
     if(McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         REG_EECON1  = 0x195;
         REG_EECON2  = 0x196;
-        REG_EEDATL  = 0x193;
+        REG_EEDATA  = 0x193;
         REG_EEDATH  = 0x194;
-        REG_EEADRL  = 0x191;
+        REG_EEADR   = 0x191;
         REG_EEADRH  = 0x192;
     } else
     if(McuAs(" PIC10F")
@@ -4949,7 +5031,7 @@ void CompilePic16(char *outFile)
     } else {
 //      oops();
     }
-    //------------------------------------------------------------
+    //----------continue------------------------------------------
     if(McuAs(" PIC16F1512 ")
     || McuAs(" PIC16F1513 ")
     || McuAs(" PIC16F1516 ")
@@ -4960,6 +5042,8 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1527 ")
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         REG_ANSELA  = 0x18C;
     }
@@ -4972,6 +5056,7 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1526 ")
     || McuAs(" PIC16F1527 ")
     || McuAs(" PIC16F1933 ")
+    || McuAs(" PIC16F1827 ")
     ) {
         REG_ANSELB  = 0x18D;
     }
@@ -4981,6 +5066,7 @@ void CompilePic16(char *outFile)
     || McuAs(" PIC16F1517 ")
     || McuAs(" PIC16F1518 ")
     || McuAs(" PIC16F1519 ")
+    || McuAs(" PIC16F1824 ")
     ) {
         REG_ANSELC  = 0x18E;
     }
@@ -5006,6 +5092,64 @@ void CompilePic16(char *outFile)
         REG_ANSELF  = 0x40C;
         REG_ANSELG  = 0x40D;
     }
+    //------------------------------------------------------------
+    if(McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
+    ) {
+        REG_OSCON   = 0x099;
+    }
+    //------------------------------------------------------------
+    if(McuAs("Microchip PIC16F887 ")
+    || McuAs("Microchip PIC16F886 ")
+    || McuAs("Microchip PIC16F88 ")
+    || McuAs(" PIC16F87 ")
+    || McuAs(" PIC16F884 ")
+    || McuAs(" PIC16F883 ")
+    || McuAs(" PIC16F882 ")
+    ) {
+        CONFIG_ADDR1 = 0x2007;
+        CONFIG_ADDR2 = 0x2008;
+    } else
+    if(McuAs(" PIC16F1512 ")
+    || McuAs(" PIC16F1513 ")
+    || McuAs(" PIC16F1516 ")
+    || McuAs(" PIC16F1517 ")
+    || McuAs(" PIC16F1518 ")
+    || McuAs(" PIC16F1519 ")
+    || McuAs(" PIC16F1526 ")
+    || McuAs(" PIC16F1527 ")
+    || McuAs(" PIC16F1933 ")
+    || McuAs(" PIC16F1947 ")
+    || McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
+    ) {
+        CONFIG_ADDR1 = 0x8007;
+        CONFIG_ADDR2 = 0x8008;
+    } else
+    if(McuAs("Microchip PIC16F628 ")
+    || McuAs("Microchip PIC16F819 ")
+    || McuAs("Microchip PIC16F877 ")
+    || McuAs("Microchip PIC16F876 ")
+    || McuAs(" PIC16F874 ")
+    || McuAs(" PIC16F873 ")
+    || McuAs(" PIC16F72 ")
+    || McuAs(" PIC12F675 ")
+    || McuAs(" PIC12F683 ")
+    ) {
+        CONFIG_ADDR1 = 0x2007;
+    } else
+    if(McuAs(" PIC10F200 ")
+    || McuAs(" PIC10F204 ")
+    || McuAs(" PIC10F220 ")
+    ) {
+        CONFIG_ADDR1 = 0x01ff;
+    } else
+    if(McuAs(" PIC10F202 ")
+    || McuAs(" PIC10F206 ")
+    || McuAs(" PIC10F222 ")
+    ) {
+        CONFIG_ADDR1 = 0x03ff;
+    } else oops();
     //------------------------------------------------------------
     f = fopen(outFile, "w");
     if(!f) {
@@ -5039,11 +5183,10 @@ void CompilePic16(char *outFile)
     if(!Prog.configurationWord)
         Prog.configurationWord = Prog.mcu->configurationWord;
 
-    fprintf(fAsm, ".CONFIG = 0x%X\n", Prog.configurationWord);
-    if(Prog.configurationWord >> 16) {
-        fprintf(fAsm, ";CONFIG1 WORD= 0x%04X\n", Prog.configurationWord & 0xffff);
-        fprintf(fAsm, ";CONFIG2 WORD= 0x%04X\n", Prog.configurationWord >> 16);
-    }
+    fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR1, Prog.configurationWord & 0xFFFF);
+    if(CONFIG_ADDR2 != -1)
+    fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR2, (Prog.configurationWord >> 16) & 0xFFFF);
+
     fprintf(fAsm, "\tradix dec\n");
     fprintf(fAsm, "\torg 0\n");
     fprintf(fAsm, ";TABSIZE = 8\n");
@@ -5133,7 +5276,21 @@ void CompilePic16(char *outFile)
     FwdAddrIsNow(progStart);
     Comment("Program Start");
 
-    Comment("Now zero out the RAM");
+    if(McuAs(" PIC16F1824 ")
+    || McuAs(" PIC16F1827 ")
+    ) {
+        Comment("Selects 16MHz for the Internal Oscillator when it used, ignored otherwise.");
+        WriteRegister(REG_OSCON, 0xF << IRCF0);
+    }
+    if(Prog.cycleTime != 0) { // 1
+        // Configure PLC Timer near the progStart
+        CalcPicPlcCycle(Prog.cycleTime);
+        if(Prog.cycleTimer==0)
+            ConfigureTimer0(Prog.cycleTime);
+        else
+            ConfigureTimer1(Prog.cycleTime);
+    }
+    Comment("Now zero out the RAM"); // 2
     DWORD progStartBank = 0;
     DWORD i;
 //  for(i = 0; i < MAX_RAM_SECTIONS; i++) {
@@ -5181,18 +5338,27 @@ void CompilePic16(char *outFile)
 //      Instruction(OP_CLRF, Prog.mcu->ram[i].start & ~BankMask()); // not need, self cleared here >>>^
       }
     }
-    if(Bank(Prog.mcu->ram[RamSection].start)) {
+    if(Bank(Prog.mcu->ram[RamSection].start)) { // 3
         Instruction(OP_CLRF, REG_STATUS); // Select Bank 0 and Indirect Bank 0
         if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
             Instruction(OP_MOVLB, 0);     // Select Bank 0
         }
     }
-
-    BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
-    BuildDirectionRegisters(isInput, isOutput);
+    if(Prog.cycleTime != 0) { // 4
+        // Configure PLC Timer near the progStart after zero out RAM
+        if(plcTmr.softDivisor > 1) { // RAM neded
+            Comment("Configure PLC Timer softDivisor");
+            MemForVariable("$softDivisor", &plcTmr.softDivisorAddr);
+            WriteRegister(plcTmr.softDivisorAddr, BYTE(plcTmr.softDivisor & 0xff));
+            if(plcTmr.softDivisor > 0xff)
+                WriteRegister(plcTmr.softDivisorAddr+1, BYTE(plcTmr.softDivisor >> 8));
+        }
+    }
+    BYTE isInput[MAX_IO_PORTS], isAnsel[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
+    BuildDirectionRegisters(isInput, isAnsel, isOutput);
 
     if(Prog.mcu->core == BaselineCore12bit) {
-        Comment("Set up the TRISx registers (direction). 1 means tri-stated (input), 0-output.");
+        Comment("Set up the TRISx registers (direction). 1-tri-stated (input), 0-output.");
 
         Prog.WDTPSA = 1;
         Prog.OPTION = 0xFF; // default; only for PIC10Fxxx
@@ -5238,14 +5404,6 @@ void CompilePic16(char *outFile)
             FwdAddrIsNow(notWdtWakeUp);
         }
     }
-
-    if(Prog.cycleTime != 0) {
-        // Configure PLC Timer near the progStart
-        if(Prog.cycleTimer==0)
-            ConfigureTimer0(Prog.cycleTime);
-        else
-            ConfigureTimer1(Prog.cycleTime);
-    }
     if(McuAs("Microchip PIC16F877 ") ||
        McuAs("Microchip PIC16F819 ") ||
        McuAs("Microchip PIC16F876 ")) {
@@ -5259,6 +5417,7 @@ void CompilePic16(char *outFile)
         WriteRegister(REG_ADCON1, 0x7); // all digital inputs
     }
 
+    Comment("Set up the ANSELx registers. 1-analog input, 0-digital I/O.");
     if(McuAs("Microchip PIC16F88 ")
     || McuAs(" PIC12F675 ")
     || McuAs(" PIC12F683 ")
@@ -5277,20 +5436,41 @@ void CompilePic16(char *outFile)
     if(REG_ANSELH != -1)
         Instruction(OP_CLRF, REG_ANSELH);
     /**/
-    if(REG_ANSELA != -1)
+    if(REG_ANSELA != -1) {
         Instruction(OP_CLRF, REG_ANSELA);
-    if(REG_ANSELB != -1)
+        if(isAnsel[0])
+            WriteRegister(REG_ANSELA, isAnsel[0]);
+    }
+    if(REG_ANSELB != -1) {
         Instruction(OP_CLRF, REG_ANSELB);
-    if(REG_ANSELC != -1)
+        if(isAnsel[1])
+            WriteRegister(REG_ANSELB, isAnsel[1]);
+    }
+    if(REG_ANSELC != -1) {
         Instruction(OP_CLRF, REG_ANSELC);
-    if(REG_ANSELD != -1)
+        if(isAnsel[2])
+            WriteRegister(REG_ANSELC, isAnsel[2]);
+    }
+    if(REG_ANSELD != -1) {
         Instruction(OP_CLRF, REG_ANSELD);
-    if(REG_ANSELE != -1)
+        if(isAnsel[3])
+            WriteRegister(REG_ANSELD, isAnsel[3]);
+    }
+    if(REG_ANSELE != -1) {
         Instruction(OP_CLRF, REG_ANSELE);
-    if(REG_ANSELF != -1)
+        if(isAnsel[4])
+            WriteRegister(REG_ANSELE, isAnsel[4]);
+    }
+    if(REG_ANSELF != -1) {
         Instruction(OP_CLRF, REG_ANSELF);
-    if(REG_ANSELG != -1)
+        if(isAnsel[5])
+            WriteRegister(REG_ANSELF, isAnsel[5]);
+    }
+    if(REG_ANSELG != -1) {
         Instruction(OP_CLRF, REG_ANSELG);
+        if(isAnsel[6])
+            WriteRegister(REG_ANSELG, isAnsel[6]);
+    }
 
     if(McuAs("Microchip PIC16F628 ")
     || McuAs(" PIC12F675 ")
@@ -5305,7 +5485,7 @@ void CompilePic16(char *outFile)
     if(Prog.mcu->core == BaselineCore12bit) {
         ; //
     } else {
-        Comment("Set up the TRISx registers (direction). 1 means tri-stated (input), 0-output and drive the outputs low to start");
+        Comment("Set up the TRISx registers (direction). 1-tri-stated (input), 0-output and drive the outputs low to start");
         for(i = 0; i < MAX_IO_PORTS; i++) {
           if(IS_MCU_REG(i))
             WriteRegister(Prog.mcu->outputRegs[i], 0x00);
@@ -5334,7 +5514,7 @@ void CompilePic16(char *outFile)
             return;
         }
 
-        Comment("UartFunctionUsed. UART setup");
+        Comment("UART setup");
         // So now we should set up the UART. First let us calculate the
         // baud rate; there is so little point in the fast baud rates that
         // I won't even bother, so
@@ -5350,10 +5530,13 @@ void CompilePic16(char *outFile)
         if(fabs(percentErr) > 2) {
             ComplainAboutBaudRateError(divisor, actual, percentErr);
         }
-        if(divisor > 255) ComplainAboutBaudRateOverflow();
-
-        WriteRegister(REG_SPBRG, divisor);
-        WriteRegister(REG_TXSTA, 1 << TXEN); // only TXEN set
+        if(divisor > 255)
+          //if(REG_SPBRGH != -1)
+          //    WriteRegister(REG_SPBRGH, (divisor >> 8) & 0xFF);
+          //else
+                ComplainAboutBaudRateOverflow();
+        WriteRegister(REG_SPBRG, divisor & 0xFF);
+        WriteRegister(REG_TXSTA, 1 << TXEN); // only TXEN set, SYNC=0
         WriteRegister(REG_RCSTA, (1 << SPEN)|(1 << CREN)); // only SPEN, CREN set
     }
 
@@ -5382,36 +5565,14 @@ void CompilePic16(char *outFile)
               Instruction(OP_MOVLW, 256 - plcTmr.tmr + 1); // tested in Proteus - 1) 992Hz 0=996}
               Instruction(OP_MOVWF, REG_TMR0);
           } else {
-              Instruction(OP_MOVLW,  256 - plcTmr.tmr + 1); // tested in Proteus {+1} {1ms=1kHz} {0.250ms=4kHz}
+              Instruction(OP_MOVLW,  256 - plcTmr.tmr + 0); // tested in Proteus {DONE +0} {1ms=1kHz} {0.250ms=4kHz}
               IfBitClear(REG_INTCON, T0IF);
               Instruction(OP_GOTO,   PicProgWriteP - 1);
               //Instruction(OP_MOVWF,  REG_TMR0); // 3999 // 7920 = 8kHz = 0.125ms
               Instruction(OP_ADDWF,  REG_TMR0, DEST_F); // 4012 //7967 = 8kHz = 0.125ms
               Instruction(OP_BCF,    REG_INTCON ,T0IF); // must be cleared in software
           }
-
-          if(plcTmr.softDivisor > 1) {
-              DWORD yesZero;
-              if(plcTmr.softDivisor > 0xff) {
-                  yesZero = AllocFwdAddr();
-              }
-              Instruction(OP_DECFSZ, plcTmr.softDivisorAddr, DEST_F); // Skip if zero
-              Instruction(OP_GOTO, BeginOfPLCCycle);
-
-              if(plcTmr.softDivisor > 0xff) {
-                  Instruction(OP_MOVF, plcTmr.softDivisorAddr+1, DEST_F);
-                  Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
-                  Instruction(OP_GOTO, yesZero);
-                  Instruction(OP_DECF, plcTmr.softDivisorAddr+1, DEST_F);
-                  Instruction(OP_GOTO, BeginOfPLCCycle);
-                  FwdAddrIsNow(yesZero);
-
-                  WriteRegister(plcTmr.softDivisorAddr+1, BYTE(plcTmr.softDivisor >> 8));
-              }
-
-              WriteRegister(plcTmr.softDivisorAddr,   BYTE(plcTmr.softDivisor & 0xff));
-          }
-      } else {
+      } else { // Timer1
           if(Prog.mcu->core == BaselineCore12bit) {
               Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
               fCompileError(f, fAsm);
@@ -5420,8 +5581,32 @@ void CompilePic16(char *outFile)
           Instruction(OP_GOTO, PicProgWriteP - 1);
           Instruction(OP_BCF, REG_PIR1, CCP1IF);
       }
-    }
+      Comment("Watchdog reset");
+      Instruction(OP_CLRWDT);
+      if(plcTmr.softDivisor > 1) {
+          DWORD yesZero;
+          if(plcTmr.softDivisor > 0xff) {
+              yesZero = AllocFwdAddr();
+          }
+          Instruction(OP_DECFSZ, plcTmr.softDivisorAddr, DEST_F); // Skip if zero
+          Instruction(OP_GOTO, BeginOfPLCCycle);
 
+          if(plcTmr.softDivisor > 0xff) {
+              Instruction(OP_MOVF, plcTmr.softDivisorAddr+1, DEST_F);
+              Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
+              Instruction(OP_GOTO, yesZero);
+              Instruction(OP_DECF, plcTmr.softDivisorAddr+1, DEST_F);
+              Instruction(OP_GOTO, BeginOfPLCCycle);
+              FwdAddrIsNow(yesZero);
+
+              WriteRegister(plcTmr.softDivisorAddr+1, BYTE(plcTmr.softDivisor >> 8)-1);
+          }
+          WriteRegister(plcTmr.softDivisorAddr, BYTE(plcTmr.softDivisor & 0xff));
+      }
+    } else { // (Prog.cycleTime == 0)
+      Comment("Watchdog reset");
+      Instruction(OP_CLRWDT);
+    }
     DWORD addrDuty;
     int   bitDuty;
     if(Prog.cycleDuty) {
@@ -5430,8 +5615,6 @@ void CompilePic16(char *outFile)
         SetBit(addrDuty, bitDuty, "YPlcCycleDuty");
     }
 
-    Comment("Watchdog reset");
-    Instruction(OP_CLRWDT, 0, 0);
     IntPc = 0;
     //Comment("CompileFromIntermediate BEGIN");
     CompileFromIntermediate(TRUE);
