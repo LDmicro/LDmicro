@@ -718,16 +718,40 @@ McuAdcPinInfo Pic16F819AdcPinInfo[] = {
     { 18, 0x01 },
 };
 
+
+//-----------------------------------------------------------------------------
+// PIC16F88
+
+McuIoPinInfo Pic16F88PinIoInfo[] = {
+    { 'A',  2,  1, "RA2/AN2" },
+    { 'A',  3,  2, "RA3/AN3/CMP1" },
+    { 'A',  4,  3, "RA4/AN4/T0CKI/CMP2" },
+    { 'A',  5,  4, "RA5/_MCLR/Vpp" }, // input only without pull-up resistor
+//  { ' ', -1,  5, "Vss" },
+    { 'B',  0,  6, "RB0/INT" },
+    { 'B',  1,  7, "RB1/SDI/SDA" },
+    { 'B',  2,  8, "RB2/SDO/RX/DT" },
+    { 'B',  3,  9, "RB3/CCP1" },
+    { 'B',  4, 10, "RB4/SCK/SCL" },
+    { 'B',  5, 11, "RB5/_SS/TX/CK" },
+    { 'B',  6, 12, "RB6/AN5" },
+    { 'B',  7, 13, "RB7/AN6" },
+//  { ' ', -1, 14, "Vdd" },
+    { 'A',  6, 15, "RA6/OSC2/CLKOUT" },
+    { 'A',  7, 16, "RA7/OSC1/CLKIN" },
+    { 'A',  0, 17, "RA0/AN0" },
+    { 'A',  1, 18, "RA1/AN1" },
+};
+
 McuAdcPinInfo Pic16F88AdcPinInfo[] = {
+    { 17, 0x00 },
+    { 18, 0x01 },
     {  1, 0x02 },
     {  2, 0x03 },
     {  3, 0x04 },
     { 12, 0x05 },
     { 13, 0x06 },
-    { 17, 0x00 },
-    { 18, 0x01 },
 };
-
 
 //-----------------------------------------------------------------------------
 // PIC16F877, PIC16F874
@@ -1516,8 +1540,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { 0x85, 0x86 }, // TRISx
         4096,
         { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 48 } },
-        Pic18PinIoInfo,
-        arraylen(Pic18PinIoInfo),
+        Pic16F88PinIoInfo,
+        arraylen(Pic16F88PinIoInfo),
         Pic16F88AdcPinInfo,
         arraylen(Pic16F88AdcPinInfo),
         1023,
@@ -1526,16 +1550,17 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         ISA_PIC16,
         MidrangeCore14bit,
         18,
-//     (0x3fff << 16) |         // CONFIG2
-            (1 << 13) |         // CP off
-            (1 << 12) |         // CCP on RB2 (doesn't matter)
-            (1 << 11) |         // ICD disabled
-            (3 <<  9) |         // flash write protection off
-            (1 <<  8) |         // code protection off
+//          (1 << 17) | // IESO: Internal External Switchover mode enabled
+//          (1 << 16) | // FCMEN: Fail-Safe Clock Monitor enabled
+            (1 << 13) | // Flash Program Memory Code Protection off
+            (0 << 12) | // CCP1 function on RB3
+            (1 << 11) | // DEBUG: ICD disabled
+            (3 <<  9) | // Flash Program Memory write protection off
+            (1 <<  8) | // Data EE Memory Code protection off
             (0 <<  7) |         // LVP disabled
             (1 <<  6) |         // BOR enabled
             (0 <<  5) |         // RA5/nMCLR is RA5
-            (0 <<  4) |         // for osc sel, later
+            (0 <<  4) | // FOSC2=0 for osc sel, HS oscillator
             (0 <<  3) |         // PWRT enabled
             (0 <<  2) |         // WDT disabled
             (2 <<  0),          // HS oscillator

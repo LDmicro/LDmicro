@@ -73,8 +73,6 @@ static int AdcShadowsCount;
 
 #define VAR_FLAG_OTHERWISE_FORGOTTEN  0x80000000
 
-#define ONLY_RESET_RTO // its original algorithm
-
 // Schematic-drawing code needs to know whether we're in simulation mode or
 // note, as that changes how everything is drawn; also UI code, to disable
 // editing during simulation.
@@ -363,41 +361,25 @@ static char *Check(char *name, DWORD flag, int i)
     switch(flag) {
         case VAR_FLAG_TOF:
             if(Variables[i].usedFlags & ~VAR_FLAG_RES)
-                return _("TOF: variable cannot be used elsewhere");
+                return _("TOF: variable can only be used for RES elsewhere");
             break;
 
         case VAR_FLAG_TON:
             if(Variables[i].usedFlags & ~VAR_FLAG_RES)
-                return _("TON: variable cannot be used elsewhere");
+                return _("TON: variable can only be used for RES elsewhere");
             break;
 
         case VAR_FLAG_TCY:
             if(Variables[i].usedFlags & ~VAR_FLAG_RES)
-                return _("TCY: variable cannot be used elsewhere");
+                return _("TCY: variable can only be used for RES elsewhere");
             break;
 
-        #ifdef ONLY_RESET_RTO
-        //It is impossible to manipulate the
-        // counter variable elsewhere, for example with a MOV instruction.
         case VAR_FLAG_RTO:
             if(Variables[i].usedFlags & ~VAR_FLAG_RES)
                 return _("RTO: variable can only be used for RES elsewhere");
             break;
-        #else
-        case VAR_FLAG_RTO:
-            break;
-        #endif
 
-        #ifndef ONLY_RESET_RTO
         case VAR_FLAG_RES:
-            if(Variables[i].usedFlags == 0)
-                return _("RES: Above this rung variable is not assigned to COUNTER or TIMER.\r\n"
-                         "You must assign a variable below");
-            break;
-        #else
-        case VAR_FLAG_RES:
-        #endif
-
         case VAR_FLAG_CTU:
         case VAR_FLAG_CTD:
         case VAR_FLAG_CTC:

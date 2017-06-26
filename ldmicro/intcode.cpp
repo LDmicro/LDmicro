@@ -555,20 +555,20 @@ int HexDigit(int c)
 //-----------------------------------------------------------------------------
 static void GenSymParThis(char *dest)
 {
-    sprintf(dest, "$parThis_%04x", GenSymCountParThis);
+    sprintf(dest, "$parThis_%01x", GenSymCountParThis);
     GenSymCountParThis++;
 }
 static void GenSymParOut(char *dest)
 {
-    sprintf(dest, "$parOut_%04x", GenSymCountParOut);
+    sprintf(dest, "$parOut_%01x", GenSymCountParOut);
     GenSymCountParOut++;
 }
 void GenSymOneShot(char *dest, char *name1, char *name2)
 {
     if(int_comment_level == 1)
-        sprintf(dest, "$oneShot_%04x", GenSymCountOneShot);
+        sprintf(dest, "$onece_%01x", GenSymCountOneShot);
     else
-        sprintf(dest, "$oneShot_%04x_%s_%s", GenSymCountOneShot, name1, name2);
+        sprintf(dest, "$onece_%01x_%s_%s", GenSymCountOneShot, name1, name2);
     GenSymCountOneShot++;
 }
 static void GenSymOneShot(char *dest)
@@ -577,7 +577,7 @@ static void GenSymOneShot(char *dest)
 }
 static void GenSymFormattedString(char *dest, char *name)
 {
-    sprintf(dest, "$fmtdStr_%04x_%s", GenSymCountFormattedString, name);
+    sprintf(dest, "$fmtd_%01x_%s", GenSymCountFormattedString, name);
     GenSymCountFormattedString++;
 }
 static void GenSymFormattedString(char *dest)
@@ -586,7 +586,7 @@ static void GenSymFormattedString(char *dest)
 }
 static void GenSymStepper(char *dest, char *name)
 {
-    sprintf(dest, "$stepper_%04x_%s", GenSymCountStepper, name);
+    sprintf(dest, "$step_%01x_%s", GenSymCountStepper, name);
     GenSymCountStepper++;
 }
 

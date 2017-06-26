@@ -1174,9 +1174,23 @@ void PushRungDown(void)
     int i = RungContainingSelected();
     if(i == (Prog.numRungs-1)) return;
 
+    int HeightBefore = 0;
+    int j;
+    for(j = 0; j < i; j++)
+        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[j]);
+    int HeightNow  = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+    int HeightDown = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i+1]);
+
     ElemSubcktSeries *temp = Prog.rungs[i];
     Prog.rungs[i] = Prog.rungs[i+1];
     Prog.rungs[i+1] = temp;
+
+    for(j = HeightBefore; j < (HeightBefore+HeightNow+HeightDown); j++) {
+        for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
+            DisplayMatrix[i][j] = NULL;
+            DisplayMatrixWhich[i][j] = ELEM_NULL;
+        }
+    }
 
     WhatCanWeDoFromCursorAndTopology();
     ScrollSelectedIntoViewAfterNextPaint = TRUE;
@@ -1191,9 +1205,23 @@ void PushRungUp(void)
     int i = RungContainingSelected();
     if(i == 0) return;
 
+    int HeightBefore = 0;
+    int j;
+    for(j = 0; j < i-1; j++)
+        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[j]);
+    int HeightUp = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i-1]);
+    int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+
     ElemSubcktSeries *temp = Prog.rungs[i];
     Prog.rungs[i] = Prog.rungs[i-1];
     Prog.rungs[i-1] = temp;
+
+    for(j = HeightBefore; j < (HeightBefore+HeightUp+HeightNow); j++) {
+        for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
+            DisplayMatrix[i][j] = NULL;
+            DisplayMatrixWhich[i][j] = ELEM_NULL;
+        }
+    }
 
     WhatCanWeDoFromCursorAndTopology();
     ScrollSelectedIntoViewAfterNextPaint = TRUE;
