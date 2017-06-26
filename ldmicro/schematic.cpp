@@ -63,9 +63,8 @@ BOOL FindSelected(int *gx, int *gy)
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
             if(DisplayMatrix[i][j] == Selected) {
               if(SelectedWhich != ELEM_COMMENT)
-                while(DisplayMatrix[i+1][j] == Selected) {
+                    while(DisplayMatrix[i+1][j] == Selected)
                     i++;
-                }
                 *gx = i;
                 *gy = j;
                 return TRUE;
@@ -313,11 +312,13 @@ void ForgetFromGrid(void *p)
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
             if(DisplayMatrix[i][j] == p) {
                 DisplayMatrix[i][j] = NULL;
+                DisplayMatrixWhich[i][j] = ELEM_NULL;
             }
         }
     }
     if(Selected == p) {
         Selected = NULL;
+        SelectedWhich = ELEM_NULL;
     }
 }
 

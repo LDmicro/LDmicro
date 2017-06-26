@@ -1,3 +1,15 @@
+== Release 4.2.3
+
+    * HotFix:
+    Move Selected Rung Up/Down with COMMENT
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=6321&tt=1495630635
+
+    * Fixed: PIC16F88 PIN IO names. CCP1 function on RB3.
+
+    * Fixed: PIC MCU's EEPROM write.
+
+    * Fixed: PIC ANSI C UART functions.
+
 == Release 4.2.2
 
     * HotFix: Addressing error when writing the PIC CONFIGURATION WORD's to the .hex file.
