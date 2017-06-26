@@ -93,9 +93,9 @@ static char *MapSym(char *str, int how)
     if(IsNumber(str))
         sprintf(ret, "%s", str);
     else if(*str == '$') {
-        sprintf(ret, "I_%c_%s", bit_int, str+1);
+        sprintf(ret, "I%c_%s", bit_int, str+1);
     } else {
-        sprintf(ret, "U_%c_%s", bit_int, str);
+        sprintf(ret, "U%c_%s", bit_int, str);
     }
     return ret;
 }
@@ -109,8 +109,17 @@ static char *MapSym(char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, char *str, int sov)
 {
+  if(sov==1)
+    fprintf(f, "STATIC signed char %s = 0;\n", str);
+  else if(sov==2)
     fprintf(f, "STATIC SWORD %s = 0;\n", str);
-    fprintf(f, "\n");
+  else if((sov==3)||(sov==4))
+    fprintf(f, "STATIC SDWORD %s = 0;\n", str);
+  else {
+    fprintf(f, "STATIC SWORD %s = 0;\n", str);
+//  oops();
+  }
+  //fprintf(f, "\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -124,21 +133,36 @@ static void DeclareBit(FILE *f, char *str)
 {
     // The mapped symbol has the form U_b_{X,Y,R}name, so look at character
     // four to determine if it's an input, output, internal relay.
-    if(str[4] == 'X') {
+    int type = NO_PIN_ASSIGNED;
+    int i;
+    for(i = 0; i < Prog.io.count; i++) {
+        if(strcmp(Prog.io.assignment[i].name, &str[3])==0) {
+            type = Prog.io.assignment[i].type;
+            break;
+        }
+    }
+
+    //if(str[3] == 'X') {
+    if(type == IO_TYPE_DIG_INPUT) {
         fprintf(f, "\n");
         fprintf(f, "/* You provide this function. */\n");
         fprintf(f, "PROTO(extern BOOL Read_%s(void);)\n", str);
         fprintf(f, "\n");
-    } else if(str[4] == 'Y') {
+
+//  } else if(str[3] == 'Y') {
+    } else if(type == IO_TYPE_DIG_OUTPUT) {
         fprintf(f, "\n");
         fprintf(f, "/* You provide these functions. */\n");
         fprintf(f, "PROTO(BOOL Read_%s(void);)\n", str);
         fprintf(f, "PROTO(void Write_%s(BOOL v);)\n", str);
         fprintf(f, "\n");
     } else {
-        fprintf(f, "STATIC BOOL %s = 0;\n", str);
+        fprintf(f, "STATIC ldBOOL %s = 0;\n", str);
         fprintf(f, "#define Read_%s() %s\n", str, str);
         fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
+        fprintf(f, "#define Write0_%s() (%s = 0)\n", str, str);
+        fprintf(f, "#define Write1_%s() (%s = 1)\n", str, str);
+        fprintf(f, "\n");
     }
 }
 
@@ -519,7 +543,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_UART_RECV:
-                    fprintf(f, "%s = UART_Receive();\n",  MapSym(IntCode[i].name1, ASINT) );
+                    fprintf(f, "%s=0; if(UART_Receive_Avail()) {%s = UART_Receive(); %s=1;};\n", MapSym(IntCode[i].name2, ASBIT), MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASBIT));
                 break;
 
             case INT_UART_SEND:
@@ -768,7 +792,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "   against this one. */\n"
 "\n"
 "/* You must provide ladder.h; there you must provide:\n"
-"      * a typedef for SWORD and BOOL, signed 16 bit and boolean types\n"
+"      * a typedef for SWORD and ldBOOL, signed 16 bit and boolean types\n"
 "        (probably typedef signed short SWORD; typedef unsigned char BOOL;)\n"
 "\n"
 "   You must also provide implementations of all the I/O read/write\n"
@@ -786,13 +810,13 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "   the PWM duty cycle on the micro. That way you can add support for\n"
 "   peripherals that LDmicro doesn't know about. */\n"
 "#ifdef EXTERN_EVERYTHING\n"
-"#define STATIC \n"
+"  #define STATIC\n"
 "#else\n"
-"#define STATIC static\n"
+"  #define STATIC static\n"
 "#endif\n"
 "\n"
 "/* Define NO_PROTOTYPES if you don't want LDmicro to provide prototypes for\n"
-"   all the I/O functions (Read_U_xxx, Write_U_xxx) that you must provide.\n"
+"   all the I/O functions (Read_Ux_xxx, Write_Ux_xxx) that you must provide.\n"
 "   If you define this then you must provide your own prototypes for these\n"
 "   functions in ladder.h, or provide definitions (e.g. as inlines or macros)\n"
 "   for them in ladder.h. */\n"
@@ -802,9 +826,15 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "#define PROTO(x) x\n"
 "#endif\n"
 "\n"
-"/* U_xxx symbols correspond to user-defined names. There is such a symbol\n"
+"/* Ux_xxx symbols correspond to user-defined names. There is such a symbol\n"
 "   for every internal relay, variable, timer, and so on in the ladder\n"
-"   program. I_xxx symbols are internally generated. */\n"
+"   program. Ix_xxx symbols are internally generated. */\n"
+"/* Ix_xxx\n"
+"   Ux_xxx\n"
+"    ^\n"
+"    b means BOOL type\n"
+"    i means int type */\n"
+"\n"
         );
 
     // now generate declarations for all variables
@@ -812,24 +842,99 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
     GenerateAnsiC_flash_eeprom(f);
     GenerateSUBPROG(f);
 
+  if(compile_MNU == MNU_COMPILE_ARDUINO) {
     if(UartFunctionUsed()) {
-    fprintf(f,
-"void UART_Transmit(unsigned char data) // AVR\n"
+      fprintf(f,
+"void UART_Transmit(unsigned char data)\n"
+"{\n"
+"    Serial.write(data);\n"
+"    //Serial.flush();\n"
+"}\n"
+"\n"
+"unsigned char UART_Receive(void)\n"
+"{\n"
+"    return Serial.read();\n"
+"}\n"
+"\n"
+"ldBOOL UART_Receive_Avail(void)\n"
+"{\n"
+"    return Serial.available();\n"
+"}\n"
+"\n"
+"ldBOOL UART_Transmit_Ready(void)\n"
+"{\n"
+"    Serial.flush();\n"
+"    return 1;\n"
+"}\n"
+"\n"
+      );
+    }
+  } else if(mcu_ISA == ISA_AVR) {
+    if(UartFunctionUsed())
+      fprintf(f,
+"void UART_Init(void)\n"
+"{\n"
+"}\n"
+"\n"
+"void UART_Transmit(unsigned char data)\n"
 "{ // Wait for empty transmit buffer\n"
-"  while ( !( UCSRA & (1<<UDRE)) );\n"
+"  while( !( UCSRA & (1<<UDRE)) );\n"
 "  // Put data into buffer, sends the data\n"
 "  UDR = data;\n"
 "}\n"
 "\n"
-"unsigned char UART_Receive(void) // AVR\n"
+"unsigned char UART_Receive(void)\n"
 "{ // Wait for data to be received\n"
-"  while ( !(UCSRA & (1<<RXC)) );\n"
+"  while( !(UCSRA & (1<<RXC)) );\n"
 "  // Get and return received data from buffer\n"
 "  return UDR;\n"
 "}\n"
-"\n");
+"\n"
+"ldBOOL UART_Transmit_Ready(void)\n"
+"{\n"
+"  return UCSRA & (1<<UDRE);\n"
+"}\n"
+"\n"
+"ldBOOL UART_Receive_Avail(void)\n"
+"{\n"
+"  return UCSRA & (1<<RXC);\n"
+"}\n"
+"\n"
+      );
+  } else if(mcu_ISA == ISA_PIC16) {
+    if(UartFunctionUsed()) {
+      fprintf(f,
+"void UART_Init(void)\n"
+"{ // UART baud rate setup\n"
+"}\n"
+"\n"
+"void UART_Transmit(unsigned char data)\n"
+"{ // Wait for empty transmit buffer\n"
+"  while( !TRMT );\n"
+"  // Put data into buffer, sends the data\n"
+"  TXREG = data;\n"
+"}\n"
+"\n"
+"unsigned char UART_Receive(void)\n"
+"{ // Wait for data to be received\n"
+"  while( !RCIF );\n"
+"  // Get and return received data from buffer\n"
+"  return RCREG;\n"
+"}\n"
+"\n"
+"ldBOOL UART_Transmit_Ready(void)\n"
+"{\n"
+"  return TRMT;\n"
+"}\n"
+"\n"
+"ldBOOL UART_Receive_Avail(void)\n"
+"{\n"
+"  return RCIF;\n"
+"}\n"
+"\n"
+      );
     }
-//---------------------------------------------------------------------------
+  }
 //---------------------------------------------------------------------------
     fprintf(f,
 "\n"
@@ -847,28 +952,72 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "\n"
 "void setupPlc(void)\n"
 "{\n"
+"    // Set up I/O pins direction, and drive the outputs low to start.\n"
     );
 
-    Comment("Set up I/O pins");
+    fprintf(f,
+"    // Turn on the pull-ups.\n"
+"\n"
+"    // Watchdog on\n"
+"\n");
 
-    Comment("Turn on the pull-ups, and drive the outputs low to start");
+    fprintf(f,
+"    //Initialise PLC cycle timer here.\n");
 
     if(UartFunctionUsed()) {
       Comment("Set up UART");
+      fprintf(f,
+"    UART_Init();\n"
+      );
     }
+    fprintf(f,
+"}\n");
 
     fprintf(f,
-"//Initialise PLC cycle timer here.\n"
-"//Watchdog on\n"
+"\n"
+"void mainPlc(void) // Call mainPlc() function in main() of your project.\n"
+"{\n"
+"    setupPlc();\n"
+"    while(1) {\n"
+"        // Test PLC cycle timer interval here.\n"
+    );
+    fprintf(f,
+"\n"
+"        PlcCycle();\n"
+"        // You can place your code here, if you don't generate C code from LDmicro again.\n"
+"        // ...\n"
+"\n"
+"        // Watchdog reset\n"
+"        #ifdef __CODEVISIONAVR__\n"
+"            #asm(\"wdr\")\n"
+"        #elif defined(__GNUC__)\n"
+"            wdt_reset();\n"
+"        #elif defined(CCS_PIC_C)\n"
+"            restart_wdt();\n"
+"        #elif defined(HI_TECH_C)\n"
+"            CLRWDT();\n"
+"        #else\n"
+"            Watchdog Reset is required. // You must provide this.\n"
+"        #endif\n"
+"    }\n"
 "}\n"
+"\n"
     );
 
     fprintf(f,
-"int main(void)\n"
+"#ifdef __CODEVISIONAVR__\n"
+"void main(void) // You can use this as is.\n"
 "{\n"
-"    setupPlc();\n"
+"    mainPlc();\n"
+"    return;\n"
+"}\n"
+"#else\n"
+"int main(void) // You can use this as is.\n"
+"{\n"
+"    mainPlc();\n"
 "    return 0;\n"
 "}\n"
+"#endif\n"
     );
 
     fclose(f);

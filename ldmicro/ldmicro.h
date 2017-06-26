@@ -1140,7 +1140,7 @@ BOOL FindSelected(int *gx, int *gy);
 BOOL MoveCursorNear(int *gx, int *gy);
 
 #define DISPLAY_MATRIX_X_SIZE 256
-#define DISPLAY_MATRIX_Y_SIZE 2048
+#define DISPLAY_MATRIX_Y_SIZE (MAX_RUNGS*2) // 2048
 extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
@@ -1688,6 +1688,7 @@ int isVarInited(char *name);
 int isPinAssigned(char *name);
 void AllocStart(void);
 DWORD AllocOctetRam(void);
+DWORD AllocOctetRam(int bytes);
 void AllocBitRam(DWORD *addr, int *bit);
 int MemForVariable(char *name, DWORD *addrl, int sizeOfVar);
 int MemForVariable(char *name, DWORD *addr);

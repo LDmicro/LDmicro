@@ -203,10 +203,10 @@ static BOOL DivideUsed24;
 // For EEPROM: we queue up characters to send in 16-bit words (corresponding
 // to the integer variables), but we can actually just program 8 bits at a
 // time, so we need to store the high byte somewhere while we wait.
-static DWORD EepromHighByte;
-static DWORD AllocateNextByte; // Allocate 2 bytes needed for 24 bit integers variables.
-static DWORD EepromHighByteWaitingAddr; // obsolete
-static int   EepromHighByteWaitingBit;  // obsolete
+static DWORD EepromHighByte; // Allocate high bytes needed for 16-24-32 bit integers variables.
+//static DWORD AllocateNextByte; // Allocate 2 bytes needed for 24 bit integers variables.
+//static DWORD EepromHighByteWaitingAddr; // obsolete
+//static int   EepromHighByteWaitingBit;  // obsolete
 static DWORD EepromHighBytesCounter;
 
 // Some useful registers, unfortunately many of which are in different places
@@ -2779,6 +2779,9 @@ static void WriteRuntime(void)
         WriteMemory(REG_UBRRH, divisor >> 8);
         WriteMemory(REG_UBRRL, divisor & 0xff);
         WriteMemory(REG_UCSRB, (1 << RXEN) | (1 << TXEN));
+
+        // UCSRC initial Value frame format: 8 data, parity - none, 1 stop bit.
+        // Not need to set.
     }
 
     Comment("Turn on the pull-ups, and drive the outputs low to start");
@@ -2814,7 +2817,6 @@ static void WriteRuntime(void)
           //To clean a bit in the register TIFR need write 1 in the corresponding bit!
         }
       } else { // Timer1
-
           DWORD i=SKBS(REG_TIFR1, OCF1A);
           Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer1/Counter
 
@@ -2823,6 +2825,11 @@ static void WriteRuntime(void)
       }
       Comment("Watchdog reset");
       Instruction(OP_WDR);
+      if(plcTmr.softDivisor > 1) {
+          Decrement(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor));
+          Instruction(OP_BRNE, BeginOfPLCCycle);
+          WriteLiteralToMemory(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+      }
     } else {
         Comment("Watchdog reset");
         Instruction(OP_WDR);
@@ -3728,6 +3735,7 @@ static void CompileFromIntermediate(void)
                 FwdAddrIsNow(skip);
                 break;
             }
+            #if 0
             case INT_EEPROM_BUSY_CHECK: {
                 MemForSingleBit(a->name1, FALSE, &addr, &bit);
 
@@ -3736,8 +3744,14 @@ static void CompileFromIntermediate(void)
                 IfBitSet(REG_EECR, EEWE);
                 Instruction(OP_RJMP, isBusy, 0);
 
-                IfBitClear(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
-                Instruction(OP_RJMP, done, 0);
+              //IfBitClear(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
+              //Instruction(OP_RJMP, done, 0);
+                LoadXAddr(EepromHighBytesCounter);
+                Instruction(OP_LD_X, r23); //r23 as EepromHighBytesCounter
+                Instruction(OP_TST,  r23, 0);
+                Instruction(OP_BREQ, done);
+                Instruction(OP_DEC,  r23);
+                Instruction(OP_ST_X, r23);
 
                 // Just increment EEARH:EEARL, to point to the high byte of
                 // whatever we just wrote the low byte for.
@@ -3765,13 +3779,67 @@ static void CompileFromIntermediate(void)
                 Instruction(OP_LDI, 16, (1 << EEMWE) | (1 << EEWE)); // 0x06
                 Instruction(OP_ST_X, 16, 0);
 
-                ClearBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
+                FwdAddrIsNow(isBusy);
+                SetBit(addr, bit);
+                FwdAddrIsNow(done);
+                break;
+            }
+            #else
+            case INT_EEPROM_BUSY_CHECK: {
+                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+
+                DWORD isBusy = AllocFwdAddr();
+                DWORD done = AllocFwdAddr();
+                IfBitSet(REG_EECR, EEWE);
+                Instruction(OP_RJMP, isBusy);
+
+                LoadXAddr(EepromHighBytesCounter);
+                Instruction(OP_LD_X, r23); //r23 as EepromHighBytesCounter
+                Instruction(OP_TST,  r23, 0);
+                Instruction(OP_BREQ, done);
+                Instruction(OP_DEC,  r23);
+                Instruction(OP_ST_X, r23);
+
+                // Just increment EEARH:EEARL, to point to the high byte of
+                // whatever we just wrote the low byte for.
+                LoadXAddr(REG_EEARL);
+                Instruction(OP_LD_X, 16);
+                Instruction(OP_INC, 16);
+                DWORD noCarry = AllocFwdAddr();
+                Instruction(OP_BRNE, noCarry, 0);
+                LoadYAddr(REG_EEARH);
+                Instruction(OP_LD_Y, 17);
+                Instruction(OP_INC, 17);
+                // Y is still REG_EEARH
+                Instruction(OP_ST_Y, 17);
+                FwdAddrIsNow(noCarry);
+                // X is still REG_EEARL
+                Instruction(OP_ST_X, 16);
+                //
+                LoadXAddr(EepromHighByte);
+
+                Instruction(OP_TST,  r23, 0); //r23 still EepromHighBytesCounter-1
+                DWORD doOut = AllocFwdAddr();
+                Instruction(OP_BRNE, doOut, 0);
+                Instruction(OP_LD_XP, r16); //increment addres EepromHighByte in X register
+                                            //skip middle byte
+                FwdAddrIsNow(doOut);
+                Instruction(OP_LD_X, r16); //EepromHighByte data to r16
+                LoadXAddr(REG_EEDR);
+                Instruction(OP_ST_X, 16);
+                LoadXAddr(REG_EECR);
+                Instruction(OP_LDI, 16, 0x04);
+                Instruction(OP_ST_X, 16);
+                Instruction(OP_LDI, 16, 0x06);
+                Instruction(OP_ST_X, 16);
 
                 FwdAddrIsNow(isBusy);
                 SetBit(addr, bit);
                 FwdAddrIsNow(done);
                 break;
             }
+            #endif
+            #if 0
             case INT_EEPROM_READ: {
                 MemForVariable(a->name1, &addr1);
                 int i;
@@ -3790,6 +3858,24 @@ static void CompileFromIntermediate(void)
                 }
                 break;
             }
+            #else
+            case INT_EEPROM_READ: {
+                MemForVariable(a->name1, &addr1);
+                LoadXAddr(addr1);
+                LoadYAddr(REG_EEDR);
+                sov = SizeOfVar(a->name2);
+                int i;
+                for(i = 0; i < sov; i++) {
+                    WriteMemory(REG_EEARH,(((a->literal+i) >> 8) & 0xff));
+                    WriteMemory(REG_EEARL, ((a->literal+i) & 0xff));
+                    WriteMemory(REG_EECR, 0x01);
+                    Instruction(OP_LD_Y, 16);
+                    Instruction(OP_ST_XP, 16);
+                }
+                break;
+            }
+            #endif
+            #if 0
             case INT_EEPROM_WRITE:
                 MemForVariable(a->name1, &addr1);
                 SetBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
@@ -3810,7 +3896,29 @@ static void CompileFromIntermediate(void)
                 Instruction(OP_LDI, 16, (1 << EEMWE) | (1 << EEWE)); // 0x06
                 Instruction(OP_ST_X, 16, 0);
                 break;
+            #else
+            case INT_EEPROM_WRITE:
+                sov = SizeOfVar(a->name1);
+                Instruction(OP_LDI, 16, sov - 1);
+                LoadYAddr(EepromHighBytesCounter);
+                Instruction(OP_ST_Y, 16);
 
+                if(sov >= 2) {
+                    MemForVariable(a->name1, &addr1);
+                    LoadXAddr(addr1+1);
+                    LoadYAddr(EepromHighByte);
+                    Instruction(OP_LD_XP, 16);
+                    Instruction(OP_ST_YP, 16);
+                    if(sov >= 3) {
+                        Instruction(OP_LD_XP, 16);
+                        Instruction(OP_ST_YP, 16);
+                        if(sov >= 4) {
+                            Instruction(OP_LD_XP, 16);
+                            Instruction(OP_ST_YP, 16);
+                        }
+                    }
+                }
+            #endif
             case INT_READ_ADC: {
                 MemForVariable(a->name1, &addr1);
 
@@ -5626,10 +5734,9 @@ void CompileAvr(char *outFile)
         // Where we hold the high byte to program in EEPROM while the low byte
         // programs.
         // Allocate 2 bytes needed for 24 bit integers variables.
-        EepromHighByte = AllocOctetRam();  // 16 bit integer high byte or 24 bit integer middle byte.
-        AllocateNextByte = AllocOctetRam(); // 24 bit integer high byte.
+        EepromHighByte = AllocOctetRam(3);  // 16-24-32 bit integer high bytes
         EepromHighBytesCounter = AllocOctetRam();
-        AllocBitRam(&EepromHighByteWaitingAddr, &EepromHighByteWaitingBit);
+      //AllocBitRam(&EepromHighByteWaitingAddr, &EepromHighByteWaitingBit);
     }
     rungNow = -50;
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

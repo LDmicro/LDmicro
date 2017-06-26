@@ -139,9 +139,10 @@ static DWORD Scratch11;
 // The extra byte to program, for the EEPROM (because we can only set
 // up one byte to program at a time, and we will be writing two-byte
 // variables, in general).
-static DWORD EepromHighByte;
-static DWORD EepromHighByteWaitingAddr;
-static int EepromHighByteWaitingBit;
+static DWORD EepromHighByte; // Allocate high bytes needed for 16-24-32 bit integers variables.
+//static DWORD EepromHighByteWaitingAddr; // obsolete
+//static int EepromHighByteWaitingBit;    // obsolete
+static DWORD EepromHighBytesCounter;
 
 // Subroutines to do multiply/divide
 static DWORD MultiplyRoutineAddress8;
@@ -225,6 +226,10 @@ static DWORD FwdAddrCount;
 // 0 means not defined(error!) or not exist in MCU.
 // EEPROM Registers
 static DWORD REG_EECON1  = -1;
+#define          EEPGD     BIT7
+#define          WREN      BIT2
+#define          WR        BIT1
+#define          RD        BIT0
 static DWORD REG_EECON2  = -1;
 static DWORD REG_EEDATA  = -1;
 static DWORD REG_EEADR   = -1;
@@ -3508,6 +3513,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 #endif
 
             case INT_EEPROM_BUSY_CHECK: {
+                Comment("INT_EEPROM_BUSY_CHECK");
                 DWORD isBusy = AllocFwdAddr();
                 DWORD done = AllocFwdAddr();
                 MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
@@ -3516,24 +3522,34 @@ static void CompileFromIntermediate(BOOL topLevel)
                 IfBitSet(REG_EECON1, 1);
                 Instruction(OP_GOTO, isBusy, 0);
 
-                IfBitClear(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
-                Instruction(OP_GOTO, done, 0);
+                //IfBitClear(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
+                Instruction(OP_MOVF, EepromHighBytesCounter, DEST_W);
+                skpnz
+                Instruction(OP_GOTO, done);
+
+                Instruction(OP_DECF, EepromHighBytesCounter, DEST_F);
 
                 // So there is not a write pending, but we have another
                 // character to transmit queued up.
 
                 Instruction(OP_INCF, REG_EEADR, DEST_F);
-                Instruction(OP_MOVF, EepromHighByte, DEST_W);
-                Instruction(OP_MOVWF, REG_EEDATA, 0);
+              //Instruction(OP_MOVF, EepromHighByte, DEST_W);
+                Instruction(OP_MOVLW, EepromHighByte); //Point to address
+                Instruction(OP_ADDWF, EepromHighBytesCounter, DEST_W);
+                Instruction(OP_MOVWF, REG_FSR);
+                Instruction(OP_MOVF, REG_INDF, DEST_W);
+
+                Instruction(OP_MOVWF, REG_EEDATA);
                 Instruction(OP_BCF, REG_EECON1, 7);
                 Instruction(OP_BSF, REG_EECON1, 2);
-                Instruction(OP_MOVLW, 0x55, 0);
-                Instruction(OP_MOVWF, REG_EECON2, 0);
-                Instruction(OP_MOVLW, 0xaa, 0);
-                Instruction(OP_MOVWF, REG_EECON2, 0);
+                Instruction(OP_MOVLW, 0x55);
+                Instruction(OP_MOVWF, REG_EECON2);
+                Instruction(OP_MOVLW, 0xaa);
+                Instruction(OP_MOVWF, REG_EECON2);
                 Instruction(OP_BSF, REG_EECON1, 1);
+                Instruction(OP_BCF, REG_EECON1, 2);
 
-                ClearBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
+                //ClearBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
 
                 FwdAddrIsNow(isBusy);
                 #else
@@ -3580,24 +3596,38 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
             }
             case INT_EEPROM_WRITE: {
+                Comment("INT_EEPROM_WRITE");
                 MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
 
                 #ifdef AUTO_BANKING
-                SetBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
+                //SetBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
+                WriteRegister(EepromHighBytesCounter, sov1 - 1);
+                if(sov1 > 1) {
                 Instruction(OP_MOVF, addr1+1, DEST_W);
-                Instruction(OP_MOVWF, EepromHighByte, 0);
-
-                Instruction(OP_MOVLW, a->literal, 0);
-                Instruction(OP_MOVWF, REG_EEADR, 0);
+                  Instruction(OP_MOVWF, EepromHighByte);
+                  if(sov1 > 2) {
+                    Instruction(OP_MOVF, addr1+2, DEST_W);
+                    Instruction(OP_MOVWF, EepromHighByte+1);
+                    if(sov1 > 3) {
+                      Instruction(OP_MOVF, addr1+3, DEST_W);
+                      Instruction(OP_MOVWF, EepromHighByte+2);
+                    }
+                  }
+                }
+                Instruction(OP_MOVLW, a->literal);
+                Instruction(OP_MOVWF, REG_EEADR);
                 Instruction(OP_MOVF, addr1, DEST_W);
-                Instruction(OP_MOVWF, REG_EEDATA, 0);
+
+                Instruction(OP_MOVWF, REG_EEDATA);
                 Instruction(OP_BCF, REG_EECON1, 7);
                 Instruction(OP_BSF, REG_EECON1, 2);
-                Instruction(OP_MOVLW, 0x55, 0);
-                Instruction(OP_MOVWF, REG_EECON2, 0);
-                Instruction(OP_MOVLW, 0xaa, 0);
-                Instruction(OP_MOVWF, REG_EECON2, 0);
+                Instruction(OP_MOVLW, 0x55);
+                Instruction(OP_MOVWF, REG_EECON2);
+                Instruction(OP_MOVLW, 0xaa);
+                Instruction(OP_MOVWF, REG_EECON2);
                 Instruction(OP_BSF, REG_EECON1, 1);
+                Instruction(OP_BCF, REG_EECON1, 2);
                 #else
                 WORD m = 0;
 
@@ -3626,16 +3656,18 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
             }
             case INT_EEPROM_READ: {
+                Comment("INT_EEPROM_READ");
                 int i;
                 MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
                 #ifdef AUTO_BANKING
-                for(i = 0; i < 2; i++) {
-                    Instruction(OP_MOVLW, a->literal+i, 0);
-                    Instruction(OP_MOVWF, REG_EEADR, 0);
+                for(i = 0; i < sov1; i++) {
+                    Instruction(OP_MOVLW, a->literal+i);
+                    Instruction(OP_MOVWF, REG_EEADR);
                     Instruction(OP_BCF, REG_EECON1, 7);
                     Instruction(OP_BSF, REG_EECON1, 0);
                     Instruction(OP_MOVF, REG_EEDATA, DEST_W);
-                    Instruction(OP_MOVWF, addr1+i, 0);
+                    Instruction(OP_MOVWF, addr1+i);
                 }
                 #else
                 WORD m = 0;
@@ -5217,8 +5249,9 @@ void CompilePic16(char *outFile)
     // Allocate the register used to hold the high byte of the EEPROM word
     // that's queued up to program, plus the bit to indicate that it is
     // valid.
-    EepromHighByte = AllocOctetRam();
-    AllocBitRam(&EepromHighByteWaitingAddr, &EepromHighByteWaitingBit);
+    EepromHighByte = AllocOctetRam(3);
+//  AllocBitRam(&EepromHighByteWaitingAddr, &EepromHighByteWaitingBit);
+    EepromHighBytesCounter = AllocOctetRam();
 
     DWORD progStart = AllocFwdAddr();
     // Our boot vectors; not necessary to do it like this, but it lets

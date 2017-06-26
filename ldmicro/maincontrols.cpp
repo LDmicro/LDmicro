@@ -85,6 +85,7 @@ void MakeMainWindowControls(void)
         lvc.cx = w; \
         ListView_InsertColumn(hWnd, i, &lvc); \
     } while(0)
+    // create child window for IO list
     IoList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, "", WS_CHILD |
         LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP |
         LVS_SINGLESEL | WS_CLIPSIBLINGS,
@@ -106,10 +107,11 @@ void MakeMainWindowControls(void)
     LV_ADD_COLUMN(IoList, LV_IO_RAM_ADDRESS, 75,           _("Address"));
     LV_ADD_COLUMN(IoList, LV_IO_SISE_OF_VAR, 60,           _("Size"));
     LV_ADD_COLUMN(IoList, LV_IO_MODBUS,      modbusWidth,  _("Modbus addr"));
-
+    // IO list horizontal scroll bar
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
         100, 100, 100, 100, MainWindow, NULL, Instance, NULL);
+    // IO list Verticle scroll bar
     VertScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_VERT | SBS_LEFTALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
         200, 100, 100, 100, MainWindow, NULL, Instance, NULL);
@@ -124,6 +126,7 @@ void MakeMainWindowControls(void)
     int edges[] = { 60, 250 + 60, 370 + 130, -1 };
     SendMessage(StatusBar, SB_SETPARTS, 4, (LPARAM)edges);
 
+    // display IO list window with white background - no actual list 
     ShowWindow(IoList, SW_SHOW);
 }
 
@@ -310,7 +313,7 @@ HMENU MakeMainWindowMenus(void)
     HMENU settings, compile, help;
     HMENU ConfigMenu;
     int i;
-
+    // file popup menu
     FileMenu = CreatePopupMenu();
     AppendMenu(FileMenu, MF_STRING,   MNU_NEW,         _("&New\tCtrl+N"));
     AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,        _("&Open...\tCtrl+O"));
@@ -389,6 +392,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_STRING, MNU_ROLL_END,
         _("Roll End\tCtrl+End"));
 
+    // instruction popup  menu
     InstructionMenu = CreatePopupMenu();
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COMMENT,
         _("Insert Co&mment\t;"));
@@ -659,6 +663,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1527 64-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC16F1933 - PIC16F1947");
 
+    // simulate popup menu
     SimulateMenu = CreatePopupMenu();
     AppendMenu(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE,
         _("Si&mulation Mode\tCtrl+M or F7"));
