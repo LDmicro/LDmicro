@@ -35,6 +35,8 @@
 //#define DEFAULT_PARALLEL_ALGORITHM
 //#define DEFAULT_COIL_ALGORITHM
 
+#define TON_NEW
+
 //-----------------------------------------------------------------------------
 #ifdef DEFAULT_PARALLEL_ALGORITHM
 int int_comment_level  = 1;
@@ -742,34 +744,61 @@ static void _Comment(int l, char *f, int level, char *str, ...)
 #define Comment(...) _Comment(__LINE__, __FILE__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
+SDWORD TestTimerPeriod(char *name, SDWORD delay) // delay in us
+{
+    if(delay <= 0) {
+        Error("%s '%s': %s", _("Timer"), name, _("Delay cannot be zero or negative."));
+        return -1;
+    }
+    long long int period=0, maxPeriod=0;
+    period = delay / Prog.cycleTime; // - 1;
+
+    int b = byteNeeded(period);
+    if((SizeOfVar(name) != b) && (b<=4))
+        SetSizeOfVar(name, b);
+    maxPeriod=long long int(1) << (SizeOfVar(name)*8-1); maxPeriod--;
+
+    if(period < 0) {
+        Error(_("Delay cannot be zero or negative."));
+    } else if(period < 1)  {
+        char s1[1024];
+        sprintf(s1, "%s %s", _("Timer period too short (needs faster cycle time)."), _("Or increase timer period."));
+        char s2[1024];
+        sprintf(s2, _("Timer '%s'=%.3f ms."), name, 1.0*delay/1000);
+        char s3[1024];
+        sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
+        char *s4 = _("Not available");
+        Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
+    }
+
+    if((period > maxPeriod)
+    && (Prog.mcu)
+    && (Prog.mcu->portPrefix != 'L')) {
+        char s1[1024];
+        sprintf(s1, "%s %s", _("Timer period too long; (use a slower cycle time)."), _("Or decrease timer period."));
+        char s2[1024];
+        sprintf(s2, _("Timer 'T%s'=%10.0Lf s   needs %15lld PLC cycle times."), name, 1.0*delay/1000, period);
+        long double maxDelay = 1.0 * maxPeriod / 1000000 * Prog.cycleTime; // s
+        char s3[1024];
+        sprintf(s3, _("Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."), name, maxDelay, maxPeriod);
+        Error("%s\r\n%s\r\n%s", s1, s2, s3);
+        period = -1;
+    }
+    return period;
+}
+//-----------------------------------------------------------------------------
 // Calculate the period in scan units from the period in microseconds, and
 // raise an error if the given period is unachievable.
 //-----------------------------------------------------------------------------
 static SDWORD TimerPeriod(ElemLeaf *l)
 {
     if(Prog.cycleTime <= 0) {
-        Error(" PLC Cycle Time is 0. Timers does not work correctly!");
+        Error(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!");
         return 1;
     }
-    SDWORD period = SDWORD(l->d.timer.delay / Prog.cycleTime);// - 1;
-    if(period < 1)  {
-        char *s1 = _("Timer period too short (needs faster cycle time).");
-        char s2[1024];
-        sprintf(s2, _("Timer '%s'=%.3f ms."), l->d.timer.name, 1.0*l->d.timer.delay/1000);
-        char s3[1024];
-        sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
-        Error("%s\n\r%s\r\n%s", s1, s2, s3);
-        CompileError();
-    }
-    if(period >= (1 << 15)) {
-        char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
-            "slower cycle time.");
-        char s2[1024];
-        sprintf(s2, _("Timer '%s'=%.3f ms needs %d PLC cycle times."), l->d.timer.name, 1.0*l->d.timer.delay/1000, period);
-        double maxDelay = 1.0 * ((1 << (SizeOfVar(l->d.timer.name)*8-1))-1) * Prog.cycleTime / 1000000; //s
-        char s3[1024];
-        sprintf(s3, _("Maximum available timer period = %.3f s."), maxDelay);
-        Error("%s\r\n%s\r\n%s", s1, s2, s3);
+
+    SDWORD period = TestTimerPeriod(l->d.timer.name, l->d.timer.delay);
+    if(period < 1) {
         CompileError();
     }
     return period;
@@ -1062,10 +1091,31 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             if(n)
                 (*n)++; // counting the number of variables
             else {
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, l->d.timer.delay);
+                SDWORD period = TimerPeriod(l);
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             }
             break;
         }
+        #ifdef TON_NEW
+        case ELEM_TCY: {
+            if(n)
+                (*n)++; // counting the number of variables
+            else {
+                SDWORD period = TimerPeriod(l) - 1;
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+            }
+            break;
+        }
+        case ELEM_TON: {
+            if(n)
+                (*n)++; // counting the number of variables
+            else {
+                SDWORD period = TimerPeriod(l);
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+            }
+            break;
+        }
+        #endif
         case ELEM_SEED_RANDOM: {
             char name[MAX_NAME_LEN];
             sprintf(name, "$seed_%s", l->d.readAdc.name);
@@ -1363,11 +1413,43 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             #endif
           break;
         }
+        //-------------------------------------------------------------------
+        case ELEM_RTL: {
+            Comment(3, "ELEM_RTL");
+            SDWORD period = TimerPeriod(l);
+
+            #ifndef NEW_CMP
+            Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+            #else
+            char speriod[MAX_NAME_LEN];
+            sprintf(speriod, "%d", period);
+            Op(INT_IF_LES, l->d.timer.name, speriod);
+            #endif
+
+              Op(INT_IF_BIT_CLEAR, stateInOut);
+                Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
+              Op(INT_END_IF);
+              Op(INT_CLEAR_BIT, stateInOut);
+
+            Op(INT_ELSE);
+
+              Op(INT_SET_BIT, stateInOut);
+
+            Op(INT_END_IF);
+
+            break;
+        }
         case ELEM_RTO: {
             Comment(3, "ELEM_RTO");
             SDWORD period = TimerPeriod(l);
 
+            #ifndef NEW_CMP
             Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+            #else
+            char speriod[MAX_NAME_LEN];
+            sprintf(speriod, "%d", period);
+            Op(INT_IF_LES, l->d.timer.name, speriod);
+            #endif
 
               Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
@@ -1400,14 +1482,21 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         case ELEM_TCY: {
-            SDWORD period = TimerPeriod(l)-1;
-            Comment(3, "ELEM_TCY %s %d ms %d", l->d.timer.name, l->d.timer.delay, period);
+            SDWORD period = TimerPeriod(l) - 1;
+            Comment(3, "ELEM_TCY %s %d ms %d(0x%X)", l->d.timer.name, l->d.timer.delay, period, period);
 
             char store[MAX_NAME_LEN];
             GenSymOneShot(store, "TCY", l->d.timer.name);
 
+            #ifndef TON_NEW
             Op(INT_IF_BIT_SET, stateInOut);
+              #ifndef NEW_CMP
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+              #else
+              char speriod[MAX_NAME_LEN];
+              sprintf(speriod, "%d", period);
+              Op(INT_IF_LES, l->d.timer.name, speriod);
+              #endif
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
               Op(INT_ELSE);
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
@@ -1415,7 +1504,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                   Op(INT_SET_BIT, store);
                 Op(INT_ELSE);
                   Op(INT_CLEAR_BIT, store);
-               Op(INT_END_IF);
+                Op(INT_END_IF);
               Op(INT_END_IF);
               Op(INT_IF_BIT_CLEAR, store);
                 Op(INT_CLEAR_BIT, stateInOut);
@@ -1423,18 +1512,40 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_ELSE);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
             Op(INT_END_IF);
+            #else
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_DECREMENT_VARIABLE, l->d.timer.name, stateInOut);
+              Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_IF_BIT_CLEAR, store);
+                  Op(INT_SET_BIT, store);
+                Op(INT_ELSE);
+                  Op(INT_CLEAR_BIT, store);
+                Op(INT_END_IF);
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+              Op(INT_END_IF);
+              Op(INT_COPY_BIT_TO_BIT, stateInOut, store);
+            Op(INT_ELSE);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+            Op(INT_END_IF);
+            #endif
             break;
         }
         case ELEM_TON: {
             Comment(3, "ELEM_TON");
             SDWORD period = TimerPeriod(l);
 
+            #ifndef TON_NEW
             Op(INT_IF_BIT_SET, stateInOut);
 
+              #ifndef NEW_CMP
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-
-                Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
-                Op(INT_CLEAR_BIT, stateInOut);
+              #else
+              char speriod[MAX_NAME_LEN];
+              sprintf(speriod, "%d", period);
+              Op(INT_IF_LES, l->d.timer.name, speriod);
+              #endif
+                Op(INT_CLEAR_BIT, stateInOut); //1
+                Op(INT_INCREMENT_VARIABLE, l->d.timer.name); //2
               Op(INT_END_IF);
 
             Op(INT_ELSE);
@@ -1442,12 +1553,30 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
 
             Op(INT_END_IF);
+            #else
+            char store[MAX_NAME_LEN];
+            GenSymOneShot(store, "TON", l->d.timer.name);
+
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_IF_BIT_CLEAR, store);
+                Op(INT_DECREMENT_VARIABLE, l->d.timer.name, stateInOut);
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_SET_BIT, store);
+                Op(INT_END_IF);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, store);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+            Op(INT_END_IF);
+            #endif
             break;
         }
         case ELEM_TOF: {
             Comment(3, "ELEM_TOF");
             SDWORD period = TimerPeriod(l);
 
+            #ifndef TON_NEW
+            /*
             // All variables start at zero by default, so by default the
             // TOF timer would start out with its output forced HIGH, until
             // it finishes counting up. This does not seem to be what
@@ -1458,10 +1587,16 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_SET_BIT, antiGlitchName);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             Op(INT_END_IF);
-
+            /**/
             Op(INT_IF_BIT_CLEAR, stateInOut);
 
+              #ifndef NEW_CMP
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+              #else
+              char speriod[MAX_NAME_LEN];
+              sprintf(speriod, "%d", period);
+              Op(INT_IF_LES, l->d.timer.name, speriod);
+              #endif
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
                 Op(INT_SET_BIT, stateInOut);
               Op(INT_END_IF);
@@ -1471,8 +1606,26 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
 
             Op(INT_END_IF);
+            #else
+            char store[MAX_NAME_LEN];
+            GenSymOneShot(store, "TOF", l->d.timer.name);
+
+            Op(INT_IF_BIT_CLEAR, stateInOut);
+              Op(INT_IF_BIT_CLEAR, store);
+                Op(INT_DECREMENT_VARIABLE, l->d.timer.name, store);
+              Op(INT_END_IF);
+              //Op(INT_IF_BIT_SET, store);
+              Op(INT_IF_BIT_CLEAR, store); // aaa
+                Op(INT_SET_BIT, stateInOut);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, store);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+            Op(INT_END_IF);
+            #endif
             break;
         }
+        //-------------------------------------------------------------------
         case ELEM_CTU: {
             Comment(3, "ELEM_CTU");
             if(IsNumber(l->d.counter.max))
@@ -1592,12 +1745,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               // -5 --> -10
               // ^init  ^max
               if(IsNumber(l->d.counter.max)){
-                #ifdef USE_CMP
-                Op(INT_IF_VARIABLE_GEQ_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max));
-                Op(INT_ELSE);
-                #else
                 Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max));
-                #endif
               } else {
                 Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.max, l->d.counter.name);
               }
@@ -1640,12 +1788,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
 
               if(IsNumber(l->d.counter.max)){
-                #ifndef USE_CMP
                 Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max)+1);
                 Op(INT_ELSE);
-                #else
-                Op(INT_IF_VARIABLE_GEQ_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max)+1);
-                #endif
               } else {
                 Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.name, l->d.counter.max);
               }
@@ -1788,6 +1932,26 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         // Special function
+
+        #ifdef NEW_CMP
+        {
+        int intOp;
+        case ELEM_GRT: intOp=INT_IF_LEQ; Comment(3, "ELEM_GRT"); goto cmp;
+        case ELEM_GEQ: intOp=INT_IF_LES; Comment(3, "ELEM_GEQ"); goto cmp;
+        case ELEM_LES: intOp=INT_IF_GEQ; Comment(3, "ELEM_LES"); goto cmp;
+        case ELEM_LEQ: intOp=INT_IF_GRT; Comment(3, "ELEM_LEQ"); goto cmp;
+        case ELEM_NEQ: intOp=INT_IF_EQU; Comment(3, "ELEM_NEQ"); goto cmp;
+        case ELEM_EQU: intOp=INT_IF_NEQ; Comment(3, "ELEM_EQU"); goto cmp;
+        cmp: {
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(intOp, l->d.cmp.op1, l->d.cmp.op2);
+                    Op(INT_CLEAR_BIT, stateInOut);
+                Op(INT_END_IF);
+            Op(INT_END_IF);
+            break;
+            }
+        }
+        #else
         case ELEM_GRT: Comment(3, "ELEM_GRT"); goto cmp;
         case ELEM_GEQ: Comment(3, "ELEM_GEQ"); goto cmp;
         case ELEM_LES: Comment(3, "ELEM_LES"); goto cmp;
@@ -1795,8 +1959,6 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_NEQ: Comment(3, "ELEM_NEQ"); goto cmp;
         case ELEM_EQU: Comment(3, "ELEM_EQU"); goto cmp;
         cmp: {
-            #ifdef USE_CMP
-            #endif
             {
               char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch1");
               char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
@@ -1822,6 +1984,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_END_IF);
           break;
         }
+        #endif
 
         case ELEM_IF_BIT_SET:
             Comment(3, "ELEM_IF_BIT_SET");
@@ -1929,6 +2092,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         {
+        int deg, len;
         case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  goto xseg;
         case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  goto xseg;
         case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); goto xseg;
@@ -2082,13 +2246,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                     Op(INT_EEPROM_BUSY_CHECK, "$scratch");
                     Op(INT_IF_BIT_CLEAR, "$scratch");
                         Op(INT_EEPROM_READ, "$tmpVar24bit", EepromAddrFree);
-                        #ifdef USE_CMP
-                        Op(INT_IF_VARIABLE_NEQ_VARIABLE, "$tmpVar24bit", l->d.persist.var);
-                        #else
                         Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$tmpVar24bit",
                             l->d.persist.var);
                         Op(INT_ELSE);
-                        #endif
                             Op(INT_EEPROM_WRITE, l->d.persist.var, EepromAddrFree);
                         Op(INT_END_IF);
                     Op(INT_END_IF);

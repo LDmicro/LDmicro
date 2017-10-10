@@ -509,14 +509,16 @@ static int IsOperation(PicOp op)
 /**/
 #define SetBit(...)         Instruction(OP_BSF, __VA_ARGS__)
 #define ClearBit(...)       Instruction(OP_BCF, __VA_ARGS__)
-#define IfBitClear(...)     Instruction(OP_BTFSS, __VA_ARGS__)
 #define IfBitSet(...)       Instruction(OP_BTFSC, __VA_ARGS__)
+#define IfBitClear(...)     Instruction(OP_BTFSS, __VA_ARGS__)
+#define SkpIfBitSet(...)    Instruction(OP_BTFSS, __VA_ARGS__)
+#define SkpIfBitClear(...)  Instruction(OP_BTFSC, __VA_ARGS__)
 /**/
 // http://picprojects.org.uk/projects/pseudoins.htm
 #define skpnc               Instruction(OP_BTFSC, REG_STATUS, STATUS_C); // Skip on No Carry
 #define skpc                Instruction(OP_BTFSS, REG_STATUS, STATUS_C); // Skip on Carry
-#define skpnz               Instruction(OP_BTFSC, REG_STATUS, STATUS_Z); // Skip on Non Zero
-#define skpz                Instruction(OP_BTFSS, REG_STATUS, STATUS_Z); // Skip on Zero
+#define skpnz               Instruction(OP_BTFSC, REG_STATUS, STATUS_Z); // Skip on Non Zero // equal to IfBitSet(REG_STATUS, STATUS_Z);
+#define skpz                Instruction(OP_BTFSS, REG_STATUS, STATUS_Z); // Skip on Zero     // equal to IfBitClear(REG_STATUS, STATUS_Z);
 
 //-----------------------------------------------------------------------------
 // Store an instruction at the next spot in program memory.  Error condition
@@ -2123,8 +2125,9 @@ static BOOL IsInput(DWORD addr)
     return FALSE;
 }
 
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest, char *nameSrc)
 {
+    Comment("CopyBit");
 /*
     // With possibility of "jitter" on destination pin.
     // Don't use for outputs pins.
@@ -2144,41 +2147,71 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
     &&((Bank(addrDest) == Bank(addrSrc))
     || IsCoreRegister(addrDest)
     || IsCoreRegister(addrSrc)) ) {
-        IfBitSet(addrSrc, bitSrc);
-        SetBit(addrDest, bitDest);
-        IfBitClear(addrSrc, bitSrc);
-        ClearBit(addrDest, bitDest);
+        IfBitSet(addrSrc, bitSrc, nameSrc);
+        SetBit(addrDest, bitDest, nameDest);
+        IfBitClear(addrSrc, bitSrc, nameSrc);
+        ClearBit(addrDest, bitDest, nameDest);
     } else {
-        ClearBit(REG_STATUS, STATUS_DC);
-        IfBitSet(addrSrc, bitSrc);
+        ClearBit(REG_STATUS, STATUS_DC, "STATUS_DC");
+        IfBitSet(addrSrc, bitSrc, nameSrc);
         SetBit(REG_STATUS, STATUS_DC);
 
-        IfBitSet(REG_STATUS, STATUS_DC);
-        SetBit(addrDest, bitDest);
-        IfBitClear(REG_STATUS, STATUS_DC);
-        ClearBit(addrDest, bitDest);
+        IfBitSet(REG_STATUS, STATUS_DC, "STATUS_DC");
+        SetBit(addrDest, bitDest, nameDest);
+        IfBitClear(REG_STATUS, STATUS_DC, "STATUS_DC");
+        ClearBit(addrDest, bitDest, nameDest);
     }
 }
 
-static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
+    CopyBit(addrDest, bitDest, addrSrc, bitSrc, NULL, NULL);
+}
+
+static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest, char *nameSrc)
+{
+    Comment("CopyNotBit");
     if((Bank(addrDest) == Bank(addrSrc))
     || IsCoreRegister(addrDest)
     || IsCoreRegister(addrSrc)) {
-        IfBitSet(addrSrc, bitSrc);
-        ClearBit(addrDest, bitDest);
-        IfBitClear(addrSrc, bitSrc);
-        SetBit(addrDest, bitDest);
+        IfBitSet(addrSrc, bitSrc, nameSrc);
+        ClearBit(addrDest, bitDest, nameDest);
+        IfBitClear(addrSrc, bitSrc, nameSrc);
+        SetBit(addrDest, bitDest, nameDest);
     } else {
-        ClearBit(REG_STATUS, STATUS_DC);
-        IfBitSet(addrSrc, bitSrc);
-        SetBit(REG_STATUS, STATUS_DC);
+        ClearBit(REG_STATUS, STATUS_DC, "STATUS_DC");
+        IfBitSet(addrSrc, bitSrc, nameSrc);
+        SetBit(REG_STATUS, STATUS_DC, "STATUS_DC");
 
-        IfBitSet(REG_STATUS, STATUS_DC);
-        ClearBit(addrDest, bitDest);
-        IfBitClear(REG_STATUS, STATUS_DC);
-        SetBit(addrDest, bitDest);
+        IfBitSet(REG_STATUS, STATUS_DC, "STATUS_DC");
+        ClearBit(addrDest, bitDest, nameDest);
+        IfBitClear(REG_STATUS, STATUS_DC, "STATUS_DC");
+        SetBit(addrDest, bitDest, nameDest);
     }
+}
+
+static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+{
+    CopyNotBit(addrDest, bitDest, addrSrc, bitSrc, NULL, NULL);
+}
+
+static void XorBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+{
+    Comment("XorBit");
+    DWORD is0 = AllocFwdAddr();
+    DWORD isEnd = AllocFwdAddr();
+    SkpIfBitSet(addrDest, bitDest);
+    Instruction(OP_GOTO, is0);
+    //is1
+    IfBitSet(addrSrc, bitSrc);
+    ClearBit(addrDest, bitDest);
+    Instruction(OP_GOTO, isEnd);
+
+    FwdAddrIsNow(is0);
+    IfBitSet(addrSrc, bitSrc);
+    SetBit(addrDest, bitDest);
+
+    FwdAddrIsNow(isEnd);
 }
 
 //-----------------------------------------------------------------------------
@@ -2187,8 +2220,9 @@ static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 // address (which is an FwdAddress, so not yet assigned). Called with IntPc
 // on the IF statement, returns with IntPc on the END IF.
 //-----------------------------------------------------------------------------
-static void CompileIfBody(DWORD condFalse)
+static void CompileIfBody(DWORD condFalse, char *s)
 {
+    Comment("CompileIfBody %s vvv", s);
     IntPc++;
     IntPcNow = IntPc;
     CompileFromIntermediate(FALSE);
@@ -2206,6 +2240,12 @@ static void CompileIfBody(DWORD condFalse)
     }
 
     if(IntCode[IntPc].op != INT_END_IF) oops();
+    Comment("CompileIfBody %s ^^^", s);
+}
+
+static void CompileIfBody(DWORD condFalse)
+{
+    CompileIfBody(condFalse, "");
 }
 /*
 //-----------------------------------------------------------------------------
@@ -2229,6 +2269,7 @@ static char *VarFromExpr(char *expr, char *tempName, DWORD addr)
 //-----------------------------------------------------------------------------
 static void CopyLiteralToRegs(DWORD addr, int sov, SDWORD literal, char *comment)
 {
+    Comment("CopyLiteralToRegs");
     // vvv reassurance, check before calling this routine
     if(sov < 1) ooops(comment);
     if(sov > 4) ooops(comment);
@@ -2261,7 +2302,9 @@ static void CopyLiteralToRegs(DWORD addr, int sov, SDWORD literal, char *comment
 
 //-----------------------------------------------------------------------------
 static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *name1, char *name2, BOOL Sign)
+// addr1 - dest, addr2 - source
 {
+    Comment("CopyRegsToRegs");
     // vvv reassurance, check before calling this routine
     if(sov1 < 1) ooops(name1);
     if(sov1 > 4) ooops(name1);
@@ -2272,37 +2315,37 @@ static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *n
     Instruction(OP_MOVF, addr2, DEST_W, name2);
     Instruction(OP_MOVWF, addr1, 0, name1);
     if(sov1 >= 2) {
-      if(sov2 >= sov1) {
+      if(sov2 >= 2) {
         Instruction(OP_MOVF, addr2+1, DEST_W, name2);
       } else {
-        Instruction(OP_MOVLW, 0x00);               // Sign propagation
+        Instruction(OP_MOVLW, 0x00);
         if(Sign) {
-        Instruction(OP_BTFSC, addr1+sov1-1, BIT7); //
-        Instruction(OP_MOVLW, 0xFF);               //
+        Instruction(OP_BTFSC, addr2+sov2-1, BIT7, name2); // Sign propagation
+        Instruction(OP_MOVLW, 0xFF);
         }
       }
       Instruction(OP_MOVWF, addr1+1, 0, name1);
 
       if(sov1 >= 3) {
-        if(sov2 >= sov1) {
+        if(sov2 >= 3) {
           Instruction(OP_MOVF, addr2+2, DEST_W, name2);
         } else {
-          Instruction(OP_MOVLW, 0x00);               // Sign propagation
+          Instruction(OP_MOVLW, 0x00);
           if(Sign) {
-          Instruction(OP_BTFSC, addr1+sov1-1, BIT7); //
-          Instruction(OP_MOVLW, 0xFF);               //
+          Instruction(OP_BTFSC, addr2+sov2-1, BIT7, name2); // Sign propagation
+          Instruction(OP_MOVLW, 0xFF);
           }
         }
         Instruction(OP_MOVWF, addr1+2, 0, name1);
 
         if(sov1 >= 4) {
-          if(sov2 >= sov1) {
+          if(sov2 >= 4) {
             Instruction(OP_MOVF, addr2+3, DEST_W, name2);
           } else {
-            Instruction(OP_MOVLW, 0x00);               // Sign propagation
+            Instruction(OP_MOVLW, 0x00);
             if(Sign) {
-            Instruction(OP_BTFSC, addr1+sov1-1, BIT7); //
-            Instruction(OP_MOVLW, 0xFF);               //
+            Instruction(OP_BTFSC, addr2+sov2-1, BIT7, name2); // Sign propagation
+            Instruction(OP_MOVLW, 0xFF);
             }
           }
           Instruction(OP_MOVWF, addr1+3, 0, name1);
@@ -2312,16 +2355,20 @@ static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *n
 }
 
 //-----------------------------------------------------------------------------
-static void CopyArgToReg(DWORD addr1, int sov1, char *name)
+static DWORD CopyArgToReg(BOOL isModificationRisk, DWORD destAddr, int destSov, char *name, BOOL Sign)
 {
     if(IsNumber(name)) {
-        CopyLiteralToRegs(addr1, sov1, hobatoi(name), name);
+        CopyLiteralToRegs(destAddr, destSov, hobatoi(name), name);
     } else {
-        int sov2 = SizeOfVar(name);
-        DWORD addr2;
-        MemForVariable(name, &addr2);
-        CopyRegsToRegs(addr1, sov1, addr2, sov2, "$", name, TRUE);
+        int sov = SizeOfVar(name);
+        DWORD addr;
+        MemForVariable(name, &addr);
+        if(isModificationRisk || (sov < destSov))
+            CopyRegsToRegs(destAddr, destSov, addr, sov, "$CopyArgToReg", name, Sign);
+        else
+            destAddr = addr;
     }
+    return destAddr;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -2504,9 +2551,36 @@ return;
 #define CheckSovNames(...) _CheckSovNames(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
-static void Increment(DWORD addr, int sov, char *name)
-// a = a + 1
+/*
+Increment
+; from David Cary: tested on PIC 16F877
+; inc
+    incf count0,f
+    skpnz
+    incf count1,f
+    skpnz
+    incf count2,f
+    ;... {repeat the last two lines for as wide a counter as is needed}
+    ; w is unchanged.
+    ; Status:Z is 1 if and only if counter is now all zeros.
+    ; rest of Status unchanged.
+;from Dmitry Kiryashov
+;inc
+    movlw   1
+    addwf   count0,F
+    skpnc
+    addwf   count1,F
+    ;... {ed: repeat the last two lines for as wide a counter as is needed}
+    ; w is now 1
+    ; Status:Z and Status:C are 1 if and only if counter is now all zeros.
+*/
+static void Increment(DWORD addr, int sov, char *name, char *overlap, char *overflow)
+// a := a + 1
 {
+  if(overflow && strlen(overflow)) {
+    Instruction(OP_MOVF, addr+sov-1, DEST_W);
+    Instruction(OP_MOVWF, ScratchS); // signBefore
+  }
   Instruction(OP_INCF, addr, DEST_F, name);
   if(sov >= 2) {
     IfBitSet(REG_STATUS, STATUS_Z);
@@ -2517,22 +2591,124 @@ static void Increment(DWORD addr, int sov, char *name)
       if(sov >= 4) {
         IfBitSet(REG_STATUS, STATUS_Z);
         Instruction(OP_INCF, addr+3, DEST_F, name);
+        if(sov > 4) oops();
       }
     }
   }
+  DWORD addrO;
+  int bitO;
+  if(overlap && strlen(overlap)) {
+      MemForSingleBit(overlap, FALSE, &addrO, &bitO);
+      CopyBit(addrO, bitO, REG_STATUS, STATUS_Z); // zero as overlap flag; counter rolled over and is now all zeros.
+  }
+  if(overflow && strlen(overflow)) {
+    /*
+    if((signBefore == 0) && (signAfter != 0))
+      SetSingleBit(overflow, TRUE);
+    */
+    DWORD notOverflow = AllocFwdAddr();
+    Instruction(OP_BTFSC, ScratchS, 7);   // signBefore
+    Instruction(OP_GOTO,  notOverflow);   // BIT7 == 1 if signBefore != 0
+                                          // BIT7 == 0 if signBefore == 0
+    Instruction(OP_BTFSS, addr+sov-1, 7); // signAfter
+    Instruction(OP_GOTO,  notOverflow);   // BIT7 == 0 if signAfter == 0
+                                          // BIT7 == 1 if signAfter != 0
+    MemForSingleBit(overflow, FALSE, &addrO, &bitO);
+    SetBit(addrO, bitO);
+
+    FwdAddrIsNow(notOverflow);
+  }
+}
+
+static void Increment(DWORD addr, int sov, char *name)
+{
+  Increment(addr, sov, name, NULL, NULL);
 }
 
 static void Increment(DWORD addr, int sov)
 {
-  Increment(addr, sov, NULL);
+  Increment(addr, sov, NULL, NULL, NULL);
+}
+//-----------------------------------------------------------------------------
+/*
+Decrement
+;dec
+        movlw   1
+        subwf   count0,F
+        skpc
+        subwf   count1,F
+;... {ed: repeat the last two lines for as wide a counter as is needed}
+    ; w is now 1
+    ; Status:C is now 0 if and only if counter rolled over and is now all ones
+    ; Status:Z is set if the least significant byte of the counter is zero
+    ; (not necessarily all bytes !) and in certain other cases.
+*/
+static void Decrement(DWORD addr, int sov, char *name, char *overlap, char *overflow)
+// a := a - 1
+{
+  if(overflow && strlen(overflow)) {
+    Instruction(OP_MOVF, addr+sov-1, DEST_W);
+    Instruction(OP_MOVWF, ScratchS); // signBefore
+  }
+  Instruction(OP_MOVLW, 1);
+  Instruction(OP_SUBWF, addr, DEST_F, name);
+  if(sov >= 2) {
+    //IfBitSet(REG_STATUS, STATUS_C); BORROW !!!
+    /* Note: For borrow, the polarity is reversed.
+    A subtraction is executed by adding the two's
+    complement of the second operand. */
+    IfBitClear(REG_STATUS, STATUS_C);
+    Instruction(OP_SUBWF, addr+1, DEST_F, name);
+    if(sov >= 3) {
+      IfBitClear(REG_STATUS, STATUS_C);
+      Instruction(OP_SUBWF, addr+2, DEST_F, name);
+      if(sov >= 4) {
+        IfBitClear(REG_STATUS, STATUS_C);
+        Instruction(OP_SUBWF, addr+3, DEST_F, name);
+        if(sov > 4) oops();
+      }
+    }
+  }
+  DWORD addrO;
+  int bitO;
+  if(overlap && strlen(overlap)) {
+      MemForSingleBit(overlap, FALSE, &addrO, &bitO);
+      CopyNotBit(addrO, bitO, REG_STATUS, STATUS_C, overlap, "STATUS_C"); // borrow as overlap flag, counter rolled over and is now all ones.
+  }
+  if(overflow && strlen(overflow)) {
+    /*
+    if((signBefore != 0) && (signAfter == 0))
+      SetSingleBit(overflow, TRUE);
+    */
+    DWORD notOverflow = AllocFwdAddr();
+    Instruction(OP_BTFSS,      ScratchS, 7);
+    Instruction(OP_GOTO,       notOverflow); // BIT7 == 0 if signBefore == 0
+                                             // BIT7 == 1 if signBefore != 0
+    Instruction(OP_BTFSC,      addr+sov-1, 7);
+    Instruction(OP_GOTO,       notOverflow); // BIT7 == 1 if signAfter != 0
+                                             // BIT7 == 0 if signAfter == 0
+    MemForSingleBit(overflow, FALSE, &addrO, &bitO);
+    SetBit(addrO, bitO);
+
+    FwdAddrIsNow(notOverflow);
+  }
 }
 
+static void Decrement(DWORD addr, int sov, char *name)
+{
+  Decrement(addr, sov, name, NULL, NULL);
+}
+
+static void Decrement(DWORD addr, int sov)
+{
+  Decrement(addr, sov, NULL, NULL, NULL);
+}
+//-----------------------------------------------------------------------------
 static void aplusw(DWORD addr, int sov, char *name)
-// a = a + W
+// a := a + W
 {
   Instruction(OP_ADDWF, addr, DEST_F, name);
   if(sov >= 2) {
-    ClearBit(REG_STATUS, STATUS_Z);
     IfBitSet(REG_STATUS, STATUS_C);
     Instruction(OP_INCF, addr+1, DEST_F, name);
     if(sov >= 3) {
@@ -2551,7 +2727,7 @@ static void aplusw(DWORD addr, int sov)
   aplusw(addr, sov, NULL);
 }
 
-
+//-----------------------------------------------------------------------------
 static void VariableAdd(DWORD addr1, DWORD addr2, DWORD addr3, int sov)
 // addr1 = addr2 + addr3 // original
 // ScratchS used !!!
@@ -2570,10 +2746,9 @@ static void VariableAdd(DWORD addr1, DWORD addr2, DWORD addr3, int sov)
   Instruction(OP_INCF, addr1+1, DEST_F);
 }
 
-static void bplusa(DWORD b, DWORD a, int sov)
-//                   addrb    addra   sovb == sova
-// b = b + a , b - is rewritten
+//-----------------------------------------------------------------------------
 /*
+PIC_Mid_A_14.pdf
 For example, for a 32-bit add:
     movf     a,w ; add byte 0 (LSB)
     addwf    b,f
@@ -2590,78 +2765,167 @@ For example, for a 32-bit add:
     incfsz   a+3,w
     addwf    b+3,f
 */
+static void add(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
+//                   addrb    addra  sovb == sova
+// b = b + a , b - is rewritten
 {
-  Instruction(OP_MOVF, a, DEST_W);
-  Instruction(OP_ADDWF, b, DEST_F);
+  if(overflow && strlen(overflow)) {
+    Instruction(OP_MOVF,       b+sov-1, DEST_W);
+    Instruction(OP_XORWF,      a+sov-1, DEST_W);
+    Instruction(OP_MOVWF,      ScratchS);
+  }
+  Instruction(OP_MOVF,         a, DEST_W);
+  Instruction(OP_ADDWF,        b, DEST_F);
   if(sov >= 2) {
-    Instruction(OP_MOVF, a+1, DEST_W);
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
-    Instruction(OP_INCFSZ, a+1, DEST_W);
-    Instruction(OP_ADDWF, b+1, DEST_F);
+    Instruction(OP_MOVF,       a+1, DEST_W);
+    Instruction(OP_BTFSC,      REG_STATUS, STATUS_C);
+    Instruction(OP_INCFSZ,     a+1, DEST_W);
+    Instruction(OP_ADDWF,      b+1, DEST_F);
     if(sov >= 3) {
-      Instruction(OP_MOVF, a+2, DEST_W);
-      Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
-      Instruction(OP_INCFSZ, a+2, DEST_W);
-      Instruction(OP_ADDWF, b+2, DEST_F);
+      Instruction(OP_MOVF,     a+2, DEST_W);
+      Instruction(OP_BTFSC,    REG_STATUS, STATUS_C);
+      Instruction(OP_INCFSZ,   a+2, DEST_W);
+      Instruction(OP_ADDWF,    b+2, DEST_F);
       if(sov >= 4) {
-        Instruction(OP_MOVF, a+3, DEST_W);
-        Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+        Instruction(OP_MOVF,   a+3, DEST_W);
+        Instruction(OP_BTFSC,  REG_STATUS, STATUS_C);
         Instruction(OP_INCFSZ, a+3, DEST_W);
-        Instruction(OP_ADDWF, b+3, DEST_F);
+        Instruction(OP_ADDWF,  b+3, DEST_F);
       }
     }
   }
+  if(overflow && strlen(overflow)) {
+    /*
+    if((sign2 == sign3)
+    && (signr != sign3))
+        SetSingleBit(Overflow, TRUE);
+    */
+    DWORD notOverflow = AllocFwdAddr();
+    Instruction(OP_BTFSC,      ScratchS, 7);
+    Instruction(OP_GOTO,       notOverflow); // BIT7 == 1 if sign2 != sign3
+                                             // BIT7 == 0 if sign2 == sign3
+    Instruction(OP_MOVF,       b+sov-1, DEST_W);
+    Instruction(OP_XORWF,      a+sov-1, DEST_W);
+    Instruction(OP_MOVWF,      ScratchS);
+    Instruction(OP_BTFSS,      ScratchS, 7);
+    Instruction(OP_GOTO,       notOverflow); // BIT7 == 0 if sign2 == sign3
+                                             // BIT7 == 1 if sign2 != sign3
+    DWORD addr2 = 0;
+    int   bit2 = -1;
+    MemForSingleBit(overflow, FALSE, &addr2, &bit2);
+    SetBit(addr2, bit2);
+
+    FwdAddrIsNow(notOverflow);
+  }
 }
 
-static void bplusa(DWORD b, DWORD a, int sovb, int sova)
-//          bplusa(DWORD addrb, DWORD addra, int sovb)
-// b = b + a , b - is rewritten
-/*
-For example, for a 32-bit add:
-    movf     a,w ; add byte 0 (LSB)
-    addwf    b,f
-    movf     a+1,w ; add byte 1
-    btfsc    STATUS,C
-    incfsz   a+1,w
-    addwf    b+1,f
-    movf     a+2,w ; add byte 2
-    btfsc    STATUS,C
-    incfsz   a+2,w
-    addwf    b+2,f
-    movf     a+3,w ; add byte 3 (MSB)
-    btfsc    STATUS,C
-    incfsz   a+3,w
-    addwf    b+3,f
-*/
+static void add(DWORD b, DWORD a, int sov, char *overflow)
 {
-  Instruction(OP_MOVF, a, DEST_W);
-  Instruction(OP_ADDWF, b, DEST_F);
-  if(sovb >= 2) {
-    if(sova >= sovb)
-      Instruction(OP_MOVF, a+1, DEST_W);
-    else
-      Instruction(OP_MOVLW, 0);
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
-    if(sova >= sovb)
-      Instruction(OP_INCFSZ, a+1, DEST_W);
-    else
-      Instruction(OP_MOVLW, 1);
-    Instruction(OP_ADDWF, b+1, DEST_F);
-    if(sovb >= 3) {
-      Instruction(OP_MOVF, a+2, DEST_W);
-      Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
-      Instruction(OP_INCFSZ, a+2, DEST_W);
-      Instruction(OP_ADDWF, b+2, DEST_F);
-      if(sovb >= 4) {
-        Instruction(OP_MOVF, a+3, DEST_W);
-        Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+    add(b, a, sov, overflow, NULL);
+}
+
+static void add(DWORD b, DWORD a, int sov)
+{
+    add(b, a, sov, NULL, NULL);
+}
+
+//-----------------------------------------------------------------------------
+/*
+PIC_Mid_A_14.pdf
+For example, for a 32-bit subtraction:
+    movf     a,w ; subtract byte 0 (LSB)
+    subwf    b,f
+    movf     a+1,w ; subtract byte 1
+    btfss    STATUS,C
+    incfsz   a+1,w
+    subwf    b+1,f
+    movf     a+2,w ; subtract byte 2
+    btfss    STATUS,C
+    incfsz   a+2,w
+    subwf    b+2,f
+    movf     a+3,w ; subtract byte 3 (MSB)
+    btfss    STATUS,C
+    incfsz   a+3,w
+    subwf    b+3,f
+*/
+static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, char *overlap, char *overflow)
+//                  addrb    addra  sovb == sova
+// b = b - a , b - is rewritten
+{
+  if(overflow && strlen(overflow)) {
+    Instruction(OP_MOVF,       b+sov-1, DEST_W);
+    Instruction(OP_XORWF,      a+sov-1, DEST_W);
+    Instruction(OP_MOVWF,      ScratchS);
+  }
+  Instruction(OP_MOVF,         a, DEST_W); // subtract byte 0 (LSB)
+  Instruction(OP_SUBWF,        b, DEST_W_F);
+  if(sov >= 2) {
+    Instruction(OP_MOVF,       a+1, DEST_W); // subtract byte 1
+    Instruction(OP_BTFSS,      REG_STATUS, STATUS_C);
+    Instruction(OP_INCFSZ,     a+1, DEST_W);
+    Instruction(OP_SUBWF,      b+1, DEST_W_F);
+    if(sov >= 3) {
+      Instruction(OP_MOVF,     a+2, DEST_W); // subtract byte 2
+      Instruction(OP_BTFSS,    REG_STATUS, STATUS_C);
+      Instruction(OP_INCFSZ,   a+2, DEST_W);
+      Instruction(OP_SUBWF,    b+2, DEST_W_F);
+      if(sov >= 4) {
+        Instruction(OP_MOVF,   a+3, DEST_W); // subtract byte 3 (MSB)
+        Instruction(OP_BTFSS,  REG_STATUS, STATUS_C);
         Instruction(OP_INCFSZ, a+3, DEST_W);
-        Instruction(OP_ADDWF, b+3, DEST_F);
+        Instruction(OP_SUBWF,  b+3, DEST_W_F);
       }
     }
   }
+  if(overflow && strlen(overflow)) {
+    /*
+    if((sign2 != sign3)
+    && (signr == sign3))
+          SetSingleBit(Overflow, TRUE);
+    */
+    DWORD notOverflow = AllocFwdAddr();
+    Instruction(OP_BTFSS,      ScratchS, 7);
+    Instruction(OP_GOTO,       notOverflow); // BIT7 == 0 if sign2 == sign3
+                                             // BIT7 == 1 if sign2 != sign3
+    if(DEST_W_F == DEST_F)
+    Instruction(OP_MOVF,       b+sov-1, DEST_W);
+    else
+    Instruction(OP_NOP_);
+    Instruction(OP_XORWF,      a+sov-1, DEST_W);     ///aaa
+    Instruction(OP_MOVWF,      ScratchS);
+    Instruction(OP_BTFSC,      ScratchS, 7);
+    Instruction(OP_GOTO,       notOverflow); // BIT7 == 1 if sign2 != sign3
+                                             // BIT7 == 0 if sign2 == sign3
+    DWORD addr2 = 0;
+    int   bit2 = -1;
+    MemForSingleBit(overflow, FALSE, &addr2, &bit2);
+    SetBit(addr2, bit2);
+
+    FwdAddrIsNow(notOverflow);
+  }
 }
 
+static void sub(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
+{
+    sub_(b, a, sov, DEST_F, overlap, overflow);
+}
+
+static void sub(DWORD b, DWORD a, int sov)
+{
+    sub_(b, a, sov, DEST_F, NULL, NULL);
+}
+
+static void cmp(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
+{
+    sub_(b, a, sov, DEST_W, overlap, overflow);
+}
+/*
+static void cmp(DWORD b, DWORD a, int sov)
+{
+    sub_(b, a, sov, DEST_W, NULL, NULL);
+}
+*/
+//-----------------------------------------------------------------------------
 static void shl(DWORD addr, int sov)
 {
   Instruction(OP_BCF, REG_STATUS, STATUS_C);
@@ -2793,26 +3057,31 @@ static void CompileFromIntermediate(BOOL topLevel)
         rungNow = a->rung;
         switch(a->op) {
             case INT_SET_BIT:
+                Comment("INT_SET_BIT %s", a->name1);
                 MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
                 SetBit(addr1, bit1, a->name1);
                 break;
 
             case INT_CLEAR_BIT:
+                Comment("INT_CLEAR_BIT %s", a->name1);
                 MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
                 ClearBit(addr1, bit1, a->name1);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
+                Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1, a->name2);
                 MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
                 MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
                 CopyBit(addr1, bit1, addr2, bit2);
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
+                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1, a->literal, a->literal);
                 CheckSovNames(a);
                 MemForVariable(a->name1, &addr1);
                 sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1, addr1, a->literal, a->literal);
                 sov1 = SizeOfVar(a->name1);
+                sov2 = byteNeeded(a->literal);
                 #ifdef AUTO_BANKING
                 CopyLiteralToRegs(addr1, sov1, a->literal, comment);
                 #else
@@ -2830,48 +3099,23 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
 
             case INT_INCREMENT_VARIABLE: {
-                sov1 = SizeOfVar(a->name1);
+                Comment("INT_INCREMENT_VARIABLE %s overlap to %s overflow to %s", a->name1, a->name2, a->name3);
                 CheckSovNames(a);
+                sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
-                Increment(addr1, sov1, a->name1);
-                #ifdef CARRY_BORROW
-                if(a->name2 && strlen(a->name2)) {
-                    MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
-                    CopyBit(addr2, bit2, REG_STATUS, STATUS_Z/*, a->name2, "Z"*/); // ??? overflow, counter is now all zeros.
-                }
-                #endif
+                Increment(addr1, sov1, a->name1, a->name2, a->name3);
                 break;
             }
             case INT_DECREMENT_VARIABLE: {
+                Comment("INT_DECREMENT_VARIABLE %s overlap to %s overflow to %s", a->name1, a->name2, a->name3);
                 CheckSovNames(a);
+                sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
-                sov = SizeOfVar(a->name1);
-                Instruction(OP_MOVLW, 1);
-                Instruction(OP_SUBWF, addr1, DEST_F, a->name1);
-                if(sov >= 2) {
-                  //IfBitSet(REG_STATUS, STATUS_C); BORROW !!!
-                  /* Note: For borrow, the polarity is reversed.
-                  A subtraction is executed by adding the two's
-                  complement of the second operand. */
-                  IfBitClear(REG_STATUS, STATUS_C);
-                  Instruction(OP_SUBWF, addr1+1, DEST_F);
-                  if(sov >= 3) {
-                    IfBitClear(REG_STATUS, STATUS_C);
-                    Instruction(OP_SUBWF, addr1+2, DEST_F);
-                    if(sov >= 4) {
-                      IfBitClear(REG_STATUS, STATUS_C);
-                      Instruction(OP_SUBWF, addr1+3, DEST_F);
-                    }
-                  }
-                }
-                if(a->name2 && strlen(a->name2)) {
-                    MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
-                    IfBitClear(REG_STATUS, STATUS_C);
-                    SetBit(addr2, bit2, a->name2); // ??? borrow, counter rolled over and is now all ones.
-                }
+                Decrement(addr1, sov1, a->name1, a->name2, a->name3);
                 break;
             }
             case INT_IF_BIT_SET: {
+                Comment("INT_IF_BIT_SET %s", a->name1);
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 IfBitClear(addr1, bit1, a->name1);
@@ -2880,6 +3124,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
             }
             case INT_IF_BIT_CLEAR: {
+                Comment("INT_IF_BIT_CLEAR %s", a->name1);
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 IfBitSet(addr1, bit1, a->name1);
@@ -2887,7 +3132,116 @@ static void CompileFromIntermediate(BOOL topLevel)
                 CompileIfBody(condFalse);
                 break;
             }
+            #ifdef NEW_CMP
+            case INT_IF_NEQ: Comment("INT_IF_NEQ"); goto cmp1;
+            case INT_IF_EQU: Comment("INT_IF_EQU"); goto cmp1;
+            cmp1: {
+                CheckSovNames(a);
+                DWORD ifThen = AllocFwdAddr(); // isTrue
+                DWORD ifEnd = AllocFwdAddr();  // notTrue
+
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                sov = max(sov1, sov2);
+
+                DWORD addrA = CopyArgToReg(FALSE, Scratch0, sov, a->name1, FALSE);
+                DWORD addrB = CopyArgToReg(FALSE, Scratch4, sov, a->name2, FALSE);
+
+                int i;
+                for(i=0; i<sov; i++) {
+                    Instruction(OP_MOVF, addrA+i, DEST_W);
+                    Instruction(OP_SUBWF, addrB+i, DEST_W);
+                    switch(a->op) {
+                        case INT_IF_NEQ: // ELEM_EQU
+                            IfBitClear(REG_STATUS, STATUS_Z);
+                            Instruction(OP_GOTO, ifThen); // Z=0, A!=B
+                            break;
+                        case INT_IF_EQU: // ELEM_NEQ
+                            IfBitClear(REG_STATUS, STATUS_Z);
+                            Instruction(OP_GOTO, ifEnd); // Z=0, A!=B
+                            break;
+                        default: oops();
+                    }
+                }
+                switch(a->op) {
+                    case INT_IF_NEQ: // ELEM_EQU
+                        Instruction(OP_GOTO, ifEnd); // Z=1, A==B
+                        break;
+                }
+                //ifThen:
+                FwdAddrIsNow(ifThen);
+                CompileIfBody(ifEnd);
+                //ifEnd:
+                break;
+            }
+
+            case INT_IF_GEQ: Comment("INT_IF_GEQ"); goto cmp2;
+            // (A>=B) equal to (A-B), C=0
+            case INT_IF_LEQ: Comment("INT_IF_LEQ"); goto cmp2;
+            // (A<=B) equal to (B-A), C=0
+            case INT_IF_LES: Comment("INT_IF_LES"); goto cmp2;
+            // (A<B) equal to !(A>=B) equal to (A-B), C=1
+            case INT_IF_GRT: Comment("INT_IF_GRT"); goto cmp2;
+            // (A>B) equal to !(A<=B) equal to (B-A), C=1
+            cmp2: {
+                CheckSovNames(a);
+                DWORD ifThen = AllocFwdAddr(); // isTrue
+                DWORD ifEnd = AllocFwdAddr();  // notTrue
+
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                sov = max(sov1, sov2);
+
+                DWORD addrA;
+                DWORD addrB;
+                switch(a->op) {
+                    case INT_IF_GEQ: // op1 - op2
+                    case INT_IF_LES:
+                        // don't change argument a->name1 !!!
+                        addrB = CopyArgToReg(TRUE,  Scratch0, sov, a->name1, TRUE);
+                        addrA = CopyArgToReg(FALSE, Scratch4, sov, a->name2, TRUE);
+                        break;
+                    case INT_IF_LEQ: // op2 - op1
+                    case INT_IF_GRT:
+                        // don't change argument a->name2 !!!
+                        addrB = CopyArgToReg(TRUE,  Scratch0, sov, a->name2, TRUE);
+                        addrA = CopyArgToReg(FALSE, Scratch4, sov, a->name1, TRUE);
+                        break;
+                    default: oops();
+                }
+
+                DWORD addrO;
+                int bitO;
+                MemForSingleBit("$overflow", &addrO, &bitO);
+                ClearBit(addrO, bitO, "$overflow");
+
+                // sub used, we need Sign
+                sub(addrB, addrA, sov, NULL, "$overflow"); // b = b - a , b - is rewritten
+                XorBit(addrO, bitO, addrB+sov-1, 7);
+                switch(a->op) {
+                    case INT_IF_GEQ:
+                    case INT_IF_LEQ:
+                        //skpc
+                        IfBitClear(addrO, bitO);
+                        break;
+                    case INT_IF_LES:
+                    case INT_IF_GRT:
+                        //skpnc
+                        IfBitSet(addrO, bitO);
+                        break;
+                    default: oops();
+                }
+                Instruction(OP_GOTO, ifThen);
+                Instruction(OP_GOTO, ifEnd);
+                //ifThen:
+                FwdAddrIsNow(ifThen);
+                CompileIfBody(ifEnd);
+                //ifEnd:
+                break;
+            }
+            #else
             case INT_IF_VARIABLE_LES_LITERAL: {
+                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1, a->literal, a->literal);
                 DWORD notTrue = AllocFwdAddr();
                 DWORD isTrue = AllocFwdAddr();
                 DWORD lsbDecides = AllocFwdAddr();
@@ -3003,7 +3357,9 @@ static void CompileFromIntermediate(BOOL topLevel)
                 CompileIfBody(notTrue);
                 break;
             }
+            #endif
             case INT_SET_VARIABLE_TO_VARIABLE:
+                Comment("INT_SET_VARIABLE_TO_VARIABLE %s := %s", a->name1, a->name2);
                 CheckSovNames(a);
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
@@ -3014,10 +3370,73 @@ static void CompileFromIntermediate(BOOL topLevel)
                 CopyRegsToRegs(addr1, sov1, addr2, sov2, a->name1, a->name2, TRUE);
                 break;
 
+            case INT_SET_SWAP: {
+                Comment("INT_SET_SWAP %s := SWAP(%s)", a->name1, a->name2);
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                CopyArgToReg(TRUE, Scratch0, sov2, a->name2, FALSE);
+                if(sov2 == 1) {
+                    Instruction(OP_SWAPF, Scratch0, DEST_F);
+                } else if(sov2 == 2) {
+                    Instruction(OP_MOVF, Scratch0, DEST_W);
+                    Instruction(OP_MOVWF, ScratchS);
+                    Instruction(OP_MOVF, Scratch0+1, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0);
+                    Instruction(OP_MOVF, ScratchS, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0+1);
+                } else if(sov2 == 3) {
+                    Instruction(OP_SWAPF, Scratch0+1, DEST_F);
+
+                    Instruction(OP_MOVF, Scratch0, DEST_W);
+                    Instruction(OP_MOVWF, ScratchS);
+                    Instruction(OP_MOVF, Scratch0+2, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0);
+                    Instruction(OP_MOVF, ScratchS, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0+2);
+                } else if(sov2 == 4) {
+                    Instruction(OP_MOVF, Scratch0, DEST_W);
+                    Instruction(OP_MOVWF, ScratchS);
+                    Instruction(OP_MOVF, Scratch0+3, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0);
+                    Instruction(OP_MOVF, ScratchS, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0+3);
+
+                    Instruction(OP_MOVF, Scratch0+1, DEST_W);
+                    Instruction(OP_MOVWF, ScratchS);
+                    Instruction(OP_MOVF, Scratch0+2, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0+1);
+                    Instruction(OP_MOVF, ScratchS, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0+2);
+                } else oops()
+
+                MemForVariable(a->name1, &addr1);
+                CopyRegsToRegs(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
+                break;
+            }
             // The add and subtract routines must be written to return correct
             // results if the destination and one of the operands happen to
-            // be the same registers (e.g. for B = A - B).
-            case INT_SET_VARIABLE_ADD:
+            // be the same registers (e.g. for A := A - C).
+
+            case INT_SET_VARIABLE_ADD: {
+                Comment("INT_SET_VARIABLE_ADD %s := %s + %s; '%s'; '%s'", a->name1, a->name2, a->name3, a->name4, a->name5);
+                // a->name1 = a->name2 + a->name3
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+                MemForVariable(a->name3, &addr3);
+
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                sov3 = SizeOfVar(a->name3);
+                sov = sov1;
+
+                DWORD addrB = CopyArgToReg(TRUE, Scratch0, sov, a->name2, TRUE);
+                DWORD addrA = CopyArgToReg(FALSE, Scratch4, sov, a->name3, TRUE);
+                add(addrB, addrA, sov1, a->name4, a->name5); // b = b + a , b - is rewritten
+                CopyRegsToRegs(addr1, sov1, Scratch0, sov1, a->name1, "$Scratch0", TRUE);
+                break;
+            }
+
+            case -INT_SET_VARIABLE_ADD:
                 MemForVariable(a->name1, &addr1);
                 MemForVariable(a->name2, &addr2);
                 MemForVariable(a->name3, &addr3);
@@ -3025,7 +3444,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 VariableAdd(addr1, addr2, addr3, 2);
                 break;
 
-            case INT_SET_VARIABLE_SUBTRACT:
+            case -INT_SET_VARIABLE_SUBTRACT: {
                 MemForVariable(a->name1, &addr1);
                 MemForVariable(a->name2, &addr2);
                 MemForVariable(a->name3, &addr3);
@@ -3044,6 +3463,25 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Instruction(OP_DECF, addr1+1, DEST_F);
                 break;
 
+            case INT_SET_VARIABLE_SUBTRACT:
+                Comment("INT_SET_VARIABLE_SUBTRACT %s := %s + %s; '%s'; '%s'", a->name1, a->name2, a->name3, a->name4, a->name5);
+                // a->name1 = a->name2 - a->name3
+                MemForVariable(a->name1, &addr1);
+
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                sov3 = SizeOfVar(a->name3);
+                sov = max(sov2, sov3);
+                if(sov1 < sov) {
+                    Error(" Size of result '%s' less then an argument(s) '%s' or '%s'", a->name1, a->name2, a->name3);
+                }
+
+                DWORD addrB = CopyArgToReg(TRUE, Scratch0, sov, a->name2, TRUE);
+                DWORD addrA = CopyArgToReg(FALSE, Scratch4, sov, a->name3, TRUE);
+                sub(addrB, addrA, sov, a->name4, a->name5); // b = b - a , b - is rewritten
+                CopyRegsToRegs(addr1, sov1, Scratch0, sov, a->name1, "$Scratch0", TRUE);
+                break;
+            }
             case INT_SET_VARIABLE_MULTIPLY:
                 MultiplyNeeded = TRUE;
 
@@ -3140,7 +3578,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 FwdAddrIsNow(noSend);
 
-                XorCopyBit(addr2, bit2, REG_TXSTA, TRMT); // return as busy
+                CopyNotBit(addr2, bit2, REG_TXSTA, TRMT); // return as busy
                 break;
             }
             case INT_UART_SEND_READY: {
@@ -3180,7 +3618,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 FwdAddrIsNow(noSend);
                 #ifdef AUTO_BANKING
-                XorCopyBit(addr2, bit2, REG_TXSTA, TRMT); // return as busy // TRMT=1 if TSR empty, ready; TRMT=0 if TSR full
+                CopyNotBit(addr2, bit2, REG_TXSTA, TRMT); // return as busy // TRMT=1 if TSR empty, ready; TRMT=0 if TSR full
                 #else
                 ClearBit(addr2, bit2);
 
@@ -3604,7 +4042,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 //SetBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
                 WriteRegister(EepromHighBytesCounter, sov1 - 1);
                 if(sov1 > 1) {
-                Instruction(OP_MOVF, addr1+1, DEST_W);
+                  Instruction(OP_MOVF, addr1+1, DEST_W);
                   Instruction(OP_MOVWF, EepromHighByte);
                   if(sov1 > 2) {
                     Instruction(OP_MOVF, addr1+2, DEST_W);
@@ -3709,34 +4147,34 @@ static void CompileFromIntermediate(BOOL topLevel)
                 MemForVariable(seedName, &addr2);
                 CopyRegsToRegs(Scratch1, 4, addr2, 4, "", "", FALSE);
 
-              //bplusa(addr2, Scratch1, 4);     // * bit0 already in result
-                bplusa(addr2 + 1, Scratch1, 3); // * bit8
-                bplusa(addr2 + 2, Scratch1, 2); // * bit16
+              //add(addr2, Scratch1, 4);     // * bit0 already in result
+                add(addr2 + 1, Scratch1, 3); // * bit8
+                add(addr2 + 2, Scratch1, 2); // * bit16
 
                 shl(Scratch1, 4); //1
                 shl(Scratch1, 4); //2
-                bplusa(addr2, Scratch1, 4);   // * bit2
+                add(addr2, Scratch1, 4);   // * bit2
                 shl(Scratch1, 4); //3
-                bplusa(addr2, Scratch1, 4);   // * bit3
+                add(addr2, Scratch1, 4);   // * bit3
                 shl(Scratch1, 4); //4
                 shl(Scratch1, 4); //5
                 shl(Scratch1, 4); //6
-                bplusa(addr2, Scratch1, 4);   // * bit6
+                add(addr2, Scratch1, 4);   // * bit6
                 shl(Scratch1, 4); //7
-                bplusa(addr2, Scratch1, 4);   // * bit7
+                add(addr2, Scratch1, 4);   // * bit7
                 shl(Scratch1, 4); //8
-              //bplusa(addr2, Scratch1, 4);   // * bit8
+              //add(addr2, Scratch1, 4);   // * bit8
                 shl(Scratch1, 4); //9
                 shl(Scratch1, 4); //10
-                bplusa(addr2, Scratch1, 4);   // * bit10
+                add(addr2, Scratch1, 4);   // * bit10
                 shl(Scratch1, 4); //11
-                bplusa(addr2, Scratch1, 4);   // * bit11
+                add(addr2, Scratch1, 4);   // * bit11
               //shl(Scratch1, 4); //12
               //shl(Scratch1, 4); //13
               //shl(Scratch1, 4); //14
               //shl(Scratch1, 4); //15
               //shl(Scratch1, 4); //16
-              //bplusa(addr2, Scratch1, 4);   // * bit16
+              //add(addr2, Scratch1, 4);   // * bit16
 
                 Increment(addr2, 4, seedName);
                 CopyRegsToRegs(addr1, sov1, addr2 + 4 - sov1, 4, "", "", FALSE);
@@ -4000,7 +4438,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                    CopyLiteralToRegs(Scratch0, 2, hobatoi(a->name3), a->name3);
                  } else {
                    MemForVariable(a->name3, &addr3);
-                   CopyRegsToRegs(Scratch0, 2, addr3, 2, "Scratch0", a->name3, FALSE);
+                   CopyRegsToRegs(Scratch0, 2, addr3, 2, "$Scratch0", a->name3, FALSE);
                  }
 
                  int sovElement = a->literal2;
@@ -4010,7 +4448,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                  } else if(sovElement == 2) {
                    VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 2
                  } else if(sovElement == 3) {
-                   CopyRegsToRegs(Scratch2, 2, addr3, 2, "Scratch2", a->name3, FALSE);
+                   CopyRegsToRegs(Scratch2, 2, addr3, 2, "$Scratch2", a->name3, FALSE);
                    VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 2
                    VariableAdd(Scratch0, Scratch0, Scratch2, 2); // * 3
                  } else if(sovElement == 4) {

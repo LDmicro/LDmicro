@@ -134,6 +134,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         &l->d.timer.delay)==2))
     {
         *which = ELEM_RTO;
+    } else if((sscanf(line, "RTL %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+        *which = ELEM_RTL;
 
     } else if((sscanf(line, "CTR %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
         *which = ELEM_CTR;
@@ -174,6 +176,9 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 
     } else if(sscanf(line, "BCD2BIN %s %s", l->d.move.dest, l->d.move.src)==2) {
         *which = ELEM_BCD2BIN;
+
+    } else if(sscanf(line, "OPPOSITE %s %s", l->d.move.dest, l->d.move.src)==2) {
+        *which = ELEM_OPPOSITE;
 
     } else if(sscanf(line, "SWAP %s %s", l->d.move.dest, l->d.move.src)==2) {
         *which = ELEM_SWAP;
@@ -823,6 +828,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             s = "TOF"; goto timer;
         case ELEM_RTO:
             s = "RTO"; goto timer;
+        case ELEM_RTL:
+            s = "RTL"; goto timer;
         timer:
             fprintf(f, "%s %s %d\n", s, l->d.timer.name, l->d.timer.delay);
             break;
@@ -873,6 +880,10 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
         case ELEM_BCD2BIN:
             fprintf(f, "BCD2BIN %s %s\n", l->d.move.dest, l->d.move.src);
+            break;
+
+        case ELEM_OPPOSITE:
+            fprintf(f, "OPPOSITE %s %s\n", l->d.move.dest, l->d.move.src);
             break;
 
         case ELEM_SWAP:

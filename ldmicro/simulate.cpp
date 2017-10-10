@@ -59,17 +59,18 @@ static struct {
 } AdcShadows[MAX_IO];
 static int AdcShadowsCount;
 
-#define VAR_FLAG_TON     0x00000001
-#define VAR_FLAG_TOF     0x00000002
-#define VAR_FLAG_RTO     0x00000004
-#define VAR_FLAG_TCY     0x00000008
-#define VAR_FLAG_CTU     0x00000010
-#define VAR_FLAG_CTD     0x00000020
-#define VAR_FLAG_CTC     0x00000040
-#define VAR_FLAG_CTR     0x00000080
-#define VAR_FLAG_RES     0x00000100
-#define VAR_FLAG_TABLE   0x00000200
-#define VAR_FLAG_ANY     0x00008000
+#define VAR_FLAG_TON                  0x00000001
+#define VAR_FLAG_TOF                  0x00000002
+#define VAR_FLAG_RTO                  0x00000004
+#define VAR_FLAG_RTL                  0x00000008
+#define VAR_FLAG_TCY                  0x00000010
+#define VAR_FLAG_CTU                  0x00000100
+#define VAR_FLAG_CTD                  0x00000200
+#define VAR_FLAG_CTC                  0x00000400
+#define VAR_FLAG_CTR                  0x00000800
+#define VAR_FLAG_RES                  0x00001000
+#define VAR_FLAG_TABLE                0x00010000
+#define VAR_FLAG_ANY                  0x08000000
 
 #define VAR_FLAG_OTHERWISE_FORGOTTEN  0x80000000
 
@@ -174,25 +175,28 @@ static void SetSingleBit(char *name, BOOL state)
 
 BOOL GetSingleBit(char *name)
 {
-    int i;
-    for(i = 0; i < SingleBitItemsCount; i++) {
-        if(strcmp(SingleBitItems[i].name, name)==0) {
-            return SingleBitItems[i].powered;
-        }
-    }
-    return FALSE;
+    return SingleBitOn(name);
 }
 
 //-----------------------------------------------------------------------------
 // Count a timer up (i.e. increment its associated count by 1). Must already
 // exist in the table.
 //-----------------------------------------------------------------------------
-static void IncrementVariable(char *name)
+static void Increment(char *name, char *overlap, char *overflow)
 {
+    int sov = SizeOfVar(name);
+    SDWORD signMask = 1 << (sov * 8 - 1);
+    SDWORD signBefore, signAfter;
     int i;
     for(i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name)==0) {
+            signBefore = Variables[i].val & signMask;
             (Variables[i].val)++;
+            signAfter = Variables[i].val & signMask;
+            if((signBefore == 0) && (signAfter != 0))
+              SetSingleBit(overflow, TRUE);
+
+            SetSingleBit(overlap, Variables[i].val == 0); // OVERLAP 11...11 -> 00...00
             return;
         }
     }
@@ -200,16 +204,60 @@ static void IncrementVariable(char *name)
 }
 
 //-----------------------------------------------------------------------------
-static void DecrementVariable(char *name)
+static void Decrement(char *name, char *overlap, char *overflow)
 {
+    int sov = SizeOfVar(name);
+    SDWORD signMask = 1 << (sov * 8 - 1);
+    SDWORD signBefore, signAfter;
     int i;
     for(i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name)==0) {
+            SetSingleBit(overlap, Variables[i].val == 0); // OVERLAP 00...00 -> 11...11
+
+            signBefore = Variables[i].val & signMask;
             (Variables[i].val)--;
+            signAfter = Variables[i].val & signMask;
+
+            if((signBefore != 0) && (signAfter == 0))
+              SetSingleBit(overflow, TRUE);
             return;
         }
     }
     ooops(name);
+}
+
+//-----------------------------------------------------------------------------
+static SDWORD AddVariable(char *name1, char *name2, char *name3, char *overflow)
+{
+    long long int ret = (long long int )GetSimulationVariable(name2) +
+                        (long long int )GetSimulationVariable(name3);
+    int sov = SizeOfVar(name1);
+    SDWORD signMask = 1 << (sov * 8 - 1);
+    SDWORD sign2 = GetSimulationVariable(name2) & signMask;
+    SDWORD sign3 = GetSimulationVariable(name3) & signMask;
+    SDWORD signr = ret & signMask;
+    if((sign2 == sign3)
+    && (signr != sign3))
+        SetSingleBit(overflow, TRUE);
+    return SDWORD(ret);
+}
+
+//-----------------------------------------------------------------------------
+static SDWORD SubVariable(char *name1, char *name2, char *name3, char *overflow)
+{
+    long long int ret = (long long int )GetSimulationVariable(name2) -
+                        (long long int )GetSimulationVariable(name3);
+    int sov = SizeOfVar(name1);
+    SDWORD signMask = 1 << (sov * 8 - 1);
+    SDWORD sign2 = GetSimulationVariable(name2) & signMask;
+    SDWORD sign3 = GetSimulationVariable(name3) & signMask;
+    SDWORD signr = ret & signMask;
+//  if((sign2 != sign3)
+//  && (signr != sign2))
+    if((sign2 != sign3)
+    && (signr == sign3))
+        SetSingleBit(overflow, TRUE);
+    return SDWORD(ret);
 }
 
 //-----------------------------------------------------------------------------
@@ -379,6 +427,11 @@ static char *Check(char *name, DWORD flag, int i)
                 return _("RTO: variable can only be used for RES elsewhere");
             break;
 
+        case VAR_FLAG_RTL:
+            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
+                return _("RTL: variable can only be used for RES elsewhere");
+            break;
+
         case VAR_FLAG_RES:
         case VAR_FLAG_CTU:
         case VAR_FLAG_CTD:
@@ -520,12 +573,15 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
         }
 
+        case ELEM_RTL:
         case ELEM_RTO:
         case ELEM_TOF:
         case ELEM_TON:
         case ELEM_TCY:
             if(which == ELEM_RTO)
                 flag = VAR_FLAG_RTO;
+            else if(which == ELEM_RTL)
+                flag = VAR_FLAG_RTL;
             else if(which == ELEM_TOF)
                 flag = VAR_FLAG_TOF;
             else if(which == ELEM_TON)
@@ -589,7 +645,9 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_BIN2BCD:
         case ELEM_BCD2BIN:
         case ELEM_SWAP:
+        case ELEM_OPPOSITE:
         case ELEM_BUS:
+            MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
 
         char *s;
@@ -598,6 +656,10 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_14SEG: s = "char14seg"; goto xseg;
         case ELEM_16SEG: s = "char16seg"; goto xseg;
         xseg:
+            MarkWithCheck(s, VAR_FLAG_ANY);
+            MarkWithCheck(l->d.segments.dest, VAR_FLAG_ANY);
+            if(!IsNumber(l->d.segments.src))
+              MarkWithCheck(l->d.segments.src, VAR_FLAG_ANY);
             break;
 
         case ELEM_LOOK_UP_TABLE:
@@ -733,6 +795,10 @@ void CheckVariableNames(void)
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_RTO)
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_RTO, i));
+
+    for(i = 0; i < VariableCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_RTL)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_RTL, i));
 
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_CTU)
@@ -874,6 +940,244 @@ static void IfConditionFalse(void)
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+long rol(long val, SDWORD n, int size, BOOL *state)
+{
+    char MSB = 0;
+    signed char i;
+    for(i = 0; i < n; i++) {
+        if(size == 1) {
+            if(val & 0x80)
+                MSB = 1;
+        } else if(size == 2) {
+            if(val & 0x8000)
+                MSB = 1;
+        } else if(size == 3) {
+            if(val & 0x800000)
+                MSB = 1;
+        } else if(size == 4) {
+            if(val & 0x80000000)
+                MSB = 1;
+        } else oops();
+
+        val = val << 1;
+        val |= MSB;
+        *state = MSB;
+
+        if(size == 1)
+            val &= 0xff;
+        else if(size == 2)
+            val &= 0xffff;
+        else if(size == 3)
+            val &= 0xFFffff;
+        else if(size == 4)
+            val &= 0xFFFFffff;
+        else oops();
+    }
+    return val;
+}
+//-----------------------------------------------------------------------------
+long ror(long val, SDWORD n, int size, BOOL *state)
+{
+    char LSB = 0;
+    signed char i;
+    for(i = 0; i < n; i++) {
+        LSB = (char)(val & 1);
+        *state = LSB;
+        val = val >> 1;
+        if(LSB) {
+          if(size == 1)
+              val |= 0x80;
+          else if(size == 2)
+              val |= 0x8000;
+          else if(size == 3)
+              val |= 0x800000;
+          else if(size == 4)
+              val |= 0x80000000;
+          else oops();
+        } else {
+          if(size == 1)
+              val &= 0x7f;
+          else if(size == 2)
+              val &= 0x7fff;
+          else if(size == 3)
+              val &= 0x7fffFF;
+          else if(size == 4)
+              val &= 0x7fffFFFF;
+          else oops();
+        }
+        if(size == 1)
+            val &= 0xff;
+        else if(size == 2)
+            val &= 0xffff;
+        else if(size == 3)
+            val &= 0xffffFF;
+        else if(size == 4)
+            val &= 0xffffFFFF;
+        else oops();
+    }
+    return val;
+}
+//-----------------------------------------------------------------------------
+long sr0(long val, SDWORD n, int size, BOOL *state)
+{
+    char LSB = 0;
+    signed char i;
+    for(i = 0; i < n; i++) {
+        LSB = (char)(val & 1);
+        *state = LSB;
+        val = val >> 1;
+        if(size == 1)
+            val &= 0x7f;
+        else if(size == 2)
+            val &= 0x7fff;
+        else if(size == 3)
+            val &= 0x7fffFF;
+        else if(size == 4)
+            val &= 0x7fffFFFF;
+        else oops();
+    }
+    return val;
+}
+//-----------------------------------------------------------------------------
+long shr(signed long int val, SDWORD n, int size, BOOL *state)
+{
+    signed long int MSB = 0;
+    char LSB = 0;
+    signed char i;
+    for(i = 0; i < n; i++) {
+        if(size == 1) {
+            MSB = val & 0x80;
+        } else if(size == 2) {
+            MSB = val & 0x8000;
+        } else if(size == 3) {
+            MSB = val & 0x800000;
+        } else if(size == 4) {
+            MSB = val & 0x80000000;
+        } else oops();
+
+        LSB = (char)(val & 1);
+        *state = LSB;
+        val = val >> 1;
+        val |= MSB;
+    }
+    return val;
+}
+//-----------------------------------------------------------------------------
+long shl(long val, SDWORD n, int size, BOOL *state)
+{
+    char MSB = 0;
+    signed char i;
+    for(i = 0; i < n; i++) {
+        if(size == 1) {
+            if(val & 0x80)
+                MSB = 1;
+        } else if(size == 2) {
+            if(val & 0x8000)
+                MSB = 1;
+        } else if(size == 3) {
+            if(val & 0x800000)
+                MSB = 1;
+        } else if(size == 4) {
+            if(val & 0x80000000)
+                MSB = 1;
+        } else oops();
+
+        val = val << 1;
+        *state = MSB;
+
+        if(size == 1)
+            val &= 0xff;
+        else if(size == 2)
+            val &= 0xffff;
+        else if(size == 3)
+            val &= 0xFFffff;
+        else if(size == 4)
+            val &= 0xFFFFffff;
+        else oops();
+    }
+    return val;
+}
+//-----------------------------------------------------------------------------
+//Binary to unpacked BCD
+int bin2bcd(int val)
+{
+    int sign = 1;
+    if(val < 0) {
+        sign = - 1;
+        Error(" Value 'val'=%d < 0", val);
+    }
+    if(val >= TenToThe(sizeof(val)))
+        Error("Value 'val'=%d overflow output range %d.", val, sizeof(val)-1);
+    int ret = val        % 10;
+    val /= 10;
+    ret |= (val        % 10) <<  8;
+    val /= 10;
+    ret |= (val        % 10) << 16;
+    val /= 10;
+    ret |= (val        % 10) << 24;
+//  ret |= sign<0?0x80000000:0*/;
+    return ret;
+    return  (val        % 10)
+        | (((val /= 10) % 10) <<  8)
+        | (((val /= 10) % 10) << 16)
+        | (((val /= 10) % 10) << 24)
+        | (sign<0?0x80000000:0);
+}
+//-----------------------------------------------------------------------------
+//Unpacked BCD to binary
+int bcd2bin(int val)
+{
+    if( (val & 0x000000f)        > 9
+    || ((val & 0x0000f00) >>  8) > 9
+    || ((val & 0x00f0000) >> 16) > 9
+    || ((val & 0xf000000) >> 24) > 9 )
+        Error("Value 'val'=0x%x not in unpacked BCD format.", val);
+    return (val & 0x000000f)
+        + ((val & 0x0000f00) >>  8) * 10
+        + ((val & 0x00f0000) >> 16) * 100
+        + ((val & 0xf000000) >> 24) * 1000;
+}
+//-----------------------------------------------------------------------------
+//Packed BCD to binary
+int packedbcd2bin(int val)
+{
+    return (val & 0x0000000f)
+        + ((val & 0x000000f0) >>  4) * 10
+        + ((val & 0x00000f00) >>  8) * 100
+        + ((val & 0x0000f000) >> 12) * 1000
+        + ((val & 0x000f0000) >> 16) * 10000
+        + ((val & 0x00f00000) >> 20) * 100000
+        + ((val & 0x0f000000) >> 24) * 1000000
+        + ((val & 0xf0000000) >> 28) * 10000000;
+}
+//-----------------------------------------------------------------------------
+int opposite(int val, int sov)
+{
+    int ret = 0;
+    int i;
+    for(i = 0; i < sov*8; i++) {
+        ret = ret << 1;
+        ret |= val & 1;
+        val = val >> 1;
+    }
+    return ret;
+}
+//-----------------------------------------------------------------------------
+int swap(int val, int sov)
+{
+    int ret = 0;
+    if(sov == 1) {
+        ret = ((val & 0x0f) <<  4) | ((val & 0xf0) >> 4);
+    } else if(sov == 2) {
+        ret = ((val & 0xff) <<  8) | ((val & 0xff00) >> 8);
+    } else if(sov == 3) {
+        ret = ((val & 0xff) << 16) | ((val & 0xff0000) >> 16) | (val & 0xff00);
+    } else if(sov == 4) {
+        ret = ((val & 0xff) << 20) | ((val & 0xff000000) >> 20) | ((val & 0xff0000) >> 8) | ((val & 0xff00) << 8);
+    } else oops();
+    return ret;
+}
+//-----------------------------------------------------------------------------
 #define STACK_LEN 8
 static int stack[STACK_LEN];
 static int stackCount = 0;
@@ -1008,6 +1312,13 @@ static void SimulateIntCode(void)
                 SetSingleBit(a->name1, SingleBitOn(a->name2));
                 break;
 
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                if(GetSimulationVariable(a->name2) & (1<<a->literal2))
+                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) | (1<<a->literal));
+                else
+                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) & ~(1<<a->literal));
+                break;
+
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(GetSimulationVariable(a->name1) !=
                     a->literal && a->name1[0] != '$')
@@ -1048,14 +1359,38 @@ static void SimulateIntCode(void)
                 break;
 
             case INT_SET_BIN2BCD: {
+                int var2 = bin2bcd(GetSimulationVariable(a->name2));
+                if(GetSimulationVariable(a->name1) != var2) {
+                    NeedRedraw = 3;
+                    SetSimulationVariable(a->name1, var2);
+                }
                 break;
             }
 
             case INT_SET_BCD2BIN: {
+                int var2 = bcd2bin(GetSimulationVariable(a->name2));
+                if(GetSimulationVariable(a->name1) != var2) {
+                    NeedRedraw = 4;
+                    SetSimulationVariable(a->name1, var2);
+                }
+                break;
+            }
+
+            case INT_SET_OPPOSITE: {
+                int var2 = opposite(GetSimulationVariable(a->name2),SizeOfVar(a->name2));
+                if(GetSimulationVariable(a->name1) != var2) {
+                    NeedRedraw = 5;
+                    SetSimulationVariable(a->name1, var2);
+                }
                 break;
             }
 
             case INT_SET_SWAP: {
+                int var2 = swap(GetSimulationVariable(a->name2),SizeOfVar(a->name2));
+                if(GetSimulationVariable(a->name1) != var2) {
+                    NeedRedraw = 5;
+                    SetSimulationVariable(a->name1, var2);
+                }
                 break;
             }
 
@@ -1070,53 +1405,69 @@ static void SimulateIntCode(void)
                 break;
 
             case INT_INCREMENT_VARIABLE:
-                GetSimulationVariable(a->name1);
-                IncrementVariable(a->name1);
+                Increment(a->name1, a->name2, "ROverflowFlagV");
                 NeedRedraw = 7;
                 break;
 
             case INT_DECREMENT_VARIABLE:
-                GetSimulationVariable(a->name1);
-                DecrementVariable(a->name1);
+                Decrement(a->name1, a->name2, "ROverflowFlagV");
                 NeedRedraw = 8;
                 break;
             {
                 SDWORD v;
+                BOOL state;
+                case INT_SET_VARIABLE_SR0:
+                    v = sr0(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
+                    SetSingleBit(a->name4, state);
+                    goto math;
                 case INT_SET_VARIABLE_ROL:
+                    v = rol(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
+                    SetSingleBit(a->name4, state);
                     goto math;
                 case INT_SET_VARIABLE_ROR:
-                    goto math;
-                case INT_SET_VARIABLE_SR0:
+                    v = ror(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
+                    SetSingleBit(a->name4, state);
                     goto math;
                 case INT_SET_VARIABLE_SHL:
+                    v = shl(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
+                    SetSingleBit(a->name4, state);
                     goto math;
                 case INT_SET_VARIABLE_SHR:
+                    v = shr(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
+                    SetSingleBit(a->name4, state);
                     goto math;
                 case INT_SET_VARIABLE_AND:
+                    v = GetSimulationVariable(a->name2) &
+                        GetSimulationVariable(a->name3);
                     goto math;
                 case INT_SET_VARIABLE_OR:
+                    v = GetSimulationVariable(a->name2) |
+                        GetSimulationVariable(a->name3);
                     goto math;
                 case INT_SET_VARIABLE_XOR:
+                    v = GetSimulationVariable(a->name2) ^
+                        GetSimulationVariable(a->name3);
                     goto math;
                 case INT_SET_VARIABLE_NOT:
-                    goto math;
-                case INT_SET_VARIABLE_NEG:
+                    v = ~ GetSimulationVariable(a->name2);
                     goto math;
                 case INT_SET_VARIABLE_RANDOM:
                     v = GetRandom(a->name1);
                     goto math;
+                case INT_SET_VARIABLE_NEG:
+                    v = - GetSimulationVariable(a->name2);
+                    goto math;
                 case INT_SET_VARIABLE_ADD:
-                    v = GetSimulationVariable(a->name2) +
-                        GetSimulationVariable(a->name3);
+                    v = AddVariable(a->name1, a->name2, a->name3, "ROverflowFlagV");
                     goto math;
                 case INT_SET_VARIABLE_SUBTRACT:
-                    v = GetSimulationVariable(a->name2) -
-                        GetSimulationVariable(a->name3);
+                    v = SubVariable(a->name1, a->name2, a->name3, "ROverflowFlagV");
                     goto math;
                 case INT_SET_VARIABLE_MULTIPLY:
                     v = GetSimulationVariable(a->name2) *
                         GetSimulationVariable(a->name3);
                     goto math;
+                case INT_SET_VARIABLE_MOD:
                 case INT_SET_VARIABLE_DIVIDE:
                     if(GetSimulationVariable(a->name3) != 0) {
                       if(a->op == INT_SET_VARIABLE_DIVIDE)
@@ -1156,17 +1507,65 @@ static void SimulateIntCode(void)
                     IF_BODY
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_IF_BIT_SET_IN_VAR:
+                if(GetSimulationVariable(a->name1)
+                & (1<<hobatoi(a->name2)))
+                    IF_BODY
                 break;
 
             case INT_IF_BIT_CLEAR_IN_VAR:
+                if((GetSimulationVariable(a->name1)
+                & (1<<hobatoi(a->name2))) == 0)
+                    IF_BODY
                 break;
 
             case INT_IF_BITS_SET_IN_VAR:
+                if(GetSimulationVariable(a->name1)
+                & hobatoi(a->name2))
+                    IF_BODY
                 break;
 
             case INT_IF_BITS_CLEAR_IN_VAR:
+                if((GetSimulationVariable(a->name1)
+                & hobatoi(a->name2)) == 0)
+                    IF_BODY
+                break;
+
+            #ifdef NEW_CMP
+            case INT_IF_GRT:
+                if(GetSimulationVariable(a->name1)
+                >  GetSimulationVariable(a->name2))
+                    IF_BODY
+                break;
+
+            case INT_IF_GEQ:
+                if(GetSimulationVariable(a->name1)
+                >= GetSimulationVariable(a->name2))
+                    IF_BODY
+                break;
+
+            case INT_IF_LES:
+                if(GetSimulationVariable(a->name1)
+                <  GetSimulationVariable(a->name2))
+                    IF_BODY
+                break;
+
+            case INT_IF_LEQ:
+                if(GetSimulationVariable(a->name1)
+                <= GetSimulationVariable(a->name2))
+                    IF_BODY
+                break;
+
+            case INT_IF_NEQ:
+                if(GetSimulationVariable(a->name1)
+                != GetSimulationVariable(a->name2))
+                    IF_BODY
+                break;
+
+            case INT_IF_EQU:
+                if(GetSimulationVariable(a->name1)
+                == GetSimulationVariable(a->name2))
+                    IF_BODY
                 break;
             #endif
 
@@ -1547,6 +1946,7 @@ void DescribeForIoList(char *name, int type, char *out)
         case IO_TYPE_TCY:
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
+        case IO_TYPE_RTL:
         case IO_TYPE_RTO: {
             SDWORD v = GetSimulationVariable(name, TRUE);
             double dtms = v *

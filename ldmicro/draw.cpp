@@ -87,6 +87,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_TCY:
         case ELEM_TON:
         case ELEM_TOF:
+        case ELEM_RTL:
         case ELEM_RTO:
         case ELEM_CTU:
         case ELEM_CTD:
@@ -116,6 +117,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_BIN2BCD:
         case ELEM_BCD2BIN:
         case ELEM_SWAP:
+        case ELEM_OPPOSITE:
         case ELEM_BUS:
         case ELEM_7SEG:
         case ELEM_9SEG:
@@ -995,6 +997,17 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             *cx += POS_WIDTH;
             break;
         }
+        case ELEM_OPPOSITE: {
+            ElemMove *m = &leaf->d.move;
+            formatWidth(top, POS_WIDTH, "{","","",m->dest,":=}");
+            formatWidth(bot, POS_WIDTH, "{\x01""OPPOSITE\x02 ","","",m->src,"}");
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+
+            *cx += POS_WIDTH;
+            break;
+        }
         {
             char *s;
             case ELEM_RSFR:    s = "Read";   goto sfrcmp;
@@ -1212,6 +1225,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         case ELEM_TIME2COUNT:
         case ELEM_TCY:
+        case ELEM_RTL:
         case ELEM_RTO:
         case ELEM_TON:
         case ELEM_TOF: {
@@ -1222,6 +1236,8 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
                 s = "\x01""TOF\x02";
             else if(which == ELEM_RTO)
                 s = "\x01""RTO\x02";
+            else if(which == ELEM_RTL)
+                s = "\x01""RTL\x02";
             else if(which == ELEM_TCY)
                 s = "\x01""TCY\x02";
             else if(which == ELEM_TIME2COUNT)
@@ -1313,6 +1329,19 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_ISP_CPRINTF:  s = "ISP"; goto cprintf;
         case ELEM_UART_CPRINTF: s = "UART"; goto cprintf; {
         cprintf:
+            sprintf(s1,"->%s{", leaf->d.fmtdStr.enable);
+            sprintf(s2,"%s %s:=", s, leaf->d.fmtdStr.dest);
+            sprintf(s3,"}%s->", leaf->d.fmtdStr.error);
+
+            formatWidth(top,2*POS_WIDTH, s1,"",s2,"",s3);
+
+            sprintf(s1,"\"%s\",",leaf->d.fmtdStr.string);
+            sprintf(s2,"%s",leaf->d.fmtdStr.var);
+            formatWidth(bot,2*POS_WIDTH, "{",s1,"",s2,"}");
+
+            CenterWithSpacesWidth(*cx, *cy, top, poweredBefore, TRUE, 2*POS_WIDTH);
+            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2*POS_WIDTH);
+            *cx += 2*POS_WIDTH;
             break;
         }
 
@@ -1465,7 +1494,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             }
         }
         //xadj = (ColsAvailable-1)*POS_WIDTH*FONT_WIDTH;
-        xadj = (len-1)*POS_WIDTH*FONT_WIDTH;
+        xadj = (len - 1) * POS_WIDTH * FONT_WIDTH;
     }
 
     int x0 = X_PADDING + cx0*FONT_WIDTH;

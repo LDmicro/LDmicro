@@ -234,6 +234,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_BIN2BCD, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_BCD2BIN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SWAP, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_OPPOSITE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TIME2COUNT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TCY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TON, t);
@@ -245,6 +246,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_PULSER, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_NPULSE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_QUAD_ENCOD, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_RTL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_RTO, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CONTACTS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CONT_RELAY, t);
@@ -464,6 +466,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert TO&F (Delayed Turn Off)\tF"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTO,
         _("Insert R&TO (Retentive Delayed Turn On)\tT"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTL,
+        _("Insert RTL (Retentive Delayed Turn On If Low Input)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TCY,
         _("Insert TCY (Cyclic On/Off)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT,
@@ -479,7 +483,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTR,
         _("Insert CT&R (Count Circular Reversive)\tK"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RES,
-        _("Insert R&ES (Counter/RTO/PWM Reset)\tE"));
+        _("Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
 /*
@@ -541,23 +545,24 @@ HMENU MakeMainWindowMenus(void)
         _("Insert MUL (16-bit Integer Multiply)\t*"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_DIV,
         _("Insert DIV (16-bit Integer Divide)\tD"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD,_("EDIT: Insert MOD (Integer Divide Remainder)"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG,_("EDIT: Insert NEG (Integer Negate)"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_RANDOM,_("Insert Random"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SEED_RANDOM,_("Insert Seed of Random"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD, _("EDIT: Insert MOD (Integer Divide Remainder)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG, _("EDIT: Insert NEG (Integer Negate)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_RANDOM, _("Insert Random"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SEED_RANDOM, _("Insert Seed of Random"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SignedMenu,_("Signed variable operations"));
 
     BitwiseMenu = CreatePopupMenu();
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND,     _("EDIT: Insert bitwise AND"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR ,     _("EDIT: Insert bitwise OR     |"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_XOR,     _("EDIT: Insert bitwise XOR  ^"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT,     _("EDIT: Insert bitwise NOT  ~"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL,     _("EDIT: Insert SHL << arithmetic,logic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR,     _("EDIT: Insert SHR >> arithmetic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SR0,     _("EDIT: Insert SR0 >> logic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL,     _("EDIT: Insert ROL cyclic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR,     _("EDIT: Insert ROR cyclic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP,    _("EDIT: Insert SWAP"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND,       _("EDIT: Insert bitwise AND"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR ,       _("EDIT: Insert bitwise OR     |"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_XOR,       _("EDIT: Insert bitwise XOR  ^"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT,       _("EDIT: Insert bitwise NOT  ~"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL,       _("EDIT: Insert SHL << arithmetic,logic shift to the left"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR,       _("EDIT: Insert SHR >> arithmetic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SR0,       _("Insert SR0 >> logic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL,       _("EDIT: Insert ROL cyclic shift to the left"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR,       _("EDIT: Insert ROR cyclic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP,      _("EDIT: Insert SWAP"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OPPOSITE,  _("EDIT: Insert OPPOSITE"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT,   _("EDIT: Insert Set Bit #"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("EDIT: Insert Clear Bit #"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu,_("Bitwise variable operations (Unsigned)"));

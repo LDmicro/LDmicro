@@ -2503,7 +2503,7 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
             Instruction(OP_LD_XP, reg+1);
         else {
             Instruction(OP_LDI, reg+1, 0);
-            Instruction(OP_SBRC, reg, BIT7);
+            Instruction(OP_SBRC, reg, BIT7); // Sign propagation
             Instruction(OP_LDI, reg+1, 0xff);
         }
     }
@@ -2512,7 +2512,7 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
             Instruction(OP_LD_XP, reg+2);
         else {
             Instruction(OP_LDI, reg+2, 0);
-            Instruction(OP_SBRC, reg+1, BIT7);
+            Instruction(OP_SBRC, reg+1, BIT7); // Sign propagation
             Instruction(OP_LDI, reg+2, 0xff);
         }
     }
@@ -2521,7 +2521,7 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
             Instruction(OP_LD_XP, reg+3);
         else {
             Instruction(OP_LDI, reg+3, 0);
-            Instruction(OP_SBRC, reg+2, BIT7);
+            Instruction(OP_SBRC, reg+2, BIT7); // Sign propagation
             Instruction(OP_LDI, reg+3, 0xff);
         }
     }
@@ -2541,7 +2541,7 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
             Instruction(OP_ST_XP, reg+1);
         else {
             Instruction(OP_LDI, reg+1, 0);
-            Instruction(OP_SBRC, reg, BIT7);
+            Instruction(OP_SBRC, reg, BIT7); // Sign propagation
             Instruction(OP_LDI, reg+1, 0xff);
         }
     }
@@ -2550,7 +2550,7 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
             Instruction(OP_ST_XP, reg+2);
         else {
             Instruction(OP_LDI, reg+2, 0);
-            Instruction(OP_SBRC, reg+1, BIT7);
+            Instruction(OP_SBRC, reg+1, BIT7); // Sign propagation
             Instruction(OP_LDI, reg+2, 0xff);
         }
     }
@@ -2559,7 +2559,7 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
             Instruction(OP_ST_XP, reg+3);
         else {
             Instruction(OP_LDI, reg+3, 0);
-            Instruction(OP_SBRC, reg+2, BIT7);
+            Instruction(OP_SBRC, reg+2, BIT7); // Sign propagation
             Instruction(OP_LDI, reg+3, 0xff);
         }
     }
@@ -2599,12 +2599,12 @@ static void Decrement(DWORD addr, int sov)
     // 6 or 10 or 13 instructions for 24 bit var;
 }
 //-----------------------------------------------------------------------------
-static void Increment(DWORD addr, int sov)
+static void Increment(DWORD addr, int sov, char *name)
 //used ZL, r25
 {
     LoadZAddr(addr); //2  instructions
     Instruction(OP_LD_Z , r25); //1 instruction
-    Instruction(OP_INC, r25);
+    Instruction(OP_INC, r25, 0, name);
   //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
     Instruction(OP_ST_ZP, r25);
     if(sov >= 2) {
@@ -2612,21 +2612,21 @@ static void Increment(DWORD addr, int sov)
       Instruction(OP_BRNE, noCarry);
     //Instruction(OP_BRCS, noCarry);
       Instruction(OP_LD_Z, r25);  // now Z is addl+1 => addrh
-      Instruction(OP_INC, r25);
+      Instruction(OP_INC, r25, 0, name);
     //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
       Instruction(OP_ST_ZP, r25);
       if(sov >= 3) {
         Instruction(OP_BRNE, noCarry);
       //Instruction(OP_BRCS, noCarry);
         Instruction(OP_LD_Z, r25);  // now Z is addr+2 => addrh+1
-        Instruction(OP_INC, r25);
+        Instruction(OP_INC, r25, 0, name);
       //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
         Instruction(OP_ST_ZP, r25);
         if(sov >= 4) {
           Instruction(OP_BRNE, noCarry);
         //Instruction(OP_BRCS, noCarry);
           Instruction(OP_LD_Z, r25);  // now Z is addr+2 => addrh+1
-          Instruction(OP_INC, r25);
+          Instruction(OP_INC, r25, 0, name);
         //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
           Instruction(OP_ST_ZP, r25);
         }
@@ -2637,6 +2637,11 @@ static void Increment(DWORD addr, int sov)
     // 6 or 9 instructions for 16 bit var;
     // 6 or 10 or 13 instructions for 24 bit var;
     // ? instructions for 32 bit var;
+}
+
+static void Increment(DWORD addr, int sov)
+{
+  Increment(addr, sov, NULL);
 }
 //-----------------------------------------------------------------------------
 static void IncrementReg(int reg, int sov)
@@ -2931,16 +2936,19 @@ static void CompileFromIntermediate(void)
         rungNow = a->rung;
         switch(a->op) {
             case INT_SET_BIT:
+                Comment("INT_SET_BIT %s", a->name1);
                 MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
                 SetBit(addr1, bit1, a->name1);
                 break;
 
             case INT_CLEAR_BIT:
+                Comment("INT_CLEAR_BIT %s", a->name1);
                 MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
                 ClearBit(addr1, bit1, a->name1);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
+                Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1, a->name2);
                 MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
                 MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
                 CopyBit(addr1, bit1, addr2, bit2, a->name1, a->name2);
@@ -2952,24 +2960,28 @@ static void CompileFromIntermediate(void)
             #endif
 
             case INT_SET_VARIABLE_TO_LITERAL:
+                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1, a->literal, a->literal);
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 WriteLiteralToMemory(addr1, sov1, a->literal, a->name1);
                 break;
 
             case INT_INCREMENT_VARIABLE: {
+                Comment("INT_INCREMENT_VARIABLE %s", a->name1);
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
                 Increment(addr1,sov1);
                 break;
             }
             case INT_DECREMENT_VARIABLE: {
+                Comment("INT_DECREMENT_VARIABLE %s", a->name1);
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
                 Decrement(addr1,sov1);
                 break;
             }
             case INT_IF_BIT_SET: {
+                Comment("INT_IF_BIT_SET %s", a->name1);
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 IfBitClear(addr1, bit1, (char *)a->name1);
@@ -2978,6 +2990,7 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_IF_BIT_CLEAR: {
+                Comment("INT_IF_BIT_CLEAR %s", a->name1);
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 IfBitSet(addr1, bit1, (char *)a->name1);
@@ -2991,36 +3004,51 @@ static void CompileFromIntermediate(void)
             case INT_IF_VARIABLE_GEQ_LITERAL:
             #endif
             case INT_IF_VARIABLE_LES_LITERAL: {
+                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1, a->literal, a->literal);
                 DWORD notTrue = AllocFwdAddr();
 
                 MemForVariable(a->name1, &addr1);
-                Instruction(OP_LDI, 20, (a->literal & 0xff));
                 LoadXAddr(addr1);
+
+                DWORD l1, l2;
+                l1 = a->literal & 0xff;
+
+              //Instruction(OP_LDI, 20, (a->literal & 0xff));
+                Instruction(OP_LDI, 20, l1);
                 Instruction(OP_LD_XP, 16);
                 Instruction(OP_CP, 16, 20);
 
                 sov1 = SizeOfVar(a->name1);
                 if(sov1 >= 2) {
-                  Instruction(OP_LDI, 21, (a->literal >> 8) & 0xff);
+                //Instruction(OP_LDI, 20, (a->literal >> 8) & 0xff);
+                  l2 = (a->literal >> 8) & 0xff;
+                  if(l1 != l2)
+                      Instruction(OP_LDI, r20, l2);
                   Instruction(OP_LD_XP, 17);
-                  Instruction(OP_CPC, 17, 21);
+                  Instruction(OP_CPC, 17, 20);
 
                   if(sov1 >= 3) {
-                    Instruction(OP_LDI, 22, (a->literal >> 16) & 0xff);
+                  //Instruction(OP_LDI, 20, (a->literal >> 16) & 0xff);
+                    l1 = (a->literal >> 16) & 0xff;
+                    if(l1 != l2)
+                        Instruction(OP_LDI, r20, l1);
                     Instruction(OP_LD_XP, 18);
-                    Instruction(OP_CPC, 18, 22);
+                    Instruction(OP_CPC, 18, 20);
+
+                    if(sov1 >= 4) {
+                    //Instruction(OP_LDI, 20, (a->literal >> 24) & 0xff);
+                      l2 = (a->literal >> 24) & 0xff;
+                      if(l1 != l2)
+                          Instruction(OP_LDI, r20, l2);
+                      Instruction(OP_LD_XP, 19);
+                      Instruction(OP_CPC, 19, 20);
+
+                      if(sov1 > 4) oops();
+                    }
                   }
                 }
                 if(a->op == INT_IF_VARIABLE_LES_LITERAL)
                   Instruction(OP_BRGE, notTrue, 0);
-                #ifdef USE_CMP
-                else if(a->op == INT_IF_VARIABLE_GEQ_LITERAL)
-                  Instruction(OP_BRLT, notTrue, 0);
-                else if(a->op == INT_IF_VARIABLE_EQU_LITERAL)
-                  Instruction(OP_BRNE, notTrue, 0);
-                else if(a->op == INT_IF_VARIABLE_NEQ_LITERAL)
-                  Instruction(OP_BREQ, notTrue, 0);
-                #endif
 
                 CompileIfBody(notTrue);
                 break;
@@ -3081,6 +3109,38 @@ static void CompileFromIntermediate(void)
 
                 switch(a->op) {
                     case INT_IF_LEQ: // * op2 - op1
+                    case INT_IF_GRT: // *
+                        Instruction(OP_CP, 16, 20);
+                        if(sov >= 2)
+                            Instruction(OP_CPC, 17, 21);
+                        if(sov >= 3)
+                            Instruction(OP_CPC, 18, 22);
+                        if(sov >= 4)
+                            Instruction(OP_CPC, 19, 23);
+                        break;
+                    case INT_IF_EQU: // op1 - op2
+                        Instruction(OP_CP, 20, 16);
+                        Instruction(OP_BRNE, notTrue, 0);
+                        if(sov >= 2) {
+                            Instruction(OP_CPC, 21, 17);
+                            Instruction(OP_BRNE, notTrue, 0);
+                        }
+                        if(sov >= 3) {
+                            Instruction(OP_CPC, 22, 18);
+                            Instruction(OP_BRNE, notTrue, 0);
+                        }
+                        if(sov >= 4) {
+                            Instruction(OP_CPC, 23, 19);
+                            Instruction(OP_BRNE, notTrue, 0);
+                        }
+                    default: // op1 - op2
+                        Instruction(OP_CP, 20, 16);
+                        if(sov >= 2)
+                            Instruction(OP_CPC, 21, 17);
+                        if(sov >= 3)
+                            Instruction(OP_CPC, 22, 18);
+                        if(sov >= 4)
+                            Instruction(OP_CPC, 23, 19);
                 }
                 switch(a->op) {
                     case INT_IF_LEQ: // *
@@ -3088,6 +3148,13 @@ static void CompileFromIntermediate(void)
                         Instruction(OP_BRLT, notTrue, 0);
                         break;
                     case INT_IF_GRT: // *
+                    case INT_IF_LES:
+                        Instruction(OP_BRGE, notTrue, 0);
+                        break;
+                    case INT_IF_NEQ:
+                        Instruction(OP_BREQ, notTrue, 0);
+                        break;
+                    case INT_IF_EQU:
                         Instruction(OP_BRNE, notTrue, 0);
                         break;
                     default: oops();
@@ -3442,7 +3509,6 @@ static void CompileFromIntermediate(void)
             case INT_SET_VARIABLE_ROR:
             case INT_SET_VARIABLE_SHL:
             case INT_SET_VARIABLE_SHR:
-            case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_NOT:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_AND:
@@ -3454,9 +3520,9 @@ static void CompileFromIntermediate(void)
                 sov = SizeOfVar(a->name1);
                 CopyVarToRegs(r20, a->name2, sov);
 
+                if(a->op != INT_SET_VARIABLE_NEG)
                 #ifdef NEW_FEATURE
-                if((a->op != INT_SET_VARIABLE_NEG)
-                && (a->op != INT_SET_VARIABLE_NOT))
+                if(a->op != INT_SET_VARIABLE_NOT)
                 #endif
                     CopyVarToRegs(r16, a->name3, sov);
 
@@ -3472,6 +3538,17 @@ static void CompileFromIntermediate(void)
                         Instruction(OP_SBC, r21, 17);
                     if(sov >= 3)
                         Instruction(OP_SBC, r22, 17);
+                } else if(a->op == INT_SET_VARIABLE_NEG) {
+                    Instruction(OP_COM, 20, 0);
+                    Instruction(OP_SUBI, 20, 0xff);
+                    if(sov >= 2){
+                        Instruction(OP_COM, 21, 0);
+                        Instruction(OP_SBCI, 21, 0xff); //are equivalent to adding $0001 to the 16-bit number.
+                    }
+                    if(sov >= 3) {
+                        Instruction(OP_COM, 22, 0);
+                        Instruction(OP_SBCI, 22, 0xff);
+                    }
                 #ifdef NEW_FEATURE
                 #endif
                 } else oops();

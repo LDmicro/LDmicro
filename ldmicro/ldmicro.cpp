@@ -883,6 +883,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddTimer(ELEM_RTO));
             break;
 
+        case MNU_INSERT_RTL:
+            CHANGING_PROGRAM(AddTimer(ELEM_RTL));
+            break;
+
         case MNU_INSERT_CTU:
             CHANGING_PROGRAM(AddCounter(ELEM_CTU));
             break;
@@ -1007,6 +1011,10 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_BCD2BIN:
             CHANGING_PROGRAM(AddBcd(ELEM_BCD2BIN));
+            break;
+
+        case MNU_INSERT_OPPOSITE:
+            CHANGING_PROGRAM(AddBcd(ELEM_OPPOSITE));
             break;
 
         case MNU_INSERT_SWAP:
@@ -2535,6 +2543,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     setlocale(LC_ALL,"");
     //RunningInBatchMode = FALSE;
+    int i;
 
     MakeWindowClass();
     MakeDialogBoxClass();
@@ -2671,6 +2680,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     GenerateIoListDontLoseSelection();
     RefreshScrollbars();
     UpdateMainWindowTitleBar();
+
+    for(i=0; i < 10; i++)
+      dbp("\n");
 
     MSG msg;
     DWORD ret;

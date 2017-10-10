@@ -115,6 +115,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_TON          0x23
 #define MNU_INSERT_TOF          0x24
 #define MNU_INSERT_RTO          0x25
+#define MNU_INSERT_RTL          0x2501
 #define MNU_INSERT_RES          0x26
 #define MNU_INSERT_TIME2COUNT   0x2601
 #define MNU_INSERT_OSR          0x27
@@ -146,6 +147,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_BIN2BCD      0x3001
 #define MNU_INSERT_BCD2BIN      0x3002
 #define MNU_INSERT_SWAP         0x3003
+#define MNU_INSERT_OPPOSITE     0x3004
 #define MNU_INSERT_READ_ADC     0x31
 #define MNU_INSERT_SET_PWM      0x32
 #define MNU_INSERT_SET_PWM_SOFT 0x3201
@@ -303,6 +305,7 @@ typedef signed long SDWORD;
 #define ELEM_TON                0x12
 #define ELEM_TOF                0x13
 #define ELEM_RTO                0x14
+#define ELEM_RTL                0x1401
 #define ELEM_RES                0x15
 #define ELEM_ONE_SHOT_RISING    0x16
 #define ELEM_ONE_SHOT_FALLING   0x17
@@ -310,6 +313,7 @@ typedef signed long SDWORD;
 #define ELEM_BIN2BCD            0x1801
 #define ELEM_BCD2BIN            0x1802
 #define ELEM_SWAP               0x1803
+#define ELEM_OPPOSITE           0x1804
 #define ELEM_ADD                0x19
 #define ELEM_SUB                0x1a
 #define ELEM_MUL                0x1b
@@ -418,6 +422,7 @@ typedef signed long SDWORD;
         case ELEM_TON: \
         case ELEM_TOF: \
         case ELEM_RTO: \
+        case ELEM_RTL: \
         case ELEM_TCY: \
         case ELEM_CTD: \
         case ELEM_CTU: \
@@ -476,6 +481,7 @@ typedef signed long SDWORD;
         case ELEM_BIN2BCD: \
         case ELEM_BCD2BIN: \
         case ELEM_SWAP: \
+        case ELEM_OPPOSITE: \
         case ELEM_MOVE: \
         case ELEM_SHORT: \
         case ELEM_OPEN: \
@@ -785,18 +791,19 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_INTERNAL_RELAY  13
 #define IO_TYPE_TCY             14
 #define IO_TYPE_RTO             15
-#define IO_TYPE_TON             16
-#define IO_TYPE_TOF             17
-#define IO_TYPE_MODBUS_CONTACT  18
-#define IO_TYPE_MODBUS_COIL     19
-#define IO_TYPE_MODBUS_HREG     20
-#define IO_TYPE_PORT_INPUT      21 // 8bit PORT for in data  - McuIoInfo.inputRegs
-#define IO_TYPE_PORT_OUTPUT     22 // 8bit PORT for out data - McuIoInfo.oututRegs
-#define IO_TYPE_MCU_REG         23 // 8bit register in/out data as McuIoInfo.dirRegs
-#define IO_TYPE_BCD             24 // unpacked, max 10 byte
-#define IO_TYPE_STRING          25 // max
-#define IO_TYPE_TABLE_IN_FLASH  26 // max limited (size of flsh - progSize)
-#define IO_TYPE_VAL_IN_FLASH    27 //
+#define IO_TYPE_RTL             16
+#define IO_TYPE_TON             17
+#define IO_TYPE_TOF             18
+#define IO_TYPE_MODBUS_CONTACT  19
+#define IO_TYPE_MODBUS_COIL     20
+#define IO_TYPE_MODBUS_HREG     21
+#define IO_TYPE_PORT_INPUT      22 // 8bit PORT for in data  - McuIoInfo.inputRegs
+#define IO_TYPE_PORT_OUTPUT     23 // 8bit PORT for out data - McuIoInfo.oututRegs
+#define IO_TYPE_MCU_REG         24 // 8bit register in/out data as McuIoInfo.dirRegs
+#define IO_TYPE_BCD             25 // unpacked, max 10 byte
+#define IO_TYPE_STRING          26 // max
+#define IO_TYPE_TABLE_IN_FLASH  27 // max limited (size of flsh - progSize)
+#define IO_TYPE_VAL_IN_FLASH    28 //
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -1013,7 +1020,7 @@ typedef struct McuIoInfoTag {
     }                rom[MAX_ROM_SECTIONS]; //EEPROM or HEI?
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 25
+#define NUM_SUPPORTED_MCUS 26
 
 //-----------------------------------------------
 // Function prototypes
@@ -1724,6 +1731,7 @@ extern int asm_comment_level;
 extern int asm_discover_names;
 extern int rungNow;
 void IntDumpListing(char *outFile);
+SDWORD TestTimerPeriod(char *name, SDWORD delay); // delay in us
 BOOL GenerateIntermediateCode(void);
 BOOL CheckEndOfRungElem(int which, void *elem);
 BOOL CheckLeafElem(int which, void *elem);

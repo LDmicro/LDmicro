@@ -143,6 +143,19 @@ void CompileInterpreted(char *outFile)
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 break;
 
+            #ifdef NEW_FEATURE
+            case INT_SET_VARIABLE_SHL:
+            case INT_SET_VARIABLE_SHR:
+            case INT_SET_VARIABLE_ROL:
+            case INT_SET_VARIABLE_ROR:
+            case INT_SET_VARIABLE_AND:
+            case INT_SET_VARIABLE_OR :
+            case INT_SET_VARIABLE_XOR:
+            case INT_SET_VARIABLE_NOT:
+            case INT_SET_VARIABLE_MOD:
+            #endif
+            case INT_SET_VARIABLE_SR0:
+            case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_MULTIPLY:

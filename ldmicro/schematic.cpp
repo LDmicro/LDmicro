@@ -62,9 +62,9 @@ BOOL FindSelected(int *gx, int *gy)
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
             if(DisplayMatrix[i][j] == Selected) {
-              if(SelectedWhich != ELEM_COMMENT)
+                if(SelectedWhich != ELEM_COMMENT)
                     while(DisplayMatrix[i+1][j] == Selected)
-                    i++;
+                        i++;
                 *gx = i;
                 *gy = j;
                 return TRUE;
@@ -147,6 +147,7 @@ BOOL StaySameElem(int Which)
         Which == ELEM_BIN2BCD ||
         Which == ELEM_BCD2BIN ||
         Which == ELEM_SWAP ||
+        Which == ELEM_OPPOSITE ||
         Which == ELEM_BUS  ||
         Which == ELEM_7SEG  ||
         Which == ELEM_9SEG  ||
@@ -498,7 +499,8 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         //
         case ELEM_TON: newWhich = ELEM_TOF; break;
         case ELEM_TOF: newWhich = ELEM_RTO; break;
-        case ELEM_RTO: newWhich = ELEM_TCY; break;
+        case ELEM_RTO: newWhich = ELEM_RTL; break;
+        case ELEM_RTL: newWhich = ELEM_TCY; break;
         case ELEM_TCY: newWhich = ELEM_TON; break;
         //
         case ELEM_EQU: newWhich = ELEM_NEQ; break;
@@ -547,6 +549,9 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_SR0: newWhich = ELEM_ROL; break;
         case ELEM_ROL: newWhich = ELEM_ROR; break;
         case ELEM_ROR: newWhich = ELEM_SHL; break;
+        //
+        case ELEM_SWAP: newWhich = ELEM_OPPOSITE; break;
+        case ELEM_OPPOSITE: newWhich = ELEM_SWAP; break;
         //
         case ELEM_ADD: newWhich = ELEM_SUB; break;
         case ELEM_SUB: newWhich = ELEM_MUL; break;
@@ -665,6 +670,7 @@ void EditSelectedElement(void)
         case ELEM_TON:
         case ELEM_TOF:
         case ELEM_RTO:
+        case ELEM_RTL:
             ShowTimerDialog(SelectedWhich, &(Selected->d.timer.delay),
                 Selected->d.timer.name);
             break;
@@ -769,6 +775,7 @@ void EditSelectedElement(void)
         case ELEM_BIN2BCD:
         case ELEM_BCD2BIN:
         case ELEM_SWAP:
+        case ELEM_OPPOSITE:
         case ELEM_MOVE:
             ShowMoveDialog(SelectedWhich, Selected->d.move.dest, Selected->d.move.src);
             break;

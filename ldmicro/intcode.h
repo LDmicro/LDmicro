@@ -28,6 +28,7 @@
 #ifndef __INTCODE_H
 #define __INTCODE_H
 
+    #define NEW_CMP
 #define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
 
 #define INT_SET_BIT                              1
@@ -42,6 +43,7 @@
 #define INT_SET_BIN2BCD                          5001
 #define INT_SET_BCD2BIN                          5002
 #define INT_SET_SWAP                             5003
+#define INT_SET_OPPOSITE                         5004
 #define INT_DECREMENT_VARIABLE                   6001
 #define INT_INCREMENT_VARIABLE                   6
 #define INT_SET_VARIABLE_ADD                     7
@@ -49,10 +51,8 @@
 #define INT_SET_VARIABLE_MULTIPLY                9
 #define INT_SET_VARIABLE_DIVIDE                 10
 
-#ifdef NEW_FEATURE
 #define INT_SET_VARIABLE_MOD                    1001
 #define INT_COPY_VAR_BIT_TO_VAR_BIT             1002
-#endif
 
 #ifdef TABLE_IN_FLASH
 #define INT_FLASH_INIT                          1003
@@ -102,27 +102,19 @@
 #define INT_SET_VARIABLE_ROR                    38
 
 #define INT_IF_GROUP_BEGIN                      40
-#ifdef USE_CMP
-#define INT_IF_VARIABLE_LES_VARIABLE            40
-#define INT_IF_VARIABLE_NEQ_VARIABLE            41
-#define INT_IF_VARIABLE_GEQ_VARIABLE            42
-#define INT_IF_VARIABLE_GEQ_LITERAL             43
-#define INT_IF_VARIABLE_EQU_LITERAL             44
-#define INT_IF_VARIABLE_NEQ_LITERAL             45
-#endif
-
-//#define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
+#define INT_IF_BIT_SET_IN_VAR                   46
+#define INT_IF_BIT_CLEAR_IN_VAR                 47
+#define INT_IF_BITS_SET_IN_VAR                  48
+#define INT_IF_BITS_CLEAR_IN_VAR                49
+/*
+#define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
+*/
 #define INT_IF_BIT_SET                          50
 #define INT_IF_BIT_CLEAR                        51
 #define INT_IF_VARIABLE_LES_LITERAL             52
 #define INT_IF_VARIABLE_EQUALS_VARIABLE         53
-#define INT_IF_VARIABLE_GRT_VARIABLE            54 // obsolete
-#ifdef NEW_FEATURE
-#define INT_IF_BIT_SET_IN_VAR                   55
-#define INT_IF_BIT_CLEAR_IN_VAR                 56
-#define INT_IF_BITS_SET_IN_VAR                  57
-#define INT_IF_BITS_CLEAR_IN_VAR                58
-#endif
+#define INT_IF_VARIABLE_GRT_VARIABLE            54
+
 #ifdef NEW_CMP
 #define INT_IF_EQU                              60
 #define INT_IF_NEQ                              61

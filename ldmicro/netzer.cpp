@@ -316,11 +316,6 @@ static void locateRegister(void)
                 AddrForRelay(IntCode[ipc].name2);
                 break;
 
-            #ifdef USE_CMP
-            case INT_IF_VARIABLE_GEQ_LITERAL:
-            case INT_IF_VARIABLE_NEQ_LITERAL:
-            case INT_IF_VARIABLE_EQU_LITERAL:
-            #endif
             case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
             case INT_SET_VARIABLE_TO_LITERAL:
@@ -336,14 +331,18 @@ static void locateRegister(void)
             #ifdef NEW_FEATURE
             case INT_SET_BIN2BCD:
             case INT_SET_BCD2BIN:
-            case INT_SET_SWAP:
+            case INT_SET_OPPOSITE:
             case INT_SET_VARIABLE_TO_VARIABLE:
+            #endif
+            case INT_SET_SWAP:
                 AddrForVariable(IntCode[ipc].name1);
                 AddrForVariable(IntCode[ipc].name2);
                 break;
 
-            case INT_SET_VARIABLE_NEG:
+            #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_NOT:
+            #endif
+            case INT_SET_VARIABLE_NEG:
                 if (AddrForVariable(IntCode[ipc].name1) & MAPPED_TO_IO)
                 {
                     AddrForVariable("$dummy1");
@@ -354,9 +353,9 @@ static void locateRegister(void)
                 }
                 break;
 
+            #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_SHL:
             case INT_SET_VARIABLE_SHR:
-            case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ROL:
             case INT_SET_VARIABLE_ROR:
             case INT_SET_VARIABLE_AND:
@@ -364,6 +363,7 @@ static void locateRegister(void)
             case INT_SET_VARIABLE_XOR:
             case INT_SET_VARIABLE_MOD:
             #endif
+            case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_MULTIPLY:
@@ -386,11 +386,6 @@ static void locateRegister(void)
                 }
                 break;
 
-            #ifdef USE_CMP
-            case INT_IF_VARIABLE_LES_VARIABLE:
-            case INT_IF_VARIABLE_GEQ_VARIABLE:
-            case INT_IF_VARIABLE_NEQ_VARIABLE:
-            #endif
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
                 if (AddrForVariable(IntCode[ipc].name1) & MAPPED_TO_IO)
@@ -450,10 +445,11 @@ int GenerateIntOpcodes(void)
             #ifdef NEW_FEATURE
             case INT_SET_BIN2BCD:
             case INT_SET_BCD2BIN:
-            case INT_SET_SWAP:
-            case INT_SET_VARIABLE_NEG:
+            case INT_SET_OPPOSITE:
             case INT_SET_VARIABLE_NOT:
             #endif
+            case INT_SET_SWAP:
+            case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 op.name2 = AddrForVariable(IntCode[ipc].name2);
@@ -467,12 +463,12 @@ int GenerateIntOpcodes(void)
             #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_SHL:
             case INT_SET_VARIABLE_SHR:
-            case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_AND:
             case INT_SET_VARIABLE_OR :
             case INT_SET_VARIABLE_XOR:
             case INT_SET_VARIABLE_MOD:
             #endif
+            case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_MULTIPLY:
@@ -486,20 +482,12 @@ int GenerateIntOpcodes(void)
             case INT_IF_BIT_CLEAR:
                 op.name1 = AddrForRelay(IntCode[ipc].name1);
                 goto finishIf;
-            #ifdef USE_CMP
-            case INT_IF_VARIABLE_GEQ_LITERAL:
-            case INT_IF_VARIABLE_NEQ_LITERAL:
-            case INT_IF_VARIABLE_EQU_LITERAL:
-            #endif
+
             case INT_IF_VARIABLE_LES_LITERAL:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 op.literal = IntCode[ipc].literal;
                 goto finishIf;
-            #ifdef USE_CMP
-            case INT_IF_VARIABLE_LES_VARIABLE:
-            case INT_IF_VARIABLE_GEQ_VARIABLE:
-            case INT_IF_VARIABLE_NEQ_VARIABLE:
-            #endif
+
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
@@ -1292,6 +1280,10 @@ static void generateNetzerOpcodes(BinOp * Program, int MaxLabel,
                 decrementVariable(&Program[idx], pOpcodeMeta, f);
                 break;
 
+            case INT_SET_VARIABLE_SR0:
+                math(OP_SET_VARIABLE_SR0, &Program[idx], pOpcodeMeta, f);
+                break;
+
             #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_SHL:
                 math(OP_SET_VARIABLE_SHL, &Program[idx], pOpcodeMeta, f);
@@ -1299,10 +1291,6 @@ static void generateNetzerOpcodes(BinOp * Program, int MaxLabel,
 
             case INT_SET_VARIABLE_SHR:
                 math(OP_SET_VARIABLE_SHR, &Program[idx], pOpcodeMeta, f);
-                break;
-
-            case INT_SET_VARIABLE_SR0:
-                math(OP_SET_VARIABLE_SR0, &Program[idx], pOpcodeMeta, f);
                 break;
 
             case INT_SET_VARIABLE_AND:
@@ -1320,11 +1308,11 @@ static void generateNetzerOpcodes(BinOp * Program, int MaxLabel,
             case INT_SET_VARIABLE_NOT:
                 math(OP_SET_VARIABLE_NOT, &Program[idx], pOpcodeMeta, f);
                 break;
+            #endif
 
             case INT_SET_VARIABLE_NEG:
                 math(OP_SET_VARIABLE_NEG, &Program[idx], pOpcodeMeta, f);
                 break;
-            #endif
 
             case INT_SET_VARIABLE_ADD:
                 math(OP_SET_VARIABLE_ADD, &Program[idx], pOpcodeMeta, f);
@@ -1355,32 +1343,6 @@ static void generateNetzerOpcodes(BinOp * Program, int MaxLabel,
             case INT_IF_BIT_CLEAR:
                 ifBitCleared(&Program[idx], pOpcodeMeta, f);
                 break;
-
-            #ifdef USE_CMP
-            case INT_IF_VARIABLE_GEQ_LITERAL:
-                ifVariableGeqLiteral(&Program[idx], pOpcodeMeta, f);
-                break;
-
-            case INT_IF_VARIABLE_EQU_LITERAL:
-                ifVariableEquLiteral(&Program[idx], pOpcodeMeta, f);
-                break;
-
-            case INT_IF_VARIABLE_NEQ_LITERAL:
-                ifVariableNeqLiteral(&Program[idx], pOpcodeMeta, f);
-                break;
-
-            case INT_IF_VARIABLE_NEQ_VARIABLE:
-                ifVariable_X_Variable(&Program[idx], OP_IF_VARIABLE_NEQ_VARIABLE, pOpcodeMeta, f);
-                break;
-
-            case INT_IF_VARIABLE_LES_VARIABLE:
-                ifVariable_X_Variable(&Program[idx], OP_IF_VARIABLE_LES_VARIABLE, pOpcodeMeta, f);
-                break;
-
-            case INT_IF_VARIABLE_GEQ_VARIABLE:
-                ifVariable_X_Variable(&Program[idx], OP_IF_VARIABLE_GEQ_VARIABLE, pOpcodeMeta, f);
-                break;
-            #endif
 
             case INT_IF_VARIABLE_LES_LITERAL:
                 ifVariableLesLiteral(&Program[idx], pOpcodeMeta, f);
