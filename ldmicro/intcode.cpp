@@ -148,6 +148,12 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2);
                 break;
 
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                fprintf(f, "if ('%s' & (1<<%d)) {", IntCode[i].name2, IntCode[i].literal2); indent++;
+                fprintf(f, "  '%s' |= (1<<%d) } else {", IntCode[i].name1, IntCode[i].literal);
+                fprintf(f, "  '%s' &= ~(1<<%d) }", IntCode[i].name1, IntCode[i].literal); indent--;
+                break;
+
             case INT_SET_VARIABLE_TO_LITERAL:
                 fprintf(f, "let var '%s' := %d", IntCode[i].name1,
                     IntCode[i].literal);
@@ -168,8 +174,8 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2);
                 break;
 
-            case INT_SET_SWAP:
-                fprintf(f, "let var '%s' = swap('%s');", IntCode[i].name1,
+            case INT_SET_OPPOSITE:
+                fprintf(f, "let var '%s' = opposite('%s');", IntCode[i].name1,
                     IntCode[i].name2);
                 break;
 
@@ -193,11 +199,6 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2, IntCode[i].name3);
                 break;
 
-            case INT_SET_VARIABLE_SR0:
-                fprintf(f, "let var '%s' := '%s' sr0 '%s'", IntCode[i].name1,
-                    IntCode[i].name2, IntCode[i].name3);
-                break;
-
             case INT_SET_VARIABLE_AND:
                 fprintf(f, "let var '%s' := '%s' & '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
@@ -213,24 +214,38 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2, IntCode[i].name3);
                 break;
 
-            case INT_SET_VARIABLE_NEG:
-                fprintf(f, "let var '%s' := - '%s'", IntCode[i].name1,
+            case INT_SET_VARIABLE_NOT:
+                fprintf(f, "let var '%s' := ~ '%s'", IntCode[i].name1,
                     IntCode[i].name2);
                 break;
 
-            case INT_SET_VARIABLE_NOT:
-                fprintf(f, "let var '%s' := ~ '%s'", IntCode[i].name1,
+            case INT_SET_SWAP:
+                fprintf(f, "let var '%s' = swap('%s');", IntCode[i].name1,
+                    IntCode[i].name2);
+                break;
+
+            case INT_SET_VARIABLE_SR0:
+                fprintf(f, "let var '%s' := '%s' sr0 '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
+                break;
+
+            case INT_SET_VARIABLE_NEG:
+                fprintf(f, "let var '%s' := - '%s'", IntCode[i].name1,
                     IntCode[i].name2);
                 break;
 
             case INT_SET_VARIABLE_ADD:
                 fprintf(f, "let var '%s' := '%s' + '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
+                if(IntCode[i].name4 && strlen(IntCode[i].name4))
+                    fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4);
                 break;
 
             case INT_SET_VARIABLE_SUBTRACT:
                 fprintf(f, "let var '%s' := '%s' - '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
+                if(IntCode[i].name4 && strlen(IntCode[i].name4))
+                    fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4);
                 break;
 
             case INT_SET_VARIABLE_MULTIPLY:
@@ -243,15 +258,25 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2, IntCode[i].name3);
                 break;
 
-            /*
             case INT_SET_VARIABLE_MOD:
                 fprintf(f, "let var '%s' := '%s' % '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
                 break;
-            */
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1);
+                if(IntCode[i].name2 && strlen(IntCode[i].name2))
+                fprintf(f, "; copy overlap(-1 to 0) flag to '%s'", IntCode[i].name2);
+                if(IntCode[i].name3 && strlen(IntCode[i].name3))
+                fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name3);
+                break;
+
+            case INT_DECREMENT_VARIABLE:
+                fprintf(f, "decrement '%s'", IntCode[i].name1);
+                if(IntCode[i].name2 && strlen(IntCode[i].name2))
+                fprintf(f, "; copy overlap(0 to -1) flag to '%s'", IntCode[i].name2);
+                if(IntCode[i].name3 && strlen(IntCode[i].name3))
+                fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name3);
                 break;
 
             case INT_READ_ADC:
@@ -269,10 +294,6 @@ void IntDumpListing(char *outFile)
             case INT_SET_PWM:
                 fprintf(f, "set pwm '%s' %% %s Hz out '%s'", IntCode[i].name1,
                     IntCode[i].name2, IntCode[i].name3);
-                break;
-
-            case INT_DECREMENT_VARIABLE:
-                fprintf(f, "decrement '%s'", IntCode[i].name1);
                 break;
 
             case INT_QUAD_ENCOD:
@@ -378,6 +399,28 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "LOCK;");
                 break;
 
+            case INT_VARIABLE_SET_BIT:
+                fprintf(f, "set bit number '%s' in var '%s'", IntCode[i].name2, IntCode[i].name1);
+                break;
+
+            case INT_VARIABLE_CLEAR_BIT:
+                fprintf(f, "clear bit number '%s' in var '%s'", IntCode[i].name2, IntCode[i].name1);
+                break;
+
+            case INT_IF_BIT_SET_IN_VAR: // TODO
+                fprintf(f, "if ('%s' & (1<<%d)) != 0  {", IntCode[i].name1, IntCode[i].name2); indent++;
+                break;
+
+            case INT_IF_BIT_CLEAR_IN_VAR: // TODO
+                fprintf(f, "if ('%s' & (1<<%d)) == 0 {", IntCode[i].name1, IntCode[i].name2); indent++;
+                break;
+            case INT_IF_BITS_SET_IN_VAR: // TODO
+                fprintf(f, "if ('%s' & %d) == %d  {", IntCode[i].name1, IntCode[i].literal, IntCode[i].literal); indent++;
+                break;
+            case INT_IF_BITS_CLEAR_IN_VAR: // TODO
+                fprintf(f, "if ('%s' & %d) == 0 {", IntCode[i].name1, IntCode[i].literal); indent++;
+                break;
+
             case INT_IF_VARIABLE_LES_LITERAL:
                 fprintf(f, "if '%s' < %d {", IntCode[i].name1,
                     IntCode[i].literal); indent++;
@@ -390,6 +433,36 @@ void IntDumpListing(char *outFile)
 
             case INT_IF_VARIABLE_GRT_VARIABLE:
                 fprintf(f, "if '%s' > '%s' {", IntCode[i].name1,
+                    IntCode[i].name2); indent++;
+                break;
+
+            case INT_IF_GRT:
+                fprintf(f, "if '%s' > '%s' {", IntCode[i].name1,
+                    IntCode[i].name2); indent++;
+                break;
+
+            case INT_IF_GEQ:
+                fprintf(f, "if '%s' >= '%s' {", IntCode[i].name1,
+                    IntCode[i].name2); indent++;
+                break;
+
+            case INT_IF_LES:
+                fprintf(f, "if '%s' < '%s' {", IntCode[i].name1,
+                    IntCode[i].name2); indent++;
+                break;
+
+            case INT_IF_LEQ:
+                fprintf(f, "if '%s' <= '%s' {", IntCode[i].name1,
+                    IntCode[i].name2); indent++;
+                break;
+
+            case INT_IF_NEQ:
+                fprintf(f, "if '%s' != '%s' {", IntCode[i].name1,
+                    IntCode[i].name2); indent++;
+                break;
+
+            case INT_IF_EQU:
+                fprintf(f, "if '%s' == '%s' {", IntCode[i].name1,
                     IntCode[i].name2); indent++;
                 break;
 
@@ -491,6 +564,10 @@ void IntDumpListing(char *outFile)
 
             case INT_RETURN:
                 fprintf(f, "RETURN // %s", IntCode[i].name1);
+                break;
+
+            case INT_WRITE_STRING:
+                fprintf(f, "sprintf(%s, \"%s\", %s);", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
                 break;
 
             #ifdef TABLE_IN_FLASH
@@ -667,6 +744,11 @@ static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, ch
     _Op(l, f, args, op, NULL, name1, name2, name3, name4, NULL, NULL, 0, 0, NULL);
 }
 //
+static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5)
+{
+    _Op(l, f, args, op, NULL, name1, name2, name3, name4, name5, NULL, 0, 0, NULL);
+}
+//
 static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, data);
@@ -784,7 +866,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay) // delay in us
         Error("%s\r\n%s\r\n%s", s1, s2, s3);
         period = -1;
     }
-    return period;
+    return SDWORD(period);
 }
 //-----------------------------------------------------------------------------
 // Calculate the period in scan units from the period in microseconds, and
@@ -1285,14 +1367,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             int i;
             BOOL ExistEnd = FALSE; //FALSE indicates that it is NEED to calculate the parOut
             for(i = 0; i < p->count; i++) {
-              if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].data.any)){
+              if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].data.any)) {
                 ExistEnd = TRUE; // TRUE indicates that it is NOT NEED to calculate the parOut
                 break;
               }
             }
             BOOL CanChange = FALSE; // FALSE indicates that it is NOT NEED to calculate the parThis
             for(i = 0; i < p->count; i++) {
-              if(!CheckStaySameElem(p->contents[i].which, p->contents[i].data.any)){
+              if(!CheckStaySameElem(p->contents[i].which, p->contents[i].data.any)) {
                 CanChange = TRUE; // TRUE indicates that it is NEED to calculate the parThis
                 break;
               }
@@ -1699,7 +1781,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
 
             //dbp("%s %s", l->d.counter.name, l->d.counter.max);
-            if(IsNumber(l->d.counter.max)){
+            if(IsNumber(l->d.counter.max)) {
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max) + 1);
                 // переход 1->0 будет на заданном пределе
                 Op(INT_CLEAR_BIT, stateInOut);
@@ -1744,12 +1826,12 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               //Use max as min, and init as max
               // -5 --> -10
               // ^init  ^max
-              if(IsNumber(l->d.counter.max)){
+              if(IsNumber(l->d.counter.max)) {
                 Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max));
               } else {
                 Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.max, l->d.counter.name);
               }
-                  if(IsNumber(l->d.counter.init)){
+                  if(IsNumber(l->d.counter.init)) {
                     Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.init));
                   } else {
                     Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.counter.name, l->d.counter.init);
@@ -1787,13 +1869,13 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 Op(INT_SET_BIT, storeName); // This line1
                 Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
 
-              if(IsNumber(l->d.counter.max)){
+              if(IsNumber(l->d.counter.max)) {
                 Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max)+1);
                 Op(INT_ELSE);
               } else {
                 Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.name, l->d.counter.max);
               }
-                  if(IsNumber(l->d.counter.init)){
+                  if(IsNumber(l->d.counter.init)) {
                     Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.init));
                   } else {
                     Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.counter.name, l->d.counter.init);
@@ -1988,9 +2070,16 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
         case ELEM_IF_BIT_SET:
             Comment(3, "ELEM_IF_BIT_SET");
+            Op(INT_IF_BIT_CLEAR_IN_VAR, l->d.cmp.op1, stateInOut, hobatoi(l->d.cmp.op2));
+                Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
             break;
+
         case ELEM_IF_BIT_CLEAR:
             Comment(3, "ELEM_IF_BIT_CLEAR");
+            Op(INT_IF_BIT_SET_IN_VAR, l->d.cmp.op1, stateInOut, hobatoi(l->d.cmp.op2));
+                Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
             break;
 
         case ELEM_ONE_SHOT_RISING: {
@@ -2137,16 +2226,53 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
         case ELEM_BIN2BCD: {
             Comment(3, "ELEM_BIN2BCD");
+            if(IsNumber(l->d.move.dest)) {
+                Error(_("BIN2BCD instruction: '%s' not a valid destination."),
+                    l->d.move.dest);
+                CompileError();
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_SET_BIN2BCD, l->d.move.dest, l->d.move.src);
+            Op(INT_END_IF);
             break;
         }
 
         case ELEM_BCD2BIN: {
             Comment(3, "ELEM_BCD2BIN");
+            if(IsNumber(l->d.move.dest)) {
+                Error(_("BCD2BIN instruction: '%s' not a valid destination."),
+                    l->d.move.dest);
+                CompileError();
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_SET_BCD2BIN, l->d.move.dest, l->d.move.src);
+            Op(INT_END_IF);
+            break;
+        }
+
+        case ELEM_OPPOSITE: {
+            Comment(3, "ELEM_OPPOSITE");
+            if(IsNumber(l->d.move.dest)) {
+                Error(_("OPPOSITE instruction: '%s' not a valid destination."),
+                    l->d.move.dest);
+                CompileError();
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_SET_OPPOSITE, l->d.move.dest, l->d.move.src);
+            Op(INT_END_IF);
             break;
         }
 
         case ELEM_SWAP: {
             Comment(3, "ELEM_SWAP");
+            if(IsNumber(l->d.move.dest)) {
+                Error(_("SWAP instruction: '%s' not a valid destination."),
+                    l->d.move.dest);
+                CompileError();
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_SET_SWAP, l->d.move.dest, l->d.move.src);
+            Op(INT_END_IF);
             break;
         }
 
@@ -2327,28 +2453,63 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         }
         case ELEM_SET_BIT:
                 Comment(3, "ELEM_SET_BIT");
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_VARIABLE_SET_BIT, l->d.math.dest, hobatoi(l->d.math.op1));
+                Op(INT_END_IF);
+                break;
         case ELEM_CLEAR_BIT:
                 Comment(3, "ELEM_CLEAR_BIT");
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_VARIABLE_CLEAR_BIT, l->d.math.dest, hobatoi(l->d.math.op1));
+                Op(INT_END_IF);
                 break;
         {
         int intOp;
-        case ELEM_SHL:
-        case ELEM_SHR:
-        case ELEM_SR0:
-        case ELEM_ROL:
-        case ELEM_ROR:
-        case ELEM_AND:
-        case ELEM_OR:
-        case ELEM_XOR:
-        case ELEM_NOT:
-        case ELEM_NEG:
-        case ELEM_MOD:
+        case ELEM_NEG: intOp = INT_SET_VARIABLE_NEG;      Comment(3, "ELEM_NEG"); goto mathBit;
+        case ELEM_SR0: intOp = INT_SET_VARIABLE_SR0;      Comment(3, "ELEM_SR0"); goto mathBit;
+        case ELEM_SHL: intOp = INT_SET_VARIABLE_SHL;      Comment(3, "ELEM_SHL"); goto mathBit;
+        case ELEM_SHR: intOp = INT_SET_VARIABLE_SHR;      Comment(3, "ELEM_SHR"); goto mathBit;
+        case ELEM_ROL: intOp = INT_SET_VARIABLE_ROL;      Comment(3, "ELEM_ROL"); goto mathBit;
+        case ELEM_ROR: intOp = INT_SET_VARIABLE_ROR;      Comment(3, "ELEM_ROR"); goto mathBit;
+        case ELEM_AND: intOp = INT_SET_VARIABLE_AND;      Comment(3, "ELEM_AND"); goto mathBit;
+        case ELEM_OR:  intOp = INT_SET_VARIABLE_OR;       Comment(3, "ELEM_OR" ); goto mathBit;
+        case ELEM_XOR: intOp = INT_SET_VARIABLE_XOR;      Comment(3, "ELEM_XOR"); goto mathBit;
+        case ELEM_NOT: intOp = INT_SET_VARIABLE_NOT;      Comment(3, "ELEM_NOT"); goto mathBit;
+          mathBit: {
+            if(IsNumber(l->d.math.dest)) {
+                Error(_("Math instruction: '%s' not a valid destination."),
+                    l->d.math.dest);
+                CompileError();
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+            if((intOp == INT_SET_VARIABLE_NEG)
+            || (intOp == INT_SET_VARIABLE_NOT)
+            ) {
+                Op(intOp, l->d.math.dest, l->d.math.op1, stateInOut);
+            } else {
+                if((which == ELEM_SR0)
+                || (which == ELEM_SHL) || (which == ELEM_SHR)
+                || (which == ELEM_ROL) || (which == ELEM_ROR)
+                ) {
+                    if((hobatoi(l->d.math.op2) < 0) || (SizeOfVar(l->d.math.op1)*8 < hobatoi(l->d.math.op2))) {
+                        Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1)*8);
+                        CompileError();
+                    }
+                }
+                Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2);
+            }
+            Op(INT_END_IF);
             break;
+          }
+        }
+        //
+        {
+        int intOp;
         case ELEM_ADD: intOp = INT_SET_VARIABLE_ADD;      Comment(3, "ELEM_ADD"); goto math;
         case ELEM_SUB: intOp = INT_SET_VARIABLE_SUBTRACT; Comment(3, "ELEM_SUB"); goto math;
         case ELEM_MUL: intOp = INT_SET_VARIABLE_MULTIPLY; Comment(3, "ELEM_MUL"); goto math;
         case ELEM_DIV: intOp = INT_SET_VARIABLE_DIVIDE;   Comment(3, "ELEM_DIV"); goto math;
-math:   {
+          math: {
             if(IsNumber(l->d.math.dest)) {
                 Error(_("Math instruction: '%s' not a valid destination."),
                     l->d.math.dest);
@@ -2356,38 +2517,45 @@ math:   {
             }
             Op(INT_IF_BIT_SET, stateInOut);
             char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
-            if((intOp == INT_SET_VARIABLE_NOT)
-            || (intOp == INT_SET_VARIABLE_NEG)){
-                Op(intOp, l->d.math.dest, op1);
-            } else
             if((intOp == INT_SET_VARIABLE_SUBTRACT)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
-            &&(strcmp(l->d.math.op2,"1")==0)){
-                Op(INT_DECREMENT_VARIABLE, l->d.math.dest);
+            &&(strcmp(l->d.math.op2,"1")==0)) {
+                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+            } else if((intOp == INT_SET_VARIABLE_SUBTRACT)
+            &&(int_comment_level != 1)
+            &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
+            &&(strcmp(l->d.math.op2,"-1")==0)) {
+                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+
             } else if((intOp == INT_SET_VARIABLE_ADD)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
-            &&(strcmp(l->d.math.op2,"1")==0)){
-                Op(INT_INCREMENT_VARIABLE, l->d.math.dest);
+            &&(strcmp(l->d.math.op2,"1")==0)) {
+                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
             } else if((intOp == INT_SET_VARIABLE_ADD)
+            &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op2)==0)
-            &&(strcmp(l->d.math.op1,"1")==0)){
-                Op(INT_INCREMENT_VARIABLE, l->d.math.dest);
+            &&(strcmp(l->d.math.op1,"1")==0)) {
+                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+            } else if((intOp == INT_SET_VARIABLE_ADD)
+            &&(int_comment_level != 1)
+            &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
+            &&(strcmp(l->d.math.op2,"-1")==0)) {
+                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+            } else if((intOp == INT_SET_VARIABLE_ADD)
+            &&(int_comment_level != 1)
+            &&(strcmp(l->d.math.dest,l->d.math.op2)==0)
+            &&(strcmp(l->d.math.op1,"-1")==0)) {
+                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+
             } else {
                 char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
-                if((which == ELEM_SHL) || (which == ELEM_SHR) || (which == ELEM_SR0)
-                || (which == ELEM_ROL) || (which == ELEM_ROR)) {
-                    if((hobatoi(l->d.math.op2)<0) || (BITS_OF_LD_VAR<hobatoi(l->d.math.op2))){
-                        Error(_("Shift constant %s=%d out of range: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), BITS_OF_LD_VAR);
-                        CompileError();
-                    }
-                }
-                Op(intOp, l->d.math.dest, op1, op2);
+                Op(intOp, l->d.math.dest, op1, op2, stateInOut, "ROverflowFlagV");
             }
             Op(INT_END_IF);
             break;
-        }
+          }
         }
         case ELEM_SLEEP:
             Comment(3, "ELEM_SLEEP");
@@ -2948,7 +3116,7 @@ math:   {
             AnsiToOem(l->d.comment.str,s1);
             s2 = s1;
             for(; *s2; s2++) {
-                if(*s2 == '\r'){
+                if(*s2 == '\r') {
                     *s2 = '\0';
                     s2++;
                     if(*s2 == '\n')
@@ -3116,7 +3284,7 @@ BOOL GenerateIntermediateCode(void)
             AnsiToOem(l->d.comment.str,s1);
             s2 = s1;
             for(; *s2; s2++) {
-                if(*s2 == '\r'){
+                if(*s2 == '\r') {
                     *s2 = '\0';
                     s2++;
                     if(*s2 == '\n')
@@ -3246,11 +3414,7 @@ BOOL UartSendUsed(void)
 BOOL Bin32BcdRoutineUsed(void)
 {
     int i;
-    for(i = 0; i < IntCodeLen; i++){
-        if((IntCode[i].op == INT_SET_BIN2BCD)
-        ) {
-            return TRUE;
-        }
+    for(i = 0; i < IntCodeLen; i++) {
     }
     return FALSE;
 }

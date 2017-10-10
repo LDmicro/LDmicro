@@ -207,6 +207,15 @@ static void GenerateDeclarations(FILE *f)
                 intVar1 = IntCode[i].name1;
                 break;
 
+            case INT_SET_BIN2BCD:
+            case INT_SET_BCD2BIN:
+            case INT_SET_OPPOSITE:
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+            case INT_SET_VARIABLE_NOT:
+                break;
+
+            case INT_SET_SWAP:
+            case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
                 intVar1 = IntCode[i].name1;
                 intVar2 = IntCode[i].name2;
@@ -236,7 +245,17 @@ static void GenerateDeclarations(FILE *f)
             case  INT_TEST_C_SFR_VARIABLE_L:
                 break;
 
+            case INT_SET_VARIABLE_ROL:
+            case INT_SET_VARIABLE_ROR:
+            case INT_SET_VARIABLE_SHL:
+            case INT_SET_VARIABLE_SHR:
+            case INT_SET_VARIABLE_AND:
+            case INT_SET_VARIABLE_OR :
+            case INT_SET_VARIABLE_MOD:
+                break;
 
+            case INT_SET_VARIABLE_XOR:
+            case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_DIVIDE:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_SUBTRACT:
@@ -417,24 +436,56 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     IntCode[i].literal);
                 break;
 
+            case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                break;
+
             case INT_SET_VARIABLE_TO_VARIABLE:
                 fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT),
                                          MapSym(IntCode[i].name2, ASINT));
                 break;
 
+            case INT_SET_BIN2BCD:
+            case INT_SET_BCD2BIN:
+            case INT_SET_OPPOSITE:
+            case INT_SET_VARIABLE_NOT:
+                break;
+
+            case INT_SET_VARIABLE_RANDOM:
+                fprintf(f, "%s = rand();\n", MapSym(IntCode[i].name1, ASINT));
+                break;
             {
             char op;
-            case INT_SET_VARIABLE_ADD: op = '+'; goto arith;
-            case INT_SET_VARIABLE_SUBTRACT: op = '-'; goto arith;
-            case INT_SET_VARIABLE_MULTIPLY: op = '*'; goto arith;
-            case INT_SET_VARIABLE_DIVIDE: op = '/'; goto arith;
-            arith:
-                fprintf(f, "%s = %s %c %s;\n",
-                MapSym(IntCode[i].name1, ASINT),
-                MapSym(IntCode[i].name2, ASINT),
-                op,
-                MapSym(IntCode[i].name3, ASINT) );
+            case INT_SET_VARIABLE_SR0: op = '>'; goto arith_shift;
+            arith_shift:
+                fprintf(f, "%s = %s %c%c %s;\n",
+                    MapSym(IntCode[i].name1, ASINT),
+                    MapSym(IntCode[i].name2, ASINT),
+                    op,
+                    op,
+                    MapSym(IntCode[i].name3, ASINT) );
                 break;
+            }
+            {
+            char *op;
+            case INT_SET_VARIABLE_ROL: op = "rol"; goto cicle_shift;
+            case INT_SET_VARIABLE_ROR: op = "ror"; goto cicle_shift;
+            cicle_shift:
+                break;
+            }
+
+            {
+                char op;
+                case INT_SET_VARIABLE_ADD: op = '+'; goto arith;
+                case INT_SET_VARIABLE_SUBTRACT: op = '-'; goto arith;
+                case INT_SET_VARIABLE_MULTIPLY: op = '*'; goto arith;
+                case INT_SET_VARIABLE_DIVIDE: op = '/'; goto arith;
+                arith:
+                    fprintf(f, "%s = %s %c %s;\n",
+                        MapSym(IntCode[i].name1, ASINT),
+                        MapSym(IntCode[i].name2, ASINT),
+                        op,
+                        MapSym(IntCode[i].name3, ASINT) );
+                    break;
             }
 
             case INT_INCREMENT_VARIABLE:

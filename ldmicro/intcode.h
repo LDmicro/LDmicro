@@ -28,7 +28,7 @@
 #ifndef __INTCODE_H
 #define __INTCODE_H
 
-    #define NEW_CMP
+#define NEW_CMP // (C) GitHub.LDmicro@gmail.com
 #define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
 
 #define INT_SET_BIT                              1
@@ -42,8 +42,8 @@
 #define INT_SET_VARIABLE_TO_VARIABLE             5
 #define INT_SET_BIN2BCD                          5001
 #define INT_SET_BCD2BIN                          5002
-#define INT_SET_SWAP                             5003
-#define INT_SET_OPPOSITE                         5004
+#define INT_SET_OPPOSITE                         5003
+#define INT_SET_SWAP                             5004
 #define INT_DECREMENT_VARIABLE                   6001
 #define INT_INCREMENT_VARIABLE                   6
 #define INT_SET_VARIABLE_ADD                     7
@@ -52,7 +52,9 @@
 #define INT_SET_VARIABLE_DIVIDE                 10
 
 #define INT_SET_VARIABLE_MOD                    1001
-#define INT_COPY_VAR_BIT_TO_VAR_BIT             1002
+#define INT_COPY_VAR_BIT_TO_VAR_BIT             1021
+#define INT_NOT_VAR_BIT_TO_VAR_BIT              1022
+#define INT_XOR_VAR_BIT_TO_VAR_BIT              1023
 
 #ifdef TABLE_IN_FLASH
 #define INT_FLASH_INIT                          1003

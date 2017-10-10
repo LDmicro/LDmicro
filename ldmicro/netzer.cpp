@@ -328,20 +328,16 @@ static void locateRegister(void)
                 AddrForVariable(IntCode[ipc].name2);    // src
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_SET_BIN2BCD:
             case INT_SET_BCD2BIN:
             case INT_SET_OPPOSITE:
             case INT_SET_VARIABLE_TO_VARIABLE:
-            #endif
             case INT_SET_SWAP:
                 AddrForVariable(IntCode[ipc].name1);
                 AddrForVariable(IntCode[ipc].name2);
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_NOT:
-            #endif
             case INT_SET_VARIABLE_NEG:
                 if (AddrForVariable(IntCode[ipc].name1) & MAPPED_TO_IO)
                 {
@@ -353,7 +349,6 @@ static void locateRegister(void)
                 }
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_SHL:
             case INT_SET_VARIABLE_SHR:
             case INT_SET_VARIABLE_ROL:
@@ -362,7 +357,6 @@ static void locateRegister(void)
             case INT_SET_VARIABLE_OR :
             case INT_SET_VARIABLE_XOR:
             case INT_SET_VARIABLE_MOD:
-            #endif
             case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT:
@@ -442,12 +436,10 @@ int GenerateIntOpcodes(void)
                 op.literal = IntCode[ipc].literal;
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_SET_BIN2BCD:
             case INT_SET_BCD2BIN:
             case INT_SET_OPPOSITE:
             case INT_SET_VARIABLE_NOT:
-            #endif
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -460,14 +452,12 @@ int GenerateIntOpcodes(void)
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_SHL:
             case INT_SET_VARIABLE_SHR:
             case INT_SET_VARIABLE_AND:
             case INT_SET_VARIABLE_OR :
             case INT_SET_VARIABLE_XOR:
             case INT_SET_VARIABLE_MOD:
-            #endif
             case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT:
@@ -1284,7 +1274,6 @@ static void generateNetzerOpcodes(BinOp * Program, int MaxLabel,
                 math(OP_SET_VARIABLE_SR0, &Program[idx], pOpcodeMeta, f);
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_SHL:
                 math(OP_SET_VARIABLE_SHL, &Program[idx], pOpcodeMeta, f);
                 break;
@@ -1308,7 +1297,6 @@ static void generateNetzerOpcodes(BinOp * Program, int MaxLabel,
             case INT_SET_VARIABLE_NOT:
                 math(OP_SET_VARIABLE_NOT, &Program[idx], pOpcodeMeta, f);
                 break;
-            #endif
 
             case INT_SET_VARIABLE_NEG:
                 math(OP_SET_VARIABLE_NEG, &Program[idx], pOpcodeMeta, f);
@@ -1330,11 +1318,9 @@ static void generateNetzerOpcodes(BinOp * Program, int MaxLabel,
                 math(OP_SET_VARIABLE_DIV, &Program[idx], pOpcodeMeta, f);
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_MOD:
                 math(OP_SET_VARIABLE_MOD, &Program[idx], pOpcodeMeta, f);
                 break;
-            #endif
 
             case INT_IF_BIT_SET:
                 ifBitSet(&Program[idx], pOpcodeMeta, f);

@@ -1467,6 +1467,7 @@ static void SimulateIntCode(void)
                     v = GetSimulationVariable(a->name2) *
                         GetSimulationVariable(a->name3);
                     goto math;
+
                 case INT_SET_VARIABLE_MOD:
                 case INT_SET_VARIABLE_DIVIDE:
                     if(GetSimulationVariable(a->name3) != 0) {

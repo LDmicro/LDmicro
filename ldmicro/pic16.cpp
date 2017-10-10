@@ -3132,6 +3132,11 @@ static void CompileFromIntermediate(BOOL topLevel)
                 CompileIfBody(condFalse);
                 break;
             }
+
+            case INT_IF_BIT_SET_IN_VAR:
+            case INT_IF_BIT_CLEAR_IN_VAR:
+                break;
+
             #ifdef NEW_CMP
             case INT_IF_NEQ: Comment("INT_IF_NEQ"); goto cmp1;
             case INT_IF_EQU: Comment("INT_IF_EQU"); goto cmp1;
@@ -3413,6 +3418,134 @@ static void CompileFromIntermediate(BOOL topLevel)
                 CopyRegsToRegs(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
                 break;
             }
+            case INT_SET_OPPOSITE: {
+                Comment("INT_SET_OPPOSITE %s := OPPOSITE(%s)", a->name1, a->name2);
+                break;
+            }
+            case INT_SET_VARIABLE_ROR: Comment("INT_SET_VARIABLE_ROR"); 
+            case INT_SET_VARIABLE_ROL: Comment("INT_SET_VARIABLE_ROL"); 
+            case INT_SET_VARIABLE_SHL: Comment("INT_SET_VARIABLE_SHL"); 
+            case INT_SET_VARIABLE_SHR: Comment("INT_SET_VARIABLE_SHR"); 
+                break;
+            case INT_SET_VARIABLE_SR0: Comment("INT_SET_VARIABLE_SR0"); goto ror;
+            ror:
+            {
+                CheckSovNames(a);
+
+                sov1 = SizeOfVar(a->name1);
+                if(sov1 < 1) oops()
+                MemForVariable(a->name1, &addr1);
+
+                sov2 = SizeOfVar(a->name2);
+                if(sov2 < 1) oops()
+                // full source copy to shadow
+                // all operation execute in shadow
+                // and then copy to dest
+                CopyArgToReg(TRUE, Scratch0, sov2, a->name2, FALSE);
+
+                DWORD addrA = Scratch0;
+                if((a->op == INT_SET_VARIABLE_SR0)
+                ) {
+                   addrA += sov2-1; // start at MSB
+                } else {
+                   // start at LSB
+                }
+
+                sov3 = SizeOfVar(a->name3);
+                //if(sov3 != 1) oops();
+                sov3 = 1;
+                CopyArgToReg(TRUE, ScratchS, sov3, a->name3, FALSE);
+                DWORD loop = PicProgWriteP;
+
+                if(a->op == INT_SET_VARIABLE_SR0) {
+                    ClearBit(REG_STATUS, STATUS_C);
+                } else oops();
+
+                int i;
+                for(i = 0; i < sov2; i++) {
+                    if(a->op == INT_SET_VARIABLE_SR0) {
+                        Instruction(OP_RRF, addrA-i, DEST_F);
+                    } else oops();
+                }
+
+                Instruction(OP_DECFSZ, ScratchS, DEST_F);
+                Instruction(OP_GOTO, loop);
+
+                if(a->name4 && strlen(a->name4)) {
+                    MemForSingleBit(a->name4, TRUE, &addr4, &bit4);
+                    CopyBit(addr4, bit4, REG_STATUS, STATUS_C, a->name4, "REG_STATUS_C");
+                }
+                CopyRegsToRegs(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
+                break;
+            }
+            case INT_SET_VARIABLE_AND: Comment("INT_SET_VARIABLE_AND"); 
+            case INT_SET_VARIABLE_OR : Comment("INT_SET_VARIABLE_OR "); 
+                break;
+            case INT_SET_VARIABLE_XOR: Comment("INT_SET_VARIABLE_XOR"); goto and;
+            and: {
+                CheckSovNames(a);
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                sov3 = SizeOfVar(a->name3);
+              //sov = max(sov1,max(sov2,sov3));
+                sov = sov1;
+
+                MemForVariable(a->name1, &addr1);
+
+                // no sign extention !
+                //   -1==0xff..ff
+                // 0xff==0xff
+
+                DWORD addrA = CopyArgToReg(FALSE, Scratch0, sov, a->name2, FALSE);
+                DWORD addrB = CopyArgToReg(FALSE, Scratch4, sov, a->name3, FALSE);
+
+                if((addr1!=addrB)&&(addr1==addrA)) {
+                    DWORD a=addrA;
+                    addrA = addrB;
+                    addrB = a;
+                }
+
+                int i;
+                for(i = 0; i < sov; i++) {
+                    Instruction(OP_MOVF, addrA+i, DEST_W);
+                    if(a->op == INT_SET_VARIABLE_AND)
+                        Instruction(OP_ANDWF, addrB+i, addr1==addrB?DEST_F:DEST_W);
+                    else if(a->op == INT_SET_VARIABLE_OR)
+                        Instruction(OP_IORWF, addrB+i, addr1==addrB?DEST_F:DEST_W);
+                    else if(a->op == INT_SET_VARIABLE_XOR)
+                        Instruction(OP_XORWF, addrB+i, addr1==addrB?DEST_F:DEST_W);
+                    else oops();
+                    if(addr1!=addrB)
+                        Instruction(OP_MOVWF, addr1+i);
+                }
+                break;
+            }
+            case INT_SET_VARIABLE_NOT: {
+                Comment("INT_SET_VARIABLE_NOT %s := ~%s", a->name1, a->name2);
+                break;
+            }
+            case INT_SET_VARIABLE_NEG: {
+                Comment("INT_SET_VARIABLE_NEG %s := - %s", a->name1, a->name2);
+                CheckSovNames(a);
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                MemForVariable(a->name1, &addr1);
+
+                CopyArgToReg(TRUE, Scratch0, sov1, a->name2, TRUE);
+
+                DWORD neg = AllocFwdAddr();
+                int i;
+                for(i=0; i<sov1; i++)
+                    Instruction(OP_COMF, Scratch0+i, DEST_F);
+                for(i=0; i<(sov1-1); i++) {
+                    Instruction(OP_INCFSZ, Scratch0+i, DEST_F);
+                    Instruction(OP_GOTO, neg);
+                }
+                Instruction(OP_INCF, Scratch0+sov1-1, DEST_F);
+                FwdAddrIsNow(neg);
+                CopyRegsToRegs(addr1, sov1, Scratch0, sov1, a->name1, "$Scratch0", FALSE);
+                break;
+            }
             // The add and subtract routines must be written to return correct
             // results if the destination and one of the operands happen to
             // be the same registers (e.g. for A := A - C).
@@ -3507,6 +3640,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                 Instruction(OP_MOVWF, addr1+1, 0);
                 break;
 
+            case INT_SET_VARIABLE_MOD:
+                break;
             case INT_SET_VARIABLE_DIVIDE:
                 DivideNeeded = TRUE;
 
@@ -4423,6 +4558,9 @@ static void CompileFromIntermediate(BOOL topLevel)
                     Instruction(OP_CALL, AddrOfRungN[rung].FwdAddr);
                 } else oops();
                 break;
+            }
+            case INT_SET_BIN2BCD: {
+                 break;
             }
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT: {

@@ -2954,10 +2954,17 @@ static void CompileFromIntermediate(void)
                 CopyBit(addr1, bit1, addr2, bit2, a->name1, a->name2);
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                Comment("INT_COPY_VAR_BIT_TO_VAR_BIT");
                 break;
-            #endif
+
+            case INT_SET_BCD2BIN:
+                Comment("INT_SET_BCD2BIN");
+                break;
+
+            case INT_SET_BIN2BCD:
+                Comment("INT_SET_BIN2BCD");
+                break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1, a->literal, a->literal);
@@ -2998,11 +3005,62 @@ static void CompileFromIntermediate(void)
                 CompileIfBody(condFalse);
                 break;
             }
-            #ifdef USE_CMP
-            case INT_IF_VARIABLE_EQU_LITERAL:
-            case INT_IF_VARIABLE_NEQ_LITERAL:
-            case INT_IF_VARIABLE_GEQ_LITERAL:
-            #endif
+            case INT_VARIABLE_CLEAR_BIT: {
+                Comment("INT_VARIABLE_CLEAR_BIT %s", a->name1);
+                break;
+            }
+            case INT_VARIABLE_SET_BIT: {
+                Comment("INT_VARIABLE_SET_BIT %s", a->name1);
+                break;
+            }
+            case INT_IF_BIT_SET_IN_VAR: {
+        Comment("INT_IF_BIT_SET_IN_VAR %s", a->name1);
+                break;
+            }
+            case INT_IF_BIT_CLEAR_IN_VAR: {
+        Comment("INT_IF_BIT_CLEAR_IN_VAR %s", a->name1);
+            }
+            //case INT_IF_BITS_CLEAR_IN_VAR: TODO
+            case INT_IF_BITS_SET_IN_VAR: {
+        Comment("INT_IF_BITS_SET_IN_VAR %s", a->name1);
+            }
+            case INT_SET_OPPOSITE:
+        Comment("INT_SET_OPPOSITE %s", a->name1);
+                break;
+            case INT_SET_SWAP:
+        Comment(" %s", a->name1);
+                //MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                if(IsNumber(a->name2)){
+                  CopyLiteralToRegs(r16, hobatoi(a->name2), sov1);
+                } else {
+                  //MemForVariable(a->name2, &addr);
+                  CopyVarToRegs(r16, a->name2, sov1);
+                }
+                if(sov2 == 1) {
+                    Instruction(OP_SWAP, r16);
+                } else if(sov2 == 2) {
+                    Instruction(OP_MOV, r3, r16);
+                    Instruction(OP_MOV, r16, r17);
+                    Instruction(OP_MOV, r17, r3);
+                } else if(sov2 == 3) {
+                    Instruction(OP_MOV, r3, r16);
+                    Instruction(OP_MOV, r16, r18); // r17 stay same
+                    Instruction(OP_MOV, r18, r3);
+                } else if(sov2 == 4) {
+                    Instruction(OP_MOV, r3, r16);
+                    Instruction(OP_MOV, r16, r19);
+                    Instruction(OP_MOV, r19, r3);
+
+                    Instruction(OP_MOV, r3, r17);
+                    Instruction(OP_MOV, r17, r18);
+                    Instruction(OP_MOV, r18, r3);
+                } else oops()
+
+                CopyRegsToVar(a->name1, r16, sov1);
+                break;
+
             case INT_IF_VARIABLE_LES_LITERAL: {
                 Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1, a->literal, a->literal);
                 DWORD notTrue = AllocFwdAddr();
@@ -3458,9 +3516,9 @@ static void CompileFromIntermediate(void)
                 CopyRegsToVar(a->name1, r16, SizeOfVar(a->name2));
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_MOD:
-            #endif
+                break;
+
             case INT_SET_VARIABLE_DIVIDE:
                 // Do this one separately since the divide routine uses
                 // slightly different in/out registers and I don't feel like
@@ -3504,26 +3562,25 @@ static void CompileFromIntermediate(void)
                 CopyRegsToVar(a->name1, r20, sov1);
                 break;
 
-            #ifdef NEW_FEATURE
             case INT_SET_VARIABLE_ROL:
             case INT_SET_VARIABLE_ROR:
             case INT_SET_VARIABLE_SHL:
             case INT_SET_VARIABLE_SHR:
             case INT_SET_VARIABLE_NOT:
-            case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_AND:
             case INT_SET_VARIABLE_OR :
+                break;
+
             case INT_SET_VARIABLE_XOR:
-            #endif
+            case INT_SET_VARIABLE_NEG:
+            case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT: {
                 sov = SizeOfVar(a->name1);
                 CopyVarToRegs(r20, a->name2, sov);
 
                 if(a->op != INT_SET_VARIABLE_NEG)
-                #ifdef NEW_FEATURE
                 if(a->op != INT_SET_VARIABLE_NOT)
-                #endif
                     CopyVarToRegs(r16, a->name3, sov);
 
                 if(a->op == INT_SET_VARIABLE_ADD) {
@@ -3549,11 +3606,17 @@ static void CompileFromIntermediate(void)
                         Instruction(OP_COM, 22, 0);
                         Instruction(OP_SBCI, 22, 0xff);
                     }
-                #ifdef NEW_FEATURE
-                #endif
                 } else oops();
 
                 CopyRegsToVar(a->name1, r20, sov);
+                break;
+            }
+            case INT_QUAD_ENCOD: {
+                break;
+            }
+            case INT_SET_NPULSE: {
+            }
+            case INT_OFF_NPULSE: {
                 break;
             }
             case INT_PWM_OFF: {
