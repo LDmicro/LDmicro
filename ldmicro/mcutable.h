@@ -963,6 +963,13 @@ McuAdcPinInfo Pic16F886AdcPinInfo[] = {
 // 6-Pin SOT-23
 // PIC10F200, PIC10F202, PIC10F204, PIC10F206
 // PIC10F220, PIC10F222
+McuIoPinInfo Pic6Pin_SOT23[] = {
+    { 'P', 0, 1, "GP0/ICSPDAT" },
+    { 'P', 1, 3, "GP1/ICSPCLK" },
+    { 'P', 2, 4, "GP2/T0CKI/FOSC4" },
+    { 'P', 3, 5, "GP3/_MCLR/Vpp (Input Only)" },
+};
+
 //-----------------------------------------------------------------------------
 // 8-Pin PDIP, SOIC, DFN-S, DFN
 // PIC12F675, PIC12F629
@@ -1553,7 +1560,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
 //          (1 << 17) | // IESO: Internal External Switchover mode enabled
 //          (1 << 16) | // FCMEN: Fail-Safe Clock Monitor enabled
             (1 << 13) | // Flash Program Memory Code Protection off
-            (0 << 12) | // CCP1 function on RB3
+            (0 << 12) | // CCP1 function on RB3 (doesn't matter)
             (1 << 11) | // DEBUG: ICD disabled
             (3 <<  9) | // Flash Program Memory write protection off
             (1 <<  8) | // Data EE Memory Code protection off
@@ -1749,6 +1756,38 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         arraylen(PicPwmPinInfo28_2),
         PicExtIntPinInfo28,
         arraylen(PicExtIntPinInfo28)
+    },
+    {
+        "Microchip PIC10F200 6-SOT",
+        "PIC10F200",
+        "P10F200",
+        "P10F200",
+        "PIC10F200",
+        'G',
+//        A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x06}, // PORTx = GPIO
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x06}, // PORTx
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x06}, // TRISx
+        256-1, //Location 00FFh contains the internal clock oscillator
+               //calibration value. This value should never be overwritten.
+        { { 0x10, 16 } },
+        Pic6Pin_SOT23,
+        arraylen(Pic6Pin_SOT23),
+        NULL,
+        0,
+        0,
+        { },
+        0,
+        ISA_PIC16, //ISA_PIC12,
+        BaselineCore12bit,
+        6,
+            (0 <<  4) |     // nMCLR disabled
+            (1 <<  3) |     // Code protection disabled
+            (0 <<  2) |     // WDTE disabled
+            (0 <<  1) |     //
+            (0 <<  0),      //
+        NULL,
+        0
     },
 //===========================================================================
     {

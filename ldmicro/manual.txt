@@ -198,11 +198,57 @@ counter accumulators. This may sometimes be useful; for example, you
 could check if the count of a timer is in a particular range.
 
 Variables are always 16 bit integers. This means that they can go
-from -32768 to 32767. Variables are always treated as signed. You can
-specify literals as normal decimal numbers (10, 1234, -56). You can also
-specify ASCII character values ('A', 'z') by putting the character in
-single-quotes. You can use an ASCII character code in most places that
-you could use a decimal number.
+from -32768 to 32767. Variables are always treated as signed.
+
+UPDATED: Release 4.3.0
+Variables can allocate 1,2,3 or 4 bytes.
+Variables are stored and processed in the two's complement form.
+See https://en.wikipedia.org/wiki/Two%27s_complement
+
+Bytes    Types       Range from                   to
+ 1   signed int8   -2^7 =       -128=0x80        2^7 -1=       127=0x7f
+ 2   signed int16  -2^15=     -32768=0x8000      2^15-1=     32767=0x7fff
+ 3   signed int24  -2^23=   -8388608=0x800000    2^23-1=   8388607=0x7fFFFF
+ 4   signed int32  -2^31=-2147483647=0x80000000  2^31-1=2147483647=0x7fffFFFF
+
+The decimal zero value (0) is represented as all zeros bits 00...000
+The decimal value (-1) represented as all  11...111
+
+Signed int8 variables are used for make the hex file smaller and faster.
+Signed int24 and int32 types are used to upsize range of variables.
+Sign extension for variables of different sizes are provided automatically.
+Note: MUL, DIV, MOD instructions can't processed int32 variables.
+
+The arithmetic Overflow(underflow) flag is provided as internal relay ROverflowFlagV.
+https://en.wikipedia.org/wiki/Overflow_flag
+https://www.allaboutcircuits.com/textbook/digital/chpt-2/binary-overflow/
+The Overflow flag indicates that the signed two's-complement result would
+not fit in the number of bits used for the operation, and signals an error.
+For example, if variable int8 dest = 127(0x7f) add 1, we get -128(0x80),
+and Overflow flag ROverflowFlagV will be set to 1.
+Instead if variable int16 dest = 127(0x007f) add 1, we get 128(0x0080),
+and Overflow flag ROverflowFlagV is not affected.
+LDmicro resets the ROverflowFlagV to zero during initialization.
+Note: CTC generate overfill(carry) impulse when Counter==Max.
+      CTR generate overfill(borrow) impulse when Counter==Min.
+      Overfill do not set the Overflow flag.
+
+The Overlap flag is provided as the output state of ADD, SUB operations.
+The Overlap flag indicates that sign of result has been changed.
+For example, Overlap occured when -1(0xf..f) add 1(or sub -1), we get 0(0x0..0),
+all ones 1 are changed to all zeros 0.
+Also, Overlap occured when 0(0x0..0) sub 1(or add -1), we get -1(0xf..f),
+all zeros 0 are changed to all ones 1.
+For example, Overlap occured when -10 add 15(or sub -15), we get 5,
+negative source are changed to positive result.
+Also, Overlap occured when 10 sub 15(or add -15), we get -5,
+positive source are changed to negative result.
+END UPDATES: Release 4.3.0
+
+You can specify literals as normal decimal numbers (10, 1234, -56).
+You can also specify ASCII character values ('A', 'z') by putting
+the character in single-quotes. You can use an ASCII character code
+in most places that you could use a decimal number.
 You can use hexadecimal numbers (0xA, 0x04D2, 0xffc8),
 octal numbers (0o12, 0o2322, 0o177710),
 binary numbers (0b1010, 0b10011010010, 0b1111111111001000)
@@ -431,8 +477,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 > RETENTIVE TIMER               Trto
                            -[RTO 1.000 s]-
 
-    This instruction keeps track of how long its input has been true. If
-    its input has been true for at least 1.000 s, then the output is
+    This instruction keeps track of how long its input has been true(HI).
+    If its input has been true for at least 1.000 s, then the output is
     true. Otherwise the output is false. The input need not have been
     true for 1000 consecutive milliseconds; if the input goes true
     for 0.6 s, then false for 2.0 s, and then true for 0.4 s, then the
@@ -445,6 +491,18 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     TON instruction outputs true when the counter variable is greater
     than or equal to the given delay. It is possible to manipulate the
     counter variable elsewhere, for example with a MOV instruction.
+
+
+> RETENTIVE TIMER LOW           Trto
+                           -[RTL 1.000 s]-
+
+    RTL works like RTO, but catch low level input.
+    This instruction keeps track of how long its input has been false(LOW).
+    If its input has been false for at least 1.000 s, then the output is
+    true. Otherwise the output is false.
+    After the output goes true it will stay true even after the input
+    goes true. This timer must therefore be reset manually,
+    using the reset instruction.
 
 
 > CYCLIC TIMER                Tmeander
@@ -599,7 +657,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     instruction). These instructions must therefore be used in pairs:
     one to (maybe conditionally) start the possibly-disabled section,
     and one to end it.
-    https://github.com/LDmicro/LDmicro/wiki/MASTER-CONTROL-RELAY
+    See https://github.com/LDmicro/LDmicro/wiki/MASTER-CONTROL-RELAY
 
 
 > MOVE                      {destvar :=  }      {Tret :=     }
@@ -634,16 +692,19 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     condition. Divide truncates; 7 / 3 = 2. This instruction must be
     the rightmost instruction in its rung.
 
-  MODULO                   {MOD     dest:=}
+
+> MODULO                   {MOD     dest:=}
                           -{src     %    2}-
 
     Remainder of the division 7 % 3 = 1
-    https://en.wikipedia.org/wiki/Modulo_operation
+    See https://en.wikipedia.org/wiki/Modulo_operation
 
-  NEGATIVE                 {NEG     dest:=}
+
+> NEGATIVE                 {NEG     dest:=}
                           -{         - src}-
 
     Negative -{NEG a:= -a}- is the optimized equivalent to -{SUB a:= 0 - a}-
+
 
 > BITWISE OPERATION          {AND  var1 :=}       {OR   Ccnt :=}
                             -{var2 & var3 }-     -{ Ccnt | 0o07}-
@@ -659,15 +720,142 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     Please read http://en.wikipedia.org/wiki/Bitwise_operation
 
 
+> BITWISE SWAP               {      dest:=}
+                            -{SWAP     src}-
+
+    This operation swaps the nibbles and the bytes.
+    See https://en.wikipedia.org/wiki/Nibble
+    When size of variables is
+    1 - then bitwise swap the nibbles in a BYTE, i.e. 0x73 -> 0x37
+
+                     MSB       bits       LSB
+                      7  6  5  4  3  2  1  0
+                      \________/  \________/
+                             ^      ^
+                             |      |
+                             +------+
+        Bits changes:
+           7 <-> 3
+           6 <-> 2
+           5 <-> 1
+           4 <-> 0
+
+    2 - then bitwise swap the bytes in a WORD, i.e. 0x7733 -> 0x3377
+
+            MSB                  bits                   LSB
+             15 14 13 12 11 10 9 8  7  6  5  4  3  2  1  0
+             \___________________/  \____________________/
+                             ^           ^
+                             |           |
+                             +-----------+
+        Bits changes:
+          15 <-> 7
+          14 <-> 6
+             ...
+           9 <-> 1
+           8 <-> 0
+
+    3 - then bitwise swap the nibbles of 1 byte and the bytes 2 and 0 in a INT24, i.e. 0x775A33 -> 0x33A577
+
+       MSB                             bits                          LSB
+        23 22 21 20 19 18 17 16 15 14 13 12 11 10  9  8 7 6 5 4 3 2 1 0
+        \_____________________/ \_________/ \_________/ \_____________/
+                    ^                ^           ^             ^
+                    |                |           |             |
+                    |                +-----------+             |
+                    +------------------------------------------+
+        Bits changes:
+          23 <->  7
+             ...
+          16 <->  0
+          15 <-> 11
+             ...
+          12 <->  8
+
+    4 - then bitwise swap the bytes 3 and 0  and the bytes 2 and 1 in a DWORD, i.e. 0x7755AA33 -> 0x33AA5577
+
+        MSB                                          bits                                  LSB
+        31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0
+        \_____________________/ \_____________________/ \___________________/ \_____________/
+                    ^                            ^           ^                     ^
+                    |                            |           |                     |
+                    |                            +-----------+                     |
+                    +--------------------------------------------------------------+
+        Bits changes:
+          31 <->  7
+             ...
+          24 <->  0
+          23 <-> 15
+             ...
+          16 <->  8
+
+
+> BITWISE OPPOSITE           {      dest:=}
+                            -{OPPOSITE src}-
+
+    This operation reverses the bits sequence to the opposite.
+    The MSB moves to the LSB, and the LSB moves to the MSB and etc.
+
+                     MSB      bits       LSB
+                      n n-1 n-2 ... 2  1  0
+                      ^  ^   ^      ^  ^  ^
+                      |  |   |      |  |  |
+                      |  |   +------+  |  |
+                      |  +-------------+  |
+                      +-------------------+
+
+
 > ARITHMETIC SHIFT: SHL, SHR.
-    https://en.wikipedia.org/wiki/Arithmetic_shift
+    See https://en.wikipedia.org/wiki/Arithmetic_shift
+
+    SHL - arithmetic left shift
+        MSB                    LSB
+             MSB-1         1    0
+    C <- x <- x <- .... <- x <- x <- 0
+
+
+    SHR - arithmetic right shift
+        MSB                    LSB
+             MSB-1         1    0
+    /--> x -> x -> .... -> x -> x -> C
+    \   /
+     <--
+
+
+    Note: MSB = Most Significant Bit, LSB = Least Significant Bit
+
 
 > LOGICAL SHIFT TO RIGHT SR0.
-    https://en.wikipedia.org/wiki/Logical_shift
-    Logical shift to left is equivalent to SHL arithmetic shift to left.
+    See https://en.wikipedia.org/wiki/Logical_shift
+
+    SR0 - logical right shift
+        MSB                    LSB
+             MSB-1         1    0
+    0 -> x -> x -> .... -> x -> x -> C
+
+
+    NOte: Logical shift to left is equivalent to SHL arithmetic shift to left.
+
 
 > CIRCULAR SHIFT: ROL, ROR.
-    https://en.wikipedia.org/wiki/Circular_shift
+    See https://en.wikipedia.org/wiki/Circular_shift
+
+    ROL - circular shift (bitwise rotation) left
+        MSB                    LSB
+             MSB-1         1    0
+    C <- x <- x <- .... <- x <- x
+         v                      ^
+         \_________>____________/
+
+
+    ROR - circular shift (bitwise rotation) right
+        MSB                    LSB
+             MSB-1         1    0
+         x -> x -> .... -> x -> x -> C
+         ^                      v
+         \_________<____________/
+
+
 
                               {SHL  var1 :=}       {SHR   cnt :=}
                              -{var2 << 2   }-     -{  cnt >>  1 }-
@@ -763,10 +951,10 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     Added 'Init' value in CTU,CTD,CTC,CTR counters.
     CTU,CTC counter start from 'Init' and count up to 'Max' value.
-    CTC generate overflow impulse when Counter==Max.
+    CTC generate overfill(carry) impulse when Counter==Max.
 
     CTD,CTR counter start from 'Init' and count down to 'Min' value.
-    CTR generate overflow impulse when Counter==Min.
+    CTR generate overfill(borrow) impulse when Counter==Min.
 
 
 > SHIFT REGISTER            {SHIFT REG   }
@@ -908,8 +1096,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     with at least two suitable timers. PWM uses pin CCP2 (not CCP1)
     on PIC16 chips and OC1B (not OC1A) on AVRs.
 
-    LDmicro V4.x.x allow all hardware PWM. See
-    https://github.com/LDmicro/LDmicro/wiki/LDmicro-PWM
+    LDmicro V4.x.x allow all hardware PWM.
+    See https://github.com/LDmicro/LDmicro/wiki/LDmicro-PWM
 
     See RESET PWM upper.
 

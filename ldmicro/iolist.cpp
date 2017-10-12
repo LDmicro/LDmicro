@@ -374,6 +374,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.timer.name, IO_TYPE_RTO);
             break;
 
+        case ELEM_RTL:
+            AppendIo(l->d.timer.name, IO_TYPE_RTL);
+            break;
+
         case ELEM_BIN2BCD:
             AppendIo(l->d.move.dest, IO_TYPE_BCD);
             if(CheckForNumber(l->d.move.src) == FALSE) {
@@ -394,6 +398,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
             break;
 
+        case ELEM_OPPOSITE:
         case ELEM_SWAP:
         case ELEM_BUS:
         case ELEM_MOVE:
@@ -568,12 +573,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_LES:
         case ELEM_LEQ:
         case ELEM_RES:
+        #ifdef USE_SFR
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
         case ELEM_CSFR:
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
+        #endif
         case ELEM_PWM_OFF:
         case ELEM_NPULSE_OFF:
             break;
@@ -641,6 +648,8 @@ int GenerateIoList(int prevSel)
     for(i = 0; i < Prog.numRungs; i++) {
         ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
+    AppendIo("ROverflowFlagV", IO_TYPE_INTERNAL_RELAY);
+
     if(Prog.cycleDuty) {
         AppendIo(YPlcCycleDuty, IO_TYPE_DIG_OUTPUT);
     }
@@ -1005,6 +1014,7 @@ void ShowIoDialog(int item)
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
         case IO_TYPE_RTO:
+        case IO_TYPE_RTL:
             ShowSizeOfVarDialog(&Prog.io.assignment[item]);
             return;
         case IO_TYPE_INTERNAL_RELAY:
@@ -1430,7 +1440,7 @@ void IoListProc(NMHDR *h)
                     if(!Prog.mcu)
                          break;
                     DWORD addr = 0;
-                    int bit = 0;
+                    int bit = -1;
                     if((type == IO_TYPE_PORT_INPUT)
                     || (type == IO_TYPE_PORT_OUTPUT)
                     || (type == IO_TYPE_MCU_REG)
@@ -1444,6 +1454,7 @@ void IoListProc(NMHDR *h)
                     if((type == IO_TYPE_GENERAL)
                     || (type == IO_TYPE_PERSIST)
                     || (type == IO_TYPE_STRING)
+                    || (type == IO_TYPE_RTL)
                     || (type == IO_TYPE_RTO)
                     || (type == IO_TYPE_TCY)
                     || (type == IO_TYPE_TON)
@@ -1457,20 +1468,20 @@ void IoListProc(NMHDR *h)
                     if((type == IO_TYPE_INTERNAL_RELAY)
                     ) {
                             MemForSingleBit(name, TRUE, &addr, &bit);
-                            if(addr > 0 && bit > 0)
+                            if(addr > 0 && bit >= 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                     } else
                     if (type == IO_TYPE_UART_TX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.txPin, &addr, &bit, FALSE);
-                            if(addr > 0 && bit > 0)
+                            if(addr > 0 && bit >= 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                         }
                     } else
                     if (type == IO_TYPE_UART_RX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.rxPin, &addr, &bit, TRUE);
-                            if(addr > 0 && bit > 0)
+                            if(addr > 0 && bit >= 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                         }
                     } else
@@ -1480,7 +1491,7 @@ void IoListProc(NMHDR *h)
                             iop = PinInfoForName(name);
                             if(iop) {
                                 AddrBitForPin(iop->pin, &addr, &bit, TRUE);
-                                if(addr > 0 && bit > 0)
+                                if(addr > 0 && bit >= 0)
                                     sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                             }
                         }
@@ -1512,6 +1523,7 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_STRING          )
                     || (type == IO_TYPE_COUNTER         )
                     || (type == IO_TYPE_VAL_IN_FLASH    )
+                    || (type == IO_TYPE_RTL             )
                     || (type == IO_TYPE_RTO             )
                     || (type == IO_TYPE_TCY             )
                     || (type == IO_TYPE_TON             )
@@ -1554,6 +1566,7 @@ void IoListProc(NMHDR *h)
                     case IO_TYPE_STRING:
                     case IO_TYPE_GENERAL:
                     case IO_TYPE_PERSIST:
+                    case IO_TYPE_RTL:
                     case IO_TYPE_RTO:
                     case IO_TYPE_COUNTER:
                     case IO_TYPE_UART_TX:

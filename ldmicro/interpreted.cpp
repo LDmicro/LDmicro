@@ -143,6 +143,17 @@ void CompileInterpreted(char *outFile)
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 break;
 
+            case INT_SET_VARIABLE_SHL:
+            case INT_SET_VARIABLE_SHR:
+            case INT_SET_VARIABLE_ROL:
+            case INT_SET_VARIABLE_ROR:
+            case INT_SET_VARIABLE_AND:
+            case INT_SET_VARIABLE_OR :
+            case INT_SET_VARIABLE_NOT:
+            case INT_SET_VARIABLE_MOD:
+            case INT_SET_VARIABLE_XOR:
+            case INT_SET_VARIABLE_SR0:
+            case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_MULTIPLY:
@@ -198,6 +209,7 @@ finishIf:
                 // Don't care; ignore, and don't generate an instruction.
                 continue;
 
+            #ifdef USE_SFR
             case  INT_READ_SFR_LITERAL:
             case  INT_WRITE_SFR_LITERAL:
             case  INT_SET_SFR_LITERAL:
@@ -220,6 +232,7 @@ finishIf:
             case  INT_TEST_C_SFR_VARIABLE:
             case  INT_TEST_C_SFR_LITERAL_L:
             case  INT_TEST_C_SFR_VARIABLE_L:
+            #endif
 
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:

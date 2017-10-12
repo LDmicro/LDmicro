@@ -28,11 +28,14 @@
 #ifndef __INTCODE_H
 #define __INTCODE_H
 
+#define NEW_CMP // (C) GitHub.LDmicro@gmail.com
 #define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
 
 #define INT_SET_BIT                              1
 #define INT_CLEAR_BIT                            2
 #define INT_COPY_BIT_TO_BIT                      3
+#define INT_COPY_NOT_BIT_TO_BIT                  301
+#define INT_COPY_XOR_BIT_TO_BIT                  302
 #define INT_VARIABLE_SET_BIT                     3001
 #define INT_VARIABLE_CLEAR_BIT                   3002
 #define INT_VARIABLE_SET_BITS                    3006
@@ -41,7 +44,8 @@
 #define INT_SET_VARIABLE_TO_VARIABLE             5
 #define INT_SET_BIN2BCD                          5001
 #define INT_SET_BCD2BIN                          5002
-#define INT_SET_SWAP                             5003
+#define INT_SET_OPPOSITE                         5003
+#define INT_SET_SWAP                             5004
 #define INT_DECREMENT_VARIABLE                   6001
 #define INT_INCREMENT_VARIABLE                   6
 #define INT_SET_VARIABLE_ADD                     7
@@ -49,10 +53,10 @@
 #define INT_SET_VARIABLE_MULTIPLY                9
 #define INT_SET_VARIABLE_DIVIDE                 10
 
-#ifdef NEW_FEATURE
 #define INT_SET_VARIABLE_MOD                    1001
-#define INT_COPY_VAR_BIT_TO_VAR_BIT             1002
-#endif
+#define INT_COPY_VAR_BIT_TO_VAR_BIT             1021
+#define INT_NOT_VAR_BIT_TO_VAR_BIT              1022
+#define INT_XOR_VAR_BIT_TO_VAR_BIT              1023
 
 #ifdef TABLE_IN_FLASH
 #define INT_FLASH_INIT                          1003
@@ -102,26 +106,19 @@
 #define INT_SET_VARIABLE_ROR                    38
 
 #define INT_IF_GROUP_BEGIN                      40
-#ifdef USE_CMP
-#define INT_IF_VARIABLE_LES_VARIABLE            40
-#define INT_IF_VARIABLE_NEQ_VARIABLE            41
-#define INT_IF_VARIABLE_GEQ_VARIABLE            42
-#define INT_IF_VARIABLE_GEQ_LITERAL             43
-#define INT_IF_VARIABLE_EQU_LITERAL             44
-#define INT_IF_VARIABLE_NEQ_LITERAL             45
-#endif
-
-//#define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
+#define INT_IF_BIT_SET_IN_VAR                   46
+#define INT_IF_BIT_CLEAR_IN_VAR                 47
+#define INT_IF_BITS_SET_IN_VAR                  48
+#define INT_IF_BITS_CLEAR_IN_VAR                49
+/*
+#define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
+*/
 #define INT_IF_BIT_SET                          50
 #define INT_IF_BIT_CLEAR                        51
+#ifndef NEW_CMP
 #define INT_IF_VARIABLE_LES_LITERAL             52
 #define INT_IF_VARIABLE_EQUALS_VARIABLE         53
-#define INT_IF_VARIABLE_GRT_VARIABLE            54 // obsolete
-#ifdef NEW_FEATURE
-#define INT_IF_BIT_SET_IN_VAR                   55
-#define INT_IF_BIT_CLEAR_IN_VAR                 56
-#define INT_IF_BITS_SET_IN_VAR                  57
-#define INT_IF_BITS_CLEAR_IN_VAR                58
+#define INT_IF_VARIABLE_GRT_VARIABLE            54
 #endif
 #ifdef NEW_CMP
 #define INT_IF_EQU                              60
@@ -130,6 +127,9 @@
 #define INT_IF_GRT                              63
 #define INT_IF_LEQ                              64
 #define INT_IF_GEQ                              65
+#define INT_IF_VARIABLE_LES_LITERAL             INT_IF_LES
+#define INT_IF_VARIABLE_EQUALS_VARIABLE         INT_IF_EQU
+#define INT_IF_VARIABLE_GRT_VARIABLE            INT_IF_GRT
 #endif
 #define INT_IF_GROUP_END                        70
 #define INT_IF_GROUP(x) (((x) >= INT_IF_GROUP_BEGIN) && ((x) <= INT_IF_GROUP_END))
@@ -137,6 +137,7 @@
 #define INT_ELSE                                60 + 100
 #define INT_END_IF                              61 + 100
 //
+#ifdef USE_SFR
 // Special function
 #define INT_READ_SFR_LITERAL                    1061
 #define INT_WRITE_SFR_LITERAL                   1062
@@ -167,6 +168,7 @@
 #define INT_TEST_C_SFR_LITERAL_L                1081
 #define INT_TEST_C_SFR_VARIABLE_L               1082
 // Special function
+#endif
 
 #define INT_PWM_OFF                             2001
 #define INT_SET_NPULSE                          2002

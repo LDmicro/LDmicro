@@ -126,7 +126,7 @@ void MakeMainWindowControls(void)
     int edges[] = { 60, 250 + 60, 370 + 130, -1 };
     SendMessage(StatusBar, SB_SETPARTS, 4, (LPARAM)edges);
 
-    // display IO list window with white background - no actual list 
+    // display IO list window with white background - no actual list
     ShowWindow(IoList, SW_SHOW);
 }
 
@@ -234,6 +234,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_BIN2BCD, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_BCD2BIN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SWAP, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_OPPOSITE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TIME2COUNT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TCY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TON, t);
@@ -245,6 +246,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_PULSER, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_NPULSE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_QUAD_ENCOD, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_RTL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_RTO, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CONTACTS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CONT_RELAY, t);
@@ -281,12 +283,14 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, ELEM_ISP_CPRINTF  , t);
     EnableMenuItem(InstructionMenu, ELEM_UART_CPRINTF , t);
 
+    #ifdef USE_SFR
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFW, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SSFB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_csFB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TSFB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_T_C_SFB, t);
+    #endif
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_BUS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_7SEG, t);
@@ -464,6 +468,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert TO&F (Delayed Turn Off)\tF"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTO,
         _("Insert R&TO (Retentive Delayed Turn On)\tT"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTL,
+        _("Insert RTL (Retentive Delayed Turn On If Low Input)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TCY,
         _("Insert TCY (Cyclic On/Off)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT,
@@ -479,7 +485,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTR,
         _("Insert CT&R (Count Circular Reversive)\tK"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RES,
-        _("Insert R&ES (Counter/RTO/PWM Reset)\tE"));
+        _("Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
 /*
@@ -509,8 +515,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert LES (Compare for Less Than)\t<"));
     AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_LEQ,
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_SET,    _("EDIT: Insert Test If Bit Set"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR,  _("EDIT: Insert Test If Bit Clear"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_SET,    _("SIMUL: Insert Test If Bit Set"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR,  _("SIMUL: Insert Test If Bit Clear"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CmpMenu,_("Compare variable"));
 
 /*
@@ -541,25 +547,26 @@ HMENU MakeMainWindowMenus(void)
         _("Insert MUL (16-bit Integer Multiply)\t*"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_DIV,
         _("Insert DIV (16-bit Integer Divide)\tD"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD,_("EDIT: Insert MOD (Integer Divide Remainder)"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG,_("EDIT: Insert NEG (Integer Negate)"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_RANDOM,_("Insert Random"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SEED_RANDOM,_("Insert Seed of Random"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD, _("SIMUL: Insert MOD (Integer Divide Remainder)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG, _("Insert NEG (Integer Negate)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_RANDOM, _("Insert Random"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SEED_RANDOM, _("Insert Seed of Random"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SignedMenu,_("Signed variable operations"));
 
     BitwiseMenu = CreatePopupMenu();
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND,     _("EDIT: Insert bitwise AND"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR ,     _("EDIT: Insert bitwise OR     |"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_XOR,     _("EDIT: Insert bitwise XOR  ^"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT,     _("EDIT: Insert bitwise NOT  ~"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL,     _("EDIT: Insert SHL << arithmetic,logic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR,     _("EDIT: Insert SHR >> arithmetic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SR0,     _("EDIT: Insert SR0 >> logic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL,     _("EDIT: Insert ROL cyclic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR,     _("EDIT: Insert ROR cyclic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP,    _("EDIT: Insert SWAP"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT,   _("EDIT: Insert Set Bit #"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("EDIT: Insert Clear Bit #"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND,       _("SIMUL: Insert bitwise AND"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR ,       _("SIMUL: Insert bitwise OR     |"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_XOR,       _("Insert bitwise XOR  ^"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT,       _("SIMUL: Insert bitwise NOT  ~"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL,       _("SIMUL: Insert SHL << arithmetic,logic shift to the left"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR,       _("SIMUL: Insert SHR >> arithmetic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SR0,       _("Insert SR0 >> logic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL,       _("SIMUL: Insert ROL cyclic shift to the left"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR,       _("SIMUL: Insert ROR cyclic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP,      _("Insert SWAP"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OPPOSITE,  _("SIMUL: Insert OPPOSITE"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT,   _("SIMUL: Insert Set Bit #"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("SIMUL: Insert Clear Bit #"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu,_("Bitwise variable operations (Unsigned)"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
@@ -598,15 +605,16 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("EDIT: Insert QUAD ENCOD"));
     DisplayMenu = CreatePopupMenu();
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD,        _("EDIT: Insert BIN2BCD"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN,        _("EDIT: Insert BCD2BIN"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS,            _("EDIT: Insert BUS tracer"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG,           _("EDIT: Insert char to 7 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG,           _("EDIT: Insert char to 9 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG,          _("EDIT: Insert char to 14 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("EDIT: Insert char to 16 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD,        _("SIMUL: Insert BIN2BCD"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN,        _("SIMUL: Insert BCD2BIN"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS,            _("SIMUL: Insert BUS tracer"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG,           _("SIMUL: Insert char to 7 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG,           _("SIMUL: Insert char to 9 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG,          _("SIMUL: Insert char to 14 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("SIMUL: Insert char to 16 SEGMENT converter"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu,_("Displays"));
 
+    #ifdef USE_SFR
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     // Special function menu
     SpecialFunction = CreatePopupMenu();
@@ -618,6 +626,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB,  _("&Insert Test If Bit Clear in SFR"));
 
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction,_("&Special Function for AVR"));
+    #endif
 
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
