@@ -248,6 +248,7 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
         case ELEM_TON: s = _("Turn-On Delay"); break;
         case ELEM_TOF: s = _("Turn-Off Delay"); break;
         case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;
+        case ELEM_RTL: s = _("Retentive Turn-On Delay If Low Input"); break;
         default: oops(); break;
     }
 
@@ -262,40 +263,24 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
     if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
         name[0] = 'T';
         strcpy(name+1, nameBuf);
-        double del = atof(delBuf);
-        long long period=0;
-        if(Prog.cycleTime > 0)
-            period = (long long)round(del * 1000 / Prog.cycleTime);// - 1;
-        if(del <= 0) {
-            Error(_("Delay cannot be zero or negative."));
-        } else if(period  < 1)  {
-            char *s1 = _("Timer period too short (needs faster cycle time).");
-            char s2[1024];
-            sprintf(s2, _("Timer '%s'=%.3f ms."), name, del);
-            char s3[1024];
-            sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
-            char *s4 = _("Not available");
-            Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
-        } else if((period >= long long (1 << (SizeOfVar(name)*8-1)))
-                   && (Prog.mcu->portPrefix != 'L')) {
-            char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
-                "slower cycle time.");
-            char s2[1024];
-            sprintf(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del/1000, period);
-            double maxDelay = 1.0 * ((1 << (SizeOfVar(name)*8-1))-1) * Prog.cycleTime / 1000000; //s
-            char s3[1024];
-            sprintf(s3, _("Maximum available timer period = %.3f s."), maxDelay);
-            Error("%s\r\n%s\r\n%s", s1, s2, s3);
-            *delay = (SDWORD)(1000*del + 0.5);
-        /*
-        if(del > 2140000) { // 2**31/1000, don't overflow signed int
-            Error(_("Delay too long; maximum is 2**31 us."));
-        } else if(del <= 0) {
-            Error(_("Delay cannot be zero or negative."));
-        */
-        } else {
-            *delay = (SDWORD)(1000*del + 0.5);
+        double delay_ms = atof(delBuf);
+
+        long long int delay_us = round(delay_ms * 1000.0);
+
+        if(delay_us > LONG_MAX) {
+            Error(_("Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
+            delay_us = LONG_MAX;
         }
+
+        SDWORD period ;
+        if(Prog.cycleTime <= 0) {
+            Error(_(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
+            period = 1;
+        } else {
+            period = TestTimerPeriod(name, delay_us);
+        }
+        if(period > 0)
+            *delay = delay_us;
     }
 }
 
@@ -471,6 +456,7 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
 // Special function
 void ShowSFRDialog(int which, char *op1, char *op2)
 {
+    #ifdef USE_SFR
     char *title;
     char *l2;
     switch(which) {
@@ -517,6 +503,7 @@ void ShowSFRDialog(int which, char *op1, char *op2)
             }
         }
     }
+    #endif
 }
 // Special function
 
@@ -592,6 +579,7 @@ void ShowMoveDialog(int which, char *dest, char *src)
         case ELEM_BIN2BCD     : title = _("Convert BIN to packed BCD"); break;
         case ELEM_BCD2BIN     : title = _("Convert packed BCD to BIN"); break;
         case ELEM_SWAP        : title = _("Swap source and assign to destination"); break;
+        case ELEM_OPPOSITE    : title = _("Opposite source and assign to destination"); break;
         case ELEM_SEED_RANDOM : title = _("Seed Random : $seed_..."); break;
         default: oops();
     }
@@ -846,7 +834,7 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
             if((which == ELEM_SHL) || (which == ELEM_SHR) || (which == ELEM_SR0)
             || (which == ELEM_ROL) || (which == ELEM_ROR)) {
                 if((hobatoi(op2) < 0) || (SizeOfVar(op1)*8 < hobatoi(op2))) {
-                    Error(_("Shift constant %s=%d out of range: 0 to %d inclusive."), op2, hobatoi(op2), SizeOfVar(op1)*8);
+                    Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), op2, hobatoi(op2), op1, SizeOfVar(op1)*8);
                 }
             }
         }
@@ -1158,7 +1146,6 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
     }
     if(ShowSimpleDialog(s, 2, labels, 0x3, 0x0, 0x3, dests)) {
        sov = hobatoi(sovStr);
-       sov = 2;
        if((sov <= 0)
        ||((io->type != IO_TYPE_STRING) && (sov>4) && (io->type != IO_TYPE_BCD))
        ||((io->type == IO_TYPE_BCD) && (sov>10))

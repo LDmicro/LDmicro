@@ -1,3 +1,68 @@
+== Release 4.3.0
+
+    * Add: Microchip PIC10F200 6-SOT target.
+
+    * New: Variables can allocate 1,2,3 or 4 bytes.
+    Variables are stored and processed in the two's complement form.
+    See https://en.wikipedia.org/wiki/Two%27s_complement
+
+    Bytes    Types       Range from                   to
+     1   signed int8   -2^7 =       -128=0x80        2^7 -1=       127=0x7f
+     2   signed int16  -2^15=     -32768=0x8000      2^15-1=     32767=0x7fff
+     3   signed int24  -2^23=   -8388608=0x800000    2^23-1=   8388607=0x7fFFFF
+     4   signed int32  -2^31=-2147483647=0x80000000  2^31-1=2147483647=0x7fffFFFF
+
+    The decimal zero value (0) is represented as all zeros bits 00...000
+    The decimal value (-1) represented as all  11...111
+
+    Signed int8 variables are used for make the hex file smaller and faster.
+    Signed int24 and int32 types are used to upsize range of variables.
+    Sign extension for variables of different sizes are provided automatically.
+    Note: MUL, DIV, MOD instructions can't processed int32 variables.
+
+    The arithmetic Overflow(underflow) flag is provided as internal relay ROverflowFlagV.
+    https://en.wikipedia.org/wiki/Overflow_flag
+    https://www.allaboutcircuits.com/textbook/digital/chpt-2/binary-overflow/
+    The Overflow flag indicates that the signed two's-complement result would
+    not fit in the number of bits used for the operation, and signals an error.
+    For example, if variable int8 dest = 127(0x7f) add 1, we get -128(0x80),
+    and Overflow flag ROverflowFlagV will be set to 1.
+    Instead if variable int16 dest = 127(0x007f) add 1, we get 128(0x0080),
+    and Overflow flag ROverflowFlagV is not affected.
+    LDmicro resets the ROverflowFlagV to zero during initialization.
+    Note: CTC generate overfill(carry) impulse when Counter==Max.
+          CTR generate overfill(borrow) impulse when Counter==Min.
+          Overfill do not set the Overflow flag.
+
+    The Overlap flag is provided as the output state of ADD, SUB operations.
+    The Overlap flag indicates that sign of result has been changed.
+    For example, Overlap occured when -1(0xf..f) add 1(or sub -1), we get 0(0x0..0),
+    all ones 1 are changed to all zeros 0.
+    Also, Overlap occured when 0(0x0..0) sub 1(or add -1), we get -1(0xf..f),
+    all zeros 0 are changed to all ones 1.
+    For example, Overlap occured when -10 add 15(or sub -15), we get 5,
+    negative source are changed to positive result.
+    Also, Overlap occured when 10 sub 15(or add -15), we get -5,
+    positive source are changed to negative result.
+
+    * New: RETENTIVE TIMER LOW oparation.
+    RTL works like RTO, but catch low level input.
+
+    * New: BITWISE SWAP oparation.
+    This operation swaps the nibbles and the bytes inside the variable.
+
+    * New: BITWISE OPPOSITE oparation.
+    This operation reverses the bits sequence to the opposite inside the variable.
+    The MSB moves to the LSB, and the LSB moves to the MSB and etc.
+
+    See manual.txt for all new oparation.
+
+    ! Attention:
+    ! You can add, edit, save, load, simulate this elements marked 'SIMUL:' in menu.
+    ! No compile code at output.
+
+    * DowngradeFix: Restored COMMENT element accoding to Release 2.3
+
 == Release 4.2.3
 
     * HotFix:
@@ -688,10 +753,10 @@
 
       Added 'Init' value in CTU,CTD,CTC,CTR counters.
       CTU,CTC counter start from 'Init' and count up to 'Max' value.
-      CTC generate overflow impulse when Counter==Max.
+      CTC generate overfill(carry) impulse when Counter==Max.
 
       CTD,CTR counter start from 'Init' and count down to 'Min' value.
-      CTR generate overflow impulse when Counter==Min.
+      CTR generate overfill(borrow) impulse when Counter==Min.
 
     * Attention! You may need to correct the previous versions of the program containing CTD counter!
       For example:
@@ -934,7 +999,7 @@
 == Release 3.1.0
 
     * Move an element CTC count from EndOFRung to LeafOfRung.
-      After the counter overflow CTC generate OSR at its output.
+      After the counter overfill CTC generate OSR at its output.
       Format of LD file will not changed.
       Not need changes for old LD program
       in this LDmicro realese (backward-compatible).

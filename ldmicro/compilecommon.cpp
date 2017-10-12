@@ -389,7 +389,7 @@ BYTE MuxForAdcVariable(char *name)
 }
 
 //-----------------------------------------------------------------------------
-int byteNeeded(SDWORD i)
+int byteNeeded(long long int i)
 {
     if((-128<=i) && (i<=127))
         return 1;
@@ -397,7 +397,7 @@ int byteNeeded(SDWORD i)
         return 2;
     else if((-8388608<=i) && (i<=8388607))
         return 3;
-    else if((-2147483648LL<=i) && (i<=2147483647))
+    else if((-2147483648LL<=i) && (i<=2147483647LL))
         return 4; // not FULLY implamanted for LDmicro
     else oops();
     return 0;
@@ -459,14 +459,14 @@ int MemForVariable(char *name, DWORD *addrl, int sizeOfVar)
             //dbp("Size %d set to %d for var '%s'", Variables[i].SizeOfVar, sizeOfVar, name);
             Variables[i].SizeOfVar = sizeOfVar;
         } else {
+            Variables[i].SizeOfVar = sizeOfVar;
             if(Variables[i].Allocated >= sizeOfVar) {
-               if(Variables[i].Allocated > sizeOfVar)
-                   Error(_(" You can decrease size of variable '%s' to %d bit in LD file."), name, sizeOfVar*8);
-               //dbp("Size of var '%s'(%d) set to %d", name, Variables[i].SizeOfVar, sizeOfVar);
-               Variables[i].SizeOfVar = sizeOfVar;
+               //if(Variables[i].Allocated > sizeOfVar)
+               //    Error(_(" You can decrease size of variable '%s' to %d bit in LD file."), name, sizeOfVar*8);
             } else {
-               Error(_("Can not increase size of variable '%s' to %d bit.\nYou must increase size of variable in LD file!"), name, sizeOfVar*8);
+               //Error(_("Can not increase size of variable '%s' to %d bit.\nYou must increase size of variable in LD file!"), name, sizeOfVar*8);
                //CompileError();
+               Variables[i].Allocated = 0; // Request to reallocate memory of var 
             }
         }
         if(addrl) {
@@ -559,7 +559,7 @@ int MemForVariable(char *name, DWORD *addrl, int sizeOfVar)
                   }
 
               } else if(Variables[i].Allocated != sizeOfVar) {
-                  Error(" Variable '%s' already allocated as signed %d bit", Variables[i].name, Variables[i].Allocated*8);
+                  //Error(" Variable '%s' already allocated as signed %d bit", Variables[i].name, Variables[i].Allocated*8);
                   //CompileError();
               }
           }
@@ -590,10 +590,13 @@ int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 //-----------------------------------------------------------------------------
 int SetSizeOfVar(char *name, int sizeOfVar)
 {
-    if((sizeOfVar<1)) {
+    if((sizeOfVar<1)||(4<sizeOfVar)) {
         Error(_("Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
         sizeOfVar = 2;
     }
+    #ifndef NEW_CMP
+    sizeOfVar = 2;
+    #endif
     return MemForVariable(name, NULL, sizeOfVar);
 }
 
@@ -784,12 +787,11 @@ static void MemForBitInternal(char *name, DWORD *addr, int *bit, BOOL writeTo)
 //-----------------------------------------------------------------------------
 void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit)
 {
+        *addr = -1;
+        *bit = -1;
     if(!(name) || (name && strlen(name) == 0)) {
-        *addr = 0;
-        *bit  = 0;
         return;
     }
-
     switch(name[0]) {
         case 'I':
         case 'X':

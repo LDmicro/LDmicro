@@ -59,7 +59,7 @@ typedef signed short SWORD;     // 16-bit signed
 // .literal then you only have 8-bit literals now (so you can't move
 // 300 into 'var'). If you crunch down .name3 then that limits your code size,
 // because that is the field used to encode the jump addresses.
-// 
+//
 // A more compact encoding is very possible if space is a problem for
 // you. You will probably need some kind of translator regardless, though,
 // to put it in whatever format you're going to pack in flash or whatever,
@@ -205,6 +205,10 @@ void Disassemble(void)
                 printf("int16s[%03x] := int16s[%03x]", p->name1, p->name2);
                 break;
 
+            case INT_DECREMENT_VARIABLE:
+                printf("(int16s[%03x])--", p->name1);
+                break;
+
             case INT_INCREMENT_VARIABLE:
                 printf("(int16s[%03x])++", p->name1);
                 break;
@@ -292,6 +296,10 @@ void InterpretOneCycle(void)
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 Integers[p->name1] = Integers[p->name2];
+                break;
+
+            case INT_DECREMENT_VARIABLE:
+                (Integers[p->name1])--;
                 break;
 
             case INT_INCREMENT_VARIABLE:
