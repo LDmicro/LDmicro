@@ -49,13 +49,19 @@
     RTL works like RTO, but catch low level input.
 
     * New: BITWISE SWAP oparation.
-    This operation swaps the nibbles and the bytes.
+    This operation swaps the nibbles and the bytes inside the variable.
 
     * New: BITWISE OPPOSITE oparation.
-    This operation reverses the bits sequence to the opposite.
+    This operation reverses the bits sequence to the opposite inside the variable.
     The MSB moves to the LSB, and the LSB moves to the MSB and etc.
 
     See manual.txt for all new oparation.
+
+    ! Attention:
+    ! You can add, edit, save, load, simulate this elements marked 'SIMUL:' in menu.
+    ! No compile code at output.
+
+    * DowngradeFix: Restored COMMENT element accoding to Release 2.3
 
 == Release 4.2.3
 
@@ -747,10 +753,10 @@
 
       Added 'Init' value in CTU,CTD,CTC,CTR counters.
       CTU,CTC counter start from 'Init' and count up to 'Max' value.
-      CTC generate overflow impulse when Counter==Max.
+      CTC generate overfill(carry) impulse when Counter==Max.
 
       CTD,CTR counter start from 'Init' and count down to 'Min' value.
-      CTR generate overflow impulse when Counter==Min.
+      CTR generate overfill(borrow) impulse when Counter==Min.
 
     * Attention! You may need to correct the previous versions of the program containing CTD counter!
       For example:
@@ -993,7 +999,7 @@
 == Release 3.1.0
 
     * Move an element CTC count from EndOFRung to LeafOfRung.
-      After the counter overflow CTC generate OSR at its output.
+      After the counter overfill CTC generate OSR at its output.
       Format of LD file will not changed.
       Not need changes for old LD program
       in this LDmicro realese (backward-compatible).
