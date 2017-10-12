@@ -573,12 +573,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_LES:
         case ELEM_LEQ:
         case ELEM_RES:
+        #ifdef USE_SFR
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
         case ELEM_CSFR:
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
+        #endif
         case ELEM_PWM_OFF:
         case ELEM_NPULSE_OFF:
             break;

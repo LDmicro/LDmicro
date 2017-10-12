@@ -283,12 +283,14 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, ELEM_ISP_CPRINTF  , t);
     EnableMenuItem(InstructionMenu, ELEM_UART_CPRINTF , t);
 
+    #ifdef USE_SFR
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SFW, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SSFB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_csFB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TSFB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_T_C_SFB, t);
+    #endif
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_BUS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_7SEG, t);
@@ -612,6 +614,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("SIMUL: Insert char to 16 SEGMENT converter"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu,_("Displays"));
 
+    #ifdef USE_SFR
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     // Special function menu
     SpecialFunction = CreatePopupMenu();
@@ -623,6 +626,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB,  _("&Insert Test If Bit Clear in SFR"));
 
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction,_("&Special Function for AVR"));
+    #endif
 
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));

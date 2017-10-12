@@ -185,7 +185,9 @@ BOOL CanChangeOutputElem(int Which)
         Which == ELEM_PULSER ||
         Which == ELEM_NPULSE ||
         Which == ELEM_MASTER_RELAY ||
+        #ifdef USE_SFR
         Which == ELEM_WSFR ||
+        #endif
         Which == ELEM_PERSIST)
       return TRUE;
     else
@@ -293,9 +295,11 @@ void WhatCanWeDoFromCursorAndTopology(void)
         // the rung entirely
         CanInsertComment = TRUE;
     } else {
+/*
         if(CanInsertEnd && Selected && (Selected->selectedState == SELECTED_RIGHT))
           CanInsertComment = TRUE;
         else
+*/
           CanInsertComment = FALSE;
     }
     SetMenusEnabled(canNegate, canNormal, canResetOnly, canSetOnly, canDelete,
@@ -313,13 +317,13 @@ void ForgetFromGrid(void *p)
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
             if(DisplayMatrix[i][j] == p) {
                 DisplayMatrix[i][j] = NULL;
-                DisplayMatrixWhich[i][j] = ELEM_NULL;
+//              DisplayMatrixWhich[i][j] = ELEM_NULL; // ???
             }
         }
     }
     if(Selected == p) {
         Selected = NULL;
-        SelectedWhich = ELEM_NULL;
+//      SelectedWhich = ELEM_NULL; // ???
     }
 }
 
@@ -394,7 +398,7 @@ void MoveCursorKeyboard(int keyCode)
                 SelectElement(-1, -1, SELECTED_LEFT);
                 break;
             }
-            //if(SelectedWhich == ELEM_COMMENT) break;
+            if(SelectedWhich == ELEM_COMMENT) break; // can comment ???
             int i, j;
             if(FindSelected(&i, &j)) {
                 i--;
@@ -524,12 +528,14 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_UART_SEND:  newWhich = ELEM_UART_SENDn; break;
         case ELEM_UART_SENDn: newWhich = ELEM_UART_SEND;  break;
         //
+        #ifdef USE_SFR
         case ELEM_RSFR: newWhich = ELEM_WSFR; break;
         case ELEM_WSFR: newWhich = ELEM_RSFR; break;
         case ELEM_SSFR: newWhich = ELEM_CSFR; break;
         case ELEM_CSFR: newWhich = ELEM_SSFR; break;
         case ELEM_TSFR: newWhich = ELEM_T_C_SFR; break;
         case ELEM_T_C_SFR: newWhich = ELEM_TSFR; break;
+        #endif
         //
         case ELEM_AND: newWhich = ELEM_OR ; break;
         case ELEM_OR : newWhich = ELEM_XOR; break;
@@ -692,6 +698,7 @@ void EditSelectedElement(void)
                 Selected->d.counter.name);
             break;
 
+        #ifdef USE_SFR
         // Special function
         case ELEM_RSFR:
         case ELEM_WSFR:
@@ -703,6 +710,7 @@ void EditSelectedElement(void)
                 Selected->d.sfr.op);
             break;
         // Special function
+        #endif
 
         case ELEM_IF_BIT_SET  :
         case ELEM_IF_BIT_CLEAR:

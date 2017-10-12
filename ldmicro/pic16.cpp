@@ -2127,6 +2127,9 @@ static BOOL IsInput(DWORD addr)
 
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest, char *nameSrc)
 {
+    if((addrDest==addrSrc) && (bitDest==bitSrc)) {
+        return;
+    }
     Comment("CopyBit");
 /*
     // With possibility of "jitter" on destination pin.
@@ -2171,9 +2174,14 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest, char *nameSrc)
 {
     Comment("CopyNotBit");
-    if((Bank(addrDest) == Bank(addrSrc))
+    if((
+      (addrDest != addrSrc)
+      || (bitDest != bitSrc)
+    ) && (
+      (Bank(addrDest) == Bank(addrSrc))
     || IsCoreRegister(addrDest)
-    || IsCoreRegister(addrSrc)) {
+      || IsCoreRegister(addrSrc)
+    )) {
         IfBitSet(addrSrc, bitSrc, nameSrc);
         ClearBit(addrDest, bitDest, nameDest);
         IfBitClear(addrSrc, bitSrc, nameSrc);
@@ -2491,6 +2499,8 @@ void AllocBitsVars()
                 break;
 
             case INT_COPY_BIT_TO_BIT:
+            case INT_COPY_NOT_BIT_TO_BIT:
+            case INT_COPY_XOR_BIT_TO_BIT:
                 MemForSingleBit(a->name1, FALSE, &addr, &bit);
                 MemForSingleBit(a->name2, FALSE, &addr, &bit);
                 break;
@@ -3073,6 +3083,20 @@ static void CompileFromIntermediate(BOOL topLevel)
                 MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
                 MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
                 CopyBit(addr1, bit1, addr2, bit2);
+                break;
+
+            case INT_COPY_NOT_BIT_TO_BIT:
+                Comment("INT_COPY_NOT_BIT_TO_BIT %s:=!%s", a->name1, a->name2);
+                MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
+                MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
+                CopyNotBit(addr1, bit1, addr2, bit2);
+                break;
+
+            case INT_COPY_XOR_BIT_TO_BIT:
+                Comment("INT_COPY_XOR_BIT_TO_BIT %s:=%s^%s", a->name1, a->name1, a->name2);
+                MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
+                MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
+                XorBit(addr1, bit1, addr2, bit2);
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
@@ -6020,7 +6044,7 @@ void CompilePic16(char *outFile)
         // inputs, so turn that around
         WriteRegister(REG_ADCON1,
             (1 << 7) |      // right-justify A/D result
-            (6 << 0)        // all digital inputs
+            (7 << 0)        // all digital inputs
         );
     } else if(McuAs(" PIC16F72 ")) {
         WriteRegister(REG_ADCON1, 0x7); // all digital inputs

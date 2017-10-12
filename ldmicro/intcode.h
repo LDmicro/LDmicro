@@ -34,6 +34,8 @@
 #define INT_SET_BIT                              1
 #define INT_CLEAR_BIT                            2
 #define INT_COPY_BIT_TO_BIT                      3
+#define INT_COPY_NOT_BIT_TO_BIT                  301
+#define INT_COPY_XOR_BIT_TO_BIT                  302
 #define INT_VARIABLE_SET_BIT                     3001
 #define INT_VARIABLE_CLEAR_BIT                   3002
 #define INT_VARIABLE_SET_BITS                    3006
@@ -113,10 +115,11 @@
 */
 #define INT_IF_BIT_SET                          50
 #define INT_IF_BIT_CLEAR                        51
+#ifndef NEW_CMP
 #define INT_IF_VARIABLE_LES_LITERAL             52
 #define INT_IF_VARIABLE_EQUALS_VARIABLE         53
 #define INT_IF_VARIABLE_GRT_VARIABLE            54
-
+#endif
 #ifdef NEW_CMP
 #define INT_IF_EQU                              60
 #define INT_IF_NEQ                              61
@@ -124,6 +127,9 @@
 #define INT_IF_GRT                              63
 #define INT_IF_LEQ                              64
 #define INT_IF_GEQ                              65
+#define INT_IF_VARIABLE_LES_LITERAL             INT_IF_LES
+#define INT_IF_VARIABLE_EQUALS_VARIABLE         INT_IF_EQU
+#define INT_IF_VARIABLE_GRT_VARIABLE            INT_IF_GRT
 #endif
 #define INT_IF_GROUP_END                        70
 #define INT_IF_GROUP(x) (((x) >= INT_IF_GROUP_BEGIN) && ((x) <= INT_IF_GROUP_END))
@@ -131,6 +137,7 @@
 #define INT_ELSE                                60 + 100
 #define INT_END_IF                              61 + 100
 //
+#ifdef USE_SFR
 // Special function
 #define INT_READ_SFR_LITERAL                    1061
 #define INT_WRITE_SFR_LITERAL                   1062
@@ -161,6 +168,7 @@
 #define INT_TEST_C_SFR_LITERAL_L                1081
 #define INT_TEST_C_SFR_VARIABLE_L               1082
 // Special function
+#endif
 
 #define INT_PWM_OFF                             2001
 #define INT_SET_NPULSE                          2002

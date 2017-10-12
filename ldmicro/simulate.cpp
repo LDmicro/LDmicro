@@ -751,11 +751,13 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_LEQ:
         case ELEM_IF_BIT_SET:
         case ELEM_IF_BIT_CLEAR:
+        #ifdef USE_SFR
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
         case ELEM_CSFR:
         case ELEM_TSFR:
+        #endif
             break;
 
         default:
@@ -1312,6 +1314,14 @@ static void SimulateIntCode(void)
                 SetSingleBit(a->name1, SingleBitOn(a->name2));
                 break;
 
+            case INT_COPY_NOT_BIT_TO_BIT:
+                SetSingleBit(a->name1, !SingleBitOn(a->name2));
+                break;
+
+            case INT_COPY_XOR_BIT_TO_BIT:
+                SetSingleBit(a->name1, (SingleBitOn(a->name1)&1) ^ (SingleBitOn(a->name2)&1));
+                break;
+
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
                 if(GetSimulationVariable(a->name2) & (1<<a->literal2))
                     SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) | (1<<a->literal));
@@ -1328,6 +1338,7 @@ static void SimulateIntCode(void)
                 SetSimulationVariable(a->name1, a->literal);
                 break;
 
+            #ifdef USE_SFR
             case INT_READ_SFR_LITERAL:
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 break;
@@ -1357,6 +1368,7 @@ static void SimulateIntCode(void)
             case  INT_TEST_C_SFR_LITERAL_L:
             case  INT_TEST_C_SFR_VARIABLE_L:
                 break;
+            #endif
 
             case INT_SET_BIN2BCD: {
                 int var2 = bin2bcd(GetSimulationVariable(a->name2));
@@ -1570,6 +1582,7 @@ static void SimulateIntCode(void)
                 break;
             #endif
 
+            #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL:
                 if(GetSimulationVariable(a->name1) < a->literal)
                     IF_BODY
@@ -1586,6 +1599,7 @@ static void SimulateIntCode(void)
                     GetSimulationVariable(a->name2))
                     IF_BODY
                 break;
+            #endif
 
             case INT_QUAD_ENCOD:
             case INT_SET_NPULSE:

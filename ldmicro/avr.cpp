@@ -3061,6 +3061,7 @@ static void CompileFromIntermediate(void)
                 CopyRegsToVar(a->name1, r16, sov1);
                 break;
 
+            #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL: {
                 Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1, a->literal, a->literal);
                 DWORD notTrue = AllocFwdAddr();
@@ -3142,6 +3143,7 @@ static void CompileFromIntermediate(void)
                 CompileIfBody(notTrue);
                 break;
             }
+            #endif
 
             #ifdef NEW_CMP
             case INT_IF_GRT:
@@ -3222,6 +3224,7 @@ static void CompileFromIntermediate(void)
             }
             #endif
 
+            #ifdef USE_SFR
             // Sepcial function
             case INT_READ_SFR_LITERAL: {
                 MemForVariable(a->name1, &addr1);
@@ -3511,6 +3514,7 @@ static void CompileFromIntermediate(void)
                 break;
             }
             // ^^^ sfr funtions  ^^^
+            #endif
             case INT_SET_VARIABLE_TO_VARIABLE:
                 CopyVarToRegs(r16, a->name2, SizeOfVar(a->name2));
                 CopyRegsToVar(a->name1, r16, SizeOfVar(a->name2));

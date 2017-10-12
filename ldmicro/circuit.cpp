@@ -533,12 +533,14 @@ void AddSfr(int which)
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.cmp.op1, "sfr");
+    #ifdef USE_SFR
     if(which == ELEM_WSFR)
        strcpy(t->d.cmp.op2, "srs");
     else if(which == ELEM_RSFR)
        strcpy(t->d.cmp.op2, "dest");
     else
        strcpy(t->d.cmp.op2, "1");
+    #endif
     AddLeaf(which, t);
 }
 
@@ -1127,6 +1129,30 @@ static ElemSubcktSeries *AllocEmptyRung(void)
 }
 
 //-----------------------------------------------------------------------------
+static void NullDisplayMatrix(int from, int to)
+{
+    return;
+    int i,j;
+    for(j = from; j < to; j++) {
+        for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
+            if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
+                DisplayMatrix[i][j] = NULL;
+                DisplayMatrixWhich[i][j] = ELEM_NULL;
+                dbpd(j)
+            }
+        }
+    }
+    for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
+        for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
+            if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
+                DisplayMatrix[i][j] = NULL;
+                DisplayMatrixWhich[i][j] = ELEM_NULL;
+                dbpd(j)
+            }
+        }
+    }
+}
+//-----------------------------------------------------------------------------
 // Insert a rung before rung i.
 //-----------------------------------------------------------------------------
 void InsertRungI(int i)
@@ -1144,6 +1170,7 @@ void InsertRungI(int i)
         (Prog.numRungs - i)*sizeof(Prog.rungSelected[0]));
     Prog.rungs[i] = AllocEmptyRung();
     (Prog.numRungs)++;
+    NullDisplayMatrix(i,i+1+1);
 }
 
 //-----------------------------------------------------------------------------
@@ -1185,12 +1212,7 @@ void PushRungDown(void)
     Prog.rungs[i] = Prog.rungs[i+1];
     Prog.rungs[i+1] = temp;
 
-    for(j = HeightBefore; j < (HeightBefore+HeightNow+HeightDown); j++) {
-        for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-            DisplayMatrix[i][j] = NULL;
-            DisplayMatrixWhich[i][j] = ELEM_NULL;
-        }
-    }
+    NullDisplayMatrix(HeightBefore, HeightBefore+HeightNow+HeightDown);
 
     WhatCanWeDoFromCursorAndTopology();
     ScrollSelectedIntoViewAfterNextPaint = TRUE;
@@ -1216,12 +1238,7 @@ void PushRungUp(void)
     Prog.rungs[i] = Prog.rungs[i-1];
     Prog.rungs[i-1] = temp;
 
-    for(j = HeightBefore; j < (HeightBefore+HeightUp+HeightNow); j++) {
-        for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-            DisplayMatrix[i][j] = NULL;
-            DisplayMatrixWhich[i][j] = ELEM_NULL;
-        }
-    }
+    NullDisplayMatrix(HeightBefore, HeightBefore+HeightUp+HeightNow);
 
     WhatCanWeDoFromCursorAndTopology();
     ScrollSelectedIntoViewAfterNextPaint = TRUE;

@@ -31,11 +31,10 @@
 #include "intcode.h"
 #include "display.h"
 
-#define NEW_ONE_SHOT
+#define NEW_TON // (C) GitHub.LDmicro@gmail.com
+#define NEW_ONE_SHOT // (C) GitHub.LDmicro@gmail.com
 //#define DEFAULT_PARALLEL_ALGORITHM
 //#define DEFAULT_COIL_ALGORITHM
-
-#define TON_NEW
 
 //-----------------------------------------------------------------------------
 #ifdef DEFAULT_PARALLEL_ALGORITHM
@@ -145,6 +144,16 @@ void IntDumpListing(char *outFile)
 
             case INT_COPY_BIT_TO_BIT:
                 fprintf(f, "let bit '%s' := '%s'", IntCode[i].name1,
+                    IntCode[i].name2);
+                break;
+
+            case INT_COPY_NOT_BIT_TO_BIT:
+                fprintf(f, "let bit '%s' := ! '%s'", IntCode[i].name1,
+                    IntCode[i].name2);
+                break;
+
+            case INT_COPY_XOR_BIT_TO_BIT:
+                fprintf(f, "let bit '%s' := '%s' ^ '%s'", IntCode[i].name1, IntCode[i].name1,
                     IntCode[i].name2);
                 break;
 
@@ -421,6 +430,7 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "if ('%s' & %d) == 0 {", IntCode[i].name1, IntCode[i].literal); indent++;
                 break;
 
+            #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL:
                 fprintf(f, "if '%s' < %d {", IntCode[i].name1,
                     IntCode[i].literal); indent++;
@@ -435,7 +445,9 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "if '%s' > '%s' {", IntCode[i].name1,
                     IntCode[i].name2); indent++;
                 break;
+            #endif
 
+            #ifdef NEW_CMP
             case INT_IF_GRT:
                 fprintf(f, "if '%s' > '%s' {", IntCode[i].name1,
                     IntCode[i].name2); indent++;
@@ -465,6 +477,7 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "if '%s' == '%s' {", IntCode[i].name1,
                     IntCode[i].name2); indent++;
                 break;
+            #endif
 
             case INT_END_IF:
                 fprintf(f, "}");
@@ -482,6 +495,7 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "# %s", IntCode[i].name1);
                 break;
 
+            #ifdef USE_SFR
             // Special function
             case INT_READ_SFR_LITERAL:
             case INT_WRITE_SFR_LITERAL:
@@ -535,6 +549,7 @@ void IntDumpListing(char *outFile)
                 }
                 break;
             // Special function
+            #endif
 
             case INT_AllocKnownAddr:
                 //fprintf(f, "AllocKnownAddr %s %s AddrOfRung%d;", IntCode[i].name1, IntCode[i].name2, IntCode[i].literal+1);
@@ -683,6 +698,13 @@ static void _Op(int l, char *f, char *args, int op, BOOL *b, char *name1, char *
     if(name5) strcpy(IntCode[IntCodeLen].name5, name5);
     if(name6) strcpy(IntCode[IntCodeLen].name6, name6);
     IntCode[IntCodeLen].literal = lit;
+    #ifdef NEW_CMP
+    if((op==INT_IF_LES)
+    || (op==INT_IF_VARIABLE_LES_LITERAL))
+    if(!name2) {
+        sprintf(IntCode[IntCodeLen].name2, "%d", lit);
+    }
+    #endif
     IntCode[IntCodeLen].literal2 = lit2;
     IntCode[IntCodeLen].data = data;
     IntCode[IntCodeLen].rung = rungNow;
@@ -1169,6 +1191,7 @@ static void InitVarsCircuit(int which, void *elem, int *n)
                 InitVarsCircuit(p->contents[i].which, p->contents[i].data.any, n);
             break;
         }
+        #ifndef NEW_TON
         case ELEM_TOF: {
             if(n)
                 (*n)++; // counting the number of variables
@@ -1178,7 +1201,8 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             }
             break;
         }
-        #ifdef TON_NEW
+        #endif
+        #ifdef NEW_TON
         case ELEM_TCY: {
             if(n)
                 (*n)++; // counting the number of variables
@@ -1500,13 +1524,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Comment(3, "ELEM_RTL");
             SDWORD period = TimerPeriod(l);
 
-            #ifndef NEW_CMP
             Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-            #else
-            char speriod[MAX_NAME_LEN];
-            sprintf(speriod, "%d", period);
-            Op(INT_IF_LES, l->d.timer.name, speriod);
-            #endif
 
               Op(INT_IF_BIT_CLEAR, stateInOut);
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
@@ -1525,13 +1543,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Comment(3, "ELEM_RTO");
             SDWORD period = TimerPeriod(l);
 
-            #ifndef NEW_CMP
             Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-            #else
-            char speriod[MAX_NAME_LEN];
-            sprintf(speriod, "%d", period);
-            Op(INT_IF_LES, l->d.timer.name, speriod);
-            #endif
 
               Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
@@ -1570,15 +1582,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             char store[MAX_NAME_LEN];
             GenSymOneShot(store, "TCY", l->d.timer.name);
 
-            #ifndef TON_NEW
+            #ifndef NEW_TON
             Op(INT_IF_BIT_SET, stateInOut);
-              #ifndef NEW_CMP
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-              #else
-              char speriod[MAX_NAME_LEN];
-              sprintf(speriod, "%d", period);
-              Op(INT_IF_LES, l->d.timer.name, speriod);
-              #endif
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
               Op(INT_ELSE);
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
@@ -1597,7 +1603,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             #else
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_DECREMENT_VARIABLE, l->d.timer.name, stateInOut);
-              Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_IF_BIT_SET, stateInOut); // overlap(0 to -1) flag is TRUE
                 Op(INT_IF_BIT_CLEAR, store);
                   Op(INT_SET_BIT, store);
                 Op(INT_ELSE);
@@ -1607,6 +1613,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_END_IF);
               Op(INT_COPY_BIT_TO_BIT, stateInOut, store);
             Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, store);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             Op(INT_END_IF);
             #endif
@@ -1616,16 +1623,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Comment(3, "ELEM_TON");
             SDWORD period = TimerPeriod(l);
 
-            #ifndef TON_NEW
+            #ifndef NEW_TON
             Op(INT_IF_BIT_SET, stateInOut);
 
-              #ifndef NEW_CMP
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-              #else
-              char speriod[MAX_NAME_LEN];
-              sprintf(speriod, "%d", period);
-              Op(INT_IF_LES, l->d.timer.name, speriod);
-              #endif
                 Op(INT_CLEAR_BIT, stateInOut); //1
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name); //2
               Op(INT_END_IF);
@@ -1642,13 +1643,13 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_IF_BIT_CLEAR, store);
                 Op(INT_DECREMENT_VARIABLE, l->d.timer.name, stateInOut);
-                Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_IF_BIT_SET, stateInOut); // overlap(0 to -1) flag is TRUE
                   Op(INT_SET_BIT, store);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
                 Op(INT_END_IF);
               Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, store);
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             Op(INT_END_IF);
             #endif
             break;
@@ -1657,7 +1658,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Comment(3, "ELEM_TOF");
             SDWORD period = TimerPeriod(l);
 
-            #ifndef TON_NEW
+            #ifndef NEW_TON
             /*
             // All variables start at zero by default, so by default the
             // TOF timer would start out with its output forced HIGH, until
@@ -1672,13 +1673,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             /**/
             Op(INT_IF_BIT_CLEAR, stateInOut);
 
-              #ifndef NEW_CMP
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-              #else
-              char speriod[MAX_NAME_LEN];
-              sprintf(speriod, "%d", period);
-              Op(INT_IF_LES, l->d.timer.name, speriod);
-              #endif
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
                 Op(INT_SET_BIT, stateInOut);
               Op(INT_END_IF);
@@ -1696,13 +1691,13 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_IF_BIT_CLEAR, store);
                 Op(INT_DECREMENT_VARIABLE, l->d.timer.name, store);
               Op(INT_END_IF);
-              //Op(INT_IF_BIT_SET, store);
-              Op(INT_IF_BIT_CLEAR, store); // aaa
+              Op(INT_IF_BIT_SET, store); // overlap(0 to -1) flag is TRUE
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+              Op(INT_ELSE);
                 Op(INT_SET_BIT, stateInOut);
               Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, store);
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             Op(INT_END_IF);
             #endif
             break;
@@ -1890,6 +1885,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
             break;
         }
+        #ifdef USE_SFR
         // Special Function
         case ELEM_RSFR:
             Comment(3, "ELEM_RSFR");
@@ -2014,6 +2010,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         // Special function
+        #endif
 
         #ifdef NEW_CMP
         {
@@ -3143,8 +3140,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         return;
     }
     #endif
-    if(which != ELEM_SERIES_SUBCKT && which != ELEM_PARALLEL_SUBCKT
-    ) {
+    if(which != ELEM_SERIES_SUBCKT && which != ELEM_PARALLEL_SUBCKT) {
         // then it is a leaf; let the simulator know which leaf it
         // should be updating for display purposes
         SimState(&(l->poweredAfter), stateInOut);

@@ -209,6 +209,7 @@ finishIf:
                 // Don't care; ignore, and don't generate an instruction.
                 continue;
 
+            #ifdef USE_SFR
             case  INT_READ_SFR_LITERAL:
             case  INT_WRITE_SFR_LITERAL:
             case  INT_SET_SFR_LITERAL:
@@ -231,6 +232,7 @@ finishIf:
             case  INT_TEST_C_SFR_VARIABLE:
             case  INT_TEST_C_SFR_LITERAL_L:
             case  INT_TEST_C_SFR_VARIABLE_L:
+            #endif
 
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:

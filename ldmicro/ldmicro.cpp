@@ -1126,6 +1126,7 @@ math:
                 break;
         }
 
+        #ifdef USE_SFR
         // Special function register
         {
             int esfr;
@@ -1140,6 +1141,7 @@ jcmp:
                 break;
         }
         // Special function register
+        #endif
 
         {
             int elem;

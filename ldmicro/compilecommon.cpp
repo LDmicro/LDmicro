@@ -389,7 +389,7 @@ BYTE MuxForAdcVariable(char *name)
 }
 
 //-----------------------------------------------------------------------------
-int byteNeeded(SDWORD i)
+int byteNeeded(long long int i)
 {
     if((-128<=i) && (i<=127))
         return 1;
@@ -787,12 +787,11 @@ static void MemForBitInternal(char *name, DWORD *addr, int *bit, BOOL writeTo)
 //-----------------------------------------------------------------------------
 void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit)
 {
-    if(!(name) || (name && strlen(name) == 0)) {
         *addr = -1;
         *bit = -1;
+    if(!(name) || (name && strlen(name) == 0)) {
         return;
     }
-
     switch(name[0]) {
         case 'I':
         case 'X':

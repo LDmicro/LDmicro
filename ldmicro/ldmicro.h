@@ -32,6 +32,8 @@
 
 #include "current_function.hpp"
 
+#define USE_SFR // obsolete
+
 typedef signed short SWORD;
 typedef signed long SDWORD;
 
@@ -189,12 +191,14 @@ typedef signed long SDWORD;
 #define MNU_MAKE_TTRIGGER       0x4501
 #define MNU_INSERT_PWL          0x46
 
+#ifdef USE_SFR
 #define MNU_INSERT_SFR          0x47    // special function register read
 #define MNU_INSERT_SFW          0x48    // special function register write
 #define MNU_INSERT_SSFB         0x49    // set bit in special function register
 #define MNU_INSERT_csFB         0x4a    // clear bit in special function register
 #define MNU_INSERT_TSFB         0x4b    // test if bit is set in special function register
 #define MNU_INSERT_T_C_SFB      0x4c    // test if bit is clear in special function register
+#endif
 /*
 #define MNU_INSERT_CPRINTF      0x4c01 == ELEM_CPRINTF
 #define MNU_INSERT_SPRINTF      0x4c02
@@ -382,12 +386,14 @@ typedef signed long SDWORD;
 #define ELEM_PERSIST            0x30
 #define ELEM_PIECEWISE_LINEAR   0x31
 
+#ifdef USE_SFR
 #define ELEM_RSFR               0x32    // Element read from SFR
 #define ELEM_WSFR               0x33    // Element write to  SFR
 #define ELEM_SSFR               0x34    // Element set bit in SFR
 #define ELEM_CSFR               0x35    // Element clear bit in SFR
 #define ELEM_TSFR               0x36    // Element test if set bit in SFR
 #define ELEM_T_C_SFR            0x37    // Element test if clear bit in SFR
+#endif
 
 #define ELEM_CPRINTF            0x4c01
 #define ELEM_SPRINTF            0x4c02
@@ -1711,7 +1717,7 @@ int SetSizeOfVar(char *name, int sizeOfVar);
 int SizeOfVar(char *name);
 int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
-int byteNeeded(SDWORD i);
+int byteNeeded(long long int i);
 void SaveVarListToFile(FILE *f);
 BOOL LoadVarListFromFile(FILE *f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);

@@ -108,12 +108,14 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_UART_SEND:
         case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
+        #ifdef USE_SFR
         case ELEM_RSFR:
         case ELEM_WSFR:
         case ELEM_SSFR:
         case ELEM_CSFR:
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
+        #endif
         case ELEM_BIN2BCD:
         case ELEM_BCD2BIN:
         case ELEM_SWAP:
@@ -1008,6 +1010,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             *cx += POS_WIDTH;
             break;
         }
+        #ifdef USE_SFR
         {
             char *s;
             case ELEM_RSFR:    s = "Read";   goto sfrcmp;
@@ -1043,6 +1046,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
                 *cx += POS_WIDTH;
                 break;
         }
+        #endif
         {
             char *s;
             case ELEM_EQU: s = "=="; goto cmp;
@@ -1487,6 +1491,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         int i;
         for(i = 0; i < ColsAvailable; i++) {
             if((DisplayMatrixWhich[i][gy] <= ELEM_PLACEHOLDER)
+            || TRUE // 2.03
             || (DisplayMatrixWhich[i][gy] == ELEM_COMMENT)) {
                 DisplayMatrix[i][gy] = leaf;
                 DisplayMatrixWhich[i][gy] = ELEM_COMMENT;

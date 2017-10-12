@@ -221,6 +221,7 @@ static void GenerateDeclarations(FILE *f)
                 intVar2 = IntCode[i].name2;
                 break;
 
+            #ifdef USE_SFR
             case  INT_READ_SFR_LITERAL:
             case  INT_WRITE_SFR_LITERAL:
             case  INT_SET_SFR_LITERAL:
@@ -244,6 +245,7 @@ static void GenerateDeclarations(FILE *f)
             case  INT_TEST_C_SFR_LITERAL_L:
             case  INT_TEST_C_SFR_VARIABLE_L:
                 break;
+            #endif
 
             case INT_SET_VARIABLE_ROL:
             case INT_SET_VARIABLE_ROR:
@@ -556,6 +558,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f,"  delayMicroseconds(%d);\n", IntCode[i].literal);
                 break;
 
+            #ifdef USE_SFR
             case  INT_READ_SFR_LITERAL:
             case  INT_READ_SFR_VARIABLE:
                 fprintf(f, "#warning // Read from SFR\n");
@@ -592,6 +595,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case  INT_TEST_C_SFR_VARIABLE_L:
                 fprintf(f, "#warning // Test if bit Clear in SFR\n");
                 break;
+            #endif
 
             case INT_UART_RECV:
                     fprintf(f, "%s=0; if(UART_Receive_Avail()) {%s = UART_Receive(); %s=1;};\n", MapSym(IntCode[i].name2, ASBIT), MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASBIT));
