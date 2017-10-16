@@ -31,7 +31,9 @@
 #include "intcode.h"
 #include "display.h"
 
-#define NEW_TON // (C) GitHub.LDmicro@gmail.com
+//// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
+//// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
+
 #define NEW_ONE_SHOT // (C) GitHub.LDmicro@gmail.com
 //#define DEFAULT_PARALLEL_ALGORITHM
 //#define DEFAULT_COIL_ALGORITHM
@@ -2312,21 +2314,21 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         // These ELEM's are highly processor-dependent; the int code op does
         // most of the highly specific work
         {
-            case ELEM_READ_ADC:
-                Comment(3, "ELEM_READ_ADC");
-                Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_READ_ADC, l->d.readAdc.name);
-                Op(INT_END_IF);
-                break;
+        case ELEM_READ_ADC:
+            Comment(3, "ELEM_READ_ADC");
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_READ_ADC, l->d.readAdc.name);
+            Op(INT_END_IF);
+            break;
 
-            case ELEM_SET_PWM: {
-                Comment(3, "ELEM_SET_PWM");
-                Op(INT_IF_BIT_SET, stateInOut);
-                  // ugh; need a >16 bit literal though, could be >64 kHz
-                  Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name);
-                Op(INT_END_IF);
-                break;
-            }
+        case ELEM_SET_PWM: {
+            Comment(3, "ELEM_SET_PWM");
+            Op(INT_IF_BIT_SET, stateInOut);
+              // ugh; need a >16 bit literal though, could be >64 kHz
+              Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name);
+            Op(INT_END_IF);
+            break;
+        }
             case ELEM_NPULSE: {
                 Comment(3, "ELEM_NPULSE");
                 break;
