@@ -1,3 +1,13 @@
+== Release 4.3.1
+
+    * HotFix: Restored RESET the TON, TOF timers.
+
+    * HotFix: After simulate, when simulate another program, UART simulation
+    terminal shows up again and can't close it unless close the program.
+
+    * HotFix: Fault in arithmetic or compare operations.
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=6457
+
 == Release 4.3.0
 
     * Add: Microchip PIC10F200 6-SOT target.
