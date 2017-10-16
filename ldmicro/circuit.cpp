@@ -1012,6 +1012,8 @@ void FreeEntireProgram(void)
     Prog.baudRate = 9600;
     Prog.io.count = 0;
     SetMcu(NULL);
+
+    WipeIntMemory();
 }
 
 //-----------------------------------------------------------------------------

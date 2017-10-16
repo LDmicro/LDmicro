@@ -100,7 +100,7 @@ static FILE *fUART;
 
 // A window to allow simulation with the UART stuff (insert keystrokes into
 // the program, view the output, like a terminal window).
-static HWND UartSimulationWindow;
+static HWND UartSimulationWindow = NULL;
 static HWND UartSimulationTextControl;
 static LONG_PTR PrevTextProc;
 
@@ -265,6 +265,8 @@ static SDWORD SubVariable(char *name1, char *name2, char *name3, char *overflow)
 //-----------------------------------------------------------------------------
 void SetSimulationVariable(char *name, SDWORD val)
 {
+    int sov = SizeOfVar(name);
+    val &= (1 << (8 * sov)) - 1;
     int i;
     for(i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name)==0) {
@@ -2112,6 +2114,8 @@ static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
 static char buf[MAX_SCROLLBACK] = "";
 void ShowUartSimulationWindow(void)
 {
+    if(UartSimulationWindow != NULL)
+        oops();
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
@@ -2184,25 +2188,27 @@ void DestroyUartSimulationWindow(void)
     // Try not to destroy the window if it is already destroyed; that is
     // not for the sake of the window, but so that we don't trash the
     // stored position.
-    if(UartSimulationWindow == NULL) return;
+    //if(UartSimulationWindow == NULL) return;
+    if(UartSimulationWindow != NULL) {
 
-    if(fUART) fclose(fUART);
+        if(fUART) fclose(fUART);
 
-    DWORD TerminalX, TerminalY, TerminalW, TerminalH;
-    RECT r;
+        DWORD TerminalX, TerminalY, TerminalW, TerminalH;
+        RECT r;
 
-    GetClientRect(UartSimulationWindow, &r);
-    TerminalW = r.right - r.left;
-    TerminalH = r.bottom - r.top;
+        GetClientRect(UartSimulationWindow, &r);
+        TerminalW = r.right - r.left;
+        TerminalH = r.bottom - r.top;
 
-    GetWindowRect(UartSimulationWindow, &r);
-    TerminalX = r.left;
-    TerminalY = r.top;
+        GetWindowRect(UartSimulationWindow, &r);
+        TerminalX = r.left;
+        TerminalY = r.top;
 
-    FreezeDWORD(TerminalX);
-    FreezeDWORD(TerminalY);
-    FreezeDWORD(TerminalW);
-    FreezeDWORD(TerminalH);
+        FreezeDWORD(TerminalX);
+        FreezeDWORD(TerminalY);
+        FreezeDWORD(TerminalW);
+        FreezeDWORD(TerminalH);
+    }
 
     DestroyWindow(UartSimulationWindow);
     UartSimulationWindow = NULL;
