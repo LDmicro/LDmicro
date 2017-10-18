@@ -1527,9 +1527,11 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         MidrangeCore14bit,
         18,
         // code protection off, data code protection off, LVP disabled,
-        // BOD reset enabled, RA5/nMCLR is RA5, PWRT enabled, WDT disabled,
-        // HS oscillator
-        0x3f62,
+        // BOD reset enabled, RA5/nMCLR is _MCLR, PWRT enabled, WDT disabled,
+        0x3f62, // HS oscillator, _MCLR
+//      0x3f42, // HS oscillator, RA5 pin function is digital Input
+//      0x3F70, // INTOSC oscillator, _MCLR
+//      0x3F50, // INTOSC oscillator, RA5 pin function is digital Input
         PicPwmPinInfo18,
         arraylen(PicPwmPinInfo18),
         PicExtIntPinInfo18,

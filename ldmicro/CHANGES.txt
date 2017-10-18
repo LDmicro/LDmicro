@@ -1,3 +1,8 @@
+== Release 4.3.2
+
+    * HotFix review: Fault in arithmetic or compare operations.
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=6457
+
 == Release 4.3.1
 
     * HotFix: Restored RESET the TON, TOF timers.
