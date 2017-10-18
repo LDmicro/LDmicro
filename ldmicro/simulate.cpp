@@ -193,8 +193,10 @@ static void Increment(char *name, char *overlap, char *overflow)
             signBefore = Variables[i].val & signMask;
             (Variables[i].val)++;
             signAfter = Variables[i].val & signMask;
-            if((signBefore == 0) && (signAfter != 0))
+            if((signBefore == 0) && (signAfter != 0)) {
               SetSingleBit(overflow, TRUE);
+              Variables[i].val &= (1 << (8 * sov)) - 1;
+            }
 
             SetSingleBit(overlap, Variables[i].val == 0); // OVERLAP 11...11 -> 00...00
             return;
@@ -218,8 +220,10 @@ static void Decrement(char *name, char *overlap, char *overflow)
             (Variables[i].val)--;
             signAfter = Variables[i].val & signMask;
 
-            if((signBefore != 0) && (signAfter == 0))
+            if((signBefore != 0) && (signAfter == 0)) {
               SetSingleBit(overflow, TRUE);
+              Variables[i].val &= (1 << (8 * sov)) - 1;
+            }
             return;
         }
     }
@@ -265,8 +269,6 @@ static SDWORD SubVariable(char *name1, char *name2, char *name3, char *overflow)
 //-----------------------------------------------------------------------------
 void SetSimulationVariable(char *name, SDWORD val)
 {
-    int sov = SizeOfVar(name);
-    val &= (1 << (8 * sov)) - 1;
     int i;
     for(i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name)==0) {
@@ -1498,6 +1500,8 @@ static void SimulateIntCode(void)
                     }
                     goto math;
             math:
+                    int sov = SizeOfVar(a->name1);
+                    v &= (1 << (8 * sov)) - 1;
                     if(GetSimulationVariable(a->name1) != v) {
                         NeedRedraw = 9;
                         SetSimulationVariable(a->name1, v);
