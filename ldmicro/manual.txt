@@ -457,6 +457,23 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     counter variable elsewhere, for example with a MOV instruction.
 
 
+              logic
+              level
+                   ^  The duration of the input pulse
+                   |  must be longer than 1s
+           TON     |     _________
+           input   | ___/         \_______
+                   |    |         |
+                   |    | 1s      |
+                   |    |<-->|    |
+                   |         |    |
+                   |         v    v
+           TON     |          ____
+           output  | ________/    \_______
+                 --+---------------------------> time,s
+                   |
+
+
 > TURN-OFF DELAY                Tdoff
                            -[TOF 1.000 s]-
 
@@ -472,6 +489,77 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     TON instruction outputs true when the counter variable is greater
     than or equal to the given delay. It is possible to manipulate the
     counter variable elsewhere, for example with a MOV instruction.
+
+
+              logic
+              level
+                   ^  The duration of the input pulse must be
+                   |     longer than the PLC cycle
+           TOF     |        _
+           input   | ______/ \_________
+                   |       | |
+                   |       | | 1s
+                   |       | |<-->|
+                   |       |      |
+                   |       v      v
+           TOF     |        ______
+           output  | ______/      \____
+                 --+----------------------> time,s
+                   |
+
+
+> TIMER HIGH                    Thi
+                           -[THI 1.000 s]-
+
+    When the signal going into the instruction goes from false to true,
+    the output signal is true during 1.000 s. The delay is configurable.
+    The output signal is reset after 1.000 s, the internal timer counter
+    is reset after 1.000 s and if the input is false.
+
+
+              logic
+              level
+                   ^  The duration of the input pulse must be
+                   |     longer than the PLC cycle
+           THI     |     _           ________
+           input   | ___/ \_________/        \_______
+                   |    |           |
+                   |    | 1s        | 1s
+                   |    |<-->|      |<-->|
+                   |    |    |      |    |
+                   |    v    v      v    v
+           THI     |     ____        ____
+           output  | ___/    \______/    \___________
+                 --+------------------------------------> time,s
+                   |
+
+
+> TIMER LOW                     Tlo
+                           -[TLO 1.000 s]-
+
+    When the signal going into the instruction goes from true to false,
+    the output signal is false during 1.000 s. The delay is configurable.
+    The output signal is set true after 1.000 s, the internal timer counter
+    is reset after 1.000 s and if the input is true.
+
+
+              logic
+              level
+                   ^  The duration of the input pulse must be
+                   |     longer than the PLC cycle
+           TLO     | ___   _________          _______
+           input   |    \_/         \________/
+                   |    |           |
+                   |    | 1s        | 1s
+                   |    |<-->|      |<-->|
+                   |    |    |      |    |
+                   |    v    v      v    v
+           TLO     | ___      ______      ___________
+           output  |    \____/      \____/
+                 --+------------------------------------> time,s
+                   |
+
+    See https://github.com/LDmicro/LDmicro/wiki/TON,-TOF,-etc.
 
 
 > RETENTIVE TIMER               Trto
@@ -493,7 +581,25 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     counter variable elsewhere, for example with a MOV instruction.
 
 
-> RETENTIVE TIMER LOW           Trto
+              logic
+              level
+                   ^  The total duration of HI input pulses is more than 1s
+                   |  t1+t2+..+tn >= 1s
+                   |
+           RTO     |     __     _    _________
+           input   | ___/  \___/ \__/         \________
+                   |    |  |   | |  |
+                   |    |t1|   | |  |tn                   Trto
+                   |    |<>|  >|-|< |<>|                  RESET
+                   |           t2      |                  |
+                   |                   v                  v
+           RTO     |                    __________________
+           output  | __________________/                  \___
+                 --+-------------------------------------------> time,s
+                   |
+
+
+> RETENTIVE TIMER LOW           Trtl
                            -[RTL 1.000 s]-
 
     RTL works like RTO, but catch low level input.
@@ -505,13 +611,47 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     using the reset instruction.
 
 
+              logic
+              level
+                   ^  The total duration of LOW input is more than 1s
+                   |  t1+t2+..+tn >= 1s
+                   |
+           RTL     | ___    ___   __           ________
+           input   |    \__/   \_/  \_________/
+                   |    |  |   | |  |
+                   |    |t1|   | |  |tn                   Trtl
+                   |    |<>|  >|-|< |<>|                  RESET
+                   |           t2      |                  |
+                   |                   v                  v
+           RTL     |                    __________________
+           output  | __________________/                  \___
+                 --+-------------------------------------------> time,s
+                   |
+
+
 > CYCLIC TIMER                Tmeander
                            -[TCY 500 ms]-
 
     If input signal is true, this instruction produce meander with
-    period 1 s and frequency 1 Hz. If the signal going into
+    period (500ms+500ms) = 1s and frequency 1 Hz. If the signal going into
     the instruction is false, then the output signal is false.
+
     If Tmeander value = PLC cycle time, the TCY is equal to OSC.
+
+
+              logic
+              level
+                   ^  The duration of the input pulse is longer than 1 s
+           TCY     |     ______________________
+           input   | ___/                      \_______
+                   |    |                      |
+                   |    |  1s    1s    1s      |
+                   |    |<--->|<--->|<--->|    |
+                        |     |     |     |    v
+           TCY     |    v   __|   __|   __|   _
+           output  | ______/  \__/  \__/  \__/ \_______
+                 --+----------------------------------------> time,s
+                   |
 
 
 > TIME to COUNTER converter         Tconst
@@ -535,6 +675,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     Note! RES resets only numeric counter inside RTO, CTU/CTD,
     not their outputs!
 
+
 > RESET                         PWM
                            ----{RES}----
 
@@ -554,42 +695,42 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     See https://github.com/LDmicro/LDmicro/wiki/DELAY-us
 
 
-> ONE-SHOT RISING               _    _
-                           --[_/ OSR/ \_]--
+> ONE-SHOT RISING               _     _
+                           --[_/ OSR_/ \_]--
 
     This instruction normally outputs false. If the instruction's input
     is true during this scan and it was false during the previous scan
     then the output is true. It therefore generates a pulse one scan
-    wide on each rising edge of its input signal. This instruction is
-    useful if you want to trigger events off the rising edge of a signal.
+    wide on each rising edge of its input signal, i.e. univibrator. This
+    instruction is useful if you want to trigger events off the rising
+    edge of a signal.
 
 
-> ONE-SHOT FALLING            _      _
-                           --[ \_OSF/ \_]--
+> ONE-SHOT FALLING            _       _
+                           --[ \_OSF_/ \_]--
 
     This instruction normally outputs false. If the instruction's input
     is false during this scan and it was true during the previous scan
     then the output is true. It therefore generates a pulse one scan
-    wide on each falling edge of its input signal. This instruction is
-    useful if you want to trigger events off the falling edge of a signal.
+    wide on each falling edge of its input signal, i.e. univibrator. This
+    instruction is useful if you want to trigger events off the falling
+    edge of a signal.
 
 
-                               this is
-                               input signal
-                               v
+                              this is
+                              input signal
+                              v v
                                 _     _
                            --[_/ OSR_/ \_]--
-
-                                     ^
-                                     this is
-                                     output signal
-                                     v
                               _       _
                            --[ \_OSF_/ \_]--
+                              _     _   _
+                           --[ \_OSL \_/ ]--
 
-                               ^
-                               this is
-                               input signal
+                                    ^   ^
+                                    this is
+                                    output signal
+
 
 
 
@@ -609,6 +750,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
        PLC cycle time beat N+ 0 1 2 3 4 5 6 7 8
 
 
+
+
                      logic
                      level
                           ^      Single-cycle input pulse
@@ -625,15 +768,69 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
        PLC cycle time beat N+ 0 1 2 3 4 5 6
 
 
-> OSCILLATOR                       _   _
-                           --[ OSC/ \_/ \_]--
+
+> ONE-SHOT LOW LEVEL          _     _   _
+                           --[ \_OSL \_/ ]--
+
+    This instruction normally outputs ture. If the instruction's input is
+    false during this scan and it was true during the previous scan then the
+    output is false. It therefore generates a low level pulse one scan wide
+    on each falling edge of its input signal, i.e. univibrator. This
+    instruction is useful if you want to trigger events off the falling edge
+    of a signal.
+
+
+
+                     logic
+                     level
+                          ^  The duration of the input pulse is five cycles
+                  OSL     | ___           _______
+                  input   |    \_________/
+                          |
+                  OSL     | ___   _______________
+                  output  |    \_/
+                        --+---------------------------> time
+                          |
+       PLC cycle time beat N+ 0 1 2 3 4 5 6 7 8
+
+
+
+                     logic
+                     level
+                          ^      Single-cycle input pulse
+                  OSL     | ___   _______
+                  input   |    \_/
+                          |
+                  OSL     | ___   _______
+                  output  |    \_/
+                        --+------------------> time
+                          |
+       PLC cycle time beat N+ 0 1 2 3 4 5 6
+
+
+
+> OSCILLATOR                     _     _   _
+                           --[ _/ OSC_/ \_/ \_]--
 
                              F=1/(2*Tcycle)
-                            _   _   _   _   _
-                    _______/ \_/ \_/ \_/ \_/ \_______
+
+
+                     logic
+                     level
+                          ^  The duration of the input pulse is seven cycles
+                  OSC     |     ____________
+                  input   | ___/            \_______
+                          |
+                  OSC     |     _   _   _
+                  output  | ___/ \_/ \_/ \_____________
+                          |
+                        --+---------------------------> time
+                          |
+       PLC cycle time beat N+ 0 1 2 3 4 5 6 7 8
+
 
     If input signal is true, this instruction produce meander with
-    period (2*PLC cycle time). If the signal going into
+    period (2*PLC cycle time), i.e. multivibrator. If the signal going into
     the instruction is false, then the output signal is false.
 
 
@@ -949,12 +1146,22 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     counting inside. For example, the counter shown above would count
     7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, ...
 
-    Added 'Init' value in CTU,CTD,CTC,CTR counters.
-    CTU,CTC counter start from 'Init' and count up to 'Max' value.
+    Added 'Start' value in CTU,CTD,CTC,CTR counters.
+    CTU,CTC counter start from 'Start' and count up to 'Max' value.
     CTC generate overfill(carry) impulse when Counter==Max.
+    For the proper work 'Start' value should be less than 'Max' value.
 
-    CTD,CTR counter start from 'Init' and count down to 'Min' value.
+    CTD,CTR counter start from 'Start' and count down to 'Min' value.
     CTR generate overfill(borrow) impulse when Counter==Min.
+    For the proper work 'Start' value should be more than 'Min' value.
+
+   ||   Rnew      Tnew                                    Rnew      ||
+   ||----] [----[TON 1 s]----------------------------------(/)------||
+   ||                                                               ||
+   ||                                                               ||
+   ||   Rnew       Css           Cmm          Chh         Cdays     ||
+   ||----] [----[CTC 0:59]---[CTC 0:59]---[CTC 0:23]---[CTC 0:364]--||
+   ||                                                               ||
 
 
 > SHIFT REGISTER            {SHIFT REG   }

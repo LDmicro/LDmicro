@@ -247,6 +247,8 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
         case ELEM_TCY: s = _("Cyclic On/Off"); break;
         case ELEM_TON: s = _("Turn-On Delay"); break;
         case ELEM_TOF: s = _("Turn-Off Delay"); break;
+        case ELEM_THI: s = _("Hight Level Delay"); break;
+        case ELEM_TLO: s = _("Low Level Delay"); break;
         case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;
         case ELEM_RTL: s = _("Retentive Turn-On Delay If Low Input"); break;
         default: oops(); break;
@@ -919,7 +921,7 @@ void ShowStepperDialog(int which, void *e)
 
     char *title;
     title = _("Stepper");
-    char *labels[] = { _("Name:"),  _("Counter:"), _("P:"), _("Table size:"),  _("graph:"), _("Pulse to:")};
+    char *labels[] = { _("Name:"),  _("Counter:"), "P:", _("Table size:"),  _("graph:"), _("Pulse to:")};
     char sgraph[128];
     sprintf(sgraph, "%d", s->graph);
     char snSize[128];
@@ -994,7 +996,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
     char *title;
     title = _("Pulser");
 
-    char *labels[] = { _("Counter:"), _("P1:"), _("P0:"), _("Accel.:"), _("Busy to:")};
+    char *labels[] = { _("Counter:"), "P1:", "P0:", _("Accel.:"), _("Busy to:")};
     char *dests[] = { counter, P1, P0, accel, busy};
     if(ShowSimpleDialog(title, 5, labels, 0, 0xff, 0xff, dests)) {
         if(IsNumber(P1))

@@ -89,12 +89,15 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_TOF:
         case ELEM_RTL:
         case ELEM_RTO:
+        case ELEM_THI:
+        case ELEM_TLO:
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC: // as Leaf
         case ELEM_CTR:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
+        case ELEM_ONE_SHOT_LOW:
         case ELEM_OSC:
         case ELEM_EQU:
         case ELEM_NEQ:
@@ -1081,14 +1084,18 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
 
         case ELEM_ONE_SHOT_RISING:
+        case ELEM_ONE_SHOT_LOW:
         case ELEM_ONE_SHOT_FALLING: {
             char *s1, *s2;
             if(which == ELEM_ONE_SHOT_RISING) {
-                s1 = "    _    _    ";
-                s2 = "[_/ \x01""OSR\x02/ \\_]";
+                s1 = "    _     _    ";
+                s2 = "[_/ \x01""OSR\x02_/ \\_]";
             } else if(which == ELEM_ONE_SHOT_FALLING) {
-                s1 = "  _      _    ";
-                s2 = "[ \\_\x01""OSF\x02/ \\_]";
+                s1 = "  _       _    ";
+                s2 = "[ \\_\x01""OSF\x02_/ \\_]";
+            } else if(which == ELEM_ONE_SHOT_LOW) {
+                s1 = "  _     _   _ ";
+                s2 = "[ \\_\x01""OSL\x02 \\_/ ]";
             } else oops();
 
             CenterWithSpaces(*cx, *cy, s1, poweredAfter, FALSE);
@@ -1099,8 +1106,8 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         case ELEM_OSC: {
             char *s1, *s2;
-            s1 = "      _   _ ";
-            s2 = "[\x01""OSC\x02_/ \\_/ ]";
+            s1 = "   _     _   _  ";
+            s2 = "[_/ \x01""OSC\x02_/ \\_/ \\]";
 
             CenterWithSpaces(*cx, *cy, s1, poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
@@ -1231,6 +1238,8 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_TCY:
         case ELEM_RTL:
         case ELEM_RTO:
+        case ELEM_THI:
+        case ELEM_TLO:
         case ELEM_TON:
         case ELEM_TOF: {
             char *s;
@@ -1238,6 +1247,10 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
                 s = "\x01""TON\x02";
             else if(which == ELEM_TOF)
                 s = "\x01""TOF\x02";
+            else if(which == ELEM_THI)
+                s = "\x01""THI\x02";
+            else if(which == ELEM_TLO)
+                s = "\x01""TLO\x02";
             else if(which == ELEM_RTO)
                 s = "\x01""RTO\x02";
             else if(which == ELEM_RTL)
@@ -1491,7 +1504,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         int i;
         for(i = 0; i < ColsAvailable; i++) {
             if((DisplayMatrixWhich[i][gy] <= ELEM_PLACEHOLDER)
-            || TRUE // 2.03
+            || TRUE // 2.3
             || (DisplayMatrixWhich[i][gy] == ELEM_COMMENT)) {
                 DisplayMatrix[i][gy] = leaf;
                 DisplayMatrixWhich[i][gy] = ELEM_COMMENT;

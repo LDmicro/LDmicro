@@ -1638,7 +1638,7 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, char *name
                 Instruction(OP_LDI, r25, l1);
             Instruction(OP_ST_ZP, r25);
 
-            if(sov == 4) {
+            if(sov >= 4) {
                 l2 = ((literal >> 24) & 0xff);
                 if(l1 != l2)
                     Instruction(OP_LDI, r25, l2);
@@ -2229,7 +2229,7 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         long int counter = plcTmr.tmr - 1; // -1 DONE 1000Hz
         // the counter is less than the divisor at 1
 
-        WriteMemory(REG_OCR0A,  counter & 0xff);
+        WriteMemory(REG_OCR0A, counter & 0xff);
       }
     } else { // Timer1
         WriteMemory(REG_TCCR1A, 0x00); // WGM11=0, WGM10=0 // CTC mode
@@ -2683,6 +2683,11 @@ static void IfNotZeroGoto(DWORD addrVar, int sov, DWORD addrGoto)
         Instruction(OP_LD_ZP, r25);
         Instruction(OP_TST, r25);
         Instruction(OP_BRNE, addrGoto);
+        if(sov>=4) {
+          Instruction(OP_LD_ZP, r25);
+          Instruction(OP_TST, r25);
+          Instruction(OP_BRNE, addrGoto);
+        }
       }
     }
 }
@@ -3132,6 +3137,8 @@ static void CompileFromIntermediate(void)
                     Instruction(OP_CPC, 17, 21);
                 if(sov >= 3)
                     Instruction(OP_CPC, 18, 22);
+                if(sov >= 4)
+                    Instruction(OP_CPC, 19, 23);
 
                 if(a->op == INT_IF_VARIABLE_EQUALS_VARIABLE) {
                     Instruction(OP_BRNE, notTrue, 0);
@@ -3593,12 +3600,16 @@ static void CompileFromIntermediate(void)
                         Instruction(OP_ADC, r21, 17);
                     if(sov >= 3)
                         Instruction(OP_ADC, r22, 18);
+                    if(sov >= 4)
+                        Instruction(OP_ADC, r23, 19);
                 } else if(a->op == INT_SET_VARIABLE_SUBTRACT) {
                     Instruction(OP_SUB, r20, 16);
                     if(sov >= 2)
                         Instruction(OP_SBC, r21, 17);
                     if(sov >= 3)
-                        Instruction(OP_SBC, r22, 17);
+                        Instruction(OP_SBC, r22, 18);
+                    if(sov >= 4)
+                        Instruction(OP_SBC, r23, 19);
                 } else if(a->op == INT_SET_VARIABLE_NEG) {
                     Instruction(OP_COM, 20, 0);
                     Instruction(OP_SUBI, 20, 0xff);
@@ -3609,6 +3620,10 @@ static void CompileFromIntermediate(void)
                     if(sov >= 3) {
                         Instruction(OP_COM, 22, 0);
                         Instruction(OP_SBCI, 22, 0xff);
+                    }
+                    if(sov >= 4) {
+                        Instruction(OP_COM, 23, 0);
+                        Instruction(OP_SBCI, 23, 0xff);
                     }
                 } else oops();
 

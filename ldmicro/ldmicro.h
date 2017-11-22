@@ -32,8 +32,6 @@
 
 #include "current_function.hpp"
 
-#define USE_SFR // obsolete
-
 typedef signed short SWORD;
 typedef signed long SDWORD;
 
@@ -118,10 +116,13 @@ typedef signed long SDWORD;
 #define MNU_INSERT_TOF          0x24
 #define MNU_INSERT_RTO          0x25
 #define MNU_INSERT_RTL          0x2501
+#define MNU_INSERT_THI          0x2502
+#define MNU_INSERT_TLO          0x2503
 #define MNU_INSERT_RES          0x26
 #define MNU_INSERT_TIME2COUNT   0x2601
 #define MNU_INSERT_OSR          0x27
 #define MNU_INSERT_OSF          0x28
+#define MNU_INSERT_OSL          0x2801
 #define MNU_INSERT_CTU          0x29
 #define MNU_INSERT_CTD          0x2a
 #define MNU_INSERT_CTC          0x2b
@@ -310,9 +311,12 @@ typedef signed long SDWORD;
 #define ELEM_TOF                0x13
 #define ELEM_RTO                0x14
 #define ELEM_RTL                0x1401
+#define ELEM_THI                0x1402
+#define ELEM_TLO                0x1403
 #define ELEM_RES                0x15
 #define ELEM_ONE_SHOT_RISING    0x16
 #define ELEM_ONE_SHOT_FALLING   0x17
+#define ELEM_ONE_SHOT_LOW       0x1701
 #define ELEM_MOVE               0x18
 #define ELEM_BIN2BCD            0x1801
 #define ELEM_BCD2BIN            0x1802
@@ -429,6 +433,8 @@ typedef signed long SDWORD;
         case ELEM_TOF: \
         case ELEM_RTO: \
         case ELEM_RTL: \
+        case ELEM_THI: \
+        case ELEM_TLO: \
         case ELEM_TCY: \
         case ELEM_CTD: \
         case ELEM_CTU: \
@@ -437,6 +443,7 @@ typedef signed long SDWORD;
         case ELEM_RES: \
         case ELEM_ONE_SHOT_RISING: \
         case ELEM_ONE_SHOT_FALLING: \
+        case ELEM_ONE_SHOT_LOW: \
         case ELEM_OSC: \
         case ELEM_STEPPER: \
         case ELEM_PULSER: \
@@ -444,12 +451,6 @@ typedef signed long SDWORD;
         case ELEM_NPULSE_OFF: \
         case ELEM_PWM_OFF: \
         case ELEM_PWM_OFF_SOFT: \
-        case ELEM_RSFR: \
-        case ELEM_WSFR: \
-        case ELEM_SSFR: \
-        case ELEM_CSFR: \
-        case ELEM_TSFR: \
-        case ELEM_T_C_SFR: \
         case ELEM_BUS: \
         case ELEM_7SEG: \
         case ELEM_9SEG: \
@@ -800,16 +801,18 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_RTL             16
 #define IO_TYPE_TON             17
 #define IO_TYPE_TOF             18
-#define IO_TYPE_MODBUS_CONTACT  19
-#define IO_TYPE_MODBUS_COIL     20
-#define IO_TYPE_MODBUS_HREG     21
-#define IO_TYPE_PORT_INPUT      22 // 8bit PORT for in data  - McuIoInfo.inputRegs
-#define IO_TYPE_PORT_OUTPUT     23 // 8bit PORT for out data - McuIoInfo.oututRegs
-#define IO_TYPE_MCU_REG         24 // 8bit register in/out data as McuIoInfo.dirRegs
-#define IO_TYPE_BCD             25 // unpacked, max 10 byte
-#define IO_TYPE_STRING          26 // max
-#define IO_TYPE_TABLE_IN_FLASH  27 // max limited (size of flsh - progSize)
-#define IO_TYPE_VAL_IN_FLASH    28 //
+#define IO_TYPE_THI             19
+#define IO_TYPE_TLO             20
+#define IO_TYPE_MODBUS_CONTACT  21
+#define IO_TYPE_MODBUS_COIL     22
+#define IO_TYPE_MODBUS_HREG     23
+#define IO_TYPE_PORT_INPUT      24 // 8bit PORT for in data  - McuIoInfo.inputRegs
+#define IO_TYPE_PORT_OUTPUT     25 // 8bit PORT for out data - McuIoInfo.oututRegs
+#define IO_TYPE_MCU_REG         26 // 8bit register in/out data as McuIoInfo.dirRegs
+#define IO_TYPE_BCD             27 // unpacked, max 10 byte
+#define IO_TYPE_STRING          28 // max
+#define IO_TYPE_TABLE_IN_FLASH  29 // max limited (size of flsh - progSize)
+#define IO_TYPE_VAL_IN_FLASH    30 //
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;

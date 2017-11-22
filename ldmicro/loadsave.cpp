@@ -108,6 +108,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_ONE_SHOT_RISING;
     } else if(memcmp(line, "OSF", 3)==0) {
         *which = ELEM_ONE_SHOT_FALLING;
+    } else if(memcmp(line, "OSL", 3)==0) {
+        *which = ELEM_ONE_SHOT_LOW;
     } else if(memcmp(line, "OSC", 3)==0) {
         *which = ELEM_OSC;
     } else if(memcmp(line, "NPULSE_OFF",10)==0) {
@@ -136,6 +138,12 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_RTO;
     } else if((sscanf(line, "RTL %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
         *which = ELEM_RTL;
+
+    } else if((sscanf(line, "THI %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+        *which = ELEM_THI;
+
+    } else if((sscanf(line, "TLO %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+        *which = ELEM_TLO;
 
     } else if((sscanf(line, "CTR %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
         *which = ELEM_CTR;
@@ -819,30 +827,22 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                 l->d.coil.setOnly, l->d.coil.resetOnly, l->d.coil.ttrigger);
             break;
 
-        case ELEM_TIME2COUNT:
-            s = "TIME2COUNT"; goto timer;
-        case ELEM_TCY:
-            s = "TCY"; goto timer;
-        case ELEM_TON:
-            s = "TON"; goto timer;
-        case ELEM_TOF:
-            s = "TOF"; goto timer;
-        case ELEM_RTO:
-            s = "RTO"; goto timer;
-        case ELEM_RTL:
-            s = "RTL"; goto timer;
+        case ELEM_TIME2COUNT: s = "TIME2COUNT"; goto timer;
+        case ELEM_TCY: s = "TCY"; goto timer;
+        case ELEM_TON: s = "TON"; goto timer;
+        case ELEM_TOF: s = "TOF"; goto timer;
+        case ELEM_RTO: s = "RTO"; goto timer;
+        case ELEM_RTL: s = "RTL"; goto timer;
+        case ELEM_THI: s = "THI"; goto timer;
+        case ELEM_TLO: s = "TLO"; goto timer;
         timer:
             fprintf(f, "%s %s %d\n", s, l->d.timer.name, l->d.timer.delay);
             break;
 
-        case ELEM_CTU:
-            s = "CTU"; goto counter;
-        case ELEM_CTD:
-            s = "CTD"; goto counter;
-        case ELEM_CTC:
-            s = "CTC"; goto counter;
-        case ELEM_CTR:
-            s = "CTR"; goto counter;
+        case ELEM_CTU: s = "CTU"; goto counter;
+        case ELEM_CTD: s = "CTD"; goto counter;
+        case ELEM_CTC: s = "CTC"; goto counter;
+        case ELEM_CTR: s = "CTR"; goto counter;
         counter:
             fprintf(f, "%s %s %s %s\n", s, l->d.counter.name, l->d.counter.max, l->d.counter.init);
             break;
@@ -987,6 +987,10 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
         case ELEM_ONE_SHOT_FALLING:
             fprintf(f, "OSF\n");
+            break;
+
+        case ELEM_ONE_SHOT_LOW:
+            fprintf(f, "OSL\n");
             break;
 
         case ELEM_OSC:
