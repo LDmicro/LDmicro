@@ -1566,13 +1566,13 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (1 << 11) | // DEBUG: ICD disabled
             (3 <<  9) | // Flash Program Memory write protection off
             (1 <<  8) | // Data EE Memory Code protection off
-            (0 <<  7) |         // LVP disabled
-            (1 <<  6) |         // BOR enabled
-            (0 <<  5) |         // RA5/nMCLR is RA5
+            (0 <<  7) | // LVP disabled
+            (1 <<  6) | // BOR enabled
+            (0 <<  5) | // RA5/nMCLR is RA5
             (0 <<  4) | // FOSC2=0 for osc sel, HS oscillator
-            (0 <<  3) |         // PWRT enabled
-            (0 <<  2) |         // WDT disabled
-            (2 <<  0),          // HS oscillator
+            (0 <<  3) | // PWRT enabled
+            (0 <<  2) | // WDT disabled
+            (2 <<  0),  // HS oscillator
         PicPwmPinInfo18,
         arraylen(PicPwmPinInfo18),
         PicExtIntPinInfo18,

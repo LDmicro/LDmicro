@@ -239,9 +239,12 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_TCY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TON, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TOF, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_THI, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_TLO, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OSR, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OSF, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OSC, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_OSL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_STEPPER, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_PULSER, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_NPULSE, t);
@@ -451,8 +454,10 @@ HMENU MakeMainWindowMenus(void)
         _("Insert _/OSR/\\_ (One Shot Rising)\t&/"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSF,
         _("Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSL,
+        _("Insert \\_OSL\\/ (One Shot Low)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSC,
-        _("Insert OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
+        _("Insert _/OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
 
     PulseMenu = CreatePopupMenu();
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE,     _("EDIT: Insert N PULSE"));
@@ -472,6 +477,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert RTL (Retentive Delayed Turn On If Low Input)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TCY,
         _("Insert TCY (Cyclic On/Off)"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_THI, _("Insert THI (Hight Delay)"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TLO, _("Insert TLO (Low Delay)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT,
         _("Insert TIME to COUNTER converter"));
 

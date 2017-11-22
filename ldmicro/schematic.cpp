@@ -498,14 +498,17 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
         case ELEM_OPEN: newWhich = ELEM_SHORT; break;
         // group 2 of suitable elements, etc.
         case ELEM_ONE_SHOT_RISING: newWhich = ELEM_ONE_SHOT_FALLING; break;
-        case ELEM_ONE_SHOT_FALLING: newWhich = ELEM_OSC; break;
+        case ELEM_ONE_SHOT_FALLING: newWhich = ELEM_ONE_SHOT_LOW; break;
+        case ELEM_ONE_SHOT_LOW: newWhich = ELEM_OSC; break;
         case ELEM_OSC: newWhich = ELEM_ONE_SHOT_RISING; break;
         //
         case ELEM_TON: newWhich = ELEM_TOF; break;
         case ELEM_TOF: newWhich = ELEM_RTO; break;
         case ELEM_RTO: newWhich = ELEM_RTL; break;
         case ELEM_RTL: newWhich = ELEM_TCY; break;
-        case ELEM_TCY: newWhich = ELEM_TON; break;
+        case ELEM_TCY: newWhich = ELEM_THI; break;
+        case ELEM_THI: newWhich = ELEM_TLO; break;
+        case ELEM_TLO: newWhich = ELEM_TON; break;
         //
         case ELEM_EQU: newWhich = ELEM_NEQ; break;
         case ELEM_NEQ: newWhich = ELEM_GEQ; break;
@@ -677,6 +680,8 @@ void EditSelectedElement(void)
         case ELEM_TOF:
         case ELEM_RTO:
         case ELEM_RTL:
+        case ELEM_THI:
+        case ELEM_TLO:
             ShowTimerDialog(SelectedWhich, &(Selected->d.timer.delay),
                 Selected->d.timer.name);
             break;

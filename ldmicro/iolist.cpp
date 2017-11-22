@@ -378,6 +378,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.timer.name, IO_TYPE_RTL);
             break;
 
+        case ELEM_THI:
+            AppendIo(l->d.timer.name, IO_TYPE_THI);
+            break;
+
+        case ELEM_TLO:
+            AppendIo(l->d.timer.name, IO_TYPE_TLO);
+            break;
+
         case ELEM_BIN2BCD:
             AppendIo(l->d.move.dest, IO_TYPE_BCD);
             if(CheckForNumber(l->d.move.src) == FALSE) {
@@ -563,6 +571,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_ENDSUB:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
+        case ELEM_ONE_SHOT_LOW:
         case ELEM_OSC:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
@@ -1015,6 +1024,8 @@ void ShowIoDialog(int item)
         case IO_TYPE_TOF:
         case IO_TYPE_RTO:
         case IO_TYPE_RTL:
+        case IO_TYPE_THI:
+        case IO_TYPE_TLO:
             ShowSizeOfVarDialog(&Prog.io.assignment[item]);
             return;
         case IO_TYPE_INTERNAL_RELAY:
@@ -1459,6 +1470,8 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_TCY)
                     || (type == IO_TYPE_TON)
                     || (type == IO_TYPE_TOF)
+                    || (type == IO_TYPE_THI)
+                    || (type == IO_TYPE_TLO)
                     || (type == IO_TYPE_COUNTER)
                     ) {
                             MemForVariable(name, &addr);
@@ -1523,6 +1536,8 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_STRING          )
                     || (type == IO_TYPE_COUNTER         )
                     || (type == IO_TYPE_VAL_IN_FLASH    )
+                    || (type == IO_TYPE_THI             )
+                    || (type == IO_TYPE_TLO             )
                     || (type == IO_TYPE_RTL             )
                     || (type == IO_TYPE_RTO             )
                     || (type == IO_TYPE_TCY             )
@@ -1568,6 +1583,8 @@ void IoListProc(NMHDR *h)
                     case IO_TYPE_PERSIST:
                     case IO_TYPE_RTL:
                     case IO_TYPE_RTO:
+                    case IO_TYPE_THI:
+                    case IO_TYPE_TLO:
                     case IO_TYPE_COUNTER:
                     case IO_TYPE_UART_TX:
                     case IO_TYPE_UART_RX:
