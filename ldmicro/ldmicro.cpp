@@ -35,7 +35,6 @@
 #include "ldmicro.h"
 #include "freeze.h"
 #include "mcutable.h"
-#include "git_commit.h"
 #include "intcode.h"
 #include "locale.h"
 
@@ -887,6 +886,14 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddTimer(ELEM_RTL));
             break;
 
+        case MNU_INSERT_THI:
+            CHANGING_PROGRAM(AddTimer(ELEM_THI));
+            break;
+
+        case MNU_INSERT_TLO:
+            CHANGING_PROGRAM(AddTimer(ELEM_TLO));
+            break;
+
         case MNU_INSERT_CTU:
             CHANGING_PROGRAM(AddCounter(ELEM_CTU));
             break;
@@ -995,6 +1002,10 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_OSF:
             CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
+            break;
+
+        case MNU_INSERT_OSL:
+            CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_LOW));
             break;
 
         case MNU_INSERT_OSC:
@@ -1391,12 +1402,6 @@ cmp:
 
         case MNU_RELEASE:
             ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/releases",NULL,NULL,SW_SHOWNORMAL);
-            char str[1024];
-            sprintf(str,"Date: %s\n\nSHA-1: %s\n\n"
-                "Compiled: " __TIME__ " " __DATE__ ".",
-                git_commit_date, git_commit_str);
-            MessageBox(MainWindow, str, _("Release"),
-                MB_OK | MB_ICONINFORMATION);
             break;
     }
 }

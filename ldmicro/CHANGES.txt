@@ -1,7 +1,18 @@
+== Release 4.3.3
+
+    * New: Element OSL: ONE-SHOT LOW LEVEL is inversion of element
+    OSR: ONE-SHOT RISING,
+
+    * New: Element THI: TIMER HIGH
+
+    * New: Element TLO: TIMER LOW
+
+    See https://github.com/LDmicro/LDmicro/wiki/TON,-TOF,-etc.
+
 == Release 4.3.2
 
     * HotFix review: Fault in arithmetic or compare operations.
-    http://cq.cx/ladder-forum.pl?action=viewthread&parent=6457
+    See http://cq.cx/ladder-forum.pl?action=viewthread&parent=6457
 
 == Release 4.3.1
 

@@ -360,6 +360,8 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_TOF:               return _("turn-off delay");
         case IO_TYPE_RTO:               return _("retentive timer");
         case IO_TYPE_RTL:               return _("retentive timer low input");
+        case IO_TYPE_THI:               return _("hight delay");
+        case IO_TYPE_TLO:               return _("low delay");
         case IO_TYPE_COUNTER:           return _("counter");
         case IO_TYPE_GENERAL:           return _("general var");
         case IO_TYPE_PERSIST:           return _("saved var");

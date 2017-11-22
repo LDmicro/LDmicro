@@ -1569,6 +1569,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                   Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
             Op(INT_END_IF);
             break;
+
         case ELEM_TIME2COUNT: {
             Comment(3, "ELEM_TIME2COUNT");
             SDWORD period = TimerPeriod(l);
@@ -1580,7 +1581,21 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_TCY: {
             SDWORD period = TimerPeriod(l) - 1;
             Comment(3, "ELEM_TCY %s %d ms %d(0x%X)", l->d.timer.name, l->d.timer.delay, period, period);
-
+/*
+              logic
+              level
+                   ^  The duration of the input pulse is longer than 1 s
+           TCY     |     ______________________
+           input   | ___/                      \_______
+                   |    |                      |
+                   |    |  1s    1s    1s      |
+                   |    |<--->|<--->|<--->|    |
+                        |     |     |     |    v
+           TCY     |    v   __|   __|   __|   _
+           output  | ______/  \__/  \__/  \__/ \_______
+                 --+----------------------------------------> time,s
+                   |
+*/
             char store[MAX_NAME_LEN];
             GenSymOneShot(store, "TCY", l->d.timer.name);
 
@@ -1624,7 +1639,23 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_TON: {
             Comment(3, "ELEM_TON");
             SDWORD period = TimerPeriod(l);
-
+/*
+              logic
+              level
+                   ^  The duration of the input pulse
+                   |  must be longer than 1s
+           TON     |     _________
+           input   | ___/         \_______
+                   |    |         |
+                   |    | 1s      |
+                   |    |<-->|    |
+                   |         |    |
+                   |         v    v
+           TON     |          ____
+           output  | ________/    \_______
+                 --+---------------------------> time,s
+                   |
+*/
             #ifndef NEW_TON
             Op(INT_IF_BIT_SET, stateInOut);
 
@@ -1659,7 +1690,23 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_TOF: {
             Comment(3, "ELEM_TOF");
             SDWORD period = TimerPeriod(l);
-
+/*
+              logic
+              level
+                   ^  The duration of the input pulse must be
+                   |     longer than the PLC cycle
+           TOF     |        _
+           input   | ______/ \_________
+                   |       | |
+                   |       | | 1s
+                   |       | |<-->|
+                   |       |      |
+                   |       v      v
+           TOF     |        ______
+           output  | ______/      \____
+                 --+----------------------> time,s
+                   |
+*/
             #ifndef NEW_TON
             /*
             // All variables start at zero by default, so by default the
@@ -1702,6 +1749,104 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
               Op(INT_CLEAR_BIT, store);
             Op(INT_END_IF);
             #endif
+            break;
+        }
+        case ELEM_THI: {
+            Comment(3, "ELEM_THI");
+            SDWORD period = TimerPeriod(l);
+/*
+              logic
+              level
+                   ^  The duration of the input pulse must be
+                   |     longer than the PLC cycle
+           THI     |     _           ________
+           input   | ___/ \_________/        \_______
+                   |    |           |
+                   |    | 1s        | 1s
+                   |    |<-->|      |<-->|
+                   |    |    |      |    |
+                   |    v    v      v    v
+           THI     |     ____        ____
+           output  | ___/    \______/    \___________
+                 --+------------------------------------> time,s
+                   |
+*/
+            char store[MAX_NAME_LEN];
+            GenSymOneShot(store, "THI", l->d.timer.name);
+
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_IF_BIT_CLEAR, store);
+                Op(INT_SET_BIT, store);
+              Op(INT_END_IF);
+            Op(INT_END_IF);
+
+            Op(INT_IF_BIT_SET, store);
+              Op(INT_IF_LES, l->d.timer.name, period);
+                Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
+                Op(INT_SET_BIT, stateInOut);
+              Op(INT_ELSE);
+                Op(INT_IF_BIT_CLEAR, stateInOut);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+                  Op(INT_CLEAR_BIT, store);
+                Op(INT_END_IF);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
+            break;
+        }
+        case ELEM_TLO: {
+            Comment(3, "ELEM_TLO");
+            SDWORD period = TimerPeriod(l);
+/*
+              logic
+              level
+                   ^  The duration of the input pulse must be
+                   |     longer than the PLC cycle
+           TLO     | ___   _________          _______
+           input   |    \_/         \________/
+                   |    |           |
+                   |    | 1s        | 1s
+                   |    |<-->|      |<-->|
+                   |    |    |      |    |
+                   |    v    v      v    v
+           TLO     | ___      ______      ___________
+           output  |    \____/      \____/
+                 --+------------------------------------> time,s
+                   |
+*/
+            char store[MAX_NAME_LEN];
+            GenSymOneShot(store, "TLO", l->d.timer.name);
+            char storeNameHi[MAX_NAME_LEN];
+            GenSymOneShot(storeNameHi, "ONE_SHOT_HI", "");
+
+            Op(INT_IF_BIT_CLEAR, stateInOut);
+              Op(INT_IF_BIT_SET, storeNameHi);
+                Op(INT_IF_BIT_CLEAR, store);
+                  Op(INT_SET_BIT, store);
+                Op(INT_END_IF);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_SET_BIT, storeNameHi);
+            Op(INT_END_IF);
+
+            Op(INT_IF_BIT_SET, store);
+              Op(INT_IF_LES, l->d.timer.name, period);
+                Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_ELSE);
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+                  Op(INT_CLEAR_BIT, store);
+                Op(INT_END_IF);
+                Op(INT_SET_BIT, stateInOut);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_IF_BIT_SET, storeNameHi);
+                Op(INT_SET_BIT, stateInOut);
+              Op(INT_END_IF);
+            Op(INT_END_IF);
             break;
         }
         //-------------------------------------------------------------------
@@ -2084,10 +2229,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_ONE_SHOT_RISING: {
             Comment(3, "ELEM_ONE_SHOT_RISING");
             /*
-                     ___
-            INPUT __/
+                     ____
+            INPUT __/    \__
                      _
-            OUTPUT__/ \_
+            OUTPUT__/ \_____
 
                     | |
                      Tcycle
@@ -2114,13 +2259,42 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             #endif
             break;
         }
+        case ELEM_ONE_SHOT_LOW: {
+            Comment(3, "ELEM_ONE_SHOT_LOW");
+            /*
+                  __      ___
+            INPUT   \____/
+                  __   ______
+            OUTPUT  \_/
+
+                    | |
+                     Tcycle
+            */
+            char storeName[MAX_NAME_LEN];
+            GenSymOneShot(storeName, "ONE_SHOT_LOW", "");
+            char storeNameHi[MAX_NAME_LEN];
+            GenSymOneShot(storeNameHi, "ONE_SHOT_HI", "");
+
+            Op(INT_IF_BIT_CLEAR, stateInOut);
+              Op(INT_COPY_BIT_TO_BIT, stateInOut, storeName);
+              Op(INT_IF_BIT_SET, storeNameHi);
+              Op(INT_IF_BIT_CLEAR, storeName);
+                Op(INT_SET_BIT, storeName);
+              Op(INT_END_IF);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, storeName);
+              Op(INT_SET_BIT, storeNameHi);
+            Op(INT_END_IF);
+            break;
+        }
         case ELEM_ONE_SHOT_FALLING: {
             Comment(3, "ELEM_ONE_SHOT_FALLING");
             /*
-                  __
-            INPUT   \___
+                  __      __
+            INPUT   \____/
                      _
-            OUTPUT__/ \_
+            OUTPUT__/ \_____
 
                     | |
                      Tcycle
@@ -2579,7 +2753,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
         case ELEM_DELAY:
             Comment(3, "ELEM_DELAY");
-            Op(INT_DELAY, l->d.timer.delay);
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_DELAY, l->d.timer.delay);
+            Op(INT_END_IF);
             break;
 
         case ELEM_GOTO: {

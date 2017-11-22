@@ -64,6 +64,8 @@ static int AdcShadowsCount;
 #define VAR_FLAG_RTO                  0x00000004
 #define VAR_FLAG_RTL                  0x00000008
 #define VAR_FLAG_TCY                  0x00000010
+#define VAR_FLAG_THI                  0x00000020
+#define VAR_FLAG_TLO                  0x00000040
 #define VAR_FLAG_CTU                  0x00000100
 #define VAR_FLAG_CTD                  0x00000200
 #define VAR_FLAG_CTC                  0x00000400
@@ -436,6 +438,16 @@ static char *Check(char *name, DWORD flag, int i)
                 return _("RTL: variable can only be used for RES elsewhere");
             break;
 
+        case VAR_FLAG_THI:
+            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
+                return _("THI: variable can only be used for RES elsewhere");
+            break;
+
+        case VAR_FLAG_TLO:
+            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
+                return _("TLO: variable can only be used for RES elsewhere");
+            break;
+
         case VAR_FLAG_RES:
         case VAR_FLAG_CTU:
         case VAR_FLAG_CTD:
@@ -582,6 +594,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_TOF:
         case ELEM_TON:
         case ELEM_TCY:
+        case ELEM_THI:
+        case ELEM_TLO:
             if(which == ELEM_RTO)
                 flag = VAR_FLAG_RTO;
             else if(which == ELEM_RTL)
@@ -592,6 +606,10 @@ static void CheckVariableNamesCircuit(int which, void *elem)
                 flag = VAR_FLAG_TON;
             else if(which == ELEM_TCY)
                 flag = VAR_FLAG_TCY;
+            else if(which == ELEM_THI)
+                flag = VAR_FLAG_THI;
+            else if(which == ELEM_TLO)
+                flag = VAR_FLAG_TLO;
             else oops();
 
             MarkWithCheck(l->d.timer.name, flag);
@@ -746,6 +764,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_CONTACTS:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
+        case ELEM_ONE_SHOT_LOW:
         case ELEM_OSC:
         case ELEM_EQU:
         case ELEM_NEQ:
@@ -784,7 +803,7 @@ void CheckVariableNames(void)
              Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."), Variables[i].initedRung+1, Variables[i].name,
                    _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\n"
                           "You must assign a variable."));
-    return;
+  return;
 
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TCY)
@@ -1967,6 +1986,8 @@ void DescribeForIoList(char *name, int type, char *out)
         case IO_TYPE_TCY:
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
+        case IO_TYPE_THI:
+        case IO_TYPE_TLO:
         case IO_TYPE_RTL:
         case IO_TYPE_RTO: {
             SDWORD v = GetSimulationVariable(name, TRUE);

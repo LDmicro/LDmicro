@@ -2130,7 +2130,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char
     if((addrDest==addrSrc) && (bitDest==bitSrc)) {
         return;
     }
-    Comment("CopyBit");
+//  Comment("CopyBit");
 /*
     // With possibility of "jitter" on destination pin.
     // Don't use for outputs pins.
@@ -2179,7 +2179,7 @@ static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, c
       || (bitDest != bitSrc)
     ) && (
       (Bank(addrDest) == Bank(addrSrc))
-    || IsCoreRegister(addrDest)
+      || IsCoreRegister(addrDest)
       || IsCoreRegister(addrSrc)
     )) {
         IfBitSet(addrSrc, bitSrc, nameSrc);
@@ -2230,7 +2230,7 @@ static void XorBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 //-----------------------------------------------------------------------------
 static void CompileIfBody(DWORD condFalse, char *s)
 {
-    Comment("CompileIfBody %s vvv", s);
+//  Comment("CompileIfBody %s vvv", s);
     IntPc++;
     IntPcNow = IntPc;
     CompileFromIntermediate(FALSE);
@@ -2248,7 +2248,7 @@ static void CompileIfBody(DWORD condFalse, char *s)
     }
 
     if(IntCode[IntPc].op != INT_END_IF) oops();
-    Comment("CompileIfBody %s ^^^", s);
+//  Comment("CompileIfBody %s ^^^", s);
 }
 
 static void CompileIfBody(DWORD condFalse)
@@ -3502,8 +3502,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                 CopyRegsToRegs(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
                 break;
             }
-            case INT_SET_VARIABLE_AND: Comment("INT_SET_VARIABLE_AND"); 
-            case INT_SET_VARIABLE_OR : Comment("INT_SET_VARIABLE_OR "); 
+            case INT_SET_VARIABLE_AND: Comment("INT_SET_VARIABLE_AND"); goto and;
+            case INT_SET_VARIABLE_OR : Comment("INT_SET_VARIABLE_OR "); goto and;
                 break;
             case INT_SET_VARIABLE_XOR: Comment("INT_SET_VARIABLE_XOR"); goto and;
             and: {

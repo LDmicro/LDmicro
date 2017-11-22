@@ -466,7 +466,7 @@ int MemForVariable(char *name, DWORD *addrl, int sizeOfVar)
             } else {
                //Error(_("Can not increase size of variable '%s' to %d bit.\nYou must increase size of variable in LD file!"), name, sizeOfVar*8);
                //CompileError();
-               Variables[i].Allocated = 0; // Request to reallocate memory of var 
+               Variables[i].Allocated = 0; // Request to reallocate memory of var
             }
         }
         if(addrl) {
@@ -787,8 +787,8 @@ static void MemForBitInternal(char *name, DWORD *addr, int *bit, BOOL writeTo)
 //-----------------------------------------------------------------------------
 void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit)
 {
-        *addr = -1;
-        *bit = -1;
+    *addr = -1;
+    *bit = -1;
     if(!(name) || (name && strlen(name) == 0)) {
         return;
     }
