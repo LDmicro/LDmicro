@@ -1,3 +1,39 @@
+== Release 4.3.4
+
+    * HotFix: Look Up Table
+
+    * Wiki: HOW TO: Look Up Table, UART SEND
+    See https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Look-Up-Table,-UART-SEND
+
+    * Fixed: The yPlcCycleDuty option is not reset when you start a new program.
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=6806
+
+    * Fixed: No C code is generated for setting and unsetting the YPlcCycleDuty
+    pin each cycle.
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=6805
+
+    * New: Available features
+    "Compile HEX->ASM"
+    "Compile Sketch for ARDUINO"
+    "Compile AVR-GCC, Atmel AVR Toolchain, WinAVR C"
+    "Compile CodeVisionAVR C"
+    "Compile HEX->ASM"
+    "Compile HI-TECH C for PIC"
+    "Compile CCS C for PIC"
+    See http://cq.cx/ladder-forum.pl?action=viewthread&parent=6731&tt=1514541894
+
+    * Wiki: Stopwatch1 over UART, part 2
+    See https://github.com/LDmicro/LDmicro/wiki/Stopwatch1-over-UART,---part-2
+
+    * Wiki: Stopwatch1 over UART; part 3
+    See https://github.com/LDmicro/LDmicro/wiki/Stopwatch1-over-UART;-part-3
+
+    * Fixed: Compiling Interpretable Extended Byte Code fails with the error "Unsupported op"
+    See http://cq.cx/ladder-forum.pl?action=viewthread&parent=6791&tt=1514468902
+
+    * Note: You can change size of variable by double-clicking the variable name
+    in the list at the bottom of the screen.
+
 == Release 4.3.3
 
     * New: Element OSL: ONE-SHOT LOW LEVEL is inversion of element
@@ -28,7 +64,8 @@
 
     * Add: Microchip PIC10F200 6-SOT target.
 
-    * New: Variables can allocate 1,2,3 or 4 bytes.
+    * New: Variables can allocate 1,2,3 or 4 bytes. You can change size of variable by
+    double-clicking the variable name in the list at the bottom of the screen.
     Variables are stored and processed in the two's complement form.
     See https://en.wikipedia.org/wiki/Two%27s_complement
 

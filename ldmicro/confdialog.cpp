@@ -85,6 +85,27 @@ static void MakeControls(void)
         185, 12, 75, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(CycleTextbox);
 
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC,
+        _("MCU Crystal Frequency (MHz):"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        1, 43, 180, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textLabel2);
+
+    CrystalTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        185, 42, 75, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(CrystalTextbox);
+
+    HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("UART Baud Rate (bps):"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        1, 73, 180, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textLabel3);
+
+    BaudTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        185, 72, 75, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(BaudTextbox);
+
     HWND TimerLabel = CreateWindowEx(0, WC_STATIC, _("Timer0|1:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         255, 13, 70, 21, ConfDialog, NULL, Instance, NULL);
@@ -100,17 +121,6 @@ static void MakeControls(void)
         370, 13, 100, 20, ConfDialog, NULL, Instance, NULL);
     NiceFont(YPlcCycleDutyCheckbox);
 
-    HWND textLabel2 = CreateWindowEx(0, WC_STATIC,
-        _("MCU Crystal Frequency (MHz):"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        1, 43, 180, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textLabel2);
-
-    CrystalTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        185, 42, 75, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(CrystalTextbox);
-
     HWND textLabel2_ = CreateWindowEx(0, WC_STATIC,
         _("PIC Configuration Bits:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
@@ -122,15 +132,11 @@ static void MakeControls(void)
         400, 72, 85, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ConfigBitsTextbox);
 
-    HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("UART Baud Rate (bps):"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        1, 73, 180, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textLabel3);
-
-    BaudTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        185, 72, 75, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(BaudTextbox);
+    if(!Prog.mcu || (Prog.mcu->whichIsa != ISA_PIC16))
+    {
+        EnableWindow(ConfigBitsTextbox, FALSE);
+        EnableWindow(textLabel2_, FALSE);
+    }
 
     if(!UartFunctionUsed()) {
         EnableWindow(BaudTextbox, FALSE);
@@ -169,9 +175,9 @@ static void MakeControls(void)
     BOOL b = FALSE;
     if(Prog.mcu) {
         if(Prog.mcu->whichIsa == ISA_AVR) {
-            b=CalcAvrPlcCycle(Prog.cycleTime);
+            b=CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen); // && AvrProgLdLen;
         } else if(Prog.mcu->whichIsa == ISA_PIC16) {
-            b=CalcPicPlcCycle(Prog.cycleTime);
+            b=CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen) && PicProgLdLen;
         }
         char s1[100];
         char s2[100];
@@ -191,7 +197,7 @@ static void MakeControls(void)
 
             double _TCycle = SIprefix(1.0*plcTmr.TCycle,s1);
             double _Fcycle = SIprefix(1.0*plcTmr.Fcycle,s2);
-            sprintf(txt,_("In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, TCycle deviation=%f%%\n"), _TCycle, s1, _Fcycle, s2, (1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime);
+            sprintf(txt,_("In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Cycle deviation=%.3f%%\n"), _TCycle, s1, _Fcycle, s2, 1e2*(1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime);
             strcat(explanation,txt);
         }
         sprintf(txt,"\n");
@@ -392,9 +398,9 @@ void ShowConfDialog(void)
         char txt[1024] = "";
         if(Prog.mcu) {
           if(Prog.mcu->whichIsa == ISA_AVR) {
-             CalcAvrPlcCycle(ProgCycleTime);
+             CalcAvrPlcCycle(ProgCycleTime, AvrProgLdLen);
           } else if(Prog.mcu->whichIsa == ISA_PIC16) {
-             CalcPicPlcCycle(ProgCycleTime);
+             CalcPicPlcCycle(ProgCycleTime, PicProgLdLen);
           }
         }
 

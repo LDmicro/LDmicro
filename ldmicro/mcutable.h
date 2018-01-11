@@ -1741,8 +1741,10 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         ISA_PIC16,
         MidrangeCore14bit,
         28,
+         (0x38 << (8+16)) | // Unimplemented: Read as 1
             (3 << (9+16)) | // flash write protection off
             (0 << (8+16)) | // BOR at 2.1 V
+         (0xff << 16) |     // Unimplemented: Read as 1
             (1 << 13) |     // ICD disabled
             (0 << 12) |     // LVP disabled
             (0 << 11) |     // fail-safe clock monitor disabled
@@ -1780,7 +1782,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         0,
         { },
         0,
-        ISA_PIC16, //ISA_PIC12,
+        ISA_PIC16,
         BaselineCore12bit,
         6,
             (0 <<  4) |     // nMCLR disabled

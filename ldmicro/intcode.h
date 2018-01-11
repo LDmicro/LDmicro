@@ -71,6 +71,7 @@
 #define INT_UART_SEND1                          1301
 #define INT_UART_SENDn                          1302
 #define INT_UART_SEND_READY                     1303
+#define INT_UART_SEND_BUSY                      1304
 #define INT_UART_RECV                           14
 #define INT_UART_RECVn                          1401
 #define INT_UART_RECV_AVAIL                     1402

@@ -1675,7 +1675,7 @@ typedef struct PicAvrInstructionTag {
     DWORD       arg1orig;
     DWORD       BANK;   // this operation opPic will executed with this STATUS or BSR registers
     DWORD       PCLATH; // this operation opPic will executed with this PCLATH which now or previously selected
-    BOOL        label;
+    int         label;
     char        commentInt[MAX_COMMENT_LEN]; // before op
     char        commentAsm[MAX_COMMENT_LEN]; // after op
     char        arg1name[MAX_NAME_LEN];
@@ -1763,11 +1763,15 @@ void GenSymOneShot(char *dest, char *name1, char *name2);
 int getradix(char *str);
 
 // pic16.cpp
+extern DWORD PicProgLdLen;
 void CompilePic16(char *outFile);
 BOOL McuAs(char *str);
-BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds);
+BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, DWORD PicProgLdLen);
 // avr.cpp
-BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds);
+extern DWORD AvrProgLdLen;
+int calcAvrUsart(int *divisor, double  *actual, double  *percentErr);
+int testAvrUsart(int divisor, double  actual, double  percentErr);
+BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
 void CompileAvr(char *outFile);
 // ansic.cpp
 extern int compile_MNU;

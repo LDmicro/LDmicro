@@ -110,6 +110,13 @@ static void AppendIo(char *IOname, int type)
     SetVariableType(name, type);
     int i;
     for(i = 0; i < Prog.io.count; i++) {
+        if(strcmp(Prog.io.assignment[i].name, name)==0) {
+            if((Prog.io.assignment[i].type==IO_TYPE_COUNTER) && (type==IO_TYPE_GENERAL)) {
+                return;
+            } else if((Prog.io.assignment[i].type==IO_TYPE_GENERAL) && (type==IO_TYPE_COUNTER)) {
+                Prog.io.assignment[i].type = type; // replace // see compilecommon.cpp
+            }
+        }
         if((strcmp(Prog.io.assignment[i].name, name)==0)
         && (Prog.io.assignment[i].type == type))
             return;
@@ -537,7 +544,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         }
         case ELEM_LOOK_UP_TABLE: {
             if(l->d.lookUpTable.count>0)
-                SetSizeOfVar(l->d.lookUpTable.name, l->d.lookUpTable.count);
+                MemForVariable(l->d.lookUpTable.name, NULL, l->d.lookUpTable.count);
             AppendIo(l->d.lookUpTable.name, IO_TYPE_TABLE_IN_FLASH);
 
             sprintf(str, "%s[0]", l->d.lookUpTable.name);

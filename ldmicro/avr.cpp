@@ -27,6 +27,7 @@
                       // * 1 - only if GOTO or CALL operations need a label
                       //   2 - always, all line is labeled
 
+#define USE_WDT
 #define USE_MUL
 
 #include <windows.h>
@@ -155,6 +156,8 @@ typedef struct AvrInstructionTag {
 #define MAX_PROGRAM_LEN 128*1024
 static PicAvrInstruction AvrProg[MAX_PROGRAM_LEN];
 static DWORD AvrProgWriteP;
+
+DWORD AvrProgLdLen = 0;
 
 static int IntPcNow = -INT_MAX; //must be static
 
@@ -686,10 +689,11 @@ char *getName(char *s)
 // being assembled to so that it generate relative jumps; internal error if
 // a relative jump goes out of range.
 //-----------------------------------------------------------------------------
-static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
+static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm)
 {
   PicAvrInstruction *AvrInstr = &AvrProg[addrAt];
   IntOp *a = &IntCode[AvrInstr->IntPc];
+  strcpy(sAsm,"");
 /*
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
 */
@@ -707,58 +711,73 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
   switch(op) {
     case OP_COMMENT:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        if(strlen(AvrInstr->commentInt))
+            sprintf(sAsm, "nop \t; %s", AvrInstr->commentInt);
+        else
+            sprintf(sAsm, "nop \t \t");
         return 0;
 
     case OP_NOP:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "nop \t \t");
         return 0;
 
     case OP_SLEEP:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "sleep \t \t");
         return 0x9588;
 
     case OP_CPSE:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "cpse \t r%d, \t r%d", arg1, arg2);
         return 0x1000 | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_ASR:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "asr \t r%d \t", arg1);
         return 0x9000 | (2 << 9) | (arg1 << 4) | 5;
 
     case OP_ROR:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ror \t r%d \t", arg1);
         return 0x9000 | (2 << 9) | (arg1 << 4) | 7;
 
     case OP_ADD:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "add \t r%d, \t r%d", arg1, arg2);
         return (3 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_ADC:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "adc \t r%d, \t r%d", arg1, arg2);
         return (7 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_ADIW:
         if(!((arg1==24)||(arg1==26)||(arg1==28)||(arg1==30))) oops();
         CHECK2(arg2, 0, 64);
+        sprintf(sAsm, "adiw \t r%d:r%d, %d", arg1+1, arg1, arg2);
         return 0x9600 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) |
             (arg2 & 0x0f);
 
     case OP_SBIW:
         if(!((arg1==24)||(arg1==26)||(arg1==28)||(arg1==30))) oops();
         CHECK2(arg2, 0, 64);
+        sprintf(sAsm, "sbiw \t r%d:r%d, %d", arg1+1, arg1, arg2);
         return 0x9700 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) |
             (arg2 & 0x0f);
 
     case OP_EOR:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "eor \t r%d, \t r%d", arg1, arg2);
         return (9 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_CLR:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "clr \t r%d \t", arg1);
         return (9 << 10) | ((arg1 & 0x10) << 5) | (arg1 << 4) |
             (arg1 & 0x0f);
 
@@ -766,97 +785,118 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
         CHECK2(arg1,16,31);
         CHECK(arg1, 5); CHECK(arg2, 0);
         if((arg1<16) || (31<arg1)) oops();
+        sprintf(sAsm, "ser \t r%d \t", arg1);
         return 0xEF0F | (arg1 << 4);
 
     case OP_SUB:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "sub \t r%d, \t r%d", arg1, arg2);
         return (6 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_SBC:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "sbc \t r%d, \t r%d", arg1, arg2);
         return (2 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_CP:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "cp  \t r%d, \t r%d", arg1, arg2);
         return (5 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_CPC:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "cpc \t r%d, \t r%d", arg1, arg2);
         return (1 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_CPI:
         CHECK2(arg1,16,31); CHECK(arg2, 8);
+        sprintf(sAsm, "cpi \t r%d, \t 0x%X", arg1, arg2);
         return 0x3000 | ((arg2 & 0xF0) << 4) | ((arg1 & 0x0F) << 4) |
             (arg2 & 0x0F);
 
     case OP_COM:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "com \t r%d \t", arg1);
         return 0x9000 | (2 << 9) | (arg1 << 4);
 
     case OP_SBR:
         CHECK2(arg1,16,31); CHECK(arg2, 8);
+        sprintf(sAsm, "sbr \t r%d, \t 0x%X", arg1, arg2);
         return 0x6000 | ((arg2 & 0xf0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0x0f);
 
     case OP_CBR:
         CHECK2(arg1,16,31); CHECK(arg2, 8);
+        sprintf(sAsm, "cbr \t r%d, \t 0X%X", arg1, arg2);
         arg2 = ~arg2;
         return 0x7000 | ((arg2 & 0xf0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0x0f);
 
     case OP_INC:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "inc \t r%d \t", arg1);
         return 0x9400 | (arg1 << 4) | 3;
 
     case OP_DEC:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "dec \t r%d \t", arg1);
         return 0x9400 | (arg1 << 4) | 10;
 
     case OP_SUBI:
         CHECK2(arg1,16,31); CHECK2(arg2, -256, 255);
+        sprintf(sAsm, "subi \t r%d, \t %d", arg1, arg2);
         return 0x5000 | ((arg2 & 0XF0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0X0F);
 
     case OP_SBCI:
         CHECK2(arg1,16,31); CHECK(arg2, 8);
+        sprintf(sAsm, "sbci \t r%d, \t 0x%X", arg1, arg2);
         return 0x4000 | ((arg2 & 0xf0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0x0f);
 
     case OP_TST:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "tst \t r%d \t", arg1);
         return 0x2000 | ((arg1 & 0x10) << 4) | ((arg1 & 0x10) << 5) |
                         ((arg1 & 0x0f) << 4) |  (arg1 & 0x0f);
 
     case OP_SEC:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "sec \t \t");
         return 0x9408;
 
     case OP_CLC:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "clc \t \t");
         return 0x9488;
 
     case OP_IJMP:
         //CHECK(arg1, 0); // arg1 used for label
         CHECK(arg2, 0);
+        sprintf(sAsm, "ijmp \t \t");
         return 0x9409;
 
     case OP_EIJMP:
         //CHECK(arg1, 0); // arg1 used for label
         CHECK(arg2, 0);
+        sprintf(sAsm, "eijmp \t \t");
         return 0x9419;
 
     case OP_ICALL:
         //CHECK(arg1, 0); // arg1 used for label
         CHECK(arg2, 0);
+        sprintf(sAsm, "icall \t \t");
         return 0x9509;
 
     case OP_EICALL:
         //CHECK(arg1, 0); // arg1 used for label
         CHECK(arg2, 0);
+        sprintf(sAsm, "eicall \t \t");
         return 0x9519;
 
     case OP_RJMP:
         CHECK(arg2, 0);
+        sprintf(sAsm, "rjmp \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -2048, 2047); // $fff !!!
         if(((int)arg1) > 2047 || ((int)arg1) < -2048) oops();
@@ -865,6 +905,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
 
     case OP_RCALL:
         CHECK(arg2, 0);
+        sprintf(sAsm, "rcall \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -2048, 2047); //$fff !!!
         if(((int)arg1) > 2047 || ((int)arg1) < -2048) oops();
@@ -873,206 +914,252 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
 
     case OP_RETI:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "reti \t \t");
         return 0x9518;
 
     case OP_RET:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "ret \t \t");
         return 0x9508;
 
     case OP_SBRC:
         CHECK(arg1, 5); CHECK(arg2, 3);
+        sprintf(sAsm, "sbrc \t r%d, \t %d", arg1, arg2);
         return (0x7e << 9) | (arg1 << 4) | arg2;
 
     case OP_SBRS:
         CHECK(arg1, 5); CHECK(arg2, 3);
+        sprintf(sAsm, "sbrs \t r%d, \t %d", arg1, arg2);
         return (0x7f << 9) | (arg1 << 4) | arg2;
 
     case OP_BREQ:
         CHECK(arg2, 0);
+        sprintf(sAsm, "breq \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -64, 63);
         return 0xf001 | ((arg1 & 0x7f) << 3);
 
     case OP_BRNE:
         CHECK(arg2, 0);
+        sprintf(sAsm, "brne \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -64, 63);
         return 0xf401 | ((arg1 & 0x7f) << 3);
 
     case OP_BRLO:
         CHECK(arg2, 0);
+        sprintf(sAsm, "brlo \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -64, 63);
         return 0xf000 | ((arg1 & 0x7f) << 3);
 
     case OP_BRGE:
         CHECK(arg2, 0);
+        sprintf(sAsm, "brge \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -64, 63);
         return 0xf404 | ((arg1 & 0x7f) << 3);
 
     case OP_BRLT:
         CHECK(arg2, 0);
+        sprintf(sAsm, "brlt \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -64, 63);
         return 0xf004 | ((arg1 & 0x7f) << 3);
 
     case OP_BRCC:
         CHECK(arg2, 0);
+        sprintf(sAsm, "brcc \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -64, 63);
         return 0xf400  | ((arg1 & 0x7f) << 3);
 
     case OP_BRCS:
         CHECK(arg2, 0);
+        sprintf(sAsm, "brcs \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -64, 63);
         return 0xf000 | ((arg1 & 0x7f) << 3);
 
     case OP_BRMI:
         CHECK(arg2, 0);
+        sprintf(sAsm, "brmi \t l_%06x ", arg1);
         arg1 = arg1 - addrAt - 1;
         CHECK2(arg1, -64, 63);
         return 0xf002 | ((arg1 & 0x7f) << 3);
 
     case OP_MOV:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "mov \t r%d, \t r%d", arg1, arg2);
         return (0xb << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_SWAP:
         CHECK(arg1, 5);  CHECK(arg2, 0);
+        sprintf(sAsm, "swap \t r%d \t", arg1);
         return 0x9402 | (arg1 << 4);
 
     case OP_LDI:
         CHECK2(arg1,16,31); CHECK(arg2, 8);
+        sprintf(sAsm, "ldi \t r%d, \t 0x%X", arg1, arg2);
         return 0xE000 | ((arg2 & 0xF0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0x0F);
 
     case OP_LD_X:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ld  \t r%d, \t X", arg1, arg2);
         return 0x9000 | (arg1 << 4) | 12;
 
     case OP_LD_XP:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ld  \t r%d, \t X+", arg1, arg2);
         return 0x9000 | (arg1 << 4) | 13;
 
     case OP_LD_XS:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ld  \t r%d, \t -X", arg1, arg2);
         return 0x9000 | (arg1 << 4) | 14;
 
     case OP_LD_Y:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ld  \t r%d, \t Y", arg1, arg2);
         return 0x8000 | (arg1 << 4) |  8;
 
     case OP_LD_YP:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ld  \t r%d, \t Y+", arg1, arg2);
         return 0x9000 | (arg1 << 4) |  9;
 
     case OP_LD_YS:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ld  \t r%d, \t -Y", arg1, arg2);
         return 0x9000 | (arg1 << 4) | 10;
 
     case OP_LDD_Y:
         CHECK(arg1, 5); CHECK(arg2, 6);
+        sprintf(sAsm, "ldd  \t r%d, \t Y+%d", arg1, arg2);
         return 0x8008 | (arg1 << 4) | ((arg2 & 0x20) << 8) | ((arg2 & 0x18) << 7) | (arg2 & 0x7);
 
     case OP_LD_Z:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ld  \t r%d, \t Z", arg1, arg2);
         return 0x8000 | (arg1 << 4) |  0;
 
     case OP_LD_ZP:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ld  \t r%d, \t Z+", arg1, arg2);
         return 0x9000 | (arg1 << 4) |  1;
 
     case OP_LD_ZS:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "ld  \t r%d, \t -Z", arg1, arg2);
         return 0x9000 | (arg1 << 4) |  2;
 
     case OP_LDD_Z:
         CHECK(arg1, 5); CHECK(arg2, 6);
+        sprintf(sAsm, "ldd  \t r%d, \t Z+%d", arg1, arg2);
         return 0x8000 | (arg1 << 4) | ((arg2 & 0x20) << 8) | ((arg2 & 0x18) << 7) | (arg2 & 0x7);
 
     case OP_LPM_0Z:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "lpm \t \t");
         return 0x95C8;
 
     case OP_LPM_Z:
         CHECK2(arg1, 0, 31); CHECK(arg2, 0);
+        sprintf(sAsm, "lpm \t r%d, \t Z", arg1);
         return (0x9004) | (arg1 << 4);
 
     case OP_LPM_ZP:
         CHECK2(arg1, 0, 31); CHECK(arg2, 0);
+        sprintf(sAsm, "lpm \t r%d, \t Z+", arg1);
         return (0x9005) | (arg1 << 4);
 
     case OP_ST_X:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "st  \t X, \t r%d", arg1);
         return 0x9200 | (arg1 << 4) | 12;
 
     case OP_ST_XP:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "st  \t X+, \t r%d", arg1);
         return 0x9200 | (arg1 << 4) | 13;
 
     case OP_ST_XS:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "st  \t -X, \t r%d", arg1);
         return 0x9200 | (arg1 << 4) | 14;
 
     case OP_ST_Y:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "st  \t Y, \t r%d", arg1);
         return 0x8200 | (arg1 << 4) |  8;
 
     case OP_ST_YP:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "st  \t Y+, \t r%d", arg1);
         return 0x9200 | (arg1 << 4) |  9;
 
     case OP_ST_YS:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "st  \t -Y, \t r%d", arg1);
         return 0x9200 | (arg1 << 4) | 10;
 
     case OP_ST_Z:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "st  \t Z, \t r%d", arg1);
         return 0x8200 | (arg1 << 4) |  0;
 
     case OP_ST_ZP:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "st  \t Z+, \t r%d", arg1);
         return 0x9200 | (arg1 << 4) |  1;
 
     case OP_ST_ZS:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "st  \t -Z, \t r%d", arg1);
         return 0x9200 | (arg1 << 4) |  2;
 
     case OP_WDR:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "wdr \t \t");
         return 0x95a8;
 
     case OP_ANDI:
         CHECK2(arg1,16,31); CHECK(arg2, 8);
+        sprintf(sAsm, "andi \t r%d, \t 0x%X", arg1, arg2);
         return 0x7000 | ((arg2 & 0xF0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0x0F);
 
     case OP_ORI:
         CHECK2(arg1,16,31); CHECK(arg2, 8);
+        sprintf(sAsm, "ori \t r%d, \t 0x%X", arg1, arg2);
         return 0x6000 | ((arg2 & 0xF0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0x0F);
 
     case OP_AND:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "and \t r%d, \t r%d", arg1, arg2);
         return (0x8 << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_OR:
         CHECK(arg1, 5); CHECK(arg2, 5);
+        sprintf(sAsm, "or  \t r%d, \t r%d", arg1, arg2);
         return (0xA << 10) | ((arg2 & 0x10) << 5) | (arg1 << 4) |
             (arg2 & 0x0f);
 
     case OP_LSL:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "lsl \t r%d \t", arg1);
         return (3 << 10) | ((arg1 & 0x10) << 5) | (arg1 << 4) |
             (arg1 & 0x0f);
 
     case OP_LSR:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "lsr \t r%d \t", arg1);
         return (0x9406) | (arg1 << 4);
 
     case OP_ROL:
         CHECK(arg1, 5); CHECK(arg2, 0);
+        sprintf(sAsm, "rol \t r%d \t", arg1);
         return (7 << 10) | ((arg1 & 0x10) << 5) | (arg1 << 4) |
             (arg1 & 0x0f);
 
@@ -1080,6 +1167,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
         CHECK2(arg1, 0, 30); CHECK2(arg2, 0, 30);
         if(arg1 & 1) oops();
         if(arg2 & 1) oops();
+        sprintf(sAsm, "movw \t r%d:r%d, \t r%d:r%d", arg1+1, arg1, arg2+1, arg2);
         return (0x0100)
             | ( (arg1>>1) << 4)
             | ( (arg2>>1) );
@@ -1087,18 +1175,21 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
     #ifdef USE_MUL
     case OP_MUL:
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 31);
+        sprintf(sAsm, "mul \t r%d, \t r%d", arg1, arg2);
         return (0x9C00)
             | (arg1 << 4)
             | ((arg2 & 0x10) << 5) | (arg2 & 0x0f);
 
     case OP_MULS:
         CHECK2(arg1, 16, 31); CHECK2(arg2, 16, 31);
+        sprintf(sAsm, "muls \t r%d, \t r%d", arg1, arg2);
         return (0x0200)
             | ((arg1 & 0x0f) << 4)
             | (arg2 & 0x0f);
 
     case OP_MULSU:
         CHECK2(arg1, 16, 23); CHECK2(arg2, 16, 23);
+        sprintf(sAsm, "mulsu \t r%d, \t r%d", arg1, arg2);
         return (0x0300)
             | ((arg1 & 0x07) << 4)
             | (arg2 & 0x07);
@@ -1107,66 +1198,84 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
     #if USE_IO_REGISTERS == 1
     case OP_IN:
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 63);
+        sprintf(sAsm, "in  \t r%d, \t 0x%02X", arg1, arg2);
         return 0xB000 | ((arg2 & 0x30) << 5) | (arg1 << 4) | (arg2 & 0x0f);
 
     case OP_OUT:
         CHECK2(arg1, 0, 63); CHECK2(arg2, 0, 31);
+        sprintf(sAsm, "out \t 0x%02X, \t r%d", arg1, arg2);
         return 0xB800 | ((arg1 & 0x30) << 5) | (arg2 << 4) | (arg1 & 0x0f);
 
     case OP_SBI:
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
+        sprintf(sAsm, "sbi \t 0x%02X, \t %d", arg1, arg2);
         return 0x9A00 | (arg1 << 3) | arg2;
 
     case OP_CBI:
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
+        sprintf(sAsm, "cbi \t 0x%02X, \t %d", arg1, arg2);
         return 0x9800 | (arg1 << 3) | arg2;
 
     case OP_SBIC:
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
+        sprintf(sAsm, "sbic \t 0x%02X, \t %d", arg1, arg2);
         return 0x9900 | (arg1 << 3) | arg2;
 
     case OP_SBIS:
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
+        sprintf(sAsm, "sbis \t 0x%02X, \t %d", arg1, arg2);
         return 0x9b00 | (arg1 << 3) | arg2;
     #endif
     case OP_BST:
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
+        sprintf(sAsm, "bst \t r%d, \t %d", arg1, arg2);
         return 0xFA00 | (arg1 << 4) | arg2;
 
     case OP_BLD:
         CHECK2(arg1, 0, 31); CHECK2(arg2, 0, 7);
+        sprintf(sAsm, "bld \t r%d, \t %d", arg1, arg2);
         return 0xF800 | (arg1 << 4) | arg2;
 
     case OP_PUSH:
         CHECK2(arg1, 0, 31); CHECK(arg2, 0);
+        sprintf(sAsm, "push \t r%d \t", arg1);
         return (0x920F) | (arg1 << 4);
 
     case OP_POP:
         CHECK2(arg1, 0, 31); CHECK(arg2, 0);
+        sprintf(sAsm, "pop \t r%d \t", arg1);
         return (0x900F) | (arg1 << 4);
 
     case OP_CLI:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "cli \t \t");
         return 0x94f8;
 
     case OP_SEI:
         CHECK(arg1, 0); CHECK(arg2, 0);
+        sprintf(sAsm, "sei \t \t");
         return 0x9478;
 
     case OP_DB:
         CHECK2(BYTE(arg1), 0, 255); CHECK(arg2, 0);
+//      CHECK2(arg1, -128, 127); CHECK(arg2, 0);
+        sprintf(sAsm, ".db  \t 0x%02X \t", BYTE(arg1));
         return BYTE(arg1);
 
     case OP_DB2:
         CHECK2(BYTE(arg1), 0, 255); CHECK2(BYTE(arg2), 0, 255);
+//      CHECK2(arg1, -128, 127); CHECK2(arg2, -128, 127);
+        sprintf(sAsm, ".db  \t 0x%02X, \t 0x%02X", BYTE(arg1), BYTE(arg2));
         return (BYTE(arg2) << 8) | BYTE(arg1);
 
     case OP_DW:
         CHECK2(WORD(arg1), 0, 0xffff); CHECK(arg2, 0);
+        sprintf(sAsm, ".dw  \t 0x%04X \t", WORD(arg1));
         return WORD(arg1);
 
     default:
-        ooops("OP_%d", op);
+        sprintf(sAsm,"0x%X OP_%d %d %d", addrAt, op, arg1, arg2);
+        Error(sAsm);
         return 0;
   }
 }
@@ -1175,8 +1284,12 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2)
 // Write an intel IHEX format description of the program assembled so far.
 // This is where we actually do the assembly to binary format.
 //-----------------------------------------------------------------------------
-static void WriteHexFile(FILE *f)
+static void WriteHexFile(FILE *f, FILE *fAsm)
 {
+    static int prevRung = INT_MAX;
+    static int prevL = INT_MAX;
+    static int prevIntPcL = INT_MAX;
+    char sAsm[1024];
     const int n = 1; // 1 - VMLAB and (avrasm2.exe or avrasm32.exe)
                      // 2 - increases the length of the data string to be compatible with "avrdude.exe -U flash:r:saved_Intel_Hex.hex:i"
     BYTE soFar[16 * n];
@@ -1198,8 +1311,77 @@ static void WriteHexFile(FILE *f)
             AvrProg[AvrProg[i].arg1].label = TRUE;
     }
 
+    for(i = 1; i < AvrProgWriteP; i++) {
+        if((AvrProg[i].opAvr == OP_DB) && (AvrProg[i-1].opAvr != OP_DB))
+            AvrProg[i].label = TRUE;
+        if((AvrProg[i].opAvr == OP_DB2) && (AvrProg[i-1].opAvr != OP_DB2))
+            AvrProg[i].label = TRUE;
+        if((AvrProg[i].opAvr == OP_DW) && (AvrProg[i-1].opAvr != OP_DW))
+            AvrProg[i].label = TRUE;
+    }
+
     for(i = 0; i < AvrProgWriteP; i++) {
-        DWORD w = Assemble(i, AvrProg[i].opAvr, AvrProg[i].arg1, AvrProg[i].arg2);
+        DWORD w = Assemble(i, AvrProg[i].opAvr, AvrProg[i].arg1, AvrProg[i].arg2, sAsm);
+
+        if(strlen(AvrProg[i].commentInt)) {
+                fprintf(fAsm, "        ; %s\n", AvrProg[i].commentInt);
+        }
+
+        if(strlen(sAsm)) {
+
+            #if ASM_LABEL > 0
+            if(AvrProg[i].label || (ASM_LABEL == 2))
+                fprintf(fAsm, "l_%06x: %s", i, sAsm);
+            else
+                fprintf(fAsm, "          %s",    sAsm);
+            #else
+                fprintf(fAsm, "          %s",    sAsm);
+            #endif
+
+            if(asm_comment_level >= 3) {
+                fprintf(fAsm, "\t");
+                if(1 || (prevRung != AvrProg[i].rung)) {
+                    fprintf(fAsm, " ; rung=%d", AvrProg[i].rung+1);
+                    prevRung = AvrProg[i].rung;
+                 } else {
+                    fprintf(fAsm, " \t");
+                 }
+            }
+
+            if(asm_comment_level >= 4) {
+                if(1 || (prevL != AvrProg[i].l)) {
+                   fprintf(fAsm, " ; line %d in %s",
+                       AvrProg[i].l,
+                       AvrProg[i].f
+                       );
+                    prevL = AvrProg[i].l;
+                 }
+            }
+
+            if(asm_comment_level >= 5) {
+              if((AvrProg[i].IntPc >= 0) && (AvrProg[i].IntPc < IntCodeLen)) {
+                fprintf(fAsm, "\t");
+                if(IntCode[AvrProg[i].IntPc].which != INT_MAX) {
+                    fprintf(fAsm, " ; ELEM_0x%X",
+                        IntCode[AvrProg[i].IntPc].which);
+                }
+                if(1 || (prevIntPcL != IntCode[AvrProg[i].IntPc].l)) {
+                    fprintf(fAsm, " ; line %d in %s",
+                        IntCode[AvrProg[i].IntPc].l,
+                        IntCode[AvrProg[i].IntPc].f);
+                    prevIntPcL = IntCode[AvrProg[i].IntPc].l;
+                }
+              }
+            }
+
+            if(asm_comment_level >= 2)
+              if(strlen(AvrProg[i].commentAsm)) {
+                  fprintf(fAsm, "\t ; %s", AvrProg[i].commentAsm);
+              }
+
+            fprintf(fAsm, "\n");
+        } else
+            Error("op=%d, i=%d", AvrProg[i].opAvr, i);
 
         if(ExtendedSegmentAddress != (i & ~0x7fff)) {
       //if(i == 0x8000) {
@@ -1760,7 +1942,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 }
 
 //-----------------------------------------------------------------------------
-static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *name1,  char *name2)
+static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *name1,  char *name2)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc)) oops();
     char s[10];
@@ -1780,9 +1962,9 @@ static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, c
     Instruction(OP_ST_Z, r25, 0, name1);
 }
 
-static void XorCopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
-    XorCopyBit(addrDest, bitDest, addrSrc, bitSrc, "", "");
+    CopyNotBit(addrDest, bitDest, addrSrc, bitSrc, "", "");
 }
 
 //-----------------------------------------------------------------------------
@@ -1798,6 +1980,12 @@ static void GetUartSendReady(DWORD addr, int bit)
     */
 //  CopyBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
     CopyBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty and ready
+}
+//-----------------------------------------------------------------------------
+static void GetUartSendBusy(DWORD addr, int bit)
+{
+//  CopyNotBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
+    CopyNotBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty and ready
 }
 //-----------------------------------------------------------------------------
 // Execute the next instruction only if the specified bit of the specified
@@ -2034,7 +2222,7 @@ return TRUE;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // Calc AVR 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds)
+BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
 {
     //memset(plcTmr, 0, sizeof(plcTmr));
     plcTmr.softDivisor = 1;
@@ -2046,7 +2234,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds)
     if(Prog.cycleTimer == 0) {
         max_tmr = 0xFF;//+1;
         max_prescaler = 1024; // 1,8,64,256,1024
-        max_softDivisor = 0xFFFF; // 1..0xFFFF
+        max_softDivisor = 0xFF; // 1..0xFFFF
     } else {
         max_tmr = 0xFFFF;//+1;
         max_prescaler = 1024; // 1,8,64,256,1024
@@ -2074,6 +2262,8 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds)
 
         if(plcTmr.tmr <= max_tmr) {
             int err = int(abs(1.0*(cycleTimeMicrosecondsFact - cycleTimeMicroseconds)));
+            if((AvrProgLdLen <= 0)
+            !! (bestPrescaler * bestTmr >= AvrProgLdLen))
             if((err <= bestError) && (bestTmr < plcTmr.tmr)) {
                 bestError = err;
                 bestPrescaler = plcTmr.prescaler;
@@ -2208,7 +2398,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds)
 static long int tcnt0PlcCycle = 0;
 static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 {
-    CalcAvrPlcCycle(cycleTimeMicroseconds);
+    CalcAvrPlcCycle(cycleTimeMicroseconds, AvrProgLdLen);
 
     if(Prog.cycleTimer == 0) {
       if((WGM01  == -1)) { // ATmega8
@@ -2300,7 +2490,7 @@ static void InitTable(IntOp *a)
         Comment("TABLE %s", a->name1);
         if(AvrProgWriteP % 2)
             Instruction(OP_NOP);
-        addrOfTable = AvrProgWriteP << 1; //see LPM // data stored in flash
+        addrOfTable = AvrProgWriteP; // << 1; //see LPM // data stored in flash
 
         SetMemForVariable(a->name1, addrOfTable, a->literal);
 
@@ -2563,6 +2753,7 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
             Instruction(OP_LDI, reg+3, 0xff);
         }
     }
+    if(sov > 4) oops()
 }
 
 #define CopyRegsToVar(...) _CopyRegsToVar(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
@@ -2691,6 +2882,30 @@ static void IfNotZeroGoto(DWORD addrVar, int sov, DWORD addrGoto)
       }
     }
 }
+
+//-----------------------------------------------------------------------------
+int calcAvrUsart(int *divisor, double  *actual, double  *percentErr)
+{
+    // bps = Fosc/(16*(X+1))
+    // bps*16*(X + 1) = Fosc
+    // X = Fosc/(bps*16)-1
+    // and round, don't truncate
+    *divisor = (Prog.mcuClock + Prog.baudRate*8)/(Prog.baudRate*16) - 1;
+
+    *actual = 1.0*Prog.mcuClock/(16.0*(*divisor+1));
+    *percentErr = 100.0*(*actual - Prog.baudRate)/Prog.baudRate;
+    return *divisor;
+}
+
+int testAvrUsart(int divisor, double  actual, double  percentErr)
+{
+    if(fabs(percentErr) > 2) {
+        ComplainAboutBaudRateError(divisor, actual, percentErr);
+    }
+    if(divisor > 4095) ComplainAboutBaudRateOverflow();
+    return divisor;
+}
+
 //-----------------------------------------------------------------------------
 // Write the basic runtime. We set up our reset vector, configure all the
 // I/O pins, then set up the timer that does the cycling. Next instruction
@@ -2725,7 +2940,9 @@ static void WriteRuntime(void)
     Comment("Watchdog on"); // 3
     Instruction(OP_CLI);
     Instruction(OP_WDR);
+    #ifdef USE_WDT
     STOREval(REG_WDTCR, (1<<WDCE) | (1<<WDE));
+    #endif
     Comment("- Got only four cycles to set the new values from here! -");
     WriteMemoryCurrAddr((1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s
     Instruction(OP_SEI);
@@ -2772,19 +2989,12 @@ static void WriteRuntime(void)
         }
 
         Comment("UartFunctionUsed. UART setup");
-        // bps = Fosc/(16*(X+1))
-        // bps*16*(X + 1) = Fosc
-        // X = Fosc/(bps*16)-1
-        // and round, don't truncate
-        int divisor = (Prog.mcuClock + Prog.baudRate*8)/(Prog.baudRate*16) - 1;
+        int divisor;
+        double actual;
+        double percentErr;
 
-        double actual = Prog.mcuClock/(16.0*(divisor+1));
-        double percentErr = 100.0*(actual - Prog.baudRate)/Prog.baudRate;
-
-        if(fabs(percentErr) > 2) {
-            ComplainAboutBaudRateError(divisor, actual, percentErr);
-        }
-        if(divisor > 4095) ComplainAboutBaudRateOverflow();
+        calcAvrUsart(&divisor, &actual, &percentErr);
+        testAvrUsart(divisor, actual, percentErr);
 
         WriteMemory(REG_UBRRH, divisor >> 8);
         WriteMemory(REG_UBRRL, divisor & 0xff);
@@ -2965,6 +3175,7 @@ static void CompileFromIntermediate(void)
 
             case INT_SET_BCD2BIN:
                 Comment("INT_SET_BCD2BIN");
+                oops();
                 break;
 
             case INT_SET_BIN2BCD:
@@ -4132,23 +4343,36 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_UART_SEND_READY: {
+                Comment("INT_UART_SEND_READY");
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 GetUartSendReady(addr1, bit1);
                 break;
             }
+            case INT_UART_SEND_BUSY: {
+                Comment("INT_UART_SEND_BUSY");
+                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                GetUartSendBusy(addr1, bit1);
+                break;
+            }
             case INT_UART_RECV_AVAIL: {
+                Comment("INT_UART_RECV_AVAIL");
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
 
             case INT_UART_SEND: {
+                Comment("INT_UART_SEND");
                 MemForVariable(a->name1, &addr1);
                 MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
 
                 DWORD noSend = AllocFwdAddr();
                 IfBitClear(addr2, bit2);
                 Instruction(OP_RJMP, noSend);
+
+                DWORD isBusy = AllocFwdAddr();
+                //IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
+                //Instruction(OP_RJMP, isBusy);
 
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, r16);
@@ -4157,17 +4381,35 @@ static void CompileFromIntermediate(void)
 
                 FwdAddrIsNow(noSend);
 
-                XorCopyBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
+                CopyNotBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
+
+                FwdAddrIsNow(isBusy);
                 break;
             }
             case INT_UART_SEND1: {
+                Comment("INT_UART_SEND1");
+                MemForVariable(a->name1, &addr1);
+
+                DWORD isBusy = AllocFwdAddr();
+                IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
+                Instruction(OP_RJMP, isBusy);
+
+                LoadXAddr(addr1);
+                Instruction(OP_LD_X, r16);
+                LoadXAddr(REG_UDR);
+                Instruction(OP_ST_X, r16);
+
+                FwdAddrIsNow(isBusy);
+                break;
+            }
+            case -INT_UART_SEND1: {
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
                 MemForVariable(a->name3, &addr3);
 
                 DWORD noSend = AllocFwdAddr();
-
+                /*
                 // Little endian byte order
                 // REG_UDR = X[addr1 + sov - 1 - X[addr3]]
                 LoadXAddr(addr1);
@@ -4193,7 +4435,7 @@ static void CompileFromIntermediate(void)
 
                 FwdAddrIsNow(noSend);
 
-              //XorCopyBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
+              //CopyNotBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
                 break;
             }
             case INT_UART_RECV: {
@@ -4317,7 +4559,7 @@ static void CompileFromIntermediate(void)
                 DWORD addrOfTable = 0;
                 MemOfVar(a->name2, &addrOfTable);
 
-                CopyLiteralToRegs(ZL, addrOfTable, 2, "addrOfTable"); // Z = DataAddr
+                CopyLiteralToRegs(ZL, addrOfTable << 1, 2, "addrOfTable"); // see LPM // data stored in flash
                 //Comment(" Z == DataAddr");
 
                 Instruction(OP_ADD, ZL, r16);
@@ -4940,11 +5182,32 @@ void CompileAvr(char *outFile)
         return;
     }
 
-    if(setjmp(CompileErrorBuf) != 0) {
+    char outFileAsm[MAX_PATH];
+    SetExt(outFileAsm, outFile, ".asm");
+    FILE *fAsm = fopen(outFileAsm, "w");
+    if(!fAsm) {
+        Error(_("Couldn't open file '%s'"), outFileAsm);
         fclose(f);
         return;
     }
 
+    if(setjmp(CompileErrorBuf) != 0) {
+        fclose(f);
+        fclose(fAsm);
+        return;
+    }
+
+    fprintf(fAsm,
+";/* This is auto-generated ASM code from LDmicro. Do not edit this file!\n"
+";   Go back to the LDmicro ladder diagram source for changes in the ladder logic. */\n"
+";%s is the LDmicro target processor.\n"
+".DEVICE %s\n"
+";#pragma AVRPART ADMIN PART_NAME %s\n"
+";.INCLUDE <%s.inc>\n"
+".CSEG\n"
+".ORG 0x0\n"
+";TABSIZE = 8\n"
+    ,Prog.mcu->mcuName, Prog.mcu->mcuList, Prog.mcu->mcuList, Prog.mcu->mcuInc);
     Comment("GOTO, progStart");
 
     //***********************************************************************
@@ -5952,9 +6215,13 @@ void CompileAvr(char *outFile)
     ProgWriteP = AvrProgWriteP;
 
     rungNow = -5;
-    WriteHexFile(f);
+    WriteHexFile(f, fAsm);
     fflush(f);
     fclose(f);
+
+    PrintVariables(fAsm);
+    fflush(fAsm);
+    fclose(fAsm);
 
     char str[MAX_PATH+500];
     sprintf(str, _("Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\n"
@@ -5982,4 +6249,7 @@ void CompileAvr(char *outFile)
         CompileSuccessfulMessage(str3, MB_ICONERROR);
     } else
         CompileSuccessfulMessage(str4);
+
+    AvrProgLdLen = AvrProgWriteP - BeginOfPLCCycle;
+    //dbp("%d %d %d", AvrProgLdLen, AvrProgWriteP, BeginOfPLCCycle);
 }
