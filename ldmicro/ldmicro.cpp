@@ -512,8 +512,9 @@ static void CompileProgram(BOOL compileAs, int MNU)
             ofn.lpstrDefExt = "c";
             c = "c";
           //compile_MNU = MNU;
-        } else if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
-                               Prog.mcu->whichIsa == ISA_NETZER)) {
+        } else if ((MNU == MNU_COMPILE_INT) ||
+            (Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
+                          Prog.mcu->whichIsa == ISA_NETZER))) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
             c = "int";
@@ -594,7 +595,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
         CompileAnsiC(CurrentCompileFile, 0/*ISA_ARDUINO*/, MNU);
         postCompile("ARDUINO");
     } else if (MNU == MNU_COMPILE_INT) {
-        CompileXInterpreted(CurrentCompileFile);
+        CompileInterpreted(CurrentCompileFile);
         postCompile("INTERPRETED");
     } else if (MNU == MNU_COMPILE_XINT) {
         CompileXInterpreted(CurrentCompileFile);

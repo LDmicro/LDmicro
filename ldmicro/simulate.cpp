@@ -1655,6 +1655,12 @@ static void SimulateIntCode(void)
                 break;
 
             case INT_UART_SEND1:
+                if(SimulateUartTxCountdown == 0) {
+                    SimulateUartTxCountdown = 2;
+                    AppendToUartSimulationTextControl(
+                        (BYTE)GetSimulationVariable(a->name1));
+                }
+                break;
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) {
                     SimulateUartTxCountdown = 2;
@@ -1671,7 +1677,15 @@ static void SimulateIntCode(void)
                 if(SimulateUartTxCountdown == 0) {
                     SetSingleBit(a->name1, TRUE); // ready
                 } else {
-                    SetSingleBit(a->name1, FALSE); // not ready
+                    SetSingleBit(a->name1, FALSE); // not ready, busy
+                }
+                break;
+
+            case INT_UART_SEND_BUSY:
+                if(SimulateUartTxCountdown != 0) {
+                    SetSingleBit(a->name1, TRUE); // busy
+                } else {
+                    SetSingleBit(a->name1, FALSE); // not busy, ready
                 }
                 break;
 

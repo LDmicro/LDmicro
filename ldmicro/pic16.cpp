@@ -118,6 +118,8 @@ static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
 static DWORD PicProgWriteP;
 static DWORD BeginOfPLCCycle;
 
+DWORD PicProgLdLen = 0;
+
 static int IntPcNow = -INT_MAX; //must be static
 
 // Scratch variables, for temporaries
@@ -264,6 +266,7 @@ static DWORD REG_T1CON   = -1; // 0x10
 #define          T1CKPS0   BIT4
 
 static DWORD REG_T1GCON  = -1; //
+#define          TMR1GE    BIT7
 static DWORD REG_CCPR1L  = -1; // 0x15
 static DWORD REG_CCPR1H  = -1; // 0x16
 static DWORD REG_CCP1CON = -1; // 0x17
@@ -273,7 +276,7 @@ static DWORD REG_VRCON   = -1; // 0x9f
 //USART
 static DWORD REG_TXSTA   = -1; // 0x98
 #define          TXEN      BIT5
-#define          TRMT      BIT1// 1 is TSR empty, ready; 0 is TSR full
+#define          TRMT      BIT1// 1 is TSR empty, ready; 0 is TSR full, busy
 static DWORD REG_RCSTA   = -1; // 0x18
 #define          SPEN      BIT7
 #define          CREN      BIT4
@@ -340,13 +343,54 @@ BOOL McuAs(char *str)
 }
 
 //-----------------------------------------------------------------------------
+static char *GetName(int addrAt, char *name)
+{
+    name[0] = '\0';
+    int i = 0;
+    char *s;
+    s = strstr(PicProg[addrAt].commentAsm, "REG_");
+    if(s) {
+      s += 4;
+      if(isalpha_(*s)) {
+        while(isal_num(*s)) {
+            name[i] = *s;
+            s++;
+            i++;
+        }
+        name[i] = '\0';
+      }
+    }
+    return name;
+}
+
 //-----------------------------------------------------------------------------
 static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
 {
+    char s[MAX_NAME_LEN];
+    if(asm_discover_names <= 2) {
+        sprintf(s, "0x%02X", BYTE(PicProg[addrAt].arg1));
+    } else {
+        GetName(addrAt, s);
+        if(strlen(s) == 0)
+            sprintf(s, "0x%02X", PicProg[addrAt].arg1);
+    }
 
-    arg1s[0] = '\0';
+    sprintf(arg1s, "%-16s", s);
 
     arg1comm[0] = '\0';
+
+    if((asm_discover_names == 1) || (asm_discover_names == 2)) {
+      GetName(addrAt, s);
+      if(strcmp(arg1s, s) != 0)
+        sprintf(arg1comm, "%s ; %s", arg1comm, s);
+    }
+
+    if(asm_discover_names >= 3)
+      if(arg1s[0] != '0')
+        sprintf(arg1comm, "%s ; 0x%X", arg1comm, PicProg[addrAt].arg1);
+
+    if((asm_discover_names == 2) || (asm_discover_names == 4))
+        sprintf(arg1comm, "%s ; %d", arg1comm, PicProg[addrAt].arg1);
 }
 
 //-----------------------------------------------------------------------------
@@ -656,15 +700,6 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DW
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void _Comment1(char *str)
-{
-  if(asm_comment_level) {
-    if(strlen(str)>=MAX_COMMENT_LEN)
-      str[MAX_COMMENT_LEN-1]='\0';
-    Instruction(OP_COMMENT_INT, 0, 0, str);
-  }
-}
-
 static void Comment(char *str, ...)
 {
   if(asm_comment_level) {
@@ -1032,7 +1067,7 @@ static void BankCorrection()
 
 //---------------------------------------------------------------------------
 #define L_LABEL         0x01
-#define l_LABEL         0x02
+#define I_LABEL         0x02
 #define DIR_SET         0x08
 
 #define ENDS_RET        0x40
@@ -1048,16 +1083,16 @@ static void PagePreSet()
     }
     // PCLATH is 0 after reset
     PicProg[0].PCLATH = 0;
-    PicProg[0].label |= l_LABEL;
+    PicProg[0].label |= I_LABEL;
 
     // GOTO progStart
     PicProg[3].PCLATH = 0;
-    PicProg[3].label |= l_LABEL;
+    PicProg[3].label |= I_LABEL;
 
     // Mark the interrupt vector operation as the multi entry point.
     if(Prog.mcu->core != BaselineCore12bit) {
         PicProg[4].PCLATH = MULTYDEF(0);
-        PicProg[4].label |= l_LABEL;
+        PicProg[4].label |= I_LABEL;
     }
     // Mark Labels for GOTO and CALL
     for(i = 1; i < PicProgWriteP; i++) {
@@ -1101,7 +1136,7 @@ static void PagePreSet()
               PicProg[i-1].PCLATH &= ~NOTDEF(0);
               PicProg[i-1].PCLATH |= 1 << PicProg[i].arg2;
               PicProg[i].PCLATH |= PicProg[i-1].PCLATH;
-              PicProg[i-1].label = DIR_SET;
+              PicProg[i-1].label |= DIR_SET;
             }
         } else
         if((PicProg[i].opPic == OP_BCF)
@@ -1114,7 +1149,7 @@ static void PagePreSet()
               PicProg[i-1].PCLATH &= ~NOTDEF(0);
               PicProg[i-1].PCLATH &= ~(1 << PicProg[i].arg2);
               PicProg[i].PCLATH |= PicProg[i-1].PCLATH;
-              PicProg[i-1].label = DIR_SET;
+              PicProg[i-1].label |= DIR_SET;
             }
         } else
         if((PicProg[i].opPic == OP_MOVWF)
@@ -1465,13 +1500,14 @@ static void BankCheckForErrorsPostCompile()
 // PIC. Check that the operands do not have more bits set than is meaningful;
 // it is an internal error if they do.
 //-----------------------------------------------------------------------------
-static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
+static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm)
 //14-Bit Opcode
 {
     char arg1s[1024];
     char arg1comm[1024];
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
     IntOp *a = &IntCode[PicInstr->IntPc];
+    strcpy(sAsm,"");
     sprintf(arg1s, "0x%X", arg1);
     arg1comm[0] = '\0';
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) \
@@ -1488,65 +1524,78 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
         case OP_ADDWF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "addwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0700 | (arg2 << 7) | arg1;
 
         case OP_ANDWF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "andwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0500 | (arg2 << 7) | arg1;
 
         case OP_BSF:
             CHECK(arg2, 3); CHECK(arg1, 7);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "bsf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x1400 | (arg2 << 7) | arg1;
 
         case OP_BCF:
             CHECK(arg2, 3); CHECK(arg1, 7);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "bcf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x1000 | (arg2 << 7) | arg1;
 
         case OP_BTFSC:
             CHECK(arg2, 3); CHECK(arg1, 7);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "btfsc\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x1800 | (arg2 << 7) | arg1;
 
         case OP_BTFSS:
             CHECK(arg2, 3); CHECK(arg1, 7);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "btfss\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x1c00 | (arg2 << 7) | arg1;
 
         case OP_CLRF:
             CHECK(arg1, 7); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "clrf\t %s\t %s", arg1s, arg1comm);
             return 0x0180 | arg1;
 
         case OP_CLRWDT:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            sprintf(sAsm, "clrwdt\t \t \t ");
             return 0x0064;
 
         case OP_COMF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "comf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0900 | (arg2 << 7) | arg1;
 
         case OP_DECF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "decf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0300 | (arg2 << 7) | arg1;
 
         case OP_DECFSZ:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "decfsz %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0b00 | (arg2 << 7) | arg1;
 
         case OP_GOTO: {
             // Very special case: we will assume that the PCLATH stuff has
             // been taken care of already.
+            sprintf(sAsm, "goto\t l_%06x\t \t ", arg1);
             arg1 &= 0x7ff;
             CHECK(arg1, 11); CHECK(arg2, 0);
             return 0x2800 | arg1;
         }
         case OP_CALL: {
+            sprintf(sAsm, "call\t l_%06x\t \t ", arg1);
             arg1 &= 0x7ff;
             CHECK(arg1, 11); CHECK(arg2, 0);
             return 0x2000 | arg1;
@@ -1554,96 +1603,118 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
         case OP_INCF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "incf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0a00 | (arg2 << 7) | arg1;
 
         case OP_INCFSZ:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "incfsz %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0f00 | (arg2 << 7) | arg1;
 
         case OP_IORWF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "iorwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0400 | (arg2 << 7) | arg1;
 
         case OP_MOVLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "movlw\t %s \t %s", arg1s, arg1comm);
             return 0x3000 | arg1;
 
         case OP_MOVLB:
             CHECK(arg1, 5); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "movlb\t %s \t %s", arg1s, arg1comm);
             return 0x0020 | arg1;
 
         case OP_MOVLP:
             CHECK(arg1, 7); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "movlp\t %s \t %s", arg1s, arg1comm);
             return 0x3180 | arg1;
 
         case OP_MOVF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "movf\t %s, %d \t %s", arg1s, arg2, arg1comm);
             return 0x0800 | (arg2 << 7) | arg1;
 
         case OP_MOVWF:
             CHECK(arg1, 7); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "movwf\t %s\t %s", arg1s, arg1comm);
             return 0x0080 | arg1;
 
         case OP_NOP_:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            sprintf(sAsm, "nop\t \t\t \t ");
             return 0x0000;
 
         case OP_COMMENT_:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            if(strlen(PicInstr->commentInt))
+                sprintf(sAsm, "nop\t \t\t ; %s", PicInstr->commentInt);
+            else
+                sprintf(sAsm, "nop\t \t \t ");
             return 0x0000;
 
         case OP_RETLW:
             CHECK(BYTE(arg1), 8); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "retlw\t %s \t %s", arg1s, arg1comm);
             return 0x3400 | BYTE(arg1);
 
         case OP_RETURN:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            sprintf(sAsm, "return\t \t \t ");
             return 0x0008;
 
         case OP_RETFIE:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            sprintf(sAsm, "retfie\t \t \t ");
             return 0x0009;
 
         case OP_RLF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "rlf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0d00 | (arg2 << 7) | arg1;
 
         case OP_RRF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "rrf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0c00 | (arg2 << 7) | arg1;
 
         case OP_IORLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "iorlw\t %s \t %s", arg1s, arg1comm);
             return 0x3800 | arg1;
-
         case OP_SUBWF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "subwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0200 | (arg2 << 7) | arg1;
 
         case OP_XORWF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "xorwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0600 | (arg2 << 7) | arg1;
 
         case OP_SWAPF:
             CHECK(arg1, 7); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "swapf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0E00 | (arg2 << 7) | arg1;
 
         case OP_SLEEP_:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            sprintf(sAsm, "sleep\t\t\t\t ");
             return 0x0063;
 
         default:
@@ -1652,13 +1723,14 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
     }
 }
 
-static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
+static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm)
 //12-Bit Opcode for PIC10, PIC12
 {
     char arg1s[1024];
     char arg1comm[1024];
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
     IntOp *a = &IntCode[PicInstr->IntPc];
+    strcpy(sAsm,"");
     sprintf(arg1s, "0x%X", arg1);
     arg1comm[0] = '\0';
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) \
@@ -1670,65 +1742,78 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
         case OP_ADDWF:
             CHECK(arg2, 1); CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "addwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x1C0 | (arg2 << 5) | arg1;
 
         case OP_ANDWF:
             CHECK(arg2, 1); CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "andwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x140 | (arg2 << 5) | arg1;
 
         case OP_BCF:
             CHECK(arg2, 3); CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "bcf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x400 | (arg2 << 5) | arg1;
 
         case OP_BSF:
             CHECK(arg2, 3); CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "bsf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x500 | (arg2 << 5) | arg1;
 
         case OP_BTFSC:
             CHECK(arg2, 3); CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "btfsc\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x600 | (arg2 << 5) | arg1;
 
         case OP_BTFSS:
             CHECK(arg2, 3); CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "btfss\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x700 | (arg2 << 5) | arg1;
 
         case OP_CLRF:
             CHECK(arg1, 5); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "clrf\t %s\t %s", arg1s, arg1comm);
             return 0x060 | arg1;
 
         case OP_CLRWDT:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            sprintf(sAsm, "clrwdt\t \t \t ");
             return 0x004;
 
         case OP_COMF:
             CHECK(arg2, 1); CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "comf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x240 | (arg2 << 5) | arg1;
 
         case OP_DECF:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "decf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x0C0 | (arg2 << 5) | arg1;
 
         case OP_DECFSZ:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "decfsz %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x2C0 | (arg2 << 5) | arg1;
 
         case OP_GOTO: {
             // Very special case: we will assume that the PCLATH stuff has
             // been taken care of already.
+            sprintf(sAsm, "goto\t l_%06x\t \t ", arg1);
             arg1 &= 0x1ff;
             CHECK(arg1, 9); CHECK(arg2, 0);
             return 0xA00 | arg1;
         }
         case OP_CALL: {
+            sprintf(sAsm, "call\t l_%06x\t \t ", arg1);
             arg1 &= 0xff;
             CHECK(arg1, 8); CHECK(arg2, 0);
             return 0x900 | arg1;
@@ -1736,98 +1821,108 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
         case OP_INCF:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "incf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x280 | (arg2 << 5) | arg1;
 
         case OP_INCFSZ:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "incfsz %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x3C0 | (arg2 << 5) | arg1;
 
         case OP_IORWF:
             CHECK(arg2, 1); CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "iorwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x100 | (arg2 << 5) | arg1;
 
         case OP_MOVLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "movlw\t %s \t %s", arg1s, arg1comm);
             return 0xC00 | arg1;
-/*
-        case OP_MOVLB:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            discoverArgs(addrAt, arg1s, arg1comm);
-            return 0x020 | arg1;
 
-        case OP_MOVLP:
-            CHECK(arg1, 5); CHECK(arg2, 0);
-            discoverArgs(addrAt, arg1s, arg1comm);
-            return 0x3180 | arg1;
-*/
         case OP_MOVF:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "movf\t %s, %d \t %s", arg1s, arg2, arg1comm);
             return 0x200 | (arg2 << 5) | arg1;
 
         case OP_MOVWF:
             CHECK(arg1, 5); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "movwf\t %s\t %s", arg1s, arg1comm);
             return 0x020 | arg1;
 
         case OP_NOP_:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            sprintf(sAsm, "nop\t \t\t \t ");
             return 0x000;
 
         case OP_COMMENT_:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            if(strlen(PicInstr->commentInt))
+                sprintf(sAsm, "nop\t \t\t ; %s", PicInstr->commentInt);
+            else
+                sprintf(sAsm, "nop\t \t \t ");
             return 0x000;
 
         case OP_RETLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "retlw\t %s \t %s", arg1s, arg1comm);
             return 0x800 | BYTE(arg1);
 
         case OP_RLF:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "rlf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x340 | (arg2 << 5) | arg1;
 
         case OP_RRF:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "rrf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x300 | (arg2 << 5) | arg1;
 
         case OP_IORLW:
             CHECK(arg1, 8); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "iorlw\t %s\t \t %s", arg1s, arg1comm);
             return 0xD00 | arg1;
-
         case OP_SUBWF:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "subwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x080 | (arg2 << 5) | arg1;
 
         case OP_XORWF:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "xorwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x180 | (arg2 << 5) | arg1;
 
         case OP_SWAPF:
             CHECK(arg1, 5); CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "swapf\t %s, %d\t %s", arg1s, arg2, arg1comm);
             return 0x380 | (arg2 << 5) | arg1;
 
         case OP_TRIS:
             CHECK(arg1, 3); CHECK(arg2, 0);
             if( !((arg1==6) || (arg1==7)) ) oops();
             discoverArgs(addrAt, arg1s, arg1comm);
+            sprintf(sAsm, "tris\t %s\t %s", arg1s, arg1comm);
             return 0x000 | arg1;
 
         case OP_OPTION:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            sprintf(sAsm, "option\t\t\t ");
             return 0x002;
 
         case OP_SLEEP_:
             CHECK(arg1, 0); CHECK(arg2, 0);
+            sprintf(sAsm, "sleep\t\t\t\t ");
             return 0x003;
 
         default:
@@ -1836,10 +1931,139 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2)
     }
 }
 
-static DWORD Assemble16(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, DWORD arg3)
+static DWORD Assemble16(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, DWORD arg3, char *sAsm)
 //16-Bit Instruction Word for PIC18
 {
+    PicAvrInstruction *PicInstr = &PicProg[addrAt];
+    IntOp *a = &IntCode[PicInstr->IntPc];
+    sAsm[0] = '\0';
+    switch(op) {
+        case OP_ADDWF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x2400 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_ANDWF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x1400 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_BSF:
+            CHECK(arg1, 8); CHECK(arg2, 3); CHECK(arg3, 1);
+            return 0x8000 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_BCF:
+            CHECK(arg1, 8); CHECK(arg2, 3); CHECK(arg3, 1);
+            return 0x9000 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_BTFSC:
+            CHECK(arg1, 8); CHECK(arg2, 3); CHECK(arg3, 1);
+            return 0xB000 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_BTFSS:
+            CHECK(arg1, 8); CHECK(arg2, 3); CHECK(arg3, 1);
+            return 0xA000 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_CLRF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 0);
+            return 0x6A00 | (arg2 << 8) | arg1;
+
+        case OP_CLRWDT:
+            CHECK(arg1, 0); CHECK(arg2, 0); CHECK(arg3, 0);
+            return 6;
+
+        case OP_COMF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x1C00 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_DECF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x0400 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_DECFSZ:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x2C00 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_GOTO:
+            // Very special case: we will assume that the PCLATH stuff has
+            // been taken care of already.
+            CHECK(arg1, 20); CHECK(arg2, 0); CHECK(arg3, 0);
+            return 0xEF00F000 | ((arg1 & 0xff) << 16) | ((arg1 >> 8) & 0xFFF);
+
+        case OP_CALL:
+            CHECK(arg1, 20); CHECK(arg2, 1); CHECK(arg3, 0);
+            return 0xEF00F000 | ((arg1 & 0xff) << 16) | ((arg1 >> 8) & 0xFFF) | (arg2 << 24);
+
+        case OP_INCF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x2800 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_INCFSZ:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x3C00 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_IORWF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x1000 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_MOVLW:
+            CHECK(arg1, 8); CHECK(arg2, 0); CHECK(arg3, 0);
+            return 0x0E00 | arg1;
+
+        case OP_MOVF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x5000 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_MOVWF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 0);
+            return 0x6E00 | (arg2 << 8) | arg1;
+
+        case OP_NOP_:
+            CHECK(arg1, 0); CHECK(arg2, 0); CHECK(arg3, 0);
+            return 0x0000F000;
+
+        case OP_RETLW:
+            CHECK(arg1, 8); CHECK(arg2, 0); CHECK(arg3, 0);
+            return 0x0C00 | arg1;
+
+        case OP_RETURN:
+            CHECK(arg1, 1); CHECK(arg2, 0); CHECK(arg3, 0);
+            return 0x0012 | arg1;
+
+        case OP_RETFIE:
+            CHECK(arg1, 1); CHECK(arg2, 0); CHECK(arg3, 0);
+            return 0x0010 | arg1;
+
+        case OP_RLF: // RLCF
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x3400 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_RRF: // RRCF
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x3000 | (arg2 << 9) | (arg3 << 8) | arg1;
+/*
+        case OP_SUBLW:
+            CHECK(arg1, 8); CHECK(arg2, 0); CHECK(arg3, 0);
+            return 0x8000 | arg1;
+*/
+        case OP_SUBWF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x5C00 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_XORWF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x1800 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_SWAPF:
+            CHECK(arg1, 8); CHECK(arg2, 1); CHECK(arg3, 1);
+            return 0x3800 | (arg2 << 9) | (arg3 << 8) | arg1;
+
+        case OP_SLEEP_:
+            CHECK(arg1, 0); CHECK(arg2, 0);
+            return 0x0003;
+
+        default:
+            ooops("OP_%d", op);
             return 0;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1866,11 +2090,11 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     for(i = 0; i < PicProgWriteP; i++) {
         DWORD w;
         if(Prog.mcu->core == BaselineCore12bit)
-            w = Assemble12(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2);
+            w = Assemble12(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, sAsm);
         else if(Prog.mcu->core == PIC18HighEndCore16bit)
-            w = Assemble16(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, 1);
+            w = Assemble16(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, 1, sAsm);
         else
-            w = Assemble(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2);
+            w = Assemble(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, sAsm);
 
         if(ExtendedSegmentAddress != (i & ~0x7fff)) {
             ExtendedSegmentAddress = (i & ~0x7fff);
@@ -2166,6 +2390,11 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char
     }
 }
 
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest)
+{
+    CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest, NULL);
+}
+
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, NULL, NULL);
@@ -2174,11 +2403,9 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest, char *nameSrc)
 {
     Comment("CopyNotBit");
-    if((
-      (addrDest != addrSrc)
+    if(( (addrDest != addrSrc)
       || (bitDest != bitSrc)
-    ) && (
-      (Bank(addrDest) == Bank(addrSrc))
+    )&&( (Bank(addrDest) == Bank(addrSrc))
       || IsCoreRegister(addrDest)
       || IsCoreRegister(addrSrc)
     )) {
@@ -2523,6 +2750,7 @@ void AllocBitsVars()
                 MemForSingleBit(a->name2, TRUE, &addr, &bit);
                 break;
 
+            case INT_UART_SEND_BUSY:
             case INT_UART_SEND_READY:
                 MemForSingleBit(a->name1, TRUE, &addr, &bit);
                 break;
@@ -3694,53 +3922,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                 }
                 break;
 
-            case INT_UART_SEND1: {
-                MemForVariable(a->name1, &addr1);
-                sov1 = SizeOfVar(a->name1);
-                MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
-                MemForVariable(a->name3, &addr3);
-
-                DWORD noSend = AllocFwdAddr();
-
-                // Little endian byte order
-                // REG_TXREG = X[addr1 + sov - 1 - X[addr3]]
-                Instruction(OP_MOVLW, addr1 + sov1 - 1);
-                Instruction(OP_MOVWF, REG_FSR);
-                Instruction(OP_MOVF, addr3, DEST_W);
-                Instruction(OP_SUBWF, REG_FSR, DEST_F);
-                Instruction(OP_MOVF, REG_INDF, DEST_W);
-                Instruction(OP_MOVWF, REG_TXREG);
-                /*
-                // Big endian byte order
-                // REG_TXREG = X[addr1 + X[addr3]]
-                Instruction(OP_MOVLW, addr1);
-                Instruction(OP_MOVWF, REG_FSR);
-                Instruction(OP_MOVF, addr3, DEST_W);
-                Instruction(OP_ADDWF, REG_FSR, DEST_F);
-                Instruction(OP_MOVF, REG_INDF, DEST_W);
-                Instruction(OP_MOVWF, REG_TXREG);
-                /**/
-                FwdAddrIsNow(noSend);
-                break;
-            }
-            case -INT_UART_SENDn: {
-                MemForVariable(a->name1, &addr1);
-                sov1 = SizeOfVar(a->name1);
-                MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
-
-                DWORD noSend = AllocFwdAddr();
-                IfBitClear(addr2, bit2);
-                Instruction(OP_GOTO, noSend, 0);
-
-                Instruction(OP_MOVF, addr1, DEST_W);
-                Instruction(OP_MOVWF, REG_TXREG);
-
-                FwdAddrIsNow(noSend);
-
-                CopyNotBit(addr2, bit2, REG_TXSTA, TRMT); // return as busy
-                break;
-            }
             case INT_UART_SEND_READY: {
+                Comment("INT_UART_SEND_READY");
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 #ifdef AUTO_BANKING
                 CopyBit(addr1, bit1, REG_TXSTA, TRMT); // TRMT=1 is TSR empty, ready; TRMT=0 is TSR full
@@ -3760,15 +3943,41 @@ static void CompileFromIntermediate(BOOL topLevel)
                 #endif
                 break;
             }
-            case INT_UART_SEND: {
+            case INT_UART_SEND_BUSY: {
+                Comment("INT_UART_SEND_BUSY");
+                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                #ifdef AUTO_BANKING
+                CopyNotBit(addr1, bit1, REG_TXSTA, TRMT); // TRMT=1 is TSR empty, ready; TRMT=0 is TSR full
+                #else
+                oops();
+                #endif
+                break;
+            }
+            case INT_UART_SEND1: {
+                Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
-                MemForSingleBit(a->name2, TRUE, &addr2, &bit2); // output
+
+                DWORD noSend = AllocFwdAddr();
+                IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
+                Instruction(OP_GOTO, noSend, 0);
+
+                Instruction(OP_MOVF, addr1, DEST_W);
+                Instruction(OP_MOVWF, REG_TXREG);
+
+                FwdAddrIsNow(noSend);
+                break;
+            }
+            case INT_UART_SEND: {
+                Comment("INT_UART_SEND");
+                MemForVariable(a->name1, &addr1);
+                MemForSingleBit(a->name2, TRUE, &addr2, &bit2); // stateInOut returns BUSY flag
 
                 DWORD noSend = AllocFwdAddr();
                 IfBitClear(addr2, bit2);
                 Instruction(OP_GOTO, noSend);
 
                 DWORD isBusy = AllocFwdAddr();
+
                 IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
                 Instruction(OP_GOTO, isBusy); // output stay HI level
 
@@ -4074,6 +4283,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     else if(prescale == 16)
                         t2con |= 2;
                     else oops();
+
                     WriteRegister(REG_T2CON, t2con);
                 } else oops();
 
@@ -4563,6 +4773,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 
             case INT_GOTO: {
                 int rung = a->literal;
+                Comment("INT_GOTO %s %d 0x%08X 0x%08X", a->name1, rung, AddrOfRungN[rung].FwdAddr, AddrOfRungN[rung].KnownAddr);
                 if(rung < -1) {
                     Instruction(OP_GOTO, 0);
                 } else if(rung == -1) {
@@ -4576,6 +4787,7 @@ static void CompileFromIntermediate(BOOL topLevel)
             }
             case INT_GOSUB: {
                 int rung = a->literal;
+                Comment("INT_GOSUB %s %d 0x%08X 0x%08X", a->name1, rung, AddrOfRungN[rung].FwdAddr, AddrOfRungN[rung].KnownAddr);
                 if(rung < rungNow) {
                     Instruction(OP_CALL, AddrOfRungN[rung].KnownAddr);
                 } else if(rung > rungNow) {
@@ -4655,7 +4867,7 @@ static void CompileFromIntermediate(BOOL topLevel)
             #endif
 
         case INT_DELAY: {
-            long long us = a->literal;
+            long long us = a->literal; // casting of data type
             us = us * Prog.mcuClock / 4000000;
             if(us <= 0 ) us = 1;
             int i;
@@ -4807,7 +5019,7 @@ static void ConfigureTimer1(long long int cycleTimeMicroseconds)
     || McuAs(" PIC16F1933 ")
     || McuAs(" PIC16F1947 ")
     ) {
-        Instruction(OP_BCF, REG_T1GCON, 7);
+        Instruction(OP_BCF, REG_T1GCON, TMR1GE);
     }
 
     BYTE ccp1con;
@@ -4974,7 +5186,7 @@ static void SetPrescaler(int tmr)
         else if(plcTmr.prescaler ==  64)   plcTmr.PS = 0x05;
         else if(plcTmr.prescaler == 128)   plcTmr.PS = 0x06;
         else if(plcTmr.prescaler == 256)   plcTmr.PS = 0x07;
-        else oops();
+        else ooops("%d", plcTmr.prescaler);
     } else if(tmr == 1) {
         plcTmr.PS = 0x00;
         // set up prescaler
@@ -4982,14 +5194,14 @@ static void SetPrescaler(int tmr)
         else if(plcTmr.prescaler == 2)   plcTmr.PS |= 0x10;
         else if(plcTmr.prescaler == 4)   plcTmr.PS |= 0x20;
         else if(plcTmr.prescaler == 8)   plcTmr.PS |= 0x30;
-        else oops();
+        else ooops("%d", plcTmr.prescaler);
         // enable clock, internal source
         plcTmr.PS |= 0x01;
     } else oops();
 }
 //-----------------------------------------------------------------------------
 // Calc PIC 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds)
+BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, DWORD PicProgLdLen)
 {
     //memset(plcTmr, 0, sizeof(plcTmr));
     plcTmr.ticksPerCycle = (long long int)floor(1.0 * Prog.mcuClock / 4 * cycleTimeMicroseconds / 1000000 + 0.5);
@@ -5002,7 +5214,7 @@ BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds)
     if(Prog.cycleTimer == 0) {
         max_tmr = 0x100;
         max_prescaler = 256;
-        max_softDivisor = 0xFFFF; // 1..0xFFFF
+        max_softDivisor = 0xFF; // 1..0xFFFF
     } else {
         max_tmr = 0x10000;
         max_prescaler = 8;
@@ -5010,10 +5222,10 @@ BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds)
     }
     plcTmr.cycleTimeMax = (long long int)floor(1.0e6 * max_tmr * max_prescaler * max_softDivisor * 4 / Prog.mcuClock + 0.5);
 
-    long int bestTmr = LONG_MIN;
-    long int bestPrescaler = LONG_MAX;
+    long int bestTmr = LONG_MIN/4;
+    long int bestPrescaler = LONG_MAX/4;
     long int bestSoftDivisor;
-    long long int bestErr = LLONG_MAX;
+    long long int bestErr = LLONG_MAX/4;
     long long int err;
     while(plcTmr.softDivisor <= max_softDivisor) {
         plcTmr.prescaler = max_prescaler;
@@ -5022,6 +5234,8 @@ BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds)
                 err = plcTmr.ticksPerCycle - long long int (plcTmr.tmr) * plcTmr.prescaler * plcTmr.softDivisor;
                 if(err < 0) err = -err;
 
+                if((PicProgLdLen <= 0)
+                || (plcTmr.prescaler * plcTmr.tmr >= PicProgLdLen / 3))
                 if((bestErr > err)
                 ||((bestErr == err) && (bestPrescaler < plcTmr.prescaler))
                 ) {
@@ -5246,7 +5460,7 @@ static void WriteDivideRoutine(void)
 // write to the file, or if there is something inconsistent about the
 // program.
 //-----------------------------------------------------------------------------
-void CompilePic16(char *outFile)
+static void _CompilePic16(char *outFile, int ShowMessage)
 {
     if(McuAs("Microchip PIC16F628 ")
     || McuAs(         " PIC16F72 ")
@@ -5812,13 +6026,15 @@ void CompilePic16(char *outFile)
     fprintf(fAsm, "; %s is the LDmicro target processor.\n", Prog.mcu->mcuList);
     fprintf(fAsm, "\tLIST    p=%s\n", Prog.mcu->mcuList);
     fprintf(fAsm, "#include ""%s.inc""\n", Prog.mcu->mcuInc);
+
     if(!Prog.configurationWord)
         Prog.configurationWord = Prog.mcu->configurationWord;
-
-    fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR1, Prog.configurationWord & 0xFFFF);
-    if(CONFIG_ADDR2 != -1)
-    fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR2, (Prog.configurationWord >> 16) & 0xFFFF);
-
+    if(CONFIG_ADDR2 != -1) {
+        fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR1, Prog.configurationWord & 0xFFFF);
+        fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR2, (Prog.configurationWord >> 16) & 0xFFFF);
+    } else {
+        fprintf(fAsm, "\t__CONFIG 0x%X\n", Prog.configurationWord & 0xFFFF);
+    }
     fprintf(fAsm, "\tradix dec\n");
     fprintf(fAsm, "\torg 0\n");
     fprintf(fAsm, ";TABSIZE = 8\n");
@@ -5917,7 +6133,7 @@ void CompilePic16(char *outFile)
     }
     if(Prog.cycleTime != 0) { // 1
         // Configure PLC Timer near the progStart
-        CalcPicPlcCycle(Prog.cycleTime);
+        CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
         if(Prog.cycleTimer==0)
             ConfigureTimer0(Prog.cycleTime);
         else
@@ -6156,18 +6372,16 @@ void CompilePic16(char *outFile)
         // X = Fosc/(bps*64)-1
         // and round, don't truncate
         int divisor = (Prog.mcuClock + Prog.baudRate*32)/(Prog.baudRate*64) - 1;
-
+        if(divisor > 255) {
+            ComplainAboutBaudRateOverflow();
+            divisor = 255;
+        }
         double actual = Prog.mcuClock/(64.0*(divisor+1));
         double percentErr = 100*(actual - Prog.baudRate)/Prog.baudRate;
 
         if(fabs(percentErr) > 2) {
             ComplainAboutBaudRateError(divisor, actual, percentErr);
         }
-        if(divisor > 255)
-          //if(REG_SPBRGH != -1)
-          //    WriteRegister(REG_SPBRGH, (divisor >> 8) & 0xFF);
-          //else
-                ComplainAboutBaudRateOverflow();
         WriteRegister(REG_SPBRG, divisor & 0xFF);
         WriteRegister(REG_TXSTA, 1 << TXEN); // only TXEN set, SYNC=0
         WriteRegister(REG_RCSTA, (1 << SPEN)|(1 << CREN)); // only SPEN, CREN set
@@ -6175,8 +6389,20 @@ void CompilePic16(char *outFile)
 
 //  Comment("Select Bank 0");
 //  BankSelect(0xFF, 0);
+    DWORD addrDuty;
+    int   bitDuty;
+    if(Prog.cycleDuty) {
+        MemForSingleBit(YPlcCycleDuty, FALSE, &addrDuty, &bitDuty);
+    }
+    DWORD addrINTCON_T0IF;
+    int   bitINTCON_T0IF;
+    DWORD BeginOfPLCCycle0;
+
+  //Instruction(OP_BCF,   REG_INTCON ,T0IF); // must be cleared in software
+
     Comment("Begin Of PLC Cycle");
     BeginOfPLCCycle = PicProgWriteP;
+    BeginOfPLCCycle0 = PicProgWriteP;
     if(Prog.cycleTime != 0) {
       if(Prog.cycleTimer == 0) {
           if(Prog.mcu->core == BaselineCore12bit) {
@@ -6198,6 +6424,31 @@ void CompilePic16(char *outFile)
               Instruction(OP_MOVLW, 256 - plcTmr.tmr + 1); // tested in Proteus - 1) 992Hz 0=996}
               Instruction(OP_MOVWF, REG_TMR0);
           } else {
+              if(plcTmr.softDivisor > 1) {
+                  if(Prog.cycleDuty) {
+                      CopyBit(addrDuty, bitDuty, REG_INTCON, T0IF, YPlcCycleDuty);
+                      addrINTCON_T0IF = addrDuty;
+                      bitINTCON_T0IF = bitDuty;
+                  } else {
+                      MemForSingleBit("$Y_INTCON_T0IF", FALSE, &addrINTCON_T0IF, &bitINTCON_T0IF);
+                      CopyBit(addrINTCON_T0IF, bitINTCON_T0IF, REG_INTCON, T0IF, "$Y_INTCON_T0IF");
+                  }
+                  /* aaa
+                  DWORD TMR0_not_overflow;
+                  TMR0_not_overflow = AllocFwdAddr();
+
+                  IfBitClear(REG_INTCON, T0IF);
+                  Instruction(OP_GOTO, TMR0_not_overflow);
+
+                  Instruction(OP_DECF, plcTmr.softDivisorAddr, DEST_F);
+                  if(plcTmr.softDivisor > 0xff) {
+                      //Instruction(OP_DECF, plcTmr.softDivisorAddr+1, DEST_F);
+                  }
+                  FwdAddrIsNow(TMR0_not_overflow);
+                  */
+              }
+
+              BeginOfPLCCycle0 = PicProgWriteP;
               Instruction(OP_MOVLW,  256 - plcTmr.tmr + 0); // tested in Proteus {DONE +0} {1ms=1kHz} {0.250ms=4kHz}
               IfBitClear(REG_INTCON, T0IF);
               Instruction(OP_GOTO,   PicProgWriteP - 1);
@@ -6210,6 +6461,16 @@ void CompilePic16(char *outFile)
               Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
               fCompileError(f, fAsm);
           }
+                  if(Prog.cycleDuty) {
+                      CopyBit(addrDuty, bitDuty, REG_PIR1, CCP1IF, YPlcCycleDuty);
+                      addrINTCON_T0IF = addrDuty;
+                      bitINTCON_T0IF = bitDuty;
+                  } else {
+                      MemForSingleBit("$Y_INTCON_T0IF", FALSE, &addrINTCON_T0IF, &bitINTCON_T0IF);
+                      CopyBit(addrINTCON_T0IF, bitINTCON_T0IF, REG_PIR1, CCP1IF, "$Y_INTCON_T0IF");
+                  }
+
+          BeginOfPLCCycle0 = PicProgWriteP;
           IfBitClear(REG_PIR1, CCP1IF);
           Instruction(OP_GOTO, PicProgWriteP - 1);
           Instruction(OP_BCF, REG_PIR1, CCP1IF);
@@ -6217,33 +6478,56 @@ void CompilePic16(char *outFile)
       Comment("Watchdog reset");
       Instruction(OP_CLRWDT);
       if(plcTmr.softDivisor > 1) {
+          DWORD setLiteral = AllocFwdAddr();;
+          /*
           DWORD yesZero;
           if(plcTmr.softDivisor > 0xff) {
               yesZero = AllocFwdAddr();
           }
-          Instruction(OP_DECFSZ, plcTmr.softDivisorAddr, DEST_F); // Skip if zero
-          Instruction(OP_GOTO, BeginOfPLCCycle);
+          */
+          DWORD Decrement2 = AllocFwdAddr();
+          /*
+          Instruction(OP_MOVF, plcTmr.softDivisorAddr, DEST_F);
+          Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
+          Instruction(OP_GOTO, yesZero);
+          */
 
+          /**/
+          IfBitClear(addrINTCON_T0IF, bitINTCON_T0IF);
+          Instruction(OP_GOTO, Decrement2);
+/*
+              Instruction(OP_MOVLW, 256 - plcTmr.tmr + 0); // tested in Proteus {DONE +0} {1ms=1kHz} {0.250ms=4kHz}
+              Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+              Instruction(OP_SUBWF, REG_TMR0, DEST_F); // 4012 //7967 = 8kHz = 0.125ms
+*/
+          Instruction(OP_DECF, plcTmr.softDivisorAddr, DEST_F); // Skip if zero
+
+          Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
+          Instruction(OP_GOTO, setLiteral);
+
+          FwdAddrIsNow(Decrement2);
+          /**/
+
+          Instruction(OP_DECFSZ, plcTmr.softDivisorAddr, DEST_F); // Skip if zero
+          Instruction(OP_GOTO, BeginOfPLCCycle0);
+          /*
           if(plcTmr.softDivisor > 0xff) {
               Instruction(OP_MOVF, plcTmr.softDivisorAddr+1, DEST_F);
               Instruction(OP_BTFSC,REG_STATUS, STATUS_Z); // Skip if not zero
               Instruction(OP_GOTO, yesZero);
               Instruction(OP_DECF, plcTmr.softDivisorAddr+1, DEST_F);
-              Instruction(OP_GOTO, BeginOfPLCCycle);
+              Instruction(OP_GOTO, BeginOfPLCCycle0);
               FwdAddrIsNow(yesZero);
-
-              WriteRegister(plcTmr.softDivisorAddr+1, BYTE(plcTmr.softDivisor >> 8)-1);
           }
-          WriteRegister(plcTmr.softDivisorAddr, BYTE(plcTmr.softDivisor & 0xff));
+          */
+          FwdAddrIsNow(setLiteral);
+          CopyLiteralToRegs(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
       }
     } else { // (Prog.cycleTime == 0)
       Comment("Watchdog reset");
       Instruction(OP_CLRWDT);
     }
-    DWORD addrDuty;
-    int   bitDuty;
     if(Prog.cycleDuty) {
-        MemForSingleBit(YPlcCycleDuty, FALSE, &addrDuty, &bitDuty);
         Comment("SetBit YPlcCycleDuty");
         SetBit(addrDuty, bitDuty, "YPlcCycleDuty");
     }
@@ -6319,32 +6603,52 @@ void CompilePic16(char *outFile)
     fflush(fAsm);
     fclose(fAsm);
 
-    char str[MAX_PATH+500];
-    sprintf(str, _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
-        "Configuration word (fuses) has been set for crystal oscillator, BOD "
-        "enabled, LVP disabled, PWRT enabled, all code protection off."),
-            outFile, PicProgWriteP, Prog.mcu->flashWords,
+    PicProgLdLen = PicProgWriteP - BeginOfPLCCycle;
+    //dbp("%ld - %ld = %ld", PicProgWriteP, BeginOfPLCCycle, PicProgLdLen);
+
+    if(ShowMessage) {
+        char str[MAX_PATH+500];
+
+        if(Prog.cycleTime) {
+            double CycleDeviation = 1e2*(1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime;
+            if(CycleDeviation > 1.0) {
+                sprintf(str, _("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
+                Error(str);
+            }
+        }
+
+        sprintf(str, _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
+            "Configuration word (fuses) has been set for crystal oscillator, BOD "
+            "enabled, LVP disabled, PWRT enabled, all code protection off."),
+                outFile, PicProgWriteP, Prog.mcu->flashWords,
+                (100*PicProgWriteP)/Prog.mcu->flashWords);
+
+        char str2[MAX_PATH+500];
+        sprintf(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
+            PicProgWriteP, Prog.mcu->flashWords,
             (100*PicProgWriteP)/Prog.mcu->flashWords);
 
-    char str2[MAX_PATH+500];
-    sprintf(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
-        PicProgWriteP, Prog.mcu->flashWords,
-        (100*PicProgWriteP)/Prog.mcu->flashWords);
+        char str3[MAX_PATH+500];
+        sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
+            UsedRAM(), McuRAM(),
+            (100*UsedRAM())/McuRAM());
 
-    char str3[MAX_PATH+500];
-    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
-        UsedRAM(), McuRAM(),
-        (100*UsedRAM())/McuRAM());
+        char str4[MAX_PATH+500];
+        sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
 
-    char str4[MAX_PATH+500];
-    sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
+        if(PicProgWriteP > Prog.mcu->flashWords) {
+            CompileSuccessfulMessage(str4, MB_ICONWARNING);
+            CompileSuccessfulMessage(str2, MB_ICONERROR);
+        } else if(UsedRAM() > McuRAM()) {
+            CompileSuccessfulMessage(str4, MB_ICONWARNING);
+            CompileSuccessfulMessage(str3, MB_ICONERROR);
+        } else
+            CompileSuccessfulMessage(str4);
+    }
+}
 
-    if(PicProgWriteP > Prog.mcu->flashWords) {
-        CompileSuccessfulMessage(str4, MB_ICONWARNING);
-        CompileSuccessfulMessage(str2, MB_ICONERROR);
-    } else if(UsedRAM() > McuRAM()) {
-        CompileSuccessfulMessage(str4, MB_ICONWARNING);
-        CompileSuccessfulMessage(str3, MB_ICONERROR);
-    } else
-        CompileSuccessfulMessage(str4);
+void CompilePic16(char *outFile)
+{
+    _CompilePic16(outFile, 0); // 1) calc LD length approximately
+    _CompilePic16(outFile, 1); // 2) recalc timer prescaler and value
 }

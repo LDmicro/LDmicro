@@ -59,9 +59,9 @@ int asm_comment_level  = 2;
 //for example
 //-----------------------------------------------------------------------------
 int asm_discover_names = 0;
-//                       0- no discover
+//                     * 0- no discover
 //                       1- discover name if posible
-//                     * 2-     -//- and add dec value
+//                       2-     -//- and add dec value
 //                       3- replace name if posible
 //                       4-     -//- and add dec value
 //for example
@@ -365,14 +365,20 @@ void IntDumpListing(char *outFile)
             }
             case INT_UART_SEND1:
             case INT_UART_SENDn:
+                fprintf(f, "uart send from '%s'", IntCode[i].name1);
+                break;
+
             case INT_UART_SEND:
                 fprintf(f, "uart send from '%s', done? into '%s'",
                     IntCode[i].name1, IntCode[i].name2);
                 break;
 
             case INT_UART_SEND_READY:
-                fprintf(f, "'%s' = is uart ready to send ?",
-                    IntCode[i].name1);
+                fprintf(f, "'%s' = is uart ready to send ?", IntCode[i].name1);
+                break;
+
+            case INT_UART_SEND_BUSY:
+                fprintf(f, "'%s' = is uart busy to send ?", IntCode[i].name1);
                 break;
 
             case INT_UART_RECVn:
@@ -1240,6 +1246,9 @@ static void InitVarsCircuit(int which, void *elem, int *n)
         case ELEM_CTD: {
             if(IsNumber(l->d.counter.init)) {
                 int init = CheckMakeNumber(l->d.counter.init);
+                int b = byteNeeded(init);
+                if(SizeOfVar(l->d.counter.name) != b)
+                    SetSizeOfVar(l->d.counter.name, b);
                 //if(init != 0) { // need reinit if CTD(c1), CTU(c1)
                     if(n)
                         (*n)++; // counting the number of variables
@@ -1367,6 +1376,7 @@ static char *VarFromExpr(char *expr, char *tempName)
 //-----------------------------------------------------------------------------
 static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 {
+    char *stateInOut2 = "$overlap";
     whichNow = which;
     leafNow = (ElemLeaf *)any;
     ElemLeaf *l = (ElemLeaf *)any;
@@ -2613,14 +2623,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             case ELEM_UART_RECV_AVAIL:
                 Comment(3, "ELEM_UART_RECV_AVAIL");
                 //Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_UART_RECV_AVAIL, stateInOut);
+                Op(INT_UART_RECV_AVAIL, stateInOut);
                 //Op(INT_END_IF);
                 break;
 
             case ELEM_UART_SEND_READY:
                 Comment(3, "ELEM_UART_SEND_READY");
                 //Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_UART_SEND_READY, stateInOut);
+                Op(INT_UART_SEND_READY, stateInOut);
                 //Op(INT_END_IF);
                 break;
         }
@@ -2658,7 +2668,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             if((intOp == INT_SET_VARIABLE_NEG)
             || (intOp == INT_SET_VARIABLE_NOT)
             ) {
-                Op(intOp, l->d.math.dest, l->d.math.op1, stateInOut);
+                Op(intOp, l->d.math.dest, l->d.math.op1);
             } else {
                 if((which == ELEM_SR0)
                 || (which == ELEM_SHL) || (which == ELEM_SHR)
@@ -2669,7 +2679,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                         CompileError();
                     }
                 }
-                Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2);
+                Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2, stateInOut2);
             }
             Op(INT_END_IF);
             break;
@@ -2694,37 +2704,37 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
             &&(strcmp(l->d.math.op2,"1")==0)) {
-                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
             } else if((intOp == INT_SET_VARIABLE_SUBTRACT)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
             &&(strcmp(l->d.math.op2,"-1")==0)) {
-                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
 
             } else if((intOp == INT_SET_VARIABLE_ADD)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
             &&(strcmp(l->d.math.op2,"1")==0)) {
-                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
             } else if((intOp == INT_SET_VARIABLE_ADD)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op2)==0)
             &&(strcmp(l->d.math.op1,"1")==0)) {
-                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+                Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
             } else if((intOp == INT_SET_VARIABLE_ADD)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
             &&(strcmp(l->d.math.op2,"-1")==0)) {
-                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
             } else if((intOp == INT_SET_VARIABLE_ADD)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op2)==0)
             &&(strcmp(l->d.math.op1,"-1")==0)) {
-                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut, "ROverflowFlagV");
+                Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
 
             } else {
                 char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
-                Op(intOp, l->d.math.dest, op1, op2, stateInOut, "ROverflowFlagV");
+                Op(intOp, l->d.math.dest, op1, op2, stateInOut2, "ROverflowFlagV");
             }
             Op(INT_END_IF);
             break;
@@ -3251,8 +3261,12 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SDWORD)0);
             Op(INT_ELSE);
               Op(INT_IF_BIT_SET, doSend);
+                /*
                 Op(INT_SET_BIT, "$scratch");
                 Op(INT_UART_SEND, "$charToUart", "$scratch");
+                */
+                Op(INT_UART_SEND1, "$charToUart");
+                /**/
                 Op(INT_INCREMENT_VARIABLE, seq);
               Op(INT_END_IF);
             Op(INT_END_IF);
@@ -3541,6 +3555,7 @@ BOOL UartFunctionUsed(void)
         || (IntCode[i].op == INT_UART_SEND1)
         || (IntCode[i].op == INT_UART_SENDn)
         || (IntCode[i].op == INT_UART_SEND_READY)
+        || (IntCode[i].op == INT_UART_SEND_BUSY)
         || (IntCode[i].op == INT_UART_RECV_AVAIL)
         || (IntCode[i].op == INT_UART_RECVn)
         || (IntCode[i].op == INT_UART_RECV))
@@ -3560,6 +3575,7 @@ BOOL UartRecvUsed(void)
 
     for(i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_RECV)
+        || (IntCode[i].op == INT_UART_RECV_AVAIL)
         || (IntCode[i].op == INT_UART_RECVn))
             return TRUE;
     }
@@ -3577,6 +3593,8 @@ BOOL UartSendUsed(void)
 
     for(i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_SEND)
+        || (IntCode[i].op == INT_UART_SEND_READY)
+        || (IntCode[i].op == INT_UART_SEND_BUSY)
         || (IntCode[i].op == INT_UART_SEND1)
         || (IntCode[i].op == INT_UART_SENDn))
             return TRUE;
@@ -3592,8 +3610,6 @@ BOOL Bin32BcdRoutineUsed(void)
     }
     return FALSE;
 }
-
-
 
 //-----------------------------------------------------------------------------
 // Are either of the MultiplyRoutine functions used?
