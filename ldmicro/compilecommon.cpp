@@ -399,7 +399,7 @@ int byteNeeded(long long int i)
         return 3;
     else if((-2147483648LL<=i) && (i<=2147483647LL))
         return 4; // not FULLY implamanted for LDmicro
-    else oops();
+    oops();
     return 0;
 }
 
@@ -461,11 +461,7 @@ int MemForVariable(char *name, DWORD *addrl, int sizeOfVar)
         } else {
             Variables[i].SizeOfVar = sizeOfVar;
             if(Variables[i].Allocated >= sizeOfVar) {
-               //if(Variables[i].Allocated > sizeOfVar)
-               //    Error(_(" You can decrease size of variable '%s' to %d bit in LD file."), name, sizeOfVar*8);
             } else {
-               //Error(_("Can not increase size of variable '%s' to %d bit.\nYou must increase size of variable in LD file!"), name, sizeOfVar*8);
-               //CompileError();
                Variables[i].Allocated = 0; // Request to reallocate memory of var
             }
         }
@@ -584,7 +580,8 @@ int MemOfVar(char *name, DWORD *addr)
 int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 {
     MemForVariable(name, &addr, sizeOfVar); //allocate WORD memory for pointer to LPM
-    return SetSizeOfVar(name, sizeOfVar); //and set size of element of table in flash memory
+
+    return MemForVariable(name, NULL, sizeOfVar); //and set size of element of table in flash memory
 }
 
 //-----------------------------------------------------------------------------
@@ -657,10 +654,18 @@ int SetVariableType(char *name, int type)
         }
         Variables[i].type = type;
     } else {
-        if(Variables[i].type == IO_TYPE_PENDING)
+        if(Variables[i].type == IO_TYPE_PENDING) {
             Variables[i].type = type;
+        } else {
+            if((Variables[i].type==IO_TYPE_COUNTER) && (type==IO_TYPE_GENERAL)) {
+                /*skip*/;
+            } else if((Variables[i].type==IO_TYPE_GENERAL) && (type==IO_TYPE_COUNTER)) {
+                Variables[i].type = type; // replace // iolist.cpp
+            } else {
+            }
+        }
     }
-    return type;
+    return Variables[i].type;
 }
 //-----------------------------------------------------------------------------
 

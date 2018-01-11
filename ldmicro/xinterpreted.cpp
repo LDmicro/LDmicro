@@ -63,6 +63,7 @@ static int CheckRange(int value, char *name)
 
 static BYTE GetArduinoPinNumber(int pin)
 {
+    if(Prog.mcu)
     for (int i = 0; i < Prog.mcu->pinCount; i++) {
         if (Prog.mcu->pinInfo[i].pin == pin)
             return Prog.mcu->pinInfo[i].ArduinoPin;
@@ -217,6 +218,15 @@ finishIf:
                 // Don't care; ignore, and don't generate an instruction.
                 continue;
 
+            case INT_AllocFwdAddr:
+            case INT_AllocKnownAddr:
+            case INT_FwdAddrIsNow:
+            case INT_GOTO:
+            case INT_GOSUB:
+            case INT_RETURN:
+                // TODO
+                break;
+
             #ifdef USE_SFR
             case  INT_READ_SFR_LITERAL:
             case  INT_WRITE_SFR_LITERAL:
@@ -246,13 +256,17 @@ finishIf:
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
             case INT_UART_SEND:
+            case INT_UART_SEND1:
+            case INT_UART_SENDn:
             case INT_UART_RECV:
             case INT_UART_SEND_READY:
+            case INT_UART_SEND_BUSY:
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
                 Error(_("Unsupported op (anything UART, EEPROM, SFR..) for "
                     "interpretable target."));
+                Error("INT_%d", IntCode[ipc].op);
                 fclose(f);
                 return;
         }
@@ -266,7 +280,7 @@ finishIf:
 
     for (int i = 0; i < Prog.io.count; i++) {
         PlcProgramSingleIo io = Prog.io.assignment[i];
-        fprintf(f, "%2d %10s %2d %2d %2d %05d\n",
+        fprintf(f, "%2d %20s %2d %2d %2d %05d\n",
             i, io.name, io.type,
             GetArduinoPinNumber(io.pin),
             io.modbus.Slave, io.modbus.Address);

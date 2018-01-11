@@ -167,10 +167,12 @@ void CompileInterpreted(char *outFile)
             case INT_IF_BIT_CLEAR:
                 op.name1 = AddrForInternalRelay(IntCode[ipc].name1);
                 goto finishIf;
+
             case INT_IF_VARIABLE_LES_LITERAL:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 op.literal = IntCode[ipc].literal;
                 goto finishIf;
+
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
@@ -209,6 +211,15 @@ finishIf:
                 // Don't care; ignore, and don't generate an instruction.
                 continue;
 
+            case INT_AllocFwdAddr:
+            case INT_AllocKnownAddr:
+            case INT_FwdAddrIsNow:
+            case INT_GOTO:
+            case INT_GOSUB:
+            case INT_RETURN:
+                // TODO
+                break;
+
             #ifdef USE_SFR
             case  INT_READ_SFR_LITERAL:
             case  INT_WRITE_SFR_LITERAL:
@@ -240,13 +251,17 @@ finishIf:
             case INT_READ_ADC:
             case INT_SET_PWM:
             case INT_UART_SEND:
+            case INT_UART_SEND1:
+            case INT_UART_SENDn:
             case INT_UART_RECV:
+            case INT_UART_SEND_BUSY:
             case INT_UART_SEND_READY:
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
                 Error(_("Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for "
                     "interpretable target."));
+                Error("INT_%d", IntCode[ipc].op);
                 fclose(f);
                 return;
         }

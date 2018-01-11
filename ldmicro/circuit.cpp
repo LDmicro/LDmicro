@@ -1011,6 +1011,9 @@ void FreeEntireProgram(void)
     Prog.mcuClock = 16000000;
     Prog.baudRate = 9600;
     Prog.io.count = 0;
+    Prog.cycleTimer = 1;
+    Prog.cycleDuty = 0;
+    Prog.configurationWord = 0;
     SetMcu(NULL);
 
     WipeIntMemory();
