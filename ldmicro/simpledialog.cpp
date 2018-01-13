@@ -35,6 +35,7 @@ static HWND SimpleDialog;
 
 static HWND Textboxes[MAX_BOXES];
 static HWND Labels[MAX_BOXES];
+static HWND ComboBox;
 
 static LONG_PTR PrevAlnumOnlyProc[MAX_BOXES];
 static LONG_PTR PrevNumOnlyProc[MAX_BOXES];
@@ -95,7 +96,7 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     return 0;
 }
 
-static void MakeControls(int boxes, char **labels, DWORD fixedFontMask)
+static void MakeControls(int boxes, char **labels, char **dests, DWORD fixedFontMask, int combo, char **combos)
 {
     int i;
     HDC hdc = GetDC(SimpleDialog);
@@ -137,6 +138,33 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask)
             NiceFont(Textboxes[i]);
         }
     }
+
+    if(combo) {
+        //EnableWindow(Textboxes[boxes-1], FALSE);
+        ShowWindow(Textboxes[boxes-1], SW_HIDE);
+
+        ComboBox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+            WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS |WS_VISIBLE |
+            CBS_DROPDOWN | CBS_HASSTRINGS | WS_OVERLAPPED,
+            80 + 25 + adj, 12 + 30*(boxes-1), 120 + 535 - adj, 21,
+            SimpleDialog, NULL, Instance, NULL);
+
+        if(fixedFontMask & (1 << (boxes-1))) {
+            FixedFont(ComboBox);
+        } else {
+            NiceFont(ComboBox);
+        }
+
+       int ItemIndex = 0;
+       for(i = 0; i < combo; i++) {
+           SendMessage(ComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) combos[i]);
+           if(dests[boxes-1] && strlen(dests[boxes-1]))
+             if(strstr(combos[i], dests[boxes-1]))
+               ItemIndex = i;
+       }
+       SendMessage(ComboBox, CB_SETCURSEL, (WPARAM)ItemIndex, (LPARAM)0);
+    }
+
     ReleaseDC(SimpleDialog, hdc);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -151,7 +179,7 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask)
 }
 
 BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
-    DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests)
+    DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests, int combo, char **combos)
 {
     BOOL didCancel;
 
@@ -162,7 +190,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
         100, 100, 304 + 550, 15 + 30*(boxes < 2 ? 2 : boxes), NULL, NULL,
         Instance, NULL);
 
-    MakeControls(boxes, labels, fixedFontMask);
+    MakeControls(boxes, labels, dests, fixedFontMask, combo, combos);
 
     int i;
     for(i = 0; i < boxes; i++) {
@@ -207,6 +235,10 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     didCancel = DialogCancel;
 
     if(!didCancel) {
+        if(combo) {
+            int ItemIndex = SendMessage(ComboBox, CB_GETCURSEL, 0, 0);
+            SendMessage(Textboxes[boxes-1], WM_SETTEXT, 0, (LPARAM)combos[ItemIndex]);
+        }
         for(i = 0; i < boxes; i++) {
             if(NoCheckingOnBox[i]) {
                 char get[MAX_NAME_LEN];
@@ -237,6 +269,13 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     DestroyWindow(SimpleDialog);
 
     return !didCancel;
+}
+
+BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
+    DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests)
+{
+    return ShowSimpleDialog(title, boxes, labels, numOnlyMask,
+           alnumOnlyMask, fixedFontMask, dests, 0, NULL);
 }
 
 void ShowTimerDialog(int which, SDWORD *delay, char *name)
@@ -732,9 +771,15 @@ void ShowSetPwmDialog(void *e)
     char *name          = s->name;
     char *duty_cycle    = s->duty_cycle;
     char *targetFreq    = s->targetFreq;
-    char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):")};
-    char *dests[] = { name+1, duty_cycle, targetFreq};
-    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 3, labels, 0x4, 0x3, 0x7, dests)) {
+//  char *invertingMode = &s->invertingMode;
+    char *resolution    = s->resolution;
+
+    char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
+    char *dests[] = { name+1, duty_cycle, targetFreq, resolution};
+    char *resolutions[] = { "0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"};
+
+    NoCheckingOnBox[3] = TRUE;
+    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 4, labels, 0x4, 0x3, 0x7, dests, 4, resolutions)) {
         //TODO: check the available range
         double freq = hobatoi(targetFreq);
         if(freq < 0)
@@ -748,6 +793,7 @@ void ShowSetPwmDialog(void *e)
         if(duty > 100.0)
             Error(_("'%s' duty > 100"), duty_cycle, Prog.mcuClock);
     }
+    NoCheckingOnBox[3] = FALSE;
 }
 
 void ShowUartDialog(int which, char *name)

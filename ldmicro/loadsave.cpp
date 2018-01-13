@@ -311,6 +311,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_RANDOM;
     } else if(sscanf(line, "SEED_RANDOM %s %s", l->d.move.dest, l->d.move.src)==2) {
         *which = ELEM_SEED_RANDOM;
+    } else if(sscanf(line, "SET_PWM %s %s %s %s", l->d.setPwm.duty_cycle,
+        l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution)==4)
+    {
+        *which = ELEM_SET_PWM;
     } else if(sscanf(line, "SET_PWM %s %s %s", l->d.setPwm.duty_cycle,
         l->d.setPwm.targetFreq, l->d.setPwm.name)==3)
     {
@@ -638,18 +642,15 @@ BOOL LoadProjectFromFile(char *filename)
             if((cycleTimer!=0) && (cycleTimer!=1)) cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
-//          Prog.WDTE = wdte;
         } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d", &cycle, &cycleTimer, &cycleDuty)==3) {
             Prog.cycleTime = cycle;
             if((cycleTimer!=0)&&(cycleTimer!=1)) cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
-//          Prog.WDTE = 0;
         } else if(sscanf(line, "CYCLE=%lld", &cycle)) {
             Prog.cycleTime = cycle;
             Prog.cycleTimer = 1;
             Prog.cycleDuty = 0;
-//          Prog.WDTE = 0;
         } else if(sscanf(line, "BAUD=%d", &baud)) {
             Prog.baudRate = baud;
         } else if(memcmp(line, "COMPILED=", 9)==0) {
@@ -1010,8 +1011,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_SET_PWM:
-            fprintf(f, "SET_PWM %s %s %s\n", l->d.setPwm.duty_cycle,
-                l->d.setPwm.targetFreq, l->d.setPwm.name);
+            fprintf(f, "SET_PWM %s %s %s %s\n", l->d.setPwm.duty_cycle,
+                l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
             break;
 
         case ELEM_PWM_OFF:
