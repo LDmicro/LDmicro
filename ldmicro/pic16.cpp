@@ -147,15 +147,18 @@ static DWORD EepromHighByte; // Allocate high bytes needed for 16-24-32 bit inte
 static DWORD EepromHighBytesCounter;
 
 // Subroutines to do multiply/divide
-static DWORD MultiplyRoutineAddress8;
-static DWORD MultiplyRoutineAddress;
-static DWORD MultiplyRoutineAddress24;
-static DWORD MultiplyRoutineAddress32;
-static DWORD DivideRoutineAddress8;
-static DWORD DivideRoutineAddress;
-static DWORD DivideRoutineAddress24;
-static DWORD DivideRoutineAddress32;
+static DWORD MultiplyRoutineAddress8 = -1;
+static DWORD MultiplyRoutineAddress = -1;
+static DWORD MultiplyRoutineAddress24x16 = -1;
+static DWORD MultiplyRoutineAddress24 = -1;
+static DWORD MultiplyRoutineAddress32 = -1;
+static DWORD DivideRoutineAddress8 = -1;
+static DWORD DivideRoutineAddress = -1;
+static DWORD DivideRoutineAddress24 = -1;
+static DWORD DivideRoutineAddress32 = -1;
 static BOOL MultiplyNeeded;
+static BOOL MultiplyNeeded8;
+static BOOL MultiplyNeeded24x16;
 static BOOL DivideNeeded;
 
 // Subroutine to do BIN2BCD
@@ -334,11 +337,15 @@ static void CompileFromIntermediate(BOOL topLevel);
 //-----------------------------------------------------------------------------
 static BOOL McuIs(char *str)
 {
+    if(!Prog.mcu)
+        return 0;
     return strcmp(Prog.mcu->mcuName, str) == 0;
 }
 
 BOOL McuAs(char *str)
 {
+    if(!Prog.mcu)
+        return 0;
     return strstr(Prog.mcu->mcuName, str) != NULL;
 }
 
@@ -2511,25 +2518,37 @@ static void CopyLiteralToRegs(DWORD addr, int sov, SDWORD literal, char *comment
     // ^^^ reassurance, check before calling this routine
     DWORD l1, l2;
     l1 = (literal & 0xff);
-    Instruction(OP_MOVLW, l1, 0, comment);
-    Instruction(OP_MOVWF, addr, 0, comment);
+    if(l1) {
+      Instruction(OP_MOVLW, l1, 0, comment);
+      Instruction(OP_MOVWF, addr, 0, comment);
+    } else
+      Instruction(OP_CLRF, addr, 0, comment);
     if(sov >= 2) {
         l2 = ((literal >> 8) & 0xff);
-        if(l1 != l2)
+        if(l2) {
+          if(l1 != l2)
             Instruction(OP_MOVLW, l2, 0, comment);
-        Instruction(OP_MOVWF, addr+1, 0, comment);
+          Instruction(OP_MOVWF, addr+1, 0, comment);
+        } else
+          Instruction(OP_CLRF, addr+1, 0, comment);
 
         if(sov >= 3) {
             l1 = ((literal >> 16) & 0xff);
-            if(l1 != l2)
-                Instruction(OP_MOVLW, l1, 0, comment);
-            Instruction(OP_MOVWF, addr+2, 0, comment);
+            if(l1) {
+              if(l1 != l2)
+                  Instruction(OP_MOVLW, l1, 0, comment);
+              Instruction(OP_MOVWF, addr+2, 0, comment);
+            } else
+              Instruction(OP_CLRF, addr+2, 0, comment);
 
             if(sov >= 4) {
                 l2 = ((literal >> 24) & 0xff);
-                if(l1 != l2)
-                    Instruction(OP_MOVLW, l2, 0, comment);
-                Instruction(OP_MOVWF, addr+3, 0, comment);
+                if(l2) {
+                  if(l1 != l2)
+                      Instruction(OP_MOVLW, l2, 0, comment);
+                  Instruction(OP_MOVWF, addr+3, 0, comment);
+                } else
+                  Instruction(OP_CLRF, addr+3, 0, comment);
             }
         }
     }
@@ -3177,6 +3196,14 @@ static void shl(DWORD addr, int sov)
       }
     }
   }
+}
+
+static void sr0(DWORD addr, int sov)
+{
+  Instruction(OP_BCF, REG_STATUS, STATUS_C);
+  int i;
+  for(i = sov - 1; i >= 0; i--)
+     Instruction(OP_RRF, addr+i, DEST_F);
 }
 
 #ifdef TABLE_IN_FLASH
@@ -4083,8 +4110,20 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
             }
             case INT_SET_PWM: {
-            //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, &l->d.setPwm.invertingMode);
-                //dbps("INT_SET_PWM")
+                //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
+                Comment("INT_SET_PWM %s %s %s %s", a->name1, a->name2, a->name3, a->name4);
+                int resol = 7; // 0-100% (6.7 bit)
+                if(strlen(a->name4)) {
+                  if(strstr(a->name4,"0-1024"))
+                    resol = 10; // bit
+                  else if(strstr(a->name4,"0-512"))
+                    resol = 9; // bit
+                  else if(strstr(a->name4,"0-256"))
+                    resol = 8; // bit
+                  else if(strstr(a->name4,"0-100"))
+                    resol = 7; // 0-100% (6.7 bit)
+                }
+
                 int timer = 0xFFFF;
                 McuIoPinInfo *iop = PinInfoForName(a->name3);
                 if(iop) {
@@ -4144,7 +4183,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                         Error(str2);
                         fCompileError(f, fAsm);
                     }
-                    if(pr2plus1 >= 256) {
+                    if(pr2plus1 > 256) {
                       if((timer == 2)
                       || (timer == 1)) {
                         if(prescale == 1) {
@@ -4175,49 +4214,125 @@ static void CompileFromIntermediate(BOOL topLevel)
                     }
                 }
                 double targetFreq = 1.0 * Prog.mcuClock / (pr2plus1 * 4 * prescale);
-                // First scale the input variable from percent to timer units,
-                // with a multiply and then a divide.
-                MultiplyNeeded = TRUE; DivideNeeded = TRUE;
+/*
+                dbps(a->name1)
+                dbpd(timer)
+                dbpd(target)
+                dbpd(pr2plus1)
+                dbpd(prescale)
+                dbpf(targetFreq)
+                dbp("%f %s", minFreq, minSI);
+                dbp("%f %s\n\n", maxFreq, maxSI);
+
+/**/
+                // Copy l->d.setPwm.duty_cycle into Scratch0:1
                 if(IsNumber(a->name1)) {
-                    CopyLiteralToRegs(Scratch0, 1, hobatoi(a->name1), a->name1);
+                    CopyLiteralToRegs(Scratch0, 2, hobatoi(a->name1), a->name1);
                 } else {
                     MemForVariable(a->name1, &addr1);
-                    Instruction(OP_MOVF, addr1, DEST_W);
-                    Instruction(OP_MOVWF, Scratch0, 0);
+                    CopyRegsToRegs(Scratch0, 2, addr1, 2, "Scratch0:1", a->name1, FALSE);
                 }
-                Instruction(OP_CLRF, Scratch1, 0);
 
-                Instruction(OP_MOVLW, (pr2plus1 * 1) & 0xff);
-                Instruction(OP_MOVWF, Scratch2);
-                if((pr2plus1 * 1) >> 8) {
-                    Instruction(OP_MOVLW, (pr2plus1 * 1) >> 8);
-                    Instruction(OP_MOVWF, Scratch3);
-                } else
-                    Instruction(OP_CLRF, Scratch3);
+                DWORD REG_CCPR = -1;
+                DWORD REG_CCP = -1;
 
-                CallWithPclath(MultiplyRoutineAddress);
+                if((timer == 1) || McuAs(" PIC16F72 ")) {
+                    REG_CCPR = REG_CCPR1L;
+                    REG_CCP  = REG_CCP1CON;
+                } else if(timer == 2) {
+                    REG_CCPR = REG_CCPR2L;
+                    REG_CCP  = REG_CCP2CON;
+                } else oops();
 
-                Instruction(OP_MOVF, Scratch3, DEST_W);
-                Instruction(OP_MOVWF, Scratch1, 0);
-                Instruction(OP_MOVF, Scratch2, DEST_W);
-                Instruction(OP_MOVWF, Scratch0, 0);
-                Instruction(OP_MOVLW, 100, 0);
-                Instruction(OP_MOVWF, Scratch2, 0);
-                Instruction(OP_CLRF, Scratch3, 0);
+                if(resol == 8) {
+                    // First scale the input variable from percent to timer units,
+                    // with a multiply and then a divide.
+                    MultiplyNeeded = TRUE;
+                    CopyLiteralToRegs(Scratch2, 2, pr2plus1, "pr2plus1");
+                    CallWithPclath(MultiplyRoutineAddress);
 
-                CallWithPclath(DivideRoutineAddress);
+                    Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
+                    Instruction(OP_MOVWF, REG_CCPR);
 
-                Instruction(OP_MOVF, Scratch0, DEST_W);
+                    sr0(Scratch2, 1);
+                    sr0(Scratch2, 1);
+                    Instruction(OP_MOVLW, 0x30);
+                    Instruction(OP_ANDWF, Scratch2, DEST_W);
+                    Instruction(OP_IORLW, 0x0c);
+                    Instruction(OP_MOVWF, REG_CCP); // PWM mode, use LSbs
+                } else if(resol == 9) {
+                    // First scale the input variable from percent to timer units,
+                    // with a multiply and then a divide.
+                    MultiplyNeeded24x16 = TRUE;
+                    CopyLiteralToRegs(Scratch2, 3, pr2plus1, "pr2plus1");
+                    CallWithPclath(MultiplyRoutineAddress24x16);
 
-                if((timer == 1) || McuAs(" PIC16F72 "))
-                    Instruction(OP_MOVWF, REG_CCPR1L, 0);
-                else if(timer == 2)
-                    Instruction(OP_MOVWF, REG_CCPR2L, 0);
-                else oops();
+                    sr0(Scratch2, 3); //  divide by 2
+                    Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
+                    Instruction(OP_MOVWF, REG_CCPR);
+
+                    sr0(Scratch2, 1);
+                    Instruction(OP_MOVLW, 0x30);
+                    Instruction(OP_ANDWF, Scratch2, DEST_W);
+                    Instruction(OP_IORLW, 0x0c);
+                    Instruction(OP_MOVWF, REG_CCP); // PWM mode, use LSbs
+                } else if(resol == 10) {
+                    // First scale the input variable from percent to timer units,
+                    // with a multiply and then a divide.
+                    MultiplyNeeded24x16 = TRUE;
+                    CopyLiteralToRegs(Scratch2, 3, pr2plus1, "pr2plus1");
+                    CallWithPclath(MultiplyRoutineAddress24x16);
+
+                    sr0(Scratch2, 3); //  divide by 2
+                    sr0(Scratch2, 3); //  divide by 2
+                    Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
+                    Instruction(OP_MOVWF, REG_CCPR);
+
+                    Instruction(OP_MOVLW, 0x30);
+                    Instruction(OP_ANDWF, Scratch2, DEST_W);
+                    Instruction(OP_IORLW, 0x0c);
+                    Instruction(OP_MOVWF, REG_CCP); // PWM mode, use LSbs
+                } else if(resol == 7) {
+                    // First scale the input variable from percent to timer units,
+                    // with a multiply and then a divide.
+                    MultiplyNeeded = TRUE; DivideNeeded = TRUE;
+                    #if 0
+                    Instruction(OP_MOVLW, pr2plus1 & 0xff);
+                    Instruction(OP_MOVWF, Scratch2);
+                    if(pr2plus1 >> 8) {
+                        Instruction(OP_MOVLW, pr2plus1 >> 8);
+                        Instruction(OP_MOVWF, Scratch3);
+                    } else
+                        Instruction(OP_CLRF, Scratch3);
+                    #else
+                    CopyLiteralToRegs(Scratch2, 2, pr2plus1, "pr2plus1");
+                    #endif
+                    CallWithPclath(MultiplyRoutineAddress);
+
+                    #if 0
+                    Instruction(OP_MOVF, Scratch3, DEST_W);
+                    Instruction(OP_MOVWF, Scratch1, 0);
+                    Instruction(OP_MOVF, Scratch2, DEST_W);
+                    Instruction(OP_MOVWF, Scratch0, 0);
+                    #else
+                    CopyRegsToRegs(Scratch0, 2, Scratch2, 2, "Scratch0:1", "Scratch2:3", FALSE);
+                    #endif
+
+                    #if 0
+                    Instruction(OP_MOVLW, 100, 0);
+                    Instruction(OP_MOVWF, Scratch2, 0);
+                    Instruction(OP_CLRF, Scratch3, 0);
+                    #else
+                    CopyLiteralToRegs(Scratch2, 2, 100, "100");
+                    #endif
+                    CallWithPclath(DivideRoutineAddress);
+
+                    Instruction(OP_MOVF, Scratch0, DEST_W);
+                    Instruction(OP_MOVWF, REG_CCPR);
+                    WriteRegister(REG_CCP, 0x3c); // PWM mode, ignore LSbs
+                } else oops();
 
                 // Only need to do the setup stuff once
-                //MemForSingleBit("$pwm_init", FALSE, &addr, &bit);
-
                 DWORD addr;
                 int bit;
                 char storeName[MAX_NAME_LEN];
@@ -4230,11 +4345,13 @@ static void CompileFromIntermediate(BOOL topLevel)
                 SetBit(addr, bit);
 
                 // Set up the CCP2 and TMR2 peripherals.
-                WriteRegister(REG_PR2, pr2plus1 - 1);
-                //                              - 1 // Ok
+                WriteRegister(REG_PR2, pr2plus1 - 1); // - 1 is Ok
+////            WriteRegister(REG_PR2, 3);
+                                        // 1-3-3-50%  62.5kHz
+                                        // 1-2-0-     83kHz
+                                        // 1-1-0-50%-122kHz
+/**/                                    // 0-0-2-50%-250kHz
                 if(McuAs(" PIC16F72 ")) {
-                    WriteRegister(REG_CCP1CON, 0x0c); // PWM mode, ignore LSbs
-
                     BYTE t2con = (1 << 2); // timer 2 on
                     if(prescale == 1)
                         t2con |= 0;
@@ -4246,22 +4363,6 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                     WriteRegister(REG_T2CON, t2con);
                 } else if(timer == 1) {
-                    WriteRegister(REG_CCP1CON, 0x0c); // 1 PWM mode, ignore LSbs
-                    /*
-                    BYTE t1con;
-                    if(prescale == 1)
-                        t1con = 0;
-                    else if(prescale == 2)
-                        t1con = 1;
-                    else if(prescale == 4)
-                        t1con = 2;
-                    else if(prescale == 8)
-                        t1con = 3;
-                    else oops();
-
-                    t1con = (t1con<<T1CKPS0) | (1 << TMR1ON); // timer 1 on
-                    WriteRegister(REG_T1CON, t1con);
-                    */
                     BYTE t2con = (1 << 2); // timer 2 on
                     if(prescale == 1)
                         t2con |= 0;
@@ -4273,8 +4374,6 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                     WriteRegister(REG_T2CON, t2con);
                 } else if(timer == 2) {
-                    WriteRegister(REG_CCP2CON, 0x0c); // PWM mode, ignore LSbs
-
                     BYTE t2con = (1 << 2); // timer 2 on
                     if(prescale == 1)
                         t2con |= 0;
@@ -4288,6 +4387,14 @@ static void CompileFromIntermediate(BOOL topLevel)
                 } else oops();
 
                 FwdAddrIsNow(skip);
+
+        // Maximum PWM resolution (bits) for a given PWM frequency:
+        // PWM_Resolution = log(Fosc / FPWM * TMR2 Prescaler) / log(2) bits
+                /*
+                double PWM_Resolution = 1.0 * Prog.mcuClock / (targetFreq * prescale);
+                PWM_Resolution = log(PWM_Resolution) / log(2.0);
+                dbpf(PWM_Resolution)
+                */
                 break;
             }
 
@@ -4807,7 +4914,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                  sov1 = SizeOfVar(a->name1);
                  MemForVariable(a->name1, &addr1); // dest
 
-                 Comment("Scratch0:Scratch1 := Index '%s'", a->name3);
+                 Comment("Scratch0:1 := Index '%s'", a->name3);
                  if(IsNumber(a->name3)){
                    CopyLiteralToRegs(Scratch0, 2, hobatoi(a->name3), a->name3);
                  } else {
@@ -5272,12 +5379,110 @@ BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, DWORD PicProgLdLen)
 }
 
 //-----------------------------------------------------------------------------
+// Write a subroutine to do a 8x8=16 signed multiply. One operand in
+// addr1->mem[1], other operand in addr2->mem[1], write result to addr3->mem[2].
+// Result may be a byte size addr3->mem[1].
+// http://www.piclist.com/techref/microchip/math/32bmath-ph.htm
+//-----------------------------------------------------------------------------
+static void WriteMultiplyRoutine8(DWORD addr3, DWORD addr1, DWORD addr2, int sov3) // addr3 = addr1 * addr2;
+{
+    Comment("MultiplyRoutine8");
+    DWORD savePicProgWriteP = PicProgWriteP;
+    #ifdef MOVE_TO_PAGE_0
+    MultiplyRoutineAddress8 = PicProgWriteP;
+    #else
+    FwdAddrIsNow(MultiplyRoutineAddress8);
+    #endif
+
+    DWORD multiplicand0;
+    DWORD multiplier0;
+    DWORD result0;
+    DWORD result1;
+
+    // Multiplicand not changed in routine, we can use original address of data.
+    // Multiplier changed in routine (RRF), we use copy of data in Scratch2.
+    multiplier0 = Scratch2;
+    if(addr3 != addr1) {
+        multiplicand0 = addr1;
+        Instruction(OP_MOVF, addr2, DEST_W);
+    } else {
+        multiplicand0 = addr2;
+        Instruction(OP_MOVF, addr1, DEST_W);
+    }
+    Instruction(OP_MOVWF, multiplier0 , 0); // Copy data to Scratch2
+
+    BOOL needCopyResult = FALSE;
+    if(addr3 != addr1) { // a=b*c or a=b*a
+        result0 = addr3;
+        if(sov3>=2)
+            result1 = addr3+1;
+        else
+            result1 = Scratch1;
+    } else if(addr3 != addr2) { // a=a*b
+        result0 = addr3;
+        if(sov3>=2)
+            result1 = addr3+1;
+        else
+            result1 = Scratch1;
+    } else { // a=a*a // ((addr3 == addr1) && (addr3 == addr2))
+        result0 = Scratch0;
+        result1 = Scratch1;
+        needCopyResult = TRUE;
+    }
+
+    DWORD counter = Scratch6;
+
+    Instruction(OP_CLRF,   result0);               // Clear result
+    Instruction(OP_CLRF,   result1);
+    Instruction(OP_MOVLW,  0x08);                  // Bit
+    Instruction(OP_MOVWF,  counter);
+    Instruction(OP_MOVF,   multiplicand0, DEST_W); // Multiplicand in W reg
+
+    DWORD loop = PicProgWriteP;
+    Instruction(OP_RRF,    multiplier0, DEST_F);   // LSB into Carry
+    skpnc                                          // Test Carry
+    Instruction(OP_ADDWF,  result1, DEST_F);       // Add multiplicand to result
+    Instruction(OP_RRF,    result1, DEST_F);       // Align result
+    Instruction(OP_RRF,    result0, DEST_F);
+    Instruction(OP_DECFSZ, counter, DEST_F);       // Next bit
+    Instruction(OP_GOTO,   loop);
+
+    if(needCopyResult) {
+        Instruction(OP_MOVF, result0, DEST_W);
+        Instruction(OP_MOVWF, addr3);
+
+        if(sov3>=2) {
+            Instruction(OP_MOVF, result1, DEST_W);
+            Instruction(OP_MOVWF, addr3+1, 0);
+        }
+    }
+    if(sov3>=3) {
+         Instruction(OP_CLRF, addr3+2);     // Clear result
+         Instruction(OP_BTFSC, result1, 7); // MSB
+         Instruction(OP_COMF, addr3+2);     // Negate result
+         if(sov3==4) {
+             Instruction(OP_CLRF, addr3+3);     // Clear result
+             Instruction(OP_BTFSC, result1, 7); // MSB
+             Instruction(OP_COMF, addr3+3);     // Negate result
+         } else oops();
+    }
+
+    if(Prog.mcu->core == BaselineCore12bit)
+        Instruction(OP_RETLW, 0);
+    else
+        Instruction(OP_RETURN);
+
+
+    if((savePicProgWriteP >> 11) != ((PicProgWriteP-1) >> 11)) oops();
+}
+
+//-----------------------------------------------------------------------------
 // Write a subroutine to do a 16x16 signed multiply. One operand in
 // Scratch1:Scratch0, other in Scratch3:Scratch2, result in Scratch3:Scratch2.
 //-----------------------------------------------------------------------------
 static void WriteMultiplyRoutine(void)
 {
-    Comment("MultiplyRoutine16");
+    Comment("MultiplyRoutine16x16");
     DWORD savePicProgWriteP = PicProgWriteP;
     #ifdef MOVE_TO_PAGE_0
     MultiplyRoutineAddress = PicProgWriteP;
@@ -5298,18 +5503,18 @@ static void WriteMultiplyRoutine(void)
     DWORD dontAdd = AllocFwdAddr();
     DWORD top;
 
-    Instruction(OP_CLRF, result3, 0);
-    Instruction(OP_CLRF, result2, 0);
+    Instruction(OP_CLRF, result3);
+    Instruction(OP_CLRF, result2);
     Instruction(OP_BCF,  REG_STATUS, STATUS_C);
     Instruction(OP_RRF,  result1, DEST_F);
     Instruction(OP_RRF,  result0, DEST_F);
 
-    Instruction(OP_MOVLW, 16, 0);
-    Instruction(OP_MOVWF, counter, 0);
+    Instruction(OP_MOVLW, 16);
+    Instruction(OP_MOVWF, counter);
 
     top = PicProgWriteP;
     Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
-    Instruction(OP_GOTO,  dontAdd, 0);
+    Instruction(OP_GOTO,  dontAdd);
     Instruction(OP_MOVF,  multiplicand0, DEST_W);
     Instruction(OP_ADDWF, result2, DEST_F);
     Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
@@ -5326,12 +5531,85 @@ static void WriteMultiplyRoutine(void)
     Instruction(OP_RRF, result0, DEST_F);
 
     Instruction(OP_DECFSZ, counter, DEST_F);
-    Instruction(OP_GOTO, top, 0);
+    Instruction(OP_GOTO, top);
 
     if(Prog.mcu->core == BaselineCore12bit)
-        Instruction(OP_RETLW, 0);
+        Instruction(OP_RETLW);
     else
-        Instruction(OP_RETURN, 0, 0);
+        Instruction(OP_RETURN);
+
+    if((savePicProgWriteP >> 11) != ((PicProgWriteP-1) >> 11)) oops();
+}
+
+//-----------------------------------------------------------------------------
+// Write a subroutine to do a 24x16 signed multiply. One operand in
+// Scratch1:Scratch0, other in Scratch4:Scratch3:Scratch2, result in Scratch4:Scratch3:Scratch2.
+//-----------------------------------------------------------------------------
+static void WriteMultiplyRoutine24x16(void)
+{
+    Comment("MultiplyRoutine24x16");
+    DWORD savePicProgWriteP = PicProgWriteP;
+    #ifdef MOVE_TO_PAGE_0
+    MultiplyRoutineAddress24x16 = PicProgWriteP;
+    #else
+    FwdAddrIsNow(MultiplyRoutineAddress24x16);
+    #endif
+
+    DWORD result5 = Scratch7;
+    DWORD result4 = Scratch6;
+    DWORD result3 = Scratch5;
+    DWORD result2 = Scratch4;
+    DWORD result1 = Scratch3;
+    DWORD result0 = Scratch2;
+
+    DWORD multiplicand0 = Scratch0;
+    DWORD multiplicand1 = Scratch1;
+
+    DWORD counter = Scratch8;
+
+    DWORD dontAdd = AllocFwdAddr();
+    DWORD top;
+
+    Instruction(OP_CLRF, result5);
+    Instruction(OP_CLRF, result4);
+    Instruction(OP_CLRF, result3);
+    Instruction(OP_CLRF, result2);
+    Instruction(OP_BCF, REG_STATUS, STATUS_C);
+    Instruction(OP_RRF, result1, DEST_F);
+    Instruction(OP_RRF, result0, DEST_F);
+
+    Instruction(OP_MOVLW, 16);
+    Instruction(OP_MOVWF, counter);
+
+    top = PicProgWriteP;
+    Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
+    Instruction(OP_GOTO, dontAdd);
+    Instruction(OP_MOVF, multiplicand0, DEST_W);
+    Instruction(OP_ADDWF, result2, DEST_F);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+    Instruction(OP_INCF, result3, DEST_F);
+    Instruction(OP_MOVF, multiplicand1, DEST_W);
+    Instruction(OP_ADDWF, result3, DEST_F);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+    Instruction(OP_INCF, result4, DEST_F);
+    FwdAddrIsNow(dontAdd);
+
+
+    Instruction(OP_BCF, REG_STATUS, STATUS_C);
+    Instruction(OP_RRF, result5, DEST_F);
+    Instruction(OP_RRF, result4, DEST_F);
+    Instruction(OP_RRF, result3, DEST_F);
+    Instruction(OP_RRF, result2, DEST_F);
+    Instruction(OP_RRF, result1, DEST_F);
+    Instruction(OP_RRF, result0, DEST_F);
+
+    Instruction(OP_DECFSZ, counter, DEST_F);
+    Instruction(OP_GOTO, top);
+
+    if(Prog.mcu->core == BaselineCore12bit)
+        Instruction(OP_RETLW);
+    else
+        Instruction(OP_RETURN);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP-1) >> 11)) oops();
 }
@@ -6105,6 +6383,7 @@ static void _CompilePic16(char *outFile, int ShowMessage)
 
     #ifdef MOVE_TO_PAGE_0
     if(MultiplyRoutineUsed()) WriteMultiplyRoutine();
+    if(MultiplyRoutineUsed()) WriteMultiplyRoutine24x16();
     if(DivideRoutineUsed()) WriteDivideRoutine();
 //  if(Bin32BcdRoutineUsed()) WriteBin32BcdRoutine();
     #endif
@@ -6117,6 +6396,8 @@ static void _CompilePic16(char *outFile, int ShowMessage)
     MultiplyRoutineAddress = AllocFwdAddr();
     #endif
     MultiplyNeeded = FALSE;
+    MultiplyNeeded8 = FALSE;
+    MultiplyNeeded24x16 = FALSE;
     #ifndef MOVE_TO_PAGE_0
     Bin32BcdRoutineAddress = AllocFwdAddr();
     #endif
@@ -6571,6 +6852,8 @@ static void _CompilePic16(char *outFile, int ShowMessage)
 
     #ifndef MOVE_TO_PAGE_0
     if(MultiplyNeeded) WriteMultiplyRoutine();
+    if(MultiplyNeeded8) WriteMultiplyRoutine8();
+    if(MultiplyNeeded24x16) WriteMultiplyRoutine24x16();
     if(DivideNeeded) WriteDivideRoutine();
     if(Bin32BcdNeeded) WriteBin32BcdRoutine();
     #endif

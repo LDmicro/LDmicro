@@ -2509,7 +2509,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Comment(3, "ELEM_SET_PWM");
             Op(INT_IF_BIT_SET, stateInOut);
               // ugh; need a >16 bit literal though, could be >64 kHz
-              Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name);
+              Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
             Op(INT_END_IF);
             break;
         }

@@ -2940,11 +2940,16 @@ static void WriteRuntime(void)
     Comment("Watchdog on"); // 3
     Instruction(OP_CLI);
     Instruction(OP_WDR);
+//  OrMemory(REG_WDTCR, (1<<WDCE) | (1<<WDE));
+//  WriteMemoryStillAddr(REG_WDTCR, (1<<WDCE) | (1<<WDE));
     #ifdef USE_WDT
     STOREval(REG_WDTCR, (1<<WDCE) | (1<<WDE));
     #endif
     Comment("- Got only four cycles to set the new values from here! -");
     WriteMemoryCurrAddr((1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s
+//  WriteMemoryCurrAddr((1<<WDE) | (1<<WDP3) | (1<<WDP0)); // 8s
+////STOREval(REG_WDTCR, (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s BAD, more then four cycles
+////WriteMemory(REG_WDTCR, (1<<WDE) | (1<<WDP3) | (1<<WDP0)); // BAD, more then four cycles
     Instruction(OP_SEI);
 
     Comment("Set up the stack, which we use only when we jump to multiply/divide routine"); // 4

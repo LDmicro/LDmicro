@@ -1,3 +1,15 @@
+== Release 4.3.5
+
+    * Fixed: "Compile ANSIC" crashes, if seleñted (no microcontroller). 
+
+    * New: Higher PWM resolution available:
+      0-100% (maximum resolution 6.7 bits)
+      0-256  (maximum resolution 8 bits)
+      0-512  (maximum resolution 9 bits)
+      0-1024 (maximum resolution 10 bits)
+    LDmicro automatically scales the duty cycle variable from
+    percent(or binary value) to PWM clock periods.
+
 == Release 4.3.4
 
     * HotFix: Look Up Table
