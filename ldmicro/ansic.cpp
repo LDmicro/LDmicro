@@ -212,7 +212,7 @@ static void DeclareBit(FILE *f, char *str)
 
                 fprintf(f, "\n");
                 fprintf(f, "// You provide this function.\n");
-                fprintf(f, "PROTO(extern ldBOOL Read_%s(void));\n", str);
+                fprintf(f, "PROTO(extern ldBOOL Read_%s(void) { });\n", str);
                 fprintf(f, "\n");
             }
         }
@@ -337,10 +337,9 @@ static void DeclareBit(FILE *f, char *str)
                 fprintf(fh, "PROTO(void Write_%s(ldBOOL b));\n", str);
                 fprintf(fh, "\n");
 
-                fprintf(f, "\n");
                 fprintf(f, "/* You provide these functions. */\n");
-                fprintf(f, "PROTO(extern ldBOOL Read_%s(void));\n", str);
-                fprintf(f, "PROTO(extern void Write_%s(ldBOOL v));\n", str);
+                fprintf(f, "PROTO(extern ldBOOL Read_%s(void) { });\n", str);
+                fprintf(f, "PROTO(extern void Write_%s(ldBOOL v) { });\n", str);
                 fprintf(f, "\n");
             }
         }
@@ -1252,11 +1251,11 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
     }
     fprintf(flh,
 "/*\n"
-"    Type                  Size(bits)\n"
-"    ldBOOL  unsigned         1 or 8, the smallest possible\n"
-"    SBYTE     signed integer      8\n"
-"    SWORD     signed integer     16\n"
-"    SDWORD    signed integer     32\n"
+"  Type                  Size(bits)\n"
+"  ldBOOL    unsigned       1 or 8, the smallest possible\n"
+"  SBYTE     signed integer      8\n"
+"  SWORD     signed integer     16\n"
+"  SDWORD    signed integer     32\n"
 "*/\n"
     );
     if(compile_MNU == MNU_COMPILE_ARDUINO) {
@@ -1275,7 +1274,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "    typedef signed int16      SWORD;\n"
 "    typedef signed int32     SDWORD;\n"
 "#elif defined(HI_TECH_C)\n"
-"  #ifdef ___USE_MACRO\n"
+"  #ifdef _USE_MACRO\n"
 "    typedef bit              ldBOOL;\n"
 "  #else\n"
 "    typedef unsigned char    ldBOOL;\n"
@@ -1285,21 +1284,29 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "    typedef signed long int  SDWORD;\n"
 "#endif\n"
       );
-    } else { // mcu_ISA == ISA_AVR
+    } else if(mcu_ISA == ISA_AVR) {
       fprintf(flh,
+/*
 "#ifdef __CODEVISIONAVR__\n"
 "//#define ldBOOL              bit\n"
 "//typedef bool             ldBOOL;\n"
-"  typedef unsigned char    ldBOOL;\n"
-"  typedef signed char       SBYTE;\n"
-"  typedef signed short int  SWORD;\n"
-"  typedef signed long int  SDWORD;\n"
-"#else\n"
-"  typedef unsigned char    ldBOOL;\n"
-"  typedef signed char       SBYTE;\n"
-"  typedef signed short int  SWORD;\n"
-"  typedef signed long int  SDWORD;\n"
 "#endif\n"
+*/
+"  typedef unsigned char    ldBOOL;\n"
+"  typedef signed char       SBYTE;\n"
+"  typedef signed short int  SWORD;\n"
+"  typedef signed long int  SDWORD;\n"
+      );
+    } else {
+      fprintf(flh,
+"  typedef unsigned char    ldBOOL;\n"
+"  typedef signed char       SBYTE;\n"
+"  typedef signed short int  SWORD;\n"
+"  typedef signed long int  SDWORD;\n"
+      );
+    }
+    if(mcu_ISA == ISA_AVR) {
+      fprintf(flh,
 "\n"
 "#ifndef UCSRA\n"
 "  #define UCSRA UCSR0A\n"
@@ -1367,7 +1374,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
         fprintf(fh,
 "#include <EEPROM.h>\n");
     } else if(mcu_ISA == ISA_PIC16) {
-    } else {
+    } else if(mcu_ISA == ISA_AVR) {
       fprintf(fh,
 "#include <stdio.h>\n"
 "\n"
@@ -1405,6 +1412,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "#endif\n"
      );
 */
+    } else {
     }
     if(DelayUsed()) {
       fprintf(fh,
@@ -1859,6 +1867,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
     }
   }
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
     fprintf(f,
 "\n"
 "/* Call this function once per PLC cycle. You are responsible for calling\n"
@@ -1869,30 +1878,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
     GenerateAnsiC(f, 0, IntCodeLen-1);
     fprintf(f, "}\n");
 //---------------------------------------------------------------------------
-    CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
-
-    int counter = plcTmr.tmr - 1/* + CorrectorPlcCycle*/; // TODO
-    // the counter is less than the divisor at 1
-    if(counter < 0) counter = 0;
-    if(counter > 0xffff) counter = 0xffff;
-    //dbp("divider=%d EQU counter=%d", divider, counter);
-
-
-//---------------------------------------------------------------------------
   if(compile_MNU == MNU_COMPILE_ARDUINO) {
-/*
-"boolean IsPlcInterval() {\n"
-"    static unsigned long last_run;\n"
-"    unsigned long micros_now;\n"
-"    micros_now = micros();\n"
-"    unsigned long interval = micros_now - last_run - PLC_INTERVAL;\n"
-"    if (interval >= 0) {\n"
-"        last_run = micros_now - interval;\n"
-"        return true;\n"
-"    }\n"
-"    return false;\n"
-"}\n"
-*/
     fprintf(f,
 "\n"
 "// PLC Cycle timing function.\n"
@@ -1911,19 +1897,19 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "    if (IsPlcInterval()) {\n"
 "        wdt_reset();\n"
     );
-  if(Prog.cycleDuty) {
-    fprintf(f,
+    if(Prog.cycleDuty) {
+      fprintf(f,
 "        Write1_Ub_YPlcCycleDuty();\n"
-    );
-  }
+      );
+    }
     fprintf(f,
 "        PlcCycle();\n"
     );
-  if(Prog.cycleDuty) {
-    fprintf(f,
+    if(Prog.cycleDuty) {
+      fprintf(f,
 "        Write0_Ub_YPlcCycleDuty();\n"
-    );
-  }
+      );
+    }
     fprintf(f,
 "    }\n"
 "}\n"
@@ -1941,7 +1927,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "   while(!Serial) {\n"
 "       ; // We expect to connect the serial port. It is only necessary for the Leonardo.\n"
 "   }\n"
-          , Prog.baudRate);
+      , Prog.baudRate);
     }
     Comment(" Set up analog reference type");
     fprintf(f,"    analogReference(analogReference_type);\n\n");
@@ -2014,6 +2000,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
     }
 
     fprintf(f,
+"\n"
 "    // Turn on the pull-ups.\n"
 "    #ifdef CCS_PIC_C\n"
 "        port_b_pullups(TRUE);\n"
@@ -2036,9 +2023,10 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "    #elif defined(HI_TECH_C)\n"
 "        //WDTCON=1;\n"
 "    #else\n"
-"        Watchdog Init is required. // You must provide this.\n"
+"        // Watchdog Init is required. // You must provide this.\n"
 "    #endif\n"
-"\n");
+"\n"
+    );
     /*
     int err;
     if(Prog.cycleTimer==0)
@@ -2051,7 +2039,10 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
     CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
 
     fprintf(f,
-"    //Initialise PLC cycle timer here.\n");
+"    //Initialise PLC cycle timer here.\n"
+"    // Configure Timer %d\n"
+         , Prog.cycleTimer
+    );
 
     if(compile_MNU == MNU_COMPILE_CCS_PIC_C) {
       fprintf(f,
@@ -2062,65 +2053,74 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 
       if(Prog.cycleTimer==0) {
           fprintf(f,
-"    setup_timer_0(T0_INTERNAL | T0_DIV_%d);\n", plcTmr.prescaler);
+"    setup_timer_0(T0_INTERNAL | T0_DIV_%d);\n"
+          , plcTmr.prescaler
+          );
       } else {
           fprintf(f,
-"    setup_timer_1(T1_INTERNAL | T1_DIV_BY_%d);\n", plcTmr.prescaler);
+"    setup_timer_1(T1_INTERNAL | T1_DIV_BY_%d);\n"
+          , plcTmr.prescaler
+          );
       }
     } else if(compile_MNU == MNU_COMPILE_HI_TECH_C) {
-      if(Prog.cycleTimer == 0) {
+        if(Prog.cycleTimer == 0) {
           fprintf(f,
-"    // Configure Timer 0\n"
 "    CLRWDT();\n"
 "    TMR0 = 0;\n"
 "    PSA = %d;\n"
 "    T0CS = 0;\n"
 "    OPTION_REGbits.PS = %d;\n"
-          , plcTmr.prescaler == 1 ? 1 : 0
-          , plcTmr.PS);
+          , plcTmr.prescaler == 1 ? 1 : 0, plcTmr.PS
+          );
 //"          T1CON = plcTmr.PS;\n"
-      } else {
+        } else {
           fprintf(f,
-"    // Configure Timer 1\n"
 "    CLRWDT(); // Clear WDT and prescaler\n"
-
 "    CCPR1L = 0x%X;\n"
 "    CCPR1H = 0x%X;\n"
-
 "    TMR1L = 0;\n"
 "    TMR1H = 0;\n"
-
 "    T1CON = 0x%X;\n"
-
 "    CCP1CON = 0x0B; // compare mode, reset TMR1 on trigger\n"
+          , plcTmr.tmr & 0xff, plcTmr.tmr >> 8, plcTmr.PS
+          );
 
-         , plcTmr.tmr & 0xff, plcTmr.tmr >> 8, plcTmr.PS);
+          if(McuAs(" PIC16F1512 ")
+          || McuAs(" PIC16F1513 ")
+          || McuAs(" PIC16F1516 ")
+          || McuAs(" PIC16F1517 ")
+          || McuAs(" PIC16F1518 ")
+          || McuAs(" PIC16F1519 ")
+          || McuAs(" PIC16F1526 ")
+          || McuAs(" PIC16F1527 ")
+          || McuAs(" PIC16F1933 ")
+          || McuAs(" PIC16F1947 ")
+          ) {
+            fprintf(f,
+"    TMR1GE = 1;\n"
+            );
+          }
+        }
+    } else if(mcu_ISA == ISA_AVR) {
+        CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
 
-    if(McuAs(" PIC16F1512 ")
-    || McuAs(" PIC16F1513 ")
-    || McuAs(" PIC16F1516 ")
-    || McuAs(" PIC16F1517 ")
-    || McuAs(" PIC16F1518 ")
-    || McuAs(" PIC16F1519 ")
-    || McuAs(" PIC16F1526 ")
-    || McuAs(" PIC16F1527 ")
-    || McuAs(" PIC16F1933 ")
-    || McuAs(" PIC16F1947 ")
-    ) {
-          fprintf(f,
-"    TMR1GE = 1;\n");
-    }
+        int counter = plcTmr.tmr - 1/* + CorrectorPlcCycle*/; // TODO
+        // the counter is less than the divisor at 1
+        if(counter < 0) counter = 0;
+        if(counter > 0xffff) counter = 0xffff;
+        //dbp("divider=%d EQU counter=%d", divider, counter);
 
-      }
-    } else {
         fprintf(f,
-"        // Timer1 initialization\n"
 "        TCCR1A = 0x00; // WGM11=0, WGM10=0\n"
 "        TCCR1B = (1<<WGM12) | %d; // WGM13=0, WGM12=1\n"
 "        // `the high byte must be written before the low byte\n"
 "        OCR1AH = (%d >> 8) & 0xff;\n"
 "        OCR1AL = %d  & 0xff;\n"
         , plcTmr.cs, counter, counter);
+    } else {
+        fprintf(f,
+"    //  You must init PLC timer.\n"
+        );
     }
     if(UartFunctionUsed()) {
       fprintf(f,
@@ -2146,6 +2146,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "    setupPlc();\n"
 "    while(1) {\n"
     );
+/*
     McuIoPinInfo *iop;
     if(Prog.cycleDuty) {
         iop = PinInfoForName(YPlcCycleDuty);
@@ -2162,8 +2163,8 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
           }
         }
     }
+*/
     fprintf(f,
-"\n"
 "        // Test PLC cycle timer interval here.\n"
     );
     if(compile_MNU == MNU_COMPILE_CCS_PIC_C) {
@@ -2192,7 +2193,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "        CCP1IF = 0;\n"
         );
       }
-    } else {
+    } else if(mcu_ISA == ISA_AVR) {
         fprintf(f,
 "        #ifndef TIFR\n"
 "        #define TIFR TIFR1\n"
@@ -2200,9 +2201,16 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "        while((TIFR & (1<<OCF1A)) == 0);\n"
 "        TIFR |= 1<<OCF1A; // OCF1A can be cleared by writing a logic one to its bit location\n"
         );
+    } else {
+        fprintf(f,
+"        //  You must check PLC timer interval.\n"
+        );
     }
     fprintf(f,"\n");
     if(Prog.cycleDuty) {
+            fprintf(f,
+"        Write1_Ub_YPlcCycleDuty();\n");
+/*
         if(iop) {
           if(compile_MNU == MNU_COMPILE_CCS_PIC_C) {
             fprintf(f,
@@ -2218,6 +2226,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "        PORT%c |= 1<<PORT%c%d; // YPlcCycleDuty\n", iop->port, iop->port, iop->bit);
           }
         }
+*/
     }
     fprintf(f,
 "\n"
@@ -2235,8 +2244,15 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "        #elif defined(HI_TECH_C)\n"
 "            CLRWDT();\n"
 "        #else\n"
-"            Watchdog Reset is required. // You must provide this.\n"
+"            // Watchdog Reset is required. // You must provide this.\n"
 "        #endif\n"
+"\n"
+    );
+    if(Prog.cycleDuty) {
+            fprintf(f,
+"        Write0_Ub_YPlcCycleDuty();\n");
+    }
+    fprintf(f,
 "    }\n"
 "}\n"
 "\n"
@@ -2263,7 +2279,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
     fclose(fh);
 
     if(compile_MNU == MNU_COMPILE_ARDUINO) {
-      fprintf(flh,"//You can comment or delete this line after provide the I/O pin mapping for ARDUINO board in ladder.h above. //\n");
+      fprintf(flh,"   You can comment or delete this line after provide the I/O pin mapping for ARDUINO board in ladder.h above.\n");
     }
     fprintf(flh,"\n");
     fprintf(flh,"#endif\n");

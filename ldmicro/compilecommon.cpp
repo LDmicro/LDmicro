@@ -934,6 +934,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
 
         if(type == IO_TYPE_READ_ADC) {
             int j;
+            if(Prog.mcu)
             for(j = 0; j < Prog.mcu->pinCount; j++) {
                 McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
                 if(iop && (iop->pin == pin)) {
@@ -951,6 +952,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
         || type == IO_TYPE_DIG_INPUT
         ) {
             int j;
+            if(Prog.mcu)
             for(j = 0; j < Prog.mcu->pinCount; j++) {
                 McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
                 if(iop && (iop->pin == pin)) {

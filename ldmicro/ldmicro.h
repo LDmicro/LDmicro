@@ -651,6 +651,7 @@ typedef struct ElemSetPwmTag {
     char    duty_cycle[MAX_NAME_LEN];
     char    targetFreq[MAX_NAME_LEN];
     char    name[MAX_NAME_LEN]; // for IO pin
+    char    resolution[MAX_NAME_LEN]; // 0-100% (6.7 bits), 0-256 (8 bits), 0-512 (9 bits), 0-1024 (10 bits)
 } ElemSetPwm;
 
 typedef struct ElemQuadEncodTag {
@@ -1614,7 +1615,7 @@ typedef enum Pic16OpTag {
     OP_COMMENT_INT,
 //  OP_ADDLW, // absent in PIC12
     OP_ADDWF,
-    OP_ANDLW,
+//  OP_ANDLW,
     OP_ANDWF,
     OP_CALL,
     OP_BSF,

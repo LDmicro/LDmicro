@@ -613,7 +613,7 @@ McuPwmPinInfo AvrPwmPinInfo32[] = {
 };
 
 //-----------------------------------------------------------------------------
-// PIC's
+// PIC's PWM Info Tables
 ////     ti
 //// pin mer
 McuPwmPinInfo PicPwmPinInfo18[] = {

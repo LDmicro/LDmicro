@@ -1282,23 +1282,29 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     the rightmost instruction in its rung.
 
 
-> SET PWM DUTY CYCLE          duty_cycle
-                           -{PWM 32.8 kHz}-
+> SET PWM DUTY CYCLE        duty_cycle  3.8 kHz
+                          -{PWM            PWM1}-
 
-    LDmicro can generate code to use the PWM peripheral built in to
+    LDmicro can generate code to use the PWM peripheral built into
     certain microcontrollers. If the input condition to this instruction
     is true, then the duty cycle of the PWM peripheral is set to the
-    value of the variable duty_cycle. The duty cycle must be a number
-    between 0 and 100; 0 corresponds to always low, and 100 corresponds to
+    value of the variable duty_cycle.
+    Updated: LDmicro v4.3.5 allow select higher PWM resolution:
+      0-100% (maximum resolution 6.7 bits)
+      0-256  (maximum resolution 8 bits)
+      0-512  (maximum resolution 9 bits)
+      0-1024 (maximum resolution 10 bits)
+    The duty cycle must be a number between 0 and 100/256/512/1024;
+    0 corresponds to always low, and 100/256/512/1024 corresponds to
     always high. (If you are familiar with how the PWM peripheral works,
     then notice that that means that LDmicro automatically scales the
-    duty cycle variable from percent to PWM clock periods.)
+    duty cycle variable from percent(or binary value) to PWM clock periods.)
 
     You can specify the target PWM frequency, in Hz. The frequency that
     you specify might not be exactly achievable, depending on how it
     divides into the microcontroller's clock frequency. LDmicro will
     choose the closest achievable frequency; if the error is large then
-    it will warn you. Faster speeds may sacrifice resolution.
+    it will warn you. Faster speeds(PWM frequency) may sacrifice resolution.
 
     This instruction must be the rightmost instruction in its rung.
     The ladder logic runtime consumes one timer to measure the cycle
@@ -1306,10 +1312,11 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     with at least two suitable timers. PWM uses pin CCP2 (not CCP1)
     on PIC16 chips and OC1B (not OC1A) on AVRs.
 
-    LDmicro V4.x.x allow all hardware PWM.
+    Updated: LDmicro v4.x.x allow all hardware PWM.
     See https://github.com/LDmicro/LDmicro/wiki/LDmicro-PWM
 
-    See RESET PWM upper.
+    You can set another PWM base frequency only after actuation the RESET PWM.
+    See RESET PWM above.
 
 > MAKE PERSISTENT            saved_var
                            --{PERSIST}--
