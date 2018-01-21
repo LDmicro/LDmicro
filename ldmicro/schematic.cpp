@@ -208,7 +208,7 @@ BOOL EndOfRungElem(int Which)
         Which == ELEM_DIV ||
         Which == ELEM_READ_ADC ||
         Which == ELEM_SET_PWM ||
-        Which == ELEM_PWM_OFF ||
+        //Which == ELEM_PWM_OFF ||
         Which == ELEM_NPULSE_OFF ||
         Which == ELEM_MASTER_RELAY ||
         Which == ELEM_SLEEP ||
@@ -683,7 +683,7 @@ void EditSelectedElement(void)
         case ELEM_THI:
         case ELEM_TLO:
             ShowTimerDialog(SelectedWhich, &(Selected->d.timer.delay),
-                Selected->d.timer.name);
+                Selected->d.timer.name, &(Selected->d.timer.adjust));
             break;
 
         case ELEM_DELAY:

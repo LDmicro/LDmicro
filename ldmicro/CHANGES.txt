@@ -1,6 +1,31 @@
+== Release 4.3.6
+
+    * Fixed: "Compile ANSIC" DO_LDSTUBS.
+
+    * Fixed: PWM simulation.
+
+    * New: Higher PWM resolution available for:
+     All AVR, all PWM timers 0-256 (8 bits);
+     ATmega2560(timers 1,3,4 based PWM) 0-100%,256,512,1024;
+     ATmega16(timer 1 based PWM);
+     ATmega32(timer 1 based PWM);
+     ATmega328(timer 1 based PWM);
+
+    * Updated: Pin mapping for Arduino UNO and Aduino Mega 2560 in ladder.h.
+
+    * Updated: Timer adjust is applied.
+      Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (ms).
+      Timer adjust =-1 is equal to the v2.3 timer.
+
+      TON, TOF, etc. in v2.3 and v3.5.3 and later
+      https://github.com/LDmicro/LDm....-in-v2.3-and-v3.5.3-and-later
+
+    * Wiki: SG90 Servo PWM
+      https://github.com/LDmicro/LDmicro/wiki/Servo-PWM
+
 == Release 4.3.5
 
-    * Fixed: "Compile ANSIC" crashes, if seleñted (no microcontroller). 
+    * Fixed: "Compile ANSIC" crashes, if selected (no microcontroller).
 
     * New: Higher PWM resolution available:
       0-100% (maximum resolution 6.7 bits)

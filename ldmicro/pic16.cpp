@@ -4080,18 +4080,13 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
             }
             case INT_PWM_OFF: {
-                int timer = 0xFFFF;
-                McuIoPinInfo *iop = PinInfoForName(a->name1);
-                if(!iop) {
-                    Error(_("Pin '%s' not a PWM output!"), a->name1);
+                McuPwmPinInfo *ioPWM;
+                ioPWM = PwmPinInfoForName(a->name1, Prog.cycleTimer);
+                if(!ioPWM) {
+                    Error(_("Pin '%s': PWM output not available!"), a->name1);
                     CompileError();
                 }
-                if(iop) {
-                    McuPwmPinInfo *ioPWM = PwmPinInfo(iop->pin);
-                    if(ioPWM)
-                        timer = ioPWM->timer;
-                }
-
+                int timer = ioPWM->timer;
                 if(timer == 1)
                     WriteRegister(REG_CCP1CON, 0);
                 else if(timer == 2)
@@ -4112,26 +4107,16 @@ static void CompileFromIntermediate(BOOL topLevel)
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
                 Comment("INT_SET_PWM %s %s %s %s", a->name1, a->name2, a->name3, a->name4);
-                int resol = 7; // 0-100% (6.7 bit)
-                if(strlen(a->name4)) {
-                  if(strstr(a->name4,"0-1024"))
-                    resol = 10; // bit
-                  else if(strstr(a->name4,"0-512"))
-                    resol = 9; // bit
-                  else if(strstr(a->name4,"0-256"))
-                    resol = 8; // bit
-                  else if(strstr(a->name4,"0-100"))
-                    resol = 7; // 0-100% (6.7 bit)
+                int resol, TOP;
+                getResolution(a->name4, &resol, &TOP);
+                McuPwmPinInfo *ioPWM;
+                ioPWM = PwmPinInfoForName(a->name3, Prog.cycleTimer);
+                if(!ioPWM) {
+                    Error(_("Pin '%s': PWM output not available!"), a->name3);
+                    CompileError();
                 }
 
-                int timer = 0xFFFF;
-                McuIoPinInfo *iop = PinInfoForName(a->name3);
-                if(iop) {
-                    McuPwmPinInfo *ioPWM = PwmPinInfo(iop->pin);
-                    if(ioPWM)
-                        timer = ioPWM->timer;
-                }
-                if(timer == 0xFFFF) oops();
+                int timer = ioPWM->timer;
                 int target = hobatoi(a->name2);
 
                 // Timer2
@@ -4329,7 +4314,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                     Instruction(OP_MOVF, Scratch0, DEST_W);
                     Instruction(OP_MOVWF, REG_CCPR);
-                    WriteRegister(REG_CCP, 0x3c); // PWM mode, ignore LSbs
+                    WriteRegister(REG_CCP, 0x0c); // PWM mode, ignore LSbs
                 } else oops();
 
                 // Only need to do the setup stuff once
@@ -4387,14 +4372,6 @@ static void CompileFromIntermediate(BOOL topLevel)
                 } else oops();
 
                 FwdAddrIsNow(skip);
-
-        // Maximum PWM resolution (bits) for a given PWM frequency:
-        // PWM_Resolution = log(Fosc / FPWM * TMR2 Prescaler) / log(2) bits
-                /*
-                double PWM_Resolution = 1.0 * Prog.mcuClock / (targetFreq * prescale);
-                PWM_Resolution = log(PWM_Resolution) / log(2.0);
-                dbpf(PWM_Resolution)
-                */
                 break;
             }
 
@@ -5039,65 +5016,6 @@ executed as a NOP instruction. */
 
 //-----------------------------------------------------------------------------
 PlcTimerData plcTmr;
-#if 0
-int PicTimer1Prescaler(long long int cycleTimeMicroseconds)
-{
-    //memset(plcTmr, 0, sizeof(plcTmr));
-    plcTmr.ticksPerCycle = (long long int)floor(1.0 * Prog.mcuClock / 4 * cycleTimeMicroseconds / 1000000 + 0.5);
-    plcTmr.softDivisor = 1;
-    plcTmr.prescaler = 1;
-    while((plcTmr.prescaler <= 8) && (plcTmr.softDivisor <= 0xFF)) {
-        plcTmr.tmr = int(plcTmr.ticksPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
-        if(plcTmr.tmr > 0xFFFF) {
-            if(plcTmr.prescaler < 8) {
-                plcTmr.prescaler *= 2;
-            } else {
-                plcTmr.softDivisor += 1;
-                plcTmr.prescaler = 1;
-            }
-        } else {
-            break;
-        }
-    }
-    plcTmr.ticksPerCycle = plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr;
-
-    plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
-    plcTmr.TCycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
-    if(plcTmr.ticksPerCycle < (PLC_CLOCK_MIN * 2)) {
-        int min_cycleTimeMicroseconds = (PLC_CLOCK_MIN * 2) *4 *1000000 / Prog.mcuClock;
-        char str[1024];
-        sprintf(str, _("\n\nMinimum PLC cycle time is %d us."),
-            min_cycleTimeMicroseconds);
-        Error("%s%s",
-            _("Cycle time too fast; increase cycle time, or use faster "
-            "crystal."),str);
-        return -1;
-    }
-    if((plcTmr.softDivisor > 0x8000)
-    || (plcTmr.prescaler > 8)
-    || (plcTmr.tmr > 0x10000)
-    ) {
-        double max_cycleTimeSeconds = 1.0 * 0x8000 * 8 * 0x10000 * 4 / Prog.mcuClock;
-        char str[1024];
-        sprintf(str, _("\n\nMaximum PLC cycle time is %.3f s."),
-            max_cycleTimeSeconds);
-        Error("%s%s",
-            _("Cycle time too slow; decrease cycle time, or use slower "
-            "crystal."),str);
-        return -2;
-    }
-    plcTmr.PS = 0x00;
-    // set up prescaler
-    if(plcTmr.prescaler == 1)        plcTmr.PS |= 0x00;
-    else if(plcTmr.prescaler == 2)   plcTmr.PS |= 0x10;
-    else if(plcTmr.prescaler == 4)   plcTmr.PS |= 0x20;
-    else if(plcTmr.prescaler == 8)   plcTmr.PS |= 0x30;
-    else oops();
-    // enable clock, internal source
-    plcTmr.PS |= 0x01;
-    return 0;
-}
-#endif
 //-----------------------------------------------------------------------------
 // Configure Timer1 and Ccp1 to generate the periodic `cycle' interrupt
 // that triggers all the ladder logic processing. We will always use 16-bit
@@ -5136,65 +5054,6 @@ static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 }
 
 //-----------------------------------------------------------------------------
-#if 0
-int PicTimer0Prescaler(long long int cycleTimeMicroseconds)
-{
-    //memset(plcTmr, 0, sizeof(plcTmr));
-    plcTmr.ticksPerCycle = long long int(Prog.mcuClock) / 4 * cycleTimeMicroseconds / 1000000;
-    plcTmr.softDivisor = 1;
-    plcTmr.prescaler = 1;
-    plcTmr.PS = 0;
-    while((plcTmr.prescaler <= 256) && (plcTmr.softDivisor <= 0xFFFF)) {
-        plcTmr.tmr = int(plcTmr.ticksPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
-        if(plcTmr.tmr > 255) {
-            if(plcTmr.prescaler < 256) {
-                plcTmr.prescaler *= 2;
-            } else {
-                plcTmr.softDivisor += 1;
-                plcTmr.prescaler = 1;
-            }
-        } else {
-            break;
-        }
-    }
-    plcTmr.ticksPerCycle = plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr;
-
-    plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
-    plcTmr.TCycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
-    if(plcTmr.ticksPerCycle < (PLC_CLOCK_MIN * 2)) {
-        int min_cycleTimeMicroseconds = (PLC_CLOCK_MIN * 2) *4 *1000000 / Prog.mcuClock;
-        char str[1024];
-        sprintf(str, _("\n\nMinimum PLC cycle time is %d us."),
-            min_cycleTimeMicroseconds);
-        Error("%s%s",
-            _("Cycle time too fast; increase cycle time, or use faster "
-            "crystal."),str);
-        return -1;
-    }
-    if(plcTmr.softDivisor > 0x10000) {
-        double max_cycleTimeSeconds = 1.0 * 0x100 * 0x10000 * 0x100 * 4 /* * 1000000*/ / Prog.mcuClock;
-        char str[1024];
-        sprintf(str, _("\n\nMaximum PLC cycle time is %.3f s."),
-            max_cycleTimeSeconds);
-        Error("%s%s",
-            _("Cycle time too slow; decrease cycle time, or use slower "
-            "crystal."),str);
-        return -2;
-    }
-    // SetPrescaler()
-    if     (plcTmr.prescaler ==   1)   plcTmr.PS = 0x07; // wdt 2.3s
-    else if(plcTmr.prescaler ==   2)   plcTmr.PS = 0x00;
-    else if(plcTmr.prescaler ==   4)   plcTmr.PS = 0x01;
-    else if(plcTmr.prescaler ==   8)   plcTmr.PS = 0x02;
-    else if(plcTmr.prescaler ==  16)   plcTmr.PS = 0x03;
-    else if(plcTmr.prescaler ==  32)   plcTmr.PS = 0x04;
-    else if(plcTmr.prescaler ==  64)   plcTmr.PS = 0x05;
-    else if(plcTmr.prescaler == 128)   plcTmr.PS = 0x06;
-    else if(plcTmr.prescaler == 256)   plcTmr.PS = 0x07;
-    else oops();
-    return 0;
-}
-#endif
 //-----------------------------------------------------------------------------
 static void ConfigureTimer0(long long int cycleTimeMicroseconds)
 {
@@ -5738,7 +5597,7 @@ static void WriteDivideRoutine(void)
 // write to the file, or if there is something inconsistent about the
 // program.
 //-----------------------------------------------------------------------------
-static void _CompilePic16(char *outFile, int ShowMessage)
+static BOOL _CompilePic16(char *outFile, int ShowMessage)
 {
     if(McuAs("Microchip PIC16F628 ")
     || McuAs(         " PIC16F72 ")
@@ -6278,7 +6137,7 @@ static void _CompilePic16(char *outFile, int ShowMessage)
     f = fopen(outFile, "w");
     if(!f) {
         Error(_("Couldn't open file '%s'"), outFile);
-        return;
+        return FALSE;
     }
 
     char outFileAsm[MAX_PATH];
@@ -6287,13 +6146,13 @@ static void _CompilePic16(char *outFile, int ShowMessage)
     if(!fAsm) {
         Error(_("Couldn't open file '%s'"), outFileAsm);
         fclose(f);
-        return;
+        return FALSE;
     }
 
     if(setjmp(CompileErrorBuf) != 0) {
         fclose(f);
         fclose(fAsm);
-        return;
+        return FALSE;
     }
 
     rungNow = -100;
@@ -6641,7 +6500,7 @@ static void _CompilePic16(char *outFile, int ShowMessage)
         if(Prog.baudRate == 0) {
             Error(_("Zero baud rate not possible."));
             fclose(f);
-            return;
+            return FALSE;
         }
 
         Comment("UART setup");
@@ -6928,10 +6787,11 @@ static void _CompilePic16(char *outFile, int ShowMessage)
         } else
             CompileSuccessfulMessage(str4);
     }
+    return TRUE;
 }
 
 void CompilePic16(char *outFile)
 {
-    _CompilePic16(outFile, 0); // 1) calc LD length approximately
-    _CompilePic16(outFile, 1); // 2) recalc timer prescaler and value
+    BOOL b = _CompilePic16(outFile, 0); // 1) calc LD length approximately
+    if(b)    _CompilePic16(outFile, 1); // 2) recalc timer prescaler and value
 }

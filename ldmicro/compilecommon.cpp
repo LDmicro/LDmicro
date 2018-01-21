@@ -70,9 +70,14 @@ int McuPWM()
 
     int n = 0;
     if(Prog.mcu->pwmCount) {
+        if(Prog.mcu->pwmInfo[0].timer != Prog.cycleTimer)
+        if(Prog.mcu->pwmInfo[0].pin)
+            n++;
         int i;
-        for(i = 0; i <= Prog.mcu->pwmCount; i++) {
+        for(i = 1; i < Prog.mcu->pwmCount; i++) {
+            if(Prog.mcu->pwmInfo[i].timer != Prog.cycleTimer)
             if(Prog.mcu->pwmInfo[i].pin)
+            if(Prog.mcu->pwmInfo[i].pin != Prog.mcu->pwmInfo[i-1].pin)
                 n++;
         }
     } else if(Prog.mcu->pwmNeedsPin) {

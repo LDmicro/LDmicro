@@ -202,7 +202,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_RETURN:
         case ELEM_READ_ADC:
         case ELEM_SET_PWM:
-        case ELEM_PWM_OFF:
+        //case ELEM_PWM_OFF:
         case ELEM_NPULSE_OFF:
         case ELEM_PERSIST:
             if(ColsAvailable - soFar > 1) {
@@ -656,9 +656,9 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
                 poweredAfter);
             break;
         }
-        case ELEM_PWM_OFF:
-            CenterWithWires(*cx, *cy, "{PWM OFF}", poweredBefore, poweredAfter);
-            break;
+        //case ELEM_PWM_OFF:
+        //    CenterWithWires(*cx, *cy, "{PWM OFF}", poweredBefore, poweredAfter);
+        //    break;
         case ELEM_NPULSE_OFF:
             CenterWithWires(*cx, *cy, "{NPULSE OFF}", poweredBefore, poweredAfter);
             break;

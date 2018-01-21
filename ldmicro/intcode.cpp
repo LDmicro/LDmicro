@@ -668,9 +668,9 @@ static void GenSymParOut(char *dest)
 void GenSymOneShot(char *dest, char *name1, char *name2)
 {
     if(int_comment_level == 1)
-        sprintf(dest, "$onece_%01x", GenSymCountOneShot);
+        sprintf(dest, "$once_%01x", GenSymCountOneShot);
     else
-        sprintf(dest, "$onece_%01x_%s_%s", GenSymCountOneShot, name1, name2);
+        sprintf(dest, "$once_%01x_%s_%s", GenSymCountOneShot, name1, name2);
     GenSymCountOneShot++;
 }
 static void GenSymOneShot(char *dest)
@@ -856,14 +856,15 @@ static void _Comment(int l, char *f, int level, char *str, ...)
 #define Comment(...) _Comment(__LINE__, __FILE__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
-SDWORD TestTimerPeriod(char *name, SDWORD delay) // delay in us
+SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
 {
     if(delay <= 0) {
         Error("%s '%s': %s", _("Timer"), name, _("Delay cannot be zero or negative."));
         return -1;
     }
-    long long int period=0, maxPeriod=0;
+    long long int period=0, adjPeriod=0, maxPeriod=0;
     period = delay / Prog.cycleTime; // - 1;
+    adjPeriod = (delay + Prog.cycleTime * adjust) / Prog.cycleTime;
 
     int b = byteNeeded(period);
     if((SizeOfVar(name) != b) && (b<=4))
@@ -872,7 +873,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay) // delay in us
 
     if(period < 0) {
         Error(_("Delay cannot be zero or negative."));
-    } else if(period < 1)  {
+    } else if(period <= 0)  {
         char s1[1024];
         sprintf(s1, "%s %s", _("Timer period too short (needs faster cycle time)."), _("Or increase timer period."));
         char s2[1024];
@@ -881,9 +882,15 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay) // delay in us
         sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
         char *s4 = _("Not available");
         Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
+    } else if(period+adjust <= 0) {
+        Error("%s '%s': %s", _("Timer"), name, _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
+        // period = -1;
+    } else if(period <= adjust) {
+        Error("%s '%s': %s", _("Timer"), name, _("Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"));
+        // period = -1;
     }
 
-    if((period > maxPeriod)
+    if(((period > maxPeriod) || (adjPeriod > maxPeriod))
     && (Prog.mcu)
     && (Prog.mcu->portPrefix != 'L')) {
         char s1[1024];
@@ -896,7 +903,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay) // delay in us
         Error("%s\r\n%s\r\n%s", s1, s2, s3);
         period = -1;
     }
-    return SDWORD(period);
+    return SDWORD(adjPeriod);
 }
 //-----------------------------------------------------------------------------
 // Calculate the period in scan units from the period in microseconds, and
@@ -909,7 +916,7 @@ static SDWORD TimerPeriod(ElemLeaf *l)
         return 1;
     }
 
-    SDWORD period = TestTimerPeriod(l->d.timer.name, l->d.timer.delay);
+    SDWORD period = TestTimerPeriod(l->d.timer.name, l->d.timer.delay, l->d.timer.adjust);
     if(period < 1) {
         CompileError();
     }
@@ -1573,9 +1580,12 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_RES:
             Comment(3, "ELEM_RES");
             Op(INT_IF_BIT_SET, stateInOut);
-              if(l->d.reset.name[0]=='P')
+              if(l->d.reset.name[0]=='P') {
                   Op(INT_PWM_OFF, l->d.reset.name);
-              else
+                  char s[MAX_NAME_LEN];
+                  sprintf(s, "$%s", l->d.reset.name);
+                  Op(INT_CLEAR_BIT, s);
+              } else
                   Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
             Op(INT_END_IF);
             break;
@@ -2507,132 +2517,140 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
         case ELEM_SET_PWM: {
             Comment(3, "ELEM_SET_PWM");
+            char s[MAX_NAME_LEN];
+            sprintf(s, "$%s", l->d.setPwm.name);
             Op(INT_IF_BIT_SET, stateInOut);
               // ugh; need a >16 bit literal though, could be >64 kHz
               Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
+              Op(INT_SET_BIT, s);
+            Op(INT_END_IF);
+            SimState(&(l->poweredAfter), s, &(l->workingNow), s); // variant 6
+            break;
+        }
+        case ELEM_NPULSE: {
+            Comment(3, "ELEM_NPULSE");
+            break;
+        }
+
+        case ELEM_NPULSE_OFF: {
+            Comment(3, "ELEM_NPULSE_OFF");
+            break;
+        }
+        case ELEM_QUAD_ENCOD: {
+            Comment(3, "ELEM_QUAD_ENCOD");
+            break;
+        }
+
+        case ELEM_PERSIST: {
+          Comment(3, "ELEM_PERSIST");
+          Op(INT_IF_BIT_SET, stateInOut);
+
+            // At startup, get the persistent variable from flash.
+            char isInit[MAX_NAME_LEN];
+            GenSymOneShot(isInit, "PERSIST", l->d.persist.var);
+            Op(INT_IF_BIT_CLEAR, isInit);
+                Op(INT_CLEAR_BIT, "$scratch");
+                Op(INT_EEPROM_BUSY_CHECK, "$scratch");
+                Op(INT_IF_BIT_CLEAR, "$scratch");
+                    Op(INT_SET_BIT, isInit);
+                    Op(INT_EEPROM_READ, l->d.persist.var, EepromAddrFree);
+                Op(INT_END_IF);
+            Op(INT_ELSE);
+                // While running, continuously compare the EEPROM copy of
+                // the variable against the RAM one; if they are different,
+                // write the RAM one to EEPROM.
+                Op(INT_CLEAR_BIT, "$scratch");
+                Op(INT_EEPROM_BUSY_CHECK, "$scratch");
+                Op(INT_IF_BIT_CLEAR, "$scratch");
+                    Op(INT_EEPROM_READ, "$tmpVar24bit", EepromAddrFree);
+                    Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$tmpVar24bit",
+                        l->d.persist.var);
+                    Op(INT_ELSE);
+                        Op(INT_EEPROM_WRITE, l->d.persist.var, EepromAddrFree);
+                    Op(INT_END_IF);
+                Op(INT_END_IF);
+            Op(INT_END_IF);
+
+          Op(INT_END_IF);
+
+          EepromAddrFree += SizeOfVar(l->d.persist.var);
+          break;
+        }
+        case ELEM_UART_SENDn: {
+            Comment(3, "ELEM_UART_SENDn");
+            char store[MAX_NAME_LEN];
+            GenSymOneShot(store, "SENDn", l->d.uart.name);
+            char value[MAX_NAME_LEN];
+            GenSymOneShot(value, "SENDv", l->d.uart.name);
+            int sov = SizeOfVar(l->d.uart.name);
+            SetSizeOfVar(value, sov);
+          //SetSizeOfVar(store, 1);
+
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
+                  Op(INT_SET_VARIABLE_TO_LITERAL, store, sov);
+                  Op(INT_SET_VARIABLE_TO_VARIABLE, value, l->d.uart.name);
+                Op(INT_END_IF);
+              Op(INT_END_IF);
+            Op(INT_END_IF);
+
+            Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
+            Op(INT_ELSE);
+              Op(INT_UART_SEND_READY, stateInOut);
+              Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_DECREMENT_VARIABLE, store);
+               //value = X[value[addr1] + sov - 1 - store[addr3]]
+                Op(INT_UART_SEND1, value, stateInOut, store);
+              Op(INT_END_IF);
+            Op(INT_END_IF);
+
+            Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
+              Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_ELSE);
+              Op(INT_SET_BIT, stateInOut);
             Op(INT_END_IF);
             break;
         }
-            case ELEM_NPULSE: {
-                Comment(3, "ELEM_NPULSE");
-                break;
-            }
+        case ELEM_UART_SEND:
+            Comment(3, "ELEM_UART_SEND");
+/**
+            // Why in this place do not controlled stateInOut, as in the ELEM_UART_RECV ?
+            // 1. It's need in Simulation Mode.
+            // 2. It's need for Arduino.
+        ////Op(INT_IF_BIT_SET, stateInOut); // ???
+            Op(INT_UART_SEND, l->d.uart.name, stateInOut); // stateInOut returns BUSY flag
+        ////Op(INT_END_IF); // ???
+/**/
+/**/
+            // This is equivalent to the original algorithm !!!
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_UART_SEND1, l->d.uart.name);
+            Op(INT_END_IF);
+            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+/**/
+            break;
 
-            case ELEM_NPULSE_OFF: {
-                Comment(3, "ELEM_NPULSE_OFF");
-                break;
-            }
+        case ELEM_UART_RECV:
+            Comment(3, "ELEM_UART_RECV");
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_UART_RECV, l->d.uart.name, stateInOut);
+            Op(INT_END_IF);
+            break;
 
-            case ELEM_PWM_OFF: {
-                Comment(3, "ELEM_PWM_OFF");
-                break;
-            }
+        case ELEM_UART_RECV_AVAIL:
+            Comment(3, "ELEM_UART_RECV_AVAIL");
+            //Op(INT_IF_BIT_SET, stateInOut);
+            Op(INT_UART_RECV_AVAIL, stateInOut);
+            //Op(INT_END_IF);
+            break;
 
-            case ELEM_QUAD_ENCOD: {
-                Comment(3, "ELEM_QUAD_ENCOD");
-                break;
-            }
-
-            case ELEM_PERSIST: {
-              Comment(3, "ELEM_PERSIST");
-              Op(INT_IF_BIT_SET, stateInOut);
-
-                // At startup, get the persistent variable from flash.
-                char isInit[MAX_NAME_LEN];
-                GenSymOneShot(isInit, "PERSIST", l->d.persist.var);
-                Op(INT_IF_BIT_CLEAR, isInit);
-                    Op(INT_CLEAR_BIT, "$scratch");
-                    Op(INT_EEPROM_BUSY_CHECK, "$scratch");
-                    Op(INT_IF_BIT_CLEAR, "$scratch");
-                        Op(INT_SET_BIT, isInit);
-                        Op(INT_EEPROM_READ, l->d.persist.var, EepromAddrFree);
-                    Op(INT_END_IF);
-                Op(INT_ELSE);
-                    // While running, continuously compare the EEPROM copy of
-                    // the variable against the RAM one; if they are different,
-                    // write the RAM one to EEPROM.
-                    Op(INT_CLEAR_BIT, "$scratch");
-                    Op(INT_EEPROM_BUSY_CHECK, "$scratch");
-                    Op(INT_IF_BIT_CLEAR, "$scratch");
-                        Op(INT_EEPROM_READ, "$tmpVar24bit", EepromAddrFree);
-                        Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$tmpVar24bit",
-                            l->d.persist.var);
-                        Op(INT_ELSE);
-                            Op(INT_EEPROM_WRITE, l->d.persist.var, EepromAddrFree);
-                        Op(INT_END_IF);
-                    Op(INT_END_IF);
-                Op(INT_END_IF);
-
-              Op(INT_END_IF);
-
-              EepromAddrFree += SizeOfVar(l->d.persist.var);
-              break;
-            }
-            case ELEM_UART_SENDn: {
-                Comment(3, "ELEM_UART_SENDn");
-                char store[MAX_NAME_LEN];
-                GenSymOneShot(store, "SENDn", l->d.uart.name);
-                char value[MAX_NAME_LEN];
-                GenSymOneShot(value, "SENDv", l->d.uart.name);
-                int sov = SizeOfVar(l->d.uart.name);
-                SetSizeOfVar(value, sov);
-
-                Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_IF_BIT_SET, stateInOut);
-                    Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
-                      Op(INT_SET_VARIABLE_TO_LITERAL, store, sov);
-                      Op(INT_SET_VARIABLE_TO_VARIABLE, value, l->d.uart.name);
-                    Op(INT_END_IF);
-                  Op(INT_END_IF);
-                Op(INT_END_IF);
-
-                Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
-                Op(INT_ELSE);
-                  Op(INT_UART_SEND_READY, stateInOut);
-                  Op(INT_IF_BIT_SET, stateInOut);
-                    Op(INT_DECREMENT_VARIABLE, store);
-                   //value = X[value[addr1] + sov - 1 - store[addr3]]
-                    Op(INT_UART_SEND1, value, stateInOut, store);
-                  Op(INT_END_IF);
-                Op(INT_END_IF);
-
-                Op(INT_IF_VARIABLE_LES_LITERAL, store, 1); // == 0
-                  Op(INT_CLEAR_BIT, stateInOut);
-                Op(INT_ELSE);
-                  Op(INT_SET_BIT, stateInOut);
-                Op(INT_END_IF);
-                break;
-            }
-            case ELEM_UART_SEND:
-                Comment(3, "ELEM_UART_SEND");
-                // Why in this place do not controlled stateInOut, as in the ELEM_UART_RECV ?
-                // 1. It's need in Simulation Mode.
-                // 2. It's need for Arduino.
-                Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_UART_SEND, l->d.uart.name, stateInOut); // stateInOut not needed.
-                Op(INT_END_IF);
-                break;
-
-            case ELEM_UART_RECV:
-                Comment(3, "ELEM_UART_RECV");
-                Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_UART_RECV, l->d.uart.name, stateInOut);
-                Op(INT_END_IF);
-                break;
-
-            case ELEM_UART_RECV_AVAIL:
-                Comment(3, "ELEM_UART_RECV_AVAIL");
-                //Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_UART_RECV_AVAIL, stateInOut);
-                //Op(INT_END_IF);
-                break;
-
-            case ELEM_UART_SEND_READY:
-                Comment(3, "ELEM_UART_SEND_READY");
-                //Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_UART_SEND_READY, stateInOut);
-                //Op(INT_END_IF);
-                break;
+        case ELEM_UART_SEND_READY:
+            Comment(3, "ELEM_UART_SEND_READY");
+            //Op(INT_IF_BIT_SET, stateInOut);
+            Op(INT_UART_SEND_READY, stateInOut);
+            //Op(INT_END_IF);
+            break;
         }
         case ELEM_SET_BIT:
                 Comment(3, "ELEM_SET_BIT");
@@ -2854,6 +2872,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Comment(3, "ELEM_RETURN");
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_RETURN);
+//              Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
 
@@ -3324,7 +3343,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
     }
     #ifndef DEFAULT_COIL_ALGORITHM
-    if(which == ELEM_COIL) { // ELEM_COIL is a special case, see above
+    if((which == ELEM_COIL)
+    || (which == ELEM_SET_PWM)
+    ) { // ELEM_COIL is a special case, see above
         return;
     }
     if(which == ELEM_CONTACTS) { // ELEM_CONTACTS is a special case, see above
