@@ -201,7 +201,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_PERSIST, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_READ_ADC, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SET_PWM, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_PWM_OFF, t);
+    //EnableMenuItem(InstructionMenu, MNU_INSERT_PWM_OFF, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_NPULSE_OFF, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_MASTER_RLY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SLEEP, t);

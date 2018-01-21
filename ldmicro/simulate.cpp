@@ -66,12 +66,16 @@ static int AdcShadowsCount;
 #define VAR_FLAG_TCY                  0x00000010
 #define VAR_FLAG_THI                  0x00000020
 #define VAR_FLAG_TLO                  0x00000040
+
 #define VAR_FLAG_CTU                  0x00000100
 #define VAR_FLAG_CTD                  0x00000200
 #define VAR_FLAG_CTC                  0x00000400
 #define VAR_FLAG_CTR                  0x00000800
-#define VAR_FLAG_RES                  0x00001000
-#define VAR_FLAG_TABLE                0x00010000
+
+#define VAR_FLAG_PWM                  0x00001000
+
+#define VAR_FLAG_RES                  0x00010000
+#define VAR_FLAG_TABLE                0x00100000
 #define VAR_FLAG_ANY                  0x08000000
 
 #define VAR_FLAG_OTHERWISE_FORGOTTEN  0x80000000
@@ -413,6 +417,11 @@ SDWORD GetRandom(char *name)
 static char *Check(char *name, DWORD flag, int i)
 {
     switch(flag) {
+        case VAR_FLAG_PWM:
+            if(Variables[i].usedFlags & ~(VAR_FLAG_RES | VAR_FLAG_PWM))
+                return _("PWM: variable can only be used for RES elsewhere");
+            break;
+
         case VAR_FLAG_TOF:
             if(Variables[i].usedFlags & ~VAR_FLAG_RES)
                 return _("TOF: variable can only be used for RES elsewhere");
@@ -453,12 +462,38 @@ static char *Check(char *name, DWORD flag, int i)
         case VAR_FLAG_CTD:
         case VAR_FLAG_CTC:
         case VAR_FLAG_CTR:
-        case VAR_FLAG_ANY:
             break;
 
         case VAR_FLAG_TABLE:
             if(Variables[i].usedFlags & ~VAR_FLAG_TABLE)
                 return _("TABLE: variable can be used only with TABLE");
+            break;
+
+        case VAR_FLAG_ANY:
+            if(Variables[i].usedFlags & VAR_FLAG_PWM)
+                return _("PWM: variable can only be used for RES elsewhere");
+
+            if(Variables[i].usedFlags & VAR_FLAG_TOF)
+                return _("TOF: variable can only be used for RES elsewhere");
+
+            if(Variables[i].usedFlags & VAR_FLAG_TON)
+                return _("TON: variable can only be used for RES elsewhere");
+
+            if(Variables[i].usedFlags & VAR_FLAG_TCY)
+                return _("TCY: variable can only be used for RES elsewhere");
+            /*
+            if(Variables[i].usedFlags & VAR_FLAG_RTO)
+                return _("RTO: variable can only be used for RES elsewhere");
+            */
+            if(Variables[i].usedFlags & VAR_FLAG_RTL)
+                return _("RTL: variable can only be used for RES elsewhere");
+
+            if(Variables[i].usedFlags & VAR_FLAG_THI)
+                return _("THI: variable can only be used for RES elsewhere");
+
+            if(Variables[i].usedFlags & VAR_FLAG_TLO)
+                return _("TLO: variable can only be used for RES elsewhere");
+
             break;
 
         case VAR_FLAG_OTHERWISE_FORGOTTEN:
@@ -543,10 +578,21 @@ void MarkInitedVariable(char *name)
 }
 
 //-----------------------------------------------------------------------------
-static void CheckMsg(char *name, char *s)
+static void CheckMsg(char *name, char *s, int i)
 {
     if(s) {
+        #if 1
         Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow+1, name, s, rungsUsed);
+        #else
+        char s2[1000];
+        sprintf(s2,_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow+1, name, s, rungsUsed);
+        if(i>=0) {
+          char s3[1000];
+          sprintf(s3,_("Inited in Rung %d"), Variables[i].initedRung+1);
+          Error("%s %s", s2, s3);
+        } else
+          Error(s2);
+        #endif
     }
 }
 //-----------------------------------------------------------------------------
@@ -558,7 +604,7 @@ static void CheckMsg(char *name, char *s)
 static void MarkWithCheck(char *name, int flag)
 {
     char *s = MarkUsedVariable(name, flag);
-    CheckMsg(name, s);
+    CheckMsg(name, s, -1);
 }
 //-----------------------------------------------------------------------------
 static void CheckVariableNamesCircuit(int which, void *elem)
@@ -634,6 +680,10 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 
             break;
 
+        case ELEM_SET_PWM:
+            MarkWithCheck(l->d.setPwm.name, VAR_FLAG_PWM);
+            break;
+
         case ELEM_RES:
             MarkWithCheck(l->d.reset.name, VAR_FLAG_RES);
             break;
@@ -655,7 +705,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_NPULSE_OFF:
-        case ELEM_PWM_OFF:
+        //case ELEM_PWM_OFF:
             break;
 
         case ELEM_QUAD_ENCOD:
@@ -746,7 +796,6 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
         case ELEM_SEED_RANDOM:
         case ELEM_PERSIST:
-        case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
         case ELEM_DELAY:
         case ELEM_SLEEP:
@@ -795,7 +844,9 @@ void CheckVariableNames(void)
         rungNow = i; // Ok
         CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
+
     // reCheck
+    rungNow++;
 
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_RES)
@@ -803,28 +854,45 @@ void CheckVariableNames(void)
              Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."), Variables[i].initedRung+1, Variables[i].name,
                    _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\n"
                           "You must assign a variable."));
-  return;
-
+return;
     for(i = 0; i < VariableCount; i++)
-        if(Variables[i].usedFlags & VAR_FLAG_TCY)
-             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TCY, i));
-
+        if(Variables[i].usedFlags & VAR_FLAG_PWM) {
+             //dbpx(Variables[i].usedFlags)
+             //Variables[i].usedFlags &= ~VAR_FLAG_PWM;
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_PWM, i), i);
+        }
+//--
+    for(i = 0; i < VariableCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_TCY) {
+             dbpx(Variables[i].usedFlags)
+             //Variables[i].usedFlags &= ~VAR_FLAG_TCY;
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TCY, i), i);
+        }
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TON)
-             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TON, i));
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TON, i), i);
 
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TOF)
-             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TOF, i));
-
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TOF, i), i);
+/*
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_RTO)
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_RTO, i));
-
+*/
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_RTL)
-             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_RTL, i));
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_RTL, i), i);
 
+    for(i = 0; i < VariableCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_THI)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_THI, i), i);
+
+    for(i = 0; i < VariableCount; i++)
+        if(Variables[i].usedFlags & VAR_FLAG_TLO)
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TLO, i), i);
+//--
+/*
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_CTU)
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_CTU, i));
@@ -840,18 +908,20 @@ void CheckVariableNames(void)
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_CTR)
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_CTR, i));
-
+*/
+//--
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TABLE)
-             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TABLE, i));
-
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TABLE, i), i);
+/*
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_ANY)
-             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_ANY, i));
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_ANY, i), i);
 
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_OTHERWISE_FORGOTTEN)
-             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_OTHERWISE_FORGOTTEN, i));
+             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_OTHERWISE_FORGOTTEN, i), i);
+*/
 }
 //-----------------------------------------------------------------------------
 // Set normal closed inputs to 1 before simulating.
@@ -1985,7 +2055,13 @@ void DescribeForIoList(char *name, int type, char *out)
             break;
 
         case IO_TYPE_PWM_OUTPUT:
+            #if 0
             sprintf(out, "PWM");
+            #else
+            char s[MAX_NAME_LEN];
+            sprintf(s, "$%s", name);
+            sprintf(out, "%s", SingleBitOn(s) ? "ON" : "OFF");
+            #endif
             break;
 
         case IO_TYPE_STRING:

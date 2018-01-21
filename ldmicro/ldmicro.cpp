@@ -183,7 +183,7 @@ char *SetExt(char *dest, const char *src, const char *ext)
 // Get a filename with a common dialog box and then export the program as
 // an ASCII art drawing.
 //-----------------------------------------------------------------------------
-static void ExportDialog(void)
+static BOOL ExportDialog(void)
 {
     char exportFile[MAX_PATH];
     OPENFILENAME ofn;
@@ -201,9 +201,10 @@ static void ExportDialog(void)
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
     if(!GetSaveFileName(&ofn))
-        return;
+        return FALSE;
 
     ExportDrawingAsText(exportFile);
+    return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -359,15 +360,33 @@ static void readBat(char *name, int ISA)
 }
 
 //-----------------------------------------------------------------------------
-static void notepad(char *name, char *ext)
+static void notepad(char *path, char *name, char *ext)
 {
     char s[MAX_PATH]="";
-    char r[MAX_PATH];
-    s[0] = '\0';
-    SetExt(s, name, ext);
-    sprintf(r,"\"%snotepad.bat\" \"%s\"",ExePath,s);
+    char r[MAX_PATH]="";
 
+    r[0] = '\0';
+    if(path && strlen(path)) {
+        strcpy(r, path);
+        if(path[strlen(path) - 1] != '\\')
+            strcat(r, "\\");
+    }
+    strcat(r, name);
+
+    s[0] = '\0';
+    SetExt(s, r, ext);
+
+    if(!ExistFile(s)) {
+        Error("File not exist: '%s'", s);
+        return;
+    }
+    sprintf(r,"\"%snotepad.bat\" \"%s\"",ExePath,s);
     isErr(Execute(r), r);
+}
+
+static void notepad(char *name, char *ext)
+{
+    notepad(NULL, name, ext);
 }
 
 //-----------------------------------------------------------------------------
@@ -472,7 +491,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
     if(!compileAs && strlen(CurrentCompileFile)) {
       if((MNU == MNU_COMPILE)         && strstr(CurrentCompileFile,".hex") // && (compile_MNU <= 0)
       || (MNU == MNU_COMPILE_IHEX)    && strstr(CurrentCompileFile,".hex")
-      || (MNU == MNU_COMPILE_ANSIC)   && strstr(CurrentCompileFile,".c"  )
+      || (MNU >= MNU_COMPILE_ANSIC)   && strstr(CurrentCompileFile,".c"  ) && (MNU <= MNU_COMPILE_lastC)
       || (MNU == MNU_COMPILE_ARDUINO) && strstr(CurrentCompileFile,".cpp")
       || (MNU == MNU_COMPILE_PASCAL)  && strstr(CurrentCompileFile,".pas")
       || (MNU == MNU_COMPILE_INT)     && strstr(CurrentCompileFile,".int")
@@ -491,13 +510,13 @@ static void CompileProgram(BOOL compileAs, int MNU)
     if(compileAs
     ||(MNU == MNU_COMPILE_AS)
     ||(strlen(CurrentCompileFile)==0)
-    ||(MNU == MNU_COMPILE)         && (!strstr(CurrentCompileFile,".hex"))
-    ||(MNU == MNU_COMPILE_IHEX)    && (!strstr(CurrentCompileFile,".hex"))
-    ||(MNU >= MNU_COMPILE_ANSIC)   && (!strstr(CurrentCompileFile,".c"  )) && (MNU <= MNU_COMPILE_lastC)
-    ||(MNU == MNU_COMPILE_ARDUINO) && (!strstr(CurrentCompileFile,".cpp"))
-    ||(MNU == MNU_COMPILE_PASCAL)  && (!strstr(CurrentCompileFile,".pas"))
-    ||(MNU == MNU_COMPILE_INT)     && (!strstr(CurrentCompileFile,".int"))
-    ||(MNU == MNU_COMPILE_XINT)    && (!strstr(CurrentCompileFile,".xint"))
+    ||(MNU == MNU_COMPILE)         && !strstr(CurrentCompileFile,".hex")
+    ||(MNU == MNU_COMPILE_IHEX)    && !strstr(CurrentCompileFile,".hex")
+    ||(MNU >= MNU_COMPILE_ANSIC)   && !strstr(CurrentCompileFile,".c"  ) && (MNU <= MNU_COMPILE_lastC)
+    ||(MNU == MNU_COMPILE_ARDUINO) && !strstr(CurrentCompileFile,".cpp")
+    ||(MNU == MNU_COMPILE_PASCAL)  && !strstr(CurrentCompileFile,".pas")
+    ||(MNU == MNU_COMPILE_INT)     && !strstr(CurrentCompileFile,".int")
+    ||(MNU == MNU_COMPILE_XINT)    && !strstr(CurrentCompileFile,".xint")
     ) {
         char *c;
         OPENFILENAME ofn;
@@ -512,6 +531,8 @@ static void CompileProgram(BOOL compileAs, int MNU)
             ofn.lpstrDefExt = "c";
             c = "c";
           //compile_MNU = MNU;
+            if(MNU == MNU_COMPILE_ANSIC)
+                compile_MNU = MNU_COMPILE_ANSIC;
         } else if ((MNU == MNU_COMPILE_INT) ||
             (Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
                           Prog.mcu->whichIsa == ISA_NETZER))) {
@@ -589,10 +610,10 @@ static void CompileProgram(BOOL compileAs, int MNU)
     }
     if((MNU >= MNU_COMPILE_ANSIC)
     && (MNU <= MNU_COMPILE_lastC)) {
-        CompileAnsiC(CurrentCompileFile, 0/*ISA_ANSIC*/, MNU);
+        CompileAnsiC(CurrentCompileFile, MNU);
         postCompile("ANSIC");
     } else if (MNU == MNU_COMPILE_ARDUINO) {
-        CompileAnsiC(CurrentCompileFile, 0/*ISA_ARDUINO*/, MNU);
+        CompileAnsiC(CurrentCompileFile, MNU);
         postCompile("ARDUINO");
     } else if (MNU == MNU_COMPILE_INT) {
         CompileInterpreted(CurrentCompileFile);
@@ -604,11 +625,9 @@ static void CompileProgram(BOOL compileAs, int MNU)
         switch(Prog.mcu->whichIsa) {
             case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
             case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
-          //case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
             case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
             case ISA_XINTERPRETED:  CompileXInterpreted(CurrentCompileFile); break;
             case ISA_NETZER:        CompileNetzer(CurrentCompileFile); break;
-          //case ISA_ARDUINO:       CompileAnsiC(CurrentCompileFile, ISA_ARDUINO, MNU_COMPILE_ARDUINO); break;
             default: ooops("0x%X", Prog.mcu->whichIsa);
         }
         postCompile(GetIsaName(Prog.mcu->whichIsa));
@@ -810,30 +829,6 @@ static void ProcessMenu(int code)
             readBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
             break;
 
-        case MNU_NOTEPAD_TXT:
-            notepad(CurrentSaveFile, "txt");
-            break;
-
-        case MNU_NOTEPAD_HEX:
-            notepad(CurrentSaveFile, "hex");
-            break;
-
-        case MNU_NOTEPAD_ASM:
-            notepad(CurrentSaveFile, "asm");
-            break;
-
-        case MNU_NOTEPAD_C:
-            notepad(CurrentSaveFile, "c");
-            break;
-
-        case MNU_NOTEPAD_H:
-            notepad(CurrentSaveFile, "h");
-            break;
-
-        case MNU_NOTEPAD_PAS:
-            notepad(CurrentSaveFile, "pas");
-            break;
-
         case MNU_NOTEPAD_LD:
             if(CheckSaveUserCancels()) break;
             notepad(CurrentSaveFile, "ld");
@@ -841,6 +836,30 @@ static void ProcessMenu(int code)
 
         case MNU_NOTEPAD_PL:
             notepad(CurrentSaveFile, "pl");
+            break;
+
+        case MNU_NOTEPAD_TXT:
+            notepad(CurrentSaveFile, "txt");
+            break;
+
+        case MNU_NOTEPAD_HEX:
+            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "hex");
+            break;
+
+        case MNU_NOTEPAD_ASM:
+            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "asm");
+            break;
+
+        case MNU_NOTEPAD_C:
+            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "c");
+            break;
+
+        case MNU_NOTEPAD_H:
+            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "h");
+            break;
+
+        case MNU_NOTEPAD_PAS:
+            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "pas");
             break;
 
         case MNU_EXIT:
@@ -1055,10 +1074,6 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_SET_PWM:
             CHANGING_PROGRAM(AddSetPwm());
-            break;
-
-        case MNU_INSERT_PWM_OFF:
-            CHANGING_PROGRAM(AddEmpty(ELEM_PWM_OFF));
             break;
 
         case MNU_INSERT_NPULSE_OFF:
@@ -1733,8 +1748,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 ShowHelpDialog(FALSE);
                 break;
             } else if(wParam == VK_F3) {
-                ExportDialog();
-                notepad(CurrentSaveFile, "txt");
+                if(ExportDialog())
+                    notepad(CurrentSaveFile, "txt");
                 break;
             } else if(wParam == VK_F4) {
                 if(CheckSaveUserCancels()) break;

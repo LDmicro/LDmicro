@@ -96,7 +96,7 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     return 0;
 }
 
-static void MakeControls(int boxes, char **labels, char **dests, DWORD fixedFontMask, int combo, char **combos)
+static void MakeControls(int labs, char **labels, int boxes, char **dests, DWORD fixedFontMask, int combo, char **combos)
 {
     int i;
     HDC hdc = GetDC(SimpleDialog);
@@ -105,7 +105,7 @@ static void MakeControls(int boxes, char **labels, char **dests, DWORD fixedFont
     SIZE si;
 
     int maxLen = 0;
-    for(i = 0; i < boxes; i++) {
+    for(i = 0; i < boxes/*labs*/; i++) {
         GetTextExtentPoint32(hdc, labels[i], strlen(labels[i]), &si);
         if(si.cx > maxLen) maxLen = si.cx;
     }
@@ -117,15 +117,17 @@ static void MakeControls(int boxes, char **labels, char **dests, DWORD fixedFont
         adj = 0;
     }
 
-    for(i = 0; i < boxes; i++) {
+    for(i = 0; i < labs; i++) {
         GetTextExtentPoint32(hdc, labels[i], strlen(labels[i]), &si);
 
         Labels[i] = CreateWindowEx(0, WC_STATIC, labels[i],
             WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-            (80 + adj) - si.cx + 15, 13 + i*30, si.cx, 21,
+            (i< boxes ? (80 + adj) - si.cx : 0) + 15, 13 + i*30, si.cx, 21,
             SimpleDialog, NULL, Instance, NULL);
         NiceFont(Labels[i]);
+    }
 
+    for(i = 0; i < boxes; i++) {
         Textboxes[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
             WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
             WS_VISIBLE,
@@ -178,19 +180,21 @@ static void MakeControls(int boxes, char **labels, char **dests, DWORD fixedFont
     NiceFont(CancelButton);
 }
 
-BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
-    DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests, int combo, char **combos)
+static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnlyMask,
+    DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests, int combo, char **combos)
 {
     BOOL didCancel;
 
+    if(labs  > MAX_BOXES) oops();
     if(boxes > MAX_BOXES) oops();
+    if(combo > MAX_BOXES) oops();
 
     SimpleDialog = CreateWindowClient(0, "LDmicroDialog", title,
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 304 + 550, 15 + 30*(boxes < 2 ? 2 : boxes), NULL, NULL,
+        100, 100, 304 + 550, 15 + 30*(max(boxes,labs) < 2 ? 2 : max(boxes,labs)), NULL, NULL,
         Instance, NULL);
 
-    MakeControls(boxes, labels, dests, fixedFontMask, combo, combos);
+    MakeControls(labs, labels, boxes, dests, fixedFontMask, combo, combos);
 
     int i;
     for(i = 0; i < boxes; i++) {
@@ -271,14 +275,21 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     return !didCancel;
 }
 
-BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
+static BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests)
 {
     return ShowSimpleDialog(title, boxes, labels, numOnlyMask,
-           alnumOnlyMask, fixedFontMask, dests, 0, NULL);
+           alnumOnlyMask, fixedFontMask, boxes, dests, 0, NULL);
 }
 
-void ShowTimerDialog(int which, SDWORD *delay, char *name)
+static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnlyMask,
+    DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests)
+{
+    return ShowSimpleDialog(title, labs, labels, numOnlyMask,
+           alnumOnlyMask, fixedFontMask, boxes, dests, 0, NULL);
+}
+
+void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
 {
     char *s;
     switch(which) {
@@ -293,18 +304,25 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
         default: oops(); break;
     }
 
-    char *labels[] = { _("Name:"), _("Delay (ms):") };
+    char buf[100];
+    sprintf(buf, _("** Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (%.3f ms)"), 1.0 * Prog.cycleTime / 1000); //us show as ms
+    char *labels[] = { _("Name:"), _("Delay (ms):"), _("Adjust:"),
+                       _("* Adjust default = 0, typical = -1"),
+                       buf };
 
+    char adjustBuf[16];
     char delBuf[16];
     char nameBuf[MAX_NAME_LEN];
     sprintf(delBuf, "%.3f", (*delay / 1000.0));
+    sprintf(adjustBuf, "%d", (*adjust));
     strcpy(nameBuf, name+1);
-    char *dests[] = { nameBuf, delBuf };
+    char *dests[] = { nameBuf, delBuf, adjustBuf};
 
-    if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
+    if(ShowSimpleDialog(s, arraylen(labels), labels, (3 << 1), (1 << 0), (7 << 0), arraylen(dests), dests)) {
         name[0] = 'T';
         strcpy(name+1, nameBuf);
         double delay_ms = atof(delBuf);
+        *adjust = atoi(adjustBuf);
 
         long long int delay_us = round(delay_ms * 1000.0);
 
@@ -318,7 +336,7 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name)
             Error(_(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
             period = 1;
         } else {
-            period = TestTimerPeriod(name, delay_us);
+            period = TestTimerPeriod(name, delay_us, *adjust);
         }
         if(period > 0)
             *delay = delay_us;
@@ -771,7 +789,6 @@ void ShowSetPwmDialog(void *e)
     char *name          = s->name;
     char *duty_cycle    = s->duty_cycle;
     char *targetFreq    = s->targetFreq;
-//  char *invertingMode = &s->invertingMode;
     char *resolution    = s->resolution;
 
     char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
@@ -779,7 +796,7 @@ void ShowSetPwmDialog(void *e)
     char *resolutions[] = { "0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"};
 
     NoCheckingOnBox[3] = TRUE;
-    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 4, labels, 0x4, 0x3, 0x7, dests, 4, resolutions)) {
+    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 4, labels, 0x4, 0x3, 0x7, 4, dests, 4, resolutions)) {
         //TODO: check the available range
         double freq = hobatoi(targetFreq);
         if(freq < 0)
@@ -787,11 +804,17 @@ void ShowSetPwmDialog(void *e)
         if(freq > Prog.mcuClock)
             Error(_("'%s' freq > %d"), targetFreq, Prog.mcuClock);
 
+        int resol, TOP;
+        getResolution(resolution, &resol, &TOP);
+        if(resol == 7)
+            TOP = 99;
+        TOP++;
+
         double duty = atof(duty_cycle);
         if(duty < 0.0)
             Error(_("'%s' duty < 0"), duty_cycle);
-        if(duty > 100.0)
-            Error(_("'%s' duty > 100"), duty_cycle, Prog.mcuClock);
+        if(duty > TOP)
+            Error(_("'%s' duty > %d"), duty_cycle, TOP);
     }
     NoCheckingOnBox[3] = FALSE;
 }
