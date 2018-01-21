@@ -305,14 +305,16 @@ typedef signed long SDWORD;
 
 #define ELEM_CONTACTS           0x10
 #define ELEM_COIL               0x11
-#define ELEM_TIME2COUNT         0x1202
+#define ELEM_TIME2COUNT         0x1210
+
 #define ELEM_TCY                0x1201
 #define ELEM_TON                0x12
 #define ELEM_TOF                0x13
 #define ELEM_RTO                0x14
 #define ELEM_RTL                0x1401
-#define ELEM_THI                0x1402
-#define ELEM_TLO                0x1403
+#define ELEM_THI                0x1410
+#define ELEM_TLO                0x1420
+
 #define ELEM_RES                0x15
 #define ELEM_ONE_SHOT_RISING    0x16
 #define ELEM_ONE_SHOT_FALLING   0x17
@@ -360,6 +362,7 @@ typedef signed long SDWORD;
 #define ELEM_CTD                0x24
 #define ELEM_CTC                0x25
 #define ELEM_CTR                0x2501
+
 #define ELEM_SHORT              0x26
 #define ELEM_OPEN               0x27
 #define ELEM_READ_ADC           0x28
@@ -413,7 +416,7 @@ typedef signed long SDWORD;
 #define ELEM_PULSER             0x4003   //
 #define ELEM_NPULSE             0x4004   // N pulse generator use timer0 for generate meander
 #define ELEM_NPULSE_OFF         0x4005
-#define ELEM_PWM_OFF            0x4006
+//#define ELEM_PWM_OFF          0x4006
 #define ELEM_PWM_OFF_SOFT       0x4007
 #define ELEM_QUAD_ENCOD         0x4009
 
@@ -449,7 +452,6 @@ typedef signed long SDWORD;
         case ELEM_PULSER: \
         case ELEM_NPULSE: \
         case ELEM_NPULSE_OFF: \
-        case ELEM_PWM_OFF: \
         case ELEM_PWM_OFF_SOFT: \
         case ELEM_BUS: \
         case ELEM_7SEG: \
@@ -557,6 +559,8 @@ typedef struct ElemCoilTag {
 typedef struct ElemTimeTag {
     char    name[MAX_NAME_LEN];
     SDWORD  delay; // us
+    int     adjust; // adjust timer delay, default = 0, typical = -1
+    // timer_delay = delay + adjust * PLC_cycle_time
 } ElemTimer;
 
 typedef struct ElemResetTag {
@@ -908,6 +912,7 @@ typedef enum CoreTag {
     NOTHING,
 
     AVRcores,
+    ReducedCore,
     MinimalCore,
     ClassicCore8K,
     ClassicCore128K,
@@ -915,7 +920,6 @@ typedef enum CoreTag {
     EnhancedCore128K,
     EnhancedCore4M,
     XMEGAcore,
-    ReducedCore,
 
     PICcores,
     BaselineCore12bit, // baseline PIC10F, PIC12F5xx, PIC16F5xx.
@@ -944,6 +948,7 @@ typedef struct McuIoPinInfoTag {
     int     pin;
     char    pinName[MAX_NAME_LEN];
     int     ArduinoPin;
+    char    ArduinoName[MAX_NAME_LEN];
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -955,6 +960,7 @@ typedef struct McuPwmPinInfoTag {
     int     pin;
     int     timer;
 //for AVR's
+    int     resolution; // bits
     BYTE    maxCS; // can be only 5 or 7 for AVR
     ////////////// n = 0...5
     /////////////// x = A or B
@@ -1285,7 +1291,7 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name);
 void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigger, char *name);
 // simpledialog.cpp
 void CheckVarInRange(char *name, char *str, SDWORD v);
-void ShowTimerDialog(int which, SDWORD *delay, char *name);
+void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust);
 void ShowSleepDialog(int which, SDWORD *delay, char *name);
 void ShowDelayDialog(int which, SDWORD *delay);
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
@@ -1404,6 +1410,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
 char *GetPinName(int pin, char *pinName);
 char *PinToName(int pin);
+char *ArduinoPinName(McuIoPinInfo *iop);
 void SetMcu(McuIoInfo *mcu);
 int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
@@ -1412,6 +1419,8 @@ McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
 McuPwmPinInfo *PwmPinInfoForName(char *name);
 McuPwmPinInfo *PwmPinInfoForName(char *name, int timer);
+McuPwmPinInfo *PwmPinInfoForName(char *name, int timer, int resolution);
+void getResolution(char *s, int *resol, int *TOP);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
 BOOL IsExtIntPin(int pin);
@@ -1479,7 +1488,6 @@ typedef  struct VariablesListTag {
     // vvv from compilecommon.cpp
     char    name[MAX_NAME_LEN];
     DWORD   addrl;
-//  DWORD   addrh;      // obsolete
     int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
     int     SizeOfVar;  // SizeOfVar can be less then Allocated
     // ^^^ from compilecommon.cpp
@@ -1741,7 +1749,7 @@ extern int asm_comment_level;
 extern int asm_discover_names;
 extern int rungNow;
 void IntDumpListing(char *outFile);
-SDWORD TestTimerPeriod(char *name, SDWORD delay); // delay in us
+SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust); // delay in us
 BOOL GenerateIntermediateCode(void);
 BOOL CheckEndOfRungElem(int which, void *elem);
 BOOL CheckLeafElem(int which, void *elem);
@@ -1776,8 +1784,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
 void CompileAvr(char *outFile);
 // ansic.cpp
 extern int compile_MNU;
-void CompileAnsiC(char *outFile, int ISA, int MNU);
-void CompileAnsiC(char *outFile);
+void CompileAnsiC(char *outFile, int MNU);
 // interpreted.cpp
 void CompileInterpreted(char *outFile);
 // xinterpreted.cpp

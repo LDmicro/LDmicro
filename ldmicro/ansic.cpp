@@ -39,7 +39,6 @@ int SeenVariablesCount;
 static FILE *fh;
 static FILE *flh;
 
-static int compile_ISA = -1;
 static int mcu_ISA = -1;
 int compile_MNU = -1;
 
@@ -156,7 +155,12 @@ static void DeclareBit(FILE *f, char *str)
     //if(str[3] == 'X') {
     if(type == IO_TYPE_DIG_INPUT) {
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
-            fprintf(flh, "const int pin_%s = 0;\n", str);
+            McuIoPinInfo *iop = PinInfoForName(&str[3]);
+            if(iop) {
+              fprintf(flh, "const int pin_%s = %s; // %s\n", str, ArduinoPinName(iop), iop->pinName);
+            } else {
+              fprintf(flh, "const int pin_%s = -1;\n", str);
+            }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
             fprintf(fh, "// LDmicro provide this macro or function.\n");
@@ -212,7 +216,7 @@ static void DeclareBit(FILE *f, char *str)
 
                 fprintf(f, "\n");
                 fprintf(f, "// You provide this function.\n");
-                fprintf(f, "PROTO(extern ldBOOL Read_%s(void) { });\n", str);
+                fprintf(f, "LDSTUB( ldBOOL Read_%s(void) )\n", str);
                 fprintf(f, "\n");
             }
         }
@@ -220,7 +224,12 @@ static void DeclareBit(FILE *f, char *str)
 //  } else if(str[3] == 'Y') {
     } else if(type == IO_TYPE_DIG_OUTPUT) {
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
-            fprintf(flh, "const int pin_%s = 0;\n", str);
+            McuIoPinInfo *iop = PinInfoForName(&str[3]);
+            if(iop) {
+              fprintf(flh, "const int pin_%s = %s; // %s\n", str, ArduinoPinName(iop), iop->pinName);
+            } else {
+              fprintf(flh, "const int pin_%s = -1;\n", str);
+            }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
             fprintf(fh, "// LDmicro provide these macros or functions.\n");
@@ -338,15 +347,20 @@ static void DeclareBit(FILE *f, char *str)
                 fprintf(fh, "\n");
 
                 fprintf(f, "/* You provide these functions. */\n");
-                fprintf(f, "PROTO(extern ldBOOL Read_%s(void) { });\n", str);
-                fprintf(f, "PROTO(extern void Write_%s(ldBOOL v) { });\n", str);
+                fprintf(f, "LDSTUB( ldBOOL Read_%s(void) )\n", str);
+                fprintf(f, "LDSTUB( void Write_%s(ldBOOL v) )\n", str);
                 fprintf(f, "\n");
             }
         }
 
     } else if (type == IO_TYPE_PWM_OUTPUT) {
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
-            fprintf(flh, "const int pin_%s = 0; // Check that it's a PWM pin!\n", str);
+            McuIoPinInfo *iop = PinInfoForName(&str[3]);
+            if(iop) {
+              fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n", str, ArduinoPinName(iop), iop->pinName);
+            } else {
+              fprintf(flh, "const int pin_%s = -1; // Check that it's a PWM pin!\n", str);
+            }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
             fprintf(fh, "// LDmicro provide this macro or function.\n");
@@ -490,7 +504,6 @@ static void GenerateDeclarations(FILE *f)
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
             case INT_SET_VARIABLE_NOT:
                 break;
-
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -534,7 +547,6 @@ static void GenerateDeclarations(FILE *f)
             case INT_SET_VARIABLE_OR :
             case INT_SET_VARIABLE_MOD:
                 break;
-
             case INT_SET_VARIABLE_XOR:
             case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_DIVIDE:
@@ -957,7 +969,7 @@ doIndent(f, i); fprintf(f,"#endif\n");
             #endif
 
             case INT_UART_RECV:
-                    fprintf(f, "%s=0; if(UART_Receive_Avail()) {%s = UART_Receive(); %s=1;};\n", MapSym(IntCode[i].name2, ASBIT), MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASBIT));
+                fprintf(f, "%s=0; if(UART_Receive_Avail()) {%s = UART_Receive(); %s=1;};\n", MapSym(IntCode[i].name2, ASBIT), MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASBIT));
                 break;
 
             case INT_UART_SEND1:
@@ -1177,15 +1189,8 @@ winavr avr gcc
     }
 #endif
 }
-
-void CompileAnsiC(char *dest)
+void CompileAnsiC(char *dest, int MNU)
 {
-     CompileAnsiC(dest, 0, MNU_COMPILE_ANSIC);
-}
-
-void CompileAnsiC(char *dest, int ISA, int MNU)
-{
-    compile_ISA = ISA;
     if(Prog.mcu)
         mcu_ISA = Prog.mcu->whichIsa;
     if(MNU > 0)
@@ -1200,7 +1205,7 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
     SetExt(desth, dest, ".h")  ;
 
     char ladderhName[MAX_PATH];
-    sprintf(ladderhName,"%s\\ladder.h_",CurrentLdPath);
+    sprintf(ladderhName,"%s\\ladder.h_", CurrentCompilePath);
 
     flh = fopen(ladderhName, "w");
     if(!flh) {
@@ -1218,10 +1223,10 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "\n", dest);
 
     fprintf(flh,
-"// Uncomment EXTERN_EVERYTHING if you want all symbols in %s.c extern.\n"
+"/* Uncomment EXTERN_EVERYTHING if you want all symbols in %s.c extern. */\n"
 "//#define EXTERN_EVERYTHING\n"
 "\n"
-"// Uncomment NO_PROTOTYPES if you want own prototypes for functions.\n"
+"/* Uncomment NO_PROTOTYPES if you want own prototypes for functions. */\n"
 "//#define NO_PROTOTYPES\n"
 "\n"
 "/* Define NO_PROTOTYPES in ladder.h if you don't want LDmicro to provide prototypes for\n"
@@ -1235,10 +1240,21 @@ void CompileAnsiC(char *dest, int ISA, int MNU)
 "  #define PROTO(x) x\n"
 "#endif\n"
 "\n"
+"/* Uncomment DO_LDSTUBS if you want to use the empty stub-functions\n"
+"   from %s.c instead the prototypes for functions.\n"
+"   Use DO_LDSTUBS to just check the compilation of the generated files. */\n"
+"//#define DO_LDSTUBS\n"
+"\n"
+"#ifdef DO_LDSTUBS\n"
+"#define LDSTUB(x) x { ; }\n"
+"#else\n"
+"#define LDSTUB(x) PROTO(extern x ;)\n"
+"#endif\n"
+"\n"
 "// Comment out USE_MACRO in next line, if you want to use functions instead of macros.\n"
 "#define USE_MACRO\n"
 "\n"
-    , CurrentLdName, CurrentLdName, CurrentLdName);
+    , CurrentLdName, CurrentLdName, CurrentLdName, CurrentLdName);
     if(compile_MNU == MNU_COMPILE_ARDUINO) {
         fprintf(flh,
 "#if ARDUINO >= 100\n"

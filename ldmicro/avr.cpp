@@ -2241,52 +2241,6 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
         max_softDivisor = 0xFF; // 1..0xFF
     }
     plcTmr.cycleTimeMax = (long long int)floor(1e6 * max_tmr * max_prescaler * max_softDivisor / Prog.mcuClock + 0.5);
-#if 0
-    long long int cycleTimeMicrosecondsFact;
-    int bestPrescaler = 0;
-    int bestTmr = -INT_MAX;
-    int bestError = INT_MAX;
-    for(;;) {
-        int timerRate = (Prog.mcuClock / plcTmr.prescaler); // hertz
-        double timerPeriod = 1e6 / timerRate; // timer period, us
-        //plcTmr.tmr = int(cycleTimeMicroseconds / timerPeriod); //
-        //dbp("0 prescaler=%d divider=%d mul=%d", plcTmr.prescaler, plcTmr.tmr ,plcTmr.prescaler * plcTmr.tmr);
-        //plcTmr.tmr = int(round(cycleTimeMicroseconds / timerPeriod));
-        //dbp("1 prescaler=%d divider=%d mul=%d", plcTmr.prescaler, plcTmr.tmr ,plcTmr.prescaler * plcTmr.tmr);
-        plcTmr.tmr = (int)floor((double)cycleTimeMicroseconds * Prog.mcuClock / (plcTmr.prescaler * plcTmr.softDivisor * 1e6) + 0.5);
-        //dbp("1 prescaler=%d divider=%d mul=%d", plcTmr.prescaler, plcTmr.tmr ,plcTmr.prescaler * plcTmr.tmr);
-
-        cycleTimeMicrosecondsFact = (long long int)floor(1e6 * (plcTmr.prescaler * plcTmr.tmr) / Prog.mcuClock + 0.5);
-
-        //dbp("prescaler=%d divider=%d mul=%d T=%d us", plcTmr.prescaler, plcTmr.tmr ,plcTmr.prescaler * plcTmr.tmr, cycleTimeMicrosecondsFact);
-
-        if(plcTmr.tmr <= max_tmr) {
-            int err = int(abs(1.0*(cycleTimeMicrosecondsFact - cycleTimeMicroseconds)));
-            if((AvrProgLdLen <= 0)
-            !! (bestPrescaler * bestTmr >= AvrProgLdLen))
-            if((err <= bestError) && (bestTmr < plcTmr.tmr)) {
-                bestError = err;
-                bestPrescaler = plcTmr.prescaler;
-                bestTmr = plcTmr.tmr;
-            }
-        }
-        if(plcTmr.prescaler == 1) plcTmr.prescaler = 8;
-        else if(plcTmr.prescaler == 8) plcTmr.prescaler = 64;
-        else if(plcTmr.prescaler == 64) plcTmr.prescaler = 256;
-        else if(plcTmr.prescaler == 256) plcTmr.prescaler = 1024;
-        else if(plcTmr.softDivisor < max_softDivisor) {
-            plcTmr.softDivisor++;
-            plcTmr.prescaler = 1;
-        } else break;
-    }
-    if(bestPrescaler == 0) {
-        plcTmr.prescaler = 1024;
-        plcTmr.tmr = max_tmr;
-    } else {
-        plcTmr.prescaler = bestPrescaler;
-        plcTmr.tmr = bestTmr;
-    }
-#else
     plcTmr.ticksPerCycle = (long long int)floor(1.0 * Prog.mcuClock * cycleTimeMicroseconds / 1000000 + 0.5);
     long int bestTmr = LONG_MIN;
     long int bestPrescaler = LONG_MAX;
@@ -2368,7 +2322,6 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
         }
         #endif
     }
-#endif
     plcTmr.Fcycle=1.0*Prog.mcuClock/(1.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
     plcTmr.TCycle=1.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
     switch(plcTmr.prescaler) {
@@ -2450,34 +2403,6 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
     }
 }
 
-//-----------------------------------------------------------------------------
-/*
-static void PlcCycleTimerOverflowInterrupt()
-{
-    Comment("PlcCycleTimerOverflowInterrupt") ;
-    //if(tcnt0PlcCycle > 0) {
-      Instruction(OP_PUSH, r25);
-      Instruction(OP_PUSH, ZL);
-      Instruction(OP_PUSH, ZH);
-
-      //ReadIoToReg(r25, REG_SREG);
-      //Instruction(OP_PUSH, r25);
-      //vvv
-
-      Instruction(OP_LDI, r25, tcnt0PlcCycle);
-      WriteRegToIO(REG_TCNT0, r25);
-
-      //^^^
-      //Instruction(OP_POP, r25);
-      //WriteRegToIO(REG_SREG, r25);
-
-      Instruction(OP_POP, ZH);
-      Instruction(OP_POP, ZL);
-      Instruction(OP_POP, r25);
-    //}
-    Instruction(OP_RETI);
-}
-*/
 #ifdef TABLE_IN_FLASH
 //-----------------------------------------------------------------------------
 static void InitTable(IntOp *a)
@@ -2768,17 +2693,17 @@ static void Decrement(DWORD addr, int sov)
     if(sov >= 2) {
       DWORD noCarry = AllocFwdAddr();
       Instruction(OP_BRCC, noCarry);
-      Instruction(OP_LD_Z, r25);  // now Z is addr+1 => addrh
+      Instruction(OP_LD_Z, r25);  // now Z is addr+1
       Instruction(OP_SUBI, r25, 1);
       Instruction(OP_ST_ZP, r25);
       if(sov >= 3) {
         Instruction(OP_BRCC, noCarry);
-        Instruction(OP_LD_Z, r25);  // now Z is addr+2 => addrh+1
+        Instruction(OP_LD_Z, r25);  // now Z is addr+2
         Instruction(OP_SUBI, r25, 1);
         Instruction(OP_ST_ZP, r25);
         if(sov >= 4) {
           Instruction(OP_BRCC, noCarry);
-          Instruction(OP_LD_Z, r25);  // now Z is addr+3 => addrh+2
+          Instruction(OP_LD_Z, r25);  // now Z is addr+3
           Instruction(OP_SUBI, r25, 1);
           Instruction(OP_ST_ZP, r25);
         }
@@ -2802,21 +2727,21 @@ static void Increment(DWORD addr, int sov, char *name)
       DWORD noCarry = AllocFwdAddr();
       Instruction(OP_BRNE, noCarry);
     //Instruction(OP_BRCS, noCarry);
-      Instruction(OP_LD_Z, r25);  // now Z is addl+1 => addrh
+      Instruction(OP_LD_Z, r25);  // now Z is addl+1
       Instruction(OP_INC, r25, 0, name);
     //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
       Instruction(OP_ST_ZP, r25);
       if(sov >= 3) {
         Instruction(OP_BRNE, noCarry);
       //Instruction(OP_BRCS, noCarry);
-        Instruction(OP_LD_Z, r25);  // now Z is addr+2 => addrh+1
+        Instruction(OP_LD_Z, r25);  // now Z is addr+2
         Instruction(OP_INC, r25, 0, name);
       //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
         Instruction(OP_ST_ZP, r25);
         if(sov >= 4) {
           Instruction(OP_BRNE, noCarry);
         //Instruction(OP_BRCS, noCarry);
-          Instruction(OP_LD_Z, r25);  // now Z is addr+2 => addrh+1
+          Instruction(OP_LD_Z, r25);  // now Z is addr+2
           Instruction(OP_INC, r25, 0, name);
         //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
           Instruction(OP_ST_ZP, r25);
@@ -3008,6 +2933,7 @@ static void WriteRuntime(void)
         // UCSRC initial Value frame format: 8 data, parity - none, 1 stop bit.
         // Not need to set.
     }
+    // All PWM outputs setted in BuildDirectionRegisters
 
     Comment("Turn on the pull-ups, and drive the outputs low to start");
     for(i = 0; i < MAX_IO_PORTS; i++) {
@@ -3138,7 +3064,8 @@ ISR (PCINT1_vect) {
     enc_last=enc_now;                               //remember last state
 }
 The algorithm is from Scott Edwards, in Nuts&Volts Vol 1 Oct. 1995 (Basic Stamp #8) and
-is described in an article available on line at http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
+is described in an article available on line at
+http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
 */
 
 //-----------------------------------------------------------------------------
@@ -3386,7 +3313,6 @@ static void CompileFromIntermediate(void)
                 if(IsNumber(a->name2)){
                   CopyLiteralToRegs(r16, hobatoi(a->name2), sov);
                 } else {
-                  //MemForVariable(a->name2, &addrl, &addrh);
                   CopyVarToRegs(r16, a->name2, sov);
                 }
 
@@ -3745,7 +3671,6 @@ static void CompileFromIntermediate(void)
 
             case INT_SET_VARIABLE_MOD:
                 break;
-
             case INT_SET_VARIABLE_DIVIDE:
                 // Do this one separately since the divide routine uses
                 // slightly different in/out registers and I don't feel like
@@ -3797,7 +3722,6 @@ static void CompileFromIntermediate(void)
             case INT_SET_VARIABLE_AND:
             case INT_SET_VARIABLE_OR :
                 break;
-
             case INT_SET_VARIABLE_XOR:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_SR0:
@@ -3857,7 +3781,7 @@ static void CompileFromIntermediate(void)
             case INT_PWM_OFF: {
                 McuPwmPinInfo *iop = PwmPinInfoForName(a->name1, Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s' not a PWM output!"), a->name1);
+                    Error(_("Pin '%s': PWM output not available!"), a->name1);
                     CompileError();
                 }
                 if(iop->maxCS == 0) {
@@ -3881,12 +3805,25 @@ static void CompileFromIntermediate(void)
                 ClearBit(addr, bit, storeName);
                 break;
             }
+
             case INT_SET_PWM: {
-            //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, &l->d.setPwm.invertingMode);
-                McuPwmPinInfo *iop = PwmPinInfoForName(a->name3, Prog.cycleTimer);
+                //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
+                Comment("INT_SET_PWM %s %s %s %s", a->name1, a->name2, a->name3, a->name4);
+                int resol = 7; // 0-100% (6.7 bit)
+                int TOP = 0xFF;
+                getResolution(a->name4, &resol, &TOP);
+
+                McuPwmPinInfo *iop;
+                iop = PwmPinInfoForName(a->name3, Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s' not a PWM output!"), a->name3);
+                    Error(_("Pin '%s': PWM output not available!"), a->name3);
                     CompileError();
+                } else {
+                    iop = PwmPinInfoForName(a->name3, Prog.cycleTimer, max(resol, 8));
+                    if(!iop) {
+                        Error(_("Pin '%s': PWM resolution not available!"), a->name3);
+                        CompileError();
+                    }
                 }
                 if(iop->maxCS == 0) {
                     if(REG_TCCR2B > 0) {
@@ -3915,8 +3852,7 @@ static void CompileFromIntermediate(void)
                 char SI[10];
                 char freqStr[1024]="";
                 for(prescale = 1;;) {
-                  //int freq = (Prog.mcuClock + prescale*128)/(prescale*256);
-                    freq = (1.0*Prog.mcuClock) / (256.0*prescale);
+                    freq = (1.0*Prog.mcuClock) / (1.0*TOP*prescale);
 
                     freqSI = SIprefix(freq, SI);
                     sprintf(freqStr, "%s%.3f %sHz    ", freqStr, freqSI, SI);
@@ -4041,9 +3977,7 @@ static void CompileFromIntermediate(void)
                     }
                 } else  oops();
 
-                BOOL Use100 = TRUE;
-                // Use100 = FALSE; // TODO
-                if(Use100) {
+                if(resol == 7) {
                     DivideUsed = TRUE; MultiplyUsed = TRUE;
                     if(IsNumber(a->name1)){
                       CopyLiteralToRegs(r20, hobatoi(a->name1), 2);
@@ -4061,8 +3995,13 @@ static void CompileFromIntermediate(void)
                     CallSubroutine(DivideAddress);
                     // result in r20:r19
                 } else {
-                    CopyVarToRegs(r19, a->name1, 2);
+                    if(IsNumber(a->name1)){
+                      CopyLiteralToRegs(r19, hobatoi(a->name1), 2);
+                    } else {
+                      CopyVarToRegs(r19, a->name1, 2);
+                  }
                 }
+
                 if(iop->REG_OCRnxH)
                   WriteRegToIO(iop->REG_OCRnxH, r20); // first HIGH
                 WriteRegToIO(iop->REG_OCRnxL, r19);   // then LOW
@@ -4342,7 +4281,6 @@ static void CompileFromIntermediate(void)
 
                 LoadXAddr(REG_ADCH);
                 Instruction(OP_LD_X, 16);
-              //LoadXAddr(addrh);
                 Instruction(OP_ST_YP, 16);
 
                 break;
@@ -4482,14 +4420,17 @@ static void CompileFromIntermediate(void)
                 break;
 
             case INT_AllocKnownAddr:
+                Comment("INT_AllocKnownAddr %d %08X",a->literal,AddrOfRungN[a->literal].KnownAddr);
                 AddrOfRungN[a->literal].KnownAddr = AvrProgWriteP;
                 break;
 
             case INT_AllocFwdAddr:
+                Comment("INT_AllocFwdAddr %d %08X",a->literal,AddrOfRungN[a->literal].FwdAddr);
                 AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
                 break;
 
             case INT_FwdAddrIsNow:
+                Comment("INT_FwdAddrIsNow %d %08x",a->literal,AddrOfRungN[a->literal].FwdAddr);
                 FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
                 break;
 
@@ -4499,6 +4440,7 @@ static void CompileFromIntermediate(void)
 
             case INT_GOTO: {
                 int rung = a->literal;
+                Comment("INT_GOTO %s %d 0x%08X 0x%08X", a->name1, rung, AddrOfRungN[rung].FwdAddr, AddrOfRungN[rung].KnownAddr);
                 DWORD addr;
                 if(rung < -1) {
                     addr = 0;
@@ -4514,6 +4456,7 @@ static void CompileFromIntermediate(void)
             }
             case INT_GOSUB: {
                 int rung = a->literal;
+                Comment("INT_GOSUB %s %d %d 0x%08X 0x%08X", a->name1, rung+1, rungNow+1, AddrOfRungN[rung].FwdAddr, AddrOfRungN[rung].KnownAddr);
                 if(rung < rungNow) {
                     CallSubroutine(AddrOfRungN[rung].KnownAddr);
                 } else if(rung > rungNow) {
@@ -4523,6 +4466,8 @@ static void CompileFromIntermediate(void)
             }
             #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:{
+                // Inited by InitTables()
+                /*
                 DWORD addrOfTable = 0;
                 MemOfVar(a->name1, &addrOfTable);
 
@@ -4532,6 +4477,7 @@ static void CompileFromIntermediate(void)
                     InitTable(a);
                     FwdAddrIsNow(SkipData);
                 }
+                */
                 break;
             }
             case INT_FLASH_READ:{
@@ -5786,17 +5732,84 @@ void CompileAvr(char *outFile)
             INTF0   = BIT6;
 
     } else
-    if(McuAs("Atmel AVR ATmega8 ")  ||
-       McuAs("Atmel AVR ATmega32 ")
+    if(McuAs("Atmel AVR ATmega8 ")
     ){
-        REG_OCR0A   = 0x51;  // OCR0
         REG_TCCR0A  = 0x53; // TCCR0
         REG_TCCR0B  = 0x53; // TCCR0
-        if(McuAs("Atmel AVR ATmega32 ")
-        ){
+        REG_TCNT0   = 0x52;
+
+        REG_TIFR1   = 0x58; // TIFR
+            OCF1A   = BIT4;
+            TOV1    = BIT2;
+        REG_TIFR0   = 0x58; // TIFR
+            OCF0A   = BIT1;
+            TOV0    = BIT0;
+
+        REG_OCR2    = 0x43;
+      //REG_TCCR2B  = 0;
+        REG_TCCR2   = 0x45;
+            WGM20   = BIT6;
+            WGM21   = BIT3;
+            COM21   = BIT5;
+            COM20   = BIT4;
+
+        REG_EEARH   = 0x3F;
+        REG_EEARL   = 0x3E;
+        REG_EEDR    = 0x3D;
+        REG_EECR    = 0x3C;
+
+        REG_ADMUX   = 0x27;
+        REG_ADCSRA  = 0x26;
+    ////REG_ADCSRB  = 0;
+        REG_ADCH    = 0x25;
+        REG_ADCL    = 0x24;
+
+        REG_WDTCR   = 0x41;
+
+        REG_OCR1AH  = 0x4B;
+        REG_OCR1AL  = 0x4A;
+        REG_TCCR1A  = 0x4F;
+        REG_TCCR1B  = 0x4E;
+
+        REG_TIMSK   = 0x59;
+            OCIE1A  = BIT4;
+            TOIE1   = BIT2;
+            TOIE0   = BIT0;
+
+//      REG_UCSRC   = 0x40;
+        REG_UBRRH   = 0x40;
+        REG_UBRRL   = 0x29;
+        REG_UCSRB   = 0x2a;
+        REG_UCSRA   = 0x2b;
+        REG_UDR     = 0x2c;
+
+        REG_SFIOR   = 0x50;
+            PSR2    = BIT1;
+
+        REG_sleep   = 0x55; // REG_MCUCR
+            SE      = BIT7;
+            SM0     = BIT4;
+            SM1     = BIT5;
+            SM2     = BIT6;
+
+        REG_int_sup = 0x55; // REG_MCUCR
+
+        REG_int_en  = 0x5B; // REG_GICR
+            INT1    = BIT7;
+            INT0    = BIT6;
+
+        REG_int_flag= 0x5A; // REG_GIFR
+            INTF1   = BIT7;
+            INTF0   = BIT6;
+
+    } else
+    if(McuAs("Atmel AVR ATmega32 ")
+    ){
+        REG_OCR0A   = 0x5C;  // OCR0
+        REG_TCCR0A  = 0x53; // TCCR0
+        REG_TCCR0B  = 0x53; // TCCR0
             WGM00   = BIT6;
             WGM01   = BIT3;
-        }
         REG_TCNT0   = 0x52;
 
         REG_TIFR1   = 0x58; // TIFR
@@ -5866,7 +5879,7 @@ void CompileAvr(char *outFile)
     } else
     if(McuAs("Atmel AVR ATmega16 ")
     ){
-        REG_OCR0A   = 0x51;  // OCR0
+        REG_OCR0A   = 0x5C; // OCR0
         REG_TCCR0A  = 0x53; // TCCR0
         REG_TCCR0B  = 0x53; // TCCR0
             WGM00   = BIT6;
@@ -6011,6 +6024,48 @@ void CompileAvr(char *outFile)
             INT0    = BIT0;
 
         REG_int_flag= 0x58; // EIFR
+            INTF1   = BIT1;
+            INTF0   = BIT0;
+    } else
+    if(McuAs(" ATtiny10 ")
+    ){
+      //REG_OCR0A   = 0x49;
+        REG_TCCR0A  = 0x4A;
+        REG_TCCR0B  = 0x53;
+            WGM00   = BIT0;
+            WGM01   = BIT1;
+        REG_TCNT0   = 0x52;
+
+        REG_TIFR0   = 0x35;
+            OCF0A   = BIT1;
+            TOV0    = BIT0;
+
+        REG_ADMUX   = 0x7C;
+        REG_ADCSRB  = 0x7B;
+        REG_ADCSRA  = 0x7A;
+        REG_ADCH    = 0x79;
+        REG_ADCL    = 0x78;
+
+        REG_WDTCR   = 0x60;
+
+        REG_TIMSK   = 0x6F; // TIMSK1
+
+        REG_GTCCR   = 0x43;
+
+        REG_sleep   = 0x53; // REG_SMCR
+            SE      = BIT0;
+            SM0     = BIT1;
+            SM1     = BIT2;
+            SM2     = BIT3;
+
+        REG_int_sup = 0x69;
+//      REG_EICRA   = 0x69;
+
+        REG_int_en  = 0x3D; // REG_EIMSK
+            INT1    = BIT1;
+            INT0    = BIT0;
+
+        REG_int_flag= 0x3C; // REG_EIFR
             INTF1   = BIT1;
             INTF0   = BIT0;
     } else

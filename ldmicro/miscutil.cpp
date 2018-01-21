@@ -677,6 +677,16 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
 }
 
 //-----------------------------------------------------------------------------
+char *ArduinoPinName(McuIoPinInfo *iop)
+{
+    if(iop)
+      if(iop->ArduinoName)
+        if(strlen(iop->ArduinoName))
+          return iop->ArduinoName;
+    return "-1";
+}
+
+//-----------------------------------------------------------------------------
 int NameToPin(char *pinName)
 {
     int i;
@@ -729,13 +739,22 @@ McuPwmPinInfo *PwmPinInfo(int pin)
     return NULL;
 }
 
-//-----------------------------------------------------------------------------
 McuPwmPinInfo *PwmPinInfo(int pin, int timer) // !=timer !!!
 {
     int i;
     if(Prog.mcu)
         for(i = 0; i < Prog.mcu->pwmCount; i++)
             if((Prog.mcu->pwmInfo[i].pin==pin) && (Prog.mcu->pwmInfo[i].timer!=timer))
+                return &(Prog.mcu->pwmInfo[i]);
+    return NULL;
+}
+
+McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.mcu->pwmCount; i++)
+            if((Prog.mcu->pwmInfo[i].pin==pin) && (Prog.mcu->pwmInfo[i].timer!=timer) && (Prog.mcu->pwmInfo[i].resolution==resolution))
                 return &(Prog.mcu->pwmInfo[i]);
     return NULL;
 }
@@ -752,14 +771,25 @@ McuPwmPinInfo *PwmPinInfoForName(char *name)
     return NULL;
 }
 
-//-----------------------------------------------------------------------------
 McuPwmPinInfo *PwmPinInfoForName(char *name, int timer) // !=timer !!!
 {
     int i;
     if(Prog.mcu)
         for(i = 0; i < Prog.io.count; i++) {
-            if(strcmp(Prog.io.assignment[i].name, name)==0)
+            if(strcmp(Prog.io.assignment[i].name, name)==0) {
                 return PwmPinInfo(Prog.io.assignment[i].pin, timer);
+            }
+        }
+    return NULL;
+}
+
+McuPwmPinInfo *PwmPinInfoForName(char *name, int timer, int resolution) // !=timer !!!
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.io.count; i++) {
+            if(strcmp(Prog.io.assignment[i].name, name)==0)
+                return PwmPinInfo(Prog.io.assignment[i].pin, timer, resolution);
         }
     return NULL;
 }
@@ -930,3 +960,23 @@ char *toupperstr(char *dest, const char *src)
     return dest;
 }
 
+void getResolution(char *s, int *resol, int *TOP)
+{
+    *resol = 7; // 0-100% (6.7 bit)
+    *TOP = 0xFF;
+    if(strlen(s)) {
+        if(strstr(s,"0-1024")) {
+            *resol = 10; // bit
+            *TOP = 0x3FF;
+        } else if(strstr(s,"0-512")) {
+            *resol = 9; // bit
+            *TOP = 0x1FF;
+        } else if(strstr(s,"0-256")) {
+            *resol = 8; // bit
+            *TOP = 0xFF;
+        } else if(strstr(s,"0-100")) {
+            *resol = 7; // 0-100% (6.7 bit)
+            *TOP = 0xFF;
+        }
+    }
+}

@@ -114,62 +114,71 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_OSC;
     } else if(memcmp(line, "NPULSE_OFF",10)==0) {
         *which = ELEM_NPULSE_OFF;
-    } else if(memcmp(line, "PWM_OFF",7)==0) {
-        *which = ELEM_PWM_OFF;
-    } else if((sscanf(line, "TIME2COUNT %s %d", l->d.timer.name,
-        &l->d.timer.delay)==2))
-    {
+    } else if((sscanf(line, "TIME2COUNT %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
         *which = ELEM_TIME2COUNT;
-    } else if((sscanf(line, "TCY %s %d", l->d.timer.name,
-        &l->d.timer.delay)==2))
-    {
-        *which = ELEM_TCY;
-    } else if((sscanf(line, "TON %s %d", l->d.timer.name,
-        &l->d.timer.delay)==2))
-    {
+
+    } else if((sscanf(line, "TON %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
         *which = ELEM_TON;
-    } else if((sscanf(line, "TOF %s %d", l->d.timer.name,
-        &l->d.timer.delay)==2))
-    {
+    } else if((sscanf(line, "TOF %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
         *which = ELEM_TOF;
-    } else if((sscanf(line, "RTO %s %d", l->d.timer.name,
-        &l->d.timer.delay)==2))
-    {
+    } else if((sscanf(line, "RTO %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
         *which = ELEM_RTO;
+    } else if((sscanf(line, "RTL %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+        *which = ELEM_RTL;
+    } else if((sscanf(line, "TCY %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+        *which = ELEM_TCY;
+    } else if((sscanf(line, "THI %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+        *which = ELEM_THI;
+    } else if((sscanf(line, "TLO %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+        *which = ELEM_TLO;
+
+    } else if((sscanf(line, "TON %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+        *which = ELEM_TON;
+        if(strcmp(Prog.LDversion,"0.1")==0)
+            l->d.timer.adjust = -1;
+        else
+            l->d.timer.adjust = 0;
+    } else if((sscanf(line, "TOF %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+        *which = ELEM_TOF;
+        if(strcmp(Prog.LDversion,"0.1")==0)
+            l->d.timer.adjust = -1;
+        else
+            l->d.timer.adjust = 0;
+    } else if((sscanf(line, "RTO %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+        *which = ELEM_RTO;
+        if(strcmp(Prog.LDversion,"0.1")==0)
+            l->d.timer.adjust = -1;
+        else
+            l->d.timer.adjust = 0;
     } else if((sscanf(line, "RTL %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
         *which = ELEM_RTL;
-
+        l->d.timer.adjust = 0;
+    } else if((sscanf(line, "TCY %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+        *which = ELEM_TCY;
+        l->d.timer.adjust = 0;
     } else if((sscanf(line, "THI %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
         *which = ELEM_THI;
-
+        l->d.timer.adjust = 0;
     } else if((sscanf(line, "TLO %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
         *which = ELEM_TLO;
+        l->d.timer.adjust = 0;
 
     } else if((sscanf(line, "CTR %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
         *which = ELEM_CTR;
-
     } else if((sscanf(line, "CTC %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
         *which = ELEM_CTC;
-
     } else if((sscanf(line, "CTU %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
         *which = ELEM_CTU;
-
     } else if((sscanf(line, "CTD %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
         *which = ELEM_CTD;
 
-    } else if((sscanf(line, "CTD %s %s", l->d.counter.name,
-        l->d.counter.max)==2))
-    {
+    } else if((sscanf(line, "CTD %s %s", l->d.counter.name, l->d.counter.max)==2)) {
         strcpy(l->d.counter.init,"0");
         *which = ELEM_CTD;
-    } else if((sscanf(line, "CTU %s %s", l->d.counter.name,
-        l->d.counter.max)==2))
-    {
+    } else if((sscanf(line, "CTU %s %s", l->d.counter.name, l->d.counter.max)==2)) {
         strcpy(l->d.counter.init,"0");
         *which = ELEM_CTU;
-    } else if((sscanf(line, "CTC %s %s", l->d.counter.name,
-        l->d.counter.max)==2))
-    {
+    } else if((sscanf(line, "CTC %s %s", l->d.counter.name, l->d.counter.max)==2)) {
         strcpy(l->d.counter.init,"0");
         *which = ELEM_CTC;
 
@@ -837,7 +846,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         case ELEM_THI: s = "THI"; goto timer;
         case ELEM_TLO: s = "TLO"; goto timer;
         timer:
-            fprintf(f, "%s %s %d\n", s, l->d.timer.name, l->d.timer.delay);
+            fprintf(f, "%s %s %d %d\n", s, l->d.timer.name, l->d.timer.delay, l->d.timer.adjust);
             break;
 
         case ELEM_CTU: s = "CTU"; goto counter;
@@ -1013,10 +1022,6 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         case ELEM_SET_PWM:
             fprintf(f, "SET_PWM %s %s %s %s\n", l->d.setPwm.duty_cycle,
                 l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-            break;
-
-        case ELEM_PWM_OFF:
-            fprintf(f, "PWM_OFF\n");
             break;
 
         case ELEM_UART_RECV:

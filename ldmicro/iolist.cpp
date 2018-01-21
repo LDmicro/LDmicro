@@ -108,6 +108,7 @@ static void AppendIo(char *IOname, int type)
     }
 
     SetVariableType(name, type);
+
     int i;
     for(i = 0; i < Prog.io.count; i++) {
         if(strcmp(Prog.io.assignment[i].name, name)==0) {
@@ -597,7 +598,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
         #endif
-        case ELEM_PWM_OFF:
+        //case ELEM_PWM_OFF:
         case ELEM_NPULSE_OFF:
             break;
 
