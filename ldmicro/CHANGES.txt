@@ -1,3 +1,39 @@
+== Release 4.3.7
+
+    * Fixed: Atmega2560 pins name and Arduino Mega 2560 pins name.
+
+    * Fixed: Atmega2560 9/10-bit PWM.
+
+    * Fixed: ATmega328 9/10-bit PWM.
+
+    * Fixed: ATmega8 9/10-bit PWM.
+
+    * Fixed: PIC 9/10bits PWM LSBs.
+
+    * Fixed: READ_ADC in Arduino Sketch.
+
+    * Updated: ADC simulation.
+
+    * Updated: LDSTUB to LDSTUB0 and LDSTUB1 in ANSIC.
+      #define USE_WDT in ANSIC.
+
+    * Updated: The DELAY(us) element, the variable duration is implemented.
+
+    * New: TIME2DELAY(us)operation converts the time interval
+      to the internal representation of the variable DELAY().
+
+    * Wiki: DELAY(us) with variable duration
+      https://github.com/LDmicro/LDmicro/wiki/DELAY(us)-with-variable-duration
+
+    * New: SetBit, ClearBit, IfBitSet, IfBitClear is implemented.
+      To PIC's controllers used BCF, BSF, BTFSC, BTFSS instruction.
+      To AVR's controllers used SBR, CBR, SBRC, SBRS, SBIC, SBIS instruction.
+
+    * Wiki: SetBit, ClearBit, IfBitSet, IfBitClear in variable
+      https://github.com/LDmicro/LDmicro/wiki/SetBit,-ClearBit,-IfBitSet,-IfBitClear-in-variable
+
+    * Added: clear.bat to delete LDmicro output tmp files.
+
 == Release 4.3.6
 
     * Fixed: "Compile ANSIC" DO_LDSTUBS.
@@ -18,7 +54,7 @@
       Timer adjust =-1 is equal to the v2.3 timer.
 
       TON, TOF, etc. in v2.3 and v3.5.3 and later
-      https://github.com/LDmicro/LDm....-in-v2.3-and-v3.5.3-and-later
+      https://github.com/LDmicro/LDmicro/wiki/TON,-TOF,--etc.-in-v2.3-and-v3.5.3-and-later
 
     * Wiki: SG90 Servo PWM
       https://github.com/LDmicro/LDmicro/wiki/Servo-PWM

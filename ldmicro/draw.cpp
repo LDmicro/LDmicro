@@ -84,6 +84,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_SHORT:
         case ELEM_CONTACTS:
         case ELEM_TIME2COUNT:
+        case ELEM_TIME2DELAY:
         case ELEM_TCY:
         case ELEM_TON:
         case ELEM_TOF:
@@ -123,6 +124,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_BCD2BIN:
         case ELEM_SWAP:
         case ELEM_OPPOSITE:
+        case ELEM_SPI:
         case ELEM_BUS:
         case ELEM_7SEG:
         case ELEM_9SEG:
@@ -1234,6 +1236,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             *cx += POS_WIDTH;
             break;
         }
+        case ELEM_TIME2DELAY:
         case ELEM_TIME2COUNT:
         case ELEM_TCY:
         case ELEM_RTL:
@@ -1243,34 +1246,30 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_TON:
         case ELEM_TOF: {
             char *s;
-            if(which == ELEM_TON)
+            if(which == ELEM_TON) {
                 s = "\x01""TON\x02";
-            else if(which == ELEM_TOF)
+            } else if(which == ELEM_TOF) {
                 s = "\x01""TOF\x02";
-            else if(which == ELEM_THI)
+            } else if(which == ELEM_THI) {
                 s = "\x01""THI\x02";
-            else if(which == ELEM_TLO)
+            } else if(which == ELEM_TLO) {
                 s = "\x01""TLO\x02";
-            else if(which == ELEM_RTO)
+            } else if(which == ELEM_RTO) {
                 s = "\x01""RTO\x02";
-            else if(which == ELEM_RTL)
+            } else if(which == ELEM_RTL) {
                 s = "\x01""RTL\x02";
-            else if(which == ELEM_TCY)
+            } else if(which == ELEM_TCY) {
                 s = "\x01""TCY\x02";
-            else if(which == ELEM_TIME2COUNT)
+            } else if(which == ELEM_TIME2COUNT) {
                 s = "\x01""T2CNT\x02";
-            else oops();
+            } else if(which == ELEM_TIME2DELAY) {
+                s = "\x01""T2DLY\x02";
+            } else oops();
 
             ElemTimer *t = &leaf->d.timer;
-            if(t->delay >= 1000*1000) {
-                sprintf(bot, "[%s %.6g s]", s, t->delay/1000000.0);
-            } else if(t->delay >= 100*1000) {
-                sprintf(bot, "[%s %.6g ms]", s, t->delay/1000.0);
-            } else {
-                sprintf(bot, "[%s %.6g ms]", s, t->delay/1000.0);
-            }
-            sprintf(s2,"%s",t->name);
-            CenterWithSpaces(*cx, *cy, s2, poweredAfter, TRUE);
+            double d = SIprefix(t->delay / 1000000.0, s2);
+            sprintf(bot, "[%s %.6g %ss]", s, d, s2);
+            CenterWithSpaces(*cx, *cy, t->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
@@ -1284,7 +1283,10 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
 
         case ELEM_DELAY: {
             ElemTimer *t = &leaf->d.timer;
-            sprintf(s1, "%d us", t->delay);
+            if(IsNumber(t->name))
+                sprintf(s1, "%s us", t->name);
+            else
+                sprintf(s1, "%s", t->name);
             CenterWithSpaces(*cx, *cy, formatWidth(top, POS_WIDTH, "","",s1,"",""), poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "[DELAY]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
@@ -1415,6 +1417,17 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             CenterWithWires (*cx, *cy,"[UART RECV]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
+
+        case ELEM_SPI: {
+            ElemSpi *m = &leaf->d.spi;
+            formatWidth(top, POS_WIDTH, "{\x01""SPI\x02 ","","",m->name,"}");
+            formatWidth(bot, POS_WIDTH, "{->",m->recv,"",m->send,"->}");
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+            *cx += POS_WIDTH;
+            break;
+        }
 
         case ELEM_BUS: {
             ElemBus *m = &leaf->d.bus;

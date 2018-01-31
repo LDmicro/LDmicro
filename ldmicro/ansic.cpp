@@ -31,8 +31,6 @@
 #include "intcode.h"
 #include "bits.h"
 
-#define USE_WDT
-
 static char SeenVariables[MAX_IO][MAX_NAME_LEN];
 int SeenVariablesCount;
 
@@ -139,7 +137,7 @@ static void DeclareStr(FILE *f, char *str, int sov)
 // internal relay. An internal relay is just a BOOL variable, but for an
 // input or an output someone else must provide read/write functions.
 //-----------------------------------------------------------------------------
-static void DeclareBit(FILE *f, char *str)
+static void DeclareBit(FILE *f, char *str, int set1)
 {
     // The mapped symbol has the form U_b_{X,Y,R}name, so look at character
     // four to determine if it's an input, output, internal relay.
@@ -216,7 +214,7 @@ static void DeclareBit(FILE *f, char *str)
 
                 fprintf(f, "\n");
                 fprintf(f, "// You provide this function.\n");
-                fprintf(f, "LDSTUB( ldBOOL Read_%s(void) )\n", str);
+                fprintf(f, "LDSTUB%d( ldBOOL Read_%s(void) )\n", set1, str);
                 fprintf(f, "\n");
             }
         }
@@ -347,7 +345,7 @@ static void DeclareBit(FILE *f, char *str)
                 fprintf(fh, "\n");
 
                 fprintf(f, "/* You provide these functions. */\n");
-                fprintf(f, "LDSTUB( ldBOOL Read_%s(void) )\n", str);
+                fprintf(f, "LDSTUB%d( ldBOOL Read_%s(void) )\n", set1, str);
                 fprintf(f, "LDSTUB( void Write_%s(ldBOOL v) )\n", str);
                 fprintf(f, "\n");
             }
@@ -457,6 +455,11 @@ static void DeclareBit(FILE *f, char *str)
     }
 }
 
+static void DeclareBit(FILE *f, char *str)
+{
+    DeclareBit(f, str, 0);
+}
+
 //-----------------------------------------------------------------------------
 // Generate declarations for all the 16-bit/single bit variables in the ladder
 // program.
@@ -472,7 +475,9 @@ static void GenerateDeclarations(FILE *f)
         char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
         char *adcVar1 = NULL;
         char *strVar1 = NULL;
-        int sov1, sov2, sov3;
+        int sov1=0, sov2=0, sov3=0;
+
+        int bitVar1set1 = 0;
 
         addr=0;  bit=0;
         addr2=0; bit2=0;
@@ -503,7 +508,6 @@ static void GenerateDeclarations(FILE *f)
             case INT_SET_OPPOSITE:
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
             case INT_SET_VARIABLE_NOT:
-                break;
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -581,6 +585,11 @@ static void GenerateDeclarations(FILE *f)
                 bitVar1 = IntCode[i].name2;
                 break;
 
+            case INT_SPI:
+                intVar1 = IntCode[i].name1;
+                intVar2 = IntCode[i].name2;
+                break;
+
             case INT_UART_SEND1:
             case INT_UART_SENDn:
                 intVar1 = IntCode[i].name1;
@@ -596,6 +605,7 @@ static void GenerateDeclarations(FILE *f)
             case INT_IF_BIT_CLEAR:
                 isPinAssigned(a->name1);
                 bitVar1 = IntCode[i].name1;
+                bitVar1set1 = IntCode[i].literal;
                 break;
 
             #ifdef NEW_CMP
@@ -641,6 +651,7 @@ static void GenerateDeclarations(FILE *f)
                 break;
 
             case INT_WRITE_STRING:
+            case INT_SLEEP:
             case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
             case INT_FwdAddrIsNow:
@@ -672,7 +683,7 @@ static void GenerateDeclarations(FILE *f)
         intVar2 = MapSym(intVar2, ASINT);
         intVar3 = MapSym(intVar3, ASINT);
 
-        if(bitVar1 && !SeenVariable(bitVar1)) DeclareBit(f, bitVar1);
+        if(bitVar1 && !SeenVariable(bitVar1)) DeclareBit(f, bitVar1, bitVar1set1);
         if(bitVar2 && !SeenVariable(bitVar2)) DeclareBit(f, bitVar2);
 
         if(intVar1 && !SeenVariable(intVar1)) DeclareInt(f, intVar1, sov1);
@@ -1001,16 +1012,26 @@ doIndent(f, i); fprintf(f,"#endif\n");
                 break;
 
             case INT_EEPROM_READ:
-                                fprintf(f, "/* EEprom read */\n");
+                    fprintf(f, "%s = EEPROM_read(%d) + (EEPROM_read(%d) << 8);\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal, IntCode[i].literal+1);
                 break;
+
             case INT_EEPROM_WRITE:
-                                fprintf(f, "/* EEprom write */\n");
+                    fprintf(f, "EEPROM_write(%d, %s & 0xFF);\n", IntCode[i].literal, MapSym(IntCode[i].name1, ASINT));
+    doIndent(f, i); fprintf(f, "EEPROM_write(%d, %s >> 8);\n", IntCode[i].literal+1, MapSym(IntCode[i].name1, ASINT));
                 break;
+
             case INT_READ_ADC:
-                                fprintf(f, "/* Read ADC */\n");
+                    fprintf(f, "%s = Read_%s();\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name1, ASBIT));
                 break;
+
             case INT_SET_PWM:
-                                fprintf(f, "/* Set PWM */\n");
+                  if(IsNumber(IntCode[i].name2))
+                    fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT),
+                                             hobatoi(IntCode[i].name2));
+                  else
+                    fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT),
+                                             MapSym(IntCode[i].name2, ASINT));
+    doIndent(f, i); fprintf(f, "Write_%s(%s);\n", MapSym(IntCode[i].name3, ASBIT), MapSym(IntCode[i].name1, ASINT));
                 break;
 
             case INT_AllocFwdAddr:
@@ -1246,12 +1267,19 @@ void CompileAnsiC(char *dest, int MNU)
 "//#define DO_LDSTUBS\n"
 "\n"
 "#ifdef DO_LDSTUBS\n"
-"#define LDSTUB(x) x { ; }\n"
+"#define LDSTUB(x)   x { ; }\n"
+"#define LDSTUB0(x)  x { return 0; }\n"
+"#define LDSTUB1(x)  x { return 1; }\n"
 "#else\n"
-"#define LDSTUB(x) PROTO(extern x ;)\n"
+"#define LDSTUB(x)   PROTO(extern x;)\n"
+"#define LDSTUB0(x)  PROTO(extern x;)\n"
+"#define LDSTUB1(x)  PROTO(extern x;)\n"
 "#endif\n"
 "\n"
-"// Comment out USE_MACRO in next line, if you want to use functions instead of macros.\n"
+"/* Uncomment USE_WDT when you need to. */\n"
+"//#define USE_WDT\n"
+"\n"
+"/* Comment out USE_MACRO in next line, if you want to use functions instead of macros. */\n"
 "#define USE_MACRO\n"
 "\n"
     , CurrentLdName, CurrentLdName, CurrentLdName, CurrentLdName);
@@ -1378,7 +1406,9 @@ void CompileAnsiC(char *dest, int MNU)
       , Prog.cycleTime);
 
       fprintf(fh,
+"#ifdef USE_WDT\n"
 "#include <avr\\wdt.h>\n"
+"#endif\n"
       );
       if(SleepFunctionUsed()) {
         fprintf(fh,
@@ -1403,7 +1433,9 @@ void CompileAnsiC(char *dest, int MNU)
 "    #include <avr/io.h>\n"
 "    #include <avr/pgmspace.h>\n"
 "    #define __PROG_TYPES_COMPAT__ //arduino\n"
+"    #ifdef USE_WDT\n"
 "    #include <avr/wdt.h>\n"
+"    #endif\n"
 "#endif\n"
      , Prog.mcu->mcuH);
 /*
@@ -1911,7 +1943,9 @@ void CompileAnsiC(char *dest, int MNU)
 "// Call loopPlc() function in loop() of your arduino project once.\n"
 "void loopPlc() {\n"
 "    if (IsPlcInterval()) {\n"
+"        #ifdef USE_WDT\n"
 "        wdt_reset();\n"
+"        #endif\n"
     );
     if(Prog.cycleDuty) {
       fprintf(f,
@@ -1932,7 +1966,9 @@ void CompileAnsiC(char *dest, int MNU)
 "\n"
 "// Call setupPlc() function in setup() function of your arduino project once.\n"
 "void setupPlc(void) {\n"
+"   #ifdef USE_WDT\n"
 "   wdt_enable(WDTO_2S);\n"
+"   #endif\n"
 "// Initialise PLC cycle timer here if you need.\n"
 "// ...\n"
 "\n");
@@ -2024,6 +2060,7 @@ void CompileAnsiC(char *dest, int MNU)
 "        nRBPU = 0;\n"
 "    #endif\n"
 "\n"
+"  #ifdef USE_WDT\n"
 "    // Watchdog on\n"
 "    #ifdef __CODEVISIONAVR__\n"
 "        #ifndef WDTCR\n"
@@ -2041,17 +2078,11 @@ void CompileAnsiC(char *dest, int MNU)
 "    #else\n"
 "        // Watchdog Init is required. // You must provide this.\n"
 "    #endif\n"
+"  #endif\n"
 "\n"
     );
-    /*
-    int err;
-    if(Prog.cycleTimer==0)
-        err = PicTimer0Prescaler(Prog.cycleTime);
-    else
-        err = PicTimer1Prescaler(Prog.cycleTime);
-    if(err < 0)
-        return;
-    */
+
+  if(Prog.cycleTime > 0) {
     CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
 
     fprintf(f,
@@ -2081,7 +2112,9 @@ void CompileAnsiC(char *dest, int MNU)
     } else if(compile_MNU == MNU_COMPILE_HI_TECH_C) {
         if(Prog.cycleTimer == 0) {
           fprintf(f,
+"    #ifdef USE_WDT\n"
 "    CLRWDT();\n"
+"    #endif\n"
 "    TMR0 = 0;\n"
 "    PSA = %d;\n"
 "    T0CS = 0;\n"
@@ -2091,7 +2124,9 @@ void CompileAnsiC(char *dest, int MNU)
 //"          T1CON = plcTmr.PS;\n"
         } else {
           fprintf(f,
+"    #ifdef USE_WDT\n"
 "    CLRWDT(); // Clear WDT and prescaler\n"
+"    #endif\n"
 "    CCPR1L = 0x%X;\n"
 "    CCPR1H = 0x%X;\n"
 "    TMR1L = 0;\n"
@@ -2117,7 +2152,9 @@ void CompileAnsiC(char *dest, int MNU)
             );
           }
         }
+  }
     } else if(mcu_ISA == ISA_AVR) {
+      if(Prog.cycleTime > 0) {
         CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen);
 
         int counter = plcTmr.tmr - 1/* + CorrectorPlcCycle*/; // TODO
@@ -2133,6 +2170,7 @@ void CompileAnsiC(char *dest, int MNU)
 "        OCR1AH = (%d >> 8) & 0xff;\n"
 "        OCR1AL = %d  & 0xff;\n"
         , plcTmr.cs, counter, counter);
+      }
     } else {
         fprintf(f,
 "    //  You must init PLC timer.\n"
@@ -2250,6 +2288,7 @@ void CompileAnsiC(char *dest, int MNU)
 "        // You can place your code here, if you don't generate C code from LDmicro again.\n"
 "        // ...\n"
 "\n"
+"      #ifdef USE_WDT\n"
 "        // Watchdog reset\n"
 "        #ifdef __CODEVISIONAVR__\n"
 "            #asm(\"wdr\")\n"
@@ -2262,6 +2301,7 @@ void CompileAnsiC(char *dest, int MNU)
 "        #else\n"
 "            // Watchdog Reset is required. // You must provide this.\n"
 "        #endif\n"
+"      #endif\n"
 "\n"
     );
     if(Prog.cycleDuty) {

@@ -31,16 +31,22 @@
 
 static HWND SimpleDialog;
 
-#define MAX_BOXES 6
+#define MAX_BOXES 8
 
 static HWND Textboxes[MAX_BOXES];
 static HWND Labels[MAX_BOXES];
-static HWND ComboBox;
+static HWND ComboBox[MAX_BOXES];
 
 static LONG_PTR PrevAlnumOnlyProc[MAX_BOXES];
 static LONG_PTR PrevNumOnlyProc[MAX_BOXES];
 
 static BOOL NoCheckingOnBox[MAX_BOXES];
+
+#define MAX_COMBO_STRINGS 16
+typedef struct comboRecordTag {
+    int     n; // 0 <= n < MAX_COMBO_STRINGS
+    char   *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
+} comboRecord;
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than -A-Za-z0-9_ in the box.
@@ -96,9 +102,9 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     return 0;
 }
 
-static void MakeControls(int labs, char **labels, int boxes, char **dests, DWORD fixedFontMask, int combo, char **combos)
+static void MakeControls(int labs, char **labels, int boxes, char **dests, DWORD fixedFontMask, int combo, comboRecord *combos)
 {
-    int i;
+    int i, j;
     HDC hdc = GetDC(SimpleDialog);
     SelectObject(hdc, MyNiceFont);
 
@@ -141,30 +147,32 @@ static void MakeControls(int labs, char **labels, int boxes, char **dests, DWORD
         }
     }
 
-    if(combo) {
-        //EnableWindow(Textboxes[boxes-1], FALSE);
-        ShowWindow(Textboxes[boxes-1], SW_HIDE);
+    for(i = 0; i < combo; i++) {
+        if(combos[i].n) {
+            //EnableWindow(Textboxes[i], FALSE);
+            ShowWindow(Textboxes[i], SW_HIDE);
 
-        ComboBox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
-            WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS |WS_VISIBLE |
-            CBS_DROPDOWN | CBS_HASSTRINGS | WS_OVERLAPPED,
-            80 + 25 + adj, 12 + 30*(boxes-1), 120 + 535 - adj, 21,
-            SimpleDialog, NULL, Instance, NULL);
+            ComboBox[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+                WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS |WS_VISIBLE |
+                CBS_DROPDOWN | CBS_HASSTRINGS | WS_OVERLAPPED,
+                80 + 25 + adj, 12 + 30*i, 120 + 535 - adj, 21,
+                SimpleDialog, NULL, Instance, NULL);
 
-        if(fixedFontMask & (1 << (boxes-1))) {
-            FixedFont(ComboBox);
-        } else {
-            NiceFont(ComboBox);
+            if(fixedFontMask & (1 << i)) {
+                FixedFont(ComboBox[i]);
+            } else {
+                NiceFont(ComboBox[i]);
+            }
+
+            int ItemIndex = 0;
+            for(j = 0; j < combos[i].n; j++) {
+                SendMessage(ComboBox[i],(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) combos[i].str[j]);
+                if(dests[i] && strlen(dests[i]))
+                  if(strstr(combos[i].str[j], dests[i]))
+                    ItemIndex = j;
+            }
+            SendMessage(ComboBox[i], CB_SETCURSEL, (WPARAM)ItemIndex, (LPARAM)0);
         }
-
-       int ItemIndex = 0;
-       for(i = 0; i < combo; i++) {
-           SendMessage(ComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) combos[i]);
-           if(dests[boxes-1] && strlen(dests[boxes-1]))
-             if(strstr(combos[i], dests[boxes-1]))
-               ItemIndex = i;
-       }
-       SendMessage(ComboBox, CB_SETCURSEL, (WPARAM)ItemIndex, (LPARAM)0);
     }
 
     ReleaseDC(SimpleDialog, hdc);
@@ -181,13 +189,15 @@ static void MakeControls(int labs, char **labels, int boxes, char **dests, DWORD
 }
 
 static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnlyMask,
-    DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests, int combo, char **combos)
+    DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos)
 {
     BOOL didCancel;
 
     if(labs  > MAX_BOXES) oops();
     if(boxes > MAX_BOXES) oops();
+    if(boxes > labs) oops();
     if(combo > MAX_BOXES) oops();
+    if(combo > boxes) oops();
 
     SimpleDialog = CreateWindowClient(0, "LDmicroDialog", title,
         WS_OVERLAPPED | WS_SYSMENU,
@@ -237,11 +247,13 @@ static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnly
     }
 
     didCancel = DialogCancel;
-
     if(!didCancel) {
-        if(combo) {
-            int ItemIndex = SendMessage(ComboBox, CB_GETCURSEL, 0, 0);
-            SendMessage(Textboxes[boxes-1], WM_SETTEXT, 0, (LPARAM)combos[ItemIndex]);
+        for(i = 0; i < combo; i++) {
+            if(combos[i].n) {
+                if(combos[i].n > MAX_COMBO_STRINGS) oops();
+                int ItemIndex = SendMessage(ComboBox[i], CB_GETCURSEL, 0, 0);
+                SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)combos[i].str[ItemIndex]);
+            }
         }
         for(i = 0; i < boxes; i++) {
             if(NoCheckingOnBox[i]) {
@@ -267,7 +279,6 @@ static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnly
             }
         }
     }
-
     EnableWindow(MainWindow, TRUE);
     SetFocus(MainWindow);
     DestroyWindow(SimpleDialog);
@@ -275,6 +286,7 @@ static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnly
     return !didCancel;
 }
 
+//as default : labels = boxes
 static BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests)
 {
@@ -282,6 +294,7 @@ static BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnl
            alnumOnlyMask, fixedFontMask, boxes, dests, 0, NULL);
 }
 
+//coment : labels > boxes
 static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnlyMask,
     DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests)
 {
@@ -291,24 +304,49 @@ static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnly
 
 void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
 {
-    char *s;
-    switch(which) {
-        case ELEM_TIME2COUNT: s = _("TIME to COUNTER converter"); break;
-        case ELEM_TCY: s = _("Cyclic On/Off"); break;
-        case ELEM_TON: s = _("Turn-On Delay"); break;
-        case ELEM_TOF: s = _("Turn-Off Delay"); break;
-        case ELEM_THI: s = _("Hight Level Delay"); break;
-        case ELEM_TLO: s = _("Low Level Delay"); break;
-        case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;
-        case ELEM_RTL: s = _("Retentive Turn-On Delay If Low Input"); break;
-        default: oops(); break;
+    char buf1[1024];
+    if(which == ELEM_TIME2DELAY) {
+        char s[100];
+        strcpy(buf1, _("Achievable DELAY values (us): "));
+        long long T = 0, T0 = 0;
+        int i, n = 0;
+        for(i = 1; ; i++) {
+          if(Prog.mcu) {
+            if(Prog.mcu->whichIsa == ISA_AVR) {
+                T = i; // to long long
+                T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
+            } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+                T = i; // to long long
+                T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
+            }
+            if(T != T0) {
+                T0 = T;
+                sprintf(s, "%lld, ", T);
+                strcat(buf1, s);
+                n++;
+                if(n >= 5) break;
+            }
+          }
+        }
+        if(Prog.mcu) {
+          if(Prog.mcu->whichIsa == ISA_AVR) {
+              T = 0x10000; // to long long
+              T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
+          } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+              T = 0xffff; // to long long
+              T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
+          }
+          sprintf(s, "..., %lld", T);
+          strcat(buf1, s);
+        }
     }
-
-    char buf[100];
-    sprintf(buf, _("** Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (%.3f ms)"), 1.0 * Prog.cycleTime / 1000); //us show as ms
-    char *labels[] = { _("Name:"), _("Delay (ms):"), _("Adjust:"),
-                       _("* Adjust default = 0, typical = -1"),
-                       buf };
+    char buf2[100];
+    sprintf(buf2, _("** Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (%.3f ms)"), 1.0 * Prog.cycleTime / 1000); //us show as ms
+    char *labels[] = { _("Name:"),
+                       which == ELEM_TIME2DELAY ? _("Delay (us):") : _("Delay (ms):"),
+                       which == ELEM_TIME2DELAY ? buf1 : _("Adjust:"),
+                       _("* Adjust default = 0 (LDmicro v3.5.3), typical = -1 (LDmicro v2.3)"),
+                       buf2 };
 
     char adjustBuf[16];
     char delBuf[16];
@@ -318,28 +356,51 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
     strcpy(nameBuf, name+1);
     char *dests[] = { nameBuf, delBuf, adjustBuf};
 
-    if(ShowSimpleDialog(s, arraylen(labels), labels, (3 << 1), (1 << 0), (7 << 0), arraylen(dests), dests)) {
-        name[0] = 'T';
-        strcpy(name+1, nameBuf);
-        double delay_ms = atof(delBuf);
+    int labs = arraylen(labels);
+    int boxes = arraylen(dests);
+    char *s;
+    switch(which) {
+        case ELEM_TIME2DELAY: s = _("TIME to DELAY converter"); labs = 3; boxes = 2; sprintf(delBuf, "%d", *delay); strcpy(nameBuf, name); break;
+        case ELEM_TIME2COUNT: s = _("TIME to COUNTER converter"); labs = 2; boxes = 2; break;
+        case ELEM_TCY: s = _("Cyclic On/Off"); break;
+        case ELEM_TON: s = _("Turn-On Delay"); break;
+        case ELEM_TOF: s = _("Turn-Off Delay"); break;
+        case ELEM_THI: s = _("Hight Level Delay"); break;
+        case ELEM_TLO: s = _("Low Level Delay"); break;
+        case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;
+        case ELEM_RTL: s = _("Retentive Turn-On Delay If Low Input"); break;
+        default: oops(); break;
+    }
+    if(ShowSimpleDialog(s, labs, labels, (3 << 1), (1 << 0), (7 << 0), boxes, dests)) {
         *adjust = atoi(adjustBuf);
+        double delay_ms = atof(delBuf);
+        long long int delay_us;
+        if(which == ELEM_TIME2DELAY) {
+            delay_us = round(delay_ms);
+            strcpy(name, nameBuf);
 
-        long long int delay_us = round(delay_ms * 1000.0);
-
-        if(delay_us > LONG_MAX) {
-            Error(_("Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
-            delay_us = LONG_MAX;
-        }
-
-        SDWORD period ;
-        if(Prog.cycleTime <= 0) {
-            Error(_(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
-            period = 1;
+            if(delay_us > 0)
+                *delay = delay_us;
         } else {
-            period = TestTimerPeriod(name, delay_us, *adjust);
+            delay_us = round(delay_ms * 1000.0);
+            name[0] = 'T';
+            strcpy(name+1, nameBuf);
+
+            if(delay_us > LONG_MAX) {
+                Error(_("Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
+                delay_us = LONG_MAX;
+            }
+
+            SDWORD period ;
+            if(Prog.cycleTime <= 0) {
+                Error(_(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
+                period = 1;
+            } else {
+                period = TestTimerPeriod(name, delay_us, *adjust);
+            }
+            if(period > 0)
+                *delay = delay_us;
         }
-        if(period > 0)
-            *delay = delay_us;
     }
 }
 
@@ -388,23 +449,56 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
     }
 }
 
-void ShowDelayDialog(int which, SDWORD *delay)
+void ShowDelayDialog(int which, char *name)
 {
-    char *s;
-    s = _("Delay, us");
-
-    char *labels[] = { _("Delay (us):") };
+    char s[100];
+    char buf1[1024];
+    strcpy(buf1, _("Achievable DELAY values (us): "));
+    long long T = 0, T0 = 0;
+    int i, n = 0;
+    for(i = 0; ; i++) {
+      if(Prog.mcu) {
+        if(Prog.mcu->whichIsa == ISA_AVR) {
+            T = i * 1000000 / Prog.mcuClock;
+        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+            T = i * 4000000 / Prog.mcuClock;
+        }
+        if(T != T0) {
+            T0 = T;
+            sprintf(s, "%lld, ", T);
+            strcat(buf1, s);
+            n++;
+            if(n >= 5) break;
+        }
+      }
+    }
+    if(Prog.mcu) {
+       if(Prog.mcu->whichIsa == ISA_AVR) {
+           T = 0x10000; // to long long
+           T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
+       } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+           T = 0xffff; // to long long
+           T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
+       }
+       sprintf(s, "..., %lld", T);
+       strcat(buf1, s);
+    }
+    char *labels[] = { _("Delay (us):"), buf1 };
 
     char delBuf[16];
-    sprintf(delBuf, "%d", *delay);
+    sprintf(delBuf, "%s", name);
     char *dests[] = { delBuf };
 
-    if(ShowSimpleDialog(s, 1, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
-        SDWORD del = hobatoi(delBuf);
-        if(del <= 0) {
-            Error(_("Delay cannot be zero or negative."));
+    if(ShowSimpleDialog(_("Delay, us"), 2, labels, (0 << 0), (1 << 0), (1 << 0), 1, dests)) {
+        if(IsNumber(delBuf)) {
+            SDWORD del = hobatoi(delBuf);
+            if(del <= 0) {
+                Error(_("Delay cannot be zero or negative."));
+            } else {
+                strcpy(name, delBuf);
+            }
         } else {
-            *delay = del;
+            strcpy(name, delBuf);
         }
     }
 }
@@ -698,6 +792,61 @@ void ShowBusDialog(ElemLeaf *l)
     }
 }
 
+void ShowSpiDialog(ElemLeaf *l)
+{
+    ElemSpi *s = &(l->d.spi);
+    char *title = _("SPI - Serial Peripheral Interface");
+
+    char *labels[] = { _("SPI Name:"), _("SPI Mode:"), _("Send variable:"), _("Recieve to variable:"),
+         _("Bit Rate (Hz):"), _("Data Modes (CPOL, CPHA): "), _("Data Size:"), _("Data Order:") };
+
+    char *dests[] = { s->name, s->mode, s->send, s->recv,
+                      s->bitrate, s->modes, s->size, s->first};
+
+    comboRecord comboRec[] = { {0, NULL},
+                               {2, {"Master", "Slave"} },
+                               {0, NULL},
+                               {0, NULL},
+                               {0, NULL},
+                               {4, {"0b00", "0b01", "0b10", "0b11"}},
+                               {0, NULL},
+                               {2, {"MSB_FIRST", "LSB_FIRST"} } };
+    int i;
+    if(Prog.mcu) {
+        if(Prog.mcu->spiCount) {
+            comboRec[0].n = Prog.mcu->spiCount;
+            for(i=0; i < comboRec[0].n; i++) {
+                comboRec[0].str[i] = Prog.mcu->spiInfo[i].name;
+            }
+        }
+        // Bit Rate (Hz):
+        char buf[128];
+        int m;
+        if(Prog.mcu->whichIsa == ISA_AVR) {
+            m = 2;
+            comboRec[4].n = 7;
+        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+            m = 4;
+            comboRec[4].n = 3;
+        } else oops();
+        for(i = 0; i < comboRec[4].n; i++) {
+            sprintf(buf,"%15.3fHz", 1.0*Prog.mcuClock/(m*xPowerY(m,i)));
+            comboRec[4].str[i] = (char *)CheckMalloc(strlen(buf)+1);
+            strcpy(comboRec[4].str[i], buf);
+        }
+    }
+//  NoCheckingOnBox[3] = TRUE;
+    if(ShowSimpleDialog( title, 8, labels, 0x4, 0x3, -1, 8, dests, 8, comboRec)) {
+/*
+        //TODO: check the available range
+*/
+    }
+//  NoCheckingOnBox[3] = FALSE;
+    for(i = 0; i < comboRec[4].n; i++) {
+        CheckFree(comboRec[4].str[i]);
+    }
+}
+
 void ShowSegmentsDialog(ElemLeaf *l)
 {
     ElemSegments *s = &(l->d.segments);
@@ -793,10 +942,13 @@ void ShowSetPwmDialog(void *e)
 
     char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
     char *dests[] = { name+1, duty_cycle, targetFreq, resolution};
-    char *resolutions[] = { "0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"};
+    comboRecord comboRec[] = { {0, NULL},
+                               {0, NULL},
+                               {0, NULL},
+                               {4, { "0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"} } };
 
     NoCheckingOnBox[3] = TRUE;
-    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 4, labels, 0x4, 0x3, 0x7, 4, dests, 4, resolutions)) {
+    if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 4, labels, 0x4, 0x3, 0x7, 4, dests, 4, comboRec)) {
         //TODO: check the available range
         double freq = hobatoi(targetFreq);
         if(freq < 0)
@@ -933,48 +1085,6 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
     };
 
     f = fopen("acceleration_deceleration.txt", "w");
-/*
-    double k;
-    if(graph==1){
-      k = kProp(nSize);
-      makeAccelTable(f, max, P, nSize, &r->T,
-      "v=k*t  a=const  s=k*t^2/2  e=m*v^2/2",
-      1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
-      &Proportional,1, &tsProp,k, &vProp,k, &aProp,k, &eFv, massa);
-    }else if(graph==2){
-      k = kSqrt2(nSize);
-      makeAccelTable(f, max, P, nSize, &r->T,
-      "v=k*sqrt(t)  a=k/(2*t^(1/2))  s=k*t^(3/2)/(3/2)  e=m*v^2/2",
-      1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
-      &Proportional,1, &tsSqrt2,k, &vSqrt2,k, &aSqrt2,k, &eFv, massa);
-    }else if(graph==3){
-      k = kSqrt3(nSize);
-      makeAccelTable(f, max, P, nSize, &r->T,
-      "v=k*t^(1/3)  a=k/(3*t^(2/3))  s=k*t^(4/3)/(4/3)  e=m*v^2/2",
-      1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
-      &Proportional,1, &tsSqrt3,k, &vSqrt3,k, &aSqrt3,k, &eFv, massa);
-    }else if(graph==4){
-      k = k2(nSize);
-      makeAccelTable(f, max, P, nSize, &r->T,
-      "v=k*t^2  a=k*2*t  s=k*t^3/3  e=m*v^2/2",
-      1, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
-      &Proportional,1, &ts2,k, &v2,k, &a2,k, &eFv, massa);
-    }else if(graph==5){
-      k = ksS(nSize);
-      makeAccelTable(f, max, P, nSize, &r->T,
-      "v=k*t^2  a=k*2*t  s=k*t^3/3  s=i  e=m*v^2/2",
-      2, 0, &r->n, &r->Psum, &r->shrt, &r->sovElement,
-      &Proportional,1.0, &tsS,k, &vS,k, &aS,k, &eFv, massa);
-    }else if(graph==6){
-      k = ktS(nSize);
-      makeAccelTable(f, max, P, nSize, &r->T,
-      "v=k*t^2  a=k*2*t  s=k*t^3/3  t=i  e=m*v^2/2",
-      2, 1, &r->n, &r->Psum, &r->shrt, &r->sovElement,
-      &stS,k, &Proportional,1, &vS,k, &aS,k, &eFv, massa);
-    } else {
-      fprintf(f,"Generates %d steps without acceleration/deceleration.", s->max);
-    }
-*/
     fclose(f);
 
     s->n = r->n;

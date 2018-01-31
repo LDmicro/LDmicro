@@ -101,13 +101,13 @@ McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
 //   port bit pin  pinName                  ArduinoPin  ArduinoName
 //                                                      Mega/Mega2560
     { 'E',  0,  2, "PE0 (RXD0/PCINT8)",      0, "0 //RX" },
-    { 'E',  1,  3, "PE0 (TXD0)",             0, "1 //TX" },
-    { 'E',  2,  4, "PE0 (AIN0/XCK0)",        0, "" },
+    { 'E',  1,  3, "PE1 (TXD0)",             0, "1 //TX" },
+    { 'E',  2,  4, "PE2 (AIN0/XCK0)",        0, "" },
     { 'E',  3,  5, "PE3 (AIN1/OC3A)",        0, "5" },
     { 'E',  4,  6, "PE4 (INT4/OC3B)",        0, "2" },
     { 'E',  5,  7, "PE5 (INT5/OC3C)",        0, "3" },
-    { 'E',  6,  8, "PE0 (INT6/T3)",          0, "" },
-    { 'E',  7,  9, "PE0 (INT7/CLKO/ICP3)",   0, "" },
+    { 'E',  6,  8, "PE6 (INT6/T3)",          0, "" },
+    { 'E',  7,  9, "PE7 (INT7/CLKO/ICP3)",   0, "" },
 
     { 'H',  0, 12, "PH0 (RXD2)"            , 0, "17 //RX2" },
     { 'H',  1, 13, "PH1 (TXD2)"            , 0, "16 //TX2" },
@@ -170,14 +170,14 @@ McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
     { 'J',  6, 69, "PJ6 (PCINT15)"         , 0, "" },
     { 'J',  7, 79, "PJ7"                   , 0, "" },
 
-    { 'A',  7, 71, "PA0 (AD8)",              0, "22" },
-    { 'A',  6, 72, "PA1 (AD9)",              0, "23" },
-    { 'A',  5, 73, "PA2 (AD10)",             0, "24" },
-    { 'A',  4, 74, "PA3 (AD11)",             0, "25"   },
-    { 'A',  3, 75, "PA4 (AD12)",             0, "26" },
-    { 'A',  2, 76, "PA5 (AD13)",             0, "27" },
-    { 'A',  1, 77, "PA6 (AD14)",             0, "28" },
-    { 'A',  0, 78, "PA7 (AD15)",             0, "29" },
+    { 'A',  0, 78, "PA0 (AD8)",              0, "22" },
+    { 'A',  1, 77, "PA1 (AD9)",              0, "23" },
+    { 'A',  2, 76, "PA2 (AD10)",             0, "24" },
+    { 'A',  3, 75, "PA3 (AD11)",             0, "25" },
+    { 'A',  4, 74, "PA4 (AD12)",             0, "26" },
+    { 'A',  5, 73, "PA5 (AD13)",             0, "27" },
+    { 'A',  6, 72, "PA6 (AD14)",             0, "28" },
+    { 'A',  7, 71, "PA7 (AD15)",             0, "29" },
 
     { 'K',  0, 89, "PK0 (ADC8/PCINT16)",     0, "A8"  }, // ADC or I/O
     { 'K',  1, 88, "PK1 (ADC9/PCINT17)",     0, "A9"  },
@@ -188,14 +188,14 @@ McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
     { 'K',  6, 83, "PK6 (ADC14/PCINT22)",    0, "A14" },
     { 'K',  7, 82, "PK7 (ADC15/PCINT23)",    0, "A15" },
 
-    { 'F',  7, 90, "PF0 (ADC0)",             0, "A0"  }, // ADC or I/O
-    { 'F',  6, 91, "PF1 (ADC1)",             0, "A1"  },
-    { 'F',  5, 92, "PF2 (ADC2)",             0, "A2"  },
-    { 'F',  4, 93, "PF3 (ADC3)",             0, "A3"  },
-    { 'F',  3, 94, "PF4 (ADC4/TCK)",         0, "A4"  },
-    { 'F',  2, 95, "PF5 (ADC5/TMS)",         0, "A5"  },
-    { 'F',  1, 96, "PF6 (ADC6/TDO)",         0, "A6"  },
-    { 'F',  0, 97, "PF7 (ADC7/TDI)",         0, "A7"  },
+    { 'F',  0, 97, "PF0 (ADC0)",             0, "A0"  }, // ADC or I/O
+    { 'F',  1, 96, "PF1 (ADC1)",             0, "A1"  },
+    { 'F',  2, 95, "PF2 (ADC2)",             0, "A2"  },
+    { 'F',  3, 94, "PF3 (ADC3)",             0, "A3"  },
+    { 'F',  4, 93, "PF4 (ADC4/TCK)",         0, "A4"  },
+    { 'F',  5, 92, "PF5 (ADC5/TMS)",         0, "A5"  },
+    { 'F',  6, 91, "PF6 (ADC6/TDO)",         0, "A6"  },
+    { 'F',  7, 90, "PF7 (ADC7/TDI)",         0, "A7"  },
 
 };
 
@@ -390,7 +390,7 @@ McuAdcPinInfo AvrAtmega16or32AdcPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // ATmega16 or ATmega32 in 44-Pin packages
-McuIoPinInfo xAvrAtmega16or32IoPinInfo44[] = {
+McuIoPinInfo AvrAtmega16or32IoPinInfo44[] = {
     { 'B',  0, 40, "PB0 (T0/XCK)" },
     { 'B',  1, 41, "PB1 (T1)" },
     { 'B',  2, 42, "PB2 (INT2/AIN0)" },
@@ -425,7 +425,7 @@ McuIoPinInfo xAvrAtmega16or32IoPinInfo44[] = {
     { 'A',  7, 30, "PA7 (ADC7)" },
 };
 
-McuAdcPinInfo xAvrAtmega16or32AdcPinInfo44[] = {
+McuAdcPinInfo AvrAtmega16or32AdcPinInfo44[] = {
     { 37, 0x00 },
     { 36, 0x01 },
     { 35, 0x02 },
@@ -544,6 +544,9 @@ McuAdcPinInfo AvrAtmega8AdcPinInfo[] = {
 
 
 //-----------------------------------------------------------------------------
+// ATtiny10 6-Pin packages
+
+//-----------------------------------------------------------------------------
 // ATtiny85 8-Pin packages
 //-----------------------------------------------------------------------------
 // ATmega8 32-Pin packages TQFP/QFN/MLF
@@ -619,17 +622,18 @@ McuExtIntPinInfo PicExtIntPinInfo64[] = {
 //-----------------------------------------------------------------------------
 // ATmega328 32-Pin packages TQFP/QFN/MLF
 //-----------------------------------------------------------------------------
-// AVR's PWM Info Tables
-McuPwmPinInfo AvrPwmPinInfo28_[] = {
-////     ti  reso max REG_   REG_   REG_   bit    bit    mask  REG_   mask
-//// pin mer lutn  CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
-    {  0, 0, 8,    5, 0   ,  0x52,  0x53,  0,     0,        0, 0   ,  0    }, // Timer0
-    { 15, 1, 8,    5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 }, // OC1A // Fast PWM 8-bit
-    { 16, 1, 8,    5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 }, // OC1B // Fast PWM 8-bit
-    { 17, 2, 8,    7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    }, // OC2  // Fast PWM
+// AVR's SPI Info Tables
+
+McuSpiInfo McuSpiInfoATmega2560[] = {
+//     name REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
+//                                      PB3   PB2 PB1  PB0
+    { "SPI",    0x2C,    0x2D,    0x2E,  22,   21, 20,  19 },
 };
 
-McuPwmPinInfo AvrPwmPinInfo28[] = {
+//-----------------------------------------------------------------------------
+// AVR's PWM Info Tables
+
+McuPwmPinInfo AvrPwmPinInfo28_[] = { // ATmega8, etc.
 ////     ti  reso max REG_   REG_   REG_   bit    bit    mask  REG_   mask
 //// pin mer lutn  CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
     {  0, 0, 8,    5, 0   ,  0x52,  0x53,  0,     0,        0, 0   ,  0    }, // Timer0
@@ -643,6 +647,24 @@ McuPwmPinInfo AvrPwmPinInfo28[] = {
     { 16, 1,10,    5, 0x48,  0x49,  0x4F,  5,     4,        3, 0x4E,  0x08 }, // OC1B // Fast PWM 10-bit
 
     { 17, 2, 8,    7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    }, // OC2  // Fast PWM
+};
+
+McuPwmPinInfo AvrPwmPinInfo28[] = { // ATmega328, etc.
+////     ti  reso max REG_   REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer lutn  CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+    { 12, 0, 8,    5, 0x47,  0   ,  0x44,  7,     6,        3, 0x45,  0    ,"OC0A" }, // Fast PWM  8-bit
+    { 11, 0, 8,    5, 0x48,  0   ,  0x44,  5,     4,        3, 0x45,  0    ,"OC0B" }, // Fast PWM  8-bit
+
+    { 15, 1, 8,    5, 0x88,  0x89,  0x80,  7,     6,        1, 0x81,  0x08 ,"OC1A" }, // Fast PWM  8-bit
+    { 15, 1, 9,    5, 0x88,  0x89,  0x80,  7,     6,        2, 0x81,  0x08 ,"OC1A" }, // Fast PWM  9-bit
+    { 15, 1,10,    5, 0x88,  0x89,  0x80,  7,     6,        3, 0x81,  0x08 ,"OC1A" }, // Fast PWM 10-bit
+
+    { 16, 1, 8,    5, 0x8A,  0x8B,  0x80,  5,     4,        1, 0x81,  0x08 ,"OC1B" }, // Fast PWM  8-bit
+    { 16, 1, 9,    5, 0x8A,  0x8B,  0x80,  5,     4,        2, 0x81,  0x08 ,"OC1B" }, // Fast PWM  9-bit
+    { 16, 1,10,    5, 0x8A,  0x8B,  0x80,  5,     4,        3, 0x81,  0x08 ,"OC1B" }, // Fast PWM 10-bit
+
+    { 17, 2, 8,    7, 0xB3,  0   ,  0xB0,  7,     6,        3, 0xB1,  0    ,"OC2A" }, // Fast PWM  8-bit
+    {  5, 2, 8,    7, 0xB4,  0   ,  0xB0,  5,     4,        3, 0xB1,  0    ,"OC2B" }, // Fast PWM  8-bit
 };
 
 McuPwmPinInfo AvrPwmPinInfo32_[] = {
@@ -691,18 +713,18 @@ McuPwmPinInfo AvrAtmega2560PwmPinInfo[] = {
     {  7, 3,10,     5, 0x9C,  0x9D,  0x90,  3,     2,        3, 0x91,  0x08 }, // OC3C
 
     { 15, 4, 8,     5, 0xA8,  0xA9,  0xA0,  7,     6,        1, 0xA1,  0x08 }, // OC4A
-    { 15, 4, 9,     5, 0xA8,  0xA9,  0xA0,  7,     6,        1, 0xA1,  0x08 }, // OC4A
-    { 15, 4,10,     5, 0xA8,  0xA9,  0xA0,  7,     6,        1, 0xA1,  0x08 }, // OC4A
+    { 15, 4, 9,     5, 0xA8,  0xA9,  0xA0,  7,     6,        2, 0xA1,  0x08 }, // OC4A
+    { 15, 4,10,     5, 0xA8,  0xA9,  0xA0,  7,     6,        3, 0xA1,  0x08 }, // OC4A
 
     { 16, 4, 8,     5, 0xAA,  0xAB,  0xA0,  5,     4,        1, 0xA1,  0x08 }, // OC4B
-    { 16, 4, 9,     5, 0xAA,  0xAB,  0xA0,  5,     4,        1, 0xA1,  0x08 }, // OC4B
-    { 16, 4,10,     5, 0xAA,  0xAB,  0xA0,  5,     4,        1, 0xA1,  0x08 }, // OC4B
+    { 16, 4, 9,     5, 0xAA,  0xAB,  0xA0,  5,     4,        2, 0xA1,  0x08 }, // OC4B
+    { 16, 4,10,     5, 0xAA,  0xAB,  0xA0,  5,     4,        3, 0xA1,  0x08 }, // OC4B
 
     { 17, 4, 8,     5, 0xAC,  0xAD,  0xA0,  3,     2,        1, 0xA1,  0x08 }, // OC4C
-    { 17, 4, 9,     5, 0xAC,  0xAD,  0xA0,  3,     2,        1, 0xA1,  0x08 }, // OC4C
-    { 17, 4,10,     5, 0xAC,  0xAD,  0xA0,  3,     2,        1, 0xA1,  0x08 }, // OC4C
+    { 17, 4, 9,     5, 0xAC,  0xAD,  0xA0,  3,     2,        2, 0xA1,  0x08 }, // OC4C
+    { 17, 4,10,     5, 0xAC,  0xAD,  0xA0,  3,     2,        3, 0xA1,  0x08 }, // OC4C
 
-//  { 38, 5, 8,      5, 0x128, 0x129, 0x120, 7,     6,        1, 0x121, 0x08 }, // OC5A ???
+//  { 38, 5, 8,     5, 0x128, 0x129, 0x120, 7,     6,        1, 0x121, 0x08 }, // OC5A ???
 //  { 39, 5, 8,     5, 0x12A, 0x12B, 0x120, 5,     4,        1, 0x121, 0x08 }, // OC5B
 //  { 40, 5, 8,     5, 0x12C, 0x12D, 0x120, 3,     2,        1, 0x121, 0x08 }, // OC5C
 };
@@ -905,6 +927,8 @@ McuAdcPinInfo Pic16F88AdcPinInfo[] = {
     { 13, 0x06 },
 };
 
+//-----------------------------------------------------------------------------
+// PIC16F1826, PIC16F1827
 //-----------------------------------------------------------------------------
 // PIC16F877, PIC16F874
 
@@ -1231,7 +1255,11 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         100,
         0,
         AvrAtmega2560PwmPinInfo,
-        arraylen(AvrAtmega2560PwmPinInfo)
+        arraylen(AvrAtmega2560PwmPinInfo),
+        NULL,
+        0,
+        McuSpiInfoATmega2560,
+        arraylen(McuSpiInfoATmega2560),
     },
     {
         "Atmel AVR AT90USB647 64-TQFP",
@@ -1413,8 +1441,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         EnhancedCore128K,
         28,
         0,
-        AvrPwmPinInfo28_,
-        arraylen(AvrPwmPinInfo28_)
+        AvrPwmPinInfo28,
+        arraylen(AvrPwmPinInfo28)
     },
     {
         "Atmel AVR ATmega88 28-PDIP",
@@ -1439,8 +1467,8 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         EnhancedCore128K,
         28,
         0,
-        AvrPwmPinInfo28_,
-        arraylen(AvrPwmPinInfo28_)
+        AvrPwmPinInfo28,
+        arraylen(AvrPwmPinInfo28)
     },
     {
         "Atmel AVR ATmega168 28-PDIP",

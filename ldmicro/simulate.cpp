@@ -688,6 +688,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.reset.name, VAR_FLAG_RES);
             break;
 
+        case ELEM_TIME2DELAY:
         case ELEM_TIME2COUNT:
         case ELEM_MOVE:
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
@@ -1615,6 +1616,26 @@ static void SimulateIntCode(void)
                     IF_BODY
                 break;
 
+            case INT_VARIABLE_SET_BIT:
+            case INT_VARIABLE_CLEAR_BIT: {
+                SDWORD v1, v2;
+                v1 = GetSimulationVariable(a->name1);
+                if(IsNumber(a->name2))
+                    v2 = hobatoi(a->name2);
+                else
+                    v2 = GetSimulationVariable(a->name2);
+                if(a->op == INT_VARIABLE_SET_BIT)
+                    v1 |= 1 << v2;
+                else if(a->op == INT_VARIABLE_CLEAR_BIT)
+                    v1 |= ~(1 << v2);
+                else oops();
+                if(GetSimulationVariable(a->name1) != v1) {
+                    SetSimulationVariable(a->name1, v1);
+                    NeedRedraw = 99;
+                }
+                break;
+            }
+
             case INT_IF_BIT_SET_IN_VAR:
                 if(GetSimulationVariable(a->name1)
                 & (1<<hobatoi(a->name2)))
@@ -1716,14 +1737,18 @@ static void SimulateIntCode(void)
                 oops();
                 break;
 
-            case INT_READ_ADC:
+            case INT_READ_ADC: {
                 // Keep the shadow copies of the ADC variables because in
                 // the real device they will not be updated until an actual
                 // read is performed, which occurs only for a true rung-in
                 // condition there.
+                SDWORD tmp = GetSimulationVariable(a->name1);
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
+                if(tmp != GetSimulationVariable(a->name1)) {
+                    NeedRedraw = 202;
+                }
                 break;
-
+            }
             case INT_UART_SEND1:
                 if(SimulateUartTxCountdown == 0) {
                     SimulateUartTxCountdown = 2;

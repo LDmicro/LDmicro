@@ -924,6 +924,23 @@ static SDWORD TimerPeriod(ElemLeaf *l)
 }
 
 //-----------------------------------------------------------------------------
+long long CalcDelayClock(long long clocks) // in us
+{
+    #if 1 // 1
+    clocks = clocks * Prog.mcuClock / 1000000;
+    if(Prog.mcu) {
+        if(Prog.mcu->whichIsa == ISA_AVR) {
+            ;
+        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+            clocks = clocks / 4;
+        } else oops();
+    }
+    if(clocks <= 0 ) clocks = 1;
+    #endif
+    return clocks;
+}
+
+//-----------------------------------------------------------------------------
 // Is an expression that could be either a variable name or a number a number?
 //-----------------------------------------------------------------------------
 BOOL IsNumber(char *str)
@@ -1091,6 +1108,17 @@ int TenToThe(int x)
     int r = 1;
     for(i = 0; i < x; i++) {
         r *= 10;
+    }
+    return r;
+}
+
+//-----------------------------------------------------------------------------
+int xPowerY(int x, int y)
+{
+    int i;
+    int r = 1;
+    for(i = 0; i < y; i++) {
+        r *= x;
     }
     return r;
 }
@@ -1467,9 +1495,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_CONTACTS: {
             Comment(3, "ELEM_CONTACTS");
             if(l->d.contacts.negated) {
-              Op(INT_IF_BIT_SET, l->d.contacts.name);
+              Op(INT_IF_BIT_SET, l->d.contacts.name, l->d.contacts.set1);
             } else {
-              Op(INT_IF_BIT_CLEAR, l->d.contacts.name);
+              Op(INT_IF_BIT_CLEAR, l->d.contacts.name, l->d.contacts.set1);
             }
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
@@ -2234,14 +2262,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
         case ELEM_IF_BIT_SET:
             Comment(3, "ELEM_IF_BIT_SET");
-            Op(INT_IF_BIT_CLEAR_IN_VAR, l->d.cmp.op1, stateInOut, hobatoi(l->d.cmp.op2));
+            Op(INT_IF_BIT_CLEAR_IN_VAR, l->d.cmp.op1, l->d.cmp.op2);
                 Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
 
         case ELEM_IF_BIT_CLEAR:
             Comment(3, "ELEM_IF_BIT_CLEAR");
-            Op(INT_IF_BIT_SET_IN_VAR, l->d.cmp.op1, stateInOut, hobatoi(l->d.cmp.op2));
+            Op(INT_IF_BIT_SET_IN_VAR, l->d.cmp.op1, l->d.cmp.op2);
                 Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
@@ -2655,13 +2683,13 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
         case ELEM_SET_BIT:
                 Comment(3, "ELEM_SET_BIT");
                 Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_VARIABLE_SET_BIT, l->d.math.dest, hobatoi(l->d.math.op1));
+                  Op(INT_VARIABLE_SET_BIT, l->d.math.dest, l->d.math.op1);
                 Op(INT_END_IF);
                 break;
         case ELEM_CLEAR_BIT:
                 Comment(3, "ELEM_CLEAR_BIT");
                 Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_VARIABLE_CLEAR_BIT, l->d.math.dest, hobatoi(l->d.math.op1));
+                  Op(INT_VARIABLE_CLEAR_BIT, l->d.math.dest, l->d.math.op1);
                 Op(INT_END_IF);
                 break;
         {
@@ -2781,11 +2809,31 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
         case ELEM_DELAY:
             Comment(3, "ELEM_DELAY");
-            Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_DELAY, l->d.timer.delay);
+            Op(INT_IF_BIT_SET, stateInOut); // fat overhead
+                Op(INT_DELAY, l->d.timer.name);
             Op(INT_END_IF);
             break;
 
+        case ELEM_TIME2DELAY: {
+            Comment(3, "ELEM_TIME2DELAY");
+            long long clocks = CalcDelayClock(l->d.timer.delay);
+            if(Prog.mcu) {
+                if(Prog.mcu->whichIsa == ISA_AVR) {
+                    clocks = (clocks - 1) / 4;
+                    if(clocks > 0x10000)
+                        clocks = 0x10000;
+                } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+                    clocks = (clocks - 10) / 6;
+                    if(clocks > 0xffff)
+                        clocks = 0xffff;
+                } else oops();
+            }
+            if(clocks <= 0 ) clocks = 1;
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, clocks);
+            Op(INT_END_IF);
+            break;
+        }
         case ELEM_GOTO: {
             Comment(3, "ELEM_GOTO %s", l->d.doGoto.rung);
             Op(INT_IF_BIT_SET, stateInOut);
@@ -3178,12 +3226,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_IF_BIT_SET, doSend);
                 // Now check UART busy.
                 /*
+                // this is original code
                 Op(INT_CLEAR_BIT, "$scratch");
                 Op(INT_UART_SEND, "$scratch", "$scratch");
                 Op(INT_IF_BIT_SET, "$scratch");
                     Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
                 Op(INT_END_IF);
                 */
+                Op(INT_CLEAR_BIT, "$scratch"); // optional, needs only to prevent "Internal relay '%s' never assigned" message
                 Op(INT_UART_SEND_READY, "$scratch");
                 Op(INT_IF_BIT_CLEAR, "$scratch");
                     Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
@@ -3622,12 +3672,34 @@ BOOL UartSendUsed(void)
     }
     return FALSE;
 }
+//-----------------------------------------------------------------------------
+BOOL SpiFunctionUsed(void)
+{
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_SPI))
+            return TRUE;
+    }
+
+    for(i = 0; i < IntCodeLen; i++) {
+        if((IntCode[i].op == INT_SPI)
+        || (IntCode[i].op == INT_SPI))
+            return TRUE;
+    }
+    return FALSE;
+}
+
 
 //-----------------------------------------------------------------------------
 BOOL Bin32BcdRoutineUsed(void)
 {
     int i;
     for(i = 0; i < IntCodeLen; i++) {
+        if((IntCode[i].op == INT_SET_BIN2BCD)
+        ) {
+            return TRUE;
+        }
     }
     return FALSE;
 }
