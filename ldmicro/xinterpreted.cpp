@@ -255,6 +255,7 @@ finishIf:
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
+            case INT_SPI:
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:

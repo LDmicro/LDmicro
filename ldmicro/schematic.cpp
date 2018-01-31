@@ -674,6 +674,7 @@ void EditSelectedElement(void)
                 Selected->d.coil.name);
             break;
 
+        case ELEM_TIME2DELAY:
         case ELEM_TIME2COUNT:
         case ELEM_TCY:
         case ELEM_TON:
@@ -687,7 +688,7 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_DELAY:
-            ShowDelayDialog(SelectedWhich, &(Selected->d.timer.delay));
+            ShowDelayDialog(SelectedWhich, Selected->d.timer.name);
             break;
 
         case ELEM_SLEEP:
@@ -778,6 +779,10 @@ void EditSelectedElement(void)
 
         case ELEM_BUS:
             ShowBusDialog(Selected);
+            break;
+
+        case ELEM_SPI:
+            ShowSpiDialog(Selected);
             break;
 
         case ELEM_RES:

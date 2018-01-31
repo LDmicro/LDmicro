@@ -22,6 +22,7 @@ SYS("copy ldmicro.exe build\\ldmicro.exe");
 SYS("copy COPYING.txt     build");
 SYS("copy CHANGES.txt     build");
 SYS("copy manual*.txt     build");
+SYS("copy clear.bat       build");
 SYS("copy notepad.bat     build");
 SYS("copy readmcu.bat     build");
 SYS("copy flashmcu.bat    build");

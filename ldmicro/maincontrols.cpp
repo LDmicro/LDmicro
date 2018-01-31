@@ -236,6 +236,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_SWAP, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OPPOSITE, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TIME2COUNT, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_TIME2DELAY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TCY, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TON, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_TOF, t);
@@ -294,6 +295,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_TSFB, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_T_C_SFB, t);
     #endif
+
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SPI, t);
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_BUS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_7SEG, t);
@@ -362,6 +365,8 @@ HMENU MakeMainWindowMenus(void)
         _("Dup&licate Selected Rung\tCtrl+D"));
     AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG,
         _("Select Rung's\tShift+Up or Shift+Dn"));
+    AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG,
+        _("Select Rung's\tCtrl+Left Mouse Buttton Click"));
     AppendMenu(EditMenu, MF_STRING, MNU_CUT_RUNG,
         _("Cu&t Rung's\tCtrl+X or Shift+Del"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG,
@@ -425,6 +430,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
     AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_TIME2DELAY, _("Insert TIME to DELAY converter"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CourseMenu,_("Operations that change the course of the program"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
@@ -479,8 +485,7 @@ HMENU MakeMainWindowMenus(void)
         _("Insert TCY (Cyclic On/Off)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_THI, _("Insert THI (Hight Delay)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TLO, _("Insert TLO (Low Delay)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT,
-        _("Insert TIME to COUNTER converter"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT, _("Insert TIME to COUNTER converter"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
@@ -522,8 +527,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert LES (Compare for Less Than)\t<"));
     AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_LEQ,
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_SET,    _("SIMUL: Insert Test If Bit Set"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR,  _("SIMUL: Insert Test If Bit Clear"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_SET,    _("Insert Test If Bit Set"));
+    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR,  _("Insert Test If Bit Clear"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CmpMenu,_("Compare variable"));
 
 /*
@@ -713,6 +718,8 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(compile, MF_SEPARATOR, 0, NULL);
     AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,      _("Call flashMcu.bat\tF6"));
     AppendMenu(compile, MF_STRING, MNU_READ_BAT,       _("Call readMcu.bat\tCtrl+F6"));
+    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_STRING, MNU_CLEAR_BAT,      _("Call clear.bat"));
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();

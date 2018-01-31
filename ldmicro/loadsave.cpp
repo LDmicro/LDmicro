@@ -78,7 +78,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_OPEN;
     } else if(memcmp(line, "MASTER_RELAY", 12)==0) {
         *which = ELEM_MASTER_RELAY;
-    } else if((sscanf(line, "DELAY %d", &l->d.timer.delay)==1)) {
+    } else if((sscanf(line, "DELAY %s", l->d.timer.name)==1)) {
         *which = ELEM_DELAY;
     } else if((sscanf(line, "SLEEP %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
         *which = ELEM_SLEEP;
@@ -116,6 +116,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_NPULSE_OFF;
     } else if((sscanf(line, "TIME2COUNT %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
         *which = ELEM_TIME2COUNT;
+    } else if((sscanf(line, "TIME2DELAY %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+        *which = ELEM_TIME2DELAY;
 
     } else if((sscanf(line, "TON %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
         *which = ELEM_TON;
@@ -210,6 +212,9 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
                            &l->d.bus.PCBbit[1],
                            &l->d.bus.PCBbit[0])==(2+8)) {
         *which = ELEM_BUS;
+
+    } else if(sscanf(line, "SPI %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.bitrate, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first)==8) {
+        *which = ELEM_SPI;
 
     } else if(sscanf(line,  "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
         l->d.segments.which = ELEM_7SEG;
@@ -646,20 +651,28 @@ BOOL LoadProjectFromFile(char *filename)
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
             Prog.configurationWord = configWord;
+            if(Prog.cycleTime == 0)
+                Prog.cycleTimer = -1;
         } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, WDTE:%d", &cycle, &cycleTimer, &cycleDuty, &wdte)==4) {
             Prog.cycleTime = cycle;
             if((cycleTimer!=0) && (cycleTimer!=1)) cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
+            if(Prog.cycleTime == 0)
+                Prog.cycleTimer = -1;
         } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d", &cycle, &cycleTimer, &cycleDuty)==3) {
             Prog.cycleTime = cycle;
             if((cycleTimer!=0)&&(cycleTimer!=1)) cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
+            if(Prog.cycleTime == 0)
+                Prog.cycleTimer = -1;
         } else if(sscanf(line, "CYCLE=%lld", &cycle)) {
             Prog.cycleTime = cycle;
             Prog.cycleTimer = 1;
             Prog.cycleDuty = 0;
+            if(Prog.cycleTime == 0)
+                Prog.cycleTimer = -1;
         } else if(sscanf(line, "BAUD=%d", &baud)) {
             Prog.baudRate = baud;
         } else if(memcmp(line, "COMPILED=", 9)==0) {
@@ -785,7 +798,11 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_DELAY:
-            fprintf(f, "DELAY %d\n", l->d.timer.delay);
+            fprintf(f, "DELAY %s\n", l->d.timer.name);
+            break;
+
+        case ELEM_TIME2DELAY:
+            fprintf(f, "TIME2DELAY %s %d\n", l->d.timer.name, l->d.timer.delay);
             break;
 
         case ELEM_CLRWDT:
@@ -901,6 +918,10 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "SWAP %s %s\n", l->d.move.dest, l->d.move.src);
             break;
 
+        case ELEM_SPI: {
+            fprintf(f, "SPI %s %s %s %s %s %s %s %s\n", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.bitrate, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first);
+            break;
+        }
         case ELEM_BUS: {
             fprintf(f, "BUS %s %s", l->d.bus.dest, l->d.bus.src);
             int i;

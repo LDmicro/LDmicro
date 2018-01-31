@@ -250,6 +250,7 @@ finishIf:
             case INT_EEPROM_WRITE:
             case INT_READ_ADC:
             case INT_SET_PWM:
+            case INT_SPI:
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:

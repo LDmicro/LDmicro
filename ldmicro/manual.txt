@@ -658,8 +658,9 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 > TIME to COUNTER converter         Tconst
                                -[T2CNT 10 ms]-
 
-    The 'TIME to COUNTER converter' instruction convert time in ms to constant
-    value and saves it to Tconst variable to using in counters.
+    The 'TIME to COUNTER converter' instruction gets the constant time in ms,
+    converts it to the timers(TON,TOF,...)-specific value and
+    saves it in the Tconst variable for use in counters later.
     See https://github.com/LDmicro/LDmicro/wiki/TIME-to-COUNTER-converter
 
 
@@ -692,8 +693,16 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     The DELAY instruction causes a delay in us. DELAY instruction does not
     use any timers/counters. The NOP and JMP(Current Address+1) instructions
-    are used to make delay.
+    are used to make the delay.
     See https://github.com/LDmicro/LDmicro/wiki/DELAY-us
+
+
+> TIME to DELAY converter          Tconst
+                               -[T2DELAY 10 us]-
+
+    The 'TIME to DELAY converter' instruction gets the constant time in 'us',
+    converts it to the DELAY-specific value and saves it in the Tconst variable
+    for use as a parameter of the DELAY instruction later.
 
 
 > ONE-SHOT RISING               _     _

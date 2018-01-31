@@ -72,6 +72,10 @@ int IsIoType(int type)
     || (type == IO_TYPE_DIG_OUTPUT)
     || (type == IO_TYPE_READ_ADC)
     || (type == IO_TYPE_PWM_OUTPUT)
+    || (type == IO_TYPE_SPI_MOSI)
+    || (type == IO_TYPE_SPI_MISO)
+    || (type == IO_TYPE_SPI_SCK)
+    || (type == IO_TYPE_SPI__SS)
 //  || (type == IO_TYPE_MODBUS_CONTACT) //???
 //  || (type == IO_TYPE_MODBUS_COIL)    //???
     || (type == IO_TYPE_UART_TX)
@@ -362,6 +366,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
             break;
 
+        case ELEM_TIME2DELAY:
         case ELEM_TIME2COUNT:
             AppendIo(l->d.timer.name, IO_TYPE_GENERAL);
             break;
@@ -414,10 +419,44 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
             break;
 
+        case ELEM_SPI: {
+                sprintf(str, "%s_MOSI", l->d.spi.name);
+                AppendIo(str, IO_TYPE_SPI_MOSI);
+                sprintf(str, "%s_MISO", l->d.spi.name);
+                AppendIo(str, IO_TYPE_SPI_MISO);
+                sprintf(str, "%s_SCK", l->d.spi.name);
+                AppendIo(str, IO_TYPE_SPI_SCK);
+                sprintf(str, "%s__SS", l->d.spi.name);
+                AppendIo(str, IO_TYPE_SPI__SS);
+
+
+            McuSpiInfo *spiInfo=GetMcuSpiInfo(l->d.spi.name);
+            if(spiInfo) {
+                if(spiInfo->MOSI) {
+                 //     assign
+                }
+
+            }
+
+
+            if(!CheckForNumber(l->d.spi.send)) {
+                // Not need ???
+                // Need if you add only one MOV or get erroneously other src name
+                // then you can see l->d.move.src in IOlist
+                AppendIo(l->d.spi.send, IO_TYPE_GENERAL);
+            }
+            if(!CheckForNumber(l->d.spi.recv)) {
+                // Not need ???
+                // Need if you add only one MOV or get erroneously other src name
+                // then you can see l->d.move.src in IOlist
+                AppendIo(l->d.spi.recv, IO_TYPE_GENERAL);
+            }
+            break;
+        }
         case ELEM_OPPOSITE:
         case ELEM_SWAP:
         case ELEM_BUS:
-        case ELEM_MOVE:
+        case ELEM_MOVE: {
             AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
             if(CheckForNumber(l->d.move.src) == FALSE) {
                 // Not need ???
@@ -426,6 +465,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 AppendIoAutoType(l->d.move.src, IO_TYPE_GENERAL);
             }
             break;
+        }
         {
         int n, n0;
         char *nameTable;
@@ -853,7 +893,7 @@ void ShowAnalogSliderPopup(char *name)
         return;
     }
 
-    int left = pt.x - 10;
+    int left = pt.x - 70;
     // try to put the slider directly under the cursor (though later we might
     // realize that that would put the popup off the screen)
     int top = pt.y - (15 + (73*currentVal)/maxVal);
@@ -866,13 +906,14 @@ void ShowAnalogSliderPopup(char *name)
     }
     if(top < 0) top = 0;
 
-    AnalogSliderMain = CreateWindowClient(0, "LDmicroAnalogSlider", "I/O Pin",
+    AnalogSliderMain = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW, "LDmicroAnalogSlider", "ADC Pin",
+        WS_CAPTION |
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
-        left, top, 30 +5, 100 +28, NULL, NULL, Instance, NULL);
+        left, top, 30 +15, 100 +28, NULL, NULL, Instance, NULL);
 
     AnalogSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
         TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE,
-        0, 0, 30 +5, 100 +28, AnalogSliderMain, NULL, Instance, NULL);
+        0, 0, 30 +15, 100 +28, AnalogSliderMain, NULL, Instance, NULL);
     SendMessage(AnalogSliderTrackbar, TBM_SETRANGE, FALSE,
         MAKELONG(0, maxVal));
     SendMessage(AnalogSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1)/8, 0);
@@ -904,10 +945,6 @@ void ShowAnalogSliderPopup(char *name)
                 AnalogSliderCancel = TRUE;
                 break;
             }
-// //   } else if(msg.message == WM_LBUTTONUP) {
-// //       if(v != orig) {
-// //            AnalogSliderDone = TRUE; // this line not allow a kyboard UP DN
-// //       }
         } else if(msg.message == WM_RBUTTONDOWN) {
             AnalogSliderDone = TRUE;
         }

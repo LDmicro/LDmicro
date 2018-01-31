@@ -94,6 +94,14 @@ int McuADC()
     return Prog.mcu->adcCount;
 }
 
+int McuSPI()
+{
+    if(!Prog.mcu)
+        return 0;
+
+    return Prog.mcu->spiCount;
+}
+
 int McuUART()
 {
     if(!Prog.mcu)
@@ -590,16 +598,22 @@ int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 }
 
 //-----------------------------------------------------------------------------
-int SetSizeOfVar(char *name, int sizeOfVar)
+int SetSizeOfVar(char *name, int sizeOfVar, BOOL showError)
 {
+    if(showError)
     if((sizeOfVar<1)||(4<sizeOfVar)) {
-        Error(_("Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
+        Error(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
         sizeOfVar = 2;
     }
     #ifndef NEW_CMP
     sizeOfVar = 2;
     #endif
     return MemForVariable(name, NULL, sizeOfVar);
+}
+
+int SetSizeOfVar(char *name, int sizeOfVar)
+{
+    return SetSizeOfVar(name, sizeOfVar, TRUE);
 }
 
 int SizeOfVar(char *name)
@@ -750,7 +764,7 @@ BOOL LoadVarListFromFile(FILE *f)
         }
         if(sscanf(line, " %d bytes %s ", &sizeOfVar, name)==2) {
             if((sizeOfVar>0) && strlen(name)) {
-                SetSizeOfVar(name, sizeOfVar);
+                SetSizeOfVar(name, sizeOfVar, FALSE);
                 Ok = TRUE;
             }
         }

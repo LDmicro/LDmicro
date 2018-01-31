@@ -289,6 +289,7 @@ static DWORD REG_SPBRGH  = -1; // 0x99
 static DWORD REG_SPBRG   = -1; // 0x99
 static DWORD REG_TXREG   = -1; // 0x19
 static DWORD REG_RCREG   = -1; // 0x1a
+//static DWORD REG_BAUDCON = -1; // BAUD RATE CONTROL REGISTER
 
 //ADC
 static DWORD REG_ADRESH  = -1; // 0x1e
@@ -2509,9 +2510,9 @@ static char *VarFromExpr(char *expr, char *tempName, DWORD addr)
 */
 
 //-----------------------------------------------------------------------------
-static void CopyLiteralToRegs(DWORD addr, int sov, SDWORD literal, char *comment)
+static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, char *comment)
 {
-    Comment("CopyLiteralToRegs");
+    Comment("CopyLitToReg");
     // vvv reassurance, check before calling this routine
     if(sov < 1) ooops(comment);
     if(sov > 4) ooops(comment);
@@ -2555,10 +2556,10 @@ static void CopyLiteralToRegs(DWORD addr, int sov, SDWORD literal, char *comment
 }
 
 //-----------------------------------------------------------------------------
-static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *name1, char *name2, BOOL Sign)
+static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, char *name1, char *name2, BOOL Sign)
 // addr1 - dest, addr2 - source
 {
-    Comment("CopyRegsToRegs");
+    Comment("CopyRegToReg");
     // vvv reassurance, check before calling this routine
     if(sov1 < 1) ooops(name1);
     if(sov1 > 4) ooops(name1);
@@ -2608,17 +2609,28 @@ static void CopyRegsToRegs(DWORD addr1, int sov1, DWORD addr2, int sov2, char *n
     }
 }
 
+static void CopyVarToReg(DWORD addr1, int sov1, char *name2, BOOL Sign)
+{
+    DWORD addr2;
+    MemForVariable(name2, &addr2);
+    CopyRegToReg(addr1, sov1, addr2, SizeOfVar(name2), "", name2, Sign);
+}
+
+static void CopyVarToReg(DWORD addr1, int sov1, char *name2)
+{
+    CopyVarToReg(addr1, sov1, name2, FALSE);
+}
 //-----------------------------------------------------------------------------
 static DWORD CopyArgToReg(BOOL isModificationRisk, DWORD destAddr, int destSov, char *name, BOOL Sign)
 {
     if(IsNumber(name)) {
-        CopyLiteralToRegs(destAddr, destSov, hobatoi(name), name);
+        CopyLitToReg(destAddr, destSov, hobatoi(name), name);
     } else {
         int sov = SizeOfVar(name);
         DWORD addr;
         MemForVariable(name, &addr);
         if(isModificationRisk || (sov < destSov))
-            CopyRegsToRegs(destAddr, destSov, addr, sov, "$CopyArgToReg", name, Sign);
+            CopyRegToReg(destAddr, destSov, addr, sov, "$CopyArgToReg", name, Sign);
         else
             destAddr = addr;
     }
@@ -2697,15 +2709,15 @@ static void CallBin32BcdRoutine(char *nameBcd, char *nameBin)
     sizeBin = SizeOfVar(nameBin);
     sizeBin = 4;
     if(IsNumber(nameBin)) {
-        CopyLiteralToRegs(ACb0, sizeBin, hobatoi(nameBin), nameBin);
+        CopyLitToReg(ACb0, sizeBin, hobatoi(nameBin), nameBin);
     } else {
-        CopyRegsToRegs(ACb0, sizeBin, addrBin, sizeBin, "", nameBin, TRUE);
+        CopyRegToReg(ACb0, sizeBin, addrBin, sizeBin, "", nameBin, TRUE);
     }
-    CopyLiteralToRegs(sovBin, 1, sizeBin, "");
+    CopyLitToReg(sovBin, 1, sizeBin, "");
 
     DWORD addrBcd;
     MemForVariable(nameBcd, &addrBcd);
-    CopyLiteralToRegs(BCD0, 1, addrBcd, "");
+    CopyLitToReg(BCD0, 1, addrBcd, "");
 
     int sizeBcd;
     switch(sizeBin) {
@@ -2717,7 +2729,7 @@ static void CallBin32BcdRoutine(char *nameBcd, char *nameBin)
     }
     sizeBcd = SizeOfVar(nameBcd);
     sizeBcd = 10;
-    CopyLiteralToRegs(sovBcd, 1, sizeBcd, "");
+    CopyLitToReg(sovBcd, 1, sizeBcd, "");
 
 ////DWORD BCD0, int sizeBcd, DWORD ACb0, int sizeBin
     CallWithPclath(Bin32BcdRoutineAddress);
@@ -2885,6 +2897,18 @@ static void Increment(DWORD addr, int sov, char *name)
 static void Increment(DWORD addr, int sov)
 {
   Increment(addr, sov, NULL, NULL, NULL);
+}
+//-----------------------------------------------------------------------------
+static void UartSend(DWORD addr, int sov) // , char *name
+{
+    int i;
+    for(i=0; i<sov; i++) {
+        IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
+        Instruction(OP_GOTO, PicProgWriteP - 1);
+
+        Instruction(OP_MOVF, addr+i, DEST_W);
+        Instruction(OP_MOVWF, REG_TXREG);
+    }
 }
 //-----------------------------------------------------------------------------
 /*
@@ -3206,6 +3230,33 @@ static void sr0(DWORD addr, int sov)
      Instruction(OP_RRF, addr+i, DEST_F);
 }
 
+static void Delay(DWORD addr, int sov)
+{
+  //; Status:C is now 0 if and only if counter rolled over and is now all ones
+  Instruction(OP_MOVLW, 1);
+  DWORD Loop = PicProgWriteP;
+  Instruction(OP_SUBWF, addr, DEST_F);
+  if(sov >= 2) {
+    //IfBitSet(REG_STATUS, STATUS_C); BORROW !!!
+    /* Note: For borrow, the polarity is reversed.
+    A subtraction is executed by adding the two's
+    complement of the second operand. */
+    IfBitClear(REG_STATUS, STATUS_C);
+    Instruction(OP_SUBWF, addr+1, DEST_F);
+    if(sov >= 3) {
+      IfBitClear(REG_STATUS, STATUS_C);
+      Instruction(OP_SUBWF, addr+2, DEST_F);
+      if(sov >= 4) {
+        IfBitClear(REG_STATUS, STATUS_C);
+        Instruction(OP_SUBWF, addr+3, DEST_F);
+        if(sov > 4) oops();
+      }
+    }
+  }
+  IfBitSet(REG_STATUS, STATUS_C);
+  Instruction(OP_GOTO, Loop);
+}
+
 #ifdef TABLE_IN_FLASH
 //-----------------------------------------------------------------------------
 static void InitTable(IntOp *a)
@@ -3287,6 +3338,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 {
     DWORD addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
     int   bit1 = -1, bit2 = -1,            bit4 = -1;
+    int   bit  = -1;
     int   sov  = -1, sov1 = -1, sov2 = -1, sov3 = -1;
     char comment[MAX_NAME_LEN]="";
 
@@ -3353,7 +3405,116 @@ static void CompileFromIntermediate(BOOL topLevel)
                 MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
                 XorBit(addr1, bit1, addr2, bit2);
                 break;
+            //
+            case INT_VARIABLE_CLEAR_BIT: {
+                Comment("INT_VARIABLE_CLEAR_BIT %s %s", a->name1, a->name2);
+                bit = hobatoi(a->name2);
+                MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+                if((0<=bit) && (bit<=7))
+                  ClearBit(addr1, bit, a->name1);
+                else if((8<=bit) && (bit<=15) && (sov1>=2))
+                  ClearBit(addr1+1, bit-8, a->name1);
+                else if((16<=bit) && (bit<=23) && (sov1>=3))
+                  ClearBit(addr1+2, bit-16, a->name1);
+                else if((24<=bit) && (bit<=32) && (sov1>=4))
+                  ClearBit(addr1+3, bit-24, a->name1);
+                else oops();
+                break;
+            }
+            case INT_VARIABLE_SET_BIT: {
+                Comment("INT_VARIABLE_SET_BIT %s %s", a->name1, a->name2);
+                bit = hobatoi(a->name2);
+                MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+                if((0<=bit) && (bit<=7))
+                  SetBit(addr1, bit, a->name1);
+                else if((8<=bit) && (bit<=15) && (sov1>=2))
+                  SetBit(addr1+1, bit-8, a->name1);
+                else if((16<=bit) && (bit<=23) && (sov1>=3))
+                  SetBit(addr1+2, bit-16, a->name1);
+                else if((24<=bit) && (bit<=32) && (sov1>=4))
+                  SetBit(addr1+3, bit-24, a->name1);
+                else oops();
+                break;
+            }
+            case INT_IF_BIT_SET_IN_VAR: {
+                Comment("INT_IF_BIT_SET_IN_VAR %s %s", a->name1, a->name2);
+                DWORD condFalse = AllocFwdAddr();
+                DWORD condTrue = AllocFwdAddr();
+                sov1 = SizeOfVar(a->name1);
+                if(IsNumber(a->name2)) {
+                    MemForVariable(a->name1, &addr1);
+                    bit = hobatoi(a->name2);
+                    if((0<=bit) && (bit<=7))
+                      IfBitClear(addr1, bit, a->name1);
+                    else if((8<=bit) && (bit<=15) && (sov1>=2))
+                      IfBitClear(addr1+1, bit-8);
+                    else if((16<=bit) && (bit<=23) && (sov1>=3))
+                      IfBitClear(addr1+2, bit-16);
+                    else if((24<=bit) && (bit<=32) && (sov1>=4))
+                      IfBitClear(addr1+3, bit-24);
+                    else oops();
+                    Instruction(OP_GOTO, condFalse);
+                /*
+                } else {
+                    CopyVarToReg(r3, 1, a->name2);
+                    CopyLitToReg(r16, sov1, 1);
+                    DWORD Skip = AllocFwdAddr();
+                    DWORD Loop = AvrProgWriteP;
+                    Instruction(OP_TST, r3);
+                    Instruction(OP_BREQ, Skip);
+                    Instruction(OP_DEC, r3);
+                    ShlReg(r16, sov1);
+                    Instruction(OP_GOTO, Loop);
+                    FwdAddrIsNow(Skip);
 
+                    CopyVarToReg(r20, sov1, a->name1);
+                    CpseReg(r20, sov1, r16, condTrue);
+                */
+                }
+                CompileIfBody(condFalse);
+                FwdAddrIsNow(condTrue);
+                break;
+            }
+            case INT_IF_BIT_CLEAR_IN_VAR: {
+                Comment("INT_IF_BIT_CLEAR_IN_VAR %s %s", a->name1, a->name2);
+                DWORD condFalse = AllocFwdAddr();
+                sov1 = SizeOfVar(a->name1);
+                if(IsNumber(a->name2)) {
+                    MemForVariable(a->name1, &addr1);
+                    bit = hobatoi(a->name2);
+                    if((0<=bit) && (bit<=7))
+                      IfBitSet(addr1, bit);
+                    else if((8<=bit) && (bit<=15) && (sov1>=2))
+                      IfBitSet(addr1+1, bit-8);
+                    else if((16<=bit) && (bit<=23) && (sov1>=3))
+                      IfBitSet(addr1+2, bit-16);
+                    else if((24<=bit) && (bit<=32) && (sov1>=4))
+                      IfBitSet(addr1+3, bit-24);
+                    else oops();
+                    Instruction(OP_GOTO, condFalse);
+                /*
+                } else {
+                     CopyVarToReg(r3, 1, a->name2);
+                     CopyLitToReg(r16, sov1, 1);
+                     DWORD Skip = AllocFwdAddr();
+                     DWORD Loop = AvrProgWriteP;
+                     Instruction(OP_TST, r3);
+                     Instruction(OP_BREQ, Skip);
+                     Instruction(OP_DEC, r3);
+                     ShlReg(r16, sov1);
+                     Instruction(OP_GOTO, Loop);
+                     FwdAddrIsNow(Skip);
+
+                     CopyVarToReg(r20, sov1, a->name1);
+                     CpseReg(r20, sov1, r16, condFalse);
+                */
+                }
+                CompileIfBody(condFalse);
+                break;
+            }
+            //
             case INT_SET_VARIABLE_TO_LITERAL:
                 Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1, a->literal, a->literal);
                 CheckSovNames(a);
@@ -3362,7 +3523,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 sov1 = SizeOfVar(a->name1);
                 sov2 = byteNeeded(a->literal);
                 #ifdef AUTO_BANKING
-                CopyLiteralToRegs(addr1, sov1, a->literal, comment);
+                CopyLitToReg(addr1, sov1, a->literal, comment);
                 #else
                 WriteRegister(addr1, BYTE(a->literal & 0xff), comment);
                 if(sov >= 2) {
@@ -3398,7 +3559,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 IfBitClear(addr1, bit1, a->name1);
-                Instruction(OP_GOTO, condFalse, 0);
+                Instruction(OP_GOTO, condFalse);
                 CompileIfBody(condFalse);
                 break;
             }
@@ -3407,14 +3568,10 @@ static void CompileFromIntermediate(BOOL topLevel)
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 IfBitSet(addr1, bit1, a->name1);
-                Instruction(OP_GOTO, condFalse, 0);
+                Instruction(OP_GOTO, condFalse);
                 CompileIfBody(condFalse);
                 break;
             }
-
-            case INT_IF_BIT_SET_IN_VAR:
-            case INT_IF_BIT_CLEAR_IN_VAR:
-                break;
 
             #ifdef NEW_CMP
             case INT_IF_NEQ: Comment("INT_IF_NEQ"); goto cmp1;
@@ -3651,7 +3808,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 MemForVariable(a->name1, &addr1);
                 MemForVariable(a->name2, &addr2);
 
-                CopyRegsToRegs(addr1, sov1, addr2, sov2, a->name1, a->name2, TRUE);
+                CopyRegToReg(addr1, sov1, addr2, sov2, a->name1, a->name2, TRUE);
                 break;
 
             case INT_SET_SWAP: {
@@ -3694,17 +3851,17 @@ static void CompileFromIntermediate(BOOL topLevel)
                 } else oops()
 
                 MemForVariable(a->name1, &addr1);
-                CopyRegsToRegs(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
+                CopyRegToReg(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
                 break;
             }
             case INT_SET_OPPOSITE: {
                 Comment("INT_SET_OPPOSITE %s := OPPOSITE(%s)", a->name1, a->name2);
                 break;
             }
-            case INT_SET_VARIABLE_ROR: Comment("INT_SET_VARIABLE_ROR"); 
-            case INT_SET_VARIABLE_ROL: Comment("INT_SET_VARIABLE_ROL"); 
-            case INT_SET_VARIABLE_SHL: Comment("INT_SET_VARIABLE_SHL"); 
-            case INT_SET_VARIABLE_SHR: Comment("INT_SET_VARIABLE_SHR"); 
+            case INT_SET_VARIABLE_ROR: Comment("INT_SET_VARIABLE_ROR");
+            case INT_SET_VARIABLE_ROL: Comment("INT_SET_VARIABLE_ROL");
+            case INT_SET_VARIABLE_SHL: Comment("INT_SET_VARIABLE_SHL");
+            case INT_SET_VARIABLE_SHR: Comment("INT_SET_VARIABLE_SHR");
                 break;
             case INT_SET_VARIABLE_SR0: Comment("INT_SET_VARIABLE_SR0"); goto ror;
             ror:
@@ -3754,7 +3911,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     MemForSingleBit(a->name4, TRUE, &addr4, &bit4);
                     CopyBit(addr4, bit4, REG_STATUS, STATUS_C, a->name4, "REG_STATUS_C");
                 }
-                CopyRegsToRegs(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
+                CopyRegToReg(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
                 break;
             }
             case INT_SET_VARIABLE_AND: Comment("INT_SET_VARIABLE_AND"); goto and;
@@ -3822,7 +3979,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 }
                 Instruction(OP_INCF, Scratch0+sov1-1, DEST_F);
                 FwdAddrIsNow(neg);
-                CopyRegsToRegs(addr1, sov1, Scratch0, sov1, a->name1, "$Scratch0", FALSE);
+                CopyRegToReg(addr1, sov1, Scratch0, sov1, a->name1, "$Scratch0", FALSE);
                 break;
             }
             // The add and subtract routines must be written to return correct
@@ -3844,7 +4001,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 DWORD addrB = CopyArgToReg(TRUE, Scratch0, sov, a->name2, TRUE);
                 DWORD addrA = CopyArgToReg(FALSE, Scratch4, sov, a->name3, TRUE);
                 add(addrB, addrA, sov1, a->name4, a->name5); // b = b + a , b - is rewritten
-                CopyRegsToRegs(addr1, sov1, Scratch0, sov1, a->name1, "$Scratch0", TRUE);
+                CopyRegToReg(addr1, sov1, Scratch0, sov1, a->name1, "$Scratch0", TRUE);
                 break;
             }
 
@@ -3891,7 +4048,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 DWORD addrB = CopyArgToReg(TRUE, Scratch0, sov, a->name2, TRUE);
                 DWORD addrA = CopyArgToReg(FALSE, Scratch4, sov, a->name3, TRUE);
                 sub(addrB, addrA, sov, a->name4, a->name5); // b = b - a , b - is rewritten
-                CopyRegsToRegs(addr1, sov1, Scratch0, sov, a->name1, "$Scratch0", TRUE);
+                CopyRegToReg(addr1, sov1, Scratch0, sov, a->name1, "$Scratch0", TRUE);
                 break;
             }
             case INT_SET_VARIABLE_MULTIPLY:
@@ -4079,6 +4236,9 @@ static void CompileFromIntermediate(BOOL topLevel)
                 FwdAddrIsNow(done);
                 break;
             }
+            case INT_SPI: {
+                break;
+            }
             case INT_PWM_OFF: {
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name1, Prog.cycleTimer);
@@ -4140,20 +4300,40 @@ static void CompileFromIntermediate(BOOL topLevel)
                 // Timer1
                 // Software programmable prescaler (1:1, 1:2, 1:4, 1:8)
 
+                char str0[1024];
                 char str1[1024];
                 char str2[1024];
+                char str3[1024];
                 char minSI[5];
                 char maxSI[5];
                 double minFreq;
                 double maxFreq;
-                if(timer == 2) {
+
+                double McuClock;
+                double minMcuClock;
+                double maxMcuClock;
+                char McuClockSI[5];
+                char minMcuClockSI[5];
+                char maxMcuClockSI[5];
+                McuClock = SIprefix(Prog.mcuClock, McuClockSI);
+                sprintf(str0,_("When the MCU crystal frequency is %.3g %sHz."), McuClock, McuClockSI);
+
+                if((timer == 2)
+                || (timer == 1)) {
                     minFreq = SIprefix(Prog.mcuClock / ((255+1)*4*16), minSI);
                     maxFreq = SIprefix(Prog.mcuClock / ((  3+1)*4* 1), maxSI);
+                    minMcuClock = SIprefix(target * ((  3+1)*4* 1), minMcuClockSI);
+                    maxMcuClock = SIprefix(target * ((255+1)*4*16), maxMcuClockSI);
+                /*
                 } else if(timer == 1) {
                     minFreq = SIprefix(Prog.mcuClock / ((255+1)*4*8), minSI);
                     maxFreq = SIprefix(Prog.mcuClock / ((  3+1)*4*1), maxSI);
+                    minMcuClock = SIprefix(target * ((  3+1)*4*1), minMcuClockSI);
+                    maxMcuClock = SIprefix(target * ((255+1)*4*8), maxMcuClockSI);
+                */
                 } else oops();
                 sprintf(str1,_("Available PWM frequency from %.3f %sHz up to %.3f %sHz"), minFreq, minSI, maxFreq, maxSI);
+                sprintf(str3,_("Required MCU crystal frequency from %.3g %sHz up to %.3g %sHz"), minMcuClock, minMcuClockSI, maxMcuClock, maxMcuClockSI);
 
                 int pr2plus1;
                 int prescale;
@@ -4176,20 +4356,10 @@ static void CompileFromIntermediate(BOOL topLevel)
                         } else if(prescale == 4) {
                             prescale = 16;
                         } else {
-                            sprintf(str2,"'%s' %s\n\n%s",
+                            sprintf(str2,"SET '%s': %s %s\n\n%s\n\n\t\tOR\n\n%s",
                                 a->name3,
                                 _("PWM frequency too slow."),
-                                str1);
-                            Error(str2);
-                            fCompileError(f, fAsm);
-                        }
-                      } else if(timer == 1) {
-                        prescale *= 2;
-                        if(prescale == 16) {
-                            sprintf(str2,"'%s' %s\n\n%s",
-                                a->name3,
-                                _("PWM frequency too slow."),
-                                str1);
+                                str0, str1, str3);
                             Error(str2);
                             fCompileError(f, fAsm);
                         }
@@ -4212,10 +4382,10 @@ static void CompileFromIntermediate(BOOL topLevel)
 /**/
                 // Copy l->d.setPwm.duty_cycle into Scratch0:1
                 if(IsNumber(a->name1)) {
-                    CopyLiteralToRegs(Scratch0, 2, hobatoi(a->name1), a->name1);
+                    CopyLitToReg(Scratch0, 2, hobatoi(a->name1), a->name1);
                 } else {
                     MemForVariable(a->name1, &addr1);
-                    CopyRegsToRegs(Scratch0, 2, addr1, 2, "Scratch0:1", a->name1, FALSE);
+                    CopyRegToReg(Scratch0, 2, addr1, 2, "Scratch0:1", a->name1, FALSE);
                 }
 
                 DWORD REG_CCPR = -1;
@@ -4233,48 +4403,51 @@ static void CompileFromIntermediate(BOOL topLevel)
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
                     MultiplyNeeded = TRUE;
-                    CopyLiteralToRegs(Scratch2, 2, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 2, pr2plus1, "pr2plus1");
                     CallWithPclath(MultiplyRoutineAddress);
 
                     Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
                     Instruction(OP_MOVWF, REG_CCPR);
 
-                    sr0(Scratch2, 1);
-                    sr0(Scratch2, 1);
-                    Instruction(OP_MOVLW, 0x30);
-                    Instruction(OP_ANDWF, Scratch2, DEST_W);
+                    Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
+                    Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
+                    Instruction(OP_MOVLW, 0x30);             //LSbs
+                    Instruction(OP_ANDWF, Scratch2, DEST_W); //LSbs
                     Instruction(OP_IORLW, 0x0c);
                     Instruction(OP_MOVWF, REG_CCP); // PWM mode, use LSbs
                 } else if(resol == 9) {
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
                     MultiplyNeeded24x16 = TRUE;
-                    CopyLiteralToRegs(Scratch2, 3, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 3, pr2plus1, "pr2plus1");
                     CallWithPclath(MultiplyRoutineAddress24x16);
 
                     sr0(Scratch2, 3); //  divide by 2
                     Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
                     Instruction(OP_MOVWF, REG_CCPR);
 
-                    sr0(Scratch2, 1);
-                    Instruction(OP_MOVLW, 0x30);
-                    Instruction(OP_ANDWF, Scratch2, DEST_W);
+                    Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
+                    Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
+                    Instruction(OP_MOVLW, 0x30);             //LSbs
+                    Instruction(OP_ANDWF, Scratch2, DEST_W); //LSbs
                     Instruction(OP_IORLW, 0x0c);
                     Instruction(OP_MOVWF, REG_CCP); // PWM mode, use LSbs
                 } else if(resol == 10) {
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
                     MultiplyNeeded24x16 = TRUE;
-                    CopyLiteralToRegs(Scratch2, 3, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 3, pr2plus1, "pr2plus1");
                     CallWithPclath(MultiplyRoutineAddress24x16);
 
-                    sr0(Scratch2, 3); //  divide by 2
-                    sr0(Scratch2, 3); //  divide by 2
-                    Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
+                    sr0(Scratch2, 3); // divide by 2
+                    sr0(Scratch2, 3); // divide by 2
+                    Instruction(OP_MOVF, Scratch3, DEST_W); // divide by 256
                     Instruction(OP_MOVWF, REG_CCPR);
 
-                    Instruction(OP_MOVLW, 0x30);
-                    Instruction(OP_ANDWF, Scratch2, DEST_W);
+                    Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
+                    Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
+                    Instruction(OP_MOVLW, 0x30);             //LSbs
+                    Instruction(OP_ANDWF, Scratch2, DEST_W); //LSbs
                     Instruction(OP_IORLW, 0x0c);
                     Instruction(OP_MOVWF, REG_CCP); // PWM mode, use LSbs
                 } else if(resol == 7) {
@@ -4290,7 +4463,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     } else
                         Instruction(OP_CLRF, Scratch3);
                     #else
-                    CopyLiteralToRegs(Scratch2, 2, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 2, pr2plus1, "pr2plus1");
                     #endif
                     CallWithPclath(MultiplyRoutineAddress);
 
@@ -4300,7 +4473,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     Instruction(OP_MOVF, Scratch2, DEST_W);
                     Instruction(OP_MOVWF, Scratch0, 0);
                     #else
-                    CopyRegsToRegs(Scratch0, 2, Scratch2, 2, "Scratch0:1", "Scratch2:3", FALSE);
+                    CopyRegToReg(Scratch0, 2, Scratch2, 2, "Scratch0:1", "Scratch2:3", FALSE);
                     #endif
 
                     #if 0
@@ -4308,7 +4481,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     Instruction(OP_MOVWF, Scratch2, 0);
                     Instruction(OP_CLRF, Scratch3, 0);
                     #else
-                    CopyLiteralToRegs(Scratch2, 2, 100, "100");
+                    CopyLitToReg(Scratch2, 2, 100, "100");
                     #endif
                     CallWithPclath(DivideRoutineAddress);
 
@@ -4598,7 +4771,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 // X = (X * 0x10DCD + 1) % 0x100000000
                 SetSizeOfVar(seedName, 4);
                 MemForVariable(seedName, &addr2);
-                CopyRegsToRegs(Scratch1, 4, addr2, 4, "", "", FALSE);
+                CopyRegToReg(Scratch1, 4, addr2, 4, "", "", FALSE);
 
               //add(addr2, Scratch1, 4);     // * bit0 already in result
                 add(addr2 + 1, Scratch1, 3); // * bit8
@@ -4630,7 +4803,7 @@ static void CompileFromIntermediate(BOOL topLevel)
               //add(addr2, Scratch1, 4);   // * bit16
 
                 Increment(addr2, 4, seedName);
-                CopyRegsToRegs(addr1, sov1, addr2 + 4 - sov1, 4, "", "", FALSE);
+                CopyRegToReg(addr1, sov1, addr2 + 4 - sov1, 4, "", "", FALSE);
                 break;
             }
             case INT_READ_ADC: {
@@ -4893,10 +5066,10 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                  Comment("Scratch0:1 := Index '%s'", a->name3);
                  if(IsNumber(a->name3)){
-                   CopyLiteralToRegs(Scratch0, 2, hobatoi(a->name3), a->name3);
+                   CopyLitToReg(Scratch0, 2, hobatoi(a->name3), a->name3);
                  } else {
                    MemForVariable(a->name3, &addr3);
-                   CopyRegsToRegs(Scratch0, 2, addr3, 2, "$Scratch0", a->name3, FALSE);
+                   CopyRegToReg(Scratch0, 2, addr3, 2, "$Scratch0", a->name3, FALSE);
                  }
 
                  int sovElement = a->literal2;
@@ -4906,7 +5079,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                  } else if(sovElement == 2) {
                    VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 2
                  } else if(sovElement == 3) {
-                   CopyRegsToRegs(Scratch2, 2, addr3, 2, "$Scratch2", a->name3, FALSE);
+                   CopyRegToReg(Scratch2, 2, addr3, 2, "$Scratch2", a->name3, FALSE);
                    VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 2
                    VariableAdd(Scratch0, Scratch0, Scratch2, 2); // * 3
                  } else if(sovElement == 4) {
@@ -4951,14 +5124,49 @@ static void CompileFromIntermediate(BOOL topLevel)
             #endif
 
         case INT_DELAY: {
-            long long us = a->literal; // casting of data type
-            us = us * Prog.mcuClock / 4000000;
-            if(us <= 0 ) us = 1;
-            int i;
-            for(i = 0; i < (us / 2); i++)
-              Instruction(OP_GOTO, PicProgWriteP+1);
-            if(us % 2)
-              Instruction(OP_NOP_);
+                // #define DELAY_TEST
+                #ifdef DELAY_TEST
+                SetBit(0x06,6);   // 1 clocks
+                ClearBit(0x06,6); // 1 clocks
+                SetBit(0x06,6);   // 1 clocks
+                ClearBit(0x06,6); // 1 clocks
+                #endif
+                if(IsNumber(a->name1)) {
+                    long long clocks = CalcDelayClock(hobatoi(a->name1));
+                    long long clocksSave = clocks;
+                    Comment("INT_DELAY %s us = %lld clocks", a->name1, clocks);
+
+                    clocks = (clocks - 10) / 6;
+                    if(clocks > 0xffff) {
+                        clocks = 0xffff;
+                        clocksSave = clocks * 6;
+                        Error(_(" The delay is too long!\n"
+                                "The maximum possible delay is %lld us."),
+                                (clocks * 6 + 10) * 4000000 / Prog.mcuClock);
+                    }
+                    if(clocks < 0 ) clocks = 0;
+                    if(clocks > 0 ) {
+                        Instruction(OP_MOVLW, clocks & 0xff);
+                        Instruction(OP_MOVWF, Scratch0);
+                        Instruction(OP_MOVLW, (clocks >> 8) & 0xff);
+                        Instruction(OP_MOVWF, Scratch0+1);
+                        Delay(Scratch0, 2);
+                        clocksSave -= clocks * 6 + 10;
+                    }
+                    int i;
+                    for(i = 0; i < clocksSave; i++)
+                        Instruction(OP_NOP_);
+                } else {
+                    Comment("INT_DELAY %s us", a->name1);
+                    CopyVarToReg(Scratch0, 2, a->name1);
+                    Delay(Scratch0, 2);
+                }
+                #ifdef DELAY_TEST
+                SetBit(0x06,6);   // 1 clocks
+                ClearBit(0x06,6); // 1 clocks
+                SetBit(0x06,6);   // 1 clocks
+              //ClearBit(0x06,6); // 1 clocks
+                #endif
             break;
         }
         case INT_CLRWDT:
@@ -6271,7 +6479,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         Comment("Selects 16MHz for the Internal Oscillator when it used, ignored otherwise.");
         WriteRegister(REG_OSCON, 0xF << IRCF0);
     }
-    if(Prog.cycleTime != 0) { // 1
+    if(Prog.cycleTimer >= 0) { // 1
         // Configure PLC Timer near the progStart
         CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
         if(Prog.cycleTimer==0)
@@ -6333,7 +6541,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
             Instruction(OP_MOVLB, 0);     // Select Bank 0
         }
     }
-    if(Prog.cycleTime != 0) { // 4
+    if(Prog.cycleTimer >= 0) { // 4
         // Configure PLC Timer near the progStart after zero out RAM
         if(plcTmr.softDivisor > 1) { // RAM neded
             Comment("Configure PLC Timer softDivisor");
@@ -6543,80 +6751,70 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     Comment("Begin Of PLC Cycle");
     BeginOfPLCCycle = PicProgWriteP;
     BeginOfPLCCycle0 = PicProgWriteP;
-    if(Prog.cycleTime != 0) {
-      if(Prog.cycleTimer == 0) {
-          if(Prog.mcu->core == BaselineCore12bit) {
-              /*
-              // v1
-              Instruction(OP_MOVLW, plcTmr.tmr - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-  //          Instruction(OP_MOVLW, plcTmr.tmr - 1); // tested in Proteus - 1) 1kHz}
-              Instruction(OP_SUBWF, REG_TMR0, DEST_W);
-              Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
-              Instruction(OP_GOTO,  BeginOfPLCCycle);
-              Instruction(OP_CLRF,  REG_TMR0);
-              */
-              // v2
-              Instruction(OP_MOVF,  REG_TMR0, DEST_W);
-              Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
-              Instruction(OP_GOTO,  BeginOfPLCCycle);
-  //          Instruction(OP_MOVLW, 256 - plcTmr.tmr - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-  //          Instruction(OP_MOVLW, 256 - plcTmr.tmr - 1); // tested in Proteus - 1) 992Hz}
-              Instruction(OP_MOVLW, 256 - plcTmr.tmr + 1); // tested in Proteus - 1) 992Hz 0=996}
-              Instruction(OP_MOVWF, REG_TMR0);
-          } else {
-              if(plcTmr.softDivisor > 1) {
-                  if(Prog.cycleDuty) {
-                      CopyBit(addrDuty, bitDuty, REG_INTCON, T0IF, YPlcCycleDuty);
-                      addrINTCON_T0IF = addrDuty;
-                      bitINTCON_T0IF = bitDuty;
-                  } else {
-                      MemForSingleBit("$Y_INTCON_T0IF", FALSE, &addrINTCON_T0IF, &bitINTCON_T0IF);
-                      CopyBit(addrINTCON_T0IF, bitINTCON_T0IF, REG_INTCON, T0IF, "$Y_INTCON_T0IF");
-                  }
-                  /* aaa
-                  DWORD TMR0_not_overflow;
-                  TMR0_not_overflow = AllocFwdAddr();
+    if(Prog.cycleTimer == 0) {
+        if(Prog.mcu->core == BaselineCore12bit) {
+            /*
+            // v1
+            Instruction(OP_MOVLW, plcTmr.tmr - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
+          //Instruction(OP_MOVLW, plcTmr.tmr - 1); // tested in Proteus - 1) 1kHz}
+            Instruction(OP_SUBWF, REG_TMR0, DEST_W);
+            Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
+            Instruction(OP_GOTO,  BeginOfPLCCycle);
+            Instruction(OP_CLRF,  REG_TMR0);
+            */
+            // v2
+            Instruction(OP_MOVF,  REG_TMR0, DEST_W);
+            Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
+            Instruction(OP_GOTO,  BeginOfPLCCycle);
+          //Instruction(OP_MOVLW, 256 - plcTmr.tmr - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
+          //Instruction(OP_MOVLW, 256 - plcTmr.tmr - 1); // tested in Proteus - 1) 992Hz}
+            Instruction(OP_MOVLW, 256 - plcTmr.tmr + 1); // tested in Proteus - 1) 992Hz 0=996}
+            Instruction(OP_MOVWF, REG_TMR0);
+        } else {
+            if(plcTmr.softDivisor > 1) {
+                if(Prog.cycleDuty) {
+                    CopyBit(addrDuty, bitDuty, REG_INTCON, T0IF, YPlcCycleDuty);
+                    addrINTCON_T0IF = addrDuty;
+                    bitINTCON_T0IF = bitDuty;
+                } else {
+                    MemForSingleBit("$Y_INTCON_T0IF", FALSE, &addrINTCON_T0IF, &bitINTCON_T0IF);
+                    CopyBit(addrINTCON_T0IF, bitINTCON_T0IF, REG_INTCON, T0IF, "$Y_INTCON_T0IF");
+                }
+            }
+            BeginOfPLCCycle0 = PicProgWriteP;
+            Instruction(OP_MOVLW,  256 - plcTmr.tmr + 0); // tested in Proteus {DONE +0} {1ms=1kHz} {0.250ms=4kHz}
+            IfBitClear(REG_INTCON, T0IF);
+            Instruction(OP_GOTO,   PicProgWriteP - 1);
+          //Instruction(OP_MOVWF,  REG_TMR0);         // 3999 //7920 = 8kHz = 0.125ms
+            Instruction(OP_ADDWF,  REG_TMR0, DEST_F); // 4012 //7967 = 8kHz = 0.125ms
+            Instruction(OP_BCF,    REG_INTCON ,T0IF); // must be cleared in software
+        }
+    } else if(Prog.cycleTimer == 1) {
+        if(Prog.mcu->core == BaselineCore12bit) {
+            Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
+            fCompileError(f, fAsm);
+        }
+                if(Prog.cycleDuty) {
+                    CopyBit(addrDuty, bitDuty, REG_PIR1, CCP1IF, YPlcCycleDuty);
+                    addrINTCON_T0IF = addrDuty;
+                    bitINTCON_T0IF = bitDuty;
+                } else {
+                    MemForSingleBit("$Y_INTCON_T0IF", FALSE, &addrINTCON_T0IF, &bitINTCON_T0IF);
+                    CopyBit(addrINTCON_T0IF, bitINTCON_T0IF, REG_PIR1, CCP1IF, "$Y_INTCON_T0IF");
+                }
 
-                  IfBitClear(REG_INTCON, T0IF);
-                  Instruction(OP_GOTO, TMR0_not_overflow);
+        BeginOfPLCCycle0 = PicProgWriteP;
+        IfBitClear(REG_PIR1, CCP1IF);
+        Instruction(OP_GOTO, PicProgWriteP - 1);
+        Instruction(OP_BCF, REG_PIR1, CCP1IF);
+    } else if(Prog.cycleTimer < 0) { // (Prog.cycleTime == 0)
+        Comment("Watchdog reset");
+        Instruction(OP_CLRWDT);
+    } else oops();
 
-                  Instruction(OP_DECF, plcTmr.softDivisorAddr, DEST_F);
-                  if(plcTmr.softDivisor > 0xff) {
-                      //Instruction(OP_DECF, plcTmr.softDivisorAddr+1, DEST_F);
-                  }
-                  FwdAddrIsNow(TMR0_not_overflow);
-                  */
-              }
-
-              BeginOfPLCCycle0 = PicProgWriteP;
-              Instruction(OP_MOVLW,  256 - plcTmr.tmr + 0); // tested in Proteus {DONE +0} {1ms=1kHz} {0.250ms=4kHz}
-              IfBitClear(REG_INTCON, T0IF);
-              Instruction(OP_GOTO,   PicProgWriteP - 1);
-              //Instruction(OP_MOVWF,  REG_TMR0); // 3999 // 7920 = 8kHz = 0.125ms
-              Instruction(OP_ADDWF,  REG_TMR0, DEST_F); // 4012 //7967 = 8kHz = 0.125ms
-              Instruction(OP_BCF,    REG_INTCON ,T0IF); // must be cleared in software
-          }
-      } else { // Timer1
-          if(Prog.mcu->core == BaselineCore12bit) {
-              Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
-              fCompileError(f, fAsm);
-          }
-                  if(Prog.cycleDuty) {
-                      CopyBit(addrDuty, bitDuty, REG_PIR1, CCP1IF, YPlcCycleDuty);
-                      addrINTCON_T0IF = addrDuty;
-                      bitINTCON_T0IF = bitDuty;
-                  } else {
-                      MemForSingleBit("$Y_INTCON_T0IF", FALSE, &addrINTCON_T0IF, &bitINTCON_T0IF);
-                      CopyBit(addrINTCON_T0IF, bitINTCON_T0IF, REG_PIR1, CCP1IF, "$Y_INTCON_T0IF");
-                  }
-
-          BeginOfPLCCycle0 = PicProgWriteP;
-          IfBitClear(REG_PIR1, CCP1IF);
-          Instruction(OP_GOTO, PicProgWriteP - 1);
-          Instruction(OP_BCF, REG_PIR1, CCP1IF);
-      }
-      Comment("Watchdog reset");
-      Instruction(OP_CLRWDT);
+    if(Prog.cycleTimer >= 0) {
+        Comment("Watchdog reset");
+        Instruction(OP_CLRWDT);
       if(plcTmr.softDivisor > 1) {
           DWORD setLiteral = AllocFwdAddr();;
           /*
@@ -6661,11 +6859,8 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
           }
           */
           FwdAddrIsNow(setLiteral);
-          CopyLiteralToRegs(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+          CopyLitToReg(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
       }
-    } else { // (Prog.cycleTime == 0)
-      Comment("Watchdog reset");
-      Instruction(OP_CLRWDT);
     }
     if(Prog.cycleDuty) {
         Comment("SetBit YPlcCycleDuty");

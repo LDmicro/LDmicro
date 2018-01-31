@@ -39,7 +39,7 @@ extern char *HelpTextJa[];
 extern char *HelpTextRu[];
 extern char *HelpTextEs[];
 
-static char *AboutText[] = {
+extern char *AboutText[] = {
 "",
 "ABOUT LDMICRO",
 "=============",
@@ -78,7 +78,7 @@ static char *AboutText[] = {
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
 "",
-"Release 4.3.6, built " __TIME__ " " __DATE__ ".",
+"Release 4.3.7, built " __TIME__ " " __DATE__ ".", // AboutText[38]
 "",
 NULL
 };

@@ -216,16 +216,16 @@ static DWORD EepromHighBytesCounter;
 // on different AVRs! I consider this a terrible design choice by Atmel.
 // 0 means not defined.
 static DWORD REG_TIMSK  = 0;
-static BYTE      OCIE1A = -1; // Timer/Counter1, Output Compare A Match Interrupt Enable
-static BYTE      TOIE1  = -1; // Timer/Counter1 Overflow Interrupt Enable
-static BYTE      TOIE0  = -1; // Timer/Counter0 Overflow Interrupt Enable
+static int       OCIE1A = -1; // Timer/Counter1, Output Compare A Match Interrupt Enable
+static int       TOIE1  = -1; // Timer/Counter1 Overflow Interrupt Enable
+static int       TOIE0  = -1; // Timer/Counter0 Overflow Interrupt Enable
 
 static DWORD REG_TIFR1  = 0;
-static BYTE      OCF1A  = -1; // Timer/Counter1, Output Compare A Match Flag
-static BYTE      TOV1   = -1; // Timer/Counter1 Overflow Flag
+static int       OCF1A  = -1; // Timer/Counter1, Output Compare A Match Flag
+static int       TOV1   = -1; // Timer/Counter1 Overflow Flag
 static DWORD REG_TIFR0  = 0;
-static BYTE      OCF0A  = -1; // Timer/Counter0, Output Compare A Match Flag
-static BYTE      TOV0   = -1; // Timer/Counter0 Overflow Flag
+static int       OCF0A  = -1; // Timer/Counter0, Output Compare A Match Flag
+static int       TOV0   = -1; // Timer/Counter0 Overflow Flag
 
 #define REG_SREG    0x5f
 #define     SREG_C  0
@@ -302,11 +302,11 @@ static DWORD REG_TCCR1B = 0; // 0x4e
 
 // Timer0
 static DWORD REG_TCCR0A = 0;    //
-static BYTE      WGM00  = -1;   // 0 or 6 or not
-static BYTE      WGM01  = -1;   // 1 or 3 or not
+static int       WGM00  = -1;   // 0 or 6 or not
+static int       WGM01  = -1;   // 1 or 3 or not
 static DWORD REG_TCCR0B = 0;    // TCCR0 // cs
-//static BYTE      WGM02  = -1; // 3 or not // always = 0
-//static BYTE      WGM03  = -1; // not
+//static int       WGM02  = -1; // 3 or not // always = 0
+//static int       WGM03  = -1; // not
 static DWORD REG_TCNT0  = 0;    //
 static DWORD REG_OCR0A  = 0;    //
 
@@ -314,12 +314,12 @@ static DWORD REG_OCR0A  = 0;    //
 static DWORD REG_OCR2   = 0;
 static DWORD REG_TCCR2  = 0; // TCCR2A
 static DWORD REG_TCCR2B = 0;
-static BYTE      WGM20  = -1;
-static BYTE      WGM21  = -1;
-static BYTE      WGM22  = -1;
-static BYTE      WGM23  = -1;
-static BYTE      COM21  = BIT5;
-static BYTE      COM20  = BIT4;
+static int       WGM20  = -1;
+static int       WGM21  = -1;
+static int       WGM22  = -1;
+static int       WGM23  = -1;
+static int       COM21  = BIT5;
+static int       COM20  = BIT4;
 
 //EEPROM
 static DWORD REG_EEARH     = 0;
@@ -347,6 +347,13 @@ static DWORD REG_EECR      = 0;
 #define TWBR    0xB8
 */
 
+/*
+//SPI
+static DWORD REG_SPCR = 0; // SSPCON  // SPI Control Register
+static DWORD REG_SPSR = 0; // SSPSTAT // SPI Status Register
+static DWORD REG_SPDR = 0; // SSPBUF  // SPI Data Register
+*/
+
 // Interrupt Vectors Table
 static DWORD Int0Addr         = 0;
 static DWORD Int1Addr         = 0;
@@ -359,17 +366,17 @@ static DWORD REG_GTCCR = 0;
 #define          PSRASY  BIT1
 // Special Function IO Register
 static DWORD REG_SFIOR = 0;
-static BYTE      PSR2  = -1;
+static int       PSR2  = -1;
 
 // Power Reduction Register
 static DWORD REG_PRR   = 0;
 
 // Sleep Mode Control Register (redirected) =================================
 static DWORD REG_sleep = 0;  // maybe REG_SMCR or REG_MCUCR !!!
-static BYTE      SE    = -1; // maybe in REG_SMCR or REG_MCUCR !!!
-static BYTE      SM0   = -1; // maybe in REG_SMCR or REG_MCUCR or REG_EMCUCR!!!
-static BYTE      SM1   = -1; // maybe in REG_SMCR or REG_MCUCR !!!
-static BYTE      SM2   = -1; // maybe in REG_SMCR or REG_MCUCR or REG_MCUCSR!!!
+static int       SE    = -1; // maybe in REG_SMCR or REG_MCUCR !!!
+static int       SM0   = -1; // maybe in REG_SMCR or REG_MCUCR or REG_EMCUCR!!!
+static int       SM1   = -1; // maybe in REG_SMCR or REG_MCUCR !!!
+static int       SM2   = -1; // maybe in REG_SMCR or REG_MCUCR or REG_MCUCSR!!!
 
 // Sleep Mode Control Register
 //static DWORD REG_SMCR  = 0; // 0x53;
@@ -387,10 +394,10 @@ static DWORD REG_int_sup = 0; // maybe REG_EICRA or REG_MCUCR !!!
 //static DWORD REG_EICRA = 0;
 
 //               Interrupt Sense Control
-static BYTE      ISC11 = BIT3;
-static BYTE      ISC10 = BIT2;
-static BYTE      ISC01 = BIT1;
-static BYTE      ISC00 = BIT0; //maybe in REG_EICRA or REG_MCUCR !!!
+static int       ISC11 = BIT3;
+static int       ISC10 = BIT2;
+static int       ISC01 = BIT1;
+static int       ISC00 = BIT0; //maybe in REG_EICRA or REG_MCUCR !!!
 
 // Interrupt Control Register
 static DWORD REG_int_en = 0; // maybe REG_GICR or REG_EIMSK !!!
@@ -398,8 +405,8 @@ static DWORD REG_int_en = 0; // maybe REG_GICR or REG_EIMSK !!!
 // External Interrupt Mask Register
 //static DWORD REG_EIMSK = 0;
 //               External Interrupt Request Enable
-static BYTE      INT1  = -1;
-static BYTE      INT0  = -1;
+static int       INT1  = -1;
+static int       INT0  = -1;
 
 // Interrupt Flag Register
 static DWORD REG_int_flag = 0; // maybe REG_GIFR or REG_EIFR !!!
@@ -407,8 +414,8 @@ static DWORD REG_int_flag = 0; // maybe REG_GIFR or REG_EIFR !!!
 // External Interrupt Flag Register
 //static DWORD REG_EIFR  = 0;
 //               External Interrupt Flag is cleared when the interrupt routine is executed.
-static BYTE      INTF1 = -1;
-static BYTE      INTF0 = -1;
+static int       INTF1 = -1;
+static int       INTF0 = -1;
 //===========================================================================
 //used in NPulseTimerOverflowInterrupt in ELEM_NPULSE
 static DWORD  NPulseTimerOverflowVector;
@@ -830,7 +837,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
     case OP_CBR:
         CHECK2(arg1,16,31); CHECK(arg2, 8);
-        sprintf(sAsm, "cbr \t r%d, \t 0X%X", arg1, arg2);
+        sprintf(sAsm, "cbr \t r%d, \t 0x%X", arg1, arg2);
         arg2 = ~arg2;
         return 0x7000 | ((arg2 & 0xf0) << 4) | ((arg1 & 0x0F) << 4) | (arg2 & 0x0f);
 
@@ -1724,13 +1731,14 @@ static void LOAD(int reg, DWORD addr)
 //-----------------------------------------------------------------------------
 // Generate code to write/read an 8-bit value to a particular register.
 //-----------------------------------------------------------------------------
-#define WriteMemory(...) _WriteMemory(#__VA_ARGS__, __VA_ARGS__)
+#define WriteMemory(...) _WriteMemory(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 
-static void _WriteMemory(char *args, DWORD addr, BYTE val, char *name, SDWORD literal)
+static void _WriteMemory(int l, char *f, char *args, DWORD addr, BYTE val, char *name, SDWORD literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
         Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
+        Error("LINE %d FILE %s", l, f);
         return;
     }
     char s[1024];
@@ -1744,19 +1752,19 @@ static void _WriteMemory(char *args, DWORD addr, BYTE val, char *name, SDWORD li
     Instruction(OP_ST_ZP, r25, 0, name); // OP_.._ZP need for WriteMemoryNextAddr
 }
 
-static void _WriteMemory(char *args, DWORD addr, BYTE val, char *name)
+static void _WriteMemory(int l, char *f, char *args, DWORD addr, BYTE val, char *name)
 {
-    _WriteMemory(args, addr, val, name, NULL);
+    _WriteMemory(l, f, args, addr, val, name, NULL);
 }
 
-static void _WriteMemory(char *args, DWORD addr, BYTE val, SDWORD literal)
+static void _WriteMemory(int l, char *f, char *args, DWORD addr, BYTE val, SDWORD literal)
 {
-    _WriteMemory(args, addr, val, NULL, literal);
+    _WriteMemory(l, f, args, addr, val, NULL, literal);
 }
 
-static void _WriteMemory(char *args, DWORD addr, BYTE val)
+static void _WriteMemory(int l, char *f, char *args, DWORD addr, BYTE val)
 {
-    _WriteMemory(args, addr, val, NULL, NULL);
+    _WriteMemory(l, f, args, addr, val, NULL, NULL);
 }
 //-----------------------------------------------------------------------------
 // Use only after WriteMemory() !!!
@@ -2366,11 +2374,13 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         SetBit(REG_TIFR0, TOV0);       // Clear TOV0/ clear pending interrupts
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!
       } else {
-        WriteMemory(REG_TCCR0A, (1<<WGM11)); // WGM11=1, WGM10=0 // CTC mode
-        WriteMemory(REG_TCCR0B, plcTmr.cs & 0xff); // WGM12=0 // CTC mode
+        WriteMemory(REG_TCCR0A, 1<<WGM01); // WGM01=1, WGM00=0 // CTC mode
+        WriteMemory(REG_TCCR0B, plcTmr.cs & 0xff); //  WGM02=0 // CTC mode
 
-        long int counter = plcTmr.tmr - 1; // -1 DONE 1000Hz
+        int counter = plcTmr.tmr - 1; // -1 DONE 1000Hz
         // the counter is less than the divisor at 1
+        if(counter < 0) counter = 0;
+        if(counter > 0xff) counter = 0xff;
 
         WriteMemory(REG_OCR0A, counter & 0xff);
       }
@@ -2383,8 +2393,8 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         // ArduinoMega2560 has an error: 2000Hz instead 1000Hz !!!
 
         // the high byte must be written before the low byte
-        WriteMemory(REG_OCR1AH, (counter >> 8) & 0xff);
-        WriteMemory(REG_OCR1AL, counter & 0xff);
+        WriteMemory(REG_OCR1AH, BYTE((counter >> 8) & 0xff));
+        WriteMemory(REG_OCR1AL, BYTE(counter & 0xff));
         /*
         Bug .. no interupt for timer1 need..
 
@@ -2583,37 +2593,88 @@ static void CompileIfBody(DWORD condFalse)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyLiteralToRegs(int reg, int literal, int sov, char *comment)
+static void ShlReg(int reg, int sov)
+{
+    Instruction(OP_LSL, reg);
+    if(sov >= 2)
+        Instruction(OP_ROL, reg+1);
+    if(sov >= 3)
+        Instruction(OP_ROL, reg+2);
+    if(sov >= 4)
+        Instruction(OP_ROL, reg+3);
+    if(sov > 4) oops();
+}
+
+//-----------------------------------------------------------------------------
+static void CpseReg(int op1, int sov, int op2, DWORD condFalse)
+{
+    Instruction(OP_AND,  op1, op2);
+    Instruction(OP_CPSE, op1, op2);
+    Instruction(OP_RJMP, condFalse);
+    if(sov >= 2) {
+        Instruction(OP_AND,  op1+1, op2+1);
+        Instruction(OP_CPSE, op1+1, op2+1);
+        Instruction(OP_RJMP, condFalse);
+    }
+    if(sov >= 3) {
+        Instruction(OP_AND,  op1+2, op2+2);
+        Instruction(OP_CPSE, op1+2, op2+2);
+        Instruction(OP_RJMP, condFalse);
+    }
+    if(sov >= 4) {
+        Instruction(OP_AND,  op1+3, op2+3);
+        Instruction(OP_CPSE, op1+3, op2+3);
+        Instruction(OP_RJMP, condFalse);
+    }
+    if(sov > 4) oops();
+}
+//-----------------------------------------------------------------------------
+static void AndReg(int reg, int sov, int op2)
+{
+    Instruction(OP_AND, reg, op2);
+    if(sov >= 2)
+        Instruction(OP_AND, reg+1, op2+1);
+    if(sov >= 3)
+        Instruction(OP_AND, reg+2, op2+2);
+    if(sov >= 4)
+        Instruction(OP_AND, reg+3, op2+3);
+    if(sov > 4) oops();
+}
+
+//-----------------------------------------------------------------------------
+static void CopyLitToReg(int reg, int sov, int literal, char *comment)
 {
     if(sov < 1) oops();
     if(sov > 4) oops();
 
     if(sov >= 1)
-      Instruction(OP_LDI, reg, (literal & 0xff), comment);
+      Instruction(OP_LDI, reg,    literal        & 0xff, comment);
     if(sov >= 2)
-      Instruction(OP_LDI, reg+1, (literal >> 8) & 0xff);
+      Instruction(OP_LDI, reg+1, (literal >> 8)  & 0xff);
     if(sov >= 3)
       Instruction(OP_LDI, reg+2, (literal >> 16) & 0xff);
     if(sov >= 4)
       Instruction(OP_LDI, reg+3, (literal >> 24) & 0xff);
 }
 
-static void CopyLiteralToRegs(int reg, int literal, int sov)
+static void CopyLitToReg(int reg, int sov, int literal)
 {
-    CopyLiteralToRegs(reg, literal, sov, NULL);
+    CopyLitToReg(reg, sov, literal, NULL);
 }
 
 //-----------------------------------------------------------------------------
-static void CopyVarToRegs(int reg, char *var, int sovRegs)
+static void CopyVarToReg(int reg, int sovReg, char *var)
 {
     DWORD addr;
     int sov = SizeOfVar(var);
+    if(sov != sovReg)
+      dbp("reg=%d sovReg=%d <- var=%s sov=%d",reg,sovReg,var,sov);
 
     MemForVariable(var, &addr);
     LoadXAddr(addr, var);
 
     Instruction(OP_LD_XP, reg);
-    if(sovRegs >= 2) {
+    if(sovReg >= 2) {
         if(sov >= 2)
             Instruction(OP_LD_XP, reg+1);
         else {
@@ -2622,7 +2683,7 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
             Instruction(OP_LDI, reg+1, 0xff);
         }
     }
-    if(sovRegs >= 3) {
+    if(sovReg >= 3) {
         if(sov >= 3)
             Instruction(OP_LD_XP, reg+2);
         else {
@@ -2631,7 +2692,7 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
             Instruction(OP_LDI, reg+2, 0xff);
         }
     }
-    if(sovRegs >= 4) {
+    if(sovReg >= 4) {
         if(sov >= 4)
             Instruction(OP_LD_XP, reg+3);
         else {
@@ -2640,9 +2701,18 @@ static void CopyVarToRegs(int reg, char *var, int sovRegs)
             Instruction(OP_LDI, reg+3, 0xff);
         }
     }
+    if(sovReg > 4) oops();
 }
 //-----------------------------------------------------------------------------
-static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int sovRegs)
+static void CopyArgToReg(int reg, int sovReg, char *var)
+{
+    if(IsNumber(var))
+        CopyLitToReg(reg, sovReg, hobatoi(var));
+    else
+        CopyVarToReg(reg, sovReg, var);
+}
+//-----------------------------------------------------------------------------
+static void _CopyRegToVar(int l, char *f, char *args, char *var, int reg, int sovReg)
 {
     DWORD addr;
     int sov = SizeOfVar(var);
@@ -2652,7 +2722,7 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
 
     Instruction(OP_ST_XP, reg);
     if(sov >= 2) {
-        if(sovRegs >= 2)
+        if(sovReg >= 2)
             Instruction(OP_ST_XP, reg+1);
         else {
             Instruction(OP_LDI, reg+1, 0);
@@ -2661,7 +2731,7 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
         }
     }
     if(sov >= 3) {
-        if(sovRegs >= 3)
+        if(sovReg >= 3)
             Instruction(OP_ST_XP, reg+2);
         else {
             Instruction(OP_LDI, reg+2, 0);
@@ -2670,7 +2740,7 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
         }
     }
     if(sov >= 4) {
-        if(sovRegs >= 4)
+        if(sovReg >= 4)
             Instruction(OP_ST_XP, reg+3);
         else {
             Instruction(OP_LDI, reg+3, 0);
@@ -2681,7 +2751,7 @@ static void _CopyRegsToVar(int l, char *f, char *args, char *var, int reg, int s
     if(sov > 4) oops()
 }
 
-#define CopyRegsToVar(...) _CopyRegsToVar(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define CopyRegToVar(...) _CopyRegToVar(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
 static void Decrement(DWORD addr, int sov)
 //used ZL, r25
@@ -2858,7 +2928,7 @@ static void WriteRuntime(void)
 
     FwdAddrIsNow(resetVector);
     Comment("This is Reset Vector"); // 1
-    if(Prog.cycleTime != 0) { // 2
+    if(Prog.cycleTimer >= 0) { // 2
       Comment("ConfigureTimerForPlcCycle");
       ConfigureTimerForPlcCycle(Prog.cycleTime);
     }
@@ -2949,42 +3019,43 @@ static void WriteRuntime(void)
   //Comment("and now the generated PLC code will follow");
     Comment("Begin Of PLC Cycle");
     BeginOfPLCCycle = AvrProgWriteP;
-    if(Prog.cycleTime != 0) {
-      // ConfigureTimerForPlcCycle
-      if(Prog.cycleTimer == 0) {
-        if((WGM01  == -1)) { // ATmega8
-          DWORD i=SKBS(REG_TIFR0, TOV0);
-          Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer0/Counter
+    // ConfigureTimerForPlcCycle
+    if(Prog.cycleTimer == 0) {
+      if((WGM01  == -1)) { // ATmega8
+        DWORD i=SKBS(REG_TIFR0, TOV0);
+        Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer0/Counter
 
-          SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
-          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+        SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
+        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
 
-          STOREval(REG_TCNT0, tcnt0PlcCycle + 0); // + 0 DONE // reload Counter0
-        } else {
-          DWORD i=SKBS(REG_TIFR0, OCF0A);
-          Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer0/Counter
+        STOREval(REG_TCNT0, BYTE(tcnt0PlcCycle + 0)); // + 0 DONE // reload Counter0
+      } else {
+        DWORD i=SKBS(REG_TIFR0, OCF0A);
+        Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer0/Counter
 
-          SetBit(REG_TIFR0, OCF0A);
-          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
-        }
-      } else { // Timer1
-          DWORD i=SKBS(REG_TIFR1, OCF1A);
-          Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer1/Counter
-
-          SetBit(REG_TIFR1, OCF1A);
-          //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+        SetBit(REG_TIFR0, OCF0A);
+        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
       }
-      Comment("Watchdog reset");
-      Instruction(OP_WDR);
-      if(plcTmr.softDivisor > 1) {
-          Decrement(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor));
-          Instruction(OP_BRNE, BeginOfPLCCycle);
-          WriteLiteralToMemory(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
-      }
-    } else {
-        Comment("Watchdog reset");
-        Instruction(OP_WDR);
+    } else if(Prog.cycleTimer == 1) {
+        DWORD i=SKBS(REG_TIFR1, OCF1A);
+        Instruction(OP_RJMP, AvrProgWriteP-min(i,2)); // Ladder cycle timing on Timer1/Counter
+
+        SetBit(REG_TIFR1, OCF1A);
+        //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+    } else if(Prog.cycleTimer < 0 ) {
+        ;
+    } else oops();
+
+    Comment("Watchdog reset");
+    Instruction(OP_WDR);
+
+    #if 1 // 1
+    if(plcTmr.softDivisor > 1) {
+        Decrement(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor));
+        Instruction(OP_BRNE, BeginOfPLCCycle);
+        WriteLiteralToMemory(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
     }
+    #endif
 
     if(Prog.cycleDuty) {
         Comment("SetBit YPlcCycleDuty");
@@ -3111,6 +3182,7 @@ static void CompileFromIntermediate(void)
                 break;
 
             case INT_SET_BIN2BCD:
+            // 0..99
                 Comment("INT_SET_BIN2BCD");
                 break;
 
@@ -3154,23 +3226,113 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_VARIABLE_CLEAR_BIT: {
-                Comment("INT_VARIABLE_CLEAR_BIT %s", a->name1);
+                Comment("INT_VARIABLE_CLEAR_BIT %s %s", a->name1, a->name2);
+                bit = hobatoi(a->name2);
+                MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+                if((0<=bit) && (bit<=7))
+                  ClearBit(addr1, bit, a->name1);
+                else if((8<=bit) && (bit<=15) && (sov1>=2))
+                  ClearBit(addr1+1, bit-8, a->name1);
+                else if((16<=bit) && (bit<=23) && (sov1>=3))
+                  ClearBit(addr1+2, bit-16, a->name1);
+                else if((24<=bit) && (bit<=32) && (sov1>=4))
+                  ClearBit(addr1+3, bit-24, a->name1);
+                else oops();
                 break;
             }
             case INT_VARIABLE_SET_BIT: {
-                Comment("INT_VARIABLE_SET_BIT %s", a->name1);
+                Comment("INT_VARIABLE_SET_BIT %s %s", a->name1, a->name2);
+                bit = hobatoi(a->name2);
+                MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+                if((0<=bit) && (bit<=7))
+                  SetBit(addr1, bit, a->name1);
+                else if((8<=bit) && (bit<=15) && (sov1>=2))
+                  SetBit(addr1+1, bit-8, a->name1);
+                else if((16<=bit) && (bit<=23) && (sov1>=3))
+                  SetBit(addr1+2, bit-16, a->name1);
+                else if((24<=bit) && (bit<=32) && (sov1>=4))
+                  SetBit(addr1+3, bit-24, a->name1);
+                else oops();
                 break;
             }
             case INT_IF_BIT_SET_IN_VAR: {
-        Comment("INT_IF_BIT_SET_IN_VAR %s", a->name1);
+                Comment("INT_IF_BIT_SET_IN_VAR %s %s", a->name1, a->name2);
+                DWORD condFalse = AllocFwdAddr();
+                DWORD condTrue = AllocFwdAddr();
+                sov1 = SizeOfVar(a->name1);
+                if(IsNumber(a->name2)) {
+                    MemForVariable(a->name1, &addr1);
+                    bit = hobatoi(a->name2);
+                    if((0<=bit) && (bit<=7))
+                      IfBitClear(addr1, bit, a->name1);
+                    else if((8<=bit) && (bit<=15) && (sov1>=2))
+                      IfBitClear(addr1+1, bit-8);
+                    else if((16<=bit) && (bit<=23) && (sov1>=3))
+                      IfBitClear(addr1+2, bit-16);
+                    else if((24<=bit) && (bit<=32) && (sov1>=4))
+                      IfBitClear(addr1+3, bit-24);
+                    else oops();
+                    Instruction(OP_RJMP, condFalse);
+                } else {
+                    CopyVarToReg(r3, 1, a->name2);
+                    CopyLitToReg(r16, sov1, 1);
+                    DWORD Skip = AllocFwdAddr();
+                    DWORD Loop = AvrProgWriteP;
+                    Instruction(OP_TST, r3);
+                    Instruction(OP_BREQ, Skip);
+                    Instruction(OP_DEC, r3);
+                    ShlReg(r16, sov1);
+                    Instruction(OP_RJMP, Loop);
+                    FwdAddrIsNow(Skip);
+
+                    CopyVarToReg(r20, sov1, a->name1);
+                    CpseReg(r20, sov1, r16, condTrue);
+                }
+                CompileIfBody(condFalse);
+                FwdAddrIsNow(condTrue);
                 break;
             }
             case INT_IF_BIT_CLEAR_IN_VAR: {
-        Comment("INT_IF_BIT_CLEAR_IN_VAR %s", a->name1);
+                Comment("INT_IF_BIT_CLEAR_IN_VAR %s %s", a->name1, a->name2);
+                DWORD condFalse = AllocFwdAddr();
+                sov1 = SizeOfVar(a->name1);
+                if(IsNumber(a->name2)) {
+                    MemForVariable(a->name1, &addr1);
+                    bit = hobatoi(a->name2);
+                    if((0<=bit) && (bit<=7))
+                      IfBitSet(addr1, bit);
+                    else if((8<=bit) && (bit<=15) && (sov1>=2))
+                      IfBitSet(addr1+1, bit-8);
+                    else if((16<=bit) && (bit<=23) && (sov1>=3))
+                      IfBitSet(addr1+2, bit-16);
+                    else if((24<=bit) && (bit<=32) && (sov1>=4))
+                      IfBitSet(addr1+3, bit-24);
+                    else oops();
+                    Instruction(OP_RJMP, condFalse);
+                } else {
+                     CopyVarToReg(r3, 1, a->name2);
+                     CopyLitToReg(r16, sov1, 1);
+                     DWORD Skip = AllocFwdAddr();
+                     DWORD Loop = AvrProgWriteP;
+                     Instruction(OP_TST, r3);
+                     Instruction(OP_BREQ, Skip);
+                     Instruction(OP_DEC, r3);
+                     ShlReg(r16, sov1);
+                     Instruction(OP_RJMP, Loop);
+                     FwdAddrIsNow(Skip);
+
+                     CopyVarToReg(r20, sov1, a->name1);
+                     CpseReg(r20, sov1, r16, condFalse);
+                }
+                CompileIfBody(condFalse);
+                break;
             }
+            //
             //case INT_IF_BITS_CLEAR_IN_VAR: TODO
             case INT_IF_BITS_SET_IN_VAR: {
-        Comment("INT_IF_BITS_SET_IN_VAR %s", a->name1);
+                Comment("INT_IF_BITS_SET_IN_VAR %s", a->name1);
             }
             case INT_SET_OPPOSITE:
         Comment("INT_SET_OPPOSITE %s", a->name1);
@@ -3180,12 +3342,7 @@ static void CompileFromIntermediate(void)
                 //MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
-                if(IsNumber(a->name2)){
-                  CopyLiteralToRegs(r16, hobatoi(a->name2), sov1);
-                } else {
-                  //MemForVariable(a->name2, &addr);
-                  CopyVarToRegs(r16, a->name2, sov1);
-                }
+                CopyArgToReg(r16, sov1, a->name2);
                 if(sov2 == 1) {
                     Instruction(OP_SWAP, r16);
                 } else if(sov2 == 2) {
@@ -3206,7 +3363,7 @@ static void CompileFromIntermediate(void)
                     Instruction(OP_MOV, r18, r3);
                 } else oops()
 
-                CopyRegsToVar(a->name1, r16, sov1);
+                CopyRegToVar(a->name1, r16, sov1);
                 break;
 
             #ifndef NEW_CMP
@@ -3268,11 +3425,11 @@ static void CompileFromIntermediate(void)
                 sov = max(SizeOfVar(a->name1),SizeOfVar(a->name2));
                 if(a->op == INT_IF_VARIABLE_GRT_VARIABLE) {
                     //Interchange Rd and Rr in the operation before the test, i.e., CP Rd,Rr
-                    CopyVarToRegs(r20, a->name1, sov);
-                    CopyVarToRegs(r16, a->name2, sov);
+                    CopyArgToReg(r20, sov, a->name1);
+                    CopyArgToReg(r16, sov, a->name2);
                 } else {
-                    CopyVarToRegs(r16, a->name1, sov);
-                    CopyVarToRegs(r20, a->name2, sov);
+                    CopyArgToReg(r16, sov, a->name1);
+                    CopyArgToReg(r20, sov, a->name2);
                 }
 
                 Instruction(OP_CP, 16, 20);
@@ -3304,17 +3461,8 @@ static void CompileFromIntermediate(void)
             case INT_IF_EQU: {
                 DWORD notTrue = AllocFwdAddr();
                 sov = max(SizeOfVar(a->name1), SizeOfVar(a->name2));
-                if(IsNumber(a->name1)){
-                  CopyLiteralToRegs(r20, hobatoi(a->name1), sov);
-                } else {
-                  //MemForVariable(a->name1, &addr1);
-                  CopyVarToRegs(r20, a->name1, sov);
-                }
-                if(IsNumber(a->name2)){
-                  CopyLiteralToRegs(r16, hobatoi(a->name2), sov);
-                } else {
-                  CopyVarToRegs(r16, a->name2, sov);
-                }
+                CopyArgToReg(r20, sov, a->name1);
+                CopyArgToReg(r16, sov, a->name2);
 
                 switch(a->op) {
                     case INT_IF_LEQ: // * op2 - op1
@@ -3372,7 +3520,7 @@ static void CompileFromIntermediate(void)
                 break;
             }
             #endif
-
+/*
             #ifdef USE_SFR
             // Sepcial function
             case INT_READ_SFR_LITERAL: {
@@ -3404,7 +3552,7 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_WRITE_SFR_VARIABLE_L: {
-                CopyVarToRegs(ZL, a->name1, 2); //sfr
+                CopyArgToReg(ZL, a->name1, 2); //sfr
                 Instruction(OP_LDI, 28, (a->literal & 0xff)); //op
                 Instruction(OP_ST_Z, 28, 0);
                 break;
@@ -3419,7 +3567,7 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_WRITE_SFR_VARIABLE: {
-                CopyVarToRegs(ZL, a->name1, 2); //sfr
+                CopyArgToReg(ZL, a->name1, 2); //sfr
                 MemForVariable(a->name2, &addr2); //op
                 LoadXAddr(addr2);
                 Instruction(OP_LD_X, 15, 0);
@@ -3664,9 +3812,10 @@ static void CompileFromIntermediate(void)
             }
             // ^^^ sfr funtions  ^^^
             #endif
+*/
             case INT_SET_VARIABLE_TO_VARIABLE:
-                CopyVarToRegs(r16, a->name2, SizeOfVar(a->name2));
-                CopyRegsToVar(a->name1, r16, SizeOfVar(a->name2));
+                CopyVarToReg(r16, SizeOfVar(a->name2), a->name2);
+                CopyRegToVar(a->name1, r16, SizeOfVar(a->name2));
                 break;
 
             case INT_SET_VARIABLE_MOD:
@@ -3676,8 +3825,8 @@ static void CompileFromIntermediate(void)
                 // slightly different in/out registers and I don't feel like
                 // modifying it.
                 sov = max(SizeOfVar(a->name2), SizeOfVar(a->name3));
-                CopyVarToRegs(r19, a->name2, sov);
-                CopyVarToRegs(r22, a->name3, sov);
+                CopyArgToReg(r19, sov, a->name2);
+                CopyArgToReg(r22, sov, a->name3);
                 if(sov == 1) {
                   CallSubroutine(DivideAddress8);
                   DivideUsed8 = TRUE;
@@ -3689,15 +3838,15 @@ static void CompileFromIntermediate(void)
                   DivideUsed24 = TRUE;
                 } else oops();
                 if(a->op == INT_SET_VARIABLE_DIVIDE)
-                  CopyRegsToVar(a->name1, r19, sov);
+                  CopyRegToVar(a->name1, r19, sov);
                 else
-                  CopyRegsToVar(a->name1, r19, sov); // mod
+                  CopyRegToVar(a->name1, r19, sov); // mod
                 break;
 
             case INT_SET_VARIABLE_MULTIPLY:
                 sov = max(SizeOfVar(a->name2), SizeOfVar(a->name3));
-                CopyVarToRegs(r20, a->name2, sov);
-                CopyVarToRegs(r16, a->name3, sov);
+                CopyArgToReg(r20, sov, a->name2);
+                CopyArgToReg(r16, sov, a->name3);
                 if(sov == 1) {
                     CallSubroutine(MultiplyAddress8);
                     MultiplyUsed8 = TRUE;
@@ -3711,7 +3860,7 @@ static void CompileFromIntermediate(void)
                     MultiplyUsed24 = TRUE;
                     sov1 = min(6, SizeOfVar(a->name1));
                 } else oops()
-                CopyRegsToVar(a->name1, r20, sov1);
+                CopyRegToVar(a->name1, r20, sov1);
                 break;
 
             case INT_SET_VARIABLE_ROL:
@@ -3728,11 +3877,11 @@ static void CompileFromIntermediate(void)
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT: {
                 sov = SizeOfVar(a->name1);
-                CopyVarToRegs(r20, a->name2, sov);
+                CopyArgToReg(r20, sov, a->name2);
 
                 if(a->op != INT_SET_VARIABLE_NEG)
                 if(a->op != INT_SET_VARIABLE_NOT)
-                    CopyVarToRegs(r16, a->name3, sov);
+                    CopyArgToReg(r16, sov, a->name3);
 
                 if(a->op == INT_SET_VARIABLE_ADD) {
                     Instruction(OP_ADD, r20, 16);
@@ -3767,7 +3916,7 @@ static void CompileFromIntermediate(void)
                     }
                 } else oops();
 
-                CopyRegsToVar(a->name1, r20, sov);
+                CopyRegToVar(a->name1, r20, sov);
                 break;
             }
             case INT_QUAD_ENCOD: {
@@ -3979,27 +4128,19 @@ static void CompileFromIntermediate(void)
 
                 if(resol == 7) {
                     DivideUsed = TRUE; MultiplyUsed = TRUE;
-                    if(IsNumber(a->name1)){
-                      CopyLiteralToRegs(r20, hobatoi(a->name1), 2);
-                    } else {
-                      CopyVarToRegs(r20, a->name1, 2);
-                    }
-                    CopyLiteralToRegs(r16, 255, 2); // Fast PWM
+                    CopyArgToReg(r20, 2, a->name1);
+                    CopyLitToReg(r16, 2, 255); // Fast PWM
 
                     CallSubroutine(MultiplyAddress);
 
                     Instruction(OP_MOV, 19, 20);
                     Instruction(OP_MOV, 20, 21);
 
-                    CopyLiteralToRegs(r22, 100, 2);
+                    CopyLitToReg(r22, 2 , 100);
                     CallSubroutine(DivideAddress);
                     // result in r20:r19
                 } else {
-                    if(IsNumber(a->name1)){
-                      CopyLiteralToRegs(r19, hobatoi(a->name1), 2);
-                    } else {
-                      CopyVarToRegs(r19, a->name1, 2);
-                  }
+                    CopyArgToReg(r19, 2, a->name1);
                 }
 
                 if(iop->REG_OCRnxH)
@@ -4180,8 +4321,8 @@ static void CompileFromIntermediate(void)
                 sov = SizeOfVar(a->name2);
                 int i;
                 for(i = 0; i < sov; i++) {
-                    WriteMemory(REG_EEARH,(((a->literal+i) >> 8) & 0xff));
-                    WriteMemory(REG_EEARL, ((a->literal+i) & 0xff));
+                    WriteMemory(REG_EEARH,BYTE( ((a->literal+i) >> 8) & 0xff ));
+                    WriteMemory(REG_EEARL,BYTE(  (a->literal+i)       & 0xff ));
                     WriteMemory(REG_EECR, 0x01);
                     Instruction(OP_LD_Y, 16);
                     Instruction(OP_ST_XP, 16);
@@ -4483,11 +4624,7 @@ static void CompileFromIntermediate(void)
             case INT_FLASH_READ:{
                 int sovElement = a->literal2;
                 //sovElement = 1;
-                if(IsNumber(a->name3)){
-                  CopyLiteralToRegs(r16, hobatoi(a->name3), 2);
-                } else {
-                  CopyVarToRegs(r16, a->name3, 2);
-                }
+                CopyArgToReg(r16, 2, a->name3);
                 //Comment("Index in r16:r17");
 
                 if(sovElement==3){
@@ -4510,7 +4647,7 @@ static void CompileFromIntermediate(void)
                 DWORD addrOfTable = 0;
                 MemOfVar(a->name2, &addrOfTable);
 
-                CopyLiteralToRegs(ZL, addrOfTable << 1, 2, "addrOfTable"); // see LPM // data stored in flash
+                CopyLitToReg(ZL, 2, addrOfTable << 1, "addrOfTable"); // see LPM // data stored in flash
                 //Comment(" Z == DataAddr");
 
                 Instruction(OP_ADD, ZL, r16);
@@ -4524,7 +4661,7 @@ static void CompileFromIntermediate(void)
                   Instruction(OP_LPM_ZP, r22);
                 if(sovElement >= 4)
                   Instruction(OP_LPM_ZP, r23);
-                CopyRegsToVar(a->name1, r20, sovElement);
+                CopyRegToVar(a->name1, r20, sovElement);
                 break;
             }
             #endif
@@ -4559,9 +4696,9 @@ static void CompileFromIntermediate(void)
 // a    in r23:r22:r21:r20, r23 == 0, r22 == 1,
 // temp result 4 low bytes goes into r13:r12:r11:r10.
 //-----------------------------------------------------------------------------
-              //CopyLiteralToRegs(r20, 0x10DCD, 4, "a:=69069(0x10DCD)");
-                CopyLiteralToRegs(r20,  0x0DCD, 2, "a:=69069(0x10DCD)");
-                CopyVarToRegs(r16, seedName, 4);
+              //CopyLitToReg(r20, 4, 0x00010DCD, "a:=69069(0x10DCD)");
+                CopyLitToReg(r20, 2,     0x0DCD, "a:=69069(0x10DCD)");
+                CopyVarToReg(r16, 4, seedName);
 
                 Instruction(OP_SUB,   r2,  r2);    // zero
                 Instruction(OP_MOVW,  r12, r16);   // r12 = r16 * 2^16
@@ -4597,19 +4734,53 @@ static void CompileFromIntermediate(void)
                 //
                 IncrementReg(r10, 4); // (seedName + 1) % 2^32
 
-                CopyRegsToVar(seedName, r10, 4);
-                CopyRegsToVar(a->name1, r10 + 4 - sov1, sov1); // highest bytes of seed
+                CopyRegToVar(seedName, r10, 4);
+                CopyRegToVar(a->name1, r10 + 4 - sov1, sov1); // highest bytes of seed
                 break;
             }
             case INT_DELAY: {
-                long long us = a->literal;
-                us = us * Prog.mcuClock / 1000000;
-                if(us <= 0 ) us = 1;
-                int i;
-                for(i = 0; i < (us / 2); i++)
-                  Instruction(OP_RJMP, AvrProgWriteP+1);
-                if(us % 2)
-                  Instruction(OP_NOP);
+                // #define DELAY_TEST
+                #ifdef DELAY_TEST
+                SetBit(0x25,0);   // 2 clocks
+                ClearBit(0x25,0); // 2 clocks
+                SetBit(0x25,0);   // 2 clocks
+                ClearBit(0x25,0); // 2 clocks
+                #endif
+                if(IsNumber(a->name1)) {
+                    long long clocks = CalcDelayClock(hobatoi(a->name1));
+                    long long clocksSave = clocks;
+                    Comment("INT_DELAY %s us = %lld clocks", a->name1, clocks);
+
+                    clocks = (clocks - 1) / 4;
+                    if(clocks > 0x10000) {
+                        clocks = 0x10000;
+                        clocksSave = clocks * 4;
+                        Error(_(" The delay is too long!\n"
+                                "The maximum possible delay is %lld us."),
+                                (clocks * 4 + 1) * 1000000 / Prog.mcuClock);
+                    }
+                    if(clocks < 0 ) clocks = 0;
+                    if(clocks > 0 ) {
+                        CopyLitToReg(ZL, 2, clocks);           // 4 clocks
+                        Instruction(OP_SBIW, ZL, 1);           // 2 clocks
+                        Instruction(OP_BRNE, AvrProgWriteP-1); // 1/2 clocks
+                        clocksSave -= clocks * 4 + 1;
+                    }
+                    int i;
+                    for(i = 0; i < clocksSave; i++)
+                        Instruction(OP_NOP);                   // 1 clocks
+                } else {
+                    Comment("INT_DELAY %s us", a->name1);
+                    CopyVarToReg(ZL, 2, a->name1);         // 4 clocks
+                    Instruction(OP_SBIW, ZL, 1);           // 2 clocks
+                    Instruction(OP_BRNE, AvrProgWriteP-1); // 1/2 clocks
+                }
+                #ifdef DELAY_TEST
+                SetBit(0x25,0);   // 2 clocks
+                ClearBit(0x25,0); // 2 clocks
+                SetBit(0x25,0);   // 2 clocks
+              //ClearBit(0x25,0); // 2 clocks
+                #endif
                 break;
             }
             case INT_CLRWDT:
