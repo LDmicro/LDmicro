@@ -42,9 +42,6 @@ HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
 
-char ExePath[MAX_PATH];
-char CurrentLdPath[MAX_PATH];
-
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
 static HHOOK       MouseHookHandle;
@@ -53,7 +50,7 @@ static int         MouseY;
 // For the open/save dialog boxes
 #define LDMICRO_PATTERN "LDmicro Ladder Logic Programs (*.ld)\0*.ld\0" \
                      "All files\0*\0\0"
-char CurrentSaveFile[MAX_PATH]; // .ld
+
 BOOL ProgramChangedNotSaved = FALSE;
 
 ULONGLONG PrevWriteTime = 0;
@@ -67,6 +64,10 @@ ULONGLONG LastWriteTime = 0;
 #define ARDUINO_C_PATTERN "ARDUINO C Source Files (*.cpp)\0*.cpp\0All Files\0*\0\0"
 #define XINT_PATTERN \
     "Extended Byte Code Files (*.xint)\0*.xint\0All Files\0*\0\0"
+
+char ExePath[MAX_PATH];
+char CurrentSaveFile[MAX_PATH]; // .ld
+char CurrentLdPath[MAX_PATH];
 char CurrentCompileFile[MAX_PATH]; //.hex, .asm, ...
 char CurrentCompilePath[MAX_PATH];
 
@@ -236,6 +237,36 @@ bool ExistFile(const char *name)
     }
     return FALSE;
 }
+/*
+bool ExistFile2(const char* name)
+{
+    return GetFileAttributes(name) != INVALID_FILE_ATTRIBUTES;
+}
+
+bool ExistFile3(const char* name)
+{
+    #if defined(_WIN32) || defined(_WIN64)
+    return name && PathFileExists(name);
+    #else
+    struct stat sb;
+    return name && 0 == stat (name, &sb);
+    #endif
+}
+
+bool exists_test0 (const char *name) {
+    ifstream f(name);
+    return f.good();
+}
+
+bool exists_test2 (const char *name) {
+    return ( access( name, F_OK ) != -1 );
+}
+
+bool exists_test3 (const char *name) {
+  struct stat buffer;
+  return (stat (name, &buffer) == 0);
+}
+*/
 //-----------------------------------------------------------------------------
 long int fsize(FILE *fp)
 {
@@ -390,33 +421,57 @@ static void notepad(char *name, char *ext)
 }
 
 //-----------------------------------------------------------------------------
+static void clearBat()
+{
+    char LdName[MAX_PATH];
+    strcpy(LdName, ExtractFileName(CurrentSaveFile));
+    SetExt(LdName, LdName, "");
+
+    char CompileName[MAX_PATH];
+    strcpy(CompileName, ExtractFileName(CurrentCompileFile));
+    SetExt(CompileName, CompileName, "");
+
+    char r[MAX_PATH];
+
+    sprintf(r,"%sclear.bat", ExePath);
+    dbps(r)
+    if(!ExistFile(r))
+        return;
+
+    sprintf(r,"\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", ExePath,
+      CurrentLdPath, LdName, CurrentCompilePath, CompileName);
+    dbps(r)
+    isErr(Execute(r), r);
+}
+
+//-----------------------------------------------------------------------------
 static void postCompile(char *MNU)
 {
     if(!ExistFile(CurrentCompileFile))
         return;
 
-    char onlyName[MAX_PATH];
-    strcpy(onlyName, ExtractFileName(CurrentCompileFile));
-    SetExt(onlyName, onlyName, "");
+    char LdName[MAX_PATH];
+    strcpy(LdName, ExtractFileName(CurrentCompileFile));
+    SetExt(LdName, LdName, "");
 
     char outFile[MAX_PATH];
 
     if(!fsize(CurrentCompileFile)) {
         remove(CurrentCompileFile);
         if(strstr(CurrentCompileFile,".hex")) {
-            sprintf(outFile, "%s%s%s", CurrentCompilePath, onlyName, ".asm");
+            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".asm");
             remove(outFile);
         }
         if(strstr(CurrentCompileFile,".c")) {
-            sprintf(outFile, "%s%s%s", CurrentCompilePath, onlyName, ".h");
+            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".h");
             remove(outFile);
             sprintf(outFile, "%s%s", CurrentCompilePath, "ladder.h_");
             remove(outFile);
         }
         if(strstr(CurrentCompileFile,".cpp")) {
-            sprintf(outFile, "%s%s%s", CurrentCompilePath, onlyName, ".h");
+            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".h");
             remove(outFile);
-            sprintf(outFile, "%s%s%s", CurrentCompilePath, onlyName, ".ino_");
+            sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".ino_");
             remove(outFile);
             sprintf(outFile, "%s%s", CurrentCompilePath, "ladder.h_");
             remove(outFile);
@@ -434,7 +489,7 @@ static void postCompile(char *MNU)
     if(Prog.mcu)
         ISA = GetIsaName(Prog.mcu->whichIsa);
 
-    sprintf(r,"\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentCompilePath, onlyName);
+    sprintf(r,"\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentCompilePath, LdName);
     isErr(Execute(r), r);
 }
 
@@ -829,6 +884,10 @@ static void ProcessMenu(int code)
             readBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
             break;
 
+        case MNU_CLEAR_BAT:
+            clearBat();
+            break;
+
         case MNU_NOTEPAD_LD:
             if(CheckSaveUserCancels()) break;
             notepad(CurrentSaveFile, "ld");
@@ -884,6 +943,14 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_TIME2COUNT:
             CHANGING_PROGRAM(AddTimer(ELEM_TIME2COUNT));
+            break;
+
+        case MNU_INSERT_DELAY:
+            CHANGING_PROGRAM(AddTimer(ELEM_DELAY));
+            break;
+
+        case MNU_INSERT_TIME2DELAY:
+            CHANGING_PROGRAM(AddTimer(ELEM_TIME2DELAY));
             break;
 
         case MNU_INSERT_TCY:
@@ -948,10 +1015,6 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_SLEEP:
             CHANGING_PROGRAM(AddSleep());
-            break;
-
-        case MNU_INSERT_DELAY:
-            CHANGING_PROGRAM(AddDelay());
             break;
 
         case MNU_INSERT_CLRWDT:
@@ -1054,6 +1117,10 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_BUS:
             CHANGING_PROGRAM(AddBus(ELEM_BUS));
+            break;
+
+        case MNU_INSERT_SPI:
+            CHANGING_PROGRAM(AddSpi(ELEM_SPI));
             break;
 
         case MNU_INSERT_7SEG:

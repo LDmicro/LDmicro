@@ -120,10 +120,15 @@ void Error(char *str, ...)
         WriteFile(h, str, strlen(str), &written, NULL);
     } else {
         HWND h = GetForegroundWindow();
-        if(buf[0]==' ')
+        char buf2[1024];
+        if(buf[0]==' ') {
+            //sprintf(buf2, "%s (%s)", _("LDmicro Warning"), AboutText[38]);
             MessageBox(h, &buf[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
-        else
-            MessageBox(h, buf, _("LDmicro Error"), MB_OK | MB_ICONERROR);
+        } else {
+            sprintf(buf2, "%s (%s)", _("LDmicro Error"), AboutText[38]);
+            MessageBox(h, buf, buf2, MB_OK | MB_ICONERROR);
+        }
+
     }
 }
 
@@ -354,6 +359,10 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_INTERNAL_RELAY:    return _("int. relay");
         case IO_TYPE_UART_TX:           return _("UART tx");
         case IO_TYPE_UART_RX:           return _("UART rx");
+        case IO_TYPE_SPI_MOSI:          return _("SPI MOSI");
+        case IO_TYPE_SPI_MISO:          return _("SPI MISO");
+        case IO_TYPE_SPI_SCK:           return _("SPI SCK");
+        case IO_TYPE_SPI__SS:           return _("SPI _SS");
         case IO_TYPE_PWM_OUTPUT:        return _("PWM out");
         case IO_TYPE_TCY:               return _("cyclic on/off");
         case IO_TYPE_TON:               return _("turn-on delay");
@@ -756,6 +765,17 @@ McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
         for(i = 0; i < Prog.mcu->pwmCount; i++)
             if((Prog.mcu->pwmInfo[i].pin==pin) && (Prog.mcu->pwmInfo[i].timer!=timer) && (Prog.mcu->pwmInfo[i].resolution==resolution))
                 return &(Prog.mcu->pwmInfo[i]);
+    return NULL;
+}
+
+//-----------------------------------------------------------------------------
+McuSpiInfo *GetMcuSpiInfo(char *name)
+{
+    int i;
+    if(Prog.mcu)
+        for(i = 0; i < Prog.mcu->spiCount; i++)
+            if(strcmp(Prog.mcu->spiInfo[i].name, name)==0)
+                return &(Prog.mcu->spiInfo[i]);
     return NULL;
 }
 

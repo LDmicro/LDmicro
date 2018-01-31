@@ -85,6 +85,8 @@
 #define INT_EEPROM_WRITE_BYTE                   18
 #endif
 
+#define INT_SPI                                 19
+
 #define INT_WRITE_STRING                        21 // netzer
 #define INT_SPRINTF_STRING                      22 // sprintf()
 #define INT_CPRINTF                             2201

@@ -38,6 +38,7 @@ typedef signed long SDWORD;
 #include "accel.h"
 #define _BV(bit) (1 << (bit))
 #define arraylen(x) (sizeof(x)/sizeof((x)[0]))
+//#define arraylen(x) (_countof(x))
 
 //-----------------------------------------------
 #define BYTES_OF_LD_VAR 2
@@ -175,6 +176,7 @@ typedef signed long SDWORD;
 #define MNU_INSERT_CLRWDT       0x3d02
 #define MNU_INSERT_LOCK         0x3d03
 #define MNU_INSERT_DELAY        0x3d04
+#define MNU_INSERT_TIME2DELAY   0x3d05
 #define MNU_INSERT_GOTO         0x3d20
 #define MNU_INSERT_LABEL        0x3d21
 #define MNU_INSERT_SUBPROG      0x3d22
@@ -230,6 +232,8 @@ typedef signed long SDWORD;
 #define MNU_STOP_SIMULATION     0x62
 #define MNU_SINGLE_CYCLE        0x63
 
+#define MNU_INSERT_SPI          0x6401
+
 #define MNU_INSERT_BUS          0x6501
 #define MNU_INSERT_7SEG         0x6507
 #define MNU_INSERT_9SEG         0x6509
@@ -254,8 +258,9 @@ typedef signed long SDWORD;
 #define MNU_COMPILE_INT         0x77    // Interpreter
 #define MNU_COMPILE_XINT        0x78    // Extended interpreter
 
-#define MNU_FLASH_BAT           0x7E
-#define MNU_READ_BAT            0x7F
+#define MNU_FLASH_BAT           0x7D
+#define MNU_READ_BAT            0x7E
+#define MNU_CLEAR_BAT           0x7F
 
 #define MNU_MANUAL              0x80
 #define MNU_ABOUT               0x81
@@ -381,6 +386,7 @@ typedef signed long SDWORD;
 #define ELEM_CLRWDT             0x2c02
 #define ELEM_LOCK               0x2c03
 #define ELEM_DELAY              0x2c04
+#define ELEM_TIME2DELAY         0x2c05
 #define ELEM_LABEL              0x2c20
 #define ELEM_GOTO               0x2c21
 #define ELEM_SUBPROG            0x2c22
@@ -420,6 +426,8 @@ typedef signed long SDWORD;
 #define ELEM_PWM_OFF_SOFT       0x4007
 #define ELEM_QUAD_ENCOD         0x4009
 
+#define ELEM_SPI                0x6001
+
 #define ELEM_BUS                0x7001
 #define ELEM_7SEG               0x7007
 #define ELEM_9SEG               0x7009
@@ -432,6 +440,7 @@ typedef signed long SDWORD;
         case ELEM_COIL: \
         case ELEM_CONTACTS: \
         case ELEM_TIME2COUNT: \
+        case ELEM_TIME2DELAY: \
         case ELEM_TON: \
         case ELEM_TOF: \
         case ELEM_RTO: \
@@ -453,6 +462,7 @@ typedef signed long SDWORD;
         case ELEM_NPULSE: \
         case ELEM_NPULSE_OFF: \
         case ELEM_PWM_OFF_SOFT: \
+        case ELEM_SPI: \
         case ELEM_BUS: \
         case ELEM_7SEG: \
         case ELEM_9SEG: \
@@ -593,6 +603,17 @@ typedef struct ElemSegmentsTag {
     int     which;
 } ElemSegments;
 
+typedef struct ElemSpiTag {
+    char    name[MAX_NAME_LEN];
+    char    send[MAX_NAME_LEN];
+    char    recv[MAX_NAME_LEN];
+    char    mode[MAX_NAME_LEN];
+    char    bitrate[MAX_NAME_LEN];
+    char    modes[MAX_NAME_LEN];
+    char    size[MAX_NAME_LEN];
+    char    first[MAX_NAME_LEN];
+} ElemSpi;
+
 typedef struct ElemBusTag {
     char    dest[MAX_NAME_LEN];
     char    src[MAX_NAME_LEN];
@@ -725,6 +746,7 @@ typedef struct ElemLeafTag {
         ElemCmp             cmp;
         ElemGoto            doGoto;
         ElemSfr             sfr;
+        ElemSpi             spi;
         ElemBus             bus;
         ElemSegments        segments;
         ElemStepper         stepper;
@@ -818,6 +840,10 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_STRING          28 // max
 #define IO_TYPE_TABLE_IN_FLASH  29 // max limited (size of flsh - progSize)
 #define IO_TYPE_VAL_IN_FLASH    30 //
+#define IO_TYPE_SPI_MOSI        31
+#define IO_TYPE_SPI_MISO        32
+#define IO_TYPE_SPI_SCK         33
+#define IO_TYPE_SPI__SS         34
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -956,6 +982,17 @@ typedef struct McuAdcPinInfoTag {
     BYTE    muxRegValue;
 } McuAdcPinInfo;
 
+typedef struct McuSpiInfoTag {
+    char    name[MAX_NAME_LEN];
+    DWORD   REG_CTRL;
+    DWORD   REG_STAT;
+    DWORD   REG_DATA;
+    int     MISO;
+    int     MOSI;
+    int     SCK;
+    int     _SS;
+} McuSpiInfo;
+
 typedef struct McuPwmPinInfoTag {
     int     pin;
     int     timer;
@@ -972,6 +1009,7 @@ typedef struct McuPwmPinInfoTag {
     BYTE        WGMa  ; //                      // mask WGM3:0 for REG_TCCRnA if need
     DWORD   REG_TCCRnB; // or 0, if not exist   // Timer/Counter Control Registers
     BYTE        WGMb  ; //                      // mask WGM3:0 for REG_TCCRnB if need
+    char    name[MAX_NAME_LEN];
 } McuPwmPinInfo, *PMcuPwmPinInfo;
 
 typedef struct McuExtIntPinInfoTag {
@@ -1029,6 +1067,9 @@ typedef struct McuIoInfoTag {
 
     McuExtIntPinInfo *ExtIntInfo;
     int               ExtIntCount;
+
+    McuSpiInfo       *spiInfo;
+    int               spiCount;
 
     struct {
         DWORD            start;
@@ -1200,6 +1241,7 @@ void AddReadAdc(void);
 void AddRandom(void);
 void AddSeedRandom(void);
 void AddSetPwm(void);
+void AddSpi(int which);
 void AddUart(int which);
 void AddPersist(void);
 void AddComment(char *text);
@@ -1293,7 +1335,8 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigge
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust);
 void ShowSleepDialog(int which, SDWORD *delay, char *name);
-void ShowDelayDialog(int which, SDWORD *delay);
+void ShowDelayDialog(int which, char *name);
+void ShowSpiDialog(ElemLeaf *l);
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);
@@ -1336,6 +1379,7 @@ void ShowColorDialog(void);
 
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
+extern char *AboutText[];
 
 // miscutil.cpp
 #ifndef round
@@ -1415,6 +1459,7 @@ void SetMcu(McuIoInfo *mcu);
 int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
 McuIoPinInfo *PinInfoForName(char *name);
+McuSpiInfo *GetMcuSpiInfo(char *name);
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
 McuPwmPinInfo *PwmPinInfoForName(char *name);
@@ -1702,6 +1747,7 @@ int McuROM();
 int UsedROM();
 int McuPWM();
 int McuADC();
+int McuSPI();
 int McuUART();
 extern DWORD RamSection;
 extern DWORD RomSection;
@@ -1761,15 +1807,18 @@ BOOL GotoGosubUsed(void);
 BOOL UartFunctionUsed(void);
 BOOL UartRecvUsed(void);
 BOOL UartSendUsed(void);
+BOOL SpiFunctionUsed(void);
 BOOL Bin32BcdRoutineUsed(void);
 SDWORD CheckMakeNumber(char *str);
 void WipeIntMemory(void);
 BOOL CheckForNumber(char *str);
 int TenToThe(int x);
+int xPowerY(int x, int y);
 BOOL MultiplyRoutineUsed(void);
 BOOL DivideRoutineUsed(void);
 void GenSymOneShot(char *dest, char *name1, char *name2);
 int getradix(char *str);
+long long CalcDelayClock(long long clocks); // in us
 
 // pic16.cpp
 extern DWORD PicProgLdLen;

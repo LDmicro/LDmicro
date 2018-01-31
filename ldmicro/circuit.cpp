@@ -269,13 +269,28 @@ void AddCoil(int what)
     AddLeaf(ELEM_COIL, c);
 }
 
+void AddDelay(void)
+{
+    oops();
+    if(!CanInsertOther) return;
+    ElemLeaf *t = AllocLeaf();
+    t->d.timer.delay = 10; // 10 us
+    AddLeaf(ELEM_DELAY, t);
+}
+
 void AddTimer(int which)
 {
     if(!CanInsertOther) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.timer.name, "Tnew");
-    t->d.timer.delay = 100000; // 100 ms
+    if((which == ELEM_DELAY)
+    || (which == ELEM_TIME2DELAY)) {
+        strcpy(t->d.timer.name, "delay");
+        t->d.timer.delay = 10; // 10 us
+    } else {
+        strcpy(t->d.timer.name, "Tnew");
+        t->d.timer.delay = 100000; // 100 ms
+    }
     t->d.timer.adjust = 0;
     AddLeaf(which, t);
 }
@@ -321,14 +336,6 @@ void AddClrWdt(void)
 
     ElemLeaf *t = AllocLeaf();
     AddLeaf(ELEM_CLRWDT, t);
-}
-
-void AddDelay(void)
-{
-    if(!CanInsertOther) return;
-    ElemLeaf *t = AllocLeaf();
-    t->d.timer.delay = 1; // 1 us
-    AddLeaf(ELEM_DELAY, t);
 }
 
 void AddGoto(int which)
@@ -633,11 +640,11 @@ void AddReadAdc(void)
     if(Prog.mcu) {
       if(!McuADC()) {
         Error(_("No ADC or ADC not supported for selected micro."));
-        return;
+        // return;
       }
       if(AdcFunctionUsed() >= McuADC()) {
         Error(_("No available ADC inputs."));
-        return;
+        // return;
       }
     }
     ElemLeaf *t = AllocLeaf();
@@ -652,11 +659,11 @@ void AddSetPwm(void)
     if(Prog.mcu) {
       if(!McuPWM()) {
         Error(_("No PWM or PWM not supported for this MCU."));
-        return;
+        // return;
       }
       if(PwmFunctionUsed() >= McuPWM()) {
         Error(_("No available PWM outputs."));
-        return;
+        // return;
       }
     }
     ElemLeaf *t = AllocLeaf();
@@ -673,7 +680,7 @@ void AddUart(int which)
     if(Prog.mcu) {
       if(!McuUART()) {
         Error(_("No UART or UART not supported for this MCU."));
-        return;
+        // return;
       }
     }
     ElemLeaf *t = AllocLeaf();
@@ -685,6 +692,28 @@ void AddUart(int which)
     AddLeaf(which, t);
 }
 
+void AddSpi(int which)
+{
+    if(!CanInsertOther) return;
+
+    if(Prog.mcu) {
+      if(!McuSPI()) {
+        Error(_("No SPI or SPI not supported for this MCU."));
+        // return;
+      }
+    }
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.spi.name, "SPIn");
+    strcpy(t->d.spi.mode, "Master");
+    strcpy(t->d.spi.send, "send");
+    strcpy(t->d.spi.recv, "recv");
+    strcpy(t->d.spi.bitrate, "100000");
+    strcpy(t->d.spi.modes, "0");
+    strcpy(t->d.spi.size,  "8");
+    strcpy(t->d.spi.first, "MSB");
+    AddLeaf(which, t);
+}
+
 void AddPersist(void)
 {
     if(!CanInsertEnd) return;
@@ -692,7 +721,7 @@ void AddPersist(void)
     if(Prog.mcu) {
       if(!McuROM()) {
         Error(_("No ROM or ROM not supported for this MCU."));
-        return;
+        // return;
       }
     }
     ElemLeaf *t = AllocLeaf();
