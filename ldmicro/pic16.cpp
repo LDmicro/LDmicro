@@ -3207,23 +3207,64 @@ static void cmp(DWORD b, DWORD a, int sov)
 }
 */
 //-----------------------------------------------------------------------------
+static void AndReg(DWORD addr, int sov, DWORD reg2)
+{
+  if(sov < 1) oops();
+  if(sov > 4) oops();
+  int i;
+  for(i=0; i<sov; i++) {
+    Instruction(OP_MOVF, reg2+i, DEST_W);
+    Instruction(OP_ANDWF, addr+i, DEST_F);
+  }
+}
+
+static void OrReg(DWORD addr, int sov, DWORD reg2)
+{
+  if(sov < 1) oops();
+  if(sov > 4) oops();
+  int i;
+  for(i=0; i<sov; i++) {
+    Instruction(OP_MOVF, reg2+i, DEST_W);
+    Instruction(OP_IORWF, addr+i, DEST_F);
+  }
+}
+
+static void XorReg(DWORD addr, int sov, DWORD reg2)
+{
+  if(sov < 1) oops();
+  if(sov > 4) oops();
+  int i;
+  for(i=0; i<sov; i++) {
+    Instruction(OP_MOVF, reg2+i, DEST_W);
+    Instruction(OP_XORWF, addr+i, DEST_F);
+  }
+}
+
+//-----------------------------------------------------------------------------
 static void shl(DWORD addr, int sov)
 {
+  if(sov < 1) oops();
+  if(sov > 4) oops();
   Instruction(OP_BCF, REG_STATUS, STATUS_C);
-  Instruction(OP_RLF, addr, DEST_F);
-  if(sov >= 2) {
-    Instruction(OP_RLF, addr+1, DEST_F);
-    if(sov >= 3) {
-      Instruction(OP_RLF, addr+2, DEST_F);
-      if(sov >= 4) {
-        Instruction(OP_RLF, addr+3, DEST_F);
-      }
-    }
-  }
+  int i;
+  for(i=0; i<sov; i++)
+      Instruction(OP_RLF, addr+i, DEST_F);
+}
+
+static void rol(DWORD addr, int sov)
+{
+  if(sov < 1) oops();
+  if(sov > 4) oops();
+  Instruction(OP_RLF, addr+sov-1, DEST_W); // copy MSB bit 7 to Carry
+  int i;
+  for(i=0; i<sov; i++)
+      Instruction(OP_RLF, addr+i, DEST_F);
 }
 
 static void sr0(DWORD addr, int sov)
 {
+  if(sov < 1) oops();
+  if(sov > 4) oops();
   Instruction(OP_BCF, REG_STATUS, STATUS_C);
   int i;
   for(i = sov - 1; i >= 0; i--)
@@ -3336,7 +3377,7 @@ static void InitTables(void)
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate(BOOL topLevel)
 {
-    DWORD addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
+    DWORD addr1 = -1, addr2 = -1, addr3 = -1, addr4 = -1;
     int   bit1 = -1, bit2 = -1,            bit4 = -1;
     int   bit  = -1;
     int   sov  = -1, sov1 = -1, sov2 = -1, sov3 = -1;
@@ -3411,15 +3452,31 @@ static void CompileFromIntermediate(BOOL topLevel)
                 bit = hobatoi(a->name2);
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
-                if((0<=bit) && (bit<=7))
-                  ClearBit(addr1, bit, a->name1);
-                else if((8<=bit) && (bit<=15) && (sov1>=2))
-                  ClearBit(addr1+1, bit-8, a->name1);
-                else if((16<=bit) && (bit<=23) && (sov1>=3))
-                  ClearBit(addr1+2, bit-16, a->name1);
-                else if((24<=bit) && (bit<=32) && (sov1>=4))
-                  ClearBit(addr1+3, bit-24, a->name1);
-                else oops();
+                if(IsNumber(a->name2)) {
+                    if((0<=bit) && (bit<=7))
+                      ClearBit(addr1, bit, a->name1);
+                    else if((8<=bit) && (bit<=15) && (sov1>=2))
+                      ClearBit(addr1+1, bit-8, a->name1);
+                    else if((16<=bit) && (bit<=23) && (sov1>=3))
+                      ClearBit(addr1+2, bit-16, a->name1);
+                    else if((24<=bit) && (bit<=32) && (sov1>=4))
+                      ClearBit(addr1+3, bit-24, a->name1);
+                    else oops();
+                } else {
+                    CopyVarToReg(ScratchS, 1, a->name2);
+                    CopyLitToReg(Scratch0, sov1, -2, ""); // 0xF..FE
+                    DWORD Skip = AllocFwdAddr();
+                    DWORD Loop = PicProgWriteP;
+                    Instruction(OP_MOVF, ScratchS, DEST_F);
+                    skpnz;
+                    Instruction(OP_GOTO, Skip);
+                    Instruction(OP_DECF, ScratchS, DEST_F);
+                    rol(Scratch0, sov1);
+                    Instruction(OP_GOTO, Loop);
+                    FwdAddrIsNow(Skip);
+
+                    AndReg(addr1, sov1, Scratch0);
+                }
                 break;
             }
             case INT_VARIABLE_SET_BIT: {
@@ -3427,24 +3484,40 @@ static void CompileFromIntermediate(BOOL topLevel)
                 bit = hobatoi(a->name2);
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
-                if((0<=bit) && (bit<=7))
-                  SetBit(addr1, bit, a->name1);
-                else if((8<=bit) && (bit<=15) && (sov1>=2))
-                  SetBit(addr1+1, bit-8, a->name1);
-                else if((16<=bit) && (bit<=23) && (sov1>=3))
-                  SetBit(addr1+2, bit-16, a->name1);
-                else if((24<=bit) && (bit<=32) && (sov1>=4))
-                  SetBit(addr1+3, bit-24, a->name1);
-                else oops();
+                if(IsNumber(a->name2)) {
+                    if((0<=bit) && (bit<=7))
+                      SetBit(addr1, bit, a->name1);
+                    else if((8<=bit) && (bit<=15) && (sov1>=2))
+                      SetBit(addr1+1, bit-8, a->name1);
+                    else if((16<=bit) && (bit<=23) && (sov1>=3))
+                      SetBit(addr1+2, bit-16, a->name1);
+                    else if((24<=bit) && (bit<=32) && (sov1>=4))
+                      SetBit(addr1+3, bit-24, a->name1);
+                    else oops();
+                } else {
+                    CopyVarToReg(ScratchS, 1, a->name2);
+                    CopyLitToReg(Scratch0, sov1, 0x01, "");
+                    DWORD Skip = AllocFwdAddr();
+                    DWORD Loop = PicProgWriteP;
+                    Instruction(OP_MOVF, ScratchS, DEST_F);
+                    skpnz;
+                    Instruction(OP_GOTO, Skip);
+                    Instruction(OP_DECF, ScratchS, DEST_F);
+                    shl(Scratch0, sov1);
+                    Instruction(OP_GOTO, Loop);
+                    FwdAddrIsNow(Skip);
+
+                    OrReg(addr1, sov1, Scratch0);
+                }
                 break;
             }
             case INT_IF_BIT_SET_IN_VAR: {
                 Comment("INT_IF_BIT_SET_IN_VAR %s %s", a->name1, a->name2);
-                DWORD condFalse = AllocFwdAddr();
-                DWORD condTrue = AllocFwdAddr();
+                DWORD endifAddr = AllocFwdAddr();
+                DWORD ifAddr = AllocFwdAddr();
+                MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
-                    MemForVariable(a->name1, &addr1);
                     bit = hobatoi(a->name2);
                     if((0<=bit) && (bit<=7))
                       IfBitClear(addr1, bit, a->name1);
@@ -3455,34 +3528,67 @@ static void CompileFromIntermediate(BOOL topLevel)
                     else if((24<=bit) && (bit<=32) && (sov1>=4))
                       IfBitClear(addr1+3, bit-24);
                     else oops();
-                    Instruction(OP_GOTO, condFalse);
-                /*
+                    Instruction(OP_GOTO, endifAddr); // here bit is CLR
                 } else {
-                    CopyVarToReg(r3, 1, a->name2);
-                    CopyLitToReg(r16, sov1, 1);
+                    CopyVarToReg(ScratchS, 1, a->name2);
+                    CopyLitToReg(Scratch0, sov1, 0x01, "");
                     DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProgWriteP;
-                    Instruction(OP_TST, r3);
-                    Instruction(OP_BREQ, Skip);
-                    Instruction(OP_DEC, r3);
-                    ShlReg(r16, sov1);
+                    DWORD Loop = PicProgWriteP;
+                    Instruction(OP_MOVF, ScratchS, DEST_F);
+                    skpnz;
+                    Instruction(OP_GOTO, Skip);
+                    Instruction(OP_DECF, ScratchS, DEST_F);
+                    shl(Scratch0, sov1);
                     Instruction(OP_GOTO, Loop);
                     FwdAddrIsNow(Skip);
 
-                    CopyVarToReg(r20, sov1, a->name1);
-                    CpseReg(r20, sov1, r16, condTrue);
-                */
+                    Instruction(OP_MOVF, Scratch0, DEST_W);
+                    Instruction(OP_ANDWF, addr1, DEST_W);
+                    Instruction(OP_SUBWF, Scratch0, DEST_W);
+                    skpz;
+                    Instruction(OP_GOTO, endifAddr);   // here bit is CLR
+                    if(sov1 >= 2) {
+                      Instruction(OP_MOVF, Scratch0+1, DEST_W);
+                      Instruction(OP_ANDWF, addr1+1, DEST_W);
+                      Instruction(OP_SUBWF, Scratch0+1, DEST_W);
+                      skpz;
+                      Instruction(OP_GOTO, endifAddr); // here bit is CLR
+                    }
+                    if(sov1 >= 3) {
+                      Instruction(OP_MOVF, Scratch0+2, DEST_W);
+                      Instruction(OP_ANDWF, addr1+2, DEST_W);
+                      Instruction(OP_SUBWF, Scratch0+2, DEST_W);
+                      skpz;
+                      Instruction(OP_GOTO, endifAddr); // here bit is CLR
+                    }
+                    if(sov1 >= 4) {
+                      Instruction(OP_MOVF, Scratch0+3, DEST_W);
+                      Instruction(OP_ANDWF, addr1+3, DEST_W);
+                      Instruction(OP_SUBWF, Scratch0+3, DEST_W);
+                      skpz;
+                      Instruction(OP_GOTO, endifAddr); // here bit is CLR
+                    }
+                  //Instruction(OP_GOTO, ifAddr);      // here bit is SET
                 }
-                CompileIfBody(condFalse);
-                FwdAddrIsNow(condTrue);
+                FwdAddrIsNow(ifAddr);     // 1
+                CompileIfBody(endifAddr); // 2
                 break;
             }
+/*
+        case ELEM_IF_BIT_CLEAR:
+            Comment(3, "ELEM_IF_BIT_CLEAR");
+            Op(INT_IF_BIT_SET_IN_VAR, l->d.cmp.op1, l->d.cmp.op2);
+                Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
+            break;
+*/
             case INT_IF_BIT_CLEAR_IN_VAR: {
                 Comment("INT_IF_BIT_CLEAR_IN_VAR %s %s", a->name1, a->name2);
-                DWORD condFalse = AllocFwdAddr();
+                DWORD ifAddr = AllocFwdAddr();
+                DWORD endifAddr = AllocFwdAddr();
+                MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
-                    MemForVariable(a->name1, &addr1);
                     bit = hobatoi(a->name2);
                     if((0<=bit) && (bit<=7))
                       IfBitSet(addr1, bit);
@@ -3493,27 +3599,60 @@ static void CompileFromIntermediate(BOOL topLevel)
                     else if((24<=bit) && (bit<=32) && (sov1>=4))
                       IfBitSet(addr1+3, bit-24);
                     else oops();
-                    Instruction(OP_GOTO, condFalse);
-                /*
+                    Instruction(OP_GOTO, endifAddr); // here bit is SET
                 } else {
-                     CopyVarToReg(r3, 1, a->name2);
-                     CopyLitToReg(r16, sov1, 1);
-                     DWORD Skip = AllocFwdAddr();
-                     DWORD Loop = AvrProgWriteP;
-                     Instruction(OP_TST, r3);
-                     Instruction(OP_BREQ, Skip);
-                     Instruction(OP_DEC, r3);
-                     ShlReg(r16, sov1);
-                     Instruction(OP_GOTO, Loop);
-                     FwdAddrIsNow(Skip);
+                    CopyVarToReg(ScratchS, 1, a->name2);
+                    CopyLitToReg(Scratch0, sov1, 0x01, "");
+                    DWORD Skip = AllocFwdAddr();
+                    DWORD Loop = PicProgWriteP;
+                    Instruction(OP_MOVF, ScratchS, DEST_F);
+                    skpnz;
+                    Instruction(OP_GOTO, Skip);
+                    Instruction(OP_DECF, ScratchS, DEST_F);
+                    shl(Scratch0, sov1);
+                    Instruction(OP_GOTO, Loop);
+                    FwdAddrIsNow(Skip);
 
-                     CopyVarToReg(r20, sov1, a->name1);
-                     CpseReg(r20, sov1, r16, condFalse);
-                */
+                    Instruction(OP_MOVF, Scratch0, DEST_W);
+                    Instruction(OP_ANDWF, addr1, DEST_W);
+                    Instruction(OP_SUBWF, Scratch0, DEST_W);
+                    skpz;
+                    Instruction(OP_GOTO, ifAddr);    // here bit is CLR
+                    if(sov1 >= 2) {
+                      Instruction(OP_MOVF, Scratch0+1, DEST_W);
+                      Instruction(OP_ANDWF, addr1+1, DEST_W);
+                      Instruction(OP_SUBWF, Scratch0+1, DEST_W);
+                      skpz;
+                      Instruction(OP_GOTO, ifAddr);  // here bit is CLR
+                    }
+                    if(sov1 >= 3) {
+                      Instruction(OP_MOVF, Scratch0+2, DEST_W);
+                      Instruction(OP_ANDWF, addr1+2, DEST_W);
+                      Instruction(OP_SUBWF, Scratch0+2, DEST_W);
+                      skpz;
+                      Instruction(OP_GOTO, ifAddr);  // here bit is CLR
+                    }
+                    if(sov1 >= 4) {
+                      Instruction(OP_MOVF, Scratch0+3, DEST_W);
+                      Instruction(OP_ANDWF, addr1+3, DEST_W);
+                      Instruction(OP_SUBWF, Scratch0+3, DEST_W);
+                      skpz;
+                      Instruction(OP_GOTO, ifAddr);  // here bit is CLR
+                    }
+                    Instruction(OP_GOTO, endifAddr); // here bit is SET
                 }
-                CompileIfBody(condFalse);
+                FwdAddrIsNow(ifAddr);     // 1
+                CompileIfBody(endifAddr); // 2
                 break;
             }
+/*
+        case ELEM_IF_BIT_SET:
+            Comment(3, "ELEM_IF_BIT_SET");
+            Op(INT_IF_BIT_CLEAR_IN_VAR, l->d.cmp.op1, l->d.cmp.op2);
+                Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
+            break;
+*/
             //
             case INT_SET_VARIABLE_TO_LITERAL:
                 Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1, a->literal, a->literal);

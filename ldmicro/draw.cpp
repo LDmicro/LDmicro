@@ -960,8 +960,8 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         {
         char *s;
 
-        case ELEM_SET_BIT     : s = "\x01""SetBit\x02 "; goto bits;
-        case ELEM_CLEAR_BIT   : s = "\x01""ClrBit\x02 "; goto bits;
+        case ELEM_SET_BIT     : s = "\x01""SET Bit\x02 "; goto bits;
+        case ELEM_CLEAR_BIT   : s = "\x01""CLR Bit\x02 "; goto bits;
         bits:
             ElemMove *m = &leaf->d.move;
 
@@ -978,8 +978,8 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         {
         char *s;
 
-        case ELEM_IF_BIT_SET  : s = "\x01""IfBitSet\x02 "; goto ifbits;
-        case ELEM_IF_BIT_CLEAR: s = "\x01""IfBitClr\x02 "; goto ifbits;
+        case ELEM_IF_BIT_SET  : s = "\x01""if Bit SET\x02 "; goto ifbits;
+        case ELEM_IF_BIT_CLEAR: s = "\x01""if Bit CLR\x02 "; goto ifbits;
         ifbits:
             ElemMove *m = &leaf->d.move;
 

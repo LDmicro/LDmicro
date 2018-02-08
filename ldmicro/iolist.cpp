@@ -491,10 +491,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_SET_BIT     :
         case ELEM_CLEAR_BIT   :
+              AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
             break;
 
         case ELEM_IF_BIT_SET  :
         case ELEM_IF_BIT_CLEAR:
+              AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
             break;
 
         case ELEM_SHL:

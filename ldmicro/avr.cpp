@@ -2595,6 +2595,8 @@ static void CompileIfBody(DWORD condFalse)
 //-----------------------------------------------------------------------------
 static void ShlReg(int reg, int sov)
 {
+    if(sov < 1) oops();
+    if(sov > 4) oops();
     Instruction(OP_LSL, reg);
     if(sov >= 2)
         Instruction(OP_ROL, reg+1);
@@ -2602,12 +2604,29 @@ static void ShlReg(int reg, int sov)
         Instruction(OP_ROL, reg+2);
     if(sov >= 4)
         Instruction(OP_ROL, reg+3);
+}
+
+static void RolReg(int reg, int sov)
+{
+    if(sov < 1) oops();
     if(sov > 4) oops();
+    Instruction(OP_CLC);
+    Instruction(OP_LSL, reg);
+    if(sov >= 2)
+        Instruction(OP_ROL, reg+1);
+    if(sov >= 3)
+        Instruction(OP_ROL, reg+2);
+    if(sov >= 4)
+        Instruction(OP_ROL, reg+3);
+    IfBitSet(REG_SREG, SREG_C);
+    Instruction(OP_SBR, reg, 1);
 }
 
 //-----------------------------------------------------------------------------
 static void CpseReg(int op1, int sov, int op2, DWORD condFalse)
 {
+    if(sov < 1) oops();
+    if(sov > 4) oops();
     Instruction(OP_AND,  op1, op2);
     Instruction(OP_CPSE, op1, op2);
     Instruction(OP_RJMP, condFalse);
@@ -2626,11 +2645,26 @@ static void CpseReg(int op1, int sov, int op2, DWORD condFalse)
         Instruction(OP_CPSE, op1+3, op2+3);
         Instruction(OP_RJMP, condFalse);
     }
-    if(sov > 4) oops();
 }
+//-----------------------------------------------------------------------------
+static void OrReg(int reg, int sov, int op2)
+{
+    if(sov < 1) oops();
+    if(sov > 4) oops();
+    Instruction(OP_OR, reg, op2);
+    if(sov >= 2)
+        Instruction(OP_OR, reg+1, op2+1);
+    if(sov >= 3)
+        Instruction(OP_OR, reg+2, op2+2);
+    if(sov >= 4)
+        Instruction(OP_OR, reg+3, op2+3);
+}
+
 //-----------------------------------------------------------------------------
 static void AndReg(int reg, int sov, int op2)
 {
+    if(sov < 1) oops();
+    if(sov > 4) oops();
     Instruction(OP_AND, reg, op2);
     if(sov >= 2)
         Instruction(OP_AND, reg+1, op2+1);
@@ -2638,7 +2672,6 @@ static void AndReg(int reg, int sov, int op2)
         Instruction(OP_AND, reg+2, op2+2);
     if(sov >= 4)
         Instruction(OP_AND, reg+3, op2+3);
-    if(sov > 4) oops();
 }
 
 //-----------------------------------------------------------------------------
@@ -2646,7 +2679,6 @@ static void CopyLitToReg(int reg, int sov, int literal, char *comment)
 {
     if(sov < 1) oops();
     if(sov > 4) oops();
-
     if(sov >= 1)
       Instruction(OP_LDI, reg,    literal        & 0xff, comment);
     if(sov >= 2)
@@ -2665,6 +2697,8 @@ static void CopyLitToReg(int reg, int sov, int literal)
 //-----------------------------------------------------------------------------
 static void CopyVarToReg(int reg, int sovReg, char *var)
 {
+    if(sovReg < 1) oops();
+    if(sovReg > 4) oops();
     DWORD addr;
     int sov = SizeOfVar(var);
     if(sov != sovReg)
@@ -2701,7 +2735,6 @@ static void CopyVarToReg(int reg, int sovReg, char *var)
             Instruction(OP_LDI, reg+3, 0xff);
         }
     }
-    if(sovReg > 4) oops();
 }
 //-----------------------------------------------------------------------------
 static void CopyArgToReg(int reg, int sovReg, char *var)
@@ -3230,15 +3263,32 @@ static void CompileFromIntermediate(void)
                 bit = hobatoi(a->name2);
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
-                if((0<=bit) && (bit<=7))
-                  ClearBit(addr1, bit, a->name1);
-                else if((8<=bit) && (bit<=15) && (sov1>=2))
-                  ClearBit(addr1+1, bit-8, a->name1);
-                else if((16<=bit) && (bit<=23) && (sov1>=3))
-                  ClearBit(addr1+2, bit-16, a->name1);
-                else if((24<=bit) && (bit<=32) && (sov1>=4))
-                  ClearBit(addr1+3, bit-24, a->name1);
-                else oops();
+                if(IsNumber(a->name2)) {
+                    if((0<=bit) && (bit<=7))
+                      ClearBit(addr1, bit, a->name1);
+                    else if((8<=bit) && (bit<=15) && (sov1>=2))
+                      ClearBit(addr1+1, bit-8, a->name1);
+                    else if((16<=bit) && (bit<=23) && (sov1>=3))
+                      ClearBit(addr1+2, bit-16, a->name1);
+                    else if((24<=bit) && (bit<=32) && (sov1>=4))
+                      ClearBit(addr1+3, bit-24, a->name1);
+                    else oops();
+                } else {
+                    CopyVarToReg(r3, 1, a->name2);
+                    CopyLitToReg(r16, sov1, -2); // 0xF..FE
+                    DWORD Skip = AllocFwdAddr();
+                    DWORD Loop = AvrProgWriteP;
+                    Instruction(OP_TST, r3);
+                    Instruction(OP_BREQ, Skip);
+                    Instruction(OP_DEC, r3);
+                    RolReg(r16, sov1);
+                    Instruction(OP_RJMP, Loop);
+                    FwdAddrIsNow(Skip);
+
+                    CopyVarToReg(r20, sov1, a->name1);
+                    AndReg(r20, sov1, r16);
+                    CopyRegToVar(a->name1, r20, sov1);
+                }
                 break;
             }
             case INT_VARIABLE_SET_BIT: {
@@ -3246,21 +3296,38 @@ static void CompileFromIntermediate(void)
                 bit = hobatoi(a->name2);
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
-                if((0<=bit) && (bit<=7))
-                  SetBit(addr1, bit, a->name1);
-                else if((8<=bit) && (bit<=15) && (sov1>=2))
-                  SetBit(addr1+1, bit-8, a->name1);
-                else if((16<=bit) && (bit<=23) && (sov1>=3))
-                  SetBit(addr1+2, bit-16, a->name1);
-                else if((24<=bit) && (bit<=32) && (sov1>=4))
-                  SetBit(addr1+3, bit-24, a->name1);
-                else oops();
+                if(IsNumber(a->name2)) {
+                    if((0<=bit) && (bit<=7))
+                      SetBit(addr1, bit, a->name1);
+                    else if((8<=bit) && (bit<=15) && (sov1>=2))
+                      SetBit(addr1+1, bit-8, a->name1);
+                    else if((16<=bit) && (bit<=23) && (sov1>=3))
+                      SetBit(addr1+2, bit-16, a->name1);
+                    else if((24<=bit) && (bit<=32) && (sov1>=4))
+                      SetBit(addr1+3, bit-24, a->name1);
+                    else oops();
+                } else {
+                    CopyVarToReg(r3, 1, a->name2);
+                    CopyLitToReg(r16, sov1, 0x01);
+                    DWORD Skip = AllocFwdAddr();
+                    DWORD Loop = AvrProgWriteP;
+                    Instruction(OP_TST, r3);
+                    Instruction(OP_BREQ, Skip);
+                    Instruction(OP_DEC, r3);
+                    ShlReg(r16, sov1);
+                    Instruction(OP_RJMP, Loop);
+                    FwdAddrIsNow(Skip);
+
+                    CopyVarToReg(r20, sov1, a->name1);
+                    OrReg(r20, sov1, r16);
+                    CopyRegToVar(a->name1, r20, sov1);
+                }
                 break;
             }
             case INT_IF_BIT_SET_IN_VAR: {
                 Comment("INT_IF_BIT_SET_IN_VAR %s %s", a->name1, a->name2);
-                DWORD condFalse = AllocFwdAddr();
-                DWORD condTrue = AllocFwdAddr();
+                DWORD ifAddr = AllocFwdAddr();
+                DWORD endifAddr = AllocFwdAddr();
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
                     MemForVariable(a->name1, &addr1);
@@ -3274,10 +3341,10 @@ static void CompileFromIntermediate(void)
                     else if((24<=bit) && (bit<=32) && (sov1>=4))
                       IfBitClear(addr1+3, bit-24);
                     else oops();
-                    Instruction(OP_RJMP, condFalse);
+                    Instruction(OP_RJMP, endifAddr); // here bit is CLR
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
-                    CopyLitToReg(r16, sov1, 1);
+                    CopyLitToReg(r16, sov1, 0x01);
                     DWORD Skip = AllocFwdAddr();
                     DWORD Loop = AvrProgWriteP;
                     Instruction(OP_TST, r3);
@@ -3288,15 +3355,45 @@ static void CompileFromIntermediate(void)
                     FwdAddrIsNow(Skip);
 
                     CopyVarToReg(r20, sov1, a->name1);
-                    CpseReg(r20, sov1, r16, condTrue);
+                    CpseReg(r20, sov1, r16, endifAddr);
+/*
+                    Instruction(OP_AND,  r20, r16);
+                    Instruction(OP_CPSE, r20, r16);
+                    Instruction(OP_RJMP, endifAddr);     // here r20 != r16, bit is CLR
+                    if(sov >= 2) {
+                        Instruction(OP_AND,  r20+1, r16+1);
+                        Instruction(OP_CPSE, r20+1, r16+1);
+                        Instruction(OP_RJMP, endifAddr); // here r20 != r16, bit is CLR
+                    }
+                    if(sov >= 3) {
+                        Instruction(OP_AND,  r20+2, r16+2);
+                        Instruction(OP_CPSE, r20+2, r16+2);
+                        Instruction(OP_RJMP, endifAddr); // here r20 != r16, bit is CLR
+                    }
+                    if(sov >= 4) {
+                        Instruction(OP_AND,  r20+3, r16+3);
+                        Instruction(OP_CPSE, r20+3, r16+3);
+                        Instruction(OP_RJMP, endifAddr); // here r20 != r16, bit is CLR
+                    }
+                  //Instruction(OP_RJMP, ifAddr);     // here r20 == r16, bit is SET
+*/
                 }
-                CompileIfBody(condFalse);
-                FwdAddrIsNow(condTrue);
+                FwdAddrIsNow(ifAddr);     // 1
+                CompileIfBody(endifAddr); // 2
                 break;
             }
+/*
+        case ELEM_IF_BIT_CLEAR:
+            Comment(3, "ELEM_IF_BIT_CLEAR");
+            Op(INT_IF_BIT_SET_IN_VAR, l->d.cmp.op1, l->d.cmp.op2);
+                Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
+            break;
+*/
             case INT_IF_BIT_CLEAR_IN_VAR: {
                 Comment("INT_IF_BIT_CLEAR_IN_VAR %s %s", a->name1, a->name2);
-                DWORD condFalse = AllocFwdAddr();
+                DWORD ifAddr = AllocFwdAddr();
+                DWORD endifAddr = AllocFwdAddr();
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
                     MemForVariable(a->name1, &addr1);
@@ -3310,25 +3407,55 @@ static void CompileFromIntermediate(void)
                     else if((24<=bit) && (bit<=32) && (sov1>=4))
                       IfBitSet(addr1+3, bit-24);
                     else oops();
-                    Instruction(OP_RJMP, condFalse);
+                    Instruction(OP_RJMP, endifAddr); // here bit is SET
                 } else {
-                     CopyVarToReg(r3, 1, a->name2);
-                     CopyLitToReg(r16, sov1, 1);
-                     DWORD Skip = AllocFwdAddr();
-                     DWORD Loop = AvrProgWriteP;
-                     Instruction(OP_TST, r3);
-                     Instruction(OP_BREQ, Skip);
-                     Instruction(OP_DEC, r3);
-                     ShlReg(r16, sov1);
-                     Instruction(OP_RJMP, Loop);
-                     FwdAddrIsNow(Skip);
+                    CopyVarToReg(r3, 1, a->name2);
+                    CopyLitToReg(r16, sov1, 0x01);
+                    DWORD Skip = AllocFwdAddr();
+                    DWORD Loop = AvrProgWriteP;
+                    Instruction(OP_TST, r3);
+                    Instruction(OP_BREQ, Skip);
+                    Instruction(OP_DEC, r3);
+                    ShlReg(r16, sov1);
+                    Instruction(OP_RJMP, Loop);
+                    FwdAddrIsNow(Skip);
 
-                     CopyVarToReg(r20, sov1, a->name1);
-                     CpseReg(r20, sov1, r16, condFalse);
+                    CopyVarToReg(r20, sov1, a->name1);
+                    CpseReg(r20, sov1, r16, ifAddr);
+/*
+                    Instruction(OP_AND,  r20, r16);
+                    Instruction(OP_CPSE, r20, r16);
+                    Instruction(OP_RJMP, ifAddr);     // here r20 != r16, bit is CLR
+                    if(sov >= 2) {
+                        Instruction(OP_AND,  r20+1, r16+1);
+                        Instruction(OP_CPSE, r20+1, r16+1);
+                        Instruction(OP_RJMP, ifAddr); // here r20 != r16, bit is CLR
+                    }
+                    if(sov >= 3) {
+                        Instruction(OP_AND,  r20+2, r16+2);
+                        Instruction(OP_CPSE, r20+2, r16+2);
+                        Instruction(OP_RJMP, ifAddr); // here r20 != r16, bit is CLR
+                    }
+                    if(sov >= 4) {
+                        Instruction(OP_AND,  r20+3, r16+3);
+                        Instruction(OP_CPSE, r20+3, r16+3);
+                        Instruction(OP_RJMP, ifAddr); // here r20 != r16, bit is CLR
+                    }
+*/
+                    Instruction(OP_RJMP, endifAddr); // here r20 == r16, bit is SET
                 }
-                CompileIfBody(condFalse);
+                FwdAddrIsNow(ifAddr);     // 1
+                CompileIfBody(endifAddr); // 2
                 break;
             }
+/*
+        case ELEM_IF_BIT_SET:
+            Comment(3, "ELEM_IF_BIT_SET");
+            Op(INT_IF_BIT_CLEAR_IN_VAR, l->d.cmp.op1, l->d.cmp.op2);
+                Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
+            break;
+*/
             //
             //case INT_IF_BITS_CLEAR_IN_VAR: TODO
             case INT_IF_BITS_SET_IN_VAR: {
@@ -3876,6 +4003,8 @@ static void CompileFromIntermediate(void)
             case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT: {
+                Comment("INT_SET_VARIABLE_xxx %s %s %s", a->name1, a->name2, a->name3);
+
                 sov = SizeOfVar(a->name1);
                 CopyArgToReg(r20, sov, a->name2);
 
@@ -4318,7 +4447,7 @@ static void CompileFromIntermediate(void)
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
                 LoadYAddr(REG_EEDR);
-                sov = SizeOfVar(a->name2);
+                sov = SizeOfVar(a->name1);
                 int i;
                 for(i = 0; i < sov; i++) {
                     WriteMemory(REG_EEARH,BYTE( ((a->literal+i) >> 8) & 0xff ));
