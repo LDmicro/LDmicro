@@ -33,7 +33,7 @@ for $file (sort <lang-??.txt>) {
         } else {
             $translated = $_;
 
-            print "{$toTranslate,$translated},\n";
+            print "{$toTranslate,\n $translated},\n";
             $engl = 1;
         }
     }

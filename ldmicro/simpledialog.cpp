@@ -718,7 +718,9 @@ void ShowVarBitDialog(int which, char *dest, char *src)
         case ELEM_CLEAR_BIT    : title = _("Clear bit"); break;
         default: oops();
     }
-    char *labels[] = { _("Variable:"), _("Bit # [0..15]:") };
+    char s[100];
+    sprintf(s, _("Bit # [0..%d]:"), SizeOfVar(dest)*8-1);
+    char *labels[] = { _("Variable:"), s };
     char *dests[] = { dest, src };
     if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)){
     }
@@ -1003,34 +1005,34 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
         title = _("Divide Remainder");
     } else if(which == ELEM_SHL) {
         l2 = "<< Operand2:";
-        title = _("SHL");
+        title = "SHL";
     } else if(which == ELEM_SHR) {
         l2 = ">> Operand2:";
-        title = _("SHR");
+        title = "SHR";
     } else if(which == ELEM_SR0) {
         l2 = ">> Operand2:";
-        title = _("SR0");
+        title = "SR0";
     } else if(which == ELEM_ROL) {
         l2 = "rol Operand2:";
-        title = _("ROL");
+        title = "ROL";
     } else if(which == ELEM_ROR) {
         l2 = "ror Operand2:";
-        title = _("ROR");
+        title = "ROR";
     } else if(which == ELEM_AND) {
         l2 = "&& Operand2:";
-        title = _("AND");
+        title = "AND";
     } else if(which == ELEM_OR) {
         l2 = "| Operand2:";
-        title = _("OR");
+        title = "OR";
     } else if(which == ELEM_XOR) {
         l2 = "^ Operand2:";
-        title = _("XOR");
+        title = "XOR";
     } else if(which == ELEM_NOT) {
         l2 = "~ Operand1:";
-        title = _("NOT");
+        title = "NOT";
     } else if(which == ELEM_NEG) {
         l2 = "- Operand1:";
-        title = _("NEG");
+        title = "NEG";
     } else oops();
 
     NoCheckingOnBox[2] = TRUE;

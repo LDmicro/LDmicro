@@ -1,3 +1,32 @@
+== Release 4.3.8
+
+    * Fixed: persist not execute #34
+      INT_EEPROM_READ in AVR
+      https://github.com/LDmicro/LDmicro/issues/34
+
+    * Fixed: CTC counter set a size of var.
+
+    * Fixed: ADC pin mapping for Arduino in ladder_.h.
+
+    * Updated: SetBit, ClearBit, IfBitSet, IfBitClear.
+      var must be a variable, not a literal value.
+      The size of var must be from 1 to 4 bytes.
+      bit can be a literal number or a variable.
+      bit can have a value of 0-7 if sizeof(var) == 1 byte,
+                             0-15 if sizeof(var) == 2 bytes,
+                             0-23 if sizeof(var) == 3 bytes,
+                             0-31 if sizeof(var) == 4 bytes.
+
+      https://github.com/LDmicro/LDmicro/wiki/SetBit,-ClearBit,-IfBitSet,-IfBitClear-in-variable
+
+    * Updated: Spanish locale. Thanks, Toni Tin.
+
+    * Wiki: SPI: Serial Peripheral Interface
+      https://github.com/LDmicro/LDmicro/wiki/SPI:-Serial-Peripheral-Interface
+
+    * Wiki: Copy, paste, cut, etc
+      https://github.com/LDmicro/LDmicro/wiki/Copy,-paste,-cut,-etc
+
 == Release 4.3.7
 
     * Fixed: Atmega2560 pins name and Arduino Mega 2560 pins name.
@@ -32,7 +61,7 @@
     * Wiki: SetBit, ClearBit, IfBitSet, IfBitClear in variable
       https://github.com/LDmicro/LDmicro/wiki/SetBit,-ClearBit,-IfBitSet,-IfBitClear-in-variable
 
-    * Added: clear.bat to delete LDmicro output tmp files.
+    * Added: clear.bat to delete LDmicro output temp files.
 
 == Release 4.3.6
 

@@ -116,7 +116,7 @@ static void MakeControls(void)
         330, 12, 25, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(TimerTextbox);
 
-    YPlcCycleDutyCheckbox = CreateWindowEx(0, WC_BUTTON, _("YPlcCycleDuty"),
+    YPlcCycleDutyCheckbox = CreateWindowEx(0, WC_BUTTON, "YPlcCycleDuty",
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         370, 13, 100, 20, ConfDialog, NULL, Instance, NULL);
     NiceFont(YPlcCycleDutyCheckbox);

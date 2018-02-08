@@ -142,7 +142,7 @@ for filename in listdir('./'):
                         break
                 if found == 0:
                     aa = [l1[0],l1[1],'?']
-                    trans_chenged.append(aa)
+                    #trans_chenged.append(aa) # ???
 
         # test added string
         for l1 in lang_txt:

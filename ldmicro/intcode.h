@@ -38,6 +38,7 @@
 #define INT_COPY_XOR_BIT_TO_BIT                  302
 #define INT_VARIABLE_SET_BIT                     3001
 #define INT_VARIABLE_CLEAR_BIT                   3002
+#define INT_VARIABLE_NOT_BIT                     3003
 #define INT_VARIABLE_SET_BITS                    3006
 #define INT_VARIABLE_CLEAR_BITS                  3007
 #define INT_SET_VARIABLE_TO_LITERAL              4
