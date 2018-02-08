@@ -767,6 +767,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_ROR:
         case ELEM_SET_BIT:
         case ELEM_CLEAR_BIT:
+        case ELEM_IF_BIT_SET:
+        case ELEM_IF_BIT_CLEAR:
         case ELEM_AND:
         case ELEM_OR :
         case ELEM_XOR:
@@ -822,8 +824,6 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
-        case ELEM_IF_BIT_SET:
-        case ELEM_IF_BIT_CLEAR:
         #ifdef USE_SFR
         case ELEM_RSFR:
         case ELEM_WSFR:
@@ -1627,7 +1627,7 @@ static void SimulateIntCode(void)
                 if(a->op == INT_VARIABLE_SET_BIT)
                     v1 |= 1 << v2;
                 else if(a->op == INT_VARIABLE_CLEAR_BIT)
-                    v1 |= ~(1 << v2);
+                    v1 &= ~(1 << v2);
                 else oops();
                 if(GetSimulationVariable(a->name1) != v1) {
                     SetSimulationVariable(a->name1, v1);
@@ -1636,21 +1636,31 @@ static void SimulateIntCode(void)
                 break;
             }
 
-            case INT_IF_BIT_SET_IN_VAR:
-                if(GetSimulationVariable(a->name1)
-                & (1<<hobatoi(a->name2)))
+            case INT_IF_BIT_SET_IN_VAR: {
+                SDWORD v1, v2;
+                v1 = GetSimulationVariable(a->name1);
+                if(IsNumber(a->name2))
+                    v2 = hobatoi(a->name2);
+                else
+                    v2 = GetSimulationVariable(a->name2);
+                if(v1 & (1 << v2))
                     IF_BODY
                 break;
-
-            case INT_IF_BIT_CLEAR_IN_VAR:
-                if((GetSimulationVariable(a->name1)
-                & (1<<hobatoi(a->name2))) == 0)
+            }
+            case INT_IF_BIT_CLEAR_IN_VAR: {
+                SDWORD v1, v2;
+                v1 = GetSimulationVariable(a->name1);
+                if(IsNumber(a->name2))
+                    v2 = hobatoi(a->name2);
+                else
+                    v2 = GetSimulationVariable(a->name2);
+                if((v1 & (1 << v2)) == 0)
                     IF_BODY
                 break;
-
+            }
             case INT_IF_BITS_SET_IN_VAR:
-                if(GetSimulationVariable(a->name1)
-                & hobatoi(a->name2))
+                if((GetSimulationVariable(a->name1)
+                & hobatoi(a->name2)) == hobatoi(a->name2))
                     IF_BODY
                 break;
 

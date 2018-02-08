@@ -1957,3 +1957,495 @@
 "value in flash"
 "valor en flash"
 
+" A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"
+"¡Hay disponible un valor de tiempo de ciclo cero, pero los temporizadores (TON, TOF, etc.) no funcionarán correctamente!"
+
+" Invalid size (%d) of variable '%s' set to 2!"
+"Tamaño no válido (%d) de la variable '%s' establecido en 2!"
+
+" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"
+"El tiempo de ciclo del PLC es '0'. ¡Los temporizadores TON, TOF, RTO, RTL, TCY no funcionan correctamente!"
+
+" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"
+"El carácter '-' se reemplaza por '_'. \nVariable      '%s'\nrenombrar a '%s'"
+
+" The delay is too long!\nThe maximum possible delay is %lld us."
+"¡La demora es demasiado larga!\nLa máxima demora posible es %lld us."
+
+"%sPLC cycle deviation is %.3f %%%% !"
+"%sCambio de ciclo PLC es %.3f %%%% !"
+
+"&MCU Parameters...\tCtrl+F5"
+"&MCU Parametros...\tCtrl+F5"
+
+"'%s' duty > %d"
+"'%s' trabajo > %d"
+
+"* Adjust default = 0 (LDmicro v3.5.3), typical = -1 (LDmicro v2.3)"
+"* Ajuste predeterminado = 0 (LDmicro v3.5.3), típico = -1 (LDmicro v2.3)"
+
+"** Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (%.3f ms)"
+"** Retardo total del temporizador (ms) = Retardo (ms) + Ajustar * Tiempo de ciclo del PLC (%.3f ms)"
+
+"ARDUINO: Dot '.' not allowed in '%s'\nRename file!"
+"ARDUINO: Dot '.' no permitido en '%s'\nRenombrar archivo!"
+
+"ARDUINO: Space ' ' not allowed in '%s'\nRename file!"
+"ARDUINO: Espacio ' ' no permitido en '%s'\nRenombrar archivo!"
+
+"ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"
+"ARDUINO: ¡El dígito inicial '% c' no está permitido al principio en'%s.ld'\nRenombrar archivo!"
+
+"Achievable DELAY values (us): "
+"Valores de RETRASO alcanzables (us):"
+
+"Adjust:"
+"Ajustar:"
+
+"Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"
+"Ajuste el retraso del temporizador a un valor mayor o más cercano que el retardo del temporizador no tiene sentido. Disminuya el valor de ajuste!"
+
+"Applay user color scheme"
+"Esquema de color del usuario"
+
+"Background color"
+"Color de fondo"
+
+"Background, Simulation mode"
+"Fondo, modo de simulación"
+
+"Bit Rate (Hz):"
+"Tasa de bits (Hz):"
+
+"Call SUBPROG rung number or label name"
+"Llamar a la línea SUBPROG o al nombre de la etiqueta"
+
+"Call clear.bat"
+"Llama limpiar.bat"
+
+"Choose a color"
+"Elige un color"
+
+"Comment text"
+"Comentario de texto"
+
+"Compile AVR-GCC, Atmel AVR Toolchain, WinAVR C"
+"CompilarAVR-GCC, Atmel AVR Toolchain, WinAVR C"
+
+"Compile CCS C for PIC"
+"Compilar CCS C for PIC"
+
+"Compile CodeVisionAVR C"
+"Compilar CodeVisionAVR C"
+
+"Compile HI-TECH C for PIC"
+"Compilar HI-TECH C para PIC"
+
+"Compile IAR C for AVR"
+"Compilar IAR C para AVR"
+
+"Compile Interpretable Byte Code"
+"Compilar código de bytes interpretable"
+
+"Compile Interpretable Extended Byte Code"
+"Compilar código de bytes extendido interpretable"
+
+"Compile Sketch for ARDUINO"
+"Compilar Sketch para ARDUINO"
+
+"Config"
+"Configurar"
+
+"Constante %s=%d out of variable '%s' range: -2147483648 to 2147483647 inclusive."
+"Constant %s=%d salida de variable '%s' rango: -2147483648 a 2147483647 incluido."
+
+"Couldn't OPEN file '%s'"
+"No se pudo abrir el archivo '% s'"
+
+"Couldn't dump intermediate code to '%s'."
+"No se pudo volcar el código intermedio a '% s'."
+
+"Create new issue..."
+"Crear new issue..."
+
+"Data Modes (CPOL, CPHA): "
+"Modos de datos (CPOL, CPHA):"
+
+"Data Order:"
+"Orden de datos:"
+
+"Data Size:"
+"Tamaño de datos:"
+
+"De-energized element, Simulation mode"
+"Elemento desenergizado, modo de simulación"
+
+"Default foreground"
+"Defecto foreground"
+
+"Define ENDSUB name"
+"Definir nombre ENDSUB"
+
+"Define LABEL name"
+"Definir nombre LABEL"
+
+"Define SUBPROG name"
+"Definir nombre SUBPROG"
+
+"Delay (us):"
+"Delay (us):"
+
+"Delay, us"
+"Delay, us"
+
+"Destination rung(label):"
+"línea de destino(etiqueta):"
+
+"Direct Addr error"
+"Error directo de Addr"
+
+"E&xit\tAlt+X"
+"S&alir\tAlt+X"
+
+"ENDSUB name:"
+"ENDSUB nombre:"
+
+"ENDSUB: SUBPROG '%s' not found!"
+"ENDSUB: SUBPROG '%s' no encontrado!"
+
+"Energzied element, Simulation mode"
+"Elemento energizado, modo de simulación"
+
+"File->Save LDmicro0.2 file format"
+"Archivo-> Guardar formato de archivo LDmicro0.2"
+
+"Formated string"
+"Cadena formateada"
+
+"GOSUB: SUBPROG '%s' not found!"
+"GOSUB: SUBPROG '%s' no encontrado!"
+
+"GOSUB: SUBPROG as number '%s' not allowed !"
+"GOSUB: SUBPROG como número '%s' no permitido!"
+
+"GOTO: LABEL '%s' not found!"
+"GOTO: ETIQUETA '%s' no encontrado!"
+
+"Goto rung number or labe namel"
+"Ir a número de línea o nombre de etiqueta"
+
+"Hight Level Delay"
+"Delay Nivel Alto"
+
+"In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Cycle deviation=%.3f%%\n"
+"In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Ciclo de desviación =%.3f%%\n"
+
+"Inited in Rung %d"
+"Iniciar en línea %d"
+
+"Insert DELAY(us)"
+"Insertar DELAY(us)"
+
+"Insert ENDSUB declaration"
+"Insertar declaración ENDSUB"
+
+"Insert GOSUB call"
+"Insertar llamada GOSUB"
+
+"Insert GOTO Label or Rung"
+"Insertar etiqueta o línea GOTO"
+
+"Insert LABEL declaration"
+"Insertar declaración LABEL"
+
+"Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"
+"Insertar R&ESETEAR (Contador/RTO/RTL/PWM Resetear)\tE"
+
+"Insert RETURN"
+"Insertar RETORNO"
+
+"Insert RTL (Retentive Delayed Turn On If Low Input)"
+"Insertar RTL (Retención Atrasada Enciende Si La Entrada Es Baja)"
+
+"Insert SPI - Serial Peripheral Interface"
+"Insertar SPI - Interfaz Periférica Serial"
+
+"Insert SR0 >> logic shift to the right"
+"Insertar SR0 >> desplazo lógico a la derecha"
+
+"Insert SUBPROG declaration"
+"Insertar declaración SUBPROG"
+
+"Insert SWAP"
+"Insertar SWAP"
+
+"Insert THI (Hight Delay)"
+"Insertar THI (Retardo Alto)"
+
+"Insert TIME to COUNTER converter"
+"Insertar convertir TEMPORIZADOR a CONTADOR"
+
+"Insert TIME to DELAY converter"
+"Insertar convertir TEMPORIZADOR a DELAY"
+
+"Insert TLO (Low Delay)"
+"Insertar TLO (retardo bajo)"
+
+"Insert \\_OSL\\/ (One Shot Low)"
+"Insertar \\_OSL\\/ (Un Disparo Bajo)"
+
+"Insert _/OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"
+"Insertar _/OSC/\\_/\\_ (Oscilador F=1/(2*Tcycle))"
+
+"Insert bitwise XOR  ^"
+"Insertar nivel de Bit XOR  ^"
+
+"LABEL name:"
+"Nombre de la ETIQUETA:"
+
+"Literal number"
+"Número literal"
+
+"Low Level Delay"
+"Delay de bajo nivel"
+
+"Name of an item"
+"Nombre de un elemento"
+
+"Negative cycle time is not valid; Reset to 10 ms."
+"El tiempo de ciclo negativo no es válido; Restablecer a 10 ms."
+
+"No SPI or SPI not supported for this MCU."
+"No SPI o SPI no son compatibles con esta MCU."
+
+"OPPOSITE instruction: '%s' not a valid destination."
+"Instrucción OPUESTA: '%s' no es un destino válido."
+
+"OpCode (like OSR, TON, ADD, ...)"
+"OpCode (como OSR, TON, ADD, ...)"
+
+"Operations that change the course of the program"
+"Operaciones que cambian el curso del programa"
+
+"Opposite source and assign to destination"
+"Fuente opuesta y asignar al destino"
+
+"Or decrease timer period."
+"O disminuir el período del temporizador."
+
+"Or increase timer period."
+"O aumentar el período del temporizador."
+
+"PWM: variable can only be used for RES elsewhere"
+"PWM: la variable solo se puede usar para RESETEAR en otro lado"
+
+"Pin '%s': PWM output not available!!"
+"Pin '%s': salida PWM no disponible !!"
+
+"Pin '%s': PWM output not available!"
+"Pin '%s': salida PWM no disponible!"
+
+"Pin '%s': PWM resolution not available!"
+"Pin '%s': resolución PWM no disponible!"
+
+"Punctuation, like square, curly braces, etc."
+"Puntuación, como cuadrado, llaves, etc."
+
+"RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."
+"RESETEAR: La variable no está asignada a CONTADOR o TEMPORIZADOR o PWM.\r\nDebe asignar una variable."
+
+"RTL: variable can only be used for RES elsewhere"
+"RTL: la variable solo se puede usar para RESETEAR en otro lugar"
+
+"Recieve to variable:"
+"Recibe la variable:"
+
+"Releases..."
+"Lanzamientos ..."
+
+"Required MCU crystal frequency from %.3g %sHz up to %.3g %sHz"
+"Frecuencia de cristal MCU requerida desde %.3g %sHz up to %.3g %sHz"
+
+"Resolution:"
+"Resolución:"
+
+"Retentive Turn-On Delay If Low Input"
+"Retardo de encendido remanente si la entrada  es baja"
+
+"Revert a color"
+"Revertir a color"
+
+"Revert color scheme"
+"Revertir el esquema de color"
+
+"Rung %d: Variable '%s' incorrectly assigned.\n%s."
+"Línea %d: Variable '%s' incorrectamente asignada.\n%s."
+
+"Rung number"
+"Número de línea"
+
+"Rung number, Simulation mode"
+"Número de línea, modo simulación"
+
+"SIMUL: Insert Clear Bit #"
+"SIMULAR: Insertar Limpiar Bit#"
+
+"SIMUL: Insert MOD (Integer Divide Remainder)"
+"SIMULAR: Insertar MOD (Entero Divide Remainder)"
+
+"SIMUL: Insert OPPOSITE"
+"SIMULAR: Insertar OPUESTA"
+
+"SIMUL: Insert ROL cyclic shift to the left"
+"SIMULAR: insertar desplazamiento cíclico ROL hacia la izquierda"
+
+"SIMUL: Insert ROR cyclic shift to the right"
+"SIMULAR: insertar el desplazamiento cíclico de ROR hacia la derecha"
+
+"SIMUL: Insert SHL << arithmetic,logic shift to the left"
+"SIMULAR: Insertar SHL << aritmética, desplazamiento lógico a la  izquierda"
+
+"SIMUL: Insert SHR >> arithmetic shift to the right"
+"SIMUL: Insertar SHR >> desplazamiento aritmético a la derecha"
+
+"SIMUL: Insert Set Bit #"
+"SIMULAR: insertar el bit de configuración #"
+
+"SIMUL: Insert bitwise AND"
+"SIMULAR: Insertar bitwise AND"
+
+"SIMUL: Insert bitwise NOT  ~"
+"SIMULAR: Insertar bitwise NOT  ~"
+
+"SIMUL: Insert bitwise OR     |"
+"SIMULAR: Insertar bitwise OR     |"
+
+"SPI - Serial Peripheral Interface"
+"SPI - Interfaz de periféricos en serie"
+
+"SPI MISO"
+"SPI MISO"
+
+"SPI MOSI"
+"SPI MOSI"
+
+"SPI Mode:"
+"SPI Modo:"
+
+"SPI Name:"
+"SPI Nombre:"
+
+"SPI SCK"
+"SPI SCK"
+
+"SPI _SS"
+"SPI _SS"
+
+"SPI instruction: '%s' not a valid destination."
+"Instrucción SPI: '%s' no es un destino válido."
+
+"SUBPROG name:"
+"SUBPROG nombre:"
+
+"SUBPROG: '%s' declaration must be single inside a rung %d"
+"SUBPROG: la declaración '%s' debe ser única dentro de una línea% d"
+
+"SUBPROG: ENDSUB '%s' not found!"
+"SUBPROG: ENDSUB'%s' no encontrado!"
+
+"Select Rung's\tCtrl+Left Mouse Buttton Click"
+"Seleccionar Líneas\tCtrl+Botón Izquierdo Del Ratón"
+
+"Select color for user scheme:"
+"Seleccionar el color para el esquema de usuario:"
+
+"Select color scheme"
+"Seleccionar combinación de colores"
+
+"Select user colors"
+"Seleccionar color usuario"
+
+"Selected element"
+"Seleccionar elemento"
+
+"Send variable:"
+"Enviar variable:"
+
+"Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."
+"Shift constante %s=%d fuera del rango de la  '%s' variable: 0 to %d incluido."
+
+"Stack size %d overflow"
+"Tamaño de pila %d desbordamiento"
+
+"Stack size %d underflow"
+"Tamaño de pila %d subdesbordamiento"
+
+"TCY: variable can only be used for RES elsewhere"
+"TCY: la variable solo se puede usar para RESETEAR en otro lado"
+
+"THI: variable can only be used for RES elsewhere"
+"THI: la variable solo se puede usar para RESETEAR en otro lado"
+
+"TIME to COUNTER converter"
+"convertir TEMPORIZADOR A CONTADOR"
+
+"TIME to DELAY converter"
+"convertir TEMPORIZADOR A DELAY"
+
+"TLO: variable can only be used for RES elsewhere"
+"TLO: la variable solo se puede usar para RESETEAR en otro lado"
+
+"TODO: Insert Software &PWM (AVR136 AppNote)\tP"
+"TODO: Insertar software y PWM (AVR136 AppNote)\tP"
+
+"TOF: variable can only be used for RES elsewhere"
+"TOF: la variable solo se puede usar para RESETEAR en otro lado"
+
+"TON: variable can only be used for RES elsewhere"
+"TON: la variable solo se puede usar para RESETEAR en otro lado"
+
+"The 'bus' at the right of the screen, Simulation mode |"
+"El 'bus' a la derecha de la pantalla, modo de simulación |"
+
+"Timer 'T%s'=%10.0Lf s   needs %15lld PLC cycle times."
+"Temporizador 'T%s'=%10.0Lf s   necesita %15lld tiempos ciclo PLC."
+
+"Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."
+"Temporizador 'T%s'=%10.0Lf s puede usar %15lld tiempos de ciclo del PLC como el valor MÁXIMO posible."
+
+"Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
+"El período del temporizador es demasiado largo.\n\rEl valor máximo posible es: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
+
+"Timer period too long; (use a slower cycle time)."
+"Periodo del temporizador demasiado largo; (use un tiempo de ciclo más corto)."
+
+"Total timer delay cannot be zero or negative. Increase the adjust value!"
+"La demora total del temporizador no puede ser cero o negativa. ¡Incremente el valor de ajuste!"
+
+"Try again a color"
+"Prueba de nuevo un color"
+
+"Un-choose a color"
+"Des-elegir un color"
+
+"When the MCU crystal frequency is %.3g %sHz."
+"Cuando la frecuencia de cristal de la MCU es %.3g %sHz."
+
+"Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"
+"¡No se permite la dirección de memoria cero!\nWriteMemoryStillAddr(0, %d) skiped!"
+
+"hight delay"
+"retardo alto"
+
+"low delay"
+"retardo bajo"
+
+"retentive timer low input"
+"temporizador de retención de entrada baja"
+
+"| The 'bus' at the left of the screen, Simulation mode"
+"| El 'bus' a la izquierda de la pantalla, modo de simulación"
+
+"| The 'bus' at the right and left of screen |"
+"| El 'bus' a la derecha e izquierda de la pantalla |"
+

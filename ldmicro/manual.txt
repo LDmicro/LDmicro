@@ -1078,10 +1078,10 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
 
 > OPERATIONS WITH ONE BIT   {           var}       {           var}
-                           -{SetBit     bit}-     -{ClrBit     bit}-
+                           -{SET Bit    bit}-     -{CLR Bit    bit}-
 
-    -{SetBit var, bit}- In variable 'var' set bit number 'bit'.
-    -{ClrBit var, bit}- In variable 'var' clear bit number 'bit'.
+    -{SET Bit var, bit}- In variable 'var' set bit number 'bit'.
+    -{CLR Bit var, bit}- In variable 'var' clear bit number 'bit'.
 
     'Bit' means number of bit, not bit mask. For example,
     to set bit number 4 in variable 'var'
@@ -1091,11 +1091,29 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                       ^
     you must write    ^
          {          var}               {             var}
-        -{SetBit      4}-        not  -{SetBit      0x10}-
+        -{SET Bit     4}-        not  -{SET Bit     0x10}-
 
     and it is equivalent to
          {OR     var :=}
         -{   var | 0x10}-
+
+
+    To clear bit number 4 in variable 'var'
+    you must write
+         {          var}               {             var}
+        -{CLR Bit     4}-        not  -{CLR Bit     0x10}-
+
+    and it is equivalent to
+         {AND    var :=}
+        -{   var & 0xEF}-
+
+    var must be a variable, not a literal value.
+    The size of var must be from 1 to 4 bytes.
+    bit can be a literal number or a variable.
+    bit can have a value of 0-7 if sizeof(var) == 1 byte,
+                           0-15 if sizeof(var) == 2 bytes,
+                           0-23 if sizeof(var) == 3 bytes,
+                           0-31 if sizeof(var) == 4 bytes.
 
 
 > COMPARE               [var ==]        [var >]        [1 >=]
@@ -1112,17 +1130,25 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     or to compare a variable to a 16-bit signed constant.
 
 
-> TEST STATE OF ONE BIT     [           var]       [           var]
-                           -[IfBitSet   bit]-     -[IfBitClr   bit]-
+> TEST STATE OF ONE BIT     [             var]       [             var]
+                           -[if Bit SET   bit]-     -[if Bit CLR   bit]-
 
     If the input to this instruction is false then the output is false. If
     the input is true then the output is true if and only if the given
     condition is true. This instruction can be used to check the state only
     one bit of the variable.
-    'Bit' means number of bit, not bit mask.
+    'Bit' means number of bit, not bit mask. See upper the SET Bit operation.
 
-    Operation -{IfBitSet var, 0}- is equivalent condition 'If var is odd'.
-    Operation -{IfBitClr var, 0}- is equivalent condition 'If var is an even'.
+    Operation -{if Bit SET var, 0}- is equivalent condition 'If var is odd'.
+    Operation -{if Bit CLR var, 0}- is equivalent condition 'If var is an even'.
+
+    var must be a variable, not a literal value.
+    The size of var must be from 1 to 4 bytes.
+    bit can be a literal number or a variable.
+    bit can have a value of 0-7 if sizeof(var) == 1 byte,
+                           0-15 if sizeof(var) == 2 bytes,
+                           0-23 if sizeof(var) == 3 bytes,
+                           0-31 if sizeof(var) == 4 bytes.
 
 
 > COUNTER                      Cname          Cname

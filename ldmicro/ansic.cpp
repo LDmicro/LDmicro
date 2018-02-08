@@ -404,9 +404,12 @@ static void DeclareBit(FILE *f, char *str, int set1)
         }
     } else if (type == IO_TYPE_READ_ADC) {
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
-            fprintf(flh, "const int pin_%s = A0;\n", str);
-          //fprintf(flh, "const int pin_%s = A%d;\n", str, ArduinoAnalogPin);
-          //ArduinoAnalogPin++;
+            McuIoPinInfo *iop = PinInfoForName(&str[3]);
+            if(iop) {
+              fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n", str, ArduinoPinName(iop), iop->pinName);
+            } else {
+              fprintf(flh, "const int pin_%s = -1; // Check that it's a ADC pin!\n", str);
+            }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
             fprintf(fh, "// LDmicro provide this macro or function.\n");
