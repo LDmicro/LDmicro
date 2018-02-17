@@ -2199,7 +2199,7 @@ static BOOL CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int 
 
         //dbp("prescaler=%d divider=%d freq=%f Hz",prescaler, divider, freq);
 
-        err = (int)abs(freq - target);
+        err = (int)abs(static_cast<long>(freq - target));
         if((err <= *bestError) && (*bestDivider < divider)) {
             if(divider <= max_tmr) {
                 *bestError = err;
@@ -4135,7 +4135,7 @@ static void CompileFromIntermediate(void)
                     freqSI = SIprefix(freq, SI);
                     sprintf(freqStr, "%s%.3f %sHz    ", freqStr, freqSI, SI);
 
-                    int err = int(abs(freq - target));
+                    int err = int(abs(static_cast<long>(freq - target)));
                     if(err < bestError) {
                         bestError = err;
                         bestPrescale = prescale;

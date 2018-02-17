@@ -45,3 +45,12 @@ Thumbs.db
 /ldmicro/lang.txt
 /ldmicro/ldmicro.RES
 /ldmicro/m.bat
+
+#
+# CMake build 
+CMakeFiles/
+*ninja*
+*.ilk
+*Debug/
+*Release/
+*.user*
