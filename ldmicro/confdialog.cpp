@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <commctrl.h>
+#include <inttypes.h>
 
 #include "ldmicro.h"
 
@@ -318,7 +319,7 @@ void ShowConfDialog(void)
     }
     sprintf(buf, "");
     if(Prog.configurationWord) {
-        sprintf(buf, "0x%X", Prog.configurationWord);
+        sprintf(buf, "0x%" PRIX64 , Prog.configurationWord);
     }
     SendMessage(ConfigBitsTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 

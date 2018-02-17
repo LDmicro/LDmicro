@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #define _ITERATOR_DEBUG_LEVEL 0
 
@@ -294,7 +295,7 @@ finishIf:
         if ( (i % 16) == 15 || i == outPc-1) fprintf(f, "\n");
     }
 
-    fprintf(f, "$$cycle %d us\n", Prog.cycleTime);
+    fprintf(f, "$$cycle %" PRId64 "us\n", Prog.cycleTime);
 
     fclose(f);
 
