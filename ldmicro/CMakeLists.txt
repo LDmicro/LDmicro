@@ -68,6 +68,10 @@ set(LDMICRO_SRC_LIST
     "${CMAKE_CURRENT_SOURCE_DIR}/obj/lang-tables.h"
     )
 
+file( GLOB LDMICRO_HEADERS ./*.h)
+
+set(LDMICRO_SRC_LIST ${LDMICRO_SRC_LIST} ${LDMICRO_HEADERS})
+
 if(WIN32)
     set(LDMICRO_SRC_LIST ${LDMICRO_SRC_LIST}
          ldmicro.rc
