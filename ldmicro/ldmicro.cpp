@@ -2805,4 +2805,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   {
       abortHandler(EXCEPTION_EXECUTE_HANDLER);
   };
+
+  return 0;
 }

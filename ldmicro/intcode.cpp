@@ -585,9 +585,9 @@ void IntDumpListing(char *outFile)
 
             case INT_GOSUB:
                 if(IsNumber(IntCode[i].name1))
-                    fprintf(f, "GOSUB LabelRung%s; #LabelRung%d", IntCode[i].name1, IntCode[i].literal+1, IntCode[i].literal2+1);
+                    fprintf(f, "GOSUB LabelRung%s; #LabelRung%d", IntCode[i].name1, IntCode[i].literal+1);
                 else
-                    fprintf(f, "GOSUB %s; #LabelRung%d", IntCode[i].name1, IntCode[i].literal+1, IntCode[i].literal2+1);
+                    fprintf(f, "GOSUB %s; #LabelRung%d", IntCode[i].name1, IntCode[i].literal+1);
                 break;
 
             case INT_RETURN:
@@ -2408,7 +2408,6 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             break;
         }
         {
-        int deg, len;
         case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  goto xseg;
         case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  goto xseg;
         case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); goto xseg;

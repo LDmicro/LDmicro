@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include <inttypes.h>
 
 #include "ldmicro.h"
 #include "intcode.h"
@@ -1013,32 +1014,32 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
     case OP_LD_X:
         CHECK(arg1, 5); CHECK(arg2, 0);
-        sprintf(sAsm, "ld  \t r%d, \t X", arg1, arg2);
+        sprintf(sAsm, "ld  \t r%d, \t X", arg1);
         return 0x9000 | (arg1 << 4) | 12;
 
     case OP_LD_XP:
         CHECK(arg1, 5); CHECK(arg2, 0);
-        sprintf(sAsm, "ld  \t r%d, \t X+", arg1, arg2);
+        sprintf(sAsm, "ld  \t r%d, \t X+", arg1);
         return 0x9000 | (arg1 << 4) | 13;
 
     case OP_LD_XS:
         CHECK(arg1, 5); CHECK(arg2, 0);
-        sprintf(sAsm, "ld  \t r%d, \t -X", arg1, arg2);
+        sprintf(sAsm, "ld  \t r%d, \t -X", arg1);
         return 0x9000 | (arg1 << 4) | 14;
 
     case OP_LD_Y:
         CHECK(arg1, 5); CHECK(arg2, 0);
-        sprintf(sAsm, "ld  \t r%d, \t Y", arg1, arg2);
+        sprintf(sAsm, "ld  \t r%d, \t Y", arg1);
         return 0x8000 | (arg1 << 4) |  8;
 
     case OP_LD_YP:
         CHECK(arg1, 5); CHECK(arg2, 0);
-        sprintf(sAsm, "ld  \t r%d, \t Y+", arg1, arg2);
+        sprintf(sAsm, "ld  \t r%d, \t Y+", arg1);
         return 0x9000 | (arg1 << 4) |  9;
 
     case OP_LD_YS:
         CHECK(arg1, 5); CHECK(arg2, 0);
-        sprintf(sAsm, "ld  \t r%d, \t -Y", arg1, arg2);
+        sprintf(sAsm, "ld  \t r%d, \t -Y", arg1);
         return 0x9000 | (arg1 << 4) | 10;
 
     case OP_LDD_Y:
@@ -1048,17 +1049,17 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
     case OP_LD_Z:
         CHECK(arg1, 5); CHECK(arg2, 0);
-        sprintf(sAsm, "ld  \t r%d, \t Z", arg1, arg2);
+        sprintf(sAsm, "ld  \t r%d, \t Z", arg1);
         return 0x8000 | (arg1 << 4) |  0;
 
     case OP_LD_ZP:
         CHECK(arg1, 5); CHECK(arg2, 0);
-        sprintf(sAsm, "ld  \t r%d, \t Z+", arg1, arg2);
+        sprintf(sAsm, "ld  \t r%d, \t Z+", arg1);
         return 0x9000 | (arg1 << 4) |  1;
 
     case OP_LD_ZS:
         CHECK(arg1, 5); CHECK(arg2, 0);
-        sprintf(sAsm, "ld  \t r%d, \t -Z", arg1, arg2);
+        sprintf(sAsm, "ld  \t r%d, \t -Z", arg1);
         return 0x9000 | (arg1 << 4) |  2;
 
     case OP_LDD_Z:
@@ -2322,7 +2323,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
 
     char txt[1024] = "";
     if(plcTmr.tmr > max_tmr) {
-      sprintf(txt,"PLC cycle time more then %d ms not valid.", plcTmr.cycleTimeMax/1000);
+      sprintf(txt,"PLC cycle time more then %" PRId64 " ms not valid.", plcTmr.cycleTimeMax/1000);
       Error(txt);
       return FALSE;
     } else if((plcTmr.prescaler * plcTmr.tmr) < PLC_CLOCK_MIN) {
