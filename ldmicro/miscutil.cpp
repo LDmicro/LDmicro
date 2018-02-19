@@ -409,6 +409,10 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     int pin = io->pin;
     McuIoPinInfo *iop;
     if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT
+    || type == IO_TYPE_SPI_MOSI
+    || type == IO_TYPE_SPI_MISO
+    || type == IO_TYPE_SPI_SCK
+    || type == IO_TYPE_SPI__SS
     || type == IO_TYPE_READ_ADC)
     {
         if(pin == NO_PIN_ASSIGNED) {

@@ -24,11 +24,11 @@
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
-#include <setjmp.h>
-#include <stdio.h>
 #include <windows.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <setjmp.h>
 
 #include "current_function.hpp"
 
@@ -1818,13 +1818,13 @@ BOOL MultiplyRoutineUsed(void);
 BOOL DivideRoutineUsed(void);
 void GenSymOneShot(char *dest, char *name1, char *name2);
 int getradix(char *str);
-long long CalcDelayClock(long long clocks); // in us
+SDWORD CalcDelayClock(long long clocks); // in us
 
 // pic16.cpp
-extern DWORD PicProgLdLen;
+extern SDWORD PicProgLdLen;
 void CompilePic16(char *outFile);
 BOOL McuAs(char *str);
-BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, DWORD PicProgLdLen);
+BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
 // avr.cpp
 extern DWORD AvrProgLdLen;
 int calcAvrUsart(int *divisor, double  *actual, double  *percentErr);

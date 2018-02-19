@@ -1409,7 +1409,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
         if(soFarCount >= 0x10 * n || i == (AvrProgWriteP-1)) {
             StartIhex(f); // ':'->Colon
-            WriteIhex(f, soFarCount); // LL->Record Length
+            WriteIhex(f, (BYTE)soFarCount); // LL->Record Length
             WriteIhex(f, (BYTE)((soFarStart*2) >> 8));   // AA->Address as big endian values HI()
             WriteIhex(f, (BYTE)((soFarStart*2) & 0xff)); // AA->Address as big endian values LO()
             WriteIhex(f, 0x00); // TT->Record Type -> 00 is Data
@@ -2199,7 +2199,7 @@ static BOOL CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int 
 
         //dbp("prescaler=%d divider=%d freq=%f Hz",prescaler, divider, freq);
 
-        err = (int)abs(freq - target);
+        err = (int)fabs(freq - target);
         if((err <= *bestError) && (*bestDivider < divider)) {
             if(divider <= max_tmr) {
                 *bestError = err;
@@ -2256,27 +2256,6 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
     long long int bestErr = LLONG_MAX;
     long long int err;
     if(0) {
-        while(plcTmr.prescaler <= max_prescaler) {
-            for(plcTmr.tmr = max_tmr; plcTmr.tmr >= 1; plcTmr.tmr--) {
-                err = plcTmr.ticksPerCycle - plcTmr.tmr * plcTmr.prescaler;
-                if(err < 0) err = -err;
-                if((bestErr > err)
-                ||((bestErr == err) && (bestTmr < plcTmr.tmr))
-                ) {
-                   bestErr = err;
-                   bestPrescaler = plcTmr.prescaler;
-                   bestTmr = plcTmr.tmr;
-                }
-            }
-            if(plcTmr.prescaler == 1) plcTmr.prescaler = 8;
-            else if(plcTmr.prescaler == 8) plcTmr.prescaler = 64;
-            else if(plcTmr.prescaler == 64) plcTmr.prescaler = 256;
-            else if(plcTmr.prescaler == 256) plcTmr.prescaler = 1024;
-            else break;
-        }
-        plcTmr.prescaler = bestPrescaler;
-        plcTmr.tmr = bestTmr;
-        dbp("_%9d%10d%10d%10lld", plcTmr.softDivisor, plcTmr.prescaler, plcTmr.tmr, bestErr);
     } else {
         #if 1
         while(plcTmr.softDivisor <= max_softDivisor) {
@@ -2370,7 +2349,7 @@ static void ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
         Instruction(OP_LDI, r25, tcnt0PlcCycle);
         WriteRegToIO(REG_TCNT0, r25); // set divider
 
-        WriteMemory(REG_TCCR0B, plcTmr.cs); // set prescaler
+        WriteMemory(REG_TCCR0B, (BYTE)plcTmr.cs); // set prescaler
         SetBit(REG_TIFR0, TOV0);       // Clear TOV0/ clear pending interrupts
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!
       } else {
@@ -2675,7 +2654,7 @@ static void AndReg(int reg, int sov, int op2)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyLitToReg(int reg, int sov, int literal, char *comment)
+static void CopyLitToReg(int reg, int sov, SDWORD literal, char *comment)
 {
     if(sov < 1) oops();
     if(sov > 4) oops();
@@ -2689,7 +2668,7 @@ static void CopyLitToReg(int reg, int sov, int literal, char *comment)
       Instruction(OP_LDI, reg+3, (literal >> 24) & 0xff);
 }
 
-static void CopyLitToReg(int reg, int sov, int literal)
+static void CopyLitToReg(int reg, int sov, SDWORD literal)
 {
     CopyLitToReg(reg, sov, literal, NULL);
 }
@@ -2950,7 +2929,7 @@ static void WriteRuntime(void)
     #ifdef TABLE_IN_FLASH
     InstructionJMP(resetVector);       // $0000, RESET
     #else
-    Instruction(OP_RJMP, resetVector);       // $0000, RESET
+    Instruction(OP_RJMP, resetVector); // $0000, RESET
     #endif
     for(i = 0; i < 34; i++)
         Instruction(OP_RETI);
@@ -2981,7 +2960,7 @@ static void WriteRuntime(void)
     Instruction(OP_SEI);
 
     Comment("Set up the stack, which we use only when we jump to multiply/divide routine"); // 4
-    WORD topOfMemory = (WORD)Prog.mcu->ram[0].start + Prog.mcu->ram[0].len - 1;
+    WORD topOfMemory = (WORD)(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len - 1);
     WriteMemory(REG_SPH, topOfMemory >> 8, topOfMemory);
     WriteMemory(REG_SPL, topOfMemory & 0xff, topOfMemory);
 
@@ -4122,8 +4101,8 @@ static void CompileFromIntermediate(void)
                 // so not a lot of room for accurate frequency here
 
                 int prescale;
-                int bestPrescale;
-                int bestError = INT_MAX;
+                long int bestPrescale;
+		long int bestError = LONG_MAX;
                 double bestFreq;
                 double freq;
                 double freqSI;
@@ -4135,7 +4114,7 @@ static void CompileFromIntermediate(void)
                     freqSI = SIprefix(freq, SI);
                     sprintf(freqStr, "%s%.3f %sHz    ", freqStr, freqSI, SI);
 
-                    int err = int(abs(freq - target));
+                    long int err = (long int)fabs(freq - target);
                     if(err < bestError) {
                         bestError = err;
                         bestPrescale = prescale;
@@ -4277,17 +4256,15 @@ static void CompileFromIntermediate(void)
                 WriteRegToIO(iop->REG_OCRnxL, r19);   // then LOW
 
                 // Setup only happens once
-                //MemForSingleBit("$pwm_init", FALSE, &addr, &bit);
-
                 char storeName[MAX_NAME_LEN];
                 sprintf(storeName, "$pwm_init_%s", a->name3);
                 DWORD addr;
                 int bit;
                 MemForSingleBit(storeName, FALSE, &addr, &bit);
 
-                DWORD skip = AllocFwdAddr();
+                DWORD endInit = AllocFwdAddr();
                 IfBitSet(addr, bit);
-                Instruction(OP_RJMP, skip, 0);
+                Instruction(OP_RJMP, endInit, 0);
                 SetBit(addr, bit, storeName);
 
                 // Prescaler Reset Timer/Counter2
@@ -4316,7 +4293,7 @@ static void CompileFromIntermediate(void)
                         WriteMemory(REG_TCCR2, (1 << WGM20) | (1 << WGM21) | (1 << COM21) | (a->name2[0]=='/' ? (1 << COM20) : 0) | cs);
                     }
                 }
-                FwdAddrIsNow(skip);
+                FwdAddrIsNow(endInit);
                 break;
             }
             #if 0
@@ -4502,6 +4479,7 @@ static void CompileFromIntermediate(void)
                         }
                     }
                 }
+                break;
             #endif
             case INT_READ_ADC: {
                 MemForVariable(a->name1, &addr1);
@@ -4531,11 +4509,11 @@ static void CompileFromIntermediate(void)
                 for(adps = 1; adps <= 7; adps++) {
                     if((1 << adps) > divisor) break;
                 }
-                BYTE adcsra =
+                BYTE adcsra = (BYTE)(
                     (1 << ADEN) |           // ADC enabled
                     (0 << ADFR) |           // not free running
                     (0 << ADIE) |           // no interrupt enabled
-                    adps;                   // prescale setup
+                    adps);                   // prescale setup
 
                 WriteMemory(REG_ADCSRA, adcsra);
                 WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << ADSC)));
@@ -4613,42 +4591,6 @@ static void CompileFromIntermediate(void)
                 Instruction(OP_ST_X, r16);
 
                 FwdAddrIsNow(isBusy);
-                break;
-            }
-            case -INT_UART_SEND1: {
-                MemForVariable(a->name1, &addr1);
-                sov1 = SizeOfVar(a->name1);
-                MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
-                MemForVariable(a->name3, &addr3);
-
-                DWORD noSend = AllocFwdAddr();
-                /*
-                // Little endian byte order
-                // REG_UDR = X[addr1 + sov - 1 - X[addr3]]
-                LoadXAddr(addr1);
-                Instruction(OP_ADIW, XL, sov1 - 1);
-                LoadYAddr(addr3);
-                Instruction(OP_LD_Y, r17);
-                Instruction(OP_SUB,  XL,  r17);
-                Instruction(OP_LDI,  r17, 0);
-                Instruction(OP_SBC,  XH,  r17);
-                /*
-                // Big endian byte order
-                // REG_UDR = X[addr1 + X[addr3]]
-                LoadXAddr(addr1);
-                LoadYAddr(addr3);
-                Instruction(OP_LD_Y, r17);
-                Instruction(OP_ADD,  XL,  r17);
-                Instruction(OP_LDI,  r17, 0);
-                Instruction(OP_ADC,  XH,  r17);
-                /**/
-                Instruction(OP_LD_X, r16);
-                LoadXAddr(REG_UDR);
-                Instruction(OP_ST_X, r16);
-
-                FwdAddrIsNow(noSend);
-
-              //CopyNotBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
                 break;
             }
             case INT_UART_RECV: {
@@ -4876,8 +4818,8 @@ static void CompileFromIntermediate(void)
                 ClearBit(0x25,0); // 2 clocks
                 #endif
                 if(IsNumber(a->name1)) {
-                    long long clocks = CalcDelayClock(hobatoi(a->name1));
-                    long long clocksSave = clocks;
+                    SDWORD clocks = CalcDelayClock(hobatoi(a->name1));
+                    SDWORD clocksSave = clocks;
                     Comment("INT_DELAY %s us = %lld clocks", a->name1, clocks);
 
                     clocks = (clocks - 1) / 4;

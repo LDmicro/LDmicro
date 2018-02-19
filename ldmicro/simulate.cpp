@@ -245,11 +245,11 @@ static SDWORD AddVariable(char *name1, char *name2, char *name3, char *overflow)
     SDWORD signMask = 1 << (sov * 8 - 1);
     SDWORD sign2 = GetSimulationVariable(name2) & signMask;
     SDWORD sign3 = GetSimulationVariable(name3) & signMask;
-    SDWORD signr = ret & signMask;
+    SDWORD signr = (SDWORD)(ret & signMask);
     if((sign2 == sign3)
     && (signr != sign3))
         SetSingleBit(overflow, TRUE);
-    return SDWORD(ret);
+    return (SDWORD)ret;
 }
 
 //-----------------------------------------------------------------------------
@@ -261,13 +261,13 @@ static SDWORD SubVariable(char *name1, char *name2, char *name3, char *overflow)
     SDWORD signMask = 1 << (sov * 8 - 1);
     SDWORD sign2 = GetSimulationVariable(name2) & signMask;
     SDWORD sign3 = GetSimulationVariable(name3) & signMask;
-    SDWORD signr = ret & signMask;
+    SDWORD signr = (SDWORD)(ret & signMask);
 //  if((sign2 != sign3)
 //  && (signr != sign2))
     if((sign2 != sign3)
     && (signr == sign3))
         SetSingleBit(overflow, TRUE);
-    return SDWORD(ret);
+    return (SDWORD)ret;
 }
 
 //-----------------------------------------------------------------------------
@@ -391,7 +391,7 @@ SDWORD MthRandom()
 {
 //  seed = (seed * 69069 + 1) % 4294967296;
     seed = (seed * 69069 + 1) & 0xFFFFffff;
-    return SDWORD(seed);
+    return (SDWORD)seed;
 }
 
 SDWORD GetRandom(char *name)
@@ -402,11 +402,11 @@ SDWORD GetRandom(char *name)
     sprintf(seedName, "$seed_%s", name);
     SetSimulationVariable(seedName, seed);
     if(sov == 1)
-       return signed char(seed >> (8 * (4 - sov)));
+       return (signed char)(seed >> (8 * (4 - sov)));
     else if(sov == 2)
-       return SWORD(seed >> (8 * (4 - sov)));
+       return (SWORD)(seed >> (8 * (4 - sov)));
     else if(sov >= 3)
-       return SDWORD(seed >> (8 * (4 - sov)));
+       return (SDWORD)(seed >> (8 * (4 - sov)));
     else {
        oops();
        return 0;
@@ -2079,6 +2079,8 @@ SDWORD SDWORD3(SDWORD v)
 //-----------------------------------------------------------------------------
 void DescribeForIoList(char *name, int type, char *out)
 {
+    strcpy(out, "");
+
     switch(type) {
         case IO_TYPE_INT_INPUT:
         case IO_TYPE_DIG_INPUT:
@@ -2087,6 +2089,12 @@ void DescribeForIoList(char *name, int type, char *out)
         case IO_TYPE_MODBUS_COIL:
         case IO_TYPE_MODBUS_CONTACT:
             sprintf(out, "%d", SingleBitOn(name));
+            break;
+
+       case IO_TYPE_SPI_MOSI:
+       case IO_TYPE_SPI_MISO:
+       case IO_TYPE_SPI_SCK :
+       case IO_TYPE_SPI__SS :
             break;
 
         case IO_TYPE_PWM_OUTPUT:
@@ -2105,7 +2113,6 @@ void DescribeForIoList(char *name, int type, char *out)
 
         case IO_TYPE_VAL_IN_FLASH:
         case IO_TYPE_TABLE_IN_FLASH: {
-            sprintf(out, "");
             break;
         }
         case IO_TYPE_TCY:

@@ -720,6 +720,10 @@ int GenerateIoList(int prevSel)
            Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
            Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
            Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_MISO ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_SCK  ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI__SS  ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
             for(j = 0; j < IoSeenPreviouslyCount; j++) {
@@ -773,17 +777,27 @@ BOOL LoadIoListFromFile(FILE *f)
         modbus.Slave = 0;
         modbus.Address = 0;
         int type = 0;
-        switch(strspace(line)[0]) {
-          //case 'I': type = IO_TYPE_INT_INPUT; break;
-            case 'X': type = IO_TYPE_DIG_INPUT; break;
-            case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
-            case 'A': type = IO_TYPE_READ_ADC; break;
-            case 'P': type = IO_TYPE_PWM_OUTPUT; break;
-            case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
-            case 'M': type = IO_TYPE_MODBUS_COIL; break;
-            case 'C': type = IO_TYPE_COUNTER; break;
-            case 'H': type = IO_TYPE_MODBUS_HREG; break;
-            default: oops();
+        if(strstr(line, "_MOSI")) {
+            type = IO_TYPE_SPI_MOSI;
+        } else if(strstr(line, "_MISO")) {
+            type = IO_TYPE_SPI_MISO;
+        } else if(strstr(line, "_SCK")) {
+            type = IO_TYPE_SPI_SCK;
+        } else if(strstr(line, "__SS")) {
+            type = IO_TYPE_SPI__SS;
+        } else {
+            switch(strspace(line)[0]) {
+              //case 'I': type = IO_TYPE_INT_INPUT; break;
+                case 'X': type = IO_TYPE_DIG_INPUT; break;
+                case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
+                case 'A': type = IO_TYPE_READ_ADC; break;
+                case 'P': type = IO_TYPE_PWM_OUTPUT; break;
+                case 'I': type = IO_TYPE_MODBUS_CONTACT; break;
+                case 'M': type = IO_TYPE_MODBUS_COIL; break;
+                case 'C': type = IO_TYPE_COUNTER; break;
+                case 'H': type = IO_TYPE_MODBUS_HREG; break;
+                default: oops();
+            }
         }
         // Don't internationalize this! It's the file format, not UI.
         if(sscanf(line, " %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address)>=2) {
@@ -813,6 +827,10 @@ void SaveIoListToFile(FILE *f)
            Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
            Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
            Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_MISO ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_SCK  ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI__SS  ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
             j1++;
@@ -826,7 +844,7 @@ void SaveIoListToFile(FILE *f)
             if(Prog.mcu && (Prog.mcu->portPrefix == 'L') && (Prog.io.assignment[i].pin))
                 fprintf(f, "    %s at %s\n", Prog.io.assignment[i].name,
                     PinToName(Prog.io.assignment[i].pin));
-            else if(TRUE || (Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT))
+            else // if(TRUE || (Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT))
                 fprintf(f, "    %s at %d %d %d\n",
                     Prog.io.assignment[i].name,
                     Prog.io.assignment[i].pin,
@@ -884,7 +902,7 @@ void ShowAnalogSliderPopup(char *name)
 
     SWORD currentVal = GetAdcShadow(name);
 
-    SWORD maxVal;
+    int maxVal;
     if(Prog.mcu) {
         maxVal = Prog.mcu->adcMax;
     } else {
@@ -1054,6 +1072,9 @@ static void MakeControls(void)
 void ShowIoDialog(int item)
 {
     int type = Prog.io.assignment[item].type;
+    char name[MAX_NAME_LEN];
+    strcpy(name, Prog.io.assignment[item].name);
+
     switch(type) {
         case IO_TYPE_PORT_INPUT :
         case IO_TYPE_PORT_OUTPUT:
@@ -1121,14 +1142,26 @@ void ShowIoDialog(int item)
         return;
     }
 
-    if(Prog.io.assignment[item].name[0] != 'X' &&
-       Prog.io.assignment[item].name[0] != 'Y' &&
-       Prog.io.assignment[item].name[0] != 'A' &&
-       Prog.io.assignment[item].name[0] != 'P')
-    {
-        Error(_("Can only assign pin number to input/output pins (Xname or "
-            "Yname or Aname or Pname)."));
-        return;
+    switch (Prog.io.assignment[item].type) {
+       case IO_TYPE_READ_ADC:
+       case IO_TYPE_PWM_OUTPUT:
+       case IO_TYPE_INT_INPUT :
+       case IO_TYPE_DIG_INPUT :
+       case IO_TYPE_DIG_OUTPUT:
+       case IO_TYPE_SPI_MOSI:
+       case IO_TYPE_SPI_MISO:
+       case IO_TYPE_SPI_SCK :
+       case IO_TYPE_SPI__SS :
+       case IO_TYPE_UART_TX:
+       case IO_TYPE_UART_RX:
+       case IO_TYPE_MODBUS_CONTACT:
+       case IO_TYPE_MODBUS_COIL   :
+           break;
+       default: {
+           Error(_("Can only assign pin number to input/output pins (Xname or "
+               "Yname or Aname or Pname)."));
+           return;
+       }
     }
 
     if((Prog.io.assignment[item].type == IO_TYPE_READ_ADC) && (Prog.mcu->adcCount == 0)) {
@@ -1173,9 +1206,55 @@ void ShowIoDialog(int item)
             }
         }
 
+        if(type == IO_TYPE_SPI_MOSI) {
+            char *c = strchr(name, '_');
+            if(c) *c = '\0';
+            McuSpiInfo *iop = GetMcuSpiInfo(name);
+            if(iop)
+              if(iop->MOSI == Prog.mcu->pinInfo[i].pin)
+                ; // okay; we know how to connect it up to the SPI
+              else
+                goto cant_use_this_io;
+            else
+                goto cant_use_this_io;
+        } else if(type == IO_TYPE_SPI_MISO) {
+            char *c = strchr(name, '_');
+            if(c) *c = '\0';
+            McuSpiInfo *iop = GetMcuSpiInfo(name);
+            if(iop)
+              if(iop->MISO == Prog.mcu->pinInfo[i].pin)
+                ; // okay; we know how to connect it up to the SPI
+              else
+                goto cant_use_this_io;
+            else
+                goto cant_use_this_io;
+        } else if(type == IO_TYPE_SPI_SCK) {
+            char *c = strchr(name, '_');
+            if(c) *c = '\0';
+            McuSpiInfo *iop = GetMcuSpiInfo(name);
+            if(iop)
+              if(iop->SCK == Prog.mcu->pinInfo[i].pin)
+                ; // okay; we know how to connect it up to the SPI
+              else
+                goto cant_use_this_io;
+            else
+                goto cant_use_this_io;
+        } else if(type == IO_TYPE_SPI__SS) {
+            char *c = strchr(name, '_');
+            if(c) *c = '\0';
+            McuSpiInfo *iop = GetMcuSpiInfo(name);
+            if(iop)
+              if(iop->_SS == Prog.mcu->pinInfo[i].pin)
+                ; // okay; we know how to connect it up to the SPI
+              else
+                goto cant_use_this_io;
+            else
+                goto cant_use_this_io;
+        }
+
         if(UartFunctionUsed() && Prog.mcu &&
-                ((Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.rxPin) ||
-                 (Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.txPin)))
+            ((Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.rxPin) ||
+             (Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.txPin)))
         {
             goto cant_use_this_io;
         }
@@ -1187,7 +1266,6 @@ void ShowIoDialog(int item)
             goto cant_use_this_io;
         }
 #endif
-        int type = Prog.io.assignment[item].type;
         if((type == IO_TYPE_INT_INPUT) && (!IsExtIntPin(Prog.mcu->pinInfo[i].pin))) {
             goto cant_use_this_io;
         }
@@ -1216,14 +1294,15 @@ void ShowIoDialog(int item)
                 }
             }
         }
-        char pinName[MAX_NAME_LEN];
-        GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
-        sprintf(buf, "%3d  %s", Prog.mcu->pinInfo[i].pin, pinName);
 
         if(Prog.mcu->pinInfo[i].pin == Prog.io.assignment[item].pin) {
             Index = SendMessage(PinList, LB_GETCOUNT, 0, 0);
             if(Index == LB_ERR) Index = 0;
         };
+
+        char pinName[MAX_NAME_LEN];
+        GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
+        sprintf(buf, "%3d  %s", Prog.mcu->pinInfo[i].pin, pinName);
 
         SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
     cant_use_this_io:;
@@ -1545,7 +1624,12 @@ void IoListProc(NMHDR *h)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                         }
                     } else
-                    if(type == IO_TYPE_READ_ADC) {
+                    if((type == IO_TYPE_READ_ADC)
+                    || (type == IO_TYPE_SPI_MOSI)
+                    || (type == IO_TYPE_SPI_MISO)
+                    || (type == IO_TYPE_SPI_SCK )
+                    || (type == IO_TYPE_SPI__SS )
+                    ) {
                         if(Prog.mcu) {
                             McuIoPinInfo *iop;
                             iop = PinInfoForName(name);
@@ -1600,6 +1684,10 @@ void IoListProc(NMHDR *h)
                     if((type == IO_TYPE_DIG_INPUT)
                     || (type == IO_TYPE_DIG_OUTPUT)
                     || (type == IO_TYPE_INTERNAL_RELAY)
+                    || (type == IO_TYPE_SPI_MOSI)
+                    || (type == IO_TYPE_SPI_MISO)
+                    || (type == IO_TYPE_SPI_SCK )
+                    || (type == IO_TYPE_SPI__SS )
                     || (type == IO_TYPE_MODBUS_COIL)
                     || (type == IO_TYPE_MODBUS_CONTACT)) {
                         sprintf(i->item.pszText, "1 bit");
@@ -1613,7 +1701,7 @@ void IoListProc(NMHDR *h)
                     } else
                     if(type == IO_TYPE_READ_ADC) {
                         sprintf(i->item.pszText, "1 pin/2 bytes");
-                    }
+                    } // else oops();
                     break;
 
             }

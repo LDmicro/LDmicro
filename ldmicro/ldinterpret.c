@@ -35,6 +35,7 @@
 // Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <windows.h>
 
@@ -116,7 +117,7 @@ void LoadProgram(char *fileName)
     // This is not suitable for untrusted input.
 
     if(!f) {
-        fprintf(stderr, "couldn't open '%s'\n", f);
+        fprintf(stderr, "couldn't open '%s'\n", fileName);
         exit(-1);
     }
 
