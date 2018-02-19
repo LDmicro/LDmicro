@@ -118,7 +118,7 @@ static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
 static DWORD PicProgWriteP;
 static DWORD BeginOfPLCCycle;
 
-DWORD PicProgLdLen = 0;
+SDWORD PicProgLdLen = 0;
 
 static int IntPcNow = -INT_MAX; //must be static
 
@@ -376,7 +376,7 @@ static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
 {
     char s[MAX_NAME_LEN];
     if(asm_discover_names <= 2) {
-        sprintf(s, "0x%02X", BYTE(PicProg[addrAt].arg1));
+        sprintf(s, "0x%02X", (BYTE)PicProg[addrAt].arg1);
     } else {
         GetName(addrAt, s);
         if(strlen(s) == 0)
@@ -1670,10 +1670,10 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
             return 0x0000;
 
         case OP_RETLW:
-            CHECK(BYTE(arg1), 8); CHECK(arg2, 0);
+            CHECK((BYTE)arg1, 8); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
             sprintf(sAsm, "retlw\t %s \t %s", arg1s, arg1comm);
-            return 0x3400 | BYTE(arg1);
+            return 0x3400 | (BYTE)arg1;
 
         case OP_RETURN:
             CHECK(arg1, 0); CHECK(arg2, 0);
@@ -1879,7 +1879,7 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sA
             CHECK(arg1, 8); CHECK(arg2, 0);
             discoverArgs(addrAt, arg1s, arg1comm);
             sprintf(sAsm, "retlw\t %s \t %s", arg1s, arg1comm);
-            return 0x800 | BYTE(arg1);
+            return 0x800 | (BYTE)arg1;
 
         case OP_RLF:
             CHECK(arg1, 5); CHECK(arg2, 1);
@@ -2251,21 +2251,21 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
     StartIhex(f);
     WriteIhex(f, 0x02); // RECLEN 2 bytes
-    WriteIhex(f,((CONFIG_ADDR1 * 2) >> 8) & 0xff);
-    WriteIhex(f, (CONFIG_ADDR1 * 2) & 0xff);
+    WriteIhex(f, (BYTE)((CONFIG_ADDR1 * 2) >> 8) & 0xff);
+    WriteIhex(f, (BYTE)( CONFIG_ADDR1 * 2      ) & 0xff);
     WriteIhex(f, 0x00); // RECTYP: '00' Data Record
-    WriteIhex(f, BYTE((Prog.configurationWord >>  0) & 0xff));
-    WriteIhex(f, BYTE((Prog.configurationWord >>  8) & 0xff));
+    WriteIhex(f, (BYTE)(Prog.configurationWord >>  0) & 0xff);
+    WriteIhex(f, (BYTE)(Prog.configurationWord >>  8) & 0xff);
     FinishIhex(f);
 
     if(CONFIG_ADDR2 != -1) {
-        StartIhex(f);    // ':'->Colon
+        StartIhex(f); // ':'->Colon
         WriteIhex(f, 0x02); // RECLEN 2 bytes
-        WriteIhex(f,((CONFIG_ADDR2 * 2) >> 8) & 0xff);
-        WriteIhex(f, (CONFIG_ADDR2 * 2) & 0xff);
+        WriteIhex(f, (BYTE)((CONFIG_ADDR2 * 2) >> 8) & 0xff);
+        WriteIhex(f, (BYTE)( CONFIG_ADDR2 * 2      ) & 0xff);
         WriteIhex(f, 0x00); // RECTYP: '00' Data Record
-        WriteIhex(f, BYTE((Prog.configurationWord >> 16) & 0xff));
-        WriteIhex(f, BYTE((Prog.configurationWord >> 24) & 0xff));
+        WriteIhex(f, (BYTE)(Prog.configurationWord >> 16) & 0xff);
+        WriteIhex(f, (BYTE)(Prog.configurationWord >> 24) & 0xff);
         FinishIhex(f);
     }
     // end of file record
@@ -3664,13 +3664,13 @@ static void CompileFromIntermediate(BOOL topLevel)
                 #ifdef AUTO_BANKING
                 CopyLitToReg(addr1, sov1, a->literal, comment);
                 #else
-                WriteRegister(addr1, BYTE(a->literal & 0xff), comment);
+                WriteRegister(addr1, (BYTE)(a->literal & 0xff), comment);
                 if(sov >= 2) {
-                  WriteRegister(addr1+1, BYTE((a->literal >> 8) & 0xff), comment);
+                  WriteRegister(addr1+1, (BYTE)((a->literal >> 8) & 0xff), comment);
                   if(sov >= 3) {
-                    WriteRegister(addr1+2, BYTE((a->literal >> 16) & 0xff), comment);
+                    WriteRegister(addr1+2, (BYTE)((a->literal >> 16) & 0xff), comment);
                     if(sov >= 4) {
-                      WriteRegister(addr1+3, BYTE((a->literal >> 24) & 0xff), comment);
+                      WriteRegister(addr1+3, (BYTE)((a->literal >> 24) & 0xff), comment);
                     }
                   }
                 }
@@ -3829,8 +3829,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                 // V = Rd7*(Rr7')*(R7') + (Rd7')*Rr7*R7 ; but only one of the
                 // product terms can be true, and we know which at compile
                 // time
-                BYTE litH = BYTE(a->literal >> 8);
-                BYTE litL = BYTE(a->literal & 0xff);
+                BYTE litH = (BYTE)((a->literal >> 8) & 0xff);
+                BYTE litL = (BYTE)( a->literal       & 0xff);
 
                 MemForVariable(a->name1, &addr1);
 
@@ -5285,9 +5285,9 @@ static void CompileFromIntermediate(BOOL topLevel)
                     }
                     if(clocks < 0 ) clocks = 0;
                     if(clocks > 0 ) {
-                        Instruction(OP_MOVLW, clocks & 0xff);
+                        Instruction(OP_MOVLW, (BYTE)clocks & 0xff);
                         Instruction(OP_MOVWF, Scratch0);
-                        Instruction(OP_MOVLW, (clocks >> 8) & 0xff);
+                        Instruction(OP_MOVLW, (BYTE)(clocks >> 8) & 0xff);
                         Instruction(OP_MOVWF, Scratch0+1);
                         Delay(Scratch0, 2);
                         clocksSave -= clocks * 6 + 10;
@@ -5372,8 +5372,8 @@ static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 {
     Comment("Configure Timer1");
     Instruction(OP_CLRWDT); // Clear WDT and prescaler
-    WriteRegister(REG_CCPR1L, BYTE(plcTmr.tmr & 0xff));
-    WriteRegister(REG_CCPR1H, BYTE(plcTmr.tmr >> 8));
+    WriteRegister(REG_CCPR1L, (BYTE)(plcTmr.tmr & 0xff));
+    WriteRegister(REG_CCPR1H, (BYTE)(plcTmr.tmr >> 8));
 
     WriteRegister(REG_TMR1L, 0);
     WriteRegister(REG_TMR1H, 0);
@@ -5514,7 +5514,7 @@ static void SetPrescaler(int tmr)
 }
 //-----------------------------------------------------------------------------
 // Calc PIC 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, DWORD PicProgLdLen)
+BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen)
 {
     //memset(plcTmr, 0, sizeof(plcTmr));
     plcTmr.ticksPerCycle = (long long int)floor(1.0 * Prog.mcuClock / 4 * cycleTimeMicroseconds / 1000000 + 0.5);
@@ -6685,9 +6685,9 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         if(plcTmr.softDivisor > 1) { // RAM neded
             Comment("Configure PLC Timer softDivisor");
             MemForVariable("$softDivisor", &plcTmr.softDivisorAddr);
-            WriteRegister(plcTmr.softDivisorAddr, BYTE(plcTmr.softDivisor & 0xff));
+            WriteRegister(plcTmr.softDivisorAddr, (BYTE)(plcTmr.softDivisor & 0xff));
             if(plcTmr.softDivisor > 0xff)
-                WriteRegister(plcTmr.softDivisorAddr+1, BYTE(plcTmr.softDivisor >> 8));
+                WriteRegister(plcTmr.softDivisorAddr+1, (BYTE)(plcTmr.softDivisor >> 8));
         }
     }
     BYTE isInput[MAX_IO_PORTS], isAnsel[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
@@ -6704,7 +6704,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         for(i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i)) {
                 WriteRegister(Prog.mcu->outputRegs[i], 0x00);
-                Instruction(OP_MOVLW, BYTE(~isOutput[i]));
+                Instruction(OP_MOVLW, (BYTE)(~isOutput[i]));
                 Instruction(OP_TRIS, Prog.mcu->outputRegs[i]);
                 break;
             }

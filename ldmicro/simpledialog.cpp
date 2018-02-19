@@ -374,15 +374,15 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
     if(ShowSimpleDialog(s, labs, labels, (3 << 1), (1 << 0), (7 << 0), boxes, dests)) {
         *adjust = atoi(adjustBuf);
         double delay_ms = atof(delBuf);
-        long long int delay_us;
+        SDWORD delay_us;
         if(which == ELEM_TIME2DELAY) {
-            delay_us = round(delay_ms);
+            delay_us = (SDWORD)round(delay_ms);
             strcpy(name, nameBuf);
 
             if(delay_us > 0)
-                *delay = delay_us;
+                *delay = (SDWORD)delay_us;
         } else {
-            delay_us = round(delay_ms * 1000.0);
+            delay_us = (SDWORD)round(delay_ms * 1000.0);
             name[0] = 'T';
             strcpy(name+1, nameBuf);
 

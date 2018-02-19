@@ -363,6 +363,11 @@ void IntDumpListing(char *outFile)
                 else oops();
                 break;
             }
+            case INT_SPI:
+                fprintf(f, "SPI '%s' send '%s', recieve '%s', done? into '%s'",
+                    IntCode[i].name1, IntCode[i].name2, IntCode[i].name3, IntCode[i].name4);
+                break;
+
             case INT_UART_SEND1:
             case INT_UART_SENDn:
                 fprintf(f, "uart send from '%s'", IntCode[i].name1);
@@ -903,7 +908,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
         Error("%s\r\n%s\r\n%s", s1, s2, s3);
         period = -1;
     }
-    return SDWORD(adjPeriod);
+    return (SDWORD)adjPeriod;
 }
 //-----------------------------------------------------------------------------
 // Calculate the period in scan units from the period in microseconds, and
@@ -924,7 +929,7 @@ static SDWORD TimerPeriod(ElemLeaf *l)
 }
 
 //-----------------------------------------------------------------------------
-long long CalcDelayClock(long long clocks) // in us
+SDWORD CalcDelayClock(long long clocks) // in us
 {
     #if 1 // 1
     clocks = clocks * Prog.mcuClock / 1000000;
@@ -937,7 +942,7 @@ long long CalcDelayClock(long long clocks) // in us
     }
     if(clocks <= 0 ) clocks = 1;
     #endif
-    return clocks;
+    return (SDWORD)clocks;
 }
 
 //-----------------------------------------------------------------------------
@@ -2817,7 +2822,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
         case ELEM_TIME2DELAY: {
             Comment(3, "ELEM_TIME2DELAY");
-            long long clocks = CalcDelayClock(l->d.timer.delay);
+            SDWORD clocks = CalcDelayClock(l->d.timer.delay);
             if(Prog.mcu) {
                 if(Prog.mcu->whichIsa == ISA_AVR) {
                     clocks = (clocks - 1) / 4;

@@ -78,7 +78,7 @@ extern char *AboutText[] = {
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
 "",
-"Release 4.3.8, built " __TIME__ " " __DATE__ ".", // AboutText[38]
+"Release 4.3.8.1, built " __TIME__ " " __DATE__ ".", // AboutText[38]
 "",
 NULL
 };
