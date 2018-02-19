@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.2)
 
+if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+    message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a BUILD directory) and run CMake from there. You may need to remove CMakeCache.txt." )
+endif()
+
+
 project(ldmicro
     VERSION 4.3.7.0
     LANGUAGES C CXX
@@ -64,7 +69,7 @@ set(LDMICRO_SRC_LIST
 
     ../common/win32/freeze.cpp
 
-    "${CMAKE_CURRENT_BINARY_DIR}/helptext.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/obj/helptext.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/obj/lang-tables.h"
     )
 
@@ -107,7 +112,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/obj)
 execute_process(
     COMMAND ${PERL_EXECUTABLE} txt2c.pl
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/helptext.cpp"
+    OUTPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/obj/helptext.cpp"
     )
 
 execute_process(
