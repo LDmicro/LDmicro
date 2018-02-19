@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include "ldmicro.h"
 #include "intcode.h"
@@ -373,7 +374,7 @@ static void DeclareBit(FILE *f, char *str, int set1)
             fprintf(f, "#ifndef USE_MACRO\n");
             fprintf(f, "// LDmicro provide this function.\n");
             fprintf(f, "  void Write_%s(SWORD x) {\n", str);
-            fprintf(f, "    analogWrite(pin_%s, x);\n", str, str);
+            fprintf(f, "    analogWrite(pin_%s, x);\n", str);
             fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
             fprintf(f, "\n");
@@ -391,7 +392,7 @@ static void DeclareBit(FILE *f, char *str, int set1)
             fprintf(f, "#ifndef USE_MACRO\n");
             fprintf(f, "// LDmicro provide this function.\n");
             fprintf(f, "  void Write_%s(SWORD x) {\n", str);
-            fprintf(f, "    pwm_set_duty_percent(x);\n", str, str);
+            fprintf(f, "    pwm_set_duty_percent(x);\n");
             fprintf(f, "    pwm_on();\n");
             fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
@@ -399,7 +400,7 @@ static void DeclareBit(FILE *f, char *str, int set1)
         } else {
             fprintf(f, "/* You provide this function. */\n");
             fprintf(f, "SWORD Read_%s(void) {\n", str);
-            fprintf(f, "  return 0;\n", str);
+            fprintf(f, "  return 0;\n");
             fprintf(f, "}\n");
         }
     } else if (type == IO_TYPE_READ_ADC) {
@@ -438,13 +439,13 @@ static void DeclareBit(FILE *f, char *str, int set1)
             fprintf(f, "// LDmicro provide this function.\n");
             fprintf(f, "SWORD Read_%s(void) {\n", str);
             fprintf(f, "  set_adc_channel(%d);\n", MuxForAdcVariable(&str[3]));
-            fprintf(f, "  return read_adc();\n", str);
+            fprintf(f, "  return read_adc();\n");
             fprintf(f, "}\n");
             fprintf(f, "\n");
         } else {
             fprintf(f, "/* You provide this function. */\n");
             fprintf(f, "SWORD Read_%s(void) {\n", str);
-            fprintf(f, "  return 0;\n", str);
+            fprintf(f, "  return 0;\n");
             fprintf(f, "}\n");
         }
     } else {
@@ -1063,7 +1064,7 @@ doIndent(f, i); fprintf(f,"#endif\n");
                 fprintf(f, "Call_SUBPROG_%s(); // LabelRung%d\n", IntCode[i].name1, IntCode[i].literal+1);
                 break;
             case INT_RETURN:
-                fprintf(f, "return;\n", IntCode[i].name1);
+                fprintf(f, "return;\n");
                 break;
             case INT_SLEEP:
                 fprintf(f,"cli();\n");
@@ -1244,7 +1245,7 @@ void CompileAnsiC(char *dest, int MNU)
 "\n"
 "#ifndef __LADDER_H__\n"
 "#define __LADDER_H__\n"
-"\n", dest);
+"\n");
 
     fprintf(flh,
 "/* Uncomment EXTERN_EVERYTHING if you want all symbols in %s.c extern. */\n"
@@ -1404,7 +1405,7 @@ void CompileAnsiC(char *dest, int MNU)
     if(compile_MNU == MNU_COMPILE_ARDUINO) {
       fprintf(fh,
 "// PLC cycle interval, set this according to LDmicro settings. (micro seconds)\n"
-"#define PLC_INTERVAL %d // us\n"
+"#define PLC_INTERVAL %lld // us\n"
 "\n"
       , Prog.cycleTime);
 
@@ -1572,11 +1573,11 @@ void CompileAnsiC(char *dest, int MNU)
     }
     fprintf(f,
 "  #FUSES 1=0x%04X\n"
-    , Prog.configurationWord & 0xFFFF);
+    , (WORD)Prog.configurationWord & 0xFFFF);
     if(Prog.configurationWord & 0xFFFF0000) {
     fprintf(f,
 "   #FUSES 2=0x%04X\n"
-    , (Prog.configurationWord >> 16) & 0xFFFF);
+    , (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
     }
     if(DelayUsed() || UartFunctionUsed()) {
       fprintf(f,
@@ -1609,11 +1610,11 @@ void CompileAnsiC(char *dest, int MNU)
 "#include <htc.h>\n"
 "#define _XTAL_FREQ %d\n"
 "__CONFIG(0x%X);\n"
-    , Prog.mcuClock, Prog.configurationWord & 0xFFFF);
+    , Prog.mcuClock, (WORD)Prog.configurationWord & 0xFFFF);
     if(Prog.configurationWord & 0xFFFF0000) {
     fprintf(f,
 "__CONFIG(0x%X);\n"
-    , (Prog.configurationWord >> 16) & 0xFFFF);
+    , (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
     }
     /*
     int i;
@@ -1652,7 +1653,7 @@ void CompileAnsiC(char *dest, int MNU)
 "    b means BOOL type\n"
 "    i means int type */\n"
 "\n"
-        , CurrentLdName, CurrentLdName, CurrentLdName);
+        , CurrentLdName);
 
   if(compile_MNU == MNU_COMPILE_ARDUINO) {
     fprintf(fh,
@@ -2370,7 +2371,7 @@ void CompileAnsiC(char *dest, int MNU)
 "  loopPlc();\n"
 "}\n"
 "\n"
-    , CurrentLdName, CurrentLdName, CurrentLdName, CurrentLdName, CurrentLdName, CurrentLdName);
+    , CurrentLdName, CurrentLdName, CurrentLdName, CurrentLdName, CurrentLdName);
         fclose(flh);
     }
 

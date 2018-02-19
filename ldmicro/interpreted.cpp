@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include "ldmicro.h"
 #include "intcode.h"
@@ -293,7 +294,7 @@ finishIf:
         }
     }
 
-    fprintf(f, "$$cycle %d us\n", Prog.cycleTime);
+    fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
 
     fclose(f);
 
