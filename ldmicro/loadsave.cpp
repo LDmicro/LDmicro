@@ -1207,7 +1207,7 @@ BOOL SaveProjectToFile(char *filename, int code)
     if(Prog.mcu) {
         fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
     }
-    fprintf(f, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%" PRIX64 "\n", Prog.cycleTime, Prog.cycleTimer, Prog.cycleDuty, Prog.configurationWord);
+    fprintf(f, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%llX\n", Prog.cycleTime, Prog.cycleTimer, Prog.cycleDuty, Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
     fprintf(f, "BAUD=%d Hz\n", Prog.baudRate);
     if(strlen(CurrentCompileFile) > 0) {

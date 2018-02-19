@@ -6515,10 +6515,10 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     if(!Prog.configurationWord)
         Prog.configurationWord = Prog.mcu->configurationWord;
     if(CONFIG_ADDR2 != -1) {
-        fprintf(fAsm, "\t__CONFIG 0x%X, 0x%" PRIX64 "\n", CONFIG_ADDR1, Prog.configurationWord & 0xFFFF);
-        fprintf(fAsm, "\t__CONFIG 0x%X, 0x%" PRIX64 "\n", CONFIG_ADDR2, (Prog.configurationWord >> 16) & 0xFFFF);
+        fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR1, (WORD)Prog.configurationWord & 0xFFFF);
+        fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR2, (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
     } else {
-        fprintf(fAsm, "\t__CONFIG 0x%" PRIX64 "\n", Prog.configurationWord & 0xFFFF);
+        fprintf(fAsm, "\t__CONFIG 0x%X\n", (WORD)Prog.configurationWord & 0xFFFF);
     }
     fprintf(fAsm, "\tradix dec\n");
     fprintf(fAsm, "\torg 0\n");

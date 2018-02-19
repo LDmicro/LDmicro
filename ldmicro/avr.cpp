@@ -2323,7 +2323,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
 
     char txt[1024] = "";
     if(plcTmr.tmr > max_tmr) {
-      sprintf(txt,"PLC cycle time more then %" PRId64 " ms not valid.", plcTmr.cycleTimeMax/1000);
+      sprintf(txt,"PLC cycle time more then %lld ms not valid.", plcTmr.cycleTimeMax/1000);
       Error(txt);
       return FALSE;
     } else if((plcTmr.prescaler * plcTmr.tmr) < PLC_CLOCK_MIN) {

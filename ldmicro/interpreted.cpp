@@ -294,7 +294,7 @@ finishIf:
         }
     }
 
-    fprintf(f, "$$cycle %" PRId64 " us\n", Prog.cycleTime);
+    fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
 
     fclose(f);
 

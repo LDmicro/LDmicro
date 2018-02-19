@@ -1405,7 +1405,7 @@ void CompileAnsiC(char *dest, int MNU)
     if(compile_MNU == MNU_COMPILE_ARDUINO) {
       fprintf(fh,
 "// PLC cycle interval, set this according to LDmicro settings. (micro seconds)\n"
-"#define PLC_INTERVAL %" PRId64 " // us\n"
+"#define PLC_INTERVAL %lld // us\n"
 "\n"
       , Prog.cycleTime);
 
@@ -1572,12 +1572,12 @@ void CompileAnsiC(char *dest, int MNU)
       );
     }
     fprintf(f,
-"  #FUSES 1=0x%04" PRIx64 "\n"
-    , Prog.configurationWord & 0xFFFF);
+"  #FUSES 1=0x%04X\n"
+    , (WORD)Prog.configurationWord & 0xFFFF);
     if(Prog.configurationWord & 0xFFFF0000) {
     fprintf(f,
-"   #FUSES 2=0x%04" PRIx64 "\n"
-    , (Prog.configurationWord >> 16) & 0xFFFF);
+"   #FUSES 2=0x%04X\n"
+    , (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
     }
     if(DelayUsed() || UartFunctionUsed()) {
       fprintf(f,
@@ -1609,12 +1609,12 @@ void CompileAnsiC(char *dest, int MNU)
     fprintf(f,
 "#include <htc.h>\n"
 "#define _XTAL_FREQ %d\n"
-"__CONFIG(0x%" PRIX64 ");\n"
-    , Prog.mcuClock, Prog.configurationWord & 0xFFFF);
+"__CONFIG(0x%X);\n"
+    , Prog.mcuClock, (WORD)Prog.configurationWord & 0xFFFF);
     if(Prog.configurationWord & 0xFFFF0000) {
     fprintf(f,
-"__CONFIG(0x%" PRIX64 ");\n"
-    , (Prog.configurationWord >> 16) & 0xFFFF);
+"__CONFIG(0x%X);\n"
+    , (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
     }
     /*
     int i;
