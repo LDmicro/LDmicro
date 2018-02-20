@@ -24,19 +24,12 @@
 // most of the UI logic relating to the main window.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <commctrl.h>
-#include <commdlg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <shellapi.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "freeze.h"
 #include "mcutable.h"
 #include "intcode.h"
-#include "locale.h"
 
 HINSTANCE   Instance;
 HWND        MainWindow;

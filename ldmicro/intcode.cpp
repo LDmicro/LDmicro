@@ -22,14 +22,11 @@
 // AVR or PIC16 code.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "display.h"
+//#include "display.h"
 
 //// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)

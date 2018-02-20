@@ -3,9 +3,7 @@
  *
  * Jonathan Westhues, 2002
  */
-#include <windows.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 

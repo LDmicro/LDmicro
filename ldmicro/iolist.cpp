@@ -25,13 +25,10 @@
 // will not be forgotten. Also the dialog box for assigning I/O pins.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
-#include "display.h"
+//#include "display.h"
 
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list

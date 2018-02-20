@@ -34,10 +34,8 @@
 //
 // Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
-#include <stdio.h>
+#include "stdafx.h"
 #include <stdlib.h>
-#include <ctype.h>
-#include <windows.h>
 
 #define INTCODE_H_CONSTANTS_ONLY
 #include "intcode.h"

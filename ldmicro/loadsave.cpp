@@ -20,9 +20,7 @@
 // Load/save the circuit from/to a file in a nice ASCII format.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 #include <inttypes.h>
 
 #include "ldmicro.h"
