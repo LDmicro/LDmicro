@@ -23,12 +23,11 @@
 // Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include <inttypes.h>
+
+#define _ITERATOR_DEBUG_LEVEL 0
 
 #include "ldmicro.h"
 #include "intcode.h"
-
-#define _ITERATOR_DEBUG_LEVEL 0
 
 static BYTE OutProg[MAX_INT_OPS];
 

@@ -899,7 +899,7 @@ void ShowAnalogSliderPopup(char *name)
 
     SWORD currentVal = GetAdcShadow(name);
 
-    int maxVal;
+    SWORD maxVal;
     if(Prog.mcu) {
         maxVal = Prog.mcu->adcMax;
     } else {

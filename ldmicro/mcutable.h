@@ -625,9 +625,9 @@ McuExtIntPinInfo PicExtIntPinInfo64[] = {
 // AVR's SPI Info Tables
 
 McuSpiInfo McuSpiInfoATmega2560[] = {
-//     name REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
-//                                      PB3   PB2 PB1  PB0
-    { "SPI",    0x2C,    0x2D,    0x2E,  22,   21, 20,  19 },
+//     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
+//                                         PB3   PB2  PB1  PB0
+    { "SPI",       0x4C,    0x4D,    0x4E,  22,   21,  20,  19 },
 };
 
 //-----------------------------------------------------------------------------

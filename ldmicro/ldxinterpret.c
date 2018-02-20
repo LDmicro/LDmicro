@@ -11,7 +11,6 @@
 //
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include <stdlib.h>
 
 typedef unsigned char BYTE;     // 8-bit unsigned
 typedef unsigned short WORD;    // 16-bit unsigned

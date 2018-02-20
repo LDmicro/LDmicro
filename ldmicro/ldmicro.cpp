@@ -2292,7 +2292,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
         }
         case WM_MOUSEMOVE: {
-            int x = LOWORD(lParam);
+          //int x = LOWORD(lParam);
             int y = HIWORD(lParam);
 
             if((y > (IoListTop - 9)) && (y < (IoListTop + 3))) {
@@ -2482,7 +2482,7 @@ static char * _removeWhitespace(char * pBuffer)
 }
 
 //-----------------------------------------------------------------------------
-
+/*
 static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
 {
     // Parse for command line arguments.
@@ -2529,7 +2529,7 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
         *pSource = _removeWhitespace(*pSource);
     }
 }
-
+*/
 //---------------------------------------------------------------------------
 void abortHandler( int signum )
 {

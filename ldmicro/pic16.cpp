@@ -51,7 +51,6 @@
 #endif
 
 //-----------------------------------------------------------------------------
-#include <inttypes.h>
 #include "ldmicro.h"
 #include "intcode.h"
 

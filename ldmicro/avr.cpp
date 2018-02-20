@@ -30,17 +30,6 @@
 #define USE_WDT
 #define USE_MUL
 
-<<<<<<< HEAD
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <math.h>
-#include <inttypes.h>
-
-=======
->>>>>>> feature/VisualCpp2010Express
 #include "ldmicro.h"
 #include "intcode.h"
 
@@ -4105,11 +4094,7 @@ static void CompileFromIntermediate(void)
 
                 int prescale;
                 long int bestPrescale;
-<<<<<<< HEAD
-		long int bestError = LONG_MAX;
-=======
-        long int bestError = LONG_MAX;
->>>>>>> feature/VisualCpp2010Express
+                long int bestError = LONG_MAX;
                 double bestFreq;
                 double freq;
                 double freqSI;
@@ -4520,7 +4505,7 @@ static void CompileFromIntermediate(void)
                     (1 << ADEN) |           // ADC enabled
                     (0 << ADFR) |           // not free running
                     (0 << ADIE) |           // no interrupt enabled
-                    adps);                   // prescale setup
+                    adps);                  // prescale setup
 
                 WriteMemory(REG_ADCSRA, adcsra);
                 WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << ADSC)));

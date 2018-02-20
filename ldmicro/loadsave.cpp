@@ -21,7 +21,6 @@
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include <inttypes.h>
 
 #include "ldmicro.h"
 
@@ -1156,6 +1155,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                 fprintf(f, "RUNG\n");
               else
                 fprintf(f, "RUNG %d\n", rung);
+              //fprintf(f, "RUNG\n");
             } else {
                 fprintf(f, "SERIES\n");
             }

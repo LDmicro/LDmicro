@@ -25,8 +25,6 @@
 #define __LDMICRO_H
 
 #include "stdafx.h"
-#include <stdio.h>
-#include <setjmp.h>
 #include "current_function.hpp"
 
 typedef signed short SWORD;

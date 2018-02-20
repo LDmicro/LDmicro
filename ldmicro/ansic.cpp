@@ -23,7 +23,6 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include <inttypes.h>
 
 #include "ldmicro.h"
 #include "intcode.h"
