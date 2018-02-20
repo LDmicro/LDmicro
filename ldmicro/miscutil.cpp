@@ -20,9 +20,7 @@
 // Miscellaneous utility functions that don't fit anywhere else. IHEX writing,
 // verified memory allocator, other junk.
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 

@@ -22,15 +22,10 @@
 // responsible for calling us with appropriate timing.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <inttypes.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "bits.h"
 
 static char SeenVariables[MAX_IO][MAX_NAME_LEN];
 int SeenVariablesCount;

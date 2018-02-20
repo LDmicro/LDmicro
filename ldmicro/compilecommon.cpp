@@ -20,9 +20,7 @@
 // Routines common to the code generators for all processor architectures.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "intcode.h"

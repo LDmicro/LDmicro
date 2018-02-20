@@ -24,12 +24,7 @@
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <setjmp.h>
-
+#include "stdafx.h"
 #include "current_function.hpp"
 
 typedef signed short SWORD;
@@ -46,9 +41,6 @@ typedef signed long SDWORD;
 #define PLC_CLOCK_MIN 250 //500 //
 //-----------------------------------------------
 // `Configuration options.'
-
-// The library that I use to do registry stuff.
-#define FREEZE_SUBKEY "LDMicro"
 
 // Size of the font that we will use to draw the ladder diagrams, in pixels
 #define FONT_WIDTH   7

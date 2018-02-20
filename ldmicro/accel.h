@@ -25,11 +25,6 @@
 typedef signed short SWORD;
 typedef signed long SDWORD;
 
-#include <stdio.h>
-//#include <stdint.h>
-#include <math.h>
-#include <limits.h>
-
 #include "ldmicro.h"
 
 #ifndef round

@@ -22,6 +22,7 @@
 // runtime needed to schedule the cycles.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
 
 #define ASM_LABEL 1   //   0 - no labels
                       // * 1 - only if GOTO or CALL operations need a label
@@ -50,16 +51,8 @@
 #endif
 
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <math.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <inttypes.h>
-
 #include "ldmicro.h"
 #include "intcode.h"
-#include "bits.h"
 
 static FILE *f;
 static FILE *fAsm;

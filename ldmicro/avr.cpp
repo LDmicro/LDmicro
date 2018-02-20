@@ -22,25 +22,16 @@
 // runtime needed to schedule the cycles.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
 
 #define ASM_LABEL 1   //   0 - no labels
                       // * 1 - only if GOTO or CALL operations need a label
                       //   2 - always, all line is labeled
-
 #define USE_WDT
 #define USE_MUL
 
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <math.h>
-#include <inttypes.h>
-
 #include "ldmicro.h"
 #include "intcode.h"
-#include "bits.h"
 
 #define r0 0 // used muls. Don't use elsewhere!!!
 #define r1 1 // used muls. Don't use elsewhere!!!
@@ -4103,7 +4094,7 @@ static void CompileFromIntermediate(void)
 
                 int prescale;
                 long int bestPrescale;
-		long int bestError = LONG_MAX;
+        long int bestError = LONG_MAX;
                 double bestFreq;
                 double freq;
                 double freqSI;

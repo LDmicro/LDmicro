@@ -22,9 +22,7 @@
 // the entire program at all times.
 // Jonathan Westhues, split May 2005
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 

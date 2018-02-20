@@ -22,16 +22,12 @@
 // for interpretation.
 // Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <inttypes.h>
-
-#define _ITERATOR_DEBUG_LEVEL 0
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "intcode.h"
+
+#define _ITERATOR_DEBUG_LEVEL 0
 
 static BYTE OutProg[MAX_INT_OPS];
 

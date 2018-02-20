@@ -23,11 +23,7 @@
 // colours.
 // Jonathan Westhues, Dec 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-#include <richedit.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 

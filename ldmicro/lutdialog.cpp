@@ -23,10 +23,7 @@
 // in between the points.
 // Jonathan Westhues, Dec 2005
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 

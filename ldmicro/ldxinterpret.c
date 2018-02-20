@@ -6,14 +6,11 @@
 // compiled (in Settings -> MCU Parameters).
 //
 // Frederic RIBLE 2016 (frible@teaser.fr)
-// 
+//
 // Based on ldinterpret.c by Jonathan Westhues
 //
 //-----------------------------------------------------------------------------
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <windows.h>
+#include "stdafx.h"
 
 typedef unsigned char BYTE;     // 8-bit unsigned
 typedef unsigned short WORD;    // 16-bit unsigned

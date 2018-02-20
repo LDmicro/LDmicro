@@ -66,6 +66,7 @@ set(LDMICRO_SRC_LIST
     simulate.cpp
     undoredo.cpp
     xinterpreted.cpp
+    stdafx.cpp
 
     ../common/win32/freeze.cpp
 

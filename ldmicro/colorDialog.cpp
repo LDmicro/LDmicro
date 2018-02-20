@@ -19,11 +19,7 @@
 //
 // Dialog for setting the colors of LDmicro.
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-#include <commdlg.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 
