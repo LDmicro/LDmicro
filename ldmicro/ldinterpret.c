@@ -35,7 +35,6 @@
 // Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include <stdlib.h>
 
 #define INTCODE_H_CONSTANTS_ONLY
 #include "intcode.h"
