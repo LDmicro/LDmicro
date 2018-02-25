@@ -1236,7 +1236,7 @@ void AddSetPwm(void);
 void AddSpi(int which);
 void AddUart(int which);
 void AddPersist(void);
-void AddComment(char *text);
+void AddComment(const char* text);
 void AddShiftRegister(void);
 void AddMasterRelay(void);
 void AddSleep(void);
@@ -1433,15 +1433,15 @@ extern char *AboutText[];
 #endif
 
 void doexit(int status);
-void dbp(char *str, ...);
-void Error(char *str, ...);
+void dbp(const char *str, ...);
+void Error(const char* str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 extern HANDLE MainHeap;
 void StartIhex(FILE *f);
 void WriteIhex(FILE *f, BYTE b);
 void FinishIhex(FILE *f);
-char *IoTypeToString(int ioType);
+const char* IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
 char *GetPinName(int pin, char *pinName);
@@ -1461,7 +1461,7 @@ void getResolution(char *s, int *resol, int *TOP);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
 BOOL IsExtIntPin(int pin);
-HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
+HWND CreateWindowClient(DWORD exStyle, const char* className, const char* windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
 void MakeDialogBoxClass(void);
@@ -1488,7 +1488,7 @@ char *toupperstr(char *dest);
 char *toupperstr(char *dest, const char *src);
 
 // lang.cpp
-char *_(char *in);
+const char* _(const char* in);
 
 // simulate.cpp
 void MarkInitedVariable(char *name);
@@ -1815,7 +1815,7 @@ SDWORD CalcDelayClock(long long clocks); // in us
 // pic16.cpp
 extern SDWORD PicProgLdLen;
 void CompilePic16(char *outFile);
-BOOL McuAs(char *str);
+BOOL McuAs(const char* str);
 BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
 // avr.cpp
 extern DWORD AvrProgLdLen;

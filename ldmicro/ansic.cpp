@@ -1131,7 +1131,7 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int sovElement = IntCode[i].literal2;
-                char *sovs;
+                const char *sovs;
 /*
 CodeVision AVR
 // Pointer to a char string placed in FLASH

@@ -50,7 +50,7 @@ HFONT MyFixedFont;
 //-----------------------------------------------------------------------------
 // printf-like debug function, to the Windows debug log.
 //-----------------------------------------------------------------------------
-void dbp(char *str, ...)
+void dbp(const char* str, ...)
 {
     va_list f;
     char buf[1024*8];
@@ -95,7 +95,7 @@ void doexit(int status)
 // For error messages to the user; printf-like, to a message box.
 // For warning messages use ' ' in *str[0], see avr.cpp INT_SET_NPULSE.
 //-----------------------------------------------------------------------------
-void Error(char *str, ...)
+void Error(const char *str, ...)
 {
     va_list f;
     char buf[1024];
@@ -235,7 +235,7 @@ void FinishIhex(FILE *f)
 //-----------------------------------------------------------------------------
 // Create a window with a given client area.
 //-----------------------------------------------------------------------------
-HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
+HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param)
 {
@@ -345,7 +345,7 @@ void MakeDialogBoxClass(void)
 // Map an I/O type to a string describing it. Used both in the on-screen
 // list and when we write a text file to describe it.
 //-----------------------------------------------------------------------------
-char *IoTypeToString(int ioType)
+const char *IoTypeToString(int ioType)
 {
     switch(ioType) {
         case IO_TYPE_INT_INPUT:         return _("INT input");

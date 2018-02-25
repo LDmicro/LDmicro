@@ -230,7 +230,7 @@
 #endif
 /*                               exclusive  Shift   Shift
 Language    NOT     AND     OR      OR      left    right
-C/‘++,
+C/C++,
 Java,
 C#, Ruby    ~       &       |       ^       <<      >>
 

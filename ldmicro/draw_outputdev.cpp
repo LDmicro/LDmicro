@@ -629,24 +629,24 @@ BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
 }
 
 //-----------------------------------------------------------------------------
-// Âîçâðàùàåìîå çíà÷åíèå - â ñëó÷àå óñïåõà TRUE, èíà÷å FALSE
-// hFile - äåñêðèïòîð ôàéëà
-// lpszString - óêàçàòåëü íà áóôåð äëÿ ñòðîêè
+// Ã‚Ã®Ã§Ã¢Ä‘Å•Å¯Å•ÄºÄ›Ã®Äº Ã§Ã­Å•Ã·ÄºÃ­ÄÄº - Ã¢ Å„Ã«Ã³Ã·Å•Äº Ã³Å„ÄÄºÅ‘Å• TRUE, ÄÃ­Å•Ã·Äº FALSE
+// hFile - Ã¤ÄºÅ„Ä™Ä‘ÄÄÅˆÃ®Ä‘ Ã´Å•Ã©Ã«Å•
+// lpszString - Ã³Ä™Å•Ã§Å•ÅˆÄºÃ«Ã¼ Ã­Å• Ã¡Ã³Ã´ÄºÄ‘ Ã¤Ã«Ë™ Å„ÅˆÄ‘Ã®Ä™Ä
 
 BOOL GetLastWriteTime(HANDLE hFile, char *lpszString)
 {
     FILETIME ftCreate, ftAccess, ftWrite;
     SYSTEMTIME stUTC, stLocal;
 
-    // Ïîëó÷àåì âðåìåíà ôàéëà.
+    // ÄŽÃ®Ã«Ã³Ã·Å•ÄºÄ› Ã¢Ä‘ÄºÄ›ÄºÃ­Å• Ã´Å•Ã©Ã«Å•.
     if (!GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite))
         return FALSE;
 
-    // Ïðåîáðàçóåì âðåìÿ ïîñëåäíåãî èçìåíåíèÿ â ëîêàëüíîå âðåìÿ.
+    // ÄŽÄ‘ÄºÃ®Ã¡Ä‘Å•Ã§Ã³ÄºÄ› Ã¢Ä‘ÄºÄ›Ë™ ÄÃ®Å„Ã«ÄºÃ¤Ã­ÄºÄƒÃ® ÄÃ§Ä›ÄºÃ­ÄºÃ­ÄË™ Ã¢ Ã«Ã®Ä™Å•Ã«Ã¼Ã­Ã®Äº Ã¢Ä‘ÄºÄ›Ë™.
     FileTimeToSystemTime(&ftWrite, &stUTC);
     SystemTimeToTzSpecificLocalTime(NULL, &stUTC, &stLocal);
 
-    // Ñîñòàâëÿåì ñòðîêó ñ äàòîé è âðåìåíåì.
+    // ÅƒÃ®Å„ÅˆÅ•Ã¢Ã«Ë™ÄºÄ› Å„ÅˆÄ‘Ã®Ä™Ã³ Å„ Ã¤Å•ÅˆÃ®Ã© Ä Ã¢Ä‘ÄºÄ›ÄºÃ­ÄºÄ›.
     sprintf(lpszString, "%02d/%02d/%d %02d:%02d:%02d",
         stLocal.wDay, stLocal.wMonth, stLocal.wYear,
         stLocal.wHour, stLocal.wMinute, stLocal.wSecond); // wMilliseconds
@@ -659,13 +659,13 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
 {
     sFileTime[0]=0;
 
-    HANDLE hFile = CreateFile(FileName,   // îòêðûâàåìûé ôàéë
-                   GENERIC_READ,          // îòêðûâàåì äëÿ ÷òåíèÿ
-                   FILE_SHARE_READ,       // äëÿ ñîâìåñòíîãî ÷òåíèÿ
-                   NULL,                  // çàùèòà ïî óìîë÷àíèþ
-                   OPEN_EXISTING,         // òîëüêî ñóùåñòâóþùèé ôàéë
-                   FILE_ATTRIBUTE_NORMAL, // îáû÷íûé ôàéë
-                   NULL);                 // àòðèáóòîâ øàáëîíà íåò
+    HANDLE hFile = CreateFile(FileName,   // Ã®ÅˆÄ™Ä‘Å±Ã¢Å•ÄºÄ›Å±Ã© Ã´Å•Ã©Ã«
+                   GENERIC_READ,          // Ã®ÅˆÄ™Ä‘Å±Ã¢Å•ÄºÄ› Ã¤Ã«Ë™ Ã·ÅˆÄºÃ­ÄË™
+                   FILE_SHARE_READ,       // Ã¤Ã«Ë™ Å„Ã®Ã¢Ä›ÄºÅ„ÅˆÃ­Ã®ÄƒÃ® Ã·ÅˆÄºÃ­ÄË™
+                   NULL,                  // Ã§Å•Å¯ÄÅˆÅ• ÄÃ® Ã³Ä›Ã®Ã«Ã·Å•Ã­ÄÅ£
+                   OPEN_EXISTING,         // ÅˆÃ®Ã«Ã¼Ä™Ã® Å„Ã³Å¯ÄºÅ„ÅˆÃ¢Ã³Å£Å¯ÄÃ© Ã´Å•Ã©Ã«
+                   FILE_ATTRIBUTE_NORMAL, // Ã®Ã¡Å±Ã·Ã­Å±Ã© Ã´Å•Ã©Ã«
+                   NULL);                 // Å•ÅˆÄ‘ÄÃ¡Ã³ÅˆÃ®Ã¢ Å™Å•Ã¡Ã«Ã®Ã­Å• Ã­ÄºÅˆ
 
     if (hFile == INVALID_HANDLE_VALUE) {
         Error("Could not open file %s (error %d)\n", FileName, GetLastError());
@@ -797,7 +797,7 @@ void ExportDrawingAsText(char *file)
         memset(b, '\0', sizeof(b));
 
         PlcProgramSingleIo *io = &Prog.io.assignment[i];
-        char *type = IoTypeToString(io->type);
+        const char *type = IoTypeToString(io->type);
         char pin[MAX_NAME_LEN] = "";
         char portName[MAX_NAME_LEN] = "";
         char pinName[MAX_NAME_LEN] = "";

@@ -436,7 +436,7 @@ static void WipeMemory(void)
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1, DWORD arg2, char *comment)//, IntOp *IntCode)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2, char *comment)//, IntOp *IntCode)
 {
     if(AvrProg[AvrProgWriteP].opAvr != OP_VACANT) oops();
 
@@ -478,21 +478,21 @@ static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1, DWORD
     }
 }
 
-static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1, DWORD arg2)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2)
 {
     _Instruction(l, f, args, op, arg1, arg2, NULL);
 }
 
-static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1)
 {
     _Instruction(l, f, args, op, arg1, 0, NULL);
 }
 
-static void _Instruction(int l, char *f, char *args, AvrOp op)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op)
 {
     _Instruction(l, f, args, op, 0, 0, NULL);
 }
-static void _Instruction(int l, char *f, char *args, AvrOp op, char *comment)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, char *comment)
 {
     _Instruction(l, f, args, op, 0, 0, comment);
 }
@@ -535,15 +535,13 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void _Comment(char *str, ...)
+static void _Comment(const char *str, ...)
 {
   if(asm_comment_level) {
-    if(strlen(str)>=MAX_COMMENT_LEN)
-      str[MAX_COMMENT_LEN-1]='\0';
     va_list f;
     char buf[MAX_COMMENT_LEN];
     va_start(f, str);
-    vsprintf(buf, str, f);
+    vsnprintf(buf, MAX_COMMENT_LEN, str, f);
     Instruction(OP_COMMENTINT, buf);
   }
 }
@@ -3083,13 +3081,13 @@ Encoder outputs with bounce
                                <----   ---->
               -1           -0                    +0           +1
 
-  ---------¦¦¦¦         ¦¦¦¦---------------------¦¦¦¦         ¦¦¦¦---------
-A         ³¦¦¦¦         ¦¦¦¦                     ¦¦¦¦         ¦¦¦¦
-           ¦¦¦¦---------¦¦¦¦                     ¦¦¦¦---------¦¦¦¦
+  ---------Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦---------------------Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦---------
+A         Å‚Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦                     Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦
+           Â¦Â¦Â¦Â¦---------Â¦Â¦Â¦Â¦                     Â¦Â¦Â¦Â¦---------Â¦Â¦Â¦Â¦
 
-  --¦¦¦¦         ¦¦¦¦---------¦¦¦¦         ¦¦¦¦---------¦¦¦¦         ¦¦¦¦---------
-B  ³¦¦¦¦         ¦¦¦¦        ³¦¦¦¦         ¦¦¦¦         ¦¦¦¦         ¦¦¦¦
-    ¦¦¦¦---------¦¦¦¦         ¦¦¦¦---------¦¦¦¦         ¦¦¦¦---------¦¦¦¦
+  --Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦---------Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦---------Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦---------
+B  Å‚Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦        Å‚Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦
+    Â¦Â¦Â¦Â¦---------Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦---------Â¦Â¦Â¦Â¦         Â¦Â¦Â¦Â¦---------Â¦Â¦Â¦Â¦
 
 
 A_   B_   previous encoder input

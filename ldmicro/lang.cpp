@@ -42,7 +42,7 @@ typedef struct LangTag {
 // one place.
 #include "obj/lang-tables.h"
 
-char *_(char *in)
+const char* _(const char* in)
 {
     Lang *l;
 
