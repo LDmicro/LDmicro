@@ -1322,7 +1322,7 @@ void ShowCommentDialog(char *comment);
 // contactsdialog.cpp
 void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name);
 // coildialog.cpp
-void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigger, char *name);
+void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigger, char* name);
 // simpledialog.cpp
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust);
