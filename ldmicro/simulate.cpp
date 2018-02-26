@@ -112,7 +112,7 @@ static int SimulateUartTxCountdown = 0; // 0 if UART ready to send; 1 if UART bu
 static void AppendToUartSimulationTextControl(BYTE b);
 
 static void SimulateIntCode(void);
-static char *MarkUsedVariable(char *name, DWORD flag);
+static const char *MarkUsedVariable(char *name, DWORD flag);
 
 //-----------------------------------------------------------------------------
 int isVarInited(char *name)
@@ -410,7 +410,7 @@ SDWORD GetRandom(char *name)
 }
 
 //-----------------------------------------------------------------------------
-static char *Check(char *name, DWORD flag, int i)
+static const char *Check(char *name, DWORD flag, int i)
 {
     switch(flag) {
         case VAR_FLAG_PWM:
@@ -515,7 +515,7 @@ static char *Check(char *name, DWORD flag, int i)
 //-----------------------------------------------------------------------------
 static char *rungsUsed = ""; //local store var for message
 
-static char *MarkUsedVariable(char *name, DWORD flag)
+static const char *MarkUsedVariable(char *name, DWORD flag)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -541,7 +541,7 @@ static char *MarkUsedVariable(char *name, DWORD flag)
 
     rungsUsed = Variables[i].usedRungs;
 
-    char *s = Check(name, flag, i);
+    const char *s = Check(name, flag, i);
     if(s) return s;
 
     if(Variables[i].initedRung < 0)
@@ -574,7 +574,7 @@ void MarkInitedVariable(char *name)
 }
 
 //-----------------------------------------------------------------------------
-static void CheckMsg(char *name, char *s, int i)
+static void CheckMsg(const char *name, const char *s, int i)
 {
     if(s) {
         #if 1
@@ -599,7 +599,7 @@ static void CheckMsg(char *name, char *s, int i)
 //-----------------------------------------------------------------------------
 static void MarkWithCheck(char *name, int flag)
 {
-    char *s = MarkUsedVariable(name, flag);
+    const char *s = MarkUsedVariable(name, flag);
     CheckMsg(name, s, -1);
 }
 //-----------------------------------------------------------------------------

@@ -222,7 +222,7 @@ static BOOL AddLeaf(int newWhich, ElemLeaf *newElem)
 // and insert it into the current program with AddLeaf. Fill in some default
 // parameters, name etc. when we create the leaf; user can change them later.
 //-----------------------------------------------------------------------------
-void AddComment(char *str)
+void AddComment(const char *str)
 {
     if(!CanInsertComment) return;
 

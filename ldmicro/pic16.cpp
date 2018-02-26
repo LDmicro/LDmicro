@@ -330,14 +330,14 @@ static void CompileFromIntermediate(BOOL topLevel);
 //-----------------------------------------------------------------------------
 // A convenience function, whether we are using a particular MCU.
 //-----------------------------------------------------------------------------
-static BOOL McuIs(char *str)
+static BOOL McuIs(const char *str)
 {
     if(!Prog.mcu)
         return 0;
     return strcmp(Prog.mcu->mcuName, str) == 0;
 }
 
-BOOL McuAs(char *str)
+BOOL McuAs(const char *str)
 {
     if(!Prog.mcu)
         return 0;
@@ -571,7 +571,7 @@ static int IsOperation(PicOp op)
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD arg2, char *comment)
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2, char *comment)
 {
     if(IsOperation(op) >= IS_BANK) {
         if(arg1 == -1) {
@@ -649,23 +649,23 @@ static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD
     PicProgWriteP++;
 }
 
-static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD arg2)
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2)
 {
     _Instruction(l, f, args, op, arg1, arg2, NULL);
 }
 
-static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1)
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1)
 {
     _Instruction(l, f, args, op, arg1, 0, NULL);
 }
 
-static void _Instruction(int l, char *f, char *args, PicOp op)
+static void _Instruction(int l, const char *f, const char *args, PicOp op)
 {
     _Instruction(l, f, args, op, 0, 0, NULL);
 }
 
 //-----------------------------------------------------------------------------
-static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2, char *comment)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2, char *comment)
 //for setiing interrupt vector, page correcting, etc
 {
     DWORD savePicProgWriteP = PicProgWriteP;
@@ -682,17 +682,17 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DW
     PicProgWriteP = savePicProgWriteP;
 }
 
-static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2)
 {
    _SetInstruction(l, f, args, addr, op, arg1, arg2, NULL);
 }
 
-static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DWORD arg1)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1)
 {
    _SetInstruction(l, f, args, addr, op, arg1, 0, NULL);
 }
 
-static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DWORD arg1, char *comment)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, char *comment)
 {
    _SetInstruction(l, f, args, addr, op, arg1, 0, comment);
 }
@@ -702,15 +702,13 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DW
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void Comment(char *str, ...)
+static void Comment(const char *str, ...)
 {
   if(asm_comment_level) {
-    if(strlen(str)>=MAX_COMMENT_LEN)
-      str[MAX_COMMENT_LEN-1]='\0';
     va_list f;
     char buf[MAX_COMMENT_LEN];
     va_start(f, str);
-    vsprintf(buf, str, f);
+    vsnprintf(buf, MAX_COMMENT_LEN, str, f);
     Instruction(OP_COMMENT_INT, 0, 0, buf);
   }
 }
@@ -944,7 +942,7 @@ static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
   if(corrected && (corrected<20)) goto doBankCorrection;
 
     if(PicProgWriteP >= Prog.mcu->flashWords)
-        Error("Not enough memory for BANK and PAGE áorrection!");
+        Error("Not enough memory for BANK and PAGE correction!");
 
     return bank;
 }
@@ -1415,7 +1413,7 @@ static void PageCorrection()
     if(corrected) goto doPageCorrection;
 
     if(PicProgWriteP >= Prog.mcu->flashWords)
-        Error("Not enough memory for PAGE áorrection!");
+        Error("Not enough memory for PAGE correction!");
 }
 
 //-----------------------------------------------------------------------------
@@ -2271,7 +2269,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 // of the bank switching if necessary; assumes that code is called in bank
 // 0.
 //-----------------------------------------------------------------------------
-static void _WriteRegister(int l, char *f, char *args, DWORD reg, BYTE val, char *comment)
+static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val, char *comment)
 {
     #ifdef AUTO_BANKING
     //if(val) {
@@ -2298,7 +2296,7 @@ static void _WriteRegister(int l, char *f, char *args, DWORD reg, BYTE val, char
     #endif
 }
 
-static void _WriteRegister(int l, char *f, char *args, DWORD reg, BYTE val)
+static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val)
 {
     _WriteRegister(l, f, args, reg, val, NULL);
 }
@@ -4425,7 +4423,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 // Tosc = 1 / Fosc
                 // Fosc = Prog.mcuClock
                 // PR2 = 0..255 available
-                // Duty Cycle Ratio =ƒCCPR2L:CCP2CON<5:4>ƒ/ (4 * (PR2 + 1))
+                // Duty Cycle Ratio =Æ’CCPR2L:CCP2CON<5:4>Æ’/ (4 * (PR2 + 1))
 
                 // PWM freq = Fosc / (PR2 + 1) * 4 * (TMR2 Prescale Value)
                 // PR2 = Fosc / (4 * (TMR2 Prescale Value) * targetFreq) - 1

@@ -155,7 +155,7 @@ static void MakeFixedControls(BOOL forPwl)
         85 +20, 40 +30, 120, 21, LutDialog, NULL, Instance, NULL);
     FixedFont(IndexTextbox);
 
-    char *txt1 = forPwl ? _("Points:") : _("Table size:");
+    const char *txt1 = forPwl ? _("Points:") : _("Table size:");
     char txt[1024];
     sprintf(txt,"%s max %d", txt1, forPwl ? MAX_LOOK_UP_TABLE_LEN/2 : MAX_LOOK_UP_TABLE_LEN);
     Labels[3] = CreateWindowEx(0,WC_STATIC, txt,

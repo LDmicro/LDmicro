@@ -231,12 +231,12 @@ bool ExistFile(const char *name)
     return FALSE;
 }
 /*
-bool ExistFile2(const char* name)
+bool ExistFile2(const char *name)
 {
     return GetFileAttributes(name) != INVALID_FILE_ATTRIBUTES;
 }
 
-bool ExistFile3(const char* name)
+bool ExistFile3(const char *name)
 {
     #if defined(_WIN32) || defined(_WIN64)
     return name && PathFileExists(name);
@@ -2534,7 +2534,7 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
 void abortHandler( int signum )
 {
     // associate each signal with a signal name string.
-    const char* name = NULL;
+    const char *name = NULL;
     switch( signum )
     {
     case SIGABRT: name = "SIGABRT";  break;

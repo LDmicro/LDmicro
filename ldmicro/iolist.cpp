@@ -1509,7 +1509,7 @@ void IoListProc(NMHDR *h)
                     break;
 
                 case LV_IO_TYPE: {
-                    char *s = IoTypeToString(Prog.io.assignment[item].type);
+                    const char *s = IoTypeToString(Prog.io.assignment[item].type);
                     strcpy(i->item.pszText, s);
                     break;
                 }

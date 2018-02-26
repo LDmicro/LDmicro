@@ -697,7 +697,7 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, char *f, char *args, int op, BOOL *b, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2, SDWORD *data)
+static void _Op(int l, const char *f, const char *args, int op, BOOL *b, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = op;
@@ -733,55 +733,55 @@ static void _Op(int l, char *f, char *args, int op, BOOL *b, char *name1, char *
     }
 }
 
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, char *name1, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2)
+static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2)
 {
     _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1)
+static void _Op(int l, const char *f, const char *args, int op, char *name1)
 {
     _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op)
+static void _Op(int l, const char *f, const char *args, int op)
 {
     _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3)
+static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, 0, 0, NULL);
 }
 //
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2)
+static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, NULL);
 }
 //
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4)
+static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, char *name4)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, name4, NULL, NULL, 0, 0, NULL);
 }
 //
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5)
+static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, name4, name5, NULL, 0, 0, NULL);
 }
 //
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2, SDWORD *data)
+static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, data);
 }
@@ -819,38 +819,36 @@ static void SimState(BOOL *b, char *name)
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void _Comment1(int l, char *f, char *str)
+static void _Comment1(int l, const char *f, const char *str)
 {
   if(int_comment_level) {
-    if(strlen(str)>=MAX_NAME_LEN)
-      str[MAX_NAME_LEN-1]='\0';
-    _Op(l, f, NULL, INT_COMMENT, str);
+    char buf[MAX_NAME_LEN];
+    strncpy(buf, MAX_NAME_LEN-1, str);
+    buf[MAX_NAME_LEN] = '\0';
+    // http://demin.ws/blog/russian/2013/01/28/use-snprintf-on-different-platforms/
+    _Op(l, f, NULL, INT_COMMENT, buf);
   }
 }
 #define Comment1(str) _Comment1(__LINE__, __FILE__, str)
 
-static void _Comment(int l, char *f, char *str, ...)
+static void _Comment(int l, const char *f, const char *str, ...)
 {
   if(int_comment_level) {
-    if(strlen(str)>=MAX_NAME_LEN)
-      str[MAX_NAME_LEN-1]='\0';
     va_list v;
     char buf[MAX_NAME_LEN];
     va_start(v, str);
-    vsprintf(buf, str, v);
+    vsnprintf(buf, MAX_NAME_LEN, str, v);
     _Op(l, f, NULL, INT_COMMENT, buf);
   }
 }
 
-static void _Comment(int l, char *f, int level, char *str, ...)
+static void _Comment(int l, const char *f, int level, const char *str, ...)
 {
   if(int_comment_level && (int_comment_level >= level)) {
-    if(strlen(str)>=MAX_NAME_LEN)
-      str[MAX_NAME_LEN-1]='\0';
     va_list v;
     char buf[MAX_NAME_LEN];
     va_start(v, str);
-    vsprintf(buf, str, v);
+    vsnprintf(buf, MAX_NAME_LEN, str, v);
     _Op(l, f, NULL, INT_COMMENT, buf);
   }
 }
@@ -882,7 +880,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
         sprintf(s2, _("Timer '%s'=%.3f ms."), name, 1.0*delay/1000);
         char s3[1024];
         sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
-        char *s4 = _("Not available");
+        const char *s4 = _("Not available");
         Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
     } else if(period+adjust <= 0) {
         Error("%s '%s': %s", _("Timer"), name, _("Total timer delay cannot be zero or negative. Increase the adjust value!"));

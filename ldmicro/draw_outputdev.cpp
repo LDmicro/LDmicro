@@ -797,7 +797,7 @@ void ExportDrawingAsText(char *file)
         memset(b, '\0', sizeof(b));
 
         PlcProgramSingleIo *io = &Prog.io.assignment[i];
-        char *type = IoTypeToString(io->type);
+        const char *type = IoTypeToString(io->type);
         char pin[MAX_NAME_LEN] = "";
         char portName[MAX_NAME_LEN] = "";
         char pinName[MAX_NAME_LEN] = "";

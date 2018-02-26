@@ -703,14 +703,12 @@ static void GenerateDeclarations(FILE *f)
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void _Comment(FILE *f, char *str, ...)
+static void _Comment(FILE *f, const char *str, ...)
 {
-    if(strlen(str)>=MAX_NAME_LEN)
-      str[MAX_NAME_LEN-1]='\0';
     va_list v;
     char buf[MAX_NAME_LEN];
     va_start(v, str);
-    vsprintf(buf, str, v);
+    vsnprintf(buf, MAX_NAME_LEN, str, v);
     fprintf(f, "//%s\n", buf);
 }
 #define Comment(str, ...) _Comment(f, str, __VA_ARGS__)
@@ -1131,7 +1129,7 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int sovElement = IntCode[i].literal2;
-                char *sovs;
+                const char *sovs;
 /*
 CodeVision AVR
 // Pointer to a char string placed in FLASH

@@ -1083,7 +1083,7 @@ atto    a   -18     quintillionth   trillionth
 zepto   z   -21     sextillionth    thousand trillionth
 yocto   y   -24     septillionth    quadrillionth
 */
-double SIprefix(double val, char* prefix, int en_1_2)
+double SIprefix(double val, char *prefix, int en_1_2)
 {
     //dbp("SIprefix val=%f",val);
     if(val >=        1e24) {
@@ -1159,7 +1159,7 @@ double SIprefix(double val, char* prefix, int en_1_2)
         return 0;
     }
 }
-double SIprefix(double val, char* prefix)
+double SIprefix(double val, char *prefix)
 {
     return SIprefix(val, prefix, 0);
 }
