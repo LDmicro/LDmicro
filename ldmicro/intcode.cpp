@@ -823,8 +823,8 @@ static void _Comment1(int l, const char *f, const char *str)
 {
   if(int_comment_level) {
     char buf[MAX_NAME_LEN];
-    strncpy(buf, MAX_NAME_LEN-1, str);
-    buf[MAX_NAME_LEN] = '\0';
+    strncpy(buf, str, MAX_NAME_LEN-1);
+    buf[MAX_NAME_LEN-1] = '\0';
     // http://demin.ws/blog/russian/2013/01/28/use-snprintf-on-different-platforms/
     _Op(l, f, NULL, INT_COMMENT, buf);
   }
@@ -1974,7 +1974,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             //dbp("%s %s", l->d.counter.name, l->d.counter.max);
             if(IsNumber(l->d.counter.max)) {
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max) + 1);
-                // переход 1->0 будет на заданном пределе
+                // РїРµСЂРµС…РѕРґ 1->0 Р±СѓРґРµС‚ РЅР° Р·Р°РґР°РЅРЅРѕРј РїСЂРµРґРµР»Рµ
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_ELSE);
                 Op(INT_SET_BIT, stateInOut);
