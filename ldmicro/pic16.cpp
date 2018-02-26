@@ -6101,6 +6101,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     if(McuAs(" PIC10F")
     || McuAs(" PIC12F")
     || McuAs(" PIC16F72 ")
+    || McuAs("Microchip PIC16F819 ")
     ) {
         // has not
     } else
