@@ -189,7 +189,7 @@ static void MakeControls(void)
             strcat(explanation,txt);
 
             sprintf(txt,"%030lld=TicksPerCycle\n%030lld=In fact\n",
-                plcTmr.ticksPerCycle, long long int(plcTmr.prescaler) * long long int(plcTmr.softDivisor) * long long int(plcTmr.tmr));
+                plcTmr.ticksPerCycle, (long long int)(plcTmr.prescaler) * (long long int)(plcTmr.softDivisor) * (long long int)(plcTmr.tmr));
             strcat(explanation,txt);
 
             double _TCycle = SIprefix(1.0*plcTmr.TCycle,s1);

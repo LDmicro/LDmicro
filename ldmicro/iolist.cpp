@@ -42,14 +42,10 @@ static struct {
 static int IoSeenPreviouslyCount;
 
 // stuff for the dialog box that lets you choose pin assignments
-static BOOL DialogDone;
-static BOOL DialogCancel;
 
 static HWND IoDialog;
 
 static HWND PinList;
-static HWND OkButton;
-static HWND CancelButton;
 static HWND ModbusSlave;
 static HWND ModbusRegister;
 
@@ -91,7 +87,7 @@ static void AppendIo(char *IOname, int type)
     strcpy(name, IOname);
     if(!IsNumber(IOname)) {
         char *c;
-        while(c=strchr(IOname, '-'))
+        while(c = strchr(IOname, '-'))
             *c = '_';
         if(!strstr(name, IOname)) {
             Error(_(" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"), name, IOname);

@@ -302,7 +302,7 @@ void ShowHelpDialog(BOOL about)
 
     MakeClass();
 
-    char *s = about ? "About LDmicro" : "LDmicro Help";
+    const char *s = about ? "About LDmicro" : "LDmicro Help";
     HelpDialog[a] = CreateWindowEx(0, "LDmicroHelp", s,
         WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
         WS_MAXIMIZEBOX |
