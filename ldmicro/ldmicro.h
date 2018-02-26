@@ -1236,7 +1236,7 @@ void AddSetPwm(void);
 void AddSpi(int which);
 void AddUart(int which);
 void AddPersist(void);
-void AddComment(const char* text);
+void AddComment(const char *text);
 void AddShiftRegister(void);
 void AddMasterRelay(void);
 void AddSleep(void);
@@ -1322,7 +1322,7 @@ void ShowCommentDialog(char *comment);
 // contactsdialog.cpp
 void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name);
 // coildialog.cpp
-void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigger, char* name);
+void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigger, char *name);
 // simpledialog.cpp
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust);
@@ -1434,14 +1434,14 @@ extern char *AboutText[];
 
 void doexit(int status);
 void dbp(const char *str, ...);
-void Error(const char* str, ...);
+void Error(const char *str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 extern HANDLE MainHeap;
 void StartIhex(FILE *f);
 void WriteIhex(FILE *f, BYTE b);
 void FinishIhex(FILE *f);
-const char* IoTypeToString(int ioType);
+const char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
 char *GetPinName(int pin, char *pinName);
@@ -1461,7 +1461,7 @@ void getResolution(char *s, int *resol, int *TOP);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
 BOOL IsExtIntPin(int pin);
-HWND CreateWindowClient(DWORD exStyle, const char* className, const char* windowName,
+HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
 void MakeDialogBoxClass(void);
@@ -1488,7 +1488,7 @@ char *toupperstr(char *dest);
 char *toupperstr(char *dest, const char *src);
 
 // lang.cpp
-const char* _(const char* in);
+const char *_(const char *in);
 
 // simulate.cpp
 void MarkInitedVariable(char *name);
@@ -1776,8 +1776,8 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);
 #define CompileError() longjmp(CompileErrorBuf, 1)
 extern jmp_buf CompileErrorBuf;
-double SIprefix(double val, char* prefix, int en_1_2);
-double SIprefix(double val, char* prefix);
+double SIprefix(double val, char *prefix, int en_1_2);
+double SIprefix(double val, char *prefix);
 int GetVariableType(char *name);
 int SetVariableType(char *name, int type);
 
@@ -1815,7 +1815,7 @@ SDWORD CalcDelayClock(long long clocks); // in us
 // pic16.cpp
 extern SDWORD PicProgLdLen;
 void CompilePic16(char *outFile);
-BOOL McuAs(const char* str);
+BOOL McuAs(const char *str);
 BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
 // avr.cpp
 extern DWORD AvrProgLdLen;

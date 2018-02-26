@@ -823,7 +823,9 @@ static void _Comment1(int l, const char *f, const char *str)
 {
   if(int_comment_level) {
     char buf[MAX_NAME_LEN];
-    snprintf(buf, MAX_NAME_LEN,"%s", str);
+    strncpy(buf, MAX_NAME_LEN-1, str);
+    buf[MAX_NAME_LEN] = '\0';
+    // http://demin.ws/blog/russian/2013/01/28/use-snprintf-on-different-platforms/
     _Op(l, f, NULL, INT_COMMENT, buf);
   }
 }

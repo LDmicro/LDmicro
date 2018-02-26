@@ -77,7 +77,7 @@ void MakeMainWindowControls(void)
     lvc.fmt = LVCFMT_LEFT;
 #define LV_ADD_COLUMN(hWnd, i, w, s) do { \
         lvc.iSubItem = i; \
-        lvc.pszText = const_cast<char*>(s); \
+        lvc.pszText = (LPSTR)(s); \
         lvc.iOrder = 0; \
         lvc.cx = w; \
         ListView_InsertColumn(hWnd, i, &lvc); \

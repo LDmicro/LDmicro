@@ -112,7 +112,7 @@ static int SimulateUartTxCountdown = 0; // 0 if UART ready to send; 1 if UART bu
 static void AppendToUartSimulationTextControl(BYTE b);
 
 static void SimulateIntCode(void);
-static const char* MarkUsedVariable(char *name, DWORD flag);
+static const char *MarkUsedVariable(char *name, DWORD flag);
 
 //-----------------------------------------------------------------------------
 int isVarInited(char *name)

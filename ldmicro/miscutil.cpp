@@ -50,7 +50,7 @@ HFONT MyFixedFont;
 //-----------------------------------------------------------------------------
 // printf-like debug function, to the Windows debug log.
 //-----------------------------------------------------------------------------
-void dbp(const char* str, ...)
+void dbp(const char *str, ...)
 {
     va_list f;
     char buf[1024*8];
