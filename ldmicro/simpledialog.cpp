@@ -894,7 +894,7 @@ void ShowReadAdcDialog(char *name)
 
 void ShowGotoDialog(int which, char *name)
 {
-    const char *labels[2] = { _("Destination rung(label):"), 0 };
+    const char *labels[] = { _("Destination rung(label):") };
     char *dests[] = { name };
 
     const char *s;
@@ -926,7 +926,7 @@ void ShowGotoDialog(int which, char *name)
 
 void ShowRandomDialog(char *name)
 {
-    const char *labels[] = { _("Destination:"), 0 };
+    const char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Random value"), 1, labels, 0, 0x1, 0x1, dests);
 }
@@ -939,7 +939,7 @@ void ShowSetPwmDialog(void *e)
     char *targetFreq    = s->targetFreq;
     char *resolution    = s->resolution;
 
-    const char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:"), 0};
+    const char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
     char *dests[] = { name+1, duty_cycle, targetFreq, resolution};
     comboRecord comboRec[] = { {0, NULL},
                                {0, NULL},
@@ -973,7 +973,7 @@ void ShowSetPwmDialog(void *e)
 void ShowUartDialog(int which, char *name)
 {
     const char *labels[] = { (which == ELEM_UART_RECV) ? _("Destination:") :
-        _("Source:"), 0 };
+        _("Source:") };
     char *dests[] = { name };
 
     NoCheckingOnBox[0] = TRUE;

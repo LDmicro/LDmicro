@@ -1092,6 +1092,7 @@ void ShowIoDialog(int item)
         case IO_TYPE_THI:
         case IO_TYPE_TLO:
             ShowSizeOfVarDialog(&Prog.io.assignment[item]);
+            SetFocus(IoList);
             return;
         case IO_TYPE_INTERNAL_RELAY:
             // nothing;

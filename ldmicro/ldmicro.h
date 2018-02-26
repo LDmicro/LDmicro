@@ -98,6 +98,8 @@ typedef signed long SDWORD;
 #define MNU_ROLL_HOME           0x1905
 #define MNU_ROLL_END            0x1906
 
+#define MNU_TAB                 0x1911
+
 #define MNU_INSERT_COMMENT      0x20
 #define MNU_INSERT_CONTACTS     0x21
 #define MNU_INSERT_CONT_RELAY   0x2101

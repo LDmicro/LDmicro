@@ -919,6 +919,15 @@ static void ProcessMenu(int code)
             PostQuitMessage(0);
             break;
 
+        case MNU_TAB:
+            if(GetFocus() == MainWindow) {
+                SetFocus(IoList);
+                BlinkCursor(0, 0, 0, 0);
+            } else if(GetFocus() == IoList) {
+                SetFocus(MainWindow);
+            }
+            break;
+
         case MNU_INSERT_COMMENT:
             CHANGING_PROGRAM(AddComment(_("--add comment here--")));
             break;

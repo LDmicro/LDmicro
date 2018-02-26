@@ -57,7 +57,7 @@ static HMENU        SchemeMenu;
 // listview used to maintain the list of I/O pins with symbolic names, plus
 // the internal relay too
 HWND                IoList;
-static int          IoListSelectionPoint;
+static int          IoListSelectionPoint = 0;
 static BOOL         IoListOutOfSync = FALSE;
 char                IoListSelectionName[MAX_NAME_LEN] = "";
 int                 IoListHeight;
@@ -400,6 +400,9 @@ HMENU MakeMainWindowMenus(void)
         _("Roll Home\tCtrl+Home"));
     AppendMenu(EditMenu, MF_STRING, MNU_ROLL_END,
         _("Roll End\tCtrl+End"));
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_STRING, MNU_TAB,
+        _("Moving cursor between the main window and the I/O list\tTab"));
 
     // instruction popup  menu
     InstructionMenu = CreatePopupMenu();
@@ -943,7 +946,6 @@ void RefreshStatusBar(void)
 void RefreshControlsToSettings(void)
 {
     int i;
-
     if(!IoListOutOfSync) {
         IoListSelectionPoint = -1;
         for(i = 0; i < Prog.io.count; i++) {
@@ -967,6 +969,9 @@ void RefreshControlsToSettings(void)
 
         if(ListView_InsertItem(IoList, &lvi) < 0) oops();
     }
+
+    if(IoListSelectionPoint < 0)
+        IoListSelectionPoint = 0;
     if(IoListSelectionPoint >= 0) {
         for(i = 0; i < Prog.io.count; i++) {
             ListView_SetItemState(IoList, i, 0, LVIS_SELECTED);

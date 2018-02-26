@@ -1974,7 +1974,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             //dbp("%s %s", l->d.counter.name, l->d.counter.max);
             if(IsNumber(l->d.counter.max)) {
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max) + 1);
-                // РїРµСЂРµС…РѕРґ 1->0 Р±СѓРґРµС‚ РЅР° Р·Р°РґР°РЅРЅРѕРј РїСЂРµРґРµР»Рµ
+                // переход 1->0 будет на заданном пределе
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_ELSE);
                 Op(INT_SET_BIT, stateInOut);

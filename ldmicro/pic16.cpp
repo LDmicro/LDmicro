@@ -4423,7 +4423,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 // Tosc = 1 / Fosc
                 // Fosc = Prog.mcuClock
                 // PR2 = 0..255 available
-                // Duty Cycle Ratio =ƒCCPR2L:CCP2CON<5:4>ƒ/ (4 * (PR2 + 1))
+                // Duty Cycle Ratio = CCPR2L:CCP2CON<5:4> / (4 * (PR2 + 1))
 
                 // PWM freq = Fosc / (PR2 + 1) * 4 * (TMR2 Prescale Value)
                 // PR2 = Fosc / (4 * (TMR2 Prescale Value) * targetFreq) - 1
