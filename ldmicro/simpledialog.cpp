@@ -429,7 +429,7 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
             sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
             const char *s4 = _("Not available");
             Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
-        } else if((period >= (long long) (1 << (SizeOfVar(name)*8-1)))
+        } else if((period >= (long long)(1 << (SizeOfVar(name)*8-1)))
                    && (Prog.mcu->portPrefix != 'L')) {
             const char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
                 "slower cycle time.");

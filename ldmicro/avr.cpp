@@ -33,7 +33,6 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-
 #define r0 0 // used muls. Don't use elsewhere!!!
 #define r1 1 // used muls. Don't use elsewhere!!!
 #define r2 2 // used in MultiplyRoutine, RANDOM
@@ -2251,7 +2250,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
             plcTmr.prescaler = max_prescaler;
             while(plcTmr.prescaler >= 1) {
                 for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
-                    err = plcTmr.ticksPerCycle - (long long int) (plcTmr.tmr) * plcTmr.prescaler * plcTmr.softDivisor;
+                    err = plcTmr.ticksPerCycle - (long long int)plcTmr.tmr * plcTmr.prescaler * plcTmr.softDivisor;
                     if(err < 0) err = -err;
 
                     if((bestErr > err)

@@ -24,6 +24,8 @@
 
 #include "ldmicro.h"
 
+// Try to common a bit of stuff between the dialog boxes, since only one
+// can be open at any time.
 HWND OkButton;
 HWND CancelButton;
 BOOL DialogDone;
@@ -41,13 +43,6 @@ HANDLE MainHeap;
 
 // Running checksum as we build up IHEX records.
 static int IhexChecksum;
-
-// Try to common a bit of stuff between the dialog boxes, since only one
-// can be open at any time.
-//static HWND OkButton;
-//static HWND CancelButton;
-//static BOOL DialogDone;
-//static BOOL DialogCancel;
 
 HFONT MyNiceFont;
 HFONT MyFixedFont;

@@ -1153,7 +1153,7 @@ static BOOL CheckStaySameElem(int which, void *elem)
 }
 
 //-----------------------------------------------------------------------------
-BOOL CheckEndOfRungElem(int which, void *elem)
+static BOOL CheckEndOfRungElem(int which, void *elem)
 {
     ElemLeaf *l = (ElemLeaf *)elem;
 
