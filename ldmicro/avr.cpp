@@ -536,7 +536,7 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void _Comment(const char *str, ...)
+static void Comment(const char *str, ...)
 {
   if(asm_comment_level) {
     va_list f;
@@ -546,8 +546,6 @@ static void _Comment(const char *str, ...)
     Instruction(OP_COMMENTINT, buf);
   }
 }
-
-#define Comment(str, ...) _Comment(str, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 // Allocate a unique descriptor for a forward reference. Later that forward
@@ -2924,18 +2922,18 @@ static void WriteRuntime(void)
     #endif
     for(i = 0; i < 34; i++)
         Instruction(OP_RETI);
-    Comment("Interrupt table end.","");
+    Comment("Interrupt table end.");
     #ifdef TABLE_IN_FLASH
     InitTables();
     #endif
 
     FwdAddrIsNow(resetVector);
-    Comment("This is Reset Vector",""); // 1
+    Comment("This is Reset Vector"); // 1
     if(Prog.cycleTimer >= 0) { // 2
-      Comment("ConfigureTimerForPlcCycle","");
+      Comment("ConfigureTimerForPlcCycle");
       ConfigureTimerForPlcCycle(Prog.cycleTime);
     }
-    Comment("Watchdog on",""); // 3
+    Comment("Watchdog on"); // 3
     Instruction(OP_CLI);
     Instruction(OP_WDR);
 //  OrMemory(REG_WDTCR, (1<<WDCE) | (1<<WDE));
@@ -2943,19 +2941,19 @@ static void WriteRuntime(void)
     #ifdef USE_WDT
     STOREval(REG_WDTCR, (1<<WDCE) | (1<<WDE));
     #endif
-    Comment("- Got only four cycles to set the new values from here! -","");
+    Comment("- Got only four cycles to set the new values from here! -");
     WriteMemoryCurrAddr((1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s
 //  WriteMemoryCurrAddr((1<<WDE) | (1<<WDP3) | (1<<WDP0)); // 8s
 ////STOREval(REG_WDTCR, (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s BAD, more then four cycles
 ////WriteMemory(REG_WDTCR, (1<<WDE) | (1<<WDP3) | (1<<WDP0)); // BAD, more then four cycles
     Instruction(OP_SEI);
 
-    Comment("Set up the stack, which we use only when we jump to multiply/divide routine",""); // 4
+    Comment("Set up the stack, which we use only when we jump to multiply/divide routine"); // 4
     WORD topOfMemory = (WORD)(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len - 1);
     WriteMemory(REG_SPH, topOfMemory >> 8, topOfMemory);
     WriteMemory(REG_SPL, topOfMemory & 0xff, topOfMemory);
 
-    Comment("Zero out the memory used for timers, internal relays, etc.",""); // 5
+    Comment("Zero out the memory used for timers, internal relays, etc."); // 5
     LoadXAddr(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len);
     Instruction(OP_LDI, 16, 0);
     Instruction(OP_LDI, r24, (Prog.mcu->ram[0].len) & 0xff);
@@ -2976,12 +2974,12 @@ static void WriteRuntime(void)
     Instruction(OP_BRNE, loopZero);
 
     if(plcTmr.softDivisor > 1) { // RAM used, after zero out // 5
-        Comment("Configure PLC Timer softDivisor","");
+        Comment("Configure PLC Timer softDivisor");
         MemForVariable("$softDivisor", &plcTmr.softDivisorAddr);
         WriteLiteralToMemory(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
     }
 
-    Comment("Set up I/O pins",""); // 6
+    Comment("Set up I/O pins"); // 6
     BYTE isInput[MAX_IO_PORTS], isAnsel[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
     BuildDirectionRegisters(isInput, isAnsel, isOutput);
 
@@ -2991,7 +2989,7 @@ static void WriteRuntime(void)
             return;
         }
 
-        Comment("UartFunctionUsed. UART setup","");
+        Comment("UartFunctionUsed. UART setup");
         int divisor;
         double actual;
         double percentErr;
@@ -3008,7 +3006,7 @@ static void WriteRuntime(void)
     }
     // All PWM outputs setted in BuildDirectionRegisters
 
-    Comment("Turn on the pull-ups, and drive the outputs low to start","");
+    Comment("Turn on the pull-ups, and drive the outputs low to start");
     for(i = 0; i < MAX_IO_PORTS; i++) {
         if(!IS_MCU_REG(i)) {
             // skip this one, dummy entry for MCUs with I/O ports not
@@ -3020,7 +3018,7 @@ static void WriteRuntime(void)
         }
     }
   //Comment("and now the generated PLC code will follow");
-    Comment("Begin Of PLC Cycle","");
+    Comment("Begin Of PLC Cycle");
     BeginOfPLCCycle = AvrProgWriteP;
     // ConfigureTimerForPlcCycle
     if(Prog.cycleTimer == 0) {
@@ -3049,7 +3047,7 @@ static void WriteRuntime(void)
         ;
     } else oops();
 
-    Comment("Watchdog reset","");
+    Comment("Watchdog reset");
     Instruction(OP_WDR);
 
     #if 1 // 1
@@ -3061,7 +3059,7 @@ static void WriteRuntime(void)
     #endif
 
     if(Prog.cycleDuty) {
-        Comment("SetBit YPlcCycleDuty","");
+        Comment("SetBit YPlcCycleDuty");
         MemForSingleBit(YPlcCycleDuty, FALSE, &addrDuty, &bitDuty);
         SetBit(addrDuty, bitDuty);
     }
@@ -3176,17 +3174,17 @@ static void CompileFromIntermediate(void)
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
-                Comment("INT_COPY_VAR_BIT_TO_VAR_BIT","");
+                Comment("INT_COPY_VAR_BIT_TO_VAR_BIT");
                 break;
 
             case INT_SET_BCD2BIN:
-                Comment("INT_SET_BCD2BIN","");
+                Comment("INT_SET_BCD2BIN");
                 oops();
                 break;
 
             case INT_SET_BIN2BCD:
             // 0..99
-                Comment("INT_SET_BIN2BCD","");
+                Comment("INT_SET_BIN2BCD");
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
@@ -4525,26 +4523,26 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_UART_SEND_READY: {
-                Comment("INT_UART_SEND_READY","");
+                Comment("INT_UART_SEND_READY");
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 GetUartSendReady(addr1, bit1);
                 break;
             }
             case INT_UART_SEND_BUSY: {
-                Comment("INT_UART_SEND_BUSY","");
+                Comment("INT_UART_SEND_BUSY");
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 GetUartSendBusy(addr1, bit1);
                 break;
             }
             case INT_UART_RECV_AVAIL: {
-                Comment("INT_UART_RECV_AVAIL","");
+                Comment("INT_UART_RECV_AVAIL");
                 MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
                 CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
 
             case INT_UART_SEND: {
-                Comment("INT_UART_SEND","");
+                Comment("INT_UART_SEND");
                 MemForVariable(a->name1, &addr1);
                 MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
 
@@ -4569,7 +4567,7 @@ static void CompileFromIntermediate(void)
                 break;
             }
             case INT_UART_SEND1: {
-                Comment("INT_UART_SEND1","");
+                Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
 
                 DWORD isBusy = AllocFwdAddr();
@@ -4619,7 +4617,7 @@ static void CompileFromIntermediate(void)
                 break;
 
             case INT_COMMENT:
-                Comment(a->name1,"");
+                Comment(a->name1);
                 break;
 
             case INT_AllocKnownAddr:
@@ -5019,7 +5017,7 @@ static void MultiplyRoutine8(void) //5.1 Algorithm Description
 //-----------------------------------------------------------------------------
 static void MultiplyRoutine8(void)
 {
-    Comment("MultiplyRoutine8","");
+    Comment("MultiplyRoutine8");
     FwdAddrIsNow(MultiplyAddress8);
     Instruction(OP_MULS, r20, r16);
     Instruction(OP_MOVW, r20, r0);
@@ -5105,7 +5103,7 @@ muls16x16_32:
 //-----------------------------------------------------------------------------
 static void MultiplyRoutine(void)
 {
-    Comment("MultiplyRoutine16","");
+    Comment("MultiplyRoutine16");
     FwdAddrIsNow(MultiplyAddress);
     Instruction(OP_MOVW,  r18, r20);        // save op1; r19:r18 <- r21:r20
     Instruction(OP_CLR,   r2, 0);
@@ -5133,7 +5131,7 @@ static void MultiplyRoutine(void)
 //-----------------------------------------------------------------------------
 static void MultiplyRoutine24(void)
 {
-    Comment("MultiplyRoutine24","");
+    Comment("MultiplyRoutine24");
     FwdAddrIsNow(MultiplyAddress24);
     Instruction(OP_MUL,   r20, r16);   //l * l
     Instruction(OP_MOVW,  r10, r0);
@@ -5162,7 +5160,7 @@ static void MultiplyRoutine24(void)
 //-----------------------------------------------------------------------------
 static void DivideRoutine(void)
 {
-    Comment("DivideRoutine16","");
+    Comment("DivideRoutine16");
     FwdAddrIsNow(DivideAddress);
 
     DWORD d16s_1 = AllocFwdAddr();
@@ -5228,7 +5226,7 @@ static void DivideRoutine(void)
 //-----------------------------------------------------------------------------
 static void DivideRoutine24(void)
 {
-    Comment("DivideRoutine24","");
+    Comment("DivideRoutine24");
     FwdAddrIsNow(DivideAddress24);
 
     DWORD d16s_1 = AllocFwdAddr();
@@ -5305,7 +5303,7 @@ static void DivideRoutine24(void)
 //-----------------------------------------------------------------------------
 static void DivideRoutine8(void)
 {
-    Comment("DivideRoutine8","");
+    Comment("DivideRoutine8");
     FwdAddrIsNow(DivideAddress8);
 
     DWORD d16s_1 = AllocFwdAddr();
@@ -5392,7 +5390,7 @@ void CompileAvr(char *outFile)
 ".ORG 0x0\n"
 ";TABSIZE = 8\n"
     ,Prog.mcu->mcuName, Prog.mcu->mcuList, Prog.mcu->mcuList, Prog.mcu->mcuInc);
-    Comment("GOTO, progStart","");
+    Comment("GOTO, progStart");
 
     //***********************************************************************
     // Interrupt Vectors Table
@@ -6457,10 +6455,10 @@ void CompileAvr(char *outFile)
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     WriteRuntime();
 
-    Comment("CompileFromIntermediate BEGIN","");
+    Comment("CompileFromIntermediate BEGIN");
     IntPc = 0; // Ok
     CompileFromIntermediate();
-    Comment("CompileFromIntermediate END","");
+    Comment("CompileFromIntermediate END");
 
     DWORD i;
     for(i = 0; i < MAX_RUNGS; i++)
@@ -6471,12 +6469,12 @@ void CompileAvr(char *outFile)
             Prog.HexInRung[AvrProg[i].rung]++;
 
     if(Prog.cycleDuty) {
-        Comment("ClearBit YPlcCycleDuty","");
+        Comment("ClearBit YPlcCycleDuty");
         ClearBit(addrDuty, bitDuty);
     }
 
     rungNow = -30;
-    Comment("GOTO next PLC cycle","");
+    Comment("GOTO next PLC cycle");
     /*
     if(Prog.mcu->core >= ClassicCore8K) {
         Instruction(OP_LDI, ZL, (BeginOfPLCCycle & 0xff));

@@ -711,7 +711,7 @@ static void _Comment(FILE *f, const char *str, ...)
     vsnprintf(buf, MAX_NAME_LEN, str, v);
     fprintf(f, "//%s\n", buf);
 }
-#define Comment(str, ...) _Comment(f, str, __VA_ARGS__)
+#define Comment(...) _Comment(f, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 static int indent = 1;
@@ -1970,7 +1970,7 @@ void CompileAnsiC(char *dest, int MNU)
 "// ...\n"
 "\n");
     if(UartFunctionUsed()) {
-      Comment("Set up UART","");
+      Comment("Set up UART");
       fprintf(f,
 "   Serial.begin(%d);\n"
 "   while(!Serial) {\n"
@@ -1978,10 +1978,10 @@ void CompileAnsiC(char *dest, int MNU)
 "   }\n"
       , Prog.baudRate);
     }
-    Comment(" Set up analog reference type","");
+    Comment(" Set up analog reference type");
     fprintf(f,"    analogReference(analogReference_type);\n\n");
 
-    Comment(" Set up I/O pins","");
+    Comment(" Set up I/O pins");
     int i;
     for(i = 0; i < Prog.io.count; i++) {
         if((Prog.io.assignment[i].type == IO_TYPE_INT_INPUT)
