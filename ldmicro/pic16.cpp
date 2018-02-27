@@ -4045,11 +4045,11 @@ static void CompileFromIntermediate(BOOL topLevel)
                 CopyRegToReg(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
                 break;
             }
-            case INT_SET_VARIABLE_AND: Comment("INT_SET_VARIABLE_AND"); goto and;
-            case INT_SET_VARIABLE_OR : Comment("INT_SET_VARIABLE_OR "); goto and;
+            case INT_SET_VARIABLE_AND: Comment("INT_SET_VARIABLE_AND"); goto andlabel;
+            case INT_SET_VARIABLE_OR : Comment("INT_SET_VARIABLE_OR "); goto andlabel;
                 break;
-            case INT_SET_VARIABLE_XOR: Comment("INT_SET_VARIABLE_XOR"); goto and;
-            and: {
+            case INT_SET_VARIABLE_XOR: Comment("INT_SET_VARIABLE_XOR"); goto andlabel;
+            andlabel: {
                 CheckSovNames(a);
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
@@ -5536,7 +5536,7 @@ BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen)
         plcTmr.prescaler = max_prescaler;
         while(plcTmr.prescaler >= 1) {
             for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
-                err = plcTmr.ticksPerCycle - long long int (plcTmr.tmr) * plcTmr.prescaler * plcTmr.softDivisor;
+                err = plcTmr.ticksPerCycle - (long long int)plcTmr.tmr * plcTmr.prescaler * plcTmr.softDivisor;
                 if(err < 0) err = -err;
 
                 if((PicProgLdLen <= 0)

@@ -535,7 +535,7 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void _Comment(const char *str, ...)
+static void Comment(const char *str, ...)
 {
   if(asm_comment_level) {
     va_list f;
@@ -545,8 +545,6 @@ static void _Comment(const char *str, ...)
     Instruction(OP_COMMENTINT, buf);
   }
 }
-
-#define Comment(str, ...) _Comment(str, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 // Allocate a unique descriptor for a forward reference. Later that forward
@@ -2252,7 +2250,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
             plcTmr.prescaler = max_prescaler;
             while(plcTmr.prescaler >= 1) {
                 for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
-                    err = plcTmr.ticksPerCycle - long long int (plcTmr.tmr) * plcTmr.prescaler * plcTmr.softDivisor;
+                    err = plcTmr.ticksPerCycle - (long long int)plcTmr.tmr * plcTmr.prescaler * plcTmr.softDivisor;
                     if(err < 0) err = -err;
 
                     if((bestErr > err)

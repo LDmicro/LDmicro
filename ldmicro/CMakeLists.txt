@@ -69,6 +69,7 @@ set(LDMICRO_SRC_LIST
     stdafx.cpp
 
     ../common/win32/freeze.cpp
+    ../common/win32/freeze.h
 
     "${CMAKE_CURRENT_SOURCE_DIR}/obj/helptext.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/obj/lang-tables.h"
@@ -123,7 +124,9 @@ execute_process(
     )
 
 # For custom manifest
-set(CMAKE_EXE_LINKER_FLAGS "/MANIFEST:NO")
+if(MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "/MANIFEST:NO")
+endif()
 
 
 if(${LDLANG} STREQUAL "ALL")

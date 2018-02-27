@@ -390,7 +390,7 @@ static void PoweredText(BOOL powered)
 // string may contain special characters to indicate formatting (syntax
 // highlighting).
 //-----------------------------------------------------------------------------
-static int FormattedStrlen(char *str)
+static int FormattedStrlen(const char *str)
 {
     int l = 0;
     while(*str) {
@@ -437,7 +437,7 @@ static void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
 // Like CenterWithWires, but for an arbitrary width position (e.g. for ADD
 // and SUB, which are double-width).
 //-----------------------------------------------------------------------------
-static void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before,
+static void CenterWithWiresWidth(int cx, int cy, const char *str, BOOL before,
     BOOL after, int totalWidth, int which)
 {
     int extra = totalWidth - FormattedStrlen(str);
@@ -463,13 +463,13 @@ static void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before,
 // the left and right coloured according to the powered state. Draws on the
 // middle line.
 //-----------------------------------------------------------------------------
-static void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before,
+static void CenterWithWiresWidth(int cx, int cy, const char *str, BOOL before,
     BOOL after, int totalWidth)
 {
     CenterWithWiresWidth(cx, cy, str, before, after, totalWidth, 0);
 }
 
-static void CenterWithWires(int cx, int cy, char *str, BOOL before, BOOL after)
+static void CenterWithWires(int cx, int cy, const char *str, BOOL before, BOOL after)
 {
     CenterWithWiresWidth(cx, cy, str, before, after, POS_WIDTH, 0);
 }

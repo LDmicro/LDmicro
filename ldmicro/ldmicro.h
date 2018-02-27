@@ -1100,7 +1100,7 @@ extern McuIoInfo SupportedMcus[]; // NUM_SUPPORTED_MCUS
 // memory debugging, because I often get careless; ok() will check that the
 // heap used for all the program storage is not yet corrupt, and oops() if
 // it is
-void CheckHeap(char *file, int line);
+void CheckHeap(const char* file, int line);
 #define ok() CheckHeap(__FILE__, __LINE__)
 extern ULONGLONG PrevWriteTime;
 extern ULONGLONG LastWriteTime;
@@ -1155,7 +1155,7 @@ extern BOOL SelectionActive;
 extern BOOL ThisHighlighted;
 
 // draw_outputdev.cpp
-extern void (*DrawChars)(int, int, char *);
+extern void (*DrawChars)(int, int, const char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow(void);
 BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
@@ -1381,6 +1381,10 @@ extern char *AboutText[];
     (r):\
     ((r) >= 0.0) ? ((r) + 0.5) : ((r) - 0.5))
 #endif
+extern HWND OkButton;
+extern HWND CancelButton;
+extern BOOL DialogDone;
+extern BOOL DialogCancel;
 
 #define doLOG
 #ifdef doLOG
@@ -1475,10 +1479,6 @@ extern BOOL RunningInBatchMode;
 extern BOOL RunningInTestMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
-extern HWND OkButton;
-extern HWND CancelButton;
-extern BOOL DialogDone;
-extern BOOL DialogCancel;
 BOOL IsNumber(char *str);
 size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
@@ -1746,7 +1746,7 @@ int McuUART();
 extern DWORD RamSection;
 extern DWORD RomSection;
 extern DWORD EepromAddrFree;
-extern int VariableCount;
+//extern int VariableCount;
 void PrintVariables(FILE *f);
 DWORD isVarUsed(char *name);
 int isVarInited(char *name);

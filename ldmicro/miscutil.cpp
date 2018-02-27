@@ -24,6 +24,13 @@
 
 #include "ldmicro.h"
 
+// Try to common a bit of stuff between the dialog boxes, since only one
+// can be open at any time.
+HWND OkButton;
+HWND CancelButton;
+BOOL DialogDone;
+BOOL DialogCancel;
+
 // We should display messages to the user differently if we are running
 // interactively vs. in batch (command-line) mode.
 BOOL RunningInBatchMode = FALSE;
@@ -36,13 +43,6 @@ HANDLE MainHeap;
 
 // Running checksum as we build up IHEX records.
 static int IhexChecksum;
-
-// Try to common a bit of stuff between the dialog boxes, since only one
-// can be open at any time.
-HWND OkButton;
-HWND CancelButton;
-BOOL DialogDone;
-BOOL DialogCancel;
 
 HFONT MyNiceFont;
 HFONT MyFixedFont;
@@ -161,7 +161,7 @@ void CompileSuccessfulMessage(char *str)
 // Check the consistency of the heap on which all the PLC program stuff is
 // stored.
 //-----------------------------------------------------------------------------
-void CheckHeap(char *file, int line)
+void CheckHeap(const char *file, int line)
 {
     static unsigned int SkippedCalls;
     static SDWORD LastCallTime;

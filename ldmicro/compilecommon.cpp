@@ -52,7 +52,7 @@ static struct {
 ^^^ VariablesList moved to ldmicro.h
 */
 VariablesList Variables[MAX_IO];
-int VariableCount = 0;
+static int VariableCount = 0;
 
 #define NO_MEMORY   0xffffffff
 static DWORD    NextBitwiseAllocAddr;

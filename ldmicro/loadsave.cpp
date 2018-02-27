@@ -701,9 +701,11 @@ BOOL LoadProjectFromFile(char *filename)
             break;
         }
     }
-    if(strcmp(line, "PROGRAM") != 0) goto failed;
 
     int rung = -2;
+
+    if(strcmp(line, "PROGRAM") != 0) goto failed;
+
     for(rung = 0;;) {
         if(!fgets(line, sizeof(line), f)) break;
         if(!strlen(strspace(line))) continue;

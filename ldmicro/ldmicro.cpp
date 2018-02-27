@@ -286,7 +286,7 @@ long int fsize(char *filename)
 //-----------------------------------------------------------------------------
 static void isErr(int Err, char *r)
 {
-  char *s;
+  const char *s;
   switch(Err){
     case 0:s="The system is out of memory or resources"; break;
     case ERROR_BAD_FORMAT:s="The .exe file is invalid"; break;
@@ -478,7 +478,7 @@ static void postCompile(char *MNU)
     if(!ExistFile(r))
         return;
 
-    char *ISA = "_NULL_";
+    const char *ISA = "_NULL_";
     if(Prog.mcu)
         ISA = GetIsaName(Prog.mcu->whichIsa);
 
@@ -2666,7 +2666,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     if(memcmp(lpCmdLine, "/c", 2)==0) {
         RunningInBatchMode = TRUE;
 
-        char *err =
+        const char *err =
             "Bad command line arguments: run 'ldmicro /c src.ld dest.ext'";
 
         char *source = lpCmdLine + 2;
@@ -2706,7 +2706,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
         char exportFile[MAX_PATH];
 
-        char *err =
+        const char *err =
             "Bad command line arguments: run 'ldmicro /t src.ld [dest.txt]'";
 
         char *source = lpCmdLine + 2;

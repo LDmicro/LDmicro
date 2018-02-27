@@ -869,7 +869,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
     int b = byteNeeded(period);
     if((SizeOfVar(name) != b) && (b<=4))
         SetSizeOfVar(name, b);
-    maxPeriod=long long int(1) << (SizeOfVar(name)*8-1); maxPeriod--;
+    maxPeriod = (long long int)(1) << (SizeOfVar(name)*8-1); maxPeriod--;
 
     if(period < 0) {
         Error(_("Delay cannot be zero or negative."));

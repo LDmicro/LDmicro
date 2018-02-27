@@ -27,7 +27,7 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-void (*DrawChars)(int, int, char *);
+void (*DrawChars)(int, int, const char *);
 
 // After an undo all the memory addresses change but make an effort to put
 // the cursor roughly where it should be.
@@ -112,7 +112,7 @@ void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 // Output a string to the screen at a particular location, in character-
 // sized units.
 //-----------------------------------------------------------------------------
-static void DrawCharsToScreen(int cx, int cy, char *str)
+static void DrawCharsToScreen(int cx, int cy, const char *str)
 {
     cy -= ScrollYOffset*POS_HEIGHT;
     if(cy < -2) return;
@@ -291,7 +291,7 @@ void PaintWindow(void)
             SetTextColor(Hdc, InSimulationMode ? HighlightColours.simRungNum :
                 HighlightColours.rungNum);
             SelectObject(Hdc, FixedWidthFont);
-            int rung = i + 1;
+
             y = Y_PADDING + FONT_HEIGHT*cy;
             yp = y + FONT_HEIGHT*(POS_HEIGHT/2) -
                 POS_HEIGHT*FONT_HEIGHT*ScrollYOffset;
@@ -594,7 +594,7 @@ void InitForDrawing(void)
 // DrawChars function, for drawing to the export buffer instead of to the
 // screen.
 //-----------------------------------------------------------------------------
-static void DrawCharsToExportBuffer(int cx, int cy, char *str)
+static void DrawCharsToExportBuffer(int cx, int cy, const char *str)
 {
     while(*str) {
 //      if(*str >= 10) {

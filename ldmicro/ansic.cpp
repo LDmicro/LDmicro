@@ -711,7 +711,7 @@ static void _Comment(FILE *f, const char *str, ...)
     vsnprintf(buf, MAX_NAME_LEN, str, v);
     fprintf(f, "//%s\n", buf);
 }
-#define Comment(str, ...) _Comment(f, str, __VA_ARGS__)
+#define Comment(...) _Comment(f, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 static int indent = 1;
