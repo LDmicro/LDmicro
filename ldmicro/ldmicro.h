@@ -1791,7 +1791,6 @@ extern int rungNow;
 void IntDumpListing(char *outFile);
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust); // delay in us
 BOOL GenerateIntermediateCode(void);
-BOOL CheckEndOfRungElem(int which, void *elem);
 BOOL CheckLeafElem(int which, void *elem);
 extern DWORD addrRUartRecvErrorFlag;
 extern int    bitRUartRecvErrorFlag;
