@@ -186,7 +186,7 @@ static int GetPercentCharactersCount(char * Search)
     return found;
 }
 
-static WORD AddrForVariable(char *name)
+static WORD AddrForVariable(const char *name)
 {
     // Look within the variables for an already known entry.
     int i;

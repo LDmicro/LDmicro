@@ -30,7 +30,7 @@ for $manual (<manual*txt>) {
 
     print <<EOT;
 $ifdef
-char *$name\[] = {
+const char *$name\[] = {
 EOT
 
     open(IN, $manual) or die;

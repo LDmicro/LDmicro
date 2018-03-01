@@ -1027,11 +1027,11 @@ typedef struct McuExtIntPinInfoTag {
 #define IS_MCU_REG(i) ((Prog.mcu) && (Prog.mcu->inputRegs[i]) && (Prog.mcu->outputRegs[i]) && (Prog.mcu->dirRegs[i]))
 
 typedef struct McuIoInfoTag {
-    char            *mcuName;
-    char            *mcuList;
-    char            *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
-    char            *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
-    char            *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
+    const char       *mcuName;
+    const char       *mcuList;
+    const char       *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
+    const char       *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
+    const char       *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
     char             portPrefix;
     DWORD            inputRegs[MAX_IO_PORTS];         // A is 0, J is 9
     DWORD            outputRegs[MAX_IO_PORTS];
@@ -1118,7 +1118,7 @@ char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
 long int fsize(char filename);
-char *GetMnuName(int MNU);
+const char* GetMnuName(int MNU);
 int GetMnu(char *MNU_name);
 
 // maincontrols.cpp
@@ -1281,7 +1281,7 @@ void PasteRung(int PasteTo);
 void NewProgram(void);
 //ElemLeaf *AllocLeaf(void);
 #define AllocLeaf() _AllocLeaf(__LINE__, __FILE__)
-ElemLeaf *_AllocLeaf(int l, char *f);
+ElemLeaf *_AllocLeaf(int l, const char* f);
 ElemSubcktSeries *AllocSubcktSeries(void);
 ElemSubcktParallel *AllocSubcktParallel(void);
 void FreeCircuit(int which, void *any);
@@ -1308,7 +1308,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung);
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 char *strspace(char *str);
 char *strspacer(char *str);
-char *FrmStrToStr(char *dest, char *src);
+char *FrmStrToStr(char *dest, const char *src);
 
 // iolist.cpp
 int IsIoType(int type);
@@ -1361,8 +1361,8 @@ int ishobdigit(int c);
 int isalpha_(int c);
 int isal_num(int c);
 int isname(char *name);
-double hobatof(char *str);
-SDWORD hobatoi(char *str);
+double hobatof(const char *str);
+SDWORD hobatoi(const char* str);
 void ShowSizeOfVarDialog(PlcProgramSingleIo *io);
 
 // confdialog.cpp
@@ -1373,7 +1373,7 @@ void ShowColorDialog(void);
 
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
-extern char *AboutText[];
+extern const char *AboutText[];
 
 // miscutil.cpp
 #ifndef round
@@ -1451,12 +1451,12 @@ const char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
 char *GetPinName(int pin, char *pinName);
-char *PinToName(int pin);
-char *ArduinoPinName(McuIoPinInfo *iop);
+const char* PinToName(int pin);
+const char* ArduinoPinName(McuIoPinInfo *iop);
 void SetMcu(McuIoInfo *mcu);
 int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
-McuIoPinInfo *PinInfoForName(char *name);
+McuIoPinInfo *PinInfoForName(const char* name);
 McuSpiInfo *GetMcuSpiInfo(char *name);
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
@@ -1479,7 +1479,7 @@ extern BOOL RunningInBatchMode;
 extern BOOL RunningInTestMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
-BOOL IsNumber(char *str);
+BOOL IsNumber(const char *str);
 size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 char *strDelSpace(char *dest, char *src);
@@ -1511,14 +1511,14 @@ extern BOOL InSimulationMode;
 //extern BOOL SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
 void SetSimulationVariable(char *name, SDWORD val);
-SDWORD GetSimulationVariable(char *name, BOOL forIoList);
-SDWORD GetSimulationVariable(char *name);
+SDWORD GetSimulationVariable(const char *name, BOOL forIoList);
+SDWORD GetSimulationVariable(const char* name);
 void SetSimulationStr(char *name, char *val);
 char *GetSimulationStr(char *name);
-int FindOpName(int op, char *name1);
-int FindOpName(int op, char *name1, char *name2);
-int FindOpNameLast(int op, char *name1);
-int FindOpNameLast(int op, char *name1, char *name2);
+int FindOpName(int op, const char* name1);
+int FindOpName(int op, const char* name1, const char* name2);
+int FindOpNameLast(int op, const char *name1);
+int FindOpNameLast(int op, const char *name1, const char *name2);
 // Assignment of the `variables,' used for timers, counters, arithmetic, and
 // other more general things. Allocate 2 octets (16 bits) per.
 // Allocate 1 octets for  8-bits variables.
@@ -1755,18 +1755,18 @@ void AllocStart(void);
 DWORD AllocOctetRam(void);
 DWORD AllocOctetRam(int bytes);
 void AllocBitRam(DWORD *addr, int *bit);
-int MemForVariable(char *name, DWORD *addrl, int sizeOfVar);
-int MemForVariable(char *name, DWORD *addr);
+int MemForVariable(const char* name, DWORD *addrl, int sizeOfVar);
+int MemForVariable(const char* name, DWORD *addr);
 int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
 int MemOfVar(char *name, DWORD *addr);
-BYTE MuxForAdcVariable(char *name);
+BYTE MuxForAdcVariable(const char* name);
 int SingleBitAssigned(char *name);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput);
-void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit);
-void MemForSingleBit(char *name, DWORD *addr, int *bit);
+void MemForSingleBit(const char* name, BOOL forRead, DWORD *addr, int *bit);
+void MemForSingleBit(const char *name, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile(void);
-int SetSizeOfVar(char *name, int sizeOfVar);
-int SizeOfVar(char *name);
+int SetSizeOfVar(const char* name, int sizeOfVar);
+int SizeOfVar(const char* name);
 int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
@@ -1802,15 +1802,15 @@ BOOL UartRecvUsed(void);
 BOOL UartSendUsed(void);
 BOOL SpiFunctionUsed(void);
 BOOL Bin32BcdRoutineUsed(void);
-SDWORD CheckMakeNumber(char *str);
+SDWORD CheckMakeNumber(const char* str);
 void WipeIntMemory(void);
 BOOL CheckForNumber(char *str);
 int TenToThe(int x);
 int xPowerY(int x, int y);
 BOOL MultiplyRoutineUsed(void);
 BOOL DivideRoutineUsed(void);
-void GenSymOneShot(char *dest, char *name1, char *name2);
-int getradix(char *str);
+void GenSymOneShot(char *dest, const char* name1, const char* name2);
+int getradix(const char* str);
 SDWORD CalcDelayClock(long long clocks); // in us
 
 // pic16.cpp

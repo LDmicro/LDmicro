@@ -30,7 +30,7 @@
 //-----------------------------------------------------------------------------
 
 //ElemLeaf *AllocLeaf()
-ElemLeaf *_AllocLeaf(int l, char *f)
+ElemLeaf *_AllocLeaf(int l, const char *f)
 {
     return (ElemLeaf *)CheckMalloc(sizeof(ElemLeaf));
 }
@@ -1706,7 +1706,7 @@ BOOL SleepFunctionUsed(void)
 // copy the selected rung temporar, InsertRung and
 // save in the new rung temp
 //-----------------------------------------------------------------------------
-char *CLP="ldmicro.tmp";
+const char *CLP="ldmicro.tmp";
 void CopyRungDown(void)
 {
     int i = RungContainingSelected();

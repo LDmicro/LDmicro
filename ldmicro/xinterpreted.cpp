@@ -47,7 +47,7 @@ int PlcIos_AppendAndGet(char *name)
     return PlcIos_size - 1;
 }
 
-static int CheckRange(int value, char *name)
+static int CheckRange(int value, const char *name)
 {
     if (value < 0 || value > 255) {
         char msg[80];
