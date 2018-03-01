@@ -1279,9 +1279,7 @@ void CopyRung(void);
 void CopyElem(void);
 void PasteRung(int PasteTo);
 void NewProgram(void);
-//ElemLeaf *AllocLeaf(void);
-#define AllocLeaf() _AllocLeaf(__LINE__, __FILE__)
-ElemLeaf *_AllocLeaf(int l, const char* f);
+ElemLeaf *AllocLeaf(void);
 ElemSubcktSeries *AllocSubcktSeries(void);
 ElemSubcktParallel *AllocSubcktParallel(void);
 void FreeCircuit(int which, void *any);

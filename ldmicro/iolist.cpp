@@ -79,7 +79,7 @@ int IsIoType(int type)
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
 //-----------------------------------------------------------------------------
-static void AppendIo(const char *IOname, int type)
+static void AppendIo(char *IOname, int type)
 {
     if(!IOname || !strlen(IOname))
         return;
@@ -87,10 +87,11 @@ static void AppendIo(const char *IOname, int type)
     strcpy(name, IOname);
     if(!IsNumber(IOname)) {
         char *c;
-        while((c = strchr(name, '-')))
+        while(c = strchr(IOname, '-'))
             *c = '_';
         if(!strstr(name, IOname)) {
-            Error(_(" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"), IOname, name);
+            Error(_(" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"), name, IOname);
+            strcpy(name, IOname);
             ProgramChangedNotSaved = TRUE;
         }
     }
@@ -460,7 +461,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         }
         {
         int n, n0;
-        const char *nameTable;
+        char *nameTable;
         case ELEM_7SEG: nameTable = "char7seg";  n = LEN7SEG;  n0=1; goto xseg;
         case ELEM_9SEG: nameTable = "char9seg";  n = LEN9SEG;  n0=2; goto xseg;
         case ELEM_14SEG:nameTable = "char14seg"; n = LEN14SEG; n0=2; goto xseg;

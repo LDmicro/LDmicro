@@ -691,6 +691,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
 const char *ArduinoPinName(McuIoPinInfo *iop)
 {
     if(iop)
+      if(iop->ArduinoName)
         if(strlen(iop->ArduinoName))
           return iop->ArduinoName;
     return "-1";

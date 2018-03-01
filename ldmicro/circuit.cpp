@@ -29,8 +29,7 @@
 // Convenience routines for allocating frequently-used data structures.
 //-----------------------------------------------------------------------------
 
-//ElemLeaf *AllocLeaf()
-ElemLeaf *_AllocLeaf(int l, const char *f)
+ElemLeaf *AllocLeaf()
 {
     return (ElemLeaf *)CheckMalloc(sizeof(ElemLeaf));
 }
