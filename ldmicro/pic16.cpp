@@ -571,7 +571,7 @@ static int IsOperation(PicOp op)
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2, char *comment)
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2, const char *comment)
 {
     if(IsOperation(op) >= IS_BANK) {
         if(arg1 == -1) {
@@ -665,7 +665,7 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op)
 }
 
 //-----------------------------------------------------------------------------
-static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2, char *comment)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2, const char *comment)
 //for setiing interrupt vector, page correcting, etc
 {
     DWORD savePicProgWriteP = PicProgWriteP;
@@ -692,7 +692,7 @@ static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, 
    _SetInstruction(l, f, args, addr, op, arg1, 0, NULL);
 }
 
-static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, char *comment)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, const char *comment)
 {
    _SetInstruction(l, f, args, addr, op, arg1, 0, comment);
 }
@@ -2349,7 +2349,7 @@ static BOOL IsInput(DWORD addr)
     return FALSE;
 }
 
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest, char *nameSrc)
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *nameDest, const char *nameSrc)
 {
     if((addrDest==addrSrc) && (bitDest==bitSrc)) {
         return;
@@ -2390,7 +2390,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char
     }
 }
 
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest)
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *nameDest)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest, NULL);
 }
@@ -2400,7 +2400,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, NULL, NULL);
 }
 
-static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest, char *nameSrc)
+static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *nameDest, const char *nameSrc)
 {
     Comment("CopyNotBit");
     if(( (addrDest != addrSrc)
@@ -2455,7 +2455,7 @@ static void XorBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 // address (which is an FwdAddress, so not yet assigned). Called with IntPc
 // on the IF statement, returns with IntPc on the END IF.
 //-----------------------------------------------------------------------------
-static void CompileIfBody(DWORD condFalse, char *s)
+static void CompileIfBody(DWORD condFalse, const char *s)
 {
 //  Comment("CompileIfBody %s vvv", s);
     IntPc++;
@@ -2502,7 +2502,7 @@ static char *VarFromExpr(char *expr, char *tempName, DWORD addr)
 */
 
 //-----------------------------------------------------------------------------
-static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, char *comment)
+static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const char *comment)
 {
     Comment("CopyLitToReg");
     // vvv reassurance, check before calling this routine
@@ -2548,7 +2548,7 @@ static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, char *comment)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, char *name1, char *name2, BOOL Sign)
+static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const char *name1, const char *name2, BOOL Sign)
 // addr1 - dest, addr2 - source
 {
     Comment("CopyRegToReg");
@@ -2805,9 +2805,9 @@ void AllocBitsVars()
 }
 
 //-----------------------------------------------------------------------------
-static void _CheckSovNames(int l, char *f, char *args, IntOp *a)
+static void _CheckSovNames(int l, const char *f, const char *args, IntOp *a)
 {
-return;
+    return;
 }
 #define CheckSovNames(...) _CheckSovNames(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 
@@ -2835,7 +2835,7 @@ Increment
     ; w is now 1
     ; Status:Z and Status:C are 1 if and only if counter is now all zeros.
 */
-static void Increment(DWORD addr, int sov, char *name, char *overlap, char *overflow)
+static void Increment(DWORD addr, int sov, const char *name, const char *overlap, const char *overflow)
 // a := a + 1
 {
   if(overflow && strlen(overflow)) {
@@ -2881,14 +2881,14 @@ static void Increment(DWORD addr, int sov, char *name, char *overlap, char *over
   }
 }
 
-static void Increment(DWORD addr, int sov, char *name)
+static void Increment(DWORD addr, int sov, const char *name)
 {
-  Increment(addr, sov, name, NULL, NULL);
+    Increment(addr, sov, name, NULL, NULL);
 }
 
 static void Increment(DWORD addr, int sov)
 {
-  Increment(addr, sov, NULL, NULL, NULL);
+    Increment(addr, sov, NULL, NULL, NULL);
 }
 //-----------------------------------------------------------------------------
 static void UartSend(DWORD addr, int sov) // , char *name
@@ -3121,7 +3121,7 @@ For example, for a 32-bit subtraction:
     incfsz   a+3,w
     subwf    b+3,f
 */
-static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, char *overlap, char *overflow)
+static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, const char *overlap, const char *overflow)
 //                  addrb    addra  sovb == sova
 // b = b - a , b - is rewritten
 {
@@ -3178,7 +3178,7 @@ static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, char *overlap, char *
   }
 }
 
-static void sub(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
+static void sub(DWORD b, DWORD a, int sov, char *overlap, const char *overflow)
 {
     sub_(b, a, sov, DEST_F, overlap, overflow);
 }

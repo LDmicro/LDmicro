@@ -764,7 +764,7 @@ static void Indent(FILE *f, int depth)
 void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 {
     ElemLeaf *l = (ElemLeaf *)any;
-    char *s;
+    const char *s;
     char str1[1024];
     char str2[1024];
     char str3[1024];
@@ -1337,9 +1337,9 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
 }
 
 //-----------------------------------------------------------------------------
-char *FrmStrToStr(char *dest, char *src)
+char *FrmStrToStr(char *dest, const char *src)
 {
-    char *s;
+    const char *s;
     if(src)
         s = src;
     else

@@ -404,7 +404,7 @@ static int FormattedStrlen(const char *str)
 }
 
 //-----------------------------------------------------------------------------
-static void CenterWithSpacesWidth(int cx, int cy, char *str, BOOL before, BOOL after,
+static void CenterWithSpacesWidth(int cx, int cy, const char *str, BOOL before, BOOL after,
     BOOL isName, int totalWidth, int which)
 {
     int extra = totalWidth - FormattedStrlen(str);
@@ -427,7 +427,7 @@ static void CenterWithSpacesWidth(int cx, int cy, char *str, BOOL powered,
 // Draw a string, centred in the space of a single position, with spaces on
 // the left and right. Draws on the upper line of the position.
 //-----------------------------------------------------------------------------
-static void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
+static void CenterWithSpaces(int cx, int cy, const char *str, BOOL powered,
     BOOL isName)
 {
     CenterWithSpacesWidth(cx, cy, str, powered, powered, isName, POS_WIDTH, 0);
@@ -476,7 +476,8 @@ static void CenterWithWires(int cx, int cy, const char *str, BOOL before, BOOL a
 
 //-----------------------------------------------------------------------------
 #define BUF_LEN 256
-static char *formatWidth(char *buf, size_t totalWidth, char *str1, char *leftStr, char *centerStr, char *rightStr, char *str5)
+static char *formatWidth(char *buf, size_t totalWidth, const char *str1, const char *leftStr,
+                         const char *centerStr, const char *rightStr, const char *str5)
 {
    if(totalWidth>=POS_WIDTH)
        totalWidth--;
@@ -739,7 +740,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         case ELEM_PIECEWISE_LINEAR:
         case ELEM_LOOK_UP_TABLE: {
-            char *name, *dest, *index, *str;
+            const char *name, *dest, *index, *str;
             if(which == ELEM_PIECEWISE_LINEAR) {
                 str = "PWL";
                 name = leaf->d.piecewiseLinear.name;
@@ -787,8 +788,8 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, POS_WIDTH, ELEM_COIL);
             break;
         }
-        char *s;
-        char *z;
+        const char *s;
+        const char *z;
         case ELEM_DIV: s = "\x01""DIV\x02"; z="/";  goto math;
         case ELEM_MOD: s = "\x01""MOD\x02"; z="%";  goto math;
         case ELEM_MUL: s = "\x01""MUL\x02"; z="*";  goto math;
@@ -839,7 +840,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
     static char s1[BUF_LEN];
     static char s2[BUF_LEN];
     static char s3[BUF_LEN];
-    char *s;
+    const char *s;
 
     switch(which) {
         case ELEM_COMMENT: {
@@ -926,8 +927,8 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
 
       {
-        char *s;
-        char *z;
+        const char *s;
+        const char *z;
         case ELEM_ROL: s = "\x01""ROL\x02"; z="rol"; goto bitwise;
         case ELEM_ROR: s = "\x01""ROR\x02"; z="ror"; goto bitwise;
         case ELEM_SHL: s = "\x01""SHL\x02"; z="<<"; goto bitwise;
@@ -956,7 +957,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
       }
 
         {
-        char *s;
+        const char *s;
 
         case ELEM_SET_BIT     : s = "\x01""SET Bit\x02 "; goto bits;
         case ELEM_CLEAR_BIT   : s = "\x01""CLR Bit\x02 "; goto bits;
@@ -974,7 +975,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
 
         {
-        char *s;
+        const char *s;
 
         case ELEM_IF_BIT_SET  : s = "\x01""if Bit SET\x02 "; goto ifbits;
         case ELEM_IF_BIT_CLEAR: s = "\x01""if Bit CLR\x02 "; goto ifbits;
@@ -1051,7 +1052,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         #endif
         {
-            char *s;
+            const char *s;
             case ELEM_EQU: s = "=="; goto cmp;
             case ELEM_NEQ: s = "!="; goto cmp;
             case ELEM_GRT: s = ">" ; goto cmp;
@@ -1086,7 +1087,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_LOW:
         case ELEM_ONE_SHOT_FALLING: {
-            char *s1, *s2;
+            const char *s1, *s2;
             if(which == ELEM_ONE_SHOT_RISING) {
                 s1 = "    _     _    ";
                 s2 = "[_/ \x01""OSR\x02_/ \\_]";
@@ -1105,7 +1106,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
         }
         case ELEM_OSC: {
-            char *s1, *s2;
+            const char *s1, *s2;
             s1 = "   _     _   _  ";
             s2 = "[_/ \x01""OSC\x02_/ \\_/ \\]";
 
@@ -1177,7 +1178,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         case ELEM_CTR:
         case ELEM_CTC: {
-            char *s;
+            const char *s;
             if(which == ELEM_CTC)
                 s = "\x01""CTC\x02 ";
             else if(which == ELEM_CTR)
@@ -1205,7 +1206,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         case ELEM_CTU:
         case ELEM_CTD: {
-            char *s;
+            const char *s;
             if(which == ELEM_CTU)
                 s = "\x01""CTU\x02";
             else if(which == ELEM_CTD)
@@ -1243,7 +1244,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_TLO:
         case ELEM_TON:
         case ELEM_TOF: {
-            char *s;
+            const char *s;
             if(which == ELEM_TON) {
                 s = "\x01""TON\x02";
             } else if(which == ELEM_TOF) {
@@ -1439,7 +1440,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
 
         {
-        char *s;
+        const char *s;
         case ELEM_7SEG:  s = "7";  goto xseg;
         case ELEM_9SEG:  s = "9";  goto xseg;
         case ELEM_14SEG: s = "14"; goto xseg;
@@ -1710,7 +1711,7 @@ BOOL DrawElement(void *node, int which, void *elem, int *cx, int *cy, BOOL power
 void DrawEndRung(int cx, int cy)
 {
     int i;
-    char *str = "[END]";
+    const char *str = "[END]";
     int lead = (POS_WIDTH - strlen(str))/2;
     ThisHighlighted = TRUE;
     for(i = 0; i < lead; i++) {

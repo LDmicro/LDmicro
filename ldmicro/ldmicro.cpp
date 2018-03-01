@@ -322,7 +322,7 @@ char *GetIsaName(int ISA)
 }
 
 //-----------------------------------------------------------------------------
-char *GetMnuName(int MNU)
+const char *GetMnuName(int MNU)
 {
     switch(MNU) {
         case MNU_COMPILE_ANSIC         : return (char *)stringer(MNU_COMPILE_ANSIC) + 12;
@@ -368,7 +368,7 @@ static void flashBat(char *name, int ISA)
 }
 
 //-----------------------------------------------------------------------------
-static void readBat(char *name, int ISA)
+static void readBat(const char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
@@ -384,7 +384,7 @@ static void readBat(char *name, int ISA)
 }
 
 //-----------------------------------------------------------------------------
-static void notepad(char *path, char *name, char *ext)
+static void notepad(const char *path, const char *name, const char *ext)
 {
     char s[MAX_PATH]="";
     char r[MAX_PATH]="";
@@ -408,7 +408,7 @@ static void notepad(char *path, char *name, char *ext)
     isErr(Execute(r), r);
 }
 
-static void notepad(char *name, char *ext)
+static void notepad(const char *name, const char *ext)
 {
     notepad(NULL, name, ext);
 }
@@ -438,7 +438,7 @@ static void clearBat()
 }
 
 //-----------------------------------------------------------------------------
-static void postCompile(char *MNU)
+static void postCompile(const char *MNU)
 {
     if(!ExistFile(CurrentCompileFile))
         return;
@@ -566,7 +566,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
     ||(MNU == MNU_COMPILE_INT)     && !strstr(CurrentCompileFile,".int")
     ||(MNU == MNU_COMPILE_XINT)    && !strstr(CurrentCompileFile,".xint")
     ) {
-        char *c;
+        const char *c;
         OPENFILENAME ofn;
 
         memset(&ofn, 0, sizeof(ofn));

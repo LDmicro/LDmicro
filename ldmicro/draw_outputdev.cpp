@@ -230,7 +230,7 @@ void PaintWindow(void)
 
     KillTimer(MainWindow, TIMER_BLINK_CURSOR);
     if (CursorDrawn)
-        BlinkCursor(NULL, 0, NULL, 0); //Hide Cursor
+        BlinkCursor(NULL, 0, 0, 0); //Hide Cursor
     CursorDrawn = FALSE;
 
     ok();
@@ -385,7 +385,7 @@ void PaintWindow(void)
         KillTimer(MainWindow, TIMER_BLINK_CURSOR);
     } else {
         KillTimer(MainWindow, TIMER_BLINK_CURSOR);
-        BlinkCursor(NULL, 0, NULL, 0); //Draw Cursor
+        BlinkCursor(NULL, 0, 0, 0); //Draw Cursor
         SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
     }
 

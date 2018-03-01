@@ -294,7 +294,7 @@ void AllocBitRam(DWORD *addr, int *bit)
 // assigned to that I/O name. Will allocate if it no memory allocated for it
 // yet, else will return the previously allocated bit.
 //-----------------------------------------------------------------------------
-static void MemForPin(char *name, DWORD *addr, int *bit, BOOL asInput)
+static void MemForPin(const char *name, DWORD *addr, int *bit, BOOL asInput)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -372,7 +372,7 @@ int SingleBitAssigned(char *name)
 //-----------------------------------------------------------------------------
 // Determine the mux register settings to read a particular ADC channel.
 //-----------------------------------------------------------------------------
-BYTE MuxForAdcVariable(char *name)
+BYTE MuxForAdcVariable(const char *name)
 {
     int res = 0;
     int i;
@@ -430,7 +430,7 @@ int TestByteNeeded(int count, SDWORD *vals)
 //-----------------------------------------------------------------------------
 // Allocate 1,2,3 or 4 byte for a variable, used for a variety of purposes.
 //-----------------------------------------------------------------------------
-int MemForVariable(char *name, DWORD *addrl, int sizeOfVar)
+int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
 {
     if(!name) oops();
     if(strlenalnum(name)==0) {
@@ -576,7 +576,7 @@ int MemForVariable(char *name, DWORD *addrl, int sizeOfVar)
     return Variables[i].SizeOfVar;
 }
 
-int MemForVariable(char *name, DWORD *addr)
+int MemForVariable(const char *name, DWORD *addr)
 {
     return MemForVariable(name, addr, 0);
 }
@@ -596,7 +596,7 @@ int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 }
 
 //-----------------------------------------------------------------------------
-int SetSizeOfVar(char *name, int sizeOfVar, BOOL showError)
+int SetSizeOfVar(const char *name, int sizeOfVar, BOOL showError)
 {
     if(showError)
     if((sizeOfVar<1)||(4<sizeOfVar)) {
@@ -609,12 +609,12 @@ int SetSizeOfVar(char *name, int sizeOfVar, BOOL showError)
     return MemForVariable(name, NULL, sizeOfVar);
 }
 
-int SetSizeOfVar(char *name, int sizeOfVar)
+int SetSizeOfVar(const char *name, int sizeOfVar)
 {
     return SetSizeOfVar(name, sizeOfVar, TRUE);
 }
 
-int SizeOfVar(char *name)
+int SizeOfVar(const char *name)
 {
      if(IsNumber(name))
          return byteNeeded(hobatoi(name));
@@ -777,7 +777,7 @@ BOOL LoadVarListFromFile(FILE *f)
 // Allocate or retrieve the bit of memory assigned to an internal relay or
 // other thing that requires a single bit of storage.
 //-----------------------------------------------------------------------------
-static void MemForBitInternal(char *name, DWORD *addr, int *bit, BOOL writeTo)
+static void MemForBitInternal(const char *name, DWORD *addr, int *bit, BOOL writeTo)
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
@@ -807,7 +807,7 @@ static void MemForBitInternal(char *name, DWORD *addr, int *bit, BOOL writeTo)
 // or closed. Contacts could be internal relay, output pin, or input pin,
 // or one of the internal state variables ($xxx) from the int code generator.
 //-----------------------------------------------------------------------------
-void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit)
+void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit)
 {
     *addr = -1;
     *bit = -1;
@@ -837,7 +837,7 @@ void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit)
     }
 }
 
-void MemForSingleBit(char *name, DWORD *addr, int *bit)
+void MemForSingleBit(const char *name, DWORD *addr, int *bit)
 {
     MemForSingleBit(name, FALSE, addr, bit) ;
 }

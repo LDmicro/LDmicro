@@ -27,15 +27,15 @@
 
 #include "ldmicro.h"
 
-extern char *HelpText[];
-extern char *HelpTextDe[];
-extern char *HelpTextFr[];
-extern char *HelpTextTr[];
-extern char *HelpTextJa[];
-extern char *HelpTextRu[];
-extern char *HelpTextEs[];
+extern const char *HelpText[];
+extern const char *HelpTextDe[];
+extern const char *HelpTextFr[];
+extern const char *HelpTextTr[];
+extern const char *HelpTextJa[];
+extern const char *HelpTextRu[];
+extern const char *HelpTextEs[];
 
-extern char *AboutText[] = {
+const char *AboutText[] = {
 "",
 "ABOUT LDMICRO",
 "=============",
@@ -79,7 +79,7 @@ extern char *AboutText[] = {
 NULL
 };
 
-static char **Text[] = {
+static const char **Text[] = {
 #if defined(LDLANG_EN) || \
     defined(LDLANG_IT) || \
     defined(LDLANG_PT)
@@ -174,7 +174,7 @@ static void MakeControls(int a)
     int i;
     BOOL nextSubHead = FALSE;
     for(i = 0; Text[a][i]; i++) {
-        char *s = Text[a][i];
+        const char *s = Text[a][i];
 
         CHARFORMAT cf;
         cf.cbSize = sizeof(cf);

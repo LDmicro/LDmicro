@@ -667,7 +667,7 @@ static void GenSymParOut(char *dest)
     sprintf(dest, "$parOut_%01x", GenSymCountParOut);
     GenSymCountParOut++;
 }
-void GenSymOneShot(char *dest, char *name1, char *name2)
+void GenSymOneShot(char *dest, const char *name1, const char *name2)
 {
     if(int_comment_level == 1)
         sprintf(dest, "$once_%01x", GenSymCountOneShot);
@@ -679,7 +679,7 @@ static void GenSymOneShot(char *dest)
 {
     GenSymOneShot(dest, "", "");
 }
-static void GenSymFormattedString(char *dest, char *name)
+static void GenSymFormattedString(char *dest, const char *name)
 {
     sprintf(dest, "$fmtd_%01x_%s", GenSymCountFormattedString, name);
     GenSymCountFormattedString++;
@@ -697,7 +697,9 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, const char *f, const char *args, int op, BOOL *b, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2, SDWORD *data)
+static void _Op(int l, const char *f, const char *args, int op, BOOL *b,
+                const char *name1, const char *name2, const char *name3, const char *name4, const char *name5, const char *name6,
+                SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = op;
@@ -733,19 +735,19 @@ static void _Op(int l, const char *f, const char *args, int op, BOOL *b, char *n
     }
 }
 
-static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, const char *f, const char *args, int op, char *name1, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2)
 {
     _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
-static void _Op(int l, const char *f, const char *args, int op, char *name1)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1)
 {
     _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
@@ -757,31 +759,33 @@ static void _Op(int l, const char *f, const char *args, int op)
 {
     _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
-static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, 0, 0, NULL);
 }
 //
-static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, SDWORD lit, SDWORD lit2)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, NULL);
 }
 //
-static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, char *name4)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, const char *name4)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, name4, NULL, NULL, 0, 0, NULL);
 }
 //
-static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5)
+static void _Op(int l, const char *f, const char *args, int op,
+                const char *name1, const char *name2, const char *name3, const char *name4, const char *name5)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, name4, name5, NULL, 0, 0, NULL);
 }
 //
-static void _Op(int l, const char *f, const char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2, SDWORD *data)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
+                SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, data);
 }
@@ -793,7 +797,7 @@ static void _Op(int l, const char *f, const char *args, int op, char *name1, cha
 // nodes are energized (so that it can display which branches of the circuit
 // are energized onscreen). The MCU code generators ignore this, of course.
 //-----------------------------------------------------------------------------
-static void SimState(BOOL *b, char *name, BOOL *w, char *name2)
+static void SimState(BOOL *b, const char *name, BOOL *w, const char *name2)
 {
     memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = INT_SIMULATE_NODE_STATE;
@@ -811,7 +815,7 @@ static void SimState(BOOL *b, char *name, BOOL *w, char *name2)
     }
 }
 
-static void SimState(BOOL *b, char *name)
+static void SimState(BOOL *b, const char *name)
 {
     SimState(b, name, NULL, NULL);
 }
@@ -943,7 +947,7 @@ SDWORD CalcDelayClock(long long clocks) // in us
 //-----------------------------------------------------------------------------
 // Is an expression that could be either a variable name or a number a number?
 //-----------------------------------------------------------------------------
-BOOL IsNumber(char *str)
+BOOL IsNumber(const char *str)
 {
     while(isspace(*str))
         str++;
@@ -1017,10 +1021,10 @@ double hobatof(char *str)
     return atof(str);
 }
 //-----------------------------------------------------------------------------
-int getradix(char *str)
+int getradix(const char *str)
 {
     int radix = 0;
-    char *start_ptr = str;
+    const char *start_ptr = str;
     while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+')
         start_ptr++;
     if     ((start_ptr[0] != '0') && isdigit(start_ptr[0]))
@@ -1043,14 +1047,14 @@ int getradix(char *str)
     return radix;
 }
 //-----------------------------------------------------------------------------
-SDWORD hobatoi(char *str)
+SDWORD hobatoi(const char *str)
 {
     char s[512];
     if(strstr(toupperstr(s, str), "0XFFFFFFFF"))
         return 0xFFFFFFFF;
 
     long val;
-    char *start_ptr = str;
+    const char *start_ptr = str;
     while(isspace(*start_ptr))
         start_ptr++;
     if(*start_ptr == '\'') {
@@ -1091,7 +1095,7 @@ SDWORD hobatoi(char *str)
 // Try to turn a string into a constant, and raise an error if
 // something bad happens when we do so (e.g. out of range).
 //-----------------------------------------------------------------------------
-SDWORD CheckMakeNumber(char *str)
+SDWORD CheckMakeNumber(const char *str)
 {
     SDWORD val;
     val = hobatoi(str);
@@ -1365,7 +1369,7 @@ static void InitTablesCircuit(int which, void *elem)
             break;
         }
         {
-        char *nameTable;
+        const char *nameTable;
         case ELEM_7SEG:  nameTable = "char7seg";  goto xseg;
         case ELEM_9SEG:  nameTable = "char9seg";  goto xseg;
         case ELEM_14SEG: nameTable = "char14seg"; goto xseg;
@@ -1396,7 +1400,7 @@ static void InitTables(void)
 // state is in stateInOut before calling and will be in stateInOut after
 // calling.
 //-----------------------------------------------------------------------------
-static char *VarFromExpr(char *expr, char *tempName)
+static const char *VarFromExpr(const char *expr, const char *tempName)
 {
     if(IsNumber(expr)) {
         Op(INT_SET_VARIABLE_TO_LITERAL, tempName, CheckMakeNumber(expr));
@@ -1410,9 +1414,9 @@ static char *VarFromExpr(char *expr, char *tempName)
     Op(INT_CLEAR_BIT, l->d.stepper.coil);
 
 //-----------------------------------------------------------------------------
-static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
+static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int rung)
 {
-    char *stateInOut2 = "$overlap";
+    const char *stateInOut2 = "$overlap";
     whichNow = which;
     leafNow = (ElemLeaf *)any;
     ElemLeaf *l = (ElemLeaf *)any;
@@ -2745,7 +2749,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
-            char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
+            const char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
             if((intOp == INT_SET_VARIABLE_SUBTRACT)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
@@ -2779,7 +2783,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
 
             } else {
-                char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
+                const char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
                 Op(intOp, l->d.math.dest, op1, op2, stateInOut2, "ROverflowFlagV");
             }
             Op(INT_END_IF);
@@ -3211,7 +3215,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             // avoid an if statement with a big body, which is the risk
             // factor for blowing up on PIC16 page boundaries.
 
-            char *seqScratch = "$seqScratch";
+            const char *seqScratch = "$seqScratch";
 
             Op(INT_SET_VARIABLE_TO_VARIABLE, seqScratch, seq);
 

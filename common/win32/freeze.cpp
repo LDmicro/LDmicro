@@ -10,7 +10,7 @@
 /*
  * store a window's position in the registry, or fail silently if the registry calls don't work
  */
-void FreezeWindowPosF(HWND hwnd, char *subKey, char *name)
+void FreezeWindowPosF(HWND hwnd, const char* subKey, const char *name)
 {
     RECT r;
     GetWindowRect(hwnd, &r);
@@ -24,7 +24,7 @@ void FreezeWindowPosF(HWND hwnd, char *subKey, char *name)
         return;
 
     HKEY sub;
-    if(RegCreateKeyEx(software, subKey, 0, "", REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &sub, NULL) != ERROR_SUCCESS)
+    if(RegCreateKeyEx(software, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &sub, NULL) != ERROR_SUCCESS)
         return;
 
     sprintf(keyName, "%s_left", name);
@@ -96,7 +96,7 @@ static void Clamp(LONG *v, LONG min, LONG max)
 /*
  * retrieve a window's position from the registry, or do nothing if there is no info saved
  */
-void ThawWindowPosF(HWND hwnd, char *subKey, char *name)
+void ThawWindowPosF(HWND hwnd, const char *subKey, const char* name)
 {
     HKEY software;
     if(RegOpenKeyEx(HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS, &software) != ERROR_SUCCESS)
@@ -253,14 +253,14 @@ void ThawWindowPosF(HWND hwnd, char *subKey, char *name)
 /*
  * store a DWORD setting in the registry
  */
-void FreezeDWORDF(DWORD val, char *subKey, char *name)
+void FreezeDWORDF(DWORD val, const char *subKey, const char *name)
 {
     HKEY software;
     if(RegOpenKeyEx(HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS, &software) != ERROR_SUCCESS)
         return;
 
     HKEY sub;
-    if(RegCreateKeyEx(software, subKey, 0, "", REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &sub, NULL) != ERROR_SUCCESS)
+    if(RegCreateKeyEx(software, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &sub, NULL) != ERROR_SUCCESS)
         return;
   
     if(RegSetValueEx(sub, name, 0, REG_DWORD, (BYTE *)&val, sizeof(DWORD)) != ERROR_SUCCESS)
@@ -270,7 +270,7 @@ void FreezeDWORDF(DWORD val, char *subKey, char *name)
 /*
  * retrieve a DWORD setting, or return the default if that setting is unavailable
  */
-DWORD ThawDWORDF(DWORD val, char *subKey, char *name)
+DWORD ThawDWORDF(DWORD val, const char *subKey, const char* name)
 {
     HKEY software;
     if(RegOpenKeyEx(HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS, &software) != ERROR_SUCCESS)
@@ -291,14 +291,14 @@ DWORD ThawDWORDF(DWORD val, char *subKey, char *name)
 /*
  * store a string setting in the registry
  */
-void FreezeStringF(char *val, char *subKey, char *name)
+void FreezeStringF(char *val, const char *subKey, const char* name)
 {
     HKEY software;
     if(RegOpenKeyEx(HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS, &software) != ERROR_SUCCESS)
         return;
 
     HKEY sub;
-    if(RegCreateKeyEx(software, subKey, 0, "", REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &sub, NULL) != ERROR_SUCCESS)
+    if(RegCreateKeyEx(software, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &sub, NULL) != ERROR_SUCCESS)
         return;
   
     if(RegSetValueEx(sub, name, 0, REG_SZ, (BYTE *)val, strlen(val)+1) != ERROR_SUCCESS)
@@ -308,7 +308,7 @@ void FreezeStringF(char *val, char *subKey, char *name)
 /*
  * retrieve a string setting, or return the default if that setting is unavailable
  */
-void ThawStringF(char *val, int max, char *subKey, char *name)
+void ThawStringF(char *val, int max, const char *subKey, const char *name)
 {
     HKEY software;
     if(RegOpenKeyEx(HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS, &software) != ERROR_SUCCESS)

@@ -41,8 +41,8 @@ static BOOL NoCheckingOnBox[MAX_BOXES];
 
 #define MAX_COMBO_STRINGS 16
 typedef struct comboRecordTag {
-    int     n; // 0 <= n < MAX_COMBO_STRINGS
-    char   *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
+    int   n; // 0 <= n < MAX_COMBO_STRINGS
+    char *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
 } comboRecord;
 
 //-----------------------------------------------------------------------------
@@ -503,7 +503,7 @@ void ShowDelayDialog(int which, char *name)
 //-----------------------------------------------------------------------------
 // Report an error if a constant doesn't fit in 8-16-24 bits.
 //-----------------------------------------------------------------------------
-static void CheckConstantInRange(char *name, char *str, SDWORD v)
+static void CheckConstantInRange(const char *name, const char *str, SDWORD v)
 {
     SDWORD val = hobatoi(str);
     if(val != v) oops();
@@ -830,8 +830,9 @@ void ShowSpiDialog(ElemLeaf *l)
         } else oops();
         for(i = 0; i < comboRec[4].n; i++) {
             sprintf(buf,"%15.3fHz", 1.0*Prog.mcuClock/(m*xPowerY(m,i)));
-            comboRec[4].str[i] = (char *)CheckMalloc(strlen(buf)+1);
-            strcpy(comboRec[4].str[i], buf);
+            char* tmp = (char *)CheckMalloc(strlen(buf)+1);
+            strcpy(tmp, buf);
+            comboRec[4].str[i] = tmp;
         }
     }
 //  NoCheckingOnBox[3] = TRUE;
@@ -1398,7 +1399,7 @@ void ShowCprintfDialog(int which, void *e)
 
     const char *labels[] = { _("Variable list:"), _("Format string:"), _("Dest:"), _("Enable:"), _("Error:") };
     char *dests[] = { var, string, dest, enable, error };
-    char *s;
+    const char *s;
     switch(which) {
         case ELEM_CPRINTF:      s = "CPRINTF"; goto cprintf;
         case ELEM_SPRINTF:      s = "SPRINTF"; goto cprintf;

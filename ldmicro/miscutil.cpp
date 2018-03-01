@@ -688,7 +688,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
 }
 
 //-----------------------------------------------------------------------------
-char *ArduinoPinName(McuIoPinInfo *iop)
+const char *ArduinoPinName(McuIoPinInfo *iop)
 {
     if(iop)
       if(iop->ArduinoName)
@@ -708,7 +708,7 @@ int NameToPin(char *pinName)
     return 0;
 }
 //-----------------------------------------------------------------------------
-char *PinToName(int pin)
+const char *PinToName(int pin)
 {
     int i;
     if(Prog.mcu)
@@ -729,7 +729,7 @@ McuIoPinInfo *PinInfo(int pin)
 }
 
 //-----------------------------------------------------------------------------
-McuIoPinInfo *PinInfoForName(char *name)
+McuIoPinInfo *PinInfoForName(const char *name)
 {
     int i;
     if(Prog.mcu)
