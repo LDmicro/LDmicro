@@ -3600,8 +3600,7 @@ BOOL GenerateIntermediateCode(void)
 
 BOOL GotoGosubUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_GOTO, ELEM_GOSUB, -1)
         )
@@ -3616,8 +3615,7 @@ BOOL GotoGosubUsed(void)
 //-----------------------------------------------------------------------------
 BOOL UartFunctionUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
         ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3627,7 +3625,7 @@ BOOL UartFunctionUsed(void)
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_SEND)
         || (IntCode[i].op == INT_UART_SEND1)
         || (IntCode[i].op == INT_UART_SENDn)
@@ -3643,14 +3641,13 @@ BOOL UartFunctionUsed(void)
 
 BOOL UartRecvUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_RECVn, -1))
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_RECV)
         || (IntCode[i].op == INT_UART_RECV_AVAIL)
         || (IntCode[i].op == INT_UART_RECVn))
@@ -3661,14 +3658,13 @@ BOOL UartRecvUsed(void)
 
 BOOL UartSendUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_SEND, ELEM_UART_SENDn, ELEM_FORMATTED_STRING))
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_SEND)
         || (IntCode[i].op == INT_UART_SEND_READY)
         || (IntCode[i].op == INT_UART_SEND_BUSY)
@@ -3681,14 +3677,13 @@ BOOL UartSendUsed(void)
 //-----------------------------------------------------------------------------
 BOOL SpiFunctionUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_SPI))
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_SPI)
         || (IntCode[i].op == INT_SPI))
             return TRUE;
@@ -3713,12 +3708,11 @@ BOOL Bin32BcdRoutineUsed(void)
 //-----------------------------------------------------------------------------
 BOOL MultiplyRoutineUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_MUL, ELEM_SET_PWM, -1))
             return TRUE;
 
-    for(i = 0; i < IntCodeLen; i++)
+    for(int i = 0; i < IntCodeLen; i++)
         if(IntCode[i].op == INT_SET_VARIABLE_MULTIPLY)
             return TRUE;
 
@@ -3730,12 +3724,11 @@ BOOL MultiplyRoutineUsed(void)
 //-----------------------------------------------------------------------------
 BOOL DivideRoutineUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DIV, ELEM_SET_PWM, -1))
             return TRUE;
 
-    for(i = 0; i < IntCodeLen; i++)
+    for(int i = 0; i < IntCodeLen; i++)
         if(IntCode[i].op == INT_SET_VARIABLE_DIVIDE)
             return TRUE;
 
