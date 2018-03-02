@@ -995,11 +995,12 @@ BOOL CheckForNumber(char * str)
                 return FALSE;
         }
 
-        if(*start_ptr == '0')
-             if(toupper(start_ptr[1]) == 'B')
-                 radix = 2;
-             else if(toupper(start_ptr[1]) == 'O')
-                 radix = 8;
+        if(*start_ptr == '0'){
+            if(toupper(start_ptr[1]) == 'B')
+                radix = 2;
+            else if(toupper(start_ptr[1]) == 'O')
+                radix = 8;
+        }
 
         char *end_ptr = NULL;
         // errno = 0;
@@ -3699,10 +3700,8 @@ BOOL SpiFunctionUsed(void)
 //-----------------------------------------------------------------------------
 BOOL Bin32BcdRoutineUsed(void)
 {
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
-        if((IntCode[i].op == INT_SET_BIN2BCD)
-        ) {
+    for(int i = 0; i < IntCodeLen; i++) {
+        if(IntCode[i].op == INT_SET_BIN2BCD) {
             return TRUE;
         }
     }
