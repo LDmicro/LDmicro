@@ -114,7 +114,7 @@ void IntDumpListing(char *outFile)
 
     int i;
     int indent = 0;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(i = 0; i < IntCodeLen; ++i) {
 
         if(IntCode[i].op == INT_END_IF) indent--;
         if(IntCode[i].op == INT_ELSE) indent--;
@@ -737,7 +737,7 @@ static void _Op(int l, const char *f, const char *args, int op, BOOL *b,
 
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, SDWORD lit)
 {
@@ -995,7 +995,7 @@ BOOL CheckForNumber(char * str)
                 return FALSE;
         }
 
-        if(*start_ptr == '0'){
+        if(*start_ptr == '0') {
             if(toupper(start_ptr[1]) == 'B')
                 radix = 2;
             else if(toupper(start_ptr[1]) == 'O')
@@ -3106,7 +3106,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             // The total number of characters that we transmit, including
             // those from the interpolated variable.
-            int steps;
+            size_t steps;
 
             // The total number of digits to convert.
             int digits = -1;
@@ -3179,7 +3179,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 }
                 if(*p) p++;
 
-                if(steps >= static_cast<int>(sizeof(outputChars))) {
+                if(steps >= sizeof(outputChars)) {
                     oops();
                 }
             }
@@ -3249,7 +3249,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             // So we transmit this cycle, so check out which character.
             int digit = 0;
-            for(int i = 0; i < steps; i++) {
+            for(size_t i = 0; i < steps; i++) {
                 if(outputWhich[i] == OUTPUT_DIGIT) {
                     // Note gross hack to work around limit of range for
                     // AVR brne op, which is +/- 64 instructions.
