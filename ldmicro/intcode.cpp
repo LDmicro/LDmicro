@@ -1070,12 +1070,14 @@ SDWORD hobatoi(const char *str)
        }
        int radix = 0; //auto detect
        if(*start_ptr == '0')
-            if(toupper(start_ptr[1]) == 'B')
-                radix = 2;
-            else if(toupper(start_ptr[1]) == 'O')
-                radix = 8;
-            else if(toupper(start_ptr[1]) == 'X')
-                radix = 16;
+           {
+               if(toupper(start_ptr[1]) == 'B')
+                   radix = 2;
+               else if(toupper(start_ptr[1]) == 'O')
+                   radix = 8;
+               else if(toupper(start_ptr[1]) == 'X')
+                   radix = 16;
+           }
        char *end_ptr = NULL;
        // errno = 0;
        val = strtol(str, &end_ptr, radix);
@@ -3176,7 +3178,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 }
                 if(*p) p++;
 
-                if(steps >= sizeof(outputChars)) {
+                if(steps >= static_cast<int>(sizeof(outputChars))) {
                     oops();
                 }
             }
@@ -3245,9 +3247,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_END_IF);
 
             // So we transmit this cycle, so check out which character.
-            int i;
             int digit = 0;
-            for(i = 0; i < steps; i++) {
+            for(int i = 0; i < steps; i++) {
                 if(outputWhich[i] == OUTPUT_DIGIT) {
                     // Note gross hack to work around limit of range for
                     // AVR brne op, which is +/- 64 instructions.
