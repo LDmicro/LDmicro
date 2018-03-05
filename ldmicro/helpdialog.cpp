@@ -26,6 +26,7 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
+#include "ldversion.h"
 
 extern const char *HelpText[];
 extern const char *HelpTextDe[];
@@ -74,7 +75,7 @@ const char *AboutText[] = {
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
 "",
-"Release 4.3.8.1, built " __TIME__ " " __DATE__ ".", // AboutText[38]
+"Release " LDMICRO_VER_STR ", built " __TIME__ " " __DATE__ ".", // AboutText[38]
 "",
 NULL
 };
