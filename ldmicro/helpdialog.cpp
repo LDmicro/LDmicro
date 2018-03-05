@@ -26,7 +26,7 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
-#include "OBJ/ldversion.h"
+#include "ldversion.h"
 
 extern const char *HelpText[];
 extern const char *HelpTextDe[];
