@@ -114,7 +114,7 @@ void IntDumpListing(char *outFile)
 
     int i;
     int indent = 0;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(i = 0; i < IntCodeLen; ++i) {
 
         if(IntCode[i].op == INT_END_IF) indent--;
         if(IntCode[i].op == INT_ELSE) indent--;
@@ -737,7 +737,7 @@ static void _Op(int l, const char *f, const char *args, int op, BOOL *b,
 
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, SDWORD lit)
 {
@@ -995,11 +995,12 @@ BOOL CheckForNumber(char * str)
                 return FALSE;
         }
 
-        if(*start_ptr == '0')
-             if(toupper(start_ptr[1]) == 'B')
-                 radix = 2;
-             else if(toupper(start_ptr[1]) == 'O')
-                 radix = 8;
+        if(*start_ptr == '0') {
+            if(toupper(start_ptr[1]) == 'B')
+                radix = 2;
+            else if(toupper(start_ptr[1]) == 'O')
+                radix = 8;
+        }
 
         char *end_ptr = NULL;
         // errno = 0;
@@ -1070,12 +1071,14 @@ SDWORD hobatoi(const char *str)
        }
        int radix = 0; //auto detect
        if(*start_ptr == '0')
-            if(toupper(start_ptr[1]) == 'B')
-                radix = 2;
-            else if(toupper(start_ptr[1]) == 'O')
-                radix = 8;
-            else if(toupper(start_ptr[1]) == 'X')
-                radix = 16;
+           {
+               if(toupper(start_ptr[1]) == 'B')
+                   radix = 2;
+               else if(toupper(start_ptr[1]) == 'O')
+                   radix = 8;
+               else if(toupper(start_ptr[1]) == 'X')
+                   radix = 16;
+           }
        char *end_ptr = NULL;
        // errno = 0;
        val = strtol(str, &end_ptr, radix);
@@ -3103,7 +3106,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             // The total number of characters that we transmit, including
             // those from the interpolated variable.
-            int steps;
+            size_t steps;
 
             // The total number of digits to convert.
             int digits = -1;
@@ -3245,9 +3248,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_END_IF);
 
             // So we transmit this cycle, so check out which character.
-            int i;
             int digit = 0;
-            for(i = 0; i < steps; i++) {
+            for(size_t i = 0; i < steps; i++) {
                 if(outputWhich[i] == OUTPUT_DIGIT) {
                     // Note gross hack to work around limit of range for
                     // AVR brne op, which is +/- 64 instructions.
@@ -3598,8 +3600,7 @@ BOOL GenerateIntermediateCode(void)
 
 BOOL GotoGosubUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_GOTO, ELEM_GOSUB, -1)
         )
@@ -3614,8 +3615,7 @@ BOOL GotoGosubUsed(void)
 //-----------------------------------------------------------------------------
 BOOL UartFunctionUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
         ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3625,7 +3625,7 @@ BOOL UartFunctionUsed(void)
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_SEND)
         || (IntCode[i].op == INT_UART_SEND1)
         || (IntCode[i].op == INT_UART_SENDn)
@@ -3641,14 +3641,13 @@ BOOL UartFunctionUsed(void)
 
 BOOL UartRecvUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_RECVn, -1))
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_RECV)
         || (IntCode[i].op == INT_UART_RECV_AVAIL)
         || (IntCode[i].op == INT_UART_RECVn))
@@ -3659,14 +3658,13 @@ BOOL UartRecvUsed(void)
 
 BOOL UartSendUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_SEND, ELEM_UART_SENDn, ELEM_FORMATTED_STRING))
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_SEND)
         || (IntCode[i].op == INT_UART_SEND_READY)
         || (IntCode[i].op == INT_UART_SEND_BUSY)
@@ -3679,14 +3677,13 @@ BOOL UartSendUsed(void)
 //-----------------------------------------------------------------------------
 BOOL SpiFunctionUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_SPI))
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_SPI)
         || (IntCode[i].op == INT_SPI))
             return TRUE;
@@ -3698,10 +3695,8 @@ BOOL SpiFunctionUsed(void)
 //-----------------------------------------------------------------------------
 BOOL Bin32BcdRoutineUsed(void)
 {
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
-        if((IntCode[i].op == INT_SET_BIN2BCD)
-        ) {
+    for(int i = 0; i < IntCodeLen; i++) {
+        if(IntCode[i].op == INT_SET_BIN2BCD) {
             return TRUE;
         }
     }
@@ -3713,12 +3708,11 @@ BOOL Bin32BcdRoutineUsed(void)
 //-----------------------------------------------------------------------------
 BOOL MultiplyRoutineUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_MUL, ELEM_SET_PWM, -1))
             return TRUE;
 
-    for(i = 0; i < IntCodeLen; i++)
+    for(int i = 0; i < IntCodeLen; i++)
         if(IntCode[i].op == INT_SET_VARIABLE_MULTIPLY)
             return TRUE;
 
@@ -3730,12 +3724,11 @@ BOOL MultiplyRoutineUsed(void)
 //-----------------------------------------------------------------------------
 BOOL DivideRoutineUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DIV, ELEM_SET_PWM, -1))
             return TRUE;
 
-    for(i = 0; i < IntCodeLen; i++)
+    for(int i = 0; i < IntCodeLen; i++)
         if(IntCode[i].op == INT_SET_VARIABLE_DIVIDE)
             return TRUE;
 
