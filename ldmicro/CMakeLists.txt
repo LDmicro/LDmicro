@@ -6,11 +6,8 @@ endif()
 
 
 project(ldmicro
-    VERSION 4.3.8.1
     LANGUAGES C CXX
     )
-
-configure_file(cmake/ldversion.h.in ${CMAKE_CURRENT_SOURCE_DIR}/obj/ldversion.h)
 
 # set all posible languages
 SET(LDLANG_ALL EN DE ES FR IT PT TR RU JA )
@@ -75,7 +72,6 @@ set(LDMICRO_SRC_LIST
 
     "${CMAKE_CURRENT_SOURCE_DIR}/obj/helptext.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/obj/lang-tables.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/obj/ldversion.h"
     )
 
 file( GLOB LDMICRO_HEADERS ./*.h)
