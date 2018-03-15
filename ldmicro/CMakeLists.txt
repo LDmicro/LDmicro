@@ -134,6 +134,8 @@ execute_process(
 
 # For custom manifest
 if(MSVC)
+    string(APPEND CMAKE_CXX_FLAGS " /J")
+    string(APPEND CMAKE_C_FLAGS " /J")
     set(CMAKE_EXE_LINKER_FLAGS "/MANIFEST:NO")
 endif()
 
