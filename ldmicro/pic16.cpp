@@ -22,6 +22,7 @@
 // runtime needed to schedule the cycles.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
 
 #define ASM_LABEL 1   //   0 - no labels
                       // * 1 - only if GOTO or CALL operations need a label
@@ -50,16 +51,8 @@
 #endif
 
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <math.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <inttypes.h>
-
 #include "ldmicro.h"
 #include "intcode.h"
-#include "bits.h"
 
 static FILE *f;
 static FILE *fAsm;
@@ -337,14 +330,14 @@ static void CompileFromIntermediate(BOOL topLevel);
 //-----------------------------------------------------------------------------
 // A convenience function, whether we are using a particular MCU.
 //-----------------------------------------------------------------------------
-static BOOL McuIs(char *str)
+static BOOL McuIs(const char *str)
 {
     if(!Prog.mcu)
         return 0;
     return strcmp(Prog.mcu->mcuName, str) == 0;
 }
 
-BOOL McuAs(char *str)
+BOOL McuAs(const char *str)
 {
     if(!Prog.mcu)
         return 0;
@@ -578,7 +571,7 @@ static int IsOperation(PicOp op)
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD arg2, char *comment)
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2, const char *comment)
 {
     if(IsOperation(op) >= IS_BANK) {
         if(arg1 == -1) {
@@ -656,23 +649,23 @@ static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD
     PicProgWriteP++;
 }
 
-static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1, DWORD arg2)
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2)
 {
     _Instruction(l, f, args, op, arg1, arg2, NULL);
 }
 
-static void _Instruction(int l, char *f, char *args, PicOp op, DWORD arg1)
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1)
 {
     _Instruction(l, f, args, op, arg1, 0, NULL);
 }
 
-static void _Instruction(int l, char *f, char *args, PicOp op)
+static void _Instruction(int l, const char *f, const char *args, PicOp op)
 {
     _Instruction(l, f, args, op, 0, 0, NULL);
 }
 
 //-----------------------------------------------------------------------------
-static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2, char *comment)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2, const char *comment)
 //for setiing interrupt vector, page correcting, etc
 {
     DWORD savePicProgWriteP = PicProgWriteP;
@@ -689,17 +682,17 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DW
     PicProgWriteP = savePicProgWriteP;
 }
 
-static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2)
 {
    _SetInstruction(l, f, args, addr, op, arg1, arg2, NULL);
 }
 
-static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DWORD arg1)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1)
 {
    _SetInstruction(l, f, args, addr, op, arg1, 0, NULL);
 }
 
-static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DWORD arg1, char *comment)
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, const char *comment)
 {
    _SetInstruction(l, f, args, addr, op, arg1, 0, comment);
 }
@@ -709,15 +702,13 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, PicOp op, DW
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void Comment(char *str, ...)
+static void Comment(const char *str, ...)
 {
   if(asm_comment_level) {
-    if(strlen(str)>=MAX_COMMENT_LEN)
-      str[MAX_COMMENT_LEN-1]='\0';
     va_list f;
     char buf[MAX_COMMENT_LEN];
     va_start(f, str);
-    vsprintf(buf, str, f);
+    vsnprintf(buf, MAX_COMMENT_LEN, str, f);
     Instruction(OP_COMMENT_INT, 0, 0, buf);
   }
 }
@@ -951,7 +942,7 @@ static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
   if(corrected && (corrected<20)) goto doBankCorrection;
 
     if(PicProgWriteP >= Prog.mcu->flashWords)
-        Error("Not enough memory for BANK and PAGE ·orrection!");
+        Error("Not enough memory for BANK and PAGE correction!");
 
     return bank;
 }
@@ -1422,7 +1413,7 @@ static void PageCorrection()
     if(corrected) goto doPageCorrection;
 
     if(PicProgWriteP >= Prog.mcu->flashWords)
-        Error("Not enough memory for PAGE ·orrection!");
+        Error("Not enough memory for PAGE correction!");
 }
 
 //-----------------------------------------------------------------------------
@@ -2278,7 +2269,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 // of the bank switching if necessary; assumes that code is called in bank
 // 0.
 //-----------------------------------------------------------------------------
-static void _WriteRegister(int l, char *f, char *args, DWORD reg, BYTE val, char *comment)
+static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val, char *comment)
 {
     #ifdef AUTO_BANKING
     //if(val) {
@@ -2305,7 +2296,7 @@ static void _WriteRegister(int l, char *f, char *args, DWORD reg, BYTE val, char
     #endif
 }
 
-static void _WriteRegister(int l, char *f, char *args, DWORD reg, BYTE val)
+static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val)
 {
     _WriteRegister(l, f, args, reg, val, NULL);
 }
@@ -2358,7 +2349,7 @@ static BOOL IsInput(DWORD addr)
     return FALSE;
 }
 
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest, char *nameSrc)
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *nameDest, const char *nameSrc)
 {
     if((addrDest==addrSrc) && (bitDest==bitSrc)) {
         return;
@@ -2399,7 +2390,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char
     }
 }
 
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest)
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *nameDest)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest, NULL);
 }
@@ -2409,7 +2400,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, NULL, NULL);
 }
 
-static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *nameDest, char *nameSrc)
+static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *nameDest, const char *nameSrc)
 {
     Comment("CopyNotBit");
     if(( (addrDest != addrSrc)
@@ -2464,7 +2455,7 @@ static void XorBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 // address (which is an FwdAddress, so not yet assigned). Called with IntPc
 // on the IF statement, returns with IntPc on the END IF.
 //-----------------------------------------------------------------------------
-static void CompileIfBody(DWORD condFalse, char *s)
+static void CompileIfBody(DWORD condFalse, const char *s)
 {
 //  Comment("CompileIfBody %s vvv", s);
     IntPc++;
@@ -2511,7 +2502,7 @@ static char *VarFromExpr(char *expr, char *tempName, DWORD addr)
 */
 
 //-----------------------------------------------------------------------------
-static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, char *comment)
+static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const char *comment)
 {
     Comment("CopyLitToReg");
     // vvv reassurance, check before calling this routine
@@ -2557,7 +2548,7 @@ static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, char *comment)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, char *name1, char *name2, BOOL Sign)
+static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const char *name1, const char *name2, BOOL Sign)
 // addr1 - dest, addr2 - source
 {
     Comment("CopyRegToReg");
@@ -2814,9 +2805,9 @@ void AllocBitsVars()
 }
 
 //-----------------------------------------------------------------------------
-static void _CheckSovNames(int l, char *f, char *args, IntOp *a)
+static void _CheckSovNames(int l, const char *f, const char *args, IntOp *a)
 {
-return;
+    return;
 }
 #define CheckSovNames(...) _CheckSovNames(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 
@@ -2844,7 +2835,7 @@ Increment
     ; w is now 1
     ; Status:Z and Status:C are 1 if and only if counter is now all zeros.
 */
-static void Increment(DWORD addr, int sov, char *name, char *overlap, char *overflow)
+static void Increment(DWORD addr, int sov, const char *name, const char *overlap, const char *overflow)
 // a := a + 1
 {
   if(overflow && strlen(overflow)) {
@@ -2890,14 +2881,14 @@ static void Increment(DWORD addr, int sov, char *name, char *overlap, char *over
   }
 }
 
-static void Increment(DWORD addr, int sov, char *name)
+static void Increment(DWORD addr, int sov, const char *name)
 {
-  Increment(addr, sov, name, NULL, NULL);
+    Increment(addr, sov, name, NULL, NULL);
 }
 
 static void Increment(DWORD addr, int sov)
 {
-  Increment(addr, sov, NULL, NULL, NULL);
+    Increment(addr, sov, NULL, NULL, NULL);
 }
 //-----------------------------------------------------------------------------
 static void UartSend(DWORD addr, int sov) // , char *name
@@ -3130,7 +3121,7 @@ For example, for a 32-bit subtraction:
     incfsz   a+3,w
     subwf    b+3,f
 */
-static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, char *overlap, char *overflow)
+static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, const char *overlap, const char *overflow)
 //                  addrb    addra  sovb == sova
 // b = b - a , b - is rewritten
 {
@@ -3187,7 +3178,7 @@ static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, char *overlap, char *
   }
 }
 
-static void sub(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
+static void sub(DWORD b, DWORD a, int sov, char *overlap, const char *overflow)
 {
     sub_(b, a, sov, DEST_F, overlap, overflow);
 }
@@ -4054,11 +4045,11 @@ static void CompileFromIntermediate(BOOL topLevel)
                 CopyRegToReg(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", FALSE);
                 break;
             }
-            case INT_SET_VARIABLE_AND: Comment("INT_SET_VARIABLE_AND"); goto and;
-            case INT_SET_VARIABLE_OR : Comment("INT_SET_VARIABLE_OR "); goto and;
+            case INT_SET_VARIABLE_AND: Comment("INT_SET_VARIABLE_AND"); goto andlabel;
+            case INT_SET_VARIABLE_OR : Comment("INT_SET_VARIABLE_OR "); goto andlabel;
                 break;
-            case INT_SET_VARIABLE_XOR: Comment("INT_SET_VARIABLE_XOR"); goto and;
-            and: {
+            case INT_SET_VARIABLE_XOR: Comment("INT_SET_VARIABLE_XOR"); goto andlabel;
+            andlabel: {
                 CheckSovNames(a);
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
@@ -4432,7 +4423,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 // Tosc = 1 / Fosc
                 // Fosc = Prog.mcuClock
                 // PR2 = 0..255 available
-                // Duty Cycle Ratio =ÉCCPR2L:CCP2CON<5:4>É/ (4 * (PR2 + 1))
+                // Duty Cycle Ratio = CCPR2L:CCP2CON<5:4> / (4 * (PR2 + 1))
 
                 // PWM freq = Fosc / (PR2 + 1) * 4 * (TMR2 Prescale Value)
                 // PR2 = Fosc / (4 * (TMR2 Prescale Value) * targetFreq) - 1
@@ -5545,7 +5536,7 @@ BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen)
         plcTmr.prescaler = max_prescaler;
         while(plcTmr.prescaler >= 1) {
             for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
-                err = plcTmr.ticksPerCycle - long long int (plcTmr.tmr) * plcTmr.prescaler * plcTmr.softDivisor;
+                err = plcTmr.ticksPerCycle - (long long int)plcTmr.tmr * plcTmr.prescaler * plcTmr.softDivisor;
                 if(err < 0) err = -err;
 
                 if((PicProgLdLen <= 0)
@@ -6110,6 +6101,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     if(McuAs(" PIC10F")
     || McuAs(" PIC12F")
     || McuAs(" PIC16F72 ")
+    || McuAs("Microchip PIC16F819 ")
     ) {
         // has not
     } else

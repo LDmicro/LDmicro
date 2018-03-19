@@ -25,13 +25,10 @@
 // will not be forgotten. Also the dialog box for assigning I/O pins.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
-#include "display.h"
+//#include "display.h"
 
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list
@@ -45,14 +42,10 @@ static struct {
 static int IoSeenPreviouslyCount;
 
 // stuff for the dialog box that lets you choose pin assignments
-static BOOL DialogDone;
-static BOOL DialogCancel;
 
 static HWND IoDialog;
 
 static HWND PinList;
-static HWND OkButton;
-static HWND CancelButton;
 static HWND ModbusSlave;
 static HWND ModbusRegister;
 
@@ -94,7 +87,7 @@ static void AppendIo(char *IOname, int type)
     strcpy(name, IOname);
     if(!IsNumber(IOname)) {
         char *c;
-        while(c=strchr(IOname, '-'))
+        while(c = strchr(IOname, '-'))
             *c = '_';
         if(!strstr(name, IOname)) {
             Error(_(" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"), name, IOname);
@@ -902,7 +895,7 @@ void ShowAnalogSliderPopup(char *name)
 
     SWORD currentVal = GetAdcShadow(name);
 
-    int maxVal;
+    SWORD maxVal;
     if(Prog.mcu) {
         maxVal = Prog.mcu->adcMax;
     } else {
@@ -1095,6 +1088,7 @@ void ShowIoDialog(int item)
         case IO_TYPE_THI:
         case IO_TYPE_TLO:
             ShowSizeOfVarDialog(&Prog.io.assignment[item]);
+            SetFocus(IoList);
             return;
         case IO_TYPE_INTERNAL_RELAY:
             // nothing;
@@ -1512,7 +1506,7 @@ void IoListProc(NMHDR *h)
                     break;
 
                 case LV_IO_TYPE: {
-                    char *s = IoTypeToString(Prog.io.assignment[item].type);
+                    const char *s = IoTypeToString(Prog.io.assignment[item].type);
                     strcpy(i->item.pszText, s);
                     break;
                 }

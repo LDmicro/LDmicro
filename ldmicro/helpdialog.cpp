@@ -23,23 +23,20 @@
 // colours.
 // Jonathan Westhues, Dec 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-#include <richedit.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
+#include "ldversion.h"
 
-extern char *HelpText[];
-extern char *HelpTextDe[];
-extern char *HelpTextFr[];
-extern char *HelpTextTr[];
-extern char *HelpTextJa[];
-extern char *HelpTextRu[];
-extern char *HelpTextEs[];
+extern const char *HelpText[];
+extern const char *HelpTextDe[];
+extern const char *HelpTextFr[];
+extern const char *HelpTextTr[];
+extern const char *HelpTextJa[];
+extern const char *HelpTextRu[];
+extern const char *HelpTextEs[];
 
-extern char *AboutText[] = {
+const char *AboutText[] = {
 "",
 "ABOUT LDMICRO",
 "=============",
@@ -78,12 +75,12 @@ extern char *AboutText[] = {
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
 "",
-"Release 4.3.8.1, built " __TIME__ " " __DATE__ ".", // AboutText[38]
+"Release " LDMICRO_VER_STR ", built " __TIME__ " " __DATE__ ".", // AboutText[38]
 "",
 NULL
 };
 
-static char **Text[] = {
+static const char **Text[] = {
 #if defined(LDLANG_EN) || \
     defined(LDLANG_IT) || \
     defined(LDLANG_PT)
@@ -178,7 +175,7 @@ static void MakeControls(int a)
     int i;
     BOOL nextSubHead = FALSE;
     for(i = 0; Text[a][i]; i++) {
-        char *s = Text[a][i];
+        const char *s = Text[a][i];
 
         CHARFORMAT cf;
         cf.cbSize = sizeof(cf);
@@ -306,7 +303,7 @@ void ShowHelpDialog(BOOL about)
 
     MakeClass();
 
-    char *s = about ? "About LDmicro" : "LDmicro Help";
+    const char *s = about ? "About LDmicro" : "LDmicro Help";
     HelpDialog[a] = CreateWindowEx(0, "LDmicroHelp", s,
         WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
         WS_MAXIMIZEBOX |

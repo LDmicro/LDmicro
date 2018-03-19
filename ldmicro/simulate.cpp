@@ -24,11 +24,7 @@
 // timers, etc.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "intcode.h"
@@ -116,7 +112,7 @@ static int SimulateUartTxCountdown = 0; // 0 if UART ready to send; 1 if UART bu
 static void AppendToUartSimulationTextControl(BYTE b);
 
 static void SimulateIntCode(void);
-static char *MarkUsedVariable(char *name, DWORD flag);
+static const char *MarkUsedVariable(const char* name, DWORD flag);
 
 //-----------------------------------------------------------------------------
 int isVarInited(char *name)
@@ -163,7 +159,7 @@ static BOOL SingleBitOn(char *name)
 // Set the state of a single-bit item. Adds it to the list if it is not there
 // already.
 //-----------------------------------------------------------------------------
-static void SetSingleBit(char *name, BOOL state)
+static void SetSingleBit(const char *name, BOOL state)
 {
     int i;
     for(i = 0; i < SingleBitItemsCount; i++) {
@@ -188,7 +184,7 @@ BOOL GetSingleBit(char *name)
 // Count a timer up (i.e. increment its associated count by 1). Must already
 // exist in the table.
 //-----------------------------------------------------------------------------
-static void Increment(char *name, char *overlap, char *overflow)
+static void Increment(const char *name, const char *overlap, const char *overflow)
 {
     int sov = SizeOfVar(name);
     SDWORD signMask = 1 << (sov * 8 - 1);
@@ -212,7 +208,7 @@ static void Increment(char *name, char *overlap, char *overflow)
 }
 
 //-----------------------------------------------------------------------------
-static void Decrement(char *name, char *overlap, char *overflow)
+static void Decrement(const char *name, const char *overlap, const char *overflow)
 {
     int sov = SizeOfVar(name);
     SDWORD signMask = 1 << (sov * 8 - 1);
@@ -237,7 +233,7 @@ static void Decrement(char *name, char *overlap, char *overflow)
 }
 
 //-----------------------------------------------------------------------------
-static SDWORD AddVariable(char *name1, char *name2, char *name3, char *overflow)
+static SDWORD AddVariable(const char *name1, const char *name2, const char *name3, const char *overflow)
 {
     long long int ret = (long long int )GetSimulationVariable(name2) +
                         (long long int )GetSimulationVariable(name3);
@@ -253,7 +249,7 @@ static SDWORD AddVariable(char *name1, char *name2, char *name3, char *overflow)
 }
 
 //-----------------------------------------------------------------------------
-static SDWORD SubVariable(char *name1, char *name2, char *name3, char *overflow)
+static SDWORD SubVariable(const char *name1, const char *name2, const char *name3, const char *overflow)
 {
     long long int ret = (long long int )GetSimulationVariable(name2) -
                         (long long int )GetSimulationVariable(name3);
@@ -289,7 +285,7 @@ void SetSimulationVariable(char *name, SDWORD val)
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
-SDWORD GetSimulationVariable(char *name, BOOL forIoList)
+SDWORD GetSimulationVariable(const char *name, BOOL forIoList)
 {
     if(IsNumber(name)) {
         return CheckMakeNumber(name);
@@ -305,7 +301,7 @@ SDWORD GetSimulationVariable(char *name, BOOL forIoList)
     return GetSimulationVariable(name);
 }
 
-SDWORD GetSimulationVariable(char *name)
+SDWORD GetSimulationVariable(const char *name)
 {
     return GetSimulationVariable(name, FALSE);
 }
@@ -414,7 +410,7 @@ SDWORD GetRandom(char *name)
 }
 
 //-----------------------------------------------------------------------------
-static char *Check(char *name, DWORD flag, int i)
+static const char *Check(const char *name, DWORD flag, int i)
 {
     switch(flag) {
         case VAR_FLAG_PWM:
@@ -517,9 +513,9 @@ static char *Check(char *name, DWORD flag, int i)
 // (e.g. just a TON, an RTO with its reset, etc.). Returns NULL for success,
 // else an error string.
 //-----------------------------------------------------------------------------
-static char *rungsUsed = ""; //local store var for message
+static const char *rungsUsed = ""; //local store var for message
 
-static char *MarkUsedVariable(char *name, DWORD flag)
+static const char *MarkUsedVariable(const char *name, DWORD flag)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -545,7 +541,7 @@ static char *MarkUsedVariable(char *name, DWORD flag)
 
     rungsUsed = Variables[i].usedRungs;
 
-    char *s = Check(name, flag, i);
+    const char *s = Check(name, flag, i);
     if(s) return s;
 
     if(Variables[i].initedRung < 0)
@@ -578,7 +574,7 @@ void MarkInitedVariable(char *name)
 }
 
 //-----------------------------------------------------------------------------
-static void CheckMsg(char *name, char *s, int i)
+static void CheckMsg(const char *name, const char *s, int i)
 {
     if(s) {
         #if 1
@@ -601,9 +597,9 @@ static void CheckMsg(char *name, char *s, int i)
 // to have an RTO with the same name as its reset; in fact, verify that
 // there must be a reset for each RTO.
 //-----------------------------------------------------------------------------
-static void MarkWithCheck(char *name, int flag)
+static void MarkWithCheck(const char *name, int flag)
 {
-    char *s = MarkUsedVariable(name, flag);
+    const char *s = MarkUsedVariable(name, flag);
     CheckMsg(name, s, -1);
 }
 //-----------------------------------------------------------------------------
@@ -723,7 +719,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
 
-        char *s;
+        const char *s;
         case ELEM_7SEG:  s = "char7seg"; goto xseg;
         case ELEM_9SEG:  s = "char9seg"; goto xseg;
         case ELEM_14SEG: s = "char14seg"; goto xseg;
@@ -1314,7 +1310,7 @@ int FindOpRung(int op, int rung)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpName(int op, char *name1)
+int FindOpName(int op, const char *name1)
 {
     int i;
     if(!name1) oops();
@@ -1328,7 +1324,7 @@ int FindOpName(int op, char *name1)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpName(int op, char *name1, char *name2)
+int FindOpName(int op, const char *name1, const char *name2)
 {
     int i;
     if(!name1) oops();
@@ -1343,7 +1339,7 @@ int FindOpName(int op, char *name1, char *name2)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpNameLast(int op, char *name1)
+int FindOpNameLast(int op, const char* name1)
 {
     int i;
     if(!name1) oops();
@@ -1357,7 +1353,7 @@ int FindOpNameLast(int op, char *name1)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpNameLast(int op, char *name1, char *name2)
+int FindOpNameLast(int op, const char *name1, const char *name2)
 {
     int i;
     if(!name1) oops();

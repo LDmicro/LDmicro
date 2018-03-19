@@ -22,15 +22,10 @@
 // responsible for calling us with appropriate timing.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <inttypes.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "bits.h"
 
 static char SeenVariables[MAX_IO][MAX_NAME_LEN];
 int SeenVariablesCount;
@@ -45,7 +40,7 @@ int compile_MNU = -1;
 // Have we seen a variable before? If not then no need to generate code for
 // it, otherwise we will have to make a declaration, and mark it as seen.
 //-----------------------------------------------------------------------------
-static BOOL SeenVariable(char *name)
+static BOOL SeenVariable(const char *name)
 {
     int i;
     for(i = 0; i < SeenVariablesCount; i++) {
@@ -67,7 +62,7 @@ static BOOL SeenVariable(char *name)
 #define ASBIT 1
 #define ASINT 2
 #define ASSTR 3
-static char *MapSym(char *str, int how)
+static const char *MapSym(const char *str, int how)
 {
     if(!str) return NULL;
     if(strlen(str)==0) return NULL;
@@ -102,14 +97,14 @@ static char *MapSym(char *str, int how)
     return ret;
 }
 
-static char *MapSym(char *str)
+static const char *MapSym(const char *str)
 {
     return MapSym(str, ASINT);
 }
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var; easy, a static.
 //-----------------------------------------------------------------------------
-static void DeclareInt(FILE *f, char *str, int sov)
+static void DeclareInt(FILE *f, const char *str, int sov)
 {
   if(sov==1)
     fprintf(f, "STATIC SBYTE %s = 0;\n", str);
@@ -127,7 +122,7 @@ static void DeclareInt(FILE *f, char *str, int sov)
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var.
 //-----------------------------------------------------------------------------
-static void DeclareStr(FILE *f, char *str, int sov)
+static void DeclareStr(FILE *f, const char *str, int sov)
 {
     fprintf(f,"STATIC char %s[%d];\n", str, sov);
     fprintf(f, "\n");
@@ -138,7 +133,7 @@ static void DeclareStr(FILE *f, char *str, int sov)
 // internal relay. An internal relay is just a BOOL variable, but for an
 // input or an output someone else must provide read/write functions.
 //-----------------------------------------------------------------------------
-static void DeclareBit(FILE *f, char *str, int set1)
+static void DeclareBit(FILE *f, const char *str, int set1)
 {
     // The mapped symbol has the form U_b_{X,Y,R}name, so look at character
     // four to determine if it's an input, output, internal relay.
@@ -459,7 +454,7 @@ static void DeclareBit(FILE *f, char *str, int set1)
     }
 }
 
-static void DeclareBit(FILE *f, char *str)
+static void DeclareBit(FILE *f, const char *str)
 {
     DeclareBit(f, str, 0);
 }
@@ -475,10 +470,10 @@ static void GenerateDeclarations(FILE *f)
 
     int i;
     for(i = 0; i < IntCodeLen; i++) {
-        char *bitVar1 = NULL, *bitVar2 = NULL;
-        char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
-        char *adcVar1 = NULL;
-        char *strVar1 = NULL;
+        const char *bitVar1 = NULL, *bitVar2 = NULL;
+        const char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
+        const char *adcVar1 = NULL;
+        const char *strVar1 = NULL;
         int sov1=0, sov2=0, sov3=0;
 
         int bitVar1set1 = 0;
@@ -699,7 +694,7 @@ static void GenerateDeclarations(FILE *f)
         if(strVar1 && !SeenVariable(strVar1)) DeclareStr(f, strVar1, sov1);
     }
     if(Prog.cycleDuty) {
-        char *bitVar1 = NULL;
+        const char *bitVar1 = NULL;
         bitVar1 = MapSym("YPlcCycleDuty", ASBIT);
         if(bitVar1 && !SeenVariable(bitVar1)) DeclareBit(f, bitVar1);
     }
@@ -708,17 +703,15 @@ static void GenerateDeclarations(FILE *f)
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void _Comment(FILE *f, char *str, ...)
+static void _Comment(FILE *f, const char *str, ...)
 {
-    if(strlen(str)>=MAX_NAME_LEN)
-      str[MAX_NAME_LEN-1]='\0';
     va_list v;
     char buf[MAX_NAME_LEN];
     va_start(v, str);
-    vsprintf(buf, str, v);
+    vsnprintf(buf, MAX_NAME_LEN, str, v);
     fprintf(f, "//%s\n", buf);
 }
-#define Comment(str, ...) _Comment(f, str, __VA_ARGS__)
+#define Comment(...) _Comment(f, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 static int indent = 1;
@@ -803,10 +796,11 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
             }
             {
-            char *op;
+            const char *op;
             case INT_SET_VARIABLE_ROL: op = "rol"; goto cicle_shift;
             case INT_SET_VARIABLE_ROR: op = "ror"; goto cicle_shift;
             cicle_shift:
+                //TODO: write code for shift op's
                 break;
             }
 
@@ -920,6 +914,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 } else {
                     fprintf(f, "\n");
                 }
+                break;
+
+            case INT_CLRWDT:
+                fprintf(f, "// CLRWDT\n");
                 break;
 
             case INT_LOCK:
@@ -1136,7 +1134,7 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int sovElement = IntCode[i].literal2;
-                char *sovs;
+                const char *sovs;
 /*
 CodeVision AVR
 // Pointer to a char string placed in FLASH

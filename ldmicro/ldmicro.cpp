@@ -24,19 +24,12 @@
 // most of the UI logic relating to the main window.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <commctrl.h>
-#include <commdlg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <shellapi.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "freeze.h"
 #include "mcutable.h"
 #include "intcode.h"
-#include "locale.h"
 
 HINSTANCE   Instance;
 HWND        MainWindow;
@@ -238,12 +231,12 @@ bool ExistFile(const char *name)
     return FALSE;
 }
 /*
-bool ExistFile2(const char* name)
+bool ExistFile2(const char *name)
 {
     return GetFileAttributes(name) != INVALID_FILE_ATTRIBUTES;
 }
 
-bool ExistFile3(const char* name)
+bool ExistFile3(const char *name)
 {
     #if defined(_WIN32) || defined(_WIN64)
     return name && PathFileExists(name);
@@ -293,7 +286,7 @@ long int fsize(char *filename)
 //-----------------------------------------------------------------------------
 static void isErr(int Err, char *r)
 {
-  char *s;
+  const char *s;
   switch(Err){
     case 0:s="The system is out of memory or resources"; break;
     case ERROR_BAD_FORMAT:s="The .exe file is invalid"; break;
@@ -329,7 +322,7 @@ char *GetIsaName(int ISA)
 }
 
 //-----------------------------------------------------------------------------
-char *GetMnuName(int MNU)
+const char *GetMnuName(int MNU)
 {
     switch(MNU) {
         case MNU_COMPILE_ANSIC         : return (char *)stringer(MNU_COMPILE_ANSIC) + 12;
@@ -375,7 +368,7 @@ static void flashBat(char *name, int ISA)
 }
 
 //-----------------------------------------------------------------------------
-static void readBat(char *name, int ISA)
+static void readBat(const char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
@@ -391,7 +384,7 @@ static void readBat(char *name, int ISA)
 }
 
 //-----------------------------------------------------------------------------
-static void notepad(char *path, char *name, char *ext)
+static void notepad(const char *path, const char *name, const char *ext)
 {
     char s[MAX_PATH]="";
     char r[MAX_PATH]="";
@@ -415,7 +408,7 @@ static void notepad(char *path, char *name, char *ext)
     isErr(Execute(r), r);
 }
 
-static void notepad(char *name, char *ext)
+static void notepad(const char *name, const char *ext)
 {
     notepad(NULL, name, ext);
 }
@@ -445,7 +438,7 @@ static void clearBat()
 }
 
 //-----------------------------------------------------------------------------
-static void postCompile(char *MNU)
+static void postCompile(const char *MNU)
 {
     if(!ExistFile(CurrentCompileFile))
         return;
@@ -485,7 +478,7 @@ static void postCompile(char *MNU)
     if(!ExistFile(r))
         return;
 
-    char *ISA = "_NULL_";
+    const char *ISA = "_NULL_";
     if(Prog.mcu)
         ISA = GetIsaName(Prog.mcu->whichIsa);
 
@@ -573,7 +566,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
     ||(MNU == MNU_COMPILE_INT)     && !strstr(CurrentCompileFile,".int")
     ||(MNU == MNU_COMPILE_XINT)    && !strstr(CurrentCompileFile,".xint")
     ) {
-        char *c;
+        const char *c;
         OPENFILENAME ofn;
 
         memset(&ofn, 0, sizeof(ofn));
@@ -924,6 +917,15 @@ static void ProcessMenu(int code)
         case MNU_EXIT:
             if(CheckSaveUserCancels()) break;
             PostQuitMessage(0);
+            break;
+
+        case MNU_TAB:
+            if(GetFocus() == MainWindow) {
+                SetFocus(IoList);
+                BlinkCursor(0, 0, 0, 0);
+            } else if(GetFocus() == IoList) {
+                SetFocus(MainWindow);
+            }
             break;
 
         case MNU_INSERT_COMMENT:
@@ -2299,7 +2301,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
         }
         case WM_MOUSEMOVE: {
-            int x = LOWORD(lParam);
+          //int x = LOWORD(lParam);
             int y = HIWORD(lParam);
 
             if((y > (IoListTop - 9)) && (y < (IoListTop + 3))) {
@@ -2489,7 +2491,7 @@ static char * _removeWhitespace(char * pBuffer)
 }
 
 //-----------------------------------------------------------------------------
-
+/*
 static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
 {
     // Parse for command line arguments.
@@ -2536,12 +2538,12 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
         *pSource = _removeWhitespace(*pSource);
     }
 }
-
+*/
 //---------------------------------------------------------------------------
 void abortHandler( int signum )
 {
     // associate each signal with a signal name string.
-    const char* name = NULL;
+    const char *name = NULL;
     switch( signum )
     {
     case SIGABRT: name = "SIGABRT";  break;
@@ -2664,7 +2666,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     if(memcmp(lpCmdLine, "/c", 2)==0) {
         RunningInBatchMode = TRUE;
 
-        char *err =
+        const char *err =
             "Bad command line arguments: run 'ldmicro /c src.ld dest.ext'";
 
         char *source = lpCmdLine + 2;
@@ -2704,7 +2706,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
         char exportFile[MAX_PATH];
 
-        char *err =
+        const char *err =
             "Bad command line arguments: run 'ldmicro /t src.ld [dest.txt]'";
 
         char *source = lpCmdLine + 2;

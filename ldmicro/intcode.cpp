@@ -22,14 +22,11 @@
 // AVR or PIC16 code.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "display.h"
+//#include "display.h"
 
 //// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
@@ -117,7 +114,7 @@ void IntDumpListing(char *outFile)
 
     int i;
     int indent = 0;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(i = 0; i < IntCodeLen; ++i) {
 
         if(IntCode[i].op == INT_END_IF) indent--;
         if(IntCode[i].op == INT_ELSE) indent--;
@@ -670,7 +667,7 @@ static void GenSymParOut(char *dest)
     sprintf(dest, "$parOut_%01x", GenSymCountParOut);
     GenSymCountParOut++;
 }
-void GenSymOneShot(char *dest, char *name1, char *name2)
+void GenSymOneShot(char *dest, const char *name1, const char *name2)
 {
     if(int_comment_level == 1)
         sprintf(dest, "$once_%01x", GenSymCountOneShot);
@@ -682,7 +679,7 @@ static void GenSymOneShot(char *dest)
 {
     GenSymOneShot(dest, "", "");
 }
-static void GenSymFormattedString(char *dest, char *name)
+static void GenSymFormattedString(char *dest, const char *name)
 {
     sprintf(dest, "$fmtd_%01x_%s", GenSymCountFormattedString, name);
     GenSymCountFormattedString++;
@@ -700,7 +697,9 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, char *f, char *args, int op, BOOL *b, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, SDWORD lit, SDWORD lit2, SDWORD *data)
+static void _Op(int l, const char *f, const char *args, int op, BOOL *b,
+                const char *name1, const char *name2, const char *name3, const char *name4, const char *name5, const char *name6,
+                SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = op;
@@ -736,55 +735,57 @@ static void _Op(int l, char *f, char *args, int op, BOOL *b, char *name1, char *
     }
 }
 
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, nullptr);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2)
 {
     _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1)
 {
     _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op)
+static void _Op(int l, const char *f, const char *args, int op)
 {
     _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, SDWORD lit)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, 0, NULL);
 }
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, 0, 0, NULL);
 }
 //
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, SDWORD lit, SDWORD lit2)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, NULL);
 }
 //
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, const char *name4)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, name4, NULL, NULL, 0, 0, NULL);
 }
 //
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, char *name4, char *name5)
+static void _Op(int l, const char *f, const char *args, int op,
+                const char *name1, const char *name2, const char *name3, const char *name4, const char *name5)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, name4, name5, NULL, 0, 0, NULL);
 }
 //
-static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, char *name3, SDWORD lit, SDWORD lit2, SDWORD *data)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
+                SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, data);
 }
@@ -796,7 +797,7 @@ static void _Op(int l, char *f, char *args, int op, char *name1, char *name2, ch
 // nodes are energized (so that it can display which branches of the circuit
 // are energized onscreen). The MCU code generators ignore this, of course.
 //-----------------------------------------------------------------------------
-static void SimState(BOOL *b, char *name, BOOL *w, char *name2)
+static void SimState(BOOL *b, const char *name, BOOL *w, const char *name2)
 {
     memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     IntCode[IntCodeLen].op = INT_SIMULATE_NODE_STATE;
@@ -814,7 +815,7 @@ static void SimState(BOOL *b, char *name, BOOL *w, char *name2)
     }
 }
 
-static void SimState(BOOL *b, char *name)
+static void SimState(BOOL *b, const char *name)
 {
     SimState(b, name, NULL, NULL);
 }
@@ -822,38 +823,36 @@ static void SimState(BOOL *b, char *name)
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void _Comment1(int l, char *f, char *str)
+static void _Comment1(int l, const char *f, const char *str)
 {
   if(int_comment_level) {
-    if(strlen(str)>=MAX_NAME_LEN)
-      str[MAX_NAME_LEN-1]='\0';
-    _Op(l, f, NULL, INT_COMMENT, str);
+    char buf[MAX_NAME_LEN];
+    strncpy(buf, str, MAX_NAME_LEN-1);
+    buf[MAX_NAME_LEN-1] = '\0';
+    // http://demin.ws/blog/russian/2013/01/28/use-snprintf-on-different-platforms/
+    _Op(l, f, NULL, INT_COMMENT, buf);
   }
 }
 #define Comment1(str) _Comment1(__LINE__, __FILE__, str)
 
-static void _Comment(int l, char *f, char *str, ...)
+static void _Comment(int l, const char *f, const char *str, ...)
 {
   if(int_comment_level) {
-    if(strlen(str)>=MAX_NAME_LEN)
-      str[MAX_NAME_LEN-1]='\0';
     va_list v;
     char buf[MAX_NAME_LEN];
     va_start(v, str);
-    vsprintf(buf, str, v);
+    vsnprintf(buf, MAX_NAME_LEN, str, v);
     _Op(l, f, NULL, INT_COMMENT, buf);
   }
 }
 
-static void _Comment(int l, char *f, int level, char *str, ...)
+static void _Comment(int l, const char *f, int level, const char *str, ...)
 {
   if(int_comment_level && (int_comment_level >= level)) {
-    if(strlen(str)>=MAX_NAME_LEN)
-      str[MAX_NAME_LEN-1]='\0';
     va_list v;
     char buf[MAX_NAME_LEN];
     va_start(v, str);
-    vsprintf(buf, str, v);
+    vsnprintf(buf, MAX_NAME_LEN, str, v);
     _Op(l, f, NULL, INT_COMMENT, buf);
   }
 }
@@ -874,7 +873,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
     int b = byteNeeded(period);
     if((SizeOfVar(name) != b) && (b<=4))
         SetSizeOfVar(name, b);
-    maxPeriod=long long int(1) << (SizeOfVar(name)*8-1); maxPeriod--;
+    maxPeriod = (long long int)(1) << (SizeOfVar(name)*8-1); maxPeriod--;
 
     if(period < 0) {
         Error(_("Delay cannot be zero or negative."));
@@ -885,7 +884,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
         sprintf(s2, _("Timer '%s'=%.3f ms."), name, 1.0*delay/1000);
         char s3[1024];
         sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
-        char *s4 = _("Not available");
+        const char *s4 = _("Not available");
         Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
     } else if(period+adjust <= 0) {
         Error("%s '%s': %s", _("Timer"), name, _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
@@ -948,7 +947,7 @@ SDWORD CalcDelayClock(long long clocks) // in us
 //-----------------------------------------------------------------------------
 // Is an expression that could be either a variable name or a number a number?
 //-----------------------------------------------------------------------------
-BOOL IsNumber(char *str)
+BOOL IsNumber(const char *str)
 {
     while(isspace(*str))
         str++;
@@ -996,11 +995,12 @@ BOOL CheckForNumber(char * str)
                 return FALSE;
         }
 
-        if(*start_ptr == '0')
-             if(toupper(start_ptr[1]) == 'B')
-                 radix = 2;
-             else if(toupper(start_ptr[1]) == 'O')
-                 radix = 8;
+        if(*start_ptr == '0') {
+            if(toupper(start_ptr[1]) == 'B')
+                radix = 2;
+            else if(toupper(start_ptr[1]) == 'O')
+                radix = 8;
+        }
 
         char *end_ptr = NULL;
         // errno = 0;
@@ -1022,10 +1022,10 @@ double hobatof(char *str)
     return atof(str);
 }
 //-----------------------------------------------------------------------------
-int getradix(char *str)
+int getradix(const char *str)
 {
     int radix = 0;
-    char *start_ptr = str;
+    const char *start_ptr = str;
     while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+')
         start_ptr++;
     if     ((start_ptr[0] != '0') && isdigit(start_ptr[0]))
@@ -1048,14 +1048,14 @@ int getradix(char *str)
     return radix;
 }
 //-----------------------------------------------------------------------------
-SDWORD hobatoi(char *str)
+SDWORD hobatoi(const char *str)
 {
     char s[512];
     if(strstr(toupperstr(s, str), "0XFFFFFFFF"))
         return 0xFFFFFFFF;
 
     long val;
-    char *start_ptr = str;
+    const char *start_ptr = str;
     while(isspace(*start_ptr))
         start_ptr++;
     if(*start_ptr == '\'') {
@@ -1071,12 +1071,14 @@ SDWORD hobatoi(char *str)
        }
        int radix = 0; //auto detect
        if(*start_ptr == '0')
-            if(toupper(start_ptr[1]) == 'B')
-                radix = 2;
-            else if(toupper(start_ptr[1]) == 'O')
-                radix = 8;
-            else if(toupper(start_ptr[1]) == 'X')
-                radix = 16;
+           {
+               if(toupper(start_ptr[1]) == 'B')
+                   radix = 2;
+               else if(toupper(start_ptr[1]) == 'O')
+                   radix = 8;
+               else if(toupper(start_ptr[1]) == 'X')
+                   radix = 16;
+           }
        char *end_ptr = NULL;
        // errno = 0;
        val = strtol(str, &end_ptr, radix);
@@ -1096,7 +1098,7 @@ SDWORD hobatoi(char *str)
 // Try to turn a string into a constant, and raise an error if
 // something bad happens when we do so (e.g. out of range).
 //-----------------------------------------------------------------------------
-SDWORD CheckMakeNumber(char *str)
+SDWORD CheckMakeNumber(const char *str)
 {
     SDWORD val;
     val = hobatoi(str);
@@ -1370,7 +1372,7 @@ static void InitTablesCircuit(int which, void *elem)
             break;
         }
         {
-        char *nameTable;
+        const char *nameTable;
         case ELEM_7SEG:  nameTable = "char7seg";  goto xseg;
         case ELEM_9SEG:  nameTable = "char9seg";  goto xseg;
         case ELEM_14SEG: nameTable = "char14seg"; goto xseg;
@@ -1401,7 +1403,7 @@ static void InitTables(void)
 // state is in stateInOut before calling and will be in stateInOut after
 // calling.
 //-----------------------------------------------------------------------------
-static char *VarFromExpr(char *expr, char *tempName)
+static const char *VarFromExpr(const char *expr, const char *tempName)
 {
     if(IsNumber(expr)) {
         Op(INT_SET_VARIABLE_TO_LITERAL, tempName, CheckMakeNumber(expr));
@@ -1415,9 +1417,9 @@ static char *VarFromExpr(char *expr, char *tempName)
     Op(INT_CLEAR_BIT, l->d.stepper.coil);
 
 //-----------------------------------------------------------------------------
-static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
+static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int rung)
 {
-    char *stateInOut2 = "$overlap";
+    const char *stateInOut2 = "$overlap";
     whichNow = which;
     leafNow = (ElemLeaf *)any;
     ElemLeaf *l = (ElemLeaf *)any;
@@ -2750,7 +2752,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
-            char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
+            const char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
             if((intOp == INT_SET_VARIABLE_SUBTRACT)
             &&(int_comment_level != 1)
             &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
@@ -2784,7 +2786,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
                 Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
 
             } else {
-                char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
+                const char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
                 Op(intOp, l->d.math.dest, op1, op2, stateInOut2, "ROverflowFlagV");
             }
             Op(INT_END_IF);
@@ -3104,7 +3106,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
 
             // The total number of characters that we transmit, including
             // those from the interpolated variable.
-            int steps;
+            size_t steps;
 
             // The total number of digits to convert.
             int digits = -1;
@@ -3216,7 +3218,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             // avoid an if statement with a big body, which is the risk
             // factor for blowing up on PIC16 page boundaries.
 
-            char *seqScratch = "$seqScratch";
+            const char *seqScratch = "$seqScratch";
 
             Op(INT_SET_VARIABLE_TO_VARIABLE, seqScratch, seq);
 
@@ -3246,9 +3248,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut, int rung)
             Op(INT_END_IF);
 
             // So we transmit this cycle, so check out which character.
-            int i;
             int digit = 0;
-            for(i = 0; i < steps; i++) {
+            for(size_t i = 0; i < steps; i++) {
                 if(outputWhich[i] == OUTPUT_DIGIT) {
                     // Note gross hack to work around limit of range for
                     // AVR brne op, which is +/- 64 instructions.
@@ -3599,8 +3600,7 @@ BOOL GenerateIntermediateCode(void)
 
 BOOL GotoGosubUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_GOTO, ELEM_GOSUB, -1)
         )
@@ -3615,8 +3615,7 @@ BOOL GotoGosubUsed(void)
 //-----------------------------------------------------------------------------
 BOOL UartFunctionUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
         ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3626,7 +3625,7 @@ BOOL UartFunctionUsed(void)
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_SEND)
         || (IntCode[i].op == INT_UART_SEND1)
         || (IntCode[i].op == INT_UART_SENDn)
@@ -3642,14 +3641,13 @@ BOOL UartFunctionUsed(void)
 
 BOOL UartRecvUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_RECVn, -1))
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_RECV)
         || (IntCode[i].op == INT_UART_RECV_AVAIL)
         || (IntCode[i].op == INT_UART_RECVn))
@@ -3660,14 +3658,13 @@ BOOL UartRecvUsed(void)
 
 BOOL UartSendUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_SEND, ELEM_UART_SENDn, ELEM_FORMATTED_STRING))
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_UART_SEND)
         || (IntCode[i].op == INT_UART_SEND_READY)
         || (IntCode[i].op == INT_UART_SEND_BUSY)
@@ -3680,14 +3677,13 @@ BOOL UartSendUsed(void)
 //-----------------------------------------------------------------------------
 BOOL SpiFunctionUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_SPI))
             return TRUE;
     }
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         if((IntCode[i].op == INT_SPI)
         || (IntCode[i].op == INT_SPI))
             return TRUE;
@@ -3699,10 +3695,8 @@ BOOL SpiFunctionUsed(void)
 //-----------------------------------------------------------------------------
 BOOL Bin32BcdRoutineUsed(void)
 {
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
-        if((IntCode[i].op == INT_SET_BIN2BCD)
-        ) {
+    for(int i = 0; i < IntCodeLen; i++) {
+        if(IntCode[i].op == INT_SET_BIN2BCD) {
             return TRUE;
         }
     }
@@ -3714,12 +3708,11 @@ BOOL Bin32BcdRoutineUsed(void)
 //-----------------------------------------------------------------------------
 BOOL MultiplyRoutineUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_MUL, ELEM_SET_PWM, -1))
             return TRUE;
 
-    for(i = 0; i < IntCodeLen; i++)
+    for(int i = 0; i < IntCodeLen; i++)
         if(IntCode[i].op == INT_SET_VARIABLE_MULTIPLY)
             return TRUE;
 
@@ -3731,12 +3724,11 @@ BOOL MultiplyRoutineUsed(void)
 //-----------------------------------------------------------------------------
 BOOL DivideRoutineUsed(void)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DIV, ELEM_SET_PWM, -1))
             return TRUE;
 
-    for(i = 0; i < IntCodeLen; i++)
+    for(int i = 0; i < IntCodeLen; i++)
         if(IntCode[i].op == INT_SET_VARIABLE_DIVIDE)
             return TRUE;
 

@@ -20,11 +20,16 @@
 // Miscellaneous utility functions that don't fit anywhere else. IHEX writing,
 // verified memory allocator, other junk.
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
+
+// Try to common a bit of stuff between the dialog boxes, since only one
+// can be open at any time.
+HWND OkButton;
+HWND CancelButton;
+BOOL DialogDone;
+BOOL DialogCancel;
 
 // We should display messages to the user differently if we are running
 // interactively vs. in batch (command-line) mode.
@@ -39,20 +44,13 @@ HANDLE MainHeap;
 // Running checksum as we build up IHEX records.
 static int IhexChecksum;
 
-// Try to common a bit of stuff between the dialog boxes, since only one
-// can be open at any time.
-HWND OkButton;
-HWND CancelButton;
-BOOL DialogDone;
-BOOL DialogCancel;
-
 HFONT MyNiceFont;
 HFONT MyFixedFont;
 
 //-----------------------------------------------------------------------------
 // printf-like debug function, to the Windows debug log.
 //-----------------------------------------------------------------------------
-void dbp(char *str, ...)
+void dbp(const char *str, ...)
 {
     va_list f;
     char buf[1024*8];
@@ -97,7 +95,7 @@ void doexit(int status)
 // For error messages to the user; printf-like, to a message box.
 // For warning messages use ' ' in *str[0], see avr.cpp INT_SET_NPULSE.
 //-----------------------------------------------------------------------------
-void Error(char *str, ...)
+void Error(const char *str, ...)
 {
     va_list f;
     char buf[1024];
@@ -163,7 +161,7 @@ void CompileSuccessfulMessage(char *str)
 // Check the consistency of the heap on which all the PLC program stuff is
 // stored.
 //-----------------------------------------------------------------------------
-void CheckHeap(char *file, int line)
+void CheckHeap(const char *file, int line)
 {
     static unsigned int SkippedCalls;
     static SDWORD LastCallTime;
@@ -237,7 +235,7 @@ void FinishIhex(FILE *f)
 //-----------------------------------------------------------------------------
 // Create a window with a given client area.
 //-----------------------------------------------------------------------------
-HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
+HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param)
 {
@@ -347,7 +345,7 @@ void MakeDialogBoxClass(void)
 // Map an I/O type to a string describing it. Used both in the on-screen
 // list and when we write a text file to describe it.
 //-----------------------------------------------------------------------------
-char *IoTypeToString(int ioType)
+const char *IoTypeToString(int ioType)
 {
     switch(ioType) {
         case IO_TYPE_INT_INPUT:         return _("INT input");
@@ -690,7 +688,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
 }
 
 //-----------------------------------------------------------------------------
-char *ArduinoPinName(McuIoPinInfo *iop)
+const char *ArduinoPinName(McuIoPinInfo *iop)
 {
     if(iop)
       if(iop->ArduinoName)
@@ -710,7 +708,7 @@ int NameToPin(char *pinName)
     return 0;
 }
 //-----------------------------------------------------------------------------
-char *PinToName(int pin)
+const char *PinToName(int pin)
 {
     int i;
     if(Prog.mcu)
@@ -731,7 +729,7 @@ McuIoPinInfo *PinInfo(int pin)
 }
 
 //-----------------------------------------------------------------------------
-McuIoPinInfo *PinInfoForName(char *name)
+McuIoPinInfo *PinInfoForName(const char *name)
 {
     int i;
     if(Prog.mcu)

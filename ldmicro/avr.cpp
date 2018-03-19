@@ -22,25 +22,16 @@
 // runtime needed to schedule the cycles.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
 
 #define ASM_LABEL 1   //   0 - no labels
                       // * 1 - only if GOTO or CALL operations need a label
                       //   2 - always, all line is labeled
-
 #define USE_WDT
 #define USE_MUL
 
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <math.h>
-#include <inttypes.h>
-
 #include "ldmicro.h"
 #include "intcode.h"
-#include "bits.h"
 
 #define r0 0 // used muls. Don't use elsewhere!!!
 #define r1 1 // used muls. Don't use elsewhere!!!
@@ -445,7 +436,7 @@ static void WipeMemory(void)
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1, DWORD arg2, char *comment)//, IntOp *IntCode)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2, const char *comment)//, IntOp *IntCode)
 {
     if(AvrProg[AvrProgWriteP].opAvr != OP_VACANT) oops();
 
@@ -487,21 +478,21 @@ static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1, DWORD
     }
 }
 
-static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1, DWORD arg2)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2)
 {
     _Instruction(l, f, args, op, arg1, arg2, NULL);
 }
 
-static void _Instruction(int l, char *f, char *args, AvrOp op, DWORD arg1)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1)
 {
     _Instruction(l, f, args, op, arg1, 0, NULL);
 }
 
-static void _Instruction(int l, char *f, char *args, AvrOp op)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op)
 {
     _Instruction(l, f, args, op, 0, 0, NULL);
 }
-static void _Instruction(int l, char *f, char *args, AvrOp op, char *comment)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, const char *comment)
 {
     _Instruction(l, f, args, op, 0, 0, comment);
 }
@@ -544,20 +535,16 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-static void _Comment(char *str, ...)
+static void Comment(const char *str, ...)
 {
   if(asm_comment_level) {
-    if(strlen(str)>=MAX_COMMENT_LEN)
-      str[MAX_COMMENT_LEN-1]='\0';
     va_list f;
     char buf[MAX_COMMENT_LEN];
     va_start(f, str);
-    vsprintf(buf, str, f);
+    vsnprintf(buf, MAX_COMMENT_LEN, str, f);
     Instruction(OP_COMMENTINT, buf);
   }
 }
-
-#define Comment(str, ...) _Comment(str, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 // Allocate a unique descriptor for a forward reference. Later that forward
@@ -1434,7 +1421,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 // Make sure that the given address is loaded in the X register; might not
 // have to update all of it.
 //-----------------------------------------------------------------------------
-static void LoadXAddr(DWORD addr, char *comment)
+static void LoadXAddr(DWORD addr, const char *comment)
 //used X; Opcodes: 2
 {
     if(addr <= 0) {
@@ -1734,7 +1721,7 @@ static void LOAD(int reg, DWORD addr)
 //-----------------------------------------------------------------------------
 #define WriteMemory(...) _WriteMemory(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 
-static void _WriteMemory(int l, char *f, char *args, DWORD addr, BYTE val, char *name, SDWORD literal)
+static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val, const char *name, SDWORD literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
@@ -1753,19 +1740,19 @@ static void _WriteMemory(int l, char *f, char *args, DWORD addr, BYTE val, char 
     Instruction(OP_ST_ZP, r25, 0, name); // OP_.._ZP need for WriteMemoryNextAddr
 }
 
-static void _WriteMemory(int l, char *f, char *args, DWORD addr, BYTE val, char *name)
+static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val, const char *name)
 {
-    _WriteMemory(l, f, args, addr, val, name, NULL);
+    _WriteMemory(l, f, args, addr, val, name, 0);
 }
 
-static void _WriteMemory(int l, char *f, char *args, DWORD addr, BYTE val, SDWORD literal)
+static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val, SDWORD literal)
 {
     _WriteMemory(l, f, args, addr, val, NULL, literal);
 }
 
-static void _WriteMemory(int l, char *f, char *args, DWORD addr, BYTE val)
+static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val)
 {
-    _WriteMemory(l, f, args, addr, val, NULL, NULL);
+    _WriteMemory(l, f, args, addr, val, NULL, 0);
 }
 //-----------------------------------------------------------------------------
 // Use only after WriteMemory() !!!
@@ -1807,7 +1794,7 @@ static void WriteMemoryCurrAddr(BYTE val)
 }
 
 //-----------------------------------------------------------------------------
-static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, char *name)
+static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char *name)
 {
     // vvv reassurance, check before calling this routine
     if(sov < 1) ooops(name);
@@ -1912,7 +1899,7 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 //-----------------------------------------------------------------------------
 // Copy just one bit from one place to another.
 //-----------------------------------------------------------------------------
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *name1,  char *name2)
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *name1, const char *name2)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc)) oops();
     char s[10];
@@ -1951,7 +1938,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, char *name1,  char *name2)
+static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *name1, const char *name2)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc)) oops();
     char s[10];
@@ -2263,7 +2250,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
             plcTmr.prescaler = max_prescaler;
             while(plcTmr.prescaler >= 1) {
                 for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
-                    err = plcTmr.ticksPerCycle - long long int (plcTmr.tmr) * plcTmr.prescaler * plcTmr.softDivisor;
+                    err = plcTmr.ticksPerCycle - (long long int)plcTmr.tmr * plcTmr.prescaler * plcTmr.softDivisor;
                     if(err < 0) err = -err;
 
                     if((bestErr > err)
@@ -2655,7 +2642,7 @@ static void AndReg(int reg, int sov, int op2)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyLitToReg(int reg, int sov, SDWORD literal, char *comment)
+static void CopyLitToReg(int reg, int sov, SDWORD literal, const char *comment)
 {
     if(sov < 1) oops();
     if(sov > 4) oops();
@@ -2725,7 +2712,7 @@ static void CopyArgToReg(int reg, int sovReg, char *var)
         CopyVarToReg(reg, sovReg, var);
 }
 //-----------------------------------------------------------------------------
-static void _CopyRegToVar(int l, char *f, char *args, char *var, int reg, int sovReg)
+static void _CopyRegToVar(int l, const char *f, const char *args, const char *var, int reg, int sovReg)
 {
     DWORD addr;
     int sov = SizeOfVar(var);
@@ -4103,7 +4090,7 @@ static void CompileFromIntermediate(void)
 
                 int prescale;
                 long int bestPrescale;
-		long int bestError = LONG_MAX;
+                long int bestError = LONG_MAX;
                 double bestFreq;
                 double freq;
                 double freqSI;
@@ -4514,7 +4501,7 @@ static void CompileFromIntermediate(void)
                     (1 << ADEN) |           // ADC enabled
                     (0 << ADFR) |           // not free running
                     (0 << ADIE) |           // no interrupt enabled
-                    adps);                   // prescale setup
+                    adps);                  // prescale setup
 
                 WriteMemory(REG_ADCSRA, adcsra);
                 WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << ADSC)));

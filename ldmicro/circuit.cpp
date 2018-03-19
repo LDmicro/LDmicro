@@ -21,9 +21,7 @@
 // particular point, delete the selected element, etc.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 
@@ -31,8 +29,7 @@
 // Convenience routines for allocating frequently-used data structures.
 //-----------------------------------------------------------------------------
 
-//ElemLeaf *AllocLeaf()
-ElemLeaf *_AllocLeaf(int l, char *f)
+ElemLeaf *AllocLeaf()
 {
     return (ElemLeaf *)CheckMalloc(sizeof(ElemLeaf));
 }
@@ -224,7 +221,7 @@ static BOOL AddLeaf(int newWhich, ElemLeaf *newElem)
 // and insert it into the current program with AddLeaf. Fill in some default
 // parameters, name etc. when we create the leaf; user can change them later.
 //-----------------------------------------------------------------------------
-void AddComment(char *str)
+void AddComment(const char *str)
 {
     if(!CanInsertComment) return;
 
@@ -1708,7 +1705,7 @@ BOOL SleepFunctionUsed(void)
 // copy the selected rung temporar, InsertRung and
 // save in the new rung temp
 //-----------------------------------------------------------------------------
-char *CLP="ldmicro.tmp";
+const char *CLP="ldmicro.tmp";
 void CopyRungDown(void)
 {
     int i = RungContainingSelected();

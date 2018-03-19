@@ -24,12 +24,7 @@
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <setjmp.h>
-
+#include "stdafx.h"
 #include "current_function.hpp"
 
 typedef signed short SWORD;
@@ -46,9 +41,6 @@ typedef signed long SDWORD;
 #define PLC_CLOCK_MIN 250 //500 //
 //-----------------------------------------------
 // `Configuration options.'
-
-// The library that I use to do registry stuff.
-#define FREEZE_SUBKEY "LDMicro"
 
 // Size of the font that we will use to draw the ladder diagrams, in pixels
 #define FONT_WIDTH   7
@@ -105,6 +97,8 @@ typedef signed long SDWORD;
 #define MNU_SCROLL_PgUP         0x1904
 #define MNU_ROLL_HOME           0x1905
 #define MNU_ROLL_END            0x1906
+
+#define MNU_TAB                 0x1911
 
 #define MNU_INSERT_COMMENT      0x20
 #define MNU_INSERT_CONTACTS     0x21
@@ -1033,11 +1027,11 @@ typedef struct McuExtIntPinInfoTag {
 #define IS_MCU_REG(i) ((Prog.mcu) && (Prog.mcu->inputRegs[i]) && (Prog.mcu->outputRegs[i]) && (Prog.mcu->dirRegs[i]))
 
 typedef struct McuIoInfoTag {
-    char            *mcuName;
-    char            *mcuList;
-    char            *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
-    char            *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
-    char            *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
+    const char       *mcuName;
+    const char       *mcuList;
+    const char       *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
+    const char       *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
+    const char       *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
     char             portPrefix;
     DWORD            inputRegs[MAX_IO_PORTS];         // A is 0, J is 9
     DWORD            outputRegs[MAX_IO_PORTS];
@@ -1106,7 +1100,7 @@ extern McuIoInfo SupportedMcus[]; // NUM_SUPPORTED_MCUS
 // memory debugging, because I often get careless; ok() will check that the
 // heap used for all the program storage is not yet corrupt, and oops() if
 // it is
-void CheckHeap(char *file, int line);
+void CheckHeap(const char* file, int line);
 #define ok() CheckHeap(__FILE__, __LINE__)
 extern ULONGLONG PrevWriteTime;
 extern ULONGLONG LastWriteTime;
@@ -1124,7 +1118,7 @@ char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
 long int fsize(char filename);
-char *GetMnuName(int MNU);
+const char* GetMnuName(int MNU);
 int GetMnu(char *MNU_name);
 
 // maincontrols.cpp
@@ -1161,7 +1155,7 @@ extern BOOL SelectionActive;
 extern BOOL ThisHighlighted;
 
 // draw_outputdev.cpp
-extern void (*DrawChars)(int, int, char *);
+extern void (*DrawChars)(int, int, const char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow(void);
 BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
@@ -1244,7 +1238,7 @@ void AddSetPwm(void);
 void AddSpi(int which);
 void AddUart(int which);
 void AddPersist(void);
-void AddComment(char *text);
+void AddComment(const char *text);
 void AddShiftRegister(void);
 void AddMasterRelay(void);
 void AddSleep(void);
@@ -1285,9 +1279,7 @@ void CopyRung(void);
 void CopyElem(void);
 void PasteRung(int PasteTo);
 void NewProgram(void);
-//ElemLeaf *AllocLeaf(void);
-#define AllocLeaf() _AllocLeaf(__LINE__, __FILE__)
-ElemLeaf *_AllocLeaf(int l, char *f);
+ElemLeaf *AllocLeaf(void);
 ElemSubcktSeries *AllocSubcktSeries(void);
 ElemSubcktParallel *AllocSubcktParallel(void);
 void FreeCircuit(int which, void *any);
@@ -1314,7 +1306,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung);
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 char *strspace(char *str);
 char *strspacer(char *str);
-char *FrmStrToStr(char *dest, char *src);
+char *FrmStrToStr(char *dest, const char *src);
 
 // iolist.cpp
 int IsIoType(int type);
@@ -1367,8 +1359,8 @@ int ishobdigit(int c);
 int isalpha_(int c);
 int isal_num(int c);
 int isname(char *name);
-double hobatof(char *str);
-SDWORD hobatoi(char *str);
+double hobatof(const char *str);
+SDWORD hobatoi(const char* str);
 void ShowSizeOfVarDialog(PlcProgramSingleIo *io);
 
 // confdialog.cpp
@@ -1379,7 +1371,7 @@ void ShowColorDialog(void);
 
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
-extern char *AboutText[];
+extern const char *AboutText[];
 
 // miscutil.cpp
 #ifndef round
@@ -1387,6 +1379,10 @@ extern char *AboutText[];
     (r):\
     ((r) >= 0.0) ? ((r) + 0.5) : ((r) - 0.5))
 #endif
+extern HWND OkButton;
+extern HWND CancelButton;
+extern BOOL DialogDone;
+extern BOOL DialogCancel;
 
 #define doLOG
 #ifdef doLOG
@@ -1441,24 +1437,24 @@ extern char *AboutText[];
 #endif
 
 void doexit(int status);
-void dbp(char *str, ...);
-void Error(char *str, ...);
+void dbp(const char *str, ...);
+void Error(const char *str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 extern HANDLE MainHeap;
 void StartIhex(FILE *f);
 void WriteIhex(FILE *f, BYTE b);
 void FinishIhex(FILE *f);
-char *IoTypeToString(int ioType);
+const char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
 char *GetPinName(int pin, char *pinName);
-char *PinToName(int pin);
-char *ArduinoPinName(McuIoPinInfo *iop);
+const char* PinToName(int pin);
+const char* ArduinoPinName(McuIoPinInfo *iop);
 void SetMcu(McuIoInfo *mcu);
 int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
-McuIoPinInfo *PinInfoForName(char *name);
+McuIoPinInfo *PinInfoForName(const char* name);
 McuSpiInfo *GetMcuSpiInfo(char *name);
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
@@ -1469,7 +1465,7 @@ void getResolution(char *s, int *resol, int *TOP);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
 BOOL IsExtIntPin(int pin);
-HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
+HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
 void MakeDialogBoxClass(void);
@@ -1481,11 +1477,7 @@ extern BOOL RunningInBatchMode;
 extern BOOL RunningInTestMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
-extern HWND OkButton;
-extern HWND CancelButton;
-extern BOOL DialogDone;
-extern BOOL DialogCancel;
-BOOL IsNumber(char *str);
+BOOL IsNumber(const char *str);
 size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 char *strDelSpace(char *dest, char *src);
@@ -1496,7 +1488,7 @@ char *toupperstr(char *dest);
 char *toupperstr(char *dest, const char *src);
 
 // lang.cpp
-char *_(char *in);
+const char *_(const char *in);
 
 // simulate.cpp
 void MarkInitedVariable(char *name);
@@ -1517,14 +1509,14 @@ extern BOOL InSimulationMode;
 //extern BOOL SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
 void SetSimulationVariable(char *name, SDWORD val);
-SDWORD GetSimulationVariable(char *name, BOOL forIoList);
-SDWORD GetSimulationVariable(char *name);
+SDWORD GetSimulationVariable(const char *name, BOOL forIoList);
+SDWORD GetSimulationVariable(const char* name);
 void SetSimulationStr(char *name, char *val);
 char *GetSimulationStr(char *name);
-int FindOpName(int op, char *name1);
-int FindOpName(int op, char *name1, char *name2);
-int FindOpNameLast(int op, char *name1);
-int FindOpNameLast(int op, char *name1, char *name2);
+int FindOpName(int op, const char* name1);
+int FindOpName(int op, const char* name1, const char* name2);
+int FindOpNameLast(int op, const char *name1);
+int FindOpNameLast(int op, const char *name1, const char *name2);
 // Assignment of the `variables,' used for timers, counters, arithmetic, and
 // other more general things. Allocate 2 octets (16 bits) per.
 // Allocate 1 octets for  8-bits variables.
@@ -1752,7 +1744,7 @@ int McuUART();
 extern DWORD RamSection;
 extern DWORD RomSection;
 extern DWORD EepromAddrFree;
-extern int VariableCount;
+//extern int VariableCount;
 void PrintVariables(FILE *f);
 DWORD isVarUsed(char *name);
 int isVarInited(char *name);
@@ -1761,18 +1753,18 @@ void AllocStart(void);
 DWORD AllocOctetRam(void);
 DWORD AllocOctetRam(int bytes);
 void AllocBitRam(DWORD *addr, int *bit);
-int MemForVariable(char *name, DWORD *addrl, int sizeOfVar);
-int MemForVariable(char *name, DWORD *addr);
+int MemForVariable(const char* name, DWORD *addrl, int sizeOfVar);
+int MemForVariable(const char* name, DWORD *addr);
 int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
 int MemOfVar(char *name, DWORD *addr);
-BYTE MuxForAdcVariable(char *name);
+BYTE MuxForAdcVariable(const char* name);
 int SingleBitAssigned(char *name);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput);
-void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit);
-void MemForSingleBit(char *name, DWORD *addr, int *bit);
+void MemForSingleBit(const char* name, BOOL forRead, DWORD *addr, int *bit);
+void MemForSingleBit(const char *name, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile(void);
-int SetSizeOfVar(char *name, int sizeOfVar);
-int SizeOfVar(char *name);
+int SetSizeOfVar(const char* name, int sizeOfVar);
+int SizeOfVar(const char* name);
 int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
@@ -1784,8 +1776,8 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);
 #define CompileError() longjmp(CompileErrorBuf, 1)
 extern jmp_buf CompileErrorBuf;
-double SIprefix(double val, char* prefix, int en_1_2);
-double SIprefix(double val, char* prefix);
+double SIprefix(double val, char *prefix, int en_1_2);
+double SIprefix(double val, char *prefix);
 int GetVariableType(char *name);
 int SetVariableType(char *name, int type);
 
@@ -1797,7 +1789,6 @@ extern int rungNow;
 void IntDumpListing(char *outFile);
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust); // delay in us
 BOOL GenerateIntermediateCode(void);
-BOOL CheckEndOfRungElem(int which, void *elem);
 BOOL CheckLeafElem(int which, void *elem);
 extern DWORD addrRUartRecvErrorFlag;
 extern int    bitRUartRecvErrorFlag;
@@ -1809,21 +1800,21 @@ BOOL UartRecvUsed(void);
 BOOL UartSendUsed(void);
 BOOL SpiFunctionUsed(void);
 BOOL Bin32BcdRoutineUsed(void);
-SDWORD CheckMakeNumber(char *str);
+SDWORD CheckMakeNumber(const char* str);
 void WipeIntMemory(void);
 BOOL CheckForNumber(char *str);
 int TenToThe(int x);
 int xPowerY(int x, int y);
 BOOL MultiplyRoutineUsed(void);
 BOOL DivideRoutineUsed(void);
-void GenSymOneShot(char *dest, char *name1, char *name2);
-int getradix(char *str);
+void GenSymOneShot(char *dest, const char* name1, const char* name2);
+int getradix(const char* str);
 SDWORD CalcDelayClock(long long clocks); // in us
 
 // pic16.cpp
 extern SDWORD PicProgLdLen;
 void CompilePic16(char *outFile);
-BOOL McuAs(char *str);
+BOOL McuAs(const char *str);
 BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
 // avr.cpp
 extern DWORD AvrProgLdLen;

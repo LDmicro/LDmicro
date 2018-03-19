@@ -21,9 +21,7 @@
 // plus the name
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <commctrl.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 

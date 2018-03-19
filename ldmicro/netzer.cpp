@@ -22,12 +22,7 @@
 // for interpretation.
 // Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stddef.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "intcode.h"
@@ -191,7 +186,7 @@ static int GetPercentCharactersCount(char * Search)
     return found;
 }
 
-static WORD AddrForVariable(char *name)
+static WORD AddrForVariable(const char *name)
 {
     // Look within the variables for an already known entry.
     int i;

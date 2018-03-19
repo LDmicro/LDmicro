@@ -22,10 +22,7 @@
 // operands. Try to reuse code a bit.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 
@@ -44,8 +41,8 @@ static BOOL NoCheckingOnBox[MAX_BOXES];
 
 #define MAX_COMBO_STRINGS 16
 typedef struct comboRecordTag {
-    int     n; // 0 <= n < MAX_COMBO_STRINGS
-    char   *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
+    int   n; // 0 <= n < MAX_COMBO_STRINGS
+    char *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
 } comboRecord;
 
 //-----------------------------------------------------------------------------
@@ -102,7 +99,7 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     return 0;
 }
 
-static void MakeControls(int labs, char **labels, int boxes, char **dests, DWORD fixedFontMask, int combo, comboRecord *combos)
+static void MakeControls(int labs, const char **labels, int boxes, char **dests, DWORD fixedFontMask, int combo, comboRecord *combos)
 {
     int i, j;
     HDC hdc = GetDC(SimpleDialog);
@@ -188,7 +185,7 @@ static void MakeControls(int labs, char **labels, int boxes, char **dests, DWORD
     NiceFont(CancelButton);
 }
 
-static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnlyMask,
+static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask,
     DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos)
 {
     BOOL didCancel;
@@ -287,7 +284,7 @@ static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnly
 }
 
 //as default : labels = boxes
-static BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
+static BOOL ShowSimpleDialog(const char *title, int boxes, const char **labels, DWORD numOnlyMask,
     DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests)
 {
     return ShowSimpleDialog(title, boxes, labels, numOnlyMask,
@@ -295,7 +292,7 @@ static BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnl
 }
 
 //coment : labels > boxes
-static BOOL ShowSimpleDialog(char *title, int labs, char **labels, DWORD numOnlyMask,
+static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask,
     DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests)
 {
     return ShowSimpleDialog(title, labs, labels, numOnlyMask,
@@ -342,7 +339,7 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
     }
     char buf2[100];
     sprintf(buf2, _("** Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (%.3f ms)"), 1.0 * Prog.cycleTime / 1000); //us show as ms
-    char *labels[] = { _("Name:"),
+    const char *labels[] = { _("Name:"),
                        which == ELEM_TIME2DELAY ? _("Delay (us):") : _("Delay (ms):"),
                        which == ELEM_TIME2DELAY ? buf1 : _("Adjust:"),
                        _("* Adjust default = 0 (LDmicro v3.5.3), typical = -1 (LDmicro v2.3)"),
@@ -358,7 +355,7 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
 
     int labs = arraylen(labels);
     int boxes = arraylen(dests);
-    char *s;
+    const char *s;
     switch(which) {
         case ELEM_TIME2DELAY: s = _("TIME to DELAY converter"); labs = 3; boxes = 2; sprintf(delBuf, "%d", *delay); strcpy(nameBuf, name); break;
         case ELEM_TIME2COUNT: s = _("TIME to COUNTER converter"); labs = 2; boxes = 2; break;
@@ -406,10 +403,10 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
 
 void ShowSleepDialog(int which, SDWORD *delay, char *name)
 {
-    char *s;
+    const char *s;
     s = _("Sleep Delay");
 
-    char *labels[] = { /*_("Name:"),*/ _("Delay (s):") };
+    const char *labels[] = { /*_("Name:"),*/ _("Delay (s):") };
 
     char delBuf[16];
     char nameBuf[MAX_NAME_LEN];
@@ -425,16 +422,16 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
         if(del <= 0) {
             Error(_("Delay cannot be zero or negative."));
         } else if(period  < 1)  {
-            char *s1 = _("Timer period too short (needs faster cycle time).");
+            const char *s1 = _("Timer period too short (needs faster cycle time).");
             char s2[1024];
             sprintf(s2, _("Timer '%s'=%.3f ms."), name, del);
             char s3[1024];
             sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
-            char *s4 = _("Not available");
+            const char *s4 = _("Not available");
             Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
-        } else if((period >= long long (1 << (SizeOfVar(name)*8-1)))
+        } else if((period >= (long long)(1 << (SizeOfVar(name)*8-1)))
                    && (Prog.mcu->portPrefix != 'L')) {
-            char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
+            const char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
                 "slower cycle time.");
             char s2[1024];
             sprintf(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del/1000, period);
@@ -483,7 +480,7 @@ void ShowDelayDialog(int which, char *name)
        sprintf(s, "..., %lld", T);
        strcat(buf1, s);
     }
-    char *labels[] = { _("Delay (us):"), buf1 };
+    const char *labels[] = { _("Delay (us):"), buf1 };
 
     char delBuf[16];
     sprintf(delBuf, "%s", name);
@@ -506,7 +503,7 @@ void ShowDelayDialog(int which, char *name)
 //-----------------------------------------------------------------------------
 // Report an error if a constant doesn't fit in 8-16-24 bits.
 //-----------------------------------------------------------------------------
-static void CheckConstantInRange(char *name, char *str, SDWORD v)
+static void CheckConstantInRange(const char *name, const char *str, SDWORD v)
 {
     SDWORD val = hobatoi(str);
     if(val != v) oops();
@@ -579,7 +576,7 @@ void CheckVarInRange(char *name, char *str, SDWORD v)
 //-----------------------------------------------------------------------------
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
 {
-    char *title;
+    const char *title;
     switch(which) {
         case ELEM_CTU:  title = _("Count Up"); break;
         case ELEM_CTD:  title = _("Count Down"); break;
@@ -588,7 +585,7 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
         default: oops();
     }
 
-    char *labels[] = { _("Name:"),
+    const char *labels[] = { _("Name:"),
 //     ((which == ELEM_CTC)||(which == ELEM_CTU) ? _("Start value:") : _("Max value:")),
        _("Start value:"),
        (((which == ELEM_CTC) ? _("Max value:") :
@@ -662,8 +659,8 @@ void ShowSFRDialog(int which, char *op1, char *op2)
 
 void ShowCmpDialog(int which, char *op1, char *op2)
 {
-    char *title;
-    char *l2;
+    const char *title;
+    const char *l2;
     switch(which) {
         case ELEM_EQU:
             title = _("If Equals");
@@ -698,7 +695,7 @@ void ShowCmpDialog(int which, char *op1, char *op2)
         default:
             oops();
     }
-    char *labels[] = { _("'Closed' if:"), l2};
+    const char *labels[] = { _("'Closed' if:"), l2};
     char *dests[] = { op1, op2};
     if(ShowSimpleDialog(title, 2, labels, 0, 0x7, 0x7, dests)){
         if(IsNumber(op1))
@@ -710,7 +707,7 @@ void ShowCmpDialog(int which, char *op1, char *op2)
 
 void ShowVarBitDialog(int which, char *dest, char *src)
 {
-    char *title;
+    const char *title;
     switch(which) {
         case ELEM_IF_BIT_SET   : title = _("If bit set"); break;
         case ELEM_IF_BIT_CLEAR : title = _("If bit clear"); break;
@@ -720,7 +717,7 @@ void ShowVarBitDialog(int which, char *dest, char *src)
     }
     char s[100];
     sprintf(s, _("Bit # [0..%d]:"), SizeOfVar(dest)*8-1);
-    char *labels[] = { _("Variable:"), s };
+    const char *labels[] = { _("Variable:"), s };
     char *dests[] = { dest, src };
     if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)){
     }
@@ -728,7 +725,7 @@ void ShowVarBitDialog(int which, char *dest, char *src)
 
 void ShowMoveDialog(int which, char *dest, char *src)
 {
-    char *title;
+    const char *title;
     switch(which) {
         case ELEM_MOVE        : title = _("Move"); break;
         case ELEM_BIN2BCD     : title = _("Convert BIN to packed BCD"); break;
@@ -738,7 +735,7 @@ void ShowMoveDialog(int which, char *dest, char *src)
         case ELEM_SEED_RANDOM : title = _("Seed Random : $seed_..."); break;
         default: oops();
     }
-    char *labels[] = { _("Destination:"), _("Source:") };
+    const char *labels[] = { _("Destination:"), _("Source:") };
     char *dests[] = { dest, src };
     if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)){
         if(IsNumber(dest)) {
@@ -753,7 +750,7 @@ void ShowMoveDialog(int which, char *dest, char *src)
 void ShowBusDialog(ElemLeaf *l)
 {
     ElemBus *s = &(l->d.bus);
-    char *title = _("BUS tracer");
+    const char *title = _("BUS tracer");
 
     char busStr[100];
     char PCBbitStr[100];
@@ -768,7 +765,7 @@ void ShowBusDialog(ElemLeaf *l)
             strcat(busStr, PCBbitStr2);
         }
 
-    char *labels[] = { _("Destination:"), _("Source:"), _("Destination bits:"), _("Source bits:") };
+    const char *labels[] = { _("Destination:"), _("Source:"), _("Destination bits:"), _("Source bits:") };
     char *dests[] = { s->dest, busStr, s->src, PCBbitStr};
     if(ShowSimpleDialog(title, 4, labels, 0, 0x3, 0xff, dests)){
         if(IsNumber(s->dest)) {
@@ -797,9 +794,9 @@ void ShowBusDialog(ElemLeaf *l)
 void ShowSpiDialog(ElemLeaf *l)
 {
     ElemSpi *s = &(l->d.spi);
-    char *title = _("SPI - Serial Peripheral Interface");
+    const char *title = _("SPI - Serial Peripheral Interface");
 
-    char *labels[] = { _("SPI Name:"), _("SPI Mode:"), _("Send variable:"), _("Recieve to variable:"),
+    const char *labels[] = { _("SPI Name:"), _("SPI Mode:"), _("Send variable:"), _("Recieve to variable:"),
          _("Bit Rate (Hz):"), _("Data Modes (CPOL, CPHA): "), _("Data Size:"), _("Data Order:") };
 
     char *dests[] = { s->name, s->mode, s->send, s->recv,
@@ -833,8 +830,9 @@ void ShowSpiDialog(ElemLeaf *l)
         } else oops();
         for(i = 0; i < comboRec[4].n; i++) {
             sprintf(buf,"%15.3fHz", 1.0*Prog.mcuClock/(m*xPowerY(m,i)));
-            comboRec[4].str[i] = (char *)CheckMalloc(strlen(buf)+1);
-            strcpy(comboRec[4].str[i], buf);
+            char* tmp = (char *)CheckMalloc(strlen(buf)+1);
+            strcpy(tmp, buf);
+            comboRec[4].str[i] = tmp;
         }
     }
 //  NoCheckingOnBox[3] = TRUE;
@@ -854,7 +852,7 @@ void ShowSegmentsDialog(ElemLeaf *l)
     ElemSegments *s = &(l->d.segments);
     char common[10];
     sprintf(common, "%c", s->common);
-    char *s1;
+    const char *s1;
     switch(s->which) {
         case ELEM_7SEG:
                 s1 = "7";
@@ -870,7 +868,7 @@ void ShowSegmentsDialog(ElemLeaf *l)
                 break;
         default: oops();
     }
-    char *labels[] = { _("Destination:"), _("Source:"), _("Common:Cathode|Anode:")};
+    const char *labels[] = { _("Destination:"), _("Source:"), _("Common:Cathode|Anode:")};
     char *dests[] = { s->dest, s->src, common};
     char s2[50];
     sprintf(s2,_("Convert char to %s Segments"), s1);
@@ -890,17 +888,17 @@ void ShowSegmentsDialog(ElemLeaf *l)
 
 void ShowReadAdcDialog(char *name)
 {
-    char *labels[] = { _("Destination:") };
+    const char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
 }
 
 void ShowGotoDialog(int which, char *name)
 {
-    char *labels[] = { _("Destination rung(label):") };
+    const char *labels[] = { _("Destination rung(label):") };
     char *dests[] = { name };
 
-    char *s;
+    const char *s;
     switch(which) {
         case ELEM_GOTO:
             s = _("Goto rung number or labe namel");
@@ -929,7 +927,7 @@ void ShowGotoDialog(int which, char *name)
 
 void ShowRandomDialog(char *name)
 {
-    char *labels[] = { _("Destination:") };
+    const char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Random value"), 1, labels, 0, 0x1, 0x1, dests);
 }
@@ -942,7 +940,7 @@ void ShowSetPwmDialog(void *e)
     char *targetFreq    = s->targetFreq;
     char *resolution    = s->resolution;
 
-    char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
+    const char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
     char *dests[] = { name+1, duty_cycle, targetFreq, resolution};
     comboRecord comboRec[] = { {0, NULL},
                                {0, NULL},
@@ -975,7 +973,7 @@ void ShowSetPwmDialog(void *e)
 
 void ShowUartDialog(int which, char *name)
 {
-    char *labels[] = { (which == ELEM_UART_RECV) ? _("Destination:") :
+    const char *labels[] = { (which == ELEM_UART_RECV) ? _("Destination:") :
         _("Source:") };
     char *dests[] = { name };
 
@@ -987,7 +985,7 @@ void ShowUartDialog(int which, char *name)
 
 void ShowMathDialog(int which, char *dest, char *op1, char *op2)
 {
-    char *l2, *title;
+    const char *l2, *title;
     if(which == ELEM_ADD) {
         l2 = "+ Operand2:";
         title = _("Add");
@@ -1039,11 +1037,11 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
     BOOL b;
     if((which == ELEM_NOT)
     || (which == ELEM_NEG)) {
-        char *labels[] = { _("Destination:="), l2 };
+        const char *labels[] = { _("Destination:="), l2 };
         char *dests[] = { dest, op1};
         b=ShowSimpleDialog(title, 2, labels, 0, 0x7, 0x7, dests);
     } else {
-        char *labels[] = { _("Destination:="), _("Operand1:"), l2 };
+        const char *labels[] = { _("Destination:="), _("Operand1:"), l2 };
         char *dests[] = { dest, op1, op2 };
         b=ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests);
     }
@@ -1100,9 +1098,9 @@ void ShowStepperDialog(int which, void *e)
     char *max  = s->max ;
     char *coil = s->coil;
 
-    char *title;
+    const char *title;
     title = _("Stepper");
-    char *labels[] = { _("Name:"),  _("Counter:"), "P:", _("Table size:"),  _("graph:"), _("Pulse to:")};
+    const char *labels[] = { _("Name:"),  _("Counter:"), "P:", _("Table size:"),  _("graph:"), _("Pulse to:")};
     char sgraph[128];
     sprintf(sgraph, "%d", s->graph);
     char snSize[128];
@@ -1174,10 +1172,10 @@ void ShowStepperDialog(int which, void *e)
 
 void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy)
 {
-    char *title;
+    const char *title;
     title = _("Pulser");
 
-    char *labels[] = { _("Counter:"), "P1:", "P0:", _("Accel.:"), _("Busy to:")};
+    const char *labels[] = { _("Counter:"), "P1:", "P0:", _("Accel.:"), _("Busy to:")};
     char *dests[] = { counter, P1, P0, accel, busy};
     if(ShowSimpleDialog(title, 5, labels, 0, 0xff, 0xff, dests)) {
         if(IsNumber(P1))
@@ -1195,10 +1193,10 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
             double P1t=(double)Prog.cycleTime*hobatoi(P1)/1000.0;
             double P0t=(double)Prog.cycleTime*hobatoi(P0)/1000.0;
             double P=P1t+P0t;
-            char *Punits =  _("ms");
+            const char *Punits =  _("ms");
 
             double F=1000000.0/Prog.cycleTime/(hobatoi(P1)+hobatoi(P0));
-            char *Funits;
+            const char *Funits;
             if (F<1000.0)
                 Funits = _("Hz");
             else {
@@ -1241,7 +1239,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
                 else
                     Tfull=Ta;
 
-                char *Tunits;
+                const char *Tunits;
                 if(Tfull<1000.0)
                     Tunits = _("ms");
                 else {
@@ -1258,7 +1256,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
 
 void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
 {
-    char *labels[] = { _("Counter var:"), _("Frequency (Hz):"), "Pulse to:"};
+    const char *labels[] = { _("Counter var:"), _("Frequency (Hz):"), "Pulse to:"};
     char *dests[] = { counter, targetFreq, coil};
     if(ShowSimpleDialog(_("Set N Pulse Cycle"), 3, labels, 0x2, 0x1, 0x7, dests)) {
         //TODO: check the available range
@@ -1278,7 +1276,7 @@ void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, c
     char _int01[100];
     sprintf(_int01, "%d", *int01);
 
-    char *labels[] = { _("Counter var:"), _("Input A INTs:"), _("Input A:"), _("Input B:"), _("Input Z:"), _("Output Zero(Counter==0):")};
+    const char *labels[] = { _("Counter var:"), _("Input A INTs:"), _("Input A:"), _("Input B:"), _("Input Z:"), _("Output Zero(Counter==0):")};
     char *dests[] = { counter, _int01, contactA, contactB, contactZ, error};
 {};
     NoCheckingOnBox[4] = TRUE;
@@ -1313,7 +1311,7 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
     char s[MAX_NAME_LEN];
     sprintf(s, _("Set variable '%s'"), io->name);
 
-    char *labels[2];
+    const char *labels[2];
     char *dests[2];
 
     if(InSimulationMode) {
@@ -1352,7 +1350,7 @@ void ShowShiftRegisterDialog(char *name, int *stages)
     char stagesStr[20];
     sprintf(stagesStr, "%d", *stages);
 
-    char *labels[] = { _("Name:"), _("Stages:") };
+    const char *labels[] = { _("Name:"), _("Stages:") };
     char *dests[] = { name, stagesStr };
     ShowSimpleDialog(_("Shift Register"), 2, labels, 0x2, 0x1, 0x3, dests);
 
@@ -1366,7 +1364,7 @@ void ShowShiftRegisterDialog(char *name, int *stages)
 
 void ShowFormattedStringDialog(char *var, char *string)
 {
-    char *labels[] = { _("Variable:"), _("String:") };
+    const char *labels[] = { _("Variable:"), _("String:") };
     char *dests[] = { var, string };
     NoCheckingOnBox[0] = TRUE;
     NoCheckingOnBox[1] = TRUE;
@@ -1378,7 +1376,7 @@ void ShowFormattedStringDialog(char *var, char *string)
 
 void ShowStringDialog(char * dest, char *var, char *string)
 {
-    char *labels[] = { _("Variable list:"), _("Format string:"), _("Dest:") };
+    const char *labels[] = { _("Variable list:"), _("Format string:"), _("Dest:") };
     char *dests[] = { var, string, dest };
     NoCheckingOnBox[0] = TRUE;
     NoCheckingOnBox[1] = TRUE;
@@ -1399,9 +1397,9 @@ void ShowCprintfDialog(int which, void *e)
     char *enable = f->enable;
     char *error = f->error;
 
-    char *labels[] = { _("Variable list:"), _("Format string:"), _("Dest:"), _("Enable:"), _("Error:") };
+    const char *labels[] = { _("Variable list:"), _("Format string:"), _("Dest:"), _("Enable:"), _("Error:") };
     char *dests[] = { var, string, dest, enable, error };
-    char *s;
+    const char *s;
     switch(which) {
         case ELEM_CPRINTF:      s = "CPRINTF"; goto cprintf;
         case ELEM_SPRINTF:      s = "SPRINTF"; goto cprintf;
@@ -1433,7 +1431,7 @@ void ShowCprintfDialog(int which, void *e)
 
 void ShowPersistDialog(char *var)
 {
-    char *labels[] = { _("Variable:") };
+    const char *labels[] = { _("Variable:") };
     char *dests[] = { var };
     ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, dests);
 }

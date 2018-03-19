@@ -20,10 +20,7 @@
 // Load/save the circuit from/to a file in a nice ASCII format.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <inttypes.h>
+#include "stdafx.h"
 
 #include "ldmicro.h"
 
@@ -704,9 +701,11 @@ BOOL LoadProjectFromFile(char *filename)
             break;
         }
     }
-    if(strcmp(line, "PROGRAM") != 0) goto failed;
 
     int rung = -2;
+
+    if(strcmp(line, "PROGRAM") != 0) goto failed;
+
     for(rung = 0;;) {
         if(!fgets(line, sizeof(line), f)) break;
         if(!strlen(strspace(line))) continue;
@@ -765,7 +764,7 @@ static void Indent(FILE *f, int depth)
 void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 {
     ElemLeaf *l = (ElemLeaf *)any;
-    char *s;
+    const char *s;
     char str1[1024];
     char str2[1024];
     char str3[1024];
@@ -1158,6 +1157,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                 fprintf(f, "RUNG\n");
               else
                 fprintf(f, "RUNG %d\n", rung);
+              //fprintf(f, "RUNG\n");
             } else {
                 fprintf(f, "SERIES\n");
             }
@@ -1337,9 +1337,9 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
 }
 
 //-----------------------------------------------------------------------------
-char *FrmStrToStr(char *dest, char *src)
+char *FrmStrToStr(char *dest, const char *src)
 {
-    char *s;
+    const char *s;
     if(src)
         s = src;
     else

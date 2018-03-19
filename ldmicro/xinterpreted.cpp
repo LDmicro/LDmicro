@@ -22,11 +22,7 @@
 // for interpretation.
 // Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <inttypes.h>
+#include "stdafx.h"
 
 #define _ITERATOR_DEBUG_LEVEL 0
 
@@ -51,7 +47,7 @@ int PlcIos_AppendAndGet(char *name)
     return PlcIos_size - 1;
 }
 
-static int CheckRange(int value, char *name)
+static int CheckRange(int value, const char *name)
 {
     if (value < 0 || value > 255) {
         char msg[80];
