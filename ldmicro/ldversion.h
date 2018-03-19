@@ -1,7 +1,7 @@
 #ifndef __LDMICRO_VER_H__
 #define __LDMICRO_VER_H__
 
-#define LDMICRO_VER_STR "4.3.8.1"
+#define LDMICRO_VER_STR "4.3.8.2"
 
 #define LDMICRO_VER_MAJOR (4)
 #define LDMICRO_VER_MINOR (3)
