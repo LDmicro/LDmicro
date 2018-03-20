@@ -10,7 +10,7 @@ Unofficial [HOW TO:](https://github.com/LDmicro/LDmicro/wiki/HOW-TO)
 
 ### Building LDmicro
 
-#### Building with Cake
+#### Building with Cmake
 
 For building LDmicro with Cmake you need Cmake itself, Perl interpreter and C++11 compiler.
 
