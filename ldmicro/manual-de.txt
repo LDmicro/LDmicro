@@ -1,18 +1,18 @@
 
-EINFÜHRUNG
+EINFÃœHRUNG
 ===========
 
-LDmicro erzeugt einen systemspezifischen Code für einige Microchip PIC16
-und Atmel AVR Mikroprozessoren. Üblicherweise wird die Software für diese
+LDmicro erzeugt einen systemspezifischen Code fÃ¼r einige Microchip PIC16
+und Atmel AVR Mikroprozessoren. Ãœblicherweise wird die Software fÃ¼r diese
 Prozessoren in Programmsprachen, wie Assembler, C oder BASIC geschrieben.
-Ein Programm, welches in einer dieser Sprachen abgefasst ist, enthält
-eine Anweisungsliste. Auch sind die diese Sprachen sehr leistungsfähig
-und besonders gut geeignet für die Architektur dieser Prozessoren,
+Ein Programm, welches in einer dieser Sprachen abgefasst ist, enthÃ¤lt
+eine Anweisungsliste. Auch sind die diese Sprachen sehr leistungsfÃ¤hig
+und besonders gut geeignet fÃ¼r die Architektur dieser Prozessoren,
 welche diese Anweisungsliste intern abarbeiten.
 
-Programme für speicherprogrammierbare Steuerungen (SPS) andererseits,
+Programme fÃ¼r speicherprogrammierbare Steuerungen (SPS) andererseits,
 werden oftmals im Kontaktplan (KOP = ladder logic) geschrieben.
-Ein einfaches Programm, könnte wie folgt aussehen:
+Ein einfaches Programm, kÃ¶nnte wie folgt aussehen:
 
    ||                                                                    ||
    ||    Xbutton1           Tdon           Rchatter           Yred       ||
@@ -32,33 +32,33 @@ Ein einfaches Programm, könnte wie folgt aussehen:
    ||                                                                    ||
    ||                                                                    ||
 
- (TON ist eine Anzugsverzögerung, TOF eine Abfallverzögerung.
-  Die --] [-- Anweisungen bedeuten Eingänge, die sich ähnlich, wie Relais-
-  kontakte  verhalten. Die --( )-- Anweisungen bedeuten Ausgänge, die sich
-  ähnlich,  wie Relaisspulen verhalten. Viele gute Bezugsquellen werden für
+ (TON ist eine AnzugsverzÃ¶gerung, TOF eine AbfallverzÃ¶gerung.
+  Die --] [-- Anweisungen bedeuten EingÃ¤nge, die sich Ã¤hnlich, wie Relais-
+  kontakte  verhalten. Die --( )-- Anweisungen bedeuten AusgÃ¤nge, die sich
+  Ã¤hnlich,  wie Relaisspulen verhalten. Viele gute Bezugsquellen werden fÃ¼r
   KOP im Internet oder sonst wo angeboten; Einzelheiten zu dieser speziellen
-  Ausführung werden weiter unten angegeben.)
+  AusfÃ¼hrung werden weiter unten angegeben.)
 
 Einige Unterschiede sind jedoch offensichtlich:
 
 * Das Programm wird in einem grafischen Format dargestellt
   und nicht mit einer aus Anweisungen bestehenden Textliste. Viele
-  Anwender werden dies zunächst als besser verständlich auffassen.
+  Anwender werden dies zunÃ¤chst als besser verstÃ¤ndlich auffassen.
 
-* Diese Programme erscheinen wie einfachste Schaltpläne, mit
-  Relaiskontakten (Eingängen) and Spulen (Ausgängen). Dies ist recht
-  intuitiv für Programmierer, die über Kenntnisse der Theorie von
-  Elektroschaltplänen verfügen.
+* Diese Programme erscheinen wie einfachste SchaltplÃ¤ne, mit
+  Relaiskontakten (EingÃ¤ngen) and Spulen (AusgÃ¤ngen). Dies ist recht
+  intuitiv fÃ¼r Programmierer, die Ã¼ber Kenntnisse der Theorie von
+  ElektroschaltplÃ¤nen verfÃ¼gen.
 
-* Der ‘ladder logic compiler’ übernimmt was wo berechnet wird.
+* Der â€˜ladder logic compilerâ€™ Ã¼bernimmt was wo berechnet wird.
   Es ist nicht notwendig einen Code zu schreiben, um zu errechnen, wann
-  der Status (Zustand) der Ausgänge neu bestimmt werden muss, z.B. auf
-  Grund einer Änderung eines Eingangs oder Timers. Auch braucht man die
+  der Status (Zustand) der AusgÃ¤nge neu bestimmt werden muss, z.B. auf
+  Grund einer Ã„nderung eines Eingangs oder Timers. Auch braucht man die
   Reihenfolge der Berechnungen nicht anzugeben; die SPS-Hilfsprogramme
-  übernehmen dies.
+  Ã¼bernehmen dies.
 
-LDmicro kompiliert ‘ladder logic’ (KOP) in PIC16- oder AVR-Code.
-Die folgenden Prozessoren werden unterstützt:
+LDmicro kompiliert â€˜ladder logicâ€™ (KOP) in PIC16- oder AVR-Code.
+Die folgenden Prozessoren werden unterstÃ¼tzt:
 
     * PIC16F877
     * PIC16F628
@@ -74,225 +74,225 @@ Die folgenden Prozessoren werden unterstützt:
     * ATmega64
     * ATmega162 (ungetestet)
 
-Es wäre einfach noch weitere AVR- oder PIC16-Prozessoren zu unterstützen,
-aber ich habe keine Möglichkeit diese zu testen. Falls Sie einen
-bestimmten benötigen, so nehmen Sie Kontakt mit mir auf und ich werde
+Es wÃ¤re einfach noch weitere AVR- oder PIC16-Prozessoren zu unterstÃ¼tzen,
+aber ich habe keine MÃ¶glichkeit diese zu testen. Falls Sie einen
+bestimmten benÃ¶tigen, so nehmen Sie Kontakt mit mir auf und ich werde
 sehen, was ich tun kann.
 
-Mit LDmicro können Sie ein Kontaktplan-Programm zeichnen bzw. entwickeln.
-Auch können Sie dies in Realzeit mit Ihrem Computer simulieren. Wenn
-Sie dann überzeugt sind, dass Ihr Programm korrekt ist, so können
-Sie die Pins, entsprechend dem Programm als Ein- oder Ausgänge, dem
-Mikroprozessor zuweisen. Nach der Zuweisung der Pins können Sie den PIC-
-oder AVR-Code für Ihr Programm kompilieren. Der Compiler erzeugt eine
+Mit LDmicro kÃ¶nnen Sie ein Kontaktplan-Programm zeichnen bzw. entwickeln.
+Auch kÃ¶nnen Sie dies in Realzeit mit Ihrem Computer simulieren. Wenn
+Sie dann Ã¼berzeugt sind, dass Ihr Programm korrekt ist, so kÃ¶nnen
+Sie die Pins, entsprechend dem Programm als Ein- oder AusgÃ¤nge, dem
+Mikroprozessor zuweisen. Nach der Zuweisung der Pins kÃ¶nnen Sie den PIC-
+oder AVR-Code fÃ¼r Ihr Programm kompilieren. Der Compiler erzeugt eine
 Hex-Datei, mit dem Sie dann Ihren Mikroprozessor programmieren. Dies
-ist mit jedem PIC/AVR-Programmer möglich.
+ist mit jedem PIC/AVR-Programmer mÃ¶glich.
 
 LDmicro wurde entworfen, um in etwa mit den meisten kommerziellen
-SPS-Systemen ähnlich zu sein. Es gibt einige Ausnahmen und viele Dinge
+SPS-Systemen Ã¤hnlich zu sein. Es gibt einige Ausnahmen und viele Dinge
 sind ohnehin kein Standard in der Industrie. Lesen Sie aufmerksam die
 Beschreibung jeder Anweisung, auch wenn Ihnen diese vertraut erscheint.
 Dieses Dokument setzt ein Grundwissen an Kontaktplan-Programmierung
-und der Struktur von SPS-Software voraus (wie: der Ausführungszyklus,
-Eingänge lesen, rechnen und Ausgänge setzen).
+und der Struktur von SPS-Software voraus (wie: der AusfÃ¼hrungszyklus,
+EingÃ¤nge lesen, rechnen und AusgÃ¤nge setzen).
 
 
 WEITERE ZIELE
 =============
 
-Es ist auch möglich einen ANSI C - Code zu erzeugen. Diesen können
-Sie dann für jeden Prozessor verwenden, für den Sie einen C-Compiler
+Es ist auch mÃ¶glich einen ANSI C - Code zu erzeugen. Diesen kÃ¶nnen
+Sie dann fÃ¼r jeden Prozessor verwenden, fÃ¼r den Sie einen C-Compiler
 besitzen. Sie sind dann aber selbst verantwortlich, den Ablauf zu
-bestimmen. Das heißt, LDmicro erzeugt nur ein Stammprogramm für einen
-Funktions- SPS-Zyklus. Sie müssen den SPS-Zyklus bei jedem Durchlauf
-aufrufen und auch die Ausführung (Implementierung) der E/A-Funktionen,
+bestimmen. Das heiÃŸt, LDmicro erzeugt nur ein Stammprogramm fÃ¼r einen
+Funktions- SPS-Zyklus. Sie mÃ¼ssen den SPS-Zyklus bei jedem Durchlauf
+aufrufen und auch die AusfÃ¼hrung (Implementierung) der E/A-Funktionen,
 die der SPS-Zyklus abruft (wie: lesen/schreiben, digitaler Eingang usw.).
-Für mehr Einzelheiten: Siehe die Kommentare in dem erzeugten Quellcode.
+FÃ¼r mehr Einzelheiten: Siehe die Kommentare in dem erzeugten Quellcode.
 
-Ganz zuletzt kann LDmicro auch für eine virtuelle Maschine einen
-prozessor-unabhängigen Byte-Code erzeugen, welche mit der KOP-Kodierung
+Ganz zuletzt kann LDmicro auch fÃ¼r eine virtuelle Maschine einen
+prozessor-unabhÃ¤ngigen Byte-Code erzeugen, welche mit der KOP-Kodierung
 (ladder logic) laufen soll. Ich habe eine Beispiel-Anwendung des
 VM/Interpreters vorgesehen, in ziemlich gutem C geschrieben. Dieses
 Anwendungsziel wird halbwegs auf jeder Plattform funktionieren, so lange
-Sie Ihre eigene VM vorsehen. Dies könnte für solche Anwendungen nützlich
-sein, für die Sie KOP (ladder logic) als Datentransfer-Sprache verwenden
-möchten, um ein größeres Programm anzupassen.  Für weitere Einzelheiten:
+Sie Ihre eigene VM vorsehen. Dies kÃ¶nnte fÃ¼r solche Anwendungen nÃ¼tzlich
+sein, fÃ¼r die Sie KOP (ladder logic) als Datentransfer-Sprache verwenden
+mÃ¶chten, um ein grÃ¶ÃŸeres Programm anzupassen.  FÃ¼r weitere Einzelheiten:
 Siehe die Kommentare in dem Beispiel-Interpreter.
 
 
 OPTIONEN DER BEFEHLSZEILEN
 ==========================
 
-ldmicro.exe läuft normalerweise ohne eine Befehlszeilen-Option.
-Das heißt, dass Sie nur ein Tastenkürzel zu dem Programm benötigen
+ldmicro.exe lÃ¤uft normalerweise ohne eine Befehlszeilen-Option.
+Das heiÃŸt, dass Sie nur ein TastenkÃ¼rzel zu dem Programm benÃ¶tigen
 oder es auf dem Desktop abspeichern und dann auf das Symbol (die Ikone)
-doppelklicken, um es laufen zu lassen. Danach können Sie alles ausführen,
-was das GUI (Graphical User Interface) zulässt.
+doppelklicken, um es laufen zu lassen. Danach kÃ¶nnen Sie alles ausfÃ¼hren,
+was das GUI (Graphical User Interface) zulÃ¤sst.
 
 Wenn man an LDmicro einen alleinstehenden Dateinamen in der Befehlszeile
-vergeben hat (z. B. ‘ldmicro.exe asd.ld’), wird LDmicro versuchen ‘asd.ld’
-zu öffnen, falls diese existiert. Dies bedeutet, dass man ldmicro.exe
-mit .ld Dateien verbinden kann, sodass dies automatisch abläuft, wenn
+vergeben hat (z. B. â€˜ldmicro.exe asd.ldâ€™), wird LDmicro versuchen â€˜asd.ldâ€™
+zu Ã¶ffnen, falls diese existiert. Dies bedeutet, dass man ldmicro.exe
+mit .ld Dateien verbinden kann, sodass dies automatisch ablÃ¤uft, wenn
 man auf eine .ld Datei doppelklickt.
 
 Wenn man an LDmicro das Argument in der Befehlszeile in folgender Form
-vergeben hat: ‘ldmicro.exe /c src.ld dest.hex’, so wird es versuchen
-‘src.ld’ zu kompilieren und unter ‘dest.hex’ abzuspeichern. LDmicro endet
-nach dem Kompilieren, unabhängig davon, ob die Kompilierung erfolgreich
+vergeben hat: â€˜ldmicro.exe /c src.ld dest.hexâ€™, so wird es versuchen
+â€˜src.ldâ€™ zu kompilieren und unter â€˜dest.hexâ€™ abzuspeichern. LDmicro endet
+nach dem Kompilieren, unabhÃ¤ngig davon, ob die Kompilierung erfolgreich
 war oder nicht. Alle Meldungen werden auf der Konsole ausgegeben. Dieser
 Modus ist hilfreich, wenn man LDmicro von der Befehlszeile laufen
-aus lässt.
+aus lÃ¤sst.
 
 
 GRUNDLAGEN
 ==========
 
 Wenn Sie LDmicro ohne Argumente aufrufen, so beginnt es als ein leeres
-Programm. Wenn Sie LDmicro mit dem Namen eines ‘ladder’ (KOP)-Programms
-(z.B. xxx.ld) in der Befehlszeile öffnen, dann wird es versuchen dieses
+Programm. Wenn Sie LDmicro mit dem Namen eines â€˜ladderâ€™ (KOP)-Programms
+(z.B. xxx.ld) in der Befehlszeile Ã¶ffnen, dann wird es versuchen dieses
 Programm am Anfang zu laden.
 
-LDmicro verwendet sein eigenes internes Format für das Programm und
+LDmicro verwendet sein eigenes internes Format fÃ¼r das Programm und
 man kann kein logisches Zeichen aus einem anderen (Fremd-)Programm
 importieren.
 
 Falls Sie nicht ein schon vorhandenes Programm laden, dann wird Ihnen
-ein Programm mit einem leeren Netzwerk geliefert. In dieses können Sie
-einen Befehl einfügen; z. B. könnten Sie auch eine Reihe von Kontakten
-einfügen (Anweisung -> Kontakte Einfügen), die zunächst mit ‘Xneu’
-bezeichnet werden. ‘X’ bedeutet, dass der Kontakt auf einen Eingang
-des Mikroprozessors festgelegt ist. Diesen Pin können Sie später zuweisen,
-nachdem Sie den Mikroprozessor gewählt haben und die Kontakte
+ein Programm mit einem leeren Netzwerk geliefert. In dieses kÃ¶nnen Sie
+einen Befehl einfÃ¼gen; z. B. kÃ¶nnten Sie auch eine Reihe von Kontakten
+einfÃ¼gen (Anweisung -> Kontakte EinfÃ¼gen), die zunÃ¤chst mit â€˜Xneuâ€™
+bezeichnet werden. â€˜Xâ€™ bedeutet, dass der Kontakt auf einen Eingang
+des Mikroprozessors festgelegt ist. Diesen Pin kÃ¶nnen Sie spÃ¤ter zuweisen,
+nachdem Sie den Mikroprozessor gewÃ¤hlt haben und die Kontakte
 umbenannt haben. Der erste Buchstabe zeigt an, um welche Art Objekt es
 sich handelt. Zum Beispiel:
 
     * XName -- Auf einen Eingang des Mikroprozessors festgelegt
     * YName -- Auf einen Ausgang des Mikroprozessors festgelegt
     * RName -- Merker: Ein Bit im Speicher (Internes Relais)
-    * TName -- Ein Timer; Anzugs- oder Abfallverzögerung
-    * CName -- Ein Zähler, Aufwärts- oder Abwärtszähler
+    * TName -- Ein Timer; Anzugs- oder AbfallverzÃ¶gerung
+    * CName -- Ein ZÃ¤hler, AufwÃ¤rts- oder AbwÃ¤rtszÃ¤hler
     * AName -- Eine Ganzzahl, von einem A/D-Wandler eingelesen
     * Name  -- Eine Allzweck-Variable als Ganzzahl
 
-Wählen Sie den Rest des Namens, sodass dieser beschreibt, was das Objekt
+WÃ¤hlen Sie den Rest des Namens, sodass dieser beschreibt, was das Objekt
 bewirkt und das dieser auch einmalig im Programm ist. Der gleiche Name
-bezieht sich immer auf das gleiche Objekt im Programm. Es wäre zum
-Beispiel falsch eine Anzugsverzögerung (TON) ‘TVerzög’ zu nennen und im
-selben Programm eine Abfallverzögerung ‘TVerzög’ (TOF), weil jeder Zähler
-(oder Timer) seinen eigenen Speicher benötigt. Andererseits wäre es
-korrekt einen „Speichernden Timer“ (RTO) ‘TVerzög’ zu nennen und eine
-entsprechende Rücksetz-Anweisung (RES)  =  ‘TVerzög’, weil in diesem
+bezieht sich immer auf das gleiche Objekt im Programm. Es wÃ¤re zum
+Beispiel falsch eine AnzugsverzÃ¶gerung (TON) â€˜TVerzÃ¶gâ€™ zu nennen und im
+selben Programm eine AbfallverzÃ¶gerung â€˜TVerzÃ¶gâ€™ (TOF), weil jeder ZÃ¤hler
+(oder Timer) seinen eigenen Speicher benÃ¶tigt. Andererseits wÃ¤re es
+korrekt einen â€Speichernden Timerâ€œ (RTO) â€˜TVerzÃ¶gâ€™ zu nennen und eine
+entsprechende RÃ¼cksetz-Anweisung (RES)  =  â€˜TVerzÃ¶gâ€™, weil in diesem
 Fall beide Befehle dem gleichen Timer gelten.
 
-Die Namen von Variablen können aus Buchstaben, Zahlen und Unter-
+Die Namen von Variablen kÃ¶nnen aus Buchstaben, Zahlen und Unter-
 strichen (_) bestehen. Der Name einer Variablen darf nicht mit einer
-Nummer beginnen. Die Namen von Variablen sind fallabhängig.
+Nummer beginnen. Die Namen von Variablen sind fallabhÃ¤ngig.
 
-Ein Befehl für eine gewöhnliche Variable (MOV, ADD, EQU, usw.), kann
+Ein Befehl fÃ¼r eine gewÃ¶hnliche Variable (MOV, ADD, EQU, usw.), kann
 mit Variablen mit jedem Namen arbeiten. Das bedeutet, dass diese Zugang
-zu den Timer- und Zähler-Akkumulatoren haben. Das kann manchmal recht
-hilfreich sein; zum Beispiel kann man damit prüfen, ob die Zählung eines
+zu den Timer- und ZÃ¤hler-Akkumulatoren haben. Das kann manchmal recht
+hilfreich sein; zum Beispiel kann man damit prÃ¼fen, ob die ZÃ¤hlung eines
 Timers in einem bestimmten Bereich liegt.
 
-Die Variablen sind immer 16-Bit Ganzzahlen. Das heißt sie können von
+Die Variablen sind immer 16-Bit Ganzzahlen. Das heiÃŸt sie kÃ¶nnen von
 -32768 bis 32767 reichen. Die Variablen werden immer als vorzeichen-
-behaftet behandelt. Sie können auch Buchstaben als Dezimalzahlen festlegen
-(0, 1234, -56).  Auch können Sie ASCII-Zeichenwerte (‘A’, ‘z’) festlegen,
-indem Sie die Zeichen in „Auslassungszeichen“ einfügen. Sie können
+behaftet behandelt. Sie kÃ¶nnen auch Buchstaben als Dezimalzahlen festlegen
+(0, 1234, -56).  Auch kÃ¶nnen Sie ASCII-Zeichenwerte (â€˜Aâ€™, â€˜zâ€™) festlegen,
+indem Sie die Zeichen in â€Auslassungszeichenâ€œ einfÃ¼gen. Sie kÃ¶nnen
 ein ASCII-Zeichen an den meisten Stellen verwenden, an denen Sie eine
-Dezimalzahl verwenden können.
+Dezimalzahl verwenden kÃ¶nnen.
 
 Am unteren Ende der Maske (Bildanzeige) sehen Sie eine Liste aller
 Objekte (Anweisungen, Befehle) des Programms. Diese Liste wird vom
 Programm automatisch erzeugt; es besteht somit keine Notwendigkeit diese
-von Hand auf dem Laufenden zu halten. Die meisten Objekte benötigen
-keine Konfiguration.  ‘XName’, ‘YName’, und ‘AName’  Objekte allerdings,
-müssen einem Pin des Mikroprozessors zugeordnet werden. Wählen Sie zuerst
+von Hand auf dem Laufenden zu halten. Die meisten Objekte benÃ¶tigen
+keine Konfiguration.  â€˜XNameâ€™, â€˜YNameâ€™, und â€˜ANameâ€™  Objekte allerdings,
+mÃ¼ssen einem Pin des Mikroprozessors zugeordnet werden. WÃ¤hlen Sie zuerst
 welcher Prozessor verwendet wird (Voreinstellungen -> Prozessor). Danach
 legen Sie Ihre E/A Pins fest, indem Sie in der Liste auf diese jeweils
 doppelklicken.
 
-Sie können das Programm verändern, indem Sie Anweisungen (Befehle)
-einfügen oder löschen. Die Schreibmarke (cursor)im Programm blinkt,
-um die momentan gewählte Anweisung und den Einfügungspunkt anzuzeigen.
-Falls diese nicht blinkt, so drücken Sie den <Tabulator> oder klicken
-Sie auf eine Anweisung. Jetzt können Sie die momentane Anweisung löschen
-oder eine neue Anweisung einfügen; links oder rechts (in Reihenschaltung)
-oder über oder unter (in Parallelschaltung) mit der gewählten Anweisung.
+Sie kÃ¶nnen das Programm verÃ¤ndern, indem Sie Anweisungen (Befehle)
+einfÃ¼gen oder lÃ¶schen. Die Schreibmarke (cursor)im Programm blinkt,
+um die momentan gewÃ¤hlte Anweisung und den EinfÃ¼gungspunkt anzuzeigen.
+Falls diese nicht blinkt, so drÃ¼cken Sie den <Tabulator> oder klicken
+Sie auf eine Anweisung. Jetzt kÃ¶nnen Sie die momentane Anweisung lÃ¶schen
+oder eine neue Anweisung einfÃ¼gen; links oder rechts (in Reihenschaltung)
+oder Ã¼ber oder unter (in Parallelschaltung) mit der gewÃ¤hlten Anweisung.
 Einige Handhabungen sind nicht erlaubt, so zum Beispiel weitere
 Anweisungen rechts von einer Spule.
 
-Das Programm beginnt mit nur einem Netzwerk. Sie können mehr Netzwerke
-hinzufügen, indem Sie ‘Netzwerk Einfügen Davor/Danach’ im Programm-Menü
-wählen.  Den gleichen Effekt könnten Sie erzielen, indem Sie viele
+Das Programm beginnt mit nur einem Netzwerk. Sie kÃ¶nnen mehr Netzwerke
+hinzufÃ¼gen, indem Sie â€˜Netzwerk EinfÃ¼gen Davor/Danachâ€™ im Programm-MenÃ¼
+wÃ¤hlen.  Den gleichen Effekt kÃ¶nnten Sie erzielen, indem Sie viele
 komplizierte parallele Unterschaltungen in einem einzigen Netzwerk
-unterbringen. Es ist aber übersichtlicher, mehrere Netzwerke zu verwenden.
+unterbringen. Es ist aber Ã¼bersichtlicher, mehrere Netzwerke zu verwenden.
 
-Wenn Sie Ihr Programm fertig geschrieben haben, so können Sie dieses
-mit der Simulation testen. Danach können Sie es in eine Hex-Datei für
+Wenn Sie Ihr Programm fertig geschrieben haben, so kÃ¶nnen Sie dieses
+mit der Simulation testen. Danach kÃ¶nnen Sie es in eine Hex-Datei fÃ¼r
 den zugedachten Mikroprozessor kompilieren.
 
 
 SIMULATION
 ==========
 
-Um den Simulationsbetrieb einzugeben, wählen Sie ‘Simulieren ->
-Simulationsbetrieb’ oder drücken Sie <Strg+M>.  Das Programm wird
+Um den Simulationsbetrieb einzugeben, wÃ¤hlen Sie â€˜Simulieren ->
+Simulationsbetriebâ€™ oder drÃ¼cken Sie <Strg+M>.  Das Programm wird
 im Simulationsbetrieb unterschiedlich dargestellt. Es gibt keine
-Schreibmarke (cursor) mehr. Die „erregten“ Anweisungen erscheinen hellrot,
-die „nicht erregten“ erscheinen grau.  Drücken Sie die Leertaste, um das
-SPS-Programm nur einen einzelnen Zyklus durchlaufen zu lassen. Wählen
-Sie für einen kontinuierlichen Umlauf in Echtzeit ‘Simulieren -> Start
-Echtzeit-Simulation’ oder drücken Sie <Strg+R>. Die Maske (Bildanzeige)
-des Programms wird jetzt in Echtzeit, entsprechend der Änderungen des
+Schreibmarke (cursor) mehr. Die â€erregtenâ€œ Anweisungen erscheinen hellrot,
+die â€nicht erregtenâ€œ erscheinen grau.  DrÃ¼cken Sie die Leertaste, um das
+SPS-Programm nur einen einzelnen Zyklus durchlaufen zu lassen. WÃ¤hlen
+Sie fÃ¼r einen kontinuierlichen Umlauf in Echtzeit â€˜Simulieren -> Start
+Echtzeit-Simulationâ€™ oder drÃ¼cken Sie <Strg+R>. Die Maske (Bildanzeige)
+des Programms wird jetzt in Echtzeit, entsprechend der Ã„nderungen des
 Status (des Zustands) des Programms aktualisiert.
 
-Sie können den Status (Zustand) eines Eingangs im Programm einstellen,
+Sie kÃ¶nnen den Status (Zustand) eines Eingangs im Programm einstellen,
 indem Sie auf den jeweiligen auf der Liste am unteren Ende der
-Maske (Bildanzeige) doppelklicken oder auf die jeweilige ‘XName’
+Maske (Bildanzeige) doppelklicken oder auf die jeweilige â€˜XNameâ€™
 Kontakt-Anweisung im Programm. Wenn Sie den Status (Zustand) eines
-Eingangs-Pins ändern, so wird diese Änderung nicht unmittelbar in
+Eingangs-Pins Ã¤ndern, so wird diese Ã„nderung nicht unmittelbar in
 der Maske (Bildanzeige) wiedergegeben, sondern erst wenn sich die
 SPS im zyklischen Umlauf befindet. Das geschieht automatisch wenn das
-SPS-Programm in Echtzeit-Simulation läuft, oder wenn Sie die Leertaste
-drücken.
+SPS-Programm in Echtzeit-Simulation lÃ¤uft, oder wenn Sie die Leertaste
+drÃ¼cken.
 
 
 KOMPILIEREN ZUM SYSTEMSPEZIFISCHEN CODE
 =======================================
 
 Letztlich ist es dann nur sinnvoll eine .hex Datei zu erzeugen, mit
-der Sie Ihren Mikroprozessor programmieren können. Zunächst müssen
-Sie die Teilenummer des Mikroprozessors im Menü ‘Voreinstellungen ->
-Prozessor’ wählen. Danach müssen jedem ‘XName’ oder ‘YName’ Objekt
+der Sie Ihren Mikroprozessor programmieren kÃ¶nnen. ZunÃ¤chst mÃ¼ssen
+Sie die Teilenummer des Mikroprozessors im MenÃ¼ â€˜Voreinstellungen ->
+Prozessorâ€™ wÃ¤hlen. Danach mÃ¼ssen jedem â€˜XNameâ€™ oder â€˜YNameâ€™ Objekt
 einen E/A-Pin zuweisen. Tun Sie dies, indem auf den Namen des Objekts
 doppelklicken, welcher sich in der Liste ganz unten in der Maske
 (Bildanzeige) befindet. Ein Dialogfenster wird dann erscheinen und Sie
-können daraufhin einen noch nicht vergebenen Pin von der Liste aussuchen.
+kÃ¶nnen daraufhin einen noch nicht vergebenen Pin von der Liste aussuchen.
 
-Als nächstes müssen Sie die Zykluszeit wählen, mit der Sie das
-Programm laufen lassen wollen, auch müssen Sie dem Compiler mitteilen
+Als nÃ¤chstes mÃ¼ssen Sie die Zykluszeit wÃ¤hlen, mit der Sie das
+Programm laufen lassen wollen, auch mÃ¼ssen Sie dem Compiler mitteilen
 mit welcher Taktgeschwindigkeit der Prozessor arbeiten soll. Diese
-Einstellungen werden im Menü ‘Voreinstellungen -> Prozessor Parameter...’
-vorgenommen. Üblicherweise sollten Sie die Zykluszeit nicht ändern,
-denn diese ist auf 10ms voreingestellt, dies ist ein guter Wert für
+Einstellungen werden im MenÃ¼ â€˜Voreinstellungen -> Prozessor Parameter...â€™
+vorgenommen. Ãœblicherweise sollten Sie die Zykluszeit nicht Ã¤ndern,
+denn diese ist auf 10ms voreingestellt, dies ist ein guter Wert fÃ¼r
 die meisten Anwendungen. Tippen Sie die Frequenz des Quarzes (oder des
 Keramik-Resonators) ein, mit der Sie den Prozessor betreiben wollen und
 klicken auf Okay.
 
-Jetzt können Sie einen Code von Ihrem Programm erzeugen.  Wählen Sie
-‘Kompilieren -> Kompilieren’ oder ‘Kompilieren -> Kompilieren unter...’,
+Jetzt kÃ¶nnen Sie einen Code von Ihrem Programm erzeugen.  WÃ¤hlen Sie
+â€˜Kompilieren -> Kompilierenâ€™ oder â€˜Kompilieren -> Kompilieren unter...â€™,
 falls Sie vorher Ihr Programm schon kompiliert haben und einen neuen Namen
-für die Ausgangsdatei vergeben wollen. Wenn Ihr Programm fehlerfrei ist,
+fÃ¼r die Ausgangsdatei vergeben wollen. Wenn Ihr Programm fehlerfrei ist,
 wird LDmicro eine Intel IHEX Datei erzeugen, mit der sich Ihr Prozessor
-programmieren lässt.
+programmieren lÃ¤sst.
 
 Verwenden Sie hierzu irgendeine Programmier Soft- und Hardware, die Sie
 besitzen, um die Hex-Datei in den Mikroprozessor zu laden.  Beachten Sie
-die Einstellungen für die Konfigurationsbits (fuses)!  Bei den PIC16
+die Einstellungen fÃ¼r die Konfigurationsbits (fuses)!  Bei den PIC16
 Prozessoren sind diese Konfigurationsbits bereits in der Hex-Datei
 enthalten. Die meisten Programmiersoftwares schauen automatisch nach
-diesen. Für die AVR-Prozessoren müssen Sie die Konfigurationsbits von
+diesen. FÃ¼r die AVR-Prozessoren mÃ¼ssen Sie die Konfigurationsbits von
 Hand einstellen.
 
 
@@ -302,32 +302,32 @@ ANWEISUNGS-VERZEICHNIS
 > KONTAKT, SCHLIESSER           XName        RName        YName
                              ----] [----  ----] [----  ----] [----
 
-Wenn ein ‘unwahres’ Signal diese Anweisung erreicht, so ist das
-Ausgangssignal ‘unwahr’. Wenn ein ‘wahres’ Signal diese Anweisung
-erreicht, so ist das Ausgangssignal ‘wahr’. Dies nur, falls der
+Wenn ein â€˜unwahresâ€™ Signal diese Anweisung erreicht, so ist das
+Ausgangssignal â€˜unwahrâ€™. Wenn ein â€˜wahresâ€™ Signal diese Anweisung
+erreicht, so ist das Ausgangssignal â€˜wahrâ€™. Dies nur, falls der
 vorliegende Eingangspin, Ausgangspin oder eines Merkers (Hilfsrelais)
-‘wahr’ ist, anderenfalls ist es unwahr. Diese Anweisung fragt den Status
+â€˜wahrâ€™ ist, anderenfalls ist es unwahr. Diese Anweisung fragt den Status
 (Zustand) eines Eingangspins, Ausgangspins oder Merkers (Hilfsrelais) ab.
 
 
-> KONTAKT, ÖFFNER              XName        RName        YName
+> KONTAKT, Ã–FFNER              XName        RName        YName
                             ----]/[----  ----]/[----  ----]/[----
 
-Wenn ein ‘unwahres’ Signal diese Anweisung erreicht, so ist das
-Ausgangssignal ‘unwahr’. Wenn ein ‘wahres’ Signal diese Anweisung
-erreicht, so ist das Ausgangssignal ‘wahr’. Dies nur, falls der
+Wenn ein â€˜unwahresâ€™ Signal diese Anweisung erreicht, so ist das
+Ausgangssignal â€˜unwahrâ€™. Wenn ein â€˜wahresâ€™ Signal diese Anweisung
+erreicht, so ist das Ausgangssignal â€˜wahrâ€™. Dies nur, falls der
 vorliegende Eingangspin, Ausgangspin oder der Merker (= internes
-Hilfsrelais) ‘unwahr’ ist, anderenfalls ist es ‘unwahr’. Diese Anweisung
+Hilfsrelais) â€˜unwahrâ€™ ist, anderenfalls ist es â€˜unwahrâ€™. Diese Anweisung
 fragt den Status (Zustand) eines Eingangspins, Ausgangspins oder Merkers
-(Hilfsrelais) ab. Dies ist das Gegenteil eines Schließers.
+(Hilfsrelais) ab. Dies ist das Gegenteil eines SchlieÃŸers.
 
 
 > SPULE, NORMAL (MERKER,AUSGANG)    RName           YName
                                   ----( )----     ----( )----
 
-Wenn ein ‘unwahres’ Signal diese Anweisung erreicht, so wird der
+Wenn ein â€˜unwahresâ€™ Signal diese Anweisung erreicht, so wird der
 vorliegende Merker (Hilfsrelais) oder Ausgangspin nicht angesteuert. Wenn
-ein ‘wahres’ Signal diese Anweisung erreicht, so wird der vorliegende
+ein â€˜wahresâ€™ Signal diese Anweisung erreicht, so wird der vorliegende
 Merker (Hilfsrelais) oder Ausgangspin angesteuert. Es ist nicht sinnvoll
 dieser Spule eine Eingangsvariable zuzuweisen. Diese Anweisung muss
 ganz rechts im Netzwerk stehen.
@@ -336,9 +336,9 @@ ganz rechts im Netzwerk stehen.
 > SPULE, NEGIERT (MERKER,AUSGANG)   RName          YName
                                   ----(/)----   ----(/)----
 
-Wenn ein ‘wahres’ Signal diese Anweisung erreicht, so wird der vorliegende
+Wenn ein â€˜wahresâ€™ Signal diese Anweisung erreicht, so wird der vorliegende
 Merker (Hilfsrelais)oder Ausgangspin nicht angesteuert. Wenn ein
-‘unwahres’ Signal diese Anweisung erreicht, so wird der vorliegende Merker
+â€˜unwahresâ€™ Signal diese Anweisung erreicht, so wird der vorliegende Merker
 (Hilfsrelais) oder Ausgangspin angesteuert. Es ist nicht sinnvoll dieser
 Spule eine Eingangsvariable zuzuweisen. Dies ist das Gegenteil einer
 normalen Spule. Diese Anweisung muss im Netzwerk ganz rechts stehen.
@@ -347,125 +347,125 @@ normalen Spule. Diese Anweisung muss im Netzwerk ganz rechts stehen.
 > SPULE, SETZEN      RName           YName
                   ----(S)----     ----(S)----
 
-Wenn ein ‘wahres’ Signal diese Anweisung erreicht, so wird der vorliegende
-Merker (Hilfsrelais)oder Ausgangspin auf ‘wahr’ gesetzt. Anderenfalls
+Wenn ein â€˜wahresâ€™ Signal diese Anweisung erreicht, so wird der vorliegende
+Merker (Hilfsrelais)oder Ausgangspin auf â€˜wahrâ€™ gesetzt. Anderenfalls
 bleibt der Status (Zustand) des Merkers (Hilfsrelais) oder Ausgangspins
-unverändert.  Diese Anweisung kann nur den Status (Zustand) einer Spule
-von ‘unwahr’ nach ‘wahr’ verändern, insofern wird diese üblicherweise in
-einer Kombination mit einer Rücksetz-Anweisung für eine Spule verwendet.
+unverÃ¤ndert.  Diese Anweisung kann nur den Status (Zustand) einer Spule
+von â€˜unwahrâ€™ nach â€˜wahrâ€™ verÃ¤ndern, insofern wird diese Ã¼blicherweise in
+einer Kombination mit einer RÃ¼cksetz-Anweisung fÃ¼r eine Spule verwendet.
 Diese Anweisung muss ganz rechts im Netzwerk stehen.
 
 
-> SPULE, RÜCKSETZEN    RName           YName
+> SPULE, RÃœCKSETZEN    RName           YName
                     ----(R)----     ----(R)----
 
-Wenn ein ‘wahres’ Signal diese Anweisung erreicht, so wird der vorliegende
-Merker (Hilfsrelais) oder Ausgangspin rückgesetzt. Anderenfalls bleibt der
-Status (Zustand) des Merkers (Hilfsrelais) oder Ausgangspins unverändert.
-Diese Anweisung kann nur den Status (Zustand) einer Spule von ‘wahr’ nach
-‘unwahr’ verändern, insofern wird diese üblicherweise in einer Kombination
-mit einer Setz-Anweisung für eine Spule verwendet. Diese Anweisung muss
+Wenn ein â€˜wahresâ€™ Signal diese Anweisung erreicht, so wird der vorliegende
+Merker (Hilfsrelais) oder Ausgangspin rÃ¼ckgesetzt. Anderenfalls bleibt der
+Status (Zustand) des Merkers (Hilfsrelais) oder Ausgangspins unverÃ¤ndert.
+Diese Anweisung kann nur den Status (Zustand) einer Spule von â€˜wahrâ€™ nach
+â€˜unwahrâ€™ verÃ¤ndern, insofern wird diese Ã¼blicherweise in einer Kombination
+mit einer Setz-Anweisung fÃ¼r eine Spule verwendet. Diese Anweisung muss
 ganz rechts im Netzwerk stehen.
 
 
-> ANZUGSVERZÖGERUNG         Tdon
+> ANZUGSVERZÃ–GERUNG         Tdon
                       -[TON 1.000 s]-
 
 Wenn ein Signal diese Anweisung erreicht, welches seinen Status
-(Zustand) von ‘unwahr’ nach ‘wahr’ ändert, so bleibt das Ausgangssignal
-für 1,000 s ‘unwahr’, dann wird es ‘wahr’. Wenn ein Signal diese
-Anweisung erreicht, welches seinen Status (Zustand) von ‘wahr’ nach
-‘unwahr’ ändert, so wird das Ausgangssignal sofort ‘unwahr’. Der Timer
-wird jedes Mal rückgesetzt (bzw. auf Null gesetzt), wenn der Eingang
-‘unwahr’ wird. Der Eingang muss für 1000 aufeinanderfolgende Millisekunden
-‘wahr’ bleiben, bevor auch der Ausgang ‘wahr’ wird. Die Verzögerung
+(Zustand) von â€˜unwahrâ€™ nach â€˜wahrâ€™ Ã¤ndert, so bleibt das Ausgangssignal
+fÃ¼r 1,000 s â€˜unwahrâ€™, dann wird es â€˜wahrâ€™. Wenn ein Signal diese
+Anweisung erreicht, welches seinen Status (Zustand) von â€˜wahrâ€™ nach
+â€˜unwahrâ€™ Ã¤ndert, so wird das Ausgangssignal sofort â€˜unwahrâ€™. Der Timer
+wird jedes Mal rÃ¼ckgesetzt (bzw. auf Null gesetzt), wenn der Eingang
+â€˜unwahrâ€™ wird. Der Eingang muss fÃ¼r 1000 aufeinanderfolgende Millisekunden
+â€˜wahrâ€™ bleiben, bevor auch der Ausgang â€˜wahrâ€™ wird. Die VerzÃ¶gerung
 ist konfigurierbar.
 
-Die ‘TName’ Variable zählt, in der Einheit der jeweiligen Zykluszeit,
+Die â€˜TNameâ€™ Variable zÃ¤hlt, in der Einheit der jeweiligen Zykluszeit,
 von Null ab hoch. Der Ausgang der TON-Anweisung wird wahr, wenn die
-Zählervariable größer oder gleich der vorliegenden Verzögerung ist.
-Es möglich die Zählervariable an einer anderen Stelle im Programm zu
+ZÃ¤hlervariable grÃ¶ÃŸer oder gleich der vorliegenden VerzÃ¶gerung ist.
+Es mÃ¶glich die ZÃ¤hlervariable an einer anderen Stelle im Programm zu
 bearbeiten, zum Beispiel mit einer TRANSFER-Anweisung (MOV).
 
 
-> ABFALLVERZÖGERUNG         Tdoff
+> ABFALLVERZÃ–GERUNG         Tdoff
                       -[TOF 1.000 s]-
 
 Wenn ein  Signal diese Anweisung erreicht, welches seinen Status
-(Zustand) von ‘wahr’ nach ‘unwahr’ ändert, so bleibt das Ausgangssignal
-für 1,000 s ‘wahr’, dann wird es ‘unwahr’. Wenn ein Signal diese
-Anweisung erreicht, welches seinen Status (Zustand) von ‘unwahr’ nach
-‘wahr’ ändert, so wird das Ausgangssignal sofort ‘wahr’. Der Timer wird
-jedes Mal rückgesetzt (bzw. auf Null gesetzt), wenn der Eingang ‘unwahr’
-wird. Der Eingang muss für 1000 aufeinanderfolgende Millisekunden ‘unwahr’
-bleiben, bevor auch der Ausgang ‘unwahr’ wird. Die Verzögerung ist
+(Zustand) von â€˜wahrâ€™ nach â€˜unwahrâ€™ Ã¤ndert, so bleibt das Ausgangssignal
+fÃ¼r 1,000 s â€˜wahrâ€™, dann wird es â€˜unwahrâ€™. Wenn ein Signal diese
+Anweisung erreicht, welches seinen Status (Zustand) von â€˜unwahrâ€™ nach
+â€˜wahrâ€™ Ã¤ndert, so wird das Ausgangssignal sofort â€˜wahrâ€™. Der Timer wird
+jedes Mal rÃ¼ckgesetzt (bzw. auf Null gesetzt), wenn der Eingang â€˜unwahrâ€™
+wird. Der Eingang muss fÃ¼r 1000 aufeinanderfolgende Millisekunden â€˜unwahrâ€™
+bleiben, bevor auch der Ausgang â€˜unwahrâ€™ wird. Die VerzÃ¶gerung ist
 konfigurierbar.
 
-Die ‘TName’ Variable zählt, in der Einheit der jeweiligen Zykluszeit,
+Die â€˜TNameâ€™ Variable zÃ¤hlt, in der Einheit der jeweiligen Zykluszeit,
 von Null ab hoch. Der Ausgang der TOF Anweisung wird wahr, wenn die
-Zählervariable größer oder gleich der vorliegenden Verzögerung ist.
-Es möglich die Zählervariable an einer anderen Stelle im Programm zu
+ZÃ¤hlervariable grÃ¶ÃŸer oder gleich der vorliegenden VerzÃ¶gerung ist.
+Es mÃ¶glich die ZÃ¤hlervariable an einer anderen Stelle im Programm zu
 bearbeiten, zum Beispiel mit einer TRANSFER-Anweisung (MOV).
 
 
 > SPEICHERNDER TIMER         Trto
                       -[RTO 1.000 s]-
 
-Diese Anweisung zeichnet auf, wie lange sein Eingang ‘wahr’ gewesen
-ist. Wenn der Eingang für mindestens 1.000 s ‘wahr’ gewesen ist, dann
-wird der Ausgang ‘wahr’. Andernfalls ist er ‘unwahr’. Der Eingang muss
-für 1000 aufeinanderfolgende Millisekunden ‘wahr’ gewesen sein; wenn
-der Eingang für 0,6 s ‘wahr’ war, dann ‘unwahr’ für 2,0 s und danach für
-0,4 s  wieder ‘wahr’, so wird sein Ausgang ‘wahr’. Nachdem der Ausgang
-‘wahr’ wurde, so bleibt er ‘wahr’, selbst wenn der Eingang ‘unwahr’
-wird, so lange der Eingang für länger als 1.000 s ‘wahr’ gewesen ist.
-Der Timer muss deshalb von Hand mit Hilfe der Rücksetz-Anweisung
-rückgesetzt (auf Null gesetzt) werden.
+Diese Anweisung zeichnet auf, wie lange sein Eingang â€˜wahrâ€™ gewesen
+ist. Wenn der Eingang fÃ¼r mindestens 1.000 s â€˜wahrâ€™ gewesen ist, dann
+wird der Ausgang â€˜wahrâ€™. Andernfalls ist er â€˜unwahrâ€™. Der Eingang muss
+fÃ¼r 1000 aufeinanderfolgende Millisekunden â€˜wahrâ€™ gewesen sein; wenn
+der Eingang fÃ¼r 0,6 s â€˜wahrâ€™ war, dann â€˜unwahrâ€™ fÃ¼r 2,0 s und danach fÃ¼r
+0,4 s  wieder â€˜wahrâ€™, so wird sein Ausgang â€˜wahrâ€™. Nachdem der Ausgang
+â€˜wahrâ€™ wurde, so bleibt er â€˜wahrâ€™, selbst wenn der Eingang â€˜unwahrâ€™
+wird, so lange der Eingang fÃ¼r lÃ¤nger als 1.000 s â€˜wahrâ€™ gewesen ist.
+Der Timer muss deshalb von Hand mit Hilfe der RÃ¼cksetz-Anweisung
+rÃ¼ckgesetzt (auf Null gesetzt) werden.
 
-Die ‘TName’ Variable zählt, in der Einheit der jeweiligen Zykluszeit,
+Die â€˜TNameâ€™ Variable zÃ¤hlt, in der Einheit der jeweiligen Zykluszeit,
 von Null ab hoch. Der Ausgang der RTO-Anweisung wird wahr, wenn die
-Zählervariable größer oder gleich der vorliegenden Verzögerung ist.
-Es möglich die Zählervariable an einer anderen Stelle im Programm zu
+ZÃ¤hlervariable grÃ¶ÃŸer oder gleich der vorliegenden VerzÃ¶gerung ist.
+Es mÃ¶glich die ZÃ¤hlervariable an einer anderen Stelle im Programm zu
 bearbeiten, zum Beispiel mit einer TRANSFER-Anweisung (MOV).
 
 
-> RÜCKSETZEN              Trto             Citems
+> RÃœCKSETZEN              Trto             Citems
                      ----{RES}----     ----{RES}----
 
-Diese Anweisung rücksetzt einen Timer oder Zähler. TON oder TOF Timer
-werden automatisch rückgesetzt, wenn ihr Eingang ‘wahr’ oder ‘unwahr’
-wird, somit ist die RES-Anweisung für diese Timer nicht erforderlich. RTO
-Timer und CTU/CTD Zähler werden nicht automatisch rückgesetzt, somit
-müssen diese von Hand mit Hilfe der RES-Anweisung rückgesetzt (auf Null)
-werden. Wenn der Eingang ‘wahr’ ist, so wird der Timer oder Zähler
-rückgesetzt; wenn der Eingang ‘unwahr’ ist, so erfolgt keine Aktion.
+Diese Anweisung rÃ¼cksetzt einen Timer oder ZÃ¤hler. TON oder TOF Timer
+werden automatisch rÃ¼ckgesetzt, wenn ihr Eingang â€˜wahrâ€™ oder â€˜unwahrâ€™
+wird, somit ist die RES-Anweisung fÃ¼r diese Timer nicht erforderlich. RTO
+Timer und CTU/CTD ZÃ¤hler werden nicht automatisch rÃ¼ckgesetzt, somit
+mÃ¼ssen diese von Hand mit Hilfe der RES-Anweisung rÃ¼ckgesetzt (auf Null)
+werden. Wenn der Eingang â€˜wahrâ€™ ist, so wird der Timer oder ZÃ¤hler
+rÃ¼ckgesetzt; wenn der Eingang â€˜unwahrâ€™ ist, so erfolgt keine Aktion.
 Diese Anweisung muss ganz rechts im Netzwerk stehen.
 
                                             _    _
 > ONE-SHOT RISING, STEIGENDE FLANKE    --[_/ OSR/ \_]--
 
-Diese Anweisung wird normalerweise ‘unwahr’ ausgewiesen. Wenn der Eingang
-der Anweisung während des momentanen Zyklus ‘wahr’ ist und während des
-vorgehenden ‘unwahr’ war, so wird der Ausgang ‘wahr’. Daher erzeugt diese
-Anweisung bei jeder steigenden Flanke einen Impuls für einen Zyklus.
+Diese Anweisung wird normalerweise â€˜unwahrâ€™ ausgewiesen. Wenn der Eingang
+der Anweisung wÃ¤hrend des momentanen Zyklus â€˜wahrâ€™ ist und wÃ¤hrend des
+vorgehenden â€˜unwahrâ€™ war, so wird der Ausgang â€˜wahrâ€™. Daher erzeugt diese
+Anweisung bei jeder steigenden Flanke einen Impuls fÃ¼r einen Zyklus.
 Diese Anweisung ist hilfreich, wenn Sie Ereignisse an der steigenden
-Flanke eines Signals auslösen wollen.
+Flanke eines Signals auslÃ¶sen wollen.
 
                                           _      _
 > ONE-SHOT FALLING, FALLENDE FLANKE    --[ \_OSF/ \_]--
 
-Diese Anweisung wird normalerweise ‘unwahr’ ausgewiesen. Wenn der Eingang
-der Anweisung während des momentanen Zyklus ‘unwahr’ ist und während des
-vorgehenden ‘wahr’ war, so wird der Ausgang ‘wahr’. Daher erzeugt diese
-Anweisung bei jeder fallenden Flanke einen Impuls für einen Zyklus.
+Diese Anweisung wird normalerweise â€˜unwahrâ€™ ausgewiesen. Wenn der Eingang
+der Anweisung wÃ¤hrend des momentanen Zyklus â€˜unwahrâ€™ ist und wÃ¤hrend des
+vorgehenden â€˜wahrâ€™ war, so wird der Ausgang â€˜wahrâ€™. Daher erzeugt diese
+Anweisung bei jeder fallenden Flanke einen Impuls fÃ¼r einen Zyklus.
 Diese Anweisung ist hilfreich, wenn Sie Ereignisse an der fallenden
-Flanke eines Signals auslösen wollen.
+Flanke eines Signals auslÃ¶sen wollen.
 
 
-> BRÜCKE, ÖFFNUNG     ----+----+----      ----+     +----
+> BRÃœCKE, Ã–FFNUNG     ----+----+----      ----+     +----
 
-Der Eingangszustand einer Brücke ist immer gleich seinem Ausgangszustand.
-Der Ausgangszustands einer Öffnung ist immer ‘unwahr’. Diese Anweisungen
+Der Eingangszustand einer BrÃ¼cke ist immer gleich seinem Ausgangszustand.
+Der Ausgangszustands einer Ã–ffnung ist immer â€˜unwahrâ€™. Diese Anweisungen
 sind bei der Fehlerbehebung (debugging) besonders hilfreich.
 
 
@@ -473,26 +473,26 @@ sind bei der Fehlerbehebung (debugging) besonders hilfreich.
 
 
 Im Normalfall ist der Anfang (die linke Stromschiene) von jedem Netzwerk
-‘wahr’. Wenn eine ‘Master Control Relais’ Anweisung ausgeführt wird dessen
-Eingang ‘unwahr’ ist, so werden die Anfänge (die linke Stromschiene)
-aller folgenden Netzwerke ‘unwahr’. Das setzt sich fort bis die nächste
-‘Master Control Relais’ Anweisung erreicht wird (unabhängig von dem
-Anfangszustand dieser Anweisung). Diese Anweisungen müssen daher als Paar
-verwendet werden: Eine (vielleicht abhängige), um den „gegebenenfalls
-gesperrten“ Abschnitt zu starten und eine weitere, um diesen zu beenden.
+â€˜wahrâ€™. Wenn eine â€˜Master Control Relaisâ€™ Anweisung ausgefÃ¼hrt wird dessen
+Eingang â€˜unwahrâ€™ ist, so werden die AnfÃ¤nge (die linke Stromschiene)
+aller folgenden Netzwerke â€˜unwahrâ€™. Das setzt sich fort bis die nÃ¤chste
+â€˜Master Control Relaisâ€™ Anweisung erreicht wird (unabhÃ¤ngig von dem
+Anfangszustand dieser Anweisung). Diese Anweisungen mÃ¼ssen daher als Paar
+verwendet werden: Eine (vielleicht abhÃ¤ngige), um den â€gegebenenfalls
+gesperrtenâ€œ Abschnitt zu starten und eine weitere, um diesen zu beenden.
 
 
 > TRANSFER, MOV           {destvar :=  }      {Tret :=     }
                          -{ 123     MOV}-    -{ srcvar  MOV}-
 
-Wenn der Eingang dieser Anweisung ‘wahr’ ist, so setzt diese die
+Wenn der Eingang dieser Anweisung â€˜wahrâ€™ ist, so setzt diese die
 vorliegende Zielvariable gleich der vorliegenden Quellvariablen
-oder Konstanten. Wenn der Eingang dieser Anweisung ‘unwahr’ ist, so
-geschieht nichts. Mit der TRANSFER-Anweisung (MOV) können Sie jede
-Variable zuweisen; dies schließt Timer und Zähler Statusvariablen ein,
-welche mit einem vorgestellten ‘T’ oder ‘C’ unterschieden werden. Eine
-Anweisung zum Beispiel, die eine ‘0’ in einen ‘TBewahrend’ transferiert,
-ist äquivalent mit einer RES-Anweisung für diesen Timer. Diese Anweisung
+oder Konstanten. Wenn der Eingang dieser Anweisung â€˜unwahrâ€™ ist, so
+geschieht nichts. Mit der TRANSFER-Anweisung (MOV) kÃ¶nnen Sie jede
+Variable zuweisen; dies schlieÃŸt Timer und ZÃ¤hler Statusvariablen ein,
+welche mit einem vorgestellten â€˜Tâ€™ oder â€˜Câ€™ unterschieden werden. Eine
+Anweisung zum Beispiel, die eine â€˜0â€™ in einen â€˜TBewahrendâ€™ transferiert,
+ist Ã¤quivalent mit einer RES-Anweisung fÃ¼r diesen Timer. Diese Anweisung
 muss ganz rechts im Netzwerk stehen.
 
 
@@ -502,18 +502,18 @@ muss ganz rechts im Netzwerk stehen.
 >                             {MUL  dest :=}       {DIV  dv :=  }
                              -{ var * -990 }-     -{ dv / -10000}-
 
-Wenn der Eingang einer dieser Anweisungen ‘wahr’ ist, so setzt diese
+Wenn der Eingang einer dieser Anweisungen â€˜wahrâ€™ ist, so setzt diese
 die vorliegende Zielvariable gleich dem vorliegenden arithmetischem
-Ausdruck. Die Operanden können entweder Variabelen (einschließlich Timer-
-und Zählervariabelen) oder Konstanten sein. Diese Anweisungen verwenden
+Ausdruck. Die Operanden kÃ¶nnen entweder Variabelen (einschlieÃŸlich Timer-
+und ZÃ¤hlervariabelen) oder Konstanten sein. Diese Anweisungen verwenden
 16-Bitzeichen Mathematik. Beachten Sie, dass das Ergebnis jeden Zyklus
-ausgewertet wird, wenn der Eingangszustand ‘wahr’ ist. Falls Sie eine
+ausgewertet wird, wenn der Eingangszustand â€˜wahrâ€™ ist. Falls Sie eine
 Variable inkrementieren oder dekrementieren (d.h., wenn die Zielvariable
 ebenfalls einer der Operanden ist), dann wollen Sie dies vermutlich
-nicht; normalerweise würden Sie einen Impuls (one-shot) verwenden,
+nicht; normalerweise wÃ¼rden Sie einen Impuls (one-shot) verwenden,
 sodass die Variable nur bei einer steigenden oder fallenden Flanke des
-Eingangszustands ausgewertet wird. Dividieren kürzt: D.h. 8 / 3 = 2.
-Diese Anweisungen müssen ganz rechts im Netzwerk stehen.
+Eingangszustands ausgewertet wird. Dividieren kÃ¼rzt: D.h. 8 / 3 = 2.
+Diese Anweisungen mÃ¼ssen ganz rechts im Netzwerk stehen.
 
 
 > VERGLEICHEN           [var ==]        [var >]        [1 >=]
@@ -522,40 +522,40 @@ Diese Anweisungen müssen ganz rechts im Netzwerk stehen.
 >                       [var !=]        [-4 <   ]      [1 <=]
                        -[ var2 ]-      -[ vartwo]-    -[ Cup]-
 
-Wenn der Eingang dieser Anweisung ‘unwahr’ ist, so ist der Ausgang
-auch ‘unwahr’. Wenn der Eingang dieser Anweisung ‘wahr’ ist, dann ist
-Ausgang ‘wahr’; dies aber nur, wenn die vorliegende Bedingung ‘wahr’
-ist. Diese Anweisungen können zum Vergleichen verwendet werden, wie:
-Auf gleich, auf größer als, auf größer als oder gleich, auf ungleich,
+Wenn der Eingang dieser Anweisung â€˜unwahrâ€™ ist, so ist der Ausgang
+auch â€˜unwahrâ€™. Wenn der Eingang dieser Anweisung â€˜wahrâ€™ ist, dann ist
+Ausgang â€˜wahrâ€™; dies aber nur, wenn die vorliegende Bedingung â€˜wahrâ€™
+ist. Diese Anweisungen kÃ¶nnen zum Vergleichen verwendet werden, wie:
+Auf gleich, auf grÃ¶ÃŸer als, auf grÃ¶ÃŸer als oder gleich, auf ungleich,
 auf kleiner als, auf kleiner als oder gleich, eine Variable mit einer
 Variablen oder eine Variable mit einer 16-Bitzeichen-Konstanten.
 
 
-> ZÄHLER        CName          CName
+> ZÃ„HLER        CName          CName
               --[CTU >= 5]--  --[CTD > -5]--
 
-Ein Zähler inkrementiert (CTU, aufwärtszählen) oder dekrementiert
-(CTD, abwärtszählen) die bezogene Zählung bei jeder steigenden Flanke
+Ein ZÃ¤hler inkrementiert (CTU, aufwÃ¤rtszÃ¤hlen) oder dekrementiert
+(CTD, abwÃ¤rtszÃ¤hlen) die bezogene ZÃ¤hlung bei jeder steigenden Flanke
 des Eingangszustands des Netzwerks (d.h. der Eingangszustand des
-Netzwerks geht von ‘unwahr’ auf ‘wahr’ über).  Der Ausgangszustand des
-Zählers ist ‘wahr’, wenn die Zähler- variable ist größer oder gleich 5
-und andernfalls ‘unwahr’. Der Ausgangszustand des Netzwerks kann ‘wahr’
-sein, selbst wenn der Eingangszustand ‘unwahr’ ist; das hängt lediglich
-von Zählervariablen ab. Sie können einer CTU- und CTD-Anweisung den
-gleichen Namen zuteilen, um den gleichen Zähler zu inkrementieren und
-dekrementieren. Die RES-Anweisung kann einen Zähler rücksetzen oder auch
-eine gewöhnliche Variablen-Operation mit der Zählervariablen ausführen.
+Netzwerks geht von â€˜unwahrâ€™ auf â€˜wahrâ€™ Ã¼ber).  Der Ausgangszustand des
+ZÃ¤hlers ist â€˜wahrâ€™, wenn die ZÃ¤hler- variable ist grÃ¶ÃŸer oder gleich 5
+und andernfalls â€˜unwahrâ€™. Der Ausgangszustand des Netzwerks kann â€˜wahrâ€™
+sein, selbst wenn der Eingangszustand â€˜unwahrâ€™ ist; das hÃ¤ngt lediglich
+von ZÃ¤hlervariablen ab. Sie kÃ¶nnen einer CTU- und CTD-Anweisung den
+gleichen Namen zuteilen, um den gleichen ZÃ¤hler zu inkrementieren und
+dekrementieren. Die RES-Anweisung kann einen ZÃ¤hler rÃ¼cksetzen oder auch
+eine gewÃ¶hnliche Variablen-Operation mit der ZÃ¤hlervariablen ausfÃ¼hren.
 
 
-> ZIRKULIERENDER ZÄHLER       CName
+> ZIRKULIERENDER ZÃ„HLER       CName
                           --{CTC 0:7}--
 
-Ein zirkulierender Zähler arbeitet wie ein normaler CTU-Zähler, außer
-nach der Erreichung seiner Obergrenze, rücksetzt er seine Zählervariable
-auf Null. Zum Beispiel würde der oben gezeigte Zähler, wie folgt zählen:
+Ein zirkulierender ZÃ¤hler arbeitet wie ein normaler CTU-ZÃ¤hler, auÃŸer
+nach der Erreichung seiner Obergrenze, rÃ¼cksetzt er seine ZÃ¤hlervariable
+auf Null. Zum Beispiel wÃ¼rde der oben gezeigte ZÃ¤hler, wie folgt zÃ¤hlen:
 0, 1, 2, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2,....  Dies ist
-hilfreich in Kombination mit bedingten Anweisungen der Variablen‘CName’;
-Sie können dies als eine Folgeschaltung verwenden. CTC-Zähler takten
+hilfreich in Kombination mit bedingten Anweisungen der Variablenâ€˜CNameâ€™;
+Sie kÃ¶nnen dies als eine Folgeschaltung verwenden. CTC-ZÃ¤hler takten
 mit der aufsteigenden Flanke der Eingangsbedingung des Netzwerks.
 Diese Anweisung muss ganz rechts im Netzwerk stehen.
 
@@ -563,13 +563,13 @@ Diese Anweisung muss ganz rechts im Netzwerk stehen.
 > SCHIEBEREGISTER          {SHIFT REG   }
                           -{ reg0..3    }-
 
-Ein Schieberegister besteht aus einer Reihe von Variablen. So bestünde
-zum Beispiel ein Schieberegister aus den Variablen ‘reg0’, ‘reg1’,
-‘reg2’, and ‘reg3’. Der Eingang des Schieberegisters ist ‘reg0’. Bei
+Ein Schieberegister besteht aus einer Reihe von Variablen. So bestÃ¼nde
+zum Beispiel ein Schieberegister aus den Variablen â€˜reg0â€™, â€˜reg1â€™,
+â€˜reg2â€™, and â€˜reg3â€™. Der Eingang des Schieberegisters ist â€˜reg0â€™. Bei
 jeder steigenden Flanke der Eingansbedingung des Netzwerks, schiebt das
-Schieberegister nach rechts. Dies bedeutet es wie folgt zuweist: ‘reg3’
-nach ‘reg2’, ‘reg2’ nach ‘reg1’ und ‘reg1’ nach ‘reg0’.  ‘reg0’ bleibt
-unverändert. Ein großes Schieberegister kann leicht viel Speicherplatz
+Schieberegister nach rechts. Dies bedeutet es wie folgt zuweist: â€˜reg3â€™
+nach â€˜reg2â€™, â€˜reg2â€™ nach â€˜reg1â€™ und â€˜reg1â€™ nach â€˜reg0â€™.  â€˜reg0â€™ bleibt
+unverÃ¤ndert. Ein groÃŸes Schieberegister kann leicht viel Speicherplatz
 belegen. Diese Anweisung muss ganz rechts im Netzwerk stehen.
 
 
@@ -577,25 +577,25 @@ belegen. Diese Anweisung muss ganz rechts im Netzwerk stehen.
                           -{ LUT[i]     }-
 
 Eine Nachschlag-Tabelle ist eine Anordnung von n Werten. Wenn die
-Eingangsbedingung des Netzwerks ‘wahr’ ist, so wird die Ganzzahl-Variable
-‘dest’ mit dem Eintrag in der Nachschlag-Tabelle gleichgesetzt, der der
-Ganzzahl-Variablen ‘i’ entspricht. Das Verzeichnis beginnt bei Null,
-insofern muss sich ‘i’ zwischen 0 und (n-1) befinden. Das Verhalten
+Eingangsbedingung des Netzwerks â€˜wahrâ€™ ist, so wird die Ganzzahl-Variable
+â€˜destâ€™ mit dem Eintrag in der Nachschlag-Tabelle gleichgesetzt, der der
+Ganzzahl-Variablen â€˜iâ€™ entspricht. Das Verzeichnis beginnt bei Null,
+insofern muss sich â€˜iâ€™ zwischen 0 und (n-1) befinden. Das Verhalten
 dieser Anweisung ist undefiniert, wenn sich die Werte des Verzeichnisses
-außerhalb dieses Bereichs befinden.
+auÃŸerhalb dieses Bereichs befinden.
 
 
-> NÄHERUNGS-LINEAR-TABELLE    {yvar :=}
+> NÃ„HERUNGS-LINEAR-TABELLE    {yvar :=}
                              -{PWL[xvar] }-
 
-Dies ist eine gute Methode für die Näherungslösung einer komplizierten
-Funktion oder Kurve. Sie könnte zum Beispiel hilfreich sein, wenn Sie
+Dies ist eine gute Methode fÃ¼r die NÃ¤herungslÃ¶sung einer komplizierten
+Funktion oder Kurve. Sie kÃ¶nnte zum Beispiel hilfreich sein, wenn Sie
 versuchen eine Eichkurve zu verwenden, um die rohe Ausgangsspannung
-eines Fühlers in günstigere Einheiten zu wandeln.
+eines FÃ¼hlers in gÃ¼nstigere Einheiten zu wandeln.
 
-Angenommen Sie versuchen eine Näherungslösung für eine Funktion zu finden,
-die eine Eingangs-Ganzzahlvariable ‘x’ in Ausgangs-Ganzzahlvariable ‘y’
-wandelt. Einige Punkte der Funktion sind Ihnen bekannt; so würden Sie
+Angenommen Sie versuchen eine NÃ¤herungslÃ¶sung fÃ¼r eine Funktion zu finden,
+die eine Eingangs-Ganzzahlvariable â€˜xâ€™ in Ausgangs-Ganzzahlvariable â€˜yâ€™
+wandelt. Einige Punkte der Funktion sind Ihnen bekannt; so wÃ¼rden Sie
 z.B. die folgenden kennen:
 
     f(0)     = 2
@@ -610,44 +610,44 @@ Dies bedeutet, dass sich die Punkte
     (x2, y2)    = ( 10,   50)
     (x3, y3)    = (100,  100)
 
-in dieser Kurve befinden. Diese 4 Punkte können Sie in die Tabelle der
-‘Näherungs-Linear’-Anweisung eintragen. Die ‘Näherungs-Linear’-Anweisung
-wird dann auf den Wert von ‘xvar’ schauen und legt den Wert von ‘yvar’
-fest. Sie stellt ‘yvar’ so ein, dass die ‘Näherungs-Linear’-Kurve sich
-durch alle Punkte bewegt, die Sie vorgegeben haben.  Wenn Sie z.B. für
-‘xvar’ = 10 vorgegeben haben, dann stellt die Anweisung ‘yvar’ auf gleich
+in dieser Kurve befinden. Diese 4 Punkte kÃ¶nnen Sie in die Tabelle der
+â€˜NÃ¤herungs-Linearâ€™-Anweisung eintragen. Die â€˜NÃ¤herungs-Linearâ€™-Anweisung
+wird dann auf den Wert von â€˜xvarâ€™ schauen und legt den Wert von â€˜yvarâ€™
+fest. Sie stellt â€˜yvarâ€™ so ein, dass die â€˜NÃ¤herungs-Linearâ€™-Kurve sich
+durch alle Punkte bewegt, die Sie vorgegeben haben.  Wenn Sie z.B. fÃ¼r
+â€˜xvarâ€™ = 10 vorgegeben haben, dann stellt die Anweisung â€˜yvarâ€™ auf gleich
 50 ein.
 
-Falls Sie dieser Anweisung einen Wert ‘xvar’ zuweisen, der zwischen zwei
-Werten von ‘x’ liegt, denen Sie Punkte zugeordnet haben, dann stellt die
-Anweisung ‘yvar’ so ein, dass (‘xvar’, ‘yvar’) in der geraden Linie liegt;
+Falls Sie dieser Anweisung einen Wert â€˜xvarâ€™ zuweisen, der zwischen zwei
+Werten von â€˜xâ€™ liegt, denen Sie Punkte zugeordnet haben, dann stellt die
+Anweisung â€˜yvarâ€™ so ein, dass (â€˜xvarâ€™, â€˜yvarâ€™) in der geraden Linie liegt;
 diejenige die, die zwei Punkte in der Tabelle verbindet. Z.B. erzeugt
-‘xvar’ = 55 bei ‘yvar’ = 75. Die beiden Punkte in der Tabelle sind (10,
+â€˜xvarâ€™ = 55 bei â€˜yvarâ€™ = 75. Die beiden Punkte in der Tabelle sind (10,
 50) und (100, 100). 55 liegt auf halbem Weg zwischen 10 und 100 und 75
 liegt auf halbem Weg zwischen 50 und 100, somit liegt (55, 75) auf der
 Linie, die diese zwei Punkte verbindet.
 
-Die Punkte müssen in aufsteigender Reihenfolge der x-Koordinaten
-angegeben werden. Einige mathematische Operationen, erforderlich für
+Die Punkte mÃ¼ssen in aufsteigender Reihenfolge der x-Koordinaten
+angegeben werden. Einige mathematische Operationen, erforderlich fÃ¼r
 bestimmte Nachschlag-Tabellen mit 16-Bit-Mathematik, kann man ggf. nicht
-ausführen. In diesem Falle gibt LDmicro eine Warnmeldung aus. So würde
+ausfÃ¼hren. In diesem Falle gibt LDmicro eine Warnmeldung aus. So wÃ¼rde
 z.B. die folgende Nachschlag-Tabelle eine Fehlermeldung hervorrufen:
 
     (x0, y0)    = (  0,    0)
     (x1, y1)    = (300,  300)
 
-Sie können diesen Fehler beheben, indem sie den Abstand zwischen den
-Punkten kleiner machen. So ist zum Beispiel die nächste Tabelle äquivalent
+Sie kÃ¶nnen diesen Fehler beheben, indem sie den Abstand zwischen den
+Punkten kleiner machen. So ist zum Beispiel die nÃ¤chste Tabelle Ã¤quivalent
 zur vorhergehenden, ruft aber keine Fehlermeldung hervor.
 
     (x0, y0)    = (  0,    2)
     (x1, y1)    = (150,  150)
     (x2, y2)    = (300,  300)
 
-Es wird kaum einmal notwendig sein, mehr als fünf oder sechs Punkte
-zu verwenden. Falls Sie mehr Punkte hinzufügen, so vergrößert dies
-Ihren Code und verlangsamt die Ausführung. Falls Sie für ‘xvar’ einen
-Wert vergeben, der größer ist, als die größte x-Koordinate der Tabelle
+Es wird kaum einmal notwendig sein, mehr als fÃ¼nf oder sechs Punkte
+zu verwenden. Falls Sie mehr Punkte hinzufÃ¼gen, so vergrÃ¶ÃŸert dies
+Ihren Code und verlangsamt die AusfÃ¼hrung. Falls Sie fÃ¼r â€˜xvarâ€™ einen
+Wert vergeben, der grÃ¶ÃŸer ist, als die grÃ¶ÃŸte x-Koordinate der Tabelle
 oder kleiner, als die kleinste x-Koordinate in der Tabelle, so ist das
 Verhalten der Anweisung undefiniert. Diese Anweisung muss ganz rechts
 im Netzwerk stehen.
@@ -656,24 +656,24 @@ im Netzwerk stehen.
 > A/D-WANDLER EINLESEN      AName
                         --{READ ADC}--
 
-LDmicro kann einen Code erzeugen, der ermöglicht, die A/D-Wandler
+LDmicro kann einen Code erzeugen, der ermÃ¶glicht, die A/D-Wandler
 zu verwenden, die in manchen Mikroprozessoren vorgesehen sind.
-Wenn der Eingangszustand dieser Anweisung ‘wahr’ ist, dann wird eine
-Einzellesung von dem A/D-Wandler entnommen und in der Variablen ‘AName’
-gespeichert. Diese Variable kann anschließend mit einer gewöhnlichen
-Ganzzahlvariablen bearbeitet werden (wie: Kleiner als, größer als,
-arithmetisch usw.). Weisen Sie ‘Axxx’ in der gleichen Weise einen Pin
-zu, wie Sie einen Pin für einen digitalen Ein- oder Ausgang vergeben
-würden, indem auf diesen in der Liste unten in der Maske (Bildanzeige)
-doppelklicken.  Wenn der Eingangszustand dieses Netzwerks ‘unwahr’ ist,
-so wird die Variable ‘AName’ unverändert belassen.
+Wenn der Eingangszustand dieser Anweisung â€˜wahrâ€™ ist, dann wird eine
+Einzellesung von dem A/D-Wandler entnommen und in der Variablen â€˜ANameâ€™
+gespeichert. Diese Variable kann anschlieÃŸend mit einer gewÃ¶hnlichen
+Ganzzahlvariablen bearbeitet werden (wie: Kleiner als, grÃ¶ÃŸer als,
+arithmetisch usw.). Weisen Sie â€˜Axxxâ€™ in der gleichen Weise einen Pin
+zu, wie Sie einen Pin fÃ¼r einen digitalen Ein- oder Ausgang vergeben
+wÃ¼rden, indem auf diesen in der Liste unten in der Maske (Bildanzeige)
+doppelklicken.  Wenn der Eingangszustand dieses Netzwerks â€˜unwahrâ€™ ist,
+so wird die Variable â€˜ANameâ€™ unverÃ¤ndert belassen.
 
-Für alle derzeitig unterstützten Prozessoren gilt: Eine 0 Volt Lesung
+FÃ¼r alle derzeitig unterstÃ¼tzten Prozessoren gilt: Eine 0 Volt Lesung
 am Eingang des A/D-Wandlers entspricht 0. Eine Lesung gleich der
 Versorgungsspannung (bzw. Referenzspannung) entspricht 1023. Falls Sie
 AVR-Prozessoren verwenden, so verbinden Sie AREF mit Vdd.  (Siehe Atmel
-Datenblatt, dort wird eine Induktivität von 100µH empfohlen). Sie können
-arithmetische Operationen verwenden, um einen günstigeren Maßstabfaktor
+Datenblatt, dort wird eine InduktivitÃ¤t von 100ÂµH empfohlen). Sie kÃ¶nnen
+arithmetische Operationen verwenden, um einen gÃ¼nstigeren MaÃŸstabfaktor
 festzulegen, aber beachten Sie, dass das Programm nur Ganzzahl-Arithmetik
 vorsieht. Allgemein sind nicht alle Pins als A/D-Wandler verwendbar. Die
 Software gestattet Ihnen nicht, einen Pin zuzuweisen, der kein A/D
@@ -684,27 +684,27 @@ stehen.
 > PULSWEITEN MODULATIONSZYKLUS FESTLEGEN    duty_cycle
                                           -{PWM 32.8 kHz}-
 
-LDmicro kann einen Code erzeugen, der ermöglicht, die PWM-Peripherie
+LDmicro kann einen Code erzeugen, der ermÃ¶glicht, die PWM-Peripherie
 zu verwenden, die in manchen Mikroprozessoren vorgesehen ist. Wenn die
-Eingangsbedingung dieser Anweisung ‘wahr’ ist, so wird der Zyklus der
-PWM-Peripherie mit dem Wert der Variablen ‘duty cycle’ gleichgesetzt. Der
-‘duty cycle’ muss eine Zahl zwischen 0 und 100 sein. 0 entspricht immer
-‘low’ und 100 entsprechend  immer ‘high’. (Wenn Sie damit vertraut sind,
+Eingangsbedingung dieser Anweisung â€˜wahrâ€™ ist, so wird der Zyklus der
+PWM-Peripherie mit dem Wert der Variablen â€˜duty cycleâ€™ gleichgesetzt. Der
+â€˜duty cycleâ€™ muss eine Zahl zwischen 0 und 100 sein. 0 entspricht immer
+â€˜lowâ€™ und 100 entsprechend  immer â€˜highâ€™. (Wenn Sie damit vertraut sind,
 wie die PWM-Peripherie funktioniert, so bemerken Sie, dass dies bedeutet,
-dass LDmicro die ‘duty cycle’-Variable automatisch prozentual zu den
-PWM-Taktintervallen skaliert [= den Maßstabfaktor festlegt].)
+dass LDmicro die â€˜duty cycleâ€™-Variable automatisch prozentual zu den
+PWM-Taktintervallen skaliert [= den MaÃŸstabfaktor festlegt].)
 
-Sie können die PWM-Zielfrequenz in Hz definieren. Es kann vorkommen, dass
-die angegebene Frequenz nicht genau erreicht wird, das hängt davon ab,
+Sie kÃ¶nnen die PWM-Zielfrequenz in Hz definieren. Es kann vorkommen, dass
+die angegebene Frequenz nicht genau erreicht wird, das hÃ¤ngt davon ab,
 wie sich diese innerhalb der Taktfrequenz des Prozessors einteilt. LDmicro
-wählt dann die nächst erreichbare Frequenz; falls der Fehler zu groß ist,
-so wird eine Warnung ausgegeben. Höhere Geschwindigkeiten können die
-Auflösung beeinträchtigen.
+wÃ¤hlt dann die nÃ¤chst erreichbare Frequenz; falls der Fehler zu groÃŸ ist,
+so wird eine Warnung ausgegeben. HÃ¶here Geschwindigkeiten kÃ¶nnen die
+AuflÃ¶sung beeintrÃ¤chtigen.
 
-Diese Anweisung muss ganz rechts im Netzwerk stehen. Die ‘ladder
-logic’-Laufzeit verbraucht (schon) einen Timer, um die Zykluszeit
+Diese Anweisung muss ganz rechts im Netzwerk stehen. Die â€˜ladder
+logicâ€™-Laufzeit verbraucht (schon) einen Timer, um die Zykluszeit
 zu messen. Dies bedeutet, dass die PWM nur bei den Mikroprozessoren
-verfügbar ist, bei denen mindestens zwei geeignete Timer vorhanden sind.
+verfÃ¼gbar ist, bei denen mindestens zwei geeignete Timer vorhanden sind.
 PWM verwendet den PIN CCP2 (nicht CCP1) bei den PIC16-Prozessoren und
 OC2 (nicht OC1A) bei den AVR-Prozessoren.
 
@@ -712,147 +712,147 @@ OC2 (nicht OC1A) bei den AVR-Prozessoren.
 > REMANENT MACHEN     saved_var
                     --{PERSIST}--
 
-Wenn der Eingangszustand dieser Anweisung ‘wahr’ ist, so bewirkt
+Wenn der Eingangszustand dieser Anweisung â€˜wahrâ€™ ist, so bewirkt
 dies, dass eine angegebene Ganzzahl-Variable automatisch im EEPROM
 gespeichert wird. Dies bedeutet, dass ihr Wert bestehen bleiben wird,
 auch wenn der Prozessor seine Versorgungsspannung verliert. Es ist
 nicht notwendig, die Variable an klarer Stelle im EEPROM zu speichern,
 dies geschieht automatisch, so oft sich der Wert der Variablen
-ändert. Bei Spannungswiederkehr wird die Variable automatisch vom
-EEPROM zurückgespeichert. Falls eine Variable, die häufig ihren Wert
-ändert, remanent (dauerhaft) gemacht wird, so könnte Ihr Prozessor sehr
-rasch verschleißen, weil dieser lediglich für eine begrenzte Anzahl von
+Ã¤ndert. Bei Spannungswiederkehr wird die Variable automatisch vom
+EEPROM zurÃ¼ckgespeichert. Falls eine Variable, die hÃ¤ufig ihren Wert
+Ã¤ndert, remanent (dauerhaft) gemacht wird, so kÃ¶nnte Ihr Prozessor sehr
+rasch verschleiÃŸen, weil dieser lediglich fÃ¼r eine begrenzte Anzahl von
 Schreibbefehlen konstruiert ist (~100 000). Wenn der Eingangszustand des
-Netzwerks ‘unwahr’ ist, so geschieht nichts. Diese Anweisung muss ganz
+Netzwerks â€˜unwahrâ€™ ist, so geschieht nichts. Diese Anweisung muss ganz
 rechts im Netzwerk stehen.
 
 
 > UART (SERIELL) EMPFANGEN      var
                             --{UART RECV}--
 
-LDmicro kann einen Code erzeugen, der ermöglicht UART zu verwenden,
+LDmicro kann einen Code erzeugen, der ermÃ¶glicht UART zu verwenden,
 welcher in manchen Mikroprozessoren vorgesehen ist.
 Bei AVR-Prozessoren mir mehrfachem UART, wird nur UART1 (nicht UART0)
-unterstützt. Konfigurieren Sie die Baudrate, indem Sie ‘Voreinstellungen
--> Prozessor-Parameter’ verwenden. Bestimmte Baudraten werden mit
+unterstÃ¼tzt. Konfigurieren Sie die Baudrate, indem Sie â€˜Voreinstellungen
+-> Prozessor-Parameterâ€™ verwenden. Bestimmte Baudraten werden mit
 bestimmten Quarzfrequenzen nicht erreichbar sein. In diesem Fall gibt
 LDmicro eine Warnmeldung.
 
-Wenn der Eingangszustand dieser Anweisung ‘unwahr’ ist, so geschieht
-nichts. Wenn der Eingangszustand ‘wahr’ ist, so versucht diese Anweisung
+Wenn der Eingangszustand dieser Anweisung â€˜unwahrâ€™ ist, so geschieht
+nichts. Wenn der Eingangszustand â€˜wahrâ€™ ist, so versucht diese Anweisung
 ein einzelnes Schriftzeichen vom UART-Eingang zu empfangen. Wenn
 kein Schriftzeichen eingelesen wird, dann ist der Ausgangszustand
-‘unwahr’. Wenn ein ASCII-Zeichen eingelesen wird, so wird sein Wert in
-‘var’ abgespeichert und der Ausgangszustand wird für einen einzelnen
-Zyklus ‘wahr’.
+â€˜unwahrâ€™. Wenn ein ASCII-Zeichen eingelesen wird, so wird sein Wert in
+â€˜varâ€™ abgespeichert und der Ausgangszustand wird fÃ¼r einen einzelnen
+Zyklus â€˜wahrâ€™.
 
 
 > UART (SERIELL) SENDEN       var
                           --{UART SEND}--
 
-LDmicro kann einen Code erzeugen, der ermöglicht UART zu verwenden,
+LDmicro kann einen Code erzeugen, der ermÃ¶glicht UART zu verwenden,
 welcher in manchen Mikroprozessoren vorgesehen ist.
 Bei AVR-Prozessoren mir mehrfachem UART, wird nur UART1 (nicht UART0)
-unterstützt. Konfigurieren Sie die Baudrate, indem Sie ‘Voreinstellungen
--> Prozessor-Parameter’ verwenden. Bestimmte Baudraten werden mit
+unterstÃ¼tzt. Konfigurieren Sie die Baudrate, indem Sie â€˜Voreinstellungen
+-> Prozessor-Parameterâ€™ verwenden. Bestimmte Baudraten werden mit
 bestimmten Quarzfrequenzen nicht erreichbar sein. In diesem Fall gibt
 LDmicro eine Warnmeldung.
 
-Wenn der Eingangszustand dieser Anweisung ‘unwahr’ ist, so geschieht
-nichts. Wenn der Eingangszustand ‘wahr’ ist, so schreibt diese
+Wenn der Eingangszustand dieser Anweisung â€˜unwahrâ€™ ist, so geschieht
+nichts. Wenn der Eingangszustand â€˜wahrâ€™ ist, so schreibt diese
 Anweisung ein einzelnes Schriftzeichen zum UART. Der ASCII-Wert des
-Schriftzeichens, welches gesendet werden soll, muss vorher in ‘var’
+Schriftzeichens, welches gesendet werden soll, muss vorher in â€˜varâ€™
 abgespeichert worden sein. Der Ausgangszustand dieses Netzwerks ist
-‘wahr’, wenn UART beschäftigt ist (gerade dabei ein Schriftzeichen zu
-übermitteln) und andernfalls ‘unwahr’.
+â€˜wahrâ€™, wenn UART beschÃ¤ftigt ist (gerade dabei ein Schriftzeichen zu
+Ã¼bermitteln) und andernfalls â€˜unwahrâ€™.
 
 Denken Sie daran, dass einige Zeit zum Senden von Schriftzeichen
-beansprucht wird. Überprüfen Sie den Ausgangszustand dieser Anweisung,
-sodass das erste Schriftzeichen bereits übermittelt wurde, bevor Sie
-versuchen ein zweites Schriftzeichen zu übermitteln. Oder verwenden Sie
-einen Timer, um eine Verzögerung zwischen die Schriftzeichen fügen. Sie
-dürfen den Eingangszustand dieser Anweisung nur dann auf ‘wahr’ setzen
-(bzw. ein Schriftzeichen übermitteln), wenn der Ausgangszustand ‘unwahr’
-ist (bzw. UART unbeschäftigt ist).
+beansprucht wird. ÃœberprÃ¼fen Sie den Ausgangszustand dieser Anweisung,
+sodass das erste Schriftzeichen bereits Ã¼bermittelt wurde, bevor Sie
+versuchen ein zweites Schriftzeichen zu Ã¼bermitteln. Oder verwenden Sie
+einen Timer, um eine VerzÃ¶gerung zwischen die Schriftzeichen fÃ¼gen. Sie
+dÃ¼rfen den Eingangszustand dieser Anweisung nur dann auf â€˜wahrâ€™ setzen
+(bzw. ein Schriftzeichen Ã¼bermitteln), wenn der Ausgangszustand â€˜unwahrâ€™
+ist (bzw. UART unbeschÃ¤ftigt ist).
 
-Untersuchen Sie die “Formatierte Zeichenfolge”-Anweisung, bevor Sie
-diese Anweisung verwenden. Die “Formatierte Zeichenfolge”- Anweisung
-ist viel einfacher in der Anwendung und fast sicher fähig, das zu tun,
+Untersuchen Sie die â€œFormatierte Zeichenfolgeâ€-Anweisung, bevor Sie
+diese Anweisung verwenden. Die â€œFormatierte Zeichenfolgeâ€- Anweisung
+ist viel einfacher in der Anwendung und fast sicher fÃ¤hig, das zu tun,
 was Sie beabsichtigen.
 
 
-> FORMATIERTE ZEICHENFOLGE ÜBER UART            var
+> FORMATIERTE ZEICHENFOLGE ÃœBER UART            var
                                         -{"Druck: \3\r\n"}-
 
-LDmicro kann einen Code erzeugen, der ermöglicht UART zu verwenden,
+LDmicro kann einen Code erzeugen, der ermÃ¶glicht UART zu verwenden,
 welcher in manchen Mikroprozessoren vorgesehen ist.
 Bei AVR-Prozessoren mir mehrfachem UART, wird nur UART1 (nicht UART0)
-unterstützt. Konfigurieren Sie die Baudrate, indem Sie ‘Voreinstellungen
--> Prozessor-Parameter’ verwenden. Bestimmte Baudraten werden mit
+unterstÃ¼tzt. Konfigurieren Sie die Baudrate, indem Sie â€˜Voreinstellungen
+-> Prozessor-Parameterâ€™ verwenden. Bestimmte Baudraten werden mit
 bestimmten Quarzfrequenzen nicht erreichbar sein. In diesem Fall gibt
 LDmicro eine Warnmeldung.
 
-Wenn der Eingangszustand des Netzwerks für diese Anweisung von ‘unwahr’
-auf ‘wahr’ übergeht, so beginnt diese eine vollständige Zeichenfolge
-über den seriellen Anschluss zu senden. Wenn die Zeichenfolge die
-besondere Reihenfolge ‘\3’ enthält, dann wird diese Folge durch den Wert
-von ‘var’ ersetzt, welcher automatisch in eine Zeichenfolge gewandelt
+Wenn der Eingangszustand des Netzwerks fÃ¼r diese Anweisung von â€˜unwahrâ€™
+auf â€˜wahrâ€™ Ã¼bergeht, so beginnt diese eine vollstÃ¤ndige Zeichenfolge
+Ã¼ber den seriellen Anschluss zu senden. Wenn die Zeichenfolge die
+besondere Reihenfolge â€˜\3â€™ enthÃ¤lt, dann wird diese Folge durch den Wert
+von â€˜varâ€™ ersetzt, welcher automatisch in eine Zeichenfolge gewandelt
 wird. Die Variable wird formatiert, sodass diese exakt 3 Schriftzeichen
-übernimmt. Falls die Variable zum Beispiel gleich 35 ist, dann wird die
-exakte ausgegebene Zeichenfolge, wie folgt aussehen: ‘Druck:  35\r\n’
-(beachten Sie das zusätzliche Freizeichen). Wenn stattdessen die Variable
-gleich 1432 ist, so wäre das Verhalten der Anweisung undefiniert,
-weil 1432 mehr als drei Stellen hat. In diesem Fall wäre es notwendig
-stattdessen ‘\4’ zu verwenden.
+Ã¼bernimmt. Falls die Variable zum Beispiel gleich 35 ist, dann wird die
+exakte ausgegebene Zeichenfolge, wie folgt aussehen: â€˜Druck:  35\r\nâ€™
+(beachten Sie das zusÃ¤tzliche Freizeichen). Wenn stattdessen die Variable
+gleich 1432 ist, so wÃ¤re das Verhalten der Anweisung undefiniert,
+weil 1432 mehr als drei Stellen hat. In diesem Fall wÃ¤re es notwendig
+stattdessen â€˜\4â€™ zu verwenden.
 
-Falls die Variable negativ ist, so verwenden Sie stattdessen ‘\-3d’
-(oder ‘\-4d’). LDmicro wird hierdurch veranlasst eine vorgestellte
-Freistelle für positive Zahlen und ein vorgestelltes Minuszeichen für
+Falls die Variable negativ ist, so verwenden Sie stattdessen â€˜\-3dâ€™
+(oder â€˜\-4dâ€™). LDmicro wird hierdurch veranlasst eine vorgestellte
+Freistelle fÃ¼r positive Zahlen und ein vorgestelltes Minuszeichen fÃ¼r
 negative Zahlen auszugeben.
 
-Falls mehrere “Formatierte Zeichenfolge”-Anweisungen zugleich ausgegeben
+Falls mehrere â€œFormatierte Zeichenfolgeâ€-Anweisungen zugleich ausgegeben
 werden (oder wenn eine neue Zeichenfolge ausgegeben wird bevor die
 vorherige vollendet ist), oder auch wenn diese mit UART TX Anweisungen
 vermischt, so ist das Verhalten undefiniert.
 
-Es ist auch möglich diese Anweisung für eine feste Zeichenfolge zu
-verwenden, die über den seriellen Anschluss gesendet wird, ohne den Wert
+Es ist auch mÃ¶glich diese Anweisung fÃ¼r eine feste Zeichenfolge zu
+verwenden, die Ã¼ber den seriellen Anschluss gesendet wird, ohne den Wert
 einer Ganzzahlvariablen in den Text zu interpolieren. In diesem Fall
-fügen Sie einfach diese spezielle Steuerungsfolge nicht ein.
+fÃ¼gen Sie einfach diese spezielle Steuerungsfolge nicht ein.
 
-Verwenden Sie ‘\\’ für einen zeichengetreuen verkehrten Schrägstrich.
-Zusätzlich zur Steuerungsfolge für die Interpolierung einer Ganzzahl-
-Variablen, sind die folgenden Steuerungszeichen erhältlich:
+Verwenden Sie â€˜\\â€™ fÃ¼r einen zeichengetreuen verkehrten SchrÃ¤gstrich.
+ZusÃ¤tzlich zur Steuerungsfolge fÃ¼r die Interpolierung einer Ganzzahl-
+Variablen, sind die folgenden Steuerungszeichen erhÃ¤ltlich:
 
         * \r   -- carriage return      Zeilenschaltung
         * \n   -- new line             Zeilenwechsel
         * \f   -- form feed            Formularvorschub
-        * \b   -- backspace            Rücksetzen
+        * \b   -- backspace            RÃ¼cksetzen
         * \t   -- horizontal tab
         * \v   -- vertical tab
         * \a   -- alert
         * \xAB -- character with ASCII value 0xAB (hex)
                -- Schriftzeichen mit ASCII-Wert 0xAB (hex)
 
-Der Ausgangszustand des Netzwerks dieser Anweisung ist ‘wahr’, während
-diese Daten überträgt, ansonsten ‘unwahr’. Diese Anweisung benötigt eine
-große Menge des Programmspeichers, insofern sollte sie sparsam verwendet
-werden. Die gegenwärtige Umsetzung ist nicht besonders effizient, aber
-eine bessere würde Änderungen an sämtlichen Ausläufern des Programms
-benötigen.
+Der Ausgangszustand des Netzwerks dieser Anweisung ist â€˜wahrâ€™, wÃ¤hrend
+diese Daten Ã¼bertrÃ¤gt, ansonsten â€˜unwahrâ€™. Diese Anweisung benÃ¶tigt eine
+groÃŸe Menge des Programmspeichers, insofern sollte sie sparsam verwendet
+werden. Die gegenwÃ¤rtige Umsetzung ist nicht besonders effizient, aber
+eine bessere wÃ¼rde Ã„nderungen an sÃ¤mtlichen AuslÃ¤ufern des Programms
+benÃ¶tigen.
 
 
 > FORMATIERTE ZEICHENFOLGE                   dest
                                        -{"Zeichenkette", var}-
 
-Für Zielplattformen (z.B. Netzer) auf denen bereits ein printf
-verfügbar ist, kann dieser Befehl verwendet werden.
+FÃ¼r Zielplattformen (z.B. Netzer) auf denen bereits ein printf
+verfÃ¼gbar ist, kann dieser Befehl verwendet werden.
 
-Wenn der Eingangszustand des Netzwerks für diese Anweisung von ‘unwahr’
-auf ‘wahr’ übergeht, so beginnt diese die Zeichenfolge mittels printf
+Wenn der Eingangszustand des Netzwerks fÃ¼r diese Anweisung von â€˜unwahrâ€™
+auf â€˜wahrâ€™ Ã¼bergeht, so beginnt diese die Zeichenfolge mittels printf
 zu bearbeiten und gibt sie auf der Zielvariablen aus.
 
-Die Zeichenkette wird vollständig in das Kompilat eingebettet. Es gelten
+Die Zeichenkette wird vollstÃ¤ndig in das Kompilat eingebettet. Es gelten
 die Formatierungsregeln von printf.
 
 Die Variable kann eine beliebige Variable aus dem Programmbereich
@@ -861,25 +861,25 @@ sobald ein Platzhalter in der Zeichenkette gefunden wird (z.B. %d).
 
 Dest ist ein Register, auf das das Ergebnis geschrieben wird. Das sollte
 das obere Ende eines Ringpuffers oder FiFo-Speichers sein.
-d des Netzwerks dieser Anweisung ist ‘wahr’,
-Der Ausgangszustand des Netzwerks dieser Anweisung ist immer ‘wahr’,
+d des Netzwerks dieser Anweisung ist â€˜wahrâ€™,
+Der Ausgangszustand des Netzwerks dieser Anweisung ist immer â€˜wahrâ€™,
 
 
 EIN HINWEIS ZUR VERWENDUNG DER MATHEMATIK
 =========================================
 
 Denken Sie daran, dass LDmicro nur 16-Bit mathematische Operationen
-ausführt. Dies bedeutet, dass das Endresultat jeder Berechnung,
+ausfÃ¼hrt. Dies bedeutet, dass das Endresultat jeder Berechnung,
 die Sie vornehmen, eine Ganzzahl zwischen -32768 und 32767 sein muss.
 Dies bedeutet auch, dass die Zwischenergebnisse Ihrer Berechnungen alle
-in diesem Bereich liegen müssen.
+in diesem Bereich liegen mÃ¼ssen.
 
-Wollen wir zum Beispiel annehmen, dass Sie folgendes berechnen möchten
+Wollen wir zum Beispiel annehmen, dass Sie folgendes berechnen mÃ¶chten
 y = (1/x) * 1200, in der x zwischen 1 und 20 liegt.
 Dann liegt y zwischen 1200 und 60, was in eine 16-Bit Ganzzahl passt,
-so wäre es zumindest theoretisch möglich diese Berechnung auszuführen.
-Es gibt zwei Möglichkeiten, wie Sie dies codieren könnten: Sie können
-die Reziproke (Kehrwert) ausführen and dann multiplizieren:
+so wÃ¤re es zumindest theoretisch mÃ¶glich diese Berechnung auszufÃ¼hren.
+Es gibt zwei MÃ¶glichkeiten, wie Sie dies codieren kÃ¶nnten: Sie kÃ¶nnen
+die Reziproke (Kehrwert) ausfÃ¼hren and dann multiplizieren:
 
    ||         {DIV  temp  :=}          ||
    ||---------{ 1 / x       }----------||
@@ -888,33 +888,33 @@ die Reziproke (Kehrwert) ausführen and dann multiplizieren:
    ||----------{ temp * 1200}----------||
    ||                                  ||
 
-Oder Sie könnten einfach die Division in einem Schritt direkt vornehmen.
+Oder Sie kÃ¶nnten einfach die Division in einem Schritt direkt vornehmen.
 
    ||           {DIV  y  :=}           ||
    ||-----------{ 1200 / x }-----------||
 
 
-Mathematisch sind die zwei äquivalent; aber wenn Sie diese ausprobieren,
+Mathematisch sind die zwei Ã¤quivalent; aber wenn Sie diese ausprobieren,
 so werden Sie herausfinden, dass die erste ein falsches Ergebnis von
 y = 0 liefert. Dies geschieht, weil die Variable einen Unterlauf
-[= resultatabhängige Kommaverschiebung] ergibt.  So sei zum Beispiel x = 3,
+[= resultatabhÃ¤ngige Kommaverschiebung] ergibt.  So sei zum Beispiel x = 3,
 (1 / x) = 0.333, dies ist aber keine Ganzzahl; die Divisionsoperation
-nähert dies, als 'temp = 0'. Dann ist y = temp * 1200 = 0. Im zweiten
+nÃ¤hert dies, als 'temp = 0'. Dann ist y = temp * 1200 = 0. Im zweiten
 Fall gibt es kein Zwischenergebnis, welches einen Unterlauf [= resultats-
-abhängige Kommaverschiebung] ergibt, somit funktioniert dann alles.
+abhÃ¤ngige Kommaverschiebung] ergibt, somit funktioniert dann alles.
 
 Falls Sie Probleme bei Ihren mathematischen Operationen erkennen,
-dann überprüfen Sie die Zwischenergebnisse auf Unterlauf [eine
-resultatabhängige Kommaverschiebung] (oder auch auf Überlauf, der dann
+dann Ã¼berprÃ¼fen Sie die Zwischenergebnisse auf Unterlauf [eine
+resultatabhÃ¤ngige Kommaverschiebung] (oder auch auf Ãœberlauf, der dann
 im Programm in Umlauf kommt; wie zum Beispiel 32767 + 1 = -32768).
-Wann immer möglich, wählen Sie Einheiten, deren Werte in einem Bereich
+Wann immer mÃ¶glich, wÃ¤hlen Sie Einheiten, deren Werte in einem Bereich
 von -100 bis 100 liegen.
 
-Falls Sie eine Variable um einen bestimmten Faktor vergrößern müssen, tun
+Falls Sie eine Variable um einen bestimmten Faktor vergrÃ¶ÃŸern mÃ¼ssen, tun
 Sie dies, indem Sie eine Multiplikation und eine Division verwenden. Um
-zum Beispiel y = 1.8 * x zu vergrößern, berechnen Sie y = (9/5) * x,
+zum Beispiel y = 1.8 * x zu vergrÃ¶ÃŸern, berechnen Sie y = (9/5) * x,
 (was dasselbe ist, weil 1,8 = 9/5 ist), und codieren Sie dies als
-y = (9 * x)/5, indem Sie die Multiplikation zuerst ausführen.
+y = (9 * x)/5, indem Sie die Multiplikation zuerst ausfÃ¼hren.
 
    ||         {MUL  temp  :=}          ||
    ||---------{ x * 9       }----------||
@@ -923,16 +923,16 @@ y = (9 * x)/5, indem Sie die Multiplikation zuerst ausführen.
    ||-----------{ temp / 5 }-----------||
 
 
-Dies funktioniert mit allen x < (32767 / 9), oder x < 3640.  Bei höheren
-Werten würde die Variable ‘temp’ überfließen. Für x gibt es eine
-ähnliche Untergrenze.
+Dies funktioniert mit allen x < (32767 / 9), oder x < 3640.  Bei hÃ¶heren
+Werten wÃ¼rde die Variable â€˜tempâ€™ Ã¼berflieÃŸen. FÃ¼r x gibt es eine
+Ã¤hnliche Untergrenze.
 
 
 KODIER-STIL
 ===========
 
 Ich gestatte mehrere Spulen in Parallelschaltung in einem einzigen
-Netzwerk unterzubringen. Das bedeutet, sie können ein Netzwerk, wie
+Netzwerk unterzubringen. Das bedeutet, sie kÃ¶nnen ein Netzwerk, wie
 folgt schreiben:
 
    ||       Xa               Ya        ||
@@ -964,24 +964,24 @@ Anstatt diesem:
    ||                                  ||
 
 Rein theoretisch bedeutet das, dass Sie irgendein Programm, als ein
-gigantisches Netzwerk, schreiben könnten. Und es bestünde überhaupt
+gigantisches Netzwerk, schreiben kÃ¶nnten. Und es bestÃ¼nde Ã¼berhaupt
 keine Notwendigkeit mehrere Netzwerke zu verwenden. In der Praxis ist
 dies aber eine schlechte Idee, denn wenn Netzwerke komplexer werden, so
-werden sie auch schwieriger zu editieren, ohne Löschen und neu Schreiben
+werden sie auch schwieriger zu editieren, ohne LÃ¶schen und neu Schreiben
 von Anweisungen.
 
 Jedoch, ist es manchmal ein guter Einfall, verwandte Logik in einem
 einzelnen Netzwerk zusammenzufassen. Dies erzeugt einen beinahe
-identischen Code, als ob sie getrennte Netzwerke entworfen hätten, es
+identischen Code, als ob sie getrennte Netzwerke entworfen hÃ¤tten, es
 zeigt aber, dass diese Anweisungen (Logik) verwandt ist, wenn man diese
 im Netzwerk-Diagramm betrachtet.
 
             *                *                *
 
-Im Allgemeinen hält man es für eine schlechte Form, den Code in einer
+Im Allgemeinen hÃ¤lt man es fÃ¼r eine schlechte Form, den Code in einer
 solchen Weise zu schreiben, dass sein Ergebnis von einer Folge von
-Netzwerken abhängt. So zum Beispiel ist der folgende Code nicht besonders
-gut, falls ‘xa’ und ‘xb’ jemals ‘wahr’ würden.
+Netzwerken abhÃ¤ngt. So zum Beispiel ist der folgende Code nicht besonders
+gut, falls â€˜xaâ€™ und â€˜xbâ€™ jemals â€˜wahrâ€™ wÃ¼rden.
 
    ||       Xa         {v  :=       }  ||
  1 ||-------] [--------{ 12      MOV}--||
@@ -998,8 +998,8 @@ gut, falls ‘xa’ und ‘xb’ jemals ‘wahr’ würden.
 
 Ich werde diese Regel brechen und indem ich dies so mache, entwerfe ich
 einen Code-Abschnitt, der erheblich kompakter ist. Hier zum Beispiel,
-zeige ich auf, wie ich eine 4-Bit binäre Größe von ‘xb3:0’ in eine
-Ganzzahl wandeln würde.
+zeige ich auf, wie ich eine 4-Bit binÃ¤re GrÃ¶ÃŸe von â€˜xb3:0â€™ in eine
+Ganzzahl wandeln wÃ¼rde.
 
    ||                                   {v  :=       }  ||
  3 ||-----------------------------------{ 0       MOV}--||
@@ -1018,10 +1018,10 @@ Ganzzahl wandeln würde.
    ||                                                   ||
 
 Falls die TRANSFER-Anweisung (MOV) an das untere Ende des Netzwerks
-gebracht würde, anstatt auf das obere, so würde der Wert von ‘v’, an
+gebracht wÃ¼rde, anstatt auf das obere, so wÃ¼rde der Wert von â€˜vâ€™, an
 anderer Stelle im Programm gelesen, gleich Null sein. Das Ergebnis dieses
-Codes hängt daher von der Reihenfolge ab, in welcher die Anweisungen
-ausgewertet werden.  Im Hinblick darauf, wie hinderlich es wäre, diesen
+Codes hÃ¤ngt daher von der Reihenfolge ab, in welcher die Anweisungen
+ausgewertet werden.  Im Hinblick darauf, wie hinderlich es wÃ¤re, diesen
 Code auf eine andere Weise zu schreiben, nehme ich dies so hin.
 
 
@@ -1029,25 +1029,25 @@ BUGS
 ====
 
 LDmicro erzeugt keinen sehr effizienten Code; es ist langsam in der
-Ausführung und geht verschwenderisch mit dem Flash- und RAM-Speicher
-um. Trotzdem kann ein mittelgroßer PIC- oder AVR-Prozessor alles, was
-eine kleine SPS kann, somit stört dies mich nicht besonders.
+AusfÃ¼hrung und geht verschwenderisch mit dem Flash- und RAM-Speicher
+um. Trotzdem kann ein mittelgroÃŸer PIC- oder AVR-Prozessor alles, was
+eine kleine SPS kann, somit stÃ¶rt dies mich nicht besonders.
 
-Die maximale Länge der Variabelen-Bezeichnungen (-Namen) ist sehr
+Die maximale LÃ¤nge der Variabelen-Bezeichnungen (-Namen) ist sehr
 begrenzt. Dies ist so, weil diese so gut in das KOP-Programm (ladder)
-passen. Somit sehe ich keine gute Lösung für diese Angelegenheit.
+passen. Somit sehe ich keine gute LÃ¶sung fÃ¼r diese Angelegenheit.
 
-Falls Ihr Programm zu groß für die Zeit-, Programmspeicher- oder
-Datenspeicher-Beschränkungen des Prozessors ist, den Sie gewählt haben,
+Falls Ihr Programm zu groÃŸ fÃ¼r die Zeit-, Programmspeicher- oder
+Datenspeicher-BeschrÃ¤nkungen des Prozessors ist, den Sie gewÃ¤hlt haben,
 so erhalten Sie keine Fehlermeldung. Es wird einfach irgendwo anders alles
 vermasseln. (Anmerkung: Das AVR STK500 gibt hierzu Fehlermeldungen aus.)
 
-Unsorgfältiges Programmieren bei den Datei Öffnen/Abspeichern-Routinen
-führen wahrscheinlich zu der Möglichkeit eines Absturzes oder es wird
-ein willkürlicher Code erzeugt, der eine beschädigte oder bösartige .ld
+UnsorgfÃ¤ltiges Programmieren bei den Datei Ã–ffnen/Abspeichern-Routinen
+fÃ¼hren wahrscheinlich zu der MÃ¶glichkeit eines Absturzes oder es wird
+ein willkÃ¼rlicher Code erzeugt, der eine beschÃ¤digte oder bÃ¶sartige .ld
 Datei ergibt.
 
-Bitte berichten Sie zusätzliche Bugs oder richten Sie Anfragen für neue
+Bitte berichten Sie zusÃ¤tzliche Bugs oder richten Sie Anfragen fÃ¼r neue
 Programm-Bestandteile an den Autor (in Englisch).
 
 Thanks to:
