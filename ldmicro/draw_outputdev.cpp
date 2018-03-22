@@ -629,24 +629,24 @@ BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
 }
 
 //-----------------------------------------------------------------------------
-// Возвращаемое значение - в случае успеха TRUE, иначе FALSE
-// hFile - дескриптор файла
-// lpszString - указатель на буфер для строки
+// Р’РѕР·РІСЂР°С‰Р°РµРјРѕРµ Р·РЅР°С‡РµРЅРёРµ - РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р° TRUE, РёРЅР°С‡Рµ FALSE
+// hFile - РґРµСЃРєСЂРёРїС‚РѕСЂ С„Р°Р№Р»Р°
+// lpszString - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р±СѓС„РµСЂ РґР»СЏ СЃС‚СЂРѕРєРё
 
 BOOL GetLastWriteTime(HANDLE hFile, char *lpszString)
 {
     FILETIME ftCreate, ftAccess, ftWrite;
     SYSTEMTIME stUTC, stLocal;
 
-    // Получаем времена файла.
+    // РџРѕР»СѓС‡Р°РµРј РІСЂРµРјРµРЅР° С„Р°Р№Р»Р°.
     if (!GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite))
         return FALSE;
 
-    // Преобразуем время последнего изменения в локальное время.
+    // РџСЂРµРѕР±СЂР°Р·СѓРµРј РІСЂРµРјСЏ РїРѕСЃР»РµРґРЅРµРіРѕ РёР·РјРµРЅРµРЅРёСЏ РІ Р»РѕРєР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ.
     FileTimeToSystemTime(&ftWrite, &stUTC);
     SystemTimeToTzSpecificLocalTime(NULL, &stUTC, &stLocal);
 
-    // Составляем строку с датой и временем.
+    // РЎРѕСЃС‚Р°РІР»СЏРµРј СЃС‚СЂРѕРєСѓ СЃ РґР°С‚РѕР№ Рё РІСЂРµРјРµРЅРµРј.
     sprintf(lpszString, "%02d/%02d/%d %02d:%02d:%02d",
         stLocal.wDay, stLocal.wMonth, stLocal.wYear,
         stLocal.wHour, stLocal.wMinute, stLocal.wSecond); // wMilliseconds
@@ -659,13 +659,13 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
 {
     sFileTime[0]=0;
 
-    HANDLE hFile = CreateFile(FileName,   // открываемый файл
-                   GENERIC_READ,          // открываем для чтения
-                   FILE_SHARE_READ,       // для совместного чтения
-                   NULL,                  // защита по умолчанию
-                   OPEN_EXISTING,         // только существующий файл
-                   FILE_ATTRIBUTE_NORMAL, // обычный файл
-                   NULL);                 // атрибутов шаблона нет
+    HANDLE hFile = CreateFile(FileName,   // РѕС‚РєСЂС‹РІР°РµРјС‹Р№ С„Р°Р№Р»
+                   GENERIC_READ,          // РѕС‚РєСЂС‹РІР°РµРј РґР»СЏ С‡С‚РµРЅРёСЏ
+                   FILE_SHARE_READ,       // РґР»СЏ СЃРѕРІРјРµСЃС‚РЅРѕРіРѕ С‡С‚РµРЅРёСЏ
+                   NULL,                  // Р·Р°С‰РёС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+                   OPEN_EXISTING,         // С‚РѕР»СЊРєРѕ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ С„Р°Р№Р»
+                   FILE_ATTRIBUTE_NORMAL, // РѕР±С‹С‡РЅС‹Р№ С„Р°Р№Р»
+                   NULL);                 // Р°С‚СЂРёР±СѓС‚РѕРІ С€Р°Р±Р»РѕРЅР° РЅРµС‚
 
     if (hFile == INVALID_HANDLE_VALUE) {
         Error("Could not open file %s (error %d)\n", FileName, GetLastError());
