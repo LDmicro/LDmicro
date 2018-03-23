@@ -23,11 +23,12 @@
 // colours.
 // Jonathan Westhues, Dec 2004
 //-----------------------------------------------------------------------------
+
+#include <string>
 #include "stdafx.h"
 
 #include "ldmicro.h"
 #include "ldversion.h"
-#include <string>
 
 extern const char *HelpText[];
 extern const char *HelpTextDe[];
@@ -168,7 +169,7 @@ static std::wstring to_utf16(const char* s)
             MultiByteToWideChar(CP_UTF8, 0, s, -1, &output[0], size - 1);
         return output;
 #else
-#error "Function not realised for this platform!"
+#error "Function not realised for this platform!";
 #endif
 }
 
