@@ -27,6 +27,7 @@
 
 #include "ldmicro.h"
 #include "ldversion.h"
+#include <string>
 
 extern const char *HelpText[];
 extern const char *HelpTextDe[];
@@ -157,12 +158,27 @@ static BOOL Resizing(RECT *r, int wParam)
     return !touched;
 }
 
+static std::wstring to_utf16(const char* s)
+{
+#if defined(_WIN32)
+        const int size = MultiByteToWideChar(CP_UTF8, 0, s, -1, nullptr, 0);
+        std::wstring output;
+        output.resize(size - 1);
+        if(output.size() != 0)
+            MultiByteToWideChar(CP_UTF8, 0, s, -1, &output[0], size - 1);
+        return output;
+#else
+#error "Function not realised for this platform!"
+#endif
+}
+
 static void MakeControls(int a)
 {
-    HMODULE re = LoadLibrary("RichEd20.dll");
-    if(!re) oops();
+    HMODULE re = LoadLibraryA("RichEd20.dll");
+    if(!re)
+        oops();
 
-    RichEdit[a] = CreateWindowEx(0, RICHEDIT_CLASS,
+    RichEdit[a] = CreateWindowExA(0, RICHEDIT_CLASS,
         "", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_READONLY |
         ES_MULTILINE | WS_VSCROLL,
         0, 0, 100, 100, HelpDialog[a], NULL, Instance, NULL);
@@ -172,17 +188,16 @@ static void MakeControls(int a)
 
     SizeRichEdit(a);
 
-    int i;
     BOOL nextSubHead = FALSE;
-    for(i = 0; Text[a][i]; i++) {
-        const char *s = Text[a][i];
+    for(int i = 0; Text[a][i]; i++) {
+        auto w_str = to_utf16(Text[a][i]);
+        const wchar_t *s = w_str.c_str();
 
         CHARFORMAT cf;
         cf.cbSize = sizeof(cf);
         cf.dwMask = CFM_BOLD | CFM_COLOR;
         cf.dwEffects = 0;
-        if((s[0] == '=') ||
-           (Text[a][i+1] && Text[a][i+1][0] == '='))
+        if((s[0] == '=') || (Text[a][i+1] && Text[a][i+1][0] == '='))
         {
             cf.crTextColor = HighlightColours.simBusRight; // RGB(255, 255, 110);
         } else if(s[3] == '|' && s[4] == '|') {
@@ -190,9 +205,10 @@ static void MakeControls(int a)
         } else if(s[0] == '>' || nextSubHead) {
             // Need to make a copy because the strings we are passed aren't
             // mutable.
-            char copy[1024];
-            if(strlen(s) >= sizeof(copy)) oops();
-            strcpy(copy, s);
+            wchar_t copy[1024];
+            if(wcslen(s) >= (sizeof(copy)/sizeof(copy[0])))
+                oops();
+            wcscpy(copy, s);
 
             int j;
             for(j = 1; copy[j]; j++) {
@@ -202,11 +218,11 @@ static void MakeControls(int a)
             BOOL justHeading = (copy[j] == '\0');
             copy[j] = '\0';
             cf.crTextColor = HighlightColours.selected; // RGB(110, 255, 110);
-            SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION,
+            SendMessageW(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION,
                 (LPARAM)&cf);
-            SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE,
+            SendMessageW(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE,
                 (LPARAM)copy);
-            SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
+            SendMessageW(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
             // Special case if there's nothing except title on the line
             if(!justHeading) {
@@ -219,17 +235,17 @@ static void MakeControls(int a)
             cf.crTextColor = HighlightColours.def; // RGB(255, 255, 255);
         }
 
-        SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-        SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)s);
-        SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
+        SendMessageW(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+        SendMessageW(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)s);
+        SendMessageW(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
         if(Text[a][i+1]) {
-            SendMessage(RichEdit[a], EM_REPLACESEL, FALSE, (LPARAM)"\r\n");
-            SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
+            SendMessageA(RichEdit[a], EM_REPLACESEL, FALSE, (LPARAM)"\r\n");
+            SendMessageA(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
         }
     }
 
-    SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)0, (LPARAM)0);
+    SendMessageA(RichEdit[a], EM_SETSEL, (WPARAM)0, (LPARAM)0);
 }
 
 //-----------------------------------------------------------------------------
