@@ -1,13 +1,13 @@
-
-KULLANIM KİTAPÇIĞI
+ï»¿
+KULLANIM KÄ°TAPÃ‡IÄI
 ==================
-LDMicro desteklenen MicroChip PIC16 ve Atmel AVR mikrokontrolcüler için
-gerekli kodu üretir. Bu iş için kullanılabilecek değişik programlar vardır.
-Örneğin BASIC, C, assembler gibi. Bu programlar kendi dillerinde yazılmış
-programları işlemcilerde çalışabilecek dosyalar haline getirirler.
+LDMicro desteklenen MicroChip PIC16 ve Atmel AVR mikrokontrolcÃ¼ler iÃ§in
+gerekli kodu Ã¼retir. Bu iÅŸ iÃ§in kullanÄ±labilecek deÄŸiÅŸik programlar vardÄ±r.
+Ã–rneÄŸin BASIC, C, assembler gibi. Bu programlar kendi dillerinde yazÄ±lmÄ±ÅŸ
+programlarÄ± iÅŸlemcilerde Ã§alÄ±ÅŸabilecek dosyalar haline getirirler.
 
-PLC'de kullanılan dillerden biri  ladder diyagramıdır. Aşağıda LDMicro ile
-yazılmış basit bir program görülmektedir.
+PLC'de kullanÄ±lan dillerden biri  ladder diyagramÄ±dÄ±r. AÅŸaÄŸÄ±da LDMicro ile
+yazÄ±lmÄ±ÅŸ basit bir program gÃ¶rÃ¼lmektedir.
 
    ||                                                                    ||
    ||    Xbutton1           Tdon           Rchatter           Yred       ||
@@ -27,13 +27,13 @@ yazılmış basit bir program görülmektedir.
    ||                                                                    ||
    ||                                                                    ||
 
-(TON=turn-on gecikme; TOF-turn-off gecikme. --] [-- girişler, diğer bir
-deyişle kontaklardır. --( )-- ise çıkışlardır. Bunlar bir rölenin bobini
-gibi davranırlar. Ladder diyagramı ile ilgili bol miktarda kaynak internet
-üzerinde bulunmaktadır. Burada LDMicro'ya has özelliklerden bahsedeceğiz.
+(TON=turn-on gecikme; TOF-turn-off gecikme. --] [-- giriÅŸler, diÄŸer bir
+deyiÅŸle kontaklardÄ±r. --( )-- ise Ã§Ä±kÄ±ÅŸlardÄ±r. Bunlar bir rÃ¶lenin bobini
+gibi davranÄ±rlar. Ladder diyagramÄ± ile ilgili bol miktarda kaynak internet
+Ã¼zerinde bulunmaktadÄ±r. Burada LDMicro'ya has Ã¶zelliklerden bahsedeceÄŸiz.
 
-LDmicro ladder diyagramını PIC16 veya AVR koduna çevirir. Aşağıda desteklenen
-işlemcilerin listesi bulunmaktadır:
+LDmicro ladder diyagramÄ±nÄ± PIC16 veya AVR koduna Ã§evirir. AÅŸaÄŸÄ±da desteklenen
+iÅŸlemcilerin listesi bulunmaktadÄ±r:
     * PIC16F877
     * PIC16F628
     * PIC16F876 (denenmedi)
@@ -48,583 +48,583 @@ işlemcilerin listesi bulunmaktadır:
     * ATmega16 (denenmedi)
     * ATmega8 (denenmedi)
 
-Aslında daha fazla PIC16 ve AVR işlemci desteklenebilir. Ancak test ettiklerim
-ve desteklediğini düşündüklerimi yazdım. Örneğin PIC16F648 ile PIC16F628
-arasında fazla bir fark bulunmamaktadır. Eğer bir işlemcinin desteklenmesini
-istiyorsanız ve bana bildirirseniz ilgilenirim.
+AslÄ±nda daha fazla PIC16 ve AVR iÅŸlemci desteklenebilir. Ancak test ettiklerim
+ve desteklediÄŸini dÃ¼ÅŸÃ¼ndÃ¼klerimi yazdÄ±m. Ã–rneÄŸin PIC16F648 ile PIC16F628
+arasÄ±nda fazla bir fark bulunmamaktadÄ±r. EÄŸer bir iÅŸlemcinin desteklenmesini
+istiyorsanÄ±z ve bana bildirirseniz ilgilenirim.
 
-LDMicro ile ladder diyagramını çizebilir, devrenizi denemek için gerçek zamanlı
-simülasyon yapabilirsiniz. Programınızın çalıştığından eminseniz programdaki
-giriş ve çıkışlara mikrokontrolörün bacaklarını atarsınız. İşlemci bacakları
-belli olduktan sonra programınızı derleyebilirsiniz. Derleme sonucunda oluşan
-dosya .hex dosyasıdır. Bu dosyayı PIC/AVR programlayıcı ile işlemcinize kaydedersiniz.
-PIC/AVR ile uğraşanlar konuya yabancı değildir.
+LDMicro ile ladder diyagramÄ±nÄ± Ã§izebilir, devrenizi denemek iÃ§in gerÃ§ek zamanlÄ±
+simÃ¼lasyon yapabilirsiniz. ProgramÄ±nÄ±zÄ±n Ã§alÄ±ÅŸtÄ±ÄŸÄ±ndan eminseniz programdaki
+giriÅŸ ve Ã§Ä±kÄ±ÅŸlara mikrokontrolÃ¶rÃ¼n bacaklarÄ±nÄ± atarsÄ±nÄ±z. Ä°ÅŸlemci bacaklarÄ±
+belli olduktan sonra programÄ±nÄ±zÄ± derleyebilirsiniz. Derleme sonucunda oluÅŸan
+dosya .hex dosyasÄ±dÄ±r. Bu dosyayÄ± PIC/AVR programlayÄ±cÄ± ile iÅŸlemcinize kaydedersiniz.
+PIC/AVR ile uÄŸraÅŸanlar konuya yabancÄ± deÄŸildir.
 
 
-LDMicro ticari PLC programları gibi tasarlanmıştır. Bazı eksiklikler vardır.
-Kitapçığı dikkatlice okumanızı tavsiye ederim. Kullanım esnasında PLC ve
-PIC/AVR hakkında temel bilgilere sahip olduğunuz düşünülmüştür.
+LDMicro ticari PLC programlarÄ± gibi tasarlanmÄ±ÅŸtÄ±r. BazÄ± eksiklikler vardÄ±r.
+KitapÃ§Ä±ÄŸÄ± dikkatlice okumanÄ±zÄ± tavsiye ederim. KullanÄ±m esnasÄ±nda PLC ve
+PIC/AVR hakkÄ±nda temel bilgilere sahip olduÄŸunuz dÃ¼ÅŸÃ¼nÃ¼lmÃ¼ÅŸtÃ¼r.
 
-DİĞER AMAÇLAR
+DÄ°ÄER AMAÃ‡LAR
 ==================
 
-ANSI C kodunu oluşturmak mümkündür. C derleyicisi olan herhangi bir
-işlemci için bu özellikten faydalanabilirsiniz. Ancak çalıştırmak için
-gerekli dosyaları siz sağlamalısınız. Yani, LDMicro sadece PlcCycle()
-isimli fonksiyonu üretir. Her döngüde PlcCycle fonksiyonunu çağırmak, ve
-PlcCycle() fonksiyonunun çağırdığı dijital girişi yazma/okuma vs gibi
-G/Ç fonksiyonları sizin yapmanız gereken işlemlerdir.
-Oluşturulan kodu incelerseniz faydalı olur.
+ANSI C kodunu oluÅŸturmak mÃ¼mkÃ¼ndÃ¼r. C derleyicisi olan herhangi bir
+iÅŸlemci iÃ§in bu Ã¶zellikten faydalanabilirsiniz. Ancak Ã§alÄ±ÅŸtÄ±rmak iÃ§in
+gerekli dosyalarÄ± siz saÄŸlamalÄ±sÄ±nÄ±z. Yani, LDMicro sadece PlcCycle()
+isimli fonksiyonu Ã¼retir. Her dÃ¶ngÃ¼de PlcCycle fonksiyonunu Ã§aÄŸÄ±rmak, ve
+PlcCycle() fonksiyonunun Ã§aÄŸÄ±rdÄ±ÄŸÄ± dijital giriÅŸi yazma/okuma vs gibi
+G/Ã‡ fonksiyonlarÄ± sizin yapmanÄ±z gereken iÅŸlemlerdir.
+OluÅŸturulan kodu incelerseniz faydalÄ± olur.
 
-KOMUT SATIRI SEÇENEKLERİ
+KOMUT SATIRI SEÃ‡ENEKLERÄ°
 ========================
 
-Normal şartlarda ldmicro.exe komut satırından seçenek almadan çalışır.
-LDMicro'ya komut satırından dosya ismi verebilirsiniz. Örneğin;komut
-satırından 'ldmicro.exe asd.ld' yazarsanız bu dosya açılmaya çalışırlır.
-Dosya varsa açılır. Yoksa hata mesajı alırsınız. İsterseniz .ld uzantısını
-ldmicro.exe ile ilişkilendirirseniz .ld uzantılı bir dosyayı çift tıklattığınızda
-bu dosya otomatik olarak açılır. Bkz. Klasör Seçenekleri (Windows).
+Normal ÅŸartlarda ldmicro.exe komut satÄ±rÄ±ndan seÃ§enek almadan Ã§alÄ±ÅŸÄ±r.
+LDMicro'ya komut satÄ±rÄ±ndan dosya ismi verebilirsiniz. Ã–rneÄŸin;komut
+satÄ±rÄ±ndan 'ldmicro.exe asd.ld' yazarsanÄ±z bu dosya aÃ§Ä±lmaya Ã§alÄ±ÅŸÄ±rlÄ±r.
+Dosya varsa aÃ§Ä±lÄ±r. Yoksa hata mesajÄ± alÄ±rsÄ±nÄ±z. Ä°sterseniz .ld uzantÄ±sÄ±nÄ±
+ldmicro.exe ile iliÅŸkilendirirseniz .ld uzantÄ±lÄ± bir dosyayÄ± Ã§ift tÄ±klattÄ±ÄŸÄ±nÄ±zda
+bu dosya otomatik olarak aÃ§Ä±lÄ±r. Bkz. KlasÃ¶r SeÃ§enekleri (Windows).
 
-`ldmicro.exe /c src.ld dest.hex', şeklinde kullanılırsa  src.ld derlenir
-ve hazırlanan derleme dest.hex dosyasına kaydedilir. İşlem bitince LDMicro kapanır.
-Oluşabilecek tüm mesajlar konsoldan görünür.
+`ldmicro.exe /c src.ld dest.hex', ÅŸeklinde kullanÄ±lÄ±rsa  src.ld derlenir
+ve hazÄ±rlanan derleme dest.hex dosyasÄ±na kaydedilir. Ä°ÅŸlem bitince LDMicro kapanÄ±r.
+OluÅŸabilecek tÃ¼m mesajlar konsoldan gÃ¶rÃ¼nÃ¼r.
 
-TEMEL BİLGİLER
+TEMEL BÄ°LGÄ°LER
 ==============
 
-LDMicro açıldığında boş bir program ile başlar. Varolan bir dosya ile başlatırsanız
-bu program açılır. LDMicro kendi dosya biçimini kullandığından diğer dosya
-biçimlerinden dosyaları açamazsınız.
+LDMicro aÃ§Ä±ldÄ±ÄŸÄ±nda boÅŸ bir program ile baÅŸlar. Varolan bir dosya ile baÅŸlatÄ±rsanÄ±z
+bu program aÃ§Ä±lÄ±r. LDMicro kendi dosya biÃ§imini kullandÄ±ÄŸÄ±ndan diÄŸer dosya
+biÃ§imlerinden dosyalarÄ± aÃ§amazsÄ±nÄ±z.
 
-Boş bir dosya ile başlarsanız ekranda bir tane boş satır görürsünüz. Bu satıra
-komutları ekleyebilir, satır sayısını artırabilirsiniz. Satırlara Rung denilir.
-Örneğin; Komutlar->Kontak Ekle diyerek bir kontak ekleyebilirsiniz. Bu kontağa
-'Xnew' ismi verilir. 'X' bu kontağın işlemcinin bacağına denk geldiğini gösterir.
-Bu kontağa derlemeden önce isim vermeli ve mikrokontrolörün bir bacağı ile
-eşleştirmelisiniz. Eşleştirme işlemi içinde önce işlemciyi seçmelisiniz.
-Elemanların ilk harfi o elemanın ne olduğu ile ilgilidir. Örnekler:
+BoÅŸ bir dosya ile baÅŸlarsanÄ±z ekranda bir tane boÅŸ satÄ±r gÃ¶rÃ¼rsÃ¼nÃ¼z. Bu satÄ±ra
+komutlarÄ± ekleyebilir, satÄ±r sayÄ±sÄ±nÄ± artÄ±rabilirsiniz. SatÄ±rlara Rung denilir.
+Ã–rneÄŸin; Komutlar->Kontak Ekle diyerek bir kontak ekleyebilirsiniz. Bu kontaÄŸa
+'Xnew' ismi verilir. 'X' bu kontaÄŸÄ±n iÅŸlemcinin bacaÄŸÄ±na denk geldiÄŸini gÃ¶sterir.
+Bu kontaÄŸa derlemeden Ã¶nce isim vermeli ve mikrokontrolÃ¶rÃ¼n bir bacaÄŸÄ± ile
+eÅŸleÅŸtirmelisiniz. EÅŸleÅŸtirme iÅŸlemi iÃ§inde Ã¶nce iÅŸlemciyi seÃ§melisiniz.
+ElemanlarÄ±n ilk harfi o elemanÄ±n ne olduÄŸu ile ilgilidir. Ã–rnekler:
 
-    * Xname -- mikrokontrolördeki bir giriş bacağı
-    * Yname -- mikrokontrolördeki bir çıkış bacağı
-    * Rname -- `dahili röle': hafızada bir bit.
-    * Tname -- zamanlayıcı; turn-on, turn-off yada retentive
-    * Cname -- sayıcı, yukarı yada aşağı sayıcı
-    * Aname -- A/D çeviriciden okunan bir tamsayı değer
-    * name  -- genel değişken (tamsayı)
+    * Xname -- mikrokontrolÃ¶rdeki bir giriÅŸ bacaÄŸÄ±
+    * Yname -- mikrokontrolÃ¶rdeki bir Ã§Ä±kÄ±ÅŸ bacaÄŸÄ±
+    * Rname -- `dahili rÃ¶le': hafÄ±zada bir bit.
+    * Tname -- zamanlayÄ±cÄ±; turn-on, turn-off yada retentive
+    * Cname -- sayÄ±cÄ±, yukarÄ± yada aÅŸaÄŸÄ± sayÄ±cÄ±
+    * Aname -- A/D Ã§eviriciden okunan bir tamsayÄ± deÄŸer
+    * name  -- genel deÄŸiÅŸken (tamsayÄ±)
 
-İstediğiniz ismi seçebilirsiniz. Seçilen bir isim nerede kullanılırsa
-kullanılsın aynı yere denk gelir. Örnekler; bir satırda Xasd kullandığınızda
-bir başka satırda Xasd kullanırsanız aynı değere sahiptirler.
-Bazen bu mecburi olarak kullanılmaktadır. Ancak bazı durumlarda hatalı olabilir.
+Ä°stediÄŸiniz ismi seÃ§ebilirsiniz. SeÃ§ilen bir isim nerede kullanÄ±lÄ±rsa
+kullanÄ±lsÄ±n aynÄ± yere denk gelir. Ã–rnekler; bir satÄ±rda Xasd kullandÄ±ÄŸÄ±nÄ±zda
+bir baÅŸka satÄ±rda Xasd kullanÄ±rsanÄ±z aynÄ± deÄŸere sahiptirler.
+Bazen bu mecburi olarak kullanÄ±lmaktadÄ±r. Ancak bazÄ± durumlarda hatalÄ± olabilir.
 Mesela bir (TON) Turn-On Gecikmeye Tgec ismini verdikten sonra bir (TOF)
-Turn_Off gecikme devresine de Tgec ismini verirseniz hata yapmış olursunuz.
-Dikkat ederseniz yaptığınız bir mantık hatasıdır. Her gecikme devresi kendi
-hafızasına sahip olmalıdır. Ama Tgec (TON) turn-on gecikme  devresini sıfırlamak
-için kullanılan RES komutunda Tgec ismini kullanmak gerekmektedir.
+Turn_Off gecikme devresine de Tgec ismini verirseniz hata yapmÄ±ÅŸ olursunuz.
+Dikkat ederseniz yaptÄ±ÄŸÄ±nÄ±z bir mantÄ±k hatasÄ±dÄ±r. Her gecikme devresi kendi
+hafÄ±zasÄ±na sahip olmalÄ±dÄ±r. Ama Tgec (TON) turn-on gecikme  devresini sÄ±fÄ±rlamak
+iÃ§in kullanÄ±lan RES komutunda Tgec ismini kullanmak gerekmektedir.
 
-Değişken isimleri harfleri, sayıları, alt çizgileri ihtiva edebilir.
-(_). Değişken isimleri sayı ile başlamamalıdır. Değişken isimleri büyük-küçük harf duyarlıdır.
-Örneğin; TGec ve Tgec aynı zamanlayıcılar değildir.
+DeÄŸiÅŸken isimleri harfleri, sayÄ±larÄ±, alt Ã§izgileri ihtiva edebilir.
+(_). DeÄŸiÅŸken isimleri sayÄ± ile baÅŸlamamalÄ±dÄ±r. DeÄŸiÅŸken isimleri bÃ¼yÃ¼k-kÃ¼Ã§Ã¼k harf duyarlÄ±dÄ±r.
+Ã–rneÄŸin; TGec ve Tgec aynÄ± zamanlayÄ±cÄ±lar deÄŸildir.
 
 
-Genel değişkenlerle ilgili komutlar (MOV, ADD, EQU vs) herhangi bir
-isimdeki değişkenlerle çalışır. Bunun anlamı bu komutlar zamanlayıcılar
-ve sayıcılarla çalışır. Zaman zaman bu faydalı olabilir. Örneğin; bir
-zamanlayıcının değeri ile ilgili bir karşılaştırma yapabilirsiniz.
+Genel deÄŸiÅŸkenlerle ilgili komutlar (MOV, ADD, EQU vs) herhangi bir
+isimdeki deÄŸiÅŸkenlerle Ã§alÄ±ÅŸÄ±r. Bunun anlamÄ± bu komutlar zamanlayÄ±cÄ±lar
+ve sayÄ±cÄ±larla Ã§alÄ±ÅŸÄ±r. Zaman zaman bu faydalÄ± olabilir. Ã–rneÄŸin; bir
+zamanlayÄ±cÄ±nÄ±n deÄŸeri ile ilgili bir karÅŸÄ±laÅŸtÄ±rma yapabilirsiniz.
 
-Değişkenler hr zaman için 16 bit tamsayıdır. -32768 ile 32767 arasında
-bir değere sahip olabilirler. Her zaman için işaretlidir. (+ ve - değere
-sahip olabilirler) Onluk sayı sisteminde sayı kullanabilirsiniz. Tırnak
-arasına koyarak ('A', 'z' gibi) ASCII karakterler kullanabilirsiniz.
+DeÄŸiÅŸkenler hr zaman iÃ§in 16 bit tamsayÄ±dÄ±r. -32768 ile 32767 arasÄ±nda
+bir deÄŸere sahip olabilirler. Her zaman iÃ§in iÅŸaretlidir. (+ ve - deÄŸere
+sahip olabilirler) Onluk sayÄ± sisteminde sayÄ± kullanabilirsiniz. TÄ±rnak
+arasÄ±na koyarak ('A', 'z' gibi) ASCII karakterler kullanabilirsiniz.
 
-Ekranın alt tarafındaki kısımda kullanılan tüm elemanların bir listesi görünür.
-Bu liste program  tarafından otomatik olarak oluşturulur ve kendiliğinden
-güncelleştirilir. Sadece 'Xname', 'Yname', 'Aname' elemanları için
-mikrokontrolörün bacak numaraları belirtilmelidir. Önce Ayarlar->İşlemci Seçimi
-menüsünden işlemciyi seçiniz. Daha sonra G/Ç uçlarını çift tıklatarak açılan
-pencereden seçiminizi yapınız.
+EkranÄ±n alt tarafÄ±ndaki kÄ±sÄ±mda kullanÄ±lan tÃ¼m elemanlarÄ±n bir listesi gÃ¶rÃ¼nÃ¼r.
+Bu liste program  tarafÄ±ndan otomatik olarak oluÅŸturulur ve kendiliÄŸinden
+gÃ¼ncelleÅŸtirilir. Sadece 'Xname', 'Yname', 'Aname' elemanlarÄ± iÃ§in
+mikrokontrolÃ¶rÃ¼n bacak numaralarÄ± belirtilmelidir. Ã–nce Ayarlar->Ä°ÅŸlemci SeÃ§imi
+menÃ¼sÃ¼nden iÅŸlemciyi seÃ§iniz. Daha sonra G/Ã‡ uÃ§larÄ±nÄ± Ã§ift tÄ±klatarak aÃ§Ä±lan
+pencereden seÃ§iminizi yapÄ±nÄ±z.
 
-Komut ekleyerek veya çıkararak programınızı değiştirebilirsiniz. Programdaki
-kursör eleman eklenecek yeri veya hakkında işlem yapılacak elemanı göstermek
-amacıyla yanıp söner. Elemanlar arasında <Tab> tuşu ile gezinebilirsiniz. Yada
-elemanı fare ile tıklatarak işlem yapılacak elemanı seçebilirsiniz. Kursör elemanın
-solunda, sağında, altında ve üstünde olabilir. Solunda ve sağında olduğunda
-ekleme yaptığınızda eklenen eleman o tarafa eklenir. Üstünde ve altında iken
-eleman eklerseniz eklenen eleman seçili elemana paralel olarak eklenir.
-Bazı işlemleri yapamazsınız. Örneğin bir bobinin sağına eleman ekleyemezsiniz.
+Komut ekleyerek veya Ã§Ä±kararak programÄ±nÄ±zÄ± deÄŸiÅŸtirebilirsiniz. Programdaki
+kursÃ¶r eleman eklenecek yeri veya hakkÄ±nda iÅŸlem yapÄ±lacak elemanÄ± gÃ¶stermek
+amacÄ±yla yanÄ±p sÃ¶ner. Elemanlar arasÄ±nda <Tab> tuÅŸu ile gezinebilirsiniz. Yada
+elemanÄ± fare ile tÄ±klatarak iÅŸlem yapÄ±lacak elemanÄ± seÃ§ebilirsiniz. KursÃ¶r elemanÄ±n
+solunda, saÄŸÄ±nda, altÄ±nda ve Ã¼stÃ¼nde olabilir. Solunda ve saÄŸÄ±nda olduÄŸunda
+ekleme yaptÄ±ÄŸÄ±nÄ±zda eklenen eleman o tarafa eklenir. ÃœstÃ¼nde ve altÄ±nda iken
+eleman eklerseniz eklenen eleman seÃ§ili elemana paralel olarak eklenir.
+BazÄ± iÅŸlemleri yapamazsÄ±nÄ±z. Ã–rneÄŸin bir bobinin saÄŸÄ±na eleman ekleyemezsiniz.
 LDMicro buna izin vermeyecektir.
 
-Program boş bir satırla başlar. Kendiniz alta ve üste satır ekleyerek dilediğiniz
-gibi diyagramınızı oluşturabilirsiniz. Yukarıda bahsedildiği gibi alt devreler
-oluşturabilirsiniz.
+Program boÅŸ bir satÄ±rla baÅŸlar. Kendiniz alta ve Ã¼ste satÄ±r ekleyerek dilediÄŸiniz
+gibi diyagramÄ±nÄ±zÄ± oluÅŸturabilirsiniz. YukarÄ±da bahsedildiÄŸi gibi alt devreler
+oluÅŸturabilirsiniz.
 
-Programınız yazdığınızda simülasyon yapabilir, .hex dosyasını oluşturabilirsiniz.
+ProgramÄ±nÄ±z yazdÄ±ÄŸÄ±nÄ±zda simÃ¼lasyon yapabilir, .hex dosyasÄ±nÄ± oluÅŸturabilirsiniz.
 
-SİMÜLASYON
+SÄ°MÃœLASYON
 ==========
 
-Simülasyon moduna geçmek için Simülasyon->Simülasyon modu menüsünü tıklatabilir,
-yada <Ctrl+M> tuş kombinasyonuna basabilirsiniz. Simülasyon modunda program
-farklı bir görüntü alır. Kursör görünmez olur. Enerji alan yerler ve elemanlar
-parlak kırmızı, enerji almayan yerler ve elemanlar gri görünür. Boşluk tuşuna
-basarak bir çevrim ilerleyebilir yada menüden Simülasyon->Gerçek Zamanlı Simülasyonu Başlat
-diyerek (veya <Ctrl+R>) devamlı bir çevrim başlatabilirsiniz. Ladder diyagramının
-çalışmasına göre gerçek zamanlı olarak elemanlar ve yollar program tarafından değiştirilir.
+SimÃ¼lasyon moduna geÃ§mek iÃ§in SimÃ¼lasyon->SimÃ¼lasyon modu menÃ¼sÃ¼nÃ¼ tÄ±klatabilir,
+yada <Ctrl+M> tuÅŸ kombinasyonuna basabilirsiniz. SimÃ¼lasyon modunda program
+farklÄ± bir gÃ¶rÃ¼ntÃ¼ alÄ±r. KursÃ¶r gÃ¶rÃ¼nmez olur. Enerji alan yerler ve elemanlar
+parlak kÄ±rmÄ±zÄ±, enerji almayan yerler ve elemanlar gri gÃ¶rÃ¼nÃ¼r. BoÅŸluk tuÅŸuna
+basarak bir Ã§evrim ilerleyebilir yada menÃ¼den SimÃ¼lasyon->GerÃ§ek ZamanlÄ± SimÃ¼lasyonu BaÅŸlat
+diyerek (veya <Ctrl+R>) devamlÄ± bir Ã§evrim baÅŸlatabilirsiniz. Ladder diyagramÄ±nÄ±n
+Ã§alÄ±ÅŸmasÄ±na gÃ¶re gerÃ§ek zamanlÄ± olarak elemanlar ve yollar program tarafÄ±ndan deÄŸiÅŸtirilir.
 
-Giriş elemanlarının durumunu çift tıklatarak değiştirebilirsiniz. Mesela, 'Xname'
-kontağını çift tıklatıranız açıktan kapalıya veya kapalıdan açığa geçiş yapar.
+GiriÅŸ elemanlarÄ±nÄ±n durumunu Ã§ift tÄ±klatarak deÄŸiÅŸtirebilirsiniz. Mesela, 'Xname'
+kontaÄŸÄ±nÄ± Ã§ift tÄ±klatÄ±ranÄ±z aÃ§Ä±ktan kapalÄ±ya veya kapalÄ±dan aÃ§Ä±ÄŸa geÃ§iÅŸ yapar.
 
 DERLEME
 =======
 
-Ladder diyagramının yapılmasındaki amaç işlemciye yüklenecek .hex dosyasının
-oluşturulmasıdır. Buna 'derleme' denir. Derlemeden önce şu aşamalar tamamlanmalıdır:
- 1- İşlemci seçilmelidir. Ayarlar->İşlemci Seçimi menüsünden yapılır.
- 2- G/Ç uçlarının mikrokontrolördeki hangi bacaklara bağlanacağı seçilmelidir.
-    Elemanın üzerine çift tıklanır ve çıkan listeden seçim yapılır.
- 3- Çevrim süresi tanımlanmalıdır. Ayarlar->İşlemci Ayarları menüsünden yapılır.
-    Bu süre işlemcinin çalıştığı frekansa bağlıdır. Çoğu uygulamalar için 10ms
-    uygun bir seçimdir. Aynı yerden kristal frekansını ayarlamayı unutmayınız.
+Ladder diyagramÄ±nÄ±n yapÄ±lmasÄ±ndaki amaÃ§ iÅŸlemciye yÃ¼klenecek .hex dosyasÄ±nÄ±n
+oluÅŸturulmasÄ±dÄ±r. Buna 'derleme' denir. Derlemeden Ã¶nce ÅŸu aÅŸamalar tamamlanmalÄ±dÄ±r:
+ 1- Ä°ÅŸlemci seÃ§ilmelidir. Ayarlar->Ä°ÅŸlemci SeÃ§imi menÃ¼sÃ¼nden yapÄ±lÄ±r.
+ 2- G/Ã‡ uÃ§larÄ±nÄ±n mikrokontrolÃ¶rdeki hangi bacaklara baÄŸlanacaÄŸÄ± seÃ§ilmelidir.
+    ElemanÄ±n Ã¼zerine Ã§ift tÄ±klanÄ±r ve Ã§Ä±kan listeden seÃ§im yapÄ±lÄ±r.
+ 3- Ã‡evrim sÃ¼resi tanÄ±mlanmalÄ±dÄ±r. Ayarlar->Ä°ÅŸlemci AyarlarÄ± menÃ¼sÃ¼nden yapÄ±lÄ±r.
+    Bu sÃ¼re iÅŸlemcinin Ã§alÄ±ÅŸtÄ±ÄŸÄ± frekansa baÄŸlÄ±dÄ±r. Ã‡oÄŸu uygulamalar iÃ§in 10ms
+    uygun bir seÃ§imdir. AynÄ± yerden kristal frekansÄ±nÄ± ayarlamayÄ± unutmayÄ±nÄ±z.
 
-Artık kodu üretebilirsiniz. Derle->Derle yada Derle->Farklı Derle seçeneklerinden
-birini kullanacaksınız. Aradaki fark Kaydet ve Farklı Kaydet ile aynıdır. Sonuçta
-Intel IHEX dosyanız programınızda hata yoksa üretilecektir. Programınızda hata varsa
-uyarı alırsınız.
+ArtÄ±k kodu Ã¼retebilirsiniz. Derle->Derle yada Derle->FarklÄ± Derle seÃ§eneklerinden
+birini kullanacaksÄ±nÄ±z. Aradaki fark Kaydet ve FarklÄ± Kaydet ile aynÄ±dÄ±r. SonuÃ§ta
+Intel IHEX dosyanÄ±z programÄ±nÄ±zda hata yoksa Ã¼retilecektir. ProgramÄ±nÄ±zda hata varsa
+uyarÄ± alÄ±rsÄ±nÄ±z.
 
-Progamlayıcınız ile bu dosyayı işlemcinize yüklemelisiniz. Buradaki en önemli nokta
-işlemcinin konfigürasyon bitlerinin ayarlanmasıdır. PIC16 işlemciler için gerekli
-ayar bilgileri hex dosyasına kaydedildiğinden programlayıcınız bu ayarları algılayacaktır.
-Ancak AVR işlemciler için gerekli ayarları siz yapmalısınız.
+ProgamlayÄ±cÄ±nÄ±z ile bu dosyayÄ± iÅŸlemcinize yÃ¼klemelisiniz. Buradaki en Ã¶nemli nokta
+iÅŸlemcinin konfigÃ¼rasyon bitlerinin ayarlanmasÄ±dÄ±r. PIC16 iÅŸlemciler iÃ§in gerekli
+ayar bilgileri hex dosyasÄ±na kaydedildiÄŸinden programlayÄ±cÄ±nÄ±z bu ayarlarÄ± algÄ±layacaktÄ±r.
+Ancak AVR iÅŸlemciler iÃ§in gerekli ayarlarÄ± siz yapmalÄ±sÄ±nÄ±z.
 
 KOMUTLAR ve ELEMANLAR
 =====================
 
-> KONTAK, NORMALDE AÇIK         Xname           Rname          Yname
+> KONTAK, NORMALDE AÃ‡IK         Xname           Rname          Yname
                              ----] [----     ----] [----    ----] [----
 
-    Normalde açık bir anahtar gibi davranır. Komutu kontrol eden sinyal 0 ise
-    çıkışındaki sinyalde 0 olur. Eğer kontrol eden sinyal 1 olursa çıkışı da 1
-    olur ve çıkışa bağlı bobin aktif olur. Bu kontak işlemci bacağından alınan
-    bir giriş, çıkış bacağı yada dahili bir röle olabilir.
+    Normalde aÃ§Ä±k bir anahtar gibi davranÄ±r. Komutu kontrol eden sinyal 0 ise
+    Ã§Ä±kÄ±ÅŸÄ±ndaki sinyalde 0 olur. EÄŸer kontrol eden sinyal 1 olursa Ã§Ä±kÄ±ÅŸÄ± da 1
+    olur ve Ã§Ä±kÄ±ÅŸa baÄŸlÄ± bobin aktif olur. Bu kontak iÅŸlemci bacaÄŸÄ±ndan alÄ±nan
+    bir giriÅŸ, Ã§Ä±kÄ±ÅŸ bacaÄŸÄ± yada dahili bir rÃ¶le olabilir.
 
 
 > KONTAK, NORMALDE KAPALI       Xname           Rname          Yname
                              ----]/[----     ----]/[----    ----]/[----
 
-    Normalde kapalı bir anahtar gibi davranır. Komutun kontrol eden sinyal 0 ise
-    çıkışı 1 olur. Eğer kontrol eden sinyal 1 olursa çıkışı 0 olur ve çıkışa
-    bağlı elemanlar pasif olur. Normalde çıkışa gerilim verilir, ancak bu kontağı
-    kontrol eden sinyal 1 olursa kontağın çıkışında gerilim olmaz. Bu kontak
-    işlemci bacağından alınan bir giriş, çıkış bacağı yada dahili bir röle olabilir
+    Normalde kapalÄ± bir anahtar gibi davranÄ±r. Komutun kontrol eden sinyal 0 ise
+    Ã§Ä±kÄ±ÅŸÄ± 1 olur. EÄŸer kontrol eden sinyal 1 olursa Ã§Ä±kÄ±ÅŸÄ± 0 olur ve Ã§Ä±kÄ±ÅŸa
+    baÄŸlÄ± elemanlar pasif olur. Normalde Ã§Ä±kÄ±ÅŸa gerilim verilir, ancak bu kontaÄŸÄ±
+    kontrol eden sinyal 1 olursa kontaÄŸÄ±n Ã§Ä±kÄ±ÅŸÄ±nda gerilim olmaz. Bu kontak
+    iÅŸlemci bacaÄŸÄ±ndan alÄ±nan bir giriÅŸ, Ã§Ä±kÄ±ÅŸ bacaÄŸÄ± yada dahili bir rÃ¶le olabilir
 
 
-> BOBİN, NORMAL                 Rname           Yname
+> BOBÄ°N, NORMAL                 Rname           Yname
                              ----( )----     ----( )----
 
-    Elemana giren sinyal 0 ise dahili röle yada çıkış bacağı 0 yapılır.
-    Elemana giren sinyal 1 ise dahili röle yada çıkış bacağı 1 yapılır.
-    Bobine  giriş değişkeni atamak mantıksızdır. Bu eleman bir satırda
-    sağdaki en son eleman olmalıdır.
+    Elemana giren sinyal 0 ise dahili rÃ¶le yada Ã§Ä±kÄ±ÅŸ bacaÄŸÄ± 0 yapÄ±lÄ±r.
+    Elemana giren sinyal 1 ise dahili rÃ¶le yada Ã§Ä±kÄ±ÅŸ bacaÄŸÄ± 1 yapÄ±lÄ±r.
+    Bobine  giriÅŸ deÄŸiÅŸkeni atamak mantÄ±ksÄ±zdÄ±r. Bu eleman bir satÄ±rda
+    saÄŸdaki en son eleman olmalÄ±dÄ±r.
 
 
-> BOBİN, TERSLENMİŞ             Rname           Yname
+> BOBÄ°N, TERSLENMÄ°Å             Rname           Yname
                              ----(/)----     ----(/)----
 
-    Elemana giren sinyal 0 ise dahili röle yada çıkış bacağı 1 yapılır.
-    Elemana giren sinyal 1 ise dahili röle yada çıkış bacağı 0 yapılır.
-    Bobine  giriş değişkeni atamak mantıksızdır. Bu eleman bir satırda
-    sağdaki en son eleman olmalıdır. Normal bobinin tersi çalışır.
+    Elemana giren sinyal 0 ise dahili rÃ¶le yada Ã§Ä±kÄ±ÅŸ bacaÄŸÄ± 1 yapÄ±lÄ±r.
+    Elemana giren sinyal 1 ise dahili rÃ¶le yada Ã§Ä±kÄ±ÅŸ bacaÄŸÄ± 0 yapÄ±lÄ±r.
+    Bobine  giriÅŸ deÄŸiÅŸkeni atamak mantÄ±ksÄ±zdÄ±r. Bu eleman bir satÄ±rda
+    saÄŸdaki en son eleman olmalÄ±dÄ±r. Normal bobinin tersi Ã§alÄ±ÅŸÄ±r.
 
 
-> BOBİN, SET                   Rname           Yname
+> BOBÄ°N, SET                   Rname           Yname
                              ----(S)----     ----(S)----
 
-    Elemana giren sinyal 1 ise dahili röle yada çıkış bacağı 1 yapılır.
-    Diğer durumlarda bu bobinin durumunda bir değişiklik olmaz. Bu komut
-    bobinin durumunu sadece 0'dan 1'e çevirir. Bu nedenle çoğunlukla
-    BOBİN-RESET ile beraber çalışır. Bu eleman bir satırda sağdaki en
-    son eleman olmalıdır.
+    Elemana giren sinyal 1 ise dahili rÃ¶le yada Ã§Ä±kÄ±ÅŸ bacaÄŸÄ± 1 yapÄ±lÄ±r.
+    DiÄŸer durumlarda bu bobinin durumunda bir deÄŸiÅŸiklik olmaz. Bu komut
+    bobinin durumunu sadece 0'dan 1'e Ã§evirir. Bu nedenle Ã§oÄŸunlukla
+    BOBÄ°N-RESET ile beraber Ã§alÄ±ÅŸÄ±r. Bu eleman bir satÄ±rda saÄŸdaki en
+    son eleman olmalÄ±dÄ±r.
 
 
-> BOBİN, RESET                 Rname           Yname
+> BOBÄ°N, RESET                 Rname           Yname
                              ----(R)----     ----(R)----
 
-    Elemana giren sinyal 1 ise dahili röle yada çıkış bacağı 0 yapılır.
-    Diğer durumlarda bu bobinin durumunda bir değişiklik olmaz. Bu komut
-    bobinin durumunu sadece 1'dEn 0'a çevirir. Bu nedenle çoğunlukla
-    BOBİN-SET ile beraber çalışır. Bu eleman bir satırda sağdaki en
-    son eleman olmalıdır.
+    Elemana giren sinyal 1 ise dahili rÃ¶le yada Ã§Ä±kÄ±ÅŸ bacaÄŸÄ± 0 yapÄ±lÄ±r.
+    DiÄŸer durumlarda bu bobinin durumunda bir deÄŸiÅŸiklik olmaz. Bu komut
+    bobinin durumunu sadece 1'dEn 0'a Ã§evirir. Bu nedenle Ã§oÄŸunlukla
+    BOBÄ°N-SET ile beraber Ã§alÄ±ÅŸÄ±r. Bu eleman bir satÄ±rda saÄŸdaki en
+    son eleman olmalÄ±dÄ±r.
 
 
-> TURN-ON GECİKME               Tdon
+> TURN-ON GECÄ°KME               Tdon
                            -[TON 1.000 s]-
 
-    Bir zamanlayıcıdır. Girişindeki sinyal 0'dan 1'e geçerse ayarlanan
-    süre kadar sürede çıkış 0 olarak kalır, süre bitince çıkışı 1 olur.
-    Girişindeki sinyal 1'den 0'a geçerse çıkış hemen 0 olur.
-    Girişi 0 olduğu zaman zamanlayıcı sıfırlanır. Ayrıca; ayarlanan süre
-    boyunca giriş 1 olarak kalmalıdır.
+    Bir zamanlayÄ±cÄ±dÄ±r. GiriÅŸindeki sinyal 0'dan 1'e geÃ§erse ayarlanan
+    sÃ¼re kadar sÃ¼rede Ã§Ä±kÄ±ÅŸ 0 olarak kalÄ±r, sÃ¼re bitince Ã§Ä±kÄ±ÅŸÄ± 1 olur.
+    GiriÅŸindeki sinyal 1'den 0'a geÃ§erse Ã§Ä±kÄ±ÅŸ hemen 0 olur.
+    GiriÅŸi 0 olduÄŸu zaman zamanlayÄ±cÄ± sÄ±fÄ±rlanÄ±r. AyrÄ±ca; ayarlanan sÃ¼re
+    boyunca giriÅŸ 1 olarak kalmalÄ±dÄ±r.
 
-    Zamanlayıcı 0'dan başlayarak her çevrim süresinde 1 artarak sayar.
-    Sayı ayarlanan süreye eşit yada büyükse çıkış 1 olur. Zamanlayıcı
-    değişkeni üzerinde işlem yapmak mümkündür. (Örneğin MOV komutu ile)
+    ZamanlayÄ±cÄ± 0'dan baÅŸlayarak her Ã§evrim sÃ¼resinde 1 artarak sayar.
+    SayÄ± ayarlanan sÃ¼reye eÅŸit yada bÃ¼yÃ¼kse Ã§Ä±kÄ±ÅŸ 1 olur. ZamanlayÄ±cÄ±
+    deÄŸiÅŸkeni Ã¼zerinde iÅŸlem yapmak mÃ¼mkÃ¼ndÃ¼r. (Ã–rneÄŸin MOV komutu ile)
 
 
-> TURN-OFF GECİKME               Tdoff
+> TURN-OFF GECÄ°KME               Tdoff
                            -[TOF 1.000 s]-
 
-    Bir zamanlayıcıdır. Girişindeki sinyal 1'den 0'a geçerse ayarlanan
-    süre kadar sürede çıkış 1 olarak kalır, süre bitince çıkışı 0 olur.
-    Girişindeki sinyal 0'dan 1'e geçerse çıkış hemen 1 olur.
-    Girişi 0'dan 1'e geçtiğinde zamanlayıcı sıfırlanır. Ayrıca; ayarlanan
-    süre boyunca giriş 0 olarak kalmalıdır.
+    Bir zamanlayÄ±cÄ±dÄ±r. GiriÅŸindeki sinyal 1'den 0'a geÃ§erse ayarlanan
+    sÃ¼re kadar sÃ¼rede Ã§Ä±kÄ±ÅŸ 1 olarak kalÄ±r, sÃ¼re bitince Ã§Ä±kÄ±ÅŸÄ± 0 olur.
+    GiriÅŸindeki sinyal 0'dan 1'e geÃ§erse Ã§Ä±kÄ±ÅŸ hemen 1 olur.
+    GiriÅŸi 0'dan 1'e geÃ§tiÄŸinde zamanlayÄ±cÄ± sÄ±fÄ±rlanÄ±r. AyrÄ±ca; ayarlanan
+    sÃ¼re boyunca giriÅŸ 0 olarak kalmalÄ±dÄ±r.
 
-    Zamanlayıcı 0'dan başlayarak her çevrim süresinde 1 artarak sayar.
-    Sayı ayarlanan süreye eşit yada büyükse çıkış 1 olur. Zamanlayıcı
-    değişkeni üzerinde işlem yapmak mümkündür. (Örneğin MOV komutu ile)
+    ZamanlayÄ±cÄ± 0'dan baÅŸlayarak her Ã§evrim sÃ¼resinde 1 artarak sayar.
+    SayÄ± ayarlanan sÃ¼reye eÅŸit yada bÃ¼yÃ¼kse Ã§Ä±kÄ±ÅŸ 1 olur. ZamanlayÄ±cÄ±
+    deÄŸiÅŸkeni Ã¼zerinde iÅŸlem yapmak mÃ¼mkÃ¼ndÃ¼r. (Ã–rneÄŸin MOV komutu ile)
 
 
-> SÜRE SAYAN TURN-ON GECİKME        Trto
+> SÃœRE SAYAN TURN-ON GECÄ°KME        Trto
                                -[RTO 1.000 s]-
 
-    Bu zamanlayıcı girişindeki sinyalin ne kadar süre ile 1 olduğunu
-    ölçer. Ayaralanan süre boyunca giriş 1 ise çıkışı 1 olur. Aksi halde
-    çıkışı 0 olur. Ayarlanan süre devamlı olması gerekmez. Örneğin; süre
-    1 saniyeye ayarlanmışsa ve giriş önce 0.6 sn 1 olmuşsa, sonra 2.0 sn
-    boyunca 0 olmuşsa daha sonra 0.4 sn boyunca giriş tekrar 1 olursa
-    0.6 + 0.4 = 1sn olduğundan çıkış 1 olur. Çıkış 1 olduktan sonra
-    giriş 0 olsa dahi çıkış 0'a dönmez. Bu nedenle zamanlayıcı RES reset
+    Bu zamanlayÄ±cÄ± giriÅŸindeki sinyalin ne kadar sÃ¼re ile 1 olduÄŸunu
+    Ã¶lÃ§er. Ayaralanan sÃ¼re boyunca giriÅŸ 1 ise Ã§Ä±kÄ±ÅŸÄ± 1 olur. Aksi halde
+    Ã§Ä±kÄ±ÅŸÄ± 0 olur. Ayarlanan sÃ¼re devamlÄ± olmasÄ± gerekmez. Ã–rneÄŸin; sÃ¼re
+    1 saniyeye ayarlanmÄ±ÅŸsa ve giriÅŸ Ã¶nce 0.6 sn 1 olmuÅŸsa, sonra 2.0 sn
+    boyunca 0 olmuÅŸsa daha sonra 0.4 sn boyunca giriÅŸ tekrar 1 olursa
+    0.6 + 0.4 = 1sn olduÄŸundan Ã§Ä±kÄ±ÅŸ 1 olur. Ã‡Ä±kÄ±ÅŸ 1 olduktan sonra
+    giriÅŸ 0 olsa dahi Ã§Ä±kÄ±ÅŸ 0'a dÃ¶nmez. Bu nedenle zamanlayÄ±cÄ± RES reset
     komutu ile resetlenmelidir.
 
-    Zamanlayıcı 0'dan başlayarak her çevrim süresinde 1 artarak sayar.
-    Sayı ayarlanan süreye eşit yada büyükse çıkış 1 olur. Zamanlayıcı
-    değişkeni üzerinde işlem yapmak mümkündür. (Örneğin MOV komutu ile)
+    ZamanlayÄ±cÄ± 0'dan baÅŸlayarak her Ã§evrim sÃ¼resinde 1 artarak sayar.
+    SayÄ± ayarlanan sÃ¼reye eÅŸit yada bÃ¼yÃ¼kse Ã§Ä±kÄ±ÅŸ 1 olur. ZamanlayÄ±cÄ±
+    deÄŸiÅŸkeni Ã¼zerinde iÅŸlem yapmak mÃ¼mkÃ¼ndÃ¼r. (Ã–rneÄŸin MOV komutu ile)
 
 
 > RESET (SAYICI SIFIRLAMASI)     Trto             Citems
                              ----{RES}----     ----{RES}----
 
-    Bu komut bir zamanlayıcı veya sayıcıyı sıfırlar. TON ve TOF zamanlayıcı
-    komutları kendiliğinden sıfırlandığından bu komuta ihtiyaç duymazlar.
-    RTO zamanlayıcısı ve CTU/CTD sayıcıları kendiliğinden sıfırlanmadığından
-    sıfırlanmaları için kullanıcı tarafından bu komutile sıfırlanması
-    gerekir. Bu komutun girişi 1 olduğunda sayıcı/zamanlayıcı sıfırlanır.
-    Bu komut bir satırın sağındaki son komut olmalıdır.
+    Bu komut bir zamanlayÄ±cÄ± veya sayÄ±cÄ±yÄ± sÄ±fÄ±rlar. TON ve TOF zamanlayÄ±cÄ±
+    komutlarÄ± kendiliÄŸinden sÄ±fÄ±rlandÄ±ÄŸÄ±ndan bu komuta ihtiyaÃ§ duymazlar.
+    RTO zamanlayÄ±cÄ±sÄ± ve CTU/CTD sayÄ±cÄ±larÄ± kendiliÄŸinden sÄ±fÄ±rlanmadÄ±ÄŸÄ±ndan
+    sÄ±fÄ±rlanmalarÄ± iÃ§in kullanÄ±cÄ± tarafÄ±ndan bu komutile sÄ±fÄ±rlanmasÄ±
+    gerekir. Bu komutun giriÅŸi 1 olduÄŸunda sayÄ±cÄ±/zamanlayÄ±cÄ± sÄ±fÄ±rlanÄ±r.
+    Bu komut bir satÄ±rÄ±n saÄŸÄ±ndaki son komut olmalÄ±dÄ±r.
 
 
-> YÜKSELEN KENAR                _    _
+> YÃœKSELEN KENAR                _    _
                            --[_/ OSR/ \_]--
 
-    Bu komutun çıkışı normalde 0'dır. Bu komutun çıkışının 1 olabilmesi
-    için bir önceki çevrimde girişinin 0 şimdiki çevrimde girişinin 1
-    olması gerekir. Komutun çıkışı bir çevrimlik bir pals üretir.
-    Bu komut bir sinyalin yükselen kenarında bir tetikleme gereken
-    uygulamalarda faydalıdır.
+    Bu komutun Ã§Ä±kÄ±ÅŸÄ± normalde 0'dÄ±r. Bu komutun Ã§Ä±kÄ±ÅŸÄ±nÄ±n 1 olabilmesi
+    iÃ§in bir Ã¶nceki Ã§evrimde giriÅŸinin 0 ÅŸimdiki Ã§evrimde giriÅŸinin 1
+    olmasÄ± gerekir. Komutun Ã§Ä±kÄ±ÅŸÄ± bir Ã§evrimlik bir pals Ã¼retir.
+    Bu komut bir sinyalin yÃ¼kselen kenarÄ±nda bir tetikleme gereken
+    uygulamalarda faydalÄ±dÄ±r.
 
 
-> DÜŞEN KENAR                 _      _
+> DÃœÅEN KENAR                 _      _
                            --[ \_OSF/ \_]--
 
-    Bu komutun çıkışı normalde 0'dır. Bu komutun çıkışının 1 olabilmesi
-    için bir önceki çevrimde girişinin 1 şimdiki çevrimde girişinin 0
-    olması gerekir. Komutun çıkışı bir çevrimlik bir pals üretir.
-    Bu komut bir sinyalin düşen kenarında bir tetikleme gereken
-    uygulamalarda faydalıdır.
+    Bu komutun Ã§Ä±kÄ±ÅŸÄ± normalde 0'dÄ±r. Bu komutun Ã§Ä±kÄ±ÅŸÄ±nÄ±n 1 olabilmesi
+    iÃ§in bir Ã¶nceki Ã§evrimde giriÅŸinin 1 ÅŸimdiki Ã§evrimde giriÅŸinin 0
+    olmasÄ± gerekir. Komutun Ã§Ä±kÄ±ÅŸÄ± bir Ã§evrimlik bir pals Ã¼retir.
+    Bu komut bir sinyalin dÃ¼ÅŸen kenarÄ±nda bir tetikleme gereken
+    uygulamalarda faydalÄ±dÄ±r.
 
 
-> KISA DEVRE, AÇIK DEVRE
+> KISA DEVRE, AÃ‡IK DEVRE
                            ----+----+----      ----+     +----
 
-    Kısa devrenin çıkışı her zaman girişinin aynısıdır.
-    Açık devrenin çıkışı her zaman 0'dır. Bildiğimiz açık/kısa devrenin
-    aynısıdır. Genellikle hata aramada kullanılırlar.
+    KÄ±sa devrenin Ã§Ä±kÄ±ÅŸÄ± her zaman giriÅŸinin aynÄ±sÄ±dÄ±r.
+    AÃ§Ä±k devrenin Ã§Ä±kÄ±ÅŸÄ± her zaman 0'dÄ±r. BildiÄŸimiz aÃ§Ä±k/kÄ±sa devrenin
+    aynÄ±sÄ±dÄ±r. Genellikle hata aramada kullanÄ±lÄ±rlar.
 
-> ANA KONTROL RÖLESİ
+> ANA KONTROL RÃ–LESÄ°
                            -{MASTER RLY}-
 
-    Normalde her satırın ilk girişi 1'dir. Birden fazla satırın tek bir şart ile
-    kontrol edilmesi gerektiğinde paralel bağlantı yapmak gerekir. Bu ise zordur.
-    Bu işlemi kolayca yapabilmek için ana kontrol rölesini kullanabiliriz.
-    Ana kontrol rölesi eklendiğinde kendisinden sonraki satırlar bu röleye bağlı
-    hale gelir. Böylece; birden fazla satır tek bir şart ile kontrolü sağlanır.
-    Bir ana kontrol rölesi kendisinden sonra gelen ikinci bir ana kontrol
-    rölesine kadar devam eder. Diğer bir deyişle birinci ana kontrol rölesi
-    başlangıcı ikincisi ise bitişi temsil eder. Ana kontrol rölesi kullandıktan
-    sonra işlevini bitirmek için ikinci bir ana kontrol rölesi eklemelisiniz.
+    Normalde her satÄ±rÄ±n ilk giriÅŸi 1'dir. Birden fazla satÄ±rÄ±n tek bir ÅŸart ile
+    kontrol edilmesi gerektiÄŸinde paralel baÄŸlantÄ± yapmak gerekir. Bu ise zordur.
+    Bu iÅŸlemi kolayca yapabilmek iÃ§in ana kontrol rÃ¶lesini kullanabiliriz.
+    Ana kontrol rÃ¶lesi eklendiÄŸinde kendisinden sonraki satÄ±rlar bu rÃ¶leye baÄŸlÄ±
+    hale gelir. BÃ¶ylece; birden fazla satÄ±r tek bir ÅŸart ile kontrolÃ¼ saÄŸlanÄ±r.
+    Bir ana kontrol rÃ¶lesi kendisinden sonra gelen ikinci bir ana kontrol
+    rÃ¶lesine kadar devam eder. DiÄŸer bir deyiÅŸle birinci ana kontrol rÃ¶lesi
+    baÅŸlangÄ±cÄ± ikincisi ise bitiÅŸi temsil eder. Ana kontrol rÃ¶lesi kullandÄ±ktan
+    sonra iÅŸlevini bitirmek iÃ§in ikinci bir ana kontrol rÃ¶lesi eklemelisiniz.
 
 > MOVE                      {destvar :=  }      {Tret :=     }
                            -{ 123     MOV}-    -{ srcvar  MOV}-
 
-    Girişi 1 olduğunda verilen sabit sayıyı (123 gibi) yada verilen değişkenin
-    içeriğini (srcvar) belirtilen değişkene (destvar) atar. Giriş 0 ise herhangi
-    bir işlem olmaz. Bu komut ile zamanlayıcı ve sayıcılar da dahil olmak üzere
-    tüm değişkenlere değer atayabilirsiniz. Örneğin Tsay zamanlayıcısına MOVE ile
-    0 atamak ile RES ile sıfırlamak aynı sonucu doğurur. Bu komut bir satırın
-    sağındaki en son komut olmalıdır.
+    GiriÅŸi 1 olduÄŸunda verilen sabit sayÄ±yÄ± (123 gibi) yada verilen deÄŸiÅŸkenin
+    iÃ§eriÄŸini (srcvar) belirtilen deÄŸiÅŸkene (destvar) atar. GiriÅŸ 0 ise herhangi
+    bir iÅŸlem olmaz. Bu komut ile zamanlayÄ±cÄ± ve sayÄ±cÄ±lar da dahil olmak Ã¼zere
+    tÃ¼m deÄŸiÅŸkenlere deÄŸer atayabilirsiniz. Ã–rneÄŸin Tsay zamanlayÄ±cÄ±sÄ±na MOVE ile
+    0 atamak ile RES ile sÄ±fÄ±rlamak aynÄ± sonucu doÄŸurur. Bu komut bir satÄ±rÄ±n
+    saÄŸÄ±ndaki en son komut olmalÄ±dÄ±r.
 
-> MATEMATİK İŞLEMLER         {ADD  kay  :=}       {SUB  Ccnt :=}
+> MATEMATÄ°K Ä°ÅLEMLER         {ADD  kay  :=}       {SUB  Ccnt :=}
                             -{ 'a' + 10   }-     -{ Ccnt - 10  }-
 
 >                            {MUL  dest :=}       {DIV  dv :=  }
                             -{ var * -990 }-     -{ dv / -10000}-
 
-    Bu komutun girişi doğru ise belirtilen hedef değişkenine verilen matematik
-    işlemin sonucunu kaydeder. İşlenen bilgi zamanlayıcı ve sayıcılar dahil
-    olmak üzere değişkenler yada sabit sayılar olabilir. İşlenen bilgi 16 bit
-    işaretli sayıdır. Her çevrimde işlemin yeniden yapıldığı unutulmamalıdır.
-    Örneğin artırma yada eksiltme yapıyorsanız yükselen yada düşen kenar
-    kullanmanız gerekebilir. Bölme (DIV) virgülden sonrasını keser. Örneğin;
-    8 / 3 = 2 olur. Bu komut bir satırın sağındaki en son komut olmalıdır.
+    Bu komutun giriÅŸi doÄŸru ise belirtilen hedef deÄŸiÅŸkenine verilen matematik
+    iÅŸlemin sonucunu kaydeder. Ä°ÅŸlenen bilgi zamanlayÄ±cÄ± ve sayÄ±cÄ±lar dahil
+    olmak Ã¼zere deÄŸiÅŸkenler yada sabit sayÄ±lar olabilir. Ä°ÅŸlenen bilgi 16 bit
+    iÅŸaretli sayÄ±dÄ±r. Her Ã§evrimde iÅŸlemin yeniden yapÄ±ldÄ±ÄŸÄ± unutulmamalÄ±dÄ±r.
+    Ã–rneÄŸin artÄ±rma yada eksiltme yapÄ±yorsanÄ±z yÃ¼kselen yada dÃ¼ÅŸen kenar
+    kullanmanÄ±z gerekebilir. BÃ¶lme (DIV) virgÃ¼lden sonrasÄ±nÄ± keser. Ã–rneÄŸin;
+    8 / 3 = 2 olur. Bu komut bir satÄ±rÄ±n saÄŸÄ±ndaki en son komut olmalÄ±dÄ±r.
 
 
-> KARŞILAŞTIRMA         [var ==]        [var >]        [1 >=]
+> KARÅILAÅTIRMA         [var ==]        [var >]        [1 >=]
                        -[ var2 ]-      -[ 1   ]-      -[ Ton]-
 
 >                       [var !=]       [-4 <   ]       [1 <=]
                        -[ var2 ]-     -[ vartwo]-     -[ Cup]-
 
-    Değişik karşılaştırma komutları vardır. Bu komutların girişi doğru (1)
-    ve verilen şart da doğru ise çıkışları 1 olur.
+    DeÄŸiÅŸik karÅŸÄ±laÅŸtÄ±rma komutlarÄ± vardÄ±r. Bu komutlarÄ±n giriÅŸi doÄŸru (1)
+    ve verilen ÅŸart da doÄŸru ise Ã§Ä±kÄ±ÅŸlarÄ± 1 olur.
 
 
 > SAYICI                       Cname          Cname
                            --[CTU >= 5]--  --[CTD > -5]--
 
-    Sayıcılar girişlerinin 0'dan 1'e her geçişinde yani yükselen kenarında
-    değerlerini 1 artırır (CTU) yada eksiltirler (CTD). Verilen şart doğru ise
-    çıkışları aktif (1) olur. CTU ve CTD sayıcılarına aynı ismi erebilirsiniz.
-    Böylece aynı sayıcıyı artırmış yada eksiltmiş olursunuz. RES komutu sayıcıları
-    sıfırlar. Sayıcılar ile genel değişkenlerle kullandığınız komutları kullanabilirsiniz.
+    SayÄ±cÄ±lar giriÅŸlerinin 0'dan 1'e her geÃ§iÅŸinde yani yÃ¼kselen kenarÄ±nda
+    deÄŸerlerini 1 artÄ±rÄ±r (CTU) yada eksiltirler (CTD). Verilen ÅŸart doÄŸru ise
+    Ã§Ä±kÄ±ÅŸlarÄ± aktif (1) olur. CTU ve CTD sayÄ±cÄ±larÄ±na aynÄ± ismi erebilirsiniz.
+    BÃ¶ylece aynÄ± sayÄ±cÄ±yÄ± artÄ±rmÄ±ÅŸ yada eksiltmiÅŸ olursunuz. RES komutu sayÄ±cÄ±larÄ±
+    sÄ±fÄ±rlar. SayÄ±cÄ±lar ile genel deÄŸiÅŸkenlerle kullandÄ±ÄŸÄ±nÄ±z komutlarÄ± kullanabilirsiniz.
 
 
-> DAİRESEL SAYICI              Cname
+> DAÄ°RESEL SAYICI              Cname
                            --{CTC 0:7}--
 
-    Normal yukarı sayıcıdan farkı belirtilen limite ulaşınca sayıcı tekrar 0'dan başlar
-    Örneğin sayıcı 0, 1, 2, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 2,.... şeklinde
-    sayabilir. Yani bir dizi sayıcı olarak düşünülebilir. CTC sayıcılar girişlerinin
-    yükselen kenarında değer değiştirirler. Bu komut bir satırın sağındaki
-    en son komut olmalıdır.
+    Normal yukarÄ± sayÄ±cÄ±dan farkÄ± belirtilen limite ulaÅŸÄ±nca sayÄ±cÄ± tekrar 0'dan baÅŸlar
+    Ã–rneÄŸin sayÄ±cÄ± 0, 1, 2, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 2,.... ÅŸeklinde
+    sayabilir. Yani bir dizi sayÄ±cÄ± olarak dÃ¼ÅŸÃ¼nÃ¼lebilir. CTC sayÄ±cÄ±lar giriÅŸlerinin
+    yÃ¼kselen kenarÄ±nda deÄŸer deÄŸiÅŸtirirler. Bu komut bir satÄ±rÄ±n saÄŸÄ±ndaki
+    en son komut olmalÄ±dÄ±r.
 
 
 > SHIFT REGISTER            {SHIFT REG   }
                            -{ reg0..3    }-
 
-    Bir dizi değişken ile beraber çalışır. İsim olarak reg verdiğinizi ve aşama
-    sayısını 3 olarak tanımladıysanız reg0, reg1, reg2 değikenleri ile çalışırsınız.
-    Kaydedicinin girişi reg0 olur. Girişin her yükselen kenarında değerler kaydedicide
-    bir sağa kayar. Mesela; `reg2 := reg1'. and `reg1 := reg0'. `reg0' değişmez.
-    Geniş bir kaydedici hafızada çok yer kaplar.
-    Bu komut bir satırın sağındaki en son komut olmalıdır.
+    Bir dizi deÄŸiÅŸken ile beraber Ã§alÄ±ÅŸÄ±r. Ä°sim olarak reg verdiÄŸinizi ve aÅŸama
+    sayÄ±sÄ±nÄ± 3 olarak tanÄ±mladÄ±ysanÄ±z reg0, reg1, reg2 deÄŸikenleri ile Ã§alÄ±ÅŸÄ±rsÄ±nÄ±z.
+    Kaydedicinin giriÅŸi reg0 olur. GiriÅŸin her yÃ¼kselen kenarÄ±nda deÄŸerler kaydedicide
+    bir saÄŸa kayar. Mesela; `reg2 := reg1'. and `reg1 := reg0'. `reg0' deÄŸiÅŸmez.
+    GeniÅŸ bir kaydedici hafÄ±zada Ã§ok yer kaplar.
+    Bu komut bir satÄ±rÄ±n saÄŸÄ±ndaki en son komut olmalÄ±dÄ±r.
 
 
-> DEĞER TABLOSU             {dest :=     }
+> DEÄER TABLOSU             {dest :=     }
                            -{ LUT[i]     }-
 
-    Değer tablosu sıralanmış n adet değer içeren bir tablodur. Girişi doğru olduğunda
-    `dest' tamsayı değişkeni `i' tamsayı değişkenine karşılık gelen değeri alır. Sıra
-    0'dan başlar. bu nedenle `i' 0 ile (n-1) arasında olabilir. `i' bu değerler
-    arasında değilse komutun ne yapacağı tanımlı değildir.
-    Bu komut bir satırın sağındaki en son komut olmalıdır.
+    DeÄŸer tablosu sÄ±ralanmÄ±ÅŸ n adet deÄŸer iÃ§eren bir tablodur. GiriÅŸi doÄŸru olduÄŸunda
+    `dest' tamsayÄ± deÄŸiÅŸkeni `i' tamsayÄ± deÄŸiÅŸkenine karÅŸÄ±lÄ±k gelen deÄŸeri alÄ±r. SÄ±ra
+    0'dan baÅŸlar. bu nedenle `i' 0 ile (n-1) arasÄ±nda olabilir. `i' bu deÄŸerler
+    arasÄ±nda deÄŸilse komutun ne yapacaÄŸÄ± tanÄ±mlÄ± deÄŸildir.
+    Bu komut bir satÄ±rÄ±n saÄŸÄ±ndaki en son komut olmalÄ±dÄ±r.
 
 
 > PIECEWISE LINEAR TABLE    {yvar :=     }
                            -{ PWL[xvar]  }-
 
-    Bir matris tablo olarak düşünülebilir. Bir değere bağlı olarak değerin önceden
-    belirlenen bir başka değer ile değiştirilmesi içi oluşturulan bir tablodur.
-    Bu bir eğri oluşturmak, sensörden alınan değere göre çıkışta başka bir eğri
-    oluşturmak gibi amaçlar için kullanılabilir.
+    Bir matris tablo olarak dÃ¼ÅŸÃ¼nÃ¼lebilir. Bir deÄŸere baÄŸlÄ± olarak deÄŸerin Ã¶nceden
+    belirlenen bir baÅŸka deÄŸer ile deÄŸiÅŸtirilmesi iÃ§i oluÅŸturulan bir tablodur.
+    Bu bir eÄŸri oluÅŸturmak, sensÃ¶rden alÄ±nan deÄŸere gÃ¶re Ã§Ä±kÄ±ÅŸta baÅŸka bir eÄŸri
+    oluÅŸturmak gibi amaÃ§lar iÃ§in kullanÄ±labilir.
 
-    Farzedelimki x tamsayı giriş değerini y tamsayı çıkış değerine yaklaştırmak
-    istiyoruz. Değerlerin belirli noktalarda olduğunu biliyoruz. Örneğin;
+    Farzedelimki x tamsayÄ± giriÅŸ deÄŸerini y tamsayÄ± Ã§Ä±kÄ±ÅŸ deÄŸerine yaklaÅŸtÄ±rmak
+    istiyoruz. DeÄŸerlerin belirli noktalarda olduÄŸunu biliyoruz. Ã–rneÄŸin;
 
         f(0)   = 2
         f(5)   = 10
         f(10)  = 50
         f(100) = 100
 
-    Bu şu noktaların eğride olduğunu gösterir:
+    Bu ÅŸu noktalarÄ±n eÄŸride olduÄŸunu gÃ¶sterir:
 
         (x0, y0)   = (  0,   2)
         (x1, y1)   = (  5,  10)
         (x2, y2)   = ( 10,  50)
         (x3, y3)   = (100, 100)
 
-    Dört değeri parçalı lineer tabloya gireriz. Komut, xvar'ın değerine bakarak
-    yvar'a değer verir. Örneğin, yukarıdaki örneğe bakarak, xvar = 10 ise
+    DÃ¶rt deÄŸeri parÃ§alÄ± lineer tabloya gireriz. Komut, xvar'Ä±n deÄŸerine bakarak
+    yvar'a deÄŸer verir. Ã–rneÄŸin, yukarÄ±daki Ã¶rneÄŸe bakarak, xvar = 10 ise
     yvar = 50 olur.
 
-    Tabloya kayıtlı iki değerin arasında bir değer verirseniz verilen değer de
-    alınması gereken iki değerin arasında uygun gelen yerde bir değer olur.
-    Mesela; xvar=55 yazarsanız yvar=75 olur. (Tablodaki değerler (10,50) ve
-    (100,100) olduğuna göre). 55, 10 ve 100 değerlerinin ortasındadır. Bu
-    nedenle 55 ve 75 değerlerinin ortası olan 75 değeri alınır.
+    Tabloya kayÄ±tlÄ± iki deÄŸerin arasÄ±nda bir deÄŸer verirseniz verilen deÄŸer de
+    alÄ±nmasÄ± gereken iki deÄŸerin arasÄ±nda uygun gelen yerde bir deÄŸer olur.
+    Mesela; xvar=55 yazarsanÄ±z yvar=75 olur. (Tablodaki deÄŸerler (10,50) ve
+    (100,100) olduÄŸuna gÃ¶re). 55, 10 ve 100 deÄŸerlerinin ortasÄ±ndadÄ±r. Bu
+    nedenle 55 ve 75 deÄŸerlerinin ortasÄ± olan 75 deÄŸeri alÄ±nÄ±r.
 
-    Değerler x koordinatında artan değerler olarak yazılmalıdır. 16 bit tamsayı
-    kullanan bazı değerler için arama tablosu üzerinde matematik işlemler
-    gerçekleşmeyebilir. Bu durumda LDMicro sizi uyaracaktır. Örneğin aşağıdaki
-    tablo bir hata oluşturacaktır:
+    DeÄŸerler x koordinatÄ±nda artan deÄŸerler olarak yazÄ±lmalÄ±dÄ±r. 16 bit tamsayÄ±
+    kullanan bazÄ± deÄŸerler iÃ§in arama tablosu Ã¼zerinde matematik iÅŸlemler
+    gerÃ§ekleÅŸmeyebilir. Bu durumda LDMicro sizi uyaracaktÄ±r. Ã–rneÄŸin aÅŸaÄŸÄ±daki
+    tablo bir hata oluÅŸturacaktÄ±r:
 
         (x0, y0)    = (  0,   0)
         (x1, y1)    = (300, 300)
 
-    Bu tip hataları noktalar arsında ara değerler oluşturarak giderebilirsiniz.
-    Örneğin aşağıdaki tablo yukarıdakinin aynısı olmasına rağmen hata
-    oluşturmayacaktır.
+    Bu tip hatalarÄ± noktalar arsÄ±nda ara deÄŸerler oluÅŸturarak giderebilirsiniz.
+    Ã–rneÄŸin aÅŸaÄŸÄ±daki tablo yukarÄ±dakinin aynÄ±sÄ± olmasÄ±na raÄŸmen hata
+    oluÅŸturmayacaktÄ±r.
 
         (x0, y0)    = (  0,   0)
         (x1, y1)    = (150, 150)
         (x2, y2)    = (300, 300)
 
-    Genelde 5 yada 6 noktadan daha fazla değer kullanmak gerekmeyecektir.
-    Daha fazla nokta demek daha fazla kod ve daha yavaş çalışma demektir.
-    En fazla 10 nokta oluşturabilirsiniz. xvar değişkenine x koordinatında
-    tablonun en yüksek değerinden daha büyük bir değer girmenin ve en düşük
-    değerinden daha küçük bir değer girmenin sonucu tanımlı değildir.
-    Bu komut bir satırın sağındaki en son komut olmalıdır.
+    Genelde 5 yada 6 noktadan daha fazla deÄŸer kullanmak gerekmeyecektir.
+    Daha fazla nokta demek daha fazla kod ve daha yavaÅŸ Ã§alÄ±ÅŸma demektir.
+    En fazla 10 nokta oluÅŸturabilirsiniz. xvar deÄŸiÅŸkenine x koordinatÄ±nda
+    tablonun en yÃ¼ksek deÄŸerinden daha bÃ¼yÃ¼k bir deÄŸer girmenin ve en dÃ¼ÅŸÃ¼k
+    deÄŸerinden daha kÃ¼Ã§Ã¼k bir deÄŸer girmenin sonucu tanÄ±mlÄ± deÄŸildir.
+    Bu komut bir satÄ±rÄ±n saÄŸÄ±ndaki en son komut olmalÄ±dÄ±r.
 
-> A/D ÇEVİRİCİDEN OKUMA        Aname
+> A/D Ã‡EVÄ°RÄ°CÄ°DEN OKUMA        Aname
                            --{READ ADC}--
 
-    LDmicro A/D  çeviriciden değer okumak için gerekli kodları desteklediği
-    işlemciler için oluşturabilir. Komutun girişi 1 olduğunda A/D çeviriciden
-    değer okunur ve okunan değer `Aname' değişkenine aktarılır. Bu değişken
-    üzerinde genel değişkenlerle kullanılabilen işlemler kullanılabilir.
-    (büyük, küçük, büyük yada eşit gibi). Bu değişkene işlemcinin bacaklarından
-    uygun biri tanımlanmalıdır. Komutun girişi 0 ise `Aname'değişkeninde bir
-    değişiklik olmaz.
+    LDmicro A/D  Ã§eviriciden deÄŸer okumak iÃ§in gerekli kodlarÄ± desteklediÄŸi
+    iÅŸlemciler iÃ§in oluÅŸturabilir. Komutun giriÅŸi 1 olduÄŸunda A/D Ã§eviriciden
+    deÄŸer okunur ve okunan deÄŸer `Aname' deÄŸiÅŸkenine aktarÄ±lÄ±r. Bu deÄŸiÅŸken
+    Ã¼zerinde genel deÄŸiÅŸkenlerle kullanÄ±labilen iÅŸlemler kullanÄ±labilir.
+    (bÃ¼yÃ¼k, kÃ¼Ã§Ã¼k, bÃ¼yÃ¼k yada eÅŸit gibi). Bu deÄŸiÅŸkene iÅŸlemcinin bacaklarÄ±ndan
+    uygun biri tanÄ±mlanmalÄ±dÄ±r. Komutun giriÅŸi 0 ise `Aname'deÄŸiÅŸkeninde bir
+    deÄŸiÅŸiklik olmaz.
 
-    Şu an desteklenen işlemciler için; 0 Volt için ADC'den okunan değer 0,
-    Vdd (besleme gerilimi) değerine eşit gerilim değeri için ADC'den okunan değer
-    1023 olmaktadır. AVR kullanıyorsanız AREF ucunu Vdd besleme gerilimine
-    bağlayınız.
+    Åu an desteklenen iÅŸlemciler iÃ§in; 0 Volt iÃ§in ADC'den okunan deÄŸer 0,
+    Vdd (besleme gerilimi) deÄŸerine eÅŸit gerilim deÄŸeri iÃ§in ADC'den okunan deÄŸer
+    1023 olmaktadÄ±r. AVR kullanÄ±yorsanÄ±z AREF ucunu Vdd besleme gerilimine
+    baÄŸlayÄ±nÄ±z.
 
-    Aritmetik işlemler ADC değişkeni için kullanılabilir. Ayrıca bacak tanımlarken
-    ADC olmayan bacakların tanımlanmasını LDMicro engelleyecektir.
-    Bu komut bir satırın sağındaki en son komut olmalıdır.
+    Aritmetik iÅŸlemler ADC deÄŸiÅŸkeni iÃ§in kullanÄ±labilir. AyrÄ±ca bacak tanÄ±mlarken
+    ADC olmayan bacaklarÄ±n tanÄ±mlanmasÄ±nÄ± LDMicro engelleyecektir.
+    Bu komut bir satÄ±rÄ±n saÄŸÄ±ndaki en son komut olmalÄ±dÄ±r.
 
-    > PWM PALS GENİŞLİĞİ AYARI      duty_cycle
+    > PWM PALS GENÄ°ÅLÄ°ÄÄ° AYARI      duty_cycle
                              -{PWM 32.8 kHz}-
 
-    LDmicro desteklediği mikrokontrolörler için gerekli PWM kodlarını üretebilir.
-    Bu komutun girişi doğru (1) olduğunda PWM sinyalinin pals genişliği duty_cycle
-    değişkeninin değerine ayarlanır. Bu değer 0 ile 100 arasında değişir. Pals
-    genişliği yüzde olarak ayarlanır. Bir periyot 100 birim kabul edilirse bu
-    genişliğin yüzde kaçının palsi oluşturacağı ayarlanır. 0 periyodun tümü sıfır
-    100 ise periyodun tamamı 1 olsun anlamına gelir. 10 değeri palsin %10'u 1 geri
-    kalan %90'ı sıfır olsun anlamına gelir.
+    LDmicro desteklediÄŸi mikrokontrolÃ¶rler iÃ§in gerekli PWM kodlarÄ±nÄ± Ã¼retebilir.
+    Bu komutun giriÅŸi doÄŸru (1) olduÄŸunda PWM sinyalinin pals geniÅŸliÄŸi duty_cycle
+    deÄŸiÅŸkeninin deÄŸerine ayarlanÄ±r. Bu deÄŸer 0 ile 100 arasÄ±nda deÄŸiÅŸir. Pals
+    geniÅŸliÄŸi yÃ¼zde olarak ayarlanÄ±r. Bir periyot 100 birim kabul edilirse bu
+    geniÅŸliÄŸin yÃ¼zde kaÃ§Ä±nÄ±n palsi oluÅŸturacaÄŸÄ± ayarlanÄ±r. 0 periyodun tÃ¼mÃ¼ sÄ±fÄ±r
+    100 ise periyodun tamamÄ± 1 olsun anlamÄ±na gelir. 10 deÄŸeri palsin %10'u 1 geri
+    kalan %90'Ä± sÄ±fÄ±r olsun anlamÄ±na gelir.
 
-    PWM frekansını ayarlayabilirsiniz. Verilen değer Hz olarak verilir.
-    Verdiğiniz frekans kesinlikle ayarlanabilir olmalıdır. LDMicro verdiğiniz değeri
-    olabilecek en yakın değerle değiştirir. Yüksek hızlarda doğruluk azalır.
+    PWM frekansÄ±nÄ± ayarlayabilirsiniz. Verilen deÄŸer Hz olarak verilir.
+    VerdiÄŸiniz frekans kesinlikle ayarlanabilir olmalÄ±dÄ±r. LDMicro verdiÄŸiniz deÄŸeri
+    olabilecek en yakÄ±n deÄŸerle deÄŸiÅŸtirir. YÃ¼ksek hÄ±zlarda doÄŸruluk azalÄ±r.
 
-    Bu komut bir satırın sağındaki en son komut olmalıdır.
-    Periyodun süresinin ölçülebilmesi için işlemcinin zamanlayıcılarının bir tanesi
-    kullanılır. Bu nedenle PWM en az iki tane zamanlayıcısı olan işlemcilerde kullanılır.
-    PWM PIC16 işlemcilerde CCP2'yi, AVR'lerde ise OC2'yi kullanır.
+    Bu komut bir satÄ±rÄ±n saÄŸÄ±ndaki en son komut olmalÄ±dÄ±r.
+    Periyodun sÃ¼resinin Ã¶lÃ§Ã¼lebilmesi iÃ§in iÅŸlemcinin zamanlayÄ±cÄ±larÄ±nÄ±n bir tanesi
+    kullanÄ±lÄ±r. Bu nedenle PWM en az iki tane zamanlayÄ±cÄ±sÄ± olan iÅŸlemcilerde kullanÄ±lÄ±r.
+    PWM PIC16 iÅŸlemcilerde CCP2'yi, AVR'lerde ise OC2'yi kullanÄ±r.
 
 
 > EEPROMDA SAKLA             saved_var
                            --{PERSIST}--
 
-    Bu komut ile belirtilen değişkenin EEPROM'da saklanması gereken bir değişken olduğunu
-    belirmiş olursunuz. Komutun girişi doğru ise belirtilen değişkenin içeriği EEPROM'a
-    kaydedilir. Enerji kesildiğinde kaybolmaması istenen değerler için bu komut kullanılır.
-    Değişkenin içeriği gerilim geldiğinde tekrar EEPROM'dan yüklenir. Ayrıca;
-    değişkenin içeriği her değiştiğinde yeni değer tekrar EEPROM'a kaydedilir.
-    Ayrıca bir işlem yapılması gerekmez.
-    Bu komut bir satırın sağındaki en son komut olmalıdır.
+    Bu komut ile belirtilen deÄŸiÅŸkenin EEPROM'da saklanmasÄ± gereken bir deÄŸiÅŸken olduÄŸunu
+    belirmiÅŸ olursunuz. Komutun giriÅŸi doÄŸru ise belirtilen deÄŸiÅŸkenin iÃ§eriÄŸi EEPROM'a
+    kaydedilir. Enerji kesildiÄŸinde kaybolmamasÄ± istenen deÄŸerler iÃ§in bu komut kullanÄ±lÄ±r.
+    DeÄŸiÅŸkenin iÃ§eriÄŸi gerilim geldiÄŸinde tekrar EEPROM'dan yÃ¼klenir. AyrÄ±ca;
+    deÄŸiÅŸkenin iÃ§eriÄŸi her deÄŸiÅŸtiÄŸinde yeni deÄŸer tekrar EEPROM'a kaydedilir.
+    AyrÄ±ca bir iÅŸlem yapÄ±lmasÄ± gerekmez.
+    Bu komut bir satÄ±rÄ±n saÄŸÄ±ndaki en son komut olmalÄ±dÄ±r.
 
                         
-> UART (SERİ BİLGİ) AL          var
+> UART (SERÄ° BÄ°LGÄ°) AL          var
                            --{UART RECV}--
 
-    LDmicro belirli işlemciler için gerekli UART kodlarını üretebilir. AVR işlemcilerde
-    sadece UART1 (UART0) değil) desteklenmektedir. İletişim hızı (baudrate) ayarlarını
-    Ayarlar->İşlemci Ayarları menüsünden yapmalısınız. Hız kristal frekansına bağlı olup,
-    bazı hızlar desteklenmeyebilir. Bu durumda LDMicro sizi uyaracaktır.
+    LDmicro belirli iÅŸlemciler iÃ§in gerekli UART kodlarÄ±nÄ± Ã¼retebilir. AVR iÅŸlemcilerde
+    sadece UART1 (UART0) deÄŸil) desteklenmektedir. Ä°letiÅŸim hÄ±zÄ± (baudrate) ayarlarÄ±nÄ±
+    Ayarlar->Ä°ÅŸlemci AyarlarÄ± menÃ¼sÃ¼nden yapmalÄ±sÄ±nÄ±z. HÄ±z kristal frekansÄ±na baÄŸlÄ± olup,
+    bazÄ± hÄ±zlar desteklenmeyebilir. Bu durumda LDMicro sizi uyaracaktÄ±r.
 
-    Bu komutun girişi yanlışsa herhangi bir işlem yapılmaz. Doğru ise UART'dan 1 karakter
-    alınmaya çalışılır. Okuma yapılamaz ise komutun çıkışı yanlış (0) olur. Karakter
-    okunursa okunan karakter `var' değişkeninde saklanır ve komutun çıkışı doğru (1) olur.
-    Çıkışın doğru olması sadece bir PLC çevrimi sürer.
+    Bu komutun giriÅŸi yanlÄ±ÅŸsa herhangi bir iÅŸlem yapÄ±lmaz. DoÄŸru ise UART'dan 1 karakter
+    alÄ±nmaya Ã§alÄ±ÅŸÄ±lÄ±r. Okuma yapÄ±lamaz ise komutun Ã§Ä±kÄ±ÅŸÄ± yanlÄ±ÅŸ (0) olur. Karakter
+    okunursa okunan karakter `var' deÄŸiÅŸkeninde saklanÄ±r ve komutun Ã§Ä±kÄ±ÅŸÄ± doÄŸru (1) olur.
+    Ã‡Ä±kÄ±ÅŸÄ±n doÄŸru olmasÄ± sadece bir PLC Ã§evrimi sÃ¼rer.
 
 
-> UART (SERİ BİLGİ) GÖNDER      var
+> UART (SERÄ° BÄ°LGÄ°) GÃ–NDER      var
                            --{UART SEND}--
 
-    LDmicro belirli işlemciler için gerekli UART kodlarını üretebilir. AVR işlemcilerde
-    sadece UART1 (UART0) değil) desteklenmektedir. İletişim hızı (baudrate) ayarlarını
-    Ayarlar->İşlemci Ayarları menüsünden yapmalısınız. Hız kristal frekansına bağlı olup,
-    bazı hızlar desteklenmeyebilir. Bu durumda LDMicro sizi uyaracaktır.
+    LDmicro belirli iÅŸlemciler iÃ§in gerekli UART kodlarÄ±nÄ± Ã¼retebilir. AVR iÅŸlemcilerde
+    sadece UART1 (UART0) deÄŸil) desteklenmektedir. Ä°letiÅŸim hÄ±zÄ± (baudrate) ayarlarÄ±nÄ±
+    Ayarlar->Ä°ÅŸlemci AyarlarÄ± menÃ¼sÃ¼nden yapmalÄ±sÄ±nÄ±z. HÄ±z kristal frekansÄ±na baÄŸlÄ± olup,
+    bazÄ± hÄ±zlar desteklenmeyebilir. Bu durumda LDMicro sizi uyaracaktÄ±r.
 
-    Bu komutun girişi yanlışsa herhangi bir işlem yapılmaz. Doğru ise UART'dan 1 karakter
-    gönderilir. Gönderilecek karakter gönderme işleminden önce `var' değişkeninde saklı
-    olmalıdır. Komutun çıkışı UART meşgulse (bir karakterin gönderildiği sürece)
-    doğru (1) olur. Aksi halde yanlış olur.
-    Çıkışın doğru olması sadece bir PLC çevrimi sürer.
+    Bu komutun giriÅŸi yanlÄ±ÅŸsa herhangi bir iÅŸlem yapÄ±lmaz. DoÄŸru ise UART'dan 1 karakter
+    gÃ¶nderilir. GÃ¶nderilecek karakter gÃ¶nderme iÅŸleminden Ã¶nce `var' deÄŸiÅŸkeninde saklÄ±
+    olmalÄ±dÄ±r. Komutun Ã§Ä±kÄ±ÅŸÄ± UART meÅŸgulse (bir karakterin gÃ¶nderildiÄŸi sÃ¼rece)
+    doÄŸru (1) olur. Aksi halde yanlÄ±ÅŸ olur.
+    Ã‡Ä±kÄ±ÅŸÄ±n doÄŸru olmasÄ± sadece bir PLC Ã§evrimi sÃ¼rer.
 
-    Karakterin gönderilmesi belirli bir zaman alır. Bu nedenle başka bir karakter
-    göndermeden önce önceki karakterin gönderildiğini kontrol ediniz veya gönderme
-    işlemlerinin arasına geikme ekleyiniz. Komutun girişini sadece çıkış yanlış
-    (UART meşgul değilse)ise doğru yapınız.
+    Karakterin gÃ¶nderilmesi belirli bir zaman alÄ±r. Bu nedenle baÅŸka bir karakter
+    gÃ¶ndermeden Ã¶nce Ã¶nceki karakterin gÃ¶nderildiÄŸini kontrol ediniz veya gÃ¶nderme
+    iÅŸlemlerinin arasÄ±na geikme ekleyiniz. Komutun giriÅŸini sadece Ã§Ä±kÄ±ÅŸ yanlÄ±ÅŸ
+    (UART meÅŸgul deÄŸilse)ise doÄŸru yapÄ±nÄ±z.
 
-    Bu komut yerine biçimlendirilmiş kelime komutunu (bir sonraki komut) inceleyiniz.
-    Biçimlendirilmiş kelime komutunun kullanımı daha kolaydır. İstediğiniz işlemleri
-    daha rahat gerçekleştirebilirsiniz.
+    Bu komut yerine biÃ§imlendirilmiÅŸ kelime komutunu (bir sonraki komut) inceleyiniz.
+    BiÃ§imlendirilmiÅŸ kelime komutunun kullanÄ±mÄ± daha kolaydÄ±r. Ä°stediÄŸiniz iÅŸlemleri
+    daha rahat gerÃ§ekleÅŸtirebilirsiniz.
 
 
-> UART ÜZERİNDEN BİÇİMLENDİRİLMİŞ KELİME             var
+> UART ÃœZERÄ°NDEN BÄ°Ã‡Ä°MLENDÄ°RÄ°LMÄ°Å KELÄ°ME             var
                                             -{"Pressure: \3\r\n"}-
 
-    LDmicro belirli işlemciler için gerekli UART kodlarını üretebilir. AVR işlemcilerde
-    sadece UART1 (UART0) değil) desteklenmektedir. İletişim hızı (baudrate) ayarlarını
-    Ayarlar->İşlemci Ayarları menüsünden yapmalısınız. Hız kristal frekansına bağlı olup,
-    bazı hızlar desteklenmeyebilir. Bu durumda LDMicro sizi uyaracaktır.
+    LDmicro belirli iÅŸlemciler iÃ§in gerekli UART kodlarÄ±nÄ± Ã¼retebilir. AVR iÅŸlemcilerde
+    sadece UART1 (UART0) deÄŸil) desteklenmektedir. Ä°letiÅŸim hÄ±zÄ± (baudrate) ayarlarÄ±nÄ±
+    Ayarlar->Ä°ÅŸlemci AyarlarÄ± menÃ¼sÃ¼nden yapmalÄ±sÄ±nÄ±z. HÄ±z kristal frekansÄ±na baÄŸlÄ± olup,
+    bazÄ± hÄ±zlar desteklenmeyebilir. Bu durumda LDMicro sizi uyaracaktÄ±r.
 
-    Bu komutun girişi yanlıştan doğruya geçerse (yükselen kenar) ise seri port üzerinden
-    tüm kelimeyi gönderir. Eğer kelime `\3' özel kodunu içeriyorsa dizi içeriği
-    `var' değişkenin içeriği otomatik olarak kelimeye (string) çevrilerek`var'
-    değişkeninin içeriği ile değiştirilir. Değişkenin uzunluğu 3 karakter olacak şekilde
-    değiştirilir. Mesela; `var' değişkeninin içeriği 35 ise kelime 35 rakamının başına bir
-    adet boşul eklenerek `Pressure:  35\r\n' haline getirilir. Veya `var'değişkeninin
-    içeriği 1453 ise yapılacak işlem belli olmaz. Bu durumda `\4' kullanmak gerekebilir.
+    Bu komutun giriÅŸi yanlÄ±ÅŸtan doÄŸruya geÃ§erse (yÃ¼kselen kenar) ise seri port Ã¼zerinden
+    tÃ¼m kelimeyi gÃ¶nderir. EÄŸer kelime `\3' Ã¶zel kodunu iÃ§eriyorsa dizi iÃ§eriÄŸi
+    `var' deÄŸiÅŸkenin iÃ§eriÄŸi otomatik olarak kelimeye (string) Ã§evrilerek`var'
+    deÄŸiÅŸkeninin iÃ§eriÄŸi ile deÄŸiÅŸtirilir. DeÄŸiÅŸkenin uzunluÄŸu 3 karakter olacak ÅŸekilde
+    deÄŸiÅŸtirilir. Mesela; `var' deÄŸiÅŸkeninin iÃ§eriÄŸi 35 ise kelime 35 rakamÄ±nÄ±n baÅŸÄ±na bir
+    adet boÅŸul eklenerek `Pressure:  35\r\n' haline getirilir. Veya `var'deÄŸiÅŸkeninin
+    iÃ§eriÄŸi 1453 ise yapÄ±lacak iÅŸlem belli olmaz. Bu durumda `\4' kullanmak gerekebilir.
 
-    Değişken negatif bir sayı olabilecekse `\-3d' (veya `\-4d') gibi uygun bir değer
-    kullanmalısınız. Bu durumda LDMicro negatif sayıların önüne eksi işareti, pozitif sayıların
-    önüne ise bir boşluk karakteri yerleştirecektir.
+    DeÄŸiÅŸken negatif bir sayÄ± olabilecekse `\-3d' (veya `\-4d') gibi uygun bir deÄŸer
+    kullanmalÄ±sÄ±nÄ±z. Bu durumda LDMicro negatif sayÄ±larÄ±n Ã¶nÃ¼ne eksi iÅŸareti, pozitif sayÄ±larÄ±n
+    Ã¶nÃ¼ne ise bir boÅŸluk karakteri yerleÅŸtirecektir.
 
-    Aynı anda birkaç işlem tanımlanırsa, yada UART ile ilgili işlemler birbirine
-    karışık hale getirilirse programın davranışı belirli olmayacaktır. Bu nedenle
-    dikkatli olmalısınız.
+    AynÄ± anda birkaÃ§ iÅŸlem tanÄ±mlanÄ±rsa, yada UART ile ilgili iÅŸlemler birbirine
+    karÄ±ÅŸÄ±k hale getirilirse programÄ±n davranÄ±ÅŸÄ± belirli olmayacaktÄ±r. Bu nedenle
+    dikkatli olmalÄ±sÄ±nÄ±z.
 
-    Kullanılabilecek özel karakterler (escape kodları) şunlardır:
-        * \r   -- satır başına geç
-        * \n   -- yeni satır
-        * \f   -- kağıdı ilerlet (formfeed)
+    KullanÄ±labilecek Ã¶zel karakterler (escape kodlarÄ±) ÅŸunlardÄ±r:
+        * \r   -- satÄ±r baÅŸÄ±na geÃ§
+        * \n   -- yeni satÄ±r
+        * \f   -- kaÄŸÄ±dÄ± ilerlet (formfeed)
         * \b   -- bir karakter geri gel (backspace)
         * \t   -- horizontal tab
         * \v   -- vertical tab
         * \a   -- alert
         * \xAB -- ASCII karakter kodu 0xAB (hex)
 
-    Bu komutun çıkışı bilgi gönderiyorken doğru diğer durumlarda yanlış olur.
-    Bu komut program hafızasında çok yer kaplar.
+    Bu komutun Ã§Ä±kÄ±ÅŸÄ± bilgi gÃ¶nderiyorken doÄŸru diÄŸer durumlarda yanlÄ±ÅŸ olur.
+    Bu komut program hafÄ±zasÄ±nda Ã§ok yer kaplar.
 
 
-MATEMATİKSEL İŞLEMLER İLE İLGİLİ BİLGİ
+MATEMATÄ°KSEL Ä°ÅLEMLER Ä°LE Ä°LGÄ°LÄ° BÄ°LGÄ°
 ======================================
 
-Unutmayın ki, LDMicro 16-bit tamsayı matematik komutlarına sahiptir.
-Bu işlemlerde kullanılan değerler ve hesaplamanın sonucu -32768 ile
-32767 arasında bir tamsayı olabilir.
+UnutmayÄ±n ki, LDMicro 16-bit tamsayÄ± matematik komutlarÄ±na sahiptir.
+Bu iÅŸlemlerde kullanÄ±lan deÄŸerler ve hesaplamanÄ±n sonucu -32768 ile
+32767 arasÄ±nda bir tamsayÄ± olabilir.
 
-Mesela y = (1/x)*1200 formülünü hesaplamaya çalışalım. x 1 ile 20
-arasında bir sayıdır. Bu durumda y 1200 ile 60 arasında olur. Bu sayı
-16-bit bir tamsayı sınırları içindedir. Ladder diyagramımızı yazalım.
-Önce bölelim, sonra çarpma işlemini yapalım:
+Mesela y = (1/x)*1200 formÃ¼lÃ¼nÃ¼ hesaplamaya Ã§alÄ±ÅŸalÄ±m. x 1 ile 20
+arasÄ±nda bir sayÄ±dÄ±r. Bu durumda y 1200 ile 60 arasÄ±nda olur. Bu sayÄ±
+16-bit bir tamsayÄ± sÄ±nÄ±rlarÄ± iÃ§indedir. Ladder diyagramÄ±mÄ±zÄ± yazalÄ±m.
+Ã–nce bÃ¶lelim, sonra Ã§arpma iÅŸlemini yapalÄ±m:
 
    ||         {DIV  temp  :=}          ||
    ||---------{ 1 / x       }----------||
@@ -633,25 +633,25 @@ arasında bir sayıdır. Bu durumda y 1200 ile 60 arasında olur. Bu sayı
    ||----------{ temp * 1200}----------||
    ||                                  ||
 
-Yada bölmeyi doğrudan yapalım:
+Yada bÃ¶lmeyi doÄŸrudan yapalÄ±m:
 
    ||           {DIV  y  :=}           ||
    ||-----------{ 1200 / x }-----------||
 
-Matematiksel olarak iki işlem aynıd sonucu vermelidir. Ama birinci işlem
-yanlış sonuç verecektir. (y=0 olur). Bu hata `temp' değişkeninin 1'den
-küçük sonuç vermesindendir.Mesela x = 3 iken (1 / x) = 0.333 olur. Ama
-0.333 bir tamsayı değildir. Bu nedenle sonuç 0 olur. İkinci adımda ise
-y = temp * 1200 = 0 olur. İkinci şekilde ise bölen bir tamsayı olduğundan
-sonuç doğru çıkacaktır.
+Matematiksel olarak iki iÅŸlem aynÄ±d sonucu vermelidir. Ama birinci iÅŸlem
+yanlÄ±ÅŸ sonuÃ§ verecektir. (y=0 olur). Bu hata `temp' deÄŸiÅŸkeninin 1'den
+kÃ¼Ã§Ã¼k sonuÃ§ vermesindendir.Mesela x = 3 iken (1 / x) = 0.333 olur. Ama
+0.333 bir tamsayÄ± deÄŸildir. Bu nedenle sonuÃ§ 0 olur. Ä°kinci adÄ±mda ise
+y = temp * 1200 = 0 olur. Ä°kinci ÅŸekilde ise bÃ¶len bir tamsayÄ± olduÄŸundan
+sonuÃ§ doÄŸru Ã§Ä±kacaktÄ±r.
 
-İşlemlerinizde bir sorun varsa dikkatle kontrol ediniz. Ayrıca sonucun
-başa dönmemesine de dikkat ediniz. Mesela 32767 + 1 = -32768 olur.
-32767 sınırı aşılmış olacaktır.
+Ä°ÅŸlemlerinizde bir sorun varsa dikkatle kontrol ediniz. AyrÄ±ca sonucun
+baÅŸa dÃ¶nmemesine de dikkat ediniz. Mesela 32767 + 1 = -32768 olur.
+32767 sÄ±nÄ±rÄ± aÅŸÄ±lmÄ±ÅŸ olacaktÄ±r.
 
-Hesaplamalarınızda mantıksal değişimler yaparak doğru sonuçlar elde edebilirsiniz.
-Örneğin; y = 1.8*x ise formülünüzü y = (9/5)*x şeklinde yazınız.(1.8 = 9/5)
-y = (9*x)/5 şeklindeki bir kod sonucu daha tutarlı hale getirecektir.
+HesaplamalarÄ±nÄ±zda mantÄ±ksal deÄŸiÅŸimler yaparak doÄŸru sonuÃ§lar elde edebilirsiniz.
+Ã–rneÄŸin; y = 1.8*x ise formÃ¼lÃ¼nÃ¼zÃ¼ y = (9/5)*x ÅŸeklinde yazÄ±nÄ±z.(1.8 = 9/5)
+y = (9*x)/5 ÅŸeklindeki bir kod sonucu daha tutarlÄ± hale getirecektir.
 performing the multiplication first:
 
    ||         {MUL  temp  :=}          ||
@@ -661,10 +661,10 @@ performing the multiplication first:
    ||-----------{ temp / 5 }-----------||
 
 
-KODALAMA ŞEKLİ
+KODALAMA ÅEKLÄ°
 ==============
 
-Programın sağladığı kolaylıklardan faydalanın. Mesela:
+ProgramÄ±n saÄŸladÄ±ÄŸÄ± kolaylÄ±klardan faydalanÄ±n. Mesela:
 
    ||       Xa               Ya        ||
  1 ||-------] [--------------( )-------||
@@ -676,7 +676,7 @@ Programın sağladığı kolaylıklardan faydalanın. Mesela:
    ||                +-------( )-------||
    ||                                  ||
 
-yazmak aşağıdakinden daha kolay olacaktır.
+yazmak aÅŸaÄŸÄ±dakinden daha kolay olacaktÄ±r.
 
    ||       Xa               Ya        ||
  1 ||-------] [--------------( )-------||
@@ -696,9 +696,9 @@ yazmak aşağıdakinden daha kolay olacaktır.
 
                   *                 *                  *
 
-Yazdığınız kodların sonuçlarına dikkat ediniz. Aşağıdaki satırlarda
-mantıksız bir programlama yapılmıştır. Çünkü hem Xa hemde Xb aynı
-anda doğru olabilir.
+YazdÄ±ÄŸÄ±nÄ±z kodlarÄ±n sonuÃ§larÄ±na dikkat ediniz. AÅŸaÄŸÄ±daki satÄ±rlarda
+mantÄ±ksÄ±z bir programlama yapÄ±lmÄ±ÅŸtÄ±r. Ã‡Ã¼nkÃ¼ hem Xa hemde Xb aynÄ±
+anda doÄŸru olabilir.
 
    ||       Xa         {v  :=       }  ||
  1 ||-------] [--------{ 12      MOV}--||
@@ -713,8 +713,8 @@ anda doğru olabilir.
  2 ||------[ 15]-------------( )-------||
    ||                                  ||
 
-Aşağıdaki satırlar yukarda bahsi geçen tarzdadır. Ancak yapılan
-işlem 4-bit binary sayı tamsayıya çevrilmektedir.
+AÅŸaÄŸÄ±daki satÄ±rlar yukarda bahsi geÃ§en tarzdadÄ±r. Ancak yapÄ±lan
+iÅŸlem 4-bit binary sayÄ± tamsayÄ±ya Ã§evrilmektedir.
 
    ||                                   {v  :=       }  ||
  3 ||-----------------------------------{ 0       MOV}--||
@@ -736,47 +736,47 @@ işlem 4-bit binary sayı tamsayıya çevrilmektedir.
 HATALAR (BUG)
 =============
 
-LDmicro tarafından üretilen kodlar çok verimli kodlar değildir. Yavaş çalışan
-ve hafızada fazla yer kaplayan kodlar olabilirler. Buna rağmen orta büyüklükte
-bir PIC veya AVR küçük bir PLC'nin yaptığı işi yapar. Bu nedenle diğer sorunlar
-yer yer gözardı edlebilir.
+LDmicro tarafÄ±ndan Ã¼retilen kodlar Ã§ok verimli kodlar deÄŸildir. YavaÅŸ Ã§alÄ±ÅŸan
+ve hafÄ±zada fazla yer kaplayan kodlar olabilirler. Buna raÄŸmen orta bÃ¼yÃ¼klÃ¼kte
+bir PIC veya AVR kÃ¼Ã§Ã¼k bir PLC'nin yaptÄ±ÄŸÄ± iÅŸi yapar. Bu nedenle diÄŸer sorunlar
+yer yer gÃ¶zardÄ± edlebilir.
 
-Değişken isimleri çok uzun olmamalıdır.
+DeÄŸiÅŸken isimleri Ã§ok uzun olmamalÄ±dÄ±r.
 
-Programınız yada kullandığınız hafıza seçtiğiniz işlemcinin sahip olduğundan
-büyükse LDMicro hata vermeyebilir. Dikkat etmezseniz programınız hatalı çalışacaktır.
+ProgramÄ±nÄ±z yada kullandÄ±ÄŸÄ±nÄ±z hafÄ±za seÃ§tiÄŸiniz iÅŸlemcinin sahip olduÄŸundan
+bÃ¼yÃ¼kse LDMicro hata vermeyebilir. Dikkat etmezseniz programÄ±nÄ±z hatalÄ± Ã§alÄ±ÅŸacaktÄ±r.
 
-Bulduğunuz hataları yazara bildiriniz.
+BulduÄŸunuz hatalarÄ± yazara bildiriniz.
 
-Teşekkürler:
-    * Marcelo Solano, Windows 98'deki UI problemini bildirdiği için,
-    * Serge V. Polubarjev, PIC16F628 işlemcisi seçildiğinde RA3:0'ın çalışmadığı
-      ve nasıl düzelteceğimi bildirdiği için,
-    * Maxim Ibragimov, ATmega16 ve ATmega162 işlemcileri test ettikleri, problemleri
-      buldukları ve bildirdikleri için,
-    * Bill Kishonti, sıfıra bölüm hatası olduğunda simülasyonun çöktüğünü bildirdikleri
-      için,
-    * Mohamed Tayae, PIC16F628 işlemcisinde EEPROM'da saklanması gereken değişkenlerin
-      aslında saklanmadığını bildirdiği için,
-    * David Rothwell, kullanıcı arayüzündeki birkaç problemi ve "Metin Dosyası Olarak Kaydet"
-      fonksiyonundaki problemi bildirdiği için.
+TeÅŸekkÃ¼rler:
+    * Marcelo Solano, Windows 98'deki UI problemini bildirdiÄŸi iÃ§in,
+    * Serge V. Polubarjev, PIC16F628 iÅŸlemcisi seÃ§ildiÄŸinde RA3:0'Ä±n Ã§alÄ±ÅŸmadÄ±ÄŸÄ±
+      ve nasÄ±l dÃ¼zelteceÄŸimi bildirdiÄŸi iÃ§in,
+    * Maxim Ibragimov, ATmega16 ve ATmega162 iÅŸlemcileri test ettikleri, problemleri
+      bulduklarÄ± ve bildirdikleri iÃ§in,
+    * Bill Kishonti, sÄ±fÄ±ra bÃ¶lÃ¼m hatasÄ± olduÄŸunda simÃ¼lasyonun Ã§Ã¶ktÃ¼ÄŸÃ¼nÃ¼ bildirdikleri
+      iÃ§in,
+    * Mohamed Tayae, PIC16F628 iÅŸlemcisinde EEPROM'da saklanmasÄ± gereken deÄŸiÅŸkenlerin
+      aslÄ±nda saklanmadÄ±ÄŸÄ±nÄ± bildirdiÄŸi iÃ§in,
+    * David Rothwell, kullanÄ±cÄ± arayÃ¼zÃ¼ndeki birkaÃ§ problemi ve "Metin DosyasÄ± Olarak Kaydet"
+      fonksiyonundaki problemi bildirdiÄŸi iÃ§in.
 
 
-KOPYALAMA VE KULLANIM ŞARTLARI
+KOPYALAMA VE KULLANIM ÅARTLARI
 ==============================
 
-LDMICRO TARAFINDAN ÜRETİLEN KODU İNSAN HAYATI VE İNSAN HAYATINI ETKİLEYEBİLECEK
-PROJELERDE KULLANMAYINIZ. LDMICRO PROGRAMCISI LDMICRO'NUN KENDİNDEN VE LDMICRO
-İLE ÜRETİLEN KODDAN KAYNAKLANAN HİÇBİR PROBLEM İÇİN SORUMLULUK KABUL ETMEMEKTEDİR.
+LDMICRO TARAFINDAN ÃœRETÄ°LEN KODU Ä°NSAN HAYATI VE Ä°NSAN HAYATINI ETKÄ°LEYEBÄ°LECEK
+PROJELERDE KULLANMAYINIZ. LDMICRO PROGRAMCISI LDMICRO'NUN KENDÄ°NDEN VE LDMICRO
+Ä°LE ÃœRETÄ°LEN KODDAN KAYNAKLANAN HÄ°Ã‡BÄ°R PROBLEM Ä°Ã‡Ä°N SORUMLULUK KABUL ETMEMEKTEDÄ°R.
 
-Bu program ücretsiz bir program olup, dilediğiniz gibi dağıtabilirsiniz,
-kaynak kodda değişiklik yapabilirsiniz. Programın kullanımı Free Software Foundation
-tarafından yazılan GNU General Public License (version 3 ve sonrası)şartlarına bağlıdır.
+Bu program Ã¼cretsiz bir program olup, dilediÄŸiniz gibi daÄŸÄ±tabilirsiniz,
+kaynak kodda deÄŸiÅŸiklik yapabilirsiniz. ProgramÄ±n kullanÄ±mÄ± Free Software Foundation
+tarafÄ±ndan yazÄ±lan GNU General Public License (version 3 ve sonrasÄ±)ÅŸartlarÄ±na baÄŸlÄ±dÄ±r.
 
-Program faydalı olması ümidiyle dağıtılmıştır. Ancak hiçbir garanti verilmemektedir.
-Detaylar için  GNU General Public License içeriğine bakınız.
+Program faydalÄ± olmasÄ± Ã¼midiyle daÄŸÄ±tÄ±lmÄ±ÅŸtÄ±r. Ancak hiÃ§bir garanti verilmemektedir.
+Detaylar iÃ§in  GNU General Public License iÃ§eriÄŸine bakÄ±nÄ±z.
 
-Söz konusu sözleşmenin bir kopyası bu programla beraber gelmiş olması gerekmektedir.
+SÃ¶z konusu sÃ¶zleÅŸmenin bir kopyasÄ± bu programla beraber gelmiÅŸ olmasÄ± gerekmektedir.
 Gelmediyse <http://www.gnu.org/licenses/> adresinde bulabilirsiniz.
 
 
@@ -812,4 +812,4 @@ Cambridge MA  -- Sep, Dec 2005
 
 Email: user jwesthues, at host cq.cx
 
-Türkçe Versiyon : <http://tekelektirik.com/public/ldmicro.rar>
+TÃ¼rkÃ§e Versiyon : <http://tekelektirik.com/public/ldmicro.rar>
