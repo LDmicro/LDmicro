@@ -441,8 +441,8 @@ werden. Wenn der Eingang ‘wahr’ ist, so wird der Timer oder Zähler
 rückgesetzt; wenn der Eingang ‘unwahr’ ist, so erfolgt keine Aktion.
 Diese Anweisung muss ganz rechts im Netzwerk stehen.
 
-                                            _    _
-> ONE-SHOT RISING, STEIGENDE FLANKE    --[_/ OSR/ \_]--
+> ONE-SHOT RISING,       _    _
+STEIGENDE FLANKE    --[_/ OSR/ \_]--
 
 Diese Anweisung wird normalerweise ‘unwahr’ ausgewiesen. Wenn der Eingang
 der Anweisung während des momentanen Zyklus ‘wahr’ ist und während des
@@ -451,8 +451,8 @@ Anweisung bei jeder steigenden Flanke einen Impuls für einen Zyklus.
 Diese Anweisung ist hilfreich, wenn Sie Ereignisse an der steigenden
 Flanke eines Signals auslösen wollen.
 
-                                          _      _
-> ONE-SHOT FALLING, FALLENDE FLANKE    --[ \_OSF/ \_]--
+> ONE-SHOT FALLING,   _      _
+FALLENDE FLANKE    --[ \_OSF/ \_]--
 
 Diese Anweisung wird normalerweise ‘unwahr’ ausgewiesen. Wenn der Eingang
 der Anweisung während des momentanen Zyklus ‘unwahr’ ist und während des
@@ -469,8 +469,8 @@ Der Ausgangszustands einer Öffnung ist immer ‘unwahr’. Diese Anweisungen
 sind bei der Fehlerbehebung (debugging) besonders hilfreich.
 
 
-> MASTER CONTROL RELAIS   -{MASTER RLY}-
-
+> MASTER CONTROL RELAIS   
+                                     -{MASTER RLY}-
 
 Im Normalfall ist der Anfang (die linke Stromschiene) von jedem Netzwerk
 ‘wahr’. Wenn eine ‘Master Control Relais’ Anweisung ausgeführt wird dessen
