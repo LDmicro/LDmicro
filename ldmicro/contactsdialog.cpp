@@ -117,8 +117,7 @@ static void MakeControls(void)
         325, 40, 70, 23, ContactsDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
 
-    PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC,
-        (LONG_PTR)MyNameProc);
+    PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, (LONG_PTR)MyNameProc);
 }
 
 void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
@@ -135,19 +134,19 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
 
     switch (name[0]) {
     case 'R':
-        SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
+        SendMessageW(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
         break;
     case 'Y':
-        SendMessage(SourceOutputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
+        SendMessageW(SourceOutputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
         break;
     case 'X':
-        SendMessage(SourceInputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
+        SendMessageW(SourceInputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
         break;
     case 'I':
-        SendMessage(SourceModbusContactRadio, BM_SETCHECK, BST_CHECKED, 0);
+        SendMessageW(SourceModbusContactRadio, BM_SETCHECK, BST_CHECKED, 0);
         break;
     case 'M':
-        SendMessage(SourceModbusCoilRadio, BM_SETCHECK, BST_CHECKED, 0);
+        SendMessageW(SourceModbusCoilRadio, BM_SETCHECK, BST_CHECKED, 0);
         break;
     default:
         oops();
@@ -155,20 +154,21 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
     }
 
     if(*negated) {
-        SendMessage(NegatedCheckbox, BM_SETCHECK, BST_CHECKED, 0);
+        SendMessageW(NegatedCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
 
     if(*set1) {
-        SendMessage(Set1Checkbox, BM_SETCHECK, BST_CHECKED, 0);
+        SendMessageW(Set1Checkbox, BM_SETCHECK, BST_CHECKED, 0);
     }
     EnableWindow(Set1Checkbox, SendMessage(SourceInputPinRadio, BM_GETSTATE, 0, 0) & BST_CHECKED);
 
-    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
+    auto name_w = to_utf16(name + 1);
+    SendMessageW(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name_w.c_str()));
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(ContactsDialog, TRUE);
     SetFocus(NameTextbox);
-    SendMessage(NameTextbox, EM_SETSEL, 0, -1);
+    SendMessageW(NameTextbox, EM_SETSEL, 0, -1);
 
     MSG msg;
     DWORD ret;
@@ -186,7 +186,7 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
             }
         }
 
-        EnableWindow(Set1Checkbox, SendMessage(SourceInputPinRadio, BM_GETSTATE, 0, 0) & BST_CHECKED);
+        EnableWindow(Set1Checkbox, SendMessageW(SourceInputPinRadio, BM_GETSTATE, 0, 0) & BST_CHECKED);
 
         if(IsDialogMessage(ContactsDialog, &msg)) continue;
         TranslateMessage(&msg);
@@ -194,31 +194,35 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
     }
 
     if(!DialogCancel) {
-        if(SendMessage(NegatedCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+        if(SendMessageW(NegatedCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             *negated = TRUE;
         } else {
             *negated = FALSE;
         }
-        if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
+        if(SendMessageW(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
             & BST_CHECKED)
         {
             name[0] = 'R';
-        } else if(SendMessage(SourceInputPinRadio, BM_GETSTATE, 0, 0)
+        } else if(SendMessageW(SourceInputPinRadio, BM_GETSTATE, 0, 0)
             & BST_CHECKED)
         {
             name[0] = 'X';
-        } else if (SendMessage(SourceModbusContactRadio, BM_GETSTATE, 0, 0)
+        } else if (SendMessageW(SourceModbusContactRadio, BM_GETSTATE, 0, 0)
             & BST_CHECKED)
         {
             name[0] = 'I';
-        } else if (SendMessage(SourceModbusCoilRadio, BM_GETSTATE, 0, 0)
+        } else if (SendMessageW(SourceModbusCoilRadio, BM_GETSTATE, 0, 0)
             & BST_CHECKED)
         {
             name[0] = 'M';
         } else {
             name[0] = 'Y';
         }
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)(MAX_NAME_LEN-1), (LPARAM)(name+1));
+        wchar_t name_w[MAX_NAME_LEN];
+        name_w[0] = name[0];
+        SendMessageW(NameTextbox, WM_GETTEXT, (WPARAM)(MAX_NAME_LEN-1), (LPARAM)(name_w + 1));
+        std::string name_s = to_utf8(name_w);
+        strncpy(name, name_s.c_str(), MAX_NAME_LEN);
 
         if(SendMessage(Set1Checkbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             *set1 = TRUE;

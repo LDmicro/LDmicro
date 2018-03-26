@@ -175,12 +175,12 @@ static void MakeControls(void)
         } else if(Prog.mcu->whichIsa == ISA_PIC16) {
             b=CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen) && PicProgLdLen;
         }
-        char s1[100];
-        char s2[100];
-        double _cycleTimeMin = SIprefix(1.0*plcTmr.cycleTimeMin/1e6,s1);
-        double _cycleTimeMax = SIprefix(1.0*plcTmr.cycleTimeMax/1e6,s2);
+        wchar_t s1[5];
+        wchar_t s2[5];
+        double _cycleTimeMin = SIprefix(1.0*plcTmr.cycleTimeMin/1e6, s1);
+        double _cycleTimeMax = SIprefix(1.0*plcTmr.cycleTimeMax/1e6, s2);
         swprintf_s(txt,_("Available PLC Cycle Time: min=%.6g %lss, max=%lld ms (%.6g %lss)\n"),
-            _cycleTimeMin, u16(s1), plcTmr.cycleTimeMax/1000, _cycleTimeMax, u16(s2));
+            _cycleTimeMin, s1, plcTmr.cycleTimeMax/1000, _cycleTimeMax, s2);
         wcscat(explanation,txt);
         if(b) {
             swprintf_s(txt,_("MCU PLC Timer%d: TMR%d=%d, prescaler=%d, softDivisor=%d\n"),
@@ -191,9 +191,9 @@ static void MakeControls(void)
                 plcTmr.ticksPerCycle, (long long int)plcTmr.prescaler * (long long int)plcTmr.softDivisor * (long long int)plcTmr.tmr);
             wcscat(explanation,txt);
 
-            double _TCycle = SIprefix(1.0*plcTmr.TCycle,s1);
-            double _Fcycle = SIprefix(1.0*plcTmr.Fcycle,s2);
-            swprintf_s(txt,_("In fact TCycle=%.6g %lss, Fcycle=%.6g %lsHz, PLC Cycle deviation=%.3f%%\n"), _TCycle, u16(s1), _Fcycle, u16(s2), 1e2*(1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime);
+            double _TCycle = SIprefix(1.0*plcTmr.TCycle, s1);
+            double _Fcycle = SIprefix(1.0*plcTmr.Fcycle, s2);
+            swprintf_s(txt,_("In fact TCycle=%.6g %lss, Fcycle=%.6g %lsHz, PLC Cycle deviation=%.3f%%\n"), _TCycle, s1, _Fcycle, s2, 1e2*(1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime);
             wcscat(explanation,txt);
         }
         swprintf_s(txt,L"\n");
@@ -201,20 +201,20 @@ static void MakeControls(void)
 
         double minDelay;
         minDelay = SIprefix(1.0 * Prog.cycleTime / 1000000, s2); //s
-        swprintf_s(txt,_("TON,TOF,RTO min Delay=%.6g ms (%.6g %lss)\n"), 1.0 * Prog.cycleTime / 1000, minDelay, u16(s2));
+        swprintf_s(txt,_("TON,TOF,RTO min Delay=%.6g ms (%.6g %lss)\n"), 1.0 * Prog.cycleTime / 1000, minDelay, s2);
         wcscat(explanation,txt);
 
         double maxDelay;
         maxDelay = SIprefix(1.0 * 0x7f * Prog.cycleTime / 1000000, s2); //s
-        swprintf_s(txt,_("TON,TOF,RTO  8bit max Delay=%.6g %lss\n"), maxDelay, u16(s2));
+        swprintf_s(txt,_("TON,TOF,RTO  8bit max Delay=%.6g %lss\n"), maxDelay, s2);
         wcscat(explanation,txt);
 
         maxDelay = SIprefix(1.0 * 0x7fff * Prog.cycleTime / 1000000, s2); //s
-        swprintf_s(txt,_("TON,TOF,RTO 16bit max Delay=%.6g %lss\n"), maxDelay, u16(s2));
+        swprintf_s(txt,_("TON,TOF,RTO 16bit max Delay=%.6g %lss\n"), maxDelay, s2);
         wcscat(explanation,txt);
 
         maxDelay = SIprefix(1.0 * 0x7fFFff * Prog.cycleTime / 1000000, s2); //s
-        swprintf_s(txt, _("TON,TOF,RTO 24bit max Delay=%.6g %lss\n"), maxDelay, u16(s2));
+        swprintf_s(txt, _("TON,TOF,RTO 24bit max Delay=%.6g %lss\n"), maxDelay, s2);
         wcscat(explanation,txt);
 
         swprintf_s(txt,L"\n");

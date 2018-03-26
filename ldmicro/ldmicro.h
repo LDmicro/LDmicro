@@ -1788,8 +1788,10 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);
 #define CompileError() longjmp(CompileErrorBuf, 1)
 extern jmp_buf CompileErrorBuf;
-double SIprefix(double val, char *prefix, int en_1_2);
+double SIprefix(double val, char* prefix, int en_1_2);
 double SIprefix(double val, char *prefix);
+double SIprefix(double val, wchar_t* prefix, int en_1_2);
+double SIprefix(double val, wchar_t* prefix);
 int GetVariableType(char *name);
 int SetVariableType(char *name, int type);
 

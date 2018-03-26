@@ -898,10 +898,10 @@ void RefreshStatusBar(void)
         SendMessageW(StatusBar, SB_SETTEXTW, 1, (LPARAM)_("no MCU selected"));
     }
     wchar_t buf[1024];
-    char Tunits[3] = "";
-    char Funits[3] = "";
-    char F2units[3] = "";
-    char TNunits[3] = "";
+    wchar_t Tunits[3];
+    wchar_t Funits[3];
+    wchar_t F2units[3];
+    wchar_t TNunits[3];
 
     double T = SIprefix(1.0*Prog.cycleTime/1000000, Tunits);
 
@@ -915,11 +915,11 @@ void RefreshStatusBar(void)
     double TN=SIprefix(1.0*Prog.cycleTime*CyclesCount/1000000, TNunits);
 
     if(Prog.cycleTime>0) {
-        swprintf_s(buf,1000,_("Tcycle=%.6g %lss F=%.6g %lsHz F/2=%.6g %lsHz Ncycle=%d T=%.6g %lss"),
-            T,u16(Tunits), F,u16(Funits), F2,u16(F2units), CyclesCount, TN,u16(TNunits));
+        swprintf_s(buf,1000,_("TCycle=%.6g %lss F=%.6g %lsHz F/2=%.6g %lsHz Ncycle=%d T=%.6g %lss"),
+            T,Tunits, F,Funits, F2,F2units, CyclesCount, TN,TNunits);
     } else {
-        swprintf_s(buf, _("Tcycle=%.6g %lss Ncycle=%d T=%.6g %lss"),
-            T,u16(Tunits), CyclesCount, TN,u16(TNunits));
+        swprintf_s(buf, _("TCycle=%.6g %lss Ncycle=%d T=%.6g %lss"),
+            T,Tunits, CyclesCount, TN,TNunits);
     }
     SendMessageW(StatusBar, SB_SETTEXTW, 3, (LPARAM)buf);
 
