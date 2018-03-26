@@ -448,13 +448,13 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
 
 void ShowDelayDialog(int which, char *name)
 {
-    char s[100];
+    char s[100] = "";
     char buf1[1024];
     strcpy(buf1, _("Achievable DELAY values (us): "));
     long long T = 0, T0 = 0;
     int i, n = 0;
-    for(i = 0; ; i++) {
-      if(Prog.mcu) {
+    if(Prog.mcu && ((Prog.mcu->whichIsa == ISA_AVR)||(Prog.mcu->whichIsa == ISA_PIC16))) {
+      for(i = 0; ; i++) {
         if(Prog.mcu->whichIsa == ISA_AVR) {
             T = i * 1000000 / Prog.mcuClock;
         } else if(Prog.mcu->whichIsa == ISA_PIC16) {
@@ -468,17 +468,15 @@ void ShowDelayDialog(int which, char *name)
             if(n >= 5) break;
         }
       }
-    }
-    if(Prog.mcu) {
-       if(Prog.mcu->whichIsa == ISA_AVR) {
-           T = 0x10000; // to long long
-           T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
-       } else if(Prog.mcu->whichIsa == ISA_PIC16) {
-           T = 0xffff; // to long long
-           T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
-       }
-       sprintf(s, "..., %lld", T);
-       strcat(buf1, s);
+      if(Prog.mcu->whichIsa == ISA_AVR) {
+          T = 0x10000; // to long long
+          T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
+      } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+          T = 0xffff; // to long long
+          T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
+      }
+      sprintf(s, "..., %lld", T);
+      strcat(buf1, s);
     }
     const char *labels[] = { _("Delay (us):"), buf1 };
 
