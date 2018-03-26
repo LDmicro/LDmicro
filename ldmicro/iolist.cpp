@@ -87,10 +87,10 @@ static void AppendIo(char *IOname, int type)
     strcpy(name, IOname);
     if(!IsNumber(IOname)) {
         char *c;
-        while(c = strchr(IOname, '-'))
+        while((c = strchr(IOname, '-')))
             *c = '_';
         if(!strstr(name, IOname)) {
-            Error(_(" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"), name, IOname);
+            Error(_(" The character '-' is replaced by the '_'.\nVariable      '%ls'\nrenamed to '%ls'"), u16(name), u16(IOname));
             strcpy(name, IOname);
             ProgramChangedNotSaved = TRUE;
         }
@@ -1095,7 +1095,7 @@ void ShowIoDialog(int item)
             return;
     }
     if(!Prog.mcu) {
-        MessageBox(MainWindow,
+        MessageBoxW(MainWindow,
             _("No microcontroller has been selected. You must select a "
             "microcontroller before you can assign I/O pins.\r\n\r\n"
             "Select a microcontroller under the Settings menu and try "
@@ -1188,7 +1188,7 @@ void ShowIoDialog(int item)
 
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
     int Index = 0;
-    char buf[MAX_NAME_LEN];
+    wchar_t buf[MAX_NAME_LEN];
     int j;
     int i;
     for(i = 0; i < Prog.mcu->pinCount; i++) {
@@ -1295,9 +1295,9 @@ void ShowIoDialog(int item)
 
         char pinName[MAX_NAME_LEN];
         GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
-        sprintf(buf, "%3d  %s", Prog.mcu->pinInfo[i].pin, pinName);
+        swprintf_s(buf, L"%3d  %ls", Prog.mcu->pinInfo[i].pin, u16(pinName));
 
-        SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+        SendMessageW(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
     cant_use_this_io:;
     }
 
@@ -1314,10 +1314,10 @@ void ShowIoDialog(int item)
             if(j == Prog.mcu->adcCount) {
                 goto cant_use_this_io_adc;
             } else {
-                sprintf(buf, "%3d  ADC%d", Prog.mcu->adcInfo[j].pin,
+                swprintf_s(buf, L"%3d  ADC%d", Prog.mcu->adcInfo[j].pin,
                     Prog.mcu->adcInfo[j].muxRegValue);
             }
-            SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+            SendMessageW(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
         }
     cant_use_this_io_adc:;
     }
