@@ -57,62 +57,62 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static void MakeControls(void)
 {
-    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Source"),
+    HWND grouper = CreateWindowExW(0, WC_BUTTONW, _("Source"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
         7, 3, 140, 125, ContactsDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
-    SourceInternalRelayRadio = CreateWindowEx(0, WC_BUTTON, _("Internal Relay"),
+    SourceInternalRelayRadio = CreateWindowExW(0, WC_BUTTONW, _("Internal Relay"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 21, 125, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(SourceInternalRelayRadio);
 
-    SourceInputPinRadio = CreateWindowEx(0, WC_BUTTON, _("Input Pin on MCU"),
+    SourceInputPinRadio = CreateWindowExW(0, WC_BUTTONW, _("Input Pin on MCU"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 41, 125, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(SourceInputPinRadio);
 
-    SourceOutputPinRadio = CreateWindowEx(0, WC_BUTTON, _("Output Pin on MCU"),
+    SourceOutputPinRadio = CreateWindowExW(0, WC_BUTTONW, _("Output Pin on MCU"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 61, 125, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(SourceOutputPinRadio);
 
-    SourceModbusContactRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus Contact"),
+    SourceModbusContactRadio = CreateWindowExW(0, WC_BUTTONW, _("Modbus Contact"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 81, 125, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(SourceModbusContactRadio);
 
-    SourceModbusCoilRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus Coil"),
+    SourceModbusCoilRadio = CreateWindowExW(0, WC_BUTTONW, _("Modbus Coil"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 101, 125, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(SourceModbusCoilRadio);
 
-    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
+    HWND textLabel = CreateWindowExW(0, WC_STATICW, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         145, 16, 50, 21, ContactsDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    NameTextbox = CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         200, 16, 115, 21, ContactsDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-    NegatedCheckbox = CreateWindowEx(0, WC_BUTTON, _("|/| Negated"),
+    NegatedCheckbox = CreateWindowExW(0, WC_BUTTONW, _("|/| Negated"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         155, 44, 160, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(NegatedCheckbox);
 
-    Set1Checkbox = CreateWindowEx(0, WC_BUTTON, _("Set HI input level before simulation"),
+    Set1Checkbox = CreateWindowExW(0, WC_BUTTONW, _("Set HI input level before simulation"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         155, 72, 260, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(Set1Checkbox);
 
-    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+    OkButton = CreateWindowExW(0, WC_BUTTONW, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         325, 10, 70, 23, ContactsDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowExW(0, WC_BUTTONW, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         325, 40, 70, 23, ContactsDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
@@ -127,7 +127,7 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
     char nameSave[MAX_NAME_LEN];
     strcpy(nameSave, name);
 
-    ContactsDialog = CreateWindowClient(0, "LDmicroDialog",
+    ContactsDialog = CreateWindowClient(0, L"LDmicroDialog",
         _("Contacts"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 404, 135, NULL, NULL, Instance, NULL);
 
@@ -231,11 +231,9 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
           if(n >= 1) {
             BOOL rename = FALSE;
             if(strcmp(name, nameSave)) {
-                char str[1000];
-                sprintf(str, _("Rename the ALL other %d contacts/coils named '%s' to '%s' ?"), n, nameSave, name);
-                rename = IDYES == MessageBox(MainWindow,
-                               str, "LDmicro",
-                               MB_YESNO | MB_ICONQUESTION);
+                wchar_t str[1000];
+                swprintf_s(str, _("Rename the ALL other %d contacts/coils named '%s' to '%s' ?"), n, nameSave, name);
+                rename = IDYES == MessageBoxW(MainWindow, str, L"LDmicro", MB_YESNO | MB_ICONQUESTION);
             }
             if(rename)
                 if(name[0] == 'X')

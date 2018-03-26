@@ -77,13 +77,13 @@ void MakeMainWindowControls(void)
     lvc.fmt = LVCFMT_LEFT;
 #define LV_ADD_COLUMN(hWnd, i, w, s) do { \
         lvc.iSubItem = i; \
-        lvc.pszText = (LPSTR)(s); \
+        lvc.pszText = (LPWSTR)(s); \
         lvc.iOrder = 0; \
         lvc.cx = w; \
         ListView_InsertColumn(hWnd, i, &lvc); \
     } while(0)
     // create child window for IO list
-    IoList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, "", WS_CHILD |
+    IoList = CreateWindowExA(WS_EX_CLIENTEDGE, WC_LISTVIEWA, "", WS_CHILD |
         LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP |
         LVS_SINGLESEL | WS_CLIPSIBLINGS,
         12, 25, 300, 300, MainWindow, NULL, Instance, NULL);
@@ -105,11 +105,11 @@ void MakeMainWindowControls(void)
     LV_ADD_COLUMN(IoList, LV_IO_SISE_OF_VAR, 60,           _("Size"));
     LV_ADD_COLUMN(IoList, LV_IO_MODBUS,      modbusWidth,  _("Modbus addr"));
     // IO list horizontal scroll bar
-    HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
+    HorizScrollBar = CreateWindowExA(0, WC_SCROLLBARA, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
         100, 100, 100, 100, MainWindow, NULL, Instance, NULL);
     // IO list Verticle scroll bar
-    VertScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
+    VertScrollBar = CreateWindowExA(0, WC_SCROLLBARA, "", WS_CHILD |
         SBS_VERT | SBS_LEFTALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
         200, 100, 100, 100, MainWindow, NULL, Instance, NULL);
     RECT scroll;
@@ -118,7 +118,7 @@ void MakeMainWindowControls(void)
     GetWindowRect(VertScrollBar, &scroll);
     ScrollWidth = scroll.right - scroll.left;
 
-    StatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
+    StatusBar = CreateStatusWindowA(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
         "LDmicro started", MainWindow, 0);
     int edges[] = { 60, 250 + 60, 370 + 130, -1 };
     SendMessage(StatusBar, SB_SETPARTS, 4, (LPARAM)edges);
@@ -133,23 +133,23 @@ void MakeMainWindowControls(void)
 //-----------------------------------------------------------------------------
 void UpdateMainWindowTitleBar(void)
 {
-    char line[MAX_PATH+100];
+    wchar_t line[MAX_PATH+100];
     if(InSimulationMode) {
         if(RealTimeSimulationRunning) {
-            strcpy(line, _("LDmicro - Simulation (Running)"));
+            wcscpy(line, _("LDmicro - Simulation (Running)"));
         } else {
-            strcpy(line, _("LDmicro - Simulation (Stopped)"));
+            wcscpy(line, _("LDmicro - Simulation (Stopped)"));
         }
     } else {
-        strcpy(line, _("LDmicro - Program Editor"));
+        wcscpy(line, _("LDmicro - Program Editor"));
     }
     if(strlen(CurrentSaveFile) > 0) {
-        sprintf(line+strlen(line), " - %s", CurrentSaveFile);
+        swprintf_s(line+wcslen(line), arraylen(line)-wcslen(line),L" - %s", CurrentSaveFile);
     } else {
-        strcat(line, _(" - (not yet saved)"));
+        wcscat(line, _(" - (not yet saved)"));
     }
 
-    SetWindowText(MainWindow, line);
+    SetWindowTextW(MainWindow, line);
 }
 
 //-----------------------------------------------------------------------------
@@ -322,437 +322,437 @@ HMENU MakeMainWindowMenus(void)
     int i;
     // file popup menu
     FileMenu = CreatePopupMenu();
-    AppendMenu(FileMenu, MF_STRING,   MNU_NEW,         _("&New\tCtrl+N"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,        _("&Open...\tCtrl+O"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_LD,  _("Open ld in notepad\tF4"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_HEX, _("Open hex in notepad\tAlt+F6"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_ASM, _("Open asm in notepad\tAlt+F3"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_C,   _("Open c in notepad"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_H,   _("Open h in notepad"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tAlt+F5"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_EXPLORE_DIR, _("Explore ld directory"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_01,     _("Save LDmicro0.1 file format v2.3 compatible"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_02,     _("Save LDmicro0.2 file format"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,     _("Save &As..."));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_NEW,         _("&New\tCtrl+N"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_OPEN,        _("&Open...\tCtrl+O"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_NOTEPAD_LD,  _("Open ld in notepad\tF4"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_NOTEPAD_HEX, _("Open hex in notepad\tAlt+F6"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_NOTEPAD_ASM, _("Open asm in notepad\tAlt+F3"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_NOTEPAD_C,   _("Open c in notepad"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_NOTEPAD_H,   _("Open h in notepad"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tAlt+F5"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_EXPLORE_DIR, _("Explore ld directory"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_SAVE_01,     _("Save LDmicro0.1 file format v2.3 compatible"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_SAVE_02,     _("Save LDmicro0.2 file format"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_SAVE_AS,     _("Save &As..."));
 
-    AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
-    AppendMenu(FileMenu, MF_STRING,   MNU_EXPORT,      _("&Export As Text...\tCtrl+E"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_TXT, _("Open Text in notepad\tF3"));
+    AppendMenuW(FileMenu, MF_SEPARATOR,0,          L"");
+    AppendMenuW(FileMenu, MF_STRING,   MNU_EXPORT,      _("&Export As Text...\tCtrl+E"));
+    AppendMenuW(FileMenu, MF_STRING,   MNU_NOTEPAD_TXT, _("Open Text in notepad\tF3"));
 
-    AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
-    AppendMenu(FileMenu, MF_STRING,   MNU_EXIT,   _("E&xit\tAlt+X"));
+    AppendMenuW(FileMenu, MF_SEPARATOR,0,          L"");
+    AppendMenuW(FileMenu, MF_STRING,   MNU_EXIT,   _("E&xit\tAlt+X"));
 
     EditMenu = CreatePopupMenu();
-    AppendMenu(EditMenu, MF_STRING, MNU_UNDO, _("&Undo\tCtrl+Z or Alt+Backspace"));
-    AppendMenu(EditMenu, MF_STRING, MNU_REDO, _("&Redo\tCtrl+Y or Alt+Shift+Backspace"));
+    AppendMenuW(EditMenu, MF_STRING, MNU_UNDO, _("&Undo\tCtrl+Z or Alt+Backspace"));
+    AppendMenuW(EditMenu, MF_STRING, MNU_REDO, _("&Redo\tCtrl+Y or Alt+Shift+Backspace"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
+    AppendMenuW(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
         _("Insert Rung &Before\tShift+6"));
-    AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
+    AppendMenuW(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
         _("Insert Rung &After\tShift+V"));
-    AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_UP,
+    AppendMenuW(EditMenu, MF_STRING, MNU_PUSH_RUNG_UP,
         _("Move Selected Rung &Up\tAlt+Up"));
-    AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
+    AppendMenuW(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
         _("Move Selected Rung &Down\tAlt+Down"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN,
+    AppendMenuW(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN,
         _("Dup&licate Selected Rung\tCtrl+D"));
-    AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG,
+    AppendMenuW(EditMenu, MF_STRING, MNU_SELECT_RUNG,
         _("Select Rung's\tShift+Up or Shift+Dn"));
-    AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG,
+    AppendMenuW(EditMenu, MF_STRING, MNU_SELECT_RUNG,
         _("Select Rung's\tCtrl+Left Mouse Buttton Click"));
-    AppendMenu(EditMenu, MF_STRING, MNU_CUT_RUNG,
+    AppendMenuW(EditMenu, MF_STRING, MNU_CUT_RUNG,
         _("Cu&t Rung's\tCtrl+X or Shift+Del"));
-    AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG,
+    AppendMenuW(EditMenu, MF_STRING, MNU_COPY_RUNG,
         _("&Copy Rung's\tCtrl+C or Ctrl+Insert"));
-    AppendMenu(EditMenu, MF_STRING, MNU_COPY_ELEM,
+    AppendMenuW(EditMenu, MF_STRING, MNU_COPY_ELEM,
         _("Copy Selected Element\tInsert"));
-    AppendMenu(EditMenu, MF_STRING, MNU_PASTE_RUNG,
+    AppendMenuW(EditMenu, MF_STRING, MNU_PASTE_RUNG,
         _("Paste Rung's\tCtrl+V or Shift+Insert"));
-    AppendMenu(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG,
+    AppendMenuW(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG,
         _("Paste Rung's/Element &Into Rung\tAlt+Insert"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(EditMenu, MF_STRING, MNU_CUT_ELEMENT,
+    AppendMenuW(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(EditMenu, MF_STRING, MNU_CUT_ELEMENT,
         _("Cut Selected Element\tAlt+Del"));
-    AppendMenu(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
+    AppendMenuW(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
         _("&Delete Selected Element\tDel"));
-    AppendMenu(EditMenu, MF_STRING, MNU_DELETE_RUNG,
+    AppendMenuW(EditMenu, MF_STRING, MNU_DELETE_RUNG,
         _("D&elete Rung\tShift+Del"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(EditMenu, MF_STRING, MNU_REPLACE_ELEMENT,
+    AppendMenuW(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(EditMenu, MF_STRING, MNU_REPLACE_ELEMENT,
         _("Replace Selected Element in Group\tSpace"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_UP,
+    AppendMenuW(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(EditMenu, MF_STRING, MNU_SCROLL_UP,
         _("Scroll Up\tCtrl+Up"));
-    AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_DOWN,
+    AppendMenuW(EditMenu, MF_STRING, MNU_SCROLL_DOWN,
         _("Scroll Down\tCtrl+Down"));
-    AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_PgUP,
+    AppendMenuW(EditMenu, MF_STRING, MNU_SCROLL_PgUP,
         _("Scroll PgUp\tCtrl+PgUp"));
-    AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_PgDOWN,
+    AppendMenuW(EditMenu, MF_STRING, MNU_SCROLL_PgDOWN,
         _("Scroll PgDown\tCtrl+PgDown"));
-    AppendMenu(EditMenu, MF_STRING, MNU_ROLL_HOME,
+    AppendMenuW(EditMenu, MF_STRING, MNU_ROLL_HOME,
         _("Roll Home\tCtrl+Home"));
-    AppendMenu(EditMenu, MF_STRING, MNU_ROLL_END,
+    AppendMenuW(EditMenu, MF_STRING, MNU_ROLL_END,
         _("Roll End\tCtrl+End"));
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(EditMenu, MF_STRING, MNU_TAB,
+    AppendMenuW(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(EditMenu, MF_STRING, MNU_TAB,
         _("Moving cursor between the main window and the I/O list\tTab"));
 
     // instruction popup  menu
     InstructionMenu = CreatePopupMenu();
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COMMENT,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_COMMENT,
         _("Insert Co&mment\t;"));
 
     CourseMenu = CreatePopupMenu();
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_OPEN,
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_OPEN,
         _("Insert -+        +- Open-Circuit\tShift+Enter"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SHORT,
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_SHORT,
         _("Insert -+------+- Short-Circuit\tCtrl+Enter"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
 
-    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LABEL, _("Insert LABEL declaration"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOTO, _("Insert GOTO Label or Rung"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SUBPROG, _("Insert SUBPROG declaration"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB declaration"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB call"));
-    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
-    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_TIME2DELAY, _("Insert TIME to DELAY converter"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CourseMenu,_("Operations that change the course of the program"));
+    AppendMenuW(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_LABEL, _("Insert LABEL declaration"));
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_GOTO, _("Insert GOTO Label or Rung"));
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_SUBPROG, _("Insert SUBPROG declaration"));
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB declaration"));
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB call"));
+    AppendMenuW(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
+    AppendMenuW(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
+    AppendMenuW(CourseMenu, MF_STRING, MNU_INSERT_TIME2DELAY, _("Insert TIME to DELAY converter"));
+    AppendMenuW(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CourseMenu,_("Operations that change the course of the program"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
         _("Insert &Contacts: Input Pin\tC"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_RELAY,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_CONT_RELAY,
         _("Insert Contacts: Internal Relay\tShift+C"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_OUTPUT,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_CONT_OUTPUT,
         _("Insert Contacts: Output Pin\tShift+L"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
         _("Insert Coi&l: Output Pin\tL"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL_RELAY,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_COIL_RELAY,
         _("Insert Coil: Internal Relay\tAlt+L"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_NORMAL,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_MAKE_NORMAL,
         _("Make &Normal\tN"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_NEGATE,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_NEGATE,
         _("Make &Negated\tN"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_SET_ONLY,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_MAKE_SET_ONLY,
         _("Make &Set-Only\tS"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_RESET_ONLY,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_MAKE_RESET_ONLY,
         _("Make &Reset-Only\tR"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_TTRIGGER,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_MAKE_TTRIGGER,
         _("Make T-trigger"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSR,
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_OSR,
         _("Insert _/OSR/\\_ (One Shot Rising)\t&/"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSF,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_OSF,
         _("Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSL,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_OSL,
         _("Insert \\_OSL\\/ (One Shot Low)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSC,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_OSC,
         _("Insert _/OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
 
     PulseMenu = CreatePopupMenu();
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE,     _("EDIT: Insert N PULSE"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_PULSER,     _("EDIT: Insert PULSER"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_STEPPER,    _("EDIT: Insert STEPPER"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("EDIT: Insert N PULSE OFF"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu,_("Pulse generators"));
+    AppendMenuW(PulseMenu, MF_STRING, MNU_INSERT_NPULSE,     _("EDIT: Insert N PULSE"));
+    AppendMenuW(PulseMenu, MF_STRING, MNU_INSERT_PULSER,     _("EDIT: Insert PULSER"));
+    AppendMenuW(PulseMenu, MF_STRING, MNU_INSERT_STEPPER,    _("EDIT: Insert STEPPER"));
+    AppendMenuW(PulseMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("EDIT: Insert N PULSE OFF"));
+    AppendMenuW(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu,_("Pulse generators"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TON,
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_TON,
         _("Insert T&ON (Delayed Turn On)\tO"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TOF,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_TOF,
         _("Insert TO&F (Delayed Turn Off)\tF"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTO,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_RTO,
         _("Insert R&TO (Retentive Delayed Turn On)\tT"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTL,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_RTL,
         _("Insert RTL (Retentive Delayed Turn On If Low Input)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TCY,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_TCY,
         _("Insert TCY (Cyclic On/Off)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_THI, _("Insert THI (Hight Delay)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TLO, _("Insert TLO (Low Delay)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT, _("Insert TIME to COUNTER converter"));
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_THI, _("Insert THI (Hight Delay)"));
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_TLO, _("Insert TLO (Low Delay)"));
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT, _("Insert TIME to COUNTER converter"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
         _("Insert CT&U (Count Up)\tU"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTD,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_CTD,
         _("Insert CT&D (Count Down)\tI"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTC,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_CTC,
         _("Insert CT&C (Count Circular)\tJ"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTR,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_CTR,
         _("Insert CT&R (Count Circular Reversive)\tK"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RES,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_RES,
         _("Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
 /*
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_EQU,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEQ,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_NEQ,
         _("Insert NEQ (Compare for Not Equals)\t!"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GRT,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_GRT,
         _("Insert GRT (Compare for Greater Than)\t>"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GEQ,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_GEQ,
         _("Insert GEQ (Compare for Greater Than or Equal)\t."));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LES,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_LES,
         _("Insert LES (Compare for Less Than)\t<"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LEQ,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_LEQ,
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
 */
     CmpMenu = CreatePopupMenu();
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_EQU,
+    AppendMenuW(CmpMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_NEQ,
+    AppendMenuW(CmpMenu, MF_STRING, MNU_INSERT_NEQ,
         _("Insert NEQ (Compare for Not Equals)\t!"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_GRT,
+    AppendMenuW(CmpMenu, MF_STRING, MNU_INSERT_GRT,
         _("Insert GRT (Compare for Greater Than)\t>"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_GEQ,
+    AppendMenuW(CmpMenu, MF_STRING, MNU_INSERT_GEQ,
         _("Insert GEQ (Compare for Greater Than or Equal)\t."));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_LES,
+    AppendMenuW(CmpMenu, MF_STRING, MNU_INSERT_LES,
         _("Insert LES (Compare for Less Than)\t<"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_LEQ,
+    AppendMenuW(CmpMenu, MF_STRING, MNU_INSERT_LEQ,
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_SET,    _("Insert Test If Bit Set"));
-    AppendMenu(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR,  _("Insert Test If Bit Clear"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CmpMenu,_("Compare variable"));
+    AppendMenuW(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_SET,    _("Insert Test If Bit Set"));
+    AppendMenuW(CmpMenu, MF_STRING, MNU_INSERT_IF_BIT_CLEAR,  _("Insert Test If Bit Clear"));
+    AppendMenuW(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CmpMenu,_("Compare variable"));
 
 /*
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOV,
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_MOV,
         _("Insert MOV (Move)\tM"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_ADD,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_ADD,
         _("Insert ADD (16-bit Integer Add)\t+"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SUB,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_SUB,
         _("Insert SUB (16-bit Integer Subtract)\t-"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MUL,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_MUL,
         _("Insert MUL (16-bit Integer Multiply)\t*"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_DIV,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_DIV,
         _("Insert DIV (16-bit Integer Divide)\tD"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOD,_("TODO: Insert MOD (Integer Divide Remainder)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEG,_("TODO: Insert NEG (Integer Negate)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("TODO: Insert BIN2BCD"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("TODO: Insert BCD2BIN"));
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_MOD,_("TODO: Insert MOD (Integer Divide Remainder)"));
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_NEG,_("TODO: Insert NEG (Integer Negate)"));
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("TODO: Insert BIN2BCD"));
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("TODO: Insert BCD2BIN"));
 */
     SignedMenu = CreatePopupMenu();
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOV,
+    AppendMenuW(SignedMenu, MF_STRING, MNU_INSERT_MOV,
         _("Insert MOV (Move)\tM"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_ADD,
+    AppendMenuW(SignedMenu, MF_STRING, MNU_INSERT_ADD,
         _("Insert ADD (16-bit Integer Add)\t+"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SUB,
+    AppendMenuW(SignedMenu, MF_STRING, MNU_INSERT_SUB,
         _("Insert SUB (16-bit Integer Subtract)\t-"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MUL,
+    AppendMenuW(SignedMenu, MF_STRING, MNU_INSERT_MUL,
         _("Insert MUL (16-bit Integer Multiply)\t*"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_DIV,
+    AppendMenuW(SignedMenu, MF_STRING, MNU_INSERT_DIV,
         _("Insert DIV (16-bit Integer Divide)\tD"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD, _("SIMUL: Insert MOD (Integer Divide Remainder)"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG, _("Insert NEG (Integer Negate)"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_RANDOM, _("Insert Random"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SEED_RANDOM, _("Insert Seed of Random"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SignedMenu,_("Signed variable operations"));
+    AppendMenuW(SignedMenu, MF_STRING, MNU_INSERT_MOD, _("SIMUL: Insert MOD (Integer Divide Remainder)"));
+    AppendMenuW(SignedMenu, MF_STRING, MNU_INSERT_NEG, _("Insert NEG (Integer Negate)"));
+    AppendMenuW(SignedMenu, MF_STRING, MNU_INSERT_RANDOM, _("Insert Random"));
+    AppendMenuW(SignedMenu, MF_STRING, MNU_INSERT_SEED_RANDOM, _("Insert Seed of Random"));
+    AppendMenuW(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SignedMenu,_("Signed variable operations"));
 
     BitwiseMenu = CreatePopupMenu();
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND,       _("SIMUL: Insert bitwise AND"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR ,       _("SIMUL: Insert bitwise OR     |"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_XOR,       _("Insert bitwise XOR  ^"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT,       _("SIMUL: Insert bitwise NOT  ~"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL,       _("SIMUL: Insert SHL << arithmetic,logic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR,       _("SIMUL: Insert SHR >> arithmetic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SR0,       _("Insert SR0 >> logic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL,       _("SIMUL: Insert ROL cyclic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR,       _("SIMUL: Insert ROR cyclic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP,      _("Insert SWAP"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OPPOSITE,  _("SIMUL: Insert OPPOSITE"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT,   _("SIMUL: Insert Set Bit #"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("SIMUL: Insert Clear Bit #"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu,_("Bitwise variable operations (Unsigned)"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_AND,       _("SIMUL: Insert bitwise AND"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_OR ,       _("SIMUL: Insert bitwise OR     |"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_XOR,       _("Insert bitwise XOR  ^"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_NOT,       _("SIMUL: Insert bitwise NOT  ~"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_SHL,       _("SIMUL: Insert SHL << arithmetic,logic shift to the left"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_SHR,       _("SIMUL: Insert SHR >> arithmetic shift to the right"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_SR0,       _("Insert SR0 >> logic shift to the right"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_ROL,       _("SIMUL: Insert ROL cyclic shift to the left"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_ROR,       _("SIMUL: Insert ROR cyclic shift to the right"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP,      _("Insert SWAP"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_OPPOSITE,  _("SIMUL: Insert OPPOSITE"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT,   _("SIMUL: Insert Set Bit #"));
+    AppendMenuW(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("SIMUL: Insert Clear Bit #"));
+    AppendMenuW(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu,_("Bitwise variable operations (Unsigned)"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHIFT_REG,
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_SHIFT_REG,
         _("Insert Shift Register"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LUT,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_LUT,
         _("Insert Look-Up Table"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWL,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_PWL,
         _("Insert Piecewise Linear"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STRING,
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STRING,
         _("Insert Formatted String Over &UART"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
         _("Insert &UART SEND"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
         _("Insert &UART Receive"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SENDn,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_UART_SENDn,
         _("Insert &UART SENDn Variable"));
-//  AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECVn,
+//  AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECVn,
 //      _("Insert &UART Receive Variable"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND_READY,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND_READY,
         _("Insert &UART Send: Is ready to send ?"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL,
         _("Insert &UART Receive: Is data available ?"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM,
         _("Insert Set &PWM Output\tP"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,
         _("Insert &A/D Converter Read\tA"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
         _("Insert Make Persistent"));
 
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
         _("TODO: Insert Software &PWM (AVR136 AppNote)\tP"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("EDIT: Insert QUAD ENCOD"));
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("EDIT: Insert QUAD ENCOD"));
     DisplayMenu = CreatePopupMenu();
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD,        _("SIMUL: Insert BIN2BCD"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN,        _("SIMUL: Insert BCD2BIN"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS,            _("SIMUL: Insert BUS tracer"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG,           _("SIMUL: Insert char to 7 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG,           _("SIMUL: Insert char to 9 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG,          _("SIMUL: Insert char to 14 SEGMENT converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("SIMUL: Insert char to 16 SEGMENT converter"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu,_("Displays"));
+    AppendMenuW(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD,        _("SIMUL: Insert BIN2BCD"));
+    AppendMenuW(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN,        _("SIMUL: Insert BCD2BIN"));
+    AppendMenuW(DisplayMenu, MF_STRING, MNU_INSERT_BUS,            _("SIMUL: Insert BUS tracer"));
+    AppendMenuW(DisplayMenu, MF_STRING, MNU_INSERT_7SEG,           _("SIMUL: Insert char to 7 SEGMENT converter"));
+    AppendMenuW(DisplayMenu, MF_STRING, MNU_INSERT_9SEG,           _("SIMUL: Insert char to 9 SEGMENT converter"));
+    AppendMenuW(DisplayMenu, MF_STRING, MNU_INSERT_14SEG,          _("SIMUL: Insert char to 14 SEGMENT converter"));
+    AppendMenuW(DisplayMenu, MF_STRING, MNU_INSERT_16SEG,          _("SIMUL: Insert char to 16 SEGMENT converter"));
+    AppendMenuW(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu,_("Displays"));
 
     #ifdef USE_SFR
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(InstructionMenu, MF_SEPARATOR, 0, NULL);
     // Special function menu
     SpecialFunction = CreatePopupMenu();
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFR,      _("&Insert Read From SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFW,      _("&Insert Write To SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SSFB,     _("&Insert Set Bit In SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_csFB,     _("&Insert Clear Bit In SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_TSFB,     _("&Insert Test If Bit Set in SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB,  _("&Insert Test If Bit Clear in SFR"));
+    AppendMenuW(SpecialFunction, MF_STRING, MNU_INSERT_SFR,      _("&Insert Read From SFR"));
+    AppendMenuW(SpecialFunction, MF_STRING, MNU_INSERT_SFW,      _("&Insert Write To SFR"));
+    AppendMenuW(SpecialFunction, MF_STRING, MNU_INSERT_SSFB,     _("&Insert Set Bit In SFR"));
+    AppendMenuW(SpecialFunction, MF_STRING, MNU_INSERT_csFB,     _("&Insert Clear Bit In SFR"));
+    AppendMenuW(SpecialFunction, MF_STRING, MNU_INSERT_TSFB,     _("&Insert Test If Bit Set in SFR"));
+    AppendMenuW(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB,  _("&Insert Test If Bit Clear in SFR"));
 
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction,_("&Special Function for AVR"));
+    AppendMenuW(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction,_("&Special Function for AVR"));
     #endif
 
     settings = CreatePopupMenu();
-    AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
+    AppendMenuW(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
     ProcessorMenu = CreatePopupMenu();
     Core core = SupportedMcus[0].core;
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
         if(core != SupportedMcus[i].core) {
             core = SupportedMcus[i].core ;
-            AppendMenu(ProcessorMenu, MF_SEPARATOR,0,""); //separate AVR MCU core
+            AppendMenuW(ProcessorMenu, MF_SEPARATOR,0,L""); //separate AVR MCU core
         }
-        AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
+        AppendMenuA(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
             SupportedMcus[i].mcuName);
     }
-    AppendMenu(ProcessorMenu, MF_SEPARATOR,0,"");
-    AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
+    AppendMenuW(ProcessorMenu, MF_SEPARATOR,0,L"");
+    AppendMenuW(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0+i,
         _("(no microcontroller)"));
-    AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu,
+    AppendMenuW(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu,
         _("&Microcontroller"));
 
     ProcessorMenu2 = CreatePopupMenu();
-    AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu2,
+    AppendMenuW(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu2,
         _("Microcontrollers: TODO and DONE"));
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega32U4 44-Pin packages");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega32 44-Pin packages");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Atmel AVR ATmega328 32-Pin packages");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR ATtiny85");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR ATtinyXXX");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB646");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB1286");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Atmel AVR AT90USB1287");
-    AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F200/202/204/206 6-SOT");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC10F220/222 6-SOT");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC12Fxxx");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC12F629");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC12F675 8-pin packages");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,"DONE: Microchip PIC12F683 8-pin packages");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F72 28-Pin PDIP, SOIC, SSOP");
-    AppendMenu(ProcessorMenu2, MF_SEPARATOR,0,"");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC16F1512 - PIC16F1527");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1516 28-Pin SPDIP, SOIC, SSOP");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"DONE: Microchip PIC16F1527 64-Pin packages");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,"TODO: Microchip PIC16F1933 - PIC16F1947");
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("DONE: Atmel AVR ATmega32U4 44-Pin packages"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("DONE: Atmel AVR ATmega32 44-Pin packages"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("DONE: Atmel AVR ATmega328 32-Pin packages"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("TODO: Atmel AVR ATtiny85"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("TODO: Atmel AVR ATtinyXXX"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("TODO: Atmel AVR AT90USB646"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("TODO: Atmel AVR AT90USB1286"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("TODO: Atmel AVR AT90USB1287"));
+    AppendMenuW(ProcessorMenu2, MF_SEPARATOR,0,L"");
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,_("DONE: Microchip PIC10F200/202/204/206 6-SOT"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,_("DONE: Microchip PIC10F220/222 6-SOT"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("TODO: Microchip PIC12Fxxx"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,_("DONE: Microchip PIC12F629"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,_("DONE: Microchip PIC12F675 8-pin packages"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12,_("DONE: Microchip PIC12F683 8-pin packages"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("DONE: Microchip PIC16F72 28-Pin PDIP, SOIC, SSOP"));
+    AppendMenuW(ProcessorMenu2, MF_SEPARATOR,0,L"");
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("TODO: Microchip PIC16F1512 - PIC16F1527"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("DONE: Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("DONE: Microchip PIC16F1516 28-Pin SPDIP, SOIC, SSOP"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("DONE: Microchip PIC16F1527 64-Pin packages"));
+    AppendMenuW(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW,_("TODO: Microchip PIC16F1933 - PIC16F1947"));
 
     // simulate popup menu
     SimulateMenu = CreatePopupMenu();
-    AppendMenu(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE,
+    AppendMenuW(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE,
         _("Si&mulation Mode\tCtrl+M or F7"));
-    AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION,
+    AppendMenuW(SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION,
         _("Start &Real-Time Simulation\tCtrl+R or F8"));
-    AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION,
+    AppendMenuW(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION,
         _("&Halt Simulation\tCtrl+H or F9"));
-    AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_SINGLE_CYCLE,
+    AppendMenuW(SimulateMenu, MF_STRING | MF_GRAYED, MNU_SINGLE_CYCLE,
         _("Single &Cycle\tSpace"));
 
     compile = CreatePopupMenu();
-    AppendMenu(compile, MF_STRING, MNU_COMPILE,               _("&Compile\tF5"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_AS,            _("Compile &As..."));
-  //AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,          _("Compile HEX"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,          _("Compile HEX->ASM"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,         _("Compile ANSIC"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_HI_TECH_C,     _("Compile HI-TECH C for PIC"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_CCS_PIC_C,     _("Compile CCS C for PIC"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_GNUC,          _("Compile AVR-GCC, Atmel AVR Toolchain, WinAVR C"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_CODEVISIONAVR, _("Compile CodeVisionAVR C"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO,       _("Compile Sketch for ARDUINO"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("DONE: Compile PASCAL"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_INT,    _("Compile Interpretable Byte Code"));
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT,   _("Compile Interpretable Extended Byte Code"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
-    AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,      _("Call flashMcu.bat\tF6"));
-    AppendMenu(compile, MF_STRING, MNU_READ_BAT,       _("Call readMcu.bat\tCtrl+F6"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
-    AppendMenu(compile, MF_STRING, MNU_CLEAR_BAT,      _("Call clear.bat"));
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE,               _("&Compile\tF5"));
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_AS,            _("Compile &As..."));
+  //AppendMenuW(compile, MF_STRING, MNU_COMPILE_IHEX,          _("Compile HEX"));
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_IHEX,          _("Compile HEX->ASM"));
+    AppendMenuW(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_ANSIC,         _("Compile ANSIC"));
+    AppendMenuW(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_HI_TECH_C,     _("Compile HI-TECH C for PIC"));
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_CCS_PIC_C,     _("Compile CCS C for PIC"));
+    AppendMenuW(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_GNUC,          _("Compile AVR-GCC, Atmel AVR Toolchain, WinAVR C"));
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_CODEVISIONAVR, _("Compile CodeVisionAVR C"));
+    AppendMenuW(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_ARDUINO,       _("Compile Sketch for ARDUINO"));
+    AppendMenuW(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_PASCAL, _("DONE: Compile PASCAL"));
+    AppendMenuW(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_INT,    _("Compile Interpretable Byte Code"));
+    AppendMenuW(compile, MF_STRING, MNU_COMPILE_XINT,   _("Compile Interpretable Extended Byte Code"));
+    AppendMenuW(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(compile, MF_STRING, MNU_FLASH_BAT,      _("Call flashMcu.bat\tF6"));
+    AppendMenuW(compile, MF_STRING, MNU_READ_BAT,       _("Call readMcu.bat\tCtrl+F6"));
+    AppendMenuW(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(compile, MF_STRING, MNU_CLEAR_BAT,      _("Call clear.bat"));
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();
     for(i = 0; i < NUM_SUPPORTED_SCHEMES; i++) {
-      AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK+i, Schemes[i].sName);
+      AppendMenuA(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK+i, Schemes[i].sName);
     }
-    AppendMenu(SchemeMenu, MF_SEPARATOR, 0, "");
-    AppendMenu(SchemeMenu, MF_STRING, MNU_SELECT_COLOR, _("Select user colors"));
-    AppendMenu(ConfigMenu, MF_STRING | MF_POPUP, (UINT_PTR)SchemeMenu,_("Select color scheme"));
+    AppendMenuW(SchemeMenu, MF_SEPARATOR, 0, L"");
+    AppendMenuW(SchemeMenu, MF_STRING, MNU_SELECT_COLOR, _("Select user colors"));
+    AppendMenuW(ConfigMenu, MF_STRING | MF_POPUP, (UINT_PTR)SchemeMenu,_("Select color scheme"));
 
     help = CreatePopupMenu();
-    AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
-    AppendMenu(help, MF_STRING, MNU_HOW, _("HOW TO:..."));
-    AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
-    AppendMenu(help, MF_STRING, MNU_RELEASE, _("Releases..."));
-    AppendMenu(help, MF_STRING, MNU_CHANGES, _("Latest release changes..."));
-    AppendMenu(help, MF_STRING, MNU_FORUM, _("LDmicro Forum..."));
-    AppendMenu(help, MF_STRING, MNU_ISSUE, _("Create new issue..."));
-    AppendMenu(help, MF_STRING, MNU_EMAIL, _("E-mail..."));
+    AppendMenuW(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
+    AppendMenuW(help, MF_STRING, MNU_HOW, _("HOW TO:..."));
+    AppendMenuW(help, MF_STRING, MNU_ABOUT, _("&About..."));
+    AppendMenuW(help, MF_STRING, MNU_RELEASE, _("Releases..."));
+    AppendMenuW(help, MF_STRING, MNU_CHANGES, _("Latest release changes..."));
+    AppendMenuW(help, MF_STRING, MNU_FORUM, _("LDmicro Forum..."));
+    AppendMenuW(help, MF_STRING, MNU_ISSUE, _("Create new issue..."));
+    AppendMenuW(help, MF_STRING, MNU_EMAIL, _("E-mail..."));
 
     TopMenu = CreateMenu();
-    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)FileMenu, _("&File"));
-    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)EditMenu, _("&Edit"));
-    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)settings,
+    AppendMenuW(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)FileMenu, _("&File"));
+    AppendMenuW(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)EditMenu, _("&Edit"));
+    AppendMenuW(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)settings,
         _("&Settings"));
-    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)InstructionMenu,
+    AppendMenuW(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)InstructionMenu,
         _("&Instruction"));
-    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)SimulateMenu,
+    AppendMenuW(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)SimulateMenu,
         _("Si&mulate"));
-    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)compile,
+    AppendMenuW(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)compile,
         _("&Compile"));
-    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConfigMenu, _("Config"));
-    AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)help, _("&Help"));
+    AppendMenuW(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConfigMenu, _("Config"));
+    AppendMenuW(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)help, _("&Help"));
 
     return TopMenu;
 }
@@ -890,51 +890,49 @@ void HscrollProc(WPARAM wParam)
 //-----------------------------------------------------------------------------
 void RefreshStatusBar(void)
 {
-    SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_(ProgramChangedNotSaved ? _("modified") : "        " ));
+    SendMessageW(StatusBar, SB_SETTEXTW, 0, (LPARAM)_(ProgramChangedNotSaved ? "modified" : "        " ));
 
     if(Prog.mcu) {
-        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)Prog.mcu->mcuName);
+        SendMessageA(StatusBar, SB_SETTEXTA, 1, (LPARAM)Prog.mcu->mcuName);
     } else {
-        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)_("no MCU selected"));
+        SendMessageW(StatusBar, SB_SETTEXTW, 1, (LPARAM)_("no MCU selected"));
     }
-    char buf[1000];
-    char Tunits[3];
-    char Funits[3];
-    char F2units[3];
-    char TNunits[3];
+    wchar_t buf[1024];
+    char Tunits[3] = "";
+    char Funits[3] = "";
+    char F2units[3] = "";
+    char TNunits[3] = "";
 
-    double T=SIprefix(1.0*Prog.cycleTime/1000000, Tunits);
+    double T = SIprefix(1.0*Prog.cycleTime/1000000, Tunits);
 
     double F=0;
     double F2=0;
     if(Prog.cycleTime>0) {
-        F=SIprefix(1000000.0/Prog.cycleTime, Funits);
-        F2=SIprefix(1000000.0/Prog.cycleTime/2, F2units);
+        F = SIprefix(1000000.0/Prog.cycleTime, Funits);
+        F2 = SIprefix(1000000.0/Prog.cycleTime/2, F2units);
     }
 
     double TN=SIprefix(1.0*Prog.cycleTime*CyclesCount/1000000, TNunits);
 
     if(Prog.cycleTime>0) {
-        sprintf(buf, "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss",
-            T,Tunits, F,Funits, F2,F2units, CyclesCount, TN,TNunits);
+        swprintf_s(buf,1000,_("Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss"),
+            T,to_utf16(Tunits).c_str(), F,to_utf16(Funits).c_str(), F2,to_utf16(F2units).c_str(), CyclesCount, TN,to_utf16(TNunits).c_str());
     } else {
-        sprintf(buf, "Tcycle=%.6g %ss Ncycle=%d T=%.6g %ss",
-            T,Tunits, CyclesCount, TN,TNunits);
+        swprintf_s(buf, _("Tcycle=%.6g %lss Ncycle=%d T=%.6g %lss"),
+            T,to_utf16(Tunits).c_str(), CyclesCount, TN,to_utf16(TNunits).c_str());
     }
-    SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
+    SendMessageW(StatusBar, SB_SETTEXTW, 3, (LPARAM)buf);
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_NETZER ||
                     Prog.mcu->whichIsa == ISA_PASCAL ||
                     Prog.mcu->whichIsa == ISA_INTERPRETED ||
                     Prog.mcu->whichIsa == ISA_XINTERPRETED))
     {
-        strcpy(buf, "");
+        wcscpy(buf, L"");
     } else {
-        sprintf(buf, _("processor clock %.9g MHz"),
-            (double)Prog.mcuClock/1000000.0);
+        swprintf_s(buf, _("processor clock %.9g MHz"), (double)Prog.mcuClock/1000000.0);
     }
-    SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);
-
+    SendMessageW(StatusBar, SB_SETTEXTW, 2, (LPARAM)buf);
 }
 
 //-----------------------------------------------------------------------------
@@ -1001,7 +999,7 @@ void RefreshControlsToSettings(void)
         CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_UNCHECKED);
     }
 
-    for(i = 0; i < NUM_SUPPORTED_SCHEMES; i++)
+    for(decltype(scheme) i = 0; i < NUM_SUPPORTED_SCHEMES; i++)
         CheckMenuItem(SchemeMenu, MNU_SCHEME_BLACK+i, (i == scheme) ? MF_CHECKED : MF_UNCHECKED);
 }
 

@@ -4431,10 +4431,10 @@ static void CompileFromIntermediate(BOOL topLevel)
                 // Timer1
                 // Software programmable prescaler (1:1, 1:2, 1:4, 1:8)
 
-                char str0[1024];
-                char str1[1024];
-                char str2[1024];
-                char str3[1024];
+                wchar_t str0[1024];
+                wchar_t str1[1024];
+                wchar_t str2[1024];
+                wchar_t str3[1024];
                 char minSI[5];
                 char maxSI[5];
                 double minFreq;
@@ -4447,7 +4447,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 char minMcuClockSI[5];
                 char maxMcuClockSI[5];
                 McuClock = SIprefix(Prog.mcuClock, McuClockSI);
-                sprintf(str0,_("When the MCU crystal frequency is %.3g %sHz."), McuClock, McuClockSI);
+                swprintf_s(str0,_("When the MCU crystal frequency is %.3g %sHz."), McuClock, McuClockSI);
 
                 if((timer == 2)
                 || (timer == 1)) {
@@ -4463,8 +4463,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                     maxMcuClock = SIprefix(target * ((255+1)*4*8), maxMcuClockSI);
                 */
                 } else oops();
-                sprintf(str1,_("Available PWM frequency from %.3f %sHz up to %.3f %sHz"), minFreq, minSI, maxFreq, maxSI);
-                sprintf(str3,_("Required MCU crystal frequency from %.3g %sHz up to %.3g %sHz"), minMcuClock, minMcuClockSI, maxMcuClock, maxMcuClockSI);
+                swprintf_s(str1,_("Available PWM frequency from %.3f %sHz up to %.3f %sHz"), minFreq, minSI, maxFreq, maxSI);
+                swprintf_s(str3,_("Required MCU crystal frequency from %.3g %sHz up to %.3g %sHz"), minMcuClock, minMcuClockSI, maxMcuClock, maxMcuClockSI);
 
                 int pr2plus1;
                 int prescale;
@@ -4472,7 +4472,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     int dv = 4*prescale*target;
                     pr2plus1 = (Prog.mcuClock + (dv/2))/dv;
                     if(pr2plus1 < 3) {
-                        sprintf(str2,"'%s' %s\n\n%s",
+                        swprintf_s(str2,L"'%s' %ls\n\n%ls",
                             a->name3,
                             _("PWM frequency too fast."),
                             str1);
@@ -4487,7 +4487,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                         } else if(prescale == 4) {
                             prescale = 16;
                         } else {
-                            sprintf(str2,"SET '%s': %s %s\n\n%s\n\n\t\tOR\n\n%s",
+                            swprintf_s(str2,L"SET '%s': %ls %ls\n\n%ls\n\n\t\tOR\n\n%ls",
                                 a->name3,
                                 _("PWM frequency too slow."),
                                 str0, str1, str3);
@@ -7076,34 +7076,34 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     //dbp("%ld - %ld = %ld", PicProgWriteP, BeginOfPLCCycle, PicProgLdLen);
 
     if(ShowMessage) {
-        char str[MAX_PATH+500];
+        wchar_t str[MAX_PATH+500];
 
         if(Prog.cycleTime) {
             double CycleDeviation = 1e2*(1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime;
             if(CycleDeviation > 1.0) {
-                sprintf(str, _("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
+                swprintf_s(str, _("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
                 Error(str);
             }
         }
 
-        sprintf(str, _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
+        swprintf_s(str, _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
             "Configuration word (fuses) has been set for crystal oscillator, BOD "
             "enabled, LVP disabled, PWRT enabled, all code protection off."),
                 outFile, PicProgWriteP, Prog.mcu->flashWords,
                 (100*PicProgWriteP)/Prog.mcu->flashWords);
 
-        char str2[MAX_PATH+500];
-        sprintf(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
+        wchar_t str2[MAX_PATH+500];
+        swprintf_s(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
             PicProgWriteP, Prog.mcu->flashWords,
             (100*PicProgWriteP)/Prog.mcu->flashWords);
 
-        char str3[MAX_PATH+500];
-        sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
+        wchar_t str3[MAX_PATH+500];
+        swprintf_s(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
             UsedRAM(), McuRAM(),
             (100*UsedRAM())/McuRAM());
 
-        char str4[MAX_PATH+500];
-        sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
+        wchar_t str4[MAX_PATH+500];
+        swprintf_s(str4, L"%ls\r\n\r\n%ls\r\n%ls", str, str2, str3);
 
         if(PicProgWriteP > Prog.mcu->flashWords) {
             CompileSuccessfulMessage(str4, MB_ICONWARNING);

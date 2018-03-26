@@ -20,6 +20,7 @@
 // Miscellaneous utility functions that don't fit anywhere else. IHEX writing,
 // verified memory allocator, other junk.
 //-----------------------------------------------------------------------------
+#include <string>
 #include "stdafx.h"
 
 #include "ldmicro.h"
@@ -47,6 +48,9 @@ static int IhexChecksum;
 HFONT MyNiceFont;
 HFONT MyFixedFont;
 
+std::wstring to_utf16(const char* s);
+std::string to_utf8(const wchar_t* w);
+
 //-----------------------------------------------------------------------------
 // printf-like debug function, to the Windows debug log.
 //-----------------------------------------------------------------------------
@@ -56,8 +60,16 @@ void dbp(const char *str, ...)
     char buf[1024*8];
     va_start(f, str);
     vsprintf(buf, str, f);
-    OutputDebugString(buf);
-//  OutputDebugString("\n");
+    OutputDebugStringA(buf);
+}
+
+void dbp(const wchar_t *str, ...)
+{
+    va_list f;
+    wchar_t buf[1024*8];
+    va_start(f, str);
+    vswprintf_s(buf, str, f);
+    OutputDebugStringW(buf);
 }
 
 //-----------------------------------------------------------------------------
@@ -71,7 +83,7 @@ BOOL AttachConsoleDynamic(DWORD base)
     typedef BOOL WINAPI fptr_acd(DWORD base);
     fptr_acd *fp;
 
-    HMODULE hm = LoadLibrary("kernel32.dll");
+    HMODULE hm = LoadLibraryA("kernel32.dll");
     if(!hm) return FALSE;
 
     fp = (fptr_acd *)GetProcAddress(hm, "AttachConsole");
@@ -121,12 +133,45 @@ void Error(const char *str, ...)
         char buf2[1024];
         if(buf[0]==' ') {
             //sprintf(buf2, "%s (%s)", _("LDmicro Warning"), AboutText[38]);
-            MessageBox(h, &buf[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
+            MessageBoxA(h, &buf[1], ("LDmicro Warning"), MB_OK | MB_ICONWARNING);
         } else {
-            sprintf(buf2, "%s (%s)", _("LDmicro Error"), AboutText[38]);
-            MessageBox(h, buf, buf2, MB_OK | MB_ICONERROR);
+            sprintf(buf2, "%s (%s)", ("LDmicro Error"), AboutText[38]);
+            MessageBoxA(h, buf, buf2, MB_OK | MB_ICONERROR);
         }
 
+    }
+}
+
+void Error(const wchar_t *str, ...)
+{
+    va_list f;
+    wchar_t buf[1024];
+    va_start(f, str);
+    vswprintf_s(buf, str, f);
+    dbp(buf);
+    if(RunningInBatchMode) {
+        AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
+        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD written;
+
+        // Indicate that it's an error, plus the output filename
+        wchar_t str[MAX_PATH+100];
+        swprintf_s(str, L"compile error ('%s'): ", CurrentCompileFile);
+        WriteFile(h, str, wcslen(str), &written, NULL);
+        // The error message itself
+        WriteFile(h, buf, wcslen(buf), &written, NULL);
+        // And an extra newline to be safe.
+        wcscpy(str, L"\n");
+        WriteFile(h, str, wcslen(str), &written, NULL);
+    } else {
+        HWND h = GetForegroundWindow();
+        wchar_t buf2[1024];
+        if(buf[0]==' ') {
+            MessageBoxW(h, &buf[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
+        } else {
+            swprintf_s(buf2, L"%s (%s)", _("LDmicro Error"), AboutText[38]);
+            MessageBoxW(h, buf, buf2, MB_OK | MB_ICONERROR);
+        }
     }
 }
 
@@ -145,11 +190,28 @@ void CompileSuccessfulMessage(char *str, unsigned int uType)
         DWORD written;
         WriteFile(h, str, strlen(str), &written, NULL);
     } else if (uType == MB_ICONINFORMATION) {
-        MessageBox(MainWindow, str, _("Compile Successful"),
+        MessageBox(MainWindow, to_utf16(str).c_str(), _("Compile Successful"),
             MB_OK | uType);
     } else {
-        MessageBox(MainWindow, str, _("Compile is successful but exceed the memory size !!!"),
+        MessageBox(MainWindow, to_utf16(str).c_str(), _("Compile is successful but exceed the memory size !!!"),
             MB_OK | uType);
+    }
+}
+
+void CompileSuccessfulMessage(wchar_t *str, unsigned int uType)
+{
+    if(RunningInBatchMode) {
+        char str[MAX_PATH+100];
+        sprintf(str, "compiled okay, wrote '%s'\n", CurrentCompileFile);
+
+        AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
+        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD written;
+        WriteFile(h, str, strlen(str), &written, NULL);
+    } else if (uType == MB_ICONINFORMATION) {
+        MessageBoxW(MainWindow, str, _("Compile Successful"), MB_OK | uType);
+    } else {
+        MessageBoxW(MainWindow, str, _("Compile is successful but exceed the memory size !!!"), MB_OK | uType);
     }
 }
 
@@ -239,7 +301,24 @@ HWND CreateWindowClient(DWORD exStyle, const char *className, const char *window
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param)
 {
-    HWND h = CreateWindowEx(exStyle, className, windowName, style, x, y,
+    HWND h = CreateWindowExA(exStyle, className, windowName, style, x, y,
+        width, height, parent, menu, instance, param);
+
+    RECT r;
+    GetClientRect(h, &r);
+    width = width - (r.right - width);
+    height = height - (r.bottom - height);
+
+    SetWindowPos(h, HWND_TOP, x, y, width, height, 0);
+
+    return h;
+}
+
+HWND CreateWindowClient(DWORD exStyle, const wchar_t *className, const wchar_t *windowName,
+    DWORD style, int x, int y, int width, int height, HWND parent,
+    HMENU menu, HINSTANCE instance, void *param)
+{
+    HWND h = CreateWindowExW(exStyle, className, windowName, style, x, y,
         width, height, parent, menu, instance, param);
 
     RECT r;
@@ -318,7 +397,7 @@ void MakeDialogBoxClass(void)
     wc.lpfnWndProc      = (WNDPROC)DialogProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "LDmicroDialog";
+    wc.lpszClassName    = L"LDmicroDialog";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -326,15 +405,15 @@ void MakeDialogBoxClass(void)
     wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
                             IMAGE_ICON, 16, 16, 0);
 
-    RegisterClassEx(&wc);
+    RegisterClassExW(&wc);
 
-    MyNiceFont = CreateFont(16, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
+    MyNiceFont = CreateFontA(16, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
         ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
         FF_DONTCARE, "Tahoma");
     if(!MyNiceFont)
         MyNiceFont = (HFONT)GetStockObject(SYSTEM_FONT);
 
-    MyFixedFont = CreateFont(14, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
+    MyFixedFont = CreateFontA(14, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
         ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
         FF_DONTCARE, "Lucida Console");
     if(!MyFixedFont)
@@ -345,7 +424,7 @@ void MakeDialogBoxClass(void)
 // Map an I/O type to a string describing it. Used both in the on-screen
 // list and when we write a text file to describe it.
 //-----------------------------------------------------------------------------
-const char *IoTypeToString(int ioType)
+const wchar_t *IoTypeToString(int ioType)
 {
     switch(ioType) {
         case IO_TYPE_INT_INPUT:         return _("INT input");
@@ -382,6 +461,7 @@ const char *IoTypeToString(int ioType)
         case IO_TYPE_MCU_REG:           return _("MCU register");
         default:                        return _("<corrupt!>");
     }
+    return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -390,15 +470,15 @@ const char *IoTypeToString(int ioType)
 // are available) so we look at the characteristics of the MCU that is in
 // use.
 //-----------------------------------------------------------------------------
-void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName)
+void PinNumberForIo(wchar_t *dest, PlcProgramSingleIo *io, wchar_t *portName, wchar_t *pinName)
 {
     if(!dest) return;
 
-    strcpy(dest, "");
+    wcscpy(dest, L"");
     if(portName)
-        strcpy(portName, "");
+        wcscpy(portName, L"");
     if(pinName)
-        strcpy(pinName, "");
+        wcscpy(pinName, L"");
 
     if(!Prog.mcu) return;
     if(!io) return;
@@ -414,7 +494,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     || type == IO_TYPE_READ_ADC)
     {
         if(pin == NO_PIN_ASSIGNED) {
-            strcpy(dest, _("(not assigned)"));
+            wcscpy(dest, _("(not assigned)"));
             /*
             if(portName)
                 strcpy(portName, _("(not assigned)"));
@@ -422,19 +502,19 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 strcpy(pinName, _("(not assigned)"));
             */
         } else {
-            sprintf(dest, "%d", pin);
+            swprintf(dest, L"%d", pin);
             if(portName) {
                 if(UartFunctionUsed() && Prog.mcu) {
                     if((Prog.mcu->uartNeeds.rxPin == pin) ||
                        (Prog.mcu->uartNeeds.txPin == pin))
                     {
-                        strcpy(portName, _("<UART needs!>"));
+                        wcscpy(portName, _("<UART needs!>"));
                         return;
                     }
                 }
                 if(PwmFunctionUsed() && Prog.mcu) {
                     if(Prog.mcu->pwmNeedsPin == pin) {
-                        strcpy(portName, _("<PWM needs!>"));
+                        wcscpy(portName, _("<PWM needs!>"));
                         return;
                     }
                 }
@@ -454,23 +534,22 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     ;//  sprintf(portName, "%c%dP%d",
                      //      Prog.mcu->portPrefix, iop->portN, iop->portPin);
                     else
-                        sprintf(portName, "%c%c%d",
-                            Prog.mcu->portPrefix, iop->port, iop->bit);
+                        swprintf(portName, L"%c%c%d", Prog.mcu->portPrefix, iop->port, iop->bit);
                 else
-                    strcpy(portName, _("<not an I/O!>"));
+                    wcscpy(portName, _("<not an I/O!>"));
             }
             if(pinName) {
                 if(UartFunctionUsed() && Prog.mcu) {
                     if((Prog.mcu->uartNeeds.rxPin == pin) ||
                        (Prog.mcu->uartNeeds.txPin == pin))
                     {
-                        strcpy(pinName, _("<UART needs!>"));
+                        wcscpy(pinName, _("<UART needs!>"));
                         return;
                     }
                 }
                 if(PwmFunctionUsed() && Prog.mcu) {
                     if(Prog.mcu->pwmNeedsPin == pin) {
-                        strcpy(pinName, _("<PWM needs!>"));
+                        wcscpy(pinName, _("<PWM needs!>"));
                         return;
                     }
                 }
@@ -487,14 +566,14 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 iop = PinInfo(pin);
                 if(iop && Prog.mcu) {
                     if((iop->pinName) && strlen(iop->pinName))
-                      sprintf(pinName, "%s", iop->pinName);
+                      swprintf(pinName, L"%s", iop->pinName);
                 } else
-                    strcpy(pinName, _("<not an I/O!>"));
+                    wcscpy(pinName, _("<not an I/O!>"));
             }
         }
     } else if(type == IO_TYPE_INT_INPUT && Prog.mcu) {
         if(Prog.mcu->ExtIntCount == 0) {
-            strcpy(dest, _("<no INTs!>"));
+            wcscpy(dest, _("<no INTs!>"));
             /*
             if(portName)
                 strcpy(portName, _("<no INTs!>"));
@@ -502,26 +581,25 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 strcpy(pinName, _("<no INTs!>"));
             */
         } else {
-            sprintf(dest, "%d", pin);
+            swprintf(dest, L"%d", pin);
             iop = PinInfo(pin);
             if(iop) {
                 if(portName)
-                    sprintf(portName, "%c%c%d",
-                        Prog.mcu->portPrefix, iop->port, iop->bit);
+                    swprintf(portName, L"%c%c%d", Prog.mcu->portPrefix, iop->port, iop->bit);
                 if(iop->pinName)
-                    sprintf(pinName, "%s", iop->pinName);
+                    swprintf(pinName, L"%s", iop->pinName);
             } else {
                 /*
                 if(portName)
                     strcpy(portName, _("<not an I/O!>"));
                 */
                 if(pinName)
-                    strcpy(pinName, _("<not an I/O!>"));
+                    wcscpy(pinName, _("<not an I/O!>"));
             }
         }
     } else if(type == IO_TYPE_UART_TX && Prog.mcu) {
         if(Prog.mcu->uartNeeds.txPin == 0) {
-            strcpy(dest, _("<no UART!>"));
+            wcscpy(dest, _("<no UART!>"));
             /*
             if(portName)
                 strcpy(portName, _("<no UART!>"));
@@ -529,27 +607,26 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 strcpy(pinName, _("<no UART!>"));
             */
         } else {
-            sprintf(dest, "%d", Prog.mcu->uartNeeds.txPin);
+            swprintf(dest, L"%d", Prog.mcu->uartNeeds.txPin);
             iop = PinInfo(Prog.mcu->uartNeeds.txPin);
             if(iop) {
                 if(portName)
-                    sprintf(portName, "%c%c%d",
-                      Prog.mcu->portPrefix, iop->port, iop->bit);
+                    swprintf(portName, L"%c%c%d", Prog.mcu->portPrefix, iop->port, iop->bit);
                  if(pinName)
                     if(iop->pinName)
-                        sprintf(pinName, "%s", iop->pinName);
+                        swprintf(pinName, L"%s", iop->pinName);
             } else {
                 /*
                 if(portName)
                     strcpy(portName, _("<not an I/O!>"));
                 */
                 if(pinName)
-                    strcpy(pinName, _("<not an I/O!>"));
+                    wcscpy(pinName, _("<not an I/O!>"));
             }
         }
     } else if(type == IO_TYPE_UART_RX && Prog.mcu) {
         if(Prog.mcu->uartNeeds.rxPin == 0) {
-            strcpy(dest, _("<no UART!>"));
+            wcscpy(dest, _("<no UART!>"));
             /*
             if(portName)
                 strcpy(portName, _("<no UART!>"));
@@ -557,28 +634,27 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 strcpy(pinName, _("<no UART!>"));
             */
         } else {
-            sprintf(dest, "%d", Prog.mcu->uartNeeds.rxPin);
+            swprintf(dest, L"%d", Prog.mcu->uartNeeds.rxPin);
             iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
             if(iop) {
                 if(portName)
-                    sprintf(portName, "%c%c%d",
-                      Prog.mcu->portPrefix, iop->port, iop->bit);
+                    swprintf(portName, L"%c%c%d", Prog.mcu->portPrefix, iop->port, iop->bit);
                  if(pinName)
                     if(iop->pinName)
-                        sprintf(pinName, "%s", iop->pinName);
+                        swprintf(pinName, L"%s", iop->pinName);
             } else {
                 /*
                 if(portName)
                     strcpy(portName, _("<not an I/O!>"));
                 */
                 if(pinName)
-                    strcpy(pinName, _("<not an I/O!>"));
+                    wcscpy(pinName, _("<not an I/O!>"));
             }
         }
     } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu) {
 #if 1
         if(!McuPWM()) {
-            strcpy(dest, _("<no PWM!>"));
+            wcscpy(dest, _("<no PWM!>"));
             /*
             if(portName)
                 strcpy(portName, _("<no PWM!>"));
@@ -586,7 +662,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 strcpy(pinName, _("<no PWM!>"));
             */
         } else {
-            sprintf(dest, "%d", pin);
+            swprintf(dest, L"%d", pin);
             iop = PinInfo(pin);
             if(iop) {
                 if(portName)
@@ -594,30 +670,29 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                         if((Prog.mcu->uartNeeds.rxPin == pin) ||
                            (Prog.mcu->uartNeeds.txPin == pin))
                         {
-                            strcpy(portName, _("<UART needs!>"));
+                            wcscpy(portName, _("<UART needs!>"));
                             return;
                         }
                     }
-                    sprintf(portName, "%c%c%d",
-                      Prog.mcu->portPrefix, iop->port, iop->bit);
+                    swprintf(portName, L"%c%c%d", Prog.mcu->portPrefix, iop->port, iop->bit);
                 if(pinName)
                     if(UartFunctionUsed() && Prog.mcu) {
                         if((Prog.mcu->uartNeeds.rxPin == pin) ||
                            (Prog.mcu->uartNeeds.txPin == pin))
                         {
-                            strcpy(pinName, _("<UART needs!>"));
+                            wcscpy(pinName, _("<UART needs!>"));
                             return;
                         }
                     }
                     if(iop->pinName)
-                        sprintf(pinName, "%s", iop->pinName);
+                        swprintf(pinName, L"%s", iop->pinName);
             } else {
                 /*
                 if(portName)
                     strcpy(portName, _("<not an I/O!>"));
                 */
                 if(pinName)
-                    strcpy(pinName, _("<not an I/O!>"));
+                    wcscpy(pinName, _("<not an I/O!>"));
             }
         }
 #else
@@ -682,7 +757,7 @@ char *GetPinName(int pin, char *pinName)
 }
 
 //-----------------------------------------------------------------------------
-void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
+void PinNumberForIo(wchar_t *dest, PlcProgramSingleIo *io)
 {
     PinNumberForIo(dest, io, NULL, NULL);
 }

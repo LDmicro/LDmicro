@@ -58,72 +58,72 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static void MakeControls(void)
 {
-    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Type"),
+    HWND grouper = CreateWindowExW(0, WC_BUTTONW, _("Type"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE | WS_TABSTOP,
         7, 3, 120, 125, CoilDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
-    NormalRadio = CreateWindowEx(0, WC_BUTTON, _("( ) Normal"),
+    NormalRadio = CreateWindowExW(0, WC_BUTTONW, _("( ) Normal"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE | WS_GROUP,
         16, 21, 100, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(NormalRadio);
 
-    NegatedRadio = CreateWindowEx(0, WC_BUTTON, _("(/) Negated"),
+    NegatedRadio = CreateWindowExW(0, WC_BUTTONW, _("(/) Negated"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 41, 100, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(NegatedRadio);
 
-    SetOnlyRadio = CreateWindowEx(0, WC_BUTTON, _("(S) Set-Only"),
+    SetOnlyRadio = CreateWindowExW(0, WC_BUTTONW, _("(S) Set-Only"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 61, 100, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(SetOnlyRadio);
 
-    ResetOnlyRadio = CreateWindowEx(0, WC_BUTTON, _("(R) Reset-Only"),
+    ResetOnlyRadio = CreateWindowExW(0, WC_BUTTONW, _("(R) Reset-Only"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 81, 105, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(ResetOnlyRadio);
 
-    TtriggerRadio = CreateWindowEx(0, WC_BUTTON, _("(T) T-trigger"),
+    TtriggerRadio = CreateWindowExW(0, WC_BUTTONW, _("(T) T-trigger"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 101, 105, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(TtriggerRadio);
 
-    HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Source"),
+    HWND grouper2 = CreateWindowExW(0, WC_BUTTONW, _("Source"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
         135, 3, 150, 85, CoilDialog, NULL, Instance, NULL);
     NiceFont(grouper2);
 
-    SourceInternalRelayRadio = CreateWindowEx(0, WC_BUTTON, _("Internal Relay"),
+    SourceInternalRelayRadio = CreateWindowExW(0, WC_BUTTONW, _("Internal Relay"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_GROUP | WS_TABSTOP,
         144, 21, 125, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(SourceInternalRelayRadio);
 
-    SourceMcuPinRadio = CreateWindowEx(0, WC_BUTTON, _("Output Pin on MCU"),
+    SourceMcuPinRadio = CreateWindowExW(0, WC_BUTTONW, _("Output Pin on MCU"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
         144, 41, 125, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(SourceMcuPinRadio);
 
-    SourceModbusRadio = CreateWindowEx(0, WC_BUTTON, _("Modbus"),
+    SourceModbusRadio = CreateWindowExW(0, WC_BUTTONW, _("Modbus"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
         144, 61, 125, 20, CoilDialog, NULL, Instance, NULL);
     NiceFont(SourceModbusRadio);
 
-    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
+    HWND textLabel = CreateWindowExW(0, WC_STATICW, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         135, 90, 50, 21, CoilDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    NameTextbox = CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         190, 90, 175, 21, CoilDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+    OkButton = CreateWindowExW(0, WC_BUTTONW, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         295, 10, 70, 23, CoilDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowExW(0, WC_BUTTONW, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         295, 40, 70, 23, CoilDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
@@ -137,7 +137,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigge
     char nameSave[MAX_NAME_LEN];
     strcpy(nameSave, name);
 
-    CoilDialog = CreateWindowClient(0, "LDmicroDialog",
+    CoilDialog = CreateWindowClient(0, L"LDmicroDialog",
         _("Coil"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 375, 135, NULL, NULL, Instance, NULL);
     RECT r;
@@ -245,11 +245,9 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigge
           int n = CountWhich(ELEM_CONTACTS, ELEM_COIL, nameSave);
           if(n >= 1) {
             BOOL rename = FALSE;
-            char str[1000];
-            sprintf(str, _("Rename the ALL other %d coils/contacts named '%s' to '%s' ?"), n, nameSave, name);
-            rename = IDYES == MessageBox(MainWindow,
-                              str, "LDmicro",
-                              MB_YESNO | MB_ICONQUESTION);
+            wchar_t str[1000];
+            swprintf_s(str, _("Rename the ALL other %d coils/contacts named '%s' to '%s' ?"), n, nameSave, name);
+            rename = IDYES == MessageBoxW(MainWindow, str, L"LDmicro", MB_YESNO | MB_ICONQUESTION);
             if(rename)
                 RenameSet1(ELEM_COIL, nameSave, name, FALSE); // rename and reset
           }

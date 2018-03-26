@@ -179,7 +179,7 @@ static void MakeControls(int a)
     if(!re)
         oops();
 
-    RichEdit[a] = CreateWindowExA(0, RICHEDIT_CLASS,
+    RichEdit[a] = CreateWindowExA(0, RICHEDIT_CLASSA,
         "", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_READONLY |
         ES_MULTILINE | WS_VSCROLL,
         0, 0, 100, 100, HelpDialog[a], NULL, Instance, NULL);
@@ -299,7 +299,7 @@ static void MakeClass(void)
     wc.lpfnWndProc      = (WNDPROC)HelpProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszClassName    = "LDmicroHelp";
+    wc.lpszClassName    = L"LDmicroHelp";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -307,7 +307,7 @@ static void MakeClass(void)
     wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
                             IMAGE_ICON, 16, 16, 0);
 
-    RegisterClassEx(&wc);
+    RegisterClassExW(&wc);
 }
 
 void ShowHelpDialog(BOOL about)
@@ -321,7 +321,7 @@ void ShowHelpDialog(BOOL about)
     MakeClass();
 
     const char *s = about ? "About LDmicro" : "LDmicro Help";
-    HelpDialog[a] = CreateWindowEx(0, "LDmicroHelp", s,
+    HelpDialog[a] = CreateWindowExA(0, "LDmicroHelp", s,
         WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
         WS_MAXIMIZEBOX |
         WS_SIZEBOX,

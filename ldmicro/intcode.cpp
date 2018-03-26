@@ -878,33 +878,32 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
     if(period < 0) {
         Error(_("Delay cannot be zero or negative."));
     } else if(period <= 0)  {
-        char s1[1024];
-        sprintf(s1, "%s %s", _("Timer period too short (needs faster cycle time)."), _("Or increase timer period."));
-        char s2[1024];
-        sprintf(s2, _("Timer '%s'=%.3f ms."), name, 1.0*delay/1000);
-        char s3[1024];
-        sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
-        const char *s4 = _("Not available");
-        Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
+        wchar_t s1[1024];
+        swprintf_s(s1, L"%ls %ls", _("Timer period too short (needs faster cycle time)."), _("Or increase timer period."));
+        wchar_t s2[1024];
+        swprintf_s(s2, _("Timer '%s'=%.3f ms."), name, 1.0*delay/1000);
+        wchar_t s3[1024];
+        swprintf_s(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
+        const wchar_t *s4 = _("Not available");
+        Error("%ls\n\r%ls %ls\r\n%ls", s1, s4, s2, s3);
     } else if(period+adjust <= 0) {
-        Error("%s '%s': %s", _("Timer"), name, _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
+        Error("%ls '%s': %ls", _("Timer"), name, _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
         // period = -1;
     } else if(period <= adjust) {
-        Error("%s '%s': %s", _("Timer"), name, _("Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"));
-        // period = -1;
+        Error("%ls '%s': %ls", _("Timer"), name, _("Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"));
     }
 
     if(((period > maxPeriod) || (adjPeriod > maxPeriod))
     && (Prog.mcu)
     && (Prog.mcu->portPrefix != 'L')) {
-        char s1[1024];
-        sprintf(s1, "%s %s", _("Timer period too long; (use a slower cycle time)."), _("Or decrease timer period."));
-        char s2[1024];
-        sprintf(s2, _("Timer 'T%s'=%10.0Lf s   needs %15lld PLC cycle times."), name, 1.0*delay/1000, period);
+        wchar_t s1[1024];
+        swprintf_s(s1, L"%ls %ls", _("Timer period too long; (use a slower cycle time)."), _("Or decrease timer period."));
+        wchar_t s2[1024];
+        swprintf_s(s2, _("Timer 'T%s'=%10.0Lf s   needs %15lld PLC cycle times."), name, 1.0*delay/1000, period);
         long double maxDelay = 1.0 * maxPeriod / 1000000 * Prog.cycleTime; // s
-        char s3[1024];
-        sprintf(s3, _("Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."), name, maxDelay, maxPeriod);
-        Error("%s\r\n%s\r\n%s", s1, s2, s3);
+        wchar_t s3[1024];
+        swprintf_s(s3, _("Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."), name, maxDelay, maxPeriod);
+        Error("%ls\r\n%ls\r\n%ls", s1, s2, s3);
         period = -1;
     }
     return (SDWORD)adjPeriod;
@@ -1367,7 +1366,7 @@ static void InitTablesCircuit(int which, void *elem)
                 sovElement = SizeOfVar(nameTable);
                 if(sovElement < 1)
                     sovElement = 1;
-                Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable);
+                Comment(to_utf8(_("INIT TABLE: signed %d bit %s[%d] see above")).c_str(), 8*sovElement, nameTable);
             }
             break;
         }

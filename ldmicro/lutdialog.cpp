@@ -125,63 +125,63 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
 //-----------------------------------------------------------------------------
 static void MakeFixedControls(BOOL forPwl)
 {
-    Labels[0] = CreateWindowEx(0, WC_STATIC, _("Destination:"),
+    Labels[0] = CreateWindowExW(0, WC_STATICW, _("Destination:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         0, 10, 78 +20, 21, LutDialog, NULL, Instance, NULL);
     NiceFont(Labels[0]);
 
-    DestTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    DestTextbox = CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         85 +20, 10, 120, 21, LutDialog, NULL, Instance, NULL);
     FixedFont(DestTextbox);
 
-    Labels[1] = CreateWindowEx(0, WC_STATIC, _("Name:"),
+    Labels[1] = CreateWindowExW(0, WC_STATICW, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         0, 40, 78 +20, 21, LutDialog, NULL, Instance, NULL);
     NiceFont(Labels[1]);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    NameTextbox = CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         85 +20, 40, 120, 21, LutDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-    Labels[2] = CreateWindowEx(0, WC_STATIC, _("Index:"),
+    Labels[2] = CreateWindowExW(0, WC_STATICW, _("Index:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         10, 70, 68 +20, 21, LutDialog, NULL, Instance, NULL);
     NiceFont(Labels[2]);
 
-    IndexTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    IndexTextbox = CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         85 +20, 40 +30, 120, 21, LutDialog, NULL, Instance, NULL);
     FixedFont(IndexTextbox);
 
-    const char *txt1 = forPwl ? _("Points:") : _("Table size:");
-    char txt[1024];
-    sprintf(txt,"%s max %d", txt1, forPwl ? MAX_LOOK_UP_TABLE_LEN/2 : MAX_LOOK_UP_TABLE_LEN);
-    Labels[3] = CreateWindowEx(0,WC_STATIC, txt,
+    const wchar_t *txt1 = forPwl ? _("Points:") : _("Table size:");
+    wchar_t txt[1024];
+    swprintf_s(txt, arraylen(txt),L"%s max %d", txt1, forPwl ? MAX_LOOK_UP_TABLE_LEN/2 : MAX_LOOK_UP_TABLE_LEN);
+    Labels[3] = CreateWindowExW(0,WC_STATICW, txt,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         0, 70 +30, 78 +20, 21, LutDialog, NULL, Instance, NULL);
     NiceFont(Labels[3]);
 
-    CountTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    CountTextbox = CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         85 +20, 70 +30, 120, 21, LutDialog, NULL, Instance, NULL);
     NiceFont(CountTextbox);
 
     if(!forPwl) {
-        AsStringCheckbox = CreateWindowEx(0, WC_BUTTON,
+        AsStringCheckbox = CreateWindowExW(0, WC_BUTTONW,
             _("Edit table of ASCII values like a string"), WS_CHILD |
                 WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_AUTOCHECKBOX,
             10, 100 +30, 300, 21, LutDialog, NULL, Instance, NULL);
         NiceFont(AsStringCheckbox);
     }
 
-    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+    OkButton = CreateWindowExW(0, WC_BUTTONW, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         231 +20, 10, 70, 23, LutDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowExW(0, WC_BUTTONW, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         231 +20, 40, 70, 23, LutDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
@@ -268,7 +268,7 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
             }
         }
         str[j++] = '\0';
-        StringTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, str,
+        StringTextbox = CreateWindowExA(WS_EX_CLIENTEDGE, WC_EDITA, str,
             WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
                 WS_VISIBLE,
             10, 130 +30, 294, 21, LutDialog, NULL, Instance, NULL);
@@ -299,7 +299,7 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
 
             char buf[20];
             sprintf(buf, "%d", ValuesCache[i]);
-            ValuesTextbox[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, buf,
+            ValuesTextbox[i] = CreateWindowExA(WS_EX_CLIENTEDGE, WC_EDITA, buf,
                 WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
                     WS_VISIBLE,
                 x+30, y, 80, 21, LutDialog, NULL, Instance, NULL);
@@ -310,7 +310,7 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
             } else {
                 sprintf(buf, "%2d:", i);
             }
-            ValuesLabel[i] = CreateWindowEx(0, WC_STATIC, buf,
+            ValuesLabel[i] = CreateWindowExA(0, WC_STATICA, buf,
                 WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
                 x, y+3, 100, 21, LutDialog, NULL, Instance, NULL);
             FixedFont(ValuesLabel[i]);
@@ -386,7 +386,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
 
     // Now create the dialog's fixed controls, plus the changing (depending
     // on show style/entry count) controls for the initial configuration.
-    LutDialog = CreateWindowClient(0, "LDmicroDialog",
+    LutDialog = CreateWindowClient(0, L"LDmicroDialog",
         _("Look-Up Table"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 320, 375, NULL, NULL, Instance, NULL);
     MakeFixedControls(FALSE);
@@ -515,7 +515,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
 
     // Now create the dialog's fixed controls, plus the changing (depending
     // on show style/entry count) controls for the initial configuration.
-    LutDialog = CreateWindowClient(0, "LDmicroDialog",
+    LutDialog = CreateWindowClient(0, L"LDmicroDialog",
         _("Piecewise Linear Table"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 320, 375, NULL, NULL, Instance, NULL);
     MakeFixedControls(TRUE);

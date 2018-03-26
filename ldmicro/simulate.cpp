@@ -112,7 +112,7 @@ static int SimulateUartTxCountdown = 0; // 0 if UART ready to send; 1 if UART bu
 static void AppendToUartSimulationTextControl(BYTE b);
 
 static void SimulateIntCode(void);
-static const char *MarkUsedVariable(const char* name, DWORD flag);
+static const wchar_t* MarkUsedVariable(const char* name, DWORD flag);
 
 //-----------------------------------------------------------------------------
 int isVarInited(char *name)
@@ -410,7 +410,7 @@ SDWORD GetRandom(char *name)
 }
 
 //-----------------------------------------------------------------------------
-static const char *Check(const char *name, DWORD flag, int i)
+static const wchar_t *Check(const char *name, DWORD flag, int i)
 {
     switch(flag) {
         case VAR_FLAG_PWM:
@@ -515,7 +515,7 @@ static const char *Check(const char *name, DWORD flag, int i)
 //-----------------------------------------------------------------------------
 static const char *rungsUsed = ""; //local store var for message
 
-static const char *MarkUsedVariable(const char *name, DWORD flag)
+static const wchar_t *MarkUsedVariable(const char *name, DWORD flag)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -523,7 +523,8 @@ static const char *MarkUsedVariable(const char *name, DWORD flag)
             break;
         }
     }
-    if(i >= MAX_IO) return "";
+    if(i >= MAX_IO)
+        return L"";
 
     if(i == VariableCount) {
         strcpy(Variables[i].name, name);
@@ -541,8 +542,9 @@ static const char *MarkUsedVariable(const char *name, DWORD flag)
 
     rungsUsed = Variables[i].usedRungs;
 
-    const char *s = Check(name, flag, i);
-    if(s) return s;
+    const wchar_t *s = Check(name, flag, i);
+    if(s)
+        return s;
 
     if(Variables[i].initedRung < 0)
         Variables[i].initedRung = rungNow;
@@ -579,6 +581,7 @@ static void CheckMsg(const char *name, const char *s, int i)
     if(s) {
         #if 1
         Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow+1, name, s, rungsUsed);
+        (void)i;
         #else
         char s2[1000];
         sprintf(s2,_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow+1, name, s, rungsUsed);
@@ -591,6 +594,13 @@ static void CheckMsg(const char *name, const char *s, int i)
         #endif
     }
 }
+static void CheckMsg(const char *name, const wchar_t *w, int i)
+{
+    if(w) {
+        Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%ls.\nSee rungs:%s"), rungNow+1, name, w, rungsUsed);
+        (void)i;
+    }
+}
 //-----------------------------------------------------------------------------
 // Check for duplicate uses of a single variable. For example, there should
 // not be two TONs with the same name. On the other hand, it would be okay
@@ -599,7 +609,7 @@ static void CheckMsg(const char *name, const char *s, int i)
 //-----------------------------------------------------------------------------
 static void MarkWithCheck(const char *name, int flag)
 {
-    const char *s = MarkUsedVariable(name, flag);
+    const wchar_t *s = MarkUsedVariable(name, flag);
     CheckMsg(name, s, -1);
 }
 //-----------------------------------------------------------------------------
@@ -2164,6 +2174,97 @@ void DescribeForIoList(char *name, int type, char *out)
     }
 }
 
+void DescribeForIoList(char *name, int type, wchar_t *out)
+{
+    wcscpy(out, L"");
+
+    switch(type) {
+        case IO_TYPE_INT_INPUT:
+        case IO_TYPE_DIG_INPUT:
+        case IO_TYPE_DIG_OUTPUT:
+        case IO_TYPE_INTERNAL_RELAY:
+        case IO_TYPE_MODBUS_COIL:
+        case IO_TYPE_MODBUS_CONTACT:
+            swprintf(out, L"%d", SingleBitOn(name));
+            break;
+
+       case IO_TYPE_SPI_MOSI:
+       case IO_TYPE_SPI_MISO:
+       case IO_TYPE_SPI_SCK :
+       case IO_TYPE_SPI__SS :
+            break;
+
+        case IO_TYPE_PWM_OUTPUT:
+            #if 0
+            sprintf(out, "PWM");
+            #else
+            char s[MAX_NAME_LEN];
+            sprintf(s, "$%s", name);
+            swprintf(out, L"%s", SingleBitOn(s) ? "ON" : "OFF");
+            #endif
+            break;
+
+        case IO_TYPE_STRING:
+            swprintf(out, L"\"%s\"", GetSimulationStr(name));
+            break;
+
+        case IO_TYPE_VAL_IN_FLASH:
+        case IO_TYPE_TABLE_IN_FLASH: {
+            break;
+        }
+        case IO_TYPE_TCY:
+        case IO_TYPE_TON:
+        case IO_TYPE_TOF:
+        case IO_TYPE_THI:
+        case IO_TYPE_TLO:
+        case IO_TYPE_RTL:
+        case IO_TYPE_RTO: {
+            SDWORD v = GetSimulationVariable(name, TRUE);
+            double dtms = v *
+                (Prog.cycleTime / 1000.0);
+            int sov = SizeOfVar(name);
+            if(dtms < 1000) {
+              if(sov == 1)
+                swprintf(out, L"0x%02X = %d = %.6g ms", v & 0xff, v, dtms);
+              else if(sov == 2)
+                swprintf(out, L"0x%04X = %d = %.6g ms", v & 0xffff, v, dtms);
+              else if(sov == 3)
+                swprintf(out, L"0x%06X = %d = %.6g ms", v & 0xFFffff, v, dtms);
+              else if(sov == 4)
+                swprintf(out, L"0x%08X = %d = %.6g ms", v, v, dtms);
+              else oops();
+            } else {
+              if(sov == 1)
+                swprintf(out, L"0x%02X = %d = %.6g s", v & 0xff, v, dtms / 1000);
+              else if(sov == 2)
+                swprintf(out, L"0x%04X = %d = %.6g s", v & 0xffff, v, dtms / 1000);
+              else if(sov == 3)
+                swprintf(out, L"0x%06X = %d = %.6g s", v & 0xFFffff, v, dtms / 1000);
+              else if(sov == 4)
+                swprintf(out, L"0x%08X = %d = %.6g s", v, v, dtms / 1000);
+              else oops();
+            }
+            break;
+        }
+        default: {
+            SDWORD v = GetSimulationVariable(name, TRUE);
+            int sov = SizeOfVar(name);
+            if(sov == 1)
+              swprintf(out, L"0x%02X = %d = '%c'", v & 0xff, (signed char)v, v & 0xff);
+            else if(sov == 2)
+              swprintf(out, L"0x%04X = %d", v & 0xffff, (SWORD)v);
+            else if(sov == 3)
+              swprintf(out, L"0x%06X = %d", v & 0xFFffff, SDWORD3(v));
+            else if(sov == 4)
+              swprintf(out, L"0x%08X = %d", v, v);
+            else {
+              swprintf(out, L"0x%X = %d", v, v);
+            }
+            break;
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Toggle the state of a contact input; for simulation purposes, so that we
 // can set the input state of the program.
@@ -2264,12 +2365,12 @@ static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
 // the program puts into UART SEND shows up as text.
 //-----------------------------------------------------------------------------
 #define MAX_SCROLLBACK 0x10000 //256 // 0x10000
-static char buf[MAX_SCROLLBACK] = "";
+static wchar_t buf[MAX_SCROLLBACK] = L"";
 void ShowUartSimulationWindow(void)
 {
     if(UartSimulationWindow != NULL)
         oops();
-    WNDCLASSEX wc;
+    WNDCLASSEXW wc;
     memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
 
@@ -2278,11 +2379,11 @@ void ShowUartSimulationWindow(void)
     wc.lpfnWndProc      = (WNDPROC)UartSimulationProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "LDmicroUartSimulationWindow";
+    wc.lpszClassName    = L"LDmicroUartSimulationWindow";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
 
-    RegisterClassEx(&wc);
+    RegisterClassExW(&wc);
 
     DWORD TerminalX = 200, TerminalY = 200, TerminalW = 300, TerminalH = 150;
 
@@ -2308,14 +2409,14 @@ void ShowUartSimulationWindow(void)
         TerminalX, TerminalY, TerminalW, TerminalH,
         NULL, NULL, Instance, NULL);
 
-    UartSimulationTextControl = CreateWindowEx(0, WC_EDIT, "", WS_CHILD |
+    UartSimulationTextControl = CreateWindowExW(0, WC_EDITW, L"", WS_CHILD |
         WS_CLIPSIBLINGS | WS_VISIBLE | ES_AUTOVSCROLL | ES_MULTILINE |
         WS_VSCROLL, 0, 0, TerminalW, TerminalH, UartSimulationWindow, NULL,
         Instance, NULL);
 
-    HFONT fixedFont = CreateFont(14, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
+    HFONT fixedFont = CreateFontW(14, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
         ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-        FF_DONTCARE, "Lucida Console");
+        FF_DONTCARE, L"Lucida Console");
     if(!fixedFont)
         fixedFont = (HFONT)GetStockObject(SYSTEM_FONT);
 
@@ -2325,9 +2426,9 @@ void ShowUartSimulationWindow(void)
     PrevTextProc = SetWindowLongPtr(UartSimulationTextControl,
         GWLP_WNDPROC, (LONG_PTR)UartSimulationTextProc);
 
-    strcpy(buf, "");
-    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
-    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+    wcscpy(buf, L"");
+    SendMessageW(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessageW(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 
     ShowWindow(UartSimulationWindow, TRUE);
     SetFocus(MainWindow);
@@ -2400,17 +2501,17 @@ static void AppendToUartSimulationTextControl(BYTE b)
         // but in simulation window "\r\n" more like as HyperTerminal and Putty.
         strcpy(append, "\r\n");
     } else if(b == '\b') {
-        if(strlen(buf)>0)  {
+        if(wcslen(buf)>0)  {
             // backspace delete last char
-            buf[strlen(buf)-1] = '\0';
+            buf[wcslen(buf)-1] = '\0';
             append[0] = '\0';
         }
     } else if(b == '\r') {
-        if(strlen(buf)>0) {
-          if(buf[strlen(buf)-1] == '\n') {
+        if(wcslen(buf)>0) {
+          if(buf[wcslen(buf)-1] == '\n') {
               // LF CR -> CR LF
               // "\n\r" -> "\r\n"
-              buf[strlen(buf)-1] = '\0';
+              buf[wcslen(buf)-1] = '\0';
               strcpy(append, "\r\n");
               b = '\0';
           } else {
@@ -2419,15 +2520,15 @@ static void AppendToUartSimulationTextControl(BYTE b)
         }
     }
 
-    char *s;
+    wchar_t *s;
 
     if(bPrev == '\r') {  // Now, at the next cycle, '\r' is activated.
-      if(strlen(buf)>0) {
+      if(wcslen(buf)>0) {
         if(b == '\n') {
             strcpy(append, "\r\n");
             b = '\0';
         } else {
-            if(s=strrchr(buf,'\n')) {
+            if(s=wcsrchr(buf,'\n')) {
                 s[1] = '\0';
             } else {
                 buf[0] = '\0';
@@ -2438,15 +2539,15 @@ static void AppendToUartSimulationTextControl(BYTE b)
     bPrev = b;
     // ^^^ // This patch only for simulation mode and for WC_EDIT control.
 
-    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
+    int overBy = (wcslen(buf) + strlen(append) + 1) - sizeof(buf);
     if(overBy > 0) {
-        memmove(buf, buf + overBy, strlen(buf));
+        wmemmove(buf, buf + overBy, wcslen(buf));
     }
-    strcat(buf, append);
+    wcscat(buf, to_utf16(append).c_str());
 
 
-    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
-    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+    SendMessageW(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessageW(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 }
 /*
 ------------------------------ ASCII Control Codes ---------------------------

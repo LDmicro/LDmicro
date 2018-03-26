@@ -4172,26 +4172,22 @@ static void CompileFromIntermediate(void)
                 }
 
                 if(((double)bestError)/target > 0.05) {
-                    char str1[1024];
-                    char str2[1024];
-                    sprintf(str1,
+                    wchar_t str1[1024];
+                    wchar_t str2[1024];
+                    swprintf_s(str1,
                         _("Target PWM frequency %d Hz, closest achievable is "
                         "%d Hz (warning, >5%% error)."),
                         (int)target, (int)bestFreq);
                     //need duble %
-                    char *c = strchr(str1, '%');
-                    char *s = str1 + strlen(str1) + 1;
+                    wchar_t *c = wcschr(str1, '%');
+                    wchar_t *s = str1 + wcslen(str1) + 1;
                     *s = 0;
                     while(s != c) {
                         s--;
                         *(s+1) = *s;
                     }
 
-                    sprintf(str2, "'%s' %s"
-                        "\n\n"
-                        "%s"
-                        "\n"
-                        "%s",
+                    swprintf_s(str2, L"'%s' %ls\n\n%ls\n%s",
                         a->name3,
                         str1,
                         _("Select the frequency from the possible values:"),
@@ -6513,23 +6509,23 @@ void CompileAvr(char *outFile)
     fflush(fAsm);
     fclose(fAsm);
 
-    char str[MAX_PATH+500];
-    sprintf(str, _("Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\n"
+    wchar_t str[MAX_PATH+500];
+    swprintf_s(str, _("Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\n"
         "Remember to set the processor configuration (fuses) correctly. "
         "This does not happen automatically."), outFile);
 
-    char str2[MAX_PATH+500];
-    sprintf(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
+    wchar_t str2[MAX_PATH+500];
+    swprintf_s(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
          AvrProgWriteP, Prog.mcu->flashWords,
          (100*AvrProgWriteP)/Prog.mcu->flashWords);
 
-    char str3[MAX_PATH+500];
-    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
+    wchar_t str3[MAX_PATH+500];
+    swprintf_s(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
          UsedRAM(), McuRAM(),
          (100*UsedRAM())/McuRAM());
 
-    char str4[MAX_PATH+500];
-    sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
+    wchar_t str4[MAX_PATH+500];
+    swprintf_s(str4, L"%ls\r\n\r\n%ls\r\n%ls", str, str2, str3);
 
     if(AvrProgWriteP > Prog.mcu->flashWords) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);

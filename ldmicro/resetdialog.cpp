@@ -53,42 +53,42 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static void MakeControls(void)
 {
-    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Type"),
+    HWND grouper = CreateWindowExW(0, WC_BUTTONW, _("Type"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
         7, 3, 120, 85, ResetDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
-    TypeTimerRadio = CreateWindowEx(0, WC_BUTTON, _("Timer"),
+    TypeTimerRadio = CreateWindowExW(0, WC_BUTTONW, _("Timer"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 21, 100, 20, ResetDialog, NULL, Instance, NULL);
     NiceFont(TypeTimerRadio);
 
-    TypeCounterRadio = CreateWindowEx(0, WC_BUTTON, _("Counter"),
+    TypeCounterRadio = CreateWindowExW(0, WC_BUTTONW, _("Counter"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 41, 100, 20, ResetDialog, NULL, Instance, NULL);
     NiceFont(TypeCounterRadio);
 
-    TypePwmRadio = CreateWindowEx(0, WC_BUTTON, _("Pwm"),
+    TypePwmRadio = CreateWindowExW(0, WC_BUTTONW, _("Pwm"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 61, 100, 20, ResetDialog, NULL, Instance, NULL);
     NiceFont(TypePwmRadio);
 
-    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
+    HWND textLabel = CreateWindowExW(0, WC_STATICW, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         135, 16, 50, 21, ResetDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    NameTextbox = CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         190, 16, 115, 21, ResetDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+    OkButton = CreateWindowExW(0, WC_BUTTONW, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         321, 10, 70, 23, ResetDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowExW(0, WC_BUTTONW, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         321, 40, 70, 23, ResetDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
@@ -99,7 +99,7 @@ static void MakeControls(void)
 
 void ShowResetDialog(char *name)
 {
-    ResetDialog = CreateWindowClient(0, "LDmicroDialog",
+    ResetDialog = CreateWindowClient(0, L"LDmicroDialog",
         _("Reset"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 404, 95, NULL, NULL, Instance, NULL);
 

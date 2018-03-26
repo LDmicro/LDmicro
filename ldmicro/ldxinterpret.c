@@ -10,7 +10,12 @@
 // Based on ldinterpret.c by Jonathan Westhues
 //
 //-----------------------------------------------------------------------------
-#include "stdafx.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+#include <windows.h>
 
 typedef unsigned char BYTE;     // 8-bit unsigned
 typedef unsigned short WORD;    // 16-bit unsigned
