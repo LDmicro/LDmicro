@@ -1,8 +1,20 @@
+== Release 4.3.8.3
+
+    * Fixed: LDmicro goes into an endless loop if you try to display the dialog
+    to set the DELAY delay when the mcu is not set to either AVR or PIC (#53)
+
+    * Fixed: "Compile ANSIC" always generates a delay of 0 us no matter what
+    delay value has been set for the DELAY instruction (#54)
+
+    * Fixed: Some ArduinoPinName for ATmega2560
+
 == Release 4.3.8.2
+
     * Hotfix: "Compile ANSIC" fails and LDmico exits with error dialogs when
       the CLRWDT instruction is used #49
 
 == Release 4.3.8.1
+
     * Fixed: persist not execute #34
       INT_EEPROM_READ in AVR
       https://github.com/LDmicro/LDmicro/issues/34

@@ -629,24 +629,24 @@ BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
 }
 
 //-----------------------------------------------------------------------------
-// Возвращаемое значение - в случае успеха TRUE, иначе FALSE
-// hFile - дескриптор файла
-// lpszString - указатель на буфер для строки
+// The return value is TRUE if successful, otherwise FALSE.
+// hFile - file descriptor
+// lpszString - pointer to the buffer for the string
 
 BOOL GetLastWriteTime(HANDLE hFile, char *lpszString)
 {
     FILETIME ftCreate, ftAccess, ftWrite;
     SYSTEMTIME stUTC, stLocal;
 
-    // Получаем времена файла.
+    // Gets the times of the file.
     if (!GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite))
         return FALSE;
 
-    // Преобразуем время последнего изменения в локальное время.
+    // Convert the time of the last change to local time.
     FileTimeToSystemTime(&ftWrite, &stUTC);
     SystemTimeToTzSpecificLocalTime(NULL, &stUTC, &stLocal);
 
-    // Составляем строку с датой и временем.
+    // Composes a string with the date and time.
     sprintf(lpszString, "%02d/%02d/%d %02d:%02d:%02d",
         stLocal.wDay, stLocal.wMonth, stLocal.wYear,
         stLocal.wHour, stLocal.wMinute, stLocal.wSecond); // wMilliseconds
@@ -659,13 +659,13 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
 {
     sFileTime[0]=0;
 
-    HANDLE hFile = CreateFile(FileName,   // открываемый файл
-                   GENERIC_READ,          // открываем для чтения
-                   FILE_SHARE_READ,       // для совместного чтения
-                   NULL,                  // защита по умолчанию
-                   OPEN_EXISTING,         // только существующий файл
-                   FILE_ATTRIBUTE_NORMAL, // обычный файл
-                   NULL);                 // атрибутов шаблона нет
+    HANDLE hFile = CreateFile(FileName,   
+                   GENERIC_READ,          
+                   FILE_SHARE_READ,       
+                   NULL,                  
+                   OPEN_EXISTING,         
+                   FILE_ATTRIBUTE_NORMAL, 
+                   NULL);                 
 
     if (hFile == INVALID_HANDLE_VALUE) {
         Error("Could not open file %s (error %d)\n", FileName, GetLastError());

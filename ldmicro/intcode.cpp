@@ -407,7 +407,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_DELAY:
-                fprintf(f, "DELAY %d us;", IntCode[i].literal);
+                fprintf(f, "DELAY %s us;", IntCode[i].name1);
                 break;
 
             case INT_CLRWDT:
@@ -1981,7 +1981,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             //dbp("%s %s", l->d.counter.name, l->d.counter.max);
             if(IsNumber(l->d.counter.max)) {
               Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max) + 1);
-                // переход 1->0 будет на заданном пределе
+                // the transition 1-> 0 will be at a given limit
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_ELSE);
                 Op(INT_SET_BIT, stateInOut);

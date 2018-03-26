@@ -6,11 +6,28 @@ and the compilation of ladder diagrams into the native hexadecimal firmware code
 Official [LDmicro Ladder Logic for PIC and AVR Home Page](http://cq.cx/ladder.pl)  
 Official [LDmicro Forum](http://cq.cx/ladder-forum.pl)  
 
+Download executable binaries buildXXXX.zip from the [Latest release](https://github.com/LDmicro/LDmicro/releases/latest)  
 Unofficial [HOW TO:](https://github.com/LDmicro/LDmicro/wiki/HOW-TO)  
 
 ### Building LDmicro
 
-#### Building with Cake
+#### Building with make
+
+LDmicro is built using the Microsoft Visual C++ compiler. If that is
+installed correctly, then you should be able to just run
+
+    make.bat
+
+and see everything build.
+
+Various source and header files are generated automatically. The perl
+scripts to do this are included with this distribution, but it's necessary
+to have a perl.exe in your path somewhere.
+
+The makefile accepts an argument, D=LANG_XX, where XX is the language
+code. make.bat supplies that argument automatically, as LANG_EN (English).
+
+#### Building with Cmake
 
 For building LDmicro with Cmake you need Cmake itself, Perl interpreter and C++11 compiler.
 
@@ -40,7 +57,7 @@ MSYS2 packages installed:
 * `make`
 * `mingw-w64-i686-gcc`, `mingw-w64-i686-cmake`
 
-### Build with Microsoft Visual Studio 2017
+#### Build with Microsoft Visual Studio 2017
 
 Visual Studio 2017 supports CMake build system, so you may just follow these
 instructions.
@@ -49,7 +66,7 @@ instructions.
 3. In the open dialog, navigate to LDmicro/ldmicro folder and open it.
 4. In menu CMake, choose to Build all.
 
-### Build with Older Version of Microsoft Visual Studio
+#### Build with Older Version of Microsoft Visual Studio
 
 To build with older Microsoft Visual Studio 2013 or 2015, you have to
 generate project files manually:
