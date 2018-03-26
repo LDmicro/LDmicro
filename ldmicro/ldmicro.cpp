@@ -1678,14 +1678,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
              PrevWriteTime = LastWriteTime;
 
              wchar_t buf[1024];
-             swprintf_s(buf, _("File '%s' modified by another application.\r\n"
+             swprintf_s(buf, _("File '%ls' modified by another application.\r\n"
                  "Its disk timestamp is newer then the editor one.\n"
-                 "Reload from disk?"), CurrentSaveFile);
+                 "Reload from disk?"), u16(CurrentSaveFile));
              int r = MessageBoxW(MainWindow, buf, L"LDmicro", MB_YESNO | MB_ICONWARNING);
              switch(r) {
                  case IDYES:
                      if(!LoadProjectFromFile(CurrentSaveFile)) {
-                         Error(_("Couldn't reload '%s'."), CurrentSaveFile);
+                         Error(_("Couldn't reload '%ls'."), u16(CurrentSaveFile));
                      } else {
                          ProgramChangedNotSaved = FALSE;
                          RefreshControlsToSettings();

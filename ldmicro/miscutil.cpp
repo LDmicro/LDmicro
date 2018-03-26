@@ -156,7 +156,7 @@ void Error(const wchar_t *str, ...)
 
         // Indicate that it's an error, plus the output filename
         wchar_t str[MAX_PATH+100];
-        swprintf_s(str, L"compile error ('%s'): ", CurrentCompileFile);
+        swprintf_s(str, L"compile error ('%ls'): ", u16(CurrentCompileFile));
         WriteFile(h, str, wcslen(str), &written, NULL);
         // The error message itself
         WriteFile(h, buf, wcslen(buf), &written, NULL);
@@ -169,7 +169,7 @@ void Error(const wchar_t *str, ...)
         if(buf[0]==' ') {
             MessageBoxW(h, &buf[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
         } else {
-            swprintf_s(buf2, L"%s (%s)", _("LDmicro Error"), AboutText[38]);
+            swprintf_s(buf2, L"%ls (%ls)", _("LDmicro Error"), u16(AboutText[38])); //WTF ?
             MessageBoxW(h, buf, buf2, MB_OK | MB_ICONERROR);
         }
     }
@@ -566,7 +566,7 @@ void PinNumberForIo(wchar_t *dest, PlcProgramSingleIo *io, wchar_t *portName, wc
                 iop = PinInfo(pin);
                 if(iop && Prog.mcu) {
                     if((iop->pinName) && strlen(iop->pinName))
-                      swprintf(pinName, L"%s", iop->pinName);
+                      swprintf(pinName, L"%ls", u16(iop->pinName));
                 } else
                     wcscpy(pinName, _("<not an I/O!>"));
             }
@@ -587,7 +587,7 @@ void PinNumberForIo(wchar_t *dest, PlcProgramSingleIo *io, wchar_t *portName, wc
                 if(portName)
                     swprintf(portName, L"%c%c%d", Prog.mcu->portPrefix, iop->port, iop->bit);
                 if(iop->pinName)
-                    swprintf(pinName, L"%s", iop->pinName);
+                    swprintf(pinName, L"%s", u16(iop->pinName));
             } else {
                 /*
                 if(portName)
@@ -614,7 +614,7 @@ void PinNumberForIo(wchar_t *dest, PlcProgramSingleIo *io, wchar_t *portName, wc
                     swprintf(portName, L"%c%c%d", Prog.mcu->portPrefix, iop->port, iop->bit);
                  if(pinName)
                     if(iop->pinName)
-                        swprintf(pinName, L"%s", iop->pinName);
+                        swprintf(pinName, L"%ls", u16(iop->pinName));
             } else {
                 /*
                 if(portName)
@@ -641,7 +641,7 @@ void PinNumberForIo(wchar_t *dest, PlcProgramSingleIo *io, wchar_t *portName, wc
                     swprintf(portName, L"%c%c%d", Prog.mcu->portPrefix, iop->port, iop->bit);
                  if(pinName)
                     if(iop->pinName)
-                        swprintf(pinName, L"%s", iop->pinName);
+                        swprintf(pinName, L"%ls", u16(iop->pinName));
             } else {
                 /*
                 if(portName)
@@ -685,7 +685,7 @@ void PinNumberForIo(wchar_t *dest, PlcProgramSingleIo *io, wchar_t *portName, wc
                         }
                     }
                     if(iop->pinName)
-                        swprintf(pinName, L"%s", iop->pinName);
+                        swprintf(pinName, L"%ls", u16(iop->pinName));
             } else {
                 /*
                 if(portName)

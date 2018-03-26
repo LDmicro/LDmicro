@@ -159,33 +159,19 @@ static BOOL Resizing(RECT *r, int wParam)
     return !touched;
 }
 
-static std::wstring to_utf16(const char* s)
-{
-#if defined(_WIN32)
-        const int size = MultiByteToWideChar(CP_UTF8, 0, s, -1, nullptr, 0);
-        std::wstring output;
-        output.resize(size - 1);
-        if(output.size() != 0)
-            MultiByteToWideChar(CP_UTF8, 0, s, -1, &output[0], size - 1);
-        return output;
-#else
-#error "Function not realised for this platform!";
-#endif
-}
-
 static void MakeControls(int a)
 {
-    HMODULE re = LoadLibraryA("RichEd20.dll");
+    HMODULE re = LoadLibraryW(L"RichEd20.dll");
     if(!re)
         oops();
 
-    RichEdit[a] = CreateWindowExA(0, RICHEDIT_CLASSA,
-        "", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_READONLY |
+    RichEdit[a] = CreateWindowExW(0, RICHEDIT_CLASSW,
+        L"", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_READONLY |
         ES_MULTILINE | WS_VSCROLL,
         0, 0, 100, 100, HelpDialog[a], NULL, Instance, NULL);
 
-    SendMessage(RichEdit[a], WM_SETFONT, (WPARAM)FixedWidthFont, TRUE);
-    SendMessage(RichEdit[a], EM_SETBKGNDCOLOR, (WPARAM)0, HighlightColours.bg); // RGB(0, 0, 0)
+    SendMessageW(RichEdit[a], WM_SETFONT, (WPARAM)FixedWidthFont, TRUE);
+    SendMessageW(RichEdit[a], EM_SETBKGNDCOLOR, (WPARAM)0, HighlightColours.bg); // RGB(0, 0, 0)
 
     SizeRichEdit(a);
 
@@ -194,7 +180,7 @@ static void MakeControls(int a)
         auto w_str = to_utf16(Text[a][i]);
         const wchar_t *s = w_str.c_str();
 
-        CHARFORMAT cf;
+        CHARFORMATW cf;
         cf.cbSize = sizeof(cf);
         cf.dwMask = CFM_BOLD | CFM_COLOR;
         cf.dwEffects = 0;
@@ -219,10 +205,8 @@ static void MakeControls(int a)
             BOOL justHeading = (copy[j] == '\0');
             copy[j] = '\0';
             cf.crTextColor = HighlightColours.selected; // RGB(110, 255, 110);
-            SendMessageW(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION,
-                (LPARAM)&cf);
-            SendMessageW(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE,
-                (LPARAM)copy);
+            SendMessageW(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+            SendMessageW(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)copy);
             SendMessageW(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
             // Special case if there's nothing except title on the line
@@ -241,12 +225,12 @@ static void MakeControls(int a)
         SendMessageW(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
         if(Text[a][i+1]) {
-            SendMessageA(RichEdit[a], EM_REPLACESEL, FALSE, (LPARAM)"\r\n");
-            SendMessageA(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
+            SendMessageW(RichEdit[a], EM_REPLACESEL, FALSE, (LPARAM)L"\r\n");
+            SendMessageW(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
         }
     }
 
-    SendMessageA(RichEdit[a], EM_SETSEL, (WPARAM)0, (LPARAM)0);
+    SendMessageW(RichEdit[a], EM_SETSEL, (WPARAM)0, (LPARAM)0);
 }
 
 //-----------------------------------------------------------------------------
@@ -320,8 +304,8 @@ void ShowHelpDialog(BOOL about)
 
     MakeClass();
 
-    const char *s = about ? "About LDmicro" : "LDmicro Help";
-    HelpDialog[a] = CreateWindowExA(0, "LDmicroHelp", s,
+    const wchar_t *s = about ? _("About LDmicro") : _("LDmicro Help");
+    HelpDialog[a] = CreateWindowExW(0, L"LDmicroHelp", s,
         WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
         WS_MAXIMIZEBOX |
         WS_SIZEBOX,

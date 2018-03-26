@@ -2374,10 +2374,10 @@ void CompileAnsiC(char *dest, int MNU)
     }
 
     wchar_t str[MAX_PATH+500];
-    swprintf_s(str, _("Compile successful; wrote C source code to '%s'.\r\n\r\n"
+    swprintf_s(str, _("Compile successful; wrote C source code to '%ls'.\r\n\r\n"
         "This is not a complete C program. You have to provide the runtime "
         "and all the I/O routines. See the comments in the source code for "
-        "information about how to do this."), dest);
+        "information about how to do this."), to_utf16(dest).c_str());
     CompileSuccessfulMessage(str);
 }
 /*

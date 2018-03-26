@@ -179,21 +179,21 @@ static void MakeControls(void)
         char s2[100];
         double _cycleTimeMin = SIprefix(1.0*plcTmr.cycleTimeMin/1e6,s1);
         double _cycleTimeMax = SIprefix(1.0*plcTmr.cycleTimeMax/1e6,s2);
-        swprintf_s(txt,_("Available PLC Cycle Time: min=%.6g %ss, max=%lld ms (%.6g %ss)\n"),
-            _cycleTimeMin, s1, plcTmr.cycleTimeMax/1000, _cycleTimeMax, s2);
+        swprintf_s(txt,_("Available PLC Cycle Time: min=%.6g %lss, max=%lld ms (%.6g %lss)\n"),
+            _cycleTimeMin, u16(s1), plcTmr.cycleTimeMax/1000, _cycleTimeMax, u16(s2));
         wcscat(explanation,txt);
         if(b) {
             swprintf_s(txt,_("MCU PLC Timer%d: TMR%d=%d, prescaler=%d, softDivisor=%d\n"),
                 Prog.cycleTimer, Prog.cycleTimer, plcTmr.tmr, plcTmr.prescaler, plcTmr.softDivisor);
             wcscat(explanation,txt);
 
-            swprintf_s(txt,_("%030lld=TicksPerCycle\n%030lld=In fact\n"),
+            swprintf_s(txt,_("%30lld=TicksPerCycle\n%30lld=In fact\n"),
                 plcTmr.ticksPerCycle, (long long int)plcTmr.prescaler * (long long int)plcTmr.softDivisor * (long long int)plcTmr.tmr);
             wcscat(explanation,txt);
 
             double _TCycle = SIprefix(1.0*plcTmr.TCycle,s1);
             double _Fcycle = SIprefix(1.0*plcTmr.Fcycle,s2);
-            swprintf_s(txt,_("In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Cycle deviation=%.3f%%\n"), _TCycle, s1, _Fcycle, s2, 1e2*(1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime);
+            swprintf_s(txt,_("In fact TCycle=%.6g %lss, Fcycle=%.6g %lsHz, PLC Cycle deviation=%.3f%%\n"), _TCycle, u16(s1), _Fcycle, u16(s2), 1e2*(1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime);
             wcscat(explanation,txt);
         }
         swprintf_s(txt,L"\n");
@@ -201,20 +201,20 @@ static void MakeControls(void)
 
         double minDelay;
         minDelay = SIprefix(1.0 * Prog.cycleTime / 1000000, s2); //s
-        swprintf_s(txt,_("TON,TOF,RTO min Delay=%.6g ms (%.6g %ss)\n"), 1.0 * Prog.cycleTime / 1000, minDelay, s2);
+        swprintf_s(txt,_("TON,TOF,RTO min Delay=%.6g ms (%.6g %lss)\n"), 1.0 * Prog.cycleTime / 1000, minDelay, u16(s2));
         wcscat(explanation,txt);
 
         double maxDelay;
         maxDelay = SIprefix(1.0 * 0x7f * Prog.cycleTime / 1000000, s2); //s
-        swprintf_s(txt,_("TON,TOF,RTO  8bit max Delay=%.6g %ss\n"), maxDelay, s2);
+        swprintf_s(txt,_("TON,TOF,RTO  8bit max Delay=%.6g %lss\n"), maxDelay, u16(s2));
         wcscat(explanation,txt);
 
         maxDelay = SIprefix(1.0 * 0x7fff * Prog.cycleTime / 1000000, s2); //s
-        swprintf_s(txt,_("TON,TOF,RTO 16bit max Delay=%.6g %ss\n"), maxDelay, s2);
+        swprintf_s(txt,_("TON,TOF,RTO 16bit max Delay=%.6g %lss\n"), maxDelay, u16(s2));
         wcscat(explanation,txt);
 
         maxDelay = SIprefix(1.0 * 0x7fFFff * Prog.cycleTime / 1000000, s2); //s
-        swprintf_s(txt, _("TON,TOF,RTO 24bit max Delay=%.6g %ss\n"), maxDelay, s2);
+        swprintf_s(txt, _("TON,TOF,RTO 24bit max Delay=%.6g %lss\n"), maxDelay, u16(s2));
         wcscat(explanation,txt);
 
         swprintf_s(txt,L"\n");
@@ -291,32 +291,32 @@ void ShowConfDialog(void)
 
     MakeControls();
 
-    char buf[26];
-    sprintf(buf, "%.3f", 1.0 * Prog.cycleTime / 1000); //us show as ms
-    SendMessage(CycleTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+    wchar_t buf[26];
+    swprintf_s(buf, L"%.3f", 1.0 * Prog.cycleTime / 1000); //us show as ms
+    SendMessageW(CycleTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    sprintf(buf, "%d", Prog.cycleTimer);
-    SendMessage(TimerTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+    swprintf_s(buf, L"%d", Prog.cycleTimer);
+    SendMessageW(TimerTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     if(Prog.cycleDuty) {
         SendMessage(YPlcCycleDutyCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
 
-    sprintf(buf, "%.6f", Prog.mcuClock / 1e6); //Hz show as MHz
-    SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+    swprintf_s(buf, L"%.6f", Prog.mcuClock / 1e6); //Hz show as MHz
+    SendMessageW(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     if(!Prog.configurationWord) {
         if(Prog.mcu)
             Prog.configurationWord = Prog.mcu->configurationWord;
     }
-    sprintf(buf, "");
+    swprintf_s(buf, L"");
     if(Prog.configurationWord) {
-        sprintf(buf, "0x%llX", Prog.configurationWord);
+        swprintf_s(buf, L"0x%llX", Prog.configurationWord);
     }
-    SendMessage(ConfigBitsTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessageW(ConfigBitsTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    sprintf(buf, "%d", Prog.baudRate);
-    SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+    swprintf_s(buf, L"%d", Prog.baudRate);
+    SendMessageW(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(ConfDialog, TRUE);
@@ -344,17 +344,16 @@ void ShowConfDialog(void)
     }
 
     if(!DialogCancel) {
-        char buf[26];
-        SendMessage(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
-            (LPARAM)(buf));
-        double dProgCycleTime = 1000.0*atof(buf);
+        wchar_t buf[26];
+        SendMessageW(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+        double dProgCycleTime = 1000.0*atof(u8(buf));
         long long int ProgCycleTime;
 
-        sprintf(buf,"%.0f",dProgCycleTime);
-        ProgCycleTime = hobatoi(buf);
+        swprintf_s(buf,L"%.0f",dProgCycleTime);
+        ProgCycleTime = hobatoi(u8(buf));
 
         SendMessage(TimerTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        if(atoi(buf) == 0)
+        if(atoi(u8(buf)) == 0)
             Prog.cycleTimer = 0;
         else
             Prog.cycleTimer = 1;
@@ -366,13 +365,13 @@ void ShowConfDialog(void)
         }
         SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));
-        Prog.mcuClock = (int)(1e6*atof(buf) + 0.5);
+        Prog.mcuClock = (int)(1e6*atof(u8(buf)) + 0.5);
 
         SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));
 
         if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PIC16)) {
-            Prog.configurationWord = hobatoi(buf);
+            Prog.configurationWord = hobatoi(u8(buf));
             if(!Prog.configurationWord) {
                 Error(_("Zero Configuration Word(s) not valid."));
                 Prog.configurationWord = Prog.mcu->configurationWord;
@@ -380,7 +379,7 @@ void ShowConfDialog(void)
         }
 
         SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        Prog.baudRate = atoi(buf);
+        Prog.baudRate = atoi(u8(buf));
 
         if(Prog.mcuClock <= 0) {
             Error(_("Zero crystal frequency not valid; resetting to 16 MHz."));

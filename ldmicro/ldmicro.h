@@ -1498,6 +1498,8 @@ char *toupperstr(char *dest, const char *src);
 const wchar_t* _(const char *in);
 std::wstring to_utf16(const char* s);
 std::string to_utf8(const wchar_t* w);
+const wchar_t* u16(const char* s);
+const char* u8(const wchar_t* w);
 
 // simulate.cpp
 void MarkInitedVariable(char *name);

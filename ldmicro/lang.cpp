@@ -42,6 +42,18 @@ typedef struct LangTag {
 
 std::wstring to_utf16(const char* s);
 std::string to_utf8(const wchar_t* w);
+const wchar_t* u16(const char* s);
+const char* u8(const wchar_t* w);
+
+const wchar_t* u16(const char* s)
+{
+    return to_utf16(s).c_str();
+}
+
+const char* u8(const wchar_t* w)
+{
+    return to_utf8(w).c_str();
+}
 
 std::wstring to_utf16(const char* s)
 {
@@ -77,35 +89,35 @@ std::string to_utf8(const wchar_t* w)
 
 const wchar_t *_(const char *in)
 {
-    Lang *l = nullptr;
+    Lang *lang = nullptr;
 
 #if defined(LDLANG_EN)
 
 #elif defined(LDLANG_DE)
-    l = &LangDe;
+    lang = &LangDe;
 #elif defined(LDLANG_FR)
-    l = &LangFr;
+    lang = &LangFr;
 #elif defined(LDLANG_ES)
-    l = &LangEs;
+    lang = &LangEs;
 #elif defined(LDLANG_IT)
-    l = &LangIt;
+    lang = &LangIt;
 #elif defined(LDLANG_TR)
-    l = &LangTr;
+    lang = &LangTr;
 #elif defined(LDLANG_PT)
-    l = &LangPt;
+    lang = &LangPt;
 #elif defined(LDLANG_JA)
-    l = &LangJa;
+    lang = &LangJa;
 #elif defined(LDLANG_RU)
-    l = &LangRu;
+    lang = &LangRu;
 #else
 #   error "Unrecognized language!"
 #endif
     std::wstring output;
     const char* s = nullptr;
-    if(l){
-        for(int i = 0; i < l->n; i++) {
-            if(strcmp(in, l->tab[i].from)==0) {
-                s = l->tab[i].to;
+    if(lang) {
+        for(int i = 0; i < lang->n; i++) {
+            if(strcmp(in, lang->tab[i].from)==0) {
+                s = lang->tab[i].to;
             }
         }
     }
@@ -117,12 +129,6 @@ const wchar_t *_(const char *in)
     output.resize(size - 1);
     if(output.size() != 0)
         MultiByteToWideChar(CP_UTF8, 0, s, -1, &output[0], size - 1);
-
-    if(strcmp(in, "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss")==0)
-        {
-            volatile int i = 0;
-            (void)i;
-        }
 
     static std::vector<std::wstring> strings;
     const wchar_t* out;

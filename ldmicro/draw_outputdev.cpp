@@ -559,7 +559,7 @@ void InitForDrawing(void)
 {
     SetSyntaxHighlightingColours();
 
-    FixedWidthFont = CreateFontA(
+    FixedWidthFont = CreateFontW(
         FONT_HEIGHT, FONT_WIDTH,
         0, 0,
         FW_REGULAR,
@@ -571,9 +571,9 @@ void InitForDrawing(void)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         FF_DONTCARE,
-        "Lucida Console");
+        L"Lucida Console");
 
-    FixedWidthFontBold = CreateFontA(
+    FixedWidthFontBold = CreateFontW(
         FONT_HEIGHT, FONT_WIDTH,
         0, 0,
         FW_REGULAR, // the bold text renders funny under Vista
@@ -585,7 +585,7 @@ void InitForDrawing(void)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         FF_DONTCARE,
-        "Lucida Console");
+        L"Lucida Console");
 
     InitBrushesForDrawing();
 }
@@ -803,7 +803,7 @@ void ExportDrawingAsText(const char *file)
         wchar_t pinName[MAX_NAME_LEN] = L"";
 
         if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM) && (io->pin != NO_PIN_ASSIGNED))
-            swprintf_s(pin, L"%s", PinToName(io->pin));
+            swprintf_s(pin, L"%ls", u16(PinToName(io->pin)));
         else
             PinNumberForIo(pin, io, portName, pinName);
 

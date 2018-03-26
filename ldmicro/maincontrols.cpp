@@ -144,7 +144,7 @@ void UpdateMainWindowTitleBar(void)
         wcscpy(line, _("LDmicro - Program Editor"));
     }
     if(strlen(CurrentSaveFile) > 0) {
-        swprintf_s(line+wcslen(line), arraylen(line)-wcslen(line),L" - %s", CurrentSaveFile);
+        swprintf_s(line+wcslen(line), arraylen(line)-wcslen(line),L" - %ls", to_utf16(CurrentSaveFile).c_str());
     } else {
         wcscat(line, _(" - (not yet saved)"));
     }
@@ -915,11 +915,11 @@ void RefreshStatusBar(void)
     double TN=SIprefix(1.0*Prog.cycleTime*CyclesCount/1000000, TNunits);
 
     if(Prog.cycleTime>0) {
-        swprintf_s(buf,1000,_("Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss"),
-            T,to_utf16(Tunits).c_str(), F,to_utf16(Funits).c_str(), F2,to_utf16(F2units).c_str(), CyclesCount, TN,to_utf16(TNunits).c_str());
+        swprintf_s(buf,1000,_("Tcycle=%.6g %lss F=%.6g %lsHz F/2=%.6g %lsHz Ncycle=%d T=%.6g %lss"),
+            T,u16(Tunits), F,u16(Funits), F2,u16(F2units), CyclesCount, TN,u16(TNunits));
     } else {
         swprintf_s(buf, _("Tcycle=%.6g %lss Ncycle=%d T=%.6g %lss"),
-            T,to_utf16(Tunits).c_str(), CyclesCount, TN,to_utf16(TNunits).c_str());
+            T,u16(Tunits), CyclesCount, TN,u16(TNunits));
     }
     SendMessageW(StatusBar, SB_SETTEXTW, 3, (LPARAM)buf);
 

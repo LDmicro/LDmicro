@@ -1224,8 +1224,8 @@ void CompileNetzer(char *outFile)
     // And ready.
     fclose(f);
     wchar_t str[MAX_PATH+500];
-    swprintf_s(str, _("Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."),
-        outFile, meta.ImageCRC);
+    swprintf_s(str, _("Compile successful!\r\nWrote Netzer code to '%ls' (CRC: 0x%.4x)."),
+        u16(outFile), meta.ImageCRC);
     CompileSuccessfulMessage(str);
 }
 

@@ -4187,11 +4187,11 @@ static void CompileFromIntermediate(void)
                         *(s+1) = *s;
                     }
 
-                    swprintf_s(str2, L"'%s' %ls\n\n%ls\n%s",
-                        a->name3,
+                    swprintf_s(str2, L"'%ls' %ls\n\n%ls\n%ls",
+                        u16(a->name3),
                         str1,
                         _("Select the frequency from the possible values:"),
-                        freqStr);
+                        u16(freqStr));
                     Error(str2);
                 }
 
@@ -6510,9 +6510,9 @@ void CompileAvr(char *outFile)
     fclose(fAsm);
 
     wchar_t str[MAX_PATH+500];
-    swprintf_s(str, _("Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\n"
+    swprintf_s(str, _("Compile successful; wrote IHEX for AVR to '%ls'.\r\n\r\n"
         "Remember to set the processor configuration (fuses) correctly. "
-        "This does not happen automatically."), outFile);
+        "This does not happen automatically."), u16(outFile));
 
     wchar_t str2[MAX_PATH+500];
     swprintf_s(str2, _("Used %d/%d words of program flash (chip %d%% full)."),

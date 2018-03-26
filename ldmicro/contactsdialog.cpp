@@ -232,7 +232,7 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
             BOOL rename = FALSE;
             if(strcmp(name, nameSave)) {
                 wchar_t str[1000];
-                swprintf_s(str, _("Rename the ALL other %d contacts/coils named '%s' to '%s' ?"), n, nameSave, name);
+                swprintf_s(str, _("Rename the ALL other %d contacts/coils named '%ls' to '%ls' ?"), n, u16(nameSave), u16(name));
                 rename = IDYES == MessageBoxW(MainWindow, str, L"LDmicro", MB_YESNO | MB_ICONQUESTION);
             }
             if(rename)

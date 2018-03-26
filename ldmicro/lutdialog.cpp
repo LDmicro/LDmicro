@@ -157,7 +157,7 @@ static void MakeFixedControls(BOOL forPwl)
 
     const wchar_t *txt1 = forPwl ? _("Points:") : _("Table size:");
     wchar_t txt[1024];
-    swprintf_s(txt, arraylen(txt),L"%s max %d", txt1, forPwl ? MAX_LOOK_UP_TABLE_LEN/2 : MAX_LOOK_UP_TABLE_LEN);
+    swprintf_s(txt, arraylen(txt),L"%ls max %d", txt1, forPwl ? MAX_LOOK_UP_TABLE_LEN/2 : MAX_LOOK_UP_TABLE_LEN);
     Labels[3] = CreateWindowExW(0,WC_STATICW, txt,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         0, 70 +30, 78 +20, 21, LutDialog, NULL, Instance, NULL);

@@ -246,7 +246,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigge
           if(n >= 1) {
             BOOL rename = FALSE;
             wchar_t str[1000];
-            swprintf_s(str, _("Rename the ALL other %d coils/contacts named '%s' to '%s' ?"), n, nameSave, name);
+            swprintf_s(str, _("Rename the ALL other %d coils/contacts named '%ls' to '%ls' ?"), n, u16(nameSave), u16(name));
             rename = IDYES == MessageBoxW(MainWindow, str, L"LDmicro", MB_YESNO | MB_ICONQUESTION);
             if(rename)
                 RenameSet1(ELEM_COIL, nameSave, name, FALSE); // rename and reset

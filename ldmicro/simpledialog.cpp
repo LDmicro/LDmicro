@@ -424,7 +424,7 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
         } else if(period  < 1)  {
             const wchar_t *s1 = _("Timer period too short (needs faster cycle time).");
             wchar_t s2[1024];
-            swprintf(s2, _("Timer '%s'=%.3f ms."), name, del);
+            swprintf(s2, _("Timer '%ls'=%.3f ms."), u16(name), del);
             wchar_t s3[1024];
             swprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
             const wchar_t *s4 = _("Not available");
@@ -875,7 +875,7 @@ void ShowSegmentsDialog(ElemLeaf *l)
     const wchar_t *labels[] = { _("Destination:"), _("Source:"), _("Common:Cathode|Anode:")};
     char *dests[] = { s->dest, s->src, common};
     wchar_t s2[50];
-    swprintf(s2,_("Convert char to %s Segments"), s1);
+    swprintf(s2,_("Convert char to %ls Segments"), u16(s1));
     if(ShowSimpleDialog(s2, 3, labels, 0, 0x3, 0xff, dests)){
         if(IsNumber(s->dest)) {
             Error(_("Segments instruction: '%s' not a valid destination."),
@@ -1136,7 +1136,7 @@ void ShowStepperDialog(int which, void *e)
             double _F=SIprefix(F, Funits);
 
             wchar_t str[1000];
-            swprintf(str, L"Pmin=%.3f %ss, Fmax=%.3f %sHz", _Pt, Punits, _F, Funits);
+            swprintf(str, L"Pmin=%.3f %lss, Fmax=%.3f %lsHz", _Pt, u16(Punits), _F, u16(Funits));
 
             int count=hobatoi(max);
 
@@ -1146,7 +1146,7 @@ void ShowStepperDialog(int which, void *e)
                 CalcSteps(s, &r);
 
                 double _Psum=SIprefix(Pt*r.Psum, Punits);
-                swprintf(str, L"%ls\n\nAcceleration/Deceleration time=%.3f %ss", str, _Psum, Punits);
+                swprintf(str, L"%ls\n\nAcceleration/Deceleration time=%.3f %lss", str, _Psum, u16(Punits));
 
                 CheckFree(r.T);
             }
@@ -1162,10 +1162,10 @@ void ShowStepperDialog(int which, void *e)
                         Tfull=Pt*r.Psum*2.0;
 
                     _Tfull=SIprefix(Tfull, Tunits);
-                    swprintf(str, L"%ls\n\nWork time=%.3f %ss", str, _Tfull, Tunits);
+                    swprintf(str, L"%ls\n\nWork time=%.3f %lss", str, _Tfull, u16(Tunits));
                 }
                 _Tfull=SIprefix(Pt*count, Tunits);
-                swprintf(str, L"%ls\n\nTime without accel/decel=%.3f %ss", str, _Tfull, Tunits);
+                swprintf(str, L"%ls\n\nTime without accel/decel=%.3f %lss", str, _Tfull, u16(Tunits));
             }
 
             MessageBoxW(MainWindow, str, _("Stepper information"), MB_OK | MB_ICONINFORMATION);
@@ -1190,7 +1190,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
         if(IsNumber(counter))
             CheckConstantInRange("", counter,hobatoi(counter));
         if((busy[0]!='Y') && (busy[0]!='R'))
-            Error(_("Busy to: '%s' you must set to internal relay 'R%s' or to output pin 'Y%s'."), busy, busy, busy);
+            Error(_("Busy to: '%ls' you must set to internal relay 'R%ls' or to output pin 'Y%ls'."), u16(busy), u16(busy), u16(busy));
 
         if(IsNumber(P1) && IsNumber(P0)){
             double P1t=(double)Prog.cycleTime*hobatoi(P1)/1000.0;
@@ -1207,7 +1207,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
                 Funits = _("kHz");
             }
             wchar_t str[1000];
-            swprintf(str, L"P1=%.3f %ls, P0=%.3f %ls, F=%.3f %ls", P1t, Punits, P0t, Punits, F, Funits);
+            swprintf_s(str, L"P1=%.3f %ls, P0=%.3f %ls, F=%.3f %ls", P1t, Punits, P0t, Punits, F, Funits);
 
             int count;
             if(IsNumber(counter))
@@ -1230,8 +1230,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
                       if(hobatoi(P1) != hobatoi(P0)) i--;
                     }
                     Ta=(double)Prog.cycleTime*Na/1000.0;
-                    //sprintf(str, "%s\n\nAcceleration time %d cycles=%.3f %s", str, Na, Ta, Punits);
-                    swprintf(str, L"%ls\n\nAcceleration time=%.3f %s", str, Ta, Punits);
+                    swprintf_s(str, L"%ls\n\nAcceleration time=%.3f %ls", str, Ta, Punits);
                 }
             }
 
@@ -1273,10 +1272,10 @@ void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
 void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, char *contactB, char *contactZ, char *error)
 {
     wchar_t title[100];
-    swprintf(title, _("Quad Encod%d"), *int01);
+    swprintf_s(title, _("Quad Encod%d"), *int01);
 
     char _int01[100];
-    sprintf(_int01, "%d", *int01);
+    sprintf_s(_int01, "%d", *int01);
 
     const wchar_t *labels[] = { _("Counter var:"), _("Input A INTs:"), _("Input A:"), _("Input B:"), _("Input Z:"), _("Output Zero(Counter==0):")};
     char *dests[] = { counter, _int01, contactA, contactB, contactZ, error};
@@ -1311,7 +1310,7 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
     }
 
     wchar_t s[MAX_NAME_LEN];
-    swprintf_s(s, _("Set variable '%s'"), io->name);
+    swprintf_s(s, _("Set variable '%ls'"), u16(io->name));
 
     const wchar_t *labels[2];
     char *dests[2];

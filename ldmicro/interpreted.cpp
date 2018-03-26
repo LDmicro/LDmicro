@@ -296,8 +296,8 @@ finishIf:
 
     wchar_t str[MAX_PATH+500];
     swprintf_s(str,
-      _("Compile successful; wrote interpretable code to '%s'.\r\n\r\n"
+      _("Compile successful; wrote interpretable code to '%ls'.\r\n\r\n"
         "You probably have to adapt the interpreter to your application. See "
-        "the documentation."), outFile);
+        "the documentation."), u16(outFile));
     CompileSuccessfulMessage(str);
 }
