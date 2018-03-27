@@ -927,15 +927,15 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_DELAY:
                 fprintf(f,"#ifdef CCS_PIC_C\n");
-doIndent(f, i); fprintf(f,"  delay_us(%d);\n", IntCode[i].literal);
+doIndent(f, i); fprintf(f,"  delay_us(%s);\n", IntCode[i].name1);
 doIndent(f, i); fprintf(f,"#elif defined(HI_TECH_C)\n");
-doIndent(f, i); fprintf(f,"  __delay_us(%d);\n", IntCode[i].literal);
+doIndent(f, i); fprintf(f,"  __delay_us(%s);\n", IntCode[i].name1);
 doIndent(f, i); fprintf(f,"#elif defined(__CODEVISIONAVR__)\n");
-doIndent(f, i); fprintf(f,"  delay_us(%d);\n", IntCode[i].literal);
+doIndent(f, i); fprintf(f,"  delay_us(%s);\n", IntCode[i].name1);
 doIndent(f, i); fprintf(f,"#elif defined(__GNUC__)\n");
-doIndent(f, i); fprintf(f,"  _delay_us(%d);\n", IntCode[i].literal);
+doIndent(f, i); fprintf(f,"  _delay_us(%s);\n", IntCode[i].name1);
 doIndent(f, i); fprintf(f,"#else\n");
-doIndent(f, i); fprintf(f,"  delayMicroseconds(%d);\n", IntCode[i].literal);
+doIndent(f, i); fprintf(f,"  delayMicroseconds(%s);\n", IntCode[i].name1);
 doIndent(f, i); fprintf(f,"#endif\n");
                 break;
 

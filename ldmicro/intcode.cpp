@@ -407,7 +407,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_DELAY:
-                fprintf(f, "DELAY %d us;", IntCode[i].literal);
+                fprintf(f, "DELAY %s us;", IntCode[i].name1);
                 break;
 
             case INT_CLRWDT:

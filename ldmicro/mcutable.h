@@ -98,10 +98,10 @@ McuAdcPinInfo AvrAT90USB647_64TQFPAdcPinInfo[] = {
 //-----------------------------------------------------------------------------
 // ATmega2560
 McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
-//   port bit pin  pinName                  ArduinoPin  ArduinoName
-//                                                      Mega/Mega2560
-    { 'E',  0,  2, "PE0 (RXD0/PCINT8)",      0, "0 //RX" },
-    { 'E',  1,  3, "PE1 (TXD0)",             0, "1 //TX" },
+//   port bit pin  pinName          ArduinoPin  ArduinoName
+//                                              Mega/Mega2560
+    { 'E',  0,  2, "PE0 (RXD0/PCINT8)",      0, "0; //RX" },
+    { 'E',  1,  3, "PE1 (TXD0)",             0, "1; //TX" },
     { 'E',  2,  4, "PE2 (AIN0/XCK0)",        0, "" },
     { 'E',  3,  5, "PE3 (AIN1/OC3A)",        0, "5" },
     { 'E',  4,  6, "PE4 (INT4/OC3B)",        0, "2" },
@@ -109,8 +109,8 @@ McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
     { 'E',  6,  8, "PE6 (INT6/T3)",          0, "" },
     { 'E',  7,  9, "PE7 (INT7/CLKO/ICP3)",   0, "" },
 
-    { 'H',  0, 12, "PH0 (RXD2)"            , 0, "17 //RX2" },
-    { 'H',  1, 13, "PH1 (TXD2)"            , 0, "16 //TX2" },
+    { 'H',  0, 12, "PH0 (RXD2)"            , 0, "17; //RX2" },
+    { 'H',  1, 13, "PH1 (TXD2)"            , 0, "16; //TX2" },
     { 'H',  2, 14, "PH2 (XCK2)"            , 0, "" },
     { 'H',  3, 15, "PH3 (OC4A)"            , 0, "6" },
     { 'H',  4, 16, "PH4 (OC4B)"            , 0, "7" },
@@ -136,10 +136,10 @@ McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
     { 'L',  6, 41, "PL6"                   , 0, "43" },
     { 'L',  7, 42, "PL7"                   , 0, "42" },
 
-    { 'D',  0, 43, "PD0 (INT0/SCL)",         0, "21 //SCL" },
-    { 'D',  1, 44, "PD1 (INT1/SDA)",         0, "20 //SDA" },
-    { 'D',  2, 45, "PD2 (INT2/RXD1)",        0, "19 //RX1" },
-    { 'D',  3, 46, "PD3 (INT3/TXD1)",        0, "18 //TX1" },
+    { 'D',  0, 43, "PD0 (INT0/SCL)",         0, "21; //SCL" },
+    { 'D',  1, 44, "PD1 (INT1/SDA)",         0, "20; //SDA" },
+    { 'D',  2, 45, "PD2 (INT2/RXD1)",        0, "19; //RX1" },
+    { 'D',  3, 46, "PD3 (INT3/TXD1)",        0, "18; //TX1" },
     { 'D',  4, 47, "PD4 (ICP1)",             0, "" },
     { 'D',  5, 48, "PD5 (XCK1)",             0, "" },
     { 'D',  6, 49, "PD6 (T1)",               0, "" },
@@ -161,8 +161,8 @@ McuIoPinInfo AvrAtmega2560_100TQFPIoPinInfo[] = {
     { 'C',  6, 59, "PC6 (A14)",              0, "31" },
     { 'C',  7, 60, "PC7 (A15)",              0, "30" },
 
-    { 'J',  0, 63, "PJ0 (PCINT9/RXD3)"     , 0, "15 //RX3" },
-    { 'J',  1, 64, "PJ1 (PCINT10/TXD3)"    , 0, "14 //TX3" },
+    { 'J',  0, 63, "PJ0 (PCINT9/RXD3)"     , 0, "15; //RX3" },
+    { 'J',  1, 64, "PJ1 (PCINT10/TXD3)"    , 0, "14; //TX3" },
     { 'J',  2, 65, "PJ2 (PCINT11/XCK3)"    , 0, "" },
     { 'J',  3, 66, "PJ3 (PCINT12)"         , 0, "" },
     { 'J',  4, 67, "PJ4 (PCINT13)"         , 0, "" },
