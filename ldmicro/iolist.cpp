@@ -326,7 +326,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             sprintf(str, "C%s%s", l->d.stepper.name, "Dec");
             AppendIo(str, IO_TYPE_COUNTER);
 
-            if(IsNumber(l->d.stepper.P)&&(CheckMakeNumber(l->d.stepper.P)>1)
+            if((IsNumber(l->d.stepper.P)&&(CheckMakeNumber(l->d.stepper.P)>1))
             ||(l->d.stepper.graph>0)//&&(l->d.stepper.n>1)
             ||(!IsNumber(l->d.stepper.P))){
                 sprintf(str, "C%s%s", l->d.stepper.name, "Inc");
@@ -846,7 +846,7 @@ void SaveIoListToFile(FILE *f)
         }
     }
     if(j1 != j2) {
-        Error(" %s%s", "Not all I/O pins are saved! Use menu:\n", _("File->Save LDmicro0.2 file format"));
+        Error(L" %ls%ls", _("Not all I/O pins are saved! Use menu:\n"), _("File->Save LDmicro0.2 file format"));
     }
 }
 
@@ -1169,7 +1169,7 @@ void ShowIoDialog(int item)
     }
 
     if(strcmp(Prog.io.assignment[item].name+1, "new")==0) {
-        Error(_("Rename I/O from default name ('%s') before assigning MCU pin."), Prog.io.assignment[item].name);
+        Error(_("Rename I/O from default name ('%ls') before assigning MCU pin."), u16(Prog.io.assignment[item].name));
         return;
     }
 

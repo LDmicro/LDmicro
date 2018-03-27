@@ -51,7 +51,7 @@ static int CheckRange(int value, const char *name)
 {
     if (value < 0 || value > 255) {
         wchar_t msg[80];
-        swprintf_s(msg, _("%s=%d: out of range for 8bits target"), name, value);
+        swprintf_s(msg, _("%ls=%d: out of range for 8bits target"), u16(name), value);
         Error(msg);
     }
 
@@ -82,7 +82,7 @@ void CompileXInterpreted(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't write to '%s'"), outFile);
+        Error(_("Couldn't write to '%ls'"), u16(outFile));
         return;
     }
 

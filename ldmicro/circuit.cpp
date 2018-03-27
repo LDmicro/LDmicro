@@ -1715,7 +1715,7 @@ void CopyRungDown(void)
     //FILE *f = fopen(CLP, "w+TD");
     FILE *f = fopen(CLP, "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%ls'"), u16(CLP));
         return;
     }
     //fprintf(f, "RUNG\n");
@@ -1725,7 +1725,7 @@ void CopyRungDown(void)
     rewind(f);
     fgets(line,sizeof(line),f);
     if(strstr(line, "RUNG"))
-    if(temp=LoadSeriesFromFile(f)) {
+    if((temp=LoadSeriesFromFile(f))) {
         InsertRung(true);
         Prog.rungs[i+1] = temp;
     }
@@ -1742,7 +1742,7 @@ void CutRung(void)
 
     FILE *f = fopen(CLP, "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%ls'"), u16(CLP));
         return;
     }
     int SelN = 0;
@@ -1775,7 +1775,7 @@ void CopyRung(void)
 {
     FILE *f = fopen(CLP, "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%ls'"), u16(CLP));
         return;
     }
     int i;
@@ -1806,7 +1806,7 @@ void CopyElem(void)
 
     FILE *f = fopen(CLP, "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%ls'"), u16(CLP));
         return;
     }
     int i;
@@ -1854,7 +1854,7 @@ void PasteRung(int PasteInTo)
 
     FILE *f = fopen(CLP, "r");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%ls'"), u16(CLP));
         Error(_("You must Select rungs, then Copy or Cut, then Paste."));
         return;
     }

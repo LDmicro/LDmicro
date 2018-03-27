@@ -495,10 +495,10 @@ static const wchar_t *Check(const char *name, DWORD flag, int i)
         case VAR_FLAG_OTHERWISE_FORGOTTEN:
             if((name[0] != '$')
             && (name[0] != '#')) {
-                Error(_("Variable '%s' not assigned to, e.g. with a "
+                Error(_("Variable '%ls' not assigned to, e.g. with a "
                     "MOV statement, an ADD statement, etc.\r\n\r\n"
                     "This is probably a programming error; now it "
-                    "will always be zero."), name);
+                    "will always be zero."), u16(name));
             }
             break;
 
@@ -580,7 +580,10 @@ static void CheckMsg(const char *name, const char *s, int i)
 {
     if(s) {
         #if 1
-        Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow+1, name, s, rungsUsed);
+        auto name_w = to_utf16(name);
+        auto s_w = to_utf16(s);
+        auto rung_w = to_utf16(rungsUsed);
+        Error(_("Rung %d: Variable '%ls' incorrectly assigned.\n%ls.\nSee rungs:%ls"), rungNow+1, name_w.c_str(), s_w.c_str(), rung_w.c_str());
         (void)i;
         #else
         char s2[1000];
@@ -597,7 +600,9 @@ static void CheckMsg(const char *name, const char *s, int i)
 static void CheckMsg(const char *name, const wchar_t *w, int i)
 {
     if(w) {
-        Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%ls.\nSee rungs:%s"), rungNow+1, name, w, rungsUsed);
+        auto name_w = to_utf16(name);
+        auto rung_w = to_utf16(rungsUsed);
+        Error(_("Rung %d: Variable '%ls' incorrectly assigned.\n%ls.\nSee rungs:%ls"), rungNow+1, name_w.c_str(), w, rung_w.c_str());
         (void)i;
     }
 }
@@ -844,7 +849,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
     }
 }
 //-----------------------------------------------------------------------------
-void CheckVariableNames(void)
+void CheckVariableNames()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -858,7 +863,7 @@ void CheckVariableNames(void)
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_RES)
         if((Variables[i].usedFlags & ~VAR_FLAG_RES) == 0)
-             Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."), Variables[i].initedRung+1, Variables[i].name,
+             Error(_("Rung %d: Variable '%ls' incorrectly assigned.\n%ls."), Variables[i].initedRung+1, u16(Variables[i].name),
                    _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\n"
                           "You must assign a variable."));
 return;
@@ -1875,14 +1880,14 @@ static void SimulateIntCode(void)
                 SDWORD *adata;
                 adata = (SDWORD *)GetSimulationVariable(a->name2);
                 if(adata == NULL) {
-                    Error("TABLE %s is not initialized.", a->name2);
+                    Error(_("TABLE %ls is not initialized."), u16(a->name2));
                     StopSimulation();
                     ToggleSimulationMode(FALSE);
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0)||(a->literal <= index)) {
-                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2, a->literal-1);
+                    Error(_("Index=%d out of range for TABLE %ls[0..%d]"), index, u16(a->name2), a->literal-1);
                     index = a->literal;
                     StopSimulation();
                     ToggleSimulationMode(FALSE);
@@ -1899,7 +1904,7 @@ static void SimulateIntCode(void)
             case INT_RAM_READ:{
                 int index = GetSimulationVariable(a->name3);
                 if((index<0)||(a->literal<=index)) {
-                    Error("Index=%d out of range for string %s[%d]", index, a->name1, a->literal);
+                    Error(_("Index=%d out of range for string %ls[%d]"), index, u16(a->name1), a->literal);
                     index = a->literal;
                     StopSimulation();
                 }

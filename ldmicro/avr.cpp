@@ -661,8 +661,8 @@ static void AddrCheckForErrorsPostCompile()
     for(i = 0; i < AvrProgWriteP; i++) {
       if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE) {
         if(AvrProg[i].arg1 & FWD(0)) {
-            Error("Every AllocFwdAddr needs FwdAddrIsNow.");
-            Error("i=%d op=%d arg1=%d arg2=%d rung=%d", i,
+            Error(_("Every AllocFwdAddr needs FwdAddrIsNow."));
+            Error(_("i=%d op=%d arg1=%d arg2=%d rung=%d"), i,
                AvrProg[i].opAvr,
                AvrProg[i].arg1,
                AvrProg[i].arg2,
@@ -1270,7 +1270,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
     default:
         sprintf(sAsm,"0x%X OP_%d %d %d", addrAt, op, arg1, arg2);
-        Error(sAsm);
+        Error(u16(sAsm));
         return 0;
   }
 }
@@ -1413,7 +1413,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     // end of file record
     fprintf(f, ":00000001FF\n");
     if((Prog.mcu->flashWords) && (AvrProgWriteP >= Prog.mcu->flashWords)) {
-        Error(_(" Flash program memory size %d is exceed limit %d words\nfor %s."), AvrProgWriteP, Prog.mcu->flashWords, Prog.mcu->mcuName);
+        Error(_(" Flash program memory size %d is exceed limit %d words\nfor %ls."), AvrProgWriteP, Prog.mcu->flashWords, u16(Prog.mcu->mcuName));
     }
 }
 
@@ -1725,7 +1725,7 @@ static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYT
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
+        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %ls %li"), val, u16(name), literal); //see TODO
         Error("LINE %d FILE %s", l, f);
         return;
     }
@@ -5355,7 +5355,7 @@ void CompileAvr(char *outFile)
     rungNow = -100;
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), outFile);
+        Error(_("Couldn't open file '%ls'"), u16(outFile));
         return;
     }
 
@@ -5363,7 +5363,7 @@ void CompileAvr(char *outFile)
     SetExt(outFileAsm, outFile, ".asm");
     FILE *fAsm = fopen(outFileAsm, "w");
     if(!fAsm) {
-        Error(_("Couldn't open file '%s'"), outFileAsm);
+        Error(_("Couldn't open file '%ls'"), u16(outFileAsm));
         fclose(f);
         return;
     }

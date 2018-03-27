@@ -271,7 +271,7 @@ static BOOL ShowSimpleDialog(const wchar_t *title, int labs, const wchar_t **lab
                         strcpy(dests[i], get);
                     }
                 } else {
-                    Error(_("Bad use of quotes: <%s>"), get);
+                    Error(_("Bad use of quotes: <%дs>"), u16(get));
                 }
             }
         }
@@ -434,11 +434,11 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
             const wchar_t *s1 = _("Timer period too long (max 32767 times cycle time); use a "
                 "slower cycle time.");
             wchar_t s2[1024];
-            swprintf(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del/1000, period);
+            swprintf_s(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del/1000, period);
             double maxDelay = 1.0 * ((1 << (SizeOfVar(name)*8-1))-1) * Prog.cycleTime / 1000000; //s
             wchar_t s3[1024];
-            swprintf(s3, _("Maximum available timer period = %.3f s."), maxDelay);
-            Error("%ls\r\n%ls\r\n%ls", s1, s2, s3);
+            swprintf_s(s3, _("Maximum available timer period = %.3f s."), maxDelay);
+            Error(L"%ls\r\n%ls\r\n%ls", s1, s2, s3);
             *delay = (SDWORD)(1000000*del + 0.5);
         } else {
             *delay = (SDWORD)(1000000*del + 0.5);
@@ -505,6 +505,8 @@ void ShowDelayDialog(int which, char *name)
 //-----------------------------------------------------------------------------
 static void CheckConstantInRange(const char *name, const char *str, SDWORD v)
 {
+    auto name_w = to_utf16(name);
+    auto str_w = to_utf16(str);
     SDWORD val = hobatoi(str);
     if(val != v) oops();
     int radix = getradix(str);
@@ -519,24 +521,24 @@ static void CheckConstantInRange(const char *name, const char *str, SDWORD v)
         sov = SizeOfVar(name);
     if (sov == 1) {
         if((v < -128 || v > 127) && (radix == 10))
-            Error(_("Constant %s=%d out of variable '%s' range : -128 to 127 inclusive."), str, v, name);
+            Error(_("Constant %ls=%d out of variable '%ls' range : -128 to 127 inclusive."), str_w.c_str(), v, name_w.c_str());
         else if((v < 0 || v > 0xff) && (radix != 10))
-            Error(_("Constant %s=%d out of variable '%s' range : 0 to 255 inclusive."), str, v, name);
+            Error(_("Constant %ls=%d out of variable '%ls' range : 0 to 255 inclusive."), str_w.c_str(), v, name_w.c_str());
     } else if((sov == 2) || (sov == 0)) {
         if((v < -32768 || v > 32767) && (radix == 10))
-            Error(_("Constant %s=%d out of variable '%s' range: -32768 to 32767 inclusive."), str, v, name);
+            Error(_("Constant %ls=%d out of variable '%ls' range: -32768 to 32767 inclusive."), str_w.c_str(), v, name_w.c_str());
         else if((v < 0 || v > 0xffff) && (radix != 10))
-            Error(_("Constant %s=%d out of variable '%s' range : 0 to 65535 inclusive."), str, v, name);
+            Error(_("Constant %ls=%d out of variable '%ls' range : 0 to 65535 inclusive."), str_w.c_str(), v, name_w.c_str());
     } else if(sov == 3) {
         if((v < -8388608 || v > 8388607) && (radix == 10))
-            Error(_("Constant %s=%d out of variable '%s' range: -8388608 to 8388607 inclusive."), str, v, name);
+            Error(_("Constant %ls=%d out of variable '%ls' range: -8388608 to 8388607 inclusive."), str_w.c_str(), v, name_w.c_str());
         else if((v < 0 || v > 0xffffff) && (radix != 10))
-            Error(_("Constant %s=%d out of variable '%s' range : 0 to 16777215 inclusive."), str, v, name);
+            Error(_("Constant %ls=%d out of variable '%ls' range : 0 to 16777215 inclusive."), str_w.c_str(), v, name_w.c_str());
     } else if(sov == 4) {
         if((v < -2147483648LL || v > 2147483647) && (radix == 10))
-            Error(_("Constant %s=%d out of variable '%s' range: -2147483648 to 2147483647 inclusive."), str, v, name);
+            Error(_("Constant %ls=%d out of variable '%ls' range: -2147483648 to 2147483647 inclusive."), str_w.c_str(), v, name_w.c_str());
         else if((DWORD(v) < 0 || DWORD(v) > 0xFFFFffff) && (radix != 10))
-            Error(_("Constant %s=%d out of variable '%s' range : 0 to 4294967295(0xFFFFffff) inclusive."), str, v, name);
+            Error(_("Constant %ls=%d out of variable '%ls' range : 0 to 4294967295(0xFFFFffff) inclusive."), str_w.c_str(), v, name_w.c_str());
     } else ooops("Constant %s Variable '%s' size=%d value=%d", str, name, sov, v);
 }
 
@@ -545,6 +547,8 @@ static void CheckConstantInRange(const char *name, const char *str, SDWORD v)
 //-----------------------------------------------------------------------------
 void CheckVarInRange(char *name, char *str, SDWORD v)
 {
+    auto name_w = to_utf16(name);
+    auto str_w = to_utf16(str);
     SDWORD val = hobatoi(str);
     if(val != v) oops();
     int radix = getradix(str);
@@ -552,24 +556,24 @@ void CheckVarInRange(char *name, char *str, SDWORD v)
     int sov = SizeOfVar(name);
     if (sov == 1) {
         if((v < -128 || v > 127) && (radix == 10))
-            Error(_("Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
+            Error(_("Variable %ls=%d out of range: -128 to 127 inclusive."), name_w.c_str(), v);
         else if((v < 0 || v > 0xff) && (radix != 10))
-            Error(_("Variable %s=0x%X out range: 0 to 0xFF inclusive."), str, v, name);
+            Error(_("Variable %ls=0x%X out range: 0 to 0xFF inclusive."), str_w.c_str(), v, name_w.c_str());
     } else if((sov == 2) || (sov == 0)){
         if((v < -32768 || v > 32767) && (radix == 10))
-            Error(_("Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
+            Error(_("Variable %ls=%d out of range: -32768 to 32767 inclusive."), name_w.c_str(), v);
         else if((v < 0 || v > 0xffff) && (radix != 10))
-            Error(_("Variable %s=0x%X out range: 0 to 0xFFFF inclusive."), str, v, name);
+            Error(_("Variable %ls=0x%X out range: 0 to 0xFFFF inclusive."), str_w.c_str(), v, name_w.c_str());
     } else if(sov == 3) {
         if((v < -8388608 || v > 8388607) && (radix == 10))
-            Error(_("Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
+            Error(_("Variable %ls=%d out of range: -8388608 to 8388607 inclusive."), name_w.c_str(), v);
         else if((v < 0 || v > 0xffffff) && (radix != 10))
-            Error(_("Variable %s=0x%X out range: 0 to 0xffFFFF inclusive."), str, v, name);
+            Error(_("Variable %ls=0x%X out range: 0 to 0xffFFFF inclusive."), str_w.c_str(), v, name_w.c_str());
     } else if(sov == 4) {
         if((v < -2147483648LL || v > 2147483647LL) && (radix == 10))
-            Error(_("Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."), name, v);
+            Error(_("Variable %ls=%d out of range: -2147483648 to 2147483647 inclusive."), name_w.c_str(), v);
         else if((DWORD(v) < 0 || DWORD(v) > 0xffffFFFF) && (radix != 10))
-            Error(_("Variable %s=0x%X out range: 0 to 0xFFFFFFFF inclusive."), str, v, name);
+            Error(_("Variable %ls=0x%X out range: 0 to 0xFFFFFFFF inclusive."), str_w.c_str(), v, name_w.c_str());
     } else ooops("Variable '%s' size=%d value=%d", name, sov, v);
 }
 
@@ -743,8 +747,7 @@ void ShowMoveDialog(int which, char *dest, char *src)
     char *dests[] = { dest, src };
     if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)){
         if(IsNumber(dest)) {
-            Error(_("Move instruction: '%s' not a valid destination."),
-                dest);
+            Error(_("Move instruction: '%ls' not a valid destination."), u16(dest));
         }
         if(IsNumber(src))
             CheckConstantInRange(dest, src, hobatoi(src));
@@ -773,12 +776,10 @@ void ShowBusDialog(ElemLeaf *l)
     char *dests[] = { s->dest, busStr, s->src, PCBbitStr};
     if(ShowSimpleDialog(title, 4, labels, 0, 0x3, 0xff, dests)){
         if(IsNumber(s->dest)) {
-            Error(_("Bus instruction: '%s' not a valid destination."),
-                s->dest);
+            Error(_("Bus instruction: '%ls' not a valid destination."), u16(s->dest));
         }
         if(IsNumber(s->src)) {
-            Error(_("Bus instruction: '%s' not a valid source."),
-                s->src);
+            Error(_("Bus instruction: '%ls' not a valid source."), u16(s->src));
         }
 
         if(sscanf(PCBbitStr,"|%d|%d|%d|%d|%d|%d|%d|%d|",
@@ -878,8 +879,7 @@ void ShowSegmentsDialog(ElemLeaf *l)
     swprintf(s2,_("Convert char to %ls Segments"), u16(s1));
     if(ShowSimpleDialog(s2, 3, labels, 0, 0x3, 0xff, dests)){
         if(IsNumber(s->dest)) {
-            Error(_("Segments instruction: '%s' not a valid destination."),
-                s->dest);
+            Error(_("Segments instruction: '%ls' not a valid destination."), u16(s->dest));
         }
         if(IsNumber(s->src))
             CheckConstantInRange(s->dest, s->src, hobatoi(s->src));
@@ -956,9 +956,9 @@ void ShowSetPwmDialog(void *e)
         //TODO: check the available range
         double freq = hobatoi(targetFreq);
         if(freq < 0)
-            Error(_("'%s' freq < 0"), targetFreq);
+            Error(_("'%ls' freq < 0"), u16(targetFreq));
         if(freq > Prog.mcuClock)
-            Error(_("'%s' freq > %d"), targetFreq, Prog.mcuClock);
+            Error(_("'%ls' freq > %d"), u16(targetFreq), Prog.mcuClock);
 
         int resol, TOP;
         getResolution(resolution, &resol, &TOP);
@@ -968,9 +968,9 @@ void ShowSetPwmDialog(void *e)
 
         double duty = atof(duty_cycle);
         if(duty < 0.0)
-            Error(_("'%s' duty < 0"), duty_cycle);
+            Error(_("'%ls' duty < 0"), u16(duty_cycle));
         if(duty > TOP)
-            Error(_("'%s' duty > %d"), duty_cycle, TOP);
+            Error(_("'%ls' duty > %d"), u16(duty_cycle), TOP);
     }
     NoCheckingOnBox[3] = FALSE;
 }
@@ -1052,7 +1052,7 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
     NoCheckingOnBox[2] = FALSE;
     if(b){
         if(IsNumber(dest)) {
-            Error(_("Math instruction: '%s' not a valid destination."), dest);
+            Error(_("Math instruction: '%ls' not a valid destination."), u16(dest));
         }
         if(IsNumber(op1))
             CheckConstantInRange(dest, op1, hobatoi(op1));
@@ -1123,8 +1123,10 @@ void ShowStepperDialog(int which, void *e)
             sprintf(str, "C%s%s", s->name, "P");
             CheckConstantInRange(str, P, hobatoi(P));
         }
-        if(coil[0]!='Y')
-            Error(_("Pulse to: '%s' you must set to output pin 'Y%s' or to internal relay 'R%s'."), coil, coil, coil);
+        if(coil[0]!='Y') {
+            auto w = to_utf16(coil);
+            Error(_("Pulse to: '%ls' you must set to output pin 'Y%ls' or to internal relay 'R%ls'."), w.c_str(), w.c_str(), w.c_str());
+        }
 
         if(IsNumber(P)){
             double Pt=1.0*Prog.cycleTime*hobatoi(P)/1000000.0;
@@ -1263,9 +1265,9 @@ void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
         //TODO: check the available range
         double freq = hobatoi(targetFreq);
         if(freq < 0)
-            Error(_("'%s' freq < 0"), targetFreq);
+            Error(_("'%ls' freq < 0"), u16(targetFreq));
         if(freq > 1000000.0)
-            Error(_("'%s' freq > 100000"), targetFreq);
+            Error(_("'%ls' freq > 100000"), u16(targetFreq));
     }
 }
 

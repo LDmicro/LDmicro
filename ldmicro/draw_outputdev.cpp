@@ -620,7 +620,7 @@ BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
                    NULL);
 
     if (hFile == INVALID_HANDLE_VALUE) {
-        Error("Could not open file %s (error %d)\n", FileName, GetLastError());
+        Error(_("Could not open file %ls (error %d)\n"), u16(FileName), GetLastError());
         return FALSE;
     }
     BOOL b = GetFileTime(hFile, &ftCreate, &ftAccess, ftWrite);
@@ -668,7 +668,7 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
                    NULL);                 
 
     if (hFile == INVALID_HANDLE_VALUE) {
-        Error("Could not open file %s (error %d)\n", FileName, GetLastError());
+        Error(_("Could not open file %ls (error %d)\n"), u16(FileName), GetLastError());
         return FALSE;
     }
     BOOL b = GetLastWriteTime(hFile, sFileTime);
@@ -757,7 +757,7 @@ void ExportDrawingAsText(const char *file)
 
     FILE *f = fopen(file, "w");
     if(!f) {
-        Error(_("Couldn't open '%s'\n"), f);
+        Error(_("Could not open file %ls \n"), u16(file));
         return;
     }
 

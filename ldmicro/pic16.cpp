@@ -942,7 +942,7 @@ static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
   if(corrected && (corrected<20)) goto doBankCorrection;
 
     if(PicProgWriteP >= Prog.mcu->flashWords)
-        Error("Not enough memory for BANK and PAGE correction!");
+        Error(_("Not enough memory for BANK and PAGE correction!"));
 
     return bank;
 }
@@ -1413,7 +1413,7 @@ static void PageCorrection()
     if(corrected) goto doPageCorrection;
 
     if(PicProgWriteP >= Prog.mcu->flashWords)
-        Error("Not enough memory for PAGE correction!");
+        Error(_("Not enough memory for PAGE correction!"));
 }
 
 //-----------------------------------------------------------------------------
@@ -1438,7 +1438,7 @@ static void AddrCheckForErrorsPostCompile()
     for(i = 0; i < PicProgWriteP; i++) {
       if(IsOperation(PicProg[i].opPic) <= IS_PAGE)
         if(IS_FWD(PicProg[i].arg1)) {
-            Error("Every AllocFwdAddr needs FwdAddrIsNow.");
+            Error(_("Every AllocFwdAddr needs FwdAddrIsNow."));
             fCompileError(f, fAsm);
         }
     }
@@ -4173,7 +4173,10 @@ static void CompileFromIntermediate(BOOL topLevel)
                 sov3 = SizeOfVar(a->name3);
                 sov = max(sov2, sov3);
                 if(sov1 < sov) {
-                    Error(" Size of result '%s' less then an argument(s) '%s' or '%s'", a->name1, a->name2, a->name3);
+                    auto n1_w = to_utf16(a->name1);
+                    auto n2_w = to_utf16(a->name2);
+                    auto n3_w = to_utf16(a->name3);
+                    Error(_(" Size of result '%ls' less then an argument(s) '%ls' or '%ls'"), n1_w.c_str(), n2_w.c_str(), n3_w.c_str());
                 }
 
                 DWORD addrB = CopyArgToReg(TRUE, Scratch0, sov, a->name2, TRUE);
@@ -4374,7 +4377,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name1, Prog.cycleTimer);
                 if(!ioPWM) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name1);
+                    Error(_("Pin '%ls': PWM output not available!"), u16(a->name1));
                     CompileError();
                 }
                 int timer = ioPWM->timer;
@@ -4403,7 +4406,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name3, Prog.cycleTimer);
                 if(!ioPWM) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name3);
+                    Error(_("Pin '%ls': PWM output not available!"), u16(a->name3));
                     CompileError();
                 }
 
@@ -5563,13 +5566,13 @@ BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen)
     plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
     plcTmr.TCycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
     SetPrescaler(Prog.cycleTimer);
-    char txt[1024] = "";
+    wchar_t txt[1024] = L"";
     if(cycleTimeMicroseconds > plcTmr.cycleTimeMax) {
-      sprintf(txt,"PLC cycle time more then %.3f ms not valid.", 0.001 * plcTmr.cycleTimeMax);
+      swprintf_s(txt,_("PLC cycle time more then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMax);
       Error(txt);
       return FALSE;
     } else if(cycleTimeMicroseconds < plcTmr.cycleTimeMin) {
-      sprintf(txt,"PLC cycle time less then %.3f ms not valid.", 0.001 * plcTmr.cycleTimeMin);
+      swprintf_s(txt,_("PLC cycle time less then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMin);
       Error(txt);
       return FALSE;
     }
@@ -6476,7 +6479,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     //------------------------------------------------------------
     f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), outFile);
+        Error(_("Couldn't open file '%ls'"), u16(outFile));
         return FALSE;
     }
 
@@ -6484,7 +6487,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     SetExt(outFileAsm, outFile, ".asm");
     fAsm = fopen(outFileAsm, "w");
     if(!fAsm) {
-        Error(_("Couldn't open file '%s'"), outFileAsm);
+        Error(_("Couldn't open file '%s'"), u16(outFileAsm));
         fclose(f);
         return FALSE;
     }
@@ -6923,7 +6926,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         }
     } else if(Prog.cycleTimer == 1) {
         if(Prog.mcu->core == BaselineCore12bit) {
-            Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
+            Error(_("Select Timer0 in menu 'Settings -> MCU parameters'!"));
             fCompileError(f, fAsm);
         }
                 if(Prog.cycleDuty) {

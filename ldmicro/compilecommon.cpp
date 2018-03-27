@@ -390,7 +390,7 @@ BYTE MuxForAdcVariable(const char *name)
             }
         }
         if(j == Prog.mcu->adcCount) {
-            Error(_("Must assign pins for all ADC inputs (name '%s')."), name);
+            Error(_("Must assign pins for all ADC inputs (name '%ls')."), u16(name));
             CompileError();
         }
         res = Prog.mcu->adcInfo[j].muxRegValue;
@@ -434,7 +434,7 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
 {
     if(!name) oops();
     if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
+        Error(_("Empty variable name '%ls'.\nrungNow=%d"), u16(name), rungNow+1);
         CompileError();
     }
 
@@ -531,10 +531,10 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
               sizeOfVar = 2;
           }
           if(sizeOfVar<1) {
-              Error(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name, sizeOfVar);
+              Error(_("Size of var '%ls'(%d) reset as signed 8 bit variable."), u16(name), sizeOfVar);
               sizeOfVar=1;
           } else if(sizeOfVar>4) {
-              Error(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name, sizeOfVar);
+              Error(_("Size of var '%ls'(%d) reset as signed 32 bit variable."), u16(name), sizeOfVar);
               sizeOfVar=4;
           }
           if(Variables[i].SizeOfVar != sizeOfVar) {
@@ -555,7 +555,7 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
                   } else if(sizeOfVar == 4) {
                       Variables[i].addrl = AllocOctetRam(4);
                   } else {
-                      Error(_("Var '%s' not allocated %d."), name, sizeOfVar);
+                      Error(_("Var '%ls' not allocated %d."), u16(name), sizeOfVar);
                       CompileError();
                   }
                   Variables[i].Allocated = sizeOfVar;
@@ -600,7 +600,7 @@ int SetSizeOfVar(const char *name, int sizeOfVar, BOOL showError)
 {
     if(showError)
     if((sizeOfVar<1)||(4<sizeOfVar)) {
-        Error(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
+        Error(_(" Invalid size (%d) of variable '%ls' set to 2!"), sizeOfVar, u16(name));
         sizeOfVar = 2;
     }
     #ifndef NEW_CMP
@@ -626,7 +626,7 @@ int SizeOfVar(const char *name)
 int GetVariableType(char *name)
 {
     if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
+        Error(_("Empty variable name '%ls'.\nrungNow=%d"), u16(name), rungNow+1);
         CompileError();
     }
 
@@ -647,7 +647,7 @@ int GetVariableType(char *name)
 int SetVariableType(char *name, int type)
 {
     if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
+        Error(_("Empty variable name '%ls'.\nrungNow=%d"), u16(name), rungNow+1);
         CompileError();
     }
     int i;
@@ -689,7 +689,7 @@ int SetVariableType(char *name, int type)
 int AllocOfVar(char *name)
 {
     if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
+        Error(_("Empty variable name '%ls'.\nrungNow=%d"), u16(name), rungNow+1);
         CompileError();
     }
 
@@ -767,7 +767,7 @@ BOOL LoadVarListFromFile(FILE *f)
             }
         }
         if(!Ok) {
-            Error(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
+            Error(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%ls'."), u16(strspacer(line)));
             return FALSE;
         }
     }
@@ -987,8 +987,8 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
             if(Prog.mcu && raiseError) {
                 if(j >= Prog.mcu->pinCount) {
                     Error(_("Must assign pins for all I/O.\r\n\r\n"
-                        "'%s' is not assigned."),
-                        Prog.io.assignment[i].name);
+                        "'%ls' is not assigned."),
+                        u16(Prog.io.assignment[i].name));
                     if(raiseError)
                         CompileError();
                 }

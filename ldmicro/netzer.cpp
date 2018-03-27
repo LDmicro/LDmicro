@@ -1152,7 +1152,7 @@ void CompileNetzer(char *outFile)
     FILE *f = fopen(outFile, "w+b");
     if(!f)
     {
-        Error(_("Couldn't write to '%s'"), outFile);
+        Error(_("Couldn't write to '%ls'"), u16(outFile));
         return;
     }
 

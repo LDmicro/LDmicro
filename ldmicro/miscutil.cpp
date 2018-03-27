@@ -130,15 +130,14 @@ void Error(const char *str, ...)
         WriteFile(h, str, strlen(str), &written, NULL);
     } else {
         HWND h = GetForegroundWindow();
-        char buf2[1024];
-        if(buf[0]==' ') {
-            //sprintf(buf2, "%s (%s)", _("LDmicro Warning"), AboutText[38]);
-            MessageBoxA(h, &buf[1], ("LDmicro Warning"), MB_OK | MB_ICONWARNING);
+        wchar_t buf2[1024];
+        auto buf_w = to_utf16(buf);
+        if(buf_w[0] == ' ') {
+            MessageBoxW(h, &buf_w[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
         } else {
-            sprintf(buf2, "%s (%s)", ("LDmicro Error"), AboutText[38]);
-            MessageBoxA(h, buf, buf2, MB_OK | MB_ICONERROR);
+            swprintf_s(buf2, L"%s (%s)", _("LDmicro Error"), u16(AboutText[38]));
+            MessageBoxW(h, &buf_w[0], buf2, MB_OK | MB_ICONERROR);
         }
-
     }
 }
 
@@ -169,7 +168,8 @@ void Error(const wchar_t *str, ...)
         if(buf[0]==' ') {
             MessageBoxW(h, &buf[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
         } else {
-            swprintf_s(buf2, L"%ls (%ls)", _("LDmicro Error"), u16(AboutText[38])); //WTF ?
+            auto about_w = to_utf16(AboutText[38]);
+            swprintf_s(buf2, L"%ls (%ls)", _("LDmicro Error"), about_w.c_str());
             MessageBoxW(h, buf, buf2, MB_OK | MB_ICONERROR);
         }
     }
@@ -242,7 +242,7 @@ void CheckHeap(const char *file, int line)
 
     if(!HeapValidate(MainHeap, 0, NULL)) {
         //dbp("file %s line %d", file, line);
-        Error("Noticed memory corruption at file '%s' line %d.", file, line);
+        Error(_("Noticed memory corruption at file '%ls' line %d."), u16(file), line);
         oops();
     }
 }

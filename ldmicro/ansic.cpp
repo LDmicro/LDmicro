@@ -1232,7 +1232,7 @@ void CompileAnsiC(char *dest, int MNU)
 
     flh = fopen(ladderhName, "w");
     if(!flh) {
-        Error(_("Couldn't open file '%s'"), ladderhName);
+        Error(_("Couldn't open file '%ls'"), u16(ladderhName));
         return;
     }
     fprintf(flh,
@@ -1385,7 +1385,7 @@ void CompileAnsiC(char *dest, int MNU)
 
     fh = fopen(desth, "w");
     if(!fh) {
-        Error(_("Couldn't open file '%s'"), desth);
+        Error(_("Couldn't open file '%ls'"), u16(desth));
         fclose(flh);
         return;
     }
@@ -1520,7 +1520,7 @@ void CompileAnsiC(char *dest, int MNU)
     }
     FILE *f = fopen(dest, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
+        Error(_("Couldn't open file '%ls'"), u16(dest));
         fclose(flh);
         fclose(fh);
         return;
@@ -2348,7 +2348,7 @@ void CompileAnsiC(char *dest, int MNU)
 
         flh = fopen(ladderhName, "w");
         if(!flh) {
-            Error(_("Couldn't open file '%s'"), ladderhName);
+            Error(_("Couldn't open file '%ls'"), u16(ladderhName));
             //return;
         }
         fprintf(flh,

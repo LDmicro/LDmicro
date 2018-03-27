@@ -104,7 +104,7 @@ static BOOL SaveAsDialog(void)
         return FALSE;
 
     if(!SaveProjectToFile(CurrentSaveFile, MNU_SAVE)) {
-        Error(_("Couldn't write to '%s'."), CurrentSaveFile);
+        Error(_("Couldn't write to '%ls'."), u16(CurrentSaveFile));
         return FALSE;
     } else {
         ProgramChangedNotSaved = FALSE;
@@ -242,7 +242,7 @@ static BOOL SaveProgram(int code)
 {
     if(strlen(CurrentSaveFile)) {
         if(!SaveProjectToFile(CurrentSaveFile, code)) {
-            Error(_("Couldn't write to '%s'."), CurrentSaveFile);
+            Error(_("Couldn't write to '%ls'."), u16(CurrentSaveFile));
             return FALSE;
         } else {
             ProgramChangedNotSaved = FALSE;
@@ -319,16 +319,16 @@ long int fsize(char *filename)
 //-----------------------------------------------------------------------------
 static void isErr(int Err, char *r)
 {
-  const char *s;
+  const wchar_t *s;
   switch(Err){
-    case 0:s="The system is out of memory or resources"; break;
-    case ERROR_BAD_FORMAT:s="The .exe file is invalid"; break;
-    case ERROR_FILE_NOT_FOUND:s="The specified file was not found"; break;
-    case ERROR_PATH_NOT_FOUND:s="The specified path was not found"; break;
-    default:s=""; break;
+    case 0:s=L"The system is out of memory or resources"; break;
+    case ERROR_BAD_FORMAT:s=L"The .exe file is invalid"; break;
+    case ERROR_FILE_NOT_FOUND:s=L"The specified file was not found"; break;
+    case ERROR_PATH_NOT_FOUND:s=L"The specified path was not found"; break;
+    default:s=L""; break;
   }
-  if(strlen(s))
-      Error("Error: %d - %s in command line:\n\n%s",Err, s, r);
+  if(wcslen(s))
+      Error("Error: %d - %ls in command line:\n\n%s",Err, s, u16(r));
 }
 
 //-----------------------------------------------------------------------------
@@ -434,7 +434,7 @@ static void notepad(const char *path, const char *name, const char *ext)
     SetExt(s, r, ext);
 
     if(!ExistFile(s)) {
-        Error("File not exist: '%s'", s);
+        Error(_("File not exist: '%ls'"), u16(s));
         return;
     }
     sprintf(r,"\"%snotepad.bat\" \"%s\"",ExePath,s);
@@ -536,19 +536,19 @@ static void CompileProgram(BOOL compileAs, int MNU)
         if(strchr(onlyName, ' ')) {
             strcpy(CurrentCompileFile, "");
             ProgramChangedNotSaved = TRUE;
-            Error(_("ARDUINO: Space ' ' not allowed in '%s'\nRename file!"), CurrentSaveFile);
+            Error(_("ARDUINO: Space ' ' not allowed in '%ls'\nRename file!"), u16(CurrentSaveFile));
             return;
         }
         if(strchr(onlyName, '.')) {
             strcpy(CurrentCompileFile, "");
             ProgramChangedNotSaved = TRUE;
-            Error(_("ARDUINO: Dot '.' not allowed in '%s'\nRename file!"), CurrentSaveFile);
+            Error(_("ARDUINO: Dot '.' not allowed in '%ls'\nRename file!"), u16(CurrentSaveFile));
             return;
         }
         if(IsNumber(onlyName)) {
             strcpy(CurrentCompileFile, "");
             ProgramChangedNotSaved = TRUE;
-            Error(_("ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"), onlyName[0], onlyName);
+            Error(_("ARDUINO: The leading digit '%c' not allowed at the beginning in '%ls.ld'\nRename file!"), onlyName[0], u16(onlyName));
             return;
         }
 
@@ -583,7 +583,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
             remove(CurrentCompileFile);
         } else {
             compileAs = TRUE;
-            Error(_("Couldn't OPEN file '%s'"), CurrentCompileFile);
+            Error(_("Couldn't OPEN file '%ls'"), u16(CurrentCompileFile));
         }
       }
     }
@@ -776,7 +776,7 @@ static void OpenDialog(void)
         return;
 
     if(!LoadProjectFromFile(tempSaveFile)) {
-        Error(_("Couldn't open '%s'."), tempSaveFile);
+        Error(_("Couldn't open '%ls'."), u16(tempSaveFile));
         CurrentSaveFile[0] = '\0';
     } else {
         ProgramChangedNotSaved = FALSE;
@@ -2726,7 +2726,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
           *l = '\0';
         }
         if(!LoadProjectFromFile(source)) {
-            Error("Couldn't open '%s', running non-interactively.", source);
+            Error(_("Couldn't open '%s', running non-interactively."), u16(source));
             doexit(EXIT_FAILURE);
         }
         strcpy(CurrentCompileFile, dest);
@@ -2754,7 +2754,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         *dest = '\0';
         if(!LoadProjectFromFile(source)) {
-            Error("Couldn't open '%s', running non-interactively.", source);
+            Error(_("Couldn't open '%s', running non-interactively."), u16(source));
             doexit(EXIT_FAILURE);
         }
         strcpy(CurrentSaveFile,source);
@@ -2796,7 +2796,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
         if(!LoadProjectFromFile(CurrentSaveFile)) {
             NewProgram();
-            Error(_("Couldn't open '%s'."), CurrentSaveFile);
+            Error(_("Couldn't open '%s'."), u16(CurrentSaveFile));
             CurrentSaveFile[0] = '\0';
         }
         UndoFlush();
