@@ -24,6 +24,7 @@
 // most of the UI logic relating to the main window.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
+#include <string>
 #include "stdafx.h"
 
 #include "ldmicro.h"
@@ -44,19 +45,26 @@ static int         MouseY;
 #define LDMICRO_PATTERN "LDmicro Ladder Logic Programs (*.ld)\0*.ld\0" \
                      "All files\0*\0\0"
 
+#define LDMICRO_PATTERNW L"LDmicro Ladder Logic Programs (*.ld)\0*.ld\0" \
+                     "All files\0*\0\0"
+
 BOOL ProgramChangedNotSaved = FALSE;
 
 ULONGLONG PrevWriteTime = 0;
 ULONGLONG LastWriteTime = 0;
 
 #define HEX_PATTERN  "Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0"
+#define HEX_PATTERNW  L"Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0"
 #define C_PATTERN "C Source Files (*.c)\0*.c\0All Files\0*\0\0"
-#define INTERPRETED_PATTERN \
-    "Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
+#define C_PATTERNW L"C Source Files (*.c)\0*.c\0All Files\0*\0\0"
+#define INTERPRETED_PATTERN "Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
+#define INTERPRETED_PATTERNW L"Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
 #define PASCAL_PATTERN "PASCAL Source Files (*.pas)\0*.pas\0All Files\0*\0\0"
+#define PASCAL_PATTERNW L"PASCAL Source Files (*.pas)\0*.pas\0All Files\0*\0\0"
 #define ARDUINO_C_PATTERN "ARDUINO C Source Files (*.cpp)\0*.cpp\0All Files\0*\0\0"
-#define XINT_PATTERN \
-    "Extended Byte Code Files (*.xint)\0*.xint\0All Files\0*\0\0"
+#define ARDUINO_C_PATTERNW L"ARDUINO C Source Files (*.cpp)\0*.cpp\0All Files\0*\0\0"
+#define XINT_PATTERN "Extended Byte Code Files (*.xint)\0*.xint\0All Files\0*\0\0"
+#define XINT_PATTERNW L"Extended Byte Code Files (*.xint)\0*.xint\0All Files\0*\0\0"
 
 char ExePath[MAX_PATH];
 char CurrentSaveFile[MAX_PATH]; // .ld
@@ -65,11 +73,15 @@ char CurrentCompileFile[MAX_PATH]; //.hex, .asm, ...
 char CurrentCompilePath[MAX_PATH];
 
 #define TXT_PATTERN  "Text Files (*.txt)\0*.txt\0All files\0*\0\0"
+#define TXT_PATTERNW  L"Text Files (*.txt)\0*.txt\0All files\0*\0\0"
 
 // Everything relating to the PLC's program, I/O configuration, processor
 // choice, and so on--basically everything that would be saved in the
 // project file.
 PlcProgram Prog;
+
+std::wstring to_utf16(const char* s);
+std::string to_utf8(const wchar_t* w);
 
 //-----------------------------------------------------------------------------
 // Get a filename with a common dialog box and then save the program to that
@@ -77,7 +89,7 @@ PlcProgram Prog;
 //-----------------------------------------------------------------------------
 static BOOL SaveAsDialog(void)
 {
-    OPENFILENAME ofn;
+    OPENFILENAMEA ofn;
 
     memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
@@ -88,11 +100,11 @@ static BOOL SaveAsDialog(void)
     ofn.nMaxFile = sizeof(CurrentSaveFile);
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
-    if(!GetSaveFileName(&ofn))
+    if(!GetSaveFileNameA(&ofn))
         return FALSE;
 
     if(!SaveProjectToFile(CurrentSaveFile, MNU_SAVE)) {
-        Error(_("Couldn't write to '%s'."), CurrentSaveFile);
+        Error(_("Couldn't write to '%ls'."), u16(CurrentSaveFile));
         return FALSE;
     } else {
         ProgramChangedNotSaved = FALSE;
@@ -173,31 +185,52 @@ char *SetExt(char *dest, const char *src, const char *ext)
     return strcat(dest, ext);
 }
 
+wchar_t *SetExt(wchar_t *dest, const wchar_t *src, const wchar_t *ext)
+{
+    wchar_t *c;
+    if(dest != src)
+      if(wcslen(src))
+        wcscpy(dest, src);
+    if(wcslen(dest)) {
+        c = wcsrchr(dest,'.');
+        if(c)
+            c[0] = '\0';
+    };
+    if(!wcslen(dest))
+        wcscat(dest, L"new");
+
+    if(wcslen(ext))
+        if(!wcschr(ext, L'.'))
+            wcscat(dest, L".");
+
+    return wcscat(dest, ext);
+}
+
 //-----------------------------------------------------------------------------
 // Get a filename with a common dialog box and then export the program as
 // an ASCII art drawing.
 //-----------------------------------------------------------------------------
 static BOOL ExportDialog(void)
 {
-    char exportFile[MAX_PATH];
-    OPENFILENAME ofn;
+    wchar_t exportFile[MAX_PATH];
+    OPENFILENAMEW ofn;
 
     exportFile[0] = '\0';
-    SetExt(exportFile, CurrentSaveFile, "txt");
+    SetExt(exportFile, to_utf16(CurrentSaveFile).c_str(), L"txt");
 
     memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
     ofn.hInstance = Instance;
-    ofn.lpstrFilter = TXT_PATTERN;
+    ofn.lpstrFilter = TXT_PATTERNW;
     ofn.lpstrFile = exportFile;
     ofn.lpstrTitle = _("Export As Text");
     ofn.nMaxFile = sizeof(exportFile);
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
-    if(!GetSaveFileName(&ofn))
+    if(!GetSaveFileNameW(&ofn))
         return FALSE;
 
-    ExportDrawingAsText(exportFile);
+    ExportDrawingAsText(to_utf8(exportFile).c_str());
     return TRUE;
 }
 
@@ -209,7 +242,7 @@ static BOOL SaveProgram(int code)
 {
     if(strlen(CurrentSaveFile)) {
         if(!SaveProjectToFile(CurrentSaveFile, code)) {
-            Error(_("Couldn't write to '%s'."), CurrentSaveFile);
+            Error(_("Couldn't write to '%ls'."), u16(CurrentSaveFile));
             return FALSE;
         } else {
             ProgramChangedNotSaved = FALSE;
@@ -286,16 +319,16 @@ long int fsize(char *filename)
 //-----------------------------------------------------------------------------
 static void isErr(int Err, char *r)
 {
-  const char *s;
+  const wchar_t *s;
   switch(Err){
-    case 0:s="The system is out of memory or resources"; break;
-    case ERROR_BAD_FORMAT:s="The .exe file is invalid"; break;
-    case ERROR_FILE_NOT_FOUND:s="The specified file was not found"; break;
-    case ERROR_PATH_NOT_FOUND:s="The specified path was not found"; break;
-    default:s=""; break;
+    case 0:s=L"The system is out of memory or resources"; break;
+    case ERROR_BAD_FORMAT:s=L"The .exe file is invalid"; break;
+    case ERROR_FILE_NOT_FOUND:s=L"The specified file was not found"; break;
+    case ERROR_PATH_NOT_FOUND:s=L"The specified path was not found"; break;
+    default:s=L""; break;
   }
-  if(strlen(s))
-      Error("Error: %d - %s in command line:\n\n%s",Err, s, r);
+  if(wcslen(s))
+      Error("Error: %d - %ls in command line:\n\n%s",Err, s, u16(r));
 }
 
 //-----------------------------------------------------------------------------
@@ -401,7 +434,7 @@ static void notepad(const char *path, const char *name, const char *ext)
     SetExt(s, r, ext);
 
     if(!ExistFile(s)) {
-        Error("File not exist: '%s'", s);
+        Error(_("File not exist: '%ls'"), u16(s));
         return;
     }
     sprintf(r,"\"%snotepad.bat\" \"%s\"",ExePath,s);
@@ -503,19 +536,19 @@ static void CompileProgram(BOOL compileAs, int MNU)
         if(strchr(onlyName, ' ')) {
             strcpy(CurrentCompileFile, "");
             ProgramChangedNotSaved = TRUE;
-            Error(_("ARDUINO: Space ' ' not allowed in '%s'\nRename file!"), CurrentSaveFile);
+            Error(_("ARDUINO: Space ' ' not allowed in '%ls'\nRename file!"), u16(CurrentSaveFile));
             return;
         }
         if(strchr(onlyName, '.')) {
             strcpy(CurrentCompileFile, "");
             ProgramChangedNotSaved = TRUE;
-            Error(_("ARDUINO: Dot '.' not allowed in '%s'\nRename file!"), CurrentSaveFile);
+            Error(_("ARDUINO: Dot '.' not allowed in '%ls'\nRename file!"), u16(CurrentSaveFile));
             return;
         }
         if(IsNumber(onlyName)) {
             strcpy(CurrentCompileFile, "");
             ProgramChangedNotSaved = TRUE;
-            Error(_("ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"), onlyName[0], onlyName);
+            Error(_("ARDUINO: The leading digit '%c' not allowed at the beginning in '%ls.ld'\nRename file!"), onlyName[0], u16(onlyName));
             return;
         }
 
@@ -550,7 +583,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
             remove(CurrentCompileFile);
         } else {
             compileAs = TRUE;
-            Error(_("Couldn't OPEN file '%s'"), CurrentCompileFile);
+            Error(_("Couldn't OPEN file '%ls'"), u16(CurrentCompileFile));
         }
       }
     }
@@ -567,7 +600,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
     ||(MNU == MNU_COMPILE_XINT)    && !strstr(CurrentCompileFile,".xint")
     ) {
         const char *c;
-        OPENFILENAME ofn;
+        OPENFILENAMEW ofn;
 
         memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
@@ -575,8 +608,8 @@ static void CompileProgram(BOOL compileAs, int MNU)
         ofn.lpstrTitle = _("Compile To");
         if((MNU >= MNU_COMPILE_ANSIC)
         && (MNU <= MNU_COMPILE_lastC)) {
-            ofn.lpstrFilter = C_PATTERN;
-            ofn.lpstrDefExt = "c";
+            ofn.lpstrFilter = C_PATTERNW;
+            ofn.lpstrDefExt = L"c";
             c = "c";
           //compile_MNU = MNU;
             if(MNU == MNU_COMPILE_ANSIC)
@@ -584,39 +617,40 @@ static void CompileProgram(BOOL compileAs, int MNU)
         } else if ((MNU == MNU_COMPILE_INT) ||
             (Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
                           Prog.mcu->whichIsa == ISA_NETZER))) {
-            ofn.lpstrFilter = INTERPRETED_PATTERN;
-            ofn.lpstrDefExt = "int";
+            ofn.lpstrFilter = INTERPRETED_PATTERNW;
+            ofn.lpstrDefExt = L"int";
             c = "int";
             compile_MNU = MNU_COMPILE_INT;
         } else if ((MNU == MNU_COMPILE_XINT) ||
             (Prog.mcu && Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
-            ofn.lpstrFilter = XINT_PATTERN;
-            ofn.lpstrDefExt = "xint";
+            ofn.lpstrFilter = XINT_PATTERNW;
+            ofn.lpstrDefExt = L"xint";
             c = "xint";
             compile_MNU = MNU_COMPILE_XINT;
         } else if((MNU == MNU_COMPILE_PASCAL) ||
                   (Prog.mcu && Prog.mcu->whichIsa == ISA_PASCAL)) {
-            ofn.lpstrFilter = PASCAL_PATTERN;
-            ofn.lpstrDefExt = "pas";
+            ofn.lpstrFilter = PASCAL_PATTERNW;
+            ofn.lpstrDefExt = L"pas";
             c = "pas";
             compile_MNU = MNU_COMPILE_PASCAL;
         } else if(MNU == MNU_COMPILE_ARDUINO) {
-            ofn.lpstrFilter = ARDUINO_C_PATTERN;
-            ofn.lpstrDefExt = "cpp";
+            ofn.lpstrFilter = ARDUINO_C_PATTERNW;
+            ofn.lpstrDefExt = L"cpp";
             c = "cpp";
             compile_MNU = MNU_COMPILE_ARDUINO;
         } else {
-            ofn.lpstrFilter = HEX_PATTERN;
-            ofn.lpstrDefExt = "hex";
+            ofn.lpstrFilter = HEX_PATTERNW;
+            ofn.lpstrDefExt = L"hex";
             c = "hex";
             compile_MNU = MNU_COMPILE_IHEX;
         }
         SetExt(CurrentCompileFile, CurrentSaveFile, c);
-        ofn.lpstrFile = CurrentCompileFile;
+        auto CurrentCompileFileW = to_utf16(CurrentCompileFile);
+        ofn.lpstrFile = &CurrentCompileFileW[0];
         ofn.nMaxFile = sizeof(CurrentCompileFile);
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
-        if(!GetSaveFileName(&ofn))
+        if(!GetSaveFileNameW(&ofn))
             return;
 
         strcpy(CurrentCompilePath,CurrentCompileFile);
@@ -696,9 +730,9 @@ BOOL CheckSaveUserCancels(void)
         return FALSE;
     }
 
-    int r = MessageBox(MainWindow,
+    int r = MessageBoxW(MainWindow,
         _("The program has changed since it was last saved.\r\n\r\n"
-        "Do you want to save the changes?"), "LDmicro",
+        "Do you want to save the changes?"), L"LDmicro",
         MB_YESNOCANCEL | MB_ICONWARNING);
     switch(r) {
         case IDYES:
@@ -725,7 +759,7 @@ BOOL CheckSaveUserCancels(void)
 //-----------------------------------------------------------------------------
 static void OpenDialog(void)
 {
-    OPENFILENAME ofn;
+    OPENFILENAMEA ofn;
 
     char tempSaveFile[MAX_PATH] = "";
 
@@ -738,11 +772,11 @@ static void OpenDialog(void)
     ofn.nMaxFile = sizeof(tempSaveFile);
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 
-    if(!GetOpenFileName(&ofn))
+    if(!GetOpenFileNameA(&ofn))
         return;
 
     if(!LoadProjectFromFile(tempSaveFile)) {
-        Error(_("Couldn't open '%s'."), tempSaveFile);
+        Error(_("Couldn't open '%ls'."), u16(tempSaveFile));
         CurrentSaveFile[0] = '\0';
     } else {
         ProgramChangedNotSaved = FALSE;
@@ -929,7 +963,7 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_COMMENT:
-            CHANGING_PROGRAM(AddComment(_("--add comment here--")));
+            CHANGING_PROGRAM(AddComment(to_utf8(_("--add comment here--")).c_str()));
             break;
 
         case MNU_INSERT_CONTACTS:
@@ -1348,10 +1382,12 @@ cmp:
         case MNU_SELECT_RUNG: {
             int i = RungContainingSelected();
             if(i >= 0)
-                if(Prog.rungSelected[i] == ' ')
-                    Prog.rungSelected[i] = '*';
-                else
-                    Prog.rungSelected[i] = ' ';
+                {
+                    if(Prog.rungSelected[i] == ' ')
+                        Prog.rungSelected[i] = '*';
+                    else
+                        Prog.rungSelected[i] = ' ';
+                }
             break;
 
         }
@@ -1420,11 +1456,11 @@ cmp:
             break;
 
         case MNU_PROCESSOR_NEW_PIC12:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Soft-start-and-smooth-stop-of-LED-with-software-PWM",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecuteA(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Soft-start-and-smooth-stop-of-LED-with-software-PWM",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_PROCESSOR_NEW:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecuteA(0,"open","https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_COMPILE_IHEXDONE:
@@ -1460,33 +1496,33 @@ cmp:
             break;
 
         case MNU_HOW:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecuteA(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_FORUM:
-            ShellExecute(0,"open","http://cq.cx/ladder-forum.pl",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecuteA(0,"open","http://cq.cx/ladder-forum.pl",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_CHANGES:
-            ShellExecute(0,"open","https://raw.githubusercontent.com/LDmicro/LDmicro/master/ldmicro/CHANGES.txt",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecuteA(0,"open","https://raw.githubusercontent.com/LDmicro/LDmicro/master/ldmicro/CHANGES.txt",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_ISSUE:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/issues/new",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecuteA(0,"open","https://github.com/LDmicro/LDmicro/issues/new",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_EMAIL:
-            ShellExecute(0,"open","mailto:LDmicro.GitHub@gmail.com",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecuteA(0,"open","mailto:LDmicro.GitHub@gmail.com",NULL,NULL,SW_SHOWNORMAL);
             break;
 
         case MNU_EXPLORE_DIR:
             ////ShellExecute(0, "open", CurrentLdPath, NULL, NULL, SW_SHOWNORMAL);
-            ShellExecute(0, "explore", CurrentLdPath, NULL, NULL, SW_SHOWNORMAL);
+            ShellExecuteA(0, "explore", CurrentLdPath, NULL, NULL, SW_SHOWNORMAL);
             //ShellExecute(0, "find", CurrentLdPath, NULL, NULL, 0);
             break;
 
         case MNU_RELEASE:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/releases",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecuteA(0,"open","https://github.com/LDmicro/LDmicro/releases",NULL,NULL,SW_SHOWNORMAL);
             break;
     }
 }
@@ -1641,17 +1677,15 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
              tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
              PrevWriteTime = LastWriteTime;
 
-             char buf[1024];
-             sprintf(buf, _("File '%s' modified by another application.\r\n"
+             wchar_t buf[1024];
+             swprintf_s(buf, _("File '%ls' modified by another application.\r\n"
                  "Its disk timestamp is newer then the editor one.\n"
-                 "Reload from disk?"), CurrentSaveFile);
-             int r = MessageBox(MainWindow,
-                 buf, "LDmicro",
-                 MB_YESNO | MB_ICONWARNING);
+                 "Reload from disk?"), u16(CurrentSaveFile));
+             int r = MessageBoxW(MainWindow, buf, L"LDmicro", MB_YESNO | MB_ICONWARNING);
              switch(r) {
                  case IDYES:
                      if(!LoadProjectFromFile(CurrentSaveFile)) {
-                         Error(_("Couldn't reload '%s'."), CurrentSaveFile);
+                         Error(_("Couldn't reload '%ls'."), u16(CurrentSaveFile));
                      } else {
                          ProgramChangedNotSaved = FALSE;
                          RefreshControlsToSettings();
@@ -2016,7 +2050,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 case VK_DELETE:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                      //CHANGING_PROGRAM(DeleteSelectedRung());
                         CHANGING_PROGRAM(CutRung());
                     } else {
                         CHANGING_PROGRAM(DeleteSelectedFromProgram());
@@ -2024,7 +2057,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case VK_OEM_1:
-                    CHANGING_PROGRAM(AddComment(_("--add comment here--")));
+                    CHANGING_PROGRAM(AddComment(to_utf8(_("--add comment here--")).c_str()));
                     break;
 
                 case VK_INSERT:
@@ -2096,9 +2129,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         if(CheckSaveUserCancels()) break;
                         if(!ProgramChangedNotSaved) {
-                            int r = MessageBox(MainWindow,
+                            int r = MessageBoxW(MainWindow,
                                 _("Start new program?"),
-                                "LDmicro", MB_YESNO | MB_DEFBUTTON2 |
+                                L"LDmicro", MB_YESNO | MB_DEFBUTTON2 |
                                 MB_ICONQUESTION);
                             if(r == IDNO) break;
                         }
@@ -2365,7 +2398,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 static BOOL MakeWindowClass()
 {
-    WNDCLASSEX wc;
+    WNDCLASSEXW wc;
     memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
 
@@ -2374,7 +2407,7 @@ static BOOL MakeWindowClass()
     wc.lpfnWndProc      = (WNDPROC)MainWndProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszClassName    = "LDmicro";
+    wc.lpszClassName    = L"LDmicro";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -2382,7 +2415,7 @@ static BOOL MakeWindowClass()
     wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
                             IMAGE_ICON, 16, 16, 0);
 
-    return RegisterClassEx(&wc);
+    return RegisterClassExW(&wc);
 }
 
 //-----------------------------------------------------------------------------
@@ -2626,7 +2659,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
   try
   {
-    GetModuleFileName(hInstance,ExePath,MAX_PATH);
+    GetModuleFileNameA(hInstance,ExePath,MAX_PATH);
     ExtractFilePath(ExePath);
 
     Instance = hInstance;
@@ -2641,7 +2674,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     MakeDialogBoxClass();
     HMENU top = MakeMainWindowMenus();
 
-    MainWindow = CreateWindowEx(0, "LDmicro", "",
+    MainWindow = CreateWindowExW(0, L"LDmicro", L"",
         WS_OVERLAPPED | WS_THICKFRAME | WS_CLIPCHILDREN | WS_MAXIMIZEBOX |
         WS_MINIMIZEBOX | WS_SYSMENU | WS_SIZEBOX,
         10, 10, 800, 600, NULL, top, Instance, NULL);
@@ -2693,7 +2726,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
           *l = '\0';
         }
         if(!LoadProjectFromFile(source)) {
-            Error("Couldn't open '%s', running non-interactively.", source);
+            Error(_("Couldn't open '%s', running non-interactively."), u16(source));
             doexit(EXIT_FAILURE);
         }
         strcpy(CurrentCompileFile, dest);
@@ -2721,12 +2754,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         *dest = '\0';
         if(!LoadProjectFromFile(source)) {
-            Error("Couldn't open '%s', running non-interactively.", source);
+            Error(_("Couldn't open '%s', running non-interactively."), u16(source));
             doexit(EXIT_FAILURE);
         }
         strcpy(CurrentSaveFile,source);
         char *s;
-        GetFullPathName(source, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
+        GetFullPathNameA(source, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
 
         dest++;
         while(isspace(*dest)) {
@@ -2742,7 +2775,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         ExportDrawingAsText(exportFile);
         doexit(EXIT_SUCCESS);
     }
-
     // We are running interactively, or we would already have exited. We
     // can therefore show the window now, and otherwise set up the GUI.
     ShowWindow(MainWindow, SW_SHOW);
@@ -2760,11 +2792,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         if(!strchr(line, '.')) strcat(line, ".ld");
 
         char *s;
-        GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
+        GetFullPathNameA(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
 
         if(!LoadProjectFromFile(CurrentSaveFile)) {
             NewProgram();
-            Error(_("Couldn't open '%s'."), CurrentSaveFile);
+            Error(_("Couldn't open '%s'."), u16(CurrentSaveFile));
             CurrentSaveFile[0] = '\0';
         }
         UndoFlush();
@@ -2778,7 +2810,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     MSG msg;
     DWORD ret;
-    while(ret = GetMessage(&msg, NULL, 0, 0)) {
+    while((ret = GetMessage(&msg, NULL, 0, 0))) {
         if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_TAB) {
                 SetFocus(MainWindow);

@@ -942,7 +942,7 @@ static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
   if(corrected && (corrected<20)) goto doBankCorrection;
 
     if(PicProgWriteP >= Prog.mcu->flashWords)
-        Error("Not enough memory for BANK and PAGE correction!");
+        Error(_("Not enough memory for BANK and PAGE correction!"));
 
     return bank;
 }
@@ -1413,7 +1413,7 @@ static void PageCorrection()
     if(corrected) goto doPageCorrection;
 
     if(PicProgWriteP >= Prog.mcu->flashWords)
-        Error("Not enough memory for PAGE correction!");
+        Error(_("Not enough memory for PAGE correction!"));
 }
 
 //-----------------------------------------------------------------------------
@@ -1438,7 +1438,7 @@ static void AddrCheckForErrorsPostCompile()
     for(i = 0; i < PicProgWriteP; i++) {
       if(IsOperation(PicProg[i].opPic) <= IS_PAGE)
         if(IS_FWD(PicProg[i].arg1)) {
-            Error("Every AllocFwdAddr needs FwdAddrIsNow.");
+            Error(_("Every AllocFwdAddr needs FwdAddrIsNow."));
             fCompileError(f, fAsm);
         }
     }
@@ -4173,7 +4173,10 @@ static void CompileFromIntermediate(BOOL topLevel)
                 sov3 = SizeOfVar(a->name3);
                 sov = max(sov2, sov3);
                 if(sov1 < sov) {
-                    Error(" Size of result '%s' less then an argument(s) '%s' or '%s'", a->name1, a->name2, a->name3);
+                    auto n1_w = to_utf16(a->name1);
+                    auto n2_w = to_utf16(a->name2);
+                    auto n3_w = to_utf16(a->name3);
+                    Error(_(" Size of result '%ls' less then an argument(s) '%ls' or '%ls'"), n1_w.c_str(), n2_w.c_str(), n3_w.c_str());
                 }
 
                 DWORD addrB = CopyArgToReg(TRUE, Scratch0, sov, a->name2, TRUE);
@@ -4374,7 +4377,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name1, Prog.cycleTimer);
                 if(!ioPWM) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name1);
+                    Error(_("Pin '%ls': PWM output not available!"), u16(a->name1));
                     CompileError();
                 }
                 int timer = ioPWM->timer;
@@ -4403,7 +4406,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name3, Prog.cycleTimer);
                 if(!ioPWM) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name3);
+                    Error(_("Pin '%ls': PWM output not available!"), u16(a->name3));
                     CompileError();
                 }
 
@@ -4431,10 +4434,10 @@ static void CompileFromIntermediate(BOOL topLevel)
                 // Timer1
                 // Software programmable prescaler (1:1, 1:2, 1:4, 1:8)
 
-                char str0[1024];
-                char str1[1024];
-                char str2[1024];
-                char str3[1024];
+                wchar_t str0[1024];
+                wchar_t str1[1024];
+                wchar_t str2[1024];
+                wchar_t str3[1024];
                 char minSI[5];
                 char maxSI[5];
                 double minFreq;
@@ -4447,7 +4450,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 char minMcuClockSI[5];
                 char maxMcuClockSI[5];
                 McuClock = SIprefix(Prog.mcuClock, McuClockSI);
-                sprintf(str0,_("When the MCU crystal frequency is %.3g %sHz."), McuClock, McuClockSI);
+                swprintf_s(str0,_("When the MCU crystal frequency is %.3g %sHz."), McuClock, McuClockSI);
 
                 if((timer == 2)
                 || (timer == 1)) {
@@ -4463,8 +4466,8 @@ static void CompileFromIntermediate(BOOL topLevel)
                     maxMcuClock = SIprefix(target * ((255+1)*4*8), maxMcuClockSI);
                 */
                 } else oops();
-                sprintf(str1,_("Available PWM frequency from %.3f %sHz up to %.3f %sHz"), minFreq, minSI, maxFreq, maxSI);
-                sprintf(str3,_("Required MCU crystal frequency from %.3g %sHz up to %.3g %sHz"), minMcuClock, minMcuClockSI, maxMcuClock, maxMcuClockSI);
+                swprintf_s(str1,_("Available PWM frequency from %.3f %sHz up to %.3f %sHz"), minFreq, minSI, maxFreq, maxSI);
+                swprintf_s(str3,_("Required MCU crystal frequency from %.3g %sHz up to %.3g %sHz"), minMcuClock, minMcuClockSI, maxMcuClock, maxMcuClockSI);
 
                 int pr2plus1;
                 int prescale;
@@ -4472,7 +4475,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     int dv = 4*prescale*target;
                     pr2plus1 = (Prog.mcuClock + (dv/2))/dv;
                     if(pr2plus1 < 3) {
-                        sprintf(str2,"'%s' %s\n\n%s",
+                        swprintf_s(str2,L"'%s' %ls\n\n%ls",
                             a->name3,
                             _("PWM frequency too fast."),
                             str1);
@@ -4487,7 +4490,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                         } else if(prescale == 4) {
                             prescale = 16;
                         } else {
-                            sprintf(str2,"SET '%s': %s %s\n\n%s\n\n\t\tOR\n\n%s",
+                            swprintf_s(str2,L"SET '%s': %ls %ls\n\n%ls\n\n\t\tOR\n\n%ls",
                                 a->name3,
                                 _("PWM frequency too slow."),
                                 str0, str1, str3);
@@ -5563,13 +5566,13 @@ BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen)
     plcTmr.Fcycle=1.0*Prog.mcuClock/(4.0*plcTmr.softDivisor*plcTmr.prescaler*plcTmr.tmr);
     plcTmr.TCycle=4.0*plcTmr.prescaler*plcTmr.softDivisor*plcTmr.tmr/(1.0*Prog.mcuClock);
     SetPrescaler(Prog.cycleTimer);
-    char txt[1024] = "";
+    wchar_t txt[1024] = L"";
     if(cycleTimeMicroseconds > plcTmr.cycleTimeMax) {
-      sprintf(txt,"PLC cycle time more then %.3f ms not valid.", 0.001 * plcTmr.cycleTimeMax);
+      swprintf_s(txt,_("PLC cycle time more then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMax);
       Error(txt);
       return FALSE;
     } else if(cycleTimeMicroseconds < plcTmr.cycleTimeMin) {
-      sprintf(txt,"PLC cycle time less then %.3f ms not valid.", 0.001 * plcTmr.cycleTimeMin);
+      swprintf_s(txt,_("PLC cycle time less then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMin);
       Error(txt);
       return FALSE;
     }
@@ -6476,7 +6479,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     //------------------------------------------------------------
     f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), outFile);
+        Error(_("Couldn't open file '%ls'"), u16(outFile));
         return FALSE;
     }
 
@@ -6484,7 +6487,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     SetExt(outFileAsm, outFile, ".asm");
     fAsm = fopen(outFileAsm, "w");
     if(!fAsm) {
-        Error(_("Couldn't open file '%s'"), outFileAsm);
+        Error(_("Couldn't open file '%s'"), u16(outFileAsm));
         fclose(f);
         return FALSE;
     }
@@ -6923,7 +6926,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         }
     } else if(Prog.cycleTimer == 1) {
         if(Prog.mcu->core == BaselineCore12bit) {
-            Error("Select Timer0 in menu 'Settings -> MCU parameters'!");
+            Error(_("Select Timer0 in menu 'Settings -> MCU parameters'!"));
             fCompileError(f, fAsm);
         }
                 if(Prog.cycleDuty) {
@@ -7076,34 +7079,34 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     //dbp("%ld - %ld = %ld", PicProgWriteP, BeginOfPLCCycle, PicProgLdLen);
 
     if(ShowMessage) {
-        char str[MAX_PATH+500];
+        wchar_t str[MAX_PATH+500];
 
         if(Prog.cycleTime) {
             double CycleDeviation = 1e2*(1e6*plcTmr.TCycle-Prog.cycleTime)/Prog.cycleTime;
             if(CycleDeviation > 1.0) {
-                sprintf(str, _("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
+                swprintf_s(str, _("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
                 Error(str);
             }
         }
 
-        sprintf(str, _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
+        swprintf_s(str, _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
             "Configuration word (fuses) has been set for crystal oscillator, BOD "
             "enabled, LVP disabled, PWRT enabled, all code protection off."),
                 outFile, PicProgWriteP, Prog.mcu->flashWords,
                 (100*PicProgWriteP)/Prog.mcu->flashWords);
 
-        char str2[MAX_PATH+500];
-        sprintf(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
+        wchar_t str2[MAX_PATH+500];
+        swprintf_s(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
             PicProgWriteP, Prog.mcu->flashWords,
             (100*PicProgWriteP)/Prog.mcu->flashWords);
 
-        char str3[MAX_PATH+500];
-        sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
+        wchar_t str3[MAX_PATH+500];
+        swprintf_s(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
             UsedRAM(), McuRAM(),
             (100*UsedRAM())/McuRAM());
 
-        char str4[MAX_PATH+500];
-        sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
+        wchar_t str4[MAX_PATH+500];
+        swprintf_s(str4, L"%ls\r\n\r\n%ls\r\n%ls", str, str2, str3);
 
         if(PicProgWriteP > Prog.mcu->flashWords) {
             CompileSuccessfulMessage(str4, MB_ICONWARNING);

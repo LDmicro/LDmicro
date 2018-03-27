@@ -8,7 +8,7 @@
 " !!!zu lang!!!"
 
 "&About..."
-"&Über LDmicro..."
+"&Ãœber LDmicro..."
 
 "&Compile"
 "&Kompilieren"
@@ -17,7 +17,7 @@
 "&Kompilieren\tF5"
 
 "&Delete Selected Element\tDel"
-"&Gewähltes Element löschen\tEntf"
+"&GewÃ¤hltes Element lÃ¶schen\tEntf"
 
 "&Edit"
 "&Bearbeiten"
@@ -68,7 +68,7 @@
 "&Neu\tStrg+N"
 
 "&Open...\tCtrl+O"
-"&Öffnen...\tStrg+O"
+"&Ã–ffnen...\tStrg+O"
 
 "&Redo\tCtrl+Y"
 "&Wiederherstellen\tStrg+Y"
@@ -95,7 +95,7 @@
 "(/) Negiert"
 
 "(R) Reset-Only"
-"(R) Rücksetzen"
+"(R) RÃ¼cksetzen"
 
 "(S) Set-Only"
 "(S) Setzen"
@@ -110,16 +110,16 @@
 "(nicht zugewiesen)"
 
 "--add comment here--"
-"--Hier Komentar einfügen--"
+"--Hier Komentar einfÃ¼gen--"
 
 "<PWM needs!>"
-"<PWM benötigt!>"
+"<PWM benÃ¶tigt!>"
 
 "<UART needs!>"
-"<UART benötigt!>"
+"<UART benÃ¶tigt!>"
 
 "<corrupt!>"
-"<beschädigt!>"
+"<beschÃ¤digt!>"
 
 "<no PWM!>"
 "<kein PWM!>"
@@ -131,7 +131,7 @@
 "<kein E/A!>"
 
 "ANSI C target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
-"ANSI C Zieldatei unterstützt keine Peripherien (wie UART, ADC, EEPROM). Die Anweisung wird ausgelassen."
+"ANSI C Zieldatei unterstÃ¼tzt keine Peripherien (wie UART, ADC, EEPROM). Die Anweisung wird ausgelassen."
 
 "Add"
 "Addieren"
@@ -149,22 +149,22 @@
 "Quoten falsch verwendet: <%s>"
 
 "Can only assign pin number to input/output pins (Xname or Yname or Aname)."
-"Nur für Ein- und Ausgangspins können Pin-Nummern vergeben werden (XName oder YName oder AName)."
+"Nur fÃ¼r Ein- und Ausgangspins kÃ¶nnen Pin-Nummern vergeben werden (XName oder YName oder AName)."
 
 "Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code."
-"Keine E/A Zuweisung für ANSI C-Ziel möglich; kompilieren Sie und beachten die Kommentare im erzeugten Quellcode."
+"Keine E/A Zuweisung fÃ¼r ANSI C-Ziel mÃ¶glich; kompilieren Sie und beachten die Kommentare im erzeugten Quellcode."
 
 "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."
-"Keine E/A Zuweisung für ANSI C-Ziel möglich; beachten Sie die Kommentare der Referenz-Ausführung des Interpreters."
+"Keine E/A Zuweisung fÃ¼r ANSI C-Ziel mÃ¶glich; beachten Sie die Kommentare der Referenz-AusfÃ¼hrung des Interpreters."
 
 "Cancel"
 "Abbrechen"
 
 "Cannot delete rung; program must have at least one rung."
-"Das Netzwerk nicht löschbar, das Programm muss mindestens ein Netzwerk haben."
+"Das Netzwerk nicht lÃ¶schbar, das Programm muss mindestens ein Netzwerk haben."
 
 "Circular Counter"
-"Zirkulierender Zähler"
+"Zirkulierender ZÃ¤hler"
 
 "Clear Bit In SFR"
 "Clear Bit In SFR"
@@ -185,76 +185,76 @@
 "Kompilieren unter"
 
 "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
-"Die Kompilierung war erfolgreich; der C-Quellcode wurde gespeichert unter '%s'.\r\n\r\nDies ist kein komplettes C-Programm. Sie müssen die Laufzeit und alle E/A Routinen vorgeben. Siehe die Kommentare im Quellcode für Informationen, wie man das macht."
+"Die Kompilierung war erfolgreich; der C-Quellcode wurde gespeichert unter '%s'.\r\n\r\nDies ist kein komplettes C-Programm. Sie mÃ¼ssen die Laufzeit und alle E/A Routinen vorgeben. Siehe die Kommentare im Quellcode fÃ¼r Informationen, wie man das macht."
 
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
-"Kompilierung war erfolgreich. IHEX für AVR gespeichert unter '%s'.\r\n\r\n Die Prozessor-Konfigurationsbits müssen richtig gesetzt werden. Dies geschieht nicht automatisch"
+"Kompilierung war erfolgreich. IHEX fÃ¼r AVR gespeichert unter '%s'.\r\n\r\n Die Prozessor-Konfigurationsbits mÃ¼ssen richtig gesetzt werden. Dies geschieht nicht automatisch"
 
 "Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
-"Kompilierung war erfolgreich; IHEX für PIC16 gespeichert unter '%s'.\r\n\r\nKonfigurations-Wort (fuse) für Quarz-Oszillator festgelegt, BOD aktiviert, LVP gesperrt, PWRT aktiviert, Verschlüsselungsschutz aus."
+"Kompilierung war erfolgreich; IHEX fÃ¼r PIC16 gespeichert unter '%s'.\r\n\r\nKonfigurations-Wort (fuse) fÃ¼r Quarz-Oszillator festgelegt, BOD aktiviert, LVP gesperrt, PWRT aktiviert, VerschlÃ¼sselungsschutz aus."
 
 "Used %d/%d words of program flash (chip %d%% full)."
 "Verwendete %d/%d Worte des Flash-Speichers (Chip %d%% voll)."
 
 "Compile successful; wrote Netzer code to '%s'."
-"Kompilierung für Netzer war erfolgreich; interpretierbarer Code gespeichert unter '%s'."
+"Kompilierung fÃ¼r Netzer war erfolgreich; interpretierbarer Code gespeichert unter '%s'."
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
-"Kompilierung war erfolgreich; interpretierbarer Code gespeichert unter '%s'.\r\n\r\nWahrscheinlich müssen Sie den Interpreter an Ihre Anwendung anpassen. Siehe Dokumentation."
+"Kompilierung war erfolgreich; interpretierbarer Code gespeichert unter '%s'.\r\n\r\nWahrscheinlich mÃ¼ssen Sie den Interpreter an Ihre Anwendung anpassen. Siehe Dokumentation."
 
 "Constant %d out of range: -32768 to 32767 inclusive."
-"Konstante %d außerhalb des Bereichs: -32768 bis 32767 inklusive."
+"Konstante %d auÃŸerhalb des Bereichs: -32768 bis 32767 inklusive."
 
 "Contacts"
 "Kontakte"
 
 "Couldn't open '%s'."
-"Kann nicht geöffnet werden '%s'."
+"Kann nicht geÃ¶ffnet werden '%s'."
 
 "Couldn't open '%s'\n"
-"Konnte nicht geöffnet werden '%s'\n"
+"Konnte nicht geÃ¶ffnet werden '%s'\n"
 
 "Couldn't open file '%s'"
-"Datei konnte nicht geöffnet werden '%s'"
+"Datei konnte nicht geÃ¶ffnet werden '%s'"
 
 "Couldn't write to '%s'"
-"Nicht möglich, speichern unter '%s'."
+"Nicht mÃ¶glich, speichern unter '%s'."
 
 "Couldn't write to '%s'."
-"Speichern nicht möglich unter '%s'."
+"Speichern nicht mÃ¶glich unter '%s'."
 
 "Count Down"
-"Abwärtszählen"
+"AbwÃ¤rtszÃ¤hlen"
 
 "Count Up"
-"Aufwärtszählen"
+"AufwÃ¤rtszÃ¤hlen"
 
 "Count:"
 "Berechnung:"
 
 "Counter"
-"Zähler"
+"ZÃ¤hler"
 
 "Cycle time too fast; increase cycle time, or use faster crystal."
-"Zykluszeit zu schnell; Zykluszeit vergrößern oder schnelleren Quarz wählen."
+"Zykluszeit zu schnell; Zykluszeit vergrÃ¶ÃŸern oder schnelleren Quarz wÃ¤hlen."
 
 "Cycle time too slow; decrease cycle time, or use slower crystal."
-"Zykluszeit zu langsam; Zykluszeit verringern oder langsameren Quarz wählen."
+"Zykluszeit zu langsam; Zykluszeit verringern oder langsameren Quarz wÃ¤hlen."
 
 "D&elete Rung\tShift+Del"
-"Netzwerk löschen\tShift+Entf"
+"Netzwerk lÃ¶schen\tShift+Entf"
 
 "Delay (ms):"
-"Verzögerung (ms):"
+"VerzÃ¶gerung (ms):"
 
 "Delay cannot be zero or negative."
-"Verzögerung kann nicht gleich Null oder negativ sein."
+"VerzÃ¶gerung kann nicht gleich Null oder negativ sein."
 
 "Delay too long; maximum is 2**31 us."
-"Verzögerung zu lang; maximal  2**31 us."
+"VerzÃ¶gerung zu lang; maximal  2**31 us."
 
 "Dest variable of write string instruction must be located at IO register."
-"Zielvariable für die Schreibe-Zeichenfolge-Operation muss auf IO Register liegen."
+"Zielvariable fÃ¼r die Schreibe-Zeichenfolge-Operation muss auf IO Register liegen."
 
 "Destination:"
 "Ziel:"
@@ -275,7 +275,7 @@
 "ASCII-Werte Tabelle als Zeichenfolge ausgeben"
 
 "Empty row; delete it or add instructions before compiling."
-"Leere Reihe; vor dem Kompilieren löschen oder Anweisungen einfügen."
+"Leere Reihe; vor dem Kompilieren lÃ¶schen oder Anweisungen einfÃ¼gen."
 
 "Empty textbox; not permitted."
 "Leere Testbox; nicht erlaubt"
@@ -287,10 +287,10 @@
 "Als Text exportieren"
 
 "File format error; perhaps this program is for a newer version of LDmicro?"
-"Fehler beim Dateiformat; vielleicht ist dies ein Programm für eine neuere Version von LDmicro."
+"Fehler beim Dateiformat; vielleicht ist dies ein Programm fÃ¼r eine neuere Version von LDmicro."
 
 "Formatted String Over UART"
-"Formatierter Zeichensatz über UART"
+"Formatierter Zeichensatz Ã¼ber UART"
 
 "Frequency (Hz):"
 "Frequenz (Hz):"
@@ -308,10 +308,10 @@
 "Wenn gleich"
 
 "If Greater Than or Equal To"
-"Wenn größer als oder gleich"
+"Wenn grÃ¶ÃŸer als oder gleich"
 
 "If Greater Than"
-"Wenn größer als"
+"Wenn grÃ¶ÃŸer als"
 
 "If Less Than or Equal To"
 "Wenn kleiner als oder gleich"
@@ -329,118 +329,118 @@
 "Eingangspin"
 
 "Insert &Contacts\tC"
-"Kontakt &einfügen\tC"
+"Kontakt &einfÃ¼gen\tC"
 
 "Insert &UART Receive"
-"&UART Empfangen einfügen"
+"&UART Empfangen einfÃ¼gen"
 
 "Insert &UART Send"
-"&UART Senden einfügen"
+"&UART Senden einfÃ¼gen"
 
 "Insert -+        +- Open-Circuit"
-"Öffnung -+        +- einfügen"
+"Ã–ffnung -+        +- einfÃ¼gen"
 
 "Insert -+------+- Short-Circuit"
-"Brücke -+------+- einfügen"
+"BrÃ¼cke -+------+- einfÃ¼gen"
 
 "Insert A/D Converter Read\tP"
-"A/D-Wandler Einlesen einfügen\tP"
+"A/D-Wandler Einlesen einfÃ¼gen\tP"
 
 "Insert ADD (16-bit Integer Add)\t+"
-"ADD einfügen (16-bit Ganzzahl Addierer)\t+"
+"ADD einfÃ¼gen (16-bit Ganzzahl Addierer)\t+"
 
 "Insert CT&C (Count Circular)\tJ"
-"CT&C einfügen (Zirkulierender Zähler)\tJ"
+"CT&C einfÃ¼gen (Zirkulierender ZÃ¤hler)\tJ"
 
 "Insert CT&D (Count Down)\tI"
-"CT&D einfügen (Abwärtszähler)\tI"
+"CT&D einfÃ¼gen (AbwÃ¤rtszÃ¤hler)\tI"
 
 "Insert CT&U (Count Up)\tU"
-"CT&U einfügen (Aufwärtszähler)\tU"
+"CT&U einfÃ¼gen (AufwÃ¤rtszÃ¤hler)\tU"
 
 "Insert Co&mment\t;"
-"Kommentar &einfügen\t;"
+"Kommentar &einfÃ¼gen\t;"
 
 "Insert Coi&l\tL"
-"Spule einfügen \tL"
+"Spule einfÃ¼gen \tL"
 
 "Insert DIV (16-bit Integer Divide)\tD"
-"DIV einfügen (16-bit Ganzzahl Dividierer)\tD"
+"DIV einfÃ¼gen (16-bit Ganzzahl Dividierer)\tD"
 
 "Insert EQU (Compare for Equals)\t="
-"EQU einfügen (Vergleich auf gleich)\t="
+"EQU einfÃ¼gen (Vergleich auf gleich)\t="
 
 "Insert Formatted String Over UART"
-"Formatierte Zeichenfolge über UART einfügen"
+"Formatierte Zeichenfolge Ã¼ber UART einfÃ¼gen"
 
 "Insert Formatted String"
-"Formatierte Zeichenfolge einfügen"
+"Formatierte Zeichenfolge einfÃ¼gen"
 
 "Insert GEQ (Compare for Greater Than or Equal)\t."
-"GEQ einfügen (Vergleich auf größer oder gleich)\t."
+"GEQ einfÃ¼gen (Vergleich auf grÃ¶ÃŸer oder gleich)\t."
 
 "Insert GRT (Compare for Greater Than)\t>"
-"GRT einfügen (Vergleich auf größer)\t>"
+"GRT einfÃ¼gen (Vergleich auf grÃ¶ÃŸer)\t>"
 
 "Insert LEQ (Compare for Less Than or Equal)\t,"
-"LEQ einfügen (Vergleich auf kleiner oder gleich)\t,"
+"LEQ einfÃ¼gen (Vergleich auf kleiner oder gleich)\t,"
 
 "Insert LES (Compare for Less Than)\t<"
-"LES einfügen (Vergleich auf kleiner)\t<"
+"LES einfÃ¼gen (Vergleich auf kleiner)\t<"
 
 "Insert Look-Up Table"
-"Nachschlag-Tabelle einfügen"
+"Nachschlag-Tabelle einfÃ¼gen"
 
 "Insert MOV (Move)\tM"
-"Transferieren (Move) einfügen\tM"
+"Transferieren (Move) einfÃ¼gen\tM"
 
 "Insert MUL (16-bit Integer Multiply)\t*"
-"MUL einfügen (16-bit Ganzzahl Multiplizierer)\t*"
+"MUL einfÃ¼gen (16-bit Ganzzahl Multiplizierer)\t*"
 
 "Insert Make Persistent"
-"Remanent machen einfügen"
+"Remanent machen einfÃ¼gen"
 
 "Insert Master Control Relay"
-"Master Control Relais einfügen"
+"Master Control Relais einfÃ¼gen"
 
 "Insert NEQ (Compare for Not Equals)\t!"
-"NEQ einfügen (Vergleich auf ungleich)\t!"
+"NEQ einfÃ¼gen (Vergleich auf ungleich)\t!"
 
 "Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
-"\\_OSF/\\_ einfügen (Fallende Flanke)\t&\\"
+"\\_OSF/\\_ einfÃ¼gen (Fallende Flanke)\t&\\"
 
 "Insert _/OSR/\\_ (One Shot Rising)\t&/"
-"_/OSR/\\_ einfügen (Steigende Flanke)\t&/"
+"_/OSR/\\_ einfÃ¼gen (Steigende Flanke)\t&/"
 
 "Insert Piecewise Linear"
-"Näherungs-Linear-Tabelle einfügen"
+"NÃ¤herungs-Linear-Tabelle einfÃ¼gen"
 
 "Insert R&ES (Counter/RTO Reset)\tE"
-"R&ES einfügen (RTO/Zähler rücksetzen)\tE"
+"R&ES einfÃ¼gen (RTO/ZÃ¤hler rÃ¼cksetzen)\tE"
 
 "Insert R&TO (Retentive Delayed Turn On)\tT"
-"R&TO einfügen (Speichernde Anzugsverzögerung)\tT"
+"R&TO einfÃ¼gen (Speichernde AnzugsverzÃ¶gerung)\tT"
 
 "Insert Rung &After\tShift+V"
-"Netzwerk Einfügen &Danach\tShift+V"
+"Netzwerk EinfÃ¼gen &Danach\tShift+V"
 
 "Insert Rung &Before\tShift+6"
-"Netzwerk Einfügen &Davor\tShift+6"
+"Netzwerk EinfÃ¼gen &Davor\tShift+6"
 
 "Insert SUB (16-bit Integer Subtract)\t-"
-"SUB einfügen (16-bit Ganzzahl Subtrahierer)\t-"
+"SUB einfÃ¼gen (16-bit Ganzzahl Subtrahierer)\t-"
 
 "Insert Set PWM Output"
-"PWM Ausgang einfügen"
+"PWM Ausgang einfÃ¼gen"
 
 "Insert Shift Register"
-"Schieberegister einfügen"
+"Schieberegister einfÃ¼gen"
 
 "Insert T&ON (Delayed Turn On)\tO"
-"T&ON einfügen (Anzugsverzögerung)\tO"
+"T&ON einfÃ¼gen (AnzugsverzÃ¶gerung)\tO"
 
 "Insert TO&F (Delayed Turn Off)\tF"
-"TO&F einfügen (Abfallverzögerung)\tF"
+"TO&F einfÃ¼gen (AbfallverzÃ¶gerung)\tF"
 
 "Internal Relay"
 "Merker"
@@ -449,13 +449,13 @@
 "Interner Fehler beim PIC paging Seitenwechsel; Programm verkleinern oder umbilden"
 
 "Internal limit exceeded (number of vars)"
-"Interne Begrenzung überschritten (Anzahl der Variablen)"
+"Interne Begrenzung Ã¼berschritten (Anzahl der Variablen)"
 
 "Internal relay '%s' never assigned; add its coil somewhere."
-"Keine Zuweisung für Merker '%s', vergeben Sie eine Spule im Programm."
+"Keine Zuweisung fÃ¼r Merker '%s', vergeben Sie eine Spule im Programm."
 
 "LDmicro - Program Editor"
-"LDmicro – Programm-Editor"
+"LDmicro â€“ Programm-Editor"
 
 "LDmicro - Simulation (Running)"
 "LDmicro - Simulation (am Laufen)"
@@ -479,40 +479,40 @@
 "Prozessor-Port"
 
 "Make &Negated\tN"
-"Auf &Negieren ändern\tN"
+"Auf &Negieren Ã¤ndern\tN"
 
 "Make &Reset-Only\tR"
-"Auf &Rücksetzen ändern\tR"
+"Auf &RÃ¼cksetzen Ã¤ndern\tR"
 
 "Make &Set-Only\tS"
-"Auf &Setzen ändern\tS"
+"Auf &Setzen Ã¤ndern\tS"
 
 "Make Norm&al\tA"
-"Auf Normal ändern\tA"
+"Auf Normal Ã¤ndern\tA"
 
 "Make Persistent"
 "Remanent machen"
 
 "Math instruction: '%s' not a valid destination."
-"Mathem. Anweisung: '%s'keine gültige Zieladresse."
+"Mathem. Anweisung: '%s'keine gÃ¼ltige Zieladresse."
 
 "Max value:"
 "Maximalwert:"
 
 "Maximal one format placeholder is allowed in write string instruction."
-"Es ist maximal nur ein Platzhalter pro Schreibe-Zeichenfolge-Operation möglich."
+"Es ist maximal nur ein Platzhalter pro Schreibe-Zeichenfolge-Operation mÃ¶glich."
 
 "Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."
-"Prozessor '%s' nicht unterstützt.\r\n\r\nZurück zu: Kein Prozessor gewählt."
+"Prozessor '%s' nicht unterstÃ¼tzt.\r\n\r\nZurÃ¼ck zu: Kein Prozessor gewÃ¤hlt."
 
 "Move Selected Rung &Down\tAlt+Down"
-"Gewähltes Netzwerk schieben &nach unten\tAlt+Down"
+"GewÃ¤hltes Netzwerk schieben &nach unten\tAlt+Down"
 
 "Move Selected Rung &Up\tAlt+Up"
-"Gewähltes Netzwerk schieben &nach oben\tAlt+Up"
+"GewÃ¤hltes Netzwerk schieben &nach oben\tAlt+Up"
 
 "Move instruction: '%s' not a valid destination."
-"Transfer-Anweisung: '%s' ist keine gültige Zieladresse."
+"Transfer-Anweisung: '%s' ist keine gÃ¼ltige Zieladresse."
 
 "Move"
 "Transferieren"
@@ -524,13 +524,13 @@
 "Multiplizieren"
 
 "Must assign pins for all ADC inputs (name '%s')."
-"Für alle ADC-Eingänge müssen Pins zugewiesen werden (Name '%s')."
+"FÃ¼r alle ADC-EingÃ¤nge mÃ¼ssen Pins zugewiesen werden (Name '%s')."
 
 "Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."
-"Für alle E/A's müssen Pins zugewiesen werden.\r\n\r\n'%s' ist nicht zugewiesen."
+"FÃ¼r alle E/A's mÃ¼ssen Pins zugewiesen werden.\r\n\r\n'%s' ist nicht zugewiesen."
 
 "Must choose a target microcontroller before compiling."
-"Vor dem Kompilieren muss ein Prozessor gewählt werden."
+"Vor dem Kompilieren muss ein Prozessor gewÃ¤hlt werden."
 
 "Name"
 "Name"
@@ -539,13 +539,13 @@
 "Name:"
 
 "No ADC or ADC not supported for selected micro."
-"Kein A/D-Wandler vorhanden oder A/D-Wandler wird vom gewählten Prozessor nicht unterstützt."
+"Kein A/D-Wandler vorhanden oder A/D-Wandler wird vom gewÃ¤hlten Prozessor nicht unterstÃ¼tzt."
 
 "No ADC or ADC not supported for this micro."
-"Kein A/D-Wandler vorhanden oder A/D-Wandler wird vom gewählten Prozessor nicht unterstützt."
+"Kein A/D-Wandler vorhanden oder A/D-Wandler wird vom gewÃ¤hlten Prozessor nicht unterstÃ¼tzt."
 
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
-"Kein Prozessor gewählt. Sie müssen einen Prozessor wählen, bevor Sie E/A Pins zuweisen können.\r\n\r\nWählen Sie einen Prozessor im Voreinstellungs-Menu und versuchen es noch mal."
+"Kein Prozessor gewÃ¤hlt. Sie mÃ¼ssen einen Prozessor wÃ¤hlen, bevor Sie E/A Pins zuweisen kÃ¶nnen.\r\n\r\nWÃ¤hlen Sie einen Prozessor im Voreinstellungs-Menu und versuchen es noch mal."
 
 "No opcodes found."
 "Keine Operationen gefunden."
@@ -554,19 +554,19 @@
 "Keine UART-Anweisung Senden/Empfangen gefunden; die Baudrate festlegen, wenn diese Anweisung verwendet wird.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
-"Keine Variable in formatierter Zeichenfolge eingefügt, aber ein Variabelen-Name wurde vergeben. Geben Sie eine Zeichenfolge ein, wie z.B. '\\-3', oder den Variabelen-Namen unausgefüllt lassen."
+"Keine Variable in formatierter Zeichenfolge eingefÃ¼gt, aber ein Variabelen-Name wurde vergeben. Geben Sie eine Zeichenfolge ein, wie z.B. '\\-3', oder den Variabelen-Namen unausgefÃ¼llt lassen."
 
 "Not a reasonable size for a shift register."
-"Kein angemessenes Format für ein Schieberegister."
+"Kein angemessenes Format fÃ¼r ein Schieberegister."
 
 "Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details."
-"Zahlenmäßiges Problem mit der Näherungs-Linear-Tabelle. Entweder die Eingangswerte der Tabelle verringern, oder die Punkte näher zusammen legen.\r\n\r\nFür Details siehe unter Hilfe."
+"ZahlenmÃ¤ÃŸiges Problem mit der NÃ¤herungs-Linear-Tabelle. Entweder die Eingangswerte der Tabelle verringern, oder die Punkte nÃ¤her zusammen legen.\r\n\r\nFÃ¼r Details siehe unter Hilfe."
 
 "OK"
 "OK"
 
 "Out of memory; simplify program or choose microcontroller with more memory."
-"Speicher voll; vereinfachen Sie das Programm oder wählen Sie einen Prozessor mit mehr Speicherkapazität."
+"Speicher voll; vereinfachen Sie das Programm oder wÃ¤hlen Sie einen Prozessor mit mehr SpeicherkapazitÃ¤t."
 
 "Output pin"
 "Ausgangspin"
@@ -584,19 +584,19 @@
 "PWM Frequenz zu langsam."
 
 "PWM function used but not supported for this micro."
-"Dieser Prozessor unterstützt keine PWM-Funktion."
+"Dieser Prozessor unterstÃ¼tzt keine PWM-Funktion."
 
 "PWM in use; pin %d reserved for that."
-"PWM in Verwendung; Pin %d hierfür reserviert."
+"PWM in Verwendung; Pin %d hierfÃ¼r reserviert."
 
 "PWM out"
 "PWM Ausgang"
 
 "Piecewise Linear Table"
-"Näherungs-Linear-Tabelle"
+"NÃ¤herungs-Linear-Tabelle"
 
 "Piecewise linear lookup table with zero elements!"
-"Näherungs-Linear-Tabelle ohne Elemente!"
+"NÃ¤herungs-Linear-Tabelle ohne Elemente!"
 
 "Pin on MCU"
 "Prozessorpin"
@@ -605,13 +605,13 @@
 "Prozessorpin"
 
 "Please select a micro with a UART.\r\n\r\n"
-"Einen Prozessor mit UART wählen.\r\n\r\n"
+"Einen Prozessor mit UART wÃ¤hlen.\r\n\r\n"
 
 "Points:"
 "Punkte:"
 
 "RTO: variable can only be used for RES elsewhere"
-"RTO: Variable kann andernorts nur für RES verwendet werden"
+"RTO: Variable kann andernorts nur fÃ¼r RES verwendet werden"
 
 "Read A/D Converter"
 "A/D-Wandler einlesen"
@@ -632,13 +632,13 @@
 "Release.."
 
 "Rename I/O from default name ('%s') before assigning MCU pin."
-"Die Standardbezeichnung ('%s') des E/A’s vor der Zuweisung des Prozessorpins ändern."
+"Die Standardbezeichnung ('%s') des E/Aâ€™s vor der Zuweisung des Prozessorpins Ã¤ndern."
 
 "Reset"
-"Rücksetzen"
+"RÃ¼cksetzen"
 
 "Retentive Turn-On Delay"
-"Speichernde Anzugsverzögerung"
+"Speichernde AnzugsverzÃ¶gerung"
 
 "S&pecial"
 "S&pezial"
@@ -704,7 +704,7 @@
 "TON: Variable kann andernorts nicht verwendet werden"
 
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
-"Zielfrequenz %d Hz, nächste erreichbare ist %d Hz (Warnung, >5%% Abweichung)."
+"Zielfrequenz %d Hz, nÃ¤chste erreichbare ist %d Hz (Warnung, >5%% Abweichung)."
 
 "Test if Bit Clear In SFR"
 "Test if Bit Clear In SFR"
@@ -713,16 +713,16 @@
 "Test if Bit Set In SFR"
 
 "The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal."
-"Die von LDmicro erzeugte Zykluszeit des SPS-Ablaufs ist vom Anwender konfigurierbar. Sehr kurze Zykluszeiten können wegen Prozessorbeschränkungen nicht erreichbar sein, und sehr lange Zykluszeiten können wegen Hardware-Überlaufs nicht erreichbar sein. Zykluszeiten zwischen 10 ms und 100 ms sind üblich.\r\n\r\nFür die Umrechnung des Taktzykluses und der Zeitberechnung in Sekunden, muss der Compiler wissen, welche Quarzfrequenz beim Prozessor verwendet wird. Ein Quarz mit 4 bis 20 MHz ist üblich; Überprüfen Sie die Geschwindigkeit Ihres Prozessors, um die maximal erlaubte Taktgeschwindigkeit zu bestimmen, bevor Sie einen Quarz wählen."
+"Die von LDmicro erzeugte Zykluszeit des SPS-Ablaufs ist vom Anwender konfigurierbar. Sehr kurze Zykluszeiten kÃ¶nnen wegen ProzessorbeschrÃ¤nkungen nicht erreichbar sein, und sehr lange Zykluszeiten kÃ¶nnen wegen Hardware-Ãœberlaufs nicht erreichbar sein. Zykluszeiten zwischen 10 ms und 100 ms sind Ã¼blich.\r\n\r\nFÃ¼r die Umrechnung des Taktzykluses und der Zeitberechnung in Sekunden, muss der Compiler wissen, welche Quarzfrequenz beim Prozessor verwendet wird. Ein Quarz mit 4 bis 20 MHz ist Ã¼blich; ÃœberprÃ¼fen Sie die Geschwindigkeit Ihres Prozessors, um die maximal erlaubte Taktgeschwindigkeit zu bestimmen, bevor Sie einen Quarz wÃ¤hlen."
 
 "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
-"Das Programm wurde nach dem letzten Speichern geändert.\r\n\r\n Möchten Sie die Änderungen speichern?"
+"Das Programm wurde nach dem letzten Speichern geÃ¤ndert.\r\n\r\n MÃ¶chten Sie die Ã„nderungen speichern?"
 
 "Timer period too long (max 32767 times cycle time); use a slower cycle time."
 "Timer-Intervall zu lang (max. 32767mal die Zykluszeit); langsamere Zykluszeit verwenden."
 
 "Timer period too short (needs faster cycle time)."
-"Timer-Intervall zu kurz (schnellere Zykluszeit nötig)."
+"Timer-Intervall zu kurz (schnellere Zykluszeit nÃ¶tig)."
 
 "Timer"
 "Timer"
@@ -737,10 +737,10 @@
 "Wahr wenn >= :"
 
 "Turn-Off Delay"
-"Abfallverzögerung"
+"AbfallverzÃ¶gerung"
 
 "Turn-On Delay"
-"Anzugsverzögerung"
+"AnzugsverzÃ¶gerung"
 
 "Type"
 "Typ"
@@ -749,16 +749,16 @@
 "UART Baudrate (bps):"
 
 "UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken."
-"UART Baudraten-Generator: Divisor=%d aktuell=%.4f für %.2f%% Fehler.\r\n\r\nDiese ist zu hoch; versuchen Sie es mit einer anderen Baudrate (wahrscheinlich langsamer), oder eine Quarzfrequenz wählen die von vielen üblichen Baudraten teilbar ist (wie 3.6864MHz, 14.7456MHz).\r\n\r\nCode wird trotzdem erzeugt, aber er kann unzuverlässig oder beschädigt sein."
+"UART Baudraten-Generator: Divisor=%d aktuell=%.4f fÃ¼r %.2f%% Fehler.\r\n\r\nDiese ist zu hoch; versuchen Sie es mit einer anderen Baudrate (wahrscheinlich langsamer), oder eine Quarzfrequenz wÃ¤hlen die von vielen Ã¼blichen Baudraten teilbar ist (wie 3.6864MHz, 14.7456MHz).\r\n\r\nCode wird trotzdem erzeugt, aber er kann unzuverlÃ¤ssig oder beschÃ¤digt sein."
 
 "UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken."
-"UART Baudraten-Generator: Zu langsam, der Divisor hat Überlauf. Einen langsameren Quarz oder schnellere Baudrate verwenden.\r\n\r\nCode wird trotzdem erzeugt, aber er wird wahrscheinlich beschädigt sein."
+"UART Baudraten-Generator: Zu langsam, der Divisor hat Ãœberlauf. Einen langsameren Quarz oder schnellere Baudrate verwenden.\r\n\r\nCode wird trotzdem erzeugt, aber er wird wahrscheinlich beschÃ¤digt sein."
 
 "UART function used but not supported for this micro."
-"Dieser Prozessor unterstützt keine UART-Funktion."
+"Dieser Prozessor unterstÃ¼tzt keine UART-Funktion."
 
 "UART in use; pins %d and %d reserved for that."
-"UART in Verwendung; Pins %d und %d sind hierfür reserviert."
+"UART in Verwendung; Pins %d und %d sind hierfÃ¼r reserviert."
 
 "UART rx"
 "UART rx"
@@ -767,19 +767,19 @@
 "UART tx"
 
 "Unsupported op (anything ADC, PWM, UART, EEPROM) for Netzer target."
-"Keine unterstützte Operation für Netzer (kein explizites ADC, PWM, UART, EEPROM möglich)."
+"Keine unterstÃ¼tzte Operation fÃ¼r Netzer (kein explizites ADC, PWM, UART, EEPROM mÃ¶glich)."
 
 "Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for interpretable target."
-"Keine unterstützte Operation der interpretierbaren Zieldatei (kein ADC, PWM, UART, EEPROM, SFR.. möglich)."
+"Keine unterstÃ¼tzte Operation der interpretierbaren Zieldatei (kein ADC, PWM, UART, EEPROM, SFR.. mÃ¶glich)."
 
 "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
 "Variable '%s' nicht zugewiesen, z.B. zu einer Transfer- oder ADD-Anweisung usw.\r\n\r\nDas ist vermutlich ein Programmierungsfehler; jetzt wird sie immer Null sein."
 
 "Variable for '%s' incorrectly assigned: %s."
-"Variable für '%s' falsch zugewiesen: %s."
+"Variable fÃ¼r '%s' falsch zugewiesen: %s."
 
 "Variable is interpolated into formatted string, but none is specified."
-"Formatierte Zeichenfolge enthält Variable, aber keine ist angegeben."
+"Formatierte Zeichenfolge enthÃ¤lt Variable, aber keine ist angegeben."
 
 "Variable:"
 "Variable:"
@@ -788,10 +788,10 @@
 "Write To SFR"
 
 "Zero baud rate not possible."
-"Baudrate = 0 nicht möglich"
+"Baudrate = 0 nicht mÃ¶glich"
 
 "Zero cycle time not valid; resetting to 10 ms."
-"Zykluszeit =  0, nicht zulässig; wird auf 10 ms gesetzt."
+"Zykluszeit =  0, nicht zulÃ¤ssig; wird auf 10 ms gesetzt."
 
 "\n\nI/O ASSIGNMENT:\n\n"
 "\n\nE/A Zuweisungen:\n\n"
@@ -800,7 +800,7 @@
 "ADC Eingang"
 
 "counter"
-"Zähler"
+"ZÃ¤hler"
 
 "cycle time %.2f ms"
 "Zykluszeit %.2f ms"
@@ -821,7 +821,7 @@
 "gesetzt auf := :"
 
 "no MCU selected"
-"kein Prozessor gewählt"
+"kein Prozessor gewÃ¤hlt"
 
 "processor clock %.4f MHz"
 "Taktfrequenz Prozessor %.4f MHz"
@@ -833,13 +833,13 @@
 "saved var"
 
 "turn-off delay"
-"Abfallverzögerung"
+"AbfallverzÃ¶gerung"
 
 "turn-on delay"
-"Anzugsverzögerung"
+"AnzugsverzÃ¶gerung"
 
 "x values in piecewise linear table must be strictly increasing."
-"Die x-Werte in der Näherungs-Linear-Tabelle müssen strikt aufsteigend sein."
+"Die x-Werte in der NÃ¤herungs-Linear-Tabelle mÃ¼ssen strikt aufsteigend sein."
 
 "|/| Negated"
 "|/| Negiert"

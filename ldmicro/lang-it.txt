@@ -161,7 +161,7 @@
 "Cancellare"
 
 "Cannot delete rung; program must have at least one rung."
-"Non Ë in grado di eliminare le linee; il programma deve avere almeno una linea."
+"Non √® in grado di eliminare le linee; il programma deve avere almeno una linea."
 
 "Circular Counter"
 "Contatore ciclico"
@@ -185,19 +185,19 @@
 "Per compilare"
 
 "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
-"Compilato con successo; scritto il codice sorgente in C '%s'.\r\n\r\nIl non Ë un completo programma in C. Si deve fornire il runtime e tutti gli I / O di routine. Vedere i commenti nel codice sorgente per informazioni su come fare."
+"Compilato con successo; scritto il codice sorgente in C '%s'.\r\n\r\nIl non √® un completo programma in C. Si deve fornire il runtime e tutti gli I / O di routine. Vedere i commenti nel codice sorgente per informazioni su come fare."
 
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
 "Compilazione ok; scritto IHEX per AVR a '%s'.\r\n\r\nRicorda di impostare il processore (Configurazione fusibili) correttamente. Questo non avviene automaticamente."
 
 "Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
-"Compilato con successo; scritto IHEX per PIC16 per '%s'.\r\n\r\nConfigurazione word (fusibili), Ë stato fissato per il cristallo oscillatore, BOD abilitato, LVP disabilitati, PWRT attivato, tutto il codice di protezione off."
+"Compilato con successo; scritto IHEX per PIC16 per '%s'.\r\n\r\nConfigurazione word (fusibili), √® stato fissato per il cristallo oscillatore, BOD abilitato, LVP disabilitati, PWRT attivato, tutto il codice di protezione off."
 
 "Used %d/%d words of program flash (chip %d%% full)."
 "Used %d/%d word di Programma flash (chip %d%% full)."
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
-"Compilazione riuscita; codice interpretabile scritto per '%s'.\r\n\r\nSi dovr‡ probabilmente adattare l'interprete per la vostra applicazione. Vedi la documentazione."
+"Compilazione riuscita; codice interpretabile scritto per '%s'.\r\n\r\nSi dovr√† probabilmente adattare l'interprete per la vostra applicazione. Vedi la documentazione."
 
 "Constant %d out of range: -32768 to 32767 inclusive."
 "Costante %d oltre il limite: -32768 a 32767 inclusi."
@@ -233,10 +233,10 @@
 "Contatore"
 
 "Cycle time too fast; increase cycle time, or use faster crystal."
-"Tempo di ciclo troppo veloce; aumentare il tempo di ciclo o utilizzare un quarzo pi˘ veloce."
+"Tempo di ciclo troppo veloce; aumentare il tempo di ciclo o utilizzare un quarzo pi√π veloce."
 
 "Cycle time too slow; decrease cycle time, or use slower crystal."
-"Tempo di ciclo troppo lento; diminuire il tempo di ciclo o utilizzare un quarzo pi˘ lento."
+"Tempo di ciclo troppo lento; diminuire il tempo di ciclo o utilizzare un quarzo pi√π lento."
 
 "D&elete Rung\tShift+Del"
 "Cancellare il Ramo\tShift+Del"
@@ -272,7 +272,7 @@
 "Riga vuota, eliminare o aggiungere istruzioni prima di compilare."
 
 "Empty textbox; not permitted."
-"Spazio vuoto per testo; non Ë consentito"
+"Spazio vuoto per testo; non √® consentito"
 
 "Error"
 "Errore"
@@ -281,7 +281,7 @@
 "Esportare il testo"
 
 "File format error; perhaps this program is for a newer version of LDmicro?"
-"Errore del formato del file, forse questo Ë il programma per una nuova versione di LDmicro?"
+"Errore del formato del file, forse questo √® il programma per una nuova versione di LDmicro?"
 
 "Formatted String Over UART"
 "Stringhe formattate per l'UART"
@@ -302,16 +302,16 @@
 "Se Uguale"
 
 "If Greater Than or Equal To"
-"Se pi˘ grande o uguale di"
+"Se pi√π grande o uguale di"
 
 "If Greater Than"
-"Se pi˘ grande di"
+"Se pi√π grande di"
 
 "If Less Than or Equal To"
-"Se pi˘ piccolo o uguale di"
+"Se pi√π piccolo o uguale di"
 
 "If Less Than"
-"Se pi˘ piccolo di"
+"Se pi√π piccolo di"
 
 "If Not Equals"
 "Se non Uguale"
@@ -356,7 +356,7 @@
 "Inserire Co&mmento\t;"
 
 "Insert Coi&l\tL"
-"Inserire Bobina Re&lË\tL"
+"Inserire Bobina Re&l√®\tL"
 
 "Insert DIV (16-bit Integer Divide)\tD"
 "Inserire DIV (Divisione intera 16-bit)\tD"
@@ -434,16 +434,16 @@
 "Inserire TO&F (Tempo di ritardo Off)\tF"
 
 "Internal Relay"
-"RelË interno"
+"Rel√® interno"
 
 "Internal error relating to PIC paging; make program smaller or reshuffle it."
-"Errore interno relativo allla paginazione PIC; rendere il programma pi˘ piccolo."
+"Errore interno relativo allla paginazione PIC; rendere il programma pi√π piccolo."
 
 "Internal limit exceeded (number of vars)"
 "Superato il limite interno (numero di variabili)"
 
 "Internal relay '%s' never assigned; add its coil somewhere."
-"RelË interno '%s' non assegnato; aggiungere la sua bobina."
+"Rel√® interno '%s' non assegnato; aggiungere la sua bobina."
 
 "LDmicro - Program Editor"
 "LDmicro - Scrivere il programma"
@@ -485,22 +485,22 @@
 "Memoria rimanante"
 
 "Math instruction: '%s' not a valid destination."
-"Math istruzione: '%s' non Ë una destinazione valida"
+"Math istruzione: '%s' non √® una destinazione valida"
 
 "Max value:"
 "Valore massimo:"
 
 "Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."
-"Microcontrollore '%s' non Ë supportato.\r\n\r\nNessuna MCU selezionata di default."
+"Microcontrollore '%s' non √® supportato.\r\n\r\nNessuna MCU selezionata di default."
 
 "Move Selected Rung &Down\tAlt+Down"
-"Muove il Ramo selezionato &Gi˘\tAlt+Down"
+"Muove il Ramo selezionato &Gi√π\tAlt+Down"
 
 "Move Selected Rung &Up\tAlt+Up"
 "Muove il Ramo selezionato &Su\tAlt+Up"
 
 "Move instruction: '%s' not a valid destination."
-"Sposta istruzione: '%s' non Ë una destinazione valida."
+"Sposta istruzione: '%s' non √® una destinazione valida."
 
 "Move"
 "Spostare"
@@ -515,7 +515,7 @@
 "Devi assegnare i pin per tutti gli ingressi ADC (nom '%s')."
 
 "Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."
-"Devi assegnare tutti i pin di I / O.\r\n\r\n'%s' non Ë stato assegnato."
+"Devi assegnare tutti i pin di I / O.\r\n\r\n'%s' non √® stato assegnato."
 
 "Must choose a target microcontroller before compiling."
 "Scegliere un microcontrollore prima di compilare."
@@ -536,22 +536,22 @@
 "Microcontrollore non selezionato. Selezionare un microcontrollore prima di assegnare i pin.\r\n\r\nSeleziona un microcontrollore dal il menu Impostazioni e riprova."
 
 "No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
-"Nessuna istruzione (UART trasmetti o UART ricevi) Ë utilizzata; aggiungere un istruzione prima di settare il baud rate.\r\n\r\n"
+"Nessuna istruzione (UART trasmetti o UART ricevi) √® utilizzata; aggiungere un istruzione prima di settare il baud rate.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
-"Variabile interpolata non in formato stringa, ma un nome di variabile Ë stato specificato. Includi una stringa come '\\-3', o lasciare vuoto."
+"Variabile interpolata non in formato stringa, ma un nome di variabile √® stato specificato. Includi una stringa come '\\-3', o lasciare vuoto."
 
 "Not a reasonable size for a shift register."
-"Non Ë una dimensione ragionevole per un registro scorrimento."
+"Non √® una dimensione ragionevole per un registro scorrimento."
 
 "Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details."
-"Problema numerico con la tabella lineare di ricerca. Sia la tabella voci pi˘ piccole, o insieme di punti pi˘ vicini.\r\n\r\nVedere il file di aiuto per ulteriori dettagli."
+"Problema numerico con la tabella lineare di ricerca. Sia la tabella voci pi√π piccole, o insieme di punti pi√π vicini.\r\n\r\nVedere il file di aiuto per ulteriori dettagli."
 
 "OK"
 "OK"
 
 "Out of memory; simplify program or choose microcontroller with more memory."
-"Memoria insufficiente; semplificare il programma oppure scegliere microcontrollori con pi˘ memoria ."
+"Memoria insufficiente; semplificare il programma oppure scegliere microcontrollori con pi√π memoria ."
 
 "Output pin"
 "Output pin"
@@ -596,7 +596,7 @@
 "Punto:"
 
 "RTO: variable can only be used for RES elsewhere"
-"RTO: la variabile puÚ essere utilizzata altrove solo per il RES"
+"RTO: la variabile pu√≤ essere utilizzata altrove solo per il RES"
 
 "Read A/D Converter"
 "Lettura del convertitore A/D"
@@ -680,13 +680,13 @@
 "Sottrazione"
 
 "TOF: variable cannot be used elsewhere"
-"TOF: la variabile non puÚ essere utilizzata altrove"
+"TOF: la variabile non pu√≤ essere utilizzata altrove"
 
 "TON: variable cannot be used elsewhere"
-"TON: la variabile non puÚ essere utilizzata altrove"
+"TON: la variabile non pu√≤ essere utilizzata altrove"
 
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
-"Target PWM frequenza %d Hz, il pi˘ vicino realizzabile Ë %d Hz (avvertimento, >5%% di errore)."
+"Target PWM frequenza %d Hz, il pi√π vicino realizzabile √® %d Hz (avvertimento, >5%% di errore)."
 
 "Test if Bit Clear In SFR"
 "Test if Bit Clear In SFR"
@@ -695,13 +695,13 @@
 "Test if Bit Set In SFR"
 
 "The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal."
-"Il tempo di ciclo per il 'PLC' LDmicro Ë configurabile dall' utente. Tempi di ciclo molto brevi possono non essere realizzabili a causa di vincoli di velocit‡ del processore, e tempi di ciclo molto lunghi possono essere causa di overflow. Tempi di ciclo tra i 10 ms e di 100 ms di solito sono usuali.\r\n\r\nIl compilatore deve sapere che velocit‡ di cristallo stai usando con il micro per convertire in cicli di clock i Tempi. Da 4 MHz a 20 MHz, Ë il cristallo tipico; determinare la velocit‡ massima consentita prima di scegliere un cristallo."
+"Il tempo di ciclo per il 'PLC' LDmicro √® configurabile dall' utente. Tempi di ciclo molto brevi possono non essere realizzabili a causa di vincoli di velocit√† del processore, e tempi di ciclo molto lunghi possono essere causa di overflow. Tempi di ciclo tra i 10 ms e di 100 ms di solito sono usuali.\r\n\r\nIl compilatore deve sapere che velocit√† di cristallo stai usando con il micro per convertire in cicli di clock i Tempi. Da 4 MHz a 20 MHz, √® il cristallo tipico; determinare la velocit√† massima consentita prima di scegliere un cristallo."
 
 "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
-"Il programma Ë cambiato da quando Ë stato salvato l'ultima volta.\r\n\r\nDo si desidera salvare le modifiche? "
+"Il programma √® cambiato da quando √® stato salvato l'ultima volta.\r\n\r\nDo si desidera salvare le modifiche? "
 
 "Timer period too long (max 32767 times cycle time); use a slower cycle time."
-"Tempo troppo lungo (max 32767 volte di ciclo); utilizzare un tempo di ciclo pi˘ lento."
+"Tempo troppo lungo (max 32767 volte di ciclo); utilizzare un tempo di ciclo pi√π lento."
 
 "Timer period too short (needs faster cycle time)."
 "Periodo troppo corto (Diminuire il tempo de ciclo)."
@@ -731,10 +731,10 @@
 "UART Baud Rate (bps):"
 
 "UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken."
-"UART generatore di baud rate: divisore = %d effettivo = %.4f per %.2f%% di errore.\r\n\r\nIl Ë troppo grande; prova un altro baud rate (probabilmente pi˘ lento), o il quarzo scelto non Ë divisibile per molti comuni baud (ad esempio, 3.6864 MHz, 14.7456 MHz).\r\n\r\nIl codice verr‡ generato, ma comunque puÚ essere inaffidabile o completamente non funzionante."
+"UART generatore di baud rate: divisore = %d effettivo = %.4f per %.2f%% di errore.\r\n\r\nIl √® troppo grande; prova un altro baud rate (probabilmente pi√π lento), o il quarzo scelto non √® divisibile per molti comuni baud (ad esempio, 3.6864 MHz, 14.7456 MHz).\r\n\r\nIl codice verr√† generato, ma comunque pu√≤ essere inaffidabile o completamente non funzionante."
 
 "UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken."
-"UART generatore di baud rate: troppo lento, overflow. Utilizzare un quarzo pi˘ lento o una velocit‡ pi˘ alta di baud.\r\n\r\nIl codice verr‡ generato, ma comunque sar‡ probabilmente completamente inutilizzabile."
+"UART generatore di baud rate: troppo lento, overflow. Utilizzare un quarzo pi√π lento o una velocit√† pi√π alta di baud.\r\n\r\nIl codice verr√† generato, ma comunque sar√† probabilmente completamente inutilizzabile."
 
 "UART function used but not supported for this micro."
 "Le funzioni UART sono usate ma non supportate da questo micro."
@@ -752,13 +752,13 @@
 "Istruzioni non supportate (come ADC, PWM, UART, EEPROM, SFR..) per il codice interpretato."
 
 "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
-"Variabile '%s' non assegnate, ad esempio, con una dichiarazione, MOV, una dichiarazione ADD, ecc\r\n\r\nQuesto Ë probabilmente un errore di programmazione; ora sar‡ sempre uguale a zero."
+"Variabile '%s' non assegnate, ad esempio, con una dichiarazione, MOV, una dichiarazione ADD, ecc\r\n\r\nQuesto √® probabilmente un errore di programmazione; ora sar√† sempre uguale a zero."
 
 "Variable for '%s' incorrectly assigned: %s."
 "Variabile per '%s' assegnazione incorretta: %s."
 
 "Variable is interpolated into formatted string, but none is specified."
-"Variabile interpolata in formato stringa, ma non Ë specificata."
+"Variabile interpolata in formato stringa, ma non √® specificata."
 
 "Variable:"
 "Variabile:"
@@ -767,7 +767,7 @@
 "Write To SFR"
 
 "Zero baud rate not possible."
-"baud rate = Zero non Ë possibile"
+"baud rate = Zero non √® possibile"
 
 "Zero cycle time not valid; resetting to 10 ms."
 "Tempo di ciclo non valido; reimpostare a 10 ms."
@@ -794,10 +794,10 @@
 "Var. generale"
 
 "int. relay"
-"RelË interno"
+"Rel√® interno"
 
 "is set := :"
-"È impostato := :"
+"√© impostato := :"
 
 "no MCU selected"
 "nessuna MCU selezionata"

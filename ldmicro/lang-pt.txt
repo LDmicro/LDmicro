@@ -2,7 +2,7 @@
 "  Nome                       | Tipo               | Pino\n"
 
 " - (not yet saved)"
-" - (ainda n„o salvo)"
+" - (ainda n√£o salvo)"
 
 "!!!too long!!!"
 "!Muito longo!"
@@ -29,7 +29,7 @@
 "&Arquivo"
 
 "&Halt Simulation\tCtrl+H"
-"Parar SimulaÁ„o\tCtrl+H"
+"Parar Simula√ß√£o\tCtrl+H"
 
 "&Help"
 "&Ajuda"
@@ -53,10 +53,10 @@
 "&Insert Write To SFR"
 
 "&Instruction"
-"&InstruÁıes"
+"&Instru√ß√µes"
 
 "&MCU Parameters..."
-"&Par‚metros do Micro..."
+"&Par√¢metros do Micro..."
 
 "&Manual...\tF1"
 "&Manual...\tF1"
@@ -77,7 +77,7 @@
 "&Salvar\tCtrl+S"
 
 "&Settings"
-"&ConfiguraÁıes"
+"&Configura√ß√µes"
 
 "&Special Function"
 "&Special Function"
@@ -107,10 +107,10 @@
 "(sem pino)"
 
 "(not assigned)"
-"(sem atribuiÁ„o)"
+"(sem atribui√ß√£o)"
 
 "--add comment here--"
-"--Adicione Coment·rios Aqui--"
+"--Adicione Coment√°rios Aqui--"
 
 "<PWM needs!>"
 "<Se necessitar PWM!>"
@@ -128,10 +128,10 @@
 "<sem UART!>"
 
 "<not an I/O!>"
-"<N„o È uma E/S!>"
+"<N√£o √© uma E/S!>"
 
 "ANSI C target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
-"ANSI C n„o suporta perifÈricos (UART, PWM, ADC, EEPROM). Evite essas instruÁıes."
+"ANSI C n√£o suporta perif√©ricos (UART, PWM, ADC, EEPROM). Evite essas instru√ß√µes."
 
 "Add"
 "Somar"
@@ -143,25 +143,25 @@
 "Caractere Especial com Erro '\\%c'"
 
 "Bad escape: correct form is \\xAB."
-"Caractere Especial com Erro: A forma correta È \\xAB."
+"Caractere Especial com Erro: A forma correta √© \\xAB."
 
 "Bad use of quotes: <%s>"
 "Mau uso das aspas: <%s>"
 
 "Can only assign pin number to input/output pins (Xname or Yname or Aname)."
-"Somente pode atribuir n˙meros dos pinos aos pinos de Entrada/SaÌda (Xname ou Yname ou Aname)."
+"Somente pode atribuir n√∫meros dos pinos aos pinos de Entrada/Sa√≠da (Xname ou Yname ou Aname)."
 
 "Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code."
-"N„o se pode atribuir as E/S especificadas para o ANSI C gerado; compile e veja os coment·rios gerados no cÛdigo fonte."
+"N√£o se pode atribuir as E/S especificadas para o ANSI C gerado; compile e veja os coment√°rios gerados no c√≥digo fonte."
 
 "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."
-"N„o se pode atribuir as E/S especificadas para o cÛdigo gerado para o interpretador; veja os coment·rios na implementaÁ„o do interpretador."
+"N√£o se pode atribuir as E/S especificadas para o c√≥digo gerado para o interpretador; veja os coment√°rios na implementa√ß√£o do interpretador."
 
 "Cancel"
 "Cancelar"
 
 "Cannot delete rung; program must have at least one rung."
-"N„o pode apagar a Linha (rung); O programa deve contem pelo menos uma Linha (rung)."
+"N√£o pode apagar a Linha (rung); O programa deve contem pelo menos uma Linha (rung)."
 
 "Circular Counter"
 "Contador Circular"
@@ -173,31 +173,31 @@
 "Bobina"
 
 "Comment"
-"Coment·rio"
+"Coment√°rio"
 
 "Compile &As..."
 "Compilar &Como..."
 
 "Compile Successful"
-"CompilaÁ„o Sucedida"
+"Compila√ß√£o Sucedida"
 
 "Compile To"
 "Compilar Para"
 
 "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
-"CompilaÁ„o sucedida: CÛdigo Fonte escrito em C para '%s'.\r\n\r\nEste programa nao È completo em C. VocÍ tem que fornecer o tempo de execuÁ„o e de todas as rotinas de E/S. Veja os coment·rios no cÛdigo fonte para mais informaÁ„o sobre como fazer isto."
+"Compila√ß√£o sucedida: C√≥digo Fonte escrito em C para '%s'.\r\n\r\nEste programa nao √© completo em C. Voc√™ tem que fornecer o tempo de execu√ß√£o e de todas as rotinas de E/S. Veja os coment√°rios no c√≥digo fonte para mais informa√ß√£o sobre como fazer isto."
 
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
-"CompilaÁ„o sucedida; se escrito em IHEX para AVR para '%s'.\r\n\r\nLembrar de anotar as configuraÁıes (fuses) do micro, corretamente. Isto n„o acontece automaticamente."
+"Compila√ß√£o sucedida; se escrito em IHEX para AVR para '%s'.\r\n\r\nLembrar de anotar as configura√ß√µes (fuses) do micro, corretamente. Isto n√£o acontece automaticamente."
 
 "Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
-"CompilaÁ„o sucedida; escrito IHEX para PIC16 em '%s'.\r\n\r\nBits de ConfiguraÁ„o (fuses) foi estabelecido para o cristal oscilador, BOD ativado, LVP desativado, PWRT ativado, Todos os bits de proteÁ„o desativados."
+"Compila√ß√£o sucedida; escrito IHEX para PIC16 em '%s'.\r\n\r\nBits de Configura√ß√£o (fuses) foi estabelecido para o cristal oscilador, BOD ativado, LVP desativado, PWRT ativado, Todos os bits de prote√ß√£o desativados."
 
 "Used %d/%d words of program flash (chip %d%% full)."
 "Usadas %d/%d palavras de programa em flash (Chip %d%% completo)."
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
-"CompilaÁ„o sucedida: CÛdigo para interpretador escrito para '%s'.\r\n\r\nVocÍ provavelmente tem que adaptar o interpretador para sua aplicaÁ„o. Veja a documentaÁ„o."
+"Compila√ß√£o sucedida: C√≥digo para interpretador escrito para '%s'.\r\n\r\nVoc√™ provavelmente tem que adaptar o interpretador para sua aplica√ß√£o. Veja a documenta√ß√£o."
 
 "Constant %d out of range: -32768 to 32767 inclusive."
 "Constante %d fora do range: -32768 a 32767 inclusive."
@@ -206,19 +206,19 @@
 "Contatos"
 
 "Couldn't open '%s'."
-"N„o pode abrir '%s'."
+"N√£o pode abrir '%s'."
 
 "Couldn't open '%s'\n"
-"N„o pode abrir '%s'\n"
+"N√£o pode abrir '%s'\n"
 
 "Couldn't open file '%s'"
-"N„o pode abrir o arquivo '%s'"
+"N√£o pode abrir o arquivo '%s'"
 
 "Couldn't write to '%s'"
-"N„o pode ser gravado para  '%s'."
+"N√£o pode ser gravado para  '%s'."
 
 "Couldn't write to '%s'."
-"N„o pode gravar para '%s'."
+"N√£o pode gravar para '%s'."
 
 "Count Down"
 "Contador Decrescente"
@@ -233,7 +233,7 @@
 "Contador"
 
 "Cycle time too fast; increase cycle time, or use faster crystal."
-"Tempo de Ciclo muito r·pido; aumentar tempo do ciclo, ou usar um cristal de maior Mhz."
+"Tempo de Ciclo muito r√°pido; aumentar tempo do ciclo, ou usar um cristal de maior Mhz."
 
 "Cycle time too slow; decrease cycle time, or use slower crystal."
 "Tempo de Ciclo muito lento; diminuir tempo do ciclo, ou usar um cristal de menor Mhz."
@@ -245,7 +245,7 @@
 "Tempo (ms):"
 
 "Delay cannot be zero or negative."
-"Tempo n„o pode ser zero ou negativo."
+"Tempo n√£o pode ser zero ou negativo."
 
 "Delay too long; maximum is 2**31 us."
 "Tempo muito longo; Maximo 2**31 us."
@@ -257,7 +257,7 @@
 "Dividir"
 
 "Division by zero; halting simulation"
-"Divis„o por zero; Parando simulaÁ„o"
+"Divis√£o por zero; Parando simula√ß√£o"
 
 "Duty cycle var:"
 "Var Duty cycle:"
@@ -269,10 +269,10 @@
 "Editar tabela do ASCII, valores como uma string"
 
 "Empty row; delete it or add instructions before compiling."
-"Linha Vazia; apague ou adicione instruÁıes antes de compilar."
+"Linha Vazia; apague ou adicione instru√ß√µes antes de compilar."
 
 "Empty textbox; not permitted."
-"Texto vazio; n„o È permitido"
+"Texto vazio; n√£o √© permitido"
 
 "Error"
 "Error"
@@ -281,7 +281,7 @@
 "Exportar como Texto"
 
 "File format error; perhaps this program is for a newer version of LDmicro?"
-"Erro no formato de arquivo; talvez este programa È para uma vers„o mais nova do LDmicro?."
+"Erro no formato de arquivo; talvez este programa √© para uma vers√£o mais nova do LDmicro?."
 
 "Formatted String Over UART"
 "String Formatada para UART"
@@ -290,7 +290,7 @@
 "Frequencia (Hz):"
 
 "I/O Pin Assignment"
-"AtribuiÁ„o de Pinos de E/S"
+"Atribui√ß√£o de Pinos de E/S"
 
 "I/O Pin"
 "Pino E/S"
@@ -317,7 +317,7 @@
 " Se Diferente"
 
 "Index:"
-"Õndice:"
+"√çndice:"
 
 "Input pin"
 "Pino Entrada"
@@ -353,7 +353,7 @@
 "Inserir CT&U (Contador Incremental)\tU"
 
 "Insert Co&mment\t;"
-"Inserir Co&ment·rio\t;"
+"Inserir Co&ment√°rio\t;"
 
 "Insert Coi&l\tL"
 "Inserir &Bobina\tL"
@@ -362,7 +362,7 @@
 "Inserir DIV (Divide Inteiro 16-bit)\tD"
 
 "Insert EQU (Compare for Equals)\t="
-"Inserir EQU (Comparar se È Igual)\t="
+"Inserir EQU (Comparar se √© Igual)\t="
 
 "Insert Formatted String Over UART"
 "Inserir String Formatada na UART"
@@ -395,7 +395,7 @@
 "Inserir Rele de Controle Mestre"
 
 "Insert NEQ (Compare for Not Equals)\t!"
-"Inserir NEQ (Comparar se È Diferente)\t!"
+"Inserir NEQ (Comparar se √© Diferente)\t!"
 
 "Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
 "Inserir \\_OSF/\\_ (Detecta Borda de Descida)\t&\\"
@@ -404,7 +404,7 @@
 "Inserir _/OSR/\\_ (Detecta Borda de Subida)\t&/"
 
 "Insert Piecewise Linear"
-"Inserir LinearizaÁ„o por Segmentos"
+"Inserir Lineariza√ß√£o por Segmentos"
 
 "Insert R&ES (Counter/RTO Reset)\tE"
 "Inserir R&ES (Contador/RTO Reinicia)\tE"
@@ -422,7 +422,7 @@
 "Inserir SUB (Subtrair Inteiro 16-bit)\t-"
 
 "Insert Set PWM Output"
-"Inserir Valor de SaÌda PWM"
+"Inserir Valor de Sa√≠da PWM"
 
 "Insert Shift Register"
 "Inserir Registro de Troca"
@@ -437,22 +437,22 @@
 "Rele Interno"
 
 "Internal error relating to PIC paging; make program smaller or reshuffle it."
-"Erro interno relativo a paginaÁ„o do PIC; fazer um programa menor ou reorganiza-lo"
+"Erro interno relativo a pagina√ß√£o do PIC; fazer um programa menor ou reorganiza-lo"
 
 "Internal limit exceeded (number of vars)"
-"Limite interno excedido (numero de vari·veis)"
+"Limite interno excedido (numero de vari√°veis)"
 
 "Internal relay '%s' never assigned; add its coil somewhere."
-"Rele Interno'%s' n„o foi associado; adicione esta bobina em outro lugar."
+"Rele Interno'%s' n√£o foi associado; adicione esta bobina em outro lugar."
 
 "LDmicro - Program Editor"
 "LDmicro - Editor de Programa"
 
 "LDmicro - Simulation (Running)"
-"LDmicro - SimulaÁ„o (Executando)"
+"LDmicro - Simula√ß√£o (Executando)"
 
 "LDmicro - Simulation (Stopped)"
-"LDmicro - SimulaÁ„o (Parado)"
+"LDmicro - Simula√ß√£o (Parado)"
 
 "LDmicro Error"
 "LDmicro Error"
@@ -464,7 +464,7 @@
 "Buscar na Tabela"
 
 "MCU Crystal Frequency (MHz):"
-"Freq¸Íncia Cristal (MHz):"
+"Freq√º√™ncia Cristal (MHz):"
 
 "MCU Port"
 "Porta do Micro"
@@ -485,13 +485,13 @@
 "Fazer Permanente"
 
 "Math instruction: '%s' not a valid destination."
-"InstruÁıes Math: '%s' o destino n„o È v·lido."
+"Instru√ß√µes Math: '%s' o destino n√£o √© v√°lido."
 
 "Max value:"
 "Valor Max:"
 
 "Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."
-"Microcontrolador '%s' n„o suportado.\r\n\r\nFalha nenhum Micro selecionado."
+"Microcontrolador '%s' n√£o suportado.\r\n\r\nFalha nenhum Micro selecionado."
 
 "Move Selected Rung &Down\tAlt+Down"
 "Mover Linha Selecionada(Rung) &Abaixo\tAlt+Down"
@@ -500,13 +500,13 @@
 "Mover Linha Selecionada (Rung) &Acima\tAlt+Up"
 
 "Move instruction: '%s' not a valid destination."
-"InstruÁ„o Mover: '%s' o destino n„o È v·lido."
+"Instru√ß√£o Mover: '%s' o destino n√£o √© v√°lido."
 
 "Move"
 "Mover"
 
 "Multiple escapes (\\0-9) present in format string, not allowed."
-"N„o È permitido mais de um caractere especial (\\0-9) dentro da string formatada."
+"N√£o √© permitido mais de um caractere especial (\\0-9) dentro da string formatada."
 
 "Multiply"
 "Multiplicar"
@@ -515,7 +515,7 @@
 "Deve associar pinos para todas as entradas do ADC (nome '%s')."
 
 "Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."
-"Deve associar pinos a todas E/S.\r\n\r\n'%s' n„o esta associado."
+"Deve associar pinos a todas E/S.\r\n\r\n'%s' n√£o esta associado."
 
 "Must choose a target microcontroller before compiling."
 "Deve selecionar um microcontrolador antes de compilar."
@@ -527,61 +527,61 @@
 "Nome:"
 
 "No ADC or ADC not supported for selected micro."
-"O micro selecionado n„o possui ADC ou n„o suporta."
+"O micro selecionado n√£o possui ADC ou n√£o suporta."
 
 "No ADC or ADC not supported for this micro."
-"Este micro n„o tem ADC ou n„o È suportado."
+"Este micro n√£o tem ADC ou n√£o √© suportado."
 
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
-"Nenhum micro esta selecionado. VocÍ deve selecionar um micro antes de  atribuir os pinos E/S.\r\n\r\nSelecione um micro no menu de configuraÁ„o e tente novamente."
+"Nenhum micro esta selecionado. Voc√™ deve selecionar um micro antes de  atribuir os pinos E/S.\r\n\r\nSelecione um micro no menu de configura√ß√£o e tente novamente."
 
 "No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
-"Nenhuma instruÁ„o serial (UART Enviar/UART Recebe) est· em uso; adicione uma ao programa antes de configurar a taxa de transmiss„o (baud rate).\r\n\r\n"
+"Nenhuma instru√ß√£o serial (UART Enviar/UART Recebe) est√° em uso; adicione uma ao programa antes de configurar a taxa de transmiss√£o (baud rate).\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
-"Nenhuma vari·vel esta interpolada dentro da string formatada, porem um nome de vari·vel È especificada. Inclua uma string como '\\-3', ou deixe o nome da vari·vel em branco."
+"Nenhuma vari√°vel esta interpolada dentro da string formatada, porem um nome de vari√°vel √© especificada. Inclua uma string como '\\-3', ou deixe o nome da vari√°vel em branco."
 
 "Not a reasonable size for a shift register."
-"N„o È um tamanho razo·vel para um registro de deslocamento."
+"N√£o √© um tamanho razo√°vel para um registro de deslocamento."
 
 "Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details."
-"Problema numÈrico com a Tabela de LinearizaÁ„o por segmentos. FaÁa qualquer tabela com entradas menores. ou espace os pontos para mais prÚximo.\r\n\r\nVeja em ajuda para mais detalhes."
+"Problema num√©rico com a Tabela de Lineariza√ß√£o por segmentos. Fa√ßa qualquer tabela com entradas menores. ou espace os pontos para mais pr√≤ximo.\r\n\r\nVeja em ajuda para mais detalhes."
 
 "OK"
 "OK"
 
 "Out of memory; simplify program or choose microcontroller with more memory."
-"Fora de MemÛria; Simplifique o programa ou escolha um microcontrolador com mais memÛria."
+"Fora de Mem√≥ria; Simplifique o programa ou escolha um microcontrolador com mais mem√≥ria."
 
 "Output pin"
 "Pino Saida"
 
 "PLC Configuration"
-"ConfiguraÁ„o PLC"
+"Configura√ß√£o PLC"
 
 "PLC Cycle Time (ms):"
 "Tempo de Ciclo (ms):"
 
 "PWM frequency too fast."
-"Freq¸Íncia do PWM muito alta."
+"Freq√º√™ncia do PWM muito alta."
 
 "PWM frequency too slow."
-"Freq¸Íncia do PWM muito baixa."
+"Freq√º√™ncia do PWM muito baixa."
 
 "PWM function used but not supported for this micro."
-"FunÁ„o PWM È usada porem n„o suportada por este micro."
+"Fun√ß√£o PWM √© usada porem n√£o suportada por este micro."
 
 "PWM in use; pin %d reserved for that."
 "PWM em uso; pino %d reservada para isso."
 
 "PWM out"
-"saÌda PWM"
+"sa√≠da PWM"
 
 "Piecewise Linear Table"
-"Tabela de LinearizaÁ„o por Segmentos"
+"Tabela de Lineariza√ß√£o por Segmentos"
 
 "Piecewise linear lookup table with zero elements!"
-"Consulta da Tabela de LinearizaÁ„o por Segmentos com elementos zero!"
+"Consulta da Tabela de Lineariza√ß√£o por Segmentos com elementos zero!"
 
 "Pin on MCU"
 "Pino no Micro"
@@ -596,7 +596,7 @@
 "Pontos:"
 
 "RTO: variable can only be used for RES elsewhere"
-"RTO: a vari·vel somente pode ser usada como RES em outra parte"
+"RTO: a vari√°vel somente pode ser usada como RES em outra parte"
 
 "Read A/D Converter"
 "Ler Conversor A/D"
@@ -617,7 +617,7 @@
 "Release.."
 
 "Rename I/O from default name ('%s') before assigning MCU pin."
-"Renomear as E/S para nome padr„o ('%s') antes de atribuir um pino do micro."
+"Renomear as E/S para nome padr√£o ('%s') antes de atribuir um pino do micro."
 
 "Reset"
 "Reiniciar"
@@ -635,10 +635,10 @@
 "Envia para UART"
 
 "Serial (UART) will use pins %d and %d.\r\n"
-"A porta Serial (UART) usar· os pinos %d e %d.\r\n"
+"A porta Serial (UART) usar√° os pinos %d e %d.\r\n"
 
 "Serial (UART) will use pins %d and %d.\r\n"
-"Porta Serial (UART) usar· os pinos %d e %d.\r\n"
+"Porta Serial (UART) usar√° os pinos %d e %d.\r\n"
 
 "Set Bit In SFR"
 "Set Bit In SFR"
@@ -653,10 +653,10 @@
 "Si&mular"
 
 "Si&mulation Mode\tCtrl+M"
-"Modo Si&mulaÁ„o \tCtrl+M"
+"Modo Si&mula√ß√£o \tCtrl+M"
 
 "Single &Cycle\tSpace"
-"Simples &Ciclo\tEspaÁo"
+"Simples &Ciclo\tEspa√ßo"
 
 "Source"
 "Fonte"
@@ -668,7 +668,7 @@
 "Fases:"
 
 "Start &Real-Time Simulation\tCtrl+R"
-"Iniciar SimulaÁ„o em Tempo &Real\tCtrl+R"
+"Iniciar Simula√ß√£o em Tempo &Real\tCtrl+R"
 
 "Start new program?"
 "Iniciar um novo programa?"
@@ -683,13 +683,13 @@
 "Subtrair"
 
 "TOF: variable cannot be used elsewhere"
-"TOF: a vari·vel n„o pode ser usada em outra parte"
+"TOF: a vari√°vel n√£o pode ser usada em outra parte"
 
 "TON: variable cannot be used elsewhere"
-"TON: a vari·vel n„o pode ser usada em outra parte"
+"TON: a vari√°vel n√£o pode ser usada em outra parte"
 
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
-"Freq¸Íncia do Micro %d Hz, a melhor aproximaÁ„o È %d Hz (aviso, >5%% error)."
+"Freq√º√™ncia do Micro %d Hz, a melhor aproxima√ß√£o √© %d Hz (aviso, >5%% error)."
 
 "Test if Bit Clear In SFR"
 "Test if Bit Clear In SFR"
@@ -698,16 +698,16 @@
 "Test if Bit Set In SFR"
 
 "The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal."
-"O tempo de ciclo para o PLC generalizado pelo LDmicro È configuravel pelo usu·rio. Tempos de ciclo muito pequenos podem n„o ser realiz·veis devido a baixa velocidade do processador, e tempos de ciclo muito longos podem n„o ser realiz·veis devido ao temporizador do micro. Ciclos de tempo entre 10 e 100ms s„o mais usuais.\r\n\r\n O compilador tem que saber qual È a freq¸Íncia do cristal que est· sendo usado para poder converter entre o tempo em ciclos do clock e  tempo em segundos. Cristais entre 4 Mhz e 20 Mhz s„o os mais tÌpicos. Confira a velocidade  que pode funcionar seu micro e calcule a velocidade m·xima do clock antes de encolher o cristal."
+"O tempo de ciclo para o PLC generalizado pelo LDmicro √© configuravel pelo usu√°rio. Tempos de ciclo muito pequenos podem n√£o ser realiz√°veis devido a baixa velocidade do processador, e tempos de ciclo muito longos podem n√£o ser realiz√°veis devido ao temporizador do micro. Ciclos de tempo entre 10 e 100ms s√£o mais usuais.\r\n\r\n O compilador tem que saber qual √© a freq√º√™ncia do cristal que est√° sendo usado para poder converter entre o tempo em ciclos do clock e  tempo em segundos. Cristais entre 4 Mhz e 20 Mhz s√£o os mais t√≠picos. Confira a velocidade  que pode funcionar seu micro e calcule a velocidade m√°xima do clock antes de encolher o cristal."
 
 "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
-"Este programa contem mudanÁas desde a ultima vez salva.\r\n\r\n VocÍ quer salvar as mudanÁas?"
+"Este programa contem mudan√ßas desde a ultima vez salva.\r\n\r\n Voc√™ quer salvar as mudan√ßas?"
 
 "Timer period too long (max 32767 times cycle time); use a slower cycle time."
 "Tempo do Temporizador muito grande(max. 32767 tempo de ciclo); use um tempo de ciclo menor."
 
 "Timer period too short (needs faster cycle time)."
-"PerÌodo de Tempo muito curto (necessitara de um tempo de ciclo maior)."
+"Per√≠odo de Tempo muito curto (necessitara de um tempo de ciclo maior)."
 
 "Timer"
 "Temporizador"
@@ -734,13 +734,13 @@
 "Baud Rate UART (bps):"
 
 "UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken."
-"Gerador UART baud rate: divisor=%d atual=%.4f para %.2f%% error.\r\n\r\nEste È muito grande; Tente com outro valor (provavelmente menor), ou um cristal cuja freq¸Íncia seja divisÌvel pelos baud rate mais comuns (p.e. 3.6864MHz, 14.7456MHz).\r\n\r\nO cÛdigo ser· gerado de qualquer maneira, porem a serial poder· ser incerta ou completamente fragmentada."
+"Gerador UART baud rate: divisor=%d atual=%.4f para %.2f%% error.\r\n\r\nEste √© muito grande; Tente com outro valor (provavelmente menor), ou um cristal cuja freq√º√™ncia seja divis√≠vel pelos baud rate mais comuns (p.e. 3.6864MHz, 14.7456MHz).\r\n\r\nO c√≥digo ser√° gerado de qualquer maneira, porem a serial poder√° ser incerta ou completamente fragmentada."
 
 "UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken."
-"Gerador UART baud rate: muito lento, divisor excedido. Use um cristal mais lento ou um baud rate maior.\r\n\r\nO cÛdigo ser· gerado de qualquer maneira, porem a serial poder· ser incerta ou completamente fragmentada.."
+"Gerador UART baud rate: muito lento, divisor excedido. Use um cristal mais lento ou um baud rate maior.\r\n\r\nO c√≥digo ser√° gerado de qualquer maneira, porem a serial poder√° ser incerta ou completamente fragmentada.."
 
 "UART function used but not supported for this micro."
-"FunÁ„o UART È usada porem n„o suportada por este micro."
+"Fun√ß√£o UART √© usada porem n√£o suportada por este micro."
 
 "UART in use; pins %d and %d reserved for that."
 "UART em uso; pinos %d e %d reservado para isso."
@@ -752,16 +752,16 @@
 "UART tx"
 
 "Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for interpretable target."
-"Op n„o suportada no interpretador (algum ADC, PWM, UART, EEPROM, SFR..)."
+"Op n√£o suportada no interpretador (algum ADC, PWM, UART, EEPROM, SFR..)."
 
 "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
-"vari·vel '%s' n„o atribuÌda, p.e. com o comando MOV, comando ADD, etc.\r\n\r\nIsto È provavelmente um erro de programaÁ„o; ser· sempre zero."
+"vari√°vel '%s' n√£o atribu√≠da, p.e. com o comando MOV, comando ADD, etc.\r\n\r\nIsto √© provavelmente um erro de programa√ß√£o; ser√° sempre zero."
 
 "Variable for '%s' incorrectly assigned: %s."
-"Vari·vel para '%s' atribuÌda incorretamente : %s."
+"Vari√°vel para '%s' atribu√≠da incorretamente : %s."
 
 "Variable is interpolated into formatted string, but none is specified."
-"A vari·vel È interpolada dentro da string formatada, mas nenhuma È especificado."
+"A vari√°vel √© interpolada dentro da string formatada, mas nenhuma √© especificado."
 
 "Variable:"
 "Variavel:"
@@ -770,10 +770,10 @@
 "Write To SFR"
 
 "Zero baud rate not possible."
-"Zero Baud Rate n„o È possÌvel."
+"Zero Baud Rate n√£o √© poss√≠vel."
 
 "Zero cycle time not valid; resetting to 10 ms."
-"N„o È v·lido um tempo de ciclo 0; retornando a 10 ms."
+"N√£o √© v√°lido um tempo de ciclo 0; retornando a 10 ms."
 
 "\n\nI/O ASSIGNMENT:\n\n"
 "\n\nE/S ATRIBUIDA:\n\n"
@@ -791,7 +791,7 @@
 "entrada digital"
 
 "digital out"
-"saÌda digital"
+"sa√≠da digital"
 
 "general var"
 "var geral"
@@ -803,13 +803,13 @@
 "esta acionado := :"
 
 "no MCU selected"
-"Micro n„o selecionado"
+"Micro n√£o selecionado"
 
 "processor clock %.4f MHz"
 "clock do processador %.4f MHz"
 
 "retentive timer"
-"temporizador com memÛria"
+"temporizador com mem√≥ria"
 
 "saved var"
 "saved var"
@@ -821,7 +821,7 @@
 "ativar atraso"
 
 "x values in piecewise linear table must be strictly increasing."
-"Os valores X na Tabela de LinearizaÁ„o por Segmentos deve ser estritamente incrementais."
+"Os valores X na Tabela de Lineariza√ß√£o por Segmentos deve ser estritamente incrementais."
 
 "|/| Negated"
 "|/| Negado"

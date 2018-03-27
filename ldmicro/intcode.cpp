@@ -109,7 +109,7 @@ void IntDumpListing(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't dump intermediate code to '%s'."), outFile);
+        Error(_("Couldn't dump intermediate code to '%ls'."), u16(outFile));
     }
 
     int i;
@@ -863,7 +863,7 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
 {
     if(delay <= 0) {
-        Error("%s '%s': %s", _("Timer"), name, _("Delay cannot be zero or negative."));
+        Error(L"%ls '%ls': %ls", _("Timer"), u16(name), _("Delay cannot be zero or negative."));
         return -1;
     }
     long long int period=0, adjPeriod=0, maxPeriod=0;
@@ -878,33 +878,32 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
     if(period < 0) {
         Error(_("Delay cannot be zero or negative."));
     } else if(period <= 0)  {
-        char s1[1024];
-        sprintf(s1, "%s %s", _("Timer period too short (needs faster cycle time)."), _("Or increase timer period."));
-        char s2[1024];
-        sprintf(s2, _("Timer '%s'=%.3f ms."), name, 1.0*delay/1000);
-        char s3[1024];
-        sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
-        const char *s4 = _("Not available");
-        Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
+        wchar_t s1[1024];
+        swprintf_s(s1, L"%ls %ls", _("Timer period too short (needs faster cycle time)."), _("Or increase timer period."));
+        wchar_t s2[1024];
+        swprintf_s(s2, _("Timer '%ls'=%.3f ms."), u16(name), 1.0*delay/1000);
+        wchar_t s3[1024];
+        swprintf_s(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0*Prog.cycleTime/1000);
+        const wchar_t *s4 = _("Not available");
+        Error("%ls\n\r%ls %ls\r\n%ls", s1, s4, s2, s3);
     } else if(period+adjust <= 0) {
-        Error("%s '%s': %s", _("Timer"), name, _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
+        Error("%ls '%ls': %ls", _("Timer"), u16(name), _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
         // period = -1;
     } else if(period <= adjust) {
-        Error("%s '%s': %s", _("Timer"), name, _("Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"));
-        // period = -1;
+        Error("%ls '%ls': %ls", _("Timer"), u16(name), _("Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"));
     }
 
     if(((period > maxPeriod) || (adjPeriod > maxPeriod))
     && (Prog.mcu)
     && (Prog.mcu->portPrefix != 'L')) {
-        char s1[1024];
-        sprintf(s1, "%s %s", _("Timer period too long; (use a slower cycle time)."), _("Or decrease timer period."));
-        char s2[1024];
-        sprintf(s2, _("Timer 'T%s'=%10.0Lf s   needs %15lld PLC cycle times."), name, 1.0*delay/1000, period);
+        wchar_t s1[1024];
+        swprintf_s(s1, L"%ls %ls", _("Timer period too long; (use a slower cycle time)."), _("Or decrease timer period."));
+        wchar_t s2[1024];
+        swprintf_s(s2, _("Timer 'T%ls'=%10.0Lf s   needs %15lld PLC cycle times."), u16(name), 1.0*delay/1000, period);
         long double maxDelay = 1.0 * maxPeriod / 1000000 * Prog.cycleTime; // s
-        char s3[1024];
-        sprintf(s3, _("Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."), name, maxDelay, maxPeriod);
-        Error("%s\r\n%s\r\n%s", s1, s2, s3);
+        wchar_t s3[1024];
+        swprintf_s(s3, _("Timer 'T%ls'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."), u16(name), maxDelay, maxPeriod);
+        Error("%ls\r\n%ls\r\n%ls", s1, s2, s3);
         period = -1;
     }
     return (SDWORD)adjPeriod;
@@ -1062,7 +1061,7 @@ SDWORD hobatoi(const char *str)
         char dest[MAX_NAME_LEN];
         FrmStrToStr(dest, start_ptr);
         if( (strlen(dest) > 3) || (dest[0]!='\'') || (dest[2]!='\'') ) {
-            Error("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!", str);
+            Error(_("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!"), u16(str));
         }
         val = dest[1];
     } else {
@@ -1367,7 +1366,7 @@ static void InitTablesCircuit(int which, void *elem)
                 sovElement = SizeOfVar(nameTable);
                 if(sovElement < 1)
                     sovElement = 1;
-                Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable);
+                Comment(to_utf8(_("INIT TABLE: signed %d bit %s[%d] see above")).c_str(), 8*sovElement, nameTable);
             }
             break;
         }
@@ -2431,8 +2430,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_MOVE: {
             Comment(3, "ELEM_MOVE");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("Move instruction: '%s' not a valid destination."),
-                    l->d.move.dest);
+                Error(_("Move instruction: '%ls' not a valid destination."),
+                    u16(l->d.move.dest));
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2455,8 +2454,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_BIN2BCD: {
             Comment(3, "ELEM_BIN2BCD");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("BIN2BCD instruction: '%s' not a valid destination."),
-                    l->d.move.dest);
+                Error(_("BIN2BCD instruction: '%ls' not a valid destination."),
+                    u16(l->d.move.dest));
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2468,8 +2467,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_BCD2BIN: {
             Comment(3, "ELEM_BCD2BIN");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("BCD2BIN instruction: '%s' not a valid destination."),
-                    l->d.move.dest);
+                Error(_("BCD2BIN instruction: '%ls' not a valid destination."),
+                    u16(l->d.move.dest));
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2481,8 +2480,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_OPPOSITE: {
             Comment(3, "ELEM_OPPOSITE");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("OPPOSITE instruction: '%s' not a valid destination."),
-                    l->d.move.dest);
+                Error(_("OPPOSITE instruction: '%ls' not a valid destination."),
+                    u16(l->d.move.dest));
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2494,8 +2493,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_SWAP: {
             Comment(3, "ELEM_SWAP");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("SWAP instruction: '%s' not a valid destination."),
-                    l->d.move.dest);
+                Error(_("SWAP instruction: '%ls' not a valid destination."),
+                    u16(l->d.move.dest));
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2526,8 +2525,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             SetSizeOfVar(name, 4);
 
             if(IsNumber(l->d.move.dest)) {
-                Error(_("SRAND instruction: '%s' not a valid destination."),
-                    l->d.move.dest);
+                Error(_("SRAND instruction: '%ls' not a valid destination."),
+                    u16(l->d.move.dest));
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2713,8 +2712,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_NOT: intOp = INT_SET_VARIABLE_NOT;      Comment(3, "ELEM_NOT"); goto mathBit;
           mathBit: {
             if(IsNumber(l->d.math.dest)) {
-                Error(_("Math instruction: '%s' not a valid destination."),
-                    l->d.math.dest);
+                Error(_("Math instruction: '%ls' not a valid destination."),
+                    u16(l->d.math.dest));
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2728,7 +2727,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 || (which == ELEM_ROL) || (which == ELEM_ROR)
                 ) {
                     if((hobatoi(l->d.math.op2) < 0) || (SizeOfVar(l->d.math.op1)*8 < hobatoi(l->d.math.op2))) {
-                        Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1)*8);
+                        Error(_("Shift constant %ls=%d out of range of the '%ls' variable: 0 to %d inclusive."),
+                              u16(l->d.math.op2), hobatoi(l->d.math.op2), u16(l->d.math.op1), SizeOfVar(l->d.math.op1)*8);
                         CompileError();
                     }
                 }
@@ -2747,8 +2747,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_DIV: intOp = INT_SET_VARIABLE_DIVIDE;   Comment(3, "ELEM_DIV"); goto math;
           math: {
             if(IsNumber(l->d.math.dest)) {
-                Error(_("Math instruction: '%s' not a valid destination."),
-                    l->d.math.dest);
+                Error(_("Math instruction: '%ls' not a valid destination."),
+                    u16(l->d.math.dest));
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2851,7 +2851,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 } else {
                     r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
                     if(r < 0) {
-                        Error(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
+                        Error(_("GOTO: LABEL '%ls' not found!"), u16(l->d.doGoto.rung));
                         CompileError();
                     }
                 }
@@ -2865,14 +2865,14 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
                 int r;
                 if(IsNumber(l->d.doGoto.rung)) {
-                    Error(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
+                    Error(_("GOSUB: SUBPROG as number '%ls' not allowed !"), u16(l->d.doGoto.rung));
                     CompileError();
                     r = hobatoi(l->d.doGoto.rung);
                     r = min(r, Prog.numRungs+1);
                 } else {
                     r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
                     if(r < 0) {
-                        Error(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                        Error(_("GOSUB: SUBPROG '%ls' not found!"), u16(l->d.doGoto.rung));
                         CompileError();
                     }
                     r++;
@@ -2893,7 +2893,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             &&   (Prog.rungs[rungNow]->contents[1].which == ELEM_COMMENT)))) {
                 ;//;
             } else {
-                Error(_("SUBPROG: '%s' declaration must be single inside a rung %d"), l->d.doGoto.rung, rungNow+1);
+                Error(_("SUBPROG: '%ls' declaration must be single inside a rung %d"), u16(l->d.doGoto.rung), rungNow+1);
                 CompileError();
             }
             int r = -1;
@@ -2904,7 +2904,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_GOTO, l->d.doGoto.rung, "ENDSUB", r+1);
                 Op(INT_AllocKnownAddr, l->d.doGoto.rung, "SUBPROG", rungNow);
             } else {
-                Error(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.rung);
+                Error(_("SUBPROG: ENDSUB '%ls' not found!"), u16(l->d.doGoto.rung));
                 CompileError();
             }
             break;
@@ -2917,7 +2917,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             }
             if(r >= 0) {
             } else {
-                Error(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                Error(_("ENDSUB: SUBPROG '%ls' not found!"), u16(l->d.doGoto.rung));
                 CompileError();
             }
             Op(INT_RETURN, l->d.doGoto.rung, r);

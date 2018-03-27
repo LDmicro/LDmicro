@@ -109,6 +109,9 @@ add_definitions(
     "-DWIN32_LEAN_AND_MEAN"
     "-D_CRT_SECURE_NO_WARNINGS"
     "-D_CRT_SECURE_NO_DEPRECATE"
+
+    "-DUNICODE"
+    "-D_UNICODE"
     )
 
 set(LDMICRO_LIBS "")

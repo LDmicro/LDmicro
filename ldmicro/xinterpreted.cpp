@@ -50,8 +50,8 @@ int PlcIos_AppendAndGet(char *name)
 static int CheckRange(int value, const char *name)
 {
     if (value < 0 || value > 255) {
-        char msg[80];
-        sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
+        wchar_t msg[80];
+        swprintf_s(msg, _("%ls=%d: out of range for 8bits target"), u16(name), value);
         Error(msg);
     }
 
@@ -82,7 +82,7 @@ void CompileXInterpreted(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't write to '%s'"), outFile);
+        Error(_("Couldn't write to '%ls'"), u16(outFile));
         return;
     }
 
@@ -295,8 +295,8 @@ finishIf:
 
     fclose(f);
 
-    char str[MAX_PATH+500];
-    sprintf(str,
+    wchar_t str[MAX_PATH+500];
+    swprintf_s(str,
       _("Compile successful; wrote interpretable code to '%s'.\r\n\r\n"
         "You probably have to adapt the interpreter to your application. See "
         "the documentation."), outFile);

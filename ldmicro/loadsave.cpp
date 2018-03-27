@@ -693,8 +693,8 @@ BOOL LoadProjectFromFile(char *filename)
                 }
             }
             if(i == NUM_SUPPORTED_MCUS) {
-                Error(_("Microcontroller '%s' not supported.\r\n\r\n"
-                    "Defaulting to no selected MCU."), line+6);
+                Error(_("Microcontroller '%ls' not supported.\r\n\r\n"
+                    "Defaulting to no selected MCU."), u16(line+6));
             }
           }
         } else if(strcmp(line, "PROGRAM")==0) {
@@ -737,7 +737,7 @@ failed:
     NewProgram();
     Error(_("File format error; perhaps this program is for a newer version "
             "of LDmicro?"));
-    Error("Error in RUNG %d. See error below %s",rung+1, line);
+    Error(_("Error in RUNG %d. See error below %ls"),rung+1, u16(line));
     return FALSE;
 }
 

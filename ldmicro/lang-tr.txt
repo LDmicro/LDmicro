@@ -1,11 +1,11 @@
 "  Name                       | Type               | Pin\n"
-"  İsim                       | Tipi               | Bacak\n"
+"  Ä°sim                       | Tipi               | Bacak\n"
 
 " - (not yet saved)"
-" - (değişiklikler kaydedilmedi)"
+" - (deÄŸiÅŸiklikler kaydedilmedi)"
 
 "!!!too long!!!"
-"!!!çok uzun!!"
+"!!!Ã§ok uzun!!"
 
 "&About..."
 "&Bilgi..."
@@ -17,22 +17,22 @@
 "&Derle\tF5"
 
 "&Delete Selected Element\tDel"
-"&Seçili Elemanı Sil\tDel"
+"&SeÃ§ili ElemanÄ± Sil\tDel"
 
 "&Edit"
-"&Düzen"
+"&DÃ¼zen"
 
 "&Export As Text...\tCtrl+E"
-"&Metin Dosyası Olarak Kaydet\tCtrl+E"
+"&Metin DosyasÄ± Olarak Kaydet\tCtrl+E"
 
 "&File"
 "&Dosya"
 
 "&Halt Simulation\tCtrl+H"
-"Simülasyonu Durdur\tCtrl+H"
+"SimÃ¼lasyonu Durdur\tCtrl+H"
 
 "&Help"
-"&Yardım"
+"&YardÄ±m"
 
 "&Insert Clear Bit In SFR"
 "&Insert Clear Bit In SFR"
@@ -56,25 +56,25 @@
 "K&omutlar"
 
 "&MCU Parameters..."
-"&İşlemci Ayarları..."
+"&Ä°ÅŸlemci AyarlarÄ±..."
 
 "&Manual...\tF1"
-"&Kitapçık...\tF1"
+"&KitapÃ§Ä±k...\tF1"
 
 "&Microcontroller"
-"İşlemci Seçimi"
+"Ä°ÅŸlemci SeÃ§imi"
 
 "&New\tCtrl+N"
 "&Yeni Dosya\tCtrl+N"
 
 "&Open...\tCtrl+O"
-"&Dosya Aç\tCtrl+O"
+"&Dosya AÃ§\tCtrl+O"
 
 "&Redo\tCtrl+Y"
-"&Değişikliği Tekrarla\tCtrl+Y"
+"&DeÄŸiÅŸikliÄŸi Tekrarla\tCtrl+Y"
 
 "&Save\tCtrl+S"
-"&Dosyayı Kaydet\tCtrl+S"
+"&DosyayÄ± Kaydet\tCtrl+S"
 
 "&Settings"
 "&Ayarlar"
@@ -86,16 +86,16 @@
 "&Undo\tCtrl+Z or Alt+Backspace"
 
 "&Undo\tCtrl+Z"
-"Değişikliği Geri Al\tCtrl+Z"
+"DeÄŸiÅŸikliÄŸi Geri Al\tCtrl+Z"
 
 "'Closed' if:"
-"'Kapalı' Eğer:"
+"'KapalÄ±' EÄŸer:"
 
 "( ) Normal"
 "( ) Normal"
 
 "(/) Negated"
-"(/) Terslenmiş"
+"(/) TerslenmiÅŸ"
 
 "(R) Reset-Only"
 "(R) Reset"
@@ -104,13 +104,13 @@
 "(S) Set"
 
 "(no microcontroller)"
-"(işlemci yok)"
+"(iÅŸlemci yok)"
 
 "(no pin)"
 "(Bacak Yok)"
 
 "(not assigned)"
-"(tanımlı değil)"
+"(tanÄ±mlÄ± deÄŸil)"
 
 "--add comment here--"
 "--aciklamanizi buraya ekleyiniz--"
@@ -131,49 +131,49 @@
 "<UART Yok!>"
 
 "<not an I/O!>"
-"<G/Ç değil>"
+"<G/Ã‡ deÄŸil>"
 
 "ANSI C target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
-"ANSI C hedef özellikleri desteklemiyor.(UART, ADC, EEPROM). İlgili komutlar işlenmeyecek."
+"ANSI C hedef Ã¶zellikleri desteklemiyor.(UART, ADC, EEPROM). Ä°lgili komutlar iÅŸlenmeyecek."
 
 "Add"
 "Topla"
 
 "Assign:"
-"Değeri:"
+"DeÄŸeri:"
 
 "Bad escape '\\%c'"
-"Yanlış ESC komutu '\\%c'"
+"YanlÄ±ÅŸ ESC komutu '\\%c'"
 
 "Bad escape: correct form is \\xAB."
-"Yanlış ESC komutu: doğru şekil = \\xAB."
+"YanlÄ±ÅŸ ESC komutu: doÄŸru ÅŸekil = \\xAB."
 
 "Bad use of quotes: <%s>"
-"Tırnaklar yanlış kullanılmış: <%s>"
+"TÄ±rnaklar yanlÄ±ÅŸ kullanÄ±lmÄ±ÅŸ: <%s>"
 
 "Bitwise"
 "Bitwise"
 
 "Can only assign pin number to input/output pins (Xname or Yname or Aname)."
-"Sadece giriş/çıkış uçları için bacak tanımlaması yapılabilir. (XName veya YName veya AName)."
+"Sadece giriÅŸ/Ã§Ä±kÄ±ÅŸ uÃ§larÄ± iÃ§in bacak tanÄ±mlamasÄ± yapÄ±labilir. (XName veya YName veya AName)."
 
 "Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code."
-"ANSI C hedef için G/Ç tanımlaması yapılamadı. Dosyayı derleyerek oluşturulan kaynak kodundaki yorumları inceleyiniz."
+"ANSI C hedef iÃ§in G/Ã‡ tanÄ±mlamasÄ± yapÄ±lamadÄ±. DosyayÄ± derleyerek oluÅŸturulan kaynak kodundaki yorumlarÄ± inceleyiniz."
 
 "Can't specify I/O assignment for Netzer!"
 "Can't specify I/O assignment for Netzer!"
 
 "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."
-"Hedef için G/Ç tanımı yapılamadı. Derleyicinin kullanım kitapçığını inceleyiniz."
+"Hedef iÃ§in G/Ã‡ tanÄ±mÄ± yapÄ±lamadÄ±. Derleyicinin kullanÄ±m kitapÃ§Ä±ÄŸÄ±nÄ± inceleyiniz."
 
 "Cancel"
-"Vazgeç"
+"VazgeÃ§"
 
 "Cannot delete rung; program must have at least one rung."
-"Bu satır silinemez. Programda en az bir tane satır (Rung) olmalıdır."
+"Bu satÄ±r silinemez. Programda en az bir tane satÄ±r (Rung) olmalÄ±dÄ±r."
 
 "Circular Counter"
-"Dairesel Sayıcı"
+"Dairesel SayÄ±cÄ±"
 
 "Clear Bit In SFR"
 "Clear Bit In SFR"
@@ -182,16 +182,16 @@
 "Bobin"
 
 "Comment"
-"Açıklama"
+"AÃ§Ä±klama"
 
 "Compile &As..."
-"Farklı Derle..."
+"FarklÄ± Derle..."
 
 "Compile ANSIC"
 "Compile ANSIC"
 
 "Compile Successful"
-"Derleme Başarılı"
+"Derleme BaÅŸarÄ±lÄ±"
 
 "Compile To"
 "Derlenecek Yer"
@@ -200,76 +200,76 @@
 "Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."
 
 "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
-"Derleme başarıyla tamamlandı. C kaynak kodu '%s' dosyasına yazıldı.\r\n\r\nBu dosya tam bir C dosyası değildir. G/Ç rutinlerini kendiniz sağlamalısınız. Dosyayı incelemeniz faydalı olacaktır."
+"Derleme baÅŸarÄ±yla tamamlandÄ±. C kaynak kodu '%s' dosyasÄ±na yazÄ±ldÄ±.\r\n\r\nBu dosya tam bir C dosyasÄ± deÄŸildir. G/Ã‡ rutinlerini kendiniz saÄŸlamalÄ±sÄ±nÄ±z. DosyayÄ± incelemeniz faydalÄ± olacaktÄ±r."
 
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
-"Derleme başarılı. AVR için derlenen '%s' IHEX dosyasına kaydedildi.\r\n\r\n MİB konfigürasyonunu ayarlamayı unutmayın. Bu işlem otomatik olarak yapılmamaktadır."
+"Derleme baÅŸarÄ±lÄ±. AVR iÃ§in derlenen '%s' IHEX dosyasÄ±na kaydedildi.\r\n\r\n MÄ°B konfigÃ¼rasyonunu ayarlamayÄ± unutmayÄ±n. Bu iÅŸlem otomatik olarak yapÄ±lmamaktadÄ±r."
 
 "Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
-"Derleme başarıyla yapıldı; PIC16 için IHEX dosyası '%s' dosyasına kaydedildi.\r\n\r\nAyarlar: (PIC konfigürasyonu) kristal osilatör, BOD aktif, LVP pasif, PWRT aktif, tüm kod koruması kapalı."
+"Derleme baÅŸarÄ±yla yapÄ±ldÄ±; PIC16 iÃ§in IHEX dosyasÄ± '%s' dosyasÄ±na kaydedildi.\r\n\r\nAyarlar: (PIC konfigÃ¼rasyonu) kristal osilatÃ¶r, BOD aktif, LVP pasif, PWRT aktif, tÃ¼m kod korumasÄ± kapalÄ±."
 
 "Used %d/%d words of program flash (chip %d%% full)."
-"PIC hafızasının %d/%d kelimesi kullanıldı. (Hafıza %d%% dolu)."
+"PIC hafÄ±zasÄ±nÄ±n %d/%d kelimesi kullanÄ±ldÄ±. (HafÄ±za %d%% dolu)."
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
-"Derleme başarıyla tamamlandı. Kod '%s' dosyasına yazıldı.\r\n\r\nDerleyiciyi uygulamanıza göre değiştirmeniz gerekebilir. Geniş bilgi için LDMicro belgelerine başvurabilirsiniz."
+"Derleme baÅŸarÄ±yla tamamlandÄ±. Kod '%s' dosyasÄ±na yazÄ±ldÄ±.\r\n\r\nDerleyiciyi uygulamanÄ±za gÃ¶re deÄŸiÅŸtirmeniz gerekebilir. GeniÅŸ bilgi iÃ§in LDMicro belgelerine baÅŸvurabilirsiniz."
 
 "Constant %d out of range: -32768 to 32767 inclusive."
-"%d sabiti aralığın dışında: -32768 ile 32767 arasında olmalıdır."
+"%d sabiti aralÄ±ÄŸÄ±n dÄ±ÅŸÄ±nda: -32768 ile 32767 arasÄ±nda olmalÄ±dÄ±r."
 
 "Contacts"
 "Kontak"
 
 "Couldn't open '%s'."
-"'%s' dosyasına kayıt yapılamıyor."
+"'%s' dosyasÄ±na kayÄ±t yapÄ±lamÄ±yor."
 
 "Couldn't open '%s'\n"
-"'%s' dosyası açılamadı\n"
+"'%s' dosyasÄ± aÃ§Ä±lamadÄ±\n"
 
 "Couldn't open file '%s'"
-"'%s' dosyası açılamadı."
+"'%s' dosyasÄ± aÃ§Ä±lamadÄ±."
 
 "Couldn't write to '%s'"
-"'%s' dosyasına kayıt yapılamıyor."
+"'%s' dosyasÄ±na kayÄ±t yapÄ±lamÄ±yor."
 
 "Couldn't write to '%s'."
-"'%s' dosyasına yazılamadı."
+"'%s' dosyasÄ±na yazÄ±lamadÄ±."
 
 "Count Down"
-"Aşağı Say"
+"AÅŸaÄŸÄ± Say"
 
 "Count Up"
-"Yukarı Say"
+"YukarÄ± Say"
 
 "Count:"
 "Adet:"
 
 "Counter"
-"Sayıcı"
+"SayÄ±cÄ±"
 
 "Crystal Frequency (MHz):"
-"Kristal Frekansı (MHz):"
+"Kristal FrekansÄ± (MHz):"
 
 "Cycle Time (ms):"
-"Çevrim Süresi (ms):"
+"Ã‡evrim SÃ¼resi (ms):"
 
 "Cycle time too fast; increase cycle time, or use faster crystal."
-"Çevrim süresi çok kısa. Süreyi yada kristal frekansını artırınız."
+"Ã‡evrim sÃ¼resi Ã§ok kÄ±sa. SÃ¼reyi yada kristal frekansÄ±nÄ± artÄ±rÄ±nÄ±z."
 
 "Cycle time too slow; decrease cycle time, or use slower crystal."
-"Çevrim süresi çok uzun. Süreyi yada kristal frekansını azaltınız.."
+"Ã‡evrim sÃ¼resi Ã§ok uzun. SÃ¼reyi yada kristal frekansÄ±nÄ± azaltÄ±nÄ±z.."
 
 "D&elete Rung\tShift+Del"
-"Seçili Satırı Sil\tShift+Del"
+"SeÃ§ili SatÄ±rÄ± Sil\tShift+Del"
 
 "Delay (ms):"
 "Gecikme (ms):"
 
 "Delay cannot be zero or negative."
-"Gecikme sıfır yada eksi değer olamaz."
+"Gecikme sÄ±fÄ±r yada eksi deÄŸer olamaz."
 
 "Delay too long; maximum is 2**31 us."
-"Gecikme çok fazla. En fazla 2**31 us olabilir."
+"Gecikme Ã§ok fazla. En fazla 2**31 us olabilir."
 
 "Dest variable of write string instruction must be located at IO register."
 "Dest variable of write string instruction must be located at IO register."
@@ -284,37 +284,37 @@
 "Display"
 
 "Divide"
-"Böl"
+"BÃ¶l"
 
 "Division by zero; halting simulation"
-"Sıfıra bölüm; Simülasyon durduruldu."
+"SÄ±fÄ±ra bÃ¶lÃ¼m; SimÃ¼lasyon durduruldu."
 
 "Duty cycle var:"
-"Pals Genişliği Değeri:"
+"Pals GeniÅŸliÄŸi DeÄŸeri:"
 
 "E&xit"
-"Çıkış"
+"Ã‡Ä±kÄ±ÅŸ"
 
 "Edit table of ASCII values like a string"
-"ASCII değer tablosunu karakter dizisi gibi düzenle."
+"ASCII deÄŸer tablosunu karakter dizisi gibi dÃ¼zenle."
 
 "Empty row; delete it or add instructions before compiling."
-"Satır boş; Satırı silmeli yada komut eklemelisiniz."
+"SatÄ±r boÅŸ; SatÄ±rÄ± silmeli yada komut eklemelisiniz."
 
 "Empty textbox; not permitted."
-"Yazı kutusu boş olamaz"
+"YazÄ± kutusu boÅŸ olamaz"
 
 "Error"
 "Hata"
 
 "Export As Text"
-"Yazı dosyası olarak ver"
+"YazÄ± dosyasÄ± olarak ver"
 
 "File format error; perhaps this program is for a newer version of LDmicro?"
-"Dosya biçimi hatası. Açmaya çalıştığınız dosya ya LDMicro dosyası değil yada yeni bir sürüm ile yazılmış."
+"Dosya biÃ§imi hatasÄ±. AÃ§maya Ã§alÄ±ÅŸtÄ±ÄŸÄ±nÄ±z dosya ya LDMicro dosyasÄ± deÄŸil yada yeni bir sÃ¼rÃ¼m ile yazÄ±lmÄ±ÅŸ."
 
 "Formatted String Over UART"
-"UART Üzerinden Biçimlendirilmiş Karakter Dizisi"
+"UART Ãœzerinden BiÃ§imlendirilmiÅŸ Karakter Dizisi"
 
 "Formatted String"
 "Formatted String"
@@ -323,37 +323,37 @@
 "Frekans (Hz):"
 
 "I/O Pin Assignment"
-"G/Ç Bacak Tanımı"
+"G/Ã‡ Bacak TanÄ±mÄ±"
 
 "I/O Pin"
-"G/Ç Bacakları"
+"G/Ã‡ BacaklarÄ±"
 
 "INT input"
 "INT input"
 
 "If Equals"
-"Eşitse"
+"EÅŸitse"
 
 "If Greater Than or Equal To"
-"Büyük yada Eşitse"
+"BÃ¼yÃ¼k yada EÅŸitse"
 
 "If Greater Than"
-"Büyükse"
+"BÃ¼yÃ¼kse"
 
 "If Less Than or Equal To"
-"Küçük yada Eşitse"
+"KÃ¼Ã§Ã¼k yada EÅŸitse"
 
 "If Less Than"
-"Küçükse"
+"KÃ¼Ã§Ã¼kse"
 
 "If Not Equals"
-"Eşit Değilse"
+"EÅŸit DeÄŸilse"
 
 "Index:"
 "Liste:"
 
 "Input pin"
-"Giriş Bacağı"
+"GiriÅŸ BacaÄŸÄ±"
 
 "Insert &Contacts\tC"
 "Kontak Eekle\tC"
@@ -362,7 +362,7 @@
 "&UART'dan Alma ekle"
 
 "Insert &UART Send"
-"&UART'dan Gönderme ekle"
+"&UART'dan GÃ¶nderme ekle"
 
 "Insert -+        +- Open-Circuit"
 "Insert -+        +- Open-Circuit"
@@ -371,55 +371,55 @@
 "Insert -+------+- Short-Circuit"
 
 "Insert A/D Converter Read\tP"
-"A/D Çeviriciden Oku ekle\tP"
+"A/D Ã‡eviriciden Oku ekle\tP"
 
 "Insert ADD (16-bit Integer Add)\t+"
 "ADD (16 bit Toplama)ekle\t+"
 
 "Insert CT&C (Count Circular)\tJ"
-"CT&C ekle (Döngüsel Sayıcı)\tJ"
+"CT&C ekle (DÃ¶ngÃ¼sel SayÄ±cÄ±)\tJ"
 
 "Insert CT&D (Count Down)\tI"
-"CT&D ekle (Aşağı Sayıcı)\tI"
+"CT&D ekle (AÅŸaÄŸÄ± SayÄ±cÄ±)\tI"
 
 "Insert CT&U (Count Up)\tU"
-"CT&U ekle (Yukarı Sayıcı)\tU"
+"CT&U ekle (YukarÄ± SayÄ±cÄ±)\tU"
 
 "Insert Co&mment\t;"
-"Açıklama Ekle\t;"
+"AÃ§Ä±klama Ekle\t;"
 
 "Insert Coi&l\tL"
 "Bobin ek&le\tL"
 
 "Insert DIV (16-bit Integer Divide)\tD"
-"DIV (16 bit bölme) ekle\tD"
+"DIV (16 bit bÃ¶lme) ekle\tD"
 
 "Insert EQU (Compare for Equals)\t="
-"EQU ekle (Eşitlik Kontrolü)\t="
+"EQU ekle (EÅŸitlik KontrolÃ¼)\t="
 
 "Insert Formatted String Over UART"
-"UART Üzerinden Biçimlendirilmiş Kelime Ekle"
+"UART Ãœzerinden BiÃ§imlendirilmiÅŸ Kelime Ekle"
 
 "Insert GEQ (Compare for Greater Than or Equal)\t."
-"GEQ ekle (Büyük yada Eşit Kontrolü)\t."
+"GEQ ekle (BÃ¼yÃ¼k yada EÅŸit KontrolÃ¼)\t."
 
 "Insert GRT (Compare for Greater Than)\t>"
-"GRT ekle (Büyük  Kontrolü)\t>"
+"GRT ekle (BÃ¼yÃ¼k  KontrolÃ¼)\t>"
 
 "Insert LEQ (Compare for Less Than or Equal)\t,"
-"LEQ ekle (Küçük yada Eşit Kontrolü)\t,"
+"LEQ ekle (KÃ¼Ã§Ã¼k yada EÅŸit KontrolÃ¼)\t,"
 
 "Insert LES (Compare for Less Than)\t<"
-"LES ekle (Küçük Kontrolü)\t<"
+"LES ekle (KÃ¼Ã§Ã¼k KontrolÃ¼)\t<"
 
 "Insert Look-Up Table"
-"Değer Tablosu ekle"
+"DeÄŸer Tablosu ekle"
 
 "Insert MOV (Move)\tM"
-"MOV (Taşı) ekle\tM"
+"MOV (TaÅŸÄ±) ekle\tM"
 
 "Insert MUL (16-bit Integer Multiply)\t*"
-"MUL (16 bit çarpma) ekle\t*"
+"MUL (16 bit Ã§arpma) ekle\t*"
 
 "Insert Make Persistent"
 "EPROM'da Sakla ekle"
@@ -428,49 +428,49 @@
 "Insert Master Control Break"
 
 "Insert Master Control Relay"
-"Ana Kontrol Rölesi ekle"
+"Ana Kontrol RÃ¶lesi ekle"
 
 "Insert NEQ (Compare for Not Equals)"
-"NEQ ekle (Farklılık Kontrolü)"
+"NEQ ekle (FarklÄ±lÄ±k KontrolÃ¼)"
 
 "Insert NEQ (Compare for Not Equals)\t!"
 "Insert NEQ (Compare for Not Equals)\t!"
 
 "Insert OSF (One Shot Falling)\t&\\"
-"OSF ekle (Düşen Kenar)\t&\\"
+"OSF ekle (DÃ¼ÅŸen Kenar)\t&\\"
 
 "Insert OSR (One Shot Rising)\t&/"
-"OSR ekle (Yükselen Kenar)\t&/"
+"OSR ekle (YÃ¼kselen Kenar)\t&/"
 
 "Insert Open-Circuit"
-"Açık Devre ekle"
+"AÃ§Ä±k Devre ekle"
 
 "Insert Piecewise Linear"
-"Parçalı Lineer ekle"
+"ParÃ§alÄ± Lineer ekle"
 
 "Insert R&ES (Counter/RTO Reset)\tE"
-"R&ES ekle (RTO/Sayıcı Sıfırlaması)\tE"
+"R&ES ekle (RTO/SayÄ±cÄ± SÄ±fÄ±rlamasÄ±)\tE"
 
 "Insert R&TO (Retentive Delayed Turn On)\tT"
-"R&TO ekle (Süre Sayan Turn-On Gecikme)\tT"
+"R&TO ekle (SÃ¼re Sayan Turn-On Gecikme)\tT"
 
 "Insert Rung &After\tShift+V"
-"Alt kısma satır (Rung) ekle\tShift+V"
+"Alt kÄ±sma satÄ±r (Rung) ekle\tShift+V"
 
 "Insert Rung &Before\tShift+6"
-"Üst kısma satır (Rung) ekle\tShift+6"
+"Ãœst kÄ±sma satÄ±r (Rung) ekle\tShift+6"
 
 "Insert SUB (16-bit Integer Subtract)\t-"
-"SUB (16 bit çıkarma) ekle\t-"
+"SUB (16 bit Ã§Ä±karma) ekle\t-"
 
 "Insert Set PWM Output"
-"PWM Çıkışı Akit Et ekle"
+"PWM Ã‡Ä±kÄ±ÅŸÄ± Akit Et ekle"
 
 "Insert Shift Register"
 "Shift Register ekle"
 
 "Insert Short-Circuit"
-"Kapalı Devre ekle"
+"KapalÄ± Devre ekle"
 
 "Insert T&ON (Delayed Turn On)\tO"
 "T&ON ekle (Turn-On Gecikme)\tO"
@@ -485,28 +485,28 @@
 "Insert _/OSR/\\_ (One Shot Rising)\t&/"
 
 "Internal Relay"
-"Dahili Röle"
+"Dahili RÃ¶le"
 
 "Internal error relating to PIC paging; make program smaller or reshuffle it."
-"PIC sayfalaması ile ilgili dahili hata oluştu. Programı kısaltınız yada değiştiriniz."
+"PIC sayfalamasÄ± ile ilgili dahili hata oluÅŸtu. ProgramÄ± kÄ±saltÄ±nÄ±z yada deÄŸiÅŸtiriniz."
 
 "Internal limit exceeded (number of vars)"
-"Dahili sınır aşıldı (Değişken Sayısı)"
+"Dahili sÄ±nÄ±r aÅŸÄ±ldÄ± (DeÄŸiÅŸken SayÄ±sÄ±)"
 
 "Internal relay '%s' never assigned; add its coil somewhere."
-"'%s' dahili rölesine değer verilmedi, Bu röle için bir bobin ekleyiniz."
+"'%s' dahili rÃ¶lesine deÄŸer verilmedi, Bu rÃ¶le iÃ§in bir bobin ekleyiniz."
 
 "LDmicro - Program Editor"
-"LDmicro – Program Editörü "
+"LDmicro â€“ Program EditÃ¶rÃ¼ "
 
 "LDmicro - Simulation (Running)"
-"LDmicro - Simülasyon (Çalışıyor)"
+"LDmicro - SimÃ¼lasyon (Ã‡alÄ±ÅŸÄ±yor)"
 
 "LDmicro - Simulation (Stopped)"
-"LDmicro - Simülasyon (Durduruldu)"
+"LDmicro - SimÃ¼lasyon (Durduruldu)"
 
 "LDmicro Error"
-"LDmicro Hatası"
+"LDmicro HatasÄ±"
 
 "LDmicro Warning"
 "LDmicro Warning"
@@ -518,10 +518,10 @@
 "MCU Crystal Frequency (MHz):"
 
 "MCU Port"
-"İşlemci Portu"
+"Ä°ÅŸlemci Portu"
 
 "Make &Negated\tN"
-"Terslenmiş Yap\tN"
+"TerslenmiÅŸ Yap\tN"
 
 "Make &Reset-Only\tR"
 "Reset Yap\tR"
@@ -530,85 +530,85 @@
 "Set Yap\tS"
 
 "Make Norm&al\tA"
-"Normale Çevir\tA"
+"Normale Ã‡evir\tA"
 
 "Make Persistent"
 "EEPROM'da Sakla"
 
 "Math instruction: '%s' not a valid destination."
-"Matematik Komutu: '%s'geçerli bir hedef adresi değil."
+"Matematik Komutu: '%s'geÃ§erli bir hedef adresi deÄŸil."
 
 "Max value:"
-"En Yüksek Değer:"
+"En YÃ¼ksek DeÄŸer:"
 
 "Maximal one format placeholder is allowed in write string instruction."
 "Maximal one format placeholder is allowed in write string instruction."
 
 "Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."
-"'%s' desteklenen bir işlemci değil.\r\n\r\nİşlemci ayarı işlemci yok şeklinde değiştirilmiştir."
+"'%s' desteklenen bir iÅŸlemci deÄŸil.\r\n\r\nÄ°ÅŸlemci ayarÄ± iÅŸlemci yok ÅŸeklinde deÄŸiÅŸtirilmiÅŸtir."
 
 "Move Selected Rung &Down\tAlt+Down"
 "Move Selected Rung &Down\tAlt+Down"
 
 "Move Selected Rung &Down\tShift+Down"
-"Seçili satırı alta taşı\tShift+Down"
+"SeÃ§ili satÄ±rÄ± alta taÅŸÄ±\tShift+Down"
 
 "Move Selected Rung &Up\tAlt+Up"
 "Move Selected Rung &Up\tAlt+Up"
 
 "Move Selected Rung &Up\tShift+Up"
-"Seçili satırı üste taşı\tShift+Up"
+"SeÃ§ili satÄ±rÄ± Ã¼ste taÅŸÄ±\tShift+Up"
 
 "Move instruction: '%s' not a valid destination."
-"Taşıma Komutu: '%s' geçerli bir hedef adresi değil."
+"TaÅŸÄ±ma Komutu: '%s' geÃ§erli bir hedef adresi deÄŸil."
 
 "Move"
-"Taşı"
+"TaÅŸÄ±"
 
 "Multiple escapes (\\0-9) present in format string, not allowed."
-"Biçimli karakter dizisinde birden çok escape kodu var(\\0-9)."
+"BiÃ§imli karakter dizisinde birden Ã§ok escape kodu var(\\0-9)."
 
 "Multiply"
-"Çarp"
+"Ã‡arp"
 
 "Must assign pins for all ADC inputs (name '%s')."
-"Tüm ADC girişlerinin bacakları belirtilmelidir (ADC '%s')."
+"TÃ¼m ADC giriÅŸlerinin bacaklarÄ± belirtilmelidir (ADC '%s')."
 
 "Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."
-"Tüm G/Ç uçları için bacaklar belirtilmelidir.\r\n\r\n'%s' ucuna değer verilmemiş."
+"TÃ¼m G/Ã‡ uÃ§larÄ± iÃ§in bacaklar belirtilmelidir.\r\n\r\n'%s' ucuna deÄŸer verilmemiÅŸ."
 
 "Must choose a target microcontroller before compiling."
-"Derlemeden önce işlemci seçilmelidir."
+"Derlemeden Ã¶nce iÅŸlemci seÃ§ilmelidir."
 
 "Name"
-"İsim"
+"Ä°sim"
 
 "Name:"
-"İsim:"
+"Ä°sim:"
 
 "No ADC or ADC not supported for selected micro."
-"Bu işlemcide ADC yok yada ADC desteklenmiyor."
+"Bu iÅŸlemcide ADC yok yada ADC desteklenmiyor."
 
 "No ADC or ADC not supported for this micro."
-"Bu işlemcide ADC yok yada ADC desteklenmiyor."
+"Bu iÅŸlemcide ADC yok yada ADC desteklenmiyor."
 
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
-"İşlemci seçmediniz.\r\n\r\n G/Ç uçlarını seçmeden önce Ayarlar menüsünden işlemci seçiniz."
+"Ä°ÅŸlemci seÃ§mediniz.\r\n\r\n G/Ã‡ uÃ§larÄ±nÄ± seÃ§meden Ã¶nce Ayarlar menÃ¼sÃ¼nden iÅŸlemci seÃ§iniz."
 
 "No opcodes found."
 "No opcodes found."
 
 "No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
-"Seri iletişim komutu kullanmadınız. Hızı ayarlamadan önce komut kullanmalısınız.\r\n\r\n"
+"Seri iletiÅŸim komutu kullanmadÄ±nÄ±z. HÄ±zÄ± ayarlamadan Ã¶nce komut kullanmalÄ±sÄ±nÄ±z.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
-"Biçimlendirilmiş karakter kümesine değişken atanmamış ama değişken ismi belirtilmiş. Ya değişken ismini belirtiniz yada '\\-3' gibi bir değer veriniz.."
+"BiÃ§imlendirilmiÅŸ karakter kÃ¼mesine deÄŸiÅŸken atanmamÄ±ÅŸ ama deÄŸiÅŸken ismi belirtilmiÅŸ. Ya deÄŸiÅŸken ismini belirtiniz yada '\\-3' gibi bir deÄŸer veriniz.."
 
 "Not a reasonable size for a shift register."
-"Shift Register için kabul edilebilir değer değil."
+"Shift Register iÃ§in kabul edilebilir deÄŸer deÄŸil."
 
 "Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details."
-"Parçalı doğrusal arama tablosunda sayısal hata.\r\n\r\nDetaylar için yardım menüsünü inceleyiniz."
+"ParÃ§alÄ± doÄŸrusal arama tablosunda sayÄ±sal hata.\r\n\r\nDetaylar iÃ§in yardÄ±m menÃ¼sÃ¼nÃ¼ inceleyiniz."
 
 "OK"
 "Tamam"
@@ -617,58 +617,58 @@
 "Open Text in notepad\tF3"
 
 "Out of memory; simplify program or choose microcontroller with more memory."
-"İŞlemci hafızası doldu; Programı kısaltınız yada daha yüksek hafızası olan bir işlemci seçiniz."
+"Ä°Ålemci hafÄ±zasÄ± doldu; ProgramÄ± kÄ±saltÄ±nÄ±z yada daha yÃ¼ksek hafÄ±zasÄ± olan bir iÅŸlemci seÃ§iniz."
 
 "Output pin"
-"Çıkış Bacağı"
+"Ã‡Ä±kÄ±ÅŸ BacaÄŸÄ±"
 
 "PLC Configuration"
-"PLC Ayarları"
+"PLC AyarlarÄ±"
 
 "PLC Cycle Time (ms):"
 "PLC Cycle Time (ms):"
 
 "PWM frequency too fast."
-"PWM frekansı çok hızlı."
+"PWM frekansÄ± Ã§ok hÄ±zlÄ±."
 
 "PWM frequency too slow."
-"PWM frekansı çok yavaş."
+"PWM frekansÄ± Ã§ok yavaÅŸ."
 
 "PWM function used but not supported for this micro."
-"Komut kullanmışsınız, ancak PWM işlemleri bu işlemci için desteklenmiyor."
+"Komut kullanmÄ±ÅŸsÄ±nÄ±z, ancak PWM iÅŸlemleri bu iÅŸlemci iÃ§in desteklenmiyor."
 
 "PWM in use; pin %d reserved for that."
-"PWM Kullanımda; %d bacağı bunun için ayrılmıştır. Siz kullanamazsınız.."
+"PWM KullanÄ±mda; %d bacaÄŸÄ± bunun iÃ§in ayrÄ±lmÄ±ÅŸtÄ±r. Siz kullanamazsÄ±nÄ±z.."
 
 "PWM out"
-"PWM Çıkışı"
+"PWM Ã‡Ä±kÄ±ÅŸÄ±"
 
 "Piecewise Linear Table"
-"Parçalı Lineer Tablo"
+"ParÃ§alÄ± Lineer Tablo"
 
 "Piecewise linear lookup table with zero elements!"
-"Parçalı doğrusal arama tablosunda değer yok!"
+"ParÃ§alÄ± doÄŸrusal arama tablosunda deÄŸer yok!"
 
 "Pin on MCU"
-"MİB Bacağı"
+"MÄ°B BacaÄŸÄ±"
 
 "Pin on Processor"
-"İşlemci Bacak No"
+"Ä°ÅŸlemci Bacak No"
 
 "Please select a micro with a UART.\r\n\r\n"
-"Lütfen UART olan bir MİB seçiniz.\r\n\r\n"
+"LÃ¼tfen UART olan bir MÄ°B seÃ§iniz.\r\n\r\n"
 
 "Points:"
-"Değer Sayısı:"
+"DeÄŸer SayÄ±sÄ±:"
 
 "Pulse"
 "Pulse"
 
 "RTO: variable can only be used for RES elsewhere"
-"RTO: Değişken sadece RES için kullanılabilir"
+"RTO: DeÄŸiÅŸken sadece RES iÃ§in kullanÄ±labilir"
 
 "Read A/D Converter"
-"A/D Çeviriciyi Oku"
+"A/D Ã‡eviriciyi Oku"
 
 "Read From SFR"
 "Read From SFR"
@@ -686,46 +686,46 @@
 "Release..."
 
 "Rename I/O from default name ('%s') before assigning MCU pin."
-"('%s') öntanımlı isimdir. MİB bacağı tanımlamadan önce bu ismi değiştiriniz."
+"('%s') Ã¶ntanÄ±mlÄ± isimdir. MÄ°B bacaÄŸÄ± tanÄ±mlamadan Ã¶nce bu ismi deÄŸiÅŸtiriniz."
 
 "Reset"
 "Reset"
 
 "Retentive Turn-On Delay"
-"Değeri Saklanan Turn-On Gecikme"
+"DeÄŸeri Saklanan Turn-On Gecikme"
 
 "SFR position:"
 "SFR position:"
 
 "Save &As..."
-"Dosyayı Farklı Kaydet"
+"DosyayÄ± FarklÄ± Kaydet"
 
 "Send to UART"
-"UART'dan bilgi gönder"
+"UART'dan bilgi gÃ¶nder"
 
 "Serial (UART) will use pins %d and %d.\r\n"
 "Serial (UART) will use pins %d and %d.\r\n"
 
 "Serial (UART) will use pins %d and %d.\r\n\r\n"
-"Seri iletişim için (UART) %d ve %d bacakları kullanılacaktır.\r\n\r\n"
+"Seri iletiÅŸim iÃ§in (UART) %d ve %d bacaklarÄ± kullanÄ±lacaktÄ±r.\r\n\r\n"
 
 "Set Bit In SFR"
 "Set Bit In SFR"
 
 "Set PWM Duty Cycle"
-"PWM Pals Genişliği Değeri"
+"PWM Pals GeniÅŸliÄŸi DeÄŸeri"
 
 "Shift Register"
 "Shift Register"
 
 "Si&mulate"
-"Si&mülasyon"
+"Si&mÃ¼lasyon"
 
 "Si&mulation Mode\tCtrl+M"
-"Si&mülasyon Modu\tCtrl+M"
+"Si&mÃ¼lasyon Modu\tCtrl+M"
 
 "Single &Cycle\tSpace"
-"Satır Satır Simülasyon\tEspace"
+"SatÄ±r SatÄ±r SimÃ¼lasyon\tEspace"
 
 "Source"
 "Kaynak"
@@ -734,22 +734,22 @@
 "Kaynak:"
 
 "Stages:"
-"Aşamalar:"
+"AÅŸamalar:"
 
 "Start &Real-Time Simulation\tCtrl+R"
-"Ge&rçek Zamanlı Simülasyonu Başlat\tCtrl+R"
+"Ge&rÃ§ek ZamanlÄ± SimÃ¼lasyonu BaÅŸlat\tCtrl+R"
 
 "Start new program?"
-"Yeni dosya oluşturulsun mu?"
+"Yeni dosya oluÅŸturulsun mu?"
 
 "State"
-"Durum/Değer"
+"Durum/DeÄŸer"
 
 "String:"
 "Karakter Dizisi:"
 
 "Subtract"
-"Çıkar"
+"Ã‡Ä±kar"
 
 "TODO: &Copy Rung's\tCtrl+C or Ctrl+Insert"
 "TODO: &Copy Rung's\tCtrl+C or Ctrl+Insert"
@@ -890,16 +890,16 @@
 "TODO: Scroll Up\tCtrl+Up"
 
 "TOF: variable cannot be used elsewhere"
-"TOF: Değişken başka bir yerde kullanılamaz"
+"TOF: DeÄŸiÅŸken baÅŸka bir yerde kullanÄ±lamaz"
 
 "TON: variable cannot be used elsewhere"
-"TON: Değişken başka bir yerde kullanılamaz"
+"TON: DeÄŸiÅŸken baÅŸka bir yerde kullanÄ±lamaz"
 
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
 
 "Target frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
-"Hedef frekans %d Hz, bu değere en yakın olası değer %d Hz (Uyarı, >5% hatası)."
+"Hedef frekans %d Hz, bu deÄŸere en yakÄ±n olasÄ± deÄŸer %d Hz (UyarÄ±, >5% hatasÄ±)."
 
 "Test if Bit Clear In SFR"
 "Test if Bit Clear In SFR"
@@ -908,28 +908,28 @@
 "Test if Bit Set In SFR"
 
 "The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal."
-"PLC için LDMicro tarafından verilen çevrim süresi kullanıcı tarafından değiştirilebilir. Çok kısa süreler işlemcinin hızından kaynaklanan sebeplerden dolayı verilemeyebilir. 10ms ile 100ms arasındaki değerler çevrim süresi için genellikle uygun değerlerdir.\r\n\r\n.LDMicro kullanılan kristalin hızını bilmelidir. Bu değer program içerisinde kullanılır. Bilindiği üzere genellikle 4MHz ile 20MHz arasında değere sahip kristaller kullanılmaktadır. Kullandığınız kristalin değerini ayarlamalısınız."
+"PLC iÃ§in LDMicro tarafÄ±ndan verilen Ã§evrim sÃ¼resi kullanÄ±cÄ± tarafÄ±ndan deÄŸiÅŸtirilebilir. Ã‡ok kÄ±sa sÃ¼reler iÅŸlemcinin hÄ±zÄ±ndan kaynaklanan sebeplerden dolayÄ± verilemeyebilir. 10ms ile 100ms arasÄ±ndaki deÄŸerler Ã§evrim sÃ¼resi iÃ§in genellikle uygun deÄŸerlerdir.\r\n\r\n.LDMicro kullanÄ±lan kristalin hÄ±zÄ±nÄ± bilmelidir. Bu deÄŸer program iÃ§erisinde kullanÄ±lÄ±r. BilindiÄŸi Ã¼zere genellikle 4MHz ile 20MHz arasÄ±nda deÄŸere sahip kristaller kullanÄ±lmaktadÄ±r. KullandÄ±ÄŸÄ±nÄ±z kristalin deÄŸerini ayarlamalÄ±sÄ±nÄ±z."
 
 "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
-"Dosyada değişiklik yaptınız.\r\n\r\n Kaydetmek ister misiniz?"
+"Dosyada deÄŸiÅŸiklik yaptÄ±nÄ±z.\r\n\r\n Kaydetmek ister misiniz?"
 
 "Timer period too long (max 32767 times cycle time); use a slower cycle time."
-"Zamanlayıcı peryodu çok kısa(en fazla. çevrim süresinin 32767 katı olabilir); çevrim süresini düşürünüz."
+"ZamanlayÄ±cÄ± peryodu Ã§ok kÄ±sa(en fazla. Ã§evrim sÃ¼resinin 32767 katÄ± olabilir); Ã§evrim sÃ¼resini dÃ¼ÅŸÃ¼rÃ¼nÃ¼z."
 
 "Timer period too short (needs faster cycle time)."
-"Zamanlayıcı peryodu çok kısa (daha yüksek çevrim süresi gerekli)."
+"ZamanlayÄ±cÄ± peryodu Ã§ok kÄ±sa (daha yÃ¼ksek Ã§evrim sÃ¼resi gerekli)."
 
 "Timer"
-"Zamanlayıcı"
+"ZamanlayÄ±cÄ±"
 
 "Too many elements in subcircuit!"
-"Alt devrede çok fazla eleman var!"
+"Alt devrede Ã§ok fazla eleman var!"
 
 "Too many rungs!"
-"Satır sayısı (Rung) fazla!"
+"SatÄ±r sayÄ±sÄ± (Rung) fazla!"
 
 "True if >= :"
-"Doğru Eğer >= :"
+"DoÄŸru EÄŸer >= :"
 
 "Turn-Off Delay"
 "Turn-Off Gecikme Devresi"
@@ -944,16 +944,16 @@
 "UART Baud Rate (bps):"
 
 "UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken."
-"UART Hız Hesaplayıcısı: Bölen=%d Gerçekte=%.4f (%.2f%% hata payı ile).\r\n\r\nBu değer çok yüksektir. Değişik bir değer denemelisiniz yada kristal frekansını sık kullanılan ve bu değerlere bölünebilen bir değer seçiniz. (Mesela 3.6864MHz, 14.7456MHz gibi).\r\n\r\nHer durumda kod oluşturulacaktır; ancak seri iletişim düzgün çalışmayabilir yada tamamen durabilir."
+"UART HÄ±z HesaplayÄ±cÄ±sÄ±: BÃ¶len=%d GerÃ§ekte=%.4f (%.2f%% hata payÄ± ile).\r\n\r\nBu deÄŸer Ã§ok yÃ¼ksektir. DeÄŸiÅŸik bir deÄŸer denemelisiniz yada kristal frekansÄ±nÄ± sÄ±k kullanÄ±lan ve bu deÄŸerlere bÃ¶lÃ¼nebilen bir deÄŸer seÃ§iniz. (Mesela 3.6864MHz, 14.7456MHz gibi).\r\n\r\nHer durumda kod oluÅŸturulacaktÄ±r; ancak seri iletiÅŸim dÃ¼zgÃ¼n Ã§alÄ±ÅŸmayabilir yada tamamen durabilir."
 
 "UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken."
-"UART Hız Hesaplayıcısı: Hız çok düşük. Bu nedenle bölen taşma yapıyor. Ya kristal frekansını düşürünüz yada hızı (baudrate) artırınız.\r\n\r\nHer durumda kod oluşturulacaktır; ancak seri iletişim düzgün çalışmayabilir yada tamamen durabilir."
+"UART HÄ±z HesaplayÄ±cÄ±sÄ±: HÄ±z Ã§ok dÃ¼ÅŸÃ¼k. Bu nedenle bÃ¶len taÅŸma yapÄ±yor. Ya kristal frekansÄ±nÄ± dÃ¼ÅŸÃ¼rÃ¼nÃ¼z yada hÄ±zÄ± (baudrate) artÄ±rÄ±nÄ±z.\r\n\r\nHer durumda kod oluÅŸturulacaktÄ±r; ancak seri iletiÅŸim dÃ¼zgÃ¼n Ã§alÄ±ÅŸmayabilir yada tamamen durabilir."
 
 "UART function used but not supported for this micro."
-"Komut kullanmışsınız, ancak UART işlemleri bu işlemci için desteklenmiyor."
+"Komut kullanmÄ±ÅŸsÄ±nÄ±z, ancak UART iÅŸlemleri bu iÅŸlemci iÃ§in desteklenmiyor."
 
 "UART in use; pins %d and %d reserved for that."
-"UART Kullanımda; %d ve %d bacakları bunun için kullanılmaktadır. Siz kullanamazsınız."
+"UART KullanÄ±mda; %d ve %d bacaklarÄ± bunun iÃ§in kullanÄ±lmaktadÄ±r. Siz kullanamazsÄ±nÄ±z."
 
 "UART rx"
 "UART rx"
@@ -974,61 +974,61 @@
 "Unsupported operation for target, skipped."
 
 "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
-"'%s' değer atanmamış.Örneğin, MOV, ADD komutları ile değer atanabilir.\r\n\r\nMuhtemelen bu bir programlama hatasıdır. Bu nedenle değişkenin değeri 0 olarak kullanılacaktır."
+"'%s' deÄŸer atanmamÄ±ÅŸ.Ã–rneÄŸin, MOV, ADD komutlarÄ± ile deÄŸer atanabilir.\r\n\r\nMuhtemelen bu bir programlama hatasÄ±dÄ±r. Bu nedenle deÄŸiÅŸkenin deÄŸeri 0 olarak kullanÄ±lacaktÄ±r."
 
 "Variable for '%s' incorrectly assigned: %s."
-"'%s' için değişken hatalı atanmış: %s."
+"'%s' iÃ§in deÄŸiÅŸken hatalÄ± atanmÄ±ÅŸ: %s."
 
 "Variable is interpolated into formatted string, but none is specified."
-"Biçimlendirilmiş karakter kümesine değişken tanımlanmış ama hiç belirtilmemiş."
+"BiÃ§imlendirilmiÅŸ karakter kÃ¼mesine deÄŸiÅŸken tanÄ±mlanmÄ±ÅŸ ama hiÃ§ belirtilmemiÅŸ."
 
 "Variable:"
-"Değişken:"
+"DeÄŸiÅŸken:"
 
 "Write To SFR"
 "Write To SFR"
 
 "Zero baud rate not possible."
-"İletişim hızı (Baudrate) sıfır olamaz."
+"Ä°letiÅŸim hÄ±zÄ± (Baudrate) sÄ±fÄ±r olamaz."
 
 "Zero cycle time not valid; resetting to 10 ms."
-"Çevrim süresi sıfır olamaz. 10ms olarak değiştirildi."
+"Ã‡evrim sÃ¼resi sÄ±fÄ±r olamaz. 10ms olarak deÄŸiÅŸtirildi."
 
 "\n\nI/O ASSIGNMENT:\n\n"
-"\n\nG/Ç TANIMI:\n\n"
+"\n\nG/Ã‡ TANIMI:\n\n"
 
 "adc input"
-"ADC Girişi"
+"ADC GiriÅŸi"
 
 "counter"
-"Sayıcı"
+"SayÄ±cÄ±"
 
 "cycle time %.2f ms"
-"çevrim süresi %.2f ms"
+"Ã§evrim sÃ¼resi %.2f ms"
 
 "digital in"
-"Dijital Giriş"
+"Dijital GiriÅŸ"
 
 "digital out"
-"Dijital Çıkış"
+"Dijital Ã‡Ä±kÄ±ÅŸ"
 
 "general var"
-"Genel Değişken"
+"Genel DeÄŸiÅŸken"
 
 "int. relay"
-"Dahili Röle"
+"Dahili RÃ¶le"
 
 "is set := :"
-"Verilen Değer := :"
+"Verilen DeÄŸer := :"
 
 "no MCU selected"
-"İşlemci Seçilmedi"
+"Ä°ÅŸlemci SeÃ§ilmedi"
 
 "processor clock %.4f MHz"
-"işlemci frekansı %.4f MHz"
+"iÅŸlemci frekansÄ± %.4f MHz"
 
 "retentive timer"
-"değeri saklanan zamanlayıcı"
+"deÄŸeri saklanan zamanlayÄ±cÄ±"
 
 "saved var"
 "saved var"
@@ -1040,8 +1040,8 @@
 "Turn-On Gecikme"
 
 "x values in piecewise linear table must be strictly increasing."
-"Parçalı doğrusal arama tablosundaki x değerleri artan sıralamalı olmalı."
+"ParÃ§alÄ± doÄŸrusal arama tablosundaki x deÄŸerleri artan sÄ±ralamalÄ± olmalÄ±."
 
 "|/| Negated"
-"|/| Terslenmiş"
+"|/| TerslenmiÅŸ"
 

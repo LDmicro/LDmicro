@@ -72,8 +72,7 @@ static WORD AddrForVariable(char *name)
 static void Write(FILE *f, BinOp *op)
 {
     BYTE *b = (BYTE *)op;
-    int i;
-    for(i = 0; i < sizeof(*op); i++) {
+    for(unsigned int i = 0; i < sizeof(*op); i++) {
         fprintf(f, "%02x", b[i]);
     }
     fprintf(f, "\n");
@@ -83,7 +82,7 @@ void CompileInterpreted(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't write to '%s'"), outFile);
+        Error(_("Couldn't write to '%ls'"), u16(outFile));
         return;
     }
 
@@ -294,10 +293,10 @@ finishIf:
 
     fclose(f);
 
-    char str[MAX_PATH+500];
-    sprintf(str,
-      _("Compile successful; wrote interpretable code to '%s'.\r\n\r\n"
+    wchar_t str[MAX_PATH+500];
+    swprintf_s(str,
+      _("Compile successful; wrote interpretable code to '%ls'.\r\n\r\n"
         "You probably have to adapt the interpreter to your application. See "
-        "the documentation."), outFile);
+        "the documentation."), u16(outFile));
     CompileSuccessfulMessage(str);
 }

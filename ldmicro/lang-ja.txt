@@ -1,38 +1,38 @@
 "  Name                       | Type               | Pin\n"
-"  –¼‘O                       | í—Ş               | ƒsƒ“\n"
+"  åå‰                       | ç¨®é¡               | ãƒ”ãƒ³\n"
 
 " - (not yet saved)"
-" *–¢•Û‘¶*"
+" *æœªä¿å­˜*"
 
 "!!!too long!!!"
-"!!!’·‚·‚¬‚Ü‚·!!!"
+"!!!é•·ã™ãã¾ã™!!!"
 
 "&About..."
-"ƒo[ƒWƒ‡ƒ“î•ñ(&A)..."
+"ãƒãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±(&A)..."
 
 "&Compile"
-"ƒRƒ“ƒpƒCƒ‹(&C)"
+"ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«(&C)"
 
 "&Compile\tF5"
-"ƒRƒ“ƒpƒCƒ‹(&C)\tF5"
+"ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«(&C)\tF5"
 
 "&Delete Selected Element\tDel"
-"—v‘f‚ğíœ(&D)\tDel"
+"è¦ç´ ã‚’å‰Šé™¤(&D)\tDel"
 
 "&Edit"
-"•ÒW(&E)"
+"ç·¨é›†(&E)"
 
 "&Export As Text...\tCtrl+E"
-"ƒeƒLƒXƒg‚Åo—Í(&E)...\tCtrl+E"
+"ãƒ†ã‚­ã‚¹ãƒˆã§å‡ºåŠ›(&E)...\tCtrl+E"
 
 "&File"
-"ƒtƒ@ƒCƒ‹(&F)"
+"ãƒ•ã‚¡ã‚¤ãƒ«(&F)"
 
 "&Halt Simulation\tCtrl+H"
-"ƒŠƒAƒ‹ƒ^ƒCƒ€ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“’â~(&H)\tCtrl+H"
+"ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³åœæ­¢(&H)\tCtrl+H"
 
 "&Help"
-"ƒwƒ‹ƒv(&H)"
+"ãƒ˜ãƒ«ãƒ—(&H)"
 
 "&Insert Clear Bit In SFR"
 "&Insert Clear Bit In SFR"
@@ -53,61 +53,61 @@
 "&Insert Write To SFR"
 
 "&Instruction"
-"–½—ß(&I)"
+"å‘½ä»¤(&I)"
 
 "&MCU Parameters..."
-"ƒ}ƒCƒRƒ“İ’è(&M)..."
+"ãƒã‚¤ã‚³ãƒ³è¨­å®š(&M)..."
 
 "&Manual...\tF1"
-"ƒ}ƒjƒ…ƒAƒ‹(&M)...\tF1"
+"ãƒãƒ‹ãƒ¥ã‚¢ãƒ«(&M)...\tF1"
 
 "&Microcontroller"
-"ƒ^[ƒQƒbƒgƒ}ƒCƒRƒ“(&M)"
+"ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒã‚¤ã‚³ãƒ³(&M)"
 
 "&New\tCtrl+N"
-"V‹Kì¬(&N)\tCtrl+N"
+"æ–°è¦ä½œæˆ(&N)\tCtrl+N"
 
 "&Open...\tCtrl+O"
-"ŠJ‚­(&O)...\tCtrl+O"
+"é–‹ã(&O)...\tCtrl+O"
 
 "&Redo\tCtrl+Y"
-"‚â‚è’¼‚µ(&R)\tCtrl+Y"
+"ã‚„ã‚Šç›´ã—(&R)\tCtrl+Y"
 
 "&Save\tCtrl+S"
-"•Û‘¶(&S)\tCtrl+S"
+"ä¿å­˜(&S)\tCtrl+S"
 
 "&Settings"
-"İ’è(&S)"
+"è¨­å®š(&S)"
 
 "&Special Function"
 "&Special Function"
 
 "&Undo\tCtrl+Z or Alt+Backspace"
-"Œ³‚É–ß‚·(&U)\tCtrl+Z or Alt+Backspace"
+"å…ƒã«æˆ»ã™(&U)\tCtrl+Z or Alt+Backspace"
 
 "'Closed' if:"
-"‚à‚µ"
+"ã‚‚ã—"
 
 "( ) Normal"
-"( ) ’Êí"
+"( ) é€šå¸¸"
 
 "(/) Negated"
-"(/) ”½“]"
+"(/) åè»¢"
 
 "(R) Reset-Only"
-"(R) ƒŠƒZƒbƒg‚Ì‚İ"
+"(R) ãƒªã‚»ãƒƒãƒˆã®ã¿"
 
 "(S) Set-Only"
-"(S) ƒZƒbƒg‚Ì‚İ"
+"(S) ã‚»ãƒƒãƒˆã®ã¿"
 
 "(no microcontroller)"
-"(ƒ}ƒCƒRƒ“‚È‚µ)"
+"(ãƒã‚¤ã‚³ãƒ³ãªã—)"
 
 "(no pin)"
-"(ƒsƒ“‚È‚µ)"
+"(ãƒ”ãƒ³ãªã—)"
 
 "(not assigned)"
-"(–¢Š„‚è“–‚Ä)"
+"(æœªå‰²ã‚Šå½“ã¦)"
 
 "--add comment here--"
 "--comment--"
@@ -119,487 +119,487 @@
 "<UART needs!>"
 
 "<corrupt!>"
-"<•s³!>"
+"<ä¸æ­£!>"
 
 "<no PWM!>"
-"<PWM‚È‚µ!>"
+"<PWMãªã—!>"
 
 "<no UART!>"
-"<UART‚È‚µ!>"
+"<UARTãªã—!>"
 
 "<not an I/O!>"
-"<IO‚Å‚Í‚ ‚è‚Ü‚¹‚ñ!>"
+"<IOã§ã¯ã‚ã‚Šã¾ã›ã‚“!>"
 
 "ANSI C target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
-"ANSI C‚Å‚Íg‚¦‚È‚¢–½—ß‚ª‚ ‚è‚Ü‚· (ADC, PWM, UART, EEPROM)B‚±‚ê‚ç‚Ì–½—ß‚Í–³‹‚µ‚ÄƒRƒ“ƒpƒCƒ‹‚µ‚Ü‚·B"
+"ANSI Cã§ã¯ä½¿ãˆãªã„å‘½ä»¤ãŒã‚ã‚Šã¾ã™ (ADC, PWM, UART, EEPROM)ã€‚ã“ã‚Œã‚‰ã®å‘½ä»¤ã¯ç„¡è¦–ã—ã¦ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«ã—ã¾ã™ã€‚"
 
 "Add"
-"‰ÁZ"
+"åŠ ç®—"
 
 "Assign:"
-"‘ã“ü:"
+"ä»£å…¥:"
 
 "Bad escape '\\%c'"
-"ƒGƒXƒP[ƒv‚Ì‘®‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñF '\\%c'"
+"ã‚¨ã‚¹ã‚±ãƒ¼ãƒ—ã®æ›¸å¼ãŒæ­£ã—ãã‚ã‚Šã¾ã›ã‚“ï¼š '\\%c'"
 
 "Bad escape: correct form is \\xAB."
-"ƒGƒXƒP[ƒv‚Ì‘®‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñB—á: \\xAB"
+"ã‚¨ã‚¹ã‚±ãƒ¼ãƒ—ã®æ›¸å¼ãŒæ­£ã—ãã‚ã‚Šã¾ã›ã‚“ã€‚ä¾‹: \\xAB"
 
 "Bad use of quotes: <%s>"
-"ˆø—p•„‚ª•s³: <%s>"
+"å¼•ç”¨ç¬¦ãŒä¸æ­£: <%s>"
 
 "Can only assign pin number to input/output pins (Xname or Yname or Aname)."
-"ƒsƒ“”Ô†‚ğİ’è‚Å‚«‚é‚Ì‚ÍIOƒsƒ“‚Ì‚İ‚Å‚·(–¼‘O‚ªX, Y, A‚Ån‚Ü‚é•¨)B"
+"ãƒ”ãƒ³ç•ªå·ã‚’è¨­å®šã§ãã‚‹ã®ã¯IOãƒ”ãƒ³ã®ã¿ã§ã™(åå‰ãŒX, Y, Aã§å§‹ã¾ã‚‹ç‰©)ã€‚"
 
 "Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code."
-"ANSI C‚ªƒ^[ƒQƒbƒg‚Ìê‡IOƒsƒ“Š„‚è“–‚Ä‚Í‚Å‚«‚Ü‚¹‚ñBƒ\[ƒX’†‚ÌƒRƒƒ“ƒg‚ğŠm”F‚µ‚Ä‚­‚¾‚³‚¢B"
+"ANSI CãŒã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®å ´åˆIOãƒ”ãƒ³å‰²ã‚Šå½“ã¦ã¯ã§ãã¾ã›ã‚“ã€‚ã‚½ãƒ¼ã‚¹ä¸­ã®ã‚³ãƒ¡ãƒ³ãƒˆã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚"
 
 "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."
-"ƒCƒ“ƒ^ƒvƒŠƒ^‚ªƒ^[ƒQƒbƒg‚Ìê‡IOƒsƒ“Š„‚è“–‚Ä‚Í‚Å‚«‚Ü‚¹‚ñBƒCƒ“ƒ^ƒvƒŠƒ^‚ÌÀ‘•—á‚É‚ ‚éƒRƒƒ“ƒg‚ğ‚²——‚­‚¾‚³‚¢B"
+"ã‚¤ãƒ³ã‚¿ãƒ—ãƒªã‚¿ãŒã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®å ´åˆIOãƒ”ãƒ³å‰²ã‚Šå½“ã¦ã¯ã§ãã¾ã›ã‚“ã€‚ã‚¤ãƒ³ã‚¿ãƒ—ãƒªã‚¿ã®å®Ÿè£…ä¾‹ã«ã‚ã‚‹ã‚³ãƒ¡ãƒ³ãƒˆã‚’ã”è¦§ãã ã•ã„ã€‚"
 
 "Cancel"
-"ƒLƒƒƒ“ƒZƒ‹"
+"ã‚­ãƒ£ãƒ³ã‚»ãƒ«"
 
 "Cannot delete rung; program must have at least one rung."
-"ƒvƒƒOƒ‰ƒ€’†‚ÉÅ’á1‚Â‚Íƒ‰ƒ“ƒO‚ª•K—v‚Å‚·Bƒ‰ƒ“ƒO‚ğíœ‚Å‚«‚Ü‚¹‚ñB"
+"ãƒ—ãƒ­ã‚°ãƒ©ãƒ ä¸­ã«æœ€ä½1ã¤ã¯ãƒ©ãƒ³ã‚°ãŒå¿…è¦ã§ã™ã€‚ãƒ©ãƒ³ã‚°ã‚’å‰Šé™¤ã§ãã¾ã›ã‚“ã€‚"
 
 "Circular Counter"
-"zŠÂƒJƒEƒ“ƒ^"
+"å¾ªç’°ã‚«ã‚¦ãƒ³ã‚¿"
 
 "Clear Bit In SFR"
 "Clear Bit In SFR"
 
 "Coil"
-"ƒRƒCƒ‹"
+"ã‚³ã‚¤ãƒ«"
 
 "Comment"
-"ƒRƒƒ“ƒg"
+"ã‚³ãƒ¡ãƒ³ãƒˆ"
 
 "Compile &As..."
-"–¼‘O‚ğ‚Â‚¯‚ÄƒRƒ“ƒpƒCƒ‹(&A)..."
+"åå‰ã‚’ã¤ã‘ã¦ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«(&A)..."
 
 "Compile Successful"
-"ƒRƒ“ƒpƒCƒ‹¬Œ÷"
+"ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«æˆåŠŸ"
 
 "Compile To"
-"ƒRƒ“ƒpƒCƒ‹æ: "
+"ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«å…ˆ: "
 
 "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
-"ƒRƒ“ƒpƒCƒ‹¬Œ÷BCƒ\[ƒXƒR[ƒh‚ğ '%s' ‚Éo—Í‚µ‚Ü‚µ‚½B\r\n\r\no—Í‚ÍŠ®‘S‚ÈCƒvƒƒOƒ‰ƒ€‚Å‚Í‚ ‚è‚Ü‚¹‚ñBƒ‰ƒ“ƒ^ƒCƒ€‚âIOƒ‹[ƒ`ƒ“‚Æ‚Æ‚à‚ÉƒRƒ“ƒpƒCƒ‹‚·‚é•K—v‚ª‚ ‚è‚Ü‚·BÚ‚µ‚­‚Íƒ\[ƒX’†‚ÌƒRƒƒ“ƒg‚ğQÆ‚µ‚Ä‰º‚³‚¢B"
+"ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«æˆåŠŸã€‚Cã‚½ãƒ¼ã‚¹ã‚³ãƒ¼ãƒ‰ã‚’ '%s' ã«å‡ºåŠ›ã—ã¾ã—ãŸã€‚\r\n\r\nå‡ºåŠ›ã¯å®Œå…¨ãªCãƒ—ãƒ­ã‚°ãƒ©ãƒ ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚ãƒ©ãƒ³ã‚¿ã‚¤ãƒ ã‚„IOãƒ«ãƒ¼ãƒãƒ³ã¨ã¨ã‚‚ã«ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚è©³ã—ãã¯ã‚½ãƒ¼ã‚¹ä¸­ã®ã‚³ãƒ¡ãƒ³ãƒˆã‚’å‚ç…§ã—ã¦ä¸‹ã•ã„ã€‚"
 
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
-"ƒRƒ“ƒpƒCƒ‹¬Œ÷BAVR—p‚ÌIHEXƒtƒ@ƒCƒ‹‚ğ '%s' ‚Éo—Í‚µ‚Ü‚µ‚½B\r\n\r\nƒvƒƒZƒbƒT‚Ìİ’è(ƒqƒ…[ƒY)‚ğ–Y‚ê‚¸‚É’²®‚µ‚Ä‰º‚³‚¢B"
+"ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«æˆåŠŸã€‚AVRç”¨ã®IHEXãƒ•ã‚¡ã‚¤ãƒ«ã‚’ '%s' ã«å‡ºåŠ›ã—ã¾ã—ãŸã€‚\r\n\r\nãƒ—ãƒ­ã‚»ãƒƒã‚µã®è¨­å®š(ãƒ’ãƒ¥ãƒ¼ã‚º)ã‚’å¿˜ã‚Œãšã«èª¿æ•´ã—ã¦ä¸‹ã•ã„ã€‚"
 
 "Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
-"ƒRƒ“ƒpƒCƒ‹¬Œ÷BPIC16—p‚ÌIHEXƒtƒ@ƒCƒ‹‚ğ '%s' ‚Éo—Í‚µ‚Ü‚µ‚½B\r\n\r\nİ’èƒ[ƒh(ƒqƒ…[ƒY)‚Í…»”­UqABOD—LŒøALVP–³ŒøAPWRT—LŒøAƒR[ƒh•ÛŒì–³Œø‚Æ‚µ‚Ä‚¢‚Ü‚·B"
+"ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«æˆåŠŸã€‚PIC16ç”¨ã®IHEXãƒ•ã‚¡ã‚¤ãƒ«ã‚’ '%s' ã«å‡ºåŠ›ã—ã¾ã—ãŸã€‚\r\n\r\nè¨­å®šãƒ¯ãƒ¼ãƒ‰(ãƒ’ãƒ¥ãƒ¼ã‚º)ã¯æ°´æ™¶ç™ºæŒ¯å­ã€BODæœ‰åŠ¹ã€LVPç„¡åŠ¹ã€PWRTæœ‰åŠ¹ã€ã‚³ãƒ¼ãƒ‰ä¿è­·ç„¡åŠ¹ã¨ã—ã¦ã„ã¾ã™ã€‚"
 
 "Used %d/%d words of program flash (chip %d%% full)."
-"ƒtƒ‰ƒbƒVƒ…‚Ì‚¤‚¿ %d/%d ƒ[ƒh (%d%%) ‚ğg‚¢‚Ü‚µ‚½B"
+"ãƒ•ãƒ©ãƒƒã‚·ãƒ¥ã®ã†ã¡ %d/%d ãƒ¯ãƒ¼ãƒ‰ (%d%%) ã‚’ä½¿ã„ã¾ã—ãŸã€‚"
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
-"ƒRƒ“ƒpƒCƒ‹¬Œ÷BƒCƒ“ƒ^ƒvƒŠƒ^—pƒR[ƒh‚ğ '%s' ‚Éo—Í‚µ‚Ü‚µ‚½B\r\n\r\nƒCƒ“ƒ^ƒvƒŠƒ^‚Ìİ’è‚ğ‡‚í‚¹‚ÄŠm”F‚µ‚Ä‰º‚³‚¢BÚ‚µ‚­‚Íƒwƒ‹ƒv‚ğ‚²——‚­‚¾‚³‚¢B"
+"ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«æˆåŠŸã€‚ã‚¤ãƒ³ã‚¿ãƒ—ãƒªã‚¿ç”¨ã‚³ãƒ¼ãƒ‰ã‚’ '%s' ã«å‡ºåŠ›ã—ã¾ã—ãŸã€‚\r\n\r\nã‚¤ãƒ³ã‚¿ãƒ—ãƒªã‚¿ã®è¨­å®šã‚’åˆã‚ã›ã¦ç¢ºèªã—ã¦ä¸‹ã•ã„ã€‚è©³ã—ãã¯ãƒ˜ãƒ«ãƒ—ã‚’ã”è¦§ãã ã•ã„ã€‚"
 
 "Constant %d out of range: -32768 to 32767 inclusive."
-"’è” %d ‚ª”ÍˆÍŠO‚Å‚·: ’l‚Ì”ÍˆÍ‚Í -32768 ` 32767 (•Â‹æŠÔ)‚Å‚·B"
+"å®šæ•° %d ãŒç¯„å›²å¤–ã§ã™: å€¤ã®ç¯„å›²ã¯ -32768 ã€œ 32767 (é–‰åŒºé–“)ã§ã™ã€‚"
 
 "Contacts"
-"Ú“_"
+"æ¥ç‚¹"
 
 "Couldn't open '%s'."
-"'%s' ‚ğŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½B"
+"'%s' ã‚’é–‹ã‘ã¾ã›ã‚“ã§ã—ãŸã€‚"
 
 "Couldn't open '%s'\n"
-"'%s' ‚ğŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½\n"
+"'%s' ã‚’é–‹ã‘ã¾ã›ã‚“ã§ã—ãŸ\n"
 
 "Couldn't open file '%s'"
-"ƒtƒ@ƒCƒ‹ '%s' ‚ğŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½"
+"ãƒ•ã‚¡ã‚¤ãƒ« '%s' ã‚’é–‹ã‘ã¾ã›ã‚“ã§ã—ãŸ"
 
 "Couldn't write to '%s'"
-"'%s' ‚É‘‚«‚ß‚Ü‚¹‚ñ‚Å‚µ‚½"
+"'%s' ã«æ›¸ãè¾¼ã‚ã¾ã›ã‚“ã§ã—ãŸ"
 
 "Couldn't write to '%s'."
-"'%s' ‚É‘‚«‚ß‚Ü‚¹‚ñ‚Å‚µ‚½"
+"'%s' ã«æ›¸ãè¾¼ã‚ã¾ã›ã‚“ã§ã—ãŸ"
 
 "Count Down"
-"ƒ_ƒEƒ“ƒJƒEƒ“ƒ^"
+"ãƒ€ã‚¦ãƒ³ã‚«ã‚¦ãƒ³ã‚¿"
 
 "Count Up"
-"ƒAƒbƒvƒJƒEƒ“ƒ^"
+"ã‚¢ãƒƒãƒ—ã‚«ã‚¦ãƒ³ã‚¿"
 
 "Count:"
-"’·‚³:"
+"é•·ã•:"
 
 "Counter"
-"ƒJƒEƒ“ƒ^"
+"ã‚«ã‚¦ãƒ³ã‚¿"
 
 "Cycle time too fast; increase cycle time, or use faster crystal."
-"ƒTƒCƒNƒ‹ŠÔ‚ª‘‚·‚¬‚Ü‚·BƒTƒCƒNƒ‹ŠÔ‚ğ‘‚â‚·‚©A‚æ‚è‘‚¢…»‚ğg‚Á‚Ä‰º‚³‚¢B"
+"ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“ãŒæ—©ã™ãã¾ã™ã€‚ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“ã‚’å¢—ã‚„ã™ã‹ã€ã‚ˆã‚Šæ—©ã„æ°´æ™¶ã‚’ä½¿ã£ã¦ä¸‹ã•ã„ã€‚"
 
 "Cycle time too slow; decrease cycle time, or use slower crystal."
-"ƒTƒCƒNƒ‹ŠÔ‚ª’x‚·‚¬‚Ü‚·BƒTƒCƒNƒ‹ŠÔ‚ğŒ¸‚ç‚·‚©A‚æ‚è’x‚¢…»‚ğg‚Á‚Ä‰º‚³‚¢B"
+"ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“ãŒé…ã™ãã¾ã™ã€‚ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“ã‚’æ¸›ã‚‰ã™ã‹ã€ã‚ˆã‚Šé…ã„æ°´æ™¶ã‚’ä½¿ã£ã¦ä¸‹ã•ã„ã€‚"
 
 "D&elete Rung\tShift+Del"
-"ƒ‰ƒ“ƒO‚ğíœ(&E)\tShift+Del"
+"ãƒ©ãƒ³ã‚°ã‚’å‰Šé™¤(&E)\tShift+Del"
 
 "Delay (ms):"
-"’x‰„ (ms):"
+"é…å»¶ (ms):"
 
 "Delay cannot be zero or negative."
-"’x‰„‚Í³‚Ì’l‚Å‚ ‚é•K—v‚ª‚ ‚è‚Ü‚·B"
+"é…å»¶ã¯æ­£ã®å€¤ã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 "Delay too long; maximum is 2**31 us."
-"’x‰„‚ª’·‰ß‚¬‚Ü‚·BÅ‘å 2**31 us‚Å‚·"
+"é…å»¶ãŒé•·éãã¾ã™ã€‚æœ€å¤§ 2**31 usã§ã™"
 
 "Destination:"
-"æ:"
+"å…ˆ:"
 
 "Divide"
-"œZ"
+"é™¤ç®—"
 
 "Division by zero; halting simulation"
-"ƒ[ƒœZƒGƒ‰[BƒVƒ~ƒ…ƒŒ[ƒ^‚ğ’â~‚µ‚Ü‚·"
+"ã‚¼ãƒ­é™¤ç®—ã‚¨ãƒ©ãƒ¼ã€‚ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚¿ã‚’åœæ­¢ã—ã¾ã™"
 
 "Duty cycle var:"
-"ƒfƒ…[ƒeƒB”ä:"
+"ãƒ‡ãƒ¥ãƒ¼ãƒ†ã‚£æ¯”:"
 
 "E&xit"
-"I—¹(&X)"
+"çµ‚äº†(&X)"
 
 "Edit table of ASCII values like a string"
-"ASCII•¶š”z—ñ‚Æ‚µ‚Ä•ÒW"
+"ASCIIæ–‡å­—é…åˆ—ã¨ã—ã¦ç·¨é›†"
 
 "Empty row; delete it or add instructions before compiling."
-"‹ó‚Ìƒ‰ƒ“ƒO‚ª‚ ‚è‚Ü‚·BƒRƒ“ƒpƒCƒ‹‚Ì‚½‚ß‚É‚Íƒ‰ƒ“ƒO‚ğíœ‚·‚é‚©A–½—ß‚ğ’Ç‰Á‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
+"ç©ºã®ãƒ©ãƒ³ã‚°ãŒã‚ã‚Šã¾ã™ã€‚ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«ã®ãŸã‚ã«ã¯ãƒ©ãƒ³ã‚°ã‚’å‰Šé™¤ã™ã‚‹ã‹ã€å‘½ä»¤ã‚’è¿½åŠ ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 "Empty textbox; not permitted."
-"ƒeƒLƒXƒgƒ{ƒbƒNƒX‚ª‹ó‚Å‚·B"
+"ãƒ†ã‚­ã‚¹ãƒˆãƒœãƒƒã‚¯ã‚¹ãŒç©ºã§ã™ã€‚"
 
 "Export As Text"
-"ƒeƒLƒXƒg‚Åo—Í"
+"ãƒ†ã‚­ã‚¹ãƒˆã§å‡ºåŠ›"
 
 "File format error; perhaps this program is for a newer version of LDmicro?"
-"ƒtƒ@ƒCƒ‹Œ`®ƒGƒ‰[BV‚µ‚¢LDmicro‚Ìƒtƒ@ƒCƒ‹‚©‚à‚µ‚ê‚Ü‚¹‚ñB"
+"ãƒ•ã‚¡ã‚¤ãƒ«å½¢å¼ã‚¨ãƒ©ãƒ¼ã€‚æ–°ã—ã„LDmicroã®ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‚ã—ã‚Œã¾ã›ã‚“ã€‚"
 
 "Formatted String Over UART"
-"UART‘®o—Í"
+"UARTæ›¸å¼å‡ºåŠ›"
 
 "Frequency (Hz):"
-"ü”g” (Hz):"
+"å‘¨æ³¢æ•° (Hz):"
 
 "I/O Pin Assignment"
-"IOƒsƒ“Š„‚è“–‚Ä"
+"IOãƒ”ãƒ³å‰²ã‚Šå½“ã¦"
 
 "I/O Pin"
-"I/Oƒsƒ“"
+"I/Oãƒ”ãƒ³"
 
 "INT input"
 "INT input"
 
 "If Equals"
-"’l"
+"å€¤ï¼"
 
 "If Greater Than or Equal To"
-"’l†"
+"å€¤â‰§"
 
 "If Greater Than"
-"’l„"
+"å€¤ï¼"
 
 "If Less Than or Equal To"
-"’l…"
+"å€¤â‰¦"
 
 "If Less Than"
-"’lƒ"
+"å€¤ï¼œ"
 
 "If Not Equals"
-"’lI"
+"å€¤ï¼ï¼"
 
 "Index:"
-"“Yš:"
+"æ·»å­—:"
 
 "Input pin"
-"“ü—Íƒsƒ“"
+"å…¥åŠ›ãƒ”ãƒ³"
 
 "Insert &Contacts\tC"
-"--] [-- Ú“_\t&C"
+"--] [-- æ¥ç‚¹\t&C"
 
 "Insert &UART Receive"
-"--{UART RECV}-- &UARTóM"
+"--{UART RECV}-- &UARTå—ä¿¡"
 
 "Insert &UART Send"
-"--{UART SEND}-- &UART‘—M"
+"--{UART SEND}-- &UARTé€ä¿¡"
 
 "Insert -+        +- Open-Circuit"
-"--+     +-- ŠJ•ú, ŠJ‰ñ˜H"
+"--+     +-- é–‹æ”¾, é–‹å›è·¯"
 
 "Insert -+------+- Short-Circuit"
-"--+---+-- ’Z—, •Â‰ñ˜H"
+"--+---+-- çŸ­çµ¡, é–‰å›è·¯"
 
 "Insert A/D Converter Read\tP"
-"--{READ ADC}-- ƒAƒiƒƒO“ü—Í“Ç‚İæ‚è\tP"
+"--{READ ADC}-- ã‚¢ãƒŠãƒ­ã‚°å…¥åŠ›èª­ã¿å–ã‚Š\tP"
 
 "Insert ADD (16-bit Integer Add)\t+"
-"--{ + }-- ADD ‰ÁZ\t+"
+"--{ + }-- ADD åŠ ç®—\t+"
 
 "Insert CT&C (Count Circular)\tJ"
-"--{CT&C 0:0}-- zŠÂƒJƒEƒ“ƒ^\tJ"
+"--{CT&C 0:0}-- å¾ªç’°ã‚«ã‚¦ãƒ³ã‚¿\tJ"
 
 "Insert CT&D (Count Down)\tI"
-"--[CT&D >=0]-- ƒ_ƒEƒ“ƒJƒEƒ“ƒ^\tI"
+"--[CT&D >=0]-- ãƒ€ã‚¦ãƒ³ã‚«ã‚¦ãƒ³ã‚¿\tI"
 
 "Insert CT&U (Count Up)\tU"
-"--[CT&U >=0]-- ƒAƒbƒvƒJƒEƒ“ƒ^\tU"
+"--[CT&U >=0]-- ã‚¢ãƒƒãƒ—ã‚«ã‚¦ãƒ³ã‚¿\tU"
 
 "Insert Co&mment\t;"
-"; -- ƒRƒƒ“ƒg --(&M)\t;"
+"; -- ã‚³ãƒ¡ãƒ³ãƒˆ --(&M)\t;"
 
 "Insert Coi&l\tL"
-"--(  )-- ƒRƒCƒ‹\t&L"
+"--(  )-- ã‚³ã‚¤ãƒ«\t&L"
 
 "Insert DIV (16-bit Integer Divide)\tD"
-"--{ / }-- DIV œZ\tD"
+"--{ / }-- DIV é™¤ç®—\tD"
 
 "Insert EQU (Compare for Equals)\t="
-"--[ == ]-- EQU “™’l”äŠr\t="
+"--[ == ]-- EQU ç­‰å€¤æ¯”è¼ƒï¼\t="
 
 "Insert Formatted String Over UART"
-"--{\"value: \\3\\r\\n\"}-- UART‘®‘—M"
+"--{\"value: \\3\\r\\n\"}-- UARTæ›¸å¼é€ä¿¡"
 
 "Insert GEQ (Compare for Greater Than or Equal)\t."
-"--[ => ]-- GEQ ˆÈã”äŠr†\t."
+"--[ => ]-- GEQ ä»¥ä¸Šæ¯”è¼ƒâ‰§\t."
 
 "Insert GRT (Compare for Greater Than)\t>"
-"--[  > ]-- GRT ’´‰ß”äŠr„\t>"
+"--[  > ]-- GRT è¶…éæ¯”è¼ƒï¼\t>"
 
 "Insert LEQ (Compare for Less Than or Equal)\t,"
-"--[ <= ]-- LEQ ˆÈ‰º”äŠr…\t,"
+"--[ <= ]-- LEQ ä»¥ä¸‹æ¯”è¼ƒâ‰¦\t,"
 
 "Insert LES (Compare for Less Than)\t<"
-"--[ <  ]-- LES –¢–”äŠrƒ\t<"
+"--[ <  ]-- LES æœªæº€æ¯”è¼ƒï¼œ\t<"
 
 "Insert Look-Up Table"
-"--{LUT}-- ƒ‹ƒbƒNƒAƒbƒvƒe[ƒuƒ‹"
+"--{LUT}-- ãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒ—ãƒ†ãƒ¼ãƒ–ãƒ«"
 
 "Insert MOV (Move)\tM"
-"--{ := }-- MOV ‘ã“ü, “]‘—\tM"
+"--{ := }-- MOV ä»£å…¥, è»¢é€\tM"
 
 "Insert MUL (16-bit Integer Multiply)\t*"
-"--{ * }-- MUL æZ\t*"
+"--{ * }-- MUL ä¹—ç®—\t*"
 
 "Insert Make Persistent"
-"--{PERSIST}-- ‰i‘±•Ï”"
+"--{PERSIST}-- æ°¸ç¶šå¤‰æ•°"
 
 "Insert Master Control Relay"
-"--{MASTER RLY}-- ƒ}ƒXƒ^ƒRƒ“ƒgƒ[ƒ‹ƒŠƒŒ["
+"--{MASTER RLY}-- ãƒã‚¹ã‚¿ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒªãƒ¬ãƒ¼"
 
 "Insert NEQ (Compare for Not Equals)\t!"
-"--[ != ]-- NEQ ”ñ“™’l”äŠrI"
+"--[ != ]-- NEQ éç­‰å€¤æ¯”è¼ƒï¼ï¼"
 
 "Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
-"--[\\OSF/\\_ P|Q]-- —§‚¿‰º‚ª‚è”÷•ª, ‰º~ƒpƒ‹ƒX\t&\\"
+"--[\\OSF/\\_ ï¿£|ï¼¿]-- ç«‹ã¡ä¸‹ãŒã‚Šå¾®åˆ†, ä¸‹é™æ™‚ãƒ‘ãƒ«ã‚¹\t&\\"
 
 "Insert _/OSR/\\_ (One Shot Rising)\t&/"
-"--[_/OSR/\\_ Q|P]-- —§‚¿ã‚ª‚è”÷•ª, ã¸ƒpƒ‹ƒX\t&/"
+"--[_/OSR/\\_ ï¼¿|ï¿£]-- ç«‹ã¡ä¸ŠãŒã‚Šå¾®åˆ†, ä¸Šæ˜‡æ™‚ãƒ‘ãƒ«ã‚¹\t&/"
 
 "Insert Piecewise Linear"
-"--{PWL}-- üŒ`˜A‘z”z—ñ"
+"--{PWL}-- ç·šå½¢é€£æƒ³é…åˆ—"
 
 "Insert R&ES (Counter/RTO Reset)\tE"
-"--{R&ES}-- ƒJƒEƒ“ƒ^/ƒ^ƒCƒ}[ƒŠƒZƒbƒg\tE"
+"--{R&ES}-- ã‚«ã‚¦ãƒ³ã‚¿/ã‚¿ã‚¤ãƒãƒ¼ãƒªã‚»ãƒƒãƒˆ\tE"
 
 "Insert R&TO (Retentive Delayed Turn On)\tT"
-"--[R&TO 100.0ms]-- ÏZƒ^ƒCƒ}\tT"
+"--[R&TO 100.0ms]-- ç©ç®—ã‚¿ã‚¤ãƒ\tT"
 
 "Insert Rung &After\tShift+V"
-"Œã‚Éƒ‰ƒ“ƒO‚ğ‘}“ü(&A)\tShift+V"
+"å¾Œã«ãƒ©ãƒ³ã‚°ã‚’æŒ¿å…¥(&A)\tShift+V"
 
 "Insert Rung &Before\tShift+6"
-"‘O‚Éƒ‰ƒ“ƒO‚ğ‘}“ü(&B)\tShift+6"
+"å‰ã«ãƒ©ãƒ³ã‚°ã‚’æŒ¿å…¥(&B)\tShift+6"
 
 "Insert SUB (16-bit Integer Subtract)\t-"
-"--{ - }-- SUB Œ¸Z\t"
+"--{ - }-- SUB æ¸›ç®—\t"
 
 "Insert Set PWM Output"
-"--{PWM 1.00 kHz}-- PWMƒfƒ…[ƒeƒB”äİ’è"
+"--{PWM 1.00 kHz}-- PWMãƒ‡ãƒ¥ãƒ¼ãƒ†ã‚£æ¯”è¨­å®š"
 
 "Insert Shift Register"
-"--{REG}-- ƒVƒtƒgƒŒƒWƒXƒ^"
+"--{REG}-- ã‚·ãƒ•ãƒˆãƒ¬ã‚¸ã‚¹ã‚¿"
 
 "Insert T&ON (Delayed Turn On)\tO"
-"--[T&ON 100.0ms]-- ƒIƒ“ƒ^ƒCƒ}\tO"
+"--[T&ON 100.0ms]-- ã‚ªãƒ³ã‚¿ã‚¤ãƒ\tO"
 
 "Insert TO&F (Delayed Turn Off)\tF"
-"--[TO&F 100.0ms]-- ƒIƒtƒ^ƒCƒ}\tF"
+"--[TO&F 100.0ms]-- ã‚ªãƒ•ã‚¿ã‚¤ãƒ\tF"
 
 "Internal Relay"
-"“à•”ƒŠƒŒ["
+"å†…éƒ¨ãƒªãƒ¬ãƒ¼"
 
 "Internal error relating to PIC paging; make program smaller or reshuffle it."
-"PICƒy[ƒWƒ“ƒO‚Å“à•”ƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½BƒvƒƒOƒ‰ƒ€‚ğ¬‚³‚­‚·‚é‚©ƒVƒƒƒbƒtƒ‹‚µ‚Ä‰º‚³‚¢B"
+"PICãƒšãƒ¼ã‚¸ãƒ³ã‚°ã§å†…éƒ¨ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸã€‚ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‚’å°ã•ãã™ã‚‹ã‹ã‚·ãƒ£ãƒƒãƒ•ãƒ«ã—ã¦ä¸‹ã•ã„ã€‚"
 
 "Internal limit exceeded (number of vars)"
-"•Ï”“à•”—e—ÊƒI[ƒo["
+"å¤‰æ•°å†…éƒ¨å®¹é‡ã‚ªãƒ¼ãƒãƒ¼"
 
 "Internal relay '%s' never assigned; add its coil somewhere."
-"“à•”ƒŠƒŒ[ '%s' ‚É‘Î‰‚·‚éƒRƒCƒ‹‚ª‚ ‚è‚Ü‚¹‚ñB‚Ç‚±‚©‚É”z’u‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
+"å†…éƒ¨ãƒªãƒ¬ãƒ¼ '%s' ã«å¯¾å¿œã™ã‚‹ã‚³ã‚¤ãƒ«ãŒã‚ã‚Šã¾ã›ã‚“ã€‚ã©ã“ã‹ã«é…ç½®ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 "LDmicro - Program Editor"
-"LDmicro - ƒGƒfƒBƒ^"
+"LDmicro - ã‚¨ãƒ‡ã‚£ã‚¿"
 
 "LDmicro - Simulation (Running)"
-"LDmicro - ƒVƒ~ƒ…ƒŒ[ƒ^ (Às’†)"
+"LDmicro - ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚¿ (å®Ÿè¡Œä¸­)"
 
 "LDmicro - Simulation (Stopped)"
-"LDmicro - ƒVƒ~ƒ…ƒŒ[ƒ^ (’â~’†)"
+"LDmicro - ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚¿ (åœæ­¢ä¸­)"
 
 "LDmicro Error"
-"LDmicroƒGƒ‰["
+"LDmicroã‚¨ãƒ©ãƒ¼"
 
 "LDmicro Warning"
 "LDmicro Warning"
 
 "Look-Up Table"
-"ƒ‹ƒbƒNƒAƒbƒvƒe[ƒuƒ‹"
+"ãƒ«ãƒƒã‚¯ã‚¢ãƒƒãƒ—ãƒ†ãƒ¼ãƒ–ãƒ«"
 
 "MCU Crystal Frequency (MHz):"
-"“®ìü”g” (MHz):"
+"å‹•ä½œå‘¨æ³¢æ•° (MHz):"
 
 "MCU Port"
-"ƒ|[ƒg–¼"
+"ãƒãƒ¼ãƒˆå"
 
 "Make &Negated\tN"
-"--(/)-- ”½“]ƒRƒCƒ‹‚É•ÏX(&N)\tN"
+"--(/)-- åè»¢ã‚³ã‚¤ãƒ«ã«å¤‰æ›´(&N)\tN"
 
 "Make &Reset-Only\tR"
-"--(R)-- ƒŠƒZƒbƒgƒRƒCƒ‹‚É•ÏX(&R)\tR"
+"--(R)-- ãƒªã‚»ãƒƒãƒˆã‚³ã‚¤ãƒ«ã«å¤‰æ›´(&R)\tR"
 
 "Make &Set-Only\tS"
-"--(S)-- ƒZƒbƒgƒRƒCƒ‹‚É•ÏX(&S)\tS"
+"--(S)-- ã‚»ãƒƒãƒˆã‚³ã‚¤ãƒ«ã«å¤‰æ›´(&S)\tS"
 
 "Make Norm&al\tA"
-"--( )-- ’ÊíƒRƒCƒ‹‚É•ÏX(&A)\tA"
+"--( )-- é€šå¸¸ã‚³ã‚¤ãƒ«ã«å¤‰æ›´(&A)\tA"
 
 "Make Persistent"
-"‰i‘±•Ï”"
+"æ°¸ç¶šå¤‰æ•°"
 
 "Math instruction: '%s' not a valid destination."
-"ŒvZ(Math)–½—ß: ƒfƒXƒeƒBƒl[ƒVƒ‡ƒ“ '%s' ‚ª•s–¾‚Å‚·B"
+"è¨ˆç®—(Math)å‘½ä»¤: ãƒ‡ã‚¹ãƒ†ã‚£ãƒãƒ¼ã‚·ãƒ§ãƒ³ '%s' ãŒä¸æ˜ã§ã™ã€‚"
 
 "Max value:"
 "Max value:"
 
 "Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."
-"ƒ}ƒCƒRƒ“ '%s' ‚É‚Í‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB\r\n\r\n–¢‘I‘ğ‚Ìó‘Ô‚ÉƒŠƒZƒbƒg‚µ‚Ü‚·B"
+"ãƒã‚¤ã‚³ãƒ³ '%s' ã«ã¯å¯¾å¿œã—ã¦ã„ã¾ã›ã‚“ã€‚\r\n\r\næœªé¸æŠã®çŠ¶æ…‹ã«ãƒªã‚»ãƒƒãƒˆã—ã¾ã™ã€‚"
 
 "Move Selected Rung &Down\tAlt+Down"
-"‰º‚Éƒ‰ƒ“ƒO‚ğˆÚ“®(&D)\tAlt+Down"
+"ä¸‹ã«ãƒ©ãƒ³ã‚°ã‚’ç§»å‹•(&D)\tAlt+Down"
 
 "Move Selected Rung &Up\tAlt+Up"
-"ã‚Éƒ‰ƒ“ƒO‚ğˆÚ“®(&U)\tAlt+Up"
+"ä¸Šã«ãƒ©ãƒ³ã‚°ã‚’ç§»å‹•(&U)\tAlt+Up"
 
 "Move instruction: '%s' not a valid destination."
-"ˆÚ“®(Move)–½—ß: ƒfƒXƒeƒBƒl[ƒVƒ‡ƒ“ '%s' ‚ª•s–¾‚Å‚·B"
+"ç§»å‹•(Move)å‘½ä»¤: ãƒ‡ã‚¹ãƒ†ã‚£ãƒãƒ¼ã‚·ãƒ§ãƒ³ '%s' ãŒä¸æ˜ã§ã™ã€‚"
 
 "Move"
-"‘ã“ü"
+"ä»£å…¥"
 
 "Multiple escapes (\\0-9) present in format string, not allowed."
-"‘®•¶š—ñ‚ÉƒGƒXƒP[ƒv (\\0-9) ‚ğ•¡”‚¨‚­‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB"
+"æ›¸å¼æ–‡å­—åˆ—ã«ã‚¨ã‚¹ã‚±ãƒ¼ãƒ— (\\0-9) ã‚’è¤‡æ•°ãŠãã“ã¨ã¯ã§ãã¾ã›ã‚“ã€‚"
 
 "Multiply"
-"æZ"
+"ä¹—ç®—"
 
 "Must assign pins for all ADC inputs (name '%s')."
-"ADC“ü—Í‚Ìƒsƒ“‚ğ‘S‚Äİ’è‚·‚é•K—v‚ª‚ ‚è‚Ü‚· (–¼‘O: '%s')."
+"ADCå…¥åŠ›ã®ãƒ”ãƒ³ã‚’å…¨ã¦è¨­å®šã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ (åå‰: '%s')."
 
 "Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."
-"IOƒsƒ“‚ğ‘S‚Äİ’è‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B\r\n\r\n'%s' ‚ÉŠ„‚è“–‚Ä‚ª‚ ‚è‚Ü‚¹‚ñB"
+"IOãƒ”ãƒ³ã‚’å…¨ã¦è¨­å®šã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚\r\n\r\n'%s' ã«å‰²ã‚Šå½“ã¦ãŒã‚ã‚Šã¾ã›ã‚“ã€‚"
 
 "Must choose a target microcontroller before compiling."
-"ƒRƒ“ƒpƒCƒ‹‚É‚Íƒ^[ƒQƒbƒg‚Ìƒ}ƒCƒRƒ“‚ğİ’è‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
+"ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«ã«ã¯ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ãƒã‚¤ã‚³ãƒ³ã‚’è¨­å®šã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 "Name"
-"•Ï”–¼"
+"å¤‰æ•°å"
 
 "Name:"
-"–¼:"
+"å:"
 
 "No ADC or ADC not supported for selected micro."
-"‚»‚Ìƒ}ƒCƒRƒ“‚ÍAD•ÏŠ·‚É‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB"
+"ãã®ãƒã‚¤ã‚³ãƒ³ã¯ADå¤‰æ›ã«å¯¾å¿œã—ã¦ã„ã¾ã›ã‚“ã€‚"
 
 "No ADC or ADC not supported for this micro."
-"‚±‚Ìƒ}ƒCƒRƒ“‚ÍAD•ÏŠ·‚É‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB"
+"ã“ã®ãƒã‚¤ã‚³ãƒ³ã¯ADå¤‰æ›ã«å¯¾å¿œã—ã¦ã„ã¾ã›ã‚“ã€‚"
 
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
-"IOƒsƒ“‚ğg‚¤‚É‚Í[İ’è]ƒƒjƒ…[‚©‚çƒ}ƒCƒRƒ“‚Ìí—Ş‚ğİ’è‚µ‚Ä‰º‚³‚¢B"
+"IOãƒ”ãƒ³ã‚’ä½¿ã†ã«ã¯[è¨­å®š]ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‹ã‚‰ãƒã‚¤ã‚³ãƒ³ã®ç¨®é¡ã‚’è¨­å®šã—ã¦ä¸‹ã•ã„ã€‚"
 
 "No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
-"ƒVƒŠƒAƒ‹ (UART‘—M/UARTóM) ‚ğg‚¤‚Æƒ{[ƒŒ[ƒg‚ğİ’è‚Å‚«‚é‚æ‚¤‚É‚È‚è‚Ü‚·B\r\n"
+"ã‚·ãƒªã‚¢ãƒ« (UARTé€ä¿¡/UARTå—ä¿¡) ã‚’ä½¿ã†ã¨ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆã‚’è¨­å®šã§ãã‚‹ã‚ˆã†ã«ãªã‚Šã¾ã™ã€‚\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
-"‘®•¶š—ñ‚É•Ï”‚ª‚È‚¢‚Ì‚É•Ï”‚ªw’è‚³‚ê‚Ä‚¢‚Ü‚·B'\\-3' ‚Ì‚æ‚¤‚É–„‚ß‚Ş‚©A•Ï”–¼‚ğ‹ó‚É‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
+"æ›¸å¼æ–‡å­—åˆ—ã«å¤‰æ•°ãŒãªã„ã®ã«å¤‰æ•°ãŒæŒ‡å®šã•ã‚Œã¦ã„ã¾ã™ã€‚'\\-3' ã®ã‚ˆã†ã«åŸ‹ã‚è¾¼ã‚€ã‹ã€å¤‰æ•°åã‚’ç©ºã«ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 "Not a reasonable size for a shift register."
-"ƒVƒtƒgƒŒƒWƒXƒ^‚ÌƒTƒCƒY‚ª•s“KØ‚Å‚·B"
+"ã‚·ãƒ•ãƒˆãƒ¬ã‚¸ã‚¹ã‚¿ã®ã‚µã‚¤ã‚ºãŒä¸é©åˆ‡ã§ã™ã€‚"
 
 "Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details."
-"üŒ`˜A‘z”z—ñ‚Ì”’l‚Å–â‘è‚ª‚ ‚è‚Ü‚·B•\‚ÌƒTƒCƒY‚ğ¬‚³‚­‚·‚é‚©A“_‚Æ“_‚ÌŠÔŠu‚ğ‹·‚­‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B\r\n\r\nÚ‚µ‚­‚Íƒwƒ‹ƒv‚ğ‚²——‚­‚¾‚³‚¢B"
+"ç·šå½¢é€£æƒ³é…åˆ—ã®æ•°å€¤ã§å•é¡ŒãŒã‚ã‚Šã¾ã™ã€‚è¡¨ã®ã‚µã‚¤ã‚ºã‚’å°ã•ãã™ã‚‹ã‹ã€ç‚¹ã¨ç‚¹ã®é–“éš”ã‚’ç‹­ãã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚\r\n\r\nè©³ã—ãã¯ãƒ˜ãƒ«ãƒ—ã‚’ã”è¦§ãã ã•ã„ã€‚"
 
 "OK"
 "OK"
 
 "Out of memory; simplify program or choose microcontroller with more memory."
-"ƒƒ‚ƒŠ—e—Ê‚ªˆê”t‚Å‚·B‚æ‚è‘å—e—Ê‚Ìƒ}ƒCƒRƒ“‚ğg‚¤‚©AƒvƒƒOƒ‰ƒ€‚ğ’Pƒ‚É‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
+"ãƒ¡ãƒ¢ãƒªå®¹é‡ãŒä¸€æ¯ã§ã™ã€‚ã‚ˆã‚Šå¤§å®¹é‡ã®ãƒã‚¤ã‚³ãƒ³ã‚’ä½¿ã†ã‹ã€ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‚’å˜ç´”ã«ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 "Output pin"
-"o—Íƒsƒ“"
+"å‡ºåŠ›ãƒ”ãƒ³"
 
 "PLC Configuration"
-"ƒ}ƒCƒRƒ“İ’è"
+"ãƒã‚¤ã‚³ãƒ³è¨­å®š"
 
 "PLC Cycle Time (ms):"
-"ƒTƒCƒNƒ‹ŠÔ (ms):"
+"ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“ (ms):"
 
 "PWM frequency too fast."
-"PWMü”g”‚ª‘‚·‚¬‚Ü‚·"
+"PWMå‘¨æ³¢æ•°ãŒæ—©ã™ãã¾ã™"
 
 "PWM frequency too slow."
-"PWMü”g”‚ª’x‚·‚¬‚Ü‚·"
+"PWMå‘¨æ³¢æ•°ãŒé…ã™ãã¾ã™"
 
 "PWM function used but not supported for this micro."
-"‚±‚Ìƒ}ƒCƒRƒ“‚ÍPWM‚É‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB"
+"ã“ã®ãƒã‚¤ã‚³ãƒ³ã¯PWMã«å¯¾å¿œã—ã¦ã„ã¾ã›ã‚“ã€‚"
 
 "PWM in use; pin %d reserved for that."
-"%d ”Ôƒsƒ“‚ÍPWM‚Ég‚í‚ê‚Ä‚¢‚Ü‚·B"
+"%d ç•ªãƒ”ãƒ³ã¯PWMã«ä½¿ã‚ã‚Œã¦ã„ã¾ã™ã€‚"
 
 "PWM out"
 "PWM out"
 
-"PWMo—Í"
-"PWMo—Í"
+"PWMå‡ºåŠ›"
+"PWMå‡ºåŠ›"
 
 "Piecewise Linear Table"
-"üŒ`˜A‘z”z—ñ"
+"ç·šå½¢é€£æƒ³é…åˆ—"
 
 "Piecewise linear lookup table with zero elements!"
-"üŒ`˜A‘z”z—ñ‚ª‹ó‚Å‚·!"
+"ç·šå½¢é€£æƒ³é…åˆ—ãŒç©ºã§ã™!"
 
 "Pin on MCU"
-"ƒsƒ“‚Éo—Í"
+"ãƒ”ãƒ³ã«å‡ºåŠ›"
 
 "Pin on Processor"
-"ƒsƒ“”Ô†"
+"ãƒ”ãƒ³ç•ªå·"
 
 "Please select a micro with a UART.\r\n\r\n"
-"UART‘Î‰‚Ìƒ}ƒCƒRƒ“‚ğ‘I‚ñ‚Å‰º‚³‚¢B\r\n\r\n"
+"UARTå¯¾å¿œã®ãƒã‚¤ã‚³ãƒ³ã‚’é¸ã‚“ã§ä¸‹ã•ã„ã€‚\r\n\r\n"
 
 "Points:"
-"ƒGƒ“ƒgƒŠ”:"
+"ã‚¨ãƒ³ãƒˆãƒªæ•°:"
 
 "RTO: variable can only be used for RES elsewhere"
-"RTO (ÏZƒ^ƒCƒ}): RESET ˆÈŠO‚Ì‘¼‚ÌêŠ‚Åg‚¤‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"
+"RTO (ç©ç®—ã‚¿ã‚¤ãƒ): RESET ä»¥å¤–ã®ä»–ã®å ´æ‰€ã§ä½¿ã†ã“ã¨ã¯ã§ãã¾ã›ã‚“"
 
 "Read A/D Converter"
-"AD•ÏŠ·“Ç‚İ‚İ"
+"ADå¤‰æ›èª­ã¿è¾¼ã¿"
 
 "Read From SFR"
 "Read From SFR"
@@ -608,7 +608,7 @@
 "Read SFR instruction: '%s' not a valid destination."
 
 "Receive from UART"
-"UARTóM"
+"UARTå—ä¿¡"
 
 "Release"
 "Release"
@@ -617,10 +617,10 @@
 "Release.."
 
 "Rename I/O from default name ('%s') before assigning MCU pin."
-"ƒsƒ“‚ğŠ„‚è“–‚Ä‚é‘O‚ÉA•Ï”‚É–¼‘O‚ğ‚Â‚¯‚é•K—v‚ª‚ ‚è‚Ü‚·B\r\nƒfƒtƒHƒ‹ƒg‚Ì '%s' ‚©‚ç•ÏX‚µ‚Ä‚­‚¾‚³‚¢B"
+"ãƒ”ãƒ³ã‚’å‰²ã‚Šå½“ã¦ã‚‹å‰ã«ã€å¤‰æ•°ã«åå‰ã‚’ã¤ã‘ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚\r\nãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã® '%s' ã‹ã‚‰å¤‰æ›´ã—ã¦ãã ã•ã„ã€‚"
 
 "Reset"
-"ƒŠƒZƒbƒg"
+"ãƒªã‚»ãƒƒãƒˆ"
 
 "Retentive Turn-On Delay"
 "Retentive Turn-On Delay"
@@ -629,64 +629,64 @@
 "SFR position:"
 
 "Save &As..."
-"–¼‘O‚ğ•t‚¯‚Ä•Û‘¶(&A)..."
+"åå‰ã‚’ä»˜ã‘ã¦ä¿å­˜(&A)..."
 
 "Send to UART"
-"UART‘—M"
+"UARTé€ä¿¡"
 
 "Serial (UART) will use pins %d and %d.\r\n"
-"ƒVƒŠƒAƒ‹ƒ|[ƒg (UART) —p‚É %d ”Ôƒsƒ“‚Æ %d ”Ôƒsƒ“‚ğg‚¢‚Ü‚·B\r\n"
+"ã‚·ãƒªã‚¢ãƒ«ãƒãƒ¼ãƒˆ (UART) ç”¨ã« %d ç•ªãƒ”ãƒ³ã¨ %d ç•ªãƒ”ãƒ³ã‚’ä½¿ã„ã¾ã™ã€‚\r\n"
 
 "Set Bit In SFR"
 "Set Bit In SFR"
 
 "Set PWM Duty Cycle"
-"PWMƒfƒ…[ƒeƒB”äİ’è"
+"PWMãƒ‡ãƒ¥ãƒ¼ãƒ†ã‚£æ¯”è¨­å®š"
 
 "Shift Register"
-"ƒVƒtƒgƒŒƒWƒXƒ^"
+"ã‚·ãƒ•ãƒˆãƒ¬ã‚¸ã‚¹ã‚¿"
 
 "Si&mulate"
-"ƒVƒ~ƒ…ƒŒ[ƒ^(&M)"
+"ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚¿(&M)"
 
 "Si&mulation Mode\tCtrl+M"
-"ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ƒ‚[ƒh(&M)\tCtrl+M"
+"ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¢ãƒ¼ãƒ‰(&M)\tCtrl+M"
 
 "Single &Cycle\tSpace"
-"1ƒTƒCƒNƒ‹i‚ß‚é(&C)\tSpace"
+"1ã‚µã‚¤ã‚¯ãƒ«é€²ã‚ã‚‹(&C)\tSpace"
 
 "Source"
-"ƒ\[ƒX"
+"ã‚½ãƒ¼ã‚¹"
 
 "Source:"
-"Œ³:"
+"å…ƒ:"
 
 "Stages:"
-"ƒXƒe[ƒW”:"
+"ã‚¹ãƒ†ãƒ¼ã‚¸æ•°:"
 
 "Start &Real-Time Simulation\tCtrl+R"
-"ƒŠƒAƒ‹ƒ^ƒCƒ€ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ŠJn(&R)\tCtrl+R"
+"ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹(&R)\tCtrl+R"
 
 "Start new program?"
-"ƒvƒƒOƒ‰ƒ€‚ğV‹Kì¬‚µ‚Ü‚·‚©H"
+"ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‚’æ–°è¦ä½œæˆã—ã¾ã™ã‹ï¼Ÿ"
 
 "State"
-"ó‘Ô"
+"çŠ¶æ…‹"
 
 "String:"
-"•¶š—ñ:"
+"æ–‡å­—åˆ—:"
 
 "Subtract"
-"Œ¸Z"
+"æ¸›ç®—"
 
 "TOF: variable cannot be used elsewhere"
-"TOF (ƒIƒtƒ^ƒCƒ}): ‘¼‚ÌŠ‚Å•Ï”‚ğg‚¤‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"
+"TOF (ã‚ªãƒ•ã‚¿ã‚¤ãƒ): ä»–ã®æ‰€ã§å¤‰æ•°ã‚’ä½¿ã†ã“ã¨ã¯ã§ãã¾ã›ã‚“"
 
 "TON: variable cannot be used elsewhere"
-"TON (ƒIƒ“ƒ^ƒCƒ}): ‘¼‚ÌŠ‚Å•Ï”‚ğg‚¤‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"
+"TON (ã‚ªãƒ³ã‚¿ã‚¤ãƒ): ä»–ã®æ‰€ã§å¤‰æ•°ã‚’ä½¿ã†ã“ã¨ã¯ã§ãã¾ã›ã‚“"
 
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
-"İ’èü”g”‚Ì %d Hz ‚ÉÅ‚à‹ß‚¢ %d Hz ‚Éİ’è‚µ‚Ü‚· (’ˆÓ: >5%% ‚ÌŒë·)"
+"è¨­å®šå‘¨æ³¢æ•°ã® %d Hz ã«æœ€ã‚‚è¿‘ã„ %d Hz ã«è¨­å®šã—ã¾ã™ (æ³¨æ„: >5%% ã®èª¤å·®)"
 
 "Test if Bit Clear In SFR"
 "Test if Bit Clear In SFR"
@@ -695,25 +695,25 @@
 "Test if Bit Set In SFR"
 
 "The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal."
-"LDmicro‚Ì¶¬‚·‚éPLCƒ‰ƒ“ƒ^ƒCƒ€‚ÌƒTƒCƒNƒ‹ŠÔ‚Íƒ†[ƒU‚ª’²®‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B’Z‚·‚¬‚é‚ÆƒvƒƒZƒbƒT‚Ì‘¬“x‚ª‘«‚è‚È‚­‚È‚Á‚½‚èA’·‚·‚¬‚é‚ÆƒI[ƒo[ƒtƒ[‚ğ‹N‚±‚·‹°‚ê‚ª‚ ‚è‚Ü‚·BÀ—p“I‚È”ÍˆÍ‚Í 10ms ` 100ms ‚Å‚µ‚å‚¤B\r\nƒNƒƒbƒNüŠú‚ÆÀŠÔ‚ğ•ÏŠ·‚·‚é‚½‚ß‚É“®ìü”g”‚Ìİ’è‚ª•K—v‚Å‚·B‚±‚ê‚Í’Êí‚Í 4MHz ` 20MHz ’ö“x‚Å‚·Bƒf[ƒ^ƒV[ƒg‚ÅÅ‘åƒNƒƒbƒN‘¬“x‚ğŠm”F‚µ‚Ä‚¨‚­‚±‚Æ‚ğ‚¨‚·‚·‚ß‚µ‚Ü‚·B."
+"LDmicroã®ç”Ÿæˆã™ã‚‹PLCãƒ©ãƒ³ã‚¿ã‚¤ãƒ ã®ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“ã¯ãƒ¦ãƒ¼ã‚¶ãŒèª¿æ•´ã™ã‚‹ã“ã¨ãŒã§ãã¾ã™ã€‚çŸ­ã™ãã‚‹ã¨ãƒ—ãƒ­ã‚»ãƒƒã‚µã®é€Ÿåº¦ãŒè¶³ã‚Šãªããªã£ãŸã‚Šã€é•·ã™ãã‚‹ã¨ã‚ªãƒ¼ãƒãƒ¼ãƒ•ãƒ­ãƒ¼ã‚’èµ·ã“ã™æã‚ŒãŒã‚ã‚Šã¾ã™ã€‚å®Ÿç”¨çš„ãªç¯„å›²ã¯ 10ms ã€œ 100ms ã§ã—ã‚‡ã†ã€‚\r\nã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã¨å®Ÿæ™‚é–“ã‚’å¤‰æ›ã™ã‚‹ãŸã‚ã«å‹•ä½œå‘¨æ³¢æ•°ã®è¨­å®šãŒå¿…è¦ã§ã™ã€‚ã“ã‚Œã¯é€šå¸¸ã¯ 4MHz ã€œ 20MHz ç¨‹åº¦ã§ã™ã€‚ãƒ‡ãƒ¼ã‚¿ã‚·ãƒ¼ãƒˆã§æœ€å¤§ã‚¯ãƒ­ãƒƒã‚¯é€Ÿåº¦ã‚’ç¢ºèªã—ã¦ãŠãã“ã¨ã‚’ãŠã™ã™ã‚ã—ã¾ã™ã€‚."
 
 "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
-"•ÏX‚ğ•Û‘¶‚µ‚Ü‚·‚©H"
+"å¤‰æ›´ã‚’ä¿å­˜ã—ã¾ã™ã‹ï¼Ÿ"
 
 "Timer period too long (max 32767 times cycle time); use a slower cycle time."
-"ƒ^ƒCƒ}[üŠú‚ª’·‚·‚¬‚Ü‚·B(Å‘å 32767 ~ ƒTƒCƒNƒ‹ŠÔ)BƒTƒCƒNƒ‹ŠÔ‚ğ’x‚­‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
+"ã‚¿ã‚¤ãƒãƒ¼å‘¨æœŸãŒé•·ã™ãã¾ã™ã€‚(æœ€å¤§ 32767 Ã— ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“)ã€‚ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“ã‚’é…ãã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 "Timer period too short (needs faster cycle time)."
-"ƒ^ƒCƒ}[üŠú‚ª’Z‚·‚¬‚Ü‚·BƒTƒCƒNƒ‹ŠÔ‚ğ‘‚­‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B"
+"ã‚¿ã‚¤ãƒãƒ¼å‘¨æœŸãŒçŸ­ã™ãã¾ã™ã€‚ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“ã‚’æ—©ãã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 "Timer"
-"ƒ^ƒCƒ}"
+"ã‚¿ã‚¤ãƒ"
 
 "Too many elements in subcircuit!"
-"x‰ñ˜H‚Ì—v‘f‚ª‘½‚·‚¬‚Ü‚·!"
+"æ”¯å›è·¯ã®è¦ç´ ãŒå¤šã™ãã¾ã™!"
 
 "Too many rungs!"
-"ƒ‰ƒ“ƒO‚ª‘½‚·‚¬‚Ü‚·!"
+"ãƒ©ãƒ³ã‚°ãŒå¤šã™ãã¾ã™!"
 
 "True if >= :"
 "True if >= :"
@@ -728,22 +728,22 @@
 "Turn-On Delay"
 
 "Type"
-"í—Ş"
+"ç¨®é¡"
 
 "UART Baud Rate (bps):"
-"UARTƒ{[ƒŒ[ƒg (bps):"
+"UARTãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆ (bps):"
 
 "UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken."
-"UARTƒ{[ƒŒ[ƒgŒvZŠí: •ª•ê=%d Œ‹‰Ê=%.4f Œë·=%.2f%%\r\n\r\nŒë·‚ª‘å‚«‚·‚¬‚Ü‚·Bƒ{[ƒŒ[ƒg‚ğ‰º‚°‚é‚©AŠ„‚è‚â‚·‚¢ü”g”‚Ì…»‚ğg‚Á‚Ä‰º‚³‚¢(3.6864 MHz, 14.7456 MHz ‚È‚Ç)B\r\n\r\nƒR[ƒh‚Ì¶¬‚Í‰Â”\‚Å‚·‚ªAƒVƒŠƒAƒ‹’ÊM‚ª•sˆÀ’è‚É‚È‚é‹°‚ê‚ª‚ ‚è‚Ü‚·B"
+"UARTãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆè¨ˆç®—å™¨: åˆ†æ¯=%d çµæœ=%.4f èª¤å·®=%.2f%%\r\n\r\nèª¤å·®ãŒå¤§ãã™ãã¾ã™ã€‚ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆã‚’ä¸‹ã’ã‚‹ã‹ã€å‰²ã‚Šã‚„ã™ã„å‘¨æ³¢æ•°ã®æ°´æ™¶ã‚’ä½¿ã£ã¦ä¸‹ã•ã„(3.6864 MHz, 14.7456 MHz ãªã©)ã€‚\r\n\r\nã‚³ãƒ¼ãƒ‰ã®ç”Ÿæˆã¯å¯èƒ½ã§ã™ãŒã€ã‚·ãƒªã‚¢ãƒ«é€šä¿¡ãŒä¸å®‰å®šã«ãªã‚‹æã‚ŒãŒã‚ã‚Šã¾ã™ã€‚"
 
 "UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken."
-"UARTƒ{[ƒŒ[ƒgŒvZŠí: ‘¬“x‚ª‘«‚è‚Ü‚¹‚ñB•ª•ê‚ªƒI[ƒo[ƒtƒ[‚µ‚Ü‚µ‚½B‚æ‚è’x‚¢…»‚ğg‚¤‚©ƒ{[ƒŒ[ƒg‚ğã‚°‚Ä‰º‚³‚¢B\r\n\r\nƒR[ƒh‚Ì¶¬‚Í‰Â”\‚Å‚·‚ªAƒVƒŠƒAƒ‹’ÊM‚ª•sˆÀ’è‚É‚È‚é‹°‚ê‚ª‚ ‚è‚Ü‚·B"
+"UARTãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆè¨ˆç®—å™¨: é€Ÿåº¦ãŒè¶³ã‚Šã¾ã›ã‚“ã€‚åˆ†æ¯ãŒã‚ªãƒ¼ãƒãƒ¼ãƒ•ãƒ­ãƒ¼ã—ã¾ã—ãŸã€‚ã‚ˆã‚Šé…ã„æ°´æ™¶ã‚’ä½¿ã†ã‹ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆã‚’ä¸Šã’ã¦ä¸‹ã•ã„ã€‚\r\n\r\nã‚³ãƒ¼ãƒ‰ã®ç”Ÿæˆã¯å¯èƒ½ã§ã™ãŒã€ã‚·ãƒªã‚¢ãƒ«é€šä¿¡ãŒä¸å®‰å®šã«ãªã‚‹æã‚ŒãŒã‚ã‚Šã¾ã™ã€‚"
 
 "UART function used but not supported for this micro."
-"‚±‚Ìƒ}ƒCƒRƒ“‚ÍUART‚É‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB"
+"ã“ã®ãƒã‚¤ã‚³ãƒ³ã¯UARTã«å¯¾å¿œã—ã¦ã„ã¾ã›ã‚“ã€‚"
 
 "UART in use; pins %d and %d reserved for that."
-"%d ”Ôƒsƒ“‚Æ %d ”Ôƒsƒ“‚ÍUART‚Ég‚í‚ê‚Ä‚¢‚Ü‚·B"
+"%d ç•ªãƒ”ãƒ³ã¨ %d ç•ªãƒ”ãƒ³ã¯UARTã«ä½¿ã‚ã‚Œã¦ã„ã¾ã™ã€‚"
 
 "UART rx"
 "UART rx"
@@ -752,77 +752,77 @@
 "UART tx"
 
 "Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for interpretable target."
-"ƒCƒ“ƒ^ƒvƒŠƒ^‚Ì‘Î‰‚µ‚È‚¢–½—ß‚ª‚ ‚è‚Ü‚· (ADC, PWM, UART, EEPROM, SFR..)B"
+"ã‚¤ãƒ³ã‚¿ãƒ—ãƒªã‚¿ã®å¯¾å¿œã—ãªã„å‘½ä»¤ãŒã‚ã‚Šã¾ã™ (ADC, PWM, UART, EEPROM, SFR..)ã€‚"
 
 "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
-"•Ï” '%s' ‚ÉMOV‚âADD‚È‚Ç‚Ì‘ã“ü‚ª‚ ‚è‚Ü‚¹‚ñB\r\n\r\n‚¨‚»‚ç‚­‚±‚ê‚ÍƒvƒƒOƒ‰ƒ€ƒ~ƒX‚Å‚·Bƒ[ƒ‚ÅŒÅ’è‚µ‚Ü‚·B"
+"å¤‰æ•° '%s' ã«MOVã‚„ADDãªã©ã®ä»£å…¥ãŒã‚ã‚Šã¾ã›ã‚“ã€‚\r\n\r\nãŠãã‚‰ãã“ã‚Œã¯ãƒ—ãƒ­ã‚°ãƒ©ãƒ ãƒŸã‚¹ã§ã™ã€‚ã‚¼ãƒ­ã§å›ºå®šã—ã¾ã™ã€‚"
 
 "Variable for '%s' incorrectly assigned: %s."
-"'%s' ‚É•Ï” '%s' ‚ª•s“KØ‚ÉŠ„‚è“–‚Ä‚ç‚ê‚Ä‚¢‚Ü‚·B"
+"'%s' ã«å¤‰æ•° '%s' ãŒä¸é©åˆ‡ã«å‰²ã‚Šå½“ã¦ã‚‰ã‚Œã¦ã„ã¾ã™ã€‚"
 
 "Variable is interpolated into formatted string, but none is specified."
-"•Ï”‚Í‘®•¶š—ñ‚É–„‚ß‚Ş•Ï”‚ªw’è‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB"
+"å¤‰æ•°ã¯æ›¸å¼æ–‡å­—åˆ—ã«åŸ‹ã‚è¾¼ã‚€å¤‰æ•°ãŒæŒ‡å®šã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚"
 
 "Variable:"
-"•Ï”:"
+"å¤‰æ•°:"
 
 "Write To SFR"
 "Write To SFR"
 
 "Zero baud rate not possible."
-"ƒ{[ƒŒ[ƒg‚ğƒ[ƒ‚É‚Í‚Å‚«‚Ü‚¹‚ñB"
+"ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆã‚’ã‚¼ãƒ­ã«ã¯ã§ãã¾ã›ã‚“ã€‚"
 
 "Zero cycle time not valid; resetting to 10 ms."
-"ƒTƒCƒNƒ‹ŠÔ‚ğƒ[ƒ‚É‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB10 ms‚ÉƒŠƒZƒbƒg‚µ‚Ü‚·B"
+"ã‚µã‚¤ã‚¯ãƒ«æ™‚é–“ã‚’ã‚¼ãƒ­ã«ã™ã‚‹ã“ã¨ã¯ã§ãã¾ã›ã‚“ã€‚10 msã«ãƒªã‚»ãƒƒãƒˆã—ã¾ã™ã€‚"
 
 "\n\nI/O ASSIGNMENT:\n\n"
-"\n\nIOŠ„‚è“–‚Ä:\n\n"
+"\n\nIOå‰²ã‚Šå½“ã¦:\n\n"
 
 "adc input"
-"AD•ÏŠ·’l"
+"ADå¤‰æ›å€¤"
 
 "counter"
-"ƒJƒEƒ“ƒ^"
+"ã‚«ã‚¦ãƒ³ã‚¿"
 
 "cycle time %.2f ms"
-"üŠú %.2f ms"
+"å‘¨æœŸ %.2f ms"
 
 "digital in"
-"“ü—Í"
+"å…¥åŠ›"
 
 "digital out"
-"o—Í"
+"å‡ºåŠ›"
 
 "general var"
-"”Ä—p•Ï”"
+"æ±ç”¨å¤‰æ•°"
 
 "int. relay"
-"“à•”ƒŠƒŒ["
+"å†…éƒ¨ãƒªãƒ¬ãƒ¼"
 
 "is set := :"
-"•Ï”:"
+"å¤‰æ•°:"
 
 "no MCU selected"
-"ƒ^[ƒQƒbƒgƒ}ƒCƒRƒ“–¢İ’è"
+"ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒã‚¤ã‚³ãƒ³æœªè¨­å®š"
 
 "processor clock %.4f MHz"
-"ƒNƒƒbƒN %.4f MHz"
+"ã‚¯ãƒ­ãƒƒã‚¯ %.4f MHz"
 
 "retentive timer"
-"ÏZƒ^ƒCƒ}"
+"ç©ç®—ã‚¿ã‚¤ãƒ"
 
 "saved var"
 "saved var"
 
 "turn-off delay"
-"ƒIƒtƒ^ƒCƒ}"
+"ã‚ªãƒ•ã‚¿ã‚¤ãƒ"
 
 "turn-on delay"
-"ƒIƒ“ƒ^ƒCƒ}"
+"ã‚ªãƒ³ã‚¿ã‚¤ãƒ"
 
 "x values in piecewise linear table must be strictly increasing."
-"üŒ`˜A‘z”z—ñ‚Ìx’l‚Í’P’²‘‰Á‚Å‚ ‚é•K—v‚ª‚ ‚è‚Ü‚·B"
+"ç·šå½¢é€£æƒ³é…åˆ—ã®xå€¤ã¯å˜èª¿å¢—åŠ ã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 
 "|/| Negated"
-"|/| ”½“]"
+"|/| åè»¢"
 

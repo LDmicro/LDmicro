@@ -134,10 +134,10 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
             if(inBrace == 1) {
                 prev = GetTextColor(Hdc);
                 SetTextColor(Hdc, HighlightColours.punct);
-                TextOut(Hdc, x, y, str, 1);
+                TextOutA(Hdc, x, y, str, 1);
                 SetTextColor(Hdc, prev);
             } else {
-                TextOut(Hdc, x, y, str, 1);
+                TextOutA(Hdc, x, y, str, 1);
             }
             if(*str == ']' || *str == '}') inBrace--;
         } else if((
@@ -147,7 +147,7 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
         {
             prev = GetTextColor(Hdc);
             SetTextColor(Hdc, HighlightColours.lit);
-            TextOut(Hdc, x, y, str, 1);
+            TextOutA(Hdc, x, y, str, 1);
             SetTextColor(Hdc, prev);
             inNumber = TRUE;
         } else if(*str == '\x01') {
@@ -173,14 +173,14 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
             if(isdigit(*str) || *str == '.') {
                 prev = GetTextColor(Hdc);
                 SetTextColor(Hdc, HighlightColours.lit);
-                TextOut(Hdc, x, y, str, 1);
+                TextOutA(Hdc, x, y, str, 1);
                 SetTextColor(Hdc, prev);
             } else {
-                TextOut(Hdc, x, y, str, 1);
+                TextOutA(Hdc, x, y, str, 1);
                 inNumber = FALSE;
             }
         } else {
-            TextOut(Hdc, x, y, str, 1);
+            TextOutA(Hdc, x, y, str, 1);
         }
 
         firstTime = FALSE;
@@ -300,18 +300,18 @@ void PaintWindow(void)
             SetTextColor(Hdc, HighlightColours.def);
 
             sprintf(str,"%04d", i+1);
-            TextOut(Hdc, 8, yp, str, 4);
+            TextOutA(Hdc, 8, yp, str, 4);
 
             SetTextColor(Hdc, HighlightColours.rungNum);
 
             sprintf(str,"%4d",Prog.OpsInRung[i]);
-            TextOut(Hdc, 8, yp + FONT_HEIGHT, str, 4);
+            TextOutA(Hdc, 8, yp + FONT_HEIGHT, str, 4);
 
             sprintf(str,"%4d",Prog.HexInRung[i]);
-            TextOut(Hdc, 8, yp + FONT_HEIGHT * 2, str, 4);
+            TextOutA(Hdc, 8, yp + FONT_HEIGHT * 2, str, 4);
 
             SetTextColor(Hdc, HighlightColours.selected);
-            TextOut(Hdc, 8-FONT_WIDTH, yp , &Prog.rungSelected[i], 1);
+            TextOutA(Hdc, 8-FONT_WIDTH, yp , &Prog.rungSelected[i], 1);
 
             SetTextColor(Hdc, prev);
 
@@ -334,15 +334,15 @@ void PaintWindow(void)
     SetTextColor(Hdc, HighlightColours.def);
 
     sprintf(str,"%4d", Prog.numRungs);
-    TextOut(Hdc, 8, yp, str, 4);
+    TextOutA(Hdc, 8, yp, str, 4);
 
     SetTextColor(Hdc, HighlightColours.rungNum);
 
     sprintf(str,"%4d", IntCodeLen);
-    TextOut(Hdc, 8, yp + FONT_HEIGHT, str, 4);
+    TextOutA(Hdc, 8, yp + FONT_HEIGHT, str, 4);
 
     sprintf(str,"%4d", ProgWriteP);
-    TextOut(Hdc, 8, yp + FONT_HEIGHT * 2, str, 4);
+    TextOutA(Hdc, 8, yp + FONT_HEIGHT * 2, str, 4);
 
     SetTextColor(Hdc, prev);
 
@@ -559,7 +559,7 @@ void InitForDrawing(void)
 {
     SetSyntaxHighlightingColours();
 
-    FixedWidthFont = CreateFont(
+    FixedWidthFont = CreateFontW(
         FONT_HEIGHT, FONT_WIDTH,
         0, 0,
         FW_REGULAR,
@@ -571,9 +571,9 @@ void InitForDrawing(void)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         FF_DONTCARE,
-        "Lucida Console");
+        L"Lucida Console");
 
-    FixedWidthFontBold = CreateFont(
+    FixedWidthFontBold = CreateFontW(
         FONT_HEIGHT, FONT_WIDTH,
         0, 0,
         FW_REGULAR, // the bold text renders funny under Vista
@@ -585,7 +585,7 @@ void InitForDrawing(void)
         CLIP_DEFAULT_PRECIS,
         DEFAULT_QUALITY,
         FF_DONTCARE,
-        "Lucida Console");
+        L"Lucida Console");
 
     InitBrushesForDrawing();
 }
@@ -611,7 +611,7 @@ BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
 {
     FILETIME ftCreate, ftAccess;
 
-    HANDLE hFile = CreateFile(FileName,
+    HANDLE hFile = CreateFileA(FileName,
                    GENERIC_READ,
                    FILE_SHARE_READ,
                    NULL,
@@ -620,7 +620,7 @@ BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
                    NULL);
 
     if (hFile == INVALID_HANDLE_VALUE) {
-        Error("Could not open file %s (error %d)\n", FileName, GetLastError());
+        Error(_("Could not open file %ls (error %d)\n"), u16(FileName), GetLastError());
         return FALSE;
     }
     BOOL b = GetFileTime(hFile, &ftCreate, &ftAccess, ftWrite);
@@ -659,7 +659,7 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
 {
     sFileTime[0]=0;
 
-    HANDLE hFile = CreateFile(FileName,   
+    HANDLE hFile = CreateFileA(FileName,
                    GENERIC_READ,          
                    FILE_SHARE_READ,       
                    NULL,                  
@@ -668,7 +668,7 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
                    NULL);                 
 
     if (hFile == INVALID_HANDLE_VALUE) {
-        Error("Could not open file %s (error %d)\n", FileName, GetLastError());
+        Error(_("Could not open file %ls (error %d)\n"), u16(FileName), GetLastError());
         return FALSE;
     }
     BOOL b = GetLastWriteTime(hFile, sFileTime);
@@ -679,7 +679,7 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
 //-----------------------------------------------------------------------------
 // Export a text drawing of the ladder logic program to a file.
 //-----------------------------------------------------------------------------
-void ExportDrawingAsText(char *file)
+void ExportDrawingAsText(const char *file)
 {
     char sFileTime[512];
     int maxWidth = ProgCountWidestRow();
@@ -757,7 +757,7 @@ void ExportDrawingAsText(char *file)
 
     FILE *f = fopen(file, "w");
     if(!f) {
-        Error(_("Couldn't open '%s'\n"), f);
+        Error(_("Could not open file %ls \n"), u16(file));
         return;
     }
 
@@ -788,30 +788,30 @@ void ExportDrawingAsText(char *file)
     CheckFree(ExportBuffer);
     ExportBuffer = NULL;
 
-    fprintf(f, _("\nI/O ASSIGNMENT:\n"));
+    fprintf(f, "\nI/O ASSIGNMENT:\n");
 
-    fprintf(f, _("  Name                       | Type               | Pin | Port | Pin name\n"));
-    fprintf(f,   " ----------------------------+--------------------+-----+------+-----------\n");
+    fprintf(f, "  Name                       | Type               | Pin | Port | Pin name\n");
+    fprintf(f, " ----------------------------+--------------------+-----+------+-----------\n");
     for(i = 0; i < Prog.io.count; i++) {
         char b[1024];
         memset(b, '\0', sizeof(b));
 
         PlcProgramSingleIo *io = &Prog.io.assignment[i];
-        const char *type = IoTypeToString(io->type);
-        char pin[MAX_NAME_LEN] = "";
-        char portName[MAX_NAME_LEN] = "";
-        char pinName[MAX_NAME_LEN] = "";
+        std::string type = to_utf8(IoTypeToString(io->type));
+        wchar_t pin[MAX_NAME_LEN] = L"";
+        wchar_t portName[MAX_NAME_LEN] = L"";
+        wchar_t pinName[MAX_NAME_LEN] = L"";
 
         if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM) && (io->pin != NO_PIN_ASSIGNED))
-            sprintf(pin, "%s", PinToName(io->pin));
+            swprintf_s(pin, L"%ls", u16(PinToName(io->pin)));
         else
             PinNumberForIo(pin, io, portName, pinName);
 
         sprintf(b, "                             |                    | %3s | %4s | %s\n",
-            pin, portName, pinName);
+            to_utf8(pin).c_str(), to_utf8(portName).c_str(), to_utf8(pinName).c_str());
 
         memcpy(b+2, io->name, strlen(io->name));
-        memcpy(b+31, type, strlen(type));
+        memcpy(b+31, type.c_str(), strlen(type.c_str()));
         fprintf(f, "%s", b);
     }
 

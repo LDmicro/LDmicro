@@ -28,7 +28,7 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
-//#include "display.h"
+#include <cwchar>
 
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list
@@ -87,10 +87,10 @@ static void AppendIo(char *IOname, int type)
     strcpy(name, IOname);
     if(!IsNumber(IOname)) {
         char *c;
-        while(c = strchr(IOname, '-'))
+        while((c = strchr(IOname, '-')))
             *c = '_';
         if(!strstr(name, IOname)) {
-            Error(_(" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"), name, IOname);
+            Error(_(" The character '-' is replaced by the '_'.\nVariable      '%ls'\nrenamed to '%ls'"), u16(name), u16(IOname));
             strcpy(name, IOname);
             ProgramChangedNotSaved = TRUE;
         }
@@ -326,7 +326,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             sprintf(str, "C%s%s", l->d.stepper.name, "Dec");
             AppendIo(str, IO_TYPE_COUNTER);
 
-            if(IsNumber(l->d.stepper.P)&&(CheckMakeNumber(l->d.stepper.P)>1)
+            if((IsNumber(l->d.stepper.P)&&(CheckMakeNumber(l->d.stepper.P)>1))
             ||(l->d.stepper.graph>0)//&&(l->d.stepper.n>1)
             ||(!IsNumber(l->d.stepper.P))){
                 sprintf(str, "C%s%s", l->d.stepper.name, "Inc");
@@ -846,7 +846,7 @@ void SaveIoListToFile(FILE *f)
         }
     }
     if(j1 != j2) {
-        Error(" %s%s", "Not all I/O pins are saved! Use menu:\n", _("File->Save LDmicro0.2 file format"));
+        Error(L" %ls%ls", _("Not all I/O pins are saved! Use menu:\n"), _("File->Save LDmicro0.2 file format"));
     }
 }
 
@@ -875,7 +875,7 @@ static LRESULT CALLBACK AnalogSliderDialogProc(HWND hwnd, UINT msg,
 //-----------------------------------------------------------------------------
 void ShowAnalogSliderPopup(char *name)
 {
-    WNDCLASSEX wc;
+    WNDCLASSEXW wc;
     memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
 
@@ -884,11 +884,11 @@ void ShowAnalogSliderPopup(char *name)
     wc.lpfnWndProc      = (WNDPROC)AnalogSliderDialogProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "LDmicroAnalogSlider";
+    wc.lpszClassName    = L"LDmicroAnalogSlider";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
 
-    RegisterClassEx(&wc);
+    RegisterClassExW(&wc);
 
     POINT pt;
     GetCursorPos(&pt);
@@ -924,16 +924,16 @@ void ShowAnalogSliderPopup(char *name)
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
         left, top, 30 +15, 100 +28, NULL, NULL, Instance, NULL);
 
-    AnalogSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
+    AnalogSliderTrackbar = CreateWindowExA(0, TRACKBAR_CLASSA, "", WS_CHILD |
         TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE,
         0, 0, 30 +15, 100 +28, AnalogSliderMain, NULL, Instance, NULL);
-    SendMessage(AnalogSliderTrackbar, TBM_SETRANGE, FALSE,
+    SendMessageA(AnalogSliderTrackbar, TBM_SETRANGE, FALSE,
         MAKELONG(0, maxVal));
-    SendMessage(AnalogSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1)/8, 0);
-    SendMessage(AnalogSliderTrackbar, TBM_SETPOS, TRUE, currentVal);
+    SendMessageA(AnalogSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1)/8, 0);
+    SendMessageA(AnalogSliderTrackbar, TBM_SETPOS, TRUE, currentVal);
 
-    SendMessage(AnalogSliderTrackbar, TBM_SETPAGESIZE, 0, 10);
-    SendMessage(AnalogSliderTrackbar, TBM_SETLINESIZE, 0, 1);
+    SendMessageA(AnalogSliderTrackbar, TBM_SETPAGESIZE, 0, 10);
+    SendMessageA(AnalogSliderTrackbar, TBM_SETLINESIZE, 0, 1);
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(AnalogSliderMain, TRUE);
@@ -1025,7 +1025,7 @@ static BOOL MakeWindowClass()
     wc.lpfnWndProc      = (WNDPROC)IoDialogProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "LDmicroIo";
+    wc.lpszClassName    = L"LDmicroIo";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -1040,22 +1040,22 @@ static BOOL MakeWindowClass()
 #define AddY 50
 static void MakeControls(void)
 {
-    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Assign:"),
+    HWND textLabel = CreateWindowExW(0, WC_STATICW, _("Assign:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         6, 1, 80, 17, IoDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    PinList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
+    PinList = CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTBOXW, L"",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
         LBS_NOTIFY, 6, 18, 95+AddX, 320+AddY, IoDialog, NULL, Instance, NULL);
     FixedFont(PinList);
 
-    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+    OkButton = CreateWindowExW(0, WC_BUTTONW, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         6, 325+AddY+4, 95, 23, IoDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowExW(0, WC_BUTTONW, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         6, 356+AddY+2, 95, 23, IoDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
@@ -1095,7 +1095,7 @@ void ShowIoDialog(int item)
             return;
     }
     if(!Prog.mcu) {
-        MessageBox(MainWindow,
+        MessageBoxW(MainWindow,
             _("No microcontroller has been selected. You must select a "
             "microcontroller before you can assign I/O pins.\r\n\r\n"
             "Select a microcontroller under the Settings menu and try "
@@ -1169,8 +1169,7 @@ void ShowIoDialog(int item)
     }
 
     if(strcmp(Prog.io.assignment[item].name+1, "new")==0) {
-        Error(_("Rename I/O from default name ('%s') before assigning "
-            "MCU pin."), Prog.io.assignment[item].name);
+        Error(_("Rename I/O from default name ('%ls') before assigning MCU pin."), u16(Prog.io.assignment[item].name));
         return;
     }
 
@@ -1181,7 +1180,7 @@ void ShowIoDialog(int item)
     // APPWINDOW style, it becomes impossible to get the window back (by
     // Alt+Tab or taskbar).
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
-        "LDmicroIo", _("I/O Pin"),
+        L"LDmicroIo", _("I/O Pin"),
         WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 106+AddX, 387+AddY, NULL, NULL, Instance, NULL);
 
@@ -1189,7 +1188,7 @@ void ShowIoDialog(int item)
 
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
     int Index = 0;
-    char buf[MAX_NAME_LEN];
+    wchar_t buf[MAX_NAME_LEN];
     int j;
     int i;
     for(i = 0; i < Prog.mcu->pinCount; i++) {
@@ -1296,9 +1295,9 @@ void ShowIoDialog(int item)
 
         char pinName[MAX_NAME_LEN];
         GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
-        sprintf(buf, "%3d  %s", Prog.mcu->pinInfo[i].pin, pinName);
+        swprintf_s(buf, L"%3d  %ls", Prog.mcu->pinInfo[i].pin, u16(pinName));
 
-        SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+        SendMessageW(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
     cant_use_this_io:;
     }
 
@@ -1315,10 +1314,10 @@ void ShowIoDialog(int item)
             if(j == Prog.mcu->adcCount) {
                 goto cant_use_this_io_adc;
             } else {
-                sprintf(buf, "%3d  ADC%d", Prog.mcu->adcInfo[j].pin,
+                swprintf_s(buf, L"%3d  ADC%d", Prog.mcu->adcInfo[j].pin,
                     Prog.mcu->adcInfo[j].muxRegValue);
             }
-            SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+            SendMessageW(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
         }
     cant_use_this_io_adc:;
     }
@@ -1352,9 +1351,9 @@ void ShowIoDialog(int item)
 
     if(!DialogCancel) {
         int sel = SendMessage(PinList, LB_GETCURSEL, 0, 0);
-        char pin[MAX_NAME_LEN];
-        SendMessage(PinList, LB_GETTEXT, (WPARAM)sel, (LPARAM)pin);
-        if(strcmp(pin, _("(no pin)"))==0) {
+        wchar_t pin[MAX_NAME_LEN];
+        SendMessageW(PinList, LB_GETTEXT, (WPARAM)sel, (LPARAM)pin);
+        if(wcscmp(pin, _("(no pin)"))==0) {
             int i;
             for(i = 0; i < IoSeenPreviouslyCount; i++) {
                 if(strcmp(IoSeenPreviously[i].name,
@@ -1365,14 +1364,14 @@ void ShowIoDialog(int item)
             }
             Prog.io.assignment[item].pin = NO_PIN_ASSIGNED;
         } else {
-            Prog.io.assignment[item].pin = atoi(pin);
+            wchar_t *end;
+            Prog.io.assignment[item].pin = wcstol(pin, &end, 10);
             // Only one name can be bound to each pin; make sure that there's
             // not another entry for this pin in the IoSeenPreviously list,
             // that might get used if the user creates a new pin with that
             // name.
-            int i;
-            for(i = 0; i < IoSeenPreviouslyCount; i++) {
-                if(IoSeenPreviously[i].pin == atoi(pin)) {
+            for(int i = 0; i < IoSeenPreviouslyCount; i++) {
+                if(IoSeenPreviously[i].pin == wcstol(pin, &end, 10)) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
                 }
             }
@@ -1389,32 +1388,32 @@ void ShowIoDialog(int item)
 //-----------------------------------------------------------------------------
 static void MakeModbusControls(void)
 {
-    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Slave ID:"),
+    HWND textLabel2 = CreateWindowExW(0, WC_STATICW, _("Slave ID:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         6, 1, 70, 21, IoDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
-    ModbusSlave = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    ModbusSlave = CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         80, 1, 30, 21, IoDialog, NULL, Instance, NULL);
     FixedFont(ModbusSlave);
 
-    HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Register:"),
+    HWND textLabel3 = CreateWindowExW(0, WC_STATICW, _("Register:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         6, 24, 70, 21, IoDialog, NULL, Instance, NULL);
     NiceFont(textLabel3);
 
-    ModbusRegister = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    ModbusRegister = CreateWindowExW(WS_EX_CLIENTEDGE, WC_EDITW, L"",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         80, 24, 80, 21, IoDialog, NULL, Instance, NULL);
     FixedFont(ModbusRegister);
 
-    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+    OkButton = CreateWindowExW(0, WC_BUTTONW, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         6, 48, 50, 23, IoDialog, NULL, Instance, NULL);
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowExW(0, WC_BUTTONW, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         56, 48, 50, 23, IoDialog, NULL, Instance, NULL);
     NiceFont(CancelButton);
@@ -1425,7 +1424,7 @@ void ShowModbusDialog(int item)
     MakeWindowClass();
 
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
-        "LDmicroIo", _("Modbus Address"),
+        L"LDmicroIo", _("Modbus Address"),
         WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 170, 80, NULL, NULL, Instance, NULL);
 
@@ -1496,18 +1495,18 @@ void IoListProc(NMHDR *h)
                 // otherwise cause us to write to a null pointer.
                 break;
             }
-            strcpy(i->item.pszText, "");
+            wcscpy(i->item.pszText, L"");
             int item = i->item.iItem;
             char *name = Prog.io.assignment[item].name;
             int   type = Prog.io.assignment[item].type;
             switch(i->item.iSubItem) {
                 case LV_IO_NAME:
-                    strcpy(i->item.pszText, Prog.io.assignment[item].name);
+                    wcscpy(i->item.pszText, to_utf16(Prog.io.assignment[item].name).c_str());
                     break;
 
                 case LV_IO_TYPE: {
-                    const char *s = IoTypeToString(Prog.io.assignment[item].type);
-                    strcpy(i->item.pszText, s);
+                    const wchar_t *s = IoTypeToString(Prog.io.assignment[item].type);
+                    wcscpy(i->item.pszText, s);
                     break;
                 }
 
@@ -1515,7 +1514,7 @@ void IoListProc(NMHDR *h)
                     if(TRUE || InSimulationMode) {
                         DescribeForIoList(name, type, i->item.pszText);
                     } else {
-                        strcpy(i->item.pszText, "");
+                        wcscpy(i->item.pszText, L"");
                     }
                     break;
                 }
@@ -1531,19 +1530,19 @@ void IoListProc(NMHDR *h)
                                     Prog.mcu->whichIsa == ISA_XINTERPRETED ||
                                     Prog.mcu->whichIsa == ISA_INTERPRETED) )
                     {
-                        strcpy(i->item.pszText, "");
+                        wcscpy(i->item.pszText, L"");
                         break;
                     }
-                    char poptName[MAX_NAME_LEN];
-                    char pinName[MAX_NAME_LEN];
+                    wchar_t poptName[MAX_NAME_LEN];
+                    wchar_t pinName[MAX_NAME_LEN];
 
                     PinNumberForIo(i->item.pszText, // i->item.iSubItem == LV_IO_PIN
                         &(Prog.io.assignment[item]), poptName, pinName);
 
                     if(i->item.iSubItem == LV_IO_PORT)
-                        strcpy(i->item.pszText, poptName);
+                        wcscpy(i->item.pszText, poptName);
                     else if(i->item.iSubItem == LV_IO_PINNAME)
-                        strcpy(i->item.pszText, pinName);
+                        wcscpy(i->item.pszText, pinName);
                     break;
                 }
 
@@ -1552,15 +1551,15 @@ void IoListProc(NMHDR *h)
                         type != IO_TYPE_MODBUS_CONTACT &&
                         type != IO_TYPE_MODBUS_HREG)
                     {
-                        strcpy(i->item.pszText, "");
+                        wcscpy(i->item.pszText, L"");
                         break;
                     }
 
                     if (Prog.io.assignment[item].modbus.Slave == 0) {
-                        sprintf(i->item.pszText, _("(not assigned)"));
+                        swprintf_s(i->item.pszText, i->item.cchTextMax, _("(not assigned)"));
                     }
                     else {
-                        sprintf(i->item.pszText, "%d:%05d",
+                        swprintf_s(i->item.pszText, i->item.cchTextMax, L"%d:%05d",
                             Prog.io.assignment[item].modbus.Slave,
                             Prog.io.assignment[item].modbus.Address);
                     }
@@ -1578,9 +1577,9 @@ void IoListProc(NMHDR *h)
                     ) {
                             MemForVariable(name, &addr);
                             if(addr > 0)
-                                sprintf(i->item.pszText, "0x%x", addr);
+                                swprintf_s(i->item.pszText, i->item.cchTextMax, L"0x%x", addr);
                              else
-                                sprintf(i->item.pszText, "Not a PORT!");
+                                swprintf_s(i->item.pszText, i->item.cchTextMax, L"Not a PORT!");
                     } else
                     if((type == IO_TYPE_GENERAL)
                     || (type == IO_TYPE_PERSIST)
@@ -1596,26 +1595,25 @@ void IoListProc(NMHDR *h)
                     ) {
                             MemForVariable(name, &addr);
                             if(addr > 0)
-                                sprintf(i->item.pszText, "0x%x", addr);
+                                swprintf_s(i->item.pszText, i->item.cchTextMax, L"0x%x", addr);
                     } else
-                    if((type == IO_TYPE_INTERNAL_RELAY)
-                    ) {
+                    if(type == IO_TYPE_INTERNAL_RELAY) {
                             MemForSingleBit(name, TRUE, &addr, &bit);
                             if(addr > 0 && bit >= 0)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                swprintf_s(i->item.pszText, i->item.cchTextMax, L"0x%02x (BIT%d)", addr, bit);
                     } else
                     if (type == IO_TYPE_UART_TX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.txPin, &addr, &bit, FALSE);
                             if(addr > 0 && bit >= 0)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                swprintf_s(i->item.pszText, i->item.cchTextMax, L"0x%02x (BIT%d)", addr, bit);
                         }
                     } else
                     if (type == IO_TYPE_UART_RX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.rxPin, &addr, &bit, TRUE);
                             if(addr > 0 && bit >= 0)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                swprintf_s(i->item.pszText, i->item.cchTextMax, L"0x%02x (BIT%d)", addr, bit);
                         }
                     } else
                     if((type == IO_TYPE_READ_ADC)
@@ -1630,14 +1628,14 @@ void IoListProc(NMHDR *h)
                             if(iop) {
                                 AddrBitForPin(iop->pin, &addr, &bit, TRUE);
                                 if(addr > 0 && bit >= 0)
-                                    sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                    swprintf_s(i->item.pszText, i->item.cchTextMax, L"0x%02x (BIT%d)", addr, bit);
                             }
                         }
                     }
                     if (type == IO_TYPE_TABLE_IN_FLASH) {
                         MemOfVar(name, &addr);
                         if(addr > 0)
-                            sprintf(i->item.pszText, "0x%x", addr);
+                            swprintf_s(i->item.pszText, i->item.cchTextMax, L"0x%x", addr);
                     } else
                     if((type == IO_TYPE_DIG_INPUT)
                     || (type == IO_TYPE_DIG_OUTPUT)
@@ -1646,7 +1644,7 @@ void IoListProc(NMHDR *h)
                             if(SingleBitAssigned(name))
                                 MemForSingleBit(name, TRUE, &addr, &bit);
                             if(addr > 0 && bit >= 0)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                swprintf_s(i->item.pszText, i->item.cchTextMax, L"0x%02x (BIT%d)", addr, bit);
                     }
                     break;
                 }
@@ -1669,11 +1667,11 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_TON             )
                     || (type == IO_TYPE_TOF             )) {
                         int sov = SizeOfVar(name);
-                        sprintf(i->item.pszText, sov==1 ? "%d byte" : "%d bytes", sov);
+                        swprintf_s(i->item.pszText, i->item.cchTextMax, sov==1 ? L"%d byte" : L"%d bytes", sov);
                     } else
                     if (type == IO_TYPE_TABLE_IN_FLASH) {
                         int sov = MemOfVar(name, NULL); // ok
-                        sprintf(i->item.pszText, sov==1 ? "%d elem" : "%d elem's", sov);
+                        swprintf_s(i->item.pszText, i->item.cchTextMax, sov==1 ? L"%d elem" : L"%d elem's", sov);
                     } else
                     if((type == IO_TYPE_DIG_INPUT)
                     || (type == IO_TYPE_DIG_OUTPUT)
@@ -1684,17 +1682,17 @@ void IoListProc(NMHDR *h)
                     || (type == IO_TYPE_SPI__SS )
                     || (type == IO_TYPE_MODBUS_COIL)
                     || (type == IO_TYPE_MODBUS_CONTACT)) {
-                        sprintf(i->item.pszText, "1 bit");
+                        swprintf_s(i->item.pszText, i->item.cchTextMax, L"1 bit");
                     } else
                     if((type == IO_TYPE_UART_TX)
                     || (type == IO_TYPE_UART_RX)) {
-                        sprintf(i->item.pszText, "1 pin/1 byte");
+                        swprintf_s(i->item.pszText, i->item.cchTextMax, L"1 pin/1 byte");
                     } else
                     if(type == IO_TYPE_PWM_OUTPUT) {
-                        sprintf(i->item.pszText, "1 pin");
+                        swprintf_s(i->item.pszText, i->item.cchTextMax, L"1 pin");
                     } else
                     if(type == IO_TYPE_READ_ADC) {
-                        sprintf(i->item.pszText, "1 pin/2 bytes");
+                        swprintf_s(i->item.pszText, i->item.cchTextMax, L"1 pin/2 bytes");
                     } // else oops();
                     break;
 

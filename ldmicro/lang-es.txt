@@ -2,7 +2,7 @@
 "  Nombre                     | Tipo               | Pata\n"
 
 " - (not yet saved)"
-" - (no guardado a˙n)"
+" - (no guardado a√∫n)"
 
 "!!!too long!!!"
 "!!Muy grande!!"
@@ -29,7 +29,7 @@
 "&Archivo"
 
 "&Halt Simulation\tCtrl+H"
-"Parar SimulaciÛn\tCtrl+H"
+"Parar Simulaci√≥n\tCtrl+H"
 
 "&Help"
 "&Ayuda"
@@ -53,7 +53,7 @@
 "&Insert Write To SFR"
 
 "&Instruction"
-"&InstrucciÛn"
+"&Instrucci√≥n"
 
 "&MCU Parameters..."
 "&Parametros del Micro..."
@@ -110,7 +110,7 @@
 "(no asignado)"
 
 "--add comment here--"
-"--aÒade el comentario aquÌ--"
+"--a√±ade el comentario aqu√≠--"
 
 "<PWM needs!>"
 "<Se necesita PWM!>"
@@ -131,7 +131,7 @@
 "<No es una E/S!>"
 
 "ANSI C target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
-"ANSI C de destino no soporta perifericos (UART, PWM, ADC, EEPROM). Evite esa instrucciÛn."
+"ANSI C de destino no soporta perifericos (UART, PWM, ADC, EEPROM). Evite esa instrucci√≥n."
 
 "Add"
 "Sumar"
@@ -152,10 +152,10 @@
 "Solo puede asignar numero de pata a las patas de Entrada/Salida (Xname o Yname o Aname)."
 
 "Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code."
-"No se puede asignar la E/S especificadas para el ANSI C generado; compile y vea los comentarios generados en el cÛdigo fuente."
+"No se puede asignar la E/S especificadas para el ANSI C generado; compile y vea los comentarios generados en el c√≥digo fuente."
 
 "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."
-"No se puede asignar la E/S especificadas para el cÛdigo generado para el interprete; vea los comentarios en la implementaciÛn del interprete."
+"No se puede asignar la E/S especificadas para el c√≥digo generado para el interprete; vea los comentarios en la implementaci√≥n del interprete."
 
 "Cancel"
 "Cancelar"
@@ -179,25 +179,25 @@
 "Compilar &Como..."
 
 "Compile Successful"
-"CompilaciÛn Correcta"
+"Compilaci√≥n Correcta"
 
 "Compile To"
 "Compilar"
 
 "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
-"CompilaciÛn correcta: Escrito CÛdigo Fuente en C en '%s'.\r\n\r\nNo es un programa completo en C. Tiene que aÒadirle el procedimiento principal y todas las rutinas de E/S. Vea los comentarios en el cÛdigo fuente para mas informaciÛn sobre como hacer esto"
+"Compilaci√≥n correcta: Escrito C√≥digo Fuente en C en '%s'.\r\n\r\nNo es un programa completo en C. Tiene que a√±adirle el procedimiento principal y todas las rutinas de E/S. Vea los comentarios en el c√≥digo fuente para mas informaci√≥n sobre como hacer esto"
 
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
-"CompilaciÛn correcta; se escribiÛ IHEX para AVR en '%s'.\r\n\r\nRecuerde marcar la configuraciÛn (fuses) del micro correctamente. Esto NO se hace automaticamente."
+"Compilaci√≥n correcta; se escribi√≥ IHEX para AVR en '%s'.\r\n\r\nRecuerde marcar la configuraci√≥n (fuses) del micro correctamente. Esto NO se hace automaticamente."
 
 "Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off."
-"CompilaciÛn correcta; escrito IHEX para PIC16 en '%s'.\r\n\r\nBits de ConfigurariÛn (fuses) han sido establecidos para oscilador a cristal, BOD activado, LVP desactivado, PWRT activado, Todos los bits de protecciÛn desactivados."
+"Compilaci√≥n correcta; escrito IHEX para PIC16 en '%s'.\r\n\r\nBits de Configurari√≥n (fuses) han sido establecidos para oscilador a cristal, BOD activado, LVP desactivado, PWRT activado, Todos los bits de protecci√≥n desactivados."
 
 "Used %d/%d words of program flash (chip %d%% full)."
 "Usadas %d/%d palabras de programa en flash (Chip %d%% lleno)."
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
-"CompilaciÛn correcta: CÛdigo para interprete escrito en '%s'.\r\n\r\nProblablemente tengas que adaptar el interprete a tu aplicaciÛn. Mira la documentaciÛn."
+"Compilaci√≥n correcta: C√≥digo para interprete escrito en '%s'.\r\n\r\nProblablemente tengas que adaptar el interprete a tu aplicaci√≥n. Mira la documentaci√≥n."
 
 "Constant %d out of range: -32768 to 32767 inclusive."
 "Constante %d fuera de rango: -32768 a 32767 inclusive."
@@ -239,7 +239,7 @@
 "Tiempo del Ciclo demasiado lento; incrementa el tiempo de ciclo, o usa un cristal de menos Mhz."
 
 "D&elete Rung\tShift+Del"
-"B&orrar LÌnea (Rung) Seleccionada\tShift+Supr"
+"B&orrar L√≠nea (Rung) Seleccionada\tShift+Supr"
 
 "Delay (ms):"
 "Retardo (ms):"
@@ -257,7 +257,7 @@
 "Dividir"
 
 "Division by zero; halting simulation"
-"DivisiÛn por cero; Parando simulaciÛn"
+"Divisi√≥n por cero; Parando simulaci√≥n"
 
 "Duty cycle var:"
 "Var Ancho Ciclo:"
@@ -269,7 +269,7 @@
 "Editar tabla de valores ascii como una cadena"
 
 "Empty row; delete it or add instructions before compiling."
-"Fila vacia; borrela o aÒada instrucciones antes de compilar."
+"Fila vacia; borrela o a√±ada instrucciones antes de compilar."
 
 "Empty textbox; not permitted."
 "Texto vacio; no permitido"
@@ -290,7 +290,7 @@
 "Frecuencia (Hz):"
 
 "I/O Pin Assignment"
-"AsignaciÛn de pata E/S"
+"Asignaci√≥n de pata E/S"
 
 "I/O Pin"
 "E/S Pata"
@@ -404,7 +404,7 @@
 "Insertar _/OSR/\\_ (Flanco de Subida)\t&/"
 
 "Insert Piecewise Linear"
-"Insertar LinealizaciÛn por Segmentos"
+"Insertar Linealizaci√≥n por Segmentos"
 
 "Insert R&ES (Counter/RTO Reset)\tE"
 "Insertar R&ES (Contador/RTO Reinicio)\tE"
@@ -413,10 +413,10 @@
 "Insertar R&TO (Encendido Retardado con Memoria)\tT"
 
 "Insert Rung &After\tShift+V"
-"Insertar LÌnea (Rung) &Despues\tShift+V"
+"Insertar L√≠nea (Rung) &Despues\tShift+V"
 
 "Insert Rung &Before\tShift+6"
-"Insertar LÌnea (Rung) &Antes\tShift+6"
+"Insertar L√≠nea (Rung) &Antes\tShift+6"
 
 "Insert SUB (16-bit Integer Subtract)\t-"
 "Insertar SUB (Resta Entero 16-bit)\t-"
@@ -437,22 +437,22 @@
 "Rele Interno"
 
 "Internal error relating to PIC paging; make program smaller or reshuffle it."
-"Error interno relativo a la paginaciÛn del PIC; Haz el programa mas pequeÒo o reorganizalo"
+"Error interno relativo a la paginaci√≥n del PIC; Haz el programa mas peque√±o o reorganizalo"
 
 "Internal limit exceeded (number of vars)"
 "Limite interno superado (numero de variables)"
 
 "Internal relay '%s' never assigned; add its coil somewhere."
-"No ha asignado el rele interno '%s'; aÒada la bobina en cualquier parte del programa."
+"No ha asignado el rele interno '%s'; a√±ada la bobina en cualquier parte del programa."
 
 "LDmicro - Program Editor"
-"LDmicro ñ Editor de Programa"
+"LDmicro ‚Äì Editor de Programa"
 
 "LDmicro - Simulation (Running)"
-"LDmicro - SimulaciÛn (Ejecutando)"
+"LDmicro - Simulaci√≥n (Ejecutando)"
 
 "LDmicro - Simulation (Stopped)"
-"LDmicro - SimulaciÛn (Parada)"
+"LDmicro - Simulaci√≥n (Parada)"
 
 "LDmicro Error"
 "LDmicro Error"
@@ -485,7 +485,7 @@
 "Hacer permanente"
 
 "Math instruction: '%s' not a valid destination."
-"InstrucciÛn Math: '%s' no es valido el destino."
+"Instrucci√≥n Math: '%s' no es valido el destino."
 
 "Max value:"
 "Valor Max:"
@@ -494,13 +494,13 @@
 "Microcontrolador '%s' no sorportado.\r\n\r\nForzando ninguna CPU."
 
 "Move Selected Rung &Down\tAlt+Down"
-"Bajar LÌnea (Rung) Seleccionada\tAlt+Down"
+"Bajar L√≠nea (Rung) Seleccionada\tAlt+Down"
 
 "Move Selected Rung &Up\tAlt+Up"
-"Subir LÌnea (Rung) Seleccionada\tAlt+Up"
+"Subir L√≠nea (Rung) Seleccionada\tAlt+Up"
 
 "Move instruction: '%s' not a valid destination."
-"InstrucciÛn Move: '%s' no es valido el destino."
+"Instrucci√≥n Move: '%s' no es valido el destino."
 
 "Move"
 "Mover"
@@ -533,19 +533,19 @@
 "Este micro no tiene ADC o no esta soportado."
 
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
-"No se ha seleccionado micro. Debes seleccionar un micro antes de asignar patas E/S.\r\n\r\nElije un micro en el menu de configuraciÛn y prueba otra vez."
+"No se ha seleccionado micro. Debes seleccionar un micro antes de asignar patas E/S.\r\n\r\nElije un micro en el menu de configuraci√≥n y prueba otra vez."
 
 "No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
-"No se han usado instrucciones (UART Enviar/UART Recibir) para el puerto serie aun; AÒada una al programa antes de configurar los baudios.\r\n\r\n"
+"No se han usado instrucciones (UART Enviar/UART Recibir) para el puerto serie aun; A√±ada una al programa antes de configurar los baudios.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
-"No se ha declarado un parametro dentro de la cadena de caractares pero sin embargo se ha especificado una variable. AÒada un cadena como '\\-3', o quite el nombre de la variable."
+"No se ha declarado un parametro dentro de la cadena de caractares pero sin embargo se ha especificado una variable. A√±ada un cadena como '\\-3', o quite el nombre de la variable."
 
 "Not a reasonable size for a shift register."
-"No es un tamaÒo razonable para el Registro de Desplazamiento."
+"No es un tama√±o razonable para el Registro de Desplazamiento."
 
 "Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details."
-"Problema numÈrico con la tabla de linealizaciÛn por segmentos. Haz la tabla de entradas mas pequeÒa, o aleja mas los puntos juntos.\r\n\r\nMira la ayuda para mas detalles."
+"Problema num√©rico con la tabla de linealizaci√≥n por segmentos. Haz la tabla de entradas mas peque√±a, o aleja mas los puntos juntos.\r\n\r\nMira la ayuda para mas detalles."
 
 "OK"
 "OK"
@@ -557,7 +557,7 @@
 "Pata Salida"
 
 "PLC Configuration"
-"ConfiguraciÛn PLC"
+"Configuraci√≥n PLC"
 
 "PLC Cycle Time (ms):"
 "Tiempo Ciclo (ms):"
@@ -578,7 +578,7 @@
 "salida PWM"
 
 "Piecewise Linear Table"
-"Tabla de linealizaciÛn por segmentos"
+"Tabla de linealizaci√≥n por segmentos"
 
 "Piecewise linear lookup table with zero elements!"
 "tabla de linealizacion por segmentos con cero elementos!"
@@ -635,10 +635,10 @@
 "Enviado a la UART"
 
 "Serial (UART) will use pins %d and %d.\r\n"
-"El Puerto Serie (UART) usar· los pines %d y %d.\r\n"
+"El Puerto Serie (UART) usar√° los pines %d y %d.\r\n"
 
 "Serial (UART) will use pins %d and %d.\r\n"
-"Puerto Serie (UART) usar· las patas %d y %d.\r\n"
+"Puerto Serie (UART) usar√° las patas %d y %d.\r\n"
 
 "Set Bit In SFR"
 "Set Bit In SFR"
@@ -653,7 +653,7 @@
 "Si&mular"
 
 "Si&mulation Mode\tCtrl+M"
-"Modo Si&mulaciÛn \tCtrl+M"
+"Modo Si&mulaci√≥n \tCtrl+M"
 
 "Single &Cycle\tSpace"
 "Solo un &Ciclo\tSpace"
@@ -668,10 +668,10 @@
 "Fases:"
 
 "Start &Real-Time Simulation\tCtrl+R"
-"Empezar SimulaciÛn en Tiempo &Real\tCtrl+R"
+"Empezar Simulaci√≥n en Tiempo &Real\tCtrl+R"
 
 "Start new program?"
-"øEmpezar un nuevo programa?"
+"¬øEmpezar un nuevo programa?"
 
 "State"
 "Estado"
@@ -689,7 +689,7 @@
 "TON: la variable no puede ser usada en otra parte"
 
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
-"Frecuencia Micro %d Hz, la mejor aproximaciÛn es %d Hz (aviso, >5%% error)."
+"Frecuencia Micro %d Hz, la mejor aproximaci√≥n es %d Hz (aviso, >5%% error)."
 
 "Test if Bit Clear In SFR"
 "Test if Bit Clear In SFR"
@@ -698,10 +698,10 @@
 "Test if Bit Set In SFR"
 
 "The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal."
-"El tiempo de ciclo de ejecuciÛn para el 'PLC' es configurable. Un tiempo de ciclo muy corto puede no funcionar debido a la baja velocidad del micro, y un tiempo de ciclo muy largo puede no funcionar por limitaciones del temporizador del micro. Ciclos de tiempo entre 10 y 100 ms suele ser lo normal.\r\n\r\nEl compilador debe conocer la velocidad del cristal que estas usando para poder convertir entre tiempo en ciclos de reloj y tiempo en segundos. Un cristal entre 4 Mhz y 20 Mhz es lo tÌpico; Comprueba la velocidad a la que puede funcionar tu micro y calcula la velocidad m·xima del reloj antes de elegir el cristal."
+"El tiempo de ciclo de ejecuci√≥n para el 'PLC' es configurable. Un tiempo de ciclo muy corto puede no funcionar debido a la baja velocidad del micro, y un tiempo de ciclo muy largo puede no funcionar por limitaciones del temporizador del micro. Ciclos de tiempo entre 10 y 100 ms suele ser lo normal.\r\n\r\nEl compilador debe conocer la velocidad del cristal que estas usando para poder convertir entre tiempo en ciclos de reloj y tiempo en segundos. Un cristal entre 4 Mhz y 20 Mhz es lo t√≠pico; Comprueba la velocidad a la que puede funcionar tu micro y calcula la velocidad m√°xima del reloj antes de elegir el cristal."
 
 "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
-"El programa ha cambiado desde la ˙ltima vez que los guardo.\r\n\r\nøQuieres guardar los cambios?"
+"El programa ha cambiado desde la √∫ltima vez que los guardo.\r\n\r\n¬øQuieres guardar los cambios?"
 
 "Timer period too long (max 32767 times cycle time); use a slower cycle time."
 "Periodo del temporizador demasiado largo (max. 32767 veces el tiempo de ciclo); use un tiempo de ciclo mayor."
@@ -734,10 +734,10 @@
 "Baudios UART (bps):"
 
 "UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken."
-"UART generador de baudios: divisor=%d actual=%.4f para %.2f%% error.\r\n\r\nEs demasiado grande; Prueba con otro valor de baudios (probablemente menor), o un cristal cuya frecuencia sea divible por los baudios mas comunes (p.e. 3.6864MHz, 14.7456MHz).\r\n\r\nEl cÛdigo se genera de todas formas pero las tramas serie sean inestable o no entendible."
+"UART generador de baudios: divisor=%d actual=%.4f para %.2f%% error.\r\n\r\nEs demasiado grande; Prueba con otro valor de baudios (probablemente menor), o un cristal cuya frecuencia sea divible por los baudios mas comunes (p.e. 3.6864MHz, 14.7456MHz).\r\n\r\nEl c√≥digo se genera de todas formas pero las tramas serie sean inestable o no entendible."
 
 "UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken."
-"UART generador de baudios: demasiado lento, divisor demasiado grande. Use un cristal mas lento o mayor baudios.\r\n\r\nEl cÛdigo se genera de todas formas pero las tramas serie ser·n no entendible.."
+"UART generador de baudios: demasiado lento, divisor demasiado grande. Use un cristal mas lento o mayor baudios.\r\n\r\nEl c√≥digo se genera de todas formas pero las tramas serie ser√°n no entendible.."
 
 "UART function used but not supported for this micro."
 "Usadas Funciones para UART. Este micro no las soporta."
@@ -755,7 +755,7 @@
 "Op no soportada en el interprete (algun ADC, PWM, UART, EEPROM, SFR..)."
 
 "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
-"Variable '%s' no asignada, p.e. con el comando MOV, una instrucciÛn ADD, etc.\r\n\r\nEsto es probablemente un error de programaciÛn; valdr· cero."
+"Variable '%s' no asignada, p.e. con el comando MOV, una instrucci√≥n ADD, etc.\r\n\r\nEsto es probablemente un error de programaci√≥n; valdr√° cero."
 
 "Variable for '%s' incorrectly assigned: %s."
 "Variable para '%s' incorrectamente asignada: %s."
@@ -776,7 +776,7 @@
 "No es valido un tiempo de ciclo 0; forzado a 10 ms."
 
 "\n\nI/O ASSIGNMENT:\n\n"
-"\n\nE/S ASIGNACI”N:\n\n"
+"\n\nE/S ASIGNACI√ìN:\n\n"
 
 "adc input"
 "entrada adc"
@@ -821,7 +821,7 @@
 "activar retardo"
 
 "x values in piecewise linear table must be strictly increasing."
-"Los valores X en la tabla de linealizaciÛn por segmentos deben ser estrictamente incrementales."
+"Los valores X en la tabla de linealizaci√≥n por segmentos deben ser estrictamente incrementales."
 
 "|/| Negated"
 "|/| Negado"
@@ -830,16 +830,16 @@
 "  Nombre                     | Tipo               | Pin | Puerto| Nombre Pin\n"
 
 " Flash program memory size %d is exceed limit %d words\nfor %s."
-" El tamaÒo del Programa en memoria flash %d excede el limite %d palabras\nfor %s."
+" El tama√±o del Programa en memoria flash %d excede el limite %d palabras\nfor %s."
 
 " Save ld before flash."
 " Guardar Ladder antes de enviar a flash."
 
 " Target N PULSE frequency %d Hz, closest achievable with prescaler=%d and divider=%d is %d Hz (Warning, >5%% error)."
-" Target N PULSO frecuencia %d Hz, alcanzable m·s f·cilmente con prescalar=%d y dividir=%d es %d Hz (Advertencia, error> 5 %%). "
+" Target N PULSO frecuencia %d Hz, alcanzable m√°s f√°cilmente con prescalar=%d y dividir=%d es %d Hz (Advertencia, error> 5 %%). "
 
 " You can decrease size of variable '%s' to %d bit in LD file."
-" Puede reducir el tamaÒo de la variable '%s' a %d bit en el archivo LD."
+" Puede reducir el tama√±o de la variable '%s' a %d bit en el archivo LD."
 
 "%s=%d: out of range for 8bits target"
 "%s=%d: fuera de rango para longitud 8bits"
@@ -848,7 +848,7 @@
 "&Copiar Lineas\tCtrl+C o Ctrl+Insert"
 
 "&Halt Simulation\tCtrl+H or F9"
-"&Detener SimulaciÛn\tCtrl+H o F9"
+"&Detener Simulaci√≥n\tCtrl+H o F9"
 
 "&Redo\tCtrl+Y or Alt+Shift+Backspace"
 "&Rehacer\tCtrl+Y or Alt+Shift+Backspace"
@@ -857,7 +857,7 @@
 "&Guardar\tCtrl+S o F2"
 
 "&Special Function for AVR"
-"&FunciÛn Especial para AVR"
+"&Funci√≥n Especial para AVR"
 
 "'%s' duty < 0"
 "'%s' servicio < 0"
@@ -887,25 +887,25 @@
 "AND"
 
 "ANSI C target does not support peripherals (ADC). Skipping that instruction."
-"ANSI C destino no soporta perifÈricos (ADC). Omitiendo esta instrucciÛn."
+"ANSI C destino no soporta perif√©ricos (ADC). Omitiendo esta instrucci√≥n."
 
 "ANSI C target does not support peripherals (PWM). Skipping that instruction."
-"ANSI C destino no soporta perifÈricos (PWM). Omitiendo esta instrucciÛn."
+"ANSI C destino no soporta perif√©ricos (PWM). Omitiendo esta instrucci√≥n."
 
 "Accel.:"
 "Accel.:"
 
 "Addres not allowed!\nLoadXAddr(%d) skiped!"
-"DirecciÛn no permitida!\nLoadXAddr(%d) saltado!"
+"Direcci√≥n no permitida!\nLoadXAddr(%d) saltado!"
 
 "Addres not allowed!\nLoadYAddr(%d) skiped!"
-"DirecciÛn no permitida!\nLoadYAddr(%d) saltado!"
+"Direcci√≥n no permitida!\nLoadYAddr(%d) saltado!"
 
 "Addres not allowed!\nLoadZAddr(%d) skiped!"
-"DirecciÛn no permitida!\nLoadZAddr(%d) saltado!"
+"Direcci√≥n no permitida!\nLoadZAddr(%d) saltado!"
 
 "Address"
-"DirecciÛn"
+"Direcci√≥n"
 
 "Available PWM frequency from %.3f %sHz up to %.3f %sHz"
 "Frecuencia disponible para PWM desde %.3f %sHz hasta %.3f %sHz"
@@ -914,10 +914,10 @@
 "BCD var"
 
 "BCD2BIN instruction: '%s' not a valid destination."
-"BCD2BIN instrucciÛn: '%s' no es v·lida en destino."
+"BCD2BIN instrucci√≥n: '%s' no es v√°lida en destino."
 
 "BIN2BCD instruction: '%s' not a valid destination."
-"BIN2BCD instrucciÛn: '%s' no es v·lida en destino."
+"BIN2BCD instrucci√≥n: '%s' no es v√°lida en destino."
 
 "BUS tracer"
 "BUS trazar"
@@ -926,16 +926,16 @@
 "Bit # [0..15]:"
 
 "Bitwise variable operations (Unsigned)"
-"OperaciÛn de variables bit a bit (Sin signo)"
+"Operaci√≥n de variables bit a bit (Sin signo)"
 
 "Bus instruction: '%s' not a valid destination."
-"InstrucciÛn Bus: '%s' destino no disponible."
+"Instrucci√≥n Bus: '%s' destino no disponible."
 
 "Bus instruction: '%s' not a valid source."
 "Instruccion Bus: '%s' fuente no disponble."
 
 "Busy to: '%s' you must set to internal relay 'R%s' or to output pin 'Y%s'."
-"Pendiente de: '%s' debe configurar un relÈ interno 'R%s' o salida a un pin 'Y%s'."
+"Pendiente de: '%s' debe configurar un rel√© interno 'R%s' o salida a un pin 'Y%s'."
 
 "Busy to:"
 "Pendiente de:"
@@ -947,7 +947,7 @@
 "Llama readMcu.bat\tCtrl+F6"
 
 "Can not increase size of variable '%s' to %d bit.\nYou must increase size of variable in LD file!"
-"No es posible incrementar el tamaÒo de la variable '%s' a %d bit.\nDebe incrementar el tamaÒo de variableen el fichero LD!"
+"No es posible incrementar el tama√±o de la variable '%s' a %d bit.\nDebe incrementar el tama√±o de variableen el fichero LD!"
 
 "Can only assign pin number to input/output pins (Xname or Yname or Aname or Pname)."
 "Solo asigna un numero de pin a pines de entrada/salida pins (Xname or Yname or Aname or Pname)."
@@ -962,7 +962,7 @@
 "Puede usar solo un elemento PULSO N en el temporizador0."
 
 "Can't specify I/O assignment for Netzer!"
-"No se puede especificar una asignaciÛn I/O para Netzer!"
+"No se puede especificar una asignaci√≥n I/O para Netzer!"
 
 "Circular Counter Reversive"
 "Contador Circular Revesible"
@@ -971,7 +971,7 @@
 "Borrar bit"
 
 "Common:Cathode|Anode:"
-"Comun:C·todo|¡nodo:"
+"Comun:C√°todo|√Ånodo:"
 
 "Compare variable"
 "Compara variable"
@@ -986,7 +986,7 @@
 "Compila C para AVR GCC, CodeVisionAVR, IAR AVR"
 
 "Compile Extended Byte Code"
-"Compila Byte CÛdigo Extendido"
+"Compila Byte C√≥digo Extendido"
 
 "Compile HEX"
 "Compila HEX"
@@ -998,28 +998,28 @@
 "Compila PASCAL"
 
 "Compile is successful but exceed the memory size !!!"
-"CompilaciÛn terminada pero se excede el tamaÒo de memoria !!!"
+"Compilaci√≥n terminada pero se excede el tama√±o de memoria !!!"
 
 "Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."
-"CompilaciÛn terminada!\r\nWrote Netzer cÛdigo a '%s' (CRC: 0x%.4x)."
+"Compilaci√≥n terminada!\r\nWrote Netzer c√≥digo a '%s' (CRC: 0x%.4x)."
 
 "Compile successful; wrote PASCAL source code to '%s'.\r\n\r\nThis is not a complete PASCAL program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
-"Compilacion terminada; EscribiÛ el cÛdigo fuente PASCAL para '%s'.\r\n\r\nEste no es un programa PASCAL completo. Debe proporcionar el tiempo de ejecuciÛn y todas las rutinas de E / S. Consulte los comentarios en el cÛdigo fuente para obtener informaciÛn acerca de cÛmo hacer esto."
+"Compilacion terminada; Escribi√≥ el c√≥digo fuente PASCAL para '%s'.\r\n\r\nEste no es un programa PASCAL completo. Debe proporcionar el tiempo de ejecuci√≥n y todas las rutinas de E / S. Consulte los comentarios en el c√≥digo fuente para obtener informaci√≥n acerca de c√≥mo hacer esto."
 
 "Connect CONTACT to input pin or internal relay."
-"Conecte el CONTACTO a un pin de entrada o al relÈ interno."
+"Conecte el CONTACTO a un pin de entrada o al rel√© interno."
 
 "Connect CONTACT to output pin or internal relay."
-"Conecte el CONTACTO al pin de entrada o al relÈ interno."
+"Conecte el CONTACTO al pin de entrada o al rel√© interno."
 
 "Connect NPULSE to output pin YsomeName."
 "Conecte NPULSE al pin de salida YsomeName."
 
 "Connect PULSER busy flag to output pin YsomeName or internal relay RsomeName."
-"Conecte el indicador de ocupado PULSER al pin de salida YsomeName o relÈ interno RsomeName."
+"Conecte el indicador de ocupado PULSER al pin de salida YsomeName o rel√© interno RsomeName."
 
 "Connect QUAD ENCOD error flag to output pin YsomeName or internal relay RsomeName."
-"Conecte el indicador de error QUAD ENCOD al pin de salida YsomeName o relÈ interno RsomeName."
+"Conecte el indicador de error QUAD ENCOD al pin de salida YsomeName o rel√© interno RsomeName."
 
 "Connect QUAD ENCOD input A to INTs input pin IqAn."
 "Conecte la entrada QUAD ENCOD A al pin de entrada INTs IqAn."
@@ -1109,7 +1109,7 @@
 "Retardo (s):"
 
 "Dest variable of write string instruction must be located at IO register."
-"La variable Dest de la instrucciÛn de cadena de escritura debe ubicarse en el registro IO."
+"La variable Dest de la instrucci√≥n de cadena de escritura debe ubicarse en el registro IO."
 
 "Dest:"
 "Dest:"
@@ -1169,7 +1169,7 @@
 "EDIT: Insertar cadena con formato"
 
 "EDIT: Insert MOD (Integer Divide Remainder)"
-"EDIT: Inserta MOD (Entero Resto de DivisiÛn)"
+"EDIT: Inserta MOD (Entero Resto de Divisi√≥n)"
 
 "EDIT: Insert N PULSE OFF"
 "EDIT: Inserta N PULSO OFF"
@@ -1190,19 +1190,19 @@
 "EDIT: Inserta QUAD ENCOD"
 
 "EDIT: Insert ROL cyclic shift to the left"
-"EDIT: Inserta ROL RotaciÛn cÌclica a la izquierda"
+"EDIT: Inserta ROL Rotaci√≥n c√≠clica a la izquierda"
 
 "EDIT: Insert ROR cyclic shift to the right"
-"EDIT: Inserta ROR RotaciÛn cÌclica a la derecha"
+"EDIT: Inserta ROR Rotaci√≥n c√≠clica a la derecha"
 
 "EDIT: Insert SHL << arithmetic,logic shift to the left"
-"EDIT: Inserta SHL << aritmÈtico,desplazamiento lÛgico a la izquierda"
+"EDIT: Inserta SHL << aritm√©tico,desplazamiento l√≥gico a la izquierda"
 
 "EDIT: Insert SHR >> arithmetic shift to the right"
-"EDIT: Inserta SHR >> aritmÈtico,desplazamiento lÛgico a la derecha"
+"EDIT: Inserta SHR >> aritm√©tico,desplazamiento l√≥gico a la derecha"
 
 "EDIT: Insert SR0 >> logic shift to the right"
-"EDIT: Inserta SR0 >> desplazamiento lÛgico a la derecha"
+"EDIT: Inserta SR0 >> desplazamiento l√≥gico a la derecha"
 
 "EDIT: Insert STEPPER"
 "EDIT: Inserta STEPPER"
@@ -1226,13 +1226,13 @@
 "EDIT: Insertar XOR bit a bit  ^"
 
 "Empty variable name '%s'.\nrungNow=%d"
-"Nombre de la variable vacÌa '%s'.\nrungNow=%d"
+"Nombre de la variable vac√≠a '%s'.\nrungNow=%d"
 
 "Enable:"
 "Habilitar:"
 
 "Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."
-"Error leyendo 'VAR LIST' secciÛn de .ld file!\nError en linea:\n'%s'."
+"Error leyendo 'VAR LIST' secci√≥n de .ld file!\nError en linea:\n'%s'."
 
 "Error:"
 "Error:"
@@ -1241,7 +1241,7 @@
 "Explorar directorio ld"
 
 "File '%s' modified by another application.\r\nIts disk timestamp is newer then the editor one.\nReload from disk?"
-"Fichero '%s' modificado por otra aplicaciÛn.\r\nIts marca de disco mas reciente que la del editor.\nRecargar del disco?"
+"Fichero '%s' modificado por otra aplicaci√≥n.\r\nIts marca de disco mas reciente que la del editor.\nRecargar del disco?"
 
 "Format string:"
 "Formato de cadena:"
@@ -1253,10 +1253,10 @@
 "Formato de Trama: 8 dato, paridad - none, 1 bit parada, protocolo - no.\r\n\r\n"
 
 "GOTO address in Compare Element into RUNG %d must be more %d."
-"La direcciÛn GOTO en Elemento Compara en la LINEA %d debe ser mas %d."
+"La direcci√≥n GOTO en Elemento Compara en la LINEA %d debe ser mas %d."
 
 "HOW TO:..."
-"C”MO:..."
+"C√ìMO:..."
 
 "Hz"
 "Hz"
@@ -1286,7 +1286,7 @@
 "Entrada Z:"
 
 "Insert &A/D Converter Read\tA"
-"Insertar &A/D Lectura ConversiÛn\tA"
+"Insertar &A/D Lectura Conversi√≥n\tA"
 
 "Insert &Contacts: Input Pin\tC"
 "Insertar &Contactos: Pin Entrada\tC"
@@ -1328,7 +1328,7 @@
 "Insertar &Bobina: Pin Salida\tL"
 
 "Insert Coil: Internal Relay\tAlt+L"
-"Insertar Bobina: RelÈ Interno\tAlt+L"
+"Insertar Bobina: Rel√© Interno\tAlt+L"
 
 "Insert Contacts: Internal Relay\tShift+C"
 "Insertar Contacts: Internal Relay\tShift+C"
@@ -1385,22 +1385,22 @@
 "Insertar caracter para convertir en 9 SEGMENTOS"
 
 "Internal limit exceeded (MAX_INT_OPS)"
-"LÌmite Interno excedido (MAX_INT_OPS)"
+"L√≠mite Interno excedido (MAX_INT_OPS)"
 
 "Internal limit exceeded (MAX_PROGRAM_LEN)"
-"LÌmite Interno excedido (MAX_PROGRAM_LEN)"
+"L√≠mite Interno excedido (MAX_PROGRAM_LEN)"
 
 "Internal limit exceeded (number of relay)"
-"LÌmite Interno excedido (number of relay)"
+"L√≠mite Interno excedido (number of relay)"
 
 "Invalid size (%d) of variable '%s' set to 2!"
-"TamaÒo Inv·lido (%d) de la variable '%s' configurada a 2!"
+"Tama√±o Inv√°lido (%d) de la variable '%s' configurada a 2!"
 
 "LDmicro Forum..."
 "Foro LDmicro..."
 
 "Latest release changes..."
-"Cambios Ultima VersiÛn..."
+"Cambios Ultima Versi√≥n..."
 
 "MCU register"
 "Registro MCU"
@@ -1412,10 +1412,10 @@
 "Hacer T-trigger"
 
 "Maximal one format placeholder is allowed in write string instruction."
-"Se permite un marcador de posiciÛn de formato m·ximo en la instrucciÛn de cadena de escritura."
+"Se permite un marcador de posici√≥n de formato m√°ximo en la instrucci√≥n de cadena de escritura."
 
 "Maximum available timer period = %.3f s."
-"PerÌodo de tiempo m·ximo disponible = %.3f s."
+"Per√≠odo de tiempo m√°ximo disponible = %.3f s."
 
 "Microcontrollers: TODO and DONE"
 "Microcontroladores: TODO and DONE"
@@ -1424,10 +1424,10 @@
 "Valor Min:"
 
 "Minimum available timer period = PLC cycle time = %.3f ms."
-"PerÌodo de tiempo mÌnimo disponible = PLC tiempo de ciclo = %.3f ms."
+"Per√≠odo de tiempo m√≠nimo disponible = PLC tiempo de ciclo = %.3f ms."
 
 "Modbus Address"
-"DirecciÛn Modbus"
+"Direcci√≥n Modbus"
 
 "Modbus Coil"
 "Bobina Modbus"
@@ -1466,7 +1466,7 @@
 "No se encuentra opcodes."
 
 "Not a reasonable size for a variable."
-"TamaÒo no razonable para la variable."
+"Tama√±o no razonable para la variable."
 
 "Not available"
 "No disponible"
@@ -1481,16 +1481,16 @@
 "OR"
 
 "Only values 0-0x1F allowed for Register parameter.\nreg=0x%02X"
-"SÛlo se permiten los valores 0-0x1F para el par·metro Register.\nreg=0x%02X"
+"S√≥lo se permiten los valores 0-0x1F para el par√°metro Register.\nreg=0x%02X"
 
 "Only values 0-0xFFFF allowed for Addres parameter.\naddres=0x%4X"
-"SÛlo se permiten los valores 0-0xFFFF para el par·metro Address.\naddres=0x%4X"
+"S√≥lo se permiten los valores 0-0xFFFF para el par√°metro Address.\naddres=0x%4X"
 
 "Only values 0-7 allowed for Bit parameter"
-"SÛlo se permiten los valores 0-7 para el par·metro BIT"
+"S√≥lo se permiten los valores 0-7 para el par√°metro BIT"
 
 "Only values 0-7 allowed for Bit parameter.\nbit=%d"
-"SÛlo se permiten los valores 0-7 para el par·metro BIT.\nbit=%d"
+"S√≥lo se permiten los valores 0-7 para el par√°metro BIT.\nbit=%d"
 
 "Open Text in notepad\tF3"
 "Abrir texto en Notepad\tF3"
@@ -1535,13 +1535,13 @@
 "P:"
 
 "PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
-"El destino PASCAL no admite perifÈricos (UART, PWM, ADC, EEPROM). Omitiendo esa instrucciÛn."
+"El destino PASCAL no admite perif√©ricos (UART, PWM, ADC, EEPROM). Omitiendo esa instrucci√≥n."
 
 "PCB bits:"
 "PCB bits:"
 
 "PIC Configuration Bits:"
-"PIC Bits ConfiguraciÛn:"
+"PIC Bits Configuraci√≥n:"
 
 "PORT input"
 "PUERTO entrada"
@@ -1565,13 +1565,13 @@
 "Generador Pulsos"
 
 "Pulse to: '%s' you must set to output pin 'Y%s' or to internal relay 'R%s'."
-"Pulso a: '%s' debe configurarse el pin como salida 'Y%s' o relÈ interno 'R%s'."
+"Pulso a: '%s' debe configurarse el pin como salida 'Y%s' o rel√© interno 'R%s'."
 
 "Pulse to:"
 "Pulso a:"
 
 "Pulser information"
-"InformaciÛn de Pulser"
+"Informaci√≥n de Pulser"
 
 "Pulser"
 "Pulser"
@@ -1592,7 +1592,7 @@
 "RAM:"
 
 "RES: Above this rung variable is not assigned to COUNTER or TIMER.\r\nYou must assign a variable below"
-"RES: Por encima de esta linea no est· asignado un CONTADOR o un TEMPORIZADOR.\r\nDebe asignar una variable a continuaciÛn"
+"RES: Por encima de esta linea no est√° asignado un CONTADOR o un TEMPORIZADOR.\r\nDebe asignar una variable a continuaci√≥n"
 
 "ROL"
 "ROL"
@@ -1631,10 +1631,10 @@
 "Reemplazar el elemento seleccionado en el grupo\tSpace"
 
 "Roll End\tCtrl+End"
-"Fin RotaciÛn\tCtrl+End"
+"Fin Rotaci√≥n\tCtrl+End"
 
 "Roll Home\tCtrl+Home"
-"Inicio RotaciÛn\tCtrl+Home"
+"Inicio Rotaci√≥n\tCtrl+Home"
 
 "Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"
 "Linea %d: Variable '%s' asignada incorrectammente.\n%s.\nVer lineas:%s"
@@ -1676,7 +1676,7 @@
 "Semilla Aleatoria: $seed_..."
 
 "Segments instruction: '%s' not a valid destination."
-"Los segmentos de instruccion: '%s' no tienen destino v·lido."
+"Los segmentos de instruccion: '%s' no tienen destino v√°lido."
 
 "Segments:"
 "Segmentos:"
@@ -1685,13 +1685,13 @@
 "Seleccion de Linea\tShift+Up o Shift+Dn"
 
 "Select the frequency from the possible values:"
-"SelecciÛn de frecuencia entre posibles valore:"
+"Selecci√≥n de frecuencia entre posibles valore:"
 
 "Serial (UART) will use pins %d(RX) and %d(TX).\r\n"
 "Serie (UART) se deben usar los pines %d(RX) y %d(TX).\r\n"
 
 "Set HI input level before simulation"
-"Ajustar el nivel de entrada HI antes de la simulaciÛn"
+"Ajustar el nivel de entrada HI antes de la simulaci√≥n"
 
 "Set N Pulse Cycle"
 "Establece Pulso Ciclo N"
@@ -1706,25 +1706,25 @@
 "Constante Shift %s=%d fuera de rango: 0 a %d inclusive."
 
 "Si&mulation Mode\tCtrl+M or F7"
-"Modo Si&mulaciÛn\tCtrl+M or F7"
+"Modo Si&mulaci√≥n\tCtrl+M or F7"
 
 "Signed variable operations"
 "Operaciones con signo"
 
 "Simulation value:"
-"Valor SimulaciÛn:"
+"Valor Simulaci√≥n:"
 
 "Size of var '%s'(%d) reset as signed 32 bit variable."
 "Size of var '%s'(%d) reset as signed 32 bit variable."
 
 "Size of var '%s'(%d) reset as signed 8 bit variable."
-"TamaÒo de variable '%s'(%d) reset as signed 8 bit variable."
+"Tama√±o de variable '%s'(%d) reset as signed 8 bit variable."
 
 "Size"
-"TamaÒo"
+"Tama√±o"
 
 "SizeOfVar:"
-"TamaÒoVariable:"
+"Tama√±oVariable:"
 
 "Slave ID:"
 "Esclavo ID:"
@@ -1736,7 +1736,7 @@
 "Bits fuente:"
 
 "Start &Real-Time Simulation\tCtrl+R or F8"
-"Iniciar SimulaciÛn tiempo &Real\tCtrl+R or F8"
+"Iniciar Simulaci√≥n tiempo &Real\tCtrl+R or F8"
 
 "Start value:"
 "Valor Inicio:"
@@ -1769,7 +1769,7 @@
 "TODO: Inserta NEG (Entero Negado)"
 
 "TODO: Insert Set Software &PWM Output (AVR136 Application Note)\tP"
-"TODO: Insertar Set Software &PWM Salida (AVR136 Nota AplicaciÛn)\tP"
+"TODO: Insertar Set Software &PWM Salida (AVR136 Nota Aplicaci√≥n)\tP"
 
 "Insert BCD2BIN"
 "Insertar BCD2BIN"
@@ -1784,10 +1784,10 @@
 "Inserta NEG (Entero Negado)"
 
 "Insert Set Software &PWM Output (AVR136 Application Note)\tP"
-"Insertar Set Software &PWM Salida (AVR136 Nota AplicaciÛn)\tP"
+"Insertar Set Software &PWM Salida (AVR136 Nota Aplicaci√≥n)\tP"
 
 "Table size:"
-"TamaÒo tabla:"
+"Tama√±o tabla:"
 
 "Target frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
 "Frecuencia destino %d Hz, mas cercano posible es %d Hz (advertencia, >5%% error)."
@@ -1820,7 +1820,7 @@
 "Op. no soportada (cualquiera UART, EEPROM, SFR..) para interpretar en destino."
 
 "Unsupported operation 'INT_WRITE_STRING' for target, skipped."
-"OperaciÛn no soportada 'INT_WRITE_STRING' por el destino, saltada."
+"Operaci√≥n no soportada 'INT_WRITE_STRING' por el destino, saltada."
 
 "Unsupported operation for target, skipped."
 "Operacion no soportada por el destino, saltada."
@@ -1871,40 +1871,40 @@
 "Debe seleccionar Lineas, despues Copiar o Cortar, finalmente Pegar."
 
 "Zero Configuration Word(s) not valid."
-"Palabra (s) de configuraciÛn cero no v·lida."
+"Palabra (s) de configuraci√≥n cero no v√°lida."
 
 "Zero crystal frequency not valid; resetting to 16 MHz."
-"La frecuencia de cristal cero no es v·lida; resetear a 16 MHz."
+"La frecuencia de cristal cero no es v√°lida; resetear a 16 MHz."
 
 "Zero memory addres not allowed!\nAndMemory(0, %d) skiped!"
-"No se permite la direcciÛn de memoria cero!\nAndMemory(0, %d) saltar!"
+"No se permite la direcci√≥n de memoria cero!\nAndMemory(0, %d) saltar!"
 
 "Zero memory addres not allowed!\nLOAD(%d, %d) skiped!"
-"No se permite la direcciÛn de memoria cero!\nLOAD(%d, %d) saltar!"
+"No se permite la direcci√≥n de memoria cero!\nLOAD(%d, %d) saltar!"
 
 "Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"
-"No se permite la direcciÛn de memoria cero!\nLoadXAddr(%d) saltar!"
+"No se permite la direcci√≥n de memoria cero!\nLoadXAddr(%d) saltar!"
 
 "Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"
-"No se permite la direcciÛn de memoria cero!\nLoadYAddr(%d) saltar!"
+"No se permite la direcci√≥n de memoria cero!\nLoadYAddr(%d) saltar!"
 
 "Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"
-"No se permite la direcciÛn de memoria cero!\nLoadZAddr(%d) saltar!"
+"No se permite la direcci√≥n de memoria cero!\nLoadZAddr(%d) saltar!"
 
 "Zero memory addres not allowed!\nOrMemory(0, %d) skiped!"
-"No se permite la direcciÛn de memoria cero!\nOrMemory(0, %d) skiped!"
+"No se permite la direcci√≥n de memoria cero!\nOrMemory(0, %d) skiped!"
 
 "Zero memory addres not allowed!\nReadIoToReg skiped."
-"No se permite la direcciÛn de memoria cero!\nReadIoToReg saltar."
+"No se permite la direcci√≥n de memoria cero!\nReadIoToReg saltar."
 
 "Zero memory addres not allowed!\nSTORE(%d, %d) skiped!"
-"No se permite la direcciÛn de memoria cero!\nSTORE(%d, %d) saltar!"
+"No se permite la direcci√≥n de memoria cero!\nSTORE(%d, %d) saltar!"
 
 "Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"
-"No se permite la direcciÛn de memoria cero!\nWriteMemory(0, %d) saltar! %s %s"
+"No se permite la direcci√≥n de memoria cero!\nWriteMemory(0, %d) saltar! %s %s"
 
 "Zero memory addres not allowed!\nWriteRegToIO skiped."
-"No se permite la direcciÛn de memoria cero!\nWriteRegToIO saltar."
+"No se permite la direcci√≥n de memoria cero!\nWriteRegToIO saltar."
 
 "\nI/O ASSIGNMENT:\n"
 "\nI/O ASSIGNMENT:\n"
@@ -1919,7 +1919,7 @@
 "ciclo on/off"
 
 "graph:"
-"gr·fico:"
+"gr√°fico:"
 
 "kHz"
 "kHz"
@@ -1958,19 +1958,19 @@
 "valor en flash"
 
 " A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"
-"°Hay disponible un valor de tiempo de ciclo cero, pero los temporizadores (TON, TOF, etc.) no funcionar·n correctamente!"
+"¬°Hay disponible un valor de tiempo de ciclo cero, pero los temporizadores (TON, TOF, etc.) no funcionar√°n correctamente!"
 
 " Invalid size (%d) of variable '%s' set to 2!"
-"TamaÒo no v·lido (%d) de la variable '%s' establecido en 2!"
+"Tama√±o no v√°lido (%d) de la variable '%s' establecido en 2!"
 
 " PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"
-"El tiempo de ciclo del PLC es '0'. °Los temporizadores TON, TOF, RTO, RTL, TCY no funcionan correctamente!"
+"El tiempo de ciclo del PLC es '0'. ¬°Los temporizadores TON, TOF, RTO, RTL, TCY no funcionan correctamente!"
 
 " The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"
-"El car·cter '-' se reemplaza por '_'. \nVariable      '%s'\nrenombrar a '%s'"
+"El car√°cter '-' se reemplaza por '_'. \nVariable      '%s'\nrenombrar a '%s'"
 
 " The delay is too long!\nThe maximum possible delay is %lld us."
-"°La demora es demasiado larga!\nLa m·xima demora posible es %lld us."
+"¬°La demora es demasiado larga!\nLa m√°xima demora posible es %lld us."
 
 "%sPLC cycle deviation is %.3f %%%% !"
 "%sCambio de ciclo PLC es %.3f %%%% !"
@@ -1982,7 +1982,7 @@
 "'%s' trabajo > %d"
 
 "* Adjust default = 0 (LDmicro v3.5.3), typical = -1 (LDmicro v2.3)"
-"* Ajuste predeterminado = 0 (LDmicro v3.5.3), tÌpico = -1 (LDmicro v2.3)"
+"* Ajuste predeterminado = 0 (LDmicro v3.5.3), t√≠pico = -1 (LDmicro v2.3)"
 
 "** Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (%.3f ms)"
 "** Retardo total del temporizador (ms) = Retardo (ms) + Ajustar * Tiempo de ciclo del PLC (%.3f ms)"
@@ -1994,7 +1994,7 @@
 "ARDUINO: Espacio ' ' no permitido en '%s'\nRenombrar archivo!"
 
 "ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"
-"ARDUINO: °El dÌgito inicial '% c' no est· permitido al principio en'%s.ld'\nRenombrar archivo!"
+"ARDUINO: ¬°El d√≠gito inicial '% c' no est√° permitido al principio en'%s.ld'\nRenombrar archivo!"
 
 "Achievable DELAY values (us): "
 "Valores de RETRASO alcanzables (us):"
@@ -2003,7 +2003,7 @@
 "Ajustar:"
 
 "Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"
-"Ajuste el retraso del temporizador a un valor mayor o m·s cercano que el retardo del temporizador no tiene sentido. Disminuya el valor de ajuste!"
+"Ajuste el retraso del temporizador a un valor mayor o m√°s cercano que el retardo del temporizador no tiene sentido. Disminuya el valor de ajuste!"
 
 "Applay user color scheme"
 "Esquema de color del usuario"
@@ -2012,13 +2012,13 @@
 "Color de fondo"
 
 "Background, Simulation mode"
-"Fondo, modo de simulaciÛn"
+"Fondo, modo de simulaci√≥n"
 
 "Bit Rate (Hz):"
 "Tasa de bits (Hz):"
 
 "Call SUBPROG rung number or label name"
-"Llamar a la lÌnea SUBPROG o al nombre de la etiqueta"
+"Llamar a la l√≠nea SUBPROG o al nombre de la etiqueta"
 
 "Call clear.bat"
 "Llama limpiar.bat"
@@ -2045,10 +2045,10 @@
 "Compilar IAR C para AVR"
 
 "Compile Interpretable Byte Code"
-"Compilar cÛdigo de bytes interpretable"
+"Compilar c√≥digo de bytes interpretable"
 
 "Compile Interpretable Extended Byte Code"
-"Compilar cÛdigo de bytes extendido interpretable"
+"Compilar c√≥digo de bytes extendido interpretable"
 
 "Compile Sketch for ARDUINO"
 "Compilar Sketch para ARDUINO"
@@ -2063,7 +2063,7 @@
 "No se pudo abrir el archivo '% s'"
 
 "Couldn't dump intermediate code to '%s'."
-"No se pudo volcar el cÛdigo intermedio a '% s'."
+"No se pudo volcar el c√≥digo intermedio a '% s'."
 
 "Create new issue..."
 "Crear new issue..."
@@ -2075,10 +2075,10 @@
 "Orden de datos:"
 
 "Data Size:"
-"TamaÒo de datos:"
+"Tama√±o de datos:"
 
 "De-energized element, Simulation mode"
-"Elemento desenergizado, modo de simulaciÛn"
+"Elemento desenergizado, modo de simulaci√≥n"
 
 "Default foreground"
 "Defecto foreground"
@@ -2099,7 +2099,7 @@
 "Delay, us"
 
 "Destination rung(label):"
-"lÌnea de destino(etiqueta):"
+"l√≠nea de destino(etiqueta):"
 
 "Direct Addr error"
 "Error directo de Addr"
@@ -2114,7 +2114,7 @@
 "ENDSUB: SUBPROG '%s' no encontrado!"
 
 "Energzied element, Simulation mode"
-"Elemento energizado, modo de simulaciÛn"
+"Elemento energizado, modo de simulaci√≥n"
 
 "File->Save LDmicro0.2 file format"
 "Archivo-> Guardar formato de archivo LDmicro0.2"
@@ -2126,37 +2126,37 @@
 "GOSUB: SUBPROG '%s' no encontrado!"
 
 "GOSUB: SUBPROG as number '%s' not allowed !"
-"GOSUB: SUBPROG como n˙mero '%s' no permitido!"
+"GOSUB: SUBPROG como n√∫mero '%s' no permitido!"
 
 "GOTO: LABEL '%s' not found!"
 "GOTO: ETIQUETA '%s' no encontrado!"
 
 "Goto rung number or labe namel"
-"Ir a n˙mero de lÌnea o nombre de etiqueta"
+"Ir a n√∫mero de l√≠nea o nombre de etiqueta"
 
 "Hight Level Delay"
 "Delay Nivel Alto"
 
 "In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Cycle deviation=%.3f%%\n"
-"In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Ciclo de desviaciÛn =%.3f%%\n"
+"In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Ciclo de desviaci√≥n =%.3f%%\n"
 
 "Inited in Rung %d"
-"Iniciar en lÌnea %d"
+"Iniciar en l√≠nea %d"
 
 "Insert DELAY(us)"
 "Insertar DELAY(us)"
 
 "Insert ENDSUB declaration"
-"Insertar declaraciÛn ENDSUB"
+"Insertar declaraci√≥n ENDSUB"
 
 "Insert GOSUB call"
 "Insertar llamada GOSUB"
 
 "Insert GOTO Label or Rung"
-"Insertar etiqueta o lÌnea GOTO"
+"Insertar etiqueta o l√≠nea GOTO"
 
 "Insert LABEL declaration"
-"Insertar declaraciÛn LABEL"
+"Insertar declaraci√≥n LABEL"
 
 "Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"
 "Insertar R&ESETEAR (Contador/RTO/RTL/PWM Resetear)\tE"
@@ -2165,16 +2165,16 @@
 "Insertar RETORNO"
 
 "Insert RTL (Retentive Delayed Turn On If Low Input)"
-"Insertar RTL (RetenciÛn Atrasada Enciende Si La Entrada Es Baja)"
+"Insertar RTL (Retenci√≥n Atrasada Enciende Si La Entrada Es Baja)"
 
 "Insert SPI - Serial Peripheral Interface"
-"Insertar SPI - Interfaz PerifÈrica Serial"
+"Insertar SPI - Interfaz Perif√©rica Serial"
 
 "Insert SR0 >> logic shift to the right"
-"Insertar SR0 >> desplazo lÛgico a la derecha"
+"Insertar SR0 >> desplazo l√≥gico a la derecha"
 
 "Insert SUBPROG declaration"
-"Insertar declaraciÛn SUBPROG"
+"Insertar declaraci√≥n SUBPROG"
 
 "Insert SWAP"
 "Insertar SWAP"
@@ -2204,7 +2204,7 @@
 "Nombre de la ETIQUETA:"
 
 "Literal number"
-"N˙mero literal"
+"N√∫mero literal"
 
 "Low Level Delay"
 "Delay de bajo nivel"
@@ -2213,13 +2213,13 @@
 "Nombre de un elemento"
 
 "Negative cycle time is not valid; Reset to 10 ms."
-"El tiempo de ciclo negativo no es v·lido; Restablecer a 10 ms."
+"El tiempo de ciclo negativo no es v√°lido; Restablecer a 10 ms."
 
 "No SPI or SPI not supported for this MCU."
 "No SPI o SPI no son compatibles con esta MCU."
 
 "OPPOSITE instruction: '%s' not a valid destination."
-"InstrucciÛn OPUESTA: '%s' no es un destino v·lido."
+"Instrucci√≥n OPUESTA: '%s' no es un destino v√°lido."
 
 "OpCode (like OSR, TON, ADD, ...)"
 "OpCode (como OSR, TON, ADD, ...)"
@@ -2231,10 +2231,10 @@
 "Fuente opuesta y asignar al destino"
 
 "Or decrease timer period."
-"O disminuir el perÌodo del temporizador."
+"O disminuir el per√≠odo del temporizador."
 
 "Or increase timer period."
-"O aumentar el perÌodo del temporizador."
+"O aumentar el per√≠odo del temporizador."
 
 "PWM: variable can only be used for RES elsewhere"
 "PWM: la variable solo se puede usar para RESETEAR en otro lado"
@@ -2246,13 +2246,13 @@
 "Pin '%s': salida PWM no disponible!"
 
 "Pin '%s': PWM resolution not available!"
-"Pin '%s': resoluciÛn PWM no disponible!"
+"Pin '%s': resoluci√≥n PWM no disponible!"
 
 "Punctuation, like square, curly braces, etc."
-"PuntuaciÛn, como cuadrado, llaves, etc."
+"Puntuaci√≥n, como cuadrado, llaves, etc."
 
 "RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."
-"RESETEAR: La variable no est· asignada a CONTADOR o TEMPORIZADOR o PWM.\r\nDebe asignar una variable."
+"RESETEAR: La variable no est√° asignada a CONTADOR o TEMPORIZADOR o PWM.\r\nDebe asignar una variable."
 
 "RTL: variable can only be used for RES elsewhere"
 "RTL: la variable solo se puede usar para RESETEAR en otro lugar"
@@ -2267,7 +2267,7 @@
 "Frecuencia de cristal MCU requerida desde %.3g %sHz up to %.3g %sHz"
 
 "Resolution:"
-"ResoluciÛn:"
+"Resoluci√≥n:"
 
 "Retentive Turn-On Delay If Low Input"
 "Retardo de encendido remanente si la entrada  es baja"
@@ -2279,13 +2279,13 @@
 "Revertir el esquema de color"
 
 "Rung %d: Variable '%s' incorrectly assigned.\n%s."
-"LÌnea %d: Variable '%s' incorrectamente asignada.\n%s."
+"L√≠nea %d: Variable '%s' incorrectamente asignada.\n%s."
 
 "Rung number"
-"N˙mero de lÌnea"
+"N√∫mero de l√≠nea"
 
 "Rung number, Simulation mode"
-"N˙mero de lÌnea, modo simulaciÛn"
+"N√∫mero de l√≠nea, modo simulaci√≥n"
 
 "SIMUL: Insert Clear Bit #"
 "SIMULAR: Insertar Limpiar Bit#"
@@ -2297,19 +2297,19 @@
 "SIMULAR: Insertar OPUESTA"
 
 "SIMUL: Insert ROL cyclic shift to the left"
-"SIMULAR: insertar desplazamiento cÌclico ROL hacia la izquierda"
+"SIMULAR: insertar desplazamiento c√≠clico ROL hacia la izquierda"
 
 "SIMUL: Insert ROR cyclic shift to the right"
-"SIMULAR: insertar el desplazamiento cÌclico de ROR hacia la derecha"
+"SIMULAR: insertar el desplazamiento c√≠clico de ROR hacia la derecha"
 
 "SIMUL: Insert SHL << arithmetic,logic shift to the left"
-"SIMULAR: Insertar SHL << aritmÈtica, desplazamiento lÛgico a la  izquierda"
+"SIMULAR: Insertar SHL << aritm√©tica, desplazamiento l√≥gico a la  izquierda"
 
 "SIMUL: Insert SHR >> arithmetic shift to the right"
-"SIMUL: Insertar SHR >> desplazamiento aritmÈtico a la derecha"
+"SIMUL: Insertar SHR >> desplazamiento aritm√©tico a la derecha"
 
 "SIMUL: Insert Set Bit #"
-"SIMULAR: insertar el bit de configuraciÛn #"
+"SIMULAR: insertar el bit de configuraci√≥n #"
 
 "SIMUL: Insert bitwise AND"
 "SIMULAR: Insertar bitwise AND"
@@ -2321,7 +2321,7 @@
 "SIMULAR: Insertar bitwise OR     |"
 
 "SPI - Serial Peripheral Interface"
-"SPI - Interfaz de perifÈricos en serie"
+"SPI - Interfaz de perif√©ricos en serie"
 
 "SPI MISO"
 "SPI MISO"
@@ -2342,25 +2342,25 @@
 "SPI _SS"
 
 "SPI instruction: '%s' not a valid destination."
-"InstrucciÛn SPI: '%s' no es un destino v·lido."
+"Instrucci√≥n SPI: '%s' no es un destino v√°lido."
 
 "SUBPROG name:"
 "SUBPROG nombre:"
 
 "SUBPROG: '%s' declaration must be single inside a rung %d"
-"SUBPROG: la declaraciÛn '%s' debe ser ˙nica dentro de una lÌnea% d"
+"SUBPROG: la declaraci√≥n '%s' debe ser √∫nica dentro de una l√≠nea% d"
 
 "SUBPROG: ENDSUB '%s' not found!"
 "SUBPROG: ENDSUB'%s' no encontrado!"
 
 "Select Rung's\tCtrl+Left Mouse Buttton Click"
-"Seleccionar LÌneas\tCtrl+BotÛn Izquierdo Del RatÛn"
+"Seleccionar L√≠neas\tCtrl+Bot√≥n Izquierdo Del Rat√≥n"
 
 "Select color for user scheme:"
 "Seleccionar el color para el esquema de usuario:"
 
 "Select color scheme"
-"Seleccionar combinaciÛn de colores"
+"Seleccionar combinaci√≥n de colores"
 
 "Select user colors"
 "Seleccionar color usuario"
@@ -2375,10 +2375,10 @@
 "Shift constante %s=%d fuera del rango de la  '%s' variable: 0 to %d incluido."
 
 "Stack size %d overflow"
-"TamaÒo de pila %d desbordamiento"
+"Tama√±o de pila %d desbordamiento"
 
 "Stack size %d underflow"
-"TamaÒo de pila %d subdesbordamiento"
+"Tama√±o de pila %d subdesbordamiento"
 
 "TCY: variable can only be used for RES elsewhere"
 "TCY: la variable solo se puede usar para RESETEAR en otro lado"
@@ -2405,22 +2405,22 @@
 "TON: la variable solo se puede usar para RESETEAR en otro lado"
 
 "The 'bus' at the right of the screen, Simulation mode |"
-"El 'bus' a la derecha de la pantalla, modo de simulaciÛn |"
+"El 'bus' a la derecha de la pantalla, modo de simulaci√≥n |"
 
 "Timer 'T%s'=%10.0Lf s   needs %15lld PLC cycle times."
 "Temporizador 'T%s'=%10.0Lf s   necesita %15lld tiempos ciclo PLC."
 
 "Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."
-"Temporizador 'T%s'=%10.0Lf s puede usar %15lld tiempos de ciclo del PLC como el valor M¡XIMO posible."
+"Temporizador 'T%s'=%10.0Lf s puede usar %15lld tiempos de ciclo del PLC como el valor M√ÅXIMO posible."
 
 "Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
-"El perÌodo del temporizador es demasiado largo.\n\rEl valor m·ximo posible es: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
+"El per√≠odo del temporizador es demasiado largo.\n\rEl valor m√°ximo posible es: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
 
 "Timer period too long; (use a slower cycle time)."
-"Periodo del temporizador demasiado largo; (use un tiempo de ciclo m·s corto)."
+"Periodo del temporizador demasiado largo; (use un tiempo de ciclo m√°s corto)."
 
 "Total timer delay cannot be zero or negative. Increase the adjust value!"
-"La demora total del temporizador no puede ser cero o negativa. °Incremente el valor de ajuste!"
+"La demora total del temporizador no puede ser cero o negativa. ¬°Incremente el valor de ajuste!"
 
 "Try again a color"
 "Prueba de nuevo un color"
@@ -2432,7 +2432,7 @@
 "Cuando la frecuencia de cristal de la MCU es %.3g %sHz."
 
 "Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"
-"°No se permite la direcciÛn de memoria cero!\nWriteMemoryStillAddr(0, %d) skiped!"
+"¬°No se permite la direcci√≥n de memoria cero!\nWriteMemoryStillAddr(0, %d) skiped!"
 
 "hight delay"
 "retardo alto"
@@ -2441,10 +2441,10 @@
 "retardo bajo"
 
 "retentive timer low input"
-"temporizador de retenciÛn de entrada baja"
+"temporizador de retenci√≥n de entrada baja"
 
 "| The 'bus' at the left of the screen, Simulation mode"
-"| El 'bus' a la izquierda de la pantalla, modo de simulaciÛn"
+"| El 'bus' a la izquierda de la pantalla, modo de simulaci√≥n"
 
 "| The 'bus' at the right and left of screen |"
 "| El 'bus' a la derecha e izquierda de la pantalla |"

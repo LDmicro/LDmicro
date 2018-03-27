@@ -1152,7 +1152,7 @@ void CompileNetzer(char *outFile)
     FILE *f = fopen(outFile, "w+b");
     if(!f)
     {
-        Error(_("Couldn't write to '%s'"), outFile);
+        Error(_("Couldn't write to '%ls'"), u16(outFile));
         return;
     }
 
@@ -1223,9 +1223,9 @@ void CompileNetzer(char *outFile)
 
     // And ready.
     fclose(f);
-    char str[MAX_PATH+500];
-    sprintf(str, _("Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."),
-        outFile, meta.ImageCRC);
+    wchar_t str[MAX_PATH+500];
+    swprintf_s(str, _("Compile successful!\r\nWrote Netzer code to '%ls' (CRC: 0x%.4x)."),
+        u16(outFile), meta.ImageCRC);
     CompileSuccessfulMessage(str);
 }
 

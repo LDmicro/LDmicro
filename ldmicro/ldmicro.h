@@ -1115,6 +1115,7 @@ char *ExtractFilePath(char *dest);
 char *ExtractFileName(char *src); // with .ext
 char *GetFileName(char *dest, char *src); // without .ext
 char *SetExt(char *dest, const char *src, const char *ext);
+wchar_t *SetExt(wchar_t *dest, const wchar_t *src, const wchar_t *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
 long int fsize(char filename);
@@ -1159,7 +1160,7 @@ extern void (*DrawChars)(int, int, const char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow(void);
 BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
-void ExportDrawingAsText(char *file);
+void ExportDrawingAsText(const char* file);
 void InitForDrawing(void);
 void InitBrushesForDrawing(void);
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
@@ -1438,16 +1439,18 @@ extern BOOL DialogCancel;
 
 void doexit(int status);
 void dbp(const char *str, ...);
+void dbp(const wchar_t *str, ...);
 void Error(const char *str, ...);
+void Error(const wchar_t *str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 extern HANDLE MainHeap;
 void StartIhex(FILE *f);
 void WriteIhex(FILE *f, BYTE b);
 void FinishIhex(FILE *f);
-const char *IoTypeToString(int ioType);
-void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
-void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
+const wchar_t* IoTypeToString(int ioType);
+void PinNumberForIo(wchar_t* dest, PlcProgramSingleIo *io);
+void PinNumberForIo(wchar_t* dest, PlcProgramSingleIo *io, wchar_t* portName, wchar_t* pinName);
 char *GetPinName(int pin, char *pinName);
 const char* PinToName(int pin);
 const char* ArduinoPinName(McuIoPinInfo *iop);
@@ -1468,10 +1471,14 @@ BOOL IsExtIntPin(int pin);
 HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
+HWND CreateWindowClient(DWORD exStyle, const wchar_t *className, const wchar_t *windowName,
+    DWORD style, int x, int y, int width, int height, HWND parent,
+    HMENU menu, HINSTANCE instance, void *param);
 void MakeDialogBoxClass(void);
 void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str, unsigned int uType);
+void CompileSuccessfulMessage(wchar_t *str, unsigned int uType = MB_ICONINFORMATION);
 void CompileSuccessfulMessage(char *str);
 extern BOOL RunningInBatchMode;
 extern BOOL RunningInTestMode;
@@ -1488,7 +1495,11 @@ char *toupperstr(char *dest);
 char *toupperstr(char *dest, const char *src);
 
 // lang.cpp
-const char *_(const char *in);
+const wchar_t* _(const char *in);
+std::wstring to_utf16(const char* s);
+std::string to_utf8(const wchar_t* w);
+const wchar_t* u16(const char* s);
+const char* u8(const wchar_t* w);
 
 // simulate.cpp
 void MarkInitedVariable(char *name);
@@ -1499,6 +1510,7 @@ BOOL ClearSimulationData(void);
 void ClrSimulationData(void);
 void CheckVariableNames(void);
 void DescribeForIoList(char *name, int type, char *out);
+void DescribeForIoList(char *name, int type, wchar_t *out);
 void SimulationToggleContact(char *name);
 BOOL GetSingleBit(char *name);
 void SetAdcShadow(char *name, SWORD val);
@@ -1776,8 +1788,10 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);
 #define CompileError() longjmp(CompileErrorBuf, 1)
 extern jmp_buf CompileErrorBuf;
-double SIprefix(double val, char *prefix, int en_1_2);
+double SIprefix(double val, char* prefix, int en_1_2);
 double SIprefix(double val, char *prefix);
+double SIprefix(double val, wchar_t* prefix, int en_1_2);
+double SIprefix(double val, wchar_t* prefix);
 int GetVariableType(char *name);
 int SetVariableType(char *name, int type);
 

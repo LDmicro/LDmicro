@@ -661,8 +661,8 @@ static void AddrCheckForErrorsPostCompile()
     for(i = 0; i < AvrProgWriteP; i++) {
       if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE) {
         if(AvrProg[i].arg1 & FWD(0)) {
-            Error("Every AllocFwdAddr needs FwdAddrIsNow.");
-            Error("i=%d op=%d arg1=%d arg2=%d rung=%d", i,
+            Error(_("Every AllocFwdAddr needs FwdAddrIsNow."));
+            Error(_("i=%d op=%d arg1=%d arg2=%d rung=%d"), i,
                AvrProg[i].opAvr,
                AvrProg[i].arg1,
                AvrProg[i].arg2,
@@ -1270,7 +1270,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
     default:
         sprintf(sAsm,"0x%X OP_%d %d %d", addrAt, op, arg1, arg2);
-        Error(sAsm);
+        Error(u16(sAsm));
         return 0;
   }
 }
@@ -1413,7 +1413,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     // end of file record
     fprintf(f, ":00000001FF\n");
     if((Prog.mcu->flashWords) && (AvrProgWriteP >= Prog.mcu->flashWords)) {
-        Error(_(" Flash program memory size %d is exceed limit %d words\nfor %s."), AvrProgWriteP, Prog.mcu->flashWords, Prog.mcu->mcuName);
+        Error(_(" Flash program memory size %d is exceed limit %d words\nfor %ls."), AvrProgWriteP, Prog.mcu->flashWords, u16(Prog.mcu->mcuName));
     }
 }
 
@@ -1725,7 +1725,7 @@ static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYT
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
+        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %ls %li"), val, u16(name), literal); //see TODO
         Error("LINE %d FILE %s", l, f);
         return;
     }
@@ -4172,30 +4172,26 @@ static void CompileFromIntermediate(void)
                 }
 
                 if(((double)bestError)/target > 0.05) {
-                    char str1[1024];
-                    char str2[1024];
-                    sprintf(str1,
+                    wchar_t str1[1024];
+                    wchar_t str2[1024];
+                    swprintf_s(str1,
                         _("Target PWM frequency %d Hz, closest achievable is "
                         "%d Hz (warning, >5%% error)."),
                         (int)target, (int)bestFreq);
                     //need duble %
-                    char *c = strchr(str1, '%');
-                    char *s = str1 + strlen(str1) + 1;
+                    wchar_t *c = wcschr(str1, '%');
+                    wchar_t *s = str1 + wcslen(str1) + 1;
                     *s = 0;
                     while(s != c) {
                         s--;
                         *(s+1) = *s;
                     }
 
-                    sprintf(str2, "'%s' %s"
-                        "\n\n"
-                        "%s"
-                        "\n"
-                        "%s",
-                        a->name3,
+                    swprintf_s(str2, L"'%ls' %ls\n\n%ls\n%ls",
+                        u16(a->name3),
                         str1,
                         _("Select the frequency from the possible values:"),
-                        freqStr);
+                        u16(freqStr));
                     Error(str2);
                 }
 
@@ -5359,7 +5355,7 @@ void CompileAvr(char *outFile)
     rungNow = -100;
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), outFile);
+        Error(_("Couldn't open file '%ls'"), u16(outFile));
         return;
     }
 
@@ -5367,7 +5363,7 @@ void CompileAvr(char *outFile)
     SetExt(outFileAsm, outFile, ".asm");
     FILE *fAsm = fopen(outFileAsm, "w");
     if(!fAsm) {
-        Error(_("Couldn't open file '%s'"), outFileAsm);
+        Error(_("Couldn't open file '%ls'"), u16(outFileAsm));
         fclose(f);
         return;
     }
@@ -6513,23 +6509,23 @@ void CompileAvr(char *outFile)
     fflush(fAsm);
     fclose(fAsm);
 
-    char str[MAX_PATH+500];
-    sprintf(str, _("Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\n"
+    wchar_t str[MAX_PATH+500];
+    swprintf_s(str, _("Compile successful; wrote IHEX for AVR to '%ls'.\r\n\r\n"
         "Remember to set the processor configuration (fuses) correctly. "
-        "This does not happen automatically."), outFile);
+        "This does not happen automatically."), u16(outFile));
 
-    char str2[MAX_PATH+500];
-    sprintf(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
+    wchar_t str2[MAX_PATH+500];
+    swprintf_s(str2, _("Used %d/%d words of program flash (chip %d%% full)."),
          AvrProgWriteP, Prog.mcu->flashWords,
          (100*AvrProgWriteP)/Prog.mcu->flashWords);
 
-    char str3[MAX_PATH+500];
-    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
+    wchar_t str3[MAX_PATH+500];
+    swprintf_s(str3, _("Used %d/%d byte of RAM (chip %d%% full)."),
          UsedRAM(), McuRAM(),
          (100*UsedRAM())/McuRAM());
 
-    char str4[MAX_PATH+500];
-    sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
+    wchar_t str4[MAX_PATH+500];
+    swprintf_s(str4, L"%ls\r\n\r\n%ls\r\n%ls", str, str2, str3);
 
     if(AvrProgWriteP > Prog.mcu->flashWords) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);

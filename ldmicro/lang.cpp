@@ -24,8 +24,10 @@
 // table. If it fails then it just returns the English.
 // Jonathan Westhues, Apr 2007
 //-----------------------------------------------------------------------------
+#include <string>
+#include <vector>
+#include <algorithm>
 #include "stdafx.h"
-
 #include "ldmicro.h"
 
 typedef struct LangTableTag {
@@ -38,43 +40,108 @@ typedef struct LangTag {
     int          n;
 } Lang;
 
+std::wstring to_utf16(const char* s);
+std::string to_utf8(const wchar_t* w);
+const wchar_t* u16(const char* s);
+const char* u8(const wchar_t* w);
+
+const wchar_t* u16(const char* s)
+{
+    return to_utf16(s).c_str();
+}
+
+const char* u8(const wchar_t* w)
+{
+    return to_utf8(w).c_str();
+}
+
+std::wstring to_utf16(const char* s)
+{
+#if defined(_WIN32)
+        const int size = MultiByteToWideChar(CP_UTF8, 0, s, -1, nullptr, 0);
+        std::wstring output;
+        output.resize(size - 1);
+        if(output.size() != 0)
+            MultiByteToWideChar(CP_UTF8, 0, s, -1, &output[0], size - 1);
+        return output;
+#else
+#error "Function not realised for this platform!";
+#endif
+}
+
+std::string to_utf8(const wchar_t* w)
+{
+#if defined(_WIN32)
+    const int size = WideCharToMultiByte(CP_UTF8, 0, w, -1, nullptr, 0, nullptr, nullptr);
+    std::string output;
+    output.resize(size - 1);
+    if(output.size() != 0)
+        WideCharToMultiByte(CP_UTF8, 0, w, -1, &output[0], size - 1, nullptr, nullptr);
+    return output;
+#else
+    #error "Function not realised for this platform!";
+#endif
+}
+
 // These are the actual translation tables, so should be included in just
 // one place.
 #include "obj/lang-tables.h"
 
-const char *_(const char *in)
+const wchar_t *_(const char *in)
 {
-    Lang *l;
+    Lang *lang = nullptr;
 
 #if defined(LDLANG_EN)
-    return in;
+
 #elif defined(LDLANG_DE)
-    l = &LangDe;
+    lang = &LangDe;
 #elif defined(LDLANG_FR)
-    l = &LangFr;
+    lang = &LangFr;
 #elif defined(LDLANG_ES)
-    l = &LangEs;
+    lang = &LangEs;
 #elif defined(LDLANG_IT)
-    l = &LangIt;
+    lang = &LangIt;
 #elif defined(LDLANG_TR)
-    l = &LangTr;
+    lang = &LangTr;
 #elif defined(LDLANG_PT)
-    l = &LangPt;
+    lang = &LangPt;
 #elif defined(LDLANG_JA)
-    l = &LangJa;
+    lang = &LangJa;
 #elif defined(LDLANG_RU)
-    l = &LangRu;
+    lang = &LangRu;
 #else
 #   error "Unrecognized language!"
 #endif
-
-    int i;
-
-    for(i = 0; i < l->n; i++) {
-        if(strcmp(in, l->tab[i].from)==0) {
-            return l->tab[i].to;
+    std::wstring output;
+    const char* s = nullptr;
+    if(lang) {
+        for(int i = 0; i < lang->n; i++) {
+            if(strcmp(in, lang->tab[i].from)==0) {
+                s = lang->tab[i].to;
+            }
         }
     }
 
-    return in;
+    if( !s )
+        s = in;
+
+    const int size = MultiByteToWideChar(CP_UTF8, 0, s, -1, nullptr, 0);
+    output.resize(size - 1);
+    if(output.size() != 0)
+        MultiByteToWideChar(CP_UTF8, 0, s, -1, &output[0], size - 1);
+
+    static std::vector<std::wstring> strings;
+    const wchar_t* out;
+    auto str = std::find(std::begin(strings), std::end(strings), output);
+    if(str == std::end(strings))
+        {
+            strings.push_back(output);
+            out = strings.back().c_str();
+        }
+    else
+        {
+            out = str->c_str();
+        }
+
+    return out;
 }

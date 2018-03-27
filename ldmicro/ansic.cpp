@@ -1232,7 +1232,7 @@ void CompileAnsiC(char *dest, int MNU)
 
     flh = fopen(ladderhName, "w");
     if(!flh) {
-        Error(_("Couldn't open file '%s'"), ladderhName);
+        Error(_("Couldn't open file '%ls'"), u16(ladderhName));
         return;
     }
     fprintf(flh,
@@ -1385,7 +1385,7 @@ void CompileAnsiC(char *dest, int MNU)
 
     fh = fopen(desth, "w");
     if(!fh) {
-        Error(_("Couldn't open file '%s'"), desth);
+        Error(_("Couldn't open file '%ls'"), u16(desth));
         fclose(flh);
         return;
     }
@@ -1520,7 +1520,7 @@ void CompileAnsiC(char *dest, int MNU)
     }
     FILE *f = fopen(dest, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
+        Error(_("Couldn't open file '%ls'"), u16(dest));
         fclose(flh);
         fclose(fh);
         return;
@@ -2348,7 +2348,7 @@ void CompileAnsiC(char *dest, int MNU)
 
         flh = fopen(ladderhName, "w");
         if(!flh) {
-            Error(_("Couldn't open file '%s'"), ladderhName);
+            Error(_("Couldn't open file '%ls'"), u16(ladderhName));
             //return;
         }
         fprintf(flh,
@@ -2373,11 +2373,11 @@ void CompileAnsiC(char *dest, int MNU)
         fclose(flh);
     }
 
-    char str[MAX_PATH+500];
-    sprintf(str, _("Compile successful; wrote C source code to '%s'.\r\n\r\n"
+    wchar_t str[MAX_PATH+500];
+    swprintf_s(str, _("Compile successful; wrote C source code to '%ls'.\r\n\r\n"
         "This is not a complete C program. You have to provide the runtime "
         "and all the I/O routines. See the comments in the source code for "
-        "information about how to do this."), dest);
+        "information about how to do this."), to_utf16(dest).c_str());
     CompileSuccessfulMessage(str);
 }
 /*
