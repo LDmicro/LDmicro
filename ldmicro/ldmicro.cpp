@@ -537,13 +537,14 @@ static void CompileProgram(BOOL compileAs, int MNU)
 
     IsOpenAnable:
     if(!compileAs && strlen(CurrentCompileFile)) {
-      if((MNU == MNU_COMPILE)         && strstr(CurrentCompileFile,".hex") // && (compile_MNU <= 0)
-      || (MNU == MNU_COMPILE_IHEX)    && strstr(CurrentCompileFile,".hex")
-      || (MNU >= MNU_COMPILE_ANSIC)   && strstr(CurrentCompileFile,".c"  ) && (MNU <= MNU_COMPILE_lastC)
-      || (MNU == MNU_COMPILE_ARDUINO) && strstr(CurrentCompileFile,".cpp")
-      || (MNU == MNU_COMPILE_PASCAL)  && strstr(CurrentCompileFile,".pas")
-      || (MNU == MNU_COMPILE_INT)     && strstr(CurrentCompileFile,".int")
-      || (MNU == MNU_COMPILE_XINT)    && strstr(CurrentCompileFile,".xint")
+      if(((MNU == MNU_COMPILE)         && strstr(CurrentCompileFile,".hex")) // && (compile_MNU <= 0)
+      || ((MNU == MNU_COMPILE_AS)      && strstr(CurrentCompileFile,".hex"))
+      || ((MNU == MNU_COMPILE_IHEX)    && strstr(CurrentCompileFile,".hex"))
+      || ((MNU >= MNU_COMPILE_ANSIC)   && strstr(CurrentCompileFile,".c"  ) && (MNU <= MNU_COMPILE_lastC))
+      || ((MNU == MNU_COMPILE_ARDUINO) && strstr(CurrentCompileFile,".cpp"))
+      || ((MNU == MNU_COMPILE_PASCAL)  && strstr(CurrentCompileFile,".pas"))
+      || ((MNU == MNU_COMPILE_INT)     && strstr(CurrentCompileFile,".int"))
+      || ((MNU == MNU_COMPILE_XINT)    && strstr(CurrentCompileFile,".xint"))
       ) {
         if(FILE *f = fopen(CurrentCompileFile, "w")) {
             fclose(f);
@@ -556,15 +557,15 @@ static void CompileProgram(BOOL compileAs, int MNU)
     }
 
     if(compileAs
-    ||(MNU == MNU_COMPILE_AS)
+    ||((MNU == MNU_COMPILE_AS)      &&  strlen(CurrentCompileFile) == 0)
     ||(strlen(CurrentCompileFile)==0)
-    ||(MNU == MNU_COMPILE)         && !strstr(CurrentCompileFile,".hex")
-    ||(MNU == MNU_COMPILE_IHEX)    && !strstr(CurrentCompileFile,".hex")
-    ||(MNU >= MNU_COMPILE_ANSIC)   && !strstr(CurrentCompileFile,".c"  ) && (MNU <= MNU_COMPILE_lastC)
-    ||(MNU == MNU_COMPILE_ARDUINO) && !strstr(CurrentCompileFile,".cpp")
-    ||(MNU == MNU_COMPILE_PASCAL)  && !strstr(CurrentCompileFile,".pas")
-    ||(MNU == MNU_COMPILE_INT)     && !strstr(CurrentCompileFile,".int")
-    ||(MNU == MNU_COMPILE_XINT)    && !strstr(CurrentCompileFile,".xint")
+    ||((MNU == MNU_COMPILE)         && !strstr(CurrentCompileFile,".hex"))
+    ||((MNU == MNU_COMPILE_IHEX)    && !strstr(CurrentCompileFile,".hex"))
+    ||((MNU >= MNU_COMPILE_ANSIC)   && !strstr(CurrentCompileFile,".c"  ) && (MNU <= MNU_COMPILE_lastC))
+    ||((MNU == MNU_COMPILE_ARDUINO) && !strstr(CurrentCompileFile,".cpp"))
+    ||((MNU == MNU_COMPILE_PASCAL)  && !strstr(CurrentCompileFile,".pas"))
+    ||((MNU == MNU_COMPILE_INT)     && !strstr(CurrentCompileFile,".int"))
+    ||((MNU == MNU_COMPILE_XINT)    && !strstr(CurrentCompileFile,".xint"))
     ) {
         const char *c;
         OPENFILENAME ofn;
@@ -630,7 +631,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
 
     if(!GenerateIntermediateCode()) return;
 
-    if((Prog.mcu == NULL)
+    if((Prog.mcu == nullptr)
     && (MNU != MNU_COMPILE_PASCAL)
     && (MNU != MNU_COMPILE_ANSIC)
     && (MNU != MNU_COMPILE_ARDUINO)
