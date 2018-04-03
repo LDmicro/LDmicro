@@ -1,3 +1,9 @@
+== Release 4.3.8.4
+
+    * Fixed: fix "Compile As" endless dialog show #60
+
+    #59
+
 == Release 4.3.8.3
 
     * Fixed: LDmicro goes into an endless loop if you try to display the dialog
