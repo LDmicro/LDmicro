@@ -33,11 +33,11 @@ ElemLeaf *AllocLeaf()
 {
     return (ElemLeaf *)CheckMalloc(sizeof(ElemLeaf));
 }
-ElemSubcktSeries *AllocSubcktSeries(void)
+ElemSubcktSeries *AllocSubcktSeries()
 {
     return (ElemSubcktSeries *)CheckMalloc(sizeof(ElemSubcktSeries));
 }
-ElemSubcktParallel *AllocSubcktParallel(void)
+ElemSubcktParallel *AllocSubcktParallel()
 {
     return (ElemSubcktParallel *)CheckMalloc(sizeof(ElemSubcktParallel));
 }
@@ -266,7 +266,7 @@ void AddCoil(int what)
     AddLeaf(ELEM_COIL, c);
 }
 
-void AddDelay(void)
+void AddDelay()
 {
     oops();
     if(!CanInsertOther) return;
@@ -300,7 +300,7 @@ void AddEmpty(int which)
     AddLeaf(which, t);
 }
 
-void AddReset(void)
+void AddReset()
 {
     if(!CanInsertEnd) return;
 
@@ -309,7 +309,7 @@ void AddReset(void)
     AddLeaf(ELEM_RES, t);
 }
 
-void AddSleep(void)
+void AddSleep()
 {
     if(!CanInsertEnd) return;
 
@@ -319,7 +319,7 @@ void AddSleep(void)
     AddLeaf(ELEM_SLEEP, t);
 }
 
-void AddLock(void)
+void AddLock()
 {
     if(!CanInsertEnd) return;
 
@@ -327,7 +327,7 @@ void AddLock(void)
     AddLeaf(ELEM_LOCK, t);
 }
 
-void AddClrWdt(void)
+void AddClrWdt()
 {
     if(!CanInsertEnd) return;
 
@@ -345,7 +345,7 @@ void AddGoto(int which)
     AddLeaf(which, t);
 }
 
-void AddMasterRelay(void)
+void AddMasterRelay()
 {
     if(!CanInsertEnd) return;
 
@@ -353,7 +353,7 @@ void AddMasterRelay(void)
     AddLeaf(ELEM_MASTER_RELAY, t);
 }
 
-void AddShiftRegister(void)
+void AddShiftRegister()
 {
     if(!CanInsertEnd) return;
 
@@ -363,7 +363,7 @@ void AddShiftRegister(void)
     AddLeaf(ELEM_SHIFT_REGISTER, t);
 }
 
-void AddFormattedString(void)
+void AddFormattedString()
 {
     if(!CanInsertOther) return;
 
@@ -373,7 +373,7 @@ void AddFormattedString(void)
     AddLeaf(ELEM_FORMATTED_STRING, t);
 }
 
-void AddString(void)
+void AddString()
 {
     if(!CanInsertOther) return;
 
@@ -397,7 +397,7 @@ void AddPrint(int code)
     AddLeaf(code, t);
 }
 
-void AddLookUpTable(void)
+void AddLookUpTable()
 {
     if(!CanInsertEnd) return;
 
@@ -410,7 +410,7 @@ void AddLookUpTable(void)
     AddLeaf(ELEM_LOOK_UP_TABLE, t);
 }
 
-void AddPiecewiseLinear(void)
+void AddPiecewiseLinear()
 {
     if(!CanInsertEnd) return;
 
@@ -422,7 +422,7 @@ void AddPiecewiseLinear(void)
     AddLeaf(ELEM_PIECEWISE_LINEAR, t);
 }
 
-void AddMove(void)
+void AddMove()
 {
     if(!CanInsertEnd) return;
 
@@ -467,7 +467,7 @@ void AddBus(int which)
     AddLeaf(which, t);
 }
 
-void AddStepper(void)
+void AddStepper()
 {
     if(!CanInsertOther) return;
 
@@ -482,7 +482,7 @@ void AddStepper(void)
     AddLeaf(ELEM_STEPPER, t);
 }
 
-void AddPulser(void)
+void AddPulser()
 {
     if(!CanInsertOther) return;
 
@@ -495,7 +495,7 @@ void AddPulser(void)
     AddLeaf(ELEM_PULSER, t);
 }
 
-void AddNPulse(void)
+void AddNPulse()
 {
     if(!CanInsertOther) return;
 
@@ -510,7 +510,7 @@ void AddNPulse(void)
     AddLeaf(ELEM_NPULSE, t);
 }
 
-void AddQuadEncod(void)
+void AddQuadEncod()
 {
     if(!CanInsertOther) return;
 
@@ -611,7 +611,7 @@ void AddCounter(int which)
     AddLeaf(which, t);
 }
 
-void AddSeedRandom(void)
+void AddSeedRandom()
 {
     if(!CanInsertOther) return;
 
@@ -621,7 +621,7 @@ void AddSeedRandom(void)
     AddLeaf(ELEM_SEED_RANDOM, t);
 }
 
-void AddRandom(void)
+void AddRandom()
 {
     if(!CanInsertOther) return;
 
@@ -630,7 +630,7 @@ void AddRandom(void)
     AddLeaf(ELEM_RANDOM, t);
 }
 
-void AddReadAdc(void)
+void AddReadAdc()
 {
     if(!CanInsertEnd) return;
 
@@ -649,7 +649,7 @@ void AddReadAdc(void)
     AddLeaf(ELEM_READ_ADC, t);
 }
 
-void AddSetPwm(void)
+void AddSetPwm()
 {
     if(!CanInsertEnd) return;
 
@@ -711,7 +711,7 @@ void AddSpi(int which)
     AddLeaf(which, t);
 }
 
-void AddPersist(void)
+void AddPersist()
 {
     if(!CanInsertEnd) return;
 
@@ -936,7 +936,7 @@ static BOOL DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
             if(Selected != anyToDelete) {
                 ElemLeaf *saveSelected = Selected;
                 Selected=(ElemLeaf *)anyToDelete; // HOOK
-                if(res = DeleteSelectedFromSubckt(which, any)) {
+                if((res = DeleteSelectedFromSubckt(which, any))) {
                     while(CollapseUnnecessarySubckts(which, any))
                         ;
                     //dbp("DeleteAny %d", IsEnd);
@@ -952,7 +952,7 @@ static BOOL DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
 // Delete the selected item from the program. Just call
 // DeleteSelectedFromSubckt on every rung till we find it.
 //-----------------------------------------------------------------------------
-void DeleteSelectedFromProgram(void)
+void DeleteSelectedFromProgram()
 {
     if(!Selected || Selected->selectedState == SELECTED_NONE) return;
     int i = RungContainingSelected();
@@ -1024,7 +1024,7 @@ void FreeCircuit(int which, void *any)
 //-----------------------------------------------------------------------------
 // Free the entire program.
 //-----------------------------------------------------------------------------
-void FreeEntireProgram(void)
+void FreeEntireProgram()
 {
     ForgetEverything();
 
@@ -1041,7 +1041,7 @@ void FreeEntireProgram(void)
     Prog.cycleTimer = 1;
     Prog.cycleDuty = 0;
     Prog.configurationWord = 0;
-    SetMcu(NULL);
+    SetMcu(nullptr);
 
     WipeIntMemory();
 }
@@ -1093,7 +1093,7 @@ static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
 //-----------------------------------------------------------------------------
 // Use ContainsElem to find the rung containing the cursor.
 //-----------------------------------------------------------------------------
-int RungContainingSelected(void)
+int RungContainingSelected()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -1123,7 +1123,7 @@ void DeleteRungI(int i)
 //-----------------------------------------------------------------------------
 // Delete the rung that contains the cursor.
 //-----------------------------------------------------------------------------
-void DeleteSelectedRung(void)
+void DeleteSelectedRung()
 {
     if(Prog.numRungs <= 1) {
         Error(_("Cannot delete rung; program must have at least one rung."));
@@ -1149,7 +1149,7 @@ void DeleteSelectedRung(void)
 // the UI code assumes that rungs always have a coil in them, so it would
 // add a lot of nasty special cases to create rungs totally empty.
 //-----------------------------------------------------------------------------
-static ElemSubcktSeries *AllocEmptyRung(void)
+static ElemSubcktSeries *AllocEmptyRung()
 {
     ElemSubcktSeries *s = AllocSubcktSeries();
     s->count = 1;
@@ -1168,7 +1168,7 @@ static void NullDisplayMatrix(int from, int to)
     for(j = from; j < to; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
             if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
-                DisplayMatrix[i][j] = NULL;
+                DisplayMatrix[i][j] = nullptr;
                 DisplayMatrixWhich[i][j] = ELEM_NULL;
                 dbpd(j)
             }
@@ -1177,7 +1177,7 @@ static void NullDisplayMatrix(int from, int to)
     for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
             if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
-                DisplayMatrix[i][j] = NULL;
+                DisplayMatrix[i][j] = nullptr;
                 DisplayMatrixWhich[i][j] = ELEM_NULL;
                 dbpd(j)
             }
@@ -1228,7 +1228,7 @@ void InsertRung(BOOL afterCursor)
 // Swap the row containing the selected element with the one under it, or do
 // nothing if the rung is the last in the program.
 //-----------------------------------------------------------------------------
-void PushRungDown(void)
+void PushRungDown()
 {
     int i = RungContainingSelected();
     if(i == (Prog.numRungs-1)) return;
@@ -1254,7 +1254,7 @@ void PushRungDown(void)
 // Swap the row containing the selected element with the one above it, or do
 // nothing if the rung is the last in the program.
 //-----------------------------------------------------------------------------
-void PushRungUp(void)
+void PushRungUp()
 {
     int i = RungContainingSelected();
     if(i == 0) return;
@@ -1280,7 +1280,7 @@ void PushRungUp(void)
 // Start a new project. Give them one rung, with a coil (that they can
 // never delete) and nothing else.
 //-----------------------------------------------------------------------------
-void NewProgram(void)
+void NewProgram()
 {
     UndoFlush();
     FreeEntireProgram();
@@ -1557,10 +1557,10 @@ int CountWhich(int seek1, char *name)
 
 int CountWhich(int seek1)
 {
-    return CountWhich(seek1, -1, -1, NULL);
+    return CountWhich(seek1, -1, -1, nullptr);
 }
 
-BOOL DelayUsed(void)
+BOOL DelayUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -1573,7 +1573,7 @@ BOOL DelayUsed(void)
     return FALSE;
 }
 
-BOOL TablesUsed(void)
+BOOL TablesUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -1628,7 +1628,7 @@ int PwmFunctionUsed(void)
     return n;
 }
 /**/
-int PwmFunctionUsed(void)
+int PwmFunctionUsed()
 {
      return CountWhich(ELEM_SET_PWM);
 }
@@ -1649,12 +1649,12 @@ int _AdcFunctionUsed(void)
     return n;
 }
 */
-int AdcFunctionUsed(void)
+int AdcFunctionUsed()
 {
     return CountWhich(ELEM_READ_ADC);
 }
 //-----------------------------------------------------------------------------
-int QuadEncodFunctionUsed(void)
+int QuadEncodFunctionUsed()
 {
     int n = 0;
     int i;
@@ -1663,7 +1663,7 @@ int QuadEncodFunctionUsed(void)
     return n;
 }
 //-----------------------------------------------------------------------------
-BOOL NPulseFunctionUsed(void)
+BOOL NPulseFunctionUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -1676,7 +1676,7 @@ BOOL NPulseFunctionUsed(void)
     return FALSE;
 }
 //-----------------------------------------------------------------------------
-BOOL EepromFunctionUsed(void)
+BOOL EepromFunctionUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -1689,7 +1689,7 @@ BOOL EepromFunctionUsed(void)
     return FALSE;
 }
 //-----------------------------------------------------------------------------
-BOOL SleepFunctionUsed(void)
+BOOL SleepFunctionUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -1706,7 +1706,7 @@ BOOL SleepFunctionUsed(void)
 // save in the new rung temp
 //-----------------------------------------------------------------------------
 const char *CLP="ldmicro.tmp";
-void CopyRungDown(void)
+void CopyRungDown()
 {
     int i = RungContainingSelected();
     char line[512];
@@ -1725,7 +1725,7 @@ void CopyRungDown(void)
     rewind(f);
     fgets(line,sizeof(line),f);
     if(strstr(line, "RUNG"))
-    if(temp=LoadSeriesFromFile(f)) {
+    if((temp=LoadSeriesFromFile(f))) {
         InsertRung(true);
         Prog.rungs[i+1] = temp;
     }
@@ -1736,7 +1736,7 @@ void CopyRungDown(void)
 }
 
 //-----------------------------------------------------------------------------
-void CutRung(void)
+void CutRung()
 {
     int i;
 
@@ -1771,7 +1771,7 @@ void CutRung(void)
 }
 
 //-----------------------------------------------------------------------------
-void CopyRung(void)
+void CopyRung()
 {
     FILE *f = fopen(CLP, "w+");
     if(!f) {
@@ -1799,7 +1799,7 @@ void CopyRung(void)
 }
 
 //-----------------------------------------------------------------------------
-void CopyElem(void)
+void CopyElem()
 {
     if(!Selected)
       return;
@@ -1865,7 +1865,7 @@ void PasteRung(int PasteInTo)
     for(rung = 0; rung == 0;) {
         if(!fgets(line, sizeof(line), f)) break;
         if(strstr(line,"RUNG"))
-        if(temp=LoadSeriesFromFile(f)) {
+        if((temp=LoadSeriesFromFile(f))) {
             if(SelectedWhich == ELEM_PLACEHOLDER) {
                 Prog.rungs[j] = temp;
                 rung = 1;

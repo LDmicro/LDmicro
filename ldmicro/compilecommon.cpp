@@ -205,7 +205,7 @@ void PrintVariables(FILE *f)
     fprintf(f, "\n");
 }
 //-----------------------------------------------------------------------------
-static void ClrInternalData(void)
+static void ClrInternalData()
 {
     MemOffset = 0;
     RamSection = 0;
@@ -222,7 +222,7 @@ static void ClrInternalData(void)
 // Forget what memory has been allocated on the target, so we start from
 // everything free.
 //-----------------------------------------------------------------------------
-void AllocStart(void)
+void AllocStart()
 {
     NextBitwiseAllocAddr = NO_MEMORY;
     InternalRelayCount = 0;
@@ -260,7 +260,7 @@ DWORD AllocOctetRam(int bytes) // The desired number of bytes.
     return Prog.mcu->ram[RamSection].start + MemOffset - bytes;
 }
 
-DWORD AllocOctetRam(void)
+DWORD AllocOctetRam()
 {
     return AllocOctetRam(1);
 }
@@ -592,7 +592,7 @@ int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 {
     MemForVariable(name, &addr, sizeOfVar); //allocate WORD memory for pointer to LPM
 
-    return MemForVariable(name, NULL, sizeOfVar); //and set size of element of table in flash memory
+    return MemForVariable(name, nullptr, sizeOfVar); //and set size of element of table in flash memory
 }
 
 //-----------------------------------------------------------------------------
@@ -606,7 +606,7 @@ int SetSizeOfVar(const char *name, int sizeOfVar, BOOL showError)
     #ifndef NEW_CMP
     sizeOfVar = 2;
     #endif
-    return MemForVariable(name, NULL, sizeOfVar);
+    return MemForVariable(name, nullptr, sizeOfVar);
 }
 
 int SetSizeOfVar(const char *name, int sizeOfVar)
@@ -619,7 +619,7 @@ int SizeOfVar(const char *name)
      if(IsNumber(name))
          return byteNeeded(hobatoi(name));
      else
-         return MemForVariable(name, NULL, 0);
+         return MemForVariable(name, nullptr, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -917,7 +917,7 @@ void MemForCoil(char *name, DWORD *addr, int *bit)
 //-----------------------------------------------------------------------------
 // Do any post-compilation sanity checks necessary.
 //-----------------------------------------------------------------------------
-void MemCheckForErrorsPostCompile(void)
+void MemCheckForErrorsPostCompile()
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
@@ -1049,7 +1049,7 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err)
 // Display our boilerplate warning that the baud rate is too slow (making
 // for an overflowed divisor).
 //-----------------------------------------------------------------------------
-void ComplainAboutBaudRateOverflow(void)
+void ComplainAboutBaudRateOverflow()
 {
     Error(_("UART baud rate generator: too slow, divisor overflows. "
         "Use a slower crystal or a faster baud rate.\r\n"

@@ -64,8 +64,10 @@ static BOOL SeenVariable(const char *name)
 #define ASSTR 3
 static const char *MapSym(const char *str, int how)
 {
-    if(!str) return NULL;
-    if(strlen(str)==0) return NULL;
+    if(!str)
+        return nullptr;
+    if(strlen(str)==0)
+        return nullptr;
 
     static char AllRets[16][MAX_NAME_LEN+30];
     static int RetCnt;
@@ -470,10 +472,9 @@ static void GenerateDeclarations(FILE *f)
 
     int i;
     for(i = 0; i < IntCodeLen; i++) {
-        const char *bitVar1 = NULL, *bitVar2 = NULL;
-        const char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
-        const char *adcVar1 = NULL;
-        const char *strVar1 = NULL;
+        const char *bitVar1 = nullptr, *bitVar2 = nullptr;
+        const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr;
+        const char *strVar1 = nullptr;
         int sov1=0, sov2=0, sov3=0;
 
         int bitVar1set1 = 0;
@@ -694,7 +695,7 @@ static void GenerateDeclarations(FILE *f)
         if(strVar1 && !SeenVariable(strVar1)) DeclareStr(f, strVar1, sov1);
     }
     if(Prog.cycleDuty) {
-        const char *bitVar1 = NULL;
+        const char *bitVar1 = nullptr;
         bitVar1 = MapSym("YPlcCycleDuty", ASBIT);
         if(bitVar1 && !SeenVariable(bitVar1)) DeclareBit(f, bitVar1);
     }
@@ -1129,23 +1130,22 @@ static void GenerateSUBPROG(FILE *f)
 static void GenerateAnsiC_flash_eeprom(FILE *f)
 {
 #ifdef TABLE_IN_FLASH
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int sovElement = IntCode[i].literal2;
                 const char *sovs;
-/*
-CodeVision AVR
-// Pointer to a char string placed in FLASH
-flash char *ptr_to_flash1="This string is placed in FLASH";
-char flash *ptr_to_flash2="This string is also placed in FLASH";
+                /*
+                CodeVision AVR
+                // Pointer to a char string placed in FLASH
+                flash char *ptr_to_flash1="This string is placed in FLASH";
+                char flash *ptr_to_flash2="This string is also placed in FLASH";
 
 
-// Pointer to a char string placed in EEPROM
-eeprom char *ptr_to_eeprom1="This string is placed in EEPROM";
-char eeprom *ptr_to_eeprom2="This string is also placed in EEPROM";
-*/
+                // Pointer to a char string placed in EEPROM
+                eeprom char *ptr_to_eeprom1="This string is placed in EEPROM";
+                char eeprom *ptr_to_eeprom2="This string is also placed in EEPROM";
+                */
                 if(sovElement == 1) {
                     sovs = "flash unsigned char";
                 } else if(sovElement == 2) {
@@ -1186,9 +1186,9 @@ winavr avr gcc
                 } else {
                     ooops("sovElement=%d", sovElement);
                 }
-                if((isVarInited(IntCode[i].name1) < 0)
-                || 1
-                || (isVarInited(IntCode[i].name1)==rungNow)) {
+                if((isVarInited(IntCode[i].name1) < 0) ||
+                    1                                  ||
+                   (isVarInited(IntCode[i].name1)==rungNow)) {
                     fprintf(f,"#ifdef __GNUC__\n");
                     fprintf(f, "const %s %s[%d] PROGMEM = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
                     int j;

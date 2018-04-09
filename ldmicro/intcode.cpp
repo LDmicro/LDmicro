@@ -26,7 +26,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-//#include "display.h"
 
 //// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
@@ -80,7 +79,7 @@ int ProgWriteP = 0;
 static SDWORD *Tdata;
 int rungNow = -INT_MAX;
 static int whichNow = -INT_MAX;
-static ElemLeaf *leafNow = NULL;
+static ElemLeaf *leafNow = nullptr;
 
 static DWORD GenSymCountParThis;
 static DWORD GenSymCountParOut;
@@ -737,57 +736,57 @@ static void _Op(int l, const char *f, const char *args, int op, BOOL *b,
 
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, nullptr);
+    _Op(l, f, args, op, nullptr, name1, name2, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2)
 {
-    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1)
 {
-    _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op)
 {
-    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, SDWORD lit, SDWORD lit2)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, const char *name4)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, name4, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, name4, nullptr, nullptr, 0, 0, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op,
                 const char *name1, const char *name2, const char *name3, const char *name4, const char *name5)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, name4, name5, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, name4, name5, nullptr, 0, 0, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
                 SDWORD lit, SDWORD lit2, SDWORD *data)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, data);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, data);
 }
 
 // And use macro for bugtracking
@@ -817,7 +816,7 @@ static void SimState(BOOL *b, const char *name, BOOL *w, const char *name2)
 
 static void SimState(BOOL *b, const char *name)
 {
-    SimState(b, name, NULL, NULL);
+    SimState(b, name, nullptr, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -830,7 +829,7 @@ static void _Comment1(int l, const char *f, const char *str)
     strncpy(buf, str, MAX_NAME_LEN-1);
     buf[MAX_NAME_LEN-1] = '\0';
     // http://demin.ws/blog/russian/2013/01/28/use-snprintf-on-different-platforms/
-    _Op(l, f, NULL, INT_COMMENT, buf);
+    _Op(l, f, nullptr, INT_COMMENT, buf);
   }
 }
 #define Comment1(str) _Comment1(__LINE__, __FILE__, str)
@@ -842,7 +841,7 @@ static void _Comment(int l, const char *f, const char *str, ...)
     char buf[MAX_NAME_LEN];
     va_start(v, str);
     vsnprintf(buf, MAX_NAME_LEN, str, v);
-    _Op(l, f, NULL, INT_COMMENT, buf);
+    _Op(l, f, nullptr, INT_COMMENT, buf);
   }
 }
 
@@ -853,7 +852,7 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
     char buf[MAX_NAME_LEN];
     va_start(v, str);
     vsnprintf(buf, MAX_NAME_LEN, str, v);
-    _Op(l, f, NULL, INT_COMMENT, buf);
+    _Op(l, f, nullptr, INT_COMMENT, buf);
   }
 }
 
@@ -1002,7 +1001,7 @@ BOOL CheckForNumber(char * str)
                 radix = 8;
         }
 
-        char *end_ptr = NULL;
+        char *end_ptr = nullptr;
         // errno = 0;
         long val = strtol(str, &end_ptr, radix);
         if(*end_ptr) {
@@ -1079,7 +1078,7 @@ SDWORD hobatoi(const char *str)
                else if(toupper(start_ptr[1]) == 'X')
                    radix = 16;
            }
-       char *end_ptr = NULL;
+       char *end_ptr = nullptr;
        // errno = 0;
        val = strtol(str, &end_ptr, radix);
        if(*end_ptr) {
@@ -1308,7 +1307,7 @@ static void InitVarsCircuit(int which, void *elem, int *n)
 }
 
 //-----------------------------------------------------------------------------
-static void InitVars(void)
+static void InitVars()
 {
     int n = 0;
     int i;
@@ -1386,7 +1385,7 @@ static void InitTablesCircuit(int which, void *elem)
 }
 
 //-----------------------------------------------------------------------------
-static void InitTables(void)
+static void InitTables()
 {
     if(TablesUsed()) {
         Comment("INIT TABLES");
@@ -2441,7 +2440,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
 //              Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
-               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, NULL, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
+               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, nullptr, l->d.move.dest, l->d.move.src, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
             }
             Op(INT_END_IF);
             break;
@@ -3450,7 +3449,7 @@ static BOOL CheckMasterCircuit(int which, void *elem)
 }
 
 //-----------------------------------------------------------------------------
-static BOOL CheckMasterRelay(void)
+static BOOL CheckMasterRelay()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -3461,7 +3460,7 @@ static BOOL CheckMasterRelay(void)
 }
 
 //-----------------------------------------------------------------------------
-void WipeIntMemory(void)
+void WipeIntMemory()
 {
     int i;
     for(i = 0; i < IntCodeLen; i++) {
@@ -3476,7 +3475,7 @@ void WipeIntMemory(void)
 // Generate intermediate code for the entire program. Return TRUE if it worked,
 // else FALSE.
 //-----------------------------------------------------------------------------
-BOOL GenerateIntermediateCode(void)
+BOOL GenerateIntermediateCode()
 {
     Comment("GenerateIntermediateCode");
     if(setjmp(CompileErrorBuf) != 0) {
@@ -3494,7 +3493,7 @@ BOOL GenerateIntermediateCode(void)
 
     rungNow = -100;//INT_MAX;
     whichNow = -INT_MAX;
-    leafNow = NULL;
+    leafNow = nullptr;
 
     WipeIntMemory();
 
@@ -3523,7 +3522,7 @@ BOOL GenerateIntermediateCode(void)
     for(rung = 0; rung <= Prog.numRungs; rung++) {
         rungNow = rung;
         whichNow = -INT_MAX;
-        leafNow = NULL;
+        leafNow = nullptr;
         Prog.OpsInRung[rung] = 0;
         Prog.HexInRung[rung] = 0;
         Op(INT_AllocFwdAddr, (SDWORD)rung);
@@ -3532,7 +3531,7 @@ BOOL GenerateIntermediateCode(void)
     for(rung = 0; rung < Prog.numRungs; rung++) {
         rungNow = rung;
         whichNow = -INT_MAX;
-        leafNow = NULL;
+        leafNow = nullptr;
         if(int_comment_level != 1) {
             Comment("");
             Comment("======= START RUNG %d =======", rung+1);
@@ -3598,7 +3597,7 @@ BOOL GenerateIntermediateCode(void)
     return TRUE;
 }
 
-BOOL GotoGosubUsed(void)
+BOOL GotoGosubUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3613,7 +3612,7 @@ BOOL GotoGosubUsed(void)
 // Are either of the UART functions (send or recv) used? Need to know this
 // to know whether we must receive their pins.
 //-----------------------------------------------------------------------------
-BOOL UartFunctionUsed(void)
+BOOL UartFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3639,7 +3638,7 @@ BOOL UartFunctionUsed(void)
     return FALSE;
 }
 
-BOOL UartRecvUsed(void)
+BOOL UartRecvUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3656,7 +3655,7 @@ BOOL UartRecvUsed(void)
     return FALSE;
 }
 
-BOOL UartSendUsed(void)
+BOOL UartSendUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3675,7 +3674,7 @@ BOOL UartSendUsed(void)
     return FALSE;
 }
 //-----------------------------------------------------------------------------
-BOOL SpiFunctionUsed(void)
+BOOL SpiFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3693,7 +3692,7 @@ BOOL SpiFunctionUsed(void)
 
 
 //-----------------------------------------------------------------------------
-BOOL Bin32BcdRoutineUsed(void)
+BOOL Bin32BcdRoutineUsed()
 {
     for(int i = 0; i < IntCodeLen; i++) {
         if(IntCode[i].op == INT_SET_BIN2BCD) {
@@ -3706,7 +3705,7 @@ BOOL Bin32BcdRoutineUsed(void)
 //-----------------------------------------------------------------------------
 // Are either of the MultiplyRoutine functions used?
 //-----------------------------------------------------------------------------
-BOOL MultiplyRoutineUsed(void)
+BOOL MultiplyRoutineUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_MUL, ELEM_SET_PWM, -1))
@@ -3722,7 +3721,7 @@ BOOL MultiplyRoutineUsed(void)
 //-----------------------------------------------------------------------------
 // Are either of the DivideRoutine functions used?
 //-----------------------------------------------------------------------------
-BOOL DivideRoutineUsed(void)
+BOOL DivideRoutineUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DIV, ELEM_SET_PWM, -1))

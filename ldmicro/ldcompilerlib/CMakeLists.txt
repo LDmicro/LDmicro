@@ -23,7 +23,6 @@ set(LD_COMPILER_SRC_LIST
     ../bits.h
     ../display.h
     ../intcode.h
-    ../lang.h
     ../netzer.h
     ../mcutable.h
     )

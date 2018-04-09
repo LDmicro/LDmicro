@@ -762,7 +762,7 @@ HMENU MakeMainWindowMenus(void)
 // to a change in the size of the program or a change in the size of the
 // window.
 //-----------------------------------------------------------------------------
-void RefreshScrollbars(void)
+void RefreshScrollbars()
 {
     SCROLLINFO vert, horiz;
     SetUpScrollbars(&NeedHoriz, &horiz, &vert);
