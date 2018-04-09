@@ -306,7 +306,7 @@ int CountHeightOfElement(int which, void *elem)
 // Determine the width, in leaf element units, of the widest row of the PLC
 // program (i.e. loop over all the rungs and find the widest).
 //-----------------------------------------------------------------------------
-int ProgCountWidestRow(void)
+int ProgCountWidestRow()
 {
     int i;
     int max = 0;
@@ -322,7 +322,7 @@ int ProgCountWidestRow(void)
     return max;
 }
 //-----------------------------------------------------------------------------
-int ProgCountRows(void)
+int ProgCountRows()
 {
     int totalHeight = 0;
     int i;

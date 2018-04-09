@@ -6,7 +6,7 @@ endif()
 
 
 project(ldmicro
-    LANGUAGES C CXX
+    LANGUAGES CXX
     )
 
 # set all posible languages
@@ -32,33 +32,26 @@ else()
 endif()
 message(STATUS "Lang : ${LDLANG}")
 
-find_package(Perl REQUIRED)
+add_subdirectory(ldlanglib)
+add_subdirectory(ldcompilerlib)
+add_subdirectory(ldinterpret)
+
+#find_package(Perl REQUIRED)
 
 set(LDMICRO_SRC_LIST
-    ansic.cpp
-    avr.cpp
-    circuit.cpp
     coildialog.cpp
     colorDialog.cpp
     commentdialog.cpp
-    compilecommon.cpp
     confdialog.cpp
     contactsdialog.cpp
-    display.cpp
     draw.cpp
     draw_outputdev.cpp
     helpdialog.cpp
-    intcode.cpp
-    interpreted.cpp
     iolist.cpp
-    lang.cpp
     ldmicro.cpp
-    loadsave.cpp
     lutdialog.cpp
     maincontrols.cpp
     miscutil.cpp
-    netzer.cpp
-    pic16.cpp
     resetdialog.cpp
     schematic.cpp
     simpledialog.cpp
@@ -70,12 +63,15 @@ set(LDMICRO_SRC_LIST
 
     ../common/win32/freeze.cpp
     ../common/win32/freeze.h
-
-    "${CMAKE_CURRENT_SOURCE_DIR}/obj/helptext.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/obj/lang-tables.h"
     )
 
-file( GLOB LDMICRO_HEADERS ./*.h)
+set(LDMICRO_HEADERS
+    ldmicro.h
+    ldversion.h
+    ldconfig.h
+    stdafx.h
+    targetver.h
+    )
 
 set(HELPER_SCRIPRS
     ${CMAKE_SOURCE_DIR}/flashMcu.bat
@@ -95,11 +91,11 @@ if(WIN32)
 endif(WIN32)
 
 set (LDINTERPRET_SRC
-     ldinterpret.c
+     ldinterpret.cpp
     )
 
 set (LDXINTERPRET_SRC
-     ldxinterpret.c
+     ldxinterpret.cpp
     )
 
 
@@ -118,20 +114,6 @@ if(WIN32)
     list(APPEND LDMICRO_LIBS Comctl32)
 endif(WIN32)
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/obj)
-
-execute_process(
-    COMMAND ${PERL_EXECUTABLE} txt2c.pl
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_FILE      "${CMAKE_CURRENT_SOURCE_DIR}/obj/helptext.cpp"
-    )
-
-execute_process(
-    COMMAND ${PERL_EXECUTABLE} lang-tables.pl
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_FILE      "${CMAKE_CURRENT_SOURCE_DIR}/obj/lang-tables.h"
-    )
-
 # For custom manifest
 if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /J")
@@ -145,12 +127,15 @@ if(${LDLANG} STREQUAL "ALL")
         if(${lang_id} STREQUAL "EN")
             add_executable            (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
             target_compile_definitions(${PROJECT_NAME} PRIVATE -DLDLANG_${lang_id})
-            target_link_libraries     (${PROJECT_NAME} ${LDMICRO_LIBS})
+            target_link_libraries     (${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib)
+            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
+                               )
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_executable            (${PROJECT_NAME}-${ldlang_lower} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
             target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id})
-            target_link_libraries     (${PROJECT_NAME}-${ldlang_lower} ${LDMICRO_LIBS})
+            target_link_libraries     (${PROJECT_NAME}-${ldlang_lower} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower})
         endif()
     endforeach()
 
@@ -159,19 +144,18 @@ else()
     if(${LDLANG} STREQUAL "EN")
         add_definitions(-DLDLANG_${LDLANG})
         add_executable       (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
-        target_link_libraries(${PROJECT_NAME} ${LDMICRO_LIBS})
+        target_link_libraries(${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
+                           )
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         add_definitions(-DLDLANG_${LDLANG})
         string(TOLOWER ${LDLANG} ldlang_lower)
         add_executable       (${PROJECT_NAME}-${ldlang_lower} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
-        target_link_libraries(${PROJECT_NAME}-${ldlang_lower} ${LDMICRO_LIBS})
+        target_link_libraries(${PROJECT_NAME}-${ldlang_lower} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower})
+        add_custom_command(TARGET ${PROJECT_NAME}-${ldlang_lower} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
+                           )
     endif()
 
 endif()
-
-add_executable(ldinterpret  ${LDINTERPRET_SRC})
-add_executable(ldxinterpret ${LDXINTERPRET_SRC})
-
-add_custom_command(TARGET ldinterpret POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
-    )

@@ -25,6 +25,8 @@
 #define __LDMICRO_H
 
 #include "stdafx.h"
+#include "ldconfig.h"
+#include "mcutable.h"
 #include "current_function.hpp"
 
 typedef signed short SWORD;
@@ -533,12 +535,6 @@ typedef signed long SDWORD;
         case ELEM_FORMATTED_STRING: \
         case ELEM_PERSIST:
 
-#define MAX_NAME_LEN                 64 // 128
-#define MAX_COMMENT_LEN             512 // 384 // 1024
-#define MAX_LOOK_UP_TABLE_LEN        64
-#define MAX_SHIFT_REGISTER_STAGES   256
-#define MAX_STRING_LEN              256
-
 typedef struct ElemSubcktParallelTag ElemSubcktParallel;
 typedef struct ElemSubcktSeriesTag ElemSubcktSeries;
 
@@ -794,8 +790,6 @@ typedef struct ElemSubcktParallelTag {
     int count;
 } ElemSubcktParallel;
 
-typedef struct McuIoInfoTag McuIoInfo;
-
 typedef struct ModbusAddr {
     unsigned char Slave;
     unsigned short Address;
@@ -922,154 +916,7 @@ extern SyntaxHighlightingColours HighlightColours;
 extern SyntaxHighlightingColours Schemes[NUM_SUPPORTED_SCHEMES];
 extern DWORD scheme;
 
-//-----------------------------------------------
-//See Atmel AVR Instruction set inheritance table
-//https://en.wikipedia.org/wiki/Atmel_AVR_instruction_set#Instruction_set_inheritance
-//and
-//PIC instruction listings
-//https://en.wikipedia.org/wiki/PIC_instruction_listings
-typedef enum CoreTag {
-    NOTHING,
-
-    AVRcores,
-    ReducedCore,
-    MinimalCore,
-    ClassicCore8K,
-    ClassicCore128K,
-    EnhancedCore8K,
-    EnhancedCore128K,
-    EnhancedCore4M,
-    XMEGAcore,
-
-    PICcores,
-    BaselineCore12bit, // baseline PIC10F, PIC12F5xx, PIC16F5xx.
-    ELANclones13bit,
-    MidrangeCore14bit, // midrange PIC12F6xx, PIC16Fxx. The mid-range core is available in the majority of devices labeled PIC12 and PIC16.
-    EnhancedMidrangeCore14bit, // PIC microcontrollers with the Enhanced Mid-Range core are denoted as PIC12F1XXX and PIC16F1XXX
-    PIC18HighEndCore16bit,
-    PIC24_dsPICcore16bit,
-
-    ESPcores,
-    ESP8266Core,
-
-    PCcores,
-    PC_LPT_COM,
-} Core;
-
-//-----------------------------------------------
-// Processor definitions. These tables tell us where to find the I/Os on
-// a processor, what bit in what register goes with what pin, etc. There
-// is one master SupportedMcus table, which contains entries for each
-// supported microcontroller.
-
-typedef struct McuIoPinInfoTag {
-    char    port;
-    int     bit;
-    int     pin;
-    char    pinName[MAX_NAME_LEN];
-    int     ArduinoPin;
-    char    ArduinoName[MAX_NAME_LEN];
-} McuIoPinInfo;
-
-typedef struct McuAdcPinInfoTag {
-    int     pin;
-    BYTE    muxRegValue;
-} McuAdcPinInfo;
-
-typedef struct McuSpiInfoTag {
-    char    name[MAX_NAME_LEN];
-    DWORD   REG_CTRL;
-    DWORD   REG_STAT;
-    DWORD   REG_DATA;
-    int     MISO;
-    int     MOSI;
-    int     SCK;
-    int     _SS;
-} McuSpiInfo;
-
-typedef struct McuPwmPinInfoTag {
-    int     pin;
-    int     timer;
-//for AVR's
-    int     resolution; // bits
-    BYTE    maxCS; // can be only 5 or 7 for AVR
-    ////////////// n = 0...5
-    /////////////// x = A or B
-    DWORD   REG_OCRnxL; // or REG_OCRn          // Output Compare Register Low byte
-    DWORD   REG_OCRnxH; // or 0, if not exist   // Output Compare Register High byte
-    DWORD   REG_TCCRnA; // or REG_TCCRn         // Timer/Counter Control Register/s
-    BYTE        COMnx1;                         // bit COMnx1 or COMn1 for REG_TCCRnA
-    BYTE        COMnx0;                         // bit COMnx0 or COMn0 for REG_TCCRnA
-    BYTE        WGMa  ; //                      // mask WGM3:0 for REG_TCCRnA if need
-    DWORD   REG_TCCRnB; // or 0, if not exist   // Timer/Counter Control Registers
-    BYTE        WGMb  ; //                      // mask WGM3:0 for REG_TCCRnB if need
-    char    name[MAX_NAME_LEN];
-} McuPwmPinInfo, *PMcuPwmPinInfo;
-
-typedef struct McuExtIntPinInfoTag {
-    int     pin;
-} McuExtIntPinInfo;
-
-#define ISA_PIC16           0x01
-#define ISA_AVR             0x02
-#define ISA_PC_LPT_COM      0x03
-#define ISA_HARDWARE        ISA_PC_LPT_COM
-#define ISA_INTERPRETED     0x05
-#define ISA_NETZER          0x06
-#define ISA_PASCAL          0x07
-#define ISA_XINTERPRETED    0x0A    // Extended interpeter
-#define ISA_ESP8266         0x0B
-
-#define MAX_IO_PORTS        ('P'-'A'+1)
-#define MAX_RAM_SECTIONS    8
-#define MAX_ROM_SECTIONS    1
-
 #define IS_MCU_REG(i) ((Prog.mcu) && (Prog.mcu->inputRegs[i]) && (Prog.mcu->outputRegs[i]) && (Prog.mcu->dirRegs[i]))
-
-typedef struct McuIoInfoTag {
-    const char       *mcuName;
-    const char       *mcuList;
-    const char       *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
-    const char       *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
-    const char       *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
-    char             portPrefix;
-    DWORD            inputRegs[MAX_IO_PORTS];         // A is 0, J is 9
-    DWORD            outputRegs[MAX_IO_PORTS];
-    DWORD            dirRegs[MAX_IO_PORTS];
-    DWORD            flashWords;
-    struct {
-        DWORD            start;
-        int              len;
-    }                ram[MAX_RAM_SECTIONS];
-    McuIoPinInfo    *pinInfo;
-    int              pinCount;
-    McuAdcPinInfo   *adcInfo;
-    int              adcCount;
-    int              adcMax;
-    struct {
-        int             rxPin;
-        int             txPin;
-    }                uartNeeds;
-    int              pwmNeedsPin;
-    int              whichIsa;
-    Core             core;
-    int              pins;
-    DWORD            configurationWord; // only PIC
-
-    McuPwmPinInfo    *pwmInfo;
-    int               pwmCount;
-
-    McuExtIntPinInfo *ExtIntInfo;
-    int               ExtIntCount;
-
-    McuSpiInfo       *spiInfo;
-    int               spiCount;
-
-    struct {
-        DWORD            start;
-        int              len;
-    }                rom[MAX_ROM_SECTIONS]; //EEPROM or HEI?
-} McuIoInfo;
 
 #define NUM_SUPPORTED_MCUS 26
 

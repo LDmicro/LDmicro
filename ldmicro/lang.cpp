@@ -24,13 +24,11 @@
 // table. If it fails then it just returns the English.
 // Jonathan Westhues, Apr 2007
 //-----------------------------------------------------------------------------
-#include "stdafx.h"
-
-#include "ldmicro.h"
+#include <cstring>
 
 typedef struct LangTableTag {
-    char *from;
-    char *to;
+    const char *from;
+    const char *to;
 } LangTable;
 
 typedef struct LangTag {

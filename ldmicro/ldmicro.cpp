@@ -75,7 +75,7 @@ PlcProgram Prog;
 // Get a filename with a common dialog box and then save the program to that
 // file and then set our default filename to that.
 //-----------------------------------------------------------------------------
-static BOOL SaveAsDialog(void)
+static BOOL SaveAsDialog()
 {
     OPENFILENAME ofn;
 
@@ -177,7 +177,7 @@ char *SetExt(char *dest, const char *src, const char *ext)
 // Get a filename with a common dialog box and then export the program as
 // an ASCII art drawing.
 //-----------------------------------------------------------------------------
-static BOOL ExportDialog(void)
+static BOOL ExportDialog()
 {
     char exportFile[MAX_PATH];
     OPENFILENAME ofn;
@@ -690,7 +690,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
 // or to cancel the operation they are performing. Return TRUE if they want
 // to cancel.
 //-----------------------------------------------------------------------------
-BOOL CheckSaveUserCancels(void)
+BOOL CheckSaveUserCancels()
 {
     if(!ProgramChangedNotSaved) {
         // no problem
@@ -724,7 +724,7 @@ BOOL CheckSaveUserCancels(void)
 // Load a new program from a file. If it succeeds then set our default filename
 // to that, else we end up with an empty file then.
 //-----------------------------------------------------------------------------
-static void OpenDialog(void)
+static void OpenDialog()
 {
     OPENFILENAME ofn;
 
@@ -763,7 +763,7 @@ static void OpenDialog(void)
 // changed so that we ask if user wants to save before exiting, and update
 // the I/O list.
 //-----------------------------------------------------------------------------
-void ProgramChanged(void)
+void ProgramChanged()
 {
     ProgramChangedNotSaved = TRUE;
     GenerateIoListDontLoseSelection();
@@ -1349,10 +1349,12 @@ cmp:
         case MNU_SELECT_RUNG: {
             int i = RungContainingSelected();
             if(i >= 0)
-                if(Prog.rungSelected[i] == ' ')
-                    Prog.rungSelected[i] = '*';
-                else
-                    Prog.rungSelected[i] = ' ';
+                {
+                    if(Prog.rungSelected[i] == ' ')
+                        Prog.rungSelected[i] = '*';
+                    else
+                        Prog.rungSelected[i] = ' ';
+                }
             break;
 
         }
@@ -2610,11 +2612,10 @@ return;
 //-----------------------------------------------------------------------------
 // Entry point into the program.
 //-----------------------------------------------------------------------------
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-    LPSTR lpCmdLine, INT nCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
-    if(NUM_SUPPORTED_MCUS != arraylen(SupportedMcus)) {
-        Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, arraylen(SupportedMcus));
+    if(NUM_SUPPORTED_MCUS != supportedMcuLen()) {
+        Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, supportedMcuLen());
         oops();
     }
 
