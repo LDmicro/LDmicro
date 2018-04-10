@@ -90,15 +90,6 @@ if(WIN32)
         )
 endif(WIN32)
 
-set (LDINTERPRET_SRC
-     ldinterpret.cpp
-    )
-
-set (LDXINTERPRET_SRC
-     ldxinterpret.cpp
-    )
-
-
 INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./")
 add_definitions(
     "-DISOLATION_AWARE_ENABLED"
