@@ -1,3 +1,7 @@
+== Release 4.3.8.5
+
+    * Fixed: PIC10F200 compile issues #65
+
 == Release 4.3.8.4
 
     * Fixed: fix "Compile As" endless dialog show #60

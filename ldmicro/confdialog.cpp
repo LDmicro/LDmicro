@@ -170,7 +170,7 @@ static void MakeControls(void)
     char explanation[1024*4] = "";
 
     BOOL b = FALSE;
-    if(Prog.mcu) {
+    if(Prog.mcu && Prog.cycleTime) {
         if(Prog.mcu->whichIsa == ISA_AVR) {
             b=CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen); // && AvrProgLdLen;
         } else if(Prog.mcu->whichIsa == ISA_PIC16) {

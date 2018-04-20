@@ -407,16 +407,21 @@ static void WipeMemory(void)
 //-----------------------------------------------------------------------------
 static DWORD Bank(DWORD reg)
 {
-    if(IS_NOTDEF(reg)) reg &= ~(NOTDEF(0));
-    if(IS_MULTYDEF(reg)) reg &= ~(MULTYDEF(0));
+    if(IS_NOTDEF(reg)) 
+		reg &= ~(NOTDEF(0));
+    if(IS_MULTYDEF(reg)) 
+		reg &= ~(MULTYDEF(0));
     if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
-        if(reg & ~0x0FFF) ooops("0x%X", reg)
+        if(reg & ~0x0FFF) 
+			ooops("0x%X", reg)
         reg &= 0x0F80;
     } else if(Prog.mcu->core == MidrangeCore14bit) {
-        if(reg & ~0x01FF) ooops("0x%X", reg)
+        if(reg & ~0x01FF) 
+			ooops("0x%X", reg)
         reg &= 0x0180;
     } else if(Prog.mcu->core == BaselineCore12bit) {
-        if(reg & ~0x007F) ooops("0x%X", reg)
+        if(reg & ~0x007F) 
+			ooops("0x%X", reg)
         reg &= 0x0000;
     } else oops();
     return reg;
@@ -5417,6 +5422,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
     */
     if(Prog.mcu->core == BaselineCore12bit) {
         if(plcTmr.prescaler == 1) {
+            Prog.WDTPSA = 1;
             //CHANGING PRESCALER(TIMER0 -> WDT)
             Instruction(OP_CLRWDT);             // Clear WDT, not a prescaler !
             Instruction(OP_CLRF, REG_TMR0);     // Clear TMR0 and prescaler
@@ -5502,7 +5508,8 @@ static void SetPrescaler(int tmr)
         else ooops("%d", plcTmr.prescaler);
         // enable clock, internal source
         plcTmr.PS |= 0x01;
-    } else oops();
+    } else 
+		oops();
 }
 //-----------------------------------------------------------------------------
 // Calc PIC 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
@@ -6539,12 +6546,13 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     Scratch11= AllocOctetRam();
     }
 
-    // Allocate the register used to hold the high byte of the EEPROM word
-    // that's queued up to program, plus the bit to indicate that it is
-    // valid.
-    EepromHighByte = AllocOctetRam(3);
-//  AllocBitRam(&EepromHighByteWaitingAddr, &EepromHighByteWaitingBit);
-    EepromHighBytesCounter = AllocOctetRam();
+	if(REG_EEDATA  != -1) {
+		// Allocate the register used to hold the high byte of the EEPROM word
+		// that's queued up to program, plus the bit to indicate that it is
+		// valid.
+		EepromHighByte = AllocOctetRam(3);
+		EepromHighBytesCounter = AllocOctetRam();
+	}
 
     DWORD progStart = AllocFwdAddr();
     // Our boot vectors; not necessary to do it like this, but it lets
@@ -6611,7 +6619,11 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         Comment("Selects 16MHz for the Internal Oscillator when it used, ignored otherwise.");
         WriteRegister(REG_OSCON, 0xF << IRCF0);
     }
-    if(Prog.cycleTimer >= 0) { // 1
+    if(Prog.mcu->core == BaselineCore12bit) {
+        Prog.WDTPSA = 1;
+        Prog.OPTION = 0xFF; // default; only for PIC10Fxxx
+	}
+	if(Prog.cycleTimer >= 0) { // 1
         // Configure PLC Timer near the progStart
         CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
         if(Prog.cycleTimer==0)
@@ -6677,6 +6689,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         // Configure PLC Timer near the progStart after zero out RAM
         if(plcTmr.softDivisor > 1) { // RAM neded
             Comment("Configure PLC Timer softDivisor");
+			SetSizeOfVar("$softDivisor", byteNeeded(plcTmr.softDivisor));
             MemForVariable("$softDivisor", &plcTmr.softDivisorAddr);
             WriteRegister(plcTmr.softDivisorAddr, (BYTE)(plcTmr.softDivisor & 0xff));
             if(plcTmr.softDivisor > 0xff)
@@ -6689,8 +6702,6 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     if(Prog.mcu->core == BaselineCore12bit) {
         Comment("Set up the TRISx registers (direction). 1-tri-stated (input), 0-output.");
 
-        Prog.WDTPSA = 1;
-        Prog.OPTION = 0xFF; // default; only for PIC10Fxxx
         Prog.OPTION &= ~(1 << T0CS);  // Timer0 Clock Source Select bit, 0 = Transition on internal instruction cycle clock, FOSC/4
         Prog.OPTION &= ~(1 << _GPWU); // Enable Wake-up on Pin Change bit (GP0, GP1, GP3)
 
@@ -6885,22 +6896,11 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     BeginOfPLCCycle0 = PicProgWriteP;
     if(Prog.cycleTimer == 0) {
         if(Prog.mcu->core == BaselineCore12bit) {
-            /*
-            // v1
-            Instruction(OP_MOVLW, plcTmr.tmr - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-          //Instruction(OP_MOVLW, plcTmr.tmr - 1); // tested in Proteus - 1) 1kHz}
-            Instruction(OP_SUBWF, REG_TMR0, DEST_W);
-            Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
-            Instruction(OP_GOTO,  BeginOfPLCCycle);
-            Instruction(OP_CLRF,  REG_TMR0);
-            */
-            // v2
             Instruction(OP_MOVF,  REG_TMR0, DEST_W);
             Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
             Instruction(OP_GOTO,  BeginOfPLCCycle);
-          //Instruction(OP_MOVLW, 256 - plcTmr.tmr - 1 - 3); // tested in Proteus (... - 1 - 3 ) == 1.999-2.002 kHz}
-          //Instruction(OP_MOVLW, 256 - plcTmr.tmr - 1); // tested in Proteus - 1) 992Hz}
-            Instruction(OP_MOVLW, 256 - plcTmr.tmr + 1); // tested in Proteus - 1) 992Hz 0=996}
+            Instruction(OP_MOVLW, 256 - plcTmr.tmr + 1); // tested in Proteus +1 = 1001Hz = 1987Hz
+          //Instruction(OP_MOVLW, 256 - plcTmr.tmr + 2); // tested in Proteus +2 = 985Hz = 2002Hz
             Instruction(OP_MOVWF, REG_TMR0);
         } else {
             if(plcTmr.softDivisor > 1) {
@@ -6948,7 +6948,16 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         Comment("Watchdog reset");
         Instruction(OP_CLRWDT);
       if(plcTmr.softDivisor > 1) {
-          DWORD setLiteral = AllocFwdAddr();;
+        if(Prog.mcu->core == BaselineCore12bit) {
+          Instruction(OP_DECFSZ, plcTmr.softDivisorAddr, DEST_F); // Skip if zero
+          Instruction(OP_GOTO, BeginOfPLCCycle);
+          if(plcTmr.softDivisor > 0xff) {
+              Instruction(OP_DECFSZ, plcTmr.softDivisorAddr+1, DEST_F); // Skip if zero
+              Instruction(OP_GOTO, BeginOfPLCCycle);
+          }
+          CopyLitToReg(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+		} else {
+          DWORD setLiteral = AllocFwdAddr();
           /*
           DWORD yesZero;
           if(plcTmr.softDivisor > 0xff) {
@@ -6992,6 +7001,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
           */
           FwdAddrIsNow(setLiteral);
           CopyLitToReg(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+		}
       }
     }
     if(Prog.cycleDuty) {
@@ -7119,6 +7129,12 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
 
 void CompilePic16(char *outFile)
 {
+    if(Prog.mcu->core == BaselineCore12bit) {
+        if(Prog.cycleTimer > 0) {
+            Error("Select Timer 0 in menu 'Settings -> MCU parameters'!");
+			return;
+		}
+	}
     BOOL b = _CompilePic16(outFile, 0); // 1) calc LD length approximately
     if(b)    _CompilePic16(outFile, 1); // 2) recalc timer prescaler and value
 }
