@@ -254,8 +254,8 @@ BOOL LoadPcPorts(char *filename)
     IoPcCount = 0;
     while(fgets(line, sizeof(line), f)) {
         if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
-        if(c=strstr(line,"//")) c = '\0';
-        if(c=strstr(line,";"))  c = '\0';
+        if(c=strstr(line,"//")) c = 0;
+        if(c=strstr(line,";"))  c = 0;
         _strupr(line);
         pline = line;
         while (isspace(*pline)) pline++;
