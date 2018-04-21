@@ -329,6 +329,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_ASM, _("Open asm in notepad\tAlt+F3"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_C,   _("Open c in notepad"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_H,   _("Open h in notepad"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PAS, _("Open pas in notepad"));
     AppendMenu(FileMenu, MF_STRING,   MNU_NOTEPAD_PL,  _("Open pl in notepad\tAlt+F5"));
     AppendMenu(FileMenu, MF_STRING,   MNU_EXPLORE_DIR, _("Explore ld directory"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,        _("&Save\tCtrl+S or F2"));
@@ -711,7 +712,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(compile, MF_SEPARATOR, 0, NULL);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO,       _("Compile Sketch for ARDUINO"));
     AppendMenu(compile, MF_SEPARATOR, 0, NULL);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("DONE: Compile PASCAL"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("Compile PASCAL"));
     AppendMenu(compile, MF_SEPARATOR, 0, NULL);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_INT,    _("Compile Interpretable Byte Code"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT,   _("Compile Interpretable Extended Byte Code"));
@@ -924,7 +925,6 @@ void RefreshStatusBar(void)
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_NETZER ||
-                    Prog.mcu->whichIsa == ISA_PASCAL ||
                     Prog.mcu->whichIsa == ISA_INTERPRETED ||
                     Prog.mcu->whichIsa == ISA_XINTERPRETED))
     {

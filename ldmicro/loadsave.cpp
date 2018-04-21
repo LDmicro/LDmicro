@@ -502,8 +502,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 //-----------------------------------------------------------------------------
 char *strspace(char *str)
 {
-    while(isspace(*str)) str++;
-    while(isspace(str[strlen(str)-1]))
+    while(strlen(str) && isspace(str[0])) str++;
+    while(strlen(str) && isspace(str[strlen(str)-1]))
         str[strlen(str)-1] = '\0';
     return str;
 }

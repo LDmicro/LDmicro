@@ -6623,7 +6623,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         Prog.WDTPSA = 1;
         Prog.OPTION = 0xFF; // default; only for PIC10Fxxx
 	}
-	if(Prog.cycleTimer >= 0) { // 1
+    if(Prog.cycleTimer >= 0) { // 1
         // Configure PLC Timer near the progStart
         CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
         if(Prog.cycleTimer==0)

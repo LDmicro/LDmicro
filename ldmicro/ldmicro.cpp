@@ -314,7 +314,7 @@ char *GetIsaName(int ISA)
         case ISA_INTERPRETED  : return (char *)stringer( ISA_INTERPRETED  ) + 4;
         case ISA_XINTERPRETED : return (char *)stringer( ISA_XINTERPRETED ) + 4;
         case ISA_NETZER       : return (char *)stringer( ISA_NETZER       ) + 4;
-        case ISA_PASCAL       : return (char *)stringer( ISA_PASCAL       ) + 4;
+        case ISA_PC           : return (char *)stringer( ISA_PC           ) + 4;
       //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
         default               : oops(); return NULL;
@@ -595,8 +595,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
             ofn.lpstrDefExt = "xint";
             c = "xint";
             compile_MNU = MNU_COMPILE_XINT;
-        } else if((MNU == MNU_COMPILE_PASCAL) ||
-                  (Prog.mcu && Prog.mcu->whichIsa == ISA_PASCAL)) {
+        } else if(MNU == MNU_COMPILE_PASCAL) {
             ofn.lpstrFilter = PASCAL_PATTERN;
             ofn.lpstrDefExt = "pas";
             c = "pas";

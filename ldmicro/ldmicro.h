@@ -969,6 +969,10 @@ typedef struct McuIoPinInfoTag {
     char    pinName[MAX_NAME_LEN];
     int     ArduinoPin;
     char    ArduinoName[MAX_NAME_LEN];
+    int     portN;   // 1=LPT1, 2=LPT2,... 1=COM1,...
+    int     dbPin;   // in DB1..25 of PC ports
+    int     ioType;  // IN=IO_TYPE_DIG_INPUT, OUT=IO_TYPE_DIG_OUTPUT of PC ports
+    int     addr;    // addr of PC ports
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -985,6 +989,7 @@ typedef struct McuSpiInfoTag {
     int     MOSI;
     int     SCK;
     int     _SS;
+    BOOL    isUsed;
 } McuSpiInfo;
 
 typedef struct McuPwmPinInfoTag {
@@ -1012,11 +1017,10 @@ typedef struct McuExtIntPinInfoTag {
 
 #define ISA_PIC16           0x01
 #define ISA_AVR             0x02
-#define ISA_PC_LPT_COM      0x03
-#define ISA_HARDWARE        ISA_PC_LPT_COM
+#define ISA_HARDWARE        ISA_AVR
+#define ISA_PC              0x03
 #define ISA_INTERPRETED     0x05
 #define ISA_NETZER          0x06
-#define ISA_PASCAL          0x07
 #define ISA_XINTERPRETED    0x0A    // Extended interpeter
 #define ISA_ESP8266         0x0B
 
@@ -1360,7 +1364,7 @@ int isalpha_(int c);
 int isal_num(int c);
 int isname(char *name);
 double hobatof(const char *str);
-SDWORD hobatoi(const char* str);
+SDWORD hobatoi(const char *str);
 void ShowSizeOfVarDialog(PlcProgramSingleIo *io);
 
 // confdialog.cpp
@@ -1449,6 +1453,8 @@ const char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
 char *GetPinName(int pin, char *pinName);
+char *ShortPinName(McuIoPinInfo *iop, char *pinName);
+char *LongPinName(McuIoPinInfo *iop, char *pinName);
 const char* PinToName(int pin);
 const char* ArduinoPinName(McuIoPinInfo *iop);
 void SetMcu(McuIoInfo *mcu);
@@ -1759,6 +1765,7 @@ int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
 int MemOfVar(char *name, DWORD *addr);
 BYTE MuxForAdcVariable(const char* name);
 int SingleBitAssigned(char *name);
+int GetAssignedType(char *name);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput);
 void MemForSingleBit(const char* name, BOOL forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const char *name, DWORD *addr, int *bit);

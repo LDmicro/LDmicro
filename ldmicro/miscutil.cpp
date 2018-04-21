@@ -450,12 +450,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                 */
                 iop = PinInfo(pin);
                 if(iop && Prog.mcu)
-                    if(Prog.mcu->core == PC_LPT_COM)
-                    ;//  sprintf(portName, "%c%dP%d",
-                     //      Prog.mcu->portPrefix, iop->portN, iop->portPin);
-                    else
-                        sprintf(portName, "%c%c%d",
-                            Prog.mcu->portPrefix, iop->port, iop->bit);
+                    ShortPinName(iop, portName);
                 else
                     strcpy(portName, _("<not an I/O!>"));
             }
@@ -506,8 +501,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             iop = PinInfo(pin);
             if(iop) {
                 if(portName)
-                    sprintf(portName, "%c%c%d",
-                        Prog.mcu->portPrefix, iop->port, iop->bit);
+                    ShortPinName(iop, portName);
                 if(iop->pinName)
                     sprintf(pinName, "%s", iop->pinName);
             } else {
@@ -533,8 +527,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             iop = PinInfo(Prog.mcu->uartNeeds.txPin);
             if(iop) {
                 if(portName)
-                    sprintf(portName, "%c%c%d",
-                      Prog.mcu->portPrefix, iop->port, iop->bit);
+                    ShortPinName(iop, portName);
                  if(pinName)
                     if(iop->pinName)
                         sprintf(pinName, "%s", iop->pinName);
@@ -561,8 +554,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
             if(iop) {
                 if(portName)
-                    sprintf(portName, "%c%c%d",
-                      Prog.mcu->portPrefix, iop->port, iop->bit);
+                    ShortPinName(iop, portName);
                  if(pinName)
                     if(iop->pinName)
                         sprintf(pinName, "%s", iop->pinName);
@@ -598,8 +590,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                             return;
                         }
                     }
-                    sprintf(portName, "%c%c%d",
-                      Prog.mcu->portPrefix, iop->port, iop->bit);
+                    ShortPinName(iop, portName);
                 if(pinName)
                     if(UartFunctionUsed() && Prog.mcu) {
                         if((Prog.mcu->uartNeeds.rxPin == pin) ||
@@ -633,6 +624,30 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     }
 }
 
+char *ShortPinName(McuIoPinInfo *iop, char *pinName)
+{
+    strcpy(pinName, "");
+    if(iop && Prog.mcu) {
+        if(Prog.mcu->core == PC_LPT_COM)
+            sprintf(pinName, "%c%dP%d", iop->port, iop->portN, iop->dbPin);
+        else
+            sprintf(pinName, "%c%c%d", Prog.mcu->portPrefix, iop->port, iop->bit);
+    }
+    return pinName;
+}
+
+char *LongPinName(McuIoPinInfo *iop, char *pinName)
+{
+    strcpy(pinName, "");
+    if(iop && Prog.mcu) {
+        if(strlen(iop->pinName))
+            strcpy(pinName, iop->pinName);
+        else
+            ShortPinName(iop, pinName);
+    }
+    return pinName;
+}
+
 //-----------------------------------------------------------------------------
 static int ComparePin(const void *av, const void *bv)
 {
@@ -640,21 +655,16 @@ static int ComparePin(const void *av, const void *bv)
     McuIoPinInfo *b = (McuIoPinInfo *)bv;
     char sa[MAX_NAME_LEN];
     char sb[MAX_NAME_LEN];
-    if(strlen(a->pinName))
-        strcpy(sa, a->pinName);
-    else
-        sprintf(sa, "%c%c%d", Prog.mcu->portPrefix, a->port, a->bit);
-    if(strlen(b->pinName))
-        strcpy(sb, b->pinName);
-    else
-        sprintf(sb, "%c%c%d", Prog.mcu->portPrefix, b->port, b->bit);
+    LongPinName(a, sa);
+    LongPinName(b, sb);
     return strcmp(sa, sb);
 }
 
 void SetMcu(McuIoInfo *mcu)
 {
     Prog.mcu = mcu;
-    if(mcu)
+
+    if(Prog.mcu &&  (Prog.mcu->core != PC_LPT_COM))
         qsort(Prog.mcu->pinInfo, Prog.mcu->pinCount, sizeof(McuIoPinInfo), ComparePin);
 }
 
@@ -662,23 +672,14 @@ void SetMcu(McuIoInfo *mcu)
 char *GetPinName(int pin, char *pinName)
 {
     sprintf(pinName, "");
-    int i;
     if(Prog.mcu)
-    if(pin != NO_PIN_ASSIGNED)
-    for(i = 0; i < Prog.mcu->pinCount; i++)
-        if(Prog.mcu->pinInfo[i].pin==pin)
-            if(Prog.mcu && (Prog.mcu->portPrefix == 'L') && (Prog.io.assignment[i].pin))
-                sprintf(pinName, "%s",
-                    PinToName(Prog.io.assignment[i].pin));
-            else
-                if((Prog.mcu->pinInfo[i].pinName) && strlen(Prog.mcu->pinInfo[i].pinName))
-                  sprintf(pinName, "%s", Prog.mcu->pinInfo[i].pinName);
-                else
-                  sprintf(pinName, "%c%c%d",
-                    Prog.mcu->portPrefix,
-                    Prog.mcu->pinInfo[i].port,
-                    Prog.mcu->pinInfo[i].bit);
-    return pinName;
+        if(pin != NO_PIN_ASSIGNED)
+            for(int i = 0; i < Prog.mcu->pinCount; i++)
+                if(Prog.mcu->pinInfo[i].pin==pin) {
+                    LongPinName(&(Prog.mcu->pinInfo[i]), pinName);
+                    break;
+                }
+                return pinName;
 }
 
 //-----------------------------------------------------------------------------
@@ -700,9 +701,8 @@ const char *ArduinoPinName(McuIoPinInfo *iop)
 //-----------------------------------------------------------------------------
 int NameToPin(char *pinName)
 {
-    int i;
     if(Prog.mcu)
-       for(i = 0; i < Prog.mcu->pinCount; i++)
+       for(int i = 0; i < Prog.mcu->pinCount; i++)
            if(strcmp(Prog.mcu->pinInfo[i].pinName,pinName)==0)
                return Prog.mcu->pinInfo[i].pin;
     return 0;
@@ -710,9 +710,8 @@ int NameToPin(char *pinName)
 //-----------------------------------------------------------------------------
 const char *PinToName(int pin)
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.mcu->pinCount; i++)
+        for(int i = 0; i < Prog.mcu->pinCount; i++)
             if(Prog.mcu->pinInfo[i].pin==pin)
                 return Prog.mcu->pinInfo[i].pinName;
     return "";
@@ -720,9 +719,8 @@ const char *PinToName(int pin)
 //-----------------------------------------------------------------------------
 McuIoPinInfo *PinInfo(int pin)
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.mcu->pinCount; i++)
+        for(int i = 0; i < Prog.mcu->pinCount; i++)
             if(Prog.mcu->pinInfo[i].pin==pin)
                 return &(Prog.mcu->pinInfo[i]);
     return NULL;
@@ -731,9 +729,8 @@ McuIoPinInfo *PinInfo(int pin)
 //-----------------------------------------------------------------------------
 McuIoPinInfo *PinInfoForName(const char *name)
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.io.count; i++)
+        for(int i = 0; i < Prog.io.count; i++)
             if(strcmp(Prog.io.assignment[i].name, name)==0)
                 return PinInfo(Prog.io.assignment[i].pin);
     return NULL;
@@ -742,9 +739,8 @@ McuIoPinInfo *PinInfoForName(const char *name)
 //-----------------------------------------------------------------------------
 McuPwmPinInfo *PwmPinInfo(int pin)
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.mcu->pwmCount; i++)
+        for(int i = 0; i < Prog.mcu->pwmCount; i++)
             if(Prog.mcu->pwmInfo[i].pin==pin)
                 return &(Prog.mcu->pwmInfo[i]);
     return NULL;
@@ -752,19 +748,18 @@ McuPwmPinInfo *PwmPinInfo(int pin)
 
 McuPwmPinInfo *PwmPinInfo(int pin, int timer) // !=timer !!!
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.mcu->pwmCount; i++)
-            if((Prog.mcu->pwmInfo[i].pin==pin) && (Prog.mcu->pwmInfo[i].timer!=timer))
-                return &(Prog.mcu->pwmInfo[i]);
+        for(int i = 0; i < Prog.mcu->pwmCount; i++)
+            if(Prog.mcu->pwmInfo[i].pin==pin)
+               if((Prog.mcu->whichIsa == ISA_PIC16) || (Prog.mcu->pwmInfo[i].timer != Prog.cycleTimer))
+                    return &(Prog.mcu->pwmInfo[i]);
     return NULL;
 }
 
 McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.mcu->pwmCount; i++)
+        for(int i = 0; i < Prog.mcu->pwmCount; i++)
             if((Prog.mcu->pwmInfo[i].pin==pin) && (Prog.mcu->pwmInfo[i].timer!=timer) && (Prog.mcu->pwmInfo[i].resolution==resolution))
                 return &(Prog.mcu->pwmInfo[i]);
     return NULL;
@@ -773,9 +768,8 @@ McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
 //-----------------------------------------------------------------------------
 McuSpiInfo *GetMcuSpiInfo(char *name)
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.mcu->spiCount; i++)
+        for(int i = 0; i < Prog.mcu->spiCount; i++)
             if(strcmp(Prog.mcu->spiInfo[i].name, name)==0)
                 return &(Prog.mcu->spiInfo[i]);
     return NULL;
@@ -784,9 +778,8 @@ McuSpiInfo *GetMcuSpiInfo(char *name)
 //-----------------------------------------------------------------------------
 McuPwmPinInfo *PwmPinInfoForName(char *name)
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.io.count; i++) {
+        for(int i = 0; i < Prog.io.count; i++) {
             if(strcmp(Prog.io.assignment[i].name, name)==0)
                 return PwmPinInfo(Prog.io.assignment[i].pin);
         }
@@ -819,9 +812,8 @@ McuPwmPinInfo *PwmPinInfoForName(char *name, int timer, int resolution) // !=tim
 //-----------------------------------------------------------------------------
 McuAdcPinInfo *AdcPinInfo(int pin)
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.mcu->adcCount; i++)
+        for(int i = 0; i < Prog.mcu->adcCount; i++)
             if(Prog.mcu->adcInfo[i].pin==pin)
                 return &(Prog.mcu->adcInfo[i]);
     return NULL;
@@ -830,9 +822,8 @@ McuAdcPinInfo *AdcPinInfo(int pin)
 //-----------------------------------------------------------------------------
 McuAdcPinInfo *AdcPinInfoForName(char *name)
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.io.count; i++)
+        for(int i = 0; i < Prog.io.count; i++)
             if(strcmp(Prog.io.assignment[i].name, name)==0)
                 return AdcPinInfo(Prog.io.assignment[i].pin);
     return NULL;
@@ -841,9 +832,8 @@ McuAdcPinInfo *AdcPinInfoForName(char *name)
 //-----------------------------------------------------------------------------
 BOOL IsExtIntPin(int pin)
 {
-    int i;
     if(Prog.mcu)
-        for(i = 0; i < Prog.mcu->ExtIntCount; i++)
+        for(int i = 0; i < Prog.mcu->ExtIntCount; i++)
             if(Prog.mcu->ExtIntInfo[i].pin==pin)
                 return TRUE;
     return FALSE;

@@ -894,9 +894,10 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
         // period = -1;
     }
 
-    if(((period > maxPeriod) || (adjPeriod > maxPeriod))
-    && (Prog.mcu)
-    && (Prog.mcu->portPrefix != 'L')) {
+    if(((period > maxPeriod) || (adjPeriod > maxPeriod))//
+    && (Prog.mcu)//
+    && (Prog.mcu->whichIsa != ISA_PC)//
+    ) {
         char s1[1024];
         sprintf(s1, "%s %s", _("Timer period too long; (use a slower cycle time)."), _("Or decrease timer period."));
         char s2[1024];
@@ -1070,15 +1071,14 @@ SDWORD hobatoi(const char *str)
            start_ptr++;
        }
        int radix = 0; //auto detect
-       if(*start_ptr == '0')
-           {
-               if(toupper(start_ptr[1]) == 'B')
-                   radix = 2;
-               else if(toupper(start_ptr[1]) == 'O')
-                   radix = 8;
-               else if(toupper(start_ptr[1]) == 'X')
-                   radix = 16;
-           }
+       if(*start_ptr == '0') {
+            if(toupper(start_ptr[1]) == 'B')
+                radix = 2;
+            else if(toupper(start_ptr[1]) == 'O')
+                radix = 8;
+            else if(toupper(start_ptr[1]) == 'X')
+                radix = 16;
+       }
        char *end_ptr = NULL;
        // errno = 0;
        val = strtol(str, &end_ptr, radix);

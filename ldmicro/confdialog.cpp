@@ -142,7 +142,6 @@ static void MakeControls(void)
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
                     Prog.mcu->whichIsa == ISA_XINTERPRETED ||
-                    Prog.mcu->whichIsa == ISA_PASCAL ||
                     Prog.mcu->whichIsa == ISA_NETZER))
     {
         EnableWindow(CrystalTextbox, FALSE);
@@ -392,8 +391,7 @@ void ShowConfDialog(void)
             Prog.mcuClock = 16000000; //16 MHz
         }
 
-        char txt[1024] = "";
-        if(Prog.mcu) {
+        if(Prog.mcu && (ProgCycleTime > 0)) {
           if(Prog.mcu->whichIsa == ISA_AVR) {
              CalcAvrPlcCycle(ProgCycleTime, AvrProgLdLen);
           } else if(Prog.mcu->whichIsa == ISA_PIC16) {

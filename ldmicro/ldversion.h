@@ -9,6 +9,3 @@
 #define LDMICRO_VER_TWEAK (5)     //<--+
 
 #endif
-
-
-

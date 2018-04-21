@@ -834,7 +834,7 @@ void SaveIoListToFile(FILE *f)
                 continue;
             j2++;
             // Don't internationalize this! It's the file format, not UI.
-            if(Prog.mcu && (Prog.mcu->portPrefix == 'L') && (Prog.io.assignment[i].pin))
+            if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PC) && (Prog.io.assignment[i].pin))
                 fprintf(f, "    %s at %s\n", Prog.io.assignment[i].name,
                     PinToName(Prog.io.assignment[i].pin));
             else // if(TRUE || (Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT))
@@ -1275,11 +1275,11 @@ void ShowIoDialog(int item)
         if(Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) {
             if(Prog.mcu->pwmCount) {
                 McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu->pinInfo[i].pin, Prog.cycleTimer);
-                if((iop)&&(iop->timer != Prog.cycleTimer))
-                    ; // okay; we know how to connect it up to the PWM
-                else {
+                if(!iop)
                     goto cant_use_this_io;
-                }
+                if((Prog.mcu->whichIsa == ISA_AVR) && (iop->timer != Prog.cycleTimer))
+                    goto cant_use_this_io;
+                // okay; we know how to connect it up to the PWM
             } else {
                 if(Prog.mcu->pwmNeedsPin == Prog.mcu->pinInfo[i].pin)
                     ; // okay; we know how to connect it up to the PWM
@@ -1633,7 +1633,7 @@ void IoListProc(NMHDR *h)
                                     sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                             }
                         }
-                    }
+                    } else
                     if (type == IO_TYPE_TABLE_IN_FLASH) {
                         MemOfVar(name, &addr);
                         if(addr > 0)

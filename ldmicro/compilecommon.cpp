@@ -68,15 +68,13 @@ int McuPWM()
 
     int n = 0;
     if(Prog.mcu->pwmCount) {
-        if(Prog.mcu->pwmInfo[0].timer != Prog.cycleTimer)
-        if(Prog.mcu->pwmInfo[0].pin)
-            n++;
-        int i;
-        for(i = 1; i < Prog.mcu->pwmCount; i++) {
-            if(Prog.mcu->pwmInfo[i].timer != Prog.cycleTimer)
+        int prevPin = -1;
+        for(int i = 0; i < Prog.mcu->pwmCount; i++) {
             if(Prog.mcu->pwmInfo[i].pin)
-            if(Prog.mcu->pwmInfo[i].pin != Prog.mcu->pwmInfo[i-1].pin)
-                n++;
+                if(Prog.mcu->pwmInfo[i].pin != prevPin)
+                    if((Prog.mcu->whichIsa == ISA_PIC16) || (Prog.mcu->pwmInfo[i].timer != Prog.cycleTimer))
+                        n++;
+            prevPin = Prog.mcu->pwmInfo[i].pin;
         }
     } else if(Prog.mcu->pwmNeedsPin) {
         n = 1;
@@ -311,12 +309,17 @@ static void MemForPin(const char *name, DWORD *addr, int *bit, BOOL asInput)
     if(Prog.mcu) {
         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
         if(iop) {
-            if(asInput) {
-                *addr = Prog.mcu->inputRegs[iop->port - 'A'];
+            if(Prog.mcu->core == PC_LPT_COM) {
+                *addr = iop->addr;
+                *bit = iop->bit;
             } else {
-                *addr = Prog.mcu->outputRegs[iop->port - 'A'];
+                if(asInput) {
+                    *addr = Prog.mcu->inputRegs[iop->port - 'A'];
+                } else {
+                    *addr = Prog.mcu->outputRegs[iop->port - 'A'];
+                }
+                *bit = iop->bit;
             }
-            *bit = iop->bit;
         } else {
             Error(_("Must assign pins for all I/O.\r\n\r\n"
                 "'%s' is not assigned."), name);
@@ -369,6 +372,20 @@ int SingleBitAssigned(char *name)
     }
     return pin;
 }
+
+//-----------------------------------------------------------------------------
+int GetAssignedType(char *name)
+{
+    int type = NO_PIN_ASSIGNED;
+    for(int i = 0; i < Prog.io.count; i++) {
+        if(strcmp(Prog.io.assignment[i].name, name)==0) {
+            type = Prog.io.assignment[i].type;
+            break;
+        }
+    }
+    return type;
+}
+
 //-----------------------------------------------------------------------------
 // Determine the mux register settings to read a particular ADC channel.
 //-----------------------------------------------------------------------------
@@ -562,7 +579,6 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
 
                   if(Variables[i].SizeOfVar < sizeOfVar) {
                     //dbp("Err: Allocated '%s', upsize %d set to %d", name, Variables[i].SizeOfVar, sizeOfVar);
-                    //STACKWALKER
                   }
 
               } else if(Variables[i].Allocated != sizeOfVar) {
