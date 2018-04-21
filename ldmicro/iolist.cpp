@@ -580,7 +580,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         }
         case ELEM_LOOK_UP_TABLE: {
             if(l->d.lookUpTable.count>0)
-                MemForVariable(l->d.lookUpTable.name, NULL, l->d.lookUpTable.count);
+                MemForVariable(l->d.lookUpTable.name, nullptr, l->d.lookUpTable.count);
             AppendIo(l->d.lookUpTable.name, IO_TYPE_TABLE_IN_FLASH);
 
             sprintf(str, "%s[0]", l->d.lookUpTable.name);
@@ -890,8 +890,8 @@ void ShowAnalogSliderPopup(char *name)
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
     wc.lpszClassName    = "LDmicroAnalogSlider";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+    wc.lpszMenuName     = nullptr;
+    wc.hCursor          = LoadCursor(nullptr, IDC_ARROW);
 
     RegisterClassEx(&wc);
 
@@ -927,11 +927,11 @@ void ShowAnalogSliderPopup(char *name)
     AnalogSliderMain = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW, "LDmicroAnalogSlider", "ADC Pin",
         WS_CAPTION |
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
-        left, top, 30 +15, 100 +28, NULL, NULL, Instance, NULL);
+        left, top, 30 +15, 100 +28, nullptr, nullptr, Instance, nullptr);
 
     AnalogSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
         TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE,
-        0, 0, 30 +15, 100 +28, AnalogSliderMain, NULL, Instance, NULL);
+        0, 0, 30 +15, 100 +28, AnalogSliderMain, nullptr, Instance, nullptr);
     SendMessage(AnalogSliderTrackbar, TBM_SETRANGE, FALSE,
         MAKELONG(0, maxVal));
     SendMessage(AnalogSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1)/8, 0);
@@ -951,7 +951,7 @@ void ShowAnalogSliderPopup(char *name)
 
     SWORD orig = GetAdcShadow(name);
 
-    while(!AnalogSliderDone && (ret = GetMessage(&msg, NULL, 0, 0))) {
+    while(!AnalogSliderDone && (ret = GetMessage(&msg, nullptr, 0, 0))) {
         SWORD v = (SWORD)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
 
         if(msg.message == WM_KEYDOWN) {
@@ -1031,8 +1031,8 @@ static BOOL MakeWindowClass()
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
     wc.lpszClassName    = "LDmicroIo";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+    wc.lpszMenuName     = nullptr;
+    wc.hCursor          = LoadCursor(nullptr, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
                             IMAGE_ICON, 32, 32, 0);
     wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -1047,22 +1047,22 @@ static void MakeControls()
 {
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Assign:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        6, 1, 80, 17, IoDialog, NULL, Instance, NULL);
+        6, 1, 80, 17, IoDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel);
 
     PinList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
-        LBS_NOTIFY, 6, 18, 95+AddX, 320+AddY, IoDialog, NULL, Instance, NULL);
+        LBS_NOTIFY, 6, 18, 95+AddX, 320+AddY, IoDialog, nullptr, Instance, nullptr);
     FixedFont(PinList);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        6, 325+AddY+4, 95, 23, IoDialog, NULL, Instance, NULL);
+        6, 325+AddY+4, 95, 23, IoDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        6, 356+AddY+2, 95, 23, IoDialog, NULL, Instance, NULL);
+        6, 356+AddY+2, 95, 23, IoDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
@@ -1188,7 +1188,7 @@ void ShowIoDialog(int item)
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
         "LDmicroIo", _("I/O Pin"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 106+AddX, 387+AddY, NULL, NULL, Instance, NULL);
+        100, 100, 106+AddX, 387+AddY, nullptr, nullptr, Instance, nullptr);
 
     MakeControls();
 
@@ -1338,7 +1338,7 @@ void ShowIoDialog(int item)
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
-    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = TRUE;
@@ -1396,32 +1396,32 @@ static void MakeModbusControls()
 {
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Slave ID:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        6, 1, 70, 21, IoDialog, NULL, Instance, NULL);
+        6, 1, 70, 21, IoDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel2);
 
     ModbusSlave = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        80, 1, 30, 21, IoDialog, NULL, Instance, NULL);
+        80, 1, 30, 21, IoDialog, nullptr, Instance, nullptr);
     FixedFont(ModbusSlave);
 
     HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Register:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        6, 24, 70, 21, IoDialog, NULL, Instance, NULL);
+        6, 24, 70, 21, IoDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel3);
 
     ModbusRegister = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        80, 24, 80, 21, IoDialog, NULL, Instance, NULL);
+        80, 24, 80, 21, IoDialog, nullptr, Instance, nullptr);
     FixedFont(ModbusRegister);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        6, 48, 50, 23, IoDialog, NULL, Instance, NULL);
+        6, 48, 50, 23, IoDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        56, 48, 50, 23, IoDialog, NULL, Instance, NULL);
+        56, 48, 50, 23, IoDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
@@ -1432,7 +1432,7 @@ void ShowModbusDialog(int item)
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
         "LDmicroIo", _("Modbus Address"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 170, 80, NULL, NULL, Instance, NULL);
+        100, 100, 170, 80, nullptr, nullptr, Instance, nullptr);
 
     MakeModbusControls();
 
@@ -1451,7 +1451,7 @@ void ShowModbusDialog(int item)
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
-    while ((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+    while ((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if (msg.message == WM_KEYDOWN) {
             if (msg.wParam == VK_RETURN) {
                 DialogDone = TRUE;
@@ -1677,7 +1677,7 @@ void IoListProc(NMHDR *h)
                         sprintf(i->item.pszText, sov==1 ? "%d byte" : "%d bytes", sov);
                     } else
                     if (type == IO_TYPE_TABLE_IN_FLASH) {
-                        int sov = MemOfVar(name, NULL); // ok
+                        int sov = MemOfVar(name, nullptr); // ok
                         sprintf(i->item.pszText, sov==1 ? "%d elem" : "%d elem's", sov);
                     } else
                     if((type == IO_TYPE_DIG_INPUT)
@@ -1729,7 +1729,7 @@ void IoListProc(NMHDR *h)
                     case IO_TYPE_TON:
                     case IO_TYPE_TOF: {
                         ShowIoDialog(i->iItem);
-                        InvalidateRect(MainWindow, NULL, FALSE);
+                        InvalidateRect(MainWindow, nullptr, FALSE);
                         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
                         break;
                     }
@@ -1760,7 +1760,7 @@ void IoListProc(NMHDR *h)
                     break;
                 }
                 ProgramChanged();
-                InvalidateRect(MainWindow, NULL, FALSE);
+                InvalidateRect(MainWindow, nullptr, FALSE);
             }
             break;
         }

@@ -127,32 +127,32 @@ static void MakeFixedControls(BOOL forPwl)
 {
     Labels[0] = CreateWindowEx(0, WC_STATIC, _("Destination:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        0, 10, 78 +20, 21, LutDialog, NULL, Instance, NULL);
+        0, 10, 78 +20, 21, LutDialog, nullptr, Instance, nullptr);
     NiceFont(Labels[0]);
 
     DestTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        85 +20, 10, 120, 21, LutDialog, NULL, Instance, NULL);
+        85 +20, 10, 120, 21, LutDialog, nullptr, Instance, nullptr);
     FixedFont(DestTextbox);
 
     Labels[1] = CreateWindowEx(0, WC_STATIC, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        0, 40, 78 +20, 21, LutDialog, NULL, Instance, NULL);
+        0, 40, 78 +20, 21, LutDialog, nullptr, Instance, nullptr);
     NiceFont(Labels[1]);
 
     NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        85 +20, 40, 120, 21, LutDialog, NULL, Instance, NULL);
+        85 +20, 40, 120, 21, LutDialog, nullptr, Instance, nullptr);
     FixedFont(NameTextbox);
 
     Labels[2] = CreateWindowEx(0, WC_STATIC, _("Index:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 70, 68 +20, 21, LutDialog, NULL, Instance, NULL);
+        10, 70, 68 +20, 21, LutDialog, nullptr, Instance, nullptr);
     NiceFont(Labels[2]);
 
     IndexTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        85 +20, 40 +30, 120, 21, LutDialog, NULL, Instance, NULL);
+        85 +20, 40 +30, 120, 21, LutDialog, nullptr, Instance, nullptr);
     FixedFont(IndexTextbox);
 
     const char *txt1 = forPwl ? _("Points:") : _("Table size:");
@@ -160,30 +160,30 @@ static void MakeFixedControls(BOOL forPwl)
     sprintf(txt,"%s max %d", txt1, forPwl ? MAX_LOOK_UP_TABLE_LEN/2 : MAX_LOOK_UP_TABLE_LEN);
     Labels[3] = CreateWindowEx(0,WC_STATIC, txt,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        0, 70 +30, 78 +20, 21, LutDialog, NULL, Instance, NULL);
+        0, 70 +30, 78 +20, 21, LutDialog, nullptr, Instance, nullptr);
     NiceFont(Labels[3]);
 
     CountTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        85 +20, 70 +30, 120, 21, LutDialog, NULL, Instance, NULL);
+        85 +20, 70 +30, 120, 21, LutDialog, nullptr, Instance, nullptr);
     NiceFont(CountTextbox);
 
     if(!forPwl) {
         AsStringCheckbox = CreateWindowEx(0, WC_BUTTON,
             _("Edit table of ASCII values like a string"), WS_CHILD |
                 WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_AUTOCHECKBOX,
-            10, 100 +30, 300, 21, LutDialog, NULL, Instance, NULL);
+            10, 100 +30, 300, 21, LutDialog, nullptr, Instance, nullptr);
         NiceFont(AsStringCheckbox);
     }
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        231 +20, 10, 70, 23, LutDialog, NULL, Instance, NULL);
+        231 +20, 10, 70, 23, LutDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        231 +20, 40, 70, 23, LutDialog, NULL, Instance, NULL);
+        231 +20, 40, 70, 23, LutDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 
     PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC,
@@ -271,7 +271,7 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
         StringTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, str,
             WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
                 WS_VISIBLE,
-            10, 130 +30, 294, 21, LutDialog, NULL, Instance, NULL);
+            10, 130 +30, 294, 21, LutDialog, nullptr, Instance, nullptr);
         FixedFont(StringTextbox);
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)TRUE, 0);
         MoveWindow(LutDialog, 100, 30, 320 +20, 185 +30, TRUE);
@@ -302,7 +302,7 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
             ValuesTextbox[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, buf,
                 WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
                     WS_VISIBLE,
-                x+30, y, 80, 21, LutDialog, NULL, Instance, NULL);
+                x+30, y, 80, 21, LutDialog, nullptr, Instance, nullptr);
             NiceFont(ValuesTextbox[i]);
 
             if(forPwl) {
@@ -312,7 +312,7 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
             }
             ValuesLabel[i] = CreateWindowEx(0, WC_STATIC, buf,
                 WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-                x, y+3, 100, 21, LutDialog, NULL, Instance, NULL);
+                x, y+3, 100, 21, LutDialog, nullptr, Instance, nullptr);
             FixedFont(ValuesLabel[i]);
 
             PrevValuesProc[i] = SetWindowLongPtr(ValuesTextbox[i],
@@ -388,7 +388,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     // on show style/entry count) controls for the initial configuration.
     LutDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Look-Up Table"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 320, 375, NULL, NULL, Instance, NULL);
+        100, 100, 320, 375, nullptr, nullptr, Instance, nullptr);
     MakeFixedControls(FALSE);
     MakeLutControls(asString, count, FALSE);
 
@@ -415,7 +415,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
-    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = TRUE;
@@ -517,7 +517,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     // on show style/entry count) controls for the initial configuration.
     LutDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Piecewise Linear Table"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 320, 375, NULL, NULL, Instance, NULL);
+        100, 100, 320, 375, nullptr, nullptr, Instance, nullptr);
     MakeFixedControls(TRUE);
     MakeLutControls(FALSE, count*2, TRUE);
 
@@ -539,7 +539,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
-    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = TRUE;

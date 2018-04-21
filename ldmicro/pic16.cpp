@@ -341,7 +341,7 @@ BOOL McuAs(const char *str)
 {
     if(!Prog.mcu)
         return 0;
-    return strstr(Prog.mcu->mcuName, str) != NULL;
+    return strstr(Prog.mcu->mcuName, str) != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -608,16 +608,16 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
                 DWORD arg2_ = PicProg[PicProgWriteP-1].arg2;
                 switch(op_) {
                     case OP_BTFSC: // IfBitSet(...)
-                        SetBit(REG_STATUS, STATUS_DC, NULL);
-                        IfBitClear(arg1_, arg2_, NULL);
-                        ClearBit(REG_STATUS, STATUS_DC, NULL);
-                        IfBitSet(REG_STATUS, STATUS_DC, NULL);
+                        SetBit(REG_STATUS, STATUS_DC, nullptr);
+                        IfBitClear(arg1_, arg2_, nullptr);
+                        ClearBit(REG_STATUS, STATUS_DC, nullptr);
+                        IfBitSet(REG_STATUS, STATUS_DC, nullptr);
                     break;
                     case OP_BTFSS: // IfBitClear(...)
-                        ClearBit(REG_STATUS, STATUS_DC, NULL);
-                        IfBitSet(arg1_, arg2_, NULL);
-                        SetBit(REG_STATUS, STATUS_DC, NULL);
-                        IfBitClear(REG_STATUS, STATUS_DC, NULL);
+                        ClearBit(REG_STATUS, STATUS_DC, nullptr);
+                        IfBitSet(arg1_, arg2_, nullptr);
+                        SetBit(REG_STATUS, STATUS_DC, nullptr);
+                        IfBitClear(REG_STATUS, STATUS_DC, nullptr);
                     break;
                     case OP_DECFSZ:
                     case OP_INCFSZ:
@@ -656,17 +656,17 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
 
 static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2)
 {
-    _Instruction(l, f, args, op, arg1, arg2, NULL);
+    _Instruction(l, f, args, op, arg1, arg2, nullptr);
 }
 
 static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1)
 {
-    _Instruction(l, f, args, op, arg1, 0, NULL);
+    _Instruction(l, f, args, op, arg1, 0, nullptr);
 }
 
 static void _Instruction(int l, const char *f, const char *args, PicOp op)
 {
-    _Instruction(l, f, args, op, 0, 0, NULL);
+    _Instruction(l, f, args, op, 0, 0, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -689,12 +689,12 @@ static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, 
 
 static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2)
 {
-   _SetInstruction(l, f, args, addr, op, arg1, arg2, NULL);
+   _SetInstruction(l, f, args, addr, op, arg1, arg2, nullptr);
 }
 
 static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1)
 {
-   _SetInstruction(l, f, args, addr, op, arg1, 0, NULL);
+   _SetInstruction(l, f, args, addr, op, arg1, 0, nullptr);
 }
 
 static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, const char *comment)
@@ -2303,7 +2303,7 @@ static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BY
 
 static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val)
 {
-    _WriteRegister(l, f, args, reg, val, NULL);
+    _WriteRegister(l, f, args, reg, val, nullptr);
 }
 
 // And use macro for bugtracking
@@ -2397,12 +2397,12 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, cons
 
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *nameDest)
 {
-    CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest, NULL);
+    CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest, nullptr);
 }
 
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
-    CopyBit(addrDest, bitDest, addrSrc, bitSrc, NULL, NULL);
+    CopyBit(addrDest, bitDest, addrSrc, bitSrc, nullptr, nullptr);
 }
 
 static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *nameDest, const char *nameSrc)
@@ -2432,7 +2432,7 @@ static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, c
 
 static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
-    CopyNotBit(addrDest, bitDest, addrSrc, bitSrc, NULL, NULL);
+    CopyNotBit(addrDest, bitDest, addrSrc, bitSrc, nullptr, nullptr);
 }
 
 static void XorBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
@@ -2888,12 +2888,12 @@ static void Increment(DWORD addr, int sov, const char *name, const char *overlap
 
 static void Increment(DWORD addr, int sov, const char *name)
 {
-    Increment(addr, sov, name, NULL, NULL);
+    Increment(addr, sov, name, nullptr, nullptr);
 }
 
 static void Increment(DWORD addr, int sov)
 {
-    Increment(addr, sov, NULL, NULL, NULL);
+    Increment(addr, sov, nullptr, nullptr, nullptr);
 }
 //-----------------------------------------------------------------------------
 static void UartSend(DWORD addr, int sov) // , char *name
@@ -2974,12 +2974,12 @@ static void Decrement(DWORD addr, int sov, char *name, char *overlap, char *over
 
 static void Decrement(DWORD addr, int sov, char *name)
 {
-  Decrement(addr, sov, name, NULL, NULL);
+  Decrement(addr, sov, name, nullptr, nullptr);
 }
 
 static void Decrement(DWORD addr, int sov)
 {
-  Decrement(addr, sov, NULL, NULL, NULL);
+  Decrement(addr, sov, nullptr, nullptr, nullptr);
 }
 //-----------------------------------------------------------------------------
 static void aplusw(DWORD addr, int sov, char *name)
@@ -3002,7 +3002,7 @@ static void aplusw(DWORD addr, int sov, char *name)
 
 static void aplusw(DWORD addr, int sov)
 {
-  aplusw(addr, sov, NULL);
+  aplusw(addr, sov, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -3099,12 +3099,12 @@ static void add(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
 
 static void add(DWORD b, DWORD a, int sov, char *overflow)
 {
-    add(b, a, sov, overflow, NULL);
+    add(b, a, sov, overflow, nullptr);
 }
 
 static void add(DWORD b, DWORD a, int sov)
 {
-    add(b, a, sov, NULL, NULL);
+    add(b, a, sov, nullptr, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -3190,7 +3190,7 @@ static void sub(DWORD b, DWORD a, int sov, char *overlap, const char *overflow)
 
 static void sub(DWORD b, DWORD a, int sov)
 {
-    sub_(b, a, sov, DEST_F, NULL, NULL);
+    sub_(b, a, sov, DEST_F, nullptr, nullptr);
 }
 
 static void cmp(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
@@ -3200,7 +3200,7 @@ static void cmp(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
 /*
 static void cmp(DWORD b, DWORD a, int sov)
 {
-    sub_(b, a, sov, DEST_W, NULL, NULL);
+    sub_(b, a, sov, DEST_W, nullptr, nullptr);
 }
 */
 //-----------------------------------------------------------------------------
@@ -3793,7 +3793,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                 ClearBit(addrO, bitO, "$overflow");
 
                 // sub used, we need Sign
-                sub(addrB, addrA, sov, NULL, "$overflow"); // b = b - a , b - is rewritten
+                sub(addrB, addrA, sov, nullptr, "$overflow"); // b = b - a , b - is rewritten
                 XorBit(addrO, bitO, addrB+sov-1, 7);
                 switch(a->op) {
                     case INT_IF_GEQ:

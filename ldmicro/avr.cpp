@@ -480,17 +480,17 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD
 
 static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2)
 {
-    _Instruction(l, f, args, op, arg1, arg2, NULL);
+    _Instruction(l, f, args, op, arg1, arg2, nullptr);
 }
 
 static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1)
 {
-    _Instruction(l, f, args, op, arg1, 0, NULL);
+    _Instruction(l, f, args, op, arg1, 0, nullptr);
 }
 
 static void _Instruction(int l, const char *f, const char *args, AvrOp op)
 {
-    _Instruction(l, f, args, op, 0, 0, NULL);
+    _Instruction(l, f, args, op, 0, 0, nullptr);
 }
 static void _Instruction(int l, const char *f, const char *args, AvrOp op, const char *comment)
 {
@@ -1438,7 +1438,7 @@ static void LoadXAddr(DWORD addr, const char *comment)
 
 static void LoadXAddr(DWORD addr)
 {
-    LoadXAddr(addr, NULL);
+    LoadXAddr(addr, nullptr);
 }
 
 static void LoadYAddr(DWORD addr)
@@ -1473,7 +1473,7 @@ static void LoadZAddr(DWORD addr, char *comment)
 
 static void LoadZAddr(DWORD addr)
 {
-    LoadZAddr(addr, NULL);
+    LoadZAddr(addr, nullptr);
 }
 
 //See WinAVR\avr\include\avr\sfr_defs.h
@@ -1525,7 +1525,7 @@ static void SETB(DWORD addr, int bit, char *name)
 
 static void SETB(DWORD addr, int bit)
 {
-    SETB(addr, bit, r25, NULL);
+    SETB(addr, bit, r25, nullptr);
 }
 
 /*
@@ -1572,7 +1572,7 @@ static void CLRB(DWORD addr, int bit, char *name)
 
 static void CLRB(DWORD addr, int bit)
 {
-    CLRB(addr, bit, r25, NULL);
+    CLRB(addr, bit, r25, nullptr);
 }
 /*
 ;*********************************************************
@@ -1747,12 +1747,12 @@ static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYT
 
 static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val, SDWORD literal)
 {
-    _WriteMemory(l, f, args, addr, val, NULL, literal);
+    _WriteMemory(l, f, args, addr, val, nullptr, literal);
 }
 
 static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val)
 {
-    _WriteMemory(l, f, args, addr, val, NULL, 0);
+    _WriteMemory(l, f, args, addr, val, nullptr, 0);
 }
 //-----------------------------------------------------------------------------
 // Use only after WriteMemory() !!!
@@ -1843,7 +1843,7 @@ static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
 
 static void OrMemory(DWORD addr, BYTE val)
 {
-    OrMemory(addr, val, NULL, NULL);
+    OrMemory(addr, val, nullptr, nullptr);
 }
 //-----------------------------------------------------------------------------
 static void AndMemory(DWORD addr, BYTE val, char *name1, char *literal)
@@ -1862,7 +1862,7 @@ static void AndMemory(DWORD addr, BYTE val, char *name1, char *literal)
 
 static void AndMemory(DWORD addr, BYTE val)
 {
-    AndMemory(addr, val, NULL, NULL);
+    AndMemory(addr, val, nullptr, nullptr);
 }
 //-----------------------------------------------------------------------------
 static void WriteRegToIO(DWORD addr, BYTE reg)
@@ -2016,7 +2016,7 @@ static void IfBitClear(DWORD addr, int bit, char *name)
 }
 static void IfBitClear(DWORD addr, int bit)
 {
-    IfBitClear(addr, bit, r25, NULL);
+    IfBitClear(addr, bit, r25, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -2052,7 +2052,7 @@ static void IfBitSet(DWORD addr, int bit, char *name)
 }
 static void IfBitSet(DWORD addr, int bit)
 {
-    IfBitSet(addr, bit, r25, NULL);
+    IfBitSet(addr, bit, r25, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -2073,7 +2073,7 @@ static void SetBit(DWORD addr, int bit, char *name)
 }
 static void SetBit(DWORD addr, int bit)
 {
-    SetBit(addr, bit, NULL)
+    SetBit(addr, bit, nullptr)
 }
 */
 #define SetBit(...)         SETB(__VA_ARGS__)
@@ -2658,7 +2658,7 @@ static void CopyLitToReg(int reg, int sov, SDWORD literal, const char *comment)
 
 static void CopyLitToReg(int reg, int sov, SDWORD literal)
 {
-    CopyLitToReg(reg, sov, literal, NULL);
+    CopyLitToReg(reg, sov, literal, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -2827,7 +2827,7 @@ static void Increment(DWORD addr, int sov, char *name)
 
 static void Increment(DWORD addr, int sov)
 {
-  Increment(addr, sov, NULL);
+  Increment(addr, sov, nullptr);
 }
 //-----------------------------------------------------------------------------
 static void IncrementReg(int reg, int sov)

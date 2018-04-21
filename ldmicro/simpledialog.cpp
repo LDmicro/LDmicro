@@ -126,7 +126,7 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
         Labels[i] = CreateWindowEx(0, WC_STATIC, labels[i],
             WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
             (i< boxes ? (80 + adj) - si.cx : 0) + 15, 13 + i*30, si.cx, 21,
-            SimpleDialog, NULL, Instance, NULL);
+            SimpleDialog, nullptr, Instance, nullptr);
         NiceFont(Labels[i]);
     }
 
@@ -135,7 +135,7 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
             WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
             WS_VISIBLE,
             80 + 25 + adj, 12 + 30*i, 120 + 535 - adj, 21,
-            SimpleDialog, NULL, Instance, NULL);
+            SimpleDialog, nullptr, Instance, nullptr);
 
         if(fixedFontMask & (1 << i)) {
             FixedFont(Textboxes[i]);
@@ -153,7 +153,7 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
                 WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS |WS_VISIBLE |
                 CBS_DROPDOWN | CBS_HASSTRINGS | WS_OVERLAPPED,
                 80 + 25 + adj, 12 + 30*i, 120 + 535 - adj, 21,
-                SimpleDialog, NULL, Instance, NULL);
+                SimpleDialog, nullptr, Instance, nullptr);
 
             if(fixedFontMask & (1 << i)) {
                 FixedFont(ComboBox[i]);
@@ -176,12 +176,12 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        218 + 550, 11, 70, 23, SimpleDialog, NULL, Instance, NULL);
+        218 + 550, 11, 70, 23, SimpleDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        218 + 550, 41, 70, 23, SimpleDialog, NULL, Instance, NULL);
+        218 + 550, 41, 70, 23, SimpleDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
@@ -198,8 +198,8 @@ static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, D
 
     SimpleDialog = CreateWindowClient(0, "LDmicroDialog", title,
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 304 + 550, 15 + 30*(max(boxes,labs) < 2 ? 2 : max(boxes,labs)), NULL, NULL,
-        Instance, NULL);
+        100, 100, 304 + 550, 15 + 30*(max(boxes,labs) < 2 ? 2 : max(boxes,labs)), nullptr, nullptr,
+        Instance, nullptr);
 
     MakeControls(labs, labels, boxes, dests, fixedFontMask, combo, combos);
 
@@ -226,7 +226,7 @@ static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, D
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
-    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = TRUE;
@@ -288,7 +288,7 @@ static BOOL ShowSimpleDialog(const char *title, int boxes, const char **labels, 
     DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests)
 {
     return ShowSimpleDialog(title, boxes, labels, numOnlyMask,
-           alnumOnlyMask, fixedFontMask, boxes, dests, 0, NULL);
+           alnumOnlyMask, fixedFontMask, boxes, dests, 0, nullptr);
 }
 
 //coment : labels > boxes
@@ -296,7 +296,7 @@ static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, D
     DWORD alnumOnlyMask, DWORD fixedFontMask, int boxes, char **dests)
 {
     return ShowSimpleDialog(title, labs, labels, numOnlyMask,
-           alnumOnlyMask, fixedFontMask, boxes, dests, 0, NULL);
+           alnumOnlyMask, fixedFontMask, boxes, dests, 0, nullptr);
 }
 
 void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
@@ -802,13 +802,13 @@ void ShowSpiDialog(ElemLeaf *l)
     char *dests[] = { s->name, s->mode, s->send, s->recv,
                       s->bitrate, s->modes, s->size, s->first};
 
-    comboRecord comboRec[] = { {0, NULL},
+    comboRecord comboRec[] = { {0, nullptr},
                                {2, {"Master", "Slave"} },
-                               {0, NULL},
-                               {0, NULL},
-                               {0, NULL},
+                               {0, nullptr},
+                               {0, nullptr},
+                               {0, nullptr},
                                {4, {"0b00", "0b01", "0b10", "0b11"}},
-                               {0, NULL},
+                               {0, nullptr},
                                {2, {"MSB_FIRST", "LSB_FIRST"} } };
     int i;
     if(Prog.mcu) {
@@ -944,9 +944,9 @@ void ShowSetPwmDialog(void *e)
 
     const char *labels[] = { _("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
     char *dests[] = { name+1, duty_cycle, targetFreq, resolution};
-    comboRecord comboRec[] = { {0, NULL},
-                               {0, NULL},
-                               {0, NULL},
+    comboRecord comboRec[] = { {0, nullptr},
+                               {0, nullptr},
+                               {0, nullptr},
                                {4, { "0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"} } };
 
     NoCheckingOnBox[3] = TRUE;

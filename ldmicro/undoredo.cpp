@@ -198,7 +198,7 @@ void UndoUndo()
     }
     RefreshControlsToSettings();
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 }
 
 //-----------------------------------------------------------------------------
@@ -221,7 +221,7 @@ void UndoRedo()
     }
     RefreshControlsToSettings();
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 }
 
 //-----------------------------------------------------------------------------

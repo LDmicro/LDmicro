@@ -77,7 +77,7 @@ const char *AboutText[] = {
 "",
 "Release " LDMICRO_VER_STR ", built " __TIME__ " " __DATE__ ".", // AboutText[38]
 "",
-NULL
+nullptr
 };
 
 static const char **Text[] = {
@@ -165,7 +165,7 @@ static void MakeControls(int a)
     RichEdit[a] = CreateWindowEx(0, RICHEDIT_CLASS,
         "", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_READONLY |
         ES_MULTILINE | WS_VSCROLL,
-        0, 0, 100, 100, HelpDialog[a], NULL, Instance, NULL);
+        0, 0, 100, 100, HelpDialog[a], nullptr, Instance, nullptr);
 
     SendMessage(RichEdit[a], WM_SETFONT, (WPARAM)FixedWidthFont, TRUE);
     SendMessage(RichEdit[a], EM_SETBKGNDCOLOR, (WPARAM)0, HighlightColours.bg); // RGB(0, 0, 0)
@@ -283,8 +283,8 @@ static void MakeClass()
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszClassName    = "LDmicroHelp";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+    wc.lpszMenuName     = nullptr;
+    wc.hCursor          = LoadCursor(nullptr, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
                             IMAGE_ICON, 32, 32, 0);
     wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -308,7 +308,7 @@ void ShowHelpDialog(BOOL about)
         WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
         WS_MAXIMIZEBOX |
         WS_SIZEBOX,
-        100, 100, 650 +50, (about ? 120 : 300)+ 300+10*FONT_HEIGHT, NULL, NULL, Instance, NULL);
+        100, 100, 650 +50, (about ? 120 : 300)+ 300+10*FONT_HEIGHT, nullptr, nullptr, Instance, nullptr);
     MakeControls(a);
 
     ShowWindow(HelpDialog[a], TRUE);

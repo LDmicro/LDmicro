@@ -74,59 +74,59 @@ static void MakeControls()
 {
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("PLC Cycle Time (ms):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        1, 13, 180, 21, ConfDialog, NULL, Instance, NULL);
+        1, 13, 180, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel);
 
     CycleTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        185, 12, 75, 21, ConfDialog, NULL, Instance, NULL);
+        185, 12, 75, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(CycleTextbox);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC,
         _("MCU Crystal Frequency (MHz):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        1, 43, 180, 21, ConfDialog, NULL, Instance, NULL);
+        1, 43, 180, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel2);
 
     CrystalTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        185, 42, 75, 21, ConfDialog, NULL, Instance, NULL);
+        185, 42, 75, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(CrystalTextbox);
 
     HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("UART Baud Rate (bps):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        1, 73, 180, 21, ConfDialog, NULL, Instance, NULL);
+        1, 73, 180, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel3);
 
     BaudTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        185, 72, 75, 21, ConfDialog, NULL, Instance, NULL);
+        185, 72, 75, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(BaudTextbox);
 
     HWND TimerLabel = CreateWindowEx(0, WC_STATIC, _("Timer0|1:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        255, 13, 70, 21, ConfDialog, NULL, Instance, NULL);
+        255, 13, 70, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(TimerLabel);
 
     TimerTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        330, 12, 25, 21, ConfDialog, NULL, Instance, NULL);
+        330, 12, 25, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(TimerTextbox);
 
     YPlcCycleDutyCheckbox = CreateWindowEx(0, WC_BUTTON, "YPlcCycleDuty",
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        370, 13, 100, 20, ConfDialog, NULL, Instance, NULL);
+        370, 13, 100, 20, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(YPlcCycleDutyCheckbox);
 
     HWND textLabel2_ = CreateWindowEx(0, WC_STATIC,
         _("PIC Configuration Bits:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
-        265, 73, 130, 21, ConfDialog, NULL, Instance, NULL);
+        265, 73, 130, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel2_);
 
     ConfigBitsTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        400, 72, 85, 21, ConfDialog, NULL, Instance, NULL);
+        400, 72, 85, 21, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(ConfigBitsTextbox);
 
     if(!Prog.mcu || (Prog.mcu->whichIsa != ISA_PIC16))
@@ -157,12 +157,12 @@ static void MakeControls()
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        268 + 215, 11, 70, 23, ConfDialog, NULL, Instance, NULL);
+        268 + 215, 11, 70, 23, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        268 + 215, 41, 70, 23, ConfDialog, NULL, Instance, NULL);
+        268 + 215, 41, 70, 23, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 
     char txt[1024*4] = "";
@@ -252,25 +252,25 @@ static void MakeControls()
 
     HWND textLabel4 = CreateWindowEx(0, WC_STATIC, explanation,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        10, 100, 340 + 200, 800, ConfDialog, NULL, Instance, NULL);
+        10, 100, 340 + 200, 800, ConfDialog, nullptr, Instance, nullptr);
     NiceFont(textLabel4);
 
     // Measure the explanation string, so that we know how to size our window
     RECT tr, cr;
     int w = 370 + 200;
-    HDC hdc = CreateCompatibleDC(NULL);
+    HDC hdc = CreateCompatibleDC(nullptr);
     SelectObject(hdc, MyNiceFont);
     SetRect(&tr, 0, 0, w, 800);
     DrawText(hdc, explanation, -1, &tr, DT_CALCRECT |
                                         DT_LEFT | DT_TOP | DT_WORDBREAK);
     DeleteDC(hdc);
     int h = 104 + tr.bottom + 10 + 20;
-    SetWindowPos(ConfDialog, NULL, 0, 0, w, h, SWP_NOMOVE);
+    SetWindowPos(ConfDialog, nullptr, 0, 0, w, h, SWP_NOMOVE);
     // h is the desired client height, but SetWindowPos includes title bar;
     // so fix it up by hand
     GetClientRect(ConfDialog, &cr);
     int nh = h + (h - (cr.bottom - cr.top));
-    SetWindowPos(ConfDialog, NULL, 0, 0, w, nh, SWP_NOMOVE);
+    SetWindowPos(ConfDialog, nullptr, 0, 0, w, nh, SWP_NOMOVE);
 
     PrevCycleProc = SetWindowLongPtr(CycleTextbox, GWLP_WNDPROC,
         (LONG_PTR)MyNumberProc);
@@ -290,7 +290,7 @@ void ShowConfDialog()
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 0, 0, NULL, NULL, Instance, NULL);
+        100, 100, 0, 0, nullptr, nullptr, Instance, nullptr);
 
     MakeControls();
 
@@ -329,7 +329,7 @@ void ShowConfDialog()
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
-    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = TRUE;

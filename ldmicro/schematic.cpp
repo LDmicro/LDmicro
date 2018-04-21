@@ -314,13 +314,13 @@ void ForgetFromGrid(void *p)
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
             if(DisplayMatrix[i][j] == p) {
-                DisplayMatrix[i][j] = NULL;
+                DisplayMatrix[i][j] = nullptr;
 //              DisplayMatrixWhich[i][j] = ELEM_NULL; // ???
             }
         }
     }
     if(Selected == p) {
-        Selected = NULL;
+        Selected = nullptr;
 //      SelectedWhich = ELEM_NULL; // ???
     }
 }
@@ -334,7 +334,7 @@ void ForgetEverything()
 {
     memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
     memset(DisplayMatrixWhich, 0, sizeof(DisplayMatrixWhich));
-    Selected = NULL;
+    Selected = nullptr;
     SelectedWhich = 0;
 }
 

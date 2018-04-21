@@ -138,7 +138,7 @@ static void doChooseClr()
     }
     if(b) {
         InitBrushesForDrawing();
-        InvalidateRect(MainWindow, NULL, FALSE);
+        InvalidateRect(MainWindow, nullptr, FALSE);
     }
 }
 //-----------------------------------------------------------------------------
@@ -173,7 +173,7 @@ static LRESULT CALLBACK ColorDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
                     default: oops();
                 }
                 InitBrushesForDrawing();
-                InvalidateRect(MainWindow, NULL, FALSE);
+                InvalidateRect(MainWindow, nullptr, FALSE);
                 return 1;
             } else if(h == RevertButton) {
                 switch(sel) {
@@ -196,7 +196,7 @@ static LRESULT CALLBACK ColorDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
                     default: oops();
                 }
                 InitBrushesForDrawing();
-                InvalidateRect(MainWindow, NULL, FALSE);
+                InvalidateRect(MainWindow, nullptr, FALSE);
                 return 1;
             } else if(h == AgainButton) {
                 switch(sel) {
@@ -219,7 +219,7 @@ static LRESULT CALLBACK ColorDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
                     default: oops();
                 }
                 InitBrushesForDrawing();
-                InvalidateRect(MainWindow, NULL, FALSE);
+                InvalidateRect(MainWindow, nullptr, FALSE);
                 return 1;
             }
             break;
@@ -239,37 +239,37 @@ static void MakeControls()
 {
     ColorList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
-        LBS_NOTIFY, 10, 10, 455, 245, ColorDialog, NULL, Instance, NULL);
+        LBS_NOTIFY, 10, 10, 455, 245, ColorDialog, nullptr, Instance, nullptr);
     FixedFont(ColorList);
 
     ChooseButton = CreateWindowEx(0, WC_BUTTON, _("Choose a color"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        480, 10, 160, 23, ColorDialog, NULL, Instance, NULL);
+        480, 10, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(ChooseButton);
 
     UnChooseButton = CreateWindowEx(0, WC_BUTTON, _("Un-choose a color"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        480, 40, 160, 23, ColorDialog, NULL, Instance, NULL);
+        480, 40, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(UnChooseButton);
 
     AgainButton = CreateWindowEx(0, WC_BUTTON, _("Try again a color"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        480, 70, 160, 23, ColorDialog, NULL, Instance, NULL);
+        480, 70, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(AgainButton);
 
     RevertButton = CreateWindowEx(0, WC_BUTTON, _("Revert a color"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        480, 100, 160, 23, ColorDialog, NULL, Instance, NULL);
+        480, 100, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(RevertButton);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("Applay user color scheme"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        480, 160, 160, 23, ColorDialog, NULL, Instance, NULL);
+        480, 160, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Revert color scheme"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        480, 190, 160, 23, ColorDialog, NULL, Instance, NULL);
+        480, 190, 160, 23, ColorDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
@@ -287,7 +287,7 @@ void ShowColorDialog()
 
     ColorDialog = CreateWindowClient(0, "LDmicroDialog", _("Select color for user scheme:"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 650, 265, NULL, NULL, Instance, NULL);
+        100, 100, 650, 265, nullptr, nullptr, Instance, nullptr);
 
     MakeControls();
 
@@ -324,7 +324,7 @@ void ShowColorDialog()
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
-    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         switch (msg.message) {
             case WM_KEYDOWN: {
                 if(msg.wParam == VK_RETURN) {
@@ -357,7 +357,7 @@ void ShowColorDialog()
         memcpy(&HighlightColours, &OrigSchemeSave, sizeof(HighlightColours));
     }
     InitForDrawing();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
     EnableWindow(MainWindow, TRUE);
     SetFocus(MainWindow);
     DestroyWindow(ColorDialog);

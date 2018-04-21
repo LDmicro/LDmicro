@@ -58,7 +58,7 @@ int TranslitFile(char *dest)
     char line[512];
     char trans[1024];
 
-    if( (tmp=tmpnam(ntmp)) = NULL) {
+    if( (tmp=tmpnam(ntmp)) = nullptr) {
         Error(_("Couldn't create a unique file name for '%s'"), dest);
         return 1;
     }
@@ -102,8 +102,8 @@ int TranslitFile(char *dest)
 #define ASSTR 3
 static char *MapSym(char *str, int how)
 {
-    if(!str) return NULL;
-//  if(IsNumber(str)) return NULL;
+    if(!str) return nullptr;
+//  if(IsNumber(str)) return nullptr;
 
     static char AllRets[16][MAX_NAME_LEN+30];
     static int RetCnt;
@@ -387,8 +387,8 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
 
     int i;
     for(i = 0; i < IntCodeLen; i++) {
-        char *bitVar1 = NULL, *bitVar2 = NULL;
-        char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
+        char *bitVar1 = nullptr, *bitVar2 = nullptr;
+        char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr;
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:

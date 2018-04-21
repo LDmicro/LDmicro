@@ -275,7 +275,7 @@ long int fsize(char *filename)
 {
     FILE *fp;
     fp=fopen(filename,"rb");
-    if(fp==NULL) {
+    if(fp==nullptr) {
         return 0;
     }
     fseek(fp, 0L, SEEK_END);
@@ -318,7 +318,7 @@ char *GetIsaName(int ISA)
         case ISA_PC           : return (char *)stringer( ISA_PC           ) + 4;
       //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
-        default               : oops(); return NULL;
+        default               : oops(); return nullptr;
     }
 }
 
@@ -413,7 +413,7 @@ static void notepad(const char *path, const char *name, const char *ext)
 
 static void notepad(const char *name, const char *ext)
 {
-    notepad(NULL, name, ext);
+    notepad(nullptr, name, ext);
 }
 
 //-----------------------------------------------------------------------------
@@ -828,7 +828,7 @@ static void ProcessMenu(int code)
         return;
     }
     if(code == MNU_PROCESSOR_0+NUM_SUPPORTED_MCUS) {
-        SetMcu(NULL);
+        SetMcu(nullptr);
         strcpy(CurrentCompileFile, "");
         RefreshControlsToSettings();
         ProgramChangedNotSaved = TRUE;
@@ -838,7 +838,7 @@ static void ProcessMenu(int code)
     && (code < MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES)) {
         scheme = code & 0xff;
         InitForDrawing();
-        InvalidateRect(MainWindow, NULL, FALSE);
+        InvalidateRect(MainWindow, nullptr, FALSE);
         RefreshControlsToSettings();
         return;
     }
@@ -1427,11 +1427,11 @@ cmp:
             break;
 
         case MNU_PROCESSOR_NEW_PIC12:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Soft-start-and-smooth-stop-of-LED-with-software-PWM",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Soft-start-and-smooth-stop-of-LED-with-software-PWM",nullptr,nullptr,SW_SHOWNORMAL);
             break;
 
         case MNU_PROCESSOR_NEW:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE",nullptr,nullptr,SW_SHOWNORMAL);
             break;
 
         case MNU_COMPILE_IHEXDONE:
@@ -1467,33 +1467,33 @@ cmp:
             break;
 
         case MNU_HOW:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO",nullptr,nullptr,SW_SHOWNORMAL);
             break;
 
         case MNU_FORUM:
-            ShellExecute(0,"open","http://cq.cx/ladder-forum.pl",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0,"open","http://cq.cx/ladder-forum.pl",nullptr,nullptr,SW_SHOWNORMAL);
             break;
 
         case MNU_CHANGES:
-            ShellExecute(0,"open","https://raw.githubusercontent.com/LDmicro/LDmicro/master/ldmicro/CHANGES.txt",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0,"open","https://raw.githubusercontent.com/LDmicro/LDmicro/master/ldmicro/CHANGES.txt",nullptr,nullptr,SW_SHOWNORMAL);
             break;
 
         case MNU_ISSUE:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/issues/new",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/issues/new",nullptr,nullptr,SW_SHOWNORMAL);
             break;
 
         case MNU_EMAIL:
-            ShellExecute(0,"open","mailto:LDmicro.GitHub@gmail.com",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0,"open","mailto:LDmicro.GitHub@gmail.com",nullptr,nullptr,SW_SHOWNORMAL);
             break;
 
         case MNU_EXPLORE_DIR:
-            ////ShellExecute(0, "open", CurrentLdPath, NULL, NULL, SW_SHOWNORMAL);
-            ShellExecute(0, "explore", CurrentLdPath, NULL, NULL, SW_SHOWNORMAL);
-            //ShellExecute(0, "find", CurrentLdPath, NULL, NULL, 0);
+            ////ShellExecute(0, "open", CurrentLdPath, nullptr, nullptr, SW_SHOWNORMAL);
+            ShellExecute(0, "explore", CurrentLdPath, nullptr, nullptr, SW_SHOWNORMAL);
+            //ShellExecute(0, "find", CurrentLdPath, nullptr, nullptr, 0);
             break;
 
         case MNU_RELEASE:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/releases",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/releases",nullptr,nullptr,SW_SHOWNORMAL);
             break;
     }
 }
@@ -1504,7 +1504,7 @@ void ScrollUp()
     if(ScrollYOffset > 0)
         ScrollYOffset--;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 
     int gx=0, gy=0;
     if (!InSimulationMode && FindSelected(&gx, &gy)) {
@@ -1520,7 +1520,7 @@ void ScrollDown()
     if(ScrollYOffset < ScrollYOffsetMax)
         ScrollYOffset++;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 
     int gx=0, gy=0;
     if (!InSimulationMode && FindSelected(&gx, &gy)) {
@@ -1538,7 +1538,7 @@ void ScrollPgUp()
 
     ScrollYOffset = 0;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 
     SelectedGxAfterNextPaint = gx;
     SelectedGyAfterNextPaint = 0;
@@ -1551,7 +1551,7 @@ void ScrollPgDown()
 
     ScrollYOffset = ScrollYOffsetMax;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 
     SelectedGxAfterNextPaint = gx;
     SelectedGyAfterNextPaint = totalHeightScrollbars-1;
@@ -1677,7 +1677,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_SETFOCUS:
-            InvalidateRect(MainWindow, NULL, FALSE);
+            InvalidateRect(MainWindow, nullptr, FALSE);
             break;
 
         case WM_PAINT: {
@@ -1867,7 +1867,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     ScrollXOffset -= FONT_WIDTH;
                     if(ScrollXOffset < 0) ScrollXOffset = 0;
                     RefreshScrollbars();
-                    InvalidateRect(MainWindow, NULL, FALSE);
+                    InvalidateRect(MainWindow, nullptr, FALSE);
                   } else {
                     MoveCursorKeyboard(wParam);
                   }
@@ -1879,7 +1879,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if(ScrollXOffset >= ScrollXOffsetMax)
                         ScrollXOffset = ScrollXOffsetMax;
                     RefreshScrollbars();
-                    InvalidateRect(MainWindow, NULL, FALSE);
+                    InvalidateRect(MainWindow, nullptr, FALSE);
                   } else {
                     MoveCursorKeyboard(wParam);
                   }
@@ -1925,7 +1925,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         ScrollYOffset=0;
                     }
                     RefreshScrollbars();
-                    InvalidateRect(MainWindow, NULL, FALSE);
+                    InvalidateRect(MainWindow, nullptr, FALSE);
 
                     if(gy-ScreenRowsAvailable()-1 > 0) {
                         gy-=ScreenRowsAvailable()-1;
@@ -1952,7 +1952,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                       ScrollYOffset = ScrollYOffsetMax;
                     }
                     RefreshScrollbars();
-                    InvalidateRect(MainWindow, NULL, FALSE);
+                    InvalidateRect(MainWindow, nullptr, FALSE);
 
                     if(gy+ScreenRowsAvailable()-1 < totalHeightScrollbars-1) {
                         gy+=ScreenRowsAvailable()-1;
@@ -2270,7 +2270,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
             }
             if(wParam != VK_SHIFT && wParam != VK_CONTROL) {
-                InvalidateRect(MainWindow, NULL, FALSE);
+                InvalidateRect(MainWindow, nullptr, FALSE);
             }
             break;
         }
@@ -2283,7 +2283,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             } else {
                 CHANGING_PROGRAM(EditElementMouseDoubleclick(x, y));
             }
-            InvalidateRect(MainWindow, NULL, FALSE);
+            InvalidateRect(MainWindow, nullptr, FALSE);
             break;
         }
 
@@ -2304,7 +2304,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 TestSelections(msg,rung1);
             }
             SetFocus(MainWindow);
-            InvalidateRect(MainWindow, NULL, FALSE);
+            InvalidateRect(MainWindow, nullptr, FALSE);
             break;
         }
         case WM_MOUSEMOVE: {
@@ -2312,9 +2312,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int y = HIWORD(lParam);
 
             if((y > (IoListTop - 9)) && (y < (IoListTop + 3))) {
-                SetCursor(LoadCursor(NULL, IDC_SIZENS));
+                SetCursor(LoadCursor(nullptr, IDC_SIZENS));
             } else {
-                SetCursor(LoadCursor(NULL, IDC_ARROW));
+                SetCursor(LoadCursor(nullptr, IDC_ARROW));
             }
 
             break;
@@ -2349,7 +2349,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_COMMAND:
             ProcessMenu(LOWORD(wParam));
-            InvalidateRect(MainWindow, NULL, FALSE);
+            InvalidateRect(MainWindow, nullptr, FALSE);
             break;
 
         case WM_CLOSE:
@@ -2382,8 +2382,8 @@ static BOOL MakeWindowClass()
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszClassName    = "LDmicro";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+    wc.lpszMenuName     = nullptr;
+    wc.hCursor          = LoadCursor(nullptr, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
                             IMAGE_ICON, 32, 32, 0);
     wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -2415,7 +2415,7 @@ static LPSTR _getNextCommandLineArgument(LPSTR lpBuffer)
 
         lpBuffer++;
     }
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -2439,7 +2439,7 @@ static LPSTR _getNextPositionalArgument(LPSTR lpBuffer)
         }
         lpBuffer++;
     }
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -2465,7 +2465,7 @@ static char * _removeWhitespace(char * pBuffer)
     if (*pBuffer == 0)
     {
         // No alphanumeric characters in this string.
-        return NULL;
+        return nullptr;
     }
 
 
@@ -2491,7 +2491,7 @@ static char * _removeWhitespace(char * pBuffer)
 
     if (strlen(pStart) == 0)
     {
-        return NULL;
+        return nullptr;
     }
 
     return pStart;
@@ -2508,7 +2508,7 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
     {
         lpArgs = _getNextCommandLineArgument(lpArgs);
 
-        if(lpArgs == NULL)
+        if(lpArgs == nullptr)
         {
             break;
         }
@@ -2525,8 +2525,8 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
 
 
     // Parse for positional arguments (first is source, second destination):
-    *pSource = NULL;
-    *pDest = NULL;
+    *pSource = nullptr;
+    *pDest = nullptr;
 
     lpCmdLine = _getNextPositionalArgument(lpCmdLine);
 
@@ -2550,7 +2550,7 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
 void abortHandler( int signum )
 {
     // associate each signal with a signal name string.
-    const char* name = NULL;
+    const char* name = nullptr;
     switch( signum )
     {
     case SIGABRT: name = "SIGABRT";  break;
@@ -2653,7 +2653,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     MainWindow = CreateWindowEx(0, "LDmicro", "",
         WS_OVERLAPPED | WS_THICKFRAME | WS_CLIPCHILDREN | WS_MAXIMIZEBOX |
         WS_MINIMIZEBOX | WS_SYSMENU | WS_SIZEBOX,
-        10, 10, 800, 600, NULL, top, Instance, NULL);
+        10, 10, 800, 600, nullptr, top, Instance, nullptr);
     ThawWindowPos(MainWindow);
     IoListHeight = 100;
     ThawDWORD(IoListHeight);
@@ -2787,7 +2787,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     MSG msg;
     DWORD ret;
-    while(ret = GetMessage(&msg, NULL, 0, 0)) {
+    while(ret = GetMessage(&msg, nullptr, 0, 0)) {
         if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_TAB) {
                 SetFocus(MainWindow);

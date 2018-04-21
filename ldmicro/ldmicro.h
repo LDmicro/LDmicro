@@ -1207,7 +1207,7 @@ extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
 #define PADDING_IN_DISPLAY_MATRIX (&DisplayMatrixFiller)
-#define VALID_LEAF(x) ((x) != NULL && (x) != PADDING_IN_DISPLAY_MATRIX)
+#define VALID_LEAF(x) ((x) != nullptr && (x) != PADDING_IN_DISPLAY_MATRIX)
 extern ElemLeaf *Selected;
 extern int SelectedWhich;
 

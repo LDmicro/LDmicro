@@ -142,8 +142,8 @@ void Transliterate(char* dest, char* str)
 #define ASSTR 3
 static const char *MapSym(const char *str, int how)
 {
-    if(!str) return NULL;
-    if(strlen(str)==0) return NULL;
+    if(!str) return nullptr;
+    if(strlen(str)==0) return nullptr;
 
     static char AllRets[16][MAX_NAME_LEN+30];
     static int RetCnt;
@@ -541,10 +541,10 @@ static void GenerateDeclarations(FILE *f)
 
     int i;
     for(i = 0; i < IntCodeLen; i++) {
-        const char *bitVar1 = NULL, *bitVar2 = NULL;
-        const char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
-      //const char *adcVar1 = NULL;
-        const char *strVar1 = NULL;
+        const char *bitVar1 = nullptr, *bitVar2 = nullptr;
+        const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr;
+      //const char *adcVar1 = nullptr;
+        const char *strVar1 = nullptr;
         int sov1=0, sov2=0, sov3=0;
 
         int bitVar1set1 = 0;
@@ -765,7 +765,7 @@ static void GenerateDeclarations(FILE *f)
         if(strVar1 && !SeenVariable(strVar1)) DeclareStr(f, strVar1, sov1);
     }
     if(Prog.cycleDuty) {
-        const char *bitVar1 = NULL;
+        const char *bitVar1 = nullptr;
         bitVar1 = MapSym("YPlcCycleDuty", ASBIT);
         if(bitVar1 && !SeenVariable(bitVar1)) DeclareBit(f, bitVar1);
     }

@@ -230,7 +230,7 @@ void PaintWindow()
 
     KillTimer(MainWindow, TIMER_BLINK_CURSOR);
     if (CursorDrawn)
-        BlinkCursor(NULL, 0, 0, 0); //Hide Cursor
+        BlinkCursor(nullptr, 0, 0, 0); //Hide Cursor
     CursorDrawn = FALSE;
 
     ok();
@@ -349,18 +349,18 @@ void PaintWindow()
     if(SelectedGxAfterNextPaint >= 0) {
         int gx=SelectedGxAfterNextPaint, gy=SelectedGyAfterNextPaint;
         MoveCursorNear(&gx, &gy);
-        InvalidateRect(MainWindow, NULL, FALSE);
+        InvalidateRect(MainWindow, nullptr, FALSE);
         SelectedGxAfterNextPaint = -1;
         SelectedGyAfterNextPaint = -1;
     } else if(ScrollSelectedIntoViewAfterNextPaint && Selected) {
         SelectElement(-1, -1, Selected->selectedState);
         ScrollSelectedIntoViewAfterNextPaint = FALSE;
-        InvalidateRect(MainWindow, NULL, FALSE);
+        InvalidateRect(MainWindow, nullptr, FALSE);
     } else {
         if(!SelectionActive) {
             if(Prog.numRungs > 0) {
                 if(MoveCursorTopLeft()) {
-                    InvalidateRect(MainWindow, NULL, FALSE);
+                    InvalidateRect(MainWindow, nullptr, FALSE);
                 }
             }
         }
@@ -385,7 +385,7 @@ void PaintWindow()
         KillTimer(MainWindow, TIMER_BLINK_CURSOR);
     } else {
         KillTimer(MainWindow, TIMER_BLINK_CURSOR);
-        BlinkCursor(NULL, 0, 0, 0); //Draw Cursor
+        BlinkCursor(nullptr, 0, 0, 0); //Draw Cursor
         SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
     }
 
@@ -614,10 +614,10 @@ BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
     HANDLE hFile = CreateFile(FileName,
                    GENERIC_READ,
                    FILE_SHARE_READ,
-                   NULL,
+                   nullptr,
                    OPEN_EXISTING,
                    FILE_ATTRIBUTE_NORMAL,
-                   NULL);
+                   nullptr);
 
     if (hFile == INVALID_HANDLE_VALUE) {
         Error("Could not open file %s (error %d)\n", FileName, GetLastError());
@@ -644,7 +644,7 @@ BOOL GetLastWriteTime(HANDLE hFile, char *lpszString)
 
     // Convert the time of the last change to local time.
     FileTimeToSystemTime(&ftWrite, &stUTC);
-    SystemTimeToTzSpecificLocalTime(NULL, &stUTC, &stLocal);
+    SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
 
     // Composes a string with the date and time.
     sprintf(lpszString, "%02d/%02d/%d %02d:%02d:%02d",
@@ -662,10 +662,10 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
     HANDLE hFile = CreateFile(FileName,
                    GENERIC_READ,
                    FILE_SHARE_READ,
-                   NULL,
+                   nullptr,
                    OPEN_EXISTING,
                    FILE_ATTRIBUTE_NORMAL,
-                   NULL);
+                   nullptr);
 
     if (hFile == INVALID_HANDLE_VALUE) {
         Error("Could not open file %s (error %d)\n", FileName, GetLastError());
@@ -786,7 +786,7 @@ void ExportDrawingAsText(char *file)
         CheckFree(ExportBuffer[i]);
     }
     CheckFree(ExportBuffer);
-    ExportBuffer = NULL;
+    ExportBuffer = nullptr;
 
     fprintf(f, _("\nI/O ASSIGNMENT:\n"));
 
@@ -817,7 +817,7 @@ void ExportDrawingAsText(char *file)
     fclose(f);
 
     // we may have trashed the grid tables a bit; a repaint will fix that
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 }
 
 //-----------------------------------------------------------------------------

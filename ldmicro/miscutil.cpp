@@ -110,12 +110,12 @@ void Error(const char *str, ...)
         // Indicate that it's an error, plus the output filename
         char str[MAX_PATH+100];
         sprintf(str, "compile error ('%s'): ", CurrentCompileFile);
-        WriteFile(h, str, strlen(str), &written, NULL);
+        WriteFile(h, str, strlen(str), &written, nullptr);
         // The error message itself
-        WriteFile(h, buf, strlen(buf), &written, NULL);
+        WriteFile(h, buf, strlen(buf), &written, nullptr);
         // And an extra newline to be safe.
         strcpy(str, "\n");
-        WriteFile(h, str, strlen(str), &written, NULL);
+        WriteFile(h, str, strlen(str), &written, nullptr);
     } else {
         HWND h = GetForegroundWindow();
         char buf2[1024];
@@ -143,7 +143,7 @@ void CompileSuccessfulMessage(char *str, unsigned int uType)
         AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
         HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD written;
-        WriteFile(h, str, strlen(str), &written, NULL);
+        WriteFile(h, str, strlen(str), &written, nullptr);
     } else if (uType == MB_ICONINFORMATION) {
         MessageBox(MainWindow, str, _("Compile Successful"),
             MB_OK | uType);
@@ -178,7 +178,7 @@ void CheckHeap(const char *file, int line)
     SkippedCalls = 0;
     LastCallTime = now;
 
-    if(!HeapValidate(MainHeap, 0, NULL)) {
+    if(!HeapValidate(MainHeap, 0, nullptr)) {
         //dbp("file %s line %d", file, line);
         Error("Noticed memory corruption at file '%s' line %d.", file, line);
         oops();
@@ -319,8 +319,8 @@ void MakeDialogBoxClass()
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
     wc.lpszClassName    = "LDmicroDialog";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+    wc.lpszMenuName     = nullptr;
+    wc.hCursor          = LoadCursor(nullptr, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
                             IMAGE_ICON, 32, 32, 0);
     wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -687,7 +687,7 @@ char *GetPinName(int pin, char *pinName)
 //-----------------------------------------------------------------------------
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
 {
-    PinNumberForIo(dest, io, NULL, NULL);
+    PinNumberForIo(dest, io, nullptr, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -725,7 +725,7 @@ McuIoPinInfo *PinInfo(int pin)
         for(int i = 0; i < Prog.mcu->pinCount; i++)
             if(Prog.mcu->pinInfo[i].pin==pin)
                 return &(Prog.mcu->pinInfo[i]);
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -735,7 +735,7 @@ McuIoPinInfo *PinInfoForName(const char *name)
         for(int i = 0; i < Prog.io.count; i++)
             if(strcmp(Prog.io.assignment[i].name, name)==0)
                 return PinInfo(Prog.io.assignment[i].pin);
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -745,7 +745,7 @@ McuPwmPinInfo *PwmPinInfo(int pin)
         for(int i = 0; i < Prog.mcu->pwmCount; i++)
             if(Prog.mcu->pwmInfo[i].pin==pin)
                 return &(Prog.mcu->pwmInfo[i]);
-    return NULL;
+    return nullptr;
 }
 
 McuPwmPinInfo *PwmPinInfo(int pin, int timer) // !=timer !!!
@@ -755,7 +755,7 @@ McuPwmPinInfo *PwmPinInfo(int pin, int timer) // !=timer !!!
             if(Prog.mcu->pwmInfo[i].pin==pin)
                if((Prog.mcu->whichIsa == ISA_PIC16) || (Prog.mcu->pwmInfo[i].timer != Prog.cycleTimer))
                     return &(Prog.mcu->pwmInfo[i]);
-    return NULL;
+    return nullptr;
 }
 
 McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
@@ -764,7 +764,7 @@ McuPwmPinInfo *PwmPinInfo(int pin, int timer, int resolution) // !=timer !!!
         for(int i = 0; i < Prog.mcu->pwmCount; i++)
             if((Prog.mcu->pwmInfo[i].pin==pin) && (Prog.mcu->pwmInfo[i].timer!=timer) && (Prog.mcu->pwmInfo[i].resolution==resolution))
                 return &(Prog.mcu->pwmInfo[i]);
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -774,7 +774,7 @@ McuSpiInfo *GetMcuSpiInfo(char *name)
         for(int i = 0; i < Prog.mcu->spiCount; i++)
             if(strcmp(Prog.mcu->spiInfo[i].name, name)==0)
                 return &(Prog.mcu->spiInfo[i]);
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -785,7 +785,7 @@ McuPwmPinInfo *PwmPinInfoForName(char *name)
             if(strcmp(Prog.io.assignment[i].name, name)==0)
                 return PwmPinInfo(Prog.io.assignment[i].pin);
         }
-    return NULL;
+    return nullptr;
 }
 
 McuPwmPinInfo *PwmPinInfoForName(char *name, int timer) // !=timer !!!
@@ -797,7 +797,7 @@ McuPwmPinInfo *PwmPinInfoForName(char *name, int timer) // !=timer !!!
                 return PwmPinInfo(Prog.io.assignment[i].pin, timer);
             }
         }
-    return NULL;
+    return nullptr;
 }
 
 McuPwmPinInfo *PwmPinInfoForName(char *name, int timer, int resolution) // !=timer !!!
@@ -808,7 +808,7 @@ McuPwmPinInfo *PwmPinInfoForName(char *name, int timer, int resolution) // !=tim
             if(strcmp(Prog.io.assignment[i].name, name)==0)
                 return PwmPinInfo(Prog.io.assignment[i].pin, timer, resolution);
         }
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -818,7 +818,7 @@ McuAdcPinInfo *AdcPinInfo(int pin)
         for(int i = 0; i < Prog.mcu->adcCount; i++)
             if(Prog.mcu->adcInfo[i].pin==pin)
                 return &(Prog.mcu->adcInfo[i]);
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -828,7 +828,7 @@ McuAdcPinInfo *AdcPinInfoForName(char *name)
         for(int i = 0; i < Prog.io.count; i++)
             if(strcmp(Prog.io.assignment[i].name, name)==0)
                 return AdcPinInfo(Prog.io.assignment[i].pin);
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -920,7 +920,7 @@ char *strDelSpace(char *dest, char *src)
 
 char *strDelSpace(char *dest)
 {
-    return strDelSpace(dest, NULL);
+    return strDelSpace(dest, nullptr);
 }
 
 char *strncpyn(char *s1, const char *s2, size_t n)

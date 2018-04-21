@@ -522,7 +522,7 @@ char *strspacer(char *str)
 // Load a parallel subcircuit from a file. We look for leaf nodes using
 // LoadLeafFromFile, which we can put directly into the parallel circuit
 // that we're building up, or series subcircuits that we can pass to
-// LoadSeriesFromFile. Returns the parallel subcircuit built up, or NULL if
+// LoadSeriesFromFile. Returns the parallel subcircuit built up, or nullptr if
 // something goes wrong.
 //-----------------------------------------------------------------------------
 static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
@@ -535,7 +535,7 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
     int cnt = 0;
 
     for(;;) {
-        if(!fgets(line, sizeof(line), f)) return NULL;
+        if(!fgets(line, sizeof(line), f)) return nullptr;
         if(!strlen(strspace(line))) continue;
         char *s = line;
         while(isspace(*s)) s++;
@@ -545,7 +545,7 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
         if(strcmp(s, "SERIES")==0) {
             which = ELEM_SERIES_SUBCKT;
             any = LoadSeriesFromFile(f);
-            if(!any) return NULL;
+            if(!any) return nullptr;
 
         } else if(LoadLeafFromFile(s, &any, &which)) {
             // got it
@@ -553,12 +553,12 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
             ret->count = cnt;
             return ret;
         } else {
-            return NULL;
+            return nullptr;
         }
         ret->contents[cnt].which = which;
         ret->contents[cnt].data.any = any;
         cnt++;
-        if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
+        if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return nullptr;
     }
 }
 
@@ -576,7 +576,7 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
     int cnt = 0;
 
     for(;;) {
-        if(!fgets(line, sizeof(line), f)) return NULL;
+        if(!fgets(line, sizeof(line), f)) return nullptr;
         if(!strlen(strspace(line))) continue;
         char *s = line;
         while(isspace(*s)) s++;
@@ -584,23 +584,23 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
         if(strcmp(s, "PARALLEL")==0) {
             which = ELEM_PARALLEL_SUBCKT;
             any = LoadParallelFromFile(f);
-            if(!any) return NULL;
+            if(!any) return nullptr;
         } else if(strcmp(s, "SERIES")==0) {
             which = ELEM_SERIES_SUBCKT;
             any = LoadSeriesFromFile(f);
-            if(!any) return NULL;
+            if(!any) return nullptr;
         } else if(LoadLeafFromFile(s, &any, &which)) {
             // got it
         } else if(strcmp(s, "END")==0) {
             ret->count = cnt;
             return ret;
         } else {
-            return NULL;
+            return nullptr;
         }
         ret->contents[cnt].which = which;
         ret->contents[cnt].data.any = any;
         cnt++;
-        if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
+        if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return nullptr;
     }
 }
 
@@ -1311,7 +1311,7 @@ void FrmStrToFile(FILE *f, char *str)
 //---------------------------------------------------------------------------
 char *StrToFrmStr(char *dest, char *src, FRMT frmt)
 {
-    if((src == NULL) || (strlen(src) == 0)) {
+    if((src == nullptr) || (strlen(src) == 0)) {
         strcpy(dest, " (none)");
         return dest;
     }
@@ -1431,7 +1431,7 @@ char *FrmStrToStr(char *dest, const char *src)
 
 char *FrmStrToStr(char *dest)
 {
-    return FrmStrToStr(dest, NULL);
+    return FrmStrToStr(dest, nullptr);
 }
 //-----------------------------------------------------------------------------
 char *DelNL(char *str)

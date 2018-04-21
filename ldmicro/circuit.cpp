@@ -1041,7 +1041,7 @@ void FreeEntireProgram()
     Prog.cycleTimer = 1;
     Prog.cycleDuty = 0;
     Prog.configurationWord = 0;
-    SetMcu(NULL);
+    SetMcu(nullptr);
 
     WipeIntMemory();
 }
@@ -1168,7 +1168,7 @@ static void NullDisplayMatrix(int from, int to)
     for(j = from; j < to; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
             if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
-                DisplayMatrix[i][j] = NULL;
+                DisplayMatrix[i][j] = nullptr;
                 DisplayMatrixWhich[i][j] = ELEM_NULL;
                 dbpd(j)
             }
@@ -1177,7 +1177,7 @@ static void NullDisplayMatrix(int from, int to)
     for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
             if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
-                DisplayMatrix[i][j] = NULL;
+                DisplayMatrix[i][j] = nullptr;
                 DisplayMatrixWhich[i][j] = ELEM_NULL;
                 dbpd(j)
             }
@@ -1429,7 +1429,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
             }
             break;
     }
-    return NULL;
+    return nullptr;
 }
 
 ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2)
@@ -1557,7 +1557,7 @@ int CountWhich(int seek1, char *name)
 
 int CountWhich(int seek1)
 {
-    return CountWhich(seek1, -1, -1, NULL);
+    return CountWhich(seek1, -1, -1, nullptr);
 }
 
 BOOL DelayUsed()

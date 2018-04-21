@@ -102,7 +102,7 @@ static FILE *fUART;
 
 // A window to allow simulation with the UART stuff (insert keystrokes into
 // the program, view the output, like a terminal window).
-static HWND UartSimulationWindow = NULL;
+static HWND UartSimulationWindow = nullptr;
 static HWND UartSimulationTextControl;
 static LONG_PTR PrevTextProc;
 
@@ -505,12 +505,12 @@ static const char *Check(const char *name, DWORD flag, int i)
         default:
             oops();
     }
-    return NULL;
+    return nullptr;
 }
 //-----------------------------------------------------------------------------
 // Mark how a variable is used; a series of flags that we can OR together,
 // then we can check to make sure that only valid combinations have been used
-// (e.g. just a TON, an RTO with its reset, etc.). Returns NULL for success,
+// (e.g. just a TON, an RTO with its reset, etc.). Returns nullptr for success,
 // else an error string.
 //-----------------------------------------------------------------------------
 static const char *rungsUsed = ""; //local store var for message
@@ -547,7 +547,7 @@ static const char *MarkUsedVariable(const char *name, DWORD flag)
     if(Variables[i].initedRung < 0)
         Variables[i].initedRung = rungNow;
     Variables[i].usedFlags |= flag;
-    return NULL;
+    return nullptr;
 }
 
 void MarkInitedVariable(const char *name)
@@ -606,7 +606,7 @@ static void MarkWithCheck(const char *name, int flag)
 static void CheckVariableNamesCircuit(int which, void *elem)
 {
     ElemLeaf *l = (ElemLeaf *)elem;
-    char *name = NULL;
+    char *name = nullptr;
     DWORD flag;
     char str[MAX_NAME_LEN];
 
@@ -926,7 +926,7 @@ return;
 static void CheckSingleBitNegateCircuit(int which, void *elem)
 {
     ElemLeaf *l = (ElemLeaf *)elem;
-    char *name = NULL;
+    char *name = nullptr;
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -1864,7 +1864,7 @@ static void SimulateIntCode()
             case INT_FLASH_READ:{
                 SDWORD *adata;
                 adata = (SDWORD *)GetSimulationVariable(a->name2);
-                if(adata == NULL) {
+                if(adata == nullptr) {
                     Error("TABLE %s is not initialized.", a->name2);
                     StopSimulation();
                     ToggleSimulationMode(FALSE);
@@ -1990,7 +1990,7 @@ void SimulateOneCycle(BOOL forceRefresh)
             UpdateWindow(MainWindow);
             updateWindow--;
         } else {
-            InvalidateRect(MainWindow, NULL, FALSE);
+            InvalidateRect(MainWindow, nullptr, FALSE);
         }
         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 
@@ -2267,7 +2267,7 @@ static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
 static char buf[MAX_SCROLLBACK] = "";
 void ShowUartSimulationWindow()
 {
-    if(UartSimulationWindow != NULL)
+    if(UartSimulationWindow != nullptr)
         oops();
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
@@ -2279,8 +2279,8 @@ void ShowUartSimulationWindow()
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
     wc.lpszClassName    = "LDmicroUartSimulationWindow";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+    wc.lpszMenuName     = nullptr;
+    wc.hCursor          = LoadCursor(nullptr, IDC_ARROW);
 
     RegisterClassEx(&wc);
 
@@ -2306,12 +2306,12 @@ void ShowUartSimulationWindow()
         "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX
         | WS_MAXIMIZEBOX | WS_MINIMIZEBOX,
         TerminalX, TerminalY, TerminalW, TerminalH,
-        NULL, NULL, Instance, NULL);
+        nullptr, nullptr, Instance, nullptr);
 
     UartSimulationTextControl = CreateWindowEx(0, WC_EDIT, "", WS_CHILD |
         WS_CLIPSIBLINGS | WS_VISIBLE | ES_AUTOVSCROLL | ES_MULTILINE |
-        WS_VSCROLL, 0, 0, TerminalW, TerminalH, UartSimulationWindow, NULL,
-        Instance, NULL);
+        WS_VSCROLL, 0, 0, TerminalW, TerminalH, UartSimulationWindow, nullptr,
+        Instance, nullptr);
 
     HFONT fixedFont = CreateFont(14, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE,
         ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
@@ -2341,8 +2341,8 @@ void DestroyUartSimulationWindow()
     // Try not to destroy the window if it is already destroyed; that is
     // not for the sake of the window, but so that we don't trash the
     // stored position.
-    //if(UartSimulationWindow == NULL) return;
-    if(UartSimulationWindow != NULL) {
+    //if(UartSimulationWindow == nullptr) return;
+    if(UartSimulationWindow != nullptr) {
 
         if(fUART) fclose(fUART);
 
@@ -2364,7 +2364,7 @@ void DestroyUartSimulationWindow()
     }
 
     DestroyWindow(UartSimulationWindow);
-    UartSimulationWindow = NULL;
+    UartSimulationWindow = nullptr;
 }
 
 //-----------------------------------------------------------------------------

@@ -80,7 +80,7 @@ int ProgWriteP = 0;
 static SDWORD *Tdata;
 int rungNow = -INT_MAX;
 static int whichNow = -INT_MAX;
-static ElemLeaf *leafNow = NULL;
+static ElemLeaf *leafNow = nullptr;
 
 static DWORD GenSymCount;
 static DWORD GenSymCountParThis;
@@ -755,57 +755,57 @@ static void _Op(int l, const char *f, const char *args, int op, BOOL *b,
 
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, lit, 0, nullptr);
+    _Op(l, f, args, op, nullptr, name1, name2, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2)
 {
-    _Op(l, f, args, op, NULL, name1, name2, NULL, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1)
 {
-    _Op(l, f, args, op, NULL, name1, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op)
 {
-    _Op(l, f, args, op, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, SDWORD lit)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, SDWORD lit, SDWORD lit2)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3, const char *name4)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, name4, NULL, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, name4, nullptr, nullptr, 0, 0, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op,
                 const char *name1, const char *name2, const char *name3, const char *name4, const char *name5)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, name4, name5, NULL, 0, 0, NULL);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, name4, name5, nullptr, 0, 0, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
                 SDWORD lit, SDWORD lit2, SDWORD *data)
 {
-    _Op(l, f, args, op, NULL, name1, name2, name3, NULL, NULL, NULL, lit, lit2, data);
+    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, data);
 }
 
 // And use macro for bugtracking
@@ -835,7 +835,7 @@ static void SimState(BOOL *b, const char *name, BOOL *w, const char *name2)
 
 static void SimState(BOOL *b, const char *name)
 {
-    SimState(b, name, NULL, NULL);
+    SimState(b, name, nullptr, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -848,7 +848,7 @@ static void _Comment1(int l, const char *f, const char *str)
     strncpy(buf, str, MAX_NAME_LEN-1);
     buf[MAX_NAME_LEN-1] = '\0';
     // http://demin.ws/blog/russian/2013/01/28/use-snprintf-on-different-platforms/
-    _Op(l, f, NULL, INT_COMMENT, buf);
+    _Op(l, f, nullptr, INT_COMMENT, buf);
   }
 }
 #define Comment1(str) _Comment1(__LINE__, __FILE__, str)
@@ -860,7 +860,7 @@ static void _Comment(int l, const char *f, const char *str, ...)
     char buf[MAX_NAME_LEN];
     va_start(v, str);
     vsnprintf(buf, MAX_NAME_LEN, str, v);
-    _Op(l, f, NULL, INT_COMMENT, buf);
+    _Op(l, f, nullptr, INT_COMMENT, buf);
   }
 }
 
@@ -871,7 +871,7 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
     char buf[MAX_NAME_LEN];
     va_start(v, str);
     vsnprintf(buf, MAX_NAME_LEN, str, v);
-    _Op(l, f, NULL, INT_COMMENT, buf);
+    _Op(l, f, nullptr, INT_COMMENT, buf);
   }
 }
 
@@ -1021,7 +1021,7 @@ BOOL CheckForNumber(char * str)
                 radix = 8;
         }
 
-        char *end_ptr = NULL;
+        char *end_ptr = nullptr;
         // errno = 0;
         long val = strtol(str, &end_ptr, radix);
         if(*end_ptr) {
@@ -1097,7 +1097,7 @@ SDWORD hobatoi(const char *str)
             else if(toupper(start_ptr[1]) == 'X')
                 radix = 16;
        }
-       char *end_ptr = NULL;
+       char *end_ptr = nullptr;
        // errno = 0;
        val = strtol(str, &end_ptr, radix);
        if(*end_ptr) {
@@ -1341,7 +1341,7 @@ static void InitVars()
         Op(INT_SET_BIT, storeInit);
         for(i = 0; i < Prog.numRungs; i++) {
             rungNow = i;
-            InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], NULL);
+            InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], nullptr);
         }
       Op(INT_END_IF);
     }
@@ -1380,7 +1380,7 @@ static void InitTablesCircuit(int which, void *elem)
             if((isVarInited(nameTable) < 0)
             || (isVarInited(nameTable)==rungNow)) {
                 sovElement =  TestByteNeeded(t->count, t->vals);
-                Op(INT_FLASH_INIT, nameTable, NULL, NULL, t->count, sovElement, t->vals);
+                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, t->count, sovElement, t->vals);
             } else {
                 sovElement = SizeOfVar(nameTable);
                 if(sovElement < 1)
@@ -2131,7 +2131,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.sfr.op)) {
                 if(IsNumber(l->d.sfr.sfr)) {
-                    Op(INT_WRITE_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.sfr.sfr), CheckMakeNumber(l->d.sfr.op));
+                    Op(INT_WRITE_SFR_LITERAL_L,nullptr,nullptr,nullptr, CheckMakeNumber(l->d.sfr.sfr), CheckMakeNumber(l->d.sfr.op));
                 } else {
                     Op(INT_WRITE_SFR_VARIABLE_L,l->d.sfr.sfr, CheckMakeNumber(l->d.sfr.op));
                 }
@@ -2151,7 +2151,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.dest)) {
                 if(IsNumber(l->d.move.src)) {
-                    Op(INT_SET_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+                    Op(INT_SET_SFR_LITERAL_L,nullptr,nullptr,nullptr, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
                 } else {
                     Op(INT_SET_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
                 }
@@ -2171,7 +2171,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.dest)) {
                 if(IsNumber(l->d.move.src)) {
-                    Op(INT_CLEAR_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+                    Op(INT_CLEAR_SFR_LITERAL_L,nullptr,nullptr,nullptr, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
                 } else {
                     Op(INT_CLEAR_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
                 }
@@ -2190,7 +2190,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Comment(3, "ELEM_TSFR");
             if(IsNumber(l->d.move.dest)) {
                 if(IsNumber(l->d.move.src)) {
-                    Op(INT_TEST_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+                    Op(INT_TEST_SFR_LITERAL_L,nullptr,nullptr,nullptr, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
                 } else {
                     Op(INT_TEST_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
                 }
@@ -2212,7 +2212,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Comment(3, "ELEM_T_C_SFR");
             if(IsNumber(l->d.move.dest)) {
                 if(IsNumber(l->d.move.src)) {
-                    Op(INT_TEST_C_SFR_LITERAL_L,NULL,NULL,NULL, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
+                    Op(INT_TEST_C_SFR_LITERAL_L,nullptr,nullptr,nullptr, CheckMakeNumber(l->d.move.src), CheckMakeNumber(l->d.move.dest));
                 } else {
                     Op(INT_TEST_C_SFR_VARIABLE_L,l->d.move.src, CheckMakeNumber(l->d.move.dest));
                 }
@@ -2459,7 +2459,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
 //              Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
-               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, NULL, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
+               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, nullptr, l->d.move.dest, l->d.move.src, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
             }
             Op(INT_END_IF);
             break;
@@ -3513,7 +3513,7 @@ BOOL GenerateIntermediateCode()
 
     rungNow = -100;//INT_MAX;
     whichNow = -INT_MAX;
-    leafNow = NULL;
+    leafNow = nullptr;
 
     WipeIntMemory();
 
@@ -3542,7 +3542,7 @@ BOOL GenerateIntermediateCode()
     for(rung = 0; rung <= Prog.numRungs; rung++) {
         rungNow = rung;
         whichNow = -INT_MAX;
-        leafNow = NULL;
+        leafNow = nullptr;
         Prog.OpsInRung[rung] = 0;
         Prog.HexInRung[rung] = 0;
         Op(INT_AllocFwdAddr, (SDWORD)rung);
@@ -3551,7 +3551,7 @@ BOOL GenerateIntermediateCode()
     for(rung = 0; rung < Prog.numRungs; rung++) {
         rungNow = rung;
         whichNow = -INT_MAX;
-        leafNow = NULL;
+        leafNow = nullptr;
         if(int_comment_level != 1) {
             Comment("");
             Comment("======= START RUNG %d =======", rung+1);

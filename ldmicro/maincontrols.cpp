@@ -86,7 +86,7 @@ void MakeMainWindowControls()
     IoList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, "", WS_CHILD |
         LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP |
         LVS_SINGLESEL | WS_CLIPSIBLINGS,
-        12, 25, 300, 300, MainWindow, NULL, Instance, NULL);
+        12, 25, 300, 300, MainWindow, nullptr, Instance, nullptr);
     ListView_SetExtendedListViewStyle(IoList, LVS_EX_FULLROWSELECT);
 
     int typeWidth = 110;
@@ -107,11 +107,11 @@ void MakeMainWindowControls()
     // IO list horizontal scroll bar
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
-        100, 100, 100, 100, MainWindow, NULL, Instance, NULL);
+        100, 100, 100, 100, MainWindow, nullptr, Instance, nullptr);
     // IO list Verticle scroll bar
     VertScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_VERT | SBS_LEFTALIGN | WS_VISIBLE | WS_CLIPSIBLINGS,
-        200, 100, 100, 100, MainWindow, NULL, Instance, NULL);
+        200, 100, 100, 100, MainWindow, nullptr, Instance, nullptr);
     RECT scroll;
     GetWindowRect(HorizScrollBar, &scroll);
     ScrollHeight = scroll.bottom - scroll.top;
@@ -348,7 +348,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(EditMenu, MF_STRING, MNU_UNDO, _("&Undo\tCtrl+Z or Alt+Backspace"));
     AppendMenu(EditMenu, MF_STRING, MNU_REDO, _("&Redo\tCtrl+Y or Alt+Shift+Backspace"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
         _("Insert Rung &Before\tShift+6"));
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
@@ -358,7 +358,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
         _("Move Selected Rung &Down\tAlt+Down"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN,
         _("Dup&licate Selected Rung\tCtrl+D"));
     AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG,
@@ -376,7 +376,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG,
         _("Paste Rung's/Element &Into Rung\tAlt+Insert"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EditMenu, MF_STRING, MNU_CUT_ELEMENT,
         _("Cut Selected Element\tAlt+Del"));
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
@@ -384,11 +384,11 @@ HMENU MakeMainWindowMenus()
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_RUNG,
         _("D&elete Rung\tShift+Del"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EditMenu, MF_STRING, MNU_REPLACE_ELEMENT,
         _("Replace Selected Element in Group\tSpace"));
 
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_UP,
         _("Scroll Up\tCtrl+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_SCROLL_DOWN,
@@ -401,7 +401,7 @@ HMENU MakeMainWindowMenus()
         _("Roll Home\tCtrl+Home"));
     AppendMenu(EditMenu, MF_STRING, MNU_ROLL_END,
         _("Roll End\tCtrl+End"));
-    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EditMenu, MF_STRING, MNU_TAB,
         _("Moving cursor between the main window and the I/O list\tTab"));
 
@@ -418,23 +418,23 @@ HMENU MakeMainWindowMenus()
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
 
-    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LABEL, _("Insert LABEL declaration"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOTO, _("Insert GOTO Label or Rung"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SUBPROG, _("Insert SUBPROG declaration"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB declaration"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB call"));
-    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
-    AppendMenu(CourseMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_TIME2DELAY, _("Insert TIME to DELAY converter"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CourseMenu,_("Operations that change the course of the program"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS,
         _("Insert &Contacts: Input Pin\tC"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_RELAY,
@@ -456,7 +456,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_TTRIGGER,
         _("Make T-trigger"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSR,
         _("Insert _/OSR/\\_ (One Shot Rising)\t&/"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSF,
@@ -473,7 +473,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("EDIT: Insert N PULSE OFF"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu,_("Pulse generators"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TON,
         _("Insert T&ON (Delayed Turn On)\tO"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TOF,
@@ -488,7 +488,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TLO, _("Insert TLO (Low Delay)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT, _("Insert TIME to COUNTER converter"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
         _("Insert CT&U (Count Up)\tU"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTD,
@@ -500,7 +500,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RES,
         _("Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
 /*
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
@@ -533,7 +533,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CmpMenu,_("Compare variable"));
 
 /*
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOV,
         _("Insert MOV (Move)\tM"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_ADD,
@@ -582,7 +582,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("SIMUL: Insert Clear Bit #"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu,_("Bitwise variable operations (Unsigned)"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHIFT_REG,
         _("Insert Shift Register"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LUT,
@@ -590,7 +590,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWL,
         _("Insert Piecewise Linear"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STRING,
         _("Insert Formatted String Over &UART"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
@@ -615,7 +615,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT,
         _("TODO: Insert Software &PWM (AVR136 AppNote)\tP"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("EDIT: Insert QUAD ENCOD"));
     DisplayMenu = CreatePopupMenu();
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD,        _("SIMUL: Insert BIN2BCD"));
@@ -628,7 +628,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)DisplayMenu,_("Displays"));
 
     #ifdef USE_SFR
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     // Special function menu
     SpecialFunction = CreatePopupMenu();
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFR,      _("&Insert Read From SFR"));
@@ -701,25 +701,25 @@ HMENU MakeMainWindowMenus()
     AppendMenu(compile, MF_STRING, MNU_COMPILE_AS,            _("Compile &As..."));
   //AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,          _("Compile HEX"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_IHEX,          _("Compile HEX->ASM"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ANSIC,         _("Compile ANSIC"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_HI_TECH_C,     _("Compile HI-TECH C for PIC"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_CCS_PIC_C,     _("Compile CCS C for PIC"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_GNUC,          _("Compile AVR-GCC, Atmel AVR Toolchain, WinAVR C"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_CODEVISIONAVR, _("Compile CodeVisionAVR C"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO,       _("Compile Sketch for ARDUINO"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("Compile PASCAL"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_INT,    _("Compile Interpretable Byte Code"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_XINT,   _("Compile Interpretable Extended Byte Code"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_FLASH_BAT,      _("Call flashMcu.bat\tF6"));
     AppendMenu(compile, MF_STRING, MNU_READ_BAT,       _("Call readMcu.bat\tCtrl+F6"));
-    AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_CLEAR_BAT,      _("Call clear.bat"));
 
     ConfigMenu = CreatePopupMenu();
@@ -787,7 +787,7 @@ void RefreshScrollbars()
     MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, 1, ScrollWidth,
         NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3), TRUE);
 
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 }
 
 //-----------------------------------------------------------------------------
@@ -832,7 +832,7 @@ void VscrollProc(WPARAM wParam)
         si.nPos = ScrollYOffset;
         SetScrollInfo(VertScrollBar, SB_CTL, &si, TRUE);
 
-        InvalidateRect(MainWindow, NULL, FALSE);
+        InvalidateRect(MainWindow, nullptr, FALSE);
     }
 }
 
@@ -884,7 +884,7 @@ void HscrollProc(WPARAM wParam)
         si.nPos = ScrollXOffset;
         SetScrollInfo(HorizScrollBar, SB_CTL, &si, TRUE);
 
-        InvalidateRect(MainWindow, NULL, FALSE);
+        InvalidateRect(MainWindow, nullptr, FALSE);
     }
 }
 
@@ -1064,7 +1064,7 @@ void MainWindowResized()
 
     RefreshScrollbars();
 
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 }
 
 //-----------------------------------------------------------------------------
@@ -1133,7 +1133,7 @@ void ToggleSimulationMode(BOOL doSimulateOneRung)
     UpdateMainWindowTitleBar();
 
     DrawMenuBar(MainWindow);
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }
 

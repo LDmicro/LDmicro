@@ -608,7 +608,7 @@ int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 {
     MemForVariable(name, &addr, sizeOfVar); //allocate WORD memory for pointer to LPM
 
-    return MemForVariable(name, NULL, sizeOfVar); //and set size of element of table in flash memory
+    return MemForVariable(name, nullptr, sizeOfVar); //and set size of element of table in flash memory
 }
 
 //-----------------------------------------------------------------------------
@@ -622,7 +622,7 @@ int SetSizeOfVar(const char *name, int sizeOfVar, BOOL showError)
     #ifndef NEW_CMP
     sizeOfVar = 2;
     #endif
-    return MemForVariable(name, NULL, sizeOfVar);
+    return MemForVariable(name, nullptr, sizeOfVar);
 }
 
 int SetSizeOfVar(const char *name, int sizeOfVar)
@@ -635,7 +635,7 @@ int SizeOfVar(const char *name)
      if(IsNumber(name))
          return byteNeeded(hobatoi(name));
      else
-         return MemForVariable(name, NULL, 0);
+         return MemForVariable(name, nullptr, 0);
 }
 
 //-----------------------------------------------------------------------------

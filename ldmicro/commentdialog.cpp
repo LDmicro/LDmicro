@@ -34,17 +34,17 @@ static void MakeControls(RECT r)
     CommentTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE |
         ES_MULTILINE | ES_WANTRETURN,
-        7, 10, r.right-137, 38, CommentDialog, NULL, Instance, NULL);
+        7, 10, r.right-137, 38, CommentDialog, nullptr, Instance, nullptr);
     FixedFont(CommentTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        r.right-120,  6, 70, 23, CommentDialog, NULL, Instance, NULL);
+        r.right-120,  6, 70, 23, CommentDialog, nullptr, Instance, nullptr);
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        r.right-120, 36, 70, 23, CommentDialog, NULL, Instance, NULL);
+        r.right-120, 36, 70, 23, CommentDialog, nullptr, Instance, nullptr);
     NiceFont(CancelButton);
 }
 
@@ -55,7 +55,7 @@ void ShowCommentDialog(char *comment)
 
     CommentDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Comment"), WS_OVERLAPPED | WS_SYSMENU,
-        r.left+20, 100, r.right-r.left-40, 65, NULL, NULL, Instance, NULL);
+        r.left+20, 100, r.right-r.left-40, 65, nullptr, nullptr, Instance, nullptr);
 
     MakeControls(r);
 
@@ -70,7 +70,7 @@ void ShowCommentDialog(char *comment)
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
-    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_TAB && GetFocus() == CommentTextbox) {
                 SetFocus(OkButton);

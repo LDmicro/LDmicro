@@ -61,11 +61,11 @@ static char Strings[MAX_IO][MAX_NAME_LEN];
 static int StringsCount;
 
 static void generateNetzerOpcodes(BinOp * Program, int MaxLabel,
-    OpcodeMeta * pOpcodeMeta, FILE * f = NULL);
+    OpcodeMeta * pOpcodeMeta, FILE * f = nullptr);
 static BYTE getInternalIntegerAddress(WORD Address);
 
 
-static int GetLocalVariablesAsMetaTags(FILE * f = NULL)
+static int GetLocalVariablesAsMetaTags(FILE * f = nullptr)
 {
     int i;
     int metas = 0;
@@ -90,7 +90,7 @@ static int GetLocalVariablesAsMetaTags(FILE * f = NULL)
     return metas;
 }
 
-static int GetLocalRelaysAsMetaTags(FILE * f = NULL)
+static int GetLocalRelaysAsMetaTags(FILE * f = nullptr)
 {
     int i;
     int metas = 0;
@@ -603,7 +603,7 @@ static BYTE getIOAddress(WORD Address)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void clearBit(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void clearBit(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     if (Op->name1 & MAPPED_TO_IO)
     {
@@ -621,7 +621,7 @@ static void clearBit(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void setBit(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void setBit(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     if (Op->name1 & MAPPED_TO_IO)
     {
@@ -639,7 +639,7 @@ static void setBit(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void copyBit(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void copyBit(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     int src_relay = Op->name2;
     int dst_relay = Op->name1;
@@ -692,7 +692,7 @@ static void copyBit(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void ifBitSet(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void ifBitSet(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     WORD labelAddress;
     if (f) labelAddress = calculateJumpLabel(Op->name3);
@@ -716,7 +716,7 @@ static void ifBitSet(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void ifBitCleared(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void ifBitCleared(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     WORD labelAddress;
     if (f) labelAddress = calculateJumpLabel(Op->name3);
@@ -752,7 +752,7 @@ static BYTE getInternalIntegerAddress(WORD Address)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void setVariableToLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void setVariableToLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     BYTE address;
     NetzerIntCodes op;
@@ -776,7 +776,7 @@ static void setVariableToLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void setVariableToVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void setVariableToVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     int src_var = Op->name2;
     int dst_var = Op->name1;
@@ -811,7 +811,7 @@ static void setVariableToVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NUL
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void incrementVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void incrementVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     if (Op->name1 & MAPPED_TO_IO)
     {
@@ -829,7 +829,7 @@ static void incrementVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void decrementVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void decrementVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     if (Op->name1 & MAPPED_TO_IO)
     {
@@ -847,7 +847,7 @@ static void decrementVariable(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void ifVariableLesLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void ifVariableLesLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     WORD labelAddress;
     if (f) labelAddress = calculateJumpLabel(Op->name3);
@@ -872,7 +872,7 @@ static void ifVariableLesLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void ifVariableGeqLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void ifVariableGeqLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     WORD labelAddress;
     if (f) labelAddress = calculateJumpLabel(Op->name3);
@@ -897,7 +897,7 @@ static void ifVariableGeqLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void ifVariableEquLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void ifVariableEquLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     WORD labelAddress;
     if (f) labelAddress = calculateJumpLabel(Op->name3);
@@ -922,7 +922,7 @@ static void ifVariableEquLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void ifVariableNeqLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void ifVariableNeqLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     WORD labelAddress;
     if (f) labelAddress = calculateJumpLabel(Op->name3);
@@ -947,7 +947,7 @@ static void ifVariableNeqLiteral(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void math(NetzerIntCodes Opcode, BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void math(NetzerIntCodes Opcode, BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     int dst = Op->name1;
     int src1 = Op->name2;
@@ -999,7 +999,7 @@ static void math(NetzerIntCodes Opcode, BinOp * Op, OpcodeMeta * pMeta, FILE * f
 ///////////////////////////////////////////////////////////////////////////////
 
 static void ifVariable_X_Variable(BinOp * Op, BYTE NetzerOp,
-    OpcodeMeta * pMeta, FILE * f = NULL)
+    OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     int src1 = Op->name1;
     int src2 = Op->name2;
@@ -1037,7 +1037,7 @@ static void ifVariable_X_Variable(BinOp * Op, BYTE NetzerOp,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void elseOp(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void elseOp(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     if (f)
     {
@@ -1052,7 +1052,7 @@ static void elseOp(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static int normalizeString(char * pString, FILE * f = NULL)
+static int normalizeString(char * pString, FILE * f = nullptr)
 {
     int len = 0;
 
@@ -1061,7 +1061,7 @@ static int normalizeString(char * pString, FILE * f = NULL)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void writeStringOp(BinOp * Op, OpcodeMeta * pMeta, FILE * f = NULL)
+static void writeStringOp(BinOp * Op, OpcodeMeta * pMeta, FILE * f = nullptr)
 {
     BYTE address;
     NetzerIntCodes op;
@@ -1107,7 +1107,7 @@ void CompileNetzer(char *outFile)
         char * lastbslash = strrchr(outFile, '\\');
 
         char * copy = lastslash > lastbslash ? lastslash : lastbslash;
-        if (copy == NULL)
+        if (copy == nullptr)
         {
             copy = outFile;
         }
