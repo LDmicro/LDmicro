@@ -306,7 +306,7 @@ int CountHeightOfElement(int which, void *elem)
 // Determine the width, in leaf element units, of the widest row of the PLC
 // program (i.e. loop over all the rungs and find the widest).
 //-----------------------------------------------------------------------------
-int ProgCountWidestRow(void)
+int ProgCountWidestRow()
 {
     int i;
     int max = 0;
@@ -322,7 +322,7 @@ int ProgCountWidestRow(void)
     return max;
 }
 //-----------------------------------------------------------------------------
-int ProgCountRows(void)
+int ProgCountRows()
 {
     int totalHeight = 0;
     int i;
@@ -351,25 +351,25 @@ static void VerticalWire(int cx, int cy)
 //-----------------------------------------------------------------------------
 // Convenience functions for making the text colors pretty, for DrawElement.
 //-----------------------------------------------------------------------------
-static void NormText(void)
+static void NormText()
 {
     SetTextColor(Hdc, InSimulationMode ? HighlightColours.simOff :
         HighlightColours.def);
     SelectObject(Hdc, FixedWidthFont);
 }
-static void EmphText(void)
+static void EmphText()
 {
     SetTextColor(Hdc, InSimulationMode ? HighlightColours.simOn :
         HighlightColours.selected);
     SelectObject(Hdc, FixedWidthFontBold);
 }
-static void NameText(void)
+static void NameText()
 {
     if(!InSimulationMode && !ThisHighlighted) {
         SetTextColor(Hdc, HighlightColours.name);
     }
 }
-static void BodyText(void)
+static void BodyText()
 {
     if(!InSimulationMode && !ThisHighlighted) {
         SetTextColor(Hdc, HighlightColours.def);

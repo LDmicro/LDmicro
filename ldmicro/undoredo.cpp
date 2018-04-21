@@ -168,7 +168,7 @@ static void PopProgramStack(ProgramStack *ps)
 // Push a copy of the PLC program onto the undo history, replacing (and
 // freeing) the oldest one if necessary.
 //-----------------------------------------------------------------------------
-void UndoRemember(void)
+void UndoRemember()
 {
     // can't redo after modifying the program
     EmptyProgramStack(&(Undo.redo));
@@ -182,7 +182,7 @@ void UndoRemember(void)
 // undo. This means that we push the current program on the redo stack, and
 // pop the undo stack onto the current program.
 //-----------------------------------------------------------------------------
-void UndoUndo(void)
+void UndoUndo()
 {
     if(Undo.undo.count <= 0) return;
 
@@ -205,7 +205,7 @@ void UndoUndo(void)
 // Redo an undone operation. Push the current program onto the undo stack,
 // and pop the redo stack into the current program.
 //-----------------------------------------------------------------------------
-void UndoRedo(void)
+void UndoRedo()
 {
     if(Undo.redo.count <= 0) return;
 
@@ -227,7 +227,7 @@ void UndoRedo(void)
 //-----------------------------------------------------------------------------
 // Empty out our undo history entirely, as when loading a new file.
 //-----------------------------------------------------------------------------
-void UndoFlush(void)
+void UndoFlush()
 {
     EmptyProgramStack(&(Undo.undo));
     EmptyProgramStack(&(Undo.redo));
@@ -240,7 +240,7 @@ void UndoFlush(void)
 // notices that easily is the display code, which will respond by undoing
 // the last operation, presumably the one that added the long line.
 //-----------------------------------------------------------------------------
-BOOL CanUndo(void)
+BOOL CanUndo()
 {
     return (Undo.undo.count > 0);
 }

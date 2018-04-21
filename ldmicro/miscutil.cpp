@@ -307,7 +307,7 @@ void FixedFont(HWND h)
 //-----------------------------------------------------------------------------
 // Create our dialog box class, used for most of the popup dialogs.
 //-----------------------------------------------------------------------------
-void MakeDialogBoxClass(void)
+void MakeDialogBoxClass()
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));

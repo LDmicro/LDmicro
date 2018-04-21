@@ -419,13 +419,13 @@ static int sovNPulseTimerOverflowCounter;
 
 static int IntPc;
 
-static void CompileFromIntermediate(void);
+static void CompileFromIntermediate();
 
 //-----------------------------------------------------------------------------
 // Wipe the program and set the write pointer back to the beginning. Also
 // flush all the state of the register allocators etc.
 //-----------------------------------------------------------------------------
-static void WipeMemory(void)
+static void WipeMemory()
 {
     memset(AvrProg, 0, sizeof(AvrProg));
     AvrProgWriteP = 0;
@@ -551,7 +551,7 @@ static void Comment(const char *str, ...)
 // reference gets assigned to an absolute address, and we can go back and
 // fix up the reference.
 //-----------------------------------------------------------------------------
-static DWORD AllocFwdAddr(void)
+static DWORD AllocFwdAddr()
 {
     FwdAddrCount++;
     return FWD(FwdAddrCount);
@@ -2434,7 +2434,7 @@ static void InitTable(IntOp *a)
 }
 
 //-----------------------------------------------------------------------------
-static void InitTables(void)
+static void InitTables()
 {
     for(IntPc=0; IntPc < IntCodeLen; IntPc++) {
         IntPcNow = IntPc;
@@ -2909,7 +2909,7 @@ int testAvrUsart(int divisor, double  actual, double  percentErr)
 //-----------------------------------------------------------------------------
 static DWORD addrDuty;
 static int   bitDuty;
-static void WriteRuntime(void)
+static void WriteRuntime()
 {
     DWORD resetVector = AllocFwdAddr();
 
@@ -3142,7 +3142,7 @@ http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
 //-----------------------------------------------------------------------------
 // Compile the intermediate code to AVR native code.
 //-----------------------------------------------------------------------------
-static void CompileFromIntermediate(void)
+static void CompileFromIntermediate()
 {
     DWORD addr = 0, addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
     int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
@@ -4920,7 +4920,7 @@ static void CompileFromIntermediate(void)
 // op2 in r17:r16, result low word goes into r21:r20.
 // Signed 32bit result goes into     r23:r22:r21:r20.
 //-----------------------------------------------------------------------------
-static void MultiplyRoutine(void) //5.1 Algorithm Description
+static void MultiplyRoutine() //5.1 Algorithm Description
 {
     Comment("MultiplyRoutine16");
     FwdAddrIsNow(MultiplyAddress);
@@ -4952,7 +4952,7 @@ static void MultiplyRoutine(void) //5.1 Algorithm Description
 // op2 in r18:r17:r16, result 3 low bytes goes into r22:r21:r20.
 // Signed 48bit result goes into        r25:r24:r23:r22:r21:r20.
 //-----------------------------------------------------------------------------
-static void MultiplyRoutine24(void) //5.1 Algorithm Description
+static void MultiplyRoutine24() //5.1 Algorithm Description
 {
     Comment("MultiplyRoutine24");
     FwdAddrIsNow(MultiplyAddress24);
@@ -4989,7 +4989,7 @@ static void MultiplyRoutine24(void) //5.1 Algorithm Description
 // op1 in r20,
 // op2 in r16, result word goes into r21:r20.
 //-----------------------------------------------------------------------------
-static void MultiplyRoutine8(void) //5.1 Algorithm Description
+static void MultiplyRoutine8() //5.1 Algorithm Description
 {
     Comment("MultiplyRoutine8");
     FwdAddrIsNow(MultiplyAddress8);
@@ -5014,7 +5014,7 @@ static void MultiplyRoutine8(void) //5.1 Algorithm Description
 // op1 in r20,
 // op2 in r16, result word goes into r21:r20.
 //-----------------------------------------------------------------------------
-static void MultiplyRoutine8(void)
+static void MultiplyRoutine8()
 {
     Comment("MultiplyRoutine8");
     FwdAddrIsNow(MultiplyAddress8);
@@ -5100,7 +5100,7 @@ muls16x16_32:
 // op2 in r17:r16, result low word goes into r21:r20.
 // Signed 32bit result goes into     r23:r22:r21:r20.
 //-----------------------------------------------------------------------------
-static void MultiplyRoutine(void)
+static void MultiplyRoutine()
 {
     Comment("MultiplyRoutine16");
     FwdAddrIsNow(MultiplyAddress);
@@ -5128,7 +5128,7 @@ static void MultiplyRoutine(void)
 // op2 in r18:r17:r16, result 3 low bytes goes into r12:r11:r10.
 //                     result 3 low bytes goes into r22:r21:r20.
 //-----------------------------------------------------------------------------
-static void MultiplyRoutine24(void)
+static void MultiplyRoutine24()
 {
     Comment("MultiplyRoutine24");
     FwdAddrIsNow(MultiplyAddress24);
@@ -5157,7 +5157,7 @@ static void MultiplyRoutine24(void)
 // Dividend in r20:r19,
 // divisor in  r23:r22, result goes in r20:r19 (and remainder in r17:r16).
 //-----------------------------------------------------------------------------
-static void DivideRoutine(void)
+static void DivideRoutine()
 {
     Comment("DivideRoutine16");
     FwdAddrIsNow(DivideAddress);
@@ -5223,7 +5223,7 @@ static void DivideRoutine(void)
 // Dividend in r21:r20:r19,
 // divisor in  r24:r23:r22, result goes in r21:r20:r19 (and remainder in r18:r17:r16).
 //-----------------------------------------------------------------------------
-static void DivideRoutine24(void)
+static void DivideRoutine24()
 {
     Comment("DivideRoutine24");
     FwdAddrIsNow(DivideAddress24);
@@ -5300,7 +5300,7 @@ static void DivideRoutine24(void)
 // Dividend in r19,
 // divisor in  r22, result goes in r19 (and remainder in r18).
 //-----------------------------------------------------------------------------
-static void DivideRoutine8(void)
+static void DivideRoutine8()
 {
     Comment("DivideRoutine8");
     FwdAddrIsNow(DivideAddress8);

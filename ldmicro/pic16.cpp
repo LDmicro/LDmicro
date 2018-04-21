@@ -398,7 +398,7 @@ static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
 //-----------------------------------------------------------------------------
 // Wipe the program and set the write pointer back to the beginning.
 //-----------------------------------------------------------------------------
-static void WipeMemory(void)
+static void WipeMemory()
 {
     memset(PicProg, 0, sizeof(PicProg));
     PicProgWriteP = 0;
@@ -407,28 +407,28 @@ static void WipeMemory(void)
 //-----------------------------------------------------------------------------
 static DWORD Bank(DWORD reg)
 {
-    if(IS_NOTDEF(reg)) 
-		reg &= ~(NOTDEF(0));
-    if(IS_MULTYDEF(reg)) 
-		reg &= ~(MULTYDEF(0));
+    if(IS_NOTDEF(reg))
+        reg &= ~(NOTDEF(0));
+    if(IS_MULTYDEF(reg))
+        reg &= ~(MULTYDEF(0));
     if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
-        if(reg & ~0x0FFF) 
-			ooops("0x%X", reg)
+        if(reg & ~0x0FFF)
+            ooops("0x%X", reg)
         reg &= 0x0F80;
     } else if(Prog.mcu->core == MidrangeCore14bit) {
-        if(reg & ~0x01FF) 
-			ooops("0x%X", reg)
+        if(reg & ~0x01FF)
+            ooops("0x%X", reg)
         reg &= 0x0180;
     } else if(Prog.mcu->core == BaselineCore12bit) {
-        if(reg & ~0x007F) 
-			ooops("0x%X", reg)
+        if(reg & ~0x007F)
+            ooops("0x%X", reg)
         reg &= 0x0000;
     } else oops();
     return reg;
 }
 
 //-----------------------------------------------------------------------------
-static DWORD BankMask(void)
+static DWORD BankMask()
 {
     DWORD reg;
     if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
@@ -723,7 +723,7 @@ static void Comment(const char *str, ...)
 // reference gets assigned to an absolute address, and we can go back and
 // fix up the reference.
 //-----------------------------------------------------------------------------
-static DWORD AllocFwdAddr(void)
+static DWORD AllocFwdAddr()
 {
     FwdAddrCount++;
     return FWD(FwdAddrCount);
@@ -3353,7 +3353,7 @@ static void InitTable(IntOp *a)
 }
 
 //-----------------------------------------------------------------------------
-static void InitTables(void)
+static void InitTables()
 {
     for(IntPc=0; IntPc < IntCodeLen; IntPc++) {
         IntPcNow = IntPc;
@@ -5508,8 +5508,8 @@ static void SetPrescaler(int tmr)
         else ooops("%d", plcTmr.prescaler);
         // enable clock, internal source
         plcTmr.PS |= 0x01;
-    } else 
-		oops();
+    } else
+        oops();
 }
 //-----------------------------------------------------------------------------
 // Calc PIC 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
@@ -5685,7 +5685,7 @@ static void WriteMultiplyRoutine8(DWORD addr3, DWORD addr1, DWORD addr2, int sov
 // Write a subroutine to do a 16x16 signed multiply. One operand in
 // Scratch1:Scratch0, other in Scratch3:Scratch2, result in Scratch3:Scratch2.
 //-----------------------------------------------------------------------------
-static void WriteMultiplyRoutine(void)
+static void WriteMultiplyRoutine()
 {
     Comment("MultiplyRoutine16x16");
     DWORD savePicProgWriteP = PicProgWriteP;
@@ -5750,7 +5750,7 @@ static void WriteMultiplyRoutine(void)
 // Write a subroutine to do a 24x16 signed multiply. One operand in
 // Scratch1:Scratch0, other in Scratch4:Scratch3:Scratch2, result in Scratch4:Scratch3:Scratch2.
 //-----------------------------------------------------------------------------
-static void WriteMultiplyRoutine24x16(void)
+static void WriteMultiplyRoutine24x16()
 {
     Comment("MultiplyRoutine24x16");
     DWORD savePicProgWriteP = PicProgWriteP;
@@ -5823,7 +5823,7 @@ static void WriteMultiplyRoutine24x16(void)
 // Write a subroutine to do a 16/16 signed divide. Call with dividend in
 // Scratch1:0, divisor in Scratch3:2, and get the result in Scratch1:0.
 //-----------------------------------------------------------------------------
-static void WriteDivideRoutine(void)
+static void WriteDivideRoutine()
 {
     Comment("DivideRoutine16");
     DWORD savePicProgWriteP = PicProgWriteP;
@@ -6546,13 +6546,13 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     Scratch11= AllocOctetRam();
     }
 
-	if(REG_EEDATA  != -1) {
-		// Allocate the register used to hold the high byte of the EEPROM word
-		// that's queued up to program, plus the bit to indicate that it is
-		// valid.
-		EepromHighByte = AllocOctetRam(3);
-		EepromHighBytesCounter = AllocOctetRam();
-	}
+    if(REG_EEDATA  != -1) {
+        // Allocate the register used to hold the high byte of the EEPROM word
+        // that's queued up to program, plus the bit to indicate that it is
+        // valid.
+        EepromHighByte = AllocOctetRam(3);
+        EepromHighBytesCounter = AllocOctetRam();
+    }
 
     DWORD progStart = AllocFwdAddr();
     // Our boot vectors; not necessary to do it like this, but it lets
@@ -6622,7 +6622,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     if(Prog.mcu->core == BaselineCore12bit) {
         Prog.WDTPSA = 1;
         Prog.OPTION = 0xFF; // default; only for PIC10Fxxx
-	}
+    }
     if(Prog.cycleTimer >= 0) { // 1
         // Configure PLC Timer near the progStart
         CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
@@ -6689,7 +6689,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         // Configure PLC Timer near the progStart after zero out RAM
         if(plcTmr.softDivisor > 1) { // RAM neded
             Comment("Configure PLC Timer softDivisor");
-			SetSizeOfVar("$softDivisor", byteNeeded(plcTmr.softDivisor));
+            SetSizeOfVar("$softDivisor", byteNeeded(plcTmr.softDivisor));
             MemForVariable("$softDivisor", &plcTmr.softDivisorAddr);
             WriteRegister(plcTmr.softDivisorAddr, (BYTE)(plcTmr.softDivisor & 0xff));
             if(plcTmr.softDivisor > 0xff)
@@ -6956,7 +6956,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
               Instruction(OP_GOTO, BeginOfPLCCycle);
           }
           CopyLitToReg(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
-		} else {
+        } else {
           DWORD setLiteral = AllocFwdAddr();
           /*
           DWORD yesZero;
@@ -7001,7 +7001,7 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
           */
           FwdAddrIsNow(setLiteral);
           CopyLitToReg(plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
-		}
+        }
       }
     }
     if(Prog.cycleDuty) {
@@ -7132,9 +7132,9 @@ void CompilePic16(char *outFile)
     if(Prog.mcu->core == BaselineCore12bit) {
         if(Prog.cycleTimer > 0) {
             Error("Select Timer 0 in menu 'Settings -> MCU parameters'!");
-			return;
-		}
-	}
+            return;
+        }
+    }
     BOOL b = _CompilePic16(outFile, 0); // 1) calc LD length approximately
     if(b)    _CompilePic16(outFile, 1); // 2) recalc timer prescaler and value
 }

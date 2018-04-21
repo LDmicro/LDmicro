@@ -70,7 +70,7 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
     return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
 }
 
-static void MakeControls(void)
+static void MakeControls()
 {
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("PLC Cycle Time (ms):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -285,7 +285,7 @@ static void MakeControls(void)
         (LONG_PTR)MyNumberProc);
 }
 
-void ShowConfDialog(void)
+void ShowConfDialog()
 {
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"),

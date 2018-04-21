@@ -56,7 +56,7 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
     return CallWindowProc((WNDPROC)PrevNameProc, hwnd, msg, wParam, lParam);
 }
 
-static void MakeControls(void)
+static void MakeControls()
 {
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Type"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE | WS_TABSTOP,

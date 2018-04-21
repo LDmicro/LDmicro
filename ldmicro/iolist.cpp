@@ -1043,7 +1043,7 @@ static BOOL MakeWindowClass()
 
 #define AddX 200
 #define AddY 50
-static void MakeControls(void)
+static void MakeControls()
 {
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Assign:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
@@ -1392,7 +1392,7 @@ void ShowIoDialog(int item)
 }
 
 //-----------------------------------------------------------------------------
-static void MakeModbusControls(void)
+static void MakeModbusControls()
 {
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Slave ID:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,

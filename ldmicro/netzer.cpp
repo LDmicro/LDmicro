@@ -222,7 +222,7 @@ static WORD AddrForVariable(const char *name)
     return Variables[i].Address;
 }
 
-static void MapNotLocatedElements(void)
+static void MapNotLocatedElements()
 {
     int address = 0;
 
@@ -289,7 +289,7 @@ static void MapNotLocatedElements(void)
     }
 }
 
-static void locateRegister(void)
+static void locateRegister()
 {
     int ipc;
     int outPc;
@@ -393,7 +393,7 @@ static void locateRegister(void)
 }
 
 
-int GenerateIntOpcodes(void)
+int GenerateIntOpcodes()
 {
     int ipc;
     int outPc;

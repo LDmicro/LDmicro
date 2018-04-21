@@ -88,7 +88,7 @@ int SpecialAddrForXosc;
 // remember the length of the program because the last instruction is a
 // special marker (INT_END_OF_PROGRAM).
 //
-void BadFormat(void)
+void BadFormat()
 {
     fprintf(stderr, "Bad program format.\n");
     exit(-1);
@@ -174,7 +174,7 @@ void LoadProgram(char *fileName)
 // integer variables; I refer to those as bits[addr] and int16s[addr]
 // respectively.
 //-----------------------------------------------------------------------------
-void Disassemble(void)
+void Disassemble()
 {
     int pc;
     for(pc = 0; ; pc++) {
@@ -269,7 +269,7 @@ cond:
 // The execution time of this function depends mostly on the length of the
 // program. It will be a little bit data-dependent but not very.
 //-----------------------------------------------------------------------------
-void InterpretOneCycle(void)
+void InterpretOneCycle()
 {
     int pc;
     for(pc = 0; ; pc++) {

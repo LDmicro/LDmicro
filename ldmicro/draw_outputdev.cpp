@@ -192,7 +192,7 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
 // window area. Need to leave some slop on the right for the scrollbar, of
 // course.
 //-----------------------------------------------------------------------------
-int ScreenColsAvailable(void)
+int ScreenColsAvailable()
 {
     RECT r;
     GetClientRect(MainWindow, &r);
@@ -206,7 +206,7 @@ int ScreenColsAvailable(void)
 // course, and extra slop at the bottom for the horiz scrollbar if it is
 // shown.
 //-----------------------------------------------------------------------------
-int ScreenRowsAvailable(void)
+int ScreenRowsAvailable()
 {
     int adj;
     if(ScrollXOffsetMax == 0) {
@@ -222,7 +222,7 @@ int ScreenRowsAvailable(void)
 // cursor should go and fill in coordinates for BlinkCursor. Not allowed to
 // draw deeper than IoListTop, as we would run in to the I/O listbox.
 //-----------------------------------------------------------------------------
-void PaintWindow(void)
+void PaintWindow()
 {
     static HBITMAP BackBitmap;
     static HDC BackDc;
@@ -515,7 +515,7 @@ SyntaxHighlightingColours Schemes[NUM_SUPPORTED_SCHEMES] = {
     }
 };
 
-static void SetSyntaxHighlightingColours(void)
+static void SetSyntaxHighlightingColours()
 {
     if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES)
         oops();
@@ -531,7 +531,7 @@ static void SetSyntaxHighlightingColours(void)
 }
 
 //-----------------------------------------------------------------------------
-void InitBrushesForDrawing(void)
+void InitBrushesForDrawing()
 {
     LOGBRUSH lb;
     lb.lbStyle = BS_SOLID;
@@ -555,7 +555,7 @@ void InitBrushesForDrawing(void)
 // Set up the stuff we'll need to draw our schematic diagram. Fonts, brushes,
 // pens, etc.
 //-----------------------------------------------------------------------------
-void InitForDrawing(void)
+void InitForDrawing()
 {
     SetSyntaxHighlightingColours();
 
@@ -659,13 +659,13 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
 {
     sFileTime[0]=0;
 
-    HANDLE hFile = CreateFile(FileName,   
-                   GENERIC_READ,          
-                   FILE_SHARE_READ,       
-                   NULL,                  
-                   OPEN_EXISTING,         
-                   FILE_ATTRIBUTE_NORMAL, 
-                   NULL);                 
+    HANDLE hFile = CreateFile(FileName,
+                   GENERIC_READ,
+                   FILE_SHARE_READ,
+                   NULL,
+                   OPEN_EXISTING,
+                   FILE_ATTRIBUTE_NORMAL,
+                   NULL);
 
     if (hFile == INVALID_HANDLE_VALUE) {
         Error("Could not open file %s (error %d)\n", FileName, GetLastError());

@@ -111,7 +111,7 @@ static int SimulateUartTxCountdown = 0; // 0 if UART ready to send; 1 if UART bu
 
 static void AppendToUartSimulationTextControl(BYTE b);
 
-static void SimulateIntCode(void);
+static void SimulateIntCode();
 static const char *MarkUsedVariable(const char* name, DWORD flag);
 
 //-----------------------------------------------------------------------------
@@ -834,7 +834,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
     }
 }
 //-----------------------------------------------------------------------------
-void CheckVariableNames(void)
+void CheckVariableNames()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -959,7 +959,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
     }
 }
 
-static void CheckSingleBitNegate(void)
+static void CheckSingleBitNegate()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -972,7 +972,7 @@ static void CheckSingleBitNegate(void)
 // END IF, and then skip the ELSE if it is present. Called with PC on the
 // IF, returns with PC on the END IF.
 //-----------------------------------------------------------------------------
-static void IfConditionTrue(void)
+static void IfConditionTrue()
 {
     IntPc++;
     // now PC is on the first statement of the IF body
@@ -1003,7 +1003,7 @@ static void IfConditionTrue(void)
 // IF, and then execute the ELSE if it is present. Called with PC on the IF,
 // returns with PC on the END IF.
 //-----------------------------------------------------------------------------
-static void IfConditionFalse(void)
+static void IfConditionFalse()
 {
     int nesting = 0;
     for(; ; IntPc++) {
@@ -1285,7 +1285,7 @@ void PushStack(int IntPc)
 }
 
 //-----------------------------------------------------------------------------
-int PopStack(void)
+int PopStack()
 {
     if(stackCount > 0) {
         stackCount--;
@@ -1373,7 +1373,7 @@ int FindOpNameLast(int op, const char *name1, const char *name2)
 // internal tables. Returns when it reaches an end if or an else construct,
 // or at the end of the program.
 //-----------------------------------------------------------------------------
-static void SimulateIntCode(void)
+static void SimulateIntCode()
 {
     for(; IntPc < IntCodeLen; IntPc++) {
         IntCode[IntPc].simulated = TRUE;
@@ -2009,7 +2009,7 @@ void SimulateOneCycle(BOOL forceRefresh)
 // is about as fast as anyone could follow by eye. Faster timers will just
 // go instantly.
 //-----------------------------------------------------------------------------
-void StartSimulationTimer(void)
+void StartSimulationTimer()
 {
     int p = (int)(Prog.cycleTime/1000);
     if(p < 5) {
@@ -2027,7 +2027,7 @@ void StartSimulationTimer(void)
 //-----------------------------------------------------------------------------
 // Clear out all the parameters relating to the previous simulation.
 //-----------------------------------------------------------------------------
-void ClrSimulationData(void)
+void ClrSimulationData()
 {
     seed = 1;
     int i;
@@ -2040,7 +2040,7 @@ void ClrSimulationData(void)
     }
 }
 
-BOOL ClearSimulationData(void)
+BOOL ClearSimulationData()
 {
     ClrSimulationData();
     SingleBitItemsCount = 0;
@@ -2265,7 +2265,7 @@ static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg,
 //-----------------------------------------------------------------------------
 #define MAX_SCROLLBACK 0x10000 //256 // 0x10000
 static char buf[MAX_SCROLLBACK] = "";
-void ShowUartSimulationWindow(void)
+void ShowUartSimulationWindow()
 {
     if(UartSimulationWindow != NULL)
         oops();
@@ -2336,7 +2336,7 @@ void ShowUartSimulationWindow(void)
 //-----------------------------------------------------------------------------
 // Get rid of the UART simulation terminal-type window.
 //-----------------------------------------------------------------------------
-void DestroyUartSimulationWindow(void)
+void DestroyUartSimulationWindow()
 {
     // Try not to destroy the window if it is already destroyed; that is
     // not for the sake of the window, but so that we don't trash the

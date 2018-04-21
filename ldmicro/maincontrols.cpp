@@ -70,7 +70,7 @@ static BOOL         RealTimeSimulationRunning;
 // Create the standard Windows controls used in the main window: a Listview
 // for the I/O list, and a status bar for settings.
 //-----------------------------------------------------------------------------
-void MakeMainWindowControls(void)
+void MakeMainWindowControls()
 {
     LVCOLUMN lvc;
     lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
@@ -131,7 +131,7 @@ void MakeMainWindowControls(void)
 // Set up the title bar text for the main window; indicate whether we are in
 // simulation or editing mode, and indicate the filename.
 //-----------------------------------------------------------------------------
-void UpdateMainWindowTitleBar(void)
+void UpdateMainWindowTitleBar()
 {
     char line[MAX_PATH+100];
     if(InSimulationMode) {
@@ -315,7 +315,7 @@ void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled)
 // Create the top-level menu bar for the main window. Mostly static, but we
 // create the "select processor" menu from the list in mcutable.h dynamically.
 //-----------------------------------------------------------------------------
-HMENU MakeMainWindowMenus(void)
+HMENU MakeMainWindowMenus()
 {
     HMENU settings, compile, help;
     HMENU ConfigMenu;
@@ -763,7 +763,7 @@ HMENU MakeMainWindowMenus(void)
 // to a change in the size of the program or a change in the size of the
 // window.
 //-----------------------------------------------------------------------------
-void RefreshScrollbars(void)
+void RefreshScrollbars()
 {
     SCROLLINFO vert, horiz;
     SetUpScrollbars(&NeedHoriz, &horiz, &vert);
@@ -889,7 +889,7 @@ void HscrollProc(WPARAM wParam)
 }
 
 //-----------------------------------------------------------------------------
-void RefreshStatusBar(void)
+void RefreshStatusBar()
 {
     SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_(ProgramChangedNotSaved ? _("modified") : "        " ));
 
@@ -943,7 +943,7 @@ void RefreshStatusBar(void)
 // does callbacks to get the strings it displays, so it just needs to know
 // how many elements to populate.
 //-----------------------------------------------------------------------------
-void RefreshControlsToSettings(void)
+void RefreshControlsToSettings()
 {
     int i;
     if(!IoListOutOfSync) {
@@ -1009,7 +1009,7 @@ void RefreshControlsToSettings(void)
 // Regenerate the I/O list, keeping the selection in the same place if
 // possible.
 //-----------------------------------------------------------------------------
-void GenerateIoListDontLoseSelection(void)
+void GenerateIoListDontLoseSelection()
 {
     int i;
     int SaveIoListSelectionPoint = IoListSelectionPoint;
@@ -1037,7 +1037,7 @@ void GenerateIoListDontLoseSelection(void)
 // Called when the main window has been resized. Adjust the size of the
 // status bar and the listview to reflect the new window size.
 //-----------------------------------------------------------------------------
-void MainWindowResized(void)
+void MainWindowResized()
 {
     RECT main;
     GetClientRect(MainWindow, &main);
@@ -1146,7 +1146,7 @@ void ToggleSimulationMode()
 // Start real-time simulation. Have to update the controls grayed status
 // to reflect this.
 //-----------------------------------------------------------------------------
-void StartSimulation(void)
+void StartSimulation()
 {
     RealTimeSimulationRunning = TRUE;
 
@@ -1161,7 +1161,7 @@ void StartSimulation(void)
 // Stop real-time simulation. Have to update the controls grayed status
 // to reflect this.
 //-----------------------------------------------------------------------------
-void StopSimulation(void)
+void StopSimulation()
 {
     RealTimeSimulationRunning = FALSE;
 

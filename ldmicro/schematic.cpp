@@ -229,7 +229,7 @@ BOOL EndOfRungElem(int Which)
 // but the circuit topology changes under it. Determines what we are allowed
 // to do: where coils can be added, etc.
 //-----------------------------------------------------------------------------
-void WhatCanWeDoFromCursorAndTopology(void)
+void WhatCanWeDoFromCursorAndTopology()
 {
     BOOL canNegate = FALSE, canNormal = FALSE;
     BOOL canResetOnly = FALSE, canSetOnly = FALSE, canTtrigger = FALSE;
@@ -330,7 +330,7 @@ void ForgetFromGrid(void *p)
 // the program (e.g. when loading a new file) then there is a race condition
 // when we repaint.
 //-----------------------------------------------------------------------------
-void ForgetEverything(void)
+void ForgetEverything()
 {
     memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
     memset(DisplayMatrixWhich, 0, sizeof(DisplayMatrixWhich));
@@ -343,7 +343,7 @@ void ForgetEverything(void)
 // to do so, FALSE if not. The latter occurs given a completely empty
 // program.
 //-----------------------------------------------------------------------------
-BOOL MoveCursorTopLeft(void)
+BOOL MoveCursorTopLeft()
 {
     int i, j;
     // Let us first try to place it somewhere on-screen, so start at the
@@ -637,7 +637,7 @@ static BOOL ReplaceElem(int which, void *any, ElemLeaf *seek,
 //-----------------------------------------------------------------------------
 // Replace the selected element on a suitable element at the cursor position.
 //-----------------------------------------------------------------------------
-BOOL ReplaceSelectedElement(void)
+BOOL ReplaceSelectedElement()
 {
     if(!Selected/* || Selected->selectedState == SELECTED_NONE*/) return FALSE;
 
@@ -652,7 +652,7 @@ BOOL ReplaceSelectedElement(void)
 // Edit the selected element. Pop up the appropriate modal dialog box to do
 // this.
 //-----------------------------------------------------------------------------
-void EditSelectedElement(void)
+void EditSelectedElement()
 {
     if(!Selected || Selected->selectedState == SELECTED_NONE) return;
 
@@ -1054,7 +1054,7 @@ BOOL MoveCursorNear(int *gx, int *gy)
 //-----------------------------------------------------------------------------
 // Negate the selected item, if this is meaningful.
 //-----------------------------------------------------------------------------
-void NegateSelected(void)
+void NegateSelected()
 {
     if(Selected->d.contacts.negated) {
         MakeNormalSelected();
@@ -1081,7 +1081,7 @@ void NegateSelected(void)
 //-----------------------------------------------------------------------------
 // Make the item selected normal: not negated, not set/reset only.
 //-----------------------------------------------------------------------------
-void MakeNormalSelected(void)
+void MakeNormalSelected()
 {
     if(!Selected->d.contacts.negated) {
         NegateSelected();
@@ -1108,7 +1108,7 @@ void MakeNormalSelected(void)
 //-----------------------------------------------------------------------------
 // Make the selected item set-only, if it is a coil.
 //-----------------------------------------------------------------------------
-void MakeSetOnlySelected(void)
+void MakeSetOnlySelected()
 {
     if(SelectedWhich != ELEM_COIL) return;
 
@@ -1122,7 +1122,7 @@ void MakeSetOnlySelected(void)
 //-----------------------------------------------------------------------------
 // Make the selected item reset-only, if it is a coil.
 //-----------------------------------------------------------------------------
-void MakeResetOnlySelected(void)
+void MakeResetOnlySelected()
 {
     if(SelectedWhich != ELEM_COIL) return;
 
@@ -1136,7 +1136,7 @@ void MakeResetOnlySelected(void)
 //-----------------------------------------------------------------------------
 // Make the selected item T-trigger, if it is a coil.
 //-----------------------------------------------------------------------------
-void MakeTtriggerSelected(void)
+void MakeTtriggerSelected()
 {
     if(SelectedWhich != ELEM_COIL) return;
 

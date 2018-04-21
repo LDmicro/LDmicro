@@ -1326,7 +1326,7 @@ static void InitVarsCircuit(int which, void *elem, int *n)
 }
 
 //-----------------------------------------------------------------------------
-static void InitVars(void)
+static void InitVars()
 {
     int n = 0;
     int i;
@@ -1404,7 +1404,7 @@ static void InitTablesCircuit(int which, void *elem)
 }
 
 //-----------------------------------------------------------------------------
-static void InitTables(void)
+static void InitTables()
 {
     if(TablesUsed()) {
         Comment("INIT TABLES");
@@ -3468,7 +3468,7 @@ static BOOL CheckMasterCircuit(int which, void *elem)
 }
 
 //-----------------------------------------------------------------------------
-static BOOL CheckMasterRelay(void)
+static BOOL CheckMasterRelay()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -3479,7 +3479,7 @@ static BOOL CheckMasterRelay(void)
 }
 
 //-----------------------------------------------------------------------------
-void WipeIntMemory(void)
+void WipeIntMemory()
 {
     int i;
     for(i = 0; i < IntCodeLen; i++) {
@@ -3494,7 +3494,7 @@ void WipeIntMemory(void)
 // Generate intermediate code for the entire program. Return TRUE if it worked,
 // else FALSE.
 //-----------------------------------------------------------------------------
-BOOL GenerateIntermediateCode(void)
+BOOL GenerateIntermediateCode()
 {
     Comment("GenerateIntermediateCode");
     if(setjmp(CompileErrorBuf) != 0) {
@@ -3617,7 +3617,7 @@ BOOL GenerateIntermediateCode(void)
     return TRUE;
 }
 
-BOOL GotoGosubUsed(void)
+BOOL GotoGosubUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3632,7 +3632,7 @@ BOOL GotoGosubUsed(void)
 // Are either of the UART functions (send or recv) used? Need to know this
 // to know whether we must receive their pins.
 //-----------------------------------------------------------------------------
-BOOL UartFunctionUsed(void)
+BOOL UartFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3658,7 +3658,7 @@ BOOL UartFunctionUsed(void)
     return FALSE;
 }
 
-BOOL UartRecvUsed(void)
+BOOL UartRecvUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3675,7 +3675,7 @@ BOOL UartRecvUsed(void)
     return FALSE;
 }
 
-BOOL UartSendUsed(void)
+BOOL UartSendUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3694,7 +3694,7 @@ BOOL UartSendUsed(void)
     return FALSE;
 }
 //-----------------------------------------------------------------------------
-BOOL SpiFunctionUsed(void)
+BOOL SpiFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
@@ -3712,7 +3712,7 @@ BOOL SpiFunctionUsed(void)
 
 
 //-----------------------------------------------------------------------------
-BOOL Bin32BcdRoutineUsed(void)
+BOOL Bin32BcdRoutineUsed()
 {
     for(int i = 0; i < IntCodeLen; i++) {
         if(IntCode[i].op == INT_SET_BIN2BCD) {
@@ -3725,7 +3725,7 @@ BOOL Bin32BcdRoutineUsed(void)
 //-----------------------------------------------------------------------------
 // Are either of the MultiplyRoutine functions used?
 //-----------------------------------------------------------------------------
-BOOL MultiplyRoutineUsed(void)
+BOOL MultiplyRoutineUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_MUL, ELEM_SET_PWM, -1))
@@ -3741,7 +3741,7 @@ BOOL MultiplyRoutineUsed(void)
 //-----------------------------------------------------------------------------
 // Are either of the DivideRoutine functions used?
 //-----------------------------------------------------------------------------
-BOOL DivideRoutineUsed(void)
+BOOL DivideRoutineUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DIV, ELEM_SET_PWM, -1))

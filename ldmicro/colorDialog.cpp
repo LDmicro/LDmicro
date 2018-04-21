@@ -235,7 +235,7 @@ static LRESULT CALLBACK ColorDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 }
 
 //-----------------------------------------------------------------------------
-static void MakeControls(void)
+static void MakeControls()
 {
     ColorList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
@@ -279,7 +279,7 @@ UINT_PTR CALLBACK CCHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam
     return 0;
 }
 
-void ShowColorDialog(void)
+void ShowColorDialog()
 {
     schemeSave = scheme;
     memcpy(&OrigSchemeSave, &HighlightColours, sizeof(HighlightColours));

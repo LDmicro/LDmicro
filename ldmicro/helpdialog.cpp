@@ -271,7 +271,7 @@ static LRESULT CALLBACK HelpProc(HWND hwnd, UINT msg, WPARAM wParam,
 //-----------------------------------------------------------------------------
 // Create the class for the help window.
 //-----------------------------------------------------------------------------
-static void MakeClass(void)
+static void MakeClass()
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));

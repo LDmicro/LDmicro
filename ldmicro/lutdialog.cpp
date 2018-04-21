@@ -201,7 +201,7 @@ static void MakeFixedControls(BOOL forPwl)
 // because if the size of the LUT changes, or if the user switches from
 // table entry to string entry, we must completely reconfigure the dialog.
 //-----------------------------------------------------------------------------
-static void DestroyLutControls(void)
+static void DestroyLutControls()
 {
     if(WasAsString) {
         // Nothing to do; we constantly update the cache from the user-

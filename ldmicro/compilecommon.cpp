@@ -203,7 +203,7 @@ void PrintVariables(FILE *f)
     fprintf(f, "\n");
 }
 //-----------------------------------------------------------------------------
-static void ClrInternalData(void)
+static void ClrInternalData()
 {
     MemOffset = 0;
     RamSection = 0;
@@ -220,7 +220,7 @@ static void ClrInternalData(void)
 // Forget what memory has been allocated on the target, so we start from
 // everything free.
 //-----------------------------------------------------------------------------
-void AllocStart(void)
+void AllocStart()
 {
     NextBitwiseAllocAddr = NO_MEMORY;
     InternalRelayCount = 0;
@@ -258,7 +258,7 @@ DWORD AllocOctetRam(int bytes) // The desired number of bytes.
     return Prog.mcu->ram[RamSection].start + MemOffset - bytes;
 }
 
-DWORD AllocOctetRam(void)
+DWORD AllocOctetRam()
 {
     return AllocOctetRam(1);
 }
@@ -933,7 +933,7 @@ void MemForCoil(char *name, DWORD *addr, int *bit)
 //-----------------------------------------------------------------------------
 // Do any post-compilation sanity checks necessary.
 //-----------------------------------------------------------------------------
-void MemCheckForErrorsPostCompile(void)
+void MemCheckForErrorsPostCompile()
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
@@ -1065,7 +1065,7 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err)
 // Display our boilerplate warning that the baud rate is too slow (making
 // for an overflowed divisor).
 //-----------------------------------------------------------------------------
-void ComplainAboutBaudRateOverflow(void)
+void ComplainAboutBaudRateOverflow()
 {
     Error(_("UART baud rate generator: too slow, divisor overflows. "
         "Use a slower crystal or a faster baud rate.\r\n"
