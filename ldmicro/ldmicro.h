@@ -1075,7 +1075,7 @@ typedef struct McuIoInfoTag {
     }                rom[MAX_ROM_SECTIONS]; //EEPROM or HEI?
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 26
+#define NUM_SUPPORTED_MCUS 27
 
 //-----------------------------------------------
 // Function prototypes
@@ -1311,6 +1311,7 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 char *strspace(char *str);
 char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
+void LoadWritePcPorts();
 
 // iolist.cpp
 int IsIoType(int type);
@@ -1497,7 +1498,7 @@ char *toupperstr(char *dest, const char *src);
 const char *_(const char *in);
 
 // simulate.cpp
-void MarkInitedVariable(char *name);
+void MarkInitedVariable(const char *name);
 void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void StartSimulationTimer(void);
@@ -1752,9 +1753,9 @@ extern DWORD RomSection;
 extern DWORD EepromAddrFree;
 //extern int VariableCount;
 void PrintVariables(FILE *f);
-DWORD isVarUsed(char *name);
-int isVarInited(char *name);
-int isPinAssigned(char *name);
+DWORD isVarUsed(const char *name);
+int isVarInited(const char *name);
+int isPinAssigned(const char *name);
 void AllocStart(void);
 DWORD AllocOctetRam(void);
 DWORD AllocOctetRam(int bytes);
@@ -1764,8 +1765,8 @@ int MemForVariable(const char* name, DWORD *addr);
 int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
 int MemOfVar(char *name, DWORD *addr);
 BYTE MuxForAdcVariable(const char* name);
-int SingleBitAssigned(char *name);
-int GetAssignedType(char *name);
+int SingleBitAssigned(const char *name);
+int GetAssignedType(const char *name);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput);
 void MemForSingleBit(const char* name, BOOL forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const char *name, DWORD *addr, int *bit);
@@ -1845,5 +1846,14 @@ typedef struct RungAddrTag {
 } RungAddr;
 extern RungAddr AddrOfRungN[MAX_RUNGS];
 
+// pascal.cpp
+void CompilePascal(char *outFile);
+void Transliterate(char* dest, char* str);
+
+//pcports.cpp
+extern McuIoPinInfo IoPc[MAX_IO];
+extern int IoPcCount;
+BOOL ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
+void FillPcPinInfo(McuIoPinInfo *pinInfo);
 
 #endif

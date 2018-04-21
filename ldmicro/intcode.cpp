@@ -82,6 +82,7 @@ int rungNow = -INT_MAX;
 static int whichNow = -INT_MAX;
 static ElemLeaf *leafNow = NULL;
 
+static DWORD GenSymCount;
 static DWORD GenSymCountParThis;
 static DWORD GenSymCountParOut;
 static DWORD GenSymCountOneShot;
@@ -114,7 +115,7 @@ void IntDumpListing(char *outFile)
 
     int i;
     int indent = 0;
-    for(i = 0; i < IntCodeLen; ++i) {
+    for(i = 0; i < IntCodeLen; i++) {
 
         if(IntCode[i].op == INT_END_IF) indent--;
         if(IntCode[i].op == INT_ELSE) indent--;
@@ -131,6 +132,8 @@ void IntDumpListing(char *outFile)
         int j;
         if((int_comment_level == 1) || (IntCode[i].op != INT_SIMULATE_NODE_STATE))
         for(j = 0; j < indent; j++) fprintf(f, "    ");
+
+        ElemLeaf *l = IntCode[i].leaf;
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -360,9 +363,17 @@ void IntDumpListing(char *outFile)
                 else oops();
                 break;
             }
+            case INT_SPI_COMPLETE:
+                fprintf(f, "SPI_COMPLETE '%s', done? into '%s'",
+                    l->d.spi.name, IntCode[i].name1);
+                break;
+            case INT_SPI_BUSY:
+                fprintf(f, "SPI_BUSY '%s', done? into '%s'",
+                    l->d.spi.name, IntCode[i].name1);
+                break;
             case INT_SPI:
                 fprintf(f, "SPI '%s' send '%s', recieve '%s', done? into '%s'",
-                    IntCode[i].name1, IntCode[i].name2, IntCode[i].name3, IntCode[i].name4);
+                    l->d.spi.name, l->d.spi.send, l->d.spi.recv, IntCode[i].name1);
                 break;
 
             case INT_UART_SEND1:
@@ -657,6 +668,13 @@ int HexDigit(int c)
 // Generate a unique symbol (unique with each call) having the given prefix
 // guaranteed not to conflict with any user symbols.
 //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void GenSym(char *dest, char *name1, char *name2)
+{
+    sprintf(dest, "$var_%01x_%s_%s", GenSymCount, name1, name2);
+    GenSymCount++;
+}
+
 static void GenSymParThis(char *dest)
 {
     sprintf(dest, "$parThis_%01x", GenSymCountParThis);
@@ -3482,6 +3500,7 @@ BOOL GenerateIntermediateCode(void)
     if(setjmp(CompileErrorBuf) != 0) {
         return FALSE;
     }
+    GenSymCount = 0;
     GenSymCountParThis = 0;
     GenSymCountParOut = 0;
     GenSymCountOneShot = 0;

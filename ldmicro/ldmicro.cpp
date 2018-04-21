@@ -30,6 +30,7 @@
 #include "freeze.h"
 #include "mcutable.h"
 #include "intcode.h"
+#include "pcports.h"
 
 HINSTANCE   Instance;
 HWND        MainWindow;
@@ -333,6 +334,7 @@ const char *GetMnuName(int MNU)
         case MNU_COMPILE_IMAGECRAFT    : return (char *)stringer(MNU_COMPILE_IMAGECRAFT) + 12;
         case MNU_COMPILE_IAR           : return (char *)stringer(MNU_COMPILE_IAR) + 12;
         case MNU_COMPILE_ARDUINO       : return (char *)stringer(MNU_COMPILE_ARDUINO) + 12;
+        case MNU_COMPILE_PASCAL        : return (char *)stringer(MNU_COMPILE_PASCAL) + 12;
         default                        : return "";
     }
 }
@@ -347,6 +349,7 @@ int GetMnu(char *MNU_name)
     if(strstr("MNU_COMPILE_GNUC",          MNU_name)) return MNU_COMPILE_GNUC;
     if(strstr("MNU_COMPILE_CODEVISIONAVR", MNU_name)) return MNU_COMPILE_CODEVISIONAVR;
     if(strstr("MNU_COMPILE_ARDUINO",       MNU_name)) return MNU_COMPILE_ARDUINO;
+    if(strstr("MNU_COMPILE_PASCAL",        MNU_name)) return MNU_COMPILE_PASCAL;
     return -1;
 }
 
@@ -663,6 +666,9 @@ static void CompileProgram(BOOL compileAs, int MNU)
     } else if (MNU == MNU_COMPILE_ARDUINO) {
         CompileAnsiC(CurrentCompileFile, MNU);
         postCompile("ARDUINO");
+    } else if (MNU == MNU_COMPILE_PASCAL) {
+        CompilePascal(CurrentCompileFile);
+        postCompile("PASCAL");
     } else if (MNU == MNU_COMPILE_INT) {
         CompileInterpreted(CurrentCompileFile);
         postCompile("INTERPRETED");
@@ -1413,6 +1419,7 @@ cmp:
         case MNU_COMPILE_IMAGECRAFT:
         case MNU_COMPILE_IAR:
         case MNU_COMPILE_IHEX:
+        case MNU_COMPILE_PASCAL:
         case MNU_COMPILE_ARDUINO:
         case MNU_COMPILE_INT:
         case MNU_COMPILE_XINT:
@@ -1712,7 +1719,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             switch(wParam) {
                 case VK_F3:
                     if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                        notepad(CurrentSaveFile, "asm");
+                        notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "asm");
                         return 1;
                     }
                 break;
@@ -1726,7 +1733,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 case VK_F6:
                     if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                        notepad(CurrentSaveFile, "hex");
+                        notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "hex");
                         return 1;
                     }
                 break;
@@ -2543,7 +2550,7 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
 void abortHandler( int signum )
 {
     // associate each signal with a signal name string.
-    const char *name = NULL;
+    const char* name = NULL;
     switch( signum )
     {
     case SIGABRT: name = "SIGABRT";  break;
@@ -2636,6 +2643,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     setlocale(LC_ALL,"");
     //RunningInBatchMode = FALSE;
     int i;
+    for(i = 0; i < arraylen(PcCfg) ; i++)
+        FillPcPinInfo(&PcCfg[i]);
 
     MakeWindowClass();
     MakeDialogBoxClass();

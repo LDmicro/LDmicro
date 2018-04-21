@@ -23,6 +23,7 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
+#include "pcports.h"
 
 char *FrmStrToStr(char *dest);
 //void FrmStrToFile(FILE *f, char *str);
@@ -211,7 +212,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
                            &l->d.bus.PCBbit[0])==(2+8)) {
         *which = ELEM_BUS;
 
-    } else if(sscanf(line, "SPI %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.bitrate, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first)==8) {
+    } else if(sscanf(line, "SPI %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first, l->d.spi.bitrate)==8) {
         *which = ELEM_SPI;
 
     } else if(sscanf(line,  "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
@@ -604,6 +605,29 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
 }
 
 //-----------------------------------------------------------------------------
+void LoadWritePcPorts()
+{
+    if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM)) {
+        //RunningInBatchMode = TRUE;
+        char pc[MAX_PATH];
+        strcpy(pc, CurrentLdPath);
+        if(strlen(pc))
+            strcat(pc, "\\");
+        strcat(pc, "pcports.cfg");
+        if (LoadPcPorts(pc)) {
+            int i;
+            for(i = 0; i < NUM_SUPPORTED_MCUS; i++)
+                if(SupportedMcus[i].core == PC_LPT_COM) {
+                    SupportedMcus[i].pinInfo = IoPc;
+                    SupportedMcus[i].pinCount = IoPcCount;
+                }
+        } else
+            Error(_(" File '%s' not found!"), pc);
+        //RunningInBatchMode = FALSE;
+    }
+}
+
+//-----------------------------------------------------------------------------
 // Load a project from a saved project description files. This describes the
 // program, the target processor, plus certain configuration settings (cycle
 // time, processor clock, etc.). Return TRUE for success, FALSE if anything
@@ -919,7 +943,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_SPI: {
-            fprintf(f, "SPI %s %s %s %s %s %s %s %s\n", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.bitrate, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first);
+            fprintf(f, "SPI %s %s %s %s %s %s %s %s\n", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first, l->d.spi.bitrate);
             break;
         }
         case ELEM_BUS: {

@@ -115,7 +115,7 @@ static void SimulateIntCode(void);
 static const char *MarkUsedVariable(const char* name, DWORD flag);
 
 //-----------------------------------------------------------------------------
-int isVarInited(char *name)
+int isVarInited(const char *name)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -127,7 +127,7 @@ int isVarInited(char *name)
     return Variables[i].initedRung;
 }
 //-----------------------------------------------------------------------------
-DWORD isVarUsed(char *name)
+DWORD isVarUsed(const char *name)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -144,7 +144,7 @@ DWORD isVarUsed(char *name)
 // Looks in the SingleBitItems list; if an item is not present then it is
 // FALSE by default.
 //-----------------------------------------------------------------------------
-static BOOL SingleBitOn(char *name)
+static BOOL SingleBitOn(const char *name)
 {
     int i;
     for(i = 0; i < SingleBitItemsCount; i++) {
@@ -550,7 +550,7 @@ static const char *MarkUsedVariable(const char *name, DWORD flag)
     return NULL;
 }
 
-void MarkInitedVariable(char *name)
+void MarkInitedVariable(const char *name)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -861,7 +861,7 @@ return;
 //--
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TCY) {
-             dbpx(Variables[i].usedFlags)
+             //dbpx(Variables[i].usedFlags)
              //Variables[i].usedFlags &= ~VAR_FLAG_TCY;
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TCY, i), i);
         }

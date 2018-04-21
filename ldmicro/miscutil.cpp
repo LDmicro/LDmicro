@@ -664,6 +664,8 @@ void SetMcu(McuIoInfo *mcu)
 {
     Prog.mcu = mcu;
 
+    LoadWritePcPorts();
+
     if(Prog.mcu &&  (Prog.mcu->core != PC_LPT_COM))
         qsort(Prog.mcu->pinInfo, Prog.mcu->pinCount, sizeof(McuIoPinInfo), ComparePin);
 }

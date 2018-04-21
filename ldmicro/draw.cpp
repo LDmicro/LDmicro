@@ -1587,7 +1587,7 @@ BOOL DrawElement(void *node, int which, void *elem, int *cx, int *cy, BOOL power
     int cx0 = *cx, cy0 = *cy;
     ElemLeaf *leaf = (ElemLeaf *)elem;
     ElemNode *_node = (ElemNode *)node;
-    ElemLeaf *_leaf = (ElemLeaf *)_node->data.any;
+  //  ElemLeaf *_leaf = (ElemLeaf *)_node->data.any;
 
     SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg :
         HighlightColours.bg);

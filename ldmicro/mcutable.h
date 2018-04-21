@@ -1227,6 +1227,11 @@ McuPwmPinInfo ControllinoMaxiPwmPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // PC LPT & COM
+McuIoPinInfo PcCfg[] = {
+// Dynamically loaded by LoadPcPorts() in psports.cpp
+//   port; bit; pin; pinName; ArduinoPin; ArduinoName; pinFunctions; pinUsed;  portN; dbPin; ioType
+    { 'L',   0,   1,      "",          0,          "",/*          0,       0,*/    1,     2,      2},
+};
 
 //===========================================================================
 McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
@@ -2013,95 +2018,27 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         ControllinoMaxiPwmPinInfo,
         arraylen(ControllinoMaxiPwmPinInfo),
     },
-/*
     {
-        "ANSI C Code",
+        "PC LPT COM",
         "",
         "",
         "",
-        'x',
+        "",
+        'L', // PC LPT & COM support
         { 0x00 },
         { 0x00 },
         { 0x00 },
         0,
-        { { 0x00, 0 } },
-        NULL,
-        0,
+        { { 0x00, 0xffffff } },
+        PcCfg,
+        arraylen(PcCfg),
         NULL,
         0,
         0,
         { 0, 0 },
         0,
-        ISA_ANSIC,
-        NOTHING,
-        0x00
+        ISA_PC,
+        PC_LPT_COM,
     },
-    {
-        "Interpretable Byte Code",
-        "",
-        "",
-        "",
-        'x',
-        { 0x00 },
-        { 0x00 },
-        { 0x00 },
-        0,
-        { { 0x00, 0 } },
-        NULL,
-        0,
-        NULL,
-        0,
-        0,
-        { 0, 0 },
-        0,
-        ISA_INTERPRETED,
-        NOTHING,
-        0x00
-    },
-    {
-        "Extended Byte Code",
-        "",
-        "",
-        "",
-        'x',
-        { 0x00 },
-        { 0x00 },
-        { 0x00 },
-            0,
-            { { 0x00, 0 } },
-            NULL,
-            0,
-            NULL,
-            0,
-            0,
-            { 0, 0 },
-            0,
-            ISA_XINTERPRETED,
-            NOTHING,
-            0x00
-    },
-    {
-        "Netzer Byte Code",
-        "",
-        "",
-        "",
-        'R',
-        { 0x00 },
-        { 0x00 },
-        { 0x00 },
-        0,
-        { { 0x00, 0 } },
-        NULL,
-        0,
-        NULL,
-        0,
-        0,
-        { 0, 0 },
-        0,
-        ISA_NETZER,
-        NOTHING,
-        0x00
-    }
-*/
 };
 

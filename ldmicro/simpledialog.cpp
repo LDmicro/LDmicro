@@ -430,7 +430,7 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
             const char *s4 = _("Not available");
             Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
         } else if((period >= (long long)(1 << (SizeOfVar(name)*8-1)))
-                   && (Prog.mcu->portPrefix != 'L')) {
+                   && (Prog.mcu->whichIsa != ISA_PC)) {
             const char *s1 = _("Timer period too long (max 32767 times cycle time); use a "
                 "slower cycle time.");
             char s2[1024];
@@ -468,15 +468,17 @@ void ShowDelayDialog(int which, char *name)
             if(n >= 5) break;
         }
       }
-      if(Prog.mcu->whichIsa == ISA_AVR) {
-          T = 0x10000; // to long long
-          T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
-      } else if(Prog.mcu->whichIsa == ISA_PIC16) {
-          T = 0xffff; // to long long
-          T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
-      }
-      sprintf(s, "..., %lld", T);
-      strcat(buf1, s);
+    }
+    if(Prog.mcu) {
+       if(Prog.mcu->whichIsa == ISA_AVR) {
+           T = 0x10000; // to long long
+           T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
+       } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+           T = 0xffff; // to long long
+           T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
+       }
+       sprintf(s, "..., %lld", T);
+       strcat(buf1, s);
     }
     const char *labels[] = { _("Delay (us):"), buf1 };
 
@@ -827,10 +829,12 @@ void ShowSpiDialog(ElemLeaf *l)
             comboRec[4].n = 3;
         } else oops();
         for(i = 0; i < comboRec[4].n; i++) {
-            sprintf(buf,"%15.3fHz", 1.0*Prog.mcuClock/(m*xPowerY(m,i)));
-            char* tmp = (char *)CheckMalloc(strlen(buf)+1);
-            strcpy(tmp, buf);
-            comboRec[4].str[i] = tmp;
+            double f = 1.0*Prog.mcuClock/(m*xPowerY(m,i));
+            double t = 1.0 * 1000 * SizeOfVar(s->send) * 8 / f;
+            //sprintf(buf,"%15.3fHz,T_ss=%.3fms", f, t);
+            sprintf(buf,"%15.3f Hz, T_ss = %.3f ms", f, t);
+            comboRec[4].str[i] = (char *)CheckMalloc(strlen(buf)+1);
+            strcpy(comboRec[4].str[i], buf);
         }
     }
 //  NoCheckingOnBox[3] = TRUE;

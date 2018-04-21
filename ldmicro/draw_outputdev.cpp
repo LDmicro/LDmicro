@@ -801,13 +801,9 @@ void ExportDrawingAsText(char *file)
         char pin[MAX_NAME_LEN] = "";
         char portName[MAX_NAME_LEN] = "";
         char pinName[MAX_NAME_LEN] = "";
-
-        if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM) && (io->pin != NO_PIN_ASSIGNED))
-            sprintf(pin, "%s", PinToName(io->pin));
-        else
             PinNumberForIo(pin, io, portName, pinName);
 
-        sprintf(b, "                             |                    | %3s | %4s | %s\n",
+        sprintf(b, "                             |                    | %3s | %-5s | %s\n",
             pin, portName, pinName);
 
         memcpy(b+2, io->name, strlen(io->name));

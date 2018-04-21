@@ -349,7 +349,7 @@ void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput)
 }
 
 //-----------------------------------------------------------------------------
-int SingleBitAssigned(char *name)
+int SingleBitAssigned(const char *name)
 {
     int pin = 0;
     int i;
@@ -374,7 +374,7 @@ int SingleBitAssigned(char *name)
 }
 
 //-----------------------------------------------------------------------------
-int GetAssignedType(char *name)
+int GetAssignedType(const char *name)
 {
     int type = NO_PIN_ASSIGNED;
     for(int i = 0; i < Prog.io.count; i++) {
@@ -859,7 +859,7 @@ void MemForSingleBit(const char *name, DWORD *addr, int *bit)
 }
 
 //-----------------------------------------------------------------------------
-int isPinAssigned(char *name)
+int isPinAssigned(const char *name)
 {
     int res = 0;
     if((Prog.mcu) &&

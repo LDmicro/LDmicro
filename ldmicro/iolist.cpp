@@ -792,14 +792,19 @@ BOOL LoadIoListFromFile(FILE *f)
                 default: oops();
             }
         }
-        // Don't internationalize this! It's the file format, not UI.
-        if(sscanf(line, " %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address)>=2) {
-            AppendIoSeenPreviously(name, type, pin, modbus);
-        // Don't internationalize this! It's the file format, not UI.
-        } else if(sscanf(line, " %s at %s", name, pinName)==2) {
-            // PC ports
-            pin=NameToPin(pinName);
-            AppendIoSeenPreviously(name, type, pin, modbus);
+        char *s = strstr(line, " at ");
+        if(isdigit(s[4])) {
+            // Don't internationalize this! It's the file format, not UI.
+            if(sscanf(line, " %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address) >= 2) {
+                AppendIoSeenPreviously(name, type, pin, modbus);
+            }
+        } else {
+            // Don't internationalize this! It's the file format, not UI.
+            if(sscanf(line, " %s at %s", name, pinName) == 2) {
+                // PC ports
+                pin=NameToPin(pinName);
+                AppendIoSeenPreviously(name, type, pin, modbus);
+            }
         }
     }
     return FALSE;
