@@ -38,6 +38,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\avr.obj \
            $(OBJDIR)\pascal.obj \
            $(OBJDIR)\pcports.obj \
+           $(OBJDIR)\translit.obj \
            $(OBJDIR)\display.obj
 
 HELPOBJ  = $(OBJDIR)\helptext.obj

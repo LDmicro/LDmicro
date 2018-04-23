@@ -52,49 +52,6 @@ static BOOL SeenVariable(char *name)
 }
 
 //-----------------------------------------------------------------------------
-int TranslitFile(char *dest)
-{
-    char *tmp;
-    char  ntmp[512];
-    char  line[512];
-    char  trans[1024];
-
-    if((tmp = tmpnam(ntmp)) = nullptr) {
-        Error(_("Couldn't create a unique file name for '%s'"), dest);
-        return 1;
-    }
-
-    if(rename(dest, ntmp)) {
-        Error(_("Couldn't rename(%s,%s)"), dest, ntmp);
-        return 2;
-    }
-
-    FILE *ftmp = fopen(ntmp, "r");
-    if(!ftmp) {
-        Error(_("Couldn't open file '%s'"), ntmp);
-        return 3;
-    }
-
-    FILE *f = fopen(dest, "w");
-    if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
-        fclose(ftmp);
-        return 4;
-    }
-
-    for(;;) {
-        if(!fgets(line, sizeof(line), ftmp))
-            break;
-        Transliterate(trans, line);
-        fwrite(trans, 1, strlen(trans), f);
-    };
-
-    fclose(ftmp);
-    fclose(f);
-
-    return 0;
-}
-//-----------------------------------------------------------------------------
 // Turn an internal symbol into a PASCAL name; only trick is that internal symbols
 // use $ for symbols that the int code generator needed for itself, so map
 // that into something okay for PASCAL.
