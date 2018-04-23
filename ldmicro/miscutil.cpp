@@ -64,9 +64,7 @@ void dbp(const char *str, ...)
 // Wrapper for AttachConsole that does nothing running under <WinXP, so that
 // we still run (except for the console stuff) in earlier versions.
 //-----------------------------------------------------------------------------
-#define ATTACH_PARENT_PROCESS                       \
-    ((DWORD)-1) // defined in WinCon.h, but only if \
-                // _WIN32_WINNT >= 0x500
+#define ATTACH_PARENT_PROCESS ((DWORD)-1) // defined in WinCon.h, but only if _WIN32_WINNT >= 0x500
 BOOL AttachConsoleDynamic(DWORD base)
 {
     typedef BOOL WINAPI fptr_acd(DWORD base);

@@ -401,7 +401,7 @@ void Transliterate(char *dest, char *str)
 #else
 void Transliterate(char *dest, char *str)
 {
-  // TODO
+    // TODO
 }
 #endif
 

@@ -24,10 +24,10 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 
-#define ASM_LABEL                                             \
-    1   //   0 - no labels                                    \
-        // * 1 - only if GOTO or CALL operations need a label \
-        //   2 - always, all line is labeled
+#define ASM_LABEL 1
+//   0 - no labels
+// * 1 - only if GOTO or CALL operations need a label
+//   2 - always, all line is labeled
 
 #define AUTO_BANKING //++
 #ifdef AUTO_BANKING

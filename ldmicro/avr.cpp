@@ -24,10 +24,11 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 
-#define ASM_LABEL                                             \
-    1   //   0 - no labels                                    \
-        // * 1 - only if GOTO or CALL operations need a label \
-        //   2 - always, all line is labeled
+#define ASM_LABEL 1
+//   0 - no labels
+// * 1 - only if GOTO or CALL operations need a label
+//   2 - always, all line is labeled
+
 #define USE_WDT
 #define USE_MUL
 
@@ -254,9 +255,10 @@ static DWORD REG_UCSRB = 0;
 #define RXEN BIT4
 #define TXEN BIT3
 static DWORD REG_UCSRA = 0;
-#define RXC BIT7 // USART Receive Complete
-                 // This flag bit is set when there are unread data
-                 //   in the receive buffer and
+#define RXC \
+    BIT7         // USART Receive Complete                          \
+                 // This flag bit is set when there are unread data \
+                 //   in the receive buffer and                     \
                  //   cleared when the receive buffer is empty.
 #define TXC BIT6 // USART Transmit Complete
 /*
