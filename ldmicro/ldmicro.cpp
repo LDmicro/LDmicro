@@ -948,16 +948,29 @@ static void ProcessMenu(int code)
             notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "asm");
             break;
 
-        case MNU_NOTEPAD_C:
+        case MNU_NOTEPAD_C: {
             notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "c");
-            break;
-
-        case MNU_NOTEPAD_H:
             notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "h");
+            char ladderhName[MAX_PATH];
+            sprintf(ladderhName, "%s\\ladder.h", strlen(CurrentCompileFile) ? CurrentCompilePath : CurrentSaveFile);
+            notepad(ladderhName, "h");
             break;
-
+        }
+        case MNU_NOTEPAD_INO: {
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".ino");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".cpp");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".h");
+            char ladderhName[MAX_PATH];
+            sprintf(ladderhName, "%s\\ladder.h", strlen(CurrentCompileFile) ? CurrentCompilePath : CurrentSaveFile);
+            notepad(ladderhName, ".h");
+            break;
+        }
         case MNU_NOTEPAD_PAS:
-            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "pas");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".pas");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "U.pas");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "U.inc");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "V.pas");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "R.pas");
             break;
 
         case MNU_EXIT:
