@@ -255,11 +255,10 @@ static DWORD REG_UCSRB = 0;
 #define RXEN BIT4
 #define TXEN BIT3
 static DWORD REG_UCSRA = 0;
-#define RXC \
-    BIT7         // USART Receive Complete                          \
-                 // This flag bit is set when there are unread data \
-                 //   in the receive buffer and                     \
-                 //   cleared when the receive buffer is empty.
+#define RXC BIT7 
+//      USART Receive Complete                          
+//      This flag bit is set when there are unread data in the receive buffer and                     
+//       cleared when the receive buffer is empty.
 #define TXC BIT6 // USART Transmit Complete
 /*
 This flag bit is set when the entire frame in the Transmit Shift Register
@@ -340,13 +339,6 @@ static DWORD REG_EECR = 0;
 #define TWAR    0xBA
 #define TWSR    0xB9
 #define TWBR    0xB8
-*/
-
-/*
-//SPI
-static DWORD REG_SPCR = 0; // SSPCON  // SPI Control Register
-static DWORD REG_SPSR = 0; // SSPSTAT // SPI Status Register
-static DWORD REG_SPDR = 0; // SSPBUF  // SPI Data Register
 */
 
 // Interrupt Vectors Table
@@ -2357,9 +2349,6 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
     long int      bestSoftDivisor;
     long long int bestErr = LLONG_MAX;
     long long int err;
-    if(0) {
-    } else {
-#if 1
         while(plcTmr.softDivisor <= max_softDivisor) {
             plcTmr.prescaler = max_prescaler;
             while(plcTmr.prescaler >= 1) {
@@ -2398,30 +2387,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
         plcTmr.softDivisor = bestSoftDivisor;
         plcTmr.prescaler = bestPrescaler;
         plcTmr.tmr = bestTmr;
-#else
-        while((plcTmr.prescaler <= max_prescaler) && (plcTmr.softDivisor <= max_softDivisor)) {
-            plcTmr.tmr = int(plcTmr.ticksPerCycle / plcTmr.prescaler / plcTmr.softDivisor);
 
-            if((plcTmr.ticksPerCycle / plcTmr.prescaler / plcTmr.softDivisor) > max_tmr) {
-                if(plcTmr.prescaler < max_prescaler) {
-                    if(plcTmr.prescaler == 1)
-                        plcTmr.prescaler = 8;
-                    else if(plcTmr.prescaler == 8)
-                        plcTmr.prescaler = 64;
-                    else if(plcTmr.prescaler == 64)
-                        plcTmr.prescaler = 256;
-                    else if(plcTmr.prescaler == 256)
-                        plcTmr.prescaler = 1024;
-                } else {
-                    plcTmr.prescaler = 1;
-                    plcTmr.softDivisor++;
-                }
-            } else {
-                break;
-            }
-        }
-#endif
-    }
     plcTmr.Fcycle = 1.0 * Prog.mcuClock / (1.0 * plcTmr.softDivisor * plcTmr.prescaler * plcTmr.tmr);
     plcTmr.TCycle = 1.0 * plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr / (1.0 * Prog.mcuClock);
     switch(plcTmr.prescaler) {

@@ -413,7 +413,7 @@ int TranslitFile(char *dest)
     char  line[512];
     char  trans[1024];
 
-    if((tmp = tmpnam(ntmp)) = nullptr) {
+    if((tmp = tmpnam(ntmp)) == nullptr) {
         Error(_("Couldn't create a unique file name for '%s'"), dest);
         return 1;
     }

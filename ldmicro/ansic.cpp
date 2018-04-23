@@ -97,6 +97,11 @@ static const char *MapSym(const char *str, int how)
     } else {
         sprintf(ret, "U%c_%s", bit_int, str);
     }
+
+    char trans[1024];
+    Transliterate(trans, ret);
+    strcpy(ret, trans);
+
     return ret;
 }
 

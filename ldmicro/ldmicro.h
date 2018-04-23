@@ -68,6 +68,7 @@ typedef signed long SDWORD;
 #define MNU_NOTEPAD_C           0x0704
 #define MNU_NOTEPAD_H           0x0705
 #define MNU_NOTEPAD_PAS         0x0706
+#define MNU_NOTEPAD_INO         0x0707
 #define MNU_NOTEPAD_TXT         0x070F
 #define MNU_EXPLORE_DIR         0x0780
 

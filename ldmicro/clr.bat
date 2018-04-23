@@ -1,5 +1,6 @@
 md BAK
 move  *.bak BAK
+move  *.orig BAK
 
 del lang.txt
 

@@ -344,7 +344,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(FileMenu, MF_STRING, MNU_NOTEPAD_HEX, _("Open hex in notepad\tAlt+F6"));
     AppendMenu(FileMenu, MF_STRING, MNU_NOTEPAD_ASM, _("Open asm in notepad\tAlt+F3"));
     AppendMenu(FileMenu, MF_STRING, MNU_NOTEPAD_C, _("Open c in notepad"));
-    AppendMenu(FileMenu, MF_STRING, MNU_NOTEPAD_H, _("Open h in notepad"));
+    AppendMenu(FileMenu, MF_STRING, MNU_NOTEPAD_INO, _("Open ino in notepad"));
     AppendMenu(FileMenu, MF_STRING, MNU_NOTEPAD_PAS, _("Open pas in notepad"));
     AppendMenu(FileMenu, MF_STRING, MNU_NOTEPAD_PL, _("Open pl in notepad\tAlt+F5"));
     AppendMenu(FileMenu, MF_STRING, MNU_EXPLORE_DIR, _("Explore ld directory"));
