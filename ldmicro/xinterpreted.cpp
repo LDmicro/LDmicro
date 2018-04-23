@@ -34,22 +34,24 @@ static BYTE OutProg[MAX_INT_OPS];
 #define MAX_PLCIO 256
 
 static char *PlcIos[MAX_PLCIO];
-static int PlcIos_size = 0;
+static int   PlcIos_size = 0;
 
 int PlcIos_AppendAndGet(char *name)
 {
-    for (int i = 0; i < PlcIos_size; i++) {
-        if (strcmp(PlcIos[i], name) ==0) return i;
+    for(int i = 0; i < PlcIos_size; i++) {
+        if(strcmp(PlcIos[i], name) == 0)
+            return i;
     }
 
-    if (PlcIos_size == MAX_PLCIO) return -1;
+    if(PlcIos_size == MAX_PLCIO)
+        return -1;
     PlcIos[PlcIos_size++] = name;
     return PlcIos_size - 1;
 }
 
 static int CheckRange(int value, const char *name)
 {
-    if (value < 0 || value > 255) {
+    if(value < 0 || value > 255) {
         char msg[80];
         sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
         Error(msg);
@@ -61,10 +63,10 @@ static int CheckRange(int value, const char *name)
 static BYTE GetArduinoPinNumber(int pin)
 {
     if(Prog.mcu)
-    for (int i = 0; i < Prog.mcu->pinCount; i++) {
-        if (Prog.mcu->pinInfo[i].pin == pin)
-            return Prog.mcu->pinInfo[i].ArduinoPin;
-    }
+        for(int i = 0; i < Prog.mcu->pinCount; i++) {
+            if(Prog.mcu->pinInfo[i].pin == pin)
+                return Prog.mcu->pinInfo[i].ArduinoPin;
+        }
     return 0;
 }
 
@@ -89,7 +91,7 @@ void CompileXInterpreted(char *outFile)
     // Preload physical IOs in the table
     PlcIos_size = 0;
 
-    for (int i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         PlcProgramSingleIo io = Prog.io.assignment[i];
         PlcIos[PlcIos_size++] = Prog.io.assignment[i].name;
     }
@@ -99,7 +101,7 @@ void CompileXInterpreted(char *outFile)
 
     // Convert the if/else structures in the intermediate code to absolute
     // conditional jumps, to make life a bit easier for the interpreter.
-#define MAX_IF_NESTING      32
+#define MAX_IF_NESTING 32
     int ifDepth = 0;
     // PC for the if(...) instruction, which we will complete with the
     // 'jump to if false' address (which is either the ELSE+1 or the ENDIF+1)
@@ -181,7 +183,7 @@ void CompileXInterpreted(char *outFile)
                 OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
                 OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
                 goto finishIf;
-finishIf:
+            finishIf:
                 ifOpIf[ifDepth] = outPc++;
                 ifOpElse[ifDepth] = 0;
                 ifDepth++;
@@ -190,7 +192,7 @@ finishIf:
 
             case INT_ELSE:
                 OutProg[outPc++] = IntCode[ipc].op;
-                ifOpElse[ifDepth-1] = outPc++;
+                ifOpElse[ifDepth - 1] = outPc++;
                 // jump target will be filled in later
                 break;
 
@@ -199,13 +201,13 @@ finishIf:
                 if(ifOpElse[ifDepth] == 0) {
                     // There is no else; if should jump straight to the
                     // instruction after this one if the condition is false.
-                    OutProg[ifOpIf[ifDepth]] = CheckRange(outPc-1 - ifOpIf[ifDepth], "pc");
+                    OutProg[ifOpIf[ifDepth]] = CheckRange(outPc - 1 - ifOpIf[ifDepth], "pc");
                 } else {
                     // There is an else clause; if the if is false then jump
                     // just past the else, and if the else is reached then
                     // jump to the endif.
                     OutProg[ifOpIf[ifDepth]] = CheckRange(ifOpElse[ifDepth] - ifOpIf[ifDepth], "pc");
-                    OutProg[ifOpElse[ifDepth]]= CheckRange(outPc-1 - ifOpElse[ifDepth], "pc");
+                    OutProg[ifOpElse[ifDepth]] = CheckRange(outPc - 1 - ifOpElse[ifDepth], "pc");
                 }
                 // But don't generate an instruction for this.
                 continue;
@@ -224,30 +226,30 @@ finishIf:
                 // TODO
                 break;
 
-            #ifdef USE_SFR
-            case  INT_READ_SFR_LITERAL:
-            case  INT_WRITE_SFR_LITERAL:
-            case  INT_SET_SFR_LITERAL:
-            case  INT_CLEAR_SFR_LITERAL:
-            case  INT_TEST_SFR_LITERAL:
-            case  INT_READ_SFR_VARIABLE:
-            case  INT_WRITE_SFR_VARIABLE:
-            case  INT_SET_SFR_VARIABLE:
-            case  INT_CLEAR_SFR_VARIABLE:
-            case  INT_TEST_SFR_VARIABLE:
-            case  INT_TEST_C_SFR_LITERAL:
-            case  INT_WRITE_SFR_LITERAL_L:
-            case  INT_WRITE_SFR_VARIABLE_L:
-            case  INT_SET_SFR_LITERAL_L:
-            case  INT_SET_SFR_VARIABLE_L:
-            case  INT_CLEAR_SFR_LITERAL_L:
-            case  INT_CLEAR_SFR_VARIABLE_L:
-            case  INT_TEST_SFR_LITERAL_L:
-            case  INT_TEST_SFR_VARIABLE_L:
-            case  INT_TEST_C_SFR_VARIABLE:
-            case  INT_TEST_C_SFR_LITERAL_L:
-            case  INT_TEST_C_SFR_VARIABLE_L:
-            #endif
+#ifdef USE_SFR
+            case INT_READ_SFR_LITERAL:
+            case INT_WRITE_SFR_LITERAL:
+            case INT_SET_SFR_LITERAL:
+            case INT_CLEAR_SFR_LITERAL:
+            case INT_TEST_SFR_LITERAL:
+            case INT_READ_SFR_VARIABLE:
+            case INT_WRITE_SFR_VARIABLE:
+            case INT_SET_SFR_VARIABLE:
+            case INT_CLEAR_SFR_VARIABLE:
+            case INT_TEST_SFR_VARIABLE:
+            case INT_TEST_C_SFR_LITERAL:
+            case INT_WRITE_SFR_LITERAL_L:
+            case INT_WRITE_SFR_VARIABLE_L:
+            case INT_SET_SFR_LITERAL_L:
+            case INT_SET_SFR_VARIABLE_L:
+            case INT_CLEAR_SFR_LITERAL_L:
+            case INT_CLEAR_SFR_VARIABLE_L:
+            case INT_TEST_SFR_LITERAL_L:
+            case INT_TEST_SFR_VARIABLE_L:
+            case INT_TEST_C_SFR_VARIABLE:
+            case INT_TEST_C_SFR_LITERAL_L:
+            case INT_TEST_C_SFR_VARIABLE_L:
+#endif
 
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
@@ -262,8 +264,9 @@ finishIf:
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
-                Error(_("Unsupported op (anything UART, EEPROM, SFR..) for "
-                    "interpretable target."));
+                Error(
+                    _("Unsupported op (anything UART, EEPROM, SFR..) for "
+                      "interpretable target."));
                 Error("INT_%d", IntCode[ipc].op);
                 fclose(f);
                 return;
@@ -276,29 +279,35 @@ finishIf:
     // $$IO nb_named_IO total_nb_IO
     fprintf(f, "$$IO %d %d\n", Prog.io.count, PlcIos_size);
 
-    for (int i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         PlcProgramSingleIo io = Prog.io.assignment[i];
-        fprintf(f, "%2d %20s %2d %2d %2d %05d\n",
-            i, io.name, io.type,
-            GetArduinoPinNumber(io.pin),
-            io.modbus.Slave, io.modbus.Address);
+        fprintf(f,
+                "%2d %20s %2d %2d %2d %05d\n",
+                i,
+                io.name,
+                io.type,
+                GetArduinoPinNumber(io.pin),
+                io.modbus.Slave,
+                io.modbus.Address);
     }
 
     // $$LDcode program_size
     fprintf(f, "$$LDcode %d\n", outPc);
     for(int i = 0; i < outPc; i++) {
         fprintf(f, "%02X", OutProg[i]);
-        if ( (i % 16) == 15 || i == outPc-1) fprintf(f, "\n");
+        if((i % 16) == 15 || i == outPc - 1)
+            fprintf(f, "\n");
     }
 
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
 
     fclose(f);
 
-    char str[MAX_PATH+500];
+    char str[MAX_PATH + 500];
     sprintf(str,
-      _("Compile successful; wrote interpretable code to '%s'.\r\n\r\n"
-        "You probably have to adapt the interpreter to your application. See "
-        "the documentation."), outFile);
+            _("Compile successful; wrote interpretable code to '%s'.\r\n\r\n"
+              "You probably have to adapt the interpreter to your application. See "
+              "the documentation."),
+            outFile);
     CompileSuccessfulMessage(str);
 }

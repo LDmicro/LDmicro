@@ -28,8 +28,8 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-static char SeenVariables[MAX_IO][MAX_NAME_LEN];
-static int SeenVariablesCount;
+static char  SeenVariables[MAX_IO][MAX_NAME_LEN];
+static int   SeenVariablesCount;
 static DWORD InCount, OutCount, TimerCount, RelayCount, VarCount;
 
 //-----------------------------------------------------------------------------
@@ -40,11 +40,12 @@ static BOOL SeenVariable(char *name)
 {
     int i;
     for(i = 0; i < SeenVariablesCount; i++) {
-        if(strcmp(SeenVariables[i], name)==0) {
+        if(strcmp(SeenVariables[i], name) == 0) {
             return TRUE;
         }
     }
-    if(i >= MAX_IO) oops();
+    if(i >= MAX_IO)
+        oops();
     strcpy(SeenVariables[i], name);
     SeenVariablesCount++;
     return FALSE;
@@ -54,11 +55,11 @@ static BOOL SeenVariable(char *name)
 int TranslitFile(char *dest)
 {
     char *tmp;
-    char ntmp[512];
-    char line[512];
-    char trans[1024];
+    char  ntmp[512];
+    char  line[512];
+    char  trans[1024];
 
-    if( (tmp=tmpnam(ntmp)) = nullptr) {
+    if((tmp = tmpnam(ntmp)) = nullptr) {
         Error(_("Couldn't create a unique file name for '%s'"), dest);
         return 1;
     }
@@ -82,7 +83,8 @@ int TranslitFile(char *dest)
     }
 
     for(;;) {
-        if(!fgets(line, sizeof(line), ftmp)) break;
+        if(!fgets(line, sizeof(line), ftmp))
+            break;
         Transliterate(trans, line);
         fwrite(trans, 1, strlen(trans), f);
     };
@@ -102,11 +104,12 @@ int TranslitFile(char *dest)
 #define ASSTR 3
 static char *MapSym(char *str, int how)
 {
-    if(!str) return nullptr;
-//  if(IsNumber(str)) return nullptr;
+    if(!str)
+        return nullptr;
+    //  if(IsNumber(str)) return nullptr;
 
-    static char AllRets[16][MAX_NAME_LEN+30];
-    static int RetCnt;
+    static char AllRets[16][MAX_NAME_LEN + 30];
+    static int  RetCnt;
 
     RetCnt = (RetCnt + 1) & 15;
 
@@ -126,17 +129,17 @@ static char *MapSym(char *str, int how)
     if(IsNumber(str))
         sprintf(ret, "%s", str);
     else if(*str == '$') {
-        sprintf(ret, "I%c_%s", bit_int, str+1);
+        sprintf(ret, "I%c_%s", bit_int, str + 1);
     } else {
         sprintf(ret, "U%c_%s", bit_int, str);
     }
 
     char trans[1024];
-  //dbp("ret   1 %s",ret);
+    //dbp("ret   1 %s",ret);
     Transliterate(trans, ret);
-  //dbp("trans 2 %s",trans);
+    //dbp("trans 2 %s",trans);
     strcpy(ret, trans);
-  //dbp("ret   2 %s",ret);
+    //dbp("ret   2 %s",ret);
 
     return ret;
 }
@@ -144,13 +147,13 @@ static char *MapSym(char *str, int how)
 //-----------------------------------------------------------------------------
 static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
 {
-    char __str[MAX_NAME_LEN];
-    char str2[MAX_NAME_LEN];
-    char *line2="1234567890-=";
-    char *line3="QWERTYUIOP";
-    char *line4="ASDFGHJKL";
-    char *line5="ZXCVBNM";
-    AnsiToOem(_str,__str);
+    char  __str[MAX_NAME_LEN];
+    char  str2[MAX_NAME_LEN];
+    char *line2 = "1234567890-=";
+    char *line3 = "QWERTYUIOP";
+    char *line4 = "ASDFGHJKL";
+    char *line5 = "ZXCVBNM";
+    AnsiToOem(_str, __str);
 
     McuIoPinInfo *iop = PinInfoForName(_str);
     ShortPinName(iop, str2);
@@ -164,10 +167,13 @@ static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
             fprintf(fv, "  InArr[InCount].WriteFunc := Write_%s;\n", str);
             fprintf(fv, "  {$ifdef HookIn}\n");
             if(InCount < strlen(line2))
-            fprintf(fv, "  InArr[InCount].KeyCode := kb_line2[InCount+1]; {'%c'}\n",  line2[InCount]);
-            else if(InCount < (strlen(line2)+strlen(line3)))
-            fprintf(fv, "  InArr[InCount].KeyCode := kb_line3[InCount-%d+1]; {'%c'}\n", strlen(line2), line3[InCount-strlen(line2)]);
-//          fprintf(fv, "  InArr[InCount].NPP := InCount;\n");
+                fprintf(fv, "  InArr[InCount].KeyCode := kb_line2[InCount+1]; {'%c'}\n", line2[InCount]);
+            else if(InCount < (strlen(line2) + strlen(line3)))
+                fprintf(fv,
+                        "  InArr[InCount].KeyCode := kb_line3[InCount-%d+1]; {'%c'}\n",
+                        strlen(line2),
+                        line3[InCount - strlen(line2)]);
+            //          fprintf(fv, "  InArr[InCount].NPP := InCount;\n");
             fprintf(fv, "  {$endif}\n");
             fprintf(fv, "  inc(InCount);\n\n");
             InCount++;
@@ -178,14 +184,14 @@ static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
             fprintf(fv, "  OutArr[OutCount].WriteFunc := Write_%s;\n", str);
             fprintf(fv, "  inc(OutCount);\n\n");
             OutCount++;
-        } else if (str[3] == 'T') {
+        } else if(str[3] == 'T') {
             fprintf(fr, "  %s := 0;\n", str);
 
             fprintf(fv, "  TimerArr[TimerCount].Name := '%s';\n", __str);
             fprintf(fv, "  TimerArr[TimerCount].puw:= @%s;\n", str);
             fprintf(fv, "  inc(TimerCount);\n\n");
             TimerCount++;
-        } else if (str[3] == 'R') {
+        } else if(str[3] == 'R') {
             fprintf(fr, "  %s := false;\n", str);
 
             fprintf(fv, "  RelayArr[RelayCount].Name := '%s';\n", __str);
@@ -193,10 +199,13 @@ static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
 
             fprintf(fv, "  {$ifdef HookRelay}\n");
             if(RelayCount < strlen(line4))
-            fprintf(fv, "  RelayArr[RelayCount].KeyCode := kb_line4[RelayCount+1]; {'%c'}\n",  line4[RelayCount]);
-            else if(RelayCount < (strlen(line4)+strlen(line5)))
-            fprintf(fv, "  RelayArr[RelayCount].KeyCode := kb_line5[RelayCount-%d+1]; {'%c'}\n", strlen(line4), line5[RelayCount-strlen(line4)]);
-//          fprintf(fv, "  RelayArr[RelayCount].NPP := RelayCount;\n");
+                fprintf(fv, "  RelayArr[RelayCount].KeyCode := kb_line4[RelayCount+1]; {'%c'}\n", line4[RelayCount]);
+            else if(RelayCount < (strlen(line4) + strlen(line5)))
+                fprintf(fv,
+                        "  RelayArr[RelayCount].KeyCode := kb_line5[RelayCount-%d+1]; {'%c'}\n",
+                        strlen(line4),
+                        line5[RelayCount - strlen(line4)]);
+            //          fprintf(fv, "  RelayArr[RelayCount].NPP := RelayCount;\n");
             fprintf(fv, "  {$endif}\n");
 
             fprintf(fv, "  inc(RelayCount);\n\n");
@@ -210,10 +219,10 @@ static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
             VarCount++;
         };
     } else {
-      if(str[1] == 'b')
-        fprintf(fr, "  %s := false;\n", str);
-      else
-        fprintf(fr, "  %s := 0;\n", str);
+        if(str[1] == 'b')
+            fprintf(fr, "  %s := false;\n", str);
+        else
+            fprintf(fr, "  %s := 0;\n", str);
     }
 }
 //-----------------------------------------------------------------------------
@@ -221,12 +230,13 @@ static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, FILE *fi, FILE *fr, FILE *fv, char *str, char *_str)
 {
-    if(IsNumber(str)) return;
+    if(IsNumber(str))
+        return;
     if(str[0] == 'U') {
-      if(str[3] == 'T')
-        fprintf(fi, "const %s : SDWORD = 0;\n", str);
-      else
-        fprintf(fi, "const %s : SDWORD = 0;\n", str);
+        if(str[3] == 'T')
+            fprintf(fi, "const %s : SDWORD = 0;\n", str);
+        else
+            fprintf(fi, "const %s : SDWORD = 0;\n", str);
     } else
         fprintf(fi, "const %s : SDWORD = 0;\n", str);
     ResetAndRegister(fr, fv, str, _str);
@@ -235,8 +245,8 @@ static void DeclareInt(FILE *f, FILE *fi, FILE *fr, FILE *fv, char *str, char *_
 static void PortX(FILE *fi, FILE *fu, char *str)
 {
     char prt[4];
-    int portN,Reg,Mask,Addr;
-    BOOL b=ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
+    int  portN, Reg, Mask, Addr;
+    BOOL b = ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
 
     fprintf(fi, "\n");
     fprintf(fi, "function   Read_%s:boolean;\n", str);
@@ -246,7 +256,7 @@ static void PortX(FILE *fi, FILE *fu, char *str)
     fprintf(fu, "function Read_%s:boolean;\n", str);
     fprintf(fu, "begin\n");
     if(!b)
-      fprintf(fu, "  {!!! not assigned to IO pin '%s' !!!}\n", str+4);
+        fprintf(fu, "  {!!! not assigned to IO pin '%s' !!!}\n", str + 4);
     fprintf(fu, "  {$ifNdef FINAL}\n");
     fprintf(fu, "  if a%s[%d].Gate[%d] = nil then\n", prt, portN, Reg);
     fprintf(fu, "    RunError(204);\n");
@@ -255,8 +265,8 @@ static void PortX(FILE *fi, FILE *fu, char *str)
     fprintf(fu, "  {$endif}\n");
 
     fprintf(fu, "  {$ifdef HookIn}\n");
-    fprintf(fu, "  if InArr[%d].IskbrdHook then begin\n", InCount-1);
-    fprintf(fu, "    Read_%s:=InArr[%d].HookValue;\n", str, InCount-1);
+    fprintf(fu, "  if InArr[%d].IskbrdHook then begin\n", InCount - 1);
+    fprintf(fu, "    Read_%s:=InArr[%d].HookValue;\n", str, InCount - 1);
     fprintf(fu, "    exit;\n");
     fprintf(fu, "  end;\n");
     fprintf(fu, "  {$endif}\n");
@@ -265,8 +275,17 @@ static void PortX(FILE *fi, FILE *fu, char *str)
     fprintf(fu, "  Read_%s:=a%s[%d].Gate[%d]^.Buf and $%x <> 0;\n", str, prt, portN, Reg, Mask);
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "  {$ifdef PortDirectIn}\n");
-    fprintf(fu, "  Read_%s:=(in_portb(a%s[%d].BaseAddr+%d) xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n", str, prt, portN, Reg, prt, portN, Reg, Mask);
-//  fprintf(fu, "  Read_%s:=(in_portb($%x)                 xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n", str, Addr, prt, portN, Reg, Mask);
+    fprintf(fu,
+            "  Read_%s:=(in_portb(a%s[%d].BaseAddr+%d) xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n",
+            str,
+            prt,
+            portN,
+            Reg,
+            prt,
+            portN,
+            Reg,
+            Mask);
+    //  fprintf(fu, "  Read_%s:=(in_portb($%x)                 xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n", str, Addr, prt, portN, Reg, Mask);
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "end;\n");
     fprintf(fu, "\n");
@@ -274,7 +293,7 @@ static void PortX(FILE *fi, FILE *fu, char *str)
     fprintf(fu, "procedure Write_%s(b:boolean);\n", str);
     fprintf(fu, "begin\n");
     if(!b)
-      fprintf(fu, "  {!!! not assigned to IO pin '%s' !!!}\n", str+4);
+        fprintf(fu, "  {!!! not assigned to IO pin '%s' !!!}\n", str + 4);
     fprintf(fu, "  {$ifNdef FINAL}\n");
     fprintf(fu, "  {$ifNdef PortBufferedIn}\n");
     fprintf(fu, "  {RunError(204);}\n");
@@ -287,9 +306,11 @@ static void PortX(FILE *fi, FILE *fu, char *str)
 
     fprintf(fu, "  {$ifdef PortBufferedIn}\n");
     fprintf(fu, "  if b then begin\n");
-    fprintf(fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf or      $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
+    fprintf(
+        fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf or      $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
     fprintf(fu, "  end else begin\n");
-    fprintf(fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf and not $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
+    fprintf(
+        fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf and not $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
     fprintf(fu, "  end;\n");
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "end;\n");
@@ -299,8 +320,8 @@ static void PortX(FILE *fi, FILE *fu, char *str)
 static void PortY(FILE *fi, FILE *fu, char *str)
 {
     char prt[4];
-    int portN,Reg,Mask,Addr;
-    BOOL b=ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
+    int  portN, Reg, Mask, Addr;
+    BOOL b = ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
 
     fprintf(fi, "\n");
     fprintf(fi, "function   Read_%s:boolean;\n", str);
@@ -310,7 +331,7 @@ static void PortY(FILE *fi, FILE *fu, char *str)
     fprintf(fu, "function Read_%s:boolean;\n", str);
     fprintf(fu, "begin\n");
     if(!b)
-      fprintf(fu, "  {!!! not assigned to IO pin '%s' !!!}\n", str+4);
+        fprintf(fu, "  {!!! not assigned to IO pin '%s' !!!}\n", str + 4);
     fprintf(fu, "  {$ifNdef FINAL}\n");
     fprintf(fu, "  if a%s[%d].Gate[%d] = nil then\n", prt, portN, Reg);
     fprintf(fu, "    RunError(204);\n");
@@ -322,7 +343,16 @@ static void PortY(FILE *fi, FILE *fu, char *str)
     fprintf(fu, "  {$endif}\n");
 
     fprintf(fu, "  {$ifdef PortDirectIn}\n");
-    fprintf(fu, "  Read_%s:=(in_portb(a%s[%d].BaseAddr+%d) xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n", str, prt, portN, Reg, prt, portN, Reg, Mask);
+    fprintf(fu,
+            "  Read_%s:=(in_portb(a%s[%d].BaseAddr+%d) xor a%s[%d].Gate[%d]^.XorMask) and $%x <> 0;\n",
+            str,
+            prt,
+            portN,
+            Reg,
+            prt,
+            portN,
+            Reg,
+            Mask);
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "end;\n");
     fprintf(fu, "\n");
@@ -330,7 +360,7 @@ static void PortY(FILE *fi, FILE *fu, char *str)
     fprintf(fu, "procedure Write_%s(b:boolean);\n", str);
     fprintf(fu, "begin\n");
     if(!b)
-      fprintf(fu, "  {!!! not assigned to IO pin '%s' !!!}\n", str+4);
+        fprintf(fu, "  {!!! not assigned to IO pin '%s' !!!}\n", str + 4);
     fprintf(fu, "  {$ifNdef FINAL}\n");
     fprintf(fu, "  if a%s[%d].Gate[%d] = nil then\n", prt, portN, Reg);
     fprintf(fu, "    RunError(204);\n");
@@ -338,13 +368,25 @@ static void PortY(FILE *fi, FILE *fu, char *str)
     fprintf(fu, "    RunError(204);\n");
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "  if b then begin\n");
-    fprintf(fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf or      $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
+    fprintf(
+        fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf or      $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
     fprintf(fu, "  end else begin\n");
-    fprintf(fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf and not $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
+    fprintf(
+        fu, "    a%s[%d].Gate[%d]^.Buf:=a%s[%d].Gate[%d]^.Buf and not $%x;\n", prt, portN, Reg, prt, portN, Reg, Mask);
     fprintf(fu, "  end;\n");
 
     fprintf(fu, "  {$ifdef PortDirectOut}\n");
-    fprintf(fu, "  out_portb(a%s[%d].BaseAddr+%d, a%s[%d].Gate[%d]^.Buf xor a%s[%d].Gate[%d]^.XorMask);\n", prt, portN, Reg, prt, portN, Reg, prt, portN, Reg);
+    fprintf(fu,
+            "  out_portb(a%s[%d].BaseAddr+%d, a%s[%d].Gate[%d]^.Buf xor a%s[%d].Gate[%d]^.XorMask);\n",
+            prt,
+            portN,
+            Reg,
+            prt,
+            portN,
+            Reg,
+            prt,
+            portN,
+            Reg);
     fprintf(fu, "  {$endif}\n");
     fprintf(fu, "end;\n");
     fprintf(fu, "\n");
@@ -407,12 +449,12 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
                 break;
 
             case INT_SET_SEED_RANDOM:
-            #ifdef SHARE
+#ifdef SHARE
             case INT_SET_BIN2BCD:
             case INT_SET_BCD2BIN:
             case INT_SET_OPPOSITE:
             case INT_SET_VARIABLE_NOT:
-            #endif
+#endif
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -426,11 +468,11 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
             case INT_SET_VARIABLE_ROL:
             case INT_SET_VARIABLE_ROR:
             case INT_SET_VARIABLE_AND:
-            case INT_SET_VARIABLE_OR :
+            case INT_SET_VARIABLE_OR:
             case INT_SET_VARIABLE_XOR:
-            #ifdef SHARE
+#ifdef SHARE
             case INT_SET_VARIABLE_MOD:
-            #endif
+#endif
             case INT_SET_VARIABLE_DIVIDE:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_SUBTRACT:
@@ -466,7 +508,7 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
                 bitVar1 = IntCode[i].name1;
                 break;
 
-            #ifndef NEW_CMP
+#ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL:
                 intVar1 = IntCode[i].name1;
                 break;
@@ -476,9 +518,9 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
                 intVar1 = IntCode[i].name1;
                 intVar2 = IntCode[i].name2;
                 break;
-            #endif
+#endif
 
-            #ifdef NEW_CMP
+#ifdef NEW_CMP
             case INT_IF_EQU:
             case INT_IF_NEQ:
             case INT_IF_LES:
@@ -486,11 +528,11 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
             case INT_IF_LEQ:
             case INT_IF_GEQ:
                 if(!IsNumber(IntCode[i].name1))
-                  intVar1 = IntCode[i].name1;
+                    intVar1 = IntCode[i].name1;
                 if(!IsNumber(IntCode[i].name2))
-                  intVar2 = IntCode[i].name2;
+                    intVar2 = IntCode[i].name2;
                 break;
-            #endif
+#endif
 
             case INT_END_IF:
             case INT_ELSE:
@@ -508,24 +550,29 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
             case INT_GOSUB:
                 break;
 
-            #ifdef TABLE_IN_FLASH
+#ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:
                 break;
             case INT_RAM_READ:
             case INT_FLASH_READ:
                 intVar1 = IntCode[i].name1;
                 break;
-            #endif
+#endif
 
             default:
                 ooops("INT_%d", IntCode[i].op);
         }
 
-        if(bitVar1) strcpy(_bitVar1,bitVar1);
-        if(bitVar2) strcpy(_bitVar2,bitVar2);
-        if(intVar1) strcpy(_intVar1,intVar1);
-        if(intVar2) strcpy(_intVar2,intVar2);
-        if(intVar3) strcpy(_intVar3,intVar3);
+        if(bitVar1)
+            strcpy(_bitVar1, bitVar1);
+        if(bitVar2)
+            strcpy(_bitVar2, bitVar2);
+        if(intVar1)
+            strcpy(_intVar1, intVar1);
+        if(intVar2)
+            strcpy(_intVar2, intVar2);
+        if(intVar3)
+            strcpy(_intVar3, intVar3);
 
         bitVar1 = MapSym(bitVar1, ASBIT);
         bitVar2 = MapSym(bitVar2, ASBIT);
@@ -534,12 +581,17 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
         intVar2 = MapSym(intVar2, ASINT);
         intVar3 = MapSym(intVar3, ASINT);
 
-        if(bitVar1 && !SeenVariable(bitVar1)) DeclareBit(f, fu, fi, fr, fv, bitVar1, _bitVar1);
-        if(bitVar2 && !SeenVariable(bitVar2)) DeclareBit(f, fu, fi, fr, fv, bitVar2, _bitVar2);
+        if(bitVar1 && !SeenVariable(bitVar1))
+            DeclareBit(f, fu, fi, fr, fv, bitVar1, _bitVar1);
+        if(bitVar2 && !SeenVariable(bitVar2))
+            DeclareBit(f, fu, fi, fr, fv, bitVar2, _bitVar2);
 
-        if(intVar1 && !SeenVariable(intVar1)) DeclareInt(f, fi, fr, fv, intVar1, _intVar1);
-        if(intVar2 && !SeenVariable(intVar2)) DeclareInt(f, fi, fr, fv, intVar2, _intVar2);
-        if(intVar3 && !SeenVariable(intVar3)) DeclareInt(f, fi, fr, fv, intVar3, _intVar3);
+        if(intVar1 && !SeenVariable(intVar1))
+            DeclareInt(f, fi, fr, fv, intVar1, _intVar1);
+        if(intVar2 && !SeenVariable(intVar2))
+            DeclareInt(f, fi, fr, fv, intVar2, _intVar2);
+        if(intVar3 && !SeenVariable(intVar3))
+            DeclareInt(f, fi, fr, fv, intVar3, _intVar3);
     }
 #endif
 }
@@ -547,13 +599,13 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
 static int SimpleBool(char *name)
 {
     if(name[0] == '$')
-      return 1;
+        return 1;
     else if(name[0] == 'X')
-      return 0;
+        return 0;
     else if(name[0] == 'Y')
-      return 0;
+        return 0;
     else
-      return 1;
+        return 1;
 }
 //-----------------------------------------------------------------------------
 // Actually generate the C source for the datas.
@@ -565,7 +617,7 @@ static void Generate_flash_eeprom(FILE *f)
     for(i = 0; i < IntCodeLen; i++) {
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
-                int sovElement = IntCode[i].literal2;
+                int   sovElement = IntCode[i].literal2;
                 char *sovs;
 
                 if(sovElement == 1) {
@@ -580,36 +632,37 @@ static void Generate_flash_eeprom(FILE *f)
                     ooops("sovElement=%d", sovElement);
                 }
 
-                fprintf(f, "const %s: array [1..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal, sovs);
-                    int j;
-                    for(j = 0; j < (IntCode[i].literal-1); j++) {
-                      fprintf(f, "%d, ", IntCode[i].data[j]);
-                    }
-                    fprintf(f, "%d);\n", IntCode[i].data[IntCode[i].literal-1]);
+                fprintf(
+                    f, "const %s: array [1..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal, sovs);
+                int j;
+                for(j = 0; j < (IntCode[i].literal - 1); j++) {
+                    fprintf(f, "%d, ", IntCode[i].data[j]);
+                }
+                fprintf(f, "%d);\n", IntCode[i].data[IntCode[i].literal - 1]);
                 break;
             }
-//const Ui_stepZ:array [1..6] of byte = (0, 6, 3, 2, 2, 1);
-            #ifdef NEW_FEATURE
+                //const Ui_stepZ:array [1..6] of byte = (0, 6, 3, 2, 2, 1);
+#ifdef NEW_FEATURE
             case INT_EEPROM_INIT: {
                 fprintf(f, "epprom datas;\n");
                 break;
             }
-            #endif
-            default:{
+#endif
+            default: {
             }
         }
     }
 #endif
 }
 //-----------------------------------------------------------------------------
-static int indent = 1;
+static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
-   int j;
-   if((IntCode[i].op != INT_SIMULATE_NODE_STATE)
-   && (IntCode[i].op != INT_AllocKnownAddr) //
-   && (IntCode[i].op != INT_AllocFwdAddr))
-       for(j = 0; j < indent; j++) fprintf(f, "    ");
+    int j;
+    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) && (IntCode[i].op != INT_AllocKnownAddr) //
+       && (IntCode[i].op != INT_AllocFwdAddr))
+        for(j = 0; j < indent; j++)
+            fprintf(f, "    ");
 }
 //-----------------------------------------------------------------------------
 // Actually generate the PASCAL source for the program.
@@ -617,36 +670,36 @@ static void doIndent(FILE *f, int i)
 static void GenerateSourceCode(FILE *f, int begin, int end)
 {
     fprintf(f,
-"{  Call this function once per PLC cycle. You are responsible for calling\n"
-"   it at the interval that you specified in the MCU configuration when you\n"
-"   generated this code. }\n"
-"procedure PlcCycle;\n"
-        );
+            "{  Call this function once per PLC cycle. You are responsible for calling\n"
+            "   it at the interval that you specified in the MCU configuration when you\n"
+            "   generated this code. }\n"
+            "procedure PlcCycle;\n");
     fprintf(f, "  label Rung0label;\n");
     int i;
     for(i = 0; i < IntCodeLen; i++) {
         switch(IntCode[i].op) {
             //case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
-                fprintf(f, "  label LabelRung%d;\n", IntCode[i].literal+1);
+                fprintf(f, "  label LabelRung%d;\n", IntCode[i].literal + 1);
                 break;
-            default:
-                ;
+            default:;
         }
     }
     fprintf(f,
-"begin\n"
-"  Rung0label:;\n"
-        );
+            "begin\n"
+            "  Rung0label:;\n");
     int indent = 1;
     for(i = 0; i < IntCodeLen; i++) {
 
-        if(IntCode[i].op == INT_END_IF) indent--;
-        if(IntCode[i].op == INT_ELSE) indent--;
+        if(IntCode[i].op == INT_END_IF)
+            indent--;
+        if(IntCode[i].op == INT_ELSE)
+            indent--;
 
         int j;
-        if (IntCode[i].op != INT_SIMULATE_NODE_STATE)
-        for(j = 0; j < indent; j++) fprintf(f, "  ");
+        if(IntCode[i].op != INT_SIMULATE_NODE_STATE)
+            for(j = 0; j < indent; j++)
+                fprintf(f, "  ");
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -665,18 +718,21 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 
             case INT_COPY_BIT_TO_BIT:
                 if(SimpleBool(IntCode[i].name1))
-                    fprintf(f, "%s:=%s%s;\n",
-                        MapSym(IntCode[i].name1, ASBIT),
-                               SimpleBool(IntCode[i].name2) ? "" : "Read_", MapSym(IntCode[i].name2, ASBIT));
+                    fprintf(f,
+                            "%s:=%s%s;\n",
+                            MapSym(IntCode[i].name1, ASBIT),
+                            SimpleBool(IntCode[i].name2) ? "" : "Read_",
+                            MapSym(IntCode[i].name2, ASBIT));
                 else
-                    fprintf(f, "Write_%s(%s%s);\n",
-                        MapSym(IntCode[i].name1, ASBIT),
-                               SimpleBool(IntCode[i].name2) ? "" : "Read_", MapSym(IntCode[i].name2, ASBIT));
+                    fprintf(f,
+                            "Write_%s(%s%s);\n",
+                            MapSym(IntCode[i].name1, ASBIT),
+                            SimpleBool(IntCode[i].name2) ? "" : "Read_",
+                            MapSym(IntCode[i].name2, ASBIT));
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                fprintf(f, "%s := %d;\n", MapSym(IntCode[i].name1, ASINT),
-                    IntCode[i].literal);
+                fprintf(f, "%s := %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 break;
 
             case INT_SET_VARIABLE_RANDOM:
@@ -684,74 +740,93 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_SEED_RANDOM:
-                fprintf(f, "seed_%s := %s;\n", MapSym(IntCode[i].name1, ASINT),
-                                               MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "seed_%s := %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                fprintf(f, "%s := %s;\n", MapSym(IntCode[i].name1, ASINT),
-                                          MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "%s := %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
-            #ifdef SHARE
+#ifdef SHARE
             case INT_SET_BIN2BCD:
-                fprintf(f, "%s := bin2bcd(%s);\n", MapSym(IntCode[i].name1, ASINT),
-                                                   MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "%s := bin2bcd(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_BCD2BIN:
-                fprintf(f, "%s := bcd2bin(%s);\n", MapSym(IntCode[i].name1, ASINT),
-                                                   MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "%s := bcd2bin(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_OPPOSITE:
-                fprintf(f, "%s := opposite(%s);\n", MapSym(IntCode[i].name1, ASINT),
-                                                    MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "%s := opposite(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_VARIABLE_NOT:
-                fprintf(f, "%s := not %s;\n", MapSym(IntCode[i].name1, ASINT),
-                                            MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "%s := not %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
-            #endif
+#endif
 
             case INT_SET_SWAP:
-                fprintf(f, "%s := swap(%s);\n", MapSym(IntCode[i].name1, ASINT),
-                                                MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "%s := swap(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_VARIABLE_NEG:
-                fprintf(f, "%s := - %s;\n", MapSym(IntCode[i].name1, ASINT),
-                                            MapSym(IntCode[i].name2, ASINT));
+                fprintf(f, "%s := - %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
-            {
-                char *op;
-                case INT_SET_VARIABLE_SHL: op = "shl"; goto arith;
-                case INT_SET_VARIABLE_SHR: op = "shr"; goto arith;
-                case INT_SET_VARIABLE_SR0: op = "sr0"; goto arith;
-                case INT_SET_VARIABLE_ROL: op = "rol"; goto arith;
-                case INT_SET_VARIABLE_ROR: op = "ror"; goto arith;
-                case INT_SET_VARIABLE_AND: op = "and"; goto arith;
-                case INT_SET_VARIABLE_OR : op = "or"; goto arith;
-                case INT_SET_VARIABLE_XOR: op = "xor"; goto arith;
-                case INT_SET_VARIABLE_ADD: op = "+"; goto arith;
-                case INT_SET_VARIABLE_SUBTRACT: op = "-"; goto arith;
-                case INT_SET_VARIABLE_MULTIPLY: op = "*"; goto arith;
-                case INT_SET_VARIABLE_DIVIDE: op = "/"; goto arith;
-            #ifdef SHARE
-                #ifdef NEW_FEATURE
-                case INT_SET_VARIABLE_MOD: op = "mod"; goto arith;
-            #endif
-                #endif
-                arith:
-                    fprintf(f, "%s := %s %s %s;\n",
-                        MapSym(IntCode[i].name1, ASINT),
-                        MapSym(IntCode[i].name2, ASINT),
-                        op,
-                        MapSym(IntCode[i].name3, ASINT) );
-                    break;
-            }
+                {
+                    char *op;
+                    case INT_SET_VARIABLE_SHL:
+                        op = "shl";
+                        goto arith;
+                    case INT_SET_VARIABLE_SHR:
+                        op = "shr";
+                        goto arith;
+                    case INT_SET_VARIABLE_SR0:
+                        op = "sr0";
+                        goto arith;
+                    case INT_SET_VARIABLE_ROL:
+                        op = "rol";
+                        goto arith;
+                    case INT_SET_VARIABLE_ROR:
+                        op = "ror";
+                        goto arith;
+                    case INT_SET_VARIABLE_AND:
+                        op = "and";
+                        goto arith;
+                    case INT_SET_VARIABLE_OR:
+                        op = "or";
+                        goto arith;
+                    case INT_SET_VARIABLE_XOR:
+                        op = "xor";
+                        goto arith;
+                    case INT_SET_VARIABLE_ADD:
+                        op = "+";
+                        goto arith;
+                    case INT_SET_VARIABLE_SUBTRACT:
+                        op = "-";
+                        goto arith;
+                    case INT_SET_VARIABLE_MULTIPLY:
+                        op = "*";
+                        goto arith;
+                    case INT_SET_VARIABLE_DIVIDE:
+                        op = "/";
+                        goto arith;
+#ifdef SHARE
+#ifdef NEW_FEATURE
+                    case INT_SET_VARIABLE_MOD:
+                        op = "mod";
+                        goto arith;
+#endif
+#endif
+                    arith:
+                        fprintf(f,
+                                "%s := %s %s %s;\n",
+                                MapSym(IntCode[i].name1, ASINT),
+                                MapSym(IntCode[i].name2, ASINT),
+                                op,
+                                MapSym(IntCode[i].name3, ASINT));
+                        break;
+                }
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "inc(%s);\n", MapSym(IntCode[i].name1, ASINT));
@@ -762,82 +837,83 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_IF_BIT_SET:
-                fprintf(f, "if %s%s then begin\n",
-                        SimpleBool(IntCode[i].name1) ? "" : "Read_", MapSym(IntCode[i].name1, ASBIT));
+                fprintf(f,
+                        "if %s%s then begin\n",
+                        SimpleBool(IntCode[i].name1) ? "" : "Read_",
+                        MapSym(IntCode[i].name1, ASBIT));
                 indent++;
                 break;
 
             case INT_IF_BIT_CLEAR:
-                fprintf(f, "if not %s%s then begin\n",
-                        SimpleBool(IntCode[i].name1) ? "" : "Read_", MapSym(IntCode[i].name1, ASBIT));
+                fprintf(f,
+                        "if not %s%s then begin\n",
+                        SimpleBool(IntCode[i].name1) ? "" : "Read_",
+                        MapSym(IntCode[i].name1, ASBIT));
                 indent++;
                 break;
 
-            #ifdef NEW_CMP
+#ifdef NEW_CMP
             case INT_IF_NEQ:
-                fprintf(f, "if %s <> %s then begin\n", MapSym(IntCode[i].name1, ASINT),
-                                                       MapSym(IntCode[i].name2, ASINT));
+                fprintf(
+                    f, "if %s <> %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
                 break;
-            #endif
+#endif
 
-            #ifdef NEW_CMP
+#ifdef NEW_CMP
             case INT_IF_LES:
-                fprintf(f, "if %s < %s then begin\n", MapSym(IntCode[i].name1, ASINT),
-                                                      IntCode[i].name2);
-            #else
+                fprintf(f, "if %s < %s then begin\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].name2);
+#else
             case INT_IF_VARIABLE_LES_LITERAL:
-                fprintf(f, "if %s < %d then begin\n", MapSym(IntCode[i].name1, ASINT),
-                                                      IntCode[i].literal);
-            #endif
+                fprintf(f, "if %s < %d then begin\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+#endif
                 indent++;
                 break;
 
-            #ifdef NEW_CMP
+#ifdef NEW_CMP
             case INT_IF_EQU:
-            #else
+#else
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-            #endif
-                fprintf(f, "if %s = %s then begin\n", MapSym(IntCode[i].name1, ASINT),
-                                                      MapSym(IntCode[i].name2, ASINT));
+#endif
+                fprintf(f, "if %s = %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
                 break;
 
-            #ifdef NEW_CMP
+#ifdef NEW_CMP
             case INT_IF_GRT:
-            #else
+#else
             case INT_IF_VARIABLE_GRT_VARIABLE:
-            #endif
-                fprintf(f, "if %s > %s then begin\n", MapSym(IntCode[i].name1, ASINT),
-                                                      MapSym(IntCode[i].name2, ASINT));
+#endif
+                fprintf(f, "if %s > %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
                 break;
 
-            #ifdef NEW_CMP
+#ifdef NEW_CMP
             case INT_IF_LEQ:
-                fprintf(f, "if %s <= %s then begin\n", MapSym(IntCode[i].name1, ASINT),
-                                                      MapSym(IntCode[i].name2, ASINT));
+                fprintf(
+                    f, "if %s <= %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
                 break;
 
             case INT_IF_GEQ:
-                fprintf(f, "if %s >= %s then begin\n", MapSym(IntCode[i].name1, ASINT),
-                                                      MapSym(IntCode[i].name2, ASINT));
+                fprintf(
+                    f, "if %s >= %s then begin\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
                 break;
-            #endif
+#endif
 
             case INT_END_IF:
                 fprintf(f, "end;\n");
                 break;
 
             case INT_ELSE:
-                fprintf(f, "end else begin\n"); indent++;
+                fprintf(f, "end else begin\n");
+                indent++;
                 break;
 
             case INT_SIMULATE_NODE_STATE:
                 // simulation-only
-              //fprintf(f, "\n");
+                //fprintf(f, "\n");
                 break;
 
             case INT_COMMENT:
@@ -866,29 +942,29 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_AllocFwdAddr:
                 break;
             case INT_FwdAddrIsNow:
-                fprintf(f, "LabelRung%d:;\n", IntCode[i].literal+1);
+                fprintf(f, "LabelRung%d:;\n", IntCode[i].literal + 1);
                 break;
             case INT_RETURN:
                 fprintf(f, "exit;\n");
                 break;
             case INT_GOSUB:
                 if(IsNumber(IntCode[i].name1)) {
-                  int rung = hobatoi(IntCode[i].name1);
-                  rung = min(rung, Prog.numRungs+1);
-                  rung = max(rung, 0); // -1 anavailable
-                  fprintf(f, "CallLabelRung%d;\n", rung);
+                    int rung = hobatoi(IntCode[i].name1);
+                    rung = min(rung, Prog.numRungs + 1);
+                    rung = max(rung, 0); // -1 anavailable
+                    fprintf(f, "CallLabelRung%d;\n", rung);
                 } else {
-                  fprintf(f, "CallLabelRung%s;\n", IntCode[i].name1);
+                    fprintf(f, "CallLabelRung%s;\n", IntCode[i].name1);
                 }
                 break;
             case INT_GOTO: {
                 if(IsNumber(IntCode[i].name1)) {
-                  int rung = hobatoi(IntCode[i].name1);
-                  rung = min(rung, Prog.numRungs+1);
-                  rung = max(rung, 0); // -1 anavailable
-                  fprintf(f, "goto LabelRung%d;\n", rung);
+                    int rung = hobatoi(IntCode[i].name1);
+                    rung = min(rung, Prog.numRungs + 1);
+                    rung = max(rung, 0); // -1 anavailable
+                    fprintf(f, "goto LabelRung%d;\n", rung);
                 } else {
-                  fprintf(f, "goto LabelRung%s;\n", IntCode[i].name1);
+                    fprintf(f, "goto LabelRung%s;\n", IntCode[i].name1);
                 }
                 break;
             }
@@ -901,37 +977,54 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
-                Error(_("PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
+                Error(_(
+                    "PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
                 break;
 
-            #ifdef TABLE_IN_FLASH
+#ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT: {
                 break;
             }
             case INT_FLASH_READ: {
                 if(IsNumber(IntCode[i].name3)) {
-                    fprintf(f, "%s := %d; { %s[%s] }\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].data[CheckMakeNumber(IntCode[i].name3)], MapSym(IntCode[i].name2, ASINT), IntCode[i].name3);
+                    fprintf(f,
+                            "%s := %d; { %s[%s] }\n",
+                            MapSym(IntCode[i].name1, ASINT),
+                            IntCode[i].data[CheckMakeNumber(IntCode[i].name3)],
+                            MapSym(IntCode[i].name2, ASINT),
+                            IntCode[i].name3);
                 } else {
-                    fprintf(f, "%s := %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), MapSym(IntCode[i].name3, ASINT));
+                    fprintf(f,
+                            "%s := %s[%s];\n",
+                            MapSym(IntCode[i].name1, ASINT),
+                            MapSym(IntCode[i].name2, ASINT),
+                            MapSym(IntCode[i].name3, ASINT));
                 }
                 break;
             }
             case INT_RAM_READ: {
                 if(IsNumber(IntCode[i].name3)) {
-                    fprintf(f, "%s := %s[%d]\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), CheckMakeNumber(IntCode[i].name3));
+                    fprintf(f,
+                            "%s := %s[%d]\n",
+                            MapSym(IntCode[i].name1, ASINT),
+                            MapSym(IntCode[i].name2, ASSTR),
+                            CheckMakeNumber(IntCode[i].name3));
                 } else {
-                    fprintf(f, "%s := %s[%s];\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASSTR), MapSym(IntCode[i].name3, ASINT));
+                    fprintf(f,
+                            "%s := %s[%s];\n",
+                            MapSym(IntCode[i].name1, ASINT),
+                            MapSym(IntCode[i].name2, ASSTR),
+                            MapSym(IntCode[i].name3, ASINT));
                 }
                 break;
             }
-            #endif
+#endif
 
             default:
                 ooops("INT_%d", IntCode[i].op);
         }
     }
-    fprintf(f,
-"end;\n");
+    fprintf(f, "end;\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -942,11 +1035,12 @@ static void GenerateSUBPROG(FILE *f)
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
-                fprintf(f, "procedure Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1, IntCode[i].literal+1);
+                fprintf(f, "procedure Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1, IntCode[i].literal + 1);
                 int indentSave = indent;
                 indent = 1;
-                GenerateSourceCode(f, FindOpName(INT_AllocKnownAddr, IntCode[i].name1, "SUBPROG")+1,
-                                  FindOpNameLast(INT_RETURN, IntCode[i].name1));
+                GenerateSourceCode(f,
+                                   FindOpName(INT_AllocKnownAddr, IntCode[i].name1, "SUBPROG") + 1,
+                                   FindOpNameLast(INT_RETURN, IntCode[i].name1));
                 indent = indentSave;
                 fprintf(f, "}\n");
             }
@@ -954,17 +1048,16 @@ static void GenerateSUBPROG(FILE *f)
     }
 }
 
-
 //-----------------------------------------------------------------------------
 static char *_GetUnitName(char *dest)
 {
     char *c;
     if(strlen(dest)) {
-        c = strrchr(dest,'.');
+        c = strrchr(dest, '.');
         c[0] = '\0';
     };
     if(strlen(dest)) {
-        c = strrchr(dest,'\\');
+        c = strrchr(dest, '\\');
         dest = ++c;
     };
     return dest;
@@ -1002,7 +1095,6 @@ void CompilePascal(char *dest)
     SetExt(destv, dest, "V.pas");
     SetExt(desti, dest, "U.inc");
 
-
     FILE *f = fopen(dest, "w");
     if(!f) {
         Error(_("Couldn't open file '%s'"), dest);
@@ -1029,269 +1121,272 @@ void CompilePascal(char *dest)
         return;
     }
 
-    unitn=GetUnitName(_destn,destn);
-    unitu=GetUnitName(_destu,destu);
-    unitr=GetUnitName(_destr,destr);
-    unitv=GetUnitName(_destv,destv);
+    unitn = GetUnitName(_destn, destn);
+    unitu = GetUnitName(_destu, destu);
+    unitr = GetUnitName(_destr, destr);
+    unitv = GetUnitName(_destv, destv);
 
     fprintf(fi,
-"type SDWORD = longint;{signed}\n"
-"type UWORD = word;{unsigned}\n"
-"{ This is INTERFACE section of '%s.pas' unit. }\n"
-"{ You provide all these functions and procedures. }\n"
-        , unitu);
+            "type SDWORD = longint;{signed}\n"
+            "type UWORD = word;{unsigned}\n"
+            "{ This is INTERFACE section of '%s.pas' unit. }\n"
+            "{ You provide all these functions and procedures. }\n",
+            unitu);
 
     fprintf(fu,
-"{$I machine.inc}\n"
-"{-$define PortBufferedIn}\n"
-"{-$define PortDirectIn}\n"
-"{$ifdef PortBufferedIn} {$UNDEF PortDirectIn}   {$endif}\n"
-"{$ifdef PortDirectIn}   {$UNDEF PortBufferedIn} {$endif}\n"
-"\n"
-"{-$define PortBufferedOut}\n"
-"{-$define PortDirectOut}\n"
-"{$ifdef PortBufferedOut} {$UNDEF PortDirectOut}   {$endif}\n"
-"{$ifdef PortDirectOut}   {$UNDEF PortBufferedOut} {$endif}\n"
-"{$E-,N-}\n"
-"unit %s;\n"
-"{ You provide all these functions and procedures. }\n"
-"interface\n"
-"uses PcPorts, ports_, portIO;\n"
-        , unitu);
+            "{$I machine.inc}\n"
+            "{-$define PortBufferedIn}\n"
+            "{-$define PortDirectIn}\n"
+            "{$ifdef PortBufferedIn} {$UNDEF PortDirectIn}   {$endif}\n"
+            "{$ifdef PortDirectIn}   {$UNDEF PortBufferedIn} {$endif}\n"
+            "\n"
+            "{-$define PortBufferedOut}\n"
+            "{-$define PortDirectOut}\n"
+            "{$ifdef PortBufferedOut} {$UNDEF PortDirectOut}   {$endif}\n"
+            "{$ifdef PortDirectOut}   {$UNDEF PortBufferedOut} {$endif}\n"
+            "{$E-,N-}\n"
+            "unit %s;\n"
+            "{ You provide all these functions and procedures. }\n"
+            "interface\n"
+            "uses PcPorts, ports_, portIO;\n",
+            unitu);
 
     fprintf(fr,
-"{$E-,N-}\n"
-"unit %s;\n"
-"interface\n"
-"uses %s, %s, %s;\n"
-        , unitr,unitn,unitu,unitv);
+            "{$E-,N-}\n"
+            "unit %s;\n"
+            "interface\n"
+            "uses %s, %s, %s;\n",
+            unitr,
+            unitn,
+            unitu,
+            unitv);
     fprintf(fr,
-"procedure ResetPlcVars; { Resets all user vars. }\n"
-"\n"
-"implementation\n"
-"procedure ResetPlcVars;\n"
-"begin\n"
-       );
+            "procedure ResetPlcVars; { Resets all user vars. }\n"
+            "\n"
+            "implementation\n"
+            "procedure ResetPlcVars;\n"
+            "begin\n");
     fprintf(fv,
-"{$I machine.inc}\n"
-"{$E-,N-}\n"
-"unit %s;\n"
-"interface\n"
-"uses ld, %s, %s, keybrd{, win_vk};\n"
-        , unitv,unitn,unitu);
+            "{$I machine.inc}\n"
+            "{$E-,N-}\n"
+            "unit %s;\n"
+            "interface\n"
+            "uses ld, %s, %s, keybrd{, win_vk};\n",
+            unitv,
+            unitn,
+            unitu);
     fprintf(fv,
-"{procedure RegisterPlcVars; { Register all user vars. }\n"
-"implementation\n"
-"const\n"
-"  InCount:word=0;\n"
-"  RelayCount:word=0;\n"
-"  TimerCount:word=0;\n"
-"  VarCount:word=0;\n"
-"  OutCount:word=0;\n"
-"procedure RegisterPlcVars;\n"
-"begin\n"
-       );
+            "{procedure RegisterPlcVars; { Register all user vars. }\n"
+            "implementation\n"
+            "const\n"
+            "  InCount:word=0;\n"
+            "  RelayCount:word=0;\n"
+            "  TimerCount:word=0;\n"
+            "  VarCount:word=0;\n"
+            "  OutCount:word=0;\n"
+            "procedure RegisterPlcVars;\n"
+            "begin\n");
     fprintf(f,
-"{$I machine.inc}\n"
-"{$E-,N-}\n"
-"unit %s;\n"
-"interface\n"
-       , unitn);
+            "{$I machine.inc}\n"
+            "{$E-,N-}\n"
+            "unit %s;\n"
+            "interface\n",
+            unitn);
     fprintf(f,
-"uses %s, ports_{, crt, serv_crt, cpuspeed, utypes};\n"
-"{  This is auto-generated code from LDmicro. Do not edit this file! Go\n"
-"   back to the ladder diagram source for changes in the logic, and make\n"
-"   any PASCAL additions either in ladder.pas unit or in additional .pas files linked\n"
-"   against this one. }\n"
-"\n"
-"{  You must provide ladder.pas unit; there you must provide:\n"
-"      * a typedef for SWORD and BOOL, signed 16 bit and boolean types\n"
-"        (probably typedef signed short SWORD; typedef unsigned char BOOL;)\n"
-"\n"
-"   You must also provide implementations of all the I/O read/write\n"
-"   either as inlines in the header file or in another source file. (The\n"
-"   I/O functions are all declared extern.)\n"
-"\n"
-"   See the generated source code (below) for function names. }\n"
-        , unitu);
+            "uses %s, ports_{, crt, serv_crt, cpuspeed, utypes};\n"
+            "{  This is auto-generated code from LDmicro. Do not edit this file! Go\n"
+            "   back to the ladder diagram source for changes in the logic, and make\n"
+            "   any PASCAL additions either in ladder.pas unit or in additional .pas files linked\n"
+            "   against this one. }\n"
+            "\n"
+            "{  You must provide ladder.pas unit; there you must provide:\n"
+            "      * a typedef for SWORD and BOOL, signed 16 bit and boolean types\n"
+            "        (probably typedef signed short SWORD; typedef unsigned char BOOL;)\n"
+            "\n"
+            "   You must also provide implementations of all the I/O read/write\n"
+            "   either as inlines in the header file or in another source file. (The\n"
+            "   I/O functions are all declared extern.)\n"
+            "\n"
+            "   See the generated source code (below) for function names. }\n",
+            unitu);
     fprintf(f,
-"\n"
-"{  Define EXTERN_EVERYTHING in ladder.pas if you want all symbols extern.\n"
-"   This could be useful to implement `magic variables,' so that for\n"
-"   example when you write to the ladder variable duty_cycle, your PLC\n"
-"   runtime can look at the PASCAL variable U_duty_cycle and use that to set\n"
-"   the PWM duty cycle on the micro. That way you can add support for\n"
-"   peripherals that LDmicro doesn't know about. }\n"
-"{\n"
-"#ifdef EXTERN_EVERYTHING\n"
-"#define STATIC \n"
-"#else\n"
-"#define STATIC static\n"
-"#endif\n"
-"}\n"
-"{  Define NO_PROTOTYPES if you don't want LDmicro to provide prototypes for\n"
-"   all the I/O procedures (Read_U_xxx, Write_U_xxx) that you must provide.\n"
-"   If you define this then you must provide your own prototypes for these\n"
-"   functions in ladder.pas, or provide definitions (e.g. as inlines or macros)\n"
-"   for them in ladder.pas. }\n"
-"{\n"
-"#ifdef NO_PROTOTYPES\n"
-"#define PROTO(x)\n"
-"#else\n"
-"#define PROTO(x) x\n"
-"#endif\n"
-"}\n"
-"{  U_xxx symbols correspond to user-defined names. There is such a symbol\n"
-"   for every internal relay, variable, timer, and so on in the ladder\n"
-"   program. I_xxx symbols are internally generated. }\n"
-        );
+            "\n"
+            "{  Define EXTERN_EVERYTHING in ladder.pas if you want all symbols extern.\n"
+            "   This could be useful to implement `magic variables,' so that for\n"
+            "   example when you write to the ladder variable duty_cycle, your PLC\n"
+            "   runtime can look at the PASCAL variable U_duty_cycle and use that to set\n"
+            "   the PWM duty cycle on the micro. That way you can add support for\n"
+            "   peripherals that LDmicro doesn't know about. }\n"
+            "{\n"
+            "#ifdef EXTERN_EVERYTHING\n"
+            "#define STATIC \n"
+            "#else\n"
+            "#define STATIC static\n"
+            "#endif\n"
+            "}\n"
+            "{  Define NO_PROTOTYPES if you don't want LDmicro to provide prototypes for\n"
+            "   all the I/O procedures (Read_U_xxx, Write_U_xxx) that you must provide.\n"
+            "   If you define this then you must provide your own prototypes for these\n"
+            "   functions in ladder.pas, or provide definitions (e.g. as inlines or macros)\n"
+            "   for them in ladder.pas. }\n"
+            "{\n"
+            "#ifdef NO_PROTOTYPES\n"
+            "#define PROTO(x)\n"
+            "#else\n"
+            "#define PROTO(x) x\n"
+            "#endif\n"
+            "}\n"
+            "{  U_xxx symbols correspond to user-defined names. There is such a symbol\n"
+            "   for every internal relay, variable, timer, and so on in the ladder\n"
+            "   program. I_xxx symbols are internally generated. }\n");
 
     fprintf(f,
-"procedure PlcCycle;\n"
-"\n"
-"const PlcCycleTimeUs:comp=%d; {us} {from %s.ld CYCLE=}\n"
-"\n"
-"implementation\n\n"
-        , Prog.cycleTime,unitn);
+            "procedure PlcCycle;\n"
+            "\n"
+            "const PlcCycleTimeUs:comp=%d; {us} {from %s.ld CYCLE=}\n"
+            "\n"
+            "implementation\n\n",
+            Prog.cycleTime,
+            unitn);
+    fprintf(fu, "{$I %s.inc}\n", unitu);
     fprintf(fu,
-"{$I %s.inc}\n"
-        ,unitu);
-    fprintf(fu,
-"implementation\n"
-"uses ld;\n"
-"\n"
-        );
+            "implementation\n"
+            "uses ld;\n"
+            "\n");
 
-    InCount=0;
-    OutCount=0;
-    TimerCount=0;
-    RelayCount=0;
-    VarCount=0;
+    InCount = 0;
+    OutCount = 0;
+    TimerCount = 0;
+    RelayCount = 0;
+    VarCount = 0;
     // now generate declarations for all variables
-    GenerateDeclarations(f,fu,fi,fr,fv);
+    GenerateDeclarations(f, fu, fi, fr, fv);
     Generate_flash_eeprom(f);
     GenerateSUBPROG(f);
 
     fprintf(f,
-"(*\n"
-"const CounterNext:comp=-9.2e18;\n"
-"const Counter_:comp=-9.2e18;\n"
-"const Counter0:comp=0;\n"
-"const Counter:comp=0;\n"
-"\n"
-"procedure InitPlcCycle;\n"
-"begin\n"
-"  SetT64(PlcCycleTimeTsc,PlcCycleTimeUs);\n"
-"  UsAsTsc(PlcCycleTimeTsc);\n"
-"  SetT64(CounterNext,Counter_);\n"
-"end;\n\n"
-"\n"
-"var n:double; i:integer;\n"
-"procedure CallPlcCycle;\n"
-"begin\n"
-"  getTsc(Counter);{not use x87}\n"
-"  if Counter>CounterNext then begin\n"
-"   {if CounterNext<0 then\n"
-"      CounterNext:=Counter;}\n"
-"\n"
-"    n:=(double(Counter)-double(CounterNext))/double(PlcCycleTimeTsc);\n"
-"    if n>10.0 then begin\n"
-"      n:=11.0;\n"
-"    end;\n"
-"    {$ifndef FINAL}\n"
-"    gotoXY(1,MaxY-1);\n"
-"    write('tsc=',PlcCycleTimeTsc:0:0,' n=',n:0:3,' ',\n"
-"      Counter-CounterNext:10:0,' ',\n"
-"      '         ');\n"
-"    {$endif}\n"
-"    if n>=1.0 then\n"
-"      CounterNext:=Counter;\n"
-"\n"
-"    CounterNext:=CounterNext + PlcCycleTimeTsc;\n"
-"   {if CounterNext<0 then\n"
-"      CounterNext:=Counter;}\n"
-"    for i:=trunc(n) downto 0 do begin\n"
-"      {$ifdef PortBufferedIn}\n"
-"      {InBufs;{}\n"
-"      {$endif}\n"
-"      PlcCycle;\n"
-"      {$ifdef PortBufferedOut}\n"
-"      {OutBufs;{}\n"
-"      {$endif}\n"
-"    end;\n"
-"  end;\n"
-"end;\n"
-"(*\n"
-"var Sub,n:comp; i:integer;\n"
-"procedure CallPlcCycle;\n"
-"begin\n"
-"  getTsc(Counter);{not use x87}\n"
-"  if CmpT64(Counter,CounterNext)>=0 then begin\n"
-"    {if CmpT64(CounterNext,Counter0)<0 then\n"
-"      SetT64(CounterNext,Counter);}\n"
-"\n"
-"    SubT64(Sub,Counter,CounterNext);\n"
-"    DivT64(n,Sub,PlcCycleTimeTsc);\n"
-"    {}\n"
-"    n:=(double(Counter)-double(CounterNext))/double(PlcCycleTimeTsc);\n"
-"    if n>10 then begin\n"
-"      n:=11;\n"
-"    end;\n"
-"    {$ifndef FINAL}\n"
-"    gotoXY(1,MaxY-1);\n"
-"    write('tsc=',PlcCycleTimeTsc:0:0,' n=',n:0:3,' ',\n"
-"      Counter-CounterNext:10:0,' ',\n"
-"      '         ');\n"
-"    {$endif}\n"
-"    if n>1 then\n"
-"      SetT64(CounterNext,Counter);\n"
-"    {}\n"
-"    AddT64(CounterNext,CounterNext,PlcCycleTimeTsc);\n"
-"    for i:=trunc(n) downto 0 do begin\n"
-"      {$ifdef PortBufferedIn}\n"
-"      {InBufs;{}\n"
-"      {$endif}\n"
-"      PlcCycle;\n"
-"      {$ifdef PortBufferedOut}\n"
-"      {OutBufs;{}\n"
-"      {$endif}\n"
-"    end;\n"
-"  end;\n"
-"end;\n"
-"*)\n"
-    );
+            "(*\n"
+            "const CounterNext:comp=-9.2e18;\n"
+            "const Counter_:comp=-9.2e18;\n"
+            "const Counter0:comp=0;\n"
+            "const Counter:comp=0;\n"
+            "\n"
+            "procedure InitPlcCycle;\n"
+            "begin\n"
+            "  SetT64(PlcCycleTimeTsc,PlcCycleTimeUs);\n"
+            "  UsAsTsc(PlcCycleTimeTsc);\n"
+            "  SetT64(CounterNext,Counter_);\n"
+            "end;\n\n"
+            "\n"
+            "var n:double; i:integer;\n"
+            "procedure CallPlcCycle;\n"
+            "begin\n"
+            "  getTsc(Counter);{not use x87}\n"
+            "  if Counter>CounterNext then begin\n"
+            "   {if CounterNext<0 then\n"
+            "      CounterNext:=Counter;}\n"
+            "\n"
+            "    n:=(double(Counter)-double(CounterNext))/double(PlcCycleTimeTsc);\n"
+            "    if n>10.0 then begin\n"
+            "      n:=11.0;\n"
+            "    end;\n"
+            "    {$ifndef FINAL}\n"
+            "    gotoXY(1,MaxY-1);\n"
+            "    write('tsc=',PlcCycleTimeTsc:0:0,' n=',n:0:3,' ',\n"
+            "      Counter-CounterNext:10:0,' ',\n"
+            "      '         ');\n"
+            "    {$endif}\n"
+            "    if n>=1.0 then\n"
+            "      CounterNext:=Counter;\n"
+            "\n"
+            "    CounterNext:=CounterNext + PlcCycleTimeTsc;\n"
+            "   {if CounterNext<0 then\n"
+            "      CounterNext:=Counter;}\n"
+            "    for i:=trunc(n) downto 0 do begin\n"
+            "      {$ifdef PortBufferedIn}\n"
+            "      {InBufs;{}\n"
+            "      {$endif}\n"
+            "      PlcCycle;\n"
+            "      {$ifdef PortBufferedOut}\n"
+            "      {OutBufs;{}\n"
+            "      {$endif}\n"
+            "    end;\n"
+            "  end;\n"
+            "end;\n"
+            "(*\n"
+            "var Sub,n:comp; i:integer;\n"
+            "procedure CallPlcCycle;\n"
+            "begin\n"
+            "  getTsc(Counter);{not use x87}\n"
+            "  if CmpT64(Counter,CounterNext)>=0 then begin\n"
+            "    {if CmpT64(CounterNext,Counter0)<0 then\n"
+            "      SetT64(CounterNext,Counter);}\n"
+            "\n"
+            "    SubT64(Sub,Counter,CounterNext);\n"
+            "    DivT64(n,Sub,PlcCycleTimeTsc);\n"
+            "    {}\n"
+            "    n:=(double(Counter)-double(CounterNext))/double(PlcCycleTimeTsc);\n"
+            "    if n>10 then begin\n"
+            "      n:=11;\n"
+            "    end;\n"
+            "    {$ifndef FINAL}\n"
+            "    gotoXY(1,MaxY-1);\n"
+            "    write('tsc=',PlcCycleTimeTsc:0:0,' n=',n:0:3,' ',\n"
+            "      Counter-CounterNext:10:0,' ',\n"
+            "      '         ');\n"
+            "    {$endif}\n"
+            "    if n>1 then\n"
+            "      SetT64(CounterNext,Counter);\n"
+            "    {}\n"
+            "    AddT64(CounterNext,CounterNext,PlcCycleTimeTsc);\n"
+            "    for i:=trunc(n) downto 0 do begin\n"
+            "      {$ifdef PortBufferedIn}\n"
+            "      {InBufs;{}\n"
+            "      {$endif}\n"
+            "      PlcCycle;\n"
+            "      {$ifdef PortBufferedOut}\n"
+            "      {OutBufs;{}\n"
+            "      {$endif}\n"
+            "    end;\n"
+            "  end;\n"
+            "end;\n"
+            "*)\n");
 
-    GenerateSourceCode(f, 0, IntCodeLen-1);
+    GenerateSourceCode(f, 0, IntCodeLen - 1);
 
     fprintf(f,
-"\n"
-"{begin}\n"
-"end.\n");
+            "\n"
+            "{begin}\n"
+            "end.\n");
     fprintf(fu,
-"\n"
-"begin\n"
-"  SetPcPortsDir;\n"
-"end.\n");
+            "\n"
+            "begin\n"
+            "  SetPcPortsDir;\n"
+            "end.\n");
     fprintf(fr,
-"end;\n"
-"\n"
-"begin\n"
-"  ResetPlcVars;\n"
-"end.\n");
+            "end;\n"
+            "\n"
+            "begin\n"
+            "  ResetPlcVars;\n"
+            "end.\n");
     fprintf(fv,
-"end;\n"
-"\n"
-"begin\n"
-"  RegisterPlcVars;\n"
-"end.\n");
+            "end;\n"
+            "\n"
+            "begin\n"
+            "  RegisterPlcVars;\n"
+            "end.\n");
     fprintf(fi,
-"const\n"
-"  InCountConst    =%d;\n"
-"  OutCountConst   =%d;\n"
-"  TimerCountConst =%d;\n"
-"  RelayCountConst =%d;\n"
-"  VarCountConst   =%d;\n",InCount,OutCount,TimerCount,RelayCount,VarCount
-        );
+            "const\n"
+            "  InCountConst    =%d;\n"
+            "  OutCountConst   =%d;\n"
+            "  TimerCountConst =%d;\n"
+            "  RelayCountConst =%d;\n"
+            "  VarCountConst   =%d;\n",
+            InCount,
+            OutCount,
+            TimerCount,
+            RelayCount,
+            VarCount);
 
     fclose(f);
     fclose(fu);
@@ -1305,11 +1400,13 @@ void CompilePascal(char *dest)
     TranslitFile(destv);
     TranslitFile(desti);
     */
-    char str[MAX_PATH+500];
-    sprintf(str, _("Compile successful; wrote PASCAL source code to '%s'.\r\n\r\n"
-        "This is not a complete PASCAL program. You have to provide the runtime "
-        "and all the I/O routines. See the comments in the source code for "
-        "information about how to do this."), dest);
+    char str[MAX_PATH + 500];
+    sprintf(str,
+            _("Compile successful; wrote PASCAL source code to '%s'.\r\n\r\n"
+              "This is not a complete PASCAL program. You have to provide the runtime "
+              "and all the I/O routines. See the comments in the source code for "
+              "information about how to do this."),
+            dest);
     CompileSuccessfulMessage(str);
 }
 
