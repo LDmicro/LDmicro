@@ -2720,8 +2720,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         setlocale(LC_ALL, "");
         //RunningInBatchMode = FALSE;
-        int i;
-        for(i = 0; i < arraylen(PcCfg); i++)
+        for(uint32_t i = 0; i < pcCfgLen(); i++)
             FillPcPinInfo(&PcCfg[i]);
 
         MakeWindowClass();
@@ -2883,7 +2882,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         RefreshScrollbars();
         UpdateMainWindowTitleBar();
 
-        for(i = 0; i < 10; i++)
+        for(int i = 0; i < 10; i++)
             dbp("\n");
 
         MSG   msg;

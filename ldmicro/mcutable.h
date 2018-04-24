@@ -67,6 +67,19 @@ typedef enum CoreTag {
 // is one master SupportedMcus table, which contains entries for each
 // supported microcontroller.
 
+typedef struct McuIoPinInfoTag {
+    char    port;
+    int     bit;
+    int     pin;
+    char    pinName[MAX_NAME_LEN];
+    int     ArduinoPin;
+    char    ArduinoName[MAX_NAME_LEN];
+    int     portN;   // 1=LPT1, 2=LPT2,... 1=COM1,...
+    int     dbPin;   // in DB1..25 of PC ports
+    int     ioType;  // IN=IO_TYPE_DIG_INPUT, OUT=IO_TYPE_DIG_OUTPUT of PC ports
+    int     addr;    // addr of PC ports
+} McuIoPinInfo;
+
 typedef struct McuAdcPinInfoTag
 {
     int     pin;
@@ -109,15 +122,6 @@ typedef struct McuExtIntPinInfoTag
 {
     int pin;
 } McuExtIntPinInfo;
-typedef struct McuIoPinInfoTag
-{
-    char port;
-    int  bit;
-    int  pin;
-    char pinName[MAX_NAME_LEN];
-    int  ArduinoPin;
-    char ArduinoName[MAX_NAME_LEN];
-} McuIoPinInfo;
 
 typedef struct McuIoInfoTag
 {
@@ -346,5 +350,6 @@ extern McuIoPinInfo PcCfg[];
 extern McuIoInfo SupportedMcus[];
 
 uint32_t supportedMcuLen();
+uint32_t pcCfgLen();
 
 #endif //__MCUTABLE_H__
