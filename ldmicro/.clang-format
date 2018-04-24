@@ -1,0 +1,27 @@
+---
+BasedOnStyle: LLVM
+Language:        Cpp
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlines: Left
+AlignTrailingComments: true
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+AllowAllParametersOfDeclarationOnNextLine: true
+BinPackArguments: false
+BinPackParameters: true
+AlwaysBreakBeforeMultilineStrings: true
+BraceWrapping:
+  AfterFunction:   true
+BreakBeforeBraces: WebKit
+BreakStringLiterals: false
+BreakBeforeBinaryOperators: NonAssignment
+ColumnLimit:     120
+IndentCaseLabels: true
+#IndentPPDirectives: AfterHash
+IndentWidth:     4
+NamespaceIndentation: All
+ReflowComments: false
+SortIncludes: false
+SpaceBeforeParens: Never
+...

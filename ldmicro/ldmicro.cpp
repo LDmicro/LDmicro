@@ -30,33 +30,33 @@
 #include "freeze.h"
 #include "mcutable.h"
 #include "intcode.h"
+#include "pcports.h"
 
-HINSTANCE   Instance;
-HWND        MainWindow;
-HDC         Hdc;
+HINSTANCE Instance;
+HWND      MainWindow;
+HDC       Hdc;
 
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
-static HHOOK       MouseHookHandle;
-static int         MouseY;
+static HHOOK MouseHookHandle;
+static int   MouseY;
 
 // For the open/save dialog boxes
-#define LDMICRO_PATTERN "LDmicro Ladder Logic Programs (*.ld)\0*.ld\0" \
-                     "All files\0*\0\0"
+#define LDMICRO_PATTERN                            \
+    "LDmicro Ladder Logic Programs (*.ld)\0*.ld\0" \
+    "All files\0*\0\0"
 
 BOOL ProgramChangedNotSaved = FALSE;
 
 ULONGLONG PrevWriteTime = 0;
 ULONGLONG LastWriteTime = 0;
 
-#define HEX_PATTERN  "Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0"
+#define HEX_PATTERN "Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0"
 #define C_PATTERN "C Source Files (*.c)\0*.c\0All Files\0*\0\0"
-#define INTERPRETED_PATTERN \
-    "Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
+#define INTERPRETED_PATTERN "Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
 #define PASCAL_PATTERN "PASCAL Source Files (*.pas)\0*.pas\0All Files\0*\0\0"
 #define ARDUINO_C_PATTERN "ARDUINO C Source Files (*.cpp)\0*.cpp\0All Files\0*\0\0"
-#define XINT_PATTERN \
-    "Extended Byte Code Files (*.xint)\0*.xint\0All Files\0*\0\0"
+#define XINT_PATTERN "Extended Byte Code Files (*.xint)\0*.xint\0All Files\0*\0\0"
 
 char ExePath[MAX_PATH];
 char CurrentSaveFile[MAX_PATH]; // .ld
@@ -64,7 +64,7 @@ char CurrentLdPath[MAX_PATH];
 char CurrentCompileFile[MAX_PATH]; //.hex, .asm, ...
 char CurrentCompilePath[MAX_PATH];
 
-#define TXT_PATTERN  "Text Files (*.txt)\0*.txt\0All files\0*\0\0"
+#define TXT_PATTERN "Text Files (*.txt)\0*.txt\0All files\0*\0\0"
 
 // Everything relating to the PLC's program, I/O configuration, processor
 // choice, and so on--basically everything that would be saved in the
@@ -75,7 +75,7 @@ PlcProgram Prog;
 // Get a filename with a common dialog box and then save the program to that
 // file and then set our default filename to that.
 //-----------------------------------------------------------------------------
-static BOOL SaveAsDialog(void)
+static BOOL SaveAsDialog()
 {
     OPENFILENAME ofn;
 
@@ -107,7 +107,7 @@ char *ExtractFileDir(char *dest) // without last backslash
 {
     char *c;
     if(strlen(dest)) {
-        c = strrchr(dest,'\\');
+        c = strrchr(dest, '\\');
         if(c)
             *c = '\0';
     };
@@ -118,7 +118,7 @@ char *ExtractFilePath(char *dest) // with last backslash
 {
     char *c;
     if(strlen(dest)) {
-        c = strrchr(dest,'\\');
+        c = strrchr(dest, '\\');
         if(c)
             c[1] = '\0';
     };
@@ -130,7 +130,7 @@ char *ExtractFileName(char *src) // with .ext
 {
     char *c;
     if(strlen(src)) {
-        c = strrchr(src,'\\');
+        c = strrchr(src, '\\');
         if(c)
             return &c[1];
     }
@@ -144,7 +144,7 @@ char *GetFileName(char *dest, char *src) // without .ext
     char *c;
     strcpy(dest, ExtractFileName(src));
     if(strlen(dest)) {
-        c = strrchr(dest,'.');
+        c = strrchr(dest, '.');
         if(c)
             c[0] = '\0';
     }
@@ -156,10 +156,10 @@ char *SetExt(char *dest, const char *src, const char *ext)
 {
     char *c;
     if(dest != src)
-      if(strlen(src))
-        strcpy(dest, src);
+        if(strlen(src))
+            strcpy(dest, src);
     if(strlen(dest)) {
-        c = strrchr(dest,'.');
+        c = strrchr(dest, '.');
         if(c)
             c[0] = '\0';
     };
@@ -167,7 +167,7 @@ char *SetExt(char *dest, const char *src, const char *ext)
         strcat(dest, "new");
 
     if(strlen(ext))
-        if(!strchr(ext,'.'))
+        if(!strchr(ext, '.'))
             strcat(dest, ".");
 
     return strcat(dest, ext);
@@ -177,9 +177,9 @@ char *SetExt(char *dest, const char *src, const char *ext)
 // Get a filename with a common dialog box and then export the program as
 // an ASCII art drawing.
 //-----------------------------------------------------------------------------
-static BOOL ExportDialog(void)
+static BOOL ExportDialog()
 {
-    char exportFile[MAX_PATH];
+    char         exportFile[MAX_PATH];
     OPENFILENAME ofn;
 
     exportFile[0] = '\0';
@@ -263,22 +263,22 @@ bool exists_test3 (const char *name) {
 //-----------------------------------------------------------------------------
 long int fsize(FILE *fp)
 {
-    long int prev=ftell(fp);
+    long int prev = ftell(fp);
     fseek(fp, 0L, SEEK_END);
-    long int sz=ftell(fp);
-    fseek(fp,prev,SEEK_SET); //go back to where we were
+    long int sz = ftell(fp);
+    fseek(fp, prev, SEEK_SET); //go back to where we were
     return sz;
 }
 
 long int fsize(char *filename)
 {
     FILE *fp;
-    fp=fopen(filename,"rb");
-    if(fp==NULL) {
+    fp = fopen(filename, "rb");
+    if(fp == nullptr) {
         return 0;
     }
     fseek(fp, 0L, SEEK_END);
-    long int sz=ftell(fp);
+    long int sz = ftell(fp);
     fclose(fp);
     return sz;
 }
@@ -286,38 +286,42 @@ long int fsize(char *filename)
 //-----------------------------------------------------------------------------
 static void isErr(int Err, char *r)
 {
-  const char *s;
-  switch(Err){
-    case 0:s="The system is out of memory or resources"; break;
-    case ERROR_BAD_FORMAT:s="The .exe file is invalid"; break;
-    case ERROR_FILE_NOT_FOUND:s="The specified file was not found"; break;
-    case ERROR_PATH_NOT_FOUND:s="The specified path was not found"; break;
-    default:s=""; break;
-  }
-  if(strlen(s))
-      Error("Error: %d - %s in command line:\n\n%s",Err, s, r);
+    const char *s;
+    switch(Err) {
+        // clang-format off
+        case 0:                    s = "The system is out of memory or resources"; break;
+        case ERROR_BAD_FORMAT:     s = "The .exe file is invalid";                 break;
+        case ERROR_FILE_NOT_FOUND: s = "The specified file was not found";         break;
+        case ERROR_PATH_NOT_FOUND: s = "The specified path was not found";         break;
+        default:                   s = "";                                         break;
+        // clang-format on
+    }
+    if(strlen(s))
+        Error("Error: %d - %s in command line:\n\n%s", Err, s, r);
 }
 
 //-----------------------------------------------------------------------------
 static int Execute(char *r)
 {
-   return WinExec(r, SW_SHOWNORMAL/* | SW_SHOWMINIMIZED*/);
+    return WinExec(r, SW_SHOWNORMAL /* | SW_SHOWMINIMIZED*/);
 }
 
 //-----------------------------------------------------------------------------
 char *GetIsaName(int ISA)
 {
     switch(ISA) {
+        // clang-format off
         case ISA_AVR          : return (char *)stringer( ISA_AVR          ) + 4;
         case ISA_PIC16        : return (char *)stringer( ISA_PIC16        ) + 4;
       //case ISA_ANSIC        : return (char *)stringer( ISA_ANSIC        ) + 4;
         case ISA_INTERPRETED  : return (char *)stringer( ISA_INTERPRETED  ) + 4;
         case ISA_XINTERPRETED : return (char *)stringer( ISA_XINTERPRETED ) + 4;
         case ISA_NETZER       : return (char *)stringer( ISA_NETZER       ) + 4;
-        case ISA_PASCAL       : return (char *)stringer( ISA_PASCAL       ) + 4;
+        case ISA_PC           : return (char *)stringer( ISA_PC           ) + 4;
       //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
-        default               : oops(); return NULL;
+        default               : oops(); return nullptr;
+        // clang-format on
     }
 }
 
@@ -325,6 +329,7 @@ char *GetIsaName(int ISA)
 const char *GetMnuName(int MNU)
 {
     switch(MNU) {
+        // clang-format off
         case MNU_COMPILE_ANSIC         : return (char *)stringer(MNU_COMPILE_ANSIC) + 12;
         case MNU_COMPILE_HI_TECH_C     : return (char *)stringer(MNU_COMPILE_HI_TECH_C) + 12;
         case MNU_COMPILE_CCS_PIC_C     : return (char *)stringer(MNU_COMPILE_CCS_PIC_C) + 12;
@@ -333,13 +338,16 @@ const char *GetMnuName(int MNU)
         case MNU_COMPILE_IMAGECRAFT    : return (char *)stringer(MNU_COMPILE_IMAGECRAFT) + 12;
         case MNU_COMPILE_IAR           : return (char *)stringer(MNU_COMPILE_IAR) + 12;
         case MNU_COMPILE_ARDUINO       : return (char *)stringer(MNU_COMPILE_ARDUINO) + 12;
+        case MNU_COMPILE_PASCAL        : return (char *)stringer(MNU_COMPILE_PASCAL) + 12;
         default                        : return "";
+            // clang-format on
     }
 }
 
 //-----------------------------------------------------------------------------
 int GetMnu(char *MNU_name)
 {
+    // clang-format off
     if(!strlen(MNU_name)) return -1;
     if(strstr("MNU_COMPILE_ANSIC",         MNU_name)) return MNU_COMPILE_ANSIC;
     if(strstr("MNU_COMPILE_HI_TECH_C",     MNU_name)) return MNU_COMPILE_HI_TECH_C;
@@ -347,6 +355,8 @@ int GetMnu(char *MNU_name)
     if(strstr("MNU_COMPILE_GNUC",          MNU_name)) return MNU_COMPILE_GNUC;
     if(strstr("MNU_COMPILE_CODEVISIONAVR", MNU_name)) return MNU_COMPILE_CODEVISIONAVR;
     if(strstr("MNU_COMPILE_ARDUINO",       MNU_name)) return MNU_COMPILE_ARDUINO;
+    if(strstr("MNU_COMPILE_PASCAL",        MNU_name)) return MNU_COMPILE_PASCAL;
+    // clang-format on
     return -1;
 }
 
@@ -362,7 +372,7 @@ static void flashBat(char *name, int ISA)
 
     s[0] = '\0';
     SetExt(s, name, "");
-    sprintf(r,"\"%sflashMcu.bat\" %s \"%s\"",ExePath,GetIsaName(ISA),s);
+    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\"", ExePath, GetIsaName(ISA), s);
 
     isErr(Execute(r), r);
 }
@@ -378,7 +388,7 @@ static void readBat(const char *name, int ISA)
 
     s[0] = '\0';
     SetExt(s, name, "");
-    sprintf(r,"\"%sreadMcu.bat\" %s \"%s\"",ExePath,GetIsaName(ISA),s);
+    sprintf(r, "\"%sreadMcu.bat\" %s \"%s\"", ExePath, GetIsaName(ISA), s);
 
     isErr(Execute(r), r);
 }
@@ -386,8 +396,8 @@ static void readBat(const char *name, int ISA)
 //-----------------------------------------------------------------------------
 static void notepad(const char *path, const char *name, const char *ext)
 {
-    char s[MAX_PATH]="";
-    char r[MAX_PATH]="";
+    char s[MAX_PATH] = "";
+    char r[MAX_PATH] = "";
 
     r[0] = '\0';
     if(path && strlen(path)) {
@@ -404,13 +414,13 @@ static void notepad(const char *path, const char *name, const char *ext)
         Error("File not exist: '%s'", s);
         return;
     }
-    sprintf(r,"\"%snotepad.bat\" \"%s\"",ExePath,s);
+    sprintf(r, "\"%snotepad.bat\" \"%s\"", ExePath, s);
     isErr(Execute(r), r);
 }
 
 static void notepad(const char *name, const char *ext)
 {
-    notepad(NULL, name, ext);
+    notepad(nullptr, name, ext);
 }
 
 //-----------------------------------------------------------------------------
@@ -426,14 +436,17 @@ static void clearBat()
 
     char r[MAX_PATH];
 
-    sprintf(r,"%sclear.bat", ExePath);
-    dbps(r)
+    sprintf(r, "%sclear.bat", ExePath);
     if(!ExistFile(r))
         return;
 
-    sprintf(r,"\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"", ExePath,
-      CurrentLdPath, LdName, CurrentCompilePath, CompileName);
-    dbps(r)
+    sprintf(r,
+            "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"",
+            ExePath,
+            CurrentLdPath,
+            LdName,
+            CurrentCompilePath,
+            CompileName);
     isErr(Execute(r), r);
 }
 
@@ -451,17 +464,17 @@ static void postCompile(const char *MNU)
 
     if(!fsize(CurrentCompileFile)) {
         remove(CurrentCompileFile);
-        if(strstr(CurrentCompileFile,".hex")) {
+        if(strstr(CurrentCompileFile, ".hex")) {
             sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".asm");
             remove(outFile);
         }
-        if(strstr(CurrentCompileFile,".c")) {
+        if(strstr(CurrentCompileFile, ".c")) {
             sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".h");
             remove(outFile);
             sprintf(outFile, "%s%s", CurrentCompilePath, "ladder.h_");
             remove(outFile);
         }
-        if(strstr(CurrentCompileFile,".cpp")) {
+        if(strstr(CurrentCompileFile, ".cpp")) {
             sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".h");
             remove(outFile);
             sprintf(outFile, "%s%s%s", CurrentCompilePath, LdName, ".ino_");
@@ -474,7 +487,7 @@ static void postCompile(const char *MNU)
 
     char r[MAX_PATH];
 
-    sprintf(r,"%spostCompile.bat", ExePath);
+    sprintf(r, "%spostCompile.bat", ExePath);
     if(!ExistFile(r))
         return;
 
@@ -482,7 +495,7 @@ static void postCompile(const char *MNU)
     if(Prog.mcu)
         ISA = GetIsaName(Prog.mcu->whichIsa);
 
-    sprintf(r,"\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentCompilePath, LdName);
+    sprintf(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentCompilePath, LdName);
     isErr(Execute(r), r);
 }
 
@@ -515,7 +528,9 @@ static void CompileProgram(BOOL compileAs, int MNU)
         if(IsNumber(onlyName)) {
             strcpy(CurrentCompileFile, "");
             ProgramChangedNotSaved = TRUE;
-            Error(_("ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"), onlyName[0], onlyName);
+            Error(_("ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"),
+                  onlyName[0],
+                  onlyName);
             return;
         }
 
@@ -535,67 +550,60 @@ static void CompileProgram(BOOL compileAs, int MNU)
         }
     }
 
-    IsOpenAnable:
+IsOpenAnable:
     if(!compileAs && strlen(CurrentCompileFile)) {
-      if((MNU == MNU_COMPILE)         && strstr(CurrentCompileFile,".hex") // && (compile_MNU <= 0)
-      || (MNU == MNU_COMPILE_IHEX)    && strstr(CurrentCompileFile,".hex")
-      || (MNU >= MNU_COMPILE_ANSIC)   && strstr(CurrentCompileFile,".c"  ) && (MNU <= MNU_COMPILE_lastC)
-      || (MNU == MNU_COMPILE_ARDUINO) && strstr(CurrentCompileFile,".cpp")
-      || (MNU == MNU_COMPILE_PASCAL)  && strstr(CurrentCompileFile,".pas")
-      || (MNU == MNU_COMPILE_INT)     && strstr(CurrentCompileFile,".int")
-      || (MNU == MNU_COMPILE_XINT)    && strstr(CurrentCompileFile,".xint")
-      ) {
-        if(FILE *f = fopen(CurrentCompileFile, "w")) {
-            fclose(f);
-            remove(CurrentCompileFile);
-        } else {
-            compileAs = TRUE;
-            Error(_("Couldn't OPEN file '%s'"), CurrentCompileFile);
+        if(((MNU == MNU_COMPILE) && strstr(CurrentCompileFile, ".hex")) // && (compile_MNU <= 0)
+           || ((MNU == MNU_COMPILE_AS) && strstr(CurrentCompileFile, ".hex"))
+           || ((MNU == MNU_COMPILE_IHEX) && strstr(CurrentCompileFile, ".hex"))
+           || ((MNU >= MNU_COMPILE_ANSIC) && strstr(CurrentCompileFile, ".c") && (MNU <= MNU_COMPILE_lastC))
+           || ((MNU == MNU_COMPILE_ARDUINO) && strstr(CurrentCompileFile, ".cpp"))
+           || ((MNU == MNU_COMPILE_PASCAL) && strstr(CurrentCompileFile, ".pas"))
+           || ((MNU == MNU_COMPILE_INT) && strstr(CurrentCompileFile, ".int"))
+           || ((MNU == MNU_COMPILE_XINT) && strstr(CurrentCompileFile, ".xint"))) {
+            if(FILE *f = fopen(CurrentCompileFile, "w")) {
+                fclose(f);
+                remove(CurrentCompileFile);
+            } else {
+                compileAs = TRUE;
+                Error(_("Couldn't OPEN file '%s'"), CurrentCompileFile);
+            }
         }
-      }
     }
 
-    if(compileAs
-    ||(MNU == MNU_COMPILE_AS)
-    ||(strlen(CurrentCompileFile)==0)
-    ||(MNU == MNU_COMPILE)         && !strstr(CurrentCompileFile,".hex")
-    ||(MNU == MNU_COMPILE_IHEX)    && !strstr(CurrentCompileFile,".hex")
-    ||(MNU >= MNU_COMPILE_ANSIC)   && !strstr(CurrentCompileFile,".c"  ) && (MNU <= MNU_COMPILE_lastC)
-    ||(MNU == MNU_COMPILE_ARDUINO) && !strstr(CurrentCompileFile,".cpp")
-    ||(MNU == MNU_COMPILE_PASCAL)  && !strstr(CurrentCompileFile,".pas")
-    ||(MNU == MNU_COMPILE_INT)     && !strstr(CurrentCompileFile,".int")
-    ||(MNU == MNU_COMPILE_XINT)    && !strstr(CurrentCompileFile,".xint")
-    ) {
-        const char *c;
+    if(compileAs || ((MNU == MNU_COMPILE_AS) && strlen(CurrentCompileFile) == 0) || (strlen(CurrentCompileFile) == 0)
+       || ((MNU == MNU_COMPILE) && !strstr(CurrentCompileFile, ".hex"))
+       || ((MNU == MNU_COMPILE_IHEX) && !strstr(CurrentCompileFile, ".hex"))
+       || ((MNU >= MNU_COMPILE_ANSIC) && !strstr(CurrentCompileFile, ".c") && (MNU <= MNU_COMPILE_lastC))
+       || ((MNU == MNU_COMPILE_ARDUINO) && !strstr(CurrentCompileFile, ".cpp"))
+       || ((MNU == MNU_COMPILE_PASCAL) && !strstr(CurrentCompileFile, ".pas"))
+       || ((MNU == MNU_COMPILE_INT) && !strstr(CurrentCompileFile, ".int"))
+       || ((MNU == MNU_COMPILE_XINT) && !strstr(CurrentCompileFile, ".xint"))) {
+        const char * c;
         OPENFILENAME ofn;
 
         memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
         ofn.hInstance = Instance;
         ofn.lpstrTitle = _("Compile To");
-        if((MNU >= MNU_COMPILE_ANSIC)
-        && (MNU <= MNU_COMPILE_lastC)) {
+        if((MNU >= MNU_COMPILE_ANSIC) && (MNU <= MNU_COMPILE_lastC)) {
             ofn.lpstrFilter = C_PATTERN;
             ofn.lpstrDefExt = "c";
             c = "c";
-          //compile_MNU = MNU;
+            //compile_MNU = MNU;
             if(MNU == MNU_COMPILE_ANSIC)
                 compile_MNU = MNU_COMPILE_ANSIC;
-        } else if ((MNU == MNU_COMPILE_INT) ||
-            (Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
-                          Prog.mcu->whichIsa == ISA_NETZER))) {
+        } else if((MNU == MNU_COMPILE_INT)
+                  || (Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED || Prog.mcu->whichIsa == ISA_NETZER))) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
             c = "int";
             compile_MNU = MNU_COMPILE_INT;
-        } else if ((MNU == MNU_COMPILE_XINT) ||
-            (Prog.mcu && Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
+        } else if((MNU == MNU_COMPILE_XINT) || (Prog.mcu && Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
             ofn.lpstrFilter = XINT_PATTERN;
             ofn.lpstrDefExt = "xint";
             c = "xint";
             compile_MNU = MNU_COMPILE_XINT;
-        } else if((MNU == MNU_COMPILE_PASCAL) ||
-                  (Prog.mcu && Prog.mcu->whichIsa == ISA_PASCAL)) {
+        } else if(MNU == MNU_COMPILE_PASCAL) {
             ofn.lpstrFilter = PASCAL_PATTERN;
             ofn.lpstrDefExt = "pas";
             c = "pas";
@@ -619,7 +627,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
         if(!GetSaveFileName(&ofn))
             return;
 
-        strcpy(CurrentCompilePath,CurrentCompileFile);
+        strcpy(CurrentCompilePath, CurrentCompileFile);
         ExtractFileDir(CurrentCompilePath);
 
         // hex output filename is stored in the .ld file
@@ -628,58 +636,65 @@ static void CompileProgram(BOOL compileAs, int MNU)
         goto IsOpenAnable;
     }
 
-    if(!GenerateIntermediateCode()) return;
+    if(!GenerateIntermediateCode())
+        return;
 
-    if((Prog.mcu == NULL)
-    && (MNU != MNU_COMPILE_PASCAL)
-    && (MNU != MNU_COMPILE_ANSIC)
-    && (MNU != MNU_COMPILE_ARDUINO)
-    && (MNU != MNU_COMPILE_XINT)) {
+    if((Prog.mcu == nullptr) && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC)
+       && (MNU != MNU_COMPILE_ARDUINO) && (MNU != MNU_COMPILE_XINT)) {
         Error(_("Must choose a target microcontroller before compiling."));
         return;
     }
 
-    if((UartFunctionUsed() && (Prog.mcu) && Prog.mcu->uartNeeds.rxPin == 0)
-    && (MNU != MNU_COMPILE_PASCAL)
-    && (MNU != MNU_COMPILE_ANSIC)
-    && (MNU != MNU_COMPILE_ARDUINO)) {
+    if((UartFunctionUsed() && (Prog.mcu) && Prog.mcu->uartNeeds.rxPin == 0) && (MNU != MNU_COMPILE_PASCAL)
+       && (MNU != MNU_COMPILE_ANSIC) && (MNU != MNU_COMPILE_ARDUINO)) {
         Error(_("UART function used but not supported for this micro."));
         return;
     }
 
     if((PwmFunctionUsed() && (Prog.mcu) && (Prog.mcu->pwmCount == 0) && Prog.mcu->pwmNeedsPin == 0)
-    && (MNU != MNU_COMPILE_PASCAL)
-    && (MNU != MNU_COMPILE_ANSIC)
-    && (MNU != MNU_COMPILE_ARDUINO)
-    && (MNU != MNU_COMPILE_XINT)
-    && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
+       && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC) && (MNU != MNU_COMPILE_ARDUINO)
+       && (MNU != MNU_COMPILE_XINT) && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
-    if((MNU >= MNU_COMPILE_ANSIC)
-    && (MNU <= MNU_COMPILE_lastC)) {
+    if((MNU >= MNU_COMPILE_ANSIC) && (MNU <= MNU_COMPILE_lastC)) {
         CompileAnsiC(CurrentCompileFile, MNU);
         postCompile("ANSIC");
-    } else if (MNU == MNU_COMPILE_ARDUINO) {
+    } else if(MNU == MNU_COMPILE_ARDUINO) {
         CompileAnsiC(CurrentCompileFile, MNU);
         postCompile("ARDUINO");
-    } else if (MNU == MNU_COMPILE_INT) {
+    } else if(MNU == MNU_COMPILE_PASCAL) {
+        CompilePascal(CurrentCompileFile);
+        postCompile("PASCAL");
+    } else if(MNU == MNU_COMPILE_INT) {
         CompileInterpreted(CurrentCompileFile);
         postCompile("INTERPRETED");
-    } else if (MNU == MNU_COMPILE_XINT) {
+    } else if(MNU == MNU_COMPILE_XINT) {
         CompileXInterpreted(CurrentCompileFile);
         postCompile("XINTERPRETED");
-    } else if (Prog.mcu) {
+    } else if(Prog.mcu) {
         switch(Prog.mcu->whichIsa) {
-            case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
-            case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
-            case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
-            case ISA_XINTERPRETED:  CompileXInterpreted(CurrentCompileFile); break;
-            case ISA_NETZER:        CompileNetzer(CurrentCompileFile); break;
-            default: ooops("0x%X", Prog.mcu->whichIsa);
+            case ISA_AVR:
+                CompileAvr(CurrentCompileFile);
+                break;
+            case ISA_PIC16:
+                CompilePic16(CurrentCompileFile);
+                break;
+            case ISA_INTERPRETED:
+                CompileInterpreted(CurrentCompileFile);
+                break;
+            case ISA_XINTERPRETED:
+                CompileXInterpreted(CurrentCompileFile);
+                break;
+            case ISA_NETZER:
+                CompileNetzer(CurrentCompileFile);
+                break;
+            default:
+                ooops("0x%X", Prog.mcu->whichIsa);
         }
         postCompile(GetIsaName(Prog.mcu->whichIsa));
-    } else oops();
+    } else
+        oops();
 
     RefreshControlsToSettings();
 }
@@ -689,7 +704,7 @@ static void CompileProgram(BOOL compileAs, int MNU)
 // or to cancel the operation they are performing. Return TRUE if they want
 // to cancel.
 //-----------------------------------------------------------------------------
-BOOL CheckSaveUserCancels(void)
+BOOL CheckSaveUserCancels()
 {
     if(!ProgramChangedNotSaved) {
         // no problem
@@ -697,9 +712,10 @@ BOOL CheckSaveUserCancels(void)
     }
 
     int r = MessageBox(MainWindow,
-        _("The program has changed since it was last saved.\r\n\r\n"
-        "Do you want to save the changes?"), "LDmicro",
-        MB_YESNOCANCEL | MB_ICONWARNING);
+                       _("The program has changed since it was last saved.\r\n\r\n"
+                         "Do you want to save the changes?"),
+                       "LDmicro",
+                       MB_YESNOCANCEL | MB_ICONWARNING);
     switch(r) {
         case IDYES:
             if(SaveProgram(MNU_SAVE))
@@ -723,7 +739,7 @@ BOOL CheckSaveUserCancels(void)
 // Load a new program from a file. If it succeeds then set our default filename
 // to that, else we end up with an empty file then.
 //-----------------------------------------------------------------------------
-static void OpenDialog(void)
+static void OpenDialog()
 {
     OPENFILENAME ofn;
 
@@ -762,7 +778,7 @@ static void OpenDialog(void)
 // changed so that we ask if user wants to save before exiting, and update
 // the I/O list.
 //-----------------------------------------------------------------------------
-void ProgramChanged(void)
+void ProgramChanged()
 {
     ProgramChangedNotSaved = TRUE;
     GenerateIoListDontLoseSelection();
@@ -792,7 +808,8 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
                     int dy = MouseY - mhs->pt.y;
 
                     IoListHeight += dy;
-                    if(IoListHeight < 50) IoListHeight = 50;
+                    if(IoListHeight < 50)
+                        IoListHeight = 50;
                     MouseY = mhs->pt.y;
                     MainWindowResized();
 
@@ -814,32 +831,32 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 static void ProcessMenu(int code)
 {
-    if(code >= MNU_PROCESSOR_0 && code < MNU_PROCESSOR_0+NUM_SUPPORTED_MCUS) {
+    if(code >= MNU_PROCESSOR_0 && code < MNU_PROCESSOR_0 + NUM_SUPPORTED_MCUS) {
         strcpy(CurrentCompileFile, "");
         SetMcu(&SupportedMcus[code - MNU_PROCESSOR_0]);
         RefreshControlsToSettings();
         ProgramChangedNotSaved = TRUE;
         return;
     }
-    if(code == MNU_PROCESSOR_0+NUM_SUPPORTED_MCUS) {
-        SetMcu(NULL);
+    if(code == MNU_PROCESSOR_0 + NUM_SUPPORTED_MCUS) {
+        SetMcu(nullptr);
         strcpy(CurrentCompileFile, "");
         RefreshControlsToSettings();
         ProgramChangedNotSaved = TRUE;
         return;
     }
-    if((code >= MNU_SCHEME_BLACK)
-    && (code < MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES)) {
+    if((code >= MNU_SCHEME_BLACK) && (code < MNU_SCHEME_BLACK + NUM_SUPPORTED_SCHEMES)) {
         scheme = code & 0xff;
         InitForDrawing();
-        InvalidateRect(MainWindow, NULL, FALSE);
+        InvalidateRect(MainWindow, nullptr, FALSE);
         RefreshControlsToSettings();
         return;
     }
 
     switch(code) {
         case MNU_NEW:
-            if(CheckSaveUserCancels()) break;
+            if(CheckSaveUserCancels())
+                break;
             NewProgram();
             strcpy(CurrentSaveFile, "");
             strcpy(CurrentCompileFile, "");
@@ -849,7 +866,8 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_OPEN:
-            if(CheckSaveUserCancels()) break;
+            if(CheckSaveUserCancels())
+                break;
             OpenDialog();
             break;
 
@@ -882,7 +900,8 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_NOTEPAD_LD:
-            if(CheckSaveUserCancels()) break;
+            if(CheckSaveUserCancels())
+                break;
             notepad(CurrentSaveFile, "ld");
             break;
 
@@ -895,27 +914,41 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_NOTEPAD_HEX:
-            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "hex");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "hex");
             break;
 
         case MNU_NOTEPAD_ASM:
-            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "asm");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "asm");
             break;
 
-        case MNU_NOTEPAD_C:
-            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "c");
+        case MNU_NOTEPAD_C: {
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "c");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "h");
+            char ladderhName[MAX_PATH];
+            sprintf(ladderhName, "%s\\ladder.h", strlen(CurrentCompileFile) ? CurrentCompilePath : CurrentSaveFile);
+            notepad(ladderhName, "h");
             break;
-
-        case MNU_NOTEPAD_H:
-            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "h");
+        }
+        case MNU_NOTEPAD_INO: {
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".ino");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".cpp");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".h");
+            char ladderhName[MAX_PATH];
+            sprintf(ladderhName, "%s\\ladder.h", strlen(CurrentCompileFile) ? CurrentCompilePath : CurrentSaveFile);
+            notepad(ladderhName, ".h");
             break;
-
+        }
         case MNU_NOTEPAD_PAS:
-            notepad(strlen(CurrentCompileFile)?CurrentCompileFile:CurrentSaveFile, "pas");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, ".pas");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "U.pas");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "U.inc");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "V.pas");
+            notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "R.pas");
             break;
 
         case MNU_EXIT:
-            if(CheckSaveUserCancels()) break;
+            if(CheckSaveUserCancels())
+                break;
             PostQuitMessage(0);
             break;
 
@@ -1189,84 +1222,146 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddPersist());
             break;
 
-        {
-            int elem;
-            case MNU_INSERT_SET_BIT      : elem = ELEM_SET_BIT     ; goto bit_ops;
-            case MNU_INSERT_CLEAR_BIT    : elem = ELEM_CLEAR_BIT   ; goto bit_ops;
-            case MNU_INSERT_IF_BIT_SET   : elem = ELEM_IF_BIT_SET  ; goto bit_ops;
-            case MNU_INSERT_IF_BIT_CLEAR : elem = ELEM_IF_BIT_CLEAR; goto bit_ops;
-bit_ops:
-                CHANGING_PROGRAM(AddBitOps(elem));
-                break;
-        }
+            {
+                int elem;
+                case MNU_INSERT_SET_BIT:
+                    elem = ELEM_SET_BIT;
+                    goto bit_ops;
+                case MNU_INSERT_CLEAR_BIT:
+                    elem = ELEM_CLEAR_BIT;
+                    goto bit_ops;
+                case MNU_INSERT_IF_BIT_SET:
+                    elem = ELEM_IF_BIT_SET;
+                    goto bit_ops;
+                case MNU_INSERT_IF_BIT_CLEAR:
+                    elem = ELEM_IF_BIT_CLEAR;
+                    goto bit_ops;
+                bit_ops:
+                    CHANGING_PROGRAM(AddBitOps(elem));
+                    break;
+            }
 
-        {
-            int elem;
-            case MNU_INSERT_ADD: elem = ELEM_ADD; goto math;
-            case MNU_INSERT_SUB: elem = ELEM_SUB; goto math;
-            case MNU_INSERT_MUL: elem = ELEM_MUL; goto math;
-            case MNU_INSERT_DIV: elem = ELEM_DIV; goto math;
-            case MNU_INSERT_MOD: elem = ELEM_MOD; goto math;
-            case MNU_INSERT_AND: elem = ELEM_AND; goto math;
-            case MNU_INSERT_OR : elem = ELEM_OR ; goto math;
-            case MNU_INSERT_XOR: elem = ELEM_XOR; goto math;
-            case MNU_INSERT_NOT: elem = ELEM_NOT; goto math;
-            case MNU_INSERT_NEG: elem = ELEM_NEG; goto math;
-            case MNU_INSERT_SHL: elem = ELEM_SHL; goto math;
-            case MNU_INSERT_SHR: elem = ELEM_SHR; goto math;
-            case MNU_INSERT_SR0: elem = ELEM_SR0; goto math;
-            case MNU_INSERT_ROL: elem = ELEM_ROL; goto math;
-            case MNU_INSERT_ROR: elem = ELEM_ROR; goto math;
-math:
-                CHANGING_PROGRAM(AddMath(elem));
-                break;
-        }
+            {
+                int elem;
+                case MNU_INSERT_ADD:
+                    elem = ELEM_ADD;
+                    goto math;
+                case MNU_INSERT_SUB:
+                    elem = ELEM_SUB;
+                    goto math;
+                case MNU_INSERT_MUL:
+                    elem = ELEM_MUL;
+                    goto math;
+                case MNU_INSERT_DIV:
+                    elem = ELEM_DIV;
+                    goto math;
+                case MNU_INSERT_MOD:
+                    elem = ELEM_MOD;
+                    goto math;
+                case MNU_INSERT_AND:
+                    elem = ELEM_AND;
+                    goto math;
+                case MNU_INSERT_OR:
+                    elem = ELEM_OR;
+                    goto math;
+                case MNU_INSERT_XOR:
+                    elem = ELEM_XOR;
+                    goto math;
+                case MNU_INSERT_NOT:
+                    elem = ELEM_NOT;
+                    goto math;
+                case MNU_INSERT_NEG:
+                    elem = ELEM_NEG;
+                    goto math;
+                case MNU_INSERT_SHL:
+                    elem = ELEM_SHL;
+                    goto math;
+                case MNU_INSERT_SHR:
+                    elem = ELEM_SHR;
+                    goto math;
+                case MNU_INSERT_SR0:
+                    elem = ELEM_SR0;
+                    goto math;
+                case MNU_INSERT_ROL:
+                    elem = ELEM_ROL;
+                    goto math;
+                case MNU_INSERT_ROR:
+                    elem = ELEM_ROR;
+                    goto math;
+                math:
+                    CHANGING_PROGRAM(AddMath(elem));
+                    break;
+            }
 
-        #ifdef USE_SFR
-        // Special function register
-        {
-            int esfr;
-            case MNU_INSERT_SFR: esfr = ELEM_RSFR; goto jcmp;
-            case MNU_INSERT_SFW: esfr = ELEM_WSFR; goto jcmp;
-            case MNU_INSERT_SSFB: esfr = ELEM_SSFR; goto jcmp;
-            case MNU_INSERT_csFB: esfr = ELEM_CSFR; goto jcmp;
-            case MNU_INSERT_TSFB: esfr = ELEM_TSFR; goto jcmp;
-            case MNU_INSERT_T_C_SFB: esfr = ELEM_T_C_SFR; goto jcmp;
-jcmp:
-                CHANGING_PROGRAM(AddSfr(esfr));
-                break;
-        }
-        // Special function register
-        #endif
+#ifdef USE_SFR
+            // Special function register
+            {
+                int esfr;
+                case MNU_INSERT_SFR:
+                    esfr = ELEM_RSFR;
+                    goto jcmp;
+                case MNU_INSERT_SFW:
+                    esfr = ELEM_WSFR;
+                    goto jcmp;
+                case MNU_INSERT_SSFB:
+                    esfr = ELEM_SSFR;
+                    goto jcmp;
+                case MNU_INSERT_csFB:
+                    esfr = ELEM_CSFR;
+                    goto jcmp;
+                case MNU_INSERT_TSFB:
+                    esfr = ELEM_TSFR;
+                    goto jcmp;
+                case MNU_INSERT_T_C_SFB:
+                    esfr = ELEM_T_C_SFR;
+                    goto jcmp;
+                jcmp:
+                    CHANGING_PROGRAM(AddSfr(esfr));
+                    break;
+            }
+// Special function register
+#endif
 
-        {
-            int elem;
-            case MNU_INSERT_EQU: elem = ELEM_EQU; goto cmp;
-            case MNU_INSERT_NEQ: elem = ELEM_NEQ; goto cmp;
-            case MNU_INSERT_GRT: elem = ELEM_GRT; goto cmp;
-            case MNU_INSERT_GEQ: elem = ELEM_GEQ; goto cmp;
-            case MNU_INSERT_LES: elem = ELEM_LES; goto cmp;
-            case MNU_INSERT_LEQ: elem = ELEM_LEQ; goto cmp;
-cmp:
-                CHANGING_PROGRAM(AddCmp(elem));
-                break;
-        }
+            {
+                int elem;
+                case MNU_INSERT_EQU:
+                    elem = ELEM_EQU;
+                    goto cmp;
+                case MNU_INSERT_NEQ:
+                    elem = ELEM_NEQ;
+                    goto cmp;
+                case MNU_INSERT_GRT:
+                    elem = ELEM_GRT;
+                    goto cmp;
+                case MNU_INSERT_GEQ:
+                    elem = ELEM_GEQ;
+                    goto cmp;
+                case MNU_INSERT_LES:
+                    elem = ELEM_LES;
+                    goto cmp;
+                case MNU_INSERT_LEQ:
+                    elem = ELEM_LEQ;
+                    goto cmp;
+                cmp:
+                    CHANGING_PROGRAM(AddCmp(elem));
+                    break;
+            }
 
         case MNU_INSERT_STEPPER:
-                CHANGING_PROGRAM(AddStepper());
-                break;
+            CHANGING_PROGRAM(AddStepper());
+            break;
 
         case MNU_INSERT_PULSER:
-                CHANGING_PROGRAM(AddPulser());
-                break;
+            CHANGING_PROGRAM(AddPulser());
+            break;
 
         case MNU_INSERT_NPULSE:
-                CHANGING_PROGRAM(AddNPulse());
-                break;
+            CHANGING_PROGRAM(AddNPulse());
+            break;
 
         case MNU_INSERT_QUAD_ENCOD:
-                CHANGING_PROGRAM(AddQuadEncod());
-                break;
+            CHANGING_PROGRAM(AddQuadEncod());
+            break;
 
         case MNU_MAKE_NORMAL:
             CHANGING_PROGRAM(MakeNormalSelected());
@@ -1305,7 +1400,7 @@ cmp:
             break;
 
         case MNU_DELETE_RUNG:
-          //CHANGING_PROGRAM(DeleteSelectedRung());
+            //CHANGING_PROGRAM(DeleteSelectedRung());
             CHANGING_PROGRAM(CutRung());
             break;
 
@@ -1353,7 +1448,6 @@ cmp:
                 else
                     Prog.rungSelected[i] = ' ';
             break;
-
         }
         case MNU_CUT_RUNG:
             CHANGING_PROGRAM(CutRung());
@@ -1413,6 +1507,7 @@ cmp:
         case MNU_COMPILE_IMAGECRAFT:
         case MNU_COMPILE_IAR:
         case MNU_COMPILE_IHEX:
+        case MNU_COMPILE_PASCAL:
         case MNU_COMPILE_ARDUINO:
         case MNU_COMPILE_INT:
         case MNU_COMPILE_XINT:
@@ -1420,27 +1515,33 @@ cmp:
             break;
 
         case MNU_PROCESSOR_NEW_PIC12:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Soft-start-and-smooth-stop-of-LED-with-software-PWM",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(
+                0,
+                "open",
+                "https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Soft-start-and-smooth-stop-of-LED-with-software-PWM",
+                nullptr,
+                nullptr,
+                SW_SHOWNORMAL);
             break;
 
         case MNU_PROCESSOR_NEW:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(
+                0, "open", "https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE", nullptr, nullptr, SW_SHOWNORMAL);
             break;
 
         case MNU_COMPILE_IHEXDONE:
-    Error(
-" "
-"This functionality of LDmicro is in testing and refinement.\n"
-"1. You can send your LD file at the LDmicro.GitHub@gmail.com\n"
-"and get asm output file for PIC's MPLAB or WINASM,\n"
-"or AVR Studio or avrasm2 or avrasm32\n"
-"as shown in the example for asm_demo\n"
-"https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Integrate-LDmicro-and-AVR-Studio-or-PIC-MPLAB-software.\n"
-"2. You can sponsor development and pay for it. \n"
-"After payment you will get this functionality in a state as is at the time of development \n"
-"and you will be able to generate asm output files for any of your LD files.\n"
-"On the question of payment, please contact LDmicro.GitHub@gmail.com.\n"
-    );
+            Error(
+                " "
+                "This functionality of LDmicro is in testing and refinement.\n"
+                "1. You can send your LD file at the LDmicro.GitHub@gmail.com\n"
+                "and get asm output file for PIC's MPLAB or WINASM,\n"
+                "or AVR Studio or avrasm2 or avrasm32\n"
+                "as shown in the example for asm_demo\n"
+                "https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Integrate-LDmicro-and-AVR-Studio-or-PIC-MPLAB-software.\n"
+                "2. You can sponsor development and pay for it. \n"
+                "After payment you will get this functionality in a state as is at the time of development \n"
+                "and you will be able to generate asm output files for any of your LD files.\n"
+                "On the question of payment, please contact LDmicro.GitHub@gmail.com.\n");
             break;
 
         case MNU_COMPILE_AS:
@@ -1460,33 +1561,38 @@ cmp:
             break;
 
         case MNU_HOW:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/wiki/HOW-TO",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0, "open", "https://github.com/LDmicro/LDmicro/wiki/HOW-TO", nullptr, nullptr, SW_SHOWNORMAL);
             break;
 
         case MNU_FORUM:
-            ShellExecute(0,"open","http://cq.cx/ladder-forum.pl",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0, "open", "http://cq.cx/ladder-forum.pl", nullptr, nullptr, SW_SHOWNORMAL);
             break;
 
         case MNU_CHANGES:
-            ShellExecute(0,"open","https://raw.githubusercontent.com/LDmicro/LDmicro/master/ldmicro/CHANGES.txt",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0,
+                         "open",
+                         "https://raw.githubusercontent.com/LDmicro/LDmicro/master/ldmicro/CHANGES.txt",
+                         nullptr,
+                         nullptr,
+                         SW_SHOWNORMAL);
             break;
 
         case MNU_ISSUE:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/issues/new",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0, "open", "https://github.com/LDmicro/LDmicro/issues/new", nullptr, nullptr, SW_SHOWNORMAL);
             break;
 
         case MNU_EMAIL:
-            ShellExecute(0,"open","mailto:LDmicro.GitHub@gmail.com",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0, "open", "mailto:LDmicro.GitHub@gmail.com", nullptr, nullptr, SW_SHOWNORMAL);
             break;
 
         case MNU_EXPLORE_DIR:
-            ////ShellExecute(0, "open", CurrentLdPath, NULL, NULL, SW_SHOWNORMAL);
-            ShellExecute(0, "explore", CurrentLdPath, NULL, NULL, SW_SHOWNORMAL);
-            //ShellExecute(0, "find", CurrentLdPath, NULL, NULL, 0);
+            ////ShellExecute(0, "open", CurrentLdPath, nullptr, nullptr, SW_SHOWNORMAL);
+            ShellExecute(0, "explore", CurrentLdPath, nullptr, nullptr, SW_SHOWNORMAL);
+            //ShellExecute(0, "find", CurrentLdPath, nullptr, nullptr, 0);
             break;
 
         case MNU_RELEASE:
-            ShellExecute(0,"open","https://github.com/LDmicro/LDmicro/releases",NULL,NULL,SW_SHOWNORMAL);
+            ShellExecute(0, "open", "https://github.com/LDmicro/LDmicro/releases", nullptr, nullptr, SW_SHOWNORMAL);
             break;
     }
 }
@@ -1497,14 +1603,14 @@ void ScrollUp()
     if(ScrollYOffset > 0)
         ScrollYOffset--;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 
-    int gx=0, gy=0;
-    if (!InSimulationMode && FindSelected(&gx, &gy)) {
-      if (gy>ScrollYOffset+ScreenRowsAvailable()-1) {
-        gy=ScrollYOffset+ScreenRowsAvailable()-1;
-        MoveCursorNear(&gx, &gy);
-      }
+    int gx = 0, gy = 0;
+    if(!InSimulationMode && FindSelected(&gx, &gy)) {
+        if(gy > ScrollYOffset + ScreenRowsAvailable() - 1) {
+            gy = ScrollYOffset + ScreenRowsAvailable() - 1;
+            MoveCursorNear(&gx, &gy);
+        }
     }
 }
 //-----------------------------------------------------------------------------
@@ -1513,25 +1619,25 @@ void ScrollDown()
     if(ScrollYOffset < ScrollYOffsetMax)
         ScrollYOffset++;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 
-    int gx=0, gy=0;
-    if (!InSimulationMode && FindSelected(&gx, &gy)) {
-      if (gy<ScrollYOffset) {
-        gy=ScrollYOffset;
-        MoveCursorNear(&gx, &gy);
-      }
+    int gx = 0, gy = 0;
+    if(!InSimulationMode && FindSelected(&gx, &gy)) {
+        if(gy < ScrollYOffset) {
+            gy = ScrollYOffset;
+            MoveCursorNear(&gx, &gy);
+        }
     }
 }
 //-----------------------------------------------------------------------------
 void ScrollPgUp()
 {
-    int gx=0, gy=0;
+    int gx = 0, gy = 0;
     FindSelected(&gx, &gy);
 
     ScrollYOffset = 0;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 
     SelectedGxAfterNextPaint = gx;
     SelectedGyAfterNextPaint = 0;
@@ -1539,66 +1645,66 @@ void ScrollPgUp()
 //-----------------------------------------------------------------------------
 void ScrollPgDown()
 {
-    int gx=0, gy=0;
+    int gx = 0, gy = 0;
     FindSelected(&gx, &gy);
 
     ScrollYOffset = ScrollYOffsetMax;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 
     SelectedGxAfterNextPaint = gx;
-    SelectedGyAfterNextPaint = totalHeightScrollbars-1;
+    SelectedGyAfterNextPaint = totalHeightScrollbars - 1;
 }
 //-----------------------------------------------------------------------------
 void RollHome()
 {
-    int gx=0, gy=0;
-    if (FindSelected(&gx, &gy)) {
-      gy=ScrollYOffset;
-      MoveCursorNear(&gx, &gy);
+    int gx = 0, gy = 0;
+    if(FindSelected(&gx, &gy)) {
+        gy = ScrollYOffset;
+        MoveCursorNear(&gx, &gy);
     }
 }
 //-----------------------------------------------------------------------------
 void RollEnd()
 {
-    int gx=0, gy=0;
-    if (FindSelected(&gx, &gy)) {
-      gy=ScrollYOffset+ScreenRowsAvailable()-1;
-      MoveCursorNear(&gx, &gy);
+    int gx = 0, gy = 0;
+    if(FindSelected(&gx, &gy)) {
+        gy = ScrollYOffset + ScreenRowsAvailable() - 1;
+        MoveCursorNear(&gx, &gy);
     }
 }
 //-----------------------------------------------------------------------------
 void TestSelections(UINT msg, int rung1)
 {
     int rung2;
-    if(SelectedGyAfterNextPaint>=0)
+    if(SelectedGyAfterNextPaint >= 0)
         rung2 = SelectedGyAfterNextPaint;
     else
         rung2 = RungContainingSelected();
 
     int i;
-    switch (msg) {
+    switch(msg) {
         case WM_LBUTTONDOWN: {
             if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                 if((rung1 >= 0) && (rung2 >= 0)) {
-                      if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000))
-                         for(i = 0; i < Prog.numRungs; i++)
-                             if(Prog.rungSelected[i] == '*')
-                                 Prog.rungSelected[i] = ' ';
-                      int d = (rung2 < rung1) ? -1 : +1;
-                      for(i = rung1; ; i += d) {
-                         Prog.rungSelected[i] = '*';
-                         if(i==rung2)
-                             break;
-                      }
-                 }
+                if((rung1 >= 0) && (rung2 >= 0)) {
+                    if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000))
+                        for(i = 0; i < Prog.numRungs; i++)
+                            if(Prog.rungSelected[i] == '*')
+                                Prog.rungSelected[i] = ' ';
+                    int d = (rung2 < rung1) ? -1 : +1;
+                    for(i = rung1;; i += d) {
+                        Prog.rungSelected[i] = '*';
+                        if(i == rung2)
+                            break;
+                    }
+                }
             } else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                 if((rung2 >= 0)) {
-                      if(Prog.rungSelected[rung2]==' ')
-                          Prog.rungSelected[rung2] = '*';
-                      else
-                          Prog.rungSelected[rung2] = ' ';
-                 }
+                if((rung2 >= 0)) {
+                    if(Prog.rungSelected[rung2] == ' ')
+                        Prog.rungSelected[rung2] = '*';
+                    else
+                        Prog.rungSelected[rung2] = ' ';
+                }
             } else {
                 for(i = 0; i < Prog.numRungs; i++)
                     if(Prog.rungSelected[i] == '*')
@@ -1610,15 +1716,15 @@ void TestSelections(UINT msg, int rung1)
             //switch(wParam) {
             //}
             if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                 if((rung1 >= 0) && (rung2 >= 0)) {
-                      int i;
-                      int d = (rung2 < rung1) ? -1 : +1;
-                      for(i = rung1; ; i += d) {
-                         Prog.rungSelected[i] = '*';
-                         if(i==rung2)
-                             break;
-                      }
-                 }
+                if((rung1 >= 0) && (rung2 >= 0)) {
+                    int i;
+                    int d = (rung2 < rung1) ? -1 : +1;
+                    for(i = rung1;; i += d) {
+                        Prog.rungSelected[i] = '*';
+                        if(i == rung2)
+                            break;
+                    }
+                }
             } else {
                 for(i = 0; i < Prog.numRungs; i++)
                     if(Prog.rungSelected[i] == '*')
@@ -1636,41 +1742,40 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     int rung1;
 
     if(strlen(CurrentSaveFile)) {
-        if((LastWriteTime & PrevWriteTime)
-        && (LastWriteTime != PrevWriteTime)) {
-             tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
-             PrevWriteTime = LastWriteTime;
+        if((LastWriteTime & PrevWriteTime) && (LastWriteTime != PrevWriteTime)) {
+            tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
+            PrevWriteTime = LastWriteTime;
 
-             char buf[1024];
-             sprintf(buf, _("File '%s' modified by another application.\r\n"
-                 "Its disk timestamp is newer then the editor one.\n"
-                 "Reload from disk?"), CurrentSaveFile);
-             int r = MessageBox(MainWindow,
-                 buf, "LDmicro",
-                 MB_YESNO | MB_ICONWARNING);
-             switch(r) {
-                 case IDYES:
-                     if(!LoadProjectFromFile(CurrentSaveFile)) {
-                         Error(_("Couldn't reload '%s'."), CurrentSaveFile);
-                     } else {
-                         ProgramChangedNotSaved = FALSE;
-                         RefreshControlsToSettings();
+            char buf[1024];
+            sprintf(buf,
+                    _("File '%s' modified by another application.\r\n"
+                      "Its disk timestamp is newer then the editor one.\n"
+                      "Reload from disk?"),
+                    CurrentSaveFile);
+            int r = MessageBox(MainWindow, buf, "LDmicro", MB_YESNO | MB_ICONWARNING);
+            switch(r) {
+                case IDYES:
+                    if(!LoadProjectFromFile(CurrentSaveFile)) {
+                        Error(_("Couldn't reload '%s'."), CurrentSaveFile);
+                    } else {
+                        ProgramChangedNotSaved = FALSE;
+                        RefreshControlsToSettings();
 
-                         GenerateIoListDontLoseSelection();
-                         RefreshScrollbars();
-                     }
-                     break;
-                 default:
-                     break;
-             }
-          }
+                        GenerateIoListDontLoseSelection();
+                        RefreshScrollbars();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
     }
-    switch (msg) {
+    switch(msg) {
         case WM_ERASEBKGND:
             break;
 
         case WM_SETFOCUS:
-            InvalidateRect(MainWindow, NULL, FALSE);
+            InvalidateRect(MainWindow, nullptr, FALSE);
             break;
 
         case WM_PAINT: {
@@ -1707,61 +1812,62 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 1;
         }
 
-        #define VK_ALT VK_MENU
+#define VK_ALT VK_MENU
         case WM_SYSKEYDOWN: {
             switch(wParam) {
                 case VK_F3:
                     if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                        notepad(CurrentSaveFile, "asm");
+                        notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "asm");
                         return 1;
                     }
-                break;
+                    break;
 
                 case VK_F5:
                     if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                        notepad(CurrentSaveFile, "pl");;
+                        notepad(CurrentSaveFile, "pl");
+                        ;
                         return 1;
                     }
-                break;
+                    break;
 
                 case VK_F6:
                     if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                        notepad(CurrentSaveFile, "hex");
+                        notepad(strlen(CurrentCompileFile) ? CurrentCompileFile : CurrentSaveFile, "hex");
                         return 1;
                     }
-                break;
+                    break;
 
                 case VK_F7:
                     if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                        notepad("acceleration_deceleration", "txt");;
+                        notepad("acceleration_deceleration", "txt");
+                        ;
                         return 1;
                     }
-                break;
+                    break;
 
                 case VK_BACK:
-                    if((GetAsyncKeyState(VK_ALT) & 0x8000)
-                    && (GetAsyncKeyState(VK_SHIFT) & 0x8000)) {
+                    if((GetAsyncKeyState(VK_ALT) & 0x8000) && (GetAsyncKeyState(VK_SHIFT) & 0x8000)) {
                         UndoRedo();
                         return 1;
                     } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
                         UndoUndo();
                         return 1;
                     }
-                break;
+                    break;
 
                 case VK_DOWN:
-                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                    CHANGING_PROGRAM(PushRungDown());
-                    return 1;
-                  }
-                break;
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        CHANGING_PROGRAM(PushRungDown());
+                        return 1;
+                    }
+                    break;
 
                 case VK_UP:
-                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                    CHANGING_PROGRAM(PushRungUp());
-                    return 1;
-                  }
-                break;
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        CHANGING_PROGRAM(PushRungUp());
+                        return 1;
+                    }
+                    break;
 
                 case VK_DELETE:
                     if(GetAsyncKeyState(VK_ALT) & 0x8000) {
@@ -1772,25 +1878,25 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case VK_INSERT:
-                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-                    CHANGING_PROGRAM(PasteRung(1));
-                    return 1;
-                  }
-                break;
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        CHANGING_PROGRAM(PasteRung(1));
+                        return 1;
+                    }
+                    break;
 
                 case 'L':
-                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
                         CHANGING_PROGRAM(AddCoil(MNU_INSERT_COIL_RELAY))
-                    return 1;
-                  }
-                break;
+                        return 1;
+                    }
+                    break;
 
                 case 'X':
-                  if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                    if(GetAsyncKeyState(VK_ALT) & 0x8000) {
                         SendMessage(hwnd, WM_CLOSE, 0, 0);
-                    return 1;
-                  }
-                break;
+                        return 1;
+                    }
+                    break;
 
                 default:
                     return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -1804,11 +1910,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
                 }
             } else if(wParam == VK_F7) {
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
-                        ToggleSimulationMode(TRUE);
-                    else
-                        ToggleSimulationMode();
-                    break;
+                if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
+                    ToggleSimulationMode(TRUE);
+                else
+                    ToggleSimulationMode();
+                break;
             } else if(wParam == VK_TAB) {
                 SetFocus(IoList);
                 BlinkCursor(0, 0, 0, 0);
@@ -1821,7 +1927,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     notepad(CurrentSaveFile, "txt");
                 break;
             } else if(wParam == VK_F4) {
-                if(CheckSaveUserCancels()) break;
+                if(CheckSaveUserCancels())
+                    break;
                 notepad(CurrentSaveFile, "ld");
                 break;
             } else if(wParam == VK_F6) {
@@ -1834,129 +1941,130 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             switch(wParam) {
                 case VK_DOWN:
-                  if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
-                    ScrollDown();
-                  } else {
-                    rung1 = RungContainingSelected();
-                    MoveCursorKeyboard(wParam);
-                    TestSelections(msg,rung1);
-                  }
-                  break;
+                    if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
+                        ScrollDown();
+                    } else {
+                        rung1 = RungContainingSelected();
+                        MoveCursorKeyboard(wParam);
+                        TestSelections(msg, rung1);
+                    }
+                    break;
 
                 case VK_UP:
-                  if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
-                    ScrollUp();
-//                } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
-//                  CHANGING_PROGRAM(PushRungUp());
-                  } else {
-                    rung1 = RungContainingSelected();
-                    MoveCursorKeyboard(wParam);
-                    TestSelections(msg,rung1);
-                  }
-                  break;
+                    if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
+                        ScrollUp();
+                        //                } else if(GetAsyncKeyState(VK_ALT) & 0x8000) {
+                        //                  CHANGING_PROGRAM(PushRungUp());
+                    } else {
+                        rung1 = RungContainingSelected();
+                        MoveCursorKeyboard(wParam);
+                        TestSelections(msg, rung1);
+                    }
+                    break;
 
                 case VK_LEFT:
-                  if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
-                    ScrollXOffset -= FONT_WIDTH;
-                    if(ScrollXOffset < 0) ScrollXOffset = 0;
-                    RefreshScrollbars();
-                    InvalidateRect(MainWindow, NULL, FALSE);
-                  } else {
-                    MoveCursorKeyboard(wParam);
-                  }
-                  break;
+                    if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
+                        ScrollXOffset -= FONT_WIDTH;
+                        if(ScrollXOffset < 0)
+                            ScrollXOffset = 0;
+                        RefreshScrollbars();
+                        InvalidateRect(MainWindow, nullptr, FALSE);
+                    } else {
+                        MoveCursorKeyboard(wParam);
+                    }
+                    break;
 
                 case VK_RIGHT:
-                  if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
-                    ScrollXOffset += FONT_WIDTH;
-                    if(ScrollXOffset >= ScrollXOffsetMax)
-                        ScrollXOffset = ScrollXOffsetMax;
-                    RefreshScrollbars();
-                    InvalidateRect(MainWindow, NULL, FALSE);
-                  } else {
-                    MoveCursorKeyboard(wParam);
-                  }
-                  break;
+                    if((GetAsyncKeyState(VK_CONTROL) & 0x8000) || InSimulationMode) {
+                        ScrollXOffset += FONT_WIDTH;
+                        if(ScrollXOffset >= ScrollXOffsetMax)
+                            ScrollXOffset = ScrollXOffsetMax;
+                        RefreshScrollbars();
+                        InvalidateRect(MainWindow, nullptr, FALSE);
+                    } else {
+                        MoveCursorKeyboard(wParam);
+                    }
+                    break;
 
                 case VK_HOME:
-                  if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                    RollHome();
-                  } else {
-                    int gx=0, gy=0;
-                    if (FindSelected(&gx, &gy)) {
-                        gx=0;
-                        MoveCursorNear(&gx, &gy);
-                        SelectElement(gx, gy, SELECTED_RIGHT);
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        RollHome();
+                    } else {
+                        int gx = 0, gy = 0;
+                        if(FindSelected(&gx, &gy)) {
+                            gx = 0;
+                            MoveCursorNear(&gx, &gy);
+                            SelectElement(gx, gy, SELECTED_RIGHT);
+                        }
                     }
-                  }
-                  break;
+                    break;
 
                 case VK_END:
-                  if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                    RollEnd();
-                  } else {
-                    int gx=0, gy=0;
-                    if (FindSelected(&gx, &gy)) {
-                        gx=ColsAvailable;
-                        MoveCursorNear(&gx, &gy);
-                        SelectElement(gx, gy, SELECTED_LEFT);
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        RollEnd();
+                    } else {
+                        int gx = 0, gy = 0;
+                        if(FindSelected(&gx, &gy)) {
+                            gx = ColsAvailable;
+                            MoveCursorNear(&gx, &gy);
+                            SelectElement(gx, gy, SELECTED_LEFT);
+                        }
                     }
-                  }
-                  break;
+                    break;
 
                 case VK_PRIOR:
-                  rung1 = RungContainingSelected();
-                  if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                    ScrollPgUp();
-                  } else {
-                    int gx=0, gy=0;
-                    FindSelected(&gx, &gy);
-
-                    if(ScrollYOffset-ScreenRowsAvailable()-1 > 0) {
-                        ScrollYOffset-=ScreenRowsAvailable()-1;
+                    rung1 = RungContainingSelected();
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        ScrollPgUp();
                     } else {
-                        ScrollYOffset=0;
-                    }
-                    RefreshScrollbars();
-                    InvalidateRect(MainWindow, NULL, FALSE);
+                        int gx = 0, gy = 0;
+                        FindSelected(&gx, &gy);
 
-                    if(gy-ScreenRowsAvailable()-1 > 0) {
-                        gy-=ScreenRowsAvailable()-1;
-                    } else {
-                        gy=0;
+                        if(ScrollYOffset - ScreenRowsAvailable() - 1 > 0) {
+                            ScrollYOffset -= ScreenRowsAvailable() - 1;
+                        } else {
+                            ScrollYOffset = 0;
+                        }
+                        RefreshScrollbars();
+                        InvalidateRect(MainWindow, nullptr, FALSE);
+
+                        if(gy - ScreenRowsAvailable() - 1 > 0) {
+                            gy -= ScreenRowsAvailable() - 1;
+                        } else {
+                            gy = 0;
+                        }
+                        SelectedGxAfterNextPaint = gx;
+                        SelectedGyAfterNextPaint = gy;
                     }
-                    SelectedGxAfterNextPaint = gx;
-                    SelectedGyAfterNextPaint = gy;
-                  }
-                  TestSelections(msg,rung1);
-                  break;
+                    TestSelections(msg, rung1);
+                    break;
 
                 case VK_NEXT:
-                  rung1 = RungContainingSelected();
-                  if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                    ScrollPgDown();
-                  } else {
-                    int gx=0, gy=0;
-                    FindSelected(&gx, &gy);
-
-                    if(ScrollYOffset+ScreenRowsAvailable()-1 < ScrollYOffsetMax) {
-                        ScrollYOffset+=ScreenRowsAvailable()-1;
+                    rung1 = RungContainingSelected();
+                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        ScrollPgDown();
                     } else {
-                      ScrollYOffset = ScrollYOffsetMax;
-                    }
-                    RefreshScrollbars();
-                    InvalidateRect(MainWindow, NULL, FALSE);
+                        int gx = 0, gy = 0;
+                        FindSelected(&gx, &gy);
 
-                    if(gy+ScreenRowsAvailable()-1 < totalHeightScrollbars-1) {
-                        gy+=ScreenRowsAvailable()-1;
-                    } else {
-                        gy=totalHeightScrollbars-1;
+                        if(ScrollYOffset + ScreenRowsAvailable() - 1 < ScrollYOffsetMax) {
+                            ScrollYOffset += ScreenRowsAvailable() - 1;
+                        } else {
+                            ScrollYOffset = ScrollYOffsetMax;
+                        }
+                        RefreshScrollbars();
+                        InvalidateRect(MainWindow, nullptr, FALSE);
+
+                        if(gy + ScreenRowsAvailable() - 1 < totalHeightScrollbars - 1) {
+                            gy += ScreenRowsAvailable() - 1;
+                        } else {
+                            gy = totalHeightScrollbars - 1;
+                        }
+                        SelectedGxAfterNextPaint = gx;
+                        SelectedGyAfterNextPaint = gy;
                     }
-                    SelectedGxAfterNextPaint = gx;
-                    SelectedGyAfterNextPaint = gy;
-                  }
-                  TestSelections(msg,rung1);
-                  break;
+                    TestSelections(msg, rung1);
+                    break;
             }
 
             if(InSimulationMode) {
@@ -1994,9 +2102,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             switch(wParam) {
                 case VK_F5:
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                      CHANGING_PROGRAM(ShowConfDialog());
+                        CHANGING_PROGRAM(ShowConfDialog());
                     } else {
-                      CompileProgram(FALSE, MNU_COMPILE);
+                        CompileProgram(FALSE, MNU_COMPILE);
                     }
                     break;
 
@@ -2006,17 +2114,17 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 case VK_RETURN:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                      CHANGING_PROGRAM(AddEmpty(ELEM_OPEN));
+                        CHANGING_PROGRAM(AddEmpty(ELEM_OPEN));
                     } else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                      CHANGING_PROGRAM(AddEmpty(ELEM_SHORT));
+                        CHANGING_PROGRAM(AddEmpty(ELEM_SHORT));
                     } else {
-                      CHANGING_PROGRAM(EditSelectedElement());
+                        CHANGING_PROGRAM(EditSelectedElement());
                     }
                     break;
 
                 case VK_DELETE:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                      //CHANGING_PROGRAM(DeleteSelectedRung());
+                        //CHANGING_PROGRAM(DeleteSelectedRung());
                         CHANGING_PROGRAM(CutRung());
                     } else {
                         CHANGING_PROGRAM(DeleteSelectedFromProgram());
@@ -2033,7 +2141,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     } else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         CHANGING_PROGRAM(CopyRung());
                     } else
-                      CHANGING_PROGRAM(CopyElem());
+                        CHANGING_PROGRAM(CopyElem());
                     break;
 
                 case 'C':
@@ -2049,12 +2157,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 // TODO: rather country-specific here
                 //case VK_DIVIDE: // use to ELEM_DIV
                 case VK_OEM_2:
-                //case '/':
+                    //case '/':
                     CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
                     break;
 
                 case VK_OEM_5:
-                //case '\\':
+                    //case '\\':
                     CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
                     break;
 
@@ -2078,10 +2186,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case VK_F2: {
-                        SaveProgram(MNU_SAVE);
-                        UpdateMainWindowTitleBar();
-                    }
-                    break;
+                    SaveProgram(MNU_SAVE);
+                    UpdateMainWindowTitleBar();
+                } break;
 
                 case 'S':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
@@ -2094,13 +2201,15 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 case 'N':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        if(CheckSaveUserCancels()) break;
+                        if(CheckSaveUserCancels())
+                            break;
                         if(!ProgramChangedNotSaved) {
                             int r = MessageBox(MainWindow,
-                                _("Start new program?"),
-                                "LDmicro", MB_YESNO | MB_DEFBUTTON2 |
-                                MB_ICONQUESTION);
-                            if(r == IDNO) break;
+                                               _("Start new program?"),
+                                               "LDmicro",
+                                               MB_YESNO | MB_DEFBUTTON2 | MB_ICONQUESTION);
+                            if(r == IDNO)
+                                break;
                         }
                         NewProgram();
                         strcpy(CurrentSaveFile, "");
@@ -2123,7 +2232,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 case 'O':
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        if(CheckSaveUserCancels()) break;
+                        if(CheckSaveUserCancels())
+                            break;
                         OpenDialog();
                     } else {
                         CHANGING_PROGRAM(AddTimer(ELEM_TON));
@@ -2170,7 +2280,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case VK_OEM_PLUS:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000)
                         CHANGING_PROGRAM(AddMath(ELEM_ADD))
-                     else
+                    else
                         CHANGING_PROGRAM(AddCmp(ELEM_EQU));
                     break;
 
@@ -2190,7 +2300,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case VK_MULTIPLY:
-                        CHANGING_PROGRAM(AddMath(ELEM_MUL));
+                    CHANGING_PROGRAM(AddMath(ELEM_MUL));
                     break;
 
                 case '8':
@@ -2263,7 +2373,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
             }
             if(wParam != VK_SHIFT && wParam != VK_CONTROL) {
-                InvalidateRect(MainWindow, NULL, FALSE);
+                InvalidateRect(MainWindow, nullptr, FALSE);
             }
             break;
         }
@@ -2276,7 +2386,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             } else {
                 CHANGING_PROGRAM(EditElementMouseDoubleclick(x, y));
             }
-            InvalidateRect(MainWindow, NULL, FALSE);
+            InvalidateRect(MainWindow, nullptr, FALSE);
             break;
         }
 
@@ -2285,29 +2395,29 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int y = HIWORD(lParam);
             if((y > (IoListTop - 9)) && (y < (IoListTop + 3))) {
                 POINT pt;
-                pt.x = x; pt.y = y;
+                pt.x = x;
+                pt.y = y;
                 ClientToScreen(MainWindow, &pt);
                 MouseY = pt.y;
-                MouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL,
-                        (HOOKPROC)MouseHook, Instance, 0);
+                MouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL, (HOOKPROC)MouseHook, Instance, 0);
             }
             if(!InSimulationMode) {
                 rung1 = RungContainingSelected();
                 MoveCursorMouseClick(x, y);
-                TestSelections(msg,rung1);
+                TestSelections(msg, rung1);
             }
             SetFocus(MainWindow);
-            InvalidateRect(MainWindow, NULL, FALSE);
+            InvalidateRect(MainWindow, nullptr, FALSE);
             break;
         }
         case WM_MOUSEMOVE: {
-          //int x = LOWORD(lParam);
+            //int x = LOWORD(lParam);
             int y = HIWORD(lParam);
 
             if((y > (IoListTop - 9)) && (y < (IoListTop + 3))) {
-                SetCursor(LoadCursor(NULL, IDC_SIZENS));
+                SetCursor(LoadCursor(nullptr, IDC_SIZENS));
             } else {
-                SetCursor(LoadCursor(NULL, IDC_ARROW));
+                SetCursor(LoadCursor(nullptr, IDC_ARROW));
             }
 
             break;
@@ -2342,13 +2452,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_COMMAND:
             ProcessMenu(LOWORD(wParam));
-            InvalidateRect(MainWindow, NULL, FALSE);
+            InvalidateRect(MainWindow, nullptr, FALSE);
             break;
 
         case WM_CLOSE:
         case WM_DESTROY:
             WipeIntMemory();
-            if(CheckSaveUserCancels()) break;
+            if(CheckSaveUserCancels())
+                break;
 
             PostQuitMessage(0);
             return 1;
@@ -2369,18 +2480,15 @@ static BOOL MakeWindowClass()
     memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
 
-    wc.style            = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC |
-                            CS_DBLCLKS;
-    wc.lpfnWndProc      = (WNDPROC)MainWndProc;
-    wc.hInstance        = Instance;
-    wc.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszClassName    = "LDmicro";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
-                            IMAGE_ICON, 32, 32, 0);
-    wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
-                            IMAGE_ICON, 16, 16, 0);
+    wc.style = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC | CS_DBLCLKS;
+    wc.lpfnWndProc = (WNDPROC)MainWndProc;
+    wc.hInstance = Instance;
+    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    wc.lpszClassName = "LDmicro";
+    wc.lpszMenuName = nullptr;
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wc.hIcon = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000), IMAGE_ICON, 32, 32, 0);
+    wc.hIconSm = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000), IMAGE_ICON, 16, 16, 0);
 
     return RegisterClassEx(&wc);
 }
@@ -2390,25 +2498,19 @@ static BOOL MakeWindowClass()
 static LPSTR _getNextCommandLineArgument(LPSTR lpBuffer)
 {
     BOOL argFound = FALSE;
-    while(*lpBuffer)
-    {
-        if (isspace(*lpBuffer))
-        {
+    while(*lpBuffer) {
+        if(isspace(*lpBuffer)) {
             argFound = FALSE;
 
-        }
-        else if ((*lpBuffer == '-') || (*lpBuffer == '/'))
-        {
+        } else if((*lpBuffer == '-') || (*lpBuffer == '/')) {
             argFound = TRUE;
-        }
-        else if (argFound)
-        {
+        } else if(argFound) {
             return lpBuffer;
         }
 
         lpBuffer++;
     }
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -2416,65 +2518,49 @@ static LPSTR _getNextCommandLineArgument(LPSTR lpBuffer)
 static LPSTR _getNextPositionalArgument(LPSTR lpBuffer)
 {
     BOOL argFound = FALSE;
-    while(*lpBuffer)
-    {
-        if (isspace(*lpBuffer))
-        {
+    while(*lpBuffer) {
+        if(isspace(*lpBuffer)) {
             argFound = TRUE;
-        }
-        else if ((*lpBuffer == '-') || (*lpBuffer == '/'))
-        {
+        } else if((*lpBuffer == '-') || (*lpBuffer == '/')) {
             argFound = FALSE;
-        }
-        else if (argFound)
-        {
+        } else if(argFound) {
             return lpBuffer;
         }
         lpBuffer++;
     }
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 
-static char * _removeWhitespace(char * pBuffer)
+static char *_removeWhitespace(char *pBuffer)
 {
     // Check from left:
-    char * pStart = pBuffer;
-    while(*pBuffer)
-    {
-        if (isspace(*pBuffer) || *pBuffer == '"' || *pBuffer == '\'')
-        {
+    char *pStart = pBuffer;
+    while(*pBuffer) {
+        if(isspace(*pBuffer) || *pBuffer == '"' || *pBuffer == '\'') {
             pStart++;
-        }
-        else
-        {
+        } else {
             break;
         }
 
         pBuffer++;
     }
 
-    if (*pBuffer == 0)
-    {
+    if(*pBuffer == 0) {
         // No alphanumeric characters in this string.
-        return NULL;
+        return nullptr;
     }
-
 
     // Check from right.
     {
-        int len = strlen(pBuffer);
-        char * pEnd = &pBuffer[len-1];
+        int   len = strlen(pBuffer);
+        char *pEnd = &pBuffer[len - 1];
 
-        while(pEnd > pStart)
-        {
-            if (isspace(*pEnd) || *pEnd == '"' || *pEnd == '\'')
-            {
+        while(pEnd > pStart) {
+            if(isspace(*pEnd) || *pEnd == '"' || *pEnd == '\'') {
                 *pEnd = 0;
-            }
-            else
-            {
+            } else {
                 break;
             }
 
@@ -2482,9 +2568,8 @@ static char * _removeWhitespace(char * pBuffer)
         }
     }
 
-    if (strlen(pStart) == 0)
-    {
-        return NULL;
+    if(strlen(pStart) == 0) {
+        return nullptr;
     }
 
     return pStart;
@@ -2501,7 +2586,7 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
     {
         lpArgs = _getNextCommandLineArgument(lpArgs);
 
-        if(lpArgs == NULL)
+        if(lpArgs == nullptr)
         {
             break;
         }
@@ -2518,8 +2603,8 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
 
 
     // Parse for positional arguments (first is source, second destination):
-    *pSource = NULL;
-    *pDest = NULL;
+    *pSource = nullptr;
+    *pDest = nullptr;
 
     lpCmdLine = _getNextPositionalArgument(lpCmdLine);
 
@@ -2540,77 +2625,76 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
 }
 */
 //---------------------------------------------------------------------------
-void abortHandler( int signum )
+void abortHandler(int signum)
 {
     // associate each signal with a signal name string.
-    const char *name = NULL;
-    switch( signum )
-    {
-    case SIGABRT: name = "SIGABRT";  break;
-    case SIGSEGV: name = "SIGSEGV";  break;
-  //case SIGBUS:  name = "SIGBUS";   break;
-    case SIGILL:  name = "SIGILL";   break;
-    case SIGFPE:  name = "SIGFPE";   break;
-    case SIGINT:  name = "SIGINT";   break;
-    case SIGTERM: name = "SIGTERM";  break;
+    const char *name = nullptr;
+    // clang-format off
+    switch(signum) {
+        case SIGABRT: name = "SIGABRT";  break;
+        case SIGSEGV: name = "SIGSEGV";  break;
+      //case SIGBUS:  name = "SIGBUS";   break;
+        case SIGILL:  name = "SIGILL";   break;
+        case SIGFPE:  name = "SIGFPE";   break;
+        case SIGINT:  name = "SIGINT";   break;
+        case SIGTERM: name = "SIGTERM";  break;
     }
+    // clang-format on
 
     // Notify the user which signal was caught. We use printf, because this is the
     // most basic output function. Once you get a crash, it is possible that more
     // complex output systems like streams and the like may be corrupted. So we
     // make the most basic call possible to the lowest level, most
     // standard print function.
-    if ( name )
-       dbp("Caught signal %d (%s)\n", signum, name );
+    if(name)
+        dbp("Caught signal %d (%s)\n", signum, name);
     else
-       dbp("Caught signal %d\n", signum );
+        dbp("Caught signal %d\n", signum);
 
     // Dump a stack trace.
     // This is the function we will be implementing next.
-    //printStackTrace();
+    // printStackTrace();
 
     // If you caught one of the above signals, it is likely you just
     // want to quit your program right now.
-    exit( signum );
+    exit(signum);
 }
 
 //-----------------------------------------------------------------------------
 void KxStackTrace()
 {
-    signal( SIGABRT, abortHandler );
-    signal( SIGSEGV, abortHandler );
-  //signal( SIGBUS,  abortHandler );
-    signal( SIGILL,  abortHandler );
-    signal( SIGFPE,  abortHandler );
-    signal( SIGINT,  abortHandler );
-    signal( SIGTERM, abortHandler );
+    signal(SIGABRT, abortHandler);
+    signal(SIGSEGV, abortHandler);
+    //signal( SIGBUS,  abortHandler );
+    signal(SIGILL, abortHandler);
+    signal(SIGFPE, abortHandler);
+    signal(SIGINT, abortHandler);
+    signal(SIGTERM, abortHandler);
 }
 
 //-----------------------------------------------------------------------------
 void CheckPwmPins()
 {
-return;
-    int i,j;
-    for(i = 0; i < NUM_SUPPORTED_MCUS ; i++) {
-       for(j = 0; j < SupportedMcus[i].pwmCount ; j++) {
-           if(!SupportedMcus[i].pwmNeedsPin && SupportedMcus[i].pwmCount) {
-               ooops("1 %s", SupportedMcus[i].mcuName)
-           }
-           else if(SupportedMcus[i].pwmNeedsPin)
-               if(SupportedMcus[i].pwmNeedsPin == SupportedMcus[i].pwmInfo[j].pin)
+    return;
+    int i, j;
+    for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
+        for(j = 0; j < SupportedMcus[i].pwmCount; j++) {
+            if(!SupportedMcus[i].pwmNeedsPin && SupportedMcus[i].pwmCount) {
+                ooops("1 %s", SupportedMcus[i].mcuName)
+            } else if(SupportedMcus[i].pwmNeedsPin)
+                if(SupportedMcus[i].pwmNeedsPin == SupportedMcus[i].pwmInfo[j].pin)
                     break;
-       }
-       if(SupportedMcus[i].pwmCount)
-           if(j >= SupportedMcus[i].pwmCount)
-               ooops("2 %s", SupportedMcus[i].mcuName)
-       }
+        }
+        if(SupportedMcus[i].pwmCount)
+            if(j >= SupportedMcus[i].pwmCount)
+                ooops("2 %s", SupportedMcus[i].mcuName)
+    }
 }
 
 //-----------------------------------------------------------------------------
 // Entry point into the program.
 //-----------------------------------------------------------------------------
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-    LPSTR lpCmdLine, INT nCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
     if(NUM_SUPPORTED_MCUS != arraylen(SupportedMcus)) {
         Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, arraylen(SupportedMcus));
@@ -2624,189 +2708,208 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     CheckPwmPins();
 
-  try
-  {
-    GetModuleFileName(hInstance,ExePath,MAX_PATH);
-    ExtractFilePath(ExePath);
+    try {
+        GetModuleFileName(hInstance, ExePath, MAX_PATH);
+        ExtractFilePath(ExePath);
 
-    Instance = hInstance;
+        Instance = hInstance;
 
-    MainHeap = HeapCreate(0, 1024*64, 0);
+        MainHeap = HeapCreate(0, 1024 * 64, 0);
 
-    setlocale(LC_ALL,"");
-    //RunningInBatchMode = FALSE;
-    int i;
+        setlocale(LC_ALL, "");
+        //RunningInBatchMode = FALSE;
+        int i;
+        for(i = 0; i < arraylen(PcCfg); i++)
+            FillPcPinInfo(&PcCfg[i]);
 
-    MakeWindowClass();
-    MakeDialogBoxClass();
-    HMENU top = MakeMainWindowMenus();
+        MakeWindowClass();
+        MakeDialogBoxClass();
+        HMENU top = MakeMainWindowMenus();
 
-    MainWindow = CreateWindowEx(0, "LDmicro", "",
-        WS_OVERLAPPED | WS_THICKFRAME | WS_CLIPCHILDREN | WS_MAXIMIZEBOX |
-        WS_MINIMIZEBOX | WS_SYSMENU | WS_SIZEBOX,
-        10, 10, 800, 600, NULL, top, Instance, NULL);
-    ThawWindowPos(MainWindow);
-    IoListHeight = 100;
-    ThawDWORD(IoListHeight);
+        MainWindow = CreateWindowEx(0,
+                                    "LDmicro",
+                                    "",
+                                    WS_OVERLAPPED | WS_THICKFRAME | WS_CLIPCHILDREN | WS_MAXIMIZEBOX | WS_MINIMIZEBOX
+                                        | WS_SYSMENU | WS_SIZEBOX,
+                                    10,
+                                    10,
+                                    800,
+                                    600,
+                                    nullptr,
+                                    top,
+                                    Instance,
+                                    nullptr);
+        ThawWindowPos(MainWindow);
+        IoListHeight = 100;
+        ThawDWORD(IoListHeight);
 
-    InitCommonControls();
-    InitForDrawing();
+        InitCommonControls();
+        InitForDrawing();
 
-    MakeMainWindowControls();
-    MainWindowResized();
+        MakeMainWindowControls();
+        MainWindowResized();
 
-    NewProgram();
-    strcpy(CurrentSaveFile, "");
+        NewProgram();
+        strcpy(CurrentSaveFile, "");
 
-    // Check if we're running in non-interactive mode; in that case we should
-    // load the file, compile, and exit.
-    while(isspace(*lpCmdLine)) {
-        lpCmdLine++;
-    }
-    if(memcmp(lpCmdLine, "/c", 2)==0) {
-        RunningInBatchMode = TRUE;
-
-        const char *err =
-            "Bad command line arguments: run 'ldmicro /c src.ld dest.ext'";
-
-        char *source = lpCmdLine + 2;
-        while(isspace(*source)) {
-            source++;
+        // Check if we're running in non-interactive mode; in that case we should
+        // load the file, compile, and exit.
+        while(isspace(*lpCmdLine)) {
+            lpCmdLine++;
         }
-        if(*source == '\0') { Error(err); doexit(EXIT_FAILURE); }
-        char *dest = source;
-        while(!isspace(*dest) && *dest) {
-            dest++;
-        }
-        if(*dest == '\0') { Error(err); doexit(EXIT_FAILURE); }
-        *dest = '\0'; dest++;
-        while(isspace(*dest)) {
-            dest++;
-        }
-        if(*dest == '\0') { Error(err); doexit(EXIT_FAILURE); }
-        char *l, *r;
-        if((l=strchr(dest, '.')) != (r=strrchr(dest, '.'))) {
-          while(*r) {
-            *l = *r;
-            r++; l++;
-          }
-          *l = '\0';
-        }
-        if(!LoadProjectFromFile(source)) {
-            Error("Couldn't open '%s', running non-interactively.", source);
-            doexit(EXIT_FAILURE);
-        }
-        strcpy(CurrentCompileFile, dest);
-        GenerateIoList(-1);
-        CompileProgram(FALSE, compile_MNU);
-        doexit(EXIT_SUCCESS);
-    }
-    if(memcmp(lpCmdLine, "/t", 2)==0) {
-        RunningInBatchMode = TRUE;
+        if(memcmp(lpCmdLine, "/c", 2) == 0) {
+            RunningInBatchMode = TRUE;
 
-        char exportFile[MAX_PATH];
+            const char *err = "Bad command line arguments: run 'ldmicro /c src.ld dest.ext'";
 
-        const char *err =
-            "Bad command line arguments: run 'ldmicro /t src.ld [dest.txt]'";
-
-        char *source = lpCmdLine + 2;
-        while(isspace(*source)) {
-            source++;
-        }
-        if(*source == '\0') { Error(err); doexit(EXIT_FAILURE); }
-
-        char *dest = source;
-        while(!isspace(*dest) && *dest) {
-            dest++;
-        }
-        *dest = '\0';
-        if(!LoadProjectFromFile(source)) {
-            Error("Couldn't open '%s', running non-interactively.", source);
-            doexit(EXIT_FAILURE);
-        }
-        strcpy(CurrentSaveFile,source);
-        char *s;
-        GetFullPathName(source, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
-
-        dest++;
-        while(isspace(*dest)) {
-            dest++;
-        }
-        if(*dest != '\0') {
-          strcpy(exportFile, dest);
-        } else {
-          exportFile[0] = '\0';
-          SetExt(exportFile, source, "txt");
-        }
-        GenerateIoList(-1);
-        ExportDrawingAsText(exportFile);
-        doexit(EXIT_SUCCESS);
-    }
-
-    // We are running interactively, or we would already have exited. We
-    // can therefore show the window now, and otherwise set up the GUI.
-    ShowWindow(MainWindow, SW_SHOW);
-    SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
-
-    if(strlen(lpCmdLine) > 0) {
-        char line[MAX_PATH];
-        if(*lpCmdLine == '"') {
-            strcpy(line, lpCmdLine+1);
-        } else {
-            strcpy(line, lpCmdLine);
-        }
-        if(strchr(line, '"')) *strchr(line, '"') = '\0';
-
-        if(!strchr(line, '.')) strcat(line, ".ld");
-
-        char *s;
-        GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
-
-        if(!LoadProjectFromFile(CurrentSaveFile)) {
-            NewProgram();
-            Error(_("Couldn't open '%s'."), CurrentSaveFile);
-            CurrentSaveFile[0] = '\0';
-        }
-        UndoFlush();
-    }
-    GenerateIoListDontLoseSelection();
-    RefreshScrollbars();
-    UpdateMainWindowTitleBar();
-
-    for(i=0; i < 10; i++)
-      dbp("\n");
-
-    MSG msg;
-    DWORD ret;
-    while(ret = GetMessage(&msg, NULL, 0, 0)) {
-        if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
-            if(msg.wParam == VK_TAB) {
-                SetFocus(MainWindow);
-                continue;
+            char *source = lpCmdLine + 2;
+            while(isspace(*source)) {
+                source++;
             }
-        }
-        if(msg.message == WM_KEYDOWN && msg.wParam != VK_UP &&
-            msg.wParam != VK_NEXT && msg.wParam != VK_PRIOR &&
-            msg.wParam != VK_DOWN && msg.wParam != VK_RETURN && msg.wParam
-            != VK_SHIFT)
-        {
-            if(msg.hwnd == IoList) {
-                msg.hwnd = MainWindow;
-                SetFocus(MainWindow);
+            if(*source == '\0') {
+                Error(err);
+                doexit(EXIT_FAILURE);
             }
+            char *dest = source;
+            while(!isspace(*dest) && *dest) {
+                dest++;
+            }
+            if(*dest == '\0') {
+                Error(err);
+                doexit(EXIT_FAILURE);
+            }
+            *dest = '\0';
+            dest++;
+            while(isspace(*dest)) {
+                dest++;
+            }
+            if(*dest == '\0') {
+                Error(err);
+                doexit(EXIT_FAILURE);
+            }
+            char *l, *r;
+            if((l = strchr(dest, '.')) != (r = strrchr(dest, '.'))) {
+                while(*r) {
+                    *l = *r;
+                    r++;
+                    l++;
+                }
+                *l = '\0';
+            }
+            if(!LoadProjectFromFile(source)) {
+                Error("Couldn't open '%s', running non-interactively.", source);
+                doexit(EXIT_FAILURE);
+            }
+            strcpy(CurrentCompileFile, dest);
+            GenerateIoList(-1);
+            CompileProgram(FALSE, compile_MNU);
+            doexit(EXIT_SUCCESS);
         }
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-    FreezeWindowPos(MainWindow);
-    FreezeDWORD(IoListHeight);
+        if(memcmp(lpCmdLine, "/t", 2) == 0) {
+            RunningInBatchMode = TRUE;
+
+            char exportFile[MAX_PATH];
+
+            const char *err = "Bad command line arguments: run 'ldmicro /t src.ld [dest.txt]'";
+
+            char *source = lpCmdLine + 2;
+            while(isspace(*source)) {
+                source++;
+            }
+            if(*source == '\0') {
+                Error(err);
+                doexit(EXIT_FAILURE);
+            }
+
+            char *dest = source;
+            while(!isspace(*dest) && *dest) {
+                dest++;
+            }
+            *dest = '\0';
+            if(!LoadProjectFromFile(source)) {
+                Error("Couldn't open '%s', running non-interactively.", source);
+                doexit(EXIT_FAILURE);
+            }
+            strcpy(CurrentSaveFile, source);
+            char *s;
+            GetFullPathName(source, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
+
+            dest++;
+            while(isspace(*dest)) {
+                dest++;
+            }
+            if(*dest != '\0') {
+                strcpy(exportFile, dest);
+            } else {
+                exportFile[0] = '\0';
+                SetExt(exportFile, source, "txt");
+            }
+            GenerateIoList(-1);
+            ExportDrawingAsText(exportFile);
+            doexit(EXIT_SUCCESS);
+        }
+
+        // We are running interactively, or we would already have exited. We
+        // can therefore show the window now, and otherwise set up the GUI.
+        ShowWindow(MainWindow, SW_SHOW);
+        SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
+
+        if(strlen(lpCmdLine) > 0) {
+            char line[MAX_PATH];
+            if(*lpCmdLine == '"') {
+                strcpy(line, lpCmdLine + 1);
+            } else {
+                strcpy(line, lpCmdLine);
+            }
+            if(strchr(line, '"'))
+                *strchr(line, '"') = '\0';
+
+            if(!strchr(line, '.'))
+                strcat(line, ".ld");
+
+            char *s;
+            GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
+
+            if(!LoadProjectFromFile(CurrentSaveFile)) {
+                NewProgram();
+                Error(_("Couldn't open '%s'."), CurrentSaveFile);
+                CurrentSaveFile[0] = '\0';
+            }
+            UndoFlush();
+        }
+        GenerateIoListDontLoseSelection();
+        RefreshScrollbars();
+        UpdateMainWindowTitleBar();
+
+        for(i = 0; i < 10; i++)
+            dbp("\n");
+
+        MSG   msg;
+        DWORD ret;
+        while(ret = GetMessage(&msg, nullptr, 0, 0)) {
+            if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
+                if(msg.wParam == VK_TAB) {
+                    SetFocus(MainWindow);
+                    continue;
+                }
+            }
+            if(msg.message == WM_KEYDOWN && msg.wParam != VK_UP && msg.wParam != VK_NEXT && msg.wParam != VK_PRIOR
+               && msg.wParam != VK_DOWN && msg.wParam != VK_RETURN && msg.wParam != VK_SHIFT) {
+                if(msg.hwnd == IoList) {
+                    msg.hwnd = MainWindow;
+                    SetFocus(MainWindow);
+                }
+            }
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        FreezeWindowPos(MainWindow);
+        FreezeDWORD(IoListHeight);
+
+        return 0;
+    } catch(...) {
+        abortHandler(EXCEPTION_EXECUTE_HANDLER);
+    };
 
     return 0;
-  }
-  catch(...)
-  {
-      abortHandler(EXCEPTION_EXECUTE_HANDLER);
-  };
-
-  return 0;
 }

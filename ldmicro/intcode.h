@@ -31,6 +31,8 @@
 #define NEW_CMP // (C) GitHub.LDmicro@gmail.com
 #define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
 
+// clang-format off
+
 #define INT_SET_BIT                              1
 #define INT_CLEAR_BIT                            2
 #define INT_COPY_BIT_TO_BIT                      3
@@ -75,7 +77,8 @@
 #define INT_UART_SEND_BUSY                      1304
 #define INT_UART_RECV                           14
 #define INT_UART_RECVn                          1401
-#define INT_UART_RECV_AVAIL                     1402
+#define INT_UART_RECVnn                         1402
+#define INT_UART_RECV_AVAIL                     1403
 #define INT_EEPROM_BUSY_CHECK                   15
 #ifdef NEW_FEATURE
 #define INT_EEPROM_INIT                         1601
@@ -87,6 +90,11 @@
 #endif
 
 #define INT_SPI                                 19
+#define INT_SPI_INIT                            1901
+#define INT_SPI_COMPLETE                        1902
+#define INT_SPI_BUSY                            1903
+#define INT_SPI_WRITE                           1904
+#define INT_SPI_READ                            1905
 
 #define INT_WRITE_STRING                        21 // netzer
 #define INT_SPRINTF_STRING                      22 // sprintf()
@@ -197,6 +205,8 @@
 
 // Only used for the interpretable code.
 #define INT_END_OF_PROGRAM                       255
+
+// clang-format on
 
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
     typedef struct IntOpTag {

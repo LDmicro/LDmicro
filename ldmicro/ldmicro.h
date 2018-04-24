@@ -42,6 +42,8 @@ typedef signed long SDWORD;
 //-----------------------------------------------
 // `Configuration options.'
 
+// clang-format off
+
 // Size of the font that we will use to draw the ladder diagrams, in pixels
 #define FONT_WIDTH   7
 #define FONT_HEIGHT 13
@@ -68,6 +70,7 @@ typedef signed long SDWORD;
 #define MNU_NOTEPAD_C           0x0704
 #define MNU_NOTEPAD_H           0x0705
 #define MNU_NOTEPAD_PAS         0x0706
+#define MNU_NOTEPAD_INO         0x0707
 #define MNU_NOTEPAD_TXT         0x070F
 #define MNU_EXPLORE_DIR         0x0780
 
@@ -428,6 +431,14 @@ typedef signed long SDWORD;
 #define ELEM_14SEG              0x7014
 #define ELEM_16SEG              0x7016
 
+#define MAX_NAME_LEN                 64 // 128
+#define MAX_COMMENT_LEN             512 // 384 // 1024
+#define MAX_LOOK_UP_TABLE_LEN        64
+#define MAX_SHIFT_REGISTER_STAGES   256
+#define MAX_STRING_LEN              256
+
+// clang-format on
+
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
         case ELEM_COMMENT: \
@@ -532,12 +543,6 @@ typedef signed long SDWORD;
         case ELEM_UART_CPRINTF: \
         case ELEM_FORMATTED_STRING: \
         case ELEM_PERSIST:
-
-#define MAX_NAME_LEN                 64 // 128
-#define MAX_COMMENT_LEN             512 // 384 // 1024
-#define MAX_LOOK_UP_TABLE_LEN        64
-#define MAX_SHIFT_REGISTER_STAGES   256
-#define MAX_STRING_LEN              256
 
 typedef struct ElemSubcktParallelTag ElemSubcktParallel;
 typedef struct ElemSubcktSeriesTag ElemSubcktSeries;
@@ -969,6 +974,10 @@ typedef struct McuIoPinInfoTag {
     char    pinName[MAX_NAME_LEN];
     int     ArduinoPin;
     char    ArduinoName[MAX_NAME_LEN];
+    int     portN;   // 1=LPT1, 2=LPT2,... 1=COM1,...
+    int     dbPin;   // in DB1..25 of PC ports
+    int     ioType;  // IN=IO_TYPE_DIG_INPUT, OUT=IO_TYPE_DIG_OUTPUT of PC ports
+    int     addr;    // addr of PC ports
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -985,6 +994,7 @@ typedef struct McuSpiInfoTag {
     int     MOSI;
     int     SCK;
     int     _SS;
+    BOOL    isUsed;
 } McuSpiInfo;
 
 typedef struct McuPwmPinInfoTag {
@@ -1012,11 +1022,10 @@ typedef struct McuExtIntPinInfoTag {
 
 #define ISA_PIC16           0x01
 #define ISA_AVR             0x02
-#define ISA_PC_LPT_COM      0x03
-#define ISA_HARDWARE        ISA_PC_LPT_COM
+#define ISA_HARDWARE        ISA_AVR
+#define ISA_PC              0x03
 #define ISA_INTERPRETED     0x05
 #define ISA_NETZER          0x06
-#define ISA_PASCAL          0x07
 #define ISA_XINTERPRETED    0x0A    // Extended interpeter
 #define ISA_ESP8266         0x0B
 
@@ -1071,7 +1080,7 @@ typedef struct McuIoInfoTag {
     }                rom[MAX_ROM_SECTIONS]; //EEPROM or HEI?
 } McuIoInfo;
 
-#define NUM_SUPPORTED_MCUS 26
+#define NUM_SUPPORTED_MCUS 27
 
 //-----------------------------------------------
 // Function prototypes
@@ -1083,12 +1092,12 @@ typedef struct McuIoInfoTag {
         ProgramChanged(); \
     }
 extern BOOL ProgramChangedNotSaved;
-void ProgramChanged(void);
+void ProgramChanged();
 void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
     BOOL canPushRungDown, BOOL canPushRungUp, BOOL canInsertComment);
 void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled);
-void RefreshScrollbars(void);
+void RefreshScrollbars();
 extern HINSTANCE Instance;
 extern HWND MainWindow;
 extern HDC Hdc;
@@ -1100,7 +1109,7 @@ extern McuIoInfo SupportedMcus[]; // NUM_SUPPORTED_MCUS
 // memory debugging, because I often get careless; ok() will check that the
 // heap used for all the program storage is not yet corrupt, and oops() if
 // it is
-void CheckHeap(const char* file, int line);
+void CheckHeap(const char *file, int line);
 #define ok() CheckHeap(__FILE__, __LINE__)
 extern ULONGLONG PrevWriteTime;
 extern ULONGLONG LastWriteTime;
@@ -1118,23 +1127,23 @@ char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
 long int fsize(char filename);
-const char* GetMnuName(int MNU);
+const char *GetMnuName(int MNU);
 int GetMnu(char *MNU_name);
 
 // maincontrols.cpp
-void MakeMainWindowControls(void);
-HMENU MakeMainWindowMenus(void);
+void MakeMainWindowControls();
+HMENU MakeMainWindowMenus();
 void VscrollProc(WPARAM wParam);
 void HscrollProc(WPARAM wParam);
-void GenerateIoListDontLoseSelection(void);
-void RefreshStatusBar(void);
-void RefreshControlsToSettings(void);
-void MainWindowResized(void);
+void GenerateIoListDontLoseSelection();
+void RefreshStatusBar();
+void RefreshControlsToSettings();
+void MainWindowResized();
 void ToggleSimulationMode(BOOL doSimulateOneRung);
-void ToggleSimulationMode(void);
-void StopSimulation(void);
-void StartSimulation(void);
-void UpdateMainWindowTitleBar(void);
+void ToggleSimulationMode();
+void StopSimulation();
+void StartSimulation();
+void UpdateMainWindowTitleBar();
 extern int ScrollWidth;
 extern int ScrollHeight;
 extern BOOL NeedHoriz;
@@ -1144,8 +1153,8 @@ extern int IoListHeight;
 extern char IoListSelectionName[MAX_NAME_LEN];
 
 // draw.cpp
-int ProgCountWidestRow(void);
-int ProgCountRows(void);
+int ProgCountWidestRow();
+int ProgCountRows();
 extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
 BOOL DrawElement(void *node, int which, void *elem, int *cx, int *cy, BOOL poweredBefore);
@@ -1157,14 +1166,14 @@ extern BOOL ThisHighlighted;
 // draw_outputdev.cpp
 extern void (*DrawChars)(int, int, const char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
-void PaintWindow(void);
+void PaintWindow();
 BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
 void ExportDrawingAsText(char *file);
-void InitForDrawing(void);
-void InitBrushesForDrawing(void);
+void InitForDrawing();
+void InitBrushesForDrawing();
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
-int ScreenRowsAvailable(void);
-int ScreenColsAvailable(void);
+int ScreenRowsAvailable();
+int ScreenColsAvailable();
 extern HFONT FixedWidthFont;
 extern HFONT FixedWidthFontBold;
 extern int SelectedGxAfterNextPaint;
@@ -1179,21 +1188,21 @@ extern int ScrollYOffsetMax;
 void SelectElement(int gx, int gy, int state);
 void MoveCursorKeyboard(int keyCode);
 void MoveCursorMouseClick(int x, int y);
-BOOL MoveCursorTopLeft(void);
+BOOL MoveCursorTopLeft();
 void EditElementMouseDoubleclick(int x, int y);
-void EditSelectedElement(void);
-BOOL ReplaceSelectedElement(void);
-void MakeResetOnlySelected(void);
-void MakeSetOnlySelected(void);
-void MakeNormalSelected(void);
-void NegateSelected(void);
-void MakeTtriggerSelected(void);
+void EditSelectedElement();
+BOOL ReplaceSelectedElement();
+void MakeResetOnlySelected();
+void MakeSetOnlySelected();
+void MakeNormalSelected();
+void NegateSelected();
+void MakeTtriggerSelected();
 void ForgetFromGrid(void *p);
-void ForgetEverything(void);
+void ForgetEverything();
 BOOL EndOfRungElem(int Which);
 BOOL CanChangeOutputElem(int Which);
 BOOL StaySameElem(int Which);
-void WhatCanWeDoFromCursorAndTopology(void);
+void WhatCanWeDoFromCursorAndTopology();
 BOOL FindSelected(int *gx, int *gy);
 BOOL MoveCursorNear(int *gx, int *gy);
 
@@ -1203,7 +1212,7 @@ extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
 #define PADDING_IN_DISPLAY_MATRIX (&DisplayMatrixFiller)
-#define VALID_LEAF(x) ((x) != NULL && (x) != PADDING_IN_DISPLAY_MATRIX)
+#define VALID_LEAF(x) ((x) != nullptr && (x) != PADDING_IN_DISPLAY_MATRIX)
 extern ElemLeaf *Selected;
 extern int SelectedWhich;
 
@@ -1217,45 +1226,45 @@ void AddTimer(int which);
 void AddCoil(int what);
 void AddContact(int what);
 void AddEmpty(int which);
-void AddMove(void);
+void AddMove();
 void AddBus(int which);
 void AddBcd(int which);
 void AddSegments(int which);
-void AddStepper(void);
-void AddPulser(void);
-void AddNPulse(void);
-void AddQuadEncod(void);
+void AddStepper();
+void AddPulser();
+void AddNPulse();
+void AddQuadEncod();
 void AddSfr(int which);
 void AddBitOps(int which);
 void AddMath(int which);
 void AddCmp(int which);
-void AddReset(void);
+void AddReset();
 void AddCounter(int which);
-void AddReadAdc(void);
-void AddRandom(void);
-void AddSeedRandom(void);
-void AddSetPwm(void);
+void AddReadAdc();
+void AddRandom();
+void AddSeedRandom();
+void AddSetPwm();
 void AddSpi(int which);
 void AddUart(int which);
-void AddPersist(void);
+void AddPersist();
 void AddComment(const char *text);
-void AddShiftRegister(void);
-void AddMasterRelay(void);
-void AddSleep(void);
-void AddClrWdt(void);
-void AddDelay(void);
-void AddLock(void);
+void AddShiftRegister();
+void AddMasterRelay();
+void AddSleep();
+void AddClrWdt();
+void AddDelay();
+void AddLock();
 void AddGoto(int which);
-void AddLookUpTable(void);
-void AddPiecewiseLinear(void);
-void AddFormattedString(void);
-void AddString(void);
+void AddLookUpTable();
+void AddPiecewiseLinear();
+void AddFormattedString();
+void AddString();
 void AddPrint(int code);
-void DeleteSelectedFromProgram(void);
-void DeleteSelectedRung(void);
+void DeleteSelectedFromProgram();
+void DeleteSelectedRung();
 BOOL CollapseUnnecessarySubckts(int which, void *any);
 void InsertRung(BOOL afterCursor);
-int RungContainingSelected(void);
+int RungContainingSelected();
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
 int FindRung(int seek, char *name);
 int FindRungLast(int seek, char *name);
@@ -1263,32 +1272,32 @@ int CountWhich(int seek1, int seek2, int seek3, char *name);
 int CountWhich(int seek1, int seek2, char *name);
 int CountWhich(int seek1, char *name);
 int CountWhich(int seek1);
-int AdcFunctionUsed(void);
-int PwmFunctionUsed(void);
-BOOL QuadEncodFunctionUsed(void);
-BOOL NPulseFunctionUsed(void);
-BOOL EepromFunctionUsed(void);
-BOOL SleepFunctionUsed(void);
-BOOL DelayUsed(void);
-BOOL TablesUsed(void);
-void PushRungUp(void);
-void PushRungDown(void);
-void CopyRungDown(void);
-void CutRung(void);
-void CopyRung(void);
-void CopyElem(void);
+int AdcFunctionUsed();
+int PwmFunctionUsed();
+BOOL QuadEncodFunctionUsed();
+BOOL NPulseFunctionUsed();
+BOOL EepromFunctionUsed();
+BOOL SleepFunctionUsed();
+BOOL DelayUsed();
+BOOL TablesUsed();
+void PushRungUp();
+void PushRungDown();
+void CopyRungDown();
+void CutRung();
+void CopyRung();
+void CopyElem();
 void PasteRung(int PasteTo);
-void NewProgram(void);
-ElemLeaf *AllocLeaf(void);
-ElemSubcktSeries *AllocSubcktSeries(void);
-ElemSubcktParallel *AllocSubcktParallel(void);
+void NewProgram();
+ElemLeaf *AllocLeaf();
+ElemSubcktSeries *AllocSubcktSeries();
+ElemSubcktParallel *AllocSubcktParallel();
 void FreeCircuit(int which, void *any);
-void FreeEntireProgram(void);
-void UndoUndo(void);
-void UndoRedo(void);
-void UndoRemember(void);
-void UndoFlush(void);
-BOOL CanUndo(void);
+void FreeEntireProgram();
+void UndoUndo();
+void UndoRedo();
+void UndoRemember();
+void UndoFlush();
+BOOL CanUndo();
 /*
 BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
 BOOL ContainsWhich(int which, void *any, int seek1, int seek2);
@@ -1307,6 +1316,7 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 char *strspace(char *str);
 char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
+void LoadWritePcPorts();
 
 // iolist.cpp
 int IsIoType(int type);
@@ -1360,14 +1370,14 @@ int isalpha_(int c);
 int isal_num(int c);
 int isname(char *name);
 double hobatof(const char *str);
-SDWORD hobatoi(const char* str);
+SDWORD hobatoi(const char *str);
 void ShowSizeOfVarDialog(PlcProgramSingleIo *io);
 
 // confdialog.cpp
-void ShowConfDialog(void);
+void ShowConfDialog();
 
 // colorDialog.cpp
-void ShowColorDialog(void);
+void ShowColorDialog();
 
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
@@ -1449,12 +1459,14 @@ const char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
 char *GetPinName(int pin, char *pinName);
-const char* PinToName(int pin);
-const char* ArduinoPinName(McuIoPinInfo *iop);
+char *ShortPinName(McuIoPinInfo *iop, char *pinName);
+char *LongPinName(McuIoPinInfo *iop, char *pinName);
+const char *PinToName(int pin);
+const char *ArduinoPinName(McuIoPinInfo *iop);
 void SetMcu(McuIoInfo *mcu);
 int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
-McuIoPinInfo *PinInfoForName(const char* name);
+McuIoPinInfo *PinInfoForName(const char *name);
 McuSpiInfo *GetMcuSpiInfo(char *name);
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
@@ -1468,7 +1480,7 @@ BOOL IsExtIntPin(int pin);
 HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
-void MakeDialogBoxClass(void);
+void MakeDialogBoxClass();
 void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str, unsigned int uType);
@@ -1491,30 +1503,30 @@ char *toupperstr(char *dest, const char *src);
 const char *_(const char *in);
 
 // simulate.cpp
-void MarkInitedVariable(char *name);
+void MarkInitedVariable(const char *name);
 void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
-void StartSimulationTimer(void);
-BOOL ClearSimulationData(void);
-void ClrSimulationData(void);
-void CheckVariableNames(void);
+void StartSimulationTimer();
+BOOL ClearSimulationData();
+void ClrSimulationData();
+void CheckVariableNames();
 void DescribeForIoList(char *name, int type, char *out);
 void SimulationToggleContact(char *name);
 BOOL GetSingleBit(char *name);
 void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
-void DestroyUartSimulationWindow(void);
-void ShowUartSimulationWindow(void);
+void DestroyUartSimulationWindow();
+void ShowUartSimulationWindow();
 extern BOOL InSimulationMode;
 //extern BOOL SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
 void SetSimulationVariable(char *name, SDWORD val);
 SDWORD GetSimulationVariable(const char *name, BOOL forIoList);
-SDWORD GetSimulationVariable(const char* name);
+SDWORD GetSimulationVariable(const char *name);
 void SetSimulationStr(char *name, char *val);
 char *GetSimulationStr(char *name);
-int FindOpName(int op, const char* name1);
-int FindOpName(int op, const char* name1, const char* name2);
+int FindOpName(int op, const char *name1);
+int FindOpName(int op, const char *name1, const char *name2);
 int FindOpNameLast(int op, const char *name1);
 int FindOpNameLast(int op, const char *name1, const char *name2);
 // Assignment of the `variables,' used for timers, counters, arithmetic, and
@@ -1746,25 +1758,26 @@ extern DWORD RomSection;
 extern DWORD EepromAddrFree;
 //extern int VariableCount;
 void PrintVariables(FILE *f);
-DWORD isVarUsed(char *name);
-int isVarInited(char *name);
-int isPinAssigned(char *name);
-void AllocStart(void);
-DWORD AllocOctetRam(void);
+DWORD isVarUsed(const char *name);
+int isVarInited(const char *name);
+int isPinAssigned(const char *name);
+void AllocStart();
+DWORD AllocOctetRam();
 DWORD AllocOctetRam(int bytes);
 void AllocBitRam(DWORD *addr, int *bit);
-int MemForVariable(const char* name, DWORD *addrl, int sizeOfVar);
-int MemForVariable(const char* name, DWORD *addr);
+int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar);
+int MemForVariable(const char *name, DWORD *addr);
 int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
 int MemOfVar(char *name, DWORD *addr);
-BYTE MuxForAdcVariable(const char* name);
-int SingleBitAssigned(char *name);
+BYTE MuxForAdcVariable(const char *name);
+int SingleBitAssigned(const char *name);
+int GetAssignedType(const char *name);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput);
-void MemForSingleBit(const char* name, BOOL forRead, DWORD *addr, int *bit);
+void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const char *name, DWORD *addr, int *bit);
-void MemCheckForErrorsPostCompile(void);
-int SetSizeOfVar(const char* name, int sizeOfVar);
-int SizeOfVar(const char* name);
+void MemCheckForErrorsPostCompile();
+int SetSizeOfVar(const char *name, int sizeOfVar);
+int SizeOfVar(const char *name);
 int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
@@ -1773,7 +1786,7 @@ BOOL LoadVarListFromFile(FILE *f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL raiseError);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
-void ComplainAboutBaudRateOverflow(void);
+void ComplainAboutBaudRateOverflow();
 #define CompileError() longjmp(CompileErrorBuf, 1)
 extern jmp_buf CompileErrorBuf;
 double SIprefix(double val, char *prefix, int en_1_2);
@@ -1788,27 +1801,27 @@ extern int asm_discover_names;
 extern int rungNow;
 void IntDumpListing(char *outFile);
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust); // delay in us
-BOOL GenerateIntermediateCode(void);
+BOOL GenerateIntermediateCode();
 BOOL CheckLeafElem(int which, void *elem);
 extern DWORD addrRUartRecvErrorFlag;
 extern int    bitRUartRecvErrorFlag;
 extern DWORD addrRUartSendErrorFlag;
 extern int    bitRUartSendErrorFlag;
-BOOL GotoGosubUsed(void);
-BOOL UartFunctionUsed(void);
-BOOL UartRecvUsed(void);
-BOOL UartSendUsed(void);
-BOOL SpiFunctionUsed(void);
-BOOL Bin32BcdRoutineUsed(void);
-SDWORD CheckMakeNumber(const char* str);
-void WipeIntMemory(void);
+BOOL GotoGosubUsed();
+BOOL UartFunctionUsed();
+BOOL UartRecvUsed();
+BOOL UartSendUsed();
+BOOL SpiFunctionUsed();
+BOOL Bin32BcdRoutineUsed();
+SDWORD CheckMakeNumber(const char *str);
+void WipeIntMemory();
 BOOL CheckForNumber(char *str);
 int TenToThe(int x);
 int xPowerY(int x, int y);
-BOOL MultiplyRoutineUsed(void);
-BOOL DivideRoutineUsed(void);
-void GenSymOneShot(char *dest, const char* name1, const char* name2);
-int getradix(const char* str);
+BOOL MultiplyRoutineUsed();
+BOOL DivideRoutineUsed();
+void GenSymOneShot(char *dest, const char *name1, const char *name2);
+int getradix(const char *str);
 SDWORD CalcDelayClock(long long clocks); // in us
 
 // pic16.cpp
@@ -1838,5 +1851,16 @@ typedef struct RungAddrTag {
 } RungAddr;
 extern RungAddr AddrOfRungN[MAX_RUNGS];
 
+// pascal.cpp
+void CompilePascal(char *outFile);
+
+// pcports.cpp
+extern McuIoPinInfo IoPc[MAX_IO];
+extern int IoPcCount;
+BOOL ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
+void FillPcPinInfo(McuIoPinInfo *pinInfo);
+
+// translit.cpp
+void Transliterate(char *dest, char *str);
 
 #endif

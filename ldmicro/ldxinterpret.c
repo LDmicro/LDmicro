@@ -61,7 +61,7 @@ int line_number = 0;
 // remember the length of the program because the last instruction is a
 // special marker (INT_END_OF_PROGRAM).
 //
-void BadFormat(void)
+void BadFormat()
 {
     fprintf(stderr, "Bad program format at line %d.\n", line_number);
     exit(-1);
@@ -147,7 +147,7 @@ int LoadProgram(char *fileName)
 // integer variables; I refer to those as bits[addr] and int16s[addr]
 // respectively.
 //-----------------------------------------------------------------------------
-void Disassemble(void)
+void Disassemble()
 {
     int pc;
     for (pc = 0;;) {
@@ -260,7 +260,7 @@ cond:
 // program. It will be a little bit data-dependent but not very.
 //-----------------------------------------------------------------------------
 
-void InterpretOneCycle(void)
+void InterpretOneCycle()
 {
     int  pc;
     for (pc = 0;;) {

@@ -34,8 +34,8 @@ typedef struct LangTableTag {
 } LangTable;
 
 typedef struct LangTag {
-    LangTable   *tab;
-    int          n;
+    LangTable *tab;
+    int        n;
 } Lang;
 
 // These are the actual translation tables, so should be included in just
@@ -65,13 +65,13 @@ const char *_(const char *in)
 #elif defined(LDLANG_RU)
     l = &LangRu;
 #else
-#   error "Unrecognized language!"
+#error "Unrecognized language!"
 #endif
 
     int i;
 
     for(i = 0; i < l->n; i++) {
-        if(strcmp(in, l->tab[i].from)==0) {
+        if(strcmp(in, l->tab[i].from) == 0) {
             return l->tab[i].to;
         }
     }

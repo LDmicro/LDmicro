@@ -28,17 +28,17 @@
 #include "intcode.h"
 
 static char Variables[MAX_IO][MAX_NAME_LEN];
-static int VariablesCount;
+static int  VariablesCount;
 
 static char InternalRelays[MAX_IO][MAX_NAME_LEN];
-static int InternalRelaysCount;
+static int  InternalRelaysCount;
 
 typedef struct {
-    WORD    op;
-    WORD    name1;
-    WORD    name2;
-    WORD    name3;
-    SDWORD  literal;
+    WORD   op;
+    WORD   name1;
+    WORD   name2;
+    WORD   name3;
+    SDWORD literal;
 } BinOp;
 
 static BinOp OutProg[MAX_INT_OPS];
@@ -47,7 +47,7 @@ static WORD AddrForInternalRelay(char *name)
 {
     int i;
     for(i = 0; i < InternalRelaysCount; i++) {
-        if(strcmp(InternalRelays[i], name)==0) {
+        if(strcmp(InternalRelays[i], name) == 0) {
             return i;
         }
     }
@@ -60,7 +60,7 @@ static WORD AddrForVariable(char *name)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i], name)==0) {
+        if(strcmp(Variables[i], name) == 0) {
             return i;
         }
     }
@@ -72,7 +72,7 @@ static WORD AddrForVariable(char *name)
 static void Write(FILE *f, BinOp *op)
 {
     BYTE *b = (BYTE *)op;
-    int i;
+    int   i;
     for(i = 0; i < sizeof(*op); i++) {
         fprintf(f, "%02x", b[i]);
     }
@@ -92,13 +92,13 @@ void CompileInterpreted(char *outFile)
 
     fprintf(f, "$$LDcode\n");
 
-    int ipc;
-    int outPc;
+    int   ipc;
+    int   outPc;
     BinOp op;
 
     // Convert the if/else structures in the intermediate code to absolute
     // conditional jumps, to make life a bit easier for the interpreter.
-#define MAX_IF_NESTING      32
+#define MAX_IF_NESTING 32
     int ifDepth = 0;
     // PC for the if(...) instruction, which we will complete with the
     // 'jump to if false' address (which is either the ELSE+1 or the ENDIF+1)
@@ -145,7 +145,7 @@ void CompileInterpreted(char *outFile)
             case INT_SET_VARIABLE_ROL:
             case INT_SET_VARIABLE_ROR:
             case INT_SET_VARIABLE_AND:
-            case INT_SET_VARIABLE_OR :
+            case INT_SET_VARIABLE_OR:
             case INT_SET_VARIABLE_NOT:
             case INT_SET_VARIABLE_MOD:
             case INT_SET_VARIABLE_XOR:
@@ -175,7 +175,7 @@ void CompileInterpreted(char *outFile)
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
                 op.name2 = AddrForVariable(IntCode[ipc].name2);
                 goto finishIf;
-finishIf:
+            finishIf:
                 ifOpIf[ifDepth] = outPc;
                 ifOpElse[ifDepth] = 0;
                 ifDepth++;
@@ -183,7 +183,7 @@ finishIf:
                 break;
 
             case INT_ELSE:
-                ifOpElse[ifDepth-1] = outPc;
+                ifOpElse[ifDepth - 1] = outPc;
                 // jump target will be filled in later
                 break;
 
@@ -192,13 +192,13 @@ finishIf:
                 if(ifOpElse[ifDepth] == 0) {
                     // There is no else; if should jump straight to the
                     // instruction after this one if the condition is false.
-                    OutProg[ifOpIf[ifDepth]].name3 = outPc-1;
+                    OutProg[ifOpIf[ifDepth]].name3 = outPc - 1;
                 } else {
                     // There is an else clause; if the if is false then jump
                     // just past the else, and if the else is reached then
                     // jump to the endif.
                     OutProg[ifOpIf[ifDepth]].name3 = ifOpElse[ifDepth];
-                    OutProg[ifOpElse[ifDepth]].name3 = outPc-1;
+                    OutProg[ifOpElse[ifDepth]].name3 = outPc - 1;
                 }
                 // But don't generate an instruction for this.
                 continue;
@@ -217,30 +217,30 @@ finishIf:
                 // TODO
                 break;
 
-            #ifdef USE_SFR
-            case  INT_READ_SFR_LITERAL:
-            case  INT_WRITE_SFR_LITERAL:
-            case  INT_SET_SFR_LITERAL:
-            case  INT_CLEAR_SFR_LITERAL:
-            case  INT_TEST_SFR_LITERAL:
-            case  INT_READ_SFR_VARIABLE:
-            case  INT_WRITE_SFR_VARIABLE:
-            case  INT_SET_SFR_VARIABLE:
-            case  INT_CLEAR_SFR_VARIABLE:
-            case  INT_TEST_SFR_VARIABLE:
-            case  INT_TEST_C_SFR_LITERAL:
-            case  INT_WRITE_SFR_LITERAL_L:
-            case  INT_WRITE_SFR_VARIABLE_L:
-            case  INT_SET_SFR_LITERAL_L:
-            case  INT_SET_SFR_VARIABLE_L:
-            case  INT_CLEAR_SFR_LITERAL_L:
-            case  INT_CLEAR_SFR_VARIABLE_L:
-            case  INT_TEST_SFR_LITERAL_L:
-            case  INT_TEST_SFR_VARIABLE_L:
-            case  INT_TEST_C_SFR_VARIABLE:
-            case  INT_TEST_C_SFR_LITERAL_L:
-            case  INT_TEST_C_SFR_VARIABLE_L:
-            #endif
+#ifdef USE_SFR
+            case INT_READ_SFR_LITERAL:
+            case INT_WRITE_SFR_LITERAL:
+            case INT_SET_SFR_LITERAL:
+            case INT_CLEAR_SFR_LITERAL:
+            case INT_TEST_SFR_LITERAL:
+            case INT_READ_SFR_VARIABLE:
+            case INT_WRITE_SFR_VARIABLE:
+            case INT_SET_SFR_VARIABLE:
+            case INT_CLEAR_SFR_VARIABLE:
+            case INT_TEST_SFR_VARIABLE:
+            case INT_TEST_C_SFR_LITERAL:
+            case INT_WRITE_SFR_LITERAL_L:
+            case INT_WRITE_SFR_VARIABLE_L:
+            case INT_SET_SFR_LITERAL_L:
+            case INT_SET_SFR_VARIABLE_L:
+            case INT_CLEAR_SFR_LITERAL_L:
+            case INT_CLEAR_SFR_VARIABLE_L:
+            case INT_TEST_SFR_LITERAL_L:
+            case INT_TEST_SFR_VARIABLE_L:
+            case INT_TEST_C_SFR_VARIABLE:
+            case INT_TEST_C_SFR_LITERAL_L:
+            case INT_TEST_C_SFR_VARIABLE_L:
+#endif
 
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
@@ -257,8 +257,9 @@ finishIf:
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
-                Error(_("Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for "
-                    "interpretable target."));
+                Error(
+                    _("Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for "
+                      "interpretable target."));
                 Error("INT_%d", IntCode[ipc].op);
                 fclose(f);
                 return;
@@ -275,7 +276,6 @@ finishIf:
     memset(&op, 0, sizeof(op));
     op.op = INT_END_OF_PROGRAM;
     Write(f, &op);
-
 
     fprintf(f, "$$bits\n");
     for(i = 0; i < InternalRelaysCount; i++) {
@@ -294,10 +294,11 @@ finishIf:
 
     fclose(f);
 
-    char str[MAX_PATH+500];
+    char str[MAX_PATH + 500];
     sprintf(str,
-      _("Compile successful; wrote interpretable code to '%s'.\r\n\r\n"
-        "You probably have to adapt the interpreter to your application. See "
-        "the documentation."), outFile);
+            _("Compile successful; wrote interpretable code to '%s'.\r\n\r\n"
+              "You probably have to adapt the interpreter to your application. See "
+              "the documentation."),
+            outFile);
     CompileSuccessfulMessage(str);
 }

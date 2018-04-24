@@ -23,17 +23,14 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
+#include "pcports.h"
 
 char *FrmStrToStr(char *dest);
 //void FrmStrToFile(FILE *f, char *str);
 char *DelNL(char *str);
 char *DelLastNL(char *str);
 
-typedef enum FRMTTag {
-    FRMT_COMMENT,
-    FRMT_01,
-    FRMT_x20
-} FRMT;
+typedef enum FRMTTag { FRMT_COMMENT, FRMT_01, FRMT_x20 } FRMT;
 char *StrToFrmStr(char *dest, char *str, FRMT frmt);
 
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
@@ -46,398 +43,455 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 {
     ElemLeaf *l = AllocLeaf();
-    int x;
+    int       x;
 
-    if(memcmp(line, "COMMENT", 7)==0) {
+    if(memcmp(line, "COMMENT", 7) == 0) {
         FrmStrToStr(l->d.comment.str, &line[8]);
 
         *which = ELEM_COMMENT;
-    } else if(sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name,
-        &l->d.contacts.negated, &l->d.contacts.set1)==3)
-    {
+    } else if(sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name, &l->d.contacts.negated, &l->d.contacts.set1) == 3) {
         *which = ELEM_CONTACTS;
-    } else if(sscanf(line, "CONTACTS %s %d", l->d.contacts.name,
-        &l->d.contacts.negated)==2)
-    {
+    } else if(sscanf(line, "CONTACTS %s %d", l->d.contacts.name, &l->d.contacts.negated) == 2) {
         *which = ELEM_CONTACTS;
-    } else if(sscanf(line, "COIL %s %d %d %d %d", l->d.coil.name,
-        &l->d.coil.negated, &l->d.coil.setOnly, &l->d.coil.resetOnly, &l->d.coil.ttrigger)==5)
-    {
+    } else if(sscanf(line,
+                     "COIL %s %d %d %d %d",
+                     l->d.coil.name,
+                     &l->d.coil.negated,
+                     &l->d.coil.setOnly,
+                     &l->d.coil.resetOnly,
+                     &l->d.coil.ttrigger)
+              == 5) {
         *which = ELEM_COIL;
-    } else if(sscanf(line, "COIL %s %d %d %d", l->d.coil.name,
-        &l->d.coil.negated, &l->d.coil.setOnly, &l->d.coil.resetOnly)==4)
-    {
+    } else if(sscanf(line,
+                     "COIL %s %d %d %d",
+                     l->d.coil.name,
+                     &l->d.coil.negated,
+                     &l->d.coil.setOnly,
+                     &l->d.coil.resetOnly)
+              == 4) {
         *which = ELEM_COIL;
-    } else if(memcmp(line, "PLACEHOLDER", 11)==0) {
+    } else if(memcmp(line, "PLACEHOLDER", 11) == 0) {
         *which = ELEM_PLACEHOLDER;
-    } else if(memcmp(line, "SHORT", 5)==0) {
+    } else if(memcmp(line, "SHORT", 5) == 0) {
         *which = ELEM_SHORT;
-    } else if(memcmp(line, "OPEN", 4)==0) {
+    } else if(memcmp(line, "OPEN", 4) == 0) {
         *which = ELEM_OPEN;
-    } else if(memcmp(line, "MASTER_RELAY", 12)==0) {
+    } else if(memcmp(line, "MASTER_RELAY", 12) == 0) {
         *which = ELEM_MASTER_RELAY;
-    } else if((sscanf(line, "DELAY %s", l->d.timer.name)==1)) {
+    } else if((sscanf(line, "DELAY %s", l->d.timer.name) == 1)) {
         *which = ELEM_DELAY;
-    } else if((sscanf(line, "SLEEP %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "SLEEP %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_SLEEP;
-    } else if(memcmp(line, "SLEEP", 5)==0) {
+    } else if(memcmp(line, "SLEEP", 5) == 0) {
         *which = ELEM_SLEEP;
-    } else if(memcmp(line, "CLRWDT", 6)==0) {
+    } else if(memcmp(line, "CLRWDT", 6) == 0) {
         *which = ELEM_CLRWDT;
-    } else if(memcmp(line, "LOCK", 4)==0) {
+    } else if(memcmp(line, "LOCK", 4) == 0) {
         *which = ELEM_LOCK;
-    } else if(sscanf(line, "GOTO %s", l->d.doGoto.rung)==1) {
+    } else if(sscanf(line, "GOTO %s", l->d.doGoto.rung) == 1) {
         *which = ELEM_GOTO;
-    } else if(sscanf(line, "GOSUB %s", l->d.doGoto.rung)==1) {
+    } else if(sscanf(line, "GOSUB %s", l->d.doGoto.rung) == 1) {
         *which = ELEM_GOSUB;
-    } else if(memcmp(line, "RETURN", 6)==0) {
+    } else if(memcmp(line, "RETURN", 6) == 0) {
         *which = ELEM_RETURN;
-    } else if(sscanf(line, "LABEL %s", l->d.doGoto.rung)==1) {
+    } else if(sscanf(line, "LABEL %s", l->d.doGoto.rung) == 1) {
         *which = ELEM_LABEL;
-    } else if(sscanf(line, "SUBPROG %s", l->d.doGoto.rung)==1) {
+    } else if(sscanf(line, "SUBPROG %s", l->d.doGoto.rung) == 1) {
         *which = ELEM_SUBPROG;
-    } else if(sscanf(line, "ENDSUB %s", l->d.doGoto.rung)==1) {
+    } else if(sscanf(line, "ENDSUB %s", l->d.doGoto.rung) == 1) {
         *which = ELEM_ENDSUB;
-    } else if(sscanf(line, "SHIFT_REGISTER %s %d", l->d.shiftRegister.name,
-        &(l->d.shiftRegister.stages))==2)
-    {
+    } else if(sscanf(line, "SHIFT_REGISTER %s %d", l->d.shiftRegister.name, &(l->d.shiftRegister.stages)) == 2) {
         *which = ELEM_SHIFT_REGISTER;
-    } else if(memcmp(line, "OSR", 3)==0) {
+    } else if(memcmp(line, "OSR", 3) == 0) {
         *which = ELEM_ONE_SHOT_RISING;
-    } else if(memcmp(line, "OSF", 3)==0) {
+    } else if(memcmp(line, "OSF", 3) == 0) {
         *which = ELEM_ONE_SHOT_FALLING;
-    } else if(memcmp(line, "OSL", 3)==0) {
+    } else if(memcmp(line, "OSL", 3) == 0) {
         *which = ELEM_ONE_SHOT_LOW;
-    } else if(memcmp(line, "OSC", 3)==0) {
+    } else if(memcmp(line, "OSC", 3) == 0) {
         *which = ELEM_OSC;
-    } else if(memcmp(line, "NPULSE_OFF",10)==0) {
+    } else if(memcmp(line, "NPULSE_OFF", 10) == 0) {
         *which = ELEM_NPULSE_OFF;
-    } else if((sscanf(line, "TIME2COUNT %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "TIME2COUNT %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_TIME2COUNT;
-    } else if((sscanf(line, "TIME2DELAY %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "TIME2DELAY %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_TIME2DELAY;
 
-    } else if((sscanf(line, "TON %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+    } else if((sscanf(line, "TON %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_TON;
-    } else if((sscanf(line, "TOF %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+    } else if((sscanf(line, "TOF %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_TOF;
-    } else if((sscanf(line, "RTO %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+    } else if((sscanf(line, "RTO %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_RTO;
-    } else if((sscanf(line, "RTL %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+    } else if((sscanf(line, "RTL %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_RTL;
-    } else if((sscanf(line, "TCY %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+    } else if((sscanf(line, "TCY %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_TCY;
-    } else if((sscanf(line, "THI %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+    } else if((sscanf(line, "THI %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_THI;
-    } else if((sscanf(line, "TLO %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust)==3)) {
+    } else if((sscanf(line, "TLO %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_TLO;
 
-    } else if((sscanf(line, "TON %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "TON %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_TON;
-        if(strcmp(Prog.LDversion,"0.1")==0)
+        if(strcmp(Prog.LDversion, "0.1") == 0)
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
-    } else if((sscanf(line, "TOF %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "TOF %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_TOF;
-        if(strcmp(Prog.LDversion,"0.1")==0)
+        if(strcmp(Prog.LDversion, "0.1") == 0)
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
-    } else if((sscanf(line, "RTO %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "RTO %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_RTO;
-        if(strcmp(Prog.LDversion,"0.1")==0)
+        if(strcmp(Prog.LDversion, "0.1") == 0)
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
-    } else if((sscanf(line, "RTL %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "RTL %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_RTL;
         l->d.timer.adjust = 0;
-    } else if((sscanf(line, "TCY %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "TCY %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_TCY;
         l->d.timer.adjust = 0;
-    } else if((sscanf(line, "THI %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "THI %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_THI;
         l->d.timer.adjust = 0;
-    } else if((sscanf(line, "TLO %s %d", l->d.timer.name, &l->d.timer.delay)==2)) {
+    } else if((sscanf(line, "TLO %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
         *which = ELEM_TLO;
         l->d.timer.adjust = 0;
 
-    } else if((sscanf(line, "CTR %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
+    } else if((sscanf(line, "CTR %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
         *which = ELEM_CTR;
-    } else if((sscanf(line, "CTC %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
+    } else if((sscanf(line, "CTC %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
         *which = ELEM_CTC;
-    } else if((sscanf(line, "CTU %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
+    } else if((sscanf(line, "CTU %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
         *which = ELEM_CTU;
-    } else if((sscanf(line, "CTD %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init)==3)) {
+    } else if((sscanf(line, "CTD %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
         *which = ELEM_CTD;
 
-    } else if((sscanf(line, "CTD %s %s", l->d.counter.name, l->d.counter.max)==2)) {
-        strcpy(l->d.counter.init,"0");
+    } else if((sscanf(line, "CTD %s %s", l->d.counter.name, l->d.counter.max) == 2)) {
+        strcpy(l->d.counter.init, "0");
         *which = ELEM_CTD;
-    } else if((sscanf(line, "CTU %s %s", l->d.counter.name, l->d.counter.max)==2)) {
-        strcpy(l->d.counter.init,"0");
+    } else if((sscanf(line, "CTU %s %s", l->d.counter.name, l->d.counter.max) == 2)) {
+        strcpy(l->d.counter.init, "0");
         *which = ELEM_CTU;
-    } else if((sscanf(line, "CTC %s %s", l->d.counter.name, l->d.counter.max)==2)) {
-        strcpy(l->d.counter.init,"0");
+    } else if((sscanf(line, "CTC %s %s", l->d.counter.name, l->d.counter.max) == 2)) {
+        strcpy(l->d.counter.init, "0");
         *which = ELEM_CTC;
 
-    } else if(sscanf(line, "RES %s", l->d.reset.name)==1) {
+    } else if(sscanf(line, "RES %s", l->d.reset.name) == 1) {
         *which = ELEM_RES;
 
-    } else if(sscanf(line, "MOVE %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "MOVE %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_MOVE;
 
-    } else if(sscanf(line, "BIN2BCD %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "BIN2BCD %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_BIN2BCD;
 
-    } else if(sscanf(line, "BCD2BIN %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "BCD2BIN %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_BCD2BIN;
 
-    } else if(sscanf(line, "OPPOSITE %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "OPPOSITE %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_OPPOSITE;
 
-    } else if(sscanf(line, "SWAP %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "SWAP %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_SWAP;
 
-    } else if(sscanf(line, "BUS %s %s %d %d %d %d %d %d %d %d", l->d.bus.dest, l->d.bus.src,
-                           &l->d.bus.PCBbit[7],
-                           &l->d.bus.PCBbit[6],
-                           &l->d.bus.PCBbit[5],
-                           &l->d.bus.PCBbit[4],
-                           &l->d.bus.PCBbit[3],
-                           &l->d.bus.PCBbit[2],
-                           &l->d.bus.PCBbit[1],
-                           &l->d.bus.PCBbit[0])==(2+8)) {
+    } else if(sscanf(line,
+                     "BUS %s %s %d %d %d %d %d %d %d %d",
+                     l->d.bus.dest,
+                     l->d.bus.src,
+                     &l->d.bus.PCBbit[7],
+                     &l->d.bus.PCBbit[6],
+                     &l->d.bus.PCBbit[5],
+                     &l->d.bus.PCBbit[4],
+                     &l->d.bus.PCBbit[3],
+                     &l->d.bus.PCBbit[2],
+                     &l->d.bus.PCBbit[1],
+                     &l->d.bus.PCBbit[0])
+              == (2 + 8)) {
         *which = ELEM_BUS;
 
-    } else if(sscanf(line, "SPI %s %s %s %s %s %s %s %s", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.bitrate, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first)==8) {
+    } else if(sscanf(line,
+                     "SPI %s %s %s %s %s %s %s %s",
+                     l->d.spi.name,
+                     l->d.spi.send,
+                     l->d.spi.recv,
+                     l->d.spi.mode,
+                     l->d.spi.modes,
+                     l->d.spi.size,
+                     l->d.spi.first,
+                     l->d.spi.bitrate)
+              == 8) {
         *which = ELEM_SPI;
 
-    } else if(sscanf(line,  "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+    } else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
 
-    } else if(sscanf(line,  "9SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+    } else if(sscanf(line, "9SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_9SEG;
         *which = ELEM_9SEG;
 
-    } else if(sscanf(line, "14SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+    } else if(sscanf(line, "14SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_14SEG;
         *which = ELEM_14SEG;
 
-    } else if(sscanf(line, "16SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common)==3) {
+    } else if(sscanf(line, "16SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_16SEG;
         *which = ELEM_16SEG;
 
-    } else if(sscanf(line, "STEPPER %s %s %s %d %d %s", l->d.stepper.name, l->d.stepper.max, l->d.stepper.P, &l->d.stepper.nSize, &l->d.stepper.graph, l->d.stepper.coil)==6) {
+    } else if(sscanf(line,
+                     "STEPPER %s %s %s %d %d %s",
+                     l->d.stepper.name,
+                     l->d.stepper.max,
+                     l->d.stepper.P,
+                     &l->d.stepper.nSize,
+                     &l->d.stepper.graph,
+                     l->d.stepper.coil)
+              == 6) {
         *which = ELEM_STEPPER;
-    } else if(sscanf(line, "PULSER %s %s %s %s %s", l->d.pulser.P1, l->d.pulser.P0, l->d.pulser.accel, l->d.pulser.counter, l->d.pulser.busy)==5) {
+    } else if(sscanf(line,
+                     "PULSER %s %s %s %s %s",
+                     l->d.pulser.P1,
+                     l->d.pulser.P0,
+                     l->d.pulser.accel,
+                     l->d.pulser.counter,
+                     l->d.pulser.busy)
+              == 5) {
         *which = ELEM_PULSER;
-    } else if(sscanf(line, "NPULSE %s %s %s", l->d.Npulse.counter, l->d.Npulse.targetFreq, l->d.Npulse.coil)==3) {
+    } else if(sscanf(line, "NPULSE %s %s %s", l->d.Npulse.counter, l->d.Npulse.targetFreq, l->d.Npulse.coil) == 3) {
         *which = ELEM_NPULSE;
-    } else if(sscanf(line, "QUAD_ENCOD %s %d %s %s |%s |%s", l->d.QuadEncod.counter, &l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB, l->d.QuadEncod.contactZ, l->d.QuadEncod.zero)==6) {
+    } else if(sscanf(line,
+                     "QUAD_ENCOD %s %d %s %s |%s |%s",
+                     l->d.QuadEncod.counter,
+                     &l->d.QuadEncod.int01,
+                     l->d.QuadEncod.contactA,
+                     l->d.QuadEncod.contactB,
+                     l->d.QuadEncod.contactZ,
+                     l->d.QuadEncod.zero)
+              == 6) {
         *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line, "QUAD_ENCOD %s %d %s %s | |%s", l->d.QuadEncod.counter, &l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB, l->d.QuadEncod.zero)==5) {
+    } else if(sscanf(line,
+                     "QUAD_ENCOD %s %d %s %s | |%s",
+                     l->d.QuadEncod.counter,
+                     &l->d.QuadEncod.int01,
+                     l->d.QuadEncod.contactA,
+                     l->d.QuadEncod.contactB,
+                     l->d.QuadEncod.zero)
+              == 5) {
         *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line, "QUAD_ENCOD %s %d %s %s |%s |", l->d.QuadEncod.counter, &l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB, l->d.QuadEncod.contactZ)==5) {
+    } else if(sscanf(line,
+                     "QUAD_ENCOD %s %d %s %s |%s |",
+                     l->d.QuadEncod.counter,
+                     &l->d.QuadEncod.int01,
+                     l->d.QuadEncod.contactA,
+                     l->d.QuadEncod.contactB,
+                     l->d.QuadEncod.contactZ)
+              == 5) {
         *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line, "QUAD_ENCOD %s %d %s %s", l->d.QuadEncod.counter, &l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB)==4) {
+    } else if(sscanf(line,
+                     "QUAD_ENCOD %s %d %s %s",
+                     l->d.QuadEncod.counter,
+                     &l->d.QuadEncod.int01,
+                     l->d.QuadEncod.contactA,
+                     l->d.QuadEncod.contactB)
+              == 4) {
         *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line, "MOD %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+    } else if(sscanf(line, "MOD %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_MOD;
-    } else if(sscanf(line, "SHL %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+    } else if(sscanf(line, "SHL %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_SHL;
-    } else if(sscanf(line, "SHR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+    } else if(sscanf(line, "SHR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_SHR;
-    } else if(sscanf(line, "SR0 %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+    } else if(sscanf(line, "SR0 %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_SR0;
-    } else if(sscanf(line, "ROL %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+    } else if(sscanf(line, "ROL %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_ROL;
-    } else if(sscanf(line, "ROR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+    } else if(sscanf(line, "ROR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_ROR;
-    } else if(sscanf(line, "AND %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+    } else if(sscanf(line, "AND %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_AND;
-    } else if(sscanf(line, "OR %s %s %s",  l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+    } else if(sscanf(line, "OR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_OR;
-    } else if(sscanf(line, "XOR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2)==3) {
+    } else if(sscanf(line, "XOR %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_XOR;
-    } else if(sscanf(line, "NOT %s %s", l->d.math.dest, l->d.math.op1)==2) {
+    } else if(sscanf(line, "NOT %s %s", l->d.math.dest, l->d.math.op1) == 2) {
         *which = ELEM_NOT;
-    } else if(sscanf(line, "NEG %s %s", l->d.math.dest, l->d.math.op1)==2) {
+    } else if(sscanf(line, "NEG %s %s", l->d.math.dest, l->d.math.op1) == 2) {
         *which = ELEM_NEG;
-    } else if(sscanf(line, "ADD %s %s %s", l->d.math.dest, l->d.math.op1,
-        l->d.math.op2)==3)
-    {
+    } else if(sscanf(line, "ADD %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_ADD;
-    } else if(sscanf(line, "SUB %s %s %s", l->d.math.dest, l->d.math.op1,
-        l->d.math.op2)==3)
-    {
+    } else if(sscanf(line, "SUB %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_SUB;
-    } else if(sscanf(line, "MUL %s %s %s", l->d.math.dest, l->d.math.op1,
-        l->d.math.op2)==3)
-    {
+    } else if(sscanf(line, "MUL %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_MUL;
-    } else if(sscanf(line, "DIV %s %s %s", l->d.math.dest, l->d.math.op1,
-        l->d.math.op2)==3)
-    {
+    } else if(sscanf(line, "DIV %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_DIV;
 
-    } else if(sscanf(line, "SET_BIT %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "SET_BIT %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_SET_BIT;
-    } else if(sscanf(line, "CLEAR_BIT %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "CLEAR_BIT %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_CLEAR_BIT;
-    } else if(sscanf(line, "IF_BIT_SET %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "IF_BIT_SET %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_IF_BIT_SET;
-    } else if(sscanf(line, "IF_BIT_CLEAR %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "IF_BIT_CLEAR %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_IF_BIT_CLEAR;
-    #ifdef USE_SFR
-    } else if(sscanf(line, "RSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+#ifdef USE_SFR
+    } else if(sscanf(line, "RSFR %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_RSFR;
-    } else if(sscanf(line, "WSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "WSFR %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_WSFR;
-    } else if(sscanf(line, "SSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "SSFR %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_SSFR;
-    } else if(sscanf(line, "CSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "CSFR %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_CSFR;
-    } else if(sscanf(line, "TSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "TSFR %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_TSFR;
-    } else if(sscanf(line, "TCSFR %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "TCSFR %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_T_C_SFR;
-    #endif
-    } else if(sscanf(line, "EQU %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+#endif
+    } else if(sscanf(line, "EQU %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_EQU;
-    } else if(sscanf(line, "NEQ %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "NEQ %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_NEQ;
-    } else if(sscanf(line, "GRT %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "GRT %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_GRT;
-    } else if(sscanf(line, "GEQ %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "GEQ %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_GEQ;
-    } else if(sscanf(line, "LEQ %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "LEQ %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_LEQ;
-    } else if(sscanf(line, "LES %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
+    } else if(sscanf(line, "LES %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_LES;
-    } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name)==1) {
+    } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name) == 1) {
         *which = ELEM_READ_ADC;
-    } else if(sscanf(line, "RANDOM %s", l->d.readAdc.name)==1) {
+    } else if(sscanf(line, "RANDOM %s", l->d.readAdc.name) == 1) {
         *which = ELEM_RANDOM;
-    } else if(sscanf(line, "SEED_RANDOM %s %s", l->d.move.dest, l->d.move.src)==2) {
+    } else if(sscanf(line, "SEED_RANDOM %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_SEED_RANDOM;
-    } else if(sscanf(line, "SET_PWM %s %s %s %s", l->d.setPwm.duty_cycle,
-        l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution)==4)
-    {
+    } else if(sscanf(line,
+                     "SET_PWM %s %s %s %s",
+                     l->d.setPwm.duty_cycle,
+                     l->d.setPwm.targetFreq,
+                     l->d.setPwm.name,
+                     l->d.setPwm.resolution)
+              == 4) {
         *which = ELEM_SET_PWM;
-    } else if(sscanf(line, "SET_PWM %s %s %s", l->d.setPwm.duty_cycle,
-        l->d.setPwm.targetFreq, l->d.setPwm.name)==3)
-    {
+    } else if(sscanf(line, "SET_PWM %s %s %s", l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name) == 3) {
         *which = ELEM_SET_PWM;
-    } else if(sscanf(line, "SET_PWM %s %s", l->d.setPwm.duty_cycle,
-        l->d.setPwm.targetFreq)==2)
-    {
+    } else if(sscanf(line, "SET_PWM %s %s", l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq) == 2) {
         *which = ELEM_SET_PWM;
-    } else if(memcmp(line, "UART_RECV_AVAIL", 15)==0) {
+    } else if(memcmp(line, "UART_RECV_AVAIL", 15) == 0) {
         *which = ELEM_UART_RECV_AVAIL;
-    } else if(memcmp(line, "UART_SEND_READY", 15)==0) {
+    } else if(memcmp(line, "UART_SEND_READY", 15) == 0) {
         *which = ELEM_UART_SEND_READY;
-    } else if(memcmp(line, "UART_SEND_BUSY", 14)==0) {
+    } else if(memcmp(line, "UART_SEND_BUSY", 14) == 0) {
         *which = ELEM_UART_SEND_READY;
-    } else if(memcmp(line, "UART_UDRE", 9)==0) {
+    } else if(memcmp(line, "UART_UDRE", 9) == 0) {
         *which = ELEM_UART_SEND_READY;
-    } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name)==1) {
+    } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
         *which = ELEM_UART_RECVn;
-    } else if(sscanf(line, "UART_RECV %s", l->d.uart.name)==1) {
+    } else if(sscanf(line, "UART_RECV %s", l->d.uart.name) == 1) {
         *which = ELEM_UART_RECV;
-    } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name)==1) {
+    } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
         *which = ELEM_UART_SENDn;
-    } else if(sscanf(line, "UART_SEND %s", l->d.uart.name)==1) {
+    } else if(sscanf(line, "UART_SEND %s", l->d.uart.name) == 1) {
         *which = ELEM_UART_SEND;
-    } else if(sscanf(line, "PERSIST %s", l->d.persist.var)==1) {
+    } else if(sscanf(line, "PERSIST %s", l->d.persist.var) == 1) {
         *which = ELEM_PERSIST;
-    } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var,
-        &x)==2)
-    {
-        if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
+    } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var, &x) == 2) {
+        if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
         }
 
         char *p = line;
-        int i;
+        int   i;
         for(i = 0; i < 3; i++) {
-            while(!isspace(*p)) p++;
-            while( isspace(*p)) p++;
+            while(!isspace(*p))
+                p++;
+            while(isspace(*p))
+                p++;
         }
         for(i = 0; i < x; i++) {
             l->d.fmtdStr.string[i] = atoi(p);
             if(l->d.fmtdStr.string[i] < 32) {
                 l->d.fmtdStr.string[i] = 'X';
             }
-            while(!isspace(*p) && *p) p++;
-            while( isspace(*p) && *p) p++;
+            while(!isspace(*p) && *p)
+                p++;
+            while(isspace(*p) && *p)
+                p++;
         }
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_FORMATTED_STRING;
-    } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string)==2)
-    {
-        int i=strlen("FORMATTED_STRING")+1+strlen(l->d.fmtdStr.var)+1;
+    } else if(sscanf(line, "FORMATTED_STRING %s %s", l->d.fmtdStr.var, l->d.fmtdStr.string) == 2) {
+        int i = strlen("FORMATTED_STRING") + 1 + strlen(l->d.fmtdStr.var) + 1;
 
-        if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
+        if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
         }
         FrmStrToStr(l->d.fmtdStr.string, &line[i]);
         DelNL(l->d.fmtdStr.string);
-        if(strcmp(l->d.fmtdStr.string, "(none)")==0) {
+        if(strcmp(l->d.fmtdStr.string, "(none)") == 0) {
             strcpy(l->d.fmtdStr.string, "");
         }
         *which = ELEM_FORMATTED_STRING;
-    } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var,
-        &x)==3)
-    {
-        if(strcmp(l->d.fmtdStr.dest, "(none)")==0) {
+    } else if(sscanf(line, "STRING %s %s %d", l->d.fmtdStr.dest, l->d.fmtdStr.var, &x) == 3) {
+        if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {
             strcpy(l->d.fmtdStr.dest, "");
         }
-        if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
+        if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
         }
 
         char *p = line;
-        int i;
+        int   i;
         for(i = 0; i < 4; i++) {
-            while(!isspace(*p)) p++;
-            while( isspace(*p)) p++;
+            while(!isspace(*p))
+                p++;
+            while(isspace(*p))
+                p++;
         }
         for(i = 0; i < x; i++) {
             l->d.fmtdStr.string[i] = atoi(p);
             if(l->d.fmtdStr.string[i] < 32) {
                 l->d.fmtdStr.string[i] = 'X';
             }
-            while(!isspace(*p) && *p) p++;
-            while( isspace(*p) && *p) p++;
+            while(!isspace(*p) && *p)
+                p++;
+            while(isspace(*p) && *p)
+                p++;
         }
         l->d.fmtdStr.string[i] = '\0';
 
         *which = ELEM_STRING;
-    } else if(sscanf(line, "STRING %s %s %s", l->d.fmtdStr.dest, l->d.fmtdStr.var, l->d.fmtdStr.string)==3)
-    {
-        if(strcmp(l->d.fmtdStr.dest, "(none)")==0) {
+    } else if(sscanf(line, "STRING %s %s %s", l->d.fmtdStr.dest, l->d.fmtdStr.var, l->d.fmtdStr.string) == 3) {
+        if(strcmp(l->d.fmtdStr.dest, "(none)") == 0) {
             strcpy(l->d.fmtdStr.dest, "");
         }
-        if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
+        if(strcmp(l->d.fmtdStr.var, "(none)") == 0) {
             strcpy(l->d.fmtdStr.var, "");
         }
-        int i=strlen("STRING")+1+strlen(l->d.fmtdStr.dest)+1+strlen(l->d.fmtdStr.var)+1;
+        int i = strlen("STRING") + 1 + strlen(l->d.fmtdStr.dest) + 1 + strlen(l->d.fmtdStr.var) + 1;
         FrmStrToStr(l->d.fmtdStr.string, &line[i]);
         DelNL(l->d.fmtdStr.string);
-        if(strcmp(l->d.fmtdStr.string, "(none)")==0) {
+        if(strcmp(l->d.fmtdStr.string, "(none)") == 0) {
             strcpy(l->d.fmtdStr.string, "");
         }
         *which = ELEM_STRING;
-    } else if(sscanf(line, "LOOK_UP_TABLE %s %s %d %d", l->d.lookUpTable.dest,
-        l->d.lookUpTable.index, &(l->d.lookUpTable.count),
-        &(l->d.lookUpTable.editAsString))==4)
-    {
+    } else if(sscanf(line,
+                     "LOOK_UP_TABLE %s %s %d %d",
+                     l->d.lookUpTable.dest,
+                     l->d.lookUpTable.index,
+                     &(l->d.lookUpTable.count),
+                     &(l->d.lookUpTable.editAsString))
+              == 4) {
         char *p = line;
-        int i;
+        int   i;
         // First skip over the parts that we already sscanf'd.
         for(i = 0; i < 5; i++) {
             while((!isspace(*p)) && *p)
@@ -457,12 +511,14 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         if(!strlen(l->d.lookUpTable.name))
             sprintf(l->d.lookUpTable.name, "%s%d", l->d.lookUpTable.dest, l->d.lookUpTable.count);
         *which = ELEM_LOOK_UP_TABLE;
-    } else if(sscanf(line, "PIECEWISE_LINEAR %s %s %d",
-        l->d.piecewiseLinear.dest, l->d.piecewiseLinear.index,
-        &(l->d.piecewiseLinear.count))==3)
-    {
+    } else if(sscanf(line,
+                     "PIECEWISE_LINEAR %s %s %d",
+                     l->d.piecewiseLinear.dest,
+                     l->d.piecewiseLinear.index,
+                     &(l->d.piecewiseLinear.count))
+              == 3) {
         char *p = line;
-        int i;
+        int   i;
         // First skip over the parts that we already sscanf'd.
         for(i = 0; i < 4; i++) {
             while((!isspace(*p)) && *p)
@@ -471,7 +527,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
                 p++;
         }
         // Then copy over the piecewise linear points.
-        for(i = 0; i < l->d.piecewiseLinear.count*2; i++) {
+        for(i = 0; i < l->d.piecewiseLinear.count * 2; i++) {
             l->d.piecewiseLinear.vals[i] = hobatoi(p);
             while((!isspace(*p)) && *p)
                 p++;
@@ -487,13 +543,13 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
     }
     *any = l;
     if(*which == ELEM_SET_PWM) {
-        if (l->d.setPwm.name[0] != 'P') {   // Fix the name, this case will occur when reading old LD files
-            memmove(l->d.setPwm.name + 1, l->d.setPwm.name, strlen(l->d.setPwm.name)+1);
+        if(l->d.setPwm.name[0] != 'P') { // Fix the name, this case will occur when reading old LD files
+            memmove(l->d.setPwm.name + 1, l->d.setPwm.name, strlen(l->d.setPwm.name) + 1);
             l->d.setPwm.name[0] = 'P';
         }
         char *s;
-        if(s = strchr(l->d.setPwm.targetFreq,'.')) {
-           *s = '\0';
+        if(s = strchr(l->d.setPwm.targetFreq, '.')) {
+            *s = '\0';
         }
     }
     return TRUE;
@@ -502,16 +558,17 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 //-----------------------------------------------------------------------------
 char *strspace(char *str)
 {
-    while(isspace(*str)) str++;
-    while(isspace(str[strlen(str)-1]))
-        str[strlen(str)-1] = '\0';
+    while(strlen(str) && isspace(str[0]))
+        str++;
+    while(strlen(str) && isspace(str[strlen(str) - 1]))
+        str[strlen(str) - 1] = '\0';
     return str;
 }
 //-----------------------------------------------------------------------------
 char *strspacer(char *str)
 {
-    int i = strlen(str)-1;
-    while((i>=0) && isspace(str[i])) {
+    int i = strlen(str) - 1;
+    while((i >= 0) && isspace(str[i])) {
         str[i] = 0;
         i--;
     }
@@ -521,43 +578,49 @@ char *strspacer(char *str)
 // Load a parallel subcircuit from a file. We look for leaf nodes using
 // LoadLeafFromFile, which we can put directly into the parallel circuit
 // that we're building up, or series subcircuits that we can pass to
-// LoadSeriesFromFile. Returns the parallel subcircuit built up, or NULL if
+// LoadSeriesFromFile. Returns the parallel subcircuit built up, or nullptr if
 // something goes wrong.
 //-----------------------------------------------------------------------------
 static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
 {
-    char line[512];
+    char  line[512];
     void *any;
-    int which;
+    int   which;
 
     ElemSubcktParallel *ret = AllocSubcktParallel();
-    int cnt = 0;
+    int                 cnt = 0;
 
     for(;;) {
-        if(!fgets(line, sizeof(line), f)) return NULL;
-        if(!strlen(strspace(line))) continue;
+        if(!fgets(line, sizeof(line), f))
+            return nullptr;
+        if(!strlen(strspace(line)))
+            continue;
         char *s = line;
-        while(isspace(*s)) s++;
+        while(isspace(*s))
+            s++;
         //if((*s=='/') && ((++(*s))=='/')) continue;
-        if(*s==';') continue;
+        if(*s == ';')
+            continue;
 
-        if(strcmp(s, "SERIES")==0) {
+        if(strcmp(s, "SERIES") == 0) {
             which = ELEM_SERIES_SUBCKT;
             any = LoadSeriesFromFile(f);
-            if(!any) return NULL;
+            if(!any)
+                return nullptr;
 
         } else if(LoadLeafFromFile(s, &any, &which)) {
             // got it
-        } else if(strcmp(s, "END")==0) {
+        } else if(strcmp(s, "END") == 0) {
             ret->count = cnt;
             return ret;
         } else {
-            return NULL;
+            return nullptr;
         }
         ret->contents[cnt].which = which;
         ret->contents[cnt].data.any = any;
         cnt++;
-        if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
+        if(cnt >= MAX_ELEMENTS_IN_SUBCKT)
+            return nullptr;
     }
 }
 
@@ -567,39 +630,69 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
 //-----------------------------------------------------------------------------
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
 {
-    char line[512];
+    char  line[512];
     void *any;
-    int which;
+    int   which;
 
     ElemSubcktSeries *ret = AllocSubcktSeries();
-    int cnt = 0;
+    int               cnt = 0;
 
     for(;;) {
-        if(!fgets(line, sizeof(line), f)) return NULL;
-        if(!strlen(strspace(line))) continue;
+        if(!fgets(line, sizeof(line), f))
+            return nullptr;
+        if(!strlen(strspace(line)))
+            continue;
         char *s = line;
-        while(isspace(*s)) s++;
-        if(*s==';') continue; // NOT for release
-        if(strcmp(s, "PARALLEL")==0) {
+        while(isspace(*s))
+            s++;
+        if(*s == ';')
+            continue; // NOT for release
+        if(strcmp(s, "PARALLEL") == 0) {
             which = ELEM_PARALLEL_SUBCKT;
             any = LoadParallelFromFile(f);
-            if(!any) return NULL;
-        } else if(strcmp(s, "SERIES")==0) {
+            if(!any)
+                return nullptr;
+        } else if(strcmp(s, "SERIES") == 0) {
             which = ELEM_SERIES_SUBCKT;
             any = LoadSeriesFromFile(f);
-            if(!any) return NULL;
+            if(!any)
+                return nullptr;
         } else if(LoadLeafFromFile(s, &any, &which)) {
             // got it
-        } else if(strcmp(s, "END")==0) {
+        } else if(strcmp(s, "END") == 0) {
             ret->count = cnt;
             return ret;
         } else {
-            return NULL;
+            return nullptr;
         }
         ret->contents[cnt].which = which;
         ret->contents[cnt].data.any = any;
         cnt++;
-        if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
+        if(cnt >= MAX_ELEMENTS_IN_SUBCKT)
+            return nullptr;
+    }
+}
+
+//-----------------------------------------------------------------------------
+void LoadWritePcPorts()
+{
+    if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM)) {
+        //RunningInBatchMode = TRUE;
+        char pc[MAX_PATH];
+        strcpy(pc, CurrentLdPath);
+        if(strlen(pc))
+            strcat(pc, "\\");
+        strcat(pc, "pcports.cfg");
+        if(LoadPcPorts(pc)) {
+            int i;
+            for(i = 0; i < NUM_SUPPORTED_MCUS; i++)
+                if(SupportedMcus[i].core == PC_LPT_COM) {
+                    SupportedMcus[i].pinInfo = IoPc;
+                    SupportedMcus[i].pinCount = IoPcCount;
+                }
+        } else
+            Error(_(" File '%s' not found!"), pc);
+        //RunningInBatchMode = FALSE;
     }
 }
 
@@ -615,52 +708,69 @@ BOOL LoadProjectFromFile(char *filename)
     strcpy(CurrentCompileFile, "");
 
     FILE *f = fopen(filename, "r");
-    if(!f) return FALSE;
+    if(!f)
+        return FALSE;
 
-    strcpy(CurrentLdPath,filename);
+    strcpy(CurrentLdPath, filename);
     ExtractFileDir(CurrentLdPath);
 
-    char line[512];
+    char          line[512];
     long long int cycle;
-    int crystal, baud;
-    int cycleTimer, cycleDuty, wdte;
+    int           crystal, baud;
+    int           cycleTimer, cycleDuty, wdte;
     long long int configWord = 0;
     Prog.configurationWord = 0;
     while(fgets(line, sizeof(line), f)) {
-        if(!strlen(strspace(line))) continue;
-        if(strcmp(line, "IO LIST")==0) {
+        if(!strlen(strspace(line)))
+            continue;
+        if(strcmp(line, "IO LIST") == 0) {
             if(!LoadIoListFromFile(f)) {
                 fclose(f);
                 return FALSE;
             }
-        } else if(strcmp(line, "VAR LIST")==0) {
+        } else if(strcmp(line, "VAR LIST") == 0) {
             if(!LoadVarListFromFile(f)) {
                 fclose(f);
                 return FALSE;
             }
         } else if(sscanf(line, "LDmicro%s", &Prog.LDversion)) {
-            if (strcmp(Prog.LDversion,"0.1")!=0)
-                strcpy(Prog.LDversion,"0.2");
+            if(strcmp(Prog.LDversion, "0.1") != 0)
+                strcpy(Prog.LDversion, "0.2");
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
-        } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):%llx", &cycle, &cycleTimer, &cycleDuty, &configWord)==4) {
+        } else if(sscanf(line,
+                         "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):%llx",
+                         &cycle,
+                         &cycleTimer,
+                         &cycleDuty,
+                         &configWord)
+                  == 4) {
             Prog.cycleTime = cycle;
-            if((cycleTimer!=0) && (cycleTimer!=1)) cycleTimer = 1;
+            if((cycleTimer != 0) && (cycleTimer != 1))
+                cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
             Prog.configurationWord = configWord;
             if(Prog.cycleTime == 0)
                 Prog.cycleTimer = -1;
-        } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, WDTE:%d", &cycle, &cycleTimer, &cycleDuty, &wdte)==4) {
+        } else if(sscanf(line,
+                         "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, WDTE:%d",
+                         &cycle,
+                         &cycleTimer,
+                         &cycleDuty,
+                         &wdte)
+                  == 4) {
             Prog.cycleTime = cycle;
-            if((cycleTimer!=0) && (cycleTimer!=1)) cycleTimer = 1;
+            if((cycleTimer != 0) && (cycleTimer != 1))
+                cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
             if(Prog.cycleTime == 0)
                 Prog.cycleTimer = -1;
-        } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d", &cycle, &cycleTimer, &cycleDuty)==3) {
+        } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d", &cycle, &cycleTimer, &cycleDuty) == 3) {
             Prog.cycleTime = cycle;
-            if((cycleTimer!=0)&&(cycleTimer!=1)) cycleTimer = 1;
+            if((cycleTimer != 0) && (cycleTimer != 1))
+                cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
             if(Prog.cycleTime == 0)
@@ -673,55 +783,61 @@ BOOL LoadProjectFromFile(char *filename)
                 Prog.cycleTimer = -1;
         } else if(sscanf(line, "BAUD=%d", &baud)) {
             Prog.baudRate = baud;
-        } else if(memcmp(line, "COMPILED=", 9)==0) {
-            strcpy(CurrentCompileFile, line+9);
+        } else if(memcmp(line, "COMPILED=", 9) == 0) {
+            strcpy(CurrentCompileFile, line + 9);
 
-            strcpy(CurrentCompilePath,CurrentCompileFile);
+            strcpy(CurrentCompilePath, CurrentCompileFile);
             ExtractFileDir(CurrentCompilePath);
-        } else if(memcmp(line, "COMPILER=", 9)==0) {
-            int i = GetMnu(line+9);
+        } else if(memcmp(line, "COMPILER=", 9) == 0) {
+            int i = GetMnu(line + 9);
             if(i > 0)
                 compile_MNU = i;
-        } else if(memcmp(line, "MICRO=", 6)==0) {
-          if(strlen(line) > 6) {
-            int i;
-            for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-              if(SupportedMcus[i].mcuName)
-                if(strcmp(SupportedMcus[i].mcuName, line+6)==0) {
-                    SetMcu(&SupportedMcus[i]);
-                    break;
+        } else if(memcmp(line, "MICRO=", 6) == 0) {
+            if(strlen(line) > 6) {
+                int i;
+                for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
+                    if(SupportedMcus[i].mcuName)
+                        if(strcmp(SupportedMcus[i].mcuName, line + 6) == 0) {
+                            SetMcu(&SupportedMcus[i]);
+                            break;
+                        }
+                }
+                if(i == NUM_SUPPORTED_MCUS) {
+                    Error(_("Microcontroller '%s' not supported.\r\n\r\n"
+                            "Defaulting to no selected MCU."),
+                          line + 6);
                 }
             }
-            if(i == NUM_SUPPORTED_MCUS) {
-                Error(_("Microcontroller '%s' not supported.\r\n\r\n"
-                    "Defaulting to no selected MCU."), line+6);
-            }
-          }
-        } else if(strcmp(line, "PROGRAM")==0) {
+        } else if(strcmp(line, "PROGRAM") == 0) {
             break;
         }
     }
 
     int rung = -2;
 
-    if(strcmp(line, "PROGRAM") != 0) goto failed;
+    if(strcmp(line, "PROGRAM") != 0)
+        goto failed;
 
     for(rung = 0;;) {
-        if(!fgets(line, sizeof(line), f)) break;
-        if(!strlen(strspace(line))) continue;
-        if(strstr(line,"RUNG")==0) goto failed;
+        if(!fgets(line, sizeof(line), f))
+            break;
+        if(!strlen(strspace(line)))
+            continue;
+        if(strstr(line, "RUNG") == 0)
+            goto failed;
 
         Prog.rungs[rung] = LoadSeriesFromFile(f);
-        if(!Prog.rungs[rung]) goto failed;
+        if(!Prog.rungs[rung])
+            goto failed;
         rung++;
-        if(rung >=MAX_RUNGS){
-           Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
-           break;
+        if(rung >= MAX_RUNGS) {
+            Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
+            break;
         }
     }
     Prog.numRungs = rung;
 
-    for(rung = 0; rung<Prog.numRungs; rung++) {
+    for(rung = 0; rung < Prog.numRungs; rung++) {
         while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[rung]))
             ProgramChanged();
     }
@@ -735,9 +851,10 @@ BOOL LoadProjectFromFile(char *filename)
 failed:
     fclose(f);
     NewProgram();
-    Error(_("File format error; perhaps this program is for a newer version "
-            "of LDmicro?"));
-    Error("Error in RUNG %d. See error below %s",rung+1, line);
+    Error(
+        _("File format error; perhaps this program is for a newer version "
+          "of LDmicro?"));
+    Error("Error in RUNG %d. See error below %s", rung + 1, line);
     return FALSE;
 }
 
@@ -763,12 +880,12 @@ static void Indent(FILE *f, int depth)
 //-----------------------------------------------------------------------------
 void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 {
-    ElemLeaf *l = (ElemLeaf *)any;
+    ElemLeaf *  l = (ElemLeaf *)any;
     const char *s;
-    char str1[1024];
-    char str2[1024];
-    char str3[1024];
-    char str4[1024];
+    char        str1[1024];
+    char        str2[1024];
+    char        str3[1024];
+    char        str4[1024];
 
     Indent(f, depth);
 
@@ -838,22 +955,26 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_SHIFT_REGISTER:
-            fprintf(f, "SHIFT_REGISTER %s %d\n", l->d.shiftRegister.name,
-                l->d.shiftRegister.stages);
+            fprintf(f, "SHIFT_REGISTER %s %d\n", l->d.shiftRegister.name, l->d.shiftRegister.stages);
             break;
 
         case ELEM_CONTACTS:
             if(l->d.contacts.name[0] != 'X')
                 l->d.contacts.set1 = FALSE;
-            fprintf(f, "CONTACTS %s %d %d\n", l->d.contacts.name,
-                l->d.contacts.negated, l->d.contacts.set1);
+            fprintf(f, "CONTACTS %s %d %d\n", l->d.contacts.name, l->d.contacts.negated, l->d.contacts.set1);
             break;
 
         case ELEM_COIL:
-            fprintf(f, "COIL %s %d %d %d %d\n", l->d.coil.name, l->d.coil.negated,
-                l->d.coil.setOnly, l->d.coil.resetOnly, l->d.coil.ttrigger);
+            fprintf(f,
+                    "COIL %s %d %d %d %d\n",
+                    l->d.coil.name,
+                    l->d.coil.negated,
+                    l->d.coil.setOnly,
+                    l->d.coil.resetOnly,
+                    l->d.coil.ttrigger);
             break;
 
+        // clang-format off
         case ELEM_TIME2COUNT: s = "TIME2COUNT"; goto timer;
         case ELEM_TCY: s = "TCY"; goto timer;
         case ELEM_TON: s = "TON"; goto timer;
@@ -870,16 +991,30 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         case ELEM_CTD: s = "CTD"; goto counter;
         case ELEM_CTC: s = "CTC"; goto counter;
         case ELEM_CTR: s = "CTR"; goto counter;
+        // clang-format on
         counter:
             fprintf(f, "%s %s %s %s\n", s, l->d.counter.name, l->d.counter.max, l->d.counter.init);
             break;
 
         case ELEM_STEPPER:
-            fprintf(f, "STEPPER %s %s %s %d %d %s\n", l->d.stepper.name, l->d.stepper.max, l->d.stepper.P, l->d.stepper.nSize, l->d.stepper.graph, l->d.stepper.coil);
+            fprintf(f,
+                    "STEPPER %s %s %s %d %d %s\n",
+                    l->d.stepper.name,
+                    l->d.stepper.max,
+                    l->d.stepper.P,
+                    l->d.stepper.nSize,
+                    l->d.stepper.graph,
+                    l->d.stepper.coil);
             break;
 
         case ELEM_PULSER:
-            fprintf(f, "PULSER %s %s %s %s %s\n", l->d.pulser.P1, l->d.pulser.P0, l->d.pulser.accel, l->d.pulser.counter, l->d.pulser.busy);
+            fprintf(f,
+                    "PULSER %s %s %s %s %s\n",
+                    l->d.pulser.P1,
+                    l->d.pulser.P0,
+                    l->d.pulser.accel,
+                    l->d.pulser.counter,
+                    l->d.pulser.busy);
             break;
 
         case ELEM_NPULSE:
@@ -887,7 +1022,14 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_QUAD_ENCOD:
-            fprintf(f, "QUAD_ENCOD %s %d %s %s |%s |%s\n", l->d.QuadEncod.counter, l->d.QuadEncod.int01, l->d.QuadEncod.contactA, l->d.QuadEncod.contactB, l->d.QuadEncod.contactZ, l->d.QuadEncod.zero);
+            fprintf(f,
+                    "QUAD_ENCOD %s %d %s %s |%s |%s\n",
+                    l->d.QuadEncod.counter,
+                    l->d.QuadEncod.int01,
+                    l->d.QuadEncod.contactA,
+                    l->d.QuadEncod.contactB,
+                    l->d.QuadEncod.contactZ,
+                    l->d.QuadEncod.zero);
             break;
 
         case ELEM_NPULSE_OFF:
@@ -919,23 +1061,32 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_SPI: {
-            fprintf(f, "SPI %s %s %s %s %s %s %s %s\n", l->d.spi.name, l->d.spi.send, l->d.spi.recv, l->d.spi.bitrate, l->d.spi.mode, l->d.spi.modes, l->d.spi.size, l->d.spi.first);
+            fprintf(f,
+                    "SPI %s %s %s %s %s %s %s %s\n",
+                    l->d.spi.name,
+                    l->d.spi.send,
+                    l->d.spi.recv,
+                    l->d.spi.mode,
+                    l->d.spi.modes,
+                    l->d.spi.size,
+                    l->d.spi.first,
+                    l->d.spi.bitrate);
             break;
         }
         case ELEM_BUS: {
             fprintf(f, "BUS %s %s", l->d.bus.dest, l->d.bus.src);
             int i;
-            for(i=7; i>=0; i--)
+            for(i = 7; i >= 0; i--)
                 fprintf(f, " %d", l->d.bus.PCBbit[i]);
             fprintf(f, "\n");
             break;
         }
         case ELEM_7SEG:
-            fprintf(f,  "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
+            fprintf(f, "7SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
             break;
 
         case ELEM_9SEG:
-            fprintf(f,  "9SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
+            fprintf(f, "9SEGMENTS %s %s %c\n", l->d.segments.dest, l->d.segments.src, l->d.segments.common);
             break;
 
         case ELEM_14SEG:
@@ -954,6 +1105,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "NEG %s %s\n", l->d.math.dest, l->d.math.op1);
             break;
 
+        // clang-format off
         case ELEM_ROL: s = "ROL"; goto math;
         case ELEM_ROR: s = "ROR"; goto math;
         case ELEM_SHL: s = "SHL"; goto math;
@@ -967,9 +1119,9 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         case ELEM_SUB: s = "SUB"; goto math;
         case ELEM_MUL: s = "MUL"; goto math;
         case ELEM_DIV: s = "DIV"; goto math;
+        // clang-format on
         math:
-            fprintf(f, "%s %s %s %s\n", s, l->d.math.dest, l->d.math.op1,
-                l->d.math.op2);
+            fprintf(f, "%s %s %s %s\n", s, l->d.math.dest, l->d.math.op1, l->d.math.op2);
             break;
 
         case ELEM_SET_BIT:
@@ -988,26 +1140,30 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "IF_BIT_CLEAR %s %s\n", l->d.move.dest, l->d.move.src);
             break;
 
-        #ifdef USE_SFR
+#ifdef USE_SFR
         // Special function
+        // clang-format off
         case ELEM_RSFR: s = "RSFR"; goto sfrcmp;
         case ELEM_WSFR: s = "WSFR"; goto sfrcmp;
         case ELEM_SSFR: s = "SSFR"; goto sfrcmp;
         case ELEM_CSFR: s = "CSFR"; goto sfrcmp;
         case ELEM_TSFR: s = "TSFR"; goto sfrcmp;
         case ELEM_T_C_SFR: s = "TCSFR"; goto sfrcmp;
+        // clang-format on
         sfrcmp:
             fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
             break;
-        // Special function
-        #endif
+// Special function
+#endif
 
+        // clang-format off
         case ELEM_EQU: s = "EQU"; goto cmp;
         case ELEM_NEQ: s = "NEQ"; goto cmp;
         case ELEM_GRT: s = "GRT"; goto cmp;
         case ELEM_GEQ: s = "GEQ"; goto cmp;
         case ELEM_LES: s = "LES"; goto cmp;
         case ELEM_LEQ: s = "LEQ"; goto cmp;
+        // clang-format on
         cmp:
             fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
             break;
@@ -1041,8 +1197,12 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_SET_PWM:
-            fprintf(f, "SET_PWM %s %s %s %s\n", l->d.setPwm.duty_cycle,
-                l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
+            fprintf(f,
+                    "SET_PWM %s %s %s %s\n",
+                    l->d.setPwm.duty_cycle,
+                    l->d.setPwm.targetFreq,
+                    l->d.setPwm.name,
+                    l->d.setPwm.resolution);
             break;
 
         case ELEM_UART_RECV:
@@ -1073,22 +1233,39 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "PERSIST %s\n", l->d.persist.var);
             break;
 
-        case ELEM_CPRINTF:      s = "CPRINTF"; goto cprintf;
-        case ELEM_SPRINTF:      s = "SPRINTF"; goto cprintf;
-        case ELEM_FPRINTF:      s = "FPRINTF"; goto cprintf;
-        case ELEM_PRINTF:       s = "PRINTF"; goto cprintf;
-        case ELEM_I2C_CPRINTF:  s = "I2C_PRINTF"; goto cprintf;
-        case ELEM_ISP_CPRINTF:  s = "ISP_PRINTF"; goto cprintf;
-        case ELEM_UART_CPRINTF: s = "UART_PRINTF"; goto cprintf; {
-        cprintf:
-            fprintf(f, "%s %s %s %s %s %s\n", s,
-                StrToFrmStr(str1, l->d.fmtdStr.var, FRMT_x20),
-                StrToFrmStr(str2, l->d.fmtdStr.string, FRMT_x20),
-                l->d.fmtdStr.dest,
-                StrToFrmStr(str3, l->d.fmtdStr.enable, FRMT_x20), //may be (none)
-                StrToFrmStr(str4, l->d.fmtdStr.error, FRMT_x20)); //may be (none)
-            break;
-        }
+        case ELEM_CPRINTF:
+            s = "CPRINTF";
+            goto cprintf;
+        case ELEM_SPRINTF:
+            s = "SPRINTF";
+            goto cprintf;
+        case ELEM_FPRINTF:
+            s = "FPRINTF";
+            goto cprintf;
+        case ELEM_PRINTF:
+            s = "PRINTF";
+            goto cprintf;
+        case ELEM_I2C_CPRINTF:
+            s = "I2C_PRINTF";
+            goto cprintf;
+        case ELEM_ISP_CPRINTF:
+            s = "ISP_PRINTF";
+            goto cprintf;
+        case ELEM_UART_CPRINTF:
+            s = "UART_PRINTF";
+            goto cprintf;
+            {
+            cprintf:
+                fprintf(f,
+                        "%s %s %s %s %s %s\n",
+                        s,
+                        StrToFrmStr(str1, l->d.fmtdStr.var, FRMT_x20),
+                        StrToFrmStr(str2, l->d.fmtdStr.string, FRMT_x20),
+                        l->d.fmtdStr.dest,
+                        StrToFrmStr(str3, l->d.fmtdStr.enable, FRMT_x20), //may be (none)
+                        StrToFrmStr(str4, l->d.fmtdStr.error, FRMT_x20)); //may be (none)
+                break;
+            }
         case ELEM_STRING: {
             int i;
             fprintf(f, "STRING ");
@@ -1127,9 +1304,12 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         }
         case ELEM_LOOK_UP_TABLE: {
             int i;
-            fprintf(f, "LOOK_UP_TABLE %s %s %d %d", l->d.lookUpTable.dest,
-                l->d.lookUpTable.index, l->d.lookUpTable.count,
-                l->d.lookUpTable.editAsString);
+            fprintf(f,
+                    "LOOK_UP_TABLE %s %s %d %d",
+                    l->d.lookUpTable.dest,
+                    l->d.lookUpTable.index,
+                    l->d.lookUpTable.count,
+                    l->d.lookUpTable.editAsString);
             for(i = 0; i < l->d.lookUpTable.count; i++) {
                 fprintf(f, " %d", l->d.lookUpTable.vals[i]);
             }
@@ -1139,9 +1319,12 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         }
         case ELEM_PIECEWISE_LINEAR: {
             int i;
-            fprintf(f, "PIECEWISE_LINEAR %s %s %d", l->d.piecewiseLinear.dest,
-                l->d.piecewiseLinear.index, l->d.piecewiseLinear.count);
-            for(i = 0; i < l->d.piecewiseLinear.count*2; i++) {
+            fprintf(f,
+                    "PIECEWISE_LINEAR %s %s %d",
+                    l->d.piecewiseLinear.dest,
+                    l->d.piecewiseLinear.index,
+                    l->d.piecewiseLinear.count);
+            for(i = 0; i < l->d.piecewiseLinear.count * 2; i++) {
                 fprintf(f, " %d", l->d.piecewiseLinear.vals[i]);
             }
             fprintf(f, " %s", l->d.piecewiseLinear.name);
@@ -1151,19 +1334,18 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int i;
+            int               i;
             if(depth == 0) {
-              if (strcmp(Prog.LDversion,"0.1")==0)
-                fprintf(f, "RUNG\n");
-              else
-                fprintf(f, "RUNG %d\n", rung);
-              //fprintf(f, "RUNG\n");
+                if(strcmp(Prog.LDversion, "0.1") == 0)
+                    fprintf(f, "RUNG\n");
+                else
+                    fprintf(f, "RUNG %d\n", rung);
+                //fprintf(f, "RUNG\n");
             } else {
                 fprintf(f, "SERIES\n");
             }
             for(i = 0; i < s->count; i++) {
-                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any,
-                    depth+1, rung);
+                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any, depth + 1, rung);
             }
             Indent(f, depth);
             fprintf(f, "END\n");
@@ -1172,11 +1354,10 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *s = (ElemSubcktParallel *)any;
-            int i;
+            int                 i;
             fprintf(f, "PARALLEL\n");
             for(i = 0; i < s->count; i++) {
-                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any,
-                    depth+1, rung);
+                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any, depth + 1, rung);
             }
             Indent(f, depth);
             fprintf(f, "END\n");
@@ -1184,7 +1365,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         }
 
         default:
-            ooops("ELEM_0x%x",which);
+            ooops("ELEM_0x%x", which);
             break;
     }
 }
@@ -1196,24 +1377,30 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 BOOL SaveProjectToFile(char *filename, int code)
 {
     if(code == MNU_SAVE_02)
-        strcpy(Prog.LDversion,"0.2");
+        strcpy(Prog.LDversion, "0.2");
     else if(code == MNU_SAVE_01)
-        strcpy(Prog.LDversion,"0.1");
+        strcpy(Prog.LDversion, "0.1");
 
     FILE *f = fopen(filename, "w");
-    if(!f) return FALSE;
+    if(!f)
+        return FALSE;
 
-    fprintf(f, "LDmicro%s\n",Prog.LDversion);
+    fprintf(f, "LDmicro%s\n", Prog.LDversion);
     if(Prog.mcu) {
         fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
     }
-    fprintf(f, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%llX\n", Prog.cycleTime, Prog.cycleTimer, Prog.cycleDuty, Prog.configurationWord);
+    fprintf(f,
+            "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%llX\n",
+            Prog.cycleTime,
+            Prog.cycleTimer,
+            Prog.cycleDuty,
+            Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
     fprintf(f, "BAUD=%d Hz\n", Prog.baudRate);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }
-    if (strcmp(Prog.LDversion,"0.1")!=0) {
+    if(strcmp(Prog.LDversion, "0.1") != 0) {
         if(compile_MNU > 0)
             fprintf(f, "COMPILER=%s\n", GetMnuName(compile_MNU));
 
@@ -1234,7 +1421,7 @@ BOOL SaveProjectToFile(char *filename, int code)
 
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
-        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i+1);
+        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i + 1);
     }
 
     fflush(f);
@@ -1287,14 +1474,14 @@ void FrmStrToFile(FILE *f, char *str)
 //---------------------------------------------------------------------------
 char *StrToFrmStr(char *dest, char *src, FRMT frmt)
 {
-    if((src == NULL) || (strlen(src) == 0)) {
+    if((src == nullptr) || (strlen(src) == 0)) {
         strcpy(dest, " (none)");
         return dest;
     }
 
     strcpy(dest, "");
     int i;
-    if((frmt == FRMT_01) && (strcmp(Prog.LDversion,"0.1")==0)) {
+    if((frmt == FRMT_01) && (strcmp(Prog.LDversion, "0.1") == 0)) {
         char str[1024];
         sprintf(str, " %d", strlen(src));
         strcat(dest, str);
@@ -1306,27 +1493,37 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
         for(i = 0; i < (int)strlen(src); i++) {
             if((frmt == FRMT_x20) && (src[i] == ' ')) {
                 strcat(dest, "\\x20");
-//          } else if(src[i] == '\'') {
-//              strcat(dest, "\\\'");
-//          } else if(src[i] == '\"') {
-//              strcat(dest, "\\\"");
-//          } else if(src[i] == '\?') {
-//              strcat(dest, "\\\?");
+                //          } else if(src[i] == '\'') {
+                //              strcat(dest, "\\\'");
+                //          } else if(src[i] == '\"') {
+                //              strcat(dest, "\\\"");
+                //          } else if(src[i] == '\?') {
+                //              strcat(dest, "\\\?");
             } else if(src[i] == '\\') {
                 strcat(dest, "\\\\");
-            } else if(src[i] == '\a') { //(alert) Produces an audible or visible alert without changing the active position.
+            } else if(src[i]
+                      == '\a') { //(alert) Produces an audible or visible alert without changing the active position.
                 strcat(dest, "\\a");
-            } else if(src[i] == '\b') { //(backspace) Moves the active position to the previous position on the current line.
+            } else if(src[i]
+                      == '\b') { //(backspace) Moves the active position to the previous position on the current line.
                 strcat(dest, "\\b");
-            } else if(src[i] == '\f') { //(form feed) Moves the active position to the initial position at the start of the next logical page.
+            } else if(
+                src[i]
+                == '\f') { //(form feed) Moves the active position to the initial position at the start of the next logical page.
                 strcat(dest, "\\f");
             } else if(src[i] == '\n') { //(new line) Moves the active position to the initial position of the next line.
                 strcat(dest, "\\n");
-            } else if(src[i] == '\r') { //(carriage return) Moves the active position to the initial position of the current line.
+            } else if(
+                src[i]
+                == '\r') { //(carriage return) Moves the active position to the initial position of the current line.
                 strcat(dest, "\\r");
-            } else if(src[i] == '\t') { //(horizontal tab) Moves the active position to the next horizontal tabulation position on the current line.
+            } else if(
+                src[i]
+                == '\t') { //(horizontal tab) Moves the active position to the next horizontal tabulation position on the current line.
                 strcat(dest, "\\t");
-            } else if(src[i] == '\v') { //(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
+            } else if(
+                src[i]
+                == '\v') { //(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
                 strcat(dest, "\\v");
             } else {
                 strncat(dest, &src[i], 1);
@@ -1345,7 +1542,7 @@ char *FrmStrToStr(char *dest, const char *src)
     else
         s = dest;
 
-    if(strcmp(s, "(none)")==0) {
+    if(strcmp(s, "(none)") == 0) {
         strcpy(dest, "");
         return dest;
     }
@@ -1407,13 +1604,13 @@ char *FrmStrToStr(char *dest, const char *src)
 
 char *FrmStrToStr(char *dest)
 {
-    return FrmStrToStr(dest, NULL);
+    return FrmStrToStr(dest, nullptr);
 }
 //-----------------------------------------------------------------------------
 char *DelNL(char *str)
 {
     char *s = str;
-    int i = 0;
+    int   i = 0;
     while(*s) {
         if(*s != '\n')
             str[i++] = *s;
@@ -1425,7 +1622,7 @@ char *DelNL(char *str)
 //-----------------------------------------------------------------------------
 char *DelLastNL(char *str)
 {
-    if(str[strlen(str)-1] == '\n')
-        str[strlen(str)-1] = '\0';
+    if(str[strlen(str) - 1] == '\n')
+        str[strlen(str) - 1] = '\0';
     return str;
 }

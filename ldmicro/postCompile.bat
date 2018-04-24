@@ -24,6 +24,7 @@
 @if "%1" == "PIC16"   goto PIC16
 @if "%1" == "ANSIC"   goto ANSIC
 @if "%1" == "ARDUINO" goto ARDUINO
+@if "%1" == "PASCAL"  goto PASCAL
 @if "%1" == ""        goto pauses
 goto "%1"
 goto NOT_SUPPOTED
@@ -116,6 +117,14 @@ copy "%P3%\ladder.h"          "%P3%\ARDUINO\%P4%"
 copy "%P3%\%P4%.ino"          "%P3%\ARDUINO\%P4%"
 @rem if NOT EXIST "%P3%\ARDUINO\%P4%\ladder.h"    copy "%P3%\ladder.h"   "%P3%\ARDUINO\%P4%"
 @rem if NOT EXIST "%P3%\ARDUINO\%P4%\%P4%.ino"    copy "%P3%\%P4%.ino"   "%P3%\ARDUINO\%P4%"
+@rem pause
+goto exit
+;
+@rem =======================================================================
+:PASCAL
+copy "%P3%\pcports.pas"        E:\MACHINE3\pas\SVARKA
+copy "%P3%\%P4%*.pas"          E:\MACHINE3\pas\SVARKA
+copy "%P3%\%P4%*.inc"          E:\MACHINE3\pas\SVARKA
 @rem pause
 goto exit
 ;

@@ -67,6 +67,9 @@ set(LDMICRO_SRC_LIST
     xinterpreted.cpp
     stdafx.cpp
     ldversion.h
+    pascal.cpp
+    pcports.cpp
+    translit.cpp
 
     ../common/win32/freeze.cpp
     ../common/win32/freeze.h

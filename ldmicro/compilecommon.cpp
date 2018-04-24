@@ -32,10 +32,10 @@ jmp_buf CompileErrorBuf;
 // Assignment of the internal relays to memory, efficient, one bit per
 // relay.
 static struct {
-    char    name[MAX_NAME_LEN];
-    DWORD   addr;
-    int     bit;
-    BOOL    assignedTo;
+    char  name[MAX_NAME_LEN];
+    DWORD addr;
+    int   bit;
+    BOOL  assignedTo;
 } InternalRelays[MAX_IO];
 static int InternalRelayCount;
 /*
@@ -52,13 +52,13 @@ static struct {
 ^^^ VariablesList moved to ldmicro.h
 */
 VariablesList Variables[MAX_IO];
-static int VariableCount = 0;
+static int    VariableCount = 0;
 
-#define NO_MEMORY   0xffffffff
-static DWORD    NextBitwiseAllocAddr;
-static int      NextBitwiseAllocBit;
-static int      MemOffset;
-DWORD           RamSection;
+#define NO_MEMORY 0xffffffff
+static DWORD NextBitwiseAllocAddr;
+static int   NextBitwiseAllocBit;
+static int   MemOffset;
+DWORD        RamSection;
 
 //-----------------------------------------------------------------------------
 int McuPWM()
@@ -68,15 +68,13 @@ int McuPWM()
 
     int n = 0;
     if(Prog.mcu->pwmCount) {
-        if(Prog.mcu->pwmInfo[0].timer != Prog.cycleTimer)
-        if(Prog.mcu->pwmInfo[0].pin)
-            n++;
-        int i;
-        for(i = 1; i < Prog.mcu->pwmCount; i++) {
-            if(Prog.mcu->pwmInfo[i].timer != Prog.cycleTimer)
+        int prevPin = -1;
+        for(int i = 0; i < Prog.mcu->pwmCount; i++) {
             if(Prog.mcu->pwmInfo[i].pin)
-            if(Prog.mcu->pwmInfo[i].pin != Prog.mcu->pwmInfo[i-1].pin)
-                n++;
+                if(Prog.mcu->pwmInfo[i].pin != prevPin)
+                    if((Prog.mcu->whichIsa == ISA_PIC16) || (Prog.mcu->pwmInfo[i].timer != Prog.cycleTimer))
+                        n++;
+            prevPin = Prog.mcu->pwmInfo[i].pin;
         }
     } else if(Prog.mcu->pwmNeedsPin) {
         n = 1;
@@ -119,7 +117,7 @@ int McuROM()
     if(!Prog.mcu)
         return 0;
 
-    int n = 0;
+    int   n = 0;
     DWORD i;
     for(i = 0; i < MAX_ROM_SECTIONS; i++) {
         n += Prog.mcu->rom[i].len;
@@ -132,12 +130,12 @@ int UsedROM()
     if(!Prog.mcu)
         return 0;
 
-    int n = 0;
+    int   n = 0;
     DWORD i;
     for(i = 0; i < RomSection; i++) {
         n += Prog.mcu->rom[i].len;
     }
-    return n+EepromAddrFree;
+    return n + EepromAddrFree;
 }
 
 int McuRAM()
@@ -145,7 +143,7 @@ int McuRAM()
     if(!Prog.mcu)
         return 0;
 
-    int n = 0;
+    int   n = 0;
     DWORD i;
     for(i = 0; i < MAX_RAM_SECTIONS; i++) {
         n += Prog.mcu->ram[i].len;
@@ -158,12 +156,12 @@ int UsedRAM()
     if(!Prog.mcu)
         return 0;
 
-    int n = 0;
+    int   n = 0;
     DWORD i;
     for(i = 0; i < RamSection; i++) {
         n += Prog.mcu->ram[i].len;
     }
-    return n+MemOffset;
+    return n + MemOffset;
 }
 
 //-----------------------------------------------------------------------------
@@ -171,12 +169,18 @@ void PrintVariables(FILE *f)
 {
     int i;
     fprintf(f, "\n");
-    fprintf(f, ";|  # | Name                                                    | Size      | Address      | Bit # |\n");
+    fprintf(f,
+            ";|  # | Name                                                    | Size      | Address      | Bit # |\n");
 
     fprintf(f, ";|Variables: %d\n", VariableCount);
     for(i = 0; i < VariableCount; i++) {
         if(Variables[i].addrl)
-            fprintf(f, ";|%3d | %-50s\t| %3d byte  | 0x%04X       |\n", i, Variables[i].name, Variables[i].SizeOfVar, Variables[i].addrl);
+            fprintf(f,
+                    ";|%3d | %-50s\t| %3d byte  | 0x%04X       |\n",
+                    i,
+                    Variables[i].name,
+                    Variables[i].SizeOfVar,
+                    Variables[i].addrl);
         /*
         else {
             DWORD addr;
@@ -200,18 +204,24 @@ void PrintVariables(FILE *f)
 
     fprintf(f, ";|Internal Relays: %d\n", InternalRelayCount);
     for(i = 0; i < InternalRelayCount; i++) {
-            fprintf(f, ";|%3d | %-50s\t| %3d bit   | 0x%04X       | %d     |\n", i, InternalRelays[i].name, 1, InternalRelays[i].addr, InternalRelays[i].bit);
+        fprintf(f,
+                ";|%3d | %-50s\t| %3d bit   | 0x%04X       | %d     |\n",
+                i,
+                InternalRelays[i].name,
+                1,
+                InternalRelays[i].addr,
+                InternalRelays[i].bit);
     }
     fprintf(f, "\n");
 }
 //-----------------------------------------------------------------------------
-static void ClrInternalData(void)
+static void ClrInternalData()
 {
     MemOffset = 0;
     RamSection = 0;
     RomSection = 0;
     EepromAddrFree = 0;
-//  VariableCount = 0;
+    //  VariableCount = 0;
     int i;
     for(i = 0; i < VariableCount; i++) {
         Variables[i].Allocated = 0;
@@ -222,7 +232,7 @@ static void ClrInternalData(void)
 // Forget what memory has been allocated on the target, so we start from
 // everything free.
 //-----------------------------------------------------------------------------
-void AllocStart(void)
+void AllocStart()
 {
     NextBitwiseAllocAddr = NO_MEMORY;
     InternalRelayCount = 0;
@@ -247,11 +257,13 @@ DWORD AllocOctetRam(int bytes) // The desired number of bytes.
         MemOffset = 0;
     }
 
-    if((RamSection >= MAX_RAM_SECTIONS)
-    || ((MemOffset + bytes) >= Prog.mcu->ram[RamSection].len)) {
+    if((RamSection >= MAX_RAM_SECTIONS) || ((MemOffset + bytes) >= Prog.mcu->ram[RamSection].len)) {
         char str[1024];
-        sprintf(str,"%s %s", _("RAM:"), _("Out of memory; simplify program or choose "
-            "microcontroller with more memory."));
+        sprintf(str,
+                "%s %s",
+                _("RAM:"),
+                _("Out of memory; simplify program or choose "
+                  "microcontroller with more memory."));
         Error(str);
         CompileError();
     }
@@ -260,7 +272,7 @@ DWORD AllocOctetRam(int bytes) // The desired number of bytes.
     return Prog.mcu->ram[RamSection].start + MemOffset - bytes;
 }
 
-DWORD AllocOctetRam(void)
+DWORD AllocOctetRam()
 {
     return AllocOctetRam(1);
 }
@@ -298,28 +310,37 @@ static void MemForPin(const char *name, DWORD *addr, int *bit, BOOL asInput)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
-        if(strcmp(Prog.io.assignment[i].name, name)==0)
+        if(strcmp(Prog.io.assignment[i].name, name) == 0)
             break;
     }
-    if(i >= Prog.io.count) oops();
+    if(i >= Prog.io.count)
+        oops();
 
-    if(asInput && Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) oops();
-    if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT && Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT) oops();
+    if(asInput && Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT)
+        oops();
+    if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT && Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT)
+        oops();
 
     *addr = -1;
     *bit = -1;
     if(Prog.mcu) {
         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
         if(iop) {
-            if(asInput) {
-                *addr = Prog.mcu->inputRegs[iop->port - 'A'];
+            if(Prog.mcu->core == PC_LPT_COM) {
+                *addr = iop->addr;
+                *bit = iop->bit;
             } else {
-                *addr = Prog.mcu->outputRegs[iop->port - 'A'];
+                if(asInput) {
+                    *addr = Prog.mcu->inputRegs[iop->port - 'A'];
+                } else {
+                    *addr = Prog.mcu->outputRegs[iop->port - 'A'];
+                }
+                *bit = iop->bit;
             }
-            *bit = iop->bit;
         } else {
             Error(_("Must assign pins for all I/O.\r\n\r\n"
-                "'%s' is not assigned."), name);
+                    "'%s' is not assigned."),
+                  name);
             CompileError();
         }
     }
@@ -346,15 +367,16 @@ void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput)
 }
 
 //-----------------------------------------------------------------------------
-int SingleBitAssigned(char *name)
+int SingleBitAssigned(const char *name)
 {
     int pin = 0;
     int i;
     for(i = 0; i < Prog.io.count; i++) {
-        if(strcmp(Prog.io.assignment[i].name, name)==0)
+        if(strcmp(Prog.io.assignment[i].name, name) == 0)
             break;
     }
-    if(i >= Prog.io.count) oops();
+    if(i >= Prog.io.count)
+        oops();
 
     if(Prog.mcu) {
         pin = Prog.io.assignment[i].pin;
@@ -369,6 +391,20 @@ int SingleBitAssigned(char *name)
     }
     return pin;
 }
+
+//-----------------------------------------------------------------------------
+int GetAssignedType(const char *name)
+{
+    int type = NO_PIN_ASSIGNED;
+    for(int i = 0; i < Prog.io.count; i++) {
+        if(strcmp(Prog.io.assignment[i].name, name) == 0) {
+            type = Prog.io.assignment[i].type;
+            break;
+        }
+    }
+    return type;
+}
+
 //-----------------------------------------------------------------------------
 // Determine the mux register settings to read a particular ADC channel.
 //-----------------------------------------------------------------------------
@@ -377,10 +413,11 @@ BYTE MuxForAdcVariable(const char *name)
     int res = 0;
     int i;
     for(i = 0; i < Prog.io.count; i++) {
-        if(strcmp(Prog.io.assignment[i].name, name)==0)
+        if(strcmp(Prog.io.assignment[i].name, name) == 0)
             break;
     }
-    if(i >= Prog.io.count) oops();
+    if(i >= Prog.io.count)
+        oops();
 
     if(Prog.mcu) {
         int j;
@@ -402,13 +439,13 @@ BYTE MuxForAdcVariable(const char *name)
 //-----------------------------------------------------------------------------
 int byteNeeded(long long int i)
 {
-    if((-128<=i) && (i<=127))
+    if((-128 <= i) && (i <= 127))
         return 1;
-    else if((-32768<=i) && (i<=32767))
+    else if((-32768 <= i) && (i <= 32767))
         return 2;
-    else if((-8388608<=i) && (i<=8388607))
+    else if((-8388608 <= i) && (i <= 8388607))
         return 3;
-    else if((-2147483648LL<=i) && (i<=2147483647LL))
+    else if((-2147483648LL <= i) && (i <= 2147483647LL))
         return 4; // not FULLY implamanted for LDmicro
     oops();
     return 0;
@@ -419,10 +456,10 @@ int TestByteNeeded(int count, SDWORD *vals)
 {
     int res = -1;
     int i, r;
-    for(i=0; i<count; i++){
-         r = byteNeeded(vals[i]);
-         if(res < r)
-             res = r;
+    for(i = 0; i < count; i++) {
+        r = byteNeeded(vals[i]);
+        if(res < r)
+            res = r;
     }
     return res;
 }
@@ -432,20 +469,21 @@ int TestByteNeeded(int count, SDWORD *vals)
 //-----------------------------------------------------------------------------
 int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
 {
-    if(!name) oops();
-    if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
+    if(!name)
+        oops();
+    if(strlenalnum(name) == 0) {
+        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
         CompileError();
     }
 
     int i;
     for(i = 0; i < VariableCount; i++) {
-        if((Variables[i].type == IO_TYPE_TABLE_IN_FLASH)
-        || (Variables[i].type == IO_TYPE_VAL_IN_FLASH))
+        if((Variables[i].type == IO_TYPE_TABLE_IN_FLASH) || (Variables[i].type == IO_TYPE_VAL_IN_FLASH))
             Variables[i].Allocated = Variables[i].SizeOfVar;
     }
     for(i = 0; i < VariableCount; i++) {
-        if(strcmp(name, Variables[i].name)==0) break;
+        if(strcmp(name, Variables[i].name) == 0)
+            break;
     }
     if(i >= MAX_IO) {
         Error(_("Internal limit exceeded (number of vars)"));
@@ -460,20 +498,20 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
         }
     }
     if(sizeOfVar < 0) { // get addr, get size
-      if(addrl)
-          *addrl = Variables[i].addrl;
+        if(addrl)
+            *addrl = Variables[i].addrl;
 
     } else if(sizeOfVar > 0) { // set size, set addr
         if(Variables[i].SizeOfVar == sizeOfVar) {
             // not need
-        } else if(Variables[i].Allocated==0) {
+        } else if(Variables[i].Allocated == 0) {
             //dbp("Size %d set to %d for var '%s'", Variables[i].SizeOfVar, sizeOfVar, name);
             Variables[i].SizeOfVar = sizeOfVar;
         } else {
             Variables[i].SizeOfVar = sizeOfVar;
             if(Variables[i].Allocated >= sizeOfVar) {
             } else {
-               Variables[i].Allocated = 0; // Request to reallocate memory of var
+                Variables[i].Allocated = 0; // Request to reallocate memory of var
             }
         }
         if(addrl) {
@@ -481,97 +519,97 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
         }
     } else { // if(sizeOfVar == 0) // if(addrl) { Allocate SRAM }
         if(name[0] == '#') {
-             DWORD addr = 0xff;
-             if(IsNumber(&name[1])) {
-                 addr = hobatoi(&name[1]);
+            DWORD addr = 0xff;
+            if(IsNumber(&name[1])) {
+                addr = hobatoi(&name[1]);
 
-                 if((addr == 0xff) || (addr == 0)) {
-                     dbps("Not a FSR");
-                     //Error("Not a FSR");
-                 } else {
-                     if(Variables[i].Allocated == 0) {
-                         Variables[i].addrl = addr;
-                     }
-                     Variables[i].Allocated = 1;
-                 }
-             } else {
-                 int j = name[strlen(name)-1] - 'A';
-                 if((j>=0) && (j<MAX_IO_PORTS)) {
-                     if((strstr(name, "#PORT")) && (strlen(name) == 6)) { // #PORTx
-                         if(IS_MCU_REG(j)) {
-                             addr = Prog.mcu->outputRegs[j];
-                         }
-                     }
-                     if((strstr(name, "#PIN")) && (strlen(name) == 5)) { // #PINx
-                         if(IS_MCU_REG(j)) {
-                             addr = Prog.mcu->inputRegs[j];
-                         }
-                     }
-                     if((strstr(name, "#TRIS")) && (strlen(name) == 6)) { // #TRISx
-                         if(IS_MCU_REG(j)) {
-                             addr = Prog.mcu->dirRegs[j];
-                         }
-                     }
-                 }
-                 if((addr == 0xff) || (addr == 0)) {
-                     dbps("Not a PORT/PIN");
-                     //Error("Not a PORT/PIN");
-                 } else {
-                     if(Variables[i].Allocated == 0) {
-                         Variables[i].addrl = addr;
-                     }
-                     Variables[i].Allocated = 1;
-                 }
-             }
+                if((addr == 0xff) || (addr == 0)) {
+                    dbps("Not a FSR");
+                    //Error("Not a FSR");
+                } else {
+                    if(Variables[i].Allocated == 0) {
+                        Variables[i].addrl = addr;
+                    }
+                    Variables[i].Allocated = 1;
+                }
+            } else {
+                int j = name[strlen(name) - 1] - 'A';
+                if((j >= 0) && (j < MAX_IO_PORTS)) {
+                    if((strstr(name, "#PORT")) && (strlen(name) == 6)) { // #PORTx
+                        if(IS_MCU_REG(j)) {
+                            addr = Prog.mcu->outputRegs[j];
+                        }
+                    }
+                    if((strstr(name, "#PIN")) && (strlen(name) == 5)) { // #PINx
+                        if(IS_MCU_REG(j)) {
+                            addr = Prog.mcu->inputRegs[j];
+                        }
+                    }
+                    if((strstr(name, "#TRIS")) && (strlen(name) == 6)) { // #TRISx
+                        if(IS_MCU_REG(j)) {
+                            addr = Prog.mcu->dirRegs[j];
+                        }
+                    }
+                }
+                if((addr == 0xff) || (addr == 0)) {
+                    dbps("Not a PORT/PIN");
+                    //Error("Not a PORT/PIN");
+                } else {
+                    if(Variables[i].Allocated == 0) {
+                        Variables[i].addrl = addr;
+                    }
+                    Variables[i].Allocated = 1;
+                }
+            }
         } else {
-          if((sizeOfVar<1) || (sizeOfVar>4)) {
-              sizeOfVar = Variables[i].SizeOfVar;
-          }
-          if((sizeOfVar<1) || (sizeOfVar>4)) {
-              sizeOfVar = 2;
-          }
-          if(sizeOfVar<1) {
-              Error(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name, sizeOfVar);
-              sizeOfVar=1;
-          } else if(sizeOfVar>4) {
-              Error(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name, sizeOfVar);
-              sizeOfVar=4;
-          }
-          if(Variables[i].SizeOfVar != sizeOfVar) {
-              if(!Variables[i].SizeOfVar)
-                  Variables[i].SizeOfVar = sizeOfVar;
-              else {
-                  // Error("no Resize %s %d %d", name, Variables[i].SizeOfVar, sizeOfVar);
-              }
-          }
-          if(addrl) {
-              if(Variables[i].Allocated == 0) {
-                  if(sizeOfVar == 1) {
-                      Variables[i].addrl = AllocOctetRam();
-                  } else if(sizeOfVar == 2) {
-                      Variables[i].addrl = AllocOctetRam(2);
-                  } else if(sizeOfVar == 3) {
-                      Variables[i].addrl = AllocOctetRam(3);
-                  } else if(sizeOfVar == 4) {
-                      Variables[i].addrl = AllocOctetRam(4);
-                  } else {
-                      Error(_("Var '%s' not allocated %d."), name, sizeOfVar);
-                      CompileError();
-                  }
-                  Variables[i].Allocated = sizeOfVar;
+            if((sizeOfVar < 1) || (sizeOfVar > 4)) {
+                sizeOfVar = Variables[i].SizeOfVar;
+            }
+            if((sizeOfVar < 1) || (sizeOfVar > 4)) {
+                sizeOfVar = 2;
+            }
+            if(sizeOfVar < 1) {
+                Error(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name, sizeOfVar);
+                sizeOfVar = 1;
+            } else if(sizeOfVar > 4) {
+                Error(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name, sizeOfVar);
+                sizeOfVar = 4;
+            }
+            if(Variables[i].SizeOfVar != sizeOfVar) {
+                if(!Variables[i].SizeOfVar)
+                    Variables[i].SizeOfVar = sizeOfVar;
+                else {
+                    // Error("no Resize %s %d %d", name, Variables[i].SizeOfVar, sizeOfVar);
+                }
+            }
+            if(addrl) {
+                if(Variables[i].Allocated == 0) {
+                    if(sizeOfVar == 1) {
+                        Variables[i].addrl = AllocOctetRam();
+                    } else if(sizeOfVar == 2) {
+                        Variables[i].addrl = AllocOctetRam(2);
+                    } else if(sizeOfVar == 3) {
+                        Variables[i].addrl = AllocOctetRam(3);
+                    } else if(sizeOfVar == 4) {
+                        Variables[i].addrl = AllocOctetRam(4);
+                    } else {
+                        Error(_("Var '%s' not allocated %d."), name, sizeOfVar);
+                        CompileError();
+                    }
+                    Variables[i].Allocated = sizeOfVar;
 
-                  if(Variables[i].SizeOfVar < sizeOfVar) {
-                    //dbp("Err: Allocated '%s', upsize %d set to %d", name, Variables[i].SizeOfVar, sizeOfVar);
-                    //STACKWALKER
-                  }
+                    if(Variables[i].SizeOfVar < sizeOfVar) {
+                        //dbp("Err: Allocated '%s', upsize %d set to %d", name, Variables[i].SizeOfVar, sizeOfVar);
+                    }
 
-              } else if(Variables[i].Allocated != sizeOfVar) {
-                  //Error(" Variable '%s' already allocated as signed %d bit", Variables[i].name, Variables[i].Allocated*8);
-                  //CompileError();
-              }
-          }
-      }
-      if(addrl) *addrl = Variables[i].addrl;
+                } else if(Variables[i].Allocated != sizeOfVar) {
+                    //Error(" Variable '%s' already allocated as signed %d bit", Variables[i].name, Variables[i].Allocated*8);
+                    //CompileError();
+                }
+            }
+        }
+        if(addrl)
+            *addrl = Variables[i].addrl;
     }
     return Variables[i].SizeOfVar;
 }
@@ -585,28 +623,28 @@ int MemForVariable(const char *name, DWORD *addr)
 int MemOfVar(char *name, DWORD *addr)
 {
     MemForVariable(name, addr, -1); //get WORD memory for pointer to LPM
-    return SizeOfVar(name); //and return size of element of table in flash memory
+    return SizeOfVar(name);         //and return size of element of table in flash memory
 }
 
 int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 {
     MemForVariable(name, &addr, sizeOfVar); //allocate WORD memory for pointer to LPM
 
-    return MemForVariable(name, NULL, sizeOfVar); //and set size of element of table in flash memory
+    return MemForVariable(name, nullptr, sizeOfVar); //and set size of element of table in flash memory
 }
 
 //-----------------------------------------------------------------------------
 int SetSizeOfVar(const char *name, int sizeOfVar, BOOL showError)
 {
     if(showError)
-    if((sizeOfVar<1)||(4<sizeOfVar)) {
-        Error(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
-        sizeOfVar = 2;
-    }
-    #ifndef NEW_CMP
+        if((sizeOfVar < 1) || (4 < sizeOfVar)) {
+            Error(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
+            sizeOfVar = 2;
+        }
+#ifndef NEW_CMP
     sizeOfVar = 2;
-    #endif
-    return MemForVariable(name, NULL, sizeOfVar);
+#endif
+    return MemForVariable(name, nullptr, sizeOfVar);
 }
 
 int SetSizeOfVar(const char *name, int sizeOfVar)
@@ -616,23 +654,24 @@ int SetSizeOfVar(const char *name, int sizeOfVar)
 
 int SizeOfVar(const char *name)
 {
-     if(IsNumber(name))
-         return byteNeeded(hobatoi(name));
-     else
-         return MemForVariable(name, NULL, 0);
+    if(IsNumber(name))
+        return byteNeeded(hobatoi(name));
+    else
+        return MemForVariable(name, nullptr, 0);
 }
 
 //-----------------------------------------------------------------------------
 int GetVariableType(char *name)
 {
-    if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
+    if(strlenalnum(name) == 0) {
+        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
         CompileError();
     }
 
     int i;
     for(i = 0; i < VariableCount; i++) {
-        if(strcmp(name, Variables[i].name)==0) break;
+        if(strcmp(name, Variables[i].name) == 0)
+            break;
     }
     if(i >= MAX_IO) {
         Error(_("Internal limit exceeded (number of vars)"));
@@ -646,13 +685,14 @@ int GetVariableType(char *name)
 
 int SetVariableType(char *name, int type)
 {
-    if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
+    if(strlenalnum(name) == 0) {
+        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
         CompileError();
     }
     int i;
     for(i = 0; i < VariableCount; i++) {
-        if(strcmp(name, Variables[i].name)==0) break;
+        if(strcmp(name, Variables[i].name) == 0)
+            break;
     }
     if(i >= MAX_IO) {
         Error(_("Internal limit exceeded (number of vars)"));
@@ -674,9 +714,9 @@ int SetVariableType(char *name, int type)
         if(Variables[i].type == IO_TYPE_PENDING) {
             Variables[i].type = type;
         } else {
-            if((Variables[i].type==IO_TYPE_COUNTER) && (type==IO_TYPE_GENERAL)) {
+            if((Variables[i].type == IO_TYPE_COUNTER) && (type == IO_TYPE_GENERAL)) {
                 /*skip*/;
-            } else if((Variables[i].type==IO_TYPE_GENERAL) && (type==IO_TYPE_COUNTER)) {
+            } else if((Variables[i].type == IO_TYPE_GENERAL) && (type == IO_TYPE_COUNTER)) {
                 Variables[i].type = type; // replace // iolist.cpp
             } else {
             }
@@ -688,14 +728,15 @@ int SetVariableType(char *name, int type)
 
 int AllocOfVar(char *name)
 {
-    if(strlenalnum(name)==0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow+1);
+    if(strlenalnum(name) == 0) {
+        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
         CompileError();
     }
 
     int i;
     for(i = 0; i < VariableCount; i++) {
-        if(strcmp(name, Variables[i].name)==0) break;
+        if(strcmp(name, Variables[i].name) == 0)
+            break;
     }
     if(i >= MAX_IO) {
         Error(_("Internal limit exceeded (number of vars)"));
@@ -721,19 +762,18 @@ static int CompareIo(const void *av, const void *bv)
 //-----------------------------------------------------------------------------
 void SaveVarListToFile(FILE *f)
 {
-    qsort(Variables, VariableCount, sizeof(Variables[0]),
-        CompareIo);
+    qsort(Variables, VariableCount, sizeof(Variables[0]), CompareIo);
 
     int i;
     for(i = 0; i < VariableCount; i++)
-      if(!IsIoType(Variables[i].type)
-      && (Variables[i].type != IO_TYPE_INTERNAL_RELAY)
-      && (Variables[i].name[0] != '$')) {
-          fprintf(f, "  %3d bytes %s%s\n",
-              SizeOfVar(Variables[i].name),
-              Variables[i].name,
-              Variables[i].Allocated ? "" : " \tNow not used !!!");
-      }
+        if(!IsIoType(Variables[i].type) && (Variables[i].type != IO_TYPE_INTERNAL_RELAY)
+           && (Variables[i].name[0] != '$')) {
+            fprintf(f,
+                    "  %3d bytes %s%s\n",
+                    SizeOfVar(Variables[i].name),
+                    Variables[i].name,
+                    Variables[i].Allocated ? "" : " \tNow not used !!!");
+        }
 }
 
 //-----------------------------------------------------------------------------
@@ -748,20 +788,21 @@ BOOL LoadVarListFromFile(FILE *f)
     BOOL Ok;
 
     while(fgets(line, sizeof(line), f)) {
-        if(!strlen(strspace(line))) continue;
-        if(strcmp(line, "END")==0) {
+        if(!strlen(strspace(line)))
+            continue;
+        if(strcmp(line, "END") == 0) {
             return TRUE;
         }
         Ok = FALSE;
         // Don't internationalize this! It's the file format, not UI.
-        if(sscanf(line, " %s signed %d bit variable ", name, &sizeOfVar)==2) {
-            if((sizeOfVar>0) && strlen(name)) {
+        if(sscanf(line, " %s signed %d bit variable ", name, &sizeOfVar) == 2) {
+            if((sizeOfVar > 0) && strlen(name)) {
                 SetSizeOfVar(name, sizeOfVar / 8);
                 Ok = TRUE;
             }
         }
-        if(sscanf(line, " %d bytes %s ", &sizeOfVar, name)==2) {
-            if((sizeOfVar>0) && strlen(name)) {
+        if(sscanf(line, " %d bytes %s ", &sizeOfVar, name) == 2) {
+            if((sizeOfVar > 0) && strlen(name)) {
                 SetSizeOfVar(name, sizeOfVar, FALSE);
                 Ok = TRUE;
             }
@@ -781,7 +822,7 @@ static void MemForBitInternal(const char *name, DWORD *addr, int *bit, BOOL writ
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
-        if(strcmp(name, InternalRelays[i].name)==0)
+        if(strcmp(name, InternalRelays[i].name) == 0)
             break;
     }
     if(i >= MAX_IO) {
@@ -817,7 +858,8 @@ void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit)
     switch(name[0]) {
         case 'I':
         case 'X':
-            if(!forRead) oops();
+            if(!forRead)
+                oops();
             MemForPin(name, addr, bit, TRUE);
             break;
 
@@ -839,57 +881,56 @@ void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit)
 
 void MemForSingleBit(const char *name, DWORD *addr, int *bit)
 {
-    MemForSingleBit(name, FALSE, addr, bit) ;
+    MemForSingleBit(name, FALSE, addr, bit);
 }
 
 //-----------------------------------------------------------------------------
-int isPinAssigned(char *name)
+int isPinAssigned(const char *name)
 {
     int res = 0;
-    if((Prog.mcu) &&
-      ((Prog.mcu->whichIsa == ISA_AVR)
-    || (Prog.mcu->whichIsa == ISA_PIC16)))
-    switch(name[0]) {
-        case 'A':
-        case 'I':
-        case 'X':
-        case 'Y': {
-            int i;
-            for(i = 0; i < Prog.io.count; i++) {
-                if(strcmp(Prog.io.assignment[i].name, name)==0)
-                    break;
-            }
-            if(i >= Prog.io.count) oops();
-
-            //if(asInput && Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) oops();
-            //if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT) oops();
-
-            int pin = Prog.io.assignment[i].pin;
-            if(name[0] == 'A') {
-                for(i = 0; i < Prog.mcu->adcCount; i++)
-                    if(Prog.mcu->adcInfo[i].pin == pin)
+    if((Prog.mcu) && ((Prog.mcu->whichIsa == ISA_AVR) || (Prog.mcu->whichIsa == ISA_PIC16)))
+        switch(name[0]) {
+            case 'A':
+            case 'I':
+            case 'X':
+            case 'Y': {
+                int i;
+                for(i = 0; i < Prog.io.count; i++) {
+                    if(strcmp(Prog.io.assignment[i].name, name) == 0)
                         break;
-                if(i < Prog.mcu->adcCount)
-                    res = 1;
-            } else {
-                for(i = 0; i < Prog.mcu->pinCount; i++)
-                    if(Prog.mcu->pinInfo[i].pin == pin)
-                        break;
-                if(i < Prog.mcu->pinCount)
-                    res = 1;
+                }
+                if(i >= Prog.io.count)
+                    oops();
+
+                //if(asInput && Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) oops();
+                //if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT) oops();
+
+                int pin = Prog.io.assignment[i].pin;
+                if(name[0] == 'A') {
+                    for(i = 0; i < Prog.mcu->adcCount; i++)
+                        if(Prog.mcu->adcInfo[i].pin == pin)
+                            break;
+                    if(i < Prog.mcu->adcCount)
+                        res = 1;
+                } else {
+                    for(i = 0; i < Prog.mcu->pinCount; i++)
+                        if(Prog.mcu->pinInfo[i].pin == pin)
+                            break;
+                    if(i < Prog.mcu->pinCount)
+                        res = 1;
+                }
+                break;
             }
-            break;
+
+            case 'R':
+            case '$':
+                //MemForBitInternal(name, addr, bit, !forRead);
+                break;
+
+            default:
+                //ooops(">%s<", name);
+                break;
         }
-
-        case 'R':
-        case '$':
-            //MemForBitInternal(name, addr, bit, !forRead);
-            break;
-
-        default:
-            //ooops(">%s<", name);
-            break;
-    }
     return res;
 }
 
@@ -917,14 +958,12 @@ void MemForCoil(char *name, DWORD *addr, int *bit)
 //-----------------------------------------------------------------------------
 // Do any post-compilation sanity checks necessary.
 //-----------------------------------------------------------------------------
-void MemCheckForErrorsPostCompile(void)
+void MemCheckForErrorsPostCompile()
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
         if(!InternalRelays[i].assignedTo) {
-            Error(
-               _("Internal relay '%s' never assigned; add its coil somewhere."),
-                InternalRelays[i].name);
+            Error(_("Internal relay '%s' never assigned; add its coil somewhere."), InternalRelays[i].name);
             CompileError();
         }
     }
@@ -942,62 +981,56 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
     memset(isInput, 0x00, MAX_IO_PORTS);
 
     BOOL usedUart = UartFunctionUsed();
-    BOOL usedPwm  = PwmFunctionUsed();
+    BOOL usedPwm = PwmFunctionUsed();
 
     int i;
     for(i = 0; i < Prog.io.count; i++) {
-        int pin  = Prog.io.assignment[i].pin;
+        int pin = Prog.io.assignment[i].pin;
         int type = Prog.io.assignment[i].type;
 
         if(type == IO_TYPE_READ_ADC) {
             int j;
             if(Prog.mcu)
-            for(j = 0; j < Prog.mcu->pinCount; j++) {
-                McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
-                if(iop && (iop->pin == pin)) {
-                    if(type == IO_TYPE_READ_ADC){
-                        isAnsel[iop->port - 'A'] |= (1 << iop->bit);
+                for(j = 0; j < Prog.mcu->pinCount; j++) {
+                    McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
+                    if(iop && (iop->pin == pin)) {
+                        if(type == IO_TYPE_READ_ADC) {
+                            isAnsel[iop->port - 'A'] |= (1 << iop->bit);
+                        }
+                        break;
                     }
-                    break;
                 }
-            }
         }
 
-        if(type == IO_TYPE_DIG_OUTPUT
-        || type == IO_TYPE_PWM_OUTPUT
-        || type == IO_TYPE_INT_INPUT
-        || type == IO_TYPE_DIG_INPUT
-        ) {
+        if(type == IO_TYPE_DIG_OUTPUT || type == IO_TYPE_PWM_OUTPUT || type == IO_TYPE_INT_INPUT
+           || type == IO_TYPE_DIG_INPUT) {
             int j;
             if(Prog.mcu)
-            for(j = 0; j < Prog.mcu->pinCount; j++) {
-                McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
-                if(iop && (iop->pin == pin)) {
-                    if((type == IO_TYPE_DIG_OUTPUT)
-                    || (type == IO_TYPE_PWM_OUTPUT)
-                    ) {
-                        isOutput[iop->port - 'A'] |= (1 << iop->bit);
-                    } else {
-                        isInput[iop->port - 'A'] |= (1 << iop->bit);
+                for(j = 0; j < Prog.mcu->pinCount; j++) {
+                    McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
+                    if(iop && (iop->pin == pin)) {
+                        if((type == IO_TYPE_DIG_OUTPUT) || (type == IO_TYPE_PWM_OUTPUT)) {
+                            isOutput[iop->port - 'A'] |= (1 << iop->bit);
+                        } else {
+                            isInput[iop->port - 'A'] |= (1 << iop->bit);
+                        }
+                        break;
                     }
-                    break;
                 }
-            }
 
             if(Prog.mcu && raiseError) {
                 if(j >= Prog.mcu->pinCount) {
                     Error(_("Must assign pins for all I/O.\r\n\r\n"
-                        "'%s' is not assigned."),
-                        Prog.io.assignment[i].name);
+                            "'%s' is not assigned."),
+                          Prog.io.assignment[i].name);
                     if(raiseError)
                         CompileError();
                 }
 
-                if(usedUart && (pin == Prog.mcu->uartNeeds.rxPin
-                             || pin == Prog.mcu->uartNeeds.txPin)
-                ) {
+                if(usedUart && (pin == Prog.mcu->uartNeeds.rxPin || pin == Prog.mcu->uartNeeds.txPin)) {
                     Error(_("UART in use; pins %d and %d reserved for that."),
-                        Prog.mcu->uartNeeds.rxPin, Prog.mcu->uartNeeds.txPin);
+                          Prog.mcu->uartNeeds.rxPin,
+                          Prog.mcu->uartNeeds.txPin);
                     if(raiseError)
                         CompileError();
                 }
@@ -1009,12 +1042,14 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
         iop = PinInfo(Prog.mcu->uartNeeds.txPin);
         if(iop)
             isOutput[iop->port - 'A'] |= (1 << iop->bit);
-        else oops();
+        else
+            oops();
 
         iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
         if(iop)
             isInput[iop->port - 'A'] |= (1 << iop->bit);
-        else oops();
+        else
+            oops();
     }
     if(McuAs("Microchip PIC16F877 ")) {
         // This is a nasty special case; one of the extra bits in TRISE
@@ -1035,27 +1070,31 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)
 void ComplainAboutBaudRateError(int divisor, double actual, double err)
 {
     Error(_("UART baud rate generator: divisor=%d actual=%.4f for %.2f%% "
-          "error.\r\n"
-          "\r\n"
-          "This is too large; try a different baud rate (slower "
-          "probably), or a crystal frequency chosen to be divisible "
-          "by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n"
-          "\r\n"
-          "Code will be generated anyways but serial may be "
-          "unreliable or completely broken."), divisor, actual, err);
+            "error.\r\n"
+            "\r\n"
+            "This is too large; try a different baud rate (slower "
+            "probably), or a crystal frequency chosen to be divisible "
+            "by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n"
+            "\r\n"
+            "Code will be generated anyways but serial may be "
+            "unreliable or completely broken."),
+          divisor,
+          actual,
+          err);
 }
 
 //-----------------------------------------------------------------------------
 // Display our boilerplate warning that the baud rate is too slow (making
 // for an overflowed divisor).
 //-----------------------------------------------------------------------------
-void ComplainAboutBaudRateOverflow(void)
+void ComplainAboutBaudRateOverflow()
 {
-    Error(_("UART baud rate generator: too slow, divisor overflows. "
-        "Use a slower crystal or a faster baud rate.\r\n"
-        "\r\n"
-        "Code will be generated anyways but serial will likely be "
-        "completely broken."));
+    Error(
+        _("UART baud rate generator: too slow, divisor overflows. "
+          "Use a slower crystal or a faster baud rate.\r\n"
+          "\r\n"
+          "Code will be generated anyways but serial will likely be "
+          "completely broken."));
 }
 //-----------------------------------------------------------------------------
 /*
@@ -1086,73 +1125,73 @@ yocto   y   -24     septillionth    quadrillionth
 double SIprefix(double val, char *prefix, int en_1_2)
 {
     //dbp("SIprefix val=%f",val);
-    if(val >=        1e24) {
-        strcpy(prefix,"Y");
+    if(val >= 1e24) {
+        strcpy(prefix, "Y");
         return val / 1e24;
     } else if(val >= 1e21) {
-        strcpy(prefix,"Z");
+        strcpy(prefix, "Z");
         return val / 1e21;
     } else if(val >= 1e18) {
-        strcpy(prefix,"E");
+        strcpy(prefix, "E");
         return val / 1e18;
     } else if(val >= 1e15) {
-        strcpy(prefix,"P");
+        strcpy(prefix, "P");
         return val / 1e15;
     } else if(val >= 1e12) {
-        strcpy(prefix,"T");
+        strcpy(prefix, "T");
         return val / 1e12;
     } else if(val >= 1e9) {
-        strcpy(prefix,"G");
+        strcpy(prefix, "G");
         return val / 1e9;
     } else if(val >= 1e6) {
-        strcpy(prefix,"M");
+        strcpy(prefix, "M");
         return val / 1e6;
     } else if(val >= 1e3) {
-        strcpy(prefix,"k");
+        strcpy(prefix, "k");
         return val / 1e3;
-    } else if((val >= 1e2)&&(en_1_2)) {
-        strcpy(prefix,"h");
+    } else if((val >= 1e2) && (en_1_2)) {
+        strcpy(prefix, "h");
         return val / 1e2;
-    } else if((val >= 1e1)&&(en_1_2)) {
-        strcpy(prefix,"da");
+    } else if((val >= 1e1) && (en_1_2)) {
+        strcpy(prefix, "da");
         return val / 1e1;
     } else if(val >= 1.0) {
-        strcpy(prefix,"");
+        strcpy(prefix, "");
         return val;
     } else if(val == 0.0) {
-        strcpy(prefix,"");
+        strcpy(prefix, "");
         return val;
     } else if(val < 1e-21) {
-        strcpy(prefix,"y");
+        strcpy(prefix, "y");
         return val * 1e21 * 1e3;
     } else if(val < 1e-18) {
-        strcpy(prefix,"z");
+        strcpy(prefix, "z");
         return val * 1e18 * 1e3;
     } else if(val < 1e-15) {
-        strcpy(prefix,"a");
+        strcpy(prefix, "a");
         return val * 1e15 * 1e3;
     } else if(val < 1e-12) {
-        strcpy(prefix,"f");
+        strcpy(prefix, "f");
         return val * 1e12 * 1e3;
     } else if(val < 1e-9) {
-        strcpy(prefix,"p");
+        strcpy(prefix, "p");
         return val * 1e9 * 1e3;
     } else if(val < 1e-6) {
-        strcpy(prefix,"n");
+        strcpy(prefix, "n");
         return val * 1e6 * 1e3;
     } else if(val < 1e-3) {
-        strcpy(prefix,"u");
+        strcpy(prefix, "u");
         return val * 1e3 * 1e3;
-/**/
+        /**/
     } else if((val <= 1e-2) && en_1_2) {
-        strcpy(prefix,"c");
+        strcpy(prefix, "c");
         return val * 1e2;
     } else if((val <= 1e-1) && en_1_2) {
-        strcpy(prefix,"d");
+        strcpy(prefix, "d");
         return val * 1e1;
-/**/
+        /**/
     } else if(val < 1.0) {
-        strcpy(prefix,"m");           //10 ms= 0.010 s
+        strcpy(prefix, "m"); //10 ms= 0.010 s
         return val * 1e3;
     } else {
         oops();

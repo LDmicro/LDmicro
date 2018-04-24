@@ -1227,6 +1227,11 @@ McuPwmPinInfo ControllinoMaxiPwmPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // PC LPT & COM
+McuIoPinInfo PcCfg[] = {
+// Dynamically loaded by LoadPcPorts() in psports.cpp
+//   port; bit; pin; pinName; ArduinoPin; ArduinoName; pinFunctions; pinUsed;  portN; dbPin; ioType
+    { 'L',   0,   1,      "",          0,          "",/*          0,       0,*/    1,     2,      2},
+};
 
 //===========================================================================
 McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
@@ -1256,7 +1261,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         0,
         AvrAtmega2560PwmPinInfo,
         arraylen(AvrAtmega2560PwmPinInfo),
-        NULL,
+        nullptr,
         0,
         McuSpiInfoATmega2560,
         arraylen(McuSpiInfoATmega2560),
@@ -1354,7 +1359,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { { 0x100, 1024 } },
         AvrAtmega162IoPinInfo,
         arraylen(AvrAtmega162IoPinInfo),
-        NULL,
+        nullptr,
         0,
         0,
         { 0, 0 },
@@ -1698,7 +1703,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { { 0x20, 96 }, { 0xA0, 80 }, { 0x120, 48 } },
         Pic18PinIoInfo,
         arraylen(Pic18PinIoInfo),
-        NULL,
+        nullptr,
         0,
         0,
         { 7, 8 },
@@ -1970,7 +1975,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         { { 0x10, 16 } },
         Pic6Pin_SOT23,
         arraylen(Pic6Pin_SOT23),
-        NULL,
+        nullptr,
         0,
         0,
         { },
@@ -1983,7 +1988,7 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
             (0 <<  2) |     // WDTE disabled
             (0 <<  1) |     //
             (0 <<  0),      //
-        NULL,
+        nullptr,
         0
     },
 //===========================================================================
@@ -2013,95 +2018,27 @@ McuIoInfo SupportedMcus[] = { // NUM_SUPPORTED_MCUS
         ControllinoMaxiPwmPinInfo,
         arraylen(ControllinoMaxiPwmPinInfo),
     },
-/*
     {
-        "ANSI C Code",
+        "PC LPT COM",
         "",
         "",
         "",
-        'x',
+        "",
+        'L', // PC LPT & COM support
         { 0x00 },
         { 0x00 },
         { 0x00 },
         0,
-        { { 0x00, 0 } },
-        NULL,
-        0,
-        NULL,
+        { { 0x00, 0xffffff } },
+        PcCfg,
+        arraylen(PcCfg),
+        nullptr,
         0,
         0,
         { 0, 0 },
         0,
-        ISA_ANSIC,
-        NOTHING,
-        0x00
+        ISA_PC,
+        PC_LPT_COM,
     },
-    {
-        "Interpretable Byte Code",
-        "",
-        "",
-        "",
-        'x',
-        { 0x00 },
-        { 0x00 },
-        { 0x00 },
-        0,
-        { { 0x00, 0 } },
-        NULL,
-        0,
-        NULL,
-        0,
-        0,
-        { 0, 0 },
-        0,
-        ISA_INTERPRETED,
-        NOTHING,
-        0x00
-    },
-    {
-        "Extended Byte Code",
-        "",
-        "",
-        "",
-        'x',
-        { 0x00 },
-        { 0x00 },
-        { 0x00 },
-            0,
-            { { 0x00, 0 } },
-            NULL,
-            0,
-            NULL,
-            0,
-            0,
-            { 0, 0 },
-            0,
-            ISA_XINTERPRETED,
-            NOTHING,
-            0x00
-    },
-    {
-        "Netzer Byte Code",
-        "",
-        "",
-        "",
-        'R',
-        { 0x00 },
-        { 0x00 },
-        { 0x00 },
-        0,
-        { { 0x00, 0 } },
-        NULL,
-        0,
-        NULL,
-        0,
-        0,
-        { 0, 0 },
-        0,
-        ISA_NETZER,
-        NOTHING,
-        0x00
-    }
-*/
 };
 

@@ -53,33 +53,32 @@ static struct {
 static void *DeepCopy(int which, void *any)
 {
     switch(which) {
-        CASE_LEAF {
+        CASE_LEAF
+        {
             ElemLeaf *l = AllocLeaf();
             memcpy(l, any, sizeof(*l));
             l->selectedState = SELECTED_NONE;
             return l;
         }
         case ELEM_SERIES_SUBCKT: {
-            int i;
+            int               i;
             ElemSubcktSeries *n = AllocSubcktSeries();
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             n->count = s->count;
             for(i = 0; i < s->count; i++) {
                 n->contents[i].which = s->contents[i].which;
-                n->contents[i].data.any = DeepCopy(s->contents[i].which,
-                    s->contents[i].data.any);
+                n->contents[i].data.any = DeepCopy(s->contents[i].which, s->contents[i].data.any);
             }
             return n;
         }
         case ELEM_PARALLEL_SUBCKT: {
-            int i;
+            int                 i;
             ElemSubcktParallel *n = AllocSubcktParallel();
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             n->count = p->count;
             for(i = 0; i < p->count; i++) {
                 n->contents[i].which = p->contents[i].which;
-                n->contents[i].data.any = DeepCopy(p->contents[i].which,
-                    p->contents[i].data.any);
+                n->contents[i].data.any = DeepCopy(p->contents[i].which, p->contents[i].data.any);
             }
             return n;
         }
@@ -97,7 +96,8 @@ static void EmptyProgramStack(ProgramStack *ps)
 {
     while(ps->count > 0) {
         int a = (ps->write - 1);
-        if(a < 0) a += MAX_LEVELS_UNDO;
+        if(a < 0)
+            a += MAX_LEVELS_UNDO;
         ps->write = a;
         (ps->count)--;
 
@@ -117,8 +117,7 @@ static void PushProgramStack(ProgramStack *ps, BOOL deepCopy)
     if(ps->count == MAX_LEVELS_UNDO) {
         int i;
         for(i = 0; i < ps->prog[ps->write].numRungs; i++) {
-            FreeCircuit(ELEM_SERIES_SUBCKT,
-                ps->prog[ps->write].rungs[i]);
+            FreeCircuit(ELEM_SERIES_SUBCKT, ps->prog[ps->write].rungs[i]);
         }
     } else {
         (ps->count)++;
@@ -128,8 +127,7 @@ static void PushProgramStack(ProgramStack *ps, BOOL deepCopy)
     if(deepCopy) {
         int i;
         for(i = 0; i < Prog.numRungs; i++) {
-            ps->prog[ps->write].rungs[i] =
-                (ElemSubcktSeries *)DeepCopy(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+            ps->prog[ps->write].rungs[i] = (ElemSubcktSeries *)DeepCopy(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
         }
     }
 
@@ -143,7 +141,8 @@ static void PushProgramStack(ProgramStack *ps, BOOL deepCopy)
     }
 
     int a = (ps->write + 1);
-    if(a >= MAX_LEVELS_UNDO) a -= MAX_LEVELS_UNDO;
+    if(a >= MAX_LEVELS_UNDO)
+        a -= MAX_LEVELS_UNDO;
     ps->write = a;
 }
 
@@ -154,7 +153,8 @@ static void PushProgramStack(ProgramStack *ps, BOOL deepCopy)
 static void PopProgramStack(ProgramStack *ps)
 {
     int a = (ps->write - 1);
-    if(a < 0) a += MAX_LEVELS_UNDO;
+    if(a < 0)
+        a += MAX_LEVELS_UNDO;
     ps->write = a;
     (ps->count)--;
 
@@ -168,7 +168,7 @@ static void PopProgramStack(ProgramStack *ps)
 // Push a copy of the PLC program onto the undo history, replacing (and
 // freeing) the oldest one if necessary.
 //-----------------------------------------------------------------------------
-void UndoRemember(void)
+void UndoRemember()
 {
     // can't redo after modifying the program
     EmptyProgramStack(&(Undo.redo));
@@ -182,9 +182,10 @@ void UndoRemember(void)
 // undo. This means that we push the current program on the redo stack, and
 // pop the undo stack onto the current program.
 //-----------------------------------------------------------------------------
-void UndoUndo(void)
+void UndoUndo()
 {
-    if(Undo.undo.count <= 0) return;
+    if(Undo.undo.count <= 0)
+        return;
 
     ForgetEverything();
 
@@ -198,16 +199,17 @@ void UndoUndo(void)
     }
     RefreshControlsToSettings();
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 }
 
 //-----------------------------------------------------------------------------
 // Redo an undone operation. Push the current program onto the undo stack,
 // and pop the redo stack into the current program.
 //-----------------------------------------------------------------------------
-void UndoRedo(void)
+void UndoRedo()
 {
-    if(Undo.redo.count <= 0) return;
+    if(Undo.redo.count <= 0)
+        return;
 
     ForgetEverything();
 
@@ -221,13 +223,13 @@ void UndoRedo(void)
     }
     RefreshControlsToSettings();
     RefreshScrollbars();
-    InvalidateRect(MainWindow, NULL, FALSE);
+    InvalidateRect(MainWindow, nullptr, FALSE);
 }
 
 //-----------------------------------------------------------------------------
 // Empty out our undo history entirely, as when loading a new file.
 //-----------------------------------------------------------------------------
-void UndoFlush(void)
+void UndoFlush()
 {
     EmptyProgramStack(&(Undo.undo));
     EmptyProgramStack(&(Undo.redo));
@@ -240,8 +242,7 @@ void UndoFlush(void)
 // notices that easily is the display code, which will respond by undoing
 // the last operation, presumably the one that added the long line.
 //-----------------------------------------------------------------------------
-BOOL CanUndo(void)
+BOOL CanUndo()
 {
     return (Undo.undo.count > 0);
 }
-
