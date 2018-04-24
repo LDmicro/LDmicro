@@ -26,7 +26,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-//#include "display.h"
 
 //// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
@@ -2515,7 +2514,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
 //              Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
-               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, NULL, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
+               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, nullptr, l->d.move.dest, l->d.move.src, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
             }
             Op(INT_END_IF);
             break;

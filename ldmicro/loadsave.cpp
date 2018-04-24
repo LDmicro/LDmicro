@@ -548,7 +548,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
             l->d.setPwm.name[0] = 'P';
         }
         char *s;
-        if(s = strchr(l->d.setPwm.targetFreq, '.')) {
+        if((s = strchr(l->d.setPwm.targetFreq, '.'))) {
             *s = '\0';
         }
     }

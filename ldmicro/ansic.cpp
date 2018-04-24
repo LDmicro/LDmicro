@@ -1207,8 +1207,7 @@ static void GenerateSUBPROG(FILE *f)
 static void GenerateAnsiC_flash_eeprom(FILE *f)
 {
 #ifdef TABLE_IN_FLASH
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(int i = 0; i < IntCodeLen; i++) {
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int         sovElement = IntCode[i].literal2;
@@ -1220,10 +1219,10 @@ flash char *ptr_to_flash1="This string is placed in FLASH";
 char flash *ptr_to_flash2="This string is also placed in FLASH";
 
 
-// Pointer to a char string placed in EEPROM
-eeprom char *ptr_to_eeprom1="This string is placed in EEPROM";
-char eeprom *ptr_to_eeprom2="This string is also placed in EEPROM";
-*/
+                // Pointer to a char string placed in EEPROM
+                eeprom char *ptr_to_eeprom1="This string is placed in EEPROM";
+                char eeprom *ptr_to_eeprom2="This string is also placed in EEPROM";
+                */
                 if(sovElement == 1) {
                     sovs = "flash unsigned char";
                 } else if(sovElement == 2) {

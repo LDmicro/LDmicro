@@ -3284,9 +3284,9 @@ http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate()
 {
-    DWORD addr = 0, addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
-    int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
-    int   sov = -1, sov1 = -1, sov2 = -1, sov12 = -1, sov23 = -1;
+    DWORD addr = 0, addr1 = 0, addr2 = 0;
+    int   bit = -1, bit1 = -1, bit2 = -1;
+    int   sov = -1, sov1 = -1, sov2 = -1;
 
     for(; IntPc < IntCodeLen; IntPc++) {
         IntPcNow = IntPc;

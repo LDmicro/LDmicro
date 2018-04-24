@@ -72,8 +72,7 @@ static WORD AddrForVariable(char *name)
 static void Write(FILE *f, BinOp *op)
 {
     BYTE *b = (BYTE *)op;
-    int   i;
-    for(i = 0; i < sizeof(*op); i++) {
+    for(decltype(sizeof(*op)) i = 0; i < sizeof(*op); i++) {
         fprintf(f, "%02x", b[i]);
     }
     fprintf(f, "\n");
