@@ -36,6 +36,7 @@ extern const char *HelpTextJa[];
 extern const char *HelpTextRu[];
 extern const char *HelpTextEs[];
 
+// clang-format off
 const char *AboutText[] = {
 "",
 "ABOUT LDMICRO",
@@ -77,7 +78,7 @@ const char *AboutText[] = {
 "",
 "Release " LDMICRO_VER_STR ", built " __TIME__ " " __DATE__ ".", // AboutText[38]
 "",
-NULL
+nullptr
 };
 
 static const char **Text[] = {
@@ -100,10 +101,10 @@ static const char **Text[] = {
 #else
     #error "Bad language"
 #endif
-
     // Let's always keep the about text in English.
     AboutText
 };
+// clang-format on
 
 static HWND HelpDialog[2];
 static HWND RichEdit[2];
@@ -112,16 +113,14 @@ static BOOL HelpWindowOpen[2];
 
 static int TitleHeight;
 
-#define RICH_EDIT_HEIGHT(h)  \
-    ((((h) - 3 + (FONT_HEIGHT/2)) / FONT_HEIGHT) * FONT_HEIGHT)
+#define RICH_EDIT_HEIGHT(h) ((((h)-3 + (FONT_HEIGHT / 2)) / FONT_HEIGHT) * FONT_HEIGHT)
 
 static void SizeRichEdit(int a)
 {
     RECT r;
     GetClientRect(HelpDialog[a], &r);
 
-    SetWindowPos(RichEdit[a], HWND_TOP, 6, 3, r.right - 6,
-        RICH_EDIT_HEIGHT(r.bottom), 0);
+    SetWindowPos(RichEdit[a], HWND_TOP, 6, 3, r.right - 6, RICH_EDIT_HEIGHT(r.bottom), 0);
 }
 
 static BOOL Resizing(RECT *r, int wParam)
@@ -129,9 +128,7 @@ static BOOL Resizing(RECT *r, int wParam)
     BOOL touched = FALSE;
     if(r->right - r->left < 650) {
         int diff = 650 - (r->right - r->left);
-        if(wParam == WMSZ_RIGHT || wParam == WMSZ_TOPRIGHT ||
-            wParam == WMSZ_BOTTOMRIGHT)
-        {
+        if(wParam == WMSZ_RIGHT || wParam == WMSZ_TOPRIGHT || wParam == WMSZ_BOTTOMRIGHT) {
             r->right += diff;
         } else {
             r->left -= diff;
@@ -143,9 +140,7 @@ static BOOL Resizing(RECT *r, int wParam)
         int h = r->bottom - r->top - TitleHeight - 5;
         if(RICH_EDIT_HEIGHT(h) != h) {
             int diff = h - RICH_EDIT_HEIGHT(h);
-            if(wParam == WMSZ_TOP || wParam == WMSZ_TOPRIGHT ||
-                wParam == WMSZ_TOPLEFT)
-            {
+            if(wParam == WMSZ_TOP || wParam == WMSZ_TOPRIGHT || wParam == WMSZ_TOPLEFT) {
                 r->top += diff;
             } else {
                 r->bottom -= diff;
@@ -160,19 +155,28 @@ static BOOL Resizing(RECT *r, int wParam)
 static void MakeControls(int a)
 {
     HMODULE re = LoadLibrary("RichEd20.dll");
-    if(!re) oops();
+    if(!re)
+        oops();
 
-    RichEdit[a] = CreateWindowEx(0, RICHEDIT_CLASS,
-        "", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_READONLY |
-        ES_MULTILINE | WS_VSCROLL,
-        0, 0, 100, 100, HelpDialog[a], NULL, Instance, NULL);
+    RichEdit[a] = CreateWindowEx(0,
+                                 RICHEDIT_CLASS,
+                                 "",
+                                 WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | ES_READONLY | ES_MULTILINE | WS_VSCROLL,
+                                 0,
+                                 0,
+                                 100,
+                                 100,
+                                 HelpDialog[a],
+                                 nullptr,
+                                 Instance,
+                                 nullptr);
 
     SendMessage(RichEdit[a], WM_SETFONT, (WPARAM)FixedWidthFont, TRUE);
     SendMessage(RichEdit[a], EM_SETBKGNDCOLOR, (WPARAM)0, HighlightColours.bg); // RGB(0, 0, 0)
 
     SizeRichEdit(a);
 
-    int i;
+    int  i;
     BOOL nextSubHead = FALSE;
     for(i = 0; Text[a][i]; i++) {
         const char *s = Text[a][i];
@@ -181,9 +185,7 @@ static void MakeControls(int a)
         cf.cbSize = sizeof(cf);
         cf.dwMask = CFM_BOLD | CFM_COLOR;
         cf.dwEffects = 0;
-        if((s[0] == '=') ||
-           (Text[a][i+1] && Text[a][i+1][0] == '='))
-        {
+        if((s[0] == '=') || (Text[a][i + 1] && Text[a][i + 1][0] == '=')) {
             cf.crTextColor = HighlightColours.simBusRight; // RGB(255, 255, 110);
         } else if(s[3] == '|' && s[4] == '|') {
             cf.crTextColor = HighlightColours.lit; // RGB(255, 110, 255);
@@ -191,21 +193,20 @@ static void MakeControls(int a)
             // Need to make a copy because the strings we are passed aren't
             // mutable.
             char copy[1024];
-            if(strlen(s) >= sizeof(copy)) oops();
+            if(strlen(s) >= sizeof(copy))
+                oops();
             strcpy(copy, s);
 
             int j;
             for(j = 1; copy[j]; j++) {
-                if(copy[j] == ' ' && copy[j-1] == ' ')
+                if(copy[j] == ' ' && copy[j - 1] == ' ')
                     break;
             }
             BOOL justHeading = (copy[j] == '\0');
             copy[j] = '\0';
             cf.crTextColor = HighlightColours.selected; // RGB(110, 255, 110);
-            SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION,
-                (LPARAM)&cf);
-            SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE,
-                (LPARAM)copy);
+            SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+            SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)copy);
             SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
             // Special case if there's nothing except title on the line
@@ -223,8 +224,8 @@ static void MakeControls(int a)
         SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)s);
         SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
-        if(Text[a][i+1]) {
-            SendMessage(RichEdit[a], EM_REPLACESEL, FALSE, (LPARAM)"\r\n");
+        if(Text[a][i + 1]) {
+            SendMessage(RichEdit[a], EM_REPLACESEL, FALSE, (LPARAM) "\r\n");
             SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
         }
     }
@@ -235,11 +236,10 @@ static void MakeControls(int a)
 //-----------------------------------------------------------------------------
 // Window proc for the help dialog.
 //-----------------------------------------------------------------------------
-static LRESULT CALLBACK HelpProc(HWND hwnd, UINT msg, WPARAM wParam,
-    LPARAM lParam)
+static LRESULT CALLBACK HelpProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     int a = (hwnd == HelpDialog[0] ? 0 : 1);
-    switch (msg) {
+    switch(msg) {
         case WM_SIZING: {
             RECT *r = (RECT *)lParam;
             return Resizing(r, wParam);
@@ -271,24 +271,21 @@ static LRESULT CALLBACK HelpProc(HWND hwnd, UINT msg, WPARAM wParam,
 //-----------------------------------------------------------------------------
 // Create the class for the help window.
 //-----------------------------------------------------------------------------
-static void MakeClass(void)
+static void MakeClass()
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
 
-    wc.style            = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC |
-                          CS_DBLCLKS;
-    wc.lpfnWndProc      = (WNDPROC)HelpProc;
-    wc.hInstance        = Instance;
-    wc.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszClassName    = "LDmicroHelp";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
-                            IMAGE_ICON, 32, 32, 0);
-    wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
-                            IMAGE_ICON, 16, 16, 0);
+    wc.style = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC | CS_DBLCLKS;
+    wc.lpfnWndProc = (WNDPROC)HelpProc;
+    wc.hInstance = Instance;
+    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    wc.lpszClassName = "LDmicroHelp";
+    wc.lpszMenuName = nullptr;
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wc.hIcon = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000), IMAGE_ICON, 32, 32, 0);
+    wc.hIconSm = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000), IMAGE_ICON, 16, 16, 0);
 
     RegisterClassEx(&wc);
 }
@@ -304,11 +301,19 @@ void ShowHelpDialog(BOOL about)
     MakeClass();
 
     const char *s = about ? "About LDmicro" : "LDmicro Help";
-    HelpDialog[a] = CreateWindowEx(0, "LDmicroHelp", s,
-        WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
-        WS_MAXIMIZEBOX |
-        WS_SIZEBOX,
-        100, 100, 650 +50, (about ? 120 : 300)+ 300+10*FONT_HEIGHT, NULL, NULL, Instance, NULL);
+    HelpDialog[a] =
+        CreateWindowEx(0,
+                       "LDmicroHelp",
+                       s,
+                       WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX,
+                       100,
+                       100,
+                       650 + 50,
+                       (about ? 120 : 300) + 300 + 10 * FONT_HEIGHT,
+                       nullptr,
+                       nullptr,
+                       Instance,
+                       nullptr);
     MakeControls(a);
 
     ShowWindow(HelpDialog[a], TRUE);
@@ -322,6 +327,5 @@ void ShowHelpDialog(BOOL about)
 
     GetWindowRect(HelpDialog[a], &r);
     Resizing(&r, WMSZ_TOP);
-    SetWindowPos(HelpDialog[a], HWND_TOP, r.left, r.top, r.right - r.left,
-        r.bottom - r.top, 0);
+    SetWindowPos(HelpDialog[a], HWND_TOP, r.left, r.top, r.right - r.left, r.bottom - r.top, 0);
 }

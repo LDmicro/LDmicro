@@ -340,6 +340,7 @@ extern McuAdcPinInfo ControllinoMaxiAdcPinInfo[];
 extern McuPwmPinInfo ControllinoMaxiPwmPinInfo[];
 //-----------------------------------------------------------------------------
 // PC LPT & COM
+extern McuIoPinInfo PcCfg[];
 
 //===========================================================================
 extern McuIoInfo SupportedMcus[];

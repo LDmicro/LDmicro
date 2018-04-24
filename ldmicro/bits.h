@@ -1,6 +1,8 @@
 #ifndef __BITS_H
 #define __BITS_H
 
+// clang-format off
+
 #define BIT0   0
 #define BIT1   1
 #define BIT2   2
@@ -34,5 +36,7 @@
 #define BIT30 30
 #define BIT31 31
 #define BIT32 32
+
+// clang-format on
 
 #endif

@@ -44,6 +44,8 @@ typedef signed long SDWORD;
 //-----------------------------------------------
 // `Configuration options.'
 
+// clang-format off
+
 // Size of the font that we will use to draw the ladder diagrams, in pixels
 #define FONT_WIDTH   7
 #define FONT_HEIGHT 13
@@ -70,6 +72,7 @@ typedef signed long SDWORD;
 #define MNU_NOTEPAD_C           0x0704
 #define MNU_NOTEPAD_H           0x0705
 #define MNU_NOTEPAD_PAS         0x0706
+#define MNU_NOTEPAD_INO         0x0707
 #define MNU_NOTEPAD_TXT         0x070F
 #define MNU_EXPLORE_DIR         0x0780
 
@@ -429,6 +432,14 @@ typedef signed long SDWORD;
 #define ELEM_9SEG               0x7009
 #define ELEM_14SEG              0x7014
 #define ELEM_16SEG              0x7016
+
+#define MAX_NAME_LEN                 64 // 128
+#define MAX_COMMENT_LEN             512 // 384 // 1024
+#define MAX_LOOK_UP_TABLE_LEN        64
+#define MAX_SHIFT_REGISTER_STAGES   256
+#define MAX_STRING_LEN              256
+
+// clang-format on
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -918,7 +929,7 @@ extern DWORD scheme;
 
 #define IS_MCU_REG(i) ((Prog.mcu) && (Prog.mcu->inputRegs[i]) && (Prog.mcu->outputRegs[i]) && (Prog.mcu->dirRegs[i]))
 
-#define NUM_SUPPORTED_MCUS 26
+#define NUM_SUPPORTED_MCUS 27
 
 //-----------------------------------------------
 // Function prototypes
@@ -947,7 +958,7 @@ extern McuIoInfo SupportedMcus[]; // NUM_SUPPORTED_MCUS
 // memory debugging, because I often get careless; ok() will check that the
 // heap used for all the program storage is not yet corrupt, and oops() if
 // it is
-void CheckHeap(const char* file, int line);
+void CheckHeap(const char *file, int line);
 #define ok() CheckHeap(__FILE__, __LINE__)
 extern ULONGLONG PrevWriteTime;
 extern ULONGLONG LastWriteTime;
@@ -965,7 +976,7 @@ char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
 long int fsize(char filename);
-const char* GetMnuName(int MNU);
+const char *GetMnuName(int MNU);
 int GetMnu(char *MNU_name);
 
 // maincontrols.cpp
@@ -1050,7 +1061,7 @@ extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
 #define PADDING_IN_DISPLAY_MATRIX (&DisplayMatrixFiller)
-#define VALID_LEAF(x) ((x) != NULL && (x) != PADDING_IN_DISPLAY_MATRIX)
+#define VALID_LEAF(x) ((x) != nullptr && (x) != PADDING_IN_DISPLAY_MATRIX)
 extern ElemLeaf *Selected;
 extern int SelectedWhich;
 
@@ -1154,6 +1165,7 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 char *strspace(char *str);
 char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
+void LoadWritePcPorts();
 
 // iolist.cpp
 int IsIoType(int type);
@@ -1207,7 +1219,7 @@ int isalpha_(int c);
 int isal_num(int c);
 int isname(char *name);
 double hobatof(const char *str);
-SDWORD hobatoi(const char* str);
+SDWORD hobatoi(const char *str);
 void ShowSizeOfVarDialog(PlcProgramSingleIo *io);
 
 // confdialog.cpp
@@ -1296,12 +1308,14 @@ const char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pinName);
 char *GetPinName(int pin, char *pinName);
-const char* PinToName(int pin);
-const char* ArduinoPinName(McuIoPinInfo *iop);
+char *ShortPinName(McuIoPinInfo *iop, char *pinName);
+char *LongPinName(McuIoPinInfo *iop, char *pinName);
+const char *PinToName(int pin);
+const char *ArduinoPinName(McuIoPinInfo *iop);
 void SetMcu(McuIoInfo *mcu);
 int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
-McuIoPinInfo *PinInfoForName(const char* name);
+McuIoPinInfo *PinInfoForName(const char *name);
 McuSpiInfo *GetMcuSpiInfo(char *name);
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
@@ -1338,7 +1352,7 @@ char *toupperstr(char *dest, const char *src);
 const char *_(const char *in);
 
 // simulate.cpp
-void MarkInitedVariable(char *name);
+void MarkInitedVariable(const char *name);
 void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void StartSimulationTimer();
@@ -1357,11 +1371,11 @@ extern BOOL InSimulationMode;
 extern DWORD CyclesCount;
 void SetSimulationVariable(char *name, SDWORD val);
 SDWORD GetSimulationVariable(const char *name, BOOL forIoList);
-SDWORD GetSimulationVariable(const char* name);
+SDWORD GetSimulationVariable(const char *name);
 void SetSimulationStr(char *name, char *val);
 char *GetSimulationStr(char *name);
-int FindOpName(int op, const char* name1);
-int FindOpName(int op, const char* name1, const char* name2);
+int FindOpName(int op, const char *name1);
+int FindOpName(int op, const char *name1, const char *name2);
 int FindOpNameLast(int op, const char *name1);
 int FindOpNameLast(int op, const char *name1, const char *name2);
 // Assignment of the `variables,' used for timers, counters, arithmetic, and
@@ -1593,25 +1607,26 @@ extern DWORD RomSection;
 extern DWORD EepromAddrFree;
 //extern int VariableCount;
 void PrintVariables(FILE *f);
-DWORD isVarUsed(char *name);
-int isVarInited(char *name);
-int isPinAssigned(char *name);
+DWORD isVarUsed(const char *name);
+int isVarInited(const char *name);
+int isPinAssigned(const char *name);
 void AllocStart();
 DWORD AllocOctetRam();
 DWORD AllocOctetRam(int bytes);
 void AllocBitRam(DWORD *addr, int *bit);
-int MemForVariable(const char* name, DWORD *addrl, int sizeOfVar);
-int MemForVariable(const char* name, DWORD *addr);
+int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar);
+int MemForVariable(const char *name, DWORD *addr);
 int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
 int MemOfVar(char *name, DWORD *addr);
-BYTE MuxForAdcVariable(const char* name);
-int SingleBitAssigned(char *name);
+BYTE MuxForAdcVariable(const char *name);
+int SingleBitAssigned(const char *name);
+int GetAssignedType(const char *name);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput);
-void MemForSingleBit(const char* name, BOOL forRead, DWORD *addr, int *bit);
+void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const char *name, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile();
-int SetSizeOfVar(const char* name, int sizeOfVar);
-int SizeOfVar(const char* name);
+int SetSizeOfVar(const char *name, int sizeOfVar);
+int SizeOfVar(const char *name);
 int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
@@ -1647,15 +1662,15 @@ BOOL UartRecvUsed();
 BOOL UartSendUsed();
 BOOL SpiFunctionUsed();
 BOOL Bin32BcdRoutineUsed();
-SDWORD CheckMakeNumber(const char* str);
+SDWORD CheckMakeNumber(const char *str);
 void WipeIntMemory();
 BOOL CheckForNumber(char *str);
 int TenToThe(int x);
 int xPowerY(int x, int y);
 BOOL MultiplyRoutineUsed();
 BOOL DivideRoutineUsed();
-void GenSymOneShot(char *dest, const char* name1, const char* name2);
-int getradix(const char* str);
+void GenSymOneShot(char *dest, const char *name1, const char *name2);
+int getradix(const char *str);
 SDWORD CalcDelayClock(long long clocks); // in us
 
 // pic16.cpp
@@ -1685,5 +1700,16 @@ typedef struct RungAddrTag {
 } RungAddr;
 extern RungAddr AddrOfRungN[MAX_RUNGS];
 
+// pascal.cpp
+void CompilePascal(char *outFile);
+
+// pcports.cpp
+extern McuIoPinInfo IoPc[MAX_IO];
+extern int IoPcCount;
+BOOL ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
+void FillPcPinInfo(McuIoPinInfo *pinInfo);
+
+// translit.cpp
+void Transliterate(char *dest, char *str);
 
 #endif

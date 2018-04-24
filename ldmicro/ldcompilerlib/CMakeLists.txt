@@ -18,6 +18,9 @@ set(LD_COMPILER_SRC_LIST
     ../netzer.cpp
     ../pic16.cpp
     ../mcutable.cpp
+    ../pascal.cpp
+    ../pcports.cpp
+    ../translit.cpp
 
     ../accel.h
     ../bits.h
