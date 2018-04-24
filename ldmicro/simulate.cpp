@@ -55,26 +55,30 @@ static struct {
 } AdcShadows[MAX_IO];
 static int AdcShadowsCount;
 
-#define VAR_FLAG_TON 0x00000001
-#define VAR_FLAG_TOF 0x00000002
-#define VAR_FLAG_RTO 0x00000004
-#define VAR_FLAG_RTL 0x00000008
-#define VAR_FLAG_TCY 0x00000010
-#define VAR_FLAG_THI 0x00000020
-#define VAR_FLAG_TLO 0x00000040
+// clang-format off
 
-#define VAR_FLAG_CTU 0x00000100
-#define VAR_FLAG_CTD 0x00000200
-#define VAR_FLAG_CTC 0x00000400
-#define VAR_FLAG_CTR 0x00000800
+#define VAR_FLAG_TON                  0x00000001
+#define VAR_FLAG_TOF                  0x00000002
+#define VAR_FLAG_RTO                  0x00000004
+#define VAR_FLAG_RTL                  0x00000008
+#define VAR_FLAG_TCY                  0x00000010
+#define VAR_FLAG_THI                  0x00000020
+#define VAR_FLAG_TLO                  0x00000040
 
-#define VAR_FLAG_PWM 0x00001000
+#define VAR_FLAG_CTU                  0x00000100
+#define VAR_FLAG_CTD                  0x00000200
+#define VAR_FLAG_CTC                  0x00000400
+#define VAR_FLAG_CTR                  0x00000800
 
-#define VAR_FLAG_RES 0x00010000
-#define VAR_FLAG_TABLE 0x00100000
-#define VAR_FLAG_ANY 0x08000000
+#define VAR_FLAG_PWM                  0x00001000
 
-#define VAR_FLAG_OTHERWISE_FORGOTTEN 0x80000000
+#define VAR_FLAG_RES                  0x00010000
+#define VAR_FLAG_TABLE                0x00100000
+#define VAR_FLAG_ANY                  0x08000000
+
+#define VAR_FLAG_OTHERWISE_FORGOTTEN  0x80000000
+
+// clang-format on
 
 // Schematic-drawing code needs to know whether we're in simulation mode or
 // note, as that changes how everything is drawn; also UI code, to disable
@@ -107,7 +111,8 @@ static HWND     UartSimulationTextControl;
 static LONG_PTR PrevTextProc;
 
 static int QueuedUartCharacter = -1;
-static int SimulateUartTxCountdown = 0; // 0 if UART ready to send; 1 if UART busy
+static int SimulateUartTxCountdown = 0; // 0 if UART ready to send;
+                                        // 1 if UART busy
 
 static void AppendToUartSimulationTextControl(BYTE b);
 
@@ -314,11 +319,9 @@ void SetSimulationStr(char *name, char *val)
     for(i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             strcpy(Variables[i].valstr, val);
-            //dbp("VAR '%s':=%s", name, val);
             return;
         }
     }
-    //dbp("SET %s",name);
     MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     SetSimulationStr(name, val);
 }
@@ -331,11 +334,9 @@ char *GetSimulationStr(char *name)
     int i;
     for(i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
-            //dbp("GET '%s'",name);
             return Variables[i].valstr;
         }
     }
-    //dbp("GET %s",name);
     MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     return GetSimulationStr(name);
 }
@@ -375,16 +376,17 @@ SWORD GetAdcShadow(char *name)
 }
 
 //-----------------------------------------------------------------------------
-//https://en.m.wikipedia.org/wiki/Linear_congruential_generator
+// https://en.m.wikipedia.org/wiki/Linear_congruential_generator
 // X[n+1] = (a * X[n] + c) mod m
-//VMS's MTH$RANDOM, old versions of glibc
+// VMS's MTH$RANDOM, old versions of glibc
 // a = 69069 ( 0x10DCD ) (1 00001101 11001101b)
 // c = 1
 // m = 2 ** 32
 static unsigned long long seed = 1;
-SDWORD                    MthRandom()
+//
+SDWORD MthRandom()
 {
-    //  seed = (seed * 69069 + 1) % 4294967296;
+    // seed = (seed * 69069 + 1) % 4294967296;
     seed = (seed * 69069 + 1) & 0xFFFFffff;
     return (SDWORD)seed;
 }
@@ -512,7 +514,7 @@ static const char *Check(const char *name, DWORD flag, int i)
 // (e.g. just a TON, an RTO with its reset, etc.). Returns nullptr for success,
 // else an error string.
 //-----------------------------------------------------------------------------
-static const char *rungsUsed = ""; //local store var for message
+static const char *rungsUsed = ""; // local store var for message
 
 static const char *MarkUsedVariable(const char *name, DWORD flag)
 {
@@ -529,7 +531,7 @@ static const char *MarkUsedVariable(const char *name, DWORD flag)
         strcpy(Variables[i].name, name);
         Variables[i].usedFlags = 0;
         Variables[i].val = 0;
-        Variables[i].initedRung = -2; //rungNow;
+        Variables[i].initedRung = -2; // rungNow;
         strcpy(Variables[i].usedRungs, "");
         VariableCount++;
     }
@@ -579,19 +581,7 @@ void MarkInitedVariable(const char *name)
 static void CheckMsg(const char *name, const char *s, int i)
 {
     if(s) {
-#if 1
         Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow + 1, name, s, rungsUsed);
-#else
-        char s2[1000];
-        sprintf(
-            s2, _("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow + 1, name, s, rungsUsed);
-        if(i >= 0) {
-            char s3[1000];
-            sprintf(s3, _("Inited in Rung %d"), Variables[i].initedRung + 1);
-            Error("%s %s", s2, s3);
-        } else
-            Error(s2);
-#endif
     }
 }
 //-----------------------------------------------------------------------------
@@ -705,7 +695,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_NPULSE_OFF:
-            //case ELEM_PWM_OFF:
+            // case ELEM_PWM_OFF:
             break;
 
         case ELEM_QUAD_ENCOD:
@@ -722,20 +712,14 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
             break;
 
-            const char *s;
-        case ELEM_7SEG:
-            s = "char7seg";
-            goto xseg;
-        case ELEM_9SEG:
-            s = "char9seg";
-            goto xseg;
-        case ELEM_14SEG:
-            s = "char14seg";
-            goto xseg;
-        case ELEM_16SEG:
-            s = "char16seg";
-            goto xseg;
+            // clang-format off
+        const char *s;
+        case ELEM_7SEG:  s = "char7seg";  goto xseg;
+        case ELEM_9SEG:  s = "char9seg";  goto xseg;
+        case ELEM_14SEG: s = "char14seg"; goto xseg;
+        case ELEM_16SEG: s = "char16seg"; goto xseg;
         xseg:
+            // clang-format on
             MarkWithCheck(s, VAR_FLAG_ANY);
             MarkWithCheck(l->d.segments.dest, VAR_FLAG_ANY);
             if(!IsNumber(l->d.segments.src))
@@ -751,7 +735,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_PIECEWISE_LINEAR:
-            sprintf(str, "%s%s", l->d.piecewiseLinear.name, ""); // "LutElement");
+            sprintf(str, "%s%s", l->d.piecewiseLinear.name, "");
             MarkWithCheck(str, VAR_FLAG_TABLE);
             MarkWithCheck(l->d.piecewiseLinear.dest, VAR_FLAG_ANY);
             if(!IsNumber(l->d.lookUpTable.index))
@@ -1232,27 +1216,37 @@ int bin2bcd(int val)
     ret |= (val % 10) << 24;
     //  ret |= sign<0?0x80000000:0*/;
     return ret;
-    return (val % 10) | (((val /= 10) % 10) << 8) | (((val /= 10) % 10) << 16) | (((val /= 10) % 10) << 24)
-           | (sign < 0 ? 0x80000000 : 0);
 }
 //-----------------------------------------------------------------------------
 //Unpacked BCD to binary
 int bcd2bin(int val)
 {
-    if((val & 0x000000f) > 9 || ((val & 0x0000f00) >> 8) > 9 || ((val & 0x00f0000) >> 16) > 9
-       || ((val & 0xf000000) >> 24) > 9)
+    // clang-format off
+    if( (val & 0x000000f)        > 9
+    || ((val & 0x0000f00) >>  8) > 9
+    || ((val & 0x00f0000) >> 16) > 9
+    || ((val & 0xf000000) >> 24) > 9 )
         Error("Value 'val'=0x%x not in unpacked BCD format.", val);
-    return (val & 0x000000f) + ((val & 0x0000f00) >> 8) * 10 + ((val & 0x00f0000) >> 16) * 100
-           + ((val & 0xf000000) >> 24) * 1000;
+    return (val & 0x000000f)
+        + ((val & 0x0000f00) >>  8) * 10
+        + ((val & 0x00f0000) >> 16) * 100
+        + ((val & 0xf000000) >> 24) * 1000;
+    // clang-format on
 }
 //-----------------------------------------------------------------------------
 //Packed BCD to binary
 int packedbcd2bin(int val)
 {
-    return (val & 0x0000000f) + ((val & 0x000000f0) >> 4) * 10 + ((val & 0x00000f00) >> 8) * 100
-           + ((val & 0x0000f000) >> 12) * 1000 + ((val & 0x000f0000) >> 16) * 10000
-           + ((val & 0x00f00000) >> 20) * 100000 + ((val & 0x0f000000) >> 24) * 1000000
-           + ((val & 0xf0000000) >> 28) * 10000000;
+    // clang-format off
+    return (val & 0x0000000f)
+        + ((val & 0x000000f0) >>  4) * 10
+        + ((val & 0x00000f00) >>  8) * 100
+        + ((val & 0x0000f000) >> 12) * 1000
+        + ((val & 0x000f0000) >> 16) * 10000
+        + ((val & 0x00f00000) >> 20) * 100000
+        + ((val & 0x0f000000) >> 24) * 1000000
+        + ((val & 0xf0000000) >> 28) * 10000000;
+    // clang-format on
 }
 //-----------------------------------------------------------------------------
 int opposite(int val, int sov)

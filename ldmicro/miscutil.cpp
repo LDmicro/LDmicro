@@ -361,74 +361,44 @@ void MakeDialogBoxClass()
 //-----------------------------------------------------------------------------
 const char *IoTypeToString(int ioType)
 {
+    // clang-format off
     switch(ioType) {
-        case IO_TYPE_INT_INPUT:
-            return _("INT input");
-        case IO_TYPE_DIG_INPUT:
-            return _("digital in");
-        case IO_TYPE_DIG_OUTPUT:
-            return _("digital out");
-        case IO_TYPE_MODBUS_CONTACT:
-            return _("modbus contact");
-        case IO_TYPE_MODBUS_COIL:
-            return _("modbus coil");
-        case IO_TYPE_MODBUS_HREG:
-            return _("modbus Hreg");
-        case IO_TYPE_INTERNAL_RELAY:
-            return _("int. relay");
-        case IO_TYPE_UART_TX:
-            return _("UART tx");
-        case IO_TYPE_UART_RX:
-            return _("UART rx");
-        case IO_TYPE_SPI_MOSI:
-            return _("SPI MOSI");
-        case IO_TYPE_SPI_MISO:
-            return _("SPI MISO");
-        case IO_TYPE_SPI_SCK:
-            return _("SPI SCK");
-        case IO_TYPE_SPI__SS:
-            return _("SPI _SS");
-        case IO_TYPE_PWM_OUTPUT:
-            return _("PWM out");
-        case IO_TYPE_TCY:
-            return _("cyclic on/off");
-        case IO_TYPE_TON:
-            return _("turn-on delay");
-        case IO_TYPE_TOF:
-            return _("turn-off delay");
-        case IO_TYPE_RTO:
-            return _("retentive timer");
-        case IO_TYPE_RTL:
-            return _("retentive timer low input");
-        case IO_TYPE_THI:
-            return _("hight delay");
-        case IO_TYPE_TLO:
-            return _("low delay");
-        case IO_TYPE_COUNTER:
-            return _("counter");
-        case IO_TYPE_GENERAL:
-            return _("general var");
-        case IO_TYPE_PERSIST:
-            return _("saved var");
-        case IO_TYPE_BCD:
-            return _("BCD var");
-        case IO_TYPE_STRING:
-            return _("string var");
-        case IO_TYPE_TABLE_IN_FLASH:
-            return _("table in flash");
-        case IO_TYPE_VAL_IN_FLASH:
-            return _("value in flash");
-        case IO_TYPE_READ_ADC:
-            return _("adc input");
-        case IO_TYPE_PORT_INPUT:
-            return _("PORT input");
-        case IO_TYPE_PORT_OUTPUT:
-            return _("PORT output");
-        case IO_TYPE_MCU_REG:
-            return _("MCU register");
-        default:
-            return _("<corrupt!>");
+        case IO_TYPE_INT_INPUT:         return _("INT input");
+        case IO_TYPE_DIG_INPUT:         return _("digital in");
+        case IO_TYPE_DIG_OUTPUT:        return _("digital out");
+        case IO_TYPE_MODBUS_CONTACT:    return _("modbus contact");
+        case IO_TYPE_MODBUS_COIL  :     return _("modbus coil");
+        case IO_TYPE_MODBUS_HREG:       return _("modbus Hreg");
+        case IO_TYPE_INTERNAL_RELAY:    return _("int. relay");
+        case IO_TYPE_UART_TX:           return _("UART tx");
+        case IO_TYPE_UART_RX:           return _("UART rx");
+        case IO_TYPE_SPI_MOSI:          return _("SPI MOSI");
+        case IO_TYPE_SPI_MISO:          return _("SPI MISO");
+        case IO_TYPE_SPI_SCK:           return _("SPI SCK");
+        case IO_TYPE_SPI__SS:           return _("SPI _SS");
+        case IO_TYPE_PWM_OUTPUT:        return _("PWM out");
+        case IO_TYPE_TCY:               return _("cyclic on/off");
+        case IO_TYPE_TON:               return _("turn-on delay");
+        case IO_TYPE_TOF:               return _("turn-off delay");
+        case IO_TYPE_RTO:               return _("retentive timer");
+        case IO_TYPE_RTL:               return _("retentive timer low input");
+        case IO_TYPE_THI:               return _("hight delay");
+        case IO_TYPE_TLO:               return _("low delay");
+        case IO_TYPE_COUNTER:           return _("counter");
+        case IO_TYPE_GENERAL:           return _("general var");
+        case IO_TYPE_PERSIST:           return _("saved var");
+        case IO_TYPE_BCD:               return _("BCD var");
+        case IO_TYPE_STRING:            return _("string var");
+        case IO_TYPE_TABLE_IN_FLASH:    return _("table in flash");
+        case IO_TYPE_VAL_IN_FLASH:      return _("value in flash");
+        case IO_TYPE_READ_ADC:          return _("adc input");
+        case IO_TYPE_PORT_INPUT:        return _("PORT input");
+        case IO_TYPE_PORT_OUTPUT:       return _("PORT output");
+        case IO_TYPE_MCU_REG:           return _("MCU register");
+        default:                        return _("<corrupt!>");
     }
+    // clang-format on
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -456,8 +426,14 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
     int           type = io->type;
     int           pin = io->pin;
     McuIoPinInfo *iop;
-    if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT || type == IO_TYPE_SPI_MOSI || type == IO_TYPE_SPI_MISO
-       || type == IO_TYPE_SPI_SCK || type == IO_TYPE_SPI__SS || type == IO_TYPE_READ_ADC) {
+    if(type == IO_TYPE_DIG_INPUT     //
+       || type == IO_TYPE_DIG_OUTPUT //
+       || type == IO_TYPE_SPI_MOSI   //
+       || type == IO_TYPE_SPI_MISO   //
+       || type == IO_TYPE_SPI_SCK    //
+       || type == IO_TYPE_SPI__SS    //
+       || type == IO_TYPE_READ_ADC)  //
+    {
         if(pin == NO_PIN_ASSIGNED) {
             strcpy(dest, _("(not assigned)"));
             /*

@@ -42,6 +42,8 @@ typedef signed long SDWORD;
 //-----------------------------------------------
 // `Configuration options.'
 
+// clang-format off
+
 // Size of the font that we will use to draw the ladder diagrams, in pixels
 #define FONT_WIDTH   7
 #define FONT_HEIGHT 13
@@ -429,6 +431,14 @@ typedef signed long SDWORD;
 #define ELEM_14SEG              0x7014
 #define ELEM_16SEG              0x7016
 
+#define MAX_NAME_LEN                 64 // 128
+#define MAX_COMMENT_LEN             512 // 384 // 1024
+#define MAX_LOOK_UP_TABLE_LEN        64
+#define MAX_SHIFT_REGISTER_STAGES   256
+#define MAX_STRING_LEN              256
+
+// clang-format on
+
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
         case ELEM_COMMENT: \
@@ -533,12 +543,6 @@ typedef signed long SDWORD;
         case ELEM_UART_CPRINTF: \
         case ELEM_FORMATTED_STRING: \
         case ELEM_PERSIST:
-
-#define MAX_NAME_LEN                 64 // 128
-#define MAX_COMMENT_LEN             512 // 384 // 1024
-#define MAX_LOOK_UP_TABLE_LEN        64
-#define MAX_SHIFT_REGISTER_STAGES   256
-#define MAX_STRING_LEN              256
 
 typedef struct ElemSubcktParallelTag ElemSubcktParallel;
 typedef struct ElemSubcktSeriesTag ElemSubcktSeries;

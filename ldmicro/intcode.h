@@ -31,6 +31,8 @@
 #define NEW_CMP // (C) GitHub.LDmicro@gmail.com
 #define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
 
+// clang-format off
+
 #define INT_SET_BIT                              1
 #define INT_CLEAR_BIT                            2
 #define INT_COPY_BIT_TO_BIT                      3
@@ -203,6 +205,8 @@
 
 // Only used for the interpretable code.
 #define INT_END_OF_PROGRAM                       255
+
+// clang-format on
 
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
     typedef struct IntOpTag {

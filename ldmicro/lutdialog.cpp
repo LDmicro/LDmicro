@@ -453,23 +453,15 @@ BOOL StringToValuesCache(char *str, int *c)
     while(*str) {
         if(*str == '\\') {
             str++;
+            // clang-format off
             switch(*str) {
-                case 'r':
-                    ValuesCache[count++] = '\r';
-                    break;
-                case 'n':
-                    ValuesCache[count++] = '\n';
-                    break;
-                case 'f':
-                    ValuesCache[count++] = '\f';
-                    break;
-                case 'b':
-                    ValuesCache[count++] = '\b';
-                    break;
-                default:
-                    ValuesCache[count++] = *str;
-                    break;
+                case 'r': ValuesCache[count++] = '\r'; break;
+                case 'n': ValuesCache[count++] = '\n'; break;
+                case 'f': ValuesCache[count++] = '\f'; break;
+                case 'b': ValuesCache[count++] = '\b'; break;
+                default:  ValuesCache[count++] = *str; break;
             }
+            // clang-format on
         } else {
             ValuesCache[count++] = *str;
         }

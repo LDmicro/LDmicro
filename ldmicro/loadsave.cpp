@@ -974,46 +974,24 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.coil.ttrigger);
             break;
 
-        case ELEM_TIME2COUNT:
-            s = "TIME2COUNT";
-            goto timer;
-        case ELEM_TCY:
-            s = "TCY";
-            goto timer;
-        case ELEM_TON:
-            s = "TON";
-            goto timer;
-        case ELEM_TOF:
-            s = "TOF";
-            goto timer;
-        case ELEM_RTO:
-            s = "RTO";
-            goto timer;
-        case ELEM_RTL:
-            s = "RTL";
-            goto timer;
-        case ELEM_THI:
-            s = "THI";
-            goto timer;
-        case ELEM_TLO:
-            s = "TLO";
-            goto timer;
+        // clang-format off
+        case ELEM_TIME2COUNT: s = "TIME2COUNT"; goto timer;
+        case ELEM_TCY: s = "TCY"; goto timer;
+        case ELEM_TON: s = "TON"; goto timer;
+        case ELEM_TOF: s = "TOF"; goto timer;
+        case ELEM_RTO: s = "RTO"; goto timer;
+        case ELEM_RTL: s = "RTL"; goto timer;
+        case ELEM_THI: s = "THI"; goto timer;
+        case ELEM_TLO: s = "TLO"; goto timer;
         timer:
             fprintf(f, "%s %s %d %d\n", s, l->d.timer.name, l->d.timer.delay, l->d.timer.adjust);
             break;
 
-        case ELEM_CTU:
-            s = "CTU";
-            goto counter;
-        case ELEM_CTD:
-            s = "CTD";
-            goto counter;
-        case ELEM_CTC:
-            s = "CTC";
-            goto counter;
-        case ELEM_CTR:
-            s = "CTR";
-            goto counter;
+        case ELEM_CTU: s = "CTU"; goto counter;
+        case ELEM_CTD: s = "CTD"; goto counter;
+        case ELEM_CTC: s = "CTC"; goto counter;
+        case ELEM_CTR: s = "CTR"; goto counter;
+        // clang-format on
         counter:
             fprintf(f, "%s %s %s %s\n", s, l->d.counter.name, l->d.counter.max, l->d.counter.init);
             break;
@@ -1127,45 +1105,21 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "NEG %s %s\n", l->d.math.dest, l->d.math.op1);
             break;
 
-        case ELEM_ROL:
-            s = "ROL";
-            goto math;
-        case ELEM_ROR:
-            s = "ROR";
-            goto math;
-        case ELEM_SHL:
-            s = "SHL";
-            goto math;
-        case ELEM_SHR:
-            s = "SHR";
-            goto math;
-        case ELEM_SR0:
-            s = "SR0";
-            goto math;
-        case ELEM_AND:
-            s = "AND";
-            goto math;
-        case ELEM_OR:
-            s = "OR";
-            goto math;
-        case ELEM_XOR:
-            s = "XOR";
-            goto math;
-        case ELEM_MOD:
-            s = "MOD";
-            goto math;
-        case ELEM_ADD:
-            s = "ADD";
-            goto math;
-        case ELEM_SUB:
-            s = "SUB";
-            goto math;
-        case ELEM_MUL:
-            s = "MUL";
-            goto math;
-        case ELEM_DIV:
-            s = "DIV";
-            goto math;
+        // clang-format off
+        case ELEM_ROL: s = "ROL"; goto math;
+        case ELEM_ROR: s = "ROR"; goto math;
+        case ELEM_SHL: s = "SHL"; goto math;
+        case ELEM_SHR: s = "SHR"; goto math;
+        case ELEM_SR0: s = "SR0"; goto math;
+        case ELEM_AND: s = "AND"; goto math;
+        case ELEM_OR : s = "OR" ; goto math;
+        case ELEM_XOR: s = "XOR"; goto math;
+        case ELEM_MOD: s = "MOD"; goto math;
+        case ELEM_ADD: s = "ADD"; goto math;
+        case ELEM_SUB: s = "SUB"; goto math;
+        case ELEM_MUL: s = "MUL"; goto math;
+        case ELEM_DIV: s = "DIV"; goto math;
+        // clang-format on
         math:
             fprintf(f, "%s %s %s %s\n", s, l->d.math.dest, l->d.math.op1, l->d.math.op2);
             break;
@@ -1188,48 +1142,28 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
 #ifdef USE_SFR
         // Special function
-        case ELEM_RSFR:
-            s = "RSFR";
-            goto sfrcmp;
-        case ELEM_WSFR:
-            s = "WSFR";
-            goto sfrcmp;
-        case ELEM_SSFR:
-            s = "SSFR";
-            goto sfrcmp;
-        case ELEM_CSFR:
-            s = "CSFR";
-            goto sfrcmp;
-        case ELEM_TSFR:
-            s = "TSFR";
-            goto sfrcmp;
-        case ELEM_T_C_SFR:
-            s = "TCSFR";
-            goto sfrcmp;
+        // clang-format off
+        case ELEM_RSFR: s = "RSFR"; goto sfrcmp;
+        case ELEM_WSFR: s = "WSFR"; goto sfrcmp;
+        case ELEM_SSFR: s = "SSFR"; goto sfrcmp;
+        case ELEM_CSFR: s = "CSFR"; goto sfrcmp;
+        case ELEM_TSFR: s = "TSFR"; goto sfrcmp;
+        case ELEM_T_C_SFR: s = "TCSFR"; goto sfrcmp;
+        // clang-format on
         sfrcmp:
             fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
             break;
 // Special function
 #endif
 
-        case ELEM_EQU:
-            s = "EQU";
-            goto cmp;
-        case ELEM_NEQ:
-            s = "NEQ";
-            goto cmp;
-        case ELEM_GRT:
-            s = "GRT";
-            goto cmp;
-        case ELEM_GEQ:
-            s = "GEQ";
-            goto cmp;
-        case ELEM_LES:
-            s = "LES";
-            goto cmp;
-        case ELEM_LEQ:
-            s = "LEQ";
-            goto cmp;
+        // clang-format off
+        case ELEM_EQU: s = "EQU"; goto cmp;
+        case ELEM_NEQ: s = "NEQ"; goto cmp;
+        case ELEM_GRT: s = "GRT"; goto cmp;
+        case ELEM_GEQ: s = "GEQ"; goto cmp;
+        case ELEM_LES: s = "LES"; goto cmp;
+        case ELEM_LEQ: s = "LEQ"; goto cmp;
+        // clang-format on
         cmp:
             fprintf(f, "%s %s %s\n", s, l->d.cmp.op1, l->d.cmp.op2);
             break;

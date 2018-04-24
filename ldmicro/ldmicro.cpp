@@ -288,21 +288,13 @@ static void isErr(int Err, char *r)
 {
     const char *s;
     switch(Err) {
-        case 0:
-            s = "The system is out of memory or resources";
-            break;
-        case ERROR_BAD_FORMAT:
-            s = "The .exe file is invalid";
-            break;
-        case ERROR_FILE_NOT_FOUND:
-            s = "The specified file was not found";
-            break;
-        case ERROR_PATH_NOT_FOUND:
-            s = "The specified path was not found";
-            break;
-        default:
-            s = "";
-            break;
+        // clang-format off
+        case 0:                    s = "The system is out of memory or resources"; break;
+        case ERROR_BAD_FORMAT:     s = "The .exe file is invalid";                 break;
+        case ERROR_FILE_NOT_FOUND: s = "The specified file was not found";         break;
+        case ERROR_PATH_NOT_FOUND: s = "The specified path was not found";         break;
+        default:                   s = "";                                         break;
+        // clang-format on
     }
     if(strlen(s))
         Error("Error: %d - %s in command line:\n\n%s", Err, s, r);
@@ -318,24 +310,18 @@ static int Execute(char *r)
 char *GetIsaName(int ISA)
 {
     switch(ISA) {
-        case ISA_AVR:
-            return (char *)stringer(ISA_AVR) + 4;
-        case ISA_PIC16:
-            return (char *)stringer(ISA_PIC16) + 4;
-            //case ISA_ANSIC        : return (char *)stringer( ISA_ANSIC        ) + 4;
-        case ISA_INTERPRETED:
-            return (char *)stringer(ISA_INTERPRETED) + 4;
-        case ISA_XINTERPRETED:
-            return (char *)stringer(ISA_XINTERPRETED) + 4;
-        case ISA_NETZER:
-            return (char *)stringer(ISA_NETZER) + 4;
-        case ISA_PC:
-            return (char *)stringer(ISA_PC) + 4;
-            //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
-            //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
-        default:
-            oops();
-            return nullptr;
+        // clang-format off
+        case ISA_AVR          : return (char *)stringer( ISA_AVR          ) + 4;
+        case ISA_PIC16        : return (char *)stringer( ISA_PIC16        ) + 4;
+      //case ISA_ANSIC        : return (char *)stringer( ISA_ANSIC        ) + 4;
+        case ISA_INTERPRETED  : return (char *)stringer( ISA_INTERPRETED  ) + 4;
+        case ISA_XINTERPRETED : return (char *)stringer( ISA_XINTERPRETED ) + 4;
+        case ISA_NETZER       : return (char *)stringer( ISA_NETZER       ) + 4;
+        case ISA_PC           : return (char *)stringer( ISA_PC           ) + 4;
+      //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
+      //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
+        default               : oops(); return nullptr;
+        // clang-format on
     }
 }
 
@@ -343,48 +329,34 @@ char *GetIsaName(int ISA)
 const char *GetMnuName(int MNU)
 {
     switch(MNU) {
-        case MNU_COMPILE_ANSIC:
-            return (char *)stringer(MNU_COMPILE_ANSIC) + 12;
-        case MNU_COMPILE_HI_TECH_C:
-            return (char *)stringer(MNU_COMPILE_HI_TECH_C) + 12;
-        case MNU_COMPILE_CCS_PIC_C:
-            return (char *)stringer(MNU_COMPILE_CCS_PIC_C) + 12;
-        case MNU_COMPILE_GNUC:
-            return (char *)stringer(MNU_COMPILE_GNUC) + 12;
-        case MNU_COMPILE_CODEVISIONAVR:
-            return (char *)stringer(MNU_COMPILE_CODEVISIONAVR) + 12;
-        case MNU_COMPILE_IMAGECRAFT:
-            return (char *)stringer(MNU_COMPILE_IMAGECRAFT) + 12;
-        case MNU_COMPILE_IAR:
-            return (char *)stringer(MNU_COMPILE_IAR) + 12;
-        case MNU_COMPILE_ARDUINO:
-            return (char *)stringer(MNU_COMPILE_ARDUINO) + 12;
-        case MNU_COMPILE_PASCAL:
-            return (char *)stringer(MNU_COMPILE_PASCAL) + 12;
-        default:
-            return "";
+        // clang-format off
+        case MNU_COMPILE_ANSIC         : return (char *)stringer(MNU_COMPILE_ANSIC) + 12;
+        case MNU_COMPILE_HI_TECH_C     : return (char *)stringer(MNU_COMPILE_HI_TECH_C) + 12;
+        case MNU_COMPILE_CCS_PIC_C     : return (char *)stringer(MNU_COMPILE_CCS_PIC_C) + 12;
+        case MNU_COMPILE_GNUC          : return (char *)stringer(MNU_COMPILE_GNUC) + 12;
+        case MNU_COMPILE_CODEVISIONAVR : return (char *)stringer(MNU_COMPILE_CODEVISIONAVR) + 12;
+        case MNU_COMPILE_IMAGECRAFT    : return (char *)stringer(MNU_COMPILE_IMAGECRAFT) + 12;
+        case MNU_COMPILE_IAR           : return (char *)stringer(MNU_COMPILE_IAR) + 12;
+        case MNU_COMPILE_ARDUINO       : return (char *)stringer(MNU_COMPILE_ARDUINO) + 12;
+        case MNU_COMPILE_PASCAL        : return (char *)stringer(MNU_COMPILE_PASCAL) + 12;
+        default                        : return "";
+            // clang-format on
     }
 }
 
 //-----------------------------------------------------------------------------
 int GetMnu(char *MNU_name)
 {
-    if(!strlen(MNU_name))
-        return -1;
-    if(strstr("MNU_COMPILE_ANSIC", MNU_name))
-        return MNU_COMPILE_ANSIC;
-    if(strstr("MNU_COMPILE_HI_TECH_C", MNU_name))
-        return MNU_COMPILE_HI_TECH_C;
-    if(strstr("MNU_COMPILE_CCS_PIC_C", MNU_name))
-        return MNU_COMPILE_CCS_PIC_C;
-    if(strstr("MNU_COMPILE_GNUC", MNU_name))
-        return MNU_COMPILE_GNUC;
-    if(strstr("MNU_COMPILE_CODEVISIONAVR", MNU_name))
-        return MNU_COMPILE_CODEVISIONAVR;
-    if(strstr("MNU_COMPILE_ARDUINO", MNU_name))
-        return MNU_COMPILE_ARDUINO;
-    if(strstr("MNU_COMPILE_PASCAL", MNU_name))
-        return MNU_COMPILE_PASCAL;
+    // clang-format off
+    if(!strlen(MNU_name)) return -1;
+    if(strstr("MNU_COMPILE_ANSIC",         MNU_name)) return MNU_COMPILE_ANSIC;
+    if(strstr("MNU_COMPILE_HI_TECH_C",     MNU_name)) return MNU_COMPILE_HI_TECH_C;
+    if(strstr("MNU_COMPILE_CCS_PIC_C",     MNU_name)) return MNU_COMPILE_CCS_PIC_C;
+    if(strstr("MNU_COMPILE_GNUC",          MNU_name)) return MNU_COMPILE_GNUC;
+    if(strstr("MNU_COMPILE_CODEVISIONAVR", MNU_name)) return MNU_COMPILE_CODEVISIONAVR;
+    if(strstr("MNU_COMPILE_ARDUINO",       MNU_name)) return MNU_COMPILE_ARDUINO;
+    if(strstr("MNU_COMPILE_PASCAL",        MNU_name)) return MNU_COMPILE_PASCAL;
+    // clang-format on
     return -1;
 }
 
@@ -465,7 +437,8 @@ static void clearBat()
     char r[MAX_PATH];
 
     sprintf(r, "%sclear.bat", ExePath);
-    dbps(r) if(!ExistFile(r)) return;
+    if(!ExistFile(r))
+        return;
 
     sprintf(r,
             "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"",
@@ -474,7 +447,7 @@ static void clearBat()
             LdName,
             CurrentCompilePath,
             CompileName);
-    dbps(r) isErr(Execute(r), r);
+    isErr(Execute(r), r);
 }
 
 //-----------------------------------------------------------------------------
@@ -2656,27 +2629,17 @@ void abortHandler(int signum)
 {
     // associate each signal with a signal name string.
     const char *name = nullptr;
+    // clang-format off
     switch(signum) {
-        case SIGABRT:
-            name = "SIGABRT";
-            break;
-        case SIGSEGV:
-            name = "SIGSEGV";
-            break;
-            //case SIGBUS:  name = "SIGBUS";   break;
-        case SIGILL:
-            name = "SIGILL";
-            break;
-        case SIGFPE:
-            name = "SIGFPE";
-            break;
-        case SIGINT:
-            name = "SIGINT";
-            break;
-        case SIGTERM:
-            name = "SIGTERM";
-            break;
+        case SIGABRT: name = "SIGABRT";  break;
+        case SIGSEGV: name = "SIGSEGV";  break;
+      //case SIGBUS:  name = "SIGBUS";   break;
+        case SIGILL:  name = "SIGILL";   break;
+        case SIGFPE:  name = "SIGFPE";   break;
+        case SIGINT:  name = "SIGINT";   break;
+        case SIGTERM: name = "SIGTERM";  break;
     }
+    // clang-format on
 
     // Notify the user which signal was caught. We use printf, because this is the
     // most basic output function. Once you get a crash, it is possible that more
@@ -2690,7 +2653,7 @@ void abortHandler(int signum)
 
     // Dump a stack trace.
     // This is the function we will be implementing next.
-    //printStackTrace();
+    // printStackTrace();
 
     // If you caught one of the above signals, it is likely you just
     // want to quit your program right now.

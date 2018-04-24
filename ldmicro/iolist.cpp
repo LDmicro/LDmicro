@@ -60,15 +60,23 @@ static BOOL AnalogSliderCancel;
 //-----------------------------------------------------------------------------
 int IsIoType(int type)
 {
-    if((type == IO_TYPE_INT_INPUT) || (type == IO_TYPE_DIG_INPUT) || (type == IO_TYPE_DIG_OUTPUT)
-       || (type == IO_TYPE_READ_ADC) || (type == IO_TYPE_PWM_OUTPUT) || (type == IO_TYPE_SPI_MOSI)
-       || (type == IO_TYPE_SPI_MISO) || (type == IO_TYPE_SPI_SCK)
-       || (type == IO_TYPE_SPI__SS)
-       //  || (type == IO_TYPE_MODBUS_CONTACT) //???
-       //  || (type == IO_TYPE_MODBUS_COIL)    //???
-       || (type == IO_TYPE_UART_TX) || (type == IO_TYPE_UART_RX))
+    // clang-format off
+    if((type == IO_TYPE_INT_INPUT)
+    || (type == IO_TYPE_DIG_INPUT)
+    || (type == IO_TYPE_DIG_OUTPUT)
+    || (type == IO_TYPE_READ_ADC)
+    || (type == IO_TYPE_PWM_OUTPUT)
+    || (type == IO_TYPE_SPI_MOSI)
+    || (type == IO_TYPE_SPI_MISO)
+    || (type == IO_TYPE_SPI_SCK)
+    || (type == IO_TYPE_SPI__SS)
+//  || (type == IO_TYPE_MODBUS_CONTACT) //???
+//  || (type == IO_TYPE_MODBUS_COIL)    //???
+    || (type == IO_TYPE_UART_TX)
+    || (type == IO_TYPE_UART_RX))
         return type;
     return 0;
+    // clang-format on
 }
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
@@ -171,30 +179,19 @@ static void AppendIoAutoType(char *name, int default_type)
 {
     int type;
 
-    switch(name[0]) {
-        case 'X':
-            type = IO_TYPE_DIG_INPUT;
-            break;
-        case 'Y':
-            type = IO_TYPE_DIG_OUTPUT;
-            break;
-        case 'A':
-            type = IO_TYPE_READ_ADC;
-            break;
-            //case 'P': type = IO_TYPE_PWM_OUTPUT; break;
-            //case 'I': type = IO_TYPE_MODBUS_CONTACT; break; // conflict if IO_TYPE_GENERAL variable start with 'I'
-        case 'M':
-            type = IO_TYPE_MODBUS_COIL;
-            break;
-        case 'H':
-            type = IO_TYPE_MODBUS_HREG;
-            break;
-        case 'G':
-            type = IO_TYPE_GENERAL;
-            break;
-        default:
-            type = default_type;
+    // clang-format off
+    switch (name[0]) {
+    case 'X': type = IO_TYPE_DIG_INPUT;      break;
+    case 'Y': type = IO_TYPE_DIG_OUTPUT;     break;
+    case 'A': type = IO_TYPE_READ_ADC;       break;
+  //case 'P': type = IO_TYPE_PWM_OUTPUT;     break;
+  //case 'I': type = IO_TYPE_MODBUS_CONTACT; break; // conflict if IO_TYPE_GENERAL variable start with 'I'
+    case 'M': type = IO_TYPE_MODBUS_COIL;    break;
+    case 'H': type = IO_TYPE_MODBUS_HREG;    break;
+    case 'G': type = IO_TYPE_GENERAL;        break;
+    default:  type = default_type;
     };
+    // clang-format on
 
     // type = default_type; // rewert
 
@@ -213,16 +210,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int                 i;
-            for(i = 0; i < p->count; i++) {
+            for(int i = 0; i < p->count; i++) {
                 ExtractNamesFromCircuit(p->contents[i].which, p->contents[i].data.any);
             }
             break;
         }
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int               i;
-            for(i = 0; i < s->count; i++) {
+            for(int i = 0; i < s->count; i++) {
                 ExtractNamesFromCircuit(s->contents[i].which, s->contents[i].data.any);
             }
             break;
@@ -329,8 +324,8 @@ static void ExtractNamesFromCircuit(int which, void *any)
             sprintf(str, "C%s%s", l->d.stepper.name, "Dec");
             AppendIo(str, IO_TYPE_COUNTER);
 
-            if(IsNumber(l->d.stepper.P) && (CheckMakeNumber(l->d.stepper.P) > 1)
-               || (l->d.stepper.graph > 0) //&&(l->d.stepper.n>1)
+            if(IsNumber(l->d.stepper.P) && (CheckMakeNumber(l->d.stepper.P) > 1) //
+               || (l->d.stepper.graph > 0)                                       // &&(l->d.stepper.n>1)
                || (!IsNumber(l->d.stepper.P))) {
                 sprintf(str, "C%s%s", l->d.stepper.name, "Inc");
                 AppendIo(str, IO_TYPE_COUNTER);
@@ -412,7 +407,8 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_SEED_RANDOM: {
             sprintf(str, "$seed_%s", l->d.move.dest);
             AppendIo(str, IO_TYPE_GENERAL);
-        } break;
+            break;
+        }
 
         case ELEM_SPI: {
             sprintf(str, "%s_MOSI", l->d.spi.name);
@@ -461,26 +457,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
             {
                 int   n, n0;
                 char *nameTable;
-                case ELEM_7SEG:
-                    nameTable = "char7seg";
-                    n = LEN7SEG;
-                    n0 = 1;
-                    goto xseg;
-                case ELEM_9SEG:
-                    nameTable = "char9seg";
-                    n = LEN9SEG;
-                    n0 = 2;
-                    goto xseg;
-                case ELEM_14SEG:
-                    nameTable = "char14seg";
-                    n = LEN14SEG;
-                    n0 = 2;
-                    goto xseg;
-                case ELEM_16SEG:
-                    nameTable = "char16seg";
-                    n = LEN16SEG;
-                    n0 = 3;
-                    goto xseg;
+                    // clang-format off
+        case ELEM_7SEG: nameTable = "char7seg";  n = LEN7SEG;  n0=1; goto xseg;
+        case ELEM_9SEG: nameTable = "char9seg";  n = LEN9SEG;  n0=2; goto xseg;
+        case ELEM_14SEG:nameTable = "char14seg"; n = LEN14SEG; n0=2; goto xseg;
+        case ELEM_16SEG:nameTable = "char16seg"; n = LEN16SEG; n0=3; goto xseg;
+                    // clang-format on
                 xseg:
                     AppendIoAutoType(l->d.segments.dest, IO_TYPE_GENERAL);
                     /*
@@ -648,7 +630,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
 #endif
-        //case ELEM_PWM_OFF:
+        // case ELEM_PWM_OFF:
         case ELEM_NPULSE_OFF:
             break;
 
@@ -676,7 +658,7 @@ static int CompareIo(const void *av, const void *bv)
     if(a->type != b->type) {
         return a->type - b->type;
     }
-    /*
+/*
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
 */
@@ -723,12 +705,21 @@ int GenerateIoList(int prevSel)
         AppendIo(YPlcCycleDuty, IO_TYPE_DIG_OUTPUT);
     }
     for(i = 0; i < Prog.io.count; i++) {
-        if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT || Prog.io.assignment[i].type == IO_TYPE_INT_INPUT
-           || Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT || Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT
-           || Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT || Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL
-           || Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG || Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI
-           || Prog.io.assignment[i].type == IO_TYPE_SPI_MISO || Prog.io.assignment[i].type == IO_TYPE_SPI_SCK
-           || Prog.io.assignment[i].type == IO_TYPE_SPI__SS || Prog.io.assignment[i].type == IO_TYPE_READ_ADC) {
+        // clang-format off
+        if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_INT_INPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_MISO ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_SCK  ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI__SS  ||
+           Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
+        {
+            // clang-format on
             for(j = 0; j < IoSeenPreviouslyCount; j++) {
                 if(strcmp(Prog.io.assignment[i].name, IoSeenPreviously[j].name) == 0) {
                     Prog.io.assignment[i].pin = IoSeenPreviously[j].pin;
@@ -842,15 +833,26 @@ void SaveIoListToFile(FILE *f)
 {
     int i, j1 = 0, j2 = 0;
     for(i = 0; i < Prog.io.count; i++) {
-        if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT || Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT
-           || Prog.io.assignment[i].type == IO_TYPE_INT_INPUT || Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT
-           || Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT || Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL
-           || Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG || Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI
-           || Prog.io.assignment[i].type == IO_TYPE_SPI_MISO || Prog.io.assignment[i].type == IO_TYPE_SPI_SCK
-           || Prog.io.assignment[i].type == IO_TYPE_SPI__SS || Prog.io.assignment[i].type == IO_TYPE_READ_ADC) {
+        // clang-format off
+        if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT  ||
+           Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_INT_INPUT  ||
+           Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_CONTACT ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_COIL ||
+           Prog.io.assignment[i].type == IO_TYPE_MODBUS_HREG ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_MISO ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI_SCK  ||
+           Prog.io.assignment[i].type == IO_TYPE_SPI__SS  ||
+           Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
+        {
+            // clang-format on
             j1++;
-            if((strcmp(Prog.LDversion, "0.1") == 0) && (Prog.io.assignment[i].name[0] != 'X')
-               && (Prog.io.assignment[i].name[0] != 'Y') && (Prog.io.assignment[i].name[0] != 'A'))
+            if((strcmp(Prog.LDversion, "0.1") == 0)      //
+               && (Prog.io.assignment[i].name[0] != 'X') //
+               && (Prog.io.assignment[i].name[0] != 'Y') //
+               && (Prog.io.assignment[i].name[0] != 'A'))
                 continue;
             j2++;
             // Don't internationalize this! It's the file format, not UI.
@@ -1173,7 +1175,6 @@ void ShowIoDialog(int item)
         return;
     }
 
-    //if(Prog.mcu->whichIsa > ISA_HARDWARE) {
     if(Prog.mcu->core == NOTHING) {
         if(Prog.io.assignment[item].pin) {
             int i;
@@ -1388,7 +1389,6 @@ void ShowIoDialog(int item)
     }
 
     for(j = 0; j < Prog.mcu->adcCount; j++) {
-        //if(Prog.io.assignment[item].name[0] == 'A') {
         if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
             for(i = 0; i < Prog.mcu->pinCount; i++) {
                 if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) {
@@ -1712,16 +1712,25 @@ void IoListProc(NMHDR *h)
                         break;
                     DWORD addr = 0;
                     int   bit = -1;
-                    if((type == IO_TYPE_PORT_INPUT) || (type == IO_TYPE_PORT_OUTPUT) || (type == IO_TYPE_MCU_REG)) {
+                    if((type == IO_TYPE_PORT_INPUT)     //
+                       || (type == IO_TYPE_PORT_OUTPUT) //
+                       || (type == IO_TYPE_MCU_REG)) {
                         MemForVariable(name, &addr);
                         if(addr > 0)
                             sprintf(i->item.pszText, "0x%x", addr);
                         else
                             sprintf(i->item.pszText, "Not a PORT!");
-                    } else if((type == IO_TYPE_GENERAL) || (type == IO_TYPE_PERSIST) || (type == IO_TYPE_STRING)
-                              || (type == IO_TYPE_RTL) || (type == IO_TYPE_RTO) || (type == IO_TYPE_TCY)
-                              || (type == IO_TYPE_TON) || (type == IO_TYPE_TOF) || (type == IO_TYPE_THI)
-                              || (type == IO_TYPE_TLO) || (type == IO_TYPE_COUNTER)) {
+                    } else if((type == IO_TYPE_GENERAL)    //
+                              || (type == IO_TYPE_PERSIST) //
+                              || (type == IO_TYPE_STRING)  //
+                              || (type == IO_TYPE_RTL)     //
+                              || (type == IO_TYPE_RTO)     //
+                              || (type == IO_TYPE_TCY)     //
+                              || (type == IO_TYPE_TON)     //
+                              || (type == IO_TYPE_TOF)     //
+                              || (type == IO_TYPE_THI)     //
+                              || (type == IO_TYPE_TLO)     //
+                              || (type == IO_TYPE_COUNTER)) {
                         MemForVariable(name, &addr);
                         if(addr > 0)
                             sprintf(i->item.pszText, "0x%x", addr);
@@ -1741,8 +1750,12 @@ void IoListProc(NMHDR *h)
                             if(addr > 0 && bit >= 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                         }
-                    } else if((type == IO_TYPE_READ_ADC) || (type == IO_TYPE_SPI_MOSI) || (type == IO_TYPE_SPI_MISO)
-                              || (type == IO_TYPE_SPI_SCK) || (type == IO_TYPE_SPI__SS)) {
+                    } else if((type == IO_TYPE_READ_ADC)    //
+                              || (type == IO_TYPE_SPI_MOSI) //
+                              || (type == IO_TYPE_SPI_MISO) //
+                              || (type == IO_TYPE_SPI_SCK)  //
+                              || (type == IO_TYPE_SPI__SS)  //
+                    ) {
                         if(Prog.mcu) {
                             McuIoPinInfo *iop;
                             iop = PinInfoForName(name);
@@ -1756,7 +1769,8 @@ void IoListProc(NMHDR *h)
                         MemOfVar(name, &addr);
                         if(addr > 0)
                             sprintf(i->item.pszText, "0x%x", addr);
-                    } else if((type == IO_TYPE_DIG_INPUT) || (type == IO_TYPE_DIG_OUTPUT)
+                    } else if((type == IO_TYPE_DIG_INPUT)     //
+                              || (type == IO_TYPE_DIG_OUTPUT) //
                               || (type == IO_TYPE_PWM_OUTPUT)) {
                         if(SingleBitAssigned(name))
                             MemForSingleBit(name, TRUE, &addr, &bit);
@@ -1767,23 +1781,39 @@ void IoListProc(NMHDR *h)
                 }
 
                 case LV_IO_SISE_OF_VAR:
-                    if((type == IO_TYPE_GENERAL) || (type == IO_TYPE_PERSIST) || (type == IO_TYPE_PORT_INPUT)
-                       || (type == IO_TYPE_PORT_OUTPUT) || (type == IO_TYPE_MCU_REG) || (type == IO_TYPE_BCD)
-                       || (type == IO_TYPE_STRING) || (type == IO_TYPE_COUNTER) || (type == IO_TYPE_VAL_IN_FLASH)
-                       || (type == IO_TYPE_THI) || (type == IO_TYPE_TLO) || (type == IO_TYPE_RTL)
-                       || (type == IO_TYPE_RTO) || (type == IO_TYPE_TCY) || (type == IO_TYPE_TON)
+                    if((type == IO_TYPE_GENERAL)         //
+                       || (type == IO_TYPE_PERSIST)      //
+                       || (type == IO_TYPE_PORT_INPUT)   //
+                       || (type == IO_TYPE_PORT_OUTPUT)  //
+                       || (type == IO_TYPE_MCU_REG)      //
+                       || (type == IO_TYPE_BCD)          //
+                       || (type == IO_TYPE_STRING)       //
+                       || (type == IO_TYPE_COUNTER)      //
+                       || (type == IO_TYPE_VAL_IN_FLASH) //
+                       || (type == IO_TYPE_THI)          //
+                       || (type == IO_TYPE_TLO)          //
+                       || (type == IO_TYPE_RTL)          //
+                       || (type == IO_TYPE_RTO)          //
+                       || (type == IO_TYPE_TCY)          //
+                       || (type == IO_TYPE_TON)          //
                        || (type == IO_TYPE_TOF)) {
                         int sov = SizeOfVar(name);
                         sprintf(i->item.pszText, sov == 1 ? "%d byte" : "%d bytes", sov);
                     } else if(type == IO_TYPE_TABLE_IN_FLASH) {
                         int sov = MemOfVar(name, nullptr); // ok
                         sprintf(i->item.pszText, sov == 1 ? "%d elem" : "%d elem's", sov);
-                    } else if((type == IO_TYPE_DIG_INPUT) || (type == IO_TYPE_DIG_OUTPUT)
-                              || (type == IO_TYPE_INTERNAL_RELAY) || (type == IO_TYPE_SPI_MOSI)
-                              || (type == IO_TYPE_SPI_MISO) || (type == IO_TYPE_SPI_SCK) || (type == IO_TYPE_SPI__SS)
-                              || (type == IO_TYPE_MODBUS_COIL) || (type == IO_TYPE_MODBUS_CONTACT)) {
+                    } else if((type == IO_TYPE_DIG_INPUT)         //
+                              || (type == IO_TYPE_DIG_OUTPUT)     //
+                              || (type == IO_TYPE_INTERNAL_RELAY) //
+                              || (type == IO_TYPE_SPI_MOSI)       //
+                              || (type == IO_TYPE_SPI_MISO)       //
+                              || (type == IO_TYPE_SPI_SCK)        //
+                              || (type == IO_TYPE_SPI__SS)        //
+                              || (type == IO_TYPE_MODBUS_COIL)    //
+                              || (type == IO_TYPE_MODBUS_CONTACT)) {
                         sprintf(i->item.pszText, "1 bit");
-                    } else if((type == IO_TYPE_UART_TX) || (type == IO_TYPE_UART_RX)) {
+                    } else if((type == IO_TYPE_UART_TX) //
+                              || (type == IO_TYPE_UART_RX)) {
                         sprintf(i->item.pszText, "1 pin/1 byte");
                     } else if(type == IO_TYPE_PWM_OUTPUT) {
                         sprintf(i->item.pszText, "1 pin");

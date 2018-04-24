@@ -125,39 +125,78 @@ void SelectElement(int gx, int gy, int state)
 //-----------------------------------------------------------------------------
 BOOL StaySameElem(int Which)
 {
-    if(Which == ELEM_RES || Which == ELEM_SET_BIT || Which == ELEM_CLEAR_BIT || Which == ELEM_SHL || Which == ELEM_SHR
-       || Which == ELEM_SR0 || Which == ELEM_ROL || Which == ELEM_ROR || Which == ELEM_AND || Which == ELEM_OR
-       || Which == ELEM_XOR || Which == ELEM_NOT || Which == ELEM_NEG || Which == ELEM_RANDOM
-       || Which == ELEM_SEED_RANDOM || Which == ELEM_ADD || Which == ELEM_SUB || Which == ELEM_MUL || Which == ELEM_DIV
-       || Which == ELEM_MOD || Which == ELEM_BIN2BCD || Which == ELEM_BCD2BIN || Which == ELEM_SWAP
-       || Which == ELEM_OPPOSITE || Which == ELEM_BUS || Which == ELEM_7SEG || Which == ELEM_9SEG || Which == ELEM_14SEG
-       || Which == ELEM_16SEG || Which == ELEM_READ_ADC || Which == ELEM_SET_PWM || Which == ELEM_MASTER_RELAY
-       || Which == ELEM_SLEEP || Which == ELEM_DELAY || Which == ELEM_CLRWDT || Which == ELEM_LOCK || Which == ELEM_GOTO
-       || Which == ELEM_SHIFT_REGISTER || Which == ELEM_LOOK_UP_TABLE || Which == ELEM_PIECEWISE_LINEAR
-       || Which == ELEM_PERSIST || Which == ELEM_MOVE)
-        return TRUE;
+    // clang-format off
+    if( Which == ELEM_RES ||
+        Which == ELEM_SET_BIT ||
+        Which == ELEM_CLEAR_BIT ||
+        Which == ELEM_SHL ||
+        Which == ELEM_SHR ||
+        Which == ELEM_SR0 ||
+        Which == ELEM_ROL ||
+        Which == ELEM_ROR ||
+        Which == ELEM_AND ||
+        Which == ELEM_OR  ||
+        Which == ELEM_XOR ||
+        Which == ELEM_NOT ||
+        Which == ELEM_NEG ||
+        Which == ELEM_RANDOM ||
+        Which == ELEM_SEED_RANDOM ||
+        Which == ELEM_ADD ||
+        Which == ELEM_SUB ||
+        Which == ELEM_MUL ||
+        Which == ELEM_DIV ||
+        Which == ELEM_MOD ||
+        Which == ELEM_BIN2BCD ||
+        Which == ELEM_BCD2BIN ||
+        Which == ELEM_SWAP ||
+        Which == ELEM_OPPOSITE ||
+        Which == ELEM_BUS  ||
+        Which == ELEM_7SEG  ||
+        Which == ELEM_9SEG  ||
+        Which == ELEM_14SEG ||
+        Which == ELEM_16SEG ||
+        Which == ELEM_READ_ADC ||
+        Which == ELEM_SET_PWM ||
+        Which == ELEM_MASTER_RELAY ||
+        Which == ELEM_SLEEP ||
+        Which == ELEM_DELAY ||
+        Which == ELEM_CLRWDT ||
+        Which == ELEM_LOCK ||
+        Which == ELEM_GOTO ||
+        Which == ELEM_SHIFT_REGISTER ||
+        Which == ELEM_LOOK_UP_TABLE ||
+        Which == ELEM_PIECEWISE_LINEAR ||
+        Which == ELEM_PERSIST ||
+        Which == ELEM_MOVE)
+      return TRUE;
     else
-        return FALSE;
+      return FALSE;
+    // clang-format on
 }
 //-----------------------------------------------------------------------------
 BOOL CanChangeOutputElem(int Which)
 {
-    if(Which == ELEM_COIL ||
-       /*
+    // clang-format off
+    if( Which == ELEM_COIL ||
+/*
         Which == ELEM_CTU ||
         Which == ELEM_CTD ||
         Which == ELEM_CTC ||
         Which == ELEM_CTR ||
 */
-       Which == ELEM_SET_PWM
-       || Which == ELEM_STEPPER || Which == ELEM_PULSER || Which == ELEM_NPULSE || Which == ELEM_MASTER_RELAY ||
-#ifdef USE_SFR
-       Which == ELEM_WSFR ||
-#endif
-       Which == ELEM_PERSIST)
-        return TRUE;
+        Which == ELEM_SET_PWM ||
+        Which == ELEM_STEPPER ||
+        Which == ELEM_PULSER ||
+        Which == ELEM_NPULSE ||
+        Which == ELEM_MASTER_RELAY ||
+        #ifdef USE_SFR
+        Which == ELEM_WSFR ||
+        #endif
+        Which == ELEM_PERSIST)
+      return TRUE;
     else
-        return FALSE;
+      return FALSE;
+    // clang-format on
 }
 //-----------------------------------------------------------------------------
 // Returnn TRUE if this instruction(element) must be the
@@ -165,15 +204,33 @@ BOOL CanChangeOutputElem(int Which)
 //-----------------------------------------------------------------------------
 BOOL EndOfRungElem(int Which)
 {
-    if(Which == ELEM_COIL || Which == ELEM_RES || Which == ELEM_MOD || Which == ELEM_ADD || Which == ELEM_SUB
-       || Which == ELEM_MUL || Which == ELEM_DIV || Which == ELEM_READ_ADC || Which == ELEM_SET_PWM ||
-       //Which == ELEM_PWM_OFF ||
-       Which == ELEM_NPULSE_OFF || Which == ELEM_MASTER_RELAY || Which == ELEM_SLEEP || Which == ELEM_CLRWDT
-       || Which == ELEM_LOCK || Which == ELEM_GOTO || Which == ELEM_GOSUB || Which == ELEM_RETURN
-       || Which == ELEM_SHIFT_REGISTER || Which == ELEM_LOOK_UP_TABLE || Which == ELEM_PIECEWISE_LINEAR
-       || Which == ELEM_PERSIST || Which == ELEM_MOVE)
-        return TRUE;
+    // clang-format off
+    if( Which == ELEM_COIL ||
+        Which == ELEM_RES ||
+        Which == ELEM_MOD ||
+        Which == ELEM_ADD ||
+        Which == ELEM_SUB ||
+        Which == ELEM_MUL ||
+        Which == ELEM_DIV ||
+        Which == ELEM_READ_ADC ||
+        Which == ELEM_SET_PWM ||
+        //Which == ELEM_PWM_OFF ||
+        Which == ELEM_NPULSE_OFF ||
+        Which == ELEM_MASTER_RELAY ||
+        Which == ELEM_SLEEP ||
+        Which == ELEM_CLRWDT ||
+        Which == ELEM_LOCK ||
+        Which == ELEM_GOTO ||
+        Which == ELEM_GOSUB ||
+        Which == ELEM_RETURN ||
+        Which == ELEM_SHIFT_REGISTER ||
+        Which == ELEM_LOOK_UP_TABLE ||
+        Which == ELEM_PIECEWISE_LINEAR ||
+        Which == ELEM_PERSIST ||
+        Which == ELEM_MOVE)
+      return TRUE;
     return FALSE;
+    // clang-format on
 }
 
 //-----------------------------------------------------------------------------
@@ -435,230 +492,101 @@ void MoveCursorKeyboard(int keyCode)
 static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
 {
     int newWhich;
+    // clang-format off
     switch(which) {
         // group 1 of suitable elements
-        case ELEM_SHORT:
-            newWhich = ELEM_OPEN;
-            break;
-        case ELEM_OPEN:
-            newWhich = ELEM_SHORT;
-            break;
+        case ELEM_SHORT: newWhich = ELEM_OPEN; break;
+        case ELEM_OPEN: newWhich = ELEM_SHORT; break;
         // group 2 of suitable elements, etc.
-        case ELEM_ONE_SHOT_RISING:
-            newWhich = ELEM_ONE_SHOT_FALLING;
-            break;
-        case ELEM_ONE_SHOT_FALLING:
-            newWhich = ELEM_ONE_SHOT_LOW;
-            break;
-        case ELEM_ONE_SHOT_LOW:
-            newWhich = ELEM_OSC;
-            break;
-        case ELEM_OSC:
-            newWhich = ELEM_ONE_SHOT_RISING;
-            break;
+        case ELEM_ONE_SHOT_RISING: newWhich = ELEM_ONE_SHOT_FALLING; break;
+        case ELEM_ONE_SHOT_FALLING: newWhich = ELEM_ONE_SHOT_LOW; break;
+        case ELEM_ONE_SHOT_LOW: newWhich = ELEM_OSC; break;
+        case ELEM_OSC: newWhich = ELEM_ONE_SHOT_RISING; break;
         //
-        case ELEM_TON:
-            newWhich = ELEM_TOF;
-            break;
-        case ELEM_TOF:
-            newWhich = ELEM_RTO;
-            break;
-        case ELEM_RTO:
-            newWhich = ELEM_RTL;
-            break;
-        case ELEM_RTL:
-            newWhich = ELEM_TCY;
-            break;
-        case ELEM_TCY:
-            newWhich = ELEM_THI;
-            break;
-        case ELEM_THI:
-            newWhich = ELEM_TLO;
-            break;
-        case ELEM_TLO:
-            newWhich = ELEM_TON;
-            break;
+        case ELEM_TON: newWhich = ELEM_TOF; break;
+        case ELEM_TOF: newWhich = ELEM_RTO; break;
+        case ELEM_RTO: newWhich = ELEM_RTL; break;
+        case ELEM_RTL: newWhich = ELEM_TCY; break;
+        case ELEM_TCY: newWhich = ELEM_THI; break;
+        case ELEM_THI: newWhich = ELEM_TLO; break;
+        case ELEM_TLO: newWhich = ELEM_TON; break;
         //
-        case ELEM_EQU:
-            newWhich = ELEM_NEQ;
-            break;
-        case ELEM_NEQ:
-            newWhich = ELEM_GEQ;
-            break;
-        case ELEM_GEQ:
-            newWhich = ELEM_GRT;
-            break;
-        case ELEM_GRT:
-            newWhich = ELEM_LES;
-            break;
-        case ELEM_LES:
-            newWhich = ELEM_LEQ;
-            break;
-        case ELEM_LEQ:
-            newWhich = ELEM_EQU;
-            break;
+        case ELEM_EQU: newWhich = ELEM_NEQ; break;
+        case ELEM_NEQ: newWhich = ELEM_GEQ; break;
+        case ELEM_GEQ: newWhich = ELEM_GRT; break;
+        case ELEM_GRT: newWhich = ELEM_LES; break;
+        case ELEM_LES: newWhich = ELEM_LEQ; break;
+        case ELEM_LEQ: newWhich = ELEM_EQU; break;
         //
-        case ELEM_BIN2BCD:
-            newWhich = ELEM_BCD2BIN;
-            break;
-        case ELEM_BCD2BIN:
-            newWhich = ELEM_BIN2BCD;
-            break;
+        case ELEM_BIN2BCD: newWhich = ELEM_BCD2BIN; break;
+        case ELEM_BCD2BIN: newWhich = ELEM_BIN2BCD; break;
         //
-        case ELEM_CTU:
-            newWhich = ELEM_CTD;
-            break;
-        case ELEM_CTD:
-            newWhich = ELEM_CTC;
-            break;
-        case ELEM_CTC:
-            newWhich = ELEM_CTR;
-            break;
-        case ELEM_CTR:
-            newWhich = ELEM_CTU;
-            break;
+        case ELEM_CTU: newWhich = ELEM_CTD; break;
+        case ELEM_CTD: newWhich = ELEM_CTC; break;
+        case ELEM_CTC: newWhich = ELEM_CTR; break;
+        case ELEM_CTR: newWhich = ELEM_CTU; break;
         //
-        case ELEM_UART_RECV:
-            newWhich = ELEM_UART_RECVn;
-            break;
-        case ELEM_UART_RECVn:
-            newWhich = ELEM_UART_RECV;
-            break;
+        case ELEM_UART_RECV:  newWhich = ELEM_UART_RECVn; break;
+        case ELEM_UART_RECVn: newWhich = ELEM_UART_RECV;  break;
         //
-        case ELEM_UART_SEND:
-            newWhich = ELEM_UART_SENDn;
-            break;
-        case ELEM_UART_SENDn:
-            newWhich = ELEM_UART_SEND;
-            break;
-//
-#ifdef USE_SFR
-        case ELEM_RSFR:
-            newWhich = ELEM_WSFR;
-            break;
-        case ELEM_WSFR:
-            newWhich = ELEM_RSFR;
-            break;
-        case ELEM_SSFR:
-            newWhich = ELEM_CSFR;
-            break;
-        case ELEM_CSFR:
-            newWhich = ELEM_SSFR;
-            break;
-        case ELEM_TSFR:
-            newWhich = ELEM_T_C_SFR;
-            break;
-        case ELEM_T_C_SFR:
-            newWhich = ELEM_TSFR;
-            break;
-#endif
+        case ELEM_UART_SEND:  newWhich = ELEM_UART_SENDn; break;
+        case ELEM_UART_SENDn: newWhich = ELEM_UART_SEND;  break;
         //
-        case ELEM_AND:
-            newWhich = ELEM_OR;
-            break;
-        case ELEM_OR:
-            newWhich = ELEM_XOR;
-            break;
-        case ELEM_XOR:
-            newWhich = ELEM_AND;
-            break;
+        #ifdef USE_SFR
+        case ELEM_RSFR: newWhich = ELEM_WSFR; break;
+        case ELEM_WSFR: newWhich = ELEM_RSFR; break;
+        case ELEM_SSFR: newWhich = ELEM_CSFR; break;
+        case ELEM_CSFR: newWhich = ELEM_SSFR; break;
+        case ELEM_TSFR: newWhich = ELEM_T_C_SFR; break;
+        case ELEM_T_C_SFR: newWhich = ELEM_TSFR; break;
+        #endif
         //
-        case ELEM_NOT:
-            newWhich = ELEM_NEG;
-            break;
-        case ELEM_NEG:
-            newWhich = ELEM_NOT;
-            break;
+        case ELEM_AND: newWhich = ELEM_OR ; break;
+        case ELEM_OR : newWhich = ELEM_XOR; break;
+        case ELEM_XOR: newWhich = ELEM_AND; break;
         //
-        case ELEM_IF_BIT_SET:
-            newWhich = ELEM_IF_BIT_CLEAR;
-            break;
-        case ELEM_IF_BIT_CLEAR:
-            newWhich = ELEM_IF_BIT_SET;
-            break;
+        case ELEM_NOT: newWhich = ELEM_NEG; break;
+        case ELEM_NEG: newWhich = ELEM_NOT; break;
         //
-        case ELEM_SET_BIT:
-            newWhich = ELEM_CLEAR_BIT;
-            break;
-        case ELEM_CLEAR_BIT:
-            newWhich = ELEM_SET_BIT;
-            break;
+        case ELEM_IF_BIT_SET: newWhich = ELEM_IF_BIT_CLEAR; break;
+        case ELEM_IF_BIT_CLEAR: newWhich = ELEM_IF_BIT_SET; break;
         //
-        case ELEM_SHL:
-            newWhich = ELEM_SHR;
-            break;
-        case ELEM_SHR:
-            newWhich = ELEM_SR0;
-            break;
-        case ELEM_SR0:
-            newWhich = ELEM_ROL;
-            break;
-        case ELEM_ROL:
-            newWhich = ELEM_ROR;
-            break;
-        case ELEM_ROR:
-            newWhich = ELEM_SHL;
-            break;
+        case ELEM_SET_BIT: newWhich = ELEM_CLEAR_BIT; break;
+        case ELEM_CLEAR_BIT: newWhich = ELEM_SET_BIT; break;
         //
-        case ELEM_SWAP:
-            newWhich = ELEM_OPPOSITE;
-            break;
-        case ELEM_OPPOSITE:
-            newWhich = ELEM_SWAP;
-            break;
+        case ELEM_SHL: newWhich = ELEM_SHR; break;
+        case ELEM_SHR: newWhich = ELEM_SR0; break;
+        case ELEM_SR0: newWhich = ELEM_ROL; break;
+        case ELEM_ROL: newWhich = ELEM_ROR; break;
+        case ELEM_ROR: newWhich = ELEM_SHL; break;
         //
-        case ELEM_ADD:
-            newWhich = ELEM_SUB;
-            break;
-        case ELEM_SUB:
-            newWhich = ELEM_MUL;
-            break;
-        case ELEM_MUL:
-            newWhich = ELEM_DIV;
-            break;
-        case ELEM_DIV:
-            newWhich = ELEM_MOD;
-            break;
-        case ELEM_MOD:
-            newWhich = ELEM_ADD;
-            break;
+        case ELEM_SWAP: newWhich = ELEM_OPPOSITE; break;
+        case ELEM_OPPOSITE: newWhich = ELEM_SWAP; break;
         //
-        case ELEM_7SEG:
-            newWhich = ELEM_9SEG;
-            break;
-        case ELEM_9SEG:
-            newWhich = ELEM_14SEG;
-            break;
-        case ELEM_14SEG:
-            newWhich = ELEM_16SEG;
-            break;
-        case ELEM_16SEG:
-            newWhich = ELEM_7SEG;
-            break;
+        case ELEM_ADD: newWhich = ELEM_SUB; break;
+        case ELEM_SUB: newWhich = ELEM_MUL; break;
+        case ELEM_MUL: newWhich = ELEM_DIV; break;
+        case ELEM_DIV: newWhich = ELEM_MOD; break;
+        case ELEM_MOD: newWhich = ELEM_ADD; break;
         //
-        case ELEM_GOTO:
-            newWhich = ELEM_GOSUB;
-            break;
-        case ELEM_GOSUB:
-            newWhich = ELEM_GOTO;
-            break;
+        case ELEM_7SEG : newWhich = ELEM_9SEG ; break;
+        case ELEM_9SEG : newWhich = ELEM_14SEG; break;
+        case ELEM_14SEG: newWhich = ELEM_16SEG; break;
+        case ELEM_16SEG: newWhich = ELEM_7SEG ; break;
         //
-        case ELEM_SUBPROG:
-            newWhich = ELEM_LABEL;
-            break;
-        case ELEM_LABEL:
-            newWhich = ELEM_SUBPROG;
-            break;
+        case ELEM_GOTO: newWhich = ELEM_GOSUB; break;
+        case ELEM_GOSUB: newWhich = ELEM_GOTO; break;
         //
-        case ELEM_ENDSUB:
-            newWhich = ELEM_GOTO;
-            break;
-            //      case ELEM_GOTO: newWhich = ELEM_ENDSUB; break;
-            //
-            //      case : newWhich = ; break;
-        default:
-            newWhich = 0;
+        case ELEM_SUBPROG: newWhich = ELEM_LABEL; break;
+        case ELEM_LABEL: newWhich = ELEM_SUBPROG; break;
+        //
+        case ELEM_ENDSUB: newWhich = ELEM_GOTO; break;
+//      case ELEM_GOTO: newWhich = ELEM_ENDSUB; break;
+        //
+//      case : newWhich = ; break;
+        default: newWhich = 0;
     }
+    // clang-format on
     if(newWhich) {
         if(whichWhere == ELEM_SERIES_SUBCKT) {
             ElemSubcktSeries *s = (ElemSubcktSeries *)where;

@@ -24,21 +24,22 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 
+// clang-format off
 #define ASM_LABEL 1
-//   0 - no labels
-// * 1 - only if GOTO or CALL operations need a label
-//   2 - always, all line is labeled
+//                0 - no labels
+//              * 1 - only if GOTO or CALL operations need a label
+//                2 - always, all line is labeled
 
 #define AUTO_BANKING //++
 #ifdef AUTO_BANKING
-//#define ASM_COMMENT_BANK //-
+    //#define ASM_COMMENT_BANK //-
 #endif
 
 //http://www.piclist.com/techref/microchip/pages.htm
 #define AUTO_PAGING //++
 #ifdef AUTO_PAGING
-//#define ASM_COMMENT_PAGE //-
-#define MOVE_TO_PAGE_0 //++
+    //#define ASM_COMMENT_PAGE //-
+    #define MOVE_TO_PAGE_0 //++
 #endif
 
 //#define ASM_BANKSEL //--
@@ -46,10 +47,11 @@
 
 #define USE_TIMER0_AS_LADDER_CYCLE // Timer1 as PLC Cycle sourse is obsolete
 #ifdef USE_TIMER0_AS_LADDER_CYCLE
-#ifndef AUTO_BANKING
-#error AUTO_BANKING need!
+    #ifndef AUTO_BANKING
+        #error AUTO_BANKING need!
+    #endif
 #endif
-#endif
+// clang-format on
 
 //-----------------------------------------------------------------------------
 #include "ldmicro.h"
@@ -163,164 +165,165 @@ static BOOL  Bin32BcdNeeded;
 // For yet unresolved references in jumps
 static DWORD FwdAddrCount;
 
+// clang-format off
+
 // As I start to support the paging; it is sometimes necessary to pick
 // out the high vs. low portions of the address, so that the high portion
 // goes in PCLATH, and the low portion is just used for the jump.
-#define FWD(x) ((x) | 0x80000000)
-#define FWD_HI(x) ((x) | 0x40000000)
-#define FWD_LO(x) ((x) | 0x20000000)
-#define IS_FWD(x) ((x) & (FWD(0) | FWD_HI(0) | FWD_LO(0)))
+#define FWD(x)       ((x) | 0x80000000)
+#define FWD_HI(x)    ((x) | 0x40000000)
+#define FWD_LO(x)    ((x) | 0x20000000)
+#define IS_FWD(x)    ((x) & (FWD(0) | FWD_HI(0) | FWD_LO(0)))
 
-#define NOTDEF(x) ((x) | 0x80000000)
-#define MULTYDEF(x) ((x) | 0x40000000)
-#define IS_NOTDEF(x) ((x)&NOTDEF(0))
-#define IS_MULTYDEF(x) ((x)&MULTYDEF(0))
-#define IS_UNDEF(x) ((x) & (NOTDEF(0) | MULTYDEF(0)))
+#define NOTDEF(x)       ((x) | 0x80000000)
+#define MULTYDEF(x)     ((x) | 0x40000000)
+#define IS_NOTDEF(x)    ((x) & NOTDEF(0))
+#define IS_MULTYDEF(x)  ((x) & MULTYDEF(0))
+#define IS_UNDEF(x)     ((x) & (NOTDEF(0) | MULTYDEF(0)))
 
 //-----------------------------------------------------------------------------
 // Some useful registers, which I think are mostly in the same place on
 // all the PIC16... devices.
 
 // Core Registers
-#define REG_INDF 0x00
-#define REG_PCL 0x02
+#define REG_INDF      0x00
+#define REG_PCL       0x02
 
-#define REG_STATUS 0x03
+#define REG_STATUS    0x03
 // PIC10F2xx
-#define STATUS_GPWUF BIT7 // GPIO Reset bit
-#define STATUS_CWUF BIT6  // Comparator Wake-up on Change Flag bit(
+#define  STATUS_GPWUF BIT7 // GPIO Reset bit
+#define  STATUS_CWUF  BIT6 // Comparator Wake-up on Change Flag bit(
 // others PICS
-#define STATUS_IRP BIT7 // Register Bank Select bit (used for indirect addressing)
-#define STATUS_RP1 BIT6 // Register Bank Select bits
-#define STATUS_RP0 BIT5 //  (used for direct addressing)
+#define  STATUS_IRP   BIT7 // Register Bank Select bit (used for indirect addressing)
+#define  STATUS_RP1   BIT6 // Register Bank Select bits
+#define  STATUS_RP0   BIT5 //  (used for direct addressing)
 // common bits
-#define STATUS_TO BIT4
-#define STATUS_PD BIT3
-#define STATUS_Z BIT2
-#define STATUS_DC BIT1
-#define STATUS_C BIT0
+#define  STATUS_TO    BIT4
+#define  STATUS_PD    BIT3
+#define  STATUS_Z     BIT2
+#define  STATUS_DC    BIT1
+#define  STATUS_C     BIT0
 
-#define REG_FSR 0x04
+#define REG_FSR       0x04
 // Bank Select Register instead REG_STATUS(STATUS_RP1,STATUS_RP0)
-#define REG_BSR 0x08
-#define BSR4 BIT4
-#define BSR3 BIT3
-#define BSR2 BIT2
-#define BSR1 BIT1
-#define BSR0 BIT0
+#define REG_BSR       0x08
+#define     BSR4      BIT4
+#define     BSR3      BIT3
+#define     BSR2      BIT2
+#define     BSR1      BIT1
+#define     BSR0      BIT0
 
-#define REG_PCLATH 0x0a
-#define REG_INTCON 0x0b
-#define GIE BIT7  // Global Interrupt Enable bit
-#define PEIE BIT6 // Peripheral Interrupt Enable bit
-#define T0IE BIT5 // TMR0 Overflow Interrupt Enable bit
-#define INTE \
-    BIT4 // RB0/INT External Interrupt Enable bit // 1 = The RB0/INT external interrupt occurred (must be cleared in software)
-#define RBIE BIT3 // RB Port Change Interrupt Enable bit
-#define T0IF BIT2 // TMR0 Overflow Interrupt Flag bit // 1 = TMR0 register has overflowed (must be cleared in software)
-#define INTF BIT1 // RB0/INT External Interrupt Flag bit
-#define RBIF \
-    BIT0 // RB Port Change Interrupt Flag bit // 1 = When at least one of the RB<7:4> pins changes state (must be cleared in software)
+#define REG_PCLATH    0x0a
+#define REG_INTCON    0x0b
+#define     GIE       BIT7 // Global Interrupt Enable bit
+#define     PEIE      BIT6 // Peripheral Interrupt Enable bit
+#define     T0IE      BIT5 // TMR0 Overflow Interrupt Enable bit
+#define     INTE      BIT4 // RB0/INT External Interrupt Enable bit // 1 = The RB0/INT external interrupt occurred (must be cleared in software)
+#define     RBIE      BIT3 // RB Port Change Interrupt Enable bit
+#define     T0IF      BIT2 // TMR0 Overflow Interrupt Flag bit // 1 = TMR0 register has overflowed (must be cleared in software)
+#define     INTF      BIT1 // RB0/INT External Interrupt Flag bit
+#define     RBIF      BIT0 // RB Port Change Interrupt Flag bit // 1 = When at least one of the RB<7:4> pins changes state (must be cleared in software)
 
 //static DWORD REG_IOCA    = -1; // PIC12 INTERRUPT-ON-CHANGE port register
 
 // These move around from device to device.
 // 0 means not defined(error!) or not exist in MCU.
 // EEPROM Registers
-static DWORD REG_EECON1 = -1;
-#define EEPGD BIT7
-#define WREN BIT2
-#define WR BIT1
-#define RD BIT0
-static DWORD REG_EECON2 = -1;
-static DWORD REG_EEDATA = -1;
-static DWORD REG_EEADR = -1;
-static DWORD REG_EEADRH = -1;
-static DWORD REG_EEDATL = -1;
-static DWORD REG_EEDATH = -1;
+static DWORD REG_EECON1  = -1;
+#define          EEPGD     BIT7
+#define          WREN      BIT2
+#define          WR        BIT1
+#define          RD        BIT0
+static DWORD REG_EECON2  = -1;
+static DWORD REG_EEDATA  = -1;
+static DWORD REG_EEADR   = -1;
+static DWORD REG_EEADRH  = -1;
+static DWORD REG_EEDATL  = -1;
+static DWORD REG_EEDATH  = -1;
 
 //Analog Select Register
-static DWORD REG_ANSEL = -1;
-static DWORD REG_ANSELH = -1;
+static DWORD REG_ANSEL   = -1;
+static DWORD REG_ANSELH  = -1;
 
-static DWORD REG_ANSELA = -1;
-static DWORD REG_ANSELB = -1;
-static DWORD REG_ANSELC = -1;
-static DWORD REG_ANSELD = -1;
-static DWORD REG_ANSELE = -1;
-static DWORD REG_ANSELF = -1;
-static DWORD REG_ANSELG = -1;
-
-//
-static DWORD REG_PIR1 = -1; // PERIPHERAL INTERRUPT REQUEST REGISTER 1
-#define RCIF BIT5
-#define TXIF BIT4
-#define CCP1IF BIT2
-static DWORD REG_PIE1 = -1; // 0x8c
+static DWORD REG_ANSELA  = -1;
+static DWORD REG_ANSELB  = -1;
+static DWORD REG_ANSELC  = -1;
+static DWORD REG_ANSELD  = -1;
+static DWORD REG_ANSELE  = -1;
+static DWORD REG_ANSELF  = -1;
+static DWORD REG_ANSELG  = -1;
 
 //
-static DWORD REG_TMR1L = -1; // 0x0e
-static DWORD REG_TMR1H = -1; // 0x0f
-static DWORD REG_T1CON = -1; // 0x10
-#define TMR1ON BIT0
-#define T1CKPS0 BIT4
+static DWORD REG_PIR1    = -1; // PERIPHERAL INTERRUPT REQUEST REGISTER 1
+#define          RCIF      BIT5
+#define          TXIF      BIT4
+#define          CCP1IF    BIT2
+static DWORD REG_PIE1    = -1; // 0x8c
 
-static DWORD REG_T1GCON = -1; //
-#define TMR1GE BIT7
-static DWORD REG_CCPR1L = -1;  // 0x15
-static DWORD REG_CCPR1H = -1;  // 0x16
+//
+static DWORD REG_TMR1L   = -1; // 0x0e
+static DWORD REG_TMR1H   = -1; // 0x0f
+static DWORD REG_T1CON   = -1; // 0x10
+#define          TMR1ON    BIT0
+#define          T1CKPS0   BIT4
+
+static DWORD REG_T1GCON  = -1; //
+#define          TMR1GE    BIT7
+static DWORD REG_CCPR1L  = -1; // 0x15
+static DWORD REG_CCPR1H  = -1; // 0x16
 static DWORD REG_CCP1CON = -1; // 0x17
-static DWORD REG_CMCON = -1;   // 0x1f
-static DWORD REG_VRCON = -1;   // 0x9f
+static DWORD REG_CMCON   = -1; // 0x1f
+static DWORD REG_VRCON   = -1; // 0x9f
 
 //USART
-static DWORD REG_TXSTA = -1; // 0x98
-#define TXEN BIT5
-#define TRMT BIT1            // 1 is TSR empty, ready; 0 is TSR full, busy
-static DWORD REG_RCSTA = -1; // 0x18
-#define SPEN BIT7
-#define CREN BIT4
-#define FERR BIT2
-#define OERR BIT1
-static DWORD REG_SPBRGH = -1; // 0x99
-static DWORD REG_SPBRG = -1;  // 0x99
-static DWORD REG_TXREG = -1;  // 0x19
-static DWORD REG_RCREG = -1;  // 0x1a
+static DWORD REG_TXSTA   = -1; // 0x98
+#define          TXEN      BIT5
+#define          TRMT      BIT1// 1 is TSR empty, ready; 0 is TSR full, busy
+static DWORD REG_RCSTA   = -1; // 0x18
+#define          SPEN      BIT7
+#define          CREN      BIT4
+#define          FERR      BIT2
+#define          OERR      BIT1
+static DWORD REG_SPBRGH  = -1; // 0x99
+static DWORD REG_SPBRG   = -1; // 0x99
+static DWORD REG_TXREG   = -1; // 0x19
+static DWORD REG_RCREG   = -1; // 0x1a
 //static DWORD REG_BAUDCON = -1; // BAUD RATE CONTROL REGISTER
 
 //ADC
-static DWORD REG_ADRESH = -1; // 0x1e
-static DWORD REG_ADRESL = -1; // 0x9e
-static DWORD REG_ADCON0 = -1; // 0x1f
-static DWORD REG_ADCON1 = -1; // 0x9f
+static DWORD REG_ADRESH  = -1; // 0x1e
+static DWORD REG_ADRESL  = -1; // 0x9e
+static DWORD REG_ADCON0  = -1; // 0x1f
+static DWORD REG_ADCON1  = -1; // 0x9f
 
 //PWM Timer2
-static DWORD REG_T2CON = -1;   // 0x12
-static DWORD REG_CCPR2L = -1;  // 0x1b // Pulse Width
+static DWORD REG_T2CON   = -1; // 0x12
+static DWORD REG_CCPR2L  = -1; // 0x1b // Pulse Width
 static DWORD REG_CCP2CON = -1; // 0x1d
-#define DC2B0 BIT4
-#define DC2B1 BIT5
-static DWORD REG_PR2 = -1; // 0x92 // Period
+#define          DC2B0     BIT4
+#define          DC2B1     BIT5
+static DWORD REG_PR2     = -1; // 0x92 // Period
 
 //
-static DWORD REG_TMR0 = -1;   // 0x01
-static DWORD REG_OPTION = -1; // 0x81 or 0x181 //0x95
+static DWORD REG_TMR0    = -1; // 0x01
+static DWORD REG_OPTION  = -1; // 0x81 or 0x181 //0x95
 // PIC10F2xx
-#define _GPWU BIT7 // Enable Wake-up on Pin Change bit (GP0, GP1, GP3)
-#define _GPPU BIT6 // Enable Weak Pull-ups bit (GP0, GP1, GP3)
+#define          _GPWU        BIT7 // Enable Wake-up on Pin Change bit (GP0, GP1, GP3)
+#define          _GPPU        BIT6 // Enable Weak Pull-ups bit (GP0, GP1, GP3)
 // others PICS
-#define _RBPU BIT7 // PORTB Pull-up Enable bit
+#define          _RBPU        BIT7 // PORTB Pull-up Enable bit
 // common bits
-#define T0CS BIT5
-#define PSA BIT3
+#define          T0CS         BIT5
+#define          PSA          BIT3
 
-static int WDTE = -1; //
+static int       WDTE    = -1; //
 
 // OSCILLATOR CONTROL REGISTER
-static DWORD REG_OSCON = -1;
-#define SCS0 BIT0  //..BIT1
-#define IRCF0 BIT3 //..BIt6
-#define SPLLEN BIT7
+static DWORD REG_OSCON   = -1;
+#define          SCS0         BIT0 //..BIT1
+#define          IRCF0        BIT3 //..BIt6
+#define          SPLLEN       BIT7
+// clang-format on
 
 static DWORD CONFIG_ADDR1 = -1;
 static DWORD CONFIG_ADDR2 = -1;
@@ -489,13 +492,15 @@ static int IsCoreRegister(DWORD reg)
 }
 
 //-----------------------------------------------------------------------------
-#define IS_SKIP 2
-#define IS_BANK 1
-#define IS_ANY_BANK 0
-#define IS_RETS -1
-#define IS_PAGE -2
-#define IS_GOTO -2
-#define IS_CALL -3
+// clang-format off
+#define IS_SKIP        2
+#define IS_BANK        1
+#define IS_ANY_BANK    0
+#define IS_RETS       -1
+#define IS_PAGE       -2
+#define IS_GOTO       -2
+#define IS_CALL       -3
+// clang-format on
 
 static int IsOperation(PicOp op)
 {
@@ -561,20 +566,20 @@ static int IsOperation(PicOp op)
 #define IfBitClear(reg, b)  Instruction(OP_BTFSS, reg, b)
 #define IfBitSet(reg, b)    Instruction(OP_BTFSC, reg, b)
 /**/
-#define SetBit(...) Instruction(OP_BSF, __VA_ARGS__)
-#define ClearBit(...) Instruction(OP_BCF, __VA_ARGS__)
-#define IfBitSet(...) Instruction(OP_BTFSC, __VA_ARGS__)
-#define IfBitClear(...) Instruction(OP_BTFSS, __VA_ARGS__)
-#define SkpIfBitSet(...) Instruction(OP_BTFSS, __VA_ARGS__)
-#define SkpIfBitClear(...) Instruction(OP_BTFSC, __VA_ARGS__)
-/**/
+// clang-format off
+#define SetBit(...)         Instruction(OP_BSF, __VA_ARGS__)
+#define ClearBit(...)       Instruction(OP_BCF, __VA_ARGS__)
+#define IfBitSet(...)       Instruction(OP_BTFSC, __VA_ARGS__)
+#define IfBitClear(...)     Instruction(OP_BTFSS, __VA_ARGS__)
+#define SkpIfBitSet(...)    Instruction(OP_BTFSS, __VA_ARGS__)
+#define SkpIfBitClear(...)  Instruction(OP_BTFSC, __VA_ARGS__)
+
 // http://picprojects.org.uk/projects/pseudoins.htm
-#define skpnc Instruction(OP_BTFSC, REG_STATUS, STATUS_C); // Skip on No Carry
-#define skpc Instruction(OP_BTFSS, REG_STATUS, STATUS_C);  // Skip on Carry
-#define skpnz \
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z); // Skip on Non Zero // equal to IfBitSet(REG_STATUS, STATUS_Z);
-#define skpz \
-    Instruction(OP_BTFSS, REG_STATUS, STATUS_Z); // Skip on Zero     // equal to IfBitClear(REG_STATUS, STATUS_Z);
+#define skpnc               Instruction(OP_BTFSC, REG_STATUS, STATUS_C); // Skip on No Carry
+#define skpc                Instruction(OP_BTFSS, REG_STATUS, STATUS_C); // Skip on Carry
+#define skpnz               Instruction(OP_BTFSC, REG_STATUS, STATUS_Z); // Skip on Non Zero // equal to IfBitSet(REG_STATUS, STATUS_Z);
+#define skpz                Instruction(OP_BTFSS, REG_STATUS, STATUS_Z); // Skip on Zero     // equal to IfBitClear(REG_STATUS, STATUS_Z);
+// clang-format on
 
 //-----------------------------------------------------------------------------
 // Store an instruction at the next spot in program memory.  Error condition
@@ -1084,13 +1089,15 @@ static void BankCorrection()
 #endif
 
 //---------------------------------------------------------------------------
-#define L_LABEL 0x01
-#define I_LABEL 0x02
-#define DIR_SET 0x08
+// clang-format off
+#define L_LABEL         0x01
+#define I_LABEL         0x02
+#define DIR_SET         0x08
 
-#define ENDS_RET 0x40
-#define ENDS_GOTO 0x80
-#define ENDS_ ((ENDS_RET) | (ENDS_GOTO))
+#define ENDS_RET        0x40
+#define ENDS_GOTO       0x80
+#define ENDS_           ((ENDS_RET) | (ENDS_GOTO))
+// clang-format on
 static void PagePreSet()
 {
     DWORD i;
@@ -5127,15 +5134,17 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 char seedName[MAX_NAME_LEN];
                 sprintf(seedName, "$seed_%s", a->name1);
-                //https://en.m.wikipedia.org/wiki/Linear_congruential_generator
-                // X[n+1] = (a * X[n] + c) mod m
-                //VMS's MTH$RANDOM, old versions of glibc
-                // a = 69069 ( 0x10DCD ) (1 00001101 11001101b)
-                //     bits              16        8 7      0
-                // (Multipliers: 3 * 7 * 11 * 13 * 23) (Dividers: 1, 3, 7, 11, 13, 21, 23, 33, 39, 69, 77, 91, 143, 161, 231, 253, 273, 299, 429, 483, 759, 897, 1001, 1771, 2093, 3003, 3289, 5313, 6279, 9867, 23023, 69069)
-                // c = 1
-                // m = 2^32
-                // X = (X * 0x10DCD + 1) % 0x100000000
+/*
+//https://en.m.wikipedia.org/wiki/Linear_congruential_generator
+// X[n+1] = (a * X[n] + c) mod m
+//VMS's MTH$RANDOM, old versions of glibc
+// a = 69069 ( 0x10DCD ) (1 00001101 11001101b)
+//     bits              16        8 7      0
+// (Multipliers: 3 * 7 * 11 * 13 * 23) (Dividers: 1, 3, 7, 11, 13, 21, 23, 33, 39, 69, 77, 91, 143, 161, 231, 253, 273, 299, 429, 483, 759, 897, 1001, 1771, 2093, 3003, 3289, 5313, 6279, 9867, 23023, 69069)
+// c = 1
+// m = 2^32
+// X = (X * 0x10DCD + 1) % 0x100000000
+*/
                 SetSizeOfVar(seedName, 4);
                 MemForVariable(seedName, &addr2);
                 CopyRegToReg(Scratch1, 4, addr2, 4, "", "", FALSE);
@@ -5179,15 +5188,36 @@ static void CompileFromIntermediate(BOOL topLevel)
                 MemForVariable(a->name1, &addr1);
                 //
                 int goPos, chsPos;
-                if(McuAs("Microchip PIC16F887 ") || McuAs("Microchip PIC16F886 ") || McuAs(" PIC16F882 ")
-                   || McuAs(" PIC16F883 ") || McuAs(" PIC16F884 ") || McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ")
-                   || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ") || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ")
-                   || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ") || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ")
-                   || McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+                if(McuAs("Microchip PIC16F887 ")    //
+                   || McuAs("Microchip PIC16F886 ") //
+                   || McuAs(" PIC16F882 ")          //
+                   || McuAs(" PIC16F883 ")          //
+                   || McuAs(" PIC16F884 ")          //
+                   || McuAs(" PIC16F1512 ")         //
+                   || McuAs(" PIC16F1513 ")         //
+                   || McuAs(" PIC16F1516 ")         //
+                   || McuAs(" PIC16F1517 ")         //
+                   || McuAs(" PIC16F1518 ")         //
+                   || McuAs(" PIC16F1519 ")         //
+                   || McuAs(" PIC16F1526 ")         //
+                   || McuAs(" PIC16F1527 ")         //
+                   || McuAs(" PIC16F1933 ")         //
+                   || McuAs(" PIC16F1947 ")         //
+                   || McuAs(" PIC12F675 ")          //
+                   || McuAs(" PIC12F683 ")          //
+                   || McuAs(" PIC16F1824 ")         //
+                   || McuAs(" PIC16F1827 ")         //
+                ) {
                     goPos = 1;
                     chsPos = 2;
-                } else if(McuAs(" PIC16F819 ") || McuAs(" PIC16F873 ") || McuAs(" PIC16F874 ") || McuAs(" PIC16F876 ")
-                          || McuAs(" PIC16F877 ") || McuAs(" PIC16F88 ") || McuAs(" PIC16F72 ")) {
+                } else if(McuAs(" PIC16F819 ")    //
+                          || McuAs(" PIC16F873 ") //
+                          || McuAs(" PIC16F874 ") //
+                          || McuAs(" PIC16F876 ") //
+                          || McuAs(" PIC16F877 ") //
+                          || McuAs(" PIC16F88 ")  //
+                          || McuAs(" PIC16F72 ")  //
+                ) {
                     goPos = 2;
                     chsPos = 3;
                 } else
@@ -5202,10 +5232,19 @@ static void CompileFromIntermediate(BOOL topLevel)
                 }
                 //
                 int adcsPos;
-                if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-                   || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-                   || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ")
-                   || McuAs(" PIC16F1827 ")) {
+                if(McuAs(" PIC16F1512 ")    //
+                   || McuAs(" PIC16F1513 ") //
+                   || McuAs(" PIC16F1516 ") //
+                   || McuAs(" PIC16F1517 ") //
+                   || McuAs(" PIC16F1518 ") //
+                   || McuAs(" PIC16F1519 ") //
+                   || McuAs(" PIC16F1526 ") //
+                   || McuAs(" PIC16F1527 ") //
+                   || McuAs(" PIC16F1933 ") //
+                   || McuAs(" PIC16F1947 ") //
+                   || McuAs(" PIC16F1824 ") //
+                   || McuAs(" PIC16F1827 ") //
+                ) {
                     adcsPos = 4; // in REG_ADCON1
                     WriteRegister(REG_ADCON0,
                                   (MuxForAdcVariable(a->name1) << chsPos) | (0 << goPos) | // don't start yet
@@ -5214,26 +5253,38 @@ static void CompileFromIntermediate(BOOL topLevel)
                     );
 
                     WriteRegister(REG_ADCON1,
-                                  (1 << 7) |                       // right-justified
-                                      (adcs << adcsPos) | (0 << 0) // 00 = VREF is connected to VDD
+                                  (1 << 7) |              // right-justified
+                                      (adcs << adcsPos) | //
+                                      (0 << 0)            // 00 = VREF is connected to VDD
                     );
-                } else if(McuAs(" PIC16F819 ") || McuAs(" PIC16F873 ") || McuAs(" PIC16F874 ") || McuAs(" PIC16F876 ")
-                          || McuAs(" PIC16F877 ") || McuAs(" PIC16F88 ") || McuAs(" PIC16F72 ") || McuAs(" PIC16F882 ")
-                          || McuAs(" PIC16F883 ") || McuAs(" PIC16F884 ") || McuAs(" PIC16F886 ")
-                          || McuAs(" PIC16F887 ")) {
+                } else if(McuAs(" PIC16F819 ")    //
+                          || McuAs(" PIC16F873 ") //
+                          || McuAs(" PIC16F874 ") //
+                          || McuAs(" PIC16F876 ") //
+                          || McuAs(" PIC16F877 ") //
+                          || McuAs(" PIC16F88 ")  //
+                          || McuAs(" PIC16F72 ")  //
+                          || McuAs(" PIC16F882 ") //
+                          || McuAs(" PIC16F883 ") //
+                          || McuAs(" PIC16F884 ") //
+                          || McuAs(" PIC16F886 ") //
+                          || McuAs(" PIC16F887 ") //
+                ) {
                     adcsPos = 6; // in REG_ADCON0
                     WriteRegister(REG_ADCON0,
-                                  (adcs << adcsPos) | (MuxForAdcVariable(a->name1) << chsPos) | (0 << goPos)
-                                      |        // don't start yet
-                                               // bit 1 unimplemented
-                                      (1 << 0) // A/D peripheral on
+                                  (adcs << adcsPos) | //
+                                      (0 << goPos) |  // don't start yet
+                                                      // bit 1 unimplemented
+                                      (1 << 0)        // A/D peripheral on
                     );
 
                     WriteRegister(REG_ADCON1,
                                   (1 << 7) |   // right-justified
                                       (0 << 0) // for now, all analog inputs
                     );
-                } else if(McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
+                } else if(McuAs(" PIC12F675 ")    //
+                          || McuAs(" PIC12F683 ") //
+                ) {
                     adcsPos = 4; // in REG_ANSEL
                     WriteRegister(REG_ANSEL, (adcs << adcsPos) | (1 << MuxForAdcVariable(a->name1)));
 
@@ -5250,7 +5301,8 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 if(McuAs("Microchip PIC16F88 ")) {
                     WriteRegister(REG_ANSEL, 0x7f);
-                } else if(McuAs("Microchip PIC16F887 ") || McuAs("Microchip PIC16F886 ")) {
+                } else if(McuAs("Microchip PIC16F887 ") || //
+                          McuAs("Microchip PIC16F886 ")) {
                     WriteRegister(REG_ANSEL, 0xff);
                     WriteRegister(REG_ANSELH, 0x3f);
                 }
@@ -5303,7 +5355,9 @@ static void CompileFromIntermediate(BOOL topLevel)
 #else
                     WriteRegister(REG_ANSEL, 0x00);
 #endif
-                } else if(McuAs("Microchip PIC16F887 ") || McuAs("Microchip PIC16F886 ")) {
+                } else if(McuAs("Microchip PIC16F887 ")    //
+                          || McuAs("Microchip PIC16F886 ") //
+                ) {
 #ifdef AUTO_BANKING
                     Instruction(OP_CLRF, REG_ANSEL);
                     Instruction(OP_CLRF, REG_ANSELH);
@@ -5570,9 +5624,17 @@ static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 
     WriteRegister(REG_T1CON, plcTmr.PS);
 
-    if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-       || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-       || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ")) {
+    if(McuAs(" PIC16F1512 ")    //
+       || McuAs(" PIC16F1513 ") //
+       || McuAs(" PIC16F1516 ") //
+       || McuAs(" PIC16F1517 ") //
+       || McuAs(" PIC16F1518 ") //
+       || McuAs(" PIC16F1519 ") //
+       || McuAs(" PIC16F1526 ") //
+       || McuAs(" PIC16F1527 ") //
+       || McuAs(" PIC16F1933 ") //
+       || McuAs(" PIC16F1947 ") //
+    ) {
         Instruction(OP_BCF, REG_T1GCON, TMR1GE);
     }
 
@@ -5607,7 +5669,6 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
     */
     if(Prog.mcu->core == BaselineCore12bit) {
         if(plcTmr.prescaler == 1) {
-            Prog.WDTPSA = 1;
             //CHANGING PRESCALER(TIMER0 -> WDT)
             Instruction(OP_CLRWDT);         // Clear WDT, not a prescaler !
             Instruction(OP_CLRF, REG_TMR0); // Clear TMR0 and prescaler
@@ -6148,9 +6209,15 @@ static void WriteDivideRoutine()
 //-----------------------------------------------------------------------------
 static BOOL _CompilePic16(char *outFile, int ShowMessage)
 {
-    if(McuAs("Microchip PIC16F628 ") || McuAs(" PIC16F72 ") || McuAs("Microchip PIC16F819 ") || McuAs(" PIC16F873 ")
-       || McuAs(" PIC16F874 ") || McuAs("Microchip PIC16F876 ") || McuAs("Microchip PIC16F877 ")
-       || McuAs("Microchip PIC16F88 ")) {
+    if(McuAs("Microchip PIC16F628 ")    //
+       || McuAs(" PIC16F72 ")           //
+       || McuAs("Microchip PIC16F819 ") //
+       || McuAs(" PIC16F873 ")          //
+       || McuAs(" PIC16F874 ")          //
+       || McuAs("Microchip PIC16F876 ") //
+       || McuAs("Microchip PIC16F877 ") //
+       || McuAs("Microchip PIC16F88 ")  //
+    ) {
         REG_PIR1 = 0x0c;
         REG_TMR1L = 0x0e;
         REG_TMR1H = 0x0f;
@@ -6159,13 +6226,20 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         REG_CCPR1H = 0x16;
         REG_CCP1CON = 0x17;
         WDTE = BIT2;
-    } else if(McuAs(" PIC12F629 ") || McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
+    } else if(McuAs(" PIC12F629 ")    //
+              || McuAs(" PIC12F675 ") //
+              || McuAs(" PIC12F683 ") //
+    ) {
         REG_PIR1 = 0x0c;
         REG_TMR1L = 0x0e;
         REG_TMR1H = 0x0f;
         REG_T1CON = 0x10;
-    } else if(McuAs(" PIC16F882 ") || McuAs(" PIC16F883 ") || McuAs(" PIC16F884 ") || McuAs("Microchip PIC16F886 ")
-              || McuAs("Microchip PIC16F887 ")) {
+    } else if(McuAs(" PIC16F882 ")             //
+              || McuAs(" PIC16F883 ")          //
+              || McuAs(" PIC16F884 ")          //
+              || McuAs("Microchip PIC16F886 ") //
+              || McuAs("Microchip PIC16F887 ") //
+    ) {
         REG_PIR1 = 0x0c;
         REG_TMR1L = 0x0e;
         REG_TMR1H = 0x0f;
@@ -6174,9 +6248,19 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         REG_CCPR1H = 0x16;
         REG_CCP1CON = 0x17;
         WDTE = BIT3;
-    } else if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-              || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-              || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    } else if(McuAs(" PIC16F1512 ")    //
+              || McuAs(" PIC16F1513 ") //
+              || McuAs(" PIC16F1516 ") //
+              || McuAs(" PIC16F1517 ") //
+              || McuAs(" PIC16F1518 ") //
+              || McuAs(" PIC16F1519 ") //
+              || McuAs(" PIC16F1526 ") //
+              || McuAs(" PIC16F1527 ") //
+              || McuAs(" PIC16F1933 ") //
+              || McuAs(" PIC16F1947 ") //
+              || McuAs(" PIC16F1824 ") //
+              || McuAs(" PIC16F1827 ") //
+    ) {
         REG_PIR1 = 0x0011;
         REG_TMR1L = 0x0016;
         REG_TMR1H = 0x0017;
@@ -6185,78 +6269,139 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
         REG_CCPR1L = 0x0291;
         REG_CCPR1H = 0x0292;
         REG_CCP1CON = 0x0293;
-        WDTE = BIT4; // WDT enabled while running and disabled in Sleep
-    } else if(McuAs(" PIC10F")) {
+        WDTE = BIT4;           // WDT enabled while running and disabled in Sleep
+    } else if(McuAs(" PIC10F") //
+    ) {
         // has not
         WDTE = BIT2;
     } else
         oops();
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F628 ")) {
+    if(McuAs("Microchip PIC16F628 ") //
+    ) {
         REG_CMCON = 0x1f;
-    } else if(McuAs("Microchip PIC16F88 ")) {
+    } else if(McuAs("Microchip PIC16F88 ") //
+    ) {
         REG_CMCON = 0x009C;
-    } else if(McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
+    } else if(McuAs(" PIC12F675 ")    //
+              || McuAs(" PIC12F683 ") //
+    ) {
         REG_CMCON = 0x19;
         //REG_IOCA    = 0x96;
-    } else if(McuAs("Microchip PIC16F819 ") || McuAs("Microchip PIC16F876 ") || McuAs("Microchip PIC16F877 ")
-              || McuAs("Microchip PIC16F887 ") || McuAs("Microchip PIC16F886 ") || McuAs(" PIC16F72 ")
-              || McuAs(" PIC12F629 ") || McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ")
-              || McuAs(" PIC16F1517 ") || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ")
-              || McuAs(" PIC16F1527 ") || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ")
-              || McuAs(" PIC16F1827 ")) {
+    } else if(McuAs("Microchip PIC16F819 ")    //
+              || McuAs("Microchip PIC16F876 ") //
+              || McuAs("Microchip PIC16F877 ") //
+              || McuAs("Microchip PIC16F887 ") //
+              || McuAs("Microchip PIC16F886 ") //
+              || McuAs(" PIC16F72 ")           //
+              || McuAs(" PIC12F629 ")          //
+              || McuAs(" PIC16F1512 ")         //
+              || McuAs(" PIC16F1513 ")         //
+              || McuAs(" PIC16F1516 ")         //
+              || McuAs(" PIC16F1517 ")         //
+              || McuAs(" PIC16F1518 ")         //
+              || McuAs(" PIC16F1519 ")         //
+              || McuAs(" PIC16F1526 ")         //
+              || McuAs(" PIC16F1527 ")         //
+              || McuAs(" PIC16F1933 ")         //
+              || McuAs(" PIC16F1947 ")         //
+              || McuAs(" PIC16F1824 ")         //
+              || McuAs(" PIC16F1827 ")         //
+    ) {
         // has not
-    } else if(McuAs(" PIC10F")) {
+    } else if(McuAs(" PIC10F") //
+    ) {
         // has not
     } else
         oops();
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F628 ") || McuAs("Microchip PIC16F873 ") || McuAs("Microchip PIC16F874 ")
-       || McuAs("Microchip PIC16F876 ") || McuAs("Microchip PIC16F877 ") || McuAs("Microchip PIC16F88 ")) {
+    if(McuAs("Microchip PIC16F628 ")    //
+       || McuAs("Microchip PIC16F873 ") //
+       || McuAs("Microchip PIC16F874 ") //
+       || McuAs("Microchip PIC16F876 ") //
+       || McuAs("Microchip PIC16F877 ") //
+       || McuAs("Microchip PIC16F88 ")  //
+    ) {
         REG_TXSTA = 0x98;
         REG_RCSTA = 0x18;
         REG_SPBRG = 0x99;
         REG_TXREG = 0x19;
         REG_RCREG = 0x1a;
-    } else if(McuAs(" PIC16F882 ") || McuAs(" PIC16F883 ") || McuAs(" PIC16F884 ") || McuAs(" PIC16F886 ")
-              || McuAs(" PIC16F887 ")) {
+    } else if(McuAs(" PIC16F882 ")    //
+              || McuAs(" PIC16F883 ") //
+              || McuAs(" PIC16F884 ") //
+              || McuAs(" PIC16F886 ") //
+              || McuAs(" PIC16F887 ") //
+    ) {
         REG_TXSTA = 0x98;
         REG_RCSTA = 0x18;
         REG_SPBRGH = 0x9A;
         REG_SPBRG = 0x99;
         REG_TXREG = 0x19;
         REG_RCREG = 0x1a;
-    } else if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-              || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-              || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    } else if(McuAs(" PIC16F1512 ")    //
+              || McuAs(" PIC16F1513 ") //
+              || McuAs(" PIC16F1516 ") //
+              || McuAs(" PIC16F1517 ") //
+              || McuAs(" PIC16F1518 ") //
+              || McuAs(" PIC16F1519 ") //
+              || McuAs(" PIC16F1526 ") //
+              || McuAs(" PIC16F1527 ") //
+              || McuAs(" PIC16F1933 ") //
+              || McuAs(" PIC16F1947 ") //
+              || McuAs(" PIC16F1824 ") //
+              || McuAs(" PIC16F1827 ") //
+    ) {
         REG_TXSTA = 0x019E;
         REG_RCSTA = 0x019D;
         REG_SPBRGH = 0x019C;
         REG_SPBRG = 0x019B;
         REG_TXREG = 0x019A;
         REG_RCREG = 0x0199;
-    } else if(McuAs(" PIC10F") || McuAs(" PIC12F") || McuAs(" PIC16F72 ") || McuAs("Microchip PIC16F819 ")) {
+    } else if(McuAs(" PIC10F")                 //
+              || McuAs(" PIC12F")              //
+              || McuAs(" PIC16F72 ")           //
+              || McuAs("Microchip PIC16F819 ") //
+    ) {
         // has not
     } else
         oops();
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F88 ") || McuAs("Microchip PIC16F819 ") || McuAs("Microchip PIC16F876 ")
-       || McuAs("Microchip PIC16F877 ") || McuAs("Microchip PIC16F886 ") || McuAs("Microchip PIC16F887 ")) {
+    if(McuAs("Microchip PIC16F88 ")     //
+       || McuAs("Microchip PIC16F819 ") //
+       || McuAs("Microchip PIC16F876 ") //
+       || McuAs("Microchip PIC16F877 ") //
+       || McuAs("Microchip PIC16F886 ") //
+       || McuAs("Microchip PIC16F887 ") //
+    ) {
         REG_ADRESH = 0x1e;
         REG_ADRESL = 0x9e;
         REG_ADCON0 = 0x1f;
         REG_ADCON1 = 0x9f;
-    } else if(McuAs(" PIC16F72 ")) {
+    } else if(McuAs(" PIC16F72 ") //
+    ) {
         REG_ADRESL = 0x1e;
         REG_ADCON0 = 0x1f;
         REG_ADCON1 = 0x9f;
-    } else if(McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
+    } else if(McuAs(" PIC12F675 ")    //
+              || McuAs(" PIC12F683 ") //
+    ) {
         REG_ADRESH = 0x1e;
         REG_ADRESL = 0x9e;
         REG_ADCON0 = 0x1f;
-    } else if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-              || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-              || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    } else if(McuAs(" PIC16F1512 ")    //
+              || McuAs(" PIC16F1513 ") //
+              || McuAs(" PIC16F1516 ") //
+              || McuAs(" PIC16F1517 ") //
+              || McuAs(" PIC16F1518 ") //
+              || McuAs(" PIC16F1519 ") //
+              || McuAs(" PIC16F1526 ") //
+              || McuAs(" PIC16F1527 ") //
+              || McuAs(" PIC16F1933 ") //
+              || McuAs(" PIC16F1947 ") //
+              || McuAs(" PIC16F1824 ") //
+              || McuAs(" PIC16F1827 ") //
+    ) {
         REG_ADRESH = 0x009C;
         REG_ADRESL = 0x009B;
         REG_ADCON0 = 0x009D;
@@ -6264,148 +6409,305 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     } else if(McuAs("Microchip PIC16F628 ")
               // has not
     ) {
-    } else if(McuAs(" PIC10F") || McuAs(" PIC12F")) {
+    } else if(McuAs(" PIC10F")    //
+              || McuAs(" PIC12F") //
+    ) {
         // has not
     } else
         oops();
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F876 ") || McuAs("Microchip PIC16F877 ") || McuAs("Microchip PIC16F886 ")
-       || McuAs("Microchip PIC16F887 ")) {
+    if(McuAs("Microchip PIC16F876 ")    //
+       || McuAs("Microchip PIC16F877 ") //
+       || McuAs("Microchip PIC16F886 ") //
+       || McuAs("Microchip PIC16F887 ") //
+    ) {
         REG_CCPR2L = 0x1b;
         REG_CCP2CON = 0x1d;
-    } else if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-              || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-              || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    } else if(McuAs(" PIC16F1512 ")    //
+              || McuAs(" PIC16F1513 ") //
+              || McuAs(" PIC16F1516 ") //
+              || McuAs(" PIC16F1517 ") //
+              || McuAs(" PIC16F1518 ") //
+              || McuAs(" PIC16F1519 ") //
+              || McuAs(" PIC16F1526 ") //
+              || McuAs(" PIC16F1527 ") //
+              || McuAs(" PIC16F1933 ") //
+              || McuAs(" PIC16F1947 ") //
+              || McuAs(" PIC16F1824 ") //
+              || McuAs(" PIC16F1827 ") //
+    ) {
         REG_CCPR2L = 0x0298;
         REG_CCP2CON = 0x029A;
-    } else if(McuAs("Microchip PIC16F628 ") || McuAs("Microchip PIC16F819 ") || McuAs("Microchip PIC16F88 ")
-              || McuAs(" PIC16F72 ")) {
+    } else if(McuAs("Microchip PIC16F628 ")    //
+              || McuAs("Microchip PIC16F819 ") //
+              || McuAs("Microchip PIC16F88 ")  //
+              || McuAs(" PIC16F72 ")           //
+    ) {
         // has not
-    } else if(McuAs(" PIC10F") || McuAs(" PIC12F")) {
+    } else if(McuAs(" PIC10F")    //
+              || McuAs(" PIC12F") //
+    ) {
         // has not
     } else
         oops();
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F628 ") || McuAs(" PIC16F72 ") || McuAs("Microchip PIC16F819 ")
-       || McuAs("Microchip PIC16F876 ") || McuAs("Microchip PIC16F877 ") || McuAs("Microchip PIC16F88 ")
-       || McuAs("Microchip PIC16F886 ") || McuAs("Microchip PIC16F887 ")) {
+    if(McuAs("Microchip PIC16F628 ")    //
+       || McuAs(" PIC16F72 ")           //
+       || McuAs("Microchip PIC16F819 ") //
+       || McuAs("Microchip PIC16F876 ") //
+       || McuAs("Microchip PIC16F877 ") //
+       || McuAs("Microchip PIC16F88 ")  //
+       || McuAs("Microchip PIC16F886 ") //
+       || McuAs("Microchip PIC16F887 ") //
+    ) {
         REG_T2CON = 0x12;
         REG_PR2 = 0x92;
-    } else if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-              || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-              || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    } else if(McuAs(" PIC16F1512 ")    //
+              || McuAs(" PIC16F1513 ") //
+              || McuAs(" PIC16F1516 ") //
+              || McuAs(" PIC16F1517 ") //
+              || McuAs(" PIC16F1518 ") //
+              || McuAs(" PIC16F1519 ") //
+              || McuAs(" PIC16F1526 ") //
+              || McuAs(" PIC16F1527 ") //
+              || McuAs(" PIC16F1933 ") //
+              || McuAs(" PIC16F1947 ") //
+              || McuAs(" PIC16F1824 ") //
+              || McuAs(" PIC16F1827 ") //
+    ) {
         REG_T2CON = 0x001C;
         REG_PR2 = 0x001B;
-    } else if(McuAs(" PIC10F") || McuAs(" PIC12F")) {
+    } else if(McuAs(" PIC10F")    //
+              || McuAs(" PIC12F") //
+    ) {
         // has not
     } else
         oops();
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F628 ") || McuAs("Microchip PIC16F88 ") || McuAs("Microchip PIC16F819 ")
-       || McuAs("Microchip PIC16F877 ") || McuAs("Microchip PIC16F876 ") || McuAs("Microchip PIC16F874 ")
-       || McuAs("Microchip PIC16F873 ") || McuAs("Microchip PIC16F887 ") || McuAs("Microchip PIC16F886 ")
-       || McuAs("Microchip PIC16F884 ") || McuAs("Microchip PIC16F883 ") || McuAs("Microchip PIC16F882 ")
-       || McuAs(" PIC16F72 ") || McuAs(" PIC12F629 ") || McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
+    if(McuAs("Microchip PIC16F628 ")    //
+       || McuAs("Microchip PIC16F88 ")  //
+       || McuAs("Microchip PIC16F819 ") //
+       || McuAs("Microchip PIC16F877 ") //
+       || McuAs("Microchip PIC16F876 ") //
+       || McuAs("Microchip PIC16F874 ") //
+       || McuAs("Microchip PIC16F873 ") //
+       || McuAs("Microchip PIC16F887 ") //
+       || McuAs("Microchip PIC16F886 ") //
+       || McuAs("Microchip PIC16F884 ") //
+       || McuAs("Microchip PIC16F883 ") //
+       || McuAs("Microchip PIC16F882 ") //
+       || McuAs(" PIC16F72 ")           //
+       || McuAs(" PIC12F629 ")          //
+       || McuAs(" PIC12F675 ")          //
+       || McuAs(" PIC12F683 ")          //
+    ) {
         REG_TMR0 = 0x01;
         REG_OPTION = 0x81;
-    } else if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-              || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-              || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    } else if(McuAs(" PIC16F1512 ")    //
+              || McuAs(" PIC16F1513 ") //
+              || McuAs(" PIC16F1516 ") //
+              || McuAs(" PIC16F1517 ") //
+              || McuAs(" PIC16F1518 ") //
+              || McuAs(" PIC16F1519 ") //
+              || McuAs(" PIC16F1526 ") //
+              || McuAs(" PIC16F1527 ") //
+              || McuAs(" PIC16F1933 ") //
+              || McuAs(" PIC16F1947 ") //
+              || McuAs(" PIC16F1824 ") //
+              || McuAs(" PIC16F1827 ") //
+    ) {
         REG_TMR0 = 0x15;
         REG_OPTION = 0x95;
-    } else if(McuAs(" PIC10F") || McuAs(" PIC12F")) {
+    } else if(McuAs(" PIC10F")    //
+              || McuAs(" PIC12F") //
+    ) {
         REG_TMR0 = 0x01;
         //REG_OPTION not available for read. Write able via OP_OPTION operation.
         WDTE = BIT2;
     } else
         oops();
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F877 ") || McuAs("Microchip PIC16F819 ") || McuAs("Microchip PIC16F88 ")
-       || McuAs("Microchip PIC16F876 ") || McuAs("Microchip PIC16F887 ") || McuAs("Microchip PIC16F886 ")) {
+    if(McuAs("Microchip PIC16F877 ")    //
+       || McuAs("Microchip PIC16F819 ") ///
+       || McuAs("Microchip PIC16F88 ")  //
+       || McuAs("Microchip PIC16F876 ") //
+       || McuAs("Microchip PIC16F887 ") //
+       || McuAs("Microchip PIC16F886 ") //
+    ) {
         REG_EECON1 = 0x18c;
         REG_EECON2 = 0x18d;
         REG_EEDATA = 0x10c;
         REG_EEADR = 0x10d;
-    } else if(McuAs("Microchip PIC16F628 ") || McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
+    } else if(McuAs("Microchip PIC16F628 ") //
+              || McuAs(" PIC12F675 ")       //
+              || McuAs(" PIC12F683 ")       //
+    ) {
         REG_EECON1 = 0x9c;
         REG_EECON2 = 0x9d;
         REG_EEDATA = 0x9a;
         REG_EEADR = 0x9b;
-    } else if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-              || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")) {
+    } else if(McuAs(" PIC16F1512 ")    //
+              || McuAs(" PIC16F1513 ") //
+              || McuAs(" PIC16F1516 ") //
+              || McuAs(" PIC16F1517 ") //
+              || McuAs(" PIC16F1518 ") //
+              || McuAs(" PIC16F1519 ") //
+              || McuAs(" PIC16F1526 ") //
+              || McuAs(" PIC16F1527 ") //
+    ) {
         // has not EEPROM, use PFM
-    } else if(McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    } else if(McuAs(" PIC16F1933 ")    //
+              || McuAs(" PIC16F1947 ") //
+              || McuAs(" PIC16F1824 ") //
+              || McuAs(" PIC16F1827 ") //
+    ) {
         REG_EECON1 = 0x195;
         REG_EECON2 = 0x196;
         REG_EEDATA = 0x193;
         REG_EEDATH = 0x194;
         REG_EEADR = 0x191;
         REG_EEADRH = 0x192;
-    } else if(McuAs(" PIC10F") || McuAs(" PIC16F72 ")) {
+    } else if(McuAs(" PIC10F")       //
+              || McuAs(" PIC16F72 ") //
+    ) {
         // has not
     } else
         oops();
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F887 ") || McuAs("Microchip PIC16F886 ")) {
+    if(McuAs("Microchip PIC16F887 ")    //
+       || McuAs("Microchip PIC16F886 ") //
+    ) {
         REG_ANSEL = 0x0188;
         REG_ANSELH = 0x0189;
-    } else if(McuAs("Microchip PIC16F88 ")) {
+    } else if(McuAs("Microchip PIC16F88 ") //
+    ) {
         REG_ANSEL = 0x009B;
-    } else if(McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
+    } else if(McuAs(" PIC12F675 ")    //
+              || McuAs(" PIC12F683 ") //
+    ) {
         REG_ANSEL = 0x009F;
-    } else if(McuAs("Microchip PIC16F628 ") || McuAs("Microchip PIC16F819 ") || McuAs("Microchip PIC16F877 ")
-              || McuAs("Microchip PIC16F876 ")) {
+    } else if(McuAs("Microchip PIC16F628 ")    //
+              || McuAs("Microchip PIC16F819 ") //
+              || McuAs("Microchip PIC16F877 ") //
+              || McuAs("Microchip PIC16F876 ") //
+    ) {
         // has not
     } else {
         //      oops();
     }
     //----------continue------------------------------------------
-    if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-       || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-       || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    if(McuAs(" PIC16F1512 ")    //
+       || McuAs(" PIC16F1513 ") //
+       || McuAs(" PIC16F1516 ") //
+       || McuAs(" PIC16F1517 ") //
+       || McuAs(" PIC16F1518 ") //
+       || McuAs(" PIC16F1519 ") //
+       || McuAs(" PIC16F1526 ") //
+       || McuAs(" PIC16F1527 ") //
+       || McuAs(" PIC16F1933 ") //
+       || McuAs(" PIC16F1947 ") //
+       || McuAs(" PIC16F1824 ") //
+       || McuAs(" PIC16F1827 ") //
+    ) {
         REG_ANSELA = 0x18C;
     }
-    if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-       || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-       || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1827 ")) {
+    if(McuAs(" PIC16F1512 ")    //
+       || McuAs(" PIC16F1513 ") //
+       || McuAs(" PIC16F1516 ") //
+       || McuAs(" PIC16F1517 ") //
+       || McuAs(" PIC16F1518 ") //
+       || McuAs(" PIC16F1519 ") //
+       || McuAs(" PIC16F1526 ") //
+       || McuAs(" PIC16F1527 ") //
+       || McuAs(" PIC16F1933 ") //
+       || McuAs(" PIC16F1827 ") //
+    ) {
         REG_ANSELB = 0x18D;
     }
-    if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-       || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1824 ")) {
+    if(McuAs(" PIC16F1512 ")    //
+       || McuAs(" PIC16F1513 ") //
+       || McuAs(" PIC16F1516 ") //
+       || McuAs(" PIC16F1517 ") //
+       || McuAs(" PIC16F1518 ") //
+       || McuAs(" PIC16F1519 ") //
+       || McuAs(" PIC16F1824 ") //
+    ) {
         REG_ANSELC = 0x18E;
     }
-    if(McuAs(" PIC16F1517 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")) {
+    if(McuAs(" PIC16F1517 ")    //
+       || McuAs(" PIC16F1519 ") //
+       || McuAs(" PIC16F1526 ") //
+       || McuAs(" PIC16F1527 ") //
+    ) {
         REG_ANSELD = 0x18F;
     }
-    if(McuAs(" PIC16F1517 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-       || McuAs(" PIC16F1947 ")) {
+    if(McuAs(" PIC16F1517 ")    //
+       || McuAs(" PIC16F1519 ") //
+       || McuAs(" PIC16F1526 ") //
+       || McuAs(" PIC16F1527 ") //
+       || McuAs(" PIC16F1947 ") //
+    ) {
         REG_ANSELE = 0x190;
     }
-    if(McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ") || McuAs(" PIC16F1947 ")) {
+    if(McuAs(" PIC16F1526 ")    //
+       || McuAs(" PIC16F1527 ") //
+       || McuAs(" PIC16F1947 ") //
+    ) {
         REG_ANSELF = 0x40C;
         REG_ANSELG = 0x40D;
     }
     //------------------------------------------------------------
-    if(McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    if(McuAs(" PIC16F1824 ")    //
+       || McuAs(" PIC16F1827 ") //
+    ) {
         REG_OSCON = 0x099;
     }
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F887 ") || McuAs("Microchip PIC16F886 ") || McuAs("Microchip PIC16F88 ")
-       || McuAs(" PIC16F87 ") || McuAs(" PIC16F884 ") || McuAs(" PIC16F883 ") || McuAs(" PIC16F882 ")) {
+    if(McuAs("Microchip PIC16F887 ")    //
+       || McuAs("Microchip PIC16F886 ") //
+       || McuAs("Microchip PIC16F88 ")  //
+       || McuAs(" PIC16F87 ")           //
+       || McuAs(" PIC16F884 ")          //
+       || McuAs(" PIC16F883 ")          //
+       || McuAs(" PIC16F882 ")          //
+    ) {
         CONFIG_ADDR1 = 0x2007;
         CONFIG_ADDR2 = 0x2008;
-    } else if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
-              || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ") || McuAs(" PIC16F1527 ")
-              || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ") || McuAs(" PIC16F1824 ") || McuAs(" PIC16F1827 ")) {
+    } else if(McuAs(" PIC16F1512 ")    //
+              || McuAs(" PIC16F1513 ") //
+              || McuAs(" PIC16F1516 ") //
+              || McuAs(" PIC16F1517 ") //
+              || McuAs(" PIC16F1518 ") //
+              || McuAs(" PIC16F1519 ") //
+              || McuAs(" PIC16F1526 ") //
+              || McuAs(" PIC16F1527 ") //
+              || McuAs(" PIC16F1933 ") //
+              || McuAs(" PIC16F1947 ") //
+              || McuAs(" PIC16F1824 ") //
+              || McuAs(" PIC16F1827 ") //
+    ) {
         CONFIG_ADDR1 = 0x8007;
         CONFIG_ADDR2 = 0x8008;
-    } else if(McuAs("Microchip PIC16F628 ") || McuAs("Microchip PIC16F819 ") || McuAs("Microchip PIC16F877 ")
-              || McuAs("Microchip PIC16F876 ") || McuAs(" PIC16F874 ") || McuAs(" PIC16F873 ") || McuAs(" PIC16F72 ")
-              || McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
+    } else if(McuAs("Microchip PIC16F628 ")    //
+              || McuAs("Microchip PIC16F819 ") //
+              || McuAs("Microchip PIC16F877 ") //
+              || McuAs("Microchip PIC16F876 ") //
+              || McuAs(" PIC16F874 ")          //
+              || McuAs(" PIC16F873 ")          //
+              || McuAs(" PIC16F72 ")           //
+              || McuAs(" PIC12F675 ")          //
+              || McuAs(" PIC12F683 ")          //
+    ) {
         CONFIG_ADDR1 = 0x2007;
-    } else if(McuAs(" PIC10F200 ") || McuAs(" PIC10F204 ") || McuAs(" PIC10F220 ")) {
+    } else if(McuAs(" PIC10F200 ")    //
+              || McuAs(" PIC10F204 ") //
+              || McuAs(" PIC10F220 ") //
+    ) {
         CONFIG_ADDR1 = 0x01ff;
-    } else if(McuAs(" PIC10F202 ") || McuAs(" PIC10F206 ") || McuAs(" PIC10F222 ")) {
+    } else if(McuAs(" PIC10F202 ")    //
+              || McuAs(" PIC10F206 ") //
+              || McuAs(" PIC10F222 ") //
+    ) {
         CONFIG_ADDR1 = 0x03ff;
     } else
         oops();
@@ -6679,7 +6981,10 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
             FwdAddrIsNow(notWdtWakeUp);
         }
     }
-    if(McuAs("Microchip PIC16F877 ") || McuAs("Microchip PIC16F819 ") || McuAs("Microchip PIC16F876 ")) {
+    if(McuAs("Microchip PIC16F877 ") || //
+       McuAs("Microchip PIC16F819 ") || //
+       McuAs("Microchip PIC16F876 ")    //
+    ) {
         // The GPIOs that can also be A/D inputs default to being A/D
         // inputs, so turn that around
         WriteRegister(REG_ADCON1,
@@ -6691,9 +6996,14 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
     }
 
     Comment("Set up the ANSELx registers. 1-analog input, 0-digital I/O.");
-    if(McuAs("Microchip PIC16F88 ") || McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
-        Instruction(OP_CLRF, REG_ANSEL); // all digital inputs
-    } else if(McuAs("Microchip PIC16F887 ") || McuAs("Microchip PIC16F886 ")) {
+    if(McuAs("Microchip PIC16F88 ") //
+       || McuAs(" PIC12F675 ")      //
+       || McuAs(" PIC12F683 ")      //
+    ) {
+        Instruction(OP_CLRF, REG_ANSEL);       // all digital inputs
+    } else if(McuAs("Microchip PIC16F887 ")    //
+              || McuAs("Microchip PIC16F886 ") //
+    ) {
         Instruction(OP_CLRF, REG_ANSEL);  // all digital inputs
         Instruction(OP_CLRF, REG_ANSELH); // all digital inputs
     }
@@ -6739,7 +7049,10 @@ static BOOL _CompilePic16(char *outFile, int ShowMessage)
             WriteRegister(REG_ANSELG, isAnsel[6]);
     }
 
-    if(McuAs("Microchip PIC16F628 ") || McuAs(" PIC12F675 ") || McuAs(" PIC12F683 ")) {
+    if(McuAs("Microchip PIC16F628 ") //
+       || McuAs(" PIC12F675 ")       //
+       || McuAs(" PIC12F683 ")       //
+    ) {
         // This is also a nasty special case; the comparators on the
         // PIC16F628 are enabled by default and need to be disabled, or
         // else the PORTA GPIOs don't work.

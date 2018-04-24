@@ -233,13 +233,15 @@ static void MakeControls()
         EnableWindow(BaudTextbox, FALSE);
         EnableWindow(textLabel3, FALSE);
     }
-
-    if(Prog.mcu
-       && (Prog.mcu->whichIsa == ISA_INTERPRETED || Prog.mcu->whichIsa == ISA_XINTERPRETED
-           || Prog.mcu->whichIsa == ISA_NETZER)) {
+    // clang-format off
+    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
+                    Prog.mcu->whichIsa == ISA_XINTERPRETED ||
+                    Prog.mcu->whichIsa == ISA_NETZER))
+    {
         EnableWindow(CrystalTextbox, FALSE);
         EnableWindow(textLabel2, FALSE);
     }
+    // clang-format on
 
     if(Prog.mcu && (Prog.mcu->whichIsa != ISA_PIC16)) {
         EnableWindow(ConfigBitsTextbox, FALSE);
@@ -328,20 +330,20 @@ static void MakeControls()
         strcat(explanation, txt);
 
         double minDelay;
-        minDelay = SIprefix(1.0 * Prog.cycleTime / 1000000, s2); //s
+        minDelay = SIprefix(1.0 * Prog.cycleTime / 1000000, s2); // s
         sprintf(txt, "TON,TOF,RTO min Delay=%.6g ms (%.6g %ss)\n", 1.0 * Prog.cycleTime / 1000, minDelay, s2);
         strcat(explanation, txt);
 
         double maxDelay;
-        maxDelay = SIprefix(1.0 * 0x7f * Prog.cycleTime / 1000000, s2); //s
+        maxDelay = SIprefix(1.0 * 0x7f * Prog.cycleTime / 1000000, s2); // s
         sprintf(txt, "TON,TOF,RTO  8bit max Delay=%.6g %ss\n", maxDelay, s2);
         strcat(explanation, txt);
 
-        maxDelay = SIprefix(1.0 * 0x7fff * Prog.cycleTime / 1000000, s2); //s
+        maxDelay = SIprefix(1.0 * 0x7fff * Prog.cycleTime / 1000000, s2); // s
         sprintf(txt, "TON,TOF,RTO 16bit max Delay=%.6g %ss\n", maxDelay, s2);
         strcat(explanation, txt);
 
-        maxDelay = SIprefix(1.0 * 0x7fFFff * Prog.cycleTime / 1000000, s2); //s
+        maxDelay = SIprefix(1.0 * 0x7fFFff * Prog.cycleTime / 1000000, s2); // s
         sprintf(txt, "TON,TOF,RTO 24bit max Delay=%.6g %ss\n", maxDelay, s2);
         strcat(explanation, txt);
 
@@ -408,11 +410,8 @@ static void MakeControls()
     SetWindowPos(ConfDialog, nullptr, 0, 0, w, nh, SWP_NOMOVE);
 
     PrevCycleProc = SetWindowLongPtr(CycleTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
-
     PrevCrystalProc = SetWindowLongPtr(CrystalTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
-
     PrevConfigBitsProc = SetWindowLongPtr(ConfigBitsTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
-
     PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
 }
 

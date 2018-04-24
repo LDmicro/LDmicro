@@ -36,50 +36,55 @@ extern const char *HelpTextJa[];
 extern const char *HelpTextRu[];
 extern const char *HelpTextEs[];
 
-const char *AboutText[] = {"",
-                           "ABOUT LDMICRO",
-                           "=============",
-                           "",
-                           "LDmicro is a ladder logic editor, simulator and compiler for 8-bit",
-                           "microcontrollers. It can generate native code for Atmel AVR and Microchip",
-                           "PIC16 CPUs from a ladder diagram.",
-                           "",
-                           "This program is free software: you can redistribute it and/or modify it",
-                           "under the terms of the GNU General Public License as published by the",
-                           "Free Software Foundation, either version 3 of the License, or (at your",
-                           "option) any later version.",
-                           "",
-                           "This program is distributed in the hope that it will be useful, but",
-                           "WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY",
-                           "or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License",
-                           "for more details.",
-                           "",
-                           "You should have received a copy of the GNU General Public License along",
-                           "with this program. If not, see <http://www.gnu.org/licenses/>.",
-                           "",
-                           "The source code for LDmicro is available at",
-                           "",
-                           "    http://cq.cx/ladder.pl",
-                           "",
-                           "Copyright 2005-2016 Jonathan Westhues",
-                           "    Email: user jwesthues, at host cq.cx",
-                           "",
-                           "Netzer extension by Sven Schlender (C) 2012",
-                           "    http://www.mobacon.de/wiki/doku.php/en/netzer/index",
-                           "",
-                           "Controllino Maxi support 2016",
-                           "    Frederic Rible <frible@teaser.fr>",
-                           "",
-                           "Unofficial support:",
-                           "    Repository: https://github.com/LDmicro/LDmicro",
-                           "    Email:      LDmicro.GitHub@gmail.com",
-                           "",
-                           "Release " LDMICRO_VER_STR ", built " __TIME__ " " __DATE__ ".", // AboutText[38]
-                           "",
-                           nullptr};
+// clang-format off
+const char *AboutText[] = {
+"",
+"ABOUT LDMICRO",
+"=============",
+"",
+"LDmicro is a ladder logic editor, simulator and compiler for 8-bit",
+"microcontrollers. It can generate native code for Atmel AVR and Microchip",
+"PIC16 CPUs from a ladder diagram.",
+"",
+"This program is free software: you can redistribute it and/or modify it",
+"under the terms of the GNU General Public License as published by the",
+"Free Software Foundation, either version 3 of the License, or (at your",
+"option) any later version.",
+"",
+"This program is distributed in the hope that it will be useful, but",
+"WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY",
+"or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License",
+"for more details.",
+"",
+"You should have received a copy of the GNU General Public License along",
+"with this program. If not, see <http://www.gnu.org/licenses/>.",
+"",
+"The source code for LDmicro is available at",
+"",
+"    http://cq.cx/ladder.pl",
+"",
+"Copyright 2005-2016 Jonathan Westhues",
+"    Email: user jwesthues, at host cq.cx",
+"",
+"Netzer extension by Sven Schlender (C) 2012",
+"    http://www.mobacon.de/wiki/doku.php/en/netzer/index",
+"",
+"Controllino Maxi support 2016",
+"    Frederic Rible <frible@teaser.fr>",
+"",
+"Unofficial support:",
+"    Repository: https://github.com/LDmicro/LDmicro",
+"    Email:      LDmicro.GitHub@gmail.com",
+"",
+"Release " LDMICRO_VER_STR ", built " __TIME__ " " __DATE__ ".", // AboutText[38]
+"",
+nullptr
+};
 
 static const char **Text[] = {
-#if defined(LDLANG_EN) || defined(LDLANG_IT) || defined(LDLANG_PT)
+#if defined(LDLANG_EN) || \
+    defined(LDLANG_IT) || \
+    defined(LDLANG_PT)
     HelpText,
 #elif defined(LDLANG_DE)
     HelpTextDe,
@@ -94,11 +99,12 @@ static const char **Text[] = {
 #elif defined(LDLANG_ES)
     HelpTextEs,
 #else
-#error "Bad language"
+    #error "Bad language"
 #endif
-
     // Let's always keep the about text in English.
-    AboutText};
+    AboutText
+};
+// clang-format on
 
 static HWND HelpDialog[2];
 static HWND RichEdit[2];

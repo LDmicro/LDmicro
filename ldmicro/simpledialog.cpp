@@ -401,44 +401,20 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
     int         labs = arraylen(labels);
     int         boxes = arraylen(dests);
     const char *s;
+    // clang-format off
     switch(which) {
-        case ELEM_TIME2DELAY:
-            s = _("TIME to DELAY converter");
-            labs = 3;
-            boxes = 2;
-            sprintf(delBuf, "%d", *delay);
-            strcpy(nameBuf, name);
-            break;
-        case ELEM_TIME2COUNT:
-            s = _("TIME to COUNTER converter");
-            labs = 2;
-            boxes = 2;
-            break;
-        case ELEM_TCY:
-            s = _("Cyclic On/Off");
-            break;
-        case ELEM_TON:
-            s = _("Turn-On Delay");
-            break;
-        case ELEM_TOF:
-            s = _("Turn-Off Delay");
-            break;
-        case ELEM_THI:
-            s = _("Hight Level Delay");
-            break;
-        case ELEM_TLO:
-            s = _("Low Level Delay");
-            break;
-        case ELEM_RTO:
-            s = _("Retentive Turn-On Delay");
-            break;
-        case ELEM_RTL:
-            s = _("Retentive Turn-On Delay If Low Input");
-            break;
-        default:
-            oops();
-            break;
+        case ELEM_TIME2DELAY: s = _("TIME to DELAY converter"); labs = 3; boxes = 2; sprintf(delBuf, "%d", *delay); strcpy(nameBuf, name); break;
+        case ELEM_TIME2COUNT: s = _("TIME to COUNTER converter"); labs = 2; boxes = 2; break;
+        case ELEM_TCY:        s = _("Cyclic On/Off"); break;
+        case ELEM_TON:        s = _("Turn-On Delay"); break;
+        case ELEM_TOF:        s = _("Turn-Off Delay"); break;
+        case ELEM_THI:        s = _("Hight Level Delay"); break;
+        case ELEM_TLO:        s = _("Low Level Delay"); break;
+        case ELEM_RTO:        s = _("Retentive Turn-On Delay"); break;
+        case ELEM_RTL:        s = _("Retentive Turn-On Delay If Low Input"); break;
+        default: oops(); break;
     }
+    // clang-format on
     if(ShowSimpleDialog(s, labs, labels, (3 << 1), (1 << 0), (7 << 0), boxes, dests)) {
         *adjust = atoi(adjustBuf);
         double delay_ms = atof(delBuf);
@@ -1520,35 +1496,21 @@ void ShowCprintfDialog(int which, void *e)
     const char *labels[] = {_("Variable list:"), _("Format string:"), _("Dest:"), _("Enable:"), _("Error:")};
     char *      dests[] = {var, string, dest, enable, error};
     const char *s;
+    // clang-format off
     switch(which) {
-        case ELEM_CPRINTF:
-            s = "CPRINTF";
-            goto cprintf;
-        case ELEM_SPRINTF:
-            s = "SPRINTF";
-            goto cprintf;
-        case ELEM_FPRINTF:
-            s = "FPRINTF";
-            goto cprintf;
-        case ELEM_PRINTF:
-            s = "PRINTF";
-            goto cprintf;
-        case ELEM_I2C_CPRINTF:
-            s = "I2C_PRINTF";
-            goto cprintf;
-        case ELEM_ISP_CPRINTF:
-            s = "ISP_PRINTF";
-            goto cprintf;
-        case ELEM_UART_CPRINTF:
-            s = "UART_PRINTF";
-            goto cprintf;
-            {
-            cprintf:
-                break;
-            }
-        default:
-            ooops("ELEM_0x%X");
+        case ELEM_CPRINTF:      s = "CPRINTF"; goto cprintf;
+        case ELEM_SPRINTF:      s = "SPRINTF"; goto cprintf;
+        case ELEM_FPRINTF:      s = "FPRINTF"; goto cprintf;
+        case ELEM_PRINTF:       s = "PRINTF"; goto cprintf;
+        case ELEM_I2C_CPRINTF:  s = "I2C_PRINTF"; goto cprintf;
+        case ELEM_ISP_CPRINTF:  s = "ISP_PRINTF"; goto cprintf;
+        case ELEM_UART_CPRINTF: s = "UART_PRINTF"; goto cprintf; {
+        cprintf:
+            break;
+        }
+        default: ooops("ELEM_0x%X");
     }
+    // clang-format on
     char str[MAX_NAME_LEN];
     sprintf(str, ("Formatted String over %s"), s);
     NoCheckingOnBox[0] = TRUE;

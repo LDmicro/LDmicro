@@ -58,7 +58,8 @@ BOOL ThisHighlighted;
 //-----------------------------------------------------------------------------
 static BOOL CheckBoundsUndoIfFails(int gx, int gy)
 {
-    if(gx >= DISPLAY_MATRIX_X_SIZE || gx < 0 || gy >= DISPLAY_MATRIX_Y_SIZE || gy < 0) {
+    if(gx >= DISPLAY_MATRIX_X_SIZE || gx < 0 || //
+       gy >= DISPLAY_MATRIX_Y_SIZE || gy < 0) {
         if(CanUndo()) {
             UndoUndo();
             Error(_("Too many elements in subcircuit!"));
@@ -801,33 +802,15 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL powe
             CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, POS_WIDTH, ELEM_COIL);
             break;
         }
-            const char *s;
-            const char *z;
-        case ELEM_DIV:
-            s = "\x01"
-                "DIV\x02";
-            z = "/";
-            goto math;
-        case ELEM_MOD:
-            s = "\x01"
-                "MOD\x02";
-            z = "%";
-            goto math;
-        case ELEM_MUL:
-            s = "\x01"
-                "MUL\x02";
-            z = "*";
-            goto math;
-        case ELEM_SUB:
-            s = "\x01"
-                "SUB\x02";
-            z = "-";
-            goto math;
-        case ELEM_ADD:
-            s = "\x01"
-                "ADD\x02";
-            z = "+";
-            goto math;
+            // clang-format off
+        const char *s;
+        const char *z;
+        case ELEM_DIV: s = "\x01""DIV\x02"; z="/";  goto math;
+        case ELEM_MOD: s = "\x01""MOD\x02"; z="%";  goto math;
+        case ELEM_MUL: s = "\x01""MUL\x02"; z="*";  goto math;
+        case ELEM_SUB: s = "\x01""SUB\x02"; z="-";  goto math;
+        case ELEM_ADD: s = "\x01""ADD\x02"; z="+";  goto math;
+        // clang-format on
         math : {
             int w = ((which == ELEM_NOT) || (which == ELEM_NEG)) ? 1 : 1;
             sprintf(s1, "%s ", s);
@@ -973,75 +956,37 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
             break;
         }
 
-            {
-                const char *s;
-                const char *z;
-                case ELEM_ROL:
-                    s = "\x01"
-                        "ROL\x02";
-                    z = "rol";
-                    goto bitwise;
-                case ELEM_ROR:
-                    s = "\x01"
-                        "ROR\x02";
-                    z = "ror";
-                    goto bitwise;
-                case ELEM_SHL:
-                    s = "\x01"
-                        "SHL\x02";
-                    z = "<<";
-                    goto bitwise;
-                case ELEM_SHR:
-                    s = "\x01"
-                        "SHR\x02";
-                    z = ">>";
-                    goto bitwise;
-                case ELEM_SR0:
-                    s = "\x01"
-                        "SR0\x02";
-                    z = "sr0";
-                    goto bitwise;
-                case ELEM_AND:
-                    s = "\x01"
-                        "AND\x02";
-                    z = "&";
-                    goto bitwise;
-                case ELEM_OR:
-                    s = "\x01"
-                        "OR\x02";
-                    z = "|";
-                    goto bitwise;
-                case ELEM_XOR:
-                    s = "\x01"
-                        "XOR\x02";
-                    z = "^";
-                    goto bitwise;
-                case ELEM_NOT:
-                    s = "\x01"
-                        "NOT\x02";
-                    z = "~";
-                    goto bitwise;
-                case ELEM_NEG:
-                    s = "\x01"
-                        "NEG\x02";
-                    z = "-";
-                    goto bitwise;
-                bitwise : {
-                    sprintf(s1, "%s ", s);
-                    sprintf(s2, "%s", leaf->d.math.dest);
-                    formatWidth(top, POS_WIDTH, "{", s1, "", s2, ":=}");
-                    if((which == ELEM_NOT) || (which == ELEM_NEG)) {
-                        formatWidth(bot, POS_WIDTH, "{", "", z, leaf->d.math.op1, "}");
-                    } else {
-                        formatWidth(bot, /*2**/ POS_WIDTH, "{", leaf->d.math.op1, z, leaf->d.math.op2, "}");
-                    }
-                    CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
-                    CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
-
-                    *cx += POS_WIDTH;
-                    break;
-                }
+            // clang-format off
+        {
+        const char *s;
+        const char *z;
+        case ELEM_ROL: s = "\x01""ROL\x02"; z="rol"; goto bitwise;
+        case ELEM_ROR: s = "\x01""ROR\x02"; z="ror"; goto bitwise;
+        case ELEM_SHL: s = "\x01""SHL\x02"; z="<<"; goto bitwise;
+        case ELEM_SHR: s = "\x01""SHR\x02"; z=">>"; goto bitwise;
+        case ELEM_SR0: s = "\x01""SR0\x02"; z="sr0"; goto bitwise;
+        case ELEM_AND: s = "\x01""AND\x02"; z="&";  goto bitwise;
+        case ELEM_OR : s = "\x01""OR\x02" ; z="|";  goto bitwise;
+        case ELEM_XOR: s = "\x01""XOR\x02"; z="^";  goto bitwise;
+        case ELEM_NOT: s = "\x01""NOT\x02"; z="~";  goto bitwise;
+        case ELEM_NEG: s = "\x01""NEG\x02"; z="-";  goto bitwise;
+        bitwise : {
+            sprintf(s1, "%s ", s);
+            sprintf(s2, "%s", leaf->d.math.dest);
+            formatWidth(top, POS_WIDTH, "{", s1, "", s2, ":=}");
+            if((which == ELEM_NOT) || (which == ELEM_NEG)) {
+              formatWidth(bot, POS_WIDTH, "{", "", z, leaf->d.math.op1, "}");
+            } else {
+              formatWidth(bot, POS_WIDTH, "{", leaf->d.math.op1, z, leaf->d.math.op2, "}");
             }
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+
+            *cx += POS_WIDTH;
+            break;
+        }
+        }
+            // clang-format on
 
             {
                 const char *s;
@@ -1130,24 +1075,14 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
 #ifdef USE_SFR
             {
                 char *s;
-                case ELEM_RSFR:
-                    s = "Read";
-                    goto sfrcmp;
-                case ELEM_WSFR:
-                    s = "Write";
-                    goto sfrcmp;
-                case ELEM_SSFR:
-                    s = "Sbit";
-                    goto sfrcmp;
-                case ELEM_CSFR:
-                    s = "Cbit";
-                    goto sfrcmp;
-                case ELEM_TSFR:
-                    s = "IsBitS";
-                    goto sfrcmp;
-                case ELEM_T_C_SFR:
-                    s = "IsBitC";
-                    goto sfrcmp;
+                    // clang-format off
+            case ELEM_RSFR:    s = "Read";   goto sfrcmp;
+            case ELEM_WSFR:    s = "Write";  goto sfrcmp;
+            case ELEM_SSFR:    s = "Sbit";   goto sfrcmp;
+            case ELEM_CSFR:    s = "Cbit";   goto sfrcmp;
+            case ELEM_TSFR:    s = "IsBitS"; goto sfrcmp;
+            case ELEM_T_C_SFR: s = "IsBitC"; goto sfrcmp;
+                // clang-format on
                 sfrcmp:
                     int l1, l2, lmax;
 
@@ -1177,26 +1112,16 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
             }
 #endif
             {
-                const char *s;
-                case ELEM_EQU:
-                    s = "==";
-                    goto cmp;
-                case ELEM_NEQ:
-                    s = "!=";
-                    goto cmp;
-                case ELEM_GRT:
-                    s = ">";
-                    goto cmp;
-                case ELEM_GEQ:
-                    s = ">=";
-                    goto cmp;
-                case ELEM_LES:
-                    s = "<";
-                    goto cmp;
-                case ELEM_LEQ:
-                    s = "<=";
-                    goto cmp;
-                cmp:
+                // clang-format off
+            const char *s;
+            case ELEM_EQU: s = "=="; goto cmp;
+            case ELEM_NEQ: s = "!="; goto cmp;
+            case ELEM_GRT: s = ">" ; goto cmp;
+            case ELEM_GEQ: s = ">="; goto cmp;
+            case ELEM_LES: s = "<" ; goto cmp;
+            case ELEM_LEQ: s = "<="; goto cmp;
+            cmp:
+                    // clang-format on
                     int len =
                         min(POS_WIDTH,
                             max(1 + strlen(leaf->d.cmp.op1) + 1 + strlen(s) + 1, 1 + strlen(leaf->d.cmp.op2) + 1));
@@ -1425,35 +1350,28 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
         case ELEM_TON:
         case ELEM_TOF: {
             const char *s;
+            // clang-format off
             if(which == ELEM_TON) {
-                s = "\x01"
-                    "TON\x02";
+                s = "\x01""TON\x02";
             } else if(which == ELEM_TOF) {
-                s = "\x01"
-                    "TOF\x02";
+                s = "\x01""TOF\x02";
             } else if(which == ELEM_THI) {
-                s = "\x01"
-                    "THI\x02";
+                s = "\x01""THI\x02";
             } else if(which == ELEM_TLO) {
-                s = "\x01"
-                    "TLO\x02";
+                s = "\x01""TLO\x02";
             } else if(which == ELEM_RTO) {
-                s = "\x01"
-                    "RTO\x02";
+                s = "\x01""RTO\x02";
             } else if(which == ELEM_RTL) {
-                s = "\x01"
-                    "RTL\x02";
+                s = "\x01""RTL\x02";
             } else if(which == ELEM_TCY) {
-                s = "\x01"
-                    "TCY\x02";
+                s = "\x01""TCY\x02";
             } else if(which == ELEM_TIME2COUNT) {
-                s = "\x01"
-                    "T2CNT\x02";
+                s = "\x01""T2CNT\x02";
             } else if(which == ELEM_TIME2DELAY) {
-                s = "\x01"
-                    "T2DLY\x02";
+                s = "\x01""T2DLY\x02";
             } else
                 oops();
+            // clang-format on
 
             ElemTimer *t = &leaf->d.timer;
             double     d = SIprefix(t->delay / 1000000.0, s2);
@@ -1540,28 +1458,15 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
             break;
         }
 
-        case ELEM_CPRINTF:
-            s = "CPRN";
-            goto cprintf;
-        case ELEM_SPRINTF:
-            s = "SPRN";
-            goto cprintf;
-        case ELEM_FPRINTF:
-            s = "FPRN";
-            goto cprintf;
-        case ELEM_PRINTF:
-            s = "PRN";
-            goto cprintf;
-        case ELEM_I2C_CPRINTF:
-            s = "I2C";
-            goto cprintf;
-        case ELEM_ISP_CPRINTF:
-            s = "ISP";
-            goto cprintf;
-        case ELEM_UART_CPRINTF:
-            s = "UART";
-            goto cprintf;
-            {
+        // clang-format off
+        case ELEM_CPRINTF:      s = "CPRN"; goto cprintf;
+        case ELEM_SPRINTF:      s = "SPRN"; goto cprintf;
+        case ELEM_FPRINTF:      s = "FPRN"; goto cprintf;
+        case ELEM_PRINTF:       s = "PRN";  goto cprintf;
+        case ELEM_I2C_CPRINTF:  s = "I2C";  goto cprintf;
+        case ELEM_ISP_CPRINTF:  s = "ISP";  goto cprintf;
+        case ELEM_UART_CPRINTF: s = "UART"; goto cprintf; {
+            // clang-format on
             cprintf:
                 sprintf(s1, "->%s{", leaf->d.fmtdStr.enable);
                 sprintf(s2, "%s %s:=", s, leaf->d.fmtdStr.dest);
@@ -1667,19 +1572,13 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
         }
 
             {
-                const char *s;
-                case ELEM_7SEG:
-                    s = "7";
-                    goto xseg;
-                case ELEM_9SEG:
-                    s = "9";
-                    goto xseg;
-                case ELEM_14SEG:
-                    s = "14";
-                    goto xseg;
-                case ELEM_16SEG:
-                    s = "16";
-                    goto xseg;
+                // clang-format off
+        const char *s;
+        case ELEM_7SEG:  s = "7";  goto xseg;
+        case ELEM_9SEG:  s = "9";  goto xseg;
+        case ELEM_14SEG: s = "14"; goto xseg;
+        case ELEM_16SEG: s = "16"; goto xseg;
+                // clang-format on
                 xseg:
                     ElemSegments *m = &leaf->d.segments;
                     if(m->common == COMMON_CATHODE)
@@ -1824,7 +1723,7 @@ BOOL DrawElement(void *node, int which, void *elem, int *cx, int *cy, BOOL power
     int       cx0 = *cx, cy0 = *cy;
     ElemLeaf *leaf = (ElemLeaf *)elem;
     ElemNode *_node = (ElemNode *)node;
-    //  ElemLeaf *_leaf = (ElemLeaf *)_node->data.any;
+    ElemLeaf *_leaf = (ElemLeaf *)_node->data.any;
 
     SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
     NormText();
