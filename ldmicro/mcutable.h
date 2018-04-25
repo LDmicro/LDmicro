@@ -1143,7 +1143,7 @@ McuIoPinInfo Pic6Pin_SOT23[] = {
     { 'P', 0, 1, "GP0/ICSPDAT" },
     { 'P', 1, 3, "GP1/ICSPCLK" },
     { 'P', 2, 4, "GP2/T0CKI/FOSC4" },
-    { 'P', 3, 5, "GP3/_MCLR/Vpp (Input Only)" },
+    { 'P', 3, 6, "GP3/_MCLR/Vpp (Input Only)" },
 };
 
 //-----------------------------------------------------------------------------
