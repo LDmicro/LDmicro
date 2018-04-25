@@ -148,6 +148,7 @@ void CompileXInterpreted(char *outFile)
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_DIVIDE:
+            case INT_SET_VARIABLE_MOD:
                 OutProg[outPc++] = IntCode[ipc].op;
                 OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
                 OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);

@@ -1438,7 +1438,7 @@ static void CheckPsErrorsPostCompile()
     for(i = 0; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
             if((PicProg[i].arg1 >> 11) != (PicProg[i].PCLATH >> 3)) {
-                //  ^target addr^              ^current PCLATH^
+                //^target addr^              ^current PCLATH^
                 ooops("Page Error.")
             }
         }
@@ -4437,7 +4437,6 @@ static void CompileFromIntermediate(BOOL topLevel)
                 break;
 
             case INT_SET_VARIABLE_MOD:
-                break;
             case INT_SET_VARIABLE_DIVIDE:
                 DivideNeeded = TRUE;
 
@@ -4462,7 +4461,10 @@ static void CompileFromIntermediate(BOOL topLevel)
                     Instruction(OP_MOVF, Scratch1, DEST_W);
                     Instruction(OP_MOVWF, addr1 + 1, 0);
                 } else {
-                    ooops("TODO");
+                    Instruction(OP_MOVF, Scratch4, DEST_W);
+                    Instruction(OP_MOVWF, addr1, 0);
+                    Instruction(OP_MOVF, Scratch5, DEST_W);
+                    Instruction(OP_MOVWF, addr1 + 1, 0);
                 }
                 break;
 
@@ -5669,6 +5671,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
     */
     if(Prog.mcu->core == BaselineCore12bit) {
         if(plcTmr.prescaler == 1) {
+            Prog.WDTPSA = 1;
             //CHANGING PRESCALER(TIMER0 -> WDT)
             Instruction(OP_CLRWDT);         // Clear WDT, not a prescaler !
             Instruction(OP_CLRF, REG_TMR0); // Clear TMR0 and prescaler

@@ -115,7 +115,7 @@ static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
     McuIoPinInfo *iop = PinInfoForName(_str);
     ShortPinName(iop, str2);
 
-    int type = GetAssignedType(_str);
+    int type = GetAssignedType(_str,_str);
     if(str[0] == 'U') {
         if(type == IO_TYPE_DIG_INPUT) {
             fprintf(fv, "  InArr[InCount].Name := '%s';\n", __str);
@@ -355,9 +355,9 @@ static void PortY(FILE *fi, FILE *fu, char *str)
 //-----------------------------------------------------------------------------
 static void DeclareBit(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv, char *str, char *_str)
 {
-    // The mapped symbol has the form U_b_{X,Y,R}name, so look at character
+    // The mapped symbol has the form Ub_{X,Y,R}name, so look at character
     // four to determine if it's an input, output, internal relay.
-    int type = GetAssignedType(_str);
+    int type = GetAssignedType(_str,_str);
 
     if(type == IO_TYPE_DIG_INPUT) {
         ResetAndRegister(fr, fv, str, _str);
@@ -427,9 +427,7 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
             case INT_SET_VARIABLE_AND:
             case INT_SET_VARIABLE_OR:
             case INT_SET_VARIABLE_XOR:
-#ifdef SHARE
             case INT_SET_VARIABLE_MOD:
-#endif
             case INT_SET_VARIABLE_DIVIDE:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_SUBTRACT:
@@ -768,13 +766,9 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                     case INT_SET_VARIABLE_DIVIDE:
                         op = "/";
                         goto arith;
-#ifdef SHARE
-#ifdef NEW_FEATURE
                     case INT_SET_VARIABLE_MOD:
                         op = "mod";
                         goto arith;
-#endif
-#endif
                     arith:
                         fprintf(f,
                                 "%s := %s %s %s;\n",
@@ -1182,7 +1176,7 @@ void CompilePascal(char *dest)
             "#endif\n"
             "}\n"
             "{  Define NO_PROTOTYPES if you don't want LDmicro to provide prototypes for\n"
-            "   all the I/O procedures (Read_U_xxx, Write_U_xxx) that you must provide.\n"
+            "   all the I/O procedures (Read_Ux_xxx, Write_Ux_xxx) that you must provide.\n"
             "   If you define this then you must provide your own prototypes for these\n"
             "   functions in ladder.pas, or provide definitions (e.g. as inlines or macros)\n"
             "   for them in ladder.pas. }\n"
@@ -1193,9 +1187,9 @@ void CompilePascal(char *dest)
             "#define PROTO(x) x\n"
             "#endif\n"
             "}\n"
-            "{  U_xxx symbols correspond to user-defined names. There is such a symbol\n"
+            "{  Ux_xxx symbols correspond to user-defined names. There is such a symbol\n"
             "   for every internal relay, variable, timer, and so on in the ladder\n"
-            "   program. I_xxx symbols are internally generated. }\n");
+            "   program. Ix_xxx symbols are internally generated. }\n");
 
     fprintf(f,
             "procedure PlcCycle;\n"

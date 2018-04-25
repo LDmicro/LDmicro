@@ -25,6 +25,8 @@
 #include <memory.h>
 //#include <tchar.h>
 
+//#include <cstring>
+
 //#include <inttypes.h>
 #include <ctype.h>
 #include <time.h>

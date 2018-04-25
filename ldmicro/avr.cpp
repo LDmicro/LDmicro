@@ -4061,7 +4061,6 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_SET_VARIABLE_MOD:
-                break;
             case INT_SET_VARIABLE_DIVIDE:
                 // Do this one separately since the divide routine uses
                 // slightly different in/out registers and I don't feel like

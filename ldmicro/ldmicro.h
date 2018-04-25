@@ -1771,7 +1771,7 @@ int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
 int MemOfVar(char *name, DWORD *addr);
 BYTE MuxForAdcVariable(const char *name);
 int SingleBitAssigned(const char *name);
-int GetAssignedType(const char *name);
+int GetAssignedType(const char *name, const char *fullName);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput);
 void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const char *name, DWORD *addr, int *bit);

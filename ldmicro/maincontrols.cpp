@@ -517,7 +517,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SUB, _("Insert SUB (16-bit Integer Subtract)\t-"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MUL, _("Insert MUL (16-bit Integer Multiply)\t*"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_DIV, _("Insert DIV (16-bit Integer Divide)\tD"));
-    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD, _("SIMUL: Insert MOD (Integer Divide Remainder)"));
+    AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_MOD, _("Insert MOD (Integer Divide Remainder)"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_NEG, _("Insert NEG (Integer Negate)"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_RANDOM, _("Insert Random"));
     AppendMenu(SignedMenu, MF_STRING, MNU_INSERT_SEED_RANDOM, _("Insert Seed of Random"));

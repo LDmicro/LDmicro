@@ -22,9 +22,6 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
-
-#include <cstring>
-
 //-----------------------------------------------------------------------------
 #if defined(LDLANG_RU)
 // code page 1251
@@ -403,7 +400,7 @@ void Transliterate(char *dest, char *str)
 #else
 void Transliterate(char *dest, char *str)
 {
-    std::strcpy(dest, str);
+    strcpy(dest, str);
 }
 #endif
 
