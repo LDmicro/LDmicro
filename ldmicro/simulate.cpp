@@ -2100,13 +2100,9 @@ void DescribeForIoList(char *name, int type, char *out)
             break;
 
         case IO_TYPE_PWM_OUTPUT:
-#if 0
-            sprintf(out, "PWM");
-#else
             char s[MAX_NAME_LEN];
             sprintf(s, "$%s", name);
             sprintf(out, "%s", SingleBitOn(s) ? "ON" : "OFF");
-#endif
             break;
 
         case IO_TYPE_STRING:

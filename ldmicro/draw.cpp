@@ -1623,12 +1623,6 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
 
     int xadj = 0;
     switch(which) {
-        /*
-        case ELEM_ADD:
-        case ELEM_SUB:
-        case ELEM_MUL:
-        case ELEM_DIV:
-        */
         case ELEM_QUAD_ENCOD:
         case ELEM_NPULSE:
         case ELEM_PULSER:

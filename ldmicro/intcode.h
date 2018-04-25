@@ -30,6 +30,7 @@
 
 #define NEW_CMP // (C) GitHub.LDmicro@gmail.com
 #define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
+#define NEW_INT 1
 
 // clang-format off
 
@@ -38,16 +39,20 @@
 #define INT_COPY_BIT_TO_BIT                      3
 #define INT_COPY_NOT_BIT_TO_BIT                  301
 #define INT_COPY_XOR_BIT_TO_BIT                  302
+#if NEW_INT > 0
 #define INT_VARIABLE_SET_BIT                     3001
 #define INT_VARIABLE_CLEAR_BIT                   3002
 #define INT_VARIABLE_NOT_BIT                     3003
 #define INT_VARIABLE_SET_BITS                    3006
 #define INT_VARIABLE_CLEAR_BITS                  3007
+#endif
 #define INT_SET_VARIABLE_TO_LITERAL              4
 #define INT_SET_VARIABLE_TO_VARIABLE             5
+#if NEW_INT > 0
 #define INT_SET_BIN2BCD                          5001
 #define INT_SET_BCD2BIN                          5002
 #define INT_SET_OPPOSITE                         5003
+#endif
 #define INT_SET_SWAP                             5004
 #define INT_DECREMENT_VARIABLE                   6001
 #define INT_INCREMENT_VARIABLE                   6
@@ -55,12 +60,13 @@
 #define INT_SET_VARIABLE_SUBTRACT                8
 #define INT_SET_VARIABLE_MULTIPLY                9
 #define INT_SET_VARIABLE_DIVIDE                 10
-
 #define INT_SET_VARIABLE_MOD                    1001
+
+#if NEW_INT > 0
 #define INT_COPY_VAR_BIT_TO_VAR_BIT             1021
 #define INT_NOT_VAR_BIT_TO_VAR_BIT              1022
 #define INT_XOR_VAR_BIT_TO_VAR_BIT              1023
-
+#endif
 #ifdef TABLE_IN_FLASH
 #define INT_FLASH_INIT                          1003
 #define INT_FLASH_READ                          1004

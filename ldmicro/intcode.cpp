@@ -450,10 +450,12 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "if ('%s' & (1<<%d)) == 0 {", IntCode[i].name1, IntCode[i].name2);
                 indent++;
                 break;
+
             case INT_IF_BITS_SET_IN_VAR: // TODO
                 fprintf(f, "if ('%s' & %d) == %d  {", IntCode[i].name1, IntCode[i].literal, IntCode[i].literal);
                 indent++;
                 break;
+
             case INT_IF_BITS_CLEAR_IN_VAR: // TODO
                 fprintf(f, "if ('%s' & %d) == 0 {", IntCode[i].name1, IntCode[i].literal);
                 indent++;
@@ -2814,6 +2816,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_SUB: intOp = INT_SET_VARIABLE_SUBTRACT; Comment(3, "ELEM_SUB"); goto math;
         case ELEM_MUL: intOp = INT_SET_VARIABLE_MULTIPLY; Comment(3, "ELEM_MUL"); goto math;
         case ELEM_DIV: intOp = INT_SET_VARIABLE_DIVIDE;   Comment(3, "ELEM_DIV"); goto math;
+        case ELEM_MOD: intOp = INT_SET_VARIABLE_MOD;      Comment(3, "ELEM_MOD"); goto math;
           math: {
             if(IsNumber(l->d.math.dest)) {
                 Error(_("Math instruction: '%s' not a valid destination."),
@@ -3771,7 +3774,7 @@ BOOL DivideRoutineUsed()
             return TRUE;
 
     for(int i = 0; i < IntCodeLen; i++)
-        if(IntCode[i].op == INT_SET_VARIABLE_DIVIDE)
+        if((IntCode[i].op == INT_SET_VARIABLE_DIVIDE) || (IntCode[i].op == INT_SET_VARIABLE_MOD))
             return TRUE;
 
     return FALSE;

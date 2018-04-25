@@ -1180,7 +1180,10 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
         max = hobatoi(s->max);
     };
 
-    f = fopen("acceleration_deceleration.txt", "w");
+    char fname[MAX_PATH];
+    sprintf(fname, "%s\\%s", CurrentLdPath, "acceleration_deceleration.txt");
+    f = fopen(fname, "w");
+
     fclose(f);
 
     s->n = r->n;

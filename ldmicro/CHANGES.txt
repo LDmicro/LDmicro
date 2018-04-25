@@ -1,3 +1,11 @@
+== Release 4.3.8.6
+
+    * Fixed: Transliterate for non RU (#69). Fixes strange ANSIC output.
+
+    * Fixed: pic10f200 pin number (#70)
+
+    * Added: MOD (Integer Divide Remainder) operattion.
+
 == Release 4.3.8.5
 
     * Fixed: PIC10F200 compile, issue #65

@@ -201,6 +201,7 @@ void Disassemble()
                 case INT_SET_VARIABLE_SUBTRACT: c = '-'; goto arith;
                 case INT_SET_VARIABLE_MULTIPLY: c = '*'; goto arith;
                 case INT_SET_VARIABLE_DIVIDE: c = '/'; goto arith;
+                case INT_SET_VARIABLE_MOD: c = '%'; goto arith;
 arith:
                     printf("int16s[%s] := int16s[%s] %c int16s[%s]",
                         Symbols[Program[pc]], Symbols[Program[pc+2]], c, Symbols[Program[pc+3]]);
@@ -313,6 +314,13 @@ void InterpretOneCycle()
         case INT_SET_VARIABLE_DIVIDE:
             if (READ_INT(Program[pc + 3]) != 0) {
                 WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) / READ_INT(Program[pc + 3]));
+            }
+            pc += 4;
+            break;
+
+        case INT_SET_VARIABLE_MOD:
+            if (READ_INT(Program[pc + 3]) != 0) {
+                WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) % READ_INT(Program[pc + 3]));
             }
             pc += 4;
             break;

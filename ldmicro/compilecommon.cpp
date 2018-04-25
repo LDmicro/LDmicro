@@ -393,9 +393,18 @@ int SingleBitAssigned(const char *name)
 }
 
 //-----------------------------------------------------------------------------
-int GetAssignedType(const char *name)
+int GetAssignedType(const char *name, const char *fullName)
 {
     int type = NO_PIN_ASSIGNED;
+    if(fullName && strlen(fullName))
+        if(fullName[0] == 'I') {
+            if(fullName[1] == 'b')
+                return IO_TYPE_INTERNAL_RELAY;
+            else if(fullName[1] == 'i')
+                return IO_TYPE_GENERAL;
+            else
+                oops();
+        }
     for(int i = 0; i < Prog.io.count; i++) {
         if(strcmp(Prog.io.assignment[i].name, name) == 0) {
             type = Prog.io.assignment[i].type;

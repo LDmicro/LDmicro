@@ -145,7 +145,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
 {
     // The mapped symbol has the form U_b_{X,Y,R}name, so look at character
     // four to determine if it's an input, output, internal relay.
-    int type = GetAssignedType(&str[3]);
+    int type = GetAssignedType(&str[3], str);
 
     //if(str[3] == 'X') {
     if(type == IO_TYPE_DIG_INPUT) {
@@ -560,10 +560,10 @@ static void GenerateDeclarations(FILE *f)
             case INT_SET_VARIABLE_SHR:
             case INT_SET_VARIABLE_AND:
             case INT_SET_VARIABLE_OR:
-            case INT_SET_VARIABLE_MOD:
                 break;
             case INT_SET_VARIABLE_XOR:
             case INT_SET_VARIABLE_SR0:
+            case INT_SET_VARIABLE_MOD:
             case INT_SET_VARIABLE_DIVIDE:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_SUBTRACT:
@@ -844,6 +844,9 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     case INT_SET_VARIABLE_DIVIDE:
                         op = '/';
                         goto arith;
+                    case INT_SET_VARIABLE_MOD:
+                        op = '%';
+                        goto arith;
                     arith:
                         fprintf(f,
                                 "%s = %s %c %s;\n",
@@ -953,23 +956,23 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case INT_DELAY:
                 fprintf(f, "#ifdef CCS_PIC_C\n");
                 doIndent(f, i);
-                fprintf(f, "  delay_us(%s);\n", IntCode[i].name1);
+                fprintf(f, "  delay_us(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 doIndent(f, i);
                 fprintf(f, "#elif defined(HI_TECH_C)\n");
                 doIndent(f, i);
-                fprintf(f, "  __delay_us(%s);\n", IntCode[i].name1);
+                fprintf(f, "  __delay_us(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 doIndent(f, i);
                 fprintf(f, "#elif defined(__CODEVISIONAVR__)\n");
                 doIndent(f, i);
-                fprintf(f, "  delay_us(%s);\n", IntCode[i].name1);
+                fprintf(f, "  delay_us(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 doIndent(f, i);
                 fprintf(f, "#elif defined(__GNUC__)\n");
                 doIndent(f, i);
-                fprintf(f, "  _delay_us(%s);\n", IntCode[i].name1);
+                fprintf(f, "  _delay_us(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 doIndent(f, i);
                 fprintf(f, "#else\n");
                 doIndent(f, i);
-                fprintf(f, "  delayMicroseconds(%s);\n", IntCode[i].name1);
+                fprintf(f, "  delayMicroseconds(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 doIndent(f, i);
                 fprintf(f, "#endif\n");
                 break;
@@ -1614,26 +1617,21 @@ void CompileAnsiC(char *dest, int MNU)
                 "  #include <%s.h>\n",
                 Prog.mcu->mcuH2,
                 Prog.mcu->mcuH);
-        if(AdcFunctionUsed()) {
-            fprintf(f, "  #device ADC=10\n");
-        }
-        if(PwmFunctionUsed()) {
-            fprintf(f, "  #USE PWM\n");
-        }
         fprintf(f, "  #FUSES 1=0x%04X\n", (WORD)Prog.configurationWord & 0xFFFF);
         if(Prog.configurationWord & 0xFFFF0000) {
             fprintf(f, "   #FUSES 2=0x%04X\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
         }
-        if(DelayUsed() || UartFunctionUsed()) {
-            fprintf(f, "  #USE DELAY(CLOCK=%d)\n", Prog.mcuClock);
-            /*
-      fprintf(f,
-"  #USE DELAY(INTERNAL=%d)\n"
-      , Prog.mcuClock);
-*/
-        }
         if(UartFunctionUsed()) {
             fprintf(f, "  #USE RS232(BAUD=%d, BITS=8, PARITY=N, STOP=1, ERRORS, UART1) // ENABLE=pin\n", Prog.baudRate);
+        }
+        if(DelayUsed() || UartFunctionUsed()) {
+            fprintf(f, "  #USE DELAY(CLOCK=%d)\n", Prog.mcuClock);
+        }
+        if(AdcFunctionUsed()) {
+            fprintf(f, "  #device ADC=10\n");
+        }
+        if(PwmFunctionUsed()) {
+            fprintf(f, "  //TODO #USE PWM // http://www.ccsinfo.com/newsdesk_info.php?newsdesk_id=182 \n");
         }
         int i;
         if(Prog.mcu)
@@ -2001,27 +1999,13 @@ void CompileAnsiC(char *dest, int MNU)
         fprintf(f, "    analogReference(analogReference_type);\n\n");
 
         Comment(" Set up I/O pins");
-        int i;
-        for(i = 0; i < Prog.io.count; i++) {
+        for(int i = 0; i < Prog.io.count; i++) {
             if((Prog.io.assignment[i].type == IO_TYPE_INT_INPUT) || (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT))
                 fprintf(f, "    pinMode(pin_%s, INPUT_PULLUP);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
             else if(Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT)
                 fprintf(f, "    pinMode(pin_%s, OUTPUT);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
             else if(Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT)
                 fprintf(f, "    pinMode(pin_%s, OUTPUT);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
-            /*
-      if((Prog.io.assignment[i].type == IO_TYPE_INT_INPUT)
-      || (Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT)
-      || (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT)
-      || (Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT)) {
-        if(Prog.io.assignment[i].name[0] == 'X')
-            fprintf(f,"    pinMode(pin_%s, INPUT);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
-        else if(Prog.io.assignment[i].name[0] == 'Y')
-            fprintf(f,"    pinMode(pin_%s, OUTPUT);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
-//      else if(Prog.io.assignment[i].name[0] == 'A')
-//          fprintf(f,"    analogReference(analogReference_type);\n");
-      }
-*/
         }
         if(SleepFunctionUsed()) {
             fprintf(f,

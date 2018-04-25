@@ -858,7 +858,7 @@ void SaveIoListToFile(FILE *f)
             // Don't internationalize this! It's the file format, not UI.
             if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PC) && (Prog.io.assignment[i].pin))
                 fprintf(f, "    %s at %s\n", Prog.io.assignment[i].name, PinToName(Prog.io.assignment[i].pin));
-            else // if(TRUE || (Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT))
+            else 
                 fprintf(f,
                         "    %s at %d %d %d\n",
                         Prog.io.assignment[i].name,

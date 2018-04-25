@@ -22,7 +22,6 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
-
 //-----------------------------------------------------------------------------
 #if defined(LDLANG_RU)
 // code page 1251
@@ -401,7 +400,7 @@ void Transliterate(char *dest, char *str)
 #else
 void Transliterate(char *dest, char *str)
 {
-    // TODO
+    strcpy(dest, str);
 }
 #endif
 
