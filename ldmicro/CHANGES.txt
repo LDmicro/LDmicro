@@ -1,3 +1,13 @@
+== Release 4.3.8.7
+
+    * Fixed: Can't assign PWM pin because of empty PWM pins list #73
+
+    * Fixed: When compiling ansic for arduino using REGISTER mcu,
+    generated code includes "#", arduino does not compile (#72)
+
+    * Added: For PIC16F886, PIC16F887 enabled pins:
+    RE3(Input Only), RA7 (I/O when internal oscillator used), RA6 (I/O when internal oscillator used).
+
 == Release 4.3.8.6
 
     * Fixed: Transliterate for non RU (#69). Fixes strange ANSIC output.
@@ -6,11 +16,14 @@
 
     * Added: MOD (Integer Divide Remainder) operattion.
 
+    * Wiki: PLC and safety
+    https://github.com/LDmicro/LDmicro/wiki/PLC-and-safety
+
 == Release 4.3.8.5
 
     * Fixed: PIC10F200 compile, issue #65
 
-    * Fixed: PWM no longer possible on 16F628a, issue #61
+    * Fixed: PWM no longer possible on 16F628a, issue #61 (FAIL:Fixed in 4.3.8.7 #73)
 
 == Release 4.3.8.4
 

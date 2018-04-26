@@ -1362,7 +1362,7 @@ void ShowIoDialog(int item)
                 McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu->pinInfo[i].pin, Prog.cycleTimer);
                 if(!iop)
                     goto cant_use_this_io;
-                if((Prog.mcu->whichIsa == ISA_AVR) && (iop->timer != Prog.cycleTimer))
+                if((Prog.mcu->whichIsa == ISA_AVR) && (iop->timer == Prog.cycleTimer))
                     goto cant_use_this_io;
                 // okay; we know how to connect it up to the PWM
             } else {

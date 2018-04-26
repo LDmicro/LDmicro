@@ -867,7 +867,7 @@ McuIoPinInfo Pic18PinIoInfo[] = {
     { 'A',  2,  1, "RA2/AN2/VREF" },
     { 'A',  3,  2, "RA3/AN3/CMP1" },
     { 'A',  4,  3, "RA4/T0CKI/CMP2" },
-    { 'A',  5,  4, "RA5/_MCLR/Vpp" }, // input only
+    { 'A',  5,  4, "RA5/_MCLR/Vpp (Input Only)" },
 //  { ' ', -1,  5, "Vss" },
     { 'B',  0,  6, "RB0/INT" },
     { 'B',  1,  7, "RB1/RX/DT" },
@@ -900,7 +900,7 @@ McuIoPinInfo Pic16F88PinIoInfo[] = {
     { 'A',  2,  1, "RA2/AN2" },
     { 'A',  3,  2, "RA3/AN3/CMP1" },
     { 'A',  4,  3, "RA4/AN4/T0CKI/CMP2" },
-    { 'A',  5,  4, "RA5/_MCLR/Vpp" }, // input only without pull-up resistor
+    { 'A',  5,  4, "RA5/_MCLR/Vpp (Input Only)" }, // without pull-up resistor
 //  { ' ', -1,  5, "Vss" },
     { 'B',  0,  6, "RB0/INT" },
     { 'B',  1,  7, "RB1/SDI/SDA" },
@@ -1031,9 +1031,9 @@ McuIoPinInfo Pic16F887IoPinInfo[] = {
     { 'E',  0,  8, "RE0/AN5" },
     { 'E',  1,  9, "RE1/AN6" },
     { 'E',  2, 10, "RE2/AN7" },
-//  { 'E',  3,  1, "RE3/MCLR/Vpp" },
-//  { 'A',  7, 13, "RA7/OSC1/CLKIN" },
-//  { 'A',  6, 14, "RA6/OSC2/CLKOUT" },
+    { 'E',  3,  1, "RE3/_MCLR/Vpp (Input Only)" },
+    { 'A',  7, 13, "RA7/OSC1/CLKIN" },
+    { 'A',  6, 14, "RA6/OSC2/CLKOUT" },
     { 'C',  0, 15, "RC0/T1OSO/T1CKI" },
     { 'C',  1, 16, "RC1/T1OSI/CCP2" },
     { 'C',  2, 17, "RC2/P1A/CCP1" },
@@ -1085,7 +1085,7 @@ McuAdcPinInfo Pic16F887AdcPinInfo[] = {
 // PIC16F1516, PIC16F1518
 
 McuIoPinInfo Pic28Pin_SPDIP_SOIC_SSOP[] = {
-//  { 'E', 3,  1, "RE3/_MCLR/Vpp" },
+    { 'E', 3,  1, "RE3/_MCLR/Vpp (Input Only)" },
 
     { 'A', 0,  2, "RA0/AN0/ULPWU/C12IN0-" },
     { 'A', 1,  3, "RA1/AN1/C12IN1-" },
@@ -1094,8 +1094,8 @@ McuIoPinInfo Pic28Pin_SPDIP_SOIC_SSOP[] = {
     { 'A', 4,  6, "RA4/T0CKI/C1OUT" },
     { 'A', 5,  7, "RA5/AN4/_SS/C2OUT" },
 //  {          8, "Vss" },
-//  { 'A', 7,  9, "RA,OSC2/CLKOUT" },
-//  { 'A', 6, 10, "RA,OSC1/CLKIN " },
+    { 'A', 7,  9, "RA7,OSC2/CLKOUT" },
+    { 'A', 6, 10, "RA6,OSC1/CLKIN" },
     { 'C', 0, 11, "RC0/T1OSO/T1CKI" },
     { 'C', 1, 12, "RC1/T1OSI/CCP2" },
     { 'C', 2, 13, "RC2/P1A/CCP1" },

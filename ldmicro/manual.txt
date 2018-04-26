@@ -87,7 +87,11 @@ of each instruction, even if it looks familiar. This document assumes
 basic knowledge of ladder logic and of the structure of PLC software
 (the execution cycle: read inputs, compute, write outputs).
 
-See https://github.com/LDmicro/LDmicro/wiki/PLC-Cycle-Time-0
+PLC and safety
+    https://github.com/LDmicro/LDmicro/wiki/PLC-and-safety
+
+PLC Cycle Time 0
+    https://github.com/LDmicro/LDmicro/wiki/PLC-Cycle-Time-0
 
 ADDITIONAL TARGETS
 ==================
@@ -177,6 +181,10 @@ indicates what kind of object it is.  For example:
     The variable name that begins with a '#' character and subsequent a number
     (commonly a hexadecimal) treated as immediate address of hardware register.
     Be careful with writing to the hardware registers by immediate address access.
+    See how to access to SPI thru the hardware registers.
+    * Wiki: SPI: Serial Peripheral Interface
+      https://github.com/LDmicro/LDmicro/wiki/SPI:-Serial-Peripheral-Interface
+
 
 Choose the rest of the name so that it describes what the object does,
 and so that it is unique within the program. The same name always refers

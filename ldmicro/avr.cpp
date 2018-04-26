@@ -3574,7 +3574,9 @@ static void CompileFromIntermediate()
             }
             case INT_SET_OPPOSITE:
                 Comment("INT_SET_OPPOSITE %s", a->name1);
+                oops();
                 break;
+
             case INT_SET_SWAP:
                 Comment(" %s", a->name1);
                 //MemForVariable(a->name1, &addr1);
@@ -4771,6 +4773,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_UART_RECV: {
+                //Receive one char/byte in a single PLC cycle.
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 MemForSingleBit(a->name2, TRUE, &addr2, &bit2);

@@ -92,6 +92,8 @@ static const char *MapSym(const char *str, int how)
     // User and internal symbols are distinguished.
     if(IsNumber(str))
         sprintf(ret, "%s", str);
+    else if(*str == '#')
+        sprintf(ret, "Ad_%s", str + 1); // Memory access
     else if(*str == '$') {
         sprintf(ret, "I%c_%s", bit_int, str + 1);
     } else {
@@ -114,17 +116,16 @@ static const char *MapSym(const char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, const char *str, int sov)
 {
-    if(sov == 1)
+    if(*str == 'A')
+        fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
+    else if(sov == 1)
         fprintf(f, "STATIC SBYTE %s = 0;\n", str);
     else if(sov == 2)
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
     else if((sov == 3) || (sov == 4))
         fprintf(f, "STATIC SDWORD %s = 0;\n", str);
-    else {
+    else
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
-        //  oops();
-    }
-    //fprintf(f, "\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -141,20 +142,22 @@ static void DeclareStr(FILE *f, const char *str, int sov)
 // internal relay. An internal relay is just a BOOL variable, but for an
 // input or an output someone else must provide read/write functions.
 //-----------------------------------------------------------------------------
+static BOOL all_arduino_pins_are_mapped;
 static void DeclareBit(FILE *f, const char *str, int set1)
 {
     // The mapped symbol has the form U_b_{X,Y,R}name, so look at character
     // four to determine if it's an input, output, internal relay.
     int type = GetAssignedType(&str[3], str);
 
-    //if(str[3] == 'X') {
     if(type == IO_TYPE_DIG_INPUT) {
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            if(iop) {
-                fprintf(flh, "const int pin_%s = %s; // %s\n", str, ArduinoPinName(iop), iop->pinName);
+            const char *s = ArduinoPinName(iop);
+            if(s) {
+                fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1;\n", str);
+                all_arduino_pins_are_mapped = false;
             }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
@@ -215,15 +218,15 @@ static void DeclareBit(FILE *f, const char *str, int set1)
                 fprintf(f, "\n");
             }
         }
-
-        //  } else if(str[3] == 'Y') {
     } else if(type == IO_TYPE_DIG_OUTPUT) {
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            if(iop) {
-                fprintf(flh, "const int pin_%s = %s; // %s\n", str, ArduinoPinName(iop), iop->pinName);
+            const char *s = ArduinoPinName(iop);
+            if(s) {
+                fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1;\n", str);
+                all_arduino_pins_are_mapped = false;
             }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
@@ -348,18 +351,19 @@ static void DeclareBit(FILE *f, const char *str, int set1)
                 fprintf(f, "\n");
             }
         }
-
     } else if(type == IO_TYPE_PWM_OUTPUT) {
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            if(iop) {
+            const char *s = ArduinoPinName(iop);
+            if(s) {
                 fprintf(flh,
                         "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n",
                         str,
-                        ArduinoPinName(iop),
+                        s,
                         iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1; // Check that it's a PWM pin!\n", str);
+                all_arduino_pins_are_mapped = false;
             }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
@@ -407,14 +411,16 @@ static void DeclareBit(FILE *f, const char *str, int set1)
     } else if(type == IO_TYPE_READ_ADC) {
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            if(iop) {
+            const char *s = ArduinoPinName(iop);
+            if(s) {
                 fprintf(flh,
                         "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n",
                         str,
-                        ArduinoPinName(iop),
+                        s,
                         iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1; // Check that it's a ADC pin!\n", str);
+                all_arduino_pins_are_mapped = false;
             }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
@@ -475,6 +481,8 @@ static void DeclareBit(FILE *f, const char *str)
 //-----------------------------------------------------------------------------
 static void GenerateDeclarations(FILE *f)
 {
+    all_arduino_pins_are_mapped = true;
+
     DWORD addr, addr2;
     int   bit, bit2;
 
@@ -783,6 +791,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
+                if(*IntCode[i].name1 == '#') { // TODO: in many other places :(
+                    fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1 + 1, IntCode[i].literal);
+                    doIndent(f, i);
+                }
                 fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 break;
 
@@ -790,6 +802,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
+                if(*IntCode[i].name1 == '#') { // TODO: in many other places :(
+                    fprintf(f, "//pokeb(%s, %s); // Variants 1 and 2\n", IntCode[i].name1 + 1, MapSym(IntCode[i].name2, ASINT));
+                    doIndent(f, i);
+                }
                 fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
@@ -1020,6 +1036,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "#warning // Test if bit Clear in SFR\n");
                 break;
 #endif
+
+            case INT_SPI:
+                fprintf(f, "SPI(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                break;
 
             case INT_UART_RECV:
                 fprintf(f,
@@ -1366,6 +1386,29 @@ void CompileAnsiC(char *dest, int MNU)
                 "    #include \"WProgram.h\"\n"
                 "#endif\n"
                 "\n");
+        fprintf(flh,
+  "#ifdef __GNUC__\n"
+  "    //mem.h vvv\n"
+  "    //CodeVisionAVR V2.0 C Compiler\n"
+  "    //(C) 1998-2007 Pavel Haiduc, HP InfoTech S.R.L.\n"
+  "    //\n"
+  "    //  Memory access macros\n"
+  "\n"
+  "    #ifndef _MEM_INCLUDED_\n"
+  "    #define _MEM_INCLUDED_\n"
+  "\n"
+  "    #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
+  "    #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
+  "    #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
+  "    #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
+  "\n"
+  "    #endif\n"
+  "    //mem.h ^^^\n"
+  "#endif\n"
+       );
+        fprintf(flh,
+  "    #define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n"
+       );
     }
     fprintf(flh,
             "/*\n"
@@ -1503,7 +1546,7 @@ void CompileAnsiC(char *dest, int MNU)
                 "    #endif\n"
                 "#endif\n",
                 Prog.mcu->mcuH);
-        /*
+/*
       fprintf(fh,
 "#ifdef __GNUC__\n"
 "    //mem.h vvv\n"
@@ -1515,10 +1558,10 @@ void CompileAnsiC(char *dest, int MNU)
 "    #ifndef _MEM_INCLUDED_\n"
 "    #define _MEM_INCLUDED_\n"
 "\n"
-"    #define pokeb(addr,data) *((unsigned char *)(addr))=(data)\n"
-"    #define pokew(addr,data) *((unsigned int *)(addr))=(data)\n"
-"    #define peekb(addr) *((unsigned char *)(addr))\n"
-"    #define peekw(addr) *((unsigned int *)(addr))\n"
+"    #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
+"    #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
+"    #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
+"    #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
 "\n"
 "    #endif\n"
 "    //mem.h ^^^\n"
@@ -2302,9 +2345,11 @@ void CompileAnsiC(char *dest, int MNU)
     fclose(fh);
 
     if(compile_MNU == MNU_COMPILE_ARDUINO) {
+        if(all_arduino_pins_are_mapped)
+            fprintf(flh,"//");
         fprintf(
             flh,
-            "   You can comment or delete this line after provide the I/O pin mapping for ARDUINO board in ladder.h above.\n");
+            " You can comment or delete this line after provide the I/O pin mapping for ARDUINO board in ladder.h above.\n");
     }
     fprintf(flh, "\n");
     fprintf(flh, "#endif\n");

@@ -45,9 +45,6 @@
 #define FREEZE_SUBKEY "LDMicro"
 //#include "freeze.h"
 
-
-//#include "stdafx.h"
-
 //TODO:  some day this macros should be change to std::max / std::min
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
