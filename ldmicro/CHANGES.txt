@@ -1,5 +1,7 @@
 == Release 4.3.8.7
 
+    * Fixed: Can't assign PWM pin because of empty PWM pins list #73
+
     * Partially fixed: When compiling ansic for arduino using REGISTER mcu,
     generated code includes "#", arduino does not compile (#72)
 
@@ -21,7 +23,7 @@
 
     * Fixed: PIC10F200 compile, issue #65
 
-    * Fixed: PWM no longer possible on 16F628a, issue #61
+    * Fixed: PWM no longer possible on 16F628a, issue #61 (FAIL:Fixed in 4.3.8.7 #73)
 
 == Release 4.3.8.4
 
