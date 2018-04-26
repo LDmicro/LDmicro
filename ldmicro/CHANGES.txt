@@ -2,7 +2,7 @@
 
     * Fixed: Can't assign PWM pin because of empty PWM pins list #73
 
-    * Partially fixed: When compiling ansic for arduino using REGISTER mcu,
+    * Fixed: When compiling ansic for arduino using REGISTER mcu,
     generated code includes "#", arduino does not compile (#72)
 
     * Added: For PIC16F886, PIC16F887 enabled pins:

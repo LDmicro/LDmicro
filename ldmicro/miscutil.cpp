@@ -654,7 +654,7 @@ const char *ArduinoPinName(McuIoPinInfo *iop)
         if(iop->ArduinoName)
             if(strlen(iop->ArduinoName))
                 return iop->ArduinoName;
-    return "-1";
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
