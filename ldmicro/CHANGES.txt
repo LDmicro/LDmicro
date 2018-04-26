@@ -1,6 +1,9 @@
 == Release 4.3.8.7
-    
-    * Added: For PIC16F886, PIC16F887 enabled pins: 
+
+    * Partially fixed: When compiling ansic for arduino using REGISTER mcu,
+    generated code includes "#", arduino does not compile (#72)
+
+    * Added: For PIC16F886, PIC16F887 enabled pins:
     RE3(Input Only), RA7 (I/O when internal oscillator used), RA6 (I/O when internal oscillator used).
 
 == Release 4.3.8.6

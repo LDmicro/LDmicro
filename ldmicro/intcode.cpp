@@ -92,6 +92,11 @@ static DWORD GenSymCountStepper;
 DWORD EepromAddrFree;
 DWORD RomSection;
 
+static char PersistVariables[MAX_IO][MAX_NAME_LEN];
+int         PersistVariableCount;
+
+//-----------------------------------------------------------------------------
+// Report an error if a constant doesn't fit in 16 bits.
 //-----------------------------------------------------------------------------
 static void CheckConstantInRange(SDWORD v)
 {
@@ -1088,7 +1093,7 @@ BOOL CheckForNumber(char *str)
 }
 
 //-----------------------------------------------------------------------------
-double hobatof(char *str)
+double hobatof(const char *str)
 {
     return atof(str);
 }

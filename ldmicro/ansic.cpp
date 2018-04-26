@@ -92,6 +92,8 @@ static const char *MapSym(const char *str, int how)
     // User and internal symbols are distinguished.
     if(IsNumber(str))
         sprintf(ret, "%s", str);
+    else if(*str == '#') 
+        sprintf(ret, "Ad_%s", str + 1); // Memory access
     else if(*str == '$') {
         sprintf(ret, "I%c_%s", bit_int, str + 1);
     } else {
@@ -114,17 +116,16 @@ static const char *MapSym(const char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, const char *str, int sov)
 {
-    if(sov == 1)
+    if(*str == 'A')
+        fprintf(f, "//STATIC SBYTE %s = 0; // Memory access.\n", str);
+    else if(sov == 1)
         fprintf(f, "STATIC SBYTE %s = 0;\n", str);
     else if(sov == 2)
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
     else if((sov == 3) || (sov == 4))
         fprintf(f, "STATIC SDWORD %s = 0;\n", str);
-    else {
+    else 
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
-        //  oops();
-    }
-    //fprintf(f, "\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -783,14 +784,20 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                if(*IntCode[i].name1 == '#') // TODO: in many other places :(
+                    fprintf(f, "pokeb(%s, %d);\n", IntCode[i].name1 + 1, IntCode[i].literal);
+                else
+                    fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                if(*IntCode[i].name1 == '#') // TODO: in many other places :(
+                    fprintf(f, "pokeb(%s, %s);\n", IntCode[i].name1 + 1, MapSym(IntCode[i].name2, ASINT));
+                else
+                    fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_BIN2BCD:
@@ -1020,6 +1027,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "#warning // Test if bit Clear in SFR\n");
                 break;
 #endif
+
+            case INT_SPI:
+                fprintf(f, "SPI(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                break;
 
             case INT_UART_RECV:
                 fprintf(f,
@@ -1366,6 +1377,26 @@ void CompileAnsiC(char *dest, int MNU)
                 "    #include \"WProgram.h\"\n"
                 "#endif\n"
                 "\n");
+        fprintf(flh,
+  "#ifdef __GNUC__\n"
+  "    //mem.h vvv\n"
+  "    //CodeVisionAVR V2.0 C Compiler\n"
+  "    //(C) 1998-2007 Pavel Haiduc, HP InfoTech S.R.L.\n"
+  "    //\n"
+  "    //  Memory access macros\n"
+  "\n"
+  "    #ifndef _MEM_INCLUDED_\n"
+  "    #define _MEM_INCLUDED_\n"
+  "\n"
+  "    #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
+  "    #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
+  "    #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
+  "    #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
+  "\n"
+  "    #endif\n"
+  "    //mem.h ^^^\n"
+  "#endif\n"
+       );
     }
     fprintf(flh,
             "/*\n"
@@ -1503,7 +1534,7 @@ void CompileAnsiC(char *dest, int MNU)
                 "    #endif\n"
                 "#endif\n",
                 Prog.mcu->mcuH);
-        /*
+/*
       fprintf(fh,
 "#ifdef __GNUC__\n"
 "    //mem.h vvv\n"
@@ -1515,10 +1546,10 @@ void CompileAnsiC(char *dest, int MNU)
 "    #ifndef _MEM_INCLUDED_\n"
 "    #define _MEM_INCLUDED_\n"
 "\n"
-"    #define pokeb(addr,data) *((unsigned char *)(addr))=(data)\n"
-"    #define pokew(addr,data) *((unsigned int *)(addr))=(data)\n"
-"    #define peekb(addr) *((unsigned char *)(addr))\n"
-"    #define peekw(addr) *((unsigned int *)(addr))\n"
+"    #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
+"    #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
+"    #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
+"    #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
 "\n"
 "    #endif\n"
 "    //mem.h ^^^\n"
