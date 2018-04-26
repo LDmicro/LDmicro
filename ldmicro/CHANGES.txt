@@ -1,3 +1,8 @@
+== Release 4.3.8.7
+    
+    * Added: For PIC16F886, PIC16F887 enabled pins: 
+    RE3(Input Only), RA7 (I/O when internal oscillator used), RA6 (I/O when internal oscillator used).
+
 == Release 4.3.8.6
 
     * Fixed: Transliterate for non RU (#69). Fixes strange ANSIC output.
@@ -5,6 +10,9 @@
     * Fixed: pic10f200 pin number (#70)
 
     * Added: MOD (Integer Divide Remainder) operattion.
+
+    * Wiki: PLC and safety
+    https://github.com/LDmicro/LDmicro/wiki/PLC-and-safety
 
 == Release 4.3.8.5
 
