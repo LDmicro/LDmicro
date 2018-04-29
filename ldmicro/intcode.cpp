@@ -1358,7 +1358,7 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             if(IsNumber(l->d.counter.init) || IsNumber(l->d.counter.max)) {
                 int init = CheckMakeNumber(l->d.counter.init);
                 int max = CheckMakeNumber(l->d.counter.max);
-                int b = max(byteNeeded(init), byteNeeded(max));
+                int b = std::max(byteNeeded(init), byteNeeded(max));
                 if(SizeOfVar(l->d.counter.name) != b)
                     SetSizeOfVar(l->d.counter.name, b);
                 //if(init != 0) { // need reinit if CTD(c1), CTU(c1)
@@ -2924,7 +2924,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 int r;
                 if(IsNumber(l->d.doGoto.rung)) {
                     r = hobatoi(l->d.doGoto.rung);
-                    r = min(r, Prog.numRungs+1) - 1;
+                    r = std::min(r, Prog.numRungs+1) - 1;
                 } else {
                     r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
                     if(r < 0) {
@@ -2945,7 +2945,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Error(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
                     CompileError();
                     r = hobatoi(l->d.doGoto.rung);
-                    r = min(r, Prog.numRungs+1);
+                    r = std::min(r, Prog.numRungs+1);
                 } else {
                     r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
                     if(r < 0) {

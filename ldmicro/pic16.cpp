@@ -851,7 +851,7 @@ static DWORD CalcMaxBank()
     DWORD i;
     for(i = 0; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) >= IS_BANK)
-            MaxBank = max(MaxBank, Bank(PicProg[i].arg1));
+            MaxBank = std::max(MaxBank, Bank(PicProg[i].arg1));
     }
     return MaxBank;
 }
@@ -1380,7 +1380,7 @@ doPageCorrection:
                 n2 = PageSelectCheck(PCLATHnow, (PicProgArg1 + n1) >> 8);
                 // we can need more if after first correction we cross the page boundary
                 n3 = PageSelectCheck(PCLATHnow, (PicProgArg1 + n2) >> 8);
-                m3 = max(n1, max(n2, n3));
+                m3 = std::max(n1, std::max(n2, n3));
 
                 int   nSkip = 0;
                 DWORD ii = i; // address where we doing insert
@@ -3910,7 +3910,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
-                sov = max(sov1, sov2);
+                sov = std::max(sov1, sov2);
 
                 DWORD addrA = CopyArgToReg(FALSE, Scratch0, sov, a->name1, FALSE);
                 DWORD addrB = CopyArgToReg(FALSE, Scratch4, sov, a->name2, FALSE);
@@ -3967,7 +3967,7 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
-                sov = max(sov1, sov2);
+                sov = std::max(sov1, sov2);
 
                 DWORD addrA;
                 DWORD addrB;
@@ -4399,7 +4399,7 @@ static void CompileFromIntermediate(BOOL topLevel)
                     sov1 = SizeOfVar(a->name1);
                     sov2 = SizeOfVar(a->name2);
                     sov3 = SizeOfVar(a->name3);
-                    sov = max(sov2, sov3);
+                    sov = std::max(sov2, sov3);
                     if(sov1 < sov) {
                         Error(
                             " Size of result '%s' less then an argument(s) '%s' or '%s'", a->name1, a->name2, a->name3);

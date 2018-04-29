@@ -901,8 +901,8 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_GOSUB:
                 if(IsNumber(IntCode[i].name1)) {
                     int rung = hobatoi(IntCode[i].name1);
-                    rung = min(rung, Prog.numRungs + 1);
-                    rung = max(rung, 0); // -1 anavailable
+                    rung = std::min(rung, Prog.numRungs + 1);
+                    rung = std::max(rung, 0); // -1 anavailable
                     fprintf(f, "CallLabelRung%d;\n", rung);
                 } else {
                     fprintf(f, "CallLabelRung%s;\n", IntCode[i].name1);
@@ -911,8 +911,8 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_GOTO: {
                 if(IsNumber(IntCode[i].name1)) {
                     int rung = hobatoi(IntCode[i].name1);
-                    rung = min(rung, Prog.numRungs + 1);
-                    rung = max(rung, 0); // -1 anavailable
+                    rung = std::min(rung, Prog.numRungs + 1);
+                    rung = std::max(rung, 0); // -1 anavailable
                     fprintf(f, "goto LabelRung%d;\n", rung);
                 } else {
                     fprintf(f, "goto LabelRung%s;\n", IntCode[i].name1);

@@ -241,7 +241,7 @@ static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, D
                                       100,
                                       100,
                                       304 + 550,
-                                      15 + 30 * (max(boxes, labs) < 2 ? 2 : max(boxes, labs)),
+                                      15 + 30 * (std::max(boxes, labs) < 2 ? 2 : std::max(boxes, labs)),
                                       nullptr,
                                       nullptr,
                                       Instance,
