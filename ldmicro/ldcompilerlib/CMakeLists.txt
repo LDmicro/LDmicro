@@ -6,6 +6,8 @@ if( NOT LDLANG )
     set(LDLANG "EN")
 endif()
 
+message(STATUS "ldcompilerlib lang : ${LDLANG}")
+
 set(LD_COMPILER_SRC_LIST
     ../ansic.cpp
     ../avr.cpp
@@ -64,7 +66,7 @@ else()
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         string(TOLOWER ${LDLANG} ldlang_lower)
         add_library               (${PROJECT_NAME}-${ldlang_lower} ${LD_COMPILER_SRC_LIST})
-        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id})
+        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${LDLANG})
     endif()
 
 endif()

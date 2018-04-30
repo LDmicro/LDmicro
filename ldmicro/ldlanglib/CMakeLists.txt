@@ -2,12 +2,11 @@ cmake_minimum_required(VERSION 3.2)
 
 project(ldlanglib LANGUAGES CXX)
 
-SET(LDLANG_ALL EN DE ES FR IT PT TR RU JA )
 if( NOT LDLANG )
     set(LDLANG "EN")
 endif()
 
-message(STATUS "Lang : ${LDLANG}")
+message(STATUS "ldlang lang : ${LDLANG}")
 
 find_package(Perl REQUIRED)
 
@@ -69,7 +68,7 @@ else()
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         string(TOLOWER ${LDLANG} ldlang_lower)
         add_library               (${PROJECT_NAME}-${ldlang_lower} ${LDLANG_SRC_LIST})
-        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id})
+        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${LDLANG})
         target_include_directories(${PROJECT_NAME}-${ldlang_lower} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 
