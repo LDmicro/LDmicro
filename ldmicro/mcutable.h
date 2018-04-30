@@ -142,10 +142,10 @@ typedef struct McuIoInfoTag
         int      len;
     } ram[MAX_RAM_SECTIONS];
     McuIoPinInfo*  pinInfo;
-    int            pinCount;
+    uint32_t       pinCount;
     McuAdcPinInfo* adcInfo;
-    int            adcCount;
-    int            adcMax;
+    uint32_t       adcCount;
+    uint32_t       adcMax;
     struct
     {
         int rxPin;
@@ -158,13 +158,13 @@ typedef struct McuIoInfoTag
     uint32_t configurationWord; // only PIC
 
     McuPwmPinInfo* pwmInfo;
-    int            pwmCount;
+    uint32_t       pwmCount;
 
     McuExtIntPinInfo* ExtIntInfo;
-    int               ExtIntCount;
+    uint32_t       ExtIntCount;
 
     McuSpiInfo* spiInfo;
-    int         spiCount;
+    uint32_t    spiCount;
 
     struct
     {

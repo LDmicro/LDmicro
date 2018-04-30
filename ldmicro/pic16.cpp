@@ -23,6 +23,7 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
+#include <algorithm>
 
 // clang-format off
 #define ASM_LABEL 1

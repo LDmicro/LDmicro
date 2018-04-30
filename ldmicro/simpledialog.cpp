@@ -25,6 +25,7 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
+#include <algorithm>
 
 static HWND SimpleDialog;
 

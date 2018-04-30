@@ -23,6 +23,7 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
+#include <algorithm>
 
 #define ASM_LABEL 1
 //                0 - no labels

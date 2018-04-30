@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 
 project(ldlanglib LANGUAGES CXX)
 
+SET(LDLANG_ALL EN DE ES FR IT PT TR RU JA )
 if( NOT LDLANG )
     set(LDLANG "EN")
 endif()
@@ -36,6 +37,14 @@ if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /J")
     string(APPEND CMAKE_C_FLAGS " /J")
 endif()
+
+add_definitions(
+    "-DISOLATION_AWARE_ENABLED"
+    "-DWIN32_LEAN_AND_MEAN"
+    "-D_CRT_SECURE_NO_WARNINGS"
+    "-D_CRT_SECURE_NO_DEPRECATE"
+    "-DNOMINMAX"
+    )
 
 if(${LDLANG} STREQUAL "ALL")
     foreach(lang_id ${LDLANG_ALL})

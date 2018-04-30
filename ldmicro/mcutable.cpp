@@ -25,10 +25,16 @@
 #include "mcutable.h"
 
 #ifndef arraylen
+
+#if _MSC_VER < 1900
+#define arraylen(x) (sizeof(x)/sizeof((x)[0]))
+#else
 namespace  {
 template<class T, uint32_t N >
 constexpr uint32_t arraylen(T (&)[N]) {return N;}
 }
+#endif
+
 #endif
 
 //-----------------------------------------------------------------------------
@@ -1243,7 +1249,7 @@ McuIoPinInfo PcCfg[] = {
 };
 
 //===========================================================================
-std::vector<McuIoInfo> SupportedMcus = { // NUM_SUPPORTED_MCUS
+McuIoInfo SupportedMcus_[] = { // NUM_SUPPORTED_MCUS
     {
         "Atmel AVR ATmega2560 100-TQFP",
         "ATmega2560",
@@ -2038,7 +2044,7 @@ std::vector<McuIoInfo> SupportedMcus = { // NUM_SUPPORTED_MCUS
         { 0x00 },
         { 0x00 },
         0,
-        { { 0x00, 0xffffff } },
+        { { 0x00, int(0xffffff) } },
         PcCfg,
         arraylen(PcCfg),
         nullptr,
@@ -2051,6 +2057,7 @@ std::vector<McuIoInfo> SupportedMcus = { // NUM_SUPPORTED_MCUS
     },
 };
 
+std::vector<McuIoInfo> SupportedMcus(SupportedMcus_, SupportedMcus_ + arraylen(SupportedMcus_));
 
 std::vector<McuIoInfo>& supportedMcus()
 {

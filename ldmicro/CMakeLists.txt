@@ -96,6 +96,7 @@ add_definitions(
     "-DWIN32_LEAN_AND_MEAN"
     "-D_CRT_SECURE_NO_WARNINGS"
     "-D_CRT_SECURE_NO_DEPRECATE"
+    "-DNOMINMAX"
     )
 
 set(LDMICRO_LIBS "")

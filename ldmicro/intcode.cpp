@@ -26,7 +26,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-//#include "display.h"
+#include <algorithm>
 
 //// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
@@ -1357,8 +1357,8 @@ static void InitVarsCircuit(int which, void *elem, int *n)
         case ELEM_CTD: {
             if(IsNumber(l->d.counter.init) || IsNumber(l->d.counter.max)) {
                 int init = CheckMakeNumber(l->d.counter.init);
-                int max = CheckMakeNumber(l->d.counter.max);
-                int b = std::max(byteNeeded(init), byteNeeded(max));
+                int max_ = CheckMakeNumber(l->d.counter.max);
+                int b = std::max(byteNeeded(init), byteNeeded(max_));
                 if(SizeOfVar(l->d.counter.name) != b)
                     SetSizeOfVar(l->d.counter.name, b);
                 //if(init != 0) { // need reinit if CTD(c1), CTU(c1)
