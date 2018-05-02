@@ -26,7 +26,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-//#include "display.h"
+#include <algorithm>
 
 //// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
@@ -1357,8 +1357,8 @@ static void InitVarsCircuit(int which, void *elem, int *n)
         case ELEM_CTD: {
             if(IsNumber(l->d.counter.init) || IsNumber(l->d.counter.max)) {
                 int init = CheckMakeNumber(l->d.counter.init);
-                int max = CheckMakeNumber(l->d.counter.max);
-                int b = max(byteNeeded(init), byteNeeded(max));
+                int max_ = CheckMakeNumber(l->d.counter.max);
+                int b = std::max(byteNeeded(init), byteNeeded(max_));
                 if(SizeOfVar(l->d.counter.name) != b)
                     SetSizeOfVar(l->d.counter.name, b);
                 //if(init != 0) { // need reinit if CTD(c1), CTU(c1)
@@ -2527,7 +2527,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
               //Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
-                _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, NULL, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
+               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, NULL, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
             }
             Op(INT_END_IF);
             break;
@@ -2817,7 +2817,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 || (which == ELEM_SHL) || (which == ELEM_SHR)
                 || (which == ELEM_ROL) || (which == ELEM_ROR)
                 ) {
-                    if((hobatoi(l->d.math.op2) < 0) 
+                    if((hobatoi(l->d.math.op2) < 0)
                     || (SizeOfVar(l->d.math.op1) * 8 < hobatoi(l->d.math.op2))) {
                         Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
                         CompileError();
@@ -2938,7 +2938,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             int r;
             if(IsNumber(l->d.doGoto.rung)) {
                 r = hobatoi(l->d.doGoto.rung);
-                r = min(r, Prog.numRungs + 1) - 1;
+                r = std::min(r, Prog.numRungs + 1) - 1;
             } else {
                 r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
                 if(r < 0) {
@@ -2959,7 +2959,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Error(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
                 CompileError();
                 r = hobatoi(l->d.doGoto.rung);
-                r = min(r, Prog.numRungs + 1);
+                r = std::min(r, Prog.numRungs + 1);
             } else {
                 r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
                 if(r < 0) {
@@ -3483,7 +3483,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
     }
     #ifndef DEFAULT_COIL_ALGORITHM
-    if((which == ELEM_COIL) || (which == ELEM_SET_PWM)) { 
+    if((which == ELEM_COIL) || (which == ELEM_SET_PWM)) {
         // ELEM_COIL is a special case, see above
         return;
     }

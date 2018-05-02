@@ -590,13 +590,13 @@ HMENU MakeMainWindowMenus()
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
     ProcessorMenu = CreatePopupMenu();
-    Core core = SupportedMcus[0].core;
+    Core core = supportedMcus()[0].core;
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-        if(core != SupportedMcus[i].core) {
-            core = SupportedMcus[i].core;
+        if(core != supportedMcus()[i].core) {
+            core = supportedMcus()[i].core;
             AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, ""); //separate AVR MCU core
         }
-        AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, SupportedMcus[i].mcuName);
+        AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
     }
     AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, "");
     AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, _("(no microcontroller)"));
@@ -936,7 +936,7 @@ void RefreshControlsToSettings()
     RefreshStatusBar();
 
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-        if(&SupportedMcus[i] == Prog.mcu) {
+        if(&(supportedMcus()[i]) == Prog.mcu) {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_CHECKED);
         } else {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_UNCHECKED);

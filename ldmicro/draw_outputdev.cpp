@@ -26,6 +26,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
+#include <algorithm>
 
 void (*DrawChars)(int, int, const char *);
 
@@ -252,7 +253,7 @@ void PaintWindow()
         RECT dk;
         GetClientRect(desktop, &dk);
 
-        BitmapWidth = max(2000 + 2096, dk.right + 300 + 500);
+        BitmapWidth = std::max(static_cast<decltype(dk.right)>(2000 + 2096), dk.right + 300 + 500);
         BackBitmap = CreateCompatibleBitmap(Hdc, BitmapWidth, dk.bottom + 300 + 500);
         BackDc = CreateCompatibleDC(Hdc);
         SelectObject(BackDc, BackBitmap);

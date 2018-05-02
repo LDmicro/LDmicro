@@ -23,6 +23,7 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
+#include <algorithm>
 
 #define ASM_LABEL 1
 //                0 - no labels
@@ -3161,7 +3162,7 @@ static void  WriteRuntime()
     if(Prog.cycleTimer == 0) {
         if((WGM01 == -1)) { // ATmega8
             DWORD i = SKBS(REG_TIFR0, TOV0);
-            Instruction(OP_RJMP, AvrProgWriteP - min(i, 2)); // Ladder cycle timing on Timer0/Counter
+            Instruction(OP_RJMP, AvrProgWriteP - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
@@ -3169,14 +3170,14 @@ static void  WriteRuntime()
             STOREval(REG_TCNT0, BYTE(tcnt0PlcCycle + 0)); // + 0 DONE // reload Counter0
         } else {
             DWORD i = SKBS(REG_TIFR0, OCF0A);
-            Instruction(OP_RJMP, AvrProgWriteP - min(i, 2)); // Ladder cycle timing on Timer0/Counter
+            Instruction(OP_RJMP, AvrProgWriteP - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, OCF0A);
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
         }
     } else if(Prog.cycleTimer == 1) {
         DWORD i = SKBS(REG_TIFR1, OCF1A);
-        Instruction(OP_RJMP, AvrProgWriteP - min(i, 2)); // Ladder cycle timing on Timer1/Counter
+        Instruction(OP_RJMP, AvrProgWriteP - std::min(i, DWORD(2))); // Ladder cycle timing on Timer1/Counter
 
         SetBit(REG_TIFR1, OCF1A);
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!
@@ -3664,7 +3665,7 @@ static void CompileFromIntermediate()
             case INT_IF_VARIABLE_EQUALS_VARIABLE: {
                 DWORD notTrue = AllocFwdAddr();
 
-                sov = max(SizeOfVar(a->name1), SizeOfVar(a->name2));
+                sov = std::max(SizeOfVar(a->name1), SizeOfVar(a->name2));
                 if(a->op == INT_IF_VARIABLE_GRT_VARIABLE) {
                     //Interchange Rd and Rr in the operation before the test, i.e., CP Rd,Rr
                     CopyArgToReg(r20, sov, a->name1);
@@ -3703,7 +3704,7 @@ static void CompileFromIntermediate()
             case INT_IF_NEQ:
             case INT_IF_EQU: {
                 DWORD notTrue = AllocFwdAddr();
-                sov = max(SizeOfVar(a->name1), SizeOfVar(a->name2));
+                sov = std::max(SizeOfVar(a->name1), SizeOfVar(a->name2));
                 CopyArgToReg(r20, sov, a->name1);
                 CopyArgToReg(r16, sov, a->name2);
 
@@ -4067,7 +4068,7 @@ static void CompileFromIntermediate()
                 // Do this one separately since the divide routine uses
                 // slightly different in/out registers and I don't feel like
                 // modifying it.
-                sov = max(SizeOfVar(a->name2), SizeOfVar(a->name3));
+                sov = std::max(SizeOfVar(a->name2), SizeOfVar(a->name3));
                 CopyArgToReg(r19, sov, a->name2);
                 CopyArgToReg(r22, sov, a->name3);
                 if(sov == 1) {
@@ -4088,21 +4089,21 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_SET_VARIABLE_MULTIPLY:
-                sov = max(SizeOfVar(a->name2), SizeOfVar(a->name3));
+                sov = std::max(SizeOfVar(a->name2), SizeOfVar(a->name3));
                 CopyArgToReg(r20, sov, a->name2);
                 CopyArgToReg(r16, sov, a->name3);
                 if(sov == 1) {
                     CallSubroutine(MultiplyAddress8);
                     MultiplyUsed8 = TRUE;
-                    sov1 = min(2, SizeOfVar(a->name1));
+                    sov1 = std::min(2, SizeOfVar(a->name1));
                 } else if(sov == 2) {
                     CallSubroutine(MultiplyAddress);
                     MultiplyUsed = TRUE;
-                    sov1 = min(4, SizeOfVar(a->name1));
+                    sov1 = std::min(4, SizeOfVar(a->name1));
                 } else if(sov == 3) {
                     CallSubroutine(MultiplyAddress24);
                     MultiplyUsed24 = TRUE;
-                    sov1 = min(6, SizeOfVar(a->name1));
+                    sov1 = std::min(6, SizeOfVar(a->name1));
                 } else
                     oops() CopyRegToVar(a->name1, r20, sov1);
                 break;
@@ -4311,7 +4312,7 @@ static void CompileFromIntermediate()
                     Error(_("Pin '%s': PWM output not available!"), a->name3);
                     CompileError();
                 } else {
-                    iop = PwmPinInfoForName(a->name3, Prog.cycleTimer, max(resol, 8));
+                    iop = PwmPinInfoForName(a->name3, Prog.cycleTimer, std::max(resol, 8));
                     if(!iop) {
                         Error(_("Pin '%s': PWM resolution not available!"), a->name3);
                         CompileError();

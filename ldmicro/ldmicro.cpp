@@ -833,7 +833,7 @@ static void ProcessMenu(int code)
 {
     if(code >= MNU_PROCESSOR_0 && code < MNU_PROCESSOR_0 + NUM_SUPPORTED_MCUS) {
         strcpy(CurrentCompileFile, "");
-        SetMcu(&SupportedMcus[code - MNU_PROCESSOR_0]);
+        SetMcu(&(supportedMcus()[code - MNU_PROCESSOR_0]));
         RefreshControlsToSettings();
         ProgramChangedNotSaved = TRUE;
         return;
@@ -2676,18 +2676,18 @@ void KxStackTrace()
 void CheckPwmPins()
 {
     return;
-    int i, j;
-    for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-        for(j = 0; j < SupportedMcus[i].pwmCount; j++) {
-            if(!SupportedMcus[i].pwmNeedsPin && SupportedMcus[i].pwmCount) {
-                ooops("1 %s", SupportedMcus[i].mcuName)
-            } else if(SupportedMcus[i].pwmNeedsPin)
-                if(SupportedMcus[i].pwmNeedsPin == SupportedMcus[i].pwmInfo[j].pin)
+    uint32_t j;
+    for(uint32_t i = 0; i < supportedMcus().size(); i++) {
+        for(j = 0; j < supportedMcus()[i].pwmCount; j++) {
+            if(!supportedMcus()[i].pwmNeedsPin && supportedMcus()[i].pwmCount) {
+                ooops("1 %s", supportedMcus()[i].mcuName)
+            } else if(supportedMcus()[i].pwmNeedsPin)
+                if(supportedMcus()[i].pwmNeedsPin == supportedMcus()[i].pwmInfo[j].pin)
                     break;
         }
-        if(SupportedMcus[i].pwmCount)
-            if(j >= SupportedMcus[i].pwmCount)
-                ooops("2 %s", SupportedMcus[i].mcuName)
+        if(supportedMcus()[i].pwmCount)
+            if(j >= supportedMcus()[i].pwmCount)
+                ooops("2 %s", supportedMcus()[i].mcuName)
     }
 }
 
@@ -2696,8 +2696,8 @@ void CheckPwmPins()
 //-----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
-    if(NUM_SUPPORTED_MCUS != arraylen(SupportedMcus)) {
-        Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, arraylen(SupportedMcus));
+    if(NUM_SUPPORTED_MCUS != supportedMcus().size()) {
+        Error("NUM_SUPPORTED_MCUS=%d != supportedMcus().size()=%d", NUM_SUPPORTED_MCUS, supportedMcus().size());
         oops();
     }
 
@@ -2718,9 +2718,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         setlocale(LC_ALL, "");
         //RunningInBatchMode = FALSE;
-        int i;
-        for(i = 0; i < arraylen(PcCfg); i++)
-            FillPcPinInfo(&PcCfg[i]);
+        fillPcPinInfos();
 
         MakeWindowClass();
         MakeDialogBoxClass();
@@ -2881,12 +2879,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         RefreshScrollbars();
         UpdateMainWindowTitleBar();
 
-        for(i = 0; i < 10; i++)
+        for(int i = 0; i < 10; i++)
             dbp("\n");
 
         MSG   msg;
         DWORD ret;
-        while(ret = GetMessage(&msg, nullptr, 0, 0)) {
+        while((ret = GetMessage(&msg, nullptr, 0, 0))) {
             if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
                 if(msg.wParam == VK_TAB) {
                     SetFocus(MainWindow);

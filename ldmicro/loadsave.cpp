@@ -684,11 +684,10 @@ void LoadWritePcPorts()
             strcat(pc, "\\");
         strcat(pc, "pcports.cfg");
         if(LoadPcPorts(pc)) {
-            int i;
-            for(i = 0; i < NUM_SUPPORTED_MCUS; i++)
-                if(SupportedMcus[i].core == PC_LPT_COM) {
-                    SupportedMcus[i].pinInfo = IoPc;
-                    SupportedMcus[i].pinCount = IoPcCount;
+            for(uint32_t i = 0; i < supportedMcus().size(); i++)
+                if(supportedMcus()[i].core == PC_LPT_COM) {
+                    supportedMcus()[i].pinInfo = IoPc;
+                    supportedMcus()[i].pinCount = IoPcCount;
                 }
         } else
             Error(_(" File '%s' not found!"), pc);
@@ -794,15 +793,15 @@ BOOL LoadProjectFromFile(char *filename)
                 compile_MNU = i;
         } else if(memcmp(line, "MICRO=", 6) == 0) {
             if(strlen(line) > 6) {
-                int i;
-                for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-                    if(SupportedMcus[i].mcuName)
-                        if(strcmp(SupportedMcus[i].mcuName, line + 6) == 0) {
-                            SetMcu(&SupportedMcus[i]);
+                uint32_t i;
+                for(i = 0; i < supportedMcus().size(); i++) {
+                    if(supportedMcus()[i].mcuName)
+                        if(strcmp(supportedMcus()[i].mcuName, line + 6) == 0) {
+                            SetMcu(&supportedMcus()[i]);
                             break;
                         }
                 }
-                if(i == NUM_SUPPORTED_MCUS) {
+                if(i == supportedMcus().size()) {
                     Error(_("Microcontroller '%s' not supported.\r\n\r\n"
                             "Defaulting to no selected MCU."),
                           line + 6);
