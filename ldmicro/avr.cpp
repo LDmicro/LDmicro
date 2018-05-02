@@ -3665,7 +3665,7 @@ static void CompileFromIntermediate()
             case INT_IF_VARIABLE_EQUALS_VARIABLE: {
                 DWORD notTrue = AllocFwdAddr();
 
-                sov = max(SizeOfVar(a->name1), SizeOfVar(a->name2));
+                sov = std::max(SizeOfVar(a->name1), SizeOfVar(a->name2));
                 if(a->op == INT_IF_VARIABLE_GRT_VARIABLE) {
                     //Interchange Rd and Rr in the operation before the test, i.e., CP Rd,Rr
                     CopyArgToReg(r20, sov, a->name1);
@@ -4115,7 +4115,6 @@ static void CompileFromIntermediate()
             case INT_SET_VARIABLE_NOT:
             case INT_SET_VARIABLE_AND:
             case INT_SET_VARIABLE_OR:
-                break;
             case INT_SET_VARIABLE_XOR:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_SR0:
@@ -4161,6 +4160,103 @@ static void CompileFromIntermediate()
                         Instruction(OP_COM, 23, 0);
                         Instruction(OP_SBCI, 23, 0xff);
                     }
+                } else if(a->op == INT_SET_VARIABLE_AND) {
+                    AndReg(r20, sov, r16);
+                } else if(a->op == INT_SET_VARIABLE_OR) {
+                    OrReg(r20, sov, r16);
+                } else if(a->op == INT_SET_VARIABLE_XOR) {
+                    Instruction(OP_EOR, 20, 16);
+                    if(sov >= 2)
+                        Instruction(OP_EOR, 21, 17);
+                    if(sov >= 3)
+                        Instruction(OP_EOR, 22, 18);
+                    if(sov >= 4)
+                        Instruction(OP_EOR, 23, 19);
+                } else if(a->op == INT_SET_VARIABLE_NOT) {
+                    Instruction(OP_COM, 20, 0);
+                    if(sov >= 2)
+                        Instruction(OP_COM, 21, 0);
+                    if(sov >= 3)
+                        Instruction(OP_COM, 22, 0);
+                    if(sov >= 4)
+                        Instruction(OP_COM, 23, 0);
+                } else if((a->op == INT_SET_VARIABLE_SHL) || (a->op == INT_SET_VARIABLE_SHR)
+                          || (a->op == INT_SET_VARIABLE_SR0) || (a->op == INT_SET_VARIABLE_ROR)
+                          || (a->op == INT_SET_VARIABLE_ROL)) {
+                    DWORD Loop = AvrProgWriteP;
+                    Instruction(OP_DEC, r16);
+                    DWORD Skip = AllocFwdAddr();
+                    Instruction(OP_BRMI, Skip, 0);
+
+                    if(a->op == INT_SET_VARIABLE_SHL) {
+                        ShlReg(r20, sov);
+                    } else if(a->op == INT_SET_VARIABLE_SR0) {
+                        Instruction(OP_CLC);
+                        if(sov == 1) {
+                            Instruction(OP_ROR, 20);
+                        } else if(sov == 2) {
+                            Instruction(OP_ROR, 21);
+                            Instruction(OP_ROR, 20);
+                        } else if(sov == 3) {
+                            Instruction(OP_ROR, 22);
+                            Instruction(OP_ROR, 21);
+                            Instruction(OP_ROR, 20);
+                        } else if(sov == 4) {
+                            Instruction(OP_ROR, 23);
+                            Instruction(OP_ROR, 22);
+                            Instruction(OP_ROR, 21);
+                            Instruction(OP_ROR, 20);
+                        } else
+                            oops();
+                    } else if(a->op == INT_SET_VARIABLE_SHR) {
+                        if(sov == 1) {
+                            Instruction(OP_ASR, 20);
+                        } else if(sov == 2) {
+                            Instruction(OP_ASR, 21);
+                            Instruction(OP_ROR, 20);
+                        } else if(sov == 3) {
+                            Instruction(OP_ASR, 22);
+                            Instruction(OP_ROR, 21);
+                            Instruction(OP_ROR, 20);
+                        } else if(sov == 4) {
+                            Instruction(OP_ASR, 23);
+                            Instruction(OP_ROR, 22);
+                            Instruction(OP_ROR, 21);
+                            Instruction(OP_ROR, 20);
+                        } else
+                            oops();
+                    } else if(a->op == INT_SET_VARIABLE_ROL) {
+                        RolReg(r20, sov);
+                    } else if(a->op == INT_SET_VARIABLE_ROR) {
+                        Instruction(OP_CLC);
+                        if(sov == 1) {
+                            Instruction(OP_ROR, 20);
+                            IfBitSet(REG_SREG, SREG_C);
+                            Instruction(OP_SBR, 20, 0x80);
+                        } else if(sov == 2) {
+                            Instruction(OP_ROR, 21);
+                            Instruction(OP_ROR, 20);
+                            IfBitSet(REG_SREG, SREG_C);
+                            Instruction(OP_SBR, 21, 0x80);
+                        } else if(sov == 3) {
+                            Instruction(OP_ROR, 22);
+                            Instruction(OP_ROR, 21);
+                            Instruction(OP_ROR, 20);
+                            IfBitSet(REG_SREG, SREG_C);
+                            Instruction(OP_SBR, 22, 0x80);
+                        } else if(sov == 4) {
+                            Instruction(OP_ROR, 23);
+                            Instruction(OP_ROR, 22);
+                            Instruction(OP_ROR, 21);
+                            Instruction(OP_ROR, 20);
+                            IfBitSet(REG_SREG, SREG_C);
+                            Instruction(OP_SBR, 23, 0x80);
+                        } else
+                            oops();
+                    } else
+                        oops();
+                    Instruction(OP_RJMP, Loop);
+                    FwdAddrIsNow(Skip);
                 } else
                     oops();
 

@@ -1,3 +1,8 @@
+== Release 4.3.9.0
+
+    * New: Bitwise variable operations (Unsigned)
+    AND, OR, XOR, NOT, SHL, SHR, etc.
+
 == Release 4.3.8.7
 
     * Fixed: Can't assign PWM pin because of empty PWM pins list #73
