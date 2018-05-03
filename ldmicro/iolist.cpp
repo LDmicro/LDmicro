@@ -1076,11 +1076,13 @@ static void MakeControls()
 {
     HWND textLabel = CreateWindowEx(0,
                                     WC_STATIC,
-                                    _("Assign:"),
+                                    ((Prog.mcu) && (Prog.mcu->whichIsa == ISA_AVR)) ?
+                                    _("Pin#:   MCU pin name:                                       Arduino pin name:") :
+                                    _("Pin#:   MCU pin name:"),
                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
                                     6,
                                     1,
-                                    80,
+                                    400,
                                     17,
                                     IoDialog,
                                     nullptr,
