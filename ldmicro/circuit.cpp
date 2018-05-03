@@ -534,7 +534,7 @@ void AddQuadEncod()
     if(!CanInsertOther)
         return;
 
-    int n = 0;
+    uint32_t n = 0;
     if(Prog.mcu) {
         n = QuadEncodFunctionUsed();
         if(n > Prog.mcu->ExtIntCount) {
@@ -1664,19 +1664,17 @@ int AdcFunctionUsed()
     return CountWhich(ELEM_READ_ADC);
 }
 //-----------------------------------------------------------------------------
-int QuadEncodFunctionUsed()
+uint32_t QuadEncodFunctionUsed()
 {
-    int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    uint32_t n = 0;
+    for(int i = 0; i < Prog.numRungs; i++)
         n += CountWhich(ELEM_QUAD_ENCOD);
     return n;
 }
 //-----------------------------------------------------------------------------
 BOOL NPulseFunctionUsed()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_NPULSE, -1, -1)) {
             return TRUE;
         }
@@ -1686,8 +1684,7 @@ BOOL NPulseFunctionUsed()
 //-----------------------------------------------------------------------------
 BOOL EepromFunctionUsed()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_PERSIST, -1, -1)) {
             return TRUE;
         }
@@ -1697,8 +1694,7 @@ BOOL EepromFunctionUsed()
 //-----------------------------------------------------------------------------
 BOOL SleepFunctionUsed()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SLEEP, -1, -1)) {
             return TRUE;
         }
