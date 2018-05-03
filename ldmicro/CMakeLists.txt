@@ -36,6 +36,8 @@ add_subdirectory(ldlanglib)
 add_subdirectory(ldcompilerlib)
 add_subdirectory(ldinterpret)
 
+find_package(Perl REQUIRED)
+
 set(LDMICRO_SRC_LIST
     coildialog.cpp
     colorDialog.cpp

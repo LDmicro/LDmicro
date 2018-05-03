@@ -185,12 +185,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
             // round up, and allow space for lead-in
             len = (len + 7 + (POS_WIDTH - 1)) / POS_WIDTH;
             return std::min(ScreenColsAvailable() - soFar, std::max(ColsAvailable, len));
-<<<<<<< HEAD
             //return std::max(ColsAvailable, len);
-=======
->>>>>>> 75636e2c35d386a351c0573339e77db6ed9f25bb
         }
-            //      case ELEM_CTC: // as End
         case ELEM_RES:
         case ELEM_COIL:
         case ELEM_MOVE:
