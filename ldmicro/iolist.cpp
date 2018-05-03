@@ -1271,6 +1271,7 @@ void ShowIoDialog(int item)
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
     int  Index = 0;
     char buf[MAX_NAME_LEN];
+    char pinName[MAX_NAME_LEN];
     uint32_t i;
     uint32_t j;
     for(i = 0; i < Prog.mcu->pinCount; i++) {
@@ -1380,10 +1381,8 @@ void ShowIoDialog(int item)
                 Index = 0;
         };
 
-        char pinName[MAX_NAME_LEN];
         GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
-        const char *s = ArduinoPinName(Prog.mcu->pinInfo[i].pin);
-        sprintf(buf, "%3d  %-30s %s", Prog.mcu->pinInfo[i].pin, pinName, s);
+        sprintf(buf, "%3d  %-30s %s", Prog.mcu->pinInfo[i].pin, pinName, ArduinoPinName(Prog.mcu->pinInfo[i].pin));
 
         SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
     cant_use_this_io:;
