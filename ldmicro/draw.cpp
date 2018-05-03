@@ -187,7 +187,6 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
             return std::min(ScreenColsAvailable() - soFar, std::max(ColsAvailable, len));
             //return std::max(ColsAvailable, len);
         }
-            //      case ELEM_CTC: // as End
         case ELEM_RES:
         case ELEM_COIL:
         case ELEM_MOVE:
