@@ -4,8 +4,8 @@
  * Jonathan Westhues, 2002
  */
 #include "stdafx.h"
-
 #include "ldmicro.h"
+#include <algorithm>
 
 /*
  * store a window's position in the registry, or fail silently if the registry calls don't work
@@ -224,7 +224,7 @@ void ThawWindowPosF(HWND hwnd, const char *subKey, const char* name)
     l = sizeof(DWORD);
     if(RegQueryValueEx(sub, "Scheme", NULL, NULL, (BYTE *)&v, &l) != ERROR_SUCCESS)
         return;
-    scheme = min(max(v,0),MNU_SCHEME_USER & 0xff);
+    scheme = std::min(std::max(v,DWORD(0)),DWORD(MNU_SCHEME_USER & 0xff));
 
     RECT dr;
     GetWindowRect(GetDesktopWindow(), &dr);

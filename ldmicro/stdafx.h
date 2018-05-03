@@ -5,6 +5,8 @@
 
 #pragma once
 
+#define NOMINMAX
+
 #include "targetver.h"
 
 // #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
@@ -46,6 +48,7 @@
 //#include "freeze.h"
 
 //TODO:  some day this macros should be change to std::max / std::min
+#ifndef NOMINMAX
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
@@ -53,3 +56,4 @@
 #ifndef min
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
+#endif //NOMINMAX
