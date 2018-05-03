@@ -2676,7 +2676,7 @@ void KxStackTrace()
 void CheckPwmPins()
 {
     return;
-    int j;
+    uint32_t j;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         for(j = 0; j < supportedMcus()[i].pwmCount; j++) {
             if(!supportedMcus()[i].pwmNeedsPin && supportedMcus()[i].pwmCount) {
@@ -2697,7 +2697,7 @@ void CheckPwmPins()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
     if(NUM_SUPPORTED_MCUS != supportedMcus().size()) {
-        Error("NUM_SUPPORTED_MCUS=%d != arraylen(SupportedMcus)=%d", NUM_SUPPORTED_MCUS, supportedMcus().size());
+        Error("NUM_SUPPORTED_MCUS=%d != supportedMcus().size()=%d", NUM_SUPPORTED_MCUS, supportedMcus().size());
         oops();
     }
 

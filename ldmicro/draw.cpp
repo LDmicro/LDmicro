@@ -185,7 +185,6 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
             // round up, and allow space for lead-in
             len = (len + 7 + (POS_WIDTH - 1)) / POS_WIDTH;
             return std::min(ScreenColsAvailable() - soFar, std::max(ColsAvailable, len));
-            //return max(ColsAvailable, len);
         }
             //      case ELEM_CTC: // as End
         case ELEM_RES:
@@ -1089,7 +1088,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
 
                     l1 = 2 + 1 + strlen(s) + strlen(leaf->d.cmp.op1);
                     l2 = 2 + 1 + strlen(leaf->d.cmp.op2);
-                    lmax = max(l1, l2);
+                    lmax = std::max(l1, l2);
 
                     if(lmax < POS_WIDTH) {
                         memset(s1, ' ', sizeof(s1));

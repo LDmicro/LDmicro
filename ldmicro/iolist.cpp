@@ -858,7 +858,7 @@ void SaveIoListToFile(FILE *f)
             // Don't internationalize this! It's the file format, not UI.
             if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PC) && (Prog.io.assignment[i].pin))
                 fprintf(f, "    %s at %s\n", Prog.io.assignment[i].name, PinToName(Prog.io.assignment[i].pin));
-            else 
+            else
                 fprintf(f,
                         "    %s at %d %d %d\n",
                         Prog.io.assignment[i].name,
@@ -1271,8 +1271,8 @@ void ShowIoDialog(int item)
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
     int  Index = 0;
     char buf[MAX_NAME_LEN];
-    int  j;
-    int  i;
+    uint32_t i;
+    uint32_t j;
     for(i = 0; i < Prog.mcu->pinCount; i++) {
         for(j = 0; j < Prog.io.count; j++) {
             if(j == item)

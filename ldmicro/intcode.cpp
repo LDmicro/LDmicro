@@ -1437,7 +1437,7 @@ static void InitTablesCircuit(int which, void *elem)
             }
             break;
         }
-            // clang-format off
+        // clang-format off
         {
         const char *nameTable;
         case ELEM_7SEG:  nameTable = "char7seg";  goto xseg;
@@ -2130,7 +2130,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
 
               if(IsNumber(l->d.counter.max)) {
-                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max)+1);
+                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max) + 1);
                 Op(INT_ELSE);
               } else {
                 Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.name, l->d.counter.max);
@@ -2322,7 +2322,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_NEQ: Comment(3, "ELEM_NEQ"); goto cmp;
         case ELEM_EQU: Comment(3, "ELEM_EQU"); goto cmp;
         cmp: {
-            {
               char *op1 = VarFromExpr(l->d.cmp.op1, "$scratch1");
               char *op2 = VarFromExpr(l->d.cmp.op2, "$scratch2");
 
@@ -2342,7 +2341,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               } else if(which == ELEM_NEQ) {
                   Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
               } else oops();
-            }
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
           break;
@@ -2415,9 +2413,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_CLEAR, stateInOut);
               Op(INT_COPY_BIT_TO_BIT, stateInOut, storeName);
               Op(INT_IF_BIT_SET, storeNameHi);
-              Op(INT_IF_BIT_CLEAR, storeName);
-                Op(INT_SET_BIT, storeName);
-              Op(INT_END_IF);
+                Op(INT_IF_BIT_CLEAR, storeName);
+                  Op(INT_SET_BIT, storeName);
+                Op(INT_END_IF);
               Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, storeName);
@@ -2495,25 +2493,32 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  goto xseg;
         case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); goto xseg;
         case ELEM_16SEG: Comment(3, stringer(ELEM_16SEG)); goto xseg;
-        xseg:
-        {
+        xseg : {
             break;
         }
         }
         case ELEM_STEPPER: {
             Comment(3, "ELEM_STEPPER");
+            // Pulse generator for STEPPER motor with acceleration and deceleration.
+
+
+
+
+
             break;
         }
         case ELEM_PULSER: {
             Comment(3, "ELEM_PULSER");
+
+
+
             break;
         }
 
         case ELEM_MOVE: {
             Comment(3, "ELEM_MOVE");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("Move instruction: '%s' not a valid destination."),
-                    l->d.move.dest);
+                Error(_("Move instruction: '%s' not a valid destination."), l->d.move.dest);
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2521,7 +2526,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
-//              Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
+              //Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
                _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, NULL, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
             }
             Op(INT_END_IF);
@@ -2530,6 +2535,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_BUS: {
               Comment(3, "ELEM_BUS");
+
             break;
         }
 
@@ -2576,7 +2582,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_SET_SWAP, l->d.move.dest, l->d.move.src);
+              Op(INT_SET_SWAP, l->d.move.dest, l->d.move.src);
             Op(INT_END_IF);
             break;
         }
@@ -2584,7 +2590,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_STRING: {
             Comment(3, "ELEM_STRING");
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_WRITE_STRING, l->d.fmtdStr.dest, l->d.fmtdStr.string, l->d.fmtdStr.var);
+              Op(INT_WRITE_STRING, l->d.fmtdStr.dest, l->d.fmtdStr.string, l->d.fmtdStr.var);
             Op(INT_END_IF);
             break;
         }
@@ -2674,8 +2680,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_EEPROM_BUSY_CHECK, "$scratch");
                 Op(INT_IF_BIT_CLEAR, "$scratch");
                     Op(INT_EEPROM_READ, "$tmpVar24bit", EepromAddrFree);
-                    Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$tmpVar24bit",
-                        l->d.persist.var);
+                    Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$tmpVar24bit", l->d.persist.var);
                     Op(INT_ELSE);
                         Op(INT_EEPROM_WRITE, l->d.persist.var, EepromAddrFree);
                     Op(INT_END_IF);
@@ -2763,18 +2768,28 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             //Op(INT_END_IF);
             break;
         }
+
+        case ELEM_SPI: {
+            Comment(3, "ELEM_SPI");
+
+                Comment(3, "ELEM_SPI_1");
+                Comment(3, "ELEM_SPI_2");
+            break;
+        }
+
         case ELEM_SET_BIT:
-                Comment(3, "ELEM_SET_BIT");
-                Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_VARIABLE_SET_BIT, l->d.math.dest, l->d.math.op1);
-                Op(INT_END_IF);
-                break;
+            Comment(3, "ELEM_SET_BIT");
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_VARIABLE_SET_BIT, l->d.math.dest, l->d.math.op1);
+            Op(INT_END_IF);
+            break;
+
         case ELEM_CLEAR_BIT:
-                Comment(3, "ELEM_CLEAR_BIT");
-                Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_VARIABLE_CLEAR_BIT, l->d.math.dest, l->d.math.op1);
-                Op(INT_END_IF);
-                break;
+            Comment(3, "ELEM_CLEAR_BIT");
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_VARIABLE_CLEAR_BIT, l->d.math.dest, l->d.math.op1);
+            Op(INT_END_IF);
+            break;
         {
         int intOp;
         case ELEM_NEG: intOp = INT_SET_VARIABLE_NEG;      Comment(3, "ELEM_NEG"); goto mathBit;
@@ -2787,10 +2802,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_OR:  intOp = INT_SET_VARIABLE_OR;       Comment(3, "ELEM_OR" ); goto mathBit;
         case ELEM_XOR: intOp = INT_SET_VARIABLE_XOR;      Comment(3, "ELEM_XOR"); goto mathBit;
         case ELEM_NOT: intOp = INT_SET_VARIABLE_NOT;      Comment(3, "ELEM_NOT"); goto mathBit;
-          mathBit: {
+          mathBit : {
             if(IsNumber(l->d.math.dest)) {
-                Error(_("Math instruction: '%s' not a valid destination."),
-                    l->d.math.dest);
+                Error(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2803,8 +2817,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 || (which == ELEM_SHL) || (which == ELEM_SHR)
                 || (which == ELEM_ROL) || (which == ELEM_ROR)
                 ) {
-                    if((hobatoi(l->d.math.op2) < 0) || (SizeOfVar(l->d.math.op1)*8 < hobatoi(l->d.math.op2))) {
-                        Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1)*8);
+                    if((hobatoi(l->d.math.op2) < 0)
+                    || (SizeOfVar(l->d.math.op1) * 8 < hobatoi(l->d.math.op2))) {
+                        Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
                         CompileError();
                     }
                 }
@@ -2822,46 +2837,44 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_MUL: intOp = INT_SET_VARIABLE_MULTIPLY; Comment(3, "ELEM_MUL"); goto math;
         case ELEM_DIV: intOp = INT_SET_VARIABLE_DIVIDE;   Comment(3, "ELEM_DIV"); goto math;
         case ELEM_MOD: intOp = INT_SET_VARIABLE_MOD;      Comment(3, "ELEM_MOD"); goto math;
-          math: {
+        math : {
             if(IsNumber(l->d.math.dest)) {
-                Error(_("Math instruction: '%s' not a valid destination."),
-                    l->d.math.dest);
+                Error(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
                 CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
             const char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
             if((intOp == INT_SET_VARIABLE_SUBTRACT)
-            &&(int_comment_level != 1)
-            &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
-            &&(strcmp(l->d.math.op2,"1")==0)) {
+            && (int_comment_level != 1)
+            && (strcmp(l->d.math.dest, l->d.math.op1) == 0)
+            && (strcmp(l->d.math.op2, "1") == 0)) {
                 Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
             } else if((intOp == INT_SET_VARIABLE_SUBTRACT)
-            &&(int_comment_level != 1)
-            &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
-            &&(strcmp(l->d.math.op2,"-1")==0)) {
+            && (int_comment_level != 1)
+            && (strcmp(l->d.math.dest, l->d.math.op1) == 0)
+            && (strcmp(l->d.math.op2, "-1") == 0)) {
                 Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
 
             } else if((intOp == INT_SET_VARIABLE_ADD)
-            &&(int_comment_level != 1)
-            &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
-            &&(strcmp(l->d.math.op2,"1")==0)) {
+            && (int_comment_level != 1)
+            && (strcmp(l->d.math.dest, l->d.math.op1) == 0)
+            && (strcmp(l->d.math.op2, "1") == 0)) {
                 Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
             } else if((intOp == INT_SET_VARIABLE_ADD)
-            &&(int_comment_level != 1)
-            &&(strcmp(l->d.math.dest,l->d.math.op2)==0)
-            &&(strcmp(l->d.math.op1,"1")==0)) {
+            && (int_comment_level != 1)
+            && (strcmp(l->d.math.dest, l->d.math.op2) == 0)
+            && (strcmp(l->d.math.op1, "1") == 0)) {
                 Op(INT_INCREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
             } else if((intOp == INT_SET_VARIABLE_ADD)
-            &&(int_comment_level != 1)
-            &&(strcmp(l->d.math.dest,l->d.math.op1)==0)
-            &&(strcmp(l->d.math.op2,"-1")==0)) {
+            && (int_comment_level != 1)
+            && (strcmp(l->d.math.dest, l->d.math.op1) == 0)
+            && (strcmp(l->d.math.op2, "-1") == 0)) {
                 Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
             } else if((intOp == INT_SET_VARIABLE_ADD)
-            &&(int_comment_level != 1)
-            &&(strcmp(l->d.math.dest,l->d.math.op2)==0)
-            &&(strcmp(l->d.math.op1,"-1")==0)) {
+            && (int_comment_level != 1)
+            && (strcmp(l->d.math.dest, l->d.math.op2) == 0)
+            && (strcmp(l->d.math.op1, "-1") == 0)) {
                 Op(INT_DECREMENT_VARIABLE, l->d.math.dest, stateInOut2, "ROverflowFlagV");
-
             } else {
                 const char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
                 Op(intOp, l->d.math.dest, op1, op2, stateInOut2, "ROverflowFlagV");
@@ -2910,9 +2923,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     clocks = (clocks - 10) / 6;
                     if(clocks > 0xffff)
                         clocks = 0xffff;
-                } else oops();
+                } else
+                    oops();
             }
-            if(clocks <= 0 ) clocks = 1;
+            if(clocks <= 0)
+                clocks = 1;
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, clocks);
             Op(INT_END_IF);
@@ -2920,18 +2935,18 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_GOTO: {
             Comment(3, "ELEM_GOTO %s", l->d.doGoto.rung);
-            Op(INT_IF_BIT_SET, stateInOut);
-                int r;
-                if(IsNumber(l->d.doGoto.rung)) {
-                    r = hobatoi(l->d.doGoto.rung);
-                    r = std::min(r, Prog.numRungs+1) - 1;
-                } else {
-                    r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
-                    if(r < 0) {
-                        Error(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
-                        CompileError();
-                    }
+            int r;
+            if(IsNumber(l->d.doGoto.rung)) {
+                r = hobatoi(l->d.doGoto.rung);
+                r = std::min(r, Prog.numRungs + 1) - 1;
+            } else {
+                r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
+                if(r < 0) {
+                    Error(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
+                    CompileError();
                 }
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_GOTO, l->d.doGoto.rung, r);
                 //Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
@@ -2939,21 +2954,21 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_GOSUB: {
             Comment(3, "ELEM_GOSUB %s", l->d.doGoto.rung);
-            Op(INT_IF_BIT_SET, stateInOut);
-                int r;
-                if(IsNumber(l->d.doGoto.rung)) {
-                    Error(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
+            int r;
+            if(IsNumber(l->d.doGoto.rung)) {
+                Error(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
+                CompileError();
+                r = hobatoi(l->d.doGoto.rung);
+                r = std::min(r, Prog.numRungs + 1);
+            } else {
+                r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+                if(r < 0) {
+                    Error(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
                     CompileError();
-                    r = hobatoi(l->d.doGoto.rung);
-                    r = std::min(r, Prog.numRungs+1);
-                } else {
-                    r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
-                    if(r < 0) {
-                        Error(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
-                        CompileError();
-                    }
-                    r++;
                 }
+                r++;
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_GOSUB, l->d.doGoto.rung, r);
             Op(INT_END_IF);
             break;
@@ -2968,17 +2983,17 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             && ((Prog.rungs[rungNow]->count == 1)
             ||  ((Prog.rungs[rungNow]->count == 2)
             &&   (Prog.rungs[rungNow]->contents[1].which == ELEM_COMMENT)))) {
-                ;//;
+                ; //
             } else {
-                Error(_("SUBPROG: '%s' declaration must be single inside a rung %d"), l->d.doGoto.rung, rungNow+1);
+                Error(_("SUBPROG: '%s' declaration must be single inside a rung %d"), l->d.doGoto.rung, rungNow + 1);
                 CompileError();
             }
             int r = -1;
             if(!IsNumber(l->d.doGoto.rung)) {
-              r = FindRungLast(ELEM_ENDSUB, l->d.doGoto.rung);
+                r = FindRungLast(ELEM_ENDSUB, l->d.doGoto.rung);
             }
             if(r >= 0) {
-                Op(INT_GOTO, l->d.doGoto.rung, "ENDSUB", r+1);
+                Op(INT_GOTO, l->d.doGoto.rung, "ENDSUB", r + 1);
                 Op(INT_AllocKnownAddr, l->d.doGoto.rung, "SUBPROG", rungNow);
             } else {
                 Error(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.rung);
@@ -2987,10 +3002,10 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
         }
         case ELEM_ENDSUB: {
-            Comment(3, "ELEM_ENDSUB %s rung %d", l->d.doGoto.rung, rungNow+1);
+            Comment(3, "ELEM_ENDSUB %s rung %d", l->d.doGoto.rung, rungNow + 1);
             int r = -1;
             if(!IsNumber(l->d.doGoto.rung)) {
-              r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+                r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
             }
             if(r >= 0) {
             } else {
@@ -3004,7 +3019,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Comment(3, "ELEM_RETURN");
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_RETURN);
-//              Op(INT_CLEAR_BIT, stateInOut);
+              //Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
 
@@ -3027,13 +3042,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             GenSymOneShot(storeName, "SHIFT_REGISTER", l->d.shiftRegister.name);
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_IF_BIT_CLEAR, storeName);
-                    int i;
-                    for(i = (l->d.shiftRegister.stages-2); i >= 0; i--) {
-                        char dest[MAX_NAME_LEN], src[MAX_NAME_LEN];
-                        sprintf(src, "%s%d", l->d.shiftRegister.name, i);
-                        sprintf(dest, "%s%d", l->d.shiftRegister.name, i+1);
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, dest, src);
-                    }
+                for(int i = (l->d.shiftRegister.stages - 2); i >= 0; i--) {
+                    char dest[MAX_NAME_LEN], src[MAX_NAME_LEN];
+                    sprintf(src, "%s%d", l->d.shiftRegister.name, i);
+                    sprintf(dest, "%s%d", l->d.shiftRegister.name, i + 1);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, dest, src);
+                }
                 Op(INT_END_IF);
             Op(INT_END_IF);
             Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
@@ -3046,13 +3060,13 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Comment(3, "ELEM_LOOK_UP_TABLE %s", t->name);
 
             char nameTable[MAX_NAME_LEN];
-            sprintf(nameTable, "%s%s", t->name,""); // "LutElement");
+            sprintf(nameTable, "%s%s", t->name, ""); // "LutElement");
 
             int sovElement;
-            sovElement =  TestByteNeeded(t->count, t->vals);
+            sovElement = TestByteNeeded(t->count, t->vals);
 
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_FLASH_READ,t->dest,nameTable,t->index,t->count,sovElement,t->vals);
+                Op(INT_FLASH_READ, t->dest, nameTable, t->index, t->count, sovElement, t->vals);
             Op(INT_END_IF);
             #else
             Comment(3, "ELEM_LOOK_UP_TABLE");
@@ -3085,7 +3099,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             int i;
             int xThis = t->vals[0];
             for(i = 1; i < t->count; i++) {
-                if(t->vals[i*2] <= xThis) {
+                if(t->vals[i * 2] <= xThis) {
                     Error(_("x values in piecewise linear table must be "
                         "strictly increasing."));
                     CompileError();
@@ -3113,7 +3127,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
                 // Hack to avoid AVR brge issue again, since long jumps break
                 Op(INT_CLEAR_BIT, "$scratch");
-                Op(INT_IF_VARIABLE_LES_LITERAL, t->index, t->vals[i*2]+1);
+                Op(INT_IF_VARIABLE_LES_LITERAL, t->index, t->vals[i * 2] + 1);
                     Op(INT_SET_BIT, "$scratch");
                 Op(INT_END_IF);
 
@@ -3286,7 +3300,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Op(INT_SET_VARIABLE_TO_LITERAL, seq, (SDWORD)0);
                     Op(INT_SET_BIT, doSend);
                 Op(INT_END_IF);
-            Op(INT_ELSE); //v2
+            Op(INT_ELSE);                   //v2
                 Op(INT_CLEAR_BIT, oneShot); //v2
             Op(INT_END_IF);
             //Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut); //v1
@@ -3469,9 +3483,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
     }
     #ifndef DEFAULT_COIL_ALGORITHM
-    if((which == ELEM_COIL)
-    || (which == ELEM_SET_PWM)
-    ) { // ELEM_COIL is a special case, see above
+    if((which == ELEM_COIL) || (which == ELEM_SET_PWM)) {
+        // ELEM_COIL is a special case, see above
         return;
     }
     if(which == ELEM_CONTACTS) { // ELEM_CONTACTS is a special case, see above
@@ -3486,6 +3499,65 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
     }
 }
 // clang-format on
+//-----------------------------------------------------------------------------
+static BOOL PersistVariable(char *name)
+{
+    int i;
+    for(i = 0; i < PersistVariableCount; i++) {
+        if(strcmp(PersistVariables[i], name) == 0) {
+            return TRUE;
+        }
+    }
+    if(i >= MAX_IO)
+        oops();
+    strcpy(PersistVariables[i], name);
+    PersistVariableCount++;
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+static void CheckPersistCircuit(int which, void *elem)
+{
+    ElemLeaf *l = (ElemLeaf *)elem;
+
+    switch(which) {
+        case ELEM_SERIES_SUBCKT: {
+            int               i;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            for(i = 0; i < s->count; i++) {
+                CheckPersistCircuit(s->contents[i].which, s->contents[i].data.any);
+            }
+            break;
+        }
+
+        case ELEM_PARALLEL_SUBCKT: {
+            int                 i;
+            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            for(i = 0; i < p->count; i++) {
+                CheckPersistCircuit(p->contents[i].which, p->contents[i].data.any);
+            }
+            break;
+        }
+        case ELEM_PERSIST: {
+            PersistVariable(l->d.persist.var);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+//-----------------------------------------------------------------------------
+static void CheckPersist()
+{
+    PersistVariableCount = 0;
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        rungNow = i;
+        CheckPersistCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+    }
+}
+
 //-----------------------------------------------------------------------------
 static BOOL CheckMasterCircuit(int which, void *elem)
 {
