@@ -3420,9 +3420,8 @@ static void shl(DWORD addr, int sov)
         oops();
     if(sov > 4)
         oops();
-    Instruction(OP_BCF, REG_STATUS, STATUS_C);
-    int i;
-    for(i = 0; i < sov; i++)
+    Instruction(OP_BCF, REG_STATUS, STATUS_C); // 0 to Carry
+    for(int i = 0; i < sov; i++)
         Instruction(OP_RLF, addr + i, DEST_F);
 }
 
@@ -3433,8 +3432,7 @@ static void rol(DWORD addr, int sov)
     if(sov > 4)
         oops();
     Instruction(OP_RLF, addr + sov - 1, DEST_W); // copy MSB bit 7 to Carry
-    int i;
-    for(i = 0; i < sov; i++)
+    for(int i = 0; i < sov; i++)
         Instruction(OP_RLF, addr + i, DEST_F);
 }
 
@@ -3444,12 +3442,34 @@ static void sr0(DWORD addr, int sov)
         oops();
     if(sov > 4)
         oops();
-    Instruction(OP_BCF, REG_STATUS, STATUS_C);
-    int i;
-    for(i = sov - 1; i >= 0; i--)
+    Instruction(OP_BCF, REG_STATUS, STATUS_C); // 0 to Carry
+    for(int i = sov - 1; i >= 0; i--)
         Instruction(OP_RRF, addr + i, DEST_F);
 }
 
+static void shr(DWORD addr, int sov)
+{
+    if(sov < 1)
+        oops();
+    if(sov > 4)
+        oops();
+    Instruction(OP_RLF, addr + sov - 1, DEST_W); // copy MSB bit 7 to Carry
+    for(int i = sov - 1; i >= 0; i--)
+        Instruction(OP_RRF, addr + i, DEST_F);
+}
+
+static void ror(DWORD addr, int sov)
+{
+    if(sov < 1)
+        oops();
+    if(sov > 4)
+        oops();
+    Instruction(OP_RRF, addr, DEST_W); // copy LSB bit 0 to Carry
+    for(int i = sov - 1; i >= 0; i--)
+        Instruction(OP_RRF, addr + i, DEST_F);
+}
+
+//-----------------------------------------------------------------------------
 static void Delay(DWORD addr, int sov)
 {
     //; Status:C is now 0 if and only if counter rolled over and is now all ones
@@ -4232,15 +4252,16 @@ static void CompileFromIntermediate(BOOL topLevel)
 
                 sov1 = SizeOfVar(a->name1);
                 if(sov1 < 1)
-                    oops() MemForVariable(a->name1, &addr1);
+                    oops();
+                MemForVariable(a->name1, &addr1);
 
                 sov2 = SizeOfVar(a->name2);
                 if(sov2 < 1)
-                    oops()
-                        // full source copy to shadow
-                        // all operation execute in shadow
-                        // and then copy to dest
-                        CopyArgToReg(TRUE, Scratch0, sov2, a->name2, FALSE);
+                    oops();
+                // full source copy to shadow
+                // all operation execute in shadow
+                // and then copy to dest
+                CopyArgToReg(TRUE, Scratch0, sov2, a->name2, FALSE);
 
                 DWORD addrA = Scratch0;
                 if((a->op == INT_SET_VARIABLE_SR0)
