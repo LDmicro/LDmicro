@@ -153,7 +153,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *s = ArduinoPinName(iop);
-            if(s) {
+            if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1;\n", str);
@@ -222,7 +222,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *s = ArduinoPinName(iop);
-            if(s) {
+            if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1;\n", str);
@@ -355,7 +355,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *s = ArduinoPinName(iop);
-            if(s) {
+            if(strlen(s)) {
                 fprintf(flh,
                         "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n",
                         str,
@@ -412,7 +412,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *s = ArduinoPinName(iop);
-            if(s) {
+            if(strlen(s)) {
                 fprintf(flh,
                         "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n",
                         str,

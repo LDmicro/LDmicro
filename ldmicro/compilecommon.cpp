@@ -69,7 +69,7 @@ int McuPWM()
     int n = 0;
     if(Prog.mcu->pwmCount) {
         int prevPin = -1;
-        for(int i = 0; i < Prog.mcu->pwmCount; i++) {
+        for(uint32_t i = 0; i < Prog.mcu->pwmCount; i++) {
             if(Prog.mcu->pwmInfo[i].pin)
                 if(Prog.mcu->pwmInfo[i].pin != prevPin)
                     if((Prog.mcu->whichIsa == ISA_PIC16) || (Prog.mcu->pwmInfo[i].timer != Prog.cycleTimer))
@@ -429,7 +429,7 @@ BYTE MuxForAdcVariable(const char *name)
         oops();
 
     if(Prog.mcu) {
-        int j;
+        uint32_t j;
         for(j = 0; j < Prog.mcu->adcCount; j++) {
             if(Prog.mcu->adcInfo[j].pin == Prog.io.assignment[i].pin) {
                 break;
@@ -998,7 +998,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
         int type = Prog.io.assignment[i].type;
 
         if(type == IO_TYPE_READ_ADC) {
-            int j;
+            uint32_t j;
             if(Prog.mcu)
                 for(j = 0; j < Prog.mcu->pinCount; j++) {
                     McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
@@ -1013,7 +1013,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
 
         if(type == IO_TYPE_DIG_OUTPUT || type == IO_TYPE_PWM_OUTPUT || type == IO_TYPE_INT_INPUT
            || type == IO_TYPE_DIG_INPUT) {
-            int j;
+            uint32_t j;
             if(Prog.mcu)
                 for(j = 0; j < Prog.mcu->pinCount; j++) {
                     McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
