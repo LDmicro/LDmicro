@@ -153,7 +153,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *s = ArduinoPinName(iop);
-            if(s) {
+            if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1;\n", str);
@@ -222,7 +222,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *s = ArduinoPinName(iop);
-            if(s) {
+            if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1;\n", str);
@@ -355,7 +355,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *s = ArduinoPinName(iop);
-            if(s) {
+            if(strlen(s)) {
                 fprintf(flh,
                         "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n",
                         str,
@@ -412,7 +412,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
         if(compile_MNU == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             const char *s = ArduinoPinName(iop);
-            if(s) {
+            if(strlen(s)) {
                 fprintf(flh,
                         "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n",
                         str,
@@ -568,7 +568,6 @@ static void GenerateDeclarations(FILE *f)
             case INT_SET_VARIABLE_SHR:
             case INT_SET_VARIABLE_AND:
             case INT_SET_VARIABLE_OR:
-                break;
             case INT_SET_VARIABLE_XOR:
             case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_MOD:
@@ -761,8 +760,9 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 {
     int lock_label = 0;
     indent = 1;
-    int i;
-    for(i = begin; i <= end; i++) {
+    for(int i = begin; i <= end; i++) {
+        char opc;
+        const char *ops;
 
         if(IntCode[i].op == INT_END_IF)
             indent--;
@@ -810,68 +810,94 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_BIN2BCD:
+                break;
+
             case INT_SET_BCD2BIN:
+                break;
+
+            case INT_SET_SWAP:
+                fprintf(f, "%s = swap(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                break;
+
             case INT_SET_OPPOSITE:
+                fprintf(f, "%s = opposite(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                break;
+
             case INT_SET_VARIABLE_NOT:
+                fprintf(f, "%s = ~ %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_VARIABLE_RANDOM:
                 fprintf(f, "%s = rand();\n", MapSym(IntCode[i].name1, ASINT));
                 break;
-                {
-                    char op;
+
+                    case INT_SET_VARIABLE_SHL:
+                        opc = '<';
+                        goto arith_shift;
+                    case INT_SET_VARIABLE_SHR:
+                        opc = '>';
+                        goto arith_shift;
                     case INT_SET_VARIABLE_SR0:
-                        op = '>';
+                        opc = '>';
                         goto arith_shift;
                     arith_shift:
                         fprintf(f,
                                 "%s = %s %c%c %s;\n",
                                 MapSym(IntCode[i].name1, ASINT),
                                 MapSym(IntCode[i].name2, ASINT),
-                                op,
-                                op,
+                                opc,
+                                opc,
                                 MapSym(IntCode[i].name3, ASINT));
                         break;
-                }
-                {
-                    const char *op;
+
                     case INT_SET_VARIABLE_ROL:
-                        op = "rol";
+                        ops = "rol";
                         goto cicle_shift;
                     case INT_SET_VARIABLE_ROR:
-                        op = "ror";
+                        ops = "ror";
                         goto cicle_shift;
                     cicle_shift:
-                        //TODO: write code for shift op's
+                        fprintf(f,
+                                "%s = %s%d(%s, %s);\n",
+                                MapSym(IntCode[i].name1, ASINT),
+                                ops,
+                                SizeOfVar(IntCode[i].name2),
+                                MapSym(IntCode[i].name2, ASINT),
+                                MapSym(IntCode[i].name3, ASINT));
                         break;
-                }
 
-                {
-                    char op;
+                    case INT_SET_VARIABLE_AND:
+                        opc = '&';
+                        goto arith;
+                    case INT_SET_VARIABLE_OR:
+                        opc = '|';
+                        goto arith;
+                    case INT_SET_VARIABLE_XOR:
+                        opc = '^';
+                        goto arith;
                     case INT_SET_VARIABLE_ADD:
-                        op = '+';
+                        opc = '+';
                         goto arith;
                     case INT_SET_VARIABLE_SUBTRACT:
-                        op = '-';
+                        opc = '-';
                         goto arith;
                     case INT_SET_VARIABLE_MULTIPLY:
-                        op = '*';
+                        opc = '*';
                         goto arith;
                     case INT_SET_VARIABLE_DIVIDE:
-                        op = '/';
+                        opc = '/';
                         goto arith;
                     case INT_SET_VARIABLE_MOD:
-                        op = '%';
+                        opc = '%';
                         goto arith;
                     arith:
                         fprintf(f,
                                 "%s = %s %c %s;\n",
                                 MapSym(IntCode[i].name1, ASINT),
                                 MapSym(IntCode[i].name2, ASINT),
-                                op,
+                                opc,
                                 MapSym(IntCode[i].name3, ASINT));
                         break;
-                }
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "%s++;\n", MapSym(IntCode[i].name1, ASINT));

@@ -26,6 +26,7 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
+#include <algorithm>
 
 // Number of drawing columns (leaf element units) available. We want to
 // know this so that we can right-justify the coils.
@@ -177,16 +178,15 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
             int len;
             if(b) {
                 *b = '\0';
-                len = max(strlen(tbuf) - 1, strlen(b + 1));
+                len = std::max(strlen(tbuf) - 1, strlen(b + 1));
             } else {
                 len = strlen(tbuf);
             }
             // round up, and allow space for lead-in
             len = (len + 7 + (POS_WIDTH - 1)) / POS_WIDTH;
-            return min(ScreenColsAvailable() - soFar, max(ColsAvailable, len));
-            //return max(ColsAvailable, len);
+            return std::min(ScreenColsAvailable() - soFar, std::max(ColsAvailable, len));
+            //return std::max(ColsAvailable, len);
         }
-            //      case ELEM_CTC: // as End
         case ELEM_RES:
         case ELEM_COIL:
         case ELEM_MOVE:
@@ -733,7 +733,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL powe
             sprintf(s2, "%s", leaf->d.shiftRegister.name);
             sprintf(s3, "0..%d", leaf->d.shiftRegister.stages - 1);
 
-            int len = min(POS_WIDTH, max(1 + 9 + 1, 1 + strlen(s1) + strlen(s2)));
+            int len = std::min(POS_WIDTH, std::max(1 + 9 + 1, static_cast<int>(1 + strlen(s1) + strlen(s2))));
 
             formatWidth(top,
                         len,
@@ -1088,7 +1088,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
 
                     l1 = 2 + 1 + strlen(s) + strlen(leaf->d.cmp.op1);
                     l2 = 2 + 1 + strlen(leaf->d.cmp.op2);
-                    lmax = max(l1, l2);
+                    lmax = std::max(l1, l2);
 
                     if(lmax < POS_WIDTH) {
                         memset(s1, ' ', sizeof(s1));
@@ -1123,8 +1123,8 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
             cmp:
                     // clang-format on
                     int len =
-                        min(POS_WIDTH,
-                            max(1 + strlen(leaf->d.cmp.op1) + 1 + strlen(s) + 1, 1 + strlen(leaf->d.cmp.op2) + 1));
+                        std::min(static_cast<size_t>(POS_WIDTH),
+                            std::max(1 + strlen(leaf->d.cmp.op1) + 1 + strlen(s) + 1, 1 + strlen(leaf->d.cmp.op2) + 1));
 
                     sprintf(s1, "%s", leaf->d.cmp.op1);
                     sprintf(s2, "%s", leaf->d.cmp.op2);
@@ -1489,7 +1489,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, BOOL poweredBe
             char str[POS_WIDTH * 2];
             memset(str, 0, sizeof(str));
             char *srcStr = leaf->d.fmtdStr.string;
-            memcpy(str, srcStr, min(strlen(srcStr), POS_WIDTH * 2 - 7));
+            memcpy(str, srcStr, std::min(strlen(srcStr), static_cast<size_t>(POS_WIDTH * 2 - 7)));
 
             sprintf(bot, "{\"%s\"}", str);
 

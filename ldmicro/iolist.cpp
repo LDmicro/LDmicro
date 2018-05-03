@@ -858,7 +858,7 @@ void SaveIoListToFile(FILE *f)
             // Don't internationalize this! It's the file format, not UI.
             if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PC) && (Prog.io.assignment[i].pin))
                 fprintf(f, "    %s at %s\n", Prog.io.assignment[i].name, PinToName(Prog.io.assignment[i].pin));
-            else 
+            else
                 fprintf(f,
                         "    %s at %d %d %d\n",
                         Prog.io.assignment[i].name,
@@ -1070,17 +1070,19 @@ static BOOL MakeWindowClass()
     return RegisterClassEx(&wc);
 }
 
-#define AddX 200
+#define AddX 300
 #define AddY 50
 static void MakeControls()
 {
     HWND textLabel = CreateWindowEx(0,
                                     WC_STATIC,
-                                    _("Assign:"),
+                                    ((Prog.mcu) && (Prog.mcu->whichIsa == ISA_AVR)) ?
+                                    _("Pin#:   MCU pin name:                                       Arduino pin name:") :
+                                    _("Pin#:   MCU pin name:"),
                                     WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
                                     6,
                                     1,
-                                    80,
+                                    400,
                                     17,
                                     IoDialog,
                                     nullptr,
@@ -1271,8 +1273,9 @@ void ShowIoDialog(int item)
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
     int  Index = 0;
     char buf[MAX_NAME_LEN];
-    int  j;
-    int  i;
+    char pinName[MAX_NAME_LEN];
+    uint32_t i;
+    uint32_t j;
     for(i = 0; i < Prog.mcu->pinCount; i++) {
         for(j = 0; j < Prog.io.count; j++) {
             if(j == item)
@@ -1380,9 +1383,8 @@ void ShowIoDialog(int item)
                 Index = 0;
         };
 
-        char pinName[MAX_NAME_LEN];
         GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
-        sprintf(buf, "%3d  %s", Prog.mcu->pinInfo[i].pin, pinName);
+        sprintf(buf, "%3d  %-30s %s", Prog.mcu->pinInfo[i].pin, pinName, ArduinoPinName(Prog.mcu->pinInfo[i].pin));
 
         SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
     cant_use_this_io:;

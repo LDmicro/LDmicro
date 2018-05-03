@@ -524,19 +524,19 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SignedMenu, _("Signed variable operations"));
 
     BitwiseMenu = CreatePopupMenu();
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND, _("SIMUL: Insert bitwise AND"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR, _("SIMUL: Insert bitwise OR     |"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_AND, _("Insert bitwise AND"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR, _("Insert bitwise OR     |"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_XOR, _("Insert bitwise XOR  ^"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT, _("SIMUL: Insert bitwise NOT  ~"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL, _("SIMUL: Insert SHL << arithmetic,logic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR, _("SIMUL: Insert SHR >> arithmetic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT, _("Insert bitwise NOT  ~"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL, _("Insert SHL << arithmetic,logic shift to the left"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR, _("Insert SHR >> arithmetic shift to the right"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SR0, _("Insert SR0 >> logic shift to the right"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL, _("SIMUL: Insert ROL cyclic shift to the left"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR, _("SIMUL: Insert ROR cyclic shift to the right"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL, _("Insert ROL cyclic shift to the left"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROR, _("Insert ROR cyclic shift to the right"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SWAP, _("Insert SWAP"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OPPOSITE, _("SIMUL: Insert OPPOSITE"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT, _("SIMUL: Insert Set Bit #"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("SIMUL: Insert Clear Bit #"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OPPOSITE, _("Insert OPPOSITE"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT, _("Insert Set Bit #"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("Insert Clear Bit #"));
     AppendMenu(
         InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu, _("Bitwise variable operations (Unsigned)"));
 
@@ -590,13 +590,13 @@ HMENU MakeMainWindowMenus()
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
     ProcessorMenu = CreatePopupMenu();
-    Core core = SupportedMcus[0].core;
+    Core core = supportedMcus()[0].core;
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-        if(core != SupportedMcus[i].core) {
-            core = SupportedMcus[i].core;
+        if(core != supportedMcus()[i].core) {
+            core = supportedMcus()[i].core;
             AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, ""); //separate AVR MCU core
         }
-        AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, SupportedMcus[i].mcuName);
+        AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
     }
     AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, "");
     AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, _("(no microcontroller)"));
@@ -936,7 +936,7 @@ void RefreshControlsToSettings()
     RefreshStatusBar();
 
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-        if(&SupportedMcus[i] == Prog.mcu) {
+        if(&(supportedMcus()[i]) == Prog.mcu) {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_CHECKED);
         } else {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_UNCHECKED);

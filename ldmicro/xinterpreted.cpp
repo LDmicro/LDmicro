@@ -24,8 +24,6 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 
-#define _ITERATOR_DEBUG_LEVEL 0
-
 #include "ldmicro.h"
 #include "intcode.h"
 
