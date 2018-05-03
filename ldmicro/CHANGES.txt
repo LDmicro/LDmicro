@@ -3,6 +3,15 @@
     * New: Bitwise variable operations (Unsigned)
     AND, OR, XOR, NOT, SHL, SHR, etc.
 
+    * Updated: Arduino pin name added in I/O pin assign dialog.
+    More easy to use the Arduino board with it's pin name.
+
+    * Updated: flashMcu.bat
+    You can flash the Arduino board from LDmicro by using the bootloader of the Arduino,
+    you don't need any hardware, only the USB cable, and the COM port of the Arduino
+    (if the driver of the Arduino is installed).
+    Thanks to Gerard Jacquemin.
+
 == Release 4.3.8.7
 
     * Fixed: Can't assign PWM pin because of empty PWM pins list #73
