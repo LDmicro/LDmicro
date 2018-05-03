@@ -1070,7 +1070,7 @@ static BOOL MakeWindowClass()
     return RegisterClassEx(&wc);
 }
 
-#define AddX 200
+#define AddX 300
 #define AddY 50
 static void MakeControls()
 {
@@ -1382,7 +1382,8 @@ void ShowIoDialog(int item)
 
         char pinName[MAX_NAME_LEN];
         GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
-        sprintf(buf, "%3d  %s", Prog.mcu->pinInfo[i].pin, pinName);
+        const char *s = ArduinoPinName(Prog.mcu->pinInfo[i].pin);
+        sprintf(buf, "%3d  %-30s %s", Prog.mcu->pinInfo[i].pin, pinName, s);
 
         SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
     cant_use_this_io:;

@@ -654,7 +654,16 @@ const char *ArduinoPinName(McuIoPinInfo *iop)
         if(iop->ArduinoName)
             if(strlen(iop->ArduinoName))
                 return iop->ArduinoName;
-    return nullptr;
+    return "";
+}
+//-----------------------------------------------------------------------------
+const char *ArduinoPinName(int pin)
+{
+    if(Prog.mcu)
+        for(uint32_t i = 0; i < Prog.mcu->pinCount; i++)
+            if(Prog.mcu->pinInfo[i].pin == pin)
+                return Prog.mcu->pinInfo[i].ArduinoName;
+    return "";
 }
 
 //-----------------------------------------------------------------------------

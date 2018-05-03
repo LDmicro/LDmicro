@@ -1307,6 +1307,7 @@ char *ShortPinName(McuIoPinInfo *iop, char *pinName);
 char *LongPinName(McuIoPinInfo *iop, char *pinName);
 const char *PinToName(int pin);
 const char *ArduinoPinName(McuIoPinInfo *iop);
+const char *ArduinoPinName(int pin);
 void SetMcu(McuIoInfo *mcu);
 int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
