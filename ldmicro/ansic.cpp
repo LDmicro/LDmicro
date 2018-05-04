@@ -1340,7 +1340,10 @@ bool CompileAnsiC(char *dest, int MNU)
     SetExt(desth, dest, ".h");
 
     char ladderhName[MAX_PATH];
-    sprintf(ladderhName, "%s\\ladder.h_", CurrentCompilePath);
+    char compilePath[MAX_PATH];
+    strcpy(compilePath, dest);
+    ExtractFileDir(compilePath);
+    sprintf(ladderhName, "%s\\ladder.h_", compilePath);
 
     flh = fopen(ladderhName, "w");
     if(!flh) {
