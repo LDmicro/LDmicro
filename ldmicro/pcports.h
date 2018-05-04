@@ -1,13 +1,13 @@
 #ifndef __PCPORTS_H
 #define __PCPORTS_H
 //LPT =======================================================================
-// ë¨•È•≠®Ô ‡•£®·‚‡Æ¢ ØÆ‡‚†
-#define LPT_DATA_REG     0 // ê•£®·‚‡ §†≠≠ÎÂ
-#define LPT_STATUS_REG   1 // ê•£®·‚‡ ·Æ·‚ÆÔ≠®Ô
-#define LPT_STATE_REG    1 // ê•£®·‚‡ ·Æ·‚ÆÔ≠®Ô
-#define LPT_CONTROL_REG  2 // ê•£®·‚‡ „Ø‡†¢´•≠®Ô
-#define LPT_EPP_ADDRESS  3 // ê•£®·‚‡ †§‡•·† EPP
-#define LPT_EPP_DATA     4 // ê•£®·‚‡ §†≠≠ÎÂ EPP
+// –°–º–µ—â–µ–Ω–∏—è —Ä–µ–≥–∏—Å—Ç—Ä–æ–≤ –ø–æ—Ä—Ç–∞
+#define LPT_DATA_REG     0 // –†–µ–≥–∏—Å—Ç—Ä –¥–∞–Ω–Ω—ã—Ö
+#define LPT_STATUS_REG   1 // –†–µ–≥–∏—Å—Ç—Ä —Å–æ—Å—Ç–æ—è–Ω–∏—è
+#define LPT_STATE_REG    1 // –†–µ–≥–∏—Å—Ç—Ä —Å–æ—Å—Ç–æ—è–Ω–∏—è
+#define LPT_CONTROL_REG  2 // –†–µ–≥–∏—Å—Ç—Ä —É–ø—Ä–∞–≤–ª–µ–Ω–∏—è
+#define LPT_EPP_ADDRESS  3 // –†–µ–≥–∏—Å—Ç—Ä –∞–¥—Ä–µ—Å–∞ EPP
+#define LPT_EPP_DATA     4 // –†–µ–≥–∏—Å—Ç—Ä –¥–∞–Ω–Ω—ã—Ö EPP
 //         //PIN# DB25
 #define PAR_DATA0 0x01
 #define PAR_DATA1 0x02
@@ -67,8 +67,8 @@
 
 //COM =======================================================================
 #define LCR 3 //LCR - Line Control Register
-//ØÆ‡‚ BaseCOM+LCR - ê•£®·‚‡ „Ø‡†¢´•≠®Ô ´®≠®•©  //®ß èùÇå
-#define TD 0x40  //è•‡•§†¢†•¨Î• §†≠≠Î•
+//–ø–æ—Ä—Ç BaseCOM+LCR - –†–µ–≥–∏—Å—Ç—Ä —É–ø—Ä–∞–≤–ª–µ–Ω–∏—è –ª–∏–Ω–∏–µ–π  //–∏–∑ –ü–≠–í–ú
+#define TD 0x40  //–ü–µ—Ä–µ–¥–∞–≤–∞–µ–º—ã–µ –¥–∞–Ω–Ω—ã–µ
 #define  DB25TD 2
 #define  DB9TD  3
 //
@@ -76,12 +76,12 @@
 #define  DB9RD  2
 //
 #define MCR 4 //MCR - Modem Control Register
-//ØÆ‡‚ BaseCOM+MCR - ê•£®·‚‡ „Ø‡†¢´•≠®Ô ¨Æ§•¨Æ¨  //®ß èùÇå
-#define DTR 0x01 //ÉÆ‚Æ¢≠Æ·‚Ï èùÇå ™ ‡†°Æ‚•
+//–ø–æ—Ä—Ç BaseCOM+MCR - –†–µ–≥–∏—Å—Ç—Ä —É–ø—Ä–∞–≤–ª–µ–Ω–∏—è –º–æ–¥–µ–º–æ–º  //–∏–∑ –ü–≠–í–ú
+#define DTR 0x01 //–ì–æ—Ç–æ–≤–Ω–æ—Å—Ç—å –ü–≠–í–ú –∫ —Ä–∞–±–æ—Ç–µ
 #define  DB25DTR 20
 #define  DB9DTR   4
 //
-#define RTS 0x02 //á†Ø‡Æ· ≠† Ø•‡•§†Á„
+#define RTS 0x02 //–ó–∞–ø—Ä–æ—Å –Ω–∞ –ø–µ—Ä–µ–¥–∞—á—É
 #define  DB25RTS 4
 #define  DB9RTS  7
 //
@@ -89,20 +89,20 @@
 #define  DB9GND  5
 //
 #define MSR 6 //MSR - Modem Status Register
-//ØÆ‡‚ BaseCOM+MSR - ê•£®·‚‡ ·Æ·‚ÆÔ≠®Ô ¨Æ§•¨†  //¢ èùÇå
-#define CTS 0x10 //ÉÆ‚-·‚Ï ¨Æ§•¨† ™ Ø•‡•§†Á•
+//–ø–æ—Ä—Ç BaseCOM+MSR - –†–µ–≥–∏—Å—Ç—Ä —Å–æ—Å—Ç–æ—è–Ω–∏—è –º–æ–¥–µ–º–∞  //–≤ –ü–≠–í–ú
+#define CTS 0x10 //–ì–æ—Ç-—Å—Ç—å –º–æ–¥–µ–º–∞ –∫ –ø–µ—Ä–µ–¥–∞—á–µ
 #define  DB25CTS 5
 #define  DB9CTS 8
 //
-#define DSR 0x20 //ÉÆ‚Æ¢-·‚Ï ¨Æ§•¨† ™ ‡†°Æ‚•
+#define DSR 0x20 //–ì–æ—Ç–æ–≤-—Å—Ç—å –º–æ–¥–µ–º–∞ –∫ —Ä–∞–±–æ—Ç–µ
 #define  DB25DSR 6
 #define  DB9DSR 6
 //
-#define RI  0x40 //à≠§®™†‚Æ‡ ¢ÎßÆ¢†
+#define RI  0x40 //–ò–Ω–¥–∏–∫–∞—Ç–æ—Ä –≤—ã–∑–æ–≤–∞
 #define  DB25RI  22
 #define  DB9RI  9
 //
-#define DCD 0x80 //ë¢ÔßÏ ¨Æ§•¨Æ¢ „·‚†≠Æ¢´•≠†
+#define DCD 0x80 //–°–≤—è–∑—å –º–æ–¥–µ–º–æ–≤ —É—Å—Ç–∞–Ω–æ–≤–ª–µ–Ω–∞
 #define  DB25DCD 8
 #define  DB9DCD 1
 //
