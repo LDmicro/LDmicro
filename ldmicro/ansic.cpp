@@ -1100,7 +1100,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_EEPROM_READ:
                 fprintf(f,
-                        "%s = EEPROM_read(%d) + (EEPROM_read(%d) << 8);\n",
+                        "%s = EEPROM_read(%ld) + (EEPROM_read(%ld) << 8);\n",
                         MapSym(IntCode[i].name1, ASINT),
                         IntCode[i].literal,
                         IntCode[i].literal + 1);
