@@ -31,6 +31,7 @@ set(LD_COMPILER_SRC_LIST
     ../netzer.h
     ../mcutable.h
     ../pcports.h
+    ../compilerexceptions.hpp
     )
 
 if(MSVC)

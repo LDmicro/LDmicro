@@ -70,6 +70,7 @@ char CurrentCompilePath[MAX_PATH];
 // choice, and so on--basically everything that would be saved in the
 // project file.
 PlcProgram Prog;
+int        compile_MNU = -1;
 
 //-----------------------------------------------------------------------------
 // Get a filename with a common dialog box and then save the program to that
@@ -658,11 +659,15 @@ IsOpenAnable:
         return;
     }
     if((MNU >= MNU_COMPILE_ANSIC) && (MNU <= MNU_COMPILE_lastC)) {
-        CompileAnsiC(CurrentCompileFile, MNU);
-        postCompile("ANSIC");
+        if(CompileAnsiC(CurrentCompileFile, MNU)) {
+            CompileSuccesfullAnsiCMessage(CurrentCompileFile);
+            postCompile("ANSIC");
+        }
     } else if(MNU == MNU_COMPILE_ARDUINO) {
-        CompileAnsiC(CurrentCompileFile, MNU);
-        postCompile("ARDUINO");
+        if(CompileAnsiC(CurrentCompileFile, MNU)) {
+            CompileSuccesfullAnsiCMessage(CurrentCompileFile);
+            postCompile("ARDUINO");
+        }
     } else if(MNU == MNU_COMPILE_PASCAL) {
         CompilePascal(CurrentCompileFile);
         postCompile("PASCAL");
