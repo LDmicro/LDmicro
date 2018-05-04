@@ -1376,6 +1376,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     condition is false, nothing happens. This instruction must be the
     rightmost instruction in its rung.
 
+    See https://github.com/LDmicro/LDmicro/wiki/MAKE-PERSISTENT-operation
+
 
 > UART (SERIAL) RECEIVE          var
                            --{UART RECV}--
