@@ -156,6 +156,18 @@ void CompileSuccessfulMessage(char *str)
 {
     CompileSuccessfulMessage(str, MB_ICONINFORMATION);
 }
+
+void CompileSuccesfullAnsiCMessage(const char* dest)
+{
+    char str[MAX_PATH + 500];
+    sprintf(str,
+            _("Compile successful; wrote C source code to '%s'.\r\n\r\n"
+              "This is not a complete C program. You have to provide the runtime "
+              "and all the I/O routines. See the comments in the source code for "
+              "information about how to do this."),
+            dest);
+    CompileSuccessfulMessage(str);
+}
 //-----------------------------------------------------------------------------
 // Check the consistency of the heap on which all the PLC program stuff is
 // stored.
@@ -790,7 +802,7 @@ McuAdcPinInfo *AdcPinInfo(int pin)
 McuAdcPinInfo *AdcPinInfoForName(char *name)
 {
     if(Prog.mcu)
-        for(uint32_t i = 0; i < Prog.io.count; i++)
+        for(decltype(Prog.io.count) i = 0; i < Prog.io.count; i++)
             if(strcmp(Prog.io.assignment[i].name, name) == 0)
                 return AdcPinInfo(Prog.io.assignment[i].pin);
     return nullptr;

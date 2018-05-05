@@ -24,19 +24,18 @@
 // table. If it fails then it just returns the English.
 // Jonathan Westhues, Apr 2007
 //-----------------------------------------------------------------------------
-#include "stdafx.h"
 
-#include "ldmicro.h"
+#include <cstring>
 
-typedef struct LangTableTag {
+struct LangTable {
     char *from;
     char *to;
-} LangTable;
+};
 
-typedef struct LangTag {
+struct Lang {
     LangTable *tab;
     int        n;
-} Lang;
+};
 
 // These are the actual translation tables, so should be included in just
 // one place.
@@ -68,9 +67,7 @@ const char *_(const char *in)
 #error "Unrecognized language!"
 #endif
 
-    int i;
-
-    for(i = 0; i < l->n; i++) {
+    for(int i = 0; i < l->n; i++) {
         if(strcmp(in, l->tab[i].from) == 0) {
             return l->tab[i].to;
         }
