@@ -30,7 +30,7 @@
 struct LangTable {
     char *from;
     char *to;
-} ;
+};
 
 struct Lang {
     LangTable *tab;

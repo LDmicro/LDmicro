@@ -1261,7 +1261,6 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
                 flash char *ptr_to_flash1="This string is placed in FLASH";
                 char flash *ptr_to_flash2="This string is also placed in FLASH";
 
-
                 // Pointer to a char string placed in EEPROM
                 eeprom char *ptr_to_eeprom1="This string is placed in EEPROM";
                 char eeprom *ptr_to_eeprom2="This string is also placed in EEPROM";
