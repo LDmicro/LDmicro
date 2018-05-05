@@ -30,6 +30,8 @@ set(LD_COMPILER_SRC_LIST
     ../intcode.h
     ../netzer.h
     ../mcutable.h
+    ../pcports.h
+    ../compilerexceptions.hpp
     )
 
 if(MSVC)

@@ -1329,6 +1329,7 @@ void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str, unsigned int uType);
 void CompileSuccessfulMessage(char *str);
+void CompileSuccesfullAnsiCMessage(const char* dest);
 extern BOOL RunningInBatchMode;
 extern BOOL RunningInTestMode;
 extern HFONT MyNiceFont;
@@ -1681,7 +1682,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
 void CompileAvr(char *outFile);
 // ansic.cpp
 extern int compile_MNU;
-void CompileAnsiC(char *outFile, int MNU);
+bool CompileAnsiC(char *outFile, int MNU);
 // interpreted.cpp
 void CompileInterpreted(char *outFile);
 // xinterpreted.cpp
