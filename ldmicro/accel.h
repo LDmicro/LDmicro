@@ -22,9 +22,6 @@
 #ifndef __ACCEL_H
 #define __ACCEL_H
 
-typedef signed short SWORD;
-typedef signed long SDWORD;
-
 #include "ldmicro.h"
 
 #ifndef round

@@ -1285,6 +1285,15 @@ void ShowIoDialog(int item)
             }
         }
 
+        if(Prog.mcu->pinInfo[i].ioType) {
+            if((type == IO_TYPE_DIG_INPUT) && (Prog.mcu->pinInfo[i].ioType != IO_TYPE_DIG_INPUT)) {
+                goto cant_use_this_io;
+            }
+            if((type == IO_TYPE_DIG_OUTPUT) && (Prog.mcu->pinInfo[i].ioType != IO_TYPE_DIG_OUTPUT)) {
+                goto cant_use_this_io;
+            }
+        }
+
         if(type == IO_TYPE_SPI_MOSI) {
             char *c = strchr(name, '_');
             if(c)

@@ -407,12 +407,10 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
                 break;
 
             case INT_SET_SEED_RANDOM:
-#ifdef SHARE
             case INT_SET_BIN2BCD:
             case INT_SET_BCD2BIN:
             case INT_SET_OPPOSITE:
             case INT_SET_VARIABLE_NOT:
-#endif
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -703,7 +701,6 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 fprintf(f, "%s := %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
-#ifdef SHARE
             case INT_SET_BIN2BCD:
                 fprintf(f, "%s := bin2bcd(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
@@ -719,7 +716,6 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_SET_VARIABLE_NOT:
                 fprintf(f, "%s := not %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
-#endif
 
             case INT_SET_SWAP:
                 fprintf(f, "%s := swap(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
