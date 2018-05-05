@@ -280,12 +280,12 @@ BOOL ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
     *Addr = 0;
 
     char port;
-    int  i, dbPin = 0;
+    int  dbPin = 0;
     int  pin = 0;
     int  pinMcu = -1;
     char trans[1024];
 
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         Transliterate(trans, Prog.io.assignment[i].name);
         if(strcmp(trans, s + 3) == 0) {
             pin = Prog.io.assignment[i].pin;
@@ -293,7 +293,7 @@ BOOL ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
         };
     };
     if(Prog.mcu && (pin)) {
-        for(i = 0; i < Prog.mcu->pinCount; i++) {
+        for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
             if(pin == Prog.mcu->pinInfo[i].pin) {
                 pinMcu = i;
                 break;

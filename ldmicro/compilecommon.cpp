@@ -24,6 +24,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
+#include <algorithm>
 
 // If we encounter an error while compiling then it's convenient to break
 // out of the possibly-deeply-recursed function we're in.
@@ -380,14 +381,10 @@ int SingleBitAssigned(const char *name)
 
     if(Prog.mcu) {
         pin = Prog.io.assignment[i].pin;
-        for(i = 0; i < Prog.mcu->pinCount; i++) {
-            if(Prog.mcu->pinInfo[i].pin == pin)
-                break;
-        }
-
-        if(i >= Prog.mcu->pinCount) {
+        auto pp = std::find_if(Prog.mcu->pinInfo, Prog.mcu->pinInfo + Prog.mcu->pinCount,
+                               [pin](const McuIoPinInfo& info){return pin == info.pin;} );
+        if(pp == (Prog.mcu->pinInfo + Prog.mcu->pinCount))
             pin = 0;
-        }
     }
     return pin;
 }
@@ -903,29 +900,21 @@ int isPinAssigned(const char *name)
             case 'I':
             case 'X':
             case 'Y': {
-                int i;
-                for(i = 0; i < Prog.io.count; i++) {
-                    if(strcmp(Prog.io.assignment[i].name, name) == 0)
-                        break;
-                }
-                if(i >= Prog.io.count)
+                auto assign = std::find_if(Prog.io.assignment, Prog.io.assignment + Prog.io.count,
+                                           [name](const PlcProgramSingleIo& io){return (strcmp(io.name, name) == 0);});
+                if(assign == (Prog.io.assignment + Prog.io.count))
                     oops();
 
-                //if(asInput && Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) oops();
-                //if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT) oops();
-
-                int pin = Prog.io.assignment[i].pin;
+                int pin = assign->pin;
                 if(name[0] == 'A') {
-                    for(i = 0; i < Prog.mcu->adcCount; i++)
-                        if(Prog.mcu->adcInfo[i].pin == pin)
-                            break;
-                    if(i < Prog.mcu->adcCount)
+                    auto info = std::find_if(Prog.mcu->adcInfo, Prog.mcu->adcInfo + Prog.mcu->adcCount,
+                                           [pin](const McuAdcPinInfo& info){return (info.pin == pin);});
+                    if(info != (Prog.mcu->adcInfo + Prog.mcu->adcCount))
                         res = 1;
                 } else {
-                    for(i = 0; i < Prog.mcu->pinCount; i++)
-                        if(Prog.mcu->pinInfo[i].pin == pin)
-                            break;
-                    if(i < Prog.mcu->pinCount)
+                    auto info = std::find_if(Prog.mcu->pinInfo, Prog.mcu->pinInfo + Prog.mcu->pinCount,
+                                           [pin](const McuIoPinInfo& info){return (info.pin == pin);});
+                    if(info != (Prog.mcu->pinInfo + Prog.mcu->pinCount))
                         res = 1;
                 }
                 break;

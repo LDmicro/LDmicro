@@ -1274,10 +1274,8 @@ void ShowIoDialog(int item)
     int  Index = 0;
     char buf[MAX_NAME_LEN];
     char pinName[MAX_NAME_LEN];
-    uint32_t i;
-    uint32_t j;
-    for(i = 0; i < Prog.mcu->pinCount; i++) {
-        for(j = 0; j < Prog.io.count; j++) {
+    for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
+        for(int j = 0; j < Prog.io.count; j++) {
             if(j == item)
                 continue;
             if(Prog.io.assignment[j].pin == Prog.mcu->pinInfo[i].pin) {
@@ -1399,9 +1397,9 @@ void ShowIoDialog(int item)
     cant_use_this_io:;
     }
 
-    for(j = 0; j < Prog.mcu->adcCount; j++) {
+    for(uint32_t j = 0; j < Prog.mcu->adcCount; j++) {
         if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
-            for(i = 0; i < Prog.mcu->pinCount; i++) {
+            for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
                 if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) {
                     // okay; we know how to connect it up to the ADC
                     // break;

@@ -1391,7 +1391,7 @@ void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, c
         SDWORD val;
         val = hobatoi(_int01);
         if(Prog.mcu)
-            if((val < 0) || (Prog.mcu->ExtIntCount <= val))
+            if((val < 0) || (static_cast<SDWORD>(Prog.mcu->ExtIntCount) <= val))
                 Error(_("Can select only INTs pin."));
     }
     NoCheckingOnBox[4] = FALSE;

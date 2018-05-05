@@ -61,7 +61,7 @@ static int CheckRange(int value, const char *name)
 static BYTE GetArduinoPinNumber(int pin)
 {
     if(Prog.mcu)
-        for(int i = 0; i < Prog.mcu->pinCount; i++) {
+        for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
             if(Prog.mcu->pinInfo[i].pin == pin)
                 return Prog.mcu->pinInfo[i].ArduinoPin;
         }
