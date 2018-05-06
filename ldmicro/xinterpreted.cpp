@@ -22,12 +22,11 @@
 // for interpretation.
 // Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
-#include "stdafx.h"
-
 #include "ldmicro.h"
 #include "intcode.h"
+#include <vector>
 
-static BYTE OutProg[MAX_INT_OPS];
+static std::vector<uint8_t> OutProg;
 
 #define MAX_PLCIO 256
 
@@ -90,13 +89,8 @@ void CompileXInterpreted(char *outFile)
     PlcIos_size = 0;
 
     for(int i = 0; i < Prog.io.count; i++) {
-        PlcProgramSingleIo io = Prog.io.assignment[i];
         PlcIos[PlcIos_size++] = Prog.io.assignment[i].name;
     }
-
-    int ipc;
-    int outPc;
-
     // Convert the if/else structures in the intermediate code to absolute
     // conditional jumps, to make life a bit easier for the interpreter.
 #define MAX_IF_NESTING 32
@@ -108,38 +102,39 @@ void CompileXInterpreted(char *outFile)
     // 'jump to if reached' address (which is the ENDIF+1)
     int ifOpElse[MAX_IF_NESTING];
 
-    outPc = 0;
-    for(ipc = 0; ipc < IntCode.size(); ipc++) {
+    OutProg.clear();
+    OutProg.reserve(IntCode.size()*2);
+    for(uint32_t ipc = 0; ipc < IntCode.size(); ipc++) {
         switch(IntCode[ipc].op) {
             case INT_CLEAR_BIT:
             case INT_SET_BIT:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForBit(IntCode[ipc].name1));
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
-                OutProg[outPc++] = AddrForBit(IntCode[ipc].name2);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForBit(IntCode[ipc].name1));
+                OutProg.push_back(AddrForBit(IntCode[ipc].name2));
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-                OutProg[outPc++] = (BYTE)(IntCode[ipc].literal & 0xFF);
-                OutProg[outPc++] = (BYTE)((IntCode[ipc].literal >> 8) & 0xFF);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back((uint8_t)(IntCode[ipc].literal & 0xFF));
+                OutProg.push_back((uint8_t)((IntCode[ipc].literal >> 8) & 0xFF));
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name2));
                 break;
 
             case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
                 break;
 
             case INT_SET_VARIABLE_ADD:
@@ -147,51 +142,53 @@ void CompileXInterpreted(char *outFile)
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_DIVIDE:
             case INT_SET_VARIABLE_MOD:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name3);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name2));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name3));
                 break;
 
             case INT_SET_PWM:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-                OutProg[outPc++] = (BYTE)(IntCode[ipc].literal & 0xFF);
-                OutProg[outPc++] = (BYTE)((IntCode[ipc].literal >> 8) & 0xFF);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back((uint8_t)(IntCode[ipc].literal & 0xFF));
+                OutProg.push_back((uint8_t)((IntCode[ipc].literal >> 8) & 0xFF));
                 break;
 
             case INT_READ_ADC:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
                 break;
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForBit(IntCode[ipc].name1);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForBit(IntCode[ipc].name1));
                 goto finishIf;
             case INT_IF_VARIABLE_LES_LITERAL:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-                OutProg[outPc++] = (BYTE)(IntCode[ipc].literal & 0xFF);
-                OutProg[outPc++] = (BYTE)((IntCode[ipc].literal >> 8) & 0xFF);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back((uint8_t)(IntCode[ipc].literal & 0xFF));
+                OutProg.push_back((uint8_t)((IntCode[ipc].literal >> 8) & 0xFF));
                 goto finishIf;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                OutProg[outPc++] = IntCode[ipc].op;
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name1);
-                OutProg[outPc++] = AddrForVariable(IntCode[ipc].name2);
+                OutProg.push_back(IntCode[ipc].op);
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name2));
                 goto finishIf;
             finishIf:
-                ifOpIf[ifDepth] = outPc++;
+                ifOpIf[ifDepth] = OutProg.size();
+                OutProg.push_back(0);
                 ifOpElse[ifDepth] = 0;
                 ifDepth++;
                 // jump target will be filled in later
                 break;
 
             case INT_ELSE:
-                OutProg[outPc++] = IntCode[ipc].op;
-                ifOpElse[ifDepth - 1] = outPc++;
+                OutProg.push_back(IntCode[ipc].op);
+                ifOpElse[ifDepth - 1] = OutProg.size();
+                OutProg.push_back(0);
                 // jump target will be filled in later
                 break;
 
@@ -200,13 +197,13 @@ void CompileXInterpreted(char *outFile)
                 if(ifOpElse[ifDepth] == 0) {
                     // There is no else; if should jump straight to the
                     // instruction after this one if the condition is false.
-                    OutProg[ifOpIf[ifDepth]] = CheckRange(outPc - 1 - ifOpIf[ifDepth], "pc");
+                    OutProg[ifOpIf[ifDepth]] = CheckRange(OutProg.size() - 1 - ifOpIf[ifDepth], "pc");
                 } else {
                     // There is an else clause; if the if is false then jump
                     // just past the else, and if the else is reached then
                     // jump to the endif.
                     OutProg[ifOpIf[ifDepth]] = CheckRange(ifOpElse[ifDepth] - ifOpIf[ifDepth], "pc");
-                    OutProg[ifOpElse[ifDepth]] = CheckRange(outPc - 1 - ifOpElse[ifDepth], "pc");
+                    OutProg[ifOpElse[ifDepth]] = CheckRange(OutProg.size() - 1 - ifOpElse[ifDepth], "pc");
                 }
                 // But don't generate an instruction for this.
                 continue;
@@ -272,7 +269,7 @@ void CompileXInterpreted(char *outFile)
         }
     }
 
-    OutProg[outPc++] = INT_END_OF_PROGRAM;
+    OutProg.push_back(INT_END_OF_PROGRAM);
 
     // Create a map of io and internal variables
     // $$IO nb_named_IO total_nb_IO
@@ -291,10 +288,10 @@ void CompileXInterpreted(char *outFile)
     }
 
     // $$LDcode program_size
-    fprintf(f, "$$LDcode %d\n", outPc);
-    for(int i = 0; i < outPc; i++) {
+    fprintf(f, "$$LDcode %d\n", OutProg.size());
+    for(uint32_t i = 0; i < OutProg.size(); i++) {
         fprintf(f, "%02X", OutProg[i]);
-        if((i % 16) == 15 || i == outPc - 1)
+        if((i % 16) == 15 || i == OutProg.size() - 1)
             fprintf(f, "\n");
     }
 

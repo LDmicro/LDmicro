@@ -245,8 +245,6 @@ struct IntOp {
 };
 
 #define MAX_INT_OPS     (1024*24)
-//extern IntOp IntCode[MAX_INT_OPS];
-//extern int IntCodeLen;
 extern std::vector<IntOp> IntCode;
 extern int ProgWriteP;
 #endif // !defined(INTCODE_H_CONSTANTS_ONLY)

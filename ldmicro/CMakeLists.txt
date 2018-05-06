@@ -57,7 +57,6 @@ set(LDMICRO_SRC_LIST
     simpledialog.cpp
     simulate.cpp
     undoredo.cpp
-    xinterpreted.cpp
     stdafx.cpp
     ldversion.h
 

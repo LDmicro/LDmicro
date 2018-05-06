@@ -23,6 +23,7 @@ set(LD_COMPILER_SRC_LIST
     ../pascal.cpp
     ../pcports.cpp
     ../translit.cpp
+    ../xinterpreted.cpp
 
     ../accel.h
     ../bits.h

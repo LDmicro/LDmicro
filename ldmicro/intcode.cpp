@@ -76,7 +76,6 @@ DWORD addrRUartSendErrorFlag;
 int   bitRUartSendErrorFlag;
 
 std::vector<IntOp> IntCode;
-//int              IntCodeLen = 0;
 int              ProgWriteP = 0;
 static SDWORD *  Tdata;
 int              rungNow = -INT_MAX;
