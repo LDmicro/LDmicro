@@ -6,6 +6,7 @@
 #include "stdafx.h"
 #include "ldmicro.h"
 #include <algorithm>
+#include <memory>
 
 /*
  * store a window's position in the registry, or fail silently if the registry calls don't work
@@ -19,7 +20,7 @@ void FreezeWindowPosF(HWND hwnd, const char* subKey, const char *name)
     if(RegOpenKeyEx(HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS, &software) != ERROR_SUCCESS)
         return;
 
-    char *keyName = (char *)malloc(strlen(name) + 30);
+    auto keyName = std::unique_ptr<char, decltype(free)*>(reinterpret_cast<char*>(malloc(strlen(name) + 30)), free);
     if(!keyName)
         return;
 
@@ -27,25 +28,25 @@ void FreezeWindowPosF(HWND hwnd, const char* subKey, const char *name)
     if(RegCreateKeyEx(software, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &sub, NULL) != ERROR_SUCCESS)
         return;
 
-    sprintf(keyName, "%s_left", name);
-    if(RegSetValueEx(sub, keyName, 0, REG_DWORD, (BYTE *)&(r.left), sizeof(DWORD)) != ERROR_SUCCESS)
+    sprintf(keyName.get(), "%s_left", name);
+    if(RegSetValueEx(sub, keyName.get(), 0, REG_DWORD, (BYTE *)&(r.left), sizeof(DWORD)) != ERROR_SUCCESS)
         return;
 
-    sprintf(keyName, "%s_right", name);
-    if(RegSetValueEx(sub, keyName, 0, REG_DWORD, (BYTE *)&(r.right), sizeof(DWORD)) != ERROR_SUCCESS)
+    sprintf(keyName.get(), "%s_right", name);
+    if(RegSetValueEx(sub, keyName.get(), 0, REG_DWORD, (BYTE *)&(r.right), sizeof(DWORD)) != ERROR_SUCCESS)
         return;
 
-    sprintf(keyName, "%s_top", name);
-    if(RegSetValueEx(sub, keyName, 0, REG_DWORD, (BYTE *)&(r.top), sizeof(DWORD)) != ERROR_SUCCESS)
+    sprintf(keyName.get(), "%s_top", name);
+    if(RegSetValueEx(sub, keyName.get(), 0, REG_DWORD, (BYTE *)&(r.top), sizeof(DWORD)) != ERROR_SUCCESS)
         return;
 
-    sprintf(keyName, "%s_bottom", name);
-    if(RegSetValueEx(sub, keyName, 0, REG_DWORD, (BYTE *)&(r.bottom), sizeof(DWORD)) != ERROR_SUCCESS)
+    sprintf(keyName.get(), "%s_bottom", name);
+    if(RegSetValueEx(sub, keyName.get(), 0, REG_DWORD, (BYTE *)&(r.bottom), sizeof(DWORD)) != ERROR_SUCCESS)
         return;
 
-    sprintf(keyName, "%s_maximized", name);
+    sprintf(keyName.get(), "%s_maximized", name);
     DWORD v = IsZoomed(hwnd);
-    if(RegSetValueEx(sub, keyName, 0, REG_DWORD, (BYTE *)&(v), sizeof(DWORD)) != ERROR_SUCCESS)
+    if(RegSetValueEx(sub, keyName.get(), 0, REG_DWORD, (BYTE *)&(v), sizeof(DWORD)) != ERROR_SUCCESS)
         return;
 
     if(RegSetValueEx(sub, "color_bg",          0, REG_DWORD, (BYTE *)&(Schemes[MNU_SCHEME_USER & 0xff].         bg), sizeof(DWORD)) != ERROR_SUCCESS)
@@ -83,8 +84,6 @@ void FreezeWindowPosF(HWND hwnd, const char* subKey, const char *name)
 
     if(RegSetValueEx(sub, "Scheme", 0, REG_DWORD, (BYTE *)&(scheme), sizeof(DWORD)) != ERROR_SUCCESS)
         return;
-
-    free(keyName);
 }
 
 static void Clamp(LONG *v, LONG min, LONG max)
@@ -106,37 +105,37 @@ void ThawWindowPosF(HWND hwnd, const char *subKey, const char* name)
     if(RegOpenKeyEx(software, subKey, 0, KEY_ALL_ACCESS, &sub) != ERROR_SUCCESS)
         return;
 
-    char *keyName = (char *)malloc(strlen(name) + 30);
+    auto keyName = std::unique_ptr<char, decltype(free)*>(reinterpret_cast<char*>(malloc(strlen(name) + 30)), free);
     if(!keyName)
         return;
 
     DWORD l;
     RECT  r;
 
-    sprintf(keyName, "%s_left", name);
+    sprintf(keyName.get(), "%s_left", name);
     l = sizeof(DWORD);
-    if(RegQueryValueEx(sub, keyName, NULL, NULL, (BYTE *)&(r.left), &l) != ERROR_SUCCESS)
+    if(RegQueryValueEx(sub, keyName.get(), NULL, NULL, (BYTE *)&(r.left), &l) != ERROR_SUCCESS)
         return;
 
-    sprintf(keyName, "%s_right", name);
+    sprintf(keyName.get(), "%s_right", name);
     l = sizeof(DWORD);
-    if(RegQueryValueEx(sub, keyName, NULL, NULL, (BYTE *)&(r.right), &l) != ERROR_SUCCESS)
+    if(RegQueryValueEx(sub, keyName.get(), NULL, NULL, (BYTE *)&(r.right), &l) != ERROR_SUCCESS)
         return;
 
-    sprintf(keyName, "%s_top", name);
+    sprintf(keyName.get(), "%s_top", name);
     l = sizeof(DWORD);
-    if(RegQueryValueEx(sub, keyName, NULL, NULL, (BYTE *)&(r.top), &l) != ERROR_SUCCESS)
+    if(RegQueryValueEx(sub, keyName.get(), NULL, NULL, (BYTE *)&(r.top), &l) != ERROR_SUCCESS)
         return;
 
-    sprintf(keyName, "%s_bottom", name);
+    sprintf(keyName.get(), "%s_bottom", name);
     l = sizeof(DWORD);
-    if(RegQueryValueEx(sub, keyName, NULL, NULL, (BYTE *)&(r.bottom), &l) != ERROR_SUCCESS)
+    if(RegQueryValueEx(sub, keyName.get(), NULL, NULL, (BYTE *)&(r.bottom), &l) != ERROR_SUCCESS)
         return;
 
-    sprintf(keyName, "%s_maximized", name);
+    sprintf(keyName.get(), "%s_maximized", name);
     DWORD v;
     l = sizeof(DWORD);
-    if(RegQueryValueEx(sub, keyName, NULL, NULL, (BYTE *)&v, &l) != ERROR_SUCCESS)
+    if(RegQueryValueEx(sub, keyName.get(), NULL, NULL, (BYTE *)&v, &l) != ERROR_SUCCESS)
         return;
     if(v)
         ShowWindow(hwnd, SW_MAXIMIZE);
@@ -246,8 +245,6 @@ void ThawWindowPosF(HWND hwnd, const char *subKey, const char* name)
     Clamp(&(r.bottom), dr.top,  dr.bottom);
 
     MoveWindow(hwnd, r.left, r.top, r.right - r.left, r.bottom - r.top, TRUE);
-
-    free(keyName);
 }
 
 /*
