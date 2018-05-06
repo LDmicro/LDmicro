@@ -841,14 +841,14 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 static void ProcessMenu(int code)
 {
-    if(code >= MNU_PROCESSOR_0 && code < MNU_PROCESSOR_0 + NUM_SUPPORTED_MCUS) {
+    if(code >= MNU_PROCESSOR_0 && code < static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
         strcpy(CurrentCompileFile, "");
         SetMcu(&(supportedMcus()[code - MNU_PROCESSOR_0]));
         RefreshControlsToSettings();
         ProgramChangedNotSaved = TRUE;
         return;
     }
-    if(code == MNU_PROCESSOR_0 + NUM_SUPPORTED_MCUS) {
+    if(code == static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
         SetMcu(nullptr);
         strcpy(CurrentCompileFile, "");
         RefreshControlsToSettings();
@@ -2706,11 +2706,6 @@ void CheckPwmPins()
 //-----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
-    if(NUM_SUPPORTED_MCUS != supportedMcus().size()) {
-        Error("NUM_SUPPORTED_MCUS=%d != supportedMcus().size()=%d", NUM_SUPPORTED_MCUS, supportedMcus().size());
-        oops();
-    }
-
     if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
         Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
         oops();
