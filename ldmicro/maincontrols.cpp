@@ -591,7 +591,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
     ProcessorMenu = CreatePopupMenu();
     Core core = supportedMcus()[0].core;
-    for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
+    for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         if(core != supportedMcus()[i].core) {
             core = supportedMcus()[i].core;
             AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, ""); //separate AVR MCU core
@@ -599,7 +599,7 @@ HMENU MakeMainWindowMenus()
         AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
     }
     AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, "");
-    AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, _("(no microcontroller)"));
+    AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + supportedMcus().size(), _("(no microcontroller)"));
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu, _("&Microcontroller"));
 
     ProcessorMenu2 = CreatePopupMenu();
@@ -894,10 +894,9 @@ void RefreshStatusBar()
 //-----------------------------------------------------------------------------
 void RefreshControlsToSettings()
 {
-    int i;
     if(!IoListOutOfSync) {
         IoListSelectionPoint = -1;
-        for(i = 0; i < Prog.io.count; i++) {
+        for(int i = 0; i < Prog.io.count; i++) {
             if(ListView_GetItemState(IoList, i, LVIS_SELECTED)) {
                 IoListSelectionPoint = i;
                 break;
@@ -907,7 +906,7 @@ void RefreshControlsToSettings()
     }
 
     ListView_DeleteAllItems(IoList);
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         LVITEM lvi;
         lvi.mask = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
         lvi.state = lvi.stateMask = 0;
@@ -923,7 +922,7 @@ void RefreshControlsToSettings()
     if(IoListSelectionPoint < 0)
         IoListSelectionPoint = 0;
     if(IoListSelectionPoint >= 0) {
-        for(i = 0; i < Prog.io.count; i++) {
+        for(int i = 0; i < Prog.io.count; i++) {
             ListView_SetItemState(IoList, i, 0, LVIS_SELECTED);
             ListView_SetItemState(IoList, i, 0, LVIS_FOCUSED);
         }
@@ -935,7 +934,7 @@ void RefreshControlsToSettings()
 
     RefreshStatusBar();
 
-    for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
+    for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         if(&(supportedMcus()[i]) == Prog.mcu) {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_CHECKED);
         } else {
@@ -944,12 +943,12 @@ void RefreshControlsToSettings()
     }
     // `(no microcontroller)' setting
     if(!Prog.mcu) {
-        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_CHECKED);
+        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + supportedMcus().size(), MF_CHECKED);
     } else {
-        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_UNCHECKED);
+        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + supportedMcus().size(), MF_UNCHECKED);
     }
 
-    for(i = 0; i < NUM_SUPPORTED_SCHEMES; i++)
+    for(uint32_t i = 0; i < NUM_SUPPORTED_SCHEMES; i++)
         CheckMenuItem(SchemeMenu, MNU_SCHEME_BLACK + i, (i == scheme) ? MF_CHECKED : MF_UNCHECKED);
 }
 

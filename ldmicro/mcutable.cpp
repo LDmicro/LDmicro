@@ -1249,7 +1249,7 @@ McuIoPinInfo PcCfg[] = {
 };
 
 //===========================================================================
-McuIoInfo SupportedMcus_[] = { // NUM_SUPPORTED_MCUS
+McuIoInfo SupportedMcus_[] = {
     {
         "Atmel AVR ATmega2560 100-TQFP",
         "ATmega2560",

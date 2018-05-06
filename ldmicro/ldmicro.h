@@ -925,8 +925,6 @@ extern DWORD scheme;
 
 #define IS_MCU_REG(i) ((Prog.mcu) && (Prog.mcu->inputRegs[i]) && (Prog.mcu->outputRegs[i]) && (Prog.mcu->dirRegs[i]))
 
-#define NUM_SUPPORTED_MCUS 27
-
 //-----------------------------------------------
 // Function prototypes
 
