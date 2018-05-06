@@ -39,6 +39,7 @@ if(MSVC)
     string(APPEND CMAKE_C_FLAGS " /J")
 endif()
 
+INCLUDE_DIRECTORIES("../" "../../common/gsl-lite/include")
 add_definitions(
     "-DISOLATION_AWARE_ENABLED"
     "-DWIN32_LEAN_AND_MEAN"

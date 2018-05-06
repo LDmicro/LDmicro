@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "mcutable.h"
 #include "current_function.hpp"
+#include <gsl.hpp>
 
 typedef signed short SWORD;
 typedef signed long SDWORD;
