@@ -340,7 +340,7 @@ void PaintWindow()
 
     SetTextColor(Hdc, HighlightColours.rungNum);
 
-    sprintf(str, "%4d", IntCodeLen);
+    sprintf(str, "%4d", IntCode.size());
     TextOut(Hdc, 8, yp + FONT_HEIGHT, str, 4);
 
     sprintf(str, "%4d", ProgWriteP);
@@ -747,8 +747,8 @@ void ExportDrawingAsText(char *file)
     sprintf(str, "%4d", Prog.numRungs);
     strncpy(ExportBuffer[cy + 1], str, 4);
 
-    if(IntCodeLen) {
-        sprintf(str, "%4d", IntCodeLen);
+    if(IntCode.size()) {
+        sprintf(str, "%4d", IntCode.size());
         strncpy(ExportBuffer[cy + 2], str, 4);
     }
 

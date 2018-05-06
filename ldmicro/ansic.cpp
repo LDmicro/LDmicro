@@ -480,8 +480,7 @@ static void GenerateDeclarations(FILE *f)
     DWORD addr, addr2;
     int   bit, bit2;
 
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         const char *bitVar1 = nullptr, *bitVar2 = nullptr;
         const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr;
         //const char *adcVar1 = nullptr;
@@ -1226,8 +1225,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 //-----------------------------------------------------------------------------
 static void GenerateSUBPROG(FILE *f)
 {
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
@@ -1250,7 +1248,7 @@ static void GenerateSUBPROG(FILE *f)
 static void GenerateAnsiC_flash_eeprom(FILE *f)
 {
 #ifdef TABLE_IN_FLASH
-    for(int i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int         sovElement = IntCode[i].literal2;
@@ -2011,7 +2009,7 @@ bool CompileAnsiC(char *dest, int MNU)
             "   it at the interval that you specified in the LDmicro MCU configuration when you\n"
             "   generated this code. */\n"
             "void PlcCycle(void) {\n");
-    GenerateAnsiC(f, 0, IntCodeLen - 1);
+    GenerateAnsiC(f, 0, IntCode.size() - 1);
     fprintf(f, "}\n");
     //---------------------------------------------------------------------------
     if(compiler_variant == MNU_COMPILE_ARDUINO) {

@@ -28,6 +28,10 @@
 #ifndef __INTCODE_H
 #define __INTCODE_H
 
+#include <cstdint>
+#include <vector>
+#include "ldconfig.h"
+
 #define NEW_CMP // (C) GitHub.LDmicro@gmail.com
 #define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
 #define NEW_INT 1
@@ -215,35 +219,39 @@
 // clang-format on
 
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
-    typedef struct IntOpTag {
-        int         op;
-        char        name1[MAX_NAME_LEN];
-        char        name2[MAX_NAME_LEN];
-        char        name3[MAX_NAME_LEN];
-        char        name4[MAX_NAME_LEN];
-        char        name5[MAX_NAME_LEN];
-        char        name6[MAX_NAME_LEN];
-        SDWORD      literal;
-        SDWORD      literal2;
-        SDWORD      literal3;    // side effect: internaly used in simulation of INT_FLASH_READ
-        SDWORD     *data;        // for INT_FLASH_INIT
-        BOOL       *poweredAfter;
-        BOOL       *workingNow;
-        int         rung;        //= rungNow  //this IntOp located in rung,
-        int         which;       //= whichNow //this IntOp refers to the ELEM_<which>
-        ElemLeaf   *leaf;        //= leafNow  //
-        char        f[MAX_PATH]; //in .c source file name
-        int         l;           //and line in file
-        BOOL        simulated;
-    } IntOp;
+struct ElemLeaf;
+struct IntOp {
+    int         op;
+    char        name1[MAX_NAME_LEN];
+    char        name2[MAX_NAME_LEN];
+    char        name3[MAX_NAME_LEN];
+    char        name4[MAX_NAME_LEN];
+    char        name5[MAX_NAME_LEN];
+    char        name6[MAX_NAME_LEN];
+    int32_t     literal;
+    int32_t     literal2;
+    int32_t     literal3;    // side effect: internaly used in simulation of INT_FLASH_READ
+    int32_t     *data;       // for INT_FLASH_INIT
+    bool        *poweredAfter;
+    bool        *workingNow;
+    int         rung;        //= rungNow  //this IntOp located in rung,
+    int         which;       //= whichNow //this IntOp refers to the ELEM_<which>
+    ElemLeaf   *leaf;        //= leafNow  //
+    char        f[MAX_PATH]; //in .c source file name
+    int         l;           //and line in file
+    bool        simulated;
 
-    #define MAX_INT_OPS     (1024*24)
-    extern IntOp IntCode[MAX_INT_OPS];
-    extern int IntCodeLen;
-    extern int ProgWriteP;
-#endif
+    IntOp();
+};
 
-#endif
+#define MAX_INT_OPS     (1024*24)
+//extern IntOp IntCode[MAX_INT_OPS];
+//extern int IntCodeLen;
+extern std::vector<IntOp> IntCode;
+extern int ProgWriteP;
+#endif // !defined(INTCODE_H_CONSTANTS_ONLY)
+
+#endif //__INTCODE_H
 /*                               exclusive  Shift   Shift
 Language    NOT     AND     OR      OR      left    right
 C/C++,

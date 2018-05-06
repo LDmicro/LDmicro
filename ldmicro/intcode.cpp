@@ -22,11 +22,12 @@
 // AVR or PIC16 code.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include "stdafx.h"
-
 #include "ldmicro.h"
 #include "intcode.h"
+#include "compilerexceptions.hpp"
 #include <algorithm>
+#include <unordered_set>
+#include <string>
 
 //// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
@@ -74,8 +75,8 @@ int   bitRUartRecvErrorFlag;
 DWORD addrRUartSendErrorFlag;
 int   bitRUartSendErrorFlag;
 
-IntOp            IntCode[MAX_INT_OPS];
-int              IntCodeLen = 0;
+std::vector<IntOp> IntCode;
+//int              IntCodeLen = 0;
 int              ProgWriteP = 0;
 static SDWORD *  Tdata;
 int              rungNow = -INT_MAX;
@@ -92,8 +93,9 @@ static DWORD GenSymCountStepper;
 DWORD EepromAddrFree;
 DWORD RomSection;
 
-static char PersistVariables[MAX_IO][MAX_NAME_LEN];
-int         PersistVariableCount;
+namespace  {
+std::unordered_set<std::string> persistVariables;
+}
 
 //-----------------------------------------------------------------------------
 // Report an error if a constant doesn't fit in 16 bits.
@@ -118,9 +120,8 @@ void IntDumpListing(char *outFile)
         Error(_("Couldn't dump intermediate code to '%s'."), outFile);
     }
 
-    int i;
     int indent = 0;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
 
         if(IntCode[i].op == INT_END_IF)
             indent--;
@@ -238,13 +239,13 @@ void IntDumpListing(char *outFile)
 
             case INT_SET_VARIABLE_ADD:
                 fprintf(f, "let var '%s' := '%s' + '%s'", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
-                if(IntCode[i].name4 && strlen(IntCode[i].name4))
+                if(strlen(IntCode[i].name4))
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4);
                 break;
 
             case INT_SET_VARIABLE_SUBTRACT:
                 fprintf(f, "let var '%s' := '%s' - '%s'", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
-                if(IntCode[i].name4 && strlen(IntCode[i].name4))
+                if(strlen(IntCode[i].name4))
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4);
                 break;
 
@@ -257,22 +258,22 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_VARIABLE_MOD:
-                fprintf(f, "let var '%s' := '%s' % '%s'", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
+                fprintf(f, "let var '%s' := '%s' % '%s'", IntCode[i].name1, IntCode[i].name2);
                 break;
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1);
-                if(IntCode[i].name2 && strlen(IntCode[i].name2))
+                if(strlen(IntCode[i].name2))
                     fprintf(f, "; copy overlap(-1 to 0) flag to '%s'", IntCode[i].name2);
-                if(IntCode[i].name3 && strlen(IntCode[i].name3))
+                if(strlen(IntCode[i].name3))
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name3);
                 break;
 
             case INT_DECREMENT_VARIABLE:
                 fprintf(f, "decrement '%s'", IntCode[i].name1);
-                if(IntCode[i].name2 && strlen(IntCode[i].name2))
+                if(strlen(IntCode[i].name2))
                     fprintf(f, "; copy overlap(0 to -1) flag to '%s'", IntCode[i].name2);
-                if(IntCode[i].name3 && strlen(IntCode[i].name3))
+                if(strlen(IntCode[i].name3))
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name3);
                 break;
 
@@ -447,12 +448,12 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_IF_BIT_SET_IN_VAR: // TODO
-                fprintf(f, "if ('%s' & (1<<%d)) != 0  {", IntCode[i].name1, IntCode[i].name2);
+                fprintf(f, "if ('%s' & (1<<%d)) != 0  {", IntCode[i].name1, IntCode[i].literal);
                 indent++;
                 break;
 
             case INT_IF_BIT_CLEAR_IN_VAR: // TODO
-                fprintf(f, "if ('%s' & (1<<%d)) == 0 {", IntCode[i].name1, IntCode[i].name2);
+                fprintf(f, "if ('%s' & (1<<%d)) == 0 {", IntCode[i].name1, IntCode[i].literal);
                 indent++;
                 break;
 
@@ -705,26 +706,26 @@ int HexDigit(int c)
 //-----------------------------------------------------------------------------
 void GenSym(char *dest, char *name1, char *name2)
 {
-    sprintf(dest, "$var_%01x_%s_%s", GenSymCount, name1, name2);
+    sprintf(dest, "$var_%01lx_%s_%s", GenSymCount, name1, name2);
     GenSymCount++;
 }
 
 static void GenSymParThis(char *dest)
 {
-    sprintf(dest, "$parThis_%01x", GenSymCountParThis);
+    sprintf(dest, "$parThis_%01lx", GenSymCountParThis);
     GenSymCountParThis++;
 }
 static void GenSymParOut(char *dest)
 {
-    sprintf(dest, "$parOut_%01x", GenSymCountParOut);
+    sprintf(dest, "$parOut_%01lx", GenSymCountParOut);
     GenSymCountParOut++;
 }
 void GenSymOneShot(char *dest, const char *name1, const char *name2)
 {
     if(int_comment_level == 1)
-        sprintf(dest, "$once_%01x", GenSymCountOneShot);
+        sprintf(dest, "$once_%01lx", GenSymCountOneShot);
     else
-        sprintf(dest, "$once_%01x_%s_%s", GenSymCountOneShot, name1, name2);
+        sprintf(dest, "$once_%01lx_%s_%s", GenSymCountOneShot, name1, name2);
     GenSymCountOneShot++;
 }
 static void GenSymOneShot(char *dest)
@@ -733,7 +734,7 @@ static void GenSymOneShot(char *dest)
 }
 static void GenSymFormattedString(char *dest, const char *name)
 {
-    sprintf(dest, "$fmtd_%01x_%s", GenSymCountFormattedString, name);
+    sprintf(dest, "$fmtd_%01lx_%s", GenSymCountFormattedString, name);
     GenSymCountFormattedString++;
 }
 static void GenSymFormattedString(char *dest)
@@ -742,54 +743,51 @@ static void GenSymFormattedString(char *dest)
 }
 static void GenSymStepper(char *dest, char *name)
 {
-    sprintf(dest, "$step_%01x_%s", GenSymCountStepper, name);
+    sprintf(dest, "$step_%01lx_%s", GenSymCountStepper, name);
     GenSymCountStepper++;
 }
 
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, const char *f, const char *args, int op, BOOL *b, const char *name1, const char *name2,
+static void _Op(int l, const char *f, const char *args, int op, bool *b, const char *name1, const char *name2,
                 const char *name3, const char *name4, const char *name5, const char *name6, SDWORD lit, SDWORD lit2,
                 SDWORD *data)
 {
-    memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
-    IntCode[IntCodeLen].op = op;
+    IntOp intOp;
+    //memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
+    intOp.op = op;
     if(name1)
-        strcpy(IntCode[IntCodeLen].name1, name1);
+        strcpy(intOp.name1, name1);
     if(name2)
-        strcpy(IntCode[IntCodeLen].name2, name2);
+        strcpy(intOp.name2, name2);
     if(name3)
-        strcpy(IntCode[IntCodeLen].name3, name3);
+        strcpy(intOp.name3, name3);
     if(name4)
-        strcpy(IntCode[IntCodeLen].name4, name4);
+        strcpy(intOp.name4, name4);
     if(name5)
-        strcpy(IntCode[IntCodeLen].name5, name5);
+        strcpy(intOp.name5, name5);
     if(name6)
-        strcpy(IntCode[IntCodeLen].name6, name6);
-    IntCode[IntCodeLen].literal = lit;
+        strcpy(intOp.name6, name6);
+    intOp.literal = lit;
 #ifdef NEW_CMP
     if((op == INT_IF_LES) || (op == INT_IF_VARIABLE_LES_LITERAL))
         if(!name2) {
-            sprintf(IntCode[IntCodeLen].name2, "%d", lit);
+            sprintf(intOp.name2, "%d", lit);
         }
 #endif
-    IntCode[IntCodeLen].literal2 = lit2;
-    IntCode[IntCodeLen].data = data;
-    IntCode[IntCodeLen].rung = rungNow;
-    IntCode[IntCodeLen].which = whichNow;
-    IntCode[IntCodeLen].leaf = leafNow;
+    intOp.literal2 = lit2;
+    intOp.data = data;
+    intOp.rung = rungNow;
+    intOp.which = whichNow;
+    intOp.leaf = leafNow;
     if(b)
-        IntCode[IntCodeLen].poweredAfter = b;
+        intOp.poweredAfter = b;
     else
-        IntCode[IntCodeLen].poweredAfter = &(leafNow->poweredAfter);
-    IntCode[IntCodeLen].l = l;
-    strcpy(IntCode[IntCodeLen].f, f);
-    IntCodeLen++;
-    if(IntCodeLen >= MAX_INT_OPS) {
-        Error(_("Internal limit exceeded (MAX_INT_OPS)"));
-        CompileError();
-    }
+        intOp.poweredAfter = &(leafNow->poweredAfter);
+    intOp.l = l;
+    strcpy(intOp.f, f);
+    IntCode.emplace_back(intOp);
 }
 
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, SDWORD lit)
@@ -857,26 +855,23 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
 // nodes are energized (so that it can display which branches of the circuit
 // are energized onscreen). The MCU code generators ignore this, of course.
 //-----------------------------------------------------------------------------
-static void SimState(BOOL *b, const char *name, BOOL *w, const char *name2)
+static void SimState(bool *b, const char *name, bool *w, const char *name2)
 {
-    memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
-    IntCode[IntCodeLen].op = INT_SIMULATE_NODE_STATE;
-    IntCode[IntCodeLen].poweredAfter = b;
-    IntCode[IntCodeLen].workingNow = w;
-    strcpy(IntCode[IntCodeLen].name1, name);
+    IntOp intOp;
+    //memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
+    intOp.op = INT_SIMULATE_NODE_STATE;
+    intOp.poweredAfter = b;
+    intOp.workingNow = w;
+    strcpy(intOp.name1, name);
     if(name2)
-        strcpy(IntCode[IntCodeLen].name2, name2);
-    IntCode[IntCodeLen].rung = rungNow;
-    IntCode[IntCodeLen].which = whichNow;
-    IntCode[IntCodeLen].leaf = leafNow;
-    IntCodeLen++;
-    if(IntCodeLen >= MAX_INT_OPS) {
-        Error(_("Internal limit exceeded (MAX_INT_OPS)"));
-        CompileError();
-    }
+        strcpy(intOp.name2, name2);
+    intOp.rung = rungNow;
+    intOp.which = whichNow;
+    intOp.leaf = leafNow;
+    IntCode.emplace_back(intOp);
 }
 
-static void SimState(BOOL *b, const char *name)
+static void SimState(bool *b, const char *name)
 {
     SimState(b, name, nullptr, nullptr);
 }
@@ -1023,36 +1018,36 @@ SDWORD CalcDelayClock(long long clocks) // in us
 //-----------------------------------------------------------------------------
 // Is an expression that could be either a variable name or a number a number?
 //-----------------------------------------------------------------------------
-BOOL IsNumber(const char *str)
+bool IsNumber(const char *str)
 {
     while(isspace(*str))
         str++;
     if(isdigit(*str)) {
-        return TRUE;
+        return true;
     } else if((*str == '-') || (*str == '+')) {
         str++;
         while(isspace(*str))
             str++;
         if(isdigit(*str))
-            return TRUE;
+            return true;
         else
-            return FALSE;
+            return false;
     } else if(*str == '\'') {
         // special case--literal single character
         if(strlen(str) > 2) {
             if(str[strlen(str) - 1] == '\'')
-                return TRUE;
+                return true;
             else
-                return FALSE;
+                return false;
         } else
-            return FALSE;
-    } else {
-        return FALSE;
+            return false;
     }
+
+    return false;
 }
 
 //-----------------------------------------------------------------------------
-BOOL CheckForNumber(char *str)
+bool CheckForNumber(char *str)
 {
     if(IsNumber(str)) {
         int   radix = 0; //auto detect
@@ -1064,11 +1059,11 @@ BOOL CheckForNumber(char *str)
             // special case--literal single character
             if(strlen(start_ptr) > 2) {
                 if(str[strlen(start_ptr) - 1] == '\'')
-                    return TRUE;
+                    return true;
                 else
-                    return FALSE;
+                    return false;
             } else
-                return FALSE;
+                return false;
         }
 
         if(*start_ptr == '0') {
@@ -1082,14 +1077,14 @@ BOOL CheckForNumber(char *str)
         // errno = 0;
         long val = strtol(str, &end_ptr, radix);
         if(*end_ptr) {
-            return FALSE;
+            return false;
         }
         if((val == LONG_MAX || val == LONG_MIN) && errno == ERANGE) {
-            return FALSE;
+            return false;
         }
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1124,7 +1119,7 @@ int getradix(const char *str)
     return radix;
 }
 //-----------------------------------------------------------------------------
-SDWORD hobatoi(const char *str)
+long hobatoi(const char *str)
 {
     char s[512];
     if(strstr(toupperstr(s, str), "0XFFFFFFFF"))
@@ -1206,83 +1201,77 @@ int xPowerY(int x, int y)
 }
 
 //-----------------------------------------------------------------------------
-static BOOL CheckStaySameElem(int which, void *elem)
+static bool CheckStaySameElem(int which, void *elem)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             for(int i = 0; i < s->count; i++) {
                 if(!CheckStaySameElem(s->contents[i].which, s->contents[i].data.any))
-                    return FALSE;
+                    return false;
             }
-            return TRUE;
+            return true;
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(int i = 0; i < p->count; i++) {
                 if(!CheckStaySameElem(p->contents[i].which, p->contents[i].data.any))
-                    return FALSE;
+                    return false;
             }
-            return TRUE;
+            return true;
         }
         default:
             return StaySameElem(which);
     }
+    return false;
 }
 
 //-----------------------------------------------------------------------------
-static BOOL CheckEndOfRungElem(int which, void *elem)
+static bool CheckEndOfRungElem(int which, void *elem)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
-
             return CheckEndOfRungElem(s->contents[s->count - 1].which, s->contents[s->count - 1].data.any);
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(int i = 0; i < p->count; i++) {
                 if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].data.any))
-                    return TRUE;
+                    return true;
             }
-            return FALSE;
+            return false;
         }
         default:
             return EndOfRungElem(which);
     }
+    return false;
 }
 
 //-----------------------------------------------------------------------------
-static BOOL CheckCanChangeOutputElem(int which, void *elem)
+static bool CheckCanChangeOutputElem(int which, void *elem)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
-
-            int i;
-            for(i = 0; i < s->count; i++) {
+            for(int i = 0; i < s->count; i++) {
                 if(CheckCanChangeOutputElem(s->contents[i].which, s->contents[i].data.any))
-                    return TRUE;
+                    return true;
             }
-            return FALSE;
+            return false;
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(int i = 0; i < p->count; i++) {
                 if(CheckCanChangeOutputElem(p->contents[i].which, p->contents[i].data.any))
-                    return TRUE;
+                    return true;
             }
-            return FALSE;
+            return false;
         }
         default:
             return CanChangeOutputElem(which);
     }
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -3500,19 +3489,13 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 }
 // clang-format on
 //-----------------------------------------------------------------------------
-static BOOL PersistVariable(char *name)
+static bool PersistVariable(char *name)
 {
-    int i;
-    for(i = 0; i < PersistVariableCount; i++) {
-        if(strcmp(PersistVariables[i], name) == 0) {
-            return TRUE;
-        }
-    }
-    if(i >= MAX_IO)
-        oops();
-    strcpy(PersistVariables[i], name);
-    PersistVariableCount++;
-    return FALSE;
+    if(persistVariables.count(name))
+        return true;
+
+    persistVariables.emplace(name);
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -3550,25 +3533,22 @@ static void CheckPersistCircuit(int which, void *elem)
 //-----------------------------------------------------------------------------
 static void CheckPersist()
 {
-    PersistVariableCount = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    persistVariables.clear();
+    for(int i = 0; i < Prog.numRungs; i++) {
         rungNow = i;
         CheckPersistCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
 }
 
 //-----------------------------------------------------------------------------
-static BOOL CheckMasterCircuit(int which, void *elem)
+static bool CheckMasterCircuit(int which, void *elem)
 {
-    ElemLeaf *l = (ElemLeaf *)elem;
-
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             for(int i = 0; i < s->count; i++) {
                 if(CheckMasterCircuit(s->contents[i].which, s->contents[i].data.any))
-                    return TRUE;
+                    return true;
             }
             break;
         }
@@ -3577,51 +3557,42 @@ static BOOL CheckMasterCircuit(int which, void *elem)
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             for(int i = 0; i < p->count; i++) {
                 if(CheckMasterCircuit(p->contents[i].which, p->contents[i].data.any))
-                    return TRUE;
+                    return true;
             }
             break;
         }
         case ELEM_MASTER_RELAY:
-            return TRUE;
+            return true;
 
         default:
             break;
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
-static BOOL CheckMasterRelay()
+static bool CheckMasterRelay()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(CheckMasterCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]))
-            return TRUE;
+            return true;
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
 void WipeIntMemory()
 {
-    for(int i = 0; i < IntCodeLen; i++) {
-        //    if(IntCode[i].data)
-        //      CheckFree(IntCode[i].data); //???
-    }
-    IntCodeLen = 0;
-    memset(IntCode, 0, sizeof(IntCode));
+    IntCode.clear();
 }
 
 //-----------------------------------------------------------------------------
 // Generate intermediate code for the entire program. Return TRUE if it worked,
 // else FALSE.
 //-----------------------------------------------------------------------------
-BOOL GenerateIntermediateCode()
+bool GenerateIntermediateCode()
 {
     Comment("GenerateIntermediateCode");
-    if(setjmp(CompileErrorBuf) != 0) {
-        return FALSE;
-    }
     GenSymCount = 0;
     GenSymCountParThis = 0;
     GenSymCountParOut = 0;
@@ -3649,7 +3620,7 @@ BOOL GenerateIntermediateCode()
     InitVars();
 
     rungNow++;
-    BOOL ExistMasterRelay = CheckMasterRelay();
+    bool ExistMasterRelay = CheckMasterRelay();
     if(int_comment_level == 1) {
         // ExistMasterRelay = TRUE; // Comment this for optimisation
     }
@@ -3659,7 +3630,7 @@ BOOL GenerateIntermediateCode()
     rungNow++;
     char      s1[MAX_COMMENT_LEN];
     char     *s2 = nullptr;
-    ElemLeaf *l = nullptr;
+    ElemLeaf *leaf = nullptr;
     int       rung;
     for(rung = 0; rung <= Prog.numRungs; rung++) {
         rungNow = rung;
@@ -3684,8 +3655,8 @@ BOOL GenerateIntermediateCode()
         if(Prog.rungs[rung]->count > 0 && Prog.rungs[rung]->contents[0].which == ELEM_COMMENT) {
             // nothing to do for this one
             // Yes, I do! Push comment into interpretable OP code for C and PASCAL.
-            l = (ElemLeaf *)Prog.rungs[rung]->contents[0].data.any;
-            AnsiToOem(l->d.comment.str, s1);
+            leaf = (ElemLeaf *)Prog.rungs[rung]->contents[0].data.any;
+            AnsiToOem(leaf->d.comment.str, s1);
             s2 = s1;
             for(; *s2; s2++) {
                 if(*s2 == '\r') {
@@ -3697,7 +3668,7 @@ BOOL GenerateIntermediateCode()
                 }
             }
             if(int_comment_level >= 2) {
-                if(s1)
+                if(strlen(s1))
                     Comment1(s1); // bypass % in comments
                 if(s2)
                     Comment1(s2); // bypass % in comments
@@ -3720,10 +3691,9 @@ BOOL GenerateIntermediateCode()
     Op(INT_FwdAddrIsNow, (SDWORD)Prog.numRungs);
     rungNow++;
     //Calculate amount of intermediate codes in rungs
-    int i;
-    for(i = 0; i < MAX_RUNGS; i++)
+    for(int i = 0; i < MAX_RUNGS; i++)
         Prog.OpsInRung[i] = 0;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         //dbp("IntPc=%d rung=%d ELEM_%x", i, IntCode[i].rung, IntCode[i].which);
         if((IntCode[i].rung >= 0) && (IntCode[i].rung < MAX_RUNGS) && (IntCode[i].op != INT_SIMULATE_NODE_STATE))
             Prog.OpsInRung[IntCode[i].rung]++;
@@ -3731,128 +3701,153 @@ BOOL GenerateIntermediateCode()
 
     //Listing of intermediate codes
     char CurrentPlFile[MAX_PATH] = "temp.pl";
-    if(CurrentSaveFile)
+    if(strlen(CurrentSaveFile))
         SetExt(CurrentPlFile, CurrentSaveFile, ".pl");
     IntDumpListing(CurrentPlFile);
-    return TRUE;
+    return true;
 }
 
-BOOL GotoGosubUsed()
+bool GotoGosubUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_GOTO, ELEM_GOSUB, -1))
-            return TRUE;
+            return true;
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
 // Are either of the UART functions (send or recv) used? Need to know this
 // to know whether we must receive their pins.
 //-----------------------------------------------------------------------------
-BOOL UartFunctionUsed()
+bool UartFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECVn, ELEM_UART_SENDn, -1))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
-            return TRUE;
+        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING)) ||
+           (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECVn, ELEM_UART_SENDn, -1))                  ||
+           (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
+            return true;
     }
 
-    for(int i = 0; i < IntCodeLen; i++) {
-        if((IntCode[i].op == INT_UART_SEND) || (IntCode[i].op == INT_UART_SEND1) || (IntCode[i].op == INT_UART_SENDn)
-           || (IntCode[i].op == INT_UART_SEND_READY) || (IntCode[i].op == INT_UART_SEND_BUSY)
-           || (IntCode[i].op == INT_UART_RECV_AVAIL) || (IntCode[i].op == INT_UART_RECVn)
-           || (IntCode[i].op == INT_UART_RECV))
-            return TRUE;
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
+        if((IntCode[i].op == INT_UART_SEND) || (IntCode[i].op == INT_UART_SEND1) || (IntCode[i].op == INT_UART_SENDn) ||
+           (IntCode[i].op == INT_UART_SEND_READY) || (IntCode[i].op == INT_UART_SEND_BUSY)                            ||
+           (IntCode[i].op == INT_UART_RECV_AVAIL) || (IntCode[i].op == INT_UART_RECVn)                                ||
+           (IntCode[i].op == INT_UART_RECV))
+            return true;
     }
-    return FALSE;
+    return false;
 }
 
-BOOL UartRecvUsed()
+bool UartRecvUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECV, ELEM_UART_RECVn, -1))
-            return TRUE;
+            return true;
     }
 
-    for(int i = 0; i < IntCodeLen; i++) {
-        if((IntCode[i].op == INT_UART_RECV) || (IntCode[i].op == INT_UART_RECV_AVAIL)
-           || (IntCode[i].op == INT_UART_RECVn))
-            return TRUE;
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
+        if((IntCode[i].op == INT_UART_RECV) || (IntCode[i].op == INT_UART_RECV_AVAIL) ||
+           (IntCode[i].op == INT_UART_RECVn))
+            return true;
     }
-    return FALSE;
+    return true;
 }
 
-BOOL UartSendUsed()
+bool UartSendUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_SEND, ELEM_UART_SENDn, ELEM_FORMATTED_STRING))
-            return TRUE;
+            return true;
     }
 
-    for(int i = 0; i < IntCodeLen; i++) {
-        if((IntCode[i].op == INT_UART_SEND) || (IntCode[i].op == INT_UART_SEND_READY)
-           || (IntCode[i].op == INT_UART_SEND_BUSY) || (IntCode[i].op == INT_UART_SEND1)
-           || (IntCode[i].op == INT_UART_SENDn))
-            return TRUE;
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
+        if((IntCode[i].op == INT_UART_SEND) || (IntCode[i].op == INT_UART_SEND_READY) ||
+           (IntCode[i].op == INT_UART_SEND_BUSY) || (IntCode[i].op == INT_UART_SEND1) ||
+           (IntCode[i].op == INT_UART_SENDn))
+            return true;
     }
-    return FALSE;
+    return false;
 }
+
 //-----------------------------------------------------------------------------
-BOOL SpiFunctionUsed()
+bool SpiFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI))
-            return TRUE;
+            return true;
     }
 
-    for(int i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op == INT_SPI) || (IntCode[i].op == INT_SPI))
-            return TRUE;
+            return true;
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
-BOOL Bin32BcdRoutineUsed()
+bool Bin32BcdRoutineUsed()
 {
-    for(int i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         if(IntCode[i].op == INT_SET_BIN2BCD) {
-            return TRUE;
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
 // Are either of the MultiplyRoutine functions used?
 //-----------------------------------------------------------------------------
-BOOL MultiplyRoutineUsed()
+bool MultiplyRoutineUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_MUL, ELEM_SET_PWM, -1))
-            return TRUE;
+            return true;
 
-    for(int i = 0; i < IntCodeLen; i++)
+    for(uint32_t i = 0; i < IntCode.size(); i++)
         if(IntCode[i].op == INT_SET_VARIABLE_MULTIPLY)
-            return TRUE;
+            return true;
 
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
 // Are either of the DivideRoutine functions used?
 //-----------------------------------------------------------------------------
-BOOL DivideRoutineUsed()
+bool DivideRoutineUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++)
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DIV, ELEM_SET_PWM, -1))
-            return TRUE;
+            return true;
 
-    for(int i = 0; i < IntCodeLen; i++)
+    for(uint32_t i = 0; i < IntCode.size(); i++)
         if((IntCode[i].op == INT_SET_VARIABLE_DIVIDE) || (IntCode[i].op == INT_SET_VARIABLE_MOD))
-            return TRUE;
+            return true;
 
-    return FALSE;
+    return false;
 }
+
+IntOp::IntOp() :
+    op(0),
+    literal(0),
+    literal2(0),
+    literal3(0),
+    data(nullptr),
+    poweredAfter(nullptr),
+    workingNow(nullptr),
+    rung(0),
+    which(0),
+    leaf(nullptr),
+    l(0),
+    simulated(false)
+{
+    name1[0] = 0;
+    name2[0] = 0;
+    name3[0] = 0;
+    name4[0] = 0;
+    name5[0] = 0;
+    name6[0] = 0;
+    f[0] = 0;
+}
+

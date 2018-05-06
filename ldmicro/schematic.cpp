@@ -123,7 +123,7 @@ void SelectElement(int gx, int gy, int state)
 }
 
 //-----------------------------------------------------------------------------
-BOOL StaySameElem(int Which)
+bool StaySameElem(int Which)
 {
     // clang-format off
     if( Which == ELEM_RES ||
@@ -168,13 +168,13 @@ BOOL StaySameElem(int Which)
         Which == ELEM_PIECEWISE_LINEAR ||
         Which == ELEM_PERSIST ||
         Which == ELEM_MOVE)
-      return TRUE;
+      return true;
     else
-      return FALSE;
+      return false;
     // clang-format on
 }
 //-----------------------------------------------------------------------------
-BOOL CanChangeOutputElem(int Which)
+bool CanChangeOutputElem(int Which)
 {
     // clang-format off
     if( Which == ELEM_COIL ||
@@ -193,16 +193,16 @@ BOOL CanChangeOutputElem(int Which)
         Which == ELEM_WSFR ||
         #endif
         Which == ELEM_PERSIST)
-      return TRUE;
+      return true;
     else
-      return FALSE;
+      return false;
     // clang-format on
 }
 //-----------------------------------------------------------------------------
 // Returnn TRUE if this instruction(element) must be the
 // rightmost instruction in its rung.
 //-----------------------------------------------------------------------------
-BOOL EndOfRungElem(int Which)
+bool EndOfRungElem(int Which)
 {
     // clang-format off
     if( Which == ELEM_COIL ||
@@ -228,8 +228,8 @@ BOOL EndOfRungElem(int Which)
         Which == ELEM_PIECEWISE_LINEAR ||
         Which == ELEM_PERSIST ||
         Which == ELEM_MOVE)
-      return TRUE;
-    return FALSE;
+      return true;
+    return false;
     // clang-format on
 }
 

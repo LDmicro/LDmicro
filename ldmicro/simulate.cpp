@@ -32,7 +32,7 @@
 
 static struct {
     char name[MAX_NAME_LEN];
-    BOOL powered;
+    bool powered;
 } SingleBitItems[MAX_IO];
 static int SingleBitItemsCount;
 
@@ -100,7 +100,7 @@ BOOL SimulateRedrawAfterNextCycle;
 static int CyclesPerTimerTick;
 
 // Program counter as we evaluate the intermediate code.
-static int IntPc;
+static uint32_t IntPc;
 
 static FILE *fUART;
 
@@ -151,22 +151,21 @@ DWORD isVarUsed(const char *name)
 // Looks in the SingleBitItems list; if an item is not present then it is
 // FALSE by default.
 //-----------------------------------------------------------------------------
-static BOOL SingleBitOn(const char *name)
+static bool SingleBitOn(const char *name)
 {
-    int i;
-    for(i = 0; i < SingleBitItemsCount; i++) {
+    for(int i = 0; i < SingleBitItemsCount; i++) {
         if(strcmp(SingleBitItems[i].name, name) == 0) {
             return SingleBitItems[i].powered;
         }
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
 // Set the state of a single-bit item. Adds it to the list if it is not there
 // already.
 //-----------------------------------------------------------------------------
-static void SetSingleBit(const char *name, BOOL state)
+static void SetSingleBit(const char *name, bool state)
 {
     int i;
     for(i = 0; i < SingleBitItemsCount; i++) {
@@ -182,7 +181,7 @@ static void SetSingleBit(const char *name, BOOL state)
     }
 }
 
-BOOL GetSingleBit(char *name)
+bool GetSingleBit(char *name)
 {
     return SingleBitOn(name);
 }
@@ -975,7 +974,7 @@ static void IfConditionTrue()
     if(IntCode[IntPc].op == INT_ELSE) {
         int nesting = 1;
         for(;; IntPc++) {
-            if(IntPc >= IntCodeLen)
+            if(IntPc >= IntCode.size())
                 oops();
 
             if(IntCode[IntPc].op == INT_END_IF) {
@@ -1003,7 +1002,7 @@ static void IfConditionFalse()
 {
     int nesting = 0;
     for(;; IntPc++) {
-        if(IntPc >= IntCodeLen)
+        if(IntPc >= IntCode.size())
             oops();
 
         if(IntCode[IntPc].op == INT_END_IF) {
@@ -1030,7 +1029,7 @@ static void IfConditionFalse()
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-long rol(long val, SDWORD n, int size, BOOL *state)
+long rol(long val, SDWORD n, int size, bool *state)
 {
     char        MSB = 0;
     signed char i;
@@ -1068,7 +1067,7 @@ long rol(long val, SDWORD n, int size, BOOL *state)
     return val;
 }
 //-----------------------------------------------------------------------------
-long ror(long val, SDWORD n, int size, BOOL *state)
+long ror(long val, SDWORD n, int size, bool *state)
 {
     char        LSB = 0;
     signed char i;
@@ -1113,7 +1112,7 @@ long ror(long val, SDWORD n, int size, BOOL *state)
     return val;
 }
 //-----------------------------------------------------------------------------
-long sr0(long val, SDWORD n, int size, BOOL *state)
+long sr0(long val, SDWORD n, int size, bool *state)
 {
     char        LSB = 0;
     signed char i;
@@ -1135,7 +1134,7 @@ long sr0(long val, SDWORD n, int size, BOOL *state)
     return val;
 }
 //-----------------------------------------------------------------------------
-long shr(signed long int val, SDWORD n, int size, BOOL *state)
+long shr(signed long int val, SDWORD n, int size, bool *state)
 {
     signed long int MSB = 0;
     char            LSB = 0;
@@ -1160,7 +1159,7 @@ long shr(signed long int val, SDWORD n, int size, BOOL *state)
     return val;
 }
 //-----------------------------------------------------------------------------
-long shl(long val, SDWORD n, int size, BOOL *state)
+long shl(long val, SDWORD n, int size, bool *state)
 {
     char        MSB = 0;
     signed char i;
@@ -1307,7 +1306,7 @@ int PopStack()
 int FindOpRung(int op, int rung)
 {
     int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op == op) && (IntCode[i].rung == rung)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1322,7 +1321,7 @@ int FindOpName(int op, const char *name1)
     int i;
     if(!name1)
         oops();
-    for(i = 0; i < IntCodeLen; i++) {
+    for(i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1334,12 +1333,11 @@ int FindOpName(int op, const char *name1)
 //-----------------------------------------------------------------------------
 int FindOpName(int op, const char *name1, const char *name2)
 {
-    int i;
     if(!name1)
         oops();
     if(!name2)
         oops();
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1351,10 +1349,9 @@ int FindOpName(int op, const char *name1, const char *name2)
 //-----------------------------------------------------------------------------
 int FindOpNameLast(int op, const char *name1)
 {
-    int i;
     if(!name1)
         oops();
-    for(i = IntCodeLen - 1; i >= 0; i--) {
+    for(int i = IntCode.size() - 1; i >= 0; i--) {
         if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1366,12 +1363,11 @@ int FindOpNameLast(int op, const char *name1)
 //-----------------------------------------------------------------------------
 int FindOpNameLast(int op, const char *name1, const char *name2)
 {
-    int i;
     if(!name1)
         oops();
     if(!name2)
         oops();
-    for(i = IntCodeLen - 1; i >= 0; i--) {
+    for(int i = IntCode.size() - 1; i >= 0; i--) {
         if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1388,7 +1384,7 @@ int FindOpNameLast(int op, const char *name1, const char *name2)
 //-----------------------------------------------------------------------------
 static void SimulateIntCode()
 {
-    for(; IntPc < IntCodeLen; IntPc++) {
+    for(; IntPc < IntCode.size(); IntPc++) {
         IntCode[IntPc].simulated = TRUE;
         IntOp *a = &IntCode[IntPc];
         switch(a->op) {
@@ -1398,7 +1394,7 @@ static void SimulateIntCode()
                     *(a->poweredAfter) = SingleBitOn(a->name1);
                 }
 
-                if(a->name2 && strlen(a->name2))
+                if(strlen(a->name2))
                     if(*(a->workingNow) != SingleBitOn(a->name2)) {
                         NeedRedraw = 1;
                         *(a->workingNow) = SingleBitOn(a->name2);
@@ -1422,7 +1418,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_COPY_XOR_BIT_TO_BIT:
-                SetSingleBit(a->name1, (SingleBitOn(a->name1) & 1) ^ (SingleBitOn(a->name2) & 1));
+                SetSingleBit(a->name1, SingleBitOn(a->name1) ^ SingleBitOn(a->name2) );
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
@@ -1525,7 +1521,7 @@ static void SimulateIntCode()
                 break;
                 {
                     SDWORD v;
-                    BOOL   state;
+                    bool   state;
                     case INT_SET_VARIABLE_SR0:
                         v = sr0(GetSimulationVariable(a->name2),
                                 GetSimulationVariable(a->name3),
@@ -1968,24 +1964,21 @@ void SimulateOneCycle(BOOL forceRefresh)
     }
 
     IntPc = 0;
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
-        IntCode[i].simulated = FALSE;
-    }
-    for(i = 0; i < Prog.numRungs; i++) {
+    std::for_each(std::begin(IntCode), std::end(IntCode), [](IntOp& op){op.simulated = false;});
+    for(int i = 0; i < Prog.numRungs; i++) {
         Prog.rungSimulated[i] = FALSE;
     }
 
     SimulateIntCode();
 
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op != INT_AllocFwdAddr) && (IntCode[i].simulated)) {
             if((IntCode[i].rung >= 0) && (IntCode[i].rung < Prog.numRungs)) {
                 Prog.rungSimulated[IntCode[i].rung] = TRUE;
             }
         }
     }
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         Prog.rungPowered[i] = Prog.rungSimulated[i];
     }
 

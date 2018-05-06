@@ -330,7 +330,7 @@ static DWORD CONFIG_ADDR1 = -1;
 static DWORD CONFIG_ADDR2 = -1;
 //-----------------------------------------------------------------------------
 
-static int IntPc;
+static uint32_t IntPc = 0;
 
 static void CompileFromIntermediate(BOOL topLevel);
 
@@ -2329,7 +2329,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             }
 
             if(asm_comment_level >= 5) {
-                if((PicProg[i].IntPc >= 0) && (PicProg[i].IntPc < IntCodeLen)) {
+                if((PicProg[i].IntPc >= 0) && (PicProg[i].IntPc < IntCode.size())) {
                     fprintf(fAsm, "\t");
                     if(IntCode[PicProg[i].IntPc].which != INT_MAX) {
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[PicProg[i].IntPc].which);
@@ -2903,7 +2903,7 @@ void AllocBitsVars()
     DWORD addr;
     int   bit;
 
-    for(IntPc = 0; IntPc < IntCodeLen; IntPc++) {
+    for(IntPc = 0; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
         IntOp *a = &IntCode[IntPc];
         rungNow = a->rung;
@@ -3560,7 +3560,7 @@ static void InitTable(IntOp *a)
 //-----------------------------------------------------------------------------
 static void InitTables()
 {
-    for(IntPc = 0; IntPc < IntCodeLen; IntPc++) {
+    for(IntPc = 0; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
         IntOp *a = &IntCode[IntPc];
         rungNow = a->rung;
@@ -3589,7 +3589,7 @@ static void CompileFromIntermediate(BOOL topLevel)
     // are about to run out, fill with nops and move on to the next one.
     DWORD section = 0;
 
-    for(; IntPc < IntCodeLen; IntPc++) {
+    for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
 #ifndef AUTO_PAGING
         // Try for a margin of about 400 words, which is a little bit

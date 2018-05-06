@@ -949,11 +949,11 @@ static BOOL DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
             break;
         }
         default:
-            if(EndOfRungElem(anyWhich) == IsEnd)
+            if(EndOfRungElem(anyWhich) == static_cast<bool>(IsEnd))
                 if(Selected != anyToDelete) {
                     ElemLeaf *saveSelected = Selected;
                     Selected = (ElemLeaf *)anyToDelete; // HOOK
-                    if(res = DeleteSelectedFromSubckt(which, any)) {
+                    if((res = DeleteSelectedFromSubckt(which, any))) {
                         while(CollapseUnnecessarySubckts(which, any))
                             ;
                         //dbp("DeleteAny %d", IsEnd);

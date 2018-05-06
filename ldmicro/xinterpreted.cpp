@@ -109,7 +109,7 @@ void CompileXInterpreted(char *outFile)
     int ifOpElse[MAX_IF_NESTING];
 
     outPc = 0;
-    for(ipc = 0; ipc < IntCodeLen; ipc++) {
+    for(ipc = 0; ipc < IntCode.size(); ipc++) {
         switch(IntCode[ipc].op) {
             case INT_CLEAR_BIT:
             case INT_SET_BIT:

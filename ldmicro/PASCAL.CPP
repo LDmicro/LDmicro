@@ -567,8 +567,7 @@ static int SimpleBool(char *name)
 static void Generate_flash_eeprom(FILE *f)
 {
 #ifdef TABLE_IN_FLASH
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int   sovElement = IntCode[i].literal2;
@@ -629,8 +628,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             "   generated this code. }\n"
             "procedure PlcCycle;\n");
     fprintf(f, "  label Rung0label;\n");
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             //case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
@@ -643,7 +641,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             "begin\n"
             "  Rung0label:;\n");
     int indent = 1;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
 
         if(IntCode[i].op == INT_END_IF)
             indent--;
@@ -978,8 +976,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 //-----------------------------------------------------------------------------
 static void GenerateSUBPROG(FILE *f)
 {
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
@@ -1300,7 +1297,7 @@ void CompilePascal(char *dest)
             "end;\n"
             "*)\n");
 
-    GenerateSourceCode(f, 0, IntCodeLen - 1);
+    GenerateSourceCode(f, 0, IntCode.size() - 1);
 
     fprintf(f,
             "\n"

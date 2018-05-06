@@ -29,8 +29,8 @@
 #include "current_function.hpp"
 #include <gsl.hpp>
 
-typedef signed short SWORD;
-typedef signed long SDWORD;
+typedef int32_t SWORD;
+typedef int32_t SDWORD;
 
 #include "accel.h"
 #define _BV(bit) (1 << (bit))
@@ -726,10 +726,10 @@ typedef struct ElemPerisistTag {
 #define SELECTED_BELOW      2
 #define SELECTED_RIGHT      3
 #define SELECTED_LEFT       4
-typedef struct ElemLeafTag {
+struct ElemLeaf {
     int     selectedState;
-    BOOL    poweredAfter;
-    BOOL    workingNow;
+    bool    poweredAfter;
+    bool    workingNow;
     union {
         ElemComment         comment;
         ElemContacts        contacts;
@@ -758,7 +758,7 @@ typedef struct ElemLeafTag {
         ElemPiecewiseLinear piecewiseLinear;
         ElemPersist         persist;
     } d;
-} ElemLeaf;
+};
 
 typedef struct ElemNodeTag{
     int     which;
@@ -866,8 +866,8 @@ typedef struct PlcProgramTag {
 
 #define MAX_RUNGS 9999
     ElemSubcktSeries *rungs[MAX_RUNGS];
-    BOOL              rungPowered[MAX_RUNGS];
-    BOOL              rungSimulated[MAX_RUNGS];
+    bool              rungPowered[MAX_RUNGS];
+    bool              rungSimulated[MAX_RUNGS];
     int               numRungs;
     char              rungSelected[MAX_RUNGS];
     DWORD             OpsInRung[MAX_RUNGS];
@@ -1043,9 +1043,9 @@ void NegateSelected();
 void MakeTtriggerSelected();
 void ForgetFromGrid(void *p);
 void ForgetEverything();
-BOOL EndOfRungElem(int Which);
-BOOL CanChangeOutputElem(int Which);
-BOOL StaySameElem(int Which);
+bool EndOfRungElem(int Which);
+bool CanChangeOutputElem(int Which);
+bool StaySameElem(int Which);
 void WhatCanWeDoFromCursorAndTopology();
 BOOL FindSelected(int *gx, int *gy);
 BOOL MoveCursorNear(int *gx, int *gy);
@@ -1214,7 +1214,7 @@ int isalpha_(int c);
 int isal_num(int c);
 int isname(char *name);
 double hobatof(const char *str);
-SDWORD hobatoi(const char *str);
+long hobatoi(const char *str);
 void ShowSizeOfVarDialog(PlcProgramSingleIo *io);
 
 // confdialog.cpp
@@ -1335,7 +1335,7 @@ extern BOOL RunningInBatchMode;
 extern BOOL RunningInTestMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
-BOOL IsNumber(const char *str);
+bool IsNumber(const char *str);
 size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 char *strDelSpace(char *dest, char *src);
@@ -1358,7 +1358,7 @@ void ClrSimulationData();
 void CheckVariableNames();
 void DescribeForIoList(char *name, int type, char *out);
 void SimulationToggleContact(char *name);
-BOOL GetSingleBit(char *name);
+bool GetSingleBit(char *name);
 void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
 void DestroyUartSimulationWindow();
@@ -1647,25 +1647,25 @@ extern int asm_discover_names;
 extern int rungNow;
 void IntDumpListing(char *outFile);
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust); // delay in us
-BOOL GenerateIntermediateCode();
+bool GenerateIntermediateCode();
 BOOL CheckLeafElem(int which, void *elem);
 extern DWORD addrRUartRecvErrorFlag;
 extern int    bitRUartRecvErrorFlag;
 extern DWORD addrRUartSendErrorFlag;
 extern int    bitRUartSendErrorFlag;
-BOOL GotoGosubUsed();
-BOOL UartFunctionUsed();
-BOOL UartRecvUsed();
-BOOL UartSendUsed();
-BOOL SpiFunctionUsed();
-BOOL Bin32BcdRoutineUsed();
+bool GotoGosubUsed();
+bool UartFunctionUsed();
+bool UartRecvUsed();
+bool UartSendUsed();
+bool SpiFunctionUsed();
+bool Bin32BcdRoutineUsed();
 SDWORD CheckMakeNumber(const char *str);
 void WipeIntMemory();
-BOOL CheckForNumber(char *str);
+bool CheckForNumber(char *str);
 int TenToThe(int x);
 int xPowerY(int x, int y);
-BOOL MultiplyRoutineUsed();
-BOOL DivideRoutineUsed();
+bool MultiplyRoutineUsed();
+bool DivideRoutineUsed();
 void GenSymOneShot(char *dest, const char *name1, const char *name2);
 int getradix(const char *str);
 SDWORD CalcDelayClock(long long clocks); // in us

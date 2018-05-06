@@ -424,7 +424,7 @@ static int   NPulseTimerOverflowBit;
 static DWORD NPulseTimerOverflowCounter;
 static int   sovNPulseTimerOverflowCounter;
 
-static int IntPc;
+static uint32_t IntPc;
 
 static void CompileFromIntermediate();
 
@@ -1439,7 +1439,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             }
 
             if(asm_comment_level >= 5) {
-                if((AvrProg[i].IntPc >= 0) && (AvrProg[i].IntPc < IntCodeLen)) {
+                if((AvrProg[i].IntPc >= 0) && (AvrProg[i].IntPc < IntCode.size())) {
                     fprintf(fAsm, "\t");
                     if(IntCode[AvrProg[i].IntPc].which != INT_MAX) {
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[AvrProg[i].IntPc].which);
@@ -2555,7 +2555,7 @@ static void InitTable(IntOp *a)
 //-----------------------------------------------------------------------------
 static void InitTables()
 {
-    for(IntPc = 0; IntPc < IntCodeLen; IntPc++) {
+    for(IntPc = 0; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
         IntOp *a = &IntCode[IntPc];
         rungNow = a->rung;
@@ -3289,7 +3289,7 @@ static void CompileFromIntermediate()
     int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int   sov = -1, sov1 = -1, sov2 = -1, sov12 = -1, sov23 = -1;
 
-    for(; IntPc < IntCodeLen; IntPc++) {
+    for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
         IntOp *a = &IntCode[IntPc];
         rungNow = a->rung;
