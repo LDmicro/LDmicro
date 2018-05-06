@@ -652,54 +652,59 @@ IsOpenAnable:
         return;
     }
 
-    if((PwmFunctionUsed() && (Prog.mcu) && (Prog.mcu->pwmCount == 0) && Prog.mcu->pwmNeedsPin == 0)
-       && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC) && (MNU != MNU_COMPILE_ARDUINO)
-       && (MNU != MNU_COMPILE_XINT) && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
-        Error(_("PWM function used but not supported for this micro."));
-        return;
+    try {
+        if((PwmFunctionUsed() && (Prog.mcu) && (Prog.mcu->pwmCount == 0) && Prog.mcu->pwmNeedsPin == 0)
+           && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC) && (MNU != MNU_COMPILE_ARDUINO)
+           && (MNU != MNU_COMPILE_XINT) && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
+            Error(_("PWM function used but not supported for this micro."));
+            return;
+        }
+        if((MNU >= MNU_COMPILE_ANSIC) && (MNU <= MNU_COMPILE_lastC)) {
+            if(CompileAnsiC(CurrentCompileFile, MNU)) {
+                CompileSuccesfullAnsiCMessage(CurrentCompileFile);
+                postCompile("ANSIC");
+            }
+        } else if(MNU == MNU_COMPILE_ARDUINO) {
+            if(CompileAnsiC(CurrentCompileFile, MNU)) {
+                CompileSuccesfullAnsiCMessage(CurrentCompileFile);
+                postCompile("ARDUINO");
+            }
+        } else if(MNU == MNU_COMPILE_PASCAL) {
+            CompilePascal(CurrentCompileFile);
+            postCompile("PASCAL");
+        } else if(MNU == MNU_COMPILE_INT) {
+            CompileInterpreted(CurrentCompileFile);
+            postCompile("INTERPRETED");
+        } else if(MNU == MNU_COMPILE_XINT) {
+            CompileXInterpreted(CurrentCompileFile);
+            postCompile("XINTERPRETED");
+        } else if(Prog.mcu) {
+            switch(Prog.mcu->whichIsa) {
+                case ISA_AVR:
+                    CompileAvr(CurrentCompileFile);
+                    break;
+                case ISA_PIC16:
+                    CompilePic16(CurrentCompileFile);
+                    break;
+                case ISA_INTERPRETED:
+                    CompileInterpreted(CurrentCompileFile);
+                    break;
+                case ISA_XINTERPRETED:
+                    CompileXInterpreted(CurrentCompileFile);
+                    break;
+                case ISA_NETZER:
+                    CompileNetzer(CurrentCompileFile);
+                    break;
+                default:
+                    ooops("0x%X", Prog.mcu->whichIsa);
+            }
+            postCompile(GetIsaName(Prog.mcu->whichIsa));
+        } else
+            oops();
     }
-    if((MNU >= MNU_COMPILE_ANSIC) && (MNU <= MNU_COMPILE_lastC)) {
-        if(CompileAnsiC(CurrentCompileFile, MNU)) {
-            CompileSuccesfullAnsiCMessage(CurrentCompileFile);
-            postCompile("ANSIC");
-        }
-    } else if(MNU == MNU_COMPILE_ARDUINO) {
-        if(CompileAnsiC(CurrentCompileFile, MNU)) {
-            CompileSuccesfullAnsiCMessage(CurrentCompileFile);
-            postCompile("ARDUINO");
-        }
-    } else if(MNU == MNU_COMPILE_PASCAL) {
-        CompilePascal(CurrentCompileFile);
-        postCompile("PASCAL");
-    } else if(MNU == MNU_COMPILE_INT) {
-        CompileInterpreted(CurrentCompileFile);
-        postCompile("INTERPRETED");
-    } else if(MNU == MNU_COMPILE_XINT) {
-        CompileXInterpreted(CurrentCompileFile);
-        postCompile("XINTERPRETED");
-    } else if(Prog.mcu) {
-        switch(Prog.mcu->whichIsa) {
-            case ISA_AVR:
-                CompileAvr(CurrentCompileFile);
-                break;
-            case ISA_PIC16:
-                CompilePic16(CurrentCompileFile);
-                break;
-            case ISA_INTERPRETED:
-                CompileInterpreted(CurrentCompileFile);
-                break;
-            case ISA_XINTERPRETED:
-                CompileXInterpreted(CurrentCompileFile);
-                break;
-            case ISA_NETZER:
-                CompileNetzer(CurrentCompileFile);
-                break;
-            default:
-                ooops("0x%X", Prog.mcu->whichIsa);
-        }
-        postCompile(GetIsaName(Prog.mcu->whichIsa));
-    } else
-        oops();
+    catch(const std::exception& e){
+        Error(e.what());
+    }
 
     RefreshControlsToSettings();
 }

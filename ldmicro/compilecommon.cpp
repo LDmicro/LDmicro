@@ -20,10 +20,9 @@
 // Routines common to the code generators for all processor architectures.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include "stdafx.h"
-
 #include "ldmicro.h"
 #include "intcode.h"
+#include "compilerexceptions.hpp"
 #include <algorithm>
 
 // If we encounter an error while compiling then it's convenient to break
@@ -974,6 +973,9 @@ void MemCheckForErrorsPostCompile()
 //-----------------------------------------------------------------------------
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL raiseError)
 {
+    if(!Prog.mcu)
+        TROW_COMPILER_EXCEPTION("Invalid MCU");
+
     memset(isOutput, 0x00, MAX_IO_PORTS);
     memset(isAnsel, 0x00, MAX_IO_PORTS);
     memset(isInput, 0x00, MAX_IO_PORTS);
@@ -987,67 +989,50 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
         int type = Prog.io.assignment[i].type;
 
         if(type == IO_TYPE_READ_ADC) {
-            uint32_t j;
-            if(Prog.mcu)
-                for(j = 0; j < Prog.mcu->pinCount; j++) {
-                    McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
-                    if(iop && (iop->pin == pin)) {
-                        if(type == IO_TYPE_READ_ADC) {
-                            isAnsel[iop->port - 'A'] |= (1 << iop->bit);
-                        }
-                        break;
-                    }
-                }
+            auto iop = std::find_if(Prog.mcu->pinInfo, Prog.mcu->pinInfo + Prog.mcu->pinCount,
+                                    [pin](const McuIoPinInfo& pi){return (pi.pin == pin);});
+            if(iop != (Prog.mcu->pinInfo + Prog.mcu->pinCount))
+                isAnsel[iop->port - 'A'] |= (1 << iop->bit);
         }
 
-        if(type == IO_TYPE_DIG_OUTPUT || type == IO_TYPE_PWM_OUTPUT || type == IO_TYPE_INT_INPUT
-           || type == IO_TYPE_DIG_INPUT) {
-            uint32_t j;
-            if(Prog.mcu)
-                for(j = 0; j < Prog.mcu->pinCount; j++) {
-                    McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
-                    if(iop && (iop->pin == pin)) {
-                        if((type == IO_TYPE_DIG_OUTPUT) || (type == IO_TYPE_PWM_OUTPUT)) {
-                            isOutput[iop->port - 'A'] |= (1 << iop->bit);
-                        } else {
-                            isInput[iop->port - 'A'] |= (1 << iop->bit);
-                        }
-                        break;
-                    }
-                }
+        if(type == IO_TYPE_DIG_OUTPUT ||
+           type == IO_TYPE_PWM_OUTPUT ||
+           type == IO_TYPE_INT_INPUT  ||
+           type == IO_TYPE_DIG_INPUT) {
 
-            if(Prog.mcu && raiseError) {
-                if(j >= Prog.mcu->pinCount) {
-                    Error(_("Must assign pins for all I/O.\r\n\r\n"
-                            "'%s' is not assigned."),
-                          Prog.io.assignment[i].name);
-                    if(raiseError)
-                        CompileError();
-                }
+            auto iop = std::find_if(Prog.mcu->pinInfo, Prog.mcu->pinInfo + Prog.mcu->pinCount,
+                                    [pin](const McuIoPinInfo& pi){return (pi.pin == pin);});
+            if(iop == (Prog.mcu->pinInfo + Prog.mcu->pinCount)) {
+                TROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), Prog.io.assignment[i].name);
+            }
+            if((type == IO_TYPE_DIG_OUTPUT) || (type == IO_TYPE_PWM_OUTPUT)) {
+                isOutput[iop->port - 'A'] |= (1 << iop->bit);
+            } else {
+                isInput[iop->port - 'A'] |= (1 << iop->bit);
+            }
 
+            if(raiseError) {
                 if(usedUart && (pin == Prog.mcu->uartNeeds.rxPin || pin == Prog.mcu->uartNeeds.txPin)) {
-                    Error(_("UART in use; pins %d and %d reserved for that."),
-                          Prog.mcu->uartNeeds.rxPin,
-                          Prog.mcu->uartNeeds.txPin);
-                    if(raiseError)
-                        CompileError();
+                    TROW_COMPILER_EXCEPTION_FMT(_("UART in use; pins %d and %d reserved for that."),
+                                                Prog.mcu->uartNeeds.rxPin,
+                                                Prog.mcu->uartNeeds.txPin);
                 }
             }
         }
     }
-    if(usedUart && Prog.mcu) {
+    if(usedUart) {
         McuIoPinInfo *iop;
         iop = PinInfo(Prog.mcu->uartNeeds.txPin);
         if(iop)
             isOutput[iop->port - 'A'] |= (1 << iop->bit);
         else
-            oops();
+            TROW_COMPILER_EXCEPTION("Invalid TX pin.");
 
         iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
         if(iop)
             isInput[iop->port - 'A'] |= (1 << iop->bit);
         else
-            oops();
+            TROW_COMPILER_EXCEPTION("Invalid RX pin.");
     }
     if(McuAs("Microchip PIC16F877 ")) {
         // This is a nasty special case; one of the extra bits in TRISE

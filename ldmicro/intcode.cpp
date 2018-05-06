@@ -3658,8 +3658,8 @@ BOOL GenerateIntermediateCode()
 
     rungNow++;
     char      s1[MAX_COMMENT_LEN];
-    char *    s2;
-    ElemLeaf *l;
+    char     *s2 = nullptr;
+    ElemLeaf *l = nullptr;
     int       rung;
     for(rung = 0; rung <= Prog.numRungs; rung++) {
         rungNow = rung;
