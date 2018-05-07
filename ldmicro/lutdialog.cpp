@@ -39,7 +39,7 @@ static HWND Labels[4];
 
 static HWND StringTextbox;
 
-static BOOL WasAsString;
+static bool WasAsString;
 static int  WasCount;
 
 static HWND     ValuesTextbox[MAX_LOOK_UP_TABLE_LEN * 2];
@@ -120,7 +120,7 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 // because in that case we should not provide a checkbox to change whether
 // the table is edited as a string or table.
 //-----------------------------------------------------------------------------
-static void MakeFixedControls(BOOL forPwl)
+static void MakeFixedControls(bool forPwl)
 {
     Labels[0] = CreateWindowEx(0,
                                WC_STATIC,
@@ -322,7 +322,7 @@ static void DestroyLutControls()
 // and for table-type entry, on (b) the number of entries, and on (c)
 // whether we are editing a PWL table (list of points) or a straight LUT.
 //-----------------------------------------------------------------------------
-static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
+static void MakeLutControls(bool asString, int count, bool forPwl)
 {
     // Remember these, so that we know from where to cache stuff if we have
     // to destroy these textboxes and make something new later.
@@ -373,8 +373,8 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
                                        Instance,
                                        nullptr);
         FixedFont(StringTextbox);
-        SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)TRUE, 0);
-        MoveWindow(LutDialog, 100, 30, 320 + 20, 185 + 30, TRUE);
+        SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)true, 0);
+        MoveWindow(LutDialog, 100, 30, 320 + 20, 185 + 30, true);
     } else {
         int i;
         int base;
@@ -436,19 +436,19 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
         }
         if(count > MAX_LOOK_UP_TABLE_LEN)
             count = MAX_LOOK_UP_TABLE_LEN;
-        SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)FALSE, 0);
+        SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)false, 0);
 
-        MoveWindow(LutDialog, 100, 30, 320 + 20 + std::min(count / 16, 2) * 150, base + 30 + std::min(count, 16) * 30, TRUE);
+        MoveWindow(LutDialog, 100, 30, 320 + 20 + std::min(count / 16, 2) * 150, base + 30 + std::min(count, 16) * 30, true);
     }
 }
 
 //-----------------------------------------------------------------------------
 // Decode a string into a look-up table; store the values in ValuesCache[],
 // and update the count checkbox (which in string mode is read-only) to
-// reflect the new length. Returns FALSE if the new string is too long, else
-// TRUE.
+// reflect the new length. Returns false if the new string is too long, else
+// true.
 //-----------------------------------------------------------------------------
-BOOL StringToValuesCache(char *str, int *c)
+bool StringToValuesCache(char *str, int *c)
 {
     int count = 0;
     while(*str) {
@@ -470,7 +470,7 @@ BOOL StringToValuesCache(char *str, int *c)
             str++;
         }
         if(count >= (MAX_LOOK_UP_TABLE_LEN)) {
-            return FALSE;
+            return false;
         }
     }
 
@@ -478,7 +478,7 @@ BOOL StringToValuesCache(char *str, int *c)
     sprintf(buf, "%d", count);
     SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)(buf));
     *c = count;
-    return TRUE;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -496,7 +496,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     // bad to update those in the leaf before the user clicks okay (as he
     // might cancel).
     int  count = t->count;
-    BOOL asString = t->editAsString;
+    bool asString = t->editAsString;
     memset(ValuesCache, 0, sizeof(ValuesCache));
     int i;
     for(i = 0; i < count; i++) {
@@ -517,8 +517,8 @@ void ShowLookUpTableDialog(ElemLeaf *l)
                                    nullptr,
                                    Instance,
                                    nullptr);
-    MakeFixedControls(FALSE);
-    MakeLutControls(asString, count, FALSE);
+    MakeFixedControls(false);
+    MakeLutControls(asString, count, false);
 
     // Set up the controls to reflect the initial configuration.
     SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(t->dest));
@@ -532,8 +532,8 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     }
 
     // And show the window
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(LutDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(LutDialog, true);
     SetFocus(NameTextbox);
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
@@ -541,16 +541,16 @@ void ShowLookUpTableDialog(ElemLeaf *l)
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
-                DialogDone = TRUE;
+                DialogDone = true;
                 break;
             } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
                 break;
             }
         }
@@ -572,7 +572,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
             } else
                 count = atoi(buf);
             DestroyLutControls();
-            MakeLutControls(asString, count, FALSE);
+            MakeLutControls(asString, count, false);
         }
 
         // Are we in string mode? In that case watch the string textbox,
@@ -591,11 +591,11 @@ void ShowLookUpTableDialog(ElemLeaf *l)
         }
 
         // Did we just change modes?
-        BOOL x = SendMessage(AsStringCheckbox, BM_GETCHECK, 0, 0) == BST_CHECKED;
+        bool x = SendMessage(AsStringCheckbox, BM_GETCHECK, 0, 0) == BST_CHECKED;
         if((x && !asString) || (!x && asString)) {
             asString = x;
             DestroyLutControls();
-            MakeLutControls(asString, count, FALSE);
+            MakeLutControls(asString, count, false);
         }
     }
 
@@ -614,7 +614,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
         t->editAsString = asString;
     }
 
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(LutDialog);
 }
@@ -652,8 +652,8 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
                                    nullptr,
                                    Instance,
                                    nullptr);
-    MakeFixedControls(TRUE);
-    MakeLutControls(FALSE, count * 2, TRUE);
+    MakeFixedControls(true);
+    MakeLutControls(false, count * 2, true);
 
     // Set up the controls to reflect the initial configuration.
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(t->name));
@@ -664,23 +664,23 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     // And show the window
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(LutDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(LutDialog, true);
     SetFocus(NameTextbox);
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
-                DialogDone = TRUE;
+                DialogDone = true;
                 break;
             } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
                 break;
             }
         }
@@ -709,7 +709,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
             } else
                 count = atoi(buf);
             DestroyLutControls();
-            MakeLutControls(FALSE, count * 2, TRUE);
+            MakeLutControls(false, count * 2, true);
         }
     }
 
@@ -727,7 +727,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
         t->count = count;
     }
 
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(LutDialog);
 }

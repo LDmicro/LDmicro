@@ -134,7 +134,7 @@ static void DeclareStr(FILE *f, const char *str, int sov)
 
 //-----------------------------------------------------------------------------
 // Generate a declaration for a bit var; three cases, input, output, and
-// internal relay. An internal relay is just a BOOL variable, but for an
+// internal relay. An internal relay is just a bool variable, but for an
 // input or an output someone else must provide read/write functions.
 //-----------------------------------------------------------------------------
 static void DeclareBit(FILE *f, const char *str, int set1)
@@ -480,8 +480,7 @@ static void GenerateDeclarations(FILE *f)
     DWORD addr, addr2;
     int   bit, bit2;
 
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         const char *bitVar1 = nullptr, *bitVar2 = nullptr;
         const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr;
         //const char *adcVar1 = nullptr;
@@ -1226,8 +1225,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 //-----------------------------------------------------------------------------
 static void GenerateSUBPROG(FILE *f)
 {
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
@@ -1250,7 +1248,7 @@ static void GenerateSUBPROG(FILE *f)
 static void GenerateAnsiC_flash_eeprom(FILE *f)
 {
 #ifdef TABLE_IN_FLASH
-    for(int i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int         sovElement = IntCode[i].literal2;
@@ -1660,7 +1658,7 @@ bool CompileAnsiC(char *dest, int MNU)
             "\n"
             "/* You must provide ladder.h; there you must provide:\n"
             "      * a typedef for SWORD and ldBOOL, signed 16 bit and boolean types\n"
-            "        (probably typedef signed short SWORD; typedef unsigned char BOOL;)\n"
+            "        (probably typedef signed short SWORD; typedef unsigned char bool;)\n"
             "\n"
             "   You must also provide implementations of all the I/O read/write\n"
             "   either as inlines in the header file or in another source file. (The\n"
@@ -1751,7 +1749,7 @@ bool CompileAnsiC(char *dest, int MNU)
             "/* Ix_xxx\n"
             "   Ux_xxx\n"
             "    ^\n"
-            "    b means BOOL type\n"
+            "    b means bool type\n"
             "    i means int type */\n"
             "\n",
             CurrentLdName);
@@ -2011,7 +2009,7 @@ bool CompileAnsiC(char *dest, int MNU)
             "   it at the interval that you specified in the LDmicro MCU configuration when you\n"
             "   generated this code. */\n"
             "void PlcCycle(void) {\n");
-    GenerateAnsiC(f, 0, IntCodeLen - 1);
+    GenerateAnsiC(f, 0, IntCode.size() - 1);
     fprintf(f, "}\n");
     //---------------------------------------------------------------------------
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
@@ -2118,7 +2116,7 @@ bool CompileAnsiC(char *dest, int MNU)
                 "\n"
                 "    // Turn on the pull-ups.\n"
                 "    #ifdef CCS_PIC_C\n"
-                "        port_b_pullups(TRUE);\n"
+                "        port_b_pullups(true);\n"
                 "    #elif defined(HI_TECH_C)\n"
                 "        nRBPU = 0;\n"
                 "    #endif\n"

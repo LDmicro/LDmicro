@@ -20,10 +20,10 @@
 // Routines common to the code generators for all processor architectures.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
-#include "stdafx.h"
-
 #include "ldmicro.h"
 #include "intcode.h"
+#include "compilerexceptions.hpp"
+#include <algorithm>
 
 // If we encounter an error while compiling then it's convenient to break
 // out of the possibly-deeply-recursed function we're in.
@@ -35,7 +35,7 @@ static struct {
     char  name[MAX_NAME_LEN];
     DWORD addr;
     int   bit;
-    BOOL  assignedTo;
+    bool  assignedTo;
 } InternalRelays[MAX_IO];
 static int InternalRelayCount;
 /*
@@ -185,12 +185,12 @@ void PrintVariables(FILE *f)
         else {
             DWORD addr;
             int   bit;
-            BOOL forRead;
-            forRead = FALSE;
+            bool forRead;
+            forRead = false;
             switch(Variables[i].name[0]) {
                 case 'I':
                 case 'X':
-                    forRead = TRUE;
+                    forRead = true;
                     break;
                 default:
                     break;
@@ -306,7 +306,7 @@ void AllocBitRam(DWORD *addr, int *bit)
 // assigned to that I/O name. Will allocate if it no memory allocated for it
 // yet, else will return the previously allocated bit.
 //-----------------------------------------------------------------------------
-static void MemForPin(const char *name, DWORD *addr, int *bit, BOOL asInput)
+static void MemForPin(const char *name, DWORD *addr, int *bit, bool asInput)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -346,7 +346,7 @@ static void MemForPin(const char *name, DWORD *addr, int *bit, BOOL asInput)
     }
 }
 
-void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput)
+void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput)
 {
     *addr = -1;
     *bit = -1;
@@ -380,14 +380,10 @@ int SingleBitAssigned(const char *name)
 
     if(Prog.mcu) {
         pin = Prog.io.assignment[i].pin;
-        for(i = 0; i < Prog.mcu->pinCount; i++) {
-            if(Prog.mcu->pinInfo[i].pin == pin)
-                break;
-        }
-
-        if(i >= Prog.mcu->pinCount) {
+        auto pp = std::find_if(Prog.mcu->pinInfo, Prog.mcu->pinInfo + Prog.mcu->pinCount,
+                               [pin](const McuIoPinInfo& info){return pin == info.pin;} );
+        if(pp == (Prog.mcu->pinInfo + Prog.mcu->pinCount))
             pin = 0;
-        }
     }
     return pin;
 }
@@ -643,7 +639,7 @@ int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 }
 
 //-----------------------------------------------------------------------------
-int SetSizeOfVar(const char *name, int sizeOfVar, BOOL showError)
+int SetSizeOfVar(const char *name, int sizeOfVar, bool showError)
 {
     if(showError)
         if((sizeOfVar < 1) || (4 < sizeOfVar)) {
@@ -658,7 +654,7 @@ int SetSizeOfVar(const char *name, int sizeOfVar, BOOL showError)
 
 int SetSizeOfVar(const char *name, int sizeOfVar)
 {
-    return SetSizeOfVar(name, sizeOfVar, TRUE);
+    return SetSizeOfVar(name, sizeOfVar, true);
 }
 
 int SizeOfVar(const char *name)
@@ -786,7 +782,7 @@ void SaveVarListToFile(FILE *f)
 }
 
 //-----------------------------------------------------------------------------
-BOOL LoadVarListFromFile(FILE *f)
+bool LoadVarListFromFile(FILE *f)
 {
     //ClrInternalData(); // VariableCount = 0;
     //ClrSimulationData();
@@ -794,40 +790,40 @@ BOOL LoadVarListFromFile(FILE *f)
     char line[MAX_NAME_LEN];
     char name[MAX_NAME_LEN];
     int  sizeOfVar;
-    BOOL Ok;
+    bool Ok;
 
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line)))
             continue;
         if(strcmp(line, "END") == 0) {
-            return TRUE;
+            return true;
         }
-        Ok = FALSE;
+        Ok = false;
         // Don't internationalize this! It's the file format, not UI.
         if(sscanf(line, " %s signed %d bit variable ", name, &sizeOfVar) == 2) {
             if((sizeOfVar > 0) && strlen(name)) {
                 SetSizeOfVar(name, sizeOfVar / 8);
-                Ok = TRUE;
+                Ok = true;
             }
         }
         if(sscanf(line, " %d bytes %s ", &sizeOfVar, name) == 2) {
             if((sizeOfVar > 0) && strlen(name)) {
-                SetSizeOfVar(name, sizeOfVar, FALSE);
-                Ok = TRUE;
+                SetSizeOfVar(name, sizeOfVar, false);
+                Ok = true;
             }
         }
         if(!Ok) {
             Error(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
-            return FALSE;
+            return false;
         }
     }
-    return FALSE;
+    return false;
 }
 //-----------------------------------------------------------------------------
 // Allocate or retrieve the bit of memory assigned to an internal relay or
 // other thing that requires a single bit of storage.
 //-----------------------------------------------------------------------------
-static void MemForBitInternal(const char *name, DWORD *addr, int *bit, BOOL writeTo)
+static void MemForBitInternal(const char *name, DWORD *addr, int *bit, bool writeTo)
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
@@ -842,13 +838,13 @@ static void MemForBitInternal(const char *name, DWORD *addr, int *bit, BOOL writ
         InternalRelayCount++;
         strcpy(InternalRelays[i].name, name);
         AllocBitRam(&InternalRelays[i].addr, &InternalRelays[i].bit);
-        InternalRelays[i].assignedTo = FALSE;
+        InternalRelays[i].assignedTo = false;
     }
 
     *addr = InternalRelays[i].addr;
     *bit = InternalRelays[i].bit;
     if(writeTo) {
-        InternalRelays[i].assignedTo = TRUE;
+        InternalRelays[i].assignedTo = true;
     }
 }
 
@@ -857,7 +853,7 @@ static void MemForBitInternal(const char *name, DWORD *addr, int *bit, BOOL writ
 // or closed. Contacts could be internal relay, output pin, or input pin,
 // or one of the internal state variables ($xxx) from the int code generator.
 //-----------------------------------------------------------------------------
-void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit)
+void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit)
 {
     *addr = -1;
     *bit = -1;
@@ -869,12 +865,12 @@ void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit)
         case 'X':
             if(!forRead)
                 oops();
-            MemForPin(name, addr, bit, TRUE);
+            MemForPin(name, addr, bit, true);
             break;
 
         case 'P':
         case 'Y':
-            MemForPin(name, addr, bit, FALSE);
+            MemForPin(name, addr, bit, false);
             break;
 
         case 'R':
@@ -890,7 +886,7 @@ void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit)
 
 void MemForSingleBit(const char *name, DWORD *addr, int *bit)
 {
-    MemForSingleBit(name, FALSE, addr, bit);
+    MemForSingleBit(name, false, addr, bit);
 }
 
 //-----------------------------------------------------------------------------
@@ -903,29 +899,21 @@ int isPinAssigned(const char *name)
             case 'I':
             case 'X':
             case 'Y': {
-                int i;
-                for(i = 0; i < Prog.io.count; i++) {
-                    if(strcmp(Prog.io.assignment[i].name, name) == 0)
-                        break;
-                }
-                if(i >= Prog.io.count)
+                auto assign = std::find_if(Prog.io.assignment, Prog.io.assignment + Prog.io.count,
+                                           [name](const PlcProgramSingleIo& io){return (strcmp(io.name, name) == 0);});
+                if(assign == (Prog.io.assignment + Prog.io.count))
                     oops();
 
-                //if(asInput && Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) oops();
-                //if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT) oops();
-
-                int pin = Prog.io.assignment[i].pin;
+                int pin = assign->pin;
                 if(name[0] == 'A') {
-                    for(i = 0; i < Prog.mcu->adcCount; i++)
-                        if(Prog.mcu->adcInfo[i].pin == pin)
-                            break;
-                    if(i < Prog.mcu->adcCount)
+                    auto info = std::find_if(Prog.mcu->adcInfo, Prog.mcu->adcInfo + Prog.mcu->adcCount,
+                                           [pin](const McuAdcPinInfo& info){return (info.pin == pin);});
+                    if(info != (Prog.mcu->adcInfo + Prog.mcu->adcCount))
                         res = 1;
                 } else {
-                    for(i = 0; i < Prog.mcu->pinCount; i++)
-                        if(Prog.mcu->pinInfo[i].pin == pin)
-                            break;
-                    if(i < Prog.mcu->pinCount)
+                    auto info = std::find_if(Prog.mcu->pinInfo, Prog.mcu->pinInfo + Prog.mcu->pinCount,
+                                           [pin](const McuIoPinInfo& info){return (info.pin == pin);});
+                    if(info != (Prog.mcu->pinInfo + Prog.mcu->pinCount))
                         res = 1;
                 }
                 break;
@@ -951,11 +939,11 @@ void MemForCoil(char *name, DWORD *addr, int *bit)
 {
     switch(name[0]) {
         case 'Y':
-            MemForPin(name, addr, bit, FALSE);
+            MemForPin(name, addr, bit, false);
             break;
 
         case 'R':
-            MemForBitInternal(name, addr, bit, TRUE);
+            MemForBitInternal(name, addr, bit, true);
             break;
 
         default:
@@ -983,14 +971,17 @@ void MemCheckForErrorsPostCompile()
 // outputs, and pack that in 8-bit format as we will need to write to the
 // TRIS or DDR registers. ADC pins are neither inputs nor outputs.
 //-----------------------------------------------------------------------------
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL raiseError)
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError)
 {
+    if(!Prog.mcu)
+        TROW_COMPILER_EXCEPTION("Invalid MCU");
+
     memset(isOutput, 0x00, MAX_IO_PORTS);
     memset(isAnsel, 0x00, MAX_IO_PORTS);
     memset(isInput, 0x00, MAX_IO_PORTS);
 
-    BOOL usedUart = UartFunctionUsed();
-    BOOL usedPwm = PwmFunctionUsed();
+    bool usedUart = UartFunctionUsed();
+    int  usedPwm = PwmFunctionUsed();
 
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -998,67 +989,50 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
         int type = Prog.io.assignment[i].type;
 
         if(type == IO_TYPE_READ_ADC) {
-            uint32_t j;
-            if(Prog.mcu)
-                for(j = 0; j < Prog.mcu->pinCount; j++) {
-                    McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
-                    if(iop && (iop->pin == pin)) {
-                        if(type == IO_TYPE_READ_ADC) {
-                            isAnsel[iop->port - 'A'] |= (1 << iop->bit);
-                        }
-                        break;
-                    }
-                }
+            auto iop = std::find_if(Prog.mcu->pinInfo, Prog.mcu->pinInfo + Prog.mcu->pinCount,
+                                    [pin](const McuIoPinInfo& pi){return (pi.pin == pin);});
+            if(iop != (Prog.mcu->pinInfo + Prog.mcu->pinCount))
+                isAnsel[iop->port - 'A'] |= (1 << iop->bit);
         }
 
-        if(type == IO_TYPE_DIG_OUTPUT || type == IO_TYPE_PWM_OUTPUT || type == IO_TYPE_INT_INPUT
-           || type == IO_TYPE_DIG_INPUT) {
-            uint32_t j;
-            if(Prog.mcu)
-                for(j = 0; j < Prog.mcu->pinCount; j++) {
-                    McuIoPinInfo *iop = &(Prog.mcu->pinInfo[j]);
-                    if(iop && (iop->pin == pin)) {
-                        if((type == IO_TYPE_DIG_OUTPUT) || (type == IO_TYPE_PWM_OUTPUT)) {
-                            isOutput[iop->port - 'A'] |= (1 << iop->bit);
-                        } else {
-                            isInput[iop->port - 'A'] |= (1 << iop->bit);
-                        }
-                        break;
-                    }
-                }
+        if(type == IO_TYPE_DIG_OUTPUT ||
+           type == IO_TYPE_PWM_OUTPUT ||
+           type == IO_TYPE_INT_INPUT  ||
+           type == IO_TYPE_DIG_INPUT) {
 
-            if(Prog.mcu && raiseError) {
-                if(j >= Prog.mcu->pinCount) {
-                    Error(_("Must assign pins for all I/O.\r\n\r\n"
-                            "'%s' is not assigned."),
-                          Prog.io.assignment[i].name);
-                    if(raiseError)
-                        CompileError();
-                }
+            auto iop = std::find_if(Prog.mcu->pinInfo, Prog.mcu->pinInfo + Prog.mcu->pinCount,
+                                    [pin](const McuIoPinInfo& pi){return (pi.pin == pin);});
+            if(iop == (Prog.mcu->pinInfo + Prog.mcu->pinCount)) {
+                TROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), Prog.io.assignment[i].name);
+            }
+            if((type == IO_TYPE_DIG_OUTPUT) || (type == IO_TYPE_PWM_OUTPUT)) {
+                isOutput[iop->port - 'A'] |= (1 << iop->bit);
+            } else {
+                isInput[iop->port - 'A'] |= (1 << iop->bit);
+            }
 
+            if(raiseError) {
                 if(usedUart && (pin == Prog.mcu->uartNeeds.rxPin || pin == Prog.mcu->uartNeeds.txPin)) {
-                    Error(_("UART in use; pins %d and %d reserved for that."),
-                          Prog.mcu->uartNeeds.rxPin,
-                          Prog.mcu->uartNeeds.txPin);
-                    if(raiseError)
-                        CompileError();
+                    TROW_COMPILER_EXCEPTION_FMT(_("UART in use; pins %d and %d reserved for that."),
+                                                Prog.mcu->uartNeeds.rxPin,
+                                                Prog.mcu->uartNeeds.txPin);
                 }
             }
         }
     }
-    if(usedUart && Prog.mcu) {
+    if(usedUart) {
         McuIoPinInfo *iop;
         iop = PinInfo(Prog.mcu->uartNeeds.txPin);
         if(iop)
             isOutput[iop->port - 'A'] |= (1 << iop->bit);
         else
-            oops();
+            TROW_COMPILER_EXCEPTION("Invalid TX pin.");
 
         iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
         if(iop)
             isInput[iop->port - 'A'] |= (1 << iop->bit);
         else
-            oops();
+            TROW_COMPILER_EXCEPTION("Invalid RX pin.");
     }
     if(McuAs("Microchip PIC16F877 ")) {
         // This is a nasty special case; one of the extra bits in TRISE
@@ -1070,7 +1044,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
 
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)
 {
-    BuildDirectionRegisters(isInput, isAnsel, isOutput, TRUE);
+    BuildDirectionRegisters(isInput, isAnsel, isOutput, true);
 }
 
 //-----------------------------------------------------------------------------

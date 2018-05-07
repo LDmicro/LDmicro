@@ -95,7 +95,7 @@ typedef struct McuSpiInfoTag {
     int      MOSI;
     int      SCK;
     int      _SS;
-//  BOOL    isUsed;
+//  bool    isUsed;
 } McuSpiInfo;
 
 typedef struct McuPwmPinInfoTag {

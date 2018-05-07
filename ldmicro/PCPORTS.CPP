@@ -1,3 +1,23 @@
+//-----------------------------------------------------------------------------
+// Copyright 2015 Nehrutsa Ihor
+//
+// This file is part of LDmicro.
+//
+// LDmicro is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// LDmicro is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
+//------
+//
+//-----------------------------------------------------------------------------
 #include "stdafx.h"
 
 #include "ldmicro.h"
@@ -271,7 +291,7 @@ void ComDb25PinToRegMask(int Pin, int *Reg, int *Mask)
     };
 }
 //-----------------------------------------------------------------------------
-BOOL ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
+bool ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
 {
     strcpy(prt, "???");
     *portN = 0;
@@ -280,12 +300,12 @@ BOOL ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
     *Addr = 0;
 
     char port;
-    int  i, dbPin = 0;
+    int  dbPin = 0;
     int  pin = 0;
     int  pinMcu = -1;
     char trans[1024];
 
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         Transliterate(trans, Prog.io.assignment[i].name);
         if(strcmp(trans, s + 3) == 0) {
             pin = Prog.io.assignment[i].pin;
@@ -293,7 +313,7 @@ BOOL ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
         };
     };
     if(Prog.mcu && (pin)) {
-        for(i = 0; i < Prog.mcu->pinCount; i++) {
+        for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
             if(pin == Prog.mcu->pinInfo[i].pin) {
                 pinMcu = i;
                 break;
@@ -353,9 +373,9 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo)
     }
 }
 //-----------------------------------------------------------------------------
-BOOL SavePcPorts(char *filename)
+bool SavePcPorts(char *filename)
 {
-    dbps(filename) BOOL b = FALSE;
+    dbps(filename) bool b = false;
     dbpd(b)
         //  if(!b)
         b = WritePrivateProfileString(TEXT("LPT1"), TEXT("ADDR   "), TEXT("0x378"), filename);
@@ -399,11 +419,11 @@ static char *IoTypeToPas(int IoType)
     return "NotUsePort";
 }
 //-----------------------------------------------------------------------------
-BOOL LoadPcPorts(char *filename)
+bool LoadPcPorts(char *filename)
 {
     FILE *f = fopen(filename, "r");
     if(!f)
-        return FALSE;
+        return false;
 
     char dest[MAX_PATH];
     strcpy(dest, CurrentCompilePath);
@@ -418,7 +438,7 @@ BOOL LoadPcPorts(char *filename)
     if(!fu) {
         fclose(f);
         Error(_("Couldn't open file '%s'"), dest);
-        return FALSE;
+        return false;
     }
     fprintf(fu,
             "unit PcPorts;\n"
@@ -663,6 +683,6 @@ BOOL LoadPcPorts(char *filename)
     fprintf(fu, "end;\nend.");
     fclose(fu);
     fclose(f);
-    return TRUE;
+    return true;
 }
 //-----------------------------------------------------------------------------

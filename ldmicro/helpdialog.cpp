@@ -109,7 +109,7 @@ static const char **Text[] = {
 static HWND HelpDialog[2];
 static HWND RichEdit[2];
 
-static BOOL HelpWindowOpen[2];
+static bool HelpWindowOpen[2];
 
 static int TitleHeight;
 
@@ -123,9 +123,9 @@ static void SizeRichEdit(int a)
     SetWindowPos(RichEdit[a], HWND_TOP, 6, 3, r.right - 6, RICH_EDIT_HEIGHT(r.bottom), 0);
 }
 
-static BOOL Resizing(RECT *r, int wParam)
+static bool Resizing(RECT *r, int wParam)
 {
-    BOOL touched = FALSE;
+    bool touched = false;
     if(r->right - r->left < 650) {
         int diff = 650 - (r->right - r->left);
         if(wParam == WMSZ_RIGHT || wParam == WMSZ_TOPRIGHT || wParam == WMSZ_BOTTOMRIGHT) {
@@ -133,7 +133,7 @@ static BOOL Resizing(RECT *r, int wParam)
         } else {
             r->left -= diff;
         }
-        touched = TRUE;
+        touched = true;
     }
 
     if(!(wParam == WMSZ_LEFT || wParam == WMSZ_RIGHT)) {
@@ -145,7 +145,7 @@ static BOOL Resizing(RECT *r, int wParam)
             } else {
                 r->bottom -= diff;
             }
-            touched = TRUE;
+            touched = true;
         }
     }
 
@@ -171,13 +171,13 @@ static void MakeControls(int a)
                                  Instance,
                                  nullptr);
 
-    SendMessage(RichEdit[a], WM_SETFONT, (WPARAM)FixedWidthFont, TRUE);
+    SendMessage(RichEdit[a], WM_SETFONT, (WPARAM)FixedWidthFont, true);
     SendMessage(RichEdit[a], EM_SETBKGNDCOLOR, (WPARAM)0, HighlightColours.bg); // RGB(0, 0, 0)
 
     SizeRichEdit(a);
 
     int  i;
-    BOOL nextSubHead = FALSE;
+    bool nextSubHead = false;
     for(i = 0; Text[a][i]; i++) {
         const char *s = Text[a][i];
 
@@ -202,11 +202,11 @@ static void MakeControls(int a)
                 if(copy[j] == ' ' && copy[j - 1] == ' ')
                     break;
             }
-            BOOL justHeading = (copy[j] == '\0');
+            bool justHeading = (copy[j] == '\0');
             copy[j] = '\0';
             cf.crTextColor = HighlightColours.selected; // RGB(110, 255, 110);
             SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-            SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)copy);
+            SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)false, (LPARAM)copy);
             SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
             // Special case if there's nothing except title on the line
@@ -221,11 +221,11 @@ static void MakeControls(int a)
         }
 
         SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-        SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)s);
+        SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)false, (LPARAM)s);
         SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
         if(Text[a][i + 1]) {
-            SendMessage(RichEdit[a], EM_REPLACESEL, FALSE, (LPARAM) "\r\n");
+            SendMessage(RichEdit[a], EM_REPLACESEL, false, (LPARAM) "\r\n");
             SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
         }
     }
@@ -259,7 +259,7 @@ static LRESULT CALLBACK HelpProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         case WM_DESTROY:
         case WM_CLOSE:
-            HelpWindowOpen[a] = FALSE;
+            HelpWindowOpen[a] = false;
             // fall through
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -290,7 +290,7 @@ static void MakeClass()
     RegisterClassEx(&wc);
 }
 
-void ShowHelpDialog(BOOL about)
+void ShowHelpDialog(bool about)
 {
     int a = about ? 1 : 0;
     if(HelpWindowOpen[a]) {
@@ -316,10 +316,10 @@ void ShowHelpDialog(BOOL about)
                        nullptr);
     MakeControls(a);
 
-    ShowWindow(HelpDialog[a], TRUE);
+    ShowWindow(HelpDialog[a], true);
     SetFocus(RichEdit[a]);
 
-    HelpWindowOpen[a] = TRUE;
+    HelpWindowOpen[a] = true;
 
     RECT r;
     GetClientRect(HelpDialog[a], &r);

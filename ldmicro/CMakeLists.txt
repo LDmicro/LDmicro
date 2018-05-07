@@ -57,7 +57,6 @@ set(LDMICRO_SRC_LIST
     simpledialog.cpp
     simulate.cpp
     undoredo.cpp
-    xinterpreted.cpp
     stdafx.cpp
     ldversion.h
 
@@ -90,7 +89,7 @@ if(WIN32)
         )
 endif(WIN32)
 
-INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./")
+INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./" "../common/gsl-lite/include")
 add_definitions(
     "-DISOLATION_AWARE_ENABLED"
     "-DWIN32_LEAN_AND_MEAN"

@@ -28,9 +28,9 @@
 // Not all options all available e.g. can't delete the only relay coil in
 // a rung, can't insert two coils in series, etc. Keep track of what is
 // allowed so we don't corrupt our program.
-BOOL CanInsertEnd;
-BOOL CanInsertOther;
-BOOL CanInsertComment;
+bool CanInsertEnd;
+bool CanInsertOther;
+bool CanInsertComment;
 
 // Ladder logic program is laid out on a grid program; this matrix tells
 // us which leaf element is in which box on the grid, which allows us
@@ -51,12 +51,12 @@ PlcCursor Cursor;
 
 //-----------------------------------------------------------------------------
 // Find the address in the DisplayMatrix of the selected leaf element. Set
-// *gx and *gy if we succeed and return TRUE, else return FALSE.
+// *gx and *gy if we succeed and return true, else return false.
 //-----------------------------------------------------------------------------
-BOOL FindSelected(int *gx, int *gy)
+bool FindSelected(int *gx, int *gy)
 {
     if(!Selected)
-        return FALSE;
+        return false;
     int i, j;
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
@@ -66,11 +66,11 @@ BOOL FindSelected(int *gx, int *gy)
                         i++;
                 *gx = i;
                 *gy = j;
-                return TRUE;
+                return true;
             }
         }
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -123,7 +123,7 @@ void SelectElement(int gx, int gy, int state)
 }
 
 //-----------------------------------------------------------------------------
-BOOL StaySameElem(int Which)
+bool StaySameElem(int Which)
 {
     // clang-format off
     if( Which == ELEM_RES ||
@@ -168,13 +168,13 @@ BOOL StaySameElem(int Which)
         Which == ELEM_PIECEWISE_LINEAR ||
         Which == ELEM_PERSIST ||
         Which == ELEM_MOVE)
-      return TRUE;
+      return true;
     else
-      return FALSE;
+      return false;
     // clang-format on
 }
 //-----------------------------------------------------------------------------
-BOOL CanChangeOutputElem(int Which)
+bool CanChangeOutputElem(int Which)
 {
     // clang-format off
     if( Which == ELEM_COIL ||
@@ -193,16 +193,16 @@ BOOL CanChangeOutputElem(int Which)
         Which == ELEM_WSFR ||
         #endif
         Which == ELEM_PERSIST)
-      return TRUE;
+      return true;
     else
-      return FALSE;
+      return false;
     // clang-format on
 }
 //-----------------------------------------------------------------------------
-// Returnn TRUE if this instruction(element) must be the
+// Returnn true if this instruction(element) must be the
 // rightmost instruction in its rung.
 //-----------------------------------------------------------------------------
-BOOL EndOfRungElem(int Which)
+bool EndOfRungElem(int Which)
 {
     // clang-format off
     if( Which == ELEM_COIL ||
@@ -228,8 +228,8 @@ BOOL EndOfRungElem(int Which)
         Which == ELEM_PIECEWISE_LINEAR ||
         Which == ELEM_PERSIST ||
         Which == ELEM_MOVE)
-      return TRUE;
-    return FALSE;
+      return true;
+    return false;
     // clang-format on
 }
 
@@ -240,42 +240,42 @@ BOOL EndOfRungElem(int Which)
 //-----------------------------------------------------------------------------
 void WhatCanWeDoFromCursorAndTopology()
 {
-    BOOL canNegate = FALSE, canNormal = FALSE;
-    BOOL canResetOnly = FALSE, canSetOnly = FALSE, canTtrigger = FALSE;
-    BOOL canPushUp = TRUE, canPushDown = TRUE;
+    bool canNegate = false, canNormal = false;
+    bool canResetOnly = false, canSetOnly = false, canTtrigger = false;
+    bool canPushUp = true, canPushDown = true;
 
-    BOOL canDelete = TRUE;
+    bool canDelete = true;
 
     int i = RungContainingSelected();
     if(i >= 0) {
         if(i == 0)
-            canPushUp = FALSE;
+            canPushUp = false;
         if(i == (Prog.numRungs - 1))
-            canPushDown = FALSE;
+            canPushDown = false;
 
         if(Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which == ELEM_PLACEHOLDER) {
-            canDelete = FALSE;
+            canDelete = false;
         }
     }
 
-    CanInsertEnd = FALSE;
-    CanInsertOther = TRUE;
+    CanInsertEnd = false;
+    CanInsertOther = true;
 
     if(Selected && EndOfRungElem(SelectedWhich)) {
         if(SelectedWhich == ELEM_COIL) {
-            canNegate = TRUE;
-            canNormal = TRUE;
-            canResetOnly = TRUE;
-            canSetOnly = TRUE;
-            canTtrigger = TRUE;
+            canNegate = true;
+            canNormal = true;
+            canResetOnly = true;
+            canSetOnly = true;
+            canTtrigger = true;
         }
 
         if(Selected->selectedState == SELECTED_ABOVE || Selected->selectedState == SELECTED_BELOW) {
-            CanInsertEnd = TRUE;
-            CanInsertOther = FALSE;
+            CanInsertEnd = true;
+            CanInsertOther = false;
         } else if(Selected->selectedState == SELECTED_RIGHT) {
-            CanInsertEnd = FALSE;
-            CanInsertOther = FALSE;
+            CanInsertEnd = false;
+            CanInsertOther = false;
         }
     } else if(Selected) {
         if(Selected->selectedState == SELECTED_RIGHT || SelectedWhich == ELEM_PLACEHOLDER) {
@@ -283,26 +283,26 @@ void WhatCanWeDoFromCursorAndTopology()
         }
     }
     if(SelectedWhich == ELEM_CONTACTS) {
-        canNegate = TRUE;
-        canNormal = TRUE;
+        canNegate = true;
+        canNormal = true;
     }
     if(SelectedWhich == ELEM_COMMENT) {
         // if there's a comment there already then don't let anything else
         // into the rung
-        CanInsertEnd = FALSE;
-        CanInsertOther = FALSE;
+        CanInsertEnd = false;
+        CanInsertOther = false;
     }
     if(SelectedWhich == ELEM_PLACEHOLDER) {
         // a comment must be the only element in its rung, and it will fill
         // the rung entirely
-        CanInsertComment = TRUE;
+        CanInsertComment = true;
     } else {
         /*
         if(CanInsertEnd && Selected && (Selected->selectedState == SELECTED_RIGHT))
-          CanInsertComment = TRUE;
+          CanInsertComment = true;
         else
 */
-        CanInsertComment = FALSE;
+        CanInsertComment = false;
     }
     SetMenusEnabled(canNegate,
                     canNormal,
@@ -351,11 +351,11 @@ void ForgetEverything()
 }
 
 //-----------------------------------------------------------------------------
-// Select the top left element of the program. Returns TRUE if it was able
-// to do so, FALSE if not. The latter occurs given a completely empty
+// Select the top left element of the program. Returns true if it was able
+// to do so, false if not. The latter occurs given a completely empty
 // program.
 //-----------------------------------------------------------------------------
-BOOL MoveCursorTopLeft()
+bool MoveCursorTopLeft()
 {
     int i, j;
     // Let us first try to place it somewhere on-screen, so start at the
@@ -366,7 +366,7 @@ BOOL MoveCursorTopLeft()
         for(j = ScrollYOffset; j < DISPLAY_MATRIX_Y_SIZE && j < (ScrollYOffset + 16); j++) {
             if(VALID_LEAF(DisplayMatrix[i][j])) {
                 SelectElement(i, j, SELECTED_LEFT);
-                return TRUE;
+                return true;
             }
         }
     }
@@ -377,11 +377,11 @@ BOOL MoveCursorTopLeft()
         for(j = 0; j < 16; j++) {
             if(VALID_LEAF(DisplayMatrix[i][j])) {
                 SelectElement(i, j, SELECTED_LEFT);
-                return TRUE;
+                return true;
             }
         }
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -489,7 +489,7 @@ void MoveCursorKeyboard(int keyCode)
 }
 
 //-----------------------------------------------------------------------------
-static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
+static bool doReplaceElem(int which, int whichWhere, void *where, int index)
 {
     int newWhich;
     // clang-format off
@@ -596,13 +596,13 @@ static BOOL doReplaceElem(int which, int whichWhere, void *where, int index)
             p->contents[index].which = newWhich;
         }
         SelectedWhich = newWhich;
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
-static BOOL ReplaceElem(int which, void *any, ElemLeaf *seek, int whichWhere, void *where, int index)
+static bool ReplaceElem(int which, void *any, ElemLeaf *seek, int whichWhere, void *where, int index)
 {
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -610,7 +610,7 @@ static BOOL ReplaceElem(int which, void *any, ElemLeaf *seek, int whichWhere, vo
             int               i;
             for(i = 0; i < s->count; i++)
                 if(ReplaceElem(s->contents[i].which, s->contents[i].data.any, seek, ELEM_SERIES_SUBCKT, s, i))
-                    return TRUE;
+                    return true;
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
@@ -618,7 +618,7 @@ static BOOL ReplaceElem(int which, void *any, ElemLeaf *seek, int whichWhere, vo
             int                 i;
             for(i = 0; i < p->count; i++)
                 if(ReplaceElem(p->contents[i].which, p->contents[i].data.any, seek, ELEM_PARALLEL_SUBCKT, p, i))
-                    return TRUE;
+                    return true;
             break;
         }
             CASE_LEAF
@@ -632,22 +632,22 @@ static BOOL ReplaceElem(int which, void *any, ElemLeaf *seek, int whichWhere, vo
         default:
             ooops("which=%d", which);
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
 // Replace the selected element on a suitable element at the cursor position.
 //-----------------------------------------------------------------------------
-BOOL ReplaceSelectedElement()
+bool ReplaceSelectedElement()
 {
     if(!Selected /* || Selected->selectedState == SELECTED_NONE*/)
-        return FALSE;
+        return false;
 
     int i;
     for(i = 0; i < Prog.numRungs; i++)
         if(ReplaceElem(ELEM_SERIES_SUBCKT, Prog.rungs[i], Selected, 0, 0, 0))
-            return TRUE;
-    return FALSE;
+            return true;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1001,7 +1001,7 @@ void MoveCursorMouseClick(int x, int y)
 // Place the cursor as near to the given point on the grid as possible. Used
 // after deleting an element, for example.
 //-----------------------------------------------------------------------------
-BOOL MoveCursorNear(int *gx, int *gy)
+bool MoveCursorNear(int *gx, int *gy)
 {
     int out = 0;
 
@@ -1055,7 +1055,7 @@ BOOL MoveCursorNear(int *gx, int *gy)
 
     //MoveCursorTopLeft();
     int  tgx = *gx, tgy = *gy;
-    BOOL f = FindSelected(&tgx, &tgy);
+    bool f = FindSelected(&tgx, &tgy);
     return f;
 }
 
@@ -1070,15 +1070,15 @@ void NegateSelected()
     }
     switch(SelectedWhich) {
         case ELEM_CONTACTS:
-            Selected->d.contacts.negated = TRUE;
+            Selected->d.contacts.negated = true;
             break;
 
         case ELEM_COIL: {
             ElemCoil *c = &Selected->d.coil;
-            c->negated = TRUE;
-            c->resetOnly = FALSE;
-            c->setOnly = FALSE;
-            c->ttrigger = FALSE;
+            c->negated = true;
+            c->resetOnly = false;
+            c->setOnly = false;
+            c->ttrigger = false;
             break;
         }
         default:
@@ -1097,15 +1097,15 @@ void MakeNormalSelected()
     }
     switch(SelectedWhich) {
         case ELEM_CONTACTS:
-            Selected->d.contacts.negated = FALSE;
+            Selected->d.contacts.negated = false;
             break;
 
         case ELEM_COIL: {
             ElemCoil *c = &Selected->d.coil;
-            c->negated = FALSE;
-            c->setOnly = FALSE;
-            c->resetOnly = FALSE;
-            c->ttrigger = FALSE;
+            c->negated = false;
+            c->setOnly = false;
+            c->resetOnly = false;
+            c->ttrigger = false;
             break;
         }
         default:
@@ -1122,10 +1122,10 @@ void MakeSetOnlySelected()
         return;
 
     ElemCoil *c = &Selected->d.coil;
-    c->setOnly = TRUE;
-    c->resetOnly = FALSE;
-    c->negated = FALSE;
-    c->ttrigger = FALSE;
+    c->setOnly = true;
+    c->resetOnly = false;
+    c->negated = false;
+    c->ttrigger = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1137,10 +1137,10 @@ void MakeResetOnlySelected()
         return;
 
     ElemCoil *c = &Selected->d.coil;
-    c->resetOnly = TRUE;
-    c->setOnly = FALSE;
-    c->negated = FALSE;
-    c->ttrigger = FALSE;
+    c->resetOnly = true;
+    c->setOnly = false;
+    c->negated = false;
+    c->ttrigger = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1152,8 +1152,8 @@ void MakeTtriggerSelected()
         return;
 
     ElemCoil *c = &Selected->d.coil;
-    c->ttrigger = TRUE;
-    c->resetOnly = FALSE;
-    c->setOnly = FALSE;
-    c->negated = FALSE;
+    c->ttrigger = true;
+    c->resetOnly = false;
+    c->setOnly = false;
+    c->negated = false;
 }
