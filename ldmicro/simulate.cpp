@@ -1305,8 +1305,7 @@ int PopStack()
 //-----------------------------------------------------------------------------
 int FindOpRung(int op, int rung)
 {
-    int i;
-    for(i = 0; i < IntCode.size(); i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op == op) && (IntCode[i].rung == rung)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1318,10 +1317,9 @@ int FindOpRung(int op, int rung)
 //-----------------------------------------------------------------------------
 int FindOpName(int op, const char *name1)
 {
-    int i;
     if(!name1)
         oops();
-    for(i = 0; i < IntCode.size(); i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1351,7 +1349,7 @@ int FindOpNameLast(int op, const char *name1)
 {
     if(!name1)
         oops();
-    for(int i = IntCode.size() - 1; i >= 0; i--) {
+    for(uint32_t i = IntCode.size() - 1; i >= 0; i--) {
         if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1367,7 +1365,7 @@ int FindOpNameLast(int op, const char *name1, const char *name2)
         oops();
     if(!name2)
         oops();
-    for(int i = IntCode.size() - 1; i >= 0; i--) {
+    for(uint32_t i = IntCode.size() - 1; i >= 0; i--) {
         if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1418,7 +1416,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_COPY_XOR_BIT_TO_BIT:
-                SetSingleBit(a->name1, SingleBitOn(a->name1) ^ SingleBitOn(a->name2) );
+                SetSingleBit(a->name1, (SingleBitOn(a->name1) & 1) ^ (SingleBitOn(a->name2) & 1));
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:

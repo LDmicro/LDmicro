@@ -257,7 +257,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_VARIABLE_MOD:
-                fprintf(f, "let var '%s' := '%s' % '%s'", IntCode[i].name1, IntCode[i].name2);
+                fprintf(f, "let var '%s' := '%s' % '%s'", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_INCREMENT_VARIABLE:
@@ -447,12 +447,12 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_IF_BIT_SET_IN_VAR: // TODO
-                fprintf(f, "if ('%s' & (1<<%d)) != 0  {", IntCode[i].name1, IntCode[i].literal);
+                fprintf(f, "if ('%s' & (1<<%d)) != 0  {", IntCode[i].name1, IntCode[i].name2);
                 indent++;
                 break;
 
             case INT_IF_BIT_CLEAR_IN_VAR: // TODO
-                fprintf(f, "if ('%s' & (1<<%d)) == 0 {", IntCode[i].name1, IntCode[i].literal);
+                fprintf(f, "if ('%s' & (1<<%d)) == 0 {", IntCode[i].name1, IntCode[i].name2);
                 indent++;
                 break;
 
@@ -754,7 +754,6 @@ static void _Op(int l, const char *f, const char *args, int op, bool *b, const c
                 SDWORD *data)
 {
     IntOp intOp;
-    //memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     intOp.op = op;
     if(name1)
         strcpy(intOp.name1, name1);
@@ -857,7 +856,6 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
 static void SimState(bool *b, const char *name, bool *w, const char *name2)
 {
     IntOp intOp;
-    //memset(&IntCode[IntCodeLen], sizeof(IntCode[IntCodeLen]), 0);
     intOp.op = INT_SIMULATE_NODE_STATE;
     intOp.poweredAfter = b;
     intOp.workingNow = w;
@@ -3669,7 +3667,7 @@ bool GenerateIntermediateCode()
             if(int_comment_level >= 2) {
                 if(strlen(s1))
                     Comment1(s1); // bypass % in comments
-                if(s2)
+                if(strlen(s2))
                     Comment1(s2); // bypass % in comments
             }
             continue;
@@ -3750,7 +3748,7 @@ bool UartRecvUsed()
            (IntCode[i].op == INT_UART_RECVn))
             return true;
     }
-    return true;
+    return false;
 }
 
 bool UartSendUsed()
