@@ -35,7 +35,7 @@ static struct {
     char  name[MAX_NAME_LEN];
     DWORD addr;
     int   bit;
-    BOOL  assignedTo;
+    bool  assignedTo;
 } InternalRelays[MAX_IO];
 static int InternalRelayCount;
 /*
@@ -185,12 +185,12 @@ void PrintVariables(FILE *f)
         else {
             DWORD addr;
             int   bit;
-            BOOL forRead;
-            forRead = FALSE;
+            bool forRead;
+            forRead = false;
             switch(Variables[i].name[0]) {
                 case 'I':
                 case 'X':
-                    forRead = TRUE;
+                    forRead = true;
                     break;
                 default:
                     break;
@@ -306,7 +306,7 @@ void AllocBitRam(DWORD *addr, int *bit)
 // assigned to that I/O name. Will allocate if it no memory allocated for it
 // yet, else will return the previously allocated bit.
 //-----------------------------------------------------------------------------
-static void MemForPin(const char *name, DWORD *addr, int *bit, BOOL asInput)
+static void MemForPin(const char *name, DWORD *addr, int *bit, bool asInput)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -346,7 +346,7 @@ static void MemForPin(const char *name, DWORD *addr, int *bit, BOOL asInput)
     }
 }
 
-void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput)
+void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput)
 {
     *addr = -1;
     *bit = -1;
@@ -639,7 +639,7 @@ int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
 }
 
 //-----------------------------------------------------------------------------
-int SetSizeOfVar(const char *name, int sizeOfVar, BOOL showError)
+int SetSizeOfVar(const char *name, int sizeOfVar, bool showError)
 {
     if(showError)
         if((sizeOfVar < 1) || (4 < sizeOfVar)) {
@@ -654,7 +654,7 @@ int SetSizeOfVar(const char *name, int sizeOfVar, BOOL showError)
 
 int SetSizeOfVar(const char *name, int sizeOfVar)
 {
-    return SetSizeOfVar(name, sizeOfVar, TRUE);
+    return SetSizeOfVar(name, sizeOfVar, true);
 }
 
 int SizeOfVar(const char *name)
@@ -782,7 +782,7 @@ void SaveVarListToFile(FILE *f)
 }
 
 //-----------------------------------------------------------------------------
-BOOL LoadVarListFromFile(FILE *f)
+bool LoadVarListFromFile(FILE *f)
 {
     //ClrInternalData(); // VariableCount = 0;
     //ClrSimulationData();
@@ -790,40 +790,40 @@ BOOL LoadVarListFromFile(FILE *f)
     char line[MAX_NAME_LEN];
     char name[MAX_NAME_LEN];
     int  sizeOfVar;
-    BOOL Ok;
+    bool Ok;
 
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line)))
             continue;
         if(strcmp(line, "END") == 0) {
-            return TRUE;
+            return true;
         }
-        Ok = FALSE;
+        Ok = false;
         // Don't internationalize this! It's the file format, not UI.
         if(sscanf(line, " %s signed %d bit variable ", name, &sizeOfVar) == 2) {
             if((sizeOfVar > 0) && strlen(name)) {
                 SetSizeOfVar(name, sizeOfVar / 8);
-                Ok = TRUE;
+                Ok = true;
             }
         }
         if(sscanf(line, " %d bytes %s ", &sizeOfVar, name) == 2) {
             if((sizeOfVar > 0) && strlen(name)) {
-                SetSizeOfVar(name, sizeOfVar, FALSE);
-                Ok = TRUE;
+                SetSizeOfVar(name, sizeOfVar, false);
+                Ok = true;
             }
         }
         if(!Ok) {
             Error(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
-            return FALSE;
+            return false;
         }
     }
-    return FALSE;
+    return false;
 }
 //-----------------------------------------------------------------------------
 // Allocate or retrieve the bit of memory assigned to an internal relay or
 // other thing that requires a single bit of storage.
 //-----------------------------------------------------------------------------
-static void MemForBitInternal(const char *name, DWORD *addr, int *bit, BOOL writeTo)
+static void MemForBitInternal(const char *name, DWORD *addr, int *bit, bool writeTo)
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
@@ -838,13 +838,13 @@ static void MemForBitInternal(const char *name, DWORD *addr, int *bit, BOOL writ
         InternalRelayCount++;
         strcpy(InternalRelays[i].name, name);
         AllocBitRam(&InternalRelays[i].addr, &InternalRelays[i].bit);
-        InternalRelays[i].assignedTo = FALSE;
+        InternalRelays[i].assignedTo = false;
     }
 
     *addr = InternalRelays[i].addr;
     *bit = InternalRelays[i].bit;
     if(writeTo) {
-        InternalRelays[i].assignedTo = TRUE;
+        InternalRelays[i].assignedTo = true;
     }
 }
 
@@ -853,7 +853,7 @@ static void MemForBitInternal(const char *name, DWORD *addr, int *bit, BOOL writ
 // or closed. Contacts could be internal relay, output pin, or input pin,
 // or one of the internal state variables ($xxx) from the int code generator.
 //-----------------------------------------------------------------------------
-void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit)
+void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit)
 {
     *addr = -1;
     *bit = -1;
@@ -865,12 +865,12 @@ void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit)
         case 'X':
             if(!forRead)
                 oops();
-            MemForPin(name, addr, bit, TRUE);
+            MemForPin(name, addr, bit, true);
             break;
 
         case 'P':
         case 'Y':
-            MemForPin(name, addr, bit, FALSE);
+            MemForPin(name, addr, bit, false);
             break;
 
         case 'R':
@@ -886,7 +886,7 @@ void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit)
 
 void MemForSingleBit(const char *name, DWORD *addr, int *bit)
 {
-    MemForSingleBit(name, FALSE, addr, bit);
+    MemForSingleBit(name, false, addr, bit);
 }
 
 //-----------------------------------------------------------------------------
@@ -939,11 +939,11 @@ void MemForCoil(char *name, DWORD *addr, int *bit)
 {
     switch(name[0]) {
         case 'Y':
-            MemForPin(name, addr, bit, FALSE);
+            MemForPin(name, addr, bit, false);
             break;
 
         case 'R':
-            MemForBitInternal(name, addr, bit, TRUE);
+            MemForBitInternal(name, addr, bit, true);
             break;
 
         default:
@@ -971,7 +971,7 @@ void MemCheckForErrorsPostCompile()
 // outputs, and pack that in 8-bit format as we will need to write to the
 // TRIS or DDR registers. ADC pins are neither inputs nor outputs.
 //-----------------------------------------------------------------------------
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL raiseError)
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError)
 {
     if(!Prog.mcu)
         TROW_COMPILER_EXCEPTION("Invalid MCU");
@@ -980,8 +980,8 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
     memset(isAnsel, 0x00, MAX_IO_PORTS);
     memset(isInput, 0x00, MAX_IO_PORTS);
 
-    BOOL usedUart = UartFunctionUsed();
-    BOOL usedPwm = PwmFunctionUsed();
+    bool usedUart = UartFunctionUsed();
+    int  usedPwm = PwmFunctionUsed();
 
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -1044,7 +1044,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL 
 
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)
 {
-    BuildDirectionRegisters(isInput, isAnsel, isOutput, TRUE);
+    BuildDirectionRegisters(isInput, isAnsel, isOutput, true);
 }
 
 //-----------------------------------------------------------------------------

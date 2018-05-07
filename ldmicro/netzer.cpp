@@ -1165,7 +1165,7 @@ void CompileNetzer(char *outFile)
     meta.CycleTime = DWORD(Prog.cycleTime / 1000);
     meta.ProjectnameLength = strlen(projectname);
     meta.Flags.FormatVersion = CURRENT_FORMAT_VERSION;
-    meta.Flags.IsCompiled = FALSE;
+    meta.Flags.IsCompiled = false;
     meta.ProjectID = PROJECT_ID_IO; // Only IO project is supported in the moment.
 
     fseek(f, 0, SEEK_SET);

@@ -46,7 +46,7 @@ static int   MouseY;
     "LDmicro Ladder Logic Programs (*.ld)\0*.ld\0" \
     "All files\0*\0\0"
 
-BOOL ProgramChangedNotSaved = FALSE;
+bool ProgramChangedNotSaved = false;
 
 ULONGLONG PrevWriteTime = 0;
 ULONGLONG LastWriteTime = 0;
@@ -76,7 +76,7 @@ int        compile_MNU = -1;
 // Get a filename with a common dialog box and then save the program to that
 // file and then set our default filename to that.
 //-----------------------------------------------------------------------------
-static BOOL SaveAsDialog()
+static bool SaveAsDialog()
 {
     OPENFILENAME ofn;
 
@@ -90,16 +90,16 @@ static BOOL SaveAsDialog()
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
     if(!GetSaveFileName(&ofn))
-        return FALSE;
+        return false;
 
     if(!SaveProjectToFile(CurrentSaveFile, MNU_SAVE)) {
         Error(_("Couldn't write to '%s'."), CurrentSaveFile);
-        return FALSE;
+        return false;
     } else {
-        ProgramChangedNotSaved = FALSE;
+        ProgramChangedNotSaved = false;
         RefreshControlsToSettings();
         strcpy(CurrentCompileFile, "");
-        return TRUE;
+        return true;
     }
 }
 
@@ -178,7 +178,7 @@ char *SetExt(char *dest, const char *src, const char *ext)
 // Get a filename with a common dialog box and then export the program as
 // an ASCII art drawing.
 //-----------------------------------------------------------------------------
-static BOOL ExportDialog()
+static bool ExportDialog()
 {
     char         exportFile[MAX_PATH];
     OPENFILENAME ofn;
@@ -196,26 +196,26 @@ static BOOL ExportDialog()
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
     if(!GetSaveFileName(&ofn))
-        return FALSE;
+        return false;
 
     ExportDrawingAsText(exportFile);
-    return TRUE;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
 // If we already have a filename, save the program to that. Otherwise same
-// as Save As. Returns TRUE if it worked, else returns FALSE.
+// as Save As. Returns true if it worked, else returns false.
 //-----------------------------------------------------------------------------
-static BOOL SaveProgram(int code)
+static bool SaveProgram(int code)
 {
     if(strlen(CurrentSaveFile)) {
         if(!SaveProjectToFile(CurrentSaveFile, code)) {
             Error(_("Couldn't write to '%s'."), CurrentSaveFile);
-            return FALSE;
+            return false;
         } else {
-            ProgramChangedNotSaved = FALSE;
+            ProgramChangedNotSaved = false;
             RefreshControlsToSettings();
-            return TRUE;
+            return true;
         }
     } else {
         return SaveAsDialog();
@@ -227,9 +227,9 @@ bool ExistFile(const char *name)
 {
     if(FILE *file = fopen(name, "r")) {
         fclose(file);
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 /*
 bool ExistFile2(const char *name)
@@ -504,7 +504,7 @@ static void postCompile(const char *MNU)
 // Compile the program to a hex file for the target micro. Get the output
 // file name if necessary, then call the micro-specific compile routines.
 //-----------------------------------------------------------------------------
-static void CompileProgram(BOOL compileAs, int MNU)
+static void CompileProgram(bool compileAs, int MNU)
 {
     if((MNU == MNU_COMPILE) && (compile_MNU > 0))
         MNU = compile_MNU;
@@ -516,19 +516,19 @@ static void CompileProgram(BOOL compileAs, int MNU)
 
         if(strchr(onlyName, ' ')) {
             strcpy(CurrentCompileFile, "");
-            ProgramChangedNotSaved = TRUE;
+            ProgramChangedNotSaved = true;
             Error(_("ARDUINO: Space ' ' not allowed in '%s'\nRename file!"), CurrentSaveFile);
             return;
         }
         if(strchr(onlyName, '.')) {
             strcpy(CurrentCompileFile, "");
-            ProgramChangedNotSaved = TRUE;
+            ProgramChangedNotSaved = true;
             Error(_("ARDUINO: Dot '.' not allowed in '%s'\nRename file!"), CurrentSaveFile);
             return;
         }
         if(IsNumber(onlyName)) {
             strcpy(CurrentCompileFile, "");
-            ProgramChangedNotSaved = TRUE;
+            ProgramChangedNotSaved = true;
             Error(_("ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"),
                   onlyName[0],
                   onlyName);
@@ -539,15 +539,15 @@ static void CompileProgram(BOOL compileAs, int MNU)
         SetExt(onlyName, onlyName, "");
         if(strchr(onlyName, ' ')) {
             strcpy(CurrentCompileFile, "");
-            ProgramChangedNotSaved = TRUE;
+            ProgramChangedNotSaved = true;
         }
         if(strchr(onlyName, '.')) {
             strcpy(CurrentCompileFile, "");
-            ProgramChangedNotSaved = TRUE;
+            ProgramChangedNotSaved = true;
         }
         if(IsNumber(onlyName)) {
             strcpy(CurrentCompileFile, "");
-            ProgramChangedNotSaved = TRUE;
+            ProgramChangedNotSaved = true;
         }
     }
 
@@ -565,7 +565,7 @@ IsOpenAnable:
                 fclose(f);
                 remove(CurrentCompileFile);
             } else {
-                compileAs = TRUE;
+                compileAs = true;
                 Error(_("Couldn't OPEN file '%s'"), CurrentCompileFile);
             }
         }
@@ -632,8 +632,8 @@ IsOpenAnable:
         ExtractFileDir(CurrentCompilePath);
 
         // hex output filename is stored in the .ld file
-        ProgramChangedNotSaved = TRUE;
-        compileAs = FALSE;
+        ProgramChangedNotSaved = true;
+        compileAs = false;
         goto IsOpenAnable;
     }
 
@@ -711,14 +711,14 @@ IsOpenAnable:
 
 //-----------------------------------------------------------------------------
 // If the program has been modified then give the user the option to save it
-// or to cancel the operation they are performing. Return TRUE if they want
+// or to cancel the operation they are performing. Return true if they want
 // to cancel.
 //-----------------------------------------------------------------------------
-BOOL CheckSaveUserCancels()
+bool CheckSaveUserCancels()
 {
     if(!ProgramChangedNotSaved) {
         // no problem
-        return FALSE;
+        return false;
     }
 
     int r = MessageBox(MainWindow,
@@ -729,19 +729,19 @@ BOOL CheckSaveUserCancels()
     switch(r) {
         case IDYES:
             if(SaveProgram(MNU_SAVE))
-                return FALSE;
+                return false;
             else
-                return TRUE;
+                return true;
 
         case IDNO:
-            return FALSE;
+            return false;
 
         case IDCANCEL:
-            return TRUE;
+            return true;
 
         default:
             oops();
-            return FALSE;
+            return false;
     }
 }
 
@@ -771,7 +771,7 @@ static void OpenDialog()
         Error(_("Couldn't open '%s'."), tempSaveFile);
         CurrentSaveFile[0] = '\0';
     } else {
-        ProgramChangedNotSaved = FALSE;
+        ProgramChangedNotSaved = false;
         RefreshControlsToSettings();
         strcpy(CurrentSaveFile, tempSaveFile);
         UndoFlush();
@@ -790,7 +790,7 @@ static void OpenDialog()
 //-----------------------------------------------------------------------------
 void ProgramChanged()
 {
-    ProgramChangedNotSaved = TRUE;
+    ProgramChangedNotSaved = true;
     GenerateIoListDontLoseSelection();
     RefreshScrollbars();
 }
@@ -845,20 +845,20 @@ static void ProcessMenu(int code)
         strcpy(CurrentCompileFile, "");
         SetMcu(&(supportedMcus()[code - MNU_PROCESSOR_0]));
         RefreshControlsToSettings();
-        ProgramChangedNotSaved = TRUE;
+        ProgramChangedNotSaved = true;
         return;
     }
     if(code == static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
         SetMcu(nullptr);
         strcpy(CurrentCompileFile, "");
         RefreshControlsToSettings();
-        ProgramChangedNotSaved = TRUE;
+        ProgramChangedNotSaved = true;
         return;
     }
     if((code >= MNU_SCHEME_BLACK) && (code < MNU_SCHEME_BLACK + NUM_SUPPORTED_SCHEMES)) {
         scheme = code & 0xff;
         InitForDrawing();
-        InvalidateRect(MainWindow, nullptr, FALSE);
+        InvalidateRect(MainWindow, nullptr, false);
         RefreshControlsToSettings();
         return;
     }
@@ -1402,11 +1402,11 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_RUNG_BEFORE:
-            CHANGING_PROGRAM(InsertRung(FALSE));
+            CHANGING_PROGRAM(InsertRung(false));
             break;
 
         case MNU_INSERT_RUNG_AFTER:
-            CHANGING_PROGRAM(InsertRung(TRUE));
+            CHANGING_PROGRAM(InsertRung(true));
             break;
 
         case MNU_DELETE_RUNG:
@@ -1505,7 +1505,7 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_SINGLE_CYCLE:
-            SimulateOneCycle(TRUE);
+            SimulateOneCycle(true);
             break;
 
         case MNU_COMPILE:
@@ -1521,7 +1521,7 @@ static void ProcessMenu(int code)
         case MNU_COMPILE_ARDUINO:
         case MNU_COMPILE_INT:
         case MNU_COMPILE_XINT:
-            CompileProgram(FALSE, code);
+            CompileProgram(false, code);
             break;
 
         case MNU_PROCESSOR_NEW_PIC12:
@@ -1555,11 +1555,11 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_COMPILE_AS:
-            CompileProgram(TRUE, code);
+            CompileProgram(true, code);
             break;
 
         case MNU_MANUAL:
-            ShowHelpDialog(FALSE);
+            ShowHelpDialog(false);
             break;
 
         case MNU_SELECT_COLOR:
@@ -1567,7 +1567,7 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_ABOUT:
-            ShowHelpDialog(TRUE);
+            ShowHelpDialog(true);
             break;
 
         case MNU_HOW:
@@ -1613,7 +1613,7 @@ void ScrollUp()
     if(ScrollYOffset > 0)
         ScrollYOffset--;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
 
     int gx = 0, gy = 0;
     if(!InSimulationMode && FindSelected(&gx, &gy)) {
@@ -1629,7 +1629,7 @@ void ScrollDown()
     if(ScrollYOffset < ScrollYOffsetMax)
         ScrollYOffset++;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
 
     int gx = 0, gy = 0;
     if(!InSimulationMode && FindSelected(&gx, &gy)) {
@@ -1647,7 +1647,7 @@ void ScrollPgUp()
 
     ScrollYOffset = 0;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
 
     SelectedGxAfterNextPaint = gx;
     SelectedGyAfterNextPaint = 0;
@@ -1660,7 +1660,7 @@ void ScrollPgDown()
 
     ScrollYOffset = ScrollYOffsetMax;
     RefreshScrollbars();
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
 
     SelectedGxAfterNextPaint = gx;
     SelectedGyAfterNextPaint = totalHeightScrollbars - 1;
@@ -1768,7 +1768,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if(!LoadProjectFromFile(CurrentSaveFile)) {
                         Error(_("Couldn't reload '%s'."), CurrentSaveFile);
                     } else {
-                        ProgramChangedNotSaved = FALSE;
+                        ProgramChangedNotSaved = false;
                         RefreshControlsToSettings();
 
                         GenerateIoListDontLoseSelection();
@@ -1785,7 +1785,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_SETFOCUS:
-            InvalidateRect(MainWindow, nullptr, FALSE);
+            InvalidateRect(MainWindow, nullptr, false);
             break;
 
         case WM_PAINT: {
@@ -1921,7 +1921,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
             } else if(wParam == VK_F7) {
                 if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
-                    ToggleSimulationMode(TRUE);
+                    ToggleSimulationMode(true);
                 else
                     ToggleSimulationMode();
                 break;
@@ -1930,7 +1930,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 BlinkCursor(0, 0, 0, 0);
                 break;
             } else if(wParam == VK_F1) {
-                ShowHelpDialog(FALSE);
+                ShowHelpDialog(false);
                 break;
             } else if(wParam == VK_F3) {
                 if(ExportDialog())
@@ -1978,7 +1978,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         if(ScrollXOffset < 0)
                             ScrollXOffset = 0;
                         RefreshScrollbars();
-                        InvalidateRect(MainWindow, nullptr, FALSE);
+                        InvalidateRect(MainWindow, nullptr, false);
                     } else {
                         MoveCursorKeyboard(wParam);
                     }
@@ -1990,7 +1990,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         if(ScrollXOffset >= ScrollXOffsetMax)
                             ScrollXOffset = ScrollXOffsetMax;
                         RefreshScrollbars();
-                        InvalidateRect(MainWindow, nullptr, FALSE);
+                        InvalidateRect(MainWindow, nullptr, false);
                     } else {
                         MoveCursorKeyboard(wParam);
                     }
@@ -2036,7 +2036,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             ScrollYOffset = 0;
                         }
                         RefreshScrollbars();
-                        InvalidateRect(MainWindow, nullptr, FALSE);
+                        InvalidateRect(MainWindow, nullptr, false);
 
                         if(gy - ScreenRowsAvailable() - 1 > 0) {
                             gy -= ScreenRowsAvailable() - 1;
@@ -2063,7 +2063,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             ScrollYOffset = ScrollYOffsetMax;
                         }
                         RefreshScrollbars();
-                        InvalidateRect(MainWindow, nullptr, FALSE);
+                        InvalidateRect(MainWindow, nullptr, false);
 
                         if(gy + ScreenRowsAvailable() - 1 < totalHeightScrollbars - 1) {
                             gy += ScreenRowsAvailable() - 1;
@@ -2080,7 +2080,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if(InSimulationMode) {
                 switch(wParam) {
                     case ' ':
-                        SimulateOneCycle(TRUE);
+                        SimulateOneCycle(true);
                         break;
 
                     case VK_F8:
@@ -2114,7 +2114,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         CHANGING_PROGRAM(ShowConfDialog());
                     } else {
-                        CompileProgram(FALSE, MNU_COMPILE);
+                        CompileProgram(false, MNU_COMPILE);
                     }
                     break;
 
@@ -2351,13 +2351,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
                         CHANGING_PROGRAM(PasteRung(0));
                     } else if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(InsertRung(TRUE));
+                        CHANGING_PROGRAM(InsertRung(true));
                     }
                     break;
 
                 case '6':
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(InsertRung(FALSE));
+                        CHANGING_PROGRAM(InsertRung(false));
                     }
                     break;
 
@@ -2383,7 +2383,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
             }
             if(wParam != VK_SHIFT && wParam != VK_CONTROL) {
-                InvalidateRect(MainWindow, nullptr, FALSE);
+                InvalidateRect(MainWindow, nullptr, false);
             }
             break;
         }
@@ -2396,7 +2396,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             } else {
                 CHANGING_PROGRAM(EditElementMouseDoubleclick(x, y));
             }
-            InvalidateRect(MainWindow, nullptr, FALSE);
+            InvalidateRect(MainWindow, nullptr, false);
             break;
         }
 
@@ -2417,7 +2417,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 TestSelections(msg, rung1);
             }
             SetFocus(MainWindow);
-            InvalidateRect(MainWindow, nullptr, FALSE);
+            InvalidateRect(MainWindow, nullptr, false);
             break;
         }
         case WM_MOUSEMOVE: {
@@ -2462,7 +2462,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_COMMAND:
             ProcessMenu(LOWORD(wParam));
-            InvalidateRect(MainWindow, nullptr, FALSE);
+            InvalidateRect(MainWindow, nullptr, false);
             break;
 
         case WM_CLOSE:
@@ -2484,7 +2484,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 // Create our window class; nothing exciting.
 //-----------------------------------------------------------------------------
-static BOOL MakeWindowClass()
+static bool MakeWindowClass()
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
@@ -2507,13 +2507,13 @@ static BOOL MakeWindowClass()
 
 static LPSTR _getNextCommandLineArgument(LPSTR lpBuffer)
 {
-    BOOL argFound = FALSE;
+    bool argFound = false;
     while(*lpBuffer) {
         if(isspace(*lpBuffer)) {
-            argFound = FALSE;
+            argFound = false;
 
         } else if((*lpBuffer == '-') || (*lpBuffer == '/')) {
-            argFound = TRUE;
+            argFound = true;
         } else if(argFound) {
             return lpBuffer;
         }
@@ -2527,12 +2527,12 @@ static LPSTR _getNextCommandLineArgument(LPSTR lpBuffer)
 
 static LPSTR _getNextPositionalArgument(LPSTR lpBuffer)
 {
-    BOOL argFound = FALSE;
+    bool argFound = false;
     while(*lpBuffer) {
         if(isspace(*lpBuffer)) {
-            argFound = TRUE;
+            argFound = true;
         } else if((*lpBuffer == '-') || (*lpBuffer == '/')) {
-            argFound = FALSE;
+            argFound = false;
         } else if(argFound) {
             return lpBuffer;
         }
@@ -2602,11 +2602,11 @@ static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
         }
         if(*lpArgs == 'c')
         {
-            RunningInBatchMode = TRUE;
+            RunningInBatchMode = true;
         }
         if(*lpArgs == 't')
         {
-            RunningInTestMode = TRUE;
+            RunningInTestMode = true;
         }
     }
 
@@ -2722,7 +2722,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MainHeap = HeapCreate(0, 1024 * 64, 0);
 
         setlocale(LC_ALL, "");
-        //RunningInBatchMode = FALSE;
+        //RunningInBatchMode = false;
         fillPcPinInfos();
 
         MakeWindowClass();
@@ -2761,7 +2761,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             lpCmdLine++;
         }
         if(memcmp(lpCmdLine, "/c", 2) == 0) {
-            RunningInBatchMode = TRUE;
+            RunningInBatchMode = true;
 
             const char *err = "Bad command line arguments: run 'ldmicro /c src.ld dest.ext'";
 
@@ -2805,11 +2805,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             }
             strcpy(CurrentCompileFile, dest);
             GenerateIoList(-1);
-            CompileProgram(FALSE, compile_MNU);
+            CompileProgram(false, compile_MNU);
             doexit(EXIT_SUCCESS);
         }
         if(memcmp(lpCmdLine, "/t", 2) == 0) {
-            RunningInBatchMode = TRUE;
+            RunningInBatchMode = true;
 
             char exportFile[MAX_PATH];
 

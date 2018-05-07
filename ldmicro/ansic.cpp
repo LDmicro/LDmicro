@@ -134,7 +134,7 @@ static void DeclareStr(FILE *f, const char *str, int sov)
 
 //-----------------------------------------------------------------------------
 // Generate a declaration for a bit var; three cases, input, output, and
-// internal relay. An internal relay is just a BOOL variable, but for an
+// internal relay. An internal relay is just a bool variable, but for an
 // input or an output someone else must provide read/write functions.
 //-----------------------------------------------------------------------------
 static void DeclareBit(FILE *f, const char *str, int set1)
@@ -1658,7 +1658,7 @@ bool CompileAnsiC(char *dest, int MNU)
             "\n"
             "/* You must provide ladder.h; there you must provide:\n"
             "      * a typedef for SWORD and ldBOOL, signed 16 bit and boolean types\n"
-            "        (probably typedef signed short SWORD; typedef unsigned char BOOL;)\n"
+            "        (probably typedef signed short SWORD; typedef unsigned char bool;)\n"
             "\n"
             "   You must also provide implementations of all the I/O read/write\n"
             "   either as inlines in the header file or in another source file. (The\n"
@@ -1749,7 +1749,7 @@ bool CompileAnsiC(char *dest, int MNU)
             "/* Ix_xxx\n"
             "   Ux_xxx\n"
             "    ^\n"
-            "    b means BOOL type\n"
+            "    b means bool type\n"
             "    i means int type */\n"
             "\n",
             CurrentLdName);
@@ -2116,7 +2116,7 @@ bool CompileAnsiC(char *dest, int MNU)
                 "\n"
                 "    // Turn on the pull-ups.\n"
                 "    #ifdef CCS_PIC_C\n"
-                "        port_b_pullups(TRUE);\n"
+                "        port_b_pullups(true);\n"
                 "    #elif defined(HI_TECH_C)\n"
                 "        nRBPU = 0;\n"
                 "    #endif\n"

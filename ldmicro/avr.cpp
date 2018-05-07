@@ -185,20 +185,20 @@ static DWORD BeginOfPLCCycle;
 
 // Address of the multiply subroutine, and whether we will have to include it
 static DWORD MultiplyAddress;
-static BOOL  MultiplyUsed;
+static bool  MultiplyUsed;
 static DWORD MultiplyAddress8;
-static BOOL  MultiplyUsed8;
+static bool  MultiplyUsed8;
 static DWORD MultiplyAddress24;
-static BOOL  MultiplyUsed24;
+static bool  MultiplyUsed24;
 static DWORD MultiplyAddress32;
-static BOOL  MultiplyUsed32;
+static bool  MultiplyUsed32;
 // and also divide
 static DWORD DivideAddress;
-static BOOL  DivideUsed;
+static bool  DivideUsed;
 static DWORD DivideAddress8;
-static BOOL  DivideUsed8;
+static bool  DivideUsed8;
 static DWORD DivideAddress24;
-static BOOL  DivideUsed24;
+static bool  DivideUsed24;
 
 // For EEPROM: we queue up characters to send in 16-bit words (corresponding
 // to the integer variables), but we can actually just program 8 bits at a
@@ -1386,21 +1386,21 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     DWORD ExtendedSegmentAddress = 0;
     DWORD i;
     for(i = 0; i < AvrProgWriteP; i++) {
-        AvrProg[i].label = FALSE;
+        AvrProg[i].label = false;
     }
 
     for(i = 0; i < AvrProgWriteP; i++) {
         if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE)
-            AvrProg[AvrProg[i].arg1].label = TRUE;
+            AvrProg[AvrProg[i].arg1].label = true;
     }
 
     for(i = 1; i < AvrProgWriteP; i++) {
         if((AvrProg[i].opAvr == OP_DB) && (AvrProg[i - 1].opAvr != OP_DB))
-            AvrProg[i].label = TRUE;
+            AvrProg[i].label = true;
         if((AvrProg[i].opAvr == OP_DB2) && (AvrProg[i - 1].opAvr != OP_DB2))
-            AvrProg[i].label = TRUE;
+            AvrProg[i].label = true;
         if((AvrProg[i].opAvr == OP_DW) && (AvrProg[i - 1].opAvr != OP_DW))
-            AvrProg[i].label = TRUE;
+            AvrProg[i].label = true;
     }
 
     for(i = 0; i < AvrProgWriteP; i++) {
@@ -2195,20 +2195,20 @@ static void ClearBit(DWORD addr, int bit)
 #define ClearBit(...) CLRB(__VA_ARGS__)
 
 //-----------------------------------------------------------------------------
-BOOL TstAddrBitReg(DWORD addr, int bit, int reg)
+bool TstAddrBitReg(DWORD addr, int bit, int reg)
 {
-    BOOL b = TRUE;
+    bool b = true;
     if((addr <= 0) || (addr > 0xFFFF)) {
         Error(_("Only values 0-0xFFFF allowed for Addres parameter.\naddres=0x%4X"), addr);
-        b = FALSE;
+        b = false;
     }
     if((bit < 0) || (bit > 7)) {
         Error(_("Only values 0-7 allowed for Bit parameter.\nbit=%d"), bit);
-        b = FALSE;
+        b = false;
     }
     if((reg < 0) || (reg > 0x1F)) {
         Error(_("Only values 0-0x1F allowed for Register parameter.\nreg=0x%02X"), reg);
-        b = FALSE;
+        b = false;
     }
     return b;
 }
@@ -2262,7 +2262,7 @@ static void PulseBit(DWORD addr, int bit)
 //-----------------------------------------------------------------------------
 // Calc AVR 8-bit Timer0
 // or   AVR 16-bit Timer1 to do the timing for NPulse generator.
-static BOOL CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int *bestDivider, int *bestError,
+static bool CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int *bestDivider, int *bestError,
                                double *bestTarget)
 {
     int max_tmr;
@@ -2329,12 +2329,12 @@ static BOOL CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int 
 
     //dbp("bestPrescaler=%d bestDivider=%d bestTarget=%d Hz", *bestPrescaler, *bestDivider, *bestTarget);
 
-    return TRUE;
+    return true;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // Calc AVR 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
+bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
 {
     //memset(plcTmr, 0, sizeof(plcTmr));
     plcTmr.softDivisor = 1;
@@ -2354,7 +2354,7 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
     }
     plcTmr.cycleTimeMax = (long long int)floor(1e6 * max_tmr * max_prescaler * max_softDivisor / Prog.mcuClock + 0.5);
     if(cycleTimeMicroseconds <= 0)
-        return FALSE;
+        return false;
     plcTmr.ticksPerCycle = (long long int)floor(1.0 * Prog.mcuClock * cycleTimeMicroseconds / 1000000 + 0.5);
     long int      bestTmr = LONG_MIN;
     long int      bestPrescaler = LONG_MAX;
@@ -2426,13 +2426,13 @@ BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
     if(plcTmr.tmr > max_tmr) {
         sprintf(txt, "PLC cycle time more then %lld ms not valid.", plcTmr.cycleTimeMax / 1000);
         Error(txt);
-        return FALSE;
+        return false;
     } else if((plcTmr.prescaler * plcTmr.tmr) < PLC_CLOCK_MIN) {
         sprintf(txt, "PLC cycle time less then %d us not valid.", plcTmr.cycleTimeMin);
         Error(txt);
-        return FALSE;
+        return false;
     }
-    return TRUE;
+    return true;
 }
 //-----------------------------------------------------------------------------
 // Configure AVR 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
@@ -3200,7 +3200,7 @@ static void  WriteRuntime()
 
     if(Prog.cycleDuty) {
         Comment("SetBit YPlcCycleDuty");
-        MemForSingleBit(YPlcCycleDuty, FALSE, &addrDuty, &bitDuty);
+        MemForSingleBit(YPlcCycleDuty, false, &addrDuty, &bitDuty);
         SetBit(addrDuty, bitDuty);
     }
 }
@@ -3296,20 +3296,20 @@ static void CompileFromIntermediate()
         switch(a->op) {
             case INT_SET_BIT:
                 Comment("INT_SET_BIT %s", a->name1);
-                MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
+                MemForSingleBit(a->name1, false, &addr1, &bit1);
                 SetBit(addr1, bit1, a->name1);
                 break;
 
             case INT_CLEAR_BIT:
                 Comment("INT_CLEAR_BIT %s", a->name1);
-                MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
+                MemForSingleBit(a->name1, false, &addr1, &bit1);
                 ClearBit(addr1, bit1, a->name1);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
                 Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1, a->name2);
-                MemForSingleBit(a->name1, FALSE, &addr1, &bit1);
-                MemForSingleBit(a->name2, FALSE, &addr2, &bit2);
+                MemForSingleBit(a->name1, false, &addr1, &bit1);
+                MemForSingleBit(a->name2, false, &addr2, &bit2);
                 CopyBit(addr1, bit1, addr2, bit2, a->name1, a->name2);
                 break;
 
@@ -3351,7 +3351,7 @@ static void CompileFromIntermediate()
             case INT_IF_BIT_SET: {
                 Comment("INT_IF_BIT_SET %s", a->name1);
                 DWORD condFalse = AllocFwdAddr();
-                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
                 IfBitClear(addr1, bit1, (char *)a->name1);
                 Instruction(OP_RJMP, condFalse);
                 CompileIfBody(condFalse);
@@ -3360,7 +3360,7 @@ static void CompileFromIntermediate()
             case INT_IF_BIT_CLEAR: {
                 Comment("INT_IF_BIT_CLEAR %s", a->name1);
                 DWORD condFalse = AllocFwdAddr();
-                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
                 IfBitSet(addr1, bit1, (char *)a->name1);
                 Instruction(OP_RJMP, condFalse);
                 CompileIfBody(condFalse);
@@ -4073,13 +4073,13 @@ static void CompileFromIntermediate()
                 CopyArgToReg(r22, sov, a->name3);
                 if(sov == 1) {
                     CallSubroutine(DivideAddress8);
-                    DivideUsed8 = TRUE;
+                    DivideUsed8 = true;
                 } else if(sov == 2) {
                     CallSubroutine(DivideAddress);
-                    DivideUsed = TRUE;
+                    DivideUsed = true;
                 } else if(sov == 3) {
                     CallSubroutine(DivideAddress24);
-                    DivideUsed24 = TRUE;
+                    DivideUsed24 = true;
                 } else
                     oops();
                 if(a->op == INT_SET_VARIABLE_DIVIDE)
@@ -4094,15 +4094,15 @@ static void CompileFromIntermediate()
                 CopyArgToReg(r16, sov, a->name3);
                 if(sov == 1) {
                     CallSubroutine(MultiplyAddress8);
-                    MultiplyUsed8 = TRUE;
+                    MultiplyUsed8 = true;
                     sov1 = std::min(2, SizeOfVar(a->name1));
                 } else if(sov == 2) {
                     CallSubroutine(MultiplyAddress);
-                    MultiplyUsed = TRUE;
+                    MultiplyUsed = true;
                     sov1 = std::min(4, SizeOfVar(a->name1));
                 } else if(sov == 3) {
                     CallSubroutine(MultiplyAddress24);
-                    MultiplyUsed24 = TRUE;
+                    MultiplyUsed24 = true;
                     sov1 = std::min(6, SizeOfVar(a->name1));
                 } else
                     oops() CopyRegToVar(a->name1, r20, sov1);
@@ -4289,12 +4289,12 @@ static void CompileFromIntermediate()
                     WriteMemory(iop->REG_TCCRnB, 0);
                 WriteMemory(iop->REG_TCCRnA, 0);
 
-                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                MemForSingleBit(a->name1, false, &addr, &bit);
                 ClearBit(addr, bit, a->name1);
 
                 char storeName[MAX_NAME_LEN];
                 sprintf(storeName, "$pwm_init_%s", a->name1);
-                MemForSingleBit(storeName, FALSE, &addr, &bit);
+                MemForSingleBit(storeName, false, &addr, &bit);
                 ClearBit(addr, bit, storeName);
                 break;
             }
@@ -4501,8 +4501,8 @@ static void CompileFromIntermediate()
                     oops();
 
                 if(resol == 7) {
-                    DivideUsed = TRUE;
-                    MultiplyUsed = TRUE;
+                    DivideUsed = true;
+                    MultiplyUsed = true;
                     CopyArgToReg(r20, 2, a->name1);
                     CopyLitToReg(r16, 2, 255); // Fast PWM
 
@@ -4527,7 +4527,7 @@ static void CompileFromIntermediate()
                 sprintf(storeName, "$pwm_init_%s", a->name3);
                 DWORD addr;
                 int   bit;
-                MemForSingleBit(storeName, FALSE, &addr, &bit);
+                MemForSingleBit(storeName, false, &addr, &bit);
 
                 DWORD endInit = AllocFwdAddr();
                 IfBitSet(addr, bit);
@@ -4572,7 +4572,7 @@ static void CompileFromIntermediate()
             }
 #if 0
             case INT_EEPROM_BUSY_CHECK: {
-                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                MemForSingleBit(a->name1, false, &addr, &bit);
 
                 DWORD isBusy = AllocFwdAddr();
                 DWORD done = AllocFwdAddr();
@@ -4621,7 +4621,7 @@ static void CompileFromIntermediate()
             }
 #else
             case INT_EEPROM_BUSY_CHECK: {
-                MemForSingleBit(a->name1, FALSE, &addr, &bit);
+                MemForSingleBit(a->name1, false, &addr, &bit);
 
                 DWORD isBusy = AllocFwdAddr();
                 DWORD done = AllocFwdAddr();
@@ -4811,19 +4811,19 @@ static void CompileFromIntermediate()
             }
             case INT_UART_SEND_READY: {
                 Comment("INT_UART_SEND_READY");
-                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
                 GetUartSendReady(addr1, bit1);
                 break;
             }
             case INT_UART_SEND_BUSY: {
                 Comment("INT_UART_SEND_BUSY");
-                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
                 GetUartSendBusy(addr1, bit1);
                 break;
             }
             case INT_UART_RECV_AVAIL: {
                 Comment("INT_UART_RECV_AVAIL");
-                MemForSingleBit(a->name1, TRUE, &addr1, &bit1);
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
                 CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
@@ -4831,7 +4831,7 @@ static void CompileFromIntermediate()
             case INT_UART_SEND: {
                 Comment("INT_UART_SEND");
                 MemForVariable(a->name1, &addr1);
-                MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
 
                 DWORD noSend = AllocFwdAddr();
                 IfBitClear(addr2, bit2);
@@ -4873,7 +4873,7 @@ static void CompileFromIntermediate()
                 //Receive one char/byte in a single PLC cycle.
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
-                MemForSingleBit(a->name2, TRUE, &addr2, &bit2);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
 
                 ClearBit(addr2, bit2);
 
@@ -5036,7 +5036,7 @@ static void CompileFromIntermediate()
                 int bit;
                 char storeName[MAX_NAME_LEN];
                 sprintf(storeName, "$seed_init_%s", a->name1);
-                MemForSingleBit(storeName, FALSE, &addr, &bit);
+                MemForSingleBit(storeName, false, &addr, &bit);
                 */
 
                 //https://en.m.wikipedia.org/wiki/Linear_congruential_generator
@@ -6708,19 +6708,19 @@ void CompileAvr(char *outFile)
 
     rungNow = -90;
     WipeMemory();
-    MultiplyUsed = FALSE;
+    MultiplyUsed = false;
     MultiplyAddress = AllocFwdAddr();
-    DivideUsed = FALSE;
+    DivideUsed = false;
     DivideAddress = AllocFwdAddr();
 
-    MultiplyUsed8 = FALSE;
+    MultiplyUsed8 = false;
     MultiplyAddress8 = AllocFwdAddr();
-    DivideUsed8 = FALSE;
+    DivideUsed8 = false;
     DivideAddress8 = AllocFwdAddr();
 
-    MultiplyUsed24 = FALSE;
+    MultiplyUsed24 = false;
     MultiplyAddress24 = AllocFwdAddr();
-    DivideUsed24 = FALSE;
+    DivideUsed24 = false;
     DivideAddress24 = AllocFwdAddr();
 
     rungNow = -80;

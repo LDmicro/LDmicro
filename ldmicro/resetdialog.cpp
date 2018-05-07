@@ -191,23 +191,23 @@ void ShowResetDialog(char *name)
     } else
         oops() SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
 
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(ResetDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(ResetDialog, true);
     SetFocus(NameTextbox);
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
-                DialogDone = TRUE;
+                DialogDone = true;
                 break;
             } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
                 break;
             }
         }
@@ -229,7 +229,7 @@ void ShowResetDialog(char *name)
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)(MAX_NAME_LEN - 1), (LPARAM)(name + 1));
     }
 
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(ResetDialog);
 }

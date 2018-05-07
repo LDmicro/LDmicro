@@ -1,4 +1,3 @@
-
 #ifndef __LD_CONFIG_H__
 #define __LD_CONFIG_H__
 

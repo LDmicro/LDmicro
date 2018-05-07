@@ -549,16 +549,16 @@ typedef struct ElemCommentTag {
 
 typedef struct ElemContactsTag {
     char    name[MAX_NAME_LEN]; // All named "name[]" fields must be in first position in typedef structs!!!
-    BOOL    negated;
-    BOOL    set1; // set HI input level before Simnlation mode
+    bool    negated;
+    bool    set1; // set HI input level before Simnlation mode
 } ElemContacts;
 
 typedef struct ElemCoilTag {
     char    name[MAX_NAME_LEN];
-    BOOL    negated;
-    BOOL    setOnly;
-    BOOL    resetOnly;
-    BOOL    ttrigger;
+    bool    negated;
+    bool    setOnly;
+    bool    resetOnly;
+    bool    ttrigger;
 } ElemCoil;
 
 typedef struct ElemTimeTag {
@@ -697,7 +697,7 @@ typedef struct ElemLookUpTableTag {
     char    dest[MAX_NAME_LEN];
     char    index[MAX_NAME_LEN];
     int     count; // Table size
-    BOOL    editAsString;
+    bool    editAsString;
     SDWORD  vals[MAX_LOOK_UP_TABLE_LEN];
 } ElemLookUpTable;
 
@@ -859,7 +859,7 @@ typedef struct PlcProgramTag {
     BYTE          WDTPSA;     // only for PIC
     BYTE          OPTION;     // only for PIC10Fxxx
 #define YPlcCycleDuty "YPlcCycleDuty"
-    int           cycleDuty; // if TRUE, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
+    int           cycleDuty; // if true, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
     int           mcuClock;  // Hz
     int           baudRate;  // Hz
     char          LDversion[512];
@@ -934,12 +934,12 @@ extern DWORD scheme;
         x; \
         ProgramChanged(); \
     }
-extern BOOL ProgramChangedNotSaved;
+extern bool ProgramChangedNotSaved;
 void ProgramChanged();
-void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
-    BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
-    BOOL canPushRungDown, BOOL canPushRungUp, BOOL canInsertComment);
-void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled);
+void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly,
+    bool canSetOnly, bool canDelete, bool canInsertEnd, bool canInsertOther,
+    bool canPushRungDown, bool canPushRungUp, bool canInsertComment);
+void SetUndoEnabled(bool undoEnabled, bool redoEnabled);
 void RefreshScrollbars();
 extern HINSTANCE Instance;
 extern HWND MainWindow;
@@ -981,14 +981,14 @@ void GenerateIoListDontLoseSelection();
 void RefreshStatusBar();
 void RefreshControlsToSettings();
 void MainWindowResized();
-void ToggleSimulationMode(BOOL doSimulateOneRung);
+void ToggleSimulationMode(bool doSimulateOneRung);
 void ToggleSimulationMode();
 void StopSimulation();
 void StartSimulation();
 void UpdateMainWindowTitleBar();
 extern int ScrollWidth;
 extern int ScrollHeight;
-extern BOOL NeedHoriz;
+extern bool NeedHoriz;
 extern HWND IoList;
 extern int IoListTop;
 extern int IoListHeight;
@@ -999,11 +999,11 @@ int ProgCountWidestRow();
 int ProgCountRows();
 extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
-BOOL DrawElement(void *node, int which, void *elem, int *cx, int *cy, BOOL poweredBefore);
+bool DrawElement(void *node, int which, void *elem, int *cx, int *cy, bool poweredBefore);
 void DrawEndRung(int cx, int cy);
 extern int ColsAvailable;
-extern BOOL SelectionActive;
-extern BOOL ThisHighlighted;
+extern bool SelectionActive;
+extern bool ThisHighlighted;
 
 // draw_outputdev.cpp
 extern void (*DrawChars)(int, int, const char *);
@@ -1013,14 +1013,14 @@ BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
 void ExportDrawingAsText(char *file);
 void InitForDrawing();
 void InitBrushesForDrawing();
-void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
+void SetUpScrollbars(bool *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
 int ScreenRowsAvailable();
 int ScreenColsAvailable();
 extern HFONT FixedWidthFont;
 extern HFONT FixedWidthFontBold;
 extern int SelectedGxAfterNextPaint;
 extern int SelectedGyAfterNextPaint;
-extern BOOL ScrollSelectedIntoViewAfterNextPaint;
+extern bool ScrollSelectedIntoViewAfterNextPaint;
 extern int ScrollXOffset;
 extern int ScrollYOffset;
 extern int ScrollXOffsetMax;
@@ -1030,10 +1030,10 @@ extern int ScrollYOffsetMax;
 void SelectElement(int gx, int gy, int state);
 void MoveCursorKeyboard(int keyCode);
 void MoveCursorMouseClick(int x, int y);
-BOOL MoveCursorTopLeft();
+bool MoveCursorTopLeft();
 void EditElementMouseDoubleclick(int x, int y);
 void EditSelectedElement();
-BOOL ReplaceSelectedElement();
+bool ReplaceSelectedElement();
 void MakeResetOnlySelected();
 void MakeSetOnlySelected();
 void MakeNormalSelected();
@@ -1045,8 +1045,8 @@ bool EndOfRungElem(int Which);
 bool CanChangeOutputElem(int Which);
 bool StaySameElem(int Which);
 void WhatCanWeDoFromCursorAndTopology();
-BOOL FindSelected(int *gx, int *gy);
-BOOL MoveCursorNear(int *gx, int *gy);
+bool FindSelected(int *gx, int *gy);
+bool MoveCursorNear(int *gx, int *gy);
 
 #define DISPLAY_MATRIX_X_SIZE 256
 #define DISPLAY_MATRIX_Y_SIZE (MAX_RUNGS*2) // 2048
@@ -1059,9 +1059,9 @@ extern ElemLeaf *Selected;
 extern int SelectedWhich;
 
 extern PlcCursor Cursor;
-extern BOOL CanInsertEnd;
-extern BOOL CanInsertOther;
-extern BOOL CanInsertComment;
+extern bool CanInsertEnd;
+extern bool CanInsertOther;
+extern bool CanInsertComment;
 
 // circuit.cpp
 void AddTimer(int which);
@@ -1104,10 +1104,10 @@ void AddString();
 void AddPrint(int code);
 void DeleteSelectedFromProgram();
 void DeleteSelectedRung();
-BOOL CollapseUnnecessarySubckts(int which, void *any);
-void InsertRung(BOOL afterCursor);
+bool CollapseUnnecessarySubckts(int which, void *any);
+void InsertRung(bool afterCursor);
 int RungContainingSelected();
-BOOL ItemIsLastInCircuit(ElemLeaf *item);
+bool ItemIsLastInCircuit(ElemLeaf *item);
 int FindRung(int seek, char *name);
 int FindRungLast(int seek, char *name);
 int CountWhich(int seek1, int seek2, int seek3, char *name);
@@ -1117,11 +1117,11 @@ int CountWhich(int seek1);
 int AdcFunctionUsed();
 int PwmFunctionUsed();
 uint32_t QuadEncodFunctionUsed();
-BOOL NPulseFunctionUsed();
-BOOL EepromFunctionUsed();
-BOOL SleepFunctionUsed();
-BOOL DelayUsed();
-BOOL TablesUsed();
+bool NPulseFunctionUsed();
+bool EepromFunctionUsed();
+bool SleepFunctionUsed();
+bool DelayUsed();
+bool TablesUsed();
 void PushRungUp();
 void PushRungDown();
 void CopyRungDown();
@@ -1139,20 +1139,20 @@ void UndoUndo();
 void UndoRedo();
 void UndoRemember();
 void UndoFlush();
-BOOL CanUndo();
+bool CanUndo();
 /*
-BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
-BOOL ContainsWhich(int which, void *any, int seek1, int seek2);
-BOOL ContainsWhich(int which, void *any, int seek1);
+bool ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
+bool ContainsWhich(int which, void *any, int seek1, int seek2);
+bool ContainsWhich(int which, void *any, int seek1);
 */
 ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
 ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2);
 ElemLeaf *ContainsWhich(int which, void *any, int seek1);
-void RenameSet1(int which, char *name, char *new_name, BOOL set1);
+void RenameSet1(int which, char *name, char *new_name, bool set1);
 
 // loadsave.cpp
-BOOL LoadProjectFromFile(char *filename);
-BOOL SaveProjectToFile(char *filename, int code);
+bool LoadProjectFromFile(char *filename);
+bool SaveProjectToFile(char *filename, int code);
 void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung);
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 char *strspace(char *str);
@@ -1164,7 +1164,7 @@ void LoadWritePcPorts();
 int IsIoType(int type);
 int GenerateIoList(int prevSel);
 void SaveIoListToFile(FILE *f);
-BOOL LoadIoListFromFile(FILE *f);
+bool LoadIoListFromFile(FILE *f);
 void ShowIoDialog(int item);
 void IoListProc(NMHDR *h);
 void ShowAnalogSliderPopup(char *name);
@@ -1172,9 +1172,9 @@ void ShowAnalogSliderPopup(char *name);
 // commentdialog.cpp
 void ShowCommentDialog(char *comment);
 // contactsdialog.cpp
-void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name);
+void ShowContactsDialog(bool *negated, bool *set1, char *name);
 // coildialog.cpp
-void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, BOOL *ttrigger, char *name);
+void ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, bool *ttrigger, char *name);
 // simpledialog.cpp
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust);
@@ -1222,7 +1222,7 @@ void ShowConfDialog();
 void ShowColorDialog();
 
 // helpdialog.cpp
-void ShowHelpDialog(BOOL about);
+void ShowHelpDialog(bool about);
 extern const char *AboutText[];
 
 // miscutil.cpp
@@ -1233,8 +1233,8 @@ extern const char *AboutText[];
 #endif
 extern HWND OkButton;
 extern HWND CancelButton;
-extern BOOL DialogDone;
-extern BOOL DialogCancel;
+extern bool DialogDone;
+extern bool DialogCancel;
 
 #define doLOG
 #ifdef doLOG
@@ -1319,7 +1319,7 @@ McuPwmPinInfo *PwmPinInfoForName(char *name, int timer, int resolution);
 void getResolution(char *s, int *resol, int *TOP);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
-BOOL IsExtIntPin(int pin);
+bool IsExtIntPin(int pin);
 HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
@@ -1329,8 +1329,8 @@ void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str, unsigned int uType);
 void CompileSuccessfulMessage(char *str);
 void CompileSuccesfullAnsiCMessage(const char* dest);
-extern BOOL RunningInBatchMode;
-extern BOOL RunningInTestMode;
+extern bool RunningInBatchMode;
+extern bool RunningInTestMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 bool IsNumber(const char *str);
@@ -1348,10 +1348,10 @@ const char *_(const char *in);
 
 // simulate.cpp
 void MarkInitedVariable(const char *name);
-void SimulateOneCycle(BOOL forceRefresh);
+void SimulateOneCycle(bool forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void StartSimulationTimer();
-BOOL ClearSimulationData();
+bool ClearSimulationData();
 void ClrSimulationData();
 void CheckVariableNames();
 void DescribeForIoList(char *name, int type, char *out);
@@ -1361,11 +1361,11 @@ void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
 void DestroyUartSimulationWindow();
 void ShowUartSimulationWindow();
-extern BOOL InSimulationMode;
-//extern BOOL SimulateRedrawAfterNextCycle;
+extern bool InSimulationMode;
+//extern bool SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
 void SetSimulationVariable(char *name, SDWORD val);
-SDWORD GetSimulationVariable(const char *name, BOOL forIoList);
+SDWORD GetSimulationVariable(const char *name, bool forIoList);
 SDWORD GetSimulationVariable(const char *name);
 void SetSimulationStr(char *name, char *val);
 char *GetSimulationStr(char *name);
@@ -1616,8 +1616,8 @@ int MemOfVar(char *name, DWORD *addr);
 BYTE MuxForAdcVariable(const char *name);
 int SingleBitAssigned(const char *name);
 int GetAssignedType(const char *name, const char *fullName);
-void AddrBitForPin(int pin, DWORD *addr, int *bit, BOOL asInput);
-void MemForSingleBit(const char *name, BOOL forRead, DWORD *addr, int *bit);
+void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput);
+void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const char *name, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile();
 int SetSizeOfVar(const char *name, int sizeOfVar);
@@ -1626,9 +1626,9 @@ int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
 void SaveVarListToFile(FILE *f);
-BOOL LoadVarListFromFile(FILE *f);
+bool LoadVarListFromFile(FILE *f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, BOOL raiseError);
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow();
 #define CompileError() longjmp(CompileErrorBuf, 1)
@@ -1646,7 +1646,7 @@ extern int rungNow;
 void IntDumpListing(char *outFile);
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust); // delay in us
 bool GenerateIntermediateCode();
-BOOL CheckLeafElem(int which, void *elem);
+bool CheckLeafElem(int which, void *elem);
 extern DWORD addrRUartRecvErrorFlag;
 extern int    bitRUartRecvErrorFlag;
 extern DWORD addrRUartSendErrorFlag;
@@ -1671,13 +1671,13 @@ SDWORD CalcDelayClock(long long clocks); // in us
 // pic16.cpp
 extern SDWORD PicProgLdLen;
 void CompilePic16(char *outFile);
-BOOL McuAs(const char *str);
-BOOL CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
+bool McuAs(const char *str);
+bool CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
 // avr.cpp
 extern DWORD AvrProgLdLen;
 int calcAvrUsart(int *divisor, double  *actual, double  *percentErr);
 int testAvrUsart(int divisor, double  actual, double  percentErr);
-BOOL CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
+bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
 void CompileAvr(char *outFile);
 // ansic.cpp
 extern int compile_MNU;
@@ -1701,7 +1701,7 @@ void CompilePascal(char *outFile);
 // pcports.cpp
 extern McuIoPinInfo IoPc[MAX_IO];
 extern int IoPcCount;
-BOOL ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
+bool ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
 void FillPcPinInfo(McuIoPinInfo *pinInfo);
 
 // translit.cpp

@@ -112,7 +112,7 @@ static void EmptyProgramStack(ProgramStack *ps)
 // Push the current program onto a program stack. Can either make a deep or
 // a shallow copy of the linked data structures.
 //-----------------------------------------------------------------------------
-static void PushProgramStack(ProgramStack *ps, BOOL deepCopy)
+static void PushProgramStack(ProgramStack *ps, bool deepCopy)
 {
     if(ps->count == MAX_LEVELS_UNDO) {
         int i;
@@ -172,9 +172,9 @@ void UndoRemember()
 {
     // can't redo after modifying the program
     EmptyProgramStack(&(Undo.redo));
-    PushProgramStack(&(Undo.undo), TRUE);
+    PushProgramStack(&(Undo.undo), true);
 
-    SetUndoEnabled(TRUE, FALSE);
+    SetUndoEnabled(true, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -189,17 +189,17 @@ void UndoUndo()
 
     ForgetEverything();
 
-    PushProgramStack(&(Undo.redo), FALSE);
+    PushProgramStack(&(Undo.redo), false);
     PopProgramStack(&(Undo.undo));
 
     if(Undo.undo.count > 0) {
-        SetUndoEnabled(TRUE, TRUE);
+        SetUndoEnabled(true, true);
     } else {
-        SetUndoEnabled(FALSE, TRUE);
+        SetUndoEnabled(false, true);
     }
     RefreshControlsToSettings();
     RefreshScrollbars();
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -213,17 +213,17 @@ void UndoRedo()
 
     ForgetEverything();
 
-    PushProgramStack(&(Undo.undo), FALSE);
+    PushProgramStack(&(Undo.undo), false);
     PopProgramStack(&(Undo.redo));
 
     if(Undo.redo.count > 0) {
-        SetUndoEnabled(TRUE, TRUE);
+        SetUndoEnabled(true, true);
     } else {
-        SetUndoEnabled(TRUE, FALSE);
+        SetUndoEnabled(true, false);
     }
     RefreshControlsToSettings();
     RefreshScrollbars();
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -233,7 +233,7 @@ void UndoFlush()
 {
     EmptyProgramStack(&(Undo.undo));
     EmptyProgramStack(&(Undo.redo));
-    SetUndoEnabled(FALSE, FALSE);
+    SetUndoEnabled(false, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -242,7 +242,7 @@ void UndoFlush()
 // notices that easily is the display code, which will respond by undoing
 // the last operation, presumably the one that added the long line.
 //-----------------------------------------------------------------------------
-BOOL CanUndo()
+bool CanUndo()
 {
     return (Undo.undo.count > 0);
 }

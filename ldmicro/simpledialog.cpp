@@ -38,7 +38,7 @@ static HWND ComboBox[MAX_BOXES];
 static LONG_PTR PrevAlnumOnlyProc[MAX_BOXES];
 static LONG_PTR PrevNumOnlyProc[MAX_BOXES];
 
-static BOOL NoCheckingOnBox[MAX_BOXES];
+static bool NoCheckingOnBox[MAX_BOXES];
 
 #define MAX_COMBO_STRINGS 16
 typedef struct comboRecordTag {
@@ -154,7 +154,7 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
 
     for(i = 0; i < combo; i++) {
         if(combos[i].n) {
-            //EnableWindow(Textboxes[i], FALSE);
+            //EnableWindow(Textboxes[i], false);
             ShowWindow(Textboxes[i], SW_HIDE);
 
             ComboBox[i] = CreateWindowEx(WS_EX_CLIENTEDGE,
@@ -219,10 +219,10 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
     NiceFont(CancelButton);
 }
 
-static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
+static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
                              DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos)
 {
-    BOOL didCancel;
+    bool didCancel;
 
     if(labs > MAX_BOXES)
         oops();
@@ -262,23 +262,23 @@ static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, D
         }
     }
 
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(SimpleDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(SimpleDialog, true);
     SetFocus(Textboxes[0]);
     SendMessage(Textboxes[0], EM_SETSEL, 0, -1);
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
-                DialogDone = TRUE;
+                DialogDone = true;
                 break;
             } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
                 break;
             }
         }
@@ -321,7 +321,7 @@ static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, D
             }
         }
     }
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(SimpleDialog);
 
@@ -329,14 +329,14 @@ static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, D
 }
 
 //as default : labels = boxes
-static BOOL ShowSimpleDialog(const char *title, int boxes, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
+static bool ShowSimpleDialog(const char *title, int boxes, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
                              DWORD fixedFontMask, char **dests)
 {
     return ShowSimpleDialog(title, boxes, labels, numOnlyMask, alnumOnlyMask, fixedFontMask, boxes, dests, 0, nullptr);
 }
 
 //coment : labels > boxes
-static BOOL ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
+static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
                              DWORD fixedFontMask, int boxes, char **dests)
 {
     return ShowSimpleDialog(title, labs, labels, numOnlyMask, alnumOnlyMask, fixedFontMask, boxes, dests, 0, nullptr);
@@ -928,13 +928,13 @@ void ShowSpiDialog(ElemLeaf *l)
             strcpy(comboRec[4].str[i], buf);
         }
     }
-    //  NoCheckingOnBox[3] = TRUE;
+    //  NoCheckingOnBox[3] = true;
     if(ShowSimpleDialog(title, 8, labels, 0x4, 0x3, -1, 8, dests, 8, comboRec)) {
         /*
         //TODO: check the available range
 */
     }
-    //  NoCheckingOnBox[3] = FALSE;
+    //  NoCheckingOnBox[3] = false;
     for(i = 0; i < comboRec[4].n; i++) {
         CheckFree(comboRec[4].str[i]);
     }
@@ -1041,7 +1041,7 @@ void ShowSetPwmDialog(void *e)
                               {0, nullptr},
                               {4, {"0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"}}};
 
-    NoCheckingOnBox[3] = TRUE;
+    NoCheckingOnBox[3] = true;
     if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 4, labels, 0x4, 0x3, 0x7, 4, dests, 4, comboRec)) {
         //TODO: check the available range
         double freq = hobatoi(targetFreq);
@@ -1062,7 +1062,7 @@ void ShowSetPwmDialog(void *e)
         if(duty > TOP)
             Error(_("'%s' duty > %d"), duty_cycle, TOP);
     }
-    NoCheckingOnBox[3] = FALSE;
+    NoCheckingOnBox[3] = false;
 }
 
 void ShowUartDialog(int which, char *name)
@@ -1070,10 +1070,10 @@ void ShowUartDialog(int which, char *name)
     const char *labels[] = {(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:")};
     char *      dests[] = {name};
 
-    NoCheckingOnBox[0] = TRUE;
+    NoCheckingOnBox[0] = true;
     ShowSimpleDialog(
         (which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 1, labels, 0x0, 0x1, 0x1, dests);
-    NoCheckingOnBox[0] = FALSE;
+    NoCheckingOnBox[0] = false;
 }
 
 void ShowMathDialog(int which, char *dest, char *op1, char *op2)
@@ -1127,8 +1127,8 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
     } else
         oops();
 
-    NoCheckingOnBox[2] = TRUE;
-    BOOL b;
+    NoCheckingOnBox[2] = true;
+    bool b;
     if((which == ELEM_NOT) || (which == ELEM_NEG)) {
         const char *labels[] = {_("Destination:="), l2};
         char *      dests[] = {dest, op1};
@@ -1138,7 +1138,7 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
         char *      dests[] = {dest, op1, op2};
         b = ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests);
     }
-    NoCheckingOnBox[2] = FALSE;
+    NoCheckingOnBox[2] = false;
     if(b) {
         if(IsNumber(dest)) {
             Error(_("Math instruction: '%s' not a valid destination."), dest);
@@ -1384,8 +1384,8 @@ void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, c
                             _("Output Zero(Counter==0):")};
     char *      dests[] = {counter, _int01, contactA, contactB, contactZ, error};
     {};
-    NoCheckingOnBox[4] = TRUE;
-    NoCheckingOnBox[5] = TRUE;
+    NoCheckingOnBox[4] = true;
+    NoCheckingOnBox[5] = true;
     if(ShowSimpleDialog(title, 6, labels, 0x2, 0xff, 0xff, dests)) {
         //TODO: check the available range
         SDWORD val;
@@ -1394,8 +1394,8 @@ void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, c
             if((val < 0) || (static_cast<SDWORD>(Prog.mcu->ExtIntCount) <= val))
                 Error(_("Can select only INTs pin."));
     }
-    NoCheckingOnBox[4] = FALSE;
-    NoCheckingOnBox[5] = FALSE;
+    NoCheckingOnBox[4] = false;
+    NoCheckingOnBox[5] = false;
 }
 
 void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
@@ -1409,7 +1409,7 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
     if(io->type == IO_TYPE_STRING) {
         strcpy(valStr, GetSimulationStr(io->name));
     } else {
-        val = GetSimulationVariable(io->name, TRUE);
+        val = GetSimulationVariable(io->name, true);
         sprintf(valStr, "%d", val);
     }
 
@@ -1469,24 +1469,24 @@ void ShowFormattedStringDialog(char *var, char *string)
 {
     const char *labels[] = {_("Variable:"), _("String:")};
     char *      dests[] = {var, string};
-    NoCheckingOnBox[0] = TRUE;
-    NoCheckingOnBox[1] = TRUE;
+    NoCheckingOnBox[0] = true;
+    NoCheckingOnBox[1] = true;
     ShowSimpleDialog(_("Formatted String Over UART"), 2, labels, 0x0, 0x1, 0x3, dests);
-    NoCheckingOnBox[0] = FALSE;
-    NoCheckingOnBox[1] = FALSE;
+    NoCheckingOnBox[0] = false;
+    NoCheckingOnBox[1] = false;
 }
 
 void ShowStringDialog(char *dest, char *var, char *string)
 {
     const char *labels[] = {_("Variable list:"), _("Format string:"), _("Dest:")};
     char *      dests[] = {var, string, dest};
-    NoCheckingOnBox[0] = TRUE;
-    NoCheckingOnBox[1] = TRUE;
-    NoCheckingOnBox[2] = TRUE;
+    NoCheckingOnBox[0] = true;
+    NoCheckingOnBox[1] = true;
+    NoCheckingOnBox[2] = true;
     ShowSimpleDialog(_("Formatted String"), 3, labels, 0x0, 0x6, 0x7, dests);
-    NoCheckingOnBox[0] = FALSE;
-    NoCheckingOnBox[1] = FALSE;
-    NoCheckingOnBox[2] = FALSE;
+    NoCheckingOnBox[0] = false;
+    NoCheckingOnBox[1] = false;
+    NoCheckingOnBox[2] = false;
 }
 
 void ShowCprintfDialog(int which, void *e)
@@ -1518,17 +1518,17 @@ void ShowCprintfDialog(int which, void *e)
     // clang-format on
     char str[MAX_NAME_LEN];
     sprintf(str, ("Formatted String over %s"), s);
-    NoCheckingOnBox[0] = TRUE;
-    NoCheckingOnBox[1] = TRUE;
-    NoCheckingOnBox[2] = TRUE;
-    NoCheckingOnBox[3] = TRUE;
-    NoCheckingOnBox[4] = TRUE;
+    NoCheckingOnBox[0] = true;
+    NoCheckingOnBox[1] = true;
+    NoCheckingOnBox[2] = true;
+    NoCheckingOnBox[3] = true;
+    NoCheckingOnBox[4] = true;
     ShowSimpleDialog(str, 5, labels, 0x0, 0x1c, 0xff, dests);
-    NoCheckingOnBox[0] = FALSE;
-    NoCheckingOnBox[1] = FALSE;
-    NoCheckingOnBox[2] = FALSE;
-    NoCheckingOnBox[3] = FALSE;
-    NoCheckingOnBox[4] = FALSE;
+    NoCheckingOnBox[0] = false;
+    NoCheckingOnBox[1] = false;
+    NoCheckingOnBox[2] = false;
+    NoCheckingOnBox[3] = false;
+    NoCheckingOnBox[4] = false;
 }
 
 void ShowPersistDialog(char *var)

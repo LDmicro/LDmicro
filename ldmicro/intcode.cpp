@@ -1498,28 +1498,28 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Comment("start parallel [");
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
 
-            BOOL ExistEnd = FALSE; //FALSE indicates that it is NEED to calculate the parOut
+            bool ExistEnd = false; //false indicates that it is NEED to calculate the parOut
             for(int i = 0; i < p->count; i++) {
                 if(CheckEndOfRungElem(p->contents[i].which, p->contents[i].data.any)) {
-                    ExistEnd = TRUE; // TRUE indicates that it is NOT NEED to calculate the parOut
+                    ExistEnd = true; // true indicates that it is NOT NEED to calculate the parOut
                     break;
                 }
             }
-            BOOL CanChange = FALSE; // FALSE indicates that it is NOT NEED to calculate the parThis
+            bool CanChange = false; // false indicates that it is NOT NEED to calculate the parThis
             for(int i = 0; i < p->count; i++) {
                 if(!CheckStaySameElem(p->contents[i].which, p->contents[i].data.any)) {
-                    CanChange = TRUE; // TRUE indicates that it is NEED to calculate the parThis
+                    CanChange = true; // true indicates that it is NEED to calculate the parThis
                     break;
                 }
             }
 
 #ifdef DEFAULT_PARALLEL_ALGORITHM
             // Return to default ELEM_PARALLEL_SUBCKT algorithm
-            CanChange = TRUE;
-            ExistEnd = FALSE;
+            CanChange = true;
+            ExistEnd = false;
 #endif
 
-            if(ExistEnd == FALSE) {
+            if(ExistEnd == false) {
                 GenSymParOut(parOut);
 
                 Op(INT_CLEAR_BIT, parOut);
@@ -1538,14 +1538,14 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
                     IntCodeFromCircuit(p->contents[i].which, p->contents[i].data.any, parThis, rung);
 
-                    if(ExistEnd == FALSE) {
+                    if(ExistEnd == false) {
                         Op(INT_IF_BIT_SET, parThis);
                           Op(INT_SET_BIT, parOut);
                         Op(INT_END_IF);
                     }
                 }
             }
-            if(ExistEnd == FALSE) {
+            if(ExistEnd == false) {
                 Op(INT_COPY_BIT_TO_BIT, stateInOut, parOut);
             }
             Comment("] finish parallel");
@@ -1728,7 +1728,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             #else
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_DECREMENT_VARIABLE, l->d.timer.name, stateInOut);
-              Op(INT_IF_BIT_SET, stateInOut); // overlap(0 to -1) flag is TRUE
+              Op(INT_IF_BIT_SET, stateInOut); // overlap(0 to -1) flag is true
                 Op(INT_IF_BIT_CLEAR, store);
                   Op(INT_SET_BIT, store);
                 Op(INT_ELSE);
@@ -1784,7 +1784,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_IF_BIT_CLEAR, store);
                 Op(INT_DECREMENT_VARIABLE, l->d.timer.name, stateInOut);
-                Op(INT_IF_BIT_SET, stateInOut); // overlap(0 to -1) flag is TRUE
+                Op(INT_IF_BIT_SET, stateInOut); // overlap(0 to -1) flag is true
                   Op(INT_SET_BIT, store);
                   Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
                 Op(INT_END_IF);
@@ -1848,7 +1848,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               Op(INT_IF_BIT_CLEAR, store);
                 Op(INT_DECREMENT_VARIABLE, l->d.timer.name, store);
               Op(INT_END_IF);
-              Op(INT_IF_BIT_SET, store); // overlap(0 to -1) flag is TRUE
+              Op(INT_IF_BIT_SET, store); // overlap(0 to -1) flag is true
                 Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
               Op(INT_ELSE);
                 Op(INT_SET_BIT, stateInOut);
@@ -3180,7 +3180,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             // Release 2.2 can raise error with formated strings "\0x00" and "\0x01"
             // Release 2.3 can raise error with formated strings "\0xFF" and "\0xFE"
 
-            BOOL mustDoMinus = FALSE;
+            bool mustDoMinus = false;
 
             // The total number of characters that we transmit, including
             // those from the interpolated variable.
@@ -3202,7 +3202,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     }
                     p++;
                     if(*p == '-') {
-                        mustDoMinus = TRUE;
+                        mustDoMinus = true;
                         outputWhich[steps] = OUTPUT_SIGN;
                         outputChars[steps++] = OUTPUT_SIGN;
                         p++;
@@ -3586,8 +3586,8 @@ void WipeIntMemory()
 }
 
 //-----------------------------------------------------------------------------
-// Generate intermediate code for the entire program. Return TRUE if it worked,
-// else FALSE.
+// Generate intermediate code for the entire program. Return true if it worked,
+// else false.
 //-----------------------------------------------------------------------------
 bool GenerateIntermediateCode()
 {
@@ -3621,7 +3621,7 @@ bool GenerateIntermediateCode()
     rungNow++;
     bool ExistMasterRelay = CheckMasterRelay();
     if(int_comment_level == 1) {
-        // ExistMasterRelay = TRUE; // Comment this for optimisation
+        // ExistMasterRelay = true; // Comment this for optimisation
     }
     if(ExistMasterRelay)
         Op(INT_SET_BIT, "$mcr");

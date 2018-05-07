@@ -69,7 +69,7 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 }
 
 //-----------------------------------------------------------------------------
-BOOL ChooseClr(DWORD *rgbCurrent)
+bool ChooseClr(DWORD *rgbCurrent)
 {
     CHOOSECOLOR cc;
 
@@ -105,16 +105,16 @@ BOOL ChooseClr(DWORD *rgbCurrent)
     if(ChooseColor(&cc) == TRUE) {
         *rgbCurrent = cc.rgbResult;
         rgbResult = cc.rgbResult;
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
 static void doChooseClr()
 {
     memcpy(&SchemeSave, &HighlightColours, sizeof(HighlightColours));
-    BOOL b = FALSE;
+    bool b = false;
     int  sel = SendMessage(ColorList, LB_GETCURSEL, 0, 0);
     // clang-format off
     switch(sel) {
@@ -139,7 +139,7 @@ static void doChooseClr()
     // clang-format on
     if(b) {
         InitBrushesForDrawing();
-        InvalidateRect(MainWindow, nullptr, FALSE);
+        InvalidateRect(MainWindow, nullptr, false);
     }
 }
 //-----------------------------------------------------------------------------
@@ -176,7 +176,7 @@ static LRESULT CALLBACK ColorDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
                     }
                     // clang-format on
                     InitBrushesForDrawing();
-                    InvalidateRect(MainWindow, nullptr, FALSE);
+                    InvalidateRect(MainWindow, nullptr, false);
                     return 1;
                 } else if(h == RevertButton) {
                     // clang-format off
@@ -201,7 +201,7 @@ static LRESULT CALLBACK ColorDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
                     }
                     // clang-format on
                     InitBrushesForDrawing();
-                    InvalidateRect(MainWindow, nullptr, FALSE);
+                    InvalidateRect(MainWindow, nullptr, false);
                     return 1;
                 } else if(h == AgainButton) {
                     // clang-format off
@@ -226,7 +226,7 @@ static LRESULT CALLBACK ColorDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
                     }
                     // clang-format on
                     InitBrushesForDrawing();
-                    InvalidateRect(MainWindow, nullptr, FALSE);
+                    InvalidateRect(MainWindow, nullptr, false);
                     return 1;
                 }
                 break;
@@ -391,8 +391,8 @@ void ShowColorDialog()
     SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("| The 'bus' at the left of the screen, Simulation mode"));
     SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("The 'bus' at the right of the screen, Simulation mode |"));
 
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(ColorDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(ColorDialog, true);
     SetFocus(ColorList);
 
     Index = InSimulationMode ? 10 : 0;
@@ -400,16 +400,16 @@ void ShowColorDialog()
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         switch(msg.message) {
             case WM_KEYDOWN: {
                 if(msg.wParam == VK_RETURN) {
-                    DialogDone = TRUE;
+                    DialogDone = true;
                 } else if(msg.wParam == VK_ESCAPE) {
-                    DialogDone = TRUE;
-                    DialogCancel = TRUE;
+                    DialogDone = true;
+                    DialogCancel = true;
                 }
                 break;
             }
@@ -436,8 +436,8 @@ void ShowColorDialog()
         memcpy(&HighlightColours, &OrigSchemeSave, sizeof(HighlightColours));
     }
     InitForDrawing();
-    InvalidateRect(MainWindow, nullptr, FALSE);
-    EnableWindow(MainWindow, TRUE);
+    InvalidateRect(MainWindow, nullptr, false);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(ColorDialog);
     return;

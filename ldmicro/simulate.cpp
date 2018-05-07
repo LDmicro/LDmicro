@@ -83,16 +83,16 @@ static int AdcShadowsCount;
 // Schematic-drawing code needs to know whether we're in simulation mode or
 // note, as that changes how everything is drawn; also UI code, to disable
 // editing during simulation.
-BOOL InSimulationMode;
+bool InSimulationMode;
 
 // Don't want to redraw the screen unless necessary; track whether a coil
 // changed state or a timer output switched to see if anything could have
 // changed (not just coil, as we show the intermediate steps too).
-static BOOL NeedRedraw;
+static bool NeedRedraw;
 // Have to let the effects of a coil change in cycle k appear in cycle k+1,
 // or set by the UI code to indicate that user manually changed an Xfoo
 // input.
-BOOL SimulateRedrawAfterNextCycle;
+bool SimulateRedrawAfterNextCycle;
 
 // Don't want to set a timer every 100 us to simulate a 100 us cycle
 // time...but we can cycle multiple times per timer interrupt and it will
@@ -149,7 +149,7 @@ DWORD isVarUsed(const char *name)
 //-----------------------------------------------------------------------------
 // Query the state of a single-bit element (relay, digital in, digital out).
 // Looks in the SingleBitItems list; if an item is not present then it is
-// FALSE by default.
+// false by default.
 //-----------------------------------------------------------------------------
 static bool SingleBitOn(const char *name)
 {
@@ -202,7 +202,7 @@ static void Increment(const char *name, const char *overlap, const char *overflo
             (Variables[i].val)++;
             signAfter = Variables[i].val & signMask;
             if((signBefore == 0) && (signAfter != 0)) {
-                SetSingleBit(overflow, TRUE);
+                SetSingleBit(overflow, true);
                 Variables[i].val &= (1 << (8 * sov)) - 1;
             }
 
@@ -229,7 +229,7 @@ static void Decrement(const char *name, const char *overlap, const char *overflo
             signAfter = Variables[i].val & signMask;
 
             if((signBefore != 0) && (signAfter == 0)) {
-                SetSingleBit(overflow, TRUE);
+                SetSingleBit(overflow, true);
                 Variables[i].val &= (1 << (8 * sov)) - 1;
             }
             return;
@@ -248,7 +248,7 @@ static SDWORD AddVariable(const char *name1, const char *name2, const char *name
     SDWORD        sign3 = GetSimulationVariable(name3) & signMask;
     SDWORD        signr = (SDWORD)(ret & signMask);
     if((sign2 == sign3) && (signr != sign3))
-        SetSingleBit(overflow, TRUE);
+        SetSingleBit(overflow, true);
     return (SDWORD)ret;
 }
 
@@ -264,7 +264,7 @@ static SDWORD SubVariable(const char *name1, const char *name2, const char *name
     //  if((sign2 != sign3)
     //  && (signr != sign2))
     if((sign2 != sign3) && (signr == sign3))
-        SetSingleBit(overflow, TRUE);
+        SetSingleBit(overflow, true);
     return (SDWORD)ret;
 }
 
@@ -287,7 +287,7 @@ void SetSimulationVariable(char *name, SDWORD val)
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
-SDWORD GetSimulationVariable(const char *name, BOOL forIoList)
+SDWORD GetSimulationVariable(const char *name, bool forIoList)
 {
     if(IsNumber(name)) {
         return CheckMakeNumber(name);
@@ -306,7 +306,7 @@ SDWORD GetSimulationVariable(const char *name, BOOL forIoList)
 
 SDWORD GetSimulationVariable(const char *name)
 {
-    return GetSimulationVariable(name, FALSE);
+    return GetSimulationVariable(name, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -944,7 +944,7 @@ static void CheckSingleBitNegateCircuit(int which, void *elem)
         }
         case ELEM_CONTACTS: {
             if((l->d.contacts.name[0] == 'X') && (l->d.contacts.set1))
-                SetSingleBit(l->d.contacts.name, TRUE); // Set HI level inputs before simulating
+                SetSingleBit(l->d.contacts.name, true); // Set HI level inputs before simulating
             break;
         }
 
@@ -1051,7 +1051,7 @@ long rol(long val, SDWORD n, int size, bool *state)
 
         val = val << 1;
         val |= MSB;
-        *state = MSB;
+        *state = MSB != 0;
 
         if(size == 1)
             val &= 0xff;
@@ -1073,7 +1073,7 @@ long ror(long val, SDWORD n, int size, bool *state)
     signed char i;
     for(i = 0; i < n; i++) {
         LSB = (char)(val & 1);
-        *state = LSB;
+        *state = LSB != 0;
         val = val >> 1;
         if(LSB) {
             if(size == 1)
@@ -1118,7 +1118,7 @@ long sr0(long val, SDWORD n, int size, bool *state)
     signed char i;
     for(i = 0; i < n; i++) {
         LSB = (char)(val & 1);
-        *state = LSB;
+        *state = LSB != 0;
         val = val >> 1;
         if(size == 1)
             val &= 0x7f;
@@ -1152,7 +1152,7 @@ long shr(signed long int val, SDWORD n, int size, bool *state)
             oops();
 
         LSB = (char)(val & 1);
-        *state = LSB;
+        *state = LSB != 0;
         val = val >> 1;
         val |= MSB;
     }
@@ -1180,7 +1180,7 @@ long shl(long val, SDWORD n, int size, bool *state)
             oops();
 
         val = val << 1;
-        *state = MSB;
+        *state = MSB != 0;
 
         if(size == 1)
             val &= 0xff;
@@ -1385,7 +1385,7 @@ int FindOpNameLast(int op, const char *name1, const char *name2)
 static void SimulateIntCode()
 {
     for(; IntPc < IntCode.size(); IntPc++) {
-        IntCode[IntPc].simulated = TRUE;
+        IntCode[IntPc].simulated = true;
         IntOp *a = &IntCode[IntPc];
         switch(a->op) {
             case INT_SIMULATE_NODE_STATE:
@@ -1402,11 +1402,11 @@ static void SimulateIntCode()
                 break;
 
             case INT_SET_BIT:
-                SetSingleBit(a->name1, TRUE);
+                SetSingleBit(a->name1, true);
                 break;
 
             case INT_CLEAR_BIT:
-                SetSingleBit(a->name1, FALSE);
+                SetSingleBit(a->name1, false);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
@@ -1741,7 +1741,7 @@ static void SimulateIntCode()
             // busy all the time, so that the program never does anything
             // with it.
             case INT_EEPROM_BUSY_CHECK:
-                SetSingleBit(a->name1, TRUE);
+                SetSingleBit(a->name1, true);
                 break;
 
             case INT_EEPROM_READ:
@@ -1773,42 +1773,42 @@ static void SimulateIntCode()
                     AppendToUartSimulationTextControl((BYTE)GetSimulationVariable(a->name1));
                 }
                 if(SimulateUartTxCountdown > 0) {
-                    SetSingleBit(a->name2, TRUE); // busy
+                    SetSingleBit(a->name2, true); // busy
                 } else {
-                    SetSingleBit(a->name2, FALSE); // not busy
+                    SetSingleBit(a->name2, false); // not busy
                 }
                 break;
             case INT_UART_SEND_READY:
                 if(SimulateUartTxCountdown == 0) {
-                    SetSingleBit(a->name1, TRUE); // ready
+                    SetSingleBit(a->name1, true); // ready
                 } else {
-                    SetSingleBit(a->name1, FALSE); // not ready, busy
+                    SetSingleBit(a->name1, false); // not ready, busy
                 }
                 break;
 
             case INT_UART_SEND_BUSY:
                 if(SimulateUartTxCountdown != 0) {
-                    SetSingleBit(a->name1, TRUE); // busy
+                    SetSingleBit(a->name1, true); // busy
                 } else {
-                    SetSingleBit(a->name1, FALSE); // not busy, ready
+                    SetSingleBit(a->name1, false); // not busy, ready
                 }
                 break;
 
             case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
-                    SetSingleBit(a->name2, TRUE);
+                    SetSingleBit(a->name2, true);
                     SetSimulationVariable(a->name1, (SWORD)QueuedUartCharacter);
                     QueuedUartCharacter = -1;
                 } else {
-                    SetSingleBit(a->name2, FALSE);
+                    SetSingleBit(a->name2, false);
                 }
                 break;
 
             case INT_UART_RECV_AVAIL:
                 if(QueuedUartCharacter >= 0) {
-                    SetSingleBit(a->name1, TRUE);
+                    SetSingleBit(a->name1, true);
                 } else {
-                    SetSingleBit(a->name1, FALSE);
+                    SetSingleBit(a->name1, false);
                 }
                 break;
 
@@ -1871,7 +1871,7 @@ static void SimulateIntCode()
                 if(adata == nullptr) {
                     Error("TABLE %s is not initialized.", a->name2);
                     StopSimulation();
-                    ToggleSimulationMode(FALSE);
+                    ToggleSimulationMode(false);
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
@@ -1879,7 +1879,7 @@ static void SimulateIntCode()
                     Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2, a->literal - 1);
                     index = a->literal;
                     StopSimulation();
-                    ToggleSimulationMode(FALSE);
+                    ToggleSimulationMode(false);
                     break;
                 }
                 SDWORD d = adata[index];
@@ -1928,7 +1928,7 @@ void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 {
     int i;
     for(i = 0; i < CyclesPerTimerTick; i++) {
-        SimulateOneCycle(FALSE);
+        SimulateOneCycle(false);
         if(CyclesPerTimerTick > 1) {
             if(updateWindow < 0) {
                 updateWindow = CyclesPerTimerTick * rand() / RAND_MAX + (rand() & 1);
@@ -1943,19 +1943,19 @@ void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 // any outputs have changed. If so, force a screen refresh. If requested do
 // a screen refresh regardless.
 //-----------------------------------------------------------------------------
-void SimulateOneCycle(BOOL forceRefresh)
+void SimulateOneCycle(bool forceRefresh)
 {
     // When there is an error message up, the modal dialog makes its own
     // event loop, and there is risk that we would go recursive. So let
     // us fix that. (Note that there are no concurrency issues; we really
     // would get called recursively, not just reentrantly.)
-    static BOOL Simulating = FALSE;
+    static bool Simulating = false;
 
     if(Simulating)
         return;
-    Simulating = TRUE;
+    Simulating = true;
 
-    NeedRedraw = FALSE;
+    NeedRedraw = false;
 
     if(SimulateUartTxCountdown > 0) {
         SimulateUartTxCountdown--;
@@ -1966,7 +1966,7 @@ void SimulateOneCycle(BOOL forceRefresh)
     IntPc = 0;
     std::for_each(std::begin(IntCode), std::end(IntCode), [](IntOp& op){op.simulated = false;});
     for(int i = 0; i < Prog.numRungs; i++) {
-        Prog.rungSimulated[i] = FALSE;
+        Prog.rungSimulated[i] = false;
     }
 
     SimulateIntCode();
@@ -1974,7 +1974,7 @@ void SimulateOneCycle(BOOL forceRefresh)
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op != INT_AllocFwdAddr) && (IntCode[i].simulated)) {
             if((IntCode[i].rung >= 0) && (IntCode[i].rung < Prog.numRungs)) {
-                Prog.rungSimulated[IntCode[i].rung] = TRUE;
+                Prog.rungSimulated[IntCode[i].rung] = true;
             }
         }
     }
@@ -1985,21 +1985,21 @@ void SimulateOneCycle(BOOL forceRefresh)
     CyclesCount++;
 
     if(NeedRedraw || SimulateRedrawAfterNextCycle || forceRefresh) {
-        if((updateWindow == 0) && (forceRefresh == FALSE)) {
+        if((updateWindow == 0) && (forceRefresh == false)) {
             UpdateWindow(MainWindow);
             updateWindow--;
         } else {
-            InvalidateRect(MainWindow, nullptr, FALSE);
+            InvalidateRect(MainWindow, nullptr, false);
         }
         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
     }
     RefreshStatusBar();
 
-    SimulateRedrawAfterNextCycle = FALSE;
+    SimulateRedrawAfterNextCycle = false;
     if(NeedRedraw)
-        SimulateRedrawAfterNextCycle = TRUE;
+        SimulateRedrawAfterNextCycle = true;
 
-    Simulating = FALSE;
+    Simulating = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -2039,7 +2039,7 @@ void ClrSimulationData()
     }
 }
 
-BOOL ClearSimulationData()
+bool ClearSimulationData()
 {
     ClrSimulationData();
     SingleBitItemsCount = 0;
@@ -2053,13 +2053,13 @@ BOOL ClearSimulationData()
 
     CheckSingleBitNegate(); // Set normal closed inputs to 1 before simulating
 
-    SimulateRedrawAfterNextCycle = TRUE;
+    SimulateRedrawAfterNextCycle = true;
 
     if(!GenerateIntermediateCode()) {
         ToggleSimulationMode();
-        return FALSE;
+        return false;
     }
-    return TRUE;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -2113,7 +2113,7 @@ void DescribeForIoList(char *name, int type, char *out)
         case IO_TYPE_TLO:
         case IO_TYPE_RTL:
         case IO_TYPE_RTO: {
-            SDWORD v = GetSimulationVariable(name, TRUE);
+            SDWORD v = GetSimulationVariable(name, true);
             double dtms = v * (Prog.cycleTime / 1000.0);
             int    sov = SizeOfVar(name);
             if(dtms < 1000) {
@@ -2142,7 +2142,7 @@ void DescribeForIoList(char *name, int type, char *out)
             break;
         }
         default: {
-            SDWORD v = GetSimulationVariable(name, TRUE);
+            SDWORD v = GetSimulationVariable(name, true);
             int    sov = SizeOfVar(name);
             if(sov == 1)
                 sprintf(out, "0x%02X = %d = '%c'", v & 0xff, (signed char)v, v & 0xff);
@@ -2184,7 +2184,7 @@ static LRESULT CALLBACK UartSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, L
             break;
 
         case WM_SIZE:
-            MoveWindow(UartSimulationTextControl, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+            MoveWindow(UartSimulationTextControl, 0, 0, LOWORD(lParam), HIWORD(lParam), true);
             break;
 
         case WM_ACTIVATE:
@@ -2212,7 +2212,7 @@ static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg, WPARAM wPara
                 switch(wParam) {
                         //                  key ' ',Enter-VK_RETURN must be available for simulation input
                         //                  case ' ':
-                        //                      SimulateOneCycle(TRUE);
+                        //                      SimulateOneCycle(true);
                         //                      break;
 
                     case VK_F8:
@@ -2329,9 +2329,9 @@ void        ShowUartSimulationWindow()
                                  0,
                                  0,
                                  FW_REGULAR,
-                                 FALSE,
-                                 FALSE,
-                                 FALSE,
+                                 false,
+                                 false,
+                                 false,
                                  ANSI_CHARSET,
                                  OUT_DEFAULT_PRECIS,
                                  CLIP_DEFAULT_PRECIS,
@@ -2341,7 +2341,7 @@ void        ShowUartSimulationWindow()
     if(!fixedFont)
         fixedFont = (HFONT)GetStockObject(SYSTEM_FONT);
 
-    SendMessage((HWND)UartSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, TRUE);
+    SendMessage((HWND)UartSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
 
     PrevTextProc = SetWindowLongPtr(UartSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)UartSimulationTextProc);
 
@@ -2349,7 +2349,7 @@ void        ShowUartSimulationWindow()
     SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 
-    ShowWindow(UartSimulationWindow, TRUE);
+    ShowWindow(UartSimulationWindow, true);
     SetFocus(MainWindow);
 }
 
