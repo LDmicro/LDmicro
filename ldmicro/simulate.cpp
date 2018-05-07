@@ -1349,7 +1349,7 @@ int FindOpNameLast(int op, const char *name1)
 {
     if(!name1)
         oops();
-    for(uint32_t i = IntCode.size() - 1; i >= 0; i--) {
+    for(int i = IntCode.size() - 1; i >= 0; i--) {
         if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
@@ -1365,7 +1365,7 @@ int FindOpNameLast(int op, const char *name1, const char *name2)
         oops();
     if(!name2)
         oops();
-    for(uint32_t i = IntCode.size() - 1; i >= 0; i--) {
+    for(int i = IntCode.size() - 1; i >= 0; i--) {
         if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
