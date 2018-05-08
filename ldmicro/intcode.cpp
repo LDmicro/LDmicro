@@ -257,7 +257,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_VARIABLE_MOD:
-                fprintf(f, "let var '%s' := '%s' % '%s'", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
+                fprintf(f, "let var '%s' := '%s' %% '%s'", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
                 break;
 
             case INT_INCREMENT_VARIABLE:
