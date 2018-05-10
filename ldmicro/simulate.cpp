@@ -1961,12 +1961,12 @@ void SimulateOneCycle(bool forceRefresh)
         SimulateUartTxCountdown = 0;
     }
 
-    IntPc = 0;
     std::for_each(std::begin(IntCode), std::end(IntCode), [](IntOp& op){op.simulated = false;});
     for(int i = 0; i < Prog.numRungs; i++) {
         Prog.rungSimulated[i] = false;
     }
 
+    IntPc = 0;
     SimulateIntCode();
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
@@ -1975,9 +1975,10 @@ void SimulateOneCycle(bool forceRefresh)
                 Prog.rungSimulated[IntCode[i].rung] = true;
             }
         }
-    }
+    } 
     for(int i = 0; i < Prog.numRungs; i++) {
-        Prog.rungPowered[i] = Prog.rungSimulated[i];
+        if(!Prog.rungSimulated[i])
+            Prog.rungPowered[i] = false;
     }
 
     CyclesCount++;

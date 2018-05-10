@@ -1,5 +1,7 @@
 == Release 4.3.9.2
 
+   Fixed: MASTER RELAY simulation bug. #83
+
    Fixed: When minimizing LDmicro, it always hides the IoList window.
 
 == Release 4.3.9.1
