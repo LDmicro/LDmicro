@@ -320,7 +320,7 @@ void PaintWindow()
             SetTextColor(Hdc, prev);
 
             cx = 0;
-            DrawElement(Prog.rungs[i], ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i]);
+            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i]);
         }
 
         cy += thisHeight;
@@ -717,7 +717,7 @@ void ExportDrawingAsText(char *file)
     int  cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
         cx = 6;
-        DrawElement(Prog.rungs[i], ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i]);
+        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i]);
         /*
         if((i + 1) < 10) {
             ExportBuffer[cy+1][1] = '0' + (i + 1);

@@ -760,16 +760,6 @@ struct ElemLeaf {
     } d;
 };
 
-typedef struct ElemNodeTag{
-    int     which;
-    union {
-        void                   *any;
-        ElemSubcktParallel     *parallel;
-        ElemSubcktSeries       *series; // used in the Copy-Paste command
-        ElemLeaf               *leaf;
-    } data;
-} ElemNode;
-
 typedef struct ElemSubcktSeriesTag {
     struct {
         int     which;
@@ -999,7 +989,7 @@ int ProgCountWidestRow();
 int ProgCountRows();
 extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
-bool DrawElement(void *node, int which, void *elem, int *cx, int *cy, bool poweredBefore);
+bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore);
 void DrawEndRung(int cx, int cy);
 extern int ColsAvailable;
 extern bool SelectionActive;

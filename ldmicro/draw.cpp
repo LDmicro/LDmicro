@@ -1715,14 +1715,12 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 // element, else false. This is needed to colour all the wires correctly,
 // since the colouring indicates whether a wire is energized.
 //-----------------------------------------------------------------------------
-bool DrawElement(void *node, int which, void *elem, int *cx, int *cy, bool poweredBefore)
+bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore)
 {
     bool poweredAfter;
 
     int       cx0 = *cx, cy0 = *cy;
     ElemLeaf *leaf = (ElemLeaf *)elem;
-    ElemNode *_node = (ElemNode *)node;
-    ElemLeaf *_leaf = (ElemLeaf *)_node->data.any;
 
     SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
     NormText();
@@ -1740,8 +1738,7 @@ bool DrawElement(void *node, int which, void *elem, int *cx, int *cy, bool power
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             poweredAfter = poweredBefore;
             for(i = 0; i < s->count; i++) {
-                poweredAfter =
-                    DrawElement(&(s->contents[i]), s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter);
+                poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter);
             }
             break;
         }
@@ -1758,8 +1755,7 @@ bool DrawElement(void *node, int which, void *elem, int *cx, int *cy, bool power
             for(i = 0; i < p->count; i++) {
                 bool poweredThis;
 
-                poweredThis = DrawElement(
-                    &(p->contents[i]), p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore);
+                poweredThis = DrawElement(p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore);
 
                 if(InSimulationMode) {
                     if(poweredThis)
