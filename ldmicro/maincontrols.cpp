@@ -988,28 +988,28 @@ void MainWindowResized()
 {
     RECT main;
     GetClientRect(MainWindow, &main);
+    if(main.bottom) {
+        RECT status;
+        GetWindowRect(StatusBar, &status);
+        int statusHeight = status.bottom - status.top;
 
-    RECT status;
-    GetWindowRect(StatusBar, &status);
-    int statusHeight = status.bottom - status.top;
+        MoveWindow(StatusBar, 0, main.bottom - statusHeight, main.right, statusHeight, true);
 
-    MoveWindow(StatusBar, 0, main.bottom - statusHeight, main.right, statusHeight, true);
-
-    // Make sure that the I/O list can't disappear entirely.
-    if(IoListHeight < 30) {
-        IoListHeight = 30;
-    }
-    IoListTop = main.bottom - IoListHeight - statusHeight;
-    // Make sure that we can't drag the top of the I/O list above the
-    // bottom of the menu bar, because it then becomes inaccessible.
-    if(IoListTop < 5) {
-        IoListHeight = main.bottom - statusHeight - 5;
+        // Make sure that the I/O list can't disappear entirely.
+        if(IoListHeight < 30) {
+            IoListHeight = 30;
+        }
         IoListTop = main.bottom - IoListHeight - statusHeight;
+        // Make sure that we can't drag the top of the I/O list above the
+        // bottom of the menu bar, because it then becomes inaccessible.
+        if(IoListTop < 5) {
+            IoListHeight = main.bottom - statusHeight - 5;
+            IoListTop = main.bottom - IoListHeight - statusHeight;
+        }
+        MoveWindow(IoList, 0, IoListTop, main.right, IoListHeight, true);
+
+        RefreshScrollbars();
     }
-    MoveWindow(IoList, 0, IoListTop, main.right, IoListHeight, true);
-
-    RefreshScrollbars();
-
     InvalidateRect(MainWindow, nullptr, false);
 }
 
