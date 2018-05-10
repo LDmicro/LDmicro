@@ -4,6 +4,8 @@
 
    Fixed: When minimizing LDmicro, it always hides the IoList window.
 
+   Updated: MASTER RELAY state colors in simulation mode.
+
 == Release 4.3.9.1
 
     * Wiki: MAKE PERSISTENT operation

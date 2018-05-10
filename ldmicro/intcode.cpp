@@ -3020,6 +3020,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_ELSE);
               Op(INT_COPY_BIT_TO_BIT, "$mcr", stateInOut);
             Op(INT_END_IF);
+            SimState(&(l->poweredAfter), stateInOut, &(l->workingNow), "$mcr");
             break;
 
         case ELEM_SHIFT_REGISTER: {

@@ -696,7 +696,7 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
         }
 
         case ELEM_MASTER_RELAY:
-            CenterWithWires(*cx, *cy, "{MASTER RLY}", poweredBefore, poweredAfter);
+            CenterWithWires(*cx, *cy, "{MASTER RLY}", poweredBefore, workingNow);
             break;
 
         case ELEM_SLEEP: {
