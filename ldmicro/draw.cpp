@@ -700,8 +700,13 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
             break;
 
         case ELEM_SLEEP: {
+            #ifdef SLEEP_DELAY
+            double d = SIprefix(1.0*leaf->d.timer.delay/1000000.0, s1);
+            sprintf(s2, "%.3g %ss", d, s1);
+            sprintf(bot, "{SLEEP %s}", s2);
+            #else
             sprintf(bot, "{SLEEP}");
-
+            #endif
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }

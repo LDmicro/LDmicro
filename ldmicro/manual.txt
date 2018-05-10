@@ -860,6 +860,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     false. These are mostly useful for debugging, temporary short the
     circuit or break an electrical circuit.
 
+    See https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
+
 
 > MASTER CONTROL RELAY
                            -{MASTER RLY}-
