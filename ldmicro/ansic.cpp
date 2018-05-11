@@ -111,16 +111,21 @@ static const char *MapSym(const char *str, int how)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, const char *str, int sov)
 {
-    if(*str == 'A')
+    if(*str == 'A') {
         fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
-    else if(sov == 1)
+    } else if(sov == 1) {
         fprintf(f, "STATIC SBYTE %s = 0;\n", str);
-    else if(sov == 2)
+        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
+    } else if(sov == 2) {
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
-    else if((sov == 3) || (sov == 4))
+        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
+    } else if((sov == 3) || (sov == 4)) {
         fprintf(f, "STATIC SDWORD %s = 0;\n", str);
-    else
+        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SDWORD %s;\n#endif\n", str);
+    } else {
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
+        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -130,6 +135,8 @@ static void DeclareStr(FILE *f, const char *str, int sov)
 {
     fprintf(f, "STATIC char %s[%d];\n", str, sov);
     fprintf(f, "\n");
+    fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern char %s[%d];\n#endif\n", str, sov);
+    fprintf(fh,"\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -455,6 +462,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
         }
     } else {
         fprintf(f, "STATIC ldBOOL %s = 0;\n", str);
+        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern ldBOOL %s;\n#endif\n", str);
         //      fprintf(f, "\n");
         fprintf(fh, "#define Read_%s() %s\n", str, str);
         fprintf(fh, "#define Write_%s(x) (%s = x)\n", str, str);

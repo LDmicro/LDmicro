@@ -2,6 +2,8 @@
 
    Fixed: Problem "PERSIST" Arduino Mega. #82
 
+   Updated: EXTERN_EVERYTHING in Arduino Sketch.
+
    Fixed: UART Simulation error V4390. #84
 
    Fixed: MASTER RELAY simulation bug. #83
