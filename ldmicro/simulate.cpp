@@ -848,16 +848,15 @@ void CheckVariableNames()
                       _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\n"
                         "You must assign a variable."));
     return;
+#ifdef _LOT_OF_EXPERIMENTS_ // Never define!
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_PWM) {
-            //dbpx(Variables[i].usedFlags)
             //Variables[i].usedFlags &= ~VAR_FLAG_PWM;
             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_PWM, i), i);
         }
     //--
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TCY) {
-            //dbpx(Variables[i].usedFlags)
             //Variables[i].usedFlags &= ~VAR_FLAG_TCY;
             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TCY, i), i);
         }
@@ -915,6 +914,7 @@ void CheckVariableNames()
         if(Variables[i].usedFlags & VAR_FLAG_OTHERWISE_FORGOTTEN)
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_OTHERWISE_FORGOTTEN, i), i);
 */
+#endif
 }
 //-----------------------------------------------------------------------------
 // Set normal closed inputs to 1 before simulating.
@@ -1975,7 +1975,7 @@ void SimulateOneCycle(bool forceRefresh)
                 Prog.rungSimulated[IntCode[i].rung] = true;
             }
         }
-    } 
+    }
     for(int i = 0; i < Prog.numRungs; i++) {
         if(!Prog.rungSimulated[i])
             Prog.rungPowered[i] = false;

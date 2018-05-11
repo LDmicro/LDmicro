@@ -13,6 +13,8 @@
    * Wiki: OPEN CIRCUIT, SHORT CIRCUIT
    https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
 
+   Fixed: Is it correct return ? #55 Yes.
+
 == Release 4.3.9.1
 
     * Wiki: MAKE PERSISTENT operation
