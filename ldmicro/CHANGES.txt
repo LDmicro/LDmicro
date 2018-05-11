@@ -6,6 +6,9 @@
 
    Updated: MASTER RELAY state colors in simulation mode.
 
+   * Wiki: OPEN CIRCUIT, SHORT CIRCUIT
+   https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
+
 == Release 4.3.9.1
 
     * Wiki: MAKE PERSISTENT operation
