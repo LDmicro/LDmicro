@@ -1091,9 +1091,9 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
             case INT_EEPROM_BUSY_CHECK:
                 if(compiler_variant == MNU_COMPILE_ARDUINO) {
-                    fprintf(f, "Write1_%s(); // EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
+                    fprintf(f, "Write0_%s(); // dummy // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
                 } else {
-                    fprintf(f, "#warning //INT_EEPROM_BUSY_CHECK to %s\n", IntCode[i].name1);
+                    fprintf(f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1);
                 }
                 break;
 

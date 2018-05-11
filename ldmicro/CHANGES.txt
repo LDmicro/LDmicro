@@ -1,5 +1,7 @@
 == Release 4.3.9.2
 
+   Fixed: Problem "PERSIST" Arduino Mega. #82
+
    Fixed: UART Simulation error V4390. #84
 
    Fixed: MASTER RELAY simulation bug. #83
