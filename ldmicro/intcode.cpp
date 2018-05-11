@@ -3169,8 +3169,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             // negative is special flag values
             enum {
                 OUTPUT_UCHAR = 1,
-                OUTPUT_DIGIT = -1,
-                OUTPUT_SIGN = -2,
+                OUTPUT_DIGIT = 2,
+                OUTPUT_SIGN = 3,
             };
             char outputWhich[sizeof(outputChars)];
             // outputWhich is added to be able to send the full unsigned char range
