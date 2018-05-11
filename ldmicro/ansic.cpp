@@ -370,7 +370,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
             fprintf(fh, "// LDmicro provide this macro or function.\n");
             fprintf(fh, "#ifdef USE_MACRO\n");
-            fprintf(fh, "  #define Write_%s(x) analogWrite(pin_%s, x)\n", str, str);
+            fprintf(fh, "  #define Write_%s(x) /*setPwmFrequency(pin_%s, 1);*/ analogWrite(pin_%s, x)\n", str, str, str);
             fprintf(fh, "#else\n");
             fprintf(fh, "  void Write_%s(SWORD x);\n", str);
             fprintf(fh, "#endif\n");
@@ -380,6 +380,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
             fprintf(f, "#ifndef USE_MACRO\n");
             fprintf(f, "// LDmicro provide this function.\n");
             fprintf(f, "  void Write_%s(SWORD x) {\n", str);
+            fprintf(f, "    //setPwmFrequency(pin_%s, 1);\n", str);
             fprintf(f, "    analogWrite(pin_%s, x);\n", str);
             fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
@@ -586,8 +587,13 @@ static void GenerateDeclarations(FILE *f)
                 intVar1 = IntCode[i].name1;
                 break;
 
+            case INT_PWM_OFF:
+                bitVar1 = IntCode[i].name1;
+                break;
+
             case INT_SET_PWM:
-                intVar1 = IntCode[i].name1;
+                if(!IsNumber(IntCode[i].name1))
+                    intVar1 = IntCode[i].name1;
                 if(!IsNumber(IntCode[i].name2))
                     intVar2 = IntCode[i].name2;
                 bitVar1 = IntCode[i].name3;
@@ -1123,12 +1129,18 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "%s = Read_%s();\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name1, ASBIT));
                 break;
 
+            case INT_PWM_OFF:
+                fprintf(f, "Write_%s(0);\n", MapSym(IntCode[i].name1, ASBIT));
+                break;
+
             case INT_SET_PWM:
-                if(IsNumber(IntCode[i].name2))
-                    fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), hobatoi(IntCode[i].name2));
-                else
-                    fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
-                doIndent(f, i);
+                if(!IsNumber(IntCode[i].name1)) {
+                    if(IsNumber(IntCode[i].name2))
+                        fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), hobatoi(IntCode[i].name2));
+                    else
+                        fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                    doIndent(f, i);
+                }
                 fprintf(f, "Write_%s(%s);\n", MapSym(IntCode[i].name3, ASBIT), MapSym(IntCode[i].name1, ASINT));
                 break;
 
@@ -1410,11 +1422,7 @@ bool CompileAnsiC(char *dest, int MNU)
             CurrentLdName);
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         fprintf(flh,
-                "#if ARDUINO >= 100\n"
-                "    #include \"Arduino.h\"\n"
-                "#else\n"
-                "    #include \"WProgram.h\"\n"
-                "#endif\n"
+                "#include \"Arduino.h\"\n"
                 "\n");
         fprintf(flh,
   "#ifdef __GNUC__\n"
@@ -1553,6 +1561,11 @@ bool CompileAnsiC(char *dest, int MNU)
                 "#endif\n");
         if(SleepFunctionUsed()) {
             fprintf(fh, "#include <avr\\sleep.h>\n");
+        }
+        if(PwmFunctionUsed()) {
+            fprintf(fh, "\n);
+            fprintf(fh, "//Uncomment PwmFrequency.h and setPwmFrequency() and set proper divisor.\n");
+            fprintf(fh, "//#include \"PwmFrequency.h\"\n\n");
         }
 
         if(EepromFunctionUsed())

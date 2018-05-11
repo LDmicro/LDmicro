@@ -4,13 +4,18 @@
 
    Updated: EXTERN_EVERYTHING in Arduino Sketch.
 
+   Fixed: RESET PWM instrutions in Arduino Sketch. #62
+
+   Added: SET PWM - optional setPwmFrequency() in Arduino Sketch.
+   Need to test. See issue #62
+
    Fixed: UART Simulation error V4390. #84
 
    Fixed: MASTER RELAY simulation bug. #83
 
-   Fixed: When minimizing LDmicro, it always hides the IoList window.
-
    Updated: MASTER RELAY state colors in simulation mode.
+
+   Fixed: When minimizing LDmicro, it always hides the IoList window.
 
    * Wiki: OPEN CIRCUIT, SHORT CIRCUIT
    https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
