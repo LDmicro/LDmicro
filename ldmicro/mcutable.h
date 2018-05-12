@@ -81,14 +81,12 @@ typedef struct McuIoPinInfoTag {
     int     addr;    // addr of PC ports
 } McuIoPinInfo;
 
-typedef struct McuAdcPinInfoTag
-{
+typedef struct McuAdcPinInfoTag {
     int     pin;
     uint8_t muxRegValue;
 } McuAdcPinInfo;
 
-typedef struct McuSpiInfoTag
-{
+typedef struct McuSpiInfoTag {
     char     name[MAX_NAME_LEN];
     uint32_t REG_CTRL;
     uint32_t REG_STAT;
@@ -97,12 +95,12 @@ typedef struct McuSpiInfoTag
     int      MOSI;
     int      SCK;
     int      _SS;
+//  bool    isUsed;
 } McuSpiInfo;
 
-typedef struct McuPwmPinInfoTag
-{
-    int pin;
-    int timer;
+typedef struct McuPwmPinInfoTag {
+    int     pin;
+    int     timer;
     //for AVR's
     int     resolution; // bits
     uint8_t maxCS;      // can be only 5 or 7 for AVR
@@ -111,43 +109,39 @@ typedef struct McuPwmPinInfoTag
     uint32_t REG_OCRnxL; // or REG_OCRn          // Output Compare Register Low byte
     uint32_t REG_OCRnxH; // or 0, if not exist   // Output Compare Register High byte
     uint32_t REG_TCCRnA; // or REG_TCCRn         // Timer/Counter Control Register/s
-    uint8_t  COMnx1;     // bit COMnx1 or COMn1 for REG_TCCRnA
-    uint8_t  COMnx0;     // bit COMnx0 or COMn0 for REG_TCCRnA
-    uint8_t  WGMa;       //                      // mask WGM3:0 for REG_TCCRnA if need
+    uint8_t      COMnx1;                         // bit COMnx1 or COMn1 for REG_TCCRnA
+    uint8_t      COMnx0;                         // bit COMnx0 or COMn0 for REG_TCCRnA
+    uint8_t      WGMa;   //                      // mask WGM3:0 for REG_TCCRnA if need
     uint32_t REG_TCCRnB; // or 0, if not exist   // Timer/Counter Control Registers
-    uint8_t  WGMb;       //                      // mask WGM3:0 for REG_TCCRnB if need
+    uint8_t      WGMb;   //                      // mask WGM3:0 for REG_TCCRnB if need
     char     name[MAX_NAME_LEN];
 } McuPwmPinInfo, *PMcuPwmPinInfo;
 
-typedef struct McuExtIntPinInfoTag
-{
+typedef struct McuExtIntPinInfoTag {
     int pin;
 } McuExtIntPinInfo;
 
-typedef struct McuIoInfoTag
-{
-    const char* mcuName;
-    const char* mcuList;
-    const char* mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
-    const char* mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
-    const char* mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
+typedef struct McuIoInfoTag {
+    const char *mcuName;
+    const char *mcuList;
+    const char *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
+    const char *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
+    const char *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
     char        portPrefix;
     uint32_t    inputRegs[MAX_IO_PORTS]; // A is 0, J is 9
     uint32_t    outputRegs[MAX_IO_PORTS];
     uint32_t    dirRegs[MAX_IO_PORTS];
     uint32_t    flashWords;
-    struct
-    {
+    struct {
         uint32_t start;
         int      len;
     } ram[MAX_RAM_SECTIONS];
-    McuIoPinInfo*  pinInfo;
+    McuIoPinInfo  *pinInfo;
     uint32_t       pinCount;
-    McuAdcPinInfo* adcInfo;
+    McuAdcPinInfo *adcInfo;
     uint32_t       adcCount;
     uint32_t       adcMax;
-    struct
-    {
+    struct {
         int rxPin;
         int txPin;
     } uartNeeds;
@@ -157,17 +151,16 @@ typedef struct McuIoInfoTag
     int      pins;
     uint32_t configurationWord; // only PIC
 
-    McuPwmPinInfo* pwmInfo;
-    uint32_t       pwmCount;
+    McuPwmPinInfo    *pwmInfo;
+    uint32_t          pwmCount;
 
-    McuExtIntPinInfo* ExtIntInfo;
-    uint32_t       ExtIntCount;
+    McuExtIntPinInfo *ExtIntInfo;
+    uint32_t          ExtIntCount;
 
-    McuSpiInfo* spiInfo;
-    uint32_t    spiCount;
+    McuSpiInfo       *spiInfo;
+    uint32_t          spiCount;
 
-    struct
-    {
+    struct {
         uint32_t start;
         int      len;
     } rom[MAX_ROM_SECTIONS]; //EEPROM or HEI?

@@ -52,8 +52,8 @@ static HWND ModbusRegister;
 // stuff for the popup that lets you set the simulated value of an analog in
 static HWND AnalogSliderMain;
 static HWND AnalogSliderTrackbar;
-static BOOL AnalogSliderDone;
-static BOOL AnalogSliderCancel;
+static bool AnalogSliderDone;
+static bool AnalogSliderCancel;
 
 //-----------------------------------------------------------------------------
 // Only this types can connect name to I/O pins.
@@ -94,7 +94,7 @@ static void AppendIo(char *IOname, int type)
         if(!strstr(name, IOname)) {
             Error(_(" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"), name, IOname);
             strcpy(name, IOname);
-            ProgramChangedNotSaved = TRUE;
+            ProgramChangedNotSaved = true;
         }
     }
     if(name[0] == '#') {
@@ -392,14 +392,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_BIN2BCD:
             AppendIo(l->d.move.dest, IO_TYPE_BCD);
-            if(CheckForNumber(l->d.move.src) == FALSE) {
+            if(CheckForNumber(l->d.move.src) == false) {
                 AppendIo(l->d.move.src, IO_TYPE_GENERAL);
             }
             break;
 
         case ELEM_BCD2BIN:
             AppendIo(l->d.move.dest, IO_TYPE_GENERAL);
-            if(CheckForNumber(l->d.move.src) == FALSE) {
+            if(CheckForNumber(l->d.move.src) == false) {
                 AppendIo(l->d.move.src, IO_TYPE_BCD);
             }
             break;
@@ -446,7 +446,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_BUS:
         case ELEM_MOVE: {
             AppendIoAutoType(l->d.move.dest, IO_TYPE_GENERAL);
-            if(CheckForNumber(l->d.move.src) == FALSE) {
+            if(CheckForNumber(l->d.move.src) == false) {
                 // Not need ???
                 // Need if you add only one MOV or get erroneously other src name
                 // then you can see l->d.move.src in IOlist
@@ -466,7 +466,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 xseg:
                     AppendIoAutoType(l->d.segments.dest, IO_TYPE_GENERAL);
                     /*
-            if (CheckForNumber(l->d.segments.src) == FALSE) {
+            if (CheckForNumber(l->d.segments.src) == false) {
                 AppendIo(l->d.segments.src, IO_TYPE_GENERAL); // not need ???
             }
             */
@@ -504,12 +504,12 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_MUL:
         case ELEM_DIV:
         case ELEM_MOD:
-            if(CheckForNumber(l->d.math.op1) == FALSE) {
+            if(CheckForNumber(l->d.math.op1) == false) {
                 AppendIoAutoType(l->d.math.op1, IO_TYPE_GENERAL);
             }
             if(which != ELEM_NOT)
                 if(which != ELEM_NEG)
-                    if(CheckForNumber(l->d.math.op2) == FALSE) {
+                    if(CheckForNumber(l->d.math.op2) == false) {
                         AppendIoAutoType(l->d.math.op2, IO_TYPE_GENERAL);
                     }
             AppendIoAutoType(l->d.math.dest, IO_TYPE_GENERAL);
@@ -553,7 +553,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_CTC:
         case ELEM_CTR:
             AppendIo(l->d.counter.name, IO_TYPE_COUNTER);
-            if(CheckForNumber(l->d.counter.max) == FALSE) {
+            if(CheckForNumber(l->d.counter.max) == false) {
                 // Not need ??? See ELEM_MOV
                 AppendIoAutoType(l->d.counter.max, IO_TYPE_GENERAL);
             }
@@ -752,7 +752,7 @@ int GenerateIoList(int prevSel)
 // put it into IoSeenPreviously so that it will get used on the next
 // extraction.
 //-----------------------------------------------------------------------------
-BOOL LoadIoListFromFile(FILE *f)
+bool LoadIoListFromFile(FILE *f)
 {
     char         line[MAX_NAME_LEN];
     char         name[MAX_NAME_LEN];
@@ -763,7 +763,7 @@ BOOL LoadIoListFromFile(FILE *f)
         if(!strlen(strspace(line)))
             continue;
         if(strcmp(line, "END") == 0) {
-            return TRUE;
+            return true;
         }
         modbus.Slave = 0;
         modbus.Address = 0;
@@ -822,7 +822,7 @@ BOOL LoadIoListFromFile(FILE *f)
             }
         }
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -881,8 +881,8 @@ static LRESULT CALLBACK AnalogSliderDialogProc(HWND hwnd, UINT msg, WPARAM wPara
     switch(msg) {
         case WM_CLOSE:
         case WM_DESTROY:
-            AnalogSliderDone = TRUE;
-            AnalogSliderCancel = TRUE;
+            AnalogSliderDone = true;
+            AnalogSliderCancel = true;
             return 1;
 
         default:
@@ -966,21 +966,21 @@ void ShowAnalogSliderPopup(char *name)
                        nullptr,
                        Instance,
                        nullptr);
-    SendMessage(AnalogSliderTrackbar, TBM_SETRANGE, FALSE, MAKELONG(0, maxVal));
+    SendMessage(AnalogSliderTrackbar, TBM_SETRANGE, false, MAKELONG(0, maxVal));
     SendMessage(AnalogSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1) / 8, 0);
-    SendMessage(AnalogSliderTrackbar, TBM_SETPOS, TRUE, currentVal);
+    SendMessage(AnalogSliderTrackbar, TBM_SETPOS, true, currentVal);
 
     SendMessage(AnalogSliderTrackbar, TBM_SETPAGESIZE, 0, 10);
     SendMessage(AnalogSliderTrackbar, TBM_SETLINESIZE, 0, 1);
 
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(AnalogSliderMain, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(AnalogSliderMain, true);
     SetFocus(AnalogSliderTrackbar);
 
     DWORD ret;
     MSG   msg;
-    AnalogSliderDone = FALSE;
-    AnalogSliderCancel = FALSE;
+    AnalogSliderDone = false;
+    AnalogSliderCancel = false;
 
     SWORD orig = GetAdcShadow(name);
 
@@ -989,15 +989,15 @@ void ShowAnalogSliderPopup(char *name)
 
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
-                AnalogSliderDone = TRUE;
+                AnalogSliderDone = true;
                 break;
             } else if(msg.wParam == VK_ESCAPE) {
-                AnalogSliderDone = TRUE;
-                AnalogSliderCancel = TRUE;
+                AnalogSliderDone = true;
+                AnalogSliderCancel = true;
                 break;
             }
         } else if(msg.message == WM_RBUTTONDOWN) {
-            AnalogSliderDone = TRUE;
+            AnalogSliderDone = true;
         }
         SetAdcShadow(name, v);
 
@@ -1010,7 +1010,7 @@ void ShowAnalogSliderPopup(char *name)
         SetAdcShadow(name, v);
     }
 
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(AnalogSliderMain);
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
@@ -1025,20 +1025,20 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         case WM_COMMAND: {
             HWND h = (HWND)lParam;
             if(h == OkButton && wParam == BN_CLICKED) {
-                DialogDone = TRUE;
+                DialogDone = true;
             } else if(h == CancelButton && wParam == BN_CLICKED) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
             } else if(h == PinList && HIWORD(wParam) == LBN_DBLCLK) {
-                DialogDone = TRUE;
+                DialogDone = true;
             }
             break;
         }
 
         case WM_CLOSE:
         case WM_DESTROY:
-            DialogDone = TRUE;
-            DialogCancel = TRUE;
+            DialogDone = true;
+            DialogCancel = true;
             return 1;
 
         default:
@@ -1051,7 +1051,7 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 //-----------------------------------------------------------------------------
 // Create our window class; nothing exciting.
 //-----------------------------------------------------------------------------
-static BOOL MakeWindowClass()
+static bool MakeWindowClass()
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
@@ -1274,13 +1274,20 @@ void ShowIoDialog(int item)
     int  Index = 0;
     char buf[MAX_NAME_LEN];
     char pinName[MAX_NAME_LEN];
-    uint32_t i;
-    uint32_t j;
-    for(i = 0; i < Prog.mcu->pinCount; i++) {
-        for(j = 0; j < Prog.io.count; j++) {
+    for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
+        for(int j = 0; j < Prog.io.count; j++) {
             if(j == item)
                 continue;
             if(Prog.io.assignment[j].pin == Prog.mcu->pinInfo[i].pin) {
+                goto cant_use_this_io;
+            }
+        }
+
+        if(Prog.mcu->pinInfo[i].ioType) {
+            if((type == IO_TYPE_DIG_INPUT) && (Prog.mcu->pinInfo[i].ioType != IO_TYPE_DIG_INPUT)) {
+                goto cant_use_this_io;
+            }
+            if((type == IO_TYPE_DIG_OUTPUT) && (Prog.mcu->pinInfo[i].ioType != IO_TYPE_DIG_OUTPUT)) {
                 goto cant_use_this_io;
             }
         }
@@ -1390,9 +1397,9 @@ void ShowIoDialog(int item)
     cant_use_this_io:;
     }
 
-    for(j = 0; j < Prog.mcu->adcCount; j++) {
+    for(uint32_t j = 0; j < Prog.mcu->adcCount; j++) {
         if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
-            for(i = 0; i < Prog.mcu->pinCount; i++) {
+            for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
                 if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) {
                     // okay; we know how to connect it up to the ADC
                     // break;
@@ -1409,24 +1416,24 @@ void ShowIoDialog(int item)
     cant_use_this_io_adc:;
     }
 
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(IoDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(IoDialog, true);
     SetFocus(PinList);
 
     SendMessage(PinList, LB_SETCURSEL, (WPARAM)Index, 0);
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
-                DialogDone = TRUE;
+                DialogDone = true;
                 break;
             } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
                 break;
             }
         }
@@ -1464,7 +1471,7 @@ void ShowIoDialog(int item)
         }
     }
 
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     DestroyWindow(IoDialog);
     SetFocus(IoList);
     strcpy(IoListSelectionName, Prog.io.assignment[item].name);
@@ -1586,21 +1593,21 @@ void ShowModbusDialog(int item)
     SendMessage(ModbusSlave, WM_SETTEXT, 0, (LPARAM)txtModbusSlave);
     SendMessage(ModbusRegister, WM_SETTEXT, 0, (LPARAM)txtModbusRegister);
 
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(IoDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(IoDialog, true);
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
-                DialogDone = TRUE;
+                DialogDone = true;
                 break;
             } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
                 break;
             }
         }
@@ -1618,7 +1625,7 @@ void ShowModbusDialog(int item)
         Prog.io.assignment[item].modbus.Address = atoi(txtModbusRegister);
     }
 
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(IoDialog);
     return;
@@ -1656,7 +1663,7 @@ void IoListProc(NMHDR *h)
                 }
 
                 case LV_IO_STATE: {
-                    if(TRUE || InSimulationMode) {
+                    if(true || InSimulationMode) {
                         DescribeForIoList(name, type, i->item.pszText);
                     } else {
                         strcpy(i->item.pszText, "");
@@ -1737,18 +1744,18 @@ void IoListProc(NMHDR *h)
                         if(addr > 0)
                             sprintf(i->item.pszText, "0x%x", addr);
                     } else if((type == IO_TYPE_INTERNAL_RELAY)) {
-                        MemForSingleBit(name, TRUE, &addr, &bit);
+                        MemForSingleBit(name, true, &addr, &bit);
                         if(addr > 0 && bit >= 0)
                             sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                     } else if(type == IO_TYPE_UART_TX) {
                         if(Prog.mcu) {
-                            AddrBitForPin(Prog.mcu->uartNeeds.txPin, &addr, &bit, FALSE);
+                            AddrBitForPin(Prog.mcu->uartNeeds.txPin, &addr, &bit, false);
                             if(addr > 0 && bit >= 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                         }
                     } else if(type == IO_TYPE_UART_RX) {
                         if(Prog.mcu) {
-                            AddrBitForPin(Prog.mcu->uartNeeds.rxPin, &addr, &bit, TRUE);
+                            AddrBitForPin(Prog.mcu->uartNeeds.rxPin, &addr, &bit, true);
                             if(addr > 0 && bit >= 0)
                                 sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                         }
@@ -1762,7 +1769,7 @@ void IoListProc(NMHDR *h)
                             McuIoPinInfo *iop;
                             iop = PinInfoForName(name);
                             if(iop) {
-                                AddrBitForPin(iop->pin, &addr, &bit, TRUE);
+                                AddrBitForPin(iop->pin, &addr, &bit, true);
                                 if(addr > 0 && bit >= 0)
                                     sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                             }
@@ -1775,7 +1782,7 @@ void IoListProc(NMHDR *h)
                               || (type == IO_TYPE_DIG_OUTPUT) //
                               || (type == IO_TYPE_PWM_OUTPUT)) {
                         if(SingleBitAssigned(name))
-                            MemForSingleBit(name, TRUE, &addr, &bit);
+                            MemForSingleBit(name, true, &addr, &bit);
                         if(addr > 0 && bit >= 0)
                             sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
                     }
@@ -1849,7 +1856,7 @@ void IoListProc(NMHDR *h)
                     case IO_TYPE_TON:
                     case IO_TYPE_TOF: {
                         ShowIoDialog(i->iItem);
-                        InvalidateRect(MainWindow, nullptr, FALSE);
+                        InvalidateRect(MainWindow, nullptr, false);
                         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
                         break;
                     }
@@ -1879,7 +1886,7 @@ void IoListProc(NMHDR *h)
                         break;
                 }
                 ProgramChanged();
-                InvalidateRect(MainWindow, nullptr, FALSE);
+                InvalidateRect(MainWindow, nullptr, false);
             }
             break;
         }

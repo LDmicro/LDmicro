@@ -1,4 +1,3 @@
-
 #ifndef __LANG_H_
 #define __LANG_H_
 

@@ -38,9 +38,9 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
 // contains a leaf element (coil, contacts, etc.). If so, create an element
-// for and save that in *any and *which, and return TRUE, else return FALSE.
+// for and save that in *any and *which, and return true, else return false.
 //-----------------------------------------------------------------------------
-static BOOL LoadLeafFromFile(char *line, void **any, int *which)
+static bool LoadLeafFromFile(char *line, void **any, int *which)
 {
     ElemLeaf *l = AllocLeaf();
     int       x;
@@ -539,7 +539,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
     } else {
         // that's odd; nothing matched
         CheckFree(l);
-        return FALSE;
+        return false;
     }
     *any = l;
     if(*which == ELEM_SET_PWM) {
@@ -552,7 +552,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
             *s = '\0';
         }
     }
-    return TRUE;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -677,7 +677,7 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
 void LoadWritePcPorts()
 {
     if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM)) {
-        //RunningInBatchMode = TRUE;
+        //RunningInBatchMode = true;
         char pc[MAX_PATH];
         strcpy(pc, CurrentLdPath);
         if(strlen(pc))
@@ -691,24 +691,24 @@ void LoadWritePcPorts()
                 }
         } else
             Error(_(" File '%s' not found!"), pc);
-        //RunningInBatchMode = FALSE;
+        //RunningInBatchMode = false;
     }
 }
 
 //-----------------------------------------------------------------------------
 // Load a project from a saved project description files. This describes the
 // program, the target processor, plus certain configuration settings (cycle
-// time, processor clock, etc.). Return TRUE for success, FALSE if anything
+// time, processor clock, etc.). Return true for success, false if anything
 // went wrong.
 //-----------------------------------------------------------------------------
-BOOL LoadProjectFromFile(char *filename)
+bool LoadProjectFromFile(char *filename)
 {
     FreeEntireProgram();
     strcpy(CurrentCompileFile, "");
 
     FILE *f = fopen(filename, "r");
     if(!f)
-        return FALSE;
+        return false;
 
     strcpy(CurrentLdPath, filename);
     ExtractFileDir(CurrentLdPath);
@@ -725,12 +725,12 @@ BOOL LoadProjectFromFile(char *filename)
         if(strcmp(line, "IO LIST") == 0) {
             if(!LoadIoListFromFile(f)) {
                 fclose(f);
-                return FALSE;
+                return false;
             }
         } else if(strcmp(line, "VAR LIST") == 0) {
             if(!LoadVarListFromFile(f)) {
                 fclose(f);
-                return FALSE;
+                return false;
             }
         } else if(sscanf(line, "LDmicro%s", &Prog.LDversion)) {
             if(strcmp(Prog.LDversion, "0.1") != 0)
@@ -845,7 +845,7 @@ BOOL LoadProjectFromFile(char *filename)
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
     strcpy(CurrentSaveFile, filename);
-    return TRUE;
+    return true;
 
 failed:
     fclose(f);
@@ -854,7 +854,7 @@ failed:
         _("File format error; perhaps this program is for a newer version "
           "of LDmicro?"));
     Error("Error in RUNG %d. See error below %s", rung + 1, line);
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -959,7 +959,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
         case ELEM_CONTACTS:
             if(l->d.contacts.name[0] != 'X')
-                l->d.contacts.set1 = FALSE;
+                l->d.contacts.set1 = false;
             fprintf(f, "CONTACTS %s %d %d\n", l->d.contacts.name, l->d.contacts.negated, l->d.contacts.set1);
             break;
 
@@ -1370,10 +1370,10 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 }
 
 //-----------------------------------------------------------------------------
-// Save the program in memory to the given file. Returns TRUE for success,
-// FALSE otherwise.
+// Save the program in memory to the given file. Returns true for success,
+// false otherwise.
 //-----------------------------------------------------------------------------
-BOOL SaveProjectToFile(char *filename, int code)
+bool SaveProjectToFile(char *filename, int code)
 {
     if(code == MNU_SAVE_02)
         strcpy(Prog.LDversion, "0.2");
@@ -1382,7 +1382,7 @@ BOOL SaveProjectToFile(char *filename, int code)
 
     FILE *f = fopen(filename, "w");
     if(!f)
-        return FALSE;
+        return false;
 
     fprintf(f, "LDmicro%s\n", Prog.LDversion);
     if(Prog.mcu) {
@@ -1428,7 +1428,7 @@ BOOL SaveProjectToFile(char *filename, int code)
 
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
-    return TRUE;
+    return true;
 }
 //-----------------------------------------------------------------------------
 /*

@@ -860,6 +860,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     false. These are mostly useful for debugging, temporary short the
     circuit or break an electrical circuit.
 
+    See https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
+
 
 > MASTER CONTROL RELAY
                            -{MASTER RLY}-
@@ -892,7 +894,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 > ARITHMETIC OPERATION       {ADD  kay  :=}       {SUB  Ccnt :=}
                             -{ 'a' + 10   }-     -{ Ccnt - 10  }-
 
-                             {MUL  dest :=}       {DIV    dv :=}
+>                            {MUL  dest :=}       {DIV    dv :=}
                             -{ var * -990 }-     -{ dv / -10000}-
 
     When the input to this instruction is true, it sets the given
@@ -924,7 +926,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 > BITWISE OPERATION          {AND  var1 :=}       {OR   Ccnt :=}
                             -{var2 & var3 }-     -{ Ccnt | 0o07}-
 
-                             {XOR  dest :=}       {NOT  dv :=  }
+>                            {XOR  dest :=}       {NOT  dv :=  }
                             -{ var ^ 0xAA }-     -{ ~0b11001100}-
 
     When the input to this instruction is true, it sets the given
@@ -1020,7 +1022,9 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                       +-------------------+
 
 
-> ARITHMETIC SHIFT: SHL, SHR.
+> ARITHMETIC SHIFT: SHL, SHR.    {SHL  var1 :=}     {SHR   cnt :=}
+                                -{var2 << 2   }-   -{  cnt >>  1 }-
+
     See https://en.wikipedia.org/wiki/Arithmetic_shift
 
     SHL - arithmetic left shift
@@ -1040,7 +1044,9 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     Note: MSB = Most Significant Bit, LSB = Least Significant Bit
 
 
-> LOGICAL SHIFT TO RIGHT SR0.
+> LOGICAL SHIFT TO RIGHT SR0.    {SR0  dest :=}
+                                -{var  sr0  3 }-
+
     See https://en.wikipedia.org/wiki/Logical_shift
 
     SR0 - logical right shift
@@ -1052,7 +1058,9 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     NOte: Logical shift to left is equivalent to SHL arithmetic shift to left.
 
 
-> CIRCULAR SHIFT: ROL, ROR.
+> CIRCULAR SHIFT: ROL, ROR.      {ROL  dest :=}     {ROR    dv :=}
+                                -{ var rol 4  }-   -{var ror 4   }-
+
     See https://en.wikipedia.org/wiki/Circular_shift
 
     ROL - circular shift (bitwise rotation) left
@@ -1070,14 +1078,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
          ^                      v
          \_________<____________/
 
-
-
-                              {SHL  var1 :=}       {SHR   cnt :=}
-                             -{var2 << 2   }-     -{  cnt >>  1 }-
-
-         {SR0  dest :=}       {ROL  dest :=}       {ROR    dv :=}
-        -{var  sr0  3 }-     -{ var rol 4  }-     -{var ror 4   }-
-
+  SHL, SHR, SR0, ROL, ROR:
     When the input to this instruction is true, it sets the given
     destination variable equal to the given expression. The operands
     can be either variables (including timer and counter variables)
@@ -1103,7 +1104,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     and it is equivalent to
          {OR     var :=}
-        -{   var | 0x10}-
+        -{   val | 0x10}-
 
 
     To clear bit number 4 in variable 'var'
@@ -1113,7 +1114,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     and it is equivalent to
          {AND    var :=}
-        -{   var & 0xEF}-
+        -{   val & 0xEF}-
 
     var must be a variable, not a literal value.
     The size of var must be from 1 to 4 bytes.
@@ -1127,7 +1128,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 > COMPARE               [var ==]        [var >]        [1 >=]
                        -[ var2 ]-      -[ 1   ]-      -[ Ton]-
 
-                        [var !=]       [-4 <   ]       [1 <=]
+>                       [var !=]       [-4 <   ]       [1 <=]
                        -[ var2 ]-     -[ vartwo]-     -[ Cup]-
 
     If the input to this instruction is false then the output is false. If
@@ -1361,6 +1362,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     You can set another PWM base frequency only after actuation the RESET PWM.
     See RESET PWM above.
 
+
 > MAKE PERSISTENT            saved_var
                            --{PERSIST}--
 
@@ -1375,6 +1377,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     good for a limited (~100 000) number of writes. When the rung-in
     condition is false, nothing happens. This instruction must be the
     rightmost instruction in its rung.
+
+    See https://github.com/LDmicro/LDmicro/wiki/MAKE-PERSISTENT-operation
 
 
 > UART (SERIAL) RECEIVE          var

@@ -45,6 +45,7 @@ rem %AVRDUDE_PATH%avrdude.exe -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U
 @rem set the -P <port>       Set the serial com port for the arduino ex -P COM3
 @rem set the -b <baudrate>   baud rate for programmers (see the Set up your hardware avrdude programmer).
 @rem Modify this                                                                 COMX    BAUD
+@rem %AVRDUDE_PATH%avrdude.exe -y -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a -E noreset, novcc
 @rem %AVRDUDE_PATH%avrdude.exe -y -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -P COM4 -b 57600 -U flash:w:"%2.hex":a
      %AVRDUDE_PATH%avrdude.exe -y -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a -E noreset, vcc
 

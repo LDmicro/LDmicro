@@ -51,9 +51,9 @@ ElemSubcktParallel *AllocSubcktParallel()
 // in a parallel circuit then we must create a new parallel (for series) or
 // series (for parallel) subcircuit with 2 elements, one for the previously
 // selected element and one for the new element. Calls itself recursively on
-// all subcircuits. Returns TRUE if it or a child made the addition.
+// all subcircuits. Returns true if it or a child made the addition.
 //-----------------------------------------------------------------------------
-static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
+static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
 {
     int i;
     switch(which) {
@@ -65,7 +65,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 }
                 if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
                     if(AddLeafWorker(ELEM_PARALLEL_SUBCKT, s->contents[i].data.any, newWhich, newElem)) {
-                        return TRUE;
+                        return true;
                     }
                 }
             }
@@ -82,11 +82,11 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 CheckFree(newElem);
                 s->contents[i].which = newWhich;
                 SelectedWhich = newWhich;
-                return TRUE;
+                return true;
             }
             if(s->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
                 Error(_("Too many elements in subcircuit!"));
-                return TRUE;
+                return true;
             }
             switch(Selected->selectedState) {
                 case SELECTED_LEFT:
@@ -124,7 +124,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     oops();
                     break;
             }
-            return TRUE;
+            return true;
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
@@ -135,7 +135,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 }
                 if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
                     if(AddLeafWorker(ELEM_SERIES_SUBCKT, p->contents[i].data.any, newWhich, newElem)) {
-                        return TRUE;
+                        return true;
                     }
                 }
             }
@@ -143,7 +143,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 break;
             if(p->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
                 Error(_("Too many elements in subcircuit!"));
-                return TRUE;
+                return true;
             }
             switch(Selected->selectedState) {
                 case SELECTED_ABOVE:
@@ -181,33 +181,33 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     oops();
                     break;
             }
-            return TRUE;
+            return true;
             break;
         }
     }
 
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
 // Add the specified leaf node in the position indicated by the cursor. We
 // will search through the entire program using AddLeafWorker to find the
 // insertion point, and AddLeafWorker will stick it in at the requested
-// location and return TRUE. We return TRUE if it worked, else FALSE.
+// location and return true. We return true if it worked, else false.
 //-----------------------------------------------------------------------------
-static BOOL AddLeaf(int newWhich, ElemLeaf *newElem)
+static bool AddLeaf(int newWhich, ElemLeaf *newElem)
 {
     if(!Selected || Selected->selectedState == SELECTED_NONE)
-        return FALSE;
+        return false;
 
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         if(AddLeafWorker(ELEM_SERIES_SUBCKT, Prog.rungs[i], newWhich, newElem)) {
             WhatCanWeDoFromCursorAndTopology();
-            return TRUE;
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -239,7 +239,7 @@ void AddContact(int what)
     } else {
         strcpy(c->d.contacts.name, "Xnew");
     }
-    c->d.contacts.negated = FALSE;
+    c->d.contacts.negated = false;
 
     AddLeaf(ELEM_CONTACTS, c);
 }
@@ -255,10 +255,10 @@ void AddCoil(int what)
     } else {
         strcpy(c->d.coil.name, "Ynew");
     }
-    c->d.coil.negated = FALSE;
-    c->d.coil.setOnly = FALSE;
-    c->d.coil.resetOnly = FALSE;
-    c->d.coil.ttrigger = FALSE;
+    c->d.coil.negated = false;
+    c->d.coil.setOnly = false;
+    c->d.coil.resetOnly = false;
+    c->d.coil.ttrigger = false;
 
     AddLeaf(ELEM_COIL, c);
 }
@@ -764,12 +764,12 @@ void AddPersist()
 // parent. Call ourselves recursively to do this on every child of the passed
 // subcircuit. The passed subcircuit will not be collapsed itself, so that
 // the rung subcircuit may contain only one element as a special case. Returns
-// TRUE if it or a child made any changes, and for completeness must be
+// true if it or a child made any changes, and for completeness must be
 // called iteratively on the root till it doesn't do anything.
 //-----------------------------------------------------------------------------
-BOOL CollapseUnnecessarySubckts(int which, void *any)
+bool CollapseUnnecessarySubckts(int which, void *any)
 {
-    BOOL modified = FALSE;
+    bool modified = false;
 
     ok();
     switch(which) {
@@ -795,15 +795,15 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
                             s->contents[i].data.any = p->contents[0].data.any;
                         }
                         CheckFree(p);
-                        modified = TRUE;
+                        modified = true;
                     } else if(p->count == 0) {
                         memmove(&s->contents[i], &s->contents[i + 1], (s->count - i - 1) * sizeof(s->contents[0]));
                         s->count -= 1;
                         CheckFree(p);
-                        modified = TRUE;
+                        modified = true;
                     } else {
                         while(CollapseUnnecessarySubckts(ELEM_PARALLEL_SUBCKT, s->contents[i].data.parallel)) {
-                            modified = TRUE;
+                            modified = true;
                         }
                     }
                 } else if(s->contents[i].which == ELEM_SERIES_SUBCKT) {
@@ -816,7 +816,7 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
                         memcpy(&s->contents[i], &s2->contents[0], (s2->count) * sizeof(s->contents[0]));
                         s->count += s2->count - 1;
                         CheckFree(s2);
-                        modified = TRUE;
+                        modified = true;
                     }
                 }
                 // else a leaf, not a problem
@@ -845,15 +845,15 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
                             p->contents[i].data.any = s->contents[0].data.any;
                         }
                         CheckFree(s);
-                        modified = TRUE;
+                        modified = true;
                     } else if(s->count == 0) {
                         memmove(&p->contents[i], &p->contents[i + 1], (p->count - i - 1) * sizeof(p->contents[0]));
                         p->count -= 1;
                         CheckFree(s);
-                        modified = TRUE;
+                        modified = true;
                     } else {
                         while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, p->contents[i].data.series)) {
-                            modified = TRUE;
+                            modified = true;
                         }
                     }
                 }
@@ -874,10 +874,10 @@ BOOL CollapseUnnecessarySubckts(int which, void *any)
 // Delete the selected leaf element from the circuit. Just pull it out of the
 // subcircuit that it was in before, and don't worry about creating
 // subcircuits with only one element; we will clean that up later in a second
-// pass. Returns TRUE if it or a child (calls self recursively) found and
+// pass. Returns true if it or a child (calls self recursively) found and
 // removed the element.
 //-----------------------------------------------------------------------------
-static BOOL DeleteSelectedFromSubckt(int which, void *any)
+static bool DeleteSelectedFromSubckt(int which, void *any)
 {
     ok();
     switch(which) {
@@ -890,11 +890,11 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
                     CheckFree(s->contents[i].data.any);
                     memmove(&s->contents[i], &s->contents[i + 1], (s->count - i - 1) * sizeof(s->contents[0]));
                     (s->count)--;
-                    return TRUE;
+                    return true;
                 }
                 if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
                     if(DeleteSelectedFromSubckt(ELEM_PARALLEL_SUBCKT, s->contents[i].data.any)) {
-                        return TRUE;
+                        return true;
                     }
                 }
             }
@@ -909,11 +909,11 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
                     CheckFree(p->contents[i].data.any);
                     memmove(&p->contents[i], &p->contents[i + 1], (p->count - i - 1) * sizeof(p->contents[0]));
                     (p->count)--;
-                    return TRUE;
+                    return true;
                 }
                 if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
                     if(DeleteSelectedFromSubckt(ELEM_SERIES_SUBCKT, p->contents[i].data.any)) {
-                        return TRUE;
+                        return true;
                     }
                 }
             }
@@ -923,14 +923,14 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
             oops();
             break;
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
-static BOOL DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToDelete, BOOL IsEnd)
+static bool DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToDelete, bool IsEnd)
 {
     ok();
-    BOOL res = false;
+    bool res = false;
     switch(anyWhich) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
@@ -949,11 +949,11 @@ static BOOL DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
             break;
         }
         default:
-            if(EndOfRungElem(anyWhich) == IsEnd)
+            if(EndOfRungElem(anyWhich) == static_cast<bool>(IsEnd))
                 if(Selected != anyToDelete) {
                     ElemLeaf *saveSelected = Selected;
                     Selected = (ElemLeaf *)anyToDelete; // HOOK
-                    if(res = DeleteSelectedFromSubckt(which, any)) {
+                    if((res = DeleteSelectedFromSubckt(which, any))) {
                         while(CollapseUnnecessarySubckts(which, any))
                             ;
                         //dbp("DeleteAny %d", IsEnd);
@@ -1066,7 +1066,7 @@ void FreeEntireProgram()
 //-----------------------------------------------------------------------------
 // Returns true if the given subcircuit contains the given leaf.
 //-----------------------------------------------------------------------------
-static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
+static bool ContainsElem(int which, void *any, ElemLeaf *seek)
 {
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -1074,7 +1074,7 @@ static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
             int               i;
             for(i = 0; i < s->count; i++) {
                 if(ContainsElem(s->contents[i].which, s->contents[i].data.any, seek)) {
-                    return TRUE;
+                    return true;
                 }
             }
             break;
@@ -1084,14 +1084,14 @@ static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
             int                 i;
             for(i = 0; i < p->count; i++) {
                 if(ContainsElem(p->contents[i].which, p->contents[i].data.any, seek)) {
-                    return TRUE;
+                    return true;
                 }
             }
             break;
         }
             CASE_LEAF
             if(any == seek)
-                return TRUE;
+                return true;
             break;
 
         case ELEM_PADDING:
@@ -1100,7 +1100,7 @@ static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
         default:
             ooops("which=%d", which);
     }
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1143,7 +1143,7 @@ void DeleteSelectedRung()
     }
 
     int  gx, gy;
-    BOOL foundCursor;
+    bool foundCursor;
     foundCursor = FindSelected(&gx, &gy);
 
     int i = RungContainingSelected();
@@ -1221,7 +1221,7 @@ void InsertRungI(int i)
 //-----------------------------------------------------------------------------
 // Insert a rung either before or after the rung that contains the cursor.
 //-----------------------------------------------------------------------------
-void InsertRung(BOOL afterCursor)
+void InsertRung(bool afterCursor)
 {
     if(Prog.numRungs >= (MAX_RUNGS - 1)) {
         Error(_("Too many rungs!"));
@@ -1263,7 +1263,7 @@ void PushRungDown()
     NullDisplayMatrix(HeightBefore, HeightBefore + HeightNow + HeightDown);
 
     WhatCanWeDoFromCursorAndTopology();
-    ScrollSelectedIntoViewAfterNextPaint = TRUE;
+    ScrollSelectedIntoViewAfterNextPaint = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1290,7 +1290,7 @@ void PushRungUp()
     NullDisplayMatrix(HeightBefore, HeightBefore + HeightUp + HeightNow);
 
     WhatCanWeDoFromCursorAndTopology();
-    ScrollSelectedIntoViewAfterNextPaint = TRUE;
+    ScrollSelectedIntoViewAfterNextPaint = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1313,7 +1313,7 @@ void NewProgram()
 // position of a series subcircuit that may be in a parallel subcircuit that
 // etc.)
 //-----------------------------------------------------------------------------
-static void LastInCircuit(int which, void *any, ElemLeaf *seek, BOOL *found, BOOL *andItemAfter)
+static void LastInCircuit(int which, void *any, ElemLeaf *seek, bool *found, bool *andItemAfter)
 {
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -1334,9 +1334,9 @@ static void LastInCircuit(int which, void *any, ElemLeaf *seek, BOOL *found, BOO
         }
         default:
             if(*found)
-                *andItemAfter = TRUE;
+                *andItemAfter = true;
             if(any == seek)
-                *found = TRUE;
+                *found = true;
             break;
     }
 }
@@ -1347,28 +1347,28 @@ static void LastInCircuit(int which, void *any, ElemLeaf *seek, BOOL *found, BOO
 // circumstance in which it is okay to insert a coil, RES, etc. after
 // something
 //-----------------------------------------------------------------------------
-BOOL ItemIsLastInCircuit(ElemLeaf *item)
+bool ItemIsLastInCircuit(ElemLeaf *item)
 {
     int i = RungContainingSelected();
     if(i < 0)
-        return FALSE;
+        return false;
 
-    BOOL found = FALSE;
-    BOOL andItemAfter = FALSE;
+    bool found = false;
+    bool andItemAfter = false;
 
     LastInCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], item, &found, &andItemAfter);
 
     if(found)
         return !andItemAfter;
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
-// Returns TRUE if the subcircuit contains any of the given instruction
-// types (ELEM_....), else FALSE.
+// Returns true if the subcircuit contains any of the given instruction
+// types (ELEM_....), else false.
 //-----------------------------------------------------------------------------
 /*
-BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
+bool ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
 {
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -1378,7 +1378,7 @@ BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
                 if(ContainsWhich(p->contents[i].which, p->contents[i].data.any,
                     seek1, seek2, seek3))
                 {
-                    return TRUE;
+                    return true;
                 }
             }
             break;
@@ -1390,26 +1390,26 @@ BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
                 if(ContainsWhich(s->contents[i].which, s->contents[i].data.any,
                     seek1, seek2, seek3))
                 {
-                    return TRUE;
+                    return true;
                 }
             }
             break;
         }
         default:
             if(which == seek1 || which == seek2 || which == seek3) {
-                return TRUE;
+                return true;
             }
             break;
     }
-    return FALSE;
+    return false;
 }
 
-BOOL ContainsWhich(int which, void *any, int seek1, int seek2)
+bool ContainsWhich(int which, void *any, int seek1, int seek2)
 {
     return ContainsWhich(which, any, seek1, seek2, -1);
 }
 
-BOOL ContainsWhich(int which, void *any, int seek1)
+bool ContainsWhich(int which, void *any, int seek1)
 {
     return ContainsWhich(which, any, seek1, -1, -1);
 }
@@ -1458,7 +1458,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1)
 }
 
 //-----------------------------------------------------------------------------
-static BOOL _FindRung(int which, void *any, int seek, char *name)
+static bool _FindRung(int which, void *any, int seek, char *name)
 {
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -1466,7 +1466,7 @@ static BOOL _FindRung(int which, void *any, int seek, char *name)
             int                 i;
             for(i = 0; i < p->count; i++)
                 if(_FindRung(p->contents[i].which, p->contents[i].data.any, seek, name))
-                    return TRUE;
+                    return true;
             break;
         }
         case ELEM_SERIES_SUBCKT: {
@@ -1474,7 +1474,7 @@ static BOOL _FindRung(int which, void *any, int seek, char *name)
             int               i;
             for(i = 0; i < s->count; i++)
                 if(_FindRung(s->contents[i].which, s->contents[i].data.any, seek, name))
-                    return TRUE;
+                    return true;
             break;
         }
         case ELEM_SUBPROG:
@@ -1484,16 +1484,16 @@ static BOOL _FindRung(int which, void *any, int seek, char *name)
                 ElemLeaf *leaf = (ElemLeaf *)any;
                 ElemGoto *e = &leaf->d.doGoto;
                 if(strcmp(e->rung, name) == 0)
-                    return TRUE;
+                    return true;
             }
             break;
         }
         default:
             if(which == seek)
-                return TRUE; // ???
+                return true; // ???
             break;
     }
-    return FALSE;
+    return false;
 }
 
 int FindRung(int seek, char *name)
@@ -1575,18 +1575,18 @@ int CountWhich(int seek1)
     return CountWhich(seek1, -1, -1, nullptr);
 }
 
-BOOL DelayUsed()
+bool DelayUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DELAY, -1, -1)) {
-            return TRUE;
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 
-BOOL TablesUsed()
+bool TablesUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -1594,17 +1594,17 @@ BOOL TablesUsed()
                ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_14SEG, ELEM_16SEG, -1))) {
-            return TRUE;
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 /* function moved to intcode.cpp
 //-----------------------------------------------------------------------------
 // Are either of the UART functions (send or recv) used? Need to know this
 // to know whether we must receive their pins.
 //-----------------------------------------------------------------------------
-BOOL UartFunctionUsed()
+bool UartFunctionUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
@@ -1613,10 +1613,10 @@ BOOL UartFunctionUsed()
         ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_SEND_READY, -1, -1)))
         {
-            return TRUE;
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 */
 //-----------------------------------------------------------------------------
@@ -1672,34 +1672,34 @@ uint32_t QuadEncodFunctionUsed()
     return n;
 }
 //-----------------------------------------------------------------------------
-BOOL NPulseFunctionUsed()
+bool NPulseFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_NPULSE, -1, -1)) {
-            return TRUE;
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 //-----------------------------------------------------------------------------
-BOOL EepromFunctionUsed()
+bool EepromFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_PERSIST, -1, -1)) {
-            return TRUE;
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 //-----------------------------------------------------------------------------
-BOOL SleepFunctionUsed()
+bool SleepFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SLEEP, -1, -1)) {
-            return TRUE;
+            return true;
         }
     }
-    return FALSE;
+    return false;
 }
 //-----------------------------------------------------------------------------
 // copy the selected rung temporar, InsertRung and
@@ -1732,7 +1732,7 @@ void        CopyRungDown()
     fclose(f);
 
     WhatCanWeDoFromCursorAndTopology();
-    ScrollSelectedIntoViewAfterNextPaint = TRUE;
+    ScrollSelectedIntoViewAfterNextPaint = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1767,7 +1767,7 @@ void CutRung()
     }
 
     WhatCanWeDoFromCursorAndTopology();
-    //ScrollSelectedIntoViewAfterNextPaint = TRUE;
+    //ScrollSelectedIntoViewAfterNextPaint = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1880,7 +1880,7 @@ void PasteRung(int PasteInTo)
                     if(j >= Prog.numRungs)
                         j = Prog.numRungs - 1;
                     //insert rung INTO series
-                    BOOL doCollapse = FALSE;
+                    bool doCollapse = false;
                     if(Selected && (Selected->selectedState != SELECTED_NONE)) {
                         if(!EndOfRungElem(SelectedWhich) || (Selected->selectedState == SELECTED_LEFT))
                             if(!ItemIsLastInCircuit(Selected) || (Selected->selectedState == SELECTED_LEFT)) {
@@ -1935,7 +1935,7 @@ void PasteRung(int PasteInTo)
 }
 
 //-----------------------------------------------------------------------------
-static void RenameSet1_(int which, void *any, int which_elem, char *name, char *new_name, BOOL set1)
+static void RenameSet1_(int which, void *any, int which_elem, char *name, char *new_name, bool set1)
 {
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -1980,7 +1980,7 @@ static void RenameSet1_(int which, void *any, int which_elem, char *name, char *
 }
 
 //-----------------------------------------------------------------------------
-void RenameSet1(int which, char *name, char *new_name, BOOL set1)
+void RenameSet1(int which, char *name, char *new_name, bool set1)
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++)

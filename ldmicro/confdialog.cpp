@@ -225,28 +225,28 @@ static void MakeControls()
     NiceFont(ConfigBitsTextbox);
 
     if(!Prog.mcu || (Prog.mcu->whichIsa != ISA_PIC16)) {
-        EnableWindow(ConfigBitsTextbox, FALSE);
-        EnableWindow(textLabel2_, FALSE);
+        EnableWindow(ConfigBitsTextbox, false);
+        EnableWindow(textLabel2_, false);
     }
 
     if(!UartFunctionUsed()) {
-        EnableWindow(BaudTextbox, FALSE);
-        EnableWindow(textLabel3, FALSE);
+        EnableWindow(BaudTextbox, false);
+        EnableWindow(textLabel3, false);
     }
     // clang-format off
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
                     Prog.mcu->whichIsa == ISA_XINTERPRETED ||
                     Prog.mcu->whichIsa == ISA_NETZER))
     {
-        EnableWindow(CrystalTextbox, FALSE);
-        EnableWindow(textLabel2, FALSE);
+        EnableWindow(CrystalTextbox, false);
+        EnableWindow(textLabel2, false);
     }
     // clang-format on
 
     if(Prog.mcu && (Prog.mcu->whichIsa != ISA_PIC16)) {
-        EnableWindow(ConfigBitsTextbox, FALSE);
-        EnableWindow(textLabel2_, FALSE);
-        //      EnableWindow(WDTECheckbox, FALSE);
+        EnableWindow(ConfigBitsTextbox, false);
+        EnableWindow(textLabel2_, false);
+        //      EnableWindow(WDTECheckbox, false);
     }
 
     OkButton = CreateWindowEx(0,
@@ -280,7 +280,7 @@ static void MakeControls()
     char txt[1024 * 4] = "";
     char explanation[1024 * 4] = "";
 
-    BOOL b = FALSE;
+    bool b = false;
     if(Prog.mcu && Prog.cycleTime) {
         if(Prog.mcu->whichIsa == ISA_AVR) {
             b = CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen); // && AvrProgLdLen;
@@ -460,22 +460,22 @@ void ShowConfDialog()
     sprintf(buf, "%d", Prog.baudRate);
     SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(ConfDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(ConfDialog, true);
     SetFocus(CycleTextbox);
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
-                DialogDone = TRUE;
+                DialogDone = true;
                 break;
             } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
                 break;
             }
         }
@@ -546,7 +546,7 @@ void ShowConfDialog()
             Prog.cycleTime = ProgCycleTime;
     }
 
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(ConfDialog);
     return;

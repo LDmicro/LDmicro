@@ -17,13 +17,9 @@
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //------
 //
-// Constants, structures, declarations etc. for the PIC ladder logic compiler
 //-----------------------------------------------------------------------------
 #ifndef __ACCEL_H
 #define __ACCEL_H
-
-typedef signed short SWORD;
-typedef signed long SDWORD;
 
 #include "ldmicro.h"
 

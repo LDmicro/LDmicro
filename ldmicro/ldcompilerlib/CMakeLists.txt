@@ -23,6 +23,7 @@ set(LD_COMPILER_SRC_LIST
     ../pascal.cpp
     ../pcports.cpp
     ../translit.cpp
+    ../xinterpreted.cpp
 
     ../accel.h
     ../bits.h
@@ -30,6 +31,8 @@ set(LD_COMPILER_SRC_LIST
     ../intcode.h
     ../netzer.h
     ../mcutable.h
+    ../pcports.h
+    ../compilerexceptions.hpp
     )
 
 if(MSVC)
@@ -37,6 +40,7 @@ if(MSVC)
     string(APPEND CMAKE_C_FLAGS " /J")
 endif()
 
+INCLUDE_DIRECTORIES("../" "../../common/gsl-lite/include")
 add_definitions(
     "-DISOLATION_AWARE_ENABLED"
     "-DWIN32_LEAN_AND_MEAN"

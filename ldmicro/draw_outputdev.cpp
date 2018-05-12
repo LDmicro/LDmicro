@@ -37,7 +37,7 @@ int SelectedGyAfterNextPaint = -1;
 
 // After pushing a rung up or down the position of that rung in the table
 // changes, but the cursor should stay where it was.
-BOOL ScrollSelectedIntoViewAfterNextPaint;
+bool ScrollSelectedIntoViewAfterNextPaint;
 
 // Buffer that we write to when exporting (drawing) diagram to a text file.
 // Dynamically allocated so that we're at least slightly efficient.
@@ -51,7 +51,7 @@ HFONT FixedWidthFontBold;
 // Different colour brushes for right and left buses in simulation, but same
 // colour for both in edit mode; also for the backgrounds in simulation and
 // edit modes.
-static HBRUSH BusRightBus;
+static HBRUSH BusRightBrush;
 static HBRUSH BusLeftBrush;
 static HBRUSH BusBrush;
 static HBRUSH BgBrush;
@@ -64,7 +64,7 @@ int ScrollXOffsetMax;
 int ScrollYOffsetMax;
 
 // Is the cursor currently drawn? We XOR it so this gets toggled.
-static BOOL CursorDrawn;
+static bool CursorDrawn;
 
 // Colours with which to do syntax highlighting, configurable
 SyntaxHighlightingColours HighlightColours;
@@ -125,15 +125,15 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
         return;
 
     COLORREF prev;
-    BOOL     firstTime = TRUE;
-    BOOL     inNumber = FALSE;
-    BOOL     inComment = FALSE;
+    bool     firstTime = true;
+    bool     inNumber = false;
+    bool     inComment = false;
     int      inBrace = 0;
     for(; *str; str++, cx++) {
         int x = cx * FONT_WIDTH + X_PADDING;
         int y = cy * FONT_HEIGHT + Y_PADDING;
 
-        BOOL hiOk = !(InSimulationMode || ThisHighlighted);
+        bool hiOk = !(InSimulationMode || ThisHighlighted);
 
         if(strchr("{}[]", *str) && hiOk && !inComment) {
             if(*str == '{' || *str == '[')
@@ -156,7 +156,7 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
             SetTextColor(Hdc, HighlightColours.lit);
             TextOut(Hdc, x, y, str, 1);
             SetTextColor(Hdc, prev);
-            inNumber = TRUE;
+            inNumber = true;
         } else if(*str == '\x01') {
             cx--;
             if(hiOk) {
@@ -167,14 +167,14 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
             cx--;
             if(hiOk) {
                 SetTextColor(Hdc, prev);
-                inComment = FALSE;
+                inComment = false;
             }
         } else if(*str == '\x03') {
             cx--;
             if(hiOk || InSimulationMode) {
                 prev = GetTextColor(Hdc);
                 SetTextColor(Hdc, HighlightColours.comment);
-                inComment = TRUE;
+                inComment = true;
             }
         } else if(inNumber) {
             if(isdigit(*str) || *str == '.') {
@@ -184,13 +184,13 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
                 SetTextColor(Hdc, prev);
             } else {
                 TextOut(Hdc, x, y, str, 1);
-                inNumber = FALSE;
+                inNumber = false;
             }
         } else {
             TextOut(Hdc, x, y, str, 1);
         }
 
-        firstTime = FALSE;
+        firstTime = false;
     }
 }
 
@@ -238,7 +238,7 @@ void PaintWindow()
     KillTimer(MainWindow, TIMER_BLINK_CURSOR);
     if(CursorDrawn)
         BlinkCursor(nullptr, 0, 0, 0); //Hide Cursor
-    CursorDrawn = FALSE;
+    CursorDrawn = false;
 
     ok();
 
@@ -274,7 +274,7 @@ void PaintWindow()
         ColsAvailable = ScreenColsAvailable();
     }
     memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
-    SelectionActive = FALSE;
+    SelectionActive = false;
     memset(&Cursor, 0, sizeof(Cursor));
 
     DrawChars = DrawCharsToScreen;
@@ -320,7 +320,7 @@ void PaintWindow()
             SetTextColor(Hdc, prev);
 
             cx = 0;
-            DrawElement(Prog.rungs[i], ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i]);
+            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i], ColsAvailable);
         }
 
         cy += thisHeight;
@@ -340,7 +340,7 @@ void PaintWindow()
 
     SetTextColor(Hdc, HighlightColours.rungNum);
 
-    sprintf(str, "%4d", IntCodeLen);
+    sprintf(str, "%4d", IntCode.size());
     TextOut(Hdc, 8, yp + FONT_HEIGHT, str, 4);
 
     sprintf(str, "%4d", ProgWriteP);
@@ -351,18 +351,18 @@ void PaintWindow()
     if(SelectedGxAfterNextPaint >= 0) {
         int gx = SelectedGxAfterNextPaint, gy = SelectedGyAfterNextPaint;
         MoveCursorNear(&gx, &gy);
-        InvalidateRect(MainWindow, nullptr, FALSE);
+        InvalidateRect(MainWindow, nullptr, false);
         SelectedGxAfterNextPaint = -1;
         SelectedGyAfterNextPaint = -1;
     } else if(ScrollSelectedIntoViewAfterNextPaint && Selected) {
         SelectElement(-1, -1, Selected->selectedState);
-        ScrollSelectedIntoViewAfterNextPaint = FALSE;
-        InvalidateRect(MainWindow, nullptr, FALSE);
+        ScrollSelectedIntoViewAfterNextPaint = false;
+        InvalidateRect(MainWindow, nullptr, false);
     } else {
         if(!SelectionActive) {
             if(Prog.numRungs > 0) {
                 if(MoveCursorTopLeft()) {
-                    InvalidateRect(MainWindow, nullptr, FALSE);
+                    InvalidateRect(MainWindow, nullptr, false);
                 }
             }
         }
@@ -377,9 +377,9 @@ void PaintWindow()
 
     r.left += POS_WIDTH * FONT_WIDTH * ColsAvailable + 4;
     r.right += POS_WIDTH * FONT_WIDTH * ColsAvailable + 4;
-    FillRect(Hdc, &r, InSimulationMode ? BusRightBus : BusBrush);
+    FillRect(Hdc, &r, InSimulationMode ? BusRightBrush : BusBrush);
 
-    CursorDrawn = FALSE;
+    CursorDrawn = false;
 
     BitBlt(paintDc, 0, 0, bw, bh, BackDc, ScrollXOffset, 0, SRCCOPY);
 
@@ -543,7 +543,7 @@ void InitBrushesForDrawing()
     LOGBRUSH lb;
     lb.lbStyle = BS_SOLID;
     lb.lbColor = HighlightColours.simBusRight;
-    BusRightBus = CreateBrushIndirect(&lb);
+    BusRightBrush = CreateBrushIndirect(&lb);
 
     lb.lbColor = HighlightColours.simBusLeft;
     BusLeftBrush = CreateBrushIndirect(&lb);
@@ -571,9 +571,9 @@ void InitForDrawing()
                                 0,
                                 0,
                                 FW_REGULAR,
-                                FALSE,
-                                FALSE,
-                                FALSE,
+                                false,
+                                false,
+                                false,
                                 DEFAULT_CHARSET, // ANSI_CHARSET,
                                 OUT_DEFAULT_PRECIS,
                                 CLIP_DEFAULT_PRECIS,
@@ -586,9 +586,9 @@ void InitForDrawing()
                                     0,
                                     0,
                                     FW_REGULAR, // the bold text renders funny under Vista
-                                    FALSE,
-                                    FALSE,
-                                    FALSE,
+                                    false,
+                                    false,
+                                    false,
                                     DEFAULT_CHARSET, // ANSI_CHARSET,
                                     OUT_DEFAULT_PRECIS,
                                     CLIP_DEFAULT_PRECIS,
@@ -606,7 +606,7 @@ void InitForDrawing()
 static void DrawCharsToExportBuffer(int cx, int cy, const char *str)
 {
     while(*str) {
-        //      if(*str >= 10) {
+        // if(*str >= 10) {
         if(WORD(*str) >= 10) { // WORD typecast allow national charset in comments
             ExportBuffer[cy][cx] = *str;
             cx++;
@@ -625,7 +625,7 @@ BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
 
     if(hFile == INVALID_HANDLE_VALUE) {
         Error("Could not open file %s (error %d)\n", FileName, GetLastError());
-        return FALSE;
+        return false;
     }
     BOOL b = GetFileTime(hFile, &ftCreate, &ftAccess, ftWrite);
     CloseHandle(hFile);
@@ -633,18 +633,18 @@ BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
 }
 
 //-----------------------------------------------------------------------------
-// The return value is TRUE if successful, otherwise FALSE.
+// The return value is true if successful, otherwise false.
 // hFile - file descriptor
 // lpszString - pointer to the buffer for the string
 
-BOOL GetLastWriteTime(HANDLE hFile, char *lpszString)
+bool GetLastWriteTime(HANDLE hFile, char *lpszString)
 {
     FILETIME   ftCreate, ftAccess, ftWrite;
     SYSTEMTIME stUTC, stLocal;
 
     // Gets the times of the file.
     if(!GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite))
-        return FALSE;
+        return false;
 
     // Convert the time of the last change to local time.
     FileTimeToSystemTime(&ftWrite, &stUTC);
@@ -660,11 +660,11 @@ BOOL GetLastWriteTime(HANDLE hFile, char *lpszString)
             stLocal.wMinute,
             stLocal.wSecond); // wMilliseconds
 
-    return TRUE;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
-BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
+bool sGetLastWriteTime(char *FileName, char *sFileTime)
 {
     sFileTime[0] = 0;
 
@@ -673,9 +673,9 @@ BOOL sGetLastWriteTime(char *FileName, char *sFileTime)
 
     if(hFile == INVALID_HANDLE_VALUE) {
         Error("Could not open file %s (error %d)\n", FileName, GetLastError());
-        return FALSE;
+        return false;
     }
-    BOOL b = GetLastWriteTime(hFile, sFileTime);
+    bool b = GetLastWriteTime(hFile, sFileTime);
     CloseHandle(hFile);
     return b;
 }
@@ -717,7 +717,7 @@ void ExportDrawingAsText(char *file)
     int  cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
         cx = 6;
-        DrawElement(Prog.rungs[i], ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i]);
+        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i], 0);
         /*
         if((i + 1) < 10) {
             ExportBuffer[cy+1][1] = '0' + (i + 1);
@@ -747,8 +747,8 @@ void ExportDrawingAsText(char *file)
     sprintf(str, "%4d", Prog.numRungs);
     strncpy(ExportBuffer[cy + 1], str, 4);
 
-    if(IntCodeLen) {
-        sprintf(str, "%4d", IntCodeLen);
+    if(IntCode.size()) {
+        sprintf(str, "%4d", IntCode.size());
         strncpy(ExportBuffer[cy + 2], str, 4);
     }
 
@@ -819,7 +819,7 @@ void ExportDrawingAsText(char *file)
     fclose(f);
 
     // we may have trashed the grid tables a bit; a repaint will fix that
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -827,7 +827,7 @@ void ExportDrawingAsText(char *file)
 // scrollbars used to scroll our view of the program.
 //-----------------------------------------------------------------------------
 int  totalHeightScrollbars = 0;
-void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
+void SetUpScrollbars(bool *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
 {
     totalHeightScrollbars = ProgCountRows();
     // // //           + (Prog.numRungs + 0) / POS_HEIGHT // one empty text line between Rungs
@@ -846,11 +846,11 @@ void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
     int totalWidth = ProgCountWidestRow();
 
     if(totalWidth <= ScreenColsAvailable()) {
-        *horizShown = FALSE;
+        *horizShown = false;
         ScrollXOffset = 0;
         ScrollXOffsetMax = 0;
     } else {
-        *horizShown = TRUE;
+        *horizShown = true;
         memset(horiz, 0, sizeof(*horiz));
         horiz->cbSize = sizeof(*horiz);
         horiz->fMask = SIF_DISABLENOSCROLL | SIF_ALL;

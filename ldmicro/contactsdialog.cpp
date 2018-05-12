@@ -225,9 +225,9 @@ static void MakeControls()
     PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, (LONG_PTR)MyNameProc);
 }
 
-void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
+void ShowContactsDialog(bool *negated, bool *set1, char *name)
 {
-    BOOL set1Save = *set1;
+    bool set1Save = *set1;
     char nameSave[MAX_NAME_LEN];
     strcpy(nameSave, name);
 
@@ -278,23 +278,23 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
 
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
 
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(ContactsDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(ContactsDialog, true);
     SetFocus(NameTextbox);
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
-                DialogDone = TRUE;
+                DialogDone = true;
                 break;
             } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
                 break;
             }
         }
@@ -309,9 +309,9 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
 
     if(!DialogCancel) {
         if(SendMessage(NegatedCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            *negated = TRUE;
+            *negated = true;
         } else {
-            *negated = FALSE;
+            *negated = false;
         }
         if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             name[0] = 'R';
@@ -327,15 +327,15 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)(MAX_NAME_LEN - 1), (LPARAM)(name + 1));
 
         if(SendMessage(Set1Checkbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            *set1 = TRUE;
+            *set1 = true;
         } else {
-            *set1 = FALSE;
+            *set1 = false;
         }
 
         if((*set1 != set1Save) || strcmp(name, nameSave)) {
             int n = CountWhich(ELEM_CONTACTS, ELEM_COIL, nameSave);
             if(n >= 1) {
-                BOOL rename = FALSE;
+                bool rename = false;
                 if(strcmp(name, nameSave)) {
                     char str[1000];
                     sprintf(str, _("Rename the ALL other %d contacts/coils named '%s' to '%s' ?"), n, nameSave, name);
@@ -345,16 +345,16 @@ void ShowContactsDialog(BOOL *negated, BOOL *set1, char *name)
                     if(name[0] == 'X')
                         RenameSet1(ELEM_CONTACTS, nameSave, name, *set1); // rename and set as set1
                     else
-                        RenameSet1(ELEM_CONTACTS, nameSave, name, FALSE); // rename and reset
+                        RenameSet1(ELEM_CONTACTS, nameSave, name, false); // rename and reset
                 else if(name[0] == 'X')
                     RenameSet1(ELEM_CONTACTS, name, nullptr, *set1); // set as set1
                 else
-                    RenameSet1(ELEM_CONTACTS, name, nullptr, FALSE); // reset
+                    RenameSet1(ELEM_CONTACTS, name, nullptr, false); // reset
             }
         }
     }
 
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(ContactsDialog);
     return;

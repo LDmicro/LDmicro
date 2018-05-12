@@ -10,5 +10,13 @@ set (LDXINTERPRET_SRC
      ../ldxinterpret.cpp
     )
 
+add_definitions(
+    "-DISOLATION_AWARE_ENABLED"
+    "-DWIN32_LEAN_AND_MEAN"
+    "-D_CRT_SECURE_NO_WARNINGS"
+    "-D_CRT_SECURE_NO_DEPRECATE"
+    "-DNOMINMAX"
+    )
+
 add_executable(ldinterpret  ${LDINTERPRET_SRC})
 add_executable(ldxinterpret ${LDXINTERPRET_SRC})

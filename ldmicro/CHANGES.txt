@@ -1,3 +1,36 @@
+== Release 4.3.9.2
+
+   Fixed: Problem "PERSIST" Arduino Mega. #82
+
+   Updated: EXTERN_EVERYTHING in Arduino Sketch.
+
+   Fixed: RESET PWM instrutions in Arduino Sketch. #62
+
+   Added: SET PWM - optional setPwmFrequency() in Arduino Sketch.
+   Need to test. See issue #62
+
+   Fixed: UART Simulation error V4390. #84
+
+   Fixed: MASTER RELAY simulation bug. #83
+
+   Updated: MASTER RELAY state colors in simulation mode.
+
+   Fixed: When minimizing LDmicro, it always hides the IoList window.
+
+   * Wiki: OPEN CIRCUIT, SHORT CIRCUIT
+   https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
+
+   Fixed: Is it correct return ? #55 Yes.
+
+   Test: Unclosed Rung. See issue #56.
+   Experimental release attahed at page
+   https://github.com/LDmicro/LDmicro/issues/56
+
+== Release 4.3.9.1
+
+    * Wiki: MAKE PERSISTENT operation
+    https://github.com/LDmicro/LDmicro/wiki/MAKE-PERSISTENT-operation
+
 == Release 4.3.9.0
 
     * New: Bitwise variable operations (Unsigned)

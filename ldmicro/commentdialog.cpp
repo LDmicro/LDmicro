@@ -97,15 +97,15 @@ void ShowCommentDialog(char *comment)
 
     SendMessage(CommentTextbox, WM_SETTEXT, 0, (LPARAM)comment);
 
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(CommentDialog, TRUE);
+    EnableWindow(MainWindow, false);
+    ShowWindow(CommentDialog, true);
     SetFocus(CommentTextbox);
     SendMessage(CommentTextbox, EM_SETSEL, 0, -1);
 
     MSG   msg;
     DWORD ret;
-    DialogDone = FALSE;
-    DialogCancel = FALSE;
+    DialogDone = false;
+    DialogCancel = false;
     while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_TAB && GetFocus() == CommentTextbox) {
@@ -113,12 +113,12 @@ void ShowCommentDialog(char *comment)
                 continue;
             } else if(msg.wParam == VK_RETURN) {
                 if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                    DialogDone = TRUE;
+                    DialogDone = true;
                     break;
                 }
             } else if(msg.wParam == VK_ESCAPE) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
                 break;
             }
         }
@@ -133,7 +133,7 @@ void ShowCommentDialog(char *comment)
         SendMessage(CommentTextbox, WM_GETTEXT, (WPARAM)(MAX_COMMENT_LEN - 1), (LPARAM)comment);
     }
 
-    EnableWindow(MainWindow, TRUE);
+    EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(CommentDialog);
     return;

@@ -1,13 +1,33 @@
+//-----------------------------------------------------------------------------
+// Copyright 2015 Nehrutsa Ihor
+//
+// This file is part of LDmicro.
+//
+// LDmicro is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// LDmicro is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
+//------
+//
+//-----------------------------------------------------------------------------
 #ifndef __PCPORTS_H
 #define __PCPORTS_H
 //LPT =======================================================================
-// Смещения регистров порта
-#define LPT_DATA_REG     0 // Регистр данных
-#define LPT_STATUS_REG   1 // Регистр состояния
-#define LPT_STATE_REG    1 // Регистр состояния
-#define LPT_CONTROL_REG  2 // Регистр управления
-#define LPT_EPP_ADDRESS  3 // Регистр адреса EPP
-#define LPT_EPP_DATA     4 // Регистр данных EPP
+// ╤ьх∙хэш  ЁхушёЄЁют яюЁЄр
+#define LPT_DATA_REG     0 // ╨хушёЄЁ фрээ√ї
+#define LPT_STATUS_REG   1 // ╨хушёЄЁ ёюёЄю эш 
+#define LPT_STATE_REG    1 // ╨хушёЄЁ ёюёЄю эш 
+#define LPT_CONTROL_REG  2 // ╨хушёЄЁ єяЁртыхэш 
+#define LPT_EPP_ADDRESS  3 // ╨хушёЄЁ рфЁхёр EPP
+#define LPT_EPP_DATA     4 // ╨хушёЄЁ фрээ√ї EPP
 //         //PIN# DB25
 #define PAR_DATA0 0x01
 #define PAR_DATA1 0x02
@@ -67,8 +87,8 @@
 
 //COM =======================================================================
 #define LCR 3 //LCR - Line Control Register
-//порт BaseCOM+LCR - Регистр управления линией  //из ПЭВМ
-#define TD 0x40  //Передаваемые данные
+//яюЁЄ BaseCOM+LCR - ╨хушёЄЁ єяЁртыхэш  ышэшхщ  //шч ╧▌┬╠
+#define TD 0x40  //╧хЁхфртрхь√х фрээ√х
 #define  DB25TD 2
 #define  DB9TD  3
 //
@@ -76,12 +96,12 @@
 #define  DB9RD  2
 //
 #define MCR 4 //MCR - Modem Control Register
-//порт BaseCOM+MCR - Регистр управления модемом  //из ПЭВМ
-#define DTR 0x01 //Готовность ПЭВМ к работе
+//яюЁЄ BaseCOM+MCR - ╨хушёЄЁ єяЁртыхэш  ьюфхьюь  //шч ╧▌┬╠
+#define DTR 0x01 //├юЄютэюёЄ№ ╧▌┬╠ ъ ЁрсюЄх
 #define  DB25DTR 20
 #define  DB9DTR   4
 //
-#define RTS 0x02 //Запрос на передачу
+#define RTS 0x02 //╟ряЁюё эр яхЁхфрўє
 #define  DB25RTS 4
 #define  DB9RTS  7
 //
@@ -89,20 +109,20 @@
 #define  DB9GND  5
 //
 #define MSR 6 //MSR - Modem Status Register
-//порт BaseCOM+MSR - Регистр состояния модема  //в ПЭВМ
-#define CTS 0x10 //Гот-сть модема к передаче
+//яюЁЄ BaseCOM+MSR - ╨хушёЄЁ ёюёЄю эш  ьюфхьр  //т ╧▌┬╠
+#define CTS 0x10 //├юЄ-ёЄ№ ьюфхьр ъ яхЁхфрўх
 #define  DB25CTS 5
 #define  DB9CTS 8
 //
-#define DSR 0x20 //Готов-сть модема к работе
+#define DSR 0x20 //├юЄют-ёЄ№ ьюфхьр ъ ЁрсюЄх
 #define  DB25DSR 6
 #define  DB9DSR 6
 //
-#define RI  0x40 //Индикатор вызова
+#define RI  0x40 //╚эфшърЄюЁ т√чютр
 #define  DB25RI  22
 #define  DB9RI  9
 //
-#define DCD 0x80 //Связь модемов установлена
+#define DCD 0x80 //╤т ч№ ьюфхьют єёЄрэютыхэр
 #define  DB25DCD 8
 #define  DB9DCD 1
 //
@@ -110,7 +130,7 @@ int MaskToBit(int Pin);
 void LptDb25PinToRegMask(int Pin, int *Reg, int *Mask);
 void ComDb9PinToRegMask(int Pin, int *Reg, int *Mask);
 void ComDb25PinToRegMask(int Pin, int *Reg, int *Mask);
-BOOL SavePcPorts(char *filename);
-BOOL LoadPcPorts(char *filename);
+bool SavePcPorts(char *filename);
+bool LoadPcPorts(char *filename);
 
 #endif

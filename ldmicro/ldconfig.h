@@ -1,4 +1,3 @@
-
 #ifndef __LD_CONFIG_H__
 #define __LD_CONFIG_H__
 
@@ -20,6 +19,10 @@
 #define MAX_IO_PORTS        ('P'-'A'+1)
 #define MAX_RAM_SECTIONS    8
 #define MAX_ROM_SECTIONS    1
+
+#ifndef MAX_PATH
+#define MAX_PATH 260
+#endif
 
 #endif //__LD_CONFIG_H__
 

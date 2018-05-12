@@ -28,15 +28,15 @@
 // can be open at any time.
 HWND OkButton;
 HWND CancelButton;
-BOOL DialogDone;
-BOOL DialogCancel;
+bool DialogDone;
+bool DialogCancel;
 
 // We should display messages to the user differently if we are running
 // interactively vs. in batch (command-line) mode.
-BOOL RunningInBatchMode = FALSE;
+bool RunningInBatchMode = false;
 
 // We are in test mode.
-BOOL RunningInTestMode = FALSE;
+bool RunningInTestMode = false;
 
 // Allocate memory on a local heap
 HANDLE MainHeap;
@@ -65,18 +65,18 @@ void dbp(const char *str, ...)
 // we still run (except for the console stuff) in earlier versions.
 //-----------------------------------------------------------------------------
 #define ATTACH_PARENT_PROCESS ((DWORD)-1) // defined in WinCon.h, but only if _WIN32_WINNT >= 0x500
-BOOL AttachConsoleDynamic(DWORD base)
+bool AttachConsoleDynamic(DWORD base)
 {
-    typedef BOOL WINAPI fptr_acd(DWORD base);
+    typedef bool WINAPI fptr_acd(DWORD base);
     fptr_acd *          fp;
 
     HMODULE hm = LoadLibrary("kernel32.dll");
     if(!hm)
-        return FALSE;
+        return false;
 
     fp = (fptr_acd *)GetProcAddress(hm, "AttachConsole");
     if(!fp)
-        return FALSE;
+        return false;
 
     return fp(base);
 }
@@ -155,6 +155,18 @@ void CompileSuccessfulMessage(char *str, unsigned int uType)
 void CompileSuccessfulMessage(char *str)
 {
     CompileSuccessfulMessage(str, MB_ICONINFORMATION);
+}
+
+void CompileSuccesfullAnsiCMessage(const char* dest)
+{
+    char str[MAX_PATH + 500];
+    sprintf(str,
+            _("Compile successful; wrote C source code to '%s'.\r\n\r\n"
+              "This is not a complete C program. You have to provide the runtime "
+              "and all the I/O routines. See the comments in the source code for "
+              "information about how to do this."),
+            dest);
+    CompileSuccessfulMessage(str);
 }
 //-----------------------------------------------------------------------------
 // Check the consistency of the heap on which all the PLC program stuff is
@@ -261,18 +273,18 @@ static LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
         case WM_COMMAND: {
             HWND h = (HWND)lParam;
             if(h == OkButton && wParam == BN_CLICKED) {
-                DialogDone = TRUE;
+                DialogDone = true;
             } else if(h == CancelButton && wParam == BN_CLICKED) {
-                DialogDone = TRUE;
-                DialogCancel = TRUE;
+                DialogDone = true;
+                DialogCancel = true;
             }
             break;
         }
 
         case WM_CLOSE:
         case WM_DESTROY:
-            DialogDone = TRUE;
-            DialogCancel = TRUE;
+            DialogDone = true;
+            DialogCancel = true;
             break;
 
         default:
@@ -287,7 +299,7 @@ static LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 //-----------------------------------------------------------------------------
 void NiceFont(HWND h)
 {
-    SendMessage(h, WM_SETFONT, (WPARAM)MyNiceFont, TRUE);
+    SendMessage(h, WM_SETFONT, (WPARAM)MyNiceFont, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -296,7 +308,7 @@ void NiceFont(HWND h)
 //-----------------------------------------------------------------------------
 void FixedFont(HWND h)
 {
-    SendMessage(h, WM_SETFONT, (WPARAM)MyFixedFont, TRUE);
+    SendMessage(h, WM_SETFONT, (WPARAM)MyFixedFont, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -325,9 +337,9 @@ void MakeDialogBoxClass()
                             0,
                             0,
                             FW_REGULAR,
-                            FALSE,
-                            FALSE,
-                            FALSE,
+                            false,
+                            false,
+                            false,
                             ANSI_CHARSET,
                             OUT_DEFAULT_PRECIS,
                             CLIP_DEFAULT_PRECIS,
@@ -342,9 +354,9 @@ void MakeDialogBoxClass()
                              0,
                              0,
                              FW_REGULAR,
-                             FALSE,
-                             FALSE,
-                             FALSE,
+                             false,
+                             false,
+                             false,
                              ANSI_CHARSET,
                              OUT_DEFAULT_PRECIS,
                              CLIP_DEFAULT_PRECIS,
@@ -790,20 +802,20 @@ McuAdcPinInfo *AdcPinInfo(int pin)
 McuAdcPinInfo *AdcPinInfoForName(char *name)
 {
     if(Prog.mcu)
-        for(uint32_t i = 0; i < Prog.io.count; i++)
+        for(decltype(Prog.io.count) i = 0; i < Prog.io.count; i++)
             if(strcmp(Prog.io.assignment[i].name, name) == 0)
                 return AdcPinInfo(Prog.io.assignment[i].pin);
     return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-BOOL IsExtIntPin(int pin)
+bool IsExtIntPin(int pin)
 {
     if(Prog.mcu)
         for(uint32_t i = 0; i < Prog.mcu->ExtIntCount; i++)
             if(Prog.mcu->ExtIntInfo[i].pin == pin)
-                return TRUE;
-    return FALSE;
+                return true;
+    return false;
 }
 
 //-----------------------------------------------------------------------------

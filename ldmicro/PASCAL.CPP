@@ -37,19 +37,19 @@ static DWORD InCount, OutCount, TimerCount, RelayCount, VarCount;
 // Have we seen a variable before? If not then no need to generate code for
 // it, otherwise we will have to make a declaration, and mark it as seen.
 //-----------------------------------------------------------------------------
-static BOOL SeenVariable(char *name)
+static bool SeenVariable(char *name)
 {
     int i;
     for(i = 0; i < SeenVariablesCount; i++) {
         if(strcmp(SeenVariables[i], name) == 0) {
-            return TRUE;
+            return true;
         }
     }
     if(i >= MAX_IO)
         oops();
     strcpy(SeenVariables[i], name);
     SeenVariablesCount++;
-    return FALSE;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -204,7 +204,7 @@ static void PortX(FILE *fi, FILE *fu, char *str)
 {
     char prt[4];
     int  portN, Reg, Mask, Addr;
-    BOOL b = ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
+    bool b = ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
 
     fprintf(fi, "\n");
     fprintf(fi, "function   Read_%s:boolean;\n", str);
@@ -279,7 +279,7 @@ static void PortY(FILE *fi, FILE *fu, char *str)
 {
     char prt[4];
     int  portN, Reg, Mask, Addr;
-    BOOL b = ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
+    bool b = ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
 
     fprintf(fi, "\n");
     fprintf(fi, "function   Read_%s:boolean;\n", str);
@@ -351,7 +351,7 @@ static void PortY(FILE *fi, FILE *fu, char *str)
 }
 //-----------------------------------------------------------------------------
 // Generate a declaration for a bit var; three cases, input, output, and
-// internal relay. An internal relay is just a BOOL variable, but for an
+// internal relay. An internal relay is just a bool variable, but for an
 // input or an output someone else must provide read/write functions.
 //-----------------------------------------------------------------------------
 static void DeclareBit(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv, char *str, char *_str)
@@ -407,12 +407,10 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
                 break;
 
             case INT_SET_SEED_RANDOM:
-#ifdef SHARE
             case INT_SET_BIN2BCD:
             case INT_SET_BCD2BIN:
             case INT_SET_OPPOSITE:
             case INT_SET_VARIABLE_NOT:
-#endif
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -569,8 +567,7 @@ static int SimpleBool(char *name)
 static void Generate_flash_eeprom(FILE *f)
 {
 #ifdef TABLE_IN_FLASH
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int   sovElement = IntCode[i].literal2;
@@ -631,8 +628,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             "   generated this code. }\n"
             "procedure PlcCycle;\n");
     fprintf(f, "  label Rung0label;\n");
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             //case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
@@ -645,7 +641,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             "begin\n"
             "  Rung0label:;\n");
     int indent = 1;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
 
         if(IntCode[i].op == INT_END_IF)
             indent--;
@@ -703,7 +699,6 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 fprintf(f, "%s := %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
-#ifdef SHARE
             case INT_SET_BIN2BCD:
                 fprintf(f, "%s := bin2bcd(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
@@ -719,7 +714,6 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_SET_VARIABLE_NOT:
                 fprintf(f, "%s := not %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
-#endif
 
             case INT_SET_SWAP:
                 fprintf(f, "%s := swap(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
@@ -982,8 +976,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 //-----------------------------------------------------------------------------
 static void GenerateSUBPROG(FILE *f)
 {
-    int i;
-    for(i = 0; i < IntCodeLen; i++) {
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
@@ -1152,8 +1145,8 @@ void CompilePascal(char *dest)
             "   against this one. }\n"
             "\n"
             "{  You must provide ladder.pas unit; there you must provide:\n"
-            "      * a typedef for SWORD and BOOL, signed 16 bit and boolean types\n"
-            "        (probably typedef signed short SWORD; typedef unsigned char BOOL;)\n"
+            "      * a typedef for SWORD and bool, signed 16 bit and boolean types\n"
+            "        (probably typedef signed short SWORD; typedef unsigned char bool;)\n"
             "\n"
             "   You must also provide implementations of all the I/O read/write\n"
             "   either as inlines in the header file or in another source file. (The\n"
@@ -1304,7 +1297,7 @@ void CompilePascal(char *dest)
             "end;\n"
             "*)\n");
 
-    GenerateSourceCode(f, 0, IntCodeLen - 1);
+    GenerateSourceCode(f, 0, IntCode.size() - 1);
 
     fprintf(f,
             "\n"
@@ -1363,8 +1356,8 @@ void CompilePascal(char *dest)
 }
 
 /*
-BOOL SetConsoleCP(UINT wCodePageID);
-BOOL SetConsoleOutputCP(UINT wCodePageID);
+bool SetConsoleCP(UINT wCodePageID);
+bool SetConsoleOutputCP(UINT wCodePageID);
 Кому интересно, вот решение. Для того, чтобы SetConsoleOutPutCP работала, необходимо:
 1. Операционная система Win NT (2000, XP). 95, 98, Me - не поддерживаются.
 2. В настройках консоли стоял не точечный шрифт, а Lucida Console.

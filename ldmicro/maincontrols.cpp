@@ -31,7 +31,7 @@ static HWND HorizScrollBar;
 static HWND VertScrollBar;
 int         ScrollWidth;
 int         ScrollHeight;
-BOOL        NeedHoriz;
+bool        NeedHoriz;
 
 // status bar at the bottom of the screen, to display settings
 static HWND StatusBar;
@@ -58,13 +58,13 @@ static HMENU SchemeMenu;
 // the internal relay too
 HWND        IoList;
 static int  IoListSelectionPoint = 0;
-static BOOL IoListOutOfSync = FALSE;
+static bool IoListOutOfSync = false;
 char        IoListSelectionName[MAX_NAME_LEN] = "";
 int         IoListHeight;
 int         IoListTop;
 
 // whether the simulation is running in real time
-static BOOL RealTimeSimulationRunning;
+static bool RealTimeSimulationRunning;
 
 //-----------------------------------------------------------------------------
 // Create the standard Windows controls used in the main window: a Listview
@@ -183,8 +183,8 @@ void UpdateMainWindowTitleBar()
 // Set the enabled state of the logic menu items to reflect where we are on
 // the schematic (e.g. can't insert two coils in series).
 //-----------------------------------------------------------------------------
-void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly, BOOL canSetOnly, BOOL canDelete,
-                     BOOL canInsertEnd, BOOL canInsertOther, BOOL canPushDown, BOOL canPushUp, BOOL canInsertComment)
+void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool canSetOnly, bool canDelete,
+                     bool canInsertEnd, bool canInsertOther, bool canPushDown, bool canPushUp, bool canInsertComment)
 {
     EnableMenuItem(EditMenu, MNU_PUSH_RUNG_UP, canPushUp ? MF_ENABLED : MF_GRAYED);
     EnableMenuItem(EditMenu, MNU_PUSH_RUNG_DOWN, canPushDown ? MF_ENABLED : MF_GRAYED);
@@ -321,7 +321,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly, BOOL can
 //-----------------------------------------------------------------------------
 // Set the enabled state of the undo/redo menus.
 //-----------------------------------------------------------------------------
-void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled)
+void SetUndoEnabled(bool undoEnabled, bool redoEnabled)
 {
     EnableMenuItem(EditMenu, MNU_UNDO, undoEnabled ? MF_ENABLED : MF_GRAYED);
     EnableMenuItem(EditMenu, MNU_REDO, redoEnabled ? MF_ENABLED : MF_GRAYED);
@@ -591,7 +591,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
     ProcessorMenu = CreatePopupMenu();
     Core core = supportedMcus()[0].core;
-    for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
+    for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         if(core != supportedMcus()[i].core) {
             core = supportedMcus()[i].core;
             AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, ""); //separate AVR MCU core
@@ -599,7 +599,7 @@ HMENU MakeMainWindowMenus()
         AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, supportedMcus()[i].mcuName);
     }
     AppendMenu(ProcessorMenu, MF_SEPARATOR, 0, "");
-    AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + i, _("(no microcontroller)"));
+    AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + supportedMcus().size(), _("(no microcontroller)"));
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu, _("&Microcontroller"));
 
     ProcessorMenu2 = CreatePopupMenu();
@@ -702,16 +702,16 @@ void RefreshScrollbars()
 {
     SCROLLINFO vert, horiz;
     SetUpScrollbars(&NeedHoriz, &horiz, &vert);
-    SetScrollInfo(HorizScrollBar, SB_CTL, &horiz, TRUE);
-    SetScrollInfo(VertScrollBar, SB_CTL, &vert, TRUE);
+    SetScrollInfo(HorizScrollBar, SB_CTL, &horiz, true);
+    SetScrollInfo(VertScrollBar, SB_CTL, &vert, true);
 
     RECT main;
     GetClientRect(MainWindow, &main);
 
     if(NeedHoriz) {
-        MoveWindow(HorizScrollBar, 0, IoListTop - ScrollHeight - 2, main.right - ScrollWidth - 2, ScrollHeight, TRUE);
+        MoveWindow(HorizScrollBar, 0, IoListTop - ScrollHeight - 2, main.right - ScrollWidth - 2, ScrollHeight, true);
         ShowWindow(HorizScrollBar, SW_SHOW);
-        EnableWindow(HorizScrollBar, TRUE);
+        EnableWindow(HorizScrollBar, true);
     } else {
         ShowWindow(HorizScrollBar, SW_HIDE);
     }
@@ -720,16 +720,16 @@ void RefreshScrollbars()
                1,
                ScrollWidth,
                NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3),
-               TRUE);
+               true);
 
     MoveWindow(VertScrollBar,
                main.right - ScrollWidth - 2,
                1,
                ScrollWidth,
                NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3),
-               TRUE);
+               true);
 
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -772,9 +772,9 @@ void VscrollProc(WPARAM wParam)
         si.cbSize = sizeof(si);
         si.fMask = SIF_POS;
         si.nPos = ScrollYOffset;
-        SetScrollInfo(VertScrollBar, SB_CTL, &si, TRUE);
+        SetScrollInfo(VertScrollBar, SB_CTL, &si, true);
 
-        InvalidateRect(MainWindow, nullptr, FALSE);
+        InvalidateRect(MainWindow, nullptr, false);
     }
 }
 
@@ -826,9 +826,9 @@ void HscrollProc(WPARAM wParam)
         si.cbSize = sizeof(si);
         si.fMask = SIF_POS;
         si.nPos = ScrollXOffset;
-        SetScrollInfo(HorizScrollBar, SB_CTL, &si, TRUE);
+        SetScrollInfo(HorizScrollBar, SB_CTL, &si, true);
 
-        InvalidateRect(MainWindow, nullptr, FALSE);
+        InvalidateRect(MainWindow, nullptr, false);
     }
 }
 
@@ -894,10 +894,9 @@ void RefreshStatusBar()
 //-----------------------------------------------------------------------------
 void RefreshControlsToSettings()
 {
-    int i;
     if(!IoListOutOfSync) {
         IoListSelectionPoint = -1;
-        for(i = 0; i < Prog.io.count; i++) {
+        for(int i = 0; i < Prog.io.count; i++) {
             if(ListView_GetItemState(IoList, i, LVIS_SELECTED)) {
                 IoListSelectionPoint = i;
                 break;
@@ -907,7 +906,7 @@ void RefreshControlsToSettings()
     }
 
     ListView_DeleteAllItems(IoList);
-    for(i = 0; i < Prog.io.count; i++) {
+    for(int i = 0; i < Prog.io.count; i++) {
         LVITEM lvi;
         lvi.mask = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
         lvi.state = lvi.stateMask = 0;
@@ -923,19 +922,19 @@ void RefreshControlsToSettings()
     if(IoListSelectionPoint < 0)
         IoListSelectionPoint = 0;
     if(IoListSelectionPoint >= 0) {
-        for(i = 0; i < Prog.io.count; i++) {
+        for(int i = 0; i < Prog.io.count; i++) {
             ListView_SetItemState(IoList, i, 0, LVIS_SELECTED);
             ListView_SetItemState(IoList, i, 0, LVIS_FOCUSED);
         }
         ListView_SetItemState(IoList, IoListSelectionPoint, LVIS_SELECTED, LVIS_SELECTED);
         ListView_SetItemState(IoList, IoListSelectionPoint, LVIS_FOCUSED, LVIS_FOCUSED);
-        ListView_EnsureVisible(IoList, IoListSelectionPoint, FALSE);
+        ListView_EnsureVisible(IoList, IoListSelectionPoint, false);
     }
-    IoListOutOfSync = FALSE;
+    IoListOutOfSync = false;
 
     RefreshStatusBar();
 
-    for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
+    for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         if(&(supportedMcus()[i]) == Prog.mcu) {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_CHECKED);
         } else {
@@ -944,12 +943,12 @@ void RefreshControlsToSettings()
     }
     // `(no microcontroller)' setting
     if(!Prog.mcu) {
-        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_CHECKED);
+        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + supportedMcus().size(), MF_CHECKED);
     } else {
-        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_UNCHECKED);
+        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + supportedMcus().size(), MF_UNCHECKED);
     }
 
-    for(i = 0; i < NUM_SUPPORTED_SCHEMES; i++)
+    for(uint32_t i = 0; i < NUM_SUPPORTED_SCHEMES; i++)
         CheckMenuItem(SchemeMenu, MNU_SCHEME_BLACK + i, (i == scheme) ? MF_CHECKED : MF_UNCHECKED);
 }
 
@@ -974,7 +973,7 @@ void GenerateIoListDontLoseSelection()
     // new selection point might be out of range till we refill it
     if(IoListSelectionPoint >= 0) {
         if(IoListSelectionPoint != SaveIoListSelectionPoint) {
-            IoListOutOfSync = TRUE;
+            IoListOutOfSync = true;
             strcpy(IoListSelectionName, Prog.io.assignment[IoListSelectionPoint].name);
         }
     }
@@ -989,36 +988,36 @@ void MainWindowResized()
 {
     RECT main;
     GetClientRect(MainWindow, &main);
+    if(main.bottom) {
+        RECT status;
+        GetWindowRect(StatusBar, &status);
+        int statusHeight = status.bottom - status.top;
 
-    RECT status;
-    GetWindowRect(StatusBar, &status);
-    int statusHeight = status.bottom - status.top;
+        MoveWindow(StatusBar, 0, main.bottom - statusHeight, main.right, statusHeight, true);
 
-    MoveWindow(StatusBar, 0, main.bottom - statusHeight, main.right, statusHeight, TRUE);
-
-    // Make sure that the I/O list can't disappear entirely.
-    if(IoListHeight < 30) {
-        IoListHeight = 30;
-    }
-    IoListTop = main.bottom - IoListHeight - statusHeight;
-    // Make sure that we can't drag the top of the I/O list above the
-    // bottom of the menu bar, because it then becomes inaccessible.
-    if(IoListTop < 5) {
-        IoListHeight = main.bottom - statusHeight - 5;
+        // Make sure that the I/O list can't disappear entirely.
+        if(IoListHeight < 30) {
+            IoListHeight = 30;
+        }
         IoListTop = main.bottom - IoListHeight - statusHeight;
+        // Make sure that we can't drag the top of the I/O list above the
+        // bottom of the menu bar, because it then becomes inaccessible.
+        if(IoListTop < 5) {
+            IoListHeight = main.bottom - statusHeight - 5;
+            IoListTop = main.bottom - IoListHeight - statusHeight;
+        }
+        MoveWindow(IoList, 0, IoListTop, main.right, IoListHeight, true);
+
+        RefreshScrollbars();
     }
-    MoveWindow(IoList, 0, IoListTop, main.right, IoListHeight, TRUE);
-
-    RefreshScrollbars();
-
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
 }
 
 //-----------------------------------------------------------------------------
 // Toggle whether we are in simulation mode. A lot of options are only
 // available in one mode or the other.
 //-----------------------------------------------------------------------------
-void ToggleSimulationMode(BOOL doSimulateOneRung)
+void ToggleSimulationMode(bool doSimulateOneRung)
 {
     InSimulationMode = !InSimulationMode;
 
@@ -1048,10 +1047,10 @@ void ToggleSimulationMode(BOOL doSimulateOneRung)
         }
         if(ClearSimulationData()) {
             SimulateOneCycle(
-                TRUE); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
+                true); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
         }
     } else {
-        RealTimeSimulationRunning = FALSE;
+        RealTimeSimulationRunning = false;
         KillTimer(MainWindow, TIMER_SIMULATE);
 
         EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_GRAYED);
@@ -1081,13 +1080,13 @@ void ToggleSimulationMode(BOOL doSimulateOneRung)
     UpdateMainWindowTitleBar();
 
     DrawMenuBar(MainWindow);
-    InvalidateRect(MainWindow, nullptr, FALSE);
+    InvalidateRect(MainWindow, nullptr, false);
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }
 
 void ToggleSimulationMode()
 {
-    ToggleSimulationMode(FALSE);
+    ToggleSimulationMode(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1096,7 +1095,7 @@ void ToggleSimulationMode()
 //-----------------------------------------------------------------------------
 void StartSimulation()
 {
-    RealTimeSimulationRunning = TRUE;
+    RealTimeSimulationRunning = true;
 
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_GRAYED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_ENABLED);
@@ -1111,7 +1110,7 @@ void StartSimulation()
 //-----------------------------------------------------------------------------
 void StopSimulation()
 {
-    RealTimeSimulationRunning = FALSE;
+    RealTimeSimulationRunning = false;
 
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
