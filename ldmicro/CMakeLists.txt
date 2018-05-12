@@ -122,6 +122,9 @@ if(${LDLANG} STREQUAL "ALL")
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                                COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
                                )
+           add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                              COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LIBRARIES_FOR ${CMAKE_CURRENT_BINARY_DIR}/LIBRARIES_FOR
+                               )
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_executable            (${PROJECT_NAME}-${ldlang_lower} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
@@ -139,6 +142,9 @@ else()
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
                            )
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LIBRARIES_FOR ${CMAKE_CURRENT_BINARY_DIR}/LIBRARIES_FOR
+                            )
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         add_definitions(-DLDLANG_${LDLANG})
         string(TOLOWER ${LDLANG} ldlang_lower)
@@ -147,6 +153,9 @@ else()
         add_custom_command(TARGET ${PROJECT_NAME}-${ldlang_lower} POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
                            )
+       add_custom_command(TARGET ${PROJECT_NAME}-${ldlang_lower} POST_BUILD
+                          COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
+                          )
     endif()
 
 endif()
