@@ -187,6 +187,8 @@ static void MakeControls(int a)
         cf.dwEffects = 0;
         if((s[0] == '=') || (Text[a][i + 1] && Text[a][i + 1][0] == '=')) {
             cf.crTextColor = HighlightColours.simBusRight; // RGB(255, 255, 110);
+        } else if(strstr(s, "http") != nullptr) {
+            cf.crTextColor = HighlightColours.simOff;
         } else if(s[3] == '|' && s[4] == '|') {
             cf.crTextColor = HighlightColours.lit; // RGB(255, 110, 255);
         } else if(s[0] == '>' || nextSubHead) {
