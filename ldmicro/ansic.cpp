@@ -1563,7 +1563,7 @@ bool CompileAnsiC(char *dest, int MNU)
             fprintf(fh, "#include <avr\\sleep.h>\n");
         }
         if(PwmFunctionUsed()) {
-            fprintf(fh, "\n);
+            fprintf(fh, "\n");
             fprintf(fh, "//Uncomment PwmFrequency.h and setPwmFrequency() and set proper divisor.\n");
             fprintf(fh, "//#include \"PwmFrequency.h\"\n\n");
         }
