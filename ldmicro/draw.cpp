@@ -227,9 +227,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_SERIES_SUBCKT: {
             // total of the width of the members
             int               total = 0;
-            int               i;
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
-            for(i = 0; i < s->count; i++) {
+            for(int i = 0; i < s->count; i++) {
                 total += CountWidthOfElement(s->contents[i].which, s->contents[i].data.any, total + soFar);
             }
             return total;
@@ -238,9 +237,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_PARALLEL_SUBCKT: {
             // greatest of the width of the members
             int                 max = 0;
-            int                 i;
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
-            for(i = 0; i < p->count; i++) {
+            for(int i = 0; i < p->count; i++) {
                 int w = CountWidthOfElement(p->contents[i].which, p->contents[i].data.any, soFar);
                 if(w > max) {
                     max = w;
@@ -272,9 +270,8 @@ int CountHeightOfElement(int which, void *elem)
         case ELEM_PARALLEL_SUBCKT: {
             // total of the height of the members
             int                 total = 0;
-            int                 i;
             ElemSubcktParallel *s = (ElemSubcktParallel *)elem;
-            for(i = 0; i < s->count; i++) {
+            for(int i = 0; i < s->count; i++) {
                 total += CountHeightOfElement(s->contents[i].which, s->contents[i].data.any);
             }
             return total;
@@ -283,9 +280,8 @@ int CountHeightOfElement(int which, void *elem)
         case ELEM_SERIES_SUBCKT: {
             // greatest of the height of the members
             int               max = 0;
-            int               i;
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
-            for(i = 0; i < s->count; i++) {
+            for(int i = 0; i < s->count; i++) {
                 int w = CountHeightOfElement(s->contents[i].which, s->contents[i].data.any);
                 if(w > max) {
                     max = w;
@@ -306,11 +302,10 @@ int CountHeightOfElement(int which, void *elem)
 //-----------------------------------------------------------------------------
 int ProgCountWidestRow()
 {
-    int i;
     int max = 0;
     int colsTemp = ColsAvailable;
     ColsAvailable = 0;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         int w = CountWidthOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], 0);
         if(w > max) {
             max = w;
@@ -323,8 +318,7 @@ int ProgCountWidestRow()
 int ProgCountRows()
 {
     int totalHeight = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
     // // //totalHeight += 1; // without EndRung !
@@ -337,8 +331,7 @@ int ProgCountRows()
 static void VerticalWire(int cx, int cy)
 {
     if(cx >= 0) {
-        int j;
-        for(j = 1; j < POS_HEIGHT; j++) {
+        for(int j = 1; j < POS_HEIGHT; j++) {
             DrawChars(cx, cy + (POS_HEIGHT / 2 - j), "|");
         }
         DrawChars(cx, cy + (POS_HEIGHT / 2), "+");
@@ -438,8 +431,7 @@ static void CenterWithWiresWidth(int cx, int cy, const char *str, bool before, b
     int extra = totalWidth - FormattedStrlen(str);
 
     PoweredText(before);
-    int i;
-    for(i = 0; i < (extra / 2); i++) {
+    for(int i = 0; i < (extra / 2); i++) {
         DrawChars(cx + i, cy + (POS_HEIGHT / 2), "-");
     }
 
@@ -448,7 +440,7 @@ static void CenterWithWiresWidth(int cx, int cy, const char *str, bool before, b
     DrawChars(cx + (extra / 2), cy + (POS_HEIGHT / 2), str);
 
     PoweredText(after);
-    for(i = FormattedStrlen(str) + (extra / 2); i < totalWidth; i++) {
+    for(int i = FormattedStrlen(str) + (extra / 2); i < totalWidth; i++) {
         DrawChars(cx + i, cy + (POS_HEIGHT / 2), "-");
     }
 }
@@ -566,6 +558,17 @@ static char *formatWidth(char *buf, size_t totalWidth, const char *str1, const c
 }
 
 //-----------------------------------------------------------------------------
+void DrawWire(int *cx, int *cy, char c)
+{
+    char buf[POS_WIDTH+1];
+    memset(buf, c, POS_WIDTH);
+    buf[POS_WIDTH] = '\0';
+
+    DrawChars(*cx, *cy + (POS_HEIGHT / 2), buf);
+    *cx += POS_WIDTH;
+}
+
+//-----------------------------------------------------------------------------
 // Draw an end of line element (coil, RES, MOV, etc.). Special things about
 // an end of line element: we must right-justify it.
 //-----------------------------------------------------------------------------
@@ -609,11 +612,7 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
         DisplayMatrix[gx][gy] = PADDING_IN_DISPLAY_MATRIX;
         DisplayMatrixWhich[gx][gy] = ELEM_PADDING;
 
-        int i;
-        for(i = 0; i < POS_WIDTH; i++) {
-            DrawChars(*cx + i, *cy + (POS_HEIGHT / 2), "-");
-        }
-        *cx += POS_WIDTH;
+        DrawWire(cx, cy, '-');
         cx0 += POS_WIDTH;
     }
 
@@ -1650,8 +1649,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 
     if(which == ELEM_COMMENT) {
         int len = 0;
-        int i;
-        for(i = 0; i < ColsAvailable; i++) {
+        for(int i = 0; i < ColsAvailable; i++) {
             if((DisplayMatrixWhich[i][gy] <= ELEM_PLACEHOLDER) || true // 2.3
                || (DisplayMatrixWhich[i][gy] == ELEM_COMMENT)) {
                 DisplayMatrix[i][gy] = leaf;
@@ -1706,6 +1704,31 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 }
 
 //-----------------------------------------------------------------------------
+static bool HasEndOfRungElem(int which, void *elem)
+{
+    ElemLeaf *leaf = (ElemLeaf *)elem;
+    switch(which) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
+            return HasEndOfRungElem(s->contents[s->count - 1].which, s->contents[s->count - 1].data.any);
+            break;
+        }
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
+            for(int i = 0; i < p->count; i++) {
+                if(HasEndOfRungElem(p->contents[i].which, p->contents[i].data.any))
+                    return true;
+            }
+            break;
+        }
+        default:
+            return EndOfRungElem(which);
+            break;
+    }
+    return false;
+}
+
+//-----------------------------------------------------------------------------
 // Draw a particular subcircuit with its top left corner at *cx and *cy (in
 // characters). If it is a leaf element then just print it and return; else
 // loop over the elements of the subcircuit and call ourselves recursively.
@@ -1715,7 +1738,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 // element, else false. This is needed to colour all the wires correctly,
 // since the colouring indicates whether a wire is energized.
 //-----------------------------------------------------------------------------
-bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore)
+bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, int cols)
 {
     bool poweredAfter;
 
@@ -1734,16 +1757,26 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore)
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
-            int               i;
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             poweredAfter = poweredBefore;
-            for(i = 0; i < s->count; i++) {
-                poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter);
+            for(int i = 0; i < s->count; i++) {
+                poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter, 0);
+            }
+            break;
+            if(cols) {
+                // Draw wire to the right bus
+                if((s->contents[s->count - 1].which == ELEM_COMMENT) ||
+                   (s->contents[s->count - 1].which == ELEM_PLACEHOLDER))
+                    break;
+                if(HasEndOfRungElem(s->contents[s->count - 1].which, s->contents[s->count - 1].data.any))
+                    break;
+                int width = CountWidthOfElement(which, elem, (*cx) / POS_WIDTH);
+                for(int i = width; i < cols; i++)
+                    DrawWire(cx, cy, '-');
             }
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
-            int                 i;
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
             int                 widthMax = CountWidthOfElement(which, elem, (*cx) / POS_WIDTH);
             int                 heightMax = CountHeightOfElement(which, elem);
@@ -1752,10 +1785,10 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore)
 
             int lowestPowered = -1;
             int downBy = 0;
-            for(i = 0; i < p->count; i++) {
+            for(int i = 0; i < p->count; i++) {
                 bool poweredThis;
 
-                poweredThis = DrawElement(p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore);
+                poweredThis = DrawElement(p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore, 0);
 
                 if(InSimulationMode) {
                     if(poweredThis)
@@ -1774,14 +1807,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore)
                     DisplayMatrix[gx][gy] = PADDING_IN_DISPLAY_MATRIX;
                     DisplayMatrixWhich[gx][gy] = ELEM_PADDING;
 
-                    char buf[256];
-                    int  j;
-                    for(j = 0; j < POS_WIDTH; j++) {
-                        buf[j] = '-';
-                    }
-                    buf[j] = '\0';
-                    DrawChars(*cx, *cy + (POS_HEIGHT / 2), buf);
-                    *cx += POS_WIDTH;
+                    DrawWire(cx, cy, '-');
                 }
 
                 *cx = cx0;
@@ -1796,12 +1822,11 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore)
             *cx = cx0 + POS_WIDTH * widthMax;
             *cy = cy0;
 
-            int  j;
             bool needWire;
 
             if(*cx / POS_WIDTH != ColsAvailable) {
                 needWire = false;
-                for(j = heightMax - 1; j >= 1; j--) {
+                for(int j = heightMax - 1; j >= 1; j--) {
                     if(j <= lowestPowered)
                         PoweredText(poweredAfter);
                     if(DisplayMatrix[*cx / POS_WIDTH - 1][*cy / POS_HEIGHT + j]) {
@@ -1819,7 +1844,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore)
 
             PoweredText(poweredBefore);
             needWire = false;
-            for(j = heightMax - 1; j >= 1; j--) {
+            for(int j = heightMax - 1; j >= 1; j--) {
                 if(DisplayMatrix[cx0 / POS_WIDTH][*cy / POS_HEIGHT + j]) {
                     needWire = true;
                 }
@@ -1844,16 +1869,8 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore)
 //-----------------------------------------------------------------------------
 void DrawEndRung(int cx, int cy)
 {
-    int         i;
-    const char *str = "[END]";
-    int         lead = (POS_WIDTH - strlen(str)) / 2;
-    ThisHighlighted = true;
-    for(i = 0; i < lead; i++) {
-        DrawChars(cx + i, cy + (POS_HEIGHT / 2), "-");
-    }
-    DrawChars(cx + i, cy + (POS_HEIGHT / 2), str);
-    i += strlen(str);
-    for(; i < ColsAvailable * POS_WIDTH; i++) {
-        DrawChars(cx + i, cy + (POS_HEIGHT / 2), "-");
-    }
+    CenterWithWires(cx, cy, "[END]", false, false);
+    cx += POS_WIDTH;
+    for(int i = 1; i < ColsAvailable; i++)
+        DrawWire(&cx, &cy, '-');
 }

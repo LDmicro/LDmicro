@@ -989,7 +989,7 @@ int ProgCountWidestRow();
 int ProgCountRows();
 extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
-bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore);
+bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, int cols);
 void DrawEndRung(int cx, int cy);
 extern int ColsAvailable;
 extern bool SelectionActive;

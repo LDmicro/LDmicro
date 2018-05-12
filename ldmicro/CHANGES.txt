@@ -22,6 +22,10 @@
 
    Fixed: Is it correct return ? #55 Yes.
 
+   Test: Unclosed Rung. See issue #56.
+   Experimental release attahed at page
+   https://github.com/LDmicro/LDmicro/issues/56
+
 == Release 4.3.9.1
 
     * Wiki: MAKE PERSISTENT operation

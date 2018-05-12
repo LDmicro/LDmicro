@@ -51,7 +51,7 @@ HFONT FixedWidthFontBold;
 // Different colour brushes for right and left buses in simulation, but same
 // colour for both in edit mode; also for the backgrounds in simulation and
 // edit modes.
-static HBRUSH BusRightBus;
+static HBRUSH BusRightBrush;
 static HBRUSH BusLeftBrush;
 static HBRUSH BusBrush;
 static HBRUSH BgBrush;
@@ -320,7 +320,7 @@ void PaintWindow()
             SetTextColor(Hdc, prev);
 
             cx = 0;
-            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i]);
+            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i], ColsAvailable);
         }
 
         cy += thisHeight;
@@ -377,7 +377,7 @@ void PaintWindow()
 
     r.left += POS_WIDTH * FONT_WIDTH * ColsAvailable + 4;
     r.right += POS_WIDTH * FONT_WIDTH * ColsAvailable + 4;
-    FillRect(Hdc, &r, InSimulationMode ? BusRightBus : BusBrush);
+    FillRect(Hdc, &r, InSimulationMode ? BusRightBrush : BusBrush);
 
     CursorDrawn = false;
 
@@ -543,7 +543,7 @@ void InitBrushesForDrawing()
     LOGBRUSH lb;
     lb.lbStyle = BS_SOLID;
     lb.lbColor = HighlightColours.simBusRight;
-    BusRightBus = CreateBrushIndirect(&lb);
+    BusRightBrush = CreateBrushIndirect(&lb);
 
     lb.lbColor = HighlightColours.simBusLeft;
     BusLeftBrush = CreateBrushIndirect(&lb);
@@ -606,7 +606,7 @@ void InitForDrawing()
 static void DrawCharsToExportBuffer(int cx, int cy, const char *str)
 {
     while(*str) {
-        //      if(*str >= 10) {
+        // if(*str >= 10) {
         if(WORD(*str) >= 10) { // WORD typecast allow national charset in comments
             ExportBuffer[cy][cx] = *str;
             cx++;
@@ -717,7 +717,7 @@ void ExportDrawingAsText(char *file)
     int  cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
         cx = 6;
-        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i]);
+        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i], 0);
         /*
         if((i + 1) < 10) {
             ExportBuffer[cy+1][1] = '0' + (i + 1);
