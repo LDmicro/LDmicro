@@ -4339,7 +4339,7 @@ static void CompileFromIntermediate()
                 ClearBit(addr, bit, a->name1);
 
                 char storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$pwm_init_%s", a->name1);
+                sprintf(storeName, "$pwm_init_%s", a->name1.c_str());
                 MemForSingleBit(storeName, false, &addr, &bit);
                 ClearBit(addr, bit, storeName);
                 break;
@@ -4489,7 +4489,7 @@ static void CompileFromIntermediate()
                             "%s"
                             "\n"
                             "%s",
-                            a->name3,
+                            a->name3.c_str(),
                             str1,
                             _("Select the frequency from the possible values:"),
                             freqStr);
@@ -4570,7 +4570,7 @@ static void CompileFromIntermediate()
 
                 // Setup only happens once
                 char storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$pwm_init_%s", a->name3);
+                sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
                 DWORD addr;
                 int   bit;
                 MemForSingleBit(storeName, false, &addr, &bit);
@@ -5074,7 +5074,7 @@ static void CompileFromIntermediate()
                 sov1 = SizeOfVar(a->name1);
 
                 char seedName[MAX_NAME_LEN];
-                sprintf(seedName, "$seed_%s", a->name1);
+                sprintf(seedName, "$seed_%s", a->name1.c_str());
                 SetSizeOfVar(seedName, 4);
                 MemForVariable(seedName, &addr2);
                 /*

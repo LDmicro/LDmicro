@@ -2983,13 +2983,13 @@ void AllocBitsVars()
 
             case INT_PWM_OFF: {
                 char storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$pwm_init_%s", a->name1);
+                sprintf(storeName, "$pwm_init_%s", a->name1.c_str());
                 MemForSingleBit(storeName, false, &addr, &bit);
                 break;
             }
             case INT_SET_PWM: {
                 char storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$pwm_init_%s", a->name3);
+                sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
                 MemForSingleBit(storeName, false, &addr, &bit);
                 break;
 
@@ -3913,7 +3913,7 @@ static void CompileFromIntermediate(bool topLevel)
                 Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1, a->literal, a->literal);
                 CheckSovNames(a);
                 MemForVariable(a->name1, &addr1);
-                sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1, addr1, a->literal, a->literal);
+                sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1.c_str(), addr1, a->literal, a->literal);
                 sov1 = SizeOfVar(a->name1);
                 sov2 = byteNeeded(a->literal);
 #ifdef AUTO_BANKING
@@ -4748,7 +4748,7 @@ static void CompileFromIntermediate(bool topLevel)
                 ClearBit(addr, bit, a->name1);
 
                 char storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$pwm_init_%s", a->name1);
+                sprintf(storeName, "$pwm_init_%s", a->name1.c_str());
                 MemForSingleBit(storeName, false, &addr, &bit);
                 ClearBit(addr, bit, storeName);
                 break;
@@ -4836,7 +4836,7 @@ static void CompileFromIntermediate(bool topLevel)
                     int dv = 4 * prescale * target;
                     pr2plus1 = (Prog.mcuClock + (dv / 2)) / dv;
                     if(pr2plus1 < 3) {
-                        sprintf(str2, "'%s' %s\n\n%s", a->name3, _("PWM frequency too fast."), str1);
+                        sprintf(str2, "'%s' %s\n\n%s", a->name3.c_str(), _("PWM frequency too fast."), str1);
                         Error(str2);
                         fCompileError(f, fAsm);
                     }
@@ -4849,7 +4849,7 @@ static void CompileFromIntermediate(bool topLevel)
                             } else {
                                 sprintf(str2,
                                         "SET '%s': %s %s\n\n%s\n\n\t\tOR\n\n%s",
-                                        a->name3,
+                                        a->name3.c_str(),
                                         _("PWM frequency too slow."),
                                         str0,
                                         str1,
@@ -4992,7 +4992,7 @@ static void CompileFromIntermediate(bool topLevel)
                 DWORD addr;
                 int   bit;
                 char  storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$pwm_init_%s", a->name3);
+                sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
                 MemForSingleBit(storeName, false, &addr, &bit);
 
                 DWORD skip = AllocFwdAddr();
@@ -5260,7 +5260,7 @@ static void CompileFromIntermediate(bool topLevel)
                 sov1 = SizeOfVar(a->name1);
 
                 char seedName[MAX_NAME_LEN];
-                sprintf(seedName, "$seed_%s", a->name1);
+                sprintf(seedName, "$seed_%s", a->name1.c_str());
 /*
 //https://en.m.wikipedia.org/wiki/Linear_congruential_generator
 // X[n+1] = (a * X[n] + c) mod m

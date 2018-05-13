@@ -1204,7 +1204,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                             MapSym(IntCode[i].name1),
                             IntCode[i].data[CheckMakeNumber(IntCode[i].name3)],
                             MapSym(IntCode[i].name2),
-                            IntCode[i].name3);
+                            IntCode[i].name3.c_str());
                 } else {
                     fprintf(f, "#ifdef __GNUC__\n");
                     doIndent(f, i);

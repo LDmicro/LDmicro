@@ -83,11 +83,11 @@ static char *MapSym(const StringArray<N>& str, int how)
 
     // User and internal symbols are distinguished.
     if(IsNumber(str.c_str()))
-        sprintf(ret, "%s", str);
+        sprintf(ret, "%s", str.c_str());
     else if(str[0] == '$') {
         sprintf(ret, "I%c_%s", bit_int, str.c_str() + 1);
     } else {
-        sprintf(ret, "U%c_%s", bit_int, str);
+        sprintf(ret, "U%c_%s", bit_int, str.c_str());
     }
 
     char trans[1024];
@@ -806,7 +806,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 
 #ifdef NEW_CMP
             case INT_IF_LES:
-                fprintf(f, "if %s < %s then begin\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].name2);
+                fprintf(f, "if %s < %s then begin\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].name2.c_str());
 #else
             case INT_IF_VARIABLE_LES_LITERAL:
                 fprintf(f, "if %s < %d then begin\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
@@ -898,7 +898,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                     rung = std::max(rung, 0); // -1 anavailable
                     fprintf(f, "CallLabelRung%d;\n", rung);
                 } else {
-                    fprintf(f, "CallLabelRung%s;\n", IntCode[i].name1);
+                    fprintf(f, "CallLabelRung%s;\n", IntCode[i].name1.c_str());
                 }
                 break;
             case INT_GOTO: {
@@ -908,7 +908,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                     rung = std::max(rung, 0); // -1 anavailable
                     fprintf(f, "goto LabelRung%d;\n", rung);
                 } else {
-                    fprintf(f, "goto LabelRung%s;\n", IntCode[i].name1);
+                    fprintf(f, "goto LabelRung%s;\n", IntCode[i].name1.c_str());
                 }
                 break;
             }
@@ -936,7 +936,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                             MapSym(IntCode[i].name1, ASINT),
                             IntCode[i].data[CheckMakeNumber(IntCode[i].name3.c_str())],
                             MapSym(IntCode[i].name2, ASINT),
-                            IntCode[i].name3);
+                            IntCode[i].name3.c_str());
                 } else {
                     fprintf(f,
                             "%s := %s[%s];\n",
@@ -978,7 +978,7 @@ static void GenerateSUBPROG(FILE *f)
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
-                fprintf(f, "procedure Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1, IntCode[i].literal + 1);
+                fprintf(f, "procedure Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
                 int indentSave = indent;
                 indent = 1;
                 GenerateSourceCode(f,

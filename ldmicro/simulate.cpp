@@ -453,7 +453,7 @@ SDWORD GetRandom(const NameArray& name)
     int    sov = SizeOfVar(name);
     SDWORD seed = MthRandom();
     char   seedName[MAX_NAME_LEN];
-    sprintf(seedName, "$seed_%s", name);
+    sprintf(seedName, "$seed_%s", name.c_str());
     SetSimulationVariable(seedName, seed);
     if(sov == 1)
         return (signed char)(seed >> (8 * (4 - sov)));
