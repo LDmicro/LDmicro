@@ -993,7 +993,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_COMMENT:
                 if(IntCode[i].name1[0]) {
-                    fprintf(f, "// %s\n", IntCode[i].name1);
+                    fprintf(f, "// %s\n", IntCode[i].name1.c_str());
                 } else {
                     fprintf(f, "\n");
                 }
@@ -1113,7 +1113,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 if(compiler_variant == MNU_COMPILE_ARDUINO) {
                     fprintf(f, "Write0_%s(); // dummy // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
                 } else {
-                    fprintf(f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1);
+                    fprintf(f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1.c_str());
                 }
                 break;
 
@@ -1171,10 +1171,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "LabelRung%d:;\n", IntCode[i].literal + 1);
                 break;
             case INT_GOTO:
-                fprintf(f, "goto LabelRung%d; // %s\n", IntCode[i].literal + 1, IntCode[i].name1);
+                fprintf(f, "goto LabelRung%d; // %s\n", IntCode[i].literal + 1, IntCode[i].name1.c_str());
                 break;
             case INT_GOSUB:
-                fprintf(f, "Call_SUBPROG_%s(); // LabelRung%d\n", IntCode[i].name1, IntCode[i].literal + 1);
+                fprintf(f, "Call_SUBPROG_%s(); // LabelRung%d\n", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
                 break;
             case INT_RETURN:
                 fprintf(f, "return;\n");
@@ -1255,7 +1255,7 @@ static void GenerateSUBPROG(FILE *f)
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
-                fprintf(f, "void Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1, (int)(IntCode[i].literal + 1));
+                fprintf(f, "void Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1.c_str(), (int)(IntCode[i].literal + 1));
                 int indentSave = indent;
                 indent = 1;
                 GenerateAnsiC(f,

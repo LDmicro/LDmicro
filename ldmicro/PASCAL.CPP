@@ -862,7 +862,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 
             case INT_COMMENT:
                 if(IntCode[i].name1[0]) {
-                    fprintf(f, "{ %s }\n", IntCode[i].name1);
+                    fprintf(f, "{ %s }\n", IntCode[i].name1.c_str());
                 } else {
                     fprintf(f, "\n");
                 }
@@ -873,13 +873,13 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
-                fprintf(f, "{INT_EEPROM_BUSY_CHECK %s }\n", IntCode[i].name1);
+                fprintf(f, "{INT_EEPROM_BUSY_CHECK %s }\n", IntCode[i].name1.c_str());
                 break;
             case INT_EEPROM_READ:
-                fprintf(f, "{INT_EEPROM_READ %s }\n", IntCode[i].name1);
+                fprintf(f, "{INT_EEPROM_READ %s }\n", IntCode[i].name1.c_str());
                 break;
             case INT_EEPROM_WRITE:
-                fprintf(f, "{INT_EEPROM_WRITE %s }\n", IntCode[i].name1);
+                fprintf(f, "{INT_EEPROM_WRITE %s }\n", IntCode[i].name1.c_str());
                 break;
 
             case INT_AllocKnownAddr:
