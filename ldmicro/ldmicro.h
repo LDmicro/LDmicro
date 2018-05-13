@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "mcutable.h"
 #include "current_function.hpp"
+#include "compilercommon.hpp"
 #include <gsl.hpp>
 
 typedef int32_t SWORD;
@@ -1304,9 +1305,9 @@ McuSpiInfo *GetMcuSpiInfo(char *name);
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
 McuPwmPinInfo *PwmPinInfoForName(char *name);
-McuPwmPinInfo *PwmPinInfoForName(char *name, int timer);
-McuPwmPinInfo *PwmPinInfoForName(char *name, int timer, int resolution);
-void getResolution(char *s, int *resol, int *TOP);
+McuPwmPinInfo *PwmPinInfoForName(const char* name, int timer);
+McuPwmPinInfo *PwmPinInfoForName(const char* name, int timer, int resolution);
+void getResolution(const char* s, int *resol, int *TOP);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
 bool IsExtIntPin(int pin);
@@ -1324,6 +1325,7 @@ extern bool RunningInTestMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 bool IsNumber(const char *str);
+bool IsNumber(const NameArray& name);
 size_t strlenalnum(const char *str);
 void CopyBit(DWORD *Dest, int bitDest, DWORD Src, int bitSrc);
 char *strDelSpace(char *dest, char *src);
@@ -1344,11 +1346,12 @@ void StartSimulationTimer();
 bool ClearSimulationData();
 void ClrSimulationData();
 void CheckVariableNames();
-void DescribeForIoList(char *name, int type, char *out);
+void DescribeForIoList(const char* name, int type, char *out);
 void SimulationToggleContact(char *name);
 bool GetSingleBit(char *name);
 void SetAdcShadow(char *name, SWORD val);
-SWORD GetAdcShadow(char *name);
+SWORD GetAdcShadow(const char* name);
+SWORD GetAdcShadow(const NameArray& name);
 void DestroyUartSimulationWindow();
 void ShowUartSimulationWindow();
 extern bool InSimulationMode;
@@ -1357,12 +1360,13 @@ extern DWORD CyclesCount;
 void SetSimulationVariable(char *name, SDWORD val);
 SDWORD GetSimulationVariable(const char *name, bool forIoList);
 SDWORD GetSimulationVariable(const char *name);
+SDWORD GetSimulationVariable(const NameArray& name);
 void SetSimulationStr(char *name, char *val);
-char *GetSimulationStr(char *name);
-int FindOpName(int op, const char *name1);
-int FindOpName(int op, const char *name1, const char *name2);
-int FindOpNameLast(int op, const char *name1);
-int FindOpNameLast(int op, const char *name1, const char *name2);
+char *GetSimulationStr(const char* name);
+int FindOpName(int op, const NameArray& name1);
+int FindOpName(int op, const NameArray& name1, const NameArray& name2);
+int FindOpNameLast(int op, const NameArray& name1);
+int FindOpNameLast(int op, const NameArray& name1, const NameArray& name2);
 // Assignment of the `variables,' used for timers, counters, arithmetic, and
 // other more general things. Allocate 2 octets (16 bits) per.
 // Allocate 1 octets for  8-bits variables.
@@ -1594,24 +1598,30 @@ extern DWORD EepromAddrFree;
 void PrintVariables(FILE *f);
 DWORD isVarUsed(const char *name);
 int isVarInited(const char *name);
-int isPinAssigned(const char *name);
+int isPinAssigned(const NameArray& name);
 void AllocStart();
 DWORD AllocOctetRam();
 DWORD AllocOctetRam(int bytes);
 void AllocBitRam(DWORD *addr, int *bit);
 int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar);
 int MemForVariable(const char *name, DWORD *addr);
-int SetMemForVariable(char *name, DWORD addr, int sizeOfVar);
-int MemOfVar(char *name, DWORD *addr);
-BYTE MuxForAdcVariable(const char *name);
+int MemForVariable(const NameArray& name, DWORD *addr);
+int SetMemForVariable(const char *name, DWORD addr, int sizeOfVar);
+int SetMemForVariable(const NameArray& name, DWORD addr, int sizeOfVar);
+int MemOfVar(const char* name, DWORD *addr);
+int MemOfVar(const NameArray& name, DWORD *addr);
+uint8_t MuxForAdcVariable(const char *name);
+uint8_t MuxForAdcVariable(const NameArray& name);
 int SingleBitAssigned(const char *name);
 int GetAssignedType(const char *name, const char *fullName);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput);
 void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit);
+void MemForSingleBit(const NameArray& name, bool forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const char *name, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile();
 int SetSizeOfVar(const char *name, int sizeOfVar);
 int SizeOfVar(const char *name);
+int SizeOfVar(const NameArray& name);
 int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
@@ -1648,8 +1658,9 @@ bool UartSendUsed();
 bool SpiFunctionUsed();
 bool Bin32BcdRoutineUsed();
 SDWORD CheckMakeNumber(const char *str);
+SDWORD CheckMakeNumber(const NameArray& str);
 void WipeIntMemory();
-bool CheckForNumber(char *str);
+bool CheckForNumber(const char* str);
 int TenToThe(int x);
 int xPowerY(int x, int y);
 bool MultiplyRoutineUsed();

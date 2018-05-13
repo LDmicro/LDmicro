@@ -60,12 +60,10 @@ static bool SeenVariable(char *name)
 #define ASBIT 1
 #define ASINT 2
 #define ASSTR 3
-static char *MapSym(char *str, int how)
-{
-    if(!str)
-        return nullptr;
-    //  if(IsNumber(str)) return nullptr;
 
+template <size_t N>
+static char *MapSym(const StringArray<N>& str, int how)
+{
     static char AllRets[16][MAX_NAME_LEN + 30];
     static int  RetCnt;
 
@@ -84,10 +82,10 @@ static char *MapSym(char *str, int how)
     }
 
     // User and internal symbols are distinguished.
-    if(IsNumber(str))
+    if(IsNumber(str.c_str()))
         sprintf(ret, "%s", str);
-    else if(*str == '$') {
-        sprintf(ret, "I%c_%s", bit_int, str + 1);
+    else if(str[0] == '$') {
+        sprintf(ret, "I%c_%s", bit_int, str.c_str() + 1);
     } else {
         sprintf(ret, "U%c_%s", bit_int, str);
     }
@@ -550,7 +548,7 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
 #endif
 }
 //-----------------------------------------------------------------------------
-static int SimpleBool(char *name)
+static int SimpleBool(const NameArray& name)
 {
     if(name[0] == '$')
         return 1;
@@ -895,7 +893,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
             case INT_GOSUB:
                 if(IsNumber(IntCode[i].name1)) {
-                    int rung = hobatoi(IntCode[i].name1);
+                    int rung = hobatoi(IntCode[i].name1.c_str());
                     rung = std::min(rung, Prog.numRungs + 1);
                     rung = std::max(rung, 0); // -1 anavailable
                     fprintf(f, "CallLabelRung%d;\n", rung);
@@ -905,7 +903,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
             case INT_GOTO: {
                 if(IsNumber(IntCode[i].name1)) {
-                    int rung = hobatoi(IntCode[i].name1);
+                    int rung = hobatoi(IntCode[i].name1.c_str());
                     rung = std::min(rung, Prog.numRungs + 1);
                     rung = std::max(rung, 0); // -1 anavailable
                     fprintf(f, "goto LabelRung%d;\n", rung);
@@ -936,7 +934,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                     fprintf(f,
                             "%s := %d; { %s[%s] }\n",
                             MapSym(IntCode[i].name1, ASINT),
-                            IntCode[i].data[CheckMakeNumber(IntCode[i].name3)],
+                            IntCode[i].data[CheckMakeNumber(IntCode[i].name3.c_str())],
                             MapSym(IntCode[i].name2, ASINT),
                             IntCode[i].name3);
                 } else {
@@ -954,7 +952,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                             "%s := %s[%d]\n",
                             MapSym(IntCode[i].name1, ASINT),
                             MapSym(IntCode[i].name2, ASSTR),
-                            CheckMakeNumber(IntCode[i].name3));
+                            CheckMakeNumber(IntCode[i].name3.c_str()));
                 } else {
                     fprintf(f,
                             "%s := %s[%s];\n",

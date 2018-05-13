@@ -238,13 +238,13 @@ void IntDumpListing(char *outFile)
 
             case INT_SET_VARIABLE_ADD:
                 fprintf(f, "let var '%s' := '%s' + '%s'", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
-                if(strlen(IntCode[i].name4))
+                if(IntCode[i].name4.size())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4);
                 break;
 
             case INT_SET_VARIABLE_SUBTRACT:
                 fprintf(f, "let var '%s' := '%s' - '%s'", IntCode[i].name1, IntCode[i].name2, IntCode[i].name3);
-                if(strlen(IntCode[i].name4))
+                if(IntCode[i].name4.size())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4);
                 break;
 
@@ -262,17 +262,17 @@ void IntDumpListing(char *outFile)
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1);
-                if(strlen(IntCode[i].name2))
+                if(IntCode[i].name2.size())
                     fprintf(f, "; copy overlap(-1 to 0) flag to '%s'", IntCode[i].name2);
-                if(strlen(IntCode[i].name3))
+                if(IntCode[i].name3.size())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name3);
                 break;
 
             case INT_DECREMENT_VARIABLE:
                 fprintf(f, "decrement '%s'", IntCode[i].name1);
-                if(strlen(IntCode[i].name2))
+                if(IntCode[i].name2.size())
                     fprintf(f, "; copy overlap(0 to -1) flag to '%s'", IntCode[i].name2);
-                if(strlen(IntCode[i].name3))
+                if(IntCode[i].name3.size())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name3);
                 break;
 
@@ -659,7 +659,7 @@ void IntDumpListing(char *outFile)
                     fprintf(f,
                             "let var '%s' := %d # '%s[%s]'",
                             IntCode[i].name1,
-                            IntCode[i].data[hobatoi(IntCode[i].name3)],
+                            IntCode[i].data[hobatoi(IntCode[i].name3.c_str())],
                             IntCode[i].name2,
                             IntCode[i].name3);
                 } else {
@@ -756,22 +756,22 @@ static void _Op(int l, const char *f, const char *args, int op, bool *b, const c
     IntOp intOp;
     intOp.op = op;
     if(name1)
-        strcpy(intOp.name1, name1);
+        intOp.name1 = name1;
     if(name2)
-        strcpy(intOp.name2, name2);
+        intOp.name2 = name2;
     if(name3)
-        strcpy(intOp.name3, name3);
+        intOp.name3 = name3;
     if(name4)
-        strcpy(intOp.name4, name4);
+        intOp.name4 = name4;
     if(name5)
-        strcpy(intOp.name5, name5);
+        intOp.name5 = name5;
     if(name6)
-        strcpy(intOp.name6, name6);
+        intOp.name6 = name6;
     intOp.literal = lit;
 #ifdef NEW_CMP
     if((op == INT_IF_LES) || (op == INT_IF_VARIABLE_LES_LITERAL))
         if(!name2) {
-            sprintf(intOp.name2, "%d", lit);
+            sprintf(intOp.name2.data(), "%d", lit);
         }
 #endif
     intOp.literal2 = lit2;
@@ -859,9 +859,9 @@ static void SimState(bool *b, const char *name, bool *w, const char *name2)
     intOp.op = INT_SIMULATE_NODE_STATE;
     intOp.poweredAfter = b;
     intOp.workingNow = w;
-    strcpy(intOp.name1, name);
+    intOp.name1 = name;
     if(name2)
-        strcpy(intOp.name2, name2);
+        intOp.name2 = name2;
     intOp.rung = rungNow;
     intOp.which = whichNow;
     intOp.leaf = leafNow;
@@ -1043,12 +1043,17 @@ bool IsNumber(const char *str)
     return false;
 }
 
+bool IsNumber(const NameArray& name)
+{
+    return IsNumber(name.c_str());
+}
+
 //-----------------------------------------------------------------------------
-bool CheckForNumber(char *str)
+bool CheckForNumber(const char *str)
 {
     if(IsNumber(str)) {
         int   radix = 0; //auto detect
-        char *start_ptr = str;
+        const char *start_ptr = str;
         while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+')
             start_ptr++;
 
@@ -1171,6 +1176,11 @@ SDWORD CheckMakeNumber(const char *str)
     val = hobatoi(str);
     CheckConstantInRange(val);
     return val;
+}
+
+SDWORD CheckMakeNumber(const NameArray& str)
+{
+    return CheckMakeNumber(str.c_str());
 }
 
 //-----------------------------------------------------------------------------

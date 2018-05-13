@@ -666,6 +666,11 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
     PicProgWriteP++;
 }
 
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2, const NameArray& comment)
+{
+    _Instruction(l, f, args, op, arg1, arg2, comment.c_str());
+}
+
 static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2)
 {
     _Instruction(l, f, args, op, arg1, arg2, nullptr);
@@ -2544,6 +2549,11 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, cons
     }
 }
 
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const NameArray& nameDest, const char *nameSrc)
+{
+    CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest.c_str(), nameSrc);
+}
+
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *nameDest)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest, nullptr);
@@ -2701,6 +2711,11 @@ static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const char *commen
     }
 }
 
+static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const NameArray& comment)
+{
+    CopyLitToReg(addr, sov, literal, comment.c_str());
+}
+
 //-----------------------------------------------------------------------------
 static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const char *name1, const char *name2, bool Sign)
 // addr1 - dest, addr2 - source
@@ -2759,19 +2774,30 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
     }
 }
 
-static void CopyVarToReg(DWORD addr1, int sov1, char *name2, bool Sign)
+static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const NameArray& name1, const NameArray& name2, bool Sign)
+{
+    CopyRegToReg(addr1, sov1, addr1, sov2, name1.c_str(), name2.c_str(), Sign);
+}
+
+static void CopyVarToReg(DWORD addr1, int sov1, const char *name2, bool Sign)
 {
     DWORD addr2;
     MemForVariable(name2, &addr2);
     CopyRegToReg(addr1, sov1, addr2, SizeOfVar(name2), "", name2, Sign);
 }
 
-static void CopyVarToReg(DWORD addr1, int sov1, char *name2)
+static void CopyVarToReg(DWORD addr1, int sov1, const char *name2)
 {
     CopyVarToReg(addr1, sov1, name2, false);
 }
+
+static void CopyVarToReg(DWORD addr1, int sov1, const NameArray& name2)
+{
+    CopyVarToReg(addr1, sov1, name2.c_str());
+}
+
 //-----------------------------------------------------------------------------
-static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, char *name, bool Sign)
+static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, const char *name, bool Sign)
 {
     if(IsNumber(name)) {
         CopyLitToReg(destAddr, destSov, hobatoi(name), name);
@@ -2785,6 +2811,11 @@ static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, 
             destAddr = addr;
     }
     return destAddr;
+}
+
+static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, const NameArray& name, bool Sign)
+{
+    return CopyArgToReg(isModificationRisk, destAddr, destSov, name.c_str(), Sign);
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -3050,6 +3081,11 @@ static void Increment(DWORD addr, int sov, const char *name, const char *overlap
     }
 }
 
+static void Increment(DWORD addr, int sov, const NameArray& name, const NameArray& overlap, const NameArray& overflow)
+{
+    Increment(addr, sov, name.c_str(), overlap.c_str(), overflow.c_str());
+}
+
 static void Increment(DWORD addr, int sov, const char *name)
 {
     Increment(addr, sov, name, nullptr, nullptr);
@@ -3142,6 +3178,11 @@ static void Decrement(DWORD addr, int sov, char *name, char *overlap, char *over
     }
 }
 
+static void Decrement(DWORD addr, int sov, const NameArray& name, const NameArray& overlap, const NameArray& overflow)
+{
+    Decrement(addr, sov, name.c_str(), overlap.c_str(), overflow.c_str());
+}
+
 static void Decrement(DWORD addr, int sov, char *name)
 {
     Decrement(addr, sov, name, nullptr, nullptr);
@@ -3213,7 +3254,7 @@ For example, for a 32-bit add:
     incfsz   a+3,w
     addwf    b+3,f
 */
-static void add(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
+static void add(DWORD b, DWORD a, int sov, const char *overlap, const char *overflow)
 //                   addrb    addra  sovb == sova
 // b = b + a , b - is rewritten
 {
@@ -3267,7 +3308,12 @@ static void add(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
     }
 }
 
-static void add(DWORD b, DWORD a, int sov, char *overflow)
+static void add(DWORD b, DWORD a, int sov, const NameArray& overlap, const NameArray& overflow)
+{
+    add(b, a, sov, overlap.c_str(), overflow.c_str());
+}
+
+static void add(DWORD b, DWORD a, int sov, const char *overflow)
 {
     add(b, a, sov, overflow, nullptr);
 }
@@ -3353,9 +3399,14 @@ static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, const char *overlap, 
     }
 }
 
-static void sub(DWORD b, DWORD a, int sov, char *overlap, const char *overflow)
+static void sub(DWORD b, DWORD a, int sov, const char *overlap, const char *overflow)
 {
     sub_(b, a, sov, DEST_F, overlap, overflow);
+}
+
+static void sub(DWORD b, DWORD a, int sov, const NameArray& overlap, const NameArray& overflow)
+{
+    sub(b, a, sov, overlap.c_str(), overflow.c_str());
 }
 
 static void sub(DWORD b, DWORD a, int sov)
@@ -3649,7 +3700,7 @@ static void CompileFromIntermediate(bool topLevel)
             //
             case INT_VARIABLE_CLEAR_BIT: {
                 Comment("INT_VARIABLE_CLEAR_BIT %s %s", a->name1, a->name2);
-                bit = hobatoi(a->name2);
+                bit = hobatoi(a->name2.c_str());
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
@@ -3682,7 +3733,7 @@ static void CompileFromIntermediate(bool topLevel)
             }
             case INT_VARIABLE_SET_BIT: {
                 Comment("INT_VARIABLE_SET_BIT %s %s", a->name1, a->name2);
-                bit = hobatoi(a->name2);
+                bit = hobatoi(a->name2.c_str());
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
@@ -3720,7 +3771,7 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
-                    bit = hobatoi(a->name2);
+                    bit = hobatoi(a->name2.c_str());
                     if((0 <= bit) && (bit <= 7))
                         IfBitClear(addr1, bit, a->name1);
                     else if((8 <= bit) && (bit <= 15) && (sov1 >= 2))
@@ -3792,7 +3843,7 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
-                    bit = hobatoi(a->name2);
+                    bit = hobatoi(a->name2.c_str());
                     if((0 <= bit) && (bit <= 7))
                         IfBitSet(addr1, bit);
                     else if((8 <= bit) && (bit <= 15) && (sov1 >= 2))
@@ -4311,7 +4362,7 @@ static void CompileFromIntermediate(bool topLevel)
                 Instruction(OP_DECFSZ, ScratchS, DEST_F);
                 Instruction(OP_GOTO, loop);
 
-                if(a->name4 && strlen(a->name4)) {
+                if(a->name4.size()) {
                     MemForSingleBit(a->name4, true, &addr4, &bit4);
                     CopyBit(addr4, bit4, REG_STATUS, STATUS_C, a->name4, "REG_STATUS_C");
                 }
@@ -4678,7 +4729,7 @@ static void CompileFromIntermediate(bool topLevel)
             }
             case INT_PWM_OFF: {
                 McuPwmPinInfo *ioPWM;
-                ioPWM = PwmPinInfoForName(a->name1, Prog.cycleTimer);
+                ioPWM = PwmPinInfoForName(a->name1.c_str(), Prog.cycleTimer);
                 if(!ioPWM) {
                     Error(_("Pin '%s': PWM output not available!"), a->name1);
                     CompileError();
@@ -4706,16 +4757,16 @@ static void CompileFromIntermediate(bool topLevel)
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
                 Comment("INT_SET_PWM %s %s %s %s", a->name1, a->name2, a->name3, a->name4);
                 int resol, TOP;
-                getResolution(a->name4, &resol, &TOP);
+                getResolution(a->name4.c_str(), &resol, &TOP);
                 McuPwmPinInfo *ioPWM;
-                ioPWM = PwmPinInfoForName(a->name3, Prog.cycleTimer);
+                ioPWM = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!ioPWM) {
                     Error(_("Pin '%s': PWM output not available!"), a->name3);
                     CompileError();
                 }
 
                 int timer = ioPWM->timer;
-                int target = hobatoi(a->name2);
+                int target = hobatoi(a->name2.c_str());
 
                 // Timer2
                 // So the PWM frequency is given by
@@ -4826,7 +4877,7 @@ static void CompileFromIntermediate(bool topLevel)
 /**/
                 // Copy l->d.setPwm.duty_cycle into Scratch0:1
                 if(IsNumber(a->name1)) {
-                    CopyLitToReg(Scratch0, 2, hobatoi(a->name1), a->name1);
+                    CopyLitToReg(Scratch0, 2, hobatoi(a->name1.c_str()), a->name1);
                 } else {
                     MemForVariable(a->name1, &addr1);
                     CopyRegToReg(Scratch0, 2, addr1, 2, "Scratch0:1", a->name1, false);
@@ -5454,7 +5505,7 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
 
             case INT_COMMENT:
-                Comment(a->name1);
+                Comment(a->name1.c_str());
                 break;
 
             case INT_AllocKnownAddr:
@@ -5520,7 +5571,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                 Comment("Scratch0:1 := Index '%s'", a->name3);
                 if(IsNumber(a->name3)) {
-                    CopyLitToReg(Scratch0, 2, hobatoi(a->name3), a->name3);
+                    CopyLitToReg(Scratch0, 2, hobatoi(a->name3.c_str()), a->name3);
                 } else {
                     MemForVariable(a->name3, &addr3);
                     CopyRegToReg(Scratch0, 2, addr3, 2, "$Scratch0", a->name3, false);
@@ -5589,7 +5640,7 @@ static void CompileFromIntermediate(bool topLevel)
                 ClearBit(0x06, 6); // 1 clocks
 #endif
                 if(IsNumber(a->name1)) {
-                    long long clocks = CalcDelayClock(hobatoi(a->name1));
+                    long long clocks = CalcDelayClock(hobatoi(a->name1.c_str()));
                     long long clocksSave = clocks;
                     Comment("INT_DELAY %s us = %lld clocks", a->name1, clocks);
 
