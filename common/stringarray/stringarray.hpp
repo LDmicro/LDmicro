@@ -12,7 +12,7 @@
 
 #define STRINGARRAY_VER_MAJOR 0
 #define STRINGARRAY_VER_MINOR 1
-#define STRINGARRAY_VER_PATCH 0
+#define STRINGARRAY_VER_PATCH 1
 #define STRINGARRAY_VER_TWEAK 0
 
 #define STRINGARRAY_VER_STR TO_STR(STRINGARRAY_VER_MAJOR) "." TO_STR(STRINGARRAY_VER_MINOR) "."\
@@ -21,7 +21,6 @@
 #include <array>
 #include <string>
 #include <stdexcept>
-#include <algorithm>
 
 #include <cstdio>
 
@@ -125,6 +124,11 @@ public:
         return std::distance(std::begin(data_), zero_pos);
     }
 
+    size_type length() const
+    {
+        return size();
+    }
+
     size_type max_size() const
     { // return maximum possible length of sequence
         return (_Size - 1);
@@ -209,6 +213,11 @@ public:
     }
 
     const value_type* c_str() const
+    {
+        return data();
+    }
+
+    const value_type* str() const
     {
         return data();
     }
