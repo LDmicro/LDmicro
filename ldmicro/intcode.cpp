@@ -2627,7 +2627,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
               Op(INT_SET_BIT, s);
             Op(INT_END_IF);
-            SimState(&(l->poweredAfter), s, &(l->workingNow), s); // variant 6
+            SimState(&(l->poweredAfter), s, &(l->workingNow), s);
             break;
         }
         case ELEM_NPULSE: {

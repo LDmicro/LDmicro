@@ -1,3 +1,10 @@
+== Release
+
+   Fixed: SET PWM instruction in Arduino Sketch.
+
+   * Wiki: LDmicro, Arduino, LCD
+   https://github.com/LDmicro/LDmicro/wiki/LDmicro,-Arduino,-LCD
+
 == Release 4.3.9.2
 
    Fixed: Problem "PERSIST" Arduino Mega. #82

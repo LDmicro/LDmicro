@@ -162,20 +162,20 @@ static void DeclareBit(FILE *f, const char *str, int set1)
             }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
-            fprintf(fh, "// LDmicro provide this macro or function.\n");
-            fprintf(fh, "#ifdef USE_MACRO\n");
+            fprintf(fh, "  // LDmicro provide this macro or function.\n");
+            fprintf(fh, "  #ifdef USE_MACRO\n");
             fprintf(fh, "    #define Read_%s() digitalRead(pin_%s)\n", str, str);
-            fprintf(fh, "#else\n");
+            fprintf(fh, "  #else\n");
             fprintf(fh, "    PROTO(ldBOOL Read_%s(void));\n", str);
-            fprintf(fh, "#endif\n");
+            fprintf(fh, "  #endif\n");
             fprintf(fh, "#endif\n");
             fprintf(fh, "\n");
 
             fprintf(f, "#ifndef USE_MACRO\n");
-            fprintf(f, "// LDmicro provide this function.\n");
-            fprintf(f, "ldBOOL Read_%s(void) {\n", str);
+            fprintf(f, "  // LDmicro provide this function.\n");
+            fprintf(f, "  ldBOOL Read_%s(void) {\n", str);
             fprintf(f, "    return digitalRead(pin_%s);\n", str);
-            fprintf(f, "}\n");
+            fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
             fprintf(f, "\n");
         } else {
@@ -196,7 +196,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
                 fprintf(fh, "\n");
 
                 fprintf(f, "#ifndef USE_MACRO\n");
-                fprintf(f, "// LDmicro provide this function.\n");
+                fprintf(f, "  // LDmicro provide this function.\n");
                 fprintf(f, "  ldBOOL Read_%s(void) {\n", str);
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(f, "    return input_state(PIN_%c%d);\n", iop->port, iop->bit);
@@ -231,42 +231,42 @@ static void DeclareBit(FILE *f, const char *str, int set1)
             }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
-            fprintf(fh, "// LDmicro provide these macros or functions.\n");
-            fprintf(fh, "#ifdef USE_MACRO\n");
-            fprintf(fh, "  #define Read_%s() digitalRead(pin_%s)\n", str, str);
-            fprintf(fh, "  #define Write0_%s() digitalWrite(pin_%s, LOW)\n", str, str);
-            fprintf(fh, "  #define Write1_%s() digitalWrite(pin_%s, HIGH)\n", str, str);
-            fprintf(fh, "  #define Write_%s(b) (b) ? Write1_%s() : Write0_%s()\n", str, str, str);
-            fprintf(fh, "#else\n");
-            fprintf(fh, "  PROTO(ldBOOL Read_%s(void));\n", str);
-            fprintf(fh, "  PROTO(void Write_%s(ldBOOL b));\n", str);
-            fprintf(fh, "  PROTO(void Write1_%s(void));\n", str);
-            fprintf(fh, "  PROTO(void Write0_%s(void));\n", str);
-            fprintf(fh, "#endif\n");
+            fprintf(fh, "  // LDmicro provide these macros or functions.\n");
+            fprintf(fh, "  #ifdef USE_MACRO\n");
+            fprintf(fh, "    #define Read_%s() digitalRead(pin_%s)\n", str, str);
+            fprintf(fh, "    #define Write0_%s() digitalWrite(pin_%s, LOW)\n", str, str);
+            fprintf(fh, "    #define Write1_%s() digitalWrite(pin_%s, HIGH)\n", str, str);
+            fprintf(fh, "    #define Write_%s(b) (b) ? Write1_%s() : Write0_%s()\n", str, str, str);
+            fprintf(fh, "  #else\n");
+            fprintf(fh, "    PROTO(ldBOOL Read_%s(void));\n", str);
+            fprintf(fh, "    PROTO(void Write_%s(ldBOOL b));\n", str);
+            fprintf(fh, "    PROTO(void Write1_%s(void));\n", str);
+            fprintf(fh, "    PROTO(void Write0_%s(void));\n", str);
+            fprintf(fh, "  #endif\n");
             fprintf(fh, "#endif\n");
             fprintf(fh, "\n");
 
             fprintf(f, "#ifndef USE_MACRO\n");
-            fprintf(f, "// LDmicro provide these functions.\n");
-            fprintf(f, "ldBOOL Read_%s(void) {\n", str);
+            fprintf(f, "  // LDmicro provide these functions.\n");
+            fprintf(f, "  ldBOOL Read_%s(void) {\n", str);
             fprintf(f, "    return digitalRead(pin_%s);\n", str);
-            fprintf(f, "}\n");
-            fprintf(f, "void Write_%s(ldBOOL b) {\n", str);
+            fprintf(f, "  }\n");
+            fprintf(f, "  void Write_%s(ldBOOL b) {\n", str);
             fprintf(f, "    digitalWrite(pin_%s,b);\n", str);
-            fprintf(f, "}\n");
-            fprintf(f, "void Write1_%s(void) {\n", str);
+            fprintf(f, "  }\n");
+            fprintf(f, "  void Write1_%s(void) {\n", str);
             fprintf(f, "    digitalWrite(pin_%s,HIGH);\n", str);
-            fprintf(f, "}\n");
-            fprintf(f, "void Write0_%s(void) {\n", str);
+            fprintf(f, "  }\n");
+            fprintf(f, "  void Write0_%s(void) {\n", str);
             fprintf(f, "    digitalWrite(pin_%s,LOW);\n", str);
-            fprintf(f, "}\n");
+            fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
             fprintf(f, "\n");
         } else {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
             if(iop) {
                 fprintf(fh, "#ifdef USE_MACRO\n");
-                fprintf(fh, "// LDmicro provide these functions.\n");
+                fprintf(fh, "  // LDmicro provide these functions.\n");
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(fh, "  #define Read_%s() input_state(PIN_%c%d)\n", str, iop->port, iop->bit);
                 } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
@@ -283,8 +283,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
                     fprintf(fh, "  #define Write1_%s() (R%c%d = 1)\n", str, iop->port, iop->bit);
                     fprintf(fh, "  #define Write_%s(b) R%c%d = (b) ? 1 : 0\n", str, iop->port, iop->bit);
                 } else {
-                    fprintf(
-                        fh, "  #define Write0_%s() (PORT%c &= ~(1<<PORT%c%d))\n", str, iop->port, iop->port, iop->bit);
+                    fprintf(fh, "  #define Write0_%s() (PORT%c &= ~(1<<PORT%c%d))\n", str, iop->port, iop->port, iop->bit);
                     fprintf(fh, "  #define Write1_%s() (PORT%c |= 1<<PORT%c%d)\n", str, iop->port, iop->port, iop->bit);
                     fprintf(fh, "  #define Write_%s(b) (b) ? Write1_%s() : Write0_%s()\n", str, str, str);
                 }
@@ -295,7 +294,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
                 fprintf(fh, "\n");
 
                 fprintf(f, "#ifndef USE_MACRO\n");
-                fprintf(f, "// LDmicro provide these functions.\n");
+                fprintf(f, "  // LDmicro provide these functions.\n");
                 fprintf(f, "  ldBOOL Read_%s(void) {\n", str);
                 if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                     fprintf(f, "    return input_state(PIN_%c%d);\n", iop->port, iop->bit);
@@ -368,36 +367,35 @@ static void DeclareBit(FILE *f, const char *str, int set1)
             }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
-            fprintf(fh, "// LDmicro provide this macro or function.\n");
-            fprintf(fh, "#ifdef USE_MACRO\n");
-            fprintf(fh, "  #define Write_%s(x) /*setPwmFrequency(pin_%s, 1);*/ analogWrite(pin_%s, x)\n", str, str, str);
-            fprintf(fh, "#else\n");
-            fprintf(fh, "  void Write_%s(SWORD x);\n", str);
-            fprintf(fh, "#endif\n");
+            fprintf(fh, "  // LDmicro provide this macro or function.\n");
+            fprintf(fh, "  #ifdef USE_MACRO\n");
+            fprintf(fh, "    #define Write_%s(x) analogWrite(pin_%s, x)\n", str, str, str);
+            fprintf(fh, "  #else\n");
+            fprintf(fh, "    void Write_%s(SWORD x);\n", str);
+            fprintf(fh, "  #endif\n");
             fprintf(fh, "#endif\n");
             fprintf(fh, "\n");
 
             fprintf(f, "#ifndef USE_MACRO\n");
-            fprintf(f, "// LDmicro provide this function.\n");
+            fprintf(f, "  // LDmicro provide this function.\n");
             fprintf(f, "  void Write_%s(SWORD x) {\n", str);
-            fprintf(f, "    //setPwmFrequency(pin_%s, 1);\n", str);
             fprintf(f, "    analogWrite(pin_%s, x);\n", str);
             fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
             fprintf(f, "\n");
         } else if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
-            fprintf(fh, "// LDmicro provide this macro or function.\n");
-            fprintf(fh, "#ifdef USE_MACRO\n");
-            fprintf(fh, "  #define Write_%s(x) pwm_set_duty_percent(x); pwm_on();\n", str);
-            fprintf(fh, "#else\n");
-            fprintf(fh, "  void Write_%s(SWORD x);\n", str);
-            fprintf(fh, "#endif\n");
+            fprintf(fh, "  // LDmicro provide this macro or function.\n");
+            fprintf(fh, "  #ifdef USE_MACRO\n");
+            fprintf(fh, "    #define Write_%s(x) pwm_set_duty_percent(x); pwm_on();\n", str);
+            fprintf(fh, "  #else\n");
+            fprintf(fh, "    void Write_%s(SWORD x);\n", str);
+            fprintf(fh, "  #endif\n");
             fprintf(fh, "#endif\n");
             fprintf(fh, "\n");
 
             fprintf(f, "#ifndef USE_MACRO\n");
-            fprintf(f, "// LDmicro provide this function.\n");
+            fprintf(f, "  // LDmicro provide this function.\n");
             fprintf(f, "  void Write_%s(SWORD x) {\n", str);
             fprintf(f, "    pwm_set_duty_percent(x);\n");
             fprintf(f, "    pwm_on();\n");
@@ -426,25 +424,25 @@ static void DeclareBit(FILE *f, const char *str, int set1)
             }
 
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
-            fprintf(fh, "// LDmicro provide this macro or function.\n");
-            fprintf(fh, "#ifdef USE_MACRO\n");
-            fprintf(fh, "  #define Read_%s() analogRead(pin_%s)\n", str, str);
-            fprintf(fh, "#else\n");
-            fprintf(fh, "  SWORD Read_%s(void);\n", str);
-            fprintf(fh, "#endif\n");
+            fprintf(fh, "  // LDmicro provide this macro or function.\n");
+            fprintf(fh, "  #ifdef USE_MACRO\n");
+            fprintf(fh, "    #define Read_%s() analogRead(pin_%s)\n", str, str);
+            fprintf(fh, "  #else\n");
+            fprintf(fh, "    SWORD Read_%s(void);\n", str);
+            fprintf(fh, "  #endif\n");
             fprintf(fh, "#endif\n");
             fprintf(fh, "\n");
 
             fprintf(f, "#ifndef USE_MACRO\n");
-            fprintf(f, "// LDmicro provide this function.\n");
-            fprintf(f, "SWORD Read_%s(void) {\n", str);
-            fprintf(f, "  return analogRead(pin_%s);\n", str);
-            fprintf(f, "}\n");
+            fprintf(f, "  // LDmicro provide this function.\n");
+            fprintf(f, "  SWORD Read_%s(void) {\n", str);
+            fprintf(f, "    return analogRead(pin_%s);\n", str);
+            fprintf(f, "  }\n");
             fprintf(f, "#endif\n");
             fprintf(f, "\n");
         } else if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
-            fprintf(fh, "// LDmicro provide this function.\n");
+            fprintf(fh, "  // LDmicro provide this function.\n");
             fprintf(fh, "  SWORD Read_%s(void);\n", str);
             fprintf(fh, "#endif\n");
             fprintf(fh, "\n");
@@ -1134,13 +1132,17 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_PWM:
-                if(!IsNumber(IntCode[i].name1)) {
-                    if(IsNumber(IntCode[i].name2))
-                        fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), hobatoi(IntCode[i].name2));
-                    else
-                        fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
-                    doIndent(f, i);
-                }
+                //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
+                fprintf(f, "#ifdef USE_PWM_FREQUENCY\n");
+                doIndent(f, i);
+                fprintf(f, "  setPwmFrequency(pin_%s, 64);", MapSym(IntCode[i].name3, ASBIT), hobatoi(IntCode[i].name2));
+                if(IsNumber(IntCode[i].name2))
+                    fprintf(f, " // %d Hz\n", hobatoi(IntCode[i].name2));
+                else
+                    fprintf(f, " // %s Hz\n", MapSym(IntCode[i].name2, ASINT));
+                doIndent(f, i);
+                fprintf(f, "#endif\n");
+                doIndent(f, i);
                 fprintf(f, "Write_%s(%s);\n", MapSym(IntCode[i].name3, ASBIT), MapSym(IntCode[i].name1, ASINT));
                 break;
 
@@ -1401,13 +1403,13 @@ bool CompileAnsiC(char *dest, int MNU)
             "//#define DO_LDSTUBS\n"
             "\n"
             "#ifdef DO_LDSTUBS\n"
-            "#define LDSTUB(x)   x { ; }\n"
-            "#define LDSTUB0(x)  x { return 0; }\n"
-            "#define LDSTUB1(x)  x { return 1; }\n"
+            "  #define LDSTUB(x)   x { ; }\n"
+            "  #define LDSTUB0(x)  x { return 0; }\n"
+            "  #define LDSTUB1(x)  x { return 1; }\n"
             "#else\n"
-            "#define LDSTUB(x)   PROTO(extern x;)\n"
-            "#define LDSTUB0(x)  PROTO(extern x;)\n"
-            "#define LDSTUB1(x)  PROTO(extern x;)\n"
+            "  #define LDSTUB(x)   PROTO(extern x;)\n"
+            "  #define LDSTUB0(x)  PROTO(extern x;)\n"
+            "  #define LDSTUB1(x)  PROTO(extern x;)\n"
             "#endif\n"
             "\n"
             "/* Uncomment USE_WDT when you need to. */\n"
@@ -1426,26 +1428,26 @@ bool CompileAnsiC(char *dest, int MNU)
                 "\n");
         fprintf(flh,
   "#ifdef __GNUC__\n"
-  "    //mem.h vvv\n"
-  "    //CodeVisionAVR V2.0 C Compiler\n"
-  "    //(C) 1998-2007 Pavel Haiduc, HP InfoTech S.R.L.\n"
-  "    //\n"
-  "    //  Memory access macros\n"
+  "  //mem.h vvv\n"
+  "  //CodeVisionAVR V2.0 C Compiler\n"
+  "  //(C) 1998-2007 Pavel Haiduc, HP InfoTech S.R.L.\n"
+  "  //\n"
+  "  //  Memory access macros\n"
   "\n"
-  "    #ifndef _MEM_INCLUDED_\n"
-  "    #define _MEM_INCLUDED_\n"
+  "  #ifndef _MEM_INCLUDED_\n"
+  "  #define _MEM_INCLUDED_\n"
   "\n"
-  "    #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
-  "    #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
-  "    #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
-  "    #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
+  "  #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
+  "  #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
+  "  #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
+  "  #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
   "\n"
-  "    #endif\n"
-  "    //mem.h ^^^\n"
+  "  #endif\n"
+  "  //mem.h ^^^\n"
   "#endif\n"
        );
         fprintf(flh,
-  "    #define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n"
+  "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n"
        );
     }
     fprintf(flh,
@@ -1471,7 +1473,7 @@ bool CompileAnsiC(char *dest, int MNU)
                 "    typedef signed int16      SWORD;\n"
                 "    typedef signed int32     SDWORD;\n"
                 "#elif defined(HI_TECH_C)\n"
-                "  #ifdef _USE_MACRO\n"
+                "  #ifdef _USE_MACRO_\n"
                 "    typedef bit              ldBOOL;\n"
                 "  #else\n"
                 "    typedef unsigned char    ldBOOL;\n"
@@ -1479,7 +1481,8 @@ bool CompileAnsiC(char *dest, int MNU)
                 "    typedef signed char       SBYTE;\n"
                 "    typedef signed short int  SWORD;\n"
                 "    typedef signed long int  SDWORD;\n"
-                "#endif\n");
+                "#endif\n"
+                "\n");
     } else if(mcu_ISA == ISA_AVR) {
         fprintf(flh,
                 /*
@@ -1491,17 +1494,18 @@ bool CompileAnsiC(char *dest, int MNU)
                 "  typedef unsigned char    ldBOOL;\n"
                 "  typedef signed char       SBYTE;\n"
                 "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n");
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
     } else {
         fprintf(flh,
                 "  typedef unsigned char    ldBOOL;\n"
                 "  typedef signed char       SBYTE;\n"
                 "  typedef signed short int  SWORD;\n"
-                "  typedef signed long int  SDWORD;\n");
+                "  typedef signed long int  SDWORD;\n"
+                "\n");
     }
     if(mcu_ISA == ISA_AVR) {
         fprintf(flh,
-                "\n"
                 "#ifndef UCSRA\n"
                 "  #define UCSRA UCSR0A\n"
                 "#endif\n"
@@ -1523,11 +1527,7 @@ bool CompileAnsiC(char *dest, int MNU)
                 "#ifndef UCSRB\n"
                 "  #define UCSRB UCSR0B\n"
                 "#endif\n"
-                "/*\n"
-                "#ifndef \n"
-                "  #define \n"
-                "#endif\n"
-                "*/\n");
+                "\n");
     }
 
     fh = fopen(desth, "w");
@@ -1557,15 +1557,19 @@ bool CompileAnsiC(char *dest, int MNU)
 
         fprintf(fh,
                 "#ifdef USE_WDT\n"
-                "#include <avr\\wdt.h>\n"
+                "  #include <avr\\wdt.h>\n"
                 "#endif\n");
         if(SleepFunctionUsed()) {
             fprintf(fh, "#include <avr\\sleep.h>\n");
         }
         if(PwmFunctionUsed()) {
+            fprintf(fh, "/* Uncomment USE_PWM_FREQUENCY and and set manually the proper divisor for setPwmFrequency().\n");
+            fprintf(fh, "   Base frequencies and available divisors on the pins, see in the file PwmFrequency.h */\n");
+            fprintf(fh, "//#define USE_PWM_FREQUENCY\n");
+            fprintf(fh, "#ifdef USE_PWM_FREQUENCY\n");
+            fprintf(fh, "  #include \"PwmFrequency.h\"\n");
+            fprintf(fh, "#endif\n");
             fprintf(fh, "\n");
-            fprintf(fh, "//Uncomment PwmFrequency.h and setPwmFrequency() and set proper divisor.\n");
-            fprintf(fh, "//#include \"PwmFrequency.h\"\n\n");
         }
 
         if(EepromFunctionUsed())
@@ -1678,8 +1682,8 @@ bool CompileAnsiC(char *dest, int MNU)
             "   against this one. */\n"
             "\n"
             "/* You must provide ladder.h; there you must provide:\n"
-            "      * a typedef for SWORD and ldBOOL, signed 16 bit and boolean types\n"
-            "        (probably typedef signed short SWORD; typedef unsigned char bool;)\n"
+            "   a typedef for SWORD and ldBOOL, signed 16 bit and boolean types\n"
+            "   (probably typedef signed short SWORD; typedef unsigned char bool;)\n"
             "\n"
             "   You must also provide implementations of all the I/O read/write\n"
             "   either as inlines in the header file or in another source file. (The\n"
@@ -1826,14 +1830,12 @@ bool CompileAnsiC(char *dest, int MNU)
         if(EepromFunctionUsed()) {
             fprintf(f,
                     "#ifndef USE_MACRO\n"
-                    "void EEPROM_write(int addr, unsigned char data) {\n"
+                    "  void EEPROM_write(int addr, unsigned char data) {\n"
                     "    EEPROM.write(addr, data);\n"
-                    "}\n"
-                    "\n"
-                    "unsigned char EEPROM_read(int addr) {\n"
+                    "  }\n"
+                    "  unsigned char EEPROM_read(int addr) {\n"
                     "    return EEPROM.read(addr);\n"
-                    "}\n"
-                    "\n"
+                    "  }\n"
                     "#endif\n"
                     "void EEPROM_fill(int addr1, int addr2, unsigned char data) {\n"
                     "    for (int i = max(0,addr1) ; i < min(addr2+1, EEPROM.length()) ; i++)\n"
