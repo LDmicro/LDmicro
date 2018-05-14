@@ -12,7 +12,7 @@
 
 #define STRINGARRAY_VER_MAJOR 0
 #define STRINGARRAY_VER_MINOR 1
-#define STRINGARRAY_VER_PATCH 1
+#define STRINGARRAY_VER_PATCH 2
 #define STRINGARRAY_VER_TWEAK 0
 
 #define STRINGARRAY_VER_STR TO_STR(STRINGARRAY_VER_MAJOR) "." TO_STR(STRINGARRAY_VER_MINOR) "."\
@@ -20,6 +20,7 @@
 
 #include <array>
 #include <string>
+#include <cstring>
 #include <stdexcept>
 
 #include <cstdio>
@@ -115,13 +116,16 @@ public:
 
     size_type size() const
     { // return length of sequence
-        auto zero_pos = std::find(std::begin(data_), std::end(data_), 0);
-        if (zero_pos == std::end(data_))
+        size_type zero_pos = 0;
+        for(;zero_pos < data_.size(); ++zero_pos)
+            if(data_[zero_pos] == 0)
+                break;
+        if (zero_pos == data_.size())
             {
                 throw std::logic_error("Can't find terminating NULL in StringArray<N>");
             }
 
-        return std::distance(std::begin(data_), zero_pos);
+        return zero_pos;
     }
 
     size_type length() const
@@ -256,9 +260,9 @@ public:
         return *this;
     }
 
-    _Myt& append(const char* str)
+    _Myt& append(const char* str_)
     {
-        return append(str, strlen(str));
+        return append(str_, strlen(str_));
     }
 
     template<size_t K>
