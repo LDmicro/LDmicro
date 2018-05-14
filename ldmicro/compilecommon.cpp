@@ -21,7 +21,7 @@
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
 #include "ldmicro.h"
-#include "intcode.h"
+#include "compilercommon.hpp"
 #include "compilerexceptions.hpp"
 #include <algorithm>
 
@@ -413,7 +413,7 @@ int GetAssignedType(const char *name, const char *fullName)
 //-----------------------------------------------------------------------------
 // Determine the mux register settings to read a particular ADC channel.
 //-----------------------------------------------------------------------------
-BYTE MuxForAdcVariable(const char *name)
+uint8_t MuxForAdcVariable(const char *name)
 {
     int res = 0;
     int i;
@@ -439,6 +439,11 @@ BYTE MuxForAdcVariable(const char *name)
     }
 
     return res;
+}
+
+uint8_t MuxForAdcVariable(const NameArray& name)
+{
+    return MuxForAdcVariable(name.c_str());
 }
 
 //-----------------------------------------------------------------------------
@@ -624,18 +629,33 @@ int MemForVariable(const char *name, DWORD *addr)
     return MemForVariable(name, addr, 0);
 }
 
+int MemForVariable(const NameArray& name, DWORD *addr)
+{
+    return MemForVariable(name.c_str(), addr);
+}
+
 //-----------------------------------------------------------------------------
-int MemOfVar(char *name, DWORD *addr)
+int MemOfVar(const char *name, DWORD *addr)
 {
     MemForVariable(name, addr, -1); //get WORD memory for pointer to LPM
     return SizeOfVar(name);         //and return size of element of table in flash memory
 }
 
-int SetMemForVariable(char *name, DWORD addr, int sizeOfVar)
+int MemOfVar(const NameArray& name, DWORD *addr)
+{
+    return MemOfVar(name.c_str(), addr);
+}
+
+int SetMemForVariable(const char *name, DWORD addr, int sizeOfVar)
 {
     MemForVariable(name, &addr, sizeOfVar); //allocate WORD memory for pointer to LPM
 
     return MemForVariable(name, nullptr, sizeOfVar); //and set size of element of table in flash memory
+}
+
+int SetMemForVariable(const NameArray& name, DWORD addr, int sizeOfVar)
+{
+    return SetMemForVariable(name.c_str(), addr, sizeOfVar);
 }
 
 //-----------------------------------------------------------------------------
@@ -663,6 +683,11 @@ int SizeOfVar(const char *name)
         return byteNeeded(hobatoi(name));
     else
         return MemForVariable(name, nullptr, 0);
+}
+
+int SizeOfVar(const NameArray& name)
+{
+    return SizeOfVar(name.c_str());
 }
 
 //-----------------------------------------------------------------------------
@@ -889,8 +914,13 @@ void MemForSingleBit(const char *name, DWORD *addr, int *bit)
     MemForSingleBit(name, false, addr, bit);
 }
 
+void MemForSingleBit(const NameArray& name, bool forRead, DWORD *addr, int *bit)
+{
+    MemForSingleBit(name.c_str(), forRead, addr, bit);
+}
+
 //-----------------------------------------------------------------------------
-int isPinAssigned(const char *name)
+int isPinAssigned(const NameArray& name)
 {
     int res = 0;
     if((Prog.mcu) && ((Prog.mcu->whichIsa == ISA_AVR) || (Prog.mcu->whichIsa == ISA_PIC16)))
@@ -900,9 +930,9 @@ int isPinAssigned(const char *name)
             case 'X':
             case 'Y': {
                 auto assign = std::find_if(Prog.io.assignment, Prog.io.assignment + Prog.io.count,
-                                           [name](const PlcProgramSingleIo& io){return (strcmp(io.name, name) == 0);});
+                                           [name](const PlcProgramSingleIo& io){return (name == io.name);});
                 if(assign == (Prog.io.assignment + Prog.io.count))
-                    oops();
+                    TROW_COMPILER_EXCEPTION("Can't find right assign.");
 
                 int pin = assign->pin;
                 if(name[0] == 'A') {

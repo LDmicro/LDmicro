@@ -106,6 +106,12 @@ static const char *MapSym(const char *str, int how)
     return ret;
 }
 
+static const char *MapSym(const NameArray& name, int how = ASINT);
+static const char *MapSym(const NameArray& name, int how)
+{
+    return MapSym(name.c_str(), how);
+}
+
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var; easy, a static.
 //-----------------------------------------------------------------------------
@@ -509,19 +515,19 @@ static void GenerateDeclarations(FILE *f)
             case INT_SET_BIT:
             case INT_CLEAR_BIT:
                 isPinAssigned(a->name1);
-                bitVar1 = IntCode[i].name1;
+                bitVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_COPY_BIT_TO_BIT:
                 isPinAssigned(a->name1);
                 isPinAssigned(a->name2);
-                bitVar1 = IntCode[i].name1;
-                bitVar2 = IntCode[i].name2;
+                bitVar1 = IntCode[i].name1.c_str();
+                bitVar2 = IntCode[i].name2.c_str();
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
             case INT_SET_VARIABLE_RANDOM:
-                intVar1 = IntCode[i].name1;
+                intVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_SET_BIN2BCD:
@@ -532,8 +538,8 @@ static void GenerateDeclarations(FILE *f)
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
-                intVar1 = IntCode[i].name1;
-                intVar2 = IntCode[i].name2;
+                intVar1 = IntCode[i].name1.c_str();
+                intVar2 = IntCode[i].name2.c_str();
                 break;
 
 #ifdef USE_SFR
@@ -577,59 +583,59 @@ static void GenerateDeclarations(FILE *f)
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_ADD:
-                intVar1 = IntCode[i].name1;
-                intVar2 = IntCode[i].name2;
-                intVar3 = IntCode[i].name3;
+                intVar1 = IntCode[i].name1.c_str();
+                intVar2 = IntCode[i].name2.c_str();
+                intVar3 = IntCode[i].name3.c_str();
                 break;
 
             case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
-                intVar1 = IntCode[i].name1;
+                intVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_PWM_OFF:
-                bitVar1 = IntCode[i].name1;
+                bitVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_SET_PWM:
                 if(!IsNumber(IntCode[i].name1))
-                    intVar1 = IntCode[i].name1;
+                    intVar1 = IntCode[i].name1.c_str();
                 if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2;
-                bitVar1 = IntCode[i].name3;
+                    intVar2 = IntCode[i].name2.c_str();
+                bitVar1 = IntCode[i].name3.c_str();
                 break;
 
             case INT_READ_ADC:
-                intVar1 = IntCode[i].name1;
-                bitVar1 = IntCode[i].name1;
+                intVar1 = IntCode[i].name1.c_str();
+                bitVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_UART_RECV:
             case INT_UART_SEND:
-                intVar1 = IntCode[i].name1;
-                bitVar1 = IntCode[i].name2;
+                intVar1 = IntCode[i].name1.c_str();
+                bitVar1 = IntCode[i].name2.c_str();
                 break;
 
             case INT_SPI:
-                intVar1 = IntCode[i].name1;
-                intVar2 = IntCode[i].name2;
+                intVar1 = IntCode[i].name1.c_str();
+                intVar2 = IntCode[i].name2.c_str();
                 break;
 
             case INT_UART_SEND1:
             case INT_UART_SENDn:
-                intVar1 = IntCode[i].name1;
+                intVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_UART_RECV_AVAIL:
             case INT_UART_SEND_READY:
             case INT_UART_SEND_BUSY:
-                bitVar1 = IntCode[i].name1;
+                bitVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
                 isPinAssigned(a->name1);
-                bitVar1 = IntCode[i].name1;
+                bitVar1 = IntCode[i].name1.c_str();
                 bitVar1set1 = IntCode[i].literal;
                 break;
 
@@ -641,9 +647,9 @@ static void GenerateDeclarations(FILE *f)
             case INT_IF_LEQ:
             case INT_IF_GEQ:
                 if(!IsNumber(IntCode[i].name1))
-                    intVar1 = IntCode[i].name1;
+                    intVar1 = IntCode[i].name1.c_str();
                 if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2;
+                    intVar2 = IntCode[i].name2.c_str();
                 break;
 #else
             case INT_IF_VARIABLE_LES_LITERAL:
@@ -667,12 +673,12 @@ static void GenerateDeclarations(FILE *f)
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
-                bitVar1 = IntCode[i].name1;
+                bitVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
-                intVar1 = IntCode[i].name1;
+                intVar1 = IntCode[i].name1.c_str();
                 break;
 
             case INT_WRITE_STRING:
@@ -690,7 +696,7 @@ static void GenerateDeclarations(FILE *f)
                 break;
             case INT_RAM_READ:
             case INT_FLASH_READ:
-                intVar1 = IntCode[i].name1;
+                intVar1 = IntCode[i].name1.c_str();
                 break;
 #endif
 
@@ -798,8 +804,8 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                if(*IntCode[i].name1 == '#') { // TODO: in many other places :(
-                    fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1 + 1, IntCode[i].literal);
+                if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
+                    fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
                     doIndent(f, i);
                 }
                 fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
@@ -809,8 +815,8 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                if(*IntCode[i].name1 == '#') { // TODO: in many other places :(
-                    fprintf(f, "//pokeb(%s, %s); // Variants 1 and 2\n", IntCode[i].name1 + 1, MapSym(IntCode[i].name2, ASINT));
+                if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
+                    fprintf(f, "//pokeb(%s, %s); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, MapSym(IntCode[i].name2, ASINT));
                     doIndent(f, i);
                 }
                 fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
@@ -987,7 +993,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_COMMENT:
                 if(IntCode[i].name1[0]) {
-                    fprintf(f, "// %s\n", IntCode[i].name1);
+                    fprintf(f, "// %s\n", IntCode[i].name1.c_str());
                 } else {
                     fprintf(f, "\n");
                 }
@@ -1107,7 +1113,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 if(compiler_variant == MNU_COMPILE_ARDUINO) {
                     fprintf(f, "Write0_%s(); // dummy // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
                 } else {
-                    fprintf(f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1);
+                    fprintf(f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1.c_str());
                 }
                 break;
 
@@ -1136,7 +1142,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case INT_SET_PWM:
                 if(!IsNumber(IntCode[i].name1)) {
                     if(IsNumber(IntCode[i].name2))
-                        fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), hobatoi(IntCode[i].name2));
+                        fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), hobatoi(IntCode[i].name2.c_str()));
                     else
                         fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                     doIndent(f, i);
@@ -1154,7 +1160,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 else
                     fprintf(f, "//KnownAddr Rung%d\n", IntCode[i].literal+1);
                 */
-                if(strcmp(IntCode[i].name2, "SUBPROG") == 0) {
+                if(IntCode[i].name2 == "SUBPROG") {
                     int skip = FindOpNameLast(INT_RETURN, IntCode[i].name1);
                     if(skip <= i)
                         oops();
@@ -1165,10 +1171,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "LabelRung%d:;\n", IntCode[i].literal + 1);
                 break;
             case INT_GOTO:
-                fprintf(f, "goto LabelRung%d; // %s\n", IntCode[i].literal + 1, IntCode[i].name1);
+                fprintf(f, "goto LabelRung%d; // %s\n", IntCode[i].literal + 1, IntCode[i].name1.c_str());
                 break;
             case INT_GOSUB:
-                fprintf(f, "Call_SUBPROG_%s(); // LabelRung%d\n", IntCode[i].name1, IntCode[i].literal + 1);
+                fprintf(f, "Call_SUBPROG_%s(); // LabelRung%d\n", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
                 break;
             case INT_RETURN:
                 fprintf(f, "return;\n");
@@ -1198,7 +1204,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                             MapSym(IntCode[i].name1),
                             IntCode[i].data[CheckMakeNumber(IntCode[i].name3)],
                             MapSym(IntCode[i].name2),
-                            IntCode[i].name3);
+                            IntCode[i].name3.c_str());
                 } else {
                     fprintf(f, "#ifdef __GNUC__\n");
                     doIndent(f, i);
@@ -1249,7 +1255,7 @@ static void GenerateSUBPROG(FILE *f)
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
-                fprintf(f, "void Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1, (int)(IntCode[i].literal + 1));
+                fprintf(f, "void Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1.c_str(), (int)(IntCode[i].literal + 1));
                 int indentSave = indent;
                 indent = 1;
                 GenerateAnsiC(f,

@@ -161,6 +161,17 @@ static bool SingleBitOn(const char *name)
     return false;
 }
 
+template <size_t N>
+static bool SingleBitOn(const StringArray<N>& name)
+{
+    for(int i = 0; i < SingleBitItemsCount; i++) {
+        if(name == SingleBitItems[i].name) {
+            return SingleBitItems[i].powered;
+        }
+    }
+    return false;
+}
+
 //-----------------------------------------------------------------------------
 // Set the state of a single-bit item. Adds it to the list if it is not there
 // already.
@@ -179,6 +190,24 @@ static void SetSingleBit(const char *name, bool state)
         SingleBitItems[i].powered = state;
         SingleBitItemsCount++;
     }
+}
+
+template <size_t N>
+static void SetSingleBit(const StringArray<N>& name, bool state)
+{
+    int i;
+    for(i = 0; i < SingleBitItemsCount; i++) {
+        if(name == SingleBitItems[i].name) {
+            SingleBitItems[i].powered = state;
+            return;
+        }
+    }
+    if(i < MAX_IO) {
+        strcpy(SingleBitItems[i].name, name.c_str());
+        SingleBitItems[i].powered = state;
+        SingleBitItemsCount++;
+    }
+
 }
 
 bool GetSingleBit(char *name)
@@ -213,6 +242,16 @@ static void Increment(const char *name, const char *overlap, const char *overflo
     ooops(name);
 }
 
+static void Increment(const NameArray& name, const char *overlap, const char *overflow)
+{
+    Increment(name.c_str(), overlap, overflow);
+}
+
+static void Increment(const NameArray& name, const NameArray& overlap, const char *overflow)
+{
+    Increment(name.c_str(), overlap.c_str(), overflow);
+}
+
 //-----------------------------------------------------------------------------
 static void Decrement(const char *name, const char *overlap, const char *overflow)
 {
@@ -238,8 +277,13 @@ static void Decrement(const char *name, const char *overlap, const char *overflo
     ooops(name);
 }
 
+static void Decrement(const NameArray& name, const NameArray& overlap, const char *overflow)
+{
+    Decrement(name.c_str(), overlap.c_str(), overflow);
+}
+
 //-----------------------------------------------------------------------------
-static SDWORD AddVariable(const char *name1, const char *name2, const char *name3, const char *overflow)
+static SDWORD AddVariable(const NameArray& name1, const NameArray& name2, const NameArray& name3, const char *overflow)
 {
     long long int ret = (long long int)GetSimulationVariable(name2) + (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
@@ -253,7 +297,7 @@ static SDWORD AddVariable(const char *name1, const char *name2, const char *name
 }
 
 //-----------------------------------------------------------------------------
-static SDWORD SubVariable(const char *name1, const char *name2, const char *name3, const char *overflow)
+static SDWORD SubVariable(const NameArray& name1, const NameArray& name2, const NameArray& name3, const char *overflow)
 {
     long long int ret = (long long int)GetSimulationVariable(name2) - (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
@@ -284,6 +328,11 @@ void SetSimulationVariable(char *name, SDWORD val)
     SetSimulationVariable(name, val);
 }
 
+void SetSimulationVariable(const NameArray& name, SDWORD val)
+{
+    SetSimulationVariable(name.c_str(), val);
+}
+
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
@@ -309,6 +358,11 @@ SDWORD GetSimulationVariable(const char *name)
     return GetSimulationVariable(name, false);
 }
 
+SDWORD GetSimulationVariable(const NameArray& name)
+{
+    return GetSimulationVariable(name.c_str());
+}
+
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
@@ -328,10 +382,9 @@ void SetSimulationStr(char *name, char *val)
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
-char *GetSimulationStr(char *name)
+char *GetSimulationStr(const char *name)
 {
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             return Variables[i].valstr;
         }
@@ -363,7 +416,7 @@ void SetAdcShadow(char *name, SWORD val)
 // Return the shadow value of a variable associated with a READ ADC. This is
 // what gets copied into the real variable when an ADC read is simulated.
 //-----------------------------------------------------------------------------
-SWORD GetAdcShadow(char *name)
+SWORD GetAdcShadow(const char *name)
 {
     int i;
     for(i = 0; i < AdcShadowsCount; i++) {
@@ -372,6 +425,11 @@ SWORD GetAdcShadow(char *name)
         }
     }
     return 0;
+}
+
+SWORD GetAdcShadow(const NameArray& name)
+{
+    return GetAdcShadow(name.c_str());
 }
 
 //-----------------------------------------------------------------------------
@@ -390,12 +448,12 @@ SDWORD MthRandom()
     return (SDWORD)seed;
 }
 
-SDWORD GetRandom(char *name)
+SDWORD GetRandom(const NameArray& name)
 {
     int    sov = SizeOfVar(name);
     SDWORD seed = MthRandom();
     char   seedName[MAX_NAME_LEN];
-    sprintf(seedName, "$seed_%s", name);
+    sprintf(seedName, "$seed_%s", name.c_str());
     SetSimulationVariable(seedName, seed);
     if(sov == 1)
         return (signed char)(seed >> (8 * (4 - sov)));
@@ -1315,12 +1373,10 @@ int FindOpRung(int op, int rung)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpName(int op, const char *name1)
+int FindOpName(int op, const NameArray& name1)
 {
-    if(!name1)
-        oops();
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
+        if((IntCode[i].op == op) && (IntCode[i].name1 == name1)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
         }
@@ -1329,14 +1385,10 @@ int FindOpName(int op, const char *name1)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpName(int op, const char *name1, const char *name2)
+int FindOpName(int op, const NameArray& name1, const NameArray& name2)
 {
-    if(!name1)
-        oops();
-    if(!name2)
-        oops();
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
+        if((IntCode[i].op == op) && (IntCode[i].name1 == name1) && (IntCode[i].name2 == name2)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
         }
@@ -1345,12 +1397,10 @@ int FindOpName(int op, const char *name1, const char *name2)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpNameLast(int op, const char *name1)
+int FindOpNameLast(int op, const NameArray& name1)
 {
-    if(!name1)
-        oops();
     for(int i = IntCode.size() - 1; i >= 0; i--) {
-        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
+        if((IntCode[i].op == op) && (IntCode[i].name1 == name1)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
         }
@@ -1359,14 +1409,10 @@ int FindOpNameLast(int op, const char *name1)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpNameLast(int op, const char *name1, const char *name2)
+int FindOpNameLast(int op, const NameArray& name1, const NameArray& name2)
 {
-    if(!name1)
-        oops();
-    if(!name2)
-        oops();
     for(int i = IntCode.size() - 1; i >= 0; i--) {
-        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
+        if((IntCode[i].op == op) && ((IntCode[i].name1 == name1)) && ((IntCode[i].name2 == name2))) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
         }
@@ -1392,7 +1438,7 @@ static void SimulateIntCode()
                     *(a->poweredAfter) = SingleBitOn(a->name1);
                 }
 
-                if(strlen(a->name2))
+                if(a->name2.size())
                     if(*(a->workingNow) != SingleBitOn(a->name2)) {
                         NeedRedraw = 1;
                         *(a->workingNow) = SingleBitOn(a->name2);
@@ -1630,7 +1676,7 @@ static void SimulateIntCode()
                 SDWORD v1, v2;
                 v1 = GetSimulationVariable(a->name1);
                 if(IsNumber(a->name2))
-                    v2 = hobatoi(a->name2);
+                    v2 = hobatoi(a->name2.c_str());
                 else
                     v2 = GetSimulationVariable(a->name2);
                 if(a->op == INT_VARIABLE_SET_BIT)
@@ -1650,7 +1696,7 @@ static void SimulateIntCode()
                 SDWORD v1, v2;
                 v1 = GetSimulationVariable(a->name1);
                 if(IsNumber(a->name2))
-                    v2 = hobatoi(a->name2);
+                    v2 = hobatoi(a->name2.c_str());
                 else
                     v2 = GetSimulationVariable(a->name2);
                 if(v1 & (1 << v2))
@@ -1661,7 +1707,7 @@ static void SimulateIntCode()
                 SDWORD v1, v2;
                 v1 = GetSimulationVariable(a->name1);
                 if(IsNumber(a->name2))
-                    v2 = hobatoi(a->name2);
+                    v2 = hobatoi(a->name2.c_str());
                 else
                     v2 = GetSimulationVariable(a->name2);
                 if((v1 & (1 << v2)) == 0)
@@ -1669,12 +1715,12 @@ static void SimulateIntCode()
                 break;
             }
             case INT_IF_BITS_SET_IN_VAR:
-                if((GetSimulationVariable(a->name1) & hobatoi(a->name2)) == hobatoi(a->name2))
+                if((GetSimulationVariable(a->name1) & hobatoi(a->name2.c_str())) == hobatoi(a->name2.c_str()))
                     IF_BODY
                 break;
 
             case INT_IF_BITS_CLEAR_IN_VAR:
-                if((GetSimulationVariable(a->name1) & hobatoi(a->name2)) == 0)
+                if((GetSimulationVariable(a->name1) & hobatoi(a->name2.c_str())) == 0)
                     IF_BODY
                 break;
 
@@ -1895,7 +1941,7 @@ static void SimulateIntCode()
                     StopSimulation();
                 }
                 //dbps(GetSimulationStr(a->name1))
-                char d = GetSimulationStr(a->name1)[index];
+                char d = GetSimulationStr(a->name1.c_str())[index];
                 if(GetSimulationVariable(a->name2) != d) {
                     SetSimulationVariable(a->name2, d);
                     NeedRedraw = 11;
@@ -2071,7 +2117,7 @@ SDWORD SDWORD3(SDWORD v)
 // Provide a description for an item (Xcontacts, Ycoil, Rrelay, Ttimer,
 // or other) in the I/O list.
 //-----------------------------------------------------------------------------
-void DescribeForIoList(char *name, int type, char *out)
+void DescribeForIoList(const char *name, int type, char *out)
 {
     strcpy(out, "");
 
