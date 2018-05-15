@@ -767,7 +767,7 @@ McuPwmPinInfo *PwmPinInfoForName(char *name)
     return nullptr;
 }
 
-McuPwmPinInfo *PwmPinInfoForName(char *name, int timer) // !=timer !!!
+McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer) // !=timer !!!
 {
     if(Prog.mcu)
         for(int i = 0; i < Prog.io.count; i++) {
@@ -778,7 +778,7 @@ McuPwmPinInfo *PwmPinInfoForName(char *name, int timer) // !=timer !!!
     return nullptr;
 }
 
-McuPwmPinInfo *PwmPinInfoForName(char *name, int timer, int resolution) // !=timer !!!
+McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer, int resolution) // !=timer !!!
 {
     if(Prog.mcu)
         for(int i = 0; i < Prog.io.count; i++) {
@@ -957,7 +957,7 @@ char *toupperstr(char *dest, const char *src)
     return dest;
 }
 
-void getResolution(char *s, int *resol, int *TOP)
+void getResolution(const char *s, int *resol, int *TOP)
 {
     *resol = 7; // 0-100% (6.7 bit)
     *TOP = 0xFF;
