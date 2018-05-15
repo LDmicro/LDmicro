@@ -712,7 +712,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
           ((1 << (bits)) - 1),                                    \
           AvrInstr->l,                                            \
           AvrInstr->f,                                            \
-          a->name1,                                               \
+          a->name1.c_str(),                                               \
           a->l,                                                   \
           a->f)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
@@ -723,7 +723,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
           UpperRangeInclusive,                                           \
           AvrInstr->l,                                                   \
           AvrInstr->f,                                                   \
-          a->name1,                                                      \
+          a->name1.c_str(),                                                      \
           a->l,                                                          \
           a->f)
 
@@ -2536,7 +2536,7 @@ static void InitTable(IntOp *a)
     MemOfVar(a->name1, &addrOfTable);
 
     if(addrOfTable == 0) {
-        Comment("TABLE %s", a->name1);
+        Comment("TABLE %s", a->name1.c_str());
         if(AvrProgWriteP % 2)
             Instruction(OP_NOP);
         addrOfTable = AvrProgWriteP; // << 1; //see LPM // data stored in flash
@@ -2575,7 +2575,7 @@ static void InitTable(IntOp *a)
             }
         } else
             oops();
-        Comment("TABLE %s END", a->name1);
+        Comment("TABLE %s END", a->name1.c_str());
     }
 
     //  if((saveAvrProgWriteP >> 11) != (AvrProgWriteP >> 11)) oops();
@@ -3341,19 +3341,19 @@ static void CompileFromIntermediate()
         rungNow = a->rung;
         switch(a->op) {
             case INT_SET_BIT:
-                Comment("INT_SET_BIT %s", a->name1);
+                Comment("INT_SET_BIT %s", a->name1.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
                 SetBit(addr1, bit1, a->name1.c_str());
                 break;
 
             case INT_CLEAR_BIT:
-                Comment("INT_CLEAR_BIT %s", a->name1);
+                Comment("INT_CLEAR_BIT %s", a->name1.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
                 ClearBit(addr1, bit1, a->name1.c_str());
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1, a->name2);
+                Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1.c_str(), a->name2.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
                 MemForSingleBit(a->name2, false, &addr2, &bit2);
                 CopyBit(addr1, bit1, addr2, bit2, a->name1.c_str(), a->name2.c_str());
@@ -3374,28 +3374,28 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1, a->literal, a->literal);
+                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 WriteLiteralToMemory(addr1, sov1, a->literal, a->name1);
                 break;
 
             case INT_INCREMENT_VARIABLE: {
-                Comment("INT_INCREMENT_VARIABLE %s", a->name1);
+                Comment("INT_INCREMENT_VARIABLE %s", a->name1.c_str());
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
                 Increment(addr1, sov1);
                 break;
             }
             case INT_DECREMENT_VARIABLE: {
-                Comment("INT_DECREMENT_VARIABLE %s", a->name1);
+                Comment("INT_DECREMENT_VARIABLE %s", a->name1.c_str());
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
                 Decrement(addr1, sov1);
                 break;
             }
             case INT_IF_BIT_SET: {
-                Comment("INT_IF_BIT_SET %s", a->name1);
+                Comment("INT_IF_BIT_SET %s", a->name1.c_str());
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
                 IfBitClear(addr1, bit1, a->name1);
@@ -3404,7 +3404,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_IF_BIT_CLEAR: {
-                Comment("INT_IF_BIT_CLEAR %s", a->name1);
+                Comment("INT_IF_BIT_CLEAR %s", a->name1.c_str());
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
                 IfBitSet(addr1, bit1, a->name1);
@@ -3413,7 +3413,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_VARIABLE_CLEAR_BIT: {
-                Comment("INT_VARIABLE_CLEAR_BIT %s %s", a->name1, a->name2);
+                Comment("INT_VARIABLE_CLEAR_BIT %s %s", a->name1.c_str(), a->name2.c_str());
                 bit = hobatoi(a->name2.c_str());
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
@@ -3447,7 +3447,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_VARIABLE_SET_BIT: {
-                Comment("INT_VARIABLE_SET_BIT %s %s", a->name1, a->name2);
+                Comment("INT_VARIABLE_SET_BIT %s %s", a->name1.c_str(), a->name2.c_str());
                 bit = hobatoi(a->name2.c_str());
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
@@ -3481,7 +3481,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_IF_BIT_SET_IN_VAR: {
-                Comment("INT_IF_BIT_SET_IN_VAR %s %s", a->name1, a->name2);
+                Comment("INT_IF_BIT_SET_IN_VAR %s %s", a->name1.c_str(), a->name2.c_str());
                 DWORD ifAddr = AllocFwdAddr();
                 DWORD endifAddr = AllocFwdAddr();
                 sov1 = SizeOfVar(a->name1);
@@ -3548,7 +3548,7 @@ static void CompileFromIntermediate()
             break;
 */
             case INT_IF_BIT_CLEAR_IN_VAR: {
-                Comment("INT_IF_BIT_CLEAR_IN_VAR %s %s", a->name1, a->name2);
+                Comment("INT_IF_BIT_CLEAR_IN_VAR %s %s", a->name1.c_str(), a->name2.c_str());
                 DWORD ifAddr = AllocFwdAddr();
                 DWORD endifAddr = AllocFwdAddr();
                 sov1 = SizeOfVar(a->name1);
@@ -3617,15 +3617,15 @@ static void CompileFromIntermediate()
             //
             //case INT_IF_BITS_CLEAR_IN_VAR: TODO
             case INT_IF_BITS_SET_IN_VAR: {
-                Comment("INT_IF_BITS_SET_IN_VAR %s", a->name1);
+                Comment("INT_IF_BITS_SET_IN_VAR %s", a->name1.c_str());
             }
             case INT_SET_OPPOSITE:
-                Comment("INT_SET_OPPOSITE %s", a->name1);
+                Comment("INT_SET_OPPOSITE %s", a->name1.c_str());
                 oops();
                 break;
 
             case INT_SET_SWAP:
-                Comment(" %s", a->name1);
+                Comment(" %s", a->name1.c_str());
                 //MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
@@ -3656,7 +3656,7 @@ static void CompileFromIntermediate()
 
 #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL: {
-                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1, a->literal, a->literal);
+                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
                 DWORD notTrue = AllocFwdAddr();
 
                 MemForVariable(a->name1, &addr1);
@@ -4166,7 +4166,7 @@ static void CompileFromIntermediate()
             case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT: {
-                Comment("INT_SET_VARIABLE_xxx %s %s %s", a->name1, a->name2, a->name3);
+                Comment("INT_SET_VARIABLE_xxx %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str());
 
                 sov = SizeOfVar(a->name1);
                 CopyArgToReg(r20, sov, a->name2);
@@ -4320,7 +4320,7 @@ static void CompileFromIntermediate()
             case INT_PWM_OFF: {
                 McuPwmPinInfo *iop = PwmPinInfoForName(a->name1.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name1);
+                    Error(_("Pin '%s': PWM output not available!"), a->name1.c_str());
                     CompileError();
                 }
                 if(iop->maxCS == 0) {
@@ -4347,7 +4347,7 @@ static void CompileFromIntermediate()
 
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                Comment("INT_SET_PWM %s %s %s %s", a->name1, a->name2, a->name3, a->name4);
+                Comment("INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol = 7; // 0-100% (6.7 bit)
                 int TOP = 0xFF;
                 getResolution(a->name4.c_str(), &resol, &TOP);
@@ -4355,12 +4355,12 @@ static void CompileFromIntermediate()
                 McuPwmPinInfo *iop;
                 iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name3);
+                    Error(_("Pin '%s': PWM output not available!"), a->name3.c_str());
                     CompileError();
                 } else {
                     iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer, std::max(resol, 8));
                     if(!iop) {
-                        Error(_("Pin '%s': PWM resolution not available!"), a->name3);
+                        Error(_("Pin '%s': PWM resolution not available!"), a->name3.c_str());
                         CompileError();
                     }
                 }
@@ -4975,7 +4975,7 @@ static void CompileFromIntermediate()
             case INT_GOTO: {
                 int rung = a->literal;
                 Comment("INT_GOTO %s %d 0x%08X 0x%08X",
-                        a->name1,
+                        a->name1.c_str(),
                         rung,
                         AddrOfRungN[rung].FwdAddr,
                         AddrOfRungN[rung].KnownAddr);
@@ -4995,7 +4995,7 @@ static void CompileFromIntermediate()
             case INT_GOSUB: {
                 int rung = a->literal;
                 Comment("INT_GOSUB %s %d %d 0x%08X 0x%08X",
-                        a->name1,
+                        a->name1.c_str(),
                         rung + 1,
                         rungNow + 1,
                         AddrOfRungN[rung].FwdAddr,
@@ -5081,7 +5081,7 @@ static void CompileFromIntermediate()
                 DWORD addr;
                 int bit;
                 char storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$seed_init_%s", a->name1);
+                sprintf(storeName, "$seed_init_%s", a->name1.c_str());
                 MemForSingleBit(storeName, false, &addr, &bit);
                 */
 
@@ -5153,7 +5153,7 @@ static void CompileFromIntermediate()
                 if(IsNumber(a->name1)) {
                     SDWORD clocks = CalcDelayClock(hobatoi(a->name1.c_str()));
                     SDWORD clocksSave = clocks;
-                    Comment("INT_DELAY %s us = %lld clocks", a->name1, clocks);
+                    Comment("INT_DELAY %s us = %lld clocks", a->name1.c_str(), clocks);
 
                     clocks = (clocks - 1) / 4;
                     if(clocks > 0x10000) {
@@ -5175,7 +5175,7 @@ static void CompileFromIntermediate()
                     for(i = 0; i < clocksSave; i++)
                         Instruction(OP_NOP); // 1 clocks
                 } else {
-                    Comment("INT_DELAY %s us", a->name1);
+                    Comment("INT_DELAY %s us", a->name1.c_str());
                     CopyVarToReg(ZL, 2, a->name1);           // 4 clocks
                     Instruction(OP_SBIW, ZL, 1);             // 2 clocks
                     Instruction(OP_BRNE, AvrProgWriteP - 1); // 1/2 clocks
