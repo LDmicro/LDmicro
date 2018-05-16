@@ -1913,14 +1913,14 @@ static void SimulateIntCode()
                 SDWORD *adata;
                 adata = (SDWORD *)GetSimulationVariable(a->name2);
                 if(adata == nullptr) {
-                    Error("TABLE %s is not initialized.", a->name2);
+                    Error("TABLE %s is not initialized.", a->name2.c_str());
                     StopSimulation();
                     ToggleSimulationMode(false);
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal <= index)) {
-                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2, a->literal - 1);
+                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2.c_str(), a->literal - 1);
                     index = a->literal;
                     StopSimulation();
                     ToggleSimulationMode(false);
@@ -1936,11 +1936,11 @@ static void SimulateIntCode()
             case INT_RAM_READ: {
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal <= index)) {
-                    Error("Index=%d out of range for string %s[%d]", index, a->name1, a->literal);
+                    Error("Index=%d out of range for string %s[%d]", index, a->name1.c_str(), a->literal);
                     index = a->literal;
                     StopSimulation();
                 }
-                //dbps(GetSimulationStr(a->name1))
+                //dbps(GetSimulationStr(a->name1.c_str()))
                 char d = GetSimulationStr(a->name1.c_str())[index];
                 if(GetSimulationVariable(a->name2) != d) {
                     SetSimulationVariable(a->name2, d);

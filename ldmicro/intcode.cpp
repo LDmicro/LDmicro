@@ -3850,12 +3850,6 @@ IntOp::IntOp() :
     l(0),
     simulated(false)
 {
-    name1[0] = 0;
-    name2[0] = 0;
-    name3[0] = 0;
-    name4[0] = 0;
-    name5[0] = 0;
-    name6[0] = 0;
     f[0] = 0;
 }
 
