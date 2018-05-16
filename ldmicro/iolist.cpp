@@ -699,10 +699,13 @@ int GenerateIoList(int prevSel)
     for(i = 0; i < Prog.numRungs; i++) {
         ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
-    AppendIo("ROverflowFlagV", IO_TYPE_INTERNAL_RELAY);
+    char _tmp[128];
+    strcpy(_tmp, "ROverflowFlagV");
+    AppendIo(_tmp, IO_TYPE_INTERNAL_RELAY);
 
     if(Prog.cycleDuty) {
-        AppendIo(YPlcCycleDuty, IO_TYPE_DIG_OUTPUT);
+        strcpy(_tmp, YPlcCycleDuty);
+        AppendIo(_tmp, IO_TYPE_DIG_OUTPUT);
     }
     for(i = 0; i < Prog.io.count; i++) {
         // clang-format off

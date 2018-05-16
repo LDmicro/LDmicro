@@ -315,7 +315,12 @@ static SDWORD SubVariable(const NameArray& name1, const NameArray& name2, const 
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
-void SetSimulationVariable(char *name, SDWORD val)
+void SetSimulationVariable(const NameArray& name, SDWORD val)
+{
+    SetSimulationVariable(name.c_str(), val);
+}
+
+void SetSimulationVariable(const char *name, SDWORD val)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -326,11 +331,6 @@ void SetSimulationVariable(char *name, SDWORD val)
     }
     MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     SetSimulationVariable(name, val);
-}
-
-void SetSimulationVariable(const NameArray& name, SDWORD val)
-{
-    SetSimulationVariable(name.c_str(), val);
 }
 
 //-----------------------------------------------------------------------------
@@ -1434,13 +1434,13 @@ static void SimulateIntCode()
         switch(a->op) {
             case INT_SIMULATE_NODE_STATE:
                 if(*(a->poweredAfter) != SingleBitOn(a->name1)) {
-                    NeedRedraw = 1;
+                    NeedRedraw = true;
                     *(a->poweredAfter) = SingleBitOn(a->name1);
                 }
 
                 if(a->name2.size())
                     if(*(a->workingNow) != SingleBitOn(a->name2)) {
-                        NeedRedraw = 1;
+                        NeedRedraw = true;
                         *(a->workingNow) = SingleBitOn(a->name2);
                     }
                 break;
@@ -1474,7 +1474,7 @@ static void SimulateIntCode()
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(GetSimulationVariable(a->name1) != a->literal && a->name1[0] != '$') {
-                    NeedRedraw = 2;
+                    NeedRedraw = true;
                 }
                 SetSimulationVariable(a->name1, a->literal);
                 break;
@@ -1514,7 +1514,7 @@ static void SimulateIntCode()
             case INT_SET_BIN2BCD: {
                 int var2 = bin2bcd(GetSimulationVariable(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 3;
+                    NeedRedraw = true;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1523,7 +1523,7 @@ static void SimulateIntCode()
             case INT_SET_BCD2BIN: {
                 int var2 = bcd2bin(GetSimulationVariable(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 4;
+                    NeedRedraw = true;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1532,7 +1532,7 @@ static void SimulateIntCode()
             case INT_SET_OPPOSITE: {
                 int var2 = opposite(GetSimulationVariable(a->name2), SizeOfVar(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 5;
+                    NeedRedraw = true;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1541,7 +1541,7 @@ static void SimulateIntCode()
             case INT_SET_SWAP: {
                 int var2 = swap(GetSimulationVariable(a->name2), SizeOfVar(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 5;
+                    NeedRedraw = true;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1549,19 +1549,19 @@ static void SimulateIntCode()
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(GetSimulationVariable(a->name1) != GetSimulationVariable(a->name2)) {
-                    NeedRedraw = 6;
+                    NeedRedraw = true;
                 }
                 SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
                 break;
 
             case INT_INCREMENT_VARIABLE:
                 Increment(a->name1, a->name2, "ROverflowFlagV");
-                NeedRedraw = 7;
+                NeedRedraw = true;
                 break;
 
             case INT_DECREMENT_VARIABLE:
                 Decrement(a->name1, a->name2, "ROverflowFlagV");
-                NeedRedraw = 8;
+                NeedRedraw = true;
                 break;
                 {
                     SDWORD v;
@@ -1646,7 +1646,7 @@ static void SimulateIntCode()
                         int sov = SizeOfVar(a->name1);
                         v &= (1 << (8 * sov)) - 1;
                         if(GetSimulationVariable(a->name1) != v) {
-                            NeedRedraw = 9;
+                            NeedRedraw = true;
                             SetSimulationVariable(a->name1, v);
                         }
                         break;
@@ -1687,7 +1687,7 @@ static void SimulateIntCode()
                     oops();
                 if(GetSimulationVariable(a->name1) != v1) {
                     SetSimulationVariable(a->name1, v1);
-                    NeedRedraw = 99;
+                    NeedRedraw = true;
                 }
                 break;
             }
@@ -1801,7 +1801,7 @@ static void SimulateIntCode()
                 SDWORD tmp = GetSimulationVariable(a->name1);
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 if(tmp != GetSimulationVariable(a->name1)) {
-                    NeedRedraw = 202;
+                    NeedRedraw = true;
                 }
                 break;
             }
@@ -1929,7 +1929,7 @@ static void SimulateIntCode()
                 SDWORD d = adata[index];
                 if(GetSimulationVariable(a->name1) != d) {
                     SetSimulationVariable(a->name1, d);
-                    NeedRedraw = 10;
+                    NeedRedraw = true;
                 }
             } break;
 
@@ -1944,7 +1944,7 @@ static void SimulateIntCode()
                 char d = GetSimulationStr(a->name1.c_str())[index];
                 if(GetSimulationVariable(a->name2) != d) {
                     SetSimulationVariable(a->name2, d);
-                    NeedRedraw = 11;
+                    NeedRedraw = true;
                 }
             } break;
 #endif

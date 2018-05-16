@@ -410,7 +410,7 @@ bool SavePcPorts(char *filename)
     dbpd(b) return b;
 }
 //-----------------------------------------------------------------------------
-static char *IoTypeToPas(int IoType)
+static const char *IoTypeToPas(int IoType)
 {
     if(IoType == IO_TYPE_DIG_OUTPUT)
         return "OutPort";
@@ -467,9 +467,9 @@ bool LoadPcPorts(char *filename)
     while(fgets(line, sizeof(line), f)) {
         if(line[strlen(line) - 1] == '\n')
             line[strlen(line) - 1] = '\0';
-        if(c = strstr(line, "//"))
+        if((c = strstr(line, "//")))
             c = 0;
-        if(c = strstr(line, ";"))
+        if((c = strstr(line, ";")))
             c = 0;
         _strupr(line);
         pline = line;
@@ -485,7 +485,7 @@ bool LoadPcPorts(char *filename)
         strcpy(line3, "");
         strcpy(line4, "");
         pline4 = "";
-        if(n = sscanf(pline, "LPT%d %s %s %s", &portN, &line2, &line3, &line4)) {
+        if((n = sscanf(pline, "LPT%d %s %s %s", &portN, &line2, &line3, &line4))) {
             if(strlen(line4))
                 pline4 = strstr(pline, line4);
             if(n == 3) {
@@ -607,7 +607,7 @@ bool LoadPcPorts(char *filename)
             if(Ctype)
                 fprintf(fu, "  SetALptDir(%d,2,%-7s,' %s CONTROL');\n\n", portN, IoTypeToPas(Ctype), pline4);
 
-        } else if(n = sscanf(pline, "COM%d %s %s %s", &portN, &line2, &line3, &line4)) {
+        } else if((n = sscanf(pline, "COM%d %s %s %s", &portN, &line2, &line3, &line4))) {
             if(strlen(line4))
                 pline4 = strstr(pline, line4);
             if(n == 3) {

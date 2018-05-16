@@ -105,10 +105,10 @@ static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
 {
     char  __str[MAX_NAME_LEN];
     char  str2[MAX_NAME_LEN];
-    char *line2 = "1234567890-=";
-    char *line3 = "QWERTYUIOP";
-    char *line4 = "ASDFGHJKL";
-    char *line5 = "ZXCVBNM";
+    const char *line2 = "1234567890-=";
+    const char *line3 = "QWERTYUIOP";
+    const char *line4 = "ASDFGHJKL";
+    const char *line5 = "ZXCVBNM";
     AnsiToOem(_str, __str);
 
     McuIoPinInfo *iop = PinInfoForName(_str);
@@ -569,7 +569,7 @@ static void Generate_flash_eeprom(FILE *f)
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
                 int   sovElement = IntCode[i].literal2;
-                char *sovs;
+                const char *sovs;
 
                 if(sovElement == 1) {
                     sovs = "byte";
@@ -722,7 +722,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
                 {
-                    char *op;
+                    const char *op;
                     case INT_SET_VARIABLE_SHL:
                         op = "shl";
                         goto arith;
