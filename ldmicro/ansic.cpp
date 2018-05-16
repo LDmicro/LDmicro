@@ -375,7 +375,7 @@ static void DeclareBit(FILE *f, const char *str, int set1)
             fprintf(fh, "#ifndef NO_PROTOTYPES\n");
             fprintf(fh, "  // LDmicro provide this macro or function.\n");
             fprintf(fh, "  #ifdef USE_MACRO\n");
-            fprintf(fh, "    #define Write_%s(x) analogWrite(pin_%s, x)\n", str, str, str);
+            fprintf(fh, "    #define Write_%s(x) analogWrite(pin_%s, x)\n", str, str);
             fprintf(fh, "  #else\n");
             fprintf(fh, "    void Write_%s(SWORD x);\n", str);
             fprintf(fh, "  #endif\n");
@@ -1141,9 +1141,9 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
                 fprintf(f, "#ifdef USE_PWM_FREQUENCY\n");
                 doIndent(f, i);
-                fprintf(f, "  setPwmFrequency(pin_%s, 64);", MapSym(IntCode[i].name3, ASBIT), hobatoi(IntCode[i].name2.c_str()));
+                fprintf(f, "  setPwmFrequency(pin_%s, 64);", MapSym(IntCode[i].name3, ASBIT));
                 if(IsNumber(IntCode[i].name2))
-                    fprintf(f, " // %d Hz\n", hobatoi(IntCode[i].name2.c_str()));
+                    fprintf(f, " // %ld Hz\n", hobatoi(IntCode[i].name2.c_str()));
                 else
                     fprintf(f, " // %s Hz\n", MapSym(IntCode[i].name2, ASINT));
                 doIndent(f, i);

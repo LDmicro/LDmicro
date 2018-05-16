@@ -1357,7 +1357,7 @@ void ShowUartSimulationWindow();
 extern bool InSimulationMode;
 //extern bool SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
-void SetSimulationVariable(char *name, SDWORD val);
+void SetSimulationVariable(const char* name, SDWORD val);
 SDWORD GetSimulationVariable(const char *name, bool forIoList);
 SDWORD GetSimulationVariable(const char *name);
 SDWORD GetSimulationVariable(const NameArray& name);

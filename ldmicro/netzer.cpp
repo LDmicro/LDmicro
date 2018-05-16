@@ -264,11 +264,7 @@ static void MapNotLocatedElements()
 
 static void locateRegister()
 {
-    int ipc;
-    int outPc;
-
-    outPc = 0;
-    for(ipc = 0; ipc < IntCode.size(); ipc++) {
+    for(uint32_t ipc = 0; ipc < IntCode.size(); ipc++) {
         switch(IntCode[ipc].op) {
             case INT_CLEAR_BIT:
             case INT_SET_BIT:
@@ -358,7 +354,6 @@ static void locateRegister()
 
 int GenerateIntOpcodes()
 {
-    int   ipc;
     int   outPc;
     BinOp op;
 
@@ -374,7 +369,7 @@ int GenerateIntOpcodes()
     int ifOpElse[MAX_IF_NESTING];
 
     outPc = 0;
-    for(ipc = 0; ipc < IntCode.size(); ipc++) {
+    for(uint32_t ipc = 0; ipc < IntCode.size(); ipc++) {
         memset(&op, 0, sizeof(op));
         op.op = IntCode[ipc].op;
 

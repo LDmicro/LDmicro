@@ -315,7 +315,12 @@ static SDWORD SubVariable(const NameArray& name1, const NameArray& name2, const 
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
-void SetSimulationVariable(char *name, SDWORD val)
+void SetSimulationVariable(const NameArray& name, SDWORD val)
+{
+    SetSimulationVariable(name.c_str(), val);
+}
+
+void SetSimulationVariable(const char *name, SDWORD val)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -326,11 +331,6 @@ void SetSimulationVariable(char *name, SDWORD val)
     }
     MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     SetSimulationVariable(name, val);
-}
-
-void SetSimulationVariable(const NameArray& name, SDWORD val)
-{
-    SetSimulationVariable(name.c_str(), val);
 }
 
 //-----------------------------------------------------------------------------

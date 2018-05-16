@@ -3124,7 +3124,7 @@ Decrement
     ; Status:Z is set if the least significant byte of the counter is zero
     ; (not necessarily all bytes !) and in certain other cases.
 */
-static void Decrement(DWORD addr, int sov, char *name, char *overlap, char *overflow)
+static void Decrement(DWORD addr, int sov, const char *name, const char *overlap, const char *overflow)
 // a := a - 1
 {
     if(overflow && strlen(overflow)) {
@@ -3186,7 +3186,7 @@ static void Decrement(DWORD addr, int sov, const NameArray& name, const NameArra
     Decrement(addr, sov, name.c_str(), overlap.c_str(), overflow.c_str());
 }
 
-static void Decrement(DWORD addr, int sov, char *name)
+static void Decrement(DWORD addr, int sov, const char *name)
 {
     Decrement(addr, sov, name, nullptr, nullptr);
 }
