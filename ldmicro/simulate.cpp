@@ -88,7 +88,7 @@ bool InSimulationMode;
 // Don't want to redraw the screen unless necessary; track whether a coil
 // changed state or a timer output switched to see if anything could have
 // changed (not just coil, as we show the intermediate steps too).
-static bool NeedRedraw;
+static int NeedRedraw; // a->op used for debug
 // Have to let the effects of a coil change in cycle k appear in cycle k+1,
 // or set by the UI code to indicate that user manually changed an Xfoo
 // input.
@@ -1434,13 +1434,13 @@ static void SimulateIntCode()
         switch(a->op) {
             case INT_SIMULATE_NODE_STATE:
                 if(*(a->poweredAfter) != SingleBitOn(a->name1)) {
-                    NeedRedraw = 1;
+                    NeedRedraw = a->op;
                     *(a->poweredAfter) = SingleBitOn(a->name1);
                 }
 
                 if(a->name2.size())
                     if(*(a->workingNow) != SingleBitOn(a->name2)) {
-                        NeedRedraw = 1;
+                        NeedRedraw = a->op;
                         *(a->workingNow) = SingleBitOn(a->name2);
                     }
                 break;
@@ -1474,7 +1474,7 @@ static void SimulateIntCode()
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(GetSimulationVariable(a->name1) != a->literal && a->name1[0] != '$') {
-                    NeedRedraw = 2;
+                    NeedRedraw = a->op;
                 }
                 SetSimulationVariable(a->name1, a->literal);
                 break;
@@ -1514,7 +1514,7 @@ static void SimulateIntCode()
             case INT_SET_BIN2BCD: {
                 int var2 = bin2bcd(GetSimulationVariable(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 3;
+                    NeedRedraw = a->op;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1523,7 +1523,7 @@ static void SimulateIntCode()
             case INT_SET_BCD2BIN: {
                 int var2 = bcd2bin(GetSimulationVariable(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 4;
+                    NeedRedraw = a->op;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1532,7 +1532,7 @@ static void SimulateIntCode()
             case INT_SET_OPPOSITE: {
                 int var2 = opposite(GetSimulationVariable(a->name2), SizeOfVar(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 5;
+                    NeedRedraw = a->op;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1541,7 +1541,7 @@ static void SimulateIntCode()
             case INT_SET_SWAP: {
                 int var2 = swap(GetSimulationVariable(a->name2), SizeOfVar(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 5;
+                    NeedRedraw = a->op;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1549,19 +1549,19 @@ static void SimulateIntCode()
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(GetSimulationVariable(a->name1) != GetSimulationVariable(a->name2)) {
-                    NeedRedraw = 6;
+                    NeedRedraw = a->op;
                 }
                 SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
                 break;
 
             case INT_INCREMENT_VARIABLE:
                 Increment(a->name1, a->name2, "ROverflowFlagV");
-                NeedRedraw = 7;
+                NeedRedraw = a->op;
                 break;
 
             case INT_DECREMENT_VARIABLE:
                 Decrement(a->name1, a->name2, "ROverflowFlagV");
-                NeedRedraw = 8;
+                NeedRedraw = a->op;
                 break;
                 {
                     SDWORD v;
@@ -1646,7 +1646,7 @@ static void SimulateIntCode()
                         int sov = SizeOfVar(a->name1);
                         v &= (1 << (8 * sov)) - 1;
                         if(GetSimulationVariable(a->name1) != v) {
-                            NeedRedraw = 9;
+                            NeedRedraw = a->op;
                             SetSimulationVariable(a->name1, v);
                         }
                         break;
@@ -1687,7 +1687,7 @@ static void SimulateIntCode()
                     oops();
                 if(GetSimulationVariable(a->name1) != v1) {
                     SetSimulationVariable(a->name1, v1);
-                    NeedRedraw = 99;
+                    NeedRedraw = a->op;
                 }
                 break;
             }
@@ -1801,7 +1801,7 @@ static void SimulateIntCode()
                 SDWORD tmp = GetSimulationVariable(a->name1);
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 if(tmp != GetSimulationVariable(a->name1)) {
-                    NeedRedraw = 202;
+                    NeedRedraw = a->op;
                 }
                 break;
             }
@@ -1929,7 +1929,7 @@ static void SimulateIntCode()
                 SDWORD d = adata[index];
                 if(GetSimulationVariable(a->name1) != d) {
                     SetSimulationVariable(a->name1, d);
-                    NeedRedraw = 10;
+                    NeedRedraw = a->op;
                 }
             } break;
 
@@ -1944,7 +1944,7 @@ static void SimulateIntCode()
                 char d = GetSimulationStr(a->name1.c_str())[index];
                 if(GetSimulationVariable(a->name2) != d) {
                     SetSimulationVariable(a->name2, d);
-                    NeedRedraw = 11;
+                    NeedRedraw = a->op;
                 }
             } break;
 #endif
@@ -1999,7 +1999,7 @@ void SimulateOneCycle(bool forceRefresh)
         return;
     Simulating = true;
 
-    NeedRedraw = false;
+    NeedRedraw = 0;
 
     if(SimulateUartTxCountdown > 0) {
         SimulateUartTxCountdown--;

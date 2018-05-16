@@ -2996,9 +2996,9 @@ void AllocBitsVars()
                 MemForSingleBit(storeName, false, &addr, &bit);
                 break;
             }
-                case INT_EEPROM_BUSY_CHECK:
-                    MemForSingleBit(a->name1, false, &addr, &bit);
-                    break;
+            case INT_EEPROM_BUSY_CHECK:
+                MemForSingleBit(a->name1, false, &addr, &bit);
+                break;
 
             default:
                 break;
@@ -5391,14 +5391,14 @@ static void CompileFromIntermediate(bool topLevel)
                     WriteRegister(REG_ADCON0, //
                                   (MuxForAdcVariable(a->name1) << chsPos) | //
                                   (0 << goPos) |                            // don't start yet
-                                                                                           // bit 1 unimplemented
-                                      (1 << 0)                                             // A/D peripheral on
+                                                                            // bit 1 unimplemented
+                                  (1 << 0)                                  // A/D peripheral on
                     );
 
                     WriteRegister(REG_ADCON1,         //
-                                  (1 << 7) |              // right-justified
-                                      (adcs << adcsPos) | //
-                                      (0 << 0)            // 00 = VREF is connected to VDD
+                                  (1 << 7) |          // right-justified
+                                  (adcs << adcsPos) | //
+                                  (0 << 0)            // 00 = VREF is connected to VDD
                     );
                 } else if(McuAs(" PIC16F819 ")    //
                           || McuAs(" PIC16F873 ") //
@@ -5417,14 +5417,14 @@ static void CompileFromIntermediate(bool topLevel)
                     WriteRegister(REG_ADCON0, //
                                   (adcs << adcsPos) | //
                                   (MuxForAdcVariable(a->name1) << chsPos) | //
-                                      (0 << goPos) |  // don't start yet
+                                  (0 << goPos) |  // don't start yet
                                                       // bit 1 unimplemented
-                                      (1 << 0)        // A/D peripheral on
+                                  (1 << 0)        // A/D peripheral on
                     );
 
                     WriteRegister(REG_ADCON1, //
                                   (1 << 7) |   // right-justified
-                                      (0 << 0) // for now, all analog inputs
+                                  (0 << 0) // for now, all analog inputs
                     );
                 } else if(McuAs(" PIC12F675 ")    //
                           || McuAs(" PIC12F683 ") //
