@@ -21,6 +21,7 @@
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
 #include "ldmicro.h"
+#include "intcode.h"
 #include "compilercommon.hpp"
 #include "compilerexceptions.hpp"
 #include <algorithm>
