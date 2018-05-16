@@ -24,6 +24,7 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 #include <algorithm>
+#include <compilerexceptions.hpp>
 
 #define ASM_LABEL 1
 //                0 - no labels
@@ -699,6 +700,8 @@ char *getName(char *s)
 static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm)
 {
     PicAvrInstruction *AvrInstr = &AvrProg[addrAt];
+    if(AvrInstr->IntPc >= IntCode.size())
+        TROW_COMPILER_EXCEPTION_FMT("Invalid IntCode[%d] index %d", IntCode.size(), AvrInstr->IntPc);
     IntOp *            a = &IntCode[AvrInstr->IntPc];
     strcpy(sAsm, "");
 /*
@@ -4950,7 +4953,7 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_COMMENT:
-                Comment(a->name1.c_str());
+                Comment(a->name1.size() ? a->name1.c_str() : "");
                 break;
 
             case INT_AllocKnownAddr:
