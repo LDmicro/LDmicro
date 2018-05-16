@@ -1141,7 +1141,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
                 fprintf(f, "#ifdef USE_PWM_FREQUENCY\n");
                 doIndent(f, i);
-                fprintf(f, "  setPwmFrequency(pin_%s, 64);", MapSym(IntCode[i].name3, ASBIT), hobatoi(IntCode[i].name2.c_str()));
+                fprintf(f, "  setPwmFrequency(pin_%s, %d);", MapSym(IntCode[i].name3, ASBIT), hobatoi(IntCode[i].name2.c_str()));
                 if(IsNumber(IntCode[i].name2))
                     fprintf(f, " // %ld Hz\n", hobatoi(IntCode[i].name2.c_str()));
                 else
