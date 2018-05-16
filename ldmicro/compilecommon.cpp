@@ -714,7 +714,7 @@ int GetVariableType(char *name)
     return IO_TYPE_PENDING;
 }
 
-int SetVariableType(char *name, int type)
+int SetVariableType(const char *name, int type)
 {
     if(strlenalnum(name) == 0) {
         Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
