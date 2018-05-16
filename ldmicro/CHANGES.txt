@@ -1,3 +1,10 @@
+== Release 4.3.9.4
+
+   Fixed: LDmicro Forum - pic16f887 http://cq.cx/ladder-forum.pl?action=viewthread&parent=7317&tt=1526403799
+   Recovered backward compatibility with version 2.3 for the SET PWM operation.
+   Recovered the READ_ADC operation for PIC16F887, PIC16F877, PIC16F88, PIC16F72.
+   Attention: Releases 4.3.8.5 - 4.3.9.3 has the bug with PIC's MCU READ_ADC: only RA0 analog input is available!
+
 == Release 4.3.9.3
 
    Fixed: SET PWM instruction in Arduino Sketch.

@@ -64,10 +64,10 @@ $(OBJDIR)/lang-tables.h: lang*.txt
     perl lang-tables.pl > $(OBJDIR)/lang-tables.h
 
 $(OBJDIR)/ldinterpret.exe: ldinterpret.cpp
-    @$(CC) -Fe$(OBJDIR)/ldinterpret.exe $(LIBS) ldinterpret.cpp
+    @$(CC) $(CFLAGS) -Fe$(OBJDIR)/ldinterpret.exe $(LIBS) ldinterpret.cpp
 
 $(OBJDIR)/ldxinterpret.exe: ldxinterpret.cpp
-    @$(CC) -Fe$(OBJDIR)/ldxinterpret.exe $(LIBS) ldxinterpret.cpp
+    @$(CC) $(CFLAGS) -Fe$(OBJDIR)/ldxinterpret.exe $(LIBS) ldxinterpret.cpp
 
 $(OBJDIR)/ldmicro.exe: $(LDOBJS) $(FREEZE) $(HELPOBJ) $(OBJDIR)/ldmicro.res
     @$(CC) $(DEFINES) $(CFLAGS) -Fe$(OBJDIR)/ldmicro.exe $(LDOBJS) $(FREEZE) $(HELPOBJ) $(OBJDIR)/ldmicro.res $(LIBS)

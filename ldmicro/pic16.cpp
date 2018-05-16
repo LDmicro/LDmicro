@@ -420,13 +420,16 @@ static DWORD Bank(DWORD reg)
         reg &= ~(MULTYDEF(0));
     if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         if(reg & ~0x0FFF)
-            ooops("0x%X", reg) reg &= 0x0F80;
+            ooops("0x%X", reg);
+        reg &= 0x0F80;
     } else if(Prog.mcu->core == MidrangeCore14bit) {
         if(reg & ~0x01FF)
-            ooops("0x%X", reg) reg &= 0x0180;
+            ooops("0x%X", reg); 
+        reg &= 0x0180;
     } else if(Prog.mcu->core == BaselineCore12bit) {
         if(reg & ~0x007F)
-            ooops("0x%X", reg) reg &= 0x0000;
+            ooops("0x%X", reg); 
+        reg &= 0x0000;
     } else
         oops();
     return reg;
@@ -2776,7 +2779,7 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
 
 static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const NameArray& name1, const NameArray& name2, bool Sign)
 {
-    CopyRegToReg(addr1, sov1, addr1, sov2, name1.c_str(), name2.c_str(), Sign);
+    CopyRegToReg(addr1, sov1, addr2, sov2, name1.c_str(), name2.c_str(), Sign);
 }
 
 static void CopyVarToReg(DWORD addr1, int sov1, const char *name2, bool Sign)
@@ -2992,11 +2995,11 @@ void AllocBitsVars()
                 sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
                 MemForSingleBit(storeName, false, &addr, &bit);
                 break;
-
+            }
                 case INT_EEPROM_BUSY_CHECK:
                     MemForSingleBit(a->name1, false, &addr, &bit);
                     break;
-            }
+
             default:
                 break;
         }
@@ -5385,13 +5388,14 @@ static void CompileFromIntermediate(bool topLevel)
                    || McuAs(" PIC16F1827 ") //
                 ) {
                     adcsPos = 4; // in REG_ADCON1
-                    WriteRegister(REG_ADCON0,
-                                  (MuxForAdcVariable(a->name1) << chsPos) | (0 << goPos) | // don't start yet
+                    WriteRegister(REG_ADCON0, //
+                                  (MuxForAdcVariable(a->name1) << chsPos) | //
+                                  (0 << goPos) |                            // don't start yet
                                                                                            // bit 1 unimplemented
                                       (1 << 0)                                             // A/D peripheral on
                     );
 
-                    WriteRegister(REG_ADCON1,
+                    WriteRegister(REG_ADCON1,         //
                                   (1 << 7) |              // right-justified
                                       (adcs << adcsPos) | //
                                       (0 << 0)            // 00 = VREF is connected to VDD
@@ -5410,14 +5414,15 @@ static void CompileFromIntermediate(bool topLevel)
                           || McuAs(" PIC16F887 ") //
                 ) {
                     adcsPos = 6; // in REG_ADCON0
-                    WriteRegister(REG_ADCON0,
+                    WriteRegister(REG_ADCON0, //
                                   (adcs << adcsPos) | //
+                                  (MuxForAdcVariable(a->name1) << chsPos) | //
                                       (0 << goPos) |  // don't start yet
                                                       // bit 1 unimplemented
                                       (1 << 0)        // A/D peripheral on
                     );
 
-                    WriteRegister(REG_ADCON1,
+                    WriteRegister(REG_ADCON1, //
                                   (1 << 7) |   // right-justified
                                       (0 << 0) // for now, all analog inputs
                     );
@@ -5427,7 +5432,7 @@ static void CompileFromIntermediate(bool topLevel)
                     adcsPos = 4; // in REG_ANSEL
                     WriteRegister(REG_ANSEL, (adcs << adcsPos) | (1 << MuxForAdcVariable(a->name1)));
 
-                    WriteRegister(REG_ADCON0,
+                    WriteRegister(REG_ADCON0, //
                                   (1 << 7) |                                    // right-justified
                                       (0 << 6) |                                // VDD Voltage Reference
                                       (MuxForAdcVariable(a->name1) << chsPos) | // Analog Channel Select bits
@@ -5480,7 +5485,7 @@ static void CompileFromIntermediate(bool topLevel)
                 // hook those pins back up to the digital inputs in case
                 // some of them are used that way
                 if(REG_ADCON1 != -1)
-                    WriteRegister(REG_ADCON1,
+                    WriteRegister(REG_ADCON1, //
                                   (1 << 7) |   // right-justify A/D result
                                       (6 << 0) // all digital inputs
                     );
@@ -7128,7 +7133,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
     ) {
         // The GPIOs that can also be A/D inputs default to being A/D
         // inputs, so turn that around
-        WriteRegister(REG_ADCON1,
+        WriteRegister(REG_ADCON1, //
                       (1 << 7) |   // right-justify A/D result
                           (7 << 0) // all digital inputs
         );

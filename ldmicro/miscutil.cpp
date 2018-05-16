@@ -564,6 +564,10 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
         if(!McuPWM()) {
             strcpy(dest, _("<no PWM!>"));
         } else {
+            if(pin == 0) {
+                pin = Prog.mcu->pwmNeedsPin;
+                io->pin = pin;
+            }
             sprintf(dest, "%d", pin);
             iop = PinInfo(pin);
             if(iop) {
