@@ -562,9 +562,14 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
                         }
                     }
                 }
+                /*
                 if((addr == 0xff) || (addr == 0)) {
-                    dbps("Not a PORT/PIN");
-                    //Error("Not a PORT/PIN");
+                    return MemForVariable(&name[1], addrl);
+                }
+                */
+                if((addr == 0xff) || (addr == 0)) {
+                    //dbps("Not a PORT/PIN");
+                    //Error(_("Not a #PORT/#PIN/#TRIS/%s "), name);
                 } else {
                     if(Variables[i].Allocated == 0) {
                         Variables[i].addrl = addr;

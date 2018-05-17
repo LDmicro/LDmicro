@@ -3814,7 +3814,7 @@ static void CompileFromIntermediate()
                 break;
             }
 #endif
-                /*
+
             #ifdef USE_SFR
             // Sepcial function
             case INT_READ_SFR_LITERAL: {
@@ -3838,6 +3838,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_WRITE_SFR_LITERAL_L: {
+                Comment("INT_WRITE_SFR_LITERAL_L");
               //MemForVariable(a->name1, &addr1); // name not used
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff)); //op
                 Instruction(OP_LDI, 26, (a->literal & 0xff)); //sfr
@@ -3846,12 +3847,14 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_WRITE_SFR_VARIABLE_L: {
-                CopyArgToReg(ZL, a->name1, 2); //sfr
+                Comment("INT_WRITE_SFR_VARIABLE_L");
+                CopyArgToReg(ZL, 2, a->name1); //sfr
                 Instruction(OP_LDI, 28, (a->literal & 0xff)); //op
                 Instruction(OP_ST_Z, 28, 0);
                 break;
             }
             case INT_WRITE_SFR_LITERAL: {
+                Comment("INT_WRITE_SFR_LITERAL");
                 MemForVariable(a->name1, &addr1); //op
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 15, 0);
@@ -3861,7 +3864,8 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_WRITE_SFR_VARIABLE: {
-                CopyArgToReg(ZL, a->name1, 2); //sfr
+                Comment("INT_WRITE_SFR_VARIABLE");
+                CopyArgToReg(ZL, 2, a->name1); //sfr
                 MemForVariable(a->name2, &addr2); //op
                 LoadXAddr(addr2);
                 Instruction(OP_LD_X, 15, 0);
@@ -4106,8 +4110,9 @@ static void CompileFromIntermediate()
             }
             // ^^^ sfr funtions  ^^^
             #endif
-*/
+
             case INT_SET_VARIABLE_TO_VARIABLE:
+                Comment("INT_SET_VARIABLE_TO_VARIABLE %s = %s", a->name1.c_str(), a->name2.c_str());
                 CopyVarToReg(r16, SizeOfVar(a->name2), a->name2);
                 CopyRegToVar(a->name1, r16, SizeOfVar(a->name2));
                 break;
@@ -4957,17 +4962,17 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_AllocKnownAddr:
-                Comment("INT_AllocKnownAddr %d %08X", a->literal, AddrOfRungN[a->literal].KnownAddr);
+                //Comment("INT_AllocKnownAddr %d %08X", a->literal, AddrOfRungN[a->literal].KnownAddr);
                 AddrOfRungN[a->literal].KnownAddr = AvrProgWriteP;
                 break;
 
             case INT_AllocFwdAddr:
-                Comment("INT_AllocFwdAddr %d %08X", a->literal, AddrOfRungN[a->literal].FwdAddr);
+                //Comment("INT_AllocFwdAddr %d %08X", a->literal, AddrOfRungN[a->literal].FwdAddr);
                 AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
                 break;
 
             case INT_FwdAddrIsNow:
-                Comment("INT_FwdAddrIsNow %d %08x", a->literal, AddrOfRungN[a->literal].FwdAddr);
+                //Comment("INT_FwdAddrIsNow %d %08x", a->literal, AddrOfRungN[a->literal].FwdAddr);
                 FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
                 break;
 

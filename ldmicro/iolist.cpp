@@ -1724,14 +1724,27 @@ void IoListProc(NMHDR *h)
                         break;
                     DWORD addr = 0;
                     int   bit = -1;
-                    if((type == IO_TYPE_PORT_INPUT)     //
-                       || (type == IO_TYPE_PORT_OUTPUT) //
-                       || (type == IO_TYPE_MCU_REG)) {
+                    if((type == IO_TYPE_PORT_INPUT) ||
+                       (type == IO_TYPE_PORT_OUTPUT)) {
                         MemForVariable(name, &addr);
                         if(addr > 0)
-                            sprintf(i->item.pszText, "0x%x", addr);
+                            sprintf(i->item.pszText, "0x%X", addr);
                         else
                             sprintf(i->item.pszText, "Not a PORT!");
+                    } else if(type == IO_TYPE_MCU_REG) {
+                        if(IsNumber(&name[1])) {
+                            MemForVariable(name, &addr);
+                            if(addr > 0)
+                                sprintf(i->item.pszText, "0x%X", addr);
+                            else
+                                sprintf(i->item.pszText, "Not a PORT!");
+                        } else {
+                            //sprintf(i->item.pszText, "addr in %s", &name[1]);
+                            DescribeForIoList(&name[1], type, i->item.pszText);
+                            char *c = strchr(i->item.pszText, '=');
+                            if(c)
+                                *c = '\0';
+                        }
                     } else if((type == IO_TYPE_GENERAL)    //
                               || (type == IO_TYPE_PERSIST) //
                               || (type == IO_TYPE_STRING)  //
@@ -1745,22 +1758,22 @@ void IoListProc(NMHDR *h)
                               || (type == IO_TYPE_COUNTER)) {
                         MemForVariable(name, &addr);
                         if(addr > 0)
-                            sprintf(i->item.pszText, "0x%x", addr);
+                            sprintf(i->item.pszText, "0x%X", addr);
                     } else if((type == IO_TYPE_INTERNAL_RELAY)) {
                         MemForSingleBit(name, true, &addr, &bit);
                         if(addr > 0 && bit >= 0)
-                            sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                            sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                     } else if(type == IO_TYPE_UART_TX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.txPin, &addr, &bit, false);
                             if(addr > 0 && bit >= 0)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                         }
                     } else if(type == IO_TYPE_UART_RX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.rxPin, &addr, &bit, true);
                             if(addr > 0 && bit >= 0)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                         }
                     } else if((type == IO_TYPE_READ_ADC)    //
                               || (type == IO_TYPE_SPI_MOSI) //
@@ -1774,20 +1787,20 @@ void IoListProc(NMHDR *h)
                             if(iop) {
                                 AddrBitForPin(iop->pin, &addr, &bit, true);
                                 if(addr > 0 && bit >= 0)
-                                    sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                    sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                             }
                         }
                     } else if(type == IO_TYPE_TABLE_IN_FLASH) {
                         MemOfVar(name, &addr);
                         if(addr > 0)
-                            sprintf(i->item.pszText, "0x%x", addr);
+                            sprintf(i->item.pszText, "0x%X", addr);
                     } else if((type == IO_TYPE_DIG_INPUT)     //
                               || (type == IO_TYPE_DIG_OUTPUT) //
                               || (type == IO_TYPE_PWM_OUTPUT)) {
                         if(SingleBitAssigned(name))
                             MemForSingleBit(name, true, &addr, &bit);
                         if(addr > 0 && bit >= 0)
-                            sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                            sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                     }
                     break;
                 }

@@ -1539,6 +1539,11 @@ static void ProcessMenu(int code)
                 0, "open", "https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE", nullptr, nullptr, SW_SHOWNORMAL);
             break;
 
+        case MNU_OPEN_SFR:
+            ShellExecute(
+                0, "open", "https://github.com/LDmicro/LDmicro/wiki/Replase-the-obsolete-elements", nullptr, nullptr, SW_SHOWNORMAL);
+            break;
+
         case MNU_COMPILE_IHEXDONE:
             Error(
                 " "

@@ -1543,7 +1543,7 @@ static void SimulateIntCode()
                 SetSimulationVariable(a->name1, a->literal);
                 break;
 
-#ifdef USE_SFR
+#ifdef USE_SFR_INT
             case INT_READ_SFR_LITERAL:
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 break;

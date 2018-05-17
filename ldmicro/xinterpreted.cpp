@@ -222,7 +222,7 @@ void CompileXInterpreted(char *outFile)
                 // TODO
                 break;
 
-#ifdef USE_SFR
+#ifdef USE_SFR_INT
             case INT_READ_SFR_LITERAL:
             case INT_WRITE_SFR_LITERAL:
             case INT_SET_SFR_LITERAL:

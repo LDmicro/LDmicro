@@ -532,7 +532,7 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "# %s", IntCode[i].name1.c_str());
                 break;
 
-#ifdef USE_SFR
+#ifdef USE_SFR_INT
             // Special function
             case INT_READ_SFR_LITERAL:
             case INT_WRITE_SFR_LITERAL:
@@ -575,9 +575,9 @@ void IntDumpListing(char *outFile)
                 fprintf(f,
                         "SFR %d %s %s %s %d %d",
                         IntCode[i].op,
-                        IntCode[i].name1,
-                        IntCode[i].name2,
-                        IntCode[i].name3,
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str(),
                         IntCode[i].literal,
                         IntCode[i].literal2);
                 switch(IntCode[i].op) {
@@ -749,7 +749,7 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, const char *f, const char *args, int op, bool *b, const char *name1, const char *name2,
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2,
                 const char *name3, const char *name4, const char *name5, const char *name6, SDWORD lit, SDWORD lit2,
                 SDWORD *data)
 {
@@ -779,10 +779,7 @@ static void _Op(int l, const char *f, const char *args, int op, bool *b, const c
     intOp.rung = rungNow;
     intOp.which = whichNow;
     intOp.leaf = leafNow;
-    if(b)
-        intOp.poweredAfter = b;
-    else
-        intOp.poweredAfter = &(leafNow->poweredAfter);
+    intOp.poweredAfter = &(leafNow->poweredAfter);
     intOp.l = l;
     strcpy(intOp.f, f);
     IntCode.emplace_back(intOp);
@@ -790,60 +787,60 @@ static void _Op(int l, const char *f, const char *args, int op, bool *b, const c
 
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, SDWORD lit)
 {
-    _Op(l, f, args, op, nullptr, name1, name2, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
+    _Op(l, f, args, op, name1, name2, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, SDWORD lit)
 {
-    _Op(l, f, args, op, nullptr, name1, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
+    _Op(l, f, args, op, name1, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2)
 {
-    _Op(l, f, args, op, nullptr, name1, name2, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
+    _Op(l, f, args, op, name1, name2, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1)
 {
-    _Op(l, f, args, op, nullptr, name1, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
+    _Op(l, f, args, op, name1, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, SDWORD lit)
 {
-    _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
+    _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op)
 {
-    _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
+    _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
                 SDWORD lit)
 {
-    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, lit, 0, nullptr);
+    _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3)
 {
-    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, 0, 0, nullptr);
+    _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
                 SDWORD lit, SDWORD lit2)
 {
-    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, nullptr);
+    _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
                 const char *name4)
 {
-    _Op(l, f, args, op, nullptr, name1, name2, name3, name4, nullptr, nullptr, 0, 0, nullptr);
+    _Op(l, f, args, op, name1, name2, name3, name4, nullptr, nullptr, 0, 0, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
                 const char *name4, const char *name5)
 {
-    _Op(l, f, args, op, nullptr, name1, name2, name3, name4, name5, nullptr, 0, 0, nullptr);
+    _Op(l, f, args, op, name1, name2, name3, name4, name5, nullptr, 0, 0, nullptr);
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
                 SDWORD lit, SDWORD lit2, SDWORD *data)
 {
-    _Op(l, f, args, op, nullptr, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, data);
+    _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, data);
 }
 
 // And use macro for bugtracking
@@ -1480,6 +1477,11 @@ static const char *VarFromExpr(const char *expr, const char *tempName)
     Op(INT_SET_BIT, l->d.stepper.coil); \
     Op(INT_CLEAR_BIT, l->d.stepper.coil);
 
+//-----------------------------------------------------------------------------
+bool IsAddrInVar(const char *name)
+{
+    return (name[0] == '#') && (!IsNumber(&name[1]));
+}
 //-----------------------------------------------------------------------------
 // clang-format off
 static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int rung)
@@ -2146,7 +2148,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             break;
         }
-        #ifdef USE_SFR
+        #ifdef USE_SFR_INT
         // Special Function
         case ELEM_RSFR:
             Comment(3, "ELEM_RSFR");
@@ -2520,10 +2522,21 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
                 CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
+                if(IsAddrInVar(l->d.move.dest))
+                  Op(INT_SET_VARIABLE_TO_LITERAL, &l->d.move.dest[1], hobatoi(l->d.move.src)); // addr in dest[1]
+                else
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
-              //Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
-               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, NULL, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
+                if(IsAddrInVar(l->d.move.dest))
+                  if(IsAddrInVar(l->d.move.src))
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, &l->d.move.dest[1], &l->d.move.src[1]); // addr in dest[1], addr in src[1]
+                  else
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, &l->d.move.dest[1], l->d.move.src); // addr in dest[1]
+                else
+                  if(IsAddrInVar(l->d.move.src))
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, &l->d.move.src[1]); // addr in src[1]
+                  else
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
             }
             Op(INT_END_IF);
             break;

@@ -52,6 +52,7 @@
 #define INT_VARIABLE_CLEAR_BITS                  3007
 #endif
 #define INT_SET_VARIABLE_TO_LITERAL              4
+#define INT_SET_VARIABLE_INDIRECT                4001
 #define INT_SET_VARIABLE_TO_VARIABLE             5
 #if NEW_INT > 0
 #define INT_SET_BIN2BCD                          5001
@@ -160,7 +161,8 @@
 #define INT_ELSE                                60 + 100
 #define INT_END_IF                              61 + 100
 //
-#ifdef USE_SFR
+#define USE_SFR_INT
+#ifdef USE_SFR_INT
 // Special function
 #define INT_READ_SFR_LITERAL                    1061
 #define INT_WRITE_SFR_LITERAL                   1062
