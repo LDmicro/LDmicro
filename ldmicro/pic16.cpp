@@ -5528,7 +5528,7 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
 
             case INT_COMMENT:
-                Comment(a->name1.c_str());
+                Comment("%s",a->name1.c_str());
                 break;
 
             case INT_AllocKnownAddr:
