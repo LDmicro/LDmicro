@@ -202,7 +202,7 @@ static void PortX(FILE *fi, FILE *fu, char *str)
 {
     char prt[4];
     int  portN, Reg, Mask, Addr;
-    int b = ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
+    bool b = ParceVar(str, prt, &portN, &Reg, &Mask, &Addr);
 
     fprintf(fi, "\n");
     fprintf(fi, "function   Read_%s:boolean;\n", str);
