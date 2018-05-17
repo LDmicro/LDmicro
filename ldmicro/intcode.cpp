@@ -575,9 +575,9 @@ void IntDumpListing(char *outFile)
                 fprintf(f,
                         "SFR %d %s %s %s %d %d",
                         IntCode[i].op,
-                        IntCode[i].name1,
-                        IntCode[i].name2,
-                        IntCode[i].name3,
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str(),
                         IntCode[i].literal,
                         IntCode[i].literal2);
                 switch(IntCode[i].op) {
@@ -1477,6 +1477,11 @@ static const char *VarFromExpr(const char *expr, const char *tempName)
     Op(INT_SET_BIT, l->d.stepper.coil); \
     Op(INT_CLEAR_BIT, l->d.stepper.coil);
 
+//-----------------------------------------------------------------------------
+bool IsAddrInVar(const char *name)
+{
+    return (name[0] == '#') && (!IsNumber(&name[1]));
+}
 //-----------------------------------------------------------------------------
 // clang-format off
 static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int rung)
@@ -2517,13 +2522,22 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
                 CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
+                if(IsAddrInVar(l->d.move.dest))
+                  Op(INT_SET_VARIABLE_TO_LITERAL, &l->d.move.dest[1], hobatoi(l->d.move.src)); // addr in dest[1]
+                else
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
-              //Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
-               _Op(__LINE__, __FILE__, "args", INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src, NULL, NULL, NULL, NULL, 0, 0, NULL);
+                if(IsAddrInVar(l->d.move.dest))
+                  if(IsAddrInVar(l->d.move.src))
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, &l->d.move.dest[1], &l->d.move.src[1]); // addr in dest[1], addr in src[1]
+                  else
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, &l->d.move.dest[1], l->d.move.src); // addr in dest[1]
+                else
+                  if(IsAddrInVar(l->d.move.src))
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, &l->d.move.src[1]); // addr in src[1]
+                  else
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
             }
-//               INT_SET_VARIABLE_INDIRECT
-
             Op(INT_END_IF);
             break;
         }
