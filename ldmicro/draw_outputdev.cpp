@@ -26,7 +26,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include <algorithm>
 
 void (*DrawChars)(int, int, const char *);
 

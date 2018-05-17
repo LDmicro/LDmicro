@@ -23,7 +23,6 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include <algorithm>
 
 // clang-format off
 #define ASM_LABEL 1
@@ -424,11 +423,11 @@ static DWORD Bank(DWORD reg)
         reg &= 0x0F80;
     } else if(Prog.mcu->core == MidrangeCore14bit) {
         if(reg & ~0x01FF)
-            ooops("0x%X", reg); 
+            ooops("0x%X", reg);
         reg &= 0x0180;
     } else if(Prog.mcu->core == BaselineCore12bit) {
         if(reg & ~0x007F)
-            ooops("0x%X", reg); 
+            ooops("0x%X", reg);
         reg &= 0x0000;
     } else
         oops();
@@ -2501,19 +2500,17 @@ static void CallWithPclath(DWORD addr)
 #endif
 }
 
-static bool IsOutput(DWORD addr)
+static bool IsOutputReg(DWORD addr)
 {
-    int i;
-    for(i = 0; i < MAX_IO_PORTS; i++)
+    for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu->outputRegs[i] == addr)
             return true;
     return false;
 }
 
-static bool IsInput(DWORD addr)
+static bool IsInputReg(DWORD addr)
 {
-    int i;
-    for(i = 0; i < MAX_IO_PORTS; i++)
+    for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu->inputRegs[i] == addr)
             return true;
     return false;
@@ -2540,7 +2537,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, cons
     ClearBit(addrDest, bitDest);
 */
     // No "jitter", No "input" error
-    if((!IsOutput(addrDest))
+    if((!IsOutputReg(addrDest))
        && ((Bank(addrDest) == Bank(addrSrc)) || IsCoreRegister(addrDest) || IsCoreRegister(addrSrc))) {
         IfBitSet(addrSrc, bitSrc, nameSrc);
         SetBit(addrDest, bitDest, nameDest);

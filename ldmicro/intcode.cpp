@@ -22,12 +22,10 @@
 // AVR or PIC16 code.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
+
 #include "ldmicro.h"
 #include "intcode.h"
-#include "compilerexceptions.hpp"
-#include <algorithm>
-#include <unordered_set>
-#include <string>
 
 //// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
