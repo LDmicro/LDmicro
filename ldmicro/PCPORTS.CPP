@@ -336,7 +336,7 @@ bool ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
             }
         }
     };
-    return pin;
+    return pin != 0;
 }
 //-----------------------------------------------------------------------------
 void FillPcPinInfo(McuIoPinInfo *pinInfo)
@@ -375,7 +375,7 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo)
 //-----------------------------------------------------------------------------
 bool SavePcPorts(char *filename)
 {
-    dbps(filename) bool b = false;
+    dbps(filename) BOOL b = FALSE;
     dbpd(b)
         //  if(!b)
         b = WritePrivateProfileString(TEXT("LPT1"), TEXT("ADDR   "), TEXT("0x378"), filename);
@@ -407,7 +407,7 @@ bool SavePcPorts(char *filename)
                                   TEXT("ThirdKey"),
                                   TEXT("4Another test..."),
                                   /*TEXT("appname.ini")*/ filename);
-    dbpd(b) return b;
+    dbpd(b) return b != FALSE;
 }
 //-----------------------------------------------------------------------------
 static const char *IoTypeToPas(int IoType)

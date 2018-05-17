@@ -1577,7 +1577,7 @@ typedef struct PicAvrInstructionTag {
     char        arg1name[MAX_NAME_LEN];
     char        arg2name[MAX_NAME_LEN];
     int         rung;  // This Instruction located in Prog.rungs[rung] LD
-    int         IntPc; // This Instruction located in IntCode[IntPc]
+    uint32_t    IntPc; // This Instruction located in IntCode[IntPc]
     int         l;           // line in source file
     char        f[MAX_PATH]; // source file name
 } PicAvrInstruction;
