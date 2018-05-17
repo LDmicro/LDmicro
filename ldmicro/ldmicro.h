@@ -1636,7 +1636,7 @@ extern jmp_buf CompileErrorBuf;
 double SIprefix(double val, char *prefix, int en_1_2);
 double SIprefix(double val, char *prefix);
 int GetVariableType(char *name);
-int SetVariableType(char *name, int type);
+int SetVariableType(const char *name, int type);
 
 // intcode.cpp
 extern int int_comment_level;
