@@ -30,10 +30,10 @@ static std::vector<uint8_t> OutProg;
 
 #define MAX_PLCIO 256
 
-static char *PlcIos[MAX_PLCIO];
+static const char *PlcIos[MAX_PLCIO];
 static int   PlcIos_size = 0;
 
-int PlcIos_AppendAndGet(char *name)
+int PlcIos_AppendAndGet(const char *name)
 {
     for(int i = 0; i < PlcIos_size; i++) {
         if(strcmp(PlcIos[i], name) == 0)
@@ -67,12 +67,12 @@ static BYTE GetArduinoPinNumber(int pin)
     return 0;
 }
 
-static BYTE AddrForBit(char *name)
+static BYTE AddrForBit(const char *name)
 {
     return CheckRange(PlcIos_AppendAndGet(name), name);
 }
 
-static BYTE AddrForVariable(char *name)
+static BYTE AddrForVariable(const char *name)
 {
     return CheckRange(PlcIos_AppendAndGet(name), name);
 }
@@ -109,32 +109,32 @@ void CompileXInterpreted(char *outFile)
             case INT_CLEAR_BIT:
             case INT_SET_BIT:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForBit(IntCode[ipc].name1));
+                OutProg.push_back(AddrForBit(IntCode[ipc].name1.c_str()));
                 break;
 
             case INT_COPY_BIT_TO_BIT:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForBit(IntCode[ipc].name1));
-                OutProg.push_back(AddrForBit(IntCode[ipc].name2));
+                OutProg.push_back(AddrForBit(IntCode[ipc].name1.c_str()));
+                OutProg.push_back(AddrForBit(IntCode[ipc].name2.c_str()));
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
                 OutProg.push_back((uint8_t)(IntCode[ipc].literal & 0xFF));
                 OutProg.push_back((uint8_t)((IntCode[ipc].literal >> 8) & 0xFF));
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name2));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name2.c_str()));
                 break;
 
             case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
                 break;
 
             case INT_SET_VARIABLE_ADD:
@@ -143,39 +143,39 @@ void CompileXInterpreted(char *outFile)
             case INT_SET_VARIABLE_DIVIDE:
             case INT_SET_VARIABLE_MOD:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name2));
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name3));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name2.c_str()));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name3.c_str()));
                 break;
 
             case INT_SET_PWM:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
                 OutProg.push_back((uint8_t)(IntCode[ipc].literal & 0xFF));
                 OutProg.push_back((uint8_t)((IntCode[ipc].literal >> 8) & 0xFF));
                 break;
 
             case INT_READ_ADC:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
                 break;
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForBit(IntCode[ipc].name1));
+                OutProg.push_back(AddrForBit(IntCode[ipc].name1.c_str()));
                 goto finishIf;
             case INT_IF_VARIABLE_LES_LITERAL:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
                 OutProg.push_back((uint8_t)(IntCode[ipc].literal & 0xFF));
                 OutProg.push_back((uint8_t)((IntCode[ipc].literal >> 8) & 0xFF));
                 goto finishIf;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
                 OutProg.push_back(IntCode[ipc].op);
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name1));
-                OutProg.push_back(AddrForVariable(IntCode[ipc].name2));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
+                OutProg.push_back(AddrForVariable(IntCode[ipc].name2.c_str()));
                 goto finishIf;
             finishIf:
                 ifOpIf[ifDepth] = OutProg.size();

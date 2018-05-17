@@ -88,7 +88,7 @@ bool InSimulationMode;
 // Don't want to redraw the screen unless necessary; track whether a coil
 // changed state or a timer output switched to see if anything could have
 // changed (not just coil, as we show the intermediate steps too).
-static bool NeedRedraw;
+static int NeedRedraw; // a->op used for debug
 // Have to let the effects of a coil change in cycle k appear in cycle k+1,
 // or set by the UI code to indicate that user manually changed an Xfoo
 // input.
@@ -161,6 +161,17 @@ static bool SingleBitOn(const char *name)
     return false;
 }
 
+template <size_t N>
+static bool SingleBitOn(const StringArray<N>& name)
+{
+    for(int i = 0; i < SingleBitItemsCount; i++) {
+        if(name == SingleBitItems[i].name) {
+            return SingleBitItems[i].powered;
+        }
+    }
+    return false;
+}
+
 //-----------------------------------------------------------------------------
 // Set the state of a single-bit item. Adds it to the list if it is not there
 // already.
@@ -181,9 +192,57 @@ static void SetSingleBit(const char *name, bool state)
     }
 }
 
+template <size_t N>
+static void SetSingleBit(const StringArray<N>& name, bool state)
+{
+    int i;
+    for(i = 0; i < SingleBitItemsCount; i++) {
+        if(name == SingleBitItems[i].name) {
+            SingleBitItems[i].powered = state;
+            return;
+        }
+    }
+    if(i < MAX_IO) {
+        strcpy(SingleBitItems[i].name, name.c_str());
+        SingleBitItems[i].powered = state;
+        SingleBitItemsCount++;
+    }
+
+}
+
 bool GetSingleBit(char *name)
 {
     return SingleBitOn(name);
+}
+
+//-----------------------------------------------------------------------------
+long convert_to_int24_t(long v)
+{
+    long val;
+    memcpy(&val, &v, 3); // only 3 bytes
+    return val;
+}
+
+//-----------------------------------------------------------------------------
+long OverflowToVarSize(long val, int sov)
+{
+    if(sov < 1)
+        oops();
+    if(sov > 4)
+        oops();
+    if(sov < byteNeeded(val)) {
+        if(sov == 1)
+            val = (int8_t)val;
+        else if(sov == 2)
+            val = (int16_t)val;
+        else if(sov == 3)
+            val = convert_to_int24_t(val);
+        else if(sov == 4)
+            val = (int32_t)val;
+        else
+            val = val;
+    }
+    return val;
 }
 
 //-----------------------------------------------------------------------------
@@ -192,6 +251,7 @@ bool GetSingleBit(char *name)
 //-----------------------------------------------------------------------------
 static void Increment(const char *name, const char *overlap, const char *overflow)
 {
+/*
     int    sov = SizeOfVar(name);
     SDWORD signMask = 1 << (sov * 8 - 1);
     SDWORD signBefore, signAfter;
@@ -211,11 +271,38 @@ static void Increment(const char *name, const char *overlap, const char *overflo
         }
     }
     ooops(name);
+*/
+    int sov = SizeOfVar(name);
+    for(int i = 0; i < VariableCount; i++) {
+        if(strcmp(Variables[i].name, name) == 0) {
+
+            (Variables[i].val)++;
+
+            if(sov < byteNeeded(Variables[i].val)) {
+                SetSingleBit(overflow, true);
+                Variables[i].val = OverflowToVarSize(Variables[i].val, sov);
+            }
+            SetSingleBit(overlap, Variables[i].val == 0); // OVERLAP 11...11 -> 00...00 // -1 -> 0
+            return;
+        }
+    }
+    ooops(name);
+}
+
+static void Increment(const NameArray& name, const char *overlap, const char *overflow)
+{
+    Increment(name.c_str(), overlap, overflow);
+}
+
+static void Increment(const NameArray& name, const NameArray& overlap, const char *overflow)
+{
+    Increment(name.c_str(), overlap.c_str(), overflow);
 }
 
 //-----------------------------------------------------------------------------
 static void Decrement(const char *name, const char *overlap, const char *overflow)
 {
+/*
     int    sov = SizeOfVar(name);
     SDWORD signMask = 1 << (sov * 8 - 1);
     SDWORD signBefore, signAfter;
@@ -236,10 +323,31 @@ static void Decrement(const char *name, const char *overlap, const char *overflo
         }
     }
     ooops(name);
+*/
+    int sov = SizeOfVar(name);
+    for(int i = 0; i < VariableCount; i++) {
+        if(strcmp(Variables[i].name, name) == 0) {
+            SetSingleBit(overlap, Variables[i].val == 0); // OVERLAP 00...00 -> 11...11 // 0 -> -1
+
+            (Variables[i].val)--;
+
+            if(sov < byteNeeded(Variables[i].val)) {
+                SetSingleBit(overflow, true);
+                Variables[i].val = OverflowToVarSize(Variables[i].val, sov);
+            }
+            return;
+        }
+    }
+    ooops(name);
+}
+
+static void Decrement(const NameArray& name, const NameArray& overlap, const char *overflow)
+{
+    Decrement(name.c_str(), overlap.c_str(), overflow);
 }
 
 //-----------------------------------------------------------------------------
-static SDWORD AddVariable(const char *name1, const char *name2, const char *name3, const char *overflow)
+static SDWORD AddVariable(const NameArray& name1, const NameArray& name2, const NameArray& name3, const char *overflow)
 {
     long long int ret = (long long int)GetSimulationVariable(name2) + (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
@@ -253,7 +361,7 @@ static SDWORD AddVariable(const char *name1, const char *name2, const char *name
 }
 
 //-----------------------------------------------------------------------------
-static SDWORD SubVariable(const char *name1, const char *name2, const char *name3, const char *overflow)
+static SDWORD SubVariable(const NameArray& name1, const NameArray& name2, const NameArray& name3, const char *overflow)
 {
     long long int ret = (long long int)GetSimulationVariable(name2) - (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
@@ -271,7 +379,12 @@ static SDWORD SubVariable(const char *name1, const char *name2, const char *name
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
-void SetSimulationVariable(char *name, SDWORD val)
+void SetSimulationVariable(const NameArray& name, SDWORD val)
+{
+    SetSimulationVariable(name.c_str(), val);
+}
+
+void SetSimulationVariable(const char *name, SDWORD val)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -309,6 +422,11 @@ SDWORD GetSimulationVariable(const char *name)
     return GetSimulationVariable(name, false);
 }
 
+SDWORD GetSimulationVariable(const NameArray& name)
+{
+    return GetSimulationVariable(name.c_str());
+}
+
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
@@ -328,10 +446,9 @@ void SetSimulationStr(char *name, char *val)
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
-char *GetSimulationStr(char *name)
+char *GetSimulationStr(const char *name)
 {
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             return Variables[i].valstr;
         }
@@ -363,7 +480,7 @@ void SetAdcShadow(char *name, SWORD val)
 // Return the shadow value of a variable associated with a READ ADC. This is
 // what gets copied into the real variable when an ADC read is simulated.
 //-----------------------------------------------------------------------------
-SWORD GetAdcShadow(char *name)
+SWORD GetAdcShadow(const char *name)
 {
     int i;
     for(i = 0; i < AdcShadowsCount; i++) {
@@ -372,6 +489,11 @@ SWORD GetAdcShadow(char *name)
         }
     }
     return 0;
+}
+
+SWORD GetAdcShadow(const NameArray& name)
+{
+    return GetAdcShadow(name.c_str());
 }
 
 //-----------------------------------------------------------------------------
@@ -390,12 +512,12 @@ SDWORD MthRandom()
     return (SDWORD)seed;
 }
 
-SDWORD GetRandom(char *name)
+SDWORD GetRandom(const NameArray& name)
 {
     int    sov = SizeOfVar(name);
     SDWORD seed = MthRandom();
     char   seedName[MAX_NAME_LEN];
-    sprintf(seedName, "$seed_%s", name);
+    sprintf(seedName, "$seed_%s", name.c_str());
     SetSimulationVariable(seedName, seed);
     if(sov == 1)
         return (signed char)(seed >> (8 * (4 - sov)));
@@ -1315,12 +1437,10 @@ int FindOpRung(int op, int rung)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpName(int op, const char *name1)
+int FindOpName(int op, const NameArray& name1)
 {
-    if(!name1)
-        oops();
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
+        if((IntCode[i].op == op) && (IntCode[i].name1 == name1)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
         }
@@ -1329,14 +1449,10 @@ int FindOpName(int op, const char *name1)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpName(int op, const char *name1, const char *name2)
+int FindOpName(int op, const NameArray& name1, const NameArray& name2)
 {
-    if(!name1)
-        oops();
-    if(!name2)
-        oops();
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
+        if((IntCode[i].op == op) && (IntCode[i].name1 == name1) && (IntCode[i].name2 == name2)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
         }
@@ -1345,12 +1461,10 @@ int FindOpName(int op, const char *name1, const char *name2)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpNameLast(int op, const char *name1)
+int FindOpNameLast(int op, const NameArray& name1)
 {
-    if(!name1)
-        oops();
     for(int i = IntCode.size() - 1; i >= 0; i--) {
-        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0)) {
+        if((IntCode[i].op == op) && (IntCode[i].name1 == name1)) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
         }
@@ -1359,14 +1473,10 @@ int FindOpNameLast(int op, const char *name1)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpNameLast(int op, const char *name1, const char *name2)
+int FindOpNameLast(int op, const NameArray& name1, const NameArray& name2)
 {
-    if(!name1)
-        oops();
-    if(!name2)
-        oops();
     for(int i = IntCode.size() - 1; i >= 0; i--) {
-        if((IntCode[i].op == op) && (strcmp(IntCode[i].name1, name1) == 0) && (strcmp(IntCode[i].name2, name2) == 0)) {
+        if((IntCode[i].op == op) && ((IntCode[i].name1 == name1)) && ((IntCode[i].name2 == name2))) {
             //dbp("i=%d INT_%d r=%d ELEM_0x%X", i, IntCode[i].op, IntCode[i].rung, IntCode[i].which);
             return i;
         }
@@ -1388,13 +1498,13 @@ static void SimulateIntCode()
         switch(a->op) {
             case INT_SIMULATE_NODE_STATE:
                 if(*(a->poweredAfter) != SingleBitOn(a->name1)) {
-                    NeedRedraw = 1;
+                    NeedRedraw = a->op;
                     *(a->poweredAfter) = SingleBitOn(a->name1);
                 }
 
-                if(strlen(a->name2))
+                if(a->name2.size())
                     if(*(a->workingNow) != SingleBitOn(a->name2)) {
-                        NeedRedraw = 1;
+                        NeedRedraw = a->op;
                         *(a->workingNow) = SingleBitOn(a->name2);
                     }
                 break;
@@ -1428,7 +1538,7 @@ static void SimulateIntCode()
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(GetSimulationVariable(a->name1) != a->literal && a->name1[0] != '$') {
-                    NeedRedraw = 2;
+                    NeedRedraw = a->op;
                 }
                 SetSimulationVariable(a->name1, a->literal);
                 break;
@@ -1468,7 +1578,7 @@ static void SimulateIntCode()
             case INT_SET_BIN2BCD: {
                 int var2 = bin2bcd(GetSimulationVariable(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 3;
+                    NeedRedraw = a->op;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1477,7 +1587,7 @@ static void SimulateIntCode()
             case INT_SET_BCD2BIN: {
                 int var2 = bcd2bin(GetSimulationVariable(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 4;
+                    NeedRedraw = a->op;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1486,7 +1596,7 @@ static void SimulateIntCode()
             case INT_SET_OPPOSITE: {
                 int var2 = opposite(GetSimulationVariable(a->name2), SizeOfVar(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 5;
+                    NeedRedraw = a->op;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1495,7 +1605,7 @@ static void SimulateIntCode()
             case INT_SET_SWAP: {
                 int var2 = swap(GetSimulationVariable(a->name2), SizeOfVar(a->name2));
                 if(GetSimulationVariable(a->name1) != var2) {
-                    NeedRedraw = 5;
+                    NeedRedraw = a->op;
                     SetSimulationVariable(a->name1, var2);
                 }
                 break;
@@ -1503,108 +1613,107 @@ static void SimulateIntCode()
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(GetSimulationVariable(a->name1) != GetSimulationVariable(a->name2)) {
-                    NeedRedraw = 6;
+                    NeedRedraw = a->op;
                 }
                 SetSimulationVariable(a->name1, GetSimulationVariable(a->name2));
                 break;
 
             case INT_INCREMENT_VARIABLE:
                 Increment(a->name1, a->name2, "ROverflowFlagV");
-                NeedRedraw = 7;
+                NeedRedraw = a->op;
                 break;
 
             case INT_DECREMENT_VARIABLE:
                 Decrement(a->name1, a->name2, "ROverflowFlagV");
-                NeedRedraw = 8;
+                NeedRedraw = a->op;
                 break;
-                {
-                    SDWORD v;
-                    bool   state;
-                    case INT_SET_VARIABLE_SR0:
-                        v = sr0(GetSimulationVariable(a->name2),
-                                GetSimulationVariable(a->name3),
-                                SizeOfVar(a->name2),
-                                &state);
-                        SetSingleBit(a->name4, state);
-                        goto math;
-                    case INT_SET_VARIABLE_ROL:
-                        v = rol(GetSimulationVariable(a->name2),
-                                GetSimulationVariable(a->name3),
-                                SizeOfVar(a->name2),
-                                &state);
-                        SetSingleBit(a->name4, state);
-                        goto math;
-                    case INT_SET_VARIABLE_ROR:
-                        v = ror(GetSimulationVariable(a->name2),
-                                GetSimulationVariable(a->name3),
-                                SizeOfVar(a->name2),
-                                &state);
-                        SetSingleBit(a->name4, state);
-                        goto math;
-                    case INT_SET_VARIABLE_SHL:
-                        v = shl(GetSimulationVariable(a->name2),
-                                GetSimulationVariable(a->name3),
-                                SizeOfVar(a->name2),
-                                &state);
-                        SetSingleBit(a->name4, state);
-                        goto math;
-                    case INT_SET_VARIABLE_SHR:
-                        v = shr(GetSimulationVariable(a->name2),
-                                GetSimulationVariable(a->name3),
-                                SizeOfVar(a->name2),
-                                &state);
-                        SetSingleBit(a->name4, state);
-                        goto math;
-                    case INT_SET_VARIABLE_AND:
-                        v = GetSimulationVariable(a->name2) & GetSimulationVariable(a->name3);
-                        goto math;
-                    case INT_SET_VARIABLE_OR:
-                        v = GetSimulationVariable(a->name2) | GetSimulationVariable(a->name3);
-                        goto math;
-                    case INT_SET_VARIABLE_XOR:
-                        v = GetSimulationVariable(a->name2) ^ GetSimulationVariable(a->name3);
-                        goto math;
-                    case INT_SET_VARIABLE_NOT:
-                        v = ~GetSimulationVariable(a->name2);
-                        goto math;
-                    case INT_SET_VARIABLE_RANDOM:
-                        v = GetRandom(a->name1);
-                        goto math;
-                    case INT_SET_VARIABLE_NEG:
-                        v = -GetSimulationVariable(a->name2);
-                        goto math;
-                    case INT_SET_VARIABLE_ADD:
-                        v = AddVariable(a->name1, a->name2, a->name3, "ROverflowFlagV");
-                        goto math;
-                    case INT_SET_VARIABLE_SUBTRACT:
-                        v = SubVariable(a->name1, a->name2, a->name3, "ROverflowFlagV");
-                        goto math;
-                    case INT_SET_VARIABLE_MULTIPLY:
-                        v = GetSimulationVariable(a->name2) * GetSimulationVariable(a->name3);
-                        goto math;
-
-                    case INT_SET_VARIABLE_MOD:
-                    case INT_SET_VARIABLE_DIVIDE:
-                        if(GetSimulationVariable(a->name3) != 0) {
-                            if(a->op == INT_SET_VARIABLE_DIVIDE)
-                                v = GetSimulationVariable(a->name2) / GetSimulationVariable(a->name3);
-                            else
-                                v = GetSimulationVariable(a->name2) % GetSimulationVariable(a->name3);
-                        } else {
-                            v = 0;
-                            Error(_("Division by zero; halting simulation"));
-                            StopSimulation();
-                        }
-                        goto math;
-                    math:
-                        int sov = SizeOfVar(a->name1);
-                        v &= (1 << (8 * sov)) - 1;
-                        if(GetSimulationVariable(a->name1) != v) {
-                            NeedRedraw = 9;
-                            SetSimulationVariable(a->name1, v);
-                        }
-                        break;
+            {
+            long v;
+            bool   state;
+            case INT_SET_VARIABLE_SR0:
+                v = sr0(GetSimulationVariable(a->name2),
+                        GetSimulationVariable(a->name3),
+                        SizeOfVar(a->name2),
+                        &state);
+                SetSingleBit(a->name4, state);
+                goto math;
+            case INT_SET_VARIABLE_ROL:
+                v = rol(GetSimulationVariable(a->name2),
+                        GetSimulationVariable(a->name3),
+                        SizeOfVar(a->name2),
+                        &state);
+                SetSingleBit(a->name4, state);
+                goto math;
+            case INT_SET_VARIABLE_ROR:
+                v = ror(GetSimulationVariable(a->name2),
+                        GetSimulationVariable(a->name3),
+                        SizeOfVar(a->name2),
+                        &state);
+                SetSingleBit(a->name4, state);
+                goto math;
+            case INT_SET_VARIABLE_SHL:
+                v = shl(GetSimulationVariable(a->name2),
+                        GetSimulationVariable(a->name3),
+                        SizeOfVar(a->name2),
+                        &state);
+                SetSingleBit(a->name4, state);
+                goto math;
+            case INT_SET_VARIABLE_SHR:
+                v = shr(GetSimulationVariable(a->name2),
+                        GetSimulationVariable(a->name3),
+                        SizeOfVar(a->name2),
+                        &state);
+                SetSingleBit(a->name4, state);
+                goto math;
+            case INT_SET_VARIABLE_AND:
+                v = GetSimulationVariable(a->name2) & GetSimulationVariable(a->name3);
+                goto math;
+            case INT_SET_VARIABLE_OR:
+                v = GetSimulationVariable(a->name2) | GetSimulationVariable(a->name3);
+                goto math;
+            case INT_SET_VARIABLE_XOR:
+                v = GetSimulationVariable(a->name2) ^ GetSimulationVariable(a->name3);
+                goto math;
+            case INT_SET_VARIABLE_NOT:
+                v = ~GetSimulationVariable(a->name2);
+                goto math;
+            case INT_SET_VARIABLE_RANDOM:
+                v = GetRandom(a->name1);
+                goto math;
+            case INT_SET_VARIABLE_NEG:
+                v = -GetSimulationVariable(a->name2);
+                goto math;
+            case INT_SET_VARIABLE_ADD:
+                v = AddVariable(a->name1, a->name2, a->name3, "ROverflowFlagV");
+                goto math;
+            case INT_SET_VARIABLE_SUBTRACT:
+                v = SubVariable(a->name1, a->name2, a->name3, "ROverflowFlagV");
+                goto math;
+            case INT_SET_VARIABLE_MULTIPLY:
+                v = GetSimulationVariable(a->name2) * GetSimulationVariable(a->name3);
+                goto math;
+            case INT_SET_VARIABLE_MOD:
+            case INT_SET_VARIABLE_DIVIDE:
+                if(GetSimulationVariable(a->name3) != 0) {
+                    if(a->op == INT_SET_VARIABLE_DIVIDE)
+                        v = GetSimulationVariable(a->name2) / GetSimulationVariable(a->name3);
+                    else
+                        v = GetSimulationVariable(a->name2) % GetSimulationVariable(a->name3);
+                } else {
+                    v = 0;
+                    Error(_("Division by zero; halting simulation"));
+                    StopSimulation();
                 }
+                goto math;
+            math:
+                int sov = SizeOfVar(a->name1);
+                v = OverflowToVarSize(v, sov);
+                if(GetSimulationVariable(a->name1) != v) {
+                    NeedRedraw = a->op;
+                    SetSimulationVariable(a->name1, v);
+                }
+                break;
+            }
 //vvv
 #define IF_BODY             \
     {                       \
@@ -1614,7 +1723,7 @@ static void SimulateIntCode()
     {                       \
         IfConditionFalse(); \
     }
-            //^^^
+//^^^
             case INT_IF_BIT_SET:
                 if(SingleBitOn(a->name1))
                     IF_BODY
@@ -1630,7 +1739,7 @@ static void SimulateIntCode()
                 SDWORD v1, v2;
                 v1 = GetSimulationVariable(a->name1);
                 if(IsNumber(a->name2))
-                    v2 = hobatoi(a->name2);
+                    v2 = hobatoi(a->name2.c_str());
                 else
                     v2 = GetSimulationVariable(a->name2);
                 if(a->op == INT_VARIABLE_SET_BIT)
@@ -1641,7 +1750,7 @@ static void SimulateIntCode()
                     oops();
                 if(GetSimulationVariable(a->name1) != v1) {
                     SetSimulationVariable(a->name1, v1);
-                    NeedRedraw = 99;
+                    NeedRedraw = a->op;
                 }
                 break;
             }
@@ -1650,7 +1759,7 @@ static void SimulateIntCode()
                 SDWORD v1, v2;
                 v1 = GetSimulationVariable(a->name1);
                 if(IsNumber(a->name2))
-                    v2 = hobatoi(a->name2);
+                    v2 = hobatoi(a->name2.c_str());
                 else
                     v2 = GetSimulationVariable(a->name2);
                 if(v1 & (1 << v2))
@@ -1661,7 +1770,7 @@ static void SimulateIntCode()
                 SDWORD v1, v2;
                 v1 = GetSimulationVariable(a->name1);
                 if(IsNumber(a->name2))
-                    v2 = hobatoi(a->name2);
+                    v2 = hobatoi(a->name2.c_str());
                 else
                     v2 = GetSimulationVariable(a->name2);
                 if((v1 & (1 << v2)) == 0)
@@ -1669,12 +1778,12 @@ static void SimulateIntCode()
                 break;
             }
             case INT_IF_BITS_SET_IN_VAR:
-                if((GetSimulationVariable(a->name1) & hobatoi(a->name2)) == hobatoi(a->name2))
+                if((GetSimulationVariable(a->name1) & hobatoi(a->name2.c_str())) == hobatoi(a->name2.c_str()))
                     IF_BODY
                 break;
 
             case INT_IF_BITS_CLEAR_IN_VAR:
-                if((GetSimulationVariable(a->name1) & hobatoi(a->name2)) == 0)
+                if((GetSimulationVariable(a->name1) & hobatoi(a->name2.c_str())) == 0)
                     IF_BODY
                 break;
 
@@ -1755,7 +1864,7 @@ static void SimulateIntCode()
                 SDWORD tmp = GetSimulationVariable(a->name1);
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 if(tmp != GetSimulationVariable(a->name1)) {
-                    NeedRedraw = 202;
+                    NeedRedraw = a->op;
                 }
                 break;
             }
@@ -1867,14 +1976,14 @@ static void SimulateIntCode()
                 SDWORD *adata;
                 adata = (SDWORD *)GetSimulationVariable(a->name2);
                 if(adata == nullptr) {
-                    Error("TABLE %s is not initialized.", a->name2);
+                    Error("TABLE %s is not initialized.", a->name2.c_str());
                     StopSimulation();
                     ToggleSimulationMode(false);
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal <= index)) {
-                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2, a->literal - 1);
+                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2.c_str(), a->literal - 1);
                     index = a->literal;
                     StopSimulation();
                     ToggleSimulationMode(false);
@@ -1883,22 +1992,22 @@ static void SimulateIntCode()
                 SDWORD d = adata[index];
                 if(GetSimulationVariable(a->name1) != d) {
                     SetSimulationVariable(a->name1, d);
-                    NeedRedraw = 10;
+                    NeedRedraw = a->op;
                 }
             } break;
 
             case INT_RAM_READ: {
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal <= index)) {
-                    Error("Index=%d out of range for string %s[%d]", index, a->name1, a->literal);
+                    Error("Index=%d out of range for string %s[%d]", index, a->name1.c_str(), a->literal);
                     index = a->literal;
                     StopSimulation();
                 }
-                //dbps(GetSimulationStr(a->name1))
-                char d = GetSimulationStr(a->name1)[index];
+                //dbps(GetSimulationStr(a->name1.c_str()))
+                char d = GetSimulationStr(a->name1.c_str())[index];
                 if(GetSimulationVariable(a->name2) != d) {
                     SetSimulationVariable(a->name2, d);
-                    NeedRedraw = 11;
+                    NeedRedraw = a->op;
                 }
             } break;
 #endif
@@ -1953,7 +2062,7 @@ void SimulateOneCycle(bool forceRefresh)
         return;
     Simulating = true;
 
-    NeedRedraw = false;
+    NeedRedraw = 0;
 
     if(SimulateUartTxCountdown > 0) {
         SimulateUartTxCountdown--;
@@ -2062,16 +2171,10 @@ bool ClearSimulationData()
 }
 
 //-----------------------------------------------------------------------------
-SDWORD SDWORD3(SDWORD v)
-{
-    return v;
-}
-
-//-----------------------------------------------------------------------------
 // Provide a description for an item (Xcontacts, Ycoil, Rrelay, Ttimer,
 // or other) in the I/O list.
 //-----------------------------------------------------------------------------
-void DescribeForIoList(char *name, int type, char *out)
+void DescribeForIoList(const char *name, int type, char *out)
 {
     strcpy(out, "");
 
@@ -2115,6 +2218,7 @@ void DescribeForIoList(char *name, int type, char *out)
             SDWORD v = GetSimulationVariable(name, true);
             double dtms = v * (Prog.cycleTime / 1000.0);
             int    sov = SizeOfVar(name);
+            //v = OverflowToVarSize(v, sov);
             if(dtms < 1000) {
                 if(sov == 1)
                     sprintf(out, "0x%02X = %d = %.6g ms", v & 0xff, v, dtms);
@@ -2123,7 +2227,7 @@ void DescribeForIoList(char *name, int type, char *out)
                 else if(sov == 3)
                     sprintf(out, "0x%06X = %d = %.6g ms", v & 0xFFffff, v, dtms);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %d = %.6g ms", v, v, dtms);
+                    sprintf(out, "0x%08X = %d = %.6g ms", v & 0xFFFFffff, v, dtms);
                 else
                     oops();
             } else {
@@ -2134,23 +2238,24 @@ void DescribeForIoList(char *name, int type, char *out)
                 else if(sov == 3)
                     sprintf(out, "0x%06X = %d = %.6g s", v & 0xFFffff, v, dtms / 1000);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %d = %.6g s", v, v, dtms / 1000);
+                    sprintf(out, "0x%08X = %d = %.6g s", v & 0xFFFFffff, v, dtms / 1000);
                 else
                     oops();
             }
             break;
         }
         default: {
-            SDWORD v = GetSimulationVariable(name, true);
-            int    sov = SizeOfVar(name);
+            long v = GetSimulationVariable(name, true);
+            int  sov = SizeOfVar(name);
+            //v = OverflowToVarSize(v, sov);
             if(sov == 1)
-                sprintf(out, "0x%02X = %d = '%c'", v & 0xff, (signed char)v, v & 0xff);
+                sprintf(out, "0x%02X = %d = '%c'", v & 0xff, v, v);
             else if(sov == 2)
-                sprintf(out, "0x%04X = %d", v & 0xffff, (SWORD)v);
+                sprintf(out, "0x%04X = %d", v & 0xffff, v);
             else if(sov == 3)
-                sprintf(out, "0x%06X = %d", v & 0xFFffff, SDWORD3(v));
+                sprintf(out, "0x%06X = %d", v & 0xFFffff, v);
             else if(sov == 4)
-                sprintf(out, "0x%08X = %d", v, v);
+                sprintf(out, "0x%08X = %d", v & 0xFFFFffff, v);
             else {
                 sprintf(out, "0x%X = %d", v, v);
             }

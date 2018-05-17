@@ -81,26 +81,22 @@ int IsIoType(int type)
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
 //-----------------------------------------------------------------------------
-static void AppendIo(char *IOname, int type)
+static void AppendIo(const char *name, int type)
 {
-    if(!IOname || !strlen(IOname))
+    if(!name || !strlen(name))
         return;
-    char name[MAX_NAME_LEN];
-    strcpy(name, IOname);
-    if(!IsNumber(IOname)) {
-        char *c;
-        while(c = strchr(IOname, '-'))
-            *c = '_';
-        if(!strstr(name, IOname)) {
-            Error(_(" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"), name, IOname);
-            strcpy(name, IOname);
-            ProgramChangedNotSaved = true;
+
+    if(!IsNumber(name)) {
+        if(strchr(name, '-')) {
+            Error(_("Rename '%s': Replace the character '-' by the '_'."), name);
+            return;
         }
     }
+
     if(name[0] == '#') {
-        if(strspn(IOname, "#PORT") == 5)
+        if(strspn(name, "#PORT") == 5)
             type = IO_TYPE_PORT_OUTPUT;
-        else if(strspn(IOname, "#PIN") == 4)
+        else if(strspn(name, "#PIN") == 4)
             type = IO_TYPE_PORT_INPUT;
         else
             type = IO_TYPE_MCU_REG;
@@ -1139,6 +1135,13 @@ void ShowIoDialog(int item)
     int  type = Prog.io.assignment[item].type;
     char name[MAX_NAME_LEN];
     strcpy(name, Prog.io.assignment[item].name);
+
+    if(!IsNumber(name)) {
+        if(strchr(name, '-')) {
+            Error(_("Rename '%s': Replace the character '-' by the '_'."), name);
+            return;
+        }
+    }
 
     switch(type) {
         case IO_TYPE_PORT_INPUT:

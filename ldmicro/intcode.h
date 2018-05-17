@@ -30,7 +30,8 @@
 
 #include <cstdint>
 #include <vector>
-#include "ldconfig.h"
+#include "compilercommon.hpp"
+
 
 #define NEW_CMP // (C) GitHub.LDmicro@gmail.com
 #define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
@@ -222,12 +223,12 @@
 struct ElemLeaf;
 struct IntOp {
     int         op;
-    char        name1[MAX_NAME_LEN];
-    char        name2[MAX_NAME_LEN];
-    char        name3[MAX_NAME_LEN];
-    char        name4[MAX_NAME_LEN];
-    char        name5[MAX_NAME_LEN];
-    char        name6[MAX_NAME_LEN];
+    NameArray   name1;
+    NameArray   name2;
+    NameArray   name3;
+    NameArray   name4;
+    NameArray   name5;
+    NameArray   name6;
     int32_t     literal;
     int32_t     literal2;
     int32_t     literal3;    // side effect: internaly used in simulation of INT_FLASH_READ

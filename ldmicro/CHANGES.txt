@@ -1,10 +1,28 @@
+== Release 4.3.9.4
+
+   Fixed: LDmicro Forum - pic16f887 http://cq.cx/ladder-forum.pl?action=viewthread&parent=7317&tt=1526403799
+   Recovered backward compatibility with version 2.3 for the SET PWM operation.
+   Recovered the READ_ADC operation for PIC16F887, PIC16F877, PIC16F88, PIC16F72.
+   Attention: Releases 4.3.8.5 - 4.3.9.3 has the bug with PIC's MCU READ_ADC: only RA0 analog input is available!
+
+   Fixed: The GEQ instructrion does not work with neg.numbers #57
+   Try simulate GEQ.LD from the page
+   https://github.com/LDmicro/LDmicro/issues/57
+
+== Release 4.3.9.3
+
+   Fixed: SET PWM instruction in Arduino Sketch.
+
+   * Wiki: LDmicro, Arduino, LCD
+   https://github.com/LDmicro/LDmicro/wiki/LDmicro,-Arduino,-LCD
+
 == Release 4.3.9.2
 
    Fixed: Problem "PERSIST" Arduino Mega. #82
 
    Updated: EXTERN_EVERYTHING in Arduino Sketch.
 
-   Fixed: RESET PWM instrutions in Arduino Sketch. #62
+   Fixed: RESET PWM instruction in Arduino Sketch. #62
 
    Added: SET PWM - optional setPwmFrequency() in Arduino Sketch.
    Need to test. See issue #62
@@ -20,10 +38,10 @@
    * Wiki: OPEN CIRCUIT, SHORT CIRCUIT
    https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
 
-   Fixed: Is it correct return ? #55 Yes.
+   Fixed: Is it correct return? #55 Yes.
 
    Test: Unclosed Rung. See issue #56.
-   Experimental release attahed at page
+   Experimental release attached at page
    https://github.com/LDmicro/LDmicro/issues/56
 
 == Release 4.3.9.1

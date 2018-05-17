@@ -43,28 +43,30 @@ typedef struct {
 
 static BinOp OutProg[MAX_INT_OPS];
 
-static WORD AddrForInternalRelay(char *name)
+template <size_t N>
+static WORD AddrForInternalRelay(const StringArray<N>& name)
 {
     int i;
     for(i = 0; i < InternalRelaysCount; i++) {
-        if(strcmp(InternalRelays[i], name) == 0) {
+        if(name == InternalRelays[i]) {
             return i;
         }
     }
-    strcpy(InternalRelays[i], name);
+    strcpy(InternalRelays[i], name.c_str());
     InternalRelaysCount++;
     return i;
 }
 
-static WORD AddrForVariable(char *name)
+template <size_t N>
+static WORD AddrForVariable(const StringArray<N>& name)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i], name) == 0) {
+        if((name == Variables[i])) {
             return i;
         }
     }
-    strcpy(Variables[i], name);
+    strcpy(Variables[i], name.c_str());
     VariablesCount++;
     return i;
 }
@@ -72,8 +74,7 @@ static WORD AddrForVariable(char *name)
 static void Write(FILE *f, BinOp *op)
 {
     BYTE *b = (BYTE *)op;
-    int   i;
-    for(i = 0; i < sizeof(*op); i++) {
+    for(uint32_t i = 0; i < sizeof(*op); i++) {
         fprintf(f, "%02x", b[i]);
     }
     fprintf(f, "\n");

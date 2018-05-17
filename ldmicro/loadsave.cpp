@@ -45,30 +45,54 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     ElemLeaf *l = AllocLeaf();
     int       x;
 
+    auto scan_contact_3 = [&]() -> int
+    {
+        int negated, set1;
+        int res = sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name, &negated, &set1);
+        l->d.contacts.negated = negated != 0;
+        l->d.contacts.set1 = set1 != 0;
+        return res;
+    };
+    auto scan_contact_2 = [&]() -> int
+    {
+        int negated;
+        int res = sscanf(line, "CONTACTS %s %d ", l->d.contacts.name, &negated);
+        l->d.contacts.negated = negated != 0;
+        return res;
+    };
+
+    auto scan_coil_5 = [&]() -> int
+    {
+        int negated, setOnly, resetOnly, ttrigger;
+        int res = sscanf(line, "COIL %s %d %d %d %d", l->d.coil.name, &negated, &setOnly, &resetOnly, &ttrigger);
+        l->d.coil.negated = negated != 0;
+        l->d.coil.setOnly = setOnly != 0;
+        l->d.coil.resetOnly = resetOnly != 0;
+        l->d.coil.ttrigger = ttrigger != 0;
+        return res;
+    };
+
+    auto scan_coil_4 = [&]() -> int
+    {
+        int negated, setOnly, resetOnly;
+        int res = sscanf(line, "COIL %s %d %d %d", l->d.coil.name, &negated, &setOnly, &resetOnly);
+        l->d.coil.negated = negated != 0;
+        l->d.coil.setOnly = setOnly != 0;
+        l->d.coil.resetOnly = resetOnly != 0;
+        return res;
+    };
+
     if(memcmp(line, "COMMENT", 7) == 0) {
         FrmStrToStr(l->d.comment.str, &line[8]);
 
         *which = ELEM_COMMENT;
-    } else if(sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name, &l->d.contacts.negated, &l->d.contacts.set1) == 3) {
+    } else if(scan_contact_3() == 3) {
         *which = ELEM_CONTACTS;
-    } else if(sscanf(line, "CONTACTS %s %d", l->d.contacts.name, &l->d.contacts.negated) == 2) {
+    } else if(scan_contact_2() == 2) {
         *which = ELEM_CONTACTS;
-    } else if(sscanf(line,
-                     "COIL %s %d %d %d %d",
-                     l->d.coil.name,
-                     &l->d.coil.negated,
-                     &l->d.coil.setOnly,
-                     &l->d.coil.resetOnly,
-                     &l->d.coil.ttrigger)
-              == 5) {
+    } else if(scan_coil_5() == 5) {
         *which = ELEM_COIL;
-    } else if(sscanf(line,
-                     "COIL %s %d %d %d",
-                     l->d.coil.name,
-                     &l->d.coil.negated,
-                     &l->d.coil.setOnly,
-                     &l->d.coil.resetOnly)
-              == 4) {
+    } else if(scan_coil_4() == 4) {
         *which = ELEM_COIL;
     } else if(memcmp(line, "PLACEHOLDER", 11) == 0) {
         *which = ELEM_PLACEHOLDER;
@@ -483,12 +507,16 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             strcpy(l->d.fmtdStr.string, "");
         }
         *which = ELEM_STRING;
-    } else if(sscanf(line,
+    } else if([&]()->int{
+              int editAsString;
+              int res = sscanf(line,
                      "LOOK_UP_TABLE %s %s %d %d",
                      l->d.lookUpTable.dest,
                      l->d.lookUpTable.index,
                      &(l->d.lookUpTable.count),
-                     &(l->d.lookUpTable.editAsString))
+                     &editAsString);
+              l->d.lookUpTable.editAsString = editAsString != 0;
+              return res;}()
               == 4) {
         char *p = line;
         int   i;

@@ -104,45 +104,44 @@ static int GetLocalRelaysAsMetaTags(FILE *f = nullptr)
     return metas;
 }
 
-static WORD AddrForString(char *name)
+static WORD AddrForString(const NameArray& name)
 {
     int i;
     for(i = 0; i < StringsCount; i++) {
-        if(strcmp(Strings[i], name) == 0) {
+        if((name == Strings[i])) {
             return i;
         }
     }
-    strcpy(Strings[i], name);
+    strcpy(Strings[i], name.c_str());
     StringsCount++;
     return i;
 }
 
-static WORD AddrForRelay(char *name)
+static WORD AddrForRelay(const NameArray& name)
 {
     // Look within the relays for an already known entry.
     int i;
     for(i = 0; i < RelaysCount; i++) {
-        if(strcmp(Relays[i].Name, name) == 0) {
+        if((name == Relays[i].Name)) {
             return Relays[i].Address;
         }
     }
 
     // Prepare new entry.
-    strcpy(Relays[i].Name, name);
+    strcpy(Relays[i].Name, name.c_str());
     RelaysCount++;
     Relays[i].Address = NOT_LOCATED_YET; // Mark as not located yet.
 
     // Try to parse the given register name.
 
     // Locater included?
-    name = strchr(name, '@');
-    if(name) {
-        int reg = 0;
+    auto n = strchr(name.c_str(), '@');
+    if(n) {
         int bit = 0;
-        name++; // Throw away the @ symbol.
+        n++; // Throw away the @ symbol.
 
         // No PAB mapping, maybe IO mapping.
-        if(sscanf(name, "%x", &bit) == 1) {
+        if(sscanf(n, "%x", &bit) == 1) {
             Relays[i].Address = bit | MAPPED_TO_IO;
         }
     }
@@ -150,9 +149,10 @@ static WORD AddrForRelay(char *name)
     return Relays[i].Address;
 }
 
-static int GetPercentCharactersCount(char *Search)
+static int GetPercentCharactersCount(const NameArray& name)
 {
     int found = 0;
+    auto Search = name.c_str();
     while(Search[0]) {
         if(Search[0] == '%') {
             if(Search[1] == '%') {
@@ -168,36 +168,43 @@ static int GetPercentCharactersCount(char *Search)
     return found;
 }
 
-static WORD AddrForVariable(const char *name)
+template <size_t N>
+static WORD AddrForVariable(const StringArray<N>& name)
 {
     // Look within the variables for an already known entry.
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i].Name, name) == 0) {
+        if((name == Variables[i].Name)) {
             return Variables[i].Address;
         }
     }
 
     // Prepare new entry.
-    strcpy(Variables[i].Name, name);
+    strcpy(Variables[i].Name, name.c_str());
     VariablesCount++;
     Variables[i].Address = NOT_LOCATED_YET; // Mark as not located yet.
 
     // Try to parse the given register name.
 
     // Locater included?
-    name = strchr(name, '@');
-    if(name) {
+    auto n = strchr(name.c_str(), '@');
+    if(n) {
         int reg = 0;
-        name++; // Throw away the @ symbol.
+        n++; // Throw away the @ symbol.
 
         // No PAB mapping, maybe IO mapping.
-        if(sscanf(name, "%x", &reg) == 1) {
+        if(sscanf(n, "%x", &reg) == 1) {
             Variables[i].Address = reg | MAPPED_TO_IO;
         }
     }
 
     return Variables[i].Address;
+}
+
+static WORD AddrForVariable(gsl::cstring_span name)
+{
+    NameArray na(name.data());
+    return AddrForVariable(na);
 }
 
 static void MapNotLocatedElements()
@@ -257,11 +264,7 @@ static void MapNotLocatedElements()
 
 static void locateRegister()
 {
-    int ipc;
-    int outPc;
-
-    outPc = 0;
-    for(ipc = 0; ipc < IntCode.size(); ipc++) {
+    for(uint32_t ipc = 0; ipc < IntCode.size(); ipc++) {
         switch(IntCode[ipc].op) {
             case INT_CLEAR_BIT:
             case INT_SET_BIT:
@@ -351,7 +354,6 @@ static void locateRegister()
 
 int GenerateIntOpcodes()
 {
-    int   ipc;
     int   outPc;
     BinOp op;
 
@@ -367,7 +369,7 @@ int GenerateIntOpcodes()
     int ifOpElse[MAX_IF_NESTING];
 
     outPc = 0;
-    for(ipc = 0; ipc < IntCode.size(); ipc++) {
+    for(uint32_t ipc = 0; ipc < IntCode.size(); ipc++) {
         memset(&op, 0, sizeof(op));
         op.op = IntCode[ipc].op;
 

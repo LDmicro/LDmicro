@@ -24,6 +24,7 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 #include <algorithm>
+#include <compilerexceptions.hpp>
 
 #define ASM_LABEL 1
 //                0 - no labels
@@ -699,7 +700,9 @@ char *getName(char *s)
 static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm)
 {
     PicAvrInstruction *AvrInstr = &AvrProg[addrAt];
-    IntOp *            a = &IntCode[AvrInstr->IntPc];
+    IntOp intOp;
+    if(AvrInstr->IntPc > -1 && static_cast<uint32_t>(AvrInstr->IntPc) < IntCode.size())
+        intOp = IntCode[AvrInstr->IntPc];
     strcpy(sAsm, "");
 /*
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
@@ -712,9 +715,9 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
           ((1 << (bits)) - 1),                                    \
           AvrInstr->l,                                            \
           AvrInstr->f,                                            \
-          a->name1,                                               \
-          a->l,                                                   \
-          a->f)
+          intOp.name1.c_str(),                                    \
+          intOp.l,                                                \
+          intOp.f)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
     ooops("v=%d [%d..%d]\nat %d in %s %s\nat %d in %s",                  \
@@ -723,9 +726,9 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
           UpperRangeInclusive,                                           \
           AvrInstr->l,                                                   \
           AvrInstr->f,                                                   \
-          a->name1,                                                      \
-          a->l,                                                          \
-          a->f)
+          intOp.name1.c_str(),                                           \
+          intOp.l,                                                       \
+          intOp.f)
 
     switch(op) {
         case OP_COMMENT:
@@ -1573,7 +1576,7 @@ static void LoadZAddr(DWORD addr)
 ;*  SETB - SET Bit in IO of data space
 ;*********************************************************
 */
-static void SETB(DWORD addr, int bit, int reg, char *name)
+static void SETB(DWORD addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
         Error(_("Only values 0-7 allowed for Bit parameter"));
@@ -1605,9 +1608,14 @@ static void SETB(DWORD addr, int bit, int reg, char *name)
         oops()
 }
 
-static void SETB(DWORD addr, int bit, char *name)
+static void SETB(DWORD addr, int bit, const char *name)
 {
     SETB(addr, bit, r25, name);
+}
+
+static void SETB(DWORD addr, int bit, const NameArray& name)
+{
+    SETB(addr, bit, r25, name.c_str());
 }
 
 static void SETB(DWORD addr, int bit)
@@ -1621,7 +1629,7 @@ static void SETB(DWORD addr, int bit)
 ;*  CLRB - CLeaR Bit in IO of data space
 ;*********************************************************
 */
-static void CLRB(DWORD addr, int bit, int reg, char *name)
+static void CLRB(DWORD addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
         Error(_("Only values 0-7 allowed for Bit parameter"));
@@ -1653,9 +1661,14 @@ static void CLRB(DWORD addr, int bit, int reg, char *name)
         oops()
 }
 
-static void CLRB(DWORD addr, int bit, char *name)
+static void CLRB(DWORD addr, int bit, const char *name)
 {
     CLRB(addr, bit, r25, name);
+}
+
+static void CLRB(DWORD addr, int bit, const NameArray& name)
+{
+    CLRB(addr, bit, r25, name.c_str());
 }
 
 static void CLRB(DWORD addr, int bit)
@@ -1919,6 +1932,11 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
     }
 }
 
+static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const NameArray& name)
+{
+    WriteLiteralToMemory(addr, sov, literal, name.c_str());
+}
+
 //-----------------------------------------------------------------------------
 static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
@@ -2082,7 +2100,7 @@ static void GetUartSendBusy(DWORD addr, int bit)
 // Execute the next instruction only if the specified bit of the specified
 // memory location is clear (i.e. skip if set).
 //-----------------------------------------------------------------------------
-static void IfBitClear(DWORD addr, int bit, BYTE reg, char *name)
+static void IfBitClear(DWORD addr, int bit, BYTE reg, const char *name)
 //used ZL, r25 // bit in [0..7]
 {
     char b[10];
@@ -2106,10 +2124,17 @@ static void IfBitClear(DWORD addr, int bit, BYTE reg, char *name)
     } else
         oops()
 }
-static void IfBitClear(DWORD addr, int bit, char *name)
+
+static void IfBitClear(DWORD addr, int bit, const char *name)
 {
     IfBitClear(addr, bit, r25, name);
 }
+
+static void IfBitClear(DWORD addr, int bit, const NameArray& name)
+{
+    IfBitClear(addr, bit, r25, name.c_str());
+}
+
 static void IfBitClear(DWORD addr, int bit)
 {
     IfBitClear(addr, bit, r25, nullptr);
@@ -2119,7 +2144,7 @@ static void IfBitClear(DWORD addr, int bit)
 // Execute the next instruction only if the specified bit of the specified
 // memory location is set (i.e. skip if clear).
 //-----------------------------------------------------------------------------
-static void IfBitSet(DWORD addr, int bit, BYTE reg, char *name)
+static void IfBitSet(DWORD addr, int bit, BYTE reg, const char *name)
 //used ZL, r25 // bit in [0..7]
 {
     char b[10];
@@ -2143,10 +2168,17 @@ static void IfBitSet(DWORD addr, int bit, BYTE reg, char *name)
     } else
         oops()
 }
-static void IfBitSet(DWORD addr, int bit, char *name)
+
+static void IfBitSet(DWORD addr, int bit, const char *name)
 {
     IfBitSet(addr, bit, r25, name);
 }
+
+static void IfBitSet(DWORD addr, int bit, const NameArray& name)
+{
+    IfBitSet(addr, bit, r25, name.c_str());
+}
+
 static void IfBitSet(DWORD addr, int bit)
 {
     IfBitSet(addr, bit, r25, nullptr);
@@ -2507,7 +2539,7 @@ static void InitTable(IntOp *a)
     MemOfVar(a->name1, &addrOfTable);
 
     if(addrOfTable == 0) {
-        Comment("TABLE %s", a->name1);
+        Comment("TABLE %s", a->name1.c_str());
         if(AvrProgWriteP % 2)
             Instruction(OP_NOP);
         addrOfTable = AvrProgWriteP; // << 1; //see LPM // data stored in flash
@@ -2546,7 +2578,7 @@ static void InitTable(IntOp *a)
             }
         } else
             oops();
-        Comment("TABLE %s END", a->name1);
+        Comment("TABLE %s END", a->name1.c_str());
     }
 
     //  if((saveAvrProgWriteP >> 11) != (AvrProgWriteP >> 11)) oops();
@@ -2796,7 +2828,7 @@ static void CopyLitToReg(int reg, int sov, SDWORD literal)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyVarToReg(int reg, int sovReg, char *var)
+static void CopyVarToReg(int reg, int sovReg, const char *var)
 {
     if(sovReg < 1)
         oops();
@@ -2839,14 +2871,26 @@ static void CopyVarToReg(int reg, int sovReg, char *var)
         }
     }
 }
+
+static void CopyVarToReg(int reg, int sovReg, const NameArray& var)
+{
+    CopyVarToReg(reg, sovReg, var.c_str());
+}
+
 //-----------------------------------------------------------------------------
-static void CopyArgToReg(int reg, int sovReg, char *var)
+static void CopyArgToReg(int reg, int sovReg, const char *var)
 {
     if(IsNumber(var))
         CopyLitToReg(reg, sovReg, hobatoi(var));
     else
         CopyVarToReg(reg, sovReg, var);
 }
+
+static void CopyArgToReg(int reg, int sovReg, const NameArray& var)
+{
+    CopyArgToReg(reg, sovReg, var.c_str());
+}
+
 //-----------------------------------------------------------------------------
 static void _CopyRegToVar(int l, const char *f, const char *args, const char *var, int reg, int sovReg)
 {
@@ -2886,6 +2930,11 @@ static void _CopyRegToVar(int l, const char *f, const char *args, const char *va
     }
     if(sov > 4)
         oops()
+}
+
+static void _CopyRegToVar(int l, const char *f, const char* args, const NameArray& var, int reg, int sovReg)
+{
+    _CopyRegToVar(l, f, args, var.c_str(), reg, sovReg);
 }
 
 #define CopyRegToVar(...) _CopyRegToVar(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
@@ -3295,22 +3344,22 @@ static void CompileFromIntermediate()
         rungNow = a->rung;
         switch(a->op) {
             case INT_SET_BIT:
-                Comment("INT_SET_BIT %s", a->name1);
+                Comment("INT_SET_BIT %s", a->name1.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
-                SetBit(addr1, bit1, a->name1);
+                SetBit(addr1, bit1, a->name1.c_str());
                 break;
 
             case INT_CLEAR_BIT:
-                Comment("INT_CLEAR_BIT %s", a->name1);
+                Comment("INT_CLEAR_BIT %s", a->name1.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
-                ClearBit(addr1, bit1, a->name1);
+                ClearBit(addr1, bit1, a->name1.c_str());
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1, a->name2);
+                Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1.c_str(), a->name2.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
                 MemForSingleBit(a->name2, false, &addr2, &bit2);
-                CopyBit(addr1, bit1, addr2, bit2, a->name1, a->name2);
+                CopyBit(addr1, bit1, addr2, bit2, a->name1.c_str(), a->name2.c_str());
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
@@ -3328,47 +3377,47 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1, a->literal, a->literal);
+                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 WriteLiteralToMemory(addr1, sov1, a->literal, a->name1);
                 break;
 
             case INT_INCREMENT_VARIABLE: {
-                Comment("INT_INCREMENT_VARIABLE %s", a->name1);
+                Comment("INT_INCREMENT_VARIABLE %s", a->name1.c_str());
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
                 Increment(addr1, sov1);
                 break;
             }
             case INT_DECREMENT_VARIABLE: {
-                Comment("INT_DECREMENT_VARIABLE %s", a->name1);
+                Comment("INT_DECREMENT_VARIABLE %s", a->name1.c_str());
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
                 Decrement(addr1, sov1);
                 break;
             }
             case INT_IF_BIT_SET: {
-                Comment("INT_IF_BIT_SET %s", a->name1);
+                Comment("INT_IF_BIT_SET %s", a->name1.c_str());
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
-                IfBitClear(addr1, bit1, (char *)a->name1);
+                IfBitClear(addr1, bit1, a->name1);
                 Instruction(OP_RJMP, condFalse);
                 CompileIfBody(condFalse);
                 break;
             }
             case INT_IF_BIT_CLEAR: {
-                Comment("INT_IF_BIT_CLEAR %s", a->name1);
+                Comment("INT_IF_BIT_CLEAR %s", a->name1.c_str());
                 DWORD condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
-                IfBitSet(addr1, bit1, (char *)a->name1);
+                IfBitSet(addr1, bit1, a->name1);
                 Instruction(OP_RJMP, condFalse);
                 CompileIfBody(condFalse);
                 break;
             }
             case INT_VARIABLE_CLEAR_BIT: {
-                Comment("INT_VARIABLE_CLEAR_BIT %s %s", a->name1, a->name2);
-                bit = hobatoi(a->name2);
+                Comment("INT_VARIABLE_CLEAR_BIT %s %s", a->name1.c_str(), a->name2.c_str());
+                bit = hobatoi(a->name2.c_str());
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
@@ -3401,8 +3450,8 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_VARIABLE_SET_BIT: {
-                Comment("INT_VARIABLE_SET_BIT %s %s", a->name1, a->name2);
-                bit = hobatoi(a->name2);
+                Comment("INT_VARIABLE_SET_BIT %s %s", a->name1.c_str(), a->name2.c_str());
+                bit = hobatoi(a->name2.c_str());
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
@@ -3435,13 +3484,13 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_IF_BIT_SET_IN_VAR: {
-                Comment("INT_IF_BIT_SET_IN_VAR %s %s", a->name1, a->name2);
+                Comment("INT_IF_BIT_SET_IN_VAR %s %s", a->name1.c_str(), a->name2.c_str());
                 DWORD ifAddr = AllocFwdAddr();
                 DWORD endifAddr = AllocFwdAddr();
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
                     MemForVariable(a->name1, &addr1);
-                    bit = hobatoi(a->name2);
+                    bit = hobatoi(a->name2.c_str());
                     if((0 <= bit) && (bit <= 7))
                         IfBitClear(addr1, bit, a->name1);
                     else if((8 <= bit) && (bit <= 15) && (sov1 >= 2))
@@ -3502,13 +3551,13 @@ static void CompileFromIntermediate()
             break;
 */
             case INT_IF_BIT_CLEAR_IN_VAR: {
-                Comment("INT_IF_BIT_CLEAR_IN_VAR %s %s", a->name1, a->name2);
+                Comment("INT_IF_BIT_CLEAR_IN_VAR %s %s", a->name1.c_str(), a->name2.c_str());
                 DWORD ifAddr = AllocFwdAddr();
                 DWORD endifAddr = AllocFwdAddr();
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
                     MemForVariable(a->name1, &addr1);
-                    bit = hobatoi(a->name2);
+                    bit = hobatoi(a->name2.c_str());
                     if((0 <= bit) && (bit <= 7))
                         IfBitSet(addr1, bit);
                     else if((8 <= bit) && (bit <= 15) && (sov1 >= 2))
@@ -3571,15 +3620,15 @@ static void CompileFromIntermediate()
             //
             //case INT_IF_BITS_CLEAR_IN_VAR: TODO
             case INT_IF_BITS_SET_IN_VAR: {
-                Comment("INT_IF_BITS_SET_IN_VAR %s", a->name1);
+                Comment("INT_IF_BITS_SET_IN_VAR %s", a->name1.c_str());
             }
             case INT_SET_OPPOSITE:
-                Comment("INT_SET_OPPOSITE %s", a->name1);
+                Comment("INT_SET_OPPOSITE %s", a->name1.c_str());
                 oops();
                 break;
 
             case INT_SET_SWAP:
-                Comment(" %s", a->name1);
+                Comment(" %s", a->name1.c_str());
                 //MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
@@ -3610,7 +3659,7 @@ static void CompileFromIntermediate()
 
 #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL: {
-                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1, a->literal, a->literal);
+                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
                 DWORD notTrue = AllocFwdAddr();
 
                 MemForVariable(a->name1, &addr1);
@@ -4120,7 +4169,7 @@ static void CompileFromIntermediate()
             case INT_SET_VARIABLE_SR0:
             case INT_SET_VARIABLE_ADD:
             case INT_SET_VARIABLE_SUBTRACT: {
-                Comment("INT_SET_VARIABLE_xxx %s %s %s", a->name1, a->name2, a->name3);
+                Comment("INT_SET_VARIABLE_xxx %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str());
 
                 sov = SizeOfVar(a->name1);
                 CopyArgToReg(r20, sov, a->name2);
@@ -4272,9 +4321,9 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_PWM_OFF: {
-                McuPwmPinInfo *iop = PwmPinInfoForName(a->name1, Prog.cycleTimer);
+                McuPwmPinInfo *iop = PwmPinInfoForName(a->name1.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name1);
+                    Error(_("Pin '%s': PWM output not available!"), a->name1.c_str());
                     CompileError();
                 }
                 if(iop->maxCS == 0) {
@@ -4293,7 +4342,7 @@ static void CompileFromIntermediate()
                 ClearBit(addr, bit, a->name1);
 
                 char storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$pwm_init_%s", a->name1);
+                sprintf(storeName, "$pwm_init_%s", a->name1.c_str());
                 MemForSingleBit(storeName, false, &addr, &bit);
                 ClearBit(addr, bit, storeName);
                 break;
@@ -4301,20 +4350,20 @@ static void CompileFromIntermediate()
 
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                Comment("INT_SET_PWM %s %s %s %s", a->name1, a->name2, a->name3, a->name4);
+                Comment("INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol = 7; // 0-100% (6.7 bit)
                 int TOP = 0xFF;
-                getResolution(a->name4, &resol, &TOP);
+                getResolution(a->name4.c_str(), &resol, &TOP);
 
                 McuPwmPinInfo *iop;
-                iop = PwmPinInfoForName(a->name3, Prog.cycleTimer);
+                iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name3);
+                    Error(_("Pin '%s': PWM output not available!"), a->name3.c_str());
                     CompileError();
                 } else {
-                    iop = PwmPinInfoForName(a->name3, Prog.cycleTimer, std::max(resol, 8));
+                    iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer, std::max(resol, 8));
                     if(!iop) {
-                        Error(_("Pin '%s': PWM resolution not available!"), a->name3);
+                        Error(_("Pin '%s': PWM resolution not available!"), a->name3.c_str());
                         CompileError();
                     }
                 }
@@ -4331,7 +4380,7 @@ static void CompileFromIntermediate()
                     iop->REG_OCRnxL = REG_OCR2;
                 }
 
-                double target = hobatoi(a->name2);
+                double target = hobatoi(a->name2.c_str());
                 // PWM frequency is
                 //   target = xtal/(256*prescale)
                 // so not a lot of room for accurate frequency here
@@ -4443,7 +4492,7 @@ static void CompileFromIntermediate()
                             "%s"
                             "\n"
                             "%s",
-                            a->name3,
+                            a->name3.c_str(),
                             str1,
                             _("Select the frequency from the possible values:"),
                             freqStr);
@@ -4524,7 +4573,7 @@ static void CompileFromIntermediate()
 
                 // Setup only happens once
                 char storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$pwm_init_%s", a->name3);
+                sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
                 DWORD addr;
                 int   bit;
                 MemForSingleBit(storeName, false, &addr, &bit);
@@ -4904,7 +4953,7 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_COMMENT:
-                Comment(a->name1);
+                Comment("%s",a->name1.c_str());
                 break;
 
             case INT_AllocKnownAddr:
@@ -4929,7 +4978,7 @@ static void CompileFromIntermediate()
             case INT_GOTO: {
                 int rung = a->literal;
                 Comment("INT_GOTO %s %d 0x%08X 0x%08X",
-                        a->name1,
+                        a->name1.c_str(),
                         rung,
                         AddrOfRungN[rung].FwdAddr,
                         AddrOfRungN[rung].KnownAddr);
@@ -4949,7 +4998,7 @@ static void CompileFromIntermediate()
             case INT_GOSUB: {
                 int rung = a->literal;
                 Comment("INT_GOSUB %s %d %d 0x%08X 0x%08X",
-                        a->name1,
+                        a->name1.c_str(),
                         rung + 1,
                         rungNow + 1,
                         AddrOfRungN[rung].FwdAddr,
@@ -5028,14 +5077,14 @@ static void CompileFromIntermediate()
                 sov1 = SizeOfVar(a->name1);
 
                 char seedName[MAX_NAME_LEN];
-                sprintf(seedName, "$seed_%s", a->name1);
+                sprintf(seedName, "$seed_%s", a->name1.c_str());
                 SetSizeOfVar(seedName, 4);
                 MemForVariable(seedName, &addr2);
                 /*
                 DWORD addr;
                 int bit;
                 char storeName[MAX_NAME_LEN];
-                sprintf(storeName, "$seed_init_%s", a->name1);
+                sprintf(storeName, "$seed_init_%s", a->name1.c_str());
                 MemForSingleBit(storeName, false, &addr, &bit);
                 */
 
@@ -5105,9 +5154,9 @@ static void CompileFromIntermediate()
                 ClearBit(0x25, 0); // 2 clocks
 #endif
                 if(IsNumber(a->name1)) {
-                    SDWORD clocks = CalcDelayClock(hobatoi(a->name1));
+                    SDWORD clocks = CalcDelayClock(hobatoi(a->name1.c_str()));
                     SDWORD clocksSave = clocks;
-                    Comment("INT_DELAY %s us = %lld clocks", a->name1, clocks);
+                    Comment("INT_DELAY %s us = %lld clocks", a->name1.c_str(), clocks);
 
                     clocks = (clocks - 1) / 4;
                     if(clocks > 0x10000) {
@@ -5129,7 +5178,7 @@ static void CompileFromIntermediate()
                     for(i = 0; i < clocksSave; i++)
                         Instruction(OP_NOP); // 1 clocks
                 } else {
-                    Comment("INT_DELAY %s us", a->name1);
+                    Comment("INT_DELAY %s us", a->name1.c_str());
                     CopyVarToReg(ZL, 2, a->name1);           // 4 clocks
                     Instruction(OP_SBIW, ZL, 1);             // 2 clocks
                     Instruction(OP_BRNE, AvrProgWriteP - 1); // 1/2 clocks
