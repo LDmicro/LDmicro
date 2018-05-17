@@ -672,7 +672,7 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
 void ShowSFRDialog(int which, char *op1, char *op2)
 {
 #ifdef USE_SFR
-    char *title;
+    const char *title;
     char *l2;
     switch(which) {
         case ELEM_RSFR:
@@ -708,7 +708,7 @@ void ShowSFRDialog(int which, char *op1, char *op2)
         default:
             oops();
     }
-    char *labels[] = {_("SFR position:"), l2};
+    const char *labels[] = {_("SFR position:"), l2};
     char *dests[] = {op1, op2};
     if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)) {
         if(which == ELEM_RSFR) {

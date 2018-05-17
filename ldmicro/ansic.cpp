@@ -540,7 +540,7 @@ static void GenerateDeclarations(FILE *f)
                 intVar2 = IntCode[i].name2.c_str();
                 break;
 
-#ifdef USE_SFR
+#ifdef USE_SFR_INT
             case INT_WRITE_SFR_VARIABLE:
                 break;
 
@@ -1030,7 +1030,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "#endif\n");
                 break;
 
-#ifdef USE_SFR
+#ifdef USE_SFR_INT
             case INT_READ_SFR_LITERAL:
             case INT_READ_SFR_VARIABLE:
                 fprintf(f, "#warning // Read from SFR\n");

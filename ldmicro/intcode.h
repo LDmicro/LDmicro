@@ -160,7 +160,7 @@
 #define INT_ELSE                                60 + 100
 #define INT_END_IF                              61 + 100
 //
-#ifdef USE_SFR
+#ifdef USE_SFR_INT
 // Special function
 #define INT_READ_SFR_LITERAL                    1061
 #define INT_WRITE_SFR_LITERAL                   1062

@@ -1,3 +1,7 @@
+
+   * Wiki: Replace the obsolete elements.
+   https://github.com/LDmicro/LDmicro/wiki/Replase-the-obsolete-elements
+
 == Release 4.3.9.4
 
    Fixed: LDmicro Forum - pic16f887 http://cq.cx/ladder-forum.pl?action=viewthread&parent=7317&tt=1526403799

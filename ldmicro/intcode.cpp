@@ -532,7 +532,7 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "# %s", IntCode[i].name1.c_str());
                 break;
 
-#ifdef USE_SFR
+#ifdef USE_SFR_INT
             // Special function
             case INT_READ_SFR_LITERAL:
             case INT_WRITE_SFR_LITERAL:
@@ -2146,7 +2146,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             break;
         }
-        #ifdef USE_SFR
+        #ifdef USE_SFR_INT
         // Special Function
         case ELEM_RSFR:
             Comment(3, "ELEM_RSFR");

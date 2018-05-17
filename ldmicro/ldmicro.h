@@ -194,7 +194,9 @@ typedef int32_t SDWORD;
 #define MNU_MAKE_TTRIGGER       0x4501
 #define MNU_INSERT_PWL          0x46
 
+#define USE_SFR
 #ifdef USE_SFR
+#define MNU_OPEN_SFR            0x4700
 #define MNU_INSERT_SFR          0x47    // special function register read
 #define MNU_INSERT_SFW          0x48    // special function register write
 #define MNU_INSERT_SSFB         0x49    // set bit in special function register
@@ -539,7 +541,13 @@ typedef int32_t SDWORD;
         case ELEM_ISP_CPRINTF: \
         case ELEM_UART_CPRINTF: \
         case ELEM_FORMATTED_STRING: \
-        case ELEM_PERSIST:
+        case ELEM_PERSIST: \
+        case ELEM_RSFR: \
+        case ELEM_WSFR: \
+        case ELEM_SSFR: \
+        case ELEM_CSFR: \
+        case ELEM_TSFR: \
+        case ELEM_T_C_SFR:
 
 typedef struct ElemSubcktParallelTag ElemSubcktParallel;
 typedef struct ElemSubcktSeriesTag ElemSubcktSeries;
