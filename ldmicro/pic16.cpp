@@ -1529,7 +1529,9 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
     char               arg1s[1024];
     char               arg1comm[1024];
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
-    IntOp *            a = &IntCode[PicInstr->IntPc];
+    IntOp intOp;
+    if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
+        intOp = IntCode[PicInstr->IntPc];
     strcpy(sAsm, "");
     sprintf(arg1s, "0x%X", arg1);
     arg1comm[0] = '\0';
@@ -1542,9 +1544,9 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           ((1 << (bits)) - 1),                                         \
           PicInstr->l,                                                 \
           PicInstr->f,                                                 \
-          a->name1.c_str(),                                                    \
-          a->l,                                                        \
-          a->f)
+          intOp.name1.c_str(),                                                    \
+          intOp.l,                                                        \
+          intOp.f)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
     ooops("v=%d [%d..%d]\nat %d in %s %s\nat %d in %s",                  \
@@ -1553,9 +1555,9 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           UpperRangeInclusive,                                           \
           PicInstr->l,                                                   \
           PicInstr->f,                                                   \
-          a->name1.c_str(),                                                      \
-          a->l,                                                          \
-          a->f)
+          intOp.name1.c_str(),                                                      \
+          intOp.l,                                                          \
+          intOp.f)
     switch(op) {
         case OP_ADDWF:
             CHECK(arg1, 7);
@@ -1798,7 +1800,9 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sA
     char               arg1s[1024];
     char               arg1comm[1024];
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
-    IntOp *            a = &IntCode[PicInstr->IntPc];
+    IntOp intOp;
+    if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
+        intOp = IntCode[PicInstr->IntPc];
     strcpy(sAsm, "");
     sprintf(arg1s, "0x%X", arg1);
     arg1comm[0] = '\0';
@@ -1811,9 +1815,9 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sA
           ((1 << (bits)) - 1),                                         \
           PicInstr->l,                                                 \
           PicInstr->f,                                                 \
-          a->name1.c_str(),                                                    \
-          a->l,                                                        \
-          a->f)
+          intOp.name1.c_str(),                                         \
+          intOp.l,                                                     \
+          intOp.f)
     switch(op) {
         case OP_ADDWF:
             CHECK(arg2, 1);
@@ -2043,7 +2047,9 @@ static DWORD Assemble16(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, DWORD ar
 //16-Bit Instruction Word for PIC18
 {
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
-    IntOp *            a = &IntCode[PicInstr->IntPc];
+    IntOp intOp;
+    if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
+        intOp = IntCode[PicInstr->IntPc];
     sAsm[0] = '\0';
     switch(op) {
         case OP_ADDWF:
