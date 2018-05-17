@@ -699,7 +699,7 @@ static void GenerateDeclarations(FILE *f)
 #endif
 
             default:
-                TROW_COMPILER_EXCEPTION_FMT("INT_%d", a->op);
+                Error("INT_%d", a->op);
         }
         bitVar1 = MapSym(bitVar1, ASBIT);
         bitVar2 = MapSym(bitVar2, ASBIT);
@@ -1246,7 +1246,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             }
 #endif
             default:
-                TROW_COMPILER_EXCEPTION_FMT("INT_%d", IntCode[i].op);
+                Error("INT_%d", IntCode[i].op);
         }
     }
 }
@@ -2114,8 +2114,8 @@ bool CompileAnsiC(char *dest, int MNU)
                 "void setupPlc(void) {\n"
                 "    // Set up I/O pins direction, and drive the outputs low to start.\n");
         BYTE isInput[MAX_IO_PORTS], isAnsel[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
-        BuildDirectionRegisters(isInput, isAnsel, isOutput);
         if(Prog.mcu) {
+            BuildDirectionRegisters(isInput, isAnsel, isOutput);
             int i;
             for(i = 0; i < MAX_IO_PORTS; i++) {
                 if(IS_MCU_REG(i)) {
