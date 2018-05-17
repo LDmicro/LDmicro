@@ -5,7 +5,7 @@
    Recovered the READ_ADC operation for PIC16F887, PIC16F877, PIC16F88, PIC16F72.
    Attention: Releases 4.3.8.5 - 4.3.9.3 has the bug with PIC's MCU READ_ADC: only RA0 analog input is available!
 
-   Fixed: The GEQ instructrion does not work with neg.numbers #57
+   Fixed: The GEQ instruction does not work with neg.numbers #57
    Try simulate GEQ.LD from the page
    https://github.com/LDmicro/LDmicro/issues/57
 
