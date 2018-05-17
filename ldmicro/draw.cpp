@@ -26,7 +26,6 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
-#include <algorithm>
 
 // Number of drawing columns (leaf element units) available. We want to
 // know this so that we can right-justify the coils.

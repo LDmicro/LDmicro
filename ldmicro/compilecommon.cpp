@@ -20,11 +20,12 @@
 // Routines common to the code generators for all processor architectures.
 // Jonathan Westhues, Nov 2004
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
+
 #include "ldmicro.h"
 #include "intcode.h"
 #include "compilercommon.hpp"
 #include "compilerexceptions.hpp"
-#include <algorithm>
 
 // If we encounter an error while compiling then it's convenient to break
 // out of the possibly-deeply-recursed function we're in.
@@ -938,7 +939,7 @@ int isPinAssigned(const NameArray& name)
                 auto assign = std::find_if(Prog.io.assignment, Prog.io.assignment + Prog.io.count,
                                            [name](const PlcProgramSingleIo& io){return (name == io.name);});
                 if(assign == (Prog.io.assignment + Prog.io.count))
-                    TROW_COMPILER_EXCEPTION("Can't find right assign.");
+                    TROW_COMPILER_EXCEPTION(_("Can't find right assign."));
 
                 int pin = assign->pin;
                 if(name[0] == 'A') {
@@ -1010,7 +1011,7 @@ void MemCheckForErrorsPostCompile()
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError)
 {
     if(!Prog.mcu)
-        TROW_COMPILER_EXCEPTION("Invalid MCU");
+        TROW_COMPILER_EXCEPTION(_("Invalid MCU"));
 
     memset(isOutput, 0x00, MAX_IO_PORTS);
     memset(isAnsel, 0x00, MAX_IO_PORTS);
@@ -1062,13 +1063,13 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool 
         if(iop)
             isOutput[iop->port - 'A'] |= (1 << iop->bit);
         else
-            TROW_COMPILER_EXCEPTION("Invalid TX pin.");
+            TROW_COMPILER_EXCEPTION(_("Invalid TX pin."));
 
         iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
         if(iop)
             isInput[iop->port - 'A'] |= (1 << iop->bit);
         else
-            TROW_COMPILER_EXCEPTION("Invalid RX pin.");
+            TROW_COMPILER_EXCEPTION(_("Invalid RX pin."));
     }
     if(McuAs("Microchip PIC16F877 ")) {
         // This is a nasty special case; one of the extra bits in TRISE

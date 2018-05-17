@@ -27,7 +27,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include <algorithm>
 
 static char  SeenVariables[MAX_IO][MAX_NAME_LEN];
 static int   SeenVariablesCount;
