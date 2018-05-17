@@ -1184,7 +1184,6 @@ static void NullDisplayMatrix(int from, int to)
             if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
                 DisplayMatrix[i][j] = nullptr;
                 DisplayMatrixWhich[i][j] = ELEM_NULL;
-                dbpd(j)
             }
         }
     }
@@ -1193,7 +1192,6 @@ static void NullDisplayMatrix(int from, int to)
             if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
                 DisplayMatrix[i][j] = nullptr;
                 DisplayMatrixWhich[i][j] = ELEM_NULL;
-                dbpd(j)
             }
         }
     }
