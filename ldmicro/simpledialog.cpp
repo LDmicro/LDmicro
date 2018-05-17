@@ -43,7 +43,7 @@ static bool NoCheckingOnBox[MAX_BOXES];
 #define MAX_COMBO_STRINGS 16
 typedef struct comboRecordTag {
     int   n;                      // 0 <= n < MAX_COMBO_STRINGS
-    char* str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
+    char *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
 } comboRecord;
 
 //-----------------------------------------------------------------------------

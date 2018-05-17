@@ -375,10 +375,8 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo)
 //-----------------------------------------------------------------------------
 bool SavePcPorts(char *filename)
 {
-    dbps(filename) BOOL b = FALSE;
-    dbpd(b)
-        //  if(!b)
-        b = WritePrivateProfileString(TEXT("LPT1"), TEXT("ADDR   "), TEXT("0x378"), filename);
+    BOOL b = FALSE;
+    b = WritePrivateProfileString(TEXT("LPT1"), TEXT("ADDR   "), TEXT("0x378"), filename);
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("DATA   "), TEXT("OUT"), filename);
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("STATUS "), TEXT(" IN"), filename);
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("CONTROL"), TEXT(" IN"), filename);
@@ -390,24 +388,20 @@ bool SavePcPorts(char *filename)
     b = WritePrivateProfileString(TEXT("LPT2"), TEXT("STATUS "), TEXT(" IN"), filename);
     b = WritePrivateProfileString(TEXT("LPT2"), TEXT("CONTROL"), TEXT(" IN"), filename);
 
-    dbpd(b)
-        //  if(!b)
-        b = WritePrivateProfileString(TEXT("Section1"),
-                                      TEXT("SecondKey"),
-                                      TEXT("4By golly, it works!"),
-                                      /*TEXT("appname.ini")*/ filename);
-    dbpd(b)
-        //  if(!b)
-        b = WritePrivateProfileString(TEXT("Section1"),
-                                      TEXT("ThirdKey"),
-                                      TEXT("4Another test..."),
-                                      /*TEXT("appname.ini")*/ filename);
+    b = WritePrivateProfileString(TEXT("Section1"),
+                                  TEXT("SecondKey"),
+                                  TEXT("4By golly, it works!"),
+                                  /*TEXT("appname.ini")*/ filename);
+    b = WritePrivateProfileString(TEXT("Section1"),
+                                  TEXT("ThirdKey"),
+                                  TEXT("4Another test..."),
+                                  /*TEXT("appname.ini")*/ filename);
 
     b = WritePrivateProfileString(TEXT("Section2"),
                                   TEXT("ThirdKey"),
                                   TEXT("4Another test..."),
                                   /*TEXT("appname.ini")*/ filename);
-    dbpd(b) return b != FALSE;
+    return b != FALSE;
 }
 //-----------------------------------------------------------------------------
 static const char *IoTypeToPas(int IoType)

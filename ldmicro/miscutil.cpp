@@ -157,7 +157,7 @@ void CompileSuccessfulMessage(char *str)
     CompileSuccessfulMessage(str, MB_ICONINFORMATION);
 }
 
-void CompileSuccesfullAnsiCMessage(const char* dest)
+void CompileSuccesfullAnsiCMessage(const char *dest)
 {
     char str[MAX_PATH + 500];
     sprintf(str,

@@ -344,7 +344,6 @@ static void MakeControls()
 
 UINT_PTR CALLBACK CCHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-    // dbpd(uiMsg)
     return 0;
 }
 
