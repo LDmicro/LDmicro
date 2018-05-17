@@ -42,7 +42,7 @@ typedef signed short SWORD;     // 16-bit signed
 // that you're going to use for your interface out. I will therefore leave
 // that up to you.
 
-BYTE Program[MAX_OPS];
+uint32_t Program[MAX_OPS];
 
 SWORD Integers[MAX_VARIABLES];
 BYTE Bits[MAX_VARIABLES];

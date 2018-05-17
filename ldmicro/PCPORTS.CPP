@@ -336,7 +336,7 @@ bool ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
             }
         }
     };
-    return pin;
+    return pin != 0;
 }
 //-----------------------------------------------------------------------------
 void FillPcPinInfo(McuIoPinInfo *pinInfo)
@@ -375,7 +375,7 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo)
 //-----------------------------------------------------------------------------
 bool SavePcPorts(char *filename)
 {
-    bool b = false;
+    BOOL b = FALSE;
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("ADDR   "), TEXT("0x378"), filename);
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("DATA   "), TEXT("OUT"), filename);
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("STATUS "), TEXT(" IN"), filename);
@@ -401,7 +401,7 @@ bool SavePcPorts(char *filename)
                                   TEXT("ThirdKey"),
                                   TEXT("4Another test..."),
                                   /*TEXT("appname.ini")*/ filename);
-    return b;
+    return b != FALSE;
 }
 //-----------------------------------------------------------------------------
 static const char *IoTypeToPas(int IoType)
