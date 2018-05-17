@@ -452,7 +452,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         }
             {
                 int   n, n0;
-                char *nameTable;
+                const char *nameTable;
                     // clang-format off
         case ELEM_7SEG: nameTable = "char7seg";  n = LEN7SEG;  n0=1; goto xseg;
         case ELEM_9SEG: nameTable = "char9seg";  n = LEN9SEG;  n0=2; goto xseg;
@@ -1047,7 +1047,7 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 //-----------------------------------------------------------------------------
 // Create our window class; nothing exciting.
 //-----------------------------------------------------------------------------
-static bool MakeWindowClass()
+static ATOM MakeWindowClass()
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
