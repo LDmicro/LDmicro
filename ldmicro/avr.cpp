@@ -24,6 +24,7 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 #include <algorithm>
+#include <compilerexceptions.hpp>
 
 #define ASM_LABEL 1
 //                0 - no labels
@@ -699,7 +700,9 @@ char *getName(char *s)
 static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm)
 {
     PicAvrInstruction *AvrInstr = &AvrProg[addrAt];
-    IntOp *            a = &IntCode[AvrInstr->IntPc];
+    IntOp intOp;
+    if(AvrInstr->IntPc > -1 && static_cast<uint32_t>(AvrInstr->IntPc) < IntCode.size())
+        intOp = IntCode[AvrInstr->IntPc];
     strcpy(sAsm, "");
 /*
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
@@ -712,9 +715,9 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
           ((1 << (bits)) - 1),                                    \
           AvrInstr->l,                                            \
           AvrInstr->f,                                            \
-          a->name1.c_str(),                                               \
-          a->l,                                                   \
-          a->f)
+          intOp.name1.c_str(),                                    \
+          intOp.l,                                                \
+          intOp.f)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
     ooops("v=%d [%d..%d]\nat %d in %s %s\nat %d in %s",                  \
@@ -723,9 +726,9 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
           UpperRangeInclusive,                                           \
           AvrInstr->l,                                                   \
           AvrInstr->f,                                                   \
-          a->name1.c_str(),                                                      \
-          a->l,                                                          \
-          a->f)
+          intOp.name1.c_str(),                                           \
+          intOp.l,                                                       \
+          intOp.f)
 
     switch(op) {
         case OP_COMMENT:
@@ -4950,7 +4953,7 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_COMMENT:
-                Comment(a->name1.c_str());
+                Comment("%s",a->name1.c_str());
                 break;
 
             case INT_AllocKnownAddr:
