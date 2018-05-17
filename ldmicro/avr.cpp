@@ -2932,7 +2932,7 @@ static void _CopyRegToVar(int l, const char *f, const char *args, const char *va
         oops()
 }
 
-static void _CopyRegToVar(int l, const char *f, const char* args, const NameArray& var, int reg, int sovReg)
+static void _CopyRegToVar(int l, const char *f, const char *args, const NameArray& var, int reg, int sovReg)
 {
     _CopyRegToVar(l, f, args, var.c_str(), reg, sovReg);
 }
@@ -3814,7 +3814,7 @@ static void CompileFromIntermediate()
                 break;
             }
 #endif
-               
+
             #ifdef USE_SFR
             // Sepcial function
             case INT_READ_SFR_LITERAL: {

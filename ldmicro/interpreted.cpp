@@ -93,7 +93,6 @@ void CompileInterpreted(char *outFile)
 
     fprintf(f, "$$LDcode\n");
 
-    int   ipc;
     int   outPc;
     BinOp op;
 
@@ -109,7 +108,7 @@ void CompileInterpreted(char *outFile)
     int ifOpElse[MAX_IF_NESTING];
 
     outPc = 0;
-    for(ipc = 0; ipc < IntCode.size(); ipc++) {
+    for(uint32_t ipc = 0; ipc < IntCode.size(); ipc++) {
         memset(&op, 0, sizeof(op));
         op.op = IntCode[ipc].op;
 

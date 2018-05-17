@@ -2489,7 +2489,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 // Create our window class; nothing exciting.
 //-----------------------------------------------------------------------------
-static bool MakeWindowClass()
+static ATOM MakeWindowClass()
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));

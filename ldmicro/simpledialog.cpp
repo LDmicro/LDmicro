@@ -467,7 +467,7 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
         name[0] = 'T';
         strcpy(name + 1, nameBuf);
         double    del = atof(delBuf);
-        long long period = (long long)round(del / 1000 / 18); // 18 ms
+        int64_t period = (int64_t)round(del / 1000 / 18); // 18 ms
         if(del <= 0) {
             Error(_("Delay cannot be zero or negative."));
         } else if(period < 1) {
@@ -478,7 +478,7 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
             sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0 * Prog.cycleTime / 1000);
             const char *s4 = _("Not available");
             Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
-        } else if((period >= (long long)(1 << (SizeOfVar(name) * 8 - 1))) && (Prog.mcu->whichIsa != ISA_PC)) {
+        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1)))) && (Prog.mcu->whichIsa != ISA_PC)) {
             const char *s1 =
                 _("Timer period too long (max 32767 times cycle time); use a "
                   "slower cycle time.");
@@ -892,13 +892,13 @@ void ShowSpiDialog(ElemLeaf *l)
 
     char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->modes, s->size, s->first};
 
-    comboRecord comboRec[] = {{0, nullptr},
+    comboRecord comboRec[] = {{0, {nullptr}},
                               {2, {"Master", "Slave"}},
-                              {0, nullptr},
-                              {0, nullptr},
-                              {0, nullptr},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
                               {4, {"0b00", "0b01", "0b10", "0b11"}},
-                              {0, nullptr},
+                              {0, {nullptr}},
                               {2, {"MSB_FIRST", "LSB_FIRST"}}};
     int         i;
     if(Prog.mcu) {
@@ -1036,9 +1036,9 @@ void ShowSetPwmDialog(void *e)
 
     const char *labels[] = {_("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
     char *      dests[] = {name + 1, duty_cycle, targetFreq, resolution};
-    comboRecord comboRec[] = {{0, nullptr},
-                              {0, nullptr},
-                              {0, nullptr},
+    comboRecord comboRec[] = {{0, {nullptr}},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
                               {4, {"0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"}}};
 
     NoCheckingOnBox[3] = true;
