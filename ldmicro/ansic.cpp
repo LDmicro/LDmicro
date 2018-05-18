@@ -699,7 +699,7 @@ static void GenerateDeclarations(FILE *f)
 #endif
 
             default:
-                Error("INT_%d", a->op);
+                TROW_COMPILER_EXCEPTION_FMT("INT_%d", a->op);
         }
         bitVar1 = MapSym(bitVar1, ASBIT);
         bitVar2 = MapSym(bitVar2, ASBIT);
@@ -1246,7 +1246,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             }
 #endif
             default:
-                Error("INT_%d", IntCode[i].op);
+                TROW_COMPILER_EXCEPTION_FMT("INT_%d", IntCode[i].op);
         }
     }
 }
