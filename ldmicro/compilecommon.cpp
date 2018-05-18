@@ -939,7 +939,7 @@ int isPinAssigned(const NameArray& name)
                 auto assign = std::find_if(Prog.io.assignment, Prog.io.assignment + Prog.io.count,
                                            [name](const PlcProgramSingleIo& io){return (name == io.name);});
                 if(assign == (Prog.io.assignment + Prog.io.count))
-                    TROW_COMPILER_EXCEPTION(_("Can't find right assign."));
+                    THROW_COMPILER_EXCEPTION(_("Can't find right assign."));
 
                 int pin = assign->pin;
                 if(name[0] == 'A') {
@@ -1011,7 +1011,7 @@ void MemCheckForErrorsPostCompile()
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError)
 {
     if(!Prog.mcu)
-        TROW_COMPILER_EXCEPTION(_("Invalid MCU"));
+        THROW_COMPILER_EXCEPTION(_("Invalid MCU"));
 
     memset(isOutput, 0x00, MAX_IO_PORTS);
     memset(isAnsel, 0x00, MAX_IO_PORTS);
@@ -1040,7 +1040,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool 
             auto iop = std::find_if(Prog.mcu->pinInfo, Prog.mcu->pinInfo + Prog.mcu->pinCount,
                                     [pin](const McuIoPinInfo& pi){return (pi.pin == pin);});
             if(iop == (Prog.mcu->pinInfo + Prog.mcu->pinCount)) {
-                TROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), Prog.io.assignment[i].name);
+                THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), Prog.io.assignment[i].name);
             }
             if((type == IO_TYPE_DIG_OUTPUT) || (type == IO_TYPE_PWM_OUTPUT)) {
                 isOutput[iop->port - 'A'] |= (1 << iop->bit);
@@ -1050,7 +1050,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool 
 
             if(raiseError) {
                 if(usedUart && (pin == Prog.mcu->uartNeeds.rxPin || pin == Prog.mcu->uartNeeds.txPin)) {
-                    TROW_COMPILER_EXCEPTION_FMT(_("UART in use; pins %d and %d reserved for that."),
+                    THROW_COMPILER_EXCEPTION_FMT(_("UART in use; pins %d and %d reserved for that."),
                                                 Prog.mcu->uartNeeds.rxPin,
                                                 Prog.mcu->uartNeeds.txPin);
                 }
@@ -1063,13 +1063,13 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool 
         if(iop)
             isOutput[iop->port - 'A'] |= (1 << iop->bit);
         else
-            TROW_COMPILER_EXCEPTION(_("Invalid TX pin."));
+            THROW_COMPILER_EXCEPTION(_("Invalid TX pin."));
 
         iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
         if(iop)
             isInput[iop->port - 'A'] |= (1 << iop->bit);
         else
-            TROW_COMPILER_EXCEPTION(_("Invalid RX pin."));
+            THROW_COMPILER_EXCEPTION(_("Invalid RX pin."));
     }
     if(McuAs("Microchip PIC16F877 ")) {
         // This is a nasty special case; one of the extra bits in TRISE
