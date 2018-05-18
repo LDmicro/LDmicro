@@ -35,9 +35,6 @@ std::unordered_set<std::string> variables;
 bool all_arduino_pins_are_mapped;
 }
 
-static FILE *fh;
-static FILE *flh;
-
 static int mcu_ISA = -1;
 static int compiler_variant = -1;
 //-----------------------------------------------------------------------------
@@ -85,7 +82,7 @@ static const char *MapSym(const char *str, int how)
     } else if(how == ASSTR) {
         bit_int = 's';
     } else {
-        TROW_COMPILER_EXCEPTION("Can't assign prefix.");
+        THROW_COMPILER_EXCEPTION("Can't assign prefix.");
     }
 
     // User and internal symbols are distinguished.
@@ -115,7 +112,8 @@ static const char *MapSym(const NameArray& name, int how)
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var; easy, a static.
 //-----------------------------------------------------------------------------
-static void DeclareInt(FILE *f, const char *str, int sov)
+/**/
+static void DeclareInt(FILE *f, FILE* fh, const char *str, int sov)
 {
     if(*str == 'A') {
         fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
@@ -133,24 +131,76 @@ static void DeclareInt(FILE *f, const char *str, int sov)
         fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
     }
 }
+/*
+static void DeclareIntC(FILE *f, const char *str, int sov)
+{
+    if(*str == 'A') {
+        fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
+    } else if(sov == 1) {
+        fprintf(f, "STATIC SBYTE %s = 0;\n", str);
+    } else if(sov == 2) {
+        fprintf(f, "STATIC SWORD %s = 0;\n", str);
+    } else if((sov == 3) || (sov == 4)) {
+        fprintf(f, "STATIC SDWORD %s = 0;\n", str);
+    } else {
+        fprintf(f, "STATIC SWORD %s = 0;\n", str);
+    }
+}
 
+static void DeclareIntH(FILE *f, const char *str, int sov)
+{
+    if(*str == 'A') {
+    } else if(sov == 1) {
+        fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
+    } else if(sov == 2) {
+        fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
+    } else if((sov == 3) || (sov == 4)) {
+        fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern SDWORD %s;\n#endif\n", str);
+    } else {
+        fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
+    }
+}
+
+static void DeclareInt(FILE *fsrc, FILE* fhdr, const char *str, int sov)
+{
+    DeclareIntC(fsrc, str, sov);
+    DeclareIntH(fhdr, str, sov);
+}
+/**/
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var.
 //-----------------------------------------------------------------------------
-static void DeclareStr(FILE *f, const char *str, int sov)
+/**/
+static void DeclareStr(FILE *f, FILE* fh, const char *str, int sov)
 {
     fprintf(f, "STATIC char %s[%d];\n", str, sov);
     fprintf(f, "\n");
     fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern char %s[%d];\n#endif\n", str, sov);
     fprintf(fh,"\n");
 }
+/*
+static void DeclareStrC(FILE *f, const char *str, int sov)
+{
+    fprintf(f, "STATIC char %s[%d];\n\n", str, sov);
+}
 
+static void DeclareStrH(FILE *f, const char *str, int sov)
+{
+    fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern char %s[%d];\n#endif\n\n", str, sov);
+}
+
+static void DeclareStr(FILE *fsrc, FILE* fhdr, const char *str, int sov)
+{
+    DeclareStrC(fsrc, str, sov);
+    DeclareStrH(fhdr, str, sov);
+}
+/**/
 //-----------------------------------------------------------------------------
 // Generate a declaration for a bit var; three cases, input, output, and
 // internal relay. An internal relay is just a bool variable, but for an
 // input or an output someone else must provide read/write functions.
 //-----------------------------------------------------------------------------
-static void DeclareBit(FILE *f, const char *str, int set1)
+static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
 {
     // The mapped symbol has the form U_b_{X,Y,R}name, so look at character
     // four to determine if it's an input, output, internal relay.
@@ -477,16 +527,16 @@ static void DeclareBit(FILE *f, const char *str, int set1)
     }
 }
 
-static void DeclareBit(FILE *f, const char *str)
+static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str)
 {
-    DeclareBit(f, str, 0);
+    DeclareBit(f, fh, flh, str, 0);
 }
 
 //-----------------------------------------------------------------------------
 // Generate declarations for all the 16-bit/single bit variables in the ladder
 // program.
 //-----------------------------------------------------------------------------
-static void GenerateDeclarations(FILE *f)
+static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
 {
     all_arduino_pins_are_mapped = true;
 
@@ -699,7 +749,7 @@ static void GenerateDeclarations(FILE *f)
 #endif
 
             default:
-                TROW_COMPILER_EXCEPTION_FMT("INT_%d", a->op);
+                THROW_COMPILER_EXCEPTION_FMT("INT_%d", a->op);
         }
         bitVar1 = MapSym(bitVar1, ASBIT);
         bitVar2 = MapSym(bitVar2, ASBIT);
@@ -716,28 +766,28 @@ static void GenerateDeclarations(FILE *f)
         intVar3 = MapSym(intVar3, ASINT);
 
         if(bitVar1 && !SeenVariable(bitVar1))
-            DeclareBit(f, bitVar1, bitVar1set1);
+            DeclareBit(f, fh, flh, bitVar1, bitVar1set1);
         if(bitVar2 && !SeenVariable(bitVar2))
-            DeclareBit(f, bitVar2);
+            DeclareBit(f, fh, flh, bitVar2);
 
         if(intVar1 && !SeenVariable(intVar1))
-            DeclareInt(f, intVar1, sov1);
+            DeclareInt(f, fh, intVar1, sov1);
         if(intVar2 && !SeenVariable(intVar2))
-            DeclareInt(f, intVar2, sov2);
+            DeclareInt(f, fh, intVar2, sov2);
         if(intVar3 && !SeenVariable(intVar3))
-            DeclareInt(f, intVar3, sov3);
+            DeclareInt(f, fh, intVar3, sov3);
 
         if(strVar1)
             sov1 = SizeOfVar(strVar1);
         strVar1 = MapSym(strVar1, ASSTR);
         if(strVar1 && !SeenVariable(strVar1))
-            DeclareStr(f, strVar1, sov1);
+            DeclareStr(f, fh, strVar1, sov1);
     }
     if(Prog.cycleDuty) {
         const char *bitVar1 = nullptr;
         bitVar1 = MapSym("YPlcCycleDuty", ASBIT);
         if(bitVar1 && !SeenVariable(bitVar1))
-            DeclareBit(f, bitVar1);
+            DeclareBit(f, fh, flh, bitVar1);
     }
 }
 
@@ -1165,7 +1215,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 if(IntCode[i].name2 == "SUBPROG") {
                     int skip = FindOpNameLast(INT_RETURN, IntCode[i].name1);
                     if(skip <= i)
-                        oops();
+                        THROW_COMPILER_EXCEPTION_FMT(_("Invalid SUBPROG '%s'"), IntCode[i].name1);
                     i = skip;
                 }
                 break;
@@ -1246,7 +1296,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             }
 #endif
             default:
-                TROW_COMPILER_EXCEPTION_FMT("INT_%d", IntCode[i].op);
+                THROW_COMPILER_EXCEPTION_FMT("INT_%d", IntCode[i].op);
         }
     }
 }
@@ -1300,7 +1350,7 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
                 } else if(sovElement == 4) {
                     sovs = "flash unsigned long int";
                 } else {
-                    TROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
+                    THROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
                 }
                 fprintf(f, "#ifdef __CODEVISIONAVR__\n");
                 fprintf(f, "%s %s[%ld] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
@@ -1323,7 +1373,7 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
                 } else if(sovElement == 4) {
                     sovs = "unsigned long int";
                 } else {
-                    TROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
+                    THROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
                 }
                 fprintf(f, "#ifdef __GNUC__\n");
                 fprintf(f, "const %s %s[%ld] PROGMEM = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
@@ -1347,14 +1397,14 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
 #endif
 }
 
-bool CompileAnsiC(char *dest, int MNU)
+bool CompileAnsiC(const char *dest, int MNU)
 {
     if(Prog.mcu)
         mcu_ISA = Prog.mcu->whichIsa;
     if(MNU > 0)
         compiler_variant = MNU;
     else
-        TROW_COMPILER_EXCEPTION_FMT("Invalid MNU:%i", MNU);
+        THROW_COMPILER_EXCEPTION_FMT("Invalid MNU:%i", MNU);
 
     variables.clear();
 
@@ -1366,13 +1416,14 @@ bool CompileAnsiC(char *dest, int MNU)
 
     char ladderhName[MAX_PATH];
     char compilePath[MAX_PATH];
+    char arduinoDest[MAX_PATH];
     strcpy(compilePath, dest);
     ExtractFileDir(compilePath);
     sprintf(ladderhName, "%s\\ladder.h_", compilePath);
 
-    flh = fopen(ladderhName, "w");
+    FILE *flh = fopen(ladderhName, "w");
     if(!flh) {
-        Error(_("Couldn't open file '%s'"), ladderhName);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ladderhName);
         return false;
     }
     fprintf(flh,
@@ -1536,9 +1587,9 @@ bool CompileAnsiC(char *dest, int MNU)
                 "\n");
     }
 
-    fh = fopen(desth, "w");
+    FILE *fh = fopen(desth, "w");
     if(!fh) {
-        Error(_("Couldn't open file '%s'"), desth);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), desth);
         fclose(flh);
         return false;
     }
@@ -1671,11 +1722,11 @@ bool CompileAnsiC(char *dest, int MNU)
     }
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        SetExt(dest, dest, ".cpp");
+        SetExt(arduinoDest, dest, ".cpp");
     }
     FILE *f = fopen(dest, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
         fclose(flh);
         fclose(fh);
         return false;
@@ -1802,7 +1853,7 @@ bool CompileAnsiC(char *dest, int MNU)
     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
     }
     // now generate declarations for all variables
-    GenerateDeclarations(f);
+    GenerateDeclarations(f, fh, flh);
     GenerateAnsiC_flash_eeprom(f);
     GenerateSUBPROG(f);
 
@@ -2409,12 +2460,12 @@ bool CompileAnsiC(char *dest, int MNU)
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         SetExt(ladderhName, dest, ".ino_");
 
-        flh = fopen(ladderhName, "w");
-        if(!flh) {
-            Error(_("Couldn't open file '%s'"), ladderhName);
+        FILE *fino = fopen(ladderhName, "w");
+        if(!fino) {
+            THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ladderhName);
             //return;
         }
-        fprintf(flh,
+        fprintf(fino,
                 "/* This is example for %s.ino file!\n"
                 "   This is auto-generated ARDUINO C code from LDmicro.\n"
                 "   Rename this file as %s.ino or copy content(or part) of this file\n"
@@ -2437,7 +2488,7 @@ bool CompileAnsiC(char *dest, int MNU)
                 CurrentLdName,
                 CurrentLdName,
                 CurrentLdName);
-        fclose(flh);
+        fclose(fino);
     }
 
     return true;

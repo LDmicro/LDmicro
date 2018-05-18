@@ -127,9 +127,9 @@ char *ExtractFilePath(char *dest) // with last backslash
 }
 
 //---------------------------------------------------------------------------
-char *ExtractFileName(char *src) // with .ext
+const char *ExtractFileName(const char *src) // with .ext
 {
-    char *c;
+    const char *c;
     if(strlen(src)) {
         c = strrchr(src, '\\');
         if(c)
@@ -139,7 +139,7 @@ char *ExtractFileName(char *src) // with .ext
 }
 
 //---------------------------------------------------------------------------
-char *GetFileName(char *dest, char *src) // without .ext
+char *GetFileName(char *dest, const char *src) // without .ext
 {
     dest[0] = '\0';
     char *c;
