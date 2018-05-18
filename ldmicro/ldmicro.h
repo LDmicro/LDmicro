@@ -962,8 +962,8 @@ void RollHome();
 void RollEnd();
 char *ExtractFileDir(char *dest);
 char *ExtractFilePath(char *dest);
-char *ExtractFileName(char *src); // with .ext
-char *GetFileName(char *dest, char *src); // without .ext
+const char* ExtractFileName(const char* src); // with .ext
+char *GetFileName(char *dest, const char* src); // without .ext
 char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
@@ -1690,7 +1690,7 @@ bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
 void CompileAvr(char *outFile);
 // ansic.cpp
 extern int compile_MNU;
-bool CompileAnsiC(char *outFile, int MNU);
+bool CompileAnsiC(const char* outFile, int MNU);
 // interpreted.cpp
 void CompileInterpreted(char *outFile);
 // xinterpreted.cpp
