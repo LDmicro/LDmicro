@@ -1676,6 +1676,7 @@ bool DivideRoutineUsed();
 void GenSymOneShot(char *dest, const char *name1, const char *name2);
 int getradix(const char *str);
 SDWORD CalcDelayClock(long long clocks); // in us
+bool IsAddrInVar(const char *name);
 
 // pic16.cpp
 extern SDWORD PicProgLdLen;

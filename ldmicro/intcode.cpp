@@ -1477,7 +1477,11 @@ static const char *VarFromExpr(const char *expr, const char *tempName)
 
 //-----------------------------------------------------------------------------
 bool IsAddrInVar(const char *name)
-{
+{                                                              
+    if(((strstr(name, "#PORT")) && (strlen(name) == 6)) || // #PORTx
+       ((strstr(name, "#PIN")) && (strlen(name) == 5)) ||  // #PINx
+       ((strstr(name, "#TRIS")) && (strlen(name) == 6)))   // #TRISx
+        return false;
     return (name[0] == '#') && (!IsNumber(&name[1]));
 }
 //-----------------------------------------------------------------------------
@@ -2519,6 +2523,13 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
+                  CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
+            } else {
+                  Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
+            }
+            /*
+            if(IsNumber(l->d.move.src)) {
                 CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
                 if(IsAddrInVar(l->d.move.dest))
                   Op(INT_SET_VARIABLE_TO_LITERAL, &l->d.move.dest[1], hobatoi(l->d.move.src)); // addr in dest[1]
@@ -2536,6 +2547,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   else
                     Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
             }
+            */
             Op(INT_END_IF);
             break;
         }

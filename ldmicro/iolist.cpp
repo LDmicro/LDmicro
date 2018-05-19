@@ -1732,18 +1732,19 @@ void IoListProc(NMHDR *h)
                         else
                             sprintf(i->item.pszText, "Not a PORT!");
                     } else if(type == IO_TYPE_MCU_REG) {
-                        if(IsNumber(&name[1])) {
+                        if(IsAddrInVar(name)) {
+                            char buf[MAX_NAME_LEN];
+                            DescribeForIoList(&name[1], type, buf);
+                            char *c = strchr(buf, '=');
+                            if(c)
+                                *c = '\0';
+                            sprintf(i->item.pszText, "%s in %s", buf, &name[1]);
+                        } else {
                             MemForVariable(name, &addr);
                             if(addr > 0)
                                 sprintf(i->item.pszText, "0x%X", addr);
                             else
                                 sprintf(i->item.pszText, "Not a PORT!");
-                        } else {
-                            //sprintf(i->item.pszText, "addr in %s", &name[1]);
-                            DescribeForIoList(&name[1], type, i->item.pszText);
-                            char *c = strchr(i->item.pszText, '=');
-                            if(c)
-                                *c = '\0';
                         }
                     } else if((type == IO_TYPE_GENERAL)    //
                               || (type == IO_TYPE_PERSIST) //
