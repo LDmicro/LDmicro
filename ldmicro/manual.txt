@@ -180,6 +180,29 @@ indicates what kind of object it is.  For example:
 
     The variable name that begins with a '#' character and subsequent a number
     (commonly a hexadecimal) treated as immediate address of hardware register.
+    Value like #0xXXXX is immediate, direct, explicit addressing.
+    For example:
+    #0x8E treated as the address of the hardware PCON register
+      of the microcontroller Microchip PIC16F628.
+    #0x136 treated as the address of the hardware UDR3 register
+      (USART3 I/O Data Register) of the microcontroller Atmel ATmega2560.
+
+    The variable name that begins with a '#' character and subsequent as
+    a general-purpose variable name treated as indirect address of hardware register.
+    Value like #VarName is indirect address of hardware register (Indirect Address Pointer).
+    For example:
+      {MOV  portAddr:=}    portAddr is a general-purpose variable containing the value 0x05.
+    --{           0x05}--
+
+      {MOV #portAddr:=}    #portAddr treated as indirect address of the register #0x05 PORTA (Microchip PIC16F887).
+    --{           0xF0}--  Output pins PORTA are set to a binary value of 11110000.
+
+      {ADD  portAddr:=}    The general-purpose portAddr variable now has a value of 0x06.
+    --{portAddr  +   1}--
+
+      {MOV #portAddr:=}    #portAddr treated as indirect address of the register #0x06 PORTB (Microchip PIC16F887).
+    --{           0x0F}--  Output pins PORTB are set to a binary value of 00001111.
+
     Be careful with writing to the hardware registers by immediate address access.
     See how to access to SPI thru the hardware registers.
     * Wiki: SPI: Serial Peripheral Interface
@@ -877,8 +900,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     See https://github.com/LDmicro/LDmicro/wiki/MASTER-CONTROL-RELAY
 
 
-> MOVE                      {destvar :=  }      {Tret :=     }
-                           -{ 123     MOV}-    -{ srcvar  MOV}-
+> MOVE                      {MOV destvar:=}      {MOV  Tret :=}
+                           -{          123}-    -{      srcvar}-
 
     When the input to this instruction is true, it sets the given
     destination variable equal to the given source variable or
