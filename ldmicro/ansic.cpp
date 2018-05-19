@@ -31,10 +31,10 @@
 #include <unordered_set>
 #include <string>
 
-namespace  {
-std::unordered_set<std::string> variables;
-bool all_arduino_pins_are_mapped;
-}
+namespace {
+    std::unordered_set<std::string> variables;
+    bool                            all_arduino_pins_are_mapped;
+} // namespace
 
 static int mcu_ISA = -1;
 static int compiler_variant = -1;
@@ -104,8 +104,8 @@ static const char *MapSym(const char *str, int how)
     return ret;
 }
 
-static const char *MapSym(const NameArray& name, int how = ASINT);
-static const char *MapSym(const NameArray& name, int how)
+static const char *MapSym(const NameArray &name, int how = ASINT);
+static const char *MapSym(const NameArray &name, int how)
 {
     return MapSym(name.c_str(), how);
 }
@@ -114,22 +114,22 @@ static const char *MapSym(const NameArray& name, int how)
 // Generate a declaration for an integer var; easy, a static.
 //-----------------------------------------------------------------------------
 /**/
-static void DeclareInt(FILE *f, FILE* fh, const char *str, int sov)
+static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
 {
     if(*str == 'A') {
         fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
     } else if(sov == 1) {
         fprintf(f, "STATIC SBYTE %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
     } else if(sov == 2) {
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
     } else if((sov == 3) || (sov == 4)) {
         fprintf(f, "STATIC SDWORD %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SDWORD %s;\n#endif\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SDWORD %s;\n#endif\n", str);
     } else {
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
     }
 }
 
@@ -137,12 +137,12 @@ static void DeclareInt(FILE *f, FILE* fh, const char *str, int sov)
 // Generate a declaration for an integer var.
 //-----------------------------------------------------------------------------
 /**/
-static void DeclareStr(FILE *f, FILE* fh, const char *str, int sov)
+static void DeclareStr(FILE *f, FILE *fh, const char *str, int sov)
 {
     fprintf(f, "STATIC char %s[%d];\n", str, sov);
     fprintf(f, "\n");
-    fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern char %s[%d];\n#endif\n", str, sov);
-    fprintf(fh,"\n");
+    fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern char %s[%d];\n#endif\n", str, sov);
+    fprintf(fh, "\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     if(type == IO_TYPE_DIG_INPUT) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char *s = ArduinoPinName(iop);
+            const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
@@ -228,7 +228,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     } else if(type == IO_TYPE_DIG_OUTPUT) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char *s = ArduinoPinName(iop);
+            const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
@@ -289,7 +289,8 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(fh, "  #define Write1_%s() (R%c%d = 1)\n", str, iop->port, iop->bit);
                     fprintf(fh, "  #define Write_%s(b) R%c%d = (b) ? 1 : 0\n", str, iop->port, iop->bit);
                 } else {
-                    fprintf(fh, "  #define Write0_%s() (PORT%c &= ~(1<<PORT%c%d))\n", str, iop->port, iop->port, iop->bit);
+                    fprintf(
+                        fh, "  #define Write0_%s() (PORT%c &= ~(1<<PORT%c%d))\n", str, iop->port, iop->port, iop->bit);
                     fprintf(fh, "  #define Write1_%s() (PORT%c |= 1<<PORT%c%d)\n", str, iop->port, iop->port, iop->bit);
                     fprintf(fh, "  #define Write_%s(b) (b) ? Write1_%s() : Write0_%s()\n", str, str, str);
                 }
@@ -360,13 +361,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     } else if(type == IO_TYPE_PWM_OUTPUT) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char *s = ArduinoPinName(iop);
+            const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
-                fprintf(flh,
-                        "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n",
-                        str,
-                        s,
-                        iop->pinName);
+                fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1; // Check that it's a PWM pin!\n", str);
                 all_arduino_pins_are_mapped = false;
@@ -417,13 +414,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     } else if(type == IO_TYPE_READ_ADC) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char *s = ArduinoPinName(iop);
+            const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
-                fprintf(flh,
-                        "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n",
-                        str,
-                        s,
-                        iop->pinName);
+                fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1; // Check that it's a ADC pin!\n", str);
                 all_arduino_pins_are_mapped = false;
@@ -467,7 +460,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
         }
     } else {
         fprintf(f, "STATIC ldBOOL %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern ldBOOL %s;\n#endif\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern ldBOOL %s;\n#endif\n", str);
         //      fprintf(f, "\n");
         fprintf(fh, "#define Read_%s() %s\n", str, str);
         fprintf(fh, "#define Write_%s(x) (%s = x)\n", str, str);
@@ -752,15 +745,14 @@ static void _Comment(FILE *f, const char *str, ...)
     vsnprintf(buf, MAX_NAME_LEN, str, v);
     fprintf(f, "//%s\n", buf);
 }
-#define Comment(...) _Comment(f , __VA_ARGS__)
+#define Comment(...) _Comment(f, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
-    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) &&
-       (IntCode[i].op != INT_AllocKnownAddr) &&
-       (IntCode[i].op != INT_AllocFwdAddr))
+    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) && (IntCode[i].op != INT_AllocKnownAddr)
+       && (IntCode[i].op != INT_AllocFwdAddr))
         for(int j = 0; j < indent; j++)
             fprintf(f, "    ");
 }
@@ -772,7 +764,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
     int lock_label = 0;
     indent = 1;
     for(int i = begin; i <= end; i++) {
-        char opc;
+        char        opc;
         const char *ops;
 
         if(IntCode[i].op == INT_END_IF)
@@ -803,7 +795,8 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
-                    fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
+                    fprintf(
+                        f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
                     doIndent(f, i);
                 }
                 fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
@@ -814,7 +807,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
-                    fprintf(f, "//pokeb(%s, %s); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, MapSym(IntCode[i].name2, ASINT));
+                    fprintf(f,
+                            "//pokeb(%s, %s); // Variants 1 and 2\n",
+                            IntCode[i].name1.c_str() + 1,
+                            MapSym(IntCode[i].name2, ASINT));
                     doIndent(f, i);
                 }
                 fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
@@ -842,73 +838,73 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "%s = rand();\n", MapSym(IntCode[i].name1, ASINT));
                 break;
 
-                    case INT_SET_VARIABLE_SHL:
-                        opc = '<';
-                        goto arith_shift;
-                    case INT_SET_VARIABLE_SHR:
-                        opc = '>';
-                        goto arith_shift;
-                    case INT_SET_VARIABLE_SR0:
-                        opc = '>';
-                        goto arith_shift;
-                    arith_shift:
-                        fprintf(f,
-                                "%s = %s %c%c %s;\n",
-                                MapSym(IntCode[i].name1, ASINT),
-                                MapSym(IntCode[i].name2, ASINT),
-                                opc,
-                                opc,
-                                MapSym(IntCode[i].name3, ASINT));
-                        break;
+            case INT_SET_VARIABLE_SHL:
+                opc = '<';
+                goto arith_shift;
+            case INT_SET_VARIABLE_SHR:
+                opc = '>';
+                goto arith_shift;
+            case INT_SET_VARIABLE_SR0:
+                opc = '>';
+                goto arith_shift;
+            arith_shift:
+                fprintf(f,
+                        "%s = %s %c%c %s;\n",
+                        MapSym(IntCode[i].name1, ASINT),
+                        MapSym(IntCode[i].name2, ASINT),
+                        opc,
+                        opc,
+                        MapSym(IntCode[i].name3, ASINT));
+                break;
 
-                    case INT_SET_VARIABLE_ROL:
-                        ops = "rol";
-                        goto cicle_shift;
-                    case INT_SET_VARIABLE_ROR:
-                        ops = "ror";
-                        goto cicle_shift;
-                    cicle_shift:
-                        fprintf(f,
-                                "%s = %s%d(%s, %s);\n",
-                                MapSym(IntCode[i].name1, ASINT),
-                                ops,
-                                SizeOfVar(IntCode[i].name2),
-                                MapSym(IntCode[i].name2, ASINT),
-                                MapSym(IntCode[i].name3, ASINT));
-                        break;
+            case INT_SET_VARIABLE_ROL:
+                ops = "rol";
+                goto cicle_shift;
+            case INT_SET_VARIABLE_ROR:
+                ops = "ror";
+                goto cicle_shift;
+            cicle_shift:
+                fprintf(f,
+                        "%s = %s%d(%s, %s);\n",
+                        MapSym(IntCode[i].name1, ASINT),
+                        ops,
+                        SizeOfVar(IntCode[i].name2),
+                        MapSym(IntCode[i].name2, ASINT),
+                        MapSym(IntCode[i].name3, ASINT));
+                break;
 
-                    case INT_SET_VARIABLE_AND:
-                        opc = '&';
-                        goto arith;
-                    case INT_SET_VARIABLE_OR:
-                        opc = '|';
-                        goto arith;
-                    case INT_SET_VARIABLE_XOR:
-                        opc = '^';
-                        goto arith;
-                    case INT_SET_VARIABLE_ADD:
-                        opc = '+';
-                        goto arith;
-                    case INT_SET_VARIABLE_SUBTRACT:
-                        opc = '-';
-                        goto arith;
-                    case INT_SET_VARIABLE_MULTIPLY:
-                        opc = '*';
-                        goto arith;
-                    case INT_SET_VARIABLE_DIVIDE:
-                        opc = '/';
-                        goto arith;
-                    case INT_SET_VARIABLE_MOD:
-                        opc = '%';
-                        goto arith;
-                    arith:
-                        fprintf(f,
-                                "%s = %s %c %s;\n",
-                                MapSym(IntCode[i].name1, ASINT),
-                                MapSym(IntCode[i].name2, ASINT),
-                                opc,
-                                MapSym(IntCode[i].name3, ASINT));
-                        break;
+            case INT_SET_VARIABLE_AND:
+                opc = '&';
+                goto arith;
+            case INT_SET_VARIABLE_OR:
+                opc = '|';
+                goto arith;
+            case INT_SET_VARIABLE_XOR:
+                opc = '^';
+                goto arith;
+            case INT_SET_VARIABLE_ADD:
+                opc = '+';
+                goto arith;
+            case INT_SET_VARIABLE_SUBTRACT:
+                opc = '-';
+                goto arith;
+            case INT_SET_VARIABLE_MULTIPLY:
+                opc = '*';
+                goto arith;
+            case INT_SET_VARIABLE_DIVIDE:
+                opc = '/';
+                goto arith;
+            case INT_SET_VARIABLE_MOD:
+                opc = '%';
+                goto arith;
+            arith:
+                fprintf(f,
+                        "%s = %s %c %s;\n",
+                        MapSym(IntCode[i].name1, ASINT),
+                        MapSym(IntCode[i].name2, ASINT),
+                        opc,
+                        MapSym(IntCode[i].name3, ASINT));
+                break;
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "%s++;\n", MapSym(IntCode[i].name1, ASINT));
@@ -1111,7 +1107,8 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 if(compiler_variant == MNU_COMPILE_ARDUINO) {
                     fprintf(f, "Write0_%s(); // dummy // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
                 } else {
-                    fprintf(f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1.c_str());
+                    fprintf(
+                        f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1.c_str());
                 }
                 break;
 
@@ -1257,7 +1254,10 @@ static void GenerateSUBPROG(FILE *f)
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
-                fprintf(f, "void Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1.c_str(), (int)(IntCode[i].literal + 1));
+                fprintf(f,
+                        "void Call_SUBPROG_%s() { // LabelRung%d\n",
+                        IntCode[i].name1.c_str(),
+                        (int)(IntCode[i].literal + 1));
                 int indentSave = indent;
                 indent = 1;
                 GenerateAnsiC(f,
@@ -1434,30 +1434,27 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#include \"Arduino.h\"\n"
                 "\n");
         fprintf(flh,
-  "#ifdef __GNUC__\n"
-  "  //mem.h vvv\n"
-  "  //CodeVisionAVR V2.0 C Compiler\n"
-  "  //(C) 1998-2007 Pavel Haiduc, HP InfoTech S.R.L.\n"
-  "  //\n"
-  "  //  Memory access macros\n"
-  "\n"
-  "  #ifndef _MEM_INCLUDED_\n"
-  "  #define _MEM_INCLUDED_\n"
-  "\n"
-  "  #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
-  "  #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
-  "  #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
-  "  #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
-  "\n"
-  "  #endif\n"
-  "  //mem.h ^^^\n"
-  "#endif\n"
-       );
-        fprintf(flh ,
-  "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n"
-       );
+                "#ifdef __GNUC__\n"
+                "  //mem.h vvv\n"
+                "  //CodeVisionAVR V2.0 C Compiler\n"
+                "  //(C) 1998-2007 Pavel Haiduc, HP InfoTech S.R.L.\n"
+                "  //\n"
+                "  //  Memory access macros\n"
+                "\n"
+                "  #ifndef _MEM_INCLUDED_\n"
+                "  #define _MEM_INCLUDED_\n"
+                "\n"
+                "  #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
+                "  #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
+                "  #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
+                "  #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
+                "\n"
+                "  #endif\n"
+                "  //mem.h ^^^\n"
+                "#endif\n");
+        fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
     }
-    fprintf(flh ,
+    fprintf(flh,
             "/*\n"
             "  Type                  Size(bits)\n"
             "  ldBOOL    unsigned       1 or 8, the smallest possible\n"
@@ -1466,14 +1463,14 @@ bool CompileAnsiC(const char *dest, int MNU)
             "  SDWORD    signed integer     32\n"
             "*/\n");
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        fprintf(flh ,
+        fprintf(flh,
                 "typedef boolean       ldBOOL;\n"
                 "typedef char           SBYTE;\n"
                 "typedef int            SWORD;\n"
                 "typedef long int      SDWORD;\n"
                 "\n");
     } else if(mcu_ISA == ISA_PIC16) {
-        fprintf(flh ,
+        fprintf(flh,
                 "#ifdef CCS_PIC_C\n"
                 "    typedef int1             ldBOOL;\n"
                 "    typedef signed  int8      SBYTE;\n"
@@ -1491,7 +1488,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#endif\n"
                 "\n");
     } else if(mcu_ISA == ISA_AVR) {
-        fprintf(flh ,
+        fprintf(flh,
                 /*
 "#ifdef __CODEVISIONAVR__\n"
 "//#define ldBOOL              bit\n"
@@ -1504,7 +1501,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "  typedef signed long int  SDWORD;\n"
                 "\n");
     } else {
-        fprintf(flh ,
+        fprintf(flh,
                 "  typedef unsigned char    ldBOOL;\n"
                 "  typedef signed char       SBYTE;\n"
                 "  typedef signed short int  SWORD;\n"
@@ -1512,7 +1509,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n");
     }
     if(mcu_ISA == ISA_AVR) {
-        fprintf(flh ,
+        fprintf(flh,
                 "#ifndef UCSRA\n"
                 "  #define UCSRA UCSR0A\n"
                 "#endif\n"
@@ -1541,7 +1538,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     if(!fh) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), desth);
     }
-    fprintf(fh ,
+    fprintf(fh,
             "/* This is auto-generated C header from LDmicro. Do not edit this file!\n"
             "   Go back to the LDmicro ladder diagram source for changes in the ladder logic,\n"
             "   and make any C additions in additional .c or .h files linked against this one. */\n"
@@ -1554,34 +1551,35 @@ bool CompileAnsiC(const char *dest, int MNU)
             CurrentLdName);
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        fprintf(fh ,
+        fprintf(fh,
                 "// PLC cycle interval, set this according to LDmicro settings. (micro seconds)\n"
                 "#define PLC_INTERVAL %lld // us\n"
                 "\n",
                 Prog.cycleTime);
 
-        fprintf(fh ,
+        fprintf(fh,
                 "#ifdef USE_WDT\n"
                 "  #include <avr\\wdt.h>\n"
                 "#endif\n");
         if(SleepFunctionUsed()) {
-            fprintf(fh , "#include <avr\\sleep.h>\n");
+            fprintf(fh, "#include <avr\\sleep.h>\n");
         }
         if(PwmFunctionUsed()) {
-            fprintf(fh , "/* Uncomment USE_PWM_FREQUENCY and and set manually the proper divisor for setPwmFrequency().\n");
-            fprintf(fh , "   Base frequencies and available divisors on the pins, see in the file PwmFrequency.h */\n");
-            fprintf(fh , "//#define USE_PWM_FREQUENCY\n");
-            fprintf(fh , "#ifdef USE_PWM_FREQUENCY\n");
-            fprintf(fh , "  #include \"PwmFrequency.h\"\n");
-            fprintf(fh , "#endif\n");
-            fprintf(fh , "\n");
+            fprintf(fh,
+                    "/* Uncomment USE_PWM_FREQUENCY and and set manually the proper divisor for setPwmFrequency().\n");
+            fprintf(fh, "   Base frequencies and available divisors on the pins, see in the file PwmFrequency.h */\n");
+            fprintf(fh, "//#define USE_PWM_FREQUENCY\n");
+            fprintf(fh, "#ifdef USE_PWM_FREQUENCY\n");
+            fprintf(fh, "  #include \"PwmFrequency.h\"\n");
+            fprintf(fh, "#endif\n");
+            fprintf(fh, "\n");
         }
 
         if(EepromFunctionUsed())
-            fprintf(fh , "#include <EEPROM.h>\n");
+            fprintf(fh, "#include <EEPROM.h>\n");
     } else if(mcu_ISA == ISA_PIC16) {
     } else if(mcu_ISA == ISA_AVR) {
-        fprintf(fh ,
+        fprintf(fh,
                 "#include <stdio.h>\n"
                 "\n"
                 "#ifdef __CODEVISIONAVR__\n"
@@ -1598,7 +1596,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "    #endif\n"
                 "#endif\n",
                 Prog.mcu->mcuH);
-/*
+        /*
       fprintf(fh,
 "#ifdef __GNUC__\n"
 "    //mem.h vvv\n"
@@ -1623,7 +1621,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     } else {
     }
     if(DelayUsed()) {
-        fprintf(fh ,
+        fprintf(fh,
                 "#ifdef __CODEVISIONAVR__\n"
                 "    #include <delay.h>\n"
                 "#elif defined(__GNUC__)\n"
@@ -1634,20 +1632,20 @@ bool CompileAnsiC(const char *dest, int MNU)
     }
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        fprintf(fh ,
+        fprintf(fh,
                 "extern void loopPlc(void);  // Call loopPlc() function in loop() of your arduino project\n"
                 "extern void setupPlc(void); //  or initialise PLC cycle timer in this function\n"
                 "extern void PlcCycle(void); //  and call PlcCycle() function once per PLC cycle timer.\n"
                 "\n");
     } else {
-        fprintf(fh ,
+        fprintf(fh,
                 "//extern void loopPlc(void);  // Call loopPlc() function in main() of your project\n"
                 "extern void setupPlc(void); //  or initialise PLC cycle timer\n"
                 "extern void PlcCycle(void); //  and call PlcCycle() function once per PLC cycle timer.\n"
                 "\n");
     }
     if(UartFunctionUsed()) {
-        fprintf(fh ,
+        fprintf(fh,
                 "void UART_Init(void);\n"
                 "void UART_Transmit(unsigned char data);\n"
                 "unsigned char UART_Receive(void);\n"
@@ -1656,7 +1654,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n");
     }
     if(EepromFunctionUsed()) {
-        fprintf(fh ,
+        fprintf(fh,
                 "#define eeprom_busy_wait() do {} while(!eeprom_is_ready())\n"
                 "\n"
                 "#ifdef USE_MACRO\n"
@@ -1677,12 +1675,11 @@ bool CompileAnsiC(const char *dest, int MNU)
         f.open(dest, "w");
     }
 
-
     if(!f) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
     }
 
-    fprintf(f ,
+    fprintf(f,
             "/* This is auto-generated C code from LDmicro. Do not edit this file! Go\n"
             "   back to the LDmicro ladder diagram source for changes in the ladder logic, and make\n"
             "   any C additions either in ladder.h or in additional .c or .h files linked\n"
@@ -1707,45 +1704,45 @@ bool CompileAnsiC(const char *dest, int MNU)
         testAvrUsart(divisor, actual, percentErr);
     }
     if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-        fprintf(f ,
+        fprintf(f,
                 "#define CCS_PIC_C // CCS C Compiler, Custom Computer Services, Inc.\n"
                 "#ifdef CCS_PIC_C\n"
                 "  #device %s\n"
                 "  #include <%s.h>\n",
                 Prog.mcu->mcuH2,
                 Prog.mcu->mcuH);
-        fprintf(f , "  #FUSES 1=0x%04X\n", (WORD)Prog.configurationWord & 0xFFFF);
+        fprintf(f, "  #FUSES 1=0x%04X\n", (WORD)Prog.configurationWord & 0xFFFF);
         if(Prog.configurationWord & 0xFFFF0000) {
-            fprintf(f , "   #FUSES 2=0x%04X\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
+            fprintf(f, "   #FUSES 2=0x%04X\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
         }
         if(UartFunctionUsed()) {
-            fprintf(f , "  #USE RS232(BAUD=%d, BITS=8, PARITY=N, STOP=1, ERRORS, UART1) // ENABLE=pin\n", Prog.baudRate);
+            fprintf(f, "  #USE RS232(BAUD=%d, BITS=8, PARITY=N, STOP=1, ERRORS, UART1) // ENABLE=pin\n", Prog.baudRate);
         }
         if(DelayUsed() || UartFunctionUsed()) {
-            fprintf(f , "  #USE DELAY(CLOCK=%d)\n", Prog.mcuClock);
+            fprintf(f, "  #USE DELAY(CLOCK=%d)\n", Prog.mcuClock);
         }
         if(AdcFunctionUsed()) {
-            fprintf(f , "  #device ADC=10\n");
+            fprintf(f, "  #device ADC=10\n");
         }
         if(PwmFunctionUsed()) {
-            fprintf(f , "  //TODO #USE PWM // http://www.ccsinfo.com/newsdesk_info.php?newsdesk_id=182 \n");
+            fprintf(f, "  //TODO #USE PWM // http://www.ccsinfo.com/newsdesk_info.php?newsdesk_id=182 \n");
         }
         int i;
         if(Prog.mcu)
             for(i = 0; i < MAX_IO_PORTS; i++) {
                 if(IS_MCU_REG(i))
-                    fprintf(f , "  #USE FAST_IO(%c)\n", 'A' + i);
+                    fprintf(f, "  #USE FAST_IO(%c)\n", 'A' + i);
             }
-        fprintf(f , "#endif\n");
+        fprintf(f, "#endif\n");
     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
-        fprintf(f ,
+        fprintf(f,
                 "#include <htc.h>\n"
                 "#define _XTAL_FREQ %d\n"
                 "__CONFIG(0x%X);\n",
                 Prog.mcuClock,
                 (WORD)Prog.configurationWord & 0xFFFF);
         if(Prog.configurationWord & 0xFFFF0000) {
-            fprintf(f , "__CONFIG(0x%X);\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
+            fprintf(f, "__CONFIG(0x%X);\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
         }
         /*
     int i;
@@ -1759,7 +1756,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     */
     } else if(compiler_variant == MNU_COMPILE_CODEVISIONAVR) {
     }
-    fprintf(f ,
+    fprintf(f,
             "#include \"ladder.h\"\n"
             "#include \"%s.h\" // Copy this line into main project file where is function main().\n"
             "\n"
@@ -1787,11 +1784,11 @@ bool CompileAnsiC(const char *dest, int MNU)
             CurrentLdName);
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        fprintf(fh ,
+        fprintf(fh,
                 "// You provide I/O pin mapping for ARDUINO in ladder.h.\n"
                 "// See example lader.h_.\n"
                 "\n");
-        fprintf(flh ,
+        fprintf(flh,
                 "// You provide analog reference type for ARDUINO in ladder.h here.\n"
                 "const int analogReference_type = DEFAULT;\n"
                 "\n"
@@ -1809,7 +1806,7 @@ bool CompileAnsiC(const char *dest, int MNU)
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         if(UartFunctionUsed()) {
-            fprintf(f ,
+            fprintf(f,
                     "void UART_Transmit(unsigned char data) {\n"
                     "    Serial.write(data);\n"
                     "    //Serial.flush();\n"
@@ -1835,7 +1832,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n");
         }
         if(EepromFunctionUsed()) {
-            fprintf(f ,
+            fprintf(f,
                     "#ifndef USE_MACRO\n"
                     "  void EEPROM_write(int addr, unsigned char data) {\n"
                     "    EEPROM.write(addr, data);\n"
@@ -1854,7 +1851,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(UartFunctionUsed())
 #define RXEN BIT4
 #define TXEN BIT3
-            fprintf(f ,
+            fprintf(f,
                     "void UART_Init(void) {\n"
                     "  UBRRH = %d; \n"
                     "  UBRRL = %d; \n"
@@ -1863,7 +1860,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     divisor >> 8,
                     divisor & 0xff,
                     (1 << RXEN) | (1 << TXEN));
-        fprintf(f ,
+        fprintf(f,
                 "\n"
                 "void UART_Transmit(unsigned char data) {\n"
                 "  // Wait for empty transmit buffer\n"
@@ -1894,7 +1891,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     } else if(mcu_ISA == ISA_PIC16) {
         if(EepromFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C)
-                fprintf(f ,
+                fprintf(f,
                         "void EEPROM_write(int addr, unsigned char data) {\n"
                         "    write_eeprom(addr, data);\n"
                         "}\n"
@@ -1904,7 +1901,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "}\n"
                         "\n");
             else
-                fprintf(f ,
+                fprintf(f,
                         "void EEPROM_write(int addr, unsigned char data) {\n"
                         "    EEADR = addr;\n"
                         "    EEDATA = data;\n"
@@ -1930,26 +1927,26 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "\n");
         }
         if(AdcFunctionUsed()) {
-            fprintf(f , "void ADC_Init(void) {\n");
+            fprintf(f, "void ADC_Init(void) {\n");
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-                fprintf(f ,
+                fprintf(f,
                         "  setup_adc_ports(ALL_ANALOG);\n"
                         "  setup_adc(ADC_CLOCK_INTERNAL | ADC_CLOCK_DIV_32);\n");
             } else {
             }
-            fprintf(f ,
+            fprintf(f,
                     "}\n"
                     "\n");
         }
         if(PwmFunctionUsed()) {
-            fprintf(f , "void PWM_Init(void) {\n");
-            fprintf(f ,
+            fprintf(f, "void PWM_Init(void) {\n");
+            fprintf(f,
                     "}\n"
                     "\n");
         }
         if(UartFunctionUsed()) {
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-                fprintf(f ,
+                fprintf(f,
                         "void UART_Init(void) {\n"
                         "  // UART baud rate setup\n"
                         "  // setup_uart(%d);\n"
@@ -1957,22 +1954,22 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "\n",
                         Prog.baudRate);
             } else {
-                fprintf(f ,
+                fprintf(f,
                         "void UART_Init(void) {\n"
                         "  // UART baud rate setup\n");
                 if(compiler_variant != MNU_COMPILE_ANSIC) {
                     int divisor = (Prog.mcuClock + Prog.baudRate * 32) / (Prog.baudRate * 64) - 1;
-                    fprintf(f ,
+                    fprintf(f,
                             "  SPBRG = %d;\n"
                             "  TXEN = 1; SPEN = 1; CREN = 1;\n",
                             divisor);
                 }
-                fprintf(f ,
+                fprintf(f,
                         "}\n"
                         "\n");
             }
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-                fprintf(f ,
+                fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
                         "  // Wait for empty transmit buffer\n"
                         "  //while( !TRMT );\n"
@@ -2001,7 +1998,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "}\n"
                         "\n");
             } else {
-                fprintf(f ,
+                fprintf(f,
                         "void UART_Transmit(unsigned char data) {\n"
                         "  // Wait for empty transmit buffer\n"
                         "  while( !TRMT );\n"
@@ -2033,17 +2030,17 @@ bool CompileAnsiC(const char *dest, int MNU)
     }
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
-    fprintf(f ,
+    fprintf(f,
             "\n"
             "/* Call this function once per PLC cycle. You are responsible for calling\n"
             "   it at the interval that you specified in the LDmicro MCU configuration when you\n"
             "   generated this code. */\n"
             "void PlcCycle(void) {\n");
-    GenerateAnsiC(f , 0, IntCode.size() - 1);
-    fprintf(f , "}\n");
+    GenerateAnsiC(f, 0, IntCode.size() - 1);
+    fprintf(f, "}\n");
     //---------------------------------------------------------------------------
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
-        fprintf(f ,
+        fprintf(f,
                 "\n"
                 "// PLC Cycle timing function.\n"
                 "boolean IsPlcInterval() {\n"
@@ -2063,13 +2060,13 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "        wdt_reset();\n"
                 "        #endif\n");
         if(Prog.cycleDuty) {
-            fprintf(f , "        Write1_Ub_YPlcCycleDuty();\n");
+            fprintf(f, "        Write1_Ub_YPlcCycleDuty();\n");
         }
-        fprintf(f , "        PlcCycle();\n");
+        fprintf(f, "        PlcCycle();\n");
         if(Prog.cycleDuty) {
-            fprintf(f , "        Write0_Ub_YPlcCycleDuty();\n");
+            fprintf(f, "        Write0_Ub_YPlcCycleDuty();\n");
         }
-        fprintf(f ,
+        fprintf(f,
                 "    }\n"
                 "}\n"
                 "\n"
@@ -2083,7 +2080,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n");
         if(UartFunctionUsed()) {
             Comment("Set up UART");
-            fprintf(f ,
+            fprintf(f,
                     "   Serial.begin(%d);\n"
                     "   while(!Serial) {\n"
                     "       ; // We expect to connect the serial port. It is only necessary for the Leonardo.\n"
@@ -2091,26 +2088,26 @@ bool CompileAnsiC(const char *dest, int MNU)
                     Prog.baudRate);
         }
         Comment(" Set up analog reference type");
-        fprintf(f , "    analogReference(analogReference_type);\n\n");
+        fprintf(f, "    analogReference(analogReference_type);\n\n");
 
         Comment(" Set up I/O pins");
         for(int i = 0; i < Prog.io.count; i++) {
             if((Prog.io.assignment[i].type == IO_TYPE_INT_INPUT) || (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT))
-                fprintf(f , "    pinMode(pin_%s, INPUT_PULLUP);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
+                fprintf(f, "    pinMode(pin_%s, INPUT_PULLUP);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
             else if(Prog.io.assignment[i].type == IO_TYPE_PWM_OUTPUT)
-                fprintf(f , "    pinMode(pin_%s, OUTPUT);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
+                fprintf(f, "    pinMode(pin_%s, OUTPUT);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
             else if(Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT)
-                fprintf(f , "    pinMode(pin_%s, OUTPUT);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
+                fprintf(f, "    pinMode(pin_%s, OUTPUT);\n", MapSym(Prog.io.assignment[i].name, ASBIT));
         }
         if(SleepFunctionUsed()) {
-            fprintf(f ,
+            fprintf(f,
                     "\n"
                     "    set_sleep_mode(SLEEP_MODE_PWR_DOWN);\n");
         }
 
-        fprintf(f , "}\n");
+        fprintf(f, "}\n");
     } else {
-        fprintf(f ,
+        fprintf(f,
                 "\n"
                 "void setupPlc(void) {\n"
                 "    // Set up I/O pins direction, and drive the outputs low to start.\n");
@@ -2122,27 +2119,27 @@ bool CompileAnsiC(const char *dest, int MNU)
                 if(IS_MCU_REG(i)) {
                     if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
                         // drive the outputs low to start
-                        fprintf(f , "    output_%c(0x%02X);\n", 'a' + i, 0x00);
+                        fprintf(f, "    output_%c(0x%02X);\n", 'a' + i, 0x00);
                         // Set up I/O pins direction
-                        fprintf(f , "    set_tris_%c(0x%02X);\n", 'a' + i, ~isOutput[i] & 0xff);
+                        fprintf(f, "    set_tris_%c(0x%02X);\n", 'a' + i, ~isOutput[i] & 0xff);
                     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                         // drive the outputs low to start
-                        fprintf(f , "    PORT%c = 0x%02X;\n", 'A' + i, 0x00);
+                        fprintf(f, "    PORT%c = 0x%02X;\n", 'A' + i, 0x00);
                         // Set up I/O pins direction
-                        fprintf(f , "    TRIS%c = 0x%02X;\n", 'A' + i, ~isOutput[i] & 0xff);
+                        fprintf(f, "    TRIS%c = 0x%02X;\n", 'A' + i, ~isOutput[i] & 0xff);
                     } else {
                         //fprintf(f,"      pokeb(0x%X, 0x%X); // PORT%c\n",Prog.mcu->dirRegs[i], isOutput[i], Prog.mcu->pinInfo[i].port);
                         //fprintf(f,"    pokeb(0x%X, 0x%X);\n",Prog.mcu->dirRegs[i], isOutput[i]);
-                        fprintf(f , "    DDR%c = 0x%02X;\n", 'A' + i, isOutput[i]);
+                        fprintf(f, "    DDR%c = 0x%02X;\n", 'A' + i, isOutput[i]);
                         // turn on the pull-ups, and drive the outputs low to start
                         //fprintf(f,"    pokeb(0x%X, 0x%X);\n",Prog.mcu->outputRegs[i], isInput[i]);
-                        fprintf(f , "    PORT%c = 0x%02X;\n", 'A' + i, isInput[i]);
+                        fprintf(f, "    PORT%c = 0x%02X;\n", 'A' + i, isInput[i]);
                     }
                 }
             }
         }
 
-        fprintf(f ,
+        fprintf(f,
                 "\n"
                 "    // Turn on the pull-ups.\n"
                 "    #ifdef CCS_PIC_C\n"
@@ -2175,13 +2172,13 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(Prog.cycleTime > 0) {
             CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen);
 
-            fprintf(f ,
+            fprintf(f,
                     "    //Initialise PLC cycle timer here.\n"
                     "    // Configure Timer %d\n",
                     Prog.cycleTimer);
 
             if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-                fprintf(f ,
+                fprintf(f,
                         "    #if getenv(\"TIMER%d\") == 0\n"
                         "        #error Don't exist TIMER%d\n"
                         "    #endif\n",
@@ -2189,13 +2186,13 @@ bool CompileAnsiC(const char *dest, int MNU)
                         Prog.cycleTimer);
 
                 if(Prog.cycleTimer == 0) {
-                    fprintf(f , "    setup_timer_0(T0_INTERNAL | T0_DIV_%ld);\n", plcTmr.prescaler);
+                    fprintf(f, "    setup_timer_0(T0_INTERNAL | T0_DIV_%ld);\n", plcTmr.prescaler);
                 } else {
-                    fprintf(f , "    setup_timer_1(T1_INTERNAL | T1_DIV_BY_%ld);\n", plcTmr.prescaler);
+                    fprintf(f, "    setup_timer_1(T1_INTERNAL | T1_DIV_BY_%ld);\n", plcTmr.prescaler);
                 }
             } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
                 if(Prog.cycleTimer == 0) {
-                    fprintf(f ,
+                    fprintf(f,
                             "    #ifdef USE_WDT\n"
                             "    CLRWDT();\n"
                             "    #endif\n"
@@ -2207,7 +2204,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                             plcTmr.PS);
                     //"          T1CON = plcTmr.PS;\n"
                 } else {
-                    fprintf(f ,
+                    fprintf(f,
                             "    #ifdef USE_WDT\n"
                             "    CLRWDT(); // Clear WDT and prescaler\n"
                             "    #endif\n"
@@ -2224,7 +2221,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     if(McuAs(" PIC16F1512 ") || McuAs(" PIC16F1513 ") || McuAs(" PIC16F1516 ") || McuAs(" PIC16F1517 ")
                        || McuAs(" PIC16F1518 ") || McuAs(" PIC16F1519 ") || McuAs(" PIC16F1526 ")
                        || McuAs(" PIC16F1527 ") || McuAs(" PIC16F1933 ") || McuAs(" PIC16F1947 ")) {
-                        fprintf(f , "    TMR1GE = 1;\n");
+                        fprintf(f, "    TMR1GE = 1;\n");
                     }
                 }
             }
@@ -2240,7 +2237,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     counter = 0xffff;
                 //dbp("divider=%d EQU counter=%d", divider, counter);
 
-                fprintf(f ,
+                fprintf(f,
                         "        TCCR1A = 0x00; // WGM11=0, WGM10=0\n"
                         "        TCCR1B = (1<<WGM12) | %d; // WGM13=0, WGM12=1\n"
                         "        // `the high byte must be written before the low byte\n"
@@ -2251,20 +2248,20 @@ bool CompileAnsiC(const char *dest, int MNU)
                         counter);
             }
         } else {
-            fprintf(f , "    //  You must init PLC timer.\n");
+            fprintf(f, "    //  You must init PLC timer.\n");
         }
         if(UartFunctionUsed()) {
-            fprintf(f , "    UART_Init();\n");
+            fprintf(f, "    UART_Init();\n");
         }
         if(AdcFunctionUsed()) {
-            fprintf(f , "    ADC_Init();\n");
+            fprintf(f, "    ADC_Init();\n");
         }
         if(PwmFunctionUsed()) {
-            fprintf(f , "    PWM_Init();\n");
+            fprintf(f, "    PWM_Init();\n");
         }
-        fprintf(f , "}\n");
+        fprintf(f, "}\n");
 
-        fprintf(f ,
+        fprintf(f,
                 "\n"
                 "void mainPlc(void) { // Call mainPlc() function in main() of your project.\n"
                 "    setupPlc();\n"
@@ -2287,9 +2284,9 @@ bool CompileAnsiC(const char *dest, int MNU)
         }
     }
 */
-        fprintf(f , "        // Test PLC cycle timer interval here.\n");
+        fprintf(f, "        // Test PLC cycle timer interval here.\n");
         if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
-            fprintf(f ,
+            fprintf(f,
                     "        while(get_timer%d() < (%ld-1));\n"
                     "        set_timer%d(0); // Try it when the PLC cycle time is more than 1 ms.\n"
                     "      //set_timer%d(1); // Try it when the PLC cycle time is less than 1 ms.\n",
@@ -2297,14 +2294,14 @@ bool CompileAnsiC(const char *dest, int MNU)
                     plcTmr.tmr,
                     Prog.cycleTimer,
                     Prog.cycleTimer);
-            fprintf(f ,
+            fprintf(f,
                     "      //set_timer%d(get_timer%d() - (%ld-1)); // Try it.\n",
                     Prog.cycleTimer,
                     Prog.cycleTimer,
                     plcTmr.tmr);
         } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
             if(Prog.cycleTimer == 0) {
-                fprintf(f ,
+                fprintf(f,
                         "        #ifndef T0IF\n"
                         "          #define T0IF TMR0IF\n"
                         "        #endif\n"
@@ -2313,23 +2310,23 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "        T0IF = 0;\n",
                         256 - plcTmr.tmr + 1);
             } else {
-                fprintf(f ,
+                fprintf(f,
                         "        while(CCP1IF == 0);\n"
                         "        CCP1IF = 0;\n");
             }
         } else if(mcu_ISA == ISA_AVR) {
-            fprintf(f ,
+            fprintf(f,
                     "        #ifndef TIFR\n"
                     "        #define TIFR TIFR1\n"
                     "        #endif\n"
                     "        while((TIFR & (1<<OCF1A)) == 0);\n"
                     "        TIFR |= 1<<OCF1A; // OCF1A can be cleared by writing a logic one to its bit location\n");
         } else {
-            fprintf(f , "        //  You must check PLC timer interval.\n");
+            fprintf(f, "        //  You must check PLC timer interval.\n");
         }
-        fprintf(f , "\n");
+        fprintf(f, "\n");
         if(Prog.cycleDuty) {
-            fprintf(f , "        Write1_Ub_YPlcCycleDuty();\n");
+            fprintf(f, "        Write1_Ub_YPlcCycleDuty();\n");
             /*
         if(iop) {
           if(compiler_variant == MNU_COMPILE_CCS_PIC_C) {
@@ -2348,7 +2345,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         }
 */
         }
-        fprintf(f ,
+        fprintf(f,
                 "\n"
                 "        PlcCycle();\n"
                 "        // You can place your code here, if you don't generate C code from LDmicro again.\n"
@@ -2370,14 +2367,14 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "      #endif\n"
                 "\n");
         if(Prog.cycleDuty) {
-            fprintf(f , "        Write0_Ub_YPlcCycleDuty();\n");
+            fprintf(f, "        Write0_Ub_YPlcCycleDuty();\n");
         }
-        fprintf(f ,
+        fprintf(f,
                 "    }\n"
                 "}\n"
                 "\n");
 
-        fprintf(f ,
+        fprintf(f,
                 "#ifdef __CODEVISIONAVR__\n"
                 "void main(void) { // You can use this as is.\n"
                 "    mainPlc();\n"
@@ -2391,17 +2388,17 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#endif\n");
     }
 
-    fprintf(fh , "#endif\n");
+    fprintf(fh, "#endif\n");
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         if(all_arduino_pins_are_mapped)
-            fprintf(flh ,"//");
+            fprintf(flh, "//");
         fprintf(
-            flh ,
+            flh,
             " You can comment or delete this line after provide the I/O pin mapping for ARDUINO board in ladder.h above.\n");
     }
-    fprintf(flh , "\n");
-    fprintf(flh , "#endif\n");
+    fprintf(flh, "\n");
+    fprintf(flh, "#endif\n");
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         SetExt(ladderhName, dest, ".ino_");
