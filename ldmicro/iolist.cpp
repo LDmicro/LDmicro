@@ -1739,11 +1739,12 @@ void IoListProc(NMHDR *h)
                             else
                                 sprintf(i->item.pszText, "Not a PORT!");
                         } else {
-                            //sprintf(i->item.pszText, "addr in %s", &name[1]);
-                            DescribeForIoList(&name[1], type, i->item.pszText);
-                            char *c = strchr(i->item.pszText, '=');
+                            char buf[MAX_NAME_LEN];
+                            DescribeForIoList(&name[1], type, buf);
+                            char *c = strchr(buf, '=');
                             if(c)
                                 *c = '\0';
+                            sprintf(i->item.pszText, "%s in %s", buf, &name[1]);
                         }
                     } else if((type == IO_TYPE_GENERAL)    //
                               || (type == IO_TYPE_PERSIST) //

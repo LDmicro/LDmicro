@@ -1,3 +1,11 @@
+== Release 4.3.9.6
+
+   * Wiki: HOW TO: Change USART Baud Rate
+   https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Change-USART-Baud-Rate
+
+== Release 4.3.9.5
+
+   * Fixed: Re-enable ANSI C compilation with no MCU #95
 
    * Wiki: Replace the obsolete elements.
    https://github.com/LDmicro/LDmicro/wiki/Replase-the-obsolete-elements

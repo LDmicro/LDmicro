@@ -962,8 +962,8 @@ void RollHome();
 void RollEnd();
 char *ExtractFileDir(char *dest);
 char *ExtractFilePath(char *dest);
-const char* ExtractFileName(const char* src); // with .ext
-char *GetFileName(char *dest, const char* src); // without .ext
+const char *ExtractFileName(const char *src); // with .ext
+char *GetFileName(char *dest, const char *src); // without .ext
 char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
@@ -1676,6 +1676,7 @@ bool DivideRoutineUsed();
 void GenSymOneShot(char *dest, const char *name1, const char *name2);
 int getradix(const char *str);
 SDWORD CalcDelayClock(long long clocks); // in us
+bool IsAddrInVar(const char *name);
 
 // pic16.cpp
 extern SDWORD PicProgLdLen;
@@ -1690,7 +1691,7 @@ bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
 void CompileAvr(char *outFile);
 // ansic.cpp
 extern int compile_MNU;
-bool CompileAnsiC(const char* outFile, int MNU);
+bool CompileAnsiC(const char *outFile, int MNU);
 // interpreted.cpp
 void CompileInterpreted(char *outFile);
 // xinterpreted.cpp

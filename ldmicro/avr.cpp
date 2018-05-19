@@ -1527,8 +1527,9 @@ static void LoadXAddr(DWORD addr)
 {
     LoadXAddr(addr, nullptr);
 }
-
-static void LoadYAddr(DWORD addr)
+//----
+static void LoadYAddr(DWORD addr, const char *comment = nullptr);
+static void LoadYAddr(DWORD addr, const char *comment)
 //used Y; Opcodes: 2
 {
     if(addr <= 0) {
@@ -1539,11 +1540,11 @@ static void LoadYAddr(DWORD addr)
         Error(_("Addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
-    Instruction(OP_LDI, YL, (addr & 0xff)); // Y-register Low Byte
-    Instruction(OP_LDI, YH, (addr >> 8));   // Y-register High Byte
+    Instruction(OP_LDI, YL, (addr & 0xff), comment); // Y-register Low Byte
+    Instruction(OP_LDI, YH, (addr >> 8));            // Y-register High Byte
 }
-
-static void LoadZAddr(DWORD addr, char *comment)
+//----
+static void LoadZAddr(DWORD addr, const char *comment)
 //used Z; Opcodes: 2
 {
     if(addr <= 0) {
@@ -1896,18 +1897,126 @@ static void WriteMemoryCurrAddr(BYTE val)
 }
 
 //-----------------------------------------------------------------------------
+static void LoadXAddrFromReg(int reg, int sov)
+{
+    if(sov < 1)
+        oops();
+    if(sov > 2)
+        oops();
+    Instruction(OP_MOV, XL, reg);       // X-register Low Byte
+    if(sov > 1)                         //
+        Instruction(OP_MOV, XH, reg+1); // X-register High Byte
+    else                                //
+        Instruction(OP_LDI, XH, 0);     // X-register High Byte
+}
+
+//-----------------------------------------------------------------------------
+static void LoadYAddrFromReg(int reg, int sov)
+{
+    if(sov < 1)
+        oops();
+    if(sov > 2)
+        oops();
+    Instruction(OP_MOV, YL, reg);       // Y-register Low Byte
+    if(sov > 1)                         //
+        Instruction(OP_MOV, YH, reg+1); // Y-register High Byte
+    else                                //
+        Instruction(OP_LDI, YH, 0);     // Y-register High Byte
+}
+
+//-----------------------------------------------------------------------------
+static void LoadZAddrFromReg(int reg, int sov)
+{
+    if(sov < 1)
+        oops();
+    if(sov > 2)
+        oops();
+    Instruction(OP_MOV, ZL, reg);       // Z-register Low Byte
+    if(sov > 1)                         //
+        Instruction(OP_MOV, ZH, reg+1); // Z-register High Byte
+    else                                //
+        Instruction(OP_LDI, ZH, 0);     // Z-register High Byte
+}
+
+//-----------------------------------------------------------------------------
+static void LdToReg(AvrOp op, int reg, int sovReg, int sov, bool signPropagation)
+{
+    if(sovReg < 1)
+        oops();
+    if(sovReg > 4)
+        oops();
+    if(sov < 1)
+        oops();
+    if(sov > 4)
+        oops();
+    if((op != OP_LD_XP) && (op != OP_LD_YP) && (op != OP_LD_ZP))
+        oops();
+    for(int i = 0; i < sovReg; i++) {
+        if(i < sov)
+            Instruction(op, reg + i);
+        else {
+            Instruction(OP_LDI, reg + i, 0);
+            if(signPropagation) {
+                Instruction(OP_SBRC, reg + i - 1, BIT7); // Sign propagation
+                Instruction(OP_LDI, reg + i, 0xff);
+            }
+        }
+    }
+    /*
+    Instruction(op, reg);
+    if(sovReg >= 2) {
+        if(sov >= 2)
+            Instruction(op, reg + 1);
+        else {
+            Instruction(OP_LDI, reg + 1, 0);
+            if(signPropagation) {
+                Instruction(OP_SBRC, reg, BIT7); // Sign propagation
+                Instruction(OP_LDI, reg + 1, 0xff);
+            }
+        }
+    }
+    if(sovReg >= 3) {
+        if(sov >= 3)
+            Instruction(op, reg + 2);
+        else {
+            Instruction(OP_LDI, reg + 2, 0);
+            if(signPropagation) {
+                Instruction(OP_SBRC, reg + 1, BIT7); // Sign propagation
+                Instruction(OP_LDI, reg + 2, 0xff);
+            }
+        }
+    }
+    if(sovReg >= 4) {
+        if(sov >= 4)
+            Instruction(op, reg + 3);
+        else {
+            Instruction(OP_LDI, reg + 3, 0);
+            if(signPropagation) {
+                Instruction(OP_SBRC, reg + 2, BIT7); // Sign propagation
+                Instruction(OP_LDI, reg + 3, 0xff);
+            }
+        }
+    }
+    */
+}
+//-----------------------------------------------------------------------------
 static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char *name)
 {
-    // vvv reassurance, check before calling this routine
     if(sov < 1)
         ooops(name);
     if(sov > 4)
         ooops(name);
-    // ^^^ reassurance, check before calling this routine
+    LoadZAddr(addr, name); // load direct addres
+    if(name && IsAddrInVar(name)) {
+        int sov = SizeOfVar(name);
+        LdToReg(OP_LD_ZP, r25, 2, sov, false); // as address
+        LoadZAddrFromReg(r25, 2);              // reload indirect addres
+    }
     DWORD l1, l2;
-
     l1 = (literal & 0xff);
-    WriteMemory(addr, BYTE(l1), name, literal);
+    Instruction(OP_LDI, r25, BYTE(l1), name);
+    Instruction(OP_ST_ZP, r25, 0, name);
+
     if(sov >= 2) {
         l2 = ((literal >> 8) & 0xff);
         if(l1 != l2)
@@ -2838,35 +2947,14 @@ static void CopyVarToReg(int reg, int sovReg, const char *var)
         dbp("reg=%d sovReg=%d <- var=%s sov=%d", reg, sovReg, var, sov);
 
     MemForVariable(var, &addr);
-    LoadXAddr(addr, var);
+    LoadXAddr(addr, var); // load direct addres
 
-    Instruction(OP_LD_XP, reg);
-    if(sovReg >= 2) {
-        if(sov >= 2)
-            Instruction(OP_LD_XP, reg + 1);
-        else {
-            Instruction(OP_LDI, reg + 1, 0);
-            Instruction(OP_SBRC, reg, BIT7); // Sign propagation
-            Instruction(OP_LDI, reg + 1, 0xff);
-        }
-    }
-    if(sovReg >= 3) {
-        if(sov >= 3)
-            Instruction(OP_LD_XP, reg + 2);
-        else {
-            Instruction(OP_LDI, reg + 2, 0);
-            Instruction(OP_SBRC, reg + 1, BIT7); // Sign propagation
-            Instruction(OP_LDI, reg + 2, 0xff);
-        }
-    }
-    if(sovReg >= 4) {
-        if(sov >= 4)
-            Instruction(OP_LD_XP, reg + 3);
-        else {
-            Instruction(OP_LDI, reg + 3, 0);
-            Instruction(OP_SBRC, reg + 2, BIT7); // Sign propagation
-            Instruction(OP_LDI, reg + 3, 0xff);
-        }
+    if(var[0] == '#') {
+        LdToReg(OP_LD_XP, reg, 2, sov, false);     // as address
+        LoadXAddrFromReg(reg, 2);                  // reload indirect addres
+        LdToReg(OP_LD_XP, reg, sovReg, sov, true); // as data
+    } else {
+        LdToReg(OP_LD_XP, reg, sovReg, sov, true); // as data
     }
 }
 
@@ -3376,7 +3464,10 @@ static void CompileFromIntermediate()
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
-                MemForVariable(a->name1, &addr1);
+                if(IsAddrInVar(a->name1.c_str()))
+                    MemForVariable(&a->name1[1], &addr1);
+                else
+                    MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 WriteLiteralToMemory(addr1, sov1, a->literal, a->name1);
                 break;

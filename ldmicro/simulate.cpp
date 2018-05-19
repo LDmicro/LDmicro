@@ -1526,7 +1526,9 @@ static void SimulateIntCode()
                 break;
 
             case INT_COPY_XOR_BIT_TO_BIT:
-                SetSingleBit(a->name1, (SingleBitOn(a->name1) & 1) ^ (SingleBitOn(a->name2) & 1));
+//              SetSingleBit(a->name1,  SingleBitOn(a->name1)      ^  SingleBitOn(a->name2)     );
+//              SetSingleBit(a->name1, (SingleBitOn(a->name1) & 1) ^ (SingleBitOn(a->name2) & 1));
+                SetSingleBit(a->name1,  SingleBitOn(a->name2) ? (!SingleBitOn(a->name1)) : SingleBitOn(a->name1));
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
