@@ -2670,7 +2670,7 @@ static char *VarFromExpr(char *expr, char *tempName, DWORD addr)
 */
 
 //-----------------------------------------------------------------------------
-static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const char *comment)
+static void CopyLitToReg(DWORD addr, int sov, const char *name, SDWORD literal, const char *comment)
 {
     Comment("CopyLitToReg");
     // vvv reassurance, check before calling this routine
@@ -2679,6 +2679,9 @@ static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const char *commen
     if(sov > 4)
         ooops(comment);
     // ^^^ reassurance, check before calling this routine
+    if(IsAddrInVar(name)) {
+		//aaa
+	}
     DWORD l1, l2;
     l1 = (literal & 0xff);
     if(l1) {
@@ -2717,9 +2720,9 @@ static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const char *commen
     }
 }
 
-static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const NameArray& comment)
+static void CopyLitToReg(DWORD addr, int sov, const NameArray&  name, SDWORD literal, const NameArray& comment)
 {
-    CopyLitToReg(addr, sov, literal, comment.c_str());
+    CopyLitToReg(addr, sov, name.c_str(), literal, comment.c_str());
 }
 
 //-----------------------------------------------------------------------------
@@ -2737,6 +2740,15 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
     if(sov2 > 4)
         ooops(name2);
     // ^^^ reassurance, check before calling this routine
+    if(IsAddrInVar(name1)) {
+        sov1 = SizeOfVar(&name1[1]);
+        MemForVariable(&name1[1], &addr1);
+        Instruction(OP_MOVF, addr1, DEST_W, name1);
+        Instruction(OP_MOVWF, REG_FSR, 0, name1);
+        Instruction(OP_MOVF, addr2, DEST_W, name2);
+        Instruction(OP_MOVWF, REG_INDF, 0, name1);
+        return;
+	}
 
     Instruction(OP_MOVF, addr2, DEST_W, name2);
     Instruction(OP_MOVWF, addr1, 0, name1);
@@ -2806,7 +2818,7 @@ static void CopyVarToReg(DWORD addr1, int sov1, const NameArray& name2)
 static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, const char *name, bool Sign)
 {
     if(IsNumber(name)) {
-        CopyLitToReg(destAddr, destSov, hobatoi(name), name);
+        CopyLitToReg(destAddr, destSov, name, hobatoi(name), name);
     } else {
         int   sov = SizeOfVar(name);
         DWORD addr;
@@ -2897,15 +2909,15 @@ static void CallBin32BcdRoutine(char *nameBcd, char *nameBin)
     sizeBin = SizeOfVar(nameBin);
     sizeBin = 4;
     if(IsNumber(nameBin)) {
-        CopyLitToReg(ACb0, sizeBin, hobatoi(nameBin), nameBin);
+        CopyLitToReg(ACb0, sizeBin, "", hobatoi(nameBin), nameBin);
     } else {
         CopyRegToReg(ACb0, sizeBin, addrBin, sizeBin, "", nameBin, true);
     }
-    CopyLitToReg(sovBin, 1, sizeBin, "");
+    CopyLitToReg(sovBin, 1, "", sizeBin, "");
 
     DWORD addrBcd;
     MemForVariable(nameBcd, &addrBcd);
-    CopyLitToReg(BCD0, 1, addrBcd, "");
+    CopyLitToReg(BCD0, 1, "", addrBcd, "");
 
     int sizeBcd;
     switch(sizeBin) {
@@ -2926,7 +2938,7 @@ static void CallBin32BcdRoutine(char *nameBcd, char *nameBin)
     }
     sizeBcd = SizeOfVar(nameBcd);
     sizeBcd = 10;
-    CopyLitToReg(sovBcd, 1, sizeBcd, "");
+    CopyLitToReg(sovBcd, 1, "", sizeBcd, "");
 
     ////DWORD BCD0, int sizeBcd, DWORD ACb0, int sizeBin
     CallWithPclath(Bin32BcdRoutineAddress);
@@ -3722,7 +3734,7 @@ static void CompileFromIntermediate(bool topLevel)
                         oops();
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
-                    CopyLitToReg(Scratch0, sov1, -2, ""); // 0xF..FE
+                    CopyLitToReg(Scratch0, sov1, "", -2, ""); // 0xF..FE
                     DWORD Skip = AllocFwdAddr();
                     DWORD Loop = PicProgWriteP;
                     Instruction(OP_MOVF, ScratchS, DEST_F);
@@ -3755,7 +3767,7 @@ static void CompileFromIntermediate(bool topLevel)
                         oops();
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
-                    CopyLitToReg(Scratch0, sov1, 0x01, "");
+                    CopyLitToReg(Scratch0, sov1, "", 0x01, "");
                     DWORD Skip = AllocFwdAddr();
                     DWORD Loop = PicProgWriteP;
                     Instruction(OP_MOVF, ScratchS, DEST_F);
@@ -3791,7 +3803,7 @@ static void CompileFromIntermediate(bool topLevel)
                     Instruction(OP_GOTO, endifAddr); // here bit is CLR
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
-                    CopyLitToReg(Scratch0, sov1, 0x01, "");
+                    CopyLitToReg(Scratch0, sov1, "", 0x01, "");
                     DWORD Skip = AllocFwdAddr();
                     DWORD Loop = PicProgWriteP;
                     Instruction(OP_MOVF, ScratchS, DEST_F);
@@ -3863,7 +3875,7 @@ static void CompileFromIntermediate(bool topLevel)
                     Instruction(OP_GOTO, endifAddr); // here bit is SET
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
-                    CopyLitToReg(Scratch0, sov1, 0x01, "");
+                    CopyLitToReg(Scratch0, sov1, "", 0x01, "");
                     DWORD Skip = AllocFwdAddr();
                     DWORD Loop = PicProgWriteP;
                     Instruction(OP_MOVF, ScratchS, DEST_F);
@@ -3921,9 +3933,9 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name1, &addr1);
                 sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1.c_str(), addr1, a->literal, a->literal);
                 sov1 = SizeOfVar(a->name1);
-                sov2 = byteNeeded(a->literal);
+                //sov2 = byteNeeded(a->literal);
 #ifdef AUTO_BANKING
-                CopyLitToReg(addr1, sov1, a->literal, comment);
+                CopyLitToReg(addr1, sov1, a->name1.c_str(), a->literal, comment);
 #else
                 WriteRegister(addr1, (BYTE)(a->literal & 0xff), comment);
                 if(sov >= 2) {
@@ -4281,7 +4293,7 @@ static void CompileFromIntermediate(bool topLevel)
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
                 CopyArgToReg(true, Scratch0, sov2, a->name2, false);
-                CopyLitToReg(Scratch4, sov2, 0x0, "$OPPOSITE");
+                CopyLitToReg(Scratch4, sov2, a->name2.c_str(), 0x0, "$OPPOSITE");
                 int i, j;
                 for(j = 0; j < 8 * sov2; j++) {
                     for(i = 0; i < sov2; i++) {
@@ -4895,7 +4907,7 @@ static void CompileFromIntermediate(bool topLevel)
 /**/
                 // Copy l->d.setPwm.duty_cycle into Scratch0:1
                 if(IsNumber(a->name1)) {
-                    CopyLitToReg(Scratch0, 2, hobatoi(a->name1.c_str()), a->name1);
+                    CopyLitToReg(Scratch0, 2, "", hobatoi(a->name1.c_str()), a->name1);
                 } else {
                     MemForVariable(a->name1, &addr1);
                     CopyRegToReg(Scratch0, 2, addr1, 2, "Scratch0:1", a->name1, false);
@@ -4917,7 +4929,7 @@ static void CompileFromIntermediate(bool topLevel)
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
                     MultiplyNeeded = true;
-                    CopyLitToReg(Scratch2, 2, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 2, "", pr2plus1, "pr2plus1");
                     CallWithPclath(MultiplyRoutineAddress);
 
                     Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
@@ -4933,7 +4945,7 @@ static void CompileFromIntermediate(bool topLevel)
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
                     MultiplyNeeded24x16 = true;
-                    CopyLitToReg(Scratch2, 3, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 3, "", pr2plus1, "pr2plus1");
                     CallWithPclath(MultiplyRoutineAddress24x16);
 
                     sr0(Scratch2, 3);                       //  divide by 2
@@ -4950,7 +4962,7 @@ static void CompileFromIntermediate(bool topLevel)
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
                     MultiplyNeeded24x16 = true;
-                    CopyLitToReg(Scratch2, 3, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 3, "", pr2plus1, "pr2plus1");
                     CallWithPclath(MultiplyRoutineAddress24x16);
 
                     sr0(Scratch2, 3);                       // divide by 2
@@ -4978,7 +4990,7 @@ static void CompileFromIntermediate(bool topLevel)
                     } else
                         Instruction(OP_CLRF, Scratch3);
 #else
-                    CopyLitToReg(Scratch2, 2, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 2, "", pr2plus1, "pr2plus1");
 #endif
                     CallWithPclath(MultiplyRoutineAddress);
 
@@ -4996,7 +5008,7 @@ static void CompileFromIntermediate(bool topLevel)
                     Instruction(OP_MOVWF, Scratch2, 0);
                     Instruction(OP_CLRF, Scratch3, 0);
 #else
-                    CopyLitToReg(Scratch2, 2, 100, "100");
+                    CopyLitToReg(Scratch2, 2, "", 100, "100");
 #endif
                     CallWithPclath(DivideRoutineAddress);
 
@@ -5591,7 +5603,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                 Comment("Scratch0:1 := Index '%s'", a->name3.c_str());
                 if(IsNumber(a->name3)) {
-                    CopyLitToReg(Scratch0, 2, hobatoi(a->name3.c_str()), a->name3);
+                    CopyLitToReg(Scratch0, 2, "", hobatoi(a->name3.c_str()), a->name3);
                 } else {
                     MemForVariable(a->name3, &addr3);
                     CopyRegToReg(Scratch0, 2, addr3, 2, "$Scratch0", a->name3, false);
@@ -7344,7 +7356,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
                     Instruction(OP_GOTO, BeginOfPLCCycle);
                 }
                 CopyLitToReg(
-                    plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+                    plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), "", plcTmr.softDivisor, "plcTmr.softDivisor");
             } else {
                 DWORD setLiteral = AllocFwdAddr();
                 /*
@@ -7390,7 +7402,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
           */
                 FwdAddrIsNow(setLiteral);
                 CopyLitToReg(
-                    plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+                    plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), "", plcTmr.softDivisor, "plcTmr.softDivisor");
             }
         }
     }
