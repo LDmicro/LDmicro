@@ -1,5 +1,5 @@
 DEFINES = /D_WIN32_WINNT=0x500 /DISOLATION_AWARE_ENABLED /D_WIN32_IE=0x400 /DWIN32_LEAN_AND_MEAN /DWIN32 /DNOMINMAX /D$(D)
-CFLAGS  = /W3 /nologo -I. -I..\common\win32 -I..\common\gsl-lite\include -I..\common\gsl-lite\include\gsl -I..\common\stringarray /O2 /D_CRT_SECURE_NO_WARNINGS /Zi /D_CRT_SECURE_NO_DEPRECATE /EHsc /J
+CFLAGS  = /W3 /nologo -I. -I..\common\win32 -I..\common\gsl-lite\include -I..\common\gsl-lite\include\gsl -I..\common\stringarray -I..\common\utils /O2 /D_CRT_SECURE_NO_WARNINGS /Zi /D_CRT_SECURE_NO_DEPRECATE /EHsc /J
 
 HEADERS = ..\common\win32\freeze.h ldmicro.h mcutable.h intcode.h
 
