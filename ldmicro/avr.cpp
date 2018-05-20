@@ -1900,23 +1900,6 @@ static void LoadXAddrFromReg(int reg, int sov)
 }
 
 //-----------------------------------------------------------------------------
-<<<<<<< HEAD
-=======
-static void LoadXAddrFromReg(int reg, int sov)
-{
-    if(sov < 1)
-        oops();
-    if(sov > 2)
-        oops();
-    Instruction(OP_MOV, XL, reg);       // X-register Low Byte
-    if(sov > 1)                         //
-        Instruction(OP_MOV, XH, reg+1); // X-register High Byte
-    else                                //
-        Instruction(OP_LDI, XH, 0);     // X-register High Byte
-}
-
-//-----------------------------------------------------------------------------
->>>>>>> 7e5f8e43039103d2586379c029bcb4bc203d6135
 static void LoadYAddrFromReg(int reg, int sov)
 {
     if(sov < 1)
@@ -1945,11 +1928,7 @@ static void LoadZAddrFromReg(int reg, int sov)
 }
 
 //-----------------------------------------------------------------------------
-<<<<<<< HEAD
 static void LdToReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation)
-=======
-static void LdToReg(AvrOp op, int reg, int sovReg, int sov, bool signPropagation)
->>>>>>> 7e5f8e43039103d2586379c029bcb4bc203d6135
 {
     if(sovReg < 1)
         oops();
@@ -1959,12 +1938,11 @@ static void LdToReg(AvrOp op, int reg, int sovReg, int sov, bool signPropagation
         oops();
     if(sov > 4)
         oops();
-<<<<<<< HEAD
-    
-	if((op != OP_LD_XP) && (op != OP_LD_YP) && (op != OP_LD_ZP))
+
+    if((op != OP_LD_XP) && (op != OP_LD_YP) && (op != OP_LD_ZP))
         oops();
-    
-	for(int i = 0; i < sovReg; i++) {
+
+    for(int i = 0; i < sovReg; i++) {
         if(i < sov)
             Instruction(op, reg + i);
         else {
@@ -1975,57 +1953,6 @@ static void LdToReg(AvrOp op, int reg, int sovReg, int sov, bool signPropagation
             }
         }
     }
-=======
-    if((op != OP_LD_XP) && (op != OP_LD_YP) && (op != OP_LD_ZP))
-        oops();
-    for(int i = 0; i < sovReg; i++) {
-        if(i < sov)
-            Instruction(op, reg + i);
-        else {
-            Instruction(OP_LDI, reg + i, 0);
-            if(signPropagation) {
-                Instruction(OP_SBRC, reg + i - 1, BIT7); // Sign propagation
-                Instruction(OP_LDI, reg + i, 0xff);
-            }
-        }
-    }
-    /*
-    Instruction(op, reg);
-    if(sovReg >= 2) {
-        if(sov >= 2)
-            Instruction(op, reg + 1);
-        else {
-            Instruction(OP_LDI, reg + 1, 0);
-            if(signPropagation) {
-                Instruction(OP_SBRC, reg, BIT7); // Sign propagation
-                Instruction(OP_LDI, reg + 1, 0xff);
-            }
-        }
-    }
-    if(sovReg >= 3) {
-        if(sov >= 3)
-            Instruction(op, reg + 2);
-        else {
-            Instruction(OP_LDI, reg + 2, 0);
-            if(signPropagation) {
-                Instruction(OP_SBRC, reg + 1, BIT7); // Sign propagation
-                Instruction(OP_LDI, reg + 2, 0xff);
-            }
-        }
-    }
-    if(sovReg >= 4) {
-        if(sov >= 4)
-            Instruction(op, reg + 3);
-        else {
-            Instruction(OP_LDI, reg + 3, 0);
-            if(signPropagation) {
-                Instruction(OP_SBRC, reg + 2, BIT7); // Sign propagation
-                Instruction(OP_LDI, reg + 3, 0xff);
-            }
-        }
-    }
-    */
->>>>>>> 7e5f8e43039103d2586379c029bcb4bc203d6135
 }
 //-----------------------------------------------------------------------------
 static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char *name)
@@ -2038,13 +1965,8 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
     LoadZAddr(addr, name); // load direct addres
     if(name && IsAddrInVar(name)) {
         int sov = SizeOfVar(name);
-<<<<<<< HEAD
         LdToReg(OP_LD_ZP, sov, r4, 2, false); // as address
         LoadZAddrFromReg(r4, 2);              // reload indirect addres
-=======
-        LdToReg(OP_LD_ZP, r25, 2, sov, false); // as address
-        LoadZAddrFromReg(r25, 2);              // reload indirect addres
->>>>>>> 7e5f8e43039103d2586379c029bcb4bc203d6135
     }
     DWORD l1, l2;
     l1 = (literal & 0xff);
@@ -2979,18 +2901,9 @@ static void CopyVarToReg(int reg, int sovReg, const char *var)
     MemForVariable(var, &addr);
     LoadXAddr(addr, var); // load direct addres
 
-<<<<<<< HEAD
     if(IsAddrInVar(var)) {
         LdToReg(OP_LD_XP, sov, r4, 2, false); // as address
         LoadXAddrFromReg(r4, 2);              // reload indirect addres
-=======
-    if(var[0] == '#') {
-        LdToReg(OP_LD_XP, reg, 2, sov, false);     // as address
-        LoadXAddrFromReg(reg, 2);                  // reload indirect addres
-        LdToReg(OP_LD_XP, reg, sovReg, sov, true); // as data
-    } else {
-        LdToReg(OP_LD_XP, reg, sovReg, sov, true); // as data
->>>>>>> 7e5f8e43039103d2586379c029bcb4bc203d6135
     }
     LdToReg(OP_LD_XP, sov, reg, sovReg, true); // as data
 }
@@ -3028,8 +2941,8 @@ static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagati
 
     if((op != OP_ST_XP) && (op != OP_ST_YP) && (op != OP_ST_ZP))
         oops();
-    
-	for(int i = 0; i < sovReg; i++) {
+
+    for(int i = 0; i < sovReg; i++) {
         if(i < sov)
             Instruction(op, reg + i);
         else {
@@ -3045,16 +2958,16 @@ static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagati
 //-----------------------------------------------------------------------------
 static void _CopyRegToVar(int l, const char *f, const char *args, const char *var, int reg, int sovReg)
 {
-	DWORD addr;
+    DWORD addr;
     int   sov;
-	if(IsAddrInVar(var)) {
-		sov = SizeOfVar(&var[1]);
-	    MemForVariable(&var[1], &addr);
-	} else {
-		sov = SizeOfVar(var);
-		MemForVariable(var, &addr);
-	}
-	LoadXAddr(addr, var);  // load direct addres
+    if(IsAddrInVar(var)) {
+        sov = SizeOfVar(&var[1]);
+        MemForVariable(&var[1], &addr);
+    } else {
+        sov = SizeOfVar(var);
+        MemForVariable(var, &addr);
+    }
+    LoadXAddr(addr, var);  // load direct addres
 
     if(IsAddrInVar(var)) {
         LdToReg(OP_LD_XP, sov, r4, 2, false); // as address
