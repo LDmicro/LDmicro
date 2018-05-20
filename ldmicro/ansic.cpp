@@ -26,14 +26,15 @@
 #include "ldmicro.h"
 #include "intcode.h"
 #include "compilerexceptions.hpp"
+#include "filetracker.hpp"
 
 #include <unordered_set>
 #include <string>
 
-namespace  {
-std::unordered_set<std::string> variables;
-bool all_arduino_pins_are_mapped;
-}
+namespace {
+    std::unordered_set<std::string> variables;
+    bool                            all_arduino_pins_are_mapped;
+} // namespace
 
 static int mcu_ISA = -1;
 static int compiler_variant = -1;
@@ -103,8 +104,8 @@ static const char *MapSym(const char *str, int how)
     return ret;
 }
 
-static const char *MapSym(const NameArray& name, int how = ASINT);
-static const char *MapSym(const NameArray& name, int how)
+static const char *MapSym(const NameArray &name, int how = ASINT);
+static const char *MapSym(const NameArray &name, int how)
 {
     return MapSym(name.c_str(), how);
 }
@@ -113,88 +114,37 @@ static const char *MapSym(const NameArray& name, int how)
 // Generate a declaration for an integer var; easy, a static.
 //-----------------------------------------------------------------------------
 /**/
-static void DeclareInt(FILE *f, FILE* fh, const char *str, int sov)
+static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
 {
     if(*str == 'A') {
         fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
     } else if(sov == 1) {
         fprintf(f, "STATIC SBYTE %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
     } else if(sov == 2) {
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
     } else if((sov == 3) || (sov == 4)) {
         fprintf(f, "STATIC SDWORD %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SDWORD %s;\n#endif\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SDWORD %s;\n#endif\n", str);
     } else {
         fprintf(f, "STATIC SWORD %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
-    }
-}
-/*
-static void DeclareIntC(FILE *f, const char *str, int sov)
-{
-    if(*str == 'A') {
-        fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
-    } else if(sov == 1) {
-        fprintf(f, "STATIC SBYTE %s = 0;\n", str);
-    } else if(sov == 2) {
-        fprintf(f, "STATIC SWORD %s = 0;\n", str);
-    } else if((sov == 3) || (sov == 4)) {
-        fprintf(f, "STATIC SDWORD %s = 0;\n", str);
-    } else {
-        fprintf(f, "STATIC SWORD %s = 0;\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
     }
 }
 
-static void DeclareIntH(FILE *f, const char *str, int sov)
-{
-    if(*str == 'A') {
-    } else if(sov == 1) {
-        fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
-    } else if(sov == 2) {
-        fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
-    } else if((sov == 3) || (sov == 4)) {
-        fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern SDWORD %s;\n#endif\n", str);
-    } else {
-        fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern SWORD %s;\n#endif\n", str);
-    }
-}
-
-static void DeclareInt(FILE *fsrc, FILE* fhdr, const char *str, int sov)
-{
-    DeclareIntC(fsrc, str, sov);
-    DeclareIntH(fhdr, str, sov);
-}
-/**/
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var.
 //-----------------------------------------------------------------------------
 /**/
-static void DeclareStr(FILE *f, FILE* fh, const char *str, int sov)
+static void DeclareStr(FILE *f, FILE *fh, const char *str, int sov)
 {
     fprintf(f, "STATIC char %s[%d];\n", str, sov);
     fprintf(f, "\n");
-    fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern char %s[%d];\n#endif\n", str, sov);
-    fprintf(fh,"\n");
-}
-/*
-static void DeclareStrC(FILE *f, const char *str, int sov)
-{
-    fprintf(f, "STATIC char %s[%d];\n\n", str, sov);
+    fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern char %s[%d];\n#endif\n", str, sov);
+    fprintf(fh, "\n");
 }
 
-static void DeclareStrH(FILE *f, const char *str, int sov)
-{
-    fprintf(f,"#ifdef EXTERN_EVERYTHING\n  extern char %s[%d];\n#endif\n\n", str, sov);
-}
-
-static void DeclareStr(FILE *fsrc, FILE* fhdr, const char *str, int sov)
-{
-    DeclareStrC(fsrc, str, sov);
-    DeclareStrH(fhdr, str, sov);
-}
-/**/
 //-----------------------------------------------------------------------------
 // Generate a declaration for a bit var; three cases, input, output, and
 // internal relay. An internal relay is just a bool variable, but for an
@@ -209,7 +159,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     if(type == IO_TYPE_DIG_INPUT) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char *s = ArduinoPinName(iop);
+            const char   *s = ArduinoPinName(iop);
             if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
@@ -278,7 +228,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     } else if(type == IO_TYPE_DIG_OUTPUT) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char *s = ArduinoPinName(iop);
+            const char   *s = ArduinoPinName(iop);
             if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
@@ -410,13 +360,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     } else if(type == IO_TYPE_PWM_OUTPUT) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char *s = ArduinoPinName(iop);
+            const char   *s = ArduinoPinName(iop);
             if(strlen(s)) {
-                fprintf(flh,
-                        "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n",
-                        str,
-                        s,
-                        iop->pinName);
+                fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1; // Check that it's a PWM pin!\n", str);
                 all_arduino_pins_are_mapped = false;
@@ -467,13 +413,9 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     } else if(type == IO_TYPE_READ_ADC) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char *s = ArduinoPinName(iop);
+            const char   *s = ArduinoPinName(iop);
             if(strlen(s)) {
-                fprintf(flh,
-                        "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n",
-                        str,
-                        s,
-                        iop->pinName);
+                fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n", str, s, iop->pinName);
             } else {
                 fprintf(flh, "const int pin_%s = -1; // Check that it's a ADC pin!\n", str);
                 all_arduino_pins_are_mapped = false;
@@ -517,7 +459,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
         }
     } else {
         fprintf(f, "STATIC ldBOOL %s = 0;\n", str);
-        fprintf(fh,"#ifdef EXTERN_EVERYTHING\n  extern ldBOOL %s;\n#endif\n", str);
+        fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern ldBOOL %s;\n#endif\n", str);
         //      fprintf(f, "\n");
         fprintf(fh, "#define Read_%s() %s\n", str, str);
         fprintf(fh, "#define Write_%s(x) (%s = x)\n", str, str);
@@ -822,7 +764,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
     int lock_label = 0;
     indent = 1;
     for(int i = begin; i <= end; i++) {
-        char opc;
+        char        opc;
         const char *ops;
 
         if(IntCode[i].op == INT_END_IF)
@@ -892,73 +834,73 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "%s = rand();\n", MapSym(IntCode[i].name1, ASINT));
                 break;
 
-                    case INT_SET_VARIABLE_SHL:
-                        opc = '<';
-                        goto arith_shift;
-                    case INT_SET_VARIABLE_SHR:
-                        opc = '>';
-                        goto arith_shift;
-                    case INT_SET_VARIABLE_SR0:
-                        opc = '>';
-                        goto arith_shift;
-                    arith_shift:
-                        fprintf(f,
-                                "%s = %s %c%c %s;\n",
-                                MapSym(IntCode[i].name1, ASINT),
-                                MapSym(IntCode[i].name2, ASINT),
-                                opc,
-                                opc,
-                                MapSym(IntCode[i].name3, ASINT));
-                        break;
+            case INT_SET_VARIABLE_SHL:
+                opc = '<';
+                goto arith_shift;
+            case INT_SET_VARIABLE_SHR:
+                opc = '>';
+                goto arith_shift;
+            case INT_SET_VARIABLE_SR0:
+                opc = '>';
+                goto arith_shift;
+            arith_shift:
+                fprintf(f,
+                        "%s = %s %c%c %s;\n",
+                        MapSym(IntCode[i].name1, ASINT),
+                        MapSym(IntCode[i].name2, ASINT),
+                        opc,
+                        opc,
+                        MapSym(IntCode[i].name3, ASINT));
+                break;
 
-                    case INT_SET_VARIABLE_ROL:
-                        ops = "rol";
-                        goto cicle_shift;
-                    case INT_SET_VARIABLE_ROR:
-                        ops = "ror";
-                        goto cicle_shift;
-                    cicle_shift:
-                        fprintf(f,
-                                "%s = %s%d(%s, %s);\n",
-                                MapSym(IntCode[i].name1, ASINT),
-                                ops,
-                                SizeOfVar(IntCode[i].name2),
-                                MapSym(IntCode[i].name2, ASINT),
-                                MapSym(IntCode[i].name3, ASINT));
-                        break;
+            case INT_SET_VARIABLE_ROL:
+                ops = "rol";
+                goto cicle_shift;
+            case INT_SET_VARIABLE_ROR:
+                ops = "ror";
+                goto cicle_shift;
+            cicle_shift:
+                fprintf(f,
+                        "%s = %s%d(%s, %s);\n",
+                        MapSym(IntCode[i].name1, ASINT),
+                        ops,
+                        SizeOfVar(IntCode[i].name2),
+                        MapSym(IntCode[i].name2, ASINT),
+                        MapSym(IntCode[i].name3, ASINT));
+                break;
 
-                    case INT_SET_VARIABLE_AND:
-                        opc = '&';
-                        goto arith;
-                    case INT_SET_VARIABLE_OR:
-                        opc = '|';
-                        goto arith;
-                    case INT_SET_VARIABLE_XOR:
-                        opc = '^';
-                        goto arith;
-                    case INT_SET_VARIABLE_ADD:
-                        opc = '+';
-                        goto arith;
-                    case INT_SET_VARIABLE_SUBTRACT:
-                        opc = '-';
-                        goto arith;
-                    case INT_SET_VARIABLE_MULTIPLY:
-                        opc = '*';
-                        goto arith;
-                    case INT_SET_VARIABLE_DIVIDE:
-                        opc = '/';
-                        goto arith;
-                    case INT_SET_VARIABLE_MOD:
-                        opc = '%';
-                        goto arith;
-                    arith:
-                        fprintf(f,
-                                "%s = %s %c %s;\n",
-                                MapSym(IntCode[i].name1, ASINT),
-                                MapSym(IntCode[i].name2, ASINT),
-                                opc,
-                                MapSym(IntCode[i].name3, ASINT));
-                        break;
+            case INT_SET_VARIABLE_AND:
+                opc = '&';
+                goto arith;
+            case INT_SET_VARIABLE_OR:
+                opc = '|';
+                goto arith;
+            case INT_SET_VARIABLE_XOR:
+                opc = '^';
+                goto arith;
+            case INT_SET_VARIABLE_ADD:
+                opc = '+';
+                goto arith;
+            case INT_SET_VARIABLE_SUBTRACT:
+                opc = '-';
+                goto arith;
+            case INT_SET_VARIABLE_MULTIPLY:
+                opc = '*';
+                goto arith;
+            case INT_SET_VARIABLE_DIVIDE:
+                opc = '/';
+                goto arith;
+            case INT_SET_VARIABLE_MOD:
+                opc = '%';
+                goto arith;
+            arith:
+                fprintf(f,
+                        "%s = %s %c %s;\n",
+                        MapSym(IntCode[i].name1, ASINT),
+                        MapSym(IntCode[i].name2, ASINT),
+                        opc,
+                        MapSym(IntCode[i].name3, ASINT));
+                break;
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "%s++;\n", MapSym(IntCode[i].name1, ASINT));
@@ -1421,7 +1363,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     ExtractFileDir(compilePath);
     sprintf(ladderhName, "%s\\ladder.h_", compilePath);
 
-    FILE *flh = fopen(ladderhName, "w");
+    FileTracker flh(ladderhName, "w");
     if(!flh) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ladderhName);
         return false;
@@ -1484,28 +1426,25 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#include \"Arduino.h\"\n"
                 "\n");
         fprintf(flh,
-  "#ifdef __GNUC__\n"
-  "  //mem.h vvv\n"
-  "  //CodeVisionAVR V2.0 C Compiler\n"
-  "  //(C) 1998-2007 Pavel Haiduc, HP InfoTech S.R.L.\n"
-  "  //\n"
-  "  //  Memory access macros\n"
-  "\n"
-  "  #ifndef _MEM_INCLUDED_\n"
-  "  #define _MEM_INCLUDED_\n"
-  "\n"
-  "  #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
-  "  #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
-  "  #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
-  "  #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
-  "\n"
-  "  #endif\n"
-  "  //mem.h ^^^\n"
-  "#endif\n"
-       );
-        fprintf(flh,
-  "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n"
-       );
+                "#ifdef __GNUC__\n"
+                "  //mem.h vvv\n"
+                "  //CodeVisionAVR V2.0 C Compiler\n"
+                "  //(C) 1998-2007 Pavel Haiduc, HP InfoTech S.R.L.\n"
+                "  //\n"
+                "  //  Memory access macros\n"
+                "\n"
+                "  #ifndef _MEM_INCLUDED_\n"
+                "  #define _MEM_INCLUDED_\n"
+                "\n"
+                "  #define pokeb(addr,data) (*((volatile unsigned char *)(addr)) = (data))\n"
+                "  #define pokew(addr,data) (*((volatile unsigned int *)(addr)) = (data))\n"
+                "  #define peekb(addr) (*((volatile unsigned char *)(addr)))\n"
+                "  #define peekw(addr) (*((volatile unsigned int *)(addr)))\n"
+                "\n"
+                "  #endif\n"
+                "  //mem.h ^^^\n"
+                "#endif\n");
+        fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
     }
     fprintf(flh,
             "/*\n"
@@ -1587,11 +1526,9 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n");
     }
 
-    FILE *fh = fopen(desth, "w");
+    FileTracker fh(desth, "w");
     if(!fh) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), desth);
-        fclose(flh);
-        return false;
     }
     fprintf(fh,
             "/* This is auto-generated C header from LDmicro. Do not edit this file!\n"
@@ -1721,15 +1658,16 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n");
     }
 
+    FileTracker f;
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         SetExt(arduinoDest, dest, ".cpp");
+        f.open(arduinoDest, "w");
+    } else {
+        f.open(dest, "w");
     }
-    FILE *f = fopen(dest, "w");
+
     if(!f) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
-        fclose(flh);
-        fclose(fh);
-        return false;
     }
 
     fprintf(f,
@@ -2441,26 +2379,21 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#endif\n");
     }
 
-    fclose(f);
-
     fprintf(fh, "#endif\n");
-    fclose(fh);
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         if(all_arduino_pins_are_mapped)
-            fprintf(flh,"//");
+            fprintf(flh, "//");
         fprintf(
             flh,
             " You can comment or delete this line after provide the I/O pin mapping for ARDUINO board in ladder.h above.\n");
     }
     fprintf(flh, "\n");
     fprintf(flh, "#endif\n");
-    fclose(flh);
 
     if(compiler_variant == MNU_COMPILE_ARDUINO) {
         SetExt(ladderhName, dest, ".ino_");
-
-        FILE *fino = fopen(ladderhName, "w");
+        FileTracker fino(ladderhName, "w");
         if(!fino) {
             THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ladderhName);
             //return;
@@ -2488,7 +2421,6 @@ bool CompileAnsiC(const char *dest, int MNU)
                 CurrentLdName,
                 CurrentLdName,
                 CurrentLdName);
-        fclose(fino);
     }
 
     return true;
