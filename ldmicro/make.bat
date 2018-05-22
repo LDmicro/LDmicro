@@ -11,6 +11,6 @@ md OBJ
 @rem @nmake clean
 @rem @nmake D=LDLANG_RU %*
 @rem @nmake D=LDLANG_TR %*
-@nmake D=LDLANG_EN %*
+@nmake LDLANG=LDLANG_EN %*
 
 @if exist ldmicro.exe start ldmicro.exe %PROGECT%
