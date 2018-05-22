@@ -56,7 +56,7 @@ PRECOMP_PCH=$(OBJDIR)\stdafx.pch
 
 LIBS = user32.lib gdi32.lib comctl32.lib advapi32.lib shell32.lib
 
-all: $(OBJDIR)/ldmicro.exe $(OBJDIR)/ldinterpret.exe $(OBJDIR)/ldxinterpret.exe
+all: dir $(OBJDIR)/ldmicro.exe $(OBJDIR)/ldinterpret.exe $(OBJDIR)/ldxinterpret.exe
     @copy $(OBJDIR)\ldmicro.exe .
     @copy $(OBJDIR)\ldinterpret.exe .
     @copy $(OBJDIR)\ldxinterpret.exe .
@@ -69,6 +69,9 @@ clean:
     if exist $(OBJDIR) del /f /q $(OBJDIR)
 
 lang.cpp: $(OBJDIR)/lang-tables.h
+
+dir:
+    if not exist $(OBJDIR) mkdir $(OBJDIR)
 
 $(OBJDIR)/lang-tables.h: lang*.txt
     $(PERL) lang-tables.pl > $(OBJDIR)/lang-tables.h
@@ -109,4 +112,5 @@ $(LDLANGOBJ): $(@B).cpp
 
 $(HELPOBJ): $(OBJDIR)/helptext.cpp
     @$(CC) $(CFLAGS) $(DEFINES) -c -Fo$(OBJDIR)/helptext.obj $(OBJDIR)/helptext.cpp
+
 
