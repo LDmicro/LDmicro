@@ -120,6 +120,7 @@ SDWORD PicProgLdLen = 0;
 static int IntPcNow = -INT_MAX; //must be static
 
 // Scratch variables, for temporaries
+static DWORD ScratchI;
 static DWORD ScratchS;
 static DWORD Scratch0;
 static DWORD Scratch1;
@@ -2764,7 +2765,7 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
 // addr1 - dest, addr2 - source
 {
     Comment("CopyRegToReg");
-    if(addr1 == addr2) {
+    if((addr1 == addr2) && ((addr1 != 0) || (addr2 != 0))) {
         if(sov1 == sov2) {
             Error(_(" CopyRegToReg Warning 1"));
         } else {
@@ -2780,37 +2781,89 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
     if(sov2 > 4)
         ooops(name2);
 
-    if(IsAddrInVar(name1)) {
+    if(IsAddrInVar(name1) && (!IsAddrInVar(name2))) {
         //// sov1 = SizeOfVar(&name1[1]); // sov1 == SizeOfVar(name1); // It's right!
         MemForVariable(&name1[1], &addr1);
         Instruction(OP_MOVF, addr1, DEST_W, &name1[1]);
         Instruction(OP_MOVWF, REG_FSR, 0, name1);
+
         for(int i = 0; i < sov1; i++) {
             if(i < sov2) {
-                Instruction(OP_MOVF, addr2, DEST_W, name2);
+                Instruction(OP_MOVF, addr2 + i, DEST_W, name2);
                 Instruction(OP_MOVWF, REG_INDF, 0, name1);
             } else {
-                Instruction(OP_CLRF, REG_INDF);
+                Instruction(OP_MOVLW, 0x00); // NO BLINK
                 if(signPropagation) {
                     Instruction(OP_BTFSC, addr2 + sov2 - 1, BIT7, name2); // Sign propagation
-                    Instruction(OP_COMF, REG_INDF, DEST_F);
+                    Instruction(OP_MOVLW, 0xFF); // NO BLINK
                 }
+                Instruction(OP_MOVWF, REG_INDF, 0, name1); // NO BLINK
+            }
             if(i < (sov1 - 1))
                 Instruction(OP_INCF, REG_FSR, DEST_F);
+        }
+    } else if((!IsAddrInVar(name1)) && IsAddrInVar(name2)) {
+        //// sov2 = SizeOfVar(&name2[1]); // sov2 == SizeOfVar(name2); // It's right!
+        MemForVariable(&name2[1], &addr2);
+        Instruction(OP_MOVF, addr2, DEST_W, &name2[1]);
+        Instruction(OP_MOVWF, REG_FSR, 0, name2);
+
+        for(int i = 0; i < sov1; i++) {
+            if(i < sov2) {
+                Instruction(OP_MOVF, REG_INDF, DEST_W, name2);
+            } else {
+                Instruction(OP_MOVLW, 0x00); // NO BLINK
+                if(signPropagation) {
+                    Instruction(OP_BTFSC, addr1 + sov2 - 1, BIT7, name2); // Sign propagation // addr1 is Ok!
+                    Instruction(OP_MOVLW, 0xFF); // NO BLINK
+                }
             }
+            Instruction(OP_MOVWF, addr1 + i, 0, name1);
+            if(i < (sov2 - 1))
+                Instruction(OP_INCF, REG_FSR, DEST_F);
+        }
+    } else if((IsAddrInVar(name1)) && IsAddrInVar(name2)) {
+        MemForVariable(&name1[1], &addr1);
+        MemForVariable(&name2[1], &addr2);
+
+        for(int i = 0; i < sov1; i++) {
+            if(i < sov2) {
+                Instruction(OP_MOVF, addr2, DEST_W, &name2[1]);
+                Instruction(OP_MOVWF, REG_FSR, 0, name2);
+                for(int j = 0; j < i; j++)
+                    Instruction(OP_INCF, REG_FSR, DEST_F);
+                Instruction(OP_MOVF, REG_INDF, DEST_W, name2);
+                Instruction(OP_MOVWF, ScratchI, 0, "tmp");
+
+                Instruction(OP_MOVF, addr1, DEST_W, &name1[1]);
+                Instruction(OP_MOVWF, REG_FSR, 0, name1);
+                for(int j = 0; j < i; j++)
+                    Instruction(OP_INCF, REG_FSR, DEST_F);
+                Instruction(OP_MOVF,  ScratchI, DEST_W, "tmp");
+            } else {
+                Instruction(OP_INCF, REG_FSR, DEST_F); // FSR is addr1
+                Instruction(OP_MOVLW, 0x00); // NO BLINK
+                if(signPropagation) {
+                    Instruction(OP_BTFSC, ScratchI, BIT7, "tmp"); // Sign propagation
+                    Instruction(OP_MOVLW, 0xFF); // NO BLINK
+                }
+            }
+            Instruction(OP_MOVWF, REG_INDF, 0, name1);
         }
     } else {
         for(int i = 0; i < sov1; i++) {
             if(i < sov2) {
                 Instruction(OP_MOVF, addr2 + i, DEST_W, name2);
-                Instruction(OP_MOVWF, addr1 + i, 0, name1);
             } else {
-                Instruction(OP_CLRF, addr1 + i);
+                //Instruction(OP_CLRF, addr1 + i); // BLINK
+                Instruction(OP_MOVLW, 0x00); // NO BLINK
                 if(signPropagation) {
                     Instruction(OP_BTFSC, addr2 + sov2 - 1, BIT7, name2); // Sign propagation
-                    Instruction(OP_COMF, addr1 + i, DEST_F);
+                    //Instruction(OP_COMF, addr1 + i, DEST_F); // BLINK
+                    Instruction(OP_MOVLW, 0xFF); // NO BLINK
                 }
             }
+            Instruction(OP_MOVWF, addr1 + i, 0, name1);
         }
     }
     return;
@@ -2863,6 +2916,7 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const Nam
     CopyRegToReg(addr1, sov1, addr2, sov2, name1.c_str(), name2.c_str(), Sign);
 }
 
+//-----------------------------------------------------------------------------
 static void CopyVarToReg(DWORD addr1, int sov1, const char *name2, bool Sign)
 {
     DWORD addr2;
@@ -6990,6 +7044,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
 
     AllocBitsVars(); // first
 
+    ScratchI = AllocOctetRam(); // tmp indirect addressing
     ScratchS = AllocOctetRam(); // REG_STATUS
     Scratch0 = AllocOctetRam();
     Scratch1 = AllocOctetRam();
