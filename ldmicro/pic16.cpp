@@ -2692,7 +2692,7 @@ static void CopyLitToReg(DWORD addr, int sov, const char *name, SDWORD literal, 
         Instruction(OP_MOVWF, REG_FSR, 0, name); // indirect address
 
         for(int i = 0; i < sov; i++) {
-            lNow = ((literal >> (8 * i)) & 0xff);
+            lNow = (literal >> (8 * i)) & 0xff;
             if(lNow) {
                 if(lNow != lPrev)
                     Instruction(OP_MOVLW, lNow, 0, comment);
@@ -2705,7 +2705,7 @@ static void CopyLitToReg(DWORD addr, int sov, const char *name, SDWORD literal, 
         }
     } else {
         for(int i = 0; i < sov; i++) {
-            lNow = ((literal >> (8 * i)) & 0xff);
+            lNow = (literal >> (8 * i)) & 0xff;
             if(lNow) {
                 if(lNow != lPrev)
                     Instruction(OP_MOVLW, lNow, 0, comment);
