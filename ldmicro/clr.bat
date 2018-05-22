@@ -4,7 +4,6 @@ move  *.orig BAK
 
 del lang.txt
 
-del *.pdb
 del _*.fil
 del *.log
 del *.obj
@@ -42,7 +41,6 @@ del /S *.exp
 del /S *.idb
 del /S *.rep
 del /S *.xdc
-del /S *.pdb
 del /S *_manifest.rc
 del /S *.bsc
 del /S *.sbr

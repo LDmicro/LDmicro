@@ -22,6 +22,8 @@
 // for interpretation.
 // Jonathan Westhues, Aug 2005
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
+
 #include "ldmicro.h"
 #include "intcode.h"
 #include <vector>
