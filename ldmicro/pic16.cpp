@@ -2683,13 +2683,14 @@ static void CopyLitToReg(DWORD addr, int sov, const char *name, SDWORD literal, 
         ooops(comment);
 
     DWORD lNow, lPrev;
-    lNow = (literal & 0xff);
+    lNow = literal & 0xff;
     lPrev = ~lNow;
     if(IsAddrInVar(name)) {
         //// sov = SizeOfVar(&name[1]); // sov == SizeOfVar(name); // It's right!
         MemForVariable(&name[1], &addr);
         Instruction(OP_MOVF, addr, DEST_W, &name[1]);
-        Instruction(OP_MOVWF, REG_FSR, 0, name); // indirecr address
+        Instruction(OP_MOVWF, REG_FSR, 0, name); // indirect address
+
         for(int i = 0; i < sov; i++) {
             lNow = ((literal >> (8 * i)) & 0xff);
             if(lNow) {
