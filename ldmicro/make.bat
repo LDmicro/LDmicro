@@ -1,7 +1,5 @@
 rem @SET PROGECT=
 
-md OBJ
-
 :DEL_LDMICRO
 @del ldmicro.exe
 @if exist ldmicro.exe echo   NOT DELETED ldmicro.exe !!!

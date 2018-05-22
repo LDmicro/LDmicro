@@ -5,7 +5,6 @@ sub SYS { system($_[0]); }
 SYS("rmdir buildXXXX");
 SYS("rm -rf buildXXXX");
 SYS("mkdir buildXXXX");
-SYS("mkdir obj");
 
 foreach $f (qw(DE ES FR IT PT TR RU JA EN)) {
     SYS("nmake clean");
