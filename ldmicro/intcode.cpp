@@ -2523,10 +2523,10 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
-                  CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
-                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
+                CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
             } else {
-                  Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
+                Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
             }
             /*
             if(IsNumber(l->d.move.src)) {

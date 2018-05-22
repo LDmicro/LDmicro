@@ -1,3 +1,8 @@
+== Release
+
+   * Wiki: LDmicro indirect addressing
+   https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
+
 == Release 4.3.9.6
 
    * Wiki: HOW TO: Change USART Baud Rate
