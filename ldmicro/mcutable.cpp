@@ -21,6 +21,7 @@
 // instruction set, what init code, etc.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
 
 #include "mcutable.h"
 

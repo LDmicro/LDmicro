@@ -24,7 +24,7 @@
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "mcutable.h"
 #include "current_function.hpp"
 #include "compilercommon.hpp"

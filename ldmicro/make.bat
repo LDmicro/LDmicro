@@ -9,8 +9,8 @@ md OBJ
 @if exist ldmicro.exe goto DEL_LDMICRO
 
 @rem @nmake clean
-@rem @nmake D=LDLANG_RU %*
-@rem @nmake D=LDLANG_TR %*
+@rem @nmake LDLANG=LDLANG_RU %*
+@rem @nmake LDLANG=LDLANG_TR %*
 @nmake LDLANG=LDLANG_EN %*
 
 @if exist ldmicro.exe start ldmicro.exe %PROGECT%

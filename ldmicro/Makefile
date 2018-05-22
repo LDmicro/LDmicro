@@ -45,7 +45,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\mcutable.obj \
            $(OBJDIR)\display.obj
 
-LDLANGOBJ=$(OBJDIR)\lang.obj 
+LDLANGOBJ=$(OBJDIR)\lang.obj
 
 HELPOBJ  = $(OBJDIR)\helptext.obj
 

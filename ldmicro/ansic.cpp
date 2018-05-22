@@ -22,6 +22,7 @@
 // responsible for calling us with appropriate timing.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
 
 #include "ldmicro.h"
 #include "intcode.h"

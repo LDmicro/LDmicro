@@ -10,7 +10,7 @@ SYS("mkdir obj");
 foreach $f (qw(DE ES FR IT PT TR RU JA EN)) {
     SYS("nmake clean");
     print $f;
-    SYS("nmake D=LDLANG_$f");
+    SYS("nmake LDLANG=LDLANG_$f");
     $fl = lc($f);
     SYS("copy ldmicro.exe buildXXXX\\ldmicro-$fl.exe");
 }
