@@ -67,6 +67,7 @@ all: dir $(OBJDIR)/ldmicro.exe $(OBJDIR)/ldinterpret.exe $(OBJDIR)/ldxinterpret.
 clean:
     if not exist $(OBJDIR) mkdir $(OBJDIR)
     if exist $(OBJDIR) del /f /q $(OBJDIR)
+	del /f /q *.pdb
 
 lang.cpp: $(OBJDIR)/lang-tables.h
 
