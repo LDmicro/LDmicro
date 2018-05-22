@@ -24,6 +24,7 @@
 // table. If it fails then it just returns the English.
 // Jonathan Westhues, Apr 2007
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
 
 #include <cstring>
 
