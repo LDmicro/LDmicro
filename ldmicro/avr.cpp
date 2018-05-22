@@ -1929,6 +1929,8 @@ static void LoadZAddrFromReg(int reg, int sov)
 
 //-----------------------------------------------------------------------------
 static void LdToReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation)
+// used r25
+// Address is preloaded to X,Y or Z.
 {
     if(sovReg < 1)
         oops();
@@ -1946,28 +1948,43 @@ static void LdToReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation
         if(i < sov)
             Instruction(op, reg + i);
         else {
-            Instruction(OP_CLR, reg + i);
+            //Instruction(OP_CLR, reg + i); // BLINK
+            Instruction(OP_LDI, r25, 0x00); // NO BLINK
             if(signPropagation) {
-                Instruction(OP_SBRC, reg + i - 1, BIT7); // Sign propagation
-                Instruction(OP_COM, reg + i);
+                Instruction(OP_SBRC, reg + sov - 1, BIT7); // Sign propagation
+                Instruction(OP_LDI, r25, 0xFF); // NO BLINK
+                //Instruction(OP_COM, reg + i); // BLINK
             }
+            Instruction(OP_MOV, reg + i, r25); // NO BLINK
         }
     }
 }
 //-----------------------------------------------------------------------------
 static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char *name)
-// ued r4, r5, r25
+// used r4, r5, r25
 {
     if(sov < 1)
         ooops(name);
     if(sov > 4)
         ooops(name);
+
     LoadZAddr(addr, name); // load direct addres
     if(name && IsAddrInVar(name)) {
-        int sov = SizeOfVar(name);
-        LdToReg(OP_LD_ZP, sov, r4, 2, false); // as address
-        LoadZAddrFromReg(r4, 2);              // reload indirect addres
+        int sovA = SizeOfVar(&name[1]);
+        LdToReg(OP_LD_ZP, sovA, r4, 2, false); // as address
+        LoadZAddrFromReg(r4, 2);               // reload indirect addres
     }
+    DWORD lNow, lPrev;
+    lNow = literal & 0xff;
+    lPrev = ~lNow;
+    for(int i = 0; i < sov; i++) {
+        lNow = (literal >> (8 * i)) & 0xff;
+        if(lNow != lPrev)
+            Instruction(OP_LDI, r25, lNow);
+        Instruction(OP_ST_ZP, r25);
+        lPrev = lNow;
+    }
+    /*
     DWORD l1, l2;
     l1 = (literal & 0xff);
     Instruction(OP_LDI, r25, BYTE(l1), name);
@@ -1993,6 +2010,7 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
             }
         }
     }
+    */
 }
 
 static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const NameArray& name)
@@ -2902,8 +2920,9 @@ static void CopyVarToReg(int reg, int sovReg, const char *var)
     LoadXAddr(addr, var); // load direct addres
 
     if(IsAddrInVar(var)) {
-        LdToReg(OP_LD_XP, sov, r4, 2, false); // as address
-        LoadXAddrFromReg(r4, 2);              // reload indirect addres
+        int sovA = SizeOfVar(&var[1]);
+        LdToReg(OP_LD_XP, sovA, r4, 2, false); // as address
+        LoadXAddrFromReg(r4, 2);               // reload indirect addres
     }
     LdToReg(OP_LD_XP, sov, reg, sovReg, true); // as data
 }
@@ -2929,6 +2948,8 @@ static void CopyArgToReg(int reg, int sovReg, const NameArray& var)
 
 //-----------------------------------------------------------------------------
 static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation)
+// used r25
+// Address is preloaded to X,Y or Z.
 {
     if(sovReg < 1)
         oops();
@@ -2942,14 +2963,14 @@ static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagati
     if((op != OP_ST_XP) && (op != OP_ST_YP) && (op != OP_ST_ZP))
         oops();
 
-    for(int i = 0; i < sovReg; i++) {
-        if(i < sov)
+    for(int i = 0; i < sov; i++) {
+        if(i < sovReg)
             Instruction(op, reg + i);
         else {
-            Instruction(OP_CLR, r25);
+            Instruction(OP_CLR, r25); // NO BLINK
             if(signPropagation) {
                 Instruction(OP_SBRC, reg + sovReg - 1, BIT7); // Sign propagation
-                Instruction(OP_COM, r25);
+                Instruction(OP_COM, r25); // NO BLINK
             }
             Instruction(op, r25);
         }
@@ -2960,18 +2981,19 @@ static void _CopyRegToVar(int l, const char *f, const char *args, const char *va
 {
     DWORD addr;
     int   sov;
-    if(IsAddrInVar(var)) {
-        sov = SizeOfVar(&var[1]);
-        MemForVariable(&var[1], &addr);
-    } else {
-        sov = SizeOfVar(var);
-        MemForVariable(var, &addr);
-    }
-    LoadXAddr(addr, var);  // load direct addres
 
     if(IsAddrInVar(var)) {
-        LdToReg(OP_LD_XP, sov, r4, 2, false); // as address
-        LoadXAddrFromReg(r4, 2);              // reload indirect addres
+        MemForVariable(&var[1], &addr);
+    } else {
+        MemForVariable(var, &addr);
+    }
+    sov = SizeOfVar(var);
+    LoadXAddr(addr, var); // load direct addres
+
+    if(IsAddrInVar(var)) {
+        int sovA = SizeOfVar(&var[1]);
+        LdToReg(OP_LD_XP, sovA, r4, 2, false); // as address
+        LoadXAddrFromReg(r4, 2);               // reload indirect addres
     }
     StFromReg(OP_ST_XP, sov, reg, sovReg, true); // as data
 }
