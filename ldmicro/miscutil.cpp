@@ -89,7 +89,7 @@ void doexit(int status)
             "Please, open new issue at\n"
             "https://github.com/LDmicro/LDmicro/issues/new\n"
             "or send bug report to\n"
-            "LDmicroGitHub@gmail.com");
+            "LDmicro.GitHub@gmail.com");
     }
     exit(status);
 }
@@ -157,7 +157,7 @@ void CompileSuccessfulMessage(char *str)
     CompileSuccessfulMessage(str, MB_ICONINFORMATION);
 }
 
-void CompileSuccesfullAnsiCMessage(const char* dest)
+void CompileSuccesfullAnsiCMessage(const char *dest)
 {
     char str[MAX_PATH + 500];
     sprintf(str,

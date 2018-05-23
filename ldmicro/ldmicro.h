@@ -25,10 +25,10 @@
 #define __LDMICRO_H
 
 #include "stdafx.h"
+
 #include "mcutable.h"
 #include "current_function.hpp"
 #include "compilercommon.hpp"
-#include <gsl.hpp>
 
 typedef int32_t SWORD;
 typedef int32_t SDWORD;
@@ -194,7 +194,9 @@ typedef int32_t SDWORD;
 #define MNU_MAKE_TTRIGGER       0x4501
 #define MNU_INSERT_PWL          0x46
 
+#define USE_SFR
 #ifdef USE_SFR
+#define MNU_OPEN_SFR            0x4700
 #define MNU_INSERT_SFR          0x47    // special function register read
 #define MNU_INSERT_SFW          0x48    // special function register write
 #define MNU_INSERT_SSFB         0x49    // set bit in special function register
@@ -539,7 +541,13 @@ typedef int32_t SDWORD;
         case ELEM_ISP_CPRINTF: \
         case ELEM_UART_CPRINTF: \
         case ELEM_FORMATTED_STRING: \
-        case ELEM_PERSIST:
+        case ELEM_PERSIST: \
+        case ELEM_RSFR: \
+        case ELEM_WSFR: \
+        case ELEM_SSFR: \
+        case ELEM_CSFR: \
+        case ELEM_TSFR: \
+        case ELEM_T_C_SFR:
 
 typedef struct ElemSubcktParallelTag ElemSubcktParallel;
 typedef struct ElemSubcktSeriesTag ElemSubcktSeries;
@@ -954,8 +962,8 @@ void RollHome();
 void RollEnd();
 char *ExtractFileDir(char *dest);
 char *ExtractFilePath(char *dest);
-char *ExtractFileName(char *src); // with .ext
-char *GetFileName(char *dest, char *src); // without .ext
+const char *ExtractFileName(const char *src); // with .ext
+char *GetFileName(char *dest, const char *src); // without .ext
 char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
@@ -1305,9 +1313,9 @@ McuSpiInfo *GetMcuSpiInfo(char *name);
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
 McuPwmPinInfo *PwmPinInfoForName(char *name);
-McuPwmPinInfo *PwmPinInfoForName(const char* name, int timer);
-McuPwmPinInfo *PwmPinInfoForName(const char* name, int timer, int resolution);
-void getResolution(const char* s, int *resol, int *TOP);
+McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer);
+McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer, int resolution);
+void getResolution(const char *s, int *resol, int *TOP);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
 bool IsExtIntPin(int pin);
@@ -1319,7 +1327,7 @@ void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str, unsigned int uType);
 void CompileSuccessfulMessage(char *str);
-void CompileSuccesfullAnsiCMessage(const char* dest);
+void CompileSuccesfullAnsiCMessage(const char *dest);
 extern bool RunningInBatchMode;
 extern bool RunningInTestMode;
 extern HFONT MyNiceFont;
@@ -1346,23 +1354,23 @@ void StartSimulationTimer();
 bool ClearSimulationData();
 void ClrSimulationData();
 void CheckVariableNames();
-void DescribeForIoList(const char* name, int type, char *out);
+void DescribeForIoList(const char *name, int type, char *out);
 void SimulationToggleContact(char *name);
 bool GetSingleBit(char *name);
 void SetAdcShadow(char *name, SWORD val);
-SWORD GetAdcShadow(const char* name);
+SWORD GetAdcShadow(const char *name);
 SWORD GetAdcShadow(const NameArray& name);
 void DestroyUartSimulationWindow();
 void ShowUartSimulationWindow();
 extern bool InSimulationMode;
 //extern bool SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
-void SetSimulationVariable(const char* name, SDWORD val);
+void SetSimulationVariable(const char *name, SDWORD val);
 SDWORD GetSimulationVariable(const char *name, bool forIoList);
 SDWORD GetSimulationVariable(const char *name);
 SDWORD GetSimulationVariable(const NameArray& name);
 void SetSimulationStr(char *name, char *val);
-char *GetSimulationStr(const char* name);
+char *GetSimulationStr(const char *name);
 int FindOpName(int op, const NameArray& name1);
 int FindOpName(int op, const NameArray& name1, const NameArray& name2);
 int FindOpNameLast(int op, const NameArray& name1);
@@ -1577,7 +1585,7 @@ typedef struct PicAvrInstructionTag {
     char        arg1name[MAX_NAME_LEN];
     char        arg2name[MAX_NAME_LEN];
     int         rung;  // This Instruction located in Prog.rungs[rung] LD
-    int         IntPc; // This Instruction located in IntCode[IntPc]
+    uint32_t    IntPc; // This Instruction located in IntCode[IntPc]
     int         l;           // line in source file
     char        f[MAX_PATH]; // source file name
 } PicAvrInstruction;
@@ -1608,7 +1616,7 @@ int MemForVariable(const char *name, DWORD *addr);
 int MemForVariable(const NameArray& name, DWORD *addr);
 int SetMemForVariable(const char *name, DWORD addr, int sizeOfVar);
 int SetMemForVariable(const NameArray& name, DWORD addr, int sizeOfVar);
-int MemOfVar(const char* name, DWORD *addr);
+int MemOfVar(const char *name, DWORD *addr);
 int MemOfVar(const NameArray& name, DWORD *addr);
 uint8_t MuxForAdcVariable(const char *name);
 uint8_t MuxForAdcVariable(const NameArray& name);
@@ -1660,7 +1668,7 @@ bool Bin32BcdRoutineUsed();
 SDWORD CheckMakeNumber(const char *str);
 SDWORD CheckMakeNumber(const NameArray& str);
 void WipeIntMemory();
-bool CheckForNumber(const char* str);
+bool CheckForNumber(const char *str);
 int TenToThe(int x);
 int xPowerY(int x, int y);
 bool MultiplyRoutineUsed();
@@ -1668,6 +1676,7 @@ bool DivideRoutineUsed();
 void GenSymOneShot(char *dest, const char *name1, const char *name2);
 int getradix(const char *str);
 SDWORD CalcDelayClock(long long clocks); // in us
+bool IsAddrInVar(const char *name);
 
 // pic16.cpp
 extern SDWORD PicProgLdLen;
@@ -1682,7 +1691,7 @@ bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
 void CompileAvr(char *outFile);
 // ansic.cpp
 extern int compile_MNU;
-bool CompileAnsiC(char *outFile, int MNU);
+bool CompileAnsiC(const char *outFile, int MNU);
 // interpreted.cpp
 void CompileInterpreted(char *outFile);
 // xinterpreted.cpp

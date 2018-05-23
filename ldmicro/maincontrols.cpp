@@ -577,14 +577,16 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     // Special function menu
     SpecialFunction = CreatePopupMenu();
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFR, _("&Insert Read From SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFW, _("&Insert Write To SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SSFB, _("&Insert Set Bit In SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_csFB, _("&Insert Clear Bit In SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_TSFB, _("&Insert Test If Bit Set in SFR"));
-    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB, _("&Insert Test If Bit Clear in SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_OPEN_SFR, _("Replase the obsolete elements"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFR, _("Insert Read From SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFW, _("Insert Write To SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SSFB, _("Insert Set Bit In SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_csFB, _("Insert Clear Bit In SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_TSFB, _("Insert Test If Bit Set in SFR"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB, _("Insert Test If Bit Clear in SFR"));
 
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction, _("&Special Function for AVR"));
+    AppendMenu(
+        InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction, _("Special Function for AVR (Obsolete)"));
 #endif
 
     settings = CreatePopupMenu();

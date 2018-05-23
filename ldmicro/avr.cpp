@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
 // Copyright 2007 Jonathan Westhues
+// Copyright 2015 Nehrutsa Ihor
 //
 // This file is part of LDmicro.
 //
@@ -23,8 +24,6 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include <algorithm>
-#include <compilerexceptions.hpp>
 
 #define ASM_LABEL 1
 //                0 - no labels
@@ -42,15 +41,18 @@
 #define r2 2 // used in MultiplyRoutine, RANDOM
 #define r3 3 // used in CopyBit, XorBit, _SWAP etc.
 
-#define r5 5
+#define r4 4 // WriteLiteralToMemory
+#define r5 5 // WriteLiteralToMemory
+
+#define r6 6
 #define r7 7 // used as Sign Register (BIT7) in DivideRoutine
+#define r8 8
 #define r9 9 // used ONLY in QuadEncodInterrupt to save REG_SREG. Don't use elsewhere!!!
 
 #define r10 10 //used as op1 copy in MultiplyRoutine24
 #define r11 11
 #define r12 12
 #define r13 13
-
 #define r14 14
 #define r15 15
 #define r16 16 //used as op2
@@ -64,91 +66,25 @@
 #define r23 23 //used as op1+3 and result+3
 
 #define r24 24
-#define r25 25 // used in WriteMemory macro, CopyBit, SetBit, IfBitClear, etc.
+#define r25 25 // used in WriteLiteralToMemory, WriteMemory, CopyBit, SetBit, IfBitClear, etc.
 //      r25    // used as Loop counter in MultiplyRoutine, DivideRoutine, etc.
-
+/*
 #define r26 26 // X
 #define r27 27
 #define r28 28 // Y used as pointer to op2
 #define r29 29
 #define r30 30 // Z used as pointer to op1 and result
 #define r31 31
-
+*/
 /* Pointer definition   */
-#define XL r26
-#define XH r27
-#define YL r28
-#define YH r29
-#define ZL r30
-#define ZH r31
+#define XL 26
+#define XH 27
+#define YL 28
+#define YH 29
+#define ZL 30
+#define ZH 31
 static DWORD REG_EIND = 0; // EIND:ZH:ZL indirect addres for EICALL, EIJMP
 
-/*
-#define rX  r26
-#define Xlo r26
-#define Xhi r27
-
-#define rY  r28
-#define Ylo r28
-#define Yhi r29
-
-#define rZ  r30
-#define Zlo r30
-#define Zhi r31
-*/
-/*
-// not complete; just what I need
-typedef enum AvrOpTag {
-    OP_VACANT,
-    OP_ADC,
-    OP_ADD,
-    OP_ASR,
-    OP_BRCC,
-    OP_BRCS,
-    OP_BREQ,
-    OP_BRGE,
-    OP_BRLO,
-    OP_BRLT,
-    OP_BRNE,
-    OP_CBR,
-    OP_CLC,
-    OP_CLR,
-    OP_COM,
-    OP_CP,
-    OP_CPC,
-    OP_DEC,
-    OP_EOR,
-    OP_ICALL,
-    OP_IJMP,
-    OP_INC,
-    OP_LDI,
-    OP_LD_X,
-    OP_MOV,
-    OP_OUT,
-    OP_RCALL,
-    OP_RET,
-    OP_RETI,
-    OP_RJMP,
-    OP_ROR,
-    OP_SEC,
-    OP_SBC,
-    OP_SBCI,
-    OP_SBR,
-    OP_SBRC,
-    OP_SBRS,
-    OP_ST_X,
-    OP_SUB,
-    OP_SUBI,
-    OP_TST,
-    OP_WDR,
-} AvrOp;
-
-typedef struct AvrInstructionTag {
-    AvrOp       op;
-    DWORD       arg1;
-    DWORD       arg2;
-} AvrInstruction;
-*/
 #define MAX_PROGRAM_LEN 128 * 1024
 static PicAvrInstruction AvrProg[MAX_PROGRAM_LEN];
 static DWORD             AvrProgWriteP;
@@ -700,7 +636,7 @@ char *getName(char *s)
 static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm)
 {
     PicAvrInstruction *AvrInstr = &AvrProg[addrAt];
-    IntOp intOp;
+    IntOp              intOp;
     if(AvrInstr->IntPc > -1 && static_cast<uint32_t>(AvrInstr->IntPc) < IntCode.size())
         intOp = IntCode[AvrInstr->IntPc];
     strcpy(sAsm, "");
@@ -1514,7 +1450,7 @@ static void LoadXAddr(DWORD addr, const char *comment)
 //used X; Opcodes: 2
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
@@ -1529,8 +1465,9 @@ static void LoadXAddr(DWORD addr)
 {
     LoadXAddr(addr, nullptr);
 }
-
-static void LoadYAddr(DWORD addr)
+//----
+static void LoadYAddr(DWORD addr, const char *comment = nullptr);
+static void LoadYAddr(DWORD addr, const char *comment)
 //used Y; Opcodes: 2
 {
     if(addr <= 0) {
@@ -1541,11 +1478,11 @@ static void LoadYAddr(DWORD addr)
         Error(_("Addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
-    Instruction(OP_LDI, YL, (addr & 0xff)); // Y-register Low Byte
-    Instruction(OP_LDI, YH, (addr >> 8));   // Y-register High Byte
+    Instruction(OP_LDI, YL, (addr & 0xff), comment); // Y-register Low Byte
+    Instruction(OP_LDI, YH, (addr >> 8));            // Y-register High Byte
 }
-
-static void LoadZAddr(DWORD addr, char *comment)
+//----
+static void LoadZAddr(DWORD addr, const char *comment)
 //used Z; Opcodes: 2
 {
     if(addr <= 0) {
@@ -1613,7 +1550,7 @@ static void SETB(DWORD addr, int bit, const char *name)
     SETB(addr, bit, r25, name);
 }
 
-static void SETB(DWORD addr, int bit, const NameArray& name)
+static void SETB(DWORD addr, int bit, const NameArray &name)
 {
     SETB(addr, bit, r25, name.c_str());
 }
@@ -1666,7 +1603,7 @@ static void CLRB(DWORD addr, int bit, const char *name)
     CLRB(addr, bit, r25, name);
 }
 
-static void CLRB(DWORD addr, int bit, const NameArray& name)
+static void CLRB(DWORD addr, int bit, const NameArray &name)
 {
     CLRB(addr, bit, r25, name.c_str());
 }
@@ -1841,7 +1778,7 @@ static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYT
     // load r25 with the data
     Instruction(OP_LDI, r25, val, lit);
     // do the store
-    Instruction(OP_ST_ZP, r25, 0, name); // OP_.._ZP need for WriteMemoryNextAddr
+    Instruction(OP_ST_ZP, r25, 0, name); // only OP_.._ZP, need for WriteMemoryNextAddr
 }
 
 static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val, const char *name)
@@ -1868,7 +1805,7 @@ static void WriteMemoryNextAddr(BYTE val)
     // load r25 with the data
     Instruction(OP_LDI, r25, val);
     // do the store
-    Instruction(OP_ST_ZP, r25);
+    Instruction(OP_ST_ZP, r25); // only OP_.._ZP
 }
 
 //-----------------------------------------------------------------------------
@@ -1883,7 +1820,7 @@ static void WriteMemoryStillAddr(DWORD addr, BYTE val)
     // load r25 with the data
     Instruction(OP_LDI, r25, val);
     // do the store
-    Instruction(OP_ST_Z, r25); // not a OP_ST_ZP !
+    Instruction(OP_ST_Z, r25); // only OP_ST_Z, not a OP_ST_ZP !
 }
 
 //-----------------------------------------------------------------------------
@@ -1894,22 +1831,114 @@ static void WriteMemoryCurrAddr(BYTE val)
     // load r25 with the data
     Instruction(OP_LDI, r25, val);
     // do the store
-    Instruction(OP_ST_Z, r25); // not a OP_ST_ZP !
+    Instruction(OP_ST_Z, r25); // only OP_ST_Z, not a OP_ST_ZP !
 }
 
 //-----------------------------------------------------------------------------
-static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char *name)
+static void LoadXAddrFromReg(int reg, int sov)
 {
-    // vvv reassurance, check before calling this routine
+    if(sov < 1)
+        oops();
+    if(sov > 2)
+        oops();
+    Instruction(OP_MOV, XL, reg);         // X-register Low Byte
+    if(sov > 1)                           //
+        Instruction(OP_MOV, XH, reg + 1); // X-register High Byte
+    else                                  //
+        Instruction(OP_LDI, XH, 0);       // X-register High Byte
+}
+
+//-----------------------------------------------------------------------------
+static void LoadYAddrFromReg(int reg, int sov)
+{
+    if(sov < 1)
+        oops();
+    if(sov > 2)
+        oops();
+    Instruction(OP_MOV, YL, reg);         // Y-register Low Byte
+    if(sov > 1)                           //
+        Instruction(OP_MOV, YH, reg + 1); // Y-register High Byte
+    else                                  //
+        Instruction(OP_LDI, YH, 0);       // Y-register High Byte
+}
+
+//-----------------------------------------------------------------------------
+static void LoadZAddrFromReg(int reg, int sov)
+{
+    if(sov < 1)
+        oops();
+    if(sov > 2)
+        oops();
+    Instruction(OP_MOV, ZL, reg);         // Z-register Low Byte
+    if(sov > 1)                           //
+        Instruction(OP_MOV, ZH, reg + 1); // Z-register High Byte
+    else                                  //
+        Instruction(OP_LDI, ZH, 0);       // Z-register High Byte
+}
+
+//-----------------------------------------------------------------------------
+static void LdToReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation)
+// used r25
+// Address is preloaded to X,Y or Z.
+{
+    if(sovReg < 1)
+        oops();
+    if(sovReg > 4)
+        oops();
+    if(sov < 1)
+        oops();
+    if(sov > 4)
+        oops();
+
+    if((op != OP_LD_XP) && (op != OP_LD_YP) && (op != OP_LD_ZP))
+        oops();
+
+    for(int i = 0; i < sovReg; i++) {
+        if(i < sov)
+            Instruction(op, reg + i);
+        else {
+            //Instruction(OP_CLR, reg + i); // BLINK
+            Instruction(OP_LDI, r25, 0x00); // NO BLINK
+            if(signPropagation) {
+                Instruction(OP_SBRC, reg + sov - 1, BIT7); // Sign propagation
+                Instruction(OP_LDI, r25, 0xFF);            // NO BLINK
+                //Instruction(OP_COM, reg + i); // BLINK
+            }
+            Instruction(OP_MOV, reg + i, r25); // NO BLINK
+        }
+    }
+}
+//-----------------------------------------------------------------------------
+static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char *name)
+// used r4, r5, r25
+{
     if(sov < 1)
         ooops(name);
     if(sov > 4)
         ooops(name);
-    // ^^^ reassurance, check before calling this routine
-    DWORD l1, l2;
 
+    LoadZAddr(addr, name); // load direct addres
+    if(name && IsAddrInVar(name)) {
+        int sovA = SizeOfVar(&name[1]);
+        LdToReg(OP_LD_ZP, sovA, r4, 2, false); // as address
+        LoadZAddrFromReg(r4, 2);               // reload indirect addres
+    }
+    DWORD lNow, lPrev;
+    lNow = literal & 0xff;
+    lPrev = ~lNow;
+    for(int i = 0; i < sov; i++) {
+        lNow = (literal >> (8 * i)) & 0xff;
+        if(lNow != lPrev)
+            Instruction(OP_LDI, r25, lNow);
+        Instruction(OP_ST_ZP, r25);
+        lPrev = lNow;
+    }
+    /*
+    DWORD l1, l2;
     l1 = (literal & 0xff);
-    WriteMemory(addr, BYTE(l1), name, literal);
+    Instruction(OP_LDI, r25, BYTE(l1), name);
+    Instruction(OP_ST_ZP, r25, 0, name);
+
     if(sov >= 2) {
         l2 = ((literal >> 8) & 0xff);
         if(l1 != l2)
@@ -1930,9 +1959,10 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
             }
         }
     }
+    */
 }
 
-static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const NameArray& name)
+static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const NameArray &name)
 {
     WriteLiteralToMemory(addr, sov, literal, name.c_str());
 }
@@ -2130,7 +2160,7 @@ static void IfBitClear(DWORD addr, int bit, const char *name)
     IfBitClear(addr, bit, r25, name);
 }
 
-static void IfBitClear(DWORD addr, int bit, const NameArray& name)
+static void IfBitClear(DWORD addr, int bit, const NameArray &name)
 {
     IfBitClear(addr, bit, r25, name.c_str());
 }
@@ -2174,7 +2204,7 @@ static void IfBitSet(DWORD addr, int bit, const char *name)
     IfBitSet(addr, bit, r25, name);
 }
 
-static void IfBitSet(DWORD addr, int bit, const NameArray& name)
+static void IfBitSet(DWORD addr, int bit, const NameArray &name)
 {
     IfBitSet(addr, bit, r25, name.c_str());
 }
@@ -2393,44 +2423,44 @@ bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
     long int      bestSoftDivisor;
     long long int bestErr = LLONG_MAX;
     long long int err;
-        while(plcTmr.softDivisor <= max_softDivisor) {
-            plcTmr.prescaler = max_prescaler;
-            while(plcTmr.prescaler >= 1) {
-                for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
-                    err = plcTmr.ticksPerCycle - (long long int)plcTmr.tmr * plcTmr.prescaler * plcTmr.softDivisor;
-                    if(err < 0)
-                        err = -err;
+    while(plcTmr.softDivisor <= max_softDivisor) {
+        plcTmr.prescaler = max_prescaler;
+        while(plcTmr.prescaler >= 1) {
+            for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
+                err = plcTmr.ticksPerCycle - (long long int)plcTmr.tmr * plcTmr.prescaler * plcTmr.softDivisor;
+                if(err < 0)
+                    err = -err;
 
-                    if((bestErr > err) || ((bestErr == err) && (bestPrescaler < plcTmr.prescaler))) {
-                        bestErr = err;
-                        bestSoftDivisor = plcTmr.softDivisor;
-                        bestPrescaler = plcTmr.prescaler;
-                        bestTmr = plcTmr.tmr;
-                        if(err == 0)
-                            goto err0;
-                    }
+                if((bestErr > err) || ((bestErr == err) && (bestPrescaler < plcTmr.prescaler))) {
+                    bestErr = err;
+                    bestSoftDivisor = plcTmr.softDivisor;
+                    bestPrescaler = plcTmr.prescaler;
+                    bestTmr = plcTmr.tmr;
+                    if(err == 0)
+                        goto err0;
                 }
-                if(plcTmr.prescaler == 1)
-                    break;
-                else if(plcTmr.prescaler == 8)
-                    plcTmr.prescaler = 1;
-                else if(plcTmr.prescaler == 64)
-                    plcTmr.prescaler = 8;
-                else if(plcTmr.prescaler == 256)
-                    plcTmr.prescaler = 64;
-                else if(plcTmr.prescaler == 1024)
-                    plcTmr.prescaler = 256;
-                else
-                    oops();
             }
-            if(plcTmr.softDivisor == max_softDivisor)
+            if(plcTmr.prescaler == 1)
                 break;
-            plcTmr.softDivisor++;
+            else if(plcTmr.prescaler == 8)
+                plcTmr.prescaler = 1;
+            else if(plcTmr.prescaler == 64)
+                plcTmr.prescaler = 8;
+            else if(plcTmr.prescaler == 256)
+                plcTmr.prescaler = 64;
+            else if(plcTmr.prescaler == 1024)
+                plcTmr.prescaler = 256;
+            else
+                oops();
         }
-    err0:
-        plcTmr.softDivisor = bestSoftDivisor;
-        plcTmr.prescaler = bestPrescaler;
-        plcTmr.tmr = bestTmr;
+        if(plcTmr.softDivisor == max_softDivisor)
+            break;
+        plcTmr.softDivisor++;
+    }
+err0:
+    plcTmr.softDivisor = bestSoftDivisor;
+    plcTmr.prescaler = bestPrescaler;
+    plcTmr.tmr = bestTmr;
 
     plcTmr.Fcycle = 1.0 * Prog.mcuClock / (1.0 * plcTmr.softDivisor * plcTmr.prescaler * plcTmr.tmr);
     plcTmr.TCycle = 1.0 * plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr / (1.0 * Prog.mcuClock);
@@ -2830,49 +2860,23 @@ static void CopyLitToReg(int reg, int sov, SDWORD literal)
 //-----------------------------------------------------------------------------
 static void CopyVarToReg(int reg, int sovReg, const char *var)
 {
-    if(sovReg < 1)
-        oops();
-    if(sovReg > 4)
-        oops();
     DWORD addr;
     int   sov = SizeOfVar(var);
     if(sov != sovReg)
         dbp("reg=%d sovReg=%d <- var=%s sov=%d", reg, sovReg, var, sov);
 
     MemForVariable(var, &addr);
-    LoadXAddr(addr, var);
+    LoadXAddr(addr, var); // load direct addres
 
-    Instruction(OP_LD_XP, reg);
-    if(sovReg >= 2) {
-        if(sov >= 2)
-            Instruction(OP_LD_XP, reg + 1);
-        else {
-            Instruction(OP_LDI, reg + 1, 0);
-            Instruction(OP_SBRC, reg, BIT7); // Sign propagation
-            Instruction(OP_LDI, reg + 1, 0xff);
-        }
+    if(IsAddrInVar(var)) {
+        int sovA = SizeOfVar(&var[1]);
+        LdToReg(OP_LD_XP, sovA, r4, 2, false); // as address
+        LoadXAddrFromReg(r4, 2);               // reload indirect addres
     }
-    if(sovReg >= 3) {
-        if(sov >= 3)
-            Instruction(OP_LD_XP, reg + 2);
-        else {
-            Instruction(OP_LDI, reg + 2, 0);
-            Instruction(OP_SBRC, reg + 1, BIT7); // Sign propagation
-            Instruction(OP_LDI, reg + 2, 0xff);
-        }
-    }
-    if(sovReg >= 4) {
-        if(sov >= 4)
-            Instruction(OP_LD_XP, reg + 3);
-        else {
-            Instruction(OP_LDI, reg + 3, 0);
-            Instruction(OP_SBRC, reg + 2, BIT7); // Sign propagation
-            Instruction(OP_LDI, reg + 3, 0xff);
-        }
-    }
+    LdToReg(OP_LD_XP, sov, reg, sovReg, true); // as data
 }
 
-static void CopyVarToReg(int reg, int sovReg, const NameArray& var)
+static void CopyVarToReg(int reg, int sovReg, const NameArray &var)
 {
     CopyVarToReg(reg, sovReg, var.c_str());
 }
@@ -2886,53 +2890,64 @@ static void CopyArgToReg(int reg, int sovReg, const char *var)
         CopyVarToReg(reg, sovReg, var);
 }
 
-static void CopyArgToReg(int reg, int sovReg, const NameArray& var)
+static void CopyArgToReg(int reg, int sovReg, const NameArray &var)
 {
     CopyArgToReg(reg, sovReg, var.c_str());
 }
 
 //-----------------------------------------------------------------------------
+static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation)
+// used r25
+// Address is preloaded to X,Y or Z.
+{
+    if(sovReg < 1)
+        oops();
+    if(sovReg > 4)
+        oops();
+    if(sov < 1)
+        oops();
+    if(sov > 4)
+        oops();
+
+    if((op != OP_ST_XP) && (op != OP_ST_YP) && (op != OP_ST_ZP))
+        oops();
+
+    for(int i = 0; i < sov; i++) {
+        if(i < sovReg)
+            Instruction(op, reg + i);
+        else {
+            Instruction(OP_CLR, r25); // NO BLINK
+            if(signPropagation) {
+                Instruction(OP_SBRC, reg + sovReg - 1, BIT7); // Sign propagation
+                Instruction(OP_COM, r25);                     // NO BLINK
+            }
+            Instruction(op, r25);
+        }
+    }
+}
+//-----------------------------------------------------------------------------
 static void _CopyRegToVar(int l, const char *f, const char *args, const char *var, int reg, int sovReg)
 {
     DWORD addr;
-    int   sov = SizeOfVar(var);
+    int   sov;
 
-    MemForVariable(var, &addr);
-    LoadXAddr(addr, var);
+    if(IsAddrInVar(var)) {
+        MemForVariable(&var[1], &addr);
+    } else {
+        MemForVariable(var, &addr);
+    }
+    sov = SizeOfVar(var);
+    LoadXAddr(addr, var); // load direct addres
 
-    Instruction(OP_ST_XP, reg);
-    if(sov >= 2) {
-        if(sovReg >= 2)
-            Instruction(OP_ST_XP, reg + 1);
-        else {
-            Instruction(OP_LDI, reg + 1, 0);
-            Instruction(OP_SBRC, reg, BIT7); // Sign propagation
-            Instruction(OP_LDI, reg + 1, 0xff);
-        }
+    if(IsAddrInVar(var)) {
+        int sovA = SizeOfVar(&var[1]);
+        LdToReg(OP_LD_XP, sovA, r4, 2, false); // as address
+        LoadXAddrFromReg(r4, 2);               // reload indirect addres
     }
-    if(sov >= 3) {
-        if(sovReg >= 3)
-            Instruction(OP_ST_XP, reg + 2);
-        else {
-            Instruction(OP_LDI, reg + 2, 0);
-            Instruction(OP_SBRC, reg + 1, BIT7); // Sign propagation
-            Instruction(OP_LDI, reg + 2, 0xff);
-        }
-    }
-    if(sov >= 4) {
-        if(sovReg >= 4)
-            Instruction(OP_ST_XP, reg + 3);
-        else {
-            Instruction(OP_LDI, reg + 3, 0);
-            Instruction(OP_SBRC, reg + 2, BIT7); // Sign propagation
-            Instruction(OP_LDI, reg + 3, 0xff);
-        }
-    }
-    if(sov > 4)
-        oops()
+    StFromReg(OP_ST_XP, sov, reg, sovReg, true); // as data
 }
 
-static void _CopyRegToVar(int l, const char *f, const char* args, const NameArray& var, int reg, int sovReg)
+static void _CopyRegToVar(int l, const char *f, const char *args, const NameArray &var, int reg, int sovReg)
 {
     _CopyRegToVar(l, f, args, var.c_str(), reg, sovReg);
 }
@@ -3378,7 +3393,10 @@ static void CompileFromIntermediate()
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
-                MemForVariable(a->name1, &addr1);
+                if(IsAddrInVar(a->name1.c_str()))
+                    MemForVariable(&a->name1[1], &addr1);
+                else
+                    MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 WriteLiteralToMemory(addr1, sov1, a->literal, a->name1);
                 break;
@@ -3814,8 +3832,8 @@ static void CompileFromIntermediate()
                 break;
             }
 #endif
-                /*
-            #ifdef USE_SFR
+
+#ifdef USE_SFR
             // Sepcial function
             case INT_READ_SFR_LITERAL: {
                 MemForVariable(a->name1, &addr1);
@@ -3838,20 +3856,23 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_WRITE_SFR_LITERAL_L: {
-              //MemForVariable(a->name1, &addr1); // name not used
+                Comment("INT_WRITE_SFR_LITERAL_L");
+                //MemForVariable(a->name1, &addr1); // name not used
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff)); //op
-                Instruction(OP_LDI, 26, (a->literal & 0xff)); //sfr
-                Instruction(OP_LDI, 27, (a->literal >> 8));   //sfr
+                Instruction(OP_LDI, 26, (a->literal & 0xff));  //sfr
+                Instruction(OP_LDI, 27, (a->literal >> 8));    //sfr
                 Instruction(OP_ST_X, 28, 0);
                 break;
             }
             case INT_WRITE_SFR_VARIABLE_L: {
-                CopyArgToReg(ZL, a->name1, 2); //sfr
+                Comment("INT_WRITE_SFR_VARIABLE_L");
+                CopyArgToReg(ZL, 2, a->name1);                //sfr
                 Instruction(OP_LDI, 28, (a->literal & 0xff)); //op
                 Instruction(OP_ST_Z, 28, 0);
                 break;
             }
             case INT_WRITE_SFR_LITERAL: {
+                Comment("INT_WRITE_SFR_LITERAL");
                 MemForVariable(a->name1, &addr1); //op
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 15, 0);
@@ -3861,7 +3882,8 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_WRITE_SFR_VARIABLE: {
-                CopyArgToReg(ZL, a->name1, 2); //sfr
+                Comment("INT_WRITE_SFR_VARIABLE");
+                CopyArgToReg(ZL, 2, a->name1);    //sfr
                 MemForVariable(a->name2, &addr2); //op
                 LoadXAddr(addr2);
                 Instruction(OP_LD_X, 15, 0);
@@ -3887,7 +3909,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_MOV, 27, 17);
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_LDI, 28, (a->literal & 0xff));
-                Instruction(OP_OR, 1, 28);  // logic OR by R1,R0 result is in R1
+                Instruction(OP_OR, 1, 28); // logic OR by R1,R0 result is in R1
                 Instruction(OP_ST_X, 1, 0);
                 break;
             }
@@ -4104,10 +4126,11 @@ static void CompileFromIntermediate()
                 CompileIfBody(notTrue);
                 break;
             }
-            // ^^^ sfr funtions  ^^^
-            #endif
-*/
+// ^^^ sfr funtions  ^^^
+#endif
+
             case INT_SET_VARIABLE_TO_VARIABLE:
+                Comment("INT_SET_VARIABLE_TO_VARIABLE %s = %s", a->name1.c_str(), a->name2.c_str());
                 CopyVarToReg(r16, SizeOfVar(a->name2), a->name2);
                 CopyRegToVar(a->name1, r16, SizeOfVar(a->name2));
                 break;
@@ -4350,7 +4373,8 @@ static void CompileFromIntermediate()
 
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                Comment("INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
+                Comment(
+                    "INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol = 7; // 0-100% (6.7 bit)
                 int TOP = 0xFF;
                 getResolution(a->name4.c_str(), &resol, &TOP);
@@ -4953,21 +4977,21 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_COMMENT:
-                Comment("%s",a->name1.c_str());
+                Comment("%s", a->name1.c_str());
                 break;
 
             case INT_AllocKnownAddr:
-                Comment("INT_AllocKnownAddr %d %08X", a->literal, AddrOfRungN[a->literal].KnownAddr);
+                //Comment("INT_AllocKnownAddr %d %08X", a->literal, AddrOfRungN[a->literal].KnownAddr);
                 AddrOfRungN[a->literal].KnownAddr = AvrProgWriteP;
                 break;
 
             case INT_AllocFwdAddr:
-                Comment("INT_AllocFwdAddr %d %08X", a->literal, AddrOfRungN[a->literal].FwdAddr);
+                //Comment("INT_AllocFwdAddr %d %08X", a->literal, AddrOfRungN[a->literal].FwdAddr);
                 AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
                 break;
 
             case INT_FwdAddrIsNow:
-                Comment("INT_FwdAddrIsNow %d %08x", a->literal, AddrOfRungN[a->literal].FwdAddr);
+                //Comment("INT_FwdAddrIsNow %d %08x", a->literal, AddrOfRungN[a->literal].FwdAddr);
                 FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
                 break;
 

@@ -21,21 +21,26 @@
 // instruction set, what init code, etc.
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
+#include "stdafx.h"
 
 #include "mcutable.h"
 
 #ifndef arraylen
 
 #if _MSC_VER < 1900
-#define arraylen(x) (sizeof(x)/sizeof((x)[0]))
+#define arraylen(x) (sizeof(x) / sizeof((x)[0]))
 #else
-namespace  {
-template<class T, uint32_t N >
-constexpr uint32_t arraylen(T (&)[N]) {return N;}
-}
+namespace {
+    template <class T, uint32_t N> constexpr uint32_t arraylen(T (&)[N])
+    {
+        return N;
+    }
+} // namespace
 #endif
 
 #endif
+
+// clang-format off
 
 //-----------------------------------------------------------------------------
 // AT90USB647( AT90USB646 should also work but I do not have hardware to test ).
@@ -2057,9 +2062,11 @@ McuIoInfo SupportedMcus_[] = {
     },
 };
 
+// clang-format on
+
 std::vector<McuIoInfo> SupportedMcus(SupportedMcus_, SupportedMcus_ + arraylen(SupportedMcus_));
 
-std::vector<McuIoInfo>& supportedMcus()
+std::vector<McuIoInfo> &supportedMcus()
 {
     return SupportedMcus;
 }

@@ -43,7 +43,7 @@ static DWORD                     rgbResult = 0;
 //-----------------------------------------------------------------------------
 static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-/*
+    /*
     if(msg == WM_CHAR) {
         if(hwnd == ConfigBitsTextbox) {
             if(!(ishobdigit(wParam) || wParam == '\b'))
@@ -344,7 +344,6 @@ static void MakeControls()
 
 UINT_PTR CALLBACK CCHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-    // dbpd(uiMsg)
     return 0;
 }
 

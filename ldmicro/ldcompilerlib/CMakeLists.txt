@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.11)
+include(../cmake/PrecompiledHeader.cmake)
 
 project(ldcompilerlib LANGUAGES CXX)
 
@@ -24,6 +25,7 @@ set(LD_COMPILER_SRC_LIST
     ../pcports.cpp
     ../translit.cpp
     ../xinterpreted.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp
 
     ../accel.h
     ../bits.h
@@ -34,6 +36,7 @@ set(LD_COMPILER_SRC_LIST
     ../pcports.h
     ../compilerexceptions.hpp
     ../compilercommon.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h
     )
 
 if(MSVC)
@@ -41,7 +44,7 @@ if(MSVC)
     string(APPEND CMAKE_C_FLAGS " /J")
 endif()
 
-INCLUDE_DIRECTORIES("../" "../../common/gsl-lite/include" "../../common/stringarray")
+INCLUDE_DIRECTORIES("../" "../../common/gsl-lite/include" "../../common/stringarray" "../../common/utils")
 add_definitions(
     "-DISOLATION_AWARE_ENABLED"
     "-DWIN32_LEAN_AND_MEAN"
@@ -68,10 +71,13 @@ else()
     if(${LDLANG} STREQUAL "EN")
         add_definitions(-DLDLANG_${LDLANG})
         add_library          (${PROJECT_NAME} ${LD_COMPILER_SRC_LIST})
+        add_precompiled_header(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp)
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         string(TOLOWER ${LDLANG} ldlang_lower)
+        set(_project_name ${PROJECT_NAME}-${ldlang_lower})
         add_library               (${PROJECT_NAME}-${ldlang_lower} ${LD_COMPILER_SRC_LIST})
         target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${LDLANG})
+        add_precompiled_header(${_project_name} ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp)
     endif()
 
 endif()

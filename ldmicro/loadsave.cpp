@@ -45,24 +45,21 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     ElemLeaf *l = AllocLeaf();
     int       x;
 
-    auto scan_contact_3 = [&]() -> int
-    {
+    auto scan_contact_3 = [&]() -> int {
         int negated, set1;
         int res = sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name, &negated, &set1);
         l->d.contacts.negated = negated != 0;
         l->d.contacts.set1 = set1 != 0;
         return res;
     };
-    auto scan_contact_2 = [&]() -> int
-    {
+    auto scan_contact_2 = [&]() -> int {
         int negated;
         int res = sscanf(line, "CONTACTS %s %d ", l->d.contacts.name, &negated);
         l->d.contacts.negated = negated != 0;
         return res;
     };
 
-    auto scan_coil_5 = [&]() -> int
-    {
+    auto scan_coil_5 = [&]() -> int {
         int negated, setOnly, resetOnly, ttrigger;
         int res = sscanf(line, "COIL %s %d %d %d %d", l->d.coil.name, &negated, &setOnly, &resetOnly, &ttrigger);
         l->d.coil.negated = negated != 0;
@@ -72,8 +69,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         return res;
     };
 
-    auto scan_coil_4 = [&]() -> int
-    {
+    auto scan_coil_4 = [&]() -> int {
         int negated, setOnly, resetOnly;
         int res = sscanf(line, "COIL %s %d %d %d", l->d.coil.name, &negated, &setOnly, &resetOnly);
         l->d.coil.negated = negated != 0;
@@ -507,17 +503,17 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             strcpy(l->d.fmtdStr.string, "");
         }
         *which = ELEM_STRING;
-    } else if([&]()->int{
-              int editAsString;
-              int res = sscanf(line,
-                     "LOOK_UP_TABLE %s %s %d %d",
-                     l->d.lookUpTable.dest,
-                     l->d.lookUpTable.index,
-                     &(l->d.lookUpTable.count),
-                     &editAsString);
-              l->d.lookUpTable.editAsString = editAsString != 0;
-              return res;}()
-              == 4) {
+    } else if([&]() -> int {
+                  int editAsString;
+                  int res = sscanf(line,
+                                   "LOOK_UP_TABLE %s %s %d %d",
+                                   l->d.lookUpTable.dest,
+                                   l->d.lookUpTable.index,
+                                   &(l->d.lookUpTable.count),
+                                   &editAsString);
+                  l->d.lookUpTable.editAsString = editAsString != 0;
+                  return res;
+              }() == 4) {
         char *p = line;
         int   i;
         // First skip over the parts that we already sscanf'd.

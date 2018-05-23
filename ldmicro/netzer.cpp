@@ -104,7 +104,7 @@ static int GetLocalRelaysAsMetaTags(FILE *f = nullptr)
     return metas;
 }
 
-static WORD AddrForString(const NameArray& name)
+static WORD AddrForString(const NameArray &name)
 {
     int i;
     for(i = 0; i < StringsCount; i++) {
@@ -117,7 +117,7 @@ static WORD AddrForString(const NameArray& name)
     return i;
 }
 
-static WORD AddrForRelay(const NameArray& name)
+static WORD AddrForRelay(const NameArray &name)
 {
     // Look within the relays for an already known entry.
     int i;
@@ -149,9 +149,9 @@ static WORD AddrForRelay(const NameArray& name)
     return Relays[i].Address;
 }
 
-static int GetPercentCharactersCount(const NameArray& name)
+static int GetPercentCharactersCount(const NameArray &name)
 {
-    int found = 0;
+    int  found = 0;
     auto Search = name.c_str();
     while(Search[0]) {
         if(Search[0] == '%') {
@@ -168,8 +168,7 @@ static int GetPercentCharactersCount(const NameArray& name)
     return found;
 }
 
-template <size_t N>
-static WORD AddrForVariable(const StringArray<N>& name)
+template <size_t N> static WORD AddrForVariable(const StringArray<N> &name)
 {
     // Look within the variables for an already known entry.
     int i;

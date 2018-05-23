@@ -1,3 +1,26 @@
+== Release 4.4.0.0
+
+   * New: The variable name that begins with a '#' character and subsequent as
+    a general-purpose variable name treated as indirect address of hardware register.
+    Value like #VarName is indirect address of hardware register (Indirect Address Pointer).
+   See manual.txt
+   Note: Înly for PIC,AVR implemented.
+
+   * Wiki: LDmicro indirect addressing
+   https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
+
+== Release 4.3.9.6
+
+   * Wiki: HOW TO: Change USART Baud Rate
+   https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Change-USART-Baud-Rate
+
+== Release 4.3.9.5
+
+   * Fixed: Re-enable ANSI C compilation with no MCU #95
+
+   * Wiki: Replace the obsolete elements.
+   https://github.com/LDmicro/LDmicro/wiki/Replase-the-obsolete-elements
+
 == Release 4.3.9.4
 
    Fixed: LDmicro Forum - pic16f887 http://cq.cx/ladder-forum.pl?action=viewthread&parent=7317&tt=1526403799
@@ -5,7 +28,7 @@
    Recovered the READ_ADC operation for PIC16F887, PIC16F877, PIC16F88, PIC16F72.
    Attention: Releases 4.3.8.5 - 4.3.9.3 has the bug with PIC's MCU READ_ADC: only RA0 analog input is available!
 
-   Fixed: The GEQ instructrion does not work with neg.numbers #57
+   Fixed: The GEQ instruction does not work with neg.numbers #57
    Try simulate GEQ.LD from the page
    https://github.com/LDmicro/LDmicro/issues/57
 

@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.11)
+include(./cmake/PrecompiledHeader.cmake)
 
 if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
     message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a BUILD directory) and run CMake from there. You may need to remove CMakeCache.txt." )
@@ -57,7 +58,7 @@ set(LDMICRO_SRC_LIST
     simpledialog.cpp
     simulate.cpp
     undoredo.cpp
-    stdafx.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp
     ldversion.h
 
     ../common/win32/freeze.cpp
@@ -68,7 +69,7 @@ set(LDMICRO_HEADERS
     ldmicro.h
     ldversion.h
     ldconfig.h
-    stdafx.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h
     targetver.h
     )
 
@@ -84,9 +85,7 @@ set(HELPER_SCRIPRS
 set(LDMICRO_SRC_LIST ${LDMICRO_SRC_LIST} ${LDMICRO_HEADERS})
 
 if(WIN32)
-    set(LDMICRO_SRC_LIST ${LDMICRO_SRC_LIST}
-         ldmicro.rc
-        )
+    set(LDMICRO_SRC_LIST ${LDMICRO_SRC_LIST} ldmicro.rc)
 endif(WIN32)
 
 INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./" "../common/gsl-lite/include" "../common/stringarray")
@@ -140,22 +139,21 @@ else()
         add_executable       (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
         target_link_libraries(${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
-                           )
+                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR})
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LIBRARIES_FOR ${CMAKE_CURRENT_BINARY_DIR}/LIBRARIES_FOR
-                            )
+                           COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LIBRARIES_FOR ${CMAKE_CURRENT_BINARY_DIR}/LIBRARIES_FOR)
+        add_precompiled_header(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp)
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         add_definitions(-DLDLANG_${LDLANG})
         string(TOLOWER ${LDLANG} ldlang_lower)
-        add_executable       (${PROJECT_NAME}-${ldlang_lower} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
-        target_link_libraries(${PROJECT_NAME}-${ldlang_lower} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower})
-        add_custom_command(TARGET ${PROJECT_NAME}-${ldlang_lower} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
-                           )
-       add_custom_command(TARGET ${PROJECT_NAME}-${ldlang_lower} POST_BUILD
-                          COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
-                          )
+        set(_project_name ${PROJECT_NAME}-${ldlang_lower})
+        add_executable       (${_project_name} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
+        target_link_libraries(${_project_name} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower})
+        add_custom_command(TARGET ${_project_name} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR})
+       add_custom_command(TARGET ${_project_name} POST_BUILD
+                          COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR})
+       add_precompiled_header(${_project_name} stdafx.h FORCEINCLUDE SOURCE_CXX stdafx.cpp)
     endif()
 
 endif()

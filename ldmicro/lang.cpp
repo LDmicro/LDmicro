@@ -24,8 +24,7 @@
 // table. If it fails then it just returns the English.
 // Jonathan Westhues, Apr 2007
 //-----------------------------------------------------------------------------
-
-#include <cstring>
+#include "stdafx.h"
 
 struct LangTable {
     char *from;

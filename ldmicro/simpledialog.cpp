@@ -25,7 +25,6 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
-#include <algorithm>
 
 static HWND SimpleDialog;
 
@@ -466,8 +465,8 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
     if(ShowSimpleDialog(s, 1, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
         name[0] = 'T';
         strcpy(name + 1, nameBuf);
-        double    del = atof(delBuf);
-        long long period = (long long)round(del / 1000 / 18); // 18 ms
+        double  del = atof(delBuf);
+        int64_t period = (int64_t)round(del / 1000 / 18); // 18 ms
         if(del <= 0) {
             Error(_("Delay cannot be zero or negative."));
         } else if(period < 1) {
@@ -478,7 +477,7 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
             sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0 * Prog.cycleTime / 1000);
             const char *s4 = _("Not available");
             Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
-        } else if((period >= (long long)(1 << (SizeOfVar(name) * 8 - 1))) && (Prog.mcu->whichIsa != ISA_PC)) {
+        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1)))) && (Prog.mcu->whichIsa != ISA_PC)) {
             const char *s1 =
                 _("Timer period too long (max 32767 times cycle time); use a "
                   "slower cycle time.");
@@ -606,24 +605,24 @@ void CheckVarInRange(char *name, char *str, SDWORD v)
     int sov = SizeOfVar(name);
     if(sov == 1) {
         if((v < -128 || v > 127) && (radix == 10))
-            Error(_("Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
+            Error(_(" Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
         else if((v < 0 || v > 0xff) && (radix != 10))
-            Error(_("Variable %s=0x%X out range: 0 to 0xFF inclusive."), str, v, name);
+            Error(_(" Variable %s=0x%X out of range: 0 to 0xFF inclusive."), str, v, name);
     } else if((sov == 2) || (sov == 0)) {
         if((v < -32768 || v > 32767) && (radix == 10))
-            Error(_("Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
+            Error(_(" Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
         else if((v < 0 || v > 0xffff) && (radix != 10))
-            Error(_("Variable %s=0x%X out range: 0 to 0xFFFF inclusive."), str, v, name);
+            Error(_(" Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."), str, v, name);
     } else if(sov == 3) {
         if((v < -8388608 || v > 8388607) && (radix == 10))
-            Error(_("Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
+            Error(_(" Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
         else if((v < 0 || v > 0xffffff) && (radix != 10))
-            Error(_("Variable %s=0x%X out range: 0 to 0xffFFFF inclusive."), str, v, name);
+            Error(_(" Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."), str, v, name);
     } else if(sov == 4) {
         if((v < -2147483648LL || v > 2147483647LL) && (radix == 10))
-            Error(_("Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."), name, v);
+            Error(_(" Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."), name, v);
         else if((DWORD(v) < 0 || DWORD(v) > 0xffffFFFF) && (radix != 10))
-            Error(_("Variable %s=0x%X out range: 0 to 0xFFFFFFFF inclusive."), str, v, name);
+            Error(_(" Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."), str, v, name);
     } else
         ooops("Variable '%s' size=%d value=%d", name, sov, v);
 }
@@ -668,12 +667,14 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
         }
     }
 }
+
+//-----------------------------------------------------------------------------
+#ifdef USE_SFR
 // Special function
 void ShowSFRDialog(int which, char *op1, char *op2)
 {
-#ifdef USE_SFR
-    char *title;
-    char *l2;
+    const char *title;
+    char *      l2;
     switch(which) {
         case ELEM_RSFR:
             title = _("Read From SFR");
@@ -708,8 +709,8 @@ void ShowSFRDialog(int which, char *op1, char *op2)
         default:
             oops();
     }
-    char *labels[] = {_("SFR position:"), l2};
-    char *dests[] = {op1, op2};
+    const char *labels[] = {_("SFR position:"), l2};
+    char *      dests[] = {op1, op2};
     if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)) {
         if(which == ELEM_RSFR) {
             if(IsNumber(op2)) {
@@ -717,10 +718,11 @@ void ShowSFRDialog(int which, char *op1, char *op2)
             }
         }
     }
-#endif
 }
 // Special function
+#endif
 
+//-----------------------------------------------------------------------------
 void ShowCmpDialog(int which, char *op1, char *op2)
 {
     const char *title;
@@ -892,13 +894,13 @@ void ShowSpiDialog(ElemLeaf *l)
 
     char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->modes, s->size, s->first};
 
-    comboRecord comboRec[] = {{0, nullptr},
+    comboRecord comboRec[] = {{0, {nullptr}},
                               {2, {"Master", "Slave"}},
-                              {0, nullptr},
-                              {0, nullptr},
-                              {0, nullptr},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
                               {4, {"0b00", "0b01", "0b10", "0b11"}},
-                              {0, nullptr},
+                              {0, {nullptr}},
                               {2, {"MSB_FIRST", "LSB_FIRST"}}};
     int         i;
     if(Prog.mcu) {
@@ -1036,9 +1038,9 @@ void ShowSetPwmDialog(void *e)
 
     const char *labels[] = {_("Name:"), _("Duty cycle:"), _("Frequency (Hz):"), _("Resolution:")};
     char *      dests[] = {name + 1, duty_cycle, targetFreq, resolution};
-    comboRecord comboRec[] = {{0, nullptr},
-                              {0, nullptr},
-                              {0, nullptr},
+    comboRecord comboRec[] = {{0, {nullptr}},
+                              {0, {nullptr}},
+                              {0, {nullptr}},
                               {4, {"0-100% (6.7 bits)", "0-256  (8 bits)", "0-512  (9 bits)", "0-1024 (10 bits)"}}};
 
     NoCheckingOnBox[3] = true;

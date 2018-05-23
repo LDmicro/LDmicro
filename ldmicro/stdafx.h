@@ -7,6 +7,8 @@
 
 #include "targetver.h"
 
+#include <gsl.hpp>
+
 // #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
 // Windows Header Files:
@@ -15,7 +17,7 @@
 #include <commdlg.h>
 #include <richedit.h>
 #include <shellapi.h>
-#include "locale.h"
+#include <locale.h>
 
 // C RunTime Header Files
 #include <stdlib.h>
@@ -23,23 +25,33 @@
 #include <stddef.h>
 #include <malloc.h>
 #include <memory.h>
-//#include <tchar.h>
 
+//#include <tchar.h>
 //#include <cstring>
+#include <string>
+
+#include <cstdint>
+#include <vector>
 
 //#include <inttypes.h>
 #include <ctype.h>
 #include <time.h>
 #include <limits.h>
 #include <math.h>
+
 #include <signal.h>
 #include <setjmp.h>
 #include <errno.h>
+
+#include <algorithm>
+#include <unordered_set>
 
 // TODO: reference additional headers your program requires here
 //#include "current_function.hpp"
 #include "bits.h"
 #include "display.h"
+
+#include "compilerexceptions.hpp"
 
 // The library that I use to do registry stuff.
 #define FREEZE_SUBKEY "LDMicro"

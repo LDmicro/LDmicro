@@ -12,18 +12,18 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 
-typedef unsigned char BYTE;     // 8-bit unsigned
-typedef unsigned short WORD;    // 16-bit unsigned
-typedef signed short SWORD;     // 16-bit signed
+typedef unsigned char  BYTE;  // 8-bit unsigned
+typedef unsigned short WORD;  // 16-bit unsigned
+typedef signed short   SWORD; // 16-bit signed
 
 #define INTCODE_H_CONSTANTS_ONLY
 
 #include "intcode.h"
 
 // Some arbitrary limits on the program and data size
-#define MAX_OPS                 1024
-#define MAX_VARIABLES           256
-#define MAX_INTERNAL_RELAYS     256
+#define MAX_OPS 1024
+#define MAX_VARIABLES 256
+#define MAX_INTERNAL_RELAYS 256
 
 // This data structure represents a single instruction for the 'virtual
 // machine.' The .op field gives the opcode, and the other fields give
@@ -42,18 +42,18 @@ typedef signed short SWORD;     // 16-bit signed
 // that you're going to use for your interface out. I will therefore leave
 // that up to you.
 
-BYTE Program[MAX_OPS];
+uint32_t Program[MAX_OPS];
 
 SWORD Integers[MAX_VARIABLES];
-BYTE Bits[MAX_VARIABLES];
+BYTE  Bits[MAX_VARIABLES];
 
-#define READ_BIT(addr)           Bits[addr]
-#define WRITE_BIT(addr, value)   Bits[addr] = (value)
-#define READ_INT(addr)           Integers[addr]
-#define WRITE_INT(addr, value)   Integers[addr] = (value)
+#define READ_BIT(addr) Bits[addr]
+#define WRITE_BIT(addr, value) Bits[addr] = (value)
+#define READ_INT(addr) Integers[addr]
+#define WRITE_INT(addr, value) Integers[addr] = (value)
 
 char Symbols[MAX_VARIABLES][40];
-int line_number = 0;
+int  line_number = 0;
 
 //-----------------------------------------------------------------------------
 // What follows are just routines to load the program, which I represent as
@@ -86,10 +86,10 @@ int LoadProgram(char *fileName)
     int i;
 
     FILE *f = fopen(fileName, "r");
-    char line[80];
+    char  line[80];
 
     line_number = 0;
-    for (i = 0; i < MAX_VARIABLES; i++) {
+    for(i = 0; i < MAX_VARIABLES; i++) {
         sprintf(Symbols[i], "%d", i);
     }
 
@@ -100,36 +100,42 @@ int LoadProgram(char *fileName)
         exit(-1);
     }
 
-    if (!fgets(line, sizeof(line), f)) BadFormat();
+    if(!fgets(line, sizeof(line), f))
+        BadFormat();
     line_number++;
-    if (strncmp(line, "$$IO", 4) != 0) BadFormat();
+    if(strncmp(line, "$$IO", 4) != 0)
+        BadFormat();
 
-    while (fgets(line, sizeof(line), f)) {
-        int addr;
+    while(fgets(line, sizeof(line), f)) {
+        int  addr;
         char name[40];
-        int type;
-        int pin;
-        int modbus_slave;
-        int modbus_offset;
+        int  type;
+        int  pin;
+        int  modbus_slave;
+        int  modbus_offset;
 
         line_number++;
-        if (line[0] == '$') break;
+        if(line[0] == '$')
+            break;
 
-        if (sscanf(line, "%d %s %d %d %d %d",
-            &addr, name, &type, &pin, &modbus_slave, &modbus_offset) != 6) BadFormat();
-        if (addr < 0 || addr >= MAX_VARIABLES) BadFormat();
+        if(sscanf(line, "%d %s %d %d %d %d", &addr, name, &type, &pin, &modbus_slave, &modbus_offset) != 6)
+            BadFormat();
+        if(addr < 0 || addr >= MAX_VARIABLES)
+            BadFormat();
         strcpy(Symbols[addr], name);
     }
 
-    if(strncmp(line, "$$LDcode", 8)!=0) BadFormat();
+    if(strncmp(line, "$$LDcode", 8) != 0)
+        BadFormat();
 
     pc = 0;
-    while (fgets(line, sizeof(line), f)) {
+    while(fgets(line, sizeof(line), f)) {
         char *t;
 
         line_number++;
-        if (line[0] == '$') break;
-        for (t = line; t[0] >= 32 && t[1] >= 32 ; t += 2) {
+        if(line[0] == '$')
+            break;
+        for(t = line; t[0] >= 32 && t[1] >= 32; t += 2) {
             Program[pc++] = HexDigit(t[1]) | (HexDigit(t[0]) << 4);
         }
     }
@@ -138,7 +144,6 @@ int LoadProgram(char *fileName)
     return 0;
 }
 //-----------------------------------------------------------------------------
-
 
 //-----------------------------------------------------------------------------
 // Disassemble the program and pretty-print it. This is just for debugging,
@@ -149,93 +154,102 @@ int LoadProgram(char *fileName)
 //-----------------------------------------------------------------------------
 void Disassemble()
 {
-    int pc;
-    for (pc = 0;;) {
+    char c;
+    for(int pc = 0;;) {
         printf("%03x: ", pc);
 
         switch(Program[pc]) {
             case INT_SET_BIT:
-                printf("bits[%s] := 1", Symbols[Program[pc+1]]);
+                printf("bits[%s] := 1", Symbols[Program[pc + 1]]);
                 pc += 2;
                 break;
 
             case INT_CLEAR_BIT:
-                printf("bits[%s] := 0", Symbols[Program[pc+1]]);
+                printf("bits[%s] := 0", Symbols[Program[pc + 1]]);
                 pc += 2;
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                printf("bits[%s] := bits[%s]", Symbols[Program[pc+1]], Symbols[Program[pc+2]]);
+                printf("bits[%s] := bits[%s]", Symbols[Program[pc + 1]], Symbols[Program[pc + 2]]);
                 pc += 3;
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                printf("int16s[%s] := %d", Symbols[Program[pc+1]],
-                    Program[pc+2] + (Program[pc+3] << 8));
+                printf("int16s[%s] := %d", Symbols[Program[pc + 1]], Program[pc + 2] + (Program[pc + 3] << 8));
                 pc += 4;
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                printf("int16s[%s] := int16s[%s]", Symbols[Program[pc+1]], Symbols[Program[pc+2]]);
+                printf("int16s[%s] := int16s[%s]", Symbols[Program[pc + 1]], Symbols[Program[pc + 2]]);
                 pc += 3;
                 break;
 
             case INT_INCREMENT_VARIABLE:
-                printf("(int16s[%s])++", Symbols[Program[pc+1]]);
+                printf("(int16s[%s])++", Symbols[Program[pc + 1]]);
                 pc += 2;
                 break;
 
             case INT_SET_PWM:
-                printf("setpwm(%s, %d Hz)", Symbols[Program[pc+1]], Program[pc+2] + (Program[pc+3]<<8));
+                printf("setpwm(%s, %d Hz)", Symbols[Program[pc + 1]], Program[pc + 2] + (Program[pc + 3] << 8));
                 pc += 4;
                 break;
 
             case INT_READ_ADC:
-                printf("readadc(%s)", Symbols[Program[pc+1]]);
+                printf("readadc(%s)", Symbols[Program[pc + 1]]);
                 pc += 2;
                 break;
 
-            {
-                char c;
-                case INT_SET_VARIABLE_ADD: c = '+'; goto arith;
-                case INT_SET_VARIABLE_SUBTRACT: c = '-'; goto arith;
-                case INT_SET_VARIABLE_MULTIPLY: c = '*'; goto arith;
-                case INT_SET_VARIABLE_DIVIDE: c = '/'; goto arith;
-                case INT_SET_VARIABLE_MOD: c = '%'; goto arith;
-arith:
-                    printf("int16s[%s] := int16s[%s] %c int16s[%s]",
-                        Symbols[Program[pc]], Symbols[Program[pc+2]], c, Symbols[Program[pc+3]]);
-                    pc += 4;
-                    break;
-            }
+            case INT_SET_VARIABLE_ADD:
+                c = '+';
+                goto arith;
+            case INT_SET_VARIABLE_SUBTRACT:
+                c = '-';
+                goto arith;
+            case INT_SET_VARIABLE_MULTIPLY:
+                c = '*';
+                goto arith;
+            case INT_SET_VARIABLE_DIVIDE:
+                c = '/';
+                goto arith;
+            case INT_SET_VARIABLE_MOD:
+                c = '%';
+                goto arith;
+            arith:
+                printf("int16s[%s] := int16s[%s] %c int16s[%s]",
+                       Symbols[Program[pc]],
+                       Symbols[Program[pc + 2]],
+                       c,
+                       Symbols[Program[pc + 3]]);
+                pc += 4;
+                break;
 
             case INT_IF_BIT_SET:
-                printf("ifnot (bits[%s] set)", Symbols[Program[pc+1]]);
+                printf("ifnot (bits[%s] set)", Symbols[Program[pc + 1]]);
                 pc += 2;
                 goto cond;
             case INT_IF_BIT_CLEAR:
-                printf("ifnot (bits[%s] clear)", Symbols[Program[pc+1]]);
+                printf("ifnot (bits[%s] clear)", Symbols[Program[pc + 1]]);
                 pc += 2;
                 goto cond;
             case INT_IF_VARIABLE_LES_LITERAL:
-                printf("ifnot (int16s[%s] < %d)", Symbols[Program[pc+1]], Program[pc+2] + (Program[pc+3] << 8));
+                printf("ifnot (int16s[%s] < %d)", Symbols[Program[pc + 1]], Program[pc + 2] + (Program[pc + 3] << 8));
                 pc += 4;
                 goto cond;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-                printf("ifnot (int16s[%s] == int16s[%s])", Symbols[Program[pc+1]],Symbols[Program[pc+2]]);
+                printf("ifnot (int16s[%s] == int16s[%s])", Symbols[Program[pc + 1]], Symbols[Program[pc + 2]]);
                 pc += 3;
                 goto cond;
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                printf("ifnot (int16s[%s] > int16s[%s])", Symbols[Program[pc+1]], Symbols[Program[pc+2]]);
+                printf("ifnot (int16s[%s] > int16s[%s])", Symbols[Program[pc + 1]], Symbols[Program[pc + 2]]);
                 pc += 3;
                 goto cond;
-cond:
-                printf(" jump %03x", pc + Program[pc]+1);
+            cond:
+                printf(" jump %03x", pc + Program[pc] + 1);
                 pc += 1;
                 break;
 
             case INT_ELSE:
-                printf("jump %03x", pc + Program[pc+1]+2);
+                printf("jump %03x", pc + Program[pc + 1] + 2);
                 pc += 2;
                 break;
 
@@ -263,113 +277,118 @@ cond:
 
 void InterpretOneCycle()
 {
-    int  pc;
-    for (pc = 0;;) {
-        switch (Program[pc]) {
-        case INT_SET_BIT:
-            WRITE_BIT(Program[pc + 1], 1);
-            pc += 2;
-            break;
+    int pc;
+    for(pc = 0;;) {
+        switch(Program[pc]) {
+            case INT_SET_BIT:
+                WRITE_BIT(Program[pc + 1], 1);
+                pc += 2;
+                break;
 
-        case INT_CLEAR_BIT:
-            WRITE_BIT(Program[pc + 1], 0);
-            pc += 2;
-            break;
+            case INT_CLEAR_BIT:
+                WRITE_BIT(Program[pc + 1], 0);
+                pc += 2;
+                break;
 
-        case INT_COPY_BIT_TO_BIT:
-            WRITE_BIT(Program[pc + 1], READ_BIT(Program[pc + 2]));
-            pc += 3;
-            break;
+            case INT_COPY_BIT_TO_BIT:
+                WRITE_BIT(Program[pc + 1], READ_BIT(Program[pc + 2]));
+                pc += 3;
+                break;
 
-        case INT_SET_VARIABLE_TO_LITERAL:
-            WRITE_INT(Program[pc + 1], Program[pc + 2] + (Program[pc + 3] << 8));
-            pc += 4;
-            break;
+            case INT_SET_VARIABLE_TO_LITERAL:
+                WRITE_INT(Program[pc + 1], Program[pc + 2] + (Program[pc + 3] << 8));
+                pc += 4;
+                break;
 
-        case INT_SET_VARIABLE_TO_VARIABLE:
-            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]));
-            pc += 3;
-            break;
+            case INT_SET_VARIABLE_TO_VARIABLE:
+                WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]));
+                pc += 3;
+                break;
 
-        case INT_INCREMENT_VARIABLE:
-            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 1]) + 1);
-            pc += 2;
-            break;
+            case INT_INCREMENT_VARIABLE:
+                WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 1]) + 1);
+                pc += 2;
+                break;
 
-        case INT_SET_VARIABLE_ADD:
-            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) + READ_INT(Program[pc + 3]));
-            pc += 4;
-            break;
+            case INT_SET_VARIABLE_ADD:
+                WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) + READ_INT(Program[pc + 3]));
+                pc += 4;
+                break;
 
-        case INT_SET_VARIABLE_SUBTRACT:
-            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) - READ_INT(Program[pc + 3]));
-            pc += 4;
-            break;
+            case INT_SET_VARIABLE_SUBTRACT:
+                WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) - READ_INT(Program[pc + 3]));
+                pc += 4;
+                break;
 
-        case INT_SET_VARIABLE_MULTIPLY:
-            WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) * READ_INT(Program[pc + 3]));
-            pc += 4;
-            break;
+            case INT_SET_VARIABLE_MULTIPLY:
+                WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) * READ_INT(Program[pc + 3]));
+                pc += 4;
+                break;
 
-        case INT_SET_VARIABLE_DIVIDE:
-            if (READ_INT(Program[pc + 3]) != 0) {
-                WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) / READ_INT(Program[pc + 3]));
-            }
-            pc += 4;
-            break;
+            case INT_SET_VARIABLE_DIVIDE:
+                if(READ_INT(Program[pc + 3]) != 0) {
+                    WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) / READ_INT(Program[pc + 3]));
+                }
+                pc += 4;
+                break;
 
-        case INT_SET_VARIABLE_MOD:
-            if (READ_INT(Program[pc + 3]) != 0) {
-                WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) % READ_INT(Program[pc + 3]));
-            }
-            pc += 4;
-            break;
+            case INT_SET_VARIABLE_MOD:
+                if(READ_INT(Program[pc + 3]) != 0) {
+                    WRITE_INT(Program[pc + 1], READ_INT(Program[pc + 2]) % READ_INT(Program[pc + 3]));
+                }
+                pc += 4;
+                break;
 
-        case INT_SET_PWM:
-            //WRITE_PWM(Program[pc + 1]);    // PWM frequency is ignored
-            pc += 4;
-            break;
+            case INT_SET_PWM:
+                //WRITE_PWM(Program[pc + 1]);    // PWM frequency is ignored
+                pc += 4;
+                break;
 
-        case INT_READ_ADC:
-            //READ_ADC(Program[pc + 1]);
-            pc += 2;
-            break;
+            case INT_READ_ADC:
+                //READ_ADC(Program[pc + 1]);
+                pc += 2;
+                break;
 
-        case INT_IF_BIT_SET:
-            if (!READ_BIT(Program[pc + 1])) pc += Program[pc + 2];
-            pc += 3;
-            break;
+            case INT_IF_BIT_SET:
+                if(!READ_BIT(Program[pc + 1]))
+                    pc += Program[pc + 2];
+                pc += 3;
+                break;
 
-        case INT_IF_BIT_CLEAR:
-            if (READ_BIT(Program[pc + 1])) pc += Program[pc + 2];
-            pc += 3;
-            break;
+            case INT_IF_BIT_CLEAR:
+                if(READ_BIT(Program[pc + 1]))
+                    pc += Program[pc + 2];
+                pc += 3;
+                break;
 
-        case INT_IF_VARIABLE_LES_LITERAL:
-            if (!(READ_INT(Program[pc + 1]) < (Program[pc + 2] + (Program[pc + 3] << 8)))) pc += Program[pc + 4];
-            pc += 5;
-            break;
+            case INT_IF_VARIABLE_LES_LITERAL:
+                if(!(READ_INT(Program[pc + 1]) < (Program[pc + 2] + (Program[pc + 3] << 8))))
+                    pc += Program[pc + 4];
+                pc += 5;
+                break;
 
-        case INT_IF_VARIABLE_EQUALS_VARIABLE:
-            if (!(READ_INT(Program[pc + 1]) == READ_INT(Program[pc + 2]))) pc += Program[pc + 3];
-            pc += 4;
-            break;
+            case INT_IF_VARIABLE_EQUALS_VARIABLE:
+                if(!(READ_INT(Program[pc + 1]) == READ_INT(Program[pc + 2])))
+                    pc += Program[pc + 3];
+                pc += 4;
+                break;
 
-        case INT_IF_VARIABLE_GRT_VARIABLE:
-            if (!(READ_INT(Program[pc + 1]) > READ_INT(Program[pc + 2]))) pc += Program[pc + 3];
-            pc += 4;
-            break;
+            case INT_IF_VARIABLE_GRT_VARIABLE:
+                if(!(READ_INT(Program[pc + 1]) > READ_INT(Program[pc + 2])))
+                    pc += Program[pc + 3];
+                pc += 4;
+                break;
 
-        case INT_ELSE:
-            pc += Program[pc + 1];
-            pc += 2;
-            break;
+            case INT_ELSE:
+                pc += Program[pc + 1];
+                pc += 2;
+                break;
 
-        case INT_END_OF_PROGRAM:
-            return;
+            case INT_END_OF_PROGRAM:
+                return;
 
-        default:
-            return;
+            default:
+                return;
         }
     }
 }
@@ -389,7 +408,8 @@ int main(int argc, char **argv)
     memset(Bits, 0, sizeof(Bits));
 
     Disassemble();
-    if (rc) exit(rc);
+    if(rc)
+        exit(rc);
 
     // 1000 cycles times 10 ms gives 10 seconds execution
     for(i = 0; i < 1000; i++) {

@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
 // Copyright 2007 Jonathan Westhues
+// Copyright 2015 Nehrutsa Ihor
 //
 // This file is part of LDmicro.
 //
@@ -23,7 +24,6 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include <algorithm>
 
 // clang-format off
 #define ASM_LABEL 1
@@ -31,26 +31,19 @@
 //              * 1 - only if GOTO or CALL operations need a label
 //                2 - always, all line is labeled
 
-#define AUTO_BANKING //++
-#ifdef AUTO_BANKING
-    //#define ASM_COMMENT_BANK //-
-#endif
+#define AUTO_BANKING // ++ (C) LDmicro.GitHub@gmail.com
+//#define ASM_COMMENT_BANK //-
 
 //http://www.piclist.com/techref/microchip/pages.htm
-#define AUTO_PAGING //++
-#ifdef AUTO_PAGING
-    //#define ASM_COMMENT_PAGE //-
-    #define MOVE_TO_PAGE_0 //++
-#endif
+#define AUTO_PAGING // ++ (C) LDmicro.GitHub@gmail.com
+//#define ASM_COMMENT_PAGE // -
+#define MOVE_TO_PAGE_0 // ++
 
 //#define ASM_BANKSEL //--
 //#define ASM_PAGESEL //--
 
 #define USE_TIMER0_AS_LADDER_CYCLE // Timer1 as PLC Cycle sourse is obsolete
 #ifdef USE_TIMER0_AS_LADDER_CYCLE
-    #ifndef AUTO_BANKING
-        #error AUTO_BANKING need!
-    #endif
 #endif
 // clang-format on
 
@@ -58,7 +51,7 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-static FILE *f;
+static FILE *f; // .hex
 static FILE *fAsm;
 
 #define fCompileError(f1, f2) \
@@ -68,49 +61,9 @@ static FILE *fAsm;
     fclose(f1);               \
     CompileError();
 
-/* moved to ldmicro.h
-// not complete; just what I need
-typedef enum Pic16OpTag {
-    OP_VACANT,
-    OP_ADDWF,
-    OP_ANDWF,
-    OP_CALL,
-    OP_BSF,
-    OP_BCF,
-    OP_BTFSC,
-    OP_BTFSS,
-    OP_GOTO,
-    OP_CLRF,
-    OP_CLRWDT,
-    OP_COMF,
-    OP_DECF,
-    OP_DECFSZ,
-    OP_INCF,
-    OP_INCFSZ,
-    OP_IORWF,
-    OP_MOVLW,
-    OP_MOVF,
-    OP_MOVWF,
-    OP_NOP,
-    OP_RETFIE,
-    OP_RETURN,
-    OP_RLF,
-    OP_RRF,
-    OP_SUBLW,
-    OP_SUBWF,
-    OP_XORWF,
-} Pic16Op;
-*/
 #define DEST_F 1
 #define DEST_W 0
 
-/* moved to ldmicro.h
-typedef struct Pic16InstructionTag {
-    Pic16Op     op;
-    DWORD       arg1;
-    DWORD       arg2;
-} Pic16Instruction;
-*/
 #define MAX_PROGRAM_LEN 128 * 1024
 static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
 static DWORD             PicProgWriteP;
@@ -121,6 +74,7 @@ SDWORD PicProgLdLen = 0;
 static int IntPcNow = -INT_MAX; //must be static
 
 // Scratch variables, for temporaries
+static DWORD ScratchI;
 static DWORD ScratchS;
 static DWORD Scratch0;
 static DWORD Scratch1;
@@ -424,11 +378,11 @@ static DWORD Bank(DWORD reg)
         reg &= 0x0F80;
     } else if(Prog.mcu->core == MidrangeCore14bit) {
         if(reg & ~0x01FF)
-            ooops("0x%X", reg); 
+            ooops("0x%X", reg);
         reg &= 0x0180;
     } else if(Prog.mcu->core == BaselineCore12bit) {
         if(reg & ~0x007F)
-            ooops("0x%X", reg); 
+            ooops("0x%X", reg);
         reg &= 0x0000;
     } else
         oops();
@@ -590,6 +544,8 @@ static int IsOperation(PicOp op)
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1 = 0, DWORD arg2 = 0,
+                         const char *comment = nullptr);
 static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2, const char *comment)
 {
     if(IsOperation(op) >= IS_BANK) {
@@ -611,7 +567,6 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
         return;
     }
 
-#ifdef AUTO_BANKING
     if(PicProgWriteP)
         if((IsOperation(PicProg[PicProgWriteP - 1].opPic) == IS_SKIP) && (IsOperation(op) >= IS_BANK)) {
             if((!IsCoreRegister(PicProg[PicProgWriteP - 1].arg1)) && (!IsCoreRegister(arg1))) {
@@ -640,7 +595,6 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
                 }
             }
         }
-#endif
 
     PicProg[PicProgWriteP].arg1orig = arg1; // arg1 can be changed by bank or page corretion;
     //
@@ -669,11 +623,12 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
     PicProgWriteP++;
 }
 
-static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2, const NameArray& comment)
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2,
+                         const NameArray &comment)
 {
     _Instruction(l, f, args, op, arg1, arg2, comment.c_str());
 }
-
+/*
 static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2)
 {
     _Instruction(l, f, args, op, arg1, arg2, nullptr);
@@ -688,8 +643,10 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op)
 {
     _Instruction(l, f, args, op, 0, 0, nullptr);
 }
-
+*/
 //-----------------------------------------------------------------------------
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1 = 0,
+                            DWORD arg2 = 0, const char *comment = nullptr);
 static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2,
                             const char *comment)
 //for setiing interrupt vector, page correcting, etc
@@ -704,10 +661,10 @@ static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, 
         strncatn(PicProg[PicProgWriteP].commentAsm, comment, MAX_COMMENT_LEN);
     }
 
-    _Instruction(l, f, args, op, arg1, arg2);
+    _Instruction(l, f, args, op, arg1, arg2, "");
     PicProgWriteP = savePicProgWriteP;
 }
-
+/*
 static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2)
 {
     _SetInstruction(l, f, args, addr, op, arg1, arg2, nullptr);
@@ -723,7 +680,7 @@ static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, 
 {
     _SetInstruction(l, f, args, addr, op, arg1, 0, comment);
 }
-
+*/
 #define SetInstruction(...) _SetInstruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
@@ -764,16 +721,6 @@ static void FwdAddrIsNow(DWORD addr)
     DWORD i;
     for(i = 0; i < PicProgWriteP; i++) {
         if(PicProg[i].arg1 == addr) {
-#ifndef AUTO_PAGING
-            // Insist that they be in the same page, but otherwise assume
-            // that PCLATH has already been set up appropriately.
-            if((i >> 11) != (PicProgWriteP >> 11)) {
-                Error(
-                    _("Internal error relating to PIC paging; make program "
-                      "smaller or reshuffle it."));
-                fCompileError(f, fAsm);
-            }
-#endif
             PicProg[i].arg1 = PicProgWriteP;
             seen = true;
         } else if(PicProg[i].arg1 == FWD_LO(addr)) {
@@ -889,7 +836,6 @@ static int BankSelectCheck(DWORD bankNow, DWORD bankNew)
 
 static DWORD notRealocableAddr = 0; // upper range
 
-#ifdef AUTO_BANKING
 static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
 {
     if(PicProgWriteP >= Prog.mcu->flashWords)
@@ -1095,7 +1041,6 @@ static void BankCorrection()
             PicProg[i].arg1 &= ~Bank(PicProg[i].arg1);
     }
 }
-#endif
 
 //---------------------------------------------------------------------------
 // clang-format off
@@ -1271,7 +1216,7 @@ static void PagePreSet()
         }
     }
 }
-#ifdef AUTO_PAGING
+
 //-----------------------------------------------------------------------------
 static int PageSelectCheck(DWORD PCLATH, DWORD PCLATHnew)
 {
@@ -1307,7 +1252,7 @@ static int PageSelect(DWORD addr, DWORD *PCLATH, DWORD PCLATHnew)
     int n = 0;
     if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         if((*PCLATH >> 3) != (PCLATHnew >> 3)) {
-            SetInstruction(addr, OP_MOVLP, PCLATHnew, "PageSel2");
+            SetInstruction(addr, OP_MOVLP, 0, PCLATHnew, "PageSel2");
             *PCLATH = PCLATHnew;
             n++;
         }
@@ -1453,7 +1398,6 @@ static void CheckPsErrorsPostCompile()
         }
     }
 }
-#endif
 
 //-----------------------------------------------------------------------------
 static void AddrCheckForErrorsPostCompile()
@@ -1529,7 +1473,7 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
     char               arg1s[1024];
     char               arg1comm[1024];
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
-    IntOp intOp;
+    IntOp              intOp;
     if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
         intOp = IntCode[PicInstr->IntPc];
     strcpy(sAsm, "");
@@ -1544,8 +1488,8 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           ((1 << (bits)) - 1),                                         \
           PicInstr->l,                                                 \
           PicInstr->f,                                                 \
-          intOp.name1.c_str(),                                                    \
-          intOp.l,                                                        \
+          intOp.name1.c_str(),                                         \
+          intOp.l,                                                     \
           intOp.f)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
@@ -1555,8 +1499,8 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           UpperRangeInclusive,                                           \
           PicInstr->l,                                                   \
           PicInstr->f,                                                   \
-          intOp.name1.c_str(),                                                      \
-          intOp.l,                                                          \
+          intOp.name1.c_str(),                                           \
+          intOp.l,                                                       \
           intOp.f)
     switch(op) {
         case OP_ADDWF:
@@ -1800,7 +1744,7 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sA
     char               arg1s[1024];
     char               arg1comm[1024];
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
-    IntOp intOp;
+    IntOp              intOp;
     if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
         intOp = IntCode[PicInstr->IntPc];
     strcpy(sAsm, "");
@@ -2047,7 +1991,7 @@ static DWORD Assemble16(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, DWORD ar
 //16-Bit Instruction Word for PIC18
 {
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
-    IntOp intOp;
+    IntOp              intOp;
     if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
         intOp = IntCode[PicInstr->IntPc];
     sAsm[0] = '\0';
@@ -2384,7 +2328,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
             fprintf(fAsm, "\n");
         } else
-        ;//;;//Error("op=%d=0x%X", PicProg[i].opPic, PicProg[i].opPic);
+            ; //;;//Error("op=%d=0x%X", PicProg[i].opPic, PicProg[i].opPic);
     }
 
     if(ExtendedSegmentAddress != (CONFIG_ADDR1 * 2 & ~0xffff)) {
@@ -2435,42 +2379,18 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 // of the bank switching if necessary; assumes that code is called in bank
 // 0.
 //-----------------------------------------------------------------------------
+static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val, char *comment = nullptr);
 static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val, char *comment)
 {
-#ifdef AUTO_BANKING
-    //if(val) {
+    // if(val) {
     _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
     _Instruction(l, f, args, OP_MOVWF, reg, 0, comment);
-//} else
-//    vvv Z Status Affected !!!
-//    _Instruction(l, f, args, OP_CLRF, reg, 0, comment);
-//    ^^^ Z Status Affected !!!
-#else
-    if(reg & 0x080)
-        Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-    if(reg & 0x100)
-        Instruction(OP_BSF, REG_STATUS, STATUS_RP1);
-
-    //if(val) {
-    _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
-    _Instruction(l, f, args, OP_MOVWF, (reg & 0x7f), 0, comment);
-    //} else
+    // } else
     //    vvv Z Status Affected !!!
-    //    _Instruction(l, f, args, OP_CLRF, (reg & 0x7f), 0, comment);
+    //    _Instruction(l, f, args, OP_CLRF, reg, comment);
     //    ^^^ Z Status Affected !!!
-
-    if(reg & 0x080)
-        Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-    if(reg & 0x100)
-        Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
-#endif
+    // }
 }
-
-static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val)
-{
-    _WriteRegister(l, f, args, reg, val, nullptr);
-}
-
 // And use macro for bugtracking
 #define WriteRegister(...) _WriteRegister(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
@@ -2479,41 +2399,20 @@ static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BY
 //-----------------------------------------------------------------------------
 static void CallWithPclath(DWORD addr)
 {
-#ifdef AUTO_PAGING
     Instruction(OP_CALL, addr);
-#else
-// Set up PCLATH for the jump, and then do it.
-#ifdef MOVE_TO_PAGE_0
-    Instruction(OP_MOVLW, addr >> 8);
-    Instruction(OP_MOVWF, REG_PCLATH);
-    Instruction(OP_CALL, addr);
-#else
-    Instruction(OP_MOVLW, FWD_HI(addr), 0);
-    Instruction(OP_MOVWF, REG_PCLATH, 0);
-    Instruction(OP_CALL, FWD_LO(addr), 0);
-#endif
-
-    // Restore PCLATH to something appropriate for our page. (We have
-    // already made fairly sure that we will never try to compile across
-    // a page boundary.)
-    Instruction(OP_MOVLW, (PicProgWriteP >> 8), 0);
-    Instruction(OP_MOVWF, REG_PCLATH, 0);
-#endif
 }
 
-static bool IsOutput(DWORD addr)
+static bool IsOutputReg(DWORD addr)
 {
-    int i;
-    for(i = 0; i < MAX_IO_PORTS; i++)
+    for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu->outputRegs[i] == addr)
             return true;
     return false;
 }
 
-static bool IsInput(DWORD addr)
+static bool IsInputReg(DWORD addr)
 {
-    int i;
-    for(i = 0; i < MAX_IO_PORTS; i++)
+    for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu->inputRegs[i] == addr)
             return true;
     return false;
@@ -2540,7 +2439,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, cons
     ClearBit(addrDest, bitDest);
 */
     // No "jitter", No "input" error
-    if((!IsOutput(addrDest))
+    if((!IsOutputReg(addrDest))
        && ((Bank(addrDest) == Bank(addrSrc)) || IsCoreRegister(addrDest) || IsCoreRegister(addrSrc))) {
         IfBitSet(addrSrc, bitSrc, nameSrc);
         SetBit(addrDest, bitDest, nameDest);
@@ -2558,7 +2457,8 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, cons
     }
 }
 
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const NameArray& nameDest, const char *nameSrc)
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const NameArray &nameDest,
+                    const char *nameSrc)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest.c_str(), nameSrc);
 }
@@ -2635,7 +2535,7 @@ static void CompileIfBody(DWORD condFalse, const char *s)
         IntPc++;
         IntPcNow = IntPc;
         DWORD endBlock = AllocFwdAddr();
-        Instruction(OP_GOTO, endBlock, 0);
+        Instruction(OP_GOTO, endBlock);
 
         FwdAddrIsNow(condFalse);
         CompileFromIntermediate(false);
@@ -2673,15 +2573,49 @@ static char *VarFromExpr(char *expr, char *tempName, DWORD addr)
 */
 
 //-----------------------------------------------------------------------------
-static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const char *comment)
+static void CopyLitToReg(DWORD addr, int sov, const char *name, SDWORD literal, const char *comment)
 {
     Comment("CopyLitToReg");
-    // vvv reassurance, check before calling this routine
     if(sov < 1)
         ooops(comment);
     if(sov > 4)
         ooops(comment);
-    // ^^^ reassurance, check before calling this routine
+
+    DWORD lNow, lPrev;
+    lNow = literal & 0xff;
+    lPrev = ~lNow;
+    if(IsAddrInVar(name)) {
+        //// sov = SizeOfVar(&name[1]); // sov == SizeOfVar(name); // It's right!
+        MemForVariable(&name[1], &addr);
+        Instruction(OP_MOVF, addr, DEST_W, &name[1]);
+        Instruction(OP_MOVWF, REG_FSR, 0, name); // indirect address
+
+        for(int i = 0; i < sov; i++) {
+            lNow = (literal >> (8 * i)) & 0xff;
+            if(lNow) {
+                if(lNow != lPrev)
+                    Instruction(OP_MOVLW, lNow, 0, comment);
+                Instruction(OP_MOVWF, REG_INDF, 0, "indirecr");
+            } else
+                Instruction(OP_CLRF, REG_INDF);
+            if(i < (sov - 1))
+                Instruction(OP_INCF, REG_FSR, DEST_F);
+            lPrev = lNow;
+        }
+    } else {
+        for(int i = 0; i < sov; i++) {
+            lNow = (literal >> (8 * i)) & 0xff;
+            if(lNow) {
+                if(lNow != lPrev)
+                    Instruction(OP_MOVLW, lNow, 0, comment);
+                Instruction(OP_MOVWF, addr + i, 0, comment);
+            } else
+                Instruction(OP_CLRF, addr + i, 0, comment);
+            lPrev = lNow;
+        }
+    }
+    return;
+    /*
     DWORD l1, l2;
     l1 = (literal & 0xff);
     if(l1) {
@@ -2718,19 +2652,27 @@ static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const char *commen
             }
         }
     }
+*/
 }
 
-static void CopyLitToReg(DWORD addr, int sov, SDWORD literal, const NameArray& comment)
+static void CopyLitToReg(DWORD addr, int sov, const NameArray &name, SDWORD literal, const NameArray &comment)
 {
-    CopyLitToReg(addr, sov, literal, comment.c_str());
+    CopyLitToReg(addr, sov, name.c_str(), literal, comment.c_str());
 }
 
 //-----------------------------------------------------------------------------
-static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const char *name1, const char *name2, bool Sign)
+static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const char *name1, const char *name2,
+                         bool signPropagation)
 // addr1 - dest, addr2 - source
 {
     Comment("CopyRegToReg");
-    // vvv reassurance, check before calling this routine
+    if((addr1 == addr2) && ((addr1 != 0) || (addr2 != 0))) {
+        if(sov1 == sov2) {
+            Error(_(" CopyRegToReg Warning 1"));
+        } else {
+            Error(_(" CopyRegToReg Message 2"));
+        }
+    }
     if(sov1 < 1)
         ooops(name1);
     if(sov1 > 4)
@@ -2739,8 +2681,94 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
         ooops(name2);
     if(sov2 > 4)
         ooops(name2);
-    // ^^^ reassurance, check before calling this routine
 
+    if(IsAddrInVar(name1) && (!IsAddrInVar(name2))) {
+        //// sov1 = SizeOfVar(&name1[1]); // sov1 == SizeOfVar(name1); // It's right!
+        MemForVariable(&name1[1], &addr1);
+        Instruction(OP_MOVF, addr1, DEST_W, &name1[1]);
+        Instruction(OP_MOVWF, REG_FSR, 0, name1);
+
+        for(int i = 0; i < sov1; i++) {
+            if(i < sov2) {
+                Instruction(OP_MOVF, addr2 + i, DEST_W, name2);
+                Instruction(OP_MOVWF, REG_INDF, 0, name1);
+            } else {
+                Instruction(OP_MOVLW, 0x00); // NO BLINK
+                if(signPropagation) {
+                    Instruction(OP_BTFSC, addr2 + sov2 - 1, BIT7, name2); // Sign propagation
+                    Instruction(OP_MOVLW, 0xFF);                          // NO BLINK
+                }
+                Instruction(OP_MOVWF, REG_INDF, 0, name1); // NO BLINK
+            }
+            if(i < (sov1 - 1))
+                Instruction(OP_INCF, REG_FSR, DEST_F);
+        }
+    } else if((!IsAddrInVar(name1)) && IsAddrInVar(name2)) {
+        //// sov2 = SizeOfVar(&name2[1]); // sov2 == SizeOfVar(name2); // It's right!
+        MemForVariable(&name2[1], &addr2);
+        Instruction(OP_MOVF, addr2, DEST_W, &name2[1]);
+        Instruction(OP_MOVWF, REG_FSR, 0, name2);
+
+        for(int i = 0; i < sov1; i++) {
+            if(i < sov2) {
+                Instruction(OP_MOVF, REG_INDF, DEST_W, name2);
+            } else {
+                Instruction(OP_MOVLW, 0x00); // NO BLINK
+                if(signPropagation) {
+                    Instruction(OP_BTFSC, addr1 + sov2 - 1, BIT7, name2); // Sign propagation // addr1 is Ok!
+                    Instruction(OP_MOVLW, 0xFF);                          // NO BLINK
+                }
+            }
+            Instruction(OP_MOVWF, addr1 + i, 0, name1);
+            if(i < (sov2 - 1))
+                Instruction(OP_INCF, REG_FSR, DEST_F);
+        }
+    } else if((IsAddrInVar(name1)) && IsAddrInVar(name2)) {
+        MemForVariable(&name1[1], &addr1);
+        MemForVariable(&name2[1], &addr2);
+
+        for(int i = 0; i < sov1; i++) {
+            if(i < sov2) {
+                Instruction(OP_MOVF, addr2, DEST_W, &name2[1]);
+                Instruction(OP_MOVWF, REG_FSR, 0, name2);
+                for(int j = 0; j < i; j++)
+                    Instruction(OP_INCF, REG_FSR, DEST_F);
+                Instruction(OP_MOVF, REG_INDF, DEST_W, name2);
+                Instruction(OP_MOVWF, ScratchI, 0, "tmp");
+
+                Instruction(OP_MOVF, addr1, DEST_W, &name1[1]);
+                Instruction(OP_MOVWF, REG_FSR, 0, name1);
+                for(int j = 0; j < i; j++)
+                    Instruction(OP_INCF, REG_FSR, DEST_F);
+                Instruction(OP_MOVF, ScratchI, DEST_W, "tmp");
+            } else {
+                Instruction(OP_INCF, REG_FSR, DEST_F); // FSR is addr1
+                Instruction(OP_MOVLW, 0x00);           // NO BLINK
+                if(signPropagation) {
+                    Instruction(OP_BTFSC, ScratchI, BIT7, "tmp"); // Sign propagation
+                    Instruction(OP_MOVLW, 0xFF);                  // NO BLINK
+                }
+            }
+            Instruction(OP_MOVWF, REG_INDF, 0, name1);
+        }
+    } else {
+        for(int i = 0; i < sov1; i++) {
+            if(i < sov2) {
+                Instruction(OP_MOVF, addr2 + i, DEST_W, name2);
+            } else {
+                //Instruction(OP_CLRF, addr1 + i); // BLINK
+                Instruction(OP_MOVLW, 0x00); // NO BLINK
+                if(signPropagation) {
+                    Instruction(OP_BTFSC, addr2 + sov2 - 1, BIT7, name2); // Sign propagation
+                    //Instruction(OP_COMF, addr1 + i, DEST_F); // BLINK
+                    Instruction(OP_MOVLW, 0xFF); // NO BLINK
+                }
+            }
+            Instruction(OP_MOVWF, addr1 + i, 0, name1);
+        }
+    }
+    return;
+    /*
     Instruction(OP_MOVF, addr2, DEST_W, name2);
     Instruction(OP_MOVWF, addr1, 0, name1);
     if(sov1 >= 2) {
@@ -2748,7 +2776,7 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
             Instruction(OP_MOVF, addr2 + 1, DEST_W, name2);
         } else {
             Instruction(OP_MOVLW, 0x00);
-            if(Sign) {
+            if(signPropagation) {
                 Instruction(OP_BTFSC, addr2 + sov2 - 1, BIT7, name2); // Sign propagation
                 Instruction(OP_MOVLW, 0xFF);
             }
@@ -2760,7 +2788,7 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
                 Instruction(OP_MOVF, addr2 + 2, DEST_W, name2);
             } else {
                 Instruction(OP_MOVLW, 0x00);
-                if(Sign) {
+                if(signPropagation) {
                     Instruction(OP_BTFSC, addr2 + sov2 - 1, BIT7, name2); // Sign propagation
                     Instruction(OP_MOVLW, 0xFF);
                 }
@@ -2772,7 +2800,7 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
                     Instruction(OP_MOVF, addr2 + 3, DEST_W, name2);
                 } else {
                     Instruction(OP_MOVLW, 0x00);
-                    if(Sign) {
+                    if(signPropagation) {
                         Instruction(OP_BTFSC, addr2 + sov2 - 1, BIT7, name2); // Sign propagation
                         Instruction(OP_MOVLW, 0xFF);
                     }
@@ -2781,13 +2809,16 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
             }
         }
     }
+    */
 }
 
-static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const NameArray& name1, const NameArray& name2, bool Sign)
+static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const NameArray &name1, const NameArray &name2,
+                         bool Sign)
 {
     CopyRegToReg(addr1, sov1, addr2, sov2, name1.c_str(), name2.c_str(), Sign);
 }
 
+//-----------------------------------------------------------------------------
 static void CopyVarToReg(DWORD addr1, int sov1, const char *name2, bool Sign)
 {
     DWORD addr2;
@@ -2800,7 +2831,7 @@ static void CopyVarToReg(DWORD addr1, int sov1, const char *name2)
     CopyVarToReg(addr1, sov1, name2, false);
 }
 
-static void CopyVarToReg(DWORD addr1, int sov1, const NameArray& name2)
+static void CopyVarToReg(DWORD addr1, int sov1, const NameArray &name2)
 {
     CopyVarToReg(addr1, sov1, name2.c_str());
 }
@@ -2809,7 +2840,7 @@ static void CopyVarToReg(DWORD addr1, int sov1, const NameArray& name2)
 static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, const char *name, bool Sign)
 {
     if(IsNumber(name)) {
-        CopyLitToReg(destAddr, destSov, hobatoi(name), name);
+        CopyLitToReg(destAddr, destSov, name, hobatoi(name), name);
     } else {
         int   sov = SizeOfVar(name);
         DWORD addr;
@@ -2822,7 +2853,7 @@ static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, 
     return destAddr;
 }
 
-static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, const NameArray& name, bool Sign)
+static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, const NameArray &name, bool Sign)
 {
     return CopyArgToReg(isModificationRisk, destAddr, destSov, name.c_str(), Sign);
 }
@@ -2900,15 +2931,15 @@ static void CallBin32BcdRoutine(char *nameBcd, char *nameBin)
     sizeBin = SizeOfVar(nameBin);
     sizeBin = 4;
     if(IsNumber(nameBin)) {
-        CopyLitToReg(ACb0, sizeBin, hobatoi(nameBin), nameBin);
+        CopyLitToReg(ACb0, sizeBin, "", hobatoi(nameBin), nameBin);
     } else {
         CopyRegToReg(ACb0, sizeBin, addrBin, sizeBin, "", nameBin, true);
     }
-    CopyLitToReg(sovBin, 1, sizeBin, "");
+    CopyLitToReg(sovBin, 1, "", sizeBin, "");
 
     DWORD addrBcd;
     MemForVariable(nameBcd, &addrBcd);
-    CopyLitToReg(BCD0, 1, addrBcd, "");
+    CopyLitToReg(BCD0, 1, "", addrBcd, "");
 
     int sizeBcd;
     switch(sizeBin) {
@@ -2929,7 +2960,7 @@ static void CallBin32BcdRoutine(char *nameBcd, char *nameBin)
     }
     sizeBcd = SizeOfVar(nameBcd);
     sizeBcd = 10;
-    CopyLitToReg(sovBcd, 1, sizeBcd, "");
+    CopyLitToReg(sovBcd, 1, "", sizeBcd, "");
 
     ////DWORD BCD0, int sizeBcd, DWORD ACb0, int sizeBin
     CallWithPclath(Bin32BcdRoutineAddress);
@@ -3090,7 +3121,7 @@ static void Increment(DWORD addr, int sov, const char *name, const char *overlap
     }
 }
 
-static void Increment(DWORD addr, int sov, const NameArray& name, const NameArray& overlap, const NameArray& overflow)
+static void Increment(DWORD addr, int sov, const NameArray &name, const NameArray &overlap, const NameArray &overflow)
 {
     Increment(addr, sov, name.c_str(), overlap.c_str(), overflow.c_str());
 }
@@ -3187,7 +3218,7 @@ static void Decrement(DWORD addr, int sov, const char *name, const char *overlap
     }
 }
 
-static void Decrement(DWORD addr, int sov, const NameArray& name, const NameArray& overlap, const NameArray& overflow)
+static void Decrement(DWORD addr, int sov, const NameArray &name, const NameArray &overlap, const NameArray &overflow)
 {
     Decrement(addr, sov, name.c_str(), overlap.c_str(), overflow.c_str());
 }
@@ -3239,7 +3270,7 @@ static void VariableAdd(DWORD addr1, DWORD addr2, DWORD addr3, int sov)
 
     Instruction(OP_MOVF, addr2 + 1, DEST_W);
     Instruction(OP_ADDWF, addr3 + 1, DEST_W);
-    Instruction(OP_MOVWF, addr1 + 1, 0);
+    Instruction(OP_MOVWF, addr1 + 1);
     IfBitSet(ScratchS, STATUS_C);
     Instruction(OP_INCF, addr1 + 1, DEST_F);
 }
@@ -3317,7 +3348,7 @@ static void add(DWORD b, DWORD a, int sov, const char *overlap, const char *over
     }
 }
 
-static void add(DWORD b, DWORD a, int sov, const NameArray& overlap, const NameArray& overflow)
+static void add(DWORD b, DWORD a, int sov, const NameArray &overlap, const NameArray &overflow)
 {
     add(b, a, sov, overlap.c_str(), overflow.c_str());
 }
@@ -3394,7 +3425,7 @@ static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, const char *overlap, 
             Instruction(OP_MOVF, b + sov - 1, DEST_W);
         else
             Instruction(OP_NOP_);
-        Instruction(OP_XORWF, a + sov - 1, DEST_W); ///aaa
+        Instruction(OP_XORWF, a + sov - 1, DEST_W); //???
         Instruction(OP_MOVWF, ScratchS);
         Instruction(OP_BTFSC, ScratchS, 7);
         Instruction(OP_GOTO, notOverflow); // BIT7 == 1 if sign2 != sign3
@@ -3413,7 +3444,7 @@ static void sub(DWORD b, DWORD a, int sov, const char *overlap, const char *over
     sub_(b, a, sov, DEST_F, overlap, overflow);
 }
 
-static void sub(DWORD b, DWORD a, int sov, const NameArray& overlap, const NameArray& overflow)
+static void sub(DWORD b, DWORD a, int sov, const NameArray &overlap, const NameArray &overflow)
 {
     sub(b, a, sov, overlap.c_str(), overflow.c_str());
 }
@@ -3574,7 +3605,7 @@ static void InitTable(IntOp *a)
 
 #define TABLE_CALC 8
         //This code is unrealocable.
-        Instruction(OP_MOVLW, ((addrOfTableRoutine + TABLE_CALC) >> 8) & 0xFF, DEST_W);
+        Instruction(OP_MOVLW, ((addrOfTableRoutine + TABLE_CALC) >> 8) & 0xFF);
         Instruction(OP_ADDWF, Scratch1, DEST_W); // index hi
         Instruction(OP_MOVWF, REG_PCLATH);
 
@@ -3651,26 +3682,6 @@ static void CompileFromIntermediate(bool topLevel)
 
     for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
-#ifndef AUTO_PAGING
-        // Try for a margin of about 400 words, which is a little bit
-        // wasteful but considering that the formatted output commands
-        // are huge, probably necessary. Of course if we are in our
-        // last section then it is silly to do that, either we make it
-        // or we're screwed...
-        if(topLevel && (((PicProgWriteP + 400) >> 11) != section) && ((PicProgWriteP + 400) < Prog.mcu->flashWords)) {
-            // Jump to the beginning of the next section
-            Instruction(OP_MOVLW, (PicProgWriteP >> 8) + (1 << 3), 0);
-            Instruction(OP_MOVWF, REG_PCLATH, 0);
-            Instruction(OP_GOTO, 0, 0);
-            // Then, just burn the last of this section with NOPs.
-            while((PicProgWriteP >> 11) == section) {
-                Instruction(OP_MOVLW, 0xab, 0);
-            }
-            section = (PicProgWriteP >> 11);
-            // And now PCLATH is set up, so everything in our new section
-            // should just work
-        }
-#endif
         IntOp *a = &IntCode[IntPc];
         rungNow = a->rung;
         switch(a->op) {
@@ -3725,7 +3736,7 @@ static void CompileFromIntermediate(bool topLevel)
                         oops();
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
-                    CopyLitToReg(Scratch0, sov1, -2, ""); // 0xF..FE
+                    CopyLitToReg(Scratch0, sov1, "", -2, ""); // 0xF..FE
                     DWORD Skip = AllocFwdAddr();
                     DWORD Loop = PicProgWriteP;
                     Instruction(OP_MOVF, ScratchS, DEST_F);
@@ -3758,7 +3769,7 @@ static void CompileFromIntermediate(bool topLevel)
                         oops();
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
-                    CopyLitToReg(Scratch0, sov1, 0x01, "");
+                    CopyLitToReg(Scratch0, sov1, "", 0x01, "");
                     DWORD Skip = AllocFwdAddr();
                     DWORD Loop = PicProgWriteP;
                     Instruction(OP_MOVF, ScratchS, DEST_F);
@@ -3794,7 +3805,7 @@ static void CompileFromIntermediate(bool topLevel)
                     Instruction(OP_GOTO, endifAddr); // here bit is CLR
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
-                    CopyLitToReg(Scratch0, sov1, 0x01, "");
+                    CopyLitToReg(Scratch0, sov1, "", 0x01, "");
                     DWORD Skip = AllocFwdAddr();
                     DWORD Loop = PicProgWriteP;
                     Instruction(OP_MOVF, ScratchS, DEST_F);
@@ -3866,7 +3877,7 @@ static void CompileFromIntermediate(bool topLevel)
                     Instruction(OP_GOTO, endifAddr); // here bit is SET
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
-                    CopyLitToReg(Scratch0, sov1, 0x01, "");
+                    CopyLitToReg(Scratch0, sov1, "", 0x01, "");
                     DWORD Skip = AllocFwdAddr();
                     DWORD Loop = PicProgWriteP;
                     Instruction(OP_MOVF, ScratchS, DEST_F);
@@ -3924,21 +3935,8 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name1, &addr1);
                 sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1.c_str(), addr1, a->literal, a->literal);
                 sov1 = SizeOfVar(a->name1);
-                sov2 = byteNeeded(a->literal);
-#ifdef AUTO_BANKING
-                CopyLitToReg(addr1, sov1, a->literal, comment);
-#else
-                WriteRegister(addr1, (BYTE)(a->literal & 0xff), comment);
-                if(sov >= 2) {
-                    WriteRegister(addr1 + 1, (BYTE)((a->literal >> 8) & 0xff), comment);
-                    if(sov >= 3) {
-                        WriteRegister(addr1 + 2, (BYTE)((a->literal >> 16) & 0xff), comment);
-                        if(sov >= 4) {
-                            WriteRegister(addr1 + 3, (BYTE)((a->literal >> 24) & 0xff), comment);
-                        }
-                    }
-                }
-#endif
+                //sov2 = byteNeeded(a->literal);
+                CopyLitToReg(addr1, sov1, a->name1.c_str(), a->literal, comment);
                 break;
 
             case INT_INCREMENT_VARIABLE: {
@@ -4120,11 +4118,11 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name1, &addr1);
 
                 // var - lit
-                Instruction(OP_MOVLW, litH, 0);
+                Instruction(OP_MOVLW, litH);
                 Instruction(OP_SUBWF, addr1 + 1, DEST_W, a->name1);
                 IfBitSet(REG_STATUS, STATUS_Z);
-                Instruction(OP_GOTO, lsbDecides, 0);
-                Instruction(OP_MOVWF, Scratch0, 0);
+                Instruction(OP_GOTO, lsbDecides);
+                Instruction(OP_MOVWF, Scratch0);
                 if(litH & 0x80) {
                     Instruction(OP_COMF, addr1 + 1, DEST_W);
                     Instruction(OP_ANDWF, Scratch0, DEST_W);
@@ -4135,18 +4133,18 @@ static void CompileFromIntermediate(bool topLevel)
                     Instruction(OP_XORWF, Scratch0, DEST_F);
                 }
                 IfBitSet(Scratch0, 7); // var - lit < 0, var < lit
-                Instruction(OP_GOTO, isTrue, 0);
-                Instruction(OP_GOTO, notTrue, 0);
+                Instruction(OP_GOTO, isTrue);
+                Instruction(OP_GOTO, notTrue);
 
                 FwdAddrIsNow(lsbDecides);
 
                 // var - lit < 0
                 // var < lit
-                Instruction(OP_MOVLW, litL, 0);
+                Instruction(OP_MOVLW, litL);
                 Instruction(OP_SUBWF, addr1, DEST_W, a->name1);
                 IfBitClear(REG_STATUS, STATUS_C);
-                Instruction(OP_GOTO, isTrue, 0);
-                Instruction(OP_GOTO, notTrue, 0);
+                Instruction(OP_GOTO, isTrue);
+                Instruction(OP_GOTO, notTrue);
 
                 FwdAddrIsNow(isTrue);
                 CompileIfBody(notTrue);
@@ -4160,12 +4158,12 @@ static void CompileFromIntermediate(bool topLevel)
                 Instruction(OP_MOVF, addr1, DEST_W, a->name1);
                 Instruction(OP_SUBWF, addr2, DEST_W, a->name2);
                 IfBitClear(REG_STATUS, STATUS_Z);
-                Instruction(OP_GOTO, notEqual, 0);
+                Instruction(OP_GOTO, notEqual);
 
                 Instruction(OP_MOVF, addr1 + 1, DEST_W);
                 Instruction(OP_SUBWF, addr2 + 1, DEST_W);
                 IfBitClear(REG_STATUS, STATUS_Z);
-                Instruction(OP_GOTO, notEqual, 0);
+                Instruction(OP_GOTO, notEqual);
 
                 CompileIfBody(notEqual);
                 break;
@@ -4185,10 +4183,10 @@ static void CompileFromIntermediate(bool topLevel)
                 DWORD signb = Scratch1;
 
                 Instruction(OP_COMF, ju, DEST_W);
-                Instruction(OP_MOVWF, signb, 0);
+                Instruction(OP_MOVWF, signb);
 
                 Instruction(OP_ANDWF, iu, DEST_W);
-                Instruction(OP_MOVWF, signa, 0);
+                Instruction(OP_MOVWF, signa);
 
                 Instruction(OP_MOVF, iu, DEST_W);
                 Instruction(OP_IORWF, signb, DEST_F);
@@ -4197,26 +4195,26 @@ static void CompileFromIntermediate(bool topLevel)
                 Instruction(OP_MOVF, ju, DEST_W);
                 Instruction(OP_SUBWF, iu, DEST_W);
                 IfBitSet(REG_STATUS, STATUS_Z);
-                Instruction(OP_GOTO, lsbDecides, 0);
+                Instruction(OP_GOTO, lsbDecides);
 
                 Instruction(OP_ANDWF, signb, DEST_F);
-                Instruction(OP_MOVWF, Scratch2, 0);
+                Instruction(OP_MOVWF, Scratch2);
                 Instruction(OP_COMF, Scratch2, DEST_W);
                 Instruction(OP_ANDWF, signa, DEST_W);
                 Instruction(OP_IORWF, signb, DEST_W);
                 Instruction(OP_XORWF, Scratch2, DEST_F);
                 IfBitSet(Scratch2, 7);
-                Instruction(OP_GOTO, isTrue, 0);
+                Instruction(OP_GOTO, isTrue);
 
-                Instruction(OP_GOTO, notTrue, 0);
+                Instruction(OP_GOTO, notTrue);
 
                 FwdAddrIsNow(lsbDecides);
                 Instruction(OP_MOVF, addr1, DEST_W);
                 Instruction(OP_SUBWF, addr2, DEST_W);
                 IfBitClear(REG_STATUS, STATUS_C);
-                Instruction(OP_GOTO, isTrue, 0);
+                Instruction(OP_GOTO, isTrue);
 
-                Instruction(OP_GOTO, notTrue, 0);
+                Instruction(OP_GOTO, notTrue);
 
                 FwdAddrIsNow(isTrue);
                 CompileIfBody(notTrue);
@@ -4284,7 +4282,7 @@ static void CompileFromIntermediate(bool topLevel)
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
                 CopyArgToReg(true, Scratch0, sov2, a->name2, false);
-                CopyLitToReg(Scratch4, sov2, 0x0, "$OPPOSITE");
+                CopyLitToReg(Scratch4, sov2, a->name2.c_str(), 0x0, "$OPPOSITE");
                 int i, j;
                 for(j = 0; j < 8 * sov2; j++) {
                     for(i = 0; i < sov2; i++) {
@@ -4330,10 +4328,9 @@ static void CompileFromIntermediate(bool topLevel)
                 CopyArgToReg(true, Scratch0, sov2, a->name2, false);
 
                 DWORD addrA = Scratch0;
-                if((a->op == INT_SET_VARIABLE_SR0)
-                || (a->op == INT_SET_VARIABLE_ROR)
-                || (a->op == INT_SET_VARIABLE_SHR)
-                ) {
+                if((a->op == INT_SET_VARIABLE_SR0) || //
+                   (a->op == INT_SET_VARIABLE_ROR) || //
+                   (a->op == INT_SET_VARIABLE_SHR)) {
                     addrA += sov2 - 1; // start at MSB
                 } else {
                     // start at LSB
@@ -4525,7 +4522,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                 Instruction(OP_MOVF, addr3 + 1, DEST_W);
                 Instruction(OP_SUBWF, addr2 + 1, DEST_W);
-                Instruction(OP_MOVWF, addr1 + 1, 0);
+                Instruction(OP_MOVWF, addr1 + 1);
                 IfBitClear(Scratch0, 0); // bit is carry / (not borrow)
                 Instruction(OP_DECF, addr1 + 1, DEST_F);
                 break;
@@ -4565,21 +4562,21 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name3, &addr3);
 
                 Instruction(OP_MOVF, addr2, DEST_W, a->name2);
-                Instruction(OP_MOVWF, Scratch0, 0);
+                Instruction(OP_MOVWF, Scratch0);
                 Instruction(OP_MOVF, addr2 + 1, DEST_W);
-                Instruction(OP_MOVWF, Scratch1, 0);
+                Instruction(OP_MOVWF, Scratch1);
 
                 Instruction(OP_MOVF, addr3, DEST_W, a->name3);
-                Instruction(OP_MOVWF, Scratch2, 0);
+                Instruction(OP_MOVWF, Scratch2);
                 Instruction(OP_MOVF, addr3 + 1, DEST_W);
-                Instruction(OP_MOVWF, Scratch3, 0);
+                Instruction(OP_MOVWF, Scratch3);
 
                 CallWithPclath(MultiplyRoutineAddress);
 
                 Instruction(OP_MOVF, Scratch2, DEST_W);
                 Instruction(OP_MOVWF, addr1, 0, a->name1);
                 Instruction(OP_MOVF, Scratch3, DEST_W);
-                Instruction(OP_MOVWF, addr1 + 1, 0);
+                Instruction(OP_MOVWF, addr1 + 1);
                 break;
 
             case INT_SET_VARIABLE_MOD:
@@ -4591,58 +4588,39 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name3, &addr3);
 
                 Instruction(OP_MOVF, addr2, DEST_W);
-                Instruction(OP_MOVWF, Scratch0, 0);
+                Instruction(OP_MOVWF, Scratch0);
                 Instruction(OP_MOVF, addr2 + 1, DEST_W);
-                Instruction(OP_MOVWF, Scratch1, 0);
+                Instruction(OP_MOVWF, Scratch1);
 
                 Instruction(OP_MOVF, addr3, DEST_W);
-                Instruction(OP_MOVWF, Scratch2, 0);
+                Instruction(OP_MOVWF, Scratch2);
                 Instruction(OP_MOVF, addr3 + 1, DEST_W);
-                Instruction(OP_MOVWF, Scratch3, 0);
+                Instruction(OP_MOVWF, Scratch3);
 
                 CallWithPclath(DivideRoutineAddress);
                 if(a->op == INT_SET_VARIABLE_DIVIDE) {
                     Instruction(OP_MOVF, Scratch0, DEST_W);
-                    Instruction(OP_MOVWF, addr1, 0);
+                    Instruction(OP_MOVWF, addr1);
                     Instruction(OP_MOVF, Scratch1, DEST_W);
-                    Instruction(OP_MOVWF, addr1 + 1, 0);
+                    Instruction(OP_MOVWF, addr1 + 1);
                 } else {
                     Instruction(OP_MOVF, Scratch4, DEST_W);
-                    Instruction(OP_MOVWF, addr1, 0);
+                    Instruction(OP_MOVWF, addr1);
                     Instruction(OP_MOVF, Scratch5, DEST_W);
-                    Instruction(OP_MOVWF, addr1 + 1, 0);
+                    Instruction(OP_MOVWF, addr1 + 1);
                 }
                 break;
 
             case INT_UART_SEND_READY: {
                 Comment("INT_UART_SEND_READY");
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
-#ifdef AUTO_BANKING
                 CopyBit(addr1, bit1, REG_TXSTA, TRMT); // TRMT=1 is TSR empty, ready; TRMT=0 is TSR full
-#else
-                ClearBit(addr1, bit1);
-
-                DWORD notReady = AllocFwdAddr();
-                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-                Instruction(OP_BTFSS, REG_TXSTA ^ 0x80, TRMT);
-                Instruction(OP_GOTO, notBusy, 0);
-
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-                SetBit(addr1, bit1);
-
-                FwdAddrIsNow(notRedy);
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-#endif
                 break;
             }
             case INT_UART_SEND_BUSY: {
                 Comment("INT_UART_SEND_BUSY");
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
-#ifdef AUTO_BANKING
                 CopyNotBit(addr1, bit1, REG_TXSTA, TRMT); // TRMT=1 is TSR empty, ready; TRMT=0 is TSR full
-#else
-                oops();
-#endif
                 break;
             }
             case INT_UART_SEND1: {
@@ -4651,7 +4629,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                 DWORD noSend = AllocFwdAddr();
                 IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
-                Instruction(OP_GOTO, noSend, 0);
+                Instruction(OP_GOTO, noSend);
 
                 Instruction(OP_MOVF, addr1, DEST_W);
                 Instruction(OP_MOVWF, REG_TXREG);
@@ -4677,23 +4655,8 @@ static void CompileFromIntermediate(bool topLevel)
                 Instruction(OP_MOVWF, REG_TXREG);
 
                 FwdAddrIsNow(noSend);
-#ifdef AUTO_BANKING
                 CopyNotBit(
                     addr2, bit2, REG_TXSTA, TRMT); // return as busy // TRMT=1 if TSR empty, ready; TRMT=0 if TSR full
-#else
-                ClearBit(addr2, bit2);
-
-                DWORD notBusy = AllocFwdAddr();
-                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-                Instruction(OP_BTFSC, REG_TXSTA ^ 0x80, TRMT);
-                Instruction(OP_GOTO, notBusy, 0);
-
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-                SetBit(addr2, bit2);
-
-                FwdAddrIsNow(notBusy);
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-#endif
                 FwdAddrIsNow(isBusy);
                 break;
             }
@@ -4713,7 +4676,7 @@ static void CompileFromIntermediate(bool topLevel)
                 // case jump to the end, and leave the rung-out clear.
                 DWORD done = AllocFwdAddr();
                 IfBitClear(REG_PIR1, RCIF);
-                Instruction(OP_GOTO, done, 0);
+                Instruction(OP_GOTO, done);
 
                 // RCIF is set, so we have a character. Read it now.
                 Instruction(OP_MOVF, REG_RCREG, DEST_W);
@@ -4727,12 +4690,12 @@ static void CompileFromIntermediate(bool topLevel)
                 // And check for errors; need to reset the UART if yes.
                 DWORD yesError = AllocFwdAddr();
                 IfBitSet(REG_RCSTA, OERR); // overrun error
-                Instruction(OP_GOTO, yesError, 0);
+                Instruction(OP_GOTO, yesError);
                 IfBitSet(REG_RCSTA, FERR); // framing error
-                Instruction(OP_GOTO, yesError, 0);
+                Instruction(OP_GOTO, yesError);
 
                 // Neither FERR nor OERR is set, so we're good.
-                Instruction(OP_GOTO, done, 0);
+                Instruction(OP_GOTO, done);
 
                 FwdAddrIsNow(yesError);
                 // An error did occur, so flush the FIFO.
@@ -4776,7 +4739,8 @@ static void CompileFromIntermediate(bool topLevel)
             }
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                Comment("INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
+                Comment(
+                    "INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol, TOP;
                 getResolution(a->name4.c_str(), &resol, &TOP);
                 McuPwmPinInfo *ioPWM;
@@ -4898,7 +4862,7 @@ static void CompileFromIntermediate(bool topLevel)
 /**/
                 // Copy l->d.setPwm.duty_cycle into Scratch0:1
                 if(IsNumber(a->name1)) {
-                    CopyLitToReg(Scratch0, 2, hobatoi(a->name1.c_str()), a->name1);
+                    CopyLitToReg(Scratch0, 2, "", hobatoi(a->name1.c_str()), a->name1);
                 } else {
                     MemForVariable(a->name1, &addr1);
                     CopyRegToReg(Scratch0, 2, addr1, 2, "Scratch0:1", a->name1, false);
@@ -4920,7 +4884,7 @@ static void CompileFromIntermediate(bool topLevel)
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
                     MultiplyNeeded = true;
-                    CopyLitToReg(Scratch2, 2, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 2, "", pr2plus1, "pr2plus1");
                     CallWithPclath(MultiplyRoutineAddress);
 
                     Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
@@ -4936,7 +4900,7 @@ static void CompileFromIntermediate(bool topLevel)
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
                     MultiplyNeeded24x16 = true;
-                    CopyLitToReg(Scratch2, 3, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 3, "", pr2plus1, "pr2plus1");
                     CallWithPclath(MultiplyRoutineAddress24x16);
 
                     sr0(Scratch2, 3);                       //  divide by 2
@@ -4953,7 +4917,7 @@ static void CompileFromIntermediate(bool topLevel)
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
                     MultiplyNeeded24x16 = true;
-                    CopyLitToReg(Scratch2, 3, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 3, "", pr2plus1, "pr2plus1");
                     CallWithPclath(MultiplyRoutineAddress24x16);
 
                     sr0(Scratch2, 3);                       // divide by 2
@@ -4981,25 +4945,25 @@ static void CompileFromIntermediate(bool topLevel)
                     } else
                         Instruction(OP_CLRF, Scratch3);
 #else
-                    CopyLitToReg(Scratch2, 2, pr2plus1, "pr2plus1");
+                    CopyLitToReg(Scratch2, 2, "", pr2plus1, "pr2plus1");
 #endif
                     CallWithPclath(MultiplyRoutineAddress);
 
 #if 0
                     Instruction(OP_MOVF, Scratch3, DEST_W);
-                    Instruction(OP_MOVWF, Scratch1, 0);
+                    Instruction(OP_MOVWF, Scratch1);
                     Instruction(OP_MOVF, Scratch2, DEST_W);
-                    Instruction(OP_MOVWF, Scratch0, 0);
+                    Instruction(OP_MOVWF, Scratch0);
 #else
                     CopyRegToReg(Scratch0, 2, Scratch2, 2, "Scratch0:1", "Scratch2:3", false);
 #endif
 
 #if 0
-                    Instruction(OP_MOVLW, 100, 0);
-                    Instruction(OP_MOVWF, Scratch2, 0);
-                    Instruction(OP_CLRF, Scratch3, 0);
+                    Instruction(OP_MOVLW, 100);
+                    Instruction(OP_MOVWF, Scratch2);
+                    Instruction(OP_CLRF, Scratch3);
 #else
-                    CopyLitToReg(Scratch2, 2, 100, "100");
+                    CopyLitToReg(Scratch2, 2, "", 100, "100");
 #endif
                     CallWithPclath(DivideRoutineAddress);
 
@@ -5018,7 +4982,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                 DWORD skip = AllocFwdAddr();
                 IfBitSet(addr, bit);
-                Instruction(OP_GOTO, skip, 0);
+                Instruction(OP_GOTO, skip);
                 SetBit(addr, bit);
 
                 // Set up the CCP2 and TMR2 peripherals.
@@ -5071,43 +5035,14 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
             }
 
-#ifndef AUTO_BANKING
-// A quick helper macro to set the banksel bits correctly; this is necessary
-// because the EEwhatever registers are all over in the memory maps.
-#define EE_REG_BANKSEL(r)                                \
-    if((r)&0x80) {                                       \
-        if(!(m & 0x80)) {                                \
-            m |= 0x80;                                   \
-            Instruction(OP_BSF, REG_STATUS, STATUS_RP0); \
-        }                                                \
-    } else {                                             \
-        if(m & 0x80) {                                   \
-            m &= ~0x80;                                  \
-            Instruction(OP_BCF, REG_STATUS, STATUS_RP0); \
-        }                                                \
-    }                                                    \
-    if((r)&0x100) {                                      \
-        if(!(m & 0x100)) {                               \
-            m |= 0x100;                                  \
-            Instruction(OP_BSF, REG_STATUS, STATUS_RP1); \
-        }                                                \
-    } else {                                             \
-        if(m & 0x100) {                                  \
-            m &= ~0x100;                                 \
-            Instruction(OP_BCF, REG_STATUS, STATUS_RP1); \
-        }                                                \
-    }
-#endif
-
             case INT_EEPROM_BUSY_CHECK: {
                 Comment("INT_EEPROM_BUSY_CHECK");
                 DWORD isBusy = AllocFwdAddr();
                 DWORD done = AllocFwdAddr();
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
 
-#ifdef AUTO_BANKING
                 IfBitSet(REG_EECON1, 1);
-                Instruction(OP_GOTO, isBusy, 0);
+                Instruction(OP_GOTO, isBusy);
 
                 //IfBitClear(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
                 Instruction(OP_MOVF, EepromHighBytesCounter, DEST_W);
@@ -5138,44 +5073,6 @@ static void CompileFromIntermediate(bool topLevel)
                 //ClearBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
 
                 FwdAddrIsNow(isBusy);
-#else
-                WORD m = 0;
-
-                EE_REG_BANKSEL(REG_EECON1);
-                IfBitSet(REG_EECON1 ^ m, 1);
-                Instruction(OP_GOTO, isBusy, 0);
-                EE_REG_BANKSEL(0);
-
-                IfBitClear(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
-                Instruction(OP_GOTO, done, 0);
-
-                // So there is not a write pending, but we have another
-                // character to transmit queued up.
-
-                EE_REG_BANKSEL(REG_EEADR);
-                Instruction(OP_INCF, REG_EEADR ^ m, DEST_F);
-                EE_REG_BANKSEL(0);
-                Instruction(OP_MOVF, EepromHighByte, DEST_W);
-                EE_REG_BANKSEL(REG_EEDATA);
-                Instruction(OP_MOVWF, REG_EEDATA ^ m, 0);
-                EE_REG_BANKSEL(REG_EECON1);
-                Instruction(OP_BCF, REG_EECON1 ^ m, 7);
-                Instruction(OP_BSF, REG_EECON1 ^ m, 2);
-                Instruction(OP_MOVLW, 0x55, 0);
-                Instruction(OP_MOVWF, REG_EECON2 ^ m, 0);
-                Instruction(OP_MOVLW, 0xaa, 0);
-                Instruction(OP_MOVWF, REG_EECON2 ^ m, 0);
-                Instruction(OP_BSF, REG_EECON1 ^ m, 1);
-
-                EE_REG_BANKSEL(0);
-
-                ClearBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
-
-                FwdAddrIsNow(isBusy);
-                // Have to do these explicitly; m is out of date due to jump.
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
-#endif
                 SetBit(addr1, bit1);
 
                 FwdAddrIsNow(done);
@@ -5186,7 +5083,6 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
 
-#ifdef AUTO_BANKING
                 //SetBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
                 WriteRegister(EepromHighBytesCounter, sov1 - 1);
                 if(sov1 > 1) {
@@ -5214,31 +5110,6 @@ static void CompileFromIntermediate(bool topLevel)
                 Instruction(OP_MOVWF, REG_EECON2);
                 Instruction(OP_BSF, REG_EECON1, 1);
                 Instruction(OP_BCF, REG_EECON1, 2);
-#else
-                WORD m = 0;
-
-                SetBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
-                Instruction(OP_MOVF, addr1 + 1, DEST_W);
-                Instruction(OP_MOVWF, EepromHighByte, 0);
-
-                EE_REG_BANKSEL(REG_EEADR);
-                Instruction(OP_MOVLW, a->literal, 0);
-                Instruction(OP_MOVWF, REG_EEADR ^ m, 0);
-                EE_REG_BANKSEL(0);
-                Instruction(OP_MOVF, addr1, DEST_W);
-                EE_REG_BANKSEL(REG_EEDATA);
-                Instruction(OP_MOVWF, REG_EEDATA ^ m, 0);
-                EE_REG_BANKSEL(REG_EECON1);
-                Instruction(OP_BCF, REG_EECON1 ^ m, 7);
-                Instruction(OP_BSF, REG_EECON1 ^ m, 2);
-                Instruction(OP_MOVLW, 0x55, 0);
-                Instruction(OP_MOVWF, REG_EECON2 ^ m, 0);
-                Instruction(OP_MOVLW, 0xaa, 0);
-                Instruction(OP_MOVWF, REG_EECON2 ^ m, 0);
-                Instruction(OP_BSF, REG_EECON1 ^ m, 1);
-
-                EE_REG_BANKSEL(0);
-#endif
                 break;
             }
             case INT_EEPROM_READ: {
@@ -5246,7 +5117,6 @@ static void CompileFromIntermediate(bool topLevel)
                 int i;
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
-#ifdef AUTO_BANKING
                 for(i = 0; i < sov1; i++) {
                     Instruction(OP_MOVLW, a->literal + i);
                     Instruction(OP_MOVWF, REG_EEADR);
@@ -5255,25 +5125,6 @@ static void CompileFromIntermediate(bool topLevel)
                     Instruction(OP_MOVF, REG_EEDATA, DEST_W);
                     Instruction(OP_MOVWF, addr1 + i);
                 }
-#else
-                WORD m = 0;
-                for(i = 0; i < 2; i++) {
-                    EE_REG_BANKSEL(REG_EEADR);
-                    Instruction(OP_MOVLW, a->literal + i, 0);
-                    Instruction(OP_MOVWF, REG_EEADR ^ m, 0);
-                    EE_REG_BANKSEL(REG_EECON1);
-                    Instruction(OP_BCF, REG_EECON1 ^ m, 7);
-                    Instruction(OP_BSF, REG_EECON1 ^ m, 0);
-                    EE_REG_BANKSEL(REG_EEDATA);
-                    Instruction(OP_MOVF, REG_EEDATA ^ m, DEST_W);
-                    EE_REG_BANKSEL(0);
-                    if(i == 0) {
-                        Instruction(OP_MOVWF, addr1, 0);
-                    } else {
-                        Instruction(OP_MOVWF, addr1 + 1, 0);
-                    }
-                }
-#endif
                 break;
             }
             case INT_SET_VARIABLE_RANDOM: {
@@ -5282,7 +5133,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                 char seedName[MAX_NAME_LEN];
                 sprintf(seedName, "$seed_%s", a->name1.c_str());
-/*
+                /*
 //https://en.m.wikipedia.org/wiki/Linear_congruential_generator
 // X[n+1] = (a * X[n] + c) mod m
 //VMS's MTH$RANDOM, old versions of glibc
@@ -5393,18 +5244,18 @@ static void CompileFromIntermediate(bool topLevel)
                    || McuAs(" PIC16F1824 ") //
                    || McuAs(" PIC16F1827 ") //
                 ) {
-                    adcsPos = 4; // in REG_ADCON1
-                    WriteRegister(REG_ADCON0, //
+                    adcsPos = 4;                                            // in REG_ADCON1
+                    WriteRegister(REG_ADCON0,                               //
                                   (MuxForAdcVariable(a->name1) << chsPos) | //
-                                  (0 << goPos) |                            // don't start yet
+                                      (0 << goPos) |                        // don't start yet
                                                                             // bit 1 unimplemented
-                                  (1 << 0)                                  // A/D peripheral on
+                                      (1 << 0)                              // A/D peripheral on
                     );
 
-                    WriteRegister(REG_ADCON1,         //
-                                  (1 << 7) |          // right-justified
-                                  (adcs << adcsPos) | //
-                                  (0 << 0)            // 00 = VREF is connected to VDD
+                    WriteRegister(REG_ADCON1,             //
+                                  (1 << 7) |              // right-justified
+                                      (adcs << adcsPos) | //
+                                      (0 << 0)            // 00 = VREF is connected to VDD
                     );
                 } else if(McuAs(" PIC16F819 ")    //
                           || McuAs(" PIC16F873 ") //
@@ -5419,18 +5270,18 @@ static void CompileFromIntermediate(bool topLevel)
                           || McuAs(" PIC16F886 ") //
                           || McuAs(" PIC16F887 ") //
                 ) {
-                    adcsPos = 6; // in REG_ADCON0
-                    WriteRegister(REG_ADCON0, //
-                                  (adcs << adcsPos) | //
-                                  (MuxForAdcVariable(a->name1) << chsPos) | //
-                                  (0 << goPos) |  // don't start yet
-                                                      // bit 1 unimplemented
-                                  (1 << 0)        // A/D peripheral on
+                    adcsPos = 6;                                                // in REG_ADCON0
+                    WriteRegister(REG_ADCON0,                                   //
+                                  (adcs << adcsPos) |                           //
+                                      (MuxForAdcVariable(a->name1) << chsPos) | //
+                                      (0 << goPos) |                            // don't start yet
+                                                                                // bit 1 unimplemented
+                                      (1 << 0)                                  // A/D peripheral on
                     );
 
-                    WriteRegister(REG_ADCON1, //
+                    WriteRegister(REG_ADCON1,  //
                                   (1 << 7) |   // right-justified
-                                  (0 << 0) // for now, all analog inputs
+                                      (0 << 0) // for now, all analog inputs
                     );
                 } else if(McuAs(" PIC12F675 ")    //
                           || McuAs(" PIC12F683 ") //
@@ -5438,7 +5289,7 @@ static void CompileFromIntermediate(bool topLevel)
                     adcsPos = 4; // in REG_ANSEL
                     WriteRegister(REG_ANSEL, (adcs << adcsPos) | (1 << MuxForAdcVariable(a->name1)));
 
-                    WriteRegister(REG_ADCON0, //
+                    WriteRegister(REG_ADCON0,                                   //
                                   (1 << 7) |                                    // right-justified
                                       (0 << 6) |                                // VDD Voltage Reference
                                       (MuxForAdcVariable(a->name1) << chsPos) | // Analog Channel Select bits
@@ -5463,35 +5314,29 @@ static void CompileFromIntermediate(bool topLevel)
                 if(cyclesToWait < 1)
                     cyclesToWait = 1;
 
-                Instruction(OP_MOVLW, cyclesToWait, 0);
-                Instruction(OP_MOVWF, Scratch1, 0);
+                Instruction(OP_MOVLW, cyclesToWait);
+                Instruction(OP_MOVWF, Scratch1);
                 DWORD wait = PicProgWriteP;
                 Instruction(OP_DECFSZ, Scratch1, DEST_F);
-                Instruction(OP_GOTO, wait, 0);
+                Instruction(OP_GOTO, wait);
 
                 SetBit(REG_ADCON0, goPos); // starting a A/D conversion
                 DWORD spin = PicProgWriteP;
                 IfBitSet(REG_ADCON0, goPos);
-                Instruction(OP_GOTO, spin, 0);
+                Instruction(OP_GOTO, spin);
 
                 if(REG_ADRESH != -1) {
                     Instruction(OP_MOVF, REG_ADRESH, DEST_W);
                     Instruction(OP_MOVWF, addr1 + 1);
                 }
 
-#ifdef AUTO_BANKING
                 Instruction(OP_MOVF, REG_ADRESL, DEST_W);
-#else
-                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-                Instruction(OP_MOVF, REG_ADRESL ^ 0x80, DEST_W);
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-#endif
                 Instruction(OP_MOVWF, addr1);
 
                 // hook those pins back up to the digital inputs in case
                 // some of them are used that way
                 if(REG_ADCON1 != -1)
-                    WriteRegister(REG_ADCON1, //
+                    WriteRegister(REG_ADCON1,  //
                                   (1 << 7) |   // right-justify A/D result
                                       (6 << 0) // all digital inputs
                     );
@@ -5500,21 +5345,12 @@ static void CompileFromIntermediate(bool topLevel)
                    //              || McuAs(" PIC12F675 ")
                    //              || McuAs(" PIC12F683 ")
                 ) {
-#ifdef AUTO_BANKING
                     Instruction(OP_CLRF, REG_ANSEL);
-#else
-                    WriteRegister(REG_ANSEL, 0x00);
-#endif
                 } else if(McuAs("Microchip PIC16F887 ")    //
                           || McuAs("Microchip PIC16F886 ") //
                 ) {
-#ifdef AUTO_BANKING
                     Instruction(OP_CLRF, REG_ANSEL);
                     Instruction(OP_CLRF, REG_ANSELH);
-#else
-                    WriteRegister(REG_ANSEL, 0x00);
-                    WriteRegister(REG_ANSELH, 0x00);
-#endif
                 }
                 break;
             }
@@ -5528,7 +5364,7 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
 
             case INT_COMMENT:
-                Comment("%s",a->name1.c_str());
+                Comment("%s", a->name1.c_str());
                 break;
 
             case INT_AllocKnownAddr:
@@ -5555,7 +5391,7 @@ static void CompileFromIntermediate(bool topLevel)
                         AddrOfRungN[rung].FwdAddr,
                         AddrOfRungN[rung].KnownAddr);
                 if(rung < -1) {
-                    Instruction(OP_GOTO, 0);
+                    Instruction(OP_GOTO);
                 } else if(rung == -1) {
                     Instruction(OP_GOTO, BeginOfPLCCycle);
                 } else if(rung <= rungNow) {
@@ -5594,7 +5430,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                 Comment("Scratch0:1 := Index '%s'", a->name3.c_str());
                 if(IsNumber(a->name3)) {
-                    CopyLitToReg(Scratch0, 2, hobatoi(a->name3.c_str()), a->name3);
+                    CopyLitToReg(Scratch0, 2, "", hobatoi(a->name3.c_str()), a->name3);
                 } else {
                     MemForVariable(a->name3, &addr3);
                     CopyRegToReg(Scratch0, 2, addr3, 2, "$Scratch0", a->name3, false);
@@ -5741,17 +5577,6 @@ executed as a NOP instruction. */
                 ooops("INT_%d", a->op);
                 break;
         }
-#ifndef AUTO_PAGING
-        if(((PicProgWriteP >> 11) != section) && topLevel) {
-            // This is particularly prone to happening in the last section,
-            // if the program doesn't fit (since we won't have attempted
-            // to add padding).
-            Error(
-                _("Internal error relating to PIC paging; make program "
-                  "smaller or reshuffle it."));
-            fCompileError(f, fAsm);
-        }
-#endif
     }
 }
 
@@ -6027,7 +5852,7 @@ static void WriteMultiplyRoutine8(DWORD addr3, DWORD addr1, DWORD addr2, int sov
         multiplicand0 = addr2;
         Instruction(OP_MOVF, addr1, DEST_W);
     }
-    Instruction(OP_MOVWF, multiplier0, 0); // Copy data to Scratch2
+    Instruction(OP_MOVWF, multiplier0); // Copy data to Scratch2
 
     bool needCopyResult = false;
     if(addr3 != addr1) { // a=b*c or a=b*a
@@ -6071,7 +5896,7 @@ static void WriteMultiplyRoutine8(DWORD addr3, DWORD addr1, DWORD addr2, int sov
 
         if(sov3 >= 2) {
             Instruction(OP_MOVF, result1, DEST_W);
-            Instruction(OP_MOVWF, addr3 + 1, 0);
+            Instruction(OP_MOVWF, addr3 + 1);
         }
     }
     if(sov3 >= 3) {
@@ -6268,10 +6093,10 @@ static void WriteDivideRoutine()
 
     Instruction(OP_MOVF, dividend1, DEST_W);
     Instruction(OP_XORWF, divisor1, DEST_W);
-    Instruction(OP_MOVWF, sign, 0);
+    Instruction(OP_MOVWF, sign);
 
     Instruction(OP_BTFSS, divisor1, 7);
-    Instruction(OP_GOTO, dontNegateDivisor, 0);
+    Instruction(OP_GOTO, dontNegateDivisor);
     Instruction(OP_COMF, divisor0, DEST_F);
     Instruction(OP_COMF, divisor1, DEST_F);
     Instruction(OP_INCF, divisor0, DEST_F);
@@ -6280,7 +6105,7 @@ static void WriteDivideRoutine()
     FwdAddrIsNow(dontNegateDivisor);
 
     Instruction(OP_BTFSS, dividend1, 7);
-    Instruction(OP_GOTO, dontNegateDividend, 0);
+    Instruction(OP_GOTO, dontNegateDividend);
     Instruction(OP_COMF, dividend0, DEST_F);
     Instruction(OP_COMF, dividend1, DEST_F);
     Instruction(OP_INCF, dividend0, DEST_F);
@@ -6288,13 +6113,13 @@ static void WriteDivideRoutine()
     Instruction(OP_INCF, dividend1, DEST_F);
     FwdAddrIsNow(dontNegateDividend);
 
-    Instruction(OP_CLRF, remainder1, 0);
-    Instruction(OP_CLRF, remainder0, 0);
+    Instruction(OP_CLRF, remainder1);
+    Instruction(OP_CLRF, remainder0);
 
     Instruction(OP_BCF, REG_STATUS, STATUS_C);
 
-    Instruction(OP_MOVLW, 17, 0);
-    Instruction(OP_MOVWF, counter, 0);
+    Instruction(OP_MOVLW, 17);
+    Instruction(OP_MOVWF, counter);
 
     loop = PicProgWriteP;
     Instruction(OP_RLF, dividend0, DEST_F);
@@ -6302,7 +6127,7 @@ static void WriteDivideRoutine()
 
     Instruction(OP_DECF, counter, DEST_F);
     Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
-    Instruction(OP_GOTO, done, 0);
+    Instruction(OP_GOTO, done);
 
     Instruction(OP_RLF, remainder0, DEST_F);
     Instruction(OP_RLF, remainder1, DEST_F);
@@ -6315,7 +6140,7 @@ static void WriteDivideRoutine()
     Instruction(OP_SUBWF, remainder1, DEST_F);
 
     Instruction(OP_BTFSS, remainder1, 7);
-    Instruction(OP_GOTO, notNegative, 0);
+    Instruction(OP_GOTO, notNegative);
 
     Instruction(OP_MOVF, divisor0, DEST_W);
     Instruction(OP_ADDWF, remainder0, DEST_F);
@@ -6325,11 +6150,11 @@ static void WriteDivideRoutine()
     Instruction(OP_ADDWF, remainder1, DEST_F);
 
     Instruction(OP_BCF, REG_STATUS, STATUS_C);
-    Instruction(OP_GOTO, loop, 0);
+    Instruction(OP_GOTO, loop);
 
     FwdAddrIsNow(notNegative);
     Instruction(OP_BSF, REG_STATUS, STATUS_C);
-    Instruction(OP_GOTO, loop, 0);
+    Instruction(OP_GOTO, loop);
 
     FwdAddrIsNow(done);
     Instruction(OP_BTFSS, sign, 7);
@@ -6915,6 +6740,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
 
     AllocBitsVars(); // first
 
+    ScratchI = AllocOctetRam(); // tmp indirect addressing
     ScratchS = AllocOctetRam(); // REG_STATUS
     Scratch0 = AllocOctetRam();
     Scratch1 = AllocOctetRam();
@@ -6960,7 +6786,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
     } else
         oops();
     Comment("GOTO progStart");
-    Instruction(OP_GOTO, progStart, 0); //3
+    Instruction(OP_GOTO, progStart); //3
     if(Prog.mcu->core != BaselineCore12bit) {
         Comment("Interrupt Vector");
         Instruction(OP_RETFIE, 0, 0); //4 or this
@@ -7064,7 +6890,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
             Instruction(OP_INCF, REG_FSR, DEST_F);
             Instruction(OP_DECFSZ, Prog.mcu->ram[i].start & ~BankMask(), DEST_F); //  <<<<<<<<
             Instruction(OP_GOTO, zeroMem);                                        //                                ^
-            //      Instruction(OP_CLRF, Prog.mcu->ram[i].start & ~BankMask()); // not need, self cleared here >>>^
+            //Instruction(OP_CLRF, Prog.mcu->ram[i].start & ~BankMask()); // not need, self cleared here >>>^
         }
     }
     if(Bank(Prog.mcu->ram[RamSection].start)) { // 3
@@ -7103,15 +6929,11 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
             }
         }
 
-// Pull-ups are enabled after direction settings !
-#ifdef AUTO_BANKING
+        // Pull-ups are enabled after direction settings !
         Comment("Clear Bit 6 - Enable Weak Pull-ups bit (GP0, GP1, GP3)");
         Prog.OPTION &= ~(1 << _GPPU);
         Instruction(OP_MOVLW, Prog.OPTION);
         Instruction(OP_OPTION);
-#else
-        oops();
-#endif
     }
 
     if(SleepFunctionUsed()) {
@@ -7139,7 +6961,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
     ) {
         // The GPIOs that can also be A/D inputs default to being A/D
         // inputs, so turn that around
-        WriteRegister(REG_ADCON1, //
+        WriteRegister(REG_ADCON1,  //
                       (1 << 7) |   // right-justify A/D result
                           (7 << 0) // all digital inputs
         );
@@ -7228,13 +7050,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
 
         // Pull-ups are enabled after direction settings !
         Comment("Clear Bit 7 - PORTs pull-ups are enabled by individual port latch values");
-#ifdef AUTO_BANKING
         Instruction(OP_BCF, REG_OPTION, _RBPU);
-#else
-        Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-        Instruction(OP_BCF, REG_OPTION & 7, _RBPU);
-        Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-#endif
     }
 
     if(UartFunctionUsed()) {
@@ -7346,8 +7162,11 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
                     Instruction(OP_DECFSZ, plcTmr.softDivisorAddr + 1, DEST_F); // Skip if zero
                     Instruction(OP_GOTO, BeginOfPLCCycle);
                 }
-                CopyLitToReg(
-                    plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+                CopyLitToReg(plcTmr.softDivisorAddr,
+                             byteNeeded(plcTmr.softDivisor),
+                             "",
+                             plcTmr.softDivisor,
+                             "plcTmr.softDivisor");
             } else {
                 DWORD setLiteral = AllocFwdAddr();
                 /*
@@ -7392,8 +7211,11 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
           }
           */
                 FwdAddrIsNow(setLiteral);
-                CopyLitToReg(
-                    plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), plcTmr.softDivisor, "plcTmr.softDivisor");
+                CopyLitToReg(plcTmr.softDivisorAddr,
+                             byteNeeded(plcTmr.softDivisor),
+                             "",
+                             plcTmr.softDivisor,
+                             "plcTmr.softDivisor");
             }
         }
     }
@@ -7419,24 +7241,9 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
     }
 
     Comment("GOTO next PLC cycle");
-#ifndef AUTO_PAGING
-    // This is probably a big jump, so give it PCLATH.
-    Instruction(OP_CLRF, REG_PCLATH, 0);
-#endif
-    Instruction(OP_GOTO, BeginOfPLCCycle, 0);
+    Instruction(OP_GOTO, BeginOfPLCCycle);
 
     rungNow = -50;
-
-#ifndef AUTO_PAGING
-    // Once again, let us make sure not to put stuff on a page boundary
-    if((PicProgWriteP >> 11) != ((PicProgWriteP + 150) >> 11)) {
-        DWORD section = (PicProgWriteP >> 11);
-        // Just burn the last of this section with NOPs.
-        while((PicProgWriteP >> 11) == section) {
-            Instruction(OP_MOVLW, 0xab, 0);
-        }
-    }
-#endif
 
 #ifndef MOVE_TO_PAGE_0
     if(MultiplyNeeded)
@@ -7455,18 +7262,14 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
 
     MemCheckForErrorsPostCompile();
     AddrCheckForErrorsPostCompile();
-#ifdef AUTO_BANKING
     MaxBank = CalcMaxBank();
     if(MaxBank)
         BankCorrection();
-#endif
+
     BankCheckForErrorsPostCompile();
 
-#ifdef AUTO_PAGING
     PageCorrection();
     CheckPsErrorsPostCompile();
-#else
-#endif
 
     ProgWriteP = PicProgWriteP;
 

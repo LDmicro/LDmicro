@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
+// Copyright 2015 Nehrutsa Ihor
 //
 // This file is part of LDmicro.
 // This file was writen from ansic.cpp.
@@ -27,7 +27,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include <algorithm>
 
 static char  SeenVariables[MAX_IO][MAX_NAME_LEN];
 static int   SeenVariablesCount;
@@ -61,8 +60,7 @@ static bool SeenVariable(char *name)
 #define ASINT 2
 #define ASSTR 3
 
-template <size_t N>
-static char *MapSym(const StringArray<N>& str, int how)
+template <size_t N> static char *MapSym(const StringArray<N> &str, int how)
 {
     static char AllRets[16][MAX_NAME_LEN + 30];
     static int  RetCnt;
@@ -103,8 +101,8 @@ static char *MapSym(const StringArray<N>& str, int how)
 //-----------------------------------------------------------------------------
 static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
 {
-    char  __str[MAX_NAME_LEN];
-    char  str2[MAX_NAME_LEN];
+    char        __str[MAX_NAME_LEN];
+    char        str2[MAX_NAME_LEN];
     const char *line2 = "1234567890-=";
     const char *line3 = "QWERTYUIOP";
     const char *line4 = "ASDFGHJKL";
@@ -114,7 +112,7 @@ static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
     McuIoPinInfo *iop = PinInfoForName(_str);
     ShortPinName(iop, str2);
 
-    int type = GetAssignedType(_str,_str);
+    int type = GetAssignedType(_str, _str);
     if(str[0] == 'U') {
         if(type == IO_TYPE_DIG_INPUT) {
             fprintf(fv, "  InArr[InCount].Name := '%s';\n", __str);
@@ -356,7 +354,7 @@ static void DeclareBit(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv, char *st
 {
     // The mapped symbol has the form Ub_{X,Y,R}name, so look at character
     // four to determine if it's an input, output, internal relay.
-    int type = GetAssignedType(_str,_str);
+    int type = GetAssignedType(_str, _str);
 
     if(type == IO_TYPE_DIG_INPUT) {
         ResetAndRegister(fr, fv, str, _str);
@@ -548,7 +546,7 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
 #endif
 }
 //-----------------------------------------------------------------------------
-static int SimpleBool(const NameArray& name)
+static int SimpleBool(const NameArray &name)
 {
     if(name[0] == '$')
         return 1;
@@ -568,7 +566,7 @@ static void Generate_flash_eeprom(FILE *f)
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         switch(IntCode[i].op) {
             case INT_FLASH_INIT: {
-                int   sovElement = IntCode[i].literal2;
+                int         sovElement = IntCode[i].literal2;
                 const char *sovs;
 
                 if(sovElement == 1) {
@@ -978,7 +976,10 @@ static void GenerateSUBPROG(FILE *f)
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
-                fprintf(f, "procedure Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
+                fprintf(f,
+                        "procedure Call_SUBPROG_%s() { // LabelRung%d\n",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].literal + 1);
                 int indentSave = indent;
                 indent = 1;
                 GenerateSourceCode(f,

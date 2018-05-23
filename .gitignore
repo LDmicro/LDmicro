@@ -351,12 +351,15 @@ ASALocalRun/
 *.binlog
 ## VisualStudio.gitignore END
 
-*.exe
-*.orig
-
 # Clang original formattes
 /ldmicro/Chromium.clang-format
 /ldmicro/Google.clang-format
 /ldmicro/LLVM.clang-format
 /ldmicro/Mozilla.clang-format
 /ldmicro/WebKit.clang-format
+
+*.exe
+*.orig
+
+/ldmicro/temp.pl
+/ldmicro/lang-sort-de

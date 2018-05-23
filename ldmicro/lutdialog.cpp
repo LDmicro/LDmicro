@@ -26,7 +26,6 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
-#include <algorithm>
 
 static HWND LutDialog;
 
@@ -373,7 +372,7 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
                                        Instance,
                                        nullptr);
         FixedFont(StringTextbox);
-        SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)true, 0);
+        SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM) true, 0);
         MoveWindow(LutDialog, 100, 30, 320 + 20, 185 + 30, true);
     } else {
         int i;
@@ -436,9 +435,10 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
         }
         if(count > MAX_LOOK_UP_TABLE_LEN)
             count = MAX_LOOK_UP_TABLE_LEN;
-        SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)false, 0);
+        SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM) false, 0);
 
-        MoveWindow(LutDialog, 100, 30, 320 + 20 + std::min(count / 16, 2) * 150, base + 30 + std::min(count, 16) * 30, true);
+        MoveWindow(
+            LutDialog, 100, 30, 320 + 20 + std::min(count / 16, 2) * 150, base + 30 + std::min(count, 16) * 30, true);
     }
 }
 

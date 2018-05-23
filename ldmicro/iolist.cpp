@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
 // Copyright 2007 Jonathan Westhues
+// Copyright 2015 Nehrutsa Ihor
 //
 // This file is part of LDmicro.
 //
@@ -451,8 +452,8 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
         }
             {
-                int   n, n0;
-                char *nameTable;
+                int         n, n0;
+                const char *nameTable;
                     // clang-format off
         case ELEM_7SEG: nameTable = "char7seg";  n = LEN7SEG;  n0=1; goto xseg;
         case ELEM_9SEG: nameTable = "char9seg";  n = LEN9SEG;  n0=2; goto xseg;
@@ -654,7 +655,7 @@ static int CompareIo(const void *av, const void *bv)
     if(a->type != b->type) {
         return a->type - b->type;
     }
-/*
+    /*
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
 */
@@ -1047,7 +1048,7 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 //-----------------------------------------------------------------------------
 // Create our window class; nothing exciting.
 //-----------------------------------------------------------------------------
-static bool MakeWindowClass()
+static ATOM MakeWindowClass()
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
@@ -1070,20 +1071,21 @@ static bool MakeWindowClass()
 #define AddY 50
 static void MakeControls()
 {
-    HWND textLabel = CreateWindowEx(0,
-                                    WC_STATIC,
-                                    ((Prog.mcu) && (Prog.mcu->whichIsa == ISA_AVR)) ?
-                                    _("Pin#:   MCU pin name:                                       Arduino pin name:") :
-                                    _("Pin#:   MCU pin name:"),
-                                    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                    6,
-                                    1,
-                                    400,
-                                    17,
-                                    IoDialog,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    HWND textLabel =
+        CreateWindowEx(0,
+                       WC_STATIC,
+                       ((Prog.mcu) && (Prog.mcu->whichIsa == ISA_AVR))
+                           ? _("Pin#:   MCU pin name:                                       Arduino pin name:")
+                           : _("Pin#:   MCU pin name:"),
+                       WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+                       6,
+                       1,
+                       400,
+                       17,
+                       IoDialog,
+                       nullptr,
+                       Instance,
+                       nullptr);
     NiceFont(textLabel);
 
     PinList = CreateWindowEx(WS_EX_CLIENTEDGE,
@@ -1724,14 +1726,28 @@ void IoListProc(NMHDR *h)
                         break;
                     DWORD addr = 0;
                     int   bit = -1;
-                    if((type == IO_TYPE_PORT_INPUT)     //
-                       || (type == IO_TYPE_PORT_OUTPUT) //
-                       || (type == IO_TYPE_MCU_REG)) {
+                    if((type == IO_TYPE_PORT_INPUT) || //
+                       (type == IO_TYPE_PORT_OUTPUT)) {
                         MemForVariable(name, &addr);
                         if(addr > 0)
-                            sprintf(i->item.pszText, "0x%x", addr);
+                            sprintf(i->item.pszText, "0x%X", addr);
                         else
                             sprintf(i->item.pszText, "Not a PORT!");
+                    } else if(type == IO_TYPE_MCU_REG) {
+                        if(IsAddrInVar(name)) {
+                            char buf[MAX_NAME_LEN];
+                            DescribeForIoList(&name[1], type, buf);
+                            char *c = strchr(buf, '=');
+                            if(c)
+                                *c = '\0';
+                            sprintf(i->item.pszText, "%s in %s", buf, &name[1]);
+                        } else {
+                            MemForVariable(name, &addr);
+                            if(addr > 0)
+                                sprintf(i->item.pszText, "0x%X", addr);
+                            else
+                                sprintf(i->item.pszText, "Not a PORT!");
+                        }
                     } else if((type == IO_TYPE_GENERAL)    //
                               || (type == IO_TYPE_PERSIST) //
                               || (type == IO_TYPE_STRING)  //
@@ -1745,22 +1761,22 @@ void IoListProc(NMHDR *h)
                               || (type == IO_TYPE_COUNTER)) {
                         MemForVariable(name, &addr);
                         if(addr > 0)
-                            sprintf(i->item.pszText, "0x%x", addr);
+                            sprintf(i->item.pszText, "0x%X", addr);
                     } else if((type == IO_TYPE_INTERNAL_RELAY)) {
                         MemForSingleBit(name, true, &addr, &bit);
                         if(addr > 0 && bit >= 0)
-                            sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                            sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                     } else if(type == IO_TYPE_UART_TX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.txPin, &addr, &bit, false);
                             if(addr > 0 && bit >= 0)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                         }
                     } else if(type == IO_TYPE_UART_RX) {
                         if(Prog.mcu) {
                             AddrBitForPin(Prog.mcu->uartNeeds.rxPin, &addr, &bit, true);
                             if(addr > 0 && bit >= 0)
-                                sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                         }
                     } else if((type == IO_TYPE_READ_ADC)    //
                               || (type == IO_TYPE_SPI_MOSI) //
@@ -1774,20 +1790,20 @@ void IoListProc(NMHDR *h)
                             if(iop) {
                                 AddrBitForPin(iop->pin, &addr, &bit, true);
                                 if(addr > 0 && bit >= 0)
-                                    sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                                    sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                             }
                         }
                     } else if(type == IO_TYPE_TABLE_IN_FLASH) {
                         MemOfVar(name, &addr);
                         if(addr > 0)
-                            sprintf(i->item.pszText, "0x%x", addr);
+                            sprintf(i->item.pszText, "0x%X", addr);
                     } else if((type == IO_TYPE_DIG_INPUT)     //
                               || (type == IO_TYPE_DIG_OUTPUT) //
                               || (type == IO_TYPE_PWM_OUTPUT)) {
                         if(SingleBitAssigned(name))
                             MemForSingleBit(name, true, &addr, &bit);
                         if(addr > 0 && bit >= 0)
-                            sprintf(i->item.pszText, "0x%02x (BIT%d)", addr, bit);
+                            sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                     }
                     break;
                 }
