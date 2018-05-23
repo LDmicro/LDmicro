@@ -32,8 +32,8 @@
 
 #include "compilercommon.hpp"
 
-#define NEW_CMP // (C) GitHub.LDmicro@gmail.com
-#define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
+#define NEW_CMP // (C) LDmicro.GitHub@gmail.com
+#define TABLE_IN_FLASH // (C) LDmicro.GitHub@gmail.com
 #define NEW_INT 1
 
 // clang-format off

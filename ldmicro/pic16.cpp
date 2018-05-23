@@ -51,7 +51,7 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-static FILE *f;
+static FILE *f; // .hex
 static FILE *fAsm;
 
 #define fCompileError(f1, f2) \
@@ -61,49 +61,9 @@ static FILE *fAsm;
     fclose(f1);               \
     CompileError();
 
-/* moved to ldmicro.h
-// not complete; just what I need
-typedef enum Pic16OpTag {
-    OP_VACANT,
-    OP_ADDWF,
-    OP_ANDWF,
-    OP_CALL,
-    OP_BSF,
-    OP_BCF,
-    OP_BTFSC,
-    OP_BTFSS,
-    OP_GOTO,
-    OP_CLRF,
-    OP_CLRWDT,
-    OP_COMF,
-    OP_DECF,
-    OP_DECFSZ,
-    OP_INCF,
-    OP_INCFSZ,
-    OP_IORWF,
-    OP_MOVLW,
-    OP_MOVF,
-    OP_MOVWF,
-    OP_NOP,
-    OP_RETFIE,
-    OP_RETURN,
-    OP_RLF,
-    OP_RRF,
-    OP_SUBLW,
-    OP_SUBWF,
-    OP_XORWF,
-} Pic16Op;
-*/
 #define DEST_F 1
 #define DEST_W 0
 
-/* moved to ldmicro.h
-typedef struct Pic16InstructionTag {
-    Pic16Op     op;
-    DWORD       arg1;
-    DWORD       arg2;
-} Pic16Instruction;
-*/
 #define MAX_PROGRAM_LEN 128 * 1024
 static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
 static DWORD             PicProgWriteP;

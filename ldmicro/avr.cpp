@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
 // Copyright 2007 Jonathan Westhues
+// Copyright 2015 Nehrutsa Ihor
 //
 // This file is part of LDmicro.
 //
@@ -83,59 +84,7 @@
 #define ZL 30
 #define ZH 31
 static DWORD REG_EIND = 0; // EIND:ZH:ZL indirect addres for EICALL, EIJMP
-/*
-// not complete; just what I need
-typedef enum AvrOpTag {
-    OP_VACANT,
-    OP_ADC,
-    OP_ADD,
-    OP_ASR,
-    OP_BRCC,
-    OP_BRCS,
-    OP_BREQ,
-    OP_BRGE,
-    OP_BRLO,
-    OP_BRLT,
-    OP_BRNE,
-    OP_CBR,
-    OP_CLC,
-    OP_CLR,
-    OP_COM,
-    OP_CP,
-    OP_CPC,
-    OP_DEC,
-    OP_EOR,
-    OP_ICALL,
-    OP_IJMP,
-    OP_INC,
-    OP_LDI,
-    OP_LD_X,
-    OP_MOV,
-    OP_OUT,
-    OP_RCALL,
-    OP_RET,
-    OP_RETI,
-    OP_RJMP,
-    OP_ROR,
-    OP_SEC,
-    OP_SBC,
-    OP_SBCI,
-    OP_SBR,
-    OP_SBRC,
-    OP_SBRS,
-    OP_ST_X,
-    OP_SUB,
-    OP_SUBI,
-    OP_TST,
-    OP_WDR,
-} AvrOp;
 
-typedef struct AvrInstructionTag {
-    AvrOp       op;
-    DWORD       arg1;
-    DWORD       arg2;
-} AvrInstruction;
-*/
 #define MAX_PROGRAM_LEN 128 * 1024
 static PicAvrInstruction AvrProg[MAX_PROGRAM_LEN];
 static DWORD             AvrProgWriteP;

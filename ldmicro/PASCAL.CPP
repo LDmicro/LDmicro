@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
+// Copyright 2015 Nehrutsa Ihor
 //
 // This file is part of LDmicro.
 // This file was writen from ansic.cpp.

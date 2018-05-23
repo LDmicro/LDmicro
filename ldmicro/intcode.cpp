@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
 // Copyright 2007 Jonathan Westhues
+// Copyright 2015 Nehrutsa Ihor
 //
 // This file is part of LDmicro.
 //
@@ -27,10 +28,10 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-//// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
+//// #define NEW_TON // (C) LDmicro.GitHub@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
 
-#define NEW_ONE_SHOT // (C) GitHub.LDmicro@gmail.com
+#define NEW_ONE_SHOT // (C) LDmicro.GitHub@gmail.com
 //#define DEFAULT_PARALLEL_ALGORITHM
 //#define DEFAULT_COIL_ALGORITHM
 
