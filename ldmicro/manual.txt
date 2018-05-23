@@ -202,6 +202,8 @@ indicates what kind of object it is.  For example:
 
       {MOV #portAddr:=}    #portAddr treated as indirect address of the register #0x06 PORTB (Microchip PIC16F887).
     --{           0x0F}--  Output pins PORTB are set to a binary value of 00001111.
+    * Wiki: LDmicro indirect addressing
+      https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
 
     Be careful with writing to the hardware registers by immediate address access.
     See how to access to SPI thru the hardware registers.

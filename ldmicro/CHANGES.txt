@@ -1,4 +1,10 @@
-== Release
+== Release 4.4.0.0
+
+   * New: The variable name that begins with a '#' character and subsequent as
+    a general-purpose variable name treated as indirect address of hardware register.
+    Value like #VarName is indirect address of hardware register (Indirect Address Pointer).
+   See manual.txt
+   Note: Înly for PIC,AVR implemented.
 
    * Wiki: LDmicro indirect addressing
    https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
