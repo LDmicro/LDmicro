@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
 // Copyright 2007 Jonathan Westhues
+// Copyright 2015 Nehrutsa Ihor
 //
 // This file is part of LDmicro.
 //
@@ -30,26 +31,19 @@
 //              * 1 - only if GOTO or CALL operations need a label
 //                2 - always, all line is labeled
 
-#define AUTO_BANKING //++
-#ifdef AUTO_BANKING
-    //#define ASM_COMMENT_BANK //-
-#endif
+#define AUTO_BANKING // ++ (C) LDmicro.GitHub@gmail.com
+//#define ASM_COMMENT_BANK //-
 
 //http://www.piclist.com/techref/microchip/pages.htm
-#define AUTO_PAGING //++
-#ifdef AUTO_PAGING
-    //#define ASM_COMMENT_PAGE //-
-    #define MOVE_TO_PAGE_0 //++
-#endif
+#define AUTO_PAGING // ++ (C) LDmicro.GitHub@gmail.com
+//#define ASM_COMMENT_PAGE // -
+#define MOVE_TO_PAGE_0 // ++
 
 //#define ASM_BANKSEL //--
 //#define ASM_PAGESEL //--
 
 #define USE_TIMER0_AS_LADDER_CYCLE // Timer1 as PLC Cycle sourse is obsolete
 #ifdef USE_TIMER0_AS_LADDER_CYCLE
-    #ifndef AUTO_BANKING
-        #error AUTO_BANKING need!
-    #endif
 #endif
 // clang-format on
 
@@ -612,7 +606,6 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
         return;
     }
 
-#ifdef AUTO_BANKING
     if(PicProgWriteP)
         if((IsOperation(PicProg[PicProgWriteP - 1].opPic) == IS_SKIP) && (IsOperation(op) >= IS_BANK)) {
             if((!IsCoreRegister(PicProg[PicProgWriteP - 1].arg1)) && (!IsCoreRegister(arg1))) {
@@ -641,7 +634,6 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
                 }
             }
         }
-#endif
 
     PicProg[PicProgWriteP].arg1orig = arg1; // arg1 can be changed by bank or page corretion;
     //
@@ -767,16 +759,6 @@ static void FwdAddrIsNow(DWORD addr)
     DWORD i;
     for(i = 0; i < PicProgWriteP; i++) {
         if(PicProg[i].arg1 == addr) {
-#ifndef AUTO_PAGING
-            // Insist that they be in the same page, but otherwise assume
-            // that PCLATH has already been set up appropriately.
-            if((i >> 11) != (PicProgWriteP >> 11)) {
-                Error(
-                    _("Internal error relating to PIC paging; make program "
-                      "smaller or reshuffle it."));
-                fCompileError(f, fAsm);
-            }
-#endif
             PicProg[i].arg1 = PicProgWriteP;
             seen = true;
         } else if(PicProg[i].arg1 == FWD_LO(addr)) {
@@ -892,7 +874,6 @@ static int BankSelectCheck(DWORD bankNow, DWORD bankNew)
 
 static DWORD notRealocableAddr = 0; // upper range
 
-#ifdef AUTO_BANKING
 static DWORD BankCorrection_(DWORD addr, DWORD bank, int is_call)
 {
     if(PicProgWriteP >= Prog.mcu->flashWords)
@@ -1098,7 +1079,6 @@ static void BankCorrection()
             PicProg[i].arg1 &= ~Bank(PicProg[i].arg1);
     }
 }
-#endif
 
 //---------------------------------------------------------------------------
 // clang-format off
@@ -1274,7 +1254,7 @@ static void PagePreSet()
         }
     }
 }
-#ifdef AUTO_PAGING
+
 //-----------------------------------------------------------------------------
 static int PageSelectCheck(DWORD PCLATH, DWORD PCLATHnew)
 {
@@ -1456,7 +1436,6 @@ static void CheckPsErrorsPostCompile()
         }
     }
 }
-#endif
 
 //-----------------------------------------------------------------------------
 static void AddrCheckForErrorsPostCompile()
@@ -2438,42 +2417,18 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 // of the bank switching if necessary; assumes that code is called in bank
 // 0.
 //-----------------------------------------------------------------------------
+static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val, char *comment = nullptr);
 static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val, char *comment)
 {
-#ifdef AUTO_BANKING
-    //if(val) {
+// if(val) {
     _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
     _Instruction(l, f, args, OP_MOVWF, reg, 0, comment);
-//} else
+// } else
 //    vvv Z Status Affected !!!
 //    _Instruction(l, f, args, OP_CLRF, reg, comment);
 //    ^^^ Z Status Affected !!!
-#else
-    if(reg & 0x080)
-        Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-    if(reg & 0x100)
-        Instruction(OP_BSF, REG_STATUS, STATUS_RP1);
-
-    //if(val) {
-    _Instruction(l, f, args, OP_MOVLW, val, comment);
-    _Instruction(l, f, args, OP_MOVWF, (reg & 0x7f), comment);
-    //} else
-    //    vvv Z Status Affected !!!
-    //    _Instruction(l, f, args, OP_CLRF, (reg & 0x7f), comment);
-    //    ^^^ Z Status Affected !!!
-
-    if(reg & 0x080)
-        Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-    if(reg & 0x100)
-        Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
-#endif
+// }
 }
-
-static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val)
-{
-    _WriteRegister(l, f, args, reg, val, nullptr);
-}
-
 // And use macro for bugtracking
 #define WriteRegister(...) _WriteRegister(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
@@ -2482,26 +2437,7 @@ static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BY
 //-----------------------------------------------------------------------------
 static void CallWithPclath(DWORD addr)
 {
-#ifdef AUTO_PAGING
     Instruction(OP_CALL, addr);
-#else
-// Set up PCLATH for the jump, and then do it.
-#ifdef MOVE_TO_PAGE_0
-    Instruction(OP_MOVLW, addr >> 8);
-    Instruction(OP_MOVWF, REG_PCLATH);
-    Instruction(OP_CALL, addr);
-#else
-    Instruction(OP_MOVLW, FWD_HI(addr));
-    Instruction(OP_MOVWF, REG_PCLATH);
-    Instruction(OP_CALL, FWD_LO(addr));
-#endif
-
-    // Restore PCLATH to something appropriate for our page. (We have
-    // already made fairly sure that we will never try to compile across
-    // a page boundary.)
-    Instruction(OP_MOVLW, (PicProgWriteP >> 8));
-    Instruction(OP_MOVWF, REG_PCLATH);
-#endif
 }
 
 static bool IsOutputReg(DWORD addr)
@@ -3781,26 +3717,6 @@ static void CompileFromIntermediate(bool topLevel)
 
     for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
-#ifndef AUTO_PAGING
-        // Try for a margin of about 400 words, which is a little bit
-        // wasteful but considering that the formatted output commands
-        // are huge, probably necessary. Of course if we are in our
-        // last section then it is silly to do that, either we make it
-        // or we're screwed...
-        if(topLevel && (((PicProgWriteP + 400) >> 11) != section) && ((PicProgWriteP + 400) < Prog.mcu->flashWords)) {
-            // Jump to the beginning of the next section
-            Instruction(OP_MOVLW, (PicProgWriteP >> 8) + (1 << 3));
-            Instruction(OP_MOVWF, REG_PCLATH);
-            Instruction(OP_GOTO, 0x0000);
-            // Then, just burn the last of this section with NOPs.
-            while((PicProgWriteP >> 11) == section) {
-                Instruction(OP_MOVLW, 0x00);
-            }
-            section = (PicProgWriteP >> 11);
-            // And now PCLATH is set up, so everything in our new section
-            // should just work
-        }
-#endif
         IntOp *a = &IntCode[IntPc];
         rungNow = a->rung;
         switch(a->op) {
@@ -4055,20 +3971,7 @@ static void CompileFromIntermediate(bool topLevel)
                 sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1.c_str(), addr1, a->literal, a->literal);
                 sov1 = SizeOfVar(a->name1);
                 //sov2 = byteNeeded(a->literal);
-#ifdef AUTO_BANKING
                 CopyLitToReg(addr1, sov1, a->name1.c_str(), a->literal, comment);
-#else
-                WriteRegister(addr1, (BYTE)(a->literal & 0xff), comment);
-                if(sov >= 2) {
-                    WriteRegister(addr1 + 1, (BYTE)((a->literal >> 8) & 0xff), comment);
-                    if(sov >= 3) {
-                        WriteRegister(addr1 + 2, (BYTE)((a->literal >> 16) & 0xff), comment);
-                        if(sov >= 4) {
-                            WriteRegister(addr1 + 3, (BYTE)((a->literal >> 24) & 0xff), comment);
-                        }
-                    }
-                }
-#endif
                 break;
 
             case INT_INCREMENT_VARIABLE: {
@@ -4747,32 +4650,13 @@ static void CompileFromIntermediate(bool topLevel)
             case INT_UART_SEND_READY: {
                 Comment("INT_UART_SEND_READY");
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
-#ifdef AUTO_BANKING
                 CopyBit(addr1, bit1, REG_TXSTA, TRMT); // TRMT=1 is TSR empty, ready; TRMT=0 is TSR full
-#else
-                ClearBit(addr1, bit1);
-
-                DWORD notReady = AllocFwdAddr();
-                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-                Instruction(OP_BTFSS, REG_TXSTA ^ 0x80, TRMT);
-                Instruction(OP_GOTO, notBusy);
-
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-                SetBit(addr1, bit1);
-
-                FwdAddrIsNow(notRedy);
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-#endif
                 break;
             }
             case INT_UART_SEND_BUSY: {
                 Comment("INT_UART_SEND_BUSY");
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
-#ifdef AUTO_BANKING
                 CopyNotBit(addr1, bit1, REG_TXSTA, TRMT); // TRMT=1 is TSR empty, ready; TRMT=0 is TSR full
-#else
-                oops();
-#endif
                 break;
             }
             case INT_UART_SEND1: {
@@ -4807,23 +4691,8 @@ static void CompileFromIntermediate(bool topLevel)
                 Instruction(OP_MOVWF, REG_TXREG);
 
                 FwdAddrIsNow(noSend);
-#ifdef AUTO_BANKING
                 CopyNotBit(
                     addr2, bit2, REG_TXSTA, TRMT); // return as busy // TRMT=1 if TSR empty, ready; TRMT=0 if TSR full
-#else
-                ClearBit(addr2, bit2);
-
-                DWORD notBusy = AllocFwdAddr();
-                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-                Instruction(OP_BTFSC, REG_TXSTA ^ 0x80, TRMT);
-                Instruction(OP_GOTO, notBusy);
-
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-                SetBit(addr2, bit2);
-
-                FwdAddrIsNow(notBusy);
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-#endif
                 FwdAddrIsNow(isBusy);
                 break;
             }
@@ -5201,41 +5070,12 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
             }
 
-#ifndef AUTO_BANKING
-// A quick helper macro to set the banksel bits correctly; this is necessary
-// because the EEwhatever registers are all over in the memory maps.
-#define EE_REG_BANKSEL(r)                                \
-    if((r)&0x80) {                                       \
-        if(!(m & 0x80)) {                                \
-            m |= 0x80;                                   \
-            Instruction(OP_BSF, REG_STATUS, STATUS_RP0); \
-        }                                                \
-    } else {                                             \
-        if(m & 0x80) {                                   \
-            m &= ~0x80;                                  \
-            Instruction(OP_BCF, REG_STATUS, STATUS_RP0); \
-        }                                                \
-    }                                                    \
-    if((r)&0x100) {                                      \
-        if(!(m & 0x100)) {                               \
-            m |= 0x100;                                  \
-            Instruction(OP_BSF, REG_STATUS, STATUS_RP1); \
-        }                                                \
-    } else {                                             \
-        if(m & 0x100) {                                  \
-            m &= ~0x100;                                 \
-            Instruction(OP_BCF, REG_STATUS, STATUS_RP1); \
-        }                                                \
-    }
-#endif
-
             case INT_EEPROM_BUSY_CHECK: {
                 Comment("INT_EEPROM_BUSY_CHECK");
                 DWORD isBusy = AllocFwdAddr();
                 DWORD done = AllocFwdAddr();
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
 
-#ifdef AUTO_BANKING
                 IfBitSet(REG_EECON1, 1);
                 Instruction(OP_GOTO, isBusy);
 
@@ -5268,44 +5108,6 @@ static void CompileFromIntermediate(bool topLevel)
                 //ClearBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
 
                 FwdAddrIsNow(isBusy);
-#else
-                WORD m = 0;
-
-                EE_REG_BANKSEL(REG_EECON1);
-                IfBitSet(REG_EECON1 ^ m, 1);
-                Instruction(OP_GOTO, isBusy);
-                EE_REG_BANKSEL(0);
-
-                IfBitClear(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
-                Instruction(OP_GOTO, done);
-
-                // So there is not a write pending, but we have another
-                // character to transmit queued up.
-
-                EE_REG_BANKSEL(REG_EEADR);
-                Instruction(OP_INCF, REG_EEADR ^ m, DEST_F);
-                EE_REG_BANKSEL(0);
-                Instruction(OP_MOVF, EepromHighByte, DEST_W);
-                EE_REG_BANKSEL(REG_EEDATA);
-                Instruction(OP_MOVWF, REG_EEDATA ^ m, 0);
-                EE_REG_BANKSEL(REG_EECON1);
-                Instruction(OP_BCF, REG_EECON1 ^ m, 7);
-                Instruction(OP_BSF, REG_EECON1 ^ m, 2);
-                Instruction(OP_MOVLW, 0x55, 0);
-                Instruction(OP_MOVWF, REG_EECON2 ^ m, 0);
-                Instruction(OP_MOVLW, 0xaa, 0);
-                Instruction(OP_MOVWF, REG_EECON2 ^ m, 0);
-                Instruction(OP_BSF, REG_EECON1 ^ m, 1);
-
-                EE_REG_BANKSEL(0);
-
-                ClearBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
-
-                FwdAddrIsNow(isBusy);
-                // Have to do these explicitly; m is out of date due to jump.
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
-#endif
                 SetBit(addr1, bit1);
 
                 FwdAddrIsNow(done);
@@ -5316,7 +5118,6 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
 
-#ifdef AUTO_BANKING
                 //SetBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
                 WriteRegister(EepromHighBytesCounter, sov1 - 1);
                 if(sov1 > 1) {
@@ -5344,31 +5145,6 @@ static void CompileFromIntermediate(bool topLevel)
                 Instruction(OP_MOVWF, REG_EECON2);
                 Instruction(OP_BSF, REG_EECON1, 1);
                 Instruction(OP_BCF, REG_EECON1, 2);
-#else
-                WORD m = 0;
-
-                SetBit(EepromHighByteWaitingAddr, EepromHighByteWaitingBit);
-                Instruction(OP_MOVF, addr1 + 1, DEST_W);
-                Instruction(OP_MOVWF, EepromHighByte, 0);
-
-                EE_REG_BANKSEL(REG_EEADR);
-                Instruction(OP_MOVLW, a->literal, 0);
-                Instruction(OP_MOVWF, REG_EEADR ^ m, 0);
-                EE_REG_BANKSEL(0);
-                Instruction(OP_MOVF, addr1, DEST_W);
-                EE_REG_BANKSEL(REG_EEDATA);
-                Instruction(OP_MOVWF, REG_EEDATA ^ m, 0);
-                EE_REG_BANKSEL(REG_EECON1);
-                Instruction(OP_BCF, REG_EECON1 ^ m, 7);
-                Instruction(OP_BSF, REG_EECON1 ^ m, 2);
-                Instruction(OP_MOVLW, 0x55, 0);
-                Instruction(OP_MOVWF, REG_EECON2 ^ m, 0);
-                Instruction(OP_MOVLW, 0xaa, 0);
-                Instruction(OP_MOVWF, REG_EECON2 ^ m, 0);
-                Instruction(OP_BSF, REG_EECON1 ^ m, 1);
-
-                EE_REG_BANKSEL(0);
-#endif
                 break;
             }
             case INT_EEPROM_READ: {
@@ -5376,7 +5152,6 @@ static void CompileFromIntermediate(bool topLevel)
                 int i;
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
-#ifdef AUTO_BANKING
                 for(i = 0; i < sov1; i++) {
                     Instruction(OP_MOVLW, a->literal + i);
                     Instruction(OP_MOVWF, REG_EEADR);
@@ -5385,25 +5160,6 @@ static void CompileFromIntermediate(bool topLevel)
                     Instruction(OP_MOVF, REG_EEDATA, DEST_W);
                     Instruction(OP_MOVWF, addr1 + i);
                 }
-#else
-                WORD m = 0;
-                for(i = 0; i < 2; i++) {
-                    EE_REG_BANKSEL(REG_EEADR);
-                    Instruction(OP_MOVLW, a->literal + i);
-                    Instruction(OP_MOVWF, REG_EEADR ^ m);
-                    EE_REG_BANKSEL(REG_EECON1);
-                    Instruction(OP_BCF, REG_EECON1 ^ m, 7);
-                    Instruction(OP_BSF, REG_EECON1 ^ m, 0);
-                    EE_REG_BANKSEL(REG_EEDATA);
-                    Instruction(OP_MOVF, REG_EEDATA ^ m, DEST_W);
-                    EE_REG_BANKSEL(0);
-                    if(i == 0) {
-                        Instruction(OP_MOVWF, addr1);
-                    } else {
-                        Instruction(OP_MOVWF, addr1 + 1);
-                    }
-                }
-#endif
                 break;
             }
             case INT_SET_VARIABLE_RANDOM: {
@@ -5609,13 +5365,7 @@ static void CompileFromIntermediate(bool topLevel)
                     Instruction(OP_MOVWF, addr1 + 1);
                 }
 
-#ifdef AUTO_BANKING
                 Instruction(OP_MOVF, REG_ADRESL, DEST_W);
-#else
-                Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-                Instruction(OP_MOVF, REG_ADRESL ^ 0x80, DEST_W);
-                Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-#endif
                 Instruction(OP_MOVWF, addr1);
 
                 // hook those pins back up to the digital inputs in case
@@ -5630,21 +5380,12 @@ static void CompileFromIntermediate(bool topLevel)
                    //              || McuAs(" PIC12F675 ")
                    //              || McuAs(" PIC12F683 ")
                 ) {
-#ifdef AUTO_BANKING
                     Instruction(OP_CLRF, REG_ANSEL);
-#else
-                    WriteRegister(REG_ANSEL, 0x00);
-#endif
                 } else if(McuAs("Microchip PIC16F887 ")    //
                           || McuAs("Microchip PIC16F886 ") //
                 ) {
-#ifdef AUTO_BANKING
                     Instruction(OP_CLRF, REG_ANSEL);
                     Instruction(OP_CLRF, REG_ANSELH);
-#else
-                    WriteRegister(REG_ANSEL, 0x00);
-                    WriteRegister(REG_ANSELH, 0x00);
-#endif
                 }
                 break;
             }
@@ -5871,17 +5612,6 @@ executed as a NOP instruction. */
                 ooops("INT_%d", a->op);
                 break;
         }
-#ifndef AUTO_PAGING
-        if(((PicProgWriteP >> 11) != section) && topLevel) {
-            // This is particularly prone to happening in the last section,
-            // if the program doesn't fit (since we won't have attempted
-            // to add padding).
-            Error(
-                _("Internal error relating to PIC paging; make program "
-                  "smaller or reshuffle it."));
-            fCompileError(f, fAsm);
-        }
-#endif
     }
 }
 
@@ -7235,14 +6965,10 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
         }
 
 // Pull-ups are enabled after direction settings !
-#ifdef AUTO_BANKING
         Comment("Clear Bit 6 - Enable Weak Pull-ups bit (GP0, GP1, GP3)");
         Prog.OPTION &= ~(1 << _GPPU);
         Instruction(OP_MOVLW, Prog.OPTION);
         Instruction(OP_OPTION);
-#else
-        oops();
-#endif
     }
 
     if(SleepFunctionUsed()) {
@@ -7359,13 +7085,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
 
         // Pull-ups are enabled after direction settings !
         Comment("Clear Bit 7 - PORTs pull-ups are enabled by individual port latch values");
-#ifdef AUTO_BANKING
         Instruction(OP_BCF, REG_OPTION, _RBPU);
-#else
-        Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
-        Instruction(OP_BCF, REG_OPTION & 7, _RBPU);
-        Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
-#endif
     }
 
     if(UartFunctionUsed()) {
@@ -7550,24 +7270,9 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
     }
 
     Comment("GOTO next PLC cycle");
-#ifndef AUTO_PAGING
-    // This is probably a big jump, so give it PCLATH.
-    Instruction(OP_CLRF, REG_PCLATH);
-#endif
     Instruction(OP_GOTO, BeginOfPLCCycle);
 
     rungNow = -50;
-
-#ifndef AUTO_PAGING
-    // Once again, let us make sure not to put stuff on a page boundary
-    if((PicProgWriteP >> 11) != ((PicProgWriteP + 150) >> 11)) {
-        DWORD section = (PicProgWriteP >> 11);
-        // Just burn the last of this section with NOPs.
-        while((PicProgWriteP >> 11) == section) {
-            Instruction(OP_MOVLW, 0x00);
-        }
-    }
-#endif
 
 #ifndef MOVE_TO_PAGE_0
     if(MultiplyNeeded)
@@ -7586,18 +7291,14 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
 
     MemCheckForErrorsPostCompile();
     AddrCheckForErrorsPostCompile();
-#ifdef AUTO_BANKING
     MaxBank = CalcMaxBank();
     if(MaxBank)
         BankCorrection();
-#endif
+
     BankCheckForErrorsPostCompile();
 
-#ifdef AUTO_PAGING
     PageCorrection();
     CheckPsErrorsPostCompile();
-#else
-#endif
 
     ProgWriteP = PicProgWriteP;
 
