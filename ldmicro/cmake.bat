@@ -26,4 +26,7 @@ cmake.exe --build .
 cd ..
 
 copy build\Debug\ldmicro.exe .
+@if not exist ldmicro.exe goto EXIT
 start ldmicro.exe %PROGECT%
+
+:EXIT

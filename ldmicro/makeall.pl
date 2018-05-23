@@ -29,3 +29,5 @@ SYS("mkdir buildXXXX\\LIBRARIES_FOR\\ARDUINO");
 SYS("mkdir buildXXXX\\LIBRARIES_FOR\\ARDUINO\\PwmFrequency");
 SYS("copy  LIBRARIES_FOR\\ARDUINO\\PwmFrequency\\PwmFrequency.h   buildXXXX\\LIBRARIES_FOR\\ARDUINO\\PwmFrequency");
 SYS("copy  LIBRARIES_FOR\\ARDUINO\\PwmFrequency\\PwmFrequency.cpp buildXXXX\\LIBRARIES_FOR\\ARDUINO\\PwmFrequency");
+
+SYS("7zip.py");
