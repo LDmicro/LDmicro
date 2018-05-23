@@ -217,31 +217,6 @@ void CompileInterpreted(char *outFile)
                 // TODO
                 break;
 
-#ifdef USE_SFR_INT
-            case INT_READ_SFR_LITERAL:
-            case INT_WRITE_SFR_LITERAL:
-            case INT_SET_SFR_LITERAL:
-            case INT_CLEAR_SFR_LITERAL:
-            case INT_TEST_SFR_LITERAL:
-            case INT_READ_SFR_VARIABLE:
-            case INT_WRITE_SFR_VARIABLE:
-            case INT_SET_SFR_VARIABLE:
-            case INT_CLEAR_SFR_VARIABLE:
-            case INT_TEST_SFR_VARIABLE:
-            case INT_TEST_C_SFR_LITERAL:
-            case INT_WRITE_SFR_LITERAL_L:
-            case INT_WRITE_SFR_VARIABLE_L:
-            case INT_SET_SFR_LITERAL_L:
-            case INT_SET_SFR_VARIABLE_L:
-            case INT_CLEAR_SFR_LITERAL_L:
-            case INT_CLEAR_SFR_VARIABLE_L:
-            case INT_TEST_SFR_LITERAL_L:
-            case INT_TEST_SFR_VARIABLE_L:
-            case INT_TEST_C_SFR_VARIABLE:
-            case INT_TEST_C_SFR_LITERAL_L:
-            case INT_TEST_C_SFR_VARIABLE_L:
-#endif
-
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:

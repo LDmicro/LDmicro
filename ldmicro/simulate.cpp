@@ -942,6 +942,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SSFR:
         case ELEM_CSFR:
         case ELEM_TSFR:
+        case ELEM_T_C_SFR:
 #endif
             break;
 
@@ -1545,7 +1546,7 @@ static void SimulateIntCode()
                 SetSimulationVariable(a->name1, a->literal);
                 break;
 
-#ifdef USE_SFR_INT
+#ifdef USE_SFR
             case INT_READ_SFR_LITERAL:
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 break;

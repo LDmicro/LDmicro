@@ -29,9 +29,6 @@
 #include "compilerexceptions.hpp"
 #include "filetracker.hpp"
 
-#include <unordered_set>
-#include <string>
-
 namespace {
     std::unordered_set<std::string> variables;
     bool                            all_arduino_pins_are_mapped;
@@ -533,34 +530,6 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 intVar2 = IntCode[i].name2.c_str();
                 break;
 
-#ifdef USE_SFR_INT
-            case INT_WRITE_SFR_VARIABLE:
-                break;
-
-            case INT_WRITE_SFR_LITERAL:
-            case INT_READ_SFR_LITERAL:
-            case INT_SET_SFR_LITERAL:
-            case INT_CLEAR_SFR_LITERAL:
-            case INT_TEST_SFR_LITERAL:
-            case INT_READ_SFR_VARIABLE:
-            case INT_SET_SFR_VARIABLE:
-            case INT_CLEAR_SFR_VARIABLE:
-            case INT_TEST_SFR_VARIABLE:
-            case INT_TEST_C_SFR_LITERAL:
-            case INT_WRITE_SFR_LITERAL_L:
-            case INT_WRITE_SFR_VARIABLE_L:
-            case INT_SET_SFR_LITERAL_L:
-            case INT_SET_SFR_VARIABLE_L:
-            case INT_CLEAR_SFR_LITERAL_L:
-            case INT_CLEAR_SFR_VARIABLE_L:
-            case INT_TEST_SFR_LITERAL_L:
-            case INT_TEST_SFR_VARIABLE_L:
-            case INT_TEST_C_SFR_VARIABLE:
-            case INT_TEST_C_SFR_LITERAL_L:
-            case INT_TEST_C_SFR_VARIABLE_L:
-                break;
-#endif
-
             case INT_SET_VARIABLE_ROL:
             case INT_SET_VARIABLE_ROR:
             case INT_SET_VARIABLE_SHL:
@@ -1022,50 +991,6 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 doIndent(f, i);
                 fprintf(f, "#endif\n");
                 break;
-
-#ifdef USE_SFR_INT
-            case INT_READ_SFR_LITERAL:
-            case INT_READ_SFR_VARIABLE:
-                fprintf(f, "#warning // Read from SFR\n");
-                break;
-            case INT_WRITE_SFR_LITERAL:
-            case INT_WRITE_SFR_VARIABLE_L:
-            case INT_WRITE_SFR_VARIABLE:
-                fprintf(f, "// #warning Write to SFR\n");
-                //doIndent(f, i); fprintf(f, "PORTB = %s;\n", MapSym(IntCode[i].name2, ASINT));
-                doIndent(f, i);
-                fprintf(f, "pokeb(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
-                break;
-            case INT_WRITE_SFR_LITERAL_L:
-                fprintf(f, "// #warning Write to SFR\n");
-                doIndent(f, i);
-                fprintf(f, "pokeb(%d, %d);\n", IntCode[i].literal, IntCode[i].literal2);
-                break;
-            case INT_SET_SFR_LITERAL:
-            case INT_SET_SFR_VARIABLE:
-            case INT_SET_SFR_LITERAL_L:
-            case INT_SET_SFR_VARIABLE_L:
-                fprintf(f, "#warning // Set bit in SFR\n");
-                break;
-            case INT_CLEAR_SFR_LITERAL:
-            case INT_CLEAR_SFR_VARIABLE:
-            case INT_CLEAR_SFR_LITERAL_L:
-            case INT_CLEAR_SFR_VARIABLE_L:
-                fprintf(f, "#warning // Clear bit in SFR\n");
-                break;
-            case INT_TEST_SFR_LITERAL:
-            case INT_TEST_SFR_VARIABLE:
-            case INT_TEST_SFR_LITERAL_L:
-            case INT_TEST_SFR_VARIABLE_L:
-                fprintf(f, "#warning // Test if bit Set in SFR\n");
-                break;
-            case INT_TEST_C_SFR_LITERAL:
-            case INT_TEST_C_SFR_VARIABLE:
-            case INT_TEST_C_SFR_LITERAL_L:
-            case INT_TEST_C_SFR_VARIABLE_L:
-                fprintf(f, "#warning // Test if bit Clear in SFR\n");
-                break;
-#endif
 
             case INT_SPI:
                 fprintf(f, "SPI(%s, %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));

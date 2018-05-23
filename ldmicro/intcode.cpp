@@ -530,7 +530,7 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "# %s", IntCode[i].name1.c_str());
                 break;
 
-#ifdef USE_SFR_INT
+#ifdef USE_SFR
             // Special function
             case INT_READ_SFR_LITERAL:
             case INT_WRITE_SFR_LITERAL:
@@ -2150,13 +2150,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             break;
         }
-        #ifdef USE_SFR_INT
+        #ifdef USE_SFR
         // Special Function
         case ELEM_RSFR:
             Comment(3, "ELEM_RSFR");
             if(IsNumber(l->d.move.dest)) {
                 Error(_("Read SFR instruction: '%s' not a valid destination."), l->d.move.dest);
-                CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {

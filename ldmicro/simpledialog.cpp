@@ -667,10 +667,12 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
         }
     }
 }
+
+//-----------------------------------------------------------------------------
+#ifdef USE_SFR
 // Special function
 void ShowSFRDialog(int which, char *op1, char *op2)
 {
-#ifdef USE_SFR
     const char *title;
     char *l2;
     switch(which) {
@@ -716,10 +718,11 @@ void ShowSFRDialog(int which, char *op1, char *op2)
             }
         }
     }
-#endif
 }
 // Special function
+#endif
 
+//-----------------------------------------------------------------------------
 void ShowCmpDialog(int which, char *op1, char *op2)
 {
     const char *title;
