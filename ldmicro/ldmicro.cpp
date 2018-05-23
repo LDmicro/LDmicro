@@ -295,7 +295,7 @@ static void isErr(int Err, char *r)
         case ERROR_FILE_NOT_FOUND: s = "The specified file was not found";         break;
         case ERROR_PATH_NOT_FOUND: s = "The specified path was not found";         break;
         default:                   s = "";                                         break;
-        // clang-format on
+            // clang-format on
     }
     if(strlen(s))
         Error("Error: %d - %s in command line:\n\n%s", Err, s, r);
@@ -322,7 +322,7 @@ char *GetIsaName(int ISA)
       //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
         default               : oops(); return nullptr;
-        // clang-format on
+            // clang-format on
     }
 }
 
@@ -701,8 +701,7 @@ IsOpenAnable:
             postCompile(GetIsaName(Prog.mcu->whichIsa));
         } else
             oops();
-    }
-    catch(const std::exception& e){
+    } catch(const std::exception &e) {
         Error(e.what());
     }
 
@@ -1540,8 +1539,12 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_OPEN_SFR:
-            ShellExecute(
-                0, "open", "https://github.com/LDmicro/LDmicro/wiki/Replase-the-obsolete-elements", nullptr, nullptr, SW_SHOWNORMAL);
+            ShellExecute(0,
+                         "open",
+                         "https://github.com/LDmicro/LDmicro/wiki/Replase-the-obsolete-elements",
+                         nullptr,
+                         nullptr,
+                         SW_SHOWNORMAL);
             break;
 
         case MNU_COMPILE_IHEXDONE:

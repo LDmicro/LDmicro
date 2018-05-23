@@ -452,7 +452,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
         }
             {
-                int   n, n0;
+                int         n, n0;
                 const char *nameTable;
                     // clang-format off
         case ELEM_7SEG: nameTable = "char7seg";  n = LEN7SEG;  n0=1; goto xseg;
@@ -655,7 +655,7 @@ static int CompareIo(const void *av, const void *bv)
     if(a->type != b->type) {
         return a->type - b->type;
     }
-/*
+    /*
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
 */
@@ -1071,20 +1071,21 @@ static ATOM MakeWindowClass()
 #define AddY 50
 static void MakeControls()
 {
-    HWND textLabel = CreateWindowEx(0,
-                                    WC_STATIC,
-                                    ((Prog.mcu) && (Prog.mcu->whichIsa == ISA_AVR)) ?
-                                    _("Pin#:   MCU pin name:                                       Arduino pin name:") :
-                                    _("Pin#:   MCU pin name:"),
-                                    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                    6,
-                                    1,
-                                    400,
-                                    17,
-                                    IoDialog,
-                                    nullptr,
-                                    Instance,
-                                    nullptr);
+    HWND textLabel =
+        CreateWindowEx(0,
+                       WC_STATIC,
+                       ((Prog.mcu) && (Prog.mcu->whichIsa == ISA_AVR))
+                           ? _("Pin#:   MCU pin name:                                       Arduino pin name:")
+                           : _("Pin#:   MCU pin name:"),
+                       WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+                       6,
+                       1,
+                       400,
+                       17,
+                       IoDialog,
+                       nullptr,
+                       Instance,
+                       nullptr);
     NiceFont(textLabel);
 
     PinList = CreateWindowEx(WS_EX_CLIENTEDGE,
@@ -1725,7 +1726,7 @@ void IoListProc(NMHDR *h)
                         break;
                     DWORD addr = 0;
                     int   bit = -1;
-                    if((type == IO_TYPE_PORT_INPUT) ||
+                    if((type == IO_TYPE_PORT_INPUT) || //
                        (type == IO_TYPE_PORT_OUTPUT)) {
                         MemForVariable(name, &addr);
                         if(addr > 0)

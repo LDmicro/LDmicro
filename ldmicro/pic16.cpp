@@ -544,7 +544,8 @@ static int IsOperation(PicOp op)
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1 = 0, DWORD arg2 = 0, const char *comment = nullptr);
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1 = 0, DWORD arg2 = 0,
+                         const char *comment = nullptr);
 static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2, const char *comment)
 {
     if(IsOperation(op) >= IS_BANK) {
@@ -622,7 +623,8 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
     PicProgWriteP++;
 }
 
-static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2, const NameArray& comment)
+static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD arg1, DWORD arg2,
+                         const NameArray &comment)
 {
     _Instruction(l, f, args, op, arg1, arg2, comment.c_str());
 }
@@ -643,8 +645,8 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op)
 }
 */
 //-----------------------------------------------------------------------------
-static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1 = 0, DWORD arg2 = 0,
-                            const char *comment = nullptr);
+static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1 = 0,
+                            DWORD arg2 = 0, const char *comment = nullptr);
 static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, PicOp op, DWORD arg1, DWORD arg2,
                             const char *comment)
 //for setiing interrupt vector, page correcting, etc
@@ -1471,7 +1473,7 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
     char               arg1s[1024];
     char               arg1comm[1024];
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
-    IntOp intOp;
+    IntOp              intOp;
     if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
         intOp = IntCode[PicInstr->IntPc];
     strcpy(sAsm, "");
@@ -1486,8 +1488,8 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           ((1 << (bits)) - 1),                                         \
           PicInstr->l,                                                 \
           PicInstr->f,                                                 \
-          intOp.name1.c_str(),                                                    \
-          intOp.l,                                                        \
+          intOp.name1.c_str(),                                         \
+          intOp.l,                                                     \
           intOp.f)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
@@ -1497,8 +1499,8 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           UpperRangeInclusive,                                           \
           PicInstr->l,                                                   \
           PicInstr->f,                                                   \
-          intOp.name1.c_str(),                                                      \
-          intOp.l,                                                          \
+          intOp.name1.c_str(),                                           \
+          intOp.l,                                                       \
           intOp.f)
     switch(op) {
         case OP_ADDWF:
@@ -1742,7 +1744,7 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sA
     char               arg1s[1024];
     char               arg1comm[1024];
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
-    IntOp intOp;
+    IntOp              intOp;
     if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
         intOp = IntCode[PicInstr->IntPc];
     strcpy(sAsm, "");
@@ -1989,7 +1991,7 @@ static DWORD Assemble16(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, DWORD ar
 //16-Bit Instruction Word for PIC18
 {
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
-    IntOp intOp;
+    IntOp              intOp;
     if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
         intOp = IntCode[PicInstr->IntPc];
     sAsm[0] = '\0';
@@ -2326,7 +2328,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
             fprintf(fAsm, "\n");
         } else
-        ;//;;//Error("op=%d=0x%X", PicProg[i].opPic, PicProg[i].opPic);
+            ; //;;//Error("op=%d=0x%X", PicProg[i].opPic, PicProg[i].opPic);
     }
 
     if(ExtendedSegmentAddress != (CONFIG_ADDR1 * 2 & ~0xffff)) {
@@ -2380,14 +2382,14 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val, char *comment = nullptr);
 static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val, char *comment)
 {
-// if(val) {
+    // if(val) {
     _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
     _Instruction(l, f, args, OP_MOVWF, reg, 0, comment);
-// } else
-//    vvv Z Status Affected !!!
-//    _Instruction(l, f, args, OP_CLRF, reg, comment);
-//    ^^^ Z Status Affected !!!
-// }
+    // } else
+    //    vvv Z Status Affected !!!
+    //    _Instruction(l, f, args, OP_CLRF, reg, comment);
+    //    ^^^ Z Status Affected !!!
+    // }
 }
 // And use macro for bugtracking
 #define WriteRegister(...) _WriteRegister(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
@@ -2455,7 +2457,8 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, cons
     }
 }
 
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const NameArray& nameDest, const char *nameSrc)
+static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const NameArray &nameDest,
+                    const char *nameSrc)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest.c_str(), nameSrc);
 }
@@ -2612,7 +2615,7 @@ static void CopyLitToReg(DWORD addr, int sov, const char *name, SDWORD literal, 
         }
     }
     return;
-/*
+    /*
     DWORD l1, l2;
     l1 = (literal & 0xff);
     if(l1) {
@@ -2652,13 +2655,14 @@ static void CopyLitToReg(DWORD addr, int sov, const char *name, SDWORD literal, 
 */
 }
 
-static void CopyLitToReg(DWORD addr, int sov, const NameArray&  name, SDWORD literal, const NameArray& comment)
+static void CopyLitToReg(DWORD addr, int sov, const NameArray &name, SDWORD literal, const NameArray &comment)
 {
     CopyLitToReg(addr, sov, name.c_str(), literal, comment.c_str());
 }
 
 //-----------------------------------------------------------------------------
-static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const char *name1, const char *name2, bool signPropagation)
+static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const char *name1, const char *name2,
+                         bool signPropagation)
 // addr1 - dest, addr2 - source
 {
     Comment("CopyRegToReg");
@@ -2692,7 +2696,7 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
                 Instruction(OP_MOVLW, 0x00); // NO BLINK
                 if(signPropagation) {
                     Instruction(OP_BTFSC, addr2 + sov2 - 1, BIT7, name2); // Sign propagation
-                    Instruction(OP_MOVLW, 0xFF); // NO BLINK
+                    Instruction(OP_MOVLW, 0xFF);                          // NO BLINK
                 }
                 Instruction(OP_MOVWF, REG_INDF, 0, name1); // NO BLINK
             }
@@ -2712,7 +2716,7 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
                 Instruction(OP_MOVLW, 0x00); // NO BLINK
                 if(signPropagation) {
                     Instruction(OP_BTFSC, addr1 + sov2 - 1, BIT7, name2); // Sign propagation // addr1 is Ok!
-                    Instruction(OP_MOVLW, 0xFF); // NO BLINK
+                    Instruction(OP_MOVLW, 0xFF);                          // NO BLINK
                 }
             }
             Instruction(OP_MOVWF, addr1 + i, 0, name1);
@@ -2736,13 +2740,13 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
                 Instruction(OP_MOVWF, REG_FSR, 0, name1);
                 for(int j = 0; j < i; j++)
                     Instruction(OP_INCF, REG_FSR, DEST_F);
-                Instruction(OP_MOVF,  ScratchI, DEST_W, "tmp");
+                Instruction(OP_MOVF, ScratchI, DEST_W, "tmp");
             } else {
                 Instruction(OP_INCF, REG_FSR, DEST_F); // FSR is addr1
-                Instruction(OP_MOVLW, 0x00); // NO BLINK
+                Instruction(OP_MOVLW, 0x00);           // NO BLINK
                 if(signPropagation) {
                     Instruction(OP_BTFSC, ScratchI, BIT7, "tmp"); // Sign propagation
-                    Instruction(OP_MOVLW, 0xFF); // NO BLINK
+                    Instruction(OP_MOVLW, 0xFF);                  // NO BLINK
                 }
             }
             Instruction(OP_MOVWF, REG_INDF, 0, name1);
@@ -2808,7 +2812,8 @@ static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const cha
     */
 }
 
-static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const NameArray& name1, const NameArray& name2, bool Sign)
+static void CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const NameArray &name1, const NameArray &name2,
+                         bool Sign)
 {
     CopyRegToReg(addr1, sov1, addr2, sov2, name1.c_str(), name2.c_str(), Sign);
 }
@@ -2826,7 +2831,7 @@ static void CopyVarToReg(DWORD addr1, int sov1, const char *name2)
     CopyVarToReg(addr1, sov1, name2, false);
 }
 
-static void CopyVarToReg(DWORD addr1, int sov1, const NameArray& name2)
+static void CopyVarToReg(DWORD addr1, int sov1, const NameArray &name2)
 {
     CopyVarToReg(addr1, sov1, name2.c_str());
 }
@@ -2848,7 +2853,7 @@ static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, 
     return destAddr;
 }
 
-static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, const NameArray& name, bool Sign)
+static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, const NameArray &name, bool Sign)
 {
     return CopyArgToReg(isModificationRisk, destAddr, destSov, name.c_str(), Sign);
 }
@@ -3116,7 +3121,7 @@ static void Increment(DWORD addr, int sov, const char *name, const char *overlap
     }
 }
 
-static void Increment(DWORD addr, int sov, const NameArray& name, const NameArray& overlap, const NameArray& overflow)
+static void Increment(DWORD addr, int sov, const NameArray &name, const NameArray &overlap, const NameArray &overflow)
 {
     Increment(addr, sov, name.c_str(), overlap.c_str(), overflow.c_str());
 }
@@ -3213,7 +3218,7 @@ static void Decrement(DWORD addr, int sov, const char *name, const char *overlap
     }
 }
 
-static void Decrement(DWORD addr, int sov, const NameArray& name, const NameArray& overlap, const NameArray& overflow)
+static void Decrement(DWORD addr, int sov, const NameArray &name, const NameArray &overlap, const NameArray &overflow)
 {
     Decrement(addr, sov, name.c_str(), overlap.c_str(), overflow.c_str());
 }
@@ -3343,7 +3348,7 @@ static void add(DWORD b, DWORD a, int sov, const char *overlap, const char *over
     }
 }
 
-static void add(DWORD b, DWORD a, int sov, const NameArray& overlap, const NameArray& overflow)
+static void add(DWORD b, DWORD a, int sov, const NameArray &overlap, const NameArray &overflow)
 {
     add(b, a, sov, overlap.c_str(), overflow.c_str());
 }
@@ -3439,7 +3444,7 @@ static void sub(DWORD b, DWORD a, int sov, const char *overlap, const char *over
     sub_(b, a, sov, DEST_F, overlap, overflow);
 }
 
-static void sub(DWORD b, DWORD a, int sov, const NameArray& overlap, const NameArray& overflow)
+static void sub(DWORD b, DWORD a, int sov, const NameArray &overlap, const NameArray &overflow)
 {
     sub(b, a, sov, overlap.c_str(), overflow.c_str());
 }
@@ -4323,10 +4328,9 @@ static void CompileFromIntermediate(bool topLevel)
                 CopyArgToReg(true, Scratch0, sov2, a->name2, false);
 
                 DWORD addrA = Scratch0;
-                if((a->op == INT_SET_VARIABLE_SR0)
-                || (a->op == INT_SET_VARIABLE_ROR)
-                || (a->op == INT_SET_VARIABLE_SHR)
-                ) {
+                if((a->op == INT_SET_VARIABLE_SR0) || //
+                   (a->op == INT_SET_VARIABLE_ROR) || //
+                   (a->op == INT_SET_VARIABLE_SHR)) {
                     addrA += sov2 - 1; // start at MSB
                 } else {
                     // start at LSB
@@ -4735,7 +4739,8 @@ static void CompileFromIntermediate(bool topLevel)
             }
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                Comment("INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
+                Comment(
+                    "INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol, TOP;
                 getResolution(a->name4.c_str(), &resol, &TOP);
                 McuPwmPinInfo *ioPWM;
@@ -5128,7 +5133,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                 char seedName[MAX_NAME_LEN];
                 sprintf(seedName, "$seed_%s", a->name1.c_str());
-/*
+                /*
 //https://en.m.wikipedia.org/wiki/Linear_congruential_generator
 // X[n+1] = (a * X[n] + c) mod m
 //VMS's MTH$RANDOM, old versions of glibc
@@ -5239,18 +5244,18 @@ static void CompileFromIntermediate(bool topLevel)
                    || McuAs(" PIC16F1824 ") //
                    || McuAs(" PIC16F1827 ") //
                 ) {
-                    adcsPos = 4; // in REG_ADCON1
-                    WriteRegister(REG_ADCON0, //
+                    adcsPos = 4;                                            // in REG_ADCON1
+                    WriteRegister(REG_ADCON0,                               //
                                   (MuxForAdcVariable(a->name1) << chsPos) | //
-                                  (0 << goPos) |                            // don't start yet
+                                      (0 << goPos) |                        // don't start yet
                                                                             // bit 1 unimplemented
-                                  (1 << 0)                                  // A/D peripheral on
+                                      (1 << 0)                              // A/D peripheral on
                     );
 
-                    WriteRegister(REG_ADCON1,         //
-                                  (1 << 7) |          // right-justified
-                                  (adcs << adcsPos) | //
-                                  (0 << 0)            // 00 = VREF is connected to VDD
+                    WriteRegister(REG_ADCON1,             //
+                                  (1 << 7) |              // right-justified
+                                      (adcs << adcsPos) | //
+                                      (0 << 0)            // 00 = VREF is connected to VDD
                     );
                 } else if(McuAs(" PIC16F819 ")    //
                           || McuAs(" PIC16F873 ") //
@@ -5265,18 +5270,18 @@ static void CompileFromIntermediate(bool topLevel)
                           || McuAs(" PIC16F886 ") //
                           || McuAs(" PIC16F887 ") //
                 ) {
-                    adcsPos = 6; // in REG_ADCON0
-                    WriteRegister(REG_ADCON0, //
-                                  (adcs << adcsPos) | //
-                                  (MuxForAdcVariable(a->name1) << chsPos) | //
-                                  (0 << goPos) |  // don't start yet
-                                                      // bit 1 unimplemented
-                                  (1 << 0)        // A/D peripheral on
+                    adcsPos = 6;                                                // in REG_ADCON0
+                    WriteRegister(REG_ADCON0,                                   //
+                                  (adcs << adcsPos) |                           //
+                                      (MuxForAdcVariable(a->name1) << chsPos) | //
+                                      (0 << goPos) |                            // don't start yet
+                                                                                // bit 1 unimplemented
+                                      (1 << 0)                                  // A/D peripheral on
                     );
 
-                    WriteRegister(REG_ADCON1, //
+                    WriteRegister(REG_ADCON1,  //
                                   (1 << 7) |   // right-justified
-                                  (0 << 0) // for now, all analog inputs
+                                      (0 << 0) // for now, all analog inputs
                     );
                 } else if(McuAs(" PIC12F675 ")    //
                           || McuAs(" PIC12F683 ") //
@@ -5284,7 +5289,7 @@ static void CompileFromIntermediate(bool topLevel)
                     adcsPos = 4; // in REG_ANSEL
                     WriteRegister(REG_ANSEL, (adcs << adcsPos) | (1 << MuxForAdcVariable(a->name1)));
 
-                    WriteRegister(REG_ADCON0, //
+                    WriteRegister(REG_ADCON0,                                   //
                                   (1 << 7) |                                    // right-justified
                                       (0 << 6) |                                // VDD Voltage Reference
                                       (MuxForAdcVariable(a->name1) << chsPos) | // Analog Channel Select bits
@@ -5331,7 +5336,7 @@ static void CompileFromIntermediate(bool topLevel)
                 // hook those pins back up to the digital inputs in case
                 // some of them are used that way
                 if(REG_ADCON1 != -1)
-                    WriteRegister(REG_ADCON1, //
+                    WriteRegister(REG_ADCON1,  //
                                   (1 << 7) |   // right-justify A/D result
                                       (6 << 0) // all digital inputs
                     );
@@ -5359,7 +5364,7 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
 
             case INT_COMMENT:
-                Comment("%s",a->name1.c_str());
+                Comment("%s", a->name1.c_str());
                 break;
 
             case INT_AllocKnownAddr:
@@ -6924,7 +6929,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
             }
         }
 
-// Pull-ups are enabled after direction settings !
+        // Pull-ups are enabled after direction settings !
         Comment("Clear Bit 6 - Enable Weak Pull-ups bit (GP0, GP1, GP3)");
         Prog.OPTION &= ~(1 << _GPPU);
         Instruction(OP_MOVLW, Prog.OPTION);
@@ -6956,7 +6961,7 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
     ) {
         // The GPIOs that can also be A/D inputs default to being A/D
         // inputs, so turn that around
-        WriteRegister(REG_ADCON1, //
+        WriteRegister(REG_ADCON1,  //
                       (1 << 7) |   // right-justify A/D result
                           (7 << 0) // all digital inputs
         );
@@ -7157,8 +7162,11 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
                     Instruction(OP_DECFSZ, plcTmr.softDivisorAddr + 1, DEST_F); // Skip if zero
                     Instruction(OP_GOTO, BeginOfPLCCycle);
                 }
-                CopyLitToReg(
-                    plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), "", plcTmr.softDivisor, "plcTmr.softDivisor");
+                CopyLitToReg(plcTmr.softDivisorAddr,
+                             byteNeeded(plcTmr.softDivisor),
+                             "",
+                             plcTmr.softDivisor,
+                             "plcTmr.softDivisor");
             } else {
                 DWORD setLiteral = AllocFwdAddr();
                 /*
@@ -7203,8 +7211,11 @@ static bool _CompilePic16(char *outFile, int ShowMessage)
           }
           */
                 FwdAddrIsNow(setLiteral);
-                CopyLitToReg(
-                    plcTmr.softDivisorAddr, byteNeeded(plcTmr.softDivisor), "", plcTmr.softDivisor, "plcTmr.softDivisor");
+                CopyLitToReg(plcTmr.softDivisorAddr,
+                             byteNeeded(plcTmr.softDivisor),
+                             "",
+                             plcTmr.softDivisor,
+                             "plcTmr.softDivisor");
             }
         }
     }

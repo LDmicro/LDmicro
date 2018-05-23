@@ -43,7 +43,7 @@ static DWORD                     rgbResult = 0;
 //-----------------------------------------------------------------------------
 static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-/*
+    /*
     if(msg == WM_CHAR) {
         if(hwnd == ConfigBitsTextbox) {
             if(!(ishobdigit(wParam) || wParam == '\b'))

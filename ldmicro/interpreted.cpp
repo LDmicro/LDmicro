@@ -43,8 +43,7 @@ typedef struct {
 
 static BinOp OutProg[MAX_INT_OPS];
 
-template <size_t N>
-static WORD AddrForInternalRelay(const StringArray<N>& name)
+template <size_t N> static WORD AddrForInternalRelay(const StringArray<N> &name)
 {
     int i;
     for(i = 0; i < InternalRelaysCount; i++) {
@@ -57,8 +56,7 @@ static WORD AddrForInternalRelay(const StringArray<N>& name)
     return i;
 }
 
-template <size_t N>
-static WORD AddrForVariable(const StringArray<N>& name)
+template <size_t N> static WORD AddrForVariable(const StringArray<N> &name)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {

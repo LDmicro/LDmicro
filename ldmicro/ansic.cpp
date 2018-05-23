@@ -158,7 +158,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     if(type == IO_TYPE_DIG_INPUT) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char   *s = ArduinoPinName(iop);
+            const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
@@ -227,7 +227,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     } else if(type == IO_TYPE_DIG_OUTPUT) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char   *s = ArduinoPinName(iop);
+            const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s\n", str, s, iop->pinName);
             } else {
@@ -288,7 +288,8 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                     fprintf(fh, "  #define Write1_%s() (R%c%d = 1)\n", str, iop->port, iop->bit);
                     fprintf(fh, "  #define Write_%s(b) R%c%d = (b) ? 1 : 0\n", str, iop->port, iop->bit);
                 } else {
-                    fprintf(fh, "  #define Write0_%s() (PORT%c &= ~(1<<PORT%c%d))\n", str, iop->port, iop->port, iop->bit);
+                    fprintf(
+                        fh, "  #define Write0_%s() (PORT%c &= ~(1<<PORT%c%d))\n", str, iop->port, iop->port, iop->bit);
                     fprintf(fh, "  #define Write1_%s() (PORT%c |= 1<<PORT%c%d)\n", str, iop->port, iop->port, iop->bit);
                     fprintf(fh, "  #define Write_%s(b) (b) ? Write1_%s() : Write0_%s()\n", str, str, str);
                 }
@@ -359,7 +360,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     } else if(type == IO_TYPE_PWM_OUTPUT) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char   *s = ArduinoPinName(iop);
+            const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a PWM pin!\n", str, s, iop->pinName);
             } else {
@@ -412,7 +413,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
     } else if(type == IO_TYPE_READ_ADC) {
         if(compiler_variant == MNU_COMPILE_ARDUINO) {
             McuIoPinInfo *iop = PinInfoForName(&str[3]);
-            const char   *s = ArduinoPinName(iop);
+            const char *  s = ArduinoPinName(iop);
             if(strlen(s)) {
                 fprintf(flh, "const int pin_%s = %s; // %s // Check that it's a ADC pin!\n", str, s, iop->pinName);
             } else {
@@ -721,8 +722,8 @@ static void _Comment(FILE *f, const char *str, ...)
 static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
-    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) &&
-       (IntCode[i].op != INT_AllocKnownAddr) &&
+    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) && //
+       (IntCode[i].op != INT_AllocKnownAddr) &&      //
        (IntCode[i].op != INT_AllocFwdAddr))
         for(int j = 0; j < indent; j++)
             fprintf(f, "    ");
@@ -766,7 +767,8 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
-                    fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
+                    fprintf(
+                        f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
                     doIndent(f, i);
                 }
                 fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
@@ -777,7 +779,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
-                    fprintf(f, "//pokeb(%s, %s); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, MapSym(IntCode[i].name2, ASINT));
+                    fprintf(f,
+                            "//pokeb(%s, %s); // Variants 1 and 2\n",
+                            IntCode[i].name1.c_str() + 1,
+                            MapSym(IntCode[i].name2, ASINT));
                     doIndent(f, i);
                 }
                 fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
@@ -1030,7 +1035,8 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 if(compiler_variant == MNU_COMPILE_ARDUINO) {
                     fprintf(f, "Write0_%s(); // dummy // 0 = EEPROM is ready\n", MapSym(IntCode[i].name1, ASBIT));
                 } else {
-                    fprintf(f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1.c_str());
+                    fprintf(
+                        f, "#warning INT_EEPROM_BUSY_CHECK to %s // 0 = EEPROM is ready\n", IntCode[i].name1.c_str());
                 }
                 break;
 
@@ -1176,7 +1182,10 @@ static void GenerateSUBPROG(FILE *f)
         switch(IntCode[i].op) {
             case INT_GOSUB: {
                 fprintf(f, "\n");
-                fprintf(f, "void Call_SUBPROG_%s() { // LabelRung%d\n", IntCode[i].name1.c_str(), (int)(IntCode[i].literal + 1));
+                fprintf(f,
+                        "void Call_SUBPROG_%s() { // LabelRung%d\n",
+                        IntCode[i].name1.c_str(),
+                        (int)(IntCode[i].literal + 1));
                 int indentSave = indent;
                 indent = 1;
                 GenerateAnsiC(f,
@@ -1484,7 +1493,8 @@ bool CompileAnsiC(const char *dest, int MNU)
             fprintf(fh, "#include <avr\\sleep.h>\n");
         }
         if(PwmFunctionUsed()) {
-            fprintf(fh, "/* Uncomment USE_PWM_FREQUENCY and and set manually the proper divisor for setPwmFrequency().\n");
+            fprintf(fh,
+                    "/* Uncomment USE_PWM_FREQUENCY and and set manually the proper divisor for setPwmFrequency().\n");
             fprintf(fh, "   Base frequencies and available divisors on the pins, see in the file PwmFrequency.h */\n");
             fprintf(fh, "//#define USE_PWM_FREQUENCY\n");
             fprintf(fh, "#ifdef USE_PWM_FREQUENCY\n");
@@ -1514,7 +1524,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "    #endif\n"
                 "#endif\n",
                 Prog.mcu->mcuH);
-/*
+        /*
       fprintf(fh,
 "#ifdef __GNUC__\n"
 "    //mem.h vvv\n"

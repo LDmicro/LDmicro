@@ -636,7 +636,7 @@ char *getName(char *s)
 static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm)
 {
     PicAvrInstruction *AvrInstr = &AvrProg[addrAt];
-    IntOp intOp;
+    IntOp              intOp;
     if(AvrInstr->IntPc > -1 && static_cast<uint32_t>(AvrInstr->IntPc) < IntCode.size())
         intOp = IntCode[AvrInstr->IntPc];
     strcpy(sAsm, "");
@@ -1550,7 +1550,7 @@ static void SETB(DWORD addr, int bit, const char *name)
     SETB(addr, bit, r25, name);
 }
 
-static void SETB(DWORD addr, int bit, const NameArray& name)
+static void SETB(DWORD addr, int bit, const NameArray &name)
 {
     SETB(addr, bit, r25, name.c_str());
 }
@@ -1603,7 +1603,7 @@ static void CLRB(DWORD addr, int bit, const char *name)
     CLRB(addr, bit, r25, name);
 }
 
-static void CLRB(DWORD addr, int bit, const NameArray& name)
+static void CLRB(DWORD addr, int bit, const NameArray &name)
 {
     CLRB(addr, bit, r25, name.c_str());
 }
@@ -1841,11 +1841,11 @@ static void LoadXAddrFromReg(int reg, int sov)
         oops();
     if(sov > 2)
         oops();
-    Instruction(OP_MOV, XL, reg);       // X-register Low Byte
-    if(sov > 1)                         //
-        Instruction(OP_MOV, XH, reg+1); // X-register High Byte
-    else                                //
-        Instruction(OP_LDI, XH, 0);     // X-register High Byte
+    Instruction(OP_MOV, XL, reg);         // X-register Low Byte
+    if(sov > 1)                           //
+        Instruction(OP_MOV, XH, reg + 1); // X-register High Byte
+    else                                  //
+        Instruction(OP_LDI, XH, 0);       // X-register High Byte
 }
 
 //-----------------------------------------------------------------------------
@@ -1855,11 +1855,11 @@ static void LoadYAddrFromReg(int reg, int sov)
         oops();
     if(sov > 2)
         oops();
-    Instruction(OP_MOV, YL, reg);       // Y-register Low Byte
-    if(sov > 1)                         //
-        Instruction(OP_MOV, YH, reg+1); // Y-register High Byte
-    else                                //
-        Instruction(OP_LDI, YH, 0);     // Y-register High Byte
+    Instruction(OP_MOV, YL, reg);         // Y-register Low Byte
+    if(sov > 1)                           //
+        Instruction(OP_MOV, YH, reg + 1); // Y-register High Byte
+    else                                  //
+        Instruction(OP_LDI, YH, 0);       // Y-register High Byte
 }
 
 //-----------------------------------------------------------------------------
@@ -1869,11 +1869,11 @@ static void LoadZAddrFromReg(int reg, int sov)
         oops();
     if(sov > 2)
         oops();
-    Instruction(OP_MOV, ZL, reg);       // Z-register Low Byte
-    if(sov > 1)                         //
-        Instruction(OP_MOV, ZH, reg+1); // Z-register High Byte
-    else                                //
-        Instruction(OP_LDI, ZH, 0);     // Z-register High Byte
+    Instruction(OP_MOV, ZL, reg);         // Z-register Low Byte
+    if(sov > 1)                           //
+        Instruction(OP_MOV, ZH, reg + 1); // Z-register High Byte
+    else                                  //
+        Instruction(OP_LDI, ZH, 0);       // Z-register High Byte
 }
 
 //-----------------------------------------------------------------------------
@@ -1901,7 +1901,7 @@ static void LdToReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation
             Instruction(OP_LDI, r25, 0x00); // NO BLINK
             if(signPropagation) {
                 Instruction(OP_SBRC, reg + sov - 1, BIT7); // Sign propagation
-                Instruction(OP_LDI, r25, 0xFF); // NO BLINK
+                Instruction(OP_LDI, r25, 0xFF);            // NO BLINK
                 //Instruction(OP_COM, reg + i); // BLINK
             }
             Instruction(OP_MOV, reg + i, r25); // NO BLINK
@@ -1962,7 +1962,7 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
     */
 }
 
-static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const NameArray& name)
+static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const NameArray &name)
 {
     WriteLiteralToMemory(addr, sov, literal, name.c_str());
 }
@@ -2160,7 +2160,7 @@ static void IfBitClear(DWORD addr, int bit, const char *name)
     IfBitClear(addr, bit, r25, name);
 }
 
-static void IfBitClear(DWORD addr, int bit, const NameArray& name)
+static void IfBitClear(DWORD addr, int bit, const NameArray &name)
 {
     IfBitClear(addr, bit, r25, name.c_str());
 }
@@ -2204,7 +2204,7 @@ static void IfBitSet(DWORD addr, int bit, const char *name)
     IfBitSet(addr, bit, r25, name);
 }
 
-static void IfBitSet(DWORD addr, int bit, const NameArray& name)
+static void IfBitSet(DWORD addr, int bit, const NameArray &name)
 {
     IfBitSet(addr, bit, r25, name.c_str());
 }
@@ -2423,44 +2423,44 @@ bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
     long int      bestSoftDivisor;
     long long int bestErr = LLONG_MAX;
     long long int err;
-        while(plcTmr.softDivisor <= max_softDivisor) {
-            plcTmr.prescaler = max_prescaler;
-            while(plcTmr.prescaler >= 1) {
-                for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
-                    err = plcTmr.ticksPerCycle - (long long int)plcTmr.tmr * plcTmr.prescaler * plcTmr.softDivisor;
-                    if(err < 0)
-                        err = -err;
+    while(plcTmr.softDivisor <= max_softDivisor) {
+        plcTmr.prescaler = max_prescaler;
+        while(plcTmr.prescaler >= 1) {
+            for(plcTmr.tmr = 1; plcTmr.tmr <= max_tmr; plcTmr.tmr++) {
+                err = plcTmr.ticksPerCycle - (long long int)plcTmr.tmr * plcTmr.prescaler * plcTmr.softDivisor;
+                if(err < 0)
+                    err = -err;
 
-                    if((bestErr > err) || ((bestErr == err) && (bestPrescaler < plcTmr.prescaler))) {
-                        bestErr = err;
-                        bestSoftDivisor = plcTmr.softDivisor;
-                        bestPrescaler = plcTmr.prescaler;
-                        bestTmr = plcTmr.tmr;
-                        if(err == 0)
-                            goto err0;
-                    }
+                if((bestErr > err) || ((bestErr == err) && (bestPrescaler < plcTmr.prescaler))) {
+                    bestErr = err;
+                    bestSoftDivisor = plcTmr.softDivisor;
+                    bestPrescaler = plcTmr.prescaler;
+                    bestTmr = plcTmr.tmr;
+                    if(err == 0)
+                        goto err0;
                 }
-                if(plcTmr.prescaler == 1)
-                    break;
-                else if(plcTmr.prescaler == 8)
-                    plcTmr.prescaler = 1;
-                else if(plcTmr.prescaler == 64)
-                    plcTmr.prescaler = 8;
-                else if(plcTmr.prescaler == 256)
-                    plcTmr.prescaler = 64;
-                else if(plcTmr.prescaler == 1024)
-                    plcTmr.prescaler = 256;
-                else
-                    oops();
             }
-            if(plcTmr.softDivisor == max_softDivisor)
+            if(plcTmr.prescaler == 1)
                 break;
-            plcTmr.softDivisor++;
+            else if(plcTmr.prescaler == 8)
+                plcTmr.prescaler = 1;
+            else if(plcTmr.prescaler == 64)
+                plcTmr.prescaler = 8;
+            else if(plcTmr.prescaler == 256)
+                plcTmr.prescaler = 64;
+            else if(plcTmr.prescaler == 1024)
+                plcTmr.prescaler = 256;
+            else
+                oops();
         }
-    err0:
-        plcTmr.softDivisor = bestSoftDivisor;
-        plcTmr.prescaler = bestPrescaler;
-        plcTmr.tmr = bestTmr;
+        if(plcTmr.softDivisor == max_softDivisor)
+            break;
+        plcTmr.softDivisor++;
+    }
+err0:
+    plcTmr.softDivisor = bestSoftDivisor;
+    plcTmr.prescaler = bestPrescaler;
+    plcTmr.tmr = bestTmr;
 
     plcTmr.Fcycle = 1.0 * Prog.mcuClock / (1.0 * plcTmr.softDivisor * plcTmr.prescaler * plcTmr.tmr);
     plcTmr.TCycle = 1.0 * plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr / (1.0 * Prog.mcuClock);
@@ -2876,7 +2876,7 @@ static void CopyVarToReg(int reg, int sovReg, const char *var)
     LdToReg(OP_LD_XP, sov, reg, sovReg, true); // as data
 }
 
-static void CopyVarToReg(int reg, int sovReg, const NameArray& var)
+static void CopyVarToReg(int reg, int sovReg, const NameArray &var)
 {
     CopyVarToReg(reg, sovReg, var.c_str());
 }
@@ -2890,7 +2890,7 @@ static void CopyArgToReg(int reg, int sovReg, const char *var)
         CopyVarToReg(reg, sovReg, var);
 }
 
-static void CopyArgToReg(int reg, int sovReg, const NameArray& var)
+static void CopyArgToReg(int reg, int sovReg, const NameArray &var)
 {
     CopyArgToReg(reg, sovReg, var.c_str());
 }
@@ -2919,7 +2919,7 @@ static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagati
             Instruction(OP_CLR, r25); // NO BLINK
             if(signPropagation) {
                 Instruction(OP_SBRC, reg + sovReg - 1, BIT7); // Sign propagation
-                Instruction(OP_COM, r25); // NO BLINK
+                Instruction(OP_COM, r25);                     // NO BLINK
             }
             Instruction(op, r25);
         }
@@ -2947,7 +2947,7 @@ static void _CopyRegToVar(int l, const char *f, const char *args, const char *va
     StFromReg(OP_ST_XP, sov, reg, sovReg, true); // as data
 }
 
-static void _CopyRegToVar(int l, const char *f, const char *args, const NameArray& var, int reg, int sovReg)
+static void _CopyRegToVar(int l, const char *f, const char *args, const NameArray &var, int reg, int sovReg)
 {
     _CopyRegToVar(l, f, args, var.c_str(), reg, sovReg);
 }
@@ -3833,7 +3833,7 @@ static void CompileFromIntermediate()
             }
 #endif
 
-            #ifdef USE_SFR
+#ifdef USE_SFR
             // Sepcial function
             case INT_READ_SFR_LITERAL: {
                 MemForVariable(a->name1, &addr1);
@@ -3857,16 +3857,16 @@ static void CompileFromIntermediate()
             }
             case INT_WRITE_SFR_LITERAL_L: {
                 Comment("INT_WRITE_SFR_LITERAL_L");
-              //MemForVariable(a->name1, &addr1); // name not used
+                //MemForVariable(a->name1, &addr1); // name not used
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff)); //op
-                Instruction(OP_LDI, 26, (a->literal & 0xff)); //sfr
-                Instruction(OP_LDI, 27, (a->literal >> 8));   //sfr
+                Instruction(OP_LDI, 26, (a->literal & 0xff));  //sfr
+                Instruction(OP_LDI, 27, (a->literal >> 8));    //sfr
                 Instruction(OP_ST_X, 28, 0);
                 break;
             }
             case INT_WRITE_SFR_VARIABLE_L: {
                 Comment("INT_WRITE_SFR_VARIABLE_L");
-                CopyArgToReg(ZL, 2, a->name1); //sfr
+                CopyArgToReg(ZL, 2, a->name1);                //sfr
                 Instruction(OP_LDI, 28, (a->literal & 0xff)); //op
                 Instruction(OP_ST_Z, 28, 0);
                 break;
@@ -3883,7 +3883,7 @@ static void CompileFromIntermediate()
             }
             case INT_WRITE_SFR_VARIABLE: {
                 Comment("INT_WRITE_SFR_VARIABLE");
-                CopyArgToReg(ZL, 2, a->name1); //sfr
+                CopyArgToReg(ZL, 2, a->name1);    //sfr
                 MemForVariable(a->name2, &addr2); //op
                 LoadXAddr(addr2);
                 Instruction(OP_LD_X, 15, 0);
@@ -3909,7 +3909,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_MOV, 27, 17);
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_LDI, 28, (a->literal & 0xff));
-                Instruction(OP_OR, 1, 28);  // logic OR by R1,R0 result is in R1
+                Instruction(OP_OR, 1, 28); // logic OR by R1,R0 result is in R1
                 Instruction(OP_ST_X, 1, 0);
                 break;
             }
@@ -4126,8 +4126,8 @@ static void CompileFromIntermediate()
                 CompileIfBody(notTrue);
                 break;
             }
-            // ^^^ sfr funtions  ^^^
-            #endif
+// ^^^ sfr funtions  ^^^
+#endif
 
             case INT_SET_VARIABLE_TO_VARIABLE:
                 Comment("INT_SET_VARIABLE_TO_VARIABLE %s = %s", a->name1.c_str(), a->name2.c_str());
@@ -4373,7 +4373,8 @@ static void CompileFromIntermediate()
 
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                Comment("INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
+                Comment(
+                    "INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol = 7; // 0-100% (6.7 bit)
                 int TOP = 0xFF;
                 getResolution(a->name4.c_str(), &resol, &TOP);
@@ -4976,7 +4977,7 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_COMMENT:
-                Comment("%s",a->name1.c_str());
+                Comment("%s", a->name1.c_str());
                 break;
 
             case INT_AllocKnownAddr:

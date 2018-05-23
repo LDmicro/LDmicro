@@ -32,7 +32,7 @@ static std::vector<uint8_t> OutProg;
 #define MAX_PLCIO 256
 
 static const char *PlcIos[MAX_PLCIO];
-static int   PlcIos_size = 0;
+static int         PlcIos_size = 0;
 
 int PlcIos_AppendAndGet(const char *name)
 {
@@ -92,8 +92,8 @@ void CompileXInterpreted(char *outFile)
     for(int i = 0; i < Prog.io.count; i++) {
         PlcIos[PlcIos_size++] = Prog.io.assignment[i].name;
     }
-    // Convert the if/else structures in the intermediate code to absolute
-    // conditional jumps, to make life a bit easier for the interpreter.
+        // Convert the if/else structures in the intermediate code to absolute
+        // conditional jumps, to make life a bit easier for the interpreter.
 #define MAX_IF_NESTING 32
     int ifDepth = 0;
     // PC for the if(...) instruction, which we will complete with the
@@ -104,7 +104,7 @@ void CompileXInterpreted(char *outFile)
     int ifOpElse[MAX_IF_NESTING];
 
     OutProg.clear();
-    OutProg.reserve(IntCode.size()*2);
+    OutProg.reserve(IntCode.size() * 2);
     for(uint32_t ipc = 0; ipc < IntCode.size(); ipc++) {
         switch(IntCode[ipc].op) {
             case INT_CLEAR_BIT:

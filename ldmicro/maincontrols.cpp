@@ -585,7 +585,8 @@ HMENU MakeMainWindowMenus()
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_TSFB, _("Insert Test If Bit Set in SFR"));
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_T_C_SFB, _("Insert Test If Bit Clear in SFR"));
 
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction, _("&Special Function for AVR (Obsolete)"));
+    AppendMenu(
+        InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpecialFunction, _("Special Function for AVR (Obsolete)"));
 #endif
 
     settings = CreatePopupMenu();

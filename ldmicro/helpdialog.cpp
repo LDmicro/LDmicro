@@ -208,7 +208,7 @@ static void MakeControls(int a)
             copy[j] = '\0';
             cf.crTextColor = HighlightColours.selected; // RGB(110, 255, 110);
             SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-            SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)false, (LPARAM)copy);
+            SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM) false, (LPARAM)copy);
             SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
             // Special case if there's nothing except title on the line
@@ -223,7 +223,7 @@ static void MakeControls(int a)
         }
 
         SendMessage(RichEdit[a], EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
-        SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM)false, (LPARAM)s);
+        SendMessage(RichEdit[a], EM_REPLACESEL, (WPARAM) false, (LPARAM)s);
         SendMessage(RichEdit[a], EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
 
         if(Text[a][i + 1]) {
