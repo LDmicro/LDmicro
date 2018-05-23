@@ -44,6 +44,7 @@ add_definitions(
     "-D_CRT_SECURE_NO_DEPRECATE"
     "-DNOMINMAX"
     )
+INCLUDE_DIRECTORIES("../../common/win32" "../../common/gsl-lite/include" "../../common/stringarray")
 
 if(${LDLANG} STREQUAL "ALL")
     foreach(lang_id ${LDLANG_ALL})

@@ -188,19 +188,19 @@ indicates what kind of object it is.  For example:
       (USART3 I/O Data Register) of the microcontroller Atmel ATmega2560.
 
     The variable name that begins with a '#' character and subsequent as
-    a general-purpose variable name treated as indirect address of hardware register.
-    Value like #VarName is indirect address of hardware register (Indirect Address Pointer).
+    a general-purpose variable name treated as the indirect address of hardware register.
+    Value like #VarName is the indirect address of hardware register (Indirect Address Pointer).
     For example:
       {MOV  portAddr:=}    portAddr is a general-purpose variable containing the value 0x05.
     --{           0x05}--
 
-      {MOV #portAddr:=}    #portAddr treated as indirect address of the register #0x05 PORTA (Microchip PIC16F887).
+      {MOV #portAddr:=}    #portAddr treated as the indirect address of the register #0x05 PORTA (Microchip PIC16F887).
     --{           0xF0}--  Output pins PORTA are set to a binary value of 11110000.
 
       {ADD  portAddr:=}    The general-purpose portAddr variable now has a value of 0x06.
     --{portAddr  +   1}--
 
-      {MOV #portAddr:=}    #portAddr treated as indirect address of the register #0x06 PORTB (Microchip PIC16F887).
+      {MOV #portAddr:=}    #portAddr treated as the indirect address of the register #0x06 PORTB (Microchip PIC16F887).
     --{           0x0F}--  Output pins PORTB are set to a binary value of 00001111.
     * Wiki: LDmicro indirect addressing
       https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
