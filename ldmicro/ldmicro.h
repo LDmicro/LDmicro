@@ -24,11 +24,11 @@
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
-//#include "stdafx.h"
+#include "stdafx.h"
+
 #include "mcutable.h"
 #include "current_function.hpp"
 #include "compilercommon.hpp"
-#include <gsl.hpp>
 
 typedef int32_t SWORD;
 typedef int32_t SDWORD;

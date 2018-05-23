@@ -559,7 +559,7 @@ static char *formatWidth(char *buf, size_t totalWidth, const char *str1, const c
 //-----------------------------------------------------------------------------
 void DrawWire(int *cx, int *cy, char c)
 {
-    char buf[POS_WIDTH+1];
+    char buf[POS_WIDTH + 1];
     memset(buf, c, POS_WIDTH);
     buf[POS_WIDTH] = '\0';
 
@@ -698,13 +698,13 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
             break;
 
         case ELEM_SLEEP: {
-            #ifdef SLEEP_DELAY
-            double d = SIprefix(1.0*leaf->d.timer.delay/1000000.0, s1);
+#ifdef SLEEP_DELAY
+            double d = SIprefix(1.0 * leaf->d.timer.delay / 1000000.0, s1);
             sprintf(s2, "%.3g %ss", d, s1);
             sprintf(bot, "{SLEEP %s}", s2);
-            #else
+#else
             sprintf(bot, "{SLEEP}");
-            #endif
+#endif
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
@@ -1125,9 +1125,9 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             case ELEM_LEQ: s = "<="; goto cmp;
             cmp:
                     // clang-format on
-                    int len =
-                        std::min(static_cast<size_t>(POS_WIDTH),
-                            std::max(1 + strlen(leaf->d.cmp.op1) + 1 + strlen(s) + 1, 1 + strlen(leaf->d.cmp.op2) + 1));
+                    int len = std::min(
+                        static_cast<size_t>(POS_WIDTH),
+                        std::max(1 + strlen(leaf->d.cmp.op1) + 1 + strlen(s) + 1, 1 + strlen(leaf->d.cmp.op2) + 1));
 
                     sprintf(s1, "%s", leaf->d.cmp.op1);
                     sprintf(s2, "%s", leaf->d.cmp.op2);
@@ -1764,7 +1764,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
             break;
             if(cols) {
                 // Draw wire to the right bus
-                if((s->contents[s->count - 1].which == ELEM_COMMENT) ||
+                if((s->contents[s->count - 1].which == ELEM_COMMENT) || //
                    (s->contents[s->count - 1].which == ELEM_PLACEHOLDER))
                     break;
                 if(HasEndOfRungElem(s->contents[s->count - 1].which, s->contents[s->count - 1].data.any))

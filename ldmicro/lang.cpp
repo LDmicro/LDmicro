@@ -26,8 +26,6 @@
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
 
-#include <cstring>
-
 struct LangTable {
     char *from;
     char *to;

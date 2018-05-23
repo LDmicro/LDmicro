@@ -24,9 +24,9 @@
 #ifndef __MCUTABLE_H__
 #define __MCUTABLE_H__
 
+#include "stdafx.h"
+
 #include "ldconfig.h"
-#include <cstdint>
-#include <vector>
 
 //-----------------------------------------------
 //See Atmel AVR Instruction set inheritance table

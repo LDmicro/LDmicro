@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
 // Copyright 2007 Jonathan Westhues
+// Copyright 2015 Nehrutsa Ihor
 //
 // This file is part of LDmicro.
 //
@@ -27,10 +28,10 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-//// #define NEW_TON // (C) GitHub.LDmicro@gmail.com // fail
+//// #define NEW_TON // (C) LDmicro.GitHub@gmail.com // fail
 //// Restored original TON algorithm because NEW_TON don't enable RESET(TON)
 
-#define NEW_ONE_SHOT // (C) GitHub.LDmicro@gmail.com
+#define NEW_ONE_SHOT // (C) LDmicro.GitHub@gmail.com
 //#define DEFAULT_PARALLEL_ALGORITHM
 //#define DEFAULT_COIL_ALGORITHM
 
@@ -74,11 +75,11 @@ DWORD addrRUartSendErrorFlag;
 int   bitRUartSendErrorFlag;
 
 std::vector<IntOp> IntCode;
-int              ProgWriteP = 0;
-static SDWORD *  Tdata;
-int              rungNow = -INT_MAX;
-static int       whichNow = -INT_MAX;
-static ElemLeaf *leafNow = nullptr;
+int                ProgWriteP = 0;
+static SDWORD *    Tdata;
+int                rungNow = -INT_MAX;
+static int         whichNow = -INT_MAX;
+static ElemLeaf *  leafNow = nullptr;
 
 static DWORD GenSymCount;
 static DWORD GenSymCountParThis;
@@ -90,8 +91,8 @@ static DWORD GenSymCountStepper;
 DWORD EepromAddrFree;
 DWORD RomSection;
 
-namespace  {
-std::unordered_set<std::string> persistVariables;
+namespace {
+    std::unordered_set<std::string> persistVariables;
 }
 
 //-----------------------------------------------------------------------------
@@ -159,7 +160,11 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_COPY_XOR_BIT_TO_BIT:
-                fprintf(f, "let bit '%s' := '%s' ^ '%s'", IntCode[i].name1.c_str(), IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
+                fprintf(f,
+                        "let bit '%s' := '%s' ^ '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str());
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
@@ -191,31 +196,59 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_VARIABLE_ROL:
-                fprintf(f, "let var '%s' := '%s' rol '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' rol '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_ROR:
-                fprintf(f, "let var '%s' := '%s' ror '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' ror '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_SHL:
-                fprintf(f, "let var '%s' := '%s' << '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' << '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_SHR:
-                fprintf(f, "let var '%s' := '%s' >> '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' >> '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_AND:
-                fprintf(f, "let var '%s' := '%s' & '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' & '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_OR:
-                fprintf(f, "let var '%s' := '%s' | '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' | '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_XOR:
-                fprintf(f, "let var '%s' := '%s' ^ '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' ^ '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_NOT:
@@ -227,7 +260,11 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_VARIABLE_SR0:
-                fprintf(f, "let var '%s' := '%s' sr0 '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' sr0 '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_NEG:
@@ -235,27 +272,47 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_VARIABLE_ADD:
-                fprintf(f, "let var '%s' := '%s' + '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' + '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 if(IntCode[i].name4.size())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4.c_str());
                 break;
 
             case INT_SET_VARIABLE_SUBTRACT:
-                fprintf(f, "let var '%s' := '%s' - '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' - '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 if(IntCode[i].name4.size())
                     fprintf(f, "; copy overflow flag to '%s'", IntCode[i].name4.c_str());
                 break;
 
             case INT_SET_VARIABLE_MULTIPLY:
-                fprintf(f, "let var '%s' := '%s' * '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' * '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_DIVIDE:
-                fprintf(f, "let var '%s' := '%s' / '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' / '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_SET_VARIABLE_MOD:
-                fprintf(f, "let var '%s' := '%s' %% '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "let var '%s' := '%s' %% '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_INCREMENT_VARIABLE:
@@ -287,7 +344,11 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_PWM:
-                fprintf(f, "set pwm '%s' %% %s Hz out '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "set pwm '%s' %% %s Hz out '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_QUAD_ENCOD:
@@ -302,7 +363,11 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_SET_NPULSE:
-                fprintf(f, "generate %s pulses %s Hz to %s", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "generate %s pulses %s Hz to %s",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_OFF_NPULSE:
@@ -322,8 +387,11 @@ void IntDumpListing(char *outFile)
                 if(sov == 1)
                     fprintf(f, "read EEPROM[%d] into '%s'", IntCode[i].literal, IntCode[i].name1.c_str());
                 else if(sov == 2)
-                    fprintf(
-                        f, "read EEPROM[%d,%d+1] into '%s'", IntCode[i].literal, IntCode[i].literal, IntCode[i].name1.c_str());
+                    fprintf(f,
+                            "read EEPROM[%d,%d+1] into '%s'",
+                            IntCode[i].literal,
+                            IntCode[i].literal,
+                            IntCode[i].name1.c_str());
                 else if(sov == 3)
                     fprintf(f,
                             "read EEPROM[%d,%d+1,%d+2] into '%s'",
@@ -348,8 +416,11 @@ void IntDumpListing(char *outFile)
                 if(sov == 1)
                     fprintf(f, "write '%s' into EEPROM[%d]", IntCode[i].name1.c_str(), IntCode[i].literal);
                 else if(sov == 2)
-                    fprintf(
-                        f, "write '%s' into EEPROM[%d,%d+1]", IntCode[i].name1.c_str(), IntCode[i].literal, IntCode[i].literal);
+                    fprintf(f,
+                            "write '%s' into EEPROM[%d,%d+1]",
+                            IntCode[i].name1.c_str(),
+                            IntCode[i].literal,
+                            IntCode[i].literal);
                 else if(sov == 3)
                     fprintf(f,
                             "write '%s' into EEPROM[%d,%d+1,%d+2]",
@@ -530,7 +601,7 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "# %s", IntCode[i].name1.c_str());
                 break;
 
-#ifdef USE_SFR_INT
+#ifdef USE_SFR
             // Special function
             case INT_READ_SFR_LITERAL:
             case INT_WRITE_SFR_LITERAL:
@@ -623,7 +694,11 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_WRITE_STRING:
-                fprintf(f, "sprintf(%s, \"%s\", %s);", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                fprintf(f,
+                        "sprintf(%s, \"%s\", %s);",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
 #ifdef TABLE_IN_FLASH
@@ -648,7 +723,11 @@ void IntDumpListing(char *outFile)
                             IntCode[i].name1.c_str(),
                             CheckMakeNumber(IntCode[i].name3));
                 } else {
-                    fprintf(f, "let var '%s' := '%s[%s]'", IntCode[i].name2.c_str(), IntCode[i].name1.c_str(), IntCode[i].name3.c_str());
+                    fprintf(f,
+                            "let var '%s' := '%s[%s]'",
+                            IntCode[i].name2.c_str(),
+                            IntCode[i].name1.c_str(),
+                            IntCode[i].name3.c_str());
                 }
                 break;
 
@@ -661,7 +740,11 @@ void IntDumpListing(char *outFile)
                             IntCode[i].name2.c_str(),
                             IntCode[i].name3.c_str());
                 } else {
-                    fprintf(f, "let var '%s' := '%s[%s]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].name3.c_str());
+                    fprintf(f,
+                            "let var '%s' := '%s[%s]'",
+                            IntCode[i].name1.c_str(),
+                            IntCode[i].name2.c_str(),
+                            IntCode[i].name3.c_str());
                 }
                 break;
 #endif
@@ -747,9 +830,8 @@ static void GenSymStepper(char *dest, char *name)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2,
-                const char *name3, const char *name4, const char *name5, const char *name6, SDWORD lit, SDWORD lit2,
-                SDWORD *data)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
+                const char *name4, const char *name5, const char *name6, SDWORD lit, SDWORD lit2, SDWORD *data)
 {
     IntOp intOp;
     intOp.op = op;
@@ -1038,7 +1120,7 @@ bool IsNumber(const char *str)
     return false;
 }
 
-bool IsNumber(const NameArray& name)
+bool IsNumber(const NameArray &name)
 {
     return IsNumber(name.c_str());
 }
@@ -1047,7 +1129,7 @@ bool IsNumber(const NameArray& name)
 bool CheckForNumber(const char *str)
 {
     if(IsNumber(str)) {
-        int   radix = 0; //auto detect
+        int         radix = 0; //auto detect
         const char *start_ptr = str;
         while(isspace(*start_ptr) || *start_ptr == '-' || *start_ptr == '+')
             start_ptr++;
@@ -1173,7 +1255,7 @@ SDWORD CheckMakeNumber(const char *str)
     return val;
 }
 
-SDWORD CheckMakeNumber(const NameArray& str)
+SDWORD CheckMakeNumber(const NameArray &str)
 {
     return CheckMakeNumber(str.c_str());
 }
@@ -1428,7 +1510,7 @@ static void InitTablesCircuit(int which, void *elem)
             }
             break;
         }
-        // clang-format off
+            // clang-format off
         {
         const char *nameTable;
         case ELEM_7SEG:  nameTable = "char7seg";  goto xseg;
@@ -2150,13 +2232,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             break;
         }
-        #ifdef USE_SFR_INT
+        #ifdef USE_SFR
         // Special Function
         case ELEM_RSFR:
             Comment(3, "ELEM_RSFR");
             if(IsNumber(l->d.move.dest)) {
                 Error(_("Read SFR instruction: '%s' not a valid destination."), l->d.move.dest);
-                CompileError();
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -3660,7 +3741,7 @@ bool GenerateIntermediateCode()
 
     rungNow++;
     char      s1[MAX_COMMENT_LEN];
-    char     *s2 = nullptr;
+    char *    s2 = nullptr;
     ElemLeaf *leaf = nullptr;
     int       rung;
     for(rung = 0; rung <= Prog.numRungs; rung++) {
@@ -3754,16 +3835,20 @@ bool GotoGosubUsed()
 bool UartFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING)) ||
-           (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECVn, ELEM_UART_SENDn, -1))                  ||
-           (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
+        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECVn, ELEM_UART_SENDn, -1))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
             return true;
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_UART_SEND) || (IntCode[i].op == INT_UART_SEND1) || (IntCode[i].op == INT_UART_SENDn) ||
-           (IntCode[i].op == INT_UART_SEND_READY) || (IntCode[i].op == INT_UART_SEND_BUSY)                            ||
-           (IntCode[i].op == INT_UART_RECV_AVAIL) || (IntCode[i].op == INT_UART_RECVn)                                ||
+        if((IntCode[i].op == INT_UART_SEND) ||       //
+           (IntCode[i].op == INT_UART_SEND1) ||      //
+           (IntCode[i].op == INT_UART_SENDn) ||      //
+           (IntCode[i].op == INT_UART_SEND_READY) || //
+           (IntCode[i].op == INT_UART_SEND_BUSY) ||  //
+           (IntCode[i].op == INT_UART_RECV_AVAIL) || //
+           (IntCode[i].op == INT_UART_RECVn) ||      //
            (IntCode[i].op == INT_UART_RECV))
             return true;
     }
@@ -3778,7 +3863,8 @@ bool UartRecvUsed()
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_UART_RECV) || (IntCode[i].op == INT_UART_RECV_AVAIL) ||
+        if((IntCode[i].op == INT_UART_RECV) ||       //
+           (IntCode[i].op == INT_UART_RECV_AVAIL) || //
            (IntCode[i].op == INT_UART_RECVn))
             return true;
     }
@@ -3793,8 +3879,10 @@ bool UartSendUsed()
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_UART_SEND) || (IntCode[i].op == INT_UART_SEND_READY) ||
-           (IntCode[i].op == INT_UART_SEND_BUSY) || (IntCode[i].op == INT_UART_SEND1) ||
+        if((IntCode[i].op == INT_UART_SEND) ||       //
+           (IntCode[i].op == INT_UART_SEND_READY) || //
+           (IntCode[i].op == INT_UART_SEND_BUSY) ||  //
+           (IntCode[i].op == INT_UART_SEND1) ||      //
            (IntCode[i].op == INT_UART_SENDn))
             return true;
     }
@@ -3859,6 +3947,8 @@ bool DivideRoutineUsed()
     return false;
 }
 
+// clang-format off
+
 IntOp::IntOp() :
     op(0),
     literal(0),
@@ -3875,3 +3965,5 @@ IntOp::IntOp() :
 {
     f[0] = 0;
 }
+
+// clang-format on

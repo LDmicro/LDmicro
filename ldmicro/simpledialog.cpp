@@ -465,7 +465,7 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
     if(ShowSimpleDialog(s, 1, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
         name[0] = 'T';
         strcpy(name + 1, nameBuf);
-        double    del = atof(delBuf);
+        double  del = atof(delBuf);
         int64_t period = (int64_t)round(del / 1000 / 18); // 18 ms
         if(del <= 0) {
             Error(_("Delay cannot be zero or negative."));
@@ -667,12 +667,14 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
         }
     }
 }
+
+//-----------------------------------------------------------------------------
+#ifdef USE_SFR
 // Special function
 void ShowSFRDialog(int which, char *op1, char *op2)
 {
-#ifdef USE_SFR
     const char *title;
-    char *l2;
+    char *      l2;
     switch(which) {
         case ELEM_RSFR:
             title = _("Read From SFR");
@@ -708,7 +710,7 @@ void ShowSFRDialog(int which, char *op1, char *op2)
             oops();
     }
     const char *labels[] = {_("SFR position:"), l2};
-    char *dests[] = {op1, op2};
+    char *      dests[] = {op1, op2};
     if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests)) {
         if(which == ELEM_RSFR) {
             if(IsNumber(op2)) {
@@ -716,10 +718,11 @@ void ShowSFRDialog(int which, char *op1, char *op2)
             }
         }
     }
-#endif
 }
 // Special function
+#endif
 
+//-----------------------------------------------------------------------------
 void ShowCmpDialog(int which, char *op1, char *op2)
 {
     const char *title;

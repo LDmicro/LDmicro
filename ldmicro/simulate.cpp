@@ -161,8 +161,7 @@ static bool SingleBitOn(const char *name)
     return false;
 }
 
-template <size_t N>
-static bool SingleBitOn(const StringArray<N>& name)
+template <size_t N> static bool SingleBitOn(const StringArray<N> &name)
 {
     for(int i = 0; i < SingleBitItemsCount; i++) {
         if(name == SingleBitItems[i].name) {
@@ -192,8 +191,7 @@ static void SetSingleBit(const char *name, bool state)
     }
 }
 
-template <size_t N>
-static void SetSingleBit(const StringArray<N>& name, bool state)
+template <size_t N> static void SetSingleBit(const StringArray<N> &name, bool state)
 {
     int i;
     for(i = 0; i < SingleBitItemsCount; i++) {
@@ -207,7 +205,6 @@ static void SetSingleBit(const StringArray<N>& name, bool state)
         SingleBitItems[i].powered = state;
         SingleBitItemsCount++;
     }
-
 }
 
 bool GetSingleBit(char *name)
@@ -251,7 +248,7 @@ long OverflowToVarSize(long val, int sov)
 //-----------------------------------------------------------------------------
 static void Increment(const char *name, const char *overlap, const char *overflow)
 {
-/*
+    /*
     int    sov = SizeOfVar(name);
     SDWORD signMask = 1 << (sov * 8 - 1);
     SDWORD signBefore, signAfter;
@@ -289,12 +286,12 @@ static void Increment(const char *name, const char *overlap, const char *overflo
     ooops(name);
 }
 
-static void Increment(const NameArray& name, const char *overlap, const char *overflow)
+static void Increment(const NameArray &name, const char *overlap, const char *overflow)
 {
     Increment(name.c_str(), overlap, overflow);
 }
 
-static void Increment(const NameArray& name, const NameArray& overlap, const char *overflow)
+static void Increment(const NameArray &name, const NameArray &overlap, const char *overflow)
 {
     Increment(name.c_str(), overlap.c_str(), overflow);
 }
@@ -302,7 +299,7 @@ static void Increment(const NameArray& name, const NameArray& overlap, const cha
 //-----------------------------------------------------------------------------
 static void Decrement(const char *name, const char *overlap, const char *overflow)
 {
-/*
+    /*
     int    sov = SizeOfVar(name);
     SDWORD signMask = 1 << (sov * 8 - 1);
     SDWORD signBefore, signAfter;
@@ -341,13 +338,13 @@ static void Decrement(const char *name, const char *overlap, const char *overflo
     ooops(name);
 }
 
-static void Decrement(const NameArray& name, const NameArray& overlap, const char *overflow)
+static void Decrement(const NameArray &name, const NameArray &overlap, const char *overflow)
 {
     Decrement(name.c_str(), overlap.c_str(), overflow);
 }
 
 //-----------------------------------------------------------------------------
-static SDWORD AddVariable(const NameArray& name1, const NameArray& name2, const NameArray& name3, const char *overflow)
+static SDWORD AddVariable(const NameArray &name1, const NameArray &name2, const NameArray &name3, const char *overflow)
 {
     long long int ret = (long long int)GetSimulationVariable(name2) + (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
@@ -361,7 +358,7 @@ static SDWORD AddVariable(const NameArray& name1, const NameArray& name2, const 
 }
 
 //-----------------------------------------------------------------------------
-static SDWORD SubVariable(const NameArray& name1, const NameArray& name2, const NameArray& name3, const char *overflow)
+static SDWORD SubVariable(const NameArray &name1, const NameArray &name2, const NameArray &name3, const char *overflow)
 {
     long long int ret = (long long int)GetSimulationVariable(name2) - (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
@@ -379,7 +376,7 @@ static SDWORD SubVariable(const NameArray& name1, const NameArray& name2, const 
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
-void SetSimulationVariable(const NameArray& name, SDWORD val)
+void SetSimulationVariable(const NameArray &name, SDWORD val)
 {
     SetSimulationVariable(name.c_str(), val);
 }
@@ -422,7 +419,7 @@ SDWORD GetSimulationVariable(const char *name)
     return GetSimulationVariable(name, false);
 }
 
-SDWORD GetSimulationVariable(const NameArray& name)
+SDWORD GetSimulationVariable(const NameArray &name)
 {
     return GetSimulationVariable(name.c_str());
 }
@@ -491,7 +488,7 @@ SWORD GetAdcShadow(const char *name)
     return 0;
 }
 
-SWORD GetAdcShadow(const NameArray& name)
+SWORD GetAdcShadow(const NameArray &name)
 {
     return GetAdcShadow(name.c_str());
 }
@@ -512,7 +509,7 @@ SDWORD MthRandom()
     return (SDWORD)seed;
 }
 
-SDWORD GetRandom(const NameArray& name)
+SDWORD GetRandom(const NameArray &name)
 {
     int    sov = SizeOfVar(name);
     SDWORD seed = MthRandom();
@@ -942,6 +939,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SSFR:
         case ELEM_CSFR:
         case ELEM_TSFR:
+        case ELEM_T_C_SFR:
 #endif
             break;
 
@@ -1027,7 +1025,7 @@ void CheckVariableNames()
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_TABLE)
             CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_TABLE, i), i);
-    /*
+            /*
     for(i = 0; i < VariableCount; i++)
         if(Variables[i].usedFlags & VAR_FLAG_ANY)
              CheckMsg(Variables[i].name, Check(Variables[i].name, VAR_FLAG_ANY, i), i);
@@ -1437,7 +1435,7 @@ int FindOpRung(int op, int rung)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpName(int op, const NameArray& name1)
+int FindOpName(int op, const NameArray &name1)
 {
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op == op) && (IntCode[i].name1 == name1)) {
@@ -1449,7 +1447,7 @@ int FindOpName(int op, const NameArray& name1)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpName(int op, const NameArray& name1, const NameArray& name2)
+int FindOpName(int op, const NameArray &name1, const NameArray &name2)
 {
     for(uint32_t i = 0; i < IntCode.size(); i++) {
         if((IntCode[i].op == op) && (IntCode[i].name1 == name1) && (IntCode[i].name2 == name2)) {
@@ -1461,7 +1459,7 @@ int FindOpName(int op, const NameArray& name1, const NameArray& name2)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpNameLast(int op, const NameArray& name1)
+int FindOpNameLast(int op, const NameArray &name1)
 {
     for(int i = IntCode.size() - 1; i >= 0; i--) {
         if((IntCode[i].op == op) && (IntCode[i].name1 == name1)) {
@@ -1473,7 +1471,7 @@ int FindOpNameLast(int op, const NameArray& name1)
 }
 
 //-----------------------------------------------------------------------------
-int FindOpNameLast(int op, const NameArray& name1, const NameArray& name2)
+int FindOpNameLast(int op, const NameArray &name1, const NameArray &name2)
 {
     for(int i = IntCode.size() - 1; i >= 0; i--) {
         if((IntCode[i].op == op) && ((IntCode[i].name1 == name1)) && ((IntCode[i].name2 == name2))) {
@@ -1492,6 +1490,9 @@ int FindOpNameLast(int op, const NameArray& name1, const NameArray& name2)
 //-----------------------------------------------------------------------------
 static void SimulateIntCode()
 {
+    long v;
+    bool state;
+    int  sov;
     for(; IntPc < IntCode.size(); IntPc++) {
         IntCode[IntPc].simulated = true;
         IntOp *a = &IntCode[IntPc];
@@ -1526,9 +1527,9 @@ static void SimulateIntCode()
                 break;
 
             case INT_COPY_XOR_BIT_TO_BIT:
-//              SetSingleBit(a->name1,  SingleBitOn(a->name1)      ^  SingleBitOn(a->name2)     );
-//              SetSingleBit(a->name1, (SingleBitOn(a->name1) & 1) ^ (SingleBitOn(a->name2) & 1));
-                SetSingleBit(a->name1,  SingleBitOn(a->name2) ? (!SingleBitOn(a->name1)) : SingleBitOn(a->name1));
+                //SetSingleBit(a->name1,  SingleBitOn(a->name1)      ^  SingleBitOn(a->name2)     );
+                //SetSingleBit(a->name1, (SingleBitOn(a->name1) & 1) ^ (SingleBitOn(a->name2) & 1));
+                SetSingleBit(a->name1, SingleBitOn(a->name2) ? (!SingleBitOn(a->name1)) : SingleBitOn(a->name1));
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
@@ -1545,7 +1546,7 @@ static void SimulateIntCode()
                 SetSimulationVariable(a->name1, a->literal);
                 break;
 
-#ifdef USE_SFR_INT
+#ifdef USE_SFR
             case INT_READ_SFR_LITERAL:
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 break;
@@ -1629,42 +1630,25 @@ static void SimulateIntCode()
                 Decrement(a->name1, a->name2, "ROverflowFlagV");
                 NeedRedraw = a->op;
                 break;
-            {
-            long v;
-            bool   state;
+
             case INT_SET_VARIABLE_SR0:
-                v = sr0(GetSimulationVariable(a->name2),
-                        GetSimulationVariable(a->name3),
-                        SizeOfVar(a->name2),
-                        &state);
+                v = sr0(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
                 SetSingleBit(a->name4, state);
                 goto math;
             case INT_SET_VARIABLE_ROL:
-                v = rol(GetSimulationVariable(a->name2),
-                        GetSimulationVariable(a->name3),
-                        SizeOfVar(a->name2),
-                        &state);
+                v = rol(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
                 SetSingleBit(a->name4, state);
                 goto math;
             case INT_SET_VARIABLE_ROR:
-                v = ror(GetSimulationVariable(a->name2),
-                        GetSimulationVariable(a->name3),
-                        SizeOfVar(a->name2),
-                        &state);
+                v = ror(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
                 SetSingleBit(a->name4, state);
                 goto math;
             case INT_SET_VARIABLE_SHL:
-                v = shl(GetSimulationVariable(a->name2),
-                        GetSimulationVariable(a->name3),
-                        SizeOfVar(a->name2),
-                        &state);
+                v = shl(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
                 SetSingleBit(a->name4, state);
                 goto math;
             case INT_SET_VARIABLE_SHR:
-                v = shr(GetSimulationVariable(a->name2),
-                        GetSimulationVariable(a->name3),
-                        SizeOfVar(a->name2),
-                        &state);
+                v = shr(GetSimulationVariable(a->name2), GetSimulationVariable(a->name3), SizeOfVar(a->name2), &state);
                 SetSingleBit(a->name4, state);
                 goto math;
             case INT_SET_VARIABLE_AND:
@@ -1708,14 +1692,13 @@ static void SimulateIntCode()
                 }
                 goto math;
             math:
-                int sov = SizeOfVar(a->name1);
+                sov = SizeOfVar(a->name1);
                 v = OverflowToVarSize(v, sov);
                 if(GetSimulationVariable(a->name1) != v) {
                     NeedRedraw = a->op;
                     SetSimulationVariable(a->name1, v);
                 }
                 break;
-            }
 //vvv
 #define IF_BODY             \
     {                       \
@@ -1725,7 +1708,7 @@ static void SimulateIntCode()
     {                       \
         IfConditionFalse(); \
     }
-//^^^
+                //^^^
             case INT_IF_BIT_SET:
                 if(SingleBitOn(a->name1))
                     IF_BODY
@@ -2072,7 +2055,7 @@ void SimulateOneCycle(bool forceRefresh)
         SimulateUartTxCountdown = 0;
     }
 
-    std::for_each(std::begin(IntCode), std::end(IntCode), [](IntOp& op){op.simulated = false;});
+    std::for_each(std::begin(IntCode), std::end(IntCode), [](IntOp &op) { op.simulated = false; });
     for(int i = 0; i < Prog.numRungs; i++) {
         Prog.rungSimulated[i] = false;
     }

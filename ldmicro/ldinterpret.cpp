@@ -39,14 +39,14 @@
 #define INTCODE_H_CONSTANTS_ONLY
 #include "intcode.h"
 
-typedef unsigned char BYTE;     // 8-bit unsigned
-typedef unsigned short WORD;    // 16-bit unsigned
-typedef signed short SWORD;     // 16-bit signed
+typedef unsigned char  BYTE;  // 8-bit unsigned
+typedef unsigned short WORD;  // 16-bit unsigned
+typedef signed short   SWORD; // 16-bit signed
 
 // Some arbitrary limits on the program and data size
-#define MAX_OPS                 1024
-#define MAX_VARIABLES           128
-#define MAX_INTERNAL_RELAYS     128
+#define MAX_OPS 1024
+#define MAX_VARIABLES 128
+#define MAX_INTERNAL_RELAYS 128
 
 // This data structure represents a single instruction for the 'virtual
 // machine.' The .op field gives the opcode, and the other fields give
@@ -65,16 +65,16 @@ typedef signed short SWORD;     // 16-bit signed
 // that you're going to use for your interface out. I will therefore leave
 // that up to you.
 typedef struct {
-    WORD    op;
-    WORD    name1;
-    WORD    name2;
-    WORD    name3;
-    SWORD   literal;
+    WORD  op;
+    WORD  name1;
+    WORD  name2;
+    WORD  name3;
+    SWORD literal;
 } BinOp;
 
 BinOp Program[MAX_OPS];
 SWORD Integers[MAX_VARIABLES];
-BYTE Bits[MAX_INTERNAL_RELAYS];
+BYTE  Bits[MAX_INTERNAL_RELAYS];
 
 // This are addresses (indices into Integers[] or Bits[]) used so that your
 // C code can get at some of the ladder variables, by remembering the
@@ -107,9 +107,8 @@ int HexDigit(int c)
 }
 void LoadProgram(char *fileName)
 {
-    int pc;
     FILE *f = fopen(fileName, "r");
-    char line[80];
+    char  line[80];
 
     // This is not suitable for untrusted input.
 
@@ -118,16 +117,21 @@ void LoadProgram(char *fileName)
         exit(-1);
     }
 
-    if(!fgets(line, sizeof(line), f)) BadFormat();
-    if(strcmp(line, "$$LDcode\n")!=0) BadFormat();
+    if(!fgets(line, sizeof(line), f))
+        BadFormat();
+    if(strcmp(line, "$$LDcode\n") != 0)
+        BadFormat();
 
-    for(pc = 0; ; pc++) {
+    for(int pc = 0;; pc++) {
         char *t, i;
         BYTE *b;
 
-        if(!fgets(line, sizeof(line), f)) BadFormat();
-        if(strcmp(line, "$$bits\n")==0) break;
-        if(strlen(line) != sizeof(BinOp)*2 + 1) BadFormat();
+        if(!fgets(line, sizeof(line), f))
+            BadFormat();
+        if(strcmp(line, "$$bits\n") == 0)
+            break;
+        if(strlen(line) != sizeof(BinOp) * 2 + 1)
+            BadFormat();
 
         t = line;
         b = (BYTE *)&Program[pc];
@@ -141,31 +145,32 @@ void LoadProgram(char *fileName)
     SpecialAddrForA = -1;
     SpecialAddrForXosc = -1;
     while(fgets(line, sizeof(line), f)) {
-        if(memcmp(line, "a,", 2)==0) {
-            SpecialAddrForA = atoi(line+2);
+        if(memcmp(line, "a,", 2) == 0) {
+            SpecialAddrForA = atoi(line + 2);
         }
-        if(memcmp(line, "Xosc,", 5)==0) {
-            SpecialAddrForXosc = atoi(line+5);
+        if(memcmp(line, "Xosc,", 5) == 0) {
+            SpecialAddrForXosc = atoi(line + 5);
         }
-        if(memcmp(line, "$$cycle", 7)==0) {
-            if(atoi(line + 7) != 10*1000) {
-                fprintf(stderr, "cycle time was not 10 ms when compiled; "
-                    "please fix that.\n");
+        if(memcmp(line, "$$cycle", 7) == 0) {
+            if(atoi(line + 7) != 10 * 1000) {
+                fprintf(stderr,
+                        "cycle time was not 10 ms when compiled; "
+                        "please fix that.\n");
                 exit(-1);
             }
         }
     }
 
     if(SpecialAddrForA < 0 || SpecialAddrForXosc < 0) {
-        fprintf(stderr, "special interface variables 'a' or 'Xosc' not "
-            "used in prog.\n");
+        fprintf(stderr,
+                "special interface variables 'a' or 'Xosc' not "
+                "used in prog.\n");
         exit(-1);
     }
 
     fclose(f);
 }
 //-----------------------------------------------------------------------------
-
 
 //-----------------------------------------------------------------------------
 // Disassemble the program and pretty-print it. This is just for debugging,
@@ -176,8 +181,8 @@ void LoadProgram(char *fileName)
 //-----------------------------------------------------------------------------
 void Disassemble()
 {
-    int pc;
-    for(pc = 0; ; pc++) {
+    char c;
+    for(int pc = 0;; pc++) {
         BinOp *p = &Program[pc];
         printf("%03x: ", pc);
 
@@ -195,8 +200,7 @@ void Disassemble()
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                printf("int16s[%03x] := %d (0x%04x)", p->name1, p->literal,
-                    p->literal);
+                printf("int16s[%03x] := %d (0x%04x)", p->name1, p->literal, p->literal);
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -211,18 +215,24 @@ void Disassemble()
                 printf("(int16s[%03x])++", p->name1);
                 break;
 
-            {
-                char c;
-                case INT_SET_VARIABLE_ADD: c = '+'; goto arith;
-                case INT_SET_VARIABLE_SUBTRACT: c = '-'; goto arith;
-                case INT_SET_VARIABLE_MULTIPLY: c = '*'; goto arith;
-                case INT_SET_VARIABLE_DIVIDE: c = '/'; goto arith;
-                case INT_SET_VARIABLE_MOD: c = '%'; goto arith;
-arith:
-                    printf("int16s[%03x] := int16s[%03x] %c int16s[%03x]",
-                        p->name1, p->name2, c, p->name3);
-                    break;
-            }
+            case INT_SET_VARIABLE_ADD:
+                c = '+';
+                goto arith;
+            case INT_SET_VARIABLE_SUBTRACT:
+                c = '-';
+                goto arith;
+            case INT_SET_VARIABLE_MULTIPLY:
+                c = '*';
+                goto arith;
+            case INT_SET_VARIABLE_DIVIDE:
+                c = '/';
+                goto arith;
+            case INT_SET_VARIABLE_MOD:
+                c = '%';
+                goto arith;
+            arith:
+                printf("int16s[%03x] := int16s[%03x] %c int16s[%03x]", p->name1, p->name2, c, p->name3);
+                break;
 
             case INT_IF_BIT_SET:
                 printf("unless (bits[%03x] set)", p->name1);
@@ -234,14 +244,12 @@ arith:
                 printf("unless (int16s[%03x] < %d)", p->name1, p->literal);
                 goto cond;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-                printf("unless (int16s[%03x] == int16s[%03x])", p->name1,
-                    p->name2);
+                printf("unless (int16s[%03x] == int16s[%03x])", p->name1, p->name2);
                 goto cond;
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                printf("unless (int16s[%03x] > int16s[%03x])", p->name1,
-                    p->name2);
+                printf("unless (int16s[%03x] > int16s[%03x])", p->name1, p->name2);
                 goto cond;
-cond:
+            cond:
                 printf(" jump %03x+1", p->name3);
                 break;
 
@@ -272,8 +280,7 @@ cond:
 //-----------------------------------------------------------------------------
 void InterpretOneCycle()
 {
-    int pc;
-    for(pc = 0; ; pc++) {
+    for(int pc = 0;; pc++) {
         BinOp *p = &Program[pc];
 
         switch(Program[pc].op) {
@@ -328,23 +335,28 @@ void InterpretOneCycle()
                 break;
 
             case INT_IF_BIT_SET:
-                if(!Bits[p->name1]) pc = p->name3;
+                if(!Bits[p->name1])
+                    pc = p->name3;
                 break;
 
             case INT_IF_BIT_CLEAR:
-                if(Bits[p->name1]) pc = p->name3;
+                if(Bits[p->name1])
+                    pc = p->name3;
                 break;
 
             case INT_IF_VARIABLE_LES_LITERAL:
-                if(!(Integers[p->name1] < p->literal)) pc = p->name3;
+                if(!(Integers[p->name1] < p->literal))
+                    pc = p->name3;
                 break;
 
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-                if(!(Integers[p->name1] == Integers[p->name2])) pc = p->name3;
+                if(!(Integers[p->name1] == Integers[p->name2]))
+                    pc = p->name3;
                 break;
 
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                if(!(Integers[p->name1] > Integers[p->name2])) pc = p->name3;
+                if(!(Integers[p->name1] > Integers[p->name2]))
+                    pc = p->name3;
                 break;
 
             case INT_ELSE:
@@ -356,7 +368,6 @@ void InterpretOneCycle()
         }
     }
 }
-
 
 int main(int argc, char **argv)
 {

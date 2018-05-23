@@ -28,13 +28,12 @@
 #ifndef __INTCODE_H
 #define __INTCODE_H
 
-#include <cstdint>
-#include <vector>
+#include "stdafx.h"
+
 #include "compilercommon.hpp"
 
-
-#define NEW_CMP // (C) GitHub.LDmicro@gmail.com
-#define TABLE_IN_FLASH // (C) GitHub.LDmicro@gmail.com
+#define NEW_CMP // (C) LDmicro.GitHub@gmail.com
+#define TABLE_IN_FLASH // (C) LDmicro.GitHub@gmail.com
 #define NEW_INT 1
 
 // clang-format off
@@ -161,8 +160,8 @@
 #define INT_ELSE                                60 + 100
 #define INT_END_IF                              61 + 100
 //
-#define USE_SFR_INT
-#ifdef USE_SFR_INT
+#define USE_SFR
+#ifdef USE_SFR
 // Special function
 #define INT_READ_SFR_LITERAL                    1061
 #define INT_WRITE_SFR_LITERAL                   1062

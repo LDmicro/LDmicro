@@ -89,7 +89,7 @@ void doexit(int status)
             "Please, open new issue at\n"
             "https://github.com/LDmicro/LDmicro/issues/new\n"
             "or send bug report to\n"
-            "LDmicroGitHub@gmail.com");
+            "LDmicro.GitHub@gmail.com");
     }
     exit(status);
 }
