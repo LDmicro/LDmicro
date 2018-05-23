@@ -7,6 +7,8 @@
 
 #include "targetver.h"
 
+#include <gsl.hpp>
+
 // #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
 // Windows Header Files:
@@ -27,6 +29,9 @@
 //#include <tchar.h>
 //#include <cstring>
 #include <string>
+
+#include <cstdint>
+#include <vector>
 
 //#include <inttypes.h>
 #include <ctype.h>
