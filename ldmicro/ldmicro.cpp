@@ -28,7 +28,6 @@
 
 #include "ldmicro.h"
 #include "freeze.h"
-#include "mcutable.h"
 #include "intcode.h"
 #include "pcports.h"
 

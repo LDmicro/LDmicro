@@ -26,7 +26,7 @@
 
 #include "stdafx.h"
 
-#include "mcutable.h"
+#include "mcutable.hpp"
 #include "current_function.hpp"
 #include "compilercommon.hpp"
 
@@ -35,8 +35,6 @@ typedef int32_t SDWORD;
 
 #include "accel.h"
 #define _BV(bit) (1 << (bit))
-#define arraylen(x) (sizeof(x)/sizeof((x)[0]))
-//#define arraylen(x) (_countof(x))
 
 //-----------------------------------------------
 #define BYTES_OF_LD_VAR 2
