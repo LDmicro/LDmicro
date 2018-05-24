@@ -4,7 +4,7 @@
     a general-purpose variable name treated as the indirect address of hardware register.
     Value like #VarName is the indirect address of hardware register (Indirect Address Pointer).
    See manual.txt
-   Note: Înly for PIC,AVR implemented.
+   Note: Only for PIC,AVR implemented.
 
    * Wiki: LDmicro indirect addressing
    https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
