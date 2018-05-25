@@ -33,6 +33,7 @@ set(LD_COMPILER_SRC_LIST
     ../intcode.h
     ../netzer.h
     ../mcutable.h
+    ../mcutable.hpp
     ../pcports.h
     ../compilerexceptions.hpp
     ../compilercommon.hpp
