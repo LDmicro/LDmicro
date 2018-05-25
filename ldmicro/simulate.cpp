@@ -1823,6 +1823,8 @@ static void SimulateIntCode()
 
             case INT_QUAD_ENCOD:
             case INT_SET_NPULSE:
+                break;
+
             case INT_SET_PWM:
                 // Dummy call will cause a warning if no one ever assigned
                 // to that variable.

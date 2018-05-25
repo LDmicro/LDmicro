@@ -3657,6 +3657,7 @@ static void InitTables()
         rungNow = a->rung;
         switch(a->op) {
             case INT_FLASH_INIT:
+                //Comment("INT_FLASH_INIT %dbyte %s[%d]", a->literal2, a->name1, a->literal);
                 InitTable(a);
                 break;
             default:
