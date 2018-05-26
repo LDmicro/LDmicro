@@ -1489,7 +1489,7 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           PicInstr->l,                                                 \
           PicInstr->f,                                                 \
           intOp.name1.c_str(),                                         \
-          intOp.l,                                                     \
+          intOp.fileLine,                                              \
           intOp.fileName.c_str())
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
@@ -1500,7 +1500,7 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           PicInstr->l,                                                   \
           PicInstr->f,                                                   \
           intOp.name1.c_str(),                                           \
-          intOp.l,                                                       \
+          intOp.fileLine,                                                \
           intOp.fileName.c_str())
     switch(op) {
         case OP_ADDWF:
@@ -1760,7 +1760,7 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sA
           PicInstr->l,                                                 \
           PicInstr->f,                                                 \
           intOp.name1.c_str(),                                         \
-          intOp.l,                                                     \
+          intOp.fileLine,                                              \
           intOp.fileName.c_str())
     switch(op) {
         case OP_ADDWF:
@@ -2292,9 +2292,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
                     if(IntCode[PicProg[i].IntPc].which != INT_MAX) {
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[PicProg[i].IntPc].which);
                     }
-                    if(1 || (prevIntPcL != IntCode[PicProg[i].IntPc].l)) {
-                        fprintf(fAsm, " ; line %d in %s", IntCode[PicProg[i].IntPc].l, IntCode[PicProg[i].IntPc].fileName.c_str());
-                        prevIntPcL = IntCode[PicProg[i].IntPc].l;
+                    if(1 || (prevIntPcL != IntCode[PicProg[i].IntPc].fileLine)) {
+                        fprintf(fAsm, " ; line %d in %s", IntCode[PicProg[i].IntPc].fileLine, IntCode[PicProg[i].IntPc].fileName.c_str());
+                        prevIntPcL = IntCode[PicProg[i].IntPc].fileLine;
                     }
                 }
             }

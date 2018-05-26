@@ -239,8 +239,8 @@ struct IntOp {
     int         rung;        //= rungNow  //this IntOp located in rung,
     int         which;       //= whichNow //this IntOp refers to the ELEM_<which>
     ElemLeaf   *leaf;        //= leafNow  //
-    FileNameArray fileName; //in .c source file name
-    int         l;           //and line in file
+    FileNameArray fileName;  //in .c source file name
+    int         fileLine;    //and line in file
     bool        simulated;
 
     IntOp();
