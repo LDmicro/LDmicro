@@ -1490,7 +1490,7 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           PicInstr->f,                                                 \
           intOp.name1.c_str(),                                         \
           intOp.l,                                                     \
-          intOp.f)
+          intOp.fileName.c_str())
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
     ooops("v=%d [%d..%d]\nat %d in %s %s\nat %d in %s",                  \
@@ -1501,7 +1501,7 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           PicInstr->f,                                                   \
           intOp.name1.c_str(),                                           \
           intOp.l,                                                       \
-          intOp.f)
+          intOp.fileName.c_str())
     switch(op) {
         case OP_ADDWF:
             CHECK(arg1, 7);
@@ -1761,7 +1761,7 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sA
           PicInstr->f,                                                 \
           intOp.name1.c_str(),                                         \
           intOp.l,                                                     \
-          intOp.f)
+          intOp.fileName.c_str())
     switch(op) {
         case OP_ADDWF:
             CHECK(arg2, 1);
@@ -2293,7 +2293,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[PicProg[i].IntPc].which);
                     }
                     if(1 || (prevIntPcL != IntCode[PicProg[i].IntPc].l)) {
-                        fprintf(fAsm, " ; line %d in %s", IntCode[PicProg[i].IntPc].l, IntCode[PicProg[i].IntPc].f);
+                        fprintf(fAsm, " ; line %d in %s", IntCode[PicProg[i].IntPc].l, IntCode[PicProg[i].IntPc].fileName.c_str());
                         prevIntPcL = IntCode[PicProg[i].IntPc].l;
                     }
                 }

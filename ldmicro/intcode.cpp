@@ -861,7 +861,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
     intOp.leaf = leafNow;
     intOp.poweredAfter = &(leafNow->poweredAfter);
     intOp.l = l;
-    strcpy(intOp.f, f);
+    intOp.fileName = f;
     IntCode.emplace_back(intOp);
 }
 
@@ -3963,7 +3963,7 @@ IntOp::IntOp() :
     l(0),
     simulated(false)
 {
-    f[0] = 0;
+
 }
 
 // clang-format on
