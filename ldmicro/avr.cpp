@@ -652,8 +652,8 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
           AvrInstr->l,                                            \
           AvrInstr->f,                                            \
           intOp.name1.c_str(),                                    \
-          intOp.l,                                                \
-          intOp.f)
+          intOp.fileLine,                                         \
+          intOp.fileName.c_str())
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
     ooops("v=%d [%d..%d]\nat %d in %s %s\nat %d in %s",                  \
@@ -663,8 +663,8 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
           AvrInstr->l,                                                   \
           AvrInstr->f,                                                   \
           intOp.name1.c_str(),                                           \
-          intOp.l,                                                       \
-          intOp.f)
+          intOp.fileLine,                                                \
+          intOp.fileName.c_str())
 
     switch(op) {
         case OP_COMMENT:
@@ -1383,9 +1383,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
                     if(IntCode[AvrProg[i].IntPc].which != INT_MAX) {
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[AvrProg[i].IntPc].which);
                     }
-                    if(1 || (prevIntPcL != IntCode[AvrProg[i].IntPc].l)) {
-                        fprintf(fAsm, " ; line %d in %s", IntCode[AvrProg[i].IntPc].l, IntCode[AvrProg[i].IntPc].f);
-                        prevIntPcL = IntCode[AvrProg[i].IntPc].l;
+                    if(1 || (prevIntPcL != IntCode[AvrProg[i].IntPc].fileLine)) {
+                        fprintf(fAsm, " ; line %d in %s", IntCode[AvrProg[i].IntPc].fileLine, IntCode[AvrProg[i].IntPc].fileName.c_str());
+                        prevIntPcL = IntCode[AvrProg[i].IntPc].fileLine;
                     }
                 }
             }
