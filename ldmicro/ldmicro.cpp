@@ -508,7 +508,69 @@ static void CompileProgram(bool compileAs, int MNU)
     if((MNU == MNU_COMPILE) && (compile_MNU > 0))
         MNU = compile_MNU;
 
+    if(MNU == MNU_COMPILE_GNUC ){
+        if(Prog.mcu && Prog.mcu->core != ISA_AVR) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to WinAvr C, but MCU core isn't AVR.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+    if(MNU == MNU_COMPILE_CODEVISIONAVR){
+        if(Prog.mcu && Prog.mcu->core != ISA_AVR) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to CodeVision C, but MCU core isn't AVR.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+
+    if(MNU == MNU_COMPILE_HI_TECH_C){
+        if(Prog.mcu && Prog.mcu->core != ISA_PIC16) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to HI-TECH C, but MCU core isn't PIC.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+
+    if(MNU == MNU_COMPILE_CCS_PIC_C){
+        if(Prog.mcu && Prog.mcu->core != ISA_PIC16) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+
     if(MNU == MNU_COMPILE_ARDUINO) {
+        if(Prog.mcu && Prog.mcu->core != ISA_AVR) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+
         char onlyName[MAX_PATH];
         strcpy(onlyName, ExtractFileName(CurrentSaveFile));
         SetExt(onlyName, onlyName, "");
