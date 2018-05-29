@@ -1678,7 +1678,7 @@ bool IsAddrInVar(const char *name);
 
 // pic16.cpp
 extern SDWORD PicProgLdLen;
-void CompilePic16(char *outFile);
+void CompilePic16(const char* outFile);
 bool McuAs(const char *str);
 bool CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
 // avr.cpp
