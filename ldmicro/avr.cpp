@@ -2250,7 +2250,7 @@ static void ClearBit(DWORD addr, int bit)
 #define ClearBit(...) CLRB(__VA_ARGS__)
 
 //-----------------------------------------------------------------------------
-bool TstAddrBitReg(DWORD addr, int bit, int reg)
+static bool TstAddrBitReg(DWORD addr, int bit, int reg)
 {
     bool b = true;
     if((addr <= 0) || (addr > 0xFFFF)) {
