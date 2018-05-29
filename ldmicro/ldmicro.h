@@ -1678,7 +1678,7 @@ bool IsAddrInVar(const char *name);
 
 // pic16.cpp
 extern SDWORD PicProgLdLen;
-void CompilePic16(char *outFile);
+void CompilePic16(const char* outFile);
 bool McuAs(const char *str);
 bool CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
 // avr.cpp
@@ -1686,7 +1686,7 @@ extern DWORD AvrProgLdLen;
 int calcAvrUsart(int *divisor, double  *actual, double  *percentErr);
 int testAvrUsart(int divisor, double  actual, double  percentErr);
 bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
-void CompileAvr(char *outFile);
+void CompileAvr(const char* outFile);
 // ansic.cpp
 extern int compile_MNU;
 bool CompileAnsiC(const char *outFile, int MNU);
