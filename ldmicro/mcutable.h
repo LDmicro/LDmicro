@@ -796,6 +796,10 @@ McuPwmPinInfo AvrPwmPinInfo32[] = {
 // PIC's PWM Info Tables
 ////     ti
 //// pin mer
+McuPwmPinInfo PicPwmPinInfo8[] = {
+    {  5, 1 },
+};
+
 McuPwmPinInfo PicPwmPinInfo18[] = {
     {  9, 1 },
 };
@@ -1157,7 +1161,9 @@ McuIoPinInfo Pic6Pin_SOT23[] = {
 
 //-----------------------------------------------------------------------------
 // 8-Pin PDIP, SOIC, DFN-S, DFN
-// PIC12F675, PIC12F629
+// PIC12F629
+// PIC12F675
+// PIC12F683
 //-----------------------------------------------------------------------------
 // ESP8266
 //-----------------------------------------------------------------------------

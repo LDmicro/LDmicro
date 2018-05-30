@@ -5265,8 +5265,8 @@ static void CompileFromIntermediate(bool topLevel)
                                   (1 << 7) |   // right-justified
                                       (0 << 0) // for now, all analog inputs
                     );
-                } else if(McuAs(" PIC12F675 ")    //
-                          || McuAs(" PIC12F683 ") //
+                } else if(McuAs(" PIC12F675 ") || //
+                          McuAs(" PIC12F683 ") //
                 ) {
                     adcsPos = 4; // in REG_ANSEL
                     WriteRegister(REG_ANSEL, (adcs << adcsPos) | (1 << MuxForAdcVariable(a->name1)));
@@ -5581,16 +5581,16 @@ static void ConfigureTimer1(long long int cycleTimeMicroseconds)
 
     WriteRegister(REG_T1CON, plcTmr.PS);
 
-    if(McuAs(" PIC16F1512 ")    //
-       || McuAs(" PIC16F1513 ") //
-       || McuAs(" PIC16F1516 ") //
-       || McuAs(" PIC16F1517 ") //
-       || McuAs(" PIC16F1518 ") //
-       || McuAs(" PIC16F1519 ") //
-       || McuAs(" PIC16F1526 ") //
-       || McuAs(" PIC16F1527 ") //
-       || McuAs(" PIC16F1933 ") //
-       || McuAs(" PIC16F1947 ") //
+    if(McuAs(" PIC16F1512 ") || //
+       McuAs(" PIC16F1513 ") || //
+       McuAs(" PIC16F1516 ") || //
+       McuAs(" PIC16F1517 ") || //
+       McuAs(" PIC16F1518 ") || //
+       McuAs(" PIC16F1519 ") || //
+       McuAs(" PIC16F1526 ") || //
+       McuAs(" PIC16F1527 ") || //
+       McuAs(" PIC16F1933 ") || //
+       McuAs(" PIC16F1947 ") //
     ) {
         Instruction(OP_BCF, REG_T1GCON, TMR1GE);
     }
@@ -6181,14 +6181,23 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_CCPR1H = 0x16;
         REG_CCP1CON = 0x17;
         WDTE = BIT2;
-    } else if(McuAs(" PIC12F629 ")    //
-              || McuAs(" PIC12F675 ") //
-              || McuAs(" PIC12F683 ") //
+    } else if(McuAs(" PIC12F629 ") || //
+              McuAs(" PIC12F675 ") //
     ) {
         REG_PIR1 = 0x0c;
         REG_TMR1L = 0x0e;
         REG_TMR1H = 0x0f;
         REG_T1CON = 0x10;
+    } else if(McuAs(" PIC12F683 ") //
+    ) {
+        REG_PIR1 = 0x0c;
+        REG_TMR1L = 0x0e;
+        REG_TMR1H = 0x0f;
+        REG_T1CON = 0x10;
+        REG_CCPR1L = 0x13;
+        REG_CCPR1H = 0x14;
+        REG_CCP1CON = 0x15;
+        WDTE = BIT3;
     } else if(McuAs(" PIC16F882 ")             //
               || McuAs(" PIC16F883 ")          //
               || McuAs(" PIC16F884 ")          //
@@ -6238,8 +6247,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     } else if(McuAs("Microchip PIC16F88 ") //
     ) {
         REG_CMCON = 0x009C;
-    } else if(McuAs(" PIC12F675 ")    //
-              || McuAs(" PIC12F683 ") //
+    } else if(McuAs(" PIC12F675 ") || //
+              McuAs(" PIC12F683 ") //
     ) {
         REG_CMCON = 0x19;
         //REG_IOCA    = 0x96;
@@ -6338,8 +6347,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_ADRESL = 0x1e;
         REG_ADCON0 = 0x1f;
         REG_ADCON1 = 0x9f;
-    } else if(McuAs(" PIC12F675 ")    //
-              || McuAs(" PIC12F683 ") //
+    } else if(McuAs(" PIC12F675 ") || //
+              McuAs(" PIC12F683 ") //
     ) {
         REG_ADRESH = 0x1e;
         REG_ADRESL = 0x9e;
@@ -6406,34 +6415,38 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     } else
         THROW_COMPILER_EXCEPTION("Internal error.");
     //------------------------------------------------------------
-    if(McuAs("Microchip PIC16F628 ")    //
-       || McuAs(" PIC16F72 ")           //
-       || McuAs("Microchip PIC16F819 ") //
-       || McuAs("Microchip PIC16F876 ") //
-       || McuAs("Microchip PIC16F877 ") //
-       || McuAs("Microchip PIC16F88 ")  //
-       || McuAs("Microchip PIC16F886 ") //
-       || McuAs("Microchip PIC16F887 ") //
+    if(McuAs("Microchip PIC16F628 ") || //
+       McuAs(" PIC16F72 ")           || //
+       McuAs("Microchip PIC16F819 ") || //
+       McuAs("Microchip PIC16F876 ") || //
+       McuAs("Microchip PIC16F877 ") || //
+       McuAs("Microchip PIC16F88 ")  || //
+       McuAs("Microchip PIC16F886 ") || //
+       McuAs("Microchip PIC16F887 ") //
     ) {
         REG_T2CON = 0x12;
         REG_PR2 = 0x92;
-    } else if(McuAs(" PIC16F1512 ")    //
-              || McuAs(" PIC16F1513 ") //
-              || McuAs(" PIC16F1516 ") //
-              || McuAs(" PIC16F1517 ") //
-              || McuAs(" PIC16F1518 ") //
-              || McuAs(" PIC16F1519 ") //
-              || McuAs(" PIC16F1526 ") //
-              || McuAs(" PIC16F1527 ") //
-              || McuAs(" PIC16F1933 ") //
-              || McuAs(" PIC16F1947 ") //
-              || McuAs(" PIC16F1824 ") //
-              || McuAs(" PIC16F1827 ") //
+    } else if(McuAs(" PIC16F1512 ") || //
+              McuAs(" PIC16F1513 ") || //
+              McuAs(" PIC16F1516 ") || //
+              McuAs(" PIC16F1517 ") || //
+              McuAs(" PIC16F1518 ") || //
+              McuAs(" PIC16F1519 ") || //
+              McuAs(" PIC16F1526 ") || //
+              McuAs(" PIC16F1527 ") || //
+              McuAs(" PIC16F1933 ") || //
+              McuAs(" PIC16F1947 ") || //
+              McuAs(" PIC16F1824 ") || //
+              McuAs(" PIC16F1827 ") //
     ) {
         REG_T2CON = 0x001C;
         REG_PR2 = 0x001B;
-    } else if(McuAs(" PIC10F")    //
-              || McuAs(" PIC12F") //
+    } else if(McuAs(" PIC12F683 ") //
+    ) {
+        REG_T2CON = 0x12;
+        REG_PR2 = 0x92;
+    } else if(McuAs(" PIC10F") ||    //
+              McuAs(" PIC12F") //
     ) {
         // has not
     } else
@@ -6483,7 +6496,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         THROW_COMPILER_EXCEPTION("Internal error.");
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F877 ")    //
-       || McuAs("Microchip PIC16F819 ") ///
+       || McuAs("Microchip PIC16F819 ") //
        || McuAs("Microchip PIC16F88 ")  //
        || McuAs("Microchip PIC16F876 ") //
        || McuAs("Microchip PIC16F887 ") //
@@ -6493,9 +6506,9 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_EECON2 = 0x18d;
         REG_EEDATA = 0x10c;
         REG_EEADR = 0x10d;
-    } else if(McuAs("Microchip PIC16F628 ") //
-              || McuAs(" PIC12F675 ")       //
-              || McuAs(" PIC12F683 ")       //
+    } else if(McuAs("Microchip PIC16F628 ") || //
+              McuAs(" PIC12F675 ") || //
+              McuAs(" PIC12F683 ")       //
     ) {
         REG_EECON1 = 0x9c;
         REG_EECON2 = 0x9d;
@@ -6537,8 +6550,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     } else if(McuAs("Microchip PIC16F88 ") //
     ) {
         REG_ANSEL = 0x009B;
-    } else if(McuAs(" PIC12F675 ")    //
-              || McuAs(" PIC12F683 ") //
+    } else if(McuAs(" PIC12F675 ") || //
+              McuAs(" PIC12F683 ") //
     ) {
         REG_ANSEL = 0x009F;
     } else if(McuAs("Microchip PIC16F628 ")    //
@@ -6643,15 +6656,15 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         CONFIG_ADDR1 = 0x8007;
         CONFIG_ADDR2 = 0x8008;
-    } else if(McuAs("Microchip PIC16F628 ")    //
-              || McuAs("Microchip PIC16F819 ") //
-              || McuAs("Microchip PIC16F877 ") //
-              || McuAs("Microchip PIC16F876 ") //
-              || McuAs(" PIC16F874 ")          //
-              || McuAs(" PIC16F873 ")          //
-              || McuAs(" PIC16F72 ")           //
-              || McuAs(" PIC12F675 ")          //
-              || McuAs(" PIC12F683 ")          //
+    } else if(McuAs("Microchip PIC16F628 ") || //
+              McuAs("Microchip PIC16F819 ") || //
+              McuAs("Microchip PIC16F877 ") || //
+              McuAs("Microchip PIC16F876 ") || //
+              McuAs(" PIC16F874 ")          || //
+              McuAs(" PIC16F873 ")          || //
+              McuAs(" PIC16F72 ")           || //
+              McuAs(" PIC12F675 ")          || //
+              McuAs(" PIC12F683 ")          //
     ) {
         CONFIG_ADDR1 = 0x2007;
     } else if(McuAs(" PIC10F200 ")    //
@@ -6995,9 +7008,9 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
             WriteRegister(REG_ANSELG, isAnsel[6]);
     }
 
-    if(McuAs("Microchip PIC16F628 ") //
-       || McuAs(" PIC12F675 ")       //
-       || McuAs(" PIC12F683 ")       //
+    if(McuAs("Microchip PIC16F628 ") || //
+       McuAs(" PIC12F675 ") ||          //
+       McuAs(" PIC12F683 ")             //
     ) {
         // This is also a nasty special case; the comparators on the
         // PIC16F628 are enabled by default and need to be disabled, or
