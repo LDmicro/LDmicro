@@ -1006,7 +1006,7 @@ extern bool ThisHighlighted;
 extern void (*DrawChars)(int, int, const char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow();
-BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
+BOOL tGetLastWriteTime(const char *CurrentSaveFile, FILETIME *sFileTime);
 void ExportDrawingAsText(char *file);
 void InitForDrawing();
 void InitBrushesForDrawing();
@@ -1148,7 +1148,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1);
 void RenameSet1(int which, char *name, char *new_name, bool set1);
 
 // loadsave.cpp
-bool LoadProjectFromFile(char *filename);
+bool LoadProjectFromFile(const char *filename);
 bool SaveProjectToFile(char *filename, int code);
 void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung);
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
@@ -1637,8 +1637,6 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow();
-#define CompileError() longjmp(CompileErrorBuf, 1)
-extern jmp_buf CompileErrorBuf;
 double SIprefix(double val, char *prefix, int en_1_2);
 double SIprefix(double val, char *prefix);
 int GetVariableType(char *name);
@@ -1691,11 +1689,11 @@ void CompileAvr(const char* outFile);
 extern int compile_MNU;
 bool CompileAnsiC(const char *outFile, int MNU);
 // interpreted.cpp
-void CompileInterpreted(char *outFile);
+void CompileInterpreted(const char* outFile);
 // xinterpreted.cpp
 void CompileXInterpreted(char *outFile);
 // netzer.cpp
-void CompileNetzer(char *outFile);
+void CompileNetzer(const char* outFile);
 
 typedef struct RungAddrTag {
     DWORD   KnownAddr; // Addres to jump to the start of rung abowe the current in LD

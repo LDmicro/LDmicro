@@ -26,6 +26,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
+#include "filetracker.hpp"
 
 static char Variables[MAX_IO][MAX_NAME_LEN];
 static int  VariablesCount;
@@ -78,11 +79,11 @@ static void Write(FILE *f, BinOp *op)
     fprintf(f, "\n");
 }
 
-void CompileInterpreted(char *outFile)
+void CompileInterpreted(const char *outFile)
 {
-    FILE *f = fopen(outFile, "w");
+    FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't write to '%s'"), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't write to '%s'"), outFile);
         return;
     }
 
@@ -230,11 +231,9 @@ void CompileInterpreted(char *outFile)
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
-                Error(
+                THROW_COMPILER_EXCEPTION_FMT("%s INT_%d",
                     _("Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for "
-                      "interpretable target."));
-                Error("INT_%d", IntCode[ipc].op);
-                fclose(f);
+                      "interpretable target."), IntCode[ipc].op);
                 return;
         }
 
@@ -264,8 +263,6 @@ void CompileInterpreted(char *outFile)
     }
 
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
-
-    fclose(f);
 
     char str[MAX_PATH + 500];
     sprintf(str,

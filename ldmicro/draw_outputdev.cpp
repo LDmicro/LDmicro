@@ -615,7 +615,7 @@ static void DrawCharsToExportBuffer(int cx, int cy, const char *str)
 }
 
 //-----------------------------------------------------------------------------
-BOOL tGetLastWriteTime(char *FileName, FILETIME *ftWrite)
+BOOL tGetLastWriteTime(const char *FileName, FILETIME *ftWrite)
 {
     FILETIME ftCreate, ftAccess;
 

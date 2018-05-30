@@ -27,9 +27,6 @@
 #include "compilercommon.hpp"
 #include "compilerexceptions.hpp"
 
-// If we encounter an error while compiling then it's convenient to break
-// out of the possibly-deeply-recursed function we're in.
-jmp_buf CompileErrorBuf;
 
 // Assignment of the internal relays to memory, efficient, one bit per
 // relay.
