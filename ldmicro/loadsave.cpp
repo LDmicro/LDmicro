@@ -24,6 +24,7 @@
 
 #include "ldmicro.h"
 #include "pcports.h"
+#include "filetracker.hpp"
 
 char *FrmStrToStr(char *dest);
 //void FrmStrToFile(FILE *f, char *str);
@@ -714,7 +715,7 @@ void LoadWritePcPorts()
                     supportedMcus()[i].pinCount = IoPcCount;
                 }
         } else
-            Error(_(" File '%s' not found!"), pc);
+            THROW_COMPILER_EXCEPTION_FMT(_(" File '%s' not found!"), pc);
         //RunningInBatchMode = false;
     }
 }
@@ -725,12 +726,12 @@ void LoadWritePcPorts()
 // time, processor clock, etc.). Return true for success, false if anything
 // went wrong.
 //-----------------------------------------------------------------------------
-bool LoadProjectFromFile(char *filename)
+bool LoadProjectFromFile(const char *filename)
 {
     FreeEntireProgram();
     strcpy(CurrentCompileFile, "");
 
-    FILE *f = fopen(filename, "r");
+    FileTracker f(filename, "r");
     if(!f)
         return false;
 
@@ -748,12 +749,10 @@ bool LoadProjectFromFile(char *filename)
             continue;
         if(strcmp(line, "IO LIST") == 0) {
             if(!LoadIoListFromFile(f)) {
-                fclose(f);
                 return false;
             }
         } else if(strcmp(line, "VAR LIST") == 0) {
             if(!LoadVarListFromFile(f)) {
-                fclose(f);
                 return false;
             }
         } else if(sscanf(line, "LDmicro%s", &Prog.LDversion)) {
@@ -826,7 +825,7 @@ bool LoadProjectFromFile(char *filename)
                         }
                 }
                 if(i == supportedMcus().size()) {
-                    Error(_("Microcontroller '%s' not supported.\r\n\r\n"
+                    THROW_COMPILER_EXCEPTION_FMT(_("Microcontroller '%s' not supported.\r\n\r\n"
                             "Defaulting to no selected MCU."),
                           line + 6);
                 }
@@ -854,7 +853,7 @@ bool LoadProjectFromFile(char *filename)
             goto failed;
         rung++;
         if(rung >= MAX_RUNGS) {
-            Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
+            THROW_COMPILER_EXCEPTION(_("Too many rungs in input file!\nSame rungs not loaded!"));
             break;
         }
     }
@@ -865,19 +864,16 @@ bool LoadProjectFromFile(char *filename)
             ProgramChanged();
     }
 
-    fclose(f);
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
     strcpy(CurrentSaveFile, filename);
     return true;
 
 failed:
-    fclose(f);
     NewProgram();
-    Error(
+    THROW_COMPILER_EXCEPTION_FMT("%s Error in RUNG %d. See error below %s",
         _("File format error; perhaps this program is for a newer version "
-          "of LDmicro?"));
-    Error("Error in RUNG %d. See error below %s", rung + 1, line);
+          "of LDmicro?"), rung + 1, line);
     return false;
 }
 
@@ -1388,7 +1384,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         }
 
         default:
-            ooops("ELEM_0x%x", which);
+            THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%x", which);
             break;
     }
 }
@@ -1404,7 +1400,7 @@ bool SaveProjectToFile(char *filename, int code)
     else if(code == MNU_SAVE_01)
         strcpy(Prog.LDversion, "0.1");
 
-    FILE *f = fopen(filename, "w");
+    FileTracker f(filename, "w");
     if(!f)
         return false;
 
@@ -1448,7 +1444,6 @@ bool SaveProjectToFile(char *filename, int code)
     }
 
     fflush(f);
-    fclose(f);
 
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;

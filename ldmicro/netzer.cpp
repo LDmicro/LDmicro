@@ -26,6 +26,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
+#include "filetracker.hpp"
 
 #include "netzer.h"
 
@@ -469,7 +470,7 @@ int GenerateIntOpcodes()
                 op.name3 = AddrForString(IntCode[ipc].name3);   // source string
 
                 if(!(op.name1 & MAPPED_TO_IO)) {
-                    Error(
+                    THROW_COMPILER_EXCEPTION(
                         _("Dest variable of write string instruction must be "
                           "located at IO register."));
                     return -1;
@@ -477,7 +478,7 @@ int GenerateIntOpcodes()
 
                 // Check whether only one % sign is included!
                 if(GetPercentCharactersCount(IntCode[ipc].name3) > 1) {
-                    Error(
+                    THROW_COMPILER_EXCEPTION(
                         _("Maximal one format placeholder is allowed in write "
                           "string instruction."));
                     return -1;
@@ -503,7 +504,7 @@ int GenerateIntOpcodes()
             case INT_UART_SEND_READY:
             case INT_UART_SEND_BUSY:
             default:
-                Error(
+                THROW_COMPILER_EXCEPTION(
                     _("Unsupported op (anything ADC, PWM, UART, EEPROM) for "
                       "Netzer target."));
                 return -1;
@@ -713,7 +714,7 @@ static void ifBitCleared(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 static BYTE getInternalIntegerAddress(WORD Address)
 {
     if(Address * 2 >= 256) {
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     }
 
     return (BYTE)(Address * 2);
@@ -1074,7 +1075,7 @@ static void writeStringOp(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CompileNetzer(char *outFile)
+void CompileNetzer(const char *outFile)
 {
     char                    projectname[MAX_PROJECTNAME_LENGTH + 1];
     NetzerMetaInformation_t meta;
@@ -1088,7 +1089,7 @@ void CompileNetzer(char *outFile)
         char *lastslash = strrchr(outFile, '/');
         char *lastbslash = strrchr(outFile, '\\');
 
-        char *copy = lastslash > lastbslash ? lastslash : lastbslash;
+        const char *copy = lastslash > lastbslash ? lastslash : lastbslash;
         if(copy == nullptr) {
             copy = outFile;
         } else {
@@ -1114,16 +1115,16 @@ void CompileNetzer(char *outFile)
     // Generate interpretable code.
     opcodes = GenerateIntOpcodes();
     if(opcodes == 0) {
-        Error(_("No opcodes found."));
+        THROW_COMPILER_EXCEPTION(_("No opcodes found."));
         return;
     } else if(opcodes == -1) {
         // Errors found, better return without doing anything here.
         return;
     }
 
-    FILE *f = fopen(outFile, "w+b");
+    FileTracker f(outFile, "w+b");
     if(!f) {
-        Error(_("Couldn't write to '%s'"), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't write to '%s'"), outFile);
         return;
     }
 
@@ -1185,7 +1186,6 @@ void CompileNetzer(char *outFile)
     fwrite((const void *)&meta.ImageCRC, 1, sizeof(meta.ImageCRC), f);
 
     // And ready.
-    fclose(f);
     char str[MAX_PATH + 500];
     sprintf(str, _("Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."), outFile, meta.ImageCRC);
     CompileSuccessfulMessage(str);
@@ -1315,7 +1315,7 @@ static void generateNetzerOpcodes(BinOp *Program, int MaxLabel, OpcodeMeta *pOpc
                 break;
 
             default:
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
         } // switch(Program[idx].op)
     }
 }
