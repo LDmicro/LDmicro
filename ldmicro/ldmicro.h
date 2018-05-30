@@ -1637,8 +1637,6 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow();
-#define CompileError() longjmp(CompileErrorBuf, 1)
-extern jmp_buf CompileErrorBuf;
 double SIprefix(double val, char *prefix, int en_1_2);
 double SIprefix(double val, char *prefix);
 int GetVariableType(char *name);
