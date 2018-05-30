@@ -1695,7 +1695,7 @@ void CompileInterpreted(const char* outFile);
 // xinterpreted.cpp
 void CompileXInterpreted(char *outFile);
 // netzer.cpp
-void CompileNetzer(char *outFile);
+void CompileNetzer(const char* outFile);
 
 typedef struct RungAddrTag {
     DWORD   KnownAddr; // Addres to jump to the start of rung abowe the current in LD
