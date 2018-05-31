@@ -1604,6 +1604,7 @@ static void CLRB(DWORD addr, int bit)
 */
 static DWORD SKBS(DWORD addr, int bit, int reg)
 {
+    DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
         THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
@@ -1626,7 +1627,7 @@ static DWORD SKBS(DWORD addr, int bit, int reg)
 #endif
     } else
         THROW_COMPILER_EXCEPTION("Internal error");
-    return 0;
+    return AvrProg.size() - prevProgSz;
 }
 
 static DWORD SKBS(DWORD addr, int bit)
@@ -1642,6 +1643,7 @@ static DWORD SKBS(DWORD addr, int bit)
 */
 static DWORD SKBC(DWORD addr, int bit, int reg)
 {
+    DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
         THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
@@ -1665,7 +1667,7 @@ static DWORD SKBC(DWORD addr, int bit, int reg)
     } else
         THROW_COMPILER_EXCEPTION("Internal error");
 
-    return 0;
+    return AvrProg.size() - prevProgSz;
 }
 
 static DWORD SKBC(DWORD addr, int bit)
