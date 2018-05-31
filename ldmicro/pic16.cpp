@@ -203,7 +203,7 @@ static DWORD REG_ANSELG  = -1;
 static DWORD REG_PIR1    = -1; // PERIPHERAL INTERRUPT REQUEST REGISTER 1
 #define          RCIF      BIT5
 #define          TXIF      BIT4
-#define          CCP1IF    BIT2
+static int       CCP1IF  = -1; // BIT2
 static DWORD REG_PIE1    = -1; // 0x8c
 
 //
@@ -4762,7 +4762,6 @@ static void CompileFromIntermediate(bool topLevel)
 
                 char   str0[1024];
                 char   str1[1024];
-                char   str2[1024];
                 char   str3[1024];
                 char   minSI[5];
                 char   maxSI[5];
@@ -4816,8 +4815,7 @@ static void CompileFromIntermediate(bool topLevel)
                             } else if(prescale == 4) {
                                 prescale = 16;
                             } else {
-                                THROW_COMPILER_EXCEPTION_FMT(str2,
-                                                             "SET '%s': %s %s\n\n%s\n\n\t\tOR\n\n%s",
+                                THROW_COMPILER_EXCEPTION_FMT("SET '%s': %s %s\n\n%s\n\n\t\tOR\n\n%s",
                                                              a->name3.c_str(),
                                                              _("PWM frequency too slow."),
                                                              str0,
@@ -4850,15 +4848,15 @@ static void CompileFromIntermediate(bool topLevel)
                     CopyRegToReg(Scratch0, 2, addr1, 2, "Scratch0:1", a->name1, false);
                 }
 
-                DWORD REG_CCPR = -1;
-                DWORD REG_CCP = -1;
+                DWORD REG_CCPRxL = -1;
+                DWORD REG_CCPxCON = -1;
 
                 if((timer == 1) || McuAs(" PIC16F72 ")) {
-                    REG_CCPR = REG_CCPR1L;
-                    REG_CCP = REG_CCP1CON;
+                    REG_CCPRxL = REG_CCPR1L;
+                    REG_CCPxCON = REG_CCP1CON;
                 } else if(timer == 2) {
-                    REG_CCPR = REG_CCPR2L;
-                    REG_CCP = REG_CCP2CON;
+                    REG_CCPRxL = REG_CCPR2L;
+                    REG_CCPxCON = REG_CCP2CON;
                 } else
                     THROW_COMPILER_EXCEPTION("Internal error.");
 
@@ -4870,14 +4868,14 @@ static void CompileFromIntermediate(bool topLevel)
                     CallWithPclath(MultiplyRoutineAddress);
 
                     Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
-                    Instruction(OP_MOVWF, REG_CCPR);
+                    Instruction(OP_MOVWF, REG_CCPRxL);
 
                     Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
                     Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
                     Instruction(OP_MOVLW, 0x30);             //LSbs
                     Instruction(OP_ANDWF, Scratch2, DEST_W); //LSbs
                     Instruction(OP_IORLW, 0x0c);
-                    Instruction(OP_MOVWF, REG_CCP); // PWM mode, use LSbs
+                    Instruction(OP_MOVWF, REG_CCPxCON); // PWM mode, use LSbs
                 } else if(resol == 9) {
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
@@ -4887,14 +4885,14 @@ static void CompileFromIntermediate(bool topLevel)
 
                     sr0(Scratch2, 3);                       //  divide by 2
                     Instruction(OP_MOVF, Scratch3, DEST_W); //  divide by 256
-                    Instruction(OP_MOVWF, REG_CCPR);
+                    Instruction(OP_MOVWF, REG_CCPRxL);
 
                     Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
                     Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
                     Instruction(OP_MOVLW, 0x30);             //LSbs
                     Instruction(OP_ANDWF, Scratch2, DEST_W); //LSbs
                     Instruction(OP_IORLW, 0x0c);
-                    Instruction(OP_MOVWF, REG_CCP); // PWM mode, use LSbs
+                    Instruction(OP_MOVWF, REG_CCPxCON); // PWM mode, use LSbs
                 } else if(resol == 10) {
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
@@ -4905,14 +4903,14 @@ static void CompileFromIntermediate(bool topLevel)
                     sr0(Scratch2, 3);                       // divide by 2
                     sr0(Scratch2, 3);                       // divide by 2
                     Instruction(OP_MOVF, Scratch3, DEST_W); // divide by 256
-                    Instruction(OP_MOVWF, REG_CCPR);
+                    Instruction(OP_MOVWF, REG_CCPRxL);
 
                     Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
                     Instruction(OP_RRF, Scratch2, DEST_F);   //LSbs
                     Instruction(OP_MOVLW, 0x30);             //LSbs
                     Instruction(OP_ANDWF, Scratch2, DEST_W); //LSbs
                     Instruction(OP_IORLW, 0x0c);
-                    Instruction(OP_MOVWF, REG_CCP); // PWM mode, use LSbs
+                    Instruction(OP_MOVWF, REG_CCPxCON); // PWM mode, use LSbs
                 } else if(resol == 7) {
                     // First scale the input variable from percent to timer units,
                     // with a multiply and then a divide.
@@ -4950,12 +4948,13 @@ static void CompileFromIntermediate(bool topLevel)
                     CallWithPclath(DivideRoutineAddress);
 
                     Instruction(OP_MOVF, Scratch0, DEST_W);
-                    Instruction(OP_MOVWF, REG_CCPR);
-                    WriteRegister(REG_CCP, 0x0c); // PWM mode, ignore LSbs
+                    Instruction(OP_MOVWF, REG_CCPRxL);
+                    WriteRegister(REG_CCPxCON, 0x0c); // PWM mode, ignore LSbs
                 } else
                     THROW_COMPILER_EXCEPTION("Internal error.");
 
                 // Only need to do the setup stuff once
+                Comment("PWM init");
                 DWORD addr;
                 int   bit;
                 char  storeName[MAX_NAME_LEN];
@@ -5726,7 +5725,7 @@ static void SetPrescaler(int tmr)
         else
             THROW_COMPILER_EXCEPTION_FMT("%d", plcTmr.prescaler);
         // enable clock, internal source
-        plcTmr.PS |= 0x01;
+        plcTmr.PS |= 0x01; // TMR1ON
     } else
         THROW_COMPILER_EXCEPTION("Internal error.");
 }
@@ -5791,10 +5790,10 @@ err0:
     plcTmr.TCycle = 4.0 * plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr / (1.0 * Prog.mcuClock);
     SetPrescaler(Prog.cycleTimer);
     if(cycleTimeMicroseconds > plcTmr.cycleTimeMax) {
-        THROW_COMPILER_EXCEPTION_FMT("PLC cycle time more then %.3f ms not valid.", 0.001 * plcTmr.cycleTimeMax);
+        THROW_COMPILER_EXCEPTION_FMT(_("PLC cycle time more then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMax);
         return false;
     } else if(cycleTimeMicroseconds < plcTmr.cycleTimeMin) {
-        THROW_COMPILER_EXCEPTION_FMT("PLC cycle time less then %.3f ms not valid.", 0.001 * plcTmr.cycleTimeMin);
+        THROW_COMPILER_EXCEPTION_FMT(_("PLC cycle time less then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMin);
         return false;
     }
     return true;
@@ -6174,6 +6173,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
        || McuAs("Microchip PIC16F88 ")  //
     ) {
         REG_PIR1 = 0x0c;
+        CCP1IF = BIT2;
         REG_TMR1L = 0x0e;
         REG_TMR1H = 0x0f;
         REG_T1CON = 0x10;
@@ -6185,12 +6185,14 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               McuAs(" PIC12F675 ") //
     ) {
         REG_PIR1 = 0x0c;
+        CCP1IF = BIT2;
         REG_TMR1L = 0x0e;
         REG_TMR1H = 0x0f;
         REG_T1CON = 0x10;
     } else if(McuAs(" PIC12F683 ") //
     ) {
         REG_PIR1 = 0x0c;
+        CCP1IF = BIT5;
         REG_TMR1L = 0x0e;
         REG_TMR1H = 0x0f;
         REG_T1CON = 0x10;
@@ -6205,6 +6207,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs("Microchip PIC16F887 ") //
     ) {
         REG_PIR1 = 0x0c;
+        CCP1IF = BIT2;
         REG_TMR1L = 0x0e;
         REG_TMR1H = 0x0f;
         REG_T1CON = 0x10;
@@ -6226,6 +6229,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC16F1827 ") //
     ) {
         REG_PIR1 = 0x0011;
+        CCP1IF = BIT2;
         REG_TMR1L = 0x0016;
         REG_TMR1H = 0x0017;
         REG_T1CON = 0x0018;
@@ -6955,9 +6959,9 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     }
 
     Comment("Set up the ANSELx registers. 1-analog input, 0-digital I/O.");
-    if(McuAs("Microchip PIC16F88 ") //
-       || McuAs(" PIC12F675 ")      //
-       || McuAs(" PIC12F683 ")      //
+    if(McuAs("Microchip PIC16F88 ") || //
+       McuAs(" PIC12F675 ")      || //
+       McuAs(" PIC12F683 ")      //
     ) {
         Instruction(OP_CLRF, REG_ANSEL);       // all digital inputs
     } else if(McuAs("Microchip PIC16F887 ")    //
