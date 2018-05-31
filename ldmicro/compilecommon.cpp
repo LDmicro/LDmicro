@@ -493,7 +493,7 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
     }
     if(i == VariableCount) {
         VariableCount++;
-        memset(&Variables[i], sizeof(Variables[i]), 0);
+        memset(&Variables[i], 0, sizeof(Variables[i]));
         strcpy(Variables[i].name, name);
         if(name[0] == '#') {
             Variables[i].SizeOfVar = 1;
@@ -722,7 +722,7 @@ int SetVariableType(const char *name, int type)
     }
     if(i == VariableCount) {
         VariableCount++;
-        memset(&Variables[i], sizeof(Variables[i]), 0);
+        memset(&Variables[i], 0, sizeof(Variables[i]));
         strcpy(Variables[i].name, name);
         if(name[0] == '#') {
             Variables[i].SizeOfVar = 1;
