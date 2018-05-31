@@ -56,7 +56,8 @@
 #define DEST_W 0
 
 #define MAX_PROGRAM_LEN 128 * 1024
-static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
+//static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
+static std::vector<PicAvrInstruction> PicProg;
 static DWORD             PicProgWriteP;
 static DWORD             BeginOfPLCCycle;
 
@@ -352,7 +353,10 @@ static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
 //-----------------------------------------------------------------------------
 static void WipeMemory()
 {
-    memset(PicProg, 0, sizeof(PicProg));
+    if(PicProg.size() < MAX_PROGRAM_LEN)
+        PicProg.resize(MAX_PROGRAM_LEN);
+    for(uint32_t i = 0; i < PicProg.size(); ++i)
+        memset(&PicProg[i], 0, sizeof(PicAvrInstruction));
     PicProgWriteP = 0;
 }
 
