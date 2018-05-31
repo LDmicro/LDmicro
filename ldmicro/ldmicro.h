@@ -34,7 +34,6 @@ typedef int32_t SWORD;
 typedef int32_t SDWORD;
 
 #include "accel.h"
-#define _BV(bit) (1 << (bit))
 
 //-----------------------------------------------
 #define BYTES_OF_LD_VAR 2
