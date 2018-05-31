@@ -885,7 +885,7 @@ doBankCorrection:
                     memcpy(&PicProg[j + nAdd], &PicProg[j], sizeof(PicProg[0]));
                 }
                 for(j = ii; j < (ii + nAdd); j++) {
-                    memset(&PicProg[j], sizeof(PicProg[j]), 0);
+                    memset(&PicProg[j], 0, sizeof(PicProg[j]));
                     PicProg[j].opPic = OP_VACANT_;
                     PicProg[j].arg1 = 0;
                     PicProg[j].arg2 = 0;
@@ -1347,7 +1347,7 @@ doPageCorrection:
                     memcpy(&PicProg[j + m3], &PicProg[j], sizeof(PicProg[0]));
                 }
                 for(j = ii; j < (ii + m3); j++) {
-                    memset(&PicProg[j], sizeof(PicProg[j]), 0);
+                    memset(&PicProg[j], 0, sizeof(PicProg[j]));
                     PicProg[j].opPic = OP_NOP_;
                     PicProg[j].arg1 = 0;
                     PicProg[j].arg2 = 0;
