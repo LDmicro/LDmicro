@@ -4584,6 +4584,7 @@ static void CompileFromIntermediate()
                 WriteRegToIO(iop->REG_OCRnxL, r19);     // then LOW
 
                 // Setup only happens once
+                Comment("PWM init");
                 char storeName[MAX_NAME_LEN];
                 sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
                 DWORD addr;
