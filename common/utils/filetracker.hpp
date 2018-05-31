@@ -42,10 +42,8 @@ public:
     {
         return file_ != nullptr;
     }
-    FILE* get_()
+    FILE* get()
     {
-        if(!file_)
-            throw std::runtime_error("Invalid FILE* .");
         return file_;
     }
 public:
@@ -57,13 +55,9 @@ public:
     {
         return file_ != other.file_;
     }
-    operator bool() const
-    {
-        return is_open();
-    }
     operator FILE* ()
     {
-        return get_();
+        return get();
     }
     FileTracker(FileTracker&& other) :
         file_(nullptr)

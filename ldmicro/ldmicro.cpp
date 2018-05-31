@@ -2942,11 +2942,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             char *s;
             GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
 
-            if(!LoadProjectFromFile(CurrentSaveFile)) {
+            bool res;
+
+            try {
+                res = LoadProjectFromFile(CurrentSaveFile);
+            } catch(const std::exception &e) {
+                Error(e.what());
+                res = false;
+            }
+
+            if(!res) {
                 NewProgram();
                 Error(_("Couldn't open '%s'."), CurrentSaveFile);
                 CurrentSaveFile[0] = '\0';
             }
+
             UndoFlush();
         }
         GenerateIoListDontLoseSelection();
