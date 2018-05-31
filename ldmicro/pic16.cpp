@@ -138,7 +138,7 @@ static DWORD FwdAddrCount;
 #define REG_STATUS    0x03
 // PIC10F2xx
 #define  STATUS_GPWUF BIT7 // GPIO Reset bit
-#define  STATUS_CWUF  BIT6 // Comparator Wake-up on Change Flag bit(
+#define  STATUS_CWUF  BIT6 // Comparator Wake-up on Change Flag bit
 // others PICS
 #define  STATUS_IRP   BIT7 // Register Bank Select bit (used for indirect addressing)
 #define  STATUS_RP1   BIT6 // Register Bank Select bits
@@ -244,6 +244,7 @@ static DWORD REG_ADCON1  = -1; // 0x9f
 
 //PWM Timer2
 static DWORD REG_T2CON   = -1; // 0x12
+#define          TMR2ON    BIT2
 static DWORD REG_CCPR2L  = -1; // 0x1b // Pulse Width
 static DWORD REG_CCP2CON = -1; // 0x1d
 #define          DC2B0     BIT4
@@ -262,7 +263,7 @@ static DWORD REG_OPTION  = -1; // 0x81 or 0x181 //0x95
 #define          T0CS         BIT5
 #define          PSA          BIT3
 
-static int       WDTE    = -1; //
+// static int       WDTE    = -1; //
 
 // OSCILLATOR CONTROL REGISTER
 static DWORD REG_OSCON   = -1;
@@ -4758,7 +4759,7 @@ static void CompileFromIntermediate(bool topLevel)
                 // PR2 = Fosc / (4 * (TMR2 Prescale Value) * targetFreq) - 1
 
                 // Timer1
-                // Software programmable prescaler (1:1, 1:2, 1:4, 1:8)
+                // Software programmable prescaler (1:1, 1:2, 1:4, 1:8) not used.
 
                 char   str0[1024];
                 char   str1[1024];
@@ -4805,6 +4806,7 @@ static void CompileFromIntermediate(bool topLevel)
                 for(prescale = 1;;) {
                     int dv = 4 * prescale * target;
                     pr2plus1 = (Prog.mcuClock + (dv / 2)) / dv;
+                    //pr2plus1 = Prog.mcuClock / (4 * prescale * target);
                     if(pr2plus1 < 3) {
                         THROW_COMPILER_EXCEPTION_FMT("'%s' %s\n\n%s", a->name3.c_str(), _("PWM frequency too fast."), str1);
                     }
@@ -4972,9 +4974,11 @@ static void CompileFromIntermediate(bool topLevel)
                                                       // 1-3-3-50%  62.5kHz
                                                       // 1-2-0-     83kHz
                                                       // 1-1-0-50%-122kHz
-                /**/                                  // 0-0-2-50%-250kHz
+                                                      // 0-0-2-50%-250kHz
+
+                //TODO: if(Prog.mcu->core == EnhancedMidrangeCore14bit)
                 if(McuAs(" PIC16F72 ")) {
-                    BYTE t2con = (1 << 2); // timer 2 on
+                    BYTE t2con = _BV(TMR2ON); // timer 2 on
                     if(prescale == 1)
                         t2con |= 0;
                     else if(prescale == 4)
@@ -4986,7 +4990,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                     WriteRegister(REG_T2CON, t2con);
                 } else if(timer == 1) {
-                    BYTE t2con = (1 << 2); // timer 2 on
+                    BYTE t2con = _BV(TMR2ON); // timer 2 on
                     if(prescale == 1)
                         t2con |= 0;
                     else if(prescale == 4)
@@ -4998,7 +5002,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                     WriteRegister(REG_T2CON, t2con);
                 } else if(timer == 2) {
-                    BYTE t2con = (1 << 2); // timer 2 on
+                    BYTE t2con = _BV(TMR2ON); // timer 2 on
                     if(prescale == 1)
                         t2con |= 0;
                     else if(prescale == 4)
@@ -5184,6 +5188,7 @@ static void CompileFromIntermediate(bool topLevel)
                    || McuAs(" PIC16F1933 ")         //
                    || McuAs(" PIC16F1947 ")         //
                    || McuAs(" PIC12F675 ")          //
+                   || McuAs(" PIC12F752 ")          //
                    || McuAs(" PIC12F683 ")          //
                    || McuAs(" PIC16F1824 ")         //
                    || McuAs(" PIC16F1827 ")         //
@@ -5265,6 +5270,7 @@ static void CompileFromIntermediate(bool topLevel)
                                       (0 << 0) // for now, all analog inputs
                     );
                 } else if(McuAs(" PIC12F675 ") || //
+                          McuAs(" PIC12F752 ") || //
                           McuAs(" PIC12F683 ") //
                 ) {
                     adcsPos = 4; // in REG_ANSEL
@@ -5327,8 +5333,8 @@ static void CompileFromIntermediate(bool topLevel)
                    //              || McuAs(" PIC12F683 ")
                 ) {
                     Instruction(OP_CLRF, REG_ANSEL);
-                } else if(McuAs("Microchip PIC16F887 ")    //
-                          || McuAs("Microchip PIC16F886 ") //
+                } else if(McuAs("Microchip PIC16F887 ") || //
+                          McuAs("Microchip PIC16F886 ") //
                 ) {
                     Instruction(OP_CLRF, REG_ANSEL);
                     Instruction(OP_CLRF, REG_ANSELH);
@@ -6180,7 +6186,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_CCPR1L = 0x15;
         REG_CCPR1H = 0x16;
         REG_CCP1CON = 0x17;
-        WDTE = BIT2;
+        // WDTE = BIT2;
     } else if(McuAs(" PIC12F629 ") || //
               McuAs(" PIC12F675 ") //
     ) {
@@ -6199,7 +6205,18 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_CCPR1L = 0x13;
         REG_CCPR1H = 0x14;
         REG_CCP1CON = 0x15;
-        WDTE = BIT3;
+        // WDTE = BIT3;
+    } else if(McuAs(" PIC12F752 ") //
+    ) {
+        REG_PIR1 = 0x0c;
+        CCP1IF = BIT0;
+        REG_TMR1L = 0x0f;
+        REG_TMR1H = 0x10;
+        REG_T1CON = 0x11;
+        REG_CCPR1L = 0x13;
+        REG_CCPR1H = 0x14;
+        REG_CCP1CON = 0x15;
+        // WDTE = BIT3;
     } else if(McuAs(" PIC16F882 ")             //
               || McuAs(" PIC16F883 ")          //
               || McuAs(" PIC16F884 ")          //
@@ -6214,7 +6231,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_CCPR1L = 0x15;
         REG_CCPR1H = 0x16;
         REG_CCP1CON = 0x17;
-        WDTE = BIT3;
+        // WDTE = BIT3;
     } else if(McuAs(" PIC16F1512 ")    //
               || McuAs(" PIC16F1513 ") //
               || McuAs(" PIC16F1516 ") //
@@ -6237,11 +6254,11 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_CCPR1L = 0x0291;
         REG_CCPR1H = 0x0292;
         REG_CCP1CON = 0x0293;
-        WDTE = BIT4;           // WDT enabled while running and disabled in Sleep
+        // WDTE = BIT4;           // WDT enabled while running and disabled in Sleep
     } else if(McuAs(" PIC10F") //
     ) {
         // has not
-        WDTE = BIT2;
+        // WDTE = BIT2;
     } else
         THROW_COMPILER_EXCEPTION("Internal error.");
     //------------------------------------------------------------
@@ -6275,6 +6292,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC16F1947 ")         //
               || McuAs(" PIC16F1824 ")         //
               || McuAs(" PIC16F1827 ")         //
+              || McuAs(" PIC12F752 ")         //
     ) {
         // has not
     } else if(McuAs(" PIC10F") //
@@ -6351,6 +6369,12 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_ADRESL = 0x1e;
         REG_ADCON0 = 0x1f;
         REG_ADCON1 = 0x9f;
+    } else if(McuAs(" PIC12F752 ") //
+    ) {
+        REG_ADRESL = 0x1c;
+        REG_ADRESH = 0x1d;
+        REG_ADCON0 = 0x1e;
+        REG_ADCON1 = 0x1f;
     } else if(McuAs(" PIC12F675 ") || //
               McuAs(" PIC12F683 ") //
     ) {
@@ -6449,6 +6473,10 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         REG_T2CON = 0x12;
         REG_PR2 = 0x92;
+    } else if(McuAs(" PIC12F752 ") //
+    ) {
+        REG_T2CON = 0x112;
+        REG_PR2 = 0x111;
     } else if(McuAs(" PIC10F") ||    //
               McuAs(" PIC12F") //
     ) {
@@ -6472,6 +6500,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
        || McuAs(" PIC12F629 ")          //
        || McuAs(" PIC12F675 ")          //
        || McuAs(" PIC12F683 ")          //
+       || McuAs(" PIC12F752 ")          //
     ) {
         REG_TMR0 = 0x01;
         REG_OPTION = 0x81;
@@ -6495,7 +6524,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         REG_TMR0 = 0x01;
         //REG_OPTION not available for read. Write able via OP_OPTION operation.
-        WDTE = BIT2;
+        // WDTE = BIT2;
     } else
         THROW_COMPILER_EXCEPTION("Internal error.");
     //------------------------------------------------------------
@@ -6539,8 +6568,9 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_EEDATH = 0x194;
         REG_EEADR = 0x191;
         REG_EEADRH = 0x192;
-    } else if(McuAs(" PIC10F")       //
-              || McuAs(" PIC16F72 ") //
+    } else if(McuAs(" PIC10F") ||  //
+              McuAs(" PIC12F752 ") || //
+              McuAs(" PIC16F72 ") //
     ) {
         // has not
     } else
@@ -6558,6 +6588,9 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               McuAs(" PIC12F683 ") //
     ) {
         REG_ANSEL = 0x009F;
+    } else if(McuAs(" PIC12F752 ") //
+    ) {
+        REG_ANSEL = 0x0185; // ANSELA
     } else if(McuAs("Microchip PIC16F628 ")    //
               || McuAs("Microchip PIC16F819 ") //
               || McuAs("Microchip PIC16F877 ") //
@@ -6668,6 +6701,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               McuAs(" PIC16F873 ")          || //
               McuAs(" PIC16F72 ")           || //
               McuAs(" PIC12F675 ")          || //
+              McuAs(" PIC12F752 ")          || //
               McuAs(" PIC12F683 ")          //
     ) {
         CONFIG_ADDR1 = 0x2007;
