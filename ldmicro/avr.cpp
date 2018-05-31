@@ -385,6 +385,8 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD
     if(prevOp != OP_COMMENTINT)
         memset(&instruction, 0, sizeof(PicAvrInstruction));
 
+    prevOp = op;
+
     if(op == OP_COMMENTINT) {
         if(comment) {
             if(strlen(instruction.commentInt))
