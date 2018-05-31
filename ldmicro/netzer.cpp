@@ -1086,8 +1086,8 @@ void CompileNetzer(const char *outFile)
     // Prepare projectname.
     {
         int   i;
-        char *lastslash = strrchr(outFile, '/');
-        char *lastbslash = strrchr(outFile, '\\');
+        const char *lastslash = strrchr(outFile, '/');
+        const char *lastbslash = strrchr(outFile, '\\');
 
         const char *copy = lastslash > lastbslash ? lastslash : lastbslash;
         if(copy == nullptr) {

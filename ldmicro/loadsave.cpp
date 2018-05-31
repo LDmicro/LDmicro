@@ -864,6 +864,7 @@ bool LoadProjectFromFile(const char *filename)
             ProgramChanged();
     }
 
+    f.close();
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
     strcpy(CurrentSaveFile, filename);
@@ -1444,6 +1445,7 @@ bool SaveProjectToFile(char *filename, int code)
     }
 
     fflush(f);
+    f.close();
 
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;

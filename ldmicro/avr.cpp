@@ -86,9 +86,7 @@
 #define ZH 31
 static DWORD REG_EIND = 0; // EIND:ZH:ZL indirect addres for EICALL, EIJMP
 
-#define MAX_PROGRAM_LEN 128 * 1024
-static PicAvrInstruction AvrProg[MAX_PROGRAM_LEN];
-static DWORD             AvrProgWriteP;
+std::vector<PicAvrInstruction> AvrProg;
 
 DWORD AvrProgLdLen = 0;
 
@@ -372,8 +370,7 @@ static void CompileFromIntermediate();
 //-----------------------------------------------------------------------------
 static void WipeMemory()
 {
-    memset(AvrProg, 0, sizeof(AvrProg));
-    AvrProgWriteP = 0;
+    AvrProg.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -381,48 +378,45 @@ static void WipeMemory()
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2,
-                         const char *comment) //, IntOp *IntCode)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2, const char *comment)
 {
-    if(AvrProg[AvrProgWriteP].opAvr != OP_VACANT)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+    static PicAvrInstruction instruction;
+    static AvrOp prevOp = OP_VACANT;
+    if(prevOp != OP_COMMENTINT)
+        memset(&instruction, 0, sizeof(PicAvrInstruction));
+
+    prevOp = op;
 
     if(op == OP_COMMENTINT) {
         if(comment) {
-            if(strlen(AvrProg[AvrProgWriteP].commentInt))
-                strncatn(AvrProg[AvrProgWriteP].commentInt, "\n    ; ", MAX_COMMENT_LEN);
-            strncatn(AvrProg[AvrProgWriteP].commentInt, comment, MAX_COMMENT_LEN);
+            if(strlen(instruction.commentInt))
+                strncatn(instruction.commentInt, "\n;", MAX_COMMENT_LEN);
+            strncatn(instruction.commentInt, comment, MAX_COMMENT_LEN);
         }
         return;
     }
 
-    if(AvrProg[AvrProgWriteP].opAvr != OP_VACANT)
-        THROW_COMPILER_EXCEPTION("Internal error.");
-    //vvv  same
-    AvrProg[AvrProgWriteP].opAvr = op;
-    AvrProg[AvrProgWriteP].arg1 = arg1;
-    AvrProg[AvrProgWriteP].arg2 = arg2;
+    instruction.opAvr = op;
+    instruction.arg1 = arg1;
+    instruction.arg2 = arg2;
     if(args) {
-        if(strlen(AvrProg[AvrProgWriteP].commentAsm))
-            strncatn(AvrProg[AvrProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncatn(AvrProg[AvrProgWriteP].commentAsm, "(", MAX_COMMENT_LEN);
-        strncatn(AvrProg[AvrProgWriteP].commentAsm, args, MAX_COMMENT_LEN);
-        strncatn(AvrProg[AvrProgWriteP].commentAsm, ")", MAX_COMMENT_LEN);
+        if(strlen(instruction.commentAsm))
+            strncatn(instruction.commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(instruction.commentAsm, "(", MAX_COMMENT_LEN);
+        strncatn(instruction.commentAsm, args, MAX_COMMENT_LEN);
+        strncatn(instruction.commentAsm, ")", MAX_COMMENT_LEN);
     }
     if(comment) {
-        if(strlen(AvrProg[AvrProgWriteP].commentAsm))
-            strncatn(AvrProg[AvrProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncatn(AvrProg[AvrProgWriteP].commentAsm, comment, MAX_COMMENT_LEN);
+        if(strlen(instruction.commentAsm))
+            strncatn(instruction.commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(instruction.commentAsm, comment, MAX_COMMENT_LEN);
     }
-    AvrProg[AvrProgWriteP].rung = rungNow;
-    AvrProg[AvrProgWriteP].IntPc = IntPcNow;
-    AvrProg[AvrProgWriteP].l = l;
-    strcpy(AvrProg[AvrProgWriteP].f, f);
-    //^^^ same
-    AvrProgWriteP++;
-    if(AvrProgWriteP >= MAX_PROGRAM_LEN) {
-        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
-    }
+    instruction.rung = rungNow;
+    instruction.IntPc = IntPcNow;
+    instruction.l = l;
+    strcpy(instruction.f, f);
+
+    AvrProg.push_back(instruction);
 }
 
 static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2)
@@ -453,7 +447,7 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
     if(addr == 0) {
         THROW_COMPILER_EXCEPTION(_("Direct Addr error"));
     }
-    if(addr >= MAX_PROGRAM_LEN) {
+    if(addr >= AvrProg.size()) {
         THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
     }
     //vvv  same
@@ -512,8 +506,8 @@ static void FwdAddrIsNow(DWORD addr)
         THROW_COMPILER_EXCEPTION("Internal error.");
 
     WORD  seen = 0;
-    DWORD i;
-    for(i = 0; i < AvrProgWriteP; i++) {
+    uint32_t AvrProgWriteP = AvrProg.size();
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(AvrProg[i].arg1 == FWD(addr)) { // Its a FWD addr
             AvrProg[i].arg1 = AvrProgWriteP;
             seen = 0x10;
@@ -603,8 +597,7 @@ static int IsOperation(AvrOp op)
 //-----------------------------------------------------------------------------
 static void AddrCheckForErrorsPostCompile()
 {
-    DWORD i;
-    for(i = 0; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE) {
             if(AvrProg[i].arg1 & FWD(0)) {
                 THROW_COMPILER_EXCEPTION_FMT("Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d",
@@ -1315,17 +1308,16 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     //fprintf(f, ":020000040000FA\n");
 
     DWORD ExtendedSegmentAddress = 0;
-    DWORD i;
-    for(i = 0; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         AvrProg[i].label = false;
     }
 
-    for(i = 0; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE)
             AvrProg[AvrProg[i].arg1].label = true;
     }
 
-    for(i = 1; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 1; i < AvrProg.size(); i++) {
         if((AvrProg[i].opAvr == OP_DB) && (AvrProg[i - 1].opAvr != OP_DB))
             AvrProg[i].label = true;
         if((AvrProg[i].opAvr == OP_DB2) && (AvrProg[i - 1].opAvr != OP_DB2))
@@ -1334,7 +1326,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             AvrProg[i].label = true;
     }
 
-    for(i = 0; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         DWORD w = Assemble(i, AvrProg[i].opAvr, AvrProg[i].arg1, AvrProg[i].arg2, sAsm);
 
         if(strlen(AvrProg[i].commentInt)) {
@@ -1409,14 +1401,13 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         soFar[soFarCount++] = (BYTE)(w & 0xff);
         soFar[soFarCount++] = (BYTE)(w >> 8);
 
-        if(soFarCount >= 0x10 * n || i == (AvrProgWriteP - 1)) {
+        if(soFarCount >= 0x10 * n || i == (AvrProg.size() - 1)) {
             StartIhex(f);                                  // ':'->Colon
             WriteIhex(f, (BYTE)soFarCount);                // LL->Record Length
             WriteIhex(f, (BYTE)((soFarStart * 2) >> 8));   // AA->Address as big endian values HI()
             WriteIhex(f, (BYTE)((soFarStart * 2) & 0xff)); // AA->Address as big endian values LO()
             WriteIhex(f, 0x00);                            // TT->Record Type -> 00 is Data
-            int j;
-            for(j = 0; j < soFarCount; j++) {
+            for(int j = 0; j < soFarCount; j++) {
                 WriteIhex(f, soFar[j]); // DD->Data
             }
             FinishIhex(f); // CC->Checksum
@@ -1426,9 +1417,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
     // end of file record
     fprintf(f, ":00000001FF\n");
-    if((Prog.mcu->flashWords) && (AvrProgWriteP >= Prog.mcu->flashWords)) {
+    if((Prog.mcu->flashWords) && (AvrProg.size() >= Prog.mcu->flashWords)) {
         THROW_COMPILER_EXCEPTION_FMT(_(" Flash program memory size %d is exceed limit %d words\nfor %s."),
-              AvrProgWriteP,
+              AvrProg.size(),
               Prog.mcu->flashWords,
               Prog.mcu->mcuName);
     }
@@ -1613,7 +1604,6 @@ static void CLRB(DWORD addr, int bit)
 */
 static DWORD SKBS(DWORD addr, int bit, int reg)
 {
-    DWORD i = AvrProgWriteP;
     if(bit > 7) {
         THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
@@ -1636,7 +1626,7 @@ static DWORD SKBS(DWORD addr, int bit, int reg)
 #endif
     } else
         THROW_COMPILER_EXCEPTION("Internal error");
-    return AvrProgWriteP - i;
+    return 0;
 }
 
 static DWORD SKBS(DWORD addr, int bit)
@@ -1652,7 +1642,6 @@ static DWORD SKBS(DWORD addr, int bit)
 */
 static DWORD SKBC(DWORD addr, int bit, int reg)
 {
-    DWORD i = AvrProgWriteP;
     if(bit > 7) {
         THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
@@ -1676,7 +1665,7 @@ static DWORD SKBC(DWORD addr, int bit, int reg)
     } else
         THROW_COMPILER_EXCEPTION("Internal error");
 
-    return AvrProgWriteP - i;
+    return 0;
 }
 
 static DWORD SKBC(DWORD addr, int bit)
@@ -2560,22 +2549,21 @@ static void InitTable(IntOp *a)
 
     if(addrOfTable == 0) {
         Comment("TABLE %s", a->name1.c_str());
-        if(AvrProgWriteP % 2)
+        if(AvrProg.size() % 2)
             Instruction(OP_NOP);
-        addrOfTable = AvrProgWriteP; // << 1; //see LPM // data stored in flash
+        addrOfTable = AvrProg.size(); // << 1; //see LPM // data stored in flash
 
         SetMemForVariable(a->name1, addrOfTable, a->literal);
 
         int sovElement = a->literal2;
         //sovElement = 1;
-        int i;
         if(sovElement == 2) {
-            for(i = 0; i < a->literal; i++) {
+            for(int i = 0; i < a->literal; i++) {
                 //dbp("i=%d %d",i,a->data[i]);
                 Instruction(OP_DW, a->data[i]);
             }
         } else if(sovElement == 1) {
-            for(i = 0; i < a->literal; i = i + 2) {
+            for(int i = 0; i < a->literal; i = i + 2) {
                 //dbp("i=%d %d %d", i, a->data[i], a->data[i+1]);
                 Instruction(OP_DB2, a->data[i], i + 1 < a->literal ? a->data[i + 1] : 0);
             }
@@ -2586,12 +2574,12 @@ static void InitTable(IntOp *a)
             }
             */
         } else if(sovElement == 4) {
-            for(i = 0; i < a->literal; i++) {
+            for(int i = 0; i < a->literal; i++) {
                 Instruction(OP_DW, a->data[i]);
                 Instruction(OP_DW, a->data[i] >> 16);
             }
         } else if(sovElement == 3) {
-            for(i = 0; i < a->literal; i = i + 2) {
+            for(int i = 0; i < a->literal; i = i + 2) {
                 Instruction(OP_DW, a->data[i]);
                 Instruction(OP_DB2, a->data[i] >> 16, (i + 1 < a->literal ? a->data[i + 1] : 0) & 0xFF);
                 Instruction(OP_DW, (i + 1 < a->literal ? a->data[i + 1] : 0) >> 8);
@@ -2649,7 +2637,7 @@ static void CallSubroutine(DWORD addr)
             Instruction(OP_RCALL, FWD(addr));
         }
     } else {
-        if((-2048 <= (addr - AvrProgWriteP - 1)) && ((addr - AvrProgWriteP - 1) <= 2047)) {
+        if((-2048 <= (addr - AvrProg.size() - 1)) && ((addr - AvrProg.size() - 1) <= 2047)) {
             Instruction(OP_RCALL, addr);
         } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
@@ -2689,7 +2677,7 @@ static void InstructionJMP(DWORD addr)
             Instruction(OP_RJMP, FWD(addr));
         }
     } else {
-        if((-2048 <= (addr - AvrProgWriteP - 1)) && ((addr - AvrProgWriteP - 1) <= 2047)) {
+        if((-2048 <= (addr - AvrProg.size() - 1)) && ((addr - AvrProg.size() - 1) <= 2047)) {
             Instruction(OP_RJMP, addr);
         } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
@@ -3150,7 +3138,7 @@ static void  WriteRuntime()
     Instruction(OP_LDI, r24, (Prog.mcu->ram[0].len) & 0xff);
     Instruction(OP_LDI, r25, (Prog.mcu->ram[0].len) >> 8);
 
-    DWORD loopZero = AvrProgWriteP;
+    DWORD loopZero = AvrProg.size();
     //  Instruction(OP_SUBI, 26, 1);
     //  Instruction(OP_SBCI, 27, 0);
     //  Instruction(OP_ST_X, 16);
@@ -3211,12 +3199,12 @@ static void  WriteRuntime()
     }
     //Comment("and now the generated PLC code will follow");
     Comment("Begin Of PLC Cycle");
-    BeginOfPLCCycle = AvrProgWriteP;
+    BeginOfPLCCycle = AvrProg.size();
     // ConfigureTimerForPlcCycle
     if(Prog.cycleTimer == 0) {
         if((WGM01 == -1)) { // ATmega8
             DWORD i = SKBS(REG_TIFR0, TOV0);
-            Instruction(OP_RJMP, AvrProgWriteP - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
+            Instruction(OP_RJMP, AvrProg.size() - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
@@ -3224,14 +3212,14 @@ static void  WriteRuntime()
             STOREval(REG_TCNT0, BYTE(tcnt0PlcCycle + 0)); // + 0 DONE // reload Counter0
         } else {
             DWORD i = SKBS(REG_TIFR0, OCF0A);
-            Instruction(OP_RJMP, AvrProgWriteP - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
+            Instruction(OP_RJMP, AvrProg.size() - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, OCF0A);
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
         }
     } else if(Prog.cycleTimer == 1) {
         DWORD i = SKBS(REG_TIFR1, OCF1A);
-        Instruction(OP_RJMP, AvrProgWriteP - std::min(i, DWORD(2))); // Ladder cycle timing on Timer1/Counter
+        Instruction(OP_RJMP, AvrProg.size() - std::min(i, DWORD(2))); // Ladder cycle timing on Timer1/Counter
 
         SetBit(REG_TIFR1, OCF1A);
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!
@@ -3443,7 +3431,7 @@ static void CompileFromIntermediate()
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, -2); // 0xF..FE
                     DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3477,7 +3465,7 @@ static void CompileFromIntermediate()
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
                     DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3514,7 +3502,7 @@ static void CompileFromIntermediate()
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
                     DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3581,7 +3569,7 @@ static void CompileFromIntermediate()
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
                     DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -4246,7 +4234,7 @@ static void CompileFromIntermediate()
                 } else if((a->op == INT_SET_VARIABLE_SHL) || (a->op == INT_SET_VARIABLE_SHR)
                           || (a->op == INT_SET_VARIABLE_SR0) || (a->op == INT_SET_VARIABLE_ROR)
                           || (a->op == INT_SET_VARIABLE_ROL)) {
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_DEC, r16);
                     DWORD Skip = AllocFwdAddr();
                     Instruction(OP_BRMI, Skip, 0);
@@ -4855,7 +4843,7 @@ static void CompileFromIntermediate()
                 WriteMemory(REG_ADCSRA, adcsra);
                 WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << ADSC)));
 
-                DWORD waitForFinsh = AvrProgWriteP;
+                DWORD waitForFinsh = AvrProg.size();
                 IfBitSet(REG_ADCSRA, ADSC);
                 Instruction(OP_RJMP, waitForFinsh);
 
@@ -4970,7 +4958,7 @@ static void CompileFromIntermediate()
 
             case INT_AllocKnownAddr:
                 //Comment("INT_AllocKnownAddr %d %08X", a->literal, AddrOfRungN[a->literal].KnownAddr);
-                AddrOfRungN[a->literal].KnownAddr = AvrProgWriteP;
+                AddrOfRungN[a->literal].KnownAddr = AvrProg.size();
                 break;
 
             case INT_AllocFwdAddr:
@@ -5183,7 +5171,7 @@ static void CompileFromIntermediate()
                     if(clocks > 0) {
                         CopyLitToReg(ZL, 2, clocks);             // 4 clocks
                         Instruction(OP_SBIW, ZL, 1);             // 2 clocks
-                        Instruction(OP_BRNE, AvrProgWriteP - 1); // 1/2 clocks
+                        Instruction(OP_BRNE, AvrProg.size() - 1); // 1/2 clocks
                         clocksSave -= clocks * 4 + 1;
                     }
                     int i;
@@ -5193,7 +5181,7 @@ static void CompileFromIntermediate()
                     Comment("INT_DELAY %s us", a->name1.c_str());
                     CopyVarToReg(ZL, 2, a->name1);           // 4 clocks
                     Instruction(OP_SBIW, ZL, 1);             // 2 clocks
-                    Instruction(OP_BRNE, AvrProgWriteP - 1); // 1/2 clocks
+                    Instruction(OP_BRNE, AvrProg.size() - 1); // 1/2 clocks
                 }
 #ifdef DELAY_TEST
                 SetBit(0x25, 0);   // 2 clocks
@@ -5207,7 +5195,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_WDR);
                 break;
             case INT_LOCK:
-                Instruction(OP_RJMP, AvrProgWriteP);
+                Instruction(OP_RJMP, AvrProg.size());
                 break;
             case INT_SLEEP:
                 if(REG_MCUCSR)
@@ -5550,7 +5538,7 @@ static void DivideRoutine()
     Instruction(OP_SUB, r17, r17); //4.Clear remainder and carry.
     Instruction(OP_LDI, r25, 17);  //5.Load Loop counter with 17.
 
-    d16s_3 = AvrProgWriteP;
+    d16s_3 = AvrProg.size();
     Instruction(OP_ADC, r19, r19);   //6.Shift left dividend into carry.
     Instruction(OP_ADC, r20, r20);   //6.Shift left dividend into carry.
     Instruction(OP_DEC, r25);        //7.Decrement Loop counter.
@@ -5621,7 +5609,7 @@ static void DivideRoutine24()
     Instruction(OP_SUB, r18, r18); //4.Clear remainder and carry.
     Instruction(OP_LDI, r25, 25);  //5.Load Loop counter with 17+8.
 
-    d16s_3 = AvrProgWriteP;
+    d16s_3 = AvrProg.size();
     Instruction(OP_ADC, r19, r19);   //6.Shift left dividend into carry.
     Instruction(OP_ADC, r20, r20);   //6.Shift left dividend into carry.
     Instruction(OP_ADC, r21, r21);   //6.Shift left dividend into carry.
@@ -5688,7 +5676,7 @@ static void DivideRoutine8()
     Instruction(OP_SUB, r18, r18); //4.Clear remainder and carry.
     Instruction(OP_LDI, r25, 9);   //5.Load Loop counter with 17-8.
 
-    d16s_3 = AvrProgWriteP;
+    d16s_3 = AvrProg.size();
     Instruction(OP_ADC, r19, r19);   //6.Shift left dividend into carry.
     Instruction(OP_DEC, r25);        //7.Decrement Loop counter.
     Instruction(OP_BRNE, d16s_5, 0); //8.If Loop counter = 0, go to step 11.
@@ -6798,10 +6786,9 @@ void CompileAvr(const char *outFile)
     CompileFromIntermediate();
     Comment("CompileFromIntermediate END");
 
-    DWORD i;
-    for(i = 0; i < MAX_RUNGS; i++)
+    for(int i = 0; i < MAX_RUNGS; i++)
         Prog.HexInRung[i] = 0;
-    for(i = 0; i < AvrProgWriteP; i++)
+    for(uint32_t i = 0; i < AvrProg.size(); i++)
         if((AvrProg[i].rung >= 0) && (AvrProg[i].rung < MAX_RUNGS))
             Prog.HexInRung[AvrProg[i].rung]++;
 
@@ -6840,13 +6827,13 @@ void CompileAvr(const char *outFile)
     if(DivideUsed24)
         DivideRoutine24();
 
-    Instruction(OP_RJMP, AvrProgWriteP); // as CodeVisionAVR C Compiler // for label
+    Instruction(OP_RJMP, AvrProg.size()); // as CodeVisionAVR C Compiler // for label
 
     rungNow = -10;
     MemCheckForErrorsPostCompile();
     AddrCheckForErrorsPostCompile();
 
-    ProgWriteP = AvrProgWriteP;
+    ProgWriteP = AvrProg.size();
 
     rungNow = -5;
     WriteHexFile(f, fAsm);
@@ -6867,9 +6854,9 @@ void CompileAvr(const char *outFile)
     char str2[MAX_PATH + 500];
     sprintf(str2,
             _("Used %d/%d words of program flash (chip %d%% full)."),
-            AvrProgWriteP,
+            AvrProg.size(),
             Prog.mcu->flashWords,
-            (100 * AvrProgWriteP) / Prog.mcu->flashWords);
+            (100 * AvrProg.size()) / Prog.mcu->flashWords);
 
     char str3[MAX_PATH + 500];
     sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), McuRAM(), (100 * UsedRAM()) / McuRAM());
@@ -6877,7 +6864,7 @@ void CompileAvr(const char *outFile)
     char str4[MAX_PATH + 500];
     sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
 
-    if(AvrProgWriteP > Prog.mcu->flashWords) {
+    if(AvrProg.size() > Prog.mcu->flashWords) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);
         CompileSuccessfulMessage(str2, MB_ICONERROR);
     } else if(UsedRAM() > McuRAM()) {
@@ -6886,6 +6873,6 @@ void CompileAvr(const char *outFile)
     } else
         CompileSuccessfulMessage(str4);
 
-    AvrProgLdLen = AvrProgWriteP - BeginOfPLCCycle;
+    AvrProgLdLen = AvrProg.size() - BeginOfPLCCycle;
     //dbp("%d %d %d", AvrProgLdLen, AvrProgWriteP, BeginOfPLCCycle);
 }
