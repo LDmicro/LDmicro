@@ -1446,7 +1446,6 @@ bool SaveProjectToFile(char *filename, int code)
 
     fflush(f);
     f.close();
-
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
     return true;
