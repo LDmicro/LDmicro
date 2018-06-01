@@ -1246,7 +1246,7 @@ static int PageSelect(DWORD addr, DWORD *PCLATH, DWORD PCLATHnew)
     int n = 0;
     if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         if((*PCLATH >> 3) != (PCLATHnew >> 3)) {
-            SetInstruction(addr, OP_MOVLP, 0, PCLATHnew, "PageSel2");
+            SetInstruction(addr, OP_MOVLP, PCLATHnew, 0, "PageSel2");
             *PCLATH = PCLATHnew;
             n++;
         }
@@ -2375,8 +2375,17 @@ static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BY
 static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BYTE val, char *comment)
 {
     // if(val) {
-    _Instruction(l, f, args, OP_MOVLW, val, 0, comment);
-    _Instruction(l, f, args, OP_MOVWF, reg, 0, comment);
+    char buf[MAX_COMMENT_LEN];
+    if(comment && strlen(comment))
+        sprintf(buf,"%s ; 0x%X", comment, val);
+    else
+        sprintf(buf,"0x%X", val);
+    _Instruction(l, f, args, OP_MOVLW, val, 0, buf);
+    if(comment && strlen(comment))
+        sprintf(buf,"%s ; 0x%X", comment, reg);
+    else
+        sprintf(buf,"0x%X", reg);
+    _Instruction(l, f, args, OP_MOVWF, reg, 0, buf);
     // } else
     //    vvv Z Status Affected !!!
     //    _Instruction(l, f, args, OP_CLRF, reg, comment);
@@ -6767,7 +6776,6 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     AllocBitsVars(); // first
 
-    ScratchI = AllocOctetRam(); // tmp indirect addressing
     ScratchS = AllocOctetRam(); // REG_STATUS
     Scratch0 = AllocOctetRam();
     Scratch1 = AllocOctetRam();
@@ -6783,6 +6791,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Scratch10 = AllocOctetRam();
         Scratch11 = AllocOctetRam();
     }
+    ScratchI = AllocOctetRam(); // tmp indirect addressing
 
     if(REG_EEDATA != -1) {
         // Allocate the register used to hold the high byte of the EEPROM word
@@ -7057,6 +7066,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         // This is also a nasty special case; the comparators on the
         // PIC16F628 are enabled by default and need to be disabled, or
         // else the PORTA GPIOs don't work.
+        Comment("Comparator Off. Normal port I/O.");
         WriteRegister(REG_CMCON, 0x07);
     }
 
