@@ -509,7 +509,7 @@ static void CompileProgram(bool compileAs, int MNU)
         MNU = compile_MNU;
 
     if(MNU == MNU_COMPILE_GNUC ){
-        if(Prog.mcu && Prog.mcu->core != ISA_AVR) {
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_AVR) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to WinAvr C, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -521,7 +521,7 @@ static void CompileProgram(bool compileAs, int MNU)
         }
     }
     if(MNU == MNU_COMPILE_CODEVISIONAVR){
-        if(Prog.mcu && Prog.mcu->core != ISA_AVR) {
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_AVR) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to CodeVision C, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -534,7 +534,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_HI_TECH_C){
-        if(Prog.mcu && Prog.mcu->core != ISA_PIC16) {
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_PIC16) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to HI-TECH C, but MCU core isn't PIC.\nDo you want to continue?"),
@@ -547,7 +547,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_CCS_PIC_C){
-        if(Prog.mcu && Prog.mcu->core != ISA_PIC16) {
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_PIC16) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"),
@@ -560,7 +560,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_ARDUINO) {
-        if(Prog.mcu && Prog.mcu->core != ISA_AVR) {
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_AVR && Prog.mcu->whichIsa != ISA_ESP8266) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"),
