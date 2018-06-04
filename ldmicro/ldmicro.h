@@ -944,11 +944,6 @@ extern PlcProgram Prog;
 extern char CurrentSaveFile[MAX_PATH];
 extern char CurrentCompileFile[MAX_PATH];
 extern char CurrentCompilePath[MAX_PATH];
-// memory debugging, because I often get careless; ok() will check that the
-// heap used for all the program storage is not yet corrupt, and oops() if
-// it is
-void CheckHeap(const char *file, int line);
-#define ok() CheckHeap(__FILE__, __LINE__)
 extern ULONGLONG PrevWriteTime;
 extern ULONGLONG LastWriteTime;
 void ScrollDown();
@@ -1287,9 +1282,6 @@ extern bool DialogCancel;
 void doexit(int status);
 void dbp(const char *str, ...);
 void Error(const char *str, ...);
-void *CheckMalloc(size_t n);
-void CheckFree(void *p);
-extern HANDLE MainHeap;
 void StartIhex(FILE *f);
 void WriteIhex(FILE *f, BYTE b);
 void FinishIhex(FILE *f);

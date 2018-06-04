@@ -2802,8 +2802,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         Instance = hInstance;
 
-        MainHeap = HeapCreate(0, 1024 * 64, 0);
-
         setlocale(LC_ALL, "");
         //RunningInBatchMode = false;
         fillPcPinInfos();
