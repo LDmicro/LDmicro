@@ -1336,7 +1336,7 @@
 
 == Release 3.0.0
 
-    * Unofficial support:
+    * LDmicro support:
          Repository: https://github.com/LDmicro/LDmicro
          Email:      LDmicro.GitHub@gmail.com
 

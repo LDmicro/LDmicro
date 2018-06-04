@@ -1860,7 +1860,7 @@ Seattle WA    -- Feb 2009
 
 Email: user jwesthues, at host cq.cx
 
-Unofficial support:
+LDmicro support:
     LDmicro Forum:  http://cq.cx/ladder-forum.pl
     Latest release: https://github.com/LDmicro/LDmicro/releases
     Repository:     https://github.com/LDmicro/LDmicro
