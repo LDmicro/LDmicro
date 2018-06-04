@@ -7,7 +7,7 @@ Official [LDmicro Ladder Logic for PIC and AVR Home Page](http://cq.cx/ladder.pl
 Official [LDmicro Forum](http://cq.cx/ladder-forum.pl)  
 
 Download executable binaries buildXXXX.zip from the [Latest release](https://github.com/LDmicro/LDmicro/releases/latest)  
-Unofficial [HOW TO:](https://github.com/LDmicro/LDmicro/wiki/HOW-TO)  
+Read Ldmicro [Wiki](https://github.com/LDmicro/LDmicro/wiki) and [HOW TO:](https://github.com/LDmicro/LDmicro/wiki/HOW-TO)  
 
 ### Building LDmicro
 
