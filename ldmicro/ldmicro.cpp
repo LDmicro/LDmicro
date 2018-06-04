@@ -1592,11 +1592,25 @@ static void ProcessMenu(int code)
                 nullptr,
                 nullptr,
                 SW_SHOWNORMAL);
+            ShellExecute(
+                0,
+                "open",
+                "https://github.com/LDmicro/LDmicro/wiki/NEW:-PIC-8-pins-micros",
+                nullptr,
+                nullptr,
+                SW_SHOWNORMAL);
             break;
 
         case MNU_PROCESSOR_NEW:
             ShellExecute(
                 0, "open", "https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE", nullptr, nullptr, SW_SHOWNORMAL);
+            ShellExecute(
+                0,
+                "open",
+                "https://github.com/LDmicro/LDmicro/wiki/NEW:--PIC-Enhanced-Mid-Range-Products",
+                nullptr,
+                nullptr,
+                SW_SHOWNORMAL);
             break;
 
         case MNU_OPEN_SFR:

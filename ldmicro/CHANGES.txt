@@ -1,3 +1,9 @@
+   * Wiki: Disable Pull up resistors
+   https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+
+   * Wiki: Pull down resistors
+   https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
+
 == Release 4.4.0.0
 
    * New: The variable name that begins with a '#' character and subsequent as

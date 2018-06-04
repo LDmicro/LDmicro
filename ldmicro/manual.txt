@@ -56,17 +56,18 @@ LDmicro compiles ladder logic to PIC16 or AVR code. The following
 processors are supported:
     * PIC16F877
     * PIC16F628
-    * PIC16F876 (untested)
-    * PIC16F88 (untested)
-    * PIC16F819 (untested)
-    * PIC16F887 (untested)
-    * PIC16F886 (untested)
+    * PIC16F876
+    * PIC16F88
+    * PIC16F819
+    * PIC16F887
+    * PIC16F886
     * ATmega128
     * ATmega64
-    * ATmega162 (untested)
-    * ATmega32 (untested)
-    * ATmega16 (untested)
-    * ATmega8 (untested)
+    * ATmega162
+    * ATmega32
+    * ATmega16
+    * ATmega8
+    * and a lot of...
 
 It would be easy to support more AVR or PIC16 chips, but I do not have
 any way to test them. If you need one in particular then contact me and
@@ -366,6 +367,18 @@ file into the microcontroller. Remember to set the configuration bits
 (fuses)! For PIC16 processors, the configuration bits are included in the
 hex file, and most programming software will look there automatically.
 For AVR processors you must set the configuration bits by hand.
+
+
+PULL UP RESISTORS
+=================
+Pull up resistors
+https://github.com/LDmicro/LDmicro/wiki/Pull-up-resistors
+
+Disable Pull up resistors
+https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+
+Pull down resistors
+https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
 
 
 INSTRUCTIONS REFERENCE
@@ -1148,6 +1161,9 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                            0-15 if sizeof(var) == 2 bytes,
                            0-23 if sizeof(var) == 3 bytes,
                            0-31 if sizeof(var) == 4 bytes.
+
+    Learn how to use SetBit(), ClrBit() to Disable Pull up resistors
+    https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
 
 
 > COMPARE               [var ==]        [var >]        [1 >=]
