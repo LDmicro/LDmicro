@@ -239,8 +239,6 @@ void PaintWindow()
         BlinkCursor(nullptr, 0, 0, 0); //Hide Cursor
     CursorDrawn = false;
 
-    ok();
-
     RECT r;
     GetClientRect(MainWindow, &r);
     int bw = r.right;
@@ -391,7 +389,6 @@ void PaintWindow()
     }
 
     Hdc = paintDc;
-    ok();
 }
 
 //-----------------------------------------------------------------------------

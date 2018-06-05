@@ -114,10 +114,8 @@ void SelectElement(int gx, int gy, int state)
         RefreshScrollbars();
     }
 
-    ok();
     if(Selected)
         Selected->selectedState = state;
-    ok();
 
     WhatCanWeDoFromCursorAndTopology();
 }
