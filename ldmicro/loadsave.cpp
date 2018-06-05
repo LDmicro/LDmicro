@@ -563,7 +563,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_PIECEWISE_LINEAR;
     } else {
         // that's odd; nothing matched
-        free(l);
+        CheckFree(l);
         return false;
     }
     *any = l;

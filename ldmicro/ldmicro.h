@@ -1282,6 +1282,8 @@ extern bool DialogCancel;
 void doexit(int status);
 void dbp(const char *str, ...);
 void Error(const char *str, ...);
+void *CheckMalloc(size_t n);
+void CheckFree(void *p);
 void StartIhex(FILE *f);
 void WriteIhex(FILE *f, BYTE b);
 void FinishIhex(FILE *f);

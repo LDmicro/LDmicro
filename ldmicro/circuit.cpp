@@ -29,14 +29,14 @@
 // Like malloc/free, but memsets memory allocated to all zeros. Also TODO some
 // checking and something sensible if it fails.
 //-----------------------------------------------------------------------------
-static void *CheckMalloc(size_t n)
+void *CheckMalloc(size_t n)
 {
     void *p = malloc(n);
     if(p)
         memset(p, 0, n);
     return p;
 }
-static void CheckFree(void *p)
+void CheckFree(void *p)
 {
     free(p);
 }

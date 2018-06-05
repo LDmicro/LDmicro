@@ -692,12 +692,12 @@ void ExportDrawingAsText(char *file)
     totalHeight += 2;             // after EndRung for # of int and # of AVR/PIC
     //totalHeight is Ok!
 
-    ExportBuffer = (char **)malloc(totalHeight * sizeof(char *));
+    ExportBuffer = (char **)CheckMalloc(totalHeight * sizeof(char *));
 
     int l = maxWidth * POS_WIDTH + 9;
     int i;
     for(i = 0; i < totalHeight; i++) {
-        ExportBuffer[i] = (char *)malloc(l);
+        ExportBuffer[i] = (char *)CheckMalloc(l);
         memset(ExportBuffer[i], ' ', l - 1);
         ExportBuffer[i][4] = '|';
         ExportBuffer[i][5] = '|';
@@ -782,9 +782,9 @@ void ExportDrawingAsText(char *file)
     for(i = 0; i < totalHeight; i++) {
         ExportBuffer[i][4] = '|';
         fprintf(f, "%s\n", ExportBuffer[i]);
-        free(ExportBuffer[i]);
+        CheckFree(ExportBuffer[i]);
     }
-    free(ExportBuffer);
+    CheckFree(ExportBuffer);
     ExportBuffer = nullptr;
 
     fprintf(f, _("\nI/O ASSIGNMENT:\n"));
