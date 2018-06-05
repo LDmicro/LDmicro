@@ -926,7 +926,7 @@ void ShowSpiDialog(ElemLeaf *l)
             double t = 1.0 * 1000 * SizeOfVar(s->send) * 8 / f;
             //sprintf(buf,"%15.3fHz,T_ss=%.3fms", f, t);
             sprintf(buf, "%15.3f Hz, T_ss = %.3f ms", f, t);
-            comboRec[4].str[i] = (char *)malloc(strlen(buf) + 1);
+            comboRec[4].str[i] = (char *)CheckMalloc(strlen(buf) + 1);
             strcpy(comboRec[4].str[i], buf);
         }
     }
@@ -938,7 +938,7 @@ void ShowSpiDialog(ElemLeaf *l)
     }
     //  NoCheckingOnBox[3] = false;
     for(i = 0; i < comboRec[4].n; i++) {
-        free(comboRec[4].str[i]);
+        CheckFree(comboRec[4].str[i]);
     }
 }
 
@@ -1246,7 +1246,7 @@ void ShowStepperDialog(int which, void *e)
                 double _Psum = SIprefix(Pt * r.Psum, Punits);
                 sprintf(str, "%s\n\nAcceleration/Deceleration time=%.3f %ss", str, _Psum, Punits);
 
-                free(r.T);
+                CheckFree(r.T);
             }
 
             if(IsNumber(max)) {
