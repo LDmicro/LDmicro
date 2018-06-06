@@ -1387,7 +1387,7 @@ static void CheckPsErrorsPostCompile()
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
             if((PicProg[i].arg1 >> 11) != (PicProg[i].PCLATH >> 3)) {
                 //^target addr^              ^current PCLATH^
-                THROW_COMPILER_EXCEPTION("Page Error.");
+                THROW_COMPILER_EXCEPTION_FMT("Page Error.[%d:%s] 0x%X 0x%X", PicProg[i].l, PicProg[i].f, PicProg[i].arg1>>11, PicProg[i].PCLATH>>3);
             }
         }
     }
@@ -5180,6 +5180,7 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
             }
             case INT_READ_ADC: {
+                Comment("INT_READ_ADC");
                 BYTE adcs;
 
                 MemForVariable(a->name1, &addr1);
