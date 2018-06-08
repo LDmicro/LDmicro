@@ -34,6 +34,9 @@
 
 #define NEW_CMP // (C) LDmicro.GitHub@gmail.com
 #define TABLE_IN_FLASH // (C) LDmicro.GitHub@gmail.com
+#ifdef TABLE_IN_FLASH
+//#define TABLE_IN_FLASH_LINEAR // (C) LDmicro.GitHub@gmail.com
+#endif
 #define NEW_INT 1
 
 // clang-format off

@@ -1489,8 +1489,8 @@ static void InitTablesCircuit(int which, void *elem)
                 InitTablesCircuit(p->contents[i].which, p->contents[i].data.any);
             break;
         }
-        case ELEM_LOOK_UP_TABLE:
-        case ELEM_PIECEWISE_LINEAR: {
+        // case ELEM_PIECEWISE_LINEAR:
+        case ELEM_LOOK_UP_TABLE: {
             ElemLookUpTable *t = &(l->d.lookUpTable);
 
             char nameTable[MAX_NAME_LEN];
@@ -1505,7 +1505,7 @@ static void InitTablesCircuit(int which, void *elem)
                 sovElement = SizeOfVar(nameTable);
                 if(sovElement < 1)
                     sovElement = 1;
-                Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable);
+                Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable, t->count);
             }
             break;
         }
@@ -3145,14 +3145,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             ElemLookUpTable *t = &(l->d.lookUpTable);
             Comment(3, "ELEM_LOOK_UP_TABLE %s", t->name);
 
-            char nameTable[MAX_NAME_LEN];
-            sprintf(nameTable, "%s%s", t->name, ""); // "LutElement");
-
             int sovElement;
             sovElement = TestByteNeeded(t->count, t->vals);
 
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_FLASH_READ, t->dest, nameTable, t->index, t->count, sovElement, t->vals);
+                Op(INT_FLASH_READ, t->dest, t->name, t->index, t->count, sovElement, t->vals);
             Op(INT_END_IF);
             #else
             Comment(3, "ELEM_LOOK_UP_TABLE");
@@ -3181,21 +3178,45 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             if(t->count == 0) {
                 THROW_COMPILER_EXCEPTION(_("Piecewise linear lookup table with zero elements!"));
             }
-            int i;
             int xThis = t->vals[0];
-            for(i = 1; i < t->count; i++) {
+            for(int i = 1; i < t->count; i++) {
                 if(t->vals[i * 2] <= xThis) {
                     THROW_COMPILER_EXCEPTION(_("x values in piecewise linear table must be "
                         "strictly increasing."));
                 }
                 xThis = t->vals[i * 2];
             }
+            #ifdef TABLE_IN_FLASH_LINEAR
+            int sovElement;
+            sovElement = TestByteNeeded(t->count, t->vals);
+            #endif
             Op(INT_IF_BIT_SET, stateInOut);
-            for(i = t->count - 1; i >= 1; i--) {
-                int thisDx = t->vals[i * 2] - t->vals[(i - 1) * 2];
-                int thisDy = t->vals[i * 2 + 1] - t->vals[(i - 1) * 2 + 1];
+            for(int i = t->count - 1; i >= 1; i--) {
+                Comment("PWL %d", i);
+                int xThis = t->vals[i * 2];
+                int xPrev = t->vals[(i - 1) * 2];
+                int yThis = t->vals[i * 2 + 1];
+                int yPrev = t->vals[(i - 1) * 2 + 1];
+                int thisDx = xThis - xPrev;
+                int thisDy = yThis - yPrev;
+                char sxThis[21]; // -9223372036854775808
+                char sxPrev[21];
+                char syThis[21];
+                char syPrev[21];
+                char sthisDx[21];
+                char sthisDy[21];
+                sprintf(sxThis,"%d", xThis);
+                sprintf(sxPrev,"%d", xPrev);
+                sprintf(syThis,"%d", yThis);
+                sprintf(syPrev,"%d", yPrev);
+                sprintf(sthisDx,"%d", thisDx);
+                sprintf(sthisDy,"%d", thisDy);
                 // The output point is given by
                 //    yout = y[i-1] + (xin - x[i-1])*dy/dx
+                //    yout = yPrev + (xin - xPrev)*dy/dx
+                //    xin between the [xPrev and xThis]
+                //    xin is t->index
+                //    yout is t->dest
                 // and this is the best form in which to keep it, numerically
                 // speaking, because you can always fix numerical problems
                 // by moving the PWL points closer together.
@@ -3208,24 +3229,42 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         "See the help file for details."));
                 }
 
+                #ifndef TABLE_IN_FLASH_LINEAR
                 // Hack to avoid AVR brge issue again, since long jumps break
                 Op(INT_CLEAR_BIT, "$scratch");
-                Op(INT_IF_VARIABLE_LES_LITERAL, t->index, t->vals[i * 2] + 1);
+                Op(INT_IF_VARIABLE_LES_LITERAL, t->index, xThis + 1);
                     Op(INT_SET_BIT, "$scratch");
                 Op(INT_END_IF);
 
-                Op(INT_IF_BIT_SET, "$scratch");
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->vals[(i - 1) * 2]);
-                Op(INT_SET_VARIABLE_SUBTRACT, "$scratch", t->index, "$scratch");
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", thisDx);
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3", thisDy);
-                Op(INT_SET_VARIABLE_MULTIPLY, t->dest, "$scratch", "$scratch3");
-                Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, "$scratch2");
+                Op(INT_IF_BIT_SET, "$scratch");  
+#if 0
+                  Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", xPrev);
+                  Op(INT_SET_VARIABLE_SUBTRACT, "$scratch", t->index, "$scratch");
+                  Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", thisDx);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3", thisDy);
+                  Op(INT_SET_VARIABLE_MULTIPLY, t->dest, "$scratch", "$scratch3");
+                  Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, "$scratch2");
 
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->vals[(i - 1) * 2 + 1]);
-                Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, "$scratch");
+                  Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", yPrev);
+                  Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, "$scratch");
+#else
+                  Op(INT_SET_VARIABLE_SUBTRACT, t->dest, t->index, sxPrev);
+                  Op(INT_SET_VARIABLE_MULTIPLY, t->dest, t->dest, sthisDy);
+                  Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, sthisDx);
+                  Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, syPrev);
+#endif
                 Op(INT_END_IF);
+                #endif
             }
+            #ifdef TABLE_IN_FLASH_LINEAR // WIP
+                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->count);
+                Op(INT_FLASH_READ, t->dest, t->name, "$scratch", t->count, sovElement, t->vals);
+                Op(INT_LES, t->dest, t->index)
+                Op(INT_SET_VARIABLE_SUBTRACT, t->dest, t->index, sxPrev);
+                Op(INT_SET_VARIABLE_MULTIPLY, t->dest, t->dest, sthisDy);
+                Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, sthisDx);
+                Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, syPrev);
+            #endif
             Op(INT_END_IF);
             break;
         }
