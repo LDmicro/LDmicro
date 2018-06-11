@@ -413,7 +413,8 @@ uint8_t MuxForAdcVariable(const char *name)
     int res = 0;
     int i;
     for(i = 0; i < Prog.io.count; i++) {
-        if(strcmp(Prog.io.assignment[i].name, name) == 0)
+        if((strcmp(Prog.io.assignment[i].name, name) == 0) &&
+			(Prog.io.assignment[i].type == IO_TYPE_READ_ADC))
             break;
     }
     if(i >= Prog.io.count)
@@ -427,6 +428,7 @@ uint8_t MuxForAdcVariable(const char *name)
             }
         }
         if(j == Prog.mcu->adcCount) {
+            Error("i=%d pin=%d", i, Prog.io.assignment[i].pin);
             THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all ADC inputs (name '%s')."), name);
         }
         res = Prog.mcu->adcInfo[j].muxRegValue;

@@ -1,77 +1,83 @@
-   * Wiki: Disable Pull up resistors
-   https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+    * Optimized: PIECEWISE LINEAR TABLE (reduced size 10%), ADD and SUB operations for PIC's.
 
-   * Wiki: Pull down resistors
-   https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
+    * Fixed: READ ADC for EnhancedMidrangeCore14bit PIC's.
+
+    * Fixed: AUTO_PAGING version 4.3 for PIC's.
+
+    * Wiki: Disable Pull up resistors
+    https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+
+    * Wiki: Pull down resistors
+    https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
 
 == Release 4.4.0.0
 
-   * New: The variable name that begins with a '#' character and subsequent as
-    a general-purpose variable name treated as the indirect address of hardware register.
-    Value like #VarName is the indirect address of hardware register (Indirect Address Pointer).
-   See manual.txt
-   Note: Only for PIC,AVR implemented.
+    * New: The variable name that begins with a '#' character and subsequent as
+     a general-purpose variable name treated as the indirect address of hardware register.
+     Value like #VarName is the indirect address of hardware register (Indirect Address Pointer).
+    See manual.txt
+    Note: Only for PIC,AVR implemented.
 
-   * Wiki: LDmicro indirect addressing
-   https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
+    * Wiki: LDmicro indirect addressing
+    https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
 
 == Release 4.3.9.6
 
-   * Wiki: HOW TO: Change USART Baud Rate
-   https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Change-USART-Baud-Rate
+    * Wiki: HOW TO: Change USART Baud Rate
+    https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Change-USART-Baud-Rate
 
 == Release 4.3.9.5
 
-   * Fixed: Re-enable ANSI C compilation with no MCU #95
+    * Fixed: Re-enable ANSI C compilation with no MCU #95
 
-   * Wiki: Replace the obsolete elements.
-   https://github.com/LDmicro/LDmicro/wiki/Replase-the-obsolete-elements
+    * Wiki: Replace the obsolete elements.
+    https://github.com/LDmicro/LDmicro/wiki/Replase-the-obsolete-elements
 
 == Release 4.3.9.4
 
-   Fixed: LDmicro Forum - pic16f887 http://cq.cx/ladder-forum.pl?action=viewthread&parent=7317&tt=1526403799
-   Recovered backward compatibility with version 2.3 for the SET PWM operation.
-   Recovered the READ_ADC operation for PIC16F887, PIC16F877, PIC16F88, PIC16F72.
-   Attention: Releases 4.3.8.5 - 4.3.9.3 has the bug with PIC's MCU READ_ADC: only RA0 analog input is available!
+    * Fixed: LDmicro Forum - pic16f887 http://cq.cx/ladder-forum.pl?action=viewthread&parent=7317&tt=1526403799
+    Recovered backward compatibility with version 2.3 for the SET PWM operation.
+    Recovered the READ_ADC operation for PIC16F887, PIC16F877, PIC16F88, PIC16F72.
+    Attention: Releases 4.3.8.5 - 4.3.9.3 has the bug with PIC's MCU READ_ADC: only RA0 analog input is available!
 
-   Fixed: The GEQ instruction does not work with neg.numbers #57
-   Try simulate GEQ.LD from the page
-   https://github.com/LDmicro/LDmicro/issues/57
+    * Fixed: The GEQ instruction does not work with neg.numbers #57
+    Try simulate GEQ.LD from the page
+    https://github.com/LDmicro/LDmicro/issues/57
 
 == Release 4.3.9.3
 
-   Fixed: SET PWM instruction in Arduino Sketch.
+    * Fixed: SET PWM instruction in Arduino Sketch.
 
-   * Wiki: LDmicro, Arduino, LCD
-   https://github.com/LDmicro/LDmicro/wiki/LDmicro,-Arduino,-LCD
+    * Wiki: LDmicro, Arduino, LCD
+    https://github.com/LDmicro/LDmicro/wiki/LDmicro,-Arduino,-LCD
 
 == Release 4.3.9.2
 
-   Fixed: Problem "PERSIST" Arduino Mega. #82
+    * Fixed: Problem "PERSIST" Arduino Mega. #82
 
-   Updated: EXTERN_EVERYTHING in Arduino Sketch.
+    * Updated: EXTERN_EVERYTHING in Arduino Sketch.
 
-   Fixed: RESET PWM instruction in Arduino Sketch. #62
+    * Fixed: RESET PWM instruction in Arduino Sketch. #62
 
-   Added: SET PWM - optional setPwmFrequency() in Arduino Sketch.
-   Need to test. See issue #62
+    * Added: SET PWM - optional setPwmFrequency() in Arduino Sketch.
+    Need to test. See issue #62
 
-   Fixed: UART Simulation error V4390. #84
+    * Fixed: UART Simulation error V4390. #84
 
-   Fixed: MASTER RELAY simulation bug. #83
+    * Fixed: MASTER RELAY simulation bug. #83
 
-   Updated: MASTER RELAY state colors in simulation mode.
+    * Updated: MASTER RELAY state colors in simulation mode.
 
-   Fixed: When minimizing LDmicro, it always hides the IoList window.
+    * Fixed: When minimizing LDmicro, it always hides the IoList window.
 
-   * Wiki: OPEN CIRCUIT, SHORT CIRCUIT
-   https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
+    * Wiki: OPEN CIRCUIT, SHORT CIRCUIT
+    https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
 
-   Fixed: Is it correct return? #55 Yes.
+    * Fixed: Is it correct return? #55 Yes.
 
-   Test: Unclosed Rung. See issue #56.
-   Experimental release attached at page
-   https://github.com/LDmicro/LDmicro/issues/56
+    * Test: Unclosed Rung. See issue #56.
+    Experimental release attached at page
+    https://github.com/LDmicro/LDmicro/issues/56
 
 == Release 4.3.9.1
 
