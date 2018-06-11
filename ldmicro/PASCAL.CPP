@@ -920,8 +920,8 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
-                THROW_COMPILER_EXCEPTION(_(
-                    "PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
+                Error(_(
+                    " PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
                 break;
 
 #ifdef TABLE_IN_FLASH
