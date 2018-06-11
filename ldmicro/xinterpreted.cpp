@@ -26,6 +26,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
+#include "filetracker.hpp"
 
 static std::vector<uint8_t> OutProg;
 
@@ -52,7 +53,7 @@ static int CheckRange(int value, const char *name)
     if(value < 0 || value > 255) {
         char msg[80];
         sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
-        Error(msg);
+        THROW_COMPILER_EXCEPTION(msg);
     }
 
     return value;
@@ -78,11 +79,11 @@ static BYTE AddrForVariable(const char *name)
     return CheckRange(PlcIos_AppendAndGet(name), name);
 }
 
-void CompileXInterpreted(char *outFile)
+void CompileXInterpreted(const char *outFile)
 {
-    FILE *f = fopen(outFile, "w");
+    FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't write to '%s'"), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't write to '%s'"), outFile);
         return;
     }
 
@@ -236,11 +237,9 @@ void CompileXInterpreted(char *outFile)
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
-                Error(
+                THROW_COMPILER_EXCEPTION_FMT(
                     _("Unsupported op (anything UART, EEPROM, SFR..) for "
-                      "interpretable target."));
-                Error("INT_%d", IntCode[ipc].op);
-                fclose(f);
+                      "interpretable target.\nINT_%d"), IntCode[ipc].op);
                 return;
         }
     }
@@ -272,8 +271,6 @@ void CompileXInterpreted(char *outFile)
     }
 
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
-
-    fclose(f);
 
     char str[MAX_PATH + 500];
     sprintf(str,
