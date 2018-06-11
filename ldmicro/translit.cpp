@@ -22,6 +22,7 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
+#include "filetracker.hpp"
 //-----------------------------------------------------------------------------
 #if defined(LDLANG_RU)
 // code page 1251
@@ -398,7 +399,7 @@ void Transliterate(char *dest, char *str)
     }
 }
 #else
-void Transliterate(char *dest, char *str)
+void Transliterate(char *dest, const char *str)
 {
     strcpy(dest, str);
 }
@@ -413,25 +414,24 @@ int TranslitFile(char *dest)
     char  trans[1024];
 
     if((tmp = tmpnam(ntmp)) == nullptr) {
-        Error(_("Couldn't create a unique file name for '%s'"), dest);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't create a unique file name for '%s'"), dest);
         return 1;
     }
 
     if(rename(dest, ntmp)) {
-        Error(_("Couldn't rename(%s,%s)"), dest, ntmp);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't rename(%s,%s)"), dest, ntmp);
         return 2;
     }
 
-    FILE *ftmp = fopen(ntmp, "r");
+    FileTracker ftmp(ntmp, "r");
     if(!ftmp) {
-        Error(_("Couldn't open file '%s'"), ntmp);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ntmp);
         return 3;
     }
 
-    FILE *f = fopen(dest, "w");
+    FileTracker f(dest, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
-        fclose(ftmp);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
         return 4;
     }
 
@@ -441,9 +441,6 @@ int TranslitFile(char *dest)
         Transliterate(trans, line);
         fwrite(trans, 1, strlen(trans), f);
     };
-
-    fclose(ftmp);
-    fclose(f);
 
     return 0;
 }

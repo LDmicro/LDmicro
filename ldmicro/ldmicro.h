@@ -1684,7 +1684,7 @@ bool CompileAnsiC(const char *outFile, int MNU);
 // interpreted.cpp
 void CompileInterpreted(const char* outFile);
 // xinterpreted.cpp
-void CompileXInterpreted(char *outFile);
+void CompileXInterpreted(const char* outFile);
 // netzer.cpp
 void CompileNetzer(const char* outFile);
 
@@ -1695,7 +1695,7 @@ typedef struct RungAddrTag {
 extern RungAddr AddrOfRungN[MAX_RUNGS];
 
 // pascal.cpp
-void CompilePascal(char *outFile);
+void CompilePascal(const char* outFile);
 
 // pcports.cpp
 extern McuIoPinInfo IoPc[MAX_IO];
@@ -1704,6 +1704,6 @@ bool ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
 void FillPcPinInfo(McuIoPinInfo *pinInfo);
 
 // translit.cpp
-void Transliterate(char *dest, char *str);
+void Transliterate(char *dest, const char* str);
 
 #endif

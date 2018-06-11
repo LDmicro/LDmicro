@@ -22,6 +22,7 @@
 
 #include "ldmicro.h"
 #include "pcports.h"
+#include "filetracker.hpp"
 
 McuIoPinInfo IoPc[MAX_IO];
 int          IoPcCount;
@@ -373,7 +374,7 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo)
     }
 }
 //-----------------------------------------------------------------------------
-bool SavePcPorts(char *filename)
+bool SavePcPorts(const char *filename)
 {
     BOOL b = FALSE;
     b = WritePrivateProfileString(TEXT("LPT1"), TEXT("ADDR   "), TEXT("0x378"), filename);
@@ -413,9 +414,9 @@ static const char *IoTypeToPas(int IoType)
     return "NotUsePort";
 }
 //-----------------------------------------------------------------------------
-bool LoadPcPorts(char *filename)
+bool LoadPcPorts(const char *filename)
 {
-    FILE *f = fopen(filename, "r");
+    FileTracker f(filename, "r");
     if(!f)
         return false;
 
@@ -428,10 +429,9 @@ bool LoadPcPorts(char *filename)
     strcat(dest, filename);
     SetExt(dest, dest, "pas");
 
-    FILE *fu = fopen(dest, "w");
+    FileTracker fu(dest, "w");
     if(!fu) {
-        fclose(f);
-        Error(_("Couldn't open file '%s'"), dest);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
         return false;
     }
     fprintf(fu,
@@ -675,8 +675,6 @@ bool LoadPcPorts(char *filename)
         }
     }
     fprintf(fu, "end;\nend.");
-    fclose(fu);
-    fclose(f);
     return true;
 }
 //-----------------------------------------------------------------------------
