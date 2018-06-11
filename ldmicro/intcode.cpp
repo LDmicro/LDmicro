@@ -3236,7 +3236,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Op(INT_SET_BIT, "$scratch");
                 Op(INT_END_IF);
 
-                Op(INT_IF_BIT_SET, "$scratch");  
+                Op(INT_IF_BIT_SET, "$scratch");
 #if 0
                   Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", xPrev);
                   Op(INT_SET_VARIABLE_SUBTRACT, "$scratch", t->index, "$scratch");

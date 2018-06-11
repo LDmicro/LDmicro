@@ -732,7 +732,7 @@ bool LoadProjectFromFile(const char *filename)
     strcpy(CurrentCompileFile, "");
 
     FileTracker f(filename, "r");
-    if(!f)
+    if(!f.is_open())
         return false;
 
     strcpy(CurrentLdPath, filename);
