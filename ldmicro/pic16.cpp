@@ -4785,7 +4785,7 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
             }
             case INT_SET_PWM: {
-                //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
+                // Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
                 Comment(
                     "INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol, TOP;
@@ -4903,7 +4903,7 @@ static void CompileFromIntermediate(bool topLevel)
 /**/
                 // Copy l->d.setPwm.duty_cycle into Scratch0:1
                 if(IsNumber(a->name1)) {
-                    CopyLitToReg(Scratch0, 2, "", hobatoi(a->name1.c_str()), a->name1);
+                    CopyLitToReg(Scratch0, 2, "Scratch0:1", hobatoi(a->name1.c_str()), a->name1);
                 } else {
                     MemForVariable(a->name1, &addr1);
                     CopyRegToReg(Scratch0, 2, addr1, 2, "Scratch0:1", a->name1, false);
@@ -5231,63 +5231,81 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name1, &addr1);
                 //
                 int goPos, chsPos;
-                if(McuAs("Microchip PIC16F887 ")    //
-                   || McuAs("Microchip PIC16F886 ") //
-                   || McuAs(" PIC16F882 ")          //
-                   || McuAs(" PIC16F883 ")          //
-                   || McuAs(" PIC16F884 ")          //
-                   || McuAs(" PIC16F1512 ")         //
-                   || McuAs(" PIC16F1513 ")         //
-                   || McuAs(" PIC16F1516 ")         //
-                   || McuAs(" PIC16F1517 ")         //
-                   || McuAs(" PIC16F1518 ")         //
-                   || McuAs(" PIC16F1519 ")         //
-                   || McuAs(" PIC16F1526 ")         //
-                   || McuAs(" PIC16F1527 ")         //
-                   || McuAs(" PIC16F1933 ")         //
-                   || McuAs(" PIC16F1947 ")         //
-                   || McuAs(" PIC12F675 ")          //
-                   || McuAs(" PIC12F752 ")          //
-                   || McuAs(" PIC12F683 ")          //
-                   || McuAs(" PIC16F1824 ")         //
-                   || McuAs(" PIC16F1827 ")         //
+                if(McuAs("Microchip PIC16F887 ") || //
+                   McuAs("Microchip PIC16F886 ") || //
+                   McuAs(" PIC16F882 ")          || //
+                   McuAs(" PIC16F883 ")          || //
+                   McuAs(" PIC16F884 ")          || //
+                   McuAs(" PIC16F1512 ")         || //
+                   McuAs(" PIC16F1513 ")         || //
+                   McuAs(" PIC16F1516 ")         || //
+                   McuAs(" PIC16F1517 ")         || //
+                   McuAs(" PIC16F1518 ")         || //
+                   McuAs(" PIC16F1519 ")         || //
+                   McuAs(" PIC16F1526 ")         || //
+                   McuAs(" PIC16F1527 ")         || //
+                   McuAs(" PIC16F1933 ")         || //
+                   McuAs(" PIC16F1947 ")         || //
+                   McuAs(" PIC12F675 ")          || //
+                   McuAs(" PIC12F683 ")          || //
+                   McuAs(" PIC12F752 ")          || //
+                   McuAs(" PIC16F1824 ")         || //
+                   McuAs(" PIC16F1827 ")         //
                 ) {
                     goPos = 1;
                     chsPos = 2;
-                } else if(McuAs(" PIC16F819 ")    //
-                          || McuAs(" PIC16F873 ") //
-                          || McuAs(" PIC16F874 ") //
-                          || McuAs(" PIC16F876 ") //
-                          || McuAs(" PIC16F877 ") //
-                          || McuAs(" PIC16F88 ")  //
-                          || McuAs(" PIC16F72 ")  //
+                } else if(McuAs(" PIC16F819 ") || //
+                          McuAs(" PIC16F873 ") || //
+                          McuAs(" PIC16F874 ") || //
+                          McuAs(" PIC16F876 ") || //
+                          McuAs(" PIC16F877 ") || //
+                          McuAs(" PIC16F88 ")  || //
+                          McuAs(" PIC16F72 ")  //
                 ) {
                     goPos = 2;
                     chsPos = 3;
                 } else
                     THROW_COMPILER_EXCEPTION("Internal error.");
-                //
-                if(Prog.mcuClock > 5000000) {        // 5 MHz
-                    adcs = 2;                        // 32*Tosc
-                } else if(Prog.mcuClock > 1250000) { // 1.25 MHz
-                    adcs = 1;                        // 8*Tosc
+
+                if((Prog.mcu->core == EnhancedMidrangeCore14bit) || //
+                     McuAs(" PIC12F683 ") || //
+                     McuAs(" PIC12F675 ") || //
+                     McuAs(" PIC12F752 ") //
+                ) {
+                    if(Prog.mcuClock > 8000000) {        // 20 MHz
+                        adcs = 6;                        // Fosc/64
+                    } else if(Prog.mcuClock > 4000000) { // 8 MHz
+                        adcs = 2;                        // Fosc/32
+                    } else if(Prog.mcuClock > 1000000) { // 4 MHz
+                        adcs = 5;                        // Fosc/16
+                    } else if(Prog.mcuClock >  500000) { // 1 MHz
+                        adcs = 4;                        // Fosc/4
+                    } else {                             // 0.5 MHz
+                        adcs = 0;                        // Fosc/2
+                    }
                 } else {
-                    adcs = 0; // 2*Tosc
+                    if(Prog.mcuClock > 5000000) {        // 20 MHz
+                        adcs = 2;                        // 32*Tosc
+                    } else if(Prog.mcuClock > 1250000) { // 5 MHz
+                        adcs = 1;                        // 8*Tosc
+                    } else {                             // 1.25 MHz
+                        adcs = 0;                        // 2*Tosc
+                    }
                 }
-                //
+
                 int adcsPos;
-                if(McuAs(" PIC16F1512 ")    //
-                   || McuAs(" PIC16F1513 ") //
-                   || McuAs(" PIC16F1516 ") //
-                   || McuAs(" PIC16F1517 ") //
-                   || McuAs(" PIC16F1518 ") //
-                   || McuAs(" PIC16F1519 ") //
-                   || McuAs(" PIC16F1526 ") //
-                   || McuAs(" PIC16F1527 ") //
-                   || McuAs(" PIC16F1933 ") //
-                   || McuAs(" PIC16F1947 ") //
-                   || McuAs(" PIC16F1824 ") //
-                   || McuAs(" PIC16F1827 ") //
+                if(McuAs(" PIC16F1512 ") || //
+                   McuAs(" PIC16F1513 ") || //
+                   McuAs(" PIC16F1516 ") || //
+                   McuAs(" PIC16F1517 ") || //
+                   McuAs(" PIC16F1518 ") || //
+                   McuAs(" PIC16F1519 ") || //
+                   McuAs(" PIC16F1526 ") || //
+                   McuAs(" PIC16F1527 ") || //
+                   McuAs(" PIC16F1933 ") || //
+                   McuAs(" PIC16F1947 ") || //
+                   McuAs(" PIC16F1824 ") || //
+                   McuAs(" PIC16F1827 ") //
                 ) {
                     adcsPos = 4;                                            // in REG_ADCON1
                     WriteRegister(REG_ADCON0,                               //
@@ -5302,18 +5320,18 @@ static void CompileFromIntermediate(bool topLevel)
                                       (adcs << adcsPos) | //
                                       (0 << 0)            // 00 = VREF is connected to VDD
                     );
-                } else if(McuAs(" PIC16F819 ")    //
-                          || McuAs(" PIC16F873 ") //
-                          || McuAs(" PIC16F874 ") //
-                          || McuAs(" PIC16F876 ") //
-                          || McuAs(" PIC16F877 ") //
-                          || McuAs(" PIC16F88 ")  //
-                          || McuAs(" PIC16F72 ")  //
-                          || McuAs(" PIC16F882 ") //
-                          || McuAs(" PIC16F883 ") //
-                          || McuAs(" PIC16F884 ") //
-                          || McuAs(" PIC16F886 ") //
-                          || McuAs(" PIC16F887 ") //
+                } else if(McuAs(" PIC16F819 ") || //
+                          McuAs(" PIC16F873 ") || //
+                          McuAs(" PIC16F874 ") || //
+                          McuAs(" PIC16F876 ") || //
+                          McuAs(" PIC16F877 ") || //
+                          McuAs(" PIC16F72 ")  || //
+                          McuAs(" PIC16F88 ")  || //
+                          McuAs(" PIC16F882 ") || //
+                          McuAs(" PIC16F883 ") || //
+                          McuAs(" PIC16F884 ") || //
+                          McuAs(" PIC16F886 ") || //
+                          McuAs(" PIC16F887 ") //
                 ) {
                     adcsPos = 6;                                                // in REG_ADCON0
                     WriteRegister(REG_ADCON0,                                   //
@@ -5328,20 +5346,20 @@ static void CompileFromIntermediate(bool topLevel)
                                   (1 << 7) |   // right-justified
                                       (0 << 0) // for now, all analog inputs
                     );
-                } else if(McuAs(" PIC12F675 ") || //
-                          McuAs(" PIC12F752 ") || //
-                          McuAs(" PIC12F683 ") //
+                } else if(McuAs(" PIC12F683 ") || //
+                          McuAs(" PIC12F675 ") || //
+                          McuAs(" PIC12F752 ") //
                 ) {
                     adcsPos = 4; // in REG_ANSEL
                     WriteRegister(REG_ANSEL, (adcs << adcsPos) | (1 << MuxForAdcVariable(a->name1)));
 
-                    WriteRegister(REG_ADCON0,                                   //
-                                  (1 << 7) |                                    // right-justified
-                                      (0 << 6) |                                // VDD Voltage Reference
-                                      (MuxForAdcVariable(a->name1) << chsPos) | // Analog Channel Select bits
-                                      (0 << goPos) |                            // don't start yet
-                                                                                // bit 1 unimplemented
-                                      (1 << 0)                                  // A/D peripheral on
+                    WriteRegister(REG_ADCON0,                               //
+                                  (1 << 7) |                                // right-justified
+                                  (0 << 6) |                                // VDD Voltage Reference
+                                  (MuxForAdcVariable(a->name1) << chsPos) | // Analog Channel Select bits
+                                  (0 << goPos) |                            // don't start yet
+                                                                            // bit 1 unimplemented
+                                  (1 << 0)                                  // A/D peripheral on
                     );
                 } else
                     THROW_COMPILER_EXCEPTION("Internal error.");
@@ -5382,14 +5400,14 @@ static void CompileFromIntermediate(bool topLevel)
                 // hook those pins back up to the digital inputs in case
                 // some of them are used that way
                 if(REG_ADCON1 != -1)
-                    WriteRegister(REG_ADCON1,  //
-                                  (1 << 7) |   // right-justify A/D result
-                                      (6 << 0) // all digital inputs
+                    WriteRegister(REG_ADCON1, //
+                                  (1 << 7) |  // right-justify A/D result
+                                  (6 << 0)    // all digital inputs
                     );
 
-                if(McuAs("Microchip PIC16F88 ")
-                   //              || McuAs(" PIC12F675 ")
-                   //              || McuAs(" PIC12F683 ")
+                if(McuAs("Microchip PIC16F88 ") // || //
+                    // McuAs(" PIC12F675 ") || //
+                    // McuAs(" PIC12F683 ") //
                 ) {
                     Instruction(OP_CLRF, REG_ANSEL);
                 } else if(McuAs("Microchip PIC16F887 ") || //
@@ -6329,7 +6347,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               McuAs(" PIC12F683 ") //
     ) {
         REG_CMCON = 0x19;
-        //REG_IOCA    = 0x96;
+        // REG_IOCA    = 0x96;
     } else if(McuAs("Microchip PIC16F819 ")    //
               || McuAs("Microchip PIC16F876 ") //
               || McuAs("Microchip PIC16F877 ") //
@@ -6597,8 +6615,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_EEDATA = 0x10c;
         REG_EEADR = 0x10d;
     } else if(McuAs("Microchip PIC16F628 ") || //
-              McuAs(" PIC12F675 ") || //
-              McuAs(" PIC12F683 ")       //
+              McuAs(" PIC12F675 ") ||          //
+              McuAs(" PIC12F683 ")             //
     ) {
         REG_EECON1 = 0x9c;
         REG_EECON2 = 0x9d;
@@ -6752,14 +6770,14 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         CONFIG_ADDR2 = 0x8008;
     } else if(McuAs("Microchip PIC16F628 ") || //
               McuAs("Microchip PIC16F819 ") || //
-              McuAs("Microchip PIC16F877 ") || //
               McuAs("Microchip PIC16F876 ") || //
-              McuAs(" PIC16F874 ")          || //
+              McuAs("Microchip PIC16F877 ") || //
               McuAs(" PIC16F873 ")          || //
+              McuAs(" PIC16F874 ")          || //
               McuAs(" PIC16F72 ")           || //
               McuAs(" PIC12F675 ")          || //
-              McuAs(" PIC12F752 ")          || //
-              McuAs(" PIC12F683 ")          //
+              McuAs(" PIC12F683 ")          || //
+              McuAs(" PIC12F752 ")          //
     ) {
         CONFIG_ADDR1 = 0x2007;
     } else if(McuAs(" PIC10F200 ")    //
@@ -7034,6 +7052,18 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
             FwdAddrIsNow(notWdtWakeUp);
         }
     }
+
+    if(McuAs("Microchip PIC16F628 ") || //
+       McuAs(" PIC12F683 ") ||          //
+       McuAs(" PIC12F675 ")             //
+    ) {
+        // This is also a nasty special case; the comparators on the
+        // PIC16F628 are enabled by default and need to be disabled, or
+        // else the PORTA GPIOs don't work.
+        Comment("Comparator Off. Normal port I/O.");
+        WriteRegister(REG_CMCON, 0x07);
+    }
+
     if(McuAs("Microchip PIC16F877 ") || //
        McuAs("Microchip PIC16F819 ") || //
        McuAs("Microchip PIC16F876 ")    //
@@ -7042,7 +7072,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         // inputs, so turn that around
         WriteRegister(REG_ADCON1,  //
                       (1 << 7) |   // right-justify A/D result
-                          (7 << 0) // all digital inputs
+                      (7 << 0)     // all digital inputs
         );
     } else if(McuAs(" PIC16F72 ")) {
         WriteRegister(REG_ADCON1, 0x7); // all digital inputs
@@ -7050,12 +7080,12 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     Comment("Set up the ANSELx registers. 1-analog input, 0-digital I/O.");
     if(McuAs("Microchip PIC16F88 ") || //
-       McuAs(" PIC12F675 ")      || //
-       McuAs(" PIC12F683 ")      //
+       McuAs(" PIC12F683 ") ||         //
+       McuAs(" PIC12F675 ")            //
     ) {
         Instruction(OP_CLRF, REG_ANSEL);       // all digital inputs
-    } else if(McuAs("Microchip PIC16F887 ")    //
-              || McuAs("Microchip PIC16F886 ") //
+    } else if(McuAs("Microchip PIC16F887 ") || //
+              McuAs("Microchip PIC16F886 ")    //
     ) {
         Instruction(OP_CLRF, REG_ANSEL);  // all digital inputs
         Instruction(OP_CLRF, REG_ANSELH); // all digital inputs
@@ -7100,17 +7130,6 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Instruction(OP_CLRF, REG_ANSELG);
         if(isAnsel[6])
             WriteRegister(REG_ANSELG, isAnsel[6]);
-    }
-
-    if(McuAs("Microchip PIC16F628 ") || //
-       McuAs(" PIC12F675 ") ||          //
-       McuAs(" PIC12F683 ")             //
-    ) {
-        // This is also a nasty special case; the comparators on the
-        // PIC16F628 are enabled by default and need to be disabled, or
-        // else the PORTA GPIOs don't work.
-        Comment("Comparator Off. Normal port I/O.");
-        WriteRegister(REG_CMCON, 0x07);
     }
 
     if(Prog.mcu->core == BaselineCore12bit) {
