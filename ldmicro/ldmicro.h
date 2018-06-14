@@ -671,6 +671,7 @@ typedef struct ElemNPulseTag {
 
 typedef struct ElemReadAdcTag {
     char    name[MAX_NAME_LEN];
+    int     refs; // REFS1:0 for AVR // PCFG3:0 for PIC
 } ElemReadAdc;
 
 typedef struct ElemSetPwmTag {
@@ -1175,7 +1176,7 @@ void ShowSpiDialog(ElemLeaf *l);
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);
-void ShowReadAdcDialog(char *name);
+void ShowReadAdcDialog(char *name, int *refs);
 void ShowGotoDialog(int which, char *name);
 void ShowRandomDialog(char *name);
 void ShowSetPwmDialog(void *e);

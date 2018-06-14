@@ -4811,14 +4811,15 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
 
                 BYTE mux = MuxForAdcVariable(a->name1);
+                BYTE refs = a->literal & 0x3;
                 if(mux > 0x0F)
                     THROW_COMPILER_EXCEPTION_FMT("mux=0x%x", mux);
                 WriteMemory(
                     REG_ADMUX,
-                    (0 << 7) |
-                        //                  (0 << 6) |              // AREF, Internal Vref turned off.
-                        (1 << 6)
-                        | // AVCC as reference with external capacitor 100nF at AREF to GND pin. // Arduino compatible.
+                        // (0 << 7) | //
+                        // (0 << 6) | // AREF, Internal Vref turned off.
+                        // (1 << 6) | // AVCC as reference with external capacitor 100nF at AREF to GND pin. // Arduino compatible.
+                        (refs << 6) | //
                         (0 << 5) | // result is right adjusted.
                         mux & 0x07);
 

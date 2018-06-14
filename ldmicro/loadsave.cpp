@@ -78,10 +78,9 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.coil.resetOnly = resetOnly != 0;
         return res;
     };
-
+	bool scanned = true;
     if(memcmp(line, "COMMENT", 7) == 0) {
         FrmStrToStr(l->d.comment.str, &line[8]);
-
         *which = ELEM_COMMENT;
     } else if(scan_contact_3() == 3) {
         *which = ELEM_CONTACTS;
@@ -352,7 +351,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_MUL;
     } else if(sscanf(line, "DIV %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_DIV;
-
+	} else 
+		scanned = false;
+	if (scanned) {
+		; //
     } else if(sscanf(line, "SET_BIT %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_SET_BIT;
     } else if(sscanf(line, "CLEAR_BIT %s %s", l->d.move.dest, l->d.move.src) == 2) {
@@ -387,7 +389,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_LEQ;
     } else if(sscanf(line, "LES %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_LES;
+    } else if(sscanf(line, "READ_ADC %s %d", l->d.readAdc.name, &l->d.readAdc.refs) == 2) {
+        *which = ELEM_READ_ADC;
     } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name) == 1) {
+        l->d.readAdc.refs = 0;
         *which = ELEM_READ_ADC;
     } else if(sscanf(line, "RANDOM %s", l->d.readAdc.name) == 1) {
         *which = ELEM_RANDOM;
@@ -1205,7 +1210,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_READ_ADC:
-            fprintf(f, "READ_ADC %s\n", l->d.readAdc.name);
+            fprintf(f, "READ_ADC %s %d\n", l->d.readAdc.name, l->d.readAdc.refs);
             break;
 
         case ELEM_RANDOM:

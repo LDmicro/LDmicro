@@ -331,7 +331,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_READ_ADC:
-                fprintf(f, "read adc '%s'", IntCode[i].name1.c_str());
+                fprintf(f, "read adc '%s', refs is '%d'", IntCode[i].name1.c_str(), IntCode[i].literal);
                 break;
 
             case INT_SET_SEED_RANDOM:
@@ -2722,7 +2722,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_READ_ADC:
             Comment(3, "ELEM_READ_ADC");
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_READ_ADC, l->d.readAdc.name);
+              Op(INT_READ_ADC, l->d.readAdc.name, l->d.readAdc.refs);
             Op(INT_END_IF);
             break;
 
