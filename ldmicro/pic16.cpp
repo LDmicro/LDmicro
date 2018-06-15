@@ -5229,6 +5229,7 @@ static void CompileFromIntermediate(bool topLevel)
                 BYTE adcs;
 
                 MemForVariable(a->name1, &addr1);
+                BYTE refs = a->literal & 0xF;
                 //
                 int goPos, chsPos;
                 if(McuAs("Microchip PIC16F887 ") || //
@@ -5336,15 +5337,16 @@ static void CompileFromIntermediate(bool topLevel)
                     adcsPos = 6;                                                // in REG_ADCON0
                     WriteRegister(REG_ADCON0,                                   //
                                   (adcs << adcsPos) |                           //
-                                      (MuxForAdcVariable(a->name1) << chsPos) | //
-                                      (0 << goPos) |                            // don't start yet
-                                                                                // bit 1 unimplemented
-                                      (1 << 0)                                  // A/D peripheral on
+                                  (MuxForAdcVariable(a->name1) << chsPos) | //
+                                  (0 << goPos) |                            // don't start yet
+                                                                            // bit 1 unimplemented
+                                  (1 << 0)                                  // A/D peripheral on
                     );
 
                     WriteRegister(REG_ADCON1,  //
                                   (1 << 7) |   // right-justified
-                                      (0 << 0) // for now, all analog inputs
+                                  // (0 << 0)  // for now, all analog inputs
+                                  (refs << 4)  //
                     );
                 } else if(McuAs(" PIC12F683 ") || //
                           McuAs(" PIC12F675 ") || //
@@ -5402,7 +5404,8 @@ static void CompileFromIntermediate(bool topLevel)
                 if(REG_ADCON1 != -1)
                     WriteRegister(REG_ADCON1, //
                                   (1 << 7) |  // right-justify A/D result
-                                  (6 << 0)    // all digital inputs
+                                  // (6 << 0)    // all digital inputs
+                                  (refs << 4)  //
                     );
 
                 if(McuAs("Microchip PIC16F88 ") // || //
@@ -5981,11 +5984,11 @@ static void WriteMultiplyRoutine8(DWORD addr3, DWORD addr1, DWORD addr2, int sov
 
 //-----------------------------------------------------------------------------
 // Write a subroutine to do a 16x16 signed multiply. One operand in
-// Scratch1:Scratch0, other in Scratch3:Scratch2, result in Scratch3:Scratch2.
+// Scratch1:Scratch0, other in Scratch3:Scratch2, result in Scratch5:Scratch4:Scratch3:Scratch2.
 //-----------------------------------------------------------------------------
 static void WriteMultiplyRoutine()
 {
-    Comment("MultiplyRoutine16x16");
+    Comment("MultiplyRoutine16x16=32 (2x2=4)");
     DWORD savePicProgWriteP = PicProgWriteP;
 #ifdef MOVE_TO_PAGE_0
     MultiplyRoutineAddress = PicProgWriteP;
@@ -5993,13 +5996,13 @@ static void WriteMultiplyRoutine()
     FwdAddrIsNow(MultiplyRoutineAddress);
 #endif
 
-    DWORD result3 = Scratch5;
-    DWORD result2 = Scratch4;
-    DWORD result1 = Scratch3;
-    DWORD result0 = Scratch2;
+    DWORD result3 = Scratch5;             // result
+    DWORD result2 = Scratch4;             // result
+    DWORD result1 = Scratch3; // operand2 // result
+    DWORD result0 = Scratch2; // operand2 // result
 
-    DWORD multiplicand0 = Scratch0;
-    DWORD multiplicand1 = Scratch1;
+    DWORD multiplicand0 = Scratch0; // operand1
+    DWORD multiplicand1 = Scratch1; // operand1
 
     DWORD counter = Scratch6;
 
@@ -6018,12 +6021,15 @@ static void WriteMultiplyRoutine()
     top = PicProgWriteP;
     Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
     Instruction(OP_GOTO, dontAdd);
+
     Instruction(OP_MOVF, multiplicand0, DEST_W);
     Instruction(OP_ADDWF, result2, DEST_F);
     Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
     Instruction(OP_INCF, result3, DEST_F);
+
     Instruction(OP_MOVF, multiplicand1, DEST_W);
     Instruction(OP_ADDWF, result3, DEST_F);
+
     FwdAddrIsNow(dontAdd);
 
     Instruction(OP_BCF, REG_STATUS, STATUS_C);
@@ -6045,12 +6051,14 @@ static void WriteMultiplyRoutine()
 }
 
 //-----------------------------------------------------------------------------
-// Write a subroutine to do a 24x16 signed multiply. One operand in
-// Scratch1:Scratch0, other in Scratch4:Scratch3:Scratch2, result in Scratch4:Scratch3:Scratch2.
+// Write a subroutine to do a 24x16 signed multiply.
+// One operand in                       Scratch1:Scratch0,
+// other in                    Scratch4:Scratch3:Scratch2,
+// result in Scratch6:Scratch5:Scratch4:Scratch3:Scratch2.
 //-----------------------------------------------------------------------------
 static void WriteMultiplyRoutine24x16()
 {
-    Comment("MultiplyRoutine24x16");
+    Comment("MultiplyRoutine24x16=40 (3x2=5)");
     DWORD savePicProgWriteP = PicProgWriteP;
 #ifdef MOVE_TO_PAGE_0
     MultiplyRoutineAddress24x16 = PicProgWriteP;
@@ -6058,26 +6066,26 @@ static void WriteMultiplyRoutine24x16()
     FwdAddrIsNow(MultiplyRoutineAddress24x16);
 #endif
 
-    DWORD result5 = Scratch7;
-    DWORD result4 = Scratch6;
-    DWORD result3 = Scratch5;
-    DWORD result2 = Scratch4;
-    DWORD result1 = Scratch3;
-    DWORD result0 = Scratch2;
+    DWORD result4 = Scratch6;             // result
+    DWORD result3 = Scratch5;             // result
+    DWORD result2 = Scratch4; // operand2 // result
+    DWORD result1 = Scratch3; // operand2 // result
+    DWORD result0 = Scratch2; // operand2 // result
 
-    DWORD multiplicand0 = Scratch0;
-    DWORD multiplicand1 = Scratch1;
+    DWORD multiplicand0 = Scratch0; // operand1
+    DWORD multiplicand1 = Scratch1; // operand1
+    DWORD multiplicand2 = Scratch7; // always 0
+    Instruction(OP_CLRF, multiplicand2);
 
     DWORD counter = Scratch8;
 
     DWORD dontAdd = AllocFwdAddr();
     DWORD top;
 
-    Instruction(OP_CLRF, result5);
     Instruction(OP_CLRF, result4);
     Instruction(OP_CLRF, result3);
-    Instruction(OP_CLRF, result2);
     Instruction(OP_BCF, REG_STATUS, STATUS_C);
+    Instruction(OP_RRF, result2, DEST_F);
     Instruction(OP_RRF, result1, DEST_F);
     Instruction(OP_RRF, result0, DEST_F);
 
@@ -6087,18 +6095,33 @@ static void WriteMultiplyRoutine24x16()
     top = PicProgWriteP;
     Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
     Instruction(OP_GOTO, dontAdd);
+#if 1
     Instruction(OP_MOVF, multiplicand0, DEST_W);
-    Instruction(OP_ADDWF, result2, DEST_F);
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
-    Instruction(OP_INCF, result3, DEST_F);
-    Instruction(OP_MOVF, multiplicand1, DEST_W);
     Instruction(OP_ADDWF, result3, DEST_F);
     Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
     Instruction(OP_INCF, result4, DEST_F);
+
+    Instruction(OP_MOVF, multiplicand1, DEST_W);
+    Instruction(OP_ADDWF, result4, DEST_F);
+//  Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+//  Instruction(OP_INCF, result5, DEST_F);
+#else
+    Instruction(OP_MOVF, multiplicand0, DEST_W);
+    Instruction(OP_ADDWF, result3, DEST_F);
+
+    Instruction(OP_MOVF, multiplicand1, DEST_W);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+    Instruction(OP_INCFSZ, multiplicand1, DEST_W);
+    Instruction(OP_ADDWF, result4, DEST_F);
+
+//  Instruction(OP_MOVF, multiplicand3, DEST_W);
+//  Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+//  Instruction(OP_INCFSZ, multiplicand3, DEST_W);
+//  Instruction(OP_ADDWF, result5, DEST_F);
+#endif
     FwdAddrIsNow(dontAdd);
 
     Instruction(OP_BCF, REG_STATUS, STATUS_C);
-    Instruction(OP_RRF, result5, DEST_F);
     Instruction(OP_RRF, result4, DEST_F);
     Instruction(OP_RRF, result3, DEST_F);
     Instruction(OP_RRF, result2, DEST_F);
