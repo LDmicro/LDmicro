@@ -4603,7 +4603,7 @@ static void CompileFromIntermediate(bool topLevel)
                     CopyRegToReg(addr1, sov1, addrB, sov, a->name1, "addrB", true);
                     break;
             }
-            case INT_SET_VARIABLE_MULTIPLY:
+            case -INT_SET_VARIABLE_MULTIPLY:
                 MultiplyNeeded = true;
 
                 MemForVariable(a->name1, &addr1);
@@ -4628,6 +4628,37 @@ static void CompileFromIntermediate(bool topLevel)
                 Instruction(OP_MOVWF, addr1 + 1);
                 break;
 
+            case INT_SET_VARIABLE_MULTIPLY: {
+                Comment("INT_SET_VARIABLE_MULTIPLY %s := %s + %s",
+                        a->name1.c_str(),
+                        a->name2.c_str(),
+                        a->name3.c_str());
+                MemForVariable(a->name1, &addr1);
+
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                sov3 = SizeOfVar(a->name3);
+                if(sov2 < 2)
+                    sov2 = 2;
+                if(sov3 < 2)
+                    sov3 = 2;
+                int sov12 = std::max(sov1, sov2);
+
+                CopyArgToReg(true, Scratch2, sov12, a->name2, true);
+                CopyArgToReg(true, Scratch0, sov3, a->name3, true);
+
+                if((sov12 == 3) && (sov3 <= 2)) {
+                    MultiplyNeeded24x16 = true;
+                    CallWithPclath(MultiplyRoutineAddress24x16);
+                } else if((sov12 <= 2) && (sov3 <= 2)) {
+                    MultiplyNeeded = true;
+                    CallWithPclath(MultiplyRoutineAddress);
+                } else
+                     oops();
+
+                CopyRegToReg(addr1, sov1, Scratch2, sov1, a->name1, "Scratch2", true);
+                break;
+            }
             case INT_SET_VARIABLE_MOD:
             case INT_SET_VARIABLE_DIVIDE:
                 DivideNeeded = true;
@@ -5345,8 +5376,9 @@ static void CompileFromIntermediate(bool topLevel)
 
                     WriteRegister(REG_ADCON1,  //
                                   (1 << 7) |   // right-justified
-                                  // (0 << 0)  // for now, all analog inputs
+                                  //(0 << 0)   // for now, all analog inputs
                                   (refs << 4)  //
+
                     );
                 } else if(McuAs(" PIC12F683 ") || //
                           McuAs(" PIC12F675 ") || //
@@ -6028,13 +6060,71 @@ static void WriteMultiplyRoutine()
     Instruction(OP_INCF, result3, DEST_F);
 
     Instruction(OP_MOVF, multiplicand1, DEST_W);
-    Instruction(OP_ADDWF, result3, DEST_F);
+    Instruction(OP_ADDWF, result3, DEST_F); // never overflow occurs here
 
     FwdAddrIsNow(dontAdd);
 
     Instruction(OP_BCF, REG_STATUS, STATUS_C);
     Instruction(OP_RRF, result3, DEST_F);
     Instruction(OP_RRF, result2, DEST_F);
+    Instruction(OP_RRF, result1, DEST_F);
+    Instruction(OP_RRF, result0, DEST_F);
+
+    Instruction(OP_DECFSZ, counter, DEST_F);
+    Instruction(OP_GOTO, top);
+
+    if(Prog.mcu->core == BaselineCore12bit)
+        Instruction(OP_RETLW);
+    else
+        Instruction(OP_RETURN);
+
+    if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
+        THROW_COMPILER_EXCEPTION("Internal error.");
+}
+
+//-----------------------------------------------------------------------------
+// Write a subroutine to do a 8x8 signed multiply.
+// One operand in     Scratch0,
+// other in           Scratch2,
+// result in Scratch3:Scratch2.
+//-----------------------------------------------------------------------------
+static void WriteMultiplyRoutine8x8()
+{
+    Comment("MultiplyRoutine8x8=16 (1x1=2)");
+    DWORD savePicProgWriteP = PicProgWriteP;
+#ifdef MOVE_TO_PAGE_0
+    MultiplyRoutineAddress = PicProgWriteP;
+#else
+    FwdAddrIsNow(MultiplyRoutineAddress);
+#endif
+
+    DWORD result1 = Scratch3; //          // result
+    DWORD result0 = Scratch2; // operand2 // result
+
+    DWORD multiplicand0 = Scratch0; // operand1
+
+    DWORD counter = Scratch6;
+
+    DWORD dontAdd = AllocFwdAddr();
+    DWORD top;
+
+    Instruction(OP_CLRF, result1);
+    Instruction(OP_BCF, REG_STATUS, STATUS_C);
+    Instruction(OP_RRF, result0, DEST_F);
+
+    Instruction(OP_MOVLW, 8);
+    Instruction(OP_MOVWF, counter);
+
+    top = PicProgWriteP;
+    Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
+    Instruction(OP_GOTO, dontAdd);
+
+    Instruction(OP_MOVF, multiplicand0, DEST_W);
+    Instruction(OP_ADDWF, result1, DEST_F); // never overflow occurs here
+
+    FwdAddrIsNow(dontAdd);
+
+    Instruction(OP_BCF, REG_STATUS, STATUS_C);
     Instruction(OP_RRF, result1, DEST_F);
     Instruction(OP_RRF, result0, DEST_F);
 
@@ -6074,8 +6164,8 @@ static void WriteMultiplyRoutine24x16()
 
     DWORD multiplicand0 = Scratch0; // operand1
     DWORD multiplicand1 = Scratch1; // operand1
-    DWORD multiplicand2 = Scratch7; // always 0
-    Instruction(OP_CLRF, multiplicand2);
+//  DWORD multiplicand2 = Scratch7; // always 0
+//  Instruction(OP_CLRF, multiplicand2);
 
     DWORD counter = Scratch8;
 
@@ -6102,9 +6192,7 @@ static void WriteMultiplyRoutine24x16()
     Instruction(OP_INCF, result4, DEST_F);
 
     Instruction(OP_MOVF, multiplicand1, DEST_W);
-    Instruction(OP_ADDWF, result4, DEST_F);
-//  Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
-//  Instruction(OP_INCF, result5, DEST_F);
+    Instruction(OP_ADDWF, result4, DEST_F); // never overflow occurs here
 #else
     Instruction(OP_MOVF, multiplicand0, DEST_W);
     Instruction(OP_ADDWF, result3, DEST_F);
@@ -6112,12 +6200,7 @@ static void WriteMultiplyRoutine24x16()
     Instruction(OP_MOVF, multiplicand1, DEST_W);
     Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
     Instruction(OP_INCFSZ, multiplicand1, DEST_W);
-    Instruction(OP_ADDWF, result4, DEST_F);
-
-//  Instruction(OP_MOVF, multiplicand3, DEST_W);
-//  Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
-//  Instruction(OP_INCFSZ, multiplicand3, DEST_W);
-//  Instruction(OP_ADDWF, result5, DEST_F);
+    Instruction(OP_ADDWF, result4, DEST_F); // never overflow occurs here
 #endif
     FwdAddrIsNow(dontAdd);
 
@@ -6171,6 +6254,127 @@ static void WriteDivideRoutine()
     DivideRoutineAddress = PicProgWriteP;
 #else
     FwdAddrIsNow(DivideRoutineAddress);
+#endif
+
+    Instruction(OP_MOVF, dividend1, DEST_W);
+    Instruction(OP_XORWF, divisor1, DEST_W);
+    Instruction(OP_MOVWF, sign);
+
+    Instruction(OP_BTFSS, divisor1, 7);
+    Instruction(OP_GOTO, dontNegateDivisor);
+    Instruction(OP_COMF, divisor0, DEST_F);
+    Instruction(OP_COMF, divisor1, DEST_F);
+    Instruction(OP_INCF, divisor0, DEST_F);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
+    Instruction(OP_INCF, divisor1, DEST_F);
+    FwdAddrIsNow(dontNegateDivisor);
+
+    Instruction(OP_BTFSS, dividend1, 7);
+    Instruction(OP_GOTO, dontNegateDividend);
+    Instruction(OP_COMF, dividend0, DEST_F);
+    Instruction(OP_COMF, dividend1, DEST_F);
+    Instruction(OP_INCF, dividend0, DEST_F);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
+    Instruction(OP_INCF, dividend1, DEST_F);
+    FwdAddrIsNow(dontNegateDividend);
+
+    Instruction(OP_CLRF, remainder1);
+    Instruction(OP_CLRF, remainder0);
+
+    Instruction(OP_BCF, REG_STATUS, STATUS_C);
+
+    Instruction(OP_MOVLW, 17);
+    Instruction(OP_MOVWF, counter);
+
+    loop = PicProgWriteP;
+    Instruction(OP_RLF, dividend0, DEST_F);
+    Instruction(OP_RLF, dividend1, DEST_F);
+
+    Instruction(OP_DECF, counter, DEST_F);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
+    Instruction(OP_GOTO, done);
+
+    Instruction(OP_RLF, remainder0, DEST_F);
+    Instruction(OP_RLF, remainder1, DEST_F);
+
+    Instruction(OP_MOVF, divisor0, DEST_W);
+    Instruction(OP_SUBWF, remainder0, DEST_F);
+    Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
+    Instruction(OP_DECF, remainder1, DEST_F);
+    Instruction(OP_MOVF, divisor1, DEST_W);
+    Instruction(OP_SUBWF, remainder1, DEST_F);
+
+    Instruction(OP_BTFSS, remainder1, 7);
+    Instruction(OP_GOTO, notNegative);
+
+    Instruction(OP_MOVF, divisor0, DEST_W);
+    Instruction(OP_ADDWF, remainder0, DEST_F);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
+    Instruction(OP_INCF, remainder1, DEST_F);
+    Instruction(OP_MOVF, divisor1, DEST_W);
+    Instruction(OP_ADDWF, remainder1, DEST_F);
+
+    Instruction(OP_BCF, REG_STATUS, STATUS_C);
+    Instruction(OP_GOTO, loop);
+
+    FwdAddrIsNow(notNegative);
+    Instruction(OP_BSF, REG_STATUS, STATUS_C);
+    Instruction(OP_GOTO, loop);
+
+    FwdAddrIsNow(done);
+    Instruction(OP_BTFSS, sign, 7);
+    if(Prog.mcu->core == BaselineCore12bit)
+        Instruction(OP_RETLW, 0);
+    else
+        Instruction(OP_RETURN, 0, 0);
+
+    Instruction(OP_COMF, dividend0, DEST_F);
+    Instruction(OP_COMF, dividend1, DEST_F);
+    Instruction(OP_INCF, dividend0, DEST_F);
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
+    Instruction(OP_INCF, dividend1, DEST_F);
+    if(Prog.mcu->core == BaselineCore12bit)
+        Instruction(OP_RETLW, 0);
+    else
+        Instruction(OP_RETURN, 0, 0);
+
+    if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
+        THROW_COMPILER_EXCEPTION("Internal error.");
+}
+
+//-----------------------------------------------------------------------------
+// Write a subroutine to do a 24/16 signed divide.
+// Call with dividend in  Scratch2:Scratch1:Scratch0,
+// divisor in             Scratch4:Scratch3,
+// and get the result in  Scratch1:Scratch0.
+//-----------------------------------------------------------------------------
+static void WriteDivideRoutine24x16()
+{
+    Comment("DivideRoutine16");
+    DWORD savePicProgWriteP = PicProgWriteP;
+
+    DWORD dividend0 = Scratch0;
+    DWORD dividend1 = Scratch1;
+
+    DWORD divisor0 = Scratch2;
+    DWORD divisor1 = Scratch3;
+
+    DWORD remainder0 = Scratch4;
+    DWORD remainder1 = Scratch5;
+
+    DWORD counter = Scratch6;
+    DWORD sign = Scratch7;
+
+    DWORD dontNegateDivisor = AllocFwdAddr();
+    DWORD dontNegateDividend = AllocFwdAddr();
+    DWORD done = AllocFwdAddr();
+    DWORD notNegative = AllocFwdAddr();
+    DWORD loop;
+
+#ifdef MOVE_TO_PAGE_0
+    DivideRoutineAddress24x16 = PicProgWriteP;
+#else
+    FwdAddrIsNow(DivideRoutineAddress24x16);
 #endif
 
     Instruction(OP_MOVF, dividend1, DEST_W);
