@@ -5,9 +5,10 @@ and the compilation of ladder diagrams into the native hexadecimal firmware code
 
 Official [LDmicro Ladder Logic for PIC and AVR Home Page](http://cq.cx/ladder.pl)  
 Official [LDmicro Forum](http://cq.cx/ladder-forum.pl)  
+Actual [manual.txt](https://github.com/LDmicro/LDmicro/blob/master/ldmicro/manual.txt)  
 
 Download executable binaries buildXXXX.zip from the [Latest release](https://github.com/LDmicro/LDmicro/releases/latest)  
-Unofficial [HOW TO:](https://github.com/LDmicro/LDmicro/wiki/HOW-TO)  
+Read Ldmicro [Wiki](https://github.com/LDmicro/LDmicro/wiki) and [HOW TO:](https://github.com/LDmicro/LDmicro/wiki/HOW-TO)  
 
 ### Building LDmicro
 
