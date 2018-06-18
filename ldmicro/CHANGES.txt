@@ -1,3 +1,5 @@
+== Release 4.4.0.2
+
     * Optimized: PIECEWISE LINEAR TABLE (reduced size 10%), ADD and SUB operations for PIC's.
 
     * Fixed: READ ADC for EnhancedMidrangeCore14bit PIC's.
@@ -9,6 +11,17 @@
 
     * Wiki: Pull down resistors
     https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
+
+    * Added: REFS parameter for ADC Voltage Reference.
+
+    * Wiki: ADC Voltage Reference
+    https://github.com/LDmicro/LDmicro/wiki/ADC-Voltage-Reference
+
+    How to measure battery voltage (Atmel AVR)
+    https://github.com/LDmicro/LDmicro/wiki/How-to-measure-battery-voltage
+
+    How to measure voltage (PIC)
+    https://github.com/LDmicro/LDmicro/wiki/How-to-measure-voltage-(PIC)
 
 == Release 4.4.0.0
 

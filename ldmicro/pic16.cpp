@@ -92,18 +92,20 @@ static DWORD EepromHighBytesCounter;
 
 // Subroutines to do multiply/divide
 static DWORD MultiplyRoutineAddress8 = -1;
-static DWORD MultiplyRoutineAddress = -1;
+static DWORD MultiplyRoutineAddress = -1; // 16x16
 static DWORD MultiplyRoutineAddress24x16 = -1;
 static DWORD MultiplyRoutineAddress24 = -1;
 static DWORD MultiplyRoutineAddress32 = -1;
 static DWORD DivideRoutineAddress8 = -1;
-static DWORD DivideRoutineAddress = -1;
-static DWORD DivideRoutineAddress24 = -1;
+static DWORD DivideRoutineAddress = -1; // 16x16
+static DWORD DivideRoutineAddress24x16 = -1;
 static DWORD DivideRoutineAddress32 = -1;
-static bool  MultiplyNeeded;
+static bool  MultiplyNeeded; // 16x16
 static bool  MultiplyNeeded8;
 static bool  MultiplyNeeded24x16;
-static bool  DivideNeeded;
+static bool  DivideNeeded; // 16x16
+static bool  DivideNeeded8;
+static bool  DivideNeeded24x16;
 
 // Subroutine to do BIN2BCD
 static DWORD Bin32BcdRoutineAddress;
@@ -3281,6 +3283,19 @@ static void Decrement(DWORD addr, int sov)
 {
     Decrement(addr, sov, nullptr, nullptr, nullptr);
 }
+
+//-----------------------------------------------------------------------------
+static void Negate(DWORD addr, int sov, const char *name)
+{
+    for(int i = 0; i < sov; i++)
+        Instruction(OP_COMF, addr + i, DEST_F, name);
+    Instruction(OP_INCF, addr, DEST_F, name);
+    for(int i = 1; i < sov; i++) {
+        skpnz;
+        Instruction(OP_INCF, addr + i, DEST_F, name);
+    }
+}
+
 //-----------------------------------------------------------------------------
 static void aplusw(DWORD addr, int sov, char *name)
 // a := a + W
@@ -4629,7 +4644,7 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
 
             case INT_SET_VARIABLE_MULTIPLY: {
-                Comment("INT_SET_VARIABLE_MULTIPLY %s := %s + %s",
+                Comment("INT_SET_VARIABLE_MULTIPLY %s := %s * %s",
                         a->name1.c_str(),
                         a->name2.c_str(),
                         a->name3.c_str());
@@ -4660,34 +4675,45 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
             }
             case INT_SET_VARIABLE_MOD:
+                Comment("INT_SET_VARIABLE_DIVIDE %s := %s / %s",
+                        a->name1.c_str(),
+                        a->name2.c_str(),
+                        a->name3.c_str());
+                goto div;
             case INT_SET_VARIABLE_DIVIDE:
-                DivideNeeded = true;
+                Comment("INT_SET_VARIABLE_DIVIDE %s := %s / %s",
+                        a->name1.c_str(),
+                        a->name2.c_str(),
+                        a->name3.c_str());
+                div :
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                sov3 = SizeOfVar(a->name3);
+                if(sov2 < 2)
+                    sov2 = 2;
+                if(sov3 < 2)
+                    sov3 = 2;
 
                 MemForVariable(a->name1, &addr1);
                 MemForVariable(a->name2, &addr2);
                 MemForVariable(a->name3, &addr3);
 
-                Instruction(OP_MOVF, addr2, DEST_W);
-                Instruction(OP_MOVWF, Scratch0);
-                Instruction(OP_MOVF, addr2 + 1, DEST_W);
-                Instruction(OP_MOVWF, Scratch1);
+                CopyArgToReg(true, Scratch0, sov2, a->name2, true);
+                CopyArgToReg(true, Scratch4, sov3, a->name3, true);
 
-                Instruction(OP_MOVF, addr3, DEST_W);
-                Instruction(OP_MOVWF, Scratch2);
-                Instruction(OP_MOVF, addr3 + 1, DEST_W);
-                Instruction(OP_MOVWF, Scratch3);
+                if((sov2 == 3) && (sov3 <= 2)) {
+                    DivideNeeded24x16 = true;
+                    CallWithPclath(DivideRoutineAddress24x16);
+                } else if((sov2 <= 2) && (sov3 <= 2)) {
+                    DivideNeeded = true;
+                    CallWithPclath(DivideRoutineAddress);
+                } else
+                    oops()
 
-                CallWithPclath(DivideRoutineAddress);
                 if(a->op == INT_SET_VARIABLE_DIVIDE) {
-                    Instruction(OP_MOVF, Scratch0, DEST_W);
-                    Instruction(OP_MOVWF, addr1);
-                    Instruction(OP_MOVF, Scratch1, DEST_W);
-                    Instruction(OP_MOVWF, addr1 + 1);
+                    CopyRegToReg(addr1, sov1, Scratch0, sov2, a->name1, "Scratch0", true);
                 } else {
-                    Instruction(OP_MOVF, Scratch4, DEST_W);
-                    Instruction(OP_MOVWF, addr1);
-                    Instruction(OP_MOVF, Scratch5, DEST_W);
-                    Instruction(OP_MOVWF, addr1 + 1);
+                    CopyRegToReg(addr1, sov1, Scratch6, sov3, a->name1, "Scratch6", true);
                 }
                 break;
 
@@ -5032,10 +5058,10 @@ static void CompileFromIntermediate(bool topLevel)
 
 #if 0
                     Instruction(OP_MOVLW, 100);
-                    Instruction(OP_MOVWF, Scratch2);
-                    Instruction(OP_CLRF, Scratch3);
+                    Instruction(OP_MOVWF, Scratch4);
+                    Instruction(OP_CLRF, Scratch5);
 #else
-                    CopyLitToReg(Scratch2, 2, "", 100, "100");
+                    CopyLitToReg(Scratch4, 2, "", 100, "100");
 #endif
                     CallWithPclath(DivideRoutineAddress);
 
@@ -6015,8 +6041,10 @@ static void WriteMultiplyRoutine8(DWORD addr3, DWORD addr1, DWORD addr2, int sov
 }
 
 //-----------------------------------------------------------------------------
-// Write a subroutine to do a 16x16 signed multiply. One operand in
-// Scratch1:Scratch0, other in Scratch3:Scratch2, result in Scratch5:Scratch4:Scratch3:Scratch2.
+// Write a subroutine to do a 16x16 signed multiply.
+// One operand in Scratch1:Scratch0,
+// other in Scratch3:Scratch2,
+// result in Scratch5:Scratch4:Scratch3:Scratch2.
 //-----------------------------------------------------------------------------
 static void WriteMultiplyRoutine()
 {
@@ -6036,7 +6064,7 @@ static void WriteMultiplyRoutine()
     DWORD multiplicand0 = Scratch0; // operand1
     DWORD multiplicand1 = Scratch1; // operand1
 
-    DWORD counter = Scratch6;
+    DWORD counter = ScratchI;
 
     DWORD dontAdd = AllocFwdAddr();
     DWORD top;
@@ -6103,7 +6131,7 @@ static void WriteMultiplyRoutine8x8()
 
     DWORD multiplicand0 = Scratch0; // operand1
 
-    DWORD counter = Scratch6;
+    DWORD counter = ScratchI;
 
     DWORD dontAdd = AllocFwdAddr();
     DWORD top;
@@ -6167,7 +6195,7 @@ static void WriteMultiplyRoutine24x16()
 //  DWORD multiplicand2 = Scratch7; // always 0
 //  Instruction(OP_CLRF, multiplicand2);
 
-    DWORD counter = Scratch8;
+    DWORD counter = ScratchI;
 
     DWORD dontAdd = AllocFwdAddr();
     DWORD top;
@@ -6179,13 +6207,13 @@ static void WriteMultiplyRoutine24x16()
     Instruction(OP_RRF, result1, DEST_F);
     Instruction(OP_RRF, result0, DEST_F);
 
-    Instruction(OP_MOVLW, 16);
+    Instruction(OP_MOVLW, 24);
     Instruction(OP_MOVWF, counter);
 
     top = PicProgWriteP;
     Instruction(OP_BTFSS, REG_STATUS, STATUS_C);
     Instruction(OP_GOTO, dontAdd);
-#if 1
+#if 0
     Instruction(OP_MOVF, multiplicand0, DEST_W);
     Instruction(OP_ADDWF, result3, DEST_F);
     Instruction(OP_BTFSC, REG_STATUS, STATUS_C);
@@ -6224,8 +6252,10 @@ static void WriteMultiplyRoutine24x16()
 }
 
 //-----------------------------------------------------------------------------
-// Write a subroutine to do a 16/16 signed divide. Call with dividend in
-// Scratch1:0, divisor in Scratch3:2, and get the result in Scratch1:0.
+// Write a subroutine to do a 16/16 signed divide.
+// Call with dividend in Scratch1:0,
+// divisor in             Scratch5:Scratch4,
+// and get the result in Scratch1:0.
 //-----------------------------------------------------------------------------
 static void WriteDivideRoutine()
 {
@@ -6235,14 +6265,14 @@ static void WriteDivideRoutine()
     DWORD dividend0 = Scratch0;
     DWORD dividend1 = Scratch1;
 
-    DWORD divisor0 = Scratch2;
-    DWORD divisor1 = Scratch3;
+    DWORD divisor0 = Scratch4;
+    DWORD divisor1 = Scratch5;
 
-    DWORD remainder0 = Scratch4;
-    DWORD remainder1 = Scratch5;
+    DWORD remainder0 = Scratch6;
+    DWORD remainder1 = Scratch7;
 
-    DWORD counter = Scratch6;
-    DWORD sign = Scratch7;
+    DWORD counter = ScratchI;
+    DWORD sign = ScratchS;
 
     DWORD dontNegateDivisor = AllocFwdAddr();
     DWORD dontNegateDividend = AllocFwdAddr();
@@ -6262,20 +6292,12 @@ static void WriteDivideRoutine()
 
     Instruction(OP_BTFSS, divisor1, 7);
     Instruction(OP_GOTO, dontNegateDivisor);
-    Instruction(OP_COMF, divisor0, DEST_F);
-    Instruction(OP_COMF, divisor1, DEST_F);
-    Instruction(OP_INCF, divisor0, DEST_F);
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
-    Instruction(OP_INCF, divisor1, DEST_F);
+    Negate(divisor0, 2, "divisor");
     FwdAddrIsNow(dontNegateDivisor);
 
     Instruction(OP_BTFSS, dividend1, 7);
     Instruction(OP_GOTO, dontNegateDividend);
-    Instruction(OP_COMF, dividend0, DEST_F);
-    Instruction(OP_COMF, dividend1, DEST_F);
-    Instruction(OP_INCF, dividend0, DEST_F);
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
-    Instruction(OP_INCF, dividend1, DEST_F);
+    Negate(dividend0, 2, "dividend");
     FwdAddrIsNow(dontNegateDividend);
 
     Instruction(OP_CLRF, remainder1);
@@ -6283,7 +6305,7 @@ static void WriteDivideRoutine()
 
     Instruction(OP_BCF, REG_STATUS, STATUS_C);
 
-    Instruction(OP_MOVLW, 17);
+    Instruction(OP_MOVLW, 16 + 1);
     Instruction(OP_MOVWF, counter);
 
     loop = PicProgWriteP;
@@ -6328,11 +6350,8 @@ static void WriteDivideRoutine()
     else
         Instruction(OP_RETURN, 0, 0);
 
-    Instruction(OP_COMF, dividend0, DEST_F);
-    Instruction(OP_COMF, dividend1, DEST_F);
-    Instruction(OP_INCF, dividend0, DEST_F);
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
-    Instruction(OP_INCF, dividend1, DEST_F);
+    Negate(dividend0, 2, "result");
+
     if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
@@ -6345,25 +6364,26 @@ static void WriteDivideRoutine()
 //-----------------------------------------------------------------------------
 // Write a subroutine to do a 24/16 signed divide.
 // Call with dividend in  Scratch2:Scratch1:Scratch0,
-// divisor in             Scratch4:Scratch3,
-// and get the result in  Scratch1:Scratch0.
+// divisor in             Scratch5:Scratch4,
+// and get the result in  Scratch2:Scratch1:Scratch0.
 //-----------------------------------------------------------------------------
 static void WriteDivideRoutine24x16()
 {
-    Comment("DivideRoutine16");
+    Comment("DivideRoutine24/16=24");
     DWORD savePicProgWriteP = PicProgWriteP;
 
     DWORD dividend0 = Scratch0;
     DWORD dividend1 = Scratch1;
+    DWORD dividend2 = Scratch2;
 
-    DWORD divisor0 = Scratch2;
-    DWORD divisor1 = Scratch3;
+    DWORD divisor0 = Scratch4;
+    DWORD divisor1 = Scratch5;
 
-    DWORD remainder0 = Scratch4;
-    DWORD remainder1 = Scratch5;
+    DWORD remainder0 = Scratch6;
+    DWORD remainder1 = Scratch7;
 
-    DWORD counter = Scratch6;
-    DWORD sign = Scratch7;
+    DWORD counter = ScratchI;
+    DWORD sign = ScratchS;
 
     DWORD dontNegateDivisor = AllocFwdAddr();
     DWORD dontNegateDividend = AllocFwdAddr();
@@ -6377,26 +6397,18 @@ static void WriteDivideRoutine24x16()
     FwdAddrIsNow(DivideRoutineAddress24x16);
 #endif
 
-    Instruction(OP_MOVF, dividend1, DEST_W);
+    Instruction(OP_MOVF, dividend2, DEST_W);
     Instruction(OP_XORWF, divisor1, DEST_W);
     Instruction(OP_MOVWF, sign);
 
     Instruction(OP_BTFSS, divisor1, 7);
     Instruction(OP_GOTO, dontNegateDivisor);
-    Instruction(OP_COMF, divisor0, DEST_F);
-    Instruction(OP_COMF, divisor1, DEST_F);
-    Instruction(OP_INCF, divisor0, DEST_F);
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
-    Instruction(OP_INCF, divisor1, DEST_F);
+    Negate(divisor0, 2, "divisor");
     FwdAddrIsNow(dontNegateDivisor);
 
-    Instruction(OP_BTFSS, dividend1, 7);
+    Instruction(OP_BTFSS, dividend2, 7);
     Instruction(OP_GOTO, dontNegateDividend);
-    Instruction(OP_COMF, dividend0, DEST_F);
-    Instruction(OP_COMF, dividend1, DEST_F);
-    Instruction(OP_INCF, dividend0, DEST_F);
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
-    Instruction(OP_INCF, dividend1, DEST_F);
+    Negate(dividend0, 3, "dividend");
     FwdAddrIsNow(dontNegateDividend);
 
     Instruction(OP_CLRF, remainder1);
@@ -6404,12 +6416,13 @@ static void WriteDivideRoutine24x16()
 
     Instruction(OP_BCF, REG_STATUS, STATUS_C);
 
-    Instruction(OP_MOVLW, 17);
+    Instruction(OP_MOVLW, 24 + 1);
     Instruction(OP_MOVWF, counter);
 
     loop = PicProgWriteP;
     Instruction(OP_RLF, dividend0, DEST_F);
     Instruction(OP_RLF, dividend1, DEST_F);
+    Instruction(OP_RLF, dividend2, DEST_F);
 
     Instruction(OP_DECF, counter, DEST_F);
     Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
@@ -6449,11 +6462,7 @@ static void WriteDivideRoutine24x16()
     else
         Instruction(OP_RETURN, 0, 0);
 
-    Instruction(OP_COMF, dividend0, DEST_F);
-    Instruction(OP_COMF, dividend1, DEST_F);
-    Instruction(OP_INCF, dividend0, DEST_F);
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_Z);
-    Instruction(OP_INCF, dividend1, DEST_F);
+    Negate(dividend0, 3, "result");
     if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
@@ -6842,6 +6851,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         REG_EEDATA = 0x10c;
         REG_EEADR = 0x10d;
     } else if(McuAs("Microchip PIC16F628 ") || //
+              McuAs(" PIC12F629 ") ||          //
               McuAs(" PIC12F675 ") ||          //
               McuAs(" PIC12F683 ")             //
     ) {
@@ -7002,6 +7012,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               McuAs(" PIC16F873 ")          || //
               McuAs(" PIC16F874 ")          || //
               McuAs(" PIC16F72 ")           || //
+              McuAs(" PIC12F629 ")          || //
               McuAs(" PIC12F675 ")          || //
               McuAs(" PIC12F683 ")          || //
               McuAs(" PIC12F752 ")          //
@@ -7065,7 +7076,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     AllocBitsVars(); // first
 
-    ScratchS = AllocOctetRam(); // REG_STATUS
+    ScratchS = AllocOctetRam(); // REG_STATUS or sign
     Scratch0 = AllocOctetRam();
     Scratch1 = AllocOctetRam();
     Scratch2 = AllocOctetRam();
@@ -7080,7 +7091,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Scratch10 = AllocOctetRam();
         Scratch11 = AllocOctetRam();
     }
-    ScratchI = AllocOctetRam(); // tmp indirect addressing
+    ScratchI = AllocOctetRam(); // tmp indirect addressing or Counter
 
     if(REG_EEDATA != -1) {
         // Allocate the register used to hold the high byte of the EEPROM word
@@ -7132,6 +7143,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         WriteMultiplyRoutine24x16();
     if(DivideRoutineUsed())
         WriteDivideRoutine();
+    if(DivideRoutineUsed())
+        WriteDivideRoutine24x16();
 //  if(Bin32BcdRoutineUsed())
 //      WriteBin32BcdRoutine();
 #endif
@@ -7651,7 +7664,10 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
 void CompilePic16(const char *outFile)
 {
-    if(Prog.mcu->core == BaselineCore12bit) {
+    if((Prog.mcu->core == BaselineCore12bit) || //
+        McuAs(" PIC12F629 ")          || //
+        McuAs(" PIC12F675 ")          //
+    ) {
         if(Prog.cycleTimer > 0) {
             THROW_COMPILER_EXCEPTION("Select Timer 0 in menu 'Settings -> MCU parameters'!");
             return;
