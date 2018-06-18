@@ -24,6 +24,7 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
+#include "filetracker.hpp"
 
 #define ASM_LABEL 1
 //                0 - no labels
@@ -85,9 +86,7 @@
 #define ZH 31
 static DWORD REG_EIND = 0; // EIND:ZH:ZL indirect addres for EICALL, EIJMP
 
-#define MAX_PROGRAM_LEN 128 * 1024
-static PicAvrInstruction AvrProg[MAX_PROGRAM_LEN];
-static DWORD             AvrProgWriteP;
+std::vector<PicAvrInstruction> AvrProg;
 
 DWORD AvrProgLdLen = 0;
 
@@ -371,8 +370,7 @@ static void CompileFromIntermediate();
 //-----------------------------------------------------------------------------
 static void WipeMemory()
 {
-    memset(AvrProg, 0, sizeof(AvrProg));
-    AvrProgWriteP = 0;
+    AvrProg.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -380,49 +378,45 @@ static void WipeMemory()
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2,
-                         const char *comment) //, IntOp *IntCode)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2, const char *comment)
 {
-    if(AvrProg[AvrProgWriteP].opAvr != OP_VACANT)
-        oops();
+    static PicAvrInstruction instruction;
+    static AvrOp prevOp = OP_VACANT;
+    if(prevOp != OP_COMMENTINT)
+        memset(&instruction, 0, sizeof(PicAvrInstruction));
+
+    prevOp = op;
 
     if(op == OP_COMMENTINT) {
         if(comment) {
-            if(strlen(AvrProg[AvrProgWriteP].commentInt))
-                strncatn(AvrProg[AvrProgWriteP].commentInt, "\n    ; ", MAX_COMMENT_LEN);
-            strncatn(AvrProg[AvrProgWriteP].commentInt, comment, MAX_COMMENT_LEN);
+            if(strlen(instruction.commentInt))
+                strncatn(instruction.commentInt, "\n;", MAX_COMMENT_LEN);
+            strncatn(instruction.commentInt, comment, MAX_COMMENT_LEN);
         }
         return;
     }
 
-    if(AvrProg[AvrProgWriteP].opAvr != OP_VACANT)
-        oops();
-    //vvv  same
-    AvrProg[AvrProgWriteP].opAvr = op;
-    AvrProg[AvrProgWriteP].arg1 = arg1;
-    AvrProg[AvrProgWriteP].arg2 = arg2;
+    instruction.opAvr = op;
+    instruction.arg1 = arg1;
+    instruction.arg2 = arg2;
     if(args) {
-        if(strlen(AvrProg[AvrProgWriteP].commentAsm))
-            strncatn(AvrProg[AvrProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncatn(AvrProg[AvrProgWriteP].commentAsm, "(", MAX_COMMENT_LEN);
-        strncatn(AvrProg[AvrProgWriteP].commentAsm, args, MAX_COMMENT_LEN);
-        strncatn(AvrProg[AvrProgWriteP].commentAsm, ")", MAX_COMMENT_LEN);
+        if(strlen(instruction.commentAsm))
+            strncatn(instruction.commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(instruction.commentAsm, "(", MAX_COMMENT_LEN);
+        strncatn(instruction.commentAsm, args, MAX_COMMENT_LEN);
+        strncatn(instruction.commentAsm, ")", MAX_COMMENT_LEN);
     }
     if(comment) {
-        if(strlen(AvrProg[AvrProgWriteP].commentAsm))
-            strncatn(AvrProg[AvrProgWriteP].commentAsm, " ; ", MAX_COMMENT_LEN);
-        strncatn(AvrProg[AvrProgWriteP].commentAsm, comment, MAX_COMMENT_LEN);
+        if(strlen(instruction.commentAsm))
+            strncatn(instruction.commentAsm, " ; ", MAX_COMMENT_LEN);
+        strncatn(instruction.commentAsm, comment, MAX_COMMENT_LEN);
     }
-    AvrProg[AvrProgWriteP].rung = rungNow;
-    AvrProg[AvrProgWriteP].IntPc = IntPcNow;
-    AvrProg[AvrProgWriteP].l = l;
-    strcpy(AvrProg[AvrProgWriteP].f, f);
-    //^^^ same
-    AvrProgWriteP++;
-    if(AvrProgWriteP >= MAX_PROGRAM_LEN) {
-        Error(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
-        CompileError();
-    }
+    instruction.rung = rungNow;
+    instruction.IntPc = IntPcNow;
+    instruction.l = l;
+    strcpy(instruction.f, f);
+
+    AvrProg.push_back(instruction);
 }
 
 static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2)
@@ -451,12 +445,10 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
 //for setiing interrupt vector
 {
     if(addr == 0) {
-        Error(_("Direct Addr error"));
-        CompileError();
+        THROW_COMPILER_EXCEPTION(_("Direct Addr error"));
     }
-    if(addr >= MAX_PROGRAM_LEN) {
-        Error(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
-        CompileError();
+    if(addr >= AvrProg.size()) {
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
     }
     //vvv  same
     AvrProg[addr].opAvr = op;
@@ -511,11 +503,11 @@ static DWORD AllocFwdAddr()
 static void FwdAddrIsNow(DWORD addr)
 {
     if(!(addr & FWD(0)))
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error.");
 
     WORD  seen = 0;
-    DWORD i;
-    for(i = 0; i < AvrProgWriteP; i++) {
+    uint32_t AvrProgWriteP = AvrProg.size();
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(AvrProg[i].arg1 == FWD(addr)) { // Its a FWD addr
             AvrProg[i].arg1 = AvrProgWriteP;
             seen = 0x10;
@@ -605,27 +597,20 @@ static int IsOperation(AvrOp op)
 //-----------------------------------------------------------------------------
 static void AddrCheckForErrorsPostCompile()
 {
-    DWORD i;
-    for(i = 0; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE) {
             if(AvrProg[i].arg1 & FWD(0)) {
-                Error("Every AllocFwdAddr needs FwdAddrIsNow.");
-                Error("i=%d op=%d arg1=%d arg2=%d rung=%d",
+                THROW_COMPILER_EXCEPTION_FMT("Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d",
                       i,
                       AvrProg[i].opAvr,
                       AvrProg[i].arg1,
                       AvrProg[i].arg2,
                       AvrProg[i].rung + 1);
-                CompileError();
             }
         }
     }
 }
 
-char *getName(char *s)
-{
-    return &s[4];
-}
 //-----------------------------------------------------------------------------
 // Given an opcode and its operands, assemble the 16-bit instruction for the
 // AVR. Check that the operands do not have more bits set than is meaningful;
@@ -645,26 +630,26 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 */
 #define CHECK(v, bits)                                            \
     if((v) != ((v) & ((1 << (bits)) - 1)))                        \
-    ooops("v=%d ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
+    THROW_COMPILER_EXCEPTION_FMT("v=%d ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
           v,                                                      \
           bits,                                                   \
           ((1 << (bits)) - 1),                                    \
           AvrInstr->l,                                            \
           AvrInstr->f,                                            \
           intOp.name1.c_str(),                                    \
-          intOp.l,                                                \
-          intOp.f)
+          intOp.fileLine,                                         \
+          intOp.fileName.c_str())
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
-    ooops("v=%d [%d..%d]\nat %d in %s %s\nat %d in %s",                  \
+    THROW_COMPILER_EXCEPTION_FMT("v=%d [%d..%d]\nat %d in %s %s\nat %d in %s",                  \
           (int)v,                                                        \
           LowerRangeInclusive,                                           \
           UpperRangeInclusive,                                           \
           AvrInstr->l,                                                   \
           AvrInstr->f,                                                   \
           intOp.name1.c_str(),                                           \
-          intOp.l,                                                       \
-          intOp.f)
+          intOp.fileLine,                                                \
+          intOp.fileName.c_str())
 
     switch(op) {
         case OP_COMMENT:
@@ -720,14 +705,14 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
         case OP_ADIW:
             if(!((arg1 == 24) || (arg1 == 26) || (arg1 == 28) || (arg1 == 30)))
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
             CHECK2(arg2, 0, 64);
             sprintf(sAsm, "adiw \t r%d:r%d, %d", arg1 + 1, arg1, arg2);
             return 0x9600 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) | (arg2 & 0x0f);
 
         case OP_SBIW:
             if(!((arg1 == 24) || (arg1 == 26) || (arg1 == 28) || (arg1 == 30)))
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
             CHECK2(arg2, 0, 64);
             sprintf(sAsm, "sbiw \t r%d:r%d, %d", arg1 + 1, arg1, arg2);
             return 0x9700 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) | (arg2 & 0x0f);
@@ -749,7 +734,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             CHECK(arg1, 5);
             CHECK(arg2, 0);
             if((arg1 < 16) || (31 < arg1))
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
             sprintf(sAsm, "ser \t r%d \t", arg1);
             return 0xEF0F | (arg1 << 4);
 
@@ -874,7 +859,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             arg1 = arg1 - addrAt - 1;
             CHECK2(arg1, -2048, 2047); // $fff !!!
             if(((int)arg1) > 2047 || ((int)arg1) < -2048)
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
             arg1 &= (4096 - 1); // $fff !!!
             return 0xC000 | arg1;
 
@@ -884,7 +869,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             arg1 = arg1 - addrAt - 1;
             CHECK2(arg1, -2048, 2047); //$fff !!!
             if(((int)arg1) > 2047 || ((int)arg1) < -2048)
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
             arg1 &= (4096 - 1);
             return 0xD000 | arg1;
 
@@ -1176,9 +1161,9 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             CHECK2(arg1, 0, 30);
             CHECK2(arg2, 0, 30);
             if(arg1 & 1)
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
             if(arg2 & 1)
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
             sprintf(sAsm, "movw \t r%d:r%d, \t r%d:r%d", arg1 + 1, arg1, arg2 + 1, arg2);
             return (0x0100) | ((arg1 >> 1) << 4) | ((arg2 >> 1));
 
@@ -1297,7 +1282,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
         default:
             sprintf(sAsm, "0x%X OP_%d %d %d", addrAt, op, arg1, arg2);
-            Error(sAsm);
+            THROW_COMPILER_EXCEPTION_FMT("Invalid AVR OpCode %i", static_cast<int>(op));
             return 0;
     }
 }
@@ -1323,17 +1308,16 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     //fprintf(f, ":020000040000FA\n");
 
     DWORD ExtendedSegmentAddress = 0;
-    DWORD i;
-    for(i = 0; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         AvrProg[i].label = false;
     }
 
-    for(i = 0; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE)
             AvrProg[AvrProg[i].arg1].label = true;
     }
 
-    for(i = 1; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 1; i < AvrProg.size(); i++) {
         if((AvrProg[i].opAvr == OP_DB) && (AvrProg[i - 1].opAvr != OP_DB))
             AvrProg[i].label = true;
         if((AvrProg[i].opAvr == OP_DB2) && (AvrProg[i - 1].opAvr != OP_DB2))
@@ -1342,7 +1326,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             AvrProg[i].label = true;
     }
 
-    for(i = 0; i < AvrProgWriteP; i++) {
+    for(uint32_t i = 0; i < AvrProg.size(); i++) {
         DWORD w = Assemble(i, AvrProg[i].opAvr, AvrProg[i].arg1, AvrProg[i].arg2, sAsm);
 
         if(strlen(AvrProg[i].commentInt)) {
@@ -1383,9 +1367,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
                     if(IntCode[AvrProg[i].IntPc].which != INT_MAX) {
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[AvrProg[i].IntPc].which);
                     }
-                    if(1 || (prevIntPcL != IntCode[AvrProg[i].IntPc].l)) {
-                        fprintf(fAsm, " ; line %d in %s", IntCode[AvrProg[i].IntPc].l, IntCode[AvrProg[i].IntPc].f);
-                        prevIntPcL = IntCode[AvrProg[i].IntPc].l;
+                    if(1 || (prevIntPcL != IntCode[AvrProg[i].IntPc].fileLine)) {
+                        fprintf(fAsm, " ; line %d in %s", IntCode[AvrProg[i].IntPc].fileLine, IntCode[AvrProg[i].IntPc].fileName.c_str());
+                        prevIntPcL = IntCode[AvrProg[i].IntPc].fileLine;
                     }
                 }
             }
@@ -1397,7 +1381,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
             fprintf(fAsm, "\n");
         } else
-            Error("op=%d, i=%d", AvrProg[i].opAvr, i);
+            THROW_COMPILER_EXCEPTION_FMT("op=%d, i=%d", AvrProg[i].opAvr, i);
 
         if(ExtendedSegmentAddress != (i & ~0x7fff)) {
             //if(i == 0x8000) {
@@ -1417,14 +1401,13 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         soFar[soFarCount++] = (BYTE)(w & 0xff);
         soFar[soFarCount++] = (BYTE)(w >> 8);
 
-        if(soFarCount >= 0x10 * n || i == (AvrProgWriteP - 1)) {
+        if(soFarCount >= 0x10 * n || i == (AvrProg.size() - 1)) {
             StartIhex(f);                                  // ':'->Colon
             WriteIhex(f, (BYTE)soFarCount);                // LL->Record Length
             WriteIhex(f, (BYTE)((soFarStart * 2) >> 8));   // AA->Address as big endian values HI()
             WriteIhex(f, (BYTE)((soFarStart * 2) & 0xff)); // AA->Address as big endian values LO()
             WriteIhex(f, 0x00);                            // TT->Record Type -> 00 is Data
-            int j;
-            for(j = 0; j < soFarCount; j++) {
+            for(int j = 0; j < soFarCount; j++) {
                 WriteIhex(f, soFar[j]); // DD->Data
             }
             FinishIhex(f); // CC->Checksum
@@ -1434,9 +1417,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
     // end of file record
     fprintf(f, ":00000001FF\n");
-    if((Prog.mcu->flashWords) && (AvrProgWriteP >= Prog.mcu->flashWords)) {
-        Error(_(" Flash program memory size %d is exceed limit %d words\nfor %s."),
-              AvrProgWriteP,
+    if((Prog.mcu->flashWords) && (AvrProg.size() >= Prog.mcu->flashWords)) {
+        THROW_COMPILER_EXCEPTION_FMT(_(" Flash program memory size %d is exceed limit %d words\nfor %s."),
+              AvrProg.size(),
               Prog.mcu->flashWords,
               Prog.mcu->mcuName);
     }
@@ -1454,7 +1437,7 @@ static void LoadXAddr(DWORD addr, const char *comment)
         //return;
     }
     if(addr > 0xffff) {
-        Error(_("Addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, XL, (addr & 0xff), comment); // X-register Low Byte
@@ -1471,11 +1454,11 @@ static void LoadYAddr(DWORD addr, const char *comment)
 //used Y; Opcodes: 2
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        Error(_("Addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, YL, (addr & 0xff), comment); // Y-register Low Byte
@@ -1486,11 +1469,11 @@ static void LoadZAddr(DWORD addr, const char *comment)
 //used Z; Opcodes: 2
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        Error(_("Addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, ZL, (addr & 0xff), comment); // Z-register Low Byte
@@ -1516,7 +1499,7 @@ static void LoadZAddr(DWORD addr)
 static void SETB(DWORD addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1542,7 +1525,7 @@ static void SETB(DWORD addr, int bit, int reg, const char *name)
         Instruction(OP_SBI, addr - __SFR_OFFSET, bit, name);
 #endif
     } else
-        oops()
+        THROW_COMPILER_EXCEPTION("Internal error");
 }
 
 static void SETB(DWORD addr, int bit, const char *name)
@@ -1569,7 +1552,7 @@ static void SETB(DWORD addr, int bit)
 static void CLRB(DWORD addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1595,7 +1578,7 @@ static void CLRB(DWORD addr, int bit, int reg, const char *name)
         Instruction(OP_CBI, addr - __SFR_OFFSET, bit, name);
 #endif
     } else
-        oops()
+        THROW_COMPILER_EXCEPTION("Internal error");
 }
 
 static void CLRB(DWORD addr, int bit, const char *name)
@@ -1621,9 +1604,9 @@ static void CLRB(DWORD addr, int bit)
 */
 static DWORD SKBS(DWORD addr, int bit, int reg)
 {
-    DWORD i = AvrProgWriteP;
+    DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1643,8 +1626,8 @@ static DWORD SKBS(DWORD addr, int bit, int reg)
         Instruction(OP_SBIS, addr - __SFR_OFFSET, bit);
 #endif
     } else
-        oops();
-    return AvrProgWriteP - i;
+        THROW_COMPILER_EXCEPTION("Internal error");
+    return AvrProg.size() - prevProgSz;
 }
 
 static DWORD SKBS(DWORD addr, int bit)
@@ -1660,9 +1643,9 @@ static DWORD SKBS(DWORD addr, int bit)
 */
 static DWORD SKBC(DWORD addr, int bit, int reg)
 {
-    DWORD i = AvrProgWriteP;
+    DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1682,7 +1665,9 @@ static DWORD SKBC(DWORD addr, int bit, int reg)
         Instruction(OP_SBIC, addr - __SFR_OFFSET, bit);
 #endif
     } else
-        oops() return AvrProgWriteP - i;
+        THROW_COMPILER_EXCEPTION("Internal error");
+
+    return AvrProg.size() - prevProgSz;
 }
 
 static DWORD SKBC(DWORD addr, int bit)
@@ -1700,11 +1685,11 @@ static DWORD SKBC(DWORD addr, int bit)
 static void STORE(DWORD addr, int reg)
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nSTORE(%d, %d) skiped!"), addr, reg);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nSTORE(%d, %d) skiped!"), addr, reg);
         return;
     }
     if(reg < 0) {
-        Error(_("Registers less zero not allowed!\nSTORE(%d, %d) skiped."), addr, reg);
+        THROW_COMPILER_EXCEPTION_FMT(_("Registers less zero not allowed!\nSTORE(%d, %d) skiped."), addr, reg);
         return;
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
@@ -1719,7 +1704,7 @@ static void STORE(DWORD addr, int reg)
         Instruction(OP_OUT, addr - __SFR_OFFSET, reg);
 #endif
     } else
-        oops()
+        THROW_COMPILER_EXCEPTION("Internal error");
 }
 
 static void STOREval(DWORD addr, BYTE val)
@@ -1734,11 +1719,11 @@ static void STOREval(DWORD addr, BYTE val)
 static void LOAD(int reg, DWORD addr)
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nLOAD(%d, %d) skiped!"), reg, addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nLOAD(%d, %d) skiped!"), reg, addr);
         return;
     }
     if(reg < 0) {
-        Error(_("Registers less zero not allowed!\nLOAD(%d, %d) skiped."), reg, addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Registers less zero not allowed!\nLOAD(%d, %d) skiped."), reg, addr);
         return;
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
@@ -1753,7 +1738,7 @@ static void LOAD(int reg, DWORD addr)
         Instruction(OP_IN, reg, addr - __SFR_OFFSET);
 #endif
     } else
-        oops()
+        THROW_COMPILER_EXCEPTION("Internal error");
 }
 //AVR001 appnote macro
 
@@ -1766,8 +1751,7 @@ static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYT
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
-        Error("LINE %d FILE %s", l, f);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
         return;
     }
     char s[1024];
@@ -1813,7 +1797,7 @@ static void WriteMemoryStillAddr(DWORD addr, BYTE val)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1838,9 +1822,9 @@ static void WriteMemoryCurrAddr(BYTE val)
 static void LoadXAddrFromReg(int reg, int sov)
 {
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 2)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     Instruction(OP_MOV, XL, reg);         // X-register Low Byte
     if(sov > 1)                           //
         Instruction(OP_MOV, XH, reg + 1); // X-register High Byte
@@ -1852,9 +1836,9 @@ static void LoadXAddrFromReg(int reg, int sov)
 static void LoadYAddrFromReg(int reg, int sov)
 {
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 2)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     Instruction(OP_MOV, YL, reg);         // Y-register Low Byte
     if(sov > 1)                           //
         Instruction(OP_MOV, YH, reg + 1); // Y-register High Byte
@@ -1866,9 +1850,9 @@ static void LoadYAddrFromReg(int reg, int sov)
 static void LoadZAddrFromReg(int reg, int sov)
 {
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 2)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     Instruction(OP_MOV, ZL, reg);         // Z-register Low Byte
     if(sov > 1)                           //
         Instruction(OP_MOV, ZH, reg + 1); // Z-register High Byte
@@ -1882,16 +1866,16 @@ static void LdToReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation
 // Address is preloaded to X,Y or Z.
 {
     if(sovReg < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sovReg > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
 
     if((op != OP_LD_XP) && (op != OP_LD_YP) && (op != OP_LD_ZP))
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
 
     for(int i = 0; i < sovReg; i++) {
         if(i < sov)
@@ -1913,9 +1897,9 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
 // used r4, r5, r25
 {
     if(sov < 1)
-        ooops(name);
+        THROW_COMPILER_EXCEPTION(name);
     if(sov > 4)
-        ooops(name);
+        THROW_COMPILER_EXCEPTION(name);
 
     LoadZAddr(addr, name); // load direct addres
     if(name && IsAddrInVar(name)) {
@@ -1972,7 +1956,7 @@ static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nOrMemory(0, %d) skiped!"), val); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nOrMemory(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1991,7 +1975,7 @@ static void AndMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nAndMemory(0, %d) skiped!"), val); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nAndMemory(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -2011,11 +1995,11 @@ static void WriteRegToIO(DWORD addr, BYTE reg)
 //or used   ; Opcodes: 1
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nWriteRegToIO skiped.")); //see TODO
+        THROW_COMPILER_EXCEPTION(_("Zero memory addres not allowed!\nWriteRegToIO skiped.")); //see TODO
         return;
     }
     if(reg < 0) {
-        Error(_("Registers less zero not allowed!\nWriteRegToIO skiped.")); //see TODO
+        THROW_COMPILER_EXCEPTION(_("Registers less zero not allowed!\nWriteRegToIO skiped.")); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -2027,11 +2011,11 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 //or used   ; Opcodes: 1
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nReadIoToReg skiped.")); //see TODO
+        THROW_COMPILER_EXCEPTION(_("Zero memory addres not allowed!\nReadIoToReg skiped.")); //see TODO
         return;
     }
     if(reg < 0) {
-        Error(_("Registers less zero not allowed!\nReadIoToReg skiped.")); //see TODO
+        THROW_COMPILER_EXCEPTION(_("Registers less zero not allowed!\nReadIoToReg skiped.")); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -2043,7 +2027,7 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *name1, const char *name2)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc))
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     char s[10];
     char d[10];
     sprintf(s, "BIT%d", bitSrc);
@@ -2083,7 +2067,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *name1, const char *name2)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc))
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     char s[10];
     char d[10];
     sprintf(s, "BIT%d", bitSrc);
@@ -2136,7 +2120,7 @@ static void IfBitClear(DWORD addr, int bit, BYTE reg, const char *name)
     char b[10];
     sprintf(b, "BIT%d", bit);
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         LoadZAddr(addr);
@@ -2152,7 +2136,7 @@ static void IfBitClear(DWORD addr, int bit, BYTE reg, const char *name)
         Instruction(OP_SBIS, addr - __SFR_OFFSET, bit, name);
 #endif
     } else
-        oops()
+        THROW_COMPILER_EXCEPTION("Internal error");
 }
 
 static void IfBitClear(DWORD addr, int bit, const char *name)
@@ -2180,7 +2164,7 @@ static void IfBitSet(DWORD addr, int bit, BYTE reg, const char *name)
     char b[10];
     sprintf(b, "BIT%d", bit);
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         LoadZAddr(addr);
@@ -2196,7 +2180,7 @@ static void IfBitSet(DWORD addr, int bit, BYTE reg, const char *name)
         Instruction(OP_SBIC, addr - __SFR_OFFSET, bit, name);
 #endif
     } else
-        oops()
+        THROW_COMPILER_EXCEPTION("Internal error");
 }
 
 static void IfBitSet(DWORD addr, int bit, const char *name)
@@ -2257,19 +2241,19 @@ static void ClearBit(DWORD addr, int bit)
 #define ClearBit(...) CLRB(__VA_ARGS__)
 
 //-----------------------------------------------------------------------------
-bool TstAddrBitReg(DWORD addr, int bit, int reg)
+static bool TstAddrBitReg(DWORD addr, int bit, int reg)
 {
     bool b = true;
     if((addr <= 0) || (addr > 0xFFFF)) {
-        Error(_("Only values 0-0xFFFF allowed for Addres parameter.\naddres=0x%4X"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Only values 0-0xFFFF allowed for Addres parameter.\naddres=0x%4X"), addr);
         b = false;
     }
     if((bit < 0) || (bit > 7)) {
-        Error(_("Only values 0-7 allowed for Bit parameter.\nbit=%d"), bit);
+        THROW_COMPILER_EXCEPTION_FMT(_("Only values 0-7 allowed for Bit parameter.\nbit=%d"), bit);
         b = false;
     }
     if((reg < 0) || (reg > 0x1F)) {
-        Error(_("Only values 0-0x1F allowed for Register parameter.\nreg=0x%02X"), reg);
+        THROW_COMPILER_EXCEPTION_FMT(_("Only values 0-0x1F allowed for Register parameter.\nreg=0x%02X"), reg);
         b = false;
     }
     return b;
@@ -2313,7 +2297,7 @@ static void PulseBit(DWORD addr, int bit, int reg)
         Instruction(OP_CBI, addr - __SFR_OFFSET, bit);
 #endif
     } else
-        oops()
+        THROW_COMPILER_EXCEPTION("Internal error");
 }
 
 static void PulseBit(DWORD addr, int bit)
@@ -2385,7 +2369,7 @@ static bool CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int 
             *cs = 5;
             break;
         default:
-            oops();
+            THROW_COMPILER_EXCEPTION("Internal error");
             break;
     }
 
@@ -2451,7 +2435,7 @@ bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
             else if(plcTmr.prescaler == 1024)
                 plcTmr.prescaler = 256;
             else
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
         }
         if(plcTmr.softDivisor == max_softDivisor)
             break;
@@ -2481,17 +2465,14 @@ err0:
             plcTmr.cs = 5;
             break;
         default:
-            ooops("plcTmr.prescaler=%d", plcTmr.prescaler);
+            THROW_COMPILER_EXCEPTION_FMT("plcTmr.prescaler=%d", plcTmr.prescaler);
     }
 
-    char txt[1024] = "";
     if(plcTmr.tmr > max_tmr) {
-        sprintf(txt, "PLC cycle time more then %lld ms not valid.", plcTmr.cycleTimeMax / 1000);
-        Error(txt);
+        THROW_COMPILER_EXCEPTION_FMT("PLC cycle time more then %lld ms not valid.", plcTmr.cycleTimeMax / 1000);
         return false;
     } else if((plcTmr.prescaler * plcTmr.tmr) < PLC_CLOCK_MIN) {
-        sprintf(txt, "PLC cycle time less then %d us not valid.", plcTmr.cycleTimeMin);
-        Error(txt);
+        THROW_COMPILER_EXCEPTION_FMT("PLC cycle time less then %d us not valid.", plcTmr.cycleTimeMin);
         return false;
     }
     return true;
@@ -2570,22 +2551,21 @@ static void InitTable(IntOp *a)
 
     if(addrOfTable == 0) {
         Comment("TABLE %s", a->name1.c_str());
-        if(AvrProgWriteP % 2)
+        if(AvrProg.size() % 2)
             Instruction(OP_NOP);
-        addrOfTable = AvrProgWriteP; // << 1; //see LPM // data stored in flash
+        addrOfTable = AvrProg.size(); // << 1; //see LPM // data stored in flash
 
         SetMemForVariable(a->name1, addrOfTable, a->literal);
 
         int sovElement = a->literal2;
         //sovElement = 1;
-        int i;
         if(sovElement == 2) {
-            for(i = 0; i < a->literal; i++) {
+            for(int i = 0; i < a->literal; i++) {
                 //dbp("i=%d %d",i,a->data[i]);
                 Instruction(OP_DW, a->data[i]);
             }
         } else if(sovElement == 1) {
-            for(i = 0; i < a->literal; i = i + 2) {
+            for(int i = 0; i < a->literal; i = i + 2) {
                 //dbp("i=%d %d %d", i, a->data[i], a->data[i+1]);
                 Instruction(OP_DB2, a->data[i], i + 1 < a->literal ? a->data[i + 1] : 0);
             }
@@ -2596,18 +2576,18 @@ static void InitTable(IntOp *a)
             }
             */
         } else if(sovElement == 4) {
-            for(i = 0; i < a->literal; i++) {
+            for(int i = 0; i < a->literal; i++) {
                 Instruction(OP_DW, a->data[i]);
                 Instruction(OP_DW, a->data[i] >> 16);
             }
         } else if(sovElement == 3) {
-            for(i = 0; i < a->literal; i = i + 2) {
+            for(int i = 0; i < a->literal; i = i + 2) {
                 Instruction(OP_DW, a->data[i]);
                 Instruction(OP_DB2, a->data[i] >> 16, (i + 1 < a->literal ? a->data[i + 1] : 0) & 0xFF);
                 Instruction(OP_DW, (i + 1 < a->literal ? a->data[i + 1] : 0) >> 8);
             }
         } else
-            oops();
+            THROW_COMPILER_EXCEPTION("Internal error");
         Comment("TABLE %s END", a->name1.c_str());
     }
 
@@ -2659,7 +2639,7 @@ static void CallSubroutine(DWORD addr)
             Instruction(OP_RCALL, FWD(addr));
         }
     } else {
-        if((-2048 <= (addr - AvrProgWriteP - 1)) && ((addr - AvrProgWriteP - 1) <= 2047)) {
+        if((-2048 <= (addr - AvrProg.size() - 1)) && ((addr - AvrProg.size() - 1) <= 2047)) {
             Instruction(OP_RCALL, addr);
         } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
@@ -2671,7 +2651,7 @@ static void CallSubroutine(DWORD addr)
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_EICALL, addr); // arg1 used for label
         } else
-            oops();
+            THROW_COMPILER_EXCEPTION("Internal error");
     }
 }
 
@@ -2699,7 +2679,7 @@ static void InstructionJMP(DWORD addr)
             Instruction(OP_RJMP, FWD(addr));
         }
     } else {
-        if((-2048 <= (addr - AvrProgWriteP - 1)) && ((addr - AvrProgWriteP - 1) <= 2047)) {
+        if((-2048 <= (addr - AvrProg.size() - 1)) && ((addr - AvrProg.size() - 1) <= 2047)) {
             Instruction(OP_RJMP, addr);
         } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
@@ -2711,7 +2691,7 @@ static void InstructionJMP(DWORD addr)
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_EIJMP, addr); // arg1 used for label
         } else
-            oops();
+            THROW_COMPILER_EXCEPTION("Internal error");
     }
 }
 
@@ -2740,16 +2720,16 @@ static void CompileIfBody(DWORD condFalse)
     }
 
     if(IntCode[IntPc].op != INT_END_IF)
-        ooops("%d", IntCode[IntPc].op);
+        THROW_COMPILER_EXCEPTION_FMT("Invalid intcode %d.", IntCode[IntPc].op);
 }
 
 //-----------------------------------------------------------------------------
 static void ShlReg(int reg, int sov)
 {
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     Instruction(OP_LSL, reg);
     if(sov >= 2)
         Instruction(OP_ROL, reg + 1);
@@ -2762,9 +2742,9 @@ static void ShlReg(int reg, int sov)
 static void RolReg(int reg, int sov)
 {
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     Instruction(OP_CLC);
     Instruction(OP_LSL, reg);
     if(sov >= 2)
@@ -2781,9 +2761,9 @@ static void RolReg(int reg, int sov)
 static void CpseReg(int op1, int sov, int op2, DWORD condFalse)
 {
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     Instruction(OP_AND, op1, op2);
     Instruction(OP_CPSE, op1, op2);
     Instruction(OP_RJMP, condFalse);
@@ -2807,9 +2787,9 @@ static void CpseReg(int op1, int sov, int op2, DWORD condFalse)
 static void OrReg(int reg, int sov, int op2)
 {
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     Instruction(OP_OR, reg, op2);
     if(sov >= 2)
         Instruction(OP_OR, reg + 1, op2 + 1);
@@ -2823,9 +2803,9 @@ static void OrReg(int reg, int sov, int op2)
 static void AndReg(int reg, int sov, int op2)
 {
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     Instruction(OP_AND, reg, op2);
     if(sov >= 2)
         Instruction(OP_AND, reg + 1, op2 + 1);
@@ -2839,9 +2819,9 @@ static void AndReg(int reg, int sov, int op2)
 static void CopyLitToReg(int reg, int sov, SDWORD literal, const char *comment)
 {
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov >= 1)
         Instruction(OP_LDI, reg, literal & 0xff, comment);
     if(sov >= 2)
@@ -2901,16 +2881,16 @@ static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagati
 // Address is preloaded to X,Y or Z.
 {
     if(sovReg < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sovReg > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov < 1)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(sov > 4)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
 
     if((op != OP_ST_XP) && (op != OP_ST_YP) && (op != OP_ST_ZP))
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
 
     for(int i = 0; i < sov; i++) {
         if(i < sovReg)
@@ -3160,7 +3140,7 @@ static void  WriteRuntime()
     Instruction(OP_LDI, r24, (Prog.mcu->ram[0].len) & 0xff);
     Instruction(OP_LDI, r25, (Prog.mcu->ram[0].len) >> 8);
 
-    DWORD loopZero = AvrProgWriteP;
+    DWORD loopZero = AvrProg.size();
     //  Instruction(OP_SUBI, 26, 1);
     //  Instruction(OP_SBCI, 27, 0);
     //  Instruction(OP_ST_X, 16);
@@ -3187,7 +3167,7 @@ static void  WriteRuntime()
 
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
-            Error(_("Zero baud rate not possible."));
+            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."));
             return;
         }
 
@@ -3221,12 +3201,12 @@ static void  WriteRuntime()
     }
     //Comment("and now the generated PLC code will follow");
     Comment("Begin Of PLC Cycle");
-    BeginOfPLCCycle = AvrProgWriteP;
+    BeginOfPLCCycle = AvrProg.size();
     // ConfigureTimerForPlcCycle
     if(Prog.cycleTimer == 0) {
         if((WGM01 == -1)) { // ATmega8
             DWORD i = SKBS(REG_TIFR0, TOV0);
-            Instruction(OP_RJMP, AvrProgWriteP - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
+            Instruction(OP_RJMP, AvrProg.size() - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
@@ -3234,21 +3214,21 @@ static void  WriteRuntime()
             STOREval(REG_TCNT0, BYTE(tcnt0PlcCycle + 0)); // + 0 DONE // reload Counter0
         } else {
             DWORD i = SKBS(REG_TIFR0, OCF0A);
-            Instruction(OP_RJMP, AvrProgWriteP - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
+            Instruction(OP_RJMP, AvrProg.size() - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, OCF0A);
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
         }
     } else if(Prog.cycleTimer == 1) {
         DWORD i = SKBS(REG_TIFR1, OCF1A);
-        Instruction(OP_RJMP, AvrProgWriteP - std::min(i, DWORD(2))); // Ladder cycle timing on Timer1/Counter
+        Instruction(OP_RJMP, AvrProg.size() - std::min(i, DWORD(2))); // Ladder cycle timing on Timer1/Counter
 
         SetBit(REG_TIFR1, OCF1A);
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!
     } else if(Prog.cycleTimer < 0) {
         ;
     } else
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
 
     Comment("Watchdog reset");
     Instruction(OP_WDR);
@@ -3383,7 +3363,7 @@ static void CompileFromIntermediate()
 
             case INT_SET_BCD2BIN:
                 Comment("INT_SET_BCD2BIN");
-                oops();
+                THROW_COMPILER_EXCEPTION_FMT("Invalid operation %i.", INT_SET_BCD2BIN);
                 break;
 
             case INT_SET_BIN2BCD:
@@ -3448,12 +3428,12 @@ static void CompileFromIntermediate()
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         ClearBit(addr1 + 3, bit - 24, a->name1);
                     else
-                        oops();
+                        THROW_COMPILER_EXCEPTION_FMT("Invalid bit number %i", bit);
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, -2); // 0xF..FE
                     DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3482,12 +3462,12 @@ static void CompileFromIntermediate()
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         SetBit(addr1 + 3, bit - 24, a->name1);
                     else
-                        oops();
+                        THROW_COMPILER_EXCEPTION_FMT("Invalid bit number %i", bit);
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
                     DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3518,13 +3498,13 @@ static void CompileFromIntermediate()
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         IfBitClear(addr1 + 3, bit - 24);
                     else
-                        oops();
+                        THROW_COMPILER_EXCEPTION_FMT("Invalid bit number %i", bit);
                     Instruction(OP_RJMP, endifAddr); // here bit is CLR
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
                     DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3585,13 +3565,13 @@ static void CompileFromIntermediate()
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         IfBitSet(addr1 + 3, bit - 24);
                     else
-                        oops();
+                        THROW_COMPILER_EXCEPTION_FMT("Invalid bit number %i", bit);
                     Instruction(OP_RJMP, endifAddr); // here bit is SET
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
                     DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3642,7 +3622,7 @@ static void CompileFromIntermediate()
             }
             case INT_SET_OPPOSITE:
                 Comment("INT_SET_OPPOSITE %s", a->name1.c_str());
-                oops();
+                THROW_COMPILER_EXCEPTION_FMT("Invalid AVR OpCode %i", INT_SET_OPPOSITE);
                 break;
 
             case INT_SET_SWAP:
@@ -3670,7 +3650,7 @@ static void CompileFromIntermediate()
                     Instruction(OP_MOV, r17, r18);
                     Instruction(OP_MOV, r18, r3);
                 } else
-                    oops()
+                    THROW_COMPILER_EXCEPTION("Invalid var size in swap.");
 
                         CopyRegToVar(a->name1, r16, sov1);
                 break;
@@ -3826,7 +3806,7 @@ static void CompileFromIntermediate()
                         Instruction(OP_BRNE, notTrue, 0);
                         break;
                     default:
-                        oops();
+                        THROW_COMPILER_EXCEPTION("Invalid compare.");
                 }
                 CompileIfBody(notTrue);
                 break;
@@ -4153,7 +4133,7 @@ static void CompileFromIntermediate()
                     CallSubroutine(DivideAddress24);
                     DivideUsed24 = true;
                 } else
-                    oops();
+                    THROW_COMPILER_EXCEPTION("Invalid variable size.");
                 if(a->op == INT_SET_VARIABLE_DIVIDE)
                     CopyRegToVar(a->name1, r19, sov);
                 else
@@ -4177,7 +4157,8 @@ static void CompileFromIntermediate()
                     MultiplyUsed24 = true;
                     sov1 = std::min(6, SizeOfVar(a->name1));
                 } else
-                    oops() CopyRegToVar(a->name1, r20, sov1);
+                    THROW_COMPILER_EXCEPTION("Invalid variable size.");
+                CopyRegToVar(a->name1, r20, sov1);
                 break;
 
             case INT_SET_VARIABLE_ROL:
@@ -4255,7 +4236,7 @@ static void CompileFromIntermediate()
                 } else if((a->op == INT_SET_VARIABLE_SHL) || (a->op == INT_SET_VARIABLE_SHR)
                           || (a->op == INT_SET_VARIABLE_SR0) || (a->op == INT_SET_VARIABLE_ROR)
                           || (a->op == INT_SET_VARIABLE_ROL)) {
-                    DWORD Loop = AvrProgWriteP;
+                    DWORD Loop = AvrProg.size();
                     Instruction(OP_DEC, r16);
                     DWORD Skip = AllocFwdAddr();
                     Instruction(OP_BRMI, Skip, 0);
@@ -4279,7 +4260,7 @@ static void CompileFromIntermediate()
                             Instruction(OP_ROR, 21);
                             Instruction(OP_ROR, 20);
                         } else
-                            oops();
+                            THROW_COMPILER_EXCEPTION("Invalid variable size.");
                     } else if(a->op == INT_SET_VARIABLE_SHR) {
                         if(sov == 1) {
                             Instruction(OP_ASR, 20);
@@ -4296,7 +4277,7 @@ static void CompileFromIntermediate()
                             Instruction(OP_ROR, 21);
                             Instruction(OP_ROR, 20);
                         } else
-                            oops();
+                            THROW_COMPILER_EXCEPTION("Invalid variable size.");
                     } else if(a->op == INT_SET_VARIABLE_ROL) {
                         RolReg(r20, sov);
                     } else if(a->op == INT_SET_VARIABLE_ROR) {
@@ -4324,13 +4305,13 @@ static void CompileFromIntermediate()
                             IfBitSet(REG_SREG, SREG_C);
                             Instruction(OP_SBR, 23, 0x80);
                         } else
-                            oops();
+                            THROW_COMPILER_EXCEPTION("Invalid vaiable size.");
                     } else
-                        oops();
+                        THROW_COMPILER_EXCEPTION("Invalid instruction.");
                     Instruction(OP_RJMP, Loop);
                     FwdAddrIsNow(Skip);
                 } else
-                    oops();
+                    THROW_COMPILER_EXCEPTION("Invalid instruction.");
 
                 CopyRegToVar(a->name1, r20, sov);
                 break;
@@ -4346,8 +4327,7 @@ static void CompileFromIntermediate()
             case INT_PWM_OFF: {
                 McuPwmPinInfo *iop = PwmPinInfoForName(a->name1.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name1.c_str());
-                    CompileError();
+                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name1.c_str());
                 }
                 if(iop->maxCS == 0) {
                     if(REG_TCCR2B > 0) {
@@ -4382,13 +4362,11 @@ static void CompileFromIntermediate()
                 McuPwmPinInfo *iop;
                 iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name3.c_str());
-                    CompileError();
+                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name3.c_str());
                 } else {
                     iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer, std::max(resol, 8));
                     if(!iop) {
-                        Error(_("Pin '%s': PWM resolution not available!"), a->name3.c_str());
-                        CompileError();
+                        THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM resolution not available!"), a->name3.c_str());
                     }
                 }
                 if(iop->maxCS == 0) {
@@ -4490,7 +4468,7 @@ static void CompileFromIntermediate()
                             break;
                         }
                     } else
-                        oops();
+                        THROW_COMPILER_EXCEPTION("Can't set prescale.");
                 }
 
                 if(((double)bestError) / target > 0.05) {
@@ -4520,7 +4498,7 @@ static void CompileFromIntermediate()
                             str1,
                             _("Select the frequency from the possible values:"),
                             freqStr);
-                    Error(str2);
+                    THROW_COMPILER_EXCEPTION(str2);
                 }
 
                 BYTE cs;
@@ -4548,7 +4526,7 @@ static void CompileFromIntermediate()
                             cs = 7;
                             break;
                         default:
-                            oops();
+                            THROW_COMPILER_EXCEPTION("Invalid prescale.");
                     }
                 } else if(iop->maxCS == 5) {
                     switch(bestPrescale) {
@@ -4568,10 +4546,10 @@ static void CompileFromIntermediate()
                             cs = 5;
                             break;
                         default:
-                            oops();
+                            THROW_COMPILER_EXCEPTION("Invalid prescale.");
                     }
                 } else
-                    oops();
+                    THROW_COMPILER_EXCEPTION("Can't set PWM.");
 
                 if(resol == 7) {
                     DivideUsed = true;
@@ -4596,6 +4574,7 @@ static void CompileFromIntermediate()
                 WriteRegToIO(iop->REG_OCRnxL, r19);     // then LOW
 
                 // Setup only happens once
+                Comment("PWM init");
                 char storeName[MAX_NAME_LEN];
                 sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
                 DWORD addr;
@@ -4832,14 +4811,15 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
 
                 BYTE mux = MuxForAdcVariable(a->name1);
+                BYTE refs = a->literal & 0x3;
                 if(mux > 0x0F)
-                    ooops("mux=0x%x", mux);
+                    THROW_COMPILER_EXCEPTION_FMT("mux=0x%x", mux);
                 WriteMemory(
                     REG_ADMUX,
-                    (0 << 7) |
-                        //                  (0 << 6) |              // AREF, Internal Vref turned off.
-                        (1 << 6)
-                        | // AVCC as reference with external capacitor 100nF at AREF to GND pin. // Arduino compatible.
+                        // (0 << 7) | //
+                        // (0 << 6) | // AREF, Internal Vref turned off.
+                        // (1 << 6) | // AVCC as reference with external capacitor 100nF at AREF to GND pin. // Arduino compatible.
+                        (refs << 6) | //
                         (0 << 5) | // result is right adjusted.
                         mux & 0x07);
 
@@ -4867,7 +4847,7 @@ static void CompileFromIntermediate()
                 WriteMemory(REG_ADCSRA, adcsra);
                 WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << ADSC)));
 
-                DWORD waitForFinsh = AvrProgWriteP;
+                DWORD waitForFinsh = AvrProg.size();
                 IfBitSet(REG_ADCSRA, ADSC);
                 Instruction(OP_RJMP, waitForFinsh);
 
@@ -4972,7 +4952,7 @@ static void CompileFromIntermediate()
                 return;
 
             case INT_WRITE_STRING:
-                Error(_("Unsupported operation 'INT_WRITE_STRING' for target, skipped."));
+                THROW_COMPILER_EXCEPTION(_("Unsupported operation 'INT_WRITE_STRING' for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
                 break;
 
@@ -4982,7 +4962,7 @@ static void CompileFromIntermediate()
 
             case INT_AllocKnownAddr:
                 //Comment("INT_AllocKnownAddr %d %08X", a->literal, AddrOfRungN[a->literal].KnownAddr);
-                AddrOfRungN[a->literal].KnownAddr = AvrProgWriteP;
+                AddrOfRungN[a->literal].KnownAddr = AvrProg.size();
                 break;
 
             case INT_AllocFwdAddr:
@@ -5032,7 +5012,7 @@ static void CompileFromIntermediate()
                 } else if(rung > rungNow) {
                     CallSubroutine(AddrOfRungN[rung].FwdAddr);
                 } else
-                    oops();
+                    THROW_COMPILER_EXCEPTION("Can't instantiate GOSUB.");
                 break;
             }
 #ifdef TABLE_IN_FLASH
@@ -5186,7 +5166,7 @@ static void CompileFromIntermediate()
                     if(clocks > 0x10000) {
                         clocks = 0x10000;
                         clocksSave = clocks * 4;
-                        Error(_(" The delay is too long!\n"
+                        THROW_COMPILER_EXCEPTION_FMT(_(" The delay is too long!\n"
                                 "The maximum possible delay is %lld us."),
                               (clocks * 4 + 1) * 1000000 / Prog.mcuClock);
                     }
@@ -5195,7 +5175,7 @@ static void CompileFromIntermediate()
                     if(clocks > 0) {
                         CopyLitToReg(ZL, 2, clocks);             // 4 clocks
                         Instruction(OP_SBIW, ZL, 1);             // 2 clocks
-                        Instruction(OP_BRNE, AvrProgWriteP - 1); // 1/2 clocks
+                        Instruction(OP_BRNE, AvrProg.size() - 1); // 1/2 clocks
                         clocksSave -= clocks * 4 + 1;
                     }
                     int i;
@@ -5205,7 +5185,7 @@ static void CompileFromIntermediate()
                     Comment("INT_DELAY %s us", a->name1.c_str());
                     CopyVarToReg(ZL, 2, a->name1);           // 4 clocks
                     Instruction(OP_SBIW, ZL, 1);             // 2 clocks
-                    Instruction(OP_BRNE, AvrProgWriteP - 1); // 1/2 clocks
+                    Instruction(OP_BRNE, AvrProg.size() - 1); // 1/2 clocks
                 }
 #ifdef DELAY_TEST
                 SetBit(0x25, 0);   // 2 clocks
@@ -5219,7 +5199,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_WDR);
                 break;
             case INT_LOCK:
-                Instruction(OP_RJMP, AvrProgWriteP);
+                Instruction(OP_RJMP, AvrProg.size());
                 break;
             case INT_SLEEP:
                 if(REG_MCUCSR)
@@ -5280,7 +5260,7 @@ static void CompileFromIntermediate()
                 ClearBit(REG_int_en, INT1);
                 break;
             default:
-                ooops("INT_%d", a->op);
+                THROW_COMPILER_EXCEPTION_FMT("INT_%d", a->op);
                 break;
         }
     }
@@ -5562,7 +5542,7 @@ static void DivideRoutine()
     Instruction(OP_SUB, r17, r17); //4.Clear remainder and carry.
     Instruction(OP_LDI, r25, 17);  //5.Load Loop counter with 17.
 
-    d16s_3 = AvrProgWriteP;
+    d16s_3 = AvrProg.size();
     Instruction(OP_ADC, r19, r19);   //6.Shift left dividend into carry.
     Instruction(OP_ADC, r20, r20);   //6.Shift left dividend into carry.
     Instruction(OP_DEC, r25);        //7.Decrement Loop counter.
@@ -5633,7 +5613,7 @@ static void DivideRoutine24()
     Instruction(OP_SUB, r18, r18); //4.Clear remainder and carry.
     Instruction(OP_LDI, r25, 25);  //5.Load Loop counter with 17+8.
 
-    d16s_3 = AvrProgWriteP;
+    d16s_3 = AvrProg.size();
     Instruction(OP_ADC, r19, r19);   //6.Shift left dividend into carry.
     Instruction(OP_ADC, r20, r20);   //6.Shift left dividend into carry.
     Instruction(OP_ADC, r21, r21);   //6.Shift left dividend into carry.
@@ -5700,7 +5680,7 @@ static void DivideRoutine8()
     Instruction(OP_SUB, r18, r18); //4.Clear remainder and carry.
     Instruction(OP_LDI, r25, 9);   //5.Load Loop counter with 17-8.
 
-    d16s_3 = AvrProgWriteP;
+    d16s_3 = AvrProg.size();
     Instruction(OP_ADC, r19, r19);   //6.Shift left dividend into carry.
     Instruction(OP_DEC, r25);        //7.Decrement Loop counter.
     Instruction(OP_BRNE, d16s_5, 0); //8.If Loop counter = 0, go to step 11.
@@ -5727,27 +5707,20 @@ static void DivideRoutine8()
 // write to the file, or if there is something inconsistent about the
 // program.
 //-----------------------------------------------------------------------------
-void CompileAvr(char *outFile)
+void CompileAvr(const char *outFile)
 {
     rungNow = -100;
-    FILE *f = fopen(outFile, "w");
+    FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFile);
         return;
     }
 
     char outFileAsm[MAX_PATH];
     SetExt(outFileAsm, outFile, ".asm");
-    FILE *fAsm = fopen(outFileAsm, "w");
+    FileTracker fAsm(outFileAsm, "w");
     if(!fAsm) {
-        Error(_("Couldn't open file '%s'"), outFileAsm);
-        fclose(f);
-        return;
-    }
-
-    if(setjmp(CompileErrorBuf) != 0) {
-        fclose(f);
-        fclose(fAsm);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFileAsm);
         return;
     }
 
@@ -6776,7 +6749,7 @@ void CompileAvr(char *outFile)
 //      REG_UCSRC   = 0x9d;
     */
     } else
-        oops();
+        THROW_COMPILER_EXCEPTION_FMT("Don't know how to init %s.", Prog.mcu ? Prog.mcu->mcuName : "Invalid MCU");
     //***********************************************************************
 
     rungNow = -90;
@@ -6817,10 +6790,9 @@ void CompileAvr(char *outFile)
     CompileFromIntermediate();
     Comment("CompileFromIntermediate END");
 
-    DWORD i;
-    for(i = 0; i < MAX_RUNGS; i++)
+    for(int i = 0; i < MAX_RUNGS; i++)
         Prog.HexInRung[i] = 0;
-    for(i = 0; i < AvrProgWriteP; i++)
+    for(uint32_t i = 0; i < AvrProg.size(); i++)
         if((AvrProg[i].rung >= 0) && (AvrProg[i].rung < MAX_RUNGS))
             Prog.HexInRung[AvrProg[i].rung]++;
 
@@ -6859,13 +6831,13 @@ void CompileAvr(char *outFile)
     if(DivideUsed24)
         DivideRoutine24();
 
-    Instruction(OP_RJMP, AvrProgWriteP); // as CodeVisionAVR C Compiler // for label
+    Instruction(OP_RJMP, AvrProg.size()); // as CodeVisionAVR C Compiler // for label
 
     rungNow = -10;
     MemCheckForErrorsPostCompile();
     AddrCheckForErrorsPostCompile();
 
-    ProgWriteP = AvrProgWriteP;
+    ProgWriteP = AvrProg.size();
 
     rungNow = -5;
     WriteHexFile(f, fAsm);
@@ -6886,9 +6858,9 @@ void CompileAvr(char *outFile)
     char str2[MAX_PATH + 500];
     sprintf(str2,
             _("Used %d/%d words of program flash (chip %d%% full)."),
-            AvrProgWriteP,
+            AvrProg.size(),
             Prog.mcu->flashWords,
-            (100 * AvrProgWriteP) / Prog.mcu->flashWords);
+            (100 * AvrProg.size()) / Prog.mcu->flashWords);
 
     char str3[MAX_PATH + 500];
     sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), McuRAM(), (100 * UsedRAM()) / McuRAM());
@@ -6896,7 +6868,7 @@ void CompileAvr(char *outFile)
     char str4[MAX_PATH + 500];
     sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
 
-    if(AvrProgWriteP > Prog.mcu->flashWords) {
+    if(AvrProg.size() > Prog.mcu->flashWords) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);
         CompileSuccessfulMessage(str2, MB_ICONERROR);
     } else if(UsedRAM() > McuRAM()) {
@@ -6905,6 +6877,6 @@ void CompileAvr(char *outFile)
     } else
         CompileSuccessfulMessage(str4);
 
-    AvrProgLdLen = AvrProgWriteP - BeginOfPLCCycle;
+    AvrProgLdLen = AvrProg.size() - BeginOfPLCCycle;
     //dbp("%d %d %d", AvrProgLdLen, AvrProgWriteP, BeginOfPLCCycle);
 }

@@ -114,10 +114,8 @@ void SelectElement(int gx, int gy, int state)
         RefreshScrollbars();
     }
 
-    ok();
     if(Selected)
         Selected->selectedState = state;
-    ok();
 
     WhatCanWeDoFromCursorAndTopology();
 }
@@ -814,7 +812,7 @@ void EditSelectedElement()
             break;
 
         case ELEM_READ_ADC:
-            ShowReadAdcDialog(Selected->d.readAdc.name + 1);
+            ShowReadAdcDialog(Selected->d.readAdc.name + 1, &Selected->d.readAdc.refs);
             break;
 
         case ELEM_LABEL:

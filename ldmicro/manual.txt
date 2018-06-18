@@ -56,17 +56,18 @@ LDmicro compiles ladder logic to PIC16 or AVR code. The following
 processors are supported:
     * PIC16F877
     * PIC16F628
-    * PIC16F876 (untested)
-    * PIC16F88 (untested)
-    * PIC16F819 (untested)
-    * PIC16F887 (untested)
-    * PIC16F886 (untested)
+    * PIC16F876
+    * PIC16F88
+    * PIC16F819
+    * PIC16F887
+    * PIC16F886
     * ATmega128
     * ATmega64
-    * ATmega162 (untested)
-    * ATmega32 (untested)
-    * ATmega16 (untested)
-    * ATmega8 (untested)
+    * ATmega162
+    * ATmega32
+    * ATmega16
+    * ATmega8
+    * and a lot of...
 
 It would be easy to support more AVR or PIC16 chips, but I do not have
 any way to test them. If you need one in particular then contact me and
@@ -366,6 +367,18 @@ file into the microcontroller. Remember to set the configuration bits
 (fuses)! For PIC16 processors, the configuration bits are included in the
 hex file, and most programming software will look there automatically.
 For AVR processors you must set the configuration bits by hand.
+
+
+PULL UP RESISTORS
+=================
+Pull up resistors
+https://github.com/LDmicro/LDmicro/wiki/Pull-up-resistors
+
+Disable Pull up resistors
+https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+
+Pull down resistors
+https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
 
 
 INSTRUCTIONS REFERENCE
@@ -1149,6 +1162,9 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                            0-23 if sizeof(var) == 3 bytes,
                            0-31 if sizeof(var) == 4 bytes.
 
+    Learn how to use SetBit(), ClrBit() to Disable Pull up resistors
+    https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+
 
 > COMPARE               [var ==]        [var >]        [1 >=]
                        -[ var2 ]-      -[ 1   ]-      -[ Ton]-
@@ -1349,6 +1365,17 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     for use with the A/D converter. The software will not allow you to
     assign non-A/D pins to an analog input. This instruction must be
     the rightmost instruction in its rung.
+
+    Updated: ADC Voltage Reference.
+    The reference voltage for the ADC (Vref) indicates the conversion
+    range for the ADC. Single-ended channels that exceed Vref will result
+    in codes close to 0x3FF(1023). Vref can be selected as either AVCC,
+    internal 2.56V reference, internal 1.1V reference, or external Aref pin.
+    The parameter REFS=0 is backward compatible with the previous LDmicro releases.
+
+    See https://github.com/LDmicro/LDmicro/wiki/ADC-Voltage-Reference
+    https://github.com/LDmicro/LDmicro/wiki/How-to-measure-battery-voltage
+    https://github.com/LDmicro/LDmicro/wiki/How-to-measure-voltage-(PIC)
 
 
 > SET PWM DUTY CYCLE        duty_cycle  3.8 kHz
@@ -1860,7 +1887,7 @@ Seattle WA    -- Feb 2009
 
 Email: user jwesthues, at host cq.cx
 
-Unofficial support:
+LDmicro support:
     LDmicro Forum:  http://cq.cx/ladder-forum.pl
     Latest release: https://github.com/LDmicro/LDmicro/releases
     Repository:     https://github.com/LDmicro/LDmicro

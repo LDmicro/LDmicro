@@ -981,11 +981,16 @@ void ShowSegmentsDialog(ElemLeaf *l)
     }
 }
 
-void ShowReadAdcDialog(char *name)
+void ShowReadAdcDialog(char *name, int *refs)
 {
-    const char *labels[] = {_("Destination:")};
-    char *      dests[] = {name};
-    ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
+    const char *labels[] = {_("Destination:"), _("REFS:")};
+    char srefs[100];
+    sprintf(srefs, "%d", *refs);
+    char *dests[] = { name, srefs };
+    if(ShowSimpleDialog(_("Read A/D Converter"), 2, labels, 0, 0x1, 0x1, dests)) {
+        // TODO check the ranges
+        *refs = hobatoi(srefs);
+    }
 }
 
 void ShowGotoDialog(int which, char *name)

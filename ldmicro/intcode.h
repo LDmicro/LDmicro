@@ -34,6 +34,9 @@
 
 #define NEW_CMP // (C) LDmicro.GitHub@gmail.com
 #define TABLE_IN_FLASH // (C) LDmicro.GitHub@gmail.com
+#ifdef TABLE_IN_FLASH
+//#define TABLE_IN_FLASH_LINEAR // (C) LDmicro.GitHub@gmail.com
+#endif
 #define NEW_INT 1
 
 // clang-format off
@@ -239,8 +242,8 @@ struct IntOp {
     int         rung;        //= rungNow  //this IntOp located in rung,
     int         which;       //= whichNow //this IntOp refers to the ELEM_<which>
     ElemLeaf   *leaf;        //= leafNow  //
-    char        f[MAX_PATH]; //in .c source file name
-    int         l;           //and line in file
+    FileNameArray fileName;  //in .c source file name
+    int         fileLine;    //and line in file
     bool        simulated;
 
     IntOp();

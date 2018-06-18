@@ -27,6 +27,7 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
+#include "filetracker.hpp"
 
 static char  SeenVariables[MAX_IO][MAX_NAME_LEN];
 static int   SeenVariablesCount;
@@ -45,7 +46,7 @@ static bool SeenVariable(char *name)
         }
     }
     if(i >= MAX_IO)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error.");
     strcpy(SeenVariables[i], name);
     SeenVariablesCount++;
     return false;
@@ -76,7 +77,7 @@ template <size_t N> static char *MapSym(const StringArray<N> &str, int how)
     } else if(how == ASINT) {
         bit_int = 'i';
     } else {
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error.");
     }
 
     // User and internal symbols are distinguished.
@@ -578,7 +579,7 @@ static void Generate_flash_eeprom(FILE *f)
                 } else if(sovElement == 4) {
                     sovs = "longint";
                 } else {
-                    ooops("sovElement=%d", sovElement);
+                    THROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
                 }
 
                 fprintf(
@@ -920,7 +921,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_UART_SEND1:
             case INT_UART_SENDn:
                 Error(_(
-                    "PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
+                    " PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
                 break;
 
 #ifdef TABLE_IN_FLASH
@@ -963,7 +964,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 #endif
 
             default:
-                ooops("INT_%d", IntCode[i].op);
+                THROW_COMPILER_EXCEPTION_FMT("INT_%d", IntCode[i].op);
         }
     }
     fprintf(f, "end;\n");
@@ -1013,7 +1014,7 @@ static char *GetUnitName(char *unitn, char *dest)
     return _GetUnitName(unitn);
 }
 //-----------------------------------------------------------------------------
-void CompilePascal(char *dest)
+void CompilePascal(const char *dest)
 {
     SeenVariablesCount = 0;
 
@@ -1039,29 +1040,29 @@ void CompilePascal(char *dest)
     SetExt(destv, dest, "V.pas");
     SetExt(desti, dest, "U.inc");
 
-    FILE *f = fopen(dest, "w");
+    FileTracker f(dest, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
         return;
     }
-    FILE *fu = fopen(destu, "w");
+    FileTracker fu(destu, "w");
     if(!fu) {
-        Error(_("Couldn't open file '%s'"), destu);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), destu);
         return;
     }
-    FILE *fr = fopen(destr, "w");
+    FileTracker fr(destr, "w");
     if(!fr) {
-        Error(_("Couldn't open file '%s'"), destr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), destr);
         return;
     }
-    FILE *fv = fopen(destv, "w");
+    FileTracker fv(destv, "w");
     if(!fv) {
-        Error(_("Couldn't open file '%s'"), destv);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), destv);
         return;
     }
-    FILE *fi = fopen(desti, "w");
+    FileTracker fi(desti, "w");
     if(!fi) {
-        Error(_("Couldn't open file '%s'"), desti);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), desti);
         return;
     }
 
@@ -1332,11 +1333,11 @@ void CompilePascal(char *dest)
             RelayCount,
             VarCount);
 
-    fclose(f);
-    fclose(fu);
-    fclose(fr);
-    fclose(fv);
-    fclose(fi);
+    f.close();
+    fu.close();
+    fr.close();
+    fv.close();
+    fi.close();
     /*
     TranslitFile(dest );
     TranslitFile(destu);

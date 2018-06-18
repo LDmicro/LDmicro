@@ -39,4 +39,20 @@
 
 // clang-format on
 
+//bitNumber to bitMask
+#define _BV(bit) (1 << (bit))
+#define bit(b) (1UL << (b))
+
+#define bitRead(value, bit) (((value) >> (bit)) & 0x01) // Returns the value of the bit (0 or 1).
+#define bitReadMask(value, bit) ((value) & bit(bit)) // Returns the mask value of the bit (0 or 0xXXXX).
+#define bitSet(value, bit) ((value) |= (1UL << (bit)))
+#define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
+#define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))
+
+#define lowByte(w) ((uint8_t) ((w) & 0xff))
+#define byte0(w) (lowByte(w))
+#define byte1(w) ((uint8_t) ((w) >> 8))
+#define byte2(w) ((uint8_t) ((w) >> 16))
+#define byte3(w) ((uint8_t) ((w) >> 24))
+
 #endif

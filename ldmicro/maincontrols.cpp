@@ -609,25 +609,28 @@ HMENU MakeMainWindowMenus()
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Atmel AVR ATmega32U4 44-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Atmel AVR ATmega32 44-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Atmel AVR ATmega328 32-Pin packages");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "TODO: Atmel AVR ATtiny85");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Atmel AVR ATtiny85 8/20-Pin packages");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Atmel AVR ATtiny10 6-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "TODO: Atmel AVR ATtinyXXX");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "TODO: Atmel AVR AT90USB646");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "TODO: Atmel AVR AT90USB1286");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "TODO: Atmel AVR AT90USB1287");
     AppendMenu(ProcessorMenu2, MF_SEPARATOR, 0, "");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12, "DONE: Microchip PIC10F200/202/204/206 6-SOT");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12, "DONE: Microchip PIC10F220/222 6-SOT");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12, "DONE: Microchip PIC10F200/202/204/206 6-SOT");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "TODO: Microchip PIC12Fxxx");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12, "DONE: Microchip PIC12F629");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12, "DONE: Microchip PIC12F675 8-pin packages");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12, "DONE: Microchip PIC12F752 8-pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12, "DONE: Microchip PIC12F683 8-pin packages");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12, "DONE: Microchip PIC12F675 8-pin packages");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW_PIC12, "DONE: Microchip PIC12F629 8-pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F72 28-Pin PDIP, SOIC, SSOP");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F887 44-TQFP");
     AppendMenu(ProcessorMenu2, MF_SEPARATOR, 0, "");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "TODO: Microchip PIC16F1512 - PIC16F1527");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F1512 - PIC16F1527");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F1512 28-Pin SPDIP, SOIC, SSOP");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F1516 28-Pin SPDIP, SOIC, SSOP");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F1527 64-Pin packages");
-    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "TODO: Microchip PIC16F1933 - PIC16F1947");
+    AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F1933 - PIC16F1947");
 
     // simulate popup menu
     SimulateMenu = CreatePopupMenu();

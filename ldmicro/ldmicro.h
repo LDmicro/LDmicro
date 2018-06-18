@@ -26,7 +26,7 @@
 
 #include "stdafx.h"
 
-#include "mcutable.h"
+#include "mcutable.hpp"
 #include "current_function.hpp"
 #include "compilercommon.hpp"
 
@@ -34,9 +34,6 @@ typedef int32_t SWORD;
 typedef int32_t SDWORD;
 
 #include "accel.h"
-#define _BV(bit) (1 << (bit))
-#define arraylen(x) (sizeof(x)/sizeof((x)[0]))
-//#define arraylen(x) (_countof(x))
 
 //-----------------------------------------------
 #define BYTES_OF_LD_VAR 2
@@ -674,6 +671,7 @@ typedef struct ElemNPulseTag {
 
 typedef struct ElemReadAdcTag {
     char    name[MAX_NAME_LEN];
+    int     refs; // REFS1:0 for AVR // PCFG3:0 for PIC
 } ElemReadAdc;
 
 typedef struct ElemSetPwmTag {
@@ -947,11 +945,6 @@ extern PlcProgram Prog;
 extern char CurrentSaveFile[MAX_PATH];
 extern char CurrentCompileFile[MAX_PATH];
 extern char CurrentCompilePath[MAX_PATH];
-// memory debugging, because I often get careless; ok() will check that the
-// heap used for all the program storage is not yet corrupt, and oops() if
-// it is
-void CheckHeap(const char *file, int line);
-#define ok() CheckHeap(__FILE__, __LINE__)
 extern ULONGLONG PrevWriteTime;
 extern ULONGLONG LastWriteTime;
 void ScrollDown();
@@ -1008,7 +1001,7 @@ extern bool ThisHighlighted;
 extern void (*DrawChars)(int, int, const char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow();
-BOOL tGetLastWriteTime(char *CurrentSaveFile, FILETIME *sFileTime);
+BOOL tGetLastWriteTime(const char *CurrentSaveFile, FILETIME *sFileTime);
 void ExportDrawingAsText(char *file);
 void InitForDrawing();
 void InitBrushesForDrawing();
@@ -1150,7 +1143,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1);
 void RenameSet1(int which, char *name, char *new_name, bool set1);
 
 // loadsave.cpp
-bool LoadProjectFromFile(char *filename);
+bool LoadProjectFromFile(const char *filename);
 bool SaveProjectToFile(char *filename, int code);
 void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung);
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
@@ -1183,7 +1176,7 @@ void ShowSpiDialog(ElemLeaf *l);
 void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);
-void ShowReadAdcDialog(char *name);
+void ShowReadAdcDialog(char *name, int *refs);
 void ShowGotoDialog(int which, char *name);
 void ShowRandomDialog(char *name);
 void ShowSetPwmDialog(void *e);
@@ -1292,7 +1285,6 @@ void dbp(const char *str, ...);
 void Error(const char *str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
-extern HANDLE MainHeap;
 void StartIhex(FILE *f);
 void WriteIhex(FILE *f, BYTE b);
 void FinishIhex(FILE *f);
@@ -1639,8 +1631,6 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError);
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow();
-#define CompileError() longjmp(CompileErrorBuf, 1)
-extern jmp_buf CompileErrorBuf;
 double SIprefix(double val, char *prefix, int en_1_2);
 double SIprefix(double val, char *prefix);
 int GetVariableType(char *name);
@@ -1680,7 +1670,7 @@ bool IsAddrInVar(const char *name);
 
 // pic16.cpp
 extern SDWORD PicProgLdLen;
-void CompilePic16(char *outFile);
+void CompilePic16(const char* outFile);
 bool McuAs(const char *str);
 bool CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
 // avr.cpp
@@ -1688,16 +1678,16 @@ extern DWORD AvrProgLdLen;
 int calcAvrUsart(int *divisor, double  *actual, double  *percentErr);
 int testAvrUsart(int divisor, double  actual, double  percentErr);
 bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
-void CompileAvr(char *outFile);
+void CompileAvr(const char* outFile);
 // ansic.cpp
 extern int compile_MNU;
 bool CompileAnsiC(const char *outFile, int MNU);
 // interpreted.cpp
-void CompileInterpreted(char *outFile);
+void CompileInterpreted(const char* outFile);
 // xinterpreted.cpp
-void CompileXInterpreted(char *outFile);
+void CompileXInterpreted(const char* outFile);
 // netzer.cpp
-void CompileNetzer(char *outFile);
+void CompileNetzer(const char* outFile);
 
 typedef struct RungAddrTag {
     DWORD   KnownAddr; // Addres to jump to the start of rung abowe the current in LD
@@ -1706,7 +1696,7 @@ typedef struct RungAddrTag {
 extern RungAddr AddrOfRungN[MAX_RUNGS];
 
 // pascal.cpp
-void CompilePascal(char *outFile);
+void CompilePascal(const char* outFile);
 
 // pcports.cpp
 extern McuIoPinInfo IoPc[MAX_IO];
@@ -1715,6 +1705,6 @@ bool ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
 void FillPcPinInfo(McuIoPinInfo *pinInfo);
 
 // translit.cpp
-void Transliterate(char *dest, char *str);
+void Transliterate(char *dest, const char* str);
 
 #endif

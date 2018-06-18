@@ -130,7 +130,7 @@ int MaskToBit(int Pin);
 void LptDb25PinToRegMask(int Pin, int *Reg, int *Mask);
 void ComDb9PinToRegMask(int Pin, int *Reg, int *Mask);
 void ComDb25PinToRegMask(int Pin, int *Reg, int *Mask);
-bool SavePcPorts(char *filename);
-bool LoadPcPorts(char *filename);
+bool SavePcPorts(const char *filename);
+bool LoadPcPorts(const char *filename);
 
 #endif

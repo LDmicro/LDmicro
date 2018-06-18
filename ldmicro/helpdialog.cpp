@@ -72,7 +72,7 @@ const char *AboutText[] = {
 "Controllino Maxi support 2016",
 "    Frederic Rible <frible@teaser.fr>",
 "",
-"Unofficial support:",
+"LDmicro support:",
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
 "",

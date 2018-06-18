@@ -28,7 +28,6 @@
 
 #include "ldmicro.h"
 #include "freeze.h"
-#include "mcutable.h"
 #include "intcode.h"
 #include "pcports.h"
 
@@ -509,7 +508,69 @@ static void CompileProgram(bool compileAs, int MNU)
     if((MNU == MNU_COMPILE) && (compile_MNU > 0))
         MNU = compile_MNU;
 
+    if(MNU == MNU_COMPILE_GNUC ){
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_AVR) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to WinAvr C, but MCU core isn't AVR.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+    if(MNU == MNU_COMPILE_CODEVISIONAVR){
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_AVR) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to CodeVision C, but MCU core isn't AVR.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+
+    if(MNU == MNU_COMPILE_HI_TECH_C){
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_PIC16) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to HI-TECH C, but MCU core isn't PIC.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+
+    if(MNU == MNU_COMPILE_CCS_PIC_C){
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_PIC16) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+
     if(MNU == MNU_COMPILE_ARDUINO) {
+        if(Prog.mcu && Prog.mcu->whichIsa != ISA_AVR && Prog.mcu->whichIsa != ISA_ESP8266) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+
         char onlyName[MAX_PATH];
         strcpy(onlyName, ExtractFileName(CurrentSaveFile));
         SetExt(onlyName, onlyName, "");
@@ -1531,11 +1592,25 @@ static void ProcessMenu(int code)
                 nullptr,
                 nullptr,
                 SW_SHOWNORMAL);
+            ShellExecute(
+                0,
+                "open",
+                "https://github.com/LDmicro/LDmicro/wiki/NEW:-PIC-8-pins-micros",
+                nullptr,
+                nullptr,
+                SW_SHOWNORMAL);
             break;
 
         case MNU_PROCESSOR_NEW:
             ShellExecute(
                 0, "open", "https://github.com/LDmicro/LDmicro/wiki/TODO-&-DONE", nullptr, nullptr, SW_SHOWNORMAL);
+            ShellExecute(
+                0,
+                "open",
+                "https://github.com/LDmicro/LDmicro/wiki/NEW:--PIC-Enhanced-Mid-Range-Products",
+                nullptr,
+                nullptr,
+                SW_SHOWNORMAL);
             break;
 
         case MNU_OPEN_SFR:
@@ -2727,8 +2802,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         Instance = hInstance;
 
-        MainHeap = HeapCreate(0, 1024 * 64, 0);
-
         setlocale(LC_ALL, "");
         //RunningInBatchMode = false;
         fillPcPinInfos();
@@ -2881,11 +2954,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             char *s;
             GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
 
-            if(!LoadProjectFromFile(CurrentSaveFile)) {
+            bool res = false;
+            try {
+                res = LoadProjectFromFile(CurrentSaveFile);
+            } catch(const std::exception &e) {
+                Error(e.what());
+            }
+            if(!res) {
                 NewProgram();
                 Error(_("Couldn't open '%s'."), CurrentSaveFile);
                 CurrentSaveFile[0] = '\0';
             }
+
             UndoFlush();
         }
         GenerateIoListDontLoseSelection();

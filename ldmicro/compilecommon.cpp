@@ -27,9 +27,6 @@
 #include "compilercommon.hpp"
 #include "compilerexceptions.hpp"
 
-// If we encounter an error while compiling then it's convenient to break
-// out of the possibly-deeply-recursed function we're in.
-jmp_buf CompileErrorBuf;
 
 // Assignment of the internal relays to memory, efficient, one bit per
 // relay.
@@ -260,14 +257,10 @@ DWORD AllocOctetRam(int bytes) // The desired number of bytes.
     }
 
     if((RamSection >= MAX_RAM_SECTIONS) || ((MemOffset + bytes) >= Prog.mcu->ram[RamSection].len)) {
-        char str[1024];
-        sprintf(str,
-                "%s %s",
-                _("RAM:"),
-                _("Out of memory; simplify program or choose "
-                  "microcontroller with more memory."));
-        Error(str);
-        CompileError();
+        THROW_COMPILER_EXCEPTION_FMT("%s %s",
+                                     _("RAM:"),
+                                     _("Out of memory; simplify program or choose "
+                                       "microcontroller with more memory."));
     }
 
     MemOffset += bytes;
@@ -316,12 +309,12 @@ static void MemForPin(const char *name, DWORD *addr, int *bit, bool asInput)
             break;
     }
     if(i >= Prog.io.count)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
 
     if(asInput && Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT && Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
 
     *addr = -1;
     *bit = -1;
@@ -340,10 +333,9 @@ static void MemForPin(const char *name, DWORD *addr, int *bit, bool asInput)
                 *bit = iop->bit;
             }
         } else {
-            Error(_("Must assign pins for all I/O.\r\n\r\n"
+            THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n"
                     "'%s' is not assigned."),
                   name);
-            CompileError();
         }
     }
 }
@@ -363,7 +355,7 @@ void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput)
             *bit = iop->bit;
         } else {
             if(pin)
-                Error(_("Not described pin %d "), pin);
+                THROW_COMPILER_EXCEPTION_FMT(_("Not described pin %d "), pin);
         }
     }
 }
@@ -378,7 +370,7 @@ int SingleBitAssigned(const char *name)
             break;
     }
     if(i >= Prog.io.count)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
 
     if(Prog.mcu) {
         pin = Prog.io.assignment[i].pin;
@@ -402,7 +394,7 @@ int GetAssignedType(const char *name, const char *fullName)
             else if(fullName[1] == 'i')
                 return IO_TYPE_GENERAL;
             else
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
         }
     for(int i = 0; i < Prog.io.count; i++) {
         if(strcmp(Prog.io.assignment[i].name, name) == 0) {
@@ -421,11 +413,12 @@ uint8_t MuxForAdcVariable(const char *name)
     int res = 0;
     int i;
     for(i = 0; i < Prog.io.count; i++) {
-        if(strcmp(Prog.io.assignment[i].name, name) == 0)
+        if((strcmp(Prog.io.assignment[i].name, name) == 0) &&
+			(Prog.io.assignment[i].type == IO_TYPE_READ_ADC))
             break;
     }
     if(i >= Prog.io.count)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
 
     if(Prog.mcu) {
         uint32_t j;
@@ -435,8 +428,8 @@ uint8_t MuxForAdcVariable(const char *name)
             }
         }
         if(j == Prog.mcu->adcCount) {
-            Error(_("Must assign pins for all ADC inputs (name '%s')."), name);
-            CompileError();
+            Error("i=%d pin=%d", i, Prog.io.assignment[i].pin);
+            THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all ADC inputs (name '%s')."), name);
         }
         res = Prog.mcu->adcInfo[j].muxRegValue;
     }
@@ -460,7 +453,7 @@ int byteNeeded(long long int i)
         return 3;
     else if((-2147483648LL <= i) && (i <= 2147483647LL))
         return 4; // not FULLY implamanted for LDmicro
-    oops();
+    THROW_COMPILER_EXCEPTION("Internal error");
     return 0;
 }
 
@@ -483,10 +476,9 @@ int TestByteNeeded(int count, SDWORD *vals)
 int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
 {
     if(!name)
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
     if(strlenalnum(name) == 0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
-        CompileError();
+        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
     }
 
     int i;
@@ -499,12 +491,11 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
             break;
     }
     if(i >= MAX_IO) {
-        Error(_("Internal limit exceeded (number of vars)"));
-        CompileError();
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i == VariableCount) {
         VariableCount++;
-        memset(&Variables[i], sizeof(Variables[i]), 0);
+        memset(&Variables[i], 0, sizeof(Variables[i]));
         strcpy(Variables[i].name, name);
         if(name[0] == '#') {
             Variables[i].SizeOfVar = 1;
@@ -587,10 +578,10 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
                 sizeOfVar = 2;
             }
             if(sizeOfVar < 1) {
-                Error(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name, sizeOfVar);
+                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name, sizeOfVar);
                 sizeOfVar = 1;
             } else if(sizeOfVar > 4) {
-                Error(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name, sizeOfVar);
+                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name, sizeOfVar);
                 sizeOfVar = 4;
             }
             if(Variables[i].SizeOfVar != sizeOfVar) {
@@ -611,8 +602,7 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
                     } else if(sizeOfVar == 4) {
                         Variables[i].addrl = AllocOctetRam(4);
                     } else {
-                        Error(_("Var '%s' not allocated %d."), name, sizeOfVar);
-                        CompileError();
+                        THROW_COMPILER_EXCEPTION_FMT(_("Var '%s' not allocated %d."), name, sizeOfVar);
                     }
                     Variables[i].Allocated = sizeOfVar;
 
@@ -671,7 +661,7 @@ int SetSizeOfVar(const char *name, int sizeOfVar, bool showError)
 {
     if(showError)
         if((sizeOfVar < 1) || (4 < sizeOfVar)) {
-            Error(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
+            THROW_COMPILER_EXCEPTION_FMT(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
             sizeOfVar = 2;
         }
 #ifndef NEW_CMP
@@ -702,8 +692,7 @@ int SizeOfVar(const NameArray &name)
 int GetVariableType(char *name)
 {
     if(strlenalnum(name) == 0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
-        CompileError();
+        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
     }
 
     int i;
@@ -712,8 +701,7 @@ int GetVariableType(char *name)
             break;
     }
     if(i >= MAX_IO) {
-        Error(_("Internal limit exceeded (number of vars)"));
-        CompileError();
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i < VariableCount) {
         return Variables[i].type;
@@ -724,8 +712,7 @@ int GetVariableType(char *name)
 int SetVariableType(const char *name, int type)
 {
     if(strlenalnum(name) == 0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
-        CompileError();
+        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
     }
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -733,12 +720,11 @@ int SetVariableType(const char *name, int type)
             break;
     }
     if(i >= MAX_IO) {
-        Error(_("Internal limit exceeded (number of vars)"));
-        CompileError();
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i == VariableCount) {
         VariableCount++;
-        memset(&Variables[i], sizeof(Variables[i]), 0);
+        memset(&Variables[i], 0, sizeof(Variables[i]));
         strcpy(Variables[i].name, name);
         if(name[0] == '#') {
             Variables[i].SizeOfVar = 1;
@@ -767,8 +753,7 @@ int SetVariableType(const char *name, int type)
 int AllocOfVar(char *name)
 {
     if(strlenalnum(name) == 0) {
-        Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
-        CompileError();
+        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
     }
 
     int i;
@@ -777,8 +762,7 @@ int AllocOfVar(char *name)
             break;
     }
     if(i >= MAX_IO) {
-        Error(_("Internal limit exceeded (number of vars)"));
-        CompileError();
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i < VariableCount) {
         return Variables[i].Allocated;
@@ -846,7 +830,7 @@ bool LoadVarListFromFile(FILE *f)
             }
         }
         if(!Ok) {
-            Error(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
+            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
             return false;
         }
     }
@@ -864,8 +848,7 @@ static void MemForBitInternal(const char *name, DWORD *addr, int *bit, bool writ
             break;
     }
     if(i >= MAX_IO) {
-        Error(_("Internal limit exceeded (number of relay)"));
-        CompileError();
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of relay)"));
     }
     if(i == InternalRelayCount) {
         InternalRelayCount++;
@@ -897,7 +880,7 @@ void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit)
         case 'I':
         case 'X':
             if(!forRead)
-                oops();
+                THROW_COMPILER_EXCEPTION("Internal error");
             MemForPin(name, addr, bit, true);
             break;
 
@@ -912,7 +895,7 @@ void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit)
             break;
 
         default:
-            ooops("Unknown name >%s<", name);
+            THROW_COMPILER_EXCEPTION_FMT("Unknown name >%s<", name);
             break;
     }
 }
@@ -1001,8 +984,7 @@ void MemCheckForErrorsPostCompile()
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
         if(!InternalRelays[i].assignedTo) {
-            Error(_("Internal relay '%s' never assigned; add its coil somewhere."), InternalRelays[i].name);
-            CompileError();
+            THROW_COMPILER_EXCEPTION_FMT(_("Internal relay '%s' never assigned; add its coil somewhere."), InternalRelays[i].name);
         }
     }
 }
@@ -1096,7 +1078,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)
 //-----------------------------------------------------------------------------
 void ComplainAboutBaudRateError(int divisor, double actual, double err)
 {
-    Error(_("UART baud rate generator: divisor=%d actual=%.4f for %.2f%% "
+    THROW_COMPILER_EXCEPTION_FMT(_("UART baud rate generator: divisor=%d actual=%.4f for %.2f%% "
             "error.\r\n"
             "\r\n"
             "This is too large; try a different baud rate (slower "
@@ -1116,7 +1098,7 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err)
 //-----------------------------------------------------------------------------
 void ComplainAboutBaudRateOverflow()
 {
-    Error(
+    THROW_COMPILER_EXCEPTION(
         _("UART baud rate generator: too slow, divisor overflows. "
           "Use a slower crystal or a faster baud rate.\r\n"
           "\r\n"
@@ -1221,7 +1203,7 @@ double SIprefix(double val, char *prefix, int en_1_2)
         strcpy(prefix, "m"); //10 ms= 0.010 s
         return val * 1e3;
     } else {
-        oops();
+        THROW_COMPILER_EXCEPTION("Internal error");
         return 0;
     }
 }

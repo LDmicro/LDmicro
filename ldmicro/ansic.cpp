@@ -112,7 +112,6 @@ static const char *MapSym(const NameArray &name, int how)
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var; easy, a static.
 //-----------------------------------------------------------------------------
-/**/
 static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
 {
     if(*str == 'A') {
@@ -135,7 +134,6 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var.
 //-----------------------------------------------------------------------------
-/**/
 static void DeclareStr(FILE *f, FILE *fh, const char *str, int sov)
 {
     fprintf(f, "STATIC char %s[%d];\n", str, sov);

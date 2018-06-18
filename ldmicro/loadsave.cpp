@@ -24,6 +24,7 @@
 
 #include "ldmicro.h"
 #include "pcports.h"
+#include "filetracker.hpp"
 
 char *FrmStrToStr(char *dest);
 //void FrmStrToFile(FILE *f, char *str);
@@ -77,10 +78,9 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.coil.resetOnly = resetOnly != 0;
         return res;
     };
-
+	bool scanned = true;
     if(memcmp(line, "COMMENT", 7) == 0) {
         FrmStrToStr(l->d.comment.str, &line[8]);
-
         *which = ELEM_COMMENT;
     } else if(scan_contact_3() == 3) {
         *which = ELEM_CONTACTS;
@@ -351,7 +351,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_MUL;
     } else if(sscanf(line, "DIV %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_DIV;
-
+	} else 
+		scanned = false;
+	if (scanned) {
+		; //
     } else if(sscanf(line, "SET_BIT %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_SET_BIT;
     } else if(sscanf(line, "CLEAR_BIT %s %s", l->d.move.dest, l->d.move.src) == 2) {
@@ -386,7 +389,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_LEQ;
     } else if(sscanf(line, "LES %s %s", l->d.cmp.op1, l->d.cmp.op2) == 2) {
         *which = ELEM_LES;
+    } else if(sscanf(line, "READ_ADC %s %d", l->d.readAdc.name, &l->d.readAdc.refs) == 2) {
+        *which = ELEM_READ_ADC;
     } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name) == 1) {
+        l->d.readAdc.refs = 0;
         *which = ELEM_READ_ADC;
     } else if(sscanf(line, "RANDOM %s", l->d.readAdc.name) == 1) {
         *which = ELEM_RANDOM;
@@ -714,7 +720,7 @@ void LoadWritePcPorts()
                     supportedMcus()[i].pinCount = IoPcCount;
                 }
         } else
-            Error(_(" File '%s' not found!"), pc);
+            THROW_COMPILER_EXCEPTION_FMT(_(" File '%s' not found!"), pc);
         //RunningInBatchMode = false;
     }
 }
@@ -725,13 +731,13 @@ void LoadWritePcPorts()
 // time, processor clock, etc.). Return true for success, false if anything
 // went wrong.
 //-----------------------------------------------------------------------------
-bool LoadProjectFromFile(char *filename)
+bool LoadProjectFromFile(const char *filename)
 {
     FreeEntireProgram();
     strcpy(CurrentCompileFile, "");
 
-    FILE *f = fopen(filename, "r");
-    if(!f)
+    FileTracker f(filename, "r");
+    if(!f.is_open())
         return false;
 
     strcpy(CurrentLdPath, filename);
@@ -748,12 +754,10 @@ bool LoadProjectFromFile(char *filename)
             continue;
         if(strcmp(line, "IO LIST") == 0) {
             if(!LoadIoListFromFile(f)) {
-                fclose(f);
                 return false;
             }
         } else if(strcmp(line, "VAR LIST") == 0) {
             if(!LoadVarListFromFile(f)) {
-                fclose(f);
                 return false;
             }
         } else if(sscanf(line, "LDmicro%s", &Prog.LDversion)) {
@@ -826,7 +830,7 @@ bool LoadProjectFromFile(char *filename)
                         }
                 }
                 if(i == supportedMcus().size()) {
-                    Error(_("Microcontroller '%s' not supported.\r\n\r\n"
+                    THROW_COMPILER_EXCEPTION_FMT(_("Microcontroller '%s' not supported.\r\n\r\n"
                             "Defaulting to no selected MCU."),
                           line + 6);
                 }
@@ -854,7 +858,7 @@ bool LoadProjectFromFile(char *filename)
             goto failed;
         rung++;
         if(rung >= MAX_RUNGS) {
-            Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
+            THROW_COMPILER_EXCEPTION(_("Too many rungs in input file!\nSame rungs not loaded!"));
             break;
         }
     }
@@ -865,19 +869,17 @@ bool LoadProjectFromFile(char *filename)
             ProgramChanged();
     }
 
-    fclose(f);
+    f.close();
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
     strcpy(CurrentSaveFile, filename);
     return true;
 
 failed:
-    fclose(f);
     NewProgram();
-    Error(
+    THROW_COMPILER_EXCEPTION_FMT("%s Error in RUNG %d. See error below %s",
         _("File format error; perhaps this program is for a newer version "
-          "of LDmicro?"));
-    Error("Error in RUNG %d. See error below %s", rung + 1, line);
+          "of LDmicro?"), rung + 1, line);
     return false;
 }
 
@@ -1208,7 +1210,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_READ_ADC:
-            fprintf(f, "READ_ADC %s\n", l->d.readAdc.name);
+            fprintf(f, "READ_ADC %s %d\n", l->d.readAdc.name, l->d.readAdc.refs);
             break;
 
         case ELEM_RANDOM:
@@ -1388,7 +1390,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         }
 
         default:
-            ooops("ELEM_0x%x", which);
+            THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%x", which);
             break;
     }
 }
@@ -1404,7 +1406,7 @@ bool SaveProjectToFile(char *filename, int code)
     else if(code == MNU_SAVE_01)
         strcpy(Prog.LDversion, "0.1");
 
-    FILE *f = fopen(filename, "w");
+    FileTracker f(filename, "w");
     if(!f)
         return false;
 
@@ -1448,8 +1450,7 @@ bool SaveProjectToFile(char *filename, int code)
     }
 
     fflush(f);
-    fclose(f);
-
+    f.close();
     tGetLastWriteTime(filename, (PFILETIME)&LastWriteTime);
     PrevWriteTime = LastWriteTime;
     return true;

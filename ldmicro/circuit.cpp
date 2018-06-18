@@ -26,6 +26,22 @@
 #include "ldmicro.h"
 
 //-----------------------------------------------------------------------------
+// Like malloc/free, but memsets memory allocated to all zeros. Also TODO some
+// checking and something sensible if it fails.
+//-----------------------------------------------------------------------------
+void *CheckMalloc(size_t n)
+{
+    void *p = malloc(n);
+    if(p)
+        memset(p, 0, n);
+    return p;
+}
+void CheckFree(void *p)
+{
+    free(p);
+}
+
+//-----------------------------------------------------------------------------
 // Convenience routines for allocating frequently-used data structures.
 //-----------------------------------------------------------------------------
 
@@ -771,7 +787,6 @@ bool CollapseUnnecessarySubckts(int which, void *any)
 {
     bool modified = false;
 
-    ok();
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
@@ -866,7 +881,7 @@ bool CollapseUnnecessarySubckts(int which, void *any)
             oops();
             break;
     }
-    ok();
+
     return modified;
 }
 
@@ -879,7 +894,6 @@ bool CollapseUnnecessarySubckts(int which, void *any)
 //-----------------------------------------------------------------------------
 static bool DeleteSelectedFromSubckt(int which, void *any)
 {
-    ok();
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
@@ -929,7 +943,6 @@ static bool DeleteSelectedFromSubckt(int which, void *any)
 //-----------------------------------------------------------------------------
 static bool DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToDelete, bool IsEnd)
 {
-    ok();
     bool res = false;
     switch(anyWhich) {
         case ELEM_SERIES_SUBCKT: {
@@ -1006,7 +1019,6 @@ void DeleteSelectedFromProgram()
 //-----------------------------------------------------------------------------
 void FreeCircuit(int which, void *any)
 {
-    ok();
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
@@ -1035,7 +1047,6 @@ void FreeCircuit(int which, void *any)
             oops();
             break;
     }
-    ok();
 }
 
 //-----------------------------------------------------------------------------

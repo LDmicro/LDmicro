@@ -102,8 +102,7 @@ static void CheckConstantInRange(SDWORD v)
 {
     /*
     if(v < -0x800000 || v > 0x7FffFF) {
-        Error(_("Constant %d out of range: %d to %d inclusive."), v, -0x800000, 0x7FffFF);
-        CompileError();
+        THROW_COMPILER_EXCEPTION_FMT(_("Constant %d out of range: %d to %d inclusive."), v, -0x800000, 0x7FffFF);
     }
     */
 }
@@ -115,7 +114,7 @@ void IntDumpListing(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't dump intermediate code to '%s'."), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't dump intermediate code to '%s'."), outFile);
     }
 
     int indent = 0;
@@ -332,7 +331,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_READ_ADC:
-                fprintf(f, "read adc '%s'", IntCode[i].name1.c_str());
+                fprintf(f, "read adc '%s', refs is '%d'", IntCode[i].name1.c_str(), IntCode[i].literal);
                 break;
 
             case INT_SET_SEED_RANDOM:
@@ -408,7 +407,7 @@ void IntDumpListing(char *outFile)
                             IntCode[i].literal,
                             IntCode[i].name1.c_str());
                 else
-                    oops();
+                    THROW_COMPILER_EXCEPTION("Internal error");
                 break;
             }
             case INT_EEPROM_WRITE: {
@@ -437,7 +436,7 @@ void IntDumpListing(char *outFile)
                             IntCode[i].literal,
                             IntCode[i].literal);
                 else
-                    oops();
+                    THROW_COMPILER_EXCEPTION("Internal error");
                 break;
             }
             case INT_SPI_COMPLETE:
@@ -750,7 +749,7 @@ void IntDumpListing(char *outFile)
 #endif
 
             default:
-                ooops("INT_%d", IntCode[i].op);
+                THROW_COMPILER_EXCEPTION_FMT("INT_%d", IntCode[i].op);
         }
         if((int_comment_level == 1)
            || ((IntCode[i].op != INT_SIMULATE_NODE_STATE) && (IntCode[i].op != INT_AllocKnownAddr)
@@ -860,8 +859,8 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
     intOp.which = whichNow;
     intOp.leaf = leafNow;
     intOp.poweredAfter = &(leafNow->poweredAfter);
-    intOp.l = l;
-    strcpy(intOp.f, f);
+    intOp.fileLine = l;
+    intOp.fileName = f;
     IntCode.emplace_back(intOp);
 }
 
@@ -993,7 +992,7 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
 {
     if(delay <= 0) {
-        Error("%s '%s': %s", _("Timer"), name, _("Delay cannot be zero or negative."));
+        THROW_COMPILER_EXCEPTION_FMT("%s '%s': %s", _("Timer"), name, _("Delay cannot be zero or negative."));
         return -1;
     }
     long long int period = 0, adjPeriod = 0, maxPeriod = 0;
@@ -1007,7 +1006,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
     maxPeriod--;
 
     if(period < 0) {
-        Error(_("Delay cannot be zero or negative."));
+        THROW_COMPILER_EXCEPTION(_("Delay cannot be zero or negative."));
     } else if(period <= 0) {
         char s1[1024];
         sprintf(s1, "%s %s", _("Timer period too short (needs faster cycle time)."), _("Or increase timer period."));
@@ -1016,15 +1015,15 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
         char s3[1024];
         sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0 * Prog.cycleTime / 1000);
         const char *s4 = _("Not available");
-        Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
+        THROW_COMPILER_EXCEPTION_FMT("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
     } else if(period + adjust <= 0) {
-        Error("%s '%s': %s",
+        THROW_COMPILER_EXCEPTION_FMT("%s '%s': %s",
               _("Timer"),
               name,
               _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
         // period = -1;
     } else if(period <= adjust) {
-        Error(
+        THROW_COMPILER_EXCEPTION_FMT(
             "%s '%s': %s",
             _("Timer"),
             name,
@@ -1047,7 +1046,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
                 name,
                 maxDelay,
                 maxPeriod);
-        Error("%s\r\n%s\r\n%s", s1, s2, s3);
+        THROW_COMPILER_EXCEPTION_FMT("%s\r\n%s\r\n%s", s1, s2, s3);
         period = -1;
     }
     return (SDWORD)adjPeriod;
@@ -1059,13 +1058,13 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
 static SDWORD TimerPeriod(ElemLeaf *l)
 {
     if(Prog.cycleTime <= 0) {
-        Error(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!");
+        THROW_COMPILER_EXCEPTION(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!");
         return 1;
     }
 
     SDWORD period = TestTimerPeriod(l->d.timer.name, l->d.timer.delay, l->d.timer.adjust);
     if(period < 1) {
-        CompileError();
+        THROW_COMPILER_EXCEPTION("Internal error");
     }
     return period;
 }
@@ -1081,7 +1080,7 @@ SDWORD CalcDelayClock(long long clocks) // in us
         } else if(Prog.mcu->whichIsa == ISA_PIC16) {
             clocks = clocks / 4;
         } else
-            oops();
+            THROW_COMPILER_EXCEPTION("Internal error");
     }
     if(clocks <= 0)
         clocks = 1;
@@ -1193,7 +1192,7 @@ int getradix(const char *str)
     else if(start_ptr[0] == '\'')
         radix = -1;
     if(!radix) {
-        ooops("'%s'\r\n'%s'", str, start_ptr);
+        THROW_COMPILER_EXCEPTION_FMT("'%s'\r\n'%s'", str, start_ptr);
     }
     return radix;
 }
@@ -1212,7 +1211,7 @@ long hobatoi(const char *str)
         char dest[MAX_NAME_LEN];
         FrmStrToStr(dest, start_ptr);
         if((strlen(dest) > 3) || (dest[0] != '\'') || (dest[2] != '\'')) {
-            Error("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!", str);
+            THROW_COMPILER_EXCEPTION_FMT("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!", str);
         }
         val = dest[1];
     } else {
@@ -1233,11 +1232,11 @@ long hobatoi(const char *str)
         val = strtol(str, &end_ptr, radix);
         if(*end_ptr) {
             //         val = 0;
-            //         Error("Conversion error the\n'%s' string into number %d at\n'%s' position.", str, val, end_ptr);
+            //         THROW_COMPILER_EXCEPTION_FMT("Conversion error the\n'%s' string into number %d at\n'%s' position.", str, val, end_ptr);
         }
         if((val == LONG_MAX || val == LONG_MIN) && errno == ERANGE) {
             //         val = 0;
-            //         Error("Conversion overflow error the string\n'%s' into number %d.", str, val);
+            //         THROW_COMPILER_EXCEPTION_FMT("Conversion overflow error the string\n'%s' into number %d.", str, val);
         }
     }
     return val;
@@ -1490,8 +1489,8 @@ static void InitTablesCircuit(int which, void *elem)
                 InitTablesCircuit(p->contents[i].which, p->contents[i].data.any);
             break;
         }
-        case ELEM_LOOK_UP_TABLE:
-        case ELEM_PIECEWISE_LINEAR: {
+        // case ELEM_PIECEWISE_LINEAR:
+        case ELEM_LOOK_UP_TABLE: {
             ElemLookUpTable *t = &(l->d.lookUpTable);
 
             char nameTable[MAX_NAME_LEN];
@@ -1506,7 +1505,7 @@ static void InitTablesCircuit(int which, void *elem)
                 sovElement = SizeOfVar(nameTable);
                 if(sovElement < 1)
                     sovElement = 1;
-                Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable);
+                Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8 * sovElement, nameTable, t->count);
             }
             break;
         }
@@ -2237,7 +2236,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_RSFR:
             Comment(3, "ELEM_RSFR");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("Read SFR instruction: '%s' not a valid destination."), l->d.move.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("Read SFR instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -2421,7 +2420,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   Op(INT_ELSE);
               } else if(which == ELEM_NEQ) {
                   Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
-              } else oops();
+              } else
+                  THROW_COMPILER_EXCEPTION("Internal error");
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
           break;
@@ -2599,8 +2599,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_MOVE: {
             Comment(3, "ELEM_MOVE");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("Move instruction: '%s' not a valid destination."), l->d.move.dest);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("Move instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -2642,8 +2641,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_BIN2BCD: {
             Comment(3, "ELEM_BIN2BCD");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("BIN2BCD instruction: '%s' not a valid destination."), l->d.move.dest);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("BIN2BCD instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_BIN2BCD, l->d.move.dest, l->d.move.src);
@@ -2654,8 +2652,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_BCD2BIN: {
             Comment(3, "ELEM_BCD2BIN");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("BCD2BIN instruction: '%s' not a valid destination."), l->d.move.dest);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("BCD2BIN instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_BCD2BIN, l->d.move.dest, l->d.move.src);
@@ -2666,8 +2663,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_OPPOSITE: {
             Comment(3, "ELEM_OPPOSITE");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("OPPOSITE instruction: '%s' not a valid destination."), l->d.move.dest);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("OPPOSITE instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_OPPOSITE, l->d.move.dest, l->d.move.src);
@@ -2678,8 +2674,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_SWAP: {
             Comment(3, "ELEM_SWAP");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("SWAP instruction: '%s' not a valid destination."), l->d.move.dest);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("SWAP instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_SET_SWAP, l->d.move.dest, l->d.move.src);
@@ -2709,8 +2704,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             SetSizeOfVar(name, 4);
 
             if(IsNumber(l->d.move.dest)) {
-                Error(_("SRAND instruction: '%s' not a valid destination."), l->d.move.dest);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("SRAND instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -2728,7 +2722,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_READ_ADC:
             Comment(3, "ELEM_READ_ADC");
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_READ_ADC, l->d.readAdc.name);
+              Op(INT_READ_ADC, l->d.readAdc.name, l->d.readAdc.refs);
             Op(INT_END_IF);
             break;
 
@@ -2904,8 +2898,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_NOT: intOp = INT_SET_VARIABLE_NOT;      Comment(3, "ELEM_NOT"); goto mathBit;
           mathBit : {
             if(IsNumber(l->d.math.dest)) {
-                Error(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if((intOp == INT_SET_VARIABLE_NEG)
@@ -2919,8 +2912,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 ) {
                     if((hobatoi(l->d.math.op2) < 0)
                     || (SizeOfVar(l->d.math.op1) * 8 < hobatoi(l->d.math.op2))) {
-                        Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
-                        CompileError();
+                        THROW_COMPILER_EXCEPTION_FMT(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
                     }
                 }
                 Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2, stateInOut2);
@@ -2939,8 +2931,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_MOD: intOp = INT_SET_VARIABLE_MOD;      Comment(3, "ELEM_MOD"); goto math;
         math : {
             if(IsNumber(l->d.math.dest)) {
-                Error(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             const char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
@@ -3024,7 +3015,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     if(clocks > 0xffff)
                         clocks = 0xffff;
                 } else
-                    oops();
+                    THROW_COMPILER_EXCEPTION("Internal error");
             }
             if(clocks <= 0)
                 clocks = 1;
@@ -3042,8 +3033,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             } else {
                 r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
                 if(r < 0) {
-                    Error(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
-                    CompileError();
+                    THROW_COMPILER_EXCEPTION_FMT(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -3056,15 +3046,13 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Comment(3, "ELEM_GOSUB %s", l->d.doGoto.rung);
             int r;
             if(IsNumber(l->d.doGoto.rung)) {
-                Error(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
                 r = hobatoi(l->d.doGoto.rung);
                 r = std::min(r, Prog.numRungs + 1);
             } else {
                 r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
                 if(r < 0) {
-                    Error(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
-                    CompileError();
+                    THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
                 }
                 r++;
             }
@@ -3085,8 +3073,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             &&   (Prog.rungs[rungNow]->contents[1].which == ELEM_COMMENT)))) {
                 ; //
             } else {
-                Error(_("SUBPROG: '%s' declaration must be single inside a rung %d"), l->d.doGoto.rung, rungNow + 1);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("SUBPROG: '%s' declaration must be single inside a rung %d"), l->d.doGoto.rung, rungNow + 1);
             }
             int r = -1;
             if(!IsNumber(l->d.doGoto.rung)) {
@@ -3096,8 +3083,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_GOTO, l->d.doGoto.rung, "ENDSUB", r + 1);
                 Op(INT_AllocKnownAddr, l->d.doGoto.rung, "SUBPROG", rungNow);
             } else {
-                Error(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.rung);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.rung);
             }
             break;
         }
@@ -3109,8 +3095,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             }
             if(r >= 0) {
             } else {
-                Error(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
-                CompileError();
+                THROW_COMPILER_EXCEPTION_FMT(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
             }
             Op(INT_RETURN, l->d.doGoto.rung, r);
             break;
@@ -3160,14 +3145,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             ElemLookUpTable *t = &(l->d.lookUpTable);
             Comment(3, "ELEM_LOOK_UP_TABLE %s", t->name);
 
-            char nameTable[MAX_NAME_LEN];
-            sprintf(nameTable, "%s%s", t->name, ""); // "LutElement");
-
             int sovElement;
             sovElement = TestByteNeeded(t->count, t->vals);
 
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_FLASH_READ, t->dest, nameTable, t->index, t->count, sovElement, t->vals);
+                Op(INT_FLASH_READ, t->dest, t->name, t->index, t->count, sovElement, t->vals);
             Op(INT_END_IF);
             #else
             Comment(3, "ELEM_LOOK_UP_TABLE");
@@ -3194,56 +3176,95 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             // point math.
             ElemPiecewiseLinear *t = &(l->d.piecewiseLinear);
             if(t->count == 0) {
-                Error(_("Piecewise linear lookup table with zero elements!"));
-                CompileError();
+                THROW_COMPILER_EXCEPTION(_("Piecewise linear lookup table with zero elements!"));
             }
-            int i;
             int xThis = t->vals[0];
-            for(i = 1; i < t->count; i++) {
+            for(int i = 1; i < t->count; i++) {
                 if(t->vals[i * 2] <= xThis) {
-                    Error(_("x values in piecewise linear table must be "
+                    THROW_COMPILER_EXCEPTION(_("x values in piecewise linear table must be "
                         "strictly increasing."));
-                    CompileError();
                 }
                 xThis = t->vals[i * 2];
             }
+            #ifdef TABLE_IN_FLASH_LINEAR
+            int sovElement;
+            sovElement = TestByteNeeded(t->count, t->vals);
+            #endif
             Op(INT_IF_BIT_SET, stateInOut);
-            for(i = t->count - 1; i >= 1; i--) {
-                int thisDx = t->vals[i * 2] - t->vals[(i - 1) * 2];
-                int thisDy = t->vals[i * 2 + 1] - t->vals[(i - 1) * 2 + 1];
+            for(int i = t->count - 1; i >= 1; i--) {
+                Comment("PWL %d", i);
+                int xThis = t->vals[i * 2];
+                int xPrev = t->vals[(i - 1) * 2];
+                int yThis = t->vals[i * 2 + 1];
+                int yPrev = t->vals[(i - 1) * 2 + 1];
+                int thisDx = xThis - xPrev;
+                int thisDy = yThis - yPrev;
+                char sxThis[21]; // -9223372036854775808
+                char sxPrev[21];
+                char syThis[21];
+                char syPrev[21];
+                char sthisDx[21];
+                char sthisDy[21];
+                sprintf(sxThis,"%d", xThis);
+                sprintf(sxPrev,"%d", xPrev);
+                sprintf(syThis,"%d", yThis);
+                sprintf(syPrev,"%d", yPrev);
+                sprintf(sthisDx,"%d", thisDx);
+                sprintf(sthisDy,"%d", thisDy);
                 // The output point is given by
                 //    yout = y[i-1] + (xin - x[i-1])*dy/dx
+                //    yout = yPrev + (xin - xPrev)*dy/dx
+                //    xin between the [xPrev and xThis]
+                //    xin is t->index
+                //    yout is t->dest
                 // and this is the best form in which to keep it, numerically
                 // speaking, because you can always fix numerical problems
                 // by moving the PWL points closer together.
 
                 // Check for numerical problems, and fail if we have them.
                 if((thisDx * thisDy) >= 32767 || (thisDx * thisDy) <= -32768) {
-                    Error(_("Numerical problem with piecewise linear lookup "
+                    THROW_COMPILER_EXCEPTION(_("Numerical problem with piecewise linear lookup "
                         "table. Either make the table entries smaller, "
                         "or space the points together more closely.\r\n\r\n"
                         "See the help file for details."));
-                    CompileError();
                 }
 
+                #ifndef TABLE_IN_FLASH_LINEAR
                 // Hack to avoid AVR brge issue again, since long jumps break
                 Op(INT_CLEAR_BIT, "$scratch");
-                Op(INT_IF_VARIABLE_LES_LITERAL, t->index, t->vals[i * 2] + 1);
+                Op(INT_IF_VARIABLE_LES_LITERAL, t->index, xThis + 1);
                     Op(INT_SET_BIT, "$scratch");
                 Op(INT_END_IF);
 
                 Op(INT_IF_BIT_SET, "$scratch");
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->vals[(i - 1) * 2]);
-                Op(INT_SET_VARIABLE_SUBTRACT, "$scratch", t->index, "$scratch");
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", thisDx);
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3", thisDy);
-                Op(INT_SET_VARIABLE_MULTIPLY, t->dest, "$scratch", "$scratch3");
-                Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, "$scratch2");
+#if 0
+                  Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", xPrev);
+                  Op(INT_SET_VARIABLE_SUBTRACT, "$scratch", t->index, "$scratch");
+                  Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", thisDx);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3", thisDy);
+                  Op(INT_SET_VARIABLE_MULTIPLY, t->dest, "$scratch", "$scratch3");
+                  Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, "$scratch2");
 
-                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->vals[(i - 1) * 2 + 1]);
-                Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, "$scratch");
+                  Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", yPrev);
+                  Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, "$scratch");
+#else
+                  Op(INT_SET_VARIABLE_SUBTRACT, t->dest, t->index, sxPrev);
+                  Op(INT_SET_VARIABLE_MULTIPLY, t->dest, t->dest, sthisDy);
+                  Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, sthisDx);
+                  Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, syPrev);
+#endif
                 Op(INT_END_IF);
+                #endif
             }
+            #ifdef TABLE_IN_FLASH_LINEAR // WIP
+                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->count);
+                Op(INT_FLASH_READ, t->dest, t->name, "$scratch", t->count, sovElement, t->vals);
+                Op(INT_LES, t->dest, t->index)
+                Op(INT_SET_VARIABLE_SUBTRACT, t->dest, t->index, sxPrev);
+                Op(INT_SET_VARIABLE_MULTIPLY, t->dest, t->dest, sthisDy);
+                Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, sthisDx);
+                Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, syPrev);
+            #endif
             Op(INT_END_IF);
             break;
         }
@@ -3309,9 +3330,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             while(*p) {
                 if(*p == '\\' && (isdigit(p[1]) || p[1] == '-')) {
                     if(digits >= 0) {
-                        Error(_("Multiple escapes (\\0-9) present in format "
+                        THROW_COMPILER_EXCEPTION(_("Multiple escapes (\\0-9) present in format "
                             "string, not allowed."));
-                        CompileError();
                     }
                     p++;
                     if(*p == '-') {
@@ -3321,9 +3341,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         p++;
                     }
                     if(!isdigit(*p) || (*p - '0') > 5 || *p == '0') {
-                        Error(_("Bad escape sequence following \\; for a "
+                        THROW_COMPILER_EXCEPTION(_("Bad escape sequence following \\; for a "
                             "literal backslash, use \\\\"));
-                        CompileError();
                     }
                     digits = (*p - '0');
                     int i;
@@ -3355,13 +3374,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                                     break;
                                 }
                             }
-                            Error(_("Bad escape: correct form is \\xAB."));
-                            CompileError();
+                            THROW_COMPILER_EXCEPTION(_("Bad escape: correct form is \\xAB."));
                             break;
                         }
                         default:
-                            Error(_("Bad escape '\\%c'"), *p);
-                            CompileError();
+                            THROW_COMPILER_EXCEPTION_FMT(_("Bad escape '\\%c'"), *p);
                             break;
                     }
                 } else {
@@ -3372,19 +3389,17 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     p++;
 
                 if(steps >= sizeof(outputChars)) {
-                    oops();
+                    THROW_COMPILER_EXCEPTION("Internal error");
                 }
             }
 
             if(digits >= 0 && (strlen(var) == 0)) {
-                Error(_("Variable is interpolated into formatted string, but "
+                THROW_COMPILER_EXCEPTION(_("Variable is interpolated into formatted string, but "
                     "none is specified."));
-                CompileError();
             } else if(digits < 0 && (strlen(var) > 0)) {
-                Error(_("No variable is interpolated into formatted string, "
+                THROW_COMPILER_EXCEPTION(_("No variable is interpolated into formatted string, "
                     "but a variable name is specified. Include a string like "
                     "'\\-3', or leave variable name blank."));
-                CompileError();
             }
 
             // We want to respond to rising edges, so yes we need a one shot.
@@ -3514,7 +3529,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                       Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", outputChars[i]);
                     Op(INT_END_IF);
                 } else
-                    oops();
+                    THROW_COMPILER_EXCEPTION("Internal error");
             }
 
             Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SDWORD)0);
@@ -3553,8 +3568,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_PLACEHOLDER: {
             //Comment(3, "ELEM_PLACEHOLDER");
-            Error(_("Empty row; delete it or add instructions before compiling."));
-            CompileError();
+            THROW_COMPILER_EXCEPTION(_("Empty row; delete it or add instructions before compiling."));
             break;
         }
         case ELEM_COMMENT: {
@@ -3580,7 +3594,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
         }
         default:
-            ooops("ELEM_0x%X", which);
+            THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%X", which);
             break;
     }
     #ifndef DEFAULT_COIL_ALGORITHM
@@ -3960,10 +3974,10 @@ IntOp::IntOp() :
     rung(0),
     which(0),
     leaf(nullptr),
-    l(0),
+    fileLine(0),
     simulated(false)
 {
-    f[0] = 0;
+
 }
 
 // clang-format on
