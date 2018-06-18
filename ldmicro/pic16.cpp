@@ -5375,16 +5375,32 @@ static void CompileFromIntermediate(bool topLevel)
 
                     WriteRegister(REG_ADCON1,             //
                                   (1 << 7) |              // right-justified
-                                      (adcs << adcsPos) | //
-                                      (0 << 0)            // 00 = VREF is connected to VDD
+                                  (adcs << adcsPos) | //
+                                  ((refs & 3) << 0)            // 00 = VREF is connected to VDD
                     );
                 } else if(McuAs(" PIC16F819 ") || //
                           McuAs(" PIC16F873 ") || //
                           McuAs(" PIC16F874 ") || //
                           McuAs(" PIC16F876 ") || //
                           McuAs(" PIC16F877 ") || //
-                          McuAs(" PIC16F72 ")  || //
-                          McuAs(" PIC16F88 ")  || //
+                          McuAs(" PIC16F72 ")     //
+                ) {
+                    adcsPos = 6;                                                // in REG_ADCON0
+                    WriteRegister(REG_ADCON0,                                   //
+                                  (adcs << adcsPos) |                           //
+                                  (MuxForAdcVariable(a->name1) << chsPos) | //
+                                  (0 << goPos) |                            // don't start yet
+                                                                            // bit 1 unimplemented
+                                  (1 << 0)                                  // A/D peripheral on
+                    );
+
+                    WriteRegister(REG_ADCON1,  //
+                                  (1 << 7) |   // right-justified
+                                  //(0 << 0)   // for now, all analog inputs
+                                  (refs << 0)  //
+
+                    );
+                } else if(McuAs(" PIC16F88 ")  || //
                           McuAs(" PIC16F882 ") || //
                           McuAs(" PIC16F883 ") || //
                           McuAs(" PIC16F884 ") || //
@@ -5403,7 +5419,7 @@ static void CompileFromIntermediate(bool topLevel)
                     WriteRegister(REG_ADCON1,  //
                                   (1 << 7) |   // right-justified
                                   //(0 << 0)   // for now, all analog inputs
-                                  (refs << 4)  //
+                                  ((refs & 3) << 4)  //
 
                     );
                 } else if(McuAs(" PIC12F683 ") || //
@@ -5415,7 +5431,7 @@ static void CompileFromIntermediate(bool topLevel)
 
                     WriteRegister(REG_ADCON0,                               //
                                   (1 << 7) |                                // right-justified
-                                  (0 << 6) |                                // VDD Voltage Reference
+                                  ((refs & 1) << 6) |                     // VDD Voltage Reference
                                   (MuxForAdcVariable(a->name1) << chsPos) | // Analog Channel Select bits
                                   (0 << goPos) |                            // don't start yet
                                                                             // bit 1 unimplemented
