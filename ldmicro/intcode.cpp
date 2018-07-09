@@ -992,7 +992,7 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
 {
     if(delay <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT("%s '%s': %s", _("Timer"), name, _("Delay cannot be zero or negative."));
+        Error("%s '%s': %s", _("Timer"), name, _("Delay cannot be zero or negative."));
         return -1;
     }
     long long int period = 0, adjPeriod = 0, maxPeriod = 0;
@@ -1006,7 +1006,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
     maxPeriod--;
 
     if(period < 0) {
-        THROW_COMPILER_EXCEPTION(_("Delay cannot be zero or negative."));
+        Error(_("Delay cannot be zero or negative."));
     } else if(period <= 0) {
         char s1[1024];
         sprintf(s1, "%s %s", _("Timer period too short (needs faster cycle time)."), _("Or increase timer period."));
@@ -1015,15 +1015,15 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
         char s3[1024];
         sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0 * Prog.cycleTime / 1000);
         const char *s4 = _("Not available");
-        THROW_COMPILER_EXCEPTION_FMT("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
+        Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
     } else if(period + adjust <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT("%s '%s': %s",
+        Error("%s '%s': %s",
               _("Timer"),
               name,
               _("Total timer delay cannot be zero or negative. Increase the adjust value!"));
         // period = -1;
     } else if(period <= adjust) {
-        THROW_COMPILER_EXCEPTION_FMT(
+        Error(
             "%s '%s': %s",
             _("Timer"),
             name,
@@ -1046,7 +1046,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
                 name,
                 maxDelay,
                 maxPeriod);
-        THROW_COMPILER_EXCEPTION_FMT("%s\r\n%s\r\n%s", s1, s2, s3);
+        Error("%s\r\n%s\r\n%s", s1, s2, s3);
         period = -1;
     }
     return (SDWORD)adjPeriod;
@@ -1058,13 +1058,13 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
 static SDWORD TimerPeriod(ElemLeaf *l)
 {
     if(Prog.cycleTime <= 0) {
-        THROW_COMPILER_EXCEPTION(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!");
+        Error(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!");
         return 1;
     }
 
-    SDWORD period = TestTimerPeriod(l->d.timer.name, l->d.timer.delay, l->d.timer.adjust);
+    SDWORD period = TestTimerPeriod(l->d.timer.name, hobatoi(l->d.timer.delay), l->d.timer.adjust);
     if(period < 1) {
-        THROW_COMPILER_EXCEPTION("Internal error");
+        Error("Internal error");
     }
     return period;
 }
@@ -1080,7 +1080,7 @@ SDWORD CalcDelayClock(long long clocks) // in us
         } else if(Prog.mcu->whichIsa == ISA_PIC16) {
             clocks = clocks / 4;
         } else
-            THROW_COMPILER_EXCEPTION("Internal error");
+            Error("Internal error");
     }
     if(clocks <= 0)
         clocks = 1;
@@ -1248,8 +1248,7 @@ long hobatoi(const char *str)
 //-----------------------------------------------------------------------------
 SDWORD CheckMakeNumber(const char *str)
 {
-    SDWORD val;
-    val = hobatoi(str);
+    SDWORD val = hobatoi(str);
     CheckConstantInRange(val);
     return val;
 }
@@ -1264,9 +1263,8 @@ SDWORD CheckMakeNumber(const NameArray &str)
 //-----------------------------------------------------------------------------
 int TenToThe(int x)
 {
-    int i;
     int r = 1;
-    for(i = 0; i < x; i++) {
+    for(int i = 0; i < x; i++) {
         r *= 10;
     }
     return r;
@@ -1275,9 +1273,8 @@ int TenToThe(int x)
 //-----------------------------------------------------------------------------
 int xPowerY(int x, int y)
 {
-    int i;
     int r = 1;
-    for(i = 0; i < y; i++) {
+    for(int i = 0; i < y; i++) {
         r *= x;
     }
     return r;
@@ -1361,7 +1358,7 @@ static bool CheckCanChangeOutputElem(int which, void *elem)
 void OpSetVar(char *op1, char *op2)
 {
     if(IsNumber(op2))
-        Op(INT_SET_VARIABLE_TO_LITERAL, op1, (SDWORD)hobatoi(op2));
+        Op(INT_SET_VARIABLE_TO_LITERAL, op1, (SDWORD)CheckMakeNumber(op2));
     else
         Op(INT_SET_VARIABLE_TO_VARIABLE, op1, op2);
 }
@@ -1427,19 +1424,19 @@ static void InitVarsCircuit(int which, void *elem, int *n)
         case ELEM_CTC:
         case ELEM_CTU:
         case ELEM_CTD: {
-            if(IsNumber(l->d.counter.init) || IsNumber(l->d.counter.max)) {
+            if(n)
+                (*n)++; // counting the number of variables
+            if(IsNumber(l->d.counter.init)) {
+                int init = CheckMakeNumber(l->d.counter.init);
+                if(!n)
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, init);
+            }
+            if(IsNumber(l->d.counter.init) && IsNumber(l->d.counter.max)) {
                 int init = CheckMakeNumber(l->d.counter.init);
                 int max_ = CheckMakeNumber(l->d.counter.max);
                 int b = std::max(byteNeeded(init), byteNeeded(max_));
                 if(SizeOfVar(l->d.counter.name) != b)
                     SetSizeOfVar(l->d.counter.name, b);
-                //if(init != 0) { // need reinit if CTD(c1), CTU(c1)
-                if(n)
-                    (*n)++; // counting the number of variables
-                else {
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, init);
-                }
-                //}
             }
             break;
         }
@@ -1452,8 +1449,7 @@ static void InitVarsCircuit(int which, void *elem, int *n)
 static void InitVars()
 {
     int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], &n);
     }
     if(n) {
@@ -1462,7 +1458,7 @@ static void InitVars()
         GenSymOneShot(storeInit, "INIT", "VARS");
         Op(INT_IF_BIT_CLEAR, storeInit);
         Op(INT_SET_BIT, storeInit);
-        for(i = 0; i < Prog.numRungs; i++) {
+        for(int i = 0; i < Prog.numRungs; i++) {
             rungNow = i;
             InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], nullptr);
         }
@@ -1780,8 +1776,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
         }
         case ELEM_TCY: {
-            SDWORD period = TimerPeriod(l) - 1;
-            Comment(3, "ELEM_TCY %s %d ms %d(0x%X)", l->d.timer.name, l->d.timer.delay, period, period);
+            Comment(3, "ELEM_TCY %s %s", l->d.timer.name, l->d.timer.delay);
 /*
               logic
               level
@@ -1802,19 +1797,24 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             #ifndef NEW_TON
             Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-                Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
-              Op(INT_ELSE);
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
-                Op(INT_IF_BIT_CLEAR, store);
-                  Op(INT_SET_BIT, store);
+              if(IsNumber(l->d.timer.delay)) {
+                SDWORD period = TimerPeriod(l);
+                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+              } else {
+                Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
+              }
+                  Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
                 Op(INT_ELSE);
-                  Op(INT_CLEAR_BIT, store);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+                  Op(INT_IF_BIT_CLEAR, store);
+                    Op(INT_SET_BIT, store);
+                  Op(INT_ELSE);
+                    Op(INT_CLEAR_BIT, store);
+                  Op(INT_END_IF);
                 Op(INT_END_IF);
-              Op(INT_END_IF);
-              Op(INT_IF_BIT_CLEAR, store);
-                Op(INT_CLEAR_BIT, stateInOut);
-              Op(INT_END_IF);
+                Op(INT_IF_BIT_CLEAR, store);
+                  Op(INT_CLEAR_BIT, stateInOut);
+                Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
             Op(INT_END_IF);
@@ -1838,8 +1838,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
         }
         case ELEM_TON: {
-            Comment(3, "ELEM_TON");
-            SDWORD period = TimerPeriod(l);
+            Comment(3, "ELEM_TON %s %s", l->d.timer.name, l->d.timer.delay);
 /*
               logic
               level
@@ -1860,10 +1859,15 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             #ifndef NEW_TON
             Op(INT_IF_BIT_SET, stateInOut);
 
-              Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-                Op(INT_CLEAR_BIT, stateInOut);               //1
-                Op(INT_INCREMENT_VARIABLE, l->d.timer.name); //2
-              Op(INT_END_IF);
+              if(IsNumber(l->d.timer.delay)) {
+                SDWORD period = TimerPeriod(l);
+                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+              } else {
+                Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
+              }
+                  Op(INT_CLEAR_BIT, stateInOut);               //1
+                  Op(INT_INCREMENT_VARIABLE, l->d.timer.name); //2
+                Op(INT_END_IF);
 
             Op(INT_ELSE);
 
@@ -1890,7 +1894,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_TOF: {
             Comment(3, "ELEM_TOF");
-            SDWORD period = TimerPeriod(l);
 /*
               logic
               level
@@ -1923,10 +1926,15 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             /**/
             Op(INT_IF_BIT_CLEAR, stateInOut);
 
-              Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
-                Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
-                Op(INT_SET_BIT, stateInOut);
-              Op(INT_END_IF);
+              if(IsNumber(l->d.timer.delay)) {
+                SDWORD period = TimerPeriod(l);
+                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
+              } else {
+                Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
+              }
+                  Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
+                  Op(INT_SET_BIT, stateInOut);
+                Op(INT_END_IF);
 
             Op(INT_ELSE);
 
@@ -1954,7 +1962,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_THI: {
             Comment(3, "ELEM_THI");
-            SDWORD period = TimerPeriod(l);
 /*
               logic
               level
@@ -1982,16 +1989,21 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_END_IF);
 
             Op(INT_IF_BIT_SET, store);
-              Op(INT_IF_LES, l->d.timer.name, period);
-                Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
-                Op(INT_SET_BIT, stateInOut);
-              Op(INT_ELSE);
-                Op(INT_IF_BIT_CLEAR, stateInOut);
-                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
-                  Op(INT_CLEAR_BIT, store);
+              if(IsNumber(l->d.timer.delay)) {
+                SDWORD period = TimerPeriod(l);
+                Op(INT_IF_LES, l->d.timer.name, period);
+              } else {
+                Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
+              }
+                  Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
+                  Op(INT_SET_BIT, stateInOut);
+                Op(INT_ELSE);
+                  Op(INT_IF_BIT_CLEAR, stateInOut);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+                    Op(INT_CLEAR_BIT, store);
+                  Op(INT_END_IF);
+                  Op(INT_CLEAR_BIT, stateInOut);
                 Op(INT_END_IF);
-                Op(INT_CLEAR_BIT, stateInOut);
-              Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
@@ -1999,7 +2011,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_TLO: {
             Comment(3, "ELEM_TLO");
-            SDWORD period = TimerPeriod(l);
 /*
               logic
               level
@@ -2033,16 +2044,21 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_END_IF);
 
             Op(INT_IF_BIT_SET, store);
-              Op(INT_IF_LES, l->d.timer.name, period);
-                Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
-                Op(INT_CLEAR_BIT, stateInOut);
-              Op(INT_ELSE);
-                Op(INT_IF_BIT_SET, stateInOut);
-                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
-                  Op(INT_CLEAR_BIT, store);
+              if(IsNumber(l->d.timer.delay)) {
+                SDWORD period = TimerPeriod(l);
+                Op(INT_IF_LES, l->d.timer.name, period);
+              } else {
+                Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
+              }
+                  Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
+                  Op(INT_CLEAR_BIT, stateInOut);
+                Op(INT_ELSE);
+                  Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+                    Op(INT_CLEAR_BIT, store);
+                  Op(INT_END_IF);
+                  Op(INT_SET_BIT, stateInOut);
                 Op(INT_END_IF);
-                Op(INT_SET_BIT, stateInOut);
-              Op(INT_END_IF);
             Op(INT_ELSE);
               Op(INT_IF_BIT_SET, storeNameHi);
                 Op(INT_SET_BIT, stateInOut);
@@ -2068,30 +2084,48 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             }
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName, "CTU", l->d.counter.name);
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_IF_BIT_CLEAR, storeName);
-                Op(INT_SET_BIT, storeName);
-                if(IsNumber(l->d.counter.max)) {
-                  Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max));
-                } else {
-                  Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.max, l->d.counter.name);
-                }
+
+            if(l->d.counter.inputKind == '/') {
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_IF_BIT_CLEAR, storeName);
+                    Op(INT_SET_BIT, storeName);
+                      Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
+                        Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+                      Op(INT_END_IF);
+                  Op(INT_END_IF);
+                Op(INT_ELSE);
+                  Op(INT_CLEAR_BIT, storeName);
+                Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == '\\') {
+                Op(INT_IF_BIT_CLEAR, stateInOut);
+                  Op(INT_IF_BIT_SET, storeName);
+                    Op(INT_CLEAR_BIT, storeName);
+                      Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
+                        Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+                      Op(INT_END_IF);
+                  Op(INT_END_IF);
+                Op(INT_ELSE);
+                  Op(INT_SET_BIT, storeName);
+                Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == '-') {
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
                     Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
                   Op(INT_END_IF);
-              Op(INT_END_IF);
-            Op(INT_ELSE);
-              Op(INT_CLEAR_BIT, storeName);
-            Op(INT_END_IF);
+                Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == 'o') {
+                Op(INT_IF_BIT_CLEAR, stateInOut);
+                  Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
+                    Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+            } else oops();
 
-            if(IsNumber(l->d.counter.max)) {
-              Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max));
-            } else {
-              Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.max, l->d.counter.name);
-            }
-                Op(INT_CLEAR_BIT, stateInOut);
-              Op(INT_ELSE);
-                Op(INT_SET_BIT, stateInOut);
-              Op(INT_END_IF);
+            Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
+              Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_ELSE);
+              Op(INT_SET_BIT, stateInOut);
+            Op(INT_END_IF);
             break;
         }
         case ELEM_CTD: {
@@ -2112,33 +2146,49 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName, "CTD", l->d.counter.name);
 
-            Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_IF_BIT_CLEAR, storeName);
+            if(l->d.counter.inputKind == '/') {
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_IF_BIT_CLEAR, storeName);
                     Op(INT_SET_BIT, storeName);
-                    Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
+                    Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
+                      Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
+                    Op(INT_END_IF);
+                  Op(INT_END_IF);
+                Op(INT_ELSE);
+                  Op(INT_CLEAR_BIT, storeName);
                 Op(INT_END_IF);
-            Op(INT_ELSE);
-              Op(INT_CLEAR_BIT, storeName);
-            Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == '\\') {
+                Op(INT_IF_BIT_CLEAR, stateInOut);
+                  Op(INT_IF_BIT_SET, storeName);
+                    Op(INT_CLEAR_BIT, storeName);
+                    Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
+                      Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
+                    Op(INT_END_IF);
+                  Op(INT_END_IF);
+                Op(INT_ELSE);
+                  Op(INT_SET_BIT, storeName);
+                Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == '-') {
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
+                    Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == 'o') {
+                Op(INT_IF_BIT_CLEAR, stateInOut);
+                  Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
+                    Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+            } else oops();
 
-            //dbp("%s %s", l->d.counter.name, l->d.counter.max);
-            if(IsNumber(l->d.counter.max)) {
-              Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max) + 1);
-                // the transition 1-> 0 will be at a given limit
-                Op(INT_CLEAR_BIT, stateInOut);
-              Op(INT_ELSE);
-                Op(INT_SET_BIT, stateInOut);
-              Op(INT_END_IF);
-            } else {
-              Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.name, l->d.counter.max);
-                Op(INT_SET_BIT, stateInOut);
-              Op(INT_ELSE);
-                Op(INT_CLEAR_BIT, stateInOut);
-              Op(INT_END_IF);
-            }
+            Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
+              Op(INT_SET_BIT, stateInOut);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_END_IF);
             break;
         }
-
         case ELEM_CTR: {
             Comment(3, "ELEM_CTR");
             if(IsNumber(l->d.counter.max))
@@ -2157,35 +2207,64 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName, "CTR", l->d.counter.name);
 
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_CLEAR_BIT, stateInOut);
+            if(l->d.counter.inputKind == '/') {
+              Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_CLEAR_BIT, stateInOut);
+                Op(INT_IF_BIT_CLEAR, storeName);
+                  Op(INT_SET_BIT, storeName);
+                  Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
 
-              Op(INT_IF_BIT_CLEAR, storeName);
+                //Use max as min, and init as max
+                // -5 --> -10
+                // ^init  ^max
+                  Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
+                    OpSetVar(l->d.counter.name, l->d.counter.init);
+                    Op(INT_SET_BIT, stateInOut); // overload impulse
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+              Op(INT_ELSE);
+                Op(INT_CLEAR_BIT, storeName);
+              Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == '\\') {
+              Op(INT_IF_BIT_CLEAR, stateInOut);
+                Op(INT_IF_BIT_SET, storeName);
+                  Op(INT_CLEAR_BIT, storeName);
+                  Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
+
+                  Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
+                    OpSetVar(l->d.counter.name, l->d.counter.init);
+                    Op(INT_SET_BIT, stateInOut); // overload impulse
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+              Op(INT_ELSE);
                 Op(INT_SET_BIT, storeName);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == '-') {
+              Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
 
-              //Use max as min, and init as max
-              // -5 --> -10
-              // ^init  ^max
-              if(IsNumber(l->d.counter.max)) {
-                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max));
-              } else {
-                Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.max, l->d.counter.name);
-              }
-                  if(IsNumber(l->d.counter.init)) {
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.init));
-                  } else {
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.counter.name, l->d.counter.init);
-                  }
-                  Op(INT_SET_BIT, stateInOut); // overload impulse
+                Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
+                  OpSetVar(l->d.counter.name, l->d.counter.init);
+                //Op(INT_SET_BIT, stateInOut); // overload impulse
+                Op(INT_ELSE);
+                  Op(INT_CLEAR_BIT, stateInOut);
                 Op(INT_END_IF);
               Op(INT_END_IF);
-            Op(INT_ELSE);
-              Op(INT_CLEAR_BIT, storeName);
-            Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == 'o') {
+              Op(INT_IF_BIT_CLEAR, stateInOut);
+                Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
+
+                Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
+                  OpSetVar(l->d.counter.name, l->d.counter.init);
+                  Op(INT_SET_BIT, stateInOut); // overload impulse
+                Op(INT_END_IF);
+              Op(INT_ELSE);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_END_IF);
+            } else oops();
             break;
         }
-
         case ELEM_CTC: {
             Comment(3, "ELEM_CTC");
             if(IsNumber(l->d.counter.max))
@@ -2204,33 +2283,63 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName, "CTC", l->d.counter.name);
 
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_CLEAR_BIT, stateInOut);
-              Op(INT_IF_BIT_CLEAR, storeName);
-                Op(INT_SET_BIT, storeName); // This line1
+            if(l->d.counter.inputKind == '/') {
+              Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_CLEAR_BIT, stateInOut);
+                Op(INT_IF_BIT_CLEAR, storeName);
+                  Op(INT_SET_BIT, storeName); // This line1
+                  Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+
+                  Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
+                    OpSetVar(l->d.counter.name, l->d.counter.init);
+                    Op(INT_SET_BIT, stateInOut); // overload impulse
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+              Op(INT_ELSE);
+                Op(INT_CLEAR_BIT, storeName); // This line2
+              Op(INT_END_IF);
+          ////Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut); // This line3 equivalently line1 + line2
+            } else if(l->d.counter.inputKind == '\\') {
+              Op(INT_IF_BIT_CLEAR, stateInOut);
+                Op(INT_IF_BIT_SET, storeName);
+                  Op(INT_CLEAR_BIT, storeName);
+                  Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
+
+                  Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
+                    OpSetVar(l->d.counter.name, l->d.counter.init);
+                    Op(INT_SET_BIT, stateInOut); // overload impulse
+                  Op(INT_END_IF);
+                Op(INT_END_IF);
+              Op(INT_ELSE);
+                Op(INT_SET_BIT, storeName);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_END_IF);
+            } else if(l->d.counter.inputKind == '-') {
+              Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
 
-              if(IsNumber(l->d.counter.max)) {
-                Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.max) + 1);
+                Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
+                  OpSetVar(l->d.counter.name, l->d.counter.init);
+                //Op(INT_SET_BIT, stateInOut); // overload impulse
                 Op(INT_ELSE);
-              } else {
-                Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.name, l->d.counter.max);
-              }
-                  if(IsNumber(l->d.counter.init)) {
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.counter.name, CheckMakeNumber(l->d.counter.init));
-                  } else {
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.counter.name, l->d.counter.init);
-                  }
-                  Op(INT_SET_BIT, stateInOut); // overload impulse
+                  Op(INT_CLEAR_BIT, stateInOut);
                 Op(INT_END_IF);
               Op(INT_END_IF);
-            Op(INT_ELSE);
-              Op(INT_CLEAR_BIT, storeName); // This line2
-            Op(INT_END_IF);
-        ////Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut); // This line3 equivalently line1 + line2
+            } else if(l->d.counter.inputKind == 'o') {
+              Op(INT_IF_BIT_CLEAR, stateInOut);
+                Op(INT_INCREMENT_VARIABLE, l->d.counter.name);
 
+                Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
+                  OpSetVar(l->d.counter.name, l->d.counter.init);
+                  Op(INT_SET_BIT, stateInOut); // overload impulse
+                Op(INT_END_IF);
+              Op(INT_ELSE);
+                Op(INT_CLEAR_BIT, stateInOut);
+              Op(INT_END_IF);
+            } else oops();
             break;
         }
+        //-------------------------------------------------------------------
         #ifdef USE_SFR
         // Special Function
         case ELEM_RSFR:
@@ -3004,7 +3113,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_TIME2DELAY: {
             Comment(3, "ELEM_TIME2DELAY");
-            SDWORD clocks = CalcDelayClock(l->d.timer.delay);
+            SDWORD clocks = CalcDelayClock(hobatoi(l->d.timer.delay));
             if(Prog.mcu) {
                 if(Prog.mcu->whichIsa == ISA_AVR) {
                     clocks = (clocks - 1) / 4;

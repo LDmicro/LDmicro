@@ -341,8 +341,13 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
     return ShowSimpleDialog(title, labs, labels, numOnlyMask, alnumOnlyMask, fixedFontMask, boxes, dests, 0, nullptr);
 }
 
-void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
+void ShowTimerDialog(int which, ElemLeaf *l)
 {
+    ElemTimer *e = &(l->d.timer);
+    char *name = e->name;
+    char *delay = e->delay;
+    int *adjust = &(e->adjust);
+
     char buf1[1024];
     if(which == ELEM_TIME2DELAY) {
         char s[100];
@@ -393,7 +398,11 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
     char adjustBuf[16];
     char delBuf[16];
     char nameBuf[MAX_NAME_LEN];
-    sprintf(delBuf, "%.3f", (*delay / 1000.0));
+    if(IsNumber(delay)) {
+        sprintf(delBuf, "%.3f", hobatoi(delay) / 1000.0);
+    } else {
+        strcpy(delBuf, delay);
+    }
     sprintf(adjustBuf, "%d", (*adjust));
     strcpy(nameBuf, name + 1);
     char *dests[] = {nameBuf, delBuf, adjustBuf};
@@ -417,40 +426,50 @@ void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust)
     // clang-format on
     if(ShowSimpleDialog(s, labs, labels, (3 << 1), (1 << 0), (7 << 0), boxes, dests)) {
         *adjust = atoi(adjustBuf);
-        double delay_ms = atof(delBuf);
+        double delay_ms;
         SDWORD delay_us;
         if(which == ELEM_TIME2DELAY) {
-            delay_us = (SDWORD)round(delay_ms);
+            delay_us = (SDWORD)round(atof(delBuf));
             strcpy(name, nameBuf);
 
             if(delay_us > 0)
-                *delay = (SDWORD)delay_us;
+                strcpy(delay, delBuf);
+                //*delay = (SDWORD)delay_us;
         } else {
-            delay_us = (SDWORD)round(delay_ms * 1000.0);
             name[0] = 'T';
             strcpy(name + 1, nameBuf);
+            if(IsNumber(delBuf)) {
+                delay_ms = atof(delBuf);
+                delay_us = (SDWORD)round(delay_ms * 1000.0);
 
-            if(delay_us > LONG_MAX) {
-                Error(_(
-                    "Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
-                delay_us = LONG_MAX;
-            }
+                if(delay_us > LONG_MAX) {
+                    Error(_(
+                        "Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
+                    delay_us = LONG_MAX;
+                }
 
-            SDWORD period;
-            if(Prog.cycleTime <= 0) {
-                Error(_(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
-                period = 1;
+                SDWORD period;
+                if(Prog.cycleTime <= 0) {
+                    Error(_(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
+                    period = 1;
+                } else {
+                    period = TestTimerPeriod(name, delay_us, *adjust);
+                }
+                if(period > 0)
+                    sprintf(delay, "%d", delay_us);
             } else {
-                period = TestTimerPeriod(name, delay_us, *adjust);
+                strcpy(delay, delBuf);
             }
-            if(period > 0)
-                *delay = delay_us;
         }
     }
 }
 
-void ShowSleepDialog(int which, SDWORD *delay, char *name)
+void ShowSleepDialog(int which, ElemLeaf *l)
 {
+    ElemTimer *e = &(l->d.timer);
+    char *name = e->name;
+    char *delay = e->delay;
+
     const char *s;
     s = _("Sleep Delay");
 
@@ -494,8 +513,10 @@ void ShowSleepDialog(int which, SDWORD *delay, char *name)
     }
 }
 
-void ShowDelayDialog(int which, char *name)
+void ShowDelayDialog(int which, ElemLeaf *l)
 {
+    ElemTimer *e = &(l->d.timer);
+    char *name = e->name;
     char s[100] = "";
     char buf1[1024];
     strcpy(buf1, _("Achievable DELAY values (us): "));
@@ -628,8 +649,15 @@ void CheckVarInRange(char *name, char *str, SDWORD v)
 }
 
 //-----------------------------------------------------------------------------
-void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
+void ShowCounterDialog(int which, ElemLeaf *l)
 {
+    ElemCounter *e = &(l->d.counter);
+    char *minV = e->init;
+    char *maxV = e->max;
+    char *name = e->name;
+    char inputKind[MAX_NAME_LEN];
+    sprintf(inputKind, "%c", e->inputKind);
+
     const char *title;
     switch(which) {
         case ELEM_CTU:
@@ -639,10 +667,10 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
             title = _("Count Down");
             break;
         case ELEM_CTC:
-            title = _("Circular Counter");
+            title = _("Circular Counter, incremental");
             break;
         case ELEM_CTR:
-            title = _("Circular Counter Reversive");
+            title = _("Circular Counter Reversive, decremental");
             break;
         default:
             oops();
@@ -654,9 +682,10 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
         _("Start value:"),
         (((which == ELEM_CTC)
               ? _("Max value:")
-              : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ? _("True if >= :") : _("True if > :"))))};
-    char *dests[] = {name + 1, minV, maxV};
-    if(ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests)) {
+              : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ? _("True if >= :") : _("True if > :")))),
+        _("Input kind:")};
+    char *dests[] = {name + 1, minV, maxV, inputKind};
+    if(ShowSimpleDialog(title, 4, labels, 0, 0x7, 0x7, dests)) {
         if(IsNumber(minV)) {
             SDWORD _minV = hobatoi(minV);
             CheckVarInRange(name, minV, _minV);
@@ -665,6 +694,10 @@ void ShowCounterDialog(int which, char *minV, char *maxV, char *name)
             SDWORD _maxV = hobatoi(maxV);
             CheckVarInRange(name, maxV, _maxV);
         }
+        if((inputKind[0] == '/') || (inputKind[0] == '\\') || (inputKind[0] == 'o') || (inputKind[0] == '-'))
+            e->inputKind = inputKind[0];
+        else
+            Error("Only the characters '-o/\\' are available!");
     }
 }
 

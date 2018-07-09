@@ -285,7 +285,7 @@ void AddDelay()
     if(!CanInsertOther)
         return;
     ElemLeaf *t = AllocLeaf();
-    t->d.timer.delay = 10; // 10 us
+    strcpy(t->d.timer.delay, "10"); // 10 us
     AddLeaf(ELEM_DELAY, t);
 }
 
@@ -297,10 +297,10 @@ void AddTimer(int which)
     ElemLeaf *t = AllocLeaf();
     if((which == ELEM_DELAY) || (which == ELEM_TIME2DELAY)) {
         strcpy(t->d.timer.name, "delay");
-        t->d.timer.delay = 10; // 10 us
+        strcpy(t->d.timer.delay, "10"); // 10 us
     } else {
         strcpy(t->d.timer.name, "Tnew");
-        t->d.timer.delay = 100000; // 100 ms
+        strcpy(t->d.timer.delay, "100000"); // 100 ms
     }
     t->d.timer.adjust = 0;
     AddLeaf(which, t);
@@ -332,7 +332,7 @@ void AddSleep()
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.timer.name, "$Tsleep");
-    t->d.timer.delay = 1000000; // 1 s
+    strcpy(t->d.timer.delay, "1000000"); // 1 s
     AddLeaf(ELEM_SLEEP, t);
 }
 
@@ -650,7 +650,7 @@ void AddCounter(int which)
             break;
     }
     strcpy(t->d.counter.init, "0");
-
+    t->d.counter.inputKind = '/';
     AddLeaf(which, t);
 }
 

@@ -5948,10 +5948,10 @@ err0:
     plcTmr.TCycle = 4.0 * plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr / (1.0 * Prog.mcuClock);
     SetPrescaler(Prog.cycleTimer);
     if(cycleTimeMicroseconds > plcTmr.cycleTimeMax) {
-        THROW_COMPILER_EXCEPTION_FMT(_("PLC cycle time more then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMax);
+        Error(_("PLC cycle time more then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMax);
         return false;
     } else if(cycleTimeMicroseconds < plcTmr.cycleTimeMin) {
-        THROW_COMPILER_EXCEPTION_FMT(_("PLC cycle time less then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMin);
+        Error(_("PLC cycle time less then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMin);
         return false;
     }
     return true;
