@@ -829,6 +829,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
+            case INT_SET_VARIABLE_NEG:
+                fprintf(f, "%s = - %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                break;
+
             case INT_SET_BIN2BCD:
                 break;
 

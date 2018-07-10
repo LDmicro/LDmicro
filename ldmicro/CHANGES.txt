@@ -1,5 +1,10 @@
 == Release 4.4.1.0
 
+    * Fixed: "Compile ANSIC" fails and LDmico exits with an error when
+    the INT_SET_VARIABLE_NEG instruction is used. #117
+
+    * Fixed: Test bit instructions (IF SET bit) with arduino #116
+
     * New: Kind of inputs of ladder elements
     https://github.com/LDmicro/LDmicro/wiki/Kind-of-inputs-of-ladder-elements
 
