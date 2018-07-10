@@ -49,33 +49,41 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     auto scan_contact_3 = [&]() -> int {
         int negated, set1;
         int res = sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name, &negated, &set1);
-        l->d.contacts.negated = negated != 0;
-        l->d.contacts.set1 = set1 != 0;
+        if(res == 3) {
+            l->d.contacts.negated = negated != 0;
+            l->d.contacts.set1 = set1 != 0;
+        }
         return res;
     };
     auto scan_contact_2 = [&]() -> int {
         int negated;
         int res = sscanf(line, "CONTACTS %s %d ", l->d.contacts.name, &negated);
-        l->d.contacts.negated = negated != 0;
+        if(res == 2) {
+            l->d.contacts.negated = negated != 0;
+        }
         return res;
     };
 
     auto scan_coil_5 = [&]() -> int {
         int negated, setOnly, resetOnly, ttrigger;
         int res = sscanf(line, "COIL %s %d %d %d %d", l->d.coil.name, &negated, &setOnly, &resetOnly, &ttrigger);
-        l->d.coil.negated = negated != 0;
-        l->d.coil.setOnly = setOnly != 0;
-        l->d.coil.resetOnly = resetOnly != 0;
-        l->d.coil.ttrigger = ttrigger != 0;
+        if(res == 5) {
+            l->d.coil.negated = negated != 0;
+            l->d.coil.setOnly = setOnly != 0;
+            l->d.coil.resetOnly = resetOnly != 0;
+            l->d.coil.ttrigger = ttrigger != 0;
+        }
         return res;
     };
 
     auto scan_coil_4 = [&]() -> int {
         int negated, setOnly, resetOnly;
         int res = sscanf(line, "COIL %s %d %d %d", l->d.coil.name, &negated, &setOnly, &resetOnly);
-        l->d.coil.negated = negated != 0;
-        l->d.coil.setOnly = setOnly != 0;
-        l->d.coil.resetOnly = resetOnly != 0;
+        if(res == 4) {
+            l->d.coil.negated = negated != 0;
+            l->d.coil.setOnly = setOnly != 0;
+            l->d.coil.resetOnly = resetOnly != 0;
+        }
         return res;
     };
     bool scanned = true;

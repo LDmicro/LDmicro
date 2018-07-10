@@ -1724,8 +1724,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
               Op(INT_IF_BIT_CLEAR, stateInOut);
                 Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
+              Op(INT_ELSE);
+                Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
-              Op(INT_CLEAR_BIT, stateInOut);
 
             Op(INT_ELSE);
 
@@ -1769,6 +1770,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_TIME2COUNT: {
             Comment(3, "ELEM_TIME2COUNT");
+            if(!IsNumber(l->d.timer.delay))
+                Error("The TIME to COUNTER converter T2CNT '%S' delay must be a number in ms!", l->d.timer.name);
             SDWORD period = TimerPeriod(l);
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
@@ -2031,7 +2034,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             char store[MAX_NAME_LEN];
             GenSymOneShot(store, "TLO", l->d.timer.name);
             char storeNameHi[MAX_NAME_LEN];
-            GenSymOneShot(storeNameHi, "ONE_SHOT_HI", "");
+            GenSymOneShot(storeNameHi, "ONE_SHOT_HI", l->d.timer.name);
 
             Op(INT_IF_BIT_CLEAR, stateInOut);
               Op(INT_IF_BIT_SET, storeNameHi);
@@ -2214,9 +2217,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   Op(INT_SET_BIT, storeName);
                   Op(INT_DECREMENT_VARIABLE, l->d.counter.name);
 
-                //Use max as min, and init as max
-                // -5 --> -10
-                // ^init  ^max
+                  //Use max as min, and init as max
+                  // -5 --> -10
+                  // ^init  ^max
                   Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
                     OpSetVar(l->d.counter.name, l->d.counter.init);
                     Op(INT_SET_BIT, stateInOut); // overload impulse
@@ -2246,7 +2249,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
                 Op(INT_IF_LES, l->d.counter.name, l->d.counter.max);
                   OpSetVar(l->d.counter.name, l->d.counter.init);
-                //Op(INT_SET_BIT, stateInOut); // overload impulse
+                  // overload impulse
                 Op(INT_ELSE);
                   Op(INT_CLEAR_BIT, stateInOut);
                 Op(INT_END_IF);
@@ -2320,7 +2323,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
                 Op(INT_IF_GRT, l->d.counter.name, l->d.counter.max);
                   OpSetVar(l->d.counter.name, l->d.counter.init);
-                //Op(INT_SET_BIT, stateInOut); // overload impulse
+                  // overload impulse
                 Op(INT_ELSE);
                   Op(INT_CLEAR_BIT, stateInOut);
                 Op(INT_END_IF);

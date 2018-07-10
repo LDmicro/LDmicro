@@ -701,7 +701,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
                    |
 
 
-> TON, TOF, THI, TLO, RTO, RTL, TCY timers
+> TON, TOF, THI, TLO, RTO, RTL, TCY timers      Ton
+                                           -[TON value]-
 
     Updated in release 4.4.1.0
     You can use a general variable as timer delay.
@@ -1286,7 +1287,6 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
    ||                               || External 0 produces internal 1.
 
     Note: Counters of previous versions has the dynamic input "/".
-
     These two rungs are equivalent in new release.
    ||                                                   ||
    ||       X1               C1                         ||
