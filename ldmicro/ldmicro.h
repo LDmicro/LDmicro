@@ -569,7 +569,8 @@ typedef struct ElemCoilTag {
 
 typedef struct ElemTimeTag {
     char    name[MAX_NAME_LEN];
-    SDWORD  delay; // us
+  //SDWORD  delay; // us
+    char    delay[MAX_NAME_LEN]; // us
     int     adjust; // adjust timer delay, default = 0, typical = -1
     // timer_delay = delay + adjust * PLC_cycle_time
 } ElemTimer;
@@ -635,6 +636,11 @@ typedef struct ElemCounterTag {
     char    name[MAX_NAME_LEN];
     char    max[MAX_NAME_LEN];
     char    init[MAX_NAME_LEN];
+    char    inputKind; // '-' Direct static logic input. Active at external 1.
+                       // 'o' Inverse static logic input. Logic negation at input. External 0 produces internal 1.
+                       // '/' Dynamic input active on 0 to 1 transition for positive logic.
+                       // '\' Dynamic input active on 1 to 0 transition for positive logic.
+
 } ElemCounter;
 
 typedef struct ResStepsTag {
@@ -1169,11 +1175,11 @@ void ShowContactsDialog(bool *negated, bool *set1, char *name);
 void ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, bool *ttrigger, char *name);
 // simpledialog.cpp
 void CheckVarInRange(char *name, char *str, SDWORD v);
-void ShowTimerDialog(int which, SDWORD *delay, char *name, int *adjust);
-void ShowSleepDialog(int which, SDWORD *delay, char *name);
-void ShowDelayDialog(int which, char *name);
+void ShowTimerDialog(int which, ElemLeaf *l);
+void ShowSleepDialog(int which, ElemLeaf *l);
+void ShowDelayDialog(int which, ElemLeaf *l);
 void ShowSpiDialog(ElemLeaf *l);
-void ShowCounterDialog(int which, char *minV, char *maxV, char *name);
+void ShowCounterDialog(int which, ElemLeaf *l);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);
 void ShowReadAdcDialog(char *name, int *refs);

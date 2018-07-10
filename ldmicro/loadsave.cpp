@@ -49,36 +49,44 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     auto scan_contact_3 = [&]() -> int {
         int negated, set1;
         int res = sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name, &negated, &set1);
-        l->d.contacts.negated = negated != 0;
-        l->d.contacts.set1 = set1 != 0;
+        if(res == 3) {
+            l->d.contacts.negated = negated != 0;
+            l->d.contacts.set1 = set1 != 0;
+        }
         return res;
     };
     auto scan_contact_2 = [&]() -> int {
         int negated;
         int res = sscanf(line, "CONTACTS %s %d ", l->d.contacts.name, &negated);
-        l->d.contacts.negated = negated != 0;
+        if(res == 2) {
+            l->d.contacts.negated = negated != 0;
+        }
         return res;
     };
 
     auto scan_coil_5 = [&]() -> int {
         int negated, setOnly, resetOnly, ttrigger;
         int res = sscanf(line, "COIL %s %d %d %d %d", l->d.coil.name, &negated, &setOnly, &resetOnly, &ttrigger);
-        l->d.coil.negated = negated != 0;
-        l->d.coil.setOnly = setOnly != 0;
-        l->d.coil.resetOnly = resetOnly != 0;
-        l->d.coil.ttrigger = ttrigger != 0;
+        if(res == 5) {
+            l->d.coil.negated = negated != 0;
+            l->d.coil.setOnly = setOnly != 0;
+            l->d.coil.resetOnly = resetOnly != 0;
+            l->d.coil.ttrigger = ttrigger != 0;
+        }
         return res;
     };
 
     auto scan_coil_4 = [&]() -> int {
         int negated, setOnly, resetOnly;
         int res = sscanf(line, "COIL %s %d %d %d", l->d.coil.name, &negated, &setOnly, &resetOnly);
-        l->d.coil.negated = negated != 0;
-        l->d.coil.setOnly = setOnly != 0;
-        l->d.coil.resetOnly = resetOnly != 0;
+        if(res == 4) {
+            l->d.coil.negated = negated != 0;
+            l->d.coil.setOnly = setOnly != 0;
+            l->d.coil.resetOnly = resetOnly != 0;
+        }
         return res;
     };
-	bool scanned = true;
+    bool scanned = true;
     if(memcmp(line, "COMMENT", 7) == 0) {
         FrmStrToStr(l->d.comment.str, &line[8]);
         *which = ELEM_COMMENT;
@@ -100,7 +108,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_MASTER_RELAY;
     } else if((sscanf(line, "DELAY %s", l->d.timer.name) == 1)) {
         *which = ELEM_DELAY;
-    } else if((sscanf(line, "SLEEP %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "SLEEP %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_SLEEP;
     } else if(memcmp(line, "SLEEP", 5) == 0) {
         *which = ELEM_SLEEP;
@@ -132,74 +140,90 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_OSC;
     } else if(memcmp(line, "NPULSE_OFF", 10) == 0) {
         *which = ELEM_NPULSE_OFF;
-    } else if((sscanf(line, "TIME2COUNT %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "TIME2COUNT %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TIME2COUNT;
-    } else if((sscanf(line, "TIME2DELAY %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "TIME2DELAY %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TIME2DELAY;
 
-    } else if((sscanf(line, "TON %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
+    } else if((sscanf(line, "TON %s %s %d", l->d.timer.name, l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_TON;
-    } else if((sscanf(line, "TOF %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
+    } else if((sscanf(line, "TOF %s %s %d", l->d.timer.name, l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_TOF;
-    } else if((sscanf(line, "RTO %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
+    } else if((sscanf(line, "RTO %s %s %d", l->d.timer.name, l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_RTO;
-    } else if((sscanf(line, "RTL %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
+    } else if((sscanf(line, "RTL %s %s %d", l->d.timer.name, l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_RTL;
-    } else if((sscanf(line, "TCY %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
+    } else if((sscanf(line, "TCY %s %s %d", l->d.timer.name, l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_TCY;
-    } else if((sscanf(line, "THI %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
+    } else if((sscanf(line, "THI %s %s %d", l->d.timer.name, l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_THI;
-    } else if((sscanf(line, "TLO %s %d %d", l->d.timer.name, &l->d.timer.delay, &l->d.timer.adjust) == 3)) {
+    } else if((sscanf(line, "TLO %s %s %d", l->d.timer.name, l->d.timer.delay, &l->d.timer.adjust) == 3)) {
         *which = ELEM_TLO;
 
-    } else if((sscanf(line, "TON %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "TON %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TON;
         if(strcmp(Prog.LDversion, "0.1") == 0)
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
-    } else if((sscanf(line, "TOF %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "TOF %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TOF;
         if(strcmp(Prog.LDversion, "0.1") == 0)
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
-    } else if((sscanf(line, "RTO %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "RTO %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_RTO;
         if(strcmp(Prog.LDversion, "0.1") == 0)
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
-    } else if((sscanf(line, "RTL %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "RTL %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_RTL;
         l->d.timer.adjust = 0;
-    } else if((sscanf(line, "TCY %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "TCY %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TCY;
         l->d.timer.adjust = 0;
-    } else if((sscanf(line, "THI %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "THI %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_THI;
         l->d.timer.adjust = 0;
-    } else if((sscanf(line, "TLO %s %d", l->d.timer.name, &l->d.timer.delay) == 2)) {
+    } else if((sscanf(line, "TLO %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TLO;
         l->d.timer.adjust = 0;
+
+    } else if((sscanf(line, "CTR %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
+        *which = ELEM_CTR;
+    } else if((sscanf(line, "CTC %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
+        *which = ELEM_CTC;
+    } else if((sscanf(line, "CTU %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
+        *which = ELEM_CTU;
+    } else if((sscanf(line, "CTD %s %s %s %c", l->d.counter.name, l->d.counter.max, l->d.counter.init, &l->d.counter.inputKind) == 4)) {
+        *which = ELEM_CTD;
 
     } else if((sscanf(line, "CTR %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
         *which = ELEM_CTR;
+        l->d.counter.inputKind = '/';
     } else if((sscanf(line, "CTC %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
         *which = ELEM_CTC;
+        l->d.counter.inputKind = '/';
     } else if((sscanf(line, "CTU %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
         *which = ELEM_CTU;
+        l->d.counter.inputKind = '/';
     } else if((sscanf(line, "CTD %s %s %s", l->d.counter.name, l->d.counter.max, l->d.counter.init) == 3)) {
+        l->d.counter.inputKind = '/';
         *which = ELEM_CTD;
 
     } else if((sscanf(line, "CTD %s %s", l->d.counter.name, l->d.counter.max) == 2)) {
         strcpy(l->d.counter.init, "0");
+        l->d.counter.inputKind = '/';
         *which = ELEM_CTD;
     } else if((sscanf(line, "CTU %s %s", l->d.counter.name, l->d.counter.max) == 2)) {
         strcpy(l->d.counter.init, "0");
+        l->d.counter.inputKind = '/';
         *which = ELEM_CTU;
     } else if((sscanf(line, "CTC %s %s", l->d.counter.name, l->d.counter.max) == 2)) {
         strcpy(l->d.counter.init, "0");
+        l->d.counter.inputKind = '/';
         *which = ELEM_CTC;
 
     } else if(sscanf(line, "RES %s", l->d.reset.name) == 1) {
@@ -351,10 +375,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_MUL;
     } else if(sscanf(line, "DIV %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_DIV;
-	} else 
-		scanned = false;
-	if (scanned) {
-		; //
+    } else
+        scanned = false;
+    if (scanned) {
+        ; //
     } else if(sscanf(line, "SET_BIT %s %s", l->d.move.dest, l->d.move.src) == 2) {
         *which = ELEM_SET_BIT;
     } else if(sscanf(line, "CLEAR_BIT %s %s", l->d.move.dest, l->d.move.src) == 2) {
@@ -936,7 +960,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_SLEEP:
-            fprintf(f, "SLEEP %s %d\n", l->d.timer.name, l->d.timer.delay);
+            fprintf(f, "SLEEP %s %s\n", l->d.timer.name, l->d.timer.delay);
             break;
 
         case ELEM_DELAY:
@@ -944,7 +968,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_TIME2DELAY:
-            fprintf(f, "TIME2DELAY %s %d\n", l->d.timer.name, l->d.timer.delay);
+            fprintf(f, "TIME2DELAY %s %s\n", l->d.timer.name, l->d.timer.delay);
             break;
 
         case ELEM_CLRWDT:
@@ -1009,7 +1033,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         case ELEM_THI: s = "THI"; goto timer;
         case ELEM_TLO: s = "TLO"; goto timer;
         timer:
-            fprintf(f, "%s %s %d %d\n", s, l->d.timer.name, l->d.timer.delay, l->d.timer.adjust);
+            fprintf(f, "%s %s %s %d\n", s, l->d.timer.name, l->d.timer.delay, l->d.timer.adjust);
             break;
 
         case ELEM_CTU: s = "CTU"; goto counter;
@@ -1018,7 +1042,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         case ELEM_CTR: s = "CTR"; goto counter;
         // clang-format on
         counter:
-            fprintf(f, "%s %s %s %s\n", s, l->d.counter.name, l->d.counter.max, l->d.counter.init);
+            fprintf(f, "%s %s %s %s %c\n", s, l->d.counter.name, l->d.counter.max, l->d.counter.init, l->d.counter.inputKind);
             break;
 
         case ELEM_STEPPER:

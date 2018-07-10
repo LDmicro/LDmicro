@@ -1,3 +1,21 @@
+== Release 4.4.1.0
+
+    * Fixed: "Compile ANSIC" fails and LDmico exits with an error when
+    the INT_SET_VARIABLE_NEG instruction is used. #117
+
+    * Fixed: Test bit instructions (IF SET bit) with arduino #116
+
+    * New: Kind of inputs of ladder elements
+    https://github.com/LDmicro/LDmicro/wiki/Kind-of-inputs-of-ladder-elements
+
+    '-' Direct static logic input. Active at external 1.
+    'o' Inverse static logic input. Logic negation at input. External 0 produces internal 1.
+    '/' Dynamic input active on 0 to 1 transition for positive logic.
+    '\' Dynamic input active on 1 to 0 transition for positive logic.
+
+    * New: Timer with variable delay
+    https://github.com/LDmicro/LDmicro/wiki/Timer-with-variable-delay
+
 == Release 4.4.0.2
 
     * Optimized: PIECEWISE LINEAR TABLE (reduced size 10%), ADD and SUB operations for PIC's.

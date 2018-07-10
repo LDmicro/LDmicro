@@ -699,7 +699,8 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
 
         case ELEM_SLEEP: {
 #ifdef SLEEP_DELAY
-            double d = SIprefix(1.0 * leaf->d.timer.delay / 1000000.0, s1);
+            double d = 1;
+            // SIprefix(1.0 * leaf->d.timer.delay / 1000000.0, s1);
             sprintf(s2, "%.3g %ss", d, s1);
             sprintf(bot, "{SLEEP %s}", s2);
 #else
@@ -1293,7 +1294,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             if(l > POS_WIDTH - 7)
                 l = POS_WIDTH - 7;
             formatWidth(s2, l, "", "", s1, "", "");
-
+            /*
             if(which == ELEM_CTC)
                 sprintf(bot,
                         "[\x01"
@@ -1304,6 +1305,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
                         "[\x01"
                         "CTR\x02 %s]",
                         s2);
+            */
+            sprintf(bot, "%c[%s %s]", c->inputKind, s, s2);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
@@ -1335,9 +1338,9 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             }
             formatWidth(s2, l, "", "", c->max, "", "");
             if(which == ELEM_CTD)
-                sprintf(bot, "[%s>%s]", s, s2);
+                sprintf(bot, "%c[%s>%s]", c->inputKind, s, s2);
             else
-                sprintf(bot, "[%s>=%s]", s, s2);
+                sprintf(bot, "%c[%s>=%s]", c->inputKind, s, s2);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
@@ -1352,23 +1355,32 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_TLO:
         case ELEM_TON:
         case ELEM_TOF: {
+            const char *s0;
             const char *s;
             // clang-format off
             if(which == ELEM_TON) {
+                s0 = "";
                 s = "\x01""TON\x02";
             } else if(which == ELEM_TOF) {
+                s0 = "";
                 s = "\x01""TOF\x02";
             } else if(which == ELEM_THI) {
+                s0 = "";
                 s = "\x01""THI\x02";
             } else if(which == ELEM_TLO) {
+                s0 = "o";
                 s = "\x01""TLO\x02";
             } else if(which == ELEM_RTO) {
+                s0 = "";
                 s = "\x01""RTO\x02";
             } else if(which == ELEM_RTL) {
+                s0 = "o";
                 s = "\x01""RTL\x02";
             } else if(which == ELEM_TCY) {
+                s0 = "";
                 s = "\x01""TCY\x02";
             } else if(which == ELEM_TIME2COUNT) {
+                s0 = "";
                 s = "\x01""T2CNT\x02";
             } else if(which == ELEM_TIME2DELAY) {
                 s = "\x01""T2DLY\x02";
@@ -1376,10 +1388,17 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
                 oops();
             // clang-format on
 
+
             ElemTimer *t = &leaf->d.timer;
-            double     d = SIprefix(t->delay / 1000000.0, s2);
-            sprintf(bot, "[%s %.6g %ss]", s, d, s2);
             CenterWithSpaces(*cx, *cy, t->name, poweredAfter, true);
+
+            //s0 = ""; // restore to original
+            if(IsNumber(t->delay)) {
+              double d = SIprefix(hobatoi(t->delay) / 1000000.0, s2);
+              sprintf(bot, "%s[%s %.6g %ss]", s0, s, d, s2);
+            } else {
+              sprintf(bot, "%s[%s %s]", s0, s, t->delay);
+            }
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;

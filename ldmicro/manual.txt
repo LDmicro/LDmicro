@@ -582,7 +582,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
 
 > TIMER LOW                     Tlo
-                           -[TLO 1.000 s]-
+                          -o[TLO 1.000 s]-
 
     When the signal going into the instruction goes from true to false,
     the output signal is false during 1.000 s. The delay is configurable.
@@ -647,7 +647,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
 
 > RETENTIVE TIMER LOW           Trtl
-                           -[RTL 1.000 s]-
+                          -o[RTL 1.000 s]-
 
     RTL works like RTO, but catch low level input.
     This instruction keeps track of how long its input has been false(LOW).
@@ -699,6 +699,24 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
            output  | ______/  \__/  \__/  \__/ \_______
                  --+----------------------------------------> time,s
                    |
+
+
+> TON, TOF, THI, TLO, RTO, RTL, TCY timers      Ton
+                                           -[TON value]-
+
+    Updated in release 4.4.1.0
+    You can use a general variable as timer delay.
+    You must calculate the proper(correct) value of the variable according to
+    the PLC Cycle Time.
+    Timer delay (ms) = Tplc (ms) * Delay value
+   ||                                                       ||
+   ||                                             Adc       ||
+   ||-----------------------------------------{READ ADC}----||
+   ||                                                       ||
+   ||                                                       ||
+   ||       X1               T1                   Y1        ||
+   ||-------] [-----------[TON Adc]---------------( )-------||
+   ||                                                       ||
 
 
 > TIME to COUNTER converter         Tconst
@@ -1248,6 +1266,36 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
    ||   Rnew       Css           Cmm          Chh         Cdays     ||
    ||----] [----[CTC 0:59]---[CTC 0:59]---[CTC 0:23]---[CTC 0:364]--||
    ||                                                               ||
+
+    Updated in release 4.4.1.0
+    Kind of inputs of ladder elements
+    https://github.com/LDmicro/LDmicro/wiki/Kind-of-inputs-of-ladder-elements
+
+   ||                               ||
+   ||  X1          CTU1:0      Y1   ||
+   ||--] [---+---/[CTU>=10]----( )--|| '/' Dynamic input active on 0 to 1
+   ||        |                      || transition for positive logic.
+   ||        |     CTU2:0      Y2   ||
+   ||        +---\[CTU>=10]----( )--|| '\' Dynamic input active on 1 to 0
+   ||        |                      || transition for positive logic.
+   ||        |     CTU3:0      Y3   ||
+   ||        +----[CTU>=10]----( )--|| '-' Direct static logic input.
+   ||        |                      || Active at external 1.
+   ||        |     CTU4:0      Y4   ||
+   ||        +---o[CTU>=10]----( )--|| 'o' Inverse static logic input.
+   ||                               || Logic negation at input.
+   ||                               || External 0 produces internal 1.
+
+    Note: Counters of previous versions has the dynamic input "/".
+    These two rungs are equivalent in new release.
+   ||                                                   ||
+   ||       X1               C1                         ||
+   ||-------] [----------/[CTC  0:9]---                 ||
+   ||                                                   ||
+   ||                                                   ||
+   ||       X1             _     _            C2        ||
+   ||-------] [---------[_/ OSR_/ \_]------[CTC  0:9]---||
+   ||                                                   ||
 
 
 > SHIFT REGISTER            {SHIFT REG   }

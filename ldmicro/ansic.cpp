@@ -115,7 +115,15 @@ static const char *MapSym(const NameArray &name, int how)
 static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
 {
     if(*str == 'A') {
-        fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
+        if(IsNumber(&str[3])) {
+          fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
+        } else {
+          DWORD addr;
+          char name[MAX_NAME_LEN];
+          sprintf(name,"#%s", &str[3]);
+          MemForVariable(name, &addr);
+          fprintf(f, "#define %s SFR_ADDR(0x%X) // Memory access\n", str, addr);
+        }
     } else if(sov == 1) {
         fprintf(f, "STATIC SBYTE %s = 0;\n", str);
         fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
@@ -599,6 +607,13 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1set1 = IntCode[i].literal;
                 break;
 
+            case INT_IF_BIT_SET_IN_VAR:
+            case INT_IF_BIT_CLEAR_IN_VAR:
+                if(!IsNumber(IntCode[i].name1))
+                    intVar1 = IntCode[i].name1.c_str();
+                if(!IsNumber(IntCode[i].name2))
+                    intVar2 = IntCode[i].name2.c_str();
+                break;
 #ifdef NEW_CMP
             case INT_IF_EQU:
             case INT_IF_NEQ:
@@ -765,8 +780,15 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
-                    fprintf(
-                        f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
+                    if(IsNumber(&IntCode[i].name1[1])) {
+                      fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
+                    } else {
+                      DWORD addr;
+                      char name[MAX_NAME_LEN];
+                      sprintf(name,"#%s", &IntCode[i].name1[1]);
+                      MemForVariable(name, &addr);
+                      fprintf(f, "//pokeb(0x%X, %d); // %s // Variants 1 and 2\n", addr, IntCode[i].literal, IntCode[i].name1.c_str() + 1);
+                    }
                     doIndent(f, i);
                 }
                 fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
@@ -776,6 +798,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
+                /*
                 if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
                     fprintf(f,
                             "//pokeb(%s, %s); // Variants 1 and 2\n",
@@ -783,7 +806,31 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                             MapSym(IntCode[i].name2, ASINT));
                     doIndent(f, i);
                 }
+                if(IntCode[i].name2[0] == '#') {
+                    if(IsNumber(&IntCode[i].name2[1])) {
+                      fprintf(f,
+                            "//%s = peekb(%s); // Variants 1 and 2\n",
+                            MapSym(IntCode[i].name1.c_str(), ASINT),
+                            &IntCode[i].name2[1]);
+                    } else {
+                      DWORD addr;
+                      char name[MAX_NAME_LEN];
+                      sprintf(name,"#%s", &IntCode[i].name2[1]);
+                      MemForVariable(name, &addr);
+                      fprintf(f,
+                            "//%s = peekb(0x%X); // %s // Variants 1 and 2\n",
+                            MapSym(IntCode[i].name1.c_str(), ASINT),
+                            addr,
+                            &IntCode[i].name2[1]);
+                    }
+                    doIndent(f, i);
+                }
+                */
                 fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                break;
+
+            case INT_SET_VARIABLE_NEG:
+                fprintf(f, "%s = - %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_BIN2BCD:
@@ -891,6 +938,16 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_IF_BIT_CLEAR:
                 fprintf(f, "if(!Read_%s()) {\n", MapSym(IntCode[i].name1, ASBIT));
+                indent++;
+                break;
+
+            case INT_IF_BIT_SET_IN_VAR:
+                fprintf(f, "if(%s & (1<<%s)) {\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                indent++;
+                break;
+
+            case INT_IF_BIT_CLEAR_IN_VAR:
+                fprintf(f, "if((%s & (1<<%s)) == 0) {\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
                 break;
 

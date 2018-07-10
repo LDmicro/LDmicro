@@ -684,24 +684,22 @@ void EditSelectedElement()
         case ELEM_RTL:
         case ELEM_THI:
         case ELEM_TLO:
-            ShowTimerDialog(
-                SelectedWhich, &(Selected->d.timer.delay), Selected->d.timer.name, &(Selected->d.timer.adjust));
+            ShowTimerDialog(SelectedWhich, Selected);
             break;
 
         case ELEM_DELAY:
-            ShowDelayDialog(SelectedWhich, Selected->d.timer.name);
+            ShowDelayDialog(SelectedWhich, Selected);
             break;
 
         case ELEM_SLEEP:
-            ShowSleepDialog(SelectedWhich, &(Selected->d.timer.delay), Selected->d.timer.name);
+            ShowSleepDialog(SelectedWhich, Selected);
             break;
 
         case ELEM_CTR:
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
-            ShowCounterDialog(
-                SelectedWhich, Selected->d.counter.init, Selected->d.counter.max, Selected->d.counter.name);
+            ShowCounterDialog(SelectedWhich, Selected);
             break;
 
 #ifdef USE_SFR
