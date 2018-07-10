@@ -217,11 +217,14 @@ static DWORD REG_UDR = 0;
 // WDT
 static DWORD REG_WDTCR  = 0; // 0x41 or 0x60
 #define          WDP3    BIT5
-#define          WDCE    BIT4
-#define          WDE     BIT3
+#define          WDCE    BIT4 // Watchdog Change Enable
+#define          WDE     BIT3 // Watchdog System Reset Enable
 #define          WDP2    BIT2
 #define          WDP1    BIT1
-#define          WDP0    BIT0
+#define          WDP0    BIT0 // Watchdog Timer Prescaler 3, 2, 1 and 0
+
+static DWORD REG_MCUSR = 0; // MCU Status Register
+#define          WDRF    BIT3 // Watchdog Reset Flag
 
 // Timer1
 static DWORD REG_OCR1AH = 0; // 0x4b
