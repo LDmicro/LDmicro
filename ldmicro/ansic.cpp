@@ -607,6 +607,8 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1set1 = IntCode[i].literal;
                 break;
 
+            case INT_VARIABLE_SET_BIT:
+            case INT_VARIABLE_CLEAR_BIT:
             case INT_IF_BIT_SET_IN_VAR:
             case INT_IF_BIT_CLEAR_IN_VAR:
                 if(!IsNumber(IntCode[i].name1))
@@ -949,6 +951,14 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case INT_IF_BIT_CLEAR_IN_VAR:
                 fprintf(f, "if((%s & (1<<%s)) == 0) {\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
+                break;
+
+            case INT_VARIABLE_SET_BIT:
+                fprintf(f, "%s |= 1 << %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                break;
+
+            case INT_VARIABLE_CLEAR_BIT:
+                fprintf(f, "%s &= ~(1 << %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
 #ifdef NEW_CMP
