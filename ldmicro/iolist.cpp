@@ -269,12 +269,22 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_QUAD_ENCOD:
+            /*
             switch(l->d.QuadEncod.contactA[0]) {
                 case 'I':
                     AppendIo(l->d.QuadEncod.contactA, IO_TYPE_INT_INPUT);
                     break;
                 default:
                     Error(_("Connect QUAD ENCOD input A to INTs input pin IqAn."));
+                    break;
+            }
+            */
+            switch(l->d.QuadEncod.contactA[0]) {
+                case 'X':
+                    AppendIo(l->d.QuadEncod.contactA, IO_TYPE_DIG_INPUT);
+                    break;
+                default:
+                    Error(_("Connect QUAD ENCOD input A to input pin XqAn."));
                     break;
             }
             switch(l->d.QuadEncod.contactB[0]) {

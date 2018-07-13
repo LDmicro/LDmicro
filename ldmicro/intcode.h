@@ -141,6 +141,8 @@
 */
 #define INT_IF_BIT_SET                          50
 #define INT_IF_BIT_CLEAR                        51
+#define INT_IF_BIT_EQU_BIT                      5101
+#define INT_IF_BIT_NEQ_BIT                      5102
 #ifndef NEW_CMP
 #define INT_IF_VARIABLE_LES_LITERAL             52
 #define INT_IF_VARIABLE_EQUALS_VARIABLE         53

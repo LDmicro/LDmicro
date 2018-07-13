@@ -744,7 +744,7 @@ void LoadWritePcPorts()
                     supportedMcus()[i].pinCount = IoPcCount;
                 }
         } else
-            THROW_COMPILER_EXCEPTION_FMT(_(" File '%s' not found!"), pc);
+            Error(_(" File '%s' not found!"), pc);
         //RunningInBatchMode = false;
     }
 }
@@ -854,7 +854,7 @@ bool LoadProjectFromFile(const char *filename)
                         }
                 }
                 if(i == supportedMcus().size()) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("Microcontroller '%s' not supported.\r\n\r\n"
+                    Error(_("Microcontroller '%s' not supported.\r\n\r\n"
                             "Defaulting to no selected MCU."),
                           line + 6);
                 }
@@ -882,7 +882,7 @@ bool LoadProjectFromFile(const char *filename)
             goto failed;
         rung++;
         if(rung >= MAX_RUNGS) {
-            THROW_COMPILER_EXCEPTION(_("Too many rungs in input file!\nSame rungs not loaded!"));
+            Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
             break;
         }
     }
@@ -901,9 +901,10 @@ bool LoadProjectFromFile(const char *filename)
 
 failed:
     NewProgram();
-    THROW_COMPILER_EXCEPTION_FMT("%s Error in RUNG %d. See error below %s",
+    Error(
         _("File format error; perhaps this program is for a newer version "
-          "of LDmicro?"), rung + 1, line);
+          "of LDmicro?"));
+    Error("Error in RUNG %d. See error below %s", rung + 1, line);
     return false;
 }
 
@@ -1414,7 +1415,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         }
 
         default:
-            THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%x", which);
+            Error("ELEM_0x%x", which);
             break;
     }
 }

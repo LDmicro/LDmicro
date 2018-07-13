@@ -1388,7 +1388,6 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
                 oops();
             // clang-format on
 
-
             ElemTimer *t = &leaf->d.timer;
             CenterWithSpaces(*cx, *cy, t->name, poweredAfter, true);
 

@@ -554,14 +554,14 @@ void AddQuadEncod()
     if(Prog.mcu) {
         n = QuadEncodFunctionUsed();
         if(n > Prog.mcu->ExtIntCount) {
-            Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
-            return;
+            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
+            //return;
         }
     }
     ElemLeaf *t = AllocLeaf();
     t->d.QuadEncod.int01 = n;
     sprintf(t->d.QuadEncod.counter, "qCount%d", n);
-    sprintf(t->d.QuadEncod.contactA, "IqA%d", n);
+    sprintf(t->d.QuadEncod.contactA, "XqA%d", n);
     sprintf(t->d.QuadEncod.contactB, "XqB%d", n);
     sprintf(t->d.QuadEncod.contactZ, "XqZ%d", n);
     sprintf(t->d.QuadEncod.zero, "YqZero%d", n);
@@ -1602,7 +1602,7 @@ bool TablesUsed()
         if((ContainsWhich(
                ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_14SEG, ELEM_16SEG, -1))) {
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
             return true;
         }
     }
