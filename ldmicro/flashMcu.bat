@@ -50,12 +50,14 @@ goto NOT_SUPPOTED
 @rem SET AVRDUDE_PATH=D:\Arduino\hardware\tools\avr\bin\
 @rem SET AVRDUDE_PATH=D:\Program\Electronique\Ldmicro\
 @rem SET AVRDUDE_PATH=D:\AVRDUDE\BIN\
-     SET AVRDUDE_PATH=C:\Users\nii\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\
+@rem SET AVRDUDE_PATH=C:\Users\nii\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\
+     SET AVRDUDE_PATH="%ProgramFiles%\Arduino\hardware\tools\avr\bin\"
 
 @rem *** Set up your avrdude config file. ***
 @rem SET AVRDUDE_CONF=
 @rem SET AVRDUDE_CONF=-C %AVRDUDE_PATH%avrdude.conf
-     SET AVRDUDE_CONF=-C %AVRDUDE_PATH%..\etc\avrdude.conf
+@rem SET AVRDUDE_CONF=-C %AVRDUDE_PATH%..\etc\avrdude.conf
+     SET AVRDUDE_CONF=-C "%ProgramFiles%\Arduino\hardware\tools\avr\\etc\avrdude.conf"
 
 @rem *** Set up your hardware avrdude programmer. ***
 @rem     See avrdude.conf programmer id.
@@ -74,7 +76,7 @@ goto NOT_SUPPOTED
 @rem SET AVRDUDE_PROGRAMMER_ID=stk500
 @rem SET AVRDUDE_PROGRAMMER_ID=stk200s5
 @rem SET AVRDUDE_PROGRAMMER_ID=stk500v2 -P COM9 -b 115200
-     SET AVRDUDE_PROGRAMMER_ID=wiring -P COM9 -b 115200
+     SET AVRDUDE_PROGRAMMER_ID=wiring -P COM3 -b 115200
 
 @rem *** Set up your avrdude Atmel Microcontroller. ***
 @rem     See avrdude.conf part id.
