@@ -2404,7 +2404,7 @@ static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BY
 // Call a subroutine, that might be in an arbitrary page, and then put
 // PCLATH back where we want it.
 //-----------------------------------------------------------------------------
-static void _CallWithPclath(DWORD addr, char *comment)
+static void _CallWithPclath(DWORD addr, const char *comment)
 {
     Instruction(OP_CALL, addr, 0, comment);
 }

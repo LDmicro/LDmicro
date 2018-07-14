@@ -1078,7 +1078,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         }
 #ifdef USE_SFR
             {
-                char *s;
+                const char *s;
                     // clang-format off
             case ELEM_RSFR:    s = "Read";   goto sfrcmp;
             case ELEM_WSFR:    s = "Write";  goto sfrcmp;
