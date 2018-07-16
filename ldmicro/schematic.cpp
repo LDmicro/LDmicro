@@ -768,20 +768,14 @@ void EditSelectedElement()
             break;
 
         case ELEM_QUAD_ENCOD:
-            ShowQuadEncodDialog(SelectedWhich,
-                                Selected->d.QuadEncod.counter,
-                                &(Selected->d.QuadEncod.int01),
-                                Selected->d.QuadEncod.contactA,
-                                Selected->d.QuadEncod.contactB,
-                                Selected->d.QuadEncod.contactZ,
-                                Selected->d.QuadEncod.zero);
+            ShowQuadEncodDialog(SelectedWhich, Selected);
             break;
 
         case ELEM_7SEG:
         case ELEM_9SEG:
         case ELEM_14SEG:
         case ELEM_16SEG:
-            ShowSegmentsDialog(Selected);
+            ShowSegmentsDialog(SelectedWhich, Selected);
             break;
 
         case ELEM_BUS:

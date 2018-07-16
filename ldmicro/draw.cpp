@@ -1191,15 +1191,12 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_QUAD_ENCOD: {
             ElemQuadEncod *m = &leaf->d.QuadEncod;
 
-            sprintf(s2,
-                    "%s \x01"
-                    "QUAD ENCOD%d\x02",
-                    m->contactA,
-                    m->int01);
-            sprintf(s3, "%s", m->zero);
-            formatWidth(top, 2 * POS_WIDTH, "->[", s2, "", s3, "]->");
-            sprintf(s2, "%s %s %s", m->contactB, m->contactZ, m->counter);
-            formatWidth(bot, 2 * POS_WIDTH, "->[", "", s2, "", "]--");
+            sprintf(s2, "=>[%s %s", m->inputA, m->inputB/*, m->int01*/);
+            sprintf(s3, "%s]->", m->dir);
+            formatWidth(top, 2 * POS_WIDTH, s2, "", "", "", s3);
+            sprintf(s1, "->[%s", m->inputZ);
+            sprintf(s2, " \x01QUAD ENCOD%d\x02 ", m->int01);
+            formatWidth(bot, 2 * POS_WIDTH, s1, "", s2, m->counter, "]--");
 
             CenterWithSpacesWidth(*cx, *cy, top, poweredAfter, false, 2 * POS_WIDTH);
             CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2 * POS_WIDTH);

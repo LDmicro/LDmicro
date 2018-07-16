@@ -975,7 +975,7 @@ void ShowSpiDialog(ElemLeaf *l)
     }
 }
 
-void ShowSegmentsDialog(ElemLeaf *l)
+void ShowSegmentsDialog(int which, ElemLeaf *l)
 {
     ElemSegments *s = &(l->d.segments);
     char          common[10];
@@ -1407,9 +1407,19 @@ void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
     }
 }
 
-void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, char *contactB, char *contactZ,
-                         char *error)
+void ShowQuadEncodDialog(int which, ElemLeaf *l)
 {
+    ElemQuadEncod *q= &(l->d.QuadEncod);
+    char *counter      = q->counter;
+    int  *int01        = &(q->int01);
+    char *inputA     = q->inputA;
+    char *inputB     = q->inputB;
+    char *inputZ     = q->inputZ;
+    int  countPerRevol = q->countPerRevol;
+    char *dir          = q->dir;
+    char inputZKind[MAX_NAME_LEN];
+    sprintf(inputZKind, "%c", q->inputZKind);
+
     char title[100];
     sprintf(title, _("Quad Encod%d"), *int01);
 
@@ -1421,8 +1431,9 @@ void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, c
                             _("Input A:"),
                             _("Input B:"),
                             _("Input Z:"),
-                            _("Output Zero(Counter==0):")};
-    char *      dests[] = {counter, _int01, contactA, contactB, contactZ, error};
+                            _("Output Dir:"),
+                            _("Count per revol:")};
+    char *      dests[] = {counter, _int01, inputA, inputB, inputZ, inputZKind};
     {};
     NoCheckingOnBox[4] = true;
     NoCheckingOnBox[5] = true;

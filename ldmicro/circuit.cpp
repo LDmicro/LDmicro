@@ -561,10 +561,12 @@ void AddQuadEncod()
     ElemLeaf *t = AllocLeaf();
     t->d.QuadEncod.int01 = n;
     sprintf(t->d.QuadEncod.counter, "qCount%d", n);
-    sprintf(t->d.QuadEncod.contactA, "XqA%d", n);
-    sprintf(t->d.QuadEncod.contactB, "XqB%d", n);
-    sprintf(t->d.QuadEncod.contactZ, "XqZ%d", n);
-    sprintf(t->d.QuadEncod.zero, "YqZero%d", n);
+    sprintf(t->d.QuadEncod.inputA, "XqA%d", n);
+    sprintf(t->d.QuadEncod.inputB, "XqB%d", n);
+    sprintf(t->d.QuadEncod.inputZ, "XqZ%d", n);
+    t->d.QuadEncod.inputZKind = '/';
+    t->d.QuadEncod.countPerRevol = 0;
+    sprintf(t->d.QuadEncod.dir, "YqDir%d", n);
     AddLeaf(ELEM_QUAD_ENCOD, t);
 }
 

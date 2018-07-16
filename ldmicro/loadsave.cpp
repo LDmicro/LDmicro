@@ -313,36 +313,36 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      "QUAD_ENCOD %s %d %s %s |%s |%s",
                      l->d.QuadEncod.counter,
                      &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.contactA,
-                     l->d.QuadEncod.contactB,
-                     l->d.QuadEncod.contactZ,
-                     l->d.QuadEncod.zero)
+                     l->d.QuadEncod.inputA,
+                     l->d.QuadEncod.inputB,
+                     l->d.QuadEncod.inputZ,
+                     l->d.QuadEncod.dir)
               == 6) {
         *which = ELEM_QUAD_ENCOD;
     } else if(sscanf(line,
                      "QUAD_ENCOD %s %d %s %s | |%s",
                      l->d.QuadEncod.counter,
                      &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.contactA,
-                     l->d.QuadEncod.contactB,
-                     l->d.QuadEncod.zero)
+                     l->d.QuadEncod.inputA,
+                     l->d.QuadEncod.inputB,
+                     l->d.QuadEncod.dir)
               == 5) {
         *which = ELEM_QUAD_ENCOD;
     } else if(sscanf(line,
                      "QUAD_ENCOD %s %d %s %s |%s |",
                      l->d.QuadEncod.counter,
                      &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.contactA,
-                     l->d.QuadEncod.contactB,
-                     l->d.QuadEncod.contactZ)
+                     l->d.QuadEncod.inputA,
+                     l->d.QuadEncod.inputB,
+                     l->d.QuadEncod.inputZ)
               == 5) {
         *which = ELEM_QUAD_ENCOD;
     } else if(sscanf(line,
                      "QUAD_ENCOD %s %d %s %s",
                      l->d.QuadEncod.counter,
                      &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.contactA,
-                     l->d.QuadEncod.contactB)
+                     l->d.QuadEncod.inputA,
+                     l->d.QuadEncod.inputB)
               == 4) {
         *which = ELEM_QUAD_ENCOD;
     } else if(sscanf(line, "MOD %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
@@ -1076,10 +1076,10 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     "QUAD_ENCOD %s %d %s %s |%s |%s\n",
                     l->d.QuadEncod.counter,
                     l->d.QuadEncod.int01,
-                    l->d.QuadEncod.contactA,
-                    l->d.QuadEncod.contactB,
-                    l->d.QuadEncod.contactZ,
-                    l->d.QuadEncod.zero);
+                    l->d.QuadEncod.inputA,
+                    l->d.QuadEncod.inputB,
+                    l->d.QuadEncod.inputZ,
+                    l->d.QuadEncod.dir);
             break;
 
         case ELEM_NPULSE_OFF:
