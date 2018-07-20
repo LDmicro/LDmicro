@@ -1565,8 +1565,7 @@ static int CountWhich_(int which, void *any, int seek1, int seek2, int seek3, ch
 int CountWhich(int seek1, int seek2, int seek3, char *name)
 {
     int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         n += CountWhich_(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek1, seek2, seek3, name);
     return n;
 }
@@ -1677,10 +1676,7 @@ int AdcFunctionUsed()
 //-----------------------------------------------------------------------------
 uint32_t QuadEncodFunctionUsed()
 {
-    uint32_t n = 0;
-    for(int i = 0; i < Prog.numRungs; i++)
-        n += CountWhich(ELEM_QUAD_ENCOD);
-    return n;
+    return CountWhich(ELEM_QUAD_ENCOD);
 }
 //-----------------------------------------------------------------------------
 bool NPulseFunctionUsed()

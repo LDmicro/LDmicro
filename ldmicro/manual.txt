@@ -244,7 +244,7 @@ Bytes    Types       Range from                   to
  1   signed int8   -2^7 =       -128=0x80        2^7 -1=       127=0x7f
  2   signed int16  -2^15=     -32768=0x8000      2^15-1=     32767=0x7fff
  3   signed int24  -2^23=   -8388608=0x800000    2^23-1=   8388607=0x7fFFFF
- 4   signed int32  -2^31=-2147483647=0x80000000  2^31-1=2147483647=0x7fffFFFF
+ 4   signed int32  -2^31=-2147483648=0x80000000  2^31-1=2147483647=0x7fffFFFF
 
 The decimal zero value (0) is represented as all zeros bits 00...000
 The decimal value (-1) represented as all  11...111
@@ -1297,6 +1297,12 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
    ||-------] [---------[_/ OSR_/ \_]------[CTC  0:9]---||
    ||                                                   ||
 
+    '-/' is positive edge-triggered (rising edge) input.
+    '-\' is negative edge-triggered (falling edge) input.
+    '--' is high level active static input.
+    '--' is static input, active at a high level.
+    '-o' is static input, active at a low level.
+
 
 > SHIFT REGISTER            {SHIFT REG   }
                            -{ reg0..3    }-
@@ -1716,6 +1722,89 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
    ||      Rand2                                              ||
  0 ||-----{RAND}------                                        ||
    ||                                                         ||
+
+
+> QUADRATURE ENCODER        =>[XqA0 XqB0            YqDir0]->
+                            ->[XqZ0   QUAD ENCOD   qCount0]--
+
+    The QUADRATURE ENCODER instruction takes two quadrature-encoded signals
+    (A and B) from an incremental rotary or linear encoder device.
+    See https://en.wikipedia.org/wiki/Incremental_encoder
+
+ logic
+ levels               move ->             |            <- move
+       ^
+       | ___         _______         ___________          _______         ___
+Input A|    |_______|       |_______|           |________|       |_______|
+       |
+       | _______         _______         ___         ________         _______
+Input B|        |_______|       |_______|   |_______|        |_______|
+       |
+       |
+Counter|  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0
+       |
+ Output| ___________________________________   decrease or CCW or backward
+    Dir|    increase or CW or forward       |________________________________
+       |
+ Output|
+  Pulse| ___^___^___^___^___^___^___^___^___^___^___^___^___^___^___^___^____
+       |
+     --+----------------------------------------------------------------> time
+       |
+           '^' - is one PLC Cycle time impulse
+    Use Output Pulse for determine was Counter changed, not for counting.
+    Hint: Use the Output Pulse to determine if the Counter was changed, not for counting.
+
+    The QUAD ENCOD instruction can contain 4 or 3 inputs and 2 or 1 outputs.
+    Input Z is optional and can be empty.
+    Output Dir is optional and can be empty.
+
+   ||                                                                    ||
+   ||       R0        =>[XqA0 XqB0            YqDir0]->        R1        ||
+   ||-------] [-------->[XqZ0   QUAD ENCOD   qCount0]----------( )-------||
+   ||                                                                    ||
+
+    When the input R0 to QUAD ENCOD instruction is false, inputs A, B, Z
+    are ignored.
+    When the input R0 to QUAD ENCOD instruction is true, the pulses at
+    the inputs A, B, Z are decoded into the counter value.
+
+    Input Z can be dynamic (edge triggered) or static.
+    If 'Count per revol' is 0 and the Z input is active, then counter sets to 0.
+    If 'Count per revol' is greater than 0 and the Z input is active, then
+    the counter will be rounded to a multiple of the 'Count per revol' value.
+    If 'Count per revol' is less than 0, then input Z is ignored.
+
+
+ logic
+ levels               move ->
+       ^
+       | ___         _______         _______         _______         ________
+Input A|    |_______|       |_______|       |_______|       |_______|
+       |
+       | _______         _______         _______         _______         ____
+Input B|        |_______|       |_______|       |_______|       |_______|
+       |
+       |
+Input Z| __________________________________/\_______________________________
+       |
+       |
+       |                 'Count per revol' is 0
+       |
+Counter|  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+       |
+       |
+       |          'Count per revol' is 10 (there are losses of A,B pulses)
+       |
+Counter|  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |10 |11 |12 |13 |14 |15 |16 |17
+       |
+     --+----------------------------------------------------------------> time
+       |
+
+    To simulate the A, B, Z inputs - double-clicking the input name in the list
+    at the bottom of the screen.
+
+    See for details https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER
 
 
 A NOTE ON USING MATH

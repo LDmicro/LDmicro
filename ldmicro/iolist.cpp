@@ -313,6 +313,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
                         Error(_("Connect QUAD ENCOD dir flag to output pin YsomeName."));
                         break;
                 }
+/*
+            AppendIo("ELEM_QUAD_ENCOD", IO_TYPE_TABLE_IN_FLASH);
+            SetSizeOfVar("ELEM_QUAD_ENCOD", 16);
+*/
             break;
 
         case ELEM_NPULSE:

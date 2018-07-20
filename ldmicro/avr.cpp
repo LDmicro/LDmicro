@@ -3280,26 +3280,29 @@ B   xxxx         xxxx         xxxx         xxxx         xxxx         xxxx
 A_   B_   previous encoder input
 A    B    new encoder input
 
+https://en.wikipedia.org/wiki/Incremental_encoder
 Encoder lookup table
-     B_ A_ B  A                           (B_A_ xor BA)     (B_ xor B)
-0    0  0  0  0    0   not changed state         0               0
-1    0  0  0  1   -1                             1               0      -
-2    0  0  1  0   +1                             2               1      +
-3    0  0  1  1    E   Error                     3 (B | A)       1
-4    0  1  0  0   +1                             1               0      +
-5    0  1  0  1    0   not changed state         0               0
-6    0  1  1  0    E   Error                     3 (B | A)       1
-7    0  1  1  1   -1                             2               1      -
-8    1  0  0  0   -1                             2               1      -
-9    1  0  0  1    E   Error                     3 (B | A)       0
-A    1  0  1  0    0   not changed state         0               0
-B    1  0  1  1   +1                             1               0      +
-C    1  1  0  0    E   Error                     3 (B | A)       1
-D    1  1  0  1   +1                             2               1      +
-E    1  1  1  0   -1                             1               0      -
-F    1  1  1  1    0   not changed state         0               0
+     B_ A_ B  A   x1   x2   x4                      (B_A_ xor BA)     (B_ xor B)
+0    0  0  0  0    0    0    0   not changed state         0               0
+1    0  0  0  1    0    0   -1                             1               0      -
+2    0  0  1  0   +1   +1   +1                             2               1      +
+3    0  0  1  1    E    E    E   Error                     3 (B | A)       1
+4    0  1  0  0    0    0   +1                             1               0      +
+5    0  1  0  1    0    0    0   not changed state         0               0
+6    0  1  1  0    E    E    E   Error                     3 (B | A)       1
+7    0  1  1  1    0   -1   -1                             2               1      -
+8    1  0  0  0   -1   -1   -1                             2               1      -
+9    1  0  0  1    E    E    E   Error                     3 (B | A)       0
+A    1  0  1  0    0    0    0   not changed state         0               0
+B    1  0  1  1    0    0   +1                             1               0      +
+C    1  1  0  0    E    E    E   Error                     3 (B | A)       1
+D    1  1  0  1    0   +1   +1                             2               1      +
+E    1  1  1  0    0    0   -1                             1               0      -
+F    1  1  1  1    0    0    0   not changed state         0               0
 
-{0,-1,1,E,1,0,E,-1,-1,E,0,1,E,1,-1,0};
+x1={0, 0,1,E,0,0,E, 0,-1,E,0,0,E,0, 0,0};
+x2={0, 0,1,E,0,0,E,-1,-1,E,0,0,E,1, 0,0};
+x4={0,-1,1,E,1,0,E,-1,-1,E,0,1,E,1,-1,0};
 
                        (B_ xor A)   (A_ xor B)
 2    0  0  1  0   +1        0           1

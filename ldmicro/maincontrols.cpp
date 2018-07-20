@@ -562,7 +562,7 @@ HMENU MakeMainWindowMenus()
         InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT, _("TODO: Insert Software &PWM (AVR136 AppNote)\tP"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("EDIT: Insert QUAD ENCOD"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("Insert QUADRATURE ENCODER"));
     DisplayMenu = CreatePopupMenu();
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("SIMUL: Insert BIN2BCD"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("SIMUL: Insert BCD2BIN"));

@@ -1,3 +1,10 @@
+== Release 4.4.2.0
+
+    * Fixed: Bug in FORMATTED STRING OVER UART element, when using
+    command \0xFE\ instead of \xFE\ ldmicro closes (#120)
+
+    * New: Incremental QUADRATURE ENCODER instruction.
+
 == Release 4.4.1.1
 
     * Fixed: Bug in insert SET BIT instructions with arduino (#118)

@@ -2510,6 +2510,20 @@ static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
     CopyNotBit(addrDest, bitDest, addrSrc, bitSrc, nullptr, nullptr);
 }
 
+static void AndBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+{
+    Comment("AndBit");
+    IfBitClear(addrSrc, bitSrc);
+    ClearBit(addrDest, bitDest);
+}
+
+static void OrBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+{
+    Comment("OrBit");
+    IfBitSet(addrSrc, bitSrc);
+    SetBit(addrDest, bitDest);
+}
+
 static void XorBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
     Comment("XorBit");
@@ -3041,9 +3055,16 @@ static void AllocBitsVars()
 
             case INT_COPY_BIT_TO_BIT:
             case INT_COPY_NOT_BIT_TO_BIT:
-            case INT_COPY_XOR_BIT_TO_BIT:
                 MemForSingleBit(a->name1, false, &addr, &bit);
                 MemForSingleBit(a->name2, false, &addr, &bit);
+                break;
+
+            case INT_SET_BIT_AND_BIT:
+            case INT_SET_BIT_OR_BIT:
+            case INT_SET_BIT_XOR_BIT:
+                MemForSingleBit(a->name1, false, &addr, &bit);
+                MemForSingleBit(a->name2, false, &addr, &bit);
+                MemForSingleBit(a->name3, false, &addr, &bit);
                 break;
 
             case INT_IF_BIT_SET:
@@ -3734,7 +3755,7 @@ static void InitTables()
 static void CompileFromIntermediate(bool topLevel)
 {
     DWORD addr1 = -1, addr2 = -1, addr3 = -1, addr4 = -1;
-    int   bit1 = -1, bit2 = -1, bit4 = -1;
+    int   bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int   bit = -1;
     int   sov = -1, sov1 = -1, sov2 = -1, sov3 = -1;
     char  comment[MAX_NAME_LEN] = "";
@@ -3774,11 +3795,12 @@ static void CompileFromIntermediate(bool topLevel)
                 CopyNotBit(addr1, bit1, addr2, bit2);
                 break;
 
-            case INT_COPY_XOR_BIT_TO_BIT:
-                Comment("INT_COPY_XOR_BIT_TO_BIT %s:=%s^%s", a->name1.c_str(), a->name1.c_str(), a->name2.c_str());
+            case INT_SET_BIT_XOR_BIT:
+                Comment("INT_SET_BIT_XOR_BIT %s:=%s^%s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
                 MemForSingleBit(a->name2, false, &addr2, &bit2);
-                XorBit(addr1, bit1, addr2, bit2);
+                MemForSingleBit(a->name3, false, &addr3, &bit3);
+                XorBit(addr1, bit1, addr2, bit2/*, addr3, bit3*/);
                 break;
             //
             case INT_VARIABLE_CLEAR_BIT: {

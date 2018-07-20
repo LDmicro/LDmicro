@@ -33,6 +33,7 @@ char *DelLastNL(char *str);
 
 typedef enum FRMTTag { FRMT_COMMENT, FRMT_01, FRMT_x20 } FRMT;
 char *StrToFrmStr(char *dest, char *str, FRMT frmt);
+char *StrToFrmStr(char *dest, char *src);
 
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 
@@ -310,40 +311,18 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "NPULSE %s %s %s", l->d.Npulse.counter, l->d.Npulse.targetFreq, l->d.Npulse.coil) == 3) {
         *which = ELEM_NPULSE;
     } else if(sscanf(line,
-                     "QUAD_ENCOD %s %d %s %s |%s |%s",
+                     "QUAD_ENCOD %s %d %s %s %s %s %c %d",
                      l->d.QuadEncod.counter,
                      &l->d.QuadEncod.int01,
                      l->d.QuadEncod.inputA,
                      l->d.QuadEncod.inputB,
                      l->d.QuadEncod.inputZ,
-                     l->d.QuadEncod.dir)
-              == 6) {
-        *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line,
-                     "QUAD_ENCOD %s %d %s %s | |%s",
-                     l->d.QuadEncod.counter,
-                     &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.inputA,
-                     l->d.QuadEncod.inputB,
-                     l->d.QuadEncod.dir)
-              == 5) {
-        *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line,
-                     "QUAD_ENCOD %s %d %s %s |%s |",
-                     l->d.QuadEncod.counter,
-                     &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.inputA,
-                     l->d.QuadEncod.inputB,
-                     l->d.QuadEncod.inputZ)
-              == 5) {
-        *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line,
-                     "QUAD_ENCOD %s %d %s %s",
-                     l->d.QuadEncod.counter,
-                     &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.inputA,
-                     l->d.QuadEncod.inputB)
-              == 4) {
+                     l->d.QuadEncod.dir,
+                     &l->d.QuadEncod.inputZKind,
+                     &l->d.QuadEncod.countPerRevol)
+              == 8) {
+        FrmStrToStr(l->d.QuadEncod.inputZ, l->d.QuadEncod.inputZ);
+        FrmStrToStr(l->d.QuadEncod.dir, l->d.QuadEncod.dir);
         *which = ELEM_QUAD_ENCOD;
     } else if(sscanf(line, "MOD %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_MOD;
@@ -1073,13 +1052,15 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
         case ELEM_QUAD_ENCOD:
             fprintf(f,
-                    "QUAD_ENCOD %s %d %s %s |%s |%s\n",
+                    "QUAD_ENCOD %s %d %s %s %s %s %c %d\n",
                     l->d.QuadEncod.counter,
                     l->d.QuadEncod.int01,
                     l->d.QuadEncod.inputA,
                     l->d.QuadEncod.inputB,
-                    l->d.QuadEncod.inputZ,
-                    l->d.QuadEncod.dir);
+                    StrToFrmStr(str1,l->d.QuadEncod.inputZ),
+                    StrToFrmStr(str2,l->d.QuadEncod.dir),
+                    l->d.QuadEncod.inputZKind,
+                    l->d.QuadEncod.countPerRevol);
             break;
 
         case ELEM_NPULSE_OFF:
@@ -1524,7 +1505,7 @@ void FrmStrToFile(FILE *f, char *str)
 char *StrToFrmStr(char *dest, char *src, FRMT frmt)
 {
     if((src == nullptr) || (strlen(src) == 0)) {
-        strcpy(dest, " (none)");
+        strcpy(dest, "(none)");
         return dest;
     }
 
@@ -1580,6 +1561,10 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
         }
     }
     return dest;
+}
+char *StrToFrmStr(char *dest, char *src)
+{
+    return StrToFrmStr(dest, src, FRMT_x20);
 }
 
 //-----------------------------------------------------------------------------

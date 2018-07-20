@@ -817,6 +817,23 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_QUAD_ENCOD:
+            MarkWithCheck(l->d.QuadEncod.counter, VAR_FLAG_ANY);
+
+            char ticks[MAX_NAME_LEN];
+            sprintf(ticks, "$ticks_%s", l->d.QuadEncod.counter);
+            MarkWithCheck(ticks, VAR_FLAG_ANY);
+
+            char dir[MAX_NAME_LEN];
+            sprintf(dir, "$dir_%s", l->d.QuadEncod.counter);
+            MarkWithCheck(dir, VAR_FLAG_ANY);
+
+            char revol[MAX_NAME_LEN];
+            sprintf(revol, "$revol_%s", l->d.QuadEncod.counter);
+            MarkWithCheck(revol, VAR_FLAG_ANY);
+
+            MarkWithCheck("ELEM_QUAD_ENCOD", VAR_FLAG_ANY);
+            break;
+
         case ELEM_NPULSE:
         case ELEM_PULSER:
         case ELEM_STEPPER:
@@ -1526,10 +1543,16 @@ static void SimulateIntCode()
                 SetSingleBit(a->name1, !SingleBitOn(a->name2));
                 break;
 
-            case INT_COPY_XOR_BIT_TO_BIT:
-                //SetSingleBit(a->name1,  SingleBitOn(a->name1)      ^  SingleBitOn(a->name2)     );
-                //SetSingleBit(a->name1, (SingleBitOn(a->name1) & 1) ^ (SingleBitOn(a->name2) & 1));
-                SetSingleBit(a->name1, SingleBitOn(a->name2) ? (!SingleBitOn(a->name1)) : SingleBitOn(a->name1));
+            case INT_SET_BIT_AND_BIT:
+                SetSingleBit(a->name1, (SingleBitOn(a->name2) & SingleBitOn(a->name3)) & 1);
+                break;
+
+            case INT_SET_BIT_OR_BIT:
+                SetSingleBit(a->name1, (SingleBitOn(a->name2) | SingleBitOn(a->name3)) & 1);
+                break;
+
+            case INT_SET_BIT_XOR_BIT:
+                SetSingleBit(a->name1, (SingleBitOn(a->name2) ^ SingleBitOn(a->name3)) & 1);
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
@@ -1716,6 +1739,16 @@ static void SimulateIntCode()
 
             case INT_IF_BIT_CLEAR:
                 if(!SingleBitOn(a->name1))
+                    IF_BODY
+                break;
+
+            case INT_IF_BIT_EQU_BIT:
+                if(SingleBitOn(a->name1) == SingleBitOn(a->name2))
+                    IF_BODY
+                break;
+
+            case INT_IF_BIT_NEQ_BIT:
+                if(SingleBitOn(a->name1) != SingleBitOn(a->name2))
                     IF_BODY
                 break;
 
