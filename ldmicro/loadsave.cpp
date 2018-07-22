@@ -1461,45 +1461,6 @@ bool SaveProjectToFile(char *filename, int code)
     PrevWriteTime = LastWriteTime;
     return true;
 }
-//-----------------------------------------------------------------------------
-/*
-simple-escape-sequence: one of
-    \' \" \? \\
-    \a \b \f \n \r \t \v
-void FrmStrToFile(FILE *f, char *str)
-{
-    char *s = str;
-    for(; *s; s++) {
-        if(*s == '\'') {
-            fprintf(f, "\\\'");
-        } else if(*s == '\"') {
-            fprintf(f, "\\\"");
-        } else if(*s == '\?') {
-            fprintf(f, "\\\?");
-        } else if(*s == '\\') {
-            fprintf(f, "\\\\");
-        } else if(*s == ' ') {
-            fprintf(f, "\x20");
-        } else if(*s == '\a') {//(alert) Produces an audible or visible alert without changing the active position.
-            fprintf(f, "\\a");
-        } else if(*s == '\b') {//(backspace) Moves the active position to the previous position on the current line.
-            fprintf(f, "\\b");
-        } else if(*s == '\f') {//( form feed) Moves the active position to the initial position at the start of the next logical page.
-            fprintf(f, "\\f");
-        } else if(*s == '\n') {//(new line) Moves the active position to the initial position of the next line.
-            fprintf(f, "\\n");
-        } else if(*s == '\r') {//(carriage return) Moves the active position to the initial position of the current line.
-            fprintf(f, "\\r");
-        } else if(*s == '\t') {//(horizontal tab) Moves the active position to the next horizontal tabulation position on the current line.
-            fprintf(f, "\\t");
-        } else if(*s == '\v') {//(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
-            fprintf(f, "\\v");
-        } else {
-            fprintf(f, "%c", *s);
-        }
-    }
-}
-*/
 
 //---------------------------------------------------------------------------
 char *StrToFrmStr(char *dest, char *src, FRMT frmt)
@@ -1532,11 +1493,14 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
             } else if(src[i] == '\\') {
                 strcat(dest, "\\\\");
             } else if(src[i]
-                      == '\a') { //(alert) Produces an audible or visible alert without changing the active position.
+                      == 0x07) { //(alert) Produces an audible or visible alert without changing the active position.
                 strcat(dest, "\\a");
             } else if(src[i]
                       == '\b') { //(backspace) Moves the active position to the previous position on the current line.
                 strcat(dest, "\\b");
+            } else if(src[i]
+                      == 0x1B) { //Escape character
+                strcat(dest, "\\e");
             } else if(
                 src[i]
                 == '\f') { //(form feed) Moves the active position to the initial position at the start of the next logical page.
@@ -1603,10 +1567,13 @@ char *FrmStrToStr(char *dest, const char *src)
                 dest[i++] = '\\';
                 s++;
             } else if(s[1] == 'a') {
-                dest[i++] = '\a';
+                dest[i++] = 0x07;
                 s++;
             } else if(s[1] == 'b') {
                 dest[i++] = '\b';
+                s++;
+            } else if(s[1] == 'e') {
+                dest[i++] = 0x1B;
                 s++;
             } else if(s[1] == 'f') {
                 dest[i++] = '\f';

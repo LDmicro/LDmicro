@@ -3867,14 +3867,18 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     L1:
                     p++;
                     switch(*p) {
-                        case 'r': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\r'; break;
-                        case 'n': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\n'; break;
-                        case 'b': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\b'; break;
-                        case 'f': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\f'; break;
-                        case 't': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\t'; break;
-                        case 'v': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\v'; break;
-                        case 'a': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\a'; break;
-                        case '\\':outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\\'; break;
+                        case 'a': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = 0x07; break;
+                        case 'b': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\b'; break;
+                        case 'e': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = 0x1B; break;
+                        case 'f': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\f'; break;
+                        case 'n': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\n'; break;
+                        case 'r': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\r'; break;
+                        case 't': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\t'; break;
+                        case 'v': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\v'; break;
+                        case '\'':outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\''; break;
+                        case '"': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\"'; break;
+                        case '?': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\?'; break;
+                        case '\\':outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\\'; break;
                         case '0': goto L1; break;
                         case 'X':
                         case 'x': {
