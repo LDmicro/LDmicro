@@ -3056,7 +3056,7 @@ static void AllocBitsVars()
             case INT_COPY_BIT_TO_BIT:
             case INT_COPY_NOT_BIT_TO_BIT:
                 MemForSingleBit(a->name1, false, &addr, &bit);
-                MemForSingleBit(a->name2, false, &addr, &bit);
+                MemForSingleBit(a->name2, true, &addr, &bit);
                 break;
 
             case INT_SET_BIT_AND_BIT:
@@ -3784,14 +3784,14 @@ static void CompileFromIntermediate(bool topLevel)
             case INT_COPY_BIT_TO_BIT:
                 Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1.c_str(), a->name2.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
-                MemForSingleBit(a->name2, false, &addr2, &bit2);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
                 CopyBit(addr1, bit1, addr2, bit2);
                 break;
 
             case INT_COPY_NOT_BIT_TO_BIT:
                 Comment("INT_COPY_NOT_BIT_TO_BIT %s:=!%s", a->name1.c_str(), a->name2.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
-                MemForSingleBit(a->name2, false, &addr2, &bit2);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
                 CopyNotBit(addr1, bit1, addr2, bit2);
                 break;
 
@@ -4044,6 +4044,50 @@ static void CompileFromIntermediate(bool topLevel)
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
                 Decrement(addr1, sov1, a->name1, a->name2, a->name3);
+                break;
+            }
+            case INT_IF_BIT_EQU_BIT: {
+                Comment("INT_IF_BIT_EQU_BIT %s %s", a->name1.c_str(), a->name2.c_str());
+                DWORD condFalse = AllocFwdAddr();
+                DWORD condTrue = AllocFwdAddr();
+                DWORD now1Set = AllocFwdAddr();
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
+                IfBitSet(addr1, bit1, a->name1);
+                Instruction(OP_GOTO, now1Set);
+                //now1Clear
+                IfBitSet(addr2, bit2, a->name2);
+                Instruction(OP_GOTO, condFalse);
+                Instruction(OP_GOTO, condTrue);
+
+                FwdAddrIsNow(now1Set);
+                IfBitClear(addr2, bit2, a->name2);
+                Instruction(OP_GOTO, condFalse);
+
+                FwdAddrIsNow(condTrue);
+                CompileIfBody(condFalse);
+                break;
+            }
+            case INT_IF_BIT_NEQ_BIT: {
+                Comment("INT_IF_BIT_NEQ_BIT %s %s", a->name1.c_str(), a->name2.c_str());
+                DWORD condFalse = AllocFwdAddr();
+                DWORD condTrue = AllocFwdAddr();
+                DWORD now1Set = AllocFwdAddr();
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
+                IfBitSet(addr1, bit1, a->name1);
+                Instruction(OP_GOTO, now1Set);
+                //now1Clear
+                IfBitClear(addr2, bit2, a->name2);
+                Instruction(OP_GOTO, condFalse);
+                Instruction(OP_GOTO, condTrue);
+
+                FwdAddrIsNow(now1Set);
+                IfBitSet(addr2, bit2, a->name2);
+                Instruction(OP_GOTO, condFalse);
+
+                FwdAddrIsNow(condTrue);
+                CompileIfBody(condFalse);
                 break;
             }
             case INT_IF_BIT_SET: {

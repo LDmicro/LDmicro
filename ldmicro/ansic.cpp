@@ -514,6 +514,9 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1 = IntCode[i].name1.c_str();
                 break;
 
+            case INT_IF_BIT_EQU_BIT:
+            case INT_IF_BIT_NEQ_BIT:
+            case INT_COPY_NOT_BIT_TO_BIT:
             case INT_COPY_BIT_TO_BIT:
                 isPinAssigned(a->name1);
                 isPinAssigned(a->name2);
@@ -774,6 +777,20 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     fprintf(f, "Write0_%s();\n", MapSym(IntCode[i].name1, ASBIT));
                 else
                     fprintf(f, "Write_%s(0);\n", MapSym(IntCode[i].name1, ASBIT));
+                break;
+
+            case INT_IF_BIT_EQU_BIT:
+                fprintf(f, "if(Read_%s() == Read_%s()) {\n", MapSym(IntCode[i].name1, ASBIT), MapSym(IntCode[i].name2, ASBIT));
+                indent++;
+                break;
+
+            case INT_IF_BIT_NEQ_BIT:
+                fprintf(f, "if(Read_%s() != Read_%s()) {\n", MapSym(IntCode[i].name1, ASBIT), MapSym(IntCode[i].name2, ASBIT));
+                indent++;
+                break;
+
+            case INT_COPY_NOT_BIT_TO_BIT:
+                fprintf(f, "Write_%s(!Read_%s());\n", MapSym(IntCode[i].name1, ASBIT), MapSym(IntCode[i].name2, ASBIT));
                 break;
 
             case INT_COPY_BIT_TO_BIT:

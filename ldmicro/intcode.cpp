@@ -3025,7 +3025,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 #endif
               if(strlen(l->d.QuadEncod.inputZ) && (l->d.QuadEncod.countPerRevol >= 0)) {
                 char storeName[MAX_NAME_LEN];
-                GenSymOneShot(storeName, "$OneShot", l->d.QuadEncod.counter);
+                GenSymOneShot(storeName, l->d.QuadEncod.counter, "");
                 Op(INT_COPY_BIT_TO_BIT, nowZ, l->d.QuadEncod.inputZ);
                 if(l->d.QuadEncod.inputZKind == '/') {
                   Op(INT_IF_BIT_SET, nowZ);
