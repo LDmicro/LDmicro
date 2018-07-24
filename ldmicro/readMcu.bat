@@ -1,6 +1,7 @@
 @echo OFF
 @rem This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 cls
+if "%1" == "" goto PIC16
 if "%1" == "" goto AVR
 if "%1" == "AVR" goto AVR
 if "%1" == "PIC16" goto PIC16
@@ -118,6 +119,35 @@ goto exit
 
 @rem =======================================================================
 :PIC16
+@rem *** Set up PIC reading tool. ***
+@rem SET TOOL="d:\Program Files\Microchip\PICkit 3 v1\PICkit 3.exe"
+     SET TOOL="d:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3\PK3CMD.exe"
+
+@rem *** Part Selection. ***
+@rem Part name should be mentioned without Family Information like PIC/dsPIC
+@rem Example: PIC16F628 should be mentioned as 16F628.
+@rem SET PART=-P16F628
+     SET PART=-P16F877A
+
+@rem *** Set up additional options of TOOL program. ***
+     SET OPTIONS=-V5.00
+
+@rem *** Read PROGRAM Memory ***
+%TOOL% %PART% %OPTIONS% -GPF%2_program.hex ?E
+
+@rem *** Read CONFIG Memory ***
+%TOOL% %PART% %OPTIONS% -GCF%2_config.hex
+
+@rem *** Read EEPROM Memory ***
+%TOOL% %PART% %OPTIONS% -GEF%2_eeprom.hex
+
+@rem *** Read USER ID Memory ***
+%TOOL% %PART% %OPTIONS% -GIF%2_user_id.hex
+
+@rem *** Read BOOT Memory ***
+%TOOL% %PART% %OPTIONS% -GBF%2_boot.hex
+
+@echo
 @echo You can write own command for read PIC's.
 pause
 goto exit
