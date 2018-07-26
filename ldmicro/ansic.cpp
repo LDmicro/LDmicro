@@ -677,6 +677,9 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_RAM_READ:
             case INT_FLASH_READ:
                 intVar1 = IntCode[i].name1.c_str();
+                if(!IsNumber(IntCode[i].name3)) {
+                    intVar3 = IntCode[i].name3.c_str();
+                }
                 break;
 #endif
 
