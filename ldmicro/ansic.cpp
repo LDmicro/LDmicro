@@ -538,7 +538,8 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
                 intVar1 = IntCode[i].name1.c_str();
-                intVar2 = IntCode[i].name2.c_str();
+                if(!IsNumber(IntCode[i].name2))
+                    intVar2 = IntCode[i].name2.c_str();
                 break;
 
             case INT_SET_VARIABLE_ROL:
@@ -555,8 +556,10 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_ADD:
                 intVar1 = IntCode[i].name1.c_str();
-                intVar2 = IntCode[i].name2.c_str();
-                intVar3 = IntCode[i].name3.c_str();
+                if(!IsNumber(IntCode[i].name2))
+                    intVar2 = IntCode[i].name2.c_str();
+                if(!IsNumber(IntCode[i].name3))
+                    intVar3 = IntCode[i].name3.c_str();
                 break;
 
             case INT_DECREMENT_VARIABLE:
