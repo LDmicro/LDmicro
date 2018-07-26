@@ -87,6 +87,9 @@ static void AppendIo(const char *name, int type)
     if(!name || !strlen(name))
         return;
 
+    if(IsNumber(name))
+        return;
+
     if(!IsNumber(name)) {
         if(strchr(name, '-')) {
             Error(_("Rename '%s': Replace the character '-' by the '_'."), name);
@@ -603,6 +606,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         }
         case ELEM_PIECEWISE_LINEAR:
             AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL);
+            AppendIo(l->d.lookUpTable.index, IO_TYPE_GENERAL);
             break;
 
         case ELEM_PLACEHOLDER:
