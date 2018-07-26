@@ -2422,6 +2422,8 @@ static bool IsOutputReg(DWORD addr)
 
 static bool IsInputReg(DWORD addr)
 {
+    if((addr == -1) || (addr == 0))
+        THROW_COMPILER_EXCEPTION("Internal error.");
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu->inputRegs[i] == addr)
             return true;
@@ -5640,7 +5642,8 @@ static void CompileFromIntermediate(bool topLevel)
                     CopyLitToReg(Scratch0, 2, "", hobatoi(a->name3.c_str()), a->name3);
                 } else {
                     MemForVariable(a->name3, &addr3);
-                    CopyRegToReg(Scratch0, 2, addr3, 2, "$Scratch0", a->name3, false);
+                    sov3 = SizeOfVar(a->name3);
+                    CopyRegToReg(Scratch0, 2, addr3, sov3, "$Scratch0", a->name3, false);
                 }
 
                 int sovElement = a->literal2;

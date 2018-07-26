@@ -710,7 +710,7 @@ int GenerateIoList(int prevSel)
     for(i = 0; i < Prog.numRungs; i++) {
         ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
-    AppendIo("ROverflowFlagV", IO_TYPE_INTERNAL_RELAY);
+    // AppendIo("ROverflowFlagV", IO_TYPE_INTERNAL_RELAY);
 
     if(Prog.cycleDuty) {
         AppendIo(YPlcCycleDuty, IO_TYPE_DIG_OUTPUT);

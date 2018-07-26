@@ -1511,7 +1511,7 @@ static void InitTablesCircuit(int which, void *elem)
             break;
         }
         case ELEM_QUAD_ENCOD: {
-#define QUAD_ALGO 22 // 1, 2, 4, 21, 22, 222 are available
+#define QUAD_ALGO 222 // 1, 2, 4, 22, 222 are available
 #if QUAD_ALGO <= 4
             char nameTable[MAX_NAME_LEN];
             strcpy(nameTable, "ELEM_QUAD_ENCOD");
@@ -2920,6 +2920,10 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             sprintf(nowZ, "$now_%s", l->d.QuadEncod.inputZ);
             sprintf(prevZ, "$prev_%s", l->d.QuadEncod.inputZ);
 
+            char pins[MAX_NAME_LEN];
+            sprintf(pins, "$pins_%s", l->d.QuadEncod.counter);
+            SetSizeOfVar(pins, 1);
+
             char state[MAX_NAME_LEN];
             sprintf(state, "$state_%s", l->d.QuadEncod.counter);
             SetSizeOfVar(state, 1);
@@ -2936,81 +2940,121 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             sprintf(ticks, "$ticks_%s", l->d.QuadEncod.counter);
             SetSizeOfVar(ticks, byteNeeded(l->d.QuadEncod.countPerRevol));
 
+            DWORD addr1 = -1, addr2 = -1;
+            int   bit1 = -1, bit2 = -1;
+            MemForSingleBit(l->d.QuadEncod.inputA, true, &addr1, &bit1);
+            MemForSingleBit(l->d.QuadEncod.inputB, true, &addr2, &bit2);
+
             Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_CLEAR_BIT, stateInOut);
 #if QUAD_ALGO <= 4
               // table algorithm
               // https://hifiduino.wordpress.com/2010/10/20/rotaryencoder-hw-sw-no-debounce/
-              Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_SET_VARIABLE_SHL, state, state, "2");
               Op(INT_SET_VARIABLE_AND, state, state, "0x0F");
-              Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
-                Op(INT_VARIABLE_SET_BIT, state, "0");
-              Op(INT_END_IF);
-              Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
-                Op(INT_VARIABLE_SET_BIT, state, "1");
-              Op(INT_END_IF);
+
+              if(addr1 == addr2) {
+                char s[MAX_NAME_LEN];
+                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr1));
+                Op(INT_SET_VARIABLE_TO_VARIABLE, pins, s);
+                sprintf(s, "%d", bit1);
+                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                  Op(INT_VARIABLE_SET_BIT, state, "0");
+                Op(INT_END_IF);
+                sprintf(s, "%d", bit2);
+                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                  Op(INT_VARIABLE_SET_BIT, state, "1");
+                Op(INT_END_IF);
+              } else {
+                #if 0
+                Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
+                  Op(INT_VARIABLE_SET_BIT, state, "0");
+                Op(INT_END_IF);
+                Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
+                  Op(INT_VARIABLE_SET_BIT, state, "1");
+                Op(INT_END_IF);
+                #else
+                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
+                #endif
+              }
 
               int count = 16;
               int sovElement = 1;
               Op(INT_FLASH_READ, dir, "ELEM_QUAD_ENCOD", state, count, sovElement);
               Op(INT_IF_GRT, dir, "0");
                 Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                Op(INT_INCREMENT_VARIABLE, ticks);
+                if(l->d.QuadEncod.countPerRevol > 0)
+                  Op(INT_INCREMENT_VARIABLE, ticks);
                 if(strlen(l->d.QuadEncod.dir))
                   Op(INT_SET_BIT, l->d.QuadEncod.dir);
                 Op(INT_SET_BIT, stateInOut);
               Op(INT_ELSE);
                 Op(INT_IF_LES, dir, "0");
                   Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                  Op(INT_DECREMENT_VARIABLE, ticks);
+                  if(l->d.QuadEncod.countPerRevol > 0)
+                    Op(INT_DECREMENT_VARIABLE, ticks);
                   if(strlen(l->d.QuadEncod.dir))
                     Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
                   Op(INT_SET_BIT, stateInOut);
                 Op(INT_END_IF);
               Op(INT_END_IF);
-#elif QUAD_ALGO >= 21
+#elif QUAD_ALGO == 22
               // http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-040-arduino-rotary-encoder-user-manual/
               Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
-              Op(INT_CLEAR_BIT, stateInOut);
-
               Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
-#if QUAD_ALGO == 21
-                Op(INT_IF_BIT_SET, nowA);
-                  Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
-#else
-                  Op(INT_IF_BIT_EQU_BIT, l->d.QuadEncod.inputB, nowA);
-#endif
-                    Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
+                Op(INT_IF_BIT_EQU_BIT, l->d.QuadEncod.inputB, nowA);
+                  Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
+                  if(l->d.QuadEncod.countPerRevol > 0)
                     Op(INT_INCREMENT_VARIABLE, ticks);
-                    if(strlen(l->d.QuadEncod.dir))
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                  Op(INT_ELSE);
-                    Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
+                  if(strlen(l->d.QuadEncod.dir))
+                    Op(INT_SET_BIT, l->d.QuadEncod.dir);
+                Op(INT_ELSE);
+                  Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
+                  if(l->d.QuadEncod.countPerRevol > 0)
                     Op(INT_DECREMENT_VARIABLE, ticks);
-                    if(strlen(l->d.QuadEncod.dir))
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                  Op(INT_END_IF);
-                  Op(INT_SET_BIT, stateInOut);
-#if QUAD_ALGO == 21
+                  if(strlen(l->d.QuadEncod.dir))
+                    Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
                 Op(INT_END_IF);
-#endif
+                Op(INT_SET_BIT, stateInOut);
                 Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
               Op(INT_END_IF);
 #elif QUAD_ALGO == 222
               // http://www.technoblogy.com/show?1YHJ
+              #if 1
+              if(addr1 == addr2) {
+                char s[MAX_NAME_LEN];
+                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr1));
+                Op(INT_SET_VARIABLE_TO_VARIABLE, pins, s);
+                Op(INT_CLEAR_BIT, nowA);
+                sprintf(s, "%d", bit1);
+                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                  Op(INT_SET_BIT, nowA);
+                Op(INT_END_IF);
+                Op(INT_CLEAR_BIT, nowB);
+                sprintf(s, "%d", bit2);
+                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                  Op(INT_SET_BIT, nowB);
+                Op(INT_END_IF);
+              } else {
+                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
+              }
+              #else
               Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
               Op(INT_COPY_BIT_TO_BIT, nowB, l->d.QuadEncod.inputB);
-              Op(INT_CLEAR_BIT, stateInOut);
+              #endif
+
               Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
                 Op(INT_IF_BIT_NEQ_BIT, prevB, nowB);
                   Op(INT_IF_BIT_EQU_BIT, nowA, nowB);
                     Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                    Op(INT_DECREMENT_VARIABLE, ticks);
+                    if(l->d.QuadEncod.countPerRevol > 0)
+                      Op(INT_INCREMENT_VARIABLE, ticks);
                     if(strlen(l->d.QuadEncod.dir))
                       Op(INT_SET_BIT, l->d.QuadEncod.dir);
                   Op(INT_ELSE);
                     Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                    Op(INT_DECREMENT_VARIABLE, ticks);
+                    if(l->d.QuadEncod.countPerRevol > 0)
+                      Op(INT_DECREMENT_VARIABLE, ticks);
                     if(strlen(l->d.QuadEncod.dir))
                       Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
                   Op(INT_END_IF);
@@ -3020,8 +3064,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
               Op(INT_END_IF);
 #elif QUAD_ALGO == 40
-            char A_xorB[MAX_NAME_LEN];
-            sprintf(A_xorB, "$A_xorB_%s", l->d.QuadEncod.counter);
+              char A_xorB[MAX_NAME_LEN];
+              sprintf(A_xorB, "$A_xorB_%s", l->d.QuadEncod.counter);
 #endif
               if(strlen(l->d.QuadEncod.inputZ) && (l->d.QuadEncod.countPerRevol >= 0)) {
                 char storeName[MAX_NAME_LEN];
@@ -3079,190 +3123,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_END_IF);
               }
             Op(INT_END_IF);
-/*
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
-              Op(INT_COPY_BIT_TO_BIT, nowB, l->d.QuadEncod.inputB);
-              Op(INT_IF_BIT_EQU_BIT, prevA, nowA);
-                Op(INT_IF_BIT_EQU_BIT, prevB, nowB);
-                  // not changed state
-                  Op(INT_CLEAR_BIT, stateInOut);
-                Op(INT_ELSE);
-
-                  Op(INT_IF_BIT_SET, nowA);
-                    Op(INT_IF_BIT_SET, nowB);
-                      Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                    Op(INT_ELSE);
-                      Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                    Op(INT_END_IF);
-                  Op(INT_ELSE); // A == 0
-                    Op(INT_IF_BIT_CLEAR, nowB);
-                      Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                    Op(INT_ELSE);
-                      Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                    Op(INT_END_IF);
-                  Op(INT_END_IF);
-
-                Op(INT_END_IF);
-              Op(INT_ELSE); // prevA != A
-                Op(INT_IF_BIT_NEQ_BIT, prevB, nowB);
-                  // Error // Skipped
-                  // Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // debug
-                  Op(INT_CLEAR_BIT, stateInOut);
-                Op(INT_ELSE);
-
-                  Op(INT_IF_BIT_SET, nowB);
-                    Op(INT_IF_BIT_CLEAR, nowA);
-                      Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                    Op(INT_ELSE);
-                      Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                    Op(INT_END_IF);
-                  Op(INT_ELSE); // B == 0
-                    Op(INT_IF_BIT_SET, nowA);
-                      Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                    Op(INT_ELSE);
-                      Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                    Op(INT_END_IF);
-                  Op(INT_END_IF);
-
-                Op(INT_END_IF);
-              Op(INT_END_IF);
-
-              Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
-              Op(INT_COPY_BIT_TO_BIT, prevB, nowB);
-            Op(INT_END_IF);
-*/
-/*
-            char state[MAX_NAME_LEN];
-            sprintf(state, "$state_%s", l->d.QuadEncod.counter);
-            SetSizeOfVar(state, 1);
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_CLEAR_BIT, stateInOut);
-              Op(INT_SET_VARIABLE_SHL, state, state, "2");
-              Op(INT_SET_VARIABLE_AND, state, state, "0x0F");
-              Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
-                Op(INT_VARIABLE_SET_BIT, state, "0");
-              Op(INT_END_IF);
-              Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
-                Op(INT_VARIABLE_SET_BIT, state, "1");
-              Op(INT_END_IF);
-
-              Op(INT_IF_EQU, state, "2");
-                Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                Op(INT_SET_BIT, stateInOut);
-              Op(INT_ELSE);
-                Op(INT_IF_EQU, state, "4");
-                  Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                  Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                  Op(INT_SET_BIT, stateInOut);
-                Op(INT_ELSE);
-                  Op(INT_IF_EQU, state, "0xB");
-                    Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                    Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                    Op(INT_SET_BIT, stateInOut);
-                  Op(INT_ELSE);
-                    Op(INT_IF_EQU, state, "0xD");
-                      Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                      Op(INT_SET_BIT, stateInOut);
-                    Op(INT_ELSE);
-                      Op(INT_IF_EQU, state, "1");
-                        Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                        Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                        Op(INT_SET_BIT, stateInOut);
-                      Op(INT_ELSE);
-                        Op(INT_IF_EQU, state, "7");
-                          Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                          Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                          Op(INT_SET_BIT, stateInOut);
-                        Op(INT_ELSE);
-                          Op(INT_IF_EQU, state, "8");
-                            Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                            Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                            Op(INT_SET_BIT, stateInOut);
-                          Op(INT_ELSE);
-                            Op(INT_IF_EQU, state, "0xE");
-                              Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                              Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                              Op(INT_SET_BIT, stateInOut);
-                            Op(INT_END_IF);
-                          Op(INT_END_IF);
-                        Op(INT_END_IF);
-                      Op(INT_END_IF);
-                    Op(INT_END_IF);
-                  Op(INT_END_IF);
-                Op(INT_END_IF);
-              Op(INT_END_IF);
-            Op(INT_END_IF);
-*/
-/*
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_IF_BIT_EQU_BIT, prevA, l->d.QuadEncod.inputA);
-                Op(INT_IF_BIT_EQU_BIT, prevB, l->d.QuadEncod.inputB);
-                  // not changed state
-                  Op(INT_CLEAR_BIT, stateInOut);
-                Op(INT_ELSE);
-
-                  Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
-                    Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
-      //              Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                    Op(INT_ELSE);
-    //                Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                    Op(INT_END_IF);
-                  Op(INT_ELSE); // A == 0
-                    Op(INT_IF_BIT_CLEAR, l->d.QuadEncod.inputB);
-  //                  Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                    Op(INT_ELSE);
-//                    Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                    Op(INT_END_IF);
-                  Op(INT_END_IF);
-
-                Op(INT_END_IF);
-              Op(INT_ELSE); // prevA != A
-                Op(INT_IF_BIT_NEQ_BIT, prevB, l->d.QuadEncod.inputB);
-                  // Error // Skipped
-                  Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // debug
-                  Op(INT_CLEAR_BIT, stateInOut);
-                Op(INT_ELSE);
-
-                  Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
-                    Op(INT_IF_BIT_CLEAR, l->d.QuadEncod.inputA);
-//                    Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                    Op(INT_ELSE);
-  //                  Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                    Op(INT_END_IF);
-                  Op(INT_ELSE); // B == 0
-                    Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
-    //                Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
-                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
-                    Op(INT_ELSE);
-      //              Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
-                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
-                    Op(INT_END_IF);
-                  Op(INT_END_IF);
-
-                Op(INT_END_IF);
-              Op(INT_END_IF);
-
-              Op(INT_COPY_BIT_TO_BIT, prevA, l->d.QuadEncod.inputA);
-              Op(INT_COPY_BIT_TO_BIT, prevB, l->d.QuadEncod.inputB);
-            Op(INT_END_IF);
-*/
             break;
         }
 
@@ -4366,7 +4226,7 @@ bool GotoGosubUsed()
 // Are either of the UART functions (send or recv) used? Need to know this
 // to know whether we must receive their pins.
 //-----------------------------------------------------------------------------
-bool UartFunctionUsed()
+bool UartFunctionUsed()                         
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))

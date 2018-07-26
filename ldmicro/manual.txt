@@ -1759,8 +1759,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
    ||                                                         ||
 
 
-> QUADRATURE ENCODER        =>[XqA0 XqB0            YqDir0]->
-                            ->[XqZ0   QUAD ENCOD   qCount0]--
+> QUADRATURE ENCODER        ~~[XqA0 XqB0            YqDir0]-
+                            -\[XqZ0   QUAD ENCOD   qCount0]^-
 
     The QUADRATURE ENCODER instruction takes two quadrature-encoded signals
     (A and B) from an incremental rotary or linear encoder device.
@@ -1776,39 +1776,49 @@ Input A|    |_______|       |_______|           |________|       |_______|
 Input B|        |_______|       |_______|   |_______|        |_______|
        |
        |
-Counter|  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0
+Counter|  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0
        |
  Output| ___________________________________   decrease or CCW or backward
     Dir|    increase or CW or forward       |________________________________
        |
  Output|
-  Pulse| ___^___^___^___^___^___^___^___^___^___^___^___^___^___^___^___^____
+  Pulse| _______^_______^_______^_______^_______^_______^_______^_______^____
        |
      --+----------------------------------------------------------------> time
        |
            '^' - is one PLC Cycle time impulse
-    Use Output Pulse for determine was Counter changed, not for counting.
-    Hint: Use the Output Pulse to determine if the Counter was changed, not for counting.
+    Hint: Use the Output Pulse to determine if the Counter was changed,
+    not for counting.
 
-    The QUAD ENCOD instruction can contain 4 or 3 inputs and 2 or 1 outputs.
+    The QUAD ENCOD instruction can contain 3 or 2 inputs and 1 or 0 output.
+    Inputs A and B must be located in same MCU PORT.
+    For example, RBx and RBx, not RAx, RBx.
     Input Z is optional and can be empty.
     Output Dir is optional and can be empty.
 
    ||                                                                    ||
-   ||       R0        =>[XqA0 XqB0            YqDir0]->        R1        ||
-   ||-------] [-------->[XqZ0   QUAD ENCOD   qCount0]----------( )-------||
+   ||       R0        ~~[XqA0 XqB0            YqDir0]-         R1        ||
+   ||-------] [--------\[XqZ0   QUAD ENCOD   qCount0]^---------( )-------||
    ||                                                                    ||
 
-    When the input R0 to QUAD ENCOD instruction is false, inputs A, B, Z
-    are ignored.
-    When the input R0 to QUAD ENCOD instruction is true, the pulses at
-    the inputs A, B, Z are decoded into the counter value.
+    When the rung-in condition R0 of the QUAD ENCOD instruction is false,
+    inputs A, B, Z are ignored.
+    When the rung-in condition R0 of the QUAD ENCOD instruction is true,
+    the pulses at the inputs A, B, Z are decoded into the counter value,
+    the output signal Dir is high, when the counter increases and
+    a low when the counter is decremented, an output pulse R1 occurs.
+    The value of the counter changes when both inputs A and B changes.
+    This corresponds to the clock multiplier x2. The frequency of the output
+    pulses is twice the frequency of the input pulses A (B).
+    The frequency of the input pulses A (B) must be less than the frequency of
+    the PLC cycle / 4, otherwise will be losses of input pulses.
+    A bounce of the input pulses A (B) must be less than the PLC cycle time / 8.
 
     Input Z can be dynamic (edge triggered) or static.
-    If 'Count per revol' is 0 and the Z input is active, then counter sets to 0.
-    If 'Count per revol' is greater than 0 and the Z input is active, then
+    If 'Count per revol' parameter is 0 and the Z input is active, then counter sets to 0.
+    If 'Count per revol' parameter is greater than 0 and the Z input is active, then
     the counter will be rounded to a multiple of the 'Count per revol' value.
-    If 'Count per revol' is less than 0, then input Z is ignored.
+    If 'Count per revol' parameter is less than 0, then input Z is ignored.
 
 
  logic
@@ -1821,17 +1831,17 @@ Input A|    |_______|       |_______|       |_______|       |_______|
 Input B|        |_______|       |_______|       |_______|       |_______|
        |
        |
-Input Z| __________________________________/\_______________________________
+Input Z| _______________________________________________________/\___________
        |
        |
-       |                 'Count per revol' is 0
+       |                                     'Count per revol' is 0 (reset the counter)
        |
-Counter|  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+Counter|  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 5 |   | 6 |   | 0 |   | 1
        |
        |
-       |          'Count per revol' is 10 (there are losses of A,B pulses)
+       | (there are losses of A,B pulses)   'Count per revol' is 10 (recover the counter)
        |
-Counter|  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |10 |11 |12 |13 |14 |15 |16 |17
+Counter|  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 5 |   | 6 |   |10 |   | 11
        |
      --+----------------------------------------------------------------> time
        |

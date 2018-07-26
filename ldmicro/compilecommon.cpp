@@ -273,6 +273,17 @@ DWORD AllocOctetRam()
 }
 
 //-----------------------------------------------------------------------------
+int InputRegIndex(DWORD addr)
+{
+    if((addr == -1) || (addr == 0))
+        THROW_COMPILER_EXCEPTION("Internal error.");
+    for(int i = 0; i < MAX_IO_PORTS; i++)
+        if(Prog.mcu->inputRegs[i] == addr)
+            return i;
+    return -1;
+}
+
+//-----------------------------------------------------------------------------
 // Return the address (octet address) and bit of a previously unused bit of
 // RAM on the target.
 //-----------------------------------------------------------------------------

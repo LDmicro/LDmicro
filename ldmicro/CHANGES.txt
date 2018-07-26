@@ -1,9 +1,11 @@
 == Release 4.4.2.0
 
     * Fixed: Bug in FORMATTED STRING OVER UART element, when using
-    command \0xFE\ instead of \xFE\ ldmicro closes (#120)
+    command \0xFE instead of \xFE ldmicro closes (#120)
 
     * New: Incremental QUADRATURE ENCODER instruction.
+    See manual.txt and
+    https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER
 
 == Release 4.4.1.1
 
