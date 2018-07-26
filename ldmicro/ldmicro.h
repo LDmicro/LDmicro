@@ -1149,6 +1149,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
 ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2);
 ElemLeaf *ContainsWhich(int which, void *any, int seek1);
 void RenameSet1(int which, char *name, char *new_name, bool set1);
+void *FindElem(int which, char *name);
 
 // loadsave.cpp
 bool LoadProjectFromFile(const char *filename);

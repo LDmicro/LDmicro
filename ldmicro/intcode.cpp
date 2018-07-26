@@ -1807,6 +1807,26 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   char s[MAX_NAME_LEN];
                   sprintf(s, "$%s", l->d.reset.name);
                   Op(INT_CLEAR_BIT, s);
+              } else if(l->d.reset.name[0] == 'C') {
+                  void *v;
+                  v = FindElem(ELEM_CTU, l->d.reset.name);
+                  if(!v) {
+                      v = FindElem(ELEM_CTD, l->d.reset.name);
+                      if(!v) {
+                          v = FindElem(ELEM_CTC, l->d.reset.name);
+                          if(!v) {
+                              v = FindElem(ELEM_CTR, l->d.reset.name);
+                          }
+                      }
+                  }
+                  if(v) {
+                      ElemCounter *c = (ElemCounter *)v;
+                      if(IsNumber(c->init))
+                         Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, hobatoi(c->init));
+                      else
+                         Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.reset.name, c->init);
+                  } else
+                      Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
               } else
                   Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
             Op(INT_END_IF);
@@ -4226,7 +4246,7 @@ bool GotoGosubUsed()
 // Are either of the UART functions (send or recv) used? Need to know this
 // to know whether we must receive their pins.
 //-----------------------------------------------------------------------------
-bool UartFunctionUsed()                         
+bool UartFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))

@@ -1045,12 +1045,12 @@ void ToggleSimulationMode(bool doSimulateOneRung)
 
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_CHECKED);
 
-        // Recheck InSimulationMode, because there could have been a compile
-        // error, which would have kicked us out of simulation mode.
-        if(UartFunctionUsed() && InSimulationMode) {
-            ShowUartSimulationWindow();
-        }
         if(ClearSimulationData()) {
+            // Recheck InSimulationMode, because there could have been a compile
+            // error, which would have kicked us out of simulation mode.
+            if(UartFunctionUsed() && InSimulationMode) {
+                ShowUartSimulationWindow();
+            }
             SimulateOneCycle(
                 true); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
         }

@@ -1947,15 +1947,13 @@ static void RenameSet1_(int which, void *any, int which_elem, char *name, char *
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int                 i;
-            for(i = 0; i < p->count; i++)
+            for(int i = 0; i < p->count; i++)
                 RenameSet1_(p->contents[i].which, p->contents[i].data.any, which_elem, name, new_name, set1);
             break;
         }
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int               i;
-            for(i = 0; i < s->count; i++)
+            for(int i = 0; i < s->count; i++)
                 RenameSet1_(s->contents[i].which, s->contents[i].data.any, which_elem, name, new_name, set1);
             break;
         }
@@ -1989,7 +1987,63 @@ static void RenameSet1_(int which, void *any, int which_elem, char *name, char *
 //-----------------------------------------------------------------------------
 void RenameSet1(int which, char *name, char *new_name, bool set1)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         RenameSet1_(ELEM_SERIES_SUBCKT, Prog.rungs[i], which, name, new_name, set1);
 }
+
+//-----------------------------------------------------------------------------
+static void *FindElem_(int which, void *any, int which_elem, char *name)
+{
+    void *res;
+    switch(which) {
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            for(int i = 0; i < p->count; i++) {
+                res = FindElem_(p->contents[i].which, p->contents[i].data.any, which_elem, name);
+                if(res)
+                    return res;
+            }
+            break;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            for(int i = 0; i < s->count; i++) {
+                res = FindElem_(s->contents[i].which, s->contents[i].data.any, which_elem, name);
+                if(res)
+                    return res;
+            }
+            break;
+        }
+        case ELEM_CTD:
+        case ELEM_CTU:
+        case ELEM_CTC:
+        case ELEM_CTR: {
+            ElemLeaf *leaf = (ElemLeaf *)any;
+            ElemCounter *c = &leaf->d.counter;
+            if(strcmp(c->name, name) == 0) {
+                return c;
+            }
+            break;
+        }
+        default: {
+            if(which == which_elem)
+                 oops();
+            return nullptr;
+            break;
+        }
+    }
+    return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void *FindElem(int which, char *name)
+{
+    void *res;
+    for(int i = 0; i < Prog.numRungs; i++) {
+        res = FindElem_(ELEM_SERIES_SUBCKT, Prog.rungs[i], which, name);
+        if(res)
+            return res;
+    }
+    return nullptr;
+}
+
