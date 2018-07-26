@@ -1078,7 +1078,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         }
 #ifdef USE_SFR
             {
-                char *s;
+                const char *s;
                     // clang-format off
             case ELEM_RSFR:    s = "Read";   goto sfrcmp;
             case ELEM_WSFR:    s = "Write";  goto sfrcmp;
@@ -1191,15 +1191,13 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_QUAD_ENCOD: {
             ElemQuadEncod *m = &leaf->d.QuadEncod;
 
-            sprintf(s2,
-                    "%s \x01"
-                    "QUAD ENCOD%d\x02",
-                    m->contactA,
-                    m->int01);
-            sprintf(s3, "%s", m->zero);
-            formatWidth(top, 2 * POS_WIDTH, "->[", s2, "", s3, "]->");
-            sprintf(s2, "%s %s %s", m->contactB, m->contactZ, m->counter);
-            formatWidth(bot, 2 * POS_WIDTH, "->[", "", s2, "", "]--");
+            sprintf(s2, "~~[%s %s", m->inputA, m->inputB);
+            sprintf(s3, "%s]%s", m->dir, strlen(m->dir)?"-":" ");
+            formatWidth(top, 2 * POS_WIDTH, s2, "", "", "", s3);
+
+            sprintf(s1, "-%c[%s", strlen(m->inputZ)&&(m->countPerRevol >= 0)?m->inputZKind:'-', m->inputZ);
+            sprintf(s2, " \x01QUAD ENCOD\x02 ");
+            formatWidth(bot, 2 * POS_WIDTH, s1, "", s2, m->counter, "]^");
 
             CenterWithSpacesWidth(*cx, *cy, top, poweredAfter, false, 2 * POS_WIDTH);
             CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2 * POS_WIDTH);
@@ -1387,7 +1385,6 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             } else
                 oops();
             // clang-format on
-
 
             ElemTimer *t = &leaf->d.timer;
             CenterWithSpaces(*cx, *cy, t->name, poweredAfter, true);

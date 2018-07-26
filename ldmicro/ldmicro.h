@@ -690,10 +690,12 @@ typedef struct ElemSetPwmTag {
 typedef struct ElemQuadEncodTag {
     char    counter[MAX_NAME_LEN];
     int     int01; // inputA
-    char    contactA[MAX_NAME_LEN]; // inputA
-    char    contactB[MAX_NAME_LEN]; // inputB
-    char    contactZ[MAX_NAME_LEN]; // inputZ
-    char    zero[MAX_NAME_LEN];
+    char    inputA[MAX_NAME_LEN];
+    char    inputB[MAX_NAME_LEN];
+    char    inputZ[MAX_NAME_LEN];
+    char    inputZKind; // '/\-o'
+    int     countPerRevol; // counter ticks per revolution
+    char    dir[MAX_NAME_LEN];
 } ElemQuadEncod;
 
 typedef struct ElemUartTag {
@@ -1147,6 +1149,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3);
 ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2);
 ElemLeaf *ContainsWhich(int which, void *any, int seek1);
 void RenameSet1(int which, char *name, char *new_name, bool set1);
+void *FindElem(int which, char *name);
 
 // loadsave.cpp
 bool LoadProjectFromFile(const char *filename);
@@ -1194,8 +1197,8 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 void ShowStepperDialog(int which, void *e);
 void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy);
 void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil);
-void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, char *contactB, char *contactZ, char *error);
-void ShowSegmentsDialog(ElemLeaf *l);
+void ShowQuadEncodDialog(int which, ElemLeaf *l);
+void ShowSegmentsDialog(int which, ElemLeaf *l);
 void ShowBusDialog(ElemLeaf *l);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
@@ -1620,6 +1623,7 @@ uint8_t MuxForAdcVariable(const char *name);
 uint8_t MuxForAdcVariable(const NameArray& name);
 int SingleBitAssigned(const char *name);
 int GetAssignedType(const char *name, const char *fullName);
+int InputRegIndex(DWORD addr);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput);
 void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const NameArray& name, bool forRead, DWORD *addr, int *bit);

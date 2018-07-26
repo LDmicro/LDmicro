@@ -45,13 +45,15 @@
 #define INT_CLEAR_BIT                            2
 #define INT_COPY_BIT_TO_BIT                      3
 #define INT_COPY_NOT_BIT_TO_BIT                  301
-#define INT_COPY_XOR_BIT_TO_BIT                  302
+#define INT_SET_BIT_AND_BIT                      331
+#define INT_SET_BIT_OR_BIT                       332
+#define INT_SET_BIT_XOR_BIT                      333
 #if NEW_INT > 0
 #define INT_VARIABLE_SET_BIT                     3001
 #define INT_VARIABLE_CLEAR_BIT                   3002
 #define INT_VARIABLE_NOT_BIT                     3003
-#define INT_VARIABLE_SET_BITS                    3006
-#define INT_VARIABLE_CLEAR_BITS                  3007
+//#define INT_VARIABLE_SET_BITS                    3006
+//#define INT_VARIABLE_CLEAR_BITS                  3007
 #endif
 #define INT_SET_VARIABLE_TO_LITERAL              4
 #define INT_SET_VARIABLE_INDIRECT                4001
@@ -141,6 +143,8 @@
 */
 #define INT_IF_BIT_SET                          50
 #define INT_IF_BIT_CLEAR                        51
+#define INT_IF_BIT_EQU_BIT                      58
+#define INT_IF_BIT_NEQ_BIT                      59
 #ifndef NEW_CMP
 #define INT_IF_VARIABLE_LES_LITERAL             52
 #define INT_IF_VARIABLE_EQUALS_VARIABLE         53

@@ -554,17 +554,19 @@ void AddQuadEncod()
     if(Prog.mcu) {
         n = QuadEncodFunctionUsed();
         if(n > Prog.mcu->ExtIntCount) {
-            Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
-            return;
+            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
+            //return;
         }
     }
     ElemLeaf *t = AllocLeaf();
     t->d.QuadEncod.int01 = n;
     sprintf(t->d.QuadEncod.counter, "qCount%d", n);
-    sprintf(t->d.QuadEncod.contactA, "IqA%d", n);
-    sprintf(t->d.QuadEncod.contactB, "XqB%d", n);
-    sprintf(t->d.QuadEncod.contactZ, "XqZ%d", n);
-    sprintf(t->d.QuadEncod.zero, "YqZero%d", n);
+    sprintf(t->d.QuadEncod.inputA, "XqA%d", n);
+    sprintf(t->d.QuadEncod.inputB, "XqB%d", n);
+    sprintf(t->d.QuadEncod.inputZ, "XqZ%d", n);
+    t->d.QuadEncod.inputZKind = '/';
+    t->d.QuadEncod.countPerRevol = 0;
+    sprintf(t->d.QuadEncod.dir, "YqDir%d", n);
     AddLeaf(ELEM_QUAD_ENCOD, t);
 }
 
@@ -1563,8 +1565,7 @@ static int CountWhich_(int which, void *any, int seek1, int seek2, int seek3, ch
 int CountWhich(int seek1, int seek2, int seek3, char *name)
 {
     int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         n += CountWhich_(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek1, seek2, seek3, name);
     return n;
 }
@@ -1602,7 +1603,7 @@ bool TablesUsed()
         if((ContainsWhich(
                ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
            || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_14SEG, ELEM_16SEG, -1))) {
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
             return true;
         }
     }
@@ -1675,10 +1676,7 @@ int AdcFunctionUsed()
 //-----------------------------------------------------------------------------
 uint32_t QuadEncodFunctionUsed()
 {
-    uint32_t n = 0;
-    for(int i = 0; i < Prog.numRungs; i++)
-        n += CountWhich(ELEM_QUAD_ENCOD);
-    return n;
+    return CountWhich(ELEM_QUAD_ENCOD);
 }
 //-----------------------------------------------------------------------------
 bool NPulseFunctionUsed()
@@ -1949,15 +1947,13 @@ static void RenameSet1_(int which, void *any, int which_elem, char *name, char *
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int                 i;
-            for(i = 0; i < p->count; i++)
+            for(int i = 0; i < p->count; i++)
                 RenameSet1_(p->contents[i].which, p->contents[i].data.any, which_elem, name, new_name, set1);
             break;
         }
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int               i;
-            for(i = 0; i < s->count; i++)
+            for(int i = 0; i < s->count; i++)
                 RenameSet1_(s->contents[i].which, s->contents[i].data.any, which_elem, name, new_name, set1);
             break;
         }
@@ -1991,7 +1987,63 @@ static void RenameSet1_(int which, void *any, int which_elem, char *name, char *
 //-----------------------------------------------------------------------------
 void RenameSet1(int which, char *name, char *new_name, bool set1)
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         RenameSet1_(ELEM_SERIES_SUBCKT, Prog.rungs[i], which, name, new_name, set1);
 }
+
+//-----------------------------------------------------------------------------
+static void *FindElem_(int which, void *any, int which_elem, char *name)
+{
+    void *res;
+    switch(which) {
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            for(int i = 0; i < p->count; i++) {
+                res = FindElem_(p->contents[i].which, p->contents[i].data.any, which_elem, name);
+                if(res)
+                    return res;
+            }
+            break;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            for(int i = 0; i < s->count; i++) {
+                res = FindElem_(s->contents[i].which, s->contents[i].data.any, which_elem, name);
+                if(res)
+                    return res;
+            }
+            break;
+        }
+        case ELEM_CTD:
+        case ELEM_CTU:
+        case ELEM_CTC:
+        case ELEM_CTR: {
+            ElemLeaf *leaf = (ElemLeaf *)any;
+            ElemCounter *c = &leaf->d.counter;
+            if(strcmp(c->name, name) == 0) {
+                return c;
+            }
+            break;
+        }
+        default: {
+            if(which == which_elem)
+                 oops();
+            return nullptr;
+            break;
+        }
+    }
+    return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void *FindElem(int which, char *name)
+{
+    void *res;
+    for(int i = 0; i < Prog.numRungs; i++) {
+        res = FindElem_(ELEM_SERIES_SUBCKT, Prog.rungs[i], which, name);
+        if(res)
+            return res;
+    }
+    return nullptr;
+}
+

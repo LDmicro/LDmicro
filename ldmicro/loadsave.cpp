@@ -33,6 +33,7 @@ char *DelLastNL(char *str);
 
 typedef enum FRMTTag { FRMT_COMMENT, FRMT_01, FRMT_x20 } FRMT;
 char *StrToFrmStr(char *dest, char *str, FRMT frmt);
+char *StrToFrmStr(char *dest, char *src);
 
 ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 
@@ -310,40 +311,18 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "NPULSE %s %s %s", l->d.Npulse.counter, l->d.Npulse.targetFreq, l->d.Npulse.coil) == 3) {
         *which = ELEM_NPULSE;
     } else if(sscanf(line,
-                     "QUAD_ENCOD %s %d %s %s |%s |%s",
+                     "QUAD_ENCOD %s %d %s %s %s %s %c %d",
                      l->d.QuadEncod.counter,
                      &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.contactA,
-                     l->d.QuadEncod.contactB,
-                     l->d.QuadEncod.contactZ,
-                     l->d.QuadEncod.zero)
-              == 6) {
-        *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line,
-                     "QUAD_ENCOD %s %d %s %s | |%s",
-                     l->d.QuadEncod.counter,
-                     &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.contactA,
-                     l->d.QuadEncod.contactB,
-                     l->d.QuadEncod.zero)
-              == 5) {
-        *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line,
-                     "QUAD_ENCOD %s %d %s %s |%s |",
-                     l->d.QuadEncod.counter,
-                     &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.contactA,
-                     l->d.QuadEncod.contactB,
-                     l->d.QuadEncod.contactZ)
-              == 5) {
-        *which = ELEM_QUAD_ENCOD;
-    } else if(sscanf(line,
-                     "QUAD_ENCOD %s %d %s %s",
-                     l->d.QuadEncod.counter,
-                     &l->d.QuadEncod.int01,
-                     l->d.QuadEncod.contactA,
-                     l->d.QuadEncod.contactB)
-              == 4) {
+                     l->d.QuadEncod.inputA,
+                     l->d.QuadEncod.inputB,
+                     l->d.QuadEncod.inputZ,
+                     l->d.QuadEncod.dir,
+                     &l->d.QuadEncod.inputZKind,
+                     &l->d.QuadEncod.countPerRevol)
+              == 8) {
+        FrmStrToStr(l->d.QuadEncod.inputZ, l->d.QuadEncod.inputZ);
+        FrmStrToStr(l->d.QuadEncod.dir, l->d.QuadEncod.dir);
         *which = ELEM_QUAD_ENCOD;
     } else if(sscanf(line, "MOD %s %s %s", l->d.math.dest, l->d.math.op1, l->d.math.op2) == 3) {
         *which = ELEM_MOD;
@@ -744,7 +723,7 @@ void LoadWritePcPorts()
                     supportedMcus()[i].pinCount = IoPcCount;
                 }
         } else
-            THROW_COMPILER_EXCEPTION_FMT(_(" File '%s' not found!"), pc);
+            Error(_(" File '%s' not found!"), pc);
         //RunningInBatchMode = false;
     }
 }
@@ -854,7 +833,7 @@ bool LoadProjectFromFile(const char *filename)
                         }
                 }
                 if(i == supportedMcus().size()) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("Microcontroller '%s' not supported.\r\n\r\n"
+                    Error(_("Microcontroller '%s' not supported.\r\n\r\n"
                             "Defaulting to no selected MCU."),
                           line + 6);
                 }
@@ -882,7 +861,7 @@ bool LoadProjectFromFile(const char *filename)
             goto failed;
         rung++;
         if(rung >= MAX_RUNGS) {
-            THROW_COMPILER_EXCEPTION(_("Too many rungs in input file!\nSame rungs not loaded!"));
+            Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
             break;
         }
     }
@@ -901,9 +880,10 @@ bool LoadProjectFromFile(const char *filename)
 
 failed:
     NewProgram();
-    THROW_COMPILER_EXCEPTION_FMT("%s Error in RUNG %d. See error below %s",
+    Error(
         _("File format error; perhaps this program is for a newer version "
-          "of LDmicro?"), rung + 1, line);
+          "of LDmicro?"));
+    Error("Error in RUNG %d. See error below %s", rung + 1, line);
     return false;
 }
 
@@ -1072,13 +1052,15 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 
         case ELEM_QUAD_ENCOD:
             fprintf(f,
-                    "QUAD_ENCOD %s %d %s %s |%s |%s\n",
+                    "QUAD_ENCOD %s %d %s %s %s %s %c %d\n",
                     l->d.QuadEncod.counter,
                     l->d.QuadEncod.int01,
-                    l->d.QuadEncod.contactA,
-                    l->d.QuadEncod.contactB,
-                    l->d.QuadEncod.contactZ,
-                    l->d.QuadEncod.zero);
+                    l->d.QuadEncod.inputA,
+                    l->d.QuadEncod.inputB,
+                    StrToFrmStr(str1,l->d.QuadEncod.inputZ),
+                    StrToFrmStr(str2,l->d.QuadEncod.dir),
+                    l->d.QuadEncod.inputZKind,
+                    l->d.QuadEncod.countPerRevol);
             break;
 
         case ELEM_NPULSE_OFF:
@@ -1414,7 +1396,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
         }
 
         default:
-            THROW_COMPILER_EXCEPTION_FMT("ELEM_0x%x", which);
+            Error("ELEM_0x%x", which);
             break;
     }
 }
@@ -1479,51 +1461,12 @@ bool SaveProjectToFile(char *filename, int code)
     PrevWriteTime = LastWriteTime;
     return true;
 }
-//-----------------------------------------------------------------------------
-/*
-simple-escape-sequence: one of
-    \' \" \? \\
-    \a \b \f \n \r \t \v
-void FrmStrToFile(FILE *f, char *str)
-{
-    char *s = str;
-    for(; *s; s++) {
-        if(*s == '\'') {
-            fprintf(f, "\\\'");
-        } else if(*s == '\"') {
-            fprintf(f, "\\\"");
-        } else if(*s == '\?') {
-            fprintf(f, "\\\?");
-        } else if(*s == '\\') {
-            fprintf(f, "\\\\");
-        } else if(*s == ' ') {
-            fprintf(f, "\x20");
-        } else if(*s == '\a') {//(alert) Produces an audible or visible alert without changing the active position.
-            fprintf(f, "\\a");
-        } else if(*s == '\b') {//(backspace) Moves the active position to the previous position on the current line.
-            fprintf(f, "\\b");
-        } else if(*s == '\f') {//( form feed) Moves the active position to the initial position at the start of the next logical page.
-            fprintf(f, "\\f");
-        } else if(*s == '\n') {//(new line) Moves the active position to the initial position of the next line.
-            fprintf(f, "\\n");
-        } else if(*s == '\r') {//(carriage return) Moves the active position to the initial position of the current line.
-            fprintf(f, "\\r");
-        } else if(*s == '\t') {//(horizontal tab) Moves the active position to the next horizontal tabulation position on the current line.
-            fprintf(f, "\\t");
-        } else if(*s == '\v') {//(vertical tab) Moves the active position to the initial position of the next vertical tabulation position.
-            fprintf(f, "\\v");
-        } else {
-            fprintf(f, "%c", *s);
-        }
-    }
-}
-*/
 
 //---------------------------------------------------------------------------
 char *StrToFrmStr(char *dest, char *src, FRMT frmt)
 {
     if((src == nullptr) || (strlen(src) == 0)) {
-        strcpy(dest, " (none)");
+        strcpy(dest, "(none)");
         return dest;
     }
 
@@ -1550,11 +1493,14 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
             } else if(src[i] == '\\') {
                 strcat(dest, "\\\\");
             } else if(src[i]
-                      == '\a') { //(alert) Produces an audible or visible alert without changing the active position.
+                      == 0x07) { //(alert) Produces an audible or visible alert without changing the active position.
                 strcat(dest, "\\a");
             } else if(src[i]
                       == '\b') { //(backspace) Moves the active position to the previous position on the current line.
                 strcat(dest, "\\b");
+            } else if(src[i]
+                      == 0x1B) { //Escape character
+                strcat(dest, "\\e");
             } else if(
                 src[i]
                 == '\f') { //(form feed) Moves the active position to the initial position at the start of the next logical page.
@@ -1579,6 +1525,10 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
         }
     }
     return dest;
+}
+char *StrToFrmStr(char *dest, char *src)
+{
+    return StrToFrmStr(dest, src, FRMT_x20);
 }
 
 //-----------------------------------------------------------------------------
@@ -1617,10 +1567,13 @@ char *FrmStrToStr(char *dest, const char *src)
                 dest[i++] = '\\';
                 s++;
             } else if(s[1] == 'a') {
-                dest[i++] = '\a';
+                dest[i++] = 0x07;
                 s++;
             } else if(s[1] == 'b') {
                 dest[i++] = '\b';
+                s++;
+            } else if(s[1] == 'e') {
+                dest[i++] = 0x1B;
                 s++;
             } else if(s[1] == 'f') {
                 dest[i++] = '\f';

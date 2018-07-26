@@ -514,6 +514,9 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1 = IntCode[i].name1.c_str();
                 break;
 
+            case INT_IF_BIT_EQU_BIT:
+            case INT_IF_BIT_NEQ_BIT:
+            case INT_COPY_NOT_BIT_TO_BIT:
             case INT_COPY_BIT_TO_BIT:
                 isPinAssigned(a->name1);
                 isPinAssigned(a->name2);
@@ -535,7 +538,8 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
                 intVar1 = IntCode[i].name1.c_str();
-                intVar2 = IntCode[i].name2.c_str();
+                if(!IsNumber(IntCode[i].name2))
+                    intVar2 = IntCode[i].name2.c_str();
                 break;
 
             case INT_SET_VARIABLE_ROL:
@@ -552,8 +556,10 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_ADD:
                 intVar1 = IntCode[i].name1.c_str();
-                intVar2 = IntCode[i].name2.c_str();
-                intVar3 = IntCode[i].name3.c_str();
+                if(!IsNumber(IntCode[i].name2))
+                    intVar2 = IntCode[i].name2.c_str();
+                if(!IsNumber(IntCode[i].name3))
+                    intVar3 = IntCode[i].name3.c_str();
                 break;
 
             case INT_DECREMENT_VARIABLE:
@@ -607,6 +613,8 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1set1 = IntCode[i].literal;
                 break;
 
+            case INT_VARIABLE_SET_BIT:
+            case INT_VARIABLE_CLEAR_BIT:
             case INT_IF_BIT_SET_IN_VAR:
             case INT_IF_BIT_CLEAR_IN_VAR:
                 if(!IsNumber(IntCode[i].name1))
@@ -672,6 +680,9 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_RAM_READ:
             case INT_FLASH_READ:
                 intVar1 = IntCode[i].name1.c_str();
+                if(!IsNumber(IntCode[i].name3)) {
+                    intVar3 = IntCode[i].name3.c_str();
+                }
                 break;
 #endif
 
@@ -772,6 +783,20 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     fprintf(f, "Write0_%s();\n", MapSym(IntCode[i].name1, ASBIT));
                 else
                     fprintf(f, "Write_%s(0);\n", MapSym(IntCode[i].name1, ASBIT));
+                break;
+
+            case INT_IF_BIT_EQU_BIT:
+                fprintf(f, "if(Read_%s() == Read_%s()) {\n", MapSym(IntCode[i].name1, ASBIT), MapSym(IntCode[i].name2, ASBIT));
+                indent++;
+                break;
+
+            case INT_IF_BIT_NEQ_BIT:
+                fprintf(f, "if(Read_%s() != Read_%s()) {\n", MapSym(IntCode[i].name1, ASBIT), MapSym(IntCode[i].name2, ASBIT));
+                indent++;
+                break;
+
+            case INT_COPY_NOT_BIT_TO_BIT:
+                fprintf(f, "Write_%s(!Read_%s());\n", MapSym(IntCode[i].name1, ASBIT), MapSym(IntCode[i].name2, ASBIT));
                 break;
 
             case INT_COPY_BIT_TO_BIT:
@@ -949,6 +974,14 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case INT_IF_BIT_CLEAR_IN_VAR:
                 fprintf(f, "if((%s & (1<<%s)) == 0) {\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 indent++;
+                break;
+
+            case INT_VARIABLE_SET_BIT:
+                fprintf(f, "%s |= 1 << %s;\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
+                break;
+
+            case INT_VARIABLE_CLEAR_BIT:
+                fprintf(f, "%s &= ~(1 << %s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
 #ifdef NEW_CMP

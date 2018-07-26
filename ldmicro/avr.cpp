@@ -3280,26 +3280,29 @@ B   xxxx         xxxx         xxxx         xxxx         xxxx         xxxx
 A_   B_   previous encoder input
 A    B    new encoder input
 
+https://en.wikipedia.org/wiki/Incremental_encoder
 Encoder lookup table
-     B_ A_ B  A                           (B_A_ xor BA)     (B_ xor B)
-0    0  0  0  0    0   not changed state         0               0
-1    0  0  0  1   -1                             1               0      -
-2    0  0  1  0   +1                             2               1      +
-3    0  0  1  1    E   Error                     3 (B | A)       1
-4    0  1  0  0   +1                             1               0      +
-5    0  1  0  1    0   not changed state         0               0
-6    0  1  1  0    E   Error                     3 (B | A)       1
-7    0  1  1  1   -1                             2               1      -
-8    1  0  0  0   -1                             2               1      -
-9    1  0  0  1    E   Error                     3 (B | A)       0
-A    1  0  1  0    0   not changed state         0               0
-B    1  0  1  1   +1                             1               0      +
-C    1  1  0  0    E   Error                     3 (B | A)       1
-D    1  1  0  1   +1                             2               1      +
-E    1  1  1  0   -1                             1               0      -
-F    1  1  1  1    0   not changed state         0               0
+     B_ A_ B  A   x1   x2   x4                      (B_A_ xor BA)     (B_ xor B)
+0    0  0  0  0    0    0    0   not changed state         0               0
+1    0  0  0  1    0    0   -1                             1               0      -
+2    0  0  1  0   +1   +1   +1                             2               1      +
+3    0  0  1  1    E    E    E   Error                     3 (B | A)       1
+4    0  1  0  0    0    0   +1                             1               0      +
+5    0  1  0  1    0    0    0   not changed state         0               0
+6    0  1  1  0    E    E    E   Error                     3 (B | A)       1
+7    0  1  1  1    0   -1   -1                             2               1      -
+8    1  0  0  0   -1   -1   -1                             2               1      -
+9    1  0  0  1    E    E    E   Error                     3 (B | A)       0
+A    1  0  1  0    0    0    0   not changed state         0               0
+B    1  0  1  1    0    0   +1                             1               0      +
+C    1  1  0  0    E    E    E   Error                     3 (B | A)       1
+D    1  1  0  1    0   +1   +1                             2               1      +
+E    1  1  1  0    0    0   -1                             1               0      -
+F    1  1  1  1    0    0    0   not changed state         0               0
 
-{0,-1,1,E,1,0,E,-1,-1,E,0,1,E,1,-1,0};
+x1={0, 0,1,E,0,0,E, 0,-1,E,0,0,E,0, 0,0};
+x2={0, 0,1,E,0,0,E,-1,-1,E,0,0,E,1, 0,0};
+x4={0,-1,1,E,1,0,E,-1,-1,E,0,1,E,1,-1,0};
 
                        (B_ xor A)   (A_ xor B)
 2    0  0  1  0   +1        0           1
@@ -3357,7 +3360,7 @@ static void CompileFromIntermediate()
             case INT_COPY_BIT_TO_BIT:
                 Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1.c_str(), a->name2.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
-                MemForSingleBit(a->name2, false, &addr2, &bit2);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
                 CopyBit(addr1, bit1, addr2, bit2, a->name1.c_str(), a->name2.c_str());
                 break;
 
@@ -3397,6 +3400,50 @@ static void CompileFromIntermediate()
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
                 Decrement(addr1, sov1);
+                break;
+            }
+            case INT_IF_BIT_EQU_BIT: {
+                Comment("INT_IF_BIT_EQU_BIT %s %s", a->name1.c_str(), a->name2.c_str());
+                DWORD condFalse = AllocFwdAddr();
+                DWORD condTrue = AllocFwdAddr();
+                DWORD now1Set = AllocFwdAddr();
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
+                IfBitSet(addr1, bit1, a->name1);
+                Instruction(OP_RJMP, now1Set);
+                //now1Clear
+                IfBitSet(addr2, bit2, a->name2);
+                Instruction(OP_RJMP, condFalse);
+                Instruction(OP_RJMP, condTrue);
+
+                FwdAddrIsNow(now1Set);
+                IfBitClear(addr2, bit2, a->name2);
+                Instruction(OP_RJMP, condFalse);
+
+                FwdAddrIsNow(condTrue);
+                CompileIfBody(condFalse);
+                break;
+            }
+            case INT_IF_BIT_NEQ_BIT: {
+                Comment("INT_IF_BIT_NEQ_BIT %s %s", a->name1.c_str(), a->name2.c_str());
+                DWORD condFalse = AllocFwdAddr();
+                DWORD condTrue = AllocFwdAddr();
+                DWORD now1Set = AllocFwdAddr();
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
+                IfBitSet(addr1, bit1, a->name1);
+                Instruction(OP_RJMP, now1Set);
+                //now1Clear
+                IfBitClear(addr2, bit2, a->name2);
+                Instruction(OP_RJMP, condFalse);
+                Instruction(OP_RJMP, condTrue);
+
+                FwdAddrIsNow(now1Set);
+                IfBitSet(addr2, bit2, a->name2);
+                Instruction(OP_RJMP, condFalse);
+
+                FwdAddrIsNow(condTrue);
+                CompileIfBody(condFalse);
                 break;
             }
             case INT_IF_BIT_SET: {
@@ -3748,12 +3795,13 @@ static void CompileFromIntermediate()
 #endif
 
 #ifdef NEW_CMP
-            case INT_IF_GRT:
-            case INT_IF_GEQ:
-            case INT_IF_LES:
-            case INT_IF_LEQ:
-            case INT_IF_NEQ:
-            case INT_IF_EQU: {
+            case INT_IF_GRT: Comment("INT_IF_GRT"); goto cmp;
+            case INT_IF_GEQ: Comment("INT_IF_GEQ"); goto cmp;
+            case INT_IF_LES: Comment("INT_IF_LES"); goto cmp;
+            case INT_IF_LEQ: Comment("INT_IF_LEQ"); goto cmp;
+            case INT_IF_NEQ: Comment("INT_IF_NEQ"); goto cmp;
+            case INT_IF_EQU: Comment("INT_IF_EQU"); goto cmp;
+            cmp: {
                 DWORD notTrue = AllocFwdAddr();
                 sov = std::max(SizeOfVar(a->name1), SizeOfVar(a->name2));
                 CopyArgToReg(r20, sov, a->name1);

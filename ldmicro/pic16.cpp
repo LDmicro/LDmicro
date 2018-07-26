@@ -2404,7 +2404,7 @@ static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BY
 // Call a subroutine, that might be in an arbitrary page, and then put
 // PCLATH back where we want it.
 //-----------------------------------------------------------------------------
-static void _CallWithPclath(DWORD addr, char *comment)
+static void _CallWithPclath(DWORD addr, const char *comment)
 {
     Instruction(OP_CALL, addr, 0, comment);
 }
@@ -2422,6 +2422,8 @@ static bool IsOutputReg(DWORD addr)
 
 static bool IsInputReg(DWORD addr)
 {
+    if((addr == -1) || (addr == 0))
+        THROW_COMPILER_EXCEPTION("Internal error.");
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu->inputRegs[i] == addr)
             return true;
@@ -2508,6 +2510,20 @@ static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, c
 static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 {
     CopyNotBit(addrDest, bitDest, addrSrc, bitSrc, nullptr, nullptr);
+}
+
+static void AndBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+{
+    Comment("AndBit");
+    IfBitClear(addrSrc, bitSrc);
+    ClearBit(addrDest, bitDest);
+}
+
+static void OrBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+{
+    Comment("OrBit");
+    IfBitSet(addrSrc, bitSrc);
+    SetBit(addrDest, bitDest);
 }
 
 static void XorBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
@@ -3041,9 +3057,16 @@ static void AllocBitsVars()
 
             case INT_COPY_BIT_TO_BIT:
             case INT_COPY_NOT_BIT_TO_BIT:
-            case INT_COPY_XOR_BIT_TO_BIT:
+                MemForSingleBit(a->name1, false, &addr, &bit);
+                MemForSingleBit(a->name2, true, &addr, &bit);
+                break;
+
+            case INT_SET_BIT_AND_BIT:
+            case INT_SET_BIT_OR_BIT:
+            case INT_SET_BIT_XOR_BIT:
                 MemForSingleBit(a->name1, false, &addr, &bit);
                 MemForSingleBit(a->name2, false, &addr, &bit);
+                MemForSingleBit(a->name3, false, &addr, &bit);
                 break;
 
             case INT_IF_BIT_SET:
@@ -3734,7 +3757,7 @@ static void InitTables()
 static void CompileFromIntermediate(bool topLevel)
 {
     DWORD addr1 = -1, addr2 = -1, addr3 = -1, addr4 = -1;
-    int   bit1 = -1, bit2 = -1, bit4 = -1;
+    int   bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int   bit = -1;
     int   sov = -1, sov1 = -1, sov2 = -1, sov3 = -1;
     char  comment[MAX_NAME_LEN] = "";
@@ -3763,22 +3786,23 @@ static void CompileFromIntermediate(bool topLevel)
             case INT_COPY_BIT_TO_BIT:
                 Comment("INT_COPY_BIT_TO_BIT %s:=%s", a->name1.c_str(), a->name2.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
-                MemForSingleBit(a->name2, false, &addr2, &bit2);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
                 CopyBit(addr1, bit1, addr2, bit2);
                 break;
 
             case INT_COPY_NOT_BIT_TO_BIT:
                 Comment("INT_COPY_NOT_BIT_TO_BIT %s:=!%s", a->name1.c_str(), a->name2.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
-                MemForSingleBit(a->name2, false, &addr2, &bit2);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
                 CopyNotBit(addr1, bit1, addr2, bit2);
                 break;
 
-            case INT_COPY_XOR_BIT_TO_BIT:
-                Comment("INT_COPY_XOR_BIT_TO_BIT %s:=%s^%s", a->name1.c_str(), a->name1.c_str(), a->name2.c_str());
+            case INT_SET_BIT_XOR_BIT:
+                Comment("INT_SET_BIT_XOR_BIT %s:=%s^%s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str());
                 MemForSingleBit(a->name1, false, &addr1, &bit1);
                 MemForSingleBit(a->name2, false, &addr2, &bit2);
-                XorBit(addr1, bit1, addr2, bit2);
+                MemForSingleBit(a->name3, false, &addr3, &bit3);
+                XorBit(addr1, bit1, addr2, bit2/*, addr3, bit3*/);
                 break;
             //
             case INT_VARIABLE_CLEAR_BIT: {
@@ -4022,6 +4046,50 @@ static void CompileFromIntermediate(bool topLevel)
                 sov1 = SizeOfVar(a->name1);
                 MemForVariable(a->name1, &addr1);
                 Decrement(addr1, sov1, a->name1, a->name2, a->name3);
+                break;
+            }
+            case INT_IF_BIT_EQU_BIT: {
+                Comment("INT_IF_BIT_EQU_BIT %s %s", a->name1.c_str(), a->name2.c_str());
+                DWORD condFalse = AllocFwdAddr();
+                DWORD condTrue = AllocFwdAddr();
+                DWORD now1Set = AllocFwdAddr();
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
+                IfBitSet(addr1, bit1, a->name1);
+                Instruction(OP_GOTO, now1Set);
+                //now1Clear
+                IfBitSet(addr2, bit2, a->name2);
+                Instruction(OP_GOTO, condFalse);
+                Instruction(OP_GOTO, condTrue);
+
+                FwdAddrIsNow(now1Set);
+                IfBitClear(addr2, bit2, a->name2);
+                Instruction(OP_GOTO, condFalse);
+
+                FwdAddrIsNow(condTrue);
+                CompileIfBody(condFalse);
+                break;
+            }
+            case INT_IF_BIT_NEQ_BIT: {
+                Comment("INT_IF_BIT_NEQ_BIT %s %s", a->name1.c_str(), a->name2.c_str());
+                DWORD condFalse = AllocFwdAddr();
+                DWORD condTrue = AllocFwdAddr();
+                DWORD now1Set = AllocFwdAddr();
+                MemForSingleBit(a->name1, true, &addr1, &bit1);
+                MemForSingleBit(a->name2, true, &addr2, &bit2);
+                IfBitSet(addr1, bit1, a->name1);
+                Instruction(OP_GOTO, now1Set);
+                //now1Clear
+                IfBitClear(addr2, bit2, a->name2);
+                Instruction(OP_GOTO, condFalse);
+                Instruction(OP_GOTO, condTrue);
+
+                FwdAddrIsNow(now1Set);
+                IfBitSet(addr2, bit2, a->name2);
+                Instruction(OP_GOTO, condFalse);
+
+                FwdAddrIsNow(condTrue);
+                CompileIfBody(condFalse);
                 break;
             }
             case INT_IF_BIT_SET: {
@@ -5574,7 +5642,8 @@ static void CompileFromIntermediate(bool topLevel)
                     CopyLitToReg(Scratch0, 2, "", hobatoi(a->name3.c_str()), a->name3);
                 } else {
                     MemForVariable(a->name3, &addr3);
-                    CopyRegToReg(Scratch0, 2, addr3, 2, "$Scratch0", a->name3, false);
+                    sov3 = SizeOfVar(a->name3);
+                    CopyRegToReg(Scratch0, 2, addr3, sov3, "$Scratch0", a->name3, false);
                 }
 
                 int sovElement = a->literal2;

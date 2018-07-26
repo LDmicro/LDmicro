@@ -158,12 +158,28 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "let bit '%s' := ! '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 break;
 
-            case INT_COPY_XOR_BIT_TO_BIT:
+            case INT_SET_BIT_AND_BIT:
+                fprintf(f,
+                        "let bit '%s' := '%s' & '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
+                break;
+
+            case INT_SET_BIT_OR_BIT:
+                fprintf(f,
+                        "let bit '%s' := '%s' | '%s'",
+                        IntCode[i].name1.c_str(),
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
+                break;
+
+            case INT_SET_BIT_XOR_BIT:
                 fprintf(f,
                         "let bit '%s' := '%s' ^ '%s'",
                         IntCode[i].name1.c_str(),
-                        IntCode[i].name1.c_str(),
-                        IntCode[i].name2.c_str());
+                        IntCode[i].name2.c_str(),
+                        IntCode[i].name3.c_str());
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
@@ -490,6 +506,16 @@ void IntDumpListing(char *outFile)
                 indent++;
                 break;
 
+            case INT_IF_BIT_EQU_BIT:
+                fprintf(f, "if '%s' == '%s' {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
+                indent++;
+                break;
+
+            case INT_IF_BIT_NEQ_BIT:
+                fprintf(f, "if '%s' != '%s' {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
+                indent++;
+                break;
+
             case INT_SLEEP:
                 fprintf(f, "SLEEP;");
                 break;
@@ -707,8 +733,7 @@ void IntDumpListing(char *outFile)
                         IntCode[i].literal2,
                         IntCode[i].name1.c_str(),
                         IntCode[i].literal);
-                int j;
-                for(j = 0; j < (IntCode[i].literal - 1); j++) {
+                for(int j = 0; j < (IntCode[i].literal - 1); j++) {
                     fprintf(f, "%d, ", IntCode[i].data[j]);
                 }
                 fprintf(f, "%d}", IntCode[i].data[IntCode[i].literal - 1]);
@@ -749,7 +774,7 @@ void IntDumpListing(char *outFile)
 #endif
 
             default:
-                THROW_COMPILER_EXCEPTION_FMT("INT_%d", IntCode[i].op);
+                Error("INT_%d", IntCode[i].op);
         }
         if((int_comment_level == 1)
            || ((IntCode[i].op != INT_SIMULATE_NODE_STATE) && (IntCode[i].op != INT_AllocKnownAddr)
@@ -830,7 +855,7 @@ static void GenSymStepper(char *dest, char *name)
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                const char *name4, const char *name5, const char *name6, SDWORD lit, SDWORD lit2, SDWORD *data)
+                const char *name4, const char *name5, const char *name6, SDWORD lit, SDWORD lit2, int32_t *data)
 {
     IntOp intOp;
     intOp.op = op;
@@ -917,7 +942,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                SDWORD lit, SDWORD lit2, SDWORD *data)
+                SDWORD lit, SDWORD lit2, int32_t *data)
 {
     _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, data);
 }
@@ -1485,6 +1510,25 @@ static void InitTablesCircuit(int which, void *elem)
                 InitTablesCircuit(p->contents[i].which, p->contents[i].data.any);
             break;
         }
+        case ELEM_QUAD_ENCOD: {
+#define QUAD_ALGO 222 // 1, 2, 4, 22, 222 are available
+#if QUAD_ALGO <= 4
+            char nameTable[MAX_NAME_LEN];
+            strcpy(nameTable, "ELEM_QUAD_ENCOD");
+            int32_t count = 16;
+#if QUAD_ALGO == 1
+            static int32_t vals[16] = {0, 0,1,0,0,0,0, 0,-1,0,0,0,0,0, 0,0}; // x1
+#elif QUAD_ALGO == 2
+            static int32_t vals[16] = {0, 0,1,0,0,0,0,-1,-1,0,0,0,0,1, 0,0}; // x2
+#elif QUAD_ALGO == 4
+            static int32_t vals[16] = {0,-1,1,0,1,0,0,-1,-1,0,0,1,0,1,-1,0}; // x4
+#endif
+            int32_t sovElement = 1;
+            //SetSizeOfVar(nameTable, count);
+            Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, count, sovElement, vals);
+#endif
+            break;
+        }
         // case ELEM_PIECEWISE_LINEAR:
         case ELEM_LOOK_UP_TABLE: {
             ElemLookUpTable *t = &(l->d.lookUpTable);
@@ -1763,6 +1807,26 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   char s[MAX_NAME_LEN];
                   sprintf(s, "$%s", l->d.reset.name);
                   Op(INT_CLEAR_BIT, s);
+              } else if(l->d.reset.name[0] == 'C') {
+                  void *v;
+                  v = FindElem(ELEM_CTU, l->d.reset.name);
+                  if(!v) {
+                      v = FindElem(ELEM_CTD, l->d.reset.name);
+                      if(!v) {
+                          v = FindElem(ELEM_CTC, l->d.reset.name);
+                          if(!v) {
+                              v = FindElem(ELEM_CTR, l->d.reset.name);
+                          }
+                      }
+                  }
+                  if(v) {
+                      ElemCounter *c = (ElemCounter *)v;
+                      if(IsNumber(c->init))
+                         Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, hobatoi(c->init));
+                      else
+                         Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.reset.name, c->init);
+                  } else
+                      Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
               } else
                   Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
             Op(INT_END_IF);
@@ -2861,6 +2925,224 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_QUAD_ENCOD: {
             Comment(3, "ELEM_QUAD_ENCOD");
+            /**/
+            char nowA[MAX_NAME_LEN];
+            char nowB[MAX_NAME_LEN];
+            char prevA[MAX_NAME_LEN];
+            char prevB[MAX_NAME_LEN];
+            sprintf(nowA, "$now_%s", l->d.QuadEncod.inputA);
+            sprintf(nowB, "$now_%s", l->d.QuadEncod.inputB);
+            sprintf(prevA, "$prev_%s", l->d.QuadEncod.inputA);
+            sprintf(prevB, "$prev_%s", l->d.QuadEncod.inputB);
+            /**/
+            char nowZ[MAX_NAME_LEN];
+            char prevZ[MAX_NAME_LEN];
+            sprintf(nowZ, "$now_%s", l->d.QuadEncod.inputZ);
+            sprintf(prevZ, "$prev_%s", l->d.QuadEncod.inputZ);
+
+            char pins[MAX_NAME_LEN];
+            sprintf(pins, "$pins_%s", l->d.QuadEncod.counter);
+            SetSizeOfVar(pins, 1);
+
+            char state[MAX_NAME_LEN];
+            sprintf(state, "$state_%s", l->d.QuadEncod.counter);
+            SetSizeOfVar(state, 1);
+
+            char dir[MAX_NAME_LEN];
+            sprintf(dir, "$dir_%s", l->d.QuadEncod.counter);
+            SetSizeOfVar(dir, 1);
+
+            char revol[MAX_NAME_LEN];
+            sprintf(revol, "$revol_%s", l->d.QuadEncod.counter);
+            SetSizeOfVar(revol, SizeOfVar(l->d.QuadEncod.counter));
+
+            char ticks[MAX_NAME_LEN];
+            sprintf(ticks, "$ticks_%s", l->d.QuadEncod.counter);
+            SetSizeOfVar(ticks, byteNeeded(l->d.QuadEncod.countPerRevol));
+
+            DWORD addr1 = -1, addr2 = -1;
+            int   bit1 = -1, bit2 = -1;
+            MemForSingleBit(l->d.QuadEncod.inputA, true, &addr1, &bit1);
+            MemForSingleBit(l->d.QuadEncod.inputB, true, &addr2, &bit2);
+
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_CLEAR_BIT, stateInOut);
+#if QUAD_ALGO <= 4
+              // table algorithm
+              // https://hifiduino.wordpress.com/2010/10/20/rotaryencoder-hw-sw-no-debounce/
+              Op(INT_SET_VARIABLE_SHL, state, state, "2");
+              Op(INT_SET_VARIABLE_AND, state, state, "0x0F");
+
+              if(addr1 == addr2) {
+                char s[MAX_NAME_LEN];
+                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr1));
+                Op(INT_SET_VARIABLE_TO_VARIABLE, pins, s);
+                sprintf(s, "%d", bit1);
+                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                  Op(INT_VARIABLE_SET_BIT, state, "0");
+                Op(INT_END_IF);
+                sprintf(s, "%d", bit2);
+                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                  Op(INT_VARIABLE_SET_BIT, state, "1");
+                Op(INT_END_IF);
+              } else {
+                #if 0
+                Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
+                  Op(INT_VARIABLE_SET_BIT, state, "0");
+                Op(INT_END_IF);
+                Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
+                  Op(INT_VARIABLE_SET_BIT, state, "1");
+                Op(INT_END_IF);
+                #else
+                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
+                #endif
+              }
+
+              int count = 16;
+              int sovElement = 1;
+              Op(INT_FLASH_READ, dir, "ELEM_QUAD_ENCOD", state, count, sovElement);
+              Op(INT_IF_GRT, dir, "0");
+                Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
+                if(l->d.QuadEncod.countPerRevol > 0)
+                  Op(INT_INCREMENT_VARIABLE, ticks);
+                if(strlen(l->d.QuadEncod.dir))
+                  Op(INT_SET_BIT, l->d.QuadEncod.dir);
+                Op(INT_SET_BIT, stateInOut);
+              Op(INT_ELSE);
+                Op(INT_IF_LES, dir, "0");
+                  Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
+                  if(l->d.QuadEncod.countPerRevol > 0)
+                    Op(INT_DECREMENT_VARIABLE, ticks);
+                  if(strlen(l->d.QuadEncod.dir))
+                    Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
+                  Op(INT_SET_BIT, stateInOut);
+                Op(INT_END_IF);
+              Op(INT_END_IF);
+#elif QUAD_ALGO == 22
+              // http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-040-arduino-rotary-encoder-user-manual/
+              Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
+              Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
+                Op(INT_IF_BIT_EQU_BIT, l->d.QuadEncod.inputB, nowA);
+                  Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
+                  if(l->d.QuadEncod.countPerRevol > 0)
+                    Op(INT_INCREMENT_VARIABLE, ticks);
+                  if(strlen(l->d.QuadEncod.dir))
+                    Op(INT_SET_BIT, l->d.QuadEncod.dir);
+                Op(INT_ELSE);
+                  Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
+                  if(l->d.QuadEncod.countPerRevol > 0)
+                    Op(INT_DECREMENT_VARIABLE, ticks);
+                  if(strlen(l->d.QuadEncod.dir))
+                    Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
+                Op(INT_END_IF);
+                Op(INT_SET_BIT, stateInOut);
+                Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
+              Op(INT_END_IF);
+#elif QUAD_ALGO == 222
+              // http://www.technoblogy.com/show?1YHJ
+              #if 1
+              if(addr1 == addr2) {
+                char s[MAX_NAME_LEN];
+                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr1));
+                Op(INT_SET_VARIABLE_TO_VARIABLE, pins, s);
+                Op(INT_CLEAR_BIT, nowA);
+                sprintf(s, "%d", bit1);
+                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                  Op(INT_SET_BIT, nowA);
+                Op(INT_END_IF);
+                Op(INT_CLEAR_BIT, nowB);
+                sprintf(s, "%d", bit2);
+                Op(INT_IF_BIT_SET_IN_VAR, pins, s);
+                  Op(INT_SET_BIT, nowB);
+                Op(INT_END_IF);
+              } else {
+                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
+              }
+              #else
+              Op(INT_COPY_BIT_TO_BIT, nowA, l->d.QuadEncod.inputA);
+              Op(INT_COPY_BIT_TO_BIT, nowB, l->d.QuadEncod.inputB);
+              #endif
+
+              Op(INT_IF_BIT_NEQ_BIT, prevA, nowA);
+                Op(INT_IF_BIT_NEQ_BIT, prevB, nowB);
+                  Op(INT_IF_BIT_EQU_BIT, nowA, nowB);
+                    Op(INT_INCREMENT_VARIABLE, l->d.QuadEncod.counter); // +
+                    if(l->d.QuadEncod.countPerRevol > 0)
+                      Op(INT_INCREMENT_VARIABLE, ticks);
+                    if(strlen(l->d.QuadEncod.dir))
+                      Op(INT_SET_BIT, l->d.QuadEncod.dir);
+                  Op(INT_ELSE);
+                    Op(INT_DECREMENT_VARIABLE, l->d.QuadEncod.counter); // -
+                    if(l->d.QuadEncod.countPerRevol > 0)
+                      Op(INT_DECREMENT_VARIABLE, ticks);
+                    if(strlen(l->d.QuadEncod.dir))
+                      Op(INT_CLEAR_BIT, l->d.QuadEncod.dir);
+                  Op(INT_END_IF);
+                  Op(INT_COPY_BIT_TO_BIT, prevB, nowB);
+                  Op(INT_SET_BIT, stateInOut);
+                Op(INT_END_IF);
+                Op(INT_COPY_BIT_TO_BIT, prevA, nowA);
+              Op(INT_END_IF);
+#elif QUAD_ALGO == 40
+              char A_xorB[MAX_NAME_LEN];
+              sprintf(A_xorB, "$A_xorB_%s", l->d.QuadEncod.counter);
+#endif
+              if(strlen(l->d.QuadEncod.inputZ) && (l->d.QuadEncod.countPerRevol >= 0)) {
+                char storeName[MAX_NAME_LEN];
+                GenSymOneShot(storeName, l->d.QuadEncod.counter, "");
+                Op(INT_COPY_BIT_TO_BIT, nowZ, l->d.QuadEncod.inputZ);
+                if(l->d.QuadEncod.inputZKind == '/') {
+                  Op(INT_IF_BIT_SET, nowZ);
+                    Op(INT_IF_BIT_CLEAR, prevZ);
+                      Op(INT_SET_BIT, storeName);
+                    Op(INT_ELSE);
+                      Op(INT_CLEAR_BIT, storeName);
+                    Op(INT_END_IF);
+                  Op(INT_ELSE);
+                    Op(INT_CLEAR_BIT, storeName);
+                  Op(INT_END_IF);
+                } else if(l->d.QuadEncod.inputZKind == '\\') {
+                  Op(INT_IF_BIT_CLEAR, nowZ);
+                    Op(INT_IF_BIT_SET, prevZ);
+                      Op(INT_SET_BIT, storeName);
+                    Op(INT_ELSE);
+                      Op(INT_CLEAR_BIT, storeName);
+                    Op(INT_END_IF);
+                  Op(INT_ELSE);
+                    Op(INT_CLEAR_BIT, storeName);
+                  Op(INT_END_IF);
+                } else if(l->d.QuadEncod.inputZKind == '-') {
+                  Op(INT_COPY_BIT_TO_BIT, storeName, l->d.QuadEncod.inputZ);
+                } else if(l->d.QuadEncod.inputZKind == 'o') {
+                  Op(INT_COPY_NOT_BIT_TO_BIT, storeName, l->d.QuadEncod.inputZ);
+                } else oops();
+                Op(INT_COPY_BIT_TO_BIT, prevZ, nowZ);
+
+                Op(INT_IF_BIT_SET, storeName);
+                  Op(INT_SET_BIT, stateInOut); //
+                  if(l->d.QuadEncod.countPerRevol == 0) {
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.QuadEncod.counter, (SDWORD)0x00);
+                  } else if(l->d.QuadEncod.countPerRevol > 0) {
+                    char s[MAX_NAME_LEN];
+                    sprintf(s, "%d", l->d.QuadEncod.countPerRevol / 2);
+                    Op(INT_IF_GRT, ticks, s);
+                      Op(INT_INCREMENT_VARIABLE, revol);
+                      sprintf(s, "%d", l->d.QuadEncod.countPerRevol);
+                      Op(INT_SET_VARIABLE_MULTIPLY, l->d.QuadEncod.counter, revol, s);
+                      Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (SDWORD)0x00);
+                    Op(INT_ELSE);
+                      sprintf(s, "%d", -l->d.QuadEncod.countPerRevol / 2);
+                      Op(INT_IF_LES, ticks, s);
+                        Op(INT_DECREMENT_VARIABLE, revol);
+                        sprintf(s, "%d", l->d.QuadEncod.countPerRevol);
+                        Op(INT_SET_VARIABLE_MULTIPLY, l->d.QuadEncod.counter, revol, s);
+                        Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (SDWORD)0x00);
+                      Op(INT_END_IF);
+                    Op(INT_END_IF);
+                  }
+                Op(INT_END_IF);
+              }
+            Op(INT_END_IF);
             break;
         }
 
@@ -3440,9 +3722,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             steps = 0;
             char *p = l->d.fmtdStr.string;
             while(*p) {
-                if(*p == '\\' && (isdigit(p[1]) || p[1] == '-')) {
+                if((*p == '\\') && (isdigit(p[1]) || p[1] == '-') && (p[1] != '0')) {
                     if(digits >= 0) {
-                        THROW_COMPILER_EXCEPTION(_("Multiple escapes (\\0-9) present in format "
+                        Error(_("Multiple escapes (\\0-9) present in format "
                             "string, not allowed."));
                     }
                     p++;
@@ -3453,26 +3735,32 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         p++;
                     }
                     if(!isdigit(*p) || (*p - '0') > 5 || *p == '0') {
-                        THROW_COMPILER_EXCEPTION(_("Bad escape sequence following \\; for a "
+                        Error(_("Bad escape sequence following \\; for a "
                             "literal backslash, use \\\\"));
                     }
                     digits = (*p - '0');
-                    int i;
-                    for(i = 0; i < digits; i++) {
+                    for(int i = 0; i < digits; i++) {
                         outputWhich[steps] = OUTPUT_DIGIT;
                         outputChars[steps++] = OUTPUT_DIGIT;
                     }
                 } else if(*p == '\\') {
+                    L1:
                     p++;
                     switch(*p) {
-                        case 'r': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\r'; break;
-                        case 'n': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\n'; break;
-                        case 'b': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\b'; break;
-                        case 'f': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\f'; break;
-                        case 't': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\t'; break;
-                        case 'v': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\v'; break;
-                        case 'a': outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\a'; break;
-                        case '\\':outputWhich[steps  ] = OUTPUT_UCHAR; outputChars[steps++] = '\\'; break;
+                        case 'a': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = 0x07; break;
+                        case 'b': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\b'; break;
+                        case 'e': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = 0x1B; break;
+                        case 'f': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\f'; break;
+                        case 'n': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\n'; break;
+                        case 'r': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\r'; break;
+                        case 't': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\t'; break;
+                        case 'v': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\v'; break;
+                        case '\'':outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\''; break;
+                        case '"': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\"'; break;
+                        case '?': outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\?'; break;
+                        case '\\':outputWhich[steps] = OUTPUT_UCHAR; outputChars[steps++] = '\\'; break;
+                        case '0': goto L1; break;
+                        case 'X':
                         case 'x': {
                             int h, l;
                             p++;
@@ -3486,11 +3774,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                                     break;
                                 }
                             }
-                            THROW_COMPILER_EXCEPTION(_("Bad escape: correct form is \\xAB."));
+                            Error(_("Bad escape: correct form is \\xAB."));
                             break;
                         }
                         default:
-                            THROW_COMPILER_EXCEPTION_FMT(_("Bad escape '\\%c'"), *p);
+                            Error(_("Bad escape '\\%c'"), *p);
                             break;
                     }
                 } else {
@@ -3501,15 +3789,15 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     p++;
 
                 if(steps >= sizeof(outputChars)) {
-                    THROW_COMPILER_EXCEPTION("Internal error");
+                    Error("Internal error");
                 }
             }
 
             if(digits >= 0 && (strlen(var) == 0)) {
-                THROW_COMPILER_EXCEPTION(_("Variable is interpolated into formatted string, but "
+                Error(_("Variable is interpolated into formatted string, but "
                     "none is specified."));
             } else if(digits < 0 && (strlen(var) > 0)) {
-                THROW_COMPILER_EXCEPTION(_("No variable is interpolated into formatted string, "
+                Error(_("No variable is interpolated into formatted string, "
                     "but a variable name is specified. Include a string like "
                     "'\\-3', or leave variable name blank."));
             }
@@ -3641,7 +3929,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                       Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", outputChars[i]);
                     Op(INT_END_IF);
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error");
+                    Error("Internal error");
             }
 
             Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SDWORD)0);

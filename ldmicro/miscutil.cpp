@@ -404,8 +404,8 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
         } else {
             sprintf(dest, "%d", pin);
             if(portName) {
-                if(UartFunctionUsed() && Prog.mcu) {
-                    if((Prog.mcu->uartNeeds.rxPin == pin) || (Prog.mcu->uartNeeds.txPin == pin)) {
+                if((Prog.mcu->uartNeeds.rxPin == pin) || (Prog.mcu->uartNeeds.txPin == pin)) {
+                    if(UartFunctionUsed() && Prog.mcu) {
                         strcpy(portName, _("<UART needs!>"));
                         return;
                     }
@@ -433,8 +433,8 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     strcpy(portName, _("<not an I/O!>"));
             }
             if(pinName) {
-                if(UartFunctionUsed() && Prog.mcu) {
-                    if((Prog.mcu->uartNeeds.rxPin == pin) || (Prog.mcu->uartNeeds.txPin == pin)) {
+                if((Prog.mcu->uartNeeds.rxPin == pin) || (Prog.mcu->uartNeeds.txPin == pin)) {
+                    if(UartFunctionUsed() && Prog.mcu) {
                         strcpy(pinName, _("<UART needs!>"));
                         return;
                     }
@@ -525,16 +525,16 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             iop = PinInfo(pin);
             if(iop) {
                 if(portName)
-                    if(UartFunctionUsed() && Prog.mcu) {
-                        if((Prog.mcu->uartNeeds.rxPin == pin) || (Prog.mcu->uartNeeds.txPin == pin)) {
+                    if((Prog.mcu->uartNeeds.rxPin == pin) || (Prog.mcu->uartNeeds.txPin == pin)) {
+                        if(UartFunctionUsed() && Prog.mcu) {
                             strcpy(portName, _("<UART needs!>"));
                             return;
                         }
                     }
                 ShortPinName(iop, portName);
                 if(pinName)
-                    if(UartFunctionUsed() && Prog.mcu) {
-                        if((Prog.mcu->uartNeeds.rxPin == pin) || (Prog.mcu->uartNeeds.txPin == pin)) {
+                    if((Prog.mcu->uartNeeds.rxPin == pin) || (Prog.mcu->uartNeeds.txPin == pin)) {
+                        if(UartFunctionUsed() && Prog.mcu) {
                             strcpy(pinName, _("<UART needs!>"));
                             return;
                         }

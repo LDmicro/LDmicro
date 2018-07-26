@@ -817,6 +817,23 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             break;
 
         case ELEM_QUAD_ENCOD:
+            MarkWithCheck(l->d.QuadEncod.counter, VAR_FLAG_ANY);
+
+            char ticks[MAX_NAME_LEN];
+            sprintf(ticks, "$ticks_%s", l->d.QuadEncod.counter);
+            MarkWithCheck(ticks, VAR_FLAG_ANY);
+
+            char dir[MAX_NAME_LEN];
+            sprintf(dir, "$dir_%s", l->d.QuadEncod.counter);
+            MarkWithCheck(dir, VAR_FLAG_ANY);
+
+            char revol[MAX_NAME_LEN];
+            sprintf(revol, "$revol_%s", l->d.QuadEncod.counter);
+            MarkWithCheck(revol, VAR_FLAG_ANY);
+
+            MarkWithCheck("ELEM_QUAD_ENCOD", VAR_FLAG_ANY);
+            break;
+
         case ELEM_NPULSE:
         case ELEM_PULSER:
         case ELEM_STEPPER:
@@ -1526,10 +1543,16 @@ static void SimulateIntCode()
                 SetSingleBit(a->name1, !SingleBitOn(a->name2));
                 break;
 
-            case INT_COPY_XOR_BIT_TO_BIT:
-                //SetSingleBit(a->name1,  SingleBitOn(a->name1)      ^  SingleBitOn(a->name2)     );
-                //SetSingleBit(a->name1, (SingleBitOn(a->name1) & 1) ^ (SingleBitOn(a->name2) & 1));
-                SetSingleBit(a->name1, SingleBitOn(a->name2) ? (!SingleBitOn(a->name1)) : SingleBitOn(a->name1));
+            case INT_SET_BIT_AND_BIT:
+                SetSingleBit(a->name1, (SingleBitOn(a->name2) & SingleBitOn(a->name3)) & 1);
+                break;
+
+            case INT_SET_BIT_OR_BIT:
+                SetSingleBit(a->name1, (SingleBitOn(a->name2) | SingleBitOn(a->name3)) & 1);
+                break;
+
+            case INT_SET_BIT_XOR_BIT:
+                SetSingleBit(a->name1, (SingleBitOn(a->name2) ^ SingleBitOn(a->name3)) & 1);
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
@@ -1716,6 +1739,16 @@ static void SimulateIntCode()
 
             case INT_IF_BIT_CLEAR:
                 if(!SingleBitOn(a->name1))
+                    IF_BODY
+                break;
+
+            case INT_IF_BIT_EQU_BIT:
+                if(SingleBitOn(a->name1) == SingleBitOn(a->name2))
+                    IF_BODY
+                break;
+
+            case INT_IF_BIT_NEQ_BIT:
+                if(SingleBitOn(a->name1) != SingleBitOn(a->name2))
                     IF_BODY
                 break;
 
@@ -2559,24 +2592,3 @@ static void   AppendToUartSimulationTextControl(BYTE b)
     SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
     SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 }
-/*
------------------------------- ASCII Control Codes ---------------------------
-|Dec Hex Ctl  Name Control Meaning      |Dec Hex Ctl  Name Control Meaning
-|--- --- ---  ---- -------------------  |--- --- ---  ---- --------------------
-|  0  00  ^@  NUL  null (end string)    | 16  10  ^P  DLE  data line escape
-|  1  01  ^A  SOH  start of heading     | 17  11  ^Q  DC1  dev ctrl 1 (X-ON)
-|  2  02  ^B  STX  start of text        | 18  12  ^R  DC2  device ctrl 2
-|  3  03  ^C  ETX  end of text          | 19  13  ^S  DC3  dev ctrl 3 (X-OFF)
-|  4  04  ^D  EOT  end of transmission  | 20  14  ^T  DC4  device ctrl 4
-|  5  05  ^E  ENQ  enquiry              | 21  15  ^U  NAK  negative acknowledge
-|  6  06  ^F  ACK  acknowledge          | 22  16  ^V  SYN  synchronous idle
-|  7  07  ^G  BEL  bell               \a| 23  17  ^W  ETB  end transmit block
-|  8  08  ^H  BS   backspace          \b| 24  18  ^X  CAN  cancel
-|  9  09  ^I  HT   TAB horizontal tab \t| 25  19  ^Y  EM   end of medium
-| 10  0a  ^J  LF   line feed          \n| 26  1a  ^Z  SUB  substitute
-| 11  0b  ^K  VT   vertical tab       \v| 27  1b  ^[  ESC  escape
-| 12  0c  ^L  FF   form feed          \f| 28  1c  ^\  FS   file separator
-| 13  0d  ^M  CR   carriage return    \r| 29  1d  ^]  GS   group separator
-| 14  0e  ^N  SO   shift out            | 30  1e  ^^  RS   record separator
-| 15  0f  ^O  SI   shift in             | 31  1f  ^_  US   unit separator
-*/

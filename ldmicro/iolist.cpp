@@ -87,6 +87,9 @@ static void AppendIo(const char *name, int type)
     if(!name || !strlen(name))
         return;
 
+    if(IsNumber(name))
+        return;
+
     if(!IsNumber(name)) {
         if(strchr(name, '-')) {
             Error(_("Rename '%s': Replace the character '-' by the '_'."), name);
@@ -269,40 +272,54 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_QUAD_ENCOD:
-            switch(l->d.QuadEncod.contactA[0]) {
+            /*
+            switch(l->d.QuadEncod.inputA[0]) {
                 case 'I':
-                    AppendIo(l->d.QuadEncod.contactA, IO_TYPE_INT_INPUT);
+                    AppendIo(l->d.QuadEncod.inputA, IO_TYPE_INT_INPUT);
                     break;
                 default:
                     Error(_("Connect QUAD ENCOD input A to INTs input pin IqAn."));
                     break;
             }
-            switch(l->d.QuadEncod.contactB[0]) {
+            */
+            switch(l->d.QuadEncod.inputA[0]) {
                 case 'X':
-                    AppendIo(l->d.QuadEncod.contactB, IO_TYPE_DIG_INPUT);
+                    AppendIo(l->d.QuadEncod.inputA, IO_TYPE_DIG_INPUT);
+                    break;
+                default:
+                    Error(_("Connect QUAD ENCOD input A to input pin XqAn."));
+                    break;
+            }
+            switch(l->d.QuadEncod.inputB[0]) {
+                case 'X':
+                    AppendIo(l->d.QuadEncod.inputB, IO_TYPE_DIG_INPUT);
                     break;
                 default:
                     Error(_("Connect QUAD ENCOD input B to input pin XqBn."));
                     break;
             }
-            if(strlen(l->d.QuadEncod.contactZ) > 0)
-                switch(l->d.QuadEncod.contactZ[0]) {
+            if(strlen(l->d.QuadEncod.inputZ) > 0)
+                switch(l->d.QuadEncod.inputZ[0]) {
                     case 'X':
-                        AppendIo(l->d.QuadEncod.contactZ, IO_TYPE_DIG_INPUT);
+                        AppendIo(l->d.QuadEncod.inputZ, IO_TYPE_DIG_INPUT);
                         break;
                     default:
                         Error(_("Connect QUAD ENCOD input Z to input pin XqZn."));
                         break;
                 }
-            if(strlen(l->d.QuadEncod.zero) > 0)
-                switch(l->d.QuadEncod.zero[0]) {
+            if(strlen(l->d.QuadEncod.dir) > 0)
+                switch(l->d.QuadEncod.dir[0]) {
                     case 'Y':
-                        AppendIo(l->d.QuadEncod.zero, IO_TYPE_DIG_OUTPUT);
+                        AppendIo(l->d.QuadEncod.dir, IO_TYPE_DIG_OUTPUT);
                         break;
                     default:
-                        Error(_("Connect QUAD ENCOD zero flag to output pin YsomeName."));
+                        Error(_("Connect QUAD ENCOD dir flag to output pin YsomeName."));
                         break;
                 }
+/*
+            AppendIo("ELEM_QUAD_ENCOD", IO_TYPE_TABLE_IN_FLASH);
+            SetSizeOfVar("ELEM_QUAD_ENCOD", 16);
+*/
             break;
 
         case ELEM_NPULSE:
@@ -589,6 +606,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         }
         case ELEM_PIECEWISE_LINEAR:
             AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL);
+            AppendIo(l->d.lookUpTable.index, IO_TYPE_GENERAL);
             break;
 
         case ELEM_PLACEHOLDER:
@@ -696,7 +714,7 @@ int GenerateIoList(int prevSel)
     for(i = 0; i < Prog.numRungs; i++) {
         ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
-    AppendIo("ROverflowFlagV", IO_TYPE_INTERNAL_RELAY);
+    // AppendIo("ROverflowFlagV", IO_TYPE_INTERNAL_RELAY);
 
     if(Prog.cycleDuty) {
         AppendIo(YPlcCycleDuty, IO_TYPE_DIG_OUTPUT);

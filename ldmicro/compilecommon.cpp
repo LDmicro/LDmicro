@@ -273,6 +273,17 @@ DWORD AllocOctetRam()
 }
 
 //-----------------------------------------------------------------------------
+int InputRegIndex(DWORD addr)
+{
+    if((addr == -1) || (addr == 0))
+        THROW_COMPILER_EXCEPTION("Internal error.");
+    for(int i = 0; i < MAX_IO_PORTS; i++)
+        if(Prog.mcu->inputRegs[i] == addr)
+            return i;
+    return -1;
+}
+
+//-----------------------------------------------------------------------------
 // Return the address (octet address) and bit of a previously unused bit of
 // RAM on the target.
 //-----------------------------------------------------------------------------
@@ -414,7 +425,7 @@ uint8_t MuxForAdcVariable(const char *name)
     int i;
     for(i = 0; i < Prog.io.count; i++) {
         if((strcmp(Prog.io.assignment[i].name, name) == 0) &&
-			(Prog.io.assignment[i].type == IO_TYPE_READ_ADC))
+            (Prog.io.assignment[i].type == IO_TYPE_READ_ADC))
             break;
     }
     if(i >= Prog.io.count)
@@ -661,7 +672,7 @@ int SetSizeOfVar(const char *name, int sizeOfVar, bool showError)
 {
     if(showError)
         if((sizeOfVar < 1) || (4 < sizeOfVar)) {
-            THROW_COMPILER_EXCEPTION_FMT(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
+            Error(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
             sizeOfVar = 2;
         }
 #ifndef NEW_CMP
@@ -1078,7 +1089,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)
 //-----------------------------------------------------------------------------
 void ComplainAboutBaudRateError(int divisor, double actual, double err)
 {
-    THROW_COMPILER_EXCEPTION_FMT(_("UART baud rate generator: divisor=%d actual=%.4f for %.2f%% "
+    Error(_("UART baud rate generator: divisor=%d actual=%.4f for %.2f%% "
             "error.\r\n"
             "\r\n"
             "This is too large; try a different baud rate (slower "
@@ -1098,7 +1109,7 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err)
 //-----------------------------------------------------------------------------
 void ComplainAboutBaudRateOverflow()
 {
-    THROW_COMPILER_EXCEPTION(
+    Error(
         _("UART baud rate generator: too slow, divisor overflows. "
           "Use a slower crystal or a faster baud rate.\r\n"
           "\r\n"

@@ -975,7 +975,7 @@ void ShowSpiDialog(ElemLeaf *l)
     }
 }
 
-void ShowSegmentsDialog(ElemLeaf *l)
+void ShowSegmentsDialog(int which, ElemLeaf *l)
 {
     ElemSegments *s = &(l->d.segments);
     char          common[10];
@@ -1407,35 +1407,71 @@ void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
     }
 }
 
-void ShowQuadEncodDialog(int which, char *counter, int *int01, char *contactA, char *contactB, char *contactZ,
-                         char *error)
+void ShowQuadEncodDialog(int which, ElemLeaf *l)
 {
+    ElemQuadEncod   *q = &(l->d.QuadEncod);
+    char *counter      = q->counter;
+    int  *int01        = &(q->int01);
+    char *inputA       = q->inputA;
+    char *inputB       = q->inputB;
+    char *inputZ       = q->inputZ;
+    char *dir          = q->dir;
+    char inputKind[MAX_NAME_LEN];
+    sprintf(inputKind, "%c", q->inputZKind);
+
+    char countPerRevol[MAX_NAME_LEN];
+    sprintf(countPerRevol, "%d", q->countPerRevol);
+
     char title[100];
-    sprintf(title, _("Quad Encod%d"), *int01);
+    sprintf(title, _("Quad Encoder")/*, *int01*/);
 
     char _int01[100];
     sprintf(_int01, "%d", *int01);
 
     const char *labels[] = {_("Counter var:"),
-                            _("Input A INTs:"),
+                          //_("Input A INTs:"),
                             _("Input A:"),
                             _("Input B:"),
                             _("Input Z:"),
-                            _("Output Zero(Counter==0):")};
-    char *      dests[] = {counter, _int01, contactA, contactB, contactZ, error};
-    {};
-    NoCheckingOnBox[4] = true;
-    NoCheckingOnBox[5] = true;
-    if(ShowSimpleDialog(title, 6, labels, 0x2, 0xff, 0xff, dests)) {
+                            _("Input Z kind:"),
+                            _("Count per revol:"),
+                            _("Output Dir:")};
+    char *      dests[] = {counter, /*_int01, */&inputA[1], &inputB[1], &inputZ[1], inputKind, countPerRevol, &dir[1]};
+    NoCheckingOnBox[3] = true;
+    NoCheckingOnBox[6] = true;
+    if(strlen(inputZ) <= 1)
+        inputZ[1] = '\0';
+    if(strlen(dir) <= 1)
+        dir[1] = '\0';
+    if(ShowSimpleDialog(title, 7, labels, 0x20, 0xef, 0xff, dests)) {
+        inputA[0] = 'X';
+        inputB[0] = 'X';
+        if(strlen(&inputZ[1]))
+            inputZ[0] = 'X';
+        else
+            inputZ[0] = '\0';
+        if(strlen(&dir[1]))
+            dir[0] = 'Y';
+        else
+            dir[0] = '\0';
         //TODO: check the available range
         SDWORD val;
+        /*
         val = hobatoi(_int01);
         if(Prog.mcu)
             if((val < 0) || (static_cast<SDWORD>(Prog.mcu->ExtIntCount) <= val))
                 Error(_("Can select only INTs pin."));
+        */
+        val = hobatoi(countPerRevol);
+        q->countPerRevol = val;
+
+        if((inputKind[0] == '/') || (inputKind[0] == '\\') || (inputKind[0] == 'o') || (inputKind[0] == '-'))
+            q->inputZKind = inputKind[0];
+        else
+            Error("Only the characters '-o/\\' are available!");
     }
-    NoCheckingOnBox[4] = false;
-    NoCheckingOnBox[5] = false;
+    NoCheckingOnBox[3] = false;
+    NoCheckingOnBox[6] = false;
 }
 
 void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
