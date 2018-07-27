@@ -1850,6 +1850,8 @@ Counter|  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 5 |   | 6 |   |10 |   | 11
     at the bottom of the screen.
 
     See for details https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER
+    Incremental QUADRATURE ENCODER controls the brightness of the LED (PWM out)
+    https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER-controls-the-brightness-of-the-LED-(PWM-out)
 
 
 A NOTE ON USING MATH

@@ -2291,6 +2291,23 @@ void DescribeForIoList(const char *name, int type, char *out)
 void SimulationToggleContact(char *name)
 {
     SetSingleBit(name, !SingleBitOn(name));
+    if((name[0] == 'X') || (name[0] == 'Y')) {
+        DWORD addr = -1;
+        int   bit = -1;
+        MemForSingleBit(name, true, &addr, &bit);
+
+        char s[MAX_NAME_LEN];
+        if(name[0] == 'X')
+            sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
+        else
+            sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
+        SDWORD v = GetSimulationVariable(s);
+        if(SingleBitOn(name))
+            v |= 1<<bit;
+        else
+            v &= ~(1<<bit);
+        SetSimulationVariable(s, v);
+    }
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }
 

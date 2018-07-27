@@ -541,12 +541,12 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_IF_BIT_SET_IN_VAR: // TODO
-                fprintf(f, "if ('%s' & (1<<%d)) != 0  {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
+                fprintf(f, "if ('%s' & (1<<%s)) != 0  {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 indent++;
                 break;
 
             case INT_IF_BIT_CLEAR_IN_VAR: // TODO
-                fprintf(f, "if ('%s' & (1<<%d)) == 0 {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
+                fprintf(f, "if ('%s' & (1<<%s)) == 0 {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 indent++;
                 break;
 
@@ -1406,51 +1406,53 @@ static void InitVarsCircuit(int which, void *elem, int *n)
         }
 #ifndef NEW_TON
         case ELEM_TOF: {
-            if(n)
+            if(n) {
                 (*n)++; // counting the number of variables
-            else {
-                SDWORD period = TimerPeriod(l);
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+                return;
             }
+            SDWORD period = TimerPeriod(l);
+            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             break;
         }
 #endif
 #ifdef NEW_TON
         case ELEM_TCY: {
-            if(n)
+            if(n) {
                 (*n)++; // counting the number of variables
-            else {
-                SDWORD period = TimerPeriod(l) - 1;
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+                return;
             }
+            SDWORD period = TimerPeriod(l) - 1;
+            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             break;
         }
         case ELEM_TON: {
-            if(n)
+            if(n) {
                 (*n)++; // counting the number of variables
-            else {
-                SDWORD period = TimerPeriod(l);
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+                return;
             }
+            SDWORD period = TimerPeriod(l);
+            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             break;
         }
 #endif
         case ELEM_SEED_RANDOM: {
+            if(n) {
+                (*n)++; // counting the number of variables
+                return;
+            }
             char name[MAX_NAME_LEN];
             sprintf(name, "$seed_%s", l->d.readAdc.name);
-            if(n)
-                (*n)++; // counting the number of variables
-            else {
-                Op(INT_SET_VARIABLE_TO_LITERAL, name, 1);
-            }
+            Op(INT_SET_VARIABLE_TO_LITERAL, name, 1);
             break;
         }
         case ELEM_CTR:
         case ELEM_CTC:
         case ELEM_CTU:
         case ELEM_CTD: {
-            if(n)
+            if(n) {
                 (*n)++; // counting the number of variables
+                return;
+            }
             if(IsNumber(l->d.counter.init)) {
                 int init = CheckMakeNumber(l->d.counter.init);
                 if(!n)
@@ -1463,6 +1465,22 @@ static void InitVarsCircuit(int which, void *elem, int *n)
                 if(SizeOfVar(l->d.counter.name) != b)
                     SetSizeOfVar(l->d.counter.name, b);
             }
+            break;
+        }
+        case ELEM_QUAD_ENCOD: {
+#define QUAD_ALGO 222 // 1, 2, 4, 22, 222 are available
+#if QUAD_ALGO == 222
+            if(n) {
+                (*n)+=2; // counting the number of variables
+                return;
+            }
+            char prevA[MAX_NAME_LEN];
+            char prevB[MAX_NAME_LEN];
+            sprintf(prevA, "$prev_%s", l->d.QuadEncod.inputA);
+            sprintf(prevB, "$prev_%s", l->d.QuadEncod.inputB);
+            Op(INT_COPY_BIT_TO_BIT, prevA, l->d.QuadEncod.inputA);
+            Op(INT_COPY_BIT_TO_BIT, prevB, l->d.QuadEncod.inputB);
+#endif
             break;
         }
         default:
@@ -1510,9 +1528,8 @@ static void InitTablesCircuit(int which, void *elem)
                 InitTablesCircuit(p->contents[i].which, p->contents[i].data.any);
             break;
         }
-        case ELEM_QUAD_ENCOD: {
-#define QUAD_ALGO 222 // 1, 2, 4, 22, 222 are available
 #if QUAD_ALGO <= 4
+        case ELEM_QUAD_ENCOD: {
             char nameTable[MAX_NAME_LEN];
             strcpy(nameTable, "ELEM_QUAD_ENCOD");
             int32_t count = 16;
@@ -1526,9 +1543,9 @@ static void InitTablesCircuit(int which, void *elem)
             int32_t sovElement = 1;
             //SetSizeOfVar(nameTable, count);
             Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, count, sovElement, vals);
-#endif
             break;
         }
+#endif
         // case ELEM_PIECEWISE_LINEAR:
         case ELEM_LOOK_UP_TABLE: {
             ElemLookUpTable *t = &(l->d.lookUpTable);
@@ -2986,15 +3003,15 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   Op(INT_VARIABLE_SET_BIT, state, "1");
                 Op(INT_END_IF);
               } else {
-                #if 0
+                #if 1
+                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
+                #else
                 Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
                   Op(INT_VARIABLE_SET_BIT, state, "0");
                 Op(INT_END_IF);
                 Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
                   Op(INT_VARIABLE_SET_BIT, state, "1");
                 Op(INT_END_IF);
-                #else
-                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
                 #endif
               }
 
@@ -3087,7 +3104,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               char A_xorB[MAX_NAME_LEN];
               sprintf(A_xorB, "$A_xorB_%s", l->d.QuadEncod.counter);
 #endif
-              if(strlen(l->d.QuadEncod.inputZ) && (l->d.QuadEncod.countPerRevol >= 0)) {
+              if(strlen(l->d.QuadEncod.inputZ)) {
                 char storeName[MAX_NAME_LEN];
                 GenSymOneShot(storeName, l->d.QuadEncod.counter, "");
                 Op(INT_COPY_BIT_TO_BIT, nowZ, l->d.QuadEncod.inputZ);

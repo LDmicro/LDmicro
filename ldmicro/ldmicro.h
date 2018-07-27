@@ -1624,6 +1624,7 @@ uint8_t MuxForAdcVariable(const NameArray& name);
 int SingleBitAssigned(const char *name);
 int GetAssignedType(const char *name, const char *fullName);
 int InputRegIndex(DWORD addr);
+int OutputRegIndex(DWORD addr);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput);
 void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const NameArray& name, bool forRead, DWORD *addr, int *bit);

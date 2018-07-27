@@ -1195,7 +1195,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             sprintf(s3, "%s]%s", m->dir, strlen(m->dir)?"-":" ");
             formatWidth(top, 2 * POS_WIDTH, s2, "", "", "", s3);
 
-            sprintf(s1, "-%c[%s", strlen(m->inputZ)&&(m->countPerRevol >= 0)?m->inputZKind:'-', m->inputZ);
+            sprintf(s1, "-%c[%s", strlen(m->inputZ)?m->inputZKind:'-', m->inputZ);
             sprintf(s2, " \x01QUAD ENCOD\x02 ");
             formatWidth(bot, 2 * POS_WIDTH, s1, "", s2, m->counter, "]^");
 

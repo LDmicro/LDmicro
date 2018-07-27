@@ -4,6 +4,9 @@
     See manual.txt and
     https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER
 
+    Incremental QUADRATURE ENCODER controls the brightness of the LED (PWM out)
+    https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER-controls-the-brightness-of-the-LED-(PWM-out)
+
     * Fixed: Bug: UART box shows up even if UART is deleted from the ladder
     diagram after simulating.(#126)
 
