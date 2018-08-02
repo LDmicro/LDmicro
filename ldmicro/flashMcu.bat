@@ -187,7 +187,7 @@ goto exit
 
 @rem *** Set up additional options of TOOL program. ***
 @rem SET OPTIONS=-L -Y -V5.00
-     SET OPTIONS=-L -Y
+     SET OPTIONS=-L
 
 @rem *** Program Entire Device ***
 %TOOL% %PART% %OPTIONS% -F"%2.hex" -M ?E

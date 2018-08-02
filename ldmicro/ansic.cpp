@@ -665,6 +665,9 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 break;
 
             case INT_WRITE_STRING:
+                strVar1 = IntCode[i].name1.c_str();
+                break;
+
             case INT_SLEEP:
             case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
@@ -820,6 +823,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                fprintf(f, "if (%s & (1<<%d)) {\n", MapSym(IntCode[i].name2, ASINT), IntCode[i].literal2);
+                indent++;
+                doIndent(f, i);
+                fprintf(f, "%s |=  (1<<%d); } else {\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                doIndent(f, i);
+                fprintf(f, "%s &= ~(1<<%d); }\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                indent--;
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -859,9 +869,11 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_BIN2BCD:
+                fprintf(f, "%s = bin2bcd(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_BCD2BIN:
+                fprintf(f, "%s = bcd2bin(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_SWAP:

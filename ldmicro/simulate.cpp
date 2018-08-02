@@ -427,10 +427,9 @@ SDWORD GetSimulationVariable(const NameArray &name)
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
-void SetSimulationStr(char *name, char *val)
+void SetSimulationStr(const char *name, const char *val)
 {
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             strcpy(Variables[i].valstr, val);
             return;
@@ -665,8 +664,8 @@ static const char *MarkUsedVariable(const char *name, DWORD flag)
     if(s)
         return s;
 
-    if(Variables[i].initedRung < 0)
-        Variables[i].initedRung = rungNow;
+//    if(Variables[i].initedRung < 0)
+  //      Variables[i].initedRung = rungNow;
     Variables[i].usedFlags |= flag;
     return nullptr;
 }

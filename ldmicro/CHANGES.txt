@@ -1,3 +1,9 @@
+== Release 4.4.
+
+    * New: 7SEGMENT LED FONT instruction.
+
+    * New: BINARY to BCD CONVERTER instruction.
+
 == Release 4.4.2.0
 
     * New: Incremental QUADRATURE ENCODER instruction.

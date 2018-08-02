@@ -3366,6 +3366,14 @@ static void CompileFromIntermediate()
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
                 Comment("INT_COPY_VAR_BIT_TO_VAR_BIT");
+                MemForVariable(a->name1, &addr1);
+                MemForVariable(a->name2, &addr2);
+                CopyBit(addr1 + a->literal / 8,
+                        a->literal % 8,
+                        addr2 + a->literal2 / 8,
+                        a->literal2 % 8,
+                        a->name1.c_str(),
+                        a->name2.c_str());
                 break;
 
             case INT_SET_BCD2BIN:
@@ -3376,6 +3384,42 @@ static void CompileFromIntermediate()
             case INT_SET_BIN2BCD:
                 // 0..99
                 Comment("INT_SET_BIN2BCD");
+                //MemForVariable(a->name1, &addr1);
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                CopyArgToReg(r16, sov1, a->name2);
+                if(a->op == INT_SET_BIN2BCD) {
+                    if(sov2 == 1) {
+                        //bin2bcd8:
+                        Instruction(OP_CLR, r17); //;clear result MSD
+                                                  //bBCD8_1:
+                        DWORD bBCD8_1 = AvrProg.size();
+                        DWORD bBCD8_2 = AllocFwdAddr();
+                        Instruction(OP_SUBI, r16, 10); //;input = input - 10
+                        Instruction(OP_BRCS, bBCD8_2); //;abort if carry set
+                        //                      Instruction(OP_INC,    r17);       //;inc MSD
+                        //--------------------------------------------------------------------------
+                        //                              ;Replace the above line with this one
+                        //                              ;for packed BCD output
+                        Instruction(OP_SUBI, r17, -0x10); //;r17 = r17 + 0x10
+                        //                  Instruction(OP_SUBI,   r17, 0xF0); //;r17 = r17 + 0x10
+                        //--------------------------------------------------------------------------
+                        InstructionJMP(bBCD8_1); //;loop again
+                                                 //bBCD8_2:
+                        FwdAddrIsNow(bBCD8_2);
+                        Instruction(OP_SUBI, r16, -10); //;compensate extra subtraction
+                        //--------------------------------------------------------------------------
+                        //                              ;Add this line for packed BCD output
+                        Instruction(OP_ADD, r16, r17);
+                        //--------------------------------------------------------------------------
+                        CopyRegToVar(a->name1, r16, sov1);
+                        //} else if(sov2==2){
+                    } else
+                        oops()
+
+                } else {
+                    oops()
+                }
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:

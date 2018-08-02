@@ -567,7 +567,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("SIMUL: Insert BIN2BCD"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("SIMUL: Insert BCD2BIN"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS, _("SIMUL: Insert BUS tracer"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG, _("SIMUL: Insert char to 7 SEGMENT converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG, _("Insert char to 7 SEGMENT converter"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG, _("SIMUL: Insert char to 9 SEGMENT converter"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_14SEG, _("SIMUL: Insert char to 14 SEGMENT converter"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_16SEG, _("SIMUL: Insert char to 16 SEGMENT converter"));

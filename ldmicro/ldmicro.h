@@ -30,8 +30,8 @@
 #include "current_function.hpp"
 #include "compilercommon.hpp"
 
-typedef int32_t SWORD;
-typedef int32_t SDWORD;
+//typedef int32_t SWORD;
+//typedef int32_t SDWORD;
 
 #include "accel.h"
 
@@ -1370,7 +1370,7 @@ void SetSimulationVariable(const char *name, SDWORD val);
 SDWORD GetSimulationVariable(const char *name, bool forIoList);
 SDWORD GetSimulationVariable(const char *name);
 SDWORD GetSimulationVariable(const NameArray& name);
-void SetSimulationStr(char *name, char *val);
+void SetSimulationStr(const char *name, const char *val);
 char *GetSimulationStr(const char *name);
 int FindOpName(int op, const NameArray& name1);
 int FindOpName(int op, const NameArray& name1, const NameArray& name2);

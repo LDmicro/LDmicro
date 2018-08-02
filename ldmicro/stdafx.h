@@ -46,6 +46,9 @@
 #include <algorithm>
 #include <unordered_set>
 
+typedef int32_t SWORD;
+typedef int32_t SDWORD;
+
 // TODO: reference additional headers your program requires here
 //#include "current_function.hpp"
 #include "bits.h"

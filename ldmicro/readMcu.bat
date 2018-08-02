@@ -3,6 +3,7 @@
 cls
 if "%1" == "" goto PIC16
 if "%1" == "" goto AVR
+
 if "%1" == "AVR" goto AVR
 if "%1" == "PIC16" goto PIC16
 if "%1" == "" goto pauses
