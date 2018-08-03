@@ -2926,6 +2926,7 @@ static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, 
     return CopyArgToReg(isModificationRisk, destAddr, destSov, name.c_str(), Sign);
 }
 //-----------------------------------------------------------------------------
+// http://www.piclist.com/techref/member/BB-LTL-/index.htm
 // https://wiki.nicksoft.info/mcu:pic16:32bit-math
 // Filename:   QUAD_MATH_TESTS.ASM
 // Author:     Brian Beard
