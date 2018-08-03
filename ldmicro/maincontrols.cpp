@@ -564,7 +564,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("Insert QUADRATURE ENCODER"));
     DisplayMenu = CreatePopupMenu();
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("SIMUL: Insert BIN2BCD"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("Insert BIN2BCD"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("SIMUL: Insert BCD2BIN"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS, _("SIMUL: Insert BUS tracer"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG, _("Insert char to 7 SEGMENT converter"));

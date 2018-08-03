@@ -30,9 +30,6 @@
 #include "current_function.hpp"
 #include "compilercommon.hpp"
 
-//typedef int32_t SWORD;
-//typedef int32_t SDWORD;
-
 #include "accel.h"
 
 //-----------------------------------------------

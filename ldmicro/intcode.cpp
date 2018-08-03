@@ -1566,8 +1566,8 @@ static void InitTablesCircuit(int which, void *elem)
             }
             break;
         }
-            // clang-format off
         {
+        // clang-format off
         const char *nameTable;
         case ELEM_7SEG:  nameTable = "char7seg";  goto xseg;
         case ELEM_9SEG:  nameTable = "char9seg";  goto xseg;
@@ -1575,21 +1575,20 @@ static void InitTablesCircuit(int which, void *elem)
         case ELEM_16SEG: nameTable = "char16seg"; goto xseg;
         xseg:
         // clang-format on
-                    if(!IsNumber(l->d.segments.src)) {
-                        if((isVarInited(nameTable) < 0)) {
-                            if(which == ELEM_7SEG) {
-                                sovElement = 1;
-                                Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
-                            } else
-                                oops();
-                            MarkInitedVariable(nameTable);
-                        } else {
-                            Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable, LEN7SEG);
-                        }
-                    }
-                    break;
+            if(!IsNumber(l->d.segments.src)) {
+                if((isVarInited(nameTable) < 0)) {
+                    if(which == ELEM_7SEG) {
+                        sovElement = 1;
+                        Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
+                    } else
+                        oops();
+                    MarkInitedVariable(nameTable);
+                } else {
+                    Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable, LEN7SEG);
+                }
             }
-        // clang-format on
+            break;
+        }
         default:
             break;
     }
@@ -2775,75 +2774,76 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
         }
         {
+        // clang-format off
         int deg, len;
         case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  deg=DEGREE7;  len=LEN7SEG;  goto xseg;
         case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  deg=DEGREE9;  len=LEN9SEG;  goto xseg;
         case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); deg=DEGREE14; len=LEN14SEG; goto xseg;
         case ELEM_16SEG: Comment(3, stringer(ELEM_16SEG)); deg=DEGREE16; len=LEN16SEG; goto xseg;
-        xseg : {
-        #ifdef TABLE_IN_FLASH
-                    if(IsNumber(l->d.segments.dest)) {
-                        THROW_COMPILER_EXCEPTION_FMT(_("Segments instruction: '%s' not a valid destination."), l->d.segments.dest);
-                    }
-                    Op(INT_IF_BIT_SET, stateInOut);
-                    if(IsNumber(l->d.segments.src)) {
-                        int Xseg = CheckMakeNumber(l->d.segments.src);
-                        if(Xseg == DEGREE_CHAR)
-                            Xseg = deg;
-                        else if((Xseg < 0x00) || (len <= Xseg))
-                            Xseg = ' ';
-                        switch(which) {
-                            case ELEM_7SEG:
-                                Xseg = char7seg[Xseg];
-                                break;
-                            default:
-                                oops();
-                        }
-                        char s[MAX_NAME_LEN];
-                        sprintf(s, "0x%X", Xseg);
-                        CheckVarInRange(l->d.segments.dest, s, Xseg);
-                        if(l->d.segments.common == 'A')
-                            Op(INT_SET_VARIABLE_NOT, l->d.segments.dest, Xseg);
-                        else
-                            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.segments.dest, Xseg);
-                    } else {
-                        char *Xseg = l->d.segments.src;
-
-                        char nameTable[MAX_NAME_LEN];
-                        int  sovElement = 0;
-                        /**/
-                        Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", DEGREE_CHAR);
-                        Op(INT_IF_VARIABLE_EQUALS_VARIABLE, Xseg, "$scratch");
-                          Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)deg);
-                          Op(INT_ELSE);
-                            Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, (SDWORD)0x00);
-                              Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)0x20); // ' '
-                            Op(INT_ELSE);
-                              Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, len);
-                              Op(INT_ELSE);
-                                Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)0x20); // ' '
-                              Op(INT_END_IF);
-                            Op(INT_END_IF);
-                        Op(INT_END_IF);
-                        /**/
-                        switch(which) {
-                            case ELEM_7SEG:
-                                strcpy(nameTable, "char7seg");
-                                sovElement = 1;
-                                Op(INT_FLASH_READ, "$scratch", nameTable, Xseg, LEN7SEG, sovElement, char7seg);
-                                break;
-                            default:
-                                oops();
-                        }
-                        if(l->d.segments.common != 'C')
-                            Op(INT_SET_VARIABLE_NOT, "$scratch", "$scratch");
-                        Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.segments.dest, "$scratch");
-                    }
-                    Op(INT_END_IF);
-#endif
-                    break;
-                }
+        xseg :
+        // clang-format on
+#ifdef TABLE_IN_FLASH
+            if(IsNumber(l->d.segments.dest)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("Segments instruction: '%s' not a valid destination."), l->d.segments.dest);
             }
+            Op(INT_IF_BIT_SET, stateInOut);
+            if(IsNumber(l->d.segments.src)) {
+                int Xseg = CheckMakeNumber(l->d.segments.src);
+                if(Xseg == DEGREE_CHAR)
+                    Xseg = deg;
+                else if((Xseg < 0x00) || (len <= Xseg))
+                    Xseg = ' ';
+                switch(which) {
+                    case ELEM_7SEG:
+                        Xseg = char7seg[Xseg];
+                        break;
+                    default:
+                        oops();
+                }
+                char s[MAX_NAME_LEN];
+                sprintf(s, "0x%X", Xseg);
+                CheckVarInRange(l->d.segments.dest, s, Xseg);
+                if(l->d.segments.common == 'A')
+                    Op(INT_SET_VARIABLE_NOT, l->d.segments.dest, Xseg);
+                else
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.segments.dest, Xseg);
+            } else {
+                char *Xseg = l->d.segments.src;
+
+                char nameTable[MAX_NAME_LEN];
+                int  sovElement = 0;
+                /**/
+                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", DEGREE_CHAR);
+                Op(INT_IF_VARIABLE_EQUALS_VARIABLE, Xseg, "$scratch");
+                  Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)deg);
+                  Op(INT_ELSE);
+                    Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, (SDWORD)0x00);
+                      Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)0x20); // ' '
+                    Op(INT_ELSE);
+                      Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, len);
+                      Op(INT_ELSE);
+                        Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)0x20); // ' '
+                      Op(INT_END_IF);
+                    Op(INT_END_IF);
+                Op(INT_END_IF);
+                /**/
+                switch(which) {
+                    case ELEM_7SEG:
+                        strcpy(nameTable, "char7seg");
+                        sovElement = 1;
+                        Op(INT_FLASH_READ, "$scratch", nameTable, Xseg, LEN7SEG, sovElement, char7seg);
+                        break;
+                    default:
+                        oops();
+                }
+                if(l->d.segments.common != 'C')
+                    Op(INT_SET_VARIABLE_NOT, "$scratch", "$scratch");
+                Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.segments.dest, "$scratch");
+            }
+            Op(INT_END_IF);
+#endif
+            break;
+        }
         case ELEM_STEPPER: {
             Comment(3, "ELEM_STEPPER");
             // Pulse generator for STEPPER motor with acceleration and deceleration.
