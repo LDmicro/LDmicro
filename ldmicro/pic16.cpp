@@ -2926,8 +2926,8 @@ static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, 
     return CopyArgToReg(isModificationRisk, destAddr, destSov, name.c_str(), Sign);
 }
 //-----------------------------------------------------------------------------
+// https://wiki.nicksoft.info/mcu:pic16:32bit-math
 // Filename:   QUAD_MATH_TESTS.ASM
-// Created:    29-Jul-2009
 // Author:     Brian Beard
 //-----------------------------------------------------------------------------
 // Binary number in ACb0 = Scratch0..Scratch3.
@@ -2943,27 +2943,29 @@ static void WriteBin32BcdRoutine()
     FwdAddrIsNow(Bin32BcdRoutineAddress);
 #endif
 
-    DWORD bitcnt = Scratch8;
-    DWORD digcnt = Scratch7;
+#define ACb0 Scratch0   // Binary value is copied to ACb0 = Scratch0..Scratch3
+#define sovBin Scratch4 // Size of Binary in bytes is in Scratch4
+#define BCD0 Scratch5   // Addres of Bcd is in Scratch5
+#define digBcd Scratch6 // Number of digits Bcd is in Scratch6
 
-#define digBcd Scratch6 // Number of digits Bcd is stored in Scratch6
-#define BCD0 Scratch5
+#define bitcnt Scratch7 // bitcnt = sovBin * 8
+#define digcnt Scratch8 // digcnt = digBcd
+
     if(BCD0 >= 0x100)
         Instruction(OP_BSF, REG_STATUS, STATUS_IRP);
     else
         Instruction(OP_BCF, REG_STATUS, STATUS_IRP);
-    Instruction(OP_MOVF, BCD0, DEST_W);   //Point to address of least
-    Instruction(OP_MOVWF, REG_FSR);       // significant bcd digit
-    Instruction(OP_MOVF, digBcd, DEST_W); //Load digBcd to
-    Instruction(OP_MOVWF, digcnt);        // digit counter
+    Instruction(OP_MOVF, BCD0, DEST_W);   // Point to address of least
+    Instruction(OP_MOVWF, REG_FSR);       //  significant bcd digit
+    Instruction(OP_MOVF, digBcd, DEST_W); // Load digBcd to
+    Instruction(OP_MOVWF, digcnt);        //  digit counter
 
-    DWORD b2bcd0 = PicProgWriteP;           //Clear all bcd digits
-    Instruction(OP_CLRF, REG_INDF);         //Clear a digit
-    Instruction(OP_INCF, REG_FSR, DEST_F);  //Point to next bcd digit
-    Instruction(OP_DECFSZ, digcnt, DEST_F); //Decrement digit counter
-    Instruction(OP_GOTO, b2bcd0);           // - go up if digcnt > 0
+    DWORD b2bcd0 = PicProgWriteP;           // Clear all bcd digits
+    Instruction(OP_CLRF, REG_INDF);         // Clear a digit
+    Instruction(OP_INCF, REG_FSR, DEST_F);  // Point to next bcd digit
+    Instruction(OP_DECFSZ, digcnt, DEST_F); // Decrement digit counter
+    Instruction(OP_GOTO, b2bcd0);           //  - go up if digcnt > 0
 
-#define sovBin Scratch4
     Instruction(OP_MOVF, sovBin, DEST_W); //
     Instruction(OP_MOVWF, bitcnt);        // bit counter = sovBin * 8
     ClearBit(REG_STATUS, STATUS_C);
@@ -2973,31 +2975,44 @@ static void WriteBin32BcdRoutine()
 
                                            // Outer loop by
     DWORD b2bcd1 = PicProgWriteP;          //  bit counter
-#define ACb0 Scratch0                      //ACb0 is Scratch0..Scratch3
     /*
-    Instruction(OP_RLF, ACb0, DEST_F);     //Shift 32-bit accumulator
-    Instruction(OP_RLF, ACb0 + 1, DEST_F); // left to
-    Instruction(OP_RLF, ACb0 + 2, DEST_F); //  put ms-bit
-    Instruction(OP_RLF, ACb0 + 3, DEST_F); //   into Carry
+    Instruction(OP_RLF, ACb0, DEST_F);     // Shift 32-bit accumulator
+    Instruction(OP_RLF, ACb0 + 1, DEST_F); //  left to
+    Instruction(OP_RLF, ACb0 + 2, DEST_F); //   put ms-bit
+    Instruction(OP_RLF, ACb0 + 3, DEST_F); //    into Carry
     */
-    for(int i = 0; i < 1; i++)
-        Instruction(OP_RLF, ACb0+i, DEST_F);
-    Instruction(OP_MOVF, BCD0, DEST_W);    //Point to address of least
-    Instruction(OP_MOVWF, REG_FSR);        // significant bcd digit
-    Instruction(OP_MOVF, digBcd, DEST_W);  //Inner loop // D'10'
-    Instruction(OP_MOVWF, digcnt);         // digit counter
+    if(ACb0 >= 0x100)
+        Instruction(OP_BSF, REG_STATUS, STATUS_IRP);
+    else
+        Instruction(OP_BCF, REG_STATUS, STATUS_IRP);
+                                           // Shift 32-bit accumulator
+    Instruction(OP_MOVLW, ACb0);           //
+    Instruction(OP_MOVWF, REG_FSR);        // Point to address of 32-bit accumulator
+    Instruction(OP_MOVF, sovBin, DEST_W);  // Load sovBin to
+    Instruction(OP_MOVWF, digcnt);         //  digit counter
+
+    DWORD b2bcd00 = PicProgWriteP;
+    Instruction(OP_RLF, REG_INDF, DEST_F);  // Shift accumulator left
+    Instruction(OP_INCF, REG_FSR, DEST_F);  // Point to next byte of accumulator
+    Instruction(OP_DECFSZ, digcnt, DEST_F); // Decrement digit counter
+    Instruction(OP_GOTO, b2bcd00);          //  - go if digcnt > 0
+
+    Instruction(OP_MOVF, BCD0, DEST_W);    // Point to address of least
+    Instruction(OP_MOVWF, REG_FSR);        //  significant bcd digit
+    Instruction(OP_MOVF, digBcd, DEST_W);  // Inner loop // D'10'
+    Instruction(OP_MOVWF, digcnt);         //  digit counter
 
     DWORD b2bcd2 = PicProgWriteP;
-    Instruction(OP_RLF, REG_INDF, DEST_F);       //Shift Carry into bcd digit
-    Instruction(OP_MOVLW, 10);                   //Subtract ten from digit then
-    Instruction(OP_SUBWF, REG_INDF, DEST_W);     // check and adjust for decimal overflow
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_C); //If Carry = 1 (result >= 0)
-    Instruction(OP_MOVWF, REG_INDF);             // adjust for decimal overflow
-    Instruction(OP_INCF, REG_FSR, DEST_F);       //Point to next bcd digit // INC for little indian
-    Instruction(OP_DECFSZ, digcnt, DEST_F);      //Decrement digit counter
-    Instruction(OP_GOTO, b2bcd2);                // - go if digcnt > 0
-    Instruction(OP_DECFSZ, bitcnt, DEST_F);      //Decrement bit counter
-    Instruction(OP_GOTO, b2bcd1);                // - go if bitcnt > 0
+    Instruction(OP_RLF, REG_INDF, DEST_F);       // Shift Carry into bcd digit
+    Instruction(OP_MOVLW, 10);                   // Subtract ten from digit then
+    Instruction(OP_SUBWF, REG_INDF, DEST_W);     //  check and adjust for decimal overflow
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_C); // If Carry = 1 (result >= 0)
+    Instruction(OP_MOVWF, REG_INDF);             //  adjust for decimal overflow
+    Instruction(OP_INCF, REG_FSR, DEST_F);       // Point to next bcd digit // INC for little indian
+    Instruction(OP_DECFSZ, digcnt, DEST_F);      // Decrement digit counter
+    Instruction(OP_GOTO, b2bcd2);                //  - go if digcnt > 0
+    Instruction(OP_DECFSZ, bitcnt, DEST_F);      // Decrement bit counter
+    Instruction(OP_GOTO, b2bcd1);                //  - go if bitcnt > 0
     Instruction(OP_RETLW, 0);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
@@ -3008,11 +3023,12 @@ static void CallBin32BcdRoutine(const char *nameBcd, const char *nameBin)
 {
     Bin32BcdNeeded = true;
 
-    DWORD addrBin;
+    DWORD addrBin; // address is copied to ACb0
     MemForVariable(nameBin, &addrBin);
 
-    int sizeBin;
+    int sizeBin; // value is copied to sovBin
     sizeBin = SizeOfVar(nameBin);
+
     if(IsNumber(nameBin)) {
         CopyLitToReg(ACb0, sizeBin, "", hobatoi(nameBin), nameBin);
     } else {
@@ -3020,11 +3036,11 @@ static void CallBin32BcdRoutine(const char *nameBcd, const char *nameBin)
     }
     CopyLitToReg(sovBin, 1, "sovBin", sizeBin, "sizeBin");
 
-    DWORD addrBcd;
+    DWORD addrBcd; // address is copied to BCD0
     MemForVariable(nameBcd, &addrBcd);
     CopyLitToReg(BCD0, 1, "BCD0", addrBcd, "addrBcd");
 
-    int sizeBcd;
+    int sizeBcd; // value is copied to digBcd
     switch(sizeBin) {
         case 1:
             sizeBcd = 3;
@@ -5661,6 +5677,7 @@ otherwise the result was zero or greater.
                 break;
             }
             case INT_SET_BIN2BCD: {
+                Comment("INT_SET_BIN2BCD: %s = Bin2Bcd(%s)", a->name1.c_str(), a->name2.c_str());
                 CallBin32BcdRoutine(a->name1, a->name2);
                 break;
             }

@@ -1467,9 +1467,9 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             }
             break;
         }
-        case ELEM_QUAD_ENCOD: {
-#define QUAD_ALGO 222 // 1, 2, 4, 22, 222 are available
+#define QUAD_ALGO 2 // 222 // 1, 2, 4, 22, 222 are available
 #if QUAD_ALGO == 222
+        case ELEM_QUAD_ENCOD: {
             if(n) {
                 (*n)+=2; // counting the number of variables
                 return;
@@ -1480,9 +1480,9 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             sprintf(prevB, "$prev_%s", l->d.QuadEncod.inputB);
             Op(INT_COPY_BIT_TO_BIT, prevA, l->d.QuadEncod.inputA);
             Op(INT_COPY_BIT_TO_BIT, prevB, l->d.QuadEncod.inputB);
-#endif
             break;
         }
+#endif
         default:
             break;
     }
@@ -2835,7 +2835,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                             default:
                                 oops();
                         }
-                        if(l->d.segments.common == 'A')
+                        if(l->d.segments.common != 'C')
                             Op(INT_SET_VARIABLE_NOT, "$scratch", "$scratch");
                         Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.segments.dest, "$scratch");
                     }
