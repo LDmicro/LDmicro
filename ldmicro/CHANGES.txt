@@ -1,8 +1,8 @@
-== Release 4.4.
+== Release 4.4.3.0
 
-    * New: 7SEGMENT LED FONT instruction.
+    * New: 7-SEGMENT FONT CONVERTER instruction.
 
-    * New: BINARY to BCD CONVERTER instruction.
+    * New: BINARY TO BCD CONVERTER instruction.
 
 == Release 4.4.2.0
 
