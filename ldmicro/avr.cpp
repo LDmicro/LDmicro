@@ -1421,7 +1421,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     // end of file record
     fprintf(f, ":00000001FF\n");
     if((Prog.mcu->flashWords) && (AvrProg.size() >= Prog.mcu->flashWords)) {
-        THROW_COMPILER_EXCEPTION_FMT(_(" Flash program memory size %d is exceed limit %d words\nfor %s."),
+        Error(_(" Flash program memory size %d is exceed limit %d words\nfor %s."),
               AvrProg.size(),
               Prog.mcu->flashWords,
               Prog.mcu->mcuName);
@@ -5262,7 +5262,7 @@ static void CompileFromIntermediate()
                     if(clocks > 0x10000) {
                         clocks = 0x10000;
                         clocksSave = clocks * 4;
-                        THROW_COMPILER_EXCEPTION_FMT(_(" The delay is too long!\n"
+                        Error(_(" The delay is too long!\n"
                                 "The maximum possible delay is %lld us."),
                               (clocks * 4 + 1) * 1000000 / Prog.mcuClock);
                     }

@@ -2712,11 +2712,10 @@ static DWORD CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const ch
 
      if(addr1 == addr2) {
         if(sov1 == sov2) {
-            // THROW_COMPILER_EXCEPTION(_(" CopyRegToReg Warning 1"));
+            // Error(_(" CopyRegToReg Warning 1"));
             return addr1;
         } else {
-            THROW_COMPILER_EXCEPTION(_(" CopyRegToReg Message 2"));
-            //Error(_(" CopyRegToReg Message 2"));
+            Error(_(" CopyRegToReg Message 2"));
             return addr1;
         }
     }
@@ -5770,7 +5769,7 @@ otherwise the result was zero or greater.
                     if(clocks > 0xffff) {
                         clocks = 0xffff;
                         clocksSave = clocks * 6;
-                        THROW_COMPILER_EXCEPTION_FMT(_(" The delay is too long!\n"
+                        Error(_(" The delay is too long!\n"
                                 "The maximum possible delay is %lld us."),
                               (clocks * 6 + 10) * 4000000 / Prog.mcuClock);
                     }
