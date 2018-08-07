@@ -1759,6 +1759,87 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
    ||                                                         ||
 
 
+> CHAR TO 7 SEGMENTS FONT CONVERTER    {7SEG    dest:=}
+                                     --{C          src}--
+
+    The variable 'dest' gets the value 'abcdefgDP', it controls (highlights)
+    the font segments.
+    You can use direct access port variable '#PORTx' as the variable 'dest'.
+    It can be connected to the anodes (cathodes) of the 7-segments LED module
+    thru the current-limiting resistors.
+
+    To turn on (highlights) the "a" LED segment, a high level is required
+    on the "a" pin and a low level on the common pin, when a module with
+    the common cathode LED connection is used.
+    When a module with the common anode connection is used, then to turn on
+    the "a" LED segment, the low level is required on the "a" pin and
+    the high level is required on the common pin. Use the 'A' parameter instead
+    of the 'C' to specify which type of common connection is used.
+
+    7 segments display font
+         a
+        --
+     f|    |b
+      |  g |
+        --
+     e|    |c
+      |    |
+        -- .
+         d  DP
+
+    SEGMENT     DP g f e d c b a
+    'dest' BIT   7 6 5 4 3 2 1 0
+    DP - is dot segment
+
+
+    a  --|>|-----+-- common Cathodes LED connection
+                 |
+    b  --|>|-----+
+    ...          |
+                 |
+    DP --|>|-----+
+
+    a  --|<|-----+-- common Anodes connection
+                 |
+    b  --|<|-----+
+    ...          |
+                 |
+    DP --|<|-----+
+
+
+    The variable 'src'(char) must be in the range of 0..128 and usually has a 1-byte size.
+    128 characters of ASCII table codes are implemented.
+    The first 32 ASCII chars replased to the hex digits.
+    The 129th symbol is a symbol of a degree 'o' for use with a temperature value.
+ADDRESS=  0               16(0x10)       31(0x1F)
+row+colmn |               |              |  from 0 to 15 - hex digits
+  0       0123456789ABCDEF0123456789ABCDEF  from 16 to 31 - hex digits with the dot DP
+ 32(0x20)  !"#$%&'()*+,-./0123456789:;<=>?
+ 64(0x40) @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+ 96(0x60) `abcdefghijklmnopqrstuvwxyz{|}~
+128(0x80) o
+          ^
+          |_ degree char 0xB0
+
+    ' ' - cpace char 0x20 - blank
+    DEL char 0x7F - blank
+
+    See  X-segment LED display, font example
+    https://github.com/LDmicro/LDmicro/wiki/X-segment-LED-display,-font-example
+
+
+> BINARY TO BCD CONVERTER     {BIN2BCD dest:=}
+                            --{           src}-
+
+    The 'src' is a binary value with 1,2,3,4 bytes length.
+    The 'dest' is unpacked BCD value with 3, 5, 8, 10 bytes length.
+    Unpacked: Each numeral is encoded into one byte, with four bits
+    representing the numeral and the remaining bits having no significance.
+    Decimal  99(0x63) will be converted to the 0x00 09 09 value.
+    Decimal 100(0x64) will be converted to the 0x01 00 00 value.
+    See https://en.wikipedia.org/wiki/Binary-coded_decimal
+
+
 > QUADRATURE ENCODER        ~~[XqA0 XqB0            YqDir0]-
                             -\[XqZ0   QUAD ENCOD   qCount0]^-
 
