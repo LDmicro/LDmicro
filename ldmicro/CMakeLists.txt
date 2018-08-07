@@ -119,7 +119,7 @@ if(${LDLANG} STREQUAL "ALL")
             target_compile_definitions(${PROJECT_NAME} PRIVATE -DLDLANG_${lang_id})
             target_link_libraries     (${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib)
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                               COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}/DEBUG
+                               COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}
                                )
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                                COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LIBRARIES_FOR ${CMAKE_CURRENT_BINARY_DIR}/LIBRARIES_FOR
@@ -139,7 +139,7 @@ else()
         add_executable       (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
         target_link_libraries(${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}/DEBUG)
+                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR})
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LIBRARIES_FOR ${CMAKE_CURRENT_BINARY_DIR}/LIBRARIES_FOR)
         add_precompiled_header(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp)
