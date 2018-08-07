@@ -1480,8 +1480,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "  #endif\n"
                 "  //mem.h ^^^\n"
                 "#endif\n");
-        fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
     }
+    fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
     fprintf(flh,
             "/*\n"
             "  Type                  Size(bits)\n"
@@ -1743,11 +1743,11 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(Prog.configurationWord & 0xFFFF0000) {
             fprintf(f, "   #FUSES 2=0x%04X\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
         }
-        if(UartFunctionUsed()) {
-            fprintf(f, "  #USE RS232(BAUD=%d, BITS=8, PARITY=N, STOP=1, ERRORS, UART1) // ENABLE=pin\n", Prog.baudRate);
-        }
         if(DelayUsed() || UartFunctionUsed()) {
             fprintf(f, "  #USE DELAY(CLOCK=%d)\n", Prog.mcuClock);
+        }
+        if(UartFunctionUsed()) {
+            fprintf(f, "  #USE RS232(BAUD=%d, BITS=8, PARITY=N, STOP=1, ERRORS, UART1) // ENABLE=pin\n", Prog.baudRate);
         }
         if(AdcFunctionUsed()) {
             fprintf(f, "  #device ADC=10\n");
