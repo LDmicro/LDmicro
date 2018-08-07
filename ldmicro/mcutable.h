@@ -624,6 +624,10 @@ McuExtIntPinInfo PicExtIntPinInfo40[] = {
     { 33 }, // RB0/INT
 };
 
+McuExtIntPinInfo PicExtIntPinInfo44[] = {
+    { 8 }, // RB0/INT
+};
+
 McuExtIntPinInfo PicExtIntPinInfo64[] = {
     { 48 }, // RB0/INT
 };
@@ -816,6 +820,11 @@ McuPwmPinInfo PicPwmPinInfo28_2[] = {
 McuPwmPinInfo PicPwmPinInfo40[] = {
     { 16, 2 },
     { 17, 1 },
+};
+
+McuPwmPinInfo PicPwmPinInfo44[] = {
+    { 35, 2 },
+    { 36, 1 },
 };
 
 McuPwmPinInfo PicPwmPinInfo64[] = {

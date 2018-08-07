@@ -4,10 +4,11 @@
 @if exist ldmicro.exe PAUSE
 @if exist ldmicro.exe goto DEL_LDMICRO
 
+:DEL_LDMICRO_DEBUG
 @del build\Debug\ldmicro.exe
 @if exist build\Debug\ldmicro.exe echo   NOT DELETED build\Debug\ldmicro.exe !!!
 @if exist build\Debug\ldmicro.exe PAUSE
-@if exist build\Debug\ldmicro.exe goto DEL_LDMICRO
+@if exist build\Debug\ldmicro.exe goto DEL_LDMICRO_DEBUG
 
 @SET PROGECT=e:\SVARKA2\svarka1.ld
 @SET PROGECT=e:\SVARKA2\svarka2.ld
@@ -25,8 +26,7 @@ cmake.exe ..
 cmake.exe --build .
 cd ..
 
-copy build\Debug\ldmicro.exe .
-@if not exist ldmicro.exe goto EXIT
-start ldmicro.exe %PROGECT%
+@if not exist build\Debug\ldmicro.exe goto EXIT
+start build\Debug\ldmicro.exe %PROGECT%
 
 :EXIT

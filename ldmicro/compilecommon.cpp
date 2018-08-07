@@ -284,6 +284,17 @@ int InputRegIndex(DWORD addr)
 }
 
 //-----------------------------------------------------------------------------
+int OutputRegIndex(DWORD addr)
+{
+    if((addr == -1) || (addr == 0))
+        THROW_COMPILER_EXCEPTION("Internal error.");
+    for(int i = 0; i < MAX_IO_PORTS; i++)
+        if(Prog.mcu->outputRegs[i] == addr)
+            return i;
+    return -1;
+}
+
+//-----------------------------------------------------------------------------
 // Return the address (octet address) and bit of a previously unused bit of
 // RAM on the target.
 //-----------------------------------------------------------------------------
@@ -671,7 +682,7 @@ int SetMemForVariable(const NameArray &name, DWORD addr, int sizeOfVar)
 int SetSizeOfVar(const char *name, int sizeOfVar, bool showError)
 {
     if(showError)
-        if((sizeOfVar < 1) || (4 < sizeOfVar)) {
+        if((sizeOfVar < 1)/* || (4 < sizeOfVar)*/) {
             Error(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
             sizeOfVar = 2;
         }

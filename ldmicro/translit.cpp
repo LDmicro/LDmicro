@@ -26,7 +26,7 @@
 //-----------------------------------------------------------------------------
 #if defined(LDLANG_RU)
 // code page 1251
-void Transliterate(char *dest, char *str)
+void Transliterate(char *dest, const char *str)
 {
     dest[0] = 0;
     for(; (*str); str++) {

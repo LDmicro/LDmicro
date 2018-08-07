@@ -30,6 +30,7 @@
 #include "freeze.h"
 #include "intcode.h"
 #include "pcports.h"
+#include "display.h"
 
 HINSTANCE Instance;
 HWND      MainWindow;
@@ -2789,6 +2790,9 @@ void CheckPwmPins()
 //-----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
+    if(LEN7SEG != arraylen(char7seg))
+        oops();
+
     if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
         Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
         oops();

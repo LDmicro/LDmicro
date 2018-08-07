@@ -1,8 +1,29 @@
+== Release 4.4.3.0
+
+    * New: 7-SEGMENT FONT CONVERTER instruction.
+
+    * New: BINARY TO BCD CONVERTER instruction.
+
+    * Fixed: QUADRATURE ENCODER start value.
+
+    * Fixed: build failed in CCS when disabling pull up resistor #128
+
+    * Fixed: #USE RS232 & #USE DELAY ansi c generator for PICC build fails depending on their position #127
+
+    * Fixed: Russian localization
+
+    * PIC: You can flash the PIC MCU thru the PICkit 3 Command Line Interface.
+      Press F6 to call flashMcu.bat
+      See flashMcu.bat and readMcu.bat
+
 == Release 4.4.2.0
 
     * New: Incremental QUADRATURE ENCODER instruction.
     See manual.txt and
     https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER
+
+    Incremental QUADRATURE ENCODER controls the brightness of the LED (PWM out)
+    https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER-controls-the-brightness-of-the-LED-(PWM-out)
 
     * Fixed: Bug: UART box shows up even if UART is deleted from the ladder
     diagram after simulating.(#126)

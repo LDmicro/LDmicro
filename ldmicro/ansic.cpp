@@ -665,6 +665,9 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 break;
 
             case INT_WRITE_STRING:
+                strVar1 = IntCode[i].name1.c_str();
+                break;
+
             case INT_SLEEP:
             case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
@@ -820,6 +823,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
+                fprintf(f, "if (%s & (1<<%d)) {\n", MapSym(IntCode[i].name2, ASINT), IntCode[i].literal2);
+                indent++;
+                doIndent(f, i);
+                fprintf(f, "%s |=  (1<<%d); } else {\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                doIndent(f, i);
+                fprintf(f, "%s &= ~(1<<%d); }\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                indent--;
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -859,9 +869,11 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_BIN2BCD:
+                fprintf(f, "%s = bin2bcd(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_BCD2BIN:
+                fprintf(f, "%s = bcd2bin(%s);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT));
                 break;
 
             case INT_SET_SWAP:
@@ -1468,8 +1480,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "  #endif\n"
                 "  //mem.h ^^^\n"
                 "#endif\n");
-        fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
     }
+    fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
     fprintf(flh,
             "/*\n"
             "  Type                  Size(bits)\n"
@@ -1731,11 +1743,11 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(Prog.configurationWord & 0xFFFF0000) {
             fprintf(f, "   #FUSES 2=0x%04X\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
         }
-        if(UartFunctionUsed()) {
-            fprintf(f, "  #USE RS232(BAUD=%d, BITS=8, PARITY=N, STOP=1, ERRORS, UART1) // ENABLE=pin\n", Prog.baudRate);
-        }
         if(DelayUsed() || UartFunctionUsed()) {
             fprintf(f, "  #USE DELAY(CLOCK=%d)\n", Prog.mcuClock);
+        }
+        if(UartFunctionUsed()) {
+            fprintf(f, "  #USE RS232(BAUD=%d, BITS=8, PARITY=N, STOP=1, ERRORS, UART1) // ENABLE=pin\n", Prog.baudRate);
         }
         if(AdcFunctionUsed()) {
             fprintf(f, "  #device ADC=10\n");

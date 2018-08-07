@@ -427,10 +427,9 @@ SDWORD GetSimulationVariable(const NameArray &name)
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
-void SetSimulationStr(char *name, char *val)
+void SetSimulationStr(const char *name, const char *val)
 {
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         if(strcmp(Variables[i].name, name) == 0) {
             strcpy(Variables[i].valstr, val);
             return;
@@ -665,8 +664,8 @@ static const char *MarkUsedVariable(const char *name, DWORD flag)
     if(s)
         return s;
 
-    if(Variables[i].initedRung < 0)
-        Variables[i].initedRung = rungNow;
+//    if(Variables[i].initedRung < 0)
+  //      Variables[i].initedRung = rungNow;
     Variables[i].usedFlags |= flag;
     return nullptr;
 }
@@ -2291,6 +2290,23 @@ void DescribeForIoList(const char *name, int type, char *out)
 void SimulationToggleContact(char *name)
 {
     SetSingleBit(name, !SingleBitOn(name));
+    if((name[0] == 'X') || (name[0] == 'Y')) {
+        DWORD addr = -1;
+        int   bit = -1;
+        MemForSingleBit(name, true, &addr, &bit);
+
+        char s[MAX_NAME_LEN];
+        if(name[0] == 'X')
+            sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
+        else
+            sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
+        SDWORD v = GetSimulationVariable(s);
+        if(SingleBitOn(name))
+            v |= 1<<bit;
+        else
+            v &= ~(1<<bit);
+        SetSimulationVariable(s, v);
+    }
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }
 

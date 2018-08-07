@@ -14,7 +14,6 @@
 
 typedef unsigned char  BYTE;  // 8-bit unsigned
 typedef unsigned short WORD;  // 16-bit unsigned
-typedef signed short   SWORD; // 16-bit signed
 
 #define INTCODE_H_CONSTANTS_ONLY
 

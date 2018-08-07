@@ -540,22 +540,22 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "clear bit number '%s' in var '%s'", IntCode[i].name2.c_str(), IntCode[i].name1.c_str());
                 break;
 
-            case INT_IF_BIT_SET_IN_VAR: // TODO
-                fprintf(f, "if ('%s' & (1<<%d)) != 0  {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
+            case INT_IF_BIT_SET_IN_VAR:
+                fprintf(f, "if ('%s' & (1<<%s)) != 0  {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 indent++;
                 break;
 
-            case INT_IF_BIT_CLEAR_IN_VAR: // TODO
-                fprintf(f, "if ('%s' & (1<<%d)) == 0 {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
+            case INT_IF_BIT_CLEAR_IN_VAR:
+                fprintf(f, "if ('%s' & (1<<%s)) == 0 {", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 indent++;
                 break;
 
-            case INT_IF_BITS_SET_IN_VAR: // TODO
+            case INT_IF_BITS_SET_IN_VAR:
                 fprintf(f, "if ('%s' & %d) == %d  {", IntCode[i].name1.c_str(), IntCode[i].literal, IntCode[i].literal);
                 indent++;
                 break;
 
-            case INT_IF_BITS_CLEAR_IN_VAR: // TODO
+            case INT_IF_BITS_CLEAR_IN_VAR:
                 fprintf(f, "if ('%s' & %d) == 0 {", IntCode[i].name1.c_str(), IntCode[i].literal);
                 indent++;
                 break;
@@ -1406,51 +1406,53 @@ static void InitVarsCircuit(int which, void *elem, int *n)
         }
 #ifndef NEW_TON
         case ELEM_TOF: {
-            if(n)
+            if(n) {
                 (*n)++; // counting the number of variables
-            else {
-                SDWORD period = TimerPeriod(l);
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+                return;
             }
+            SDWORD period = TimerPeriod(l);
+            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             break;
         }
 #endif
 #ifdef NEW_TON
         case ELEM_TCY: {
-            if(n)
+            if(n) {
                 (*n)++; // counting the number of variables
-            else {
-                SDWORD period = TimerPeriod(l) - 1;
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+                return;
             }
+            SDWORD period = TimerPeriod(l) - 1;
+            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             break;
         }
         case ELEM_TON: {
-            if(n)
+            if(n) {
                 (*n)++; // counting the number of variables
-            else {
-                SDWORD period = TimerPeriod(l);
-                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
+                return;
             }
+            SDWORD period = TimerPeriod(l);
+            Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             break;
         }
 #endif
         case ELEM_SEED_RANDOM: {
+            if(n) {
+                (*n)++; // counting the number of variables
+                return;
+            }
             char name[MAX_NAME_LEN];
             sprintf(name, "$seed_%s", l->d.readAdc.name);
-            if(n)
-                (*n)++; // counting the number of variables
-            else {
-                Op(INT_SET_VARIABLE_TO_LITERAL, name, 1);
-            }
+            Op(INT_SET_VARIABLE_TO_LITERAL, name, 1);
             break;
         }
         case ELEM_CTR:
         case ELEM_CTC:
         case ELEM_CTU:
         case ELEM_CTD: {
-            if(n)
+            if(n) {
                 (*n)++; // counting the number of variables
+                return;
+            }
             if(IsNumber(l->d.counter.init)) {
                 int init = CheckMakeNumber(l->d.counter.init);
                 if(!n)
@@ -1465,6 +1467,22 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             }
             break;
         }
+#define QUAD_ALGO 2 // 222 // 1, 2, 4, 22, 222 are available
+#if QUAD_ALGO == 222
+        case ELEM_QUAD_ENCOD: {
+            if(n) {
+                (*n)+=2; // counting the number of variables
+                return;
+            }
+            char prevA[MAX_NAME_LEN];
+            char prevB[MAX_NAME_LEN];
+            sprintf(prevA, "$prev_%s", l->d.QuadEncod.inputA);
+            sprintf(prevB, "$prev_%s", l->d.QuadEncod.inputB);
+            Op(INT_COPY_BIT_TO_BIT, prevA, l->d.QuadEncod.inputA);
+            Op(INT_COPY_BIT_TO_BIT, prevB, l->d.QuadEncod.inputB);
+            break;
+        }
+#endif
         default:
             break;
     }
@@ -1510,9 +1528,8 @@ static void InitTablesCircuit(int which, void *elem)
                 InitTablesCircuit(p->contents[i].which, p->contents[i].data.any);
             break;
         }
-        case ELEM_QUAD_ENCOD: {
-#define QUAD_ALGO 222 // 1, 2, 4, 22, 222 are available
 #if QUAD_ALGO <= 4
+        case ELEM_QUAD_ENCOD: {
             char nameTable[MAX_NAME_LEN];
             strcpy(nameTable, "ELEM_QUAD_ENCOD");
             int32_t count = 16;
@@ -1526,9 +1543,9 @@ static void InitTablesCircuit(int which, void *elem)
             int32_t sovElement = 1;
             //SetSizeOfVar(nameTable, count);
             Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, count, sovElement, vals);
-#endif
             break;
         }
+#endif
         // case ELEM_PIECEWISE_LINEAR:
         case ELEM_LOOK_UP_TABLE: {
             ElemLookUpTable *t = &(l->d.lookUpTable);
@@ -1549,17 +1566,29 @@ static void InitTablesCircuit(int which, void *elem)
             }
             break;
         }
-            // clang-format off
         {
+        // clang-format off
         const char *nameTable;
         case ELEM_7SEG:  nameTable = "char7seg";  goto xseg;
         case ELEM_9SEG:  nameTable = "char9seg";  goto xseg;
         case ELEM_14SEG: nameTable = "char14seg"; goto xseg;
         case ELEM_16SEG: nameTable = "char16seg"; goto xseg;
         xseg:
+        // clang-format on
+            if(!IsNumber(l->d.segments.src)) {
+                if((isVarInited(nameTable) < 0)) {
+                    if(which == ELEM_7SEG) {
+                        sovElement = 1;
+                        Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, LEN7SEG, sovElement, char7seg);
+                    } else
+                        oops();
+                    MarkInitedVariable(nameTable);
+                } else {
+                    Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8*sovElement, nameTable, LEN7SEG);
+                }
+            }
             break;
         }
-        // clang-format on
         default:
             break;
     }
@@ -1570,8 +1599,7 @@ static void InitTables()
 {
     if(TablesUsed()) {
         Comment("INIT TABLES");
-        int i;
-        for(i = 0; i < Prog.numRungs; i++) {
+        for(int i = 0; i < Prog.numRungs; i++) {
             rungNow = i;
             InitTablesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
         }
@@ -2746,13 +2774,75 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
         }
         {
-        case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  goto xseg;
-        case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  goto xseg;
-        case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); goto xseg;
-        case ELEM_16SEG: Comment(3, stringer(ELEM_16SEG)); goto xseg;
-        xseg : {
+        // clang-format off
+        int deg, len;
+        case ELEM_7SEG:  Comment(3, stringer(ELEM_7SEG));  deg=DEGREE7;  len=LEN7SEG;  goto xseg;
+        case ELEM_9SEG:  Comment(3, stringer(ELEM_9SEG));  deg=DEGREE9;  len=LEN9SEG;  goto xseg;
+        case ELEM_14SEG: Comment(3, stringer(ELEM_14SEG)); deg=DEGREE14; len=LEN14SEG; goto xseg;
+        case ELEM_16SEG: Comment(3, stringer(ELEM_16SEG)); deg=DEGREE16; len=LEN16SEG; goto xseg;
+        xseg :
+        // clang-format on
+#ifdef TABLE_IN_FLASH
+            if(IsNumber(l->d.segments.dest)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("Segments instruction: '%s' not a valid destination."), l->d.segments.dest);
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+            if(IsNumber(l->d.segments.src)) {
+                int Xseg = CheckMakeNumber(l->d.segments.src);
+                if(Xseg == DEGREE_CHAR)
+                    Xseg = deg;
+                else if((Xseg < 0x00) || (len <= Xseg))
+                    Xseg = ' ';
+                switch(which) {
+                    case ELEM_7SEG:
+                        Xseg = char7seg[Xseg];
+                        break;
+                    default:
+                        oops();
+                }
+                char s[MAX_NAME_LEN];
+                sprintf(s, "0x%X", Xseg);
+                CheckVarInRange(l->d.segments.dest, s, Xseg);
+                if(l->d.segments.common == 'A')
+                    Op(INT_SET_VARIABLE_NOT, l->d.segments.dest, Xseg);
+                else
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.segments.dest, Xseg);
+            } else {
+                char *Xseg = l->d.segments.src;
+
+                char nameTable[MAX_NAME_LEN];
+                int  sovElement = 0;
+                /**/
+                Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", DEGREE_CHAR);
+                Op(INT_IF_VARIABLE_EQUALS_VARIABLE, Xseg, "$scratch");
+                  Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)deg);
+                  Op(INT_ELSE);
+                    Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, (SDWORD)0x00);
+                      Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)0x20); // ' '
+                    Op(INT_ELSE);
+                      Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, len);
+                      Op(INT_ELSE);
+                        Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)0x20); // ' '
+                      Op(INT_END_IF);
+                    Op(INT_END_IF);
+                Op(INT_END_IF);
+                /**/
+                switch(which) {
+                    case ELEM_7SEG:
+                        strcpy(nameTable, "char7seg");
+                        sovElement = 1;
+                        Op(INT_FLASH_READ, "$scratch", nameTable, Xseg, LEN7SEG, sovElement, char7seg);
+                        break;
+                    default:
+                        oops();
+                }
+                if(l->d.segments.common != 'C')
+                    Op(INT_SET_VARIABLE_NOT, "$scratch", "$scratch");
+                Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.segments.dest, "$scratch");
+            }
+            Op(INT_END_IF);
+#endif
             break;
-        }
         }
         case ELEM_STEPPER: {
             Comment(3, "ELEM_STEPPER");
@@ -2784,26 +2874,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             } else {
                 Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
             }
-            /*
-            if(IsNumber(l->d.move.src)) {
-                CheckVarInRange(l->d.move.dest, l->d.move.src, CheckMakeNumber(l->d.move.src));
-                if(IsAddrInVar(l->d.move.dest))
-                  Op(INT_SET_VARIABLE_TO_LITERAL, &l->d.move.dest[1], hobatoi(l->d.move.src)); // addr in dest[1]
-                else
-                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.move.dest, hobatoi(l->d.move.src));
-            } else {
-                if(IsAddrInVar(l->d.move.dest))
-                  if(IsAddrInVar(l->d.move.src))
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, &l->d.move.dest[1], &l->d.move.src[1]); // addr in dest[1], addr in src[1]
-                  else
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, &l->d.move.dest[1], l->d.move.src); // addr in dest[1]
-                else
-                  if(IsAddrInVar(l->d.move.src))
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, &l->d.move.src[1]); // addr in src[1]
-                  else
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.move.dest, l->d.move.src);
-            }
-            */
             Op(INT_END_IF);
             break;
         }
@@ -2986,15 +3056,15 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   Op(INT_VARIABLE_SET_BIT, state, "1");
                 Op(INT_END_IF);
               } else {
-                #if 0
+                #if 1
+                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
+                #else
                 Op(INT_IF_BIT_SET, l->d.QuadEncod.inputA);
                   Op(INT_VARIABLE_SET_BIT, state, "0");
                 Op(INT_END_IF);
                 Op(INT_IF_BIT_SET, l->d.QuadEncod.inputB);
                   Op(INT_VARIABLE_SET_BIT, state, "1");
                 Op(INT_END_IF);
-                #else
-                Error(_("Inputs '%s' and '%s' must be located in same MCU PORT!"), l->d.QuadEncod.inputA, l->d.QuadEncod.inputB);
                 #endif
               }
 
@@ -3087,7 +3157,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               char A_xorB[MAX_NAME_LEN];
               sprintf(A_xorB, "$A_xorB_%s", l->d.QuadEncod.counter);
 #endif
-              if(strlen(l->d.QuadEncod.inputZ) && (l->d.QuadEncod.countPerRevol >= 0)) {
+              if(strlen(l->d.QuadEncod.inputZ)) {
                 char storeName[MAX_NAME_LEN];
                 GenSymOneShot(storeName, l->d.QuadEncod.counter, "");
                 Op(INT_COPY_BIT_TO_BIT, nowZ, l->d.QuadEncod.inputZ);
@@ -3309,7 +3379,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         THROW_COMPILER_EXCEPTION_FMT(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
                     }
                 }
-                Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2, stateInOut2);
+                Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2/*, stateInOut2*/);
             }
             Op(INT_END_IF);
             break;

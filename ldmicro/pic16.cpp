@@ -2712,11 +2712,10 @@ static DWORD CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const ch
 
      if(addr1 == addr2) {
         if(sov1 == sov2) {
-            // THROW_COMPILER_EXCEPTION(_(" CopyRegToReg Warning 1"));
+            // Error(_(" CopyRegToReg Warning 1"));
             return addr1;
         } else {
-            THROW_COMPILER_EXCEPTION(_(" CopyRegToReg Message 2"));
-            //Error(_(" CopyRegToReg Message 2"));
+            Error(_(" CopyRegToReg Message 2"));
             return addr1;
         }
     }
@@ -2926,6 +2925,10 @@ static DWORD CopyArgToReg(bool isModificationRisk, DWORD destAddr, int destSov, 
     return CopyArgToReg(isModificationRisk, destAddr, destSov, name.c_str(), Sign);
 }
 //-----------------------------------------------------------------------------
+// http://www.piclist.com/techref/member/BB-LTL-/index.htm
+// https://wiki.nicksoft.info/mcu:pic16:32bit-math
+// Filename:   QUAD_MATH_TESTS.ASM
+// Author:     Brian Beard
 //-----------------------------------------------------------------------------
 // Binary number in ACb0 = Scratch0..Scratch3.
 // BCD9 to BCD0 comprise one ten digit unpacked Binary-Coded-Decimal number.
@@ -2940,76 +2943,104 @@ static void WriteBin32BcdRoutine()
     FwdAddrIsNow(Bin32BcdRoutineAddress);
 #endif
 
-    DWORD bitcnt = Scratch8;
-    DWORD digcnt = Scratch7;
+#define ACb0 Scratch0   // Binary value is copied to ACb0 = Scratch0..Scratch3
+#define sovBin Scratch4 // Size of Binary in bytes is in Scratch4
+#define BCD0 Scratch5   // Addres of Bcd is in Scratch5
+#define digBcd Scratch6 // Number of digits Bcd is in Scratch6
 
-#define sovBcd Scratch6
-#define BCD0 Scratch5
-    Instruction(OP_MOVF, BCD0, DEST_W);   //Point to address of least
-    Instruction(OP_MOVWF, REG_FSR);       // significant bcd digit
-    Instruction(OP_MOVF, sovBcd, DEST_W); //Inner loop //D'10'
-    Instruction(OP_MOVWF, digcnt);        // digit counter
-    DWORD b2bcd0 = PicProgWriteP;
-    Instruction(OP_CLRF, REG_INDF);         //Clear all bcd digits
-    Instruction(OP_INCF, REG_FSR, DEST_F);  //Point to next bcd digit
-    Instruction(OP_DECFSZ, digcnt, DEST_F); //Decrement digit counter
-    Instruction(OP_GOTO, b2bcd0);           // - go if digcnt > 0
+#define bitcnt Scratch7 // bitcnt = sovBin * 8
+#define digcnt Scratch8 // digcnt = digBcd
 
-#define sovBin Scratch4
-    Instruction(OP_MOVF, sovBin, DEST_W); //Outer loop //D'32'
-    Instruction(OP_MOVWF, bitcnt);        // bit counter
-    Instruction(OP_RLF, bitcnt, DEST_F);  // *2
-    Instruction(OP_RLF, bitcnt, DEST_F);  // *4
-    Instruction(OP_RLF, bitcnt, DEST_F);  // *8
-    DWORD b2bcd1 = PicProgWriteP;
-#define ACb0 Scratch0                      //..Scratch3
-    Instruction(OP_RLF, ACb0, DEST_F);     //Shift 32-bit accumulator
-    Instruction(OP_RLF, ACb0 + 1, DEST_F); // left to
-    Instruction(OP_RLF, ACb0 + 2, DEST_F); //  put ms-bit
-    Instruction(OP_RLF, ACb0 + 3, DEST_F); //   into Carry
-    Instruction(OP_MOVF, BCD0, DEST_W);    //Point to address of least
-    Instruction(OP_MOVWF, REG_FSR);        // significant bcd digit
-    Instruction(OP_MOVF, sovBcd, DEST_W);  //Inner loop //D'10'
-    Instruction(OP_MOVWF, digcnt);         // digit counter
+    if(BCD0 >= 0x100)
+        Instruction(OP_BSF, REG_STATUS, STATUS_IRP);
+    else
+        Instruction(OP_BCF, REG_STATUS, STATUS_IRP);
+    Instruction(OP_MOVF, BCD0, DEST_W);   // Point to address of least
+    Instruction(OP_MOVWF, REG_FSR);       //  significant bcd digit
+    Instruction(OP_MOVF, digBcd, DEST_W); // Load digBcd to
+    Instruction(OP_MOVWF, digcnt);        //  digit counter
+
+    DWORD b2bcd0 = PicProgWriteP;           // Clear all bcd digits
+    Instruction(OP_CLRF, REG_INDF);         // Clear a digit
+    Instruction(OP_INCF, REG_FSR, DEST_F);  // Point to next bcd digit
+    Instruction(OP_DECFSZ, digcnt, DEST_F); // Decrement digit counter
+    Instruction(OP_GOTO, b2bcd0);           //  - go up if digcnt > 0
+
+    Instruction(OP_MOVF, sovBin, DEST_W); //
+    Instruction(OP_MOVWF, bitcnt);        // bit counter = sovBin * 8
+    ClearBit(REG_STATUS, STATUS_C);
+    Instruction(OP_RLF, bitcnt, DEST_F);  // *2 // * 2
+    Instruction(OP_RLF, bitcnt, DEST_F);  // *2 // * 4
+    Instruction(OP_RLF, bitcnt, DEST_F);  // *2 // * 8
+
+                                           // Outer loop by
+    DWORD b2bcd1 = PicProgWriteP;          //  bit counter
+    /*
+    Instruction(OP_RLF, ACb0, DEST_F);     // Shift 32-bit accumulator
+    Instruction(OP_RLF, ACb0 + 1, DEST_F); //  left to
+    Instruction(OP_RLF, ACb0 + 2, DEST_F); //   put ms-bit
+    Instruction(OP_RLF, ACb0 + 3, DEST_F); //    into Carry
+    */
+    if(ACb0 >= 0x100)
+        Instruction(OP_BSF, REG_STATUS, STATUS_IRP);
+    else
+        Instruction(OP_BCF, REG_STATUS, STATUS_IRP);
+                                           // Shift 32-bit accumulator
+    Instruction(OP_MOVLW, ACb0);           //
+    Instruction(OP_MOVWF, REG_FSR);        // Point to address of 32-bit accumulator
+    Instruction(OP_MOVF, sovBin, DEST_W);  // Load sovBin to
+    Instruction(OP_MOVWF, digcnt);         //  digit counter
+
+    DWORD b2bcd00 = PicProgWriteP;
+    Instruction(OP_RLF, REG_INDF, DEST_F);  // Shift accumulator left
+    Instruction(OP_INCF, REG_FSR, DEST_F);  // Point to next byte of accumulator
+    Instruction(OP_DECFSZ, digcnt, DEST_F); // Decrement digit counter
+    Instruction(OP_GOTO, b2bcd00);          //  - go if digcnt > 0
+
+    Instruction(OP_MOVF, BCD0, DEST_W);    // Point to address of least
+    Instruction(OP_MOVWF, REG_FSR);        //  significant bcd digit
+    Instruction(OP_MOVF, digBcd, DEST_W);  // Inner loop // D'10'
+    Instruction(OP_MOVWF, digcnt);         //  digit counter
+
     DWORD b2bcd2 = PicProgWriteP;
-    Instruction(OP_RLF, REG_INDF, DEST_F);       //Shift Carry into bcd digit
-    Instruction(OP_MOVLW, 10);                   //Subtract ten from digit then
-    Instruction(OP_SUBWF, REG_INDF, DEST_W);     // check and adjust for decimal overflow
-    Instruction(OP_BTFSC, REG_STATUS, STATUS_C); //If Carry = 1 (result >= 0)
-    Instruction(OP_MOVWF, REG_INDF);             // adjust for decimal overflow
-    Instruction(OP_INCF, REG_FSR, DEST_F);       //Point to next bcd digit
-    Instruction(OP_DECFSZ, digcnt, DEST_F);      //Decrement digit counter
-    Instruction(OP_GOTO, b2bcd2);                // - go if digcnt > 0
-    Instruction(OP_DECFSZ, bitcnt, DEST_F);      //Decrement bit counter
-    Instruction(OP_GOTO, b2bcd1);                // - go if bitcnt > 0
+    Instruction(OP_RLF, REG_INDF, DEST_F);       // Shift Carry into bcd digit
+    Instruction(OP_MOVLW, 10);                   // Subtract ten from digit then
+    Instruction(OP_SUBWF, REG_INDF, DEST_W);     //  check and adjust for decimal overflow
+    Instruction(OP_BTFSC, REG_STATUS, STATUS_C); // If Carry = 1 (result >= 0)
+    Instruction(OP_MOVWF, REG_INDF);             //  adjust for decimal overflow
+    Instruction(OP_INCF, REG_FSR, DEST_F);       // Point to next bcd digit // INC for little indian
+    Instruction(OP_DECFSZ, digcnt, DEST_F);      // Decrement digit counter
+    Instruction(OP_GOTO, b2bcd2);                //  - go if digcnt > 0
+    Instruction(OP_DECFSZ, bitcnt, DEST_F);      // Decrement bit counter
+    Instruction(OP_GOTO, b2bcd1);                //  - go if bitcnt > 0
     Instruction(OP_RETLW, 0);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
         THROW_COMPILER_EXCEPTION("Internal error.");
 }
 
-static void CallBin32BcdRoutine(char *nameBcd, char *nameBin)
+static void CallBin32BcdRoutine(const char *nameBcd, const char *nameBin)
 {
     Bin32BcdNeeded = true;
 
-    DWORD addrBin;
+    DWORD addrBin; // address is copied to ACb0
     MemForVariable(nameBin, &addrBin);
 
-    int sizeBin;
+    int sizeBin; // value is copied to sovBin
     sizeBin = SizeOfVar(nameBin);
-    sizeBin = 4;
+
     if(IsNumber(nameBin)) {
         CopyLitToReg(ACb0, sizeBin, "", hobatoi(nameBin), nameBin);
     } else {
         CopyRegToReg(ACb0, sizeBin, addrBin, sizeBin, "", nameBin, true);
     }
-    CopyLitToReg(sovBin, 1, "", sizeBin, "");
+    CopyLitToReg(sovBin, 1, "sovBin", sizeBin, "sizeBin");
 
-    DWORD addrBcd;
+    DWORD addrBcd; // address is copied to BCD0
     MemForVariable(nameBcd, &addrBcd);
-    CopyLitToReg(BCD0, 1, "", addrBcd, "");
+    CopyLitToReg(BCD0, 1, "BCD0", addrBcd, "addrBcd");
 
-    int sizeBcd;
+    int sizeBcd; // value is copied to digBcd
     switch(sizeBin) {
         case 1:
             sizeBcd = 3;
@@ -3026,12 +3057,21 @@ static void CallBin32BcdRoutine(char *nameBcd, char *nameBin)
         default:
             THROW_COMPILER_EXCEPTION("Internal error.");
     }
+    if(sizeBcd != SizeOfVar(nameBcd)) {
+        Error("sizeBcd=%d != SizeOfVar(nameBcd)==%d", sizeBcd, SizeOfVar(nameBcd));
+        SetSizeOfVar(nameBcd, sizeBcd);
+    }
+
     sizeBcd = SizeOfVar(nameBcd);
-    sizeBcd = 10;
-    CopyLitToReg(sovBcd, 1, "", sizeBcd, "");
+    CopyLitToReg(digBcd, 1, "digBcd", sizeBcd, "sizeBcd");
 
     ////DWORD BCD0, int sizeBcd, DWORD ACb0, int sizeBin
     CallWithPclath(Bin32BcdRoutineAddress);
+}
+
+static void CallBin32BcdRoutine(const NameArray& nameBcd, const NameArray& nameBin)
+{
+    CallBin32BcdRoutine(nameBcd.c_str(), nameBin.c_str());
 }
 
 //-----------------------------------------------------------------------------
@@ -3381,15 +3421,22 @@ For example, for a 32-bit add:
     incfsz   a+3,w
     addwf    b+3,f
 */
+/*
+Для обнаружения переполнения разрядной сетки используют следующие способы:
+
+1. Сравнивают знаки слагаемых со знаком суммы. Сигнал переполнения
+вырабатывается тогда, когда знаки слагаемых одинаковы и не совпадают со
+знаком суммы.
+*/
 static void add(DWORD b, DWORD a, int sov, const char *overlap, const char *overflow)
 //                addrb    addra     sovb == sova
-// b = b + a , b - is rewritten
+// r = b = b + a , b - is rewritten
 {
     Comment("add");
     if(overflow && strlen(overflow)) {
         Instruction(OP_MOVF, b + sov - 1, DEST_W);
         Instruction(OP_XORWF, a + sov - 1, DEST_W);
-        Instruction(OP_MOVWF, ScratchS);
+        Instruction(OP_MOVWF, ScratchS); // if signa != signb then ScratchS:BIT7 is 1
     }
     Instruction(OP_MOVF, a, DEST_W);
     Instruction(OP_ADDWF, b, DEST_F);
@@ -3412,25 +3459,25 @@ static void add(DWORD b, DWORD a, int sov, const char *overlap, const char *over
         }
     }
     if(overflow && strlen(overflow)) {
-        /*
-    if((sign2 == sign3)
-    && (signr != sign3))
+    /*
+    if((signb == signa)
+    && (signr != signa))
         SetSingleBit(Overflow, true);
     */
         DWORD notOverflow = AllocFwdAddr();
         Instruction(OP_BTFSC, ScratchS, 7);
-        Instruction(OP_GOTO, notOverflow); // BIT7 == 1 if sign2 != sign3
-                                           // BIT7 == 0 if sign2 == sign3
+        Instruction(OP_GOTO, notOverflow); // BIT7 == 1 if signb != signa
+                                           // BIT7 == 0 if signb == signa
         Instruction(OP_MOVF, b + sov - 1, DEST_W);
         Instruction(OP_XORWF, a + sov - 1, DEST_W);
         Instruction(OP_MOVWF, ScratchS);
         Instruction(OP_BTFSS, ScratchS, 7);
-        Instruction(OP_GOTO, notOverflow); // BIT7 == 0 if sign2 == sign3
-                                           // BIT7 == 1 if sign2 != sign3
-        DWORD addr2 = 0;
-        int   bit2 = -1;
-        MemForSingleBit(overflow, false, &addr2, &bit2);
-        SetBit(addr2, bit2);
+        Instruction(OP_GOTO, notOverflow); // BIT7 == 0 if signr == signa
+                                           // BIT7 == 1 if signr != signa
+        DWORD addr = 0;
+        int   bit = -1;
+        MemForSingleBit(overflow, false, &addr, &bit);
+        SetBit(addr, bit, "$overflow");
 
         FwdAddrIsNow(notOverflow);
     }
@@ -3472,14 +3519,15 @@ For example, for a 32-bit subtraction:
 */
 static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, const char *overlap, const char *overflow)
 //                  addrb    addra  sovb == sova
-// b = b - a , b - is rewritten
+// r = b = b - a , b - is rewritten
 {
-    Comment("sub_");
     if(overflow && strlen(overflow)) {
+        Comment("save sign");
         Instruction(OP_MOVF, b + sov - 1, DEST_W);
         Instruction(OP_XORWF, a + sov - 1, DEST_W);
-        Instruction(OP_MOVWF, ScratchS);
+        Instruction(OP_MOVWF, ScratchS); // if signa != signb then ScratchS:BIT7 is 1
     }
+    Comment("sub_");
     Instruction(OP_MOVF, a, DEST_W); // subtract byte 0 (LSB)
     Instruction(OP_SUBWF, b, DEST_W_F);
     if(sov >= 2) {
@@ -3501,11 +3549,12 @@ static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, const char *overlap, 
         }
     }
     if(overflow && strlen(overflow)) {
-        /*
-    if((sign2 != sign3)
-    && (signr == sign3))
+    /*
+    if((signb != signa)
+    && (signr == signa))
           SetSingleBit(Overflow, true);
     */
+        Comment("check sign");
         DWORD notOverflow = AllocFwdAddr();
         Instruction(OP_BTFSS, ScratchS, 7);
         Instruction(OP_GOTO, notOverflow); // BIT7 == 0 if sign2 == sign3
@@ -3514,15 +3563,15 @@ static void sub_(DWORD b, DWORD a, int sov, BYTE DEST_W_F, const char *overlap, 
             Instruction(OP_MOVF, b + sov - 1, DEST_W);
         else
             Instruction(OP_NOP_);
-        Instruction(OP_XORWF, a + sov - 1, DEST_W); //???
+        Instruction(OP_XORWF, a + sov - 1, DEST_W);
         Instruction(OP_MOVWF, ScratchS);
         Instruction(OP_BTFSC, ScratchS, 7);
         Instruction(OP_GOTO, notOverflow); // BIT7 == 1 if sign2 != sign3
                                            // BIT7 == 0 if sign2 == sign3
-        DWORD addr2 = 0;
-        int   bit2 = -1;
-        MemForSingleBit(overflow, false, &addr2, &bit2);
-        SetBit(addr2, bit2);
+        DWORD addr = 0;
+        int   bit = -1;
+        MemForSingleBit(overflow, false, &addr, &bit);
+        SetBit(addr, bit, "$overflow");
 
         FwdAddrIsNow(notOverflow);
     }
@@ -3542,7 +3591,7 @@ static void sub(DWORD b, DWORD a, int sov)
 {
     sub_(b, a, sov, DEST_F, nullptr, nullptr);
 }
-
+/*
 static void cmp(DWORD b, DWORD a, int sov, char *overlap, char *overflow)
 {
     sub_(b, a, sov, DEST_W, overlap, overflow);
@@ -4207,18 +4256,21 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForSingleBit("$overflow", &addrO, &bitO);
                 ClearBit(addrO, bitO, "$overflow");
 
-                // sub used, we need Sign
+                // sub used, we need $overflow
                 sub(addrB, addrA, sov, nullptr, "$overflow"); // b = b - a , b - is rewritten
+/*
+If the exclusive-or of the sign and overflow flags is 1,
+the subtraction result was less than zero,
+otherwise the result was zero or greater.
+*/
                 XorBit(addrO, bitO, addrB + sov - 1, 7);
                 switch(a->op) {
                     case INT_IF_GEQ:
                     case INT_IF_LEQ:
-                        //skpc
                         IfBitClear(addrO, bitO);
                         break;
                     case INT_IF_LES:
                     case INT_IF_GRT:
-                        //skpnc
                         IfBitSet(addrO, bitO);
                         break;
                     default:
@@ -4612,6 +4664,7 @@ static void CompileFromIntermediate(bool topLevel)
                 MemForVariable(a->name1, &addr1);
                 // MemForVariable(a->name2, &addr2);
                 // MemForVariable(a->name3, &addr3);
+                //MemForSingleBit(a->name4, &addr4, &bit4); // Set Carry to stateInOut // Overflow
 
                 sov1 = SizeOfVar(a->name1);
                 // sov2 = SizeOfVar(a->name2);
@@ -4654,37 +4707,35 @@ static void CompileFromIntermediate(bool topLevel)
                 Instruction(OP_DECF, addr1 + 1, DEST_F);
                 break;
 
-                case INT_SET_VARIABLE_SUBTRACT: {
-                    Comment("INT_SET_VARIABLE_SUBTRACT %s := %s - %s; '%s'; '%s'",
-                            a->name1.c_str(),
-                            a->name2.c_str(),
-                            a->name3.c_str(),
-                            a->name4.c_str(),
-                            a->name5.c_str());
-                    // a->name1 = a->name2 - a->name3
-                    MemForVariable(a->name1, &addr1);
-                    // MemForVariable(a->name2, &addr2);
-                    // MemForVariable(a->name3, &addr3);
+            case INT_SET_VARIABLE_SUBTRACT: {
+                Comment("INT_SET_VARIABLE_SUBTRACT %s := %s - %s; '%s'; '%s'",
+                        a->name1.c_str(),
+                        a->name2.c_str(),
+                        a->name3.c_str(),
+                        a->name4.c_str(),
+                        a->name5.c_str());
+                // a->name1 = a->name2 - a->name3
+                MemForVariable(a->name1, &addr1);
 
-                    sov1 = SizeOfVar(a->name1);
-                    sov2 = SizeOfVar(a->name2);
-                    sov3 = SizeOfVar(a->name3);
-                    sov = std::max(sov2, sov3);
-                    if(sov1 < sov) {
-                        Error(" Size of result '%s' less then an argument(s) '%s' or '%s'",
-                              a->name1.c_str(),
-                              a->name2.c_str(),
-                              a->name3.c_str());
-                    }
+                sov1 = SizeOfVar(a->name1);
+                sov2 = SizeOfVar(a->name2);
+                sov3 = SizeOfVar(a->name3);
+                sov = std::max(sov2, sov3);
+                if(sov1 < sov) {
+                    Error(" Size of result '%s' less then an argument(s) '%s' or '%s'",
+                          a->name1.c_str(),
+                          a->name2.c_str(),
+                          a->name3.c_str());
+                }
 
-                    // DWORD addrB = CopyArgToReg(true, Scratch0, sov, a->name2, true);  // v1
-                    // isModificationRisk = addr1 != addr2;
-                    // DWORD addrB = CopyArgToReg(addr1 != addr2, Scratch0, sov, a->name2, true); // v2
-                    DWORD addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1), addr1, Scratch0, sov1, a->name2, true);
-                    DWORD addrA = CopyArgToReg(false, Scratch4, sov, a->name3, true);
-                    sub(addrB, addrA, sov, a->name4, a->name5); // b = b - a , b - is rewritten
-                    CopyRegToReg(addr1, sov1, addrB, sov, a->name1, "addrB", true);
-                    break;
+                // DWORD addrB = CopyArgToReg(true, Scratch0, sov, a->name2, true);  // v1
+                // isModificationRisk = addr1 != addr2;
+                // DWORD addrB = CopyArgToReg(addr1 != addr2, Scratch0, sov, a->name2, true); // v2
+                DWORD addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1), addr1, Scratch0, sov1, a->name2, true);
+                DWORD addrA = CopyArgToReg(false, Scratch4, sov, a->name3, true);
+                sub(addrB, addrA, sov, a->name4, a->name5); // b = b - a , b - is rewritten
+                CopyRegToReg(addr1, sov1, addrB, sov, a->name1, "addrB", true);
+                break;
             }
             case -INT_SET_VARIABLE_MULTIPLY:
                 MultiplyNeeded = true;
@@ -5626,6 +5677,8 @@ static void CompileFromIntermediate(bool topLevel)
                 break;
             }
             case INT_SET_BIN2BCD: {
+                Comment("INT_SET_BIN2BCD: %s = Bin2Bcd(%s)", a->name1.c_str(), a->name2.c_str());
+                CallBin32BcdRoutine(a->name1, a->name2);
                 break;
             }
 #ifdef TABLE_IN_FLASH
@@ -5716,7 +5769,7 @@ static void CompileFromIntermediate(bool topLevel)
                     if(clocks > 0xffff) {
                         clocks = 0xffff;
                         clocksSave = clocks * 6;
-                        THROW_COMPILER_EXCEPTION_FMT(_(" The delay is too long!\n"
+                        Error(_(" The delay is too long!\n"
                                 "The maximum possible delay is %lld us."),
                               (clocks * 6 + 10) * 4000000 / Prog.mcuClock);
                     }
@@ -7230,8 +7283,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         WriteDivideRoutine();
     if(DivideRoutineUsed())
         WriteDivideRoutine24x16();
-//  if(Bin32BcdRoutineUsed())
-//      WriteBin32BcdRoutine();
+    if(Bin32BcdRoutineUsed())
+        WriteBin32BcdRoutine();
 #endif
 
 #ifndef MOVE_TO_PAGE_0
