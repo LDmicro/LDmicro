@@ -111,19 +111,20 @@ if(MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "/MANIFEST:NO")
 endif()
 
-
 if(${LDLANG} STREQUAL "ALL")
     foreach(lang_id ${LDLANG_ALL})
         if(${lang_id} STREQUAL "EN")
             add_executable            (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
             target_compile_definitions(${PROJECT_NAME} PRIVATE -DLDLANG_${lang_id})
             target_link_libraries     (${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib)
+
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                               COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}/DEBUG
+                               COMMAND ${CMAKE_COMMAND} -D pattern="${PROJECT_NAME}.exe"
+                               -D _S="${HELPER_SCRIPRS}"
+                               -D _D=${CMAKE_SOURCE_DIR}/LIBRARIES_FOR
+                               -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/after_build.cmake
                                )
-            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                               COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LIBRARIES_FOR ${CMAKE_CURRENT_BINARY_DIR}/LIBRARIES_FOR
-                               )
+
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_executable            (${PROJECT_NAME}-${ldlang_lower} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
@@ -138,10 +139,15 @@ else()
         add_definitions(-DLDLANG_${LDLANG})
         add_executable       (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
         target_link_libraries(${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib)
+
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}/DEBUG)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/LIBRARIES_FOR ${CMAKE_CURRENT_BINARY_DIR}/LIBRARIES_FOR)
+                           COMMAND ${CMAKE_COMMAND} -D pattern="${PROJECT_NAME}.exe"
+                           -D _S="${HELPER_SCRIPRS}"
+                           -D _D=${CMAKE_SOURCE_DIR}/LIBRARIES_FOR
+                           -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/after_build.cmake
+                           )
+
+
         add_precompiled_header(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp)
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         add_definitions(-DLDLANG_${LDLANG})
@@ -149,11 +155,15 @@ else()
         set(_project_name ${PROJECT_NAME}-${ldlang_lower})
         add_executable       (${_project_name} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
         target_link_libraries(${_project_name} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower})
+
         add_custom_command(TARGET ${_project_name} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR}/DEBUG)
-        add_custom_command(TARGET ${_project_name} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy  ${HELPER_SCRIPRS} ${CMAKE_CURRENT_BINARY_DIR})
-        add_precompiled_header(${_project_name} stdafx.h FORCEINCLUDE SOURCE_CXX stdafx.cpp)
+                          COMMAND ${CMAKE_COMMAND} -D pattern="${_project_name}.exe"
+                          -D _S="${HELPER_SCRIPRS}"
+                          -D _D=${CMAKE_SOURCE_DIR}/LIBRARIES_FOR
+                          -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/after_build.cmake
+                          )
+
+        add_precompiled_header(${_project_name} ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp)
     endif()
 
 endif()
