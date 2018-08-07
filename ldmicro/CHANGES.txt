@@ -1,8 +1,20 @@
-== Release 4.4.
+== Release 4.4.3.0
 
-    * New: 7SEGMENT LED FONT instruction.
+    * New: 7-SEGMENT FONT CONVERTER instruction.
 
-    * New: BINARY to BCD CONVERTER instruction.
+    * New: BINARY TO BCD CONVERTER instruction.
+
+    * Fixed: QUADRATURE ENCODER start value.
+
+    * Fixed: build failed in CCS when disabling pull up resistor #128
+
+    * Fixed: #USE RS232 & #USE DELAY ansi c generator for PICC build fails depending on their position #127
+
+    * Fixed: Russian localization
+
+    * PIC: You can flash the PIC MCU thru the PICkit 3 Command Line Interface.
+      Press F6 to call flashMcu.bat
+      See flashMcu.bat and readMcu.bat
 
 == Release 4.4.2.0
 

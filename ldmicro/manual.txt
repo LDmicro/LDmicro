@@ -1759,8 +1759,8 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
    ||                                                         ||
 
 
-> CHAR TO 7 SEGMENTS FONT CONVERTER    {7SEG    dest:=}
-                                     --{C          src}--
+> 7-SEGMENTS FONT CONVERTER    {7SEG    dest:=}
+                             --{C          src}--
 
     The variable 'dest' gets the value 'abcdefgDP', it controls (highlights)
     the font segments.
