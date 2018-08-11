@@ -2973,6 +2973,13 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
 
         case ELEM_SET_PWM: {
+            McuIoPinInfo *iop = PinInfoForName(l->d.setPwm.name);
+            if(iop) {
+                McuPwmPinInfo *ioPWM = PwmPinInfo(iop->pin);
+                if(ioPWM && (ioPWM->timer == Prog.cycleTimer)) {
+                    Error(_("PWM '%s' and  PLC cycle timer can not use the same timer %d!\nChange the PLC cycle timer to 0.\nMenu Settings->MCU parameters..."), l->d.setPwm.name, Prog.cycleTimer);
+                }
+            }
             Comment(3, "ELEM_SET_PWM");
             char s[MAX_NAME_LEN];
             sprintf(s, "$%s", l->d.setPwm.name);
