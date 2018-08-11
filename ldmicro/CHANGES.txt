@@ -1,3 +1,9 @@
+== Release 4.4.3.1
+
+    * Fixed: ADC conversion time Tad for PIC16F88
+
+    * Fixed: PWM timer can not be equal to the PLC cycle timer.
+
 == Release 4.4.3.0
 
     * New: 7-SEGMENT FONT CONVERTER instruction.

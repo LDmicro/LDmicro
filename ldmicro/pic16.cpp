@@ -5460,6 +5460,19 @@ otherwise the result was zero or greater.
                     } else {                             // 0.5 MHz
                         adcs = 0;                        // Fosc/2
                     }
+                } else if(McuAs(" PIC16F88 ") //
+                ) {
+                    if(Prog.mcuClock > 10000000) {       // 20 MHz
+                        adcs = 6;                        // Fosc/64
+                    } else if(Prog.mcuClock > 5000000) { // 10 MHz
+                        adcs = 5;                        // Fosc/16
+                    } else if(Prog.mcuClock > 2500000) { // 5 MHz
+                        adcs = 1;                        // Fosc/8
+                    } else if(Prog.mcuClock > 1250000) { // 2.5 MHz
+                        adcs = 4;                        // Fosc/4
+                    } else {                             // 1.25 MHz
+                        adcs = 0;                        // Fosc/2
+                    }
                 } else {
                     if(Prog.mcuClock > 5000000) {        // 20 MHz
                         adcs = 2;                        // 32*Tosc
@@ -5519,8 +5532,7 @@ otherwise the result was zero or greater.
                                   (refs << 0)  //
 
                     );
-                } else if(McuAs(" PIC16F88 ")  || //
-                          McuAs(" PIC16F882 ") || //
+                } else if(McuAs(" PIC16F882 ") || //
                           McuAs(" PIC16F883 ") || //
                           McuAs(" PIC16F884 ") || //
                           McuAs(" PIC16F886 ") || //
@@ -5538,6 +5550,23 @@ otherwise the result was zero or greater.
                     WriteRegister(REG_ADCON1,  //
                                   (1 << 7) |   // right-justified
                                   //(0 << 0)   // for now, all analog inputs
+                                  ((refs & 3) << 4)  //
+
+                    );
+                } else if(McuAs(" PIC16F88 ") //
+                ) {
+                    adcsPos = 6;                                                // in REG_ADCON0
+                    WriteRegister(REG_ADCON0,                                   //
+                                  (adcs << adcsPos) |                           //
+                                  (MuxForAdcVariable(a->name1) << chsPos) | //
+                                  (0 << goPos) |                            // don't start yet
+                                                                            // bit 1 unimplemented
+                                  (1 << 0)                                  // A/D peripheral on
+                    );
+
+                    WriteRegister(REG_ADCON1,  //
+                                  (1 << 7) |   // right-justified
+                                  ((adcs & _BV(BIT2)) << 4) | // ADCS2 is BIT6
                                   ((refs & 3) << 4)  //
 
                     );
