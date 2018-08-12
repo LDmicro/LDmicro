@@ -32,6 +32,9 @@
 #include "pcports.h"
 #include "display.h"
 
+#include "ldversion.h"
+#include <ldlog.hpp>
+
 HINSTANCE Instance;
 HWND      MainWindow;
 HDC       Hdc;
@@ -2790,6 +2793,11 @@ void CheckPwmPins()
 //-----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
+    auto logg = ldlog::getLogger("default");
+    logg->add_sink(ldlog::newWindowsDebugStringSink());
+
+    LOG(ldlog::Info, logg, "Run LDmicro ver.: {}.", LDMICRO_VER_STR);
+
     if(LEN7SEG != arraylen(char7seg))
         oops();
 
