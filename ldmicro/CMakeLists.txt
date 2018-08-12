@@ -36,6 +36,7 @@ message(STATUS "Lang : ${LDLANG}")
 add_subdirectory(ldlanglib)
 add_subdirectory(ldcompilerlib)
 add_subdirectory(ldinterpret)
+add_subdirectory(ldlog)
 
 find_package(Perl REQUIRED)
 
