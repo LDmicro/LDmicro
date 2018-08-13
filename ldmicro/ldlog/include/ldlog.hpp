@@ -14,7 +14,7 @@
 #include "../src/fmt/format.h"
 
 #define __LDLOG_LOG_FILE (strstr(__FILE__, "/") != NULL ? \
-    strrchr(__FILE__, '/') + 1 : strrchr(__FILE__, '\\') + 1)
+    strrchr(__FILE__, '/') + 1 : strstr(__FILE__, "\\") != NULL ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 
 #define LOG(LVL,L,F,...) L->write(static_cast<ldlog::level>(LVL),__LDLOG_LOG_FILE, __LINE__, fmt::format(F, __VA_ARGS__))
 
