@@ -1516,11 +1516,12 @@ static void ProcessMenu(int code)
 
         case MNU_SELECT_RUNG: {
             int i = RungContainingSelected();
-            if(i >= 0)
+            if(i >= 0){
                 if(Prog.rungSelected[i] == ' ')
                     Prog.rungSelected[i] = '*';
                 else
                     Prog.rungSelected[i] = ' ';
+            }
             break;
         }
         case MNU_CUT_RUNG:
