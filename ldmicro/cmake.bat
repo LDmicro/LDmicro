@@ -26,7 +26,7 @@ cmake.exe ..
 cmake.exe --build .
 cd ..
 
-@if not exist build\Debug\ldmicro.exe goto EXIT
-start build\Debug\ldmicro.exe %PROGECT%
+@if not exist build\bin\Debug\ldmicro.exe goto EXIT
+start build\bin\Debug\ldmicro.exe %PROGECT%
 
 :EXIT

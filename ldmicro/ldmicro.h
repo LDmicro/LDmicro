@@ -1234,13 +1234,6 @@ extern HWND CancelButton;
 extern bool DialogDone;
 extern bool DialogCancel;
 
-#define doLOG
-#ifdef doLOG
-#define LOG(EXP) dbp( #EXP " at %d in %s %s %s", __LINE__, __FILE__, __TIME__, BOOST_CURRENT_FUNCTION);
-#else
-#define LOG(EXP)
-#endif
-
 // see C Stringizing Operator (#)
 #define stringer(exp) #exp
 #define useless(exp) stringer(exp)
