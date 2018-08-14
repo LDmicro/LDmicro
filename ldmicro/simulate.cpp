@@ -2295,17 +2295,19 @@ void SimulationToggleContact(char *name)
         int   bit = -1;
         MemForSingleBit(name, true, &addr, &bit);
 
-        char s[MAX_NAME_LEN];
-        if(name[0] == 'X')
-            sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
-        else
-            sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
-        SDWORD v = GetSimulationVariable(s);
-        if(SingleBitOn(name))
-            v |= 1<<bit;
-        else
-            v &= ~(1<<bit);
-        SetSimulationVariable(s, v);
+		if((addr != -1) && (bit != -1)) {
+			char s[MAX_NAME_LEN];
+			if(name[0] == 'X')
+				sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
+			else
+				sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
+			SDWORD v = GetSimulationVariable(s);
+			if(SingleBitOn(name))
+				v |= 1<<bit;
+			else
+				v &= ~(1<<bit);
+			SetSimulationVariable(s, v);
+		}
     }
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }

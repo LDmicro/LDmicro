@@ -1,3 +1,7 @@
+== Release 4.4.
+
+    * Fixed: In simulation mode when pressing an input, if not selected pin MCU, then LDmicro is closed. Issue #132
+
 == Release 4.4.3.1
 
     * Fixed: ADC conversion time Tad for PIC16F88
