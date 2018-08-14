@@ -1780,7 +1780,7 @@ void IoListProc(NMHDR *h)
                         MemForVariable(name, &addr);
                         if(addr > 0)
                             sprintf(i->item.pszText, "0x%X", addr);
-                    } else if((type == IO_TYPE_INTERNAL_RELAY)) {
+                    } else if(type == IO_TYPE_INTERNAL_RELAY) {
                         MemForSingleBit(name, true, &addr, &bit);
                         if(addr > 0 && bit >= 0)
                             sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
@@ -1875,41 +1875,47 @@ void IoListProc(NMHDR *h)
             char *          name = Prog.io.assignment[i->iItem].name;
             int             type = Prog.io.assignment[i->iItem].type;
             if(InSimulationMode) {
-                switch(type) {
-                    case IO_TYPE_STRING:
-                    case IO_TYPE_GENERAL:
-                    case IO_TYPE_PERSIST:
-                    case IO_TYPE_RTL:
-                    case IO_TYPE_RTO:
-                    case IO_TYPE_THI:
-                    case IO_TYPE_TLO:
-                    case IO_TYPE_COUNTER:
-                    case IO_TYPE_UART_TX:
-                    case IO_TYPE_UART_RX:
-                    case IO_TYPE_PORT_INPUT:
-                    case IO_TYPE_PORT_OUTPUT:
-                    case IO_TYPE_MCU_REG:
-                    case IO_TYPE_TCY:
-                    case IO_TYPE_TON:
-                    case IO_TYPE_TOF: {
-                        ShowIoDialog(i->iItem);
-                        InvalidateRect(MainWindow, nullptr, false);
-                        ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
-                        break;
-                    }
-                    case IO_TYPE_READ_ADC: {
-                        ShowAnalogSliderPopup(name);
-                        break;
-                    }
-                    case IO_TYPE_DIG_INPUT:
-                    case IO_TYPE_INTERNAL_RELAY:
-                    case IO_TYPE_MODBUS_CONTACT: {
-                        SimulationToggleContact(name);
-                        break;
-                    }
-                    default: {
+                try {
+                    switch(type) {
+                        case IO_TYPE_STRING:
+                        case IO_TYPE_GENERAL:
+                        case IO_TYPE_PERSIST:
+                        case IO_TYPE_RTL:
+                        case IO_TYPE_RTO:
+                        case IO_TYPE_THI:
+                        case IO_TYPE_TLO:
+                        case IO_TYPE_COUNTER:
+                        case IO_TYPE_UART_TX:
+                        case IO_TYPE_UART_RX:
+                        case IO_TYPE_PORT_INPUT:
+                        case IO_TYPE_PORT_OUTPUT:
+                        case IO_TYPE_MCU_REG:
+                        case IO_TYPE_TCY:
+                        case IO_TYPE_TON:
+                        case IO_TYPE_TOF: {
+                            ShowIoDialog(i->iItem);
+                            InvalidateRect(MainWindow, nullptr, false);
+                            ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+                            break;
+                        }
+                        case IO_TYPE_READ_ADC: {
+                            ShowAnalogSliderPopup(name);
+                            break;
+                        }
+                        case IO_TYPE_DIG_INPUT:
+                        case IO_TYPE_INTERNAL_RELAY:
+                        case IO_TYPE_MODBUS_CONTACT: {
+                            SimulationToggleContact(name);
+                            break;
+                        }
+                        default: {
+                        }
                     }
                 }
+                catch(std::runtime_error& err) {
+                    Error("%s", err.what());
+                }
+
             } else {
                 UndoRemember();
                 switch(type) {
