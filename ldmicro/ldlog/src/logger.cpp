@@ -3,7 +3,6 @@
 *  created : 01.07.2018
 *  author  : Slyshyk Oleksiy (alexslyshyk@gmail.com)
 *******************************************************************************/
-#include "ldlog.hpp"
 #include "logger.hpp"
 
 #include <algorithm>
