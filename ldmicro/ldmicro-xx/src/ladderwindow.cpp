@@ -35,11 +35,11 @@ void CLadderWindow::OnInitialUpdate()
 
 LRESULT CLadderWindow::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    auto res = MainWndProc(GetHwnd(), uMsg, wParam, lParam);
-    if( res == 0)
-        res = WndProcDefault(uMsg, wParam, lParam);
+    if(!MainWindow)
+        return WndProcDefault(uMsg, wParam, lParam);
 
-    return res;
+    return MainWndProc(GetHwnd(), uMsg, wParam, lParam);
+
 }
 
 /*

@@ -1837,8 +1837,6 @@ void TestSelections(UINT msg, int rung1)
 //-----------------------------------------------------------------------------
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    if(!MainWindow)
-        return 0;
     int rung1;
 
     if(strlen(CurrentSaveFile)) {
