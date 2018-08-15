@@ -1837,6 +1837,8 @@ void TestSelections(UINT msg, int rung1)
 //-----------------------------------------------------------------------------
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    if(!MainWindow)
+        return 0;
     int rung1;
 
     if(strlen(CurrentSaveFile)) {
@@ -2789,6 +2791,7 @@ void CheckPwmPins()
     }
 }
 
+#ifndef LDMICRO_GUI_XX
 //-----------------------------------------------------------------------------
 // Entry point into the program.
 //-----------------------------------------------------------------------------
@@ -3017,3 +3020,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     return 0;
 }
+#endif //LDMICRO_GUI_XX

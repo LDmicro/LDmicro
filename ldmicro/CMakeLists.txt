@@ -41,6 +41,7 @@ add_subdirectory(ldlanglib)
 add_subdirectory(ldcompilerlib)
 add_subdirectory(ldinterpret)
 add_subdirectory(ldlog)
+add_subdirectory(ldmicro-xx)
 
 find_package(Perl REQUIRED)
 
