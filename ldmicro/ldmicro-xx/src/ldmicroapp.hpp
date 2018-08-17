@@ -17,10 +17,9 @@ public:
     virtual ~CLdmicroApp();
     virtual BOOL InitInstance();
 
-    //CMainWindow& mainWindow() {return main_window_;}
+    CMainWindow& mainWindow() {return main_window_;}
 private:
-    //CMainWindow main_window_;
-    CLadderWindow main_window_;
+    CMainWindow main_window_;
 };
 
 // returns a reference to the CTabbedMDIApp object

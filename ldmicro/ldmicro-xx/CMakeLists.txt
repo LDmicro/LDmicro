@@ -37,6 +37,9 @@ set(ldmicro-xx-src
 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/precomp/ldmicroxxprecomphdr.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/precomp/ldmicroxxprecomphdr.hpp
+
+    res/ldmicro.rc
+    res/resource.h
     )
 
 set(ldmicro-xx-win32xx
@@ -115,3 +118,8 @@ target_compile_definitions(${PROJECT_NAME}
             NOMINMAX
             COLOR_GRADIENTACTIVECAPTION=27
     )
+
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE "/J")
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /MANIFEST:NO")
+endif()

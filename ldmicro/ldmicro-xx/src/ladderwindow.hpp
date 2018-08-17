@@ -15,8 +15,8 @@ public:
     virtual ~CLadderWindow();
 protected:
     virtual void OnInitialUpdate();
-    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
     virtual void PreCreate(CREATESTRUCT& cs);
+    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif // LADDERWINDOW_HPP

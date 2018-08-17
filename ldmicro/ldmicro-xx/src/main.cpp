@@ -15,8 +15,6 @@ INT WINAPI WinMain(HINSTANCE hInstance , HINSTANCE hPreviousInstace , LPSTR lpCm
 
     fillPcPinInfos();
 
-    MakeDialogBoxClass();
-
     CLdmicroApp m_Application;
 
     return  m_Application.Run();
