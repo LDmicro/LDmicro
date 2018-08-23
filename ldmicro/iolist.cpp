@@ -442,15 +442,9 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
 
             if(!CheckForNumber(l->d.spi.send)) {
-                // Not need ???
-                // Need if you add only one MOV or get erroneously other src name
-                // then you can see l->d.move.src in IOlist
                 AppendIo(l->d.spi.send, IO_TYPE_GENERAL);
             }
             if(!CheckForNumber(l->d.spi.recv)) {
-                // Not need ???
-                // Need if you add only one MOV or get erroneously other src name
-                // then you can see l->d.move.src in IOlist
                 AppendIo(l->d.spi.recv, IO_TYPE_GENERAL);
             }
             break;

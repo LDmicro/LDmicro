@@ -735,6 +735,8 @@ void AddUart(int which)
         strcpy(t->d.uart.name, "char");
     else
         strcpy(t->d.uart.name, "var");
+    t->d.uart.bytes = 1;
+    t->d.uart.wait = false;
     AddLeaf(which, t);
 }
 

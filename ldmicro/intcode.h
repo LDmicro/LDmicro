@@ -92,9 +92,10 @@
 #define INT_UART_SEND_READY                     1303
 #define INT_UART_SEND_BUSY                      1304
 #define INT_UART_RECV                           14
-#define INT_UART_RECVn                          1401
-#define INT_UART_RECVnn                         1402
-#define INT_UART_RECV_AVAIL                     1403
+#define INT_UART_RECV1                          1401
+#define INT_UART_RECVn                          1402
+#define INT_UART_RECVnn                         1403
+#define INT_UART_RECV_AVAIL                     1404
 #define INT_EEPROM_BUSY_CHECK                   15
 #ifdef NEW_FEATURE
 #define INT_EEPROM_INIT                         1601
