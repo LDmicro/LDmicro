@@ -423,11 +423,19 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_UART_SEND_READY;
     } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
         *which = ELEM_UART_RECVn;
+    } else if(sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+        *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name) == 1) {
+        l->d.uart.bytes = 1;
+        l->d.uart.wait = false;
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
         *which = ELEM_UART_SENDn;
+    } else if(sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+        *which = ELEM_UART_SEND;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name) == 1) {
+        l->d.uart.bytes = 1;
+        l->d.uart.wait = false;
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "PERSIST %s", l->d.persist.var) == 1) {
         *which = ELEM_PERSIST;
@@ -1237,11 +1245,11 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_UART_RECV:
-            fprintf(f, "UART_RECV %s\n", l->d.uart.name);
+            fprintf(f, "UART_RECV %s %d %d\n", l->d.uart.name, l->d.uart.bytes, l->d.uart.wait);
             break;
 
         case ELEM_UART_SEND:
-            fprintf(f, "UART_SEND %s\n", l->d.uart.name);
+            fprintf(f, "UART_SEND %s %d %d\n", l->d.uart.name, l->d.uart.bytes, l->d.uart.wait);
             break;
 
         case ELEM_UART_RECVn:

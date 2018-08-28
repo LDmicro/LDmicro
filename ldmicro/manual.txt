@@ -1668,6 +1668,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     The rung-out condition of this instruction is always true.
 
+
 > CLRWDT
                            --{CLRWDT}--
 
@@ -1676,6 +1677,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     automatically (at begin of the cycle), so you need adiitional CLRWDT
     if PLC cycle period more then WDT period if WDT enabled.
     This instruction must be the rightmost instruction in its rung.
+
 
 > LOCK
                            --{LOCK}--
@@ -1686,9 +1688,10 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     designed as infinite loop. It is deadlock, way to freeze, blockade the
     program.
     LOCK command executes goto to the current address, i.e.
-    labelN: goto labelN (label02e7: rjmp label02e7), i.e. infinite loop.
+    labelN: goto labelN (label02: rjmp label02), i.e. infinite loop.
     LOCK command executes the infinite loop, but WDT can reset the MCU.
     Only WDT or external reset can unfreeze the program after LOCK command.
+
 
 > SLEEP
                            --{SLEEP}--
@@ -1703,6 +1706,18 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     Note: SLEEP lengthens the PLC cycle time and timers TON, TOF, RTO, CTY.
     This can frustrate the plans, break the flow of work.
     This instruction must be the rightmost instruction in its rung.
+
+
+>LABEL, GOTO, SUBPROG, RETURN, ENDSUB, GOSUB
+
+    LABEL and GOTO instruction
+    https://github.com/LDmicro/LDmicro/wiki/GOTO-instruction
+
+    SUBPROG, RETURN, ENDSUB and GOSUB, LABEL and GOTO instruction. Part 2
+    https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-RETURN,-ENDSUB-and-GOSUB,-LABEL-and-GOTO-instruction.-Part-2
+
+    SUBPROG, RETURN, ENDSUB and GOSUB, LABEL and GOTO instruction. Part 3
+    https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-RETURN,-ENDSUB-and-GOSUB,-LABEL-and-GOTO-instruction.-Part-3
 
 
 > RAND                        Rand

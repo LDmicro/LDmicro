@@ -92,8 +92,6 @@ DWORD AvrProgLdLen = 0;
 
 static int IntPcNow = -INT_MAX; //must be static
 
-RungAddr AddrOfRungN[MAX_RUNGS];
-
 #define OP_XOR OP_EOR
 
 // For yet unresolved references in jumps
@@ -506,7 +504,7 @@ static DWORD AllocFwdAddr()
 static void FwdAddrIsNow(DWORD addr)
 {
     if(!(addr & FWD(0)))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION_FMT("Internal error. addr=0x%X", addr);
 
     WORD  seen = 0;
     uint32_t AvrProgWriteP = AvrProg.size();
@@ -4976,8 +4974,9 @@ static void CompileFromIntermediate()
                 CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
-
             case INT_UART_SEND: {
+                // Attention! Busy flag is not checked!!!
+                // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND");
                 MemForVariable(a->name1, &addr1);
                 MemForSingleBit(a->name2, true, &addr2, &bit2);
@@ -4985,10 +4984,6 @@ static void CompileFromIntermediate()
                 DWORD noSend = AllocFwdAddr();
                 IfBitClear(addr2, bit2);
                 Instruction(OP_RJMP, noSend);
-
-                DWORD isBusy = AllocFwdAddr();
-                //IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-                //Instruction(OP_RJMP, isBusy);
 
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, r16);
@@ -4998,24 +4993,24 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(noSend);
 
                 CopyNotBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-
-                FwdAddrIsNow(isBusy);
                 break;
             }
             case INT_UART_SEND1: {
+                // Attention! Busy flag is not checked!!!
+                // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
 
-                DWORD isBusy = AllocFwdAddr();
-                IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-                Instruction(OP_RJMP, isBusy);
+                //DWORD isBusy = AllocFwdAddr();
+                //IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
+                //Instruction(OP_RJMP, isBusy);
 
-                LoadXAddr(addr1);
+                LoadXAddr(addr1 + a->literal);
                 Instruction(OP_LD_X, r16);
                 LoadXAddr(REG_UDR);
                 Instruction(OP_ST_X, r16);
 
-                FwdAddrIsNow(isBusy);
+                //FwdAddrIsNow(isBusy);
                 break;
             }
             case INT_UART_RECV: {
@@ -5043,6 +5038,23 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(noChar);
                 break;
             }
+            case INT_UART_RECV1: {
+                //Receive one char/byte in a single PLC cycle.
+                MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
+
+                DWORD noChar = AllocFwdAddr();
+                IfBitClear(REG_UCSRA, RXC);
+                Instruction(OP_RJMP, noChar);
+
+                LoadXAddr(REG_UDR);
+                Instruction(OP_LD_X, r16);
+                LoadXAddr(addr1);
+                Instruction(OP_ST_X, r16);
+
+                FwdAddrIsNow(noChar);
+                break;
+            }
             case INT_END_IF:
             case INT_ELSE:
                 return;
@@ -5056,57 +5068,59 @@ static void CompileFromIntermediate()
                 Comment("%s", a->name1.c_str());
                 break;
 
-            case INT_AllocKnownAddr:
-                //Comment("INT_AllocKnownAddr %d %08X", a->literal, AddrOfRungN[a->literal].KnownAddr);
-                AddrOfRungN[a->literal].KnownAddr = AvrProg.size();
+            case INT_AllocKnownAddr: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                l->KnownAddr = AvrProg.size();
                 break;
-
-            case INT_AllocFwdAddr:
-                //Comment("INT_AllocFwdAddr %d %08X", a->literal, AddrOfRungN[a->literal].FwdAddr);
-                AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
+            }
+            case INT_AllocFwdAddr: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                l->FwdAddr = AllocFwdAddr();
                 break;
-
-            case INT_FwdAddrIsNow:
-                //Comment("INT_FwdAddrIsNow %d %08x", a->literal, AddrOfRungN[a->literal].FwdAddr);
-                FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
+            }
+            case INT_FwdAddrIsNow: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                FwdAddrIsNow(l->FwdAddr);
                 break;
-
+            }
             case INT_RETURN:
                 Instruction(OP_RET);
                 break;
 
             case INT_GOTO: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
                 int rung = a->literal;
                 Comment("INT_GOTO %s %d 0x%08X 0x%08X",
                         a->name1.c_str(),
                         rung,
-                        AddrOfRungN[rung].FwdAddr,
-                        AddrOfRungN[rung].KnownAddr);
+                        l->FwdAddr,
+                        l->KnownAddr);
                 DWORD addr;
                 if(rung < -1) {
                     addr = 0;
                 } else if(rung == -1) {
                     addr = BeginOfPLCCycle;
                 } else if(rung <= rungNow) {
-                    addr = AddrOfRungN[rung].KnownAddr;
+                    addr = l->KnownAddr;
                 } else {
-                    addr = AddrOfRungN[rung].FwdAddr;
+                    addr = l->FwdAddr;
                 }
                 InstructionJMP(addr);
                 break;
             }
             case INT_GOSUB: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
                 int rung = a->literal;
                 Comment("INT_GOSUB %s %d %d 0x%08X 0x%08X",
                         a->name1.c_str(),
                         rung + 1,
                         rungNow + 1,
-                        AddrOfRungN[rung].FwdAddr,
-                        AddrOfRungN[rung].KnownAddr);
+                        l->FwdAddr,
+                        l->KnownAddr);
                 if(rung < rungNow) {
-                    CallSubroutine(AddrOfRungN[rung].KnownAddr);
+                    CallSubroutine(l->KnownAddr);
                 } else if(rung > rungNow) {
-                    CallSubroutine(AddrOfRungN[rung].FwdAddr);
+                    CallSubroutine(l->FwdAddr);
                 } else
                     THROW_COMPILER_EXCEPTION("Can't instantiate GOSUB.");
                 break;

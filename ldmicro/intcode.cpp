@@ -130,7 +130,7 @@ void IntDumpListing(char *outFile)
         } else {
             if(indent < 0)
                 indent = 0;
-            if((IntCode[i].op != INT_SIMULATE_NODE_STATE) && (IntCode[i].op != INT_AllocKnownAddr)
+            if((IntCode[i].op != INT_SIMULATE_NODE_STATE) // && (IntCode[i].op != INT_AllocKnownAddr)
                && (IntCode[i].op != INT_AllocFwdAddr))
                 fprintf(f, "%4d:", i);
         }
@@ -488,8 +488,12 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_UART_RECVn:
+            case INT_UART_RECV1:
+                fprintf(f, "uart recv into '%s'", IntCode[i].name1.c_str());
+                break;
+
             case INT_UART_RECV:
-                fprintf(f, "uart recv int '%s', have? into '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
+                fprintf(f, "uart recv into '%s', have? into '%s'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str());
                 break;
 
             case INT_UART_RECV_AVAIL:
@@ -689,7 +693,7 @@ void IntDumpListing(char *outFile)
 #endif
 
             case INT_AllocKnownAddr:
-                //fprintf(f, "AllocKnownAddr %s %s AddrOfRung%d;", IntCode[i].name1, IntCode[i].name2, IntCode[i].literal+1);
+                fprintf(f, "Label%s:", IntCode[i].name1.c_str());
                 break;
 
             case INT_AllocFwdAddr:
@@ -697,14 +701,14 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_FwdAddrIsNow:
-                fprintf(f, "LabelRung%d: // %s", IntCode[i].literal + 1, IntCode[i].name1.c_str());
+                //fprintf(f, "LabelRung%d: // %s", IntCode[i].literal + 1, IntCode[i].name1.c_str());
                 break;
 
             case INT_GOTO:
                 if(IsNumber(IntCode[i].name1))
                     fprintf(f, "GOTO LabelRung%s; #LabelRung%d", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
                 else
-                    fprintf(f, "GOTO %s; #LabelRung%d", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
+                    fprintf(f, "GOTO Label%s; #LabelRung%d", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
                 break;
 
             case INT_GOSUB:
@@ -777,7 +781,7 @@ void IntDumpListing(char *outFile)
                 Error("INT_%d", IntCode[i].op);
         }
         if((int_comment_level == 1)
-           || ((IntCode[i].op != INT_SIMULATE_NODE_STATE) && (IntCode[i].op != INT_AllocKnownAddr)
+           || ((IntCode[i].op != INT_SIMULATE_NODE_STATE) // && (IntCode[i].op != INT_AllocKnownAddr)
                && (IntCode[i].op != INT_AllocFwdAddr))) {
             //fprintf(f, " ## INT_%d",IntCode[i].op);
             fprintf(f, "\n");
@@ -808,7 +812,13 @@ int HexDigit(int c)
 // guaranteed not to conflict with any user symbols.
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-void GenSym(char *dest, char *name1, char *name2)
+static void GenSym(char *dest, char *name, char *name1, char *name2)
+{
+    sprintf(dest, "%s_%01lx_%s_%s", name, GenSymCount, name1, name2);
+    GenSymCount++;
+}
+
+static void GenSym(char *dest, char *name1, char *name2)
 {
     sprintf(dest, "$var_%01lx_%s_%s", GenSymCount, name1, name2);
     GenSymCount++;
@@ -3295,42 +3305,101 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_UART_SEND:
             Comment(3, "ELEM_UART_SEND");
-/**
+#if 0
             // Why in this place do not controlled stateInOut, as in the ELEM_UART_RECV ?
             // 1. It's need in Simulation Mode.
             // 2. It's need for Arduino.
         ////Op(INT_IF_BIT_SET, stateInOut); // ???
             Op(INT_UART_SEND, l->d.uart.name, stateInOut); // stateInOut returns BUSY flag
         ////Op(INT_END_IF); // ???
-/**/
-/**/
-            // This is equivalent to the original algorithm !!!
+#else
+            // This is modified algorithm !!!
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_UART_SEND1, l->d.uart.name);
             Op(INT_END_IF);
             Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-/**/
+#endif
             break;
 
-        case ELEM_UART_RECV:
+        case ELEM_UART_RECV: {
             Comment(3, "ELEM_UART_RECV");
+            int sov = SizeOfVar(l->d.uart.name);
+            if(l->d.uart.bytes > sov) {
+                Error("ELEM_UART_RECV '%s' bytes > sov", l->d.uart.name);
+                oops();
+            }
             Op(INT_IF_BIT_SET, stateInOut);
+#if 0
               Op(INT_UART_RECV, l->d.uart.name, stateInOut);
+#else
+              if(l->d.uart.bytes == 1) {
+                Op(INT_UART_RECV_AVAIL, stateInOut);
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
+                  Op(INT_UART_RECV1, l->d.uart.name);
+                Op(INT_END_IF);
+              } else {
+                if(l->d.uart.wait) {
+                  Op(INT_UART_RECV_AVAIL, stateInOut);
+                  Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
+                    Op(INT_UART_RECV1, l->d.uart.name);
+                    for(int i = 1; i < l->d.uart.bytes; i++) {
+                      char label[MAX_NAME_LEN];
+                      GenSym(label, "Label", "UART_RECV", l->d.uart.name);
+                      Op(INT_AllocKnownAddr,label);
+                      Op(INT_UART_RECV_AVAIL, stateInOut);
+                      Op(INT_IF_BIT_CLEAR, stateInOut);
+                        Op(INT_GOTO, label);
+                      Op(INT_END_IF);
+                      Op(INT_UART_RECV1, l->d.uart.name, i);
+                    }
+                  Op(INT_END_IF);
+                } else {
+                  char bytes[MAX_NAME_LEN];
+                  GenSym(bytes, "bytes_UART_RECV", l->d.uart.name);
+                  Op(INT_IF_LES, bytes,  l->d.uart.bytes);
+                    Op(INT_UART_RECV_AVAIL, stateInOut);
+                    Op(INT_IF_BIT_SET, stateInOut);
+                      Op(INT_IF_EQU, bytes, 0);
+                        Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
+                      Op(INT_END_IF);
+                      Op(INT_UART_RECV1, l->d.uart.name, bytes);
+                      Op(INT_INCREMENT_VARIABLE, bytes);
+                    Op(INT_END_IF);
+                  Op(INT_END_IF);
+                  Op(INT_IF_EQU, bytes, l->d.uart.bytes);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, bytes, 0);
+                    Op(INT_SET_BIT, stateInOut);
+                  Op(INT_ELSE);
+                    Op(INT_CLEAR_BIT, stateInOut);
+                  Op(INT_END_IF);
+                }
+              }
+
+
+
+              if(l->d.uart.wait && (sov > 1)) {
+
+              }
+              if(l->d.uart.bytes < sov) {
+              }
+#endif
             Op(INT_END_IF);
             break;
-
+        }
         case ELEM_UART_RECV_AVAIL:
             Comment(3, "ELEM_UART_RECV_AVAIL");
-            //Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_UART_RECV_AVAIL, stateInOut);
-            //Op(INT_END_IF);
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_UART_RECV_AVAIL, stateInOut);
+            Op(INT_END_IF);
             break;
 
         case ELEM_UART_SEND_READY:
             Comment(3, "ELEM_UART_SEND_READY");
-            //Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_UART_SEND_READY, stateInOut);
-            //Op(INT_END_IF);
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_UART_SEND_READY, stateInOut);
+            Op(INT_END_IF);
             break;
         }
 
@@ -3504,7 +3573,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             } else {
                 r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
                 if(r < 0) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
+                    Error(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -3532,10 +3601,17 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_END_IF);
             break;
         }
-        case ELEM_LABEL:
+        case ELEM_LABEL: {
             Comment(3, "ELEM_LABEL %s", l->d.doGoto.rung);
+            // TODO: Check is ELEM_LABEL
+            int n = CountWhich(ELEM_LABEL, l->d.doGoto.rung);
+            if(n != 1) {
+                Error(_("Only one label '%s' is allowed!"), l->d.doGoto.rung);
+            }
+            //Op(INT_AllocKnownAddr, l->d.doGoto.rung);
+            //Op(INT_AllocFwdAddr, l->d.doGoto.rung);
             break;
-
+        }
         case ELEM_SUBPROG: {
             Comment(3, "ELEM_SUBPROG %s", l->d.doGoto.rung);
             if((Prog.rungs[rungNow]->contents[0].which == ELEM_SUBPROG)
@@ -3552,7 +3628,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             }
             if(r >= 0) {
                 Op(INT_GOTO, l->d.doGoto.rung, "ENDSUB", r + 1);
-                Op(INT_AllocKnownAddr, l->d.doGoto.rung, "SUBPROG", rungNow);
+                char s[MAX_NAME_LEN];
+                sprintf(s,"SUBPROG%s", l->d.doGoto.rung);
+                Op(INT_AllocKnownAddr, s, l->d.doGoto.rung, "SUBPROG", rungNow);
             } else {
                 THROW_COMPILER_EXCEPTION_FMT(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.rung);
             }
@@ -4241,7 +4319,8 @@ bool GenerateIntermediateCode()
         leafNow = nullptr;
         Prog.OpsInRung[rung] = 0;
         Prog.HexInRung[rung] = 0;
-        Op(INT_AllocFwdAddr, (SDWORD)rung);
+        sprintf(s1,"Rung%d", rung + 1);
+        Op(INT_AllocFwdAddr, s1, (SDWORD)rung);
     }
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
@@ -4252,8 +4331,9 @@ bool GenerateIntermediateCode()
             Comment("");
             Comment("======= START RUNG %d =======", rung + 1);
         }
-        Op(INT_AllocKnownAddr, (SDWORD)rung);
-        Op(INT_FwdAddrIsNow, (SDWORD)rung);
+        sprintf(s1,"Rung%d", rung + 1);
+        Op(INT_AllocKnownAddr, s1, (SDWORD)rung);
+        Op(INT_FwdAddrIsNow, s1, (SDWORD)rung);
 
         if(Prog.rungs[rung]->count > 0 && Prog.rungs[rung]->contents[0].which == ELEM_COMMENT) {
             // nothing to do for this one
@@ -4290,8 +4370,9 @@ bool GenerateIntermediateCode()
         IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[rung], "$rung_top", rung);
     }
     rungNow++;
-    Op(INT_AllocKnownAddr, (SDWORD)rung);
-    Op(INT_FwdAddrIsNow, (SDWORD)Prog.numRungs);
+    sprintf(s1,"Rung%d", rung + 1);
+    Op(INT_AllocKnownAddr, s1, (SDWORD)rung);
+    Op(INT_FwdAddrIsNow, s1, (SDWORD)Prog.numRungs);
     rungNow++;
     //Calculate amount of intermediate codes in rungs
     for(int i = 0; i < MAX_RUNGS; i++)

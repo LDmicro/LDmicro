@@ -1034,11 +1034,11 @@ void ShowGotoDialog(int which, char *name)
     const char *s;
     switch(which) {
         case ELEM_GOTO:
-            s = _("Goto rung number or labe namel");
+            s = _("Goto rung number or label");
             labels[0] = _("Destination rung(label):");
             break;
         case ELEM_GOSUB:
-            s = _("Call SUBPROG rung number or label name");
+            s = _("Call SUBPROG rung number or label");
             labels[0] = _("Destination rung(label):");
             break;
         case ELEM_LABEL:
