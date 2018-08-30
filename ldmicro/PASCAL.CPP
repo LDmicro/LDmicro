@@ -882,35 +882,20 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_AllocKnownAddr:
-            case INT_AllocFwdAddr:
+                fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 break;
+            case INT_AllocFwdAddr:
             case INT_FwdAddrIsNow:
-                fprintf(f, "LabelRung%d:;\n", IntCode[i].literal + 1);
                 break;
             case INT_RETURN:
                 fprintf(f, "exit;\n");
                 break;
             case INT_GOSUB:
-                if(IsNumber(IntCode[i].name1)) {
-                    int rung = hobatoi(IntCode[i].name1.c_str());
-                    rung = std::min(rung, Prog.numRungs + 1);
-                    rung = std::max(rung, 0); // -1 anavailable
-                    fprintf(f, "CallLabelRung%d;\n", rung);
-                } else {
-                    fprintf(f, "CallLabelRung%s;\n", IntCode[i].name1.c_str());
-                }
+                fprintf(f, "CallLabel%s;\n", IntCode[i].name1.c_str());
                 break;
-            case INT_GOTO: {
-                if(IsNumber(IntCode[i].name1)) {
-                    int rung = hobatoi(IntCode[i].name1.c_str());
-                    rung = std::min(rung, Prog.numRungs + 1);
-                    rung = std::max(rung, 0); // -1 anavailable
-                    fprintf(f, "goto LabelRung%d;\n", rung);
-                } else {
-                    fprintf(f, "goto LabelRung%s;\n", IntCode[i].name1.c_str());
-                }
+            case INT_GOTO:
+                fprintf(f, "goto Label%s;\n", IntCode[i].name1.c_str());
                 break;
-            }
             case INT_READ_ADC:
             case INT_SET_PWM:
             case INT_UART_SEND_BUSY:

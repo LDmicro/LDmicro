@@ -219,7 +219,7 @@
 #define INT_GOSUB                               2025
 #define INT_RETURN                              2026
 
-#define INT_SIMULATE_NODE_STATE                   80 + 100
+#define INT_SIMULATE_NODE_STATE                  180
 
 #define INT_COMMENT                              100
 
@@ -231,25 +231,25 @@
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
 struct ElemLeaf;
 struct IntOp {
-    int         op;
-    NameArray   name1;
-    NameArray   name2;
-    NameArray   name3;
-    NameArray   name4;
-    NameArray   name5;
-    NameArray   name6;
-    int32_t     literal;
-    int32_t     literal2;
-    int32_t     literal3;    // side effect: internaly used in simulation of INT_FLASH_READ
-    int32_t     *data;       // for INT_FLASH_INIT
-    bool        *poweredAfter;
-    bool        *workingNow;
-    int         rung;        //= rungNow  //this IntOp located in rung,
-    int         which;       //= whichNow //this IntOp refers to the ELEM_<which>
-    ElemLeaf   *leaf;        //= leafNow  //
-    FileNameArray fileName;  //in .c source file name
-    int         fileLine;    //and line in file
-    bool        simulated;
+    int           op;
+    NameArray     name1;
+    NameArray     name2;
+    NameArray     name3;
+    NameArray     name4;
+    NameArray     name5;
+    NameArray     name6;
+    int32_t       literal;
+    int32_t       literal2;
+    int32_t       literal3;    // side effect: internaly used in simulation of INT_FLASH_READ
+    int32_t      *data;        // for INT_FLASH_INIT
+    bool         *poweredAfter;
+    bool         *workingNow;
+    int           rung;        //= rungNow  //this IntOp located in rung,
+    int           which;       //= whichNow //this IntOp refers to the ELEM_<which>
+    ElemLeaf     *leaf;        //= leafNow  //
+    FileNameArray fileName;    //in .c source file name
+    int           fileLine;    //and line in file
+    bool          simulated;
 
     IntOp();
 };

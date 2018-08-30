@@ -5088,41 +5088,29 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_GOTO: {
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                int rung = a->literal;
-                Comment("INT_GOTO %s %d 0x%08X 0x%08X",
+                Comment("INT_GOTO %s // %s %d",
                         a->name1.c_str(),
-                        rung,
-                        l->FwdAddr,
-                        l->KnownAddr);
-                DWORD addr;
-                if(rung < -1) {
-                    addr = 0;
-                } else if(rung == -1) {
-                    addr = BeginOfPLCCycle;
-                } else if(rung <= rungNow) {
-                    addr = l->KnownAddr;
+                        a->name2.c_str(),
+                        a->literal);
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                if(a->literal) {
+                    InstructionJMP(l->KnownAddr);
                 } else {
-                    addr = l->FwdAddr;
+                    InstructionJMP(l->FwdAddr);
                 }
-                InstructionJMP(addr);
                 break;
             }
             case INT_GOSUB: {
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                int rung = a->literal;
-                Comment("INT_GOSUB %s %d %d 0x%08X 0x%08X",
+                Comment("INT_GOSUB %s // %s %d",
                         a->name1.c_str(),
-                        rung + 1,
-                        rungNow + 1,
-                        l->FwdAddr,
-                        l->KnownAddr);
-                if(rung < rungNow) {
+                        a->name2.c_str(),
+                        a->literal);
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                if(a->literal) {
                     CallSubroutine(l->KnownAddr);
-                } else if(rung > rungNow) {
+                } else {
                     CallSubroutine(l->FwdAddr);
-                } else
-                    THROW_COMPILER_EXCEPTION("Can't instantiate GOSUB.");
+                }
                 break;
             }
 #ifdef TABLE_IN_FLASH

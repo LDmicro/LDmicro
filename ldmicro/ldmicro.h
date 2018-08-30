@@ -383,9 +383,9 @@
 #define ELEM_LOCK               0x2c03
 #define ELEM_DELAY              0x2c04
 #define ELEM_TIME2DELAY         0x2c05
-#define ELEM_LABEL              0x2c20
-#define ELEM_GOTO               0x2c21
-#define ELEM_SUBPROG            0x2c22
+#define ELEM_LABEL              0x2c20 // rung label // operate with rung only
+#define ELEM_GOTO               0x2c21 // goto rung  // operate with rung only
+#define ELEM_SUBPROG            0x2c22 // call rung  // operate with rung only
 #define ELEM_RETURN             0x2c23
 #define ELEM_ENDSUB             0x2c24
 #define ELEM_GOSUB              0x2c25
@@ -626,7 +626,7 @@ typedef struct ElemMathTag {
 } ElemMath;
 
 typedef struct ElemGotoTag {
-    char    rung[MAX_NAME_LEN]; // rung number or rung symbol label
+    char    label[MAX_NAME_LEN]; // rung number or rung symbol label
 } ElemGoto;
 
 typedef struct ElemCounterTag {

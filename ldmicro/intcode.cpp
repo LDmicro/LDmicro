@@ -701,25 +701,19 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_FwdAddrIsNow:
-                //fprintf(f, "LabelRung%d: // %s", IntCode[i].literal + 1, IntCode[i].name1.c_str());
+                //fprintf(f, "Label%d: # %s", IntCode[i].literal + 1, IntCode[i].name1.c_str());
                 break;
 
             case INT_GOTO:
-                if(IsNumber(IntCode[i].name1))
-                    fprintf(f, "GOTO LabelRung%s; #LabelRung%d", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
-                else
-                    fprintf(f, "GOTO Label%s; #LabelRung%d", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
+                fprintf(f, "GOTO Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal);
                 break;
 
             case INT_GOSUB:
-                if(IsNumber(IntCode[i].name1))
-                    fprintf(f, "GOSUB LabelRung%s; #LabelRung%d", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
-                else
-                    fprintf(f, "GOSUB %s; #LabelRung%d", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
+                fprintf(f, "GOSUB Label%s # %s %d", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal);
                 break;
 
             case INT_RETURN:
-                fprintf(f, "RETURN // %s", IntCode[i].name1.c_str());
+                fprintf(f, "RETURN # %s", IntCode[i].name1.c_str());
                 break;
 
             case INT_WRITE_STRING:
@@ -1390,6 +1384,32 @@ static bool CheckCanChangeOutputElem(int which, void *elem)
 }
 
 //-----------------------------------------------------------------------------
+char *GetLabelName(int which, char *name, char *label)
+{
+   int r;
+   if(IsNumber(label)) {
+       r = hobatoi(label);
+       r = std::max(r, 1);
+       r = std::min(r, Prog.numRungs + 1);
+   } else {
+       r = FindRung(which, label);
+       if(r < 0)
+           oops();
+       r++;
+       if(which == ELEM_SUBPROG) {
+           r++; // Call the next rung.
+       }
+   }
+   sprintf(name, "Rung%d", r);
+   return name;
+}
+
+char *GetLabelName(char *name, int r)
+{
+   sprintf(name, "Rung%d", r);
+   return name;
+}
+//-----------------------------------------------------------------------------
 void OpSetVar(char *op1, char *op2)
 {
     if(IsNumber(op2))
@@ -1397,6 +1417,7 @@ void OpSetVar(char *op1, char *op2)
     else
         Op(INT_SET_VARIABLE_TO_VARIABLE, op1, op2);
 }
+
 //-----------------------------------------------------------------------------
 static void InitVarsCircuit(int which, void *elem, int *n)
 {
@@ -3350,7 +3371,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                       Op(INT_AllocKnownAddr,label);
                       Op(INT_UART_RECV_AVAIL, stateInOut);
                       Op(INT_IF_BIT_CLEAR, stateInOut);
-                        Op(INT_GOTO, label);
+                        Op(INT_GOTO, label, 1);
                       Op(INT_END_IF);
                       Op(INT_UART_RECV1, l->d.uart.name, i);
                     }
@@ -3565,88 +3586,109 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
         }
         case ELEM_GOTO: {
-            Comment(3, "ELEM_GOTO %s", l->d.doGoto.rung);
+            Comment(3, "ELEM_GOTO %s", l->d.doGoto.label);
+            char name[MAX_NAME_LEN];
+            GetLabelName(ELEM_LABEL, name, l->d.doGoto.label);
             int r;
-            if(IsNumber(l->d.doGoto.rung)) {
-                r = hobatoi(l->d.doGoto.rung);
+            if(IsNumber(l->d.doGoto.label)) {
+                r = hobatoi(l->d.doGoto.label);
                 r = std::min(r, Prog.numRungs + 1) - 1;
             } else {
-                r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
+                r = FindRung(ELEM_LABEL, l->d.doGoto.label);
                 if(r < 0) {
-                    Error(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
+                    Error(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.label);
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_GOTO, l->d.doGoto.rung, r);
+                Op(INT_GOTO, name, l->d.doGoto.label, r <= rungNow ? 1 : 0);
                 //Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
         }
         case ELEM_GOSUB: {
-            Comment(3, "ELEM_GOSUB %s", l->d.doGoto.rung);
+            Comment(3, "ELEM_GOSUB %s", l->d.doGoto.label);
+            char name[MAX_NAME_LEN];
+            GetLabelName(ELEM_SUBPROG, name, l->d.doGoto.label);
             int r;
-            if(IsNumber(l->d.doGoto.rung)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
-                r = hobatoi(l->d.doGoto.rung);
-                r = std::min(r, Prog.numRungs + 1);
+            if(IsNumber(l->d.doGoto.label)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.label);
+                r = hobatoi(l->d.doGoto.label);
+                r = std::min(r, Prog.numRungs + 1) - 1;
             } else {
-                r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+                r = FindRung(ELEM_SUBPROG, l->d.doGoto.label);
                 if(r < 0) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                    THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
                 }
-                r++;
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_GOSUB, l->d.doGoto.rung, r);
+                Op(INT_GOSUB, name, l->d.doGoto.label, r <= rungNow ? 1 : 0);
             Op(INT_END_IF);
             break;
         }
         case ELEM_LABEL: {
-            Comment(3, "ELEM_LABEL %s", l->d.doGoto.rung);
+            Comment(3, "ELEM_LABEL %s", l->d.doGoto.label);
             // TODO: Check is ELEM_LABEL
-            int n = CountWhich(ELEM_LABEL, l->d.doGoto.rung);
+            int n = CountWhich(ELEM_LABEL, l->d.doGoto.label);
             if(n != 1) {
-                Error(_("Only one label '%s' is allowed!"), l->d.doGoto.rung);
+                Error(_("LABEL: Only one LABEL '%s' is allowed!"), l->d.doGoto.label);
             }
-            //Op(INT_AllocKnownAddr, l->d.doGoto.rung);
-            //Op(INT_AllocFwdAddr, l->d.doGoto.rung);
+            //Op(INT_AllocKnownAddr, l->d.doGoto.label);
+            //Op(INT_AllocFwdAddr, l->d.doGoto.label);
             break;
         }
         case ELEM_SUBPROG: {
-            Comment(3, "ELEM_SUBPROG %s", l->d.doGoto.rung);
+            Comment(3, "ELEM_SUBPROG %s", l->d.doGoto.label);
+            int  n;
+            n = CountWhich(ELEM_SUBPROG, l->d.doGoto.label);
+            if(n != 1) {
+                Error(_("SUBPROG: Only one SUBPROG '%s' is allowed!"), l->d.doGoto.label);
+            }
+            n = CountWhich(ELEM_ENDSUB, l->d.doGoto.label);
+            if(n < 1) {
+                Error(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.label);
+            }
             if((Prog.rungs[rungNow]->contents[0].which == ELEM_SUBPROG)
-            && ((Prog.rungs[rungNow]->count == 1)
-            ||  ((Prog.rungs[rungNow]->count == 2)
-            &&   (Prog.rungs[rungNow]->contents[1].which == ELEM_COMMENT)))) {
+            && (Prog.rungs[rungNow]->count == 1)) {
                 ; //
             } else {
-                THROW_COMPILER_EXCEPTION_FMT(_("SUBPROG: '%s' declaration must be single inside a rung %d"), l->d.doGoto.rung, rungNow + 1);
+                Error(_("SUBPROG: '%s' declaration must be a single inside the rung %d"), l->d.doGoto.label, rungNow + 1);
             }
             int r = -1;
-            if(!IsNumber(l->d.doGoto.rung)) {
-                r = FindRungLast(ELEM_ENDSUB, l->d.doGoto.rung);
+            if(!IsNumber(l->d.doGoto.label)) {
+                r = FindRungLast(ELEM_ENDSUB, l->d.doGoto.label);
             }
             if(r >= 0) {
-                Op(INT_GOTO, l->d.doGoto.rung, "ENDSUB", r + 1);
-                char s[MAX_NAME_LEN];
-                sprintf(s,"SUBPROG%s", l->d.doGoto.rung);
-                Op(INT_AllocKnownAddr, s, l->d.doGoto.rung, "SUBPROG", rungNow);
-            } else {
-                THROW_COMPILER_EXCEPTION_FMT(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.rung);
+                char name[MAX_NAME_LEN];
+                GetLabelName(name, r + 2);
+                Op(INT_GOTO, name, l->d.doGoto.label, "ENDSUB", 0);
+                //char s[MAX_NAME_LEN];
+                //sprintf(s,"SUBPROG%s", l->d.doGoto.label);
+                //Op(INT_AllocKnownAddr, s, l->d.doGoto.label);
             }
             break;
         }
         case ELEM_ENDSUB: {
-            Comment(3, "ELEM_ENDSUB %s rung %d", l->d.doGoto.rung, rungNow + 1);
-            int r = -1;
-            if(!IsNumber(l->d.doGoto.rung)) {
-                r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+            Comment(3, "ELEM_ENDSUB %s", l->d.doGoto.label);
+            int n;
+            n = CountWhich(ELEM_ENDSUB, l->d.doGoto.label);
+            if(n != 1) {
+                Error(_("ENDSUB: Only one ENDSUB '%s' is allowed!"), l->d.doGoto.label);
             }
-            if(r >= 0) {
+            n = CountWhich(ELEM_SUBPROG, l->d.doGoto.label);
+            if(n < 1) {
+                Error(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
+            }
+            if((Prog.rungs[rungNow]->contents[0].which == ELEM_ENDSUB)
+            && (Prog.rungs[rungNow]->count == 1)) {
+                ; //
             } else {
-                THROW_COMPILER_EXCEPTION_FMT(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                Error(_("ENDSUB: '%s' declaration must be a single inside the rung %d"), l->d.doGoto.label, rungNow + 1);
             }
-            Op(INT_RETURN, l->d.doGoto.rung, r);
+            int r = -1;
+            if(!IsNumber(l->d.doGoto.label)) {
+                r = FindRung(ELEM_SUBPROG, l->d.doGoto.label);
+            }
+            Op(INT_RETURN, l->d.doGoto.label, r);
             break;
         }
         case ELEM_RETURN:

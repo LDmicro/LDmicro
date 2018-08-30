@@ -1195,13 +1195,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 break;
             case INT_FwdAddrIsNow:
-                fprintf(f, "LabelRung%d:;\n", IntCode[i].literal + 1);
+                fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 break;
             case INT_GOTO:
-                fprintf(f, "goto LabelRung%d; // %s\n", IntCode[i].literal + 1, IntCode[i].name1.c_str());
+                fprintf(f, "goto Label%s;\n", IntCode[i].name1.c_str());
                 break;
             case INT_GOSUB:
-                fprintf(f, "Call_SUBPROG_%s(); // LabelRung%d\n", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
+                fprintf(f, "Call_SUBPROG_%s();\n", IntCode[i].name1.c_str());
                 break;
             case INT_RETURN:
                 fprintf(f, "return;\n");

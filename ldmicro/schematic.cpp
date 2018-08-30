@@ -812,7 +812,7 @@ void EditSelectedElement()
         case ELEM_ENDSUB:
         case ELEM_GOTO:
         case ELEM_GOSUB:
-            ShowGotoDialog(SelectedWhich, Selected->d.doGoto.rung);
+            ShowGotoDialog(SelectedWhich, Selected->d.doGoto.label);
             break;
 
         case ELEM_RANDOM:
