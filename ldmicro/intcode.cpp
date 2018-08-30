@@ -470,9 +470,9 @@ void IntDumpListing(char *outFile)
                         IntCode[i].name1.c_str());
                 break;
 
-            case INT_UART_SEND1:
             case INT_UART_SENDn:
-                fprintf(f, "uart send from '%s'", IntCode[i].name1.c_str());
+            case INT_UART_SEND1:
+                fprintf(f, "uart send from '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal);
                 break;
 
             case INT_UART_SEND:
@@ -489,7 +489,7 @@ void IntDumpListing(char *outFile)
 
             case INT_UART_RECVn:
             case INT_UART_RECV1:
-                fprintf(f, "uart recv into '%s'", IntCode[i].name1.c_str());
+                fprintf(f, "uart recv into '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal);
                 break;
 
             case INT_UART_RECV:
@@ -812,7 +812,7 @@ static void GenSym(char *dest, char *name, char *name1, char *name2)
     GenSymCount++;
 }
 
-static void GenSym(char *dest, char *name1, char *name2)
+static void GenVar(char *dest, char *name1, char *name2)
 {
     sprintf(dest, "$var_%01lx_%s_%s", GenSymCount, name1, name2);
     GenSymCount++;
@@ -3324,7 +3324,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_END_IF);
             break;
         }
-        case ELEM_UART_SEND:
+        case ELEM_UART_SEND: {
             Comment(3, "ELEM_UART_SEND");
 #if 0
             // Why in this place do not controlled stateInOut, as in the ELEM_UART_RECV ?
@@ -3334,14 +3334,89 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_UART_SEND, l->d.uart.name, stateInOut); // stateInOut returns BUSY flag
         ////Op(INT_END_IF); // ???
 #else
-            // This is modified algorithm !!!
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_UART_SEND1, l->d.uart.name);
-            Op(INT_END_IF);
-            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+            if(l->d.uart.bytes == 1) {
+              // This is modified algorithm !!!
+              Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_UART_SEND1, l->d.uart.name);
+              Op(INT_END_IF);
+
+              if(!l->d.uart.wait) {
+                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+              } else {
+                char label[MAX_NAME_LEN];
+                GenSym(label, "_wait", "UART_SEND", l->d.uart.name);
+
+                Op(INT_AllocKnownAddr, label);
+                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                Op(INT_IF_BIT_SET, stateInOut);
+                  Op(INT_GOTO, label, 1);
+                Op(INT_END_IF);
+              }
+            } else {
+                if(l->d.uart.wait) {
+                  Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_UART_SEND1, l->d.uart.name);
+
+                    char label[MAX_NAME_LEN];
+                    for(int i = 1; i < l->d.uart.bytes; i++) {
+                      GenSym(label, "_wait", "UART_SEND", l->d.uart.name);
+
+                      Op(INT_AllocKnownAddr, label);
+                      Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                      Op(INT_IF_BIT_SET, stateInOut);
+                        Op(INT_GOTO, label, 1);
+                      Op(INT_END_IF);
+
+                      Op(INT_UART_SEND1, l->d.uart.name, i);
+                    }
+                  Op(INT_END_IF);
+                  Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                } else {
+                  char storeName[MAX_NAME_LEN];
+                  GenSymOneShot(storeName, "UART_SEND", l->d.uart.name);
+
+                  Op(INT_IF_BIT_SET, stateInOut);
+                    Op(INT_IF_BIT_CLEAR, storeName);
+                      Op(INT_SET_BIT, storeName);
+                    Op(INT_END_IF);
+                  Op(INT_END_IF);
+
+                  Op(INT_IF_BIT_SET, storeName);
+                    char saved[MAX_NAME_LEN];
+                    GenVar(saved, "saved_UART_SEND", l->d.uart.name);
+                    SetSizeOfVar(saved, l->d.uart.bytes);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, saved, l->d.uart.name);
+
+                    char bytes[MAX_NAME_LEN];
+                    sprintf(bytes, "%d", l->d.uart.bytes);
+
+                    char numb[MAX_NAME_LEN];
+                    GenVar(numb, "numb_UART_SEND", l->d.uart.name);
+
+                    Op(INT_IF_LES, numb,  l->d.uart.bytes);
+                      Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                      Op(INT_IF_BIT_CLEAR, stateInOut);
+                        Op(INT_UART_SEND1, saved, numb);
+                        Op(INT_INCREMENT_VARIABLE, numb);
+                      Op(INT_END_IF);
+                    Op(INT_END_IF);
+
+                    Op(INT_IF_GEQ, numb, bytes);
+                      Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
+                      Op(INT_CLEAR_BIT, storeName);
+                    Op(INT_END_IF);
+                  Op(INT_END_IF);
+
+                  Op(INT_IF_BIT_SET, storeName);
+                    Op(INT_SET_BIT, stateInOut); // busy
+                  Op(INT_ELSE);
+                    Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                  Op(INT_END_IF);
+                }
+              }
 #endif
             break;
-
+        }
         case ELEM_UART_RECV: {
             Comment(3, "ELEM_UART_RECV");
             int sov = SizeOfVar(l->d.uart.name);
@@ -3349,10 +3424,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Error("ELEM_UART_RECV '%s' bytes > sov", l->d.uart.name);
                 oops();
             }
-            Op(INT_IF_BIT_SET, stateInOut);
 #if 0
+            Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_UART_RECV, l->d.uart.name, stateInOut);
+            Op(INT_END_IF);
 #else
+            Op(INT_IF_BIT_SET, stateInOut);
               if(l->d.uart.bytes == 1) {
                 Op(INT_UART_RECV_AVAIL, stateInOut);
                 Op(INT_IF_BIT_SET, stateInOut);
@@ -3365,10 +3442,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
                     Op(INT_UART_RECV1, l->d.uart.name);
+
+                    char label[MAX_NAME_LEN];
                     for(int i = 1; i < l->d.uart.bytes; i++) {
-                      char label[MAX_NAME_LEN];
-                      GenSym(label, "Label", "UART_RECV", l->d.uart.name);
-                      Op(INT_AllocKnownAddr,label);
+                      GenSym(label, "_wait", "UART_RECV", l->d.uart.name);
+                      Op(INT_AllocKnownAddr, label);
                       Op(INT_UART_RECV_AVAIL, stateInOut);
                       Op(INT_IF_BIT_CLEAR, stateInOut);
                         Op(INT_GOTO, label, 1);
@@ -3377,36 +3455,35 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     }
                   Op(INT_END_IF);
                 } else {
+                  char saved[MAX_NAME_LEN];
+                  GenVar(saved, "saved_UART_RECV", l->d.uart.name);
+                  SetSizeOfVar(saved, l->d.uart.bytes);
+
                   char bytes[MAX_NAME_LEN];
-                  GenSym(bytes, "bytes_UART_RECV", l->d.uart.name);
-                  Op(INT_IF_LES, bytes,  l->d.uart.bytes);
+                  sprintf(bytes, "%d", l->d.uart.bytes);
+
+                  char numb[MAX_NAME_LEN];
+                  GenVar(numb, "numb_UART_RECV", l->d.uart.name);
+
+                  Op(INT_IF_LES, numb,  l->d.uart.bytes);
                     Op(INT_UART_RECV_AVAIL, stateInOut);
                     Op(INT_IF_BIT_SET, stateInOut);
-                      Op(INT_IF_EQU, bytes, 0);
-                        Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
-                      Op(INT_END_IF);
-                      Op(INT_UART_RECV1, l->d.uart.name, bytes);
-                      Op(INT_INCREMENT_VARIABLE, bytes);
+                      Op(INT_UART_RECV1, saved, numb);
+                      Op(INT_INCREMENT_VARIABLE, numb);
                     Op(INT_END_IF);
                   Op(INT_END_IF);
-                  Op(INT_IF_EQU, bytes, l->d.uart.bytes);
-                    Op(INT_SET_VARIABLE_TO_LITERAL, bytes, 0);
+
+                  Op(INT_IF_GEQ, numb, bytes);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.uart.name, saved);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
                     Op(INT_SET_BIT, stateInOut);
                   Op(INT_ELSE);
                     Op(INT_CLEAR_BIT, stateInOut);
                   Op(INT_END_IF);
                 }
               }
-
-
-
-              if(l->d.uart.wait && (sov > 1)) {
-
-              }
-              if(l->d.uart.bytes < sov) {
-              }
-#endif
             Op(INT_END_IF);
+#endif
             break;
         }
         case ELEM_UART_RECV_AVAIL:

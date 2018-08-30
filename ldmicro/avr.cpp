@@ -391,7 +391,7 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD
     if(op == OP_COMMENTINT) {
         if(comment) {
             if(strlen(instruction.commentInt))
-                strncatn(instruction.commentInt, "\n;", MAX_COMMENT_LEN);
+                strncatn(instruction.commentInt, "\n    ; ", MAX_COMMENT_LEN);
             strncatn(instruction.commentInt, comment, MAX_COMMENT_LEN);
         }
         return;
@@ -2108,7 +2108,7 @@ static void GetUartSendReady(DWORD addr, int bit)
 //-----------------------------------------------------------------------------
 static void GetUartSendBusy(DWORD addr, int bit)
 {
-    //  CopyNotBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
+    ////CopyNotBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
     CopyNotBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty and ready
 }
 //-----------------------------------------------------------------------------
@@ -5000,13 +5000,23 @@ static void CompileFromIntermediate()
                 // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
 
                 //DWORD isBusy = AllocFwdAddr();
                 //IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
                 //Instruction(OP_RJMP, isBusy);
 
-                LoadXAddr(addr1 + a->literal);
+                LoadXAddr(addr1);
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    LoadYAddr(addr2);
+                    Instruction(OP_LD_Y, r18);
+                    Instruction(OP_LDI, r19, 0);
+                    Instruction(OP_ADD, XL, r18); // addr1 +=[a->name2]
+                    Instruction(OP_ADC, XH, r19);
+                }
                 Instruction(OP_LD_X, r16);
+
                 LoadXAddr(REG_UDR);
                 Instruction(OP_ST_X, r16);
 
@@ -5040,6 +5050,8 @@ static void CompileFromIntermediate()
             }
             case INT_UART_RECV1: {
                 //Receive one char/byte in a single PLC cycle.
+                //Skip if no char.
+                Comment("INT_UART_RECV1");
                 MemForVariable(a->name1, &addr1);
                 addr1 += a->literal;
 
@@ -5049,7 +5061,16 @@ static void CompileFromIntermediate()
 
                 LoadXAddr(REG_UDR);
                 Instruction(OP_LD_X, r16);
+
                 LoadXAddr(addr1);
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    LoadYAddr(addr2);
+                    Instruction(OP_LD_Y, r18);
+                    Instruction(OP_LDI, r19, 0);
+                    Instruction(OP_ADD, XL, r18); // addr1 +=[a->name2]
+                    Instruction(OP_ADC, XH, r19);
+                }
                 Instruction(OP_ST_X, r16);
 
                 FwdAddrIsNow(noChar);
@@ -5069,6 +5090,7 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_AllocKnownAddr: {
+                Comment("INT_AllocKnownAddr %s", a->name1.c_str());
                 LabelAddr * l = GetLabelAddr(a->name1.c_str());
                 l->KnownAddr = AvrProg.size();
                 break;
