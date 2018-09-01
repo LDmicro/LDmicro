@@ -383,9 +383,9 @@
 #define ELEM_LOCK               0x2c03
 #define ELEM_DELAY              0x2c04
 #define ELEM_TIME2DELAY         0x2c05
-#define ELEM_LABEL              0x2c20
-#define ELEM_GOTO               0x2c21
-#define ELEM_SUBPROG            0x2c22
+#define ELEM_LABEL              0x2c20 // rung label // operate with rung only
+#define ELEM_GOTO               0x2c21 // goto rung  // operate with rung only
+#define ELEM_SUBPROG            0x2c22 // call rung  // operate with rung only
 #define ELEM_RETURN             0x2c23
 #define ELEM_ENDSUB             0x2c24
 #define ELEM_GOSUB              0x2c25
@@ -626,7 +626,7 @@ typedef struct ElemMathTag {
 } ElemMath;
 
 typedef struct ElemGotoTag {
-    char    rung[MAX_NAME_LEN]; // rung number or rung symbol label
+    char    label[MAX_NAME_LEN]; // rung number or rung symbol label
 } ElemGoto;
 
 typedef struct ElemCounterTag {
@@ -697,6 +697,12 @@ typedef struct ElemQuadEncodTag {
 
 typedef struct ElemUartTag {
     char    name[MAX_NAME_LEN];
+    int     bytes; // Number of bytes to transmit, default is 1 (backward compatible).
+    bool    wait;  // Wait until all bytes are transmitted
+                   //  in the same cycle of the PLC in which it started.
+                   //  or transmit a one byte per a one PLC cycle,
+                   // Default is false.
+                   // The 'wait' parameter is not used when receiving the one byte.
 } ElemUart;
 
 typedef struct ElemShiftRegisterTag {
@@ -1187,7 +1193,7 @@ void ShowGotoDialog(int which, char *name);
 void ShowRandomDialog(char *name);
 void ShowSetPwmDialog(void *e);
 void ShowPersistDialog(char *var);
-void ShowUartDialog(int which, char *name);
+void ShowUartDialog(int which, ElemLeaf *l);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
@@ -1637,6 +1643,14 @@ double SIprefix(double val, char *prefix);
 int GetVariableType(char *name);
 int SetVariableType(const char *name, int type);
 
+typedef struct LabelAddrTag {
+    char  name[MAX_NAME_LEN];
+    DWORD KnownAddr; // Addres to jump to the start of rung abowe the current in LD
+    DWORD FwdAddr;   // Addres to jump to the start of rung below the current in LD
+    DWORD used;
+} LabelAddr;
+LabelAddr *GetLabelAddr(const char *name);
+
 // intcode.cpp
 extern int int_comment_level;
 extern int asm_comment_level;
@@ -1689,13 +1703,6 @@ void CompileInterpreted(const char* outFile);
 void CompileXInterpreted(const char* outFile);
 // netzer.cpp
 void CompileNetzer(const char* outFile);
-
-typedef struct RungAddrTag {
-    DWORD   KnownAddr; // Addres to jump to the start of rung abowe the current in LD
-    DWORD   FwdAddr;   // Addres to jump to the start of rung below the current in LD
-} RungAddr;
-extern RungAddr AddrOfRungN[MAX_RUNGS];
-
 // pascal.cpp
 void CompilePascal(const char* outFile);
 

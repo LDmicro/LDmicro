@@ -1520,12 +1520,115 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     of the rung is true if the UART is busy (currently transmitting a
     character), and false otherwise.
 
-    Remember that characters take some time to transmit. Check the output
-    condition of this instruction to ensure that the first character has
-    been transmitted before trying to send a second character, or use
-    a timer to insert a delay between characters. You must only bring
-    the input condition true (try to send a character) when the output
-    condition is false (UART is not busy).
+    Remember that characters take some time to transmit. There are several
+    ways to organize the transmission:
+    1) Use PLC cycle time, which is knowingly greater than UART transmittion
+    time.
+   ||                                                    ||
+   || ; PLC cycle time is 10 ms.                         ||
+   || ; UART baud rate is 9600 bps.                      ||
+   ||                                                    ||
+   || ; In this case, there is a tenfold time reserve.   ||
+   || ; Chars sequence will be transmitted without loss. ||
+   ||                                                    ||
+   || ; 1 2 3 4 5 6 7 8 9 10 11 12 ...                   ||
+   ||                                                    ||
+   ||                                   {ADD     char:=} ||
+   ||-----------------------------------{char    +    1}-||
+   ||                                                    ||
+   ||      char                                          ||
+   ||---{UART SEND}---                                   ||
+   ||                                                    ||
+
+    2) Use timers to insert delays between characters. Timer delay must be
+    longer than UART transmission time.
+   ||                                                                    ||
+   || ; PLC cycle time is 1 ms.                                          ||
+   || ; UART baud rate is 9600 bps.                                      ||
+   ||                                                                    ||
+   || ; In this case, there is a fivefold time reserve.                  ||
+   || ; Chars sequence will be transmitted without loss.                 ||
+   ||                                                                    ||
+   || ; char1 char2 char3   char1 char2 char3   char1 char2 char3   ...  ||
+   || ; 1     5     10      2     10    20      3     15    30      ...  ||
+   ||                                                                    ||
+   ||       T0                                               Rstart      ||
+   ||---[TCY 15 ms]--------------------------------------------( )-------||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||     Rstart             T1             _     _     {ADD    char1:=} ||
+   ||-------] [----------[RTO 5 ms]------[_/ OSR_/ \_]-+{char1    +   1}-||
+   ||                                                  |                 ||
+   ||                                                  |      char1      ||
+   ||                                                  +---{UART SEND}---||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||     Rstart             T2             _     _     {ADD    char2:=} ||
+   ||-------] [----------[RTO 10 ms]-----[_/ OSR_/ \_]-+{char2    +   5}-||
+   ||                                                  |                 ||
+   ||                                                  |      char2      ||
+   ||                                                  +---{UART SEND}---||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||     Rstart             T3             _     _     {ADD    char3:=} ||
+   ||-------] [----------[RTO 15 ms]-----[_/ OSR_/ \_]-+{char3   +   10}-||
+   ||                                                  |                 ||
+   ||                                                  |      char3      ||
+   ||                                                  +---{UART SEND}---||
+   ||                                                  |                 ||
+   ||                                                  |       T1        ||
+   ||                                                  +------{RES}------||
+   ||                                                  |                 ||
+   ||                                                  |       T2        ||
+   ||                                                  +------{RES}------||
+   ||                                                  |                 ||
+   ||                                                  |       T3        ||
+   ||                                                  +------{RES}------||
+   ||                                                                    ||
+
+    3) Check the output condition of this instruction to ensure that the
+    previous character has been transmitted before trying to send a next
+    character. You must only bring the input condition true (try to send
+    a character) when the output condition is false (UART is not busy).
+   ||                                                      ||
+   || ; PLC cycle time and UART baud rate are independent  ||
+   || ; and can be various.                                ||
+   ||                                                      ||
+   || ; 1 2 3 4 5 6 7 8 9 10 11 12 ...                     ||
+   ||                                                      ||
+   ||      Rbusy                          {ADD     DATA:=} ||
+   ||-------]/[------+--[_/ OSR_/ \_]-----{DATA    +    1}-||
+   ||                |                                     ||
+   ||                |      DATA                Rbusy      ||
+   ||                +---{UART SEND}-------------( )-------||
+   ||                                                      ||
+
+
+   ||                                                                       ||
+   || ; DATA1 DATA2   DATA1 DATA2   DATA1 DATA2   ...                       ||
+   || ; 1     10      2     20      3     30      ...                       ||
+   ||                                                                       ||
+   ||   Rbusy        DATA1       _       _        DATA2          Rbusy      ||
+   ||----]/[--+---{UART SEND}---[ \_OSF_/ \_]--{UART SEND}--------( )-------||
+   ||         |                                                             ||
+   ||         |     _     _                                {ADD    DATA1:=} ||
+   ||         +--[_/ OSR_/ \_]-+---------------------------{DATA1    +   1}-||
+   ||                          |                                            ||
+   ||                          |                           {ADD    DATA2:=} ||
+   ||                          +---------------------------{DATA2   +   10}-||
+   ||                                                                       ||
+
+    4) Use the 'UART SEND: Is ready ?' instruction before UART SEND to checks
+    the UART status.
+   ||                                                    ||
+   || ; 0 1 2 3 4 5 6 7 8 9 10 11 12 ...                 ||
+   ||                                                    ||
+   ||    Is ready?          DATA                         ||
+   ||---[UART SEND]--+---{UART SEND}---------------------||
+   ||                |                                   ||
+   ||                |                  {ADD     DATA:=} ||
+   ||                +------------------{DATA    +    1}-||
+   ||                                                    ||
 
     Investigate the formatted string instruction (next) before using this
     instruction. The formatted string instruction is much easier to use,
@@ -1548,15 +1651,18 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 > UART SEND: Is ready ?       Is ready?
                            --[UART SEND]--
 
-    Input condition is not taken into view.
-    Output is 1 when transmit buffer is empty and ready to loading new data.
+    If the input condition to this instruction is false, then nothing
+    happens. If the input condition is true, then  output is true
+    when transmit buffer is empty and ready to loading new data,
+    and false otherwise.
 
 
 > UART RECV: Is avail ?       Is avail?
                            --[UART RECV]--
 
-    Input condition is not taken into view.
-    Output is 1 when there are unread data in the receive buffer.
+    If the input condition to this instruction is false, then nothing
+    happens. If the input condition is true, then  output is true when
+    there are unread data in the receive buffer, and false otherwise.
 
 
 > FORMATTED STRING OVER UART                var
@@ -1668,6 +1774,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
 
     The rung-out condition of this instruction is always true.
 
+
 > CLRWDT
                            --{CLRWDT}--
 
@@ -1676,6 +1783,7 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     automatically (at begin of the cycle), so you need adiitional CLRWDT
     if PLC cycle period more then WDT period if WDT enabled.
     This instruction must be the rightmost instruction in its rung.
+
 
 > LOCK
                            --{LOCK}--
@@ -1686,9 +1794,10 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     designed as infinite loop. It is deadlock, way to freeze, blockade the
     program.
     LOCK command executes goto to the current address, i.e.
-    labelN: goto labelN (label02e7: rjmp label02e7), i.e. infinite loop.
+    labelN: goto labelN (label02: rjmp label02), i.e. infinite loop.
     LOCK command executes the infinite loop, but WDT can reset the MCU.
     Only WDT or external reset can unfreeze the program after LOCK command.
+
 
 > SLEEP
                            --{SLEEP}--
@@ -1703,6 +1812,18 @@ Note: The several coils with the same 'YName' or 'RName' can be mentally
     Note: SLEEP lengthens the PLC cycle time and timers TON, TOF, RTO, CTY.
     This can frustrate the plans, break the flow of work.
     This instruction must be the rightmost instruction in its rung.
+
+
+>LABEL, GOTO, SUBPROG, RETURN, ENDSUB, GOSUB
+
+    LABEL and GOTO instruction
+    https://github.com/LDmicro/LDmicro/wiki/GOTO-instruction
+
+    SUBPROG, RETURN, ENDSUB and GOSUB, LABEL and GOTO instruction. Part 2
+    https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-RETURN,-ENDSUB-and-GOSUB,-LABEL-and-GOTO-instruction.-Part-2
+
+    SUBPROG, RETURN, ENDSUB and GOSUB, LABEL and GOTO instruction. Part 3
+    https://github.com/LDmicro/LDmicro/wiki/SUBPROG,-RETURN,-ENDSUB-and-GOSUB,-LABEL-and-GOTO-instruction.-Part-3
 
 
 > RAND                        Rand

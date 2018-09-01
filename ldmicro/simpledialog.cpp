@@ -1034,24 +1034,24 @@ void ShowGotoDialog(int which, char *name)
     const char *s;
     switch(which) {
         case ELEM_GOTO:
-            s = _("Goto rung number or labe namel");
-            labels[1] = _("Destination rung(label):");
+            s = _("Goto rung number or label");
+            labels[0] = _("Destination rung(label):");
             break;
         case ELEM_GOSUB:
-            s = _("Call SUBPROG rung number or label name");
-            labels[1] = _("Destination rung(label):");
+            s = _("Call SUBPROG rung number or label");
+            labels[0] = _("Destination rung(label):");
             break;
         case ELEM_LABEL:
             s = _("Define LABEL name");
-            labels[1] = _("LABEL name:");
+            labels[0] = _("LABEL name:");
             break;
         case ELEM_SUBPROG:
             s = _("Define SUBPROG name");
-            labels[1] = _("SUBPROG name:");
+            labels[0] = _("SUBPROG name:");
             break;
         case ELEM_ENDSUB:
             s = _("Define ENDSUB name");
-            labels[1] = _("ENDSUB name:");
+            labels[0] = _("ENDSUB name:");
             break;
         default:
             oops();
@@ -1105,14 +1105,22 @@ void ShowSetPwmDialog(void *e)
     NoCheckingOnBox[3] = false;
 }
 
-void ShowUartDialog(int which, char *name)
+void ShowUartDialog(int which, ElemLeaf *l)
 {
-    const char *labels[] = {(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:")};
-    char *      dests[] = {name};
+    ElemUart *   e = &(l->d.uart);
+    char bytes[MAX_NAME_LEN];
+    sprintf(bytes, "%d", e->bytes);
+    char wait[MAX_NAME_LEN];
+    sprintf(wait, "%d", e->wait);
+
+    const char *labels[] = {(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"), _("Number of bytes to transmit:"), _("Wait until all bytes are transmitted:")};
+    char *      dests[] = {e->name, bytes, wait};
 
     NoCheckingOnBox[0] = true;
-    ShowSimpleDialog(
-        (which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 1, labels, 0x0, 0x1, 0x1, dests);
+    if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 3, labels, 0x0, 0x1, 0x1, dests)) {
+        e->bytes = std::max(1, std::min(SizeOfVar(e->name), static_cast<int>(hobatoi(bytes))));
+        e->wait = hobatoi(wait) ? 1 : 0;
+    };
     NoCheckingOnBox[0] = false;
 }
 

@@ -5656,53 +5656,49 @@ otherwise the result was zero or greater.
                 Comment("%s", a->name1.c_str());
                 break;
 
-            case INT_AllocKnownAddr:
-                AddrOfRungN[a->literal].KnownAddr = PicProgWriteP;
+            case INT_AllocKnownAddr: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                l->KnownAddr = PicProgWriteP;
                 break;
-
-            case INT_AllocFwdAddr:
-                AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
+            }
+            case INT_AllocFwdAddr: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                l->FwdAddr = AllocFwdAddr();
                 break;
-
-            case INT_FwdAddrIsNow:
-                FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
+            }
+            case INT_FwdAddrIsNow: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                FwdAddrIsNow(l->FwdAddr);
                 break;
-
+            }
             case INT_RETURN:
                 Instruction(OP_RETURN);
                 break;
 
             case INT_GOTO: {
-                int rung = a->literal;
-                Comment("INT_GOTO %s %d 0x%08X 0x%08X",
+                Comment("INT_GOTO %s // %s %d",
                         a->name1.c_str(),
-                        rung,
-                        AddrOfRungN[rung].FwdAddr,
-                        AddrOfRungN[rung].KnownAddr);
-                if(rung < -1) {
-                    Instruction(OP_GOTO);
-                } else if(rung == -1) {
-                    Instruction(OP_GOTO, BeginOfPLCCycle);
-                } else if(rung <= rungNow) {
-                    Instruction(OP_GOTO, AddrOfRungN[rung].KnownAddr);
+                        a->name2.c_str(),
+                        a->literal);
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                if(a->literal) {
+                    Instruction(OP_GOTO, l->KnownAddr);
                 } else {
-                    Instruction(OP_GOTO, AddrOfRungN[rung].FwdAddr);
+                    Instruction(OP_GOTO, l->FwdAddr);
                 }
                 break;
             }
             case INT_GOSUB: {
-                int rung = a->literal;
-                Comment("INT_GOSUB %s %d 0x%08X 0x%08X",
+                Comment("INT_GOSUB %s // %s %d",
                         a->name1.c_str(),
-                        rung,
-                        AddrOfRungN[rung].FwdAddr,
-                        AddrOfRungN[rung].KnownAddr);
-                if(rung < rungNow) {
-                    Instruction(OP_CALL, AddrOfRungN[rung].KnownAddr);
-                } else if(rung > rungNow) {
-                    Instruction(OP_CALL, AddrOfRungN[rung].FwdAddr);
-                } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                        a->name2.c_str(),
+                        a->literal);
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                if(a->literal) {
+                    Instruction(OP_CALL, l->KnownAddr);
+                } else {
+                    Instruction(OP_CALL, l->FwdAddr);
+                }
                 break;
             }
             case INT_SET_BIN2BCD: {

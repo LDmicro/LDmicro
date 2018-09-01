@@ -362,7 +362,7 @@ void AddGoto(int which)
         return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.doGoto.rung, "?");
+    strcpy(t->d.doGoto.label, "?");
     AddLeaf(which, t);
 }
 
@@ -735,6 +735,8 @@ void AddUart(int which)
         strcpy(t->d.uart.name, "char");
     else
         strcpy(t->d.uart.name, "var");
+    t->d.uart.bytes = 1;
+    t->d.uart.wait = false;
     AddLeaf(which, t);
 }
 
@@ -1469,7 +1471,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1)
 }
 
 //-----------------------------------------------------------------------------
-static bool _FindRung(int which, void *any, int seek, char *name)
+static bool _FindRung(int which, void *any, int seek, const char *name)
 {
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -1494,7 +1496,7 @@ static bool _FindRung(int which, void *any, int seek, char *name)
             if(which == seek) {
                 ElemLeaf *leaf = (ElemLeaf *)any;
                 ElemGoto *e = &leaf->d.doGoto;
-                if(strcmp(e->rung, name) == 0)
+                if(strcmp(e->label, name) == 0)
                     return true;
             }
             break;

@@ -60,6 +60,32 @@ static int   MemOffset;
 DWORD        RamSection;
 
 //-----------------------------------------------------------------------------
+static LabelAddr LabelAddrArr[MAX_RUNGS];
+static int LabelAddrCount = 0;
+
+LabelAddr * GetLabelAddr(const char *name)
+{
+    if(!name)
+        oops();
+    if(!strlen(name))
+        oops();
+    int i;
+    for(i = 0; i < LabelAddrCount; i++) {
+        if(strcmp(name, LabelAddrArr[i].name) == 0)
+            break;
+    }
+    if(i >= MAX_RUNGS) {
+        THROW_COMPILER_EXCEPTION_FMT(_("Labels limit '%d' exceeded!"), MAX_RUNGS);
+    }
+    if(i == LabelAddrCount) {
+        LabelAddrCount++;
+        memset(&LabelAddrArr[i], 0, sizeof(LabelAddrArr[i]));
+        strcpy(LabelAddrArr[i].name, name);
+    }
+    return &(LabelAddrArr[i]);
+}
+
+//-----------------------------------------------------------------------------
 int McuPWM()
 {
     if(!Prog.mcu)
@@ -220,6 +246,7 @@ static void ClrInternalData()
     RamSection = 0;
     RomSection = 0;
     EepromAddrFree = 0;
+    LabelAddrCount = 0;
     //  VariableCount = 0;
     int i;
     for(i = 0; i < VariableCount; i++) {
