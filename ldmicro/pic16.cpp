@@ -976,8 +976,10 @@ static DWORD BankPreSet(DWORD addr, DWORD bank, int is_call)
     // Marking the operation as the double(multi) entry point.
     for(i = addr; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) == IS_GOTO) {
-            if(PicProg[i].arg1 >= PicProgWriteP)
+            if(PicProg[i].arg1 >= PicProgWriteP) {
+                oops()
                 THROW_COMPILER_EXCEPTION("Internal error.");
+            }
             if(PicProg[i].arg1 < 0)
                 THROW_COMPILER_EXCEPTION("Internal error.");
 
@@ -3117,10 +3119,13 @@ static void AllocBitsVars()
                 MemForSingleBit(a->name1, true, &addr, &bit);
                 break;
 
-            case INT_UART_SEND1:
             case INT_UART_SENDn:
             case INT_UART_SEND:
                 MemForSingleBit(a->name2, true, &addr, &bit);
+                break;
+
+            case INT_UART_SEND1:
+            case INT_UART_RECV1:
                 break;
 
             case INT_UART_RECV:
@@ -4849,17 +4854,26 @@ otherwise the result was zero or greater.
                 break;
             }
             case INT_UART_SEND1: {
+                // Attention! Busy flag is not checked!!!
+                // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
 
-                DWORD noSend = AllocFwdAddr();
+                DWORD isBusy = PicProg.size();
                 IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
-                Instruction(OP_GOTO, noSend);
+                Instruction(OP_GOTO, isBusy);
 
-                Instruction(OP_MOVF, addr1, DEST_W);
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    Instruction(OP_MOVLW, addr1); // Point to address
+                    Instruction(OP_ADDWF, addr2, DEST_W);
+                    Instruction(OP_MOVWF, REG_FSR);
+                    Instruction(OP_MOVF, REG_INDF, DEST_W); // addr1 +=[a->name2]
+                } else {
+                    Instruction(OP_MOVF, addr1, DEST_W);
+                }
                 Instruction(OP_MOVWF, REG_TXREG);
-
-                FwdAddrIsNow(noSend);
                 break;
             }
             case INT_UART_SEND: {
@@ -4910,6 +4924,59 @@ otherwise the result was zero or greater.
                     Instruction(OP_CLRF, addr1 + i);
                 // and set rung-out true
                 SetBit(addr2, bit2);
+
+                // And check for errors; need to reset the UART if yes.
+                DWORD yesError = AllocFwdAddr();
+                IfBitSet(REG_RCSTA, OERR); // overrun error
+                Instruction(OP_GOTO, yesError);
+                IfBitSet(REG_RCSTA, FERR); // framing error
+                Instruction(OP_GOTO, yesError);
+
+                // Neither FERR nor OERR is set, so we're good.
+                Instruction(OP_GOTO, done);
+
+                FwdAddrIsNow(yesError);
+                // An error did occur, so flush the FIFO.
+                Instruction(OP_MOVF, REG_RCREG, DEST_W);
+                Instruction(OP_MOVF, REG_RCREG, DEST_W);
+                // And clear and then set CREN, to clear the error flags.
+                ClearBit(REG_RCSTA, CREN);
+                SetBit(REG_RCSTA, CREN);
+
+                FwdAddrIsNow(done);
+                break;
+            }
+            case INT_UART_RECV1: {
+                //Receive one char/byte in a single PLC cycle.
+                //Skip if no char.
+                Comment("INT_UART_RECV1");
+                MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
+//              sov1 = SizeOfVar(a->name1);
+//              MemForSingleBit(a->name2, true, &addr2, &bit2);
+
+//              ClearBit(addr2, bit2);
+
+                // If RCIF is still clear, then there's nothing to do; in that
+                // case jump to the end, and leave the rung-out clear.
+                DWORD done = AllocFwdAddr();
+                IfBitClear(REG_PIR1, RCIF);
+                Instruction(OP_GOTO, done);
+
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    Instruction(OP_MOVLW, addr1); // Point to address
+                    Instruction(OP_ADDWF, addr2, DEST_W);
+                    Instruction(OP_MOVWF, REG_FSR);
+
+                    // RCIF is set, so we have a character. Read it now.
+                    Instruction(OP_MOVF, REG_RCREG, DEST_W);
+                    Instruction(OP_MOVWF, REG_INDF); // addr1 +=[a->name2]
+                } else {
+                    // RCIF is set, so we have a character. Read it now.
+                    Instruction(OP_MOVF, REG_RCREG, DEST_W);
+                    Instruction(OP_MOVWF, addr1);
+                }
 
                 // And check for errors; need to reset the UART if yes.
                 DWORD yesError = AllocFwdAddr();

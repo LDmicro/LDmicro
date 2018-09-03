@@ -3371,7 +3371,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     }
                   Op(INT_END_IF);
                   Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                } else {
+                } else { // don't wait
                   char storeName[MAX_NAME_LEN];
                   GenSymOneShot(storeName, "UART_SEND", l->d.uart.name);
 

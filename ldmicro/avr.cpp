@@ -5002,9 +5002,9 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
                 addr1 += a->literal;
 
-                //DWORD isBusy = AllocFwdAddr();
-                //IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-                //Instruction(OP_RJMP, isBusy);
+                DWORD isBusy = AvrProg.size();
+                IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
+                Instruction(OP_RJMP, isBusy); // reinsurance
 
                 LoadXAddr(addr1);
                 if(strlen(a->name2.c_str())) {
@@ -5019,8 +5019,6 @@ static void CompileFromIntermediate()
 
                 LoadXAddr(REG_UDR);
                 Instruction(OP_ST_X, r16);
-
-                //FwdAddrIsNow(isBusy);
                 break;
             }
             case INT_UART_RECV: {
