@@ -977,8 +977,8 @@ static DWORD BankPreSet(DWORD addr, DWORD bank, int is_call)
     for(i = addr; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) == IS_GOTO) {
             if(PicProg[i].arg1 >= PicProgWriteP) {
-                oops()
-                THROW_COMPILER_EXCEPTION("Internal error.");
+                IntOp *a = &IntCode[PicProg[i].IntPc];
+                THROW_COMPILER_EXCEPTION_FMT("Internal error. [%d:%s]", a->fileLine, a->fileName.c_str());
             }
             if(PicProg[i].arg1 < 0)
                 THROW_COMPILER_EXCEPTION("Internal error.");
@@ -4860,7 +4860,7 @@ otherwise the result was zero or greater.
                 MemForVariable(a->name1, &addr1);
                 addr1 += a->literal;
 
-                DWORD isBusy = PicProg.size();
+                DWORD isBusy = PicProgWriteP;
                 IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
                 Instruction(OP_GOTO, isBusy);
 
