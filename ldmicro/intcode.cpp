@@ -1473,7 +1473,7 @@ static void InitVarsCircuit(int which, void *elem, int *n)
             }
             char name[MAX_NAME_LEN];
             sprintf(name, "$seed_%s", l->d.readAdc.name);
-            Op(INT_SET_VARIABLE_TO_LITERAL, name, 1);
+            Op(INT_SET_VARIABLE_TO_LITERAL, name, rand());
             break;
         }
         case ELEM_CTR:
@@ -2990,6 +2990,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             } else {
                 Op(INT_SET_VARIABLE_TO_VARIABLE, name, l->d.move.src);
             }
+            Op(INT_SET_SEED_RANDOM, name);
             Op(INT_END_IF);
             break;
 
@@ -3371,7 +3372,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     }
                   Op(INT_END_IF);
                   Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                } else {
+                } else { // don't wait
                   char storeName[MAX_NAME_LEN];
                   GenSymOneShot(storeName, "UART_SEND", l->d.uart.name);
 

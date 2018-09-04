@@ -422,6 +422,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(memcmp(line, "UART_UDRE", 9) == 0) {
         *which = ELEM_UART_SEND_READY;
     } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
+        l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_RECVn;
     } else if(sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
         *which = ELEM_UART_RECV;
@@ -430,6 +431,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         l->d.uart.wait = false;
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
+        l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_SENDn;
     } else if(sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
         *which = ELEM_UART_SEND;

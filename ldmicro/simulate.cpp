@@ -1143,7 +1143,7 @@ static void IfConditionFalse()
         if(IntPc >= IntCode.size())
             oops();
 
-        if(IntCode[IntPc].op == INT_END_IF) { 
+        if(IntCode[IntPc].op == INT_END_IF) {
             nesting--;
         } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
             nesting++;
@@ -1689,6 +1689,9 @@ static void SimulateIntCode()
                 goto math;
             case INT_SET_VARIABLE_RANDOM:
                 v = GetRandom(a->name1);
+                goto math;
+            case INT_SET_SEED_RANDOM:
+                v = GetSimulationVariable(a->name1);
                 goto math;
             case INT_SET_VARIABLE_NEG:
                 v = -GetSimulationVariable(a->name2);
