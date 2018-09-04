@@ -5413,6 +5413,9 @@ otherwise the result was zero or greater.
                 }
                 break;
             }
+            case INT_SET_SEED_RANDOM:
+                break;
+
             case INT_SET_VARIABLE_RANDOM: {
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
