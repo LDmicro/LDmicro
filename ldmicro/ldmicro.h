@@ -1709,7 +1709,7 @@ void CompilePascal(const char* outFile);
 // pcports.cpp
 extern McuIoPinInfo IoPc[MAX_IO];
 extern int IoPcCount;
-bool ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
+bool ParceVar(const char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
 void FillPcPinInfo(McuIoPinInfo *pinInfo);
 
 // translit.cpp

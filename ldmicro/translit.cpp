@@ -23,6 +23,8 @@
 
 #include "ldmicro.h"
 #include "filetracker.hpp"
+
+#define LDLANG_RU // TODO
 //-----------------------------------------------------------------------------
 #if defined(LDLANG_RU)
 // code page 1251
