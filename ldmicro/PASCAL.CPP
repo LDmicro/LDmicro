@@ -590,7 +590,7 @@ static void Generate_flash_eeprom(FILE *f)
                 }
 
                 fprintf(
-                    f, "const %s: array [1..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal, sovs);
+                    f, "const %s: array [0..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal-1, sovs);
                 int j;
                 for(j = 0; j < (IntCode[i].literal - 1); j++) {
                     fprintf(f, "%d, ", IntCode[i].data[j]);

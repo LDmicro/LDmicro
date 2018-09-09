@@ -836,6 +836,28 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_NPULSE:
         case ELEM_PULSER:
         case ELEM_STEPPER:
+            sprintf(str, "%s%s", l->d.stepper.name, ""); // "LutElement");
+            MarkWithCheck(str, VAR_FLAG_TABLE);
+            //MarkWithCheck(l->d.stepper.name, VAR_FLAG_TABLE);
+
+            //MarkWithCheck(l->d.stepper.coil, VAR_FLAG_TABLE);
+            //MarkWithCheck(l->d.stepper.name, VAR_FLAG_ANY);
+
+            //if(IsNumber(l->d.stepper.P)&&(CheckMakeNumber(l->d.stepper.P)>1)
+            //||(!IsNumber(l->d.stepper.P))){
+            sprintf(str, "C%s%s", l->d.stepper.name, "Dec");
+            MarkWithCheck(str, VAR_FLAG_ANY);
+
+            sprintf(str, "C%s%s", l->d.stepper.name, "Inc");
+            MarkWithCheck(str, VAR_FLAG_ANY);
+
+            sprintf(str, "C%s%s", l->d.stepper.name, "P");
+            MarkWithCheck(str, VAR_FLAG_ANY);
+
+            //}
+            //MarkWithCheck(l->d.stepper.counter, VAR_FLAG_ANY);
+            //MarkWithCheck(l->d.stepper.P, VAR_FLAG_ANY);
+            //MarkWithCheck(l->d.stepper.accel, VAR_FLAG_ANY);
             break;
 
         case ELEM_BIN2BCD:
@@ -2015,7 +2037,7 @@ static void SimulateIntCode()
                 }
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal <= index)) {
-                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2.c_str(), a->literal - 1);
+                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2.c_str(), a->literal-1);
                     index = a->literal;
                     StopSimulation();
                     ToggleSimulationMode(false);

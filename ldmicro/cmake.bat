@@ -13,10 +13,10 @@
 @SET PROGECT=D:\LDs\SVARKA2\svarka1.ld
 @SET PROGECT=D:\LDs\SVARKA2\svarka2.ld
 @SET PROGECT=D:\LDs\SVARKA2\svarka3.ld
-:SVARKA2 - второй
-@SET PROGECT=D:\LDs\SVARKA2\svarka.ld
 :SVARKA1 - первый
 @SET PROGECT=D:\LDs\SVARKA1\svarka.ld
+:SVARKA2 - второй
+@SET PROGECT=D:\LDs\SVARKA2\svarka.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

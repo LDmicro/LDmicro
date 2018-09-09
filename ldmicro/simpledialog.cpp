@@ -25,6 +25,7 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
+//#include "accel.h"
 
 static HWND SimpleDialog;
 
@@ -1209,35 +1210,6 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
     }
 }
 
-void CalcSteps(ElemStepper *s, ResSteps *r)
-{
-    memset(&(*r), 0, sizeof(ResSteps));
-
-    FILE *f;
-
-    double massa = 1;
-    int    nSize = s->nSize;
-    int    graph = s->graph;
-
-    int P = 0;
-    if(IsNumber(s->P)) {
-        P = hobatoi(s->P);
-    };
-
-    int max = 0;
-    if(IsNumber(s->max)) {
-        max = hobatoi(s->max);
-    };
-
-    char fname[MAX_PATH];
-    sprintf(fname, "%s\\%s", CurrentLdPath, "acceleration_deceleration.txt");
-    f = fopen(fname, "w");
-
-    fclose(f);
-
-    s->n = r->n;
-}
-
 void ShowStepperDialog(int which, void *e)
 {
     ElemStepper *s = (ElemStepper *)e;
@@ -1285,7 +1257,6 @@ void ShowStepperDialog(int which, void *e)
             int count = hobatoi(max);
 
             ResSteps r;
-            //memset(&r,0,sizeof(r));
             if(IsNumber(max) && (s->graph)) {
                 CalcSteps(s, &r);
 

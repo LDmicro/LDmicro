@@ -445,9 +445,9 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSC, _("Insert _/OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
 
     PulseMenu = CreatePopupMenu();
+    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_PULSER, _("Insert PULSER"));
+    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_STEPPER, _("Insert STEPPER"));
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE, _("EDIT: Insert N PULSE"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_PULSER, _("EDIT: Insert PULSER"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_STEPPER, _("EDIT: Insert STEPPER"));
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("EDIT: Insert N PULSE OFF"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu, _("Pulse generators"));
 

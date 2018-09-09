@@ -122,14 +122,14 @@ goto exit
 ;
 @rem =======================================================================
 :PASCAL
-copy "%P3%\pcports.pas"        \MACHINE3\pas\SVARKA
-copy "%P3%\%P4%*.pas"          \MACHINE3\pas\SVARKA
-copy "%P3%\%P4%*.inc"          \MACHINE3\pas\SVARKA
+copy "%P3%\pcports.pas"        C:\MACHINE3\pas\SVARKA
+copy "%P3%\%P4%*.pas"          C:\MACHINE3\pas\SVARKA
+copy "%P3%\%P4%*.inc"          C:\MACHINE3\pas\SVARKA
 
 copy "%P3%\pcports.pas"        C:\MACHINE1\trunk\MACHINE3\pas\SVARKA
 copy "%P3%\%P4%*.pas"          C:\MACHINE1\trunk\MACHINE3\pas\SVARKA
 copy "%P3%\%P4%*.inc"          C:\MACHINE1\trunk\MACHINE3\pas\SVARKA
-@pause
+:@pause
 goto exit
 ;
 @rem =======================================================================

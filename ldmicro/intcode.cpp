@@ -2878,18 +2878,319 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_STEPPER: {
             Comment(3, "ELEM_STEPPER");
             // Pulse generator for STEPPER motor with acceleration and deceleration.
+            ElemStepper *s = &l->d.stepper;
+            ResSteps     r;
+            CalcSteps(s, &r);
 
+            int speed = 4; //ðàçãîí ïî òàáëèöå Pmul=P*Tmul >> shrt; ñ ðàñ÷åòîì
+            if(IsNumber(l->d.stepper.P) || (l->d.stepper.graph <= 0)) {
+                if((l->d.stepper.n <= 1) || (l->d.stepper.graph <= 0)) {
+                    if(CheckMakeNumber(l->d.stepper.P) == 1)
+                        speed = 1; //èìïóëüñû íà êàæäûé Tcycle
+                    else
+                        speed = 2; //èìïóëüñû íà êàæäûé Tcycle*P
+                } else {
+                    speed = 3; //ðàçãîí ïî òàáëèöå Pmul=P*Tmul >> shrt; óæå â êîíñòàíòàõ
+                }
+            }
+            //dbp("speed=%d",speed);
+            char decCounter[MAX_NAME_LEN];
+            sprintf(decCounter, "C%s%s", l->d.stepper.name, "Dec");
+            SetSizeOfVar(decCounter, byteNeeded(CheckMakeNumber(l->d.stepper.max)));
 
+            char incCounter[MAX_NAME_LEN];
+            sprintf(incCounter, "C%s%s", l->d.stepper.name, "Inc");
+            SetSizeOfVar(incCounter, SizeOfVar(decCounter));
 
+            char workP[MAX_NAME_LEN];
+            sprintf(workP, "C%s%s", l->d.stepper.name, "P");
+            SetSizeOfVar(workP, std::max(r.sovElement, SizeOfVar(l->d.stepper.P))); //may bee overload
 
+            char storeName[MAX_NAME_LEN];
+            GenSymOneShot(storeName, "STEPPER", "");
 
+            char Tmul[MAX_NAME_LEN];
+            GenSymStepper(Tmul, "Tmul");
+
+            char nameTable[MAX_NAME_LEN];
+            if(speed >= 3) {
+                sprintf(nameTable, "%s%s", l->d.stepper.name, ""); // "LutElement");
+                //SizeOfVar(nameTable, max(r.sovElement, SizeOfVar(nameTable)));
+                SetSizeOfVar(nameTable, std::max(r.sovElement, 1));
+                r.sovElement = std::max(r.sovElement, SizeOfVar(nameTable));
+                SetSizeOfVar(Tmul, r.sovElement);
+                Tdata = (SDWORD *)CheckMalloc((l->d.stepper.n + 2) * sizeof(SDWORD)); //+2 Ok
+                // CheckFree(Tdata) in WipeIntMemory();
+
+                for(int i = 0; i < l->d.stepper.n; i++) {
+                    Tdata[i] = r.T[i+1].dtMul; // Tdata from 0 to n-1 // r.T from 1 to n // Ok
+                }
+            }
+
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_IF_BIT_CLEAR, storeName);
+                Op(INT_SET_BIT, storeName);
+                // Ýòîò ôðàãìåíò êîäà âûïîëíÿåòñÿ 1 ðàç ïðè ïåðåêëþ÷åíèè 0->1.
+                // This code fragment is executed 1 time when switching 0->1.
+                Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1); // § ¯à¥â ¯®¢â®à­®© § £àã§ª¨ - ¯®¢â®à­®£® à¥áâ àâ 
+                  OpSetVar(decCounter, l->d.stepper.max);
+
+                  if(speed == 2) {
+                    Op(INT_SET_VARIABLE_TO_LITERAL, workP, (SDWORD)1);
+
+                  } else if(speed >= 3) {
+                    Op(INT_SET_VARIABLE_TO_LITERAL, workP, (SDWORD)1);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, incCounter, (SDWORD)(0));
+                    //vvv
+                    //Op(INT_SET_VARIABLE_TO_LITERAL, Tmul, l->d.stepper.n);
+                    char strn[20];
+                    sprintf(strn, "%d", l->d.stepper.n - 1);
+                    Op(INT_FLASH_READ, Tmul, nameTable, strn, l->d.stepper.n - 1, r.sovElement, Tdata);
+                  }
+                Op(INT_END_IF);
+              Op(INT_END_IF);
+            Op(INT_ELSE);
+              Op(INT_CLEAR_BIT, storeName);
+            Op(INT_END_IF);
+            //
+            if(speed >= 3) {
+                //IJMP inside INT_FLASH_INIT
+
+                if((isVarInited(nameTable) < 0) || (isVarInited(nameTable) == rungNow)) {
+                    Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, l->d.stepper.n, r.sovElement, Tdata);
+                } else {
+                    Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8 * r.sovElement, nameTable);
+                }
+            }
+            //
+            Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1);
+              Op(INT_CLEAR_BIT, stateInOut);
+            Op(INT_ELSE);
+              Op(INT_SET_BIT, stateInOut);
+                if(speed == 1) {
+                  //PULSE
+                  Op(INT_SET_BIT, l->d.stepper.coil);
+                  Op(INT_DECREMENT_VARIABLE, decCounter);
+                  Op(INT_CLEAR_BIT, l->d.stepper.coil);
+
+                } else if(speed == 2) {
+                  Op(INT_DECREMENT_VARIABLE, workP);
+                  Op(INT_IF_VARIABLE_LES_LITERAL, workP, (SDWORD)1);
+                    //PULSE
+                    Op(INT_SET_BIT, l->d.stepper.coil);
+                    Op(INT_DECREMENT_VARIABLE, decCounter);
+                    Op(INT_CLEAR_BIT, l->d.stepper.coil);
+                    OpSetVar(workP, l->d.stepper.P);
+                    //Op(INT_ELSE);
+                    //Op(INT_DECREMENT_VARIABLE, workP);
+                  Op(INT_END_IF);
+
+                } else if(speed >= 3) {
+                  Op(INT_DECREMENT_VARIABLE, workP);
+                  Op(INT_IF_VARIABLE_LES_LITERAL, workP, (SDWORD)1);
+                    //PULSE
+                    Op(INT_SET_BIT, l->d.stepper.coil);
+                    //Op(INT_DECREMENT_VARIABLE, decCounter); //n downto 1
+                    //Op(INT_INCREMENT_VARIABLE, incCounter); //0 up to n-1
+                  Op(INT_END_IF);
+                } else {
+                  oops();
+                }
+              Op(INT_END_IF);
+
+              if(speed >= 3) {
+                  Op(INT_IF_BIT_SET, l->d.stepper.coil);
+                    Op(INT_CLEAR_BIT, l->d.stepper.coil);
+                    Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)l->d.stepper.n); // DEC is more then INC
+                      Op(INT_FLASH_READ, workP, nameTable, decCounter, l->d.stepper.n, r.sovElement, Tdata);
+                    Op(INT_ELSE);
+                      Op(INT_IF_VARIABLE_LES_LITERAL, incCounter, (SDWORD)l->d.stepper.n);
+                        Op(INT_FLASH_READ, workP, nameTable, incCounter, l->d.stepper.n, r.sovElement, Tdata);
+                      Op(INT_ELSE);
+                        OpSetVar(workP, Tmul);
+                      Op(INT_END_IF);
+                    Op(INT_END_IF);
+                    Op(INT_INCREMENT_VARIABLE, incCounter); //0 up to n-1
+                    Op(INT_DECREMENT_VARIABLE, decCounter); //n-1 downto 0
+                    if(speed == 3) {
+                      //OpSetVar(workP,Tmul);
+                    } else {
+                      //Op(INT_SET_VARIABLE_MULTIPLY, workP, Tmul, l->d.stepper.P); //may bee overload
+                      Op(INT_SET_VARIABLE_MULTIPLY, workP, workP, l->d.stepper.P); //may bee overload
+                      if(r.shrt) {
+                        char rshrt[MAX_NAME_LEN];
+                        sprintf(rshrt, "%d", r.shrt);
+                        Op(INT_SET_VARIABLE_SHR, workP, workP, rshrt);
+                      }
+                    }
+                  Op(INT_END_IF);
+              }
+            CheckFree(r.T);
             break;
         }
         case ELEM_PULSER: {
             Comment(3, "ELEM_PULSER");
+            // Variable duty cycle pulse generator.
+            // ƒ¥­¥à â®à ¨¬¯ã«ìá®¢ ¯¥à¥¬¥­­®© áª¢ ¦­®áâ¨.
+            char decCounter[MAX_NAME_LEN];
+            GenSymStepper(decCounter, "decCounter");
+            char workT1[MAX_NAME_LEN];
+            GenSymStepper(workT1, "workT1");
+            char workT0[MAX_NAME_LEN];
+            GenSymStepper(workT0, "workT0");
+            char doSetT[MAX_NAME_LEN];
+            GenSymStepper(doSetT, "doSetT");
+            char T1mul[MAX_NAME_LEN];
+            GenSymStepper(T1mul, "T1mul");
+            char T0mul[MAX_NAME_LEN];
+            GenSymStepper(T0mul, "T0mul");
 
+            char storeName[MAX_NAME_LEN];
+            GenSymOneShot(storeName, "PULSER", "");
+            char Osc[MAX_NAME_LEN];
+            GenSymOneShot(Osc, "PULSER", "Osc");
+            /*
+            char busy[MAX_NAME_LEN];
+            GenSymOneShot(busy);
+            char OneShot1[MAX_NAME_LEN];
+            GenSymOneShot(OneShot1);
+            char OneShot0[MAX_NAME_LEN];
+            GenSymOneShot(OneShot0);
+            */
+            int Meander = 0;
+            if(IsNumber(l->d.pulser.P1) && IsNumber(l->d.pulser.P0)) {
+                if((CheckMakeNumber(l->d.pulser.P1) == 1) && (CheckMakeNumber(l->d.pulser.P0) == 1)) {
+                    Meander = 11;
+                    //dbp("meander11");
+                } else if(CheckMakeNumber(l->d.pulser.P1) == CheckMakeNumber(l->d.pulser.P0)) {
+                    Meander = 2;
+                    //dbp("meander2");
+                }
+            }
 
+            //if(!Meander11) {
+            const char *P1 = VarFromExpr(l->d.pulser.P1, "$scratch11");
+            const char *P0 = VarFromExpr(l->d.pulser.P0, "$scratch12");
+            const char *accel = VarFromExpr(l->d.pulser.accel, "$scratch13");
+            //}
+            const char *counter = VarFromExpr(l->d.pulser.counter, "$scratch14");
+            const char *busy = l->d.pulser.busy;
 
+            Op(INT_IF_BIT_SET, stateInOut);
+            Op(INT_IF_BIT_CLEAR, storeName);
+            Op(INT_SET_BIT, storeName);
+            // â®â äà £¬¥­â ª®¤  ¢ë¯®«­ï¥âáï 1 à § ¯à¨ ¯¥à¥ª«îç¥­¨¨ 0->1.
+            // This code fragment is executed 1 time when switching 0->1.
+            Op(INT_SET_BIT, busy);
+            Op(INT_SET_BIT, Osc);
+            Op(INT_SET_VARIABLE_TO_VARIABLE, decCounter, counter);
+            if(Meander < 11) {
+                Op(INT_CLEAR_BIT, doSetT);
+                Op(INT_SET_VARIABLE_MULTIPLY, T1mul, P1, accel);
+                Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+                if(Meander < 2) {
+                    Op(INT_SET_VARIABLE_MULTIPLY, T0mul, P0, accel);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
+                }
+            }
+            Op(INT_END_IF);
+            Op(INT_ELSE);
+            Op(INT_CLEAR_BIT, storeName);
+            Op(INT_END_IF);
+            //Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
+            //
+            Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1);
+            Op(INT_IF_BIT_SET, stateInOut);
+            Op(INT_SET_VARIABLE_TO_VARIABLE, decCounter, counter);
+            Op(INT_ELSE);
+            Op(INT_CLEAR_BIT, busy);
+            Op(INT_END_IF);
+            Op(INT_ELSE);
+            if(Meander == 11) {
+                Op(INT_IF_BIT_SET, Osc);
+                Op(INT_SET_BIT, stateInOut); // 1
+                Op(INT_CLEAR_BIT, Osc);
+                Op(INT_ELSE);
+                Op(INT_CLEAR_BIT, stateInOut); // 1
+                Op(INT_SET_BIT, Osc);
+
+                Op(INT_DECREMENT_VARIABLE, decCounter);
+                Op(INT_END_IF);
+            } else if(Meander == 2) {
+                Op(INT_IF_BIT_SET, busy);
+                /*
+                  Op(INT_IF_BIT_SET, Osc);
+                    Op(INT_SET_BIT, stateInOut);// 1
+                  Op(INT_ELSE);
+                    Op(INT_CLEAR_BIT, stateInOut);// 1
+                  Op(INT_END_IF);
+                  */
+                Op(INT_COPY_BIT_TO_BIT, stateInOut, Osc);
+                //
+                Op(INT_DECREMENT_VARIABLE, workT1);
+                Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (SDWORD)1);
+                Op(INT_IF_BIT_SET, Osc);
+                Op(INT_CLEAR_BIT, Osc);
+
+                Op(INT_DECREMENT_VARIABLE, decCounter);
+                Op(INT_ELSE);
+                Op(INT_SET_BIT, Osc);
+                Op(INT_END_IF);
+                //
+                //Op(INT_SET_BIT, doSetT);
+                Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
+                Op(INT_DECREMENT_VARIABLE, T1mul);
+                Op(INT_END_IF);
+                Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+                Op(INT_END_IF);
+                Op(INT_END_IF);
+            } else { // (Meander==0)
+                Op(INT_DECREMENT_VARIABLE, workT1);
+                Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (SDWORD)0);
+                Op(INT_CLEAR_BIT, stateInOut); // 1
+                Op(INT_DECREMENT_VARIABLE, workT0);
+
+                Op(INT_IF_VARIABLE_LES_LITERAL, workT0, (SDWORD)1);
+                Op(INT_DECREMENT_VARIABLE, decCounter);
+                //
+                Op(INT_SET_BIT, doSetT);
+                /*
+                        Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
+                          Op(INT_DECREMENT_VARIABLE, T1mul);
+                        Op(INT_END_IF);
+                        Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+
+                        Op(INT_IF_VARIABLE_GRT_VARIABLE, T0mul, P0);
+                          Op(INT_DECREMENT_VARIABLE, T0mul);
+                        Op(INT_END_IF);
+                        Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
+                        /**/
+                //Op(INT_ELSE);
+                //    Op(INT_CLEAR_BIT, OneShot0);
+                Op(INT_END_IF);
+                Op(INT_ELSE);
+                Op(INT_SET_BIT, stateInOut); // 1
+                //Op(INT_CLEAR_BIT, OneShot1);
+                Op(INT_END_IF);
+            }
+            Op(INT_END_IF);
+            //
+            if(Meander < 11) {
+                Op(INT_IF_BIT_SET, doSetT);
+                Op(INT_IF_VARIABLE_GRT_VARIABLE, T1mul, P1);
+                Op(INT_DECREMENT_VARIABLE, T1mul);
+                Op(INT_END_IF);
+                Op(INT_SET_VARIABLE_TO_VARIABLE, workT1, T1mul);
+
+                if(Meander == 0) {
+                    Op(INT_IF_VARIABLE_GRT_VARIABLE, T0mul, P0);
+                    Op(INT_DECREMENT_VARIABLE, T0mul);
+                    Op(INT_END_IF);
+                    Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
+                }
+                Op(INT_CLEAR_BIT, doSetT);
+                Op(INT_END_IF);
+            }
             break;
         }
 
