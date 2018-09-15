@@ -2893,7 +2893,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     speed = 3; //разгон по таблице Pmul=P*Tmul >> shrt; уже в константах
                 }
             }
-            //dbp("speed=%d",speed);
             char decCounter[MAX_NAME_LEN];
             sprintf(decCounter, "C%s%s", l->d.stepper.name, "Dec");
             SetSizeOfVar(decCounter, byteNeeded(CheckMakeNumber(l->d.stepper.max)));
@@ -2926,7 +2925,16 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Tdata[i] = r.T[i+1].dtMul; // Tdata from 0 to n-1 // r.T from 1 to n // Ok
                 }
             }
+            //
+            if(speed >= 3) {
+                //IJMP inside INT_FLASH_INIT
 
+                if((isVarInited(nameTable) < 0) || (isVarInited(nameTable) == rungNow)) {
+                    Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, l->d.stepper.n, r.sovElement, Tdata);
+                } else {
+                    Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8 * r.sovElement, nameTable);
+                }
+            }
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_IF_BIT_CLEAR, storeName);
                 Op(INT_SET_BIT, storeName);
@@ -2952,16 +2960,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_ELSE);
               Op(INT_CLEAR_BIT, storeName);
             Op(INT_END_IF);
-            //
-            if(speed >= 3) {
-                //IJMP inside INT_FLASH_INIT
-
-                if((isVarInited(nameTable) < 0) || (isVarInited(nameTable) == rungNow)) {
-                    Op(INT_FLASH_INIT, nameTable, nullptr, nullptr, l->d.stepper.n, r.sovElement, Tdata);
-                } else {
-                    Comment(_("INIT TABLE: signed %d bit %s[%d] see above"), 8 * r.sovElement, nameTable);
-                }
-            }
             //
             Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1);
               Op(INT_CLEAR_BIT, stateInOut);

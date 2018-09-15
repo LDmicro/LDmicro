@@ -125,6 +125,7 @@ goto exit
 copy "%P3%\pcports.pas"        C:\MACHINE3\pas\SVARKA
 copy "%P3%\%P4%*.pas"          C:\MACHINE3\pas\SVARKA
 copy "%P3%\%P4%*.inc"          C:\MACHINE3\pas\SVARKA
+copy "%P3%\%P4%*.txt"          C:\MACHINE3\pas\SVARKA
 
 copy "%P3%\pcports.pas"        C:\MACHINE1\trunk\MACHINE3\pas\SVARKA
 copy "%P3%\%P4%*.pas"          C:\MACHINE1\trunk\MACHINE3\pas\SVARKA
