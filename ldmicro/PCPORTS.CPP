@@ -292,7 +292,7 @@ void ComDb25PinToRegMask(int Pin, int *Reg, int *Mask)
     };
 }
 //-----------------------------------------------------------------------------
-bool ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
+bool ParceVar(const char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
 {
     strcpy(prt, "???");
     *portN = 0;

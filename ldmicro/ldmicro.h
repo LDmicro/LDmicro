@@ -1197,6 +1197,7 @@ void ShowUartDialog(int which, ElemLeaf *l);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
+void CalcSteps(ElemStepper *s, ResSteps *r);
 void ShowStepperDialog(int which, void *e);
 void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy);
 void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil);
@@ -1709,7 +1710,7 @@ void CompilePascal(const char* outFile);
 // pcports.cpp
 extern McuIoPinInfo IoPc[MAX_IO];
 extern int IoPcCount;
-bool ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
+bool ParceVar(const char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
 void FillPcPinInfo(McuIoPinInfo *pinInfo);
 
 // translit.cpp

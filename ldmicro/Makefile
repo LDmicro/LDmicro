@@ -42,6 +42,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\xinterpreted.obj \
            $(OBJDIR)\pic16.obj \
            $(OBJDIR)\avr.obj \
+           $(OBJDIR)\accel.obj \
            $(OBJDIR)\pascal.obj \
            $(OBJDIR)\pcports.obj \
            $(OBJDIR)\translit.obj \

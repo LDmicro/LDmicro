@@ -63,6 +63,7 @@ set(LDMICRO_SRC_LIST
     schematic.cpp
     simpledialog.cpp
     simulate.cpp
+    accel.cpp
     undoredo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp
     ldversion.h
