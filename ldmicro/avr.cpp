@@ -4418,7 +4418,7 @@ static void CompileFromIntermediate()
                 sovNPulseTimerOverflowCounter = SizeOfVar(a->name1);
                 //dbp("sovNPulseTimerOverflowCounter=%d", sovNPulseTimerOverflowCounter);
                 MemForSingleBit(a->name2, false, &NPulseTimerOverflowRegAddr, &NPulseTimerOverflowBit);
-                double target = hobatof(a->name3);
+                double target = hobatof(a->name3.c_str());
                 MemForSingleBit(a->name4, true, &addr4, &bit4); // stateInOut
                 double bestTarget;
                 int    prescaler;
