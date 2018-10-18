@@ -31,6 +31,7 @@ set(ldmicro-xx-src
     ../simulate.cpp
     ../undoredo.cpp
     ../ldversion.h
+    ../accel.cpp
 
     ../../common/win32/freeze.cpp
     ../../common/win32/freeze.h
