@@ -3324,11 +3324,16 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_NPULSE: {
             Comment(3, "ELEM_NPULSE");
+            const char *counter = VarFromExpr(l->d.Npulse.counter, "$scratch");
+            Op(INT_SET_NPULSE, counter, l->d.Npulse.targetFreq, l->d.Npulse.coil, stateInOut);
             break;
         }
 
         case ELEM_NPULSE_OFF: {
             Comment(3, "ELEM_NPULSE_OFF");
+            Op(INT_IF_BIT_SET, stateInOut);
+              Op(INT_OFF_NPULSE);
+            Op(INT_END_IF);
             break;
         }
         case ELEM_QUAD_ENCOD: {

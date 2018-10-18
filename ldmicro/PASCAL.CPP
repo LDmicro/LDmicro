@@ -615,11 +615,16 @@ static void Generate_flash_eeprom(FILE *f)
 static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
-    int j;
-    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) && (IntCode[i].op != INT_AllocKnownAddr) //
+    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) //
+       && (IntCode[i].op != INT_AllocKnownAddr) //
+       && (IntCode[i].op != INT_FwdAddrIsNow) //
        && (IntCode[i].op != INT_AllocFwdAddr))
-        for(j = 0; j < indent; j++)
-            fprintf(f, "    ");
+        for(int j = 0; j < indent; j++)
+#if 1
+            fprintf(f, "  ");
+#else
+            fprintf(f, " %d ", IntCode[i].op);
+#endif
 }
 //-----------------------------------------------------------------------------
 // Actually generate the PASCAL source for the program.
@@ -644,7 +649,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
     fprintf(f,
             "begin\n"
             "  Rung0label:;\n");
-    int indent = 1;
+    indent = 1;
     for(uint32_t i = 0; i < IntCode.size(); i++) {
 
         if(IntCode[i].op == INT_END_IF)
@@ -652,10 +657,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
         if(IntCode[i].op == INT_ELSE)
             indent--;
 
-        int j;
-        if(IntCode[i].op != INT_SIMULATE_NODE_STATE)
-            for(j = 0; j < indent; j++)
-                fprintf(f, "  ");
+        doIndent(f, i);
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -1298,7 +1300,7 @@ void CompilePascal(const char *dest)
     fprintf(fu,
             "\n"
             "begin\n"
-            "  SetPcPortsDir;\n"
+            "  {SetPcPortsDir;}\n"
             "end.\n");
     fprintf(fr,
             "end;\n"
