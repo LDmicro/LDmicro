@@ -1,9 +1,10 @@
-// stdafx.h : include file for standard system include files,
+// include file for standard system include files,
 // or project specific include files that are used frequently, but
 // are changed infrequently
 //
 
-#pragma once
+#ifndef __STDAFX_H__
+#define __STDAFX_H__
 
 #include "targetver.h"
 
@@ -70,3 +71,5 @@ typedef int32_t SDWORD;
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 #endif //NOMINMAX
+
+#endif //__STDAFX_H__

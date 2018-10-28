@@ -21,8 +21,6 @@
 #ifndef __ACCEL_H
 #define __ACCEL_H
 
-#include "ldmicro.h"
-
 #ifndef round
 #define round(r)   ((r) < (LONG_MIN-0.5) || (r) > (LONG_MAX+0.5) ?\
     (r):\
