@@ -525,6 +525,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
+            case INT_SET_SEED_RANDOM:
             case INT_SET_VARIABLE_RANDOM:
                 intVar1 = IntCode[i].name1.c_str();
                 break;
@@ -892,6 +893,10 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "%s = rand();\n", MapSym(IntCode[i].name1, ASINT));
                 break;
 
+            case INT_SET_SEED_RANDOM:
+                fprintf(f, "srand(%s);\n", MapSym(IntCode[i].name1, ASINT));
+                break;
+
             case INT_SET_VARIABLE_SHL:
                 opc = '<';
                 goto arith_shift;
@@ -1195,13 +1200,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 break;
             case INT_FwdAddrIsNow:
-                fprintf(f, "LabelRung%d:;\n", IntCode[i].literal + 1);
+                fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 break;
             case INT_GOTO:
-                fprintf(f, "goto LabelRung%d; // %s\n", IntCode[i].literal + 1, IntCode[i].name1.c_str());
+                fprintf(f, "goto Label%s;\n", IntCode[i].name1.c_str());
                 break;
             case INT_GOSUB:
-                fprintf(f, "Call_SUBPROG_%s(); // LabelRung%d\n", IntCode[i].name1.c_str(), IntCode[i].literal + 1);
+                fprintf(f, "Call_SUBPROG_%s();\n", IntCode[i].name1.c_str());
                 break;
             case INT_RETURN:
                 fprintf(f, "return;\n");

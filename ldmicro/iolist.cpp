@@ -442,15 +442,9 @@ static void ExtractNamesFromCircuit(int which, void *any)
             }
 
             if(!CheckForNumber(l->d.spi.send)) {
-                // Not need ???
-                // Need if you add only one MOV or get erroneously other src name
-                // then you can see l->d.move.src in IOlist
                 AppendIo(l->d.spi.send, IO_TYPE_GENERAL);
             }
             if(!CheckForNumber(l->d.spi.recv)) {
-                // Not need ???
-                // Need if you add only one MOV or get erroneously other src name
-                // then you can see l->d.move.src in IOlist
                 AppendIo(l->d.spi.recv, IO_TYPE_GENERAL);
             }
             break;
@@ -1875,47 +1869,41 @@ void IoListProc(NMHDR *h)
             char *          name = Prog.io.assignment[i->iItem].name;
             int             type = Prog.io.assignment[i->iItem].type;
             if(InSimulationMode) {
-                try {
-                    switch(type) {
-                        case IO_TYPE_STRING:
-                        case IO_TYPE_GENERAL:
-                        case IO_TYPE_PERSIST:
-                        case IO_TYPE_RTL:
-                        case IO_TYPE_RTO:
-                        case IO_TYPE_THI:
-                        case IO_TYPE_TLO:
-                        case IO_TYPE_COUNTER:
-                        case IO_TYPE_UART_TX:
-                        case IO_TYPE_UART_RX:
-                        case IO_TYPE_PORT_INPUT:
-                        case IO_TYPE_PORT_OUTPUT:
-                        case IO_TYPE_MCU_REG:
-                        case IO_TYPE_TCY:
-                        case IO_TYPE_TON:
-                        case IO_TYPE_TOF: {
-                            ShowIoDialog(i->iItem);
-                            InvalidateRect(MainWindow, nullptr, false);
-                            ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
-                            break;
-                        }
-                        case IO_TYPE_READ_ADC: {
-                            ShowAnalogSliderPopup(name);
-                            break;
-                        }
-                        case IO_TYPE_DIG_INPUT:
-                        case IO_TYPE_INTERNAL_RELAY:
-                        case IO_TYPE_MODBUS_CONTACT: {
-                            SimulationToggleContact(name);
-                            break;
-                        }
-                        default: {
-                        }
+                switch(type) {
+                    case IO_TYPE_STRING:
+                    case IO_TYPE_GENERAL:
+                    case IO_TYPE_PERSIST:
+                    case IO_TYPE_RTL:
+                    case IO_TYPE_RTO:
+                    case IO_TYPE_THI:
+                    case IO_TYPE_TLO:
+                    case IO_TYPE_COUNTER:
+                    case IO_TYPE_UART_TX:
+                    case IO_TYPE_UART_RX:
+                    case IO_TYPE_PORT_INPUT:
+                    case IO_TYPE_PORT_OUTPUT:
+                    case IO_TYPE_MCU_REG:
+                    case IO_TYPE_TCY:
+                    case IO_TYPE_TON:
+                    case IO_TYPE_TOF: {
+                        ShowIoDialog(i->iItem);
+                        InvalidateRect(MainWindow, nullptr, false);
+                        ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+                        break;
+                    }
+                    case IO_TYPE_READ_ADC: {
+                        ShowAnalogSliderPopup(name);
+                        break;
+                    }
+                    case IO_TYPE_DIG_INPUT:
+                    case IO_TYPE_INTERNAL_RELAY:
+                    case IO_TYPE_MODBUS_CONTACT: {
+                        SimulationToggleContact(name);
+                        break;
+                    }
+                    default: {
                     }
                 }
-                catch(std::runtime_error& err) {
-                    Error("%s", err.what());
-                }
-
             } else {
                 UndoRemember();
                 switch(type) {

@@ -812,7 +812,7 @@ void EditSelectedElement()
         case ELEM_ENDSUB:
         case ELEM_GOTO:
         case ELEM_GOSUB:
-            ShowGotoDialog(SelectedWhich, Selected->d.doGoto.rung);
+            ShowGotoDialog(SelectedWhich, Selected->d.doGoto.label);
             break;
 
         case ELEM_RANDOM:
@@ -823,7 +823,7 @@ void EditSelectedElement()
         case ELEM_UART_SEND:
         case ELEM_UART_RECVn:
         case ELEM_UART_SENDn:
-            ShowUartDialog(SelectedWhich, Selected->d.uart.name);
+            ShowUartDialog(SelectedWhich, Selected);
             break;
 
         case ELEM_PERSIST:

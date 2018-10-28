@@ -598,10 +598,11 @@ void ShowGotoDialog(int which, char *name);
 void ShowRandomDialog(char *name);
 void ShowSetPwmDialog(void *e);
 void ShowPersistDialog(char *var);
-void ShowUartDialog(int which, char *name);
+void ShowUartDialog(int which, ElemLeaf *l);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
+void CalcSteps(ElemStepper *s, ResSteps *r);
 void ShowStepperDialog(int which, void *e);
 void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy);
 void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil);
@@ -1048,6 +1049,14 @@ double SIprefix(double val, char *prefix);
 int GetVariableType(char *name);
 int SetVariableType(const char *name, int type);
 
+typedef struct LabelAddrTag {
+    char  name[MAX_NAME_LEN];
+    DWORD KnownAddr; // Addres to jump to the start of rung abowe the current in LD
+    DWORD FwdAddr;   // Addres to jump to the start of rung below the current in LD
+    DWORD used;
+} LabelAddr;
+LabelAddr *GetLabelAddr(const char *name);
+
 // intcode.cpp
 extern int int_comment_level;
 extern int asm_comment_level;
@@ -1100,20 +1109,13 @@ void CompileInterpreted(const char* outFile);
 void CompileXInterpreted(const char* outFile);
 // netzer.cpp
 void CompileNetzer(const char* outFile);
-
-typedef struct RungAddrTag {
-    DWORD   KnownAddr; // Addres to jump to the start of rung abowe the current in LD
-    DWORD   FwdAddr;   // Addres to jump to the start of rung below the current in LD
-} RungAddr;
-extern RungAddr AddrOfRungN[MAX_RUNGS];
-
 // pascal.cpp
 void CompilePascal(const char* outFile);
 
 // pcports.cpp
 extern McuIoPinInfo IoPc[MAX_IO];
 extern int IoPcCount;
-bool ParceVar(char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
+bool ParceVar(const char *str, char *prt, int *portN, int *Reg, int *Mask, int *Addr);
 void FillPcPinInfo(McuIoPinInfo *pinInfo);
 
 // translit.cpp

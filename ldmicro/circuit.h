@@ -123,9 +123,9 @@
 #define ELEM_LOCK               0x2c03
 #define ELEM_DELAY              0x2c04
 #define ELEM_TIME2DELAY         0x2c05
-#define ELEM_LABEL              0x2c20
-#define ELEM_GOTO               0x2c21
-#define ELEM_SUBPROG            0x2c22
+#define ELEM_LABEL              0x2c20 // rung label // operate with rung only
+#define ELEM_GOTO               0x2c21 // goto rung  // operate with rung only
+#define ELEM_SUBPROG            0x2c22 // call rung  // operate with rung only
 #define ELEM_RETURN             0x2c23
 #define ELEM_ENDSUB             0x2c24
 #define ELEM_GOSUB              0x2c25
@@ -366,7 +366,7 @@ typedef struct ElemMathTag {
 } ElemMath;
 
 typedef struct ElemGotoTag {
-    char    rung[MAX_NAME_LEN]; // rung number or rung symbol label
+    char    label[MAX_NAME_LEN]; // rung number or rung symbol label
 } ElemGoto;
 
 typedef struct ElemCounterTag {
@@ -384,28 +384,28 @@ typedef struct ElemAccelTag {
     //INPUT or OUTPUT DATAS
     //If s is input and ds=1 then t is output.
     //If t is input and dt=1 then s is output.
-    double  s;      // РїСЂРѕР№РґРµРЅС‹Р№ РїСѓС‚СЊ РѕС‚ 0 s(t)
-    int32_t  si;     // -/- С†РµР»РѕРµ РѕС‚ s
-    double  ds;     // РїСЂРёСЂР°С‰РµРЅРёРµ РїСѓС‚Рё РѕС‚ РїСЂРµРґС‹РґСѓС‰РµР№ С‚РѕС‡РєРё ds=s[i]-s[i-1]
-    int32_t  dsi;    // -/- С†РµР»РѕРµ РѕС‚ ds РЅРµ int(s[i]-s[i-1])
+    double  s;      // пройденый путь от 0 s(t)
+    int32_t  si;     // -/- целое от s
+    double  ds;     // приращение пути от предыдущей точки ds=s[i]-s[i-1]
+    int32_t  dsi;    // -/- целое от ds не int(s[i]-s[i-1])
 
-    double  t;      // РІСЂРµРјСЏ СЂР°Р·РіРѕРЅР° РѕС‚ 0 РґРѕ v=1
-    int32_t  ti;     // -/- С†РµР»РѕРµ РѕС‚ t
-    double  dt;     // РїСЂРёСЂР°С‰РµРЅРёРµ РІСЂРµРјРµРЅРё РѕС‚ РїСЂРµРґС‹РґСѓС‰РµР№ С‚РѕС‡РєРё dt=t[i]-t[i-1]
-    int32_t  dti;    // -/- С†РµР»РѕРµ РѕС‚ dt
+    double  t;      // время разгона от 0 до v=1
+    int32_t  ti;     // -/- целое от t
+    double  dt;     // приращение времени от предыдущей точки dt=t[i]-t[i-1]
+    int32_t  dti;    // -/- целое от dt
     int32_t  dtMul;  // dtMul = dt * mult;
     int32_t  dtShr;  // dtShr = dtMul >> shrt;
     int32_t  tdiscrete;//tdti;   // =summa(0..dti)
     //OUTPUT DATAS
-    double  v,      // СЃРєРѕСЂРѕСЃС‚СЊ РІ С‚РµРєСѓС‰РµР№ С‚РѕС‡РєРµ СЂР°Р·РіРѕРЅР°
-            dv,     // РїСЂРёСЂР°С‰РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё РІ С‚РµРєСѓС‰РµР№ С‚РѕС‡РєРµ СЂР°Р·РіРѕРЅР°
+    double  v,      // скорость в текущей точке разгона
+            dv,     // приращение скорости в текущей точке разгона
             vdiscrete, // dsi/dti
-            a,      // СѓСЃРєРѕСЂРµРЅРёРµ РІ С‚РµРєСѓС‰РµР№ С‚РѕС‡РєРµ СЂР°Р·РіРѕРЅР°
-            da,     // РїСЂРёСЂР°С‰РµРЅРёРµ СѓСЃРєРѕСЂРµРЅРёСЏ РІ С‚РµРєСѓС‰РµР№ С‚РѕС‡РєРµ СЂР°Р·РіРѕРЅР°
-            e,      // СЌРЅРµСЂРіРёСЏ РІ С‚РµРєСѓС‰РµР№ С‚РѕС‡РєРµ СЂР°Р·РіРѕРЅР°
-            de;     // РїСЂРёСЂР°С‰РµРЅРёРµ СЌРЅРµСЂРіРёРё РІ С‚РµРєСѓС‰РµР№ С‚РѕС‡РєРµ СЂР°Р·РіРѕРЅР°
+            a,      // ускорение в текущей точке разгона
+            da,     // приращение ускорения в текущей точке разгона
+            e,      // энергия в текущей точке разгона
+            de;     // приращение энергии в текущей точке разгона
 
-} ElemAccel;//, *ElemAccelPointer; //СЃС‚СЂСѓРєС‚СѓСЂР° Рё СѓРєР°Р·Р°С‚РµР»СЊРЅР° СЃС‚СЂСѓРєС‚СѓСЂСѓ
+} ElemAccel;//, *ElemAccelPointer; //структура и указательна структуру
 
 typedef struct ResStepsTag {
     ElemAccel *T;
@@ -464,6 +464,12 @@ typedef struct ElemQuadEncodTag {
 
 typedef struct ElemUartTag {
     char    name[MAX_NAME_LEN];
+    int     bytes; // Number of bytes to transmit, default is 1 (backward compatible).
+    bool    wait;  // Wait until all bytes are transmitted
+                   //  in the same cycle of the PLC in which it started.
+                   //  or transmit a one byte per a one PLC cycle,
+                   // Default is false.
+                   // The 'wait' parameter is not used when receiving the one byte.
 } ElemUart;
 
 typedef struct ElemShiftRegisterTag {
@@ -477,7 +483,7 @@ typedef struct ElemLookUpTableTag {
     char    index[MAX_NAME_LEN];
     int     count; // Table size
     bool    editAsString;
-    int32_t  vals[MAX_LOOK_UP_TABLE_LEN];
+    SDWORD  vals[MAX_LOOK_UP_TABLE_LEN];
 } ElemLookUpTable;
 
 typedef struct ElemPiecewiseLinearTag {
@@ -485,7 +491,7 @@ typedef struct ElemPiecewiseLinearTag {
     char    dest[MAX_NAME_LEN];
     char    index[MAX_NAME_LEN];
     int     count;
-    int32_t  vals[MAX_LOOK_UP_TABLE_LEN];
+    SDWORD  vals[MAX_LOOK_UP_TABLE_LEN];
 } ElemPiecewiseLinear;
 
 typedef struct ElemFormattedStringTag {

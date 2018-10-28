@@ -719,13 +719,13 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
 
         case ELEM_GOTO:
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "{GOTO}", poweredBefore, poweredAfter);
             break;
 
         case ELEM_GOSUB:
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "{GOSUB}", poweredBefore, poweredAfter);
             break;
 
@@ -1422,7 +1422,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 
         case ELEM_LABEL: {
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "[LABEL]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
@@ -1430,7 +1430,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 
         case ELEM_SUBPROG: {
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "[SUBPROG]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
@@ -1438,7 +1438,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 
         case ELEM_ENDSUB: {
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "[ENDSUB]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;

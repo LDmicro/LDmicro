@@ -92,8 +92,6 @@ DWORD AvrProgLdLen = 0;
 
 static int IntPcNow = -INT_MAX; //must be static
 
-RungAddr AddrOfRungN[MAX_RUNGS];
-
 #define OP_XOR OP_EOR
 
 // For yet unresolved references in jumps
@@ -393,7 +391,7 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD
     if(op == OP_COMMENTINT) {
         if(comment) {
             if(strlen(instruction.commentInt))
-                strncatn(instruction.commentInt, "\n;", MAX_COMMENT_LEN);
+                strncatn(instruction.commentInt, "\n    ; ", MAX_COMMENT_LEN);
             strncatn(instruction.commentInt, comment, MAX_COMMENT_LEN);
         }
         return;
@@ -506,7 +504,7 @@ static DWORD AllocFwdAddr()
 static void FwdAddrIsNow(DWORD addr)
 {
     if(!(addr & FWD(0)))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION_FMT("Internal error. addr=0x%X", addr);
 
     WORD  seen = 0;
     uint32_t AvrProgWriteP = AvrProg.size();
@@ -2110,7 +2108,7 @@ static void GetUartSendReady(DWORD addr, int bit)
 //-----------------------------------------------------------------------------
 static void GetUartSendBusy(DWORD addr, int bit)
 {
-    //  CopyNotBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
+    ////CopyNotBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
     CopyNotBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty and ready
 }
 //-----------------------------------------------------------------------------
@@ -4416,8 +4414,112 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_SET_NPULSE: {
+                //Op(INT_SET_NPULSE, counter, l->d.Npulse.targetFreq, l->d.Npulse.coil, stateInOut);
+                sovNPulseTimerOverflowCounter = SizeOfVar(a->name1);
+                //dbp("sovNPulseTimerOverflowCounter=%d", sovNPulseTimerOverflowCounter);
+                MemForSingleBit(a->name2, false, &NPulseTimerOverflowRegAddr, &NPulseTimerOverflowBit);
+                double target = hobatof(a->name3.c_str());
+                MemForSingleBit(a->name4, true, &addr4, &bit4); // stateInOut
+                double bestTarget;
+                int    prescaler;
+                BYTE   cs;
+                int    error;
+                CalcAvrTimerNPulse(target, &prescaler, &cs, &tcntNPulse, &error, &bestTarget);
+
+                if((double)error / target > 0.05)
+                    //its warning
+                    //       v
+                    Error(_(" Target N PULSE frequency %d Hz,"
+                            " closest achievable with prescaler=%d and divider=%d"
+                            " is %d Hz (Warning, >5%% error)."),
+                          target,
+                          prescaler,
+                          tcntNPulse,
+                          bestTarget);
+
+                DWORD noPulse = AllocFwdAddr();
+                IfBitClear(addr4, bit4);
+                Instruction(OP_RJMP, noPulse);
+                /*
+                NPulseTimerOverflowCounter = AllocOctetRam(); //lo byte
+                if(sovNPulseTimerOverflowCounter>=2)
+                  AllocateNextByte = AllocOctetRam(); //middle byte
+                if(sovNPulseTimerOverflowCounter>=3)
+                  AllocateNextByte = AllocOctetRam(); //hi byte
+
+                CopyArgToReg(r20, a->name1);
+
+                LoadXAddr(NPulseTimerOverflowCounter); // set pulse counter for interrupt
+                Instruction(OP_ST_XP, r20);
+                if(sovNPulseTimerOverflowCounter>=2)
+                  Instruction(OP_ST_XP, r21);
+                if(sovNPulseTimerOverflowCounter>=3)
+                  Instruction(OP_ST_XP, r22);
+                */
+                //
+                MemForVariable(a->name1, &NPulseTimerOverflowCounter); // direct decrement PulseCounter
+                //
+                // Setup if in OFF state
+                if(Prog.cycleTimer == 0)
+                    IfBitSet(REG_TIMSK, OCIE1A);
+                else
+                    IfBitSet(REG_TIMSK, TOIE0);
+                Instruction(OP_RJMP, noPulse);
+
+                Instruction(OP_CLI);
+
+                if(Prog.cycleTimer == 0) {         // Timer1
+                    WriteMemory(REG_TCCR1A, 0x00); // WGM11=0, WGM10=0
+
+                    WriteMemory(REG_TCCR1B, ((1 << WGM12) | cs) & 0xff); // WGM13=0, WGM12=1
+
+                    int counter = tcntNPulse - 1 /* + CorrectorNPulse*/; //TODO
+                    if(tcntNPulse < 0)
+                        tcntNPulse = 0;
+                    if(tcntNPulse > 0xffff)
+                        tcntNPulse = 0xffff;
+                    //dbp("NPULSE divider=%d EQU counter=%d", tcntNPulse, counter);
+
+                    // the high byte must be written before the low byte
+                    WriteMemory(REG_OCR1AH, (counter >> 8) & 0xff);
+                    WriteMemory(REG_OCR1AL, counter & 0xff);
+
+                    SetBit(REG_TIFR1, OCF1A); // Clear OCF1A/ clear pending interrupts
+                    //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+                    SetBit(REG_TIMSK, OCIE1A);
+                } else {                                                  // Timer0
+                    tcntNPulse = 256 - tcntNPulse /* + CorrectorNPulse*/; //TODO
+                    if(tcntNPulse < 0)
+                        tcntNPulse = 0;
+                    if(tcntNPulse > 255)
+                        tcntNPulse = 255;
+
+                    Instruction(OP_LDI, r25, tcntNPulse);
+                    WriteRegToIO(REG_TCNT0, r25);
+
+                    WriteMemory(REG_TCCR0B, cs); // set prescaler
+
+                    SetBit(REG_TIFR1, TOV0); // Clear TOV0/ clear pending interrupts
+                    //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+                    SetBit(REG_TIMSK, TOIE0); // Enable Timer/Counter0 Overflow Interrupt
+                }
+
+                Instruction(OP_SEI);
+
+                FwdAddrIsNow(noPulse);
+                if(Prog.cycleTimer == 0)
+                    CopyBit(addr4, bit4, REG_TIMSK, OCIE1A); // stateInOut as busy flag
+                else
+                    CopyBit(addr4, bit4, REG_TIMSK, TOIE0); // stateInOut as busy flag
+                break;
             }
             case INT_OFF_NPULSE: {
+                Instruction(OP_CLI);
+                if(Prog.cycleTimer == 0)
+                    ClearBit(REG_TIMSK, OCIE1A); // Disable Timer/Counter1 Output Compare A Match Interrupt
+                else
+                    ClearBit(REG_TIMSK, TOIE0); // Disable Timer/Counter0 Overflow Interrupt
+                Instruction(OP_SEI);
                 break;
             }
             case INT_PWM_OFF: {
@@ -4976,8 +5078,9 @@ static void CompileFromIntermediate()
                 CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
-
             case INT_UART_SEND: {
+                // Attention! Busy flag is not checked!!!
+                // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND");
                 MemForVariable(a->name1, &addr1);
                 MemForSingleBit(a->name2, true, &addr2, &bit2);
@@ -4985,10 +5088,6 @@ static void CompileFromIntermediate()
                 DWORD noSend = AllocFwdAddr();
                 IfBitClear(addr2, bit2);
                 Instruction(OP_RJMP, noSend);
-
-                DWORD isBusy = AllocFwdAddr();
-                //IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-                //Instruction(OP_RJMP, isBusy);
 
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, r16);
@@ -4998,24 +5097,32 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(noSend);
 
                 CopyNotBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-
-                FwdAddrIsNow(isBusy);
                 break;
             }
             case INT_UART_SEND1: {
+                // Attention! Busy flag is not checked!!!
+                // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
 
-                DWORD isBusy = AllocFwdAddr();
+                DWORD isBusy = AvrProg.size();
                 IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-                Instruction(OP_RJMP, isBusy);
+                Instruction(OP_RJMP, isBusy); // reinsurance
 
                 LoadXAddr(addr1);
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    LoadYAddr(addr2);
+                    Instruction(OP_LD_Y, r18);
+                    Instruction(OP_LDI, r19, 0);
+                    Instruction(OP_ADD, XL, r18); // addr1 +=[a->name2]
+                    Instruction(OP_ADC, XH, r19);
+                }
                 Instruction(OP_LD_X, r16);
+
                 LoadXAddr(REG_UDR);
                 Instruction(OP_ST_X, r16);
-
-                FwdAddrIsNow(isBusy);
                 break;
             }
             case INT_UART_RECV: {
@@ -5043,6 +5150,34 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(noChar);
                 break;
             }
+            case INT_UART_RECV1: {
+                //Receive one char/byte in a single PLC cycle.
+                //Skip if no char.
+                Comment("INT_UART_RECV1");
+                MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
+
+                DWORD noChar = AllocFwdAddr();
+                IfBitClear(REG_UCSRA, RXC);
+                Instruction(OP_RJMP, noChar);
+
+                LoadXAddr(REG_UDR);
+                Instruction(OP_LD_X, r16);
+
+                LoadXAddr(addr1);
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    LoadYAddr(addr2);
+                    Instruction(OP_LD_Y, r18);
+                    Instruction(OP_LDI, r19, 0);
+                    Instruction(OP_ADD, XL, r18); // addr1 +=[a->name2]
+                    Instruction(OP_ADC, XH, r19);
+                }
+                Instruction(OP_ST_X, r16);
+
+                FwdAddrIsNow(noChar);
+                break;
+            }
             case INT_END_IF:
             case INT_ELSE:
                 return;
@@ -5056,59 +5191,50 @@ static void CompileFromIntermediate()
                 Comment("%s", a->name1.c_str());
                 break;
 
-            case INT_AllocKnownAddr:
-                //Comment("INT_AllocKnownAddr %d %08X", a->literal, AddrOfRungN[a->literal].KnownAddr);
-                AddrOfRungN[a->literal].KnownAddr = AvrProg.size();
+            case INT_AllocKnownAddr: {
+                Comment("INT_AllocKnownAddr %s", a->name1.c_str());
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                l->KnownAddr = AvrProg.size();
                 break;
-
-            case INT_AllocFwdAddr:
-                //Comment("INT_AllocFwdAddr %d %08X", a->literal, AddrOfRungN[a->literal].FwdAddr);
-                AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
+            }
+            case INT_AllocFwdAddr: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                l->FwdAddr = AllocFwdAddr();
                 break;
-
-            case INT_FwdAddrIsNow:
-                //Comment("INT_FwdAddrIsNow %d %08x", a->literal, AddrOfRungN[a->literal].FwdAddr);
-                FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
+            }
+            case INT_FwdAddrIsNow: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                FwdAddrIsNow(l->FwdAddr);
                 break;
-
+            }
             case INT_RETURN:
                 Instruction(OP_RET);
                 break;
 
             case INT_GOTO: {
-                int rung = a->literal;
-                Comment("INT_GOTO %s %d 0x%08X 0x%08X",
+                Comment("INT_GOTO %s // %s %d",
                         a->name1.c_str(),
-                        rung,
-                        AddrOfRungN[rung].FwdAddr,
-                        AddrOfRungN[rung].KnownAddr);
-                DWORD addr;
-                if(rung < -1) {
-                    addr = 0;
-                } else if(rung == -1) {
-                    addr = BeginOfPLCCycle;
-                } else if(rung <= rungNow) {
-                    addr = AddrOfRungN[rung].KnownAddr;
+                        a->name2.c_str(),
+                        a->literal);
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                if(a->literal) {
+                    InstructionJMP(l->KnownAddr);
                 } else {
-                    addr = AddrOfRungN[rung].FwdAddr;
+                    InstructionJMP(l->FwdAddr);
                 }
-                InstructionJMP(addr);
                 break;
             }
             case INT_GOSUB: {
-                int rung = a->literal;
-                Comment("INT_GOSUB %s %d %d 0x%08X 0x%08X",
+                Comment("INT_GOSUB %s // %s %d",
                         a->name1.c_str(),
-                        rung + 1,
-                        rungNow + 1,
-                        AddrOfRungN[rung].FwdAddr,
-                        AddrOfRungN[rung].KnownAddr);
-                if(rung < rungNow) {
-                    CallSubroutine(AddrOfRungN[rung].KnownAddr);
-                } else if(rung > rungNow) {
-                    CallSubroutine(AddrOfRungN[rung].FwdAddr);
-                } else
-                    THROW_COMPILER_EXCEPTION("Can't instantiate GOSUB.");
+                        a->name2.c_str(),
+                        a->literal);
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                if(a->literal) {
+                    CallSubroutine(l->KnownAddr);
+                } else {
+                    CallSubroutine(l->FwdAddr);
+                }
                 break;
             }
 #ifdef TABLE_IN_FLASH
@@ -5172,6 +5298,9 @@ static void CompileFromIntermediate()
                 break;
             }
 #endif
+            case INT_SET_SEED_RANDOM:
+                break;
+
             case INT_SET_VARIABLE_RANDOM: {
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);

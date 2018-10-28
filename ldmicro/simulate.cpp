@@ -805,7 +805,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_LABEL:
         case ELEM_SUBPROG:
         case ELEM_ENDSUB:
-            MarkWithCheck(l->d.doGoto.rung, VAR_FLAG_ANY);
+            MarkWithCheck(l->d.doGoto.label, VAR_FLAG_ANY);
             break;
 
         case ELEM_RETURN:
@@ -836,6 +836,28 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_NPULSE:
         case ELEM_PULSER:
         case ELEM_STEPPER:
+            sprintf(str, "%s%s", l->d.stepper.name, ""); // "LutElement");
+            MarkWithCheck(str, VAR_FLAG_TABLE);
+            //MarkWithCheck(l->d.stepper.name, VAR_FLAG_TABLE);
+
+            //MarkWithCheck(l->d.stepper.coil, VAR_FLAG_TABLE);
+            //MarkWithCheck(l->d.stepper.name, VAR_FLAG_ANY);
+
+            //if(IsNumber(l->d.stepper.P)&&(CheckMakeNumber(l->d.stepper.P)>1)
+            //||(!IsNumber(l->d.stepper.P))){
+            sprintf(str, "C%s%s", l->d.stepper.name, "Dec");
+            MarkWithCheck(str, VAR_FLAG_ANY);
+
+            sprintf(str, "C%s%s", l->d.stepper.name, "Inc");
+            MarkWithCheck(str, VAR_FLAG_ANY);
+
+            sprintf(str, "C%s%s", l->d.stepper.name, "P");
+            MarkWithCheck(str, VAR_FLAG_ANY);
+
+            //}
+            //MarkWithCheck(l->d.stepper.counter, VAR_FLAG_ANY);
+            //MarkWithCheck(l->d.stepper.P, VAR_FLAG_ANY);
+            //MarkWithCheck(l->d.stepper.accel, VAR_FLAG_ANY);
             break;
 
         case ELEM_BIN2BCD:
@@ -1106,26 +1128,28 @@ static void IfConditionTrue()
     IntPc++;
     // now PC is on the first statement of the IF body
     SimulateIntCode();
-    // now PC is on the ELSE or the END IF
-    if(IntCode[IntPc].op == INT_ELSE) {
-        int nesting = 1;
-        for(;; IntPc++) {
-            if(IntPc >= IntCode.size())
-                oops();
+    if(IntPc < IntCode.size()) {
+        // now PC is on the ELSE or the END IF
+        if(IntCode[IntPc].op == INT_ELSE) {
+            int nesting = 1;
+            for(; IntPc < IntCode.size(); IntPc++) {
+                if(IntPc >= IntCode.size())
+                    oops();
 
-            if(IntCode[IntPc].op == INT_END_IF) {
-                nesting--;
-            } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
-                nesting++;
+                if(IntCode[IntPc].op == INT_END_IF) {
+                    nesting--;
+                } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
+                    nesting++;
+                }
+                if(nesting == 0)
+                    break;
             }
-            if(nesting == 0)
-                break;
+        } else if(IntCode[IntPc].op == INT_END_IF) {
+            return;
+        } else {
+            if(!GotoGosubUsed())
+                oops();
         }
-    } else if(IntCode[IntPc].op == INT_END_IF) {
-        return;
-    } else {
-        if(!GotoGosubUsed())
-            oops();
     }
 }
 
@@ -1137,7 +1161,7 @@ static void IfConditionTrue()
 static void IfConditionFalse()
 {
     int nesting = 0;
-    for(;; IntPc++) {
+    for(; IntPc < IntCode.size(); IntPc++) {
         if(IntPc >= IntCode.size())
             oops();
 
@@ -1412,7 +1436,7 @@ int swap(int val, int sov)
     return ret;
 }
 //-----------------------------------------------------------------------------
-#define STACK_LEN 8
+#define STACK_LEN 8 // hardware limit
 static int stack[STACK_LEN];
 static int stackCount = 0;
 //-----------------------------------------------------------------------------
@@ -1688,6 +1712,9 @@ static void SimulateIntCode()
             case INT_SET_VARIABLE_RANDOM:
                 v = GetRandom(a->name1);
                 goto math;
+            case INT_SET_SEED_RANDOM:
+                v = GetSimulationVariable(a->name1);
+                goto math;
             case INT_SET_VARIABLE_NEG:
                 v = -GetSimulationVariable(a->name2);
                 goto math;
@@ -1953,7 +1980,11 @@ static void SimulateIntCode()
             case INT_GOTO:
                 if(a->poweredAfter) {
                     if(*(a->poweredAfter)) {
-                        IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal /*, a->name1*/);
+                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal);
+                        if(a->literal)
+                            IntPc = FindOpName(INT_AllocKnownAddr, a->name1);
+                        else
+                            IntPc = FindOpName(INT_FwdAddrIsNow, a->name1);
                     }
                 }
                 break;
@@ -1962,7 +1993,11 @@ static void SimulateIntCode()
                 if(a->poweredAfter) {
                     if(*(a->poweredAfter)) {
                         PushStack(IntPc + 1);
-                        IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal /*, a->name1*/);
+                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal);
+                        if(a->literal)
+                            IntPc = FindOpName(INT_AllocKnownAddr, a->name1);
+                        else
+                            IntPc = FindOpName(INT_FwdAddrIsNow, a->name1);
                     }
                 }
                 break;
@@ -2001,8 +2036,8 @@ static void SimulateIntCode()
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
-                if((index < 0) || (a->literal <= index)) {
-                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2.c_str(), a->literal - 1);
+                if((index < 0) || (a->literal < index)) {
+                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2.c_str(), a->literal-1);
                     index = a->literal;
                     StopSimulation();
                     ToggleSimulationMode(false);
@@ -2043,7 +2078,7 @@ static void SimulateIntCode()
                 break;
         }
     }
-}
+} // SimulateIntCode()
 
 //-----------------------------------------------------------------------------
 // Called by the Windows timer that triggers cycles when we are running
@@ -2105,8 +2140,10 @@ void SimulateOneCycle(bool forceRefresh)
         }
     }
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(!Prog.rungSimulated[i])
+        if(!Prog.rungSimulated[i]) {
             Prog.rungPowered[i] = false;
+            NeedRedraw = true;
+        }
     }
 
     CyclesCount++;
@@ -2295,19 +2332,19 @@ void SimulationToggleContact(char *name)
         int   bit = -1;
         MemForSingleBit(name, true, &addr, &bit);
 
-		if((addr != -1) && (bit != -1)) {
-			char s[MAX_NAME_LEN];
-			if(name[0] == 'X')
-				sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
-			else
-				sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
-			SDWORD v = GetSimulationVariable(s);
-			if(SingleBitOn(name))
-				v |= 1<<bit;
-			else
-				v &= ~(1<<bit);
-			SetSimulationVariable(s, v);
-		}
+        if((addr != -1) && (bit != -1)) {
+            char s[MAX_NAME_LEN];
+            if(name[0] == 'X')
+                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
+            else
+                sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
+            SDWORD v = GetSimulationVariable(s);
+            if(SingleBitOn(name))
+                v |= 1<<bit;
+            else
+                v &= ~(1<<bit);
+            SetSimulationVariable(s, v);
+        }
     }
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }

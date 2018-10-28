@@ -10,6 +10,7 @@ endif()
 message(STATUS "ldcompilerlib lang : ${LDLANG}")
 
 set(LD_COMPILER_SRC_LIST
+    ../accel.cpp
     ../ansic.cpp
     ../avr.cpp
     ../circuit.cpp

@@ -21,6 +21,8 @@
 #ifndef __ACCEL_H
 #define __ACCEL_H
 
+#include "circuit.h"
+
 #ifndef round
 #define round(r)   ((r) < (LONG_MIN-0.5) || (r) > (LONG_MAX+0.5) ?\
     (r):\
@@ -29,14 +31,69 @@
 
 typedef     double  fxFunc(double k, double x);
 /*
-    SDWORD  nSize,  // СЂР°Р·РјРµСЂ С‚Р°Р±Р»РёС†С‹ С‚РѕС‡РµРє СЂР°Р·РіРѕРЅР°/С‚РѕСЂРјРѕР¶РµРЅРёСЏ
-    SDWORD  n,      // РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕС‡РµРє СЂР°Р·РіРѕРЅР°/С‚РѕСЂРјРѕР¶РµРЅРёСЏ РіРґРµ dt РѕС‚Р»РёС‡РЅС‹С… РѕС‚ 1
-    double  dtMax,  // РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РїСЂРёСЂРѕСЃС‚Р° dt
-    SDWORD  mult,   // РјРЅРѕР¶РёС‚РµР»СЊ dtMax РґРѕ 128
+    SDWORD  nSize,  // размер таблицы точек разгона/торможения
+    SDWORD  n,      // количество точек разгона/торможения где dt отличных от 1
+    double  dtMax,  // максимальное значение прироста dt
+    SDWORD  mult,   // множитель dtMax до 128
     SDWORD  shrt;   // mult = 2 ^ shrt
 */
 
-//typedef  ElemAccel TableAccel[]; //РјР°СЃСЃРёРІ СЃС‚СЂСѓРєС‚СѓСЂ
+//typedef  ElemAccel TableAccel[]; //массив структур
 
-//typedef  ElemAccel (*TableAccelPointer)[]; //СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЃСЃРёРІ СЃС‚СЂСѓРєС‚СѓСЂ
-#endif
+//typedef  ElemAccel (*TableAccelPointer)[]; //указатель на массив структур
+
+double Proportional(double k, double n);
+double eFv(double m, double v);
+
+//k=const ===================================================================
+double tsProp(double k, double s);
+double stProp(double k, double t);
+double vProp(double k, double t);
+double aProp(double k, double t);
+double kProp(int nSize);
+
+//v=k*t^2 ===================================================================
+double ts2(double k, double s);
+double st2(double k, double t);
+double v2(double k, double t);
+double a2(double k, double t);
+double k2(int nSize);
+
+//v=k*sqrt(t) ===============================================================
+double tsSqrt2(double k, double s);
+double stSqrt2(double k, double t);
+double vSqrt2(double k, double t);
+double aSqrt2(double k, double t);
+double kSqrt2(int nSize);
+
+//v=k*Sqrt3(t) ==============================================================
+double tsSqrt3(double k, double s);
+double stSqrt3(double k, double t);
+double vSqrt3(double k, double t);
+double aSqrt3(double k, double t);
+double kSqrt3(int nSize);
+
+//v=k*t^2 v=-k*(t-tz)^2======================================================
+double tsS(double k, double s);
+double stS(double k, double t);
+double vS(double k, double t);
+double aS(double k, double t);
+double ktS(int nSize);
+double ksS(int nSize);
+
+//===========================================================================
+void makeAccelTable(FILE *f, int max, int P, int nSize, ElemAccel **TT,
+         char *name,
+         int nN, // (1-для несимметричных кривых разгонов, 2-для cимметричных S-образных кривых разгона)
+         int sFt, // (1-sFt, 0-tFs)
+         int *n,
+         int *Psum,
+         int *shrt, // mult = 2 ^ shrt
+         int *sovElement,
+         fxFunc *fs, double ks,
+         fxFunc *ft, double kt,
+         fxFunc *fv, double kv,
+         fxFunc *fa, double ka,
+         fxFunc *eFv, double m);
+
+#endif //__ACCEL_H
