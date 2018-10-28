@@ -483,7 +483,7 @@ typedef struct ElemLookUpTableTag {
     char    index[MAX_NAME_LEN];
     int     count; // Table size
     bool    editAsString;
-    SDWORD  vals[MAX_LOOK_UP_TABLE_LEN];
+    int32_t  vals[MAX_LOOK_UP_TABLE_LEN];
 } ElemLookUpTable;
 
 typedef struct ElemPiecewiseLinearTag {
@@ -491,7 +491,7 @@ typedef struct ElemPiecewiseLinearTag {
     char    dest[MAX_NAME_LEN];
     char    index[MAX_NAME_LEN];
     int     count;
-    SDWORD  vals[MAX_LOOK_UP_TABLE_LEN];
+    int32_t  vals[MAX_LOOK_UP_TABLE_LEN];
 } ElemPiecewiseLinear;
 
 typedef struct ElemFormattedStringTag {
