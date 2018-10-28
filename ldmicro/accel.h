@@ -35,32 +35,6 @@ typedef     double  fxFunc(double k, double x);
     SDWORD  mult,   // множитель dtMax до 128
     SDWORD  shrt;   // mult = 2 ^ shrt
 */
-typedef struct ElemAccelTag {
-    //INPUT or OUTPUT DATAS
-    //If s is input and ds=1 then t is output.
-    //If t is input and dt=1 then s is output.
-    double  s;      // пройденый путь от 0 s(t)
-    SDWORD  si;     // -/- целое от s
-    double  ds;     // приращение пути от предыдущей точки ds=s[i]-s[i-1]
-    SDWORD  dsi;    // -/- целое от ds не int(s[i]-s[i-1])
-
-    double  t;      // время разгона от 0 до v=1
-    SDWORD  ti;     // -/- целое от t
-    double  dt;     // приращение времени от предыдущей точки dt=t[i]-t[i-1]
-    SDWORD  dti;    // -/- целое от dt
-    SDWORD  dtMul;  // dtMul = dt * mult;
-    SDWORD  dtShr;  // dtShr = dtMul >> shrt;
-    SDWORD  tdiscrete;//tdti;   // =summa(0..dti)
-    //OUTPUT DATAS
-    double  v,      // скорость в текущей точке разгона
-            dv,     // приращение скорости в текущей точке разгона
-            vdiscrete, // dsi/dti
-            a,      // ускорение в текущей точке разгона
-            da,     // приращение ускорения в текущей точке разгона
-            e,      // энергия в текущей точке разгона
-            de;     // приращение энергии в текущей точке разгона
-
-} ElemAccel;//, *ElemAccelPointer; //структура и указательна структуру
 
 //typedef  ElemAccel TableAccel[]; //массив структур
 
