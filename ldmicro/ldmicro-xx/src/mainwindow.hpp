@@ -15,6 +15,7 @@ public:
     CMainWindow();
     virtual ~CMainWindow();
 protected:
+    virtual void PreRegisterClass(WNDCLASS& wc);
     virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:

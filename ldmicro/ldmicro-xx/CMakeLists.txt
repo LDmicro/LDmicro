@@ -11,6 +11,10 @@ set(ldmicro-xx-src
     src/mainwindow.cpp
     src/ladderwindow.cpp
     src/ladderwindow.hpp
+    src/ScrollWnd.hpp
+    src/ScrollWnd.cpp
+    src/FontEx.hpp
+    src/FontEx.cpp
 
     ../coildialog.cpp
     ../colorDialog.cpp
@@ -30,8 +34,10 @@ set(ldmicro-xx-src
     ../simpledialog.cpp
     ../simulate.cpp
     ../undoredo.cpp
-    ../ldversion.h
     ../accel.cpp
+
+    ../ldmicro.h
+    ../ldversion.h
 
     ../../common/win32/freeze.cpp
     ../../common/win32/freeze.h
@@ -102,6 +108,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Comctl32 ldlanglib ldcompilerlib l
 target_include_directories(${PROJECT_NAME}
         PRIVATE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/precomp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/res>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../ldmicro>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../common/win32xx/include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../common/gsl-lite/include>
