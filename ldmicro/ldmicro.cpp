@@ -2790,6 +2790,7 @@ void CheckPwmPins()
     }
 }
 
+#ifndef LDMICRO_GUI_XX
 //-----------------------------------------------------------------------------
 // Entry point into the program.
 //-----------------------------------------------------------------------------
@@ -3020,3 +3021,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     return 0;
 }
+#endif //LDMICRO_GUI_XX
