@@ -1435,7 +1435,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int                 i;
             for(i = 0; i < p->count; i++) {
-                if(l = ContainsWhich(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3)) {
+                if((l = ContainsWhich(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3))) {
                     return l;
                 }
             }
@@ -1445,7 +1445,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int               i;
             for(i = 0; i < s->count; i++) {
-                if(l = ContainsWhich(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3)) {
+                if((l = ContainsWhich(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3))) {
                     return l;
                 }
             }
@@ -1715,7 +1715,7 @@ bool SleepFunctionUsed()
 // save in the new rung temp
 //-----------------------------------------------------------------------------
 const char *CLP = "ldmicro.tmp";
-void        CopyRungDown()
+void CopyRungDown()
 {
     int               i = RungContainingSelected();
     char              line[512];
@@ -1734,7 +1734,7 @@ void        CopyRungDown()
     rewind(f);
     fgets(line, sizeof(line), f);
     if(strstr(line, "RUNG"))
-        if(temp = LoadSeriesFromFile(f)) {
+        if((temp = LoadSeriesFromFile(f))) {
             InsertRung(true);
             Prog.rungs[i + 1] = temp;
         }
@@ -1747,23 +1747,21 @@ void        CopyRungDown()
 //-----------------------------------------------------------------------------
 void CutRung()
 {
-    int i;
-
     FILE *f = fopen(CLP, "w+");
     if(!f) {
         Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
     int SelN = 0;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] == '*')
             SelN++;
     if(!SelN) {
-        i = RungContainingSelected();
+        int i = RungContainingSelected();
         if(i >= 0)
             Prog.rungSelected[i] = '*';
     }
-    for(i = (Prog.numRungs - 1); i >= 0; i--)
+    for(int i = (Prog.numRungs - 1); i >= 0; i--)
         if(Prog.rungSelected[i] == '*') {
             SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
             DeleteRungI(i);
@@ -1787,17 +1785,16 @@ void CopyRung()
         Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
-    int i;
     int SelN = 0;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] == '*')
             SelN++;
     if(!SelN) {
-        i = RungContainingSelected();
+        int i = RungContainingSelected();
         if(i >= 0)
             Prog.rungSelected[i] = '*';
     }
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] > '*') {
             Prog.rungSelected[i] = ' ';
         } else if(Prog.rungSelected[i] == '*') {
@@ -1818,17 +1815,16 @@ void CopyElem()
         Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
-    int i;
     int SelN = 0;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] == '*')
             SelN++;
     if(!SelN) {
-        i = RungContainingSelected();
+        int i = RungContainingSelected();
         if(i >= 0)
             Prog.rungSelected[i] = '*';
     }
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] > '*') {
             Prog.rungSelected[i] = ' ';
         } else if(Prog.rungSelected[i] == '*') {
@@ -1868,7 +1864,6 @@ void PasteRung(int PasteInTo)
         Error(_("You must Select rungs, then Copy or Cut, then Paste."));
         return;
     }
-    int  i;
     char line[512];
     int  rung;
 
@@ -1876,7 +1871,7 @@ void PasteRung(int PasteInTo)
         if(!fgets(line, sizeof(line), f))
             break;
         if(strstr(line, "RUNG"))
-            if(temp = LoadSeriesFromFile(f)) {
+            if((temp = LoadSeriesFromFile(f))) {
                 if(SelectedWhich == ELEM_PLACEHOLDER) {
                     Prog.rungs[j] = temp;
                     rung = 1;
@@ -1894,7 +1889,7 @@ void PasteRung(int PasteInTo)
                         if(!EndOfRungElem(SelectedWhich) || (Selected->selectedState == SELECTED_LEFT))
                             if(!ItemIsLastInCircuit(Selected) || (Selected->selectedState == SELECTED_LEFT)) {
                                 doCollapse = false;
-                                for(i = temp->count - 1; i >= 0; i--) {
+                                for(int i = temp->count - 1; i >= 0; i--) {
                                     if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
                                                            temp,
                                                            temp->contents[i].which,
@@ -1910,7 +1905,7 @@ void PasteRung(int PasteInTo)
                            && ((Selected->selectedState == SELECTED_BELOW)
                                || (Selected->selectedState == SELECTED_ABOVE))) {
                             doCollapse = false;
-                            for(i = temp->count - 1; i >= 0; i--) {
+                            for(int i = temp->count - 1; i >= 0; i--) {
                                 if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
                                                        temp,
                                                        temp->contents[i].which,
@@ -1934,7 +1929,7 @@ void PasteRung(int PasteInTo)
                     oops();
             }
     }
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(Prog.rungSelected[i] != ' ')
             Prog.rungSelected[i] = ' ';
     }

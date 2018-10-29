@@ -28,8 +28,6 @@
 #ifndef __INTCODE_H
 #define __INTCODE_H
 
-#include "stdafx.h"
-
 #include "compilercommon.hpp"
 
 #define NEW_CMP // (C) LDmicro.GitHub@gmail.com

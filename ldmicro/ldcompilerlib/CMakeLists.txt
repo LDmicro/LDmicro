@@ -10,6 +10,7 @@ endif()
 message(STATUS "ldcompilerlib lang : ${LDLANG}")
 
 set(LD_COMPILER_SRC_LIST
+    ../accel.cpp
     ../ansic.cpp
     ../avr.cpp
     ../circuit.cpp
@@ -27,6 +28,7 @@ set(LD_COMPILER_SRC_LIST
     ../xinterpreted.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp
 
+    ../circuit.h
     ../accel.h
     ../bits.h
     ../display.h
