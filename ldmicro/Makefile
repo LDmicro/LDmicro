@@ -45,6 +45,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\accel.obj \
            $(OBJDIR)\pascal.obj \
            $(OBJDIR)\pcports.obj \
+           $(OBJDIR)\plcprogram.obj
            $(OBJDIR)\translit.obj \
            $(OBJDIR)\mcutable.obj \
            $(OBJDIR)\display.obj
