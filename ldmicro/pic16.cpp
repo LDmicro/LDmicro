@@ -288,16 +288,16 @@ static void CompileFromIntermediate(bool topLevel);
 //-----------------------------------------------------------------------------
 static bool McuIs(const char *str)
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
-    return strcmp(Prog.mcu->mcuName, str) == 0;
+    return strcmp(Prog.mcu()->mcuName, str) == 0;
 }
 
 bool McuAs(const char *str)
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
-    return strstr(Prog.mcu->mcuName, str) != nullptr;
+    return strstr(Prog.mcu()->mcuName, str) != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -370,15 +370,15 @@ static DWORD Bank(DWORD reg)
         reg &= ~(NOTDEF(0));
     if(IS_MULTYDEF(reg))
         reg &= ~(MULTYDEF(0));
-    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
         if(reg & ~0x0FFF)
             THROW_COMPILER_EXCEPTION_FMT("0x%X", reg);
         reg &= 0x0F80;
-    } else if(Prog.mcu->core == MidrangeCore14bit) {
+    } else if(Prog.mcu()->core == MidrangeCore14bit) {
         if(reg & ~0x01FF)
             THROW_COMPILER_EXCEPTION_FMT("0x%X", reg);
         reg &= 0x0180;
-    } else if(Prog.mcu->core == BaselineCore12bit) {
+    } else if(Prog.mcu()->core == BaselineCore12bit) {
         if(reg & ~0x007F)
             THROW_COMPILER_EXCEPTION_FMT("0x%X", reg);
         reg &= 0x0000;
@@ -391,11 +391,11 @@ static DWORD Bank(DWORD reg)
 static DWORD BankMask()
 {
     DWORD reg;
-    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
         reg = 0x0F80;
-    } else if(Prog.mcu->core == MidrangeCore14bit) {
+    } else if(Prog.mcu()->core == MidrangeCore14bit) {
         reg = 0x0180;
-    } else if(Prog.mcu->core == BaselineCore12bit) {
+    } else if(Prog.mcu()->core == BaselineCore12bit) {
         reg = 0x0000;
     } else
         THROW_COMPILER_EXCEPTION("Internal error.");
@@ -406,7 +406,7 @@ static DWORD BankMask()
 static int IsCoreRegister(DWORD reg)
 {
     reg &= ~Bank(reg); // Clear Bank
-    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
         switch(reg) {
             case REG_INDF:
             case REG_PCL:
@@ -419,7 +419,7 @@ static int IsCoreRegister(DWORD reg)
             default:
                 return 0;
         }
-    } else if(Prog.mcu->core == MidrangeCore14bit) {
+    } else if(Prog.mcu()->core == MidrangeCore14bit) {
         switch(reg) {
             case REG_INDF:
             case REG_PCL:
@@ -431,7 +431,7 @@ static int IsCoreRegister(DWORD reg)
             default:
                 return 0;
         }
-    } else if(Prog.mcu->core == BaselineCore12bit) {
+    } else if(Prog.mcu()->core == BaselineCore12bit) {
         switch(reg) {
             case REG_INDF:
             case REG_PCL:
@@ -755,12 +755,12 @@ static int BankSelect(DWORD addr, int nAdd, int nSkip, DWORD bankNow, DWORD bank
     bankNow = Bank(bankNow); // reassurance
     bankNew = Bank(bankNew);
     int n = 0;
-    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
         if(bankNow != bankNew) {
             Instruction(OP_MOVLB, bankNew >> 7);
             n++;
         }
-    } else if(Prog.mcu->core == MidrangeCore14bit) {
+    } else if(Prog.mcu()->core == MidrangeCore14bit) {
         if((bankNow ^ bankNew) & 0x0080) {
             if(bankNew & 0x0080) {
                 Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
@@ -777,7 +777,7 @@ static int BankSelect(DWORD addr, int nAdd, int nSkip, DWORD bankNow, DWORD bank
             }
             n++;
         }
-    } else if(Prog.mcu->core == BaselineCore12bit) {
+    } else if(Prog.mcu()->core == BaselineCore12bit) {
         if(bankNow != bankNew) {
             THROW_COMPILER_EXCEPTION("Internal error.");
         }
@@ -810,15 +810,15 @@ static int BankSelectCheck(DWORD bankNow, DWORD bankNew)
     bankNow = Bank(bankNow); // reassurance
     bankNew = Bank(bankNew);
     int n = 0; // need OPs
-    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
         if(bankNow != bankNew)
             n++;
-    } else if(Prog.mcu->core == MidrangeCore14bit) {
+    } else if(Prog.mcu()->core == MidrangeCore14bit) {
         if((bankNow ^ bankNew) & 0x0080)
             n++;
         if((bankNow ^ bankNew) & 0x0100)
             n++;
-    } else if(Prog.mcu->core == BaselineCore12bit) {
+    } else if(Prog.mcu()->core == BaselineCore12bit) {
         if(bankNow != bankNew) {
             THROW_COMPILER_EXCEPTION("Internal error.");
         }
@@ -913,7 +913,7 @@ doBankCorrection:
     if(corrected && (corrected < 20))
         goto doBankCorrection;
 
-    if(PicProgWriteP >= Prog.mcu->flashWords)
+    if(PicProgWriteP >= Prog.mcu()->flashWords)
         Error("Not enough memory for BANK and PAGE correction!");
 
     return bank;
@@ -1033,7 +1033,7 @@ static void BankCorrection()
     BankPreSet(0, 0, 0);
 
     // Marking the interrupt vector operation as the multi entry point.
-    if(Prog.mcu->core != BaselineCore12bit) {
+    if(Prog.mcu()->core != BaselineCore12bit) {
         PicProg[4].BANK = MULTYDEF(0);
     }
     BankCorrection_(0, 0, 0);
@@ -1069,7 +1069,7 @@ static void PagePreSet()
     PicProg[3].label |= I_LABEL;
 
     // Mark the interrupt vector operation as the multi entry point.
-    if(Prog.mcu->core != BaselineCore12bit) {
+    if(Prog.mcu()->core != BaselineCore12bit) {
         PicProg[4].PCLATH = MULTYDEF(0);
         PicProg[4].label |= I_LABEL;
     }
@@ -1093,7 +1093,7 @@ static void PagePreSet()
     }
     // direct set the PCLATH
     for(DWORD i = 0; i < PicProgWriteP; i++) {
-        if(Prog.mcu->core == BaselineCore12bit) {
+        if(Prog.mcu()->core == BaselineCore12bit) {
             // TODO
         } else {
             if((PicProg[i].opPic == OP_CLRF) && (PicProg[i].arg1 == REG_PCLATH)) {
@@ -1226,10 +1226,10 @@ static int PageSelectCheck(DWORD PCLATH, DWORD PCLATHnew)
     }
 
     int n = 0;
-    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
         if((PCLATH >> 3) != (PCLATHnew >> 3))
             n++;
-    } else if(Prog.mcu->core == MidrangeCore14bit) {
+    } else if(Prog.mcu()->core == MidrangeCore14bit) {
         if((PCLATH ^ PCLATHnew) & (1 << BIT3))
             n++;
         if((PCLATH ^ PCLATHnew) & (1 << BIT4))
@@ -1249,13 +1249,13 @@ static int PageSelect(DWORD addr, DWORD *PCLATH, DWORD PCLATHnew)
     }
 
     int n = 0;
-    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
         if((*PCLATH >> 3) != (PCLATHnew >> 3)) {
             SetInstruction(addr, OP_MOVLP, PCLATHnew, 0, "PageSel2");
             *PCLATH = PCLATHnew;
             n++;
         }
-    } else if(Prog.mcu->core == MidrangeCore14bit) {
+    } else if(Prog.mcu()->core == MidrangeCore14bit) {
         if(((*PCLATH) ^ PCLATHnew) & (1 << BIT3)) {
             if(PCLATHnew & (1 << BIT3)) {
                 SetInstruction(addr + n, OP_BSF, REG_PCLATH, BIT3, "_^");
@@ -1382,7 +1382,7 @@ doPageCorrection:
     if(corrected)
         goto doPageCorrection;
 
-    if(PicProgWriteP >= Prog.mcu->flashWords)
+    if(PicProgWriteP >= Prog.mcu()->flashWords)
         Error("Not enough memory for PAGE correction!");
 }
 
@@ -2204,9 +2204,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     DWORD ExtendedSegmentAddress = 0;
     for(DWORD i = 0; i < PicProgWriteP; i++) {
         DWORD w;
-        if(Prog.mcu->core == BaselineCore12bit)
+        if(Prog.mcu()->core == BaselineCore12bit)
             w = Assemble12(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, sAsm);
-        else if(Prog.mcu->core == PIC18HighEndCore16bit)
+        else if(Prog.mcu()->core == PIC18HighEndCore16bit)
             w = Assemble16(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, 1, sAsm);
         else
             w = Assemble(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, sAsm);
@@ -2417,7 +2417,7 @@ static bool IsOutputReg(DWORD addr)
     if((addr == -1) || (addr == 0))
         THROW_COMPILER_EXCEPTION("Internal error.");
     for(int i = 0; i < MAX_IO_PORTS; i++)
-        if(Prog.mcu->outputRegs[i] == addr)
+        if(Prog.mcu()->outputRegs[i] == addr)
             return true;
     return false;
 }
@@ -2427,7 +2427,7 @@ static bool IsInputReg(DWORD addr)
     if((addr == -1) || (addr == 0))
         THROW_COMPILER_EXCEPTION("Internal error.");
     for(int i = 0; i < MAX_IO_PORTS; i++)
-        if(Prog.mcu->inputRegs[i] == addr)
+        if(Prog.mcu()->inputRegs[i] == addr)
             return true;
     return false;
 }
@@ -3427,11 +3427,11 @@ For example, for a 32-bit add:
     addwf    b+3,f
 */
 /*
-Для обнаружения переполнения разрядной сетки используют следующие способы:
+Для обн ружения переполнения р зрядной сетки используют следующие способы:
 
-1. Сравнивают знаки слагаемых со знаком суммы. Сигнал переполнения
-вырабатывается тогда, когда знаки слагаемых одинаковы и не совпадают со
-знаком суммы.
+1. Ср внив ют зн ки сл г емых со зн ком суммы. Сигн л переполнения
+выр б тыв ется тогд , когд  зн ки сл г емых один ковы и не совп д ют со
+зн ком суммы.
 */
 static void add(DWORD b, DWORD a, int sov, const char *overlap, const char *overflow)
 //                addrb    addra     sovb == sova
@@ -5514,7 +5514,7 @@ otherwise the result was zero or greater.
                 } else
                     THROW_COMPILER_EXCEPTION("Internal error.");
 
-                if((Prog.mcu->core == EnhancedMidrangeCore14bit) || //
+                if((Prog.mcu()->core == EnhancedMidrangeCore14bit) || //
                      McuAs(" PIC12F683 ") || //
                      McuAs(" PIC12F675 ") || //
                      McuAs(" PIC12F752 ") //
@@ -5904,7 +5904,7 @@ otherwise the result was zero or greater.
                 }
 
                 DWORD loopIfWdtWakeUp = PicProgWriteP;
-                if(Prog.mcu->core == BaselineCore12bit) {
+                if(Prog.mcu()->core == BaselineCore12bit) {
                     Instruction(OP_BCF, REG_STATUS, STATUS_GPWUF);
                     Instruction(OP_BCF, REG_STATUS, STATUS_CWUF);
                     Instruction(OP_MOVF, 0x06, DEST_W);
@@ -5998,7 +5998,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
         fCompileError(f, fAsm);
     }
     */
-    if(Prog.mcu->core == BaselineCore12bit) {
+    if(Prog.mcu()->core == BaselineCore12bit) {
         if(plcTmr.prescaler == 1) {
             Prog.WDTPSA = 1;
             //CHANGING PRESCALER(TIMER0 -> WDT)
@@ -6264,7 +6264,7 @@ static void WriteMultiplyRoutine8(DWORD addr3, DWORD addr1, DWORD addr2, int sov
             THROW_COMPILER_EXCEPTION("Internal error.");
     }
 
-    if(Prog.mcu->core == BaselineCore12bit)
+    if(Prog.mcu()->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN);
@@ -6334,7 +6334,7 @@ static void WriteMultiplyRoutine()
     Instruction(OP_DECFSZ, counter, DEST_F);
     Instruction(OP_GOTO, top);
 
-    if(Prog.mcu->core == BaselineCore12bit)
+    if(Prog.mcu()->core == BaselineCore12bit)
         Instruction(OP_RETLW);
     else
         Instruction(OP_RETURN);
@@ -6392,7 +6392,7 @@ static void WriteMultiplyRoutine8x8()
     Instruction(OP_DECFSZ, counter, DEST_F);
     Instruction(OP_GOTO, top);
 
-    if(Prog.mcu->core == BaselineCore12bit)
+    if(Prog.mcu()->core == BaselineCore12bit)
         Instruction(OP_RETLW);
     else
         Instruction(OP_RETURN);
@@ -6475,7 +6475,7 @@ static void WriteMultiplyRoutine24x16()
     Instruction(OP_DECFSZ, counter, DEST_F);
     Instruction(OP_GOTO, top);
 
-    if(Prog.mcu->core == BaselineCore12bit)
+    if(Prog.mcu()->core == BaselineCore12bit)
         Instruction(OP_RETLW);
     else
         Instruction(OP_RETURN);
@@ -6578,14 +6578,14 @@ static void WriteDivideRoutine()
 
     FwdAddrIsNow(done);
     Instruction(OP_BTFSS, sign, 7);
-    if(Prog.mcu->core == BaselineCore12bit)
+    if(Prog.mcu()->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN, 0, 0);
 
     Negate(dividend0, 2, "result");
 
-    if(Prog.mcu->core == BaselineCore12bit)
+    if(Prog.mcu()->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN, 0, 0);
@@ -6690,13 +6690,13 @@ static void WriteDivideRoutine24x16()
 
     FwdAddrIsNow(done);
     Instruction(OP_BTFSS, sign, 7);
-    if(Prog.mcu->core == BaselineCore12bit)
+    if(Prog.mcu()->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN, 0, 0);
 
     Negate(dividend0, 3, "result");
-    if(Prog.mcu->core == BaselineCore12bit)
+    if(Prog.mcu()->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN, 0, 0);
@@ -7282,16 +7282,16 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     fprintf(fAsm,
             ";/* This is auto-generated ASM code from LDmicro. Do not edit this file!\n"
             ";   Go back to the LDmicro ladder diagram source for changes in the ladder logic. */\n");
-    fprintf(fAsm, "; %s is the LDmicro target processor.\n", Prog.mcu->mcuList);
-    fprintf(fAsm, "\tLIST    p=%s\n", Prog.mcu->mcuList);
+    fprintf(fAsm, "; %s is the LDmicro target processor.\n", Prog.mcu()->mcuList);
+    fprintf(fAsm, "\tLIST    p=%s\n", Prog.mcu()->mcuList);
     fprintf(fAsm,
             "#include "
             "%s.inc"
             "\n",
-            Prog.mcu->mcuInc);
+            Prog.mcu()->mcuInc);
 
     if(!Prog.configurationWord)
-        Prog.configurationWord = Prog.mcu->configurationWord;
+        Prog.configurationWord = Prog.mcu()->configurationWord;
     if(CONFIG_ADDR2 != -1) {
         fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR1, (WORD)Prog.configurationWord & 0xFFFF);
         fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR2, (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
@@ -7318,7 +7318,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     Scratch5 = AllocOctetRam();
     Scratch6 = AllocOctetRam();
     Scratch7 = AllocOctetRam();
-    if(Prog.mcu->core != BaselineCore12bit) {
+    if(Prog.mcu()->core != BaselineCore12bit) {
         Scratch8 = AllocOctetRam();
         Scratch9 = AllocOctetRam();
         Scratch10 = AllocOctetRam();
@@ -7340,15 +7340,15 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     // PCLATH is init to 0, but apparently some bootloaders want to see us
     // initialize it again.
     Comment("Reset vector"); // may be relocated with botloders
-    if(Prog.mcu->core == BaselineCore12bit) {
+    if(Prog.mcu()->core == BaselineCore12bit) {
         Instruction(OP_CLRF, REG_STATUS); //0 // Select Indirect Bank 0
         Instruction(OP_NOP_);             //1
         Instruction(OP_NOP_, 0, 0);       //2
-    } else if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+    } else if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
         Instruction(OP_CLRF, REG_STATUS); //0 // Select Indirect Bank 0
         Instruction(OP_MOVLB, 0);         //1 // Select Bank 0
         Instruction(OP_MOVLP, 0);         //2 // Select Page 0
-    } else if(Prog.mcu->core == MidrangeCore14bit) {
+    } else if(Prog.mcu()->core == MidrangeCore14bit) {
         Instruction(OP_CLRF, REG_STATUS); //0 // Select Bank 0 and Indirect Bank 0
         Instruction(OP_CLRF, REG_PCLATH); //1 // Select Page 0
         Instruction(OP_NOP_, 0, 0);       //2
@@ -7356,7 +7356,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         THROW_COMPILER_EXCEPTION("Internal error.");
     Comment("GOTO progStart");
     Instruction(OP_GOTO, progStart); //3
-    if(Prog.mcu->core != BaselineCore12bit) {
+    if(Prog.mcu()->core != BaselineCore12bit) {
         Comment("Interrupt Vector");
         Instruction(OP_RETFIE, 0, 0); //4 or this
                                       //  Instruction(OP_NOP_, 0, 0);         //4 or this
@@ -7404,7 +7404,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Comment("Selects 16MHz for the Internal Oscillator when it used, ignored otherwise.");
         WriteRegister(REG_OSCON, 0xF << IRCF0);
     }
-    if(Prog.mcu->core == BaselineCore12bit) {
+    if(Prog.mcu()->core == BaselineCore12bit) {
         Prog.WDTPSA = 1;
         Prog.OPTION = 0xFF; // default; only for PIC10Fxxx
     }
@@ -7420,52 +7420,52 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     DWORD progStartBank = 0;
     // for(DWORD i = 0; i < MAX_RAM_SECTIONS; i++) {
     for(DWORD i = 0; i <= RamSection; i++) {
-        if(Prog.mcu->ram[i].len) {
-            if(Bank(Prog.mcu->ram[i].start) != Bank(Prog.mcu->ram[i].start + Prog.mcu->ram[i].len - 1))
+        if(Prog.mcu()->ram[i].len) {
+            if(Bank(Prog.mcu()->ram[i].start) != Bank(Prog.mcu()->ram[i].start + Prog.mcu()->ram[i].len - 1))
                 THROW_COMPILER_EXCEPTION_FMT("%d", i);
-            if(Prog.mcu->ram[i].len > 256)
+            if(Prog.mcu()->ram[i].len > 256)
                 THROW_COMPILER_EXCEPTION_FMT("%d", i);
 
             // Select bank N
-            if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+            if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
                 Instruction(OP_MOVLB, progStartBank >> 7);
             } else {
-                if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0080)) {
-                    if(Prog.mcu->ram[i].start & 0x0080)
+                if((progStartBank ^ Bank(Prog.mcu()->ram[i].start) & 0x0080)) {
+                    if(Prog.mcu()->ram[i].start & 0x0080)
                         Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
                     else
                         Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
                 }
-                if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0100)) {
-                    if(Prog.mcu->ram[i].start & 0x0100)
+                if((progStartBank ^ Bank(Prog.mcu()->ram[i].start) & 0x0100)) {
+                    if(Prog.mcu()->ram[i].start & 0x0100)
                         Instruction(OP_BSF, REG_STATUS, STATUS_RP1);
                     else
                         Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
                 }
             }
-            if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0100)) {
-                if(Prog.mcu->ram[i].start & 0x0100)
+            if((progStartBank ^ Bank(Prog.mcu()->ram[i].start) & 0x0100)) {
+                if(Prog.mcu()->ram[i].start & 0x0100)
                     Instruction(OP_BSF, REG_STATUS, STATUS_IRP);
                 else
                     Instruction(OP_BCF, REG_STATUS, STATUS_IRP);
             }
-            progStartBank = Bank(Prog.mcu->ram[i].start);
-            Instruction(OP_MOVLW, Prog.mcu->ram[i].len - 1);
-            Instruction(OP_MOVWF, Prog.mcu->ram[i].start & ~BankMask());
-            Instruction(OP_MOVLW, (Prog.mcu->ram[i].start + 1) & ~BankMask());
+            progStartBank = Bank(Prog.mcu()->ram[i].start);
+            Instruction(OP_MOVLW, Prog.mcu()->ram[i].len - 1);
+            Instruction(OP_MOVWF, Prog.mcu()->ram[i].start & ~BankMask());
+            Instruction(OP_MOVLW, (Prog.mcu()->ram[i].start + 1) & ~BankMask());
             Instruction(OP_MOVWF, REG_FSR);
 
             DWORD zeroMem = PicProgWriteP;
             Instruction(OP_CLRF, REG_INDF);
             Instruction(OP_INCF, REG_FSR, DEST_F);
-            Instruction(OP_DECFSZ, Prog.mcu->ram[i].start & ~BankMask(), DEST_F); //  <<<<<<<<
+            Instruction(OP_DECFSZ, Prog.mcu()->ram[i].start & ~BankMask(), DEST_F); //  <<<<<<<<
             Instruction(OP_GOTO, zeroMem);                                        //                                ^
             //Instruction(OP_CLRF, Prog.mcu->ram[i].start & ~BankMask()); // not need, self cleared here >>>^
         }
     }
-    if(Bank(Prog.mcu->ram[RamSection].start)) { // 3
+    if(Bank(Prog.mcu()->ram[RamSection].start)) { // 3
         Instruction(OP_CLRF, REG_STATUS);       // Select Bank 0 and Indirect Bank 0
-        if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
+        if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
             Instruction(OP_MOVLB, 0); // Select Bank 0
         }
     }
@@ -7483,7 +7483,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     BYTE isInput[MAX_IO_PORTS], isAnsel[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
     BuildDirectionRegisters(isInput, isAnsel, isOutput);
 
-    if(Prog.mcu->core == BaselineCore12bit) {
+    if(Prog.mcu()->core == BaselineCore12bit) {
         Comment("Set up the TRISx registers (direction). 1-tri-stated (input), 0-output.");
 
         Prog.OPTION &=
@@ -7492,9 +7492,9 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
         for(DWORD i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i)) {
-                WriteRegister(Prog.mcu->outputRegs[i], 0x00);
+                WriteRegister(Prog.mcu()->outputRegs[i], 0x00);
                 Instruction(OP_MOVLW, (BYTE)(~isOutput[i]));
-                Instruction(OP_TRIS, Prog.mcu->outputRegs[i]);
+                Instruction(OP_TRIS, Prog.mcu()->outputRegs[i]);
                 break;
             }
         }
@@ -7507,7 +7507,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     }
 
     if(SleepFunctionUsed()) {
-        if(Prog.mcu->core == BaselineCore12bit) {
+        if(Prog.mcu()->core == BaselineCore12bit) {
             Comment("SLEEP trap");
             DWORD notWdtWakeUp = AllocFwdAddr();
             Instruction(OP_BTFSC, REG_STATUS, STATUS_TO); // The TO bit is cleared if WDT wake-up occurred.
@@ -7605,18 +7605,18 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
             WriteRegister(REG_ANSELG, isAnsel[6]);
     }
 
-    if(Prog.mcu->core == BaselineCore12bit) {
+    if(Prog.mcu()->core == BaselineCore12bit) {
         ; //
     } else {
         Comment(
             "Set up the TRISx registers (direction). 1-tri-stated (input), 0-output and drive the outputs low to start");
         for(DWORD i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i))
-                WriteRegister(Prog.mcu->outputRegs[i], 0x00);
+                WriteRegister(Prog.mcu()->outputRegs[i], 0x00);
         }
         for(DWORD i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i)) {
-                WriteRegister(Prog.mcu->dirRegs[i], ~isOutput[i]);
+                WriteRegister(Prog.mcu()->dirRegs[i], ~isOutput[i]);
             }
         }
 
@@ -7672,7 +7672,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     BeginOfPLCCycle = PicProgWriteP;
     BeginOfPLCCycle0 = PicProgWriteP;
     if(Prog.cycleTimer == 0) {
-        if(Prog.mcu->core == BaselineCore12bit) {
+        if(Prog.mcu()->core == BaselineCore12bit) {
             Instruction(OP_MOVF, REG_TMR0, DEST_W);
             Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
             Instruction(OP_GOTO, BeginOfPLCCycle);
@@ -7699,7 +7699,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
             Instruction(OP_BCF, REG_INTCON, T0IF);   // must be cleared in software
         }
     } else if(Prog.cycleTimer == 1) {
-        if(Prog.mcu->core == BaselineCore12bit) {
+        if(Prog.mcu()->core == BaselineCore12bit) {
             THROW_COMPILER_EXCEPTION("Select Timer0 in menu 'Settings -> MCU parameters'!");
         }
         if(Prog.cycleDuty) {
@@ -7725,7 +7725,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Comment("Watchdog reset");
         Instruction(OP_CLRWDT);
         if(plcTmr.softDivisor > 1) {
-            if(Prog.mcu->core == BaselineCore12bit) {
+            if(Prog.mcu()->core == BaselineCore12bit) {
                 Instruction(OP_DECFSZ, plcTmr.softDivisorAddr, DEST_F); // Skip if zero
                 Instruction(OP_GOTO, BeginOfPLCCycle);
                 if(plcTmr.softDivisor > 0xff) {
@@ -7867,15 +7867,15 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
                   "enabled, LVP disabled, PWRT enabled, all code protection off."),
                 outFile,
                 PicProgWriteP,
-                Prog.mcu->flashWords,
-                (100 * PicProgWriteP) / Prog.mcu->flashWords);
+                Prog.mcu()->flashWords,
+                (100 * PicProgWriteP) / Prog.mcu()->flashWords);
 
         char str2[MAX_PATH + 500];
         sprintf(str2,
                 _("Used %d/%d words of program flash (chip %d%% full)."),
                 PicProgWriteP,
-                Prog.mcu->flashWords,
-                (100 * PicProgWriteP) / Prog.mcu->flashWords);
+                Prog.mcu()->flashWords,
+                (100 * PicProgWriteP) / Prog.mcu()->flashWords);
 
         char str3[MAX_PATH + 500];
         sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), McuRAM(), (100 * UsedRAM()) / McuRAM());
@@ -7883,7 +7883,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         char str4[MAX_PATH + 500];
         sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
 
-        if(PicProgWriteP > Prog.mcu->flashWords) {
+        if(PicProgWriteP > Prog.mcu()->flashWords) {
             CompileSuccessfulMessage(str4, MB_ICONWARNING);
             CompileSuccessfulMessage(str2, MB_ICONERROR);
         } else if(UsedRAM() > McuRAM()) {
@@ -7897,7 +7897,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
 void CompilePic16(const char *outFile)
 {
-    if((Prog.mcu->core == BaselineCore12bit) || //
+    if((Prog.mcu()->core == BaselineCore12bit) || //
         McuAs(" PIC12F629 ")          || //
         McuAs(" PIC12F675 ")          //
     ) {

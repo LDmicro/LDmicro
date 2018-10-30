@@ -24,19 +24,21 @@ set(LD_COMPILER_SRC_LIST
     ../mcutable.cpp
     ../pascal.cpp
     ../pcports.cpp
+    ../plcprogram.cpp
     ../translit.cpp
     ../xinterpreted.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp
 
-    ../circuit.h
     ../accel.h
     ../bits.h
+    ../circuit.h
     ../display.h
     ../intcode.h
     ../netzer.h
     ../mcutable.h
     ../mcutable.hpp
     ../pcports.h
+    ../plcprogram.h
     ../compilerexceptions.hpp
     ../compilercommon.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h

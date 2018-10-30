@@ -355,11 +355,11 @@ void ShowTimerDialog(int which, ElemLeaf *l)
         long long T = 0, T0 = 0;
         int       i, n = 0;
         for(i = 1;; i++) {
-            if(Prog.mcu) {
-                if(Prog.mcu->whichIsa == ISA_AVR) {
+            if(Prog.mcu()) {
+                if(Prog.mcu()->whichIsa == ISA_AVR) {
                     T = i; // to long long
                     T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
-                } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+                } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                     T = i; // to long long
                     T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
                 }
@@ -373,11 +373,11 @@ void ShowTimerDialog(int which, ElemLeaf *l)
                 }
             }
         }
-        if(Prog.mcu) {
-            if(Prog.mcu->whichIsa == ISA_AVR) {
+        if(Prog.mcu()) {
+            if(Prog.mcu()->whichIsa == ISA_AVR) {
                 T = 0x10000; // to long long
                 T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
-            } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+            } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                 T = 0xffff; // to long long
                 T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
             }
@@ -496,7 +496,7 @@ void ShowSleepDialog(int which, ElemLeaf *l)
             sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0 * Prog.cycleTime / 1000);
             const char *s4 = _("Not available");
             Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
-        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1)))) && (Prog.mcu->whichIsa != ISA_PC)) {
+        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1)))) && (Prog.mcu()->whichIsa != ISA_PC)) {
             const char *s1 =
                 _("Timer period too long (max 32767 times cycle time); use a "
                   "slower cycle time.");
@@ -522,11 +522,11 @@ void ShowDelayDialog(int which, ElemLeaf *l)
     strcpy(buf1, _("Achievable DELAY values (us): "));
     long long T = 0, T0 = 0;
     int       i, n = 0;
-    if(Prog.mcu && ((Prog.mcu->whichIsa == ISA_AVR) || (Prog.mcu->whichIsa == ISA_PIC16))) {
+    if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16))) {
         for(i = 0;; i++) {
-            if(Prog.mcu->whichIsa == ISA_AVR) {
+            if(Prog.mcu()->whichIsa == ISA_AVR) {
                 T = i * 1000000 / Prog.mcuClock;
-            } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+            } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                 T = i * 4000000 / Prog.mcuClock;
             }
             if(T != T0) {
@@ -539,11 +539,11 @@ void ShowDelayDialog(int which, ElemLeaf *l)
             }
         }
     }
-    if(Prog.mcu) {
-        if(Prog.mcu->whichIsa == ISA_AVR) {
+    if(Prog.mcu()) {
+        if(Prog.mcu()->whichIsa == ISA_AVR) {
             T = 0x10000; // to long long
             T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
-        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+        } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
             T = 0xffff; // to long long
             T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
         }
@@ -936,20 +936,20 @@ void ShowSpiDialog(ElemLeaf *l)
                               {0, {nullptr}},
                               {2, {"MSB_FIRST", "LSB_FIRST"}}};
     int         i;
-    if(Prog.mcu) {
-        if(Prog.mcu->spiCount) {
-            comboRec[0].n = Prog.mcu->spiCount;
+    if(Prog.mcu()) {
+        if(Prog.mcu()->spiCount) {
+            comboRec[0].n = Prog.mcu()->spiCount;
             for(i = 0; i < comboRec[0].n; i++) {
-                comboRec[0].str[i] = Prog.mcu->spiInfo[i].name;
+                comboRec[0].str[i] = Prog.mcu()->spiInfo[i].name;
             }
         }
         // Bit Rate (Hz):
         char buf[128];
         int  m;
-        if(Prog.mcu->whichIsa == ISA_AVR) {
+        if(Prog.mcu()->whichIsa == ISA_AVR) {
             m = 2;
             comboRec[4].n = 7;
-        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+        } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
             m = 4;
             comboRec[4].n = 3;
         } else

@@ -224,7 +224,7 @@ static void MakeControls()
                                        nullptr);
     NiceFont(ConfigBitsTextbox);
 
-    if(!Prog.mcu || (Prog.mcu->whichIsa != ISA_PIC16)) {
+    if(!Prog.mcu() || (Prog.mcu()->whichIsa != ISA_PIC16)) {
         EnableWindow(ConfigBitsTextbox, false);
         EnableWindow(textLabel2_, false);
     }
@@ -234,16 +234,16 @@ static void MakeControls()
         EnableWindow(textLabel3, false);
     }
     // clang-format off
-    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED ||
-                    Prog.mcu->whichIsa == ISA_XINTERPRETED ||
-                    Prog.mcu->whichIsa == ISA_NETZER))
+    if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_INTERPRETED ||
+                      Prog.mcu()->whichIsa == ISA_XINTERPRETED ||
+                      Prog.mcu()->whichIsa == ISA_NETZER))
     {
         EnableWindow(CrystalTextbox, false);
         EnableWindow(textLabel2, false);
     }
     // clang-format on
 
-    if(Prog.mcu && (Prog.mcu->whichIsa != ISA_PIC16)) {
+    if(Prog.mcu() && (Prog.mcu()->whichIsa != ISA_PIC16)) {
         EnableWindow(ConfigBitsTextbox, false);
         EnableWindow(textLabel2_, false);
         //      EnableWindow(WDTECheckbox, false);
@@ -281,10 +281,10 @@ static void MakeControls()
     char explanation[1024 * 4] = "";
 
     bool b = false;
-    if(Prog.mcu && Prog.cycleTime) {
-        if(Prog.mcu->whichIsa == ISA_AVR) {
+    if(Prog.mcu() && Prog.cycleTime) {
+        if(Prog.mcu()->whichIsa == ISA_AVR) {
             b = CalcAvrPlcCycle(Prog.cycleTime, AvrProgLdLen); // && AvrProgLdLen;
-        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+        } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
             b = CalcPicPlcCycle(Prog.cycleTime, PicProgLdLen) && PicProgLdLen;
         }
         char   s1[100];
@@ -351,11 +351,11 @@ static void MakeControls()
         strcat(explanation, txt);
     }
     if(UartFunctionUsed()) {
-        if(Prog.mcu && Prog.mcu->uartNeeds.rxPin != 0) {
+        if(Prog.mcu() && Prog.mcu()->uartNeeds.rxPin != 0) {
             sprintf(txt,
                     _("Serial (UART) will use pins %d(RX) and %d(TX).\r\n"),
-                    Prog.mcu->uartNeeds.rxPin,
-                    Prog.mcu->uartNeeds.txPin);
+                    Prog.mcu()->uartNeeds.rxPin,
+                    Prog.mcu()->uartNeeds.txPin);
             strcat(explanation, txt);
             strcat(explanation, _("Frame format: 8 data, parity - none, 1 stop bit, handshaking - none.\r\n\r\n"));
         } else {
@@ -448,8 +448,8 @@ void ShowConfDialog()
     SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     if(!Prog.configurationWord) {
-        if(Prog.mcu)
-            Prog.configurationWord = Prog.mcu->configurationWord;
+        if(Prog.mcu())
+            Prog.configurationWord = Prog.mcu()->configurationWord;
     }
     sprintf(buf, "");
     if(Prog.configurationWord) {
@@ -511,11 +511,11 @@ void ShowConfDialog()
 
         SendMessage(ConfigBitsTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
 
-        if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PIC16)) {
+        if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_PIC16)) {
             Prog.configurationWord = hobatoi(buf);
             if(!Prog.configurationWord) {
                 Error(_("Zero Configuration Word(s) not valid."));
-                Prog.configurationWord = Prog.mcu->configurationWord;
+                Prog.configurationWord = Prog.mcu()->configurationWord;
             }
         }
 
@@ -527,10 +527,10 @@ void ShowConfDialog()
             Prog.mcuClock = 16000000; //16 MHz
         }
 
-        if(Prog.mcu && (ProgCycleTime > 0)) {
-            if(Prog.mcu->whichIsa == ISA_AVR) {
+        if(Prog.mcu() && (ProgCycleTime > 0)) {
+            if(Prog.mcu()->whichIsa == ISA_AVR) {
                 CalcAvrPlcCycle(ProgCycleTime, AvrProgLdLen);
-            } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+            } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                 CalcPicPlcCycle(ProgCycleTime, PicProgLdLen);
             }
         }

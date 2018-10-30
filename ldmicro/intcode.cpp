@@ -1061,8 +1061,8 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
     }
 
     if(((period > maxPeriod) || (adjPeriod > maxPeriod)) //
-       && (Prog.mcu)                                     //
-       && (Prog.mcu->whichIsa != ISA_PC)                 //
+       && (Prog.mcu())                                     //
+       && (Prog.mcu()->whichIsa != ISA_PC)                 //
     ) {
         char s1[1024];
         sprintf(s1, "%s %s", _("Timer period too long; (use a slower cycle time)."), _("Or decrease timer period."));
@@ -1103,10 +1103,10 @@ SDWORD CalcDelayClock(long long clocks) // in us
 {
 #if 1 // 1
     clocks = clocks * Prog.mcuClock / 1000000;
-    if(Prog.mcu) {
-        if(Prog.mcu->whichIsa == ISA_AVR) {
+    if(Prog.mcu()) {
+        if(Prog.mcu()->whichIsa == ISA_AVR) {
             ;
-        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+        } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
             clocks = clocks / 4;
         } else
             Error("Internal error");
@@ -2940,7 +2940,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_SET_BIT, storeName);
                 // ▌ЄюЄ ЇЁруьхэЄ ъюфр т√яюыэ хЄё  1 Ёрч яЁш яхЁхъы■ўхэшш 0->1.
                 // This code fragment is executed 1 time when switching 0->1.
-                Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1); // запрет повторной загрузки - повторного рестарта
+                Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1); // з прет повторной з грузки - повторного рест рт 
                   OpSetVar(decCounter, l->d.stepper.max);
 
                   if(speed == 2) {
@@ -3029,7 +3029,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_PULSER: {
             Comment(3, "ELEM_PULSER");
             // Variable duty cycle pulse generator.
-            // Генератор импульсов переменной скважности.
+            // Генер тор импульсов переменной скв жности.
             char decCounter[MAX_NAME_LEN];
             GenSymStepper(decCounter, "decCounter");
             char workT1[MAX_NAME_LEN];
@@ -3077,7 +3077,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
             Op(INT_IF_BIT_CLEAR, storeName);
             Op(INT_SET_BIT, storeName);
-            // Этот фрагмент кода выполняется 1 раз при переключении 0->1.
+            // Этот фр гмент код  выполняется 1 р з при переключении 0->1.
             // This code fragment is executed 1 time when switching 0->1.
             Op(INT_SET_BIT, busy);
             Op(INT_SET_BIT, Osc);
@@ -3948,12 +3948,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_TIME2DELAY: {
             Comment(3, "ELEM_TIME2DELAY");
             SDWORD clocks = CalcDelayClock(hobatoi(l->d.timer.delay));
-            if(Prog.mcu) {
-                if(Prog.mcu->whichIsa == ISA_AVR) {
+            if(Prog.mcu()) {
+                if(Prog.mcu()->whichIsa == ISA_AVR) {
                     clocks = (clocks - 1) / 4;
                     if(clocks > 0x10000)
                         clocks = 0x10000;
-                } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+                } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                     clocks = (clocks - 10) / 6;
                     if(clocks > 0xffff)
                         clocks = 0xffff;

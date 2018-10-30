@@ -551,9 +551,9 @@ void AddQuadEncod()
         return;
 
     uint32_t n = 0;
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         n = QuadEncodFunctionUsed();
-        if(n > Prog.mcu->ExtIntCount) {
+        if(n > Prog.mcu()->ExtIntCount) {
             //Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
             //return;
         }
@@ -682,7 +682,7 @@ void AddReadAdc()
     if(!CanInsertEnd)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuADC()) {
             Error(_("No ADC or ADC not supported for selected micro."));
             // return;
@@ -702,7 +702,7 @@ void AddSetPwm()
     if(!CanInsertEnd)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuPWM()) {
             Error(_("No PWM or PWM not supported for this MCU."));
             // return;
@@ -724,7 +724,7 @@ void AddUart(int which)
     if(!CanInsertOther)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuUART()) {
             Error(_("No UART or UART not supported for this MCU."));
             // return;
@@ -745,7 +745,7 @@ void AddSpi(int which)
     if(!CanInsertOther)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuSPI()) {
             Error(_("No SPI or SPI not supported for this MCU."));
             // return;
@@ -768,7 +768,7 @@ void AddPersist()
     if(!CanInsertEnd)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuROM()) {
             Error(_("No ROM or ROM not supported for this MCU."));
             // return;
@@ -1060,20 +1060,7 @@ void FreeEntireProgram()
 {
     ForgetEverything();
 
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-    }
-    memset(Prog.rungSelected, ' ', sizeof(Prog.rungSelected));
-    Prog.numRungs = 0;
-    Prog.cycleTime = 10000;
-    Prog.mcuClock = 16000000;
-    Prog.baudRate = 9600;
-    Prog.io.count = 0;
-    Prog.cycleTimer = 1;
-    Prog.cycleDuty = 0;
-    Prog.configurationWord = 0;
-    SetMcu(nullptr);
+    Prog.reset();
 
     WipeIntMemory();
 }
@@ -1174,22 +1161,6 @@ void DeleteSelectedRung()
 }
 
 //-----------------------------------------------------------------------------
-// Allocate a new `empty' rung, with only a single relay coil at the end. All
-// the UI code assumes that rungs always have a coil in them, so it would
-// add a lot of nasty special cases to create rungs totally empty.
-//-----------------------------------------------------------------------------
-static ElemSubcktSeries *AllocEmptyRung()
-{
-    ElemSubcktSeries *s = AllocSubcktSeries();
-    s->count = 1;
-    s->contents[0].which = ELEM_PLACEHOLDER;
-    ElemLeaf *l = AllocLeaf();
-    s->contents[0].data.leaf = l;
-
-    return s;
-}
-
-//-----------------------------------------------------------------------------
 static void NullDisplayMatrix(int from, int to)
 {
     return;
@@ -1226,8 +1197,7 @@ void InsertRungI(int i)
 
     memmove(&Prog.rungs[i + 1], &Prog.rungs[i], (Prog.numRungs - i) * sizeof(Prog.rungs[0]));
     memmove(&Prog.rungSelected[i + 1], &Prog.rungSelected[i], (Prog.numRungs - i) * sizeof(Prog.rungSelected[0]));
-    Prog.rungs[i] = AllocEmptyRung();
-    (Prog.numRungs)++;
+    Prog.appendEmptyRung();
     NullDisplayMatrix(i, i + 1 + 1);
 }
 
@@ -1315,8 +1285,7 @@ void NewProgram()
     UndoFlush();
     FreeEntireProgram();
 
-    Prog.numRungs = 1;
-    Prog.rungs[0] = AllocEmptyRung();
+    Prog.appendEmptyRung();
 }
 
 //-----------------------------------------------------------------------------
@@ -1769,8 +1738,7 @@ void CutRung()
     fclose(f);
 
     if(Prog.numRungs == 0) {
-        Prog.numRungs = 1;
-        Prog.rungs[0] = AllocEmptyRung();
+        Prog.appendEmptyRung();
     }
 
     WhatCanWeDoFromCursorAndTopology();

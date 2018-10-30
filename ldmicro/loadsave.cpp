@@ -163,19 +163,19 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
 
     } else if((sscanf(line, "TON %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TON;
-        if(strcmp(Prog.LDversion, "0.1") == 0)
+        if(Prog.LDversion == "0.1")
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
     } else if((sscanf(line, "TOF %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TOF;
-        if(strcmp(Prog.LDversion, "0.1") == 0)
+        if(Prog.LDversion == "0.1")
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
     } else if((sscanf(line, "RTO %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_RTO;
-        if(strcmp(Prog.LDversion, "0.1") == 0)
+        if(Prog.LDversion == "0.1")
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
@@ -719,7 +719,7 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
 //-----------------------------------------------------------------------------
 void LoadWritePcPorts()
 {
-    if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM)) {
+    if(Prog.mcu() && (Prog.mcu()->core == PC_LPT_COM)) {
         //RunningInBatchMode = true;
         char pc[MAX_PATH];
         strcpy(pc, CurrentLdPath);
@@ -757,6 +757,7 @@ bool LoadProjectFromFile(const char *filename)
     ExtractFileDir(CurrentLdPath);
 
     char          line[512];
+    char          version[512];
     long long int cycle;
     int           crystal, baud;
     int           cycleTimer, cycleDuty, wdte;
@@ -773,9 +774,10 @@ bool LoadProjectFromFile(const char *filename)
             if(!LoadVarListFromFile(f)) {
                 return false;
             }
-        } else if(sscanf(line, "LDmicro%s", &Prog.LDversion)) {
-            if(strcmp(Prog.LDversion, "0.1") != 0)
-                strcpy(Prog.LDversion, "0.2");
+        } else if(sscanf(line, "LDmicro%s", &version)) {
+            Prog.LDversion = version;
+            if((Prog.LDversion != "0.1") )
+                Prog.LDversion = "0.2";
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
         } else if(sscanf(line,
@@ -838,7 +840,7 @@ bool LoadProjectFromFile(const char *filename)
                 for(i = 0; i < supportedMcus().size(); i++) {
                     if(supportedMcus()[i].mcuName)
                         if(strcmp(supportedMcus()[i].mcuName, line + 6) == 0) {
-                            SetMcu(&supportedMcus()[i]);
+                            Prog.setMcu(&supportedMcus()[i]);
                             break;
                         }
                 }
@@ -1377,7 +1379,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int               i;
             if(depth == 0) {
-                if(strcmp(Prog.LDversion, "0.1") == 0)
+                if(Prog.LDversion == "0.1")
                     fprintf(f, "RUNG\n");
                 else
                     fprintf(f, "RUNG %d\n", rung);
@@ -1418,17 +1420,17 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 bool SaveProjectToFile(char *filename, int code)
 {
     if(code == MNU_SAVE_02)
-        strcpy(Prog.LDversion, "0.2");
+        Prog.LDversion = "0.2";
     else if(code == MNU_SAVE_01)
-        strcpy(Prog.LDversion, "0.1");
+        Prog.LDversion = "0.1";
 
     FileTracker f(filename, "w");
     if(!f)
         return false;
 
-    fprintf(f, "LDmicro%s\n", Prog.LDversion);
-    if(Prog.mcu) {
-        fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
+    fprintf(f, "LDmicro%s\n", Prog.LDversion.c_str());
+    if(Prog.mcu()) {
+        fprintf(f, "MICRO=%s\n", Prog.mcu()->mcuName);
     }
     fprintf(f,
             "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%llX\n",
@@ -1441,7 +1443,7 @@ bool SaveProjectToFile(char *filename, int code)
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }
-    if(strcmp(Prog.LDversion, "0.1") != 0) {
+    if(Prog.LDversion != "0.1") {
         if(compile_MNU > 0)
             fprintf(f, "COMPILER=%s\n", GetMnuName(compile_MNU));
 
@@ -1482,7 +1484,7 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
 
     strcpy(dest, "");
     int i;
-    if((frmt == FRMT_01) && (strcmp(Prog.LDversion, "0.1") == 0)) {
+    if((frmt == FRMT_01) && (Prog.LDversion == "0.1")) {
         char str[1024];
         sprintf(str, " %d", strlen(src));
         strcat(dest, str);

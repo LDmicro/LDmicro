@@ -497,8 +497,8 @@ static void postCompile(const char *MNU)
         return;
 
     const char *ISA = "_NULL_";
-    if(Prog.mcu)
-        ISA = GetIsaName(Prog.mcu->whichIsa);
+    if(Prog.mcu())
+        ISA = GetIsaName(Prog.mcu()->whichIsa);
 
     sprintf(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentCompilePath, LdName);
     isErr(Execute(r), r);
@@ -514,7 +514,7 @@ static void CompileProgram(bool compileAs, int MNU)
         MNU = compile_MNU;
 
     if(MNU == MNU_COMPILE_GNUC ){
-        if(Prog.mcu && Prog.mcu->whichIsa != ISA_AVR) {
+        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to WinAvr C, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -526,7 +526,7 @@ static void CompileProgram(bool compileAs, int MNU)
         }
     }
     if(MNU == MNU_COMPILE_CODEVISIONAVR){
-        if(Prog.mcu && Prog.mcu->whichIsa != ISA_AVR) {
+        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to CodeVision C, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -539,7 +539,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_HI_TECH_C){
-        if(Prog.mcu && Prog.mcu->whichIsa != ISA_PIC16) {
+        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_PIC16) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to HI-TECH C, but MCU core isn't PIC.\nDo you want to continue?"),
@@ -552,7 +552,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_CCS_PIC_C){
-        if(Prog.mcu && Prog.mcu->whichIsa != ISA_PIC16) {
+        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_PIC16) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"),
@@ -565,7 +565,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_ARDUINO) {
-        if(Prog.mcu && Prog.mcu->whichIsa != ISA_AVR && Prog.mcu->whichIsa != ISA_ESP8266) {
+        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR && Prog.mcu()->whichIsa != ISA_ESP8266) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -660,12 +660,12 @@ IsOpenAnable:
             if(MNU == MNU_COMPILE_ANSIC)
                 compile_MNU = MNU_COMPILE_ANSIC;
         } else if((MNU == MNU_COMPILE_INT)
-                  || (Prog.mcu && (Prog.mcu->whichIsa == ISA_INTERPRETED || Prog.mcu->whichIsa == ISA_NETZER))) {
+                  || (Prog.mcu() && (Prog.mcu()->whichIsa == ISA_INTERPRETED || Prog.mcu()->whichIsa == ISA_NETZER))) {
             ofn.lpstrFilter = INTERPRETED_PATTERN;
             ofn.lpstrDefExt = "int";
             c = "int";
             compile_MNU = MNU_COMPILE_INT;
-        } else if((MNU == MNU_COMPILE_XINT) || (Prog.mcu && Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
+        } else if((MNU == MNU_COMPILE_XINT) || (Prog.mcu() && Prog.mcu()->whichIsa == ISA_XINTERPRETED)) {
             ofn.lpstrFilter = XINT_PATTERN;
             ofn.lpstrDefExt = "xint";
             c = "xint";
@@ -706,22 +706,22 @@ IsOpenAnable:
     if(!GenerateIntermediateCode())
         return;
 
-    if((Prog.mcu == nullptr) && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC)
+    if((Prog.mcu() == nullptr) && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC)
        && (MNU != MNU_COMPILE_ARDUINO) && (MNU != MNU_COMPILE_XINT)) {
         Error(_("Must choose a target microcontroller before compiling."));
         return;
     }
 
-    if((UartFunctionUsed() && (Prog.mcu) && Prog.mcu->uartNeeds.rxPin == 0) && (MNU != MNU_COMPILE_PASCAL)
+    if((UartFunctionUsed() && (Prog.mcu()) && Prog.mcu()->uartNeeds.rxPin == 0) && (MNU != MNU_COMPILE_PASCAL)
        && (MNU != MNU_COMPILE_ANSIC) && (MNU != MNU_COMPILE_ARDUINO)) {
         Error(_("UART function used but not supported for this micro."));
         return;
     }
 
     try {
-        if((PwmFunctionUsed() && (Prog.mcu) && (Prog.mcu->pwmCount == 0) && Prog.mcu->pwmNeedsPin == 0)
+        if((PwmFunctionUsed() && (Prog.mcu()) && (Prog.mcu()->pwmCount == 0) && Prog.mcu()->pwmNeedsPin == 0)
            && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC) && (MNU != MNU_COMPILE_ARDUINO)
-           && (MNU != MNU_COMPILE_XINT) && (Prog.mcu->whichIsa != ISA_XINTERPRETED)) {
+           && (MNU != MNU_COMPILE_XINT) && (Prog.mcu()->whichIsa != ISA_XINTERPRETED)) {
             Error(_("PWM function used but not supported for this micro."));
             return;
         }
@@ -744,8 +744,8 @@ IsOpenAnable:
         } else if(MNU == MNU_COMPILE_XINT) {
             CompileXInterpreted(CurrentCompileFile);
             postCompile("XINTERPRETED");
-        } else if(Prog.mcu) {
-            switch(Prog.mcu->whichIsa) {
+        } else if(Prog.mcu()) {
+            switch(Prog.mcu()->whichIsa) {
                 case ISA_AVR:
                     CompileAvr(CurrentCompileFile);
                     break;
@@ -762,9 +762,9 @@ IsOpenAnable:
                     CompileNetzer(CurrentCompileFile);
                     break;
                 default:
-                    ooops("0x%X", Prog.mcu->whichIsa);
+                    ooops("0x%X", Prog.mcu()->whichIsa);
             }
-            postCompile(GetIsaName(Prog.mcu->whichIsa));
+            postCompile(GetIsaName(Prog.mcu()->whichIsa));
         } else
             oops();
     } catch(const std::exception &e) {
@@ -908,13 +908,13 @@ static void ProcessMenu(int code)
 {
     if(code >= MNU_PROCESSOR_0 && code < static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
         strcpy(CurrentCompileFile, "");
-        SetMcu(&(supportedMcus()[code - MNU_PROCESSOR_0]));
+        Prog.setMcu(&(supportedMcus()[code - MNU_PROCESSOR_0]));
         RefreshControlsToSettings();
         ProgramChangedNotSaved = true;
         return;
     }
     if(code == static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
-        SetMcu(nullptr);
+        Prog.setMcu(nullptr);
         strcpy(CurrentCompileFile, "");
         RefreshControlsToSettings();
         ProgramChangedNotSaved = true;
@@ -963,11 +963,11 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_FLASH_BAT:
-            flashBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
+            flashBat(CurrentSaveFile, Prog.mcu() ? Prog.mcu()->whichIsa : 0);
             break;
 
         case MNU_READ_BAT:
-            readBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
+            readBat(CurrentSaveFile, Prog.mcu() ? Prog.mcu()->whichIsa : 0);
             break;
 
         case MNU_CLEAR_BAT:
@@ -2032,9 +2032,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
             } else if(wParam == VK_F6) {
                 if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
-                    readBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
+                    readBat(CurrentSaveFile, Prog.mcu() ? Prog.mcu()->whichIsa : 0);
                 else
-                    flashBat(CurrentSaveFile, Prog.mcu ? Prog.mcu->whichIsa : 0);
+                    flashBat(CurrentSaveFile, Prog.mcu() ? Prog.mcu()->whichIsa : 0);
                 break;
             }
 
