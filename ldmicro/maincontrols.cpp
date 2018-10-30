@@ -842,8 +842,8 @@ void RefreshStatusBar()
 {
     SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_(ProgramChangedNotSaved ? _("modified") : "        "));
 
-    if(Prog.mcu) {
-        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)Prog.mcu->mcuName);
+    if(Prog.mcu()) {
+        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)Prog.mcu()->mcuName);
     } else {
         SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)_("no MCU selected"));
     }
@@ -881,9 +881,9 @@ void RefreshStatusBar()
     }
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 
-    if(Prog.mcu
-       && (Prog.mcu->whichIsa == ISA_NETZER || Prog.mcu->whichIsa == ISA_INTERPRETED
-           || Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
+    if(Prog.mcu()
+       && (Prog.mcu()->whichIsa == ISA_NETZER || Prog.mcu()->whichIsa == ISA_INTERPRETED
+           || Prog.mcu()->whichIsa == ISA_XINTERPRETED)) {
         strcpy(buf, "");
     } else {
         sprintf(buf, _("processor clock %.9g MHz"), (double)Prog.mcuClock / 1000000.0);
@@ -940,14 +940,14 @@ void RefreshControlsToSettings()
     RefreshStatusBar();
 
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
-        if(&(supportedMcus()[i]) == Prog.mcu) {
+        if(&(supportedMcus()[i]) == Prog.mcu()) {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_CHECKED);
         } else {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_UNCHECKED);
         }
     }
     // `(no microcontroller)' setting
-    if(!Prog.mcu) {
+    if(!Prog.mcu()) {
         CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + supportedMcus().size(), MF_CHECKED);
     } else {
         CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + supportedMcus().size(), MF_UNCHECKED);

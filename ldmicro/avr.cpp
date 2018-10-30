@@ -1418,11 +1418,11 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
     // end of file record
     fprintf(f, ":00000001FF\n");
-    if((Prog.mcu->flashWords) && (AvrProg.size() >= Prog.mcu->flashWords)) {
+    if((Prog.mcu()->flashWords) && (AvrProg.size() >= Prog.mcu()->flashWords)) {
         Error(_(" Flash program memory size %d is exceed limit %d words\nfor %s."),
               AvrProg.size(),
-              Prog.mcu->flashWords,
-              Prog.mcu->mcuName);
+              Prog.mcu()->flashWords,
+              Prog.mcu()->mcuName);
     }
 }
 
@@ -2621,7 +2621,7 @@ static void CallSubroutine(DWORD addr)
 //used ZL, r25
 {
     if(addr & FWD(0)) {
-        if(Prog.mcu->core >= EnhancedCore4M) {
+        if(Prog.mcu()->core >= EnhancedCore4M) {
             Instruction(OP_LDI, ZL, REG_EIND & 0xff);        // Z-register Low Byte
             Instruction(OP_LDI, ZH, (REG_EIND >> 8) & 0xff); // Z-register High Byte
             // load r25 with the data
@@ -2632,7 +2632,7 @@ static void CallSubroutine(DWORD addr)
             Instruction(OP_LDI, ZL, FWD_LO(addr)); // 2
             Instruction(OP_LDI, ZH, FWD_HI(addr));
             Instruction(OP_EICALL, FWD(addr)); // arg1 used for label
-        } else if(Prog.mcu->core >= ClassicCore8K) {
+        } else if(Prog.mcu()->core >= ClassicCore8K) {
             Instruction(OP_LDI, ZL, FWD_LO(addr));
             Instruction(OP_LDI, ZH, FWD_HI(addr));
             Instruction(OP_ICALL, FWD(addr)); // arg1 used for label
@@ -2642,11 +2642,11 @@ static void CallSubroutine(DWORD addr)
     } else {
         if((-2048 <= (addr - AvrProg.size() - 1)) && ((addr - AvrProg.size() - 1) <= 2047)) {
             Instruction(OP_RCALL, addr);
-        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
+        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu()->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_ICALL, addr); // arg1 used for label
-        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
+        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu()->core >= EnhancedCore4M)) {
             WriteMemory(REG_EIND, (BYTE)(addr >> 16) & 0xff); // 1
             Instruction(OP_LDI, ZL, addr & 0xff);             // 2
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
@@ -2661,7 +2661,7 @@ static void InstructionJMP(DWORD addr)
 //used ZL, r25
 {
     if(addr & FWD(0)) {
-        if(Prog.mcu->core >= EnhancedCore4M) {
+        if(Prog.mcu()->core >= EnhancedCore4M) {
             Instruction(OP_LDI, ZL, REG_EIND & 0xff);        // Z-register Low Byte
             Instruction(OP_LDI, ZH, (REG_EIND >> 8) & 0xff); // Z-register High Byte
             // load r25 with the data
@@ -2672,7 +2672,7 @@ static void InstructionJMP(DWORD addr)
             Instruction(OP_LDI, ZL, FWD_LO(addr)); // 2
             Instruction(OP_LDI, ZH, FWD_HI(addr));
             Instruction(OP_EIJMP, FWD(addr)); // arg1 used for label
-        } else if(Prog.mcu->core >= ClassicCore8K) {
+        } else if(Prog.mcu()->core >= ClassicCore8K) {
             Instruction(OP_LDI, ZL, FWD_LO(addr));
             Instruction(OP_LDI, ZH, FWD_HI(addr));
             Instruction(OP_IJMP, FWD(addr)); // arg1 used for label
@@ -2682,11 +2682,11 @@ static void InstructionJMP(DWORD addr)
     } else {
         if((-2048 <= (addr - AvrProg.size() - 1)) && ((addr - AvrProg.size() - 1) <= 2047)) {
             Instruction(OP_RJMP, addr);
-        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
+        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu()->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_IJMP, addr); // arg1 used for label
-        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
+        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu()->core >= EnhancedCore4M)) {
             WriteMemory(REG_EIND, (BYTE)(addr >> 16) & 0xff); // 1
             Instruction(OP_LDI, ZL, addr & 0xff);             // 2
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
@@ -3132,15 +3132,15 @@ static void  WriteRuntime()
     Instruction(OP_SEI);
 
     Comment("Set up the stack, which we use only when we jump to multiply/divide routine"); // 4
-    WORD topOfMemory = (WORD)(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len - 1);
+    WORD topOfMemory = (WORD)(Prog.mcu()->ram[0].start + Prog.mcu()->ram[0].len - 1);
     WriteMemory(REG_SPH, topOfMemory >> 8, topOfMemory);
     WriteMemory(REG_SPL, topOfMemory & 0xff, topOfMemory);
 
     Comment("Zero out the memory used for timers, internal relays, etc."); // 5
-    LoadXAddr(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len);
+    LoadXAddr(Prog.mcu()->ram[0].start + Prog.mcu()->ram[0].len);
     Instruction(OP_LDI, 16, 0);
-    Instruction(OP_LDI, r24, (Prog.mcu->ram[0].len) & 0xff);
-    Instruction(OP_LDI, r25, (Prog.mcu->ram[0].len) >> 8);
+    Instruction(OP_LDI, r24, (Prog.mcu()->ram[0].len) & 0xff);
+    Instruction(OP_LDI, r25, (Prog.mcu()->ram[0].len) >> 8);
 
     DWORD loopZero = AvrProg.size();
     //  Instruction(OP_SUBI, 26, 1);
@@ -3196,9 +3196,9 @@ static void  WriteRuntime()
             // skip this one, dummy entry for MCUs with I/O ports not
             // starting from A
         } else {
-            WriteMemory(Prog.mcu->dirRegs[i], isOutput[i]);
+            WriteMemory(Prog.mcu()->dirRegs[i], isOutput[i]);
             // turn on the pull-ups, and drive the outputs low to start
-            WriteMemory(Prog.mcu->outputRegs[i], isInput[i]);
+            WriteMemory(Prog.mcu()->outputRegs[i], isInput[i]);
         }
     }
     //Comment("and now the generated PLC code will follow");
@@ -5959,10 +5959,10 @@ void CompileAvr(const char *outFile)
             ".CSEG\n"
             ".ORG 0x0\n"
             ";TABSIZE = 8\n",
-            Prog.mcu->mcuName,
-            Prog.mcu->mcuList,
-            Prog.mcu->mcuList,
-            Prog.mcu->mcuInc);
+            Prog.mcu()->mcuName,
+            Prog.mcu()->mcuList,
+            Prog.mcu()->mcuList,
+            Prog.mcu()->mcuInc);
     Comment("GOTO, progStart");
 
     //***********************************************************************
@@ -6974,7 +6974,7 @@ void CompileAvr(const char *outFile)
 //      REG_UCSRC   = 0x9d;
     */
     } else
-        THROW_COMPILER_EXCEPTION_FMT("Don't know how to init %s.", Prog.mcu ? Prog.mcu->mcuName : "Invalid MCU");
+        THROW_COMPILER_EXCEPTION_FMT("Don't know how to init %s.", Prog.mcu() ? Prog.mcu()->mcuName : "Invalid MCU");
     //***********************************************************************
 
     rungNow = -90;
@@ -7084,8 +7084,8 @@ void CompileAvr(const char *outFile)
     sprintf(str2,
             _("Used %d/%d words of program flash (chip %d%% full)."),
             AvrProg.size(),
-            Prog.mcu->flashWords,
-            (100 * AvrProg.size()) / Prog.mcu->flashWords);
+            Prog.mcu()->flashWords,
+            (100 * AvrProg.size()) / Prog.mcu()->flashWords);
 
     char str3[MAX_PATH + 500];
     sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), McuRAM(), (100 * UsedRAM()) / McuRAM());
@@ -7093,7 +7093,7 @@ void CompileAvr(const char *outFile)
     char str4[MAX_PATH + 500];
     sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
 
-    if(AvrProg.size() > Prog.mcu->flashWords) {
+    if(AvrProg.size() > Prog.mcu()->flashWords) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);
         CompileSuccessfulMessage(str2, MB_ICONERROR);
     } else if(UsedRAM() > McuRAM()) {

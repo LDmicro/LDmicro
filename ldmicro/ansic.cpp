@@ -1382,8 +1382,8 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
 
 bool CompileAnsiC(const char *dest, int MNU)
 {
-    if(Prog.mcu)
-        mcu_ISA = Prog.mcu->whichIsa;
+    if(Prog.mcu())
+        mcu_ISA = Prog.mcu()->whichIsa;
     if(MNU > 0)
         compiler_variant = MNU;
     else
@@ -1628,7 +1628,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "    #include <avr/wdt.h>\n"
                 "    #endif\n"
                 "#endif\n",
-                Prog.mcu->mcuH);
+                Prog.mcu()->mcuH);
         /*
       fprintf(fh,
 "#ifdef __GNUC__\n"
@@ -1742,8 +1742,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#ifdef CCS_PIC_C\n"
                 "  #device %s\n"
                 "  #include <%s.h>\n",
-                Prog.mcu->mcuH2,
-                Prog.mcu->mcuH);
+                Prog.mcu()->mcuH2,
+                Prog.mcu()->mcuH);
         fprintf(f, "  #FUSES 1=0x%04X\n", (WORD)Prog.configurationWord & 0xFFFF);
         if(Prog.configurationWord & 0xFFFF0000) {
             fprintf(f, "   #FUSES 2=0x%04X\n", (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
@@ -1761,7 +1761,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             fprintf(f, "  //TODO #USE PWM // http://www.ccsinfo.com/newsdesk_info.php?newsdesk_id=182 \n");
         }
         int i;
-        if(Prog.mcu)
+        if(Prog.mcu())
             for(i = 0; i < MAX_IO_PORTS; i++) {
                 if(IS_MCU_REG(i))
                     fprintf(f, "  #USE FAST_IO(%c)\n", 'A' + i);
@@ -2145,7 +2145,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "void setupPlc(void) {\n"
                 "    // Set up I/O pins direction, and drive the outputs low to start.\n");
         BYTE isInput[MAX_IO_PORTS], isAnsel[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
-        if(Prog.mcu) {
+        if(Prog.mcu()) {
             BuildDirectionRegisters(isInput, isAnsel, isOutput);
             int i;
             for(i = 0; i < MAX_IO_PORTS; i++) {
