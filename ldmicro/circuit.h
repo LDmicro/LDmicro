@@ -25,6 +25,7 @@
 #define __ELEMENTS_H__
 
 #include <cstdint>
+#include <vector>
 #include "ldconfig.h"
 
 #define USE_SFR
@@ -651,5 +652,16 @@ void *FindElem(int which, char *name);
 //bool ContainsWhich(int which, void *any, int seek1, int seek2);
 //bool ContainsWhich(int which, void *any, int seek1);
 
+class Circuit
+{
+public:
+    Circuit();
+    ~Circuit();
+
+public:
+
+private:
+    std::vector<ElemSubcktSeries *> elements_;
+};
 
 #endif //__ELEMENTS_H__

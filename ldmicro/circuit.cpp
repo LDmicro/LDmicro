@@ -216,8 +216,7 @@ static bool AddLeaf(int newWhich, ElemLeaf *newElem)
     if(!Selected || Selected->selectedState == SELECTED_NONE)
         return false;
 
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(AddLeafWorker(ELEM_SERIES_SUBCKT, Prog.rungs[i], newWhich, newElem)) {
             WhatCanWeDoFromCursorAndTopology();
             return true;
@@ -1580,66 +1579,12 @@ bool TablesUsed()
     }
     return false;
 }
-/* function moved to intcode.cpp
-//-----------------------------------------------------------------------------
-// Are either of the UART functions (send or recv) used? Need to know this
-// to know whether we must receive their pins.
-//-----------------------------------------------------------------------------
-bool UartFunctionUsed()
-{
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
-        ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_UART_SEND_READY, -1, -1)))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-*/
-//-----------------------------------------------------------------------------
-// Is the PWM function used? Need to know this to know whether we must reserve
-// the pin.
-//-----------------------------------------------------------------------------
-/*
-int PwmFunctionUsed()
-{
-    int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SET_PWM,
-            -1, -1))
-        {
-            n++;
-        }
-    }
-    return n;
-}
-/**/
+
 int PwmFunctionUsed()
 {
     return CountWhich(ELEM_SET_PWM);
 }
-/**/
-//-----------------------------------------------------------------------------
-/*
-int _AdcFunctionUsed()
-{
-    int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_READ_ADC,
-            -1, -1))
-        {
-            n++;
-        }
-    }
-    return n;
-}
-*/
+
 int AdcFunctionUsed()
 {
     return CountWhich(ELEM_READ_ADC);
@@ -1683,7 +1628,11 @@ bool SleepFunctionUsed()
 // copy the selected rung temporar, InsertRung and
 // save in the new rung temp
 //-----------------------------------------------------------------------------
-const char *CLP = "ldmicro.tmp";
+static const char* clp()
+{
+    return "ldmicro.tmp";
+}
+
 void CopyRungDown()
 {
     int               i = RungContainingSelected();
@@ -1691,9 +1640,9 @@ void CopyRungDown()
     ElemSubcktSeries *temp = Prog.rungs[i];
 
     //FILE *f = fopen(CLP, "w+TD");
-    FILE *f = fopen(CLP, "w+");
+    FILE *f = fopen(clp(), "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%s'"), clp());
         return;
     }
     //fprintf(f, "RUNG\n");
@@ -1716,9 +1665,9 @@ void CopyRungDown()
 //-----------------------------------------------------------------------------
 void CutRung()
 {
-    FILE *f = fopen(CLP, "w+");
+    FILE *f = fopen(clp(), "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%s'"), clp());
         return;
     }
     int SelN = 0;
@@ -1748,9 +1697,9 @@ void CutRung()
 //-----------------------------------------------------------------------------
 void CopyRung()
 {
-    FILE *f = fopen(CLP, "w+");
+    FILE *f = fopen(clp(), "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%s'"), clp());
         return;
     }
     int SelN = 0;
@@ -1778,9 +1727,9 @@ void CopyElem()
     if(!Selected)
         return;
 
-    FILE *f = fopen(CLP, "w+");
+    FILE *f = fopen(clp(), "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%s'"), clp());
         return;
     }
     int SelN = 0;
@@ -1826,9 +1775,9 @@ void PasteRung(int PasteInTo)
 
     ElemSubcktSeries *temp;
 
-    FILE *f = fopen(CLP, "r");
+    FILE *f = fopen(clp(), "r");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), CLP);
+        Error(_("Couldn't open file '%s'"), clp());
         Error(_("You must Select rungs, then Copy or Cut, then Paste."));
         return;
     }
@@ -2012,3 +1961,15 @@ void *FindElem(int which, char *name)
     return nullptr;
 }
 
+//-----------------------------------------------------------------------------
+//-------------------------- class Circuit ------------------------------------
+//-----------------------------------------------------------------------------
+Circuit::Circuit()
+{
+
+}
+
+Circuit::~Circuit()
+{
+
+}
