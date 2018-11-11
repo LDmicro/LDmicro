@@ -546,28 +546,24 @@ struct ElemLeaf {
     } d;
 };
 
+struct SeriesNode
+{
+    int     which;
+    union {
+        void                   *any;
+        ElemSubcktParallel     *parallel;
+        ElemSubcktSeriesTag    *series; // used in the Copy-Paste command
+        ElemLeaf               *leaf;
+    } data;
+};
+
 typedef struct ElemSubcktSeriesTag {
-    struct {
-        int     which;
-        union {
-            void                   *any;
-            ElemSubcktParallel     *parallel;
-            ElemSubcktSeriesTag    *series; // used in the Copy-Paste command
-            ElemLeaf               *leaf;
-        } data;
-    } contents[MAX_ELEMENTS_IN_SUBCKT];
+    SeriesNode contents[MAX_ELEMENTS_IN_SUBCKT];
     int count;
 } ElemSubcktSeries;
 
 typedef struct ElemSubcktParallelTag {
-    struct {
-        int     which;
-        union {
-            void                   *any;
-            ElemSubcktSeries       *series;
-            ElemLeaf               *leaf;
-        } data;
-    } contents[MAX_ELEMENTS_IN_SUBCKT];
+    SeriesNode contents[MAX_ELEMENTS_IN_SUBCKT];
     int count;
 } ElemSubcktParallel;
 

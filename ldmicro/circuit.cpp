@@ -76,7 +76,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(i = 0; i < s->count; i++) {
-                if(s->contents[i].data.any == Selected) {
+                if(s->contents[i].data.any == Selected.data.any) {
                     break;
                 }
                 if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
@@ -97,14 +97,14 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 s->contents[i].data.leaf->selectedState = EndOfRungElem(newWhich) ? SELECTED_LEFT : SELECTED_RIGHT;
                 CheckFree(newElem);
                 s->contents[i].which = newWhich;
-                SelectedWhich = newWhich;
+                Selected.which = newWhich;
                 return true;
             }
             if(s->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
                 Error(_("Too many elements in subcircuit!"));
                 return true;
             }
-            switch(Selected->selectedState) {
+            switch(Selected.data.leaf->selectedState) {
                 case SELECTED_LEFT:
                     memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
                     s->contents[i].data.leaf = newElem;
@@ -125,10 +125,10 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     p->count = 2;
 
                     int t;
-                    t = (Selected->selectedState == SELECTED_ABOVE) ? 0 : 1;
+                    t = (Selected.data.leaf->selectedState == SELECTED_ABOVE) ? 0 : 1;
                     p->contents[t].which = newWhich;
                     p->contents[t].data.leaf = newElem;
-                    t = (Selected->selectedState == SELECTED_ABOVE) ? 1 : 0;
+                    t = (Selected.data.leaf->selectedState == SELECTED_ABOVE) ? 1 : 0;
                     p->contents[t].which = s->contents[i].which;
                     p->contents[t].data.any = s->contents[i].data.any;
 
@@ -146,7 +146,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(i = 0; i < p->count; i++) {
-                if(p->contents[i].data.any == Selected) {
+                if(p->contents[i].data.any == Selected.data.any) {
                     break;
                 }
                 if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
@@ -161,7 +161,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 Error(_("Too many elements in subcircuit!"));
                 return true;
             }
-            switch(Selected->selectedState) {
+            switch(Selected.data.leaf->selectedState) {
                 case SELECTED_ABOVE:
                     memmove(&p->contents[i + 1], &p->contents[i], (p->count - i) * sizeof(p->contents[0]));
                     p->contents[i].data.leaf = newElem;
@@ -182,10 +182,10 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     s->count = 2;
 
                     int t;
-                    t = (Selected->selectedState == SELECTED_LEFT) ? 0 : 1;
+                    t = (Selected.data.leaf->selectedState == SELECTED_LEFT) ? 0 : 1;
                     s->contents[t].which = newWhich;
                     s->contents[t].data.leaf = newElem;
-                    t = (Selected->selectedState == SELECTED_LEFT) ? 1 : 0;
+                    t = (Selected.data.leaf->selectedState == SELECTED_LEFT) ? 1 : 0;
                     s->contents[t].which = p->contents[i].which;
                     s->contents[t].data.any = p->contents[i].data.any;
 
@@ -213,7 +213,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
 //-----------------------------------------------------------------------------
 static bool AddLeaf(int newWhich, ElemLeaf *newElem)
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE)
+    if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE)
         return false;
 
     for(int i = 0; i < Prog.numRungs; i++) {
@@ -902,7 +902,7 @@ static bool DeleteSelectedFromSubckt(int which, void *any)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int               i;
             for(i = 0; i < s->count; i++) {
-                if(s->contents[i].data.any == Selected) {
+                if(s->contents[i].data.any == Selected.data.any) {
                     ForgetFromGrid(s->contents[i].data.any);
                     CheckFree(s->contents[i].data.any);
                     memmove(&s->contents[i], &s->contents[i + 1], (s->count - i - 1) * sizeof(s->contents[0]));
@@ -921,7 +921,7 @@ static bool DeleteSelectedFromSubckt(int which, void *any)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int                 i;
             for(i = 0; i < p->count; i++) {
-                if(p->contents[i].data.any == Selected) {
+                if(p->contents[i].data.any == Selected.data.any) {
                     ForgetFromGrid(p->contents[i].data.any);
                     CheckFree(p->contents[i].data.any);
                     memmove(&p->contents[i], &p->contents[i + 1], (p->count - i - 1) * sizeof(p->contents[0]));
@@ -966,15 +966,15 @@ static bool DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
         }
         default:
             if(EndOfRungElem(anyWhich) == static_cast<bool>(IsEnd))
-                if(Selected != anyToDelete) {
-                    ElemLeaf *saveSelected = Selected;
-                    Selected = (ElemLeaf *)anyToDelete; // HOOK
+                if(Selected.data.any != anyToDelete) {
+                    ElemLeaf *saveSelected = Selected.data.leaf;
+                    Selected.data.leaf = (ElemLeaf *)anyToDelete; // HOOK
                     if((res = DeleteSelectedFromSubckt(which, any))) {
                         while(CollapseUnnecessarySubckts(which, any))
                             ;
                         //dbp("DeleteAny %d", IsEnd);
                     }
-                    Selected = saveSelected; // RESTORE
+                    Selected.data.leaf = saveSelected; // RESTORE
                 }
             break;
     }
@@ -987,7 +987,7 @@ static bool DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
 //-----------------------------------------------------------------------------
 void DeleteSelectedFromProgram()
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE)
+    if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE)
         return;
     int i = RungContainingSelected();
     if(i < 0)
@@ -995,8 +995,8 @@ void DeleteSelectedFromProgram()
 
     if(Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which != ELEM_PARALLEL_SUBCKT) {
         Prog.rungs[i]->contents[0].which = ELEM_PLACEHOLDER;
-        SelectedWhich = ELEM_PLACEHOLDER;
-        Selected->selectedState = SELECTED_LEFT;
+        Selected.which = ELEM_PLACEHOLDER;
+        Selected.data.leaf->selectedState = SELECTED_LEFT;
         WhatCanWeDoFromCursorAndTopology();
         return;
     }
@@ -1109,9 +1109,8 @@ static bool ContainsElem(int which, void *any, ElemLeaf *seek)
 //-----------------------------------------------------------------------------
 int RungContainingSelected()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsElem(ELEM_SERIES_SUBCKT, Prog.rungs[i], Selected)) {
+    for(int i = 0; i < Prog.numRungs; i++) {
+        if(ContainsElem(ELEM_SERIES_SUBCKT, Prog.rungs[i], Selected.data.leaf)) {
             return i;
         }
     }
@@ -1724,7 +1723,7 @@ void CopyRung()
 //-----------------------------------------------------------------------------
 void CopyElem()
 {
-    if(!Selected)
+    if(!Selected.data.leaf)
         return;
 
     FILE *f = fopen(clp(), "w+");
@@ -1746,9 +1745,9 @@ void CopyElem()
             Prog.rungSelected[i] = ' ';
         } else if(Prog.rungSelected[i] == '*') {
             fprintf(f, "RUNG\n");
-            SaveElemToFile(f, SelectedWhich, Selected, 0, 0);
+            SaveElemToFile(f, Selected.which, Selected.data.any, 0, 0);
             fprintf(f, "END\n");
-            if(EndOfRungElem(SelectedWhich))
+            if(EndOfRungElem(Selected.which))
                 Prog.rungSelected[i] = 'E';
             else
                 Prog.rungSelected[i] = 'L';
@@ -1769,7 +1768,8 @@ void PasteRung(int PasteInTo)
         j = 0;
 
     if(PasteInTo == 0)
-        if(Selected && ((Selected->selectedState == SELECTED_BELOW) || (Selected->selectedState == SELECTED_RIGHT))) {
+        if(Selected.data.leaf && ((Selected.data.leaf->selectedState == SELECTED_BELOW) ||
+                                  (Selected.data.leaf->selectedState == SELECTED_RIGHT))) {
             j++;
         }
 
@@ -1789,7 +1789,7 @@ void PasteRung(int PasteInTo)
             break;
         if(strstr(line, "RUNG"))
             if((temp = LoadSeriesFromFile(f))) {
-                if(SelectedWhich == ELEM_PLACEHOLDER) {
+                if(Selected.which == ELEM_PLACEHOLDER) {
                     Prog.rungs[j] = temp;
                     rung = 1;
                 } else if(PasteInTo == 0) {
@@ -1802,9 +1802,9 @@ void PasteRung(int PasteInTo)
                         j = Prog.numRungs - 1;
                     //insert rung INTO series
                     bool doCollapse = false;
-                    if(Selected && (Selected->selectedState != SELECTED_NONE)) {
-                        if(!EndOfRungElem(SelectedWhich) || (Selected->selectedState == SELECTED_LEFT))
-                            if(!ItemIsLastInCircuit(Selected) || (Selected->selectedState == SELECTED_LEFT)) {
+                    if(Selected.data.leaf && (Selected.data.leaf->selectedState != SELECTED_NONE)) {
+                        if(!EndOfRungElem(Selected.which) || (Selected.data.leaf->selectedState == SELECTED_LEFT))
+                            if(!ItemIsLastInCircuit(Selected.data.leaf) || (Selected.data.leaf->selectedState == SELECTED_LEFT)) {
                                 doCollapse = false;
                                 for(int i = temp->count - 1; i >= 0; i--) {
                                     if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
@@ -1818,9 +1818,9 @@ void PasteRung(int PasteInTo)
                                     while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, temp))
                                         ;
                             }
-                        if(EndOfRungElem(SelectedWhich) && CanInsertEnd
-                           && ((Selected->selectedState == SELECTED_BELOW)
-                               || (Selected->selectedState == SELECTED_ABOVE))) {
+                        if(EndOfRungElem(Selected.which) && CanInsertEnd
+                           && ((Selected.data.leaf->selectedState == SELECTED_BELOW)
+                               || (Selected.data.leaf->selectedState == SELECTED_ABOVE))) {
                             doCollapse = false;
                             for(int i = temp->count - 1; i >= 0; i--) {
                                 if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,

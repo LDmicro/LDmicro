@@ -351,8 +351,8 @@ void PaintWindow()
         InvalidateRect(MainWindow, nullptr, false);
         SelectedGxAfterNextPaint = -1;
         SelectedGyAfterNextPaint = -1;
-    } else if(ScrollSelectedIntoViewAfterNextPaint && Selected) {
-        SelectElement(-1, -1, Selected->selectedState);
+    } else if(ScrollSelectedIntoViewAfterNextPaint && Selected.data.leaf) {
+        SelectElement(-1, -1, Selected.data.leaf->selectedState);
         ScrollSelectedIntoViewAfterNextPaint = false;
         InvalidateRect(MainWindow, nullptr, false);
     } else {

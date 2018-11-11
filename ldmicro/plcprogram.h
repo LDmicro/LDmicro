@@ -9,8 +9,8 @@
 typedef struct McuIoInfoTag McuIoInfo;
 
 typedef struct ModbusAddr {
-    unsigned char Slave;
-    unsigned short Address;
+    uint8_t  Slave;
+    uint16_t Address;
 } ModbusAddr_t;
 
 struct PlcProgramSingleIo {

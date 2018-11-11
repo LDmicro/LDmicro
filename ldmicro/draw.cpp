@@ -615,7 +615,7 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
         cx0 += POS_WIDTH;
     }
 
-    if(leaf == Selected && !InSimulationMode) {
+    if(leaf == Selected.data.leaf && !InSimulationMode) {
         EmphText();
         ThisHighlighted = true;
     } else {
@@ -1679,7 +1679,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
     int x0 = X_PADDING + cx0 * FONT_WIDTH;
     int y0 = Y_PADDING + cy0 * FONT_HEIGHT;
 
-    if(leaf->selectedState != SELECTED_NONE && leaf == Selected) {
+    if(leaf->selectedState != SELECTED_NONE && leaf == Selected.data.leaf) {
         SelectionActive = true;
     }
     switch(leaf->selectedState) {
@@ -1763,7 +1763,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
     SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
     NormText();
 
-    if(leaf == Selected && !InSimulationMode) {
+    if(leaf == Selected.data.leaf && !InSimulationMode) {
         EmphText();
         ThisHighlighted = true;
     } else {
