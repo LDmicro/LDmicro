@@ -64,6 +64,7 @@ public:
     const McuIoInfo* mcu() const {return mcu_;}
     void reset();
     bool appendEmptyRung();
+    //ElemSubcktSeries* rungs(uint32_t idx) {return rungs_[idx];}
 public:
     struct {
         PlcProgramSingleIo  assignment[MAX_IO];

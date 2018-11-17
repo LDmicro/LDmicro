@@ -548,6 +548,7 @@ struct ElemLeaf {
 
 struct SeriesNode
 {
+    SeriesNode() : which(0), parent_(nullptr) {data.any = NULL;}
     int     which;
     union {
         void                   *any;
@@ -555,6 +556,19 @@ struct SeriesNode
         ElemSubcktSeriesTag    *series; // used in the Copy-Paste command
         ElemLeaf               *leaf;
     } data;
+    SeriesNode* parent_;
+
+    SeriesNode*       parent() {return parent_;}
+    const SeriesNode* parent() const {return parent_;}
+    ElemLeaf*         leaf  () {return data.leaf;}
+    const ElemLeaf*   leaf  () const {return data.leaf;}
+    void*             any   () {return data.any;}
+    const void*       any   () const {return data.any;}
+
+    ElemSubcktSeriesTag*       series() {return data.series;}
+    const ElemSubcktSeriesTag* series() const {return data.series;}
+    ElemSubcktParallel*        parallel() {return data.parallel;}
+    const ElemSubcktParallel*  parallel() const {return data.parallel;}
 };
 
 typedef struct ElemSubcktSeriesTag {
@@ -657,7 +671,7 @@ public:
 public:
 
 private:
-    std::vector<ElemSubcktSeries *> elements_;
+    std::vector<SeriesNode> elements_;
 };
 
 #endif //__ELEMENTS_H__
