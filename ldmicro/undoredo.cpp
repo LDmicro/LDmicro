@@ -103,7 +103,7 @@ static void EmptyProgramStack(ProgramStack *ps)
 
         int i;
         for(i = 0; i < ps->prog[ps->write].numRungs; i++) {
-            FreeCircuit(ELEM_SERIES_SUBCKT, ps->prog[ps->write].rungs[i]);
+            FreeCircuit(ELEM_SERIES_SUBCKT, ps->prog[ps->write].rungs(i));
         }
     }
 }
@@ -117,7 +117,7 @@ static void PushProgramStack(ProgramStack *ps, bool deepCopy)
     if(ps->count == MAX_LEVELS_UNDO) {
         int i;
         for(i = 0; i < ps->prog[ps->write].numRungs; i++) {
-            FreeCircuit(ELEM_SERIES_SUBCKT, ps->prog[ps->write].rungs[i]);
+            FreeCircuit(ELEM_SERIES_SUBCKT, ps->prog[ps->write].rungs(i));
         }
     } else {
         (ps->count)++;
@@ -127,7 +127,7 @@ static void PushProgramStack(ProgramStack *ps, bool deepCopy)
     if(deepCopy) {
         int i;
         for(i = 0; i < Prog.numRungs; i++) {
-            ps->prog[ps->write].rungs[i] = (ElemSubcktSeries *)DeepCopy(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+            ps->prog[ps->write].rungs_[i] = (ElemSubcktSeries *)DeepCopy(ELEM_SERIES_SUBCKT, Prog.rungs(i));
         }
     }
 

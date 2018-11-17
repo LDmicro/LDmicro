@@ -706,7 +706,7 @@ int GenerateIoList(int prevSel)
     Prog.io.count = 0;
     // extract the new list so that it must be up to date
     for(i = 0; i < Prog.numRungs; i++) {
-        ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
     // AppendIo("ROverflowFlagV", IO_TYPE_INTERNAL_RELAY);
 

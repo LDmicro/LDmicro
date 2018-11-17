@@ -59,7 +59,7 @@ void PlcProgram::setMcu(McuIoInfo* m)
 void PlcProgram::reset()
 {
     for(int i = 0; i < numRungs; i++) {
-        FreeCircuit(ELEM_SERIES_SUBCKT, rungs[i]);
+        FreeCircuit(ELEM_SERIES_SUBCKT, rungs_[i]);
     }
     memset(rungSelected, ' ', sizeof(rungSelected));
     numRungs = 0;
@@ -77,6 +77,6 @@ bool PlcProgram::appendEmptyRung()
 {
     if(numRungs >= (MAX_RUNGS - 1))
         return false;
-    rungs[numRungs++] = AllocEmptyRung();
+    rungs_[numRungs++] = AllocEmptyRung();
     return true;
 }

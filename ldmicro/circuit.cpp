@@ -269,7 +269,7 @@ static bool AddLeaf(int newWhich, ElemLeaf *newElem)
         return false;
 
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(AddLeafWorker(ELEM_SERIES_SUBCKT, Prog.rungs[i], newWhich, newElem)) {
+        if(AddLeafWorker(ELEM_SERIES_SUBCKT, Prog.rungs(i), newWhich, newElem)) {
             WhatCanWeDoFromCursorAndTopology();
             return true;
         }
@@ -1045,8 +1045,8 @@ void DeleteSelectedFromProgram()
     if(i < 0)
         return;
 
-    if(Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which != ELEM_PARALLEL_SUBCKT) {
-        Prog.rungs[i]->contents[0].which = ELEM_PLACEHOLDER;
+    if(Prog.rungs_[i]->count == 1 && Prog.rungs_[i]->contents[0].which != ELEM_PARALLEL_SUBCKT) {
+        Prog.rungs_[i]->contents[0].which = ELEM_PLACEHOLDER;
         Selected.which = ELEM_PLACEHOLDER;
         Selected.data.leaf->selectedState = SELECTED_LEFT;
         WhatCanWeDoFromCursorAndTopology();
@@ -1059,8 +1059,8 @@ void DeleteSelectedFromProgram()
         gy = 0;
     }
 
-    if(DeleteSelectedFromSubckt(ELEM_SERIES_SUBCKT, Prog.rungs[i])) {
-        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[i]))
+    if(DeleteSelectedFromSubckt(ELEM_SERIES_SUBCKT, Prog.rungs_[i])) {
+        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs_[i]))
             ;
         WhatCanWeDoFromCursorAndTopology();
         MoveCursorNear(&gx, &gy);
@@ -1162,7 +1162,7 @@ static bool ContainsElem(int which, void *any, ElemLeaf *seek)
 int RungContainingSelected()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsElem(ELEM_SERIES_SUBCKT, Prog.rungs[i], Selected.data.leaf)) {
+        if(ContainsElem(ELEM_SERIES_SUBCKT, Prog.rungs_[i], Selected.leaf())) {
             return i;
         }
     }
@@ -1178,9 +1178,9 @@ void DeleteRungI(int i)
     if(i < 0)
         return;
 
-    FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+    FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs_[i]);
     (Prog.numRungs)--;
-    memmove(&Prog.rungs[i], &Prog.rungs[i + 1], (Prog.numRungs - i) * sizeof(Prog.rungs[0]));
+    memmove(&Prog.rungs_[i], &Prog.rungs_[i + 1], (Prog.numRungs - i) * sizeof(Prog.rungs_[0]));
     memmove(&Prog.rungSelected[i], &Prog.rungSelected[i + 1], (Prog.numRungs - i) * sizeof(Prog.rungSelected[0]));
 }
 
@@ -1245,7 +1245,7 @@ void InsertRungI(int i)
         return;
     }
 
-    memmove(&Prog.rungs[i + 1], &Prog.rungs[i], (Prog.numRungs - i) * sizeof(Prog.rungs[0]));
+    memmove(&Prog.rungs_[i + 1], &Prog.rungs_[i], (Prog.numRungs - i) * sizeof(Prog.rungs_[0]));
     memmove(&Prog.rungSelected[i + 1], &Prog.rungSelected[i], (Prog.numRungs - i) * sizeof(Prog.rungSelected[0]));
     Prog.appendEmptyRung();
     NullDisplayMatrix(i, i + 1 + 1);
@@ -1285,13 +1285,13 @@ void PushRungDown()
     int HeightBefore = 0;
     int j;
     for(j = 0; j < i; j++)
-        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[j]);
-    int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-    int HeightDown = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i + 1]);
+        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[j]);
+    int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i]);
+    int HeightDown = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i + 1]);
 
-    ElemSubcktSeries *temp = Prog.rungs[i];
-    Prog.rungs[i] = Prog.rungs[i + 1];
-    Prog.rungs[i + 1] = temp;
+    ElemSubcktSeries *temp = Prog.rungs_[i];
+    Prog.rungs_[i] = Prog.rungs_[i + 1];
+    Prog.rungs_[i + 1] = temp;
 
     NullDisplayMatrix(HeightBefore, HeightBefore + HeightNow + HeightDown);
 
@@ -1312,13 +1312,13 @@ void PushRungUp()
     int HeightBefore = 0;
     int j;
     for(j = 0; j < i - 1; j++)
-        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[j]);
-    int HeightUp = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i - 1]);
-    int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[j]);
+    int HeightUp = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i - 1]);
+    int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i]);
 
-    ElemSubcktSeries *temp = Prog.rungs[i];
-    Prog.rungs[i] = Prog.rungs[i - 1];
-    Prog.rungs[i - 1] = temp;
+    ElemSubcktSeries *temp = Prog.rungs_[i];
+    Prog.rungs_[i] = Prog.rungs_[i - 1];
+    Prog.rungs_[i - 1] = temp;
 
     NullDisplayMatrix(HeightBefore, HeightBefore + HeightUp + HeightNow);
 
@@ -1388,7 +1388,7 @@ bool ItemIsLastInCircuit(ElemLeaf *item)
     bool found = false;
     bool andItemAfter = false;
 
-    LastInCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], item, &found, &andItemAfter);
+    LastInCircuit(ELEM_SERIES_SUBCKT, Prog.rungs_[i], item, &found, &andItemAfter);
 
     if(found)
         return !andItemAfter;
@@ -1532,7 +1532,7 @@ int FindRung(int seek, char *name)
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++)
-        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek, name))
+        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs_[i], seek, name))
             return i;
     return -1;
 }
@@ -1541,7 +1541,7 @@ int FindRungLast(int seek, char *name)
 {
     int i;
     for(i = Prog.numRungs - 1; i >= 0; i--)
-        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek, name))
+        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs_[i], seek, name))
             return i;
     return -1;
 }
@@ -1587,7 +1587,7 @@ int CountWhich(int seek1, int seek2, int seek3, char *name)
 {
     int n = 0;
     for(int i = 0; i < Prog.numRungs; i++)
-        n += CountWhich_(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek1, seek2, seek3, name);
+        n += CountWhich_(ELEM_SERIES_SUBCKT, Prog.rungs_[i], seek1, seek2, seek3, name);
     return n;
 }
 
@@ -1610,7 +1610,7 @@ bool DelayUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DELAY, -1, -1)) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_DELAY, -1, -1)) {
             return true;
         }
     }
@@ -1622,9 +1622,9 @@ bool TablesUsed()
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(
-               ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
+               ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
             return true;
         }
     }
@@ -1649,7 +1649,7 @@ uint32_t QuadEncodFunctionUsed()
 bool NPulseFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_NPULSE, -1, -1)) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_NPULSE, -1, -1)) {
             return true;
         }
     }
@@ -1659,7 +1659,7 @@ bool NPulseFunctionUsed()
 bool EepromFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_PERSIST, -1, -1)) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_PERSIST, -1, -1)) {
             return true;
         }
     }
@@ -1669,7 +1669,7 @@ bool EepromFunctionUsed()
 bool SleepFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SLEEP, -1, -1)) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_SLEEP, -1, -1)) {
             return true;
         }
     }
@@ -1688,7 +1688,7 @@ void CopyRungDown()
 {
     int               i = RungContainingSelected();
     char              line[512];
-    ElemSubcktSeries *temp = Prog.rungs[i];
+    ElemSubcktSeries *temp = Prog.rungs_[i];
 
     //FILE *f = fopen(CLP, "w+TD");
     FILE *f = fopen(clp(), "w+");
@@ -1705,7 +1705,7 @@ void CopyRungDown()
     if(strstr(line, "RUNG"))
         if((temp = LoadSeriesFromFile(f))) {
             InsertRung(true);
-            Prog.rungs[i + 1] = temp;
+            Prog.rungs_[i + 1] = temp;
         }
     fclose(f);
 
@@ -1732,7 +1732,7 @@ void CutRung()
     }
     for(int i = (Prog.numRungs - 1); i >= 0; i--)
         if(Prog.rungSelected[i] == '*') {
-            SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
+            SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs_[i], 0, i);
             DeleteRungI(i);
         }
     fclose(f);
@@ -1766,7 +1766,7 @@ void CopyRung()
         if(Prog.rungSelected[i] > '*') {
             Prog.rungSelected[i] = ' ';
         } else if(Prog.rungSelected[i] == '*') {
-            SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
+            SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs_[i], 0, i);
             Prog.rungSelected[i] = 'R';
         }
     fclose(f);
@@ -1842,12 +1842,12 @@ void PasteRung(int PasteInTo)
         if(strstr(line, "RUNG"))
             if((temp = LoadSeriesFromFile(f))) {
                 if(Selected.which == ELEM_PLACEHOLDER) {
-                    Prog.rungs[j] = temp;
+                    Prog.rungs_[j] = temp;
                     rung = 1;
                 } else if(PasteInTo == 0) {
                     //insert rungs from file
                     InsertRungI(j);
-                    Prog.rungs[j] = temp;
+                    Prog.rungs_[j] = temp;
                     j++;
                 } else if(PasteInTo == 1) {
                     if(j >= Prog.numRungs)
@@ -1888,7 +1888,7 @@ void PasteRung(int PasteInTo)
                         }
                         if(temp->count > 0) {
                             if(AddLeaf(ELEM_SERIES_SUBCKT, (ElemLeaf *)temp)) {
-                                while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[j])) {
+                                while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs_[j])) {
                                     ProgramChanged();
                                 }
                             }
@@ -1954,7 +1954,7 @@ static void RenameSet1_(int which, void *any, int which_elem, char *name, char *
 void RenameSet1(int which, char *name, char *new_name, bool set1)
 {
     for(int i = 0; i < Prog.numRungs; i++)
-        RenameSet1_(ELEM_SERIES_SUBCKT, Prog.rungs[i], which, name, new_name, set1);
+        RenameSet1_(ELEM_SERIES_SUBCKT, Prog.rungs_[i], which, name, new_name, set1);
 }
 
 //-----------------------------------------------------------------------------
@@ -2006,7 +2006,7 @@ void *FindElem(int which, char *name)
 {
     void *res;
     for(int i = 0; i < Prog.numRungs; i++) {
-        res = FindElem_(ELEM_SERIES_SUBCKT, Prog.rungs[i], which, name);
+        res = FindElem_(ELEM_SERIES_SUBCKT, Prog.rungs_[i], which, name);
         if(res)
             return res;
     }

@@ -252,7 +252,7 @@ void WhatCanWeDoFromCursorAndTopology()
         if(i == (Prog.numRungs - 1))
             canPushDown = false;
 
-        if(Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which == ELEM_PLACEHOLDER) {
+        if(Prog.rungs(i)->count == 1 && Prog.rungs(i)->contents[0].which == ELEM_PLACEHOLDER) {
             canDelete = false;
         }
     }
@@ -642,9 +642,8 @@ bool ReplaceSelectedElement()
     if(!Selected.data.leaf /* || Selected->selectedState == SELECTED_NONE*/)
         return false;
 
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
-        if(ReplaceElem(ELEM_SERIES_SUBCKT, Prog.rungs[i], Selected.data.leaf, 0, 0, 0))
+    for(int i = 0; i < Prog.numRungs; i++)
+        if(ReplaceElem(ELEM_SERIES_SUBCKT, Prog.rungs(i), Selected.data.leaf, 0, 0, 0))
             return true;
     return false;
 }
@@ -655,7 +654,7 @@ bool ReplaceSelectedElement()
 //-----------------------------------------------------------------------------
 void EditSelectedElement()
 {
-    if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE)
+    if(!Selected.leaf() || Selected.leaf()->selectedState == SELECTED_NONE)
         return;
 
     switch(Selected.which) {
@@ -665,15 +664,15 @@ void EditSelectedElement()
 
         case ELEM_CONTACTS:
             ShowContactsDialog(
-                &(Selected.data.leaf->d.contacts.negated), &(Selected.data.leaf->d.contacts.set1), Selected.data.leaf->d.contacts.name);
+                &(Selected.leaf()->d.contacts.negated), &(Selected.leaf()->d.contacts.set1), Selected.leaf()->d.contacts.name);
             break;
 
         case ELEM_COIL:
-            ShowCoilDialog(&(Selected.data.leaf->d.coil.negated),
-                           &(Selected.data.leaf->d.coil.setOnly),
-                           &(Selected.data.leaf->d.coil.resetOnly),
-                           &(Selected.data.leaf->d.coil.ttrigger),
-                           Selected.data.leaf->d.coil.name);
+            ShowCoilDialog(&(Selected.leaf()->d.coil.negated),
+                           &(Selected.leaf()->d.coil.setOnly),
+                           &(Selected.leaf()->d.coil.resetOnly),
+                           &(Selected.leaf()->d.coil.ttrigger),
+                           Selected.leaf()->d.coil.name);
             break;
 
         case ELEM_TIME2DELAY:
@@ -685,22 +684,22 @@ void EditSelectedElement()
         case ELEM_RTL:
         case ELEM_THI:
         case ELEM_TLO:
-            ShowTimerDialog(Selected.which, Selected.data.leaf);
+            ShowTimerDialog(Selected.which, Selected.leaf());
             break;
 
         case ELEM_DELAY:
-            ShowDelayDialog(Selected.which, Selected.data.leaf);
+            ShowDelayDialog(Selected.which, Selected.leaf());
             break;
 
         case ELEM_SLEEP:
-            ShowSleepDialog(Selected.which, Selected.data.leaf);
+            ShowSleepDialog(Selected.which, Selected.leaf());
             break;
 
         case ELEM_CTR:
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
-            ShowCounterDialog(Selected.which, Selected.data.leaf);
+            ShowCounterDialog(Selected.which, Selected.leaf());
             break;
 
 #ifdef USE_SFR
@@ -711,7 +710,7 @@ void EditSelectedElement()
         case ELEM_CSFR:
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
-            ShowSFRDialog(Selected.which, Selected.data.leaf->d.sfr.sfr, Selected.data.leaf->d.sfr.op);
+            ShowSFRDialog(Selected.which, Selected.leaf()->d.sfr.sfr, Selected.leaf()->d.sfr.op);
             break;
 // Special function
 #endif
@@ -720,7 +719,7 @@ void EditSelectedElement()
         case ELEM_IF_BIT_CLEAR:
         case ELEM_SET_BIT:
         case ELEM_CLEAR_BIT:
-            ShowVarBitDialog(Selected.which, Selected.data.leaf->d.move.dest, Selected.data.leaf->d.move.src);
+            ShowVarBitDialog(Selected.which, Selected.leaf()->d.move.dest, Selected.leaf()->d.move.src);
             break;
 
         case ELEM_EQU:
@@ -729,7 +728,7 @@ void EditSelectedElement()
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
-            ShowCmpDialog(Selected.which, Selected.data.leaf->d.cmp.op1, Selected.data.leaf->d.cmp.op2);
+            ShowCmpDialog(Selected.which, Selected.leaf()->d.cmp.op1, Selected.leaf()->d.cmp.op2);
             break;
 
         case ELEM_ADD:
@@ -747,48 +746,48 @@ void EditSelectedElement()
         case ELEM_XOR:
         case ELEM_NOT:
         case ELEM_NEG:
-            ShowMathDialog(Selected.which, Selected.data.leaf->d.math.dest, Selected.data.leaf->d.math.op1, Selected.data.leaf->d.math.op2);
+            ShowMathDialog(Selected.which, Selected.leaf()->d.math.dest, Selected.leaf()->d.math.op1, Selected.leaf()->d.math.op2);
             break;
 
         case ELEM_STEPPER:
-            ShowStepperDialog(Selected.which, &Selected.data.leaf->d);
+            ShowStepperDialog(Selected.which, &Selected.leaf()->d);
             break;
 
         case ELEM_PULSER:
             ShowPulserDialog(Selected.which,
-                             Selected.data.leaf->d.pulser.P1,
-                             Selected.data.leaf->d.pulser.P0,
-                             Selected.data.leaf->d.pulser.accel,
-                             Selected.data.leaf->d.pulser.counter,
-                             Selected.data.leaf->d.pulser.busy);
+                             Selected.leaf()->d.pulser.P1,
+                             Selected.leaf()->d.pulser.P0,
+                             Selected.leaf()->d.pulser.accel,
+                             Selected.leaf()->d.pulser.counter,
+                             Selected.leaf()->d.pulser.busy);
             break;
 
         case ELEM_NPULSE:
             ShowNPulseDialog(
-                Selected.which, Selected.data.leaf->d.Npulse.counter, Selected.data.leaf->d.Npulse.targetFreq, Selected.data.leaf->d.Npulse.coil);
+                Selected.which, Selected.leaf()->d.Npulse.counter, Selected.leaf()->d.Npulse.targetFreq, Selected.leaf()->d.Npulse.coil);
             break;
 
         case ELEM_QUAD_ENCOD:
-            ShowQuadEncodDialog(Selected.which, Selected.data.leaf);
+            ShowQuadEncodDialog(Selected.which, Selected.leaf());
             break;
 
         case ELEM_7SEG:
         case ELEM_9SEG:
         case ELEM_14SEG:
         case ELEM_16SEG:
-            ShowSegmentsDialog(Selected.which, Selected.data.leaf);
+            ShowSegmentsDialog(Selected.which, Selected.leaf());
             break;
 
         case ELEM_BUS:
-            ShowBusDialog(Selected.data.leaf);
+            ShowBusDialog(Selected.leaf());
             break;
 
         case ELEM_SPI:
-            ShowSpiDialog(Selected.data.leaf);
+            ShowSpiDialog(Selected.leaf());
             break;
 
         case ELEM_RES:
-            ShowResetDialog(Selected.data.leaf->d.reset.name);
+            ShowResetDialog(Selected.leaf()->d.reset.name);
             break;
 
         case ELEM_SEED_RANDOM:
@@ -797,15 +796,15 @@ void EditSelectedElement()
         case ELEM_SWAP:
         case ELEM_OPPOSITE:
         case ELEM_MOVE:
-            ShowMoveDialog(Selected.which, Selected.data.leaf->d.move.dest, Selected.data.leaf->d.move.src);
+            ShowMoveDialog(Selected.which, Selected.leaf()->d.move.dest, Selected.leaf()->d.move.src);
             break;
 
         case ELEM_SET_PWM:
-            ShowSetPwmDialog(&Selected.data.leaf->d);
+            ShowSetPwmDialog(&Selected.leaf()->d);
             break;
 
         case ELEM_READ_ADC:
-            ShowReadAdcDialog(Selected.data.leaf->d.readAdc.name + 1, &Selected.data.leaf->d.readAdc.refs);
+            ShowReadAdcDialog(Selected.leaf()->d.readAdc.name + 1, &Selected.leaf()->d.readAdc.refs);
             break;
 
         case ELEM_LABEL:
@@ -813,42 +812,42 @@ void EditSelectedElement()
         case ELEM_ENDSUB:
         case ELEM_GOTO:
         case ELEM_GOSUB:
-            ShowGotoDialog(Selected.which, Selected.data.leaf->d.doGoto.label);
+            ShowGotoDialog(Selected.which, Selected.leaf()->d.doGoto.label);
             break;
 
         case ELEM_RANDOM:
-            ShowRandomDialog(Selected.data.leaf->d.readAdc.name);
+            ShowRandomDialog(Selected.leaf()->d.readAdc.name);
             break;
 
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
         case ELEM_UART_RECVn:
         case ELEM_UART_SENDn:
-            ShowUartDialog(Selected.which, Selected.data.leaf);
+            ShowUartDialog(Selected.which, Selected.leaf());
             break;
 
         case ELEM_PERSIST:
-            ShowPersistDialog(Selected.data.leaf->d.persist.var);
+            ShowPersistDialog(Selected.leaf()->d.persist.var);
             break;
 
         case ELEM_SHIFT_REGISTER:
-            ShowShiftRegisterDialog(Selected.data.leaf->d.shiftRegister.name, &(Selected.data.leaf->d.shiftRegister.stages));
+            ShowShiftRegisterDialog(Selected.leaf()->d.shiftRegister.name, &(Selected.leaf()->d.shiftRegister.stages));
             break;
 
         case ELEM_STRING:
-            ShowStringDialog(Selected.data.leaf->d.fmtdStr.dest, Selected.data.leaf->d.fmtdStr.var, Selected.data.leaf->d.fmtdStr.string);
+            ShowStringDialog(Selected.leaf()->d.fmtdStr.dest, Selected.leaf()->d.fmtdStr.var, Selected.leaf()->d.fmtdStr.string);
             break;
 
         case ELEM_FORMATTED_STRING:
-            ShowFormattedStringDialog(Selected.data.leaf->d.fmtdStr.var, Selected.data.leaf->d.fmtdStr.string);
+            ShowFormattedStringDialog(Selected.leaf()->d.fmtdStr.var, Selected.leaf()->d.fmtdStr.string);
             break;
 
         case ELEM_PIECEWISE_LINEAR:
-            ShowPiecewiseLinearDialog(Selected.data.leaf);
+            ShowPiecewiseLinearDialog(Selected.leaf());
             break;
 
         case ELEM_LOOK_UP_TABLE:
-            ShowLookUpTableDialog(Selected.data.leaf);
+            ShowLookUpTableDialog(Selected.leaf());
             break;
     }
 }
@@ -882,7 +881,7 @@ void EditElementMouseDoubleclick(int x, int y)
             ShowAnalogSliderPopup(l->d.readAdc.name);
         }
     } else {
-        if(DisplayMatrix[gx][gy] == Selected.data.leaf) {
+        if(DisplayMatrix[gx][gy] == Selected.leaf()) {
             EditSelectedElement();
         }
     }
@@ -1065,7 +1064,7 @@ void NegateSelected()
             break;
 
         case ELEM_COIL: {
-            ElemCoil *c = &Selected.data.leaf->d.coil;
+            ElemCoil *c = &Selected.leaf()->d.coil;
             c->negated = true;
             c->resetOnly = false;
             c->setOnly = false;
@@ -1082,17 +1081,17 @@ void NegateSelected()
 //-----------------------------------------------------------------------------
 void MakeNormalSelected()
 {
-    if(!Selected.data.leaf->d.contacts.negated) {
+    if(!Selected.leaf()->d.contacts.negated) {
         NegateSelected();
         return;
     }
     switch(Selected.which) {
         case ELEM_CONTACTS:
-            Selected.data.leaf->d.contacts.negated = false;
+            Selected.leaf()->d.contacts.negated = false;
             break;
 
         case ELEM_COIL: {
-            ElemCoil *c = &Selected.data.leaf->d.coil;
+            ElemCoil *c = &Selected.leaf()->d.coil;
             c->negated = false;
             c->setOnly = false;
             c->resetOnly = false;
@@ -1112,7 +1111,7 @@ void MakeSetOnlySelected()
     if(Selected.which != ELEM_COIL)
         return;
 
-    ElemCoil *c = &Selected.data.leaf->d.coil;
+    ElemCoil *c = &Selected.leaf()->d.coil;
     c->setOnly = true;
     c->resetOnly = false;
     c->negated = false;
@@ -1127,7 +1126,7 @@ void MakeResetOnlySelected()
     if(Selected.which != ELEM_COIL)
         return;
 
-    ElemCoil *c = &Selected.data.leaf->d.coil;
+    ElemCoil *c = &Selected.leaf()->d.coil;
     c->resetOnly = true;
     c->setOnly = false;
     c->negated = false;
@@ -1142,7 +1141,7 @@ void MakeTtriggerSelected()
     if(Selected.which != ELEM_COIL)
         return;
 
-    ElemCoil *c = &Selected.data.leaf->d.coil;
+    ElemCoil *c = &Selected.leaf()->d.coil;
     c->ttrigger = true;
     c->resetOnly = false;
     c->setOnly = false;

@@ -1524,7 +1524,7 @@ static void InitVars()
 {
     int n = 0;
     for(int i = 0; i < Prog.numRungs; i++) {
-        InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], &n);
+        InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i), &n);
     }
     if(n) {
         Comment("INIT VARS");
@@ -1534,7 +1534,7 @@ static void InitVars()
         Op(INT_SET_BIT, storeInit);
         for(int i = 0; i < Prog.numRungs; i++) {
             rungNow = i;
-            InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], nullptr);
+            InitVarsCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i), nullptr);
         }
         Op(INT_END_IF);
     }
@@ -1632,7 +1632,7 @@ static void InitTables()
         Comment("INIT TABLES");
         for(int i = 0; i < Prog.numRungs; i++) {
             rungNow = i;
-            InitTablesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+            InitTablesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
         }
     }
 }
@@ -4029,8 +4029,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             if(n < 1) {
                 Error(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.label);
             }
-            if((Prog.rungs[rungNow]->contents[0].which == ELEM_SUBPROG)
-            && (Prog.rungs[rungNow]->count == 1)) {
+            if((Prog.rungs(rungNow)->contents[0].which == ELEM_SUBPROG)
+            && (Prog.rungs(rungNow)->count == 1)) {
                 ; //
             } else {
                 Error(_("SUBPROG: '%s' declaration must be a single inside the rung %d"), l->d.doGoto.label, rungNow + 1);
@@ -4060,8 +4060,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             if(n < 1) {
                 Error(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
             }
-            if((Prog.rungs[rungNow]->contents[0].which == ELEM_ENDSUB)
-            && (Prog.rungs[rungNow]->count == 1)) {
+            if((Prog.rungs(rungNow)->contents[0].which == ELEM_ENDSUB)
+            && (Prog.rungs(rungNow)->count == 1)) {
                 ; //
             } else {
                 Error(_("ENDSUB: '%s' declaration must be a single inside the rung %d"), l->d.doGoto.label, rungNow + 1);
@@ -4641,7 +4641,7 @@ static void CheckPersist()
     persistVariables.clear();
     for(int i = 0; i < Prog.numRungs; i++) {
         rungNow = i;
-        CheckPersistCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        CheckPersistCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
 }
 
@@ -4679,7 +4679,7 @@ static bool CheckMasterCircuit(int which, void *elem)
 static bool CheckMasterRelay()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(CheckMasterCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]))
+        if(CheckMasterCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i)))
             return true;
     }
     return false;
@@ -4759,10 +4759,10 @@ bool GenerateIntermediateCode()
         Op(INT_AllocKnownAddr, s1, (SDWORD)rung);
         Op(INT_FwdAddrIsNow, s1, (SDWORD)rung);
 
-        if(Prog.rungs[rung]->count > 0 && Prog.rungs[rung]->contents[0].which == ELEM_COMMENT) {
+        if(Prog.rungs(rung)->count > 0 && Prog.rungs(rung)->contents[0].which == ELEM_COMMENT) {
             // nothing to do for this one
             // Yes, I do! Push comment into interpretable OP code for C and PASCAL.
-            leaf = (ElemLeaf *)Prog.rungs[rung]->contents[0].data.any;
+            leaf = (ElemLeaf *)Prog.rungs(rung)->contents[0].data.any;
             AnsiToOem(leaf->d.comment.str, s1);
             s2 = s1;
             for(; *s2; s2++) {
@@ -4791,7 +4791,7 @@ bool GenerateIntermediateCode()
         else
             Op(INT_SET_BIT, "$rung_top");
         SimState(&(Prog.rungPowered[rung]), "$rung_top");
-        IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[rung], "$rung_top", rung);
+        IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(rung), "$rung_top", rung);
     }
     rungNow++;
     sprintf(s1,"Rung%d", rung + 1);
@@ -4818,7 +4818,7 @@ bool GenerateIntermediateCode()
 bool GotoGosubUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_GOTO, ELEM_GOSUB, -1))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_GOTO, ELEM_GOSUB, -1))
             return true;
     }
     return false;
@@ -4831,9 +4831,9 @@ bool GotoGosubUsed()
 bool UartFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECVn, ELEM_UART_SENDn, -1))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
+        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECVn, ELEM_UART_SENDn, -1))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_SEND_READY, ELEM_UART_RECV_AVAIL, -1)))
             return true;
     }
 
@@ -4854,7 +4854,7 @@ bool UartFunctionUsed()
 bool UartRecvUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_RECV, ELEM_UART_RECVn, -1))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_RECV, ELEM_UART_RECVn, -1))
             return true;
     }
 
@@ -4870,7 +4870,7 @@ bool UartRecvUsed()
 bool UartSendUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_UART_SEND, ELEM_UART_SENDn, ELEM_FORMATTED_STRING))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_UART_SEND, ELEM_UART_SENDn, ELEM_FORMATTED_STRING))
             return true;
     }
 
@@ -4889,7 +4889,7 @@ bool UartSendUsed()
 bool SpiFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_SPI))
             return true;
     }
 
@@ -4917,7 +4917,7 @@ bool Bin32BcdRoutineUsed()
 bool MultiplyRoutineUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++)
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_MUL, ELEM_SET_PWM, -1))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_MUL, ELEM_SET_PWM, -1))
             return true;
 
     for(uint32_t i = 0; i < IntCode.size(); i++)
@@ -4933,7 +4933,7 @@ bool MultiplyRoutineUsed()
 bool DivideRoutineUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++)
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DIV, ELEM_SET_PWM, -1))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_DIV, ELEM_SET_PWM, -1))
             return true;
 
     for(uint32_t i = 0; i < IntCode.size(); i++)

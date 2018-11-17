@@ -991,7 +991,7 @@ void CheckVariableNames()
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
-        CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
 
     // reCheck
@@ -1115,7 +1115,7 @@ static void CheckSingleBitNegate()
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
-        CheckSingleBitNegateCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        CheckSingleBitNegateCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
 }
 //-----------------------------------------------------------------------------

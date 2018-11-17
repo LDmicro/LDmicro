@@ -868,8 +868,8 @@ bool LoadProjectFromFile(const char *filename)
         if(strstr(line, "RUNG") == 0)
             goto failed;
 
-        Prog.rungs[rung] = LoadSeriesFromFile(f);
-        if(!Prog.rungs[rung])
+        Prog.rungs_[rung] = LoadSeriesFromFile(f);
+        if(!Prog.rungs_[rung])
             goto failed;
         rung++;
         if(rung >= MAX_RUNGS) {
@@ -880,7 +880,7 @@ bool LoadProjectFromFile(const char *filename)
     Prog.numRungs = rung;
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
-        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[rung]))
+        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs_[rung]))
             ProgramChanged();
     }
 
@@ -1462,9 +1462,8 @@ bool SaveProjectToFile(char *filename, int code)
     fprintf(f, "\n");
     fprintf(f, "PROGRAM\n");
 
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i + 1);
+    for(int i = 0; i < Prog.numRungs; i++) {
+        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs(i), 0, i + 1);
     }
 
     fflush(f);

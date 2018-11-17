@@ -282,7 +282,7 @@ void PaintWindow()
     int  cy = 0;
     int  rowsAvailable = ScreenRowsAvailable();
     for(i = 0; i < Prog.numRungs; i++) {
-        int thisHeight = POS_HEIGHT * CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        int thisHeight = POS_HEIGHT * CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs(i));
 
         // For speed, there is no need to draw everything all the time, but
         // we still must draw a bit above and below so that the DisplayMatrix
@@ -317,7 +317,7 @@ void PaintWindow()
             SetTextColor(Hdc, prev);
 
             cx = 0;
-            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i], ColsAvailable);
+            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), &cx, &cy, Prog.rungPowered[i], ColsAvailable);
         }
 
         cy += thisHeight;
@@ -713,7 +713,7 @@ void ExportDrawingAsText(char *file)
     int  cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
         cx = 6;
-        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i], 0);
+        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), &cx, &cy, Prog.rungPowered[i], 0);
         /*
         if((i + 1) < 10) {
             ExportBuffer[cy+1][1] = '0' + (i + 1);
@@ -735,7 +735,7 @@ void ExportDrawingAsText(char *file)
             strncpy(ExportBuffer[cy + 3], str, 4);
         }
 
-        cy += POS_HEIGHT * CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        cy += POS_HEIGHT * CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs(i));
         cy += 1; //+1 for one empty line
     }
     DrawEndRung(6, cy);

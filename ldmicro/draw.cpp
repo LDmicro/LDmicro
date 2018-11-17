@@ -305,7 +305,7 @@ int ProgCountWidestRow()
     int colsTemp = ColsAvailable;
     ColsAvailable = 0;
     for(int i = 0; i < Prog.numRungs; i++) {
-        int w = CountWidthOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], 0);
+        int w = CountWidthOfElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), 0);
         if(w > max) {
             max = w;
         }
@@ -318,7 +318,7 @@ int ProgCountRows()
 {
     int totalHeight = 0;
     for(int i = 0; i < Prog.numRungs; i++) {
-        totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
     // // //totalHeight += 1; // without EndRung !
     return totalHeight;
