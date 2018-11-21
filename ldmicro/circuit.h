@@ -284,8 +284,8 @@
         case ELEM_TSFR: \
         case ELEM_T_C_SFR:
 
-typedef struct ElemSubcktParallelTag ElemSubcktParallel;
-typedef struct ElemSubcktSeriesTag ElemSubcktSeries;
+struct ElemSubcktParallel;
+struct ElemSubcktSeries;
 
 typedef struct ElemCommentTag {
     char    str[MAX_COMMENT_LEN];
@@ -548,13 +548,14 @@ struct ElemLeaf {
 
 struct SeriesNode
 {
-    SeriesNode() : which(0), parent_(nullptr) {data.any = NULL;}
+    SeriesNode() : which(0), parent_(nullptr) {data.any = nullptr;}
+    SeriesNode(int w, void* any, SeriesNode* parent = nullptr) : which(w), parent_(parent) {data.any = any;}
     int     which;
     union {
-        void                   *any;
-        ElemSubcktParallel     *parallel;
-        ElemSubcktSeriesTag    *series; // used in the Copy-Paste command
-        ElemLeaf               *leaf;
+        void               *any;
+        ElemSubcktParallel *parallel;
+        ElemSubcktSeries   *series; // used in the Copy-Paste command
+        ElemLeaf           *leaf;
     } data;
     SeriesNode* parent_;
 
@@ -565,21 +566,21 @@ struct SeriesNode
     void*             any   () {return data.any;}
     const void*       any   () const {return data.any;}
 
-    ElemSubcktSeriesTag*       series() {return data.series;}
-    const ElemSubcktSeriesTag* series() const {return data.series;}
-    ElemSubcktParallel*        parallel() {return data.parallel;}
-    const ElemSubcktParallel*  parallel() const {return data.parallel;}
+    ElemSubcktSeries*         series() {return data.series;}
+    const ElemSubcktSeries*   series() const {return data.series;}
+    ElemSubcktParallel*       parallel() {return data.parallel;}
+    const ElemSubcktParallel* parallel() const {return data.parallel;}
 };
 
-typedef struct ElemSubcktSeriesTag {
+struct ElemSubcktSeries {
     SeriesNode contents[MAX_ELEMENTS_IN_SUBCKT];
     int count;
-} ElemSubcktSeries;
+} ;
 
-typedef struct ElemSubcktParallelTag {
+struct ElemSubcktParallel {
     SeriesNode contents[MAX_ELEMENTS_IN_SUBCKT];
     int count;
-} ElemSubcktParallel;
+};
 
 void AddTimer(int which);
 void AddCoil(int what);

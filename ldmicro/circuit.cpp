@@ -104,7 +104,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 Error(_("Too many elements in subcircuit!"));
                 return true;
             }
-            switch(Selected.data.leaf->selectedState) {
+            switch(Selected.leaf()->selectedState) {
                 case SELECTED_LEFT:
                     memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
                     s->contents[i].data.leaf = newElem;
@@ -137,7 +137,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     break;
                 }
                 default:
-                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state {}.", Selected.data.leaf->selectedState);
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state %i.", Selected.leaf()->selectedState);
                     break;
             }
             return true;
@@ -182,10 +182,10 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     s->count = 2;
 
                     int t;
-                    t = (Selected.data.leaf->selectedState == SELECTED_LEFT) ? 0 : 1;
+                    t = (Selected.leaf()->selectedState == SELECTED_LEFT) ? 0 : 1;
                     s->contents[t].which = newWhich;
                     s->contents[t].data.leaf = newElem;
-                    t = (Selected.data.leaf->selectedState == SELECTED_LEFT) ? 1 : 0;
+                    t = (Selected.leaf()->selectedState == SELECTED_LEFT) ? 1 : 0;
                     s->contents[t].which = p->contents[i].which;
                     s->contents[t].data.any = p->contents[i].data.any;
 
@@ -194,7 +194,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     break;
                 }
                 default:
-                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state {}.", Selected.data.leaf->selectedState);
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state %i.", Selected.leaf()->selectedState);
                     break;
             }
             return true;
@@ -210,121 +210,118 @@ static bool AddLeafWorker(SeriesNode& any, SeriesNode& selected, SeriesNode newE
     int i;
     switch(any.which) {
         case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = any.series();
-            for(i = 0; i < s->count; i++) {
-                if(s->contents[i].any() == selected.any()) {
+            ElemSubcktSeries *series = any.series();
+            for(i = 0; i < series->count; i++) {
+                if(series->contents[i].any() == selected.any()) {
                     break;
                 }
-                if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
-                    if(AddLeafWorker(s->contents[i], selected, newElem)) {
+                if(series->contents[i].which == ELEM_PARALLEL_SUBCKT) {
+                    if(AddLeafWorker(series->contents[i], selected, newElem)) {
                         return true;
                     }
                 }
             }
-            if(i == s->count)
+            if(i == series->count)
                 break;
-            if(s->contents[i].which == ELEM_PLACEHOLDER) {
+            if(series->contents[i].which == ELEM_PLACEHOLDER) {
                 // Special case--placeholders are replaced. They only appear
                 // in the empty series subcircuit that I generate for them,
                 // so there is no need to consider them anywhere but here.
                 // If we copy instead of replacing then the DisplayMatrix
                 // tables don't get all messed up.
-                memcpy(s->contents[i].leaf(), newElem.leaf(), sizeof(ElemLeaf));
-                s->contents[i].leaf()->selectedState = EndOfRungElem(newElem.which) ? SELECTED_LEFT : SELECTED_RIGHT;
+                memcpy(series->contents[i].leaf(), newElem.leaf(), sizeof(ElemLeaf));
+                series->contents[i].leaf()->selectedState = EndOfRungElem(newElem.which) ? SELECTED_LEFT : SELECTED_RIGHT;
                 CheckFree(newElem.leaf());
-                s->contents[i].which = newElem.which;
+                series->contents[i].which = newElem.which;
                 selected.which = newElem.which;
                 return true;
             }
-            if(s->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
+            if(series->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
                 Error(_("Too many elements in subcircuit!"));
                 return true;
             }
             switch(selected.leaf()->selectedState) {
                 case SELECTED_LEFT:
-                    memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
-                    s->contents[i] = newElem;
-                    (s->count)++;
+                    memmove(&series->contents[i + 1], &series->contents[i], (series->count - i) * sizeof(series->contents[0]));
+                    series->contents[i] = newElem;
+                    (series->count)++;
                     break;
 
                 case SELECTED_RIGHT:
-                    memmove(&s->contents[i + 2], &s->contents[i + 1], (s->count - i - 1) * sizeof(s->contents[0]));
-                    s->contents[i + 1] = newElem;
-                    (s->count)++;
+                    memmove(&series->contents[i + 2], &series->contents[i + 1], (series->count - i - 1) * sizeof(series->contents[0]));
+                    series->contents[i + 1] = newElem;
+                    (series->count)++;
                     break;
 
                 case SELECTED_BELOW:
                 case SELECTED_ABOVE: {
-                    ElemSubcktParallel *p = AllocSubcktParallel();
-                    p->count = 2;
+                    SeriesNode sp(ELEM_PARALLEL_SUBCKT, AllocSubcktParallel());
+                    sp.parallel()->count = 2;
 
                     int t;
                     t = (selected.leaf()->selectedState == SELECTED_ABOVE) ? 0 : 1;
-                    p->contents[t] = newElem;
+                    sp.parallel()->contents[t] = newElem;
                     t = (selected.leaf()->selectedState == SELECTED_ABOVE) ? 1 : 0;
-                    p->contents[t].which = s->contents[i].which;
-                    p->contents[t].data.any = s->contents[i].data.any;
+                    sp.parallel()->contents[t] = series->contents[i];
 
-                    s->contents[i].which = ELEM_PARALLEL_SUBCKT;
-                    s->contents[i].data.parallel = p;
+                    series->contents[i] = sp;
                     break;
                 }
                 default:
-                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state {}.", Selected.data.leaf->selectedState);
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state %i.", selected.leaf()->selectedState);
                     break;
             }
             return true;
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = any.parallel();
-            for(i = 0; i < p->count; i++) {
-                if(p->contents[i].any() == selected.any()) {
+            ElemSubcktParallel *parallel = any.parallel();
+            for(i = 0; i < parallel->count; i++) {
+                if(parallel->contents[i].any() == selected.any()) {
                     break;
                 }
-                if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
-                    if(AddLeafWorker(p->contents[i], selected, newElem)) {
+                if(parallel->contents[i].which == ELEM_SERIES_SUBCKT) {
+                    if(AddLeafWorker(parallel->contents[i], selected, newElem)) {
                         return true;
                     }
                 }
             }
-            if(i == p->count)
+            if(i == parallel->count)
                 break;
-            if(p->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
+            if(parallel->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
                 Error(_("Too many elements in subcircuit!"));
                 return true;
             }
             switch(selected.leaf()->selectedState) {
                 case SELECTED_ABOVE:
-                    memmove(&p->contents[i + 1], &p->contents[i], (p->count - i) * sizeof(p->contents[0]));
-                    p->contents[i] = newElem;
-                    (p->count)++;
+                    memmove(&parallel->contents[i + 1], &parallel->contents[i], (parallel->count - i) * sizeof(parallel->contents[0]));
+                    parallel->contents[i] = newElem;
+                    (parallel->count)++;
                     break;
 
                 case SELECTED_BELOW:
-                    memmove(&p->contents[i + 2], &p->contents[i + 1], (p->count - i - 1) * sizeof(p->contents[0]));
-                    p->contents[i + 1] = newElem;
-                    (p->count)++;
+                    memmove(&parallel->contents[i + 2], &parallel->contents[i + 1], (parallel->count - i - 1) * sizeof(parallel->contents[0]));
+                    parallel->contents[i + 1] = newElem;
+                    (parallel->count)++;
                     break;
 
                 case SELECTED_LEFT:
                 case SELECTED_RIGHT: {
-                    ElemSubcktSeries *s = AllocSubcktSeries();
-                    s->count = 2;
+                    //ElemSubcktSeries *s = AllocSubcktSeries();
+                    SeriesNode ss(ELEM_SERIES_SUBCKT, AllocSubcktSeries());
+                    ss.series()->count = 2;
 
                     int t;
-                    t = (selected.data.leaf->selectedState == SELECTED_LEFT) ? 0 : 1;
-                    s->contents[t] = newElem;
-                    t = (selected.data.leaf->selectedState == SELECTED_LEFT) ? 1 : 0;
-                    s->contents[t].which = p->contents[i].which;
-                    s->contents[t].data.any = p->contents[i].data.any;
+                    t = (selected.leaf()->selectedState == SELECTED_LEFT) ? 0 : 1;
+                    ss.series()->contents[t] = newElem;
+                    t = (selected.leaf()->selectedState == SELECTED_LEFT) ? 1 : 0;
+                    ss.series()->contents[t] = parallel->contents[i];
 
-                    p->contents[i].which = ELEM_SERIES_SUBCKT;
-                    p->contents[i].data.series = s;
+                    parallel->contents[i] = ss;
                     break;
                 }
                 default:
-                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state {}.", Selected.data.leaf->selectedState);
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state %i.", selected.leaf()->selectedState);
                     break;
             }
             return true;
