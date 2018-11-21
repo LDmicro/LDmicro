@@ -205,6 +205,136 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
     return false;
 }
 
+static bool AddLeafWorker(SeriesNode& any, SeriesNode& selected, SeriesNode newElem)
+{
+    int i;
+    switch(any.which) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = any.series();
+            for(i = 0; i < s->count; i++) {
+                if(s->contents[i].any() == selected.any()) {
+                    break;
+                }
+                if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
+                    if(AddLeafWorker(s->contents[i], selected, newElem)) {
+                        return true;
+                    }
+                }
+            }
+            if(i == s->count)
+                break;
+            if(s->contents[i].which == ELEM_PLACEHOLDER) {
+                // Special case--placeholders are replaced. They only appear
+                // in the empty series subcircuit that I generate for them,
+                // so there is no need to consider them anywhere but here.
+                // If we copy instead of replacing then the DisplayMatrix
+                // tables don't get all messed up.
+                memcpy(s->contents[i].leaf(), newElem.leaf(), sizeof(ElemLeaf));
+                s->contents[i].leaf()->selectedState = EndOfRungElem(newElem.which) ? SELECTED_LEFT : SELECTED_RIGHT;
+                CheckFree(newElem.leaf());
+                s->contents[i].which = newElem.which;
+                selected.which = newElem.which;
+                return true;
+            }
+            if(s->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
+                Error(_("Too many elements in subcircuit!"));
+                return true;
+            }
+            switch(selected.leaf()->selectedState) {
+                case SELECTED_LEFT:
+                    memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
+                    s->contents[i] = newElem;
+                    (s->count)++;
+                    break;
+
+                case SELECTED_RIGHT:
+                    memmove(&s->contents[i + 2], &s->contents[i + 1], (s->count - i - 1) * sizeof(s->contents[0]));
+                    s->contents[i + 1] = newElem;
+                    (s->count)++;
+                    break;
+
+                case SELECTED_BELOW:
+                case SELECTED_ABOVE: {
+                    ElemSubcktParallel *p = AllocSubcktParallel();
+                    p->count = 2;
+
+                    int t;
+                    t = (selected.leaf()->selectedState == SELECTED_ABOVE) ? 0 : 1;
+                    p->contents[t] = newElem;
+                    t = (selected.leaf()->selectedState == SELECTED_ABOVE) ? 1 : 0;
+                    p->contents[t].which = s->contents[i].which;
+                    p->contents[t].data.any = s->contents[i].data.any;
+
+                    s->contents[i].which = ELEM_PARALLEL_SUBCKT;
+                    s->contents[i].data.parallel = p;
+                    break;
+                }
+                default:
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state {}.", Selected.data.leaf->selectedState);
+                    break;
+            }
+            return true;
+            break;
+        }
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = any.parallel();
+            for(i = 0; i < p->count; i++) {
+                if(p->contents[i].any() == selected.any()) {
+                    break;
+                }
+                if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
+                    if(AddLeafWorker(p->contents[i], selected, newElem)) {
+                        return true;
+                    }
+                }
+            }
+            if(i == p->count)
+                break;
+            if(p->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
+                Error(_("Too many elements in subcircuit!"));
+                return true;
+            }
+            switch(selected.leaf()->selectedState) {
+                case SELECTED_ABOVE:
+                    memmove(&p->contents[i + 1], &p->contents[i], (p->count - i) * sizeof(p->contents[0]));
+                    p->contents[i] = newElem;
+                    (p->count)++;
+                    break;
+
+                case SELECTED_BELOW:
+                    memmove(&p->contents[i + 2], &p->contents[i + 1], (p->count - i - 1) * sizeof(p->contents[0]));
+                    p->contents[i + 1] = newElem;
+                    (p->count)++;
+                    break;
+
+                case SELECTED_LEFT:
+                case SELECTED_RIGHT: {
+                    ElemSubcktSeries *s = AllocSubcktSeries();
+                    s->count = 2;
+
+                    int t;
+                    t = (selected.data.leaf->selectedState == SELECTED_LEFT) ? 0 : 1;
+                    s->contents[t] = newElem;
+                    t = (selected.data.leaf->selectedState == SELECTED_LEFT) ? 1 : 0;
+                    s->contents[t].which = p->contents[i].which;
+                    s->contents[t].data.any = p->contents[i].data.any;
+
+                    p->contents[i].which = ELEM_SERIES_SUBCKT;
+                    p->contents[i].data.series = s;
+                    break;
+                }
+                default:
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state {}.", Selected.data.leaf->selectedState);
+                    break;
+            }
+            return true;
+            break;
+        }
+    }
+
+    return false;
+}
+
 
 bool AddLeafToParent(SeriesNode selected, SeriesNode newLeaf)
 {
@@ -233,27 +363,6 @@ bool AddLeafToParent(SeriesNode selected, SeriesNode newLeaf)
         {
 
         }
-    return false;
-}
-
-bool AddLeafWorker(SeriesNode& circuit, const SeriesNode& selected, const SeriesNode& newLeaf)
-{
-    switch(circuit.which)
-        {
-        case ELEM_SERIES_SUBCKT:{
-            ElemSubcktSeries *s = circuit.data.series;
-            int pos = 0;
-            for(pos = 0; pos < s->count; pos++){
-
-                }
-        }
-        break;
-        case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = circuit.data.parallel;
-        }
-        break;
-        }
-
     return false;
 }
 
