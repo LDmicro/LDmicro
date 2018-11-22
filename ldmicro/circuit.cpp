@@ -307,7 +307,6 @@ static bool AddLeafWorker(SeriesNode& any, SeriesNode& selected, SeriesNode newE
 
                 case SELECTED_LEFT:
                 case SELECTED_RIGHT: {
-                    //ElemSubcktSeries *s = AllocSubcktSeries();
                     SeriesNode ss(ELEM_SERIES_SUBCKT, AllocSubcktSeries());
                     ss.series()->count = 2;
 
@@ -383,6 +382,21 @@ static bool AddLeaf(int newWhich, ElemLeaf *newElem)
     return false;
 }
 
+static bool AddLeaf(SeriesNode newElem)
+{
+    if(!Selected.leaf() || Selected.leaf()->selectedState == SELECTED_NONE)
+        return false;
+
+    for(int i = 0; i < Prog.numRungs; i++) {
+        SeriesNode ss(ELEM_SERIES_SUBCKT, Prog.rungs(i));
+        if(AddLeafWorker(ss, Selected, newElem)) {
+            WhatCanWeDoFromCursorAndTopology();
+            return true;
+        }
+    }
+    return false;
+}
+
 //-----------------------------------------------------------------------------
 // Routines to allocate memory for a new circuit element (contact, coil, etc.)
 // and insert it into the current program with AddLeaf. Fill in some default
@@ -414,7 +428,9 @@ void AddContact(int what)
     }
     c->d.contacts.negated = false;
 
-    AddLeaf(ELEM_CONTACTS, c);
+    //AddLeaf(ELEM_CONTACTS, c);
+    SeriesNode contact(ELEM_CONTACTS, c);
+    AddLeaf(contact);
 }
 
 void AddCoil(int what)
@@ -1323,17 +1339,17 @@ static void NullDisplayMatrix(int from, int to)
     int i, j;
     for(j = from; j < to; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-            if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
-                DisplayMatrix[i][j] = nullptr;
-                DisplayMatrixWhich[i][j] = ELEM_NULL;
+            if(DisplayMatrix[i][j].which == ELEM_COMMENT) {
+                DisplayMatrix[i][j].data.any = nullptr;
+                DisplayMatrix[i][j].which = ELEM_NULL;
             }
         }
     }
     for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-            if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
-                DisplayMatrix[i][j] = nullptr;
-                DisplayMatrixWhich[i][j] = ELEM_NULL;
+            if(DisplayMatrix[i][j].which == ELEM_COMMENT) {
+                DisplayMatrix[i][j].data.any = nullptr;
+                DisplayMatrix[i][j].which = ELEM_NULL;
             }
         }
     }

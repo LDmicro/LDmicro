@@ -608,8 +608,8 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
         if(gx >= DISPLAY_MATRIX_X_SIZE)
             oops();
         DM_BOUNDS(gx, gy);
-        DisplayMatrix[gx][gy] = PADDING_IN_DISPLAY_MATRIX;
-        DisplayMatrixWhich[gx][gy] = ELEM_PADDING;
+        DisplayMatrix[gx][gy].data.leaf = PADDING_IN_DISPLAY_MATRIX;
+        DisplayMatrix[gx][gy].which = ELEM_PADDING;
 
         DrawWire(cx, cy, '-');
         cx0 += POS_WIDTH;
@@ -1637,8 +1637,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         return false;
     DM_BOUNDS(gx, gy);
 
-    DisplayMatrix[gx][gy] = leaf;
-    DisplayMatrixWhich[gx][gy] = which;
+    DisplayMatrix[gx][gy].data.leaf = leaf;
+    DisplayMatrix[gx][gy].which = which;
 
     int xadj = 0;
     switch(which) {
@@ -1656,8 +1656,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_UART_CPRINTF:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx - 1, gy);
-            DisplayMatrix[gx - 1][gy] = leaf;
-            DisplayMatrixWhich[gx - 1][gy] = which;
+            DisplayMatrix[gx - 1][gy].data.leaf = leaf;
+            DisplayMatrix[gx - 1][gy].which = which;
             xadj = POS_WIDTH * FONT_WIDTH;
             break;
     }
@@ -1665,10 +1665,10 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
     if(which == ELEM_COMMENT) {
         int len = 0;
         for(int i = 0; i < ColsAvailable; i++) {
-            if((DisplayMatrixWhich[i][gy] <= ELEM_PLACEHOLDER) || true // 2.3
-               || (DisplayMatrixWhich[i][gy] == ELEM_COMMENT)) {
-                DisplayMatrix[i][gy] = leaf;
-                DisplayMatrixWhich[i][gy] = ELEM_COMMENT;
+            if((DisplayMatrix[i][gy].which <= ELEM_PLACEHOLDER) || true // 2.3
+               || (DisplayMatrix[i][gy].which == ELEM_COMMENT)) {
+                DisplayMatrix[i][gy].data.leaf = leaf;
+                DisplayMatrix[i][gy].which = ELEM_COMMENT;
                 len++;
             }
         }
@@ -1819,8 +1819,8 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
                         return false;
 
                     DM_BOUNDS(gx, gy);
-                    DisplayMatrix[gx][gy] = PADDING_IN_DISPLAY_MATRIX;
-                    DisplayMatrixWhich[gx][gy] = ELEM_PADDING;
+                    DisplayMatrix[gx][gy].data.leaf = PADDING_IN_DISPLAY_MATRIX;
+                    DisplayMatrix[gx][gy].which = ELEM_PADDING;
 
                     DrawWire(cx, cy, '-');
                 }
@@ -1844,7 +1844,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
                 for(int j = heightMax - 1; j >= 1; j--) {
                     if(j <= lowestPowered)
                         PoweredText(poweredAfter);
-                    if(DisplayMatrix[*cx / POS_WIDTH - 1][*cy / POS_HEIGHT + j]) {
+                    if(DisplayMatrix[*cx / POS_WIDTH - 1][*cy / POS_HEIGHT + j].any()) {
                         needWire = true;
                     }
                     if(needWire)
@@ -1860,7 +1860,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
             PoweredText(poweredBefore);
             needWire = false;
             for(int j = heightMax - 1; j >= 1; j--) {
-                if(DisplayMatrix[cx0 / POS_WIDTH][*cy / POS_HEIGHT + j]) {
+                if(DisplayMatrix[cx0 / POS_WIDTH][*cy / POS_HEIGHT + j].any()) {
                     needWire = true;
                 }
                 if(needWire)

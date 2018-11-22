@@ -36,10 +36,7 @@ bool CanInsertComment;
 // us which leaf element is in which box on the grid, which allows us
 // to determine what element has just been selected when the user clicks
 // on something, for example.
-ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
-int       DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
-//ElemLeaf *Selected;
-//int       SelectedWhich;
+SeriesNode DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 SeriesNode Selected;
 
 ElemLeaf DisplayMatrixFiller;
@@ -56,14 +53,14 @@ PlcCursor Cursor;
 //-----------------------------------------------------------------------------
 bool FindSelected(int *gx, int *gy)
 {
-    if(!Selected.data.leaf)
+    if(!Selected.leaf())
         return false;
     int i, j;
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
-            if(DisplayMatrix[i][j] == Selected.data.leaf) {
+            if(DisplayMatrix[i][j].leaf() == Selected.leaf()) {
                 if(Selected.which != ELEM_COMMENT)
-                    while(DisplayMatrix[i + 1][j] == Selected.data.leaf)
+                    while(DisplayMatrix[i + 1][j].data.leaf == Selected.leaf())
                         i++;
                 *gx = i;
                 *gy = j;
@@ -91,8 +88,7 @@ void SelectElement(int gx, int gy, int state)
     if(Selected.data.leaf)
         Selected.data.leaf->selectedState = SELECTED_NONE;
 
-    Selected.data.leaf = DisplayMatrix[gx][gy];
-    Selected.which = DisplayMatrixWhich[gx][gy];
+    Selected = DisplayMatrix[gx][gy];
 
     if(Selected.which == ELEM_PLACEHOLDER) {
         state = SELECTED_LEFT;
@@ -324,8 +320,8 @@ void ForgetFromGrid(void *p)
     int i, j;
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
-            if(DisplayMatrix[i][j] == p) {
-                DisplayMatrix[i][j] = nullptr;
+            if(DisplayMatrix[i][j].any() == p) {
+                DisplayMatrix[i][j].data.any = nullptr;
                 //              DisplayMatrixWhich[i][j] = ELEM_NULL; // ???
             }
         }
@@ -344,7 +340,6 @@ void ForgetFromGrid(void *p)
 void ForgetEverything()
 {
     memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
-    memset(DisplayMatrixWhich, 0, sizeof(DisplayMatrixWhich));
     Selected.data.any = nullptr;
     Selected.which = 0;
 }
@@ -410,7 +405,7 @@ void MoveCursorKeyboard(int keyCode)
             int i, j;
             if(FindSelected(&i, &j)) {
                 i--;
-                while(i >= 0 && (!VALID_LEAF(DisplayMatrix[i][j]) || (DisplayMatrix[i][j] == Selected.data.leaf))) {
+                while(i >= 0 && (!VALID_LEAF(DisplayMatrix[i][j]) || (DisplayMatrix[i][j].data.leaf == Selected.leaf()))) {
                     i--;
                 }
                 if(i >= 0) {
@@ -871,17 +866,17 @@ void EditElementMouseDoubleclick(int x, int y)
     gy += ScrollYOffset;
 
     if(InSimulationMode) {
-        ElemLeaf *l = DisplayMatrix[gx][gy];
-        if(l && DisplayMatrixWhich[gx][gy] == ELEM_CONTACTS) {
+        ElemLeaf *l = DisplayMatrix[gx][gy].leaf();
+        if(l && DisplayMatrix[gx][gy].which == ELEM_CONTACTS) {
             char *name = l->d.contacts.name;
             if((name[0] != 'Y') && (name[0] != 'M')) {
                 SimulationToggleContact(name);
             }
-        } else if(l && DisplayMatrixWhich[gx][gy] == ELEM_READ_ADC) {
+        } else if(l && DisplayMatrix[gx][gy].which == ELEM_READ_ADC) {
             ShowAnalogSliderPopup(l->d.readAdc.name);
         }
     } else {
-        if(DisplayMatrix[gx][gy] == Selected.leaf()) {
+        if(DisplayMatrix[gx][gy].leaf() == Selected.leaf()) {
             EditSelectedElement();
         }
     }
@@ -934,8 +929,8 @@ void MoveCursorMouseClick(int x, int y)
         int i, j;
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
             for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
-                if(DisplayMatrix[i][j])
-                    DisplayMatrix[i][j]->selectedState = SELECTED_NONE;
+                if(DisplayMatrix[i][j].any())
+                    DisplayMatrix[i][j].leaf()->selectedState = SELECTED_NONE;
             }
         }
         int dx = x - (gx0 * POS_WIDTH * FONT_WIDTH + X_PADDING);
@@ -947,16 +942,16 @@ void MoveCursorMouseClick(int x, int y)
         int dright = POS_WIDTH * FONT_WIDTH - dx;
 
         int extra = 1;
-        if(DisplayMatrixWhich[gx][gy] == ELEM_COMMENT) {
+        if(DisplayMatrix[gx][gy].which == ELEM_COMMENT) {
             dleft += gx * POS_WIDTH * FONT_WIDTH;
             dright += (ColsAvailable - gx - 1) * POS_WIDTH * FONT_WIDTH;
             extra = ColsAvailable;
         } else {
-            if((gx > 0) && (DisplayMatrix[gx - 1][gy] == DisplayMatrix[gx][gy])) {
+            if((gx > 0) && (DisplayMatrix[gx - 1][gy].leaf() == DisplayMatrix[gx][gy].leaf())) {
                 dleft += POS_WIDTH * FONT_WIDTH;
                 extra = 2;
             }
-            if((gx < (DISPLAY_MATRIX_X_SIZE - 1)) && (DisplayMatrix[gx + 1][gy] == DisplayMatrix[gx][gy])) {
+            if((gx < (DISPLAY_MATRIX_X_SIZE - 1)) && (DisplayMatrix[gx + 1][gy].leaf() == DisplayMatrix[gx][gy].leaf())) {
                 dright += POS_WIDTH * FONT_WIDTH;
                 extra = 2;
             }
@@ -1037,7 +1032,7 @@ bool MoveCursorNear(int *gx, int *gy)
                     SelectElement(*gx + across, *gy, SELECTED_LEFT);
                     return FindSelected(&*gx, &*gy);
                 }
-                if(!DisplayMatrix[*gx + across][*gy])
+                if(!DisplayMatrix[*gx + across][*gy].leaf())
                     break;
             }
         }
