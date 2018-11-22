@@ -142,7 +142,7 @@ double ksS(int nSize)
 //===========================================================================
 
 void makeAccelTable(FILE *f, int max, int P, int nSize, ElemAccel **TT, char *name,
-                    int  nN,  // (1-¤«п ­ҐбЁ¬¬ҐваЁз­ле ЄаЁўле а §Ј®­®ў, 2-¤«п cЁ¬¬ҐваЁз­ле S-®Ўа §­ле ЄаЁўле а §Ј®­ )
+                    int  nN,  // (1-для несимметричных кривых разгонов, 2-для cимметричных S-образных кривых разгона)
                     int  sFt, // (1-sFt, 0-tFs)
                     int *n, int *Psum,
                     int *shrt, // mult = 2 ^ shrt
@@ -286,7 +286,7 @@ void makeAccelTable(FILE *f, int max, int P, int nSize, ElemAccel **TT, char *na
             dtMax = T[i].dt;
     }
 
-    int mult = 1; // ¬­®¦ЁвҐ«м dti ¤® 128
+    int mult = 1; // множитель dti до 128
     *shrt = 0;    // mult = 2 ^ shrt
     if(P < 1) {
         P = 1;
