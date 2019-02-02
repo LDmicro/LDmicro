@@ -140,7 +140,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
 }
 
 //-----------------------------------------------------------------------------
-// Generate a declaration for an integer var.
+// Generate a declaration for a string.
 //-----------------------------------------------------------------------------
 static void DeclareStr(FILE *f, FILE *fh, const char *str, int sov)
 {
