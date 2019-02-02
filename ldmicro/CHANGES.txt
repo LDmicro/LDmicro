@@ -1,3 +1,5 @@
+    * Fixed: LDmicro compiles sketch for Arduino even if PIC MCU is selected  #101
+
     * Fixed: Cannot set a value greater than 0x7FFFFFFF in a variable of 4 bytes. #146
 
     * Updated: Italian locale. Thanks, Claudio Birello.
