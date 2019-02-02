@@ -35,6 +35,7 @@ extern const char *HelpTextTr[];
 extern const char *HelpTextJa[];
 extern const char *HelpTextRu[];
 extern const char *HelpTextEs[];
+extern const char *HelpTextIt[];
 
 // clang-format off
 const char *AboutText[] = {
@@ -83,7 +84,6 @@ nullptr
 
 static const char **Text[] = {
 #if defined(LDLANG_EN) || \
-    defined(LDLANG_IT) || \
     defined(LDLANG_PT)
     HelpText,
 #elif defined(LDLANG_DE)
@@ -98,6 +98,8 @@ static const char **Text[] = {
     HelpTextRu,
 #elif defined(LDLANG_ES)
     HelpTextEs,
+#elif defined(LDLANG_IT)
+    HelpTextIt,
 #else
     #error "Bad language"
 #endif
