@@ -1,3 +1,4 @@
+    * Fixed: Cannot set a value greater than 0x7FFFFFFF in a variable of 4 bytes. #146
 
     * Updated: Italian locale. Thanks, Claudio Birello.
 

@@ -1228,10 +1228,6 @@ int getradix(const char *str)
 //-----------------------------------------------------------------------------
 long hobatoi(const char *str)
 {
-    char s[512];
-    if(strstr(toupperstr(s, str), "0XFFFFFFFF"))
-        return 0xFFFFFFFF;
-
     long        val;
     const char *start_ptr = str;
     while(isspace(*start_ptr))
@@ -1258,7 +1254,11 @@ long hobatoi(const char *str)
         }
         char *end_ptr = nullptr;
         // errno = 0;
-        val = strtol(str, &end_ptr, radix);
+        if(radix == 16) {
+            val = strtoul(str, &end_ptr, radix);
+        } else {
+            val = strtol(str, &end_ptr, radix);
+        }
         if(*end_ptr) {
             //         val = 0;
             //         THROW_COMPILER_EXCEPTION_FMT("Conversion error the\n'%s' string into number %d at\n'%s' position.", str, val, end_ptr);
@@ -2940,7 +2940,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_SET_BIT, storeName);
                 // ▌ЄюЄ ЇЁруьхэЄ ъюфр т√яюыэ хЄё  1 Ёрч яЁш яхЁхъы■ўхэшш 0->1.
                 // This code fragment is executed 1 time when switching 0->1.
-                Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1); // з прет повторной з грузки - повторного рест рт 
+                Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1); // з прет повторной з грузки - повторного рест рт
                   OpSetVar(decCounter, l->d.stepper.max);
 
                   if(speed == 2) {

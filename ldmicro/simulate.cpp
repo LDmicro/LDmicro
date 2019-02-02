@@ -2281,9 +2281,9 @@ void DescribeForIoList(const char *name, int type, char *out)
                 else if(sov == 2)
                     sprintf(out, "0x%04X = %d = %.6g ms", v & 0xffff, v, dtms);
                 else if(sov == 3)
-                    sprintf(out, "0x%06X = %d = %.6g ms", v & 0xFFffff, v, dtms);
+                    sprintf(out, "0x%06X = %ld = %.6g ms", v & 0xFFffff, v, dtms);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %d = %.6g ms", v & 0xFFFFffff, v, dtms);
+                    sprintf(out, "0x%08X = %ld = %.6g ms", v & 0xFFFFffff, v, dtms);
                 else
                     oops();
             } else {
@@ -2292,9 +2292,9 @@ void DescribeForIoList(const char *name, int type, char *out)
                 else if(sov == 2)
                     sprintf(out, "0x%04X = %d = %.6g s", v & 0xffff, v, dtms / 1000);
                 else if(sov == 3)
-                    sprintf(out, "0x%06X = %d = %.6g s", v & 0xFFffff, v, dtms / 1000);
+                    sprintf(out, "0x%06X = %ld = %.6g s", v & 0xFFffff, v, dtms / 1000);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %d = %.6g s", v & 0xFFFFffff, v, dtms / 1000);
+                    sprintf(out, "0x%08X = %ld = %.6g s", v & 0xFFFFffff, v, dtms / 1000);
                 else
                     oops();
             }
@@ -2309,9 +2309,9 @@ void DescribeForIoList(const char *name, int type, char *out)
             else if(sov == 2)
                 sprintf(out, "0x%04X = %d", v & 0xffff, v);
             else if(sov == 3)
-                sprintf(out, "0x%06X = %d", v & 0xFFffff, v);
+                sprintf(out, "0x%06X = %ld", v & 0xFFffff, v);
             else if(sov == 4)
-                sprintf(out, "0x%08X = %d", v & 0xFFFFffff, v);
+                sprintf(out, "0x%08X = %ld", v & 0xFFFFffff, v);
             else {
                 sprintf(out, "0x%X = %d", v, v);
             }
