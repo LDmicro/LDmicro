@@ -707,7 +707,7 @@ IsOpenAnable:
         return;
 
     if((Prog.mcu() == nullptr) && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC)
-       && (MNU != MNU_COMPILE_ARDUINO) && (MNU != MNU_COMPILE_XINT)) {
+       && (MNU != MNU_COMPILE_ARDUINO) && (MNU != MNU_COMPILE_INT) && (MNU != MNU_COMPILE_XINT)) {
         Error(_("Must choose a target microcontroller before compiling."));
         return;
     }

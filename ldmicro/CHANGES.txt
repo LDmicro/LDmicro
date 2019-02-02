@@ -1,10 +1,13 @@
+== Release 4.4.4.0
+
+    * Fixed: Compile as Interpretable Byte Code fails with the error:
+    "Must choose a target microcontroller before compiling" #141
+
     * Fixed: LDmicro compiles sketch for Arduino even if PIC MCU is selected  #101
 
     * Fixed: Cannot set a value greater than 0x7FFFFFFF in a variable of 4 bytes. #146
 
     * Updated: Italian locale. Thanks, Claudio Birello.
-
-== Release 4.4.
 
     * Wiki: UART communication FAQ
     https://github.com/LDmicro/LDmicro/wiki/UART-communication-FAQ
