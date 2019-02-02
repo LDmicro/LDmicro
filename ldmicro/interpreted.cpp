@@ -83,7 +83,7 @@ void CompileInterpreted(const char *outFile)
 {
     FileTracker f(outFile, "w");
     if(!f) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't write to '%s'"), outFile);
+        Error(_("Couldn't write to '%s'"), outFile);
         return;
     }
 

@@ -102,7 +102,7 @@ static void CheckConstantInRange(SDWORD v)
 {
     /*
     if(v < -0x800000 || v > 0x7FffFF) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Constant %d out of range: %d to %d inclusive."), v, -0x800000, 0x7FffFF);
+        Error(_("Constant %d out of range: %d to %d inclusive."), v, -0x800000, 0x7FffFF);
     }
     */
 }
@@ -114,7 +114,7 @@ void IntDumpListing(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't dump intermediate code to '%s'."), outFile);
+        Error(_("Couldn't dump intermediate code to '%s'."), outFile);
     }
 
     int indent = 0;
@@ -2471,7 +2471,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_RSFR:
             Comment(3, "ELEM_RSFR");
             if(IsNumber(l->d.move.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Read SFR instruction: '%s' not a valid destination."), l->d.move.dest);
+                Error(_("Read SFR instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -2815,7 +2815,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         // clang-format on
 #ifdef TABLE_IN_FLASH
             if(IsNumber(l->d.segments.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Segments instruction: '%s' not a valid destination."), l->d.segments.dest);
+                Error(_("Segments instruction: '%s' not a valid destination."), l->d.segments.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.segments.src)) {
@@ -3195,7 +3195,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_MOVE: {
             Comment(3, "ELEM_MOVE");
             if(IsNumber(l->d.move.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Move instruction: '%s' not a valid destination."), l->d.move.dest);
+                Error(_("Move instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -3217,7 +3217,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_BIN2BCD: {
             Comment(3, "ELEM_BIN2BCD");
             if(IsNumber(l->d.move.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("BIN2BCD instruction: '%s' not a valid destination."), l->d.move.dest);
+                Error(_("BIN2BCD instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_BIN2BCD, l->d.move.dest, l->d.move.src);
@@ -3228,7 +3228,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_BCD2BIN: {
             Comment(3, "ELEM_BCD2BIN");
             if(IsNumber(l->d.move.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("BCD2BIN instruction: '%s' not a valid destination."), l->d.move.dest);
+                Error(_("BCD2BIN instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_BCD2BIN, l->d.move.dest, l->d.move.src);
@@ -3239,7 +3239,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_OPPOSITE: {
             Comment(3, "ELEM_OPPOSITE");
             if(IsNumber(l->d.move.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("OPPOSITE instruction: '%s' not a valid destination."), l->d.move.dest);
+                Error(_("OPPOSITE instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_OPPOSITE, l->d.move.dest, l->d.move.src);
@@ -3250,7 +3250,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_SWAP: {
             Comment(3, "ELEM_SWAP");
             if(IsNumber(l->d.move.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("SWAP instruction: '%s' not a valid destination."), l->d.move.dest);
+                Error(_("SWAP instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_SET_SWAP, l->d.move.dest, l->d.move.src);
@@ -3280,7 +3280,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             SetSizeOfVar(name, 4);
 
             if(IsNumber(l->d.move.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("SRAND instruction: '%s' not a valid destination."), l->d.move.dest);
+                Error(_("SRAND instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -3841,7 +3841,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_NOT: intOp = INT_SET_VARIABLE_NOT;      Comment(3, "ELEM_NOT"); goto mathBit;
           mathBit : {
             if(IsNumber(l->d.math.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
+                Error(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if((intOp == INT_SET_VARIABLE_NEG)
@@ -3855,7 +3855,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 ) {
                     if((hobatoi(l->d.math.op2) < 0)
                     || (SizeOfVar(l->d.math.op1) * 8 < hobatoi(l->d.math.op2))) {
-                        THROW_COMPILER_EXCEPTION_FMT(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
+                        Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
                     }
                 }
                 Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2/*, stateInOut2*/);
@@ -3874,7 +3874,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_MOD: intOp = INT_SET_VARIABLE_MOD;      Comment(3, "ELEM_MOD"); goto math;
         math : {
             if(IsNumber(l->d.math.dest)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
+                Error(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             const char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
@@ -3993,13 +3993,13 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             GetLabelName(ELEM_SUBPROG, name, l->d.doGoto.label);
             int r;
             if(IsNumber(l->d.doGoto.label)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.label);
+                Error(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.label);
                 r = hobatoi(l->d.doGoto.label);
                 r = std::min(r, Prog.numRungs + 1) - 1;
             } else {
                 r = FindRung(ELEM_SUBPROG, l->d.doGoto.label);
                 if(r < 0) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
+                    Error(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -4149,12 +4149,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             // point math.
             ElemPiecewiseLinear *t = &(l->d.piecewiseLinear);
             if(t->count == 0) {
-                THROW_COMPILER_EXCEPTION(_("Piecewise linear lookup table with zero elements!"));
+                Error(_("Piecewise linear lookup table with zero elements!"));
             }
             int xThis = t->vals[0];
             for(int i = 1; i < t->count; i++) {
                 if(t->vals[i * 2] <= xThis) {
-                    THROW_COMPILER_EXCEPTION(_("x values in piecewise linear table must be "
+                    Error(_("x values in piecewise linear table must be "
                         "strictly increasing."));
                 }
                 xThis = t->vals[i * 2];
@@ -4196,7 +4196,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
                 // Check for numerical problems, and fail if we have them.
                 if((thisDx * thisDy) >= 32767 || (thisDx * thisDy) <= -32768) {
-                    THROW_COMPILER_EXCEPTION(_("Numerical problem with piecewise linear lookup "
+                    Error(_("Numerical problem with piecewise linear lookup "
                         "table. Either make the table entries smaller, "
                         "or space the points together more closely.\r\n\r\n"
                         "See the help file for details."));
@@ -4547,7 +4547,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_PLACEHOLDER: {
             //Comment(3, "ELEM_PLACEHOLDER");
-            THROW_COMPILER_EXCEPTION(_("Empty row; delete it or add instructions before compiling."));
+            Error(_("Empty row; delete it or add instructions before compiling."));
             break;
         }
         case ELEM_COMMENT: {

@@ -587,7 +587,7 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
                         case OP_DECFSZ:
                         case OP_INCFSZ:
                         default:
-                            THROW_COMPILER_EXCEPTION("Bank select error!");
+                            Error(_("Bank select error!"));
                     }
                 }
             }
@@ -1016,7 +1016,7 @@ static void BankCorrection()
         if((IsOperation(PicProg[i - 1].opPic) == IS_SKIP) && (IsOperation(PicProg[i].opPic) >= IS_BANK)) {
             if((!IsCoreRegister(PicProg[i - 1].arg1)) && (!IsCoreRegister(PicProg[i].arg1))) {
                 if(Bank(PicProg[i].arg1) != Bank(PicProg[i - 1].arg1)) {
-                    THROW_COMPILER_EXCEPTION("Bank select error!");
+                    Error(_("Bank select error!"));
                 }
             }
         }
@@ -5006,7 +5006,7 @@ otherwise the result was zero or greater.
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name1.c_str(), Prog.cycleTimer);
                 if(!ioPWM) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name1.c_str());
+                    Error(_("Pin '%s': PWM output not available!"), a->name1.c_str());
                 }
                 int timer = ioPWM->timer;
                 if(timer == 1)
@@ -5036,7 +5036,7 @@ otherwise the result was zero or greater.
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!ioPWM) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name3.c_str());
+                    Error(_("Pin '%s': PWM output not available!"), a->name3.c_str());
                 }
 
                 int timer = ioPWM->timer;
@@ -5718,7 +5718,7 @@ otherwise the result was zero or greater.
                 return;
 
             case INT_WRITE_STRING:
-                THROW_COMPILER_EXCEPTION(_("Unsupported operation for target, skipped."));
+                Error(_("Unsupported operation for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
                 break;
 
@@ -7266,7 +7266,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     //------------------------------------------------------------
     FileTracker f(outFile, "w");
     if(!f) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFile);
+        Error(_("Couldn't open file '%s'"), outFile);
         return false;
     }
 
@@ -7274,7 +7274,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     SetExt(outFileAsm, outFile, ".asm");
     FileTracker fAsm(outFileAsm, "w");
     if(!fAsm) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFileAsm);
+        Error(_("Couldn't open file '%s'"), outFileAsm);
         return false;
     }
 
@@ -7627,7 +7627,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
-            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."));
+            Error(_("Zero baud rate not possible."));
             return false;
         }
 
@@ -7700,7 +7700,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         }
     } else if(Prog.cycleTimer == 1) {
         if(Prog.mcu()->core == BaselineCore12bit) {
-            THROW_COMPILER_EXCEPTION("Select Timer0 in menu 'Settings -> MCU parameters'!");
+            Error(_("Select Timer0 in menu 'Settings -> MCU parameters'!"));
         }
         if(Prog.cycleDuty) {
             CopyBit(addrDuty, bitDuty, REG_PIR1, CCP1IF, YPlcCycleDuty);
@@ -7857,7 +7857,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         if(Prog.cycleTime) {
             double CycleDeviation = 1e2 * (1e6 * plcTmr.TCycle - Prog.cycleTime) / Prog.cycleTime;
             if(CycleDeviation > 1.0) {
-                THROW_COMPILER_EXCEPTION_FMT(_("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
+                Error(_("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
             }
         }
 
@@ -7902,7 +7902,7 @@ void CompilePic16(const char *outFile)
         McuAs(" PIC12F675 ")          //
     ) {
         if(Prog.cycleTimer > 0) {
-            THROW_COMPILER_EXCEPTION("Select Timer 0 in menu 'Settings -> MCU parameters'!");
+            Error(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
             return;
         }
     }

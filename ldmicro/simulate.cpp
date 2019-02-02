@@ -2328,6 +2328,8 @@ void SimulationToggleContact(char *name)
 {
     SetSingleBit(name, !SingleBitOn(name));
     if((name[0] == 'X') || (name[0] == 'Y')) {
+      McuIoPinInfo *iop = PinInfoForName(name);
+      if(iop) {
         DWORD addr = -1;
         int   bit = -1;
         MemForSingleBit(name, true, &addr, &bit);
@@ -2345,6 +2347,7 @@ void SimulationToggleContact(char *name)
                 v &= ~(1<<bit);
             SetSimulationVariable(s, v);
         }
+      }
     }
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }

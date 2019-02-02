@@ -2801,7 +2801,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     LOG(ldlog::Info, logg, "Run LDmicro ver.: {}.", LDMICRO_VER_STR);
 
-    srand(time(0));
+    srand((int)time(0));
 
     if(LEN7SEG != arraylen(char7seg))
         oops();

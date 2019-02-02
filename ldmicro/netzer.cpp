@@ -1115,7 +1115,7 @@ void CompileNetzer(const char *outFile)
     // Generate interpretable code.
     opcodes = GenerateIntOpcodes();
     if(opcodes == 0) {
-        THROW_COMPILER_EXCEPTION(_("No opcodes found."));
+        Error(_("No opcodes found."));
         return;
     } else if(opcodes == -1) {
         // Errors found, better return without doing anything here.
@@ -1124,7 +1124,7 @@ void CompileNetzer(const char *outFile)
 
     FileTracker f(outFile, "w+b");
     if(!f) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't write to '%s'"), outFile);
+        Error(_("Couldn't write to '%s'"), outFile);
         return;
     }
 

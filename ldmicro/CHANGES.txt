@@ -1,5 +1,9 @@
 == Release 4.4.4.0
 
+
+
+    * Fixed: LDmicro closes unexpectedly #144
+
     * Fixed: Compile as Interpretable Byte Code fails with the error:
     "Must choose a target microcontroller before compiling" #141
 
