@@ -1145,20 +1145,52 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 break;
 
-            case INT_EEPROM_READ:
+            case INT_EEPROM_READ: {
+                int         sov = SizeOfVar(IntCode[i].name1);
                 fprintf(f,
-                        "%s = EEPROM_read(%ld) + (EEPROM_read(%ld) << 8);\n",
+                        "%s = EEPROM_read(%ld);\n",
                         MapSym(IntCode[i].name1, ASINT),
-                        IntCode[i].literal,
+                        IntCode[i].literal);
+                if(sov >= 2) {
+                  doIndent(f, i);
+                  fprintf(f,
+                        "%s += EEPROM_read(%ld) << 8;\n",
+                        MapSym(IntCode[i].name1, ASINT),
                         IntCode[i].literal + 1);
+                }
+                if(sov >= 3) {
+                  doIndent(f, i);
+                  fprintf(f,
+                        "%s += EEPROM_read(%ld) << 16;\n",
+                        MapSym(IntCode[i].name1, ASINT),
+                        IntCode[i].literal + 2);
+                }
+                if(sov >= 4) {
+                  doIndent(f, i);
+                  fprintf(f,
+                        "%s += EEPROM_read(%ld) << 24;\n",
+                        MapSym(IntCode[i].name1, ASINT),
+                        IntCode[i].literal + 3);
+                }
                 break;
-
-            case INT_EEPROM_WRITE:
+            }
+            case INT_EEPROM_WRITE: {
+                int         sov = SizeOfVar(IntCode[i].name1);
                 fprintf(f, "EEPROM_write(%d, %s & 0xFF);\n", IntCode[i].literal, MapSym(IntCode[i].name1, ASINT));
-                doIndent(f, i);
-                fprintf(f, "EEPROM_write(%d, %s >> 8);\n", IntCode[i].literal + 1, MapSym(IntCode[i].name1, ASINT));
+                if(sov >= 2) {
+                  doIndent(f, i);
+                  fprintf(f, "EEPROM_write(%d, (%s >> 8) & 0xFF);\n", IntCode[i].literal + 1, MapSym(IntCode[i].name1, ASINT));
+                }
+                if(sov >= 3) {
+                  doIndent(f, i);
+                  fprintf(f, "EEPROM_write(%d, (%s >> 16) & 0xFF);\n", IntCode[i].literal + 2, MapSym(IntCode[i].name1, ASINT));
+                }
+                if(sov >= 4) {
+                  doIndent(f, i);
+                  fprintf(f, "EEPROM_write(%d, (%s >> 24) & 0xFF);\n", IntCode[i].literal + 3, MapSym(IntCode[i].name1, ASINT));
+                }
                 break;
-
+            }
             case INT_READ_ADC:
                 fprintf(f, "%s = Read_%s();\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name1, ASBIT));
                 break;
