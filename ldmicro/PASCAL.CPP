@@ -37,7 +37,7 @@ static DWORD InCount, OutCount, TimerCount, RelayCount, VarCount;
 // Have we seen a variable before? If not then no need to generate code for
 // it, otherwise we will have to make a declaration, and mark it as seen.
 //-----------------------------------------------------------------------------
-static bool SeenVariable(const char *name)
+static bool SeenVariable(char *name)
 {
     int i;
     for(i = 0; i < SeenVariablesCount; i++) {
@@ -46,7 +46,7 @@ static bool SeenVariable(const char *name)
         }
     }
     if(i >= MAX_IO)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     strcpy(SeenVariables[i], name);
     SeenVariablesCount++;
     return false;
@@ -61,14 +61,8 @@ static bool SeenVariable(const char *name)
 #define ASINT 2
 #define ASSTR 3
 
-//template <size_t N> static char *MapSym(const StringArray<N> &str, int how)
-static const char *MapSym(const char *str, int how)
+template <size_t N> static char *MapSym(const StringArray<N> &str, int how)
 {
-    if(!str)
-        return nullptr;
-    if(strlen(str) == 0)
-        return nullptr;
-
     static char AllRets[16][MAX_NAME_LEN + 30];
     static int  RetCnt;
 
@@ -83,16 +77,16 @@ static const char *MapSym(const char *str, int how)
     } else if(how == ASINT) {
         bit_int = 'i';
     } else {
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), ret);
     }
 
     // User and internal symbols are distinguished.
-    if(IsNumber(str))
-        sprintf(ret, "%s", str);
+    if(IsNumber(str.c_str()))
+        sprintf(ret, "%s", str.c_str());
     else if(str[0] == '$') {
-        sprintf(ret, "I%c_%s", bit_int, str + 1);
+        sprintf(ret, "I%c_%s", bit_int, str.c_str() + 1);
     } else {
-        sprintf(ret, "U%c_%s", bit_int, str);
+        sprintf(ret, "U%c_%s", bit_int, str.c_str());
     }
 
     char trans[1024];
@@ -105,12 +99,8 @@ static const char *MapSym(const char *str, int how)
     return ret;
 }
 
-static const char *MapSym(const NameArray &name, int how)
-{
-    return MapSym(name.c_str(), how);
-}
 //-----------------------------------------------------------------------------
-static void ResetAndRegister(FILE *fr, FILE *fv, const char *str, char *_str)
+static void ResetAndRegister(FILE *fr, FILE *fv, char *str, char *_str)
 {
     char        __str[MAX_NAME_LEN];
     char        str2[MAX_NAME_LEN];
@@ -193,7 +183,7 @@ static void ResetAndRegister(FILE *fr, FILE *fv, const char *str, char *_str)
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var; easy, a static 16-bit qty.
 //-----------------------------------------------------------------------------
-static void DeclareInt(FILE *f, FILE *fi, FILE *fr, FILE *fv, const char *str, char *_str)
+static void DeclareInt(FILE *f, FILE *fi, FILE *fr, FILE *fv, char *str, char *_str)
 {
     if(IsNumber(str))
         return;
@@ -207,7 +197,7 @@ static void DeclareInt(FILE *f, FILE *fi, FILE *fr, FILE *fv, const char *str, c
     ResetAndRegister(fr, fv, str, _str);
 }
 //-----------------------------------------------------------------------------
-static void PortX(FILE *fi, FILE *fu, const char *str)
+static void PortX(FILE *fi, FILE *fu, char *str)
 {
     char prt[4];
     int  portN, Reg, Mask, Addr;
@@ -282,7 +272,7 @@ static void PortX(FILE *fi, FILE *fu, const char *str)
     fprintf(fu, "\n");
 }
 //-----------------------------------------------------------------------------
-static void PortY(FILE *fi, FILE *fu, const char *str)
+static void PortY(FILE *fi, FILE *fu, char *str)
 {
     char prt[4];
     int  portN, Reg, Mask, Addr;
@@ -361,7 +351,7 @@ static void PortY(FILE *fi, FILE *fu, const char *str)
 // internal relay. An internal relay is just a bool variable, but for an
 // input or an output someone else must provide read/write functions.
 //-----------------------------------------------------------------------------
-static void DeclareBit(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv, const char *str, char *_str)
+static void DeclareBit(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv, char *str, char *_str)
 {
     // The mapped symbol has the form Ub_{X,Y,R}name, so look at character
     // four to determine if it's an input, output, internal relay.
@@ -388,27 +378,29 @@ static void DeclareBit(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv, const ch
 //-----------------------------------------------------------------------------
 static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv)
 {
+#ifdef NEW_FEATURE
     char _bitVar1[MAX_NAME_LEN], _bitVar2[MAX_NAME_LEN];
     char _intVar1[MAX_NAME_LEN], _intVar2[MAX_NAME_LEN], _intVar3[MAX_NAME_LEN];
 
-    for(uint32_t i = 0; i < IntCode.size(); i++) {
-        const char *bitVar1 = nullptr, *bitVar2 = nullptr;
-        const char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr;
+    int i;
+    for(i = 0; i < IntCodeLen; i++) {
+        char *bitVar1 = nullptr, *bitVar2 = nullptr;
+        char *intVar1 = nullptr, *intVar2 = nullptr, *intVar3 = nullptr;
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
             case INT_CLEAR_BIT:
-                bitVar1 = IntCode[i].name1.c_str();
+                bitVar1 = IntCode[i].name1;
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                bitVar1 = IntCode[i].name1.c_str();
-                bitVar2 = IntCode[i].name2.c_str();
+                bitVar1 = IntCode[i].name1;
+                bitVar2 = IntCode[i].name2;
                 break;
 
             case INT_SET_VARIABLE_RANDOM:
             case INT_SET_VARIABLE_TO_LITERAL:
-                intVar1 = IntCode[i].name1.c_str();
+                intVar1 = IntCode[i].name1;
                 break;
 
             case INT_SET_SEED_RANDOM:
@@ -419,8 +411,8 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
             case INT_SET_SWAP:
             case INT_SET_VARIABLE_NEG:
             case INT_SET_VARIABLE_TO_VARIABLE:
-                intVar1 = IntCode[i].name1.c_str();
-                intVar2 = IntCode[i].name2.c_str();
+                intVar1 = IntCode[i].name1;
+                intVar2 = IntCode[i].name2;
                 break;
 
             case INT_SET_VARIABLE_SHL:
@@ -436,46 +428,46 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_SUBTRACT:
             case INT_SET_VARIABLE_ADD:
-                intVar1 = IntCode[i].name1.c_str();
-                intVar2 = IntCode[i].name2.c_str();
-                intVar3 = IntCode[i].name3.c_str();
+                intVar1 = IntCode[i].name1;
+                intVar2 = IntCode[i].name2;
+                intVar3 = IntCode[i].name3;
                 break;
 
             case INT_DECREMENT_VARIABLE:
             case INT_INCREMENT_VARIABLE:
             case INT_READ_ADC:
             case INT_SET_PWM:
-                intVar1 = IntCode[i].name1.c_str();
+                intVar1 = IntCode[i].name1;
                 break;
 
             case INT_UART_RECV:
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
-                intVar1 = IntCode[i].name1.c_str();
-                bitVar1 = IntCode[i].name2.c_str();
+                intVar1 = IntCode[i].name1;
+                bitVar1 = IntCode[i].name2;
                 break;
 
             case INT_UART_RECV_AVAIL:
             case INT_UART_SEND_READY:
             case INT_UART_SEND_BUSY:
-                intVar1 = IntCode[i].name1.c_str();
+                intVar1 = IntCode[i].name1;
                 break;
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
-                bitVar1 = IntCode[i].name1.c_str();
+                bitVar1 = IntCode[i].name1;
                 break;
 
 #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL:
-                intVar1 = IntCode[i].name1.c_str();
+                intVar1 = IntCode[i].name1;
                 break;
 
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                intVar1 = IntCode[i].name1.c_str();
-                intVar2 = IntCode[i].name2.c_str();
+                intVar1 = IntCode[i].name1;
+                intVar2 = IntCode[i].name2;
                 break;
 #endif
 
@@ -487,9 +479,9 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
             case INT_IF_LEQ:
             case INT_IF_GEQ:
                 if(!IsNumber(IntCode[i].name1))
-                    intVar1 = IntCode[i].name1.c_str();
+                    intVar1 = IntCode[i].name1;
                 if(!IsNumber(IntCode[i].name2))
-                    intVar2 = IntCode[i].name2.c_str();
+                    intVar2 = IntCode[i].name2;
                 break;
 #endif
 
@@ -514,7 +506,7 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
                 break;
             case INT_RAM_READ:
             case INT_FLASH_READ:
-                intVar1 = IntCode[i].name1.c_str();
+                intVar1 = IntCode[i].name1;
                 break;
 #endif
 
@@ -552,6 +544,7 @@ static void GenerateDeclarations(FILE *f, FILE *fu, FILE *fi, FILE *fr, FILE *fv
         if(intVar3 && !SeenVariable(intVar3))
             DeclareInt(f, fi, fr, fv, intVar3, _intVar3);
     }
+#endif
 }
 //-----------------------------------------------------------------------------
 static int SimpleBool(const NameArray &name)
@@ -590,7 +583,7 @@ static void Generate_flash_eeprom(FILE *f)
                 }
 
                 fprintf(
-                    f, "const %s: array [0..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal-1, sovs);
+                    f, "const %s: array [1..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal, sovs);
                 int j;
                 for(j = 0; j < (IntCode[i].literal - 1); j++) {
                     fprintf(f, "%d, ", IntCode[i].data[j]);
@@ -615,16 +608,11 @@ static void Generate_flash_eeprom(FILE *f)
 static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
-    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) //
-       && (IntCode[i].op != INT_AllocKnownAddr) //
-       && (IntCode[i].op != INT_FwdAddrIsNow) //
+    int j;
+    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) && (IntCode[i].op != INT_AllocKnownAddr) //
        && (IntCode[i].op != INT_AllocFwdAddr))
-        for(int j = 0; j < indent; j++)
-#if 1
-            fprintf(f, "  ");
-#else
-            fprintf(f, " %d ", IntCode[i].op);
-#endif
+        for(j = 0; j < indent; j++)
+            fprintf(f, "    ");
 }
 //-----------------------------------------------------------------------------
 // Actually generate the PASCAL source for the program.
@@ -649,7 +637,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
     fprintf(f,
             "begin\n"
             "  Rung0label:;\n");
-    indent = 1;
+    int indent = 1;
     for(uint32_t i = 0; i < IntCode.size(); i++) {
 
         if(IntCode[i].op == INT_END_IF)
@@ -657,7 +645,10 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
         if(IntCode[i].op == INT_ELSE)
             indent--;
 
-        doIndent(f, i);
+        int j;
+        if(IntCode[i].op != INT_SIMULATE_NODE_STATE)
+            for(j = 0; j < indent; j++)
+                fprintf(f, "  ");
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -891,20 +882,35 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_AllocKnownAddr:
-                fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
-                break;
             case INT_AllocFwdAddr:
+                break;
             case INT_FwdAddrIsNow:
+                fprintf(f, "LabelRung%d:;\n", IntCode[i].literal + 1);
                 break;
             case INT_RETURN:
                 fprintf(f, "exit;\n");
                 break;
             case INT_GOSUB:
-                fprintf(f, "CallLabel%s;\n", IntCode[i].name1.c_str());
+                if(IsNumber(IntCode[i].name1)) {
+                    int rung = hobatoi(IntCode[i].name1.c_str());
+                    rung = std::min(rung, Prog.numRungs + 1);
+                    rung = std::max(rung, 0); // -1 anavailable
+                    fprintf(f, "CallLabelRung%d;\n", rung);
+                } else {
+                    fprintf(f, "CallLabelRung%s;\n", IntCode[i].name1.c_str());
+                }
                 break;
-            case INT_GOTO:
-                fprintf(f, "goto Label%s;\n", IntCode[i].name1.c_str());
+            case INT_GOTO: {
+                if(IsNumber(IntCode[i].name1)) {
+                    int rung = hobatoi(IntCode[i].name1.c_str());
+                    rung = std::min(rung, Prog.numRungs + 1);
+                    rung = std::max(rung, 0); // -1 anavailable
+                    fprintf(f, "goto LabelRung%d;\n", rung);
+                } else {
+                    fprintf(f, "goto LabelRung%s;\n", IntCode[i].name1.c_str());
+                }
                 break;
+            }
             case INT_READ_ADC:
             case INT_SET_PWM:
             case INT_UART_SEND_BUSY:
@@ -914,8 +920,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
-                Error(_(
-                    " PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
+                Error(_(" PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."));
                 break;
 
 #ifdef TABLE_IN_FLASH
@@ -1011,6 +1016,7 @@ static char *GetUnitName(char *unitn, char *dest)
 void CompilePascal(const char *dest)
 {
     SeenVariablesCount = 0;
+	CompileFailure= 0;
 
     char destn[MAX_PATH];
     char destu[MAX_PATH];
@@ -1035,28 +1041,28 @@ void CompilePascal(const char *dest)
     SetExt(desti, dest, "U.inc");
 
     FileTracker f(dest, "w");
-    if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
+	if(!f) {
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
         return;
     }
     FileTracker fu(destu, "w");
     if(!fu) {
-        Error(_("Couldn't open file '%s'"), destu);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), destu);
         return;
     }
     FileTracker fr(destr, "w");
     if(!fr) {
-        Error(_("Couldn't open file '%s'"), destr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), destr);
         return;
     }
     FileTracker fv(destv, "w");
     if(!fv) {
-        Error(_("Couldn't open file '%s'"), destv);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), destv);
         return;
     }
     FileTracker fi(desti, "w");
     if(!fi) {
-        Error(_("Couldn't open file '%s'"), desti);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), desti);
         return;
     }
 
@@ -1300,7 +1306,7 @@ void CompilePascal(const char *dest)
     fprintf(fu,
             "\n"
             "begin\n"
-            "  {SetPcPortsDir;}\n"
+            "  SetPcPortsDir;\n"
             "end.\n");
     fprintf(fr,
             "end;\n"
@@ -1339,6 +1345,11 @@ void CompilePascal(const char *dest)
     TranslitFile(destv);
     TranslitFile(desti);
     */
+
+	///// Added by JG
+	if(CompileFailure) return;
+	/////
+
     char str[MAX_PATH + 500];
     sprintf(str,
             _("Compile successful; wrote PASCAL source code to '%s'.\r\n\r\n"

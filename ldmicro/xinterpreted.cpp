@@ -53,7 +53,7 @@ static int CheckRange(int value, const char *name)
     if(value < 0 || value > 255) {
         char msg[80];
         sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
-        THROW_COMPILER_EXCEPTION(msg);
+        THROW_COMPILER_EXCEPTION(msg, 0);
     }
 
     return value;
@@ -61,10 +61,10 @@ static int CheckRange(int value, const char *name)
 
 static BYTE GetArduinoPinNumber(int pin)
 {
-    if(Prog.mcu())
-        for(uint32_t i = 0; i < Prog.mcu()->pinCount; i++) {
-            if(Prog.mcu()->pinInfo[i].pin == pin)
-                return Prog.mcu()->pinInfo[i].ArduinoPin;
+    if(Prog.mcu)
+        for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
+            if(Prog.mcu->pinInfo[i].pin == pin)
+                return Prog.mcu->pinInfo[i].ArduinoPin;
         }
     return 0;
 }
@@ -83,7 +83,7 @@ void CompileXInterpreted(const char *outFile)
 {
     FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't write to '%s'"), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't write to '%s'"), outFile);
         return;
     }
 
@@ -228,6 +228,9 @@ void CompileXInterpreted(const char *outFile)
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
             case INT_SPI:
+			case INT_SPI_WRITE:			///// Added by JG
+			case INT_I2C_READ:			/////
+			case INT_I2C_WRITE:			/////
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
@@ -237,9 +240,7 @@ void CompileXInterpreted(const char *outFile)
             case INT_UART_RECV_AVAIL:
             case INT_WRITE_STRING:
             default:
-                THROW_COMPILER_EXCEPTION_FMT(
-                    _("Unsupported op (anything UART, EEPROM, SFR..) for "
-                      "interpretable target.\nINT_%d"), IntCode[ipc].op);
+                THROW_COMPILER_EXCEPTION_FMT(_("Unsupported op (Peripheral) for interpretable target.\nINT_%d"), IntCode[ipc].op);
                 return;
         }
     }
@@ -271,6 +272,10 @@ void CompileXInterpreted(const char *outFile)
     }
 
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
+
+	///// Added by JG
+	if(CompileFailure) return;
+	/////
 
     char str[MAX_PATH + 500];
     sprintf(str,

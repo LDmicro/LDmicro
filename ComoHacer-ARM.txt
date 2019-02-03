@@ -1,0 +1,72 @@
+
+Cómo probar LdMicro32 en ARMs (STM32) con funciones ADC, PWM, SPI o I2C:
+______________________________________________________________________
+
+1) Instale EmIde for ARMs o instale directamente un arm-gcc para Windows 
+(no probado).
+
+2) Copie el ejecutable LdMicro32 y flashMCU.bat en un mismo directorio.
+
+3) Edite FlashMCU.bat (haga clic con el botón derecho + Modificar) y en la sección ARM,
+modifique GCCPATH para que apunte a su ruta arm-none-eabi-g++.exe en lugar de la mía
+
+Si pretende utilizar directamente un Programador para flashear el objetivo, 
+debe configurar las líneas de comandos y remplazar jlink.exe con otro.
+
+De todos modos, será posible generar un archivo hex con script y
+flashear el objetivo con él manualmente a continuación.
+
+4) Cree una escalera con LdMicro32 en un directorio y copie las bibliotecas de C
+por ARM en un subdirectorio llamado "lib"
+
+5) Compile la escalera con "Compile ARM-GCC for 32 bit ARM" (nuevo)
+y genere el archivo C en el mismo directorio que el Archivo fuente (.ld), 
+con el mismo nombre (.c)
+
+También genera un archivo (.h) y un encabezado ladder.h
+Con bibliotecas unidas, realiza un proyecto de C ya confeccionado.
+
+6) Inicie FlashMCU.bat desde LdMicro32 para obtener el archivo hex y subirlo
+al destino automáticamente o manualmente desde el subdirectorio "bin"
+
+Mira la ventana de comandos; no debe haber errores de compilación
+Los archivos intermedios se generan en el subdirectorio "obj"
+
+7) Prueba de archivo hexadecimal generado en destino ...
+
+
+Por supuesto que necesita ser probado además ...
+Por favor reporte problemas (y éxitos) en el foro de ldmicro
+
+
+
+NB: Las bibliotecas han sido probadas en STM32F07
+Es posible (y fácil) adaptar el código a otros objetivos del
+La misma familia mediante el uso de directivas de compilación.
+El nombre del objetivo se define en ladder.h como LDTARGET_stm32f40X
+
+Puede usar varios ADC o PWM, pero solo un Uart, un SPI y un I2C
+(Pero con varios periféricos con diferentes pines SS de software en SPI
+o con diferentes direcciones en bus I2C)
+
+NB: SPI debe llamarse "SPI1", "SPI2", o "SPI3" en los STM32F4
+Las nuevas funciones de SPI son:
+SPI Enviar / Recibir, que envía y / o recibe un byte
+SPI Write, que envía una cadena alfanumérica a SPI sin recepción
+
+La frecuencia SPI se define como la de UART en la configuración global
+SPI funciona solo en modo maestro con la mayoría de las configuraciones estándar
+
+NB: I2C debe llamarse "I2C1", I2C2" o I2C3" en los ARM
+Las nuevas funciones de I2C son:
+I2C Leer para leer un byte en un registro de periféricos
+I2C Escribir para escribir un byte en un registro de periféricos
+
+La frecuencia I2C también se define en la configuración global
+I2C también funciona solo en modo maestro
+
+NB: Se utiliza la resolución máxima ADC disponible.
+Se utiliza la resolución máxima de PWM y el parámetro es solo% entre 0 y 100
+
+
+

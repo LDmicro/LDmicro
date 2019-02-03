@@ -1,14 +1,13 @@
-// include file for standard system include files,
+// stdafx.h : include file for standard system include files,
 // or project specific include files that are used frequently, but
 // are changed infrequently
 //
 
-#ifndef __STDAFX_H__
-#define __STDAFX_H__
+#pragma once
 
 #include "targetver.h"
 
-#include <gsl.hpp>
+#include "gsl.hpp"						// path modified by JG <gsl.hpp>
 
 // #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
@@ -71,5 +70,3 @@ typedef int32_t SDWORD;
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 #endif //NOMINMAX
-
-#endif //__STDAFX_H__

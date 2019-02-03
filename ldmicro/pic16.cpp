@@ -288,16 +288,16 @@ static void CompileFromIntermediate(bool topLevel);
 //-----------------------------------------------------------------------------
 static bool McuIs(const char *str)
 {
-    if(!Prog.mcu())
+    if(!Prog.mcu)
         return 0;
-    return strcmp(Prog.mcu()->mcuName, str) == 0;
+    return strcmp(Prog.mcu->mcuName, str) == 0;
 }
 
 bool McuAs(const char *str)
 {
-    if(!Prog.mcu())
+    if(!Prog.mcu)
         return 0;
-    return strstr(Prog.mcu()->mcuName, str) != nullptr;
+    return strstr(Prog.mcu->mcuName, str) != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -370,20 +370,32 @@ static DWORD Bank(DWORD reg)
         reg &= ~(NOTDEF(0));
     if(IS_MULTYDEF(reg))
         reg &= ~(MULTYDEF(0));
-    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         if(reg & ~0x0FFF)
+		{
             THROW_COMPILER_EXCEPTION_FMT("0x%X", reg);
+			return 0;			///// Added by JG
+		}
         reg &= 0x0F80;
-    } else if(Prog.mcu()->core == MidrangeCore14bit) {
+    } else if(Prog.mcu->core == MidrangeCore14bit) {
         if(reg & ~0x01FF)
+		{
             THROW_COMPILER_EXCEPTION_FMT("0x%X", reg);
+			return 0;			///// Added by JG
+		}
         reg &= 0x0180;
-    } else if(Prog.mcu()->core == BaselineCore12bit) {
+    } else if(Prog.mcu->core == BaselineCore12bit) {
         if(reg & ~0x007F)
+		{
             THROW_COMPILER_EXCEPTION_FMT("0x%X", reg);
+			return 0;			///// Added by JG
+		}
         reg &= 0x0000;
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+		{
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
+		return 0;			///// Added by JG
+		}
     return reg;
 }
 
@@ -391,14 +403,14 @@ static DWORD Bank(DWORD reg)
 static DWORD BankMask()
 {
     DWORD reg;
-    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         reg = 0x0F80;
-    } else if(Prog.mcu()->core == MidrangeCore14bit) {
+    } else if(Prog.mcu->core == MidrangeCore14bit) {
         reg = 0x0180;
-    } else if(Prog.mcu()->core == BaselineCore12bit) {
+    } else if(Prog.mcu->core == BaselineCore12bit) {
         reg = 0x0000;
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
     return reg;
 }
 
@@ -406,7 +418,7 @@ static DWORD BankMask()
 static int IsCoreRegister(DWORD reg)
 {
     reg &= ~Bank(reg); // Clear Bank
-    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         switch(reg) {
             case REG_INDF:
             case REG_PCL:
@@ -419,7 +431,7 @@ static int IsCoreRegister(DWORD reg)
             default:
                 return 0;
         }
-    } else if(Prog.mcu()->core == MidrangeCore14bit) {
+    } else if(Prog.mcu->core == MidrangeCore14bit) {
         switch(reg) {
             case REG_INDF:
             case REG_PCL:
@@ -431,7 +443,7 @@ static int IsCoreRegister(DWORD reg)
             default:
                 return 0;
         }
-    } else if(Prog.mcu()->core == BaselineCore12bit) {
+    } else if(Prog.mcu->core == BaselineCore12bit) {
         switch(reg) {
             case REG_INDF:
             case REG_PCL:
@@ -443,7 +455,7 @@ static int IsCoreRegister(DWORD reg)
                 return 0;
         }
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
     return 0;
 }
 
@@ -549,11 +561,12 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
     if(IsOperation(op) >= IS_BANK) {
         if(arg1 == -1) {
             THROW_COMPILER_EXCEPTION_FMT("%d %s Not inited register!", l, f);
+			return;			///// Added by JG
         }
     }
 
     if(PicProg[PicProgWriteP].opPic != OP_VACANT_)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     if(op == OP_COMMENT_INT) {
         if(comment) {
@@ -587,7 +600,7 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
                         case OP_DECFSZ:
                         case OP_INCFSZ:
                         default:
-                            Error(_("Bank select error!"));
+                            THROW_COMPILER_EXCEPTION(_("Bank select error!"));
                     }
                 }
             }
@@ -712,7 +725,7 @@ static DWORD AllocFwdAddr()
 static void FwdAddrIsNow(DWORD addr)
 {
     if(!(addr & FWD(0)))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     bool  seen = false;
     for(DWORD i = 0; i < PicProgWriteP; i++) {
@@ -755,12 +768,12 @@ static int BankSelect(DWORD addr, int nAdd, int nSkip, DWORD bankNow, DWORD bank
     bankNow = Bank(bankNow); // reassurance
     bankNew = Bank(bankNew);
     int n = 0;
-    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         if(bankNow != bankNew) {
             Instruction(OP_MOVLB, bankNew >> 7);
             n++;
         }
-    } else if(Prog.mcu()->core == MidrangeCore14bit) {
+    } else if(Prog.mcu->core == MidrangeCore14bit) {
         if((bankNow ^ bankNew) & 0x0080) {
             if(bankNew & 0x0080) {
                 Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
@@ -777,12 +790,12 @@ static int BankSelect(DWORD addr, int nAdd, int nSkip, DWORD bankNow, DWORD bank
             }
             n++;
         }
-    } else if(Prog.mcu()->core == BaselineCore12bit) {
+    } else if(Prog.mcu->core == BaselineCore12bit) {
         if(bankNow != bankNew) {
-            THROW_COMPILER_EXCEPTION("Internal error.");
+            THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
         }
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
     if(n != nAdd)
         THROW_COMPILER_EXCEPTION_FMT("%d %d", n, nAdd);
@@ -810,20 +823,20 @@ static int BankSelectCheck(DWORD bankNow, DWORD bankNew)
     bankNow = Bank(bankNow); // reassurance
     bankNew = Bank(bankNew);
     int n = 0; // need OPs
-    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         if(bankNow != bankNew)
             n++;
-    } else if(Prog.mcu()->core == MidrangeCore14bit) {
+    } else if(Prog.mcu->core == MidrangeCore14bit) {
         if((bankNow ^ bankNew) & 0x0080)
             n++;
         if((bankNow ^ bankNew) & 0x0100)
             n++;
-    } else if(Prog.mcu()->core == BaselineCore12bit) {
+    } else if(Prog.mcu->core == BaselineCore12bit) {
         if(bankNow != bankNew) {
-            THROW_COMPILER_EXCEPTION("Internal error.");
+            THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
         }
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
     return n;
 }
 
@@ -879,7 +892,7 @@ doBankCorrection:
                     nSkip++;
                 }
                 if(ii <= notRealocableAddr) {
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
                 }
                 for(j = 0; j < PicProgWriteP; j++) {
                     if(IsOperation(PicProg[j].opPic) <= IS_PAGE)
@@ -913,8 +926,8 @@ doBankCorrection:
     if(corrected && (corrected < 20))
         goto doBankCorrection;
 
-    if(PicProgWriteP >= Prog.mcu()->flashWords)
-        Error("Not enough memory for BANK and PAGE correction!");
+    if(PicProgWriteP >= Prog.mcu->flashWords)
+        Error(_("Not enough memory for BANK and PAGE correction!"));
 
     return bank;
 }
@@ -960,9 +973,9 @@ static DWORD BankPreSet(DWORD addr, DWORD bank, int is_call)
     for(i = addr; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) == IS_CALL) {
             if(PicProg[i].arg1 >= PicProgWriteP)
-                THROW_COMPILER_EXCEPTION("Internal error.");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             if(PicProg[i].arg1 < 0)
-                THROW_COMPILER_EXCEPTION("Internal error.");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
             BankPreSet(PicProg[i].arg1, PicProg[i].BANK, 1);
         }
@@ -976,12 +989,10 @@ static DWORD BankPreSet(DWORD addr, DWORD bank, int is_call)
     // Marking the operation as the double(multi) entry point.
     for(i = addr; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) == IS_GOTO) {
-            if(PicProg[i].arg1 >= PicProgWriteP) {
-                IntOp *a = &IntCode[PicProg[i].IntPc];
-                THROW_COMPILER_EXCEPTION_FMT("Internal error. [%d:%s]", a->fileLine, a->fileName.c_str());
-            }
+            if(PicProg[i].arg1 >= PicProgWriteP)
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             if(PicProg[i].arg1 < 0)
-                THROW_COMPILER_EXCEPTION("Internal error.");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
             if(IS_NOTDEF(PicProg[PicProg[i].arg1].BANK)) {
                 PicProg[PicProg[i].arg1].BANK = PicProg[i].BANK;
@@ -1016,7 +1027,7 @@ static void BankCorrection()
         if((IsOperation(PicProg[i - 1].opPic) == IS_SKIP) && (IsOperation(PicProg[i].opPic) >= IS_BANK)) {
             if((!IsCoreRegister(PicProg[i - 1].arg1)) && (!IsCoreRegister(PicProg[i].arg1))) {
                 if(Bank(PicProg[i].arg1) != Bank(PicProg[i - 1].arg1)) {
-                    Error(_("Bank select error!"));
+                    THROW_COMPILER_EXCEPTION("Bank select error!");
                 }
             }
         }
@@ -1033,7 +1044,7 @@ static void BankCorrection()
     BankPreSet(0, 0, 0);
 
     // Marking the interrupt vector operation as the multi entry point.
-    if(Prog.mcu()->core != BaselineCore12bit) {
+    if(Prog.mcu->core != BaselineCore12bit) {
         PicProg[4].BANK = MULTYDEF(0);
     }
     BankCorrection_(0, 0, 0);
@@ -1069,7 +1080,7 @@ static void PagePreSet()
     PicProg[3].label |= I_LABEL;
 
     // Mark the interrupt vector operation as the multi entry point.
-    if(Prog.mcu()->core != BaselineCore12bit) {
+    if(Prog.mcu->core != BaselineCore12bit) {
         PicProg[4].PCLATH = MULTYDEF(0);
         PicProg[4].label |= I_LABEL;
     }
@@ -1093,7 +1104,7 @@ static void PagePreSet()
     }
     // direct set the PCLATH
     for(DWORD i = 0; i < PicProgWriteP; i++) {
-        if(Prog.mcu()->core == BaselineCore12bit) {
+        if(Prog.mcu->core == BaselineCore12bit) {
             // TODO
         } else {
             if((PicProg[i].opPic == OP_CLRF) && (PicProg[i].arg1 == REG_PCLATH)) {
@@ -1135,7 +1146,7 @@ static void PagePreSet()
                     PicProg[i].PCLATH = MULTYDEF(0);
                     PicProg[i].label |= DIR_SET;
                 } else {
-                    THROW_COMPILER_EXCEPTION_FMT("PagePreSet() error at addr 0x%X", i);
+                    THROW_COMPILER_EXCEPTION_FMT(_("PagePreSet() error at addr 0x%X"), i);
                 }
             } else if((IsOperation(PicProg[i].opPic) == IS_BANK) && (PicProg[i].arg2 == DEST_F)
                       && (PicProg[i].arg1 == REG_PCLATH)) {
@@ -1226,16 +1237,16 @@ static int PageSelectCheck(DWORD PCLATH, DWORD PCLATHnew)
     }
 
     int n = 0;
-    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         if((PCLATH >> 3) != (PCLATHnew >> 3))
             n++;
-    } else if(Prog.mcu()->core == MidrangeCore14bit) {
+    } else if(Prog.mcu->core == MidrangeCore14bit) {
         if((PCLATH ^ PCLATHnew) & (1 << BIT3))
             n++;
         if((PCLATH ^ PCLATHnew) & (1 << BIT4))
             n++;
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
     return n;
 }
 
@@ -1249,13 +1260,13 @@ static int PageSelect(DWORD addr, DWORD *PCLATH, DWORD PCLATHnew)
     }
 
     int n = 0;
-    if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+    if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         if((*PCLATH >> 3) != (PCLATHnew >> 3)) {
             SetInstruction(addr, OP_MOVLP, PCLATHnew, 0, "PageSel2");
             *PCLATH = PCLATHnew;
             n++;
         }
-    } else if(Prog.mcu()->core == MidrangeCore14bit) {
+    } else if(Prog.mcu->core == MidrangeCore14bit) {
         if(((*PCLATH) ^ PCLATHnew) & (1 << BIT3)) {
             if(PCLATHnew & (1 << BIT3)) {
                 SetInstruction(addr + n, OP_BSF, REG_PCLATH, BIT3, "_^");
@@ -1281,7 +1292,7 @@ static int PageSelect(DWORD addr, DWORD *PCLATH, DWORD PCLATHnew)
             n++;
         }
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
     if(n == 0)
         *PCLATH = PCLATHnew;
@@ -1345,7 +1356,7 @@ doPageCorrection:
                     nSkip++;
                 }
                 if(ii <= notRealocableAddr) {
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
                 }
                 for(j = 0; j < PicProgWriteP; j++) {
                     if(IsOperation(PicProg[j].opPic) <= IS_PAGE)
@@ -1382,8 +1393,8 @@ doPageCorrection:
     if(corrected)
         goto doPageCorrection;
 
-    if(PicProgWriteP >= Prog.mcu()->flashWords)
-        Error("Not enough memory for PAGE correction!");
+    if(PicProgWriteP >= Prog.mcu->flashWords)
+        Error(_("Not enough memory for PAGE correction!"));
 }
 
 //-----------------------------------------------------------------------------
@@ -1393,7 +1404,7 @@ static void PageCheckForErrorsPostCompile()
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
             if((PicProg[i].arg1 >> 11) != (PicProg[i].PCLATH >> 3)) {
                 //^target addr^              ^current PCLATH^
-                Error("Page Error.[%d:%s] 0x%X 0x%X", PicProg[i].l, PicProg[i].f, PicProg[i].arg1>>11, PicProg[i].PCLATH>>3);
+                Error(_("Page Error.[%d:%s] 0x%X 0x%X"), PicProg[i].l, PicProg[i].f, PicProg[i].arg1>>11, PicProg[i].PCLATH>>3);
             }
         }
     }
@@ -1405,7 +1416,7 @@ static void AddrCheckForErrorsPostCompile()
     for(DWORD i = 0; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE)
             if(IS_FWD(PicProg[i].arg1)) {
-                Error("Every AllocFwdAddr needs FwdAddrIsNow.");
+                Error(_("Every AllocFwdAddr needs FwdAddrIsNow."));
             }
     }
 }
@@ -1965,7 +1976,7 @@ static DWORD Assemble12(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sA
             CHECK(arg1, 3);
             CHECK(arg2, 0);
             if(!((arg1 == 6) || (arg1 == 7)))
-                THROW_COMPILER_EXCEPTION("Internal error.");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             discoverArgs(addrAt, arg1s, arg1comm);
             sprintf(sAsm, "tris\t %s\t %s", arg1s, arg1comm);
             return 0x000 | arg1;
@@ -2204,9 +2215,9 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     DWORD ExtendedSegmentAddress = 0;
     for(DWORD i = 0; i < PicProgWriteP; i++) {
         DWORD w;
-        if(Prog.mcu()->core == BaselineCore12bit)
+        if(Prog.mcu->core == BaselineCore12bit)
             w = Assemble12(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, sAsm);
-        else if(Prog.mcu()->core == PIC18HighEndCore16bit)
+        else if(Prog.mcu->core == PIC18HighEndCore16bit)
             w = Assemble16(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, 1, sAsm);
         else
             w = Assemble(i, PicProg[i].opPic, PicProg[i].arg1, PicProg[i].arg2, sAsm);
@@ -2345,7 +2356,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     }
 
     if((Prog.configurationWord & ~0xffff) && (CONFIG_ADDR2 == -1))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     // Configuration words start at address 0x2007 in program memory; and the
     // hex file addresses are by bytes, not words, so we start at 0x400e.
@@ -2415,9 +2426,9 @@ static void _CallWithPclath(DWORD addr, const char *comment)
 static bool IsOutputReg(DWORD addr)
 {
     if((addr == -1) || (addr == 0))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     for(int i = 0; i < MAX_IO_PORTS; i++)
-        if(Prog.mcu()->outputRegs[i] == addr)
+        if(Prog.mcu->outputRegs[i] == addr)
             return true;
     return false;
 }
@@ -2425,9 +2436,9 @@ static bool IsOutputReg(DWORD addr)
 static bool IsInputReg(DWORD addr)
 {
     if((addr == -1) || (addr == 0))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     for(int i = 0; i < MAX_IO_PORTS; i++)
-        if(Prog.mcu()->inputRegs[i] == addr)
+        if(Prog.mcu->inputRegs[i] == addr)
             return true;
     return false;
 }
@@ -2573,7 +2584,7 @@ static void CompileIfBody(DWORD condFalse, const char *s)
     }
 
     if(IntCode[IntPc].op != INT_END_IF)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     //  Comment("CompileIfBody %s ^^^", s);
 }
 
@@ -2605,9 +2616,9 @@ static DWORD CopyLitToReg(DWORD addr, int sov, const char *name, SDWORD literal,
 {
     Comment("CopyLitToReg");
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION(comment);
+        THROW_COMPILER_EXCEPTION(comment, 0);
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION(comment);
+        THROW_COMPILER_EXCEPTION(comment, 0);
 
     DWORD lNow, lPrev;
     lNow = literal & 0xff;
@@ -2695,22 +2706,22 @@ static DWORD CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const ch
 {
     Comment("CopyRegToReg");
     if(sov1 < 1)
-        THROW_COMPILER_EXCEPTION(name1);
+        THROW_COMPILER_EXCEPTION(name1, 0);
     if(sov1 > 4)
-        THROW_COMPILER_EXCEPTION(name1);
+        THROW_COMPILER_EXCEPTION(name1, 0);
     if(sov2 < 1)
-        THROW_COMPILER_EXCEPTION(name2);
+        THROW_COMPILER_EXCEPTION(name2, 0);
     if(sov2 > 4)
-        THROW_COMPILER_EXCEPTION(name2);
+        THROW_COMPILER_EXCEPTION(name2, 0);
 
     if(addr1 == 0)
-        THROW_COMPILER_EXCEPTION(name1);
+        THROW_COMPILER_EXCEPTION(name1, 0);
     if(addr1 == -1)
-        THROW_COMPILER_EXCEPTION(name1);
+        THROW_COMPILER_EXCEPTION(name1, 0);
     if(addr2 == 0)
-        THROW_COMPILER_EXCEPTION(name2);
+        THROW_COMPILER_EXCEPTION(name2, 0);
     if(addr2 == -1)
-        THROW_COMPILER_EXCEPTION(name2);
+        THROW_COMPILER_EXCEPTION(name2, 0);
 
      if(addr1 == addr2) {
         if(sov1 == sov2) {
@@ -3018,7 +3029,7 @@ static void WriteBin32BcdRoutine()
     Instruction(OP_RETLW, 0);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 static void CallBin32BcdRoutine(const char *nameBcd, const char *nameBin)
@@ -3057,7 +3068,7 @@ static void CallBin32BcdRoutine(const char *nameBcd, const char *nameBin)
             sizeBcd = 10;
             break;
         default:
-            THROW_COMPILER_EXCEPTION("Internal error.");
+            THROW_COMPILER_EXCEPTION(_("Internal error."));
     }
     if(sizeBcd != SizeOfVar(nameBcd)) {
         Error("sizeBcd=%d != SizeOfVar(nameBcd)==%d", sizeBcd, SizeOfVar(nameBcd));
@@ -3119,13 +3130,10 @@ static void AllocBitsVars()
                 MemForSingleBit(a->name1, true, &addr, &bit);
                 break;
 
+            case INT_UART_SEND1:
             case INT_UART_SENDn:
             case INT_UART_SEND:
                 MemForSingleBit(a->name2, true, &addr, &bit);
-                break;
-
-            case INT_UART_SEND1:
-            case INT_UART_RECV1:
                 break;
 
             case INT_UART_RECV:
@@ -3212,7 +3220,7 @@ static void Increment(DWORD addr, int sov, const char *name, const char *overlap
                 IfBitSet(REG_STATUS, STATUS_Z);
                 Instruction(OP_INCF, addr + 3, DEST_F, name);
                 if(sov > 4)
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
             }
         }
     }
@@ -3303,7 +3311,7 @@ static void Decrement(DWORD addr, int sov, const char *name, const char *overlap
                 IfBitClear(REG_STATUS, STATUS_C);
                 Instruction(OP_SUBWF, addr + 3, DEST_F, name);
                 if(sov > 4)
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
             }
         }
     }
@@ -3427,11 +3435,11 @@ For example, for a 32-bit add:
     addwf    b+3,f
 */
 /*
-Для обн ружения переполнения р зрядной сетки используют следующие способы:
+Для обнаружения переполнения разрядной сетки используют следующие способы:
 
-1. Ср внив ют зн ки сл г емых со зн ком суммы. Сигн л переполнения
-выр б тыв ется тогд , когд  зн ки сл г емых один ковы и не совп д ют со
-зн ком суммы.
+1. Сравнивают знаки слагаемых со знаком суммы. Сигнал переполнения
+вырабатывается тогда, когда знаки слагаемых одинаковы и не совпадают со
+знаком суммы.
 */
 static void add(DWORD b, DWORD a, int sov, const char *overlap, const char *overflow)
 //                addrb    addra     sovb == sova
@@ -3611,9 +3619,9 @@ static void cmp(DWORD b, DWORD a, int sov)
 static void AndReg(DWORD addr, int sov, DWORD reg2)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     for(int i = 0; i < sov; i++) {
         Instruction(OP_MOVF, reg2 + i, DEST_W);
         Instruction(OP_ANDWF, addr + i, DEST_F);
@@ -3623,9 +3631,9 @@ static void AndReg(DWORD addr, int sov, DWORD reg2)
 static void OrReg(DWORD addr, int sov, DWORD reg2)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     for(int i = 0; i < sov; i++) {
         Instruction(OP_MOVF, reg2 + i, DEST_W);
         Instruction(OP_IORWF, addr + i, DEST_F);
@@ -3635,9 +3643,9 @@ static void OrReg(DWORD addr, int sov, DWORD reg2)
 static void XorReg(DWORD addr, int sov, DWORD reg2)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     for(int i = 0; i < sov; i++) {
         Instruction(OP_MOVF, reg2 + i, DEST_W);
         Instruction(OP_XORWF, addr + i, DEST_F);
@@ -3648,9 +3656,9 @@ static void XorReg(DWORD addr, int sov, DWORD reg2)
 static void shl(DWORD addr, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_BCF, REG_STATUS, STATUS_C); // 0 to Carry
     for(int i = 0; i < sov; i++)
         Instruction(OP_RLF, addr + i, DEST_F);
@@ -3659,9 +3667,9 @@ static void shl(DWORD addr, int sov)
 static void rol(DWORD addr, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_RLF, addr + sov - 1, DEST_W); // copy MSB bit 7 to Carry
     for(int i = 0; i < sov; i++)
         Instruction(OP_RLF, addr + i, DEST_F);
@@ -3670,9 +3678,9 @@ static void rol(DWORD addr, int sov)
 static void sr0(DWORD addr, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_BCF, REG_STATUS, STATUS_C); // 0 to Carry
     for(int i = sov - 1; i >= 0; i--)
         Instruction(OP_RRF, addr + i, DEST_F);
@@ -3681,9 +3689,9 @@ static void sr0(DWORD addr, int sov)
 static void shr(DWORD addr, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_RLF, addr + sov - 1, DEST_W); // copy MSB bit 7 to Carry
     for(int i = sov - 1; i >= 0; i--)
         Instruction(OP_RRF, addr + i, DEST_F);
@@ -3692,9 +3700,9 @@ static void shr(DWORD addr, int sov)
 static void ror(DWORD addr, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_RRF, addr, DEST_W); // copy LSB bit 0 to Carry
     for(int i = sov - 1; i >= 0; i--)
         Instruction(OP_RRF, addr + i, DEST_F);
@@ -3721,7 +3729,7 @@ static void Delay(DWORD addr, int sov)
                 IfBitClear(REG_STATUS, STATUS_C);
                 Instruction(OP_SUBWF, addr + 3, DEST_F);
                 if(sov > 4)
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
             }
         }
     }
@@ -3776,13 +3784,13 @@ static void InitTable(IntOp *a)
                 Instruction(OP_RETLW, (a->data[i] >> 16) & 0xFF);
                 Instruction(OP_RETLW, a->data[i] >> 24);
             } else
-                THROW_COMPILER_EXCEPTION("Internal error.");
+                THROW_COMPILER_EXCEPTION(_("Internal error."));
         }
         Comment("TABLE %s END", a->name1.c_str());
     }
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     notRealocableAddr = PicProgWriteP - 1; // Index calculation can't be moved
 }
@@ -3874,7 +3882,7 @@ static void CompileFromIntermediate(bool topLevel)
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         ClearBit(addr1 + 3, bit - 24, a->name1);
                     else
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
                     CopyLitToReg(Scratch0, sov1, "", -2, ""); // 0xF..FE
@@ -3907,7 +3915,7 @@ static void CompileFromIntermediate(bool topLevel)
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         SetBit(addr1 + 3, bit - 24, a->name1);
                     else
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
                     CopyLitToReg(Scratch0, sov1, "", 0x01, "");
@@ -3942,7 +3950,7 @@ static void CompileFromIntermediate(bool topLevel)
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         IfBitClear(addr1 + 3, bit - 24);
                     else
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
                     Instruction(OP_GOTO, endifAddr); // here bit is CLR
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
@@ -4014,7 +4022,7 @@ static void CompileFromIntermediate(bool topLevel)
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         IfBitSet(addr1 + 3, bit - 24);
                     else
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
                     Instruction(OP_GOTO, endifAddr); // here bit is SET
                 } else {
                     CopyVarToReg(ScratchS, 1, a->name2);
@@ -4197,7 +4205,7 @@ static void CompileFromIntermediate(bool topLevel)
                             Instruction(OP_GOTO, ifEnd); // Z=0, A!=B
                             break;
                         default:
-                            THROW_COMPILER_EXCEPTION("Internal error.");
+                            THROW_COMPILER_EXCEPTION(_("Internal error."));
                     }
                 }
                 switch(a->op) {
@@ -4253,7 +4261,7 @@ static void CompileFromIntermediate(bool topLevel)
                         addrA = CopyArgToReg(false, Scratch4, sov, a->name1, true);
                         break;
                     default:
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
                 }
 
                 DWORD addrO;
@@ -4279,7 +4287,7 @@ otherwise the result was zero or greater.
                         IfBitSet(addrO, bitO);
                         break;
                     default:
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
                 }
                 Instruction(OP_GOTO, ifThen);
                 Instruction(OP_GOTO, ifEnd);
@@ -4458,7 +4466,7 @@ otherwise the result was zero or greater.
                     Instruction(OP_MOVF, ScratchS, DEST_W);
                     Instruction(OP_MOVWF, Scratch0 + 2);
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                         MemForVariable(a->name1, &addr1);
                 CopyRegToReg(addr1, sov1, Scratch0, sov2, a->name1, "$Scratch0", false);
@@ -4502,12 +4510,12 @@ otherwise the result was zero or greater.
 
                 sov1 = SizeOfVar(a->name1);
                 if(sov1 < 1)
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
                 MemForVariable(a->name1, &addr1);
 
                 sov2 = SizeOfVar(a->name2);
                 if(sov2 < 1)
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
                 // full source copy to shadow
                 // all operation execute in shadow
                 // and then copy to dest
@@ -4539,7 +4547,7 @@ otherwise the result was zero or greater.
                 } else if(a->op == INT_SET_VARIABLE_SHR) {
                     Instruction(OP_RLF, addrA + sov1 - 1, DEST_W); // copy MSB bit 7 to Carry
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                 for(int i = 0; i < sov2; i++) {
                     if(a->op == INT_SET_VARIABLE_SR0) {
@@ -4553,7 +4561,7 @@ otherwise the result was zero or greater.
                     } else if(a->op == INT_SET_VARIABLE_SHR) {
                         Instruction(OP_RRF, addrA - i, DEST_F);
                     } else
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
                 }
 
                 Instruction(OP_DECFSZ, ScratchS, DEST_F);
@@ -4608,7 +4616,7 @@ otherwise the result was zero or greater.
                     else if(a->op == INT_SET_VARIABLE_XOR)
                         Instruction(OP_XORWF, addrB + i, addr1 == addrB ? DEST_F : DEST_W);
                     else
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
                     if(addr1 != addrB)
                         Instruction(OP_MOVWF, addr1 + i);
                 }
@@ -4727,7 +4735,7 @@ otherwise the result was zero or greater.
                 sov3 = SizeOfVar(a->name3);
                 sov = std::max(sov2, sov3);
                 if(sov1 < sov) {
-                    Error(" Size of result '%s' less then an argument(s) '%s' or '%s'",
+                    Error(" Size of result '%s' less than an argument(s) '%s' or '%s'",
                           a->name1.c_str(),
                           a->name2.c_str(),
                           a->name3.c_str());
@@ -4854,26 +4862,17 @@ otherwise the result was zero or greater.
                 break;
             }
             case INT_UART_SEND1: {
-                // Attention! Busy flag is not checked!!!
-                // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
-                addr1 += a->literal;
 
-                DWORD isBusy = PicProgWriteP;
+                DWORD noSend = AllocFwdAddr();
                 IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
-                Instruction(OP_GOTO, isBusy);
+                Instruction(OP_GOTO, noSend);
 
-                if(strlen(a->name2.c_str())) {
-                    MemForVariable(a->name2, &addr2);
-                    Instruction(OP_MOVLW, addr1); // Point to address
-                    Instruction(OP_ADDWF, addr2, DEST_W);
-                    Instruction(OP_MOVWF, REG_FSR);
-                    Instruction(OP_MOVF, REG_INDF, DEST_W); // addr1 +=[a->name2]
-                } else {
-                    Instruction(OP_MOVF, addr1, DEST_W);
-                }
+                Instruction(OP_MOVF, addr1, DEST_W);
                 Instruction(OP_MOVWF, REG_TXREG);
+
+                FwdAddrIsNow(noSend);
                 break;
             }
             case INT_UART_SEND: {
@@ -4946,59 +4945,6 @@ otherwise the result was zero or greater.
                 FwdAddrIsNow(done);
                 break;
             }
-            case INT_UART_RECV1: {
-                //Receive one char/byte in a single PLC cycle.
-                //Skip if no char.
-                Comment("INT_UART_RECV1");
-                MemForVariable(a->name1, &addr1);
-                addr1 += a->literal;
-//              sov1 = SizeOfVar(a->name1);
-//              MemForSingleBit(a->name2, true, &addr2, &bit2);
-
-//              ClearBit(addr2, bit2);
-
-                // If RCIF is still clear, then there's nothing to do; in that
-                // case jump to the end, and leave the rung-out clear.
-                DWORD done = AllocFwdAddr();
-                IfBitClear(REG_PIR1, RCIF);
-                Instruction(OP_GOTO, done);
-
-                if(strlen(a->name2.c_str())) {
-                    MemForVariable(a->name2, &addr2);
-                    Instruction(OP_MOVLW, addr1); // Point to address
-                    Instruction(OP_ADDWF, addr2, DEST_W);
-                    Instruction(OP_MOVWF, REG_FSR);
-
-                    // RCIF is set, so we have a character. Read it now.
-                    Instruction(OP_MOVF, REG_RCREG, DEST_W);
-                    Instruction(OP_MOVWF, REG_INDF); // addr1 +=[a->name2]
-                } else {
-                    // RCIF is set, so we have a character. Read it now.
-                    Instruction(OP_MOVF, REG_RCREG, DEST_W);
-                    Instruction(OP_MOVWF, addr1);
-                }
-
-                // And check for errors; need to reset the UART if yes.
-                DWORD yesError = AllocFwdAddr();
-                IfBitSet(REG_RCSTA, OERR); // overrun error
-                Instruction(OP_GOTO, yesError);
-                IfBitSet(REG_RCSTA, FERR); // framing error
-                Instruction(OP_GOTO, yesError);
-
-                // Neither FERR nor OERR is set, so we're good.
-                Instruction(OP_GOTO, done);
-
-                FwdAddrIsNow(yesError);
-                // An error did occur, so flush the FIFO.
-                Instruction(OP_MOVF, REG_RCREG, DEST_W);
-                Instruction(OP_MOVF, REG_RCREG, DEST_W);
-                // And clear and then set CREN, to clear the error flags.
-                ClearBit(REG_RCSTA, CREN);
-                SetBit(REG_RCSTA, CREN);
-
-                FwdAddrIsNow(done);
-                break;
-            }
             case INT_SPI: {
                 break;
             }
@@ -5006,7 +4952,7 @@ otherwise the result was zero or greater.
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name1.c_str(), Prog.cycleTimer);
                 if(!ioPWM) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name1.c_str());
+                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name1.c_str());
                 }
                 int timer = ioPWM->timer;
                 if(timer == 1)
@@ -5014,7 +4960,7 @@ otherwise the result was zero or greater.
                 else if(timer == 2)
                     WriteRegister(REG_CCP2CON, 0);
                 else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                 DWORD addr;
                 int   bit;
@@ -5036,7 +4982,7 @@ otherwise the result was zero or greater.
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!ioPWM) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name3.c_str());
+                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name3.c_str());
                 }
 
                 int timer = ioPWM->timer;
@@ -5093,7 +5039,7 @@ otherwise the result was zero or greater.
                     maxMcuClock = SIprefix(target * ((255+1)*4*8), maxMcuClockSI);
                 */
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
                 sprintf(
                     str1, _("Available PWM frequency from %.3f %sHz up to %.3f %sHz"), minFreq, minSI, maxFreq, maxSI);
                 sprintf(str3,
@@ -5127,7 +5073,7 @@ otherwise the result was zero or greater.
                                                              str3);
                             }
                         } else
-                            THROW_COMPILER_EXCEPTION("Internal error.");
+                            THROW_COMPILER_EXCEPTION(_("Internal error."));
                     } else {
                         break;
                     }
@@ -5162,7 +5108,7 @@ otherwise the result was zero or greater.
                     REG_CCPRxL = REG_CCPR2L;
                     REG_CCPxCON = REG_CCP2CON;
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                 if(resol == 8) {
                     // First scale the input variable from percent to timer units,
@@ -5255,7 +5201,7 @@ otherwise the result was zero or greater.
                     Instruction(OP_MOVWF, REG_CCPRxL);
                     WriteRegister(REG_CCPxCON, 0x0c); // PWM mode, ignore LSbs
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                 // Only need to do the setup stuff once
                 Comment("PWM init");
@@ -5288,7 +5234,7 @@ otherwise the result was zero or greater.
                     else if(prescale == 16)
                         t2con |= 2;
                     else
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                     WriteRegister(REG_T2CON, t2con);
                 } else if(timer == 1) {
@@ -5300,7 +5246,7 @@ otherwise the result was zero or greater.
                     else if(prescale == 16)
                         t2con |= 2;
                     else
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                     WriteRegister(REG_T2CON, t2con);
                 } else if(timer == 2) {
@@ -5312,11 +5258,11 @@ otherwise the result was zero or greater.
                     else if(prescale == 16)
                         t2con |= 2;
                     else
-                        THROW_COMPILER_EXCEPTION("Internal error.");
+                        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                     WriteRegister(REG_T2CON, t2con);
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                 FwdAddrIsNow(skip);
                 break;
@@ -5413,9 +5359,6 @@ otherwise the result was zero or greater.
                 }
                 break;
             }
-            case INT_SET_SEED_RANDOM:
-                break;
-
             case INT_SET_VARIABLE_RANDOM: {
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
@@ -5512,9 +5455,9 @@ otherwise the result was zero or greater.
                     goPos = 2;
                     chsPos = 3;
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
-                if((Prog.mcu()->core == EnhancedMidrangeCore14bit) || //
+                if((Prog.mcu->core == EnhancedMidrangeCore14bit) || //
                      McuAs(" PIC12F683 ") || //
                      McuAs(" PIC12F675 ") || //
                      McuAs(" PIC12F752 ") //
@@ -5528,19 +5471,6 @@ otherwise the result was zero or greater.
                     } else if(Prog.mcuClock >  500000) { // 1 MHz
                         adcs = 4;                        // Fosc/4
                     } else {                             // 0.5 MHz
-                        adcs = 0;                        // Fosc/2
-                    }
-                } else if(McuAs(" PIC16F88 ") //
-                ) {
-                    if(Prog.mcuClock > 10000000) {       // 20 MHz
-                        adcs = 6;                        // Fosc/64
-                    } else if(Prog.mcuClock > 5000000) { // 10 MHz
-                        adcs = 5;                        // Fosc/16
-                    } else if(Prog.mcuClock > 2500000) { // 5 MHz
-                        adcs = 1;                        // Fosc/8
-                    } else if(Prog.mcuClock > 1250000) { // 2.5 MHz
-                        adcs = 4;                        // Fosc/4
-                    } else {                             // 1.25 MHz
                         adcs = 0;                        // Fosc/2
                     }
                 } else {
@@ -5602,7 +5532,8 @@ otherwise the result was zero or greater.
                                   (refs << 0)  //
 
                     );
-                } else if(McuAs(" PIC16F882 ") || //
+                } else if(McuAs(" PIC16F88 ")  || //
+                          McuAs(" PIC16F882 ") || //
                           McuAs(" PIC16F883 ") || //
                           McuAs(" PIC16F884 ") || //
                           McuAs(" PIC16F886 ") || //
@@ -5623,23 +5554,6 @@ otherwise the result was zero or greater.
                                   ((refs & 3) << 4)  //
 
                     );
-                } else if(McuAs(" PIC16F88 ") //
-                ) {
-                    adcsPos = 6;                                                // in REG_ADCON0
-                    WriteRegister(REG_ADCON0,                                   //
-                                  (adcs << adcsPos) |                           //
-                                  (MuxForAdcVariable(a->name1) << chsPos) | //
-                                  (0 << goPos) |                            // don't start yet
-                                                                            // bit 1 unimplemented
-                                  (1 << 0)                                  // A/D peripheral on
-                    );
-
-                    WriteRegister(REG_ADCON1,  //
-                                  (1 << 7) |   // right-justified
-                                  ((adcs & _BV(BIT2)) << 4) | // ADCS2 is BIT6
-                                  ((refs & 3) << 4)  //
-
-                    );
                 } else if(McuAs(" PIC12F683 ") || //
                           McuAs(" PIC12F675 ") || //
                           McuAs(" PIC12F752 ") //
@@ -5656,7 +5570,7 @@ otherwise the result was zero or greater.
                                   (1 << 0)                                  // A/D peripheral on
                     );
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                 if(McuAs("Microchip PIC16F88 ")) {
                     WriteRegister(REG_ANSEL, 0x7f);
@@ -5718,7 +5632,7 @@ otherwise the result was zero or greater.
                 return;
 
             case INT_WRITE_STRING:
-                Error(_("Unsupported operation for target, skipped."));
+                THROW_COMPILER_EXCEPTION(_("Unsupported operation for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
                 break;
 
@@ -5726,49 +5640,53 @@ otherwise the result was zero or greater.
                 Comment("%s", a->name1.c_str());
                 break;
 
-            case INT_AllocKnownAddr: {
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                l->KnownAddr = PicProgWriteP;
+            case INT_AllocKnownAddr:
+                AddrOfRungN[a->literal].KnownAddr = PicProgWriteP;
                 break;
-            }
-            case INT_AllocFwdAddr: {
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                l->FwdAddr = AllocFwdAddr();
+
+            case INT_AllocFwdAddr:
+                AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
                 break;
-            }
-            case INT_FwdAddrIsNow: {
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                FwdAddrIsNow(l->FwdAddr);
+
+            case INT_FwdAddrIsNow:
+                FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
                 break;
-            }
+
             case INT_RETURN:
                 Instruction(OP_RETURN);
                 break;
 
             case INT_GOTO: {
-                Comment("INT_GOTO %s // %s %d",
+                int rung = a->literal;
+                Comment("INT_GOTO %s %d 0x%08X 0x%08X",
                         a->name1.c_str(),
-                        a->name2.c_str(),
-                        a->literal);
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                if(a->literal) {
-                    Instruction(OP_GOTO, l->KnownAddr);
+                        rung,
+                        AddrOfRungN[rung].FwdAddr,
+                        AddrOfRungN[rung].KnownAddr);
+                if(rung < -1) {
+                    Instruction(OP_GOTO);
+                } else if(rung == -1) {
+                    Instruction(OP_GOTO, BeginOfPLCCycle);
+                } else if(rung <= rungNow) {
+                    Instruction(OP_GOTO, AddrOfRungN[rung].KnownAddr);
                 } else {
-                    Instruction(OP_GOTO, l->FwdAddr);
+                    Instruction(OP_GOTO, AddrOfRungN[rung].FwdAddr);
                 }
                 break;
             }
             case INT_GOSUB: {
-                Comment("INT_GOSUB %s // %s %d",
+                int rung = a->literal;
+                Comment("INT_GOSUB %s %d 0x%08X 0x%08X",
                         a->name1.c_str(),
-                        a->name2.c_str(),
-                        a->literal);
-                LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                if(a->literal) {
-                    Instruction(OP_CALL, l->KnownAddr);
-                } else {
-                    Instruction(OP_CALL, l->FwdAddr);
-                }
+                        rung,
+                        AddrOfRungN[rung].FwdAddr,
+                        AddrOfRungN[rung].KnownAddr);
+                if(rung < rungNow) {
+                    Instruction(OP_CALL, AddrOfRungN[rung].KnownAddr);
+                } else if(rung > rungNow) {
+                    Instruction(OP_CALL, AddrOfRungN[rung].FwdAddr);
+                } else
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
                 break;
             }
             case INT_SET_BIN2BCD: {
@@ -5808,15 +5726,15 @@ otherwise the result was zero or greater.
                     VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 2
                     VariableAdd(Scratch0, Scratch0, Scratch0, 2); // * 4
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                 Comment("CALL Table '%s' address in flash", a->name2.c_str());
                 MemOfVar(a->name2, &addr2);
 
                 if(sovElement < 1)
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
                 if(sovElement > 4)
-                    THROW_COMPILER_EXCEPTION("Internal error.");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
 
                 if((sovElement >= 1) && (sov1 >= 1)) {
                     Instruction(OP_CALL, addr2);
@@ -5864,8 +5782,7 @@ otherwise the result was zero or greater.
                     if(clocks > 0xffff) {
                         clocks = 0xffff;
                         clocksSave = clocks * 6;
-                        Error(_(" The delay is too long!\n"
-                                "The maximum possible delay is %lld us."),
+                        Error(_(" The delay is too long!\nThe maximum possible delay is %lld us."),
                               (clocks * 6 + 10) * 4000000 / Prog.mcuClock);
                     }
                     if(clocks < 0)
@@ -5904,7 +5821,7 @@ otherwise the result was zero or greater.
                 }
 
                 DWORD loopIfWdtWakeUp = PicProgWriteP;
-                if(Prog.mcu()->core == BaselineCore12bit) {
+                if(Prog.mcu->core == BaselineCore12bit) {
                     Instruction(OP_BCF, REG_STATUS, STATUS_GPWUF);
                     Instruction(OP_BCF, REG_STATUS, STATUS_CWUF);
                     Instruction(OP_MOVF, 0x06, DEST_W);
@@ -5998,7 +5915,7 @@ static void ConfigureTimer0(long long int cycleTimeMicroseconds)
         fCompileError(f, fAsm);
     }
     */
-    if(Prog.mcu()->core == BaselineCore12bit) {
+    if(Prog.mcu->core == BaselineCore12bit) {
         if(plcTmr.prescaler == 1) {
             Prog.WDTPSA = 1;
             //CHANGING PRESCALER(TIMER0 -> WDT)
@@ -6102,7 +6019,7 @@ static void SetPrescaler(int tmr)
         // enable clock, internal source
         plcTmr.PS |= 0x01; // TMR1ON
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 //-----------------------------------------------------------------------------
 // Calc PIC 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
@@ -6165,10 +6082,10 @@ err0:
     plcTmr.TCycle = 4.0 * plcTmr.prescaler * plcTmr.softDivisor * plcTmr.tmr / (1.0 * Prog.mcuClock);
     SetPrescaler(Prog.cycleTimer);
     if(cycleTimeMicroseconds > plcTmr.cycleTimeMax) {
-        Error(_("PLC cycle time more then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMax);
+        Error(_("PLC cycle time more than %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMax);
         return false;
     } else if(cycleTimeMicroseconds < plcTmr.cycleTimeMin) {
-        Error(_("PLC cycle time less then %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMin);
+        Error(_("PLC cycle time less than %.3f ms not valid."), 0.001 * plcTmr.cycleTimeMin);
         return false;
     }
     return true;
@@ -6261,16 +6178,16 @@ static void WriteMultiplyRoutine8(DWORD addr3, DWORD addr1, DWORD addr2, int sov
             Instruction(OP_BTFSC, result1, 7); // MSB
             Instruction(OP_COMF, addr3 + 3);   // Negate result
         } else
-            THROW_COMPILER_EXCEPTION("Internal error.");
+            THROW_COMPILER_EXCEPTION(_("Internal error."));
     }
 
-    if(Prog.mcu()->core == BaselineCore12bit)
+    if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 //-----------------------------------------------------------------------------
@@ -6334,13 +6251,13 @@ static void WriteMultiplyRoutine()
     Instruction(OP_DECFSZ, counter, DEST_F);
     Instruction(OP_GOTO, top);
 
-    if(Prog.mcu()->core == BaselineCore12bit)
+    if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW);
     else
         Instruction(OP_RETURN);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 //-----------------------------------------------------------------------------
@@ -6392,13 +6309,13 @@ static void WriteMultiplyRoutine8x8()
     Instruction(OP_DECFSZ, counter, DEST_F);
     Instruction(OP_GOTO, top);
 
-    if(Prog.mcu()->core == BaselineCore12bit)
+    if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW);
     else
         Instruction(OP_RETURN);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 //-----------------------------------------------------------------------------
@@ -6475,13 +6392,13 @@ static void WriteMultiplyRoutine24x16()
     Instruction(OP_DECFSZ, counter, DEST_F);
     Instruction(OP_GOTO, top);
 
-    if(Prog.mcu()->core == BaselineCore12bit)
+    if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW);
     else
         Instruction(OP_RETURN);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 //-----------------------------------------------------------------------------
@@ -6578,20 +6495,20 @@ static void WriteDivideRoutine()
 
     FwdAddrIsNow(done);
     Instruction(OP_BTFSS, sign, 7);
-    if(Prog.mcu()->core == BaselineCore12bit)
+    if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN, 0, 0);
 
     Negate(dividend0, 2, "result");
 
-    if(Prog.mcu()->core == BaselineCore12bit)
+    if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN, 0, 0);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 //-----------------------------------------------------------------------------
@@ -6690,19 +6607,19 @@ static void WriteDivideRoutine24x16()
 
     FwdAddrIsNow(done);
     Instruction(OP_BTFSS, sign, 7);
-    if(Prog.mcu()->core == BaselineCore12bit)
+    if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN, 0, 0);
 
     Negate(dividend0, 3, "result");
-    if(Prog.mcu()->core == BaselineCore12bit)
+    if(Prog.mcu->core == BaselineCore12bit)
         Instruction(OP_RETLW, 0);
     else
         Instruction(OP_RETURN, 0, 0);
 
     if((savePicProgWriteP >> 11) != ((PicProgWriteP - 1) >> 11))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 //-----------------------------------------------------------------------------
@@ -6804,7 +6721,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         // has not
         // WDTE = BIT2;
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F628 ") //
     ) {
@@ -6843,7 +6760,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         // has not
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F628 ")    //
        || McuAs("Microchip PIC16F873 ") //
@@ -6895,7 +6812,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         // has not
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F88 ")     //
        || McuAs("Microchip PIC16F819 ") //
@@ -6950,7 +6867,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         // has not
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F876 ")    //
        || McuAs("Microchip PIC16F877 ") //
@@ -6985,7 +6902,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         // has not
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F628 ") || //
        McuAs(" PIC16F72 ")           || //
@@ -7026,7 +6943,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         // has not
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F628 ")    //
        || McuAs("Microchip PIC16F88 ")  //
@@ -7070,7 +6987,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         //REG_OPTION not available for read. Write able via OP_OPTION operation.
         // WDTE = BIT2;
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F877 ")    //
        || McuAs("Microchip PIC16F819 ") //
@@ -7119,7 +7036,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     ) {
         // has not
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     if(McuAs("Microchip PIC16F887 ")    //
        || McuAs("Microchip PIC16F886 ") //
@@ -7261,12 +7178,13 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC10F222 ") //
     ) {
         CONFIG_ADDR1 = 0x03ff;
-    } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+    } 
+	else
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFile);
         return false;
     }
 
@@ -7274,7 +7192,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     SetExt(outFileAsm, outFile, ".asm");
     FileTracker fAsm(outFileAsm, "w");
     if(!fAsm) {
-        Error(_("Couldn't open file '%s'"), outFileAsm);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFileAsm);
         return false;
     }
 
@@ -7282,16 +7200,16 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     fprintf(fAsm,
             ";/* This is auto-generated ASM code from LDmicro. Do not edit this file!\n"
             ";   Go back to the LDmicro ladder diagram source for changes in the ladder logic. */\n");
-    fprintf(fAsm, "; %s is the LDmicro target processor.\n", Prog.mcu()->mcuList);
-    fprintf(fAsm, "\tLIST    p=%s\n", Prog.mcu()->mcuList);
+    fprintf(fAsm, "; %s is the LDmicro target processor.\n", Prog.mcu->mcuList);
+    fprintf(fAsm, "\tLIST    p=%s\n", Prog.mcu->mcuList);
     fprintf(fAsm,
             "#include "
             "%s.inc"
             "\n",
-            Prog.mcu()->mcuInc);
+            Prog.mcu->mcuInc);
 
     if(!Prog.configurationWord)
-        Prog.configurationWord = Prog.mcu()->configurationWord;
+        Prog.configurationWord = Prog.mcu->configurationWord;
     if(CONFIG_ADDR2 != -1) {
         fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR1, (WORD)Prog.configurationWord & 0xFFFF);
         fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR2, (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
@@ -7318,7 +7236,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     Scratch5 = AllocOctetRam();
     Scratch6 = AllocOctetRam();
     Scratch7 = AllocOctetRam();
-    if(Prog.mcu()->core != BaselineCore12bit) {
+    if(Prog.mcu->core != BaselineCore12bit) {
         Scratch8 = AllocOctetRam();
         Scratch9 = AllocOctetRam();
         Scratch10 = AllocOctetRam();
@@ -7340,23 +7258,23 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     // PCLATH is init to 0, but apparently some bootloaders want to see us
     // initialize it again.
     Comment("Reset vector"); // may be relocated with botloders
-    if(Prog.mcu()->core == BaselineCore12bit) {
+    if(Prog.mcu->core == BaselineCore12bit) {
         Instruction(OP_CLRF, REG_STATUS); //0 // Select Indirect Bank 0
         Instruction(OP_NOP_);             //1
         Instruction(OP_NOP_, 0, 0);       //2
-    } else if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+    } else if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
         Instruction(OP_CLRF, REG_STATUS); //0 // Select Indirect Bank 0
         Instruction(OP_MOVLB, 0);         //1 // Select Bank 0
         Instruction(OP_MOVLP, 0);         //2 // Select Page 0
-    } else if(Prog.mcu()->core == MidrangeCore14bit) {
+    } else if(Prog.mcu->core == MidrangeCore14bit) {
         Instruction(OP_CLRF, REG_STATUS); //0 // Select Bank 0 and Indirect Bank 0
         Instruction(OP_CLRF, REG_PCLATH); //1 // Select Page 0
         Instruction(OP_NOP_, 0, 0);       //2
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     Comment("GOTO progStart");
     Instruction(OP_GOTO, progStart); //3
-    if(Prog.mcu()->core != BaselineCore12bit) {
+    if(Prog.mcu->core != BaselineCore12bit) {
         Comment("Interrupt Vector");
         Instruction(OP_RETFIE, 0, 0); //4 or this
                                       //  Instruction(OP_NOP_, 0, 0);         //4 or this
@@ -7404,7 +7322,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Comment("Selects 16MHz for the Internal Oscillator when it used, ignored otherwise.");
         WriteRegister(REG_OSCON, 0xF << IRCF0);
     }
-    if(Prog.mcu()->core == BaselineCore12bit) {
+    if(Prog.mcu->core == BaselineCore12bit) {
         Prog.WDTPSA = 1;
         Prog.OPTION = 0xFF; // default; only for PIC10Fxxx
     }
@@ -7420,52 +7338,52 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     DWORD progStartBank = 0;
     // for(DWORD i = 0; i < MAX_RAM_SECTIONS; i++) {
     for(DWORD i = 0; i <= RamSection; i++) {
-        if(Prog.mcu()->ram[i].len) {
-            if(Bank(Prog.mcu()->ram[i].start) != Bank(Prog.mcu()->ram[i].start + Prog.mcu()->ram[i].len - 1))
+        if(Prog.mcu->ram[i].len) {
+            if(Bank(Prog.mcu->ram[i].start) != Bank(Prog.mcu->ram[i].start + Prog.mcu->ram[i].len - 1))
                 THROW_COMPILER_EXCEPTION_FMT("%d", i);
-            if(Prog.mcu()->ram[i].len > 256)
+            if(Prog.mcu->ram[i].len > 256)
                 THROW_COMPILER_EXCEPTION_FMT("%d", i);
 
             // Select bank N
-            if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+            if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
                 Instruction(OP_MOVLB, progStartBank >> 7);
             } else {
-                if((progStartBank ^ Bank(Prog.mcu()->ram[i].start) & 0x0080)) {
-                    if(Prog.mcu()->ram[i].start & 0x0080)
+                if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0080)) {
+                    if(Prog.mcu->ram[i].start & 0x0080)
                         Instruction(OP_BSF, REG_STATUS, STATUS_RP0);
                     else
                         Instruction(OP_BCF, REG_STATUS, STATUS_RP0);
                 }
-                if((progStartBank ^ Bank(Prog.mcu()->ram[i].start) & 0x0100)) {
-                    if(Prog.mcu()->ram[i].start & 0x0100)
+                if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0100)) {
+                    if(Prog.mcu->ram[i].start & 0x0100)
                         Instruction(OP_BSF, REG_STATUS, STATUS_RP1);
                     else
                         Instruction(OP_BCF, REG_STATUS, STATUS_RP1);
                 }
             }
-            if((progStartBank ^ Bank(Prog.mcu()->ram[i].start) & 0x0100)) {
-                if(Prog.mcu()->ram[i].start & 0x0100)
+            if((progStartBank ^ Bank(Prog.mcu->ram[i].start) & 0x0100)) {
+                if(Prog.mcu->ram[i].start & 0x0100)
                     Instruction(OP_BSF, REG_STATUS, STATUS_IRP);
                 else
                     Instruction(OP_BCF, REG_STATUS, STATUS_IRP);
             }
-            progStartBank = Bank(Prog.mcu()->ram[i].start);
-            Instruction(OP_MOVLW, Prog.mcu()->ram[i].len - 1);
-            Instruction(OP_MOVWF, Prog.mcu()->ram[i].start & ~BankMask());
-            Instruction(OP_MOVLW, (Prog.mcu()->ram[i].start + 1) & ~BankMask());
+            progStartBank = Bank(Prog.mcu->ram[i].start);
+            Instruction(OP_MOVLW, Prog.mcu->ram[i].len - 1);
+            Instruction(OP_MOVWF, Prog.mcu->ram[i].start & ~BankMask());
+            Instruction(OP_MOVLW, (Prog.mcu->ram[i].start + 1) & ~BankMask());
             Instruction(OP_MOVWF, REG_FSR);
 
             DWORD zeroMem = PicProgWriteP;
             Instruction(OP_CLRF, REG_INDF);
             Instruction(OP_INCF, REG_FSR, DEST_F);
-            Instruction(OP_DECFSZ, Prog.mcu()->ram[i].start & ~BankMask(), DEST_F); //  <<<<<<<<
+            Instruction(OP_DECFSZ, Prog.mcu->ram[i].start & ~BankMask(), DEST_F); //  <<<<<<<<
             Instruction(OP_GOTO, zeroMem);                                        //                                ^
             //Instruction(OP_CLRF, Prog.mcu->ram[i].start & ~BankMask()); // not need, self cleared here >>>^
         }
     }
-    if(Bank(Prog.mcu()->ram[RamSection].start)) { // 3
+    if(Bank(Prog.mcu->ram[RamSection].start)) { // 3
         Instruction(OP_CLRF, REG_STATUS);       // Select Bank 0 and Indirect Bank 0
-        if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
+        if(Prog.mcu->core == EnhancedMidrangeCore14bit) {
             Instruction(OP_MOVLB, 0); // Select Bank 0
         }
     }
@@ -7483,7 +7401,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     BYTE isInput[MAX_IO_PORTS], isAnsel[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
     BuildDirectionRegisters(isInput, isAnsel, isOutput);
 
-    if(Prog.mcu()->core == BaselineCore12bit) {
+    if(Prog.mcu->core == BaselineCore12bit) {
         Comment("Set up the TRISx registers (direction). 1-tri-stated (input), 0-output.");
 
         Prog.OPTION &=
@@ -7492,9 +7410,9 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
         for(DWORD i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i)) {
-                WriteRegister(Prog.mcu()->outputRegs[i], 0x00);
+                WriteRegister(Prog.mcu->outputRegs[i], 0x00);
                 Instruction(OP_MOVLW, (BYTE)(~isOutput[i]));
-                Instruction(OP_TRIS, Prog.mcu()->outputRegs[i]);
+                Instruction(OP_TRIS, Prog.mcu->outputRegs[i]);
                 break;
             }
         }
@@ -7507,7 +7425,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     }
 
     if(SleepFunctionUsed()) {
-        if(Prog.mcu()->core == BaselineCore12bit) {
+        if(Prog.mcu->core == BaselineCore12bit) {
             Comment("SLEEP trap");
             DWORD notWdtWakeUp = AllocFwdAddr();
             Instruction(OP_BTFSC, REG_STATUS, STATUS_TO); // The TO bit is cleared if WDT wake-up occurred.
@@ -7605,18 +7523,18 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
             WriteRegister(REG_ANSELG, isAnsel[6]);
     }
 
-    if(Prog.mcu()->core == BaselineCore12bit) {
+    if(Prog.mcu->core == BaselineCore12bit) {
         ; //
     } else {
         Comment(
             "Set up the TRISx registers (direction). 1-tri-stated (input), 0-output and drive the outputs low to start");
         for(DWORD i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i))
-                WriteRegister(Prog.mcu()->outputRegs[i], 0x00);
+                WriteRegister(Prog.mcu->outputRegs[i], 0x00);
         }
         for(DWORD i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i)) {
-                WriteRegister(Prog.mcu()->dirRegs[i], ~isOutput[i]);
+                WriteRegister(Prog.mcu->dirRegs[i], ~isOutput[i]);
             }
         }
 
@@ -7627,8 +7545,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
-            Error(_("Zero baud rate not possible."));
-            return false;
+            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."), false);
+            /////	return false;
         }
 
         Comment("UART setup");
@@ -7672,7 +7590,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     BeginOfPLCCycle = PicProgWriteP;
     BeginOfPLCCycle0 = PicProgWriteP;
     if(Prog.cycleTimer == 0) {
-        if(Prog.mcu()->core == BaselineCore12bit) {
+        if(Prog.mcu->core == BaselineCore12bit) {
             Instruction(OP_MOVF, REG_TMR0, DEST_W);
             Instruction(OP_BTFSS, REG_STATUS, STATUS_Z);
             Instruction(OP_GOTO, BeginOfPLCCycle);
@@ -7699,8 +7617,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
             Instruction(OP_BCF, REG_INTCON, T0IF);   // must be cleared in software
         }
     } else if(Prog.cycleTimer == 1) {
-        if(Prog.mcu()->core == BaselineCore12bit) {
-            Error(_("Select Timer0 in menu 'Settings -> MCU parameters'!"));
+        if(Prog.mcu->core == BaselineCore12bit) {
+            THROW_COMPILER_EXCEPTION(_("Select Timer0 in menu 'Settings -> MCU parameters'!"), false);		///// _() by JG
         }
         if(Prog.cycleDuty) {
             CopyBit(addrDuty, bitDuty, REG_PIR1, CCP1IF, YPlcCycleDuty);
@@ -7719,13 +7637,13 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Comment("Watchdog reset");
         Instruction(OP_CLRWDT);
     } else
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
 
     if(Prog.cycleTimer >= 0) {
         Comment("Watchdog reset");
         Instruction(OP_CLRWDT);
         if(plcTmr.softDivisor > 1) {
-            if(Prog.mcu()->core == BaselineCore12bit) {
+            if(Prog.mcu->core == BaselineCore12bit) {
                 Instruction(OP_DECFSZ, plcTmr.softDivisorAddr, DEST_F); // Skip if zero
                 Instruction(OP_GOTO, BeginOfPLCCycle);
                 if(plcTmr.softDivisor > 0xff) {
@@ -7857,9 +7775,13 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         if(Prog.cycleTime) {
             double CycleDeviation = 1e2 * (1e6 * plcTmr.TCycle - Prog.cycleTime) / Prog.cycleTime;
             if(CycleDeviation > 1.0) {
-                Error(_("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
+                THROW_COMPILER_EXCEPTION_FMT(_("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
             }
         }
+
+		///// Added by JG
+		if(CompileFailure) return false;
+		/////
 
         sprintf(str,
                 _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
@@ -7867,15 +7789,15 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
                   "enabled, LVP disabled, PWRT enabled, all code protection off."),
                 outFile,
                 PicProgWriteP,
-                Prog.mcu()->flashWords,
-                (100 * PicProgWriteP) / Prog.mcu()->flashWords);
+                Prog.mcu->flashWords,
+                (100 * PicProgWriteP) / Prog.mcu->flashWords);
 
         char str2[MAX_PATH + 500];
         sprintf(str2,
                 _("Used %d/%d words of program flash (chip %d%% full)."),
                 PicProgWriteP,
-                Prog.mcu()->flashWords,
-                (100 * PicProgWriteP) / Prog.mcu()->flashWords);
+                Prog.mcu->flashWords,
+                (100 * PicProgWriteP) / Prog.mcu->flashWords);
 
         char str3[MAX_PATH + 500];
         sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), McuRAM(), (100 * UsedRAM()) / McuRAM());
@@ -7883,7 +7805,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         char str4[MAX_PATH + 500];
         sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
 
-        if(PicProgWriteP > Prog.mcu()->flashWords) {
+        if(PicProgWriteP > Prog.mcu->flashWords) {
             CompileSuccessfulMessage(str4, MB_ICONWARNING);
             CompileSuccessfulMessage(str2, MB_ICONERROR);
         } else if(UsedRAM() > McuRAM()) {
@@ -7897,13 +7819,13 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
 void CompilePic16(const char *outFile)
 {
-    if((Prog.mcu()->core == BaselineCore12bit) || //
+    if((Prog.mcu->core == BaselineCore12bit) || //
         McuAs(" PIC12F629 ")          || //
         McuAs(" PIC12F675 ")          //
     ) {
         if(Prog.cycleTimer > 0) {
-            Error(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
-            return;
+            THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
+            /////	return;
         }
     }
     bool b = _CompilePic16(outFile, 0); // 1) calc LD length approximately

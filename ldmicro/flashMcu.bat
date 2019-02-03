@@ -2,10 +2,27 @@
 @rem This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 cls
 
-if "%1" == "AVR" goto AVR
-if "%1" == "PIC16" goto PIC16
+REM %1 = ISA
+REM %2 = filename
+REM %3 = variant (compiler)
+REM %4 = target name
+
+if "%1" == "PIC16" goto PICX
+if "%1" == "ARM" goto ARM
+if "%1" == "AVR" goto AVRX
+
 if "%1" == "" goto pauses
-goto NOT_SUPPOTED
+
+goto NOT_SUPPORTED
+
+:PICX
+if "%3" == "2" goto HTC
+goto PIC16)
+
+:AVRX
+if "%3" == "2" goto AVRGCC
+goto AVRC
+
 
 @rem =======================================================================
 :AVR
@@ -119,6 +136,47 @@ if ERRORLEVEL==1 goto pauses
 rem %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U eeprom:r:eeprom_read2:r
 goto exit
 
+
+@rem =======================================================================
+:AVRGCC
+::**************************************************************************
+@ECHO ON
+
+REM Compilation avec avr-gcc
+
+SET GCCPATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
+SET DUDPATH=D:\Programmation\Ladder\Programmes\Tests\AvrGcc\AvrDude
+SET COMPORT=COM3
+
+path %path%;%GCCPATH%\bin
+path %path%;%DUDPATH%
+
+@REM %~nx2 donne le nom de fichier dans %2 sans le path
+
+REM Compilation des sources
+rmdir obj /s /q
+rmdir bin /s /q
+mkdir obj
+mkdir bin
+
+CD lib
+for %%F in (*.c) do  avr-gcc.exe -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF ..\obj\%%F.d -MT ..\obj\%%F.d -MT ..\obj\%%F.o %%F -o ..\obj\%%F.o 
+CD ..
+
+avr-gcc.exe -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%4 -MF obj\%~nx2.d -MT obj\%~nx2.d -MT obj\%~nx2.o %~nx2.c -o obj\%~nx2.o 
+
+REM Linkage des objets
+avr-gcc.exe -o bin\%~nx2.elf obj\*.o -Wl,-Map=obj\%~nx2.map -Wl,--start-group -Wl,-lm -Wl,--end-group -mmcu=%4 
+
+REM Conversion Elf en Hex
+avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature bin\%~nx2.elf bin\%~nx2.hex
+
+REM Transfert du programme avec AvrDude
+avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:bin\%~nx2.hex
+
+PAUSE
+goto exit
+
 @rem =======================================================================
 :PIC16
 ::**************************************************************************
@@ -202,7 +260,94 @@ pause
 goto exit
 
 @rem =======================================================================
-:NOT_SUPPOTED
+:HTC
+::**************************************************************************
+@ECHO ON
+REM Compilation avec HiTech-c (Picc)
+
+SET PCCPATH=C:\Program Files\HI-TECH Software\PICC\9.81
+path %path%;%PCCPATH%\bin
+
+@REM %~nx2 donne le nom de fichier dans %2 sans le path
+
+REM Compilation des sources
+rmdir obj /s /q
+rmdir bin /s /q
+mkdir obj
+mkdir bin
+
+CD lib
+for %%F in (*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=../obj
+CD ..
+
+picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default --opt=default  -g --asmlist --OBJDIR=obj
+
+REM Linkage des objets
+picc.exe -obin\%~nx2.cof -mbin\%~nx2.map --summary=default --output=default obj/*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=obj --OUTDIR=bin
+
+REM Conversion Elf en Hex
+
+
+
+
+REM Transfert du programme 
+
+
+
+
+PAUSE
+goto exit
+
+
+@rem =======================================================================
+:ARM
+::**************************************************************************
+@ECHO ON
+REM Compilation avec arm-gcc
+
+SET GCCPATH=C:\Program Files\EmIDE\emIDE V2.20\arm
+SET JLNPATH=C:\Program Files\SEGGER\JLink_V502j
+
+path %path%;%GCCPATH%\bin;%JLNPATH%
+
+@REM %~nx2 donne le nom de fichier dans %2 sans le path
+
+REM Compilation des sources
+rmdir obj /s /q
+rmdir bin /s /q
+mkdir obj
+mkdir bin
+
+arm-none-eabi-g++.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCCPATH%\arm-none-eabi\include" -c lib\CortexM4.S -o obj\cortexM4.o
+
+CD lib
+for %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCCPATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
+CD ..
+
+arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCCPATH%\arm\arm-none-eabi\include" -c %~n2.c -o obj\%~n2.o
+
+REM Linkage des objets
+arm-none-eabi-gcc.exe -o bin\%~nx2.elf obj\*.o -Wl,-Map -Wl,bin\%~nx2.elf.map -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m4 -mthumb -Tlib\CortexM4.ln
+
+REM Conversion Elf en Hex
+arm-none-eabi-objcopy -O ihex bin\%~nx2.elf bin\%~nx2.hex
+
+REM Creation du script jlink
+
+@ECHO r > bin\cmdfile.jlink
+@ECHO loadfile bin\%~nx2.hex >> bin\cmdfile.jlink
+@ECHO go >> bin\cmdfile.jlink
+@ECHO exit >> bin\cmdfile.jlink
+
+REM Transfert du programme avec J-Link Commander
+JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript bin\cmdfile.jlink
+
+JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript bin\cmdfile.jlink
+PAUSE
+goto exit
+
+@rem =======================================================================
+:NOT_SUPPORTED
 @echo You can write own command for '%1'.
 
 @rem =======================================================================

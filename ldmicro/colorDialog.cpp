@@ -315,7 +315,7 @@ static void MakeControls()
 
     OkButton = CreateWindowEx(0,
                               WC_BUTTON,
-                              _("Applay user color scheme"),
+                              _("Apply user color scheme"),
                               WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
                               480,
                               160,
@@ -386,7 +386,7 @@ void ShowColorDialog()
     SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Background, Simulation mode"));
     SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Rung number, Simulation mode"));
     SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("De-energized element, Simulation mode"));
-    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Energzied element, Simulation mode"));
+    SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("Energized element, Simulation mode"));
     SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("| The 'bus' at the left of the screen, Simulation mode"));
     SendMessage(ColorList, LB_ADDSTRING, 0, (LPARAM)_("The 'bus' at the right of the screen, Simulation mode |"));
 

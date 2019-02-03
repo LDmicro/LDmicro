@@ -38,7 +38,7 @@ struct Lang {
 
 // These are the actual translation tables, so should be included in just
 // one place.
-#include "obj/lang-tables.h"
+#include "obj/lang-tables.h"			
 
 const char *_(const char *in)
 {

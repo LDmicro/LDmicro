@@ -6,6 +6,9 @@
 #include "circuit.h"
 #include "mcutable.hpp"
 
+#define MAX_IO 1024     //
+#define MAX_RUNGS 9999  //
+
 typedef struct McuIoInfoTag McuIoInfo;
 
 typedef struct ModbusAddr {

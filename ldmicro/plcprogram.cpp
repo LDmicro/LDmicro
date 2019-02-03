@@ -1,7 +1,6 @@
 
 #include "plcprogram.h"
 #include "stdafx.h"
-
 //-----------------------------------------------------------------------------
 // Allocate a new `empty' rung, with only a single relay coil at the end. All
 // the UI code assumes that rungs always have a coil in them, so it would

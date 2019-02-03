@@ -11,6 +11,7 @@
 #define ISA_AVR             0x02
 #define ISA_HARDWARE        ISA_AVR
 #define ISA_PC              0x03
+#define ISA_ARM				0x04	///// Added by JG
 #define ISA_INTERPRETED     0x05
 #define ISA_NETZER          0x06
 #define ISA_XINTERPRETED    0x0A    // Extended interpeter
@@ -23,9 +24,6 @@
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
-
-#define MAX_RUNGS 9999
-#define MAX_IO    1024
 
 #endif //__LD_CONFIG_H__
 

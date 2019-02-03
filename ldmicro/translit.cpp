@@ -23,8 +23,6 @@
 
 #include "ldmicro.h"
 #include "filetracker.hpp"
-
-#define LDLANG_RU // TODO
 //-----------------------------------------------------------------------------
 #if defined(LDLANG_RU)
 // code page 1251
@@ -416,24 +414,24 @@ int TranslitFile(char *dest)
     char  trans[1024];
 
     if((tmp = tmpnam(ntmp)) == nullptr) {
-        Error(_("Couldn't create a unique file name for '%s'"), dest);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't create a unique file name for '%s'"), dest);
         return 1;
     }
 
     if(rename(dest, ntmp)) {
-        Error(_("Couldn't rename(%s,%s)"), dest, ntmp);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't rename(%s,%s)"), dest, ntmp);
         return 2;
     }
 
     FileTracker ftmp(ntmp, "r");
     if(!ftmp) {
-        Error(_("Couldn't open file '%s'"), ntmp);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ntmp);
         return 3;
     }
 
     FileTracker f(dest, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), dest);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
         return 4;
     }
 
