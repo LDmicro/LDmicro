@@ -1036,27 +1036,27 @@ void CompilePascal(const char *dest)
 
     FileTracker f(dest, "w");
     if(!f) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
+        Error(_("Couldn't open file '%s'"), dest);
         return;
     }
     FileTracker fu(destu, "w");
     if(!fu) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), destu);
+        Error(_("Couldn't open file '%s'"), destu);
         return;
     }
     FileTracker fr(destr, "w");
     if(!fr) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), destr);
+        Error(_("Couldn't open file '%s'"), destr);
         return;
     }
     FileTracker fv(destv, "w");
     if(!fv) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), destv);
+        Error(_("Couldn't open file '%s'"), destv);
         return;
     }
     FileTracker fi(desti, "w");
     if(!fi) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), desti);
+        Error(_("Couldn't open file '%s'"), desti);
         return;
     }
 

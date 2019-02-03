@@ -18,6 +18,8 @@
 :SVARKA2 - второй
 @SET PROGECT=D:\LDs\SVARKA2\svarka.ld
 
+@SET PROGECT=d:\lds\tmp\TMP.ld
+
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
 :DO_BUILD

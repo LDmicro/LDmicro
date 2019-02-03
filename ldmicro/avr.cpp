@@ -446,10 +446,10 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
 //for setiing interrupt vector
 {
     if(addr == 0) {
-        THROW_COMPILER_EXCEPTION(_("Direct Addr error"));
+        Error(_("Direct Addr error"));
     }
     if(addr >= AvrProg.size()) {
-        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
+        Error(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
     }
     //vvv  same
     AvrProg[addr].opAvr = op;
@@ -1434,11 +1434,11 @@ static void LoadXAddr(DWORD addr, const char *comment)
 //used X; Opcodes: 2
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        Error(_("Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        Error(_("Addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, XL, (addr & 0xff), comment); // X-register Low Byte
@@ -1455,11 +1455,11 @@ static void LoadYAddr(DWORD addr, const char *comment)
 //used Y; Opcodes: 2
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        Error(_("Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        Error(_("Addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, YL, (addr & 0xff), comment); // Y-register Low Byte
@@ -1470,11 +1470,11 @@ static void LoadZAddr(DWORD addr, const char *comment)
 //used Z; Opcodes: 2
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        Error(_("Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        Error(_("Addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, ZL, (addr & 0xff), comment); // Z-register Low Byte
@@ -1500,7 +1500,7 @@ static void LoadZAddr(DWORD addr)
 static void SETB(DWORD addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
+        Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1553,7 +1553,7 @@ static void SETB(DWORD addr, int bit)
 static void CLRB(DWORD addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
+        Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1607,7 +1607,7 @@ static DWORD SKBS(DWORD addr, int bit, int reg)
 {
     DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
+        Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1646,7 +1646,7 @@ static DWORD SKBC(DWORD addr, int bit, int reg)
 {
     DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
+        Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1686,11 +1686,11 @@ static DWORD SKBC(DWORD addr, int bit)
 static void STORE(DWORD addr, int reg)
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nSTORE(%d, %d) skiped!"), addr, reg);
+        Error(_("Zero memory addres not allowed!\nSTORE(%d, %d) skiped!"), addr, reg);
         return;
     }
     if(reg < 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Registers less zero not allowed!\nSTORE(%d, %d) skiped."), addr, reg);
+        Error(_("Registers less zero not allowed!\nSTORE(%d, %d) skiped."), addr, reg);
         return;
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
@@ -1720,11 +1720,11 @@ static void STOREval(DWORD addr, BYTE val)
 static void LOAD(int reg, DWORD addr)
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nLOAD(%d, %d) skiped!"), reg, addr);
+        Error(_("Zero memory addres not allowed!\nLOAD(%d, %d) skiped!"), reg, addr);
         return;
     }
     if(reg < 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Registers less zero not allowed!\nLOAD(%d, %d) skiped."), reg, addr);
+        Error(_("Registers less zero not allowed!\nLOAD(%d, %d) skiped."), reg, addr);
         return;
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
@@ -1752,7 +1752,7 @@ static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYT
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
+        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
         return;
     }
     char s[1024];
@@ -1798,7 +1798,7 @@ static void WriteMemoryStillAddr(DWORD addr, BYTE val)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
+        Error(_("Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1957,7 +1957,7 @@ static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nOrMemory(0, %d) skiped!"), val); //see TODO
+        Error(_("Zero memory addres not allowed!\nOrMemory(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1976,7 +1976,7 @@ static void AndMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory addres not allowed!\nAndMemory(0, %d) skiped!"), val); //see TODO
+        Error(_("Zero memory addres not allowed!\nAndMemory(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1996,11 +1996,11 @@ static void WriteRegToIO(DWORD addr, BYTE reg)
 //or used   ; Opcodes: 1
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION(_("Zero memory addres not allowed!\nWriteRegToIO skiped.")); //see TODO
+        Error(_("Zero memory addres not allowed!\nWriteRegToIO skiped.")); //see TODO
         return;
     }
     if(reg < 0) {
-        THROW_COMPILER_EXCEPTION(_("Registers less zero not allowed!\nWriteRegToIO skiped.")); //see TODO
+        Error(_("Registers less zero not allowed!\nWriteRegToIO skiped.")); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -2012,11 +2012,11 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 //or used   ; Opcodes: 1
 {
     if(addr <= 0) {
-        THROW_COMPILER_EXCEPTION(_("Zero memory addres not allowed!\nReadIoToReg skiped.")); //see TODO
+        Error(_("Zero memory addres not allowed!\nReadIoToReg skiped.")); //see TODO
         return;
     }
     if(reg < 0) {
-        THROW_COMPILER_EXCEPTION(_("Registers less zero not allowed!\nReadIoToReg skiped.")); //see TODO
+        Error(_("Registers less zero not allowed!\nReadIoToReg skiped.")); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -2121,7 +2121,7 @@ static void IfBitClear(DWORD addr, int bit, BYTE reg, const char *name)
     char b[10];
     sprintf(b, "BIT%d", bit);
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
+        Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         LoadZAddr(addr);
@@ -2165,7 +2165,7 @@ static void IfBitSet(DWORD addr, int bit, BYTE reg, const char *name)
     char b[10];
     sprintf(b, "BIT%d", bit);
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
+        Error(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         LoadZAddr(addr);
@@ -2246,15 +2246,15 @@ static bool TstAddrBitReg(DWORD addr, int bit, int reg)
 {
     bool b = true;
     if((addr <= 0) || (addr > 0xFFFF)) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Only values 0-0xFFFF allowed for Addres parameter.\naddres=0x%4X"), addr);
+        Error(_("Only values 0-0xFFFF allowed for Addres parameter.\naddres=0x%4X"), addr);
         b = false;
     }
     if((bit < 0) || (bit > 7)) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Only values 0-7 allowed for Bit parameter.\nbit=%d"), bit);
+        Error(_("Only values 0-7 allowed for Bit parameter.\nbit=%d"), bit);
         b = false;
     }
     if((reg < 0) || (reg > 0x1F)) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Only values 0-0x1F allowed for Register parameter.\nreg=0x%02X"), reg);
+        Error(_("Only values 0-0x1F allowed for Register parameter.\nreg=0x%02X"), reg);
         b = false;
     }
     return b;
@@ -3169,7 +3169,7 @@ static void  WriteRuntime()
 
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
-            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."));
+            Error(_("Zero baud rate not possible."));
             return;
         }
 
@@ -3743,7 +3743,7 @@ static void CompileFromIntermediate()
                     Instruction(OP_MOV, r17, r18);
                     Instruction(OP_MOV, r18, r3);
                 } else
-                    THROW_COMPILER_EXCEPTION("Invalid var size in swap.");
+                    Error(_("Invalid var size in swap."));
 
                         CopyRegToVar(a->name1, r16, sov1);
                 break;
@@ -4227,7 +4227,7 @@ static void CompileFromIntermediate()
                     CallSubroutine(DivideAddress24);
                     DivideUsed24 = true;
                 } else
-                    THROW_COMPILER_EXCEPTION("Invalid variable size.");
+                    Error(_("Invalid variable size."));
                 if(a->op == INT_SET_VARIABLE_DIVIDE)
                     CopyRegToVar(a->name1, r19, sov);
                 else
@@ -4251,7 +4251,7 @@ static void CompileFromIntermediate()
                     MultiplyUsed24 = true;
                     sov1 = std::min(6, SizeOfVar(a->name1));
                 } else
-                    THROW_COMPILER_EXCEPTION("Invalid variable size.");
+                    Error(_("Invalid variable size."));
                 CopyRegToVar(a->name1, r20, sov1);
                 break;
 
@@ -4354,7 +4354,7 @@ static void CompileFromIntermediate()
                             Instruction(OP_ROR, 21);
                             Instruction(OP_ROR, 20);
                         } else
-                            THROW_COMPILER_EXCEPTION("Invalid variable size.");
+                            Error(_("Invalid variable size."));
                     } else if(a->op == INT_SET_VARIABLE_SHR) {
                         if(sov == 1) {
                             Instruction(OP_ASR, 20);
@@ -4371,7 +4371,7 @@ static void CompileFromIntermediate()
                             Instruction(OP_ROR, 21);
                             Instruction(OP_ROR, 20);
                         } else
-                            THROW_COMPILER_EXCEPTION("Invalid variable size.");
+                            Error(_("Invalid variable size."));
                     } else if(a->op == INT_SET_VARIABLE_ROL) {
                         RolReg(r20, sov);
                     } else if(a->op == INT_SET_VARIABLE_ROR) {
@@ -4399,7 +4399,7 @@ static void CompileFromIntermediate()
                             IfBitSet(REG_SREG, SREG_C);
                             Instruction(OP_SBR, 23, 0x80);
                         } else
-                            THROW_COMPILER_EXCEPTION("Invalid vaiable size.");
+                            Error(_("Invalid variable size."));
                     } else
                         THROW_COMPILER_EXCEPTION("Invalid instruction.");
                     Instruction(OP_RJMP, Loop);
@@ -4525,7 +4525,7 @@ static void CompileFromIntermediate()
             case INT_PWM_OFF: {
                 McuPwmPinInfo *iop = PwmPinInfoForName(a->name1.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name1.c_str());
+                    Error(_("Pin '%s': PWM output not available!"), a->name1.c_str());
                 }
                 if(iop->maxCS == 0) {
                     if(REG_TCCR2B > 0) {
@@ -4560,11 +4560,11 @@ static void CompileFromIntermediate()
                 McuPwmPinInfo *iop;
                 iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name3.c_str());
+                    Error(_("Pin '%s': PWM output not available!"), a->name3.c_str());
                 } else {
                     iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer, std::max(resol, 8));
                     if(!iop) {
-                        THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM resolution not available!"), a->name3.c_str());
+                        Error(_("Pin '%s': PWM resolution not available!"), a->name3.c_str());
                     }
                 }
                 if(iop->maxCS == 0) {
@@ -4666,7 +4666,7 @@ static void CompileFromIntermediate()
                             break;
                         }
                     } else
-                        THROW_COMPILER_EXCEPTION("Can't set prescale.");
+                        Error(_("Can't set prescale."));
                 }
 
                 if(((double)bestError) / target > 0.05) {
@@ -4724,7 +4724,7 @@ static void CompileFromIntermediate()
                             cs = 7;
                             break;
                         default:
-                            THROW_COMPILER_EXCEPTION("Invalid prescale.");
+                            Error(_("Invalid prescale."));
                     }
                 } else if(iop->maxCS == 5) {
                     switch(bestPrescale) {
@@ -4744,10 +4744,10 @@ static void CompileFromIntermediate()
                             cs = 5;
                             break;
                         default:
-                            THROW_COMPILER_EXCEPTION("Invalid prescale.");
+                            Error(_("Invalid prescale."));
                     }
                 } else
-                    THROW_COMPILER_EXCEPTION("Can't set PWM.");
+                    Error(_("Can't set PWM."));
 
                 if(resol == 7) {
                     DivideUsed = true;
@@ -5183,7 +5183,7 @@ static void CompileFromIntermediate()
                 return;
 
             case INT_WRITE_STRING:
-                THROW_COMPILER_EXCEPTION(_("Unsupported operation 'INT_WRITE_STRING' for target, skipped."));
+                Error(_("Unsupported operation 'INT_WRITE_STRING' for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
                 break;
 
@@ -5937,7 +5937,7 @@ void CompileAvr(const char *outFile)
     rungNow = -100;
     FileTracker f(outFile, "w");
     if(!f) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFile);
+        Error(_("Couldn't open file '%s'"), outFile);
         return;
     }
 
@@ -5945,7 +5945,7 @@ void CompileAvr(const char *outFile)
     SetExt(outFileAsm, outFile, ".asm");
     FileTracker fAsm(outFileAsm, "w");
     if(!fAsm) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFileAsm);
+        Error(_("Couldn't open file '%s'"), outFileAsm);
         return;
     }
 

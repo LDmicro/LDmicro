@@ -1,0 +1,2271 @@
+
+INTRODUZIONE
+============
+
+LDmicro genera codice nativo per determinati microcontrollori Microchip PIC16 e
+Atmel AVR. Di solito il software per questi microcontrollori è scritto in un
+linguaggio di programmazione come assembler, C o BASIC. Un programma in una di
+queste lingue comprende un elenco di istruzioni. Questi linguaggi sono potenti
+e adatti all'architettura del processore, che esegue internamente un elenco di
+istruzioni.
+
+I PLC, d'altra parte, sono spesso programmati in `logica ladder '. Un semplice
+programma potrebbe assomigliare a questo:
+
+   ||                                                                    ||
+   ||    Xbutton1           Tdon           Rchatter           Yred       ||
+ 1 ||-------]/[---------[TON 1.000 s]-+-------]/[--------------( )-------||
+   ||                                 |                                  ||
+   ||    Xbutton2           Tdof      |                                  ||
+   ||-------]/[---------[TOF 2.000 s]-+                                  ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||    Rchatter            Ton             Tnew           Rchatter     ||
+ 2 ||-------]/[---------[TON 1.000 s]----[TOF 1.000 s]---------( )-------||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||                                                                    ||
+   ||------[END]---------------------------------------------------------||
+   ||                                                                    ||
+   ||                                                                    ||
+
+(TON è un ritardo di attivazione; TOF è un ritardo di spegnimento. Le istruzioni
+--] [--sono input, che si comportano in modo simile ai contatti su un relay.
+Le istruzioni --( )-- sono uscite, che si comportano in modo simile alla bobina
+di un relè. Molti buoni riferimenti per la logica ladder sono disponibili su
+Internet e altrove; i dettagli specifici di questa implementazione sono riportati
+di seguito.)
+
+Sono evidenti un certo numero di differenze:
+
+    * Il programma è presentato in formato grafico, non come un elenco testuale
+       di dichiarazioni. Molte persone inizialmente lo troveranno più facile da
+       capire.
+
+
+    * Al livello più elementare, i programmi assomigliano a schemi circuitali,
+       con contatti di relè (ingressi) e bobine (uscite). Questo è intuitivo
+       per i programmatori con conoscenza teorica dei circuiti elettrici.
+
+
+    * Il compilatore di logica ladder si occupa di cosa viene calcolato e dove.
+      Non è necessario scrivere codice per determinare quando le uscite devono
+      essere ricalcolate in base a una modifica degli input o un evento del timer
+      e non è necessario specificare l'ordine in cui questi calcoli devono aver
+      luogo; gli strumenti PLC lo fanno per te.
+
+LDmicro compila la logica ladder sul codice PIC16 o AVR.
+Sono supportati i seguenti processori:
+    * PIC16F877
+    * PIC16F628
+    * PIC16F876
+    * PIC16F88
+    * PIC16F819
+    * PIC16F887
+    * PIC16F886
+    * ATmega128
+    * ATmega64
+    * ATmega162
+    * ATmega32
+    * ATmega16
+    * ATmega8
+    * e molti altri...
+
+Sarebbe facile supportare più chip AVR o PIC16, ma non ho modo di testarli.
+Se ne hai bisogno in particolare, contattami e vedrò cosa posso fare.
+
+Usando LDmicro, puoi disegnare un diagramma ladder per il tuo programma.
+Puoi simulare la logica in tempo reale sul tuo PC. Quindi, quando sei
+convinto che sia corretto, puoi assegnare i pin sul microcontrollore degli
+ingressi e delle uscite del programma. Una volta assegnati i pin, è
+possibile compilare il codice PIC o AVR. L'uscita del compilatore è un
+file .hex che puoi programmare nel tuo microcontrollore usando qualsiasi
+programmatore PIC / AVR.
+
+LDmicro è progettato per essere in qualche modo simile alla maggior parte
+dei sistemi di programmazione PLC commerciali. Ci sono alcune eccezioni e
+molte cose comunque non sono standard nell'industria. Leggere attentamente
+la descrizione di ogni istruzione, anche se sembra familiare. Questo
+documento presuppone la conoscenza di base della logica ladder e della
+struttura del software PLC (il ciclo di esecuzione: ingressi di lettura,
+calcolo, uscite di scrittura).
+
+PLC e sicurezza
+    https://github.com/LDmicro/LDmicro/wiki/PLC-and-safety
+
+Tempo di ciclo PLC 0
+    https://github.com/LDmicro/LDmicro/wiki/PLC-Cycle-Time-0
+
+OBIETTIVI SUPPLEMENTARI
+=======================
+
+È anche possibile generare il codice ANSI C. È possibile utilizzarlo con
+qualsiasi processore per il quale si dispone di un compilatore C, ma si
+è responsabili della fornitura del runtime. Ciò significa che LDmicro
+genera semplicemente l'origine per una funzione PlcCycle (). Si è
+responsabili della chiamata di PlcCycle ogni volta che si esegue un
+ciclo e si è responsabili dell'implementazione di tutte le funzioni
+di I/O (lettura/scrittura digitale, ecc.) Che il PlcCycle () chiama.
+Per maggiori dettagli vedi i commenti nella sorgente generata.
+
+Infine, LDmicro può generare un codice byte indipendente dal processore
+per una macchina virtuale progettata per eseguire il codice logico ladder.
+Ho fornito un'implementazione di esempio dell'interprete/VM, scritta in
+modo abbastanza portatile C. Questo obiettivo funzionerà praticamente su
+qualsiasi piattaforma, purché sia possibile fornire la propria VM. Questo
+potrebbe essere utile per le applicazioni in cui si desidera utilizzare
+la logica ladder come un "linguaggio di scripting" per personalizzare un
+programma più grande. Per i dettagli vedi i commenti nell'interprete di
+esempio.
+
+È stato aggiunto un nuovo target "bytecode" di Controllino Maxi / Ext.
+Genera il file .xint interpretabile dal software LDuino PLC. Fino ad ora,
+è supportato solo Controllino Maxi PLC. Tuttavia, poiché il bytecode è
+generico, è possibile eseguire un adattamento a qualsiasi altra scheda
+PLC o CPU. Per questo Vedi il codice sorgente LDuino.
+
+OPZIONI DELLA LINEA DI COMANDO
+==============================
+
+ldmicro.exe viene in genere eseguito senza opzioni della riga di comando.
+Ciò significa che puoi semplicemente creare una scorciatoia per il
+programma, o salvarla sul tuo desktop e fare doppio clic sull'icona
+quando vuoi eseguirla, e quindi puoi fare tutto dalla GUI.
+
+Se a LDmicro sulla riga di comando viene passato un nome di file
+(ad esempio `ldmicro.exe asd.ld '), LDmicro tenterà di aprire` asd.ld',
+se esiste. Viene generato un errore se `asd.ld 'non esiste.
+Ciò significa che è possibile associare ldmicro.exe con file .ld,
+in modo che venga eseguito automaticamente quando si fa doppio clic
+su un file .ld.
+
+Se LDmicro passa gli argomenti della riga di comando nella forma
+`ldmicro.exe / c src.ld dest.hex ', prova a compilare` src.ld' e salva
+l'uscita come `dest.hex '. LDmicro si chiude dopo la compilazione,
+indipendentemente dal fatto che la compilazione abbia avuto esito
+positivo o meno. Tutti i messaggi vengono stampati sulla console.
+Questa modalità è utile solo quando si esegue LDmicro dalla riga
+di comando.
+
+
+BASE
+======
+
+Se esegui LDmicro senza argomenti, inizia con un programma vuoto.
+Se esegui LDmicro con il nome di un programma ladder (xxx.ld) sulla
+riga di comando, all'avvio tenterà di caricare quel programma.
+LDmicro utilizza il proprio formato interno per il programma; non
+può importare la logica da nessun altro strumento.
+
+Se non hai caricato un programma esistente, ti verrà dato un
+programma con un gradino vuoto. Dove puoi aggiungere un'istruzione;
+ad esempio è possibile aggiungere una serie di contatti (Istruzioni
+-> Inserisci contatti) denominati `Xnew '. `X 'significa che i
+contatti saranno legati a un piedino di input sul microcontrollore.
+In un secondo momento è possibile assegnare uno piedino, dopo aver
+scelto un microcontrollore e rinominato i contatti. La prima lettera
+di un nome indica che tipo di oggetto è. Per esempio:
+
+    * Xnome -- legato a un pin di ingresso sul microcontrollore
+    * Ynome -- legato a un pin di uscita sul microcontrollore
+    * Rnome -- `Relè interno ': un bit in memoria
+    * Tnome -- un timer; ritardo di attivazione, ritardo di spegnimento o ritenzione
+    * Cnome -- un contatore, conto diretto o alla rovescia
+    * Anome -- un valore letto da un convertitore A/D
+    * Pnome -- legato a un pin di uscita PWM del microcontrollore
+    * Mnome -- legato ad un'uscita MODBUS della bobina
+    * Inome -- legato a un ingresso MODBUS discreto
+    * Hnome -- legato a un registro di possesso MODBUS
+    * nome  -- una variabile (intera) generale
+
+N.B. le sottostanti lettere non possono essere usate come nomi di variabili:
+    * X -- legato a un pin di ingresso sul microcontrollore
+    * Y -- legato a un pin di uscita sul microcontrollore
+    * M -- legato ad un'uscita MODBUS della bobina
+    * H -- legato a un registro di possesso MODBUS
+possono essere usate se in minuscolo.
+
+
+    Nome variabile che inizia con il simbolo '#' come
+    #PORTA, #PORTB, #PORTC, ... trattato come porta hardware di uscita.
+    Nome variabile che inizia con il simbolo '#' come
+    #PINA, #PINB, #PINC, ... trattato come porta hardware di input.
+    Nome variabile che inizia con il simbolo '#' come
+    #TRISA, #TRISB, #TRISC, ... trattato come registro di direzione dati delle
+    corrispondenti porte
+    #PORTA, #PORTB, #PORTC, ...
+    Nota: Gli indirizzi PORTn e PINn per i PIC sono uguali.
+
+   Il nome della variabile che inizia con un carattere "#" e un numero successivo
+     (comunemente un esadecimale) trattato come indirizzo immediato del registro
+     hardware.
+     Il valore come # 0xXXXX è immediato, diretto, indirizzamento esplicito.
+    Per esempio:
+    # 0x8E trattato come indirizzo del registro hardware PCON del
+      microcontrollore Microchip PIC16F628.
+     # 0x136 trattato come indirizzo del registro UDR3 hardware
+       (registro dati I/O USART3) del microcontrollore Atmel ATmega2560.
+
+    Il nome della variabile che inizia con un carattere '#' e successivamente
+    con un nome di variabile generico considerato come indirizzo indiretto del
+    registro hardware.
+    Valore come #Varnome è l'indirizzo indiretto del registro hardware
+    (Indirect Address Pointer).
+    Per esempio:
+      {MOV  portAddr:=}    portAddr è una variabile generica contenente il valore 0x05.
+    --{           0x05}--
+
+      {MOV #portAddr:=}    #portAddr trattato come indirizzo indiretto del registro # 0x05 PORTA (Microchip PIC16F887).
+    --{           0xF0}--  I pin di uscita PORTA sono impostati su un valore binario di 11110000.
+
+      {ADD  portAddr:=}    La variabile portAddr per uso generico ora ha un valore di 0x06.
+    --{portAddr  +   1}--
+
+      {MOV #portAddr:=}    #portAddr trattato come indirizzo indiretto del registro # 0x06 PORTB (Microchip PIC16F887).
+    --{           0x0F}--  I pin di uscita PORTB sono impostati su un valore binario di 00001111.
+    * Wiki: indirizzamento indiretto LDmicro
+      https://github.com/LDmicro/LDmicro/wiki/LDmicro-indirect-addressing
+
+    Prestare attenzione con la scrittura dei registri hardware tramite l'accesso
+    diretto all'indirizzo.
+    Vedi come accedere a SPI attraverso i registri hardware.
+    * Wiki: SPI: Serial Peripheral Interface
+      https://github.com/LDmicro/LDmicro/wiki/SPI:-Serial-Peripheral-Interface
+
+
+Scegli il resto del nome in modo che descriva cosa fa l'oggetto, di modo che
+sia unico nel programma. Lo stesso nome si riferisce sempre allo stesso
+oggetto all'interno del programma. Ad esempio, sarebbe un errore avere nello
+stesso programma un ritardo di attivazione (TON) chiamato "Tdelay" e un ritardo
+di disattivazione (TOF) chiamato "Tdelay", poiché ogni contatore ha
+bisogno della sua memoria, d'altra parte, sarebbe corretto avere un timer
+ritentivo (RTO) chiamato `Tdelay 'e un'istruzione di reset (RES) associata
+a` Tdelay', dal momento che in quel caso vuoi che entrambe le istruzioni lavorino
+sullo stesso timer.
+I nomi delle variabili possono essere costituiti da lettere, numeri e caratteri
+di sottolineatura '_'.
+Un nome di variabile non deve iniziare con un numero. I nomi delle variabili
+fanno distinzione tra maiuscole e minuscole.
+
+Le istruzioni variabili generali (MOV, ADD, EQU, ecc.) Possono funzionare su
+variabili con qualsiasi nome. Ciò significa che possono accedere al timer e
+al contatore degli accumulatori. Questo a volte può essere utile; Per esempio,
+è possibile verificare se il conteggio di un timer si trova in un determinato
+intervallo.
+
+Le variabili sono sempre interi a 16 bit. Ciò significa che possono passare
+da -32768 a 32767. Le variabili vengono sempre considerate come firmate.
+
+AGGIORNAMENTO: rilascio 4.3.0
+Le variabili possono allocare 1,2,3 o 4 byte. È possibile modificare la dimensione
+della variabile facendo doppio clic sul nome della variabile nell'elenco nella
+parte inferiore dello schermo.
+Le variabili vengono memorizzate ed elaborate nella forma del complemento a due.
+Vedi https://en.wikipedia.org/wiki/Two%27s_complement
+
+Bytes    Tipo      gamma da                       a
+ 1   signed int8   -2^7 =       -128=0x80        2^7 -1=       127=0x7f
+ 2   signed int16  -2^15=     -32768=0x8000      2^15-1=     32767=0x7fff
+ 3   signed int24  -2^23=   -8388608=0x800000    2^23-1=   8388607=0x7fFFFF
+ 4   signed int32  -2^31=-2147483648=0x80000000  2^31-1=2147483647=0x7fffFFFF
+
+Il valore zero decimale (0) è rappresentato come tutti i bit zeri 00 ... 000
+Il valore decimale (-1) rappresentato come tutti gli 11 ... 111
+
+Le variabili int8 firmate vengono utilizzate per rendere il file esadecimale sempre
+più veloce.
+I tipi int24 e int32 firmati vengono utilizzati per aumentare l'intervallo di
+variabili.
+L'estensione del segno per le variabili di diverse dimensioni viene fornita
+automaticamente.
+Nota: le istruzioni MUL, DIV, MOD non possono elaborare variabili int32.
+
+La bandierina di sovradimensionamento (sottodimensionamento) aritmetico viene
+fornita come relè interno ROverflowFlagV.
+https://en.wikipedia.org/wiki/Overflow_flag
+https://www.allaboutcircuits.com/textbook/digital/chpt-2/binary-overflow/
+La bandierina trabocco indica che il risultato firmato a due complementi non si
+adatta al numero di bit utilizzati per l'operazione e segnala un errore.
+Ad esempio, se alla variabile int8 dest = 127 (0x7f) aggiungi 1, ottieni -128 (0x80),
+e la bandierina di trabocco ROverflowFlagV sarà impostata su 1.
+Invece se alla variabile int16 dest = 127 (0x007f) aggiungi 1, ottieni 128 (0x0080),
+e la bandierina trabocco ROverflowFlagV non è interessato.
+Durante l'inizializzazione LDmicro reimposta ROverflowFlagV a zero.
+Nota: CTC genera un impulso di troppo pieno (carry) quando Contatore == Max.
+      CTR genera un impulso di troppo pieno (prestare) quando Contatore == Min.
+      Il troppo pieno non imposta la bandierina trabocco.
+
+La bandierina Sovrapposizione è fornito come stato di uscita delle operazioni ADD, SUB.
+La bandierina Sovrapposizione indica che il segno del risultato è stato modificato.
+Ad esempio, la sovrapposizione si verifica quando -1 (0xf..f) aggiunge 1 (o sub -1),
+otteniamo 0 (0x0..0), tutti 1 sono cambiati in tutti gli zeri 0.
+Inoltre, la sovrapposizione si verificava quando 0 (0x0..0) sub 1 (o aggiungi -1),
+otteniamo -1 (0xf..f), tutti gli zeri 0 sono cambiati in tutti 1.
+Ad esempio, la sovrapposizione si verifica quando a -10 aggiungi 15 (o sotrai -15),
+ottenendo 5, la sorgente negativa viene cambiata in risultato positivo.
+Inoltre, la sovrapposizione si verifica quando a 10 sottrai 15 (o aggiungi -15),
+otteniamo -5, la fonte positiva viene cambiata in risultato negativo.
+FINE AGGIORNAMENTI: Release 4.3.0
+
+È possibile specificare i valori letterali come numeri decimali normali (10, 1234, -56).
+È anche possibile specificare i valori dei caratteri ASCII
+('A', 'z') inserendo il carattere tra virgolette singole.
+È possibile utilizzare un codice carattere ASCII nella maggior
+parte dei casi è possibile utilizzare un numero decimale.
+È possibile utilizzare numeri esadecimali (0xA, 0x04D2, 0xffc8),
+numeri ottali (0o12, 0o2322, 0o177710),
+numeri binari (0b1010, 0b10011010010, 0b1111111111001000)
+nella maggior parte dei casi è possibile utilizzare un numero decimale.
+LDmicro ha usato i prefissi C:
+0x__ or 0X__ per i numeri esadecimali con cifre 1234567890ABCDEF
+0o__ or 0O__ o numeri ottali 0__ con cifre 01234567
+0b__ or 0B__ per i numeri binari con cifre 01.
+Esadecimali, la notazione binaria è più comoda per le operazioni bit a bit.
+
+Nella parte inferiore dello schermo vedrai una lista di tutti gli oggetti
+nel programma. Questo elenco viene generato automaticamente dal programma;
+non c'è bisogno di tenerlo aggiornato a mano. La maggior parte degli
+oggetti non ha bisogno di alcuna configurazione. Gli oggetti `Xnome ',
+` Ynome' e `Anome 'devono tuttavia essere assegnati a un pin sul
+microcontrollore. Prima scegli quale microcontrollore vuoi usare
+(Impostazioni -> Microcontrollore). Quindi assegna i pin I/O facendo
+doppio clic su di essi nell'elenco.
+
+È possibile modificare il programma inserendo o eliminando le istruzioni.
+Il cursore nel display del programma lampeggia per indicare l'istruzione
+attualmente selezionata e il punto di inserimento corrente. Se non
+lampeggia, premi <Tab> o fai clic su un'istruzione. Ora puoi cancellare
+l'istruzione corrente, oppure puoi inserire una nuova istruzione a destra
+oa sinistra (in serie con) o sopra o sotto (in parallelo con) l'istruzione
+selezionata. Alcune operazioni non sono consentite. Ad esempio, nessuna
+istruzione è consentita a destra di una bobina.
+
+Il programma inizia con un solo ramo . È possibile aggiungere più rami
+selezionando Inserisci ramo Prima / Dopo nel menu logico. È possibile
+ottenere lo stesso effetto posizionando molti sotto circuiti complicati
+in parallelo all'interno di un ramo, ma è più chiaro utilizzare più rami.
+
+Una volta scritto un programma, puoi testarlo in simulazione e poi puoi
+compilarlo in un file HEX per il microcontrollore selezionato.
+
+
+SIMULAZIONE
+==========
+
+Per accedere alla modalità di simulazione, scegli Simula -> Modalità
+simulazione o premi <Ctrl + M>. In modalità simulazione il programma
+viene mostrato in modo diverso. Non c'è più un cursore. Le istruzioni
+attive appaiono di un rosso acceso; le istruzioni inattive appaiono in
+grigio. Premere la barra spaziatrice per eseguire un ciclo del PLC.
+Per il Ciclo continuo in tempo reale, scegli Simula -> Avvia simulazione
+in tempo reale, o premi <Ctrl+R>. La visualizzazione del programma verrà
+aggiornata in tempo reale man mano che cambia lo stato del programma.
+
+È possibile impostare lo stato degli ingressi nel programma facendo
+doppio clic su di loro nella lista in fondo allo schermo, o facendo
+doppio clic su un'istruzione contatti `Xnome ' nel programma. Se si
+modifica lo stato di un pin di input, tale modifica non si rifletterà
+sul modo in cui il programma viene visualizzato fino a quando il PLC
+non si avvia; ciò avverrà automaticamente se stai eseguendo una
+simulazione in tempo reale o quando premi la barra spaziatrice.
+
+
+COMPILAZIONE DEL CODICE NATIVO
+========================
+
+In definitiva, il punto è generare un file .hex per programmare
+il tuo microcontrollore. Per prima cosa devi selezionare il tipo di
+microcontrollore, sotto il menu Impostazioni -> Microcontrollore.
+Quindi devi assegnare un pin I/O a ciascun oggetto `Xnome 'o` Ynome'.
+Per fare questo fai doppio clic sul nome dell'oggetto nell'elenco nella
+parte inferiore dello schermo.
+Verrà visualizzata una finestra di dialogo in cui è possibile scegliere
+da un elenco un pin non assegnato.
+
+Quindi devi scegliere il tempo di ciclo che userai, e devi dire al
+compilatore quale velocità di clock il micro eseguirà. Questi sono
+impostati nel menu Impostazioni -> Parametri MCU... . In generale non
+è necessario modificare il tempo di ciclo; 10 ms è un buon valore per
+la maggior parte delle applicazioni. Digitare la frequenza del cristallo
+che si utilizzerà con il microcontrollore (o il risuonatore ceramico,
+ecc.) E fare clic su OK.
+
+Ora puoi generare il codice del tuo programma. Scegli Compila -> Compila,
+oppure Compila -> Compila come ... se in precedenza è stato compilato
+questo programma e si desidera specificare un nome di file di uscita
+diverso. Se non ci sono errori, LDmicro genererà un file Intel IHEX
+pronto da programmare nel chip.
+
+Usa qualsiasi software di programmazione e hardware per caricare il file
+.hex nel microcontrollore. Ricordarsi di impostare i bit di configurazione
+(fusibili)! Per processori PIC16, i bit di configurazione sono inclusi
+nel file esadecimale e la maggior parte del software di programmazione
+guarderà automaticamente lì.
+Per i processori AVR è necessario impostare manualmente i bit di configurazione.
+
+
+RESISTENZE PORTA ALTO
+=====================
+Resistenze PORTA alto
+https://github.com/LDmicro/LDmicro/wiki/Pull-up-resistors
+
+Disabilita Resistenze PORTA alto
+https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+
+Resistenze PORTA basso
+https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
+
+
+RIFERIMENTO ISTRUZIONI
+======================
+
+    Terminologia:
+    "Sensibile al Livello" = uscita (elemento) controllata dal livello
+     dell'ingresso.
+    "Fianco di attivazione" = l'uscita cambia solo nel momento in cui
+     l'input cambia da un valore all'altro. Può essere attivato dal
+     fronte positivo (da 0 a 1), o attivato dal fronte negativo (da 1
+     a 0). La maggior parte degli elementi di LDmicro sono "sensibili
+     al livello", alcuni elementi sono "attivati dal limite positivo".
+
+> CONTATTO, NORMALMENTE APERTO Xnome           Rnome          Ynome
+                             ----] [----     ----] [----    ----] [----
+
+     Se il segnale che entra nell'istruzione è falso, il segnale di
+     uscita è falso.
+     Se il segnale che entra nell'istruzione è vero, allora il segnale
+     di uscita è vero se e solo se il pin di ingresso, il pin di uscita
+     o il relè interno sono veri, altrimenti è falso. Questa istruzione
+     può esaminare lo stato di un pin di ingresso, un pin di uscita o un
+     relè interno.
+
+
+> CONTATTO, NORMALMENTE CHIUSO Xnome           Rnome          Ynome
+                             ----]/[----     ----]/[----    ----]/[----
+
+    Se il segnale che entra nell'istruzione è falso, il segnale di uscita
+    è falso. Se il segnale che entra nell'istruzione è vero, allora il
+    segnale di uscita è vero se e solo se il pin di input, il pin di uscita
+    o il relè interno sono falsi, altrimenti è vero. Questa istruzione può
+    esaminare lo stato di un pin di ingresso, un pin di uscita o un relè
+    interno. Questo è l'opposto di un contatto normalmente aperto.
+
+    COME: Il AND, OR, XOR operazioni logiche sui CONTATTI di ingresso
+    Vedi https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-The-AND,-OR,-XOR-
+         logic-operations-on-CONTACTs-inputs
+
+> BOBINA, NORMALE               Rnome           Ynome
+                             ----( )----     ----( )----
+
+    Se il segnale che entra nell'istruzione è falso, il relativo relè
+    interno o pin di uscita viene impostato falso. Se il segnale che
+    entra in questa istruzione è vero, allora il relativo relè interno
+    o pin di uscita è impostato su vero. Non è significativo assegnare
+    una variabile di input a una bobina. Questa istruzione deve essere
+    l'istruzione più a destra nel suo gradino. Livello sensibile.
+
+
+> BOBINA, NEGATA                Rnome           Ynome
+                             ----(/)----     ----(/)----
+
+    Se il segnale che entra nell'istruzione è vero, allora il relativo
+    relè interno o pin di uscita viene impostato falso. Se il segnale
+    che entra in questa istruzione è falso, allora il relativo relè
+    interno o pin di uscita è impostato vero. Non è significativo
+    assegnare una variabile di input a una bobina. Questo è l'opposto
+    di una bobina normale.
+    Questa istruzione deve essere l'istruzione più a destra nel suo
+    gradino.
+    Livello sensibile.
+
+> BOBINA, SOLO SET              Rnome           Ynome
+                             ----(S)----     ----(S)----
+
+    Se il segnale che entra nell'istruzione è vero, allora il relativo
+    relè interno o pin di uscita è impostato su vero. In caso contrario,
+    il relè interno o lo stato dei pin di uscita non viene modificato.
+    Questa istruzione può solo cambiare lo stato di una bobina da falso
+    a vero, quindi è tipicamente usato in combinazione con una bobina di
+    solo reset.
+    Questa istruzione deve essere l'istruzione più a destra nel suo
+    gradino.
+    Si può semplicemente presentare come trigger con l'input sensibile
+    al livello SET.
+
+
+
+
+> BOBINA, SOLO RESET            Rnome           Ynome
+                             ----(R)----     ----(R)----
+
+    Se il segnale che entra nell'istruzione è vero, allora il relativo
+    relè interno o pin di uscita viene impostato falso. In caso contrario,
+    il relè interno o lo stato dei pin di uscita non vengono modificati.
+    Questa istruzione può solo cambiare lo stato di una bobina da vero a
+    falso, quindi è tipicamente usato in combinazione con una bobina di
+    solo set.
+    Questa istruzione deve essere l'istruzione più a destra nel suo gradino.
+    Si può semplicemente presentare come trigger con l'input sensibile al
+    livello RESET.
+
+
+
+> BOBINA, T-TRIGGER             Rnome           Ynome
+                             ----(T)----     ----(T)----
+
+    Una bobina T-trigger è un flip-flop attivato dal fronte (attivare, ribaltare,
+    girare).
+    Una bobina flip-flop cambia a ogni fronte di salita della condizione di
+    input (cioè, quale sia la condizione di input da falso a vero). Se viene
+    rilevato un fronte di salita, e lo stato della bobina è falso è impostato
+    su vero. Se viene rilevato un fronte di salita, e lo stato della bobina
+    è impostato su vero, viene impostato su falso. Questa istruzione deve
+    essere l'istruzione più a destra nel suo gradino. Si può semplicemente
+    presentare come T-trigger con l'ingresso positivo attivato dal fronte.
+
+Nota: le varie bobine con lo stesso 'Ynome' o 'Rnome' possono essere
+    rappresentate mentalmente come un microchip con più input e una uscita.
+    L'ingresso normale e invertito trasferisce direttamente lo stato di
+    ingresso (normale o invertito) all'uscita. Gli ingressi R, S, T bloccano
+    (memoria) lo stato dell'uscita. L'ingresso T è attivo su un fronte positivo.
+    Gli ingressi R, S sono sensibili al livello.Se prima di R, S si inserisce
+    "OSR: ONE-SHOT RISING" o "OSF: ONE-SHOT FALLING" si ottiene un elemento
+    "innesco sul Fronte positivo".Se si utilizzano solo gli ingressi R e S, si
+    ottiene il classico trigger RS.Se aggiungi l'input T ottieni un trigger RST
+    "più recente". Possono essere più ingressi R..R o più ingressi S..S. È
+    possibile utilizzare qualsiasi combinazione di input per una bobina "Ynome"
+    o "Rnome".
+
+
+> RITARDO DI ACCENSIONE         Tdon
+                           -[TON 1.000 s]-
+
+    Quando il segnale che entra nell'istruzione passa da falso a vero, il segnale
+    di uscita rimane falso per 1.000 s prima di diventare vero. Quando il segnale
+    che entra nell'istruzione passa da vero a falso, il segnale di uscita diventa
+    falso immediatamente. Il timer viene resettato ogni volta che l'input diventa
+    falso; l'input deve rimanere vero per 1000 millisecondi consecutivi prima che
+    l'uscita diventi vero. Il ritardo è configurabile.
+
+
+    La variabile `Tnome 'conta da zero in unità di tempo di scansione.
+    L'istruzione TON va a vero quando la variabile del contatore è maggiore o
+    uguale al ritardo dato. È possibile manipolare altrove la variabile contatore,
+    ad esempio con un'istruzione MOV.
+
+              livello
+              logico
+                   ^  La durata dell'impulso di ingresso
+                   |  deve essere più lungo di 1s
+           TON     |     _________
+           Ingresso| ___/         \_______
+                   |    |         |
+                   |    | 1s      |
+                   |    |<-->|    |
+                   |         |    |
+                   |         v    v
+           TON     |          ____
+           uscita  | ________/    \_______
+                 --+---------------------------> tempi
+                   |
+
+
+> RITARDO DI SPEGNIMENTO        Tdoff
+                           -[TOF 1.000 s]-
+
+    Quando il segnale che entra nell'istruzione passa da vero a falso,
+    il segnale di uscita rimane vero per 1.000 s prima di diventare falso.
+    Quando il segnale che entra nell'istruzione passa da falso a vero, il
+    segnale di uscita diventa vero immediatamente. Il timer viene resettato
+    ogni volta che l'input diventa falso; l'input deve rimanere falso per
+    1000 millisecondi consecutivi prima che l'uscita diventi falso.
+    Il ritardo è configurabile.
+
+    La variabile ‘Tnome’ conta da zero in unità di tempo di scansione.
+    L'istruzione TON emette vero quando la variabile contatore è maggiore
+    o uguale al ritardo dato. È possibile manipolare la variabile contatore
+    altrove, ad esempio con un'istruzione MOV.
+
+
+
+              livello
+              logico
+                   ^  La durata dell'impulso di ingresso deve essere
+                   |     più lungo del ciclo del PLC
+           TOF     |        _
+           Ingresso| ______/ \_________
+                   |       | |
+                   |       | | 1s
+                   |       | |<-->|
+                   |       |      |
+                   |       v      v
+           TOF     |        ______
+           uscita  | ______/      \____
+                 --+----------------------> tempi
+                   |
+
+
+> TIMER ALTO                    THI
+                           -[THI 1.000 s]-
+
+    Quando il segnale che entra nell'istruzione passa da falso a vero, il
+    segnale di uscita va vero per 1.000s. Il ritardo è configurabile e viene
+    ripristinato dopo 1.000s se l'ingresso è falso.
+
+
+              livello
+              logico
+                   ^  La durata dell'impulso di ingresso deve essere
+                   |     più lungo del ciclo del PLC
+           THI     |     _           ________
+           Ingresso| ___/ \_________/        \_______
+                   |    |           |
+                   |    | 1s        | 1s
+                   |    |<-->|      |<-->|
+                   |    |    |      |    |
+                   |    v    v      v    v
+           THI     |     ____        ____
+           uscita  | ___/    \______/    \___________
+                 --+------------------------------------> tempi
+                   |
+
+
+> TIMER BASSO                   TLO
+                          -o[TLO 1.000 s]-
+
+    Quando il segnale che entra nell'istruzione passa da vero a falso,
+    il segnale di uscita è falso per 1.000s. Il ritardo è configurabile.
+    Il segnale di uscita ridiviene vero dopo 1.000s, il contatore del
+    timer interno viene ripristinato dopo 1.000s se l'ingresso è vero.
+
+              livello
+              logico
+                   ^  La durata dell'impulso di ingresso deve essere
+                   |     più lungo del ciclo del PLC
+           TLO     | ___   _________          _______
+           Ingresso|    \_/         \________/
+                   |    |           |
+                   |    | 1s        | 1s
+                   |    |<-->|      |<-->|
+                   |    |    |      |    |
+                   |    v    v      v    v
+           TLO     | ___      ______      ___________
+           uscita  |    \____/      \____/
+                 --+------------------------------------> tempi
+                   |
+
+    vedi https://github.com/LDmicro/LDmicro/wiki/TON,-TOF,-etc.
+
+
+> TIMER DI RITENUTA             Trto
+                           -[RTO 1.000 s]-
+
+    Questa istruzione tiene traccia di quanto a lungo il suo input è stato
+    vero (HI).Se il suo input è vero per almeno 1.000 s, l'uscita è vero.
+    Altrimenti l'uscita è falso. L'input non deve essere vero per 1000
+    millisecondi consecutivi; se l'input diventa vero per 0,6s, quindi false
+    per 2,0s, e quindi vero per 0,4s, l'uscita diventerà vero. Dopo che
+    l'uscita è diventata vera, rimarrà vera anche dopo che l'input è diventato
+    falso, a condizione che l'input sia rimasto vero per più di 1.000s.
+    Questo timer deve quindi essere resettato manualmente, usando l'istruzione
+    di reset.
+
+    La variabile `Tnome' conta da zero in unità di tempo di scansione.
+    L'istruzione TON va a vero quando la variabile contatore è maggiore o
+    uguale al ritardo dato. È possibile manipolare altrove la variabile
+    contatore, ad esempio con un'istruzione MOV.
+
+
+              livello
+              logico
+                   ^  La durata degli impulsi ALTI in ingresso è superiore a 1s
+                   |  t1+t2+..+tn >= 1s
+                   |
+           RTO     |     __     _    _________
+           Ingresso| ___/  \___/ \__/         \________
+                   |    |  |   | |  |
+                   |    |t1|   | |  |tn                   Trto
+                   |    |<>|  >|-|< |<>|                  RESET
+                   |           t2      |                  |
+                   |                   v                  v
+           RTO     |                    __________________
+           uscita  | __________________/                  \___
+                 --+-------------------------------------------> tempi
+                   |
+
+
+> TIMER DI RITENUTA BASSO       Trtl
+                          -o[RTL 1.000 s]-
+
+    RTL funziona come RTO, ma con input di basso livello. Questa istruzione
+    tiene traccia di quanto a lungo il suo input è stato falso (BASSO).
+    Se il suo input è stato basso per almeno 1.000s, l'uscita è vero.
+    Altrimenti l'uscita è falso. Dopo che l'uscita è diventato vero, rimarrà
+    vero anche dopo che l'input è diventato vero.
+    Questo timer deve quindi essere resettato manualmente, usando l'istruzione
+    di reset.
+
+
+              livello
+              logico
+                   ^  La durata degli impulsi BASSI in ingresso è superiore a 1s
+                   |  t1+t2+..+tn >= 1s
+                   |
+           RTL     | ___    ___   __           ________
+           Ingresso|    \__/   \_/  \_________/
+                   |    |  |   | |  |
+                   |    |t1|   | |  |tn                   Trtl
+                   |    |<>|  >|-|< |<>|                  RESET
+                   |           t2      |                  |
+                   |                   v                  v
+           RTL     |                    __________________
+           uscita  | __________________/                  \___
+                 --+-------------------------------------------> tempi
+                   |
+
+
+> TIMER CICLICO               Tmeander
+                           -[TCY 500 ms]-
+
+    Se il segnale di ingresso è vero, questa istruzione produce impulsi con
+    periodo (500ms + 500ms)=1s e frequenza 1 Hz. Se il segnale che entra
+    nell'istruzione è falso, il segnale di uscita è falso
+
+    Se il valore di Tmeander è = del tempo del ciclo del PLC, il TCY è uguale
+    a OSC.
+
+
+              livello
+              logico
+                   ^  La durata dell'impulso di ingresso è più lunga di 1s
+           TCY     |     ______________________
+           Ingresso| ___/                      \_______
+                   |    |                      |
+                   |    |  1s    1s    1s      |
+                   |    |<--->|<--->|<--->|    |
+                        |     |     |     |    v
+           TCY     |    v   __|   __|   __|   _
+           uscita  | ______/  \__/  \__/  \__/ \_______
+                 --+----------------------------------------> tempi
+                   |
+
+
+> timers TON, TOF, THI, TLO, RTO, RTL, TCY      Ton
+                                           -[TON value]-
+
+    Aggiornamento della versione 4.4.1.0
+    È possibile utilizzare una variabile generale come ritardo del timer.
+    È necessario calcolare il valore giusto (corretto) della variabile in
+    base al tempo di ciclo PLC.
+    Ritardo timer (ms) = Tplc (ms) * Ritardo
+   ||                                                       ||
+   ||                                             Adc       ||
+   ||-----------------------------------------{READ ADC}----||
+   ||                                                       ||
+   ||                                                       ||
+   ||       X1               T1                   Y1        ||
+   ||-------] [-----------[TON Adc]---------------( )-------||
+   ||                                                       ||
+
+
+> Convertitore DA TEMPO A CONTATORE          Tconst
+                                         -[T2CNT 10 ms]-
+
+    L'istruzione "TIME to COUNTER converter" ottiene il tempo costante in ms,
+    lo converte nel valore specifico del timer (TON, TOF, ...) e lo salva
+    nella variabile Tconst per un successivo uso nei contatori.
+    vedi https://github.com/LDmicro/LDmicro/wiki/TIME-to-COUNTER-converter
+
+
+> RESET                        Trto             Citems
+                           ----{RES}----     ----{RES}----
+
+    Questa istruzione ripristina un timer o un contatore. I timer TON e TOF
+    si ripristinano automaticamente quando il loro ingresso diventa falso o
+    vero, quindi RES non è necessario per questi timer, ma è possibile.
+    I timer RTO ei contatori CTU / CTD non vengono ripristinati automaticamente,
+    quindi devono essere ripristinati manualmente utilizzando un'istruzione RES.
+    Quando l'input è vero, il contatore o il timer viene resettato;
+    quando l'input è falso, non viene eseguita alcuna azione.
+    Questa istruzione deve essere l'istruzione più a destra nel suo gradino.
+    Nota! RES resetta solo il contatore numerico all'interno di RTO, CTU / CTD,
+    non le loro uscite!
+
+
+
+> RESET                         PWM
+                           ----{RES}----
+
+    Questa istruzione disabilita l'uscita PWM e la imposta su un livello basso.
+    Inoltre è possibile impostare un'altra frequenza PWM di base mediante
+    SET PWM DUTY CYCLE dopo l'attivazione del RESET PWM.
+
+    Vedere SET PWM DUTY CYCLE qui sotto.
+
+> RITARDO                       1 us
+                           ---[DELAY]---
+
+    L'istruzione DELAY provoca un ritardo in us. L'istruzione DELAY non
+    utilizza timer/contatori.
+    Le istruzioni NOP e JMP (Indirizzo corrente + 1) vengono utilizzate
+    per effettuare il ritardo.
+    vedi https://github.com/LDmicro/LDmicro/wiki/DELAY-us
+
+
+> CONVERTITORE da TEMPO a RITARDO     Tconst
+                                  -[T2DELAY 10 us]-
+
+    L'istruzione 'Convertitore da TEMPO a RITARDO' ottiene il tempo della
+    costante in 'us', lo converte nel valore specifico di DELAY e lo salva
+    nella variabile Tconst da utilizzare dopo come parametro dell'istruzione
+    DELAY.
+
+
+
+> IMPULSO ASCENDENTE            _     _
+                           --[_/ OSR_/ \_]--
+
+    Questa istruzione normalmente emette falso. Se l'input dell'istruzione
+    è vero durante questa scansione ed è stato falso durante la scansione
+    precedente, l'uscita è vero. Pertanto genera un impulso di ampiezza di
+    scansione su ciascun fronte di salita del suo segnale di ingresso, cioè
+    univibratore. Questa istruzione è utile se si desidera attivare eventi
+    dal fronte di salita di un segnale.
+
+
+> IMPULSO DISCENDENTE         _       _
+                           --[ \_OSF_/ \_]--
+
+    Questa istruzione normalmente emette falso. Se l'input dell'istruzione
+    è falso durante questa scansione ed era vero durante la scansione
+    precedente, l'uscita è vero. Pertanto genera un impulso di ampiezza
+    di scansione su ciascun fronte di discesa del suo segnale di ingresso,
+    cioè univibratore. Questa istruzione è utile se si desidera attivare
+    eventi fuori dal fronte di discesa di un segnale.
+
+                              questo è
+                              il segnale di ingresso
+                              v v
+                                _     _
+                           --[_/ OSR_/ \_]--
+                              _       _
+                           --[ \_OSF_/ \_]--
+                              _     _   _
+                           --[ \_OSL \_/ ]--
+
+                                    ^   ^
+                                    questo è
+                                    il segnale di uscita
+
+
+
+
+                     livello
+                     logico
+                          ^  La durata dell'impulso di ingresso è di cinque cicli
+                  OSR, OSF|     _________
+                  Ingresso| ___/         \_______
+                          |
+                  OSR     |     _
+                  uscita  | ___/ \_______________
+                          |
+                  OSF     |               _
+                  uscita  | _____________/ \_____
+                        --+---------------------------> tempo
+                          |
+       Tempo di ciclo del PLC N+ 0 1 2 3 4 5 6 7 8
+
+
+
+
+                     livello
+                     logico
+                          ^      Impulso di ingresso a ciclo singolo
+                  OSR, OSF|     _
+                  Ingresso| ___/ \_______
+                          |
+                  OSR     |     _
+                  uscita  | ___/ \_______
+                          |
+                  OSF     |       _
+                  uscita  | _____/ \_____
+                        --+------------------> tempo
+                          |
+       Tempo di ciclo del PLC N+ 0 1 2 3 4 5 6
+
+
+
+> IMPULSO AL LIVELLO BASSO    _     _   _
+                           --[ \_OSL \_/ ]--
+
+    Questa istruzione normalmente viene emessa. Se l'input dell'istruzione è
+    falso durante questa scansione ed era vero durante la scansione precedente,
+    l'uscita è falso. Pertanto genera un impulso di basso livello con una
+    scansione ampia su ciascun fronte discendente del suo segnale di ingresso,
+    cioè univibratore. Questa istruzione è utile se si desidera attivare eventi
+    fuori dal fronte di discesa di un segnale.
+
+
+
+                     livello
+                     logico
+                          ^  La durata dell'impulso di ingresso è di cinque cicli
+                  OSL     | ___           _______
+                  Ingresso|    \_________/
+                          |
+                  OSL     | ___   _______________
+                  uscita  |    \_/
+                        --+---------------------------> tempo
+                          |
+       PLC cycle time beat N+ 0 1 2 3 4 5 6 7 8
+
+
+
+                     livello
+                     logico
+                          ^      Impulso di ingresso a ciclo singolo
+                  OSL     | ___   _______
+                  Ingresso|    \_/
+                          |
+                  OSL     | ___   _______
+                  uscita  |    \_/
+                        --+------------------> tempo
+                          |
+       PLC cycle time beat N+ 0 1 2 3 4 5 6
+
+
+
+> OSCILLATORE                    _     _   _
+                           --[ _/ OSC_/ \_/ \_]--
+
+                             F=1/(2*Tcycle)
+
+
+                     Livello
+                     Logico
+                          ^  La durata dell'impulso di ingresso è di sette cicli
+                  OSC     |     ____________
+                  Ingresso| ___/            \_______
+                          |
+                  OSC     |     _   _   _
+                  uscita  | ___/ \_/ \_/ \_____________
+                          |
+                        --+---------------------------> tempo
+                          |
+       Tempo di ciclo del PLC N+ 0 1 2 3 4 5 6 7 8
+
+
+    Se il segnale di ingresso è vero, questa istruzione produce cicli
+    con periodi (2 * tempo di ciclo PLC), cioè multivibratore.
+    Se il segnale che entra nell'istruzione è falso, il segnale di
+    uscita è falso.
+
+> CIRCUITO CORTO, CIRCUITO APERTO
+                           ----+----+----      ----+     +----
+
+    La condizione di uscita di un cortocircuito è sempre uguale alla sua
+    condizione di ingresso.
+    La condizione di uscita di un circuito aperto è sempre falsa. Questi
+    sono principalmente utili per il debug, cortocircuitare temporaneamente
+    il circuito o aprire un circuito elettrico.
+
+    Vedi https://github.com/LDmicro/LDmicro/wiki/OPEN-CIRCUIT,-SHORT-CIRCUIT
+
+
+> RELÈ DI CONTROLLO PRINCIPALE
+                           -{MASTER RLY}-
+
+    Per impostazione predefinita, la condizione di ingresso di ogni ramo è
+    vera. Se un'istruzione di relè di controllo principale viene eseguita
+    con una condizione di ramo di falso, la condizione del ramo di ingresso
+    per tutti i rami successivi diventa falsa. Questo continuerà fino a quando
+    viene raggiunta la successiva istruzione del relè di controllo principale
+    (indipendentemente dalla condizione di ingresso di quella istruzione).
+    Queste istruzioni devono quindi essere utilizzate in coppia: una (forse
+    condizionatamente) avvia la sezione eventualmente disabilitata e una per
+    terminarla.
+
+    vedi https://github.com/LDmicro/LDmicro/wiki/MASTER-CONTROL-RELAY
+
+
+
+> MUOVI                     {MOV destvar:=}      {MOV  Tret :=}
+                           -{          123}-    -{      srcvar}-
+
+    Quando l'input di questa istruzione è vera, imposta la variabile
+    di destinazione data uguale alla variabile o costante specificata.
+    Quando l'input di questa istruzione è falso, non succede nulla.
+    È possibile assegnarla a qualsiasi variabile con l'istruzione MUOVI;
+    questo include variabili del timer e del contatore, che possono
+    essere distinte dal "T" o "C" iniziale. Ad esempio, un'istruzione
+    che sposta 0 in `Tretentive ' equivale a un'istruzione di reset
+    (RES) per quel timer. Questa istruzione deve essere l'istruzione
+    più a destra nel suo gradino.
+
+
+> FUNZIONI ARITMETICHE       {ADD  kay  :=}       {SUB  Ccnt :=}
+                            -{ 'a' + 10   }-     -{ Ccnt - 10  }-
+
+>                            {MUL  dest :=}       {DIV    dv :=}
+                            -{ var * -990 }-     -{ dv / -10000}-
+
+    Quando l'input di questa istruzione è vera, imposta la variabile
+    di destinazione data uguale all'espressione specificata. Gli operandi
+    possono essere variabili (comprese le variabili timer e contatore) o
+    costanti. Queste istruzioni usano la matematica con segno a 16 bit.
+    Ricordare che quando la condizione di input è vera il risultato viene
+    valutato a ogni ciclo. Se si sta incrementando o decrementando una
+    variabile (ad esempio se la variabile di destinazione è anche uno
+    degli operandi), probabilmente non lo si vuole; tipicamente useresti
+    un impulso in modo che venga valutato solo sul fronte di salita o di
+    discesa della condizione di input. Divisioni troncate; 7/3 = 2.
+    Questa istruzione deve essere l'istruzione più a destra nel suo gradino.
+
+
+> MODULO                   {MOD     dest:=}
+                          -{src     %    2}-
+
+    Resto della divisione 7 % 3 = 1
+    Vedi https://en.wikipedia.org/wiki/Modulo_operation
+
+
+> NEGATIVO                 {NEG     dest:=}
+                          -{         - src}-
+
+    Negativo - {NEG a: = -a} - è l'equivalente ottimizzato per - {SUB a: = 0 - a} -
+
+
+> OPERAZIONE bit per bit     {AND  var1 :=}       {OR   Ccnt :=}
+                            -{var2 & var3 }-     -{ Ccnt | 0o07}-
+
+>                            {XOR  dest :=}       {NOT  dv :=  }
+                            -{ var ^ 0xAA }-     -{ ~0b11001100}-
+
+    Quando l'input di questa istruzione è vera, imposta la variabile
+    di destinazione definita uguale all'espressione specificata.
+    Gli operandi possono essere variabili (comprese le variabili timer
+    e contatore) o costanti. Ricordare che il risultato viene valutato
+    a ogni ciclo quando la condizione di input è vera.
+
+    Vedere http://en.wikipedia.org/wiki/Bitwise_operation
+
+
+> SCAMBIA bit per bit        {      dest:=}
+                            -{SWAP     src}-
+
+    Questa operazione scambia i nibble e i byte.
+    vedi https://en.wikipedia.org/wiki/Nibble
+    Quando la dimensione delle variabili è
+    1 - poi scambia bit per bit i nibbles in un BYTE, i.e. 0x73 -> 0x37
+
+
+                     MSB       bits       LSB
+                      7  6  5  4  3  2  1  0
+                      \________/  \________/
+                             ^      ^
+                             |      |
+                             +------+
+        Cambi di bit:
+           7 <-> 3
+           6 <-> 2
+           5 <-> 1
+           4 <-> 0
+
+    2 - quindi scambia bit per bit i byte in una PAROLA, i.e. 0x7733 -> 0x3377
+
+            MSB                  bits                   LSB
+             15 14 13 12 11 10 9 8  7  6  5  4  3  2  1  0
+             \___________________/  \____________________/
+                             ^           ^
+                             |           |
+                             +-----------+
+        Cambi di bit:
+          15 <-> 7
+          14 <-> 6
+             ...
+           9 <-> 1
+           8 <-> 0
+
+    3 - quindi scambia bit per bit i pezzetti di 1 byte e i byte 2 e 0 in un INT24, i.e. 0x775A33 -> 0x33A577
+
+       MSB                             bits                          LSB
+        23 22 21 20 19 18 17 16 15 14 13 12 11 10  9  8 7 6 5 4 3 2 1 0
+        \_____________________/ \_________/ \_________/ \_____________/
+                    ^                ^           ^             ^
+                    |                |           |             |
+                    |                +-----------+             |
+                    +------------------------------------------+
+        Cambi di bit:
+          23 <->  7
+             ...
+          16 <->  0
+          15 <-> 11
+             ...
+          12 <->  8
+
+    4 - quindi scambiare bit per bit i byte 3 e 0 e i byte 2 e 1 in un DWORD, i.e. 0x7755AA33 -> 0x33AA5577
+
+        MSB                                          bits                                  LSB
+        31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0
+        \_____________________/ \_____________________/ \___________________/ \_____________/
+                    ^                            ^           ^                     ^
+                    |                            |           |                     |
+                    |                            +-----------+                     |
+                    +--------------------------------------------------------------+
+        Cambi di bit:
+          31 <->  7
+             ...
+          24 <->  0
+          23 <-> 15
+             ...
+          16 <->  8
+
+
+>  INVERTE BIT PER BIT      {      dest:=}
+                            -{OPPOSITE src}-
+
+    Questa operazione inverte al contrario la sequenza dei bit.
+    L'MSB si sposta su LSB e LSB si sposta su MSB e così via.
+
+                     MSB      bits       LSB
+                      n n-1 n-2 ... 2  1  0
+                      ^  ^   ^      ^  ^  ^
+                      |  |   |      |  |  |
+                      |  |   +------+  |  |
+                      |  +-------------+  |
+                      +-------------------+
+
+
+> SPOSTAMENTO ARITMETICO: SHL, SHR.    {SHL  var1 :=}     {SHR   cnt :=}
+                                      -{var2 << 2   }-   -{  cnt >>  1 }-
+
+    VEDI https://en.wikipedia.org/wiki/Arithmetic_shift
+
+    SHL - spostamento aritmetico a sinistra
+        MSB                    LSB
+             MSB-1         1    0
+    C <- x <- x <- .... <- x <- x <- 0
+
+
+    SHR - spostamento aritmetico a destra
+        MSB                    LSB
+             MSB-1         1    0
+    /--> x -> x -> .... -> x -> x -> C
+    \   /
+     <--
+
+
+    Nota: MSB = Bit più Significativo, LSB = Bit meno Significativo
+
+
+> SPOSTAMENTO LOGICO A DESTRA SR0.    {SR0  dest :=}
+                                     -{var  sr0  3 }-
+
+    Vedi https://en.wikipedia.org/wiki/Logical_shift
+
+    SR0 - spostamento logico destro
+        MSB                    LSB
+             MSB-1         1    0
+    0 -> x -> x -> .... -> x -> x -> C
+
+
+    Nota: lo spostamento logico a sinistra equivale allo spostamento
+          aritmetico SHL a sinistra.
+
+
+> SPOSTAMENTO CIRCOLARE: ROL, ROR.      {ROL  dest :=}     {ROR    dv :=}
+                                       -{ var rol 4  }-   -{var ror 4   }-
+
+    Vedi https://en.wikipedia.org/wiki/Circular_shift
+
+    ROL - SPOSTAMENTO CIRCOLARE (rotazione bit a bit) a sinistra
+        MSB                    LSB
+             MSB-1         1    0
+    C <- x <- x <- .... <- x <- x
+         v                      ^
+         \_________>____________/
+
+
+    ROR - SPOSTAMENTO CIRCOLARE (rotazione bit a bit) a destra
+        MSB                    LSB
+             MSB-1         1    0
+         x -> x -> .... -> x -> x -> C
+         ^                      v
+         \_________<____________/
+
+  SHL, SHR, SR0, ROL, ROR:
+    Quando l'input di questa istruzione è vera, imposta la variabile
+    di destinazione data uguale all'espressione specificata. Gli
+    operandi possono essere variabili (comprese le variabili timer e
+    contatore) o costanti. Ricorda che il risultato viene valutato ad
+    ogni ciclo quando la condizione di input è vera.
+
+
+> OPERAZIONI CON UN BIT     {           var}       {           var}
+                           -{SET Bit    bit}-     -{CLR Bit    bit}-
+
+    -{SET Bit var, bit}- Nella variabile 'var' imposta il numero di bit 'bit'.
+    -{CLR Bit var, bit}- Nella variabile 'var' cancella numero di bit 'bit'.
+
+    'Bit' significa numero di bit, non di bit mask. Per esempio,
+     per impostare il bit numero 4 nella variabile 'var'
+                      v
+     Bit numeri :  76543210
+     'var'      :  xxx1xxxx
+                      ^
+    devi scrivere     ^
+         {          var}               {             var}
+        -{SET Bit     4}-        non  -{SET Bit     0x10}-
+
+    ed è equivalente a
+         {OR     var :=}
+        -{   val | 0x10}-
+
+
+    Per cancellare il bit numero 4 nella variabile 'var'
+    devi scrivere
+         {          var}               {             var}
+        -{CLR Bit     4}-        non  -{CLR Bit     0x10}-
+
+    ed è equivalente a
+         {AND    var :=}
+        -{   val & 0xEF}-
+
+    var deve essere una variabile, non un valore letterale.
+    La dimensione di var deve essere compresa tra 1 e 4 byte.
+    il bit può essere un numero letterale o una variabile.
+    bit può avere un valore di 0-7 se la dimensione di (var) == 1 byte,
+                               0-15 se la dimensione di (var) == 2 bytes,
+                               0-23 se la dimensione di (var) == 3 bytes,
+                               0-31 se la dimensione di (var) == 4 bytes.
+
+    Scopri come usare SetBit (), ClrBit () per disabilitare i resistori pull up
+    https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+
+
+> COMPARA               [var ==]        [var >]        [1 >=]
+                       -[ var2 ]-      -[ 1   ]-      -[ Ton]-
+
+>                       [var !=]       [-4 <   ]       [1 <=]
+                       -[ var2 ]-     -[ vartwo]-     -[ Cup]-
+
+    Se l'ingresso di questa istruzione è falso, l'uscita è falso. Se l'ingresso è
+    vero, l'uscita è vero se e solo se la condizione data è vera. Questa
+    istruzione può essere usata per confrontare (è uguale a, è maggiore di,
+    è maggiore o uguale a, non è uguale, è minore di, è minore o uguale a)
+    una variabile a una variabile o per confrontare una variabile a 16 -bit
+    o costante segnata.
+
+> PROVA LO STATO DI UN BIT  [             var]       [             var]
+                           -[if Bit SET   bit]-     -[if Bit CLR   bit]-
+
+    Se l'ingresso di questa istruzione è falso, l'uscita è falso. Se l' ingresso è
+    vero, l'uscita è vero se e solo se la condizione data è vera. Questa
+    istruzione può essere utilizzata per controllare lo stato solo un bit
+    della variabile. 'Bit' significa numero di bit, non di bit mask.
+    Vedi in alto l'operazione SET bit.
+
+    Operazione -{if Bit SET var, 0}- è una condizione equivalente 'Se var è un
+    dispari'.
+    Operazione -{if Bit CLR var, 0}- è una condizione equivalente 'Se var è un pari'.
+    var deve essere una variabile, non un valore letterale.
+    La dimensione di var deve essere compresa tra 1 e 4 byte.
+    il bit può essere un numero letterale o una variabile.
+    bit può avere un valore di 0-7 se la dimensione di(var) == 1 byte,
+                              0-15 se la dimensione di(var) == 2 bytes,
+                              0-23 se la dimensione di(var) == 3 bytes,
+                              0-31 se la dimensione di(var) == 4 bytes.
+
+
+> CONTATORE                     Cnome          Cnome
+                           --[CTU >= 5]--  --[CTD > -5]--
+
+    Un contatore incrementale (CTU, conta incrementando) o decrementale
+    (CTD, conta decrementando) il conteggio associato su ogni fronte di
+    salita della condizione di ingresso del ramo (ossia, quando la
+    condizione di ingresso del ramo passa da falso a vero). La condizione
+    di uscita dal contatore è vera se la variabile del contatore è CTU>
+    = 5 (CTD> -5) altrimenti è falsa. La condizione dell'uscita del ramo
+    può essere vera anche se la condizione di ingresso è falsa;
+    dipende solo dalla variabile del contatore. È possibile avere
+    istruzioni CTU e CTD con lo stesso nome, al fine di incrementare e
+    decrementare lo stesso contatore. L'istruzione RES può resettare un
+    contatore, oppure è possibile eseguire operazioni variabili generali
+    sulla variabile di conteggio.
+
+> CONTATORE CIRCOLARE          Cnome             Cnome
+                           --{CTC 0:7}--     --{CTR 7:0}--
+
+    Un contatore circolare funziona come un normale contatore CTU, tranne
+    che dopo aver raggiunto il limite superiore, riporta la sua variabile
+    contatore su 0. Ad esempio, questo contatore conta0, 1, 2, 4, 5, 6, 7,
+    0, 1, 2, 3, 4, 5, 6, 7, 0, 1, ... Questo è utile in combinazione con
+    istruzioni condizionali sulla variabile `Cnome '; puoi usarlo come un
+    sequenziatore. Contatori CTC orologio sul fronte di salita della
+    condizione di condizione dell'ingresso del ramo. Obsoleto: questa
+    istruzione deve essere l'istruzione più a destra nel suo gradino.
+
+    Il CTR è un contatore circolare inverso. È come il CTC ma con il
+    conteggio decrementale all'interno.
+    Ad esempio, il contatore CTR mostrato sopra conterebbe
+    7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, ...
+
+    Aggiunto valore "Start" nei contatori CTU, CTD, CTC, CTR.
+    I contatori CTU, CTC iniziano da "Start" e contano fino al valore "Max".
+    CTC genera un impulso di troppo-pieno (carry) quando il contatore è
+    == Max.
+    Per lavorare correttamente, il valore 'Start' deve essere inferiore
+    al valore 'Max'.
+
+
+    Il contatore CTD, CTR inizia da "Start" e conta alla rovescia fino al
+    valore "Min".
+    CTR genera un impulso di troppo-pieno (borrow   ) quando il contatore è
+    == Min.
+    Per lavorare correttamente, il valore "Start" deve essere maggiore del
+    valore "Min".
+
+
+   ||   Rnew      Tnew                                    Rnew      ||
+   ||----] [----[TON 1 s]----------------------------------(/)------||
+   ||                                                               ||
+   ||                                                               ||
+   ||   Rnew       Css           Cmm          Chh         Cdays     ||
+   ||----] [----[CTC 0:59]---[CTC 0:59]---[CTC 0:23]---[CTC 0:364]--||
+   ||                                                               ||
+
+    Aggiornamento della versione 4.4.1.0
+    Tipo di ingressi di elementi a scalini
+    https://github.com/LDmicro/LDmicro/wiki/Kind-of-inputs-of-ladder-elements
+
+   ||                               ||
+   ||  X1          CTU1:0      Y1   ||
+   ||--] [---+---/[CTU>=10]----( )--|| '/' Ingresso dinamico attivo da 0 a 1
+   ||        |                      || transizione per logica positiva.
+   ||        |     CTU2:0      Y2   ||
+   ||        +---\[CTU>=10]----( )--|| '\' Ingresso dinamico attivo da 1 a 0
+   ||        |                      || transizione per logica positiva.
+   ||        |     CTU3:0      Y3   ||
+   ||        +----[CTU>=10]----( )--|| '-' Ingresso logico statico diretto.
+   ||        |                      || Attivo da esterno 1.
+   ||        |     CTU4:0      Y4   ||
+   ||        +---o[CTU>=10]----( )--|| 'o' Ingresso logico statico inverso.
+   ||                               || Negazione logica in ingresso.
+   ||                               || 0 esterno produce 1 interno.
+
+    Nota: i contatori delle versioni precedenti hanno l'input dinamico "/".
+    Nella nuova versione questi due gradini sono equivalenti.
+   ||                                                   ||
+   ||       X1               C1                         ||
+   ||-------] [----------/[CTC  0:9]---                 ||
+   ||                                                   ||
+   ||                                                   ||
+   ||       X1             _     _            C2        ||
+   ||-------] [---------[_/ OSR_/ \_]------[CTC  0:9]---||
+   ||                                                   ||
+
+    '-/' è un ingresso attivato dal lato ascendente (fronte di salita).
+    '-\' è un ingresso attivato dal lato discendente (fronte discendente).
+    '--' è un input statico attivato dal livello alto.
+    '-o' è un input statico attivato dal livello basso.
+
+
+> REGISTRO A SCORRIMENTO    {SHIFT REG   }
+                           -{ reg0..3    }-
+
+    Un registro a scorrimento è associato a un insieme di variabili.
+    Ad esempio, questo registro a scorrimento è associato alle variabili
+    `reg0 ',` reg1', `reg2 'e` reg3'.
+    L'ingresso al registro a scorrimento è `reg0 '. Su ogni fronte di
+    salita della condizione del ramo di ingresso, il registro a
+    scorrimento si sposta a destra. Ciò significa che assegna `reg3:
+    = reg2 ',` reg2: = reg1'. e `reg1: = reg0 '. `reg0 'è rimasto
+    invariato. Un ampio registro a scorrimento può facilmente consumare
+    molta memoria. Questa istruzione deve essere l'istruzione più a
+    destra nel suo gradino.
+
+
+> TABELLA DI RICERCA        {dest :=     }
+                           -{ LUT[i]     }-
+
+    Una tabella di ricerca è un insieme ordinato di n valori. Quando la
+    condizione del ramo di ingresso è vera, la variabile intera `dest '
+    viene impostata uguale alla voce nella tabella di ricerca
+    corrispondente alla variabile intera` i'. L'indice inizia da zero,
+    quindi "i" deve essere compreso tra 0 e (n-1). Il comportamento di
+    questa istruzione non è definito se l'indice è al di fuori di questo
+    intervallo. Questa istruzione deve essere l'istruzione più a destra
+    nel suo gradino.
+
+    vedi https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Look-Up-Table,-UART-SEND
+
+
+> TAVOLA LINEARE IBRIDA     {yvar :=     }
+                           -{ PWL[xvar]  }-
+
+    Questo è un buon modo per approssimare una funzione o curva complicata.
+    Potrebbe, ad esempio, essere utile se si sta tentando di applicare una
+    curva di calibrazione per convertire una tensione di uscita grezza da
+    un sensore in unità più convenienti.
+
+
+    Supponiamo che tu stia cercando di approssimare una funzione che converte
+    una variabile di input intero, x, in una variabile di uscita intero, y.
+    Conosci la funzione in diversi punti; per esempio, potresti saperlo
+
+        f(0)   = 2
+        f(5)   = 10
+        f(10)  = 50
+        f(100) = 100
+
+    Questo significa che i punti
+
+        (x0, y0)   = (  0,   2)
+        (x1, y1)   = (  5,  10)
+        (x2, y2)   = ( 10,  50)
+        (x3, y3)   = (100, 100)
+
+    giace su quella curva. Puoi inserire quei 4 punti in una tavola
+    associata all'istruzione a tratti lineare. L'istruzione a tratti
+    lineare guarderà il valore di xvar e imposterà il valore di yvar.
+    Imposterà yvar in modo tale che la curva a tratti lineare attraversi
+    tutti i punti che gli dai; per esempio,
+    se imposti xvar = 10, allora l'istruzione imposterà yvar = 50.
+
+    Se assegni all'istruzione un valore di xvar che si trova tra due dei
+    valori di x per cui hai assegnato dei punti, allora l'istruzione
+    imposterà yvar in modo che (xvar, yvar) si trovi sulla linea retta
+    che collega questi due punti nel tavolo. Ad esempio, xvar = 55
+    fornisce un'uscita di yvar = 75. (I due punti nella tabella sono
+    (10, 50) e (100, 100). 55 è a metà strada tra 10 e 100, e 75 è a
+    metà strada tra 50 e 100, così (55, 75) si trova sulla linea che
+    collega questi due punti.)
+
+
+    I punti devono essere specificati in ordine crescente per coordinate
+    x. Potrebbe non essere possibile eseguire operazioni matematiche
+    necessarie per determinate tabelle di ricerca utilizzando la
+    matematica a 16 bit interi; se questo è il caso, LDmicro ti
+    avviserà. Ad esempio, questa tabella di ricerca produrrà un errore:
+
+
+        (x0, y0)    = (  0,   0)
+        (x1, y1)    = (300, 300)
+
+    È possibile correggere questi errori riducendo la distanza tra i
+    punti nella tabella.
+    Ad esempio, questa tabella è equivalente a quella sopra riportata
+    e non produce un errore:
+
+
+        (x0, y0)    = (  0,   0)
+        (x1, y1)    = (150, 150)
+        (x2, y2)    = (300, 300)
+
+    Non dovrebbe quasi mai essere necessario utilizzare più di cinque
+    o sei punti. L'aggiunta di più punti rende il codice più grande e
+    più lento da eseguire. Il comportamento se si passa un valore di
+    `xvar 'maggiore della massima coordinata x nella tabella o minore
+    della più piccola coordinata x nella tabella non è definito.
+    Questa istruzione deve essere l'istruzione più a destra nel suo
+    gradino.
+
+> LETTORE CONVERTITORE A/D     Anome
+                           --{READ ADC}--
+
+    In determinati microcontrollori LDmicro può generare codice per
+    utilizzare i convertitori A/D integrati. Se la condizione di input
+    per questa istruzione è vera, allora un singolo campione dal
+    convertitore A/D viene acquisito e memorizzato nella variabile 'Anome'.
+    Questa variabile può essere successivamente manipolata con operazioni
+    di variabile generale (minore di, maggiore di, aritmetica e così via).
+    Assegna un pin alla variabile 'Axxx' nello stesso modo in cui assegni
+    un pin a un input o uscita digitale, facendo doppio clic sull'elenco
+    nella parte inferiore dello schermo. Se la condizione di input per
+    questo ramo è falsa, la variabile `Anome 'rimane invariata.
+
+    Per tutti i dispositivi attualmente supportati, l'ingresso 0 volt
+    corrisponde a una lettura ADC di 0 e un ingresso pari a Vdd (la
+    tensione di alimentazione) corrisponde a una lettura ADC di 1023. Se
+    si utilizza un AVR, quindi collegare AREF a Vdd. Puoi usare le
+    operazioni aritmetiche per ridimensionare la lettura in unità più
+    convenienti in seguito, ma ricorda che stai usando la matematica intera.
+    In generale non tutti i pin saranno disponibili per l'uso con il
+    convertitore A/D. Il software non ti consentirà di assegnare pin non
+    A/D a un ingresso analogico. Questa istruzione deve essere l'istruzione
+    più a destra nel suo gradino.
+
+    Aggiornato: riferimento tensione ADC.
+    La tensione di riferimento per l'ADC (Vref) indica l'intervallo di
+    conversione per l'ADC. I canali singoli-chiusi che superano Vref
+    risulteranno in codici vicini a 0x3FF (1023). Vref può essere selezionato
+    come AVCC, riferimento interno 2,56 V, riferimento interno da 1.1 V o pin
+    Aref esterno.
+    Il parametro REFS = 0 è retro compatibile con le versioni precedenti di
+    LDmicro.
+
+    vedi https://github.com/LDmicro/LDmicro/wiki/ADC-Voltage-Reference
+    https://github.com/LDmicro/LDmicro/wiki/How-to-measure-battery-voltage
+    https://github.com/LDmicro/LDmicro/wiki/How-to-measure-voltage-(PIC)
+
+
+> SET DUTY CYCLE DEL PWM    duty_cycle  3.8 kHz
+                          -{PWM            PWM1}-
+
+    LDmicro in determinati microcontrollori può generare codice per utilizzare
+    la periferica PWM integrata. Se la condizione di input per questa istruzione
+    è vera, allora il ciclo di lavoro della periferica PWM è impostato sul valore
+    della variabile duty_cycle.
+    Aggiornato: LDmicro v4.3.5 consente di selezionare una risoluzione più alta
+                del PWM:
+      0-100% (massima risoluzione 6.7 bits)
+      0-256  (massima risoluzione 8 bits)
+      0-512  (massima risoluzione 9 bits)
+      0-1024 (massima risoluzione 10 bits)
+    Il ciclo di lavoro deve essere un numero compreso tra 0 e 100/256/512/1024;
+    0 corrisponde a sempre basso, e 100/256/512/1024 corrisponde a sempre a alto.
+    (Se si ha familiarità con il funzionamento della periferica PWM,
+    quindi notare che ciò significa che LDmicro ridimensiona automaticamente il
+    file duty cycle variabile da percentuale (o valore binario) in periodi di
+    clock PWM.)
+
+    È possibile specificare la frequenza PWM di destinazione, in Hz. La frequenza
+    specificata potrebbe non essere esattamente ottenibile, a seconda di come si
+    divide nella frequenza di clock del microcontrollore. LDmicro sceglierà la
+    frequenza più vicina raggiungibile; se l'errore è grande, ti avviserà.
+    Velocità più elevate (frequenza PWM) possono sacrificare la risoluzione.
+
+    Questa istruzione deve essere l'istruzione più a destra nel suo gradino.
+    Il runtime logico ladder utilizza un timer per misurare il tempo di ciclo.
+    Ciò significa che PWM è disponibile solo su microcontrollori con almeno due
+    timer adatti. PWM utilizza pin CCP2 (non CCP1) su chip PIC16 e OC1B (non OC1A)
+    su AVR.
+
+    Aggiornato: LDmicro v4.x.x consente tutto l'hardware PWM.
+    vedi https://github.com/LDmicro/LDmicro/wiki/LDmicro-PWM
+
+    È possibile impostare un'altra frequenza di base del PWM solo dopo l'attivazione
+    del RESET PWM.
+    Vedi RESET PWM sopra.
+
+
+> RENDI PERSISTENTE          saved_var
+                           --{PERSIST}--
+
+    Quando la condizione del ramo di questa istruzione è vera, fa sì che la
+    variabile intera specificata venga salvata automaticamente in EEPROM.
+    Ciò significa che il suo valore persisterà, anche quando il micro non è alimentato.
+    Non è necessario salvare esplicitamente la variabile su EEPROM; ciò avverrà
+    automaticamente, ogni volta che la variabile cambia. La variabile viene
+    automaticamente caricata dalla EEPROM dopo il power-on reset. Se una variabile
+    che cambia frequentemente viene resa persistente, allora l'EEPROM nel tuo micro
+    potrebbe consumarsi molto rapidamente, perché è utile solo per un numero limitato
+    (~ 100.000) di scritture. Quando la condizione del ramo di ingresso è falsa, non
+    accade nulla. Questa istruzione deve essere l'istruzione più a destra nel suo piolo.
+
+    vedi https://github.com/LDmicro/LDmicro/wiki/MAKE-PERSISTENT-operation
+
+
+> UART (SERIALE) RICEVE          var
+                           --{UART RECV}--
+
+    LDmicro può generare codice per utilizzare l'UART integrato in
+    determinati microcontrollori.
+    Sugli AVR con più UART è supportato solo UART1 (non UART0).
+    Configurare la velocità di trasmissione usando Impostazioni ->
+    Parametri MCU. Alcuni tassi di baud potrebbero non essere
+    ottenibili con certe frequenze del quarzo; Se questo è il caso
+    LDmicro ti avviserà.
+
+    Se la condizione di input per questa istruzione è falsa, non succede
+    nulla. Se la condizione di input è vera, questa istruzione prova a
+    ricevere un singolo carattere dalla UART. Se nessun carattere viene
+    letto, la condizione di uscita è falsa. Se un carattere viene letto,
+    il suo valore ASCII viene memorizzato in `var 'e la condizione di
+    uscita è vera per un singolo ciclo PLC.
+
+
+> UART (SERIALE) INVIA           var
+                           --{UART SEND}--
+
+    LDmicro può generare codice per utilizzare gli UART integrati in
+    determinati microcontrollori. Su AVRS con più UART è supportato solo
+    UART1 (non UART0). Configurare la velocità di trasmissione usando
+    Impostazioni -> Parametri MCU. Alcune velocità di trasmissione
+    potrebbero non essere ottenibili con certe frequenze di quarzo;
+    Se questo è il caso LDmicro ti avviserà.
+
+    Se la condizione di input per questa istruzione è falsa, non succede
+    nulla.
+    Se la condizione di input è vera, questa istruzione scrive un singolo
+    carattere sulla UART.
+    Il valore ASCII del carattere da inviare deve essere precedentemente
+    memorizzato in `var '. La condizione di uscita del ramo è vera se la
+    UART è occupata (attualmente sta trasmettendo un carattere) altrimenti
+    e falsa.
+
+    Ricorda che i caratteri impiegano del tempo per essere trasmessi.
+    Controllare le condizioni di uscita di questa istruzione per assicurarsi
+    che il primo carattere sia stato trasmesso prima di provare a inviare un
+    secondo carattere, o utilizzare un timer per inserire un ritardo tra i
+    caratteri. È necessario solo riportare la condizione di input vero
+    (provare a inviare un carattere) quando la condizione di uscita è falso
+    (UART non è occupato).
+
+    Esaminare l'istruzione di stringa formattata (successiva) prima di
+    utilizzare questa istruzione. L'istruzione a stringa formattata è
+    molto più facile da usare ed è quasi certamente in grado di fare ciò
+    che vuoi.
+
+    Vedi https://github.com/LDmicro/LDmicro/wiki/HOW-TO:-Look-Up-Table,-UART-SEND
+
+
+> UART (SERIALE) INVIAn           var
+                           --{UART SENDn}--
+
+    Se la condizione di input per questa istruzione è falsa, non succede
+    nulla. Se la condizione di input è vera, questa istruzione scrive una
+    variabile sull'UART in formato binario non elaborato. Invia un byte per
+    ogni ciclo di PLC, come l'elemento 'FORMATTED STR OVER UART'.
+    La condizione di uscita del ramo è vera se l'UART è occupato (attualmente
+    trasmette una variabile), altrimenti e falso.
+
+
+> UART INVIA: è pronto?       È pronto?
+                           --[UART SEND]--
+
+    La condizione di input non viene visualizzata.
+    L'uscita è 1 quando il buffer di trasmissione è vuoto e pronto per
+    caricare nuovi dati.
+
+
+> UART RECEVI: è disponibile?    È utile?
+                              --[UART RECV]--
+
+    La condizione di input non viene visualizzata.
+    L'uscita è 1 quando nel buffer di ricezione sono presenti dati non
+    letti.
+
+
+> STRINGA FORMATTATA SULLA UART             var
+                                   -{"Pressure: \3\r\n"}-
+
+    LDmicro può generare codice per utilizzare gli UART integrati in
+    determinati microcontrollori. Su AVRS con più UART è supportato
+    solo UART1 (non UART0).
+    Configurare la velocità di trasmissione usando Impostazioni ->
+    Parametri MCU.
+    Alcune velocità di trasmissione potrebbero non essere ottenibili
+    con certe frequenze di quarzo; In questo caso LDmicro ti avviserà.
+
+    Quando la condizione del ramo per questa istruzione passa da falso
+    a vero, inizia a inviare un'intera stringa sulla porta seriale.
+    Se la stringa contiene la sequenza speciale `\3', allora quella
+    sequenza verrà sostituita con il valore di` var', che viene
+    automaticamente convertito in una stringa. La variabile sarà
+    formattata per prendere esattamente 3 caratteri; per esempio, se
+   `var 'è uguale a 35, allora la stringa esatta stampata sarà` Pressione:
+    35\r\n' (notare lo spazio extra). Se invece 'var' fosse uguale a 1432,
+    il comportamento sarebbe indefinito, perché 1432 ha più di tre cifre.
+    Invece in tal caso sarebbe necessario usare `\4'.
+
+    Se la variabile è negativa, invece utilizzare `\-3d ' (o` \-4d' ecc.).
+    Ciò farà sì che LDmicro stampi uno spazio iniziale per i numeri
+    positivi e un segno meno negativo per i numeri negativi.
+
+    Se più istruzioni formattate per le stringhe vengono abilitate in una
+    volta (o se una di esse viene abilitata prima che un altra sia
+    completata), o se queste istruzioni sono mescolate con le istruzioni
+    TX UART, allora il comportamento non è definito.
+
+    È anche possibile utilizzare questa istruzione per generare una
+    stringa fissa, senza interpolare il valore di una variabile intera
+    nel testo inviato su seriale. In tal caso, semplicemente non
+    includere la sequenza di scarico speciale.
+
+    La condizione di uscita di questa istruzione è vera mentre sta
+    trasmettendo dati, altrimenti è falsa. Questa istruzione consuma una
+    grande quantità di memoria di programma, quindi dovrebbe essere usato
+    con parsimonia. La presente implementazione non è efficiente, ma uno
+    migliore richiederà modifiche a tutti i back-end.
+
+    Usa `\\' per un letterale backslash. Oltre alla sequenza di scarico
+    per l'interpolazione di una variabile intera, sono disponibili i
+    seguenti caratteri di controllo:
+
+         Escape      Hex         Character
+         sequence    value       represented
+
+         \a          0x07        BEL, Avviso (Bip, Campana)
+         \b          0x08        BS, Backspace
+         \e          0x1B        Carattere di Escape
+         \f          0x0C        FF, avanzamento pagina
+         \n          0x0A        NL, Nuova riga (avanzamento riga)
+         \r          0x0D        CR, Ritorno a capo
+         \t          0x09        HT, TAB, Tab orizzontale
+         \v          0x0B        VT, Tab verticale
+         \'          0x27        Virgoletta singola
+         \"          0x22        Doppia virgoletta
+         \?          0x3F        Punto interrogativo
+         \\          0x5C        Barra rovesciata
+         \xhh        any         Il byte il cui valore numerico è dato da
+                                 hh: interpretato come un numero esadecimale
+                                 per le portate 0x00..0xFF(hex), 0..255(dec)
+         per esempio
+         \xAB è un carattere con valore ASCII 0xAB (hex)
+
+      vedi https://en.m.wikipedia.org/wiki/Escape_sequences_in_C
+
+    ---------------------------- Codici di controllo ASCII ------------------------
+    |Dec Hex Ctl  nome Significato Controllo|Dec Hex Ctl  nome Significato Controllo
+    |--- --- ---  ---- -------------------  |--- --- ---  ---- --------------------
+    |  0  00  ^@  NUL  null (fine stringa)  | 16  10  ^P  DLE  data line escape
+    |  1  01  ^A  SOH  inizio della rubrica | 17  11  ^Q  DC1  dev ctrl 1 (X-ON)
+    |  2  02  ^B  STX  inizio del testo     | 18  12  ^R  DC2  device ctrl 2
+    |  3  03  ^C  ETX  fine del testo       | 19  13  ^S  DC3  dev ctrl 3 (X-OFF)
+    |  4  04  ^D  EOT  fine trasmissione    | 20  14  ^T  DC4  device ctrl 4
+    |  5  05  ^E  ENQ  inchiesta            | 21  15  ^U  NAK  riconoscimento
+                                                               negativo
+    |  6  06  ^F  ACK  riconoscere          | 22  16  ^V  SYN  inattivo sincrono
+    |  7  07  ^G  BEL  campana            \a| 23  17  ^W  ETB  fine blocco di
+                                                               trasmissione
+    |  8  08  ^H  BS   backspace          \b| 24  18  ^X  CAN  cancella
+    |  9  09  ^I  HT   tab orizzontale    \t| 25  19  ^Y  EM   fine del medio
+    | 10  0a  ^J  LF   avanzamento riga   \n| 26  1a  ^Z  SUB  sostituto
+    | 11  0b  ^K  VT   Tab verticale      \v| 27  1b  ^[  ESC  escape
+    | 12  0c  ^L  FF   avanzamento pagina \f| 28  1c  ^\  FS   separatore di file
+    | 13  0d  ^M  CR   ritorno a capo     \r| 29  1d  ^]  GS   separatore di gruppo
+    | 14  0e  ^N  SO   sposta fuori         | 30  1e  ^^  RS   separatore di record
+    | 15  0f  ^O  SI   sposta dentro        | 31  1f  ^_  US   separatore di unità
+
+
+> STRINGA FORMATTATA                          dest
+                                       -{"string", var}-
+
+    Per obiettivi come Netzer con implementazioni printf già presenti,
+    è possibile utilizzare questa istruzione.
+
+    Quando la condizione del ramo per questa istruzione passa da falso
+    a vero, inizia a elaborare la stringa con printf e scrive il risultato
+    nel registro dest specificato.
+
+    Incolla completamente la stringa data nell'immagine risultante.
+
+    La variabile data può essere qualsiasi registro dal programma. È usato
+    come segnaposto per printf. La funzione printf accede al registro se
+    viene trovato qualsiasi segnaposto in stile printf (vale a dire %d).
+
+    Dest è un registro in cui è scritto il risultato.
+    Questa dovrebbe essere la prima voce di un buffer fifo o circolare.
+
+    La condizione di inizio di questa istruzione è sempre vera.
+
+> CLRWDT
+                           --{CLRWDT}--
+
+    Quando la condizione del ramo di questa istruzione è vera, causa la
+    cancellazione del timer WDT. LDmicro esegue il comando CLRWDT
+    automaticamente ogni ciclo del PLC (all'inizio del ciclo), quindi è
+    necessario un CLRWDT aggiuntivo se il periodo del ciclo PLC supera
+    il periodo WDT se WDT è abilitato. Questa istruzione deve essere
+    l'istruzione più a destra nel suo gradino.
+
+> BLOCCO
+                           --{LOCK}--
+
+    Quando la condizione del ramo di questa istruzione è vera, provoca
+    il comando LOCK. È una situazione artificiale alla provocazione il
+    reset WDT (se WDT è abilitato). Il comando BLOCCO progettato come
+    loop infinito. È il punto morto, modo di bloccare, bloccare il programma.
+    Il comando BLOCCO esegue goto all'indirizzo corrente, vale a dire
+    labelN: goto labelN (label02e7: rjmp label02e7), cioè loop infinito.
+    Il comando BLOCCO esegue il ciclo infinito, ma WDT può ripristinare
+    l'MCU. Solo il WDT o il reset esterno possono sbloccare il programma
+    dopo il comando BLOCCO.
+
+> SPEGNI
+                           --{SLEEP}--
+
+    Quando la condizione del ramo di questa istruzione è vera, viene
+    impostata la modalità SLEEP (spegnimento). Utilizzato per risparmiare
+    energia sull'alimentazione della batteria.
+    PIC: riattivazione dal sonno a causa di interrupt esterno sul fronte
+    di salita del pin RB0 / INT.
+    PIC10xxxx: riattivazione da sospensione su pin cambia GP0, GP1, GP3.
+    AVR: riattivazione dal sonno a causa dell'interruzione esterna sul
+    fronte di salita dei pin PD2 / INT0, PD3 / INT1.
+    L'operazione SLEEP non influisce sui pin IO MCU e su altre operazioni
+    LDmicro.
+    Nota: SLEEP allunga il tempo di ciclo e i timer del PLC TON, TOF, RTO,
+    CTY.
+    Questo può frustrare i piani, interrompere il flusso di lavoro.
+    Questa istruzione deve essere l'istruzione più a destra nel suo gradino.
+
+
+> CASUALE                     Rand
+                          --{ RAND }--
+
+    Il generatore di numeri pseudo casuali restituisce il numero nell'intervallo
+    completo della variabile 'Rand'.
+    Quando l'input di questa istruzione è vero, imposta la variabile di
+    destinazione data 'Rand' con il successivo numero pseudo-casuale
+    calcolato da un generatore congruenziale lineare (LCG).
+    Quando l'input di questa istruzione è falso, non succede nulla.
+    Vedi https://en.m.wikipedia.org/wiki/Linear_congruential_generator
+    Il generatore è definito dalla relazione di ricorrenza:
+    X [n + 1] = (a * X [n] + c) mod m
+    Costanti usate dal MMS $ RANDOM del VMS, vecchie versioni di glibc
+    a = 69069 (0x10DCD)
+    c = 1
+    m = 2 ^ 32
+    X = (X * 0x10DCD + 1)% 0x100000000
+    RAND restituisce i byte più significativi di X.
+    X memorizzato come variabile $ seed_Rand 32 bit.
+
+
+> SCASUALE                  {SRAND     Rand}
+                          --{$seed:=newSeed}--
+
+    Il generatore di numeri pseudo-casuali viene inizializzato utilizzando
+    l'argomento passato come newSeed. $ seed_Rand: = newSeed.
+    Quando l'input di questa istruzione è vero, imposta la variabile di
+    destinazione data $ seed_Rand uguale alla variabile o costante specificata.
+    Quando l'input di questa istruzione è falso, non succede nulla.
+    Due diverse inizializzazioni con lo stesso seme generano la stessa
+    successione di risultati nelle successive chiamate a RAND.
+    Se seed è impostato su 1, il generatore "Rand" viene reinizializzato al
+    suo valore iniziale e produce gli stessi valori di prima di qualsiasi
+    chiamata a RAND o SRAND.
+    Le fonti di entropia possono essere ADC, timer, RAND precedentemente salvato
+    in EEPROM, ecc.
+
+    In questo esempio abbiamo due generatori SEPARATI di numeri pseudo casuali
+    LCG.
+    Ma se il newSeed1 è uguale al newSeed2 allora RAnd1 e Rand2 sono sequenze
+    di numeri uguali
+   ||     _    _      {SRAND     Rand1}                       ||
+ 1 ||--[_/ OSR/ \_]---{$seed:=newSeed1}-                      ||
+   ||                                                         ||
+   ||      Rand1                                              ||
+ 0 ||-----{RAND}------                                        ||
+   ||                                                         ||
+   ||                                                         ||
+   ||     _    _      {SRAND     Rand2}                       ||
+ 0 ||--[_/ OSR/ \_]---{$seed:=newSeed2}-                      ||
+   ||                                                         ||
+   ||      Rand2                                              ||
+ 0 ||-----{RAND}------                                        ||
+   ||                                                         ||
+
+
+> CONVERTITORE DA CARATTERI A 7-SEGMENTI    {7SEG    dest:=}
+                                          --{C          src}--
+
+    La variabile 'dest' assume il valore 'abcdefgDP', controlla (evidenzia)
+    i segmenti dei caratteri.
+    È possibile utilizzare la variabile di porta di accesso diretto '#PORTx'
+    come variabile 'dest'.
+    Può essere collegato agli anodi (catodi) del modulo LED a 7 segmenti
+    attraverso i resistori di limitazione di corrente.
+
+    Per attivare (evidenzia) il segmento di LED "a", è richiesto un livello
+    alto sul pin "a" e un livello basso sul pin comune, quando viene utilizzato
+    un modulo con la connessione LED a catodo comune.
+    Quando viene utilizzato un modulo con la connessione anodica comune, per
+    attivare il segmento "a" LED, è necessario il livello basso sul pin "a"
+    e il livello alto è richiesto sul pin comune. Utilizzare il parametro "A"
+    anziché "C" per specificare il tipo di connessione comune utilizzata.
+
+    mostrano carattere 7 segmenti
+         a
+        --
+     f|    |b
+      |  g |
+        --
+     e|    |c
+      |    |
+        -- .
+         d  DP
+
+    SEGMENT     DP g f e d c b a
+    'dest' BIT   7 6 5 4 3 2 1 0
+    DP - è il segmento punto
+
+
+    a  --|>|-----+-- connessione LED a catodo comune
+                 |
+    b  --|>|-----+
+    ...          |
+                 |
+    DP --|>|-----+
+
+    a  --|<|-----+-- connessione a anodo comune
+                 |
+    b  --|<|-----+
+    ...          |
+                 |
+    DP --|<|-----+
+
+
+    La variabile 'src' (char) deve essere compresa nell'intervallo di 0..128 e di solito
+    ha una dimensione di 1 byte.
+    Sono implementati 128 caratteri dei codici della tabella ASCII.
+    I primi 32 caratteri ASCII sostituiti con le cifre esadecimali.
+    Il 129 ° simbolo è il simbolo del grado 'o' da utilizzare con un valore di temperatura.
+ADDRESS=  0               16(0x10)       31(0x1F)
+row+colmn |               |              |  da 0 a 15 - cifre esadecimali
+  0       0123456789ABCDEF0123456789ABCDEF  da 16 a 31 - cifre esadecimali con il punto DP
+ 32(0x20)  !"#$%&'()*+,-./0123456789:;<=>?
+ 64(0x40) @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+ 96(0x60) `abcdefghijklmnopqrstuvwxyz{|}~
+128(0x80) o
+          ^
+          |_ carattere di grado 0xB0
+
+    ' ' - carattere di cpace 0x20 - vuoto
+    carattere di DEL 0x7F - vuoto
+
+    Vedi display LED a segmenti X, esempio di carattere
+    https://github.com/LDmicro/LDmicro/wiki/X-segment-LED-display,-font-example
+
+
+> CONVERTITORE DA BINARIO A BCD     {BIN2BCD dest:=}
+                                  --{           src}-
+
+    'Src' è un valore binario con 1,2,3,4 byte di lunghezza.
+    Il 'dest' è un valore BCD decompresso con 3, 5, 8, 10 byte di lunghezza.
+    Disimballato: ogni numero è codificato in un byte, con quattro bit che
+    rappresentano il numero e i bit rimanenti senza significato.
+    99 decimale (0x63) verrà convertito nel valore 0x 09 09.
+    Il decimale 100 (0x64) verrà convertito nel valore 0x01 00 00.
+    vedi https://en.wikipedia.org/wiki/Binary-coded_decimal
+
+
+> CODIFICATORE DI QUADRATURA     ~~[XqA0 XqB0            YqDir0]-
+                                 -\[XqZ0   QUAD ENCOD   qCount0]^-
+
+    L'istruzione CODIFICATORE DI QUADRATURA acquisisce due segnali codificati in
+    quadratura (A e B) da un dispositivo incrementale rotativo o encoder lineare.
+    Vedi https://en.wikipedia.org/wiki/Incremental_encoder
+
+ logic
+ levels               move ->             |            <- move
+       ^
+       | ___         _______         ___________          _______         ___
+Input A|    |_______|       |_______|           |________|       |_______|
+       |
+       | _______         _______         ___         ________         _______
+Input B|        |_______|       |_______|   |_______|        |_______|
+       |
+       |
+Counter|  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0
+       |
+ uscita| ___________________________________   decrease or CCW or backward
+    Dir|    increase or CW or forward       |________________________________
+       |
+ uscita|
+  Pulse| _______^_______^_______^_______^_______^_______^_______^_______^____
+       |
+     --+----------------------------------------------------------------> time
+       |
+           '^' - è un impulso del tempo di ciclo del PLC
+    Suggerimento: utilizzare l'impulso di uscita per determinare se il contatore
+    è stato modificato, non per il conteggio.
+
+    L'istruzione QUAD ENCOD può contenere 3 o 2 ingressi e 1 o 0 uscite.
+    Gli ingressi A e B devono trovarsi nella stessa MCU PORT.
+    Ad esempio, RBx e RBx, non RAx, RBx.
+    L'ingresso Z è opzionale e può essere vuoto.
+    L'uscita Dir è opzionale e può essere vuoto.
+
+   ||                                                                    ||
+   ||       R0        ~~[XqA0 XqB0            YqDir0]-         R1        ||
+   ||-------] [--------\[XqZ0   QUAD ENCOD   qCount0]^---------( )-------||
+   ||                                                                    ||
+
+    Quando la condizione del ramo R0 dell'istruzione QUAD ENCOD è falsa,
+    gli ingressi A, B, Z vengono ignorati.
+    Quando la condizione di ramo R0 dell'istruzione QUAD ENCOD è vera,
+    gli impulsi agli ingressi A, B, Z vengono decodificati nel valore del contatore,
+    il segnale di uscita Dir è alto, quando il contatore aumenta e basso quando il
+    contatore è decrementato, si verifica un impulso di uscita R1.
+    Il valore del contatore cambia quando entrambi gli ingressi A e B cambiano.
+    Questo corrisponde al moltiplicatore di clock x2. La frequenza degli impulsi di
+    uscita è il doppio della frequenza degli impulsi di ingresso A (B).
+    La frequenza degli impulsi di ingresso A (B) deve essere inferiore alla frequenza
+    del ciclo PLC / 4, altrimenti ci saranno perdite di impulsi di ingresso.
+    Un rimbalzo degli impulsi di ingresso A (B) deve essere inferiore al tempo di
+    ciclo PLC / 8.
+
+    Input Z può essere dinamico (innescato dal fianco) o statico.
+    Se il parametro 'Conteggio per rivoluzione' è 0 e l'ingresso Z è attivo, il
+    contatore si imposta su 0.
+    Se il parametro 'Conteggio per rivoluzione' è maggiore di 0 e l'ingresso Z è attivo,
+    allora il contatore verrà arrotondato a un multiplo del valore "Conteggio per
+    rivoluzione".
+    Se il parametro 'Conteggio per rivoluzione' è inferiore a 0, l'input Z viene ignorato.
+
+ logic
+ levels               move ->
+       ^
+       | ___         _______         _______         _______         ________
+Input A|    |_______|       |_______|       |_______|       |_______|
+       |
+       | _______         _______         _______         _______         ____
+Input B|        |_______|       |_______|       |_______|       |_______|
+       |
+       |
+Input Z| _______________________________________________________/\___________
+       |
+       |
+       |                                     'Count per revol' is 0 (reset the counter)
+       |
+Counter|  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 5 |   | 6 |   | 0 |   | 1
+       |
+       |
+       | (there are losses of A,B pulses)   'Count per revol' is 10 (recover the counter)
+       |
+Counter|  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 5 |   | 6 |   |10 |   | 11
+       |
+     --+----------------------------------------------------------------> time
+       |
+
+    Per simulare gli ingressi A, B, Z, fare doppio clic sul nome di
+    inserimento nell'elenco nella parte inferiore dello schermo.
+
+    Per i dettagli vedi https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER
+    Incremental QUADRATURE ENCODER controls the brightness of the LED (PWM out)
+    https://github.com/LDmicro/LDmicro/wiki/Incremental-QUADRATURE-ENCODER-controls-the-brightness-of-the-LED-(PWM-out)
+
+
+UNA NOTA SULL'UTILIZZO DELLA MATEMATICA
+========================================
+
+Ricorda che LDmicro esegue solo matematica a 16 bit interi. Questo
+Significa che il risultato finale di qualsiasi calcolo eseguito deve
+essere un intero tra -32768 e 32767. Significa anche che i risultati
+intermedi del tuo calcolo devono essere tutti all'interno di tale
+intervallo.
+
+Per esempio, diciamo che volevi calcolare y = (1 / x) * 1200,dove x
+è compreso tra 1 e 20. Quindi y va tra 1200 e 60, che si inserisce in
+un intero a 16 bit, quindi almeno in teoria è possibile eseguire il
+calcolo. Esistono due modi per codificarlo: puoi eseguire il reciproco
+e quindi moltiplicare:
+
+   ||         {DIV  temp  :=}          ||
+   ||---------{ 1 / x       }----------||
+   ||                                  ||
+   ||          {MUL  y  :=  }          ||
+   ||----------{ temp * 1200}----------||
+   ||                                  ||
+
+Oppure potresti fare direttamente la divisione, in un unico passaggio:
+
+   ||           {DIV  y  :=}           ||
+   ||-----------{ 1200 / x }-----------||
+
+Matematicamente, questi due sono equivalenti; ma se li provi, allora
+troverai che il primo dà un risultato errato di y = 0. Questo è perché
+la variabile `temp' è troppo piccolo. Ad esempio, quando x = 3,(1 / x)
+= 0,333, ma non è un numero intero; l'operazione di divisione approssima
+questo come temp = 0. Quindi y = temp * 1200 = 0. Nel secondo caso non ci
+sono risultati intermedi troppo piccoli, quindi tutto funziona.
+
+Se stai riscontrando problemi con i tuoi calcoli, controlla i risultati
+intermedi per troppo piccolo (o troppo grande, che "riavvolge", ad esempio,
+32767 + 1 = -32768). Quando possibile, scegli le unità in cui inserire i
+valori in un intervallo da -100 a 100.
+
+Quando hai bisogno di ridimensionare una variabile di qualche fattore,
+fallo usando una moltiplicazione e una divisione. Ad esempio, per
+ridimensionare y = 1,8 * x, calcolare y = (9/5) * x (che è lo stesso,
+da 1.8 = 9/5) e codificalo come y = (9 * x) / 5, eseguendo per prima
+la moltiplicazione:
+
+   ||         {MUL  temp  :=}          ||
+   ||---------{ x * 9       }----------||
+   ||                                  ||
+   ||           {DIV  y  :=}           ||
+   ||-----------{ temp / 5 }-----------||
+
+Funziona per tutti x <(32767/9) o x <3640. Per valori maggiori di x,
+la variabile `temp 'sarebbe troppo piena.
+C'è un limite inferiore simile su x.
+
+
+STILE DI CODIFICA
+=================
+
+Consentendo più bobine in parallelo in un singolo gradino.
+Ciò significa che puoi fare cose come questa:
+
+   ||       Xa               Ya        ||
+ 1 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||       Xb               Yb        ||
+   ||-------] [------+-------( )-------||
+   ||                |                 ||
+   ||                |       Yc        ||
+   ||                +-------( )-------||
+   ||                                  ||
+
+Invece di questo:
+
+   ||       Xa               Ya        ||
+ 1 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||       Xb               Yb        ||
+ 2 ||-------] [--------------( )-------||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||       Xb               Yc        ||
+ 3 ||-------] [--------------( )-------||
+   ||                                  ||
+Ciò significa che in teoria è possibile scrivere qualsiasi programma come
+un gradino gigante e non è necessario utilizzare più pioli. In pratica
+sarebbe una cattiva idea, perché via via che i rung diventano più complessi
+diventano più difficili da modificare senza eliminare e ridisegnare molta
+logica.
+
+Tuttavia, è spesso una buona idea raggruppare la logica correlata come un
+singolo ramo. Questo genera codice quasi identico come creare gradini
+separati, ma quando li guardi sul diagramma ladder mostra che sono
+correlati.
+
+                  *                 *                  *
+
+In generale, è considerata una forma scadente scrivere codice in modo tale
+che la sua uscita dipende dall'ordine dei pioli. Ad esempio, questo codice
+non è molto buono perché sia Xa che Xb potrebbero non essere mai veri:
+
+   ||       Xa         {v  :=       }  ||
+ 1 ||-------] [--------{ 12      MOV}--||
+   ||                                  ||
+   ||       Xb         {v  :=       }  ||
+   ||-------] [--------{ 23      MOV}--||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||                                  ||
+   ||      [v >]             Yc        ||
+ 2 ||------[ 15]-------------( )-------||
+   ||                                  ||
+
+Interromperò questa regola se nel farlo potrò rendere un pezzo di codice
+significativamente più compatto, però. Ad esempio, ecco come convertirei
+una quantità binaria a 4 bit su Xb3: 0 in un numero intero:
+
+   ||                                   {v  :=       }  ||
+ 3 ||-----------------------------------{ 0       MOV}--||
+   ||                                                   ||
+   ||       Xb0                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 1    }-----------||
+   ||                                                   ||
+   ||       Xb1                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 2    }-----------||
+   ||                                                   ||
+   ||       Xb2                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 4    }-----------||
+   ||                                                   ||
+   ||       Xb3                  {ADD  v  :=}           ||
+   ||-------] [------------------{ v + 8    }-----------||
+   ||                                                   ||
+
+Se l'istruzione MOV è stata spostata nel gradino inferiore anziché in
+quello superiore, il valore di v quando viene letto altrove nel
+programma sarà 0. L'uscita di questo codice dipende quindi dall'ordine
+in cui vengono valutate le istruzioni . Considerando quanto sarebbe
+ingombrante codificarlo in un altro modo, lo accetto.
+
+ABBREVIAZIONI
+=============
+PLC - controllore logico programmabile.
+PWM - modulazione della larghezza d'impulso.
+ADC - convertitore analogico-digitale.
+PCB - scheda a circuito stampato
+
+ERRORI
+======
+
+LDmicro non genera codice molto efficiente; è lento da eseguire e spreco
+di flash e RAM. Nonostante ciò, un PIC o un AVR di medie dimensioni
+possono fare tutto ciò che può fare un piccolo PLC, quindi questo non
+mi infastidisce molto.
+
+La lunghezza massima dei nomi delle variabili è molto limitata. Ma è così
+che si adattano bene al diagramma ladder, quindi non vedo una buona
+soluzione a questo.
+
+Se il tuo programma è troppo grande per il tempo, la memoria di programma
+o i vincoli di memoria dati del dispositivo che hai scelto, probabilmente
+non otterrai un errore. Andrà a rovinare da qualche parte.
+
+La programmazione trascurata nelle routine di caricamento / salvataggio
+dei file rende probabilmente possibile l'arresto anomalo o l'esecuzione
+di codice arbitrario a causa di un file .ld corrotto o dannoso.
+
+Si prega di segnalare ulteriori bug o richieste di funzionalità all'autore.
+
+Grazie a:
+    * Marcelo Solano, per aver segnalato un bug dell'interfaccia utente in
+      Win98
+    * Serge V. Polubarjev, non solo per notificare che RA3: 0 sul PIC16F628
+      non funziona, ma anche mi ha spiegato come ripararlo
+    * Maxim Ibragimov, per segnalare e diagnosticare i principali problemi
+      con gli obiettivi ATmega16 e ATmega162 non ancora testati
+    * Bill Kishonti, per segnalare che il simulatore si è arrestato in modo
+      anomalo quando il logicoprogram ladder stava dividendo per zero
+    * Mohamed Tayae, per aver segnalato che le variabili persistenti sono
+      state interrotte su PIC16F628
+    * David Rothwell, per aver segnalato diversi bug dell'interfaccia utente
+      e un problema con la funzione "Esporta come testo"
+
+
+COPIA E DECLINAZIONE DI RESPONSABILITÀ
+======================================
+
+NON UTILIZZARE IL CODICE GENERATO DA LDMICRO NELLE APPLICAZIONI IN CUI IL
+GUASTO DEL SOFTWARE POTREBBE RISULTARE PERICOLOSO PER LA VITA UMANA O DANNI
+ALLA PROPRIETÀ. L'AUTORE NON SI ASSUME ALCUNA RESPONSABILITÀ PER EVENTUALI
+DANNI DERIVANTI DAL FUNZIONAMENTO DI LDMICRO O CODICE GENERATO DA LDMICRO.
+
+Questo programma è un software libero: è possibile ridistribuirlo e/o
+modificarlo secondo i termini della GNU General Public License pubblicata
+dalla Free Software Foundation, sia la versione 3 della licenza, sia
+(a propria scelta) qualsiasi versione successiva.
+
+Questo programma è distribuito nella speranza che sia utile, ma SENZA ALCUNA
+GARANZIA; senza nemmeno la garanzia implicita di COMMERCIABILITÀ o IDONEITÀ
+PER UN PARTICOLARE SCOPO. Vedi la GNU General Public License per maggiori
+dettagli.
+
+Insieme a questo programma dovresti aver ricevuto una copia della
+GNU General Public License. Altrimenti, Vedi <http://www.gnu.org/licenses/>.
+
+
+Jonathan Westhues
+
+Rijswijk      -- Dec 2004
+Waterloo ON   -- Jun, Jul 2005
+Cambridge MA  -- Sep, Dec 2005
+                 Feb, Mar 2006
+                 Feb 2007
+Seattle WA    -- Feb 2009
+
+Email: user jwesthues, at host cq.cx
+
+LDmicro support:
+    LDmicro Forum:  http://cq.cx/ladder-forum.pl
+    Ultima uscita:  https://github.com/LDmicro/LDmicro/releases
+    Deposito:       https://github.com/LDmicro/LDmicro
+    Email:          LDmicro.GitHub@gmail.com
+
+
+Traduzione fatta: Claudio Birello, cbirello@yahoo.it

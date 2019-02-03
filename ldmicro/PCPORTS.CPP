@@ -431,7 +431,7 @@ bool LoadPcPorts(const char *filename)
 
     FileTracker fu(dest, "w");
     if(!fu) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
+        Error(_("Couldn't open file '%s'"), dest);
         return false;
     }
     fprintf(fu,
