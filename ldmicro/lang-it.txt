@@ -1876,34 +1876,34 @@
 "Zero crystal frequency not valid; resetting to 16 MHz."
 "La frequenza del cristallo a zero non è valida, ripristino a 16 MHz."
 
-"Zero memory addres not allowed!\nAndMemory(0, %d) skiped!"
+"Zero memory address not allowed!\nAndMemory(0, %d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nAndMemory (0, %d) saltato!"
 
-"Zero memory addres not allowed!\nLOAD(%d, %d) skiped!"
+"Zero memory address not allowed!\nLOAD(%d, %d) skiped!"
 "Impossibile aggiungere memoria zero!\nLOAD (%d, %d) saltato!"
 
-"Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"
+"Zero memory address not allowed!\nLoadXAddr(%d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nLoadXAddr (% d) saltato!"
 
-"Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"
+"Zero memory address not allowed!\nLoadYAddr(%d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nLoadYAddr (% d) saltato!"
 
-"Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"
+"Zero memory address not allowed!\nLoadZAddr(%d) skiped!"
 "L'indirizzo di memoria zero non è permesso!\nLoadZAddr (% d) saltato!"
 
-"Zero memory addres not allowed!\nOrMemory(0, %d) skiped!"
+"Zero memory address not allowed!\nOrMemory(0, %d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nOrMemory (0,% d) saltato!"
 
-"Zero memory addres not allowed!\nReadIoToReg skiped."
+"Zero memory address not allowed!\nReadIoToReg skiped."
 "L'indirizzo di memoria zero non è consentito!\nReadIoToReg saltato"
 
-"Zero memory addres not allowed!\nSTORE(%d, %d) skiped!"
+"Zero memory address not allowed!\nSTORE(%d, %d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nSTORE (% d,% d) saltato!"
 
-"Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"
+"Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"
 "L'indirizzo di memoria zero non è permesso!\nWriteMemory (0,% d) saltato! %S %s"
 
-"Zero memory addres not allowed!\nWriteRegToIO skiped."
+"Zero memory address not allowed!\nWriteRegToIO skiped."
 "L'indirizzo di memoria zero non è consentito!\nWriteRegToIO saltato."
 
 "\nI/O ASSIGNMENT:\n"
@@ -2431,7 +2431,7 @@
 "When the MCU crystal frequency is %.3g %sHz."
 "Quando la frequenza del quarzo MCU è %.3g% sHz."
 
-"Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"
+"Zero memory address not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"
 "Impossibile aggiungere memoria zero!\nWriteMemoryStillAddr (0, %d) saltato!"
 
 "hight delay"

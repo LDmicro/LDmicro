@@ -972,8 +972,8 @@ int SetVariableType(const char *name, int type);
 
 typedef struct LabelAddrTag {
     char  name[MAX_NAME_LEN];
-    DWORD KnownAddr; // Addres to jump to the start of rung abowe the current in LD
-    DWORD FwdAddr;   // Addres to jump to the start of rung below the current in LD
+    DWORD KnownAddr; // Address to jump to the start of rung abowe the current in LD
+    DWORD FwdAddr;   // Address to jump to the start of rung below the current in LD
     DWORD used;
 } LabelAddr;
 LabelAddr *GetLabelAddr(const char *name);
