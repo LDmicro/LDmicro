@@ -107,7 +107,7 @@ void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
     ReleaseDC(MainWindow, Hdc);
 
     if(strlen(CurrentSaveFile)) {
-        tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
+        tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime, 0);
     }
 }
 

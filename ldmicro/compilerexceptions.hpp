@@ -4,6 +4,9 @@
 #include <exception>
 #include <cstdio>
 
+
+extern int CompileFailure;		///// added by JG
+
 #define THROW_COMPILER_EXCEPTION(MSG) do{ \
     char message[1024];\
     sprintf(message, "%s [%s:%i]", MSG, __FILE__, __LINE__); \

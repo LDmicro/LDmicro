@@ -50,6 +50,8 @@ struct PlcProgramSingleIo {
 #define IO_TYPE_SPI_MISO        32
 #define IO_TYPE_SPI_SCK         33
 #define IO_TYPE_SPI__SS         34
+#define IO_TYPE_I2C_SCL         35  ///// Added by JG
+#define IO_TYPE_I2C_SDA         36  /////
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;

@@ -21,6 +21,8 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 
+using namespace std;            // added by JG
+
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
@@ -189,6 +191,7 @@
 #define MNU_MAKE_TTRIGGER       0x4501
 #define MNU_INSERT_PWL          0x46
 
+//#define USE_SFR
 #ifdef USE_SFR
 #define MNU_OPEN_SFR            0x4700
 #define MNU_INSERT_SFR          0x47    // special function register read
@@ -229,6 +232,10 @@
 #define MNU_SINGLE_CYCLE        0x63
 
 #define MNU_INSERT_SPI          0x6401
+#define MNU_INSERT_SPI_WRITE    0x6402
+
+#define MNU_INSERT_I2C_READ     0x6451              //// Added by JG
+#define MNU_INSERT_I2C_WRITE    0x6452
 
 #define MNU_INSERT_BUS          0x6501
 #define MNU_INSERT_7SEG         0x6507
@@ -236,23 +243,30 @@
 #define MNU_INSERT_14SEG        0x6514
 #define MNU_INSERT_16SEG        0x6516
 
-#define MNU_COMPILE             0x70
-#define MNU_COMPILE_AS          0x71
-#define MNU_COMPILE_ANSIC           0x7200
-#define MNU_COMPILE_HI_TECH_C       0x7201
-#define MNU_COMPILE_CCS_PIC_C       0x7202
-#define MNU_COMPILE_GNUC            0x7241 // AVR-GCC // Atmel AVR Toolchain // WinAVR
-#define MNU_COMPILE_CODEVISIONAVR   0x7242
-#define MNU_COMPILE_IMAGECRAFT      0x7243
-#define MNU_COMPILE_IAR             0x7244
-#define MNU_COMPILE_lastC           0x7244
-#define MNU_COMPILE_ARDUINO         0x7281
-#define MNU_COMPILE_IHEX        0x73
-#define MNU_COMPILE_IHEXDONE    0x7301
-#define MNU_COMPILE_ASM         0x74
-#define MNU_COMPILE_PASCAL      0x75
-#define MNU_COMPILE_INT         0x77    // Interpreter
-#define MNU_COMPILE_XINT        0x78    // Extended interpreter
+#define MNU_COMPILE                 0x7000          ///// All MNU_COMPILE_* modified by JG
+#define MNU_COMPILE_AS              0x7010
+
+#define MNU_COMPILE_ANSIC           0x7100          // Begin of C compiling menus   !!!
+#define MNU_COMPILE_HI_TECH_C       0x7110          // Pic Hi-Tech C
+#define MNU_COMPILE_CCS_PIC_C       0x7130          // Pic CCS
+
+#define MNU_COMPILE_GNUC            0x7200          // AVR-GCC // Atmel AVR Toolchain // WinAVR
+#define MNU_COMPILE_AVRGCC          0x7210          // AVR Gcc / Avr Studio
+#define MNU_COMPILE_CODEVISIONAVR   0x7220          // AVR Codevision
+#define MNU_COMPILE_IMAGECRAFT      0x7230          // AVR IccAvr
+#define MNU_COMPILE_IAR             0x7240          // AVR IAR
+
+#define MNU_COMPILE_ARMGCC          0x7300          // Added by JG
+#define MNU_COMPILE_lastC           0x7399          // End of C compiling menus     !!!
+
+#define MNU_COMPILE_ARDUINO         0x7400          // Arduino
+
+#define MNU_COMPILE_IHEX            0x7500
+#define MNU_COMPILE_IHEXDONE        0x7510
+#define MNU_COMPILE_ASM             0x7600
+#define MNU_COMPILE_PASCAL          0x7700
+#define MNU_COMPILE_INT             0x7800          // Interpreter
+#define MNU_COMPILE_XINT            0x7810          // Extended interpreter
 
 #define MNU_FLASH_BAT           0x7D
 #define MNU_READ_BAT            0x7E
@@ -288,6 +302,11 @@
 // Timer IDs associated with the main window.
 #define TIMER_BLINK_CURSOR      1
 #define TIMER_SIMULATE          2
+
+// Simulation windows           Added by JG
+#define SIM_UART                1
+#define SIM_SPI                 2
+#define SIM_I2C                 3
 
 #define RUNG(r)       max(min(r,Prog.numRungs-1),0)
 
@@ -416,10 +435,11 @@ extern bool SelectionActive;
 extern bool ThisHighlighted;
 
 // draw_outputdev.cpp
+void SetSyntaxHighlightingColours();                            ///// Prototype added by JG
 extern void (*DrawChars)(int, int, const char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow();
-BOOL tGetLastWriteTime(const char *CurrentSaveFile, FILETIME *sFileTime);
+BOOL tGetLastWriteTime(const char *CurrentSaveFile, FILETIME *sFileTime, int mode);     ///// prototype modified by JG
 void ExportDrawingAsText(char *file);
 void InitForDrawing();
 void InitBrushesForDrawing();
@@ -511,6 +531,7 @@ void ShowTimerDialog(int which, ElemLeaf *l);
 void ShowSleepDialog(int which, ElemLeaf *l);
 void ShowDelayDialog(int which, ElemLeaf *l);
 void ShowSpiDialog(ElemLeaf *l);
+void ShowI2cDialog(ElemLeaf *l);
 void ShowCounterDialog(int which, ElemLeaf *l);
 void ShowVarBitDialog(int which, char *dest, char *src);
 void ShowMoveDialog(int which, char *dest, char *src);
@@ -634,11 +655,13 @@ int NameToPin(char *pinName);
 McuIoPinInfo *PinInfo(int pin);
 McuIoPinInfo *PinInfoForName(const char *name);
 McuSpiInfo *GetMcuSpiInfo(char *name);
+McuI2cInfo *GetMcuI2cInfo(char *name);          ///// Added by JG
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
 McuPwmPinInfo *PwmPinInfoForName(char *name);
 McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer);
 McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer, int resolution);
+McuPwmPinInfo *PwmMaxInfoForName(const char *name, int timer);                  ///// Added by JG
 void getResolution(const char *s, int *resol, int *TOP);
 McuAdcPinInfo *AdcPinInfo(int pin);
 McuAdcPinInfo *AdcPinInfoForName(char *name);
@@ -684,8 +707,8 @@ bool GetSingleBit(char *name);
 void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(const char *name);
 SWORD GetAdcShadow(const NameArray& name);
-void DestroyUartSimulationWindow();
-void ShowUartSimulationWindow();
+void DestroySimulationWindow(HWND SimulationWindow);        ///// Prototype modified by JG
+void ShowSimulationWindow(int sim);                         ///// Prototype modified by JG
 extern bool InSimulationMode;
 //extern bool SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
@@ -708,7 +731,7 @@ typedef  struct VariablesListTag {
     char    name[MAX_NAME_LEN];
     DWORD   addrl;
     int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
-    int     SizeOfVar;  // SizeOfVar can be less then Allocated
+    int     SizeOfVar;  // SizeOfVar can be less than Allocated
     // ^^^ from compilecommon.cpp
     int     type;       // see PlcProgramSingleIo
     // vvv from simulate.cpp
@@ -922,6 +945,7 @@ int UsedROM();
 int McuPWM();
 int McuADC();
 int McuSPI();
+int McuI2C();           ///// Added by JG
 int McuUART();
 extern DWORD RamSection;
 extern DWORD RomSection;
@@ -944,6 +968,8 @@ int MemOfVar(const char *name, DWORD *addr);
 int MemOfVar(const NameArray& name, DWORD *addr);
 uint8_t MuxForAdcVariable(const char *name);
 uint8_t MuxForAdcVariable(const NameArray& name);
+int PinsForSpiVariable(const char *name, int n, char *spipins);             ///// Added by JG
+int PinsForI2cVariable(const char *name, int n, char *i2cpins);             ///// Added by JG
 int SingleBitAssigned(const char *name);
 int GetAssignedType(const char *name, const char *fullName);
 int InputRegIndex(DWORD addr);
@@ -961,8 +987,9 @@ int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
 void SaveVarListToFile(FILE *f);
 bool LoadVarListFromFile(FILE *f);
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError);
+//void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
+void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput);                     ///// Added by JG
+void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool raiseError);    ///// Modified by JG BYTE -> WORD
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow();
 double SIprefix(double val, char *prefix, int en_1_2);
@@ -996,6 +1023,7 @@ bool UartFunctionUsed();
 bool UartRecvUsed();
 bool UartSendUsed();
 bool SpiFunctionUsed();
+bool I2cFunctionUsed();                 ///// Added by JG
 bool Bin32BcdRoutineUsed();
 SDWORD CheckMakeNumber(const char *str);
 SDWORD CheckMakeNumber(const NameArray& str);
@@ -1024,6 +1052,7 @@ void CompileAvr(const char* outFile);
 // ansic.cpp
 extern int compile_MNU;
 bool CompileAnsiC(const char *outFile, int MNU);
+int AVR_Prediv(const char * name2, const char * name3, const char * name4);     ///// Added by JG
 // interpreted.cpp
 void CompileInterpreted(const char* outFile);
 // xinterpreted.cpp
@@ -1041,5 +1070,8 @@ void FillPcPinInfo(McuIoPinInfo *pinInfo);
 
 // translit.cpp
 void Transliterate(char *dest, const char* str);
+
+// exceptions
+void abortHandler(int signum);      ///// Added by JG
 
 #endif

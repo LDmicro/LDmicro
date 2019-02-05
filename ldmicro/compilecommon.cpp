@@ -59,6 +59,8 @@ static int   NextBitwiseAllocBit;
 static int   MemOffset;
 DWORD        RamSection;
 
+int CompileFailure= 0;      ///// added by JG
+
 //-----------------------------------------------------------------------------
 static LabelAddr LabelAddrArr[MAX_RUNGS];
 static int LabelAddrCount = 0;
@@ -122,6 +124,16 @@ int McuSPI()
 
     return Prog.mcu()->spiCount;
 }
+
+///// Added by JG
+int McuI2C()
+{
+    if(!Prog.mcu())
+        return 0;
+
+    return Prog.mcu()->i2cCount;
+}
+/////
 
 int McuUART()
 {
@@ -490,6 +502,127 @@ uint8_t MuxForAdcVariable(const NameArray &name)
 {
     return MuxForAdcVariable(name.c_str());
 }
+
+
+//-----------------------------------------------------------------------------
+// Added by JG to force SPI pins assignment
+//-----------------------------------------------------------------------------
+int PinsForSpiVariable(const char *name, int n, char *spipins)
+{
+    int res = 0, port= 0;
+    int i, j;
+
+    if(!Prog.mcu()) return 0;
+    if(!spipins) return 0;
+
+    for(i = 0; i < Prog.io.count; i++)
+    {
+        if(strncmp(Prog.io.assignment[i].name, name, n) == 0)
+        {
+            if (Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI)
+            {
+                for(j = 0; j < Prog.mcu()->spiCount; j++)
+                    if((strcmp(Prog.mcu()->spiInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->spiInfo[j].MOSI == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        port= iop->port;                        // all SPI pins supposed on same port
+                        spipins[0]= iop->bit;
+                        res++; break;
+                    }
+            }
+            if (Prog.io.assignment[i].type == IO_TYPE_SPI_MISO)
+            {
+                for(j = 0; j < Prog.mcu()->spiCount; j++)
+                    if((strcmp(Prog.mcu()->spiInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->spiInfo[j].MISO == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        spipins[1]= iop->bit;
+                        res++; break;
+                    }
+            }
+            if (Prog.io.assignment[i].type == IO_TYPE_SPI_SCK)
+            {
+                for(j = 0; j < Prog.mcu()->spiCount; j++)
+                    if((strcmp(Prog.mcu()->spiInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->spiInfo[j].SCK == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        spipins[2]= iop->bit;
+                        res++; break;
+                    }
+            }
+            if (Prog.io.assignment[i].type == IO_TYPE_SPI__SS)
+            {
+                for(j = 0; j < Prog.mcu()->spiCount; j++)
+                    if((strcmp(Prog.mcu()->spiInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->spiInfo[j]._SS == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        spipins[3]= iop->bit;
+                        res++; break;
+                    }
+            }
+        }
+    }
+
+    if(res != 4)
+    {
+        THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for SPI device (name '%s')."), name);
+    }
+    return port;        // spi port
+}
+
+
+//-----------------------------------------------------------------------------
+// Added by JG to force I2C pins assignment
+//-----------------------------------------------------------------------------
+int PinsForI2cVariable(const char *name, int n, char *i2cpins)
+{
+    int res = 0, port= 0;
+    int i, j;
+
+    if(!Prog.mcu()) return 0;
+    if(!i2cpins) return 0;
+
+    for(i = 0; i < Prog.io.count; i++)
+    {
+        if(strncmp(Prog.io.assignment[i].name, name, n) == 0)
+        {
+            if (Prog.io.assignment[i].type == IO_TYPE_I2C_SCL)
+            {
+                for(j = 0; j < Prog.mcu()->i2cCount; j++)
+                    if((strcmp(Prog.mcu()->i2cInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->i2cInfo[j].SCL == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        port= iop->port;                        // all I2C pins supposed on same port
+                        i2cpins[0]= iop->bit;
+                        res++; break;
+                    }
+            }
+            if (Prog.io.assignment[i].type == IO_TYPE_I2C_SDA)
+            {
+                for(j = 0; j < Prog.mcu()->i2cCount; j++)
+                    if((strcmp(Prog.mcu()->i2cInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->i2cInfo[j].SDA == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        i2cpins[1]= iop->bit;
+                        res++; break;
+                    }
+            }
+        }
+    }
+
+    if(res != 2)
+    {
+        THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for I2C device (name '%s')."), name);
+    }
+    return port;        // i2c port
+}
+
 
 //-----------------------------------------------------------------------------
 int byteNeeded(long long int i)
@@ -1043,7 +1176,9 @@ void MemCheckForErrorsPostCompile()
 // outputs, and pack that in 8-bit format as we will need to write to the
 // TRIS or DDR registers. ADC pins are neither inputs nor outputs.
 //-----------------------------------------------------------------------------
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError)
+///// Prototype modified by JG to have 8 / 16 bit ports
+/////   void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError)
+void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool raiseError)
 {
     if(!Prog.mcu())
         Error(_("Invalid MCU"));
@@ -1117,10 +1252,27 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool 
     }
 }
 
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)
+///// Modified by JG to have 8 & 16 bit ports
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)      ///// 8-bit ports
+{
+    WORD isInp[MAX_IO_PORTS], isAns[MAX_IO_PORTS], isOut[MAX_IO_PORTS];
+
+    BuildDirectionRegisters(isInp, isAns, isOut, true);
+
+    int i;
+    for (i= 0 ; i < MAX_IO_PORTS ; i++)
+    {
+        isInput[i]= (BYTE) isInp[i];
+        isAnsel[i]= (BYTE) isAns[i];
+        isOutput[i]= (BYTE) isOut[i];
+    }
+}
+
+void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput)      ///// 16-bit ports
 {
     BuildDirectionRegisters(isInput, isAnsel, isOutput, true);
 }
+/////
 
 //-----------------------------------------------------------------------------
 // Display our boilerplate warning that the baud rate error is too high.

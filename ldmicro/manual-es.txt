@@ -720,6 +720,59 @@ En este ejemplo tenemos dos SEPARATE los generadores de números pseudo-aleatorio
    ||                                                         ||
 
 
+> SPI ENVIAR / RECIBIR          {SPI       SPI}
+                               -{->recv send->}-
+
+En una misma escalera, llamada SPI, o SPI1, SPI2, SPI3 cuando hay varios
+Disponible en el micro. SPI funciona solo en modo maestro, 8 bits de datos, con
+MSB primero, y su frecuencia se establece en el panel de configuración del micro
+en ldmicro. El pin SS se maneja para AVR pero no para ARM. Uno puede usar externo
+pines para activar / desactivar los esclavos en el bus SPI y / o el pin SS.
+En un SPI, el envío y la recepción son simultáneos, es por eso que ambas operaciones
+Se combinan en una sola función.
+
+
+> SPI ESCRIBE                   {SPI_WR     SPI}
+                               -{   "Message"->}-
+
+La función de escritura SPI envía una cadena a través de SPI, sin importar los datos entrantes.
+La cadena puede contener caracteres especiales introducidos por \\. No abusar de esto
+Función, porque SPI puede ralentizar el programa y generar un ciclo de tiempo.
+cuestiones !
+
+NÓTESE BIEN:
+Las funciones SPI utilizan bibliotecas C externas (suministradas) que deben compilarse
+con el programa principal de C generado por ldmicro al compilar a través de los menús de ldmicro
+<Compile Atmel AVR-GCC> o <Compile ARM-GCC>, seguido de un <FlashMCU>
+comando para construir el ejecutable .hex y, si está bien configurado, cargar esto
+ejecutable en el objetivo AVR o ARM.
+
+
+> I2C LEER                      {I2C_RD    I2C}
+                               -{->recv 0x20 0}-
+
+Las funciones I2C solo están disponibles en modo 'C', es decir, mediante compilación de C,
+Para ARM de 32 bits, AVR de tipo AtMega y PIC16. Solo se puede utilizar un bus I2C
+en una misma escalera, llamada I2C, o I2C1, I2C2, I2C3 cuando hay varios
+Disponible en el micro. I2C solo funciona en modo maestro y puede acceder a cualquier
+registro (basado en 0) en cualquier dirección (1-127) en el bus I2C.
+La frecuencia I2C se configura en el panel de configuración del micro.
+La función I2C READ lee un byte en un registro en el esclavo en la dirección dada.
+
+
+> I2C ESCRIBIR                  {I2C_WR    I2C}
+                               -{0x20 0 send->}-
+
+La función de ESCRIBIR I2C escribe un byte en un registro en el esclavo en la dirección dada.
+
+NÓTESE BIEN:
+Las funciones I2C utilizan bibliotecas C externas (proporcionadas) que se deben compilar
+con el programa principal de C generado por ldmicro al compilar a través de los menús de ldmicro
+<Compile Atmel AVR-GCC> o <Compile ARM-GCC>, seguido de un <FlashMCU>
+comando para construir el ejecutable .hex y, si está bien configurado, cargar esto
+ejecutable en el objetivo AVR o ARM.
+
+
 UNA NOTA PARA EL USO DE FUNCIONES MATEMATICAS
 =============================================
 
