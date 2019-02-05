@@ -1421,7 +1421,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     // end of file record
     fprintf(f, ":00000001FF\n");
     if((Prog.mcu->flashWords) && (AvrProg.size() >= Prog.mcu->flashWords)) {
-        Error(_(" Flash program memory size %d exceeds limit by %d words\nfor %s."),
+        Error(_(" Flash program memory size %d is exceed limit %d words\nfor %s."),
               AvrProg.size(),
               Prog.mcu->flashWords,
               Prog.mcu->mcuName);

@@ -7,62 +7,8 @@
 "!!!too long!!!"
 "!!!trop long!!"
 
-"&About..."
-"&A propos..."
-
-"&Compile"
-"&Compilation"
-
-"&Compile\tF5"
-"&Compiler\tF5"
-
-"&Delete Selected Element\tDel"
-"&Effacer l'élement sélectionné\tSuppr"
-
-"&Edit"
-"&Edition"
-
-"&Export As Text...\tCtrl+E"
-"&Exporter en texte...\tCtrl+E"
-
 "&File"
 "&Fichier"
-
-"&Halt Simulation\tCtrl+H"
-"&Arrêter la simulation\tCtrl+H"
-
-"&Help"
-"&Aide"
-
-"&Insert Clear Bit In SFR"
-"&Insert Clear Bit In SFR"
-
-"&Insert Read From SFR"
-"&Insert Read From SFR"
-
-"&Insert Set Bit In SFR"
-"&Insert Set Bit In SFR"
-
-"&Insert Test If Bit Clear in SFR"
-"&Insert Test If Bit Clear in SFR"
-
-"&Insert Test If Bit Set in SFR"
-"&Insert Test If Bit Set in SFR"
-
-"&Insert Write To SFR"
-"&Insert Write To SFR"
-
-"&Instruction"
-"&Instruction"
-
-"&MCU Parameters..."
-"&Paramètres MCU..."
-
-"&Manual...\tF1"
-"&Manuel...\tF1"
-
-"&Microcontroller"
-"&Microcontrolleur"
 
 "&New\tCtrl+N"
 "&Nouveau\tCtrl+N"
@@ -70,20 +16,653 @@
 "&Open...\tCtrl+O"
 "&Ouvrir...\tCtrl+O"
 
-"&Redo\tCtrl+Y"
-"&Refaire\tCtrl+Y"
+"Open ld in notepad\tF4"
+"Ouvrir ld dans notepad\tF4"
 
-"&Save\tCtrl+S"
-"&Sauvegarder\tCtrl+S"
+"Open hex in notepad\tAlt+F6"
+"Ouvrir hex dans notepad\tAlt+F6"
+
+"Open asm in notepad\tAlt+F3"
+"Ouvrir asm dans notepad\tAlt+F3"
+
+"Open c in notepad"
+"Ouvrir c dans notepad"
+
+"Open pas in notepad"
+"Ouvrir pas dans notepad"
+
+"Open ino in notepad"
+"Ouvrir ino dans notepad"
+
+"Open pl in notepad\tAlt+F5"
+"Ouvrir pl dans notepad\tAlt+F5"
+
+"Open Text in notepad\tF3"
+"Ouvrir txt dans notepad\tF3"
+
+"Explore ld directory"
+"Ouvrir le dossier ld"
+
+"&Save\tCtrl+S or F2"
+"&Sauvegarder\tCtrl+S ou F2"
+
+"Save &As..."
+"S&auvegarder sous..."
+
+"Save LDmicro0.1 file format v2.3 compatible"
+"Sauvegarder au format LDmicro 0.1 pour v2.3"
+
+"Save LDmicro0.2 file format"
+"Sauvegarder au format LDmicro 0.2"
+
+"Export As Text"
+"Exporter en texte"
+
+"E&xit\tAlt+X"
+"&Quitter\tAlt+X"
+
+"&Edit"
+"&Edition"
+
+"&Undo\tCtrl+Z or Alt+Backspace"
+"Annuler\tCtrl+Z ou Alt+Backspace"
+
+"&Redo\tCtrl+Y or Alt+Shift+Backspace"
+"&Refaire\tCtrl+Y ou Alt+Shift+Backspace"
+
+"Insert Rung &After\tShift+V"
+"Insérer ligne au-dessous\tShift+V"
+
+"Insert Rung &Before\tShift+6"
+"Insérer ligne au-dessus\tShift+6"
+
+"Move Selected Rung &Down\tAlt+Down"
+"Déplacer la ligne sélectionnée au dessous\tAlt+Down"
+
+"Move Selected Rung &Up\tAlt+Up"
+"Déplacer la ligne sélectionnée au dessus\tAlt+Up"
+
+"Dup&licate Selected Rung\tCtrl+D"
+"Dupliquer la ligne sélectionnée\tCtrl+D"
+
+"Duplicate Selected Rung\tCtrl+D"
+"Dupliquer la ligne sélectionnée\tCtrl+D"
+
+"Select Rungs\tShift+Up or Shift+Down"
+"Sélectionner les lignes\tShift+Up ou Shift+Down"
+
+"Select Rungs\tCtrl+Left Mouse Button Click"
+"Sélectionner les lignes\tCtrl+Left Mouse Button Click"
+
+"Cu&t Rungs\tCtrl+X or Shift+Del"
+"Couper les lignes\tCtrl+X ou Shift+Del"
+
+"&Copy Rungs\tCtrl+C or Ctrl+Insert"
+"Copier les lignes\tCtrl+C ou Ctrl+Insert"
+
+"Copy Selected Element\tInsert"
+"Copier l'élément sélectionné\tInsert"
+
+"Paste Rungs\tCtrl+V or Shift+Insert"
+"Coller les lignes\tCtrl+V ou Shift+Insert"
+
+"Paste Rungs or Element &Into Rung\tAlt+Insert"
+"Coller la ligne ou l’élément\tAlt+Insert"
+
+"Cut Selected Element\tAlt+Del"
+"Couper l’élément sélectionné\tAlt+Del"
+
+"&Delete Selected Element\tDel"
+"&Effacer l'élément sélectionné\tDel"
+
+"D&elete Rung\tShift+Del"
+"Supprimer la ligne\tShift+Del"
+
+"Replace Selected Element in Group\tSpace"
+"Remplacer l’élément sélectionné dans le groupe\tEspace"
+
+"Scroll Up\tCtrl+Up"
+"Scroller vers le haut\tCtrl+Up"
+
+"Scroll Down\tCtrl+Down"
+"Scroller vers le bas\tCtrl+Down"
+
+"Scroll PgUp\tCtrl+PgUp"
+"Scroller page vers le haut\tCtrl+PgUp"
+
+"Scroll PgDown\tCtrl+PgDown"
+"Scroller page vers le bas\tCtrl+PgDown"
+
+"Roll Home\tCtrl+Home"
+"Aller au début\tCtrl+Home"
+
+"Roll End\tCtrl+End"
+"Aller à la fin\tCtrl+End"
+
+"Moving cursor between the main window and the I/O list\tTab"
+"Déplacer le curseur entre fenêtre principale et liste E/S\tTab"
+
+"&MCU Parameters...\tCtrl+F5"
+"&Paramètres MCU...\tCtrl+F5"
+
+"&Microcontroller"
+"&Microcontrôleur"
+
+"Insert Co&mment\t;"
+"Insérer commentaire\t;"
+
+"Operations that change the course of the program"
+"Opérations modifiant le cours du programme"
+
+"Insert -+        +- Open-Circuit\tShift+Enter"
+"Insérer circuit ouvert -+        +- \tShift+Enter "
+
+"Insert -+------+- Short-Circuit\tCtrl+Enter"
+"Insérer court circuit -+------+- \tCtrl+Enter"
+
+"Insert Master Control Relay"
+"Insérer relais de contrôle maître"
+
+"Insert LABEL declaration"
+"Insérer un LABEL (étiquette de saut)"
+
+"Insert GOTO Label or Rung"
+"Insérer GOTO (saut) vers un Label ou une ligne"
+
+"Insert SUBPROG declaration"
+"Déclarer début de sous-programme SUBPROG"
+
+"Insert RETURN"
+"Insérer terminaison de sous-programme RETURN"
+
+"Insert GOSUB call"
+"Insérer appel de sous-programme GOSUB"
+
+"Insert ENDSUB declaration"
+"Déclarer fin de sous-programme ENDSUB "
+
+"Insert SLEEP"
+"Insérer une pause SLEEP"
+
+"Insert CLRWDT"
+"Insérer réinitialisation du Watchdog"
+
+"Insert LOCK"
+"Insérer un verrou LOCK"
+
+"Insert DELAY(us)"
+"Insérer une pause DELAY(us)"
+
+"Insert TIME to DELAY converter"
+"Insérer convertisseur TIME / DELAY"
+
+"Contacts"
+"Contacts "
+
+"Insert Contacts: Input Pin\tC"
+"Insérer &Contact : Broche d’entrée\tC"
+
+"Insert Contacts: Internal Relay\tShift+C"
+"Insérer Contact : Relai interne\tShift+C"
+
+"Insert Contacts: Output Pin\tShift+L"
+"Insérer Contact : Broche de sortie\tShift+L"
+
+"Coils / Relays"
+"Bobines / Relais"
+
+"Insert Coil: Output Pin\tL"
+"Insérer Bobine : Broche de sortie\tL"
+
+"Insert Coil: Internal Relay\tAlt+L"
+"Insérer Bobine : Relai interne\tAlt+L"
+
+"Make Norm&al\tA"
+"Rendre &Normal\tA"
+
+"Make &Negated\tN"
+"Inverser\tN"
+
+"Make &Set-Only\tS"
+"Activer uniquement\tS"
+
+"Make &Reset-Only\tR"
+"Faire RAZ uniquement\tR"
+
+"Make T-trigger"
+"Mettre en T-trigger"
+
+"Edge"
+"Fronts montants / descendants"
+
+"Insert _/OSR/\\_ (One Shot Rising)\t&/"
+"Insérer _/OSR/\\_ (Front montant)\t&/"
+
+"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
+"Insérer \\_OSF/\\_ (Front descendant)\t&\\"
+
+"Insert \\_OSL\\/ (One Shot Low)"
+"Insérer \\_OSL\\/ (Niveau bas)"
+
+"Insert _/OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"
+"Insérer _/OSC/\\_/\\_ (Oscillateur F=1/(2*Tcycle))"
+
+"Pulse generators"
+"Générateurs d’impulsions"
+
+"EDIT: Insert N PULSE"
+"Insérer N Pulse"
+
+"EDIT: Insert PULSER"
+"Insérer Pulser"
+
+"EDIT: Insert STEPPER"
+"Insérer Stepper"
+
+"EDIT: Insert N PULSE OFF"
+"Insérer N Pulse Off"
+
+"Temporization"
+"Temporisations"
+
+"Insert T&ON (Delayed Turn On)\tO"
+"Insérer T&ON (Tempo de travail)\tO"
+
+"Insert TO&F (Delayed Turn Off)\tF"
+"Insérer TO&F (Tempo de repos)\tF"
+
+"Insert R&TO (Retentive Delayed Turn On)\tT"
+"Insérer R&TO (Tempo totalisatrice)\tT"
+
+"Insert RTL (Retentive Delayed Turn On If Low Input)"
+"Insérer RTL (Tempo totalisatrice sur entrée basse)"
+
+"Insert TCY (Cyclic On/Off)"
+"Insérer TCY (Tempo cyclique On/Off)"
+
+"Insert THI (High Delay)"
+"Insérer THI (Tempo niveau haut)"
+
+"Insert TLO (Low Delay)"
+"Insérer TLO (Tempo niveau bas)"
+
+"Insert TIME to COUNTER converter"
+"Insérer convertisseur TIME / COUNTER"
+
+"Counter"
+"Compteur"
+
+"Insert CT&U (Count Up)\tU"
+"Insérer CT&U (Compteur ascendant)\tU"
+
+"Insert CT&D (Count Down)\tI"
+"Insérer CT&D (Compteur descendant)\tI"
+
+"Insert CT&C (Count Circular)\tJ"
+"Insérer CT&C (Compteur circulaire)\tJ"
+
+"Insert CT&R (Count Circular Reversive)\tK"
+"Insérer CT&R (Compteur circulaire à rebours)\tK"
+
+"Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"
+"Insérer R&ES (Remise à zéro RTO/RTL/PWM)\tE"
+
+"Compare variable"
+"Tests de comparaison"
+
+"Insert EQU (Compare for Equals)\t="
+"Insérer EQU (Test d’égalité)\t="
+
+"Insert NEQ (Compare for Not Equals)\t!"
+"Insérer NEQ (Test de non égalité)\t!"
+
+"Insert GRT (Compare for Greater Than)\t>"
+"Insérer GRT (Test supérieur strict)\t>"
+
+"Insert GEQ (Compare for Greater Than or Equal)\t."
+"Insérer GEQ (Test supérieur ou égal)\t."
+
+"Insert LES (Compare for Less Than)\t<"
+"Insérer LES (Test inférieur strict)\t<"
+
+"Insert LEQ (Compare for Less Than or Equal)\t,"
+"Insérer LEQ (Test inférieur ou égal)\t,"
+
+"Insert Test If Bit Set"
+"Insérer Test Bit à 1"
+
+"Insert Test If Bit Clear"
+"Insérer Test Bit à 0"
+
+"Signed variable operations"
+"Opérations sur variables signées"
+
+"Insert MOV (Move)\tM"
+"Insérer MOV (Mouvoir)\tM"
+
+"Insert ADD (16-bit Integer Add)\t+"
+"Insérer ADD (Addition entiers 16-bit)\t+"
+
+"Insert SUB (16-bit Integer Subtract)\t-"
+"Insérer SUB (Soustraction entiers 16-bit)\t-"
+
+"Insert MUL (16-bit Integer Multiply)\t*"
+"Insérer MUL (Multiplication entiers 16-bit)\t*"
+
+"Insert DIV (16-bit Integer Divide)\tD"
+"Insérer DIV (Division entiers 16-bit)\tD"
+
+"Insert MOD (Integer Divide Remainder)"
+"Insérer MOD (Reste division entière 16-bit)"
+
+"Insert NEG (Integer Negate)"
+"Insérer NEG (opposé)"
+
+"Insert Random"
+"Insérer Nombre aléatoire"
+
+"Insert Seed of Random"
+"Initialiser le générateur de nombres aléatoires"
+
+"Bitwise variable operations (Unsigned)"
+"Opérations binaires sur variables non signées"
+
+"Insert bitwise AND"
+"Insérer AND binaire"
+
+"Insert bitwise OR     |"
+"Insérer OR binaire"
+
+"Insert bitwise XOR  ^"
+"Insérer XOR binaire"
+
+"Insert bitwise NOT  ~"
+"Insérer NOT binaire (négation)"
+
+"Insert SHL << arithmetic, logic shift to the left"
+"Insérer SHL << (décalage de bits à gauche)"
+
+"Insert SHR >> arithmetic shift to the right"
+"Insérer SHR >> (décalage de bits à droite)"
+
+"Insert SR0 >> logic shift to the right"
+"Insérer SR0 >> (décalage à droite)"
+
+"Insert ROL cyclic shift to the left"
+"Insérer ROL (rotation de bits à gauche)"
+
+"Insert ROR cyclic shift to the right"
+"Insérer ROR (rotation de bits à droite)"
+
+"Insert SWAP"
+"Insérer SWAP (permutation des bits)"
+
+"Insert OPPOSITE"
+"Insérer OPPOSITE"
+
+"Insert Set Bit #"
+"Forcer Bit # à 1"
+
+"Insert Clear Bit #"
+"Forcer Bit # à 0"
+
+"Insert Shift Register"
+"Insérer registre à décalage"
+
+"Insert Look-Up Table"
+"Insérer tableau indexé"
+
+"Insert Piecewise Linear"
+"Insérer tableau d'interpolation linéaire"
+
+"UART functions"
+"Fonctions UART"
+
+"Insert Formatted String Over &UART"
+"Insérer chaîne formatée pour l'UART"
+
+"Insert UART Send"
+"Insérer émission UART"
+
+"Insert UART Receive"
+"Insérer réception UART"
+
+"Insert Test if UART ready to send"
+"Insérer test UART prête à émettre ?"
+
+"Insert Test if UART data available"
+"Insérer test donnée reçue sur UART ?"
+
+"SPI functions"
+"Fonctions SPI"
+
+"Insert SPI Send/Receive"
+"Insérer émission/réception SPI"
+
+"Insert SPI Write"
+"Insérer écriture SPI"
+
+"I2C functions"
+"Fonctions I2C"
+
+"Insert I2C Read"
+"Insérer réception I2C"
+
+"Insert I2C Write"
+"Insérer émission I2C"
+
+"Insert Set &PWM Output\tP"
+"Insérer réglage sortie PWM\tP"
+
+"Insert A/D Converter Read"
+"Insérer lecture convertisseur A/&D"
+
+"Insert Make Persistent"
+"Insérer rendre persistant en EEPROM"
+
+"Insert QUADRATURE ENCODER"
+"Insérer codeur incrémental (quadrature)"
+
+"Displays"
+"Afficheurs"
+
+"Insert BIN2BCD converter"
+"Convertisseur BIN2BCD"
+
+"Insert BCD2BIN converter"
+"Convertisseur BCD2BIN"
+
+"SIMUL: Insert BUS tracer"
+"Traceur BUS (Simulation)"
+
+"Insert 7-SEGMENT FONT converter"
+"Convertisseur de fonte 7 segments"
+
+"SIMUL: Insert 9-SEGMENT FONT converter"
+"Convertisseur de fonte 9 segments (simulation)"
+
+"SIMUL: Insert 14-SEGMENT FONT converter"
+"Convertisseur de fonte 14 segments (simulation)"
+
+"SIMUL: Insert 16-SEGMENT FONT converter"
+"Convertisseur de fonte 16 segments (simulation)"
+
+"Special Function for AVR (Obsolete)"
+"Fonctions Spéciales pour AVR (Obsolètes)"
+
+"Replace the obsolete elements"
+"Remplacer les éléments obsolètes"
+
+"Insert Read From SFR"
+"Insérer Read depuis SFR (AVR)"
+
+"Insert Write To SFR"
+"Insérer Write dans SFR (AVR)"
+
+"Insert Set Bit In SFR"
+"Mettre Bit à 1 dans SFR (AVR)"
+
+"Insert Clear Bit In SFR"
+"Mettre Bit à 0 dans SFR (AVR)"
+
+"Insert Test If Bit Set in SFR"
+"Insérer Test Bit à 1 dans SFR (AVR)"
+
+"Insert Test If Bit Clear in SFR"
+"Insérer Test Bit à 0 dans SFR (AVR)"
+
+"Si&mulate"
+"Si&mulation"
+
+"Si&mulation Mode\tCtrl+M or F7"
+"Mode si&mulation\tCtrl+M ou F7"
+
+"Start &Real-Time Simulation\tCtrl+R or F8"
+"Commencer la simulation temps &réel\tCtrl+R ou F8"
+
+"&Halt Simulation\tCtrl+H or F9"
+"&Arrêter la simulation\tCtrl+H ou F9"
+
+"Single &Cycle\tSpace"
+"Faire un &Cycle unique\tEspace"
+
+"&Compile"
+"&Compilation"
+
+"&Compile\tF5"
+"&Compiler\tF5"
+
+"Compile HEX"
+"Compiler HEX"
+
+"Compile HEX->ASM"
+"Compiler Hex + Asm"
+
+"Compile ANSIC"
+"Compiler en Ansi C"
+
+"Compile HI-TECH C for PIC"
+"Compiler en Hi-Tech C pour PIC"
+
+"Compile CCS C for PIC"
+"Compiler en Ccs C pour PIC"
+
+"Compile Atmel WinAVR C"
+"Compiler en WinAvr C pour Atmel AVR"
+
+"Compile Atmel AVR-GCC"
+"Compiler en AVR-GCC pour Atmel AVR"
+
+"Compile ARM-GCC for 32-bit ARM"
+"Compiler en ARM-GCC pour ARM 32 bits"
+
+"Compile CodeVisionAVR C"
+"Compiler en CodeVisionAVR C pour Atmel AVR"
+
+"Compile Sketch for ARDUINO"
+"Compiler en C pour Arduino"
+
+"Compile PASCAL"
+"Compiler en Pascal"
+
+"Compile Interpretable Byte Code"
+"Compiler en Bytecode"
+
+"Compile Interpretable Extended Byte Code"
+"Compiler en Bytecode étendu"
+
+"Call flashMcu.bat\tF6"
+"Lancer flashMCU.bat\tF6"
+
+"Call readMcu.bat\tCtrl+F6"
+"Lancer readMCU.bat\tCtrl+F6"
+
+"Call clear.bat"
+"Lancer clear.bat"
+
+"Config"
+"Configuration"
+
+"Select color scheme"
+"Choix des couleurs"
+
+"Select user colors"
+"Personnalisation des couleurs"
+
+"Original black color scheme\tJonathan"
+"Thème original noir\tJonathan"
+
+"Modified black color scheme\tIhor"
+"Thème modifié noir\tIhor"
+
+"White color scheme\tIhor"
+"Thème blanc\tIhor"
+
+"White color scheme\tMark"
+"Thème blanc\tMark"
+
+"System Colors GetSysColor() in color scheme\tWindows"
+"Thème GetSysColor() \tWindows"
+
+"User redefined color scheme\tYou"
+"Thème utilisateur\tVous"
+
+"&Help"
+"&Aide"
+
+"&Manual...\tF1"
+"&Manuel...\tF1"
+
+"HOW TO:..."
+"Aide en ligne..."
+
+"&About..."
+"&A propos..."
+
+"Releases..."
+"Nouvelles versions en ligne..."
+
+"Latest release changes..."
+"Nouvelles fonctionnalités en ligne..."
+
+"LDmicro Forum..."
+"Forum LDmicro en ligne..."
+
+"Create new issue..."
+"Signaler une erreur en ligne..."
+
+"E-mail..."
+"Envoyer un mail..."
+
+"&Export As Text...\tCtrl+E"
+"&Exporter en texte...\tCtrl+E"
+
+"&Insert Clear Bit In SFR"
+"Mettre Bit à 0 dans SFR (PIC)"
+
+"&Insert Read From SFR"
+"Insérer Read depuis SFR (PIC)"
+
+"&Insert Set Bit In SFR"
+"Mettre Bit à 1 dans SFR (PIC)"
+
+"&Insert Test If Bit Clear in SFR"
+"Insérer Test Bit à 0 dans SFR (PIC)"
+
+"&Insert Test If Bit Set in SFR"
+"Insérer Test Bit à 1 dans SFR (PIC)"
+
+"&Insert Write To SFR"
+"Insérer Write dans SFR"
+
+"&Instruction"
+"&Instructions"
 
 "&Settings"
 "&Paramètres"
 
 "&Special Function"
-"&Special Function"
-
-"&Undo\tCtrl+Z or Alt+Backspace"
-"Annuler\tCtrl+Z or Alt+Backspace"
+"Fonctions Spéciales"
 
 "'Closed' if:"
 "'Fermé' si:"
@@ -101,7 +680,7 @@
 "(S) Activer"
 
 "(no microcontroller)"
-"(pas de microcontrolleur)"
+"(Pas de microcontrôleur)"
 
 "(no pin)"
 "(Aucune broche)"
@@ -125,13 +704,13 @@
 "<Pas de PWM!>"
 
 "<no UART!>"
-"<Pas UART!>"
+"<Pas d’UART!>"
 
 "<not an I/O!>"
 "<Pas une E/S!>"
 
 "ANSI C target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
-"La sortie en code ANSI C ne supporte pas les périphériques (UART, ADC, EEPROM). Ne pas utiliser ces instructions."
+"La sortie en code ANSI C ne supporte pas les périphériques (UART, PWM, ADC, EEPROM). Instruction ignorée."
 
 "Add"
 "Addition"
@@ -149,13 +728,13 @@
 "Utilisation incorrecte des guillemets: <%s>"
 
 "Can only assign pin number to input/output pins (Xname or Yname or Aname)."
-"Vous pouvez uniquement affecter les broches Entrées/Sorties (XName , YName ou AName)."
+"Vous pouvez uniquement affecter les broches Entrées/Sorties (XName, YName ou AName)."
 
 "Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code."
 "Ne pas spécifier les E/S pour code en ANSI C; Compiler et voir les commentaires dans le code source généré."
 
 "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."
-"Ne pas spécifier les E/S pour sortie en code interprété; Voir les commentaires pour l'implémentation de l'interpréteur ."
+"Ne pas spécifier les E/S pour sortie en code interprété; Voir les commentaires pour l'implémentation de l'interpréteur."
 
 "Cancel"
 "Annuler"
@@ -167,7 +746,7 @@
 "Compteur cyclique"
 
 "Clear Bit In SFR"
-"Clear Bit In SFR"
+"Effacer Bit dans SFR"
 
 "Coil"
 "Bobine"
@@ -185,7 +764,7 @@
 "Compiler sous"
 
 "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this."
-"Compilé avec succès; Le code source C enregistré sous '%s'.\r\n\r\nCe programme n'est pas complet. Vous devez prévoir le runtime ainsi que toutes les routines d'entrées/sorties. Voir les commentaires pour connaitre la façon de procéder."
+"Compilé avec succès; Le code source C enregistré sous '%s'.\r\n\r\nCe programme n'est pas complet. Vous devez prévoir le runtime ainsi que toutes les routines d'entrées/sorties. Voir les commentaires pour connaître la façon de procéder."
 
 "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."
 "Compilé avec succès. Ecriture du fichier IHEX pour AVR sous '%s'.\r\n\r\nVous devez configurer manuellement les Bits de configuration (fusibles). Ceci n'est pas accompli automatiquement."
@@ -194,7 +773,7 @@
 "Compilé avec succès; Ecriture IHEX pour PIC16 sous '%s'.\r\n\r\nLes bits de configuration (fuse) : Oscillateur quartz, BOD activé, LVP déactivé, PWRT activé, sans code de protection."
 
 "Used %d/%d words of program flash (chip %d%% full)."
-"Utilise %d/%d mots du programme flash (Chip %d%% au total)."
+"Utilise %d/%d mots de la mémoire flash (Chip %d%% au total)."
 
 "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."
 "Compilé avec succès; Code interprété écrit sous '%s'.\r\n\r\nQue vous devez adapter probablement pour votre application. Voir documentation."
@@ -203,7 +782,10 @@
 "Constante %d hors limites: -32768 à 32767 inclus."
 
 "Contacts"
-"Contacts"
+"Contacts "
+
+"Could not open file"
+"Impossible d'ouvrir le fichier"
 
 "Couldn't open '%s'."
 "Impossible d'ouvrir '%s'."
@@ -212,7 +794,7 @@
 "Impossible d'ouvrir '%s'\n"
 
 "Couldn't open file '%s'"
-"Impossible d'ouvrir le fichier '%s'"
+"Impossible d'ouvrir le fichier '%s'."
 
 "Couldn't write to '%s'"
 "Impossible d'écrire sous '%s'."
@@ -227,25 +809,19 @@
 "Compteur"
 
 "Count:"
-"Compteur:"
-
-"Counter"
-"Compteur"
+"Compte:"
 
 "Cycle time too fast; increase cycle time, or use faster crystal."
-"Temps cycle trop court; augmenter le temps de cycle ou utiliser un quartz plus rapide."
+"Temps de cycle trop court; augmenter le temps de cycle ou utiliser un quartz plus rapide."
 
 "Cycle time too slow; decrease cycle time, or use slower crystal."
 "Temps de cycle trop long ; Diminuer le temps de cycle ou la fréquence du quartz ."
-
-"D&elete Rung\tShift+Del"
-"Supprimer la ligne\tShift+Suppr"
 
 "Delay (ms):"
 "Temps (ms):"
 
 "Delay cannot be zero or negative."
-"Tempo ne peut être à ZERO ou NEGATIF."
+"Temps ne peut être à négatif ou nul."
 
 "Delay too long; maximum is 2**31 us."
 "Temps trop long; maximum 2**31 us."
@@ -257,40 +833,46 @@
 "Division"
 
 "Division by zero; halting simulation"
-"Division par zéro; Simulation arrétée"
+"Division par zéro; simulation arrétée"
 
-"Duty cycle var:"
-"Utilisation:"
+"Duty cycle:"
+"Rapport cyclique:"
+
+"Resolution:"
+"Résolution:"
 
 "E&xit"
 "Quitter"
 
 "Edit table of ASCII values like a string"
-"Editer tableau de valeur ASCII comme chaine"
+"Editer le tableau de valeur ASCII comme chaîne"
 
 "Empty row; delete it or add instructions before compiling."
 "Ligne vide; la supprimer ou ajouter instructions avant compilation."
 
 "Empty textbox; not permitted."
-"Zone de texte vide; interdite"
+"Zone de texte vide interdite"
 
 "Error"
 "Erreur"
 
-"Export As Text"
-"Exporter en texte"
-
 "File format error; perhaps this program is for a newer version of LDmicro?"
-"Erreur format du fichier; ce programme est pour une nouvelle version de LDmicro."
+"Erreur format du fichier; ce programme est pour une nouvelle version de LDmicro?"
+
+"SPI functions used but not supported for this micro or compile mode."
+"Fonctions SPI utilisées mais non supportées par ce micro ou dans ce mode de compilation."
+
+"Must assign pins for SPI device (name '%s')."
+"Vous devez spécifier les broches pour le périphérique SPI (nom '%s')."
 
 "Formatted String Over UART"
 "Chaine formatée pour l'UART"
 
 "Frequency (Hz):"
-"Frequence (Hz):"
+"Fréquence (Hz):"
 
 "I/O Pin Assignment"
-"Affectation broches E/S"
+"Affectation des broches E/S"
 
 "I/O Pin"
 "Broches E/S"
@@ -299,22 +881,22 @@
 "INT input"
 
 "If Equals"
-"Si EGAL"
+"Si Egal"
 
 "If Greater Than or Equal To"
-"Si plus grand ou égal à"
+"Si Supérieur ou égal à"
 
 "If Greater Than"
-"Si plus grand que"
+"Si Plus grand que"
 
 "If Less Than or Equal To"
-"Si plus petit ou égal à"
+"Si Inférieur ou égal à"
 
 "If Less Than"
-"Si plus petit que"
+"Si Plus petit que"
 
 "If Not Equals"
-"Si non EGAL à"
+"Si Non Egal à"
 
 "Index:"
 "Index:"
@@ -322,182 +904,68 @@
 "Input pin"
 "Entrée"
 
-"Insert &Contacts\tC"
-"Insérer &contact\tC"
-
-"Insert &UART Receive"
-"Insérer réception &UART"
-
-"Insert &UART Send"
-"Insérer émission &UART"
-
-"Insert -+        +- Open-Circuit"
-"Insérer -+        +- circuit ouvert"
-
-"Insert -+------+- Short-Circuit"
-"Insérer -+------+- court circuit"
-
-"Insert A/D Converter Read\tP"
-"Insérer lecture convertisseur A/D\tP"
-
-"Insert ADD (16-bit Integer Add)\t+"
-"Insérer ADD (Addition entier 16-bit)\t+"
-
 "Insert CT&C (Count Circular)\tJ"
-"Insérer CT&C (Compteur cyclique)\tJ"
+"Insérer CT&C (Compteur circulaire)\tJ"
 
 "Insert CT&D (Count Down)\tI"
-"Insérer CT&D (Décompteur)\tI"
+"Insérer CT&D (Compteur descendant)\tI"
 
 "Insert CT&U (Count Up)\tU"
-"Insérer CT&U (Compteur)\tU"
-
-"Insert Co&mment\t;"
-"Insérer commentaire\t;"
+"Insérer CT&U (Compteur ascendant)\tU"
 
 "Insert Coi&l\tL"
 "Insérer bobine re&lais \tL"
-
-"Insert DIV (16-bit Integer Divide)\tD"
-"Insérer DIV (Division entier 16-bit)\tD"
-
-"Insert EQU (Compare for Equals)\t="
-"Insérer EQU (Compare pour égalité)\t="
-
-"Insert Formatted String Over UART"
-"Insérer chaine formattée pour l'UART"
-
-"Insert GEQ (Compare for Greater Than or Equal)\t."
-"Insérer GEQ (Compare plus grand ou égal à)\t."
-
-"Insert GRT (Compare for Greater Than)\t>"
-"Insérer GRT (Compare plus grand que)\t>"
-
-"Insert LEQ (Compare for Less Than or Equal)\t,"
-"Insérer LEQ (Compare plus petit ou égal à)\t,"
-
-"Insert LES (Compare for Less Than)\t<"
-"Insérer LES (Compare plus petit que)\t<"
-
-"Insert Look-Up Table"
-"Insérer tableau indexé"
-
-"Insert MOV (Move)\tM"
-"Insérer MOV (Mouvoir)\tM"
-
-"Insert MUL (16-bit Integer Multiply)\t*"
-"Insérer MUL (Multiplication entier 16-bit)\t*"
-
-"Insert Make Persistent"
-"Insérer mettre rémanent"
-
-"Insert Master Control Relay"
-"Insérer relais de contrôle maitre"
-
-"Insert NEQ (Compare for Not Equals)\t!"
-"Insérer NEQ (Compare pour inégalité)\t!"
-
-"Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "
-"Insérer \\_OSF/\\_ (Front descendant)\t&\\"
-
-"Insert _/OSR/\\_ (One Shot Rising)\t&/"
-"Insérer _/OSR/\\_ (Front montant)\t&/"
-
-"Insert Piecewise Linear"
-"Insérer tableau d'éléments linéaires"
-
-"Insert R&ES (Counter/RTO Reset)\tE"
-"Insérer R&ES (Remise à zéro RTO/compteur)\tE"
-
-"Insert R&TO (Retentive Delayed Turn On)\tT"
-"Insérer R&TO (Tempo totalisatrice)\tT"
-
-"Insert Rung &After\tShift+V"
-"Insérer ligne &après\tShift+V"
-
-"Insert Rung &Before\tShift+6"
-"Insérer ligne avant\tShift+6"
-
-"Insert SUB (16-bit Integer Subtract)\t-"
-"Insérer SUB (Soustraction entier 16-bit)\t-"
-
-"Insert Set PWM Output"
-"Insérer fixer sortie PWM"
-
-"Insert Shift Register"
-"Insérer registre à décalage"
-
-"Insert T&ON (Delayed Turn On)\tO"
-"Insérer T&ON (Tempo travail)\tO"
-
-"Insert TO&F (Delayed Turn Off)\tF"
-"Insérer TO&F (Tempo repos)\tF"
 
 "Internal Relay"
 "Relais interne"
 
 "Internal error relating to PIC paging; make program smaller or reshuffle it."
-"Erreur interne dans l'utilisation des pages du PIC; Diminuer le programme ou le remanier"
+"Erreur interne dans l'utilisation des pages du PIC; Réduire le programme ou le remanier"
 
 "Internal limit exceeded (number of vars)"
-"Vous dépassez la limite interne du nombre de variables"
+"Dépassement de la limite interne du nombre de variables"
 
 "Internal relay '%s' never assigned; add its coil somewhere."
-"Relais internes '%s', jamais utilisés, à utiliser pour la commande de bobines dans le programme."
+"Relai interne '%s', jamais utilisé; insérer une bobine associée dans le programme."
 
 "LDmicro - Program Editor"
 "LDmicro – Edition du programme "
 
 "LDmicro - Simulation (Running)"
-"LDmicro - Simulation (en cours)"
+"LDmicro - Simulation (En cours)"
 
 "LDmicro - Simulation (Stopped)"
-"LDmicro - Simulation (Arrétée)"
+"LDmicro - Simulation (Stoppée)"
 
 "LDmicro Error"
 "Erreur LDmicro"
 
 "LDmicro Warning"
-"LDmicro Warning"
+"Warning LDmicro"
 
 "Look-Up Table"
 "Tableau indexé"
 
 "MCU Crystal Frequency (MHz):"
-"Fréquence quartz (MHz):"
+"Fréquence du quartz (MHz):"
 
 "MCU Port"
 "Port du processeur"
 
-"Make &Negated\tN"
-"I&nverser\tN"
-
-"Make &Reset-Only\tR"
-"Faire RAZ uniquement\tR"
-
-"Make &Set-Only\tS"
-"Activer uniquement\tS"
-
-"Make Norm&al\tA"
-"Mettre norm&al\tA"
-
 "Make Persistent"
-"Mettre rémanent"
+"Rendre persitant en EEPROM"
+
+"EEPROM not supported by this target"
+"EEPROM non disponible sur ce micro"
 
 "Math instruction: '%s' not a valid destination."
 "Instruction Math: '%s' n'est pas une destination valide."
 
 "Max value:"
-"Valeur max.:"
+"Valeur maxi:"
 
 "Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."
-"Microcontrolleur '%s' non supporté.\r\n\r\nErreur pas de MCU sélectionné."
-
-"Move Selected Rung &Down\tAlt+Down"
-"Déplacer la ligne sélectionnée au dessous\tAlt+Down"
-
-"Move Selected Rung &Up\tAlt+Up"
-"Déplacer la ligne sélectionnée au dessus\tAlt+Up"
+"Microcontrôleur '%s' non supporté.\r\n\r\nPas de MCU sélectionné."
 
 "Move instruction: '%s' not a valid destination."
 "Instruction 'Mouvoir': '%s' n'est pas une destination valide."
@@ -506,7 +974,7 @@
 "Mouvoir"
 
 "Multiple escapes (\\0-9) present in format string, not allowed."
-"Multiples ESC (\\0-9)présents dans un format chaines non permit."
+"Présence d’ESC Multiples (\\0-9) dans une chaînes de format non permise."
 
 "Multiply"
 "Multiplication"
@@ -515,10 +983,13 @@
 "Vous devez spécifier une broche pour toutes les entrées ADC (nom '%s')."
 
 "Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."
-"Vous devez spécifier les broches pour toutes les E/S.\r\n\r\n'%s' ."
+"Vous devez spécifier les broches pour toutes les E/S.\r\n\r\n'%s' non assignée."
 
 "Must choose a target microcontroller before compiling."
-"Choisir un microcontrolleur avant de compiler."
+"Choisir un microcontrôleur avant de compiler."
+
+"Must choose a target microcontroller before simulating."
+"Choisir un microcontrôleur avant de simuler."
 
 "Name"
 "Nom"
@@ -533,16 +1004,16 @@
 "Pas de convertisseur A/D ou convertisseur non supporté pour ce micro."
 
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
-"Aucun microcontrolleur sélectionné. Vous devez sélectionner un microcontroleur avant de définir l'utilisation des broches.\r\n\r\nSélectionnez un micro dans le menu et essayez à nouveau."
+"Aucun microcontrôleur sélectionné. Vous devez sélectionner un microcontrôleur avant de définir l'utilisation des broches.\r\n\r\nSélectionnez un micro dans le menu et essayez à nouveau."
 
 "No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Aucune instruction (émission ou réception UART) n'est utilisée; ajouter une instruction avant de fixer les vitesses.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
-"Aucune variable n'est appelée dans une chaine formattée, mais un nom de variable est spécifié . Insérer une chaine comme: '\\-3', ou laisser le nom de variable vide."
+"Aucune variable n'est appelée dans une chaîne formatée, mais un nom de variable est spécifié . Insérer une chaîne comme: '\\-3', ou laisser le nom de variable vide."
 
 "Not a reasonable size for a shift register."
-"N'est pas une bonne taille pour un registre à décalage."
+"Taille non valide pour un registre à décalage."
 
 "Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details."
 "Problème numérique avec le tableau. Commencer par les faibles valeurs ou rapprocher les points du tableau .\r\n\r\nVoir fichier d'aide pour plus de détails."
@@ -551,7 +1022,7 @@
 "OK"
 
 "Out of memory; simplify program or choose microcontroller with more memory."
-"Mémoire insuffisante; simplifiez le programme ou utiliser un controleur avec plus de mémoire."
+"Mémoire insuffisante; simplifiez le programme ou utiliser un microcontrôleur avec plus de mémoire."
 
 "Output pin"
 "Sortie"
@@ -566,13 +1037,16 @@
 "Fréquence PWM trop rapide."
 
 "PWM frequency too slow."
-"Frequence PWM trop lente."
+"Fréquence PWM trop lente."
 
 "PWM function used but not supported for this micro."
 "Fonctions PWM utilisées mais non supportées par ce micro."
 
 "PWM in use; pin %d reserved for that."
-"PWM utilisé; broche %d réservée pour cela."
+"PWM utilisée; broche %d réservée pour cela."
+
+"PWM Internal error"
+"Erreur interne PWM"
 
 "PWM out"
 "Sortie PWM"
@@ -584,10 +1058,13 @@
 "Le tableau indexé linéaire ne comporte aucun élément!"
 
 "Pin on MCU"
-"Broche MCU"
+"Broche du MCU"
 
 "Pin on Processor"
 "Broche du Micro"
+
+"Pin#:   MCU pin name:"
+"Pin#:   Nom du pin:"
 
 "Please select a micro with a UART.\r\n\r\n"
 "Sélectionnez un processeur avec UART.\r\n\r\n"
@@ -596,25 +1073,25 @@
 "Points:"
 
 "RTO: variable can only be used for RES elsewhere"
-"RTO: Variable ne peut être uniquement utilisée que pour RAZ"
+"RTO: la variable ne peut être utilisée ailleurs que pour RAZ"
 
 "Read A/D Converter"
 "Lecture du convertisseur A/D"
 
 "Read From SFR"
-"Read From SFR"
+"Lecture depuis SFR (PIC)"
 
 "Read SFR instruction: '%s' not a valid destination."
-"Read SFR instruction: '%s' not a valid destination."
+"Lecture SFR: '%s' n’est pas une destination valide (PIC)."
 
 "Receive from UART"
-"Reception depuis l'UART"
+"Réception depuis l'UART"
 
 "Release"
-"Release"
+"Relâchement"
 
 "Release.."
-"Release.."
+"Relâchement.."
 
 "Rename I/O from default name ('%s') before assigning MCU pin."
 "Changer les noms par défauts des E/S ('%s') avant de leur affecter une broche MCU."
@@ -626,46 +1103,73 @@
 "Temporisation totalisatrice"
 
 "SFR position:"
-"SFR position:"
-
-"Save &As..."
-"S&auvegarder sous..."
+"Position SFR (PIC):"
 
 "Send to UART"
 "Envoyer vers l'UART"
 
 "Serial (UART) will use pins %d and %d.\r\n"
-"Communication série utilisera broches %d et %d.\r\n"
+"Communication série utilisant les broches %d et %d.\r\n"
 
 "Set Bit In SFR"
-"Set Bit In SFR"
+"Activer Bit dans SFR"
 
 "Set PWM Duty Cycle"
-"Fixer le rapport de cycle PWM"
+"Fixer le rapport cyclique PWM"
 
 "Shift Register"
 "Registre à décalage"
 
-"Si&mulate"
-"Si&mulation"
-
-"Si&mulation Mode\tCtrl+M"
-"Mode si&mulation\tCtrl+M"
-
-"Single &Cycle\tSpace"
-"&Cycle unique\tEspace"
-
 "Source"
 "Source"
 
 "Source:"
 "Source:"
+
+"SPI Rate (Hz):"
+"Cadence SPI (Hz):"
+
+"SPI: Sending too many chars in one cycle may cause timing issues"
+"SPI: Envoyer trop d'octets en un seul cycle peut causer des problèmes de timing"
+
+"Invalid SPI name in ladder."
+"SPI non valide dans ce ladder."
+
+"SPI Internal error"
+"Erreur interne SPI"
+
+"SPI Name:"
+"SPI (SPI#):"
+
+"SPI Mode:"
+"Mode SPI:"
+
+"SPI Simulation (Terminal)"
+"Simulation SPI (Terminal)"
+
+"Send variable:"
+"Variable émission:"
+
+"Receive to variable:"
+"Variable réception:"
+
+"Bit Rate (Hz):"
+"Cadence SPI (Hz):"
+
+"Data Modes (CPOL, CPHA):"
+"Mode SPI:"
+
+"Data Size:"
+"Nombre de bits:"
+
+"Data Order:"
+"Ordre des bits:"
+
+"Send string:"
+"Chaine à envoyer:"
 
 "Stages:"
 "Etapes:"
-
-"Start &Real-Time Simulation\tCtrl+R"
-"Commencer la simulation en temps &réel\tCtrl+R"
 
 "Start new program?"
 "Commencer un nouveau programme?"
@@ -680,31 +1184,31 @@
 "Soustraction"
 
 "TOF: variable cannot be used elsewhere"
-"TOF: Variable ne peut être utilisée nullepart ailleurs"
+"TOF: la variable ne peut être utilisée ailleurs"
 
 "TON: variable cannot be used elsewhere"
-"TON: Variable ne peut être utilisée nullepart ailleurs"
+"TON: la variable ne peut être utilisée ailleurs"
 
 "Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."
 "Fréquence de la cible %d Hz, fonction accomplie à %d Hz (ATTENTION, >5%% erreur)."
 
 "Test if Bit Clear In SFR"
-"Test if Bit Clear In SFR"
+"Tester Bit Clear dans SFR"
 
 "Test if Bit Set In SFR"
-"Test if Bit Set In SFR"
+"Tester Bit Set dans SFR"
 
 "The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal."
-"Le temps de cycle de l'API (automate programmable) est configurable par l'utilisateur. Un temps trop court n'est pas utilisable dû à des contraintes de vitesse du processeur. Des temps de cycle trop longs ne sont pas utilisables à cause du dépassement de capacité des registres. Des temps de cycle compris entre 10 ms et 100 ms sont géneralement utilisables.\r\n\r\nLe compilateur doit connaitre la fréquence du quartz utilisé pour définir les temps de cycles d'horloge ainsi que les temporisations, les fréquences de 4 à 20 mhz sont typiques. Déterminer la vitesse désirée avant de choisir le quartz."
+"Le temps de cycle de l'API (automate programmable) est configurable par l'utilisateur. Un temps trop court n'est pas utilisable dû à des contraintes de vitesse du processeur. Des temps de cycle trop longs ne sont pas utilisables à cause du dépassement de capacité des registres. Des temps de cycle compris entre 10 ms et 100 ms sont généralement utilisables.\r\n\r\nLe compilateur doit connaître la fréquence du quartz utilisé pour définir les temps de cycles d'horloge ainsi que les temporisations, les fréquences de 4 à 20 mhz sont typiques. Déterminer la vitesse désirée avant de choisir le quartz."
 
 "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"
-"Le programme a changé depuis la dernière sauvegarde.\r\n\r\nVoulez-vous sauvegarder les changements?"
+"Le programme a changé depuis la dernière sauvegarde.\r\n\r\nVoulez-vous enregistrer les changements?"
 
 "Timer period too long (max 32767 times cycle time); use a slower cycle time."
-"Période de tempo trop longue (max. 32767 fois le temps de cycle); utiliser un temps de cycle plus long."
+"Tempo trop longue (max. 32767 fois le temps de cycle); utiliser un temps de cycle plus lent."
 
 "Timer period too short (needs faster cycle time)."
-"Période temporisation trop courte (Diminuer le temps de cycle)."
+"Tempo trop courte ; utiliser un temps de cycle plus rapide"
 
 "Timer"
 "Temporisation"
@@ -713,7 +1217,7 @@
 "Trop d'éléments dans le circuit secondaire !"
 
 "Too many rungs!"
-"Trop de séquences!"
+"Trop de lignes!"
 
 "True if >= :"
 "Vrai si >= :"
@@ -728,52 +1232,55 @@
 "Type"
 
 "UART Baud Rate (bps):"
-"UART Vitesse (bps):"
+"Vitesse UART (bps):"
 
 "UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken."
-"UART Générateur vitesse: Diviseur=%d actuel=%.4f pour %.2f%% Erreur.\r\n\r\nCeci est trop important; Essayez une autre vitesse (probablement plus lente), ou choisir un quartz divisible par plus de vitesses de transmission (comme 3.6864MHz, 14.7456MHz).\r\n\r\nCode est tout de même généré, mais la liaison peut être inutilisable ou la transmission erronée."
+"Générateur vitesse UART: diviseur=%d réel=%.4f pour une erreur de %.2f%%.\r\n\r\nCeci est trop important; Essayer une autre vitesse (probablement plus lente), ou choisir un quartz divisible par les vitesses de transmission usuelles (comme 3.6864MHz, 14.7456MHz).\r\n\r\nLe code est tout de même généré, mais la liaison peut être inutilisable ou la transmission erronée."
 
 "UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken."
-"Générateur vitesse UART trop lent, dépassement de capacité du diviseur. Utiliser un quartz plus lent ou une vitesse plus élevée.\r\n\r\nCode est généré mais la liaison semble inutilisable."
+"Générateur vitesse UART trop lent, dépassement de capacité du diviseur. Utiliser un quartz plus lent ou une vitesse plus élevée.\r\n\r\nLe code est tout de même généré mais la liaison sera inutilisable."
 
 "UART function used but not supported for this micro."
 "Des fonctions UART sont utilisées, mais non supportées par ce micro."
 
 "UART in use; pins %d and %d reserved for that."
-"UART utilisé; broches %d et %d réservée pour cette fonction."
+"UART utilisée; broches %d et %d réservées pour cette fonction."
 
 "UART rx"
 "UART rx"
 
 "UART tx"
 "UART tx"
+
+"UART Simulation (Terminal)"
+"Simulation UART (Terminal)"
 
 "Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for interpretable target."
 "Instructions non supportées (comme ADC, PWM, UART, EEPROM, SFR.. ) pour sortie en code interprété."
 
 "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero."
-"Variable '%s' non affectée, ex: avec une commande MOV, une instruction ADD-etc.\r\n\r\nCeci est probablement une erreur de programmation; elle reste toujours à zéro."
+"Variable '%s' non affectée, ex: avec une commande MOV, une instruction ADD-etc.\r\n\r\nCeci est probablement une erreur de programmation; elle restera toujours à zéro."
 
 "Variable for '%s' incorrectly assigned: %s."
-"Variable pour '%s' Affectation incorrecte: %s."
+"Variable pour '%s' affectée incorrectement: %s."
 
 "Variable is interpolated into formatted string, but none is specified."
-"Une variable est appellée dans une chaine formattée, mais n'est pas spécifiée."
+"Une variable est référencée dans une chaîne formatée, mais aucune n'est pas spécifiée."
 
 "Variable:"
 "Variable:"
 
 "Write To SFR"
-"Write To SFR"
+"Ecriture dans SFR (PIC)"
 
 "Zero baud rate not possible."
-"Vitesse transmission = 0 : impossible"
+"Vitesse de transmission = 0 : impossible"
 
 "Zero cycle time not valid; resetting to 10 ms."
-"Temps de cycle non valide ; remis à 10 ms."
+"Temps de cycle nul non valide ; remis à 10 ms."
 
 "\n\nI/O ASSIGNMENT:\n\n"
-"\n\nE/S AFFECTATIONS:\n\n"
+"\n\nE/S AFFECTATION:\n\n"
 
 "adc input"
 "Entrée ADC"
@@ -782,34 +1289,34 @@
 "Compteur"
 
 "cycle time %.2f ms"
-"cycle %.2f ms"
+"Temps de cycle %.2f ms"
 
 "digital in"
-"Entrée digitale"
+"Entrée numérique"
 
 "digital out"
-"Sortie digitale"
+"Sortie numérique"
 
 "general var"
-"Var. générale"
+"Variable générale"
 
 "int. relay"
-"Relais interne"
+"Relai interne"
 
 "is set := :"
 "Valeur := :"
 
 "no MCU selected"
-"pas de MCU sélectionné"
+"Pas de MCU sélectionné"
 
 "processor clock %.4f MHz"
-"horloge processeur %.4f MHz"
+"Horloge processeur %.4f MHz"
 
 "retentive timer"
 "Tempo totalisatrice"
 
 "saved var"
-"saved var"
+"Variable sauvegardée"
 
 "turn-off delay"
 "Tempo repos"
@@ -823,3 +1330,1182 @@
 "|/| Negated"
 "|/| Normalement fermé"
 
+"Internal error."
+"Erreur interne."
+
+"Only one SPI can be used"
+"Un seul SPI peut être utilisé"
+
+"PWM pin error"
+"Erreur pin PWM"
+
+"ADC pin error"
+"Erreur pin ADC"
+
+" SPI: Sending too many chars in one cycle may cause timing issues"
+" SPI: Envoyer trop de caractères en un seul cycle peut causer des problèmes de timing"
+
+"Invalid SUBPROG '%s'"
+"SUBPROG non valide '%s'"
+
+"Invalid MENU:%i"
+"MENU non valide:%i"
+
+"ADC Internal error"
+"Erreur interne ADC"
+
+"Direct Addr error"
+"Erreur d'adressage direct"
+
+"Internal limit exceeded (MAX_PROGRAM_LEN)"
+"Limite interne dépassée (MAX_PROGRAM_LEN)"
+
+"Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"
+"Tout AllocFwdAddr nécessite FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"
+
+" Flash program memory size %d exceeds limit by %d words\nfor %s."
+" Taille du programme en flash %d dépasse la limite de %d words\npour %s."
+
+"Zero memory address not allowed!\nLoadXAddr(%d) skiped!"
+"Adresse mémoire nulle non autorisée!\nLoadXAddr(%d) skiped!"
+
+"Address not allowed!\nLoadXAddr(%d) skiped!"
+"Adresse non autorisée!\nLoadXAddr(%d) skiped!"
+
+"Zero memory address not allowed!\nLoadYAddr(%d) skiped!"
+"Adresse mémoire nulle non autorisée!\nLoadYAddr(%d) skiped!"
+
+"Address not allowed!\nLoadYAddr(%d) skiped!"
+"Adresse non autorisée!\nLoadYAddr(%d) skiped!"
+
+"Zero memory address not allowed!\nLoadZAddr(%d) skiped!"
+"Adresse mémoire nulle non autorisée!\nLoadZAddr(%d) skiped!"
+
+"Address not allowed!\nLoadZAddr(%d) skiped!"
+"Adresse non autorisée!\nLoadZAddr(%d) skiped!"
+
+"Only values 0-7 allowed for Bit parameter"
+"Valeurs 0-7 autorisées seulement pour paramètre Bit"
+
+"Zero memory address not allowed!\nSTORE(%d, %d) skiped!"
+"Adresse mémoire nulle non autorisée!\nSTORE(%d, %d) skiped!"
+
+"Registers less zero not allowed!\nSTORE(%d, %d) skiped."
+"Registres négatifs non autorisés!\nSTORE(%d, %d) skiped."
+
+"Zero memory address not allowed!\nLOAD(%d, %d) skiped!"
+"Adresse mémoire nulle non autorisée!\nLOAD(%d, %d) skiped!"
+
+"Registers less zero not allowed!\nLOAD(%d, %d) skiped."
+"Registres négatifs non autorisés!\nLOAD(%d, %d) skiped."
+
+"Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"
+"Adresse mémoire nulle non autorisée!\nWriteMemory(0, %d) skiped! %s %s"
+
+"Zero memory address not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"
+"Adresse mémoire nulle non autorisée!\nWriteMemoryStillAddr(0, %d) skiped!"
+
+"Zero memory address not allowed!\nOrMemory(0, %d) skiped!"
+"Adresse mémoire nulle non autorisée!\nOrMemory(0, %d) skiped!"
+
+"Zero memory address not allowed!\nAndMemory(0, %d) skiped!"
+"Adresse mémoire nulle non autorisée!\nAndMemory(0, %d) skiped!"
+
+"Zero memory address not allowed!\nWriteRegToIO skiped."
+"Adresse mémoire nulle non autorisée!\nWriteRegToIO skiped."
+
+"Registers less zero not allowed!\nWriteRegToIO skiped."
+"Registres négatifs non autorisés!\nWriteRegToIO skiped."
+
+"Zero memory address not allowed!\nReadIoToReg skiped."
+"Adresse mémoire nulle non autorisée!\nReadIoToReg skiped."
+
+"Registers less zero not allowed!\nReadIoToReg skiped."
+"Registres négatifs non autorisés!\nWriteRegToIO skiped."
+
+"Only values 0-0xFFFF allowed for address parameter.\naddres=0x%4X"
+"Valeurs 0-0xFFFF seulement autorisées pour paramètre adresse.\naddres=0x%4X"
+
+"Only values 0-7 allowed for Bit parameter.\nbit=%d"
+"Valeurs 0-7 autorisées seulement pour paramètre Bit.\nbit=%d"
+
+"Only values 0-0x1F allowed for Register parameter.\nreg=0x%02X"
+"Valeurs 0-0x1F seulement autorisées pour paramètre Registre.\nreg=0x%02X"
+
+"PLC cycle time more than %lld ms not valid."
+"Temps de cycle supérieur à %lld ms non valide."
+
+"PLC cycle time less than %d us not valid."
+"Temps de cycle inférieur à %d us non valide."
+
+"Invalid intcode %d."
+"Intcode %d non valide."
+
+"Invalid operation %i."
+"Opération %i non valide."
+
+"Invalid bit number %i."
+"Numéro de bit %i non valide."
+
+"Invalid AVR OpCode %i."
+"OpCode AVR non valide."
+
+"Invalid var size in swap."
+"Taille de variable swap non valide."
+
+"Invalid compare."
+"Comparaison non valide."
+
+"Invalid variable size."
+"Taille de variable non valide."
+
+"Invalid instruction."
+"Instruction non valide."
+
+"Pin '%s': PWM output not available!"
+"Pin '%s': sortie PWM non disponible!"
+
+"Pin '%s': PWM resolution not available!"
+"Pin '%s': résolution PWM non disponible!"
+
+"Can't set prescale."
+"Impossible de fixer la prédivision."
+
+"Select the frequency from the possible values:"
+"Choisir la fréquence parmi les valeurs possibles:"
+
+"Invalid prescale."
+"Prédivision non valide."
+
+"Can't set PWM."
+"Impossible de fixer la PWM."
+
+"Unsupported operation 'INT_WRITE_STRING' for target, skipped."
+"Opération 'INT_WRITE_STRING' non supportée par la cible, ignorée."
+
+" The delay is too long!\nThe maximum possible delay is %lld us."
+" Délai trop long!\nDélai maximum possible %lld us."
+
+"Don't know how to init %s."
+"Impossible d'initialiser %s."
+
+"Used %d/%d byte of RAM (chip %d%% full)."
+"%d/%d octets de RAM utilisés (%d%% remplis)."
+
+"Can use only one N PULSE element on timer0."
+"Un seul élément N PULSE utilisable avec timer0."
+
+"Can use only %d INTs on this MCU."
+"%d INTs utilisables seulement sur ce MCU."
+
+"No available ADC inputs."
+"Pas d'entrées ADC disponibles."
+
+"No PWM or PWM not supported for this MCU."
+"Pas de PWM disponible sur ce MCU."
+
+"No available PWM outputs."
+"Pas de sorties PWM disponibles."
+
+"No UART or UART not supported for this MCU."
+"Pas d'UART disponible sur ce MCU."
+
+"No SPI or SPI not supported for this MCU."
+"Pas de SPI disponible sur ce MCU."
+
+"No ROM or ROM not supported for this MCU."
+"Pas de ROM disponible sur ce MCU."
+
+"You must Select rungs, then Copy or Cut, then Paste."
+"Vous devez sélectionner des lignes, puis Copier ou Couper, et enfin Coller."
+
+"(T) T-trigger"
+"(T) T-trigger"
+
+"Output Pin on MCU"
+"Broche de sortie du MCU"
+
+"Modbus"
+"Modbus"
+
+"Rename the ALL other %d coils/contacts named '%s' to '%s' ?"
+"Renommer TOUS les %d autres contacts '%s' en '%s' ?"
+
+"Choose a color"
+"Sélectionner une couleur"
+
+"Un-choose a color"
+"Désélectionner une couleur"
+
+"Try again a color"
+"Réessayer une couleur"
+
+"Revert a color"
+"Inverser une couleur"
+
+"Apply user color scheme"
+"Appliquer le thème de couleurs"
+
+"Revert color scheme"
+"Inverser le thème de couleurs"
+
+"Select color for user scheme:"
+"Choisir une couleur pour le thème utilisateur:"
+
+"Background color"
+"Couleur de fond"
+
+"Default foreground"
+"Fond par défaut"
+
+"Selected element"
+"Sélectionner un élément"
+
+"OpCode (like OSR, TON, ADD, ...)"
+"OpCode (Comme OSR, TON, ADD, ...)"
+
+"Punctuation, like square, curly braces, etc."
+"Ponctuation, comme parenthèses, accolades, etc."
+
+"Literal number"
+"valeur littérale"
+
+"Name of an item"
+"Nom d'un item"
+
+"Rung number"
+"Numéro de ligne"
+
+"Comment text"
+"Commentaire"
+
+"| The 'bus' at the right and left of screen |"
+"| Le 'bus' à gauche et à droite de l'écran |"
+
+"Background, Simulation mode"
+"Fond, mode Simulation "
+
+"Rung number, Simulation mode"
+"Numéro de ligne, mode Simulation"
+
+"De-energized element, Simulation mode"
+"Elément non alimenté, mode Simulation"
+
+"Energized element, Simulation mode"
+"Elément alimenté, mode Simulation"
+
+"| The 'bus' at the left of the screen, Simulation mode"
+"| Le 'bus' à gauche de l'écran, mode Simulation"
+
+"The 'bus' at the right of the screen, Simulation mode |"
+"Le 'bus' à droite de l'écran, mode Simulation |"
+
+"RAM:"
+"RAM:"
+
+"Not described pin %d "
+"Pin %d non décrit "
+
+"Empty variable name '%s'.\nrungNow=%d"
+"Nom de variable vide '%s'.\nrungNow=%d"
+
+"Not a #PORT/#PIN/#TRIS/%s "
+"Erreur #PORT/#PIN/#TRIS/%s "
+
+"Size of var '%s'(%d) reset as signed 8 bit variable."
+"Taille de la variable '%s'(%d) fixée à 8 bits."
+
+"Size of var '%s'(%d) reset as signed 32 bit variable."
+"Taille de la variable '%s'(%d) fixée à 32 bits."
+
+"Var '%s' not allocated %d."
+"Variable '%s' non allouée %d."
+
+" Invalid size (%d) of variable '%s' set to 2!"
+" Taille non valide (%d) de la variable '%s' fixée à 2!"
+
+" \tNow not used !!!"
+" \tInutilisé actuellement !!!"
+
+"Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."
+"Erreur de lecture dans la section 'VAR LIST' du fichier .ld!\nLigne:\n'%s'."
+
+"Internal limit exceeded (number of relay)"
+"Limite interne dépassée (nombre de relais)"
+
+"Unknown name >%s<"
+"Nom inconnu >%s<"
+
+"Can't find right assign."
+"Assignation droite non trouvée."
+
+"Invalid MCU"
+"MCU non valide"
+
+"Invalid TX pin."
+"TX pin non valide"
+
+"Invalid RX pin."
+"RX pin non valide"
+
+"Timer0|1:"
+"Timer0|1:"
+
+"PIC Configuration Bits:"
+"Bits de Configuration PIC:"
+
+"Available PLC Cycle Time: min=%.6g %ss, max=%lld ms (%.6g %ss)\n"
+"Temps de cycle disponibles: min=%.6g %ss, max=%lld ms (%.6g %ss)\n"
+
+"MCU PLC Timer%d: TMR%d=%d, prescaler=%d, softDivisor=%d\n"
+"MCU PLC Timer%d: TMR%d=%d, prédivision=%d, softDivisor=%d\n"
+
+"%030lld=TicksPerCycle\n%030lld=In fact\n"
+"%030lld=TicksPerCycle\n%030lld=En fait\n"
+
+"In fact TCycle=%.6g %ss, Fcycle=%.6g %sHz, PLC Cycle deviation=%.3f%%\n"
+"En fait TCycle=%.6g %ss, Fcycle=%.6g %sHz, déviation=%.3f%%\n"
+
+"TON,TOF,RTO min Delay=%.6g ms (%.6g %ss)\n"
+"TON,TOF,RTO Délai min=%.6g ms (%.6g %ss)\n"
+
+"TON,TOF,RTO  8bit max Delay=%.6g %ss\n"
+"TON,TOF,RTO  8bit Délai max=%.6g %ss\n"
+
+"TON,TOF,RTO 16bit max Delay=%.6g %ss\n"
+"TON,TOF,RTO 16bit Délai max=%.6g %ss\n"
+
+"TON,TOF,RTO 24bit max Delay=%.6g %ss\n"
+"TON,TOF,RTO 24bit Délai max=%.6g %ss\n"
+
+"Serial (UART) will use pins %d(RX) and %d(TX).\r\n"
+"UART sur pins %d(RX) and %d(TX).\r\n"
+
+"Frame format: 8 data, parity - none, 1 stop bit, handshaking - none.\r\n\r\n"
+"Format UART: 8 bits, sans parité, 1 stop, sans contrôle de flux.\r\n\r\n"
+
+"Zero Configuration Word(s) not valid."
+"Mot(s) de Configuration non valides."
+
+"Zero crystal frequency not valid; resetting to 16 MHz."
+"Frequency de quartz nulle non valide; fixée à 16 MHz."
+
+" A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"
+" Un temps de cycle nul est possible, mais les tempos (TON, TOF, etc) ne fonctionneront pas!"
+
+"Negative cycle time is not valid; Reset to 10 ms."
+"Temps de cycle négatif non valide; fixé à 10 ms."
+
+"Input Pin on MCU"
+"Broche d'entrée du MCU"
+
+"Output Pin on MCU"
+"Broche de sortie du MCU"
+
+"Modbus Contact"
+"Contact Modbus"
+
+"Modbus Coil"
+"Bibine Modbus"
+
+"Set HI input level before simulation"
+"Mettre l'entrée au niveau haut avant simulation"
+
+"Rename the ALL other %d contacts/coils named '%s' to '%s' ?"
+"Renommer TOUS les %d autres contacts '%s' en '%s' ?"
+
+"\nI/O ASSIGNMENT:\n"
+"\nI/O ASSIGNMENT:\n"
+
+"About LDmicro"
+"A propos de LDmicro"
+
+"Constant %d out of range: %d to %d inclusive."
+"Constante %d hors limites: %d à %d inclus."
+
+"Couldn't dump intermediate code to '%s'."
+"Impossible de dumper le code intermediaire en '%s'."
+
+"Timer '%s'=%.3f ms."
+"Timer '%s'=%.3f ms."
+
+"Minimum available timer period = PLC cycle time = %.3f ms."
+"Période minimale du timer = temps de cycle = %.3f ms."
+
+"Not available"
+"Non disponible"
+
+"Total timer delay cannot be zero or negative. Increase the adjust value!"
+"Le délai total ne peut être négatif ou nul. Augmenter la valeur d'ajustement!"
+
+"Adjusting the timer delay to a value greater than or near than the timer delay is meaningless. Decrease the adjust value!"
+"Valeur de délai trop élevée. Diminuer la valeur d'ajustement!"
+
+"Timer period too long; (use a slower cycle time)."
+"Période trop longue; (réduire le temps de cycle)."
+
+"Timer 'T%s'=%10.0Lf s   needs %15lld PLC cycle times."
+"Timer 'T%s'=%10.0Lf s   requiert %15lld cycles."
+
+"Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."
+"Timer 'T%s'=%10.0Lf s ne peut excéder %15lld cycles au MAXIMUM."
+
+" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"
+" Temps de cycle nul. TON, TOF, RTO, RTL, TCY ne peuvent fonctionner correctement!"
+
+"Expected single-character or one simple-escape-sequence in single-quotes: <%s>!"
+"Un seul caractère ou une seule séquence ESC attendus entre apostrophes: <%s>!"
+
+"INIT TABLE: signed %d bit %s[%d] see above"
+"INIT TABLE: signed %d bit %s[%d] voir plus haut"
+
+"The TIME to COUNTER converter T2CNT '%S' delay must be a number in ms!"
+"Le convertisseur T2CNT de TIME vers COUNTER '%S' doit être en ms!"
+
+"Segments instruction: '%s' not a valid destination."
+"Instruction Segments : '%s' destination non valide."
+
+"BIN2BCD instruction: '%s' not a valid destination."
+"Instruction BIN2BCD : '%s' destination non valide."
+
+"BCD2BIN instruction: '%s' not a valid destination."
+"Instruction BCD2BIN : '%s' destination non valide."
+
+"OPPOSITE instruction: '%s' not a valid destination."
+"Instruction OPPOSITE : '%s' destination non valide."
+
+"SWAP instruction: '%s' not a valid destination."
+"Instruction SWAP instruction: '%s' destination non valide."
+
+"SRAND instruction: '%s' not a valid destination."
+"Instruction SRAND : '%s' destination non valide."
+
+"Inputs '%s' and '%s' must be located in same MCU PORT!"
+"Les entrées '%s' et '%s' doivent être sur le même PORT!"
+
+"Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."
+"constante Shift %s=%d hors limites pour la variable '%s' : 0 à %d inclus."
+
+"GOTO: LABEL '%s' not found!"
+"GOTO: LABEL '%s' non trouvé!"
+
+"GOSUB: SUBPROG as number '%s' not allowed !"
+"GOSUB: SUBPROG numéro '%s' non autorisé !"
+
+"GOSUB: SUBPROG '%s' not found!"
+"GOSUB: SUBPROG '%s' non trouvé!"
+
+"SUBPROG: '%s' declaration must be single inside a rung %d"
+"SUBPROG: '%s' la déclaration doit être unique dans une ligne %d"
+
+"SUBPROG: ENDSUB '%s' not found!"
+"SUBPROG: ENDSUB '%s' non trouvé!"
+
+"ENDSUB: SUBPROG '%s' not found!"
+"ENDSUB: SUBPROG '%s' non trouvé!"
+
+"Bad escape sequence following \\; for a literal backslash, use \\\\"
+"Erreur dans la séquence ESC \\; pour un backslash, utiliser \\\\"
+
+"Rename '%s': Replace the character '-' by the '_'."
+"Renommer '%s': Remplacer le caractère '-' par '_'."
+
+"Connect QUAD ENCOD input A to INTs input pin IqAn."
+"Connecter l'entrée QUAD ENCOD A sur l'entrée INTs pin IqAn."
+
+"Connect QUAD ENCOD input A to input pin XqAn."
+"Connecter l'entrée QUAD ENCOD A sur l'entrée pin XqAn."
+
+"Connect QUAD ENCOD input B to input pin XqBn."
+"Connecter l'entrée QUAD ENCOD B sur l'entrée pin XqBn."
+
+"Connect QUAD ENCOD input Z to input pin XqZn."
+"Connecter l'entrée QUAD ENCOD Z sur l'entrée pin XqZn."
+
+"Connect QUAD ENCOD dir flag to output pin YsomeName."
+"Connecter QUAD ENCOD dir flag sur une sortie pin Yxxx."
+
+"Connect NPULSE to output pin YsomeName."
+"Connecter NPULSE sur une sortie pin Yxxx."
+
+"Connect STEPPER coil to output pin YsomeName."
+"Connecter la bobine STEPPER sur une sortie pin Yxxx."
+
+"Connect PULSER busy flag to output pin YsomeName or internal relay RsomeName."
+"Connecter PULSER busy flag sur une sortie pin Yxxx ou un rela interne Rxxx."
+
+"Not all I/O pins are saved! Use menu:\n"
+"I/O pins pas tous enregistrés! Voir menu:\n"
+
+"File->Save LDmicro0.2 file format"
+"Fichier->Enregistrer au format LDmicro0.2"
+
+"Can't specify I/O assignment for Netzer!"
+"Impossible d'assigner les I/O pour Netzer!"
+
+"Can only assign pin number to input/output pins (Xname or Yname or Aname or Pname)."
+"Can only assign pin number to input/output pins (Xname or Yname or Aname or Pname)."
+
+"Slave ID:"
+"Esclave ID:"
+
+"Register:"
+"Registre:"
+
+"Modbus Address"
+"Addresse Modbus"
+
+" Save ld before flash."
+" Enregistrer le ladder avant de flasher."
+
+"File does not exist: '%s'"
+"Fichier inexistant: '%s'"
+
+"MCU type warning"
+"Attention au type de MCU"
+
+"You try to compile to WinAvr C, but MCU core isn't AVR.\nDo you want to continue?"
+"Vous compilez en WinAvr C, mais le MCU n'est pas un AVR.\nVoulez-vous continuer?"
+
+"You try to compile to AVR GCC, but MCU core isn't AVR.\nDo you want to continue?"
+"Vous compilez en AVR GCC, mais le MCU n'est pas un AVR.\nVoulez-vous continuer?"
+
+"You try to compile to CodeVision C, but MCU core isn't AVR.\nDo you want to continue?"
+"Vous compilez en CodeVision C, mais le MCU n'est pas un AVR.\nVoulez-vous continuer?"
+
+"You try to compile to HI-TECH C, but MCU core isn't PIC.\nDo you want to continue?"
+"Vous compilez en HI-TECH C, mais le MCU n'est pas un PIC.\nVoulez-vous continuer?"
+
+"You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"
+"Vous compilez en CSS-PIC C, mais le MCU n'est pas un PIC.\nVoulez-vous continuer?"
+
+"You try to compile to Arm GCC, but MCU core isn't ARM.\nDo you want to continue?"
+"Vous compilez en Arm GCC, mais le MCU n'est pas un ARM.\nVoulez-vous continuer?"
+
+"You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"
+"Vous compilez pour Arduino, mais le MCU n'est pas un AVR.\nVoulez-vous continuer?"
+
+"ARDUINO: Space ' ' not allowed in '%s'\nRename file!"
+"ARDUINO: Espace ' ' non autorisé dans '%s'\nRenommer le fichier!"
+
+"ARDUINO: Dot '.' not allowed in '%s'\nRename file!"
+"ARDUINO: Point '.' non autorisé dans '%s'\nRenommer le fichier!"
+
+"ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"
+"ARDUINO: Chiffre '%c' non autorisé en tête de '%s.ld'\nRenommer le fichier!"
+
+"File '%s' modified by another application.\r\nIts disk timestamp is newer than the editor one.\nReload from disk?"
+"Fichier '%s' modifié par une autre application.\nActualiser depuis le disque?"
+
+"Couldn't reload '%s'."
+"Impossible de recharger '%s'."
+
+"Caught signal %d (%s)\n"
+"Signal capturé %d (%s)\n"
+
+"Caught signal %d\n"
+"Signal capturé %d\n"
+
+"Couldn't open '%s', running non-interactively."
+"Impossible d'ouvrir '%s', exécution non interactive."
+
+" File '%s' not found!"
+" Fichier '%s' non trouvé!"
+
+"Too many rungs in input file!\nSame rungs not loaded!"
+"Trop de lignes dans le fichier!\nLignes identiques non chargées!"
+
+"Error in RUNG %d. See error below %s"
+"Erreur ligne %d. Voir plus bas %s"
+
+"Table size:"
+"Taille table:"
+
+"Pin Name"
+"Nom du Pin"
+
+"Address"
+"Addresse"
+
+"Size"
+"Taille"
+
+"Modbus addr"
+"Addresse Modbus"
+
+"modified"
+"modifié"
+
+"processor clock %.9g MHz"
+"horloge processeur %.9g MHz"
+
+"Compile error ('%s'): "
+"Erreur de compilation ('%s'): "
+
+"Compiled okay, wrote '%s'\n"
+"Compilation OK, écriture dans '%s'\n"
+
+"Compile is successful but exceed the memory size !!!"
+"Compilation OK mais dépasse la taille mémoire !!!"
+
+"modbus contact"
+"contact modbus"
+
+"modbus coil"
+"bobine modbus"
+
+"modbus Hreg"
+"Hreg modbus"
+
+"cyclic on/off"
+"on/off cyclique"
+
+"retentive timer low input"
+"entrée basse timer rémanent"
+
+"hight delay"
+"délai haut"
+
+"low delay"
+"délay bas"
+
+"BCD var"
+"variable BCD"
+
+"string var"
+"variable chaîne"
+
+"table in flash"
+"tableau en flash"
+
+"value in flash"
+"valeur en flash"
+
+"PORT input"
+"PORT entrée"
+
+"PORT output"
+"PORT sortie"
+
+"MCU register"
+"registre MCU"
+
+"<INT needs!>"
+"<INT requis!>"
+
+"<no INTs!>"
+"<pas d'INTs !>"
+
+"Dest variable of write string instruction must be located at IO register."
+"La variable destination de l'instruction 'write string' doit être dans un register I/O."
+
+"Maximal one format placeholder is allowed in write string instruction."
+"Au plus un formatage est permis dans l'instruction 'write string'."
+
+"Unsupported op (anything ADC, PWM, UART, EEPROM) for Netzer target."
+"OpCode non supporté (ADC, PWM, UART, EEPROM) pour Netzer."
+
+"No opcodes found."
+"Opcodes non trouvés."
+
+"Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."
+"Compilation OK!\r\nEcriture du code Netzer dans '%s' (CRC: 0x%.4x)."
+
+" PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
+" PASCAL ne supporte pas les periphériques (UART, PWM, ADC, EEPROM). Instruction ignorée."
+
+"Bank select error!"
+"Erreur de sélection de Bank!"
+
+"Not enough memory for BANK and PAGE correction!"
+"Mémoire insuffisante pour BANK et PAGE!"
+
+"PagePreSet() error at addr 0x%X"
+"Erreur PagePreSet() à l'addresse 0x%X"
+
+"Not enough memory for PAGE correction!"
+"Mémoire insuffisante pour PAGE!"
+
+"Page Error.[%d:%s] 0x%X 0x%X"
+"erreur de PAGE.[%d:%s] 0x%X 0x%X"
+
+"Every AllocFwdAddr needs FwdAddrIsNow."
+"Tout AllocFwdAddr requiert FwdAddrIsNow."
+
+" CopyRegToReg Warning 1"
+" Warning CopyRegToReg 1"
+
+" CopyRegToReg Message 2"
+" Message CopyRegToReg 2"
+
+"When the MCU crystal frequency is %.3g %sHz."
+"Quand la fréquence du quartz est %.3g %sHz."
+
+"Available PWM frequency from %.3f %sHz up to %.3f %sHz"
+"Fréquences PWM disponibles de %.3f %sHz à %.3f %sHz"
+
+"Required MCU crystal frequency from %.3g %sHz up to %.3g %sHz"
+"Fréquences MCU disponibles de %.3f %sHz à %.3f %sHz"
+
+"Unsupported operation for target, skipped."
+"Opération non supportée par la cible, ignorée."
+
+"PLC cycle time more than %.3f ms not valid."
+"Temps de cycle supérieur à %.3f ms non valide."
+
+"PLC cycle time less than %.3f ms not valid."
+"Temps de cycle inférieur à %.3f ms non valide."
+
+"%sPLC cycle deviation is %.3f %%%% !"
+"Déviation %sPLC de %.3f %%%% !"
+
+"Select Timer 0 in menu 'Settings -> MCU parameters'!"
+"Sélectionner le Timer 0 dans 'Paramètres -> Paramètres MCU'!"
+
+"Achievable DELAY values (us): "
+"valeurs DELAY accessibles (us): "
+
+"** Total timer delay (ms) = Delay (ms) + Adjust * PLC cycle time (%.3f ms)"
+"** Délai total timer (ms) = Delai (ms) + Adjustement * temps de cycle (%.3f ms)"
+
+"Delay (us):"
+"Delai (us):"
+
+"Adjust:"
+"Adjustement:"
+
+"* Adjust default = 0 (LDmicro v3.5.3), typical = -1 (LDmicro v2.3)"
+"* Adjustement par défaut = 0 (LDmicro v3.5.3), typique = -1 (LDmicro v2.3)"
+
+"TIME to DELAY converter"
+"Convertisseur TIME vers DELAY"
+
+"TIME to COUNTER converter"
+"Convertisseur TIME vers COUNTER"
+
+"Cyclic On/Off"
+"On/Off Cyclique"
+
+"Hight Level Delay"
+"Délai niveau haut"
+
+"Low Level Delay"
+"Délai niveau bas"
+
+"Retentive Turn-On Delay If Low Input"
+"Turn-On Delay If Low Input rémanent"
+
+"Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
+"Période du Timer trop longue.\n\rMaximum possible : 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"
+
+"Sleep Delay"
+"Pause"
+
+"SLEEP not available in this mode"
+"SLEEP non disponible dans ce mode"
+
+"Timer '%s'=%.3f ms."
+"Timer '%s'=%.3f ms."
+
+"Minimum available timer period = PLC cycle time = %.3f ms."
+"Période minimum du timer = temps de cycle = %.3f ms."
+
+"Timer 'T%s'=%.3f ms needs %d PLC cycle times."
+"Timer 'T%s'=%.3f ms requiert %d cycles."
+
+"Maximum available timer period = %.3f s."
+"Période maximum du timer period = %.3f s."
+
+"Delay (us):"
+"Delai (us):"
+
+"Delay, us"
+"Delai, us"
+
+"Constant %s=%d out of variable '%s' range : -128 to 127 inclusive."
+"Constante %s=%d hors limites pour la variable '%s' : -128 à 127 inclus."
+
+"Constant %s=%d out of variable '%s' range : 0 to 255 inclusive."
+"Constante %s=%d hors limites pour la variable '%s' : 0 à 255 inclus."
+
+"Constant %s=%d out of variable '%s' range: -32768 to 32767 inclusive."
+"Constante %s=%d hors limites pour la variable '%s' : -32768 à 32767 inclus."
+
+"Constant %s=%d out of variable '%s' range : 0 to 65535 inclusive."
+"Constante %s=%d hors limites pour la variable '%s' : 0 à 65535 inclus."
+
+"Constant %s=%d out of variable '%s' range: -8388608 to 8388607 inclusive."
+"Constante %s=%d hors limites pour la variable '%s' : -8388608 à 8388607 inclus."
+
+"Constant %s=%d out of variable '%s' range : 0 to 16777215 inclusive."
+"Constante %s=%d hors limites pour la variable '%s' : 0 à 16777215 inclus."
+
+"Constant %s=%d out of variable '%s' range: -2147483648 to 2147483647 inclusive."
+"Constante %s=%d hors limites pour la variable '%s' : -2147483648 à 2147483647 inclus."
+
+"Constant %s=%d out of variable '%s' range : 0 to 4294967295(0xFFFFffff) inclusive."
+"Constante %s=%d hors limites pour la variable '%s' : 0 à 4294967295(0xFFFFffff) inclus."
+
+" Variable %s=%d out of range: -128 to 127 inclusive."
+" Variable %s=%d hors limites: -128 à 127 inclus."
+
+" Variable %s=0x%X out of range: 0 to 0xFF inclusive."
+" Variable %s=0x%X hors limites: 0 à 0xFF inclus."
+
+" Variable %s=%d out of range: -32768 to 32767 inclusive."
+" Variable %s=%d hors limites: -32768 à 32767 inclus."
+
+" Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."
+" Variable %s=0x%X hors limites: 0 à 0xFFFF inclus."
+
+" Variable %s=%d out of range: -8388608 to 8388607 inclusive."
+" Variable %s=%d hors limites: -8388608 à 8388607 inclus."
+
+" Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."
+" Variable %s=0x%X hors limites: 0 à 0xffFFFF inclus."
+
+" Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."
+" Variable %s=%d hors limites: -2147483648 à 2147483647 inclus."
+
+" Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."
+" Variable %s=0x%X out of range: 0 à 0xffffFFFF inclus."
+
+"Circular Counter, incremental"
+"Compteur cyclique normal"
+
+"Circular Counter Reversive, decremental"
+"Compteur cyclique à rebours"
+
+"Start value:"
+"Valeur initiale:"
+
+"Min value:"
+"valeur Minimale:"
+
+"True if > :"
+"Vrai si > :"
+
+"Input kind:"
+"Type d'entrée:"
+
+"Only the characters '-o/\\' are available!"
+"Seuls les caractères '-o/\\' sont disponibles!"
+
+"If bit set"
+"Si bit activé"
+
+"If bit clear"
+"Si bit sdésactivé"
+
+"Set bit"
+"Activation bit"
+
+"Clear bit"
+"Désactivation bit"
+
+"Bit # [0..%d]:"
+"Bit # [0..%d]:"
+
+"Convert BIN to packed BCD"
+"Convertir BIN en packed BCD"
+
+"Convert packed BCD to BIN"
+"Convertir packed BCD en BIN"
+
+"Swap source and assign to destination"
+"Swapper les bits de la source dans la destination"
+
+"Opposite source and assign to destination"
+"Prendre l'opposé de la source pour la destination"
+
+"Seed Random : $seed_..."
+"Initialisation aléatoire : $seed_..."
+
+"BUS tracer"
+"Traceur de BUs"
+
+"Bus instruction: '%s' not a valid destination."
+"Instruction Bus : '%s' destination non valide."
+
+"Bus instruction: '%s' not a valid source."
+"Instruction Bus: '%s' source non valide."
+
+"SPI - Serial Peripheral Interface"
+"SPI - Serial Peripheral Interface"
+
+"Common: Cathode | Anode:"
+"Cathode | Anode commune:"
+
+"Convert char to %s Segments"
+"Convertir char to %s Segments"
+
+"Segments instruction: '%s' not a valid destination."
+"Instruction Segments: '%s' destination non valide."
+
+"Destination rung(label):"
+"Ligne destination (label):"
+
+"Goto rung number or label name"
+"Goto numéro de ligne ou label"
+
+"Call SUBPROG rung number or label name"
+"Appeler SUBPROG par numéro de ligne ou label"
+
+"Define LABEL name"
+"Définir un LABEL"
+
+"LABEL name:"
+"Nom du LABEL:"
+
+"Define SUBPROG name"
+"Définir le nom du SUBPROG"
+
+"SUBPROG name:"
+"Nom du SUBPROG:"
+
+"Define ENDSUB name"
+"Définir le nom du ENDSUB"
+
+"ENDSUB name:"
+"Nom du ENDSUB:"
+
+"Random value"
+"Valeur aléatoire"
+
+"Divide Remainder"
+"Reste de division"
+
+"Destination:="
+"Destination:="
+
+
+"Operand1:"
+"Operande 1:"
+
+"Stepper"
+"Stepper"
+
+"Counter:"
+"Compteur"
+
+"Table size:"
+"taille du tableau:"
+
+"Graph:"
+"Graphe:"
+
+"Pulse to:"
+"Pulser vers:"
+
+"Pulse to: '%s' you must set to output pin 'Y%s' or to internal relay 'R%s'."
+"Pulser vers: '%s' vous devez configurer 'Y%s' en sortie ou 'R%s' en relai interne."
+
+"Stepper information"
+"Information Stepper"
+
+"Pulser"
+"Pulser"
+
+"Accel.:"
+"Accelération:"
+
+"Busy to:"
+"Occupé à:"
+
+"Busy to: '%s' you must set to internal relay 'R%s' or to output pin 'Y%s'."
+"Occupé à: '%s' vous devez configurer 'R%s' en relai interne ou 'Y%s' en sortie."
+
+"%s\n\nAcceleration time=%.3f %s"
+"%s\n\nAcceleration time=%.3f %s"
+
+"Pulser information"
+"Information Pulser"
+
+"Counter var:"
+"Variable compteur:"
+
+"Set N Pulse Cycle"
+"Fixer le cycle N pulse"
+
+"Quad Encoder"
+"Encodeur quadratique"
+
+"Input A INTs:"
+"Entrée A INTs:"
+
+"Input A:"
+"Entrée A:"
+
+"Input B:"
+"Entrée B:"
+
+"Input Z:"
+"Entrée Z:"
+
+"Input Z kind:"
+"Type de l'entrée Z:"
+
+"Count per revol:"
+"Compte par tour:"
+
+"Output Dir:"
+"Répertoire de sortie:"
+
+"Can select only INTs pin."
+"Sélectionner un pin INTs."
+
+"Set variable '%s'"
+"Définir la variable '%s'"
+
+"Simulation value:"
+"Valeur de simulation:"
+
+"SizeOfVar:"
+"Taille de variable:"
+
+"Not a reasonable size for a variable."
+"Taille déraisonnable pour une variable."
+
+"Variable list:"
+"Liste de variables:"
+
+"Format string:"
+"Chaîne de format:"
+
+"Dest:"
+"Destination:"
+
+"Formatted String"
+"Chaîne formatée"
+
+"Enable:"
+"Activer:"
+
+"Error:"
+"Erreur:"
+
+"Formatted String over %s"
+"Chaîne formatée via %s"
+
+"PWM: variable can only be used for RES elsewhere"
+"PWM: la variable ne peut être utilisée qu'ailleurs comme RES"
+
+"TOF: variable can only be used for RES elsewhere"
+"TOF: la variable ne peut être utilisée qu'ailleurs comme RES"
+
+"TON: variable can only be used for RES elsewhere"
+"TON: la variable ne peut être utilisée qu'ailleurs comme RES"
+
+"TCY: variable can only be used for RES elsewhere"
+"TCY: la variable ne peut être utilisée qu'ailleurs comme RES"
+
+"RTL: variable can only be used for RES elsewhere"
+"RTL: la variable ne peut être utilisée qu'ailleurs comme RES"
+
+"THI: variable can only be used for RES elsewhere"
+"THI: la variable ne peut être utilisée qu'ailleurs comme RES"
+
+"TLO: variable can only be used for RES elsewhere"
+"TLO: la variable ne peut être utilisée qu'ailleurs comme RES"
+
+"TABLE: variable can be used only with TABLE"
+"TBLE: la variable ne peut être utilisée qu'avec TABLE"
+
+"Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"
+"Ligne %d: Variable '%s' mal affectée.\n%s.\nVoir ligne:%s"
+
+"Rung %d: Variable '%s' incorrectly assigned.\n%s."
+"Ligne %d: Variable '%s' mal affectée.\n%s."
+
+"RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."
+"RES: Aucune variable affectée au COUNTER ou TIMER ou PWM.\r\nVous devez affecter une variable."
+
+" Value 'val'=%d < 0"
+" Valeur 'val'=%d < 0"
+
+"Value 'val'=%d overflow output range %d."
+"Valeur 'val'=%d dépasse le format de sortie %d."
+
+"Value 'val'=0x%x not in unpacked BCD format."
+"Valeur 'val'=0x%x n'est pas au format BCD."
+
+"Stack size %d overflow"
+"Stack overflow (%d)"
+
+"Stack size %d underflow"
+"Stack underflow (%d)"
+
+"TABLE %s is not initialized."
+"TABLE %s non initialisée."
+
+"Index=%d out of range for TABLE %s[0..%d]"
+"Index=%d hors limites pour TABLE %s[0..%d]"
+
+"Index=%d out of range for string %s[%d]"
+"Index=%d hors limites pour chaîne %s[%d]"
+
+"Couldn't create a unique file name for '%s'"
+"Impossible de créer un nom de fichier unique pour '%s'"
+
+"Couldn't rename(%s,%s)"
+"Impossible de renommer (%s,%s)"
+
+"%s=%d: out of range for 8bits target"
+"%s=%d: hors limites pour cible 8 bits"
+
+"Unsupported op (anything UART, EEPROM, SFR..) for interpretable target.\nINT_%d"
+"OpCode non supporté (UART, EEPROM, SFR...) par la cible.\nINT_%d"
+
+"Select Timer0 in menu 'Settings -> MCU parameters'!"
+"Sélectionner le Timer 0 dans le menu 'Paramètres -> Paramètres MCU'!"
+
+"Can't assign prefix."
+"Impossible d'assigner un préfixe."
+
+"Unsupported op (Peripheral) for interpretable target.\nINT_%d"
+"OpCode non supporté (Peripheral) par la cible.\nINT_%d"
+
+"Unsupported op (Peripheral) for interpretable target."
+"OpCode non supporté (Peripheral) par la cible."
+
+"I2C Rate (Hz):"
+"Fréquence I2C (Hz):"
+
+"I2C functions used but not supported for this micro or compile mode."
+"Fonctions I2C non supportées par ce micro ou dans le mode de compilation."
+
+"No I2C or I2C not supported for this MCU."
+"Pas d'I2C ou I2C non supporté par ce MCU."
+
+"Only one I2C can be used"
+"Un seul I2C peut être utilisé"
+
+"I2C Internal error"
+"Erreur interne I2C"
+
+"Must assign pins for I2C device (name '%s')."
+"Vous devez affecter les pins pour le périphérique I2C (nom '%s')."
+
+"Invalid I2C name in ladder."
+"Nom I2C non valide dans ce ladder."
+
+"I2C - Two Wire Interface"
+"I2C - Two Wire Interface"
+
+"I2C Name:"
+"Nom de l'I2C:"
+
+"I2C Mode:"
+"Mode I2C:"
+
+"I2C Address:"
+"Adresse I2C:"
+
+"I2C Register:"
+"Registre I2C:"
+
+"SPI & I2C can't be used together on PICs"
+"SPI & I2C ne peuvent être utilisés simultanément sur PICs"
+
+"Compile failure."
+"Echec de la compilation."

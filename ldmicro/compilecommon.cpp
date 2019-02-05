@@ -59,7 +59,7 @@ static int   NextBitwiseAllocBit;
 static int   MemOffset;
 DWORD        RamSection;
 
-int CompileFailure= 0;		///// added by JG
+int CompileFailure= 0;      ///// added by JG
 
 //-----------------------------------------------------------------------------
 int McuPWM()
@@ -1148,7 +1148,6 @@ void MemCheckForErrorsPostCompile()
 // outputs, and pack that in 8-bit format as we will need to write to the
 // TRIS or DDR registers. ADC pins are neither inputs nor outputs.
 //-----------------------------------------------------------------------------
-
 ///// Prototype modified by JG to have 8 / 16 bit ports
 /////	void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError)
 void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool raiseError)

@@ -507,6 +507,9 @@ McuIoPinInfo AvrAtmega8IoPinInfo[] = {
 };
 
 //-----------------------------------------------------------------------------
+// ATmega328 32-Pin packages TQFP/QFN/MLF
+
+//-----------------------------------------------------------------------------
 // ATmega328 PDIP-28
 
 McuIoPinInfo AvrAtmega328IoPinInfo[] = {
@@ -637,33 +640,33 @@ McuExtIntPinInfo PicExtIntPinInfo64[] = {
 
 ///// Added by JG
 McuI2cInfo McuI2cInfoATmega8[] = {
-//		name,	REG_CTRL, REG_STAT, REG_DATA, REG_RATE,		SCL,	SDA
-	{ "I2C",	0,			0,			0,			0,		28,		27 },		// I2C = PC5 + PC4
-//	NB:	All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C",    0,          0,          0,          0,      28,     27 },       // I2C = PC5 + PC4
+//  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 
-McuI2cInfo McuI2cInfoATmega16[] = {												// For AtMega16, 32, 164, 324, 644, 1284
-//		name,	REG_CTRL, REG_STAT, REG_DATA, REG_RATE,		SCL,	SDA			
-	{ "I2C",	0,			0,			0,			0,		22,		23 },		// I2C = PB8 + PB9
-//	NB:	All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
+McuI2cInfo McuI2cInfoATmega16[] = {                                             // For AtMega16, 32, 164, 324, 644, 1284
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C",    0,          0,          0,          0,      22,     23 },       // I2C = PB8 + PB9
+//  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 
-McuI2cInfo McuI2cInfoATmega64[] = {												// For AtMega16, 32, 164, 324, 644, 1284
-//		name,	REG_CTRL, REG_STAT, REG_DATA, REG_RATE,		SCL,	SDA			
-	{ "I2C",	0,			0,			0,			0,		25,		26 },		// I2C = PD0 + PD1
-//	NB:	All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
+McuI2cInfo McuI2cInfoATmega64[] = {                                             // For AtMega16, 32, 164, 324, 644, 1284
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C",    0,          0,          0,          0,      25,     26 },       // I2C = PD0 + PD1
+//  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 
-McuI2cInfo McuI2cInfoATmega328[] = {											// For AtMega48, 88, 168, 328
-//		name,	REG_CTRL, REG_STAT, REG_DATA, REG_RATE,		SCL,	SDA	
-	{ "I2C",	0,			0,			0,			0,		28,		27 },		// I2C = PB8 + PB9
-//	NB:	All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
+McuI2cInfo McuI2cInfoATmega328[] = {                                            // For AtMega48, 88, 168, 328
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C",    0,          0,          0,          0,      28,     27 },       // I2C = PB8 + PB9
+//  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 
-McuI2cInfo McuI2cInfoATmega2560[] = {											// For AtMega640, 1280, 2560
-//		name,	REG_CTRL, REG_STAT, REG_DATA, REG_RATE,		SCL,	SDA	
-	{ "I2C",	0,			0,			0,			0,		43,		44 },		// I2C = PD0 + PD1
-//	NB:	All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
+McuI2cInfo McuI2cInfoATmega2560[] = {                                           // For AtMega640, 1280, 2560
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C",    0,          0,          0,          0,      43,     44 },       // I2C = PD0 + PD1
+//  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 /////
 
@@ -677,20 +680,20 @@ McuSpiInfo McuSpiInfoATmega8[] = {
     { "SPI",       0x0D,    0x0E,    0x0F,  18,   17,  19,  16 },
 };
 
-McuSpiInfo McuSpiInfoATmega16[] = {		
+McuSpiInfo McuSpiInfoATmega16[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB6   PB5  PB7  PB4
-    { "SPI",       0x0D,    0x0E,    0x0F,  7,    6,   8,   5 },		// For AtMega16, 32, 162, 164, 324, 644, 1284
+    { "SPI",       0x0D,    0x0E,    0x0F,  7,    6,   8,   5 },        // For AtMega16, 32, 162, 164, 324, 644, 1284
 };
 
 McuSpiInfo McuSpiInfoATmega64[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB6   PB5  PB7  PB4
-    { "SPI",       0x0D,    0x0E,    0x4E,  13,   12,  11,  10 },		// For AtMega64, 128
+    { "SPI",       0x0D,    0x0E,    0x4E,  13,   12,  11,  10 },       // For AtMega64, 128
 };
 
 
-McuSpiInfo McuSpiInfoATmega328[] = {									// For AtMega48, 88, 168, 328
+McuSpiInfo McuSpiInfoATmega328[] = {                                    // For AtMega48, 88, 168, 328
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB6   PB5  PB7  PB4
     { "SPI",       0x4C,    0x4D,    0x4E,  18,   17,  19,  16 },
@@ -895,22 +898,22 @@ McuPwmPinInfo PicPwmPinInfo64[] = {
 // PIC's I2C Info Tables
 
 ///// Added by JG
-McuI2cInfo McuI2cInfoPic16F88[] = {												// For PIC16F88, 819
-//		name,	REG_CTRL, REG_STAT, REG_DATA, REG_RATE,		SCL,	SDA
-	{ "I2C",	0,			0,			0,			0,		10,		7 },		// I2C = RB4 + RB1
-//	NB:	All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
+McuI2cInfo McuI2cInfoPic16F88[] = {                                             // For PIC16F88, 819
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C",    0,          0,          0,          0,      10,     7 },        // I2C = RB4 + RB1
+//  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
 };
 
-McuI2cInfo McuI2cInfoPic16F876[] = {											// For PIC16F876, 886
-//		name,	REG_CTRL, REG_STAT, REG_DATA, REG_RATE,		SCL,	SDA
-	{ "I2C",	0,			0,			0,			0,		14,		15 },		// I2C = RC3 + RC4
-//	NB:	All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
+McuI2cInfo McuI2cInfoPic16F876[] = {                                            // For PIC16F876, 886
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C",    0,          0,          0,          0,      14,     15 },       // I2C = RC3 + RC4
+//  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
 };
 
-McuI2cInfo McuI2cInfoPic16F877[] = {											// For PIC16F877, 887
-//		name,	REG_CTRL, REG_STAT, REG_DATA, REG_RATE,		SCL,	SDA
-	{ "I2C",	0,			0,			0,			0,		18,		23 },		// I2C = RC3 + RC4
-//	NB:	All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
+McuI2cInfo McuI2cInfoPic16F877[] = {                                            // For PIC16F877, 887
+//      name,   REG_CTRL, REG_STAT, REG_DATA, REG_RATE,     SCL,    SDA
+    { "I2C",    0,          0,          0,          0,      18,     23 },       // I2C = RC3 + RC4
+//  NB: All pins for a same I2C peripheral must be on the same port RBX because of PinsForI2cVariable()
 };
 
 //-----------------------------------------------------------------------------
@@ -1359,82 +1362,82 @@ McuPwmPinInfo ControllinoMaxiPwmPinInfo[] = {
     { 40, 5 },
 };
 
-///// Added by JG		// A completer
+///// Added by JG       // A completer
 //-----------------------------------------------------------------------------
 McuIoPinInfo ArmSTM32F40X_144LQFPIoPinInfo[] = {
-//	ARM STM32F40X
-	{ 'A',  0, 34, "PA00 (TX4)" }, { 'A',  1, 35, "PA01 (RX4)" }, { 'A',  2,  36, "PA02 (TX2)" }, { 'A',  3, 37, "PA03 (RX2)" },
-	{ 'A',  4, 40, "PA04 (ADC1.4)" }, { 'A',  5, 41, "PA05 (ADC1.5) (SCK1) (PWM2.1)" }, { 'A',  6,  42, "PA06 (ADC1.6) (MISO1)" }, { 'A',  7, 43, "PA07 (MOSI1)" },
-	{ 'A',  8, 100, "PA08" }, { 'A',  9, 101, "PA09 (TX1)" }, { 'A',  10,  102, "PA10 (RX1)" }, { 'A',  11, 103, "PA11" },
-	{ 'A',  12, 104, "PA12" }, { 'A',  13, 105, "PA013" }, { 'A',  14, 109, "PA14" }, { 'A',  15, 110, "PA15" },
-	{ 'B',  0, 45, "PB00" }, { 'B',  1, 46, "PB01" }, { 'B',  2,  47, "PB02" }, { 'B',  3, 133, "PB03 (PWM2.2)" },
-	{ 'B',  4, 134, "PB04 (ADC2.4)" }, { 'B',  5, 135, "PB05 (ADC2.5)" }, { 'B',  6, 136, "PB06 (ADC2.6)" }, { 'B',  7, 137, "PB07" },
-	{ 'B',  8, 139, "PB08 (SCL1)" }, { 'B',  9, 140, "PB09 (SDA1)" }, { 'B',  10, 39, "PB10 (TX3) (SCK2) (PWM2.3)" }, { 'B',  11, 70, "PB11 (RX3) (PWM2.4)" },
-	{ 'B',  12, 73, "PB12 (CS1)" }, { 'B',  13, 74, "PB13" }, { 'B',  14, 75, "PB14" }, { 'B',  15, 76, "PB15" },
-	{ 'C',  0, 26, "PC00" }, { 'C',  1, 27, "PC01" }, { 'C',  2,  28, "PC02 (MISO2)" }, { 'C',  3, 29, "PC03 (MOSI2)" },
-	{ 'C',  4, 44, "PC04" }, { 'C',  5, 45, "PC05" }, { 'C',  6,  96, "PC06 (TX6)" }, { 'C',  7, 97, "PC07 (RX6)" },
-	{ 'C',  8, 98, "PC08" }, { 'C',  9, 99, "PC09" }, { 'C',  10,  111, "PC10" }, { 'C',  11, 112, "PC11" },
-	{ 'C',  12, 113, "PC12 (TX5)" }, { 'C',  13, 7, "PC13" }, { 'C',  14,  8, "PC14" }, { 'C',  15, 9, "PC15 (CS3)" },
-	{ 'D',  0, 114, "PD00" }, { 'D',  1, 115, "PD01" },	{ 'D',  2, 116, "PD02 (RX5)" }, { 'D',  3, 117, "PD03" },
-	{ 'D',  4, 118, "PD04" }, { 'D',  5, 119, "PD05" },	{ 'D',  6, 122, "PD06" },	{ 'D',  7, 123, "PD07" },
-	{ 'D',  8, 77, "PD08" }, { 'D',  9, 78, "PD09" }, { 'D',  10, 79, "PD10" }, { 'D',  11, 80, "PD11" },
+//  ARM STM32F40X
+    { 'A',  0, 34, "PA00 (TX4)" }, { 'A',  1, 35, "PA01 (RX4)" }, { 'A',  2,  36, "PA02 (TX2)" }, { 'A',  3, 37, "PA03 (RX2)" },
+    { 'A',  4, 40, "PA04 (ADC1.4)" }, { 'A',  5, 41, "PA05 (ADC1.5) (SCK1) (PWM2.1)" }, { 'A',  6,  42, "PA06 (ADC1.6) (MISO1)" }, { 'A',  7, 43, "PA07 (MOSI1)" },
+    { 'A',  8, 100, "PA08" }, { 'A',  9, 101, "PA09 (TX1)" }, { 'A',  10,  102, "PA10 (RX1)" }, { 'A',  11, 103, "PA11" },
+    { 'A',  12, 104, "PA12" }, { 'A',  13, 105, "PA013" }, { 'A',  14, 109, "PA14" }, { 'A',  15, 110, "PA15" },
+    { 'B',  0, 45, "PB00" }, { 'B',  1, 46, "PB01" }, { 'B',  2,  47, "PB02" }, { 'B',  3, 133, "PB03 (PWM2.2)" },
+    { 'B',  4, 134, "PB04 (ADC2.4)" }, { 'B',  5, 135, "PB05 (ADC2.5)" }, { 'B',  6, 136, "PB06 (ADC2.6)" }, { 'B',  7, 137, "PB07" },
+    { 'B',  8, 139, "PB08 (SCL1)" }, { 'B',  9, 140, "PB09 (SDA1)" }, { 'B',  10, 39, "PB10 (TX3) (SCK2) (PWM2.3)" }, { 'B',  11, 70, "PB11 (RX3) (PWM2.4)" },
+    { 'B',  12, 73, "PB12 (CS1)" }, { 'B',  13, 74, "PB13" }, { 'B',  14, 75, "PB14" }, { 'B',  15, 76, "PB15" },
+    { 'C',  0, 26, "PC00" }, { 'C',  1, 27, "PC01" }, { 'C',  2,  28, "PC02 (MISO2)" }, { 'C',  3, 29, "PC03 (MOSI2)" },
+    { 'C',  4, 44, "PC04" }, { 'C',  5, 45, "PC05" }, { 'C',  6,  96, "PC06 (TX6)" }, { 'C',  7, 97, "PC07 (RX6)" },
+    { 'C',  8, 98, "PC08" }, { 'C',  9, 99, "PC09" }, { 'C',  10,  111, "PC10" }, { 'C',  11, 112, "PC11" },
+    { 'C',  12, 113, "PC12 (TX5)" }, { 'C',  13, 7, "PC13" }, { 'C',  14,  8, "PC14" }, { 'C',  15, 9, "PC15 (CS3)" },
+    { 'D',  0, 114, "PD00" }, { 'D',  1, 115, "PD01" }, { 'D',  2, 116, "PD02 (RX5)" }, { 'D',  3, 117, "PD03" },
+    { 'D',  4, 118, "PD04" }, { 'D',  5, 119, "PD05" }, { 'D',  6, 122, "PD06" },   { 'D',  7, 123, "PD07" },
+    { 'D',  8, 77, "PD08" }, { 'D',  9, 78, "PD09" }, { 'D',  10, 79, "PD10" }, { 'D',  11, 80, "PD11" },
     { 'D',  12, 81, "PD12 (PWM4.1)" }, { 'D',  13, 82, "PD13 (PWM4.2)" }, { 'D',  14, 85, "PD14 (PWM4.3" }, { 'D',  15, 86, "PD15 (PWM4.4)" },
-	{ 'E',  0, 141, "PE00" }, { 'E',  1, 142, "PE01" }, { 'E',  2,  1, "PE02" }, { 'E',  3,  2, "PE03" },
+    { 'E',  0, 141, "PE00" }, { 'E',  1, 142, "PE01" }, { 'E',  2,  1, "PE02" }, { 'E',  3,  2, "PE03" },
     { 'E',  4,  3, "PE04" }, { 'E',  5,  4, "PE05" }, { 'E',  6,  5, "PE06" }, { 'E',  7, 58, "PE07" },
     { 'E',  8, 59, "PE08" }, { 'E',  9, 60, "PE09 (PWM1.1)" }, { 'E',  10, 63, "PE10 (PWM1.2)" }, { 'E',  11, 64, "PE11" },
-	{ 'E',  12, 65, "PE12" }, { 'E',  13, 66, "PE13 (PWM1.3)" }, { 'E',  14, 67, "PE14 (PWM1.4)" }, { 'E',  15, 68, "PE15" },
-	{ 'F',  0, 10, "PF00 (SDA2)" }, { 'F',  1, 11, "PF01 (SCL2)" }, { 'F',  2, 12, "PF02" }, { 'F',  3, 13, "PF03" },
-	{ 'F',  4, 14, "PF04" }, { 'F',  5, 15, "PF05" }, { 'F',  6, 18, "PF06" }, { 'F',  7, 19, "PF07" },
-	{ 'F',  8, 20, "PF08 (ADC3.6)" }, { 'F',  9, 21, "PF09 (ADC3.7)" }, { 'F',  10, 22, "PF10 (ADC3.8)" }, { 'F',  11, 49, "PF11" },
-	{ 'F',  12, 50, "PF12" }, { 'F',  13, 53, "PF13" }, { 'F',  14, 54, "PF14" }, { 'F',  15, 55, "PF15" },
-	{ 'G',  0, 56, "PG00" }, { 'G',  1, 57, "PG01" }, { 'G',  2, 87, "PG02" }, { 'G',  3, 88, "PG03" },
-	{ 'G',  4, 89, "PG04" }, { 'G',  5, 90, "PG05" }, { 'G',  6, 91, "PG06" }, { 'G',  7, 92, "PG07" },
-	{ 'G',  8, 93, "PG08" }, { 'G',  9, 124, "PG09" }, { 'G',  10, 125, "PG10 (CS2)" }, { 'G',  11, 126, "PG11" },
-	{ 'G',  12, 128, "PG12" }, { 'G',  13, 128, "PG13" }, { 'G',  14, 129, "PG14" }, { 'G',  15, 132, "PG15" }
+    { 'E',  12, 65, "PE12" }, { 'E',  13, 66, "PE13 (PWM1.3)" }, { 'E',  14, 67, "PE14 (PWM1.4)" }, { 'E',  15, 68, "PE15" },
+    { 'F',  0, 10, "PF00 (SDA2)" }, { 'F',  1, 11, "PF01 (SCL2)" }, { 'F',  2, 12, "PF02" }, { 'F',  3, 13, "PF03" },
+    { 'F',  4, 14, "PF04" }, { 'F',  5, 15, "PF05" }, { 'F',  6, 18, "PF06" }, { 'F',  7, 19, "PF07" },
+    { 'F',  8, 20, "PF08 (ADC3.6)" }, { 'F',  9, 21, "PF09 (ADC3.7)" }, { 'F',  10, 22, "PF10 (ADC3.8)" }, { 'F',  11, 49, "PF11" },
+    { 'F',  12, 50, "PF12" }, { 'F',  13, 53, "PF13" }, { 'F',  14, 54, "PF14" }, { 'F',  15, 55, "PF15" },
+    { 'G',  0, 56, "PG00" }, { 'G',  1, 57, "PG01" }, { 'G',  2, 87, "PG02" }, { 'G',  3, 88, "PG03" },
+    { 'G',  4, 89, "PG04" }, { 'G',  5, 90, "PG05" }, { 'G',  6, 91, "PG06" }, { 'G',  7, 92, "PG07" },
+    { 'G',  8, 93, "PG08" }, { 'G',  9, 124, "PG09" }, { 'G',  10, 125, "PG10 (CS2)" }, { 'G',  11, 126, "PG11" },
+    { 'G',  12, 128, "PG12" }, { 'G',  13, 128, "PG13" }, { 'G',  14, 129, "PG14" }, { 'G',  15, 132, "PG15" }
 };
 
 McuAdcPinInfo ArmSTM32F40X_144LQFPAdcPinInfo[] = {
-//	ARM STM32F40X
-//	{pin, channel}
-    { 40, 0x04 },		// ADC1 channel 4 on PA4
-    { 41, 0x05 },		// ADC1 channel 5 on PA5
-    { 42, 0x06 },		// ADC1 channel 6 on PA6
-    { 134, 0x04 },		// ADC2 channel 4 on PA4		// appears as PB4 because of ADC1
-    { 135, 0x05 },		// ADC2 channel 5 on PA5		// appears as PB5 because of ADC1
-    { 136, 0x06 },		// ADC2 channel 6 on PA4		// appears as PB5 because of ADC1
-    { 20, 0x06 },		// ADC3 channel 6 on PF8
-    { 21, 0x07 },		// ADC3 channel 7 on PF9
-    { 22, 0x08 }		// ADC3 channel 8 on PF10
+//  ARM STM32F40X
+//  {pin, channel}
+    { 40, 0x04 },       // ADC1 channel 4 on PA4
+    { 41, 0x05 },       // ADC1 channel 5 on PA5
+    { 42, 0x06 },       // ADC1 channel 6 on PA6
+    { 134, 0x04 },      // ADC2 channel 4 on PA4        // appears as PB4 because of ADC1
+    { 135, 0x05 },      // ADC2 channel 5 on PA5        // appears as PB5 because of ADC1
+    { 136, 0x06 },      // ADC2 channel 6 on PA4        // appears as PB5 because of ADC1
+    { 20, 0x06 },       // ADC3 channel 6 on PF8
+    { 21, 0x07 },       // ADC3 channel 7 on PF9
+    { 22, 0x08 }        // ADC3 channel 8 on PF10
 };
 
 McuPwmPinInfo ArmSTM32F40X_144LQFPPwmPinInfo[] = {
-//	ARM STM32F40X
-//	{pin, timer, resol}
+//  ARM STM32F40X
+//  {pin, timer, resol}
     { 81, 4, 16 },
     { 82, 4, 16 },
     { 85, 4, 16 },
     { 86, 4, 16 },
-	{ 41, 2, 32},
-	{ 133, 2, 32},
-	{ 39, 2, 32},
-	{ 70, 2, 32}
+    { 41, 2, 32},
+    { 133, 2, 32},
+    { 39, 2, 32},
+    { 70, 2, 32}
 };
 
 McuSpiInfo ArmSTM32F40X_144LQFPMcuSpiInfo[] = {
-//	name, REG_CTRL, REG_STAT, REG_DATA, MISO, MOSI, SCK, CS			
-	{ "SPI1", 0, 0, 0, 42, 43, 41, 73 },			// SPI1 = PA6 + PA7 + PA5 + PB12
-    { "SPI2", 0, 0, 0, 28, 29, 39, 125 },			// SPI2 = PC2 + PC3 + PB10 + PG10
-	{ "SPI3", 0, 0, 0, 28, 29, 39, 9 },				// SPI2 = PB4 + PB5 + PB3 + PC15
-//	NB: CS is in fact user defined - if need be - (software CS) but a pin must be declared
-//	NB:	All pins for a same SPI peripheral must be on the same port PX because of PinsForSpiVariable()
+//  name, REG_CTRL, REG_STAT, REG_DATA, MISO, MOSI, SCK, CS
+    { "SPI1", 0, 0, 0, 42, 43, 41, 73 },            // SPI1 = PA6 + PA7 + PA5 + PB12
+    { "SPI2", 0, 0, 0, 28, 29, 39, 125 },           // SPI2 = PC2 + PC3 + PB10 + PG10
+    { "SPI3", 0, 0, 0, 28, 29, 39, 9 },             // SPI2 = PB4 + PB5 + PB3 + PC15
+//  NB: CS is in fact user defined - if need be - (software CS) but a pin must be declared
+//  NB: All pins for a same SPI peripheral must be on the same port PX because of PinsForSpiVariable()
 };
 
 McuI2cInfo ArmSTM32F40X_144LQFPMcuI2cInfo[] = {
-//	name, REG_CTRL, REG_STAT, REG_DATA, REG_RATE, SCL, SDA	
-	{"I2C1", 0, 0, 0, 0, 139, 140 },				// I2C1 = PB8 + PB9
-	{"I2C2", 0, 0, 0, 0, 11, 10	},					// I2C2 = PF1 + PF0
-//	{"I2C3", 0, 0, 0, 0, 0, 0 }						// I2C3 = PH7 + PH8
-//	NB:	All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
+//  name, REG_CTRL, REG_STAT, REG_DATA, REG_RATE, SCL, SDA
+    {"I2C1", 0, 0, 0, 0, 139, 140 },                // I2C1 = PB8 + PB9
+    {"I2C2", 0, 0, 0, 0, 11, 10 },                  // I2C2 = PF1 + PF0
+//  {"I2C3", 0, 0, 0, 0, 0, 0 }                     // I2C3 = PH7 + PH8
+//  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 /////
 
@@ -1479,8 +1482,8 @@ McuIoInfo SupportedMcus_[] = {
         0,
         McuSpiInfoATmega2560,
         arraylen(McuSpiInfoATmega2560),
-		McuI2cInfoATmega2560,
-		arraylen(McuI2cInfoATmega2560),
+        McuI2cInfoATmega2560,
+        arraylen(McuI2cInfoATmega2560),
     },
     {
         "Atmel AVR AT90USB647 64-TQFP",
@@ -1534,12 +1537,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo64_,
         arraylen(AvrPwmPinInfo64_),
-		nullptr,
-		0,
-		McuSpiInfoATmega64,
-		arraylen(McuSpiInfoATmega64),
-		McuI2cInfoATmega64,
-		arraylen(McuI2cInfoATmega64),
+        nullptr,
+        0,
+        McuSpiInfoATmega64,
+        arraylen(McuSpiInfoATmega64),
+        McuI2cInfoATmega64,
+        arraylen(McuI2cInfoATmega64),
     },
     {
         "Atmel AVR ATmega64 64-TQFP",
@@ -1566,12 +1569,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo64_,
         arraylen(AvrPwmPinInfo64_),
-		nullptr,
-		0,
-		McuSpiInfoATmega64,
-		arraylen(McuSpiInfoATmega64),
-		McuI2cInfoATmega64,
-		arraylen(McuI2cInfoATmega64),
+        nullptr,
+        0,
+        McuSpiInfoATmega64,
+        arraylen(McuSpiInfoATmega64),
+        McuI2cInfoATmega64,
+        arraylen(McuI2cInfoATmega64),
     },
     {
         "Atmel AVR ATmega162 40-PDIP",
@@ -1598,10 +1601,10 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrAtmega162PwmPinInfo40_,
         arraylen(AvrAtmega162PwmPinInfo40_),
-		nullptr,
-		0,
-		McuSpiInfoATmega16,
-		arraylen(McuSpiInfoATmega16),
+        nullptr,
+        0,
+        McuSpiInfoATmega16,
+        arraylen(McuSpiInfoATmega16),
     },
     {
         "Atmel AVR ATmega32 40-PDIP",
@@ -1628,12 +1631,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrAtmega16_32PwmPinInfo40,
         arraylen(AvrAtmega16_32PwmPinInfo40),
-		nullptr,
-		0,
-		McuSpiInfoATmega16,
-		arraylen(McuSpiInfoATmega16),
-		McuI2cInfoATmega16,
-		arraylen(McuI2cInfoATmega16),
+        nullptr,
+        0,
+        McuSpiInfoATmega16,
+        arraylen(McuSpiInfoATmega16),
+        McuI2cInfoATmega16,
+        arraylen(McuI2cInfoATmega16),
     },
     {
         "Atmel AVR ATmega16 40-PDIP",
@@ -1660,12 +1663,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrAtmega16_32PwmPinInfo40,
         arraylen(AvrAtmega16_32PwmPinInfo40),
-		nullptr,
-		0,
-		McuSpiInfoATmega16,
-		arraylen(McuSpiInfoATmega16),
-		McuI2cInfoATmega16,
-		arraylen(McuI2cInfoATmega16),
+        nullptr,
+        0,
+        McuSpiInfoATmega16,
+        arraylen(McuSpiInfoATmega16),
+        McuI2cInfoATmega16,
+        arraylen(McuI2cInfoATmega16),
     },
     {
         "Atmel AVR ATmega48 28-PDIP",
@@ -1692,12 +1695,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo28,
         arraylen(AvrPwmPinInfo28),
-		nullptr,
-		0,
-		McuSpiInfoATmega328,
-		arraylen(McuSpiInfoATmega328),
-		McuI2cInfoATmega328,
-		arraylen(McuI2cInfoATmega328),		
+        nullptr,
+        0,
+        McuSpiInfoATmega328,
+        arraylen(McuSpiInfoATmega328),
+        McuI2cInfoATmega328,
+        arraylen(McuI2cInfoATmega328),
     },
     {
         "Atmel AVR ATmega88 28-PDIP",
@@ -1724,12 +1727,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo28,
         arraylen(AvrPwmPinInfo28),
-		nullptr,
-		0,
-		McuSpiInfoATmega328,
-		arraylen(McuSpiInfoATmega328),
-		McuI2cInfoATmega328,
-		arraylen(McuI2cInfoATmega328),		
+        nullptr,
+        0,
+        McuSpiInfoATmega328,
+        arraylen(McuSpiInfoATmega328),
+        McuI2cInfoATmega328,
+        arraylen(McuI2cInfoATmega328),
     },
     {
         "Atmel AVR ATmega168 28-PDIP",
@@ -1756,12 +1759,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo28,
         arraylen(AvrPwmPinInfo28),
-		nullptr,
-		0,
-		McuSpiInfoATmega328,
-		arraylen(McuSpiInfoATmega328),
-		McuI2cInfoATmega328,
-		arraylen(McuI2cInfoATmega328),		
+        nullptr,
+        0,
+        McuSpiInfoATmega328,
+        arraylen(McuSpiInfoATmega328),
+        McuI2cInfoATmega328,
+        arraylen(McuI2cInfoATmega328),
     },
     {
         "Atmel AVR ATmega328 28-PDIP",
@@ -1788,12 +1791,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo28,
         arraylen(AvrPwmPinInfo28),
-		nullptr,
-		0,
-		McuSpiInfoATmega328,
-		arraylen(McuSpiInfoATmega328),
-		McuI2cInfoATmega328,
-		arraylen(McuI2cInfoATmega328),		
+        nullptr,
+        0,
+        McuSpiInfoATmega328,
+        arraylen(McuSpiInfoATmega328),
+        McuI2cInfoATmega328,
+        arraylen(McuI2cInfoATmega328),
     },
     {
         "Atmel AVR ATmega164 40-PDIP",
@@ -1820,12 +1823,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo40_,
         arraylen(AvrPwmPinInfo40_),
-		nullptr,
-		0,
-		McuSpiInfoATmega16,
-		arraylen(McuSpiInfoATmega16),
-		McuI2cInfoATmega16,
-		arraylen(McuI2cInfoATmega16),
+        nullptr,
+        0,
+        McuSpiInfoATmega16,
+        arraylen(McuSpiInfoATmega16),
+        McuI2cInfoATmega16,
+        arraylen(McuI2cInfoATmega16),
     },
     {
         "Atmel AVR ATmega324 40-PDIP",
@@ -1852,12 +1855,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo40_,
         arraylen(AvrPwmPinInfo40_),
-		nullptr,
-		0,
-		McuSpiInfoATmega16,
-		arraylen(McuSpiInfoATmega16),
-		McuI2cInfoATmega16,
-		arraylen(McuI2cInfoATmega16),
+        nullptr,
+        0,
+        McuSpiInfoATmega16,
+        arraylen(McuSpiInfoATmega16),
+        McuI2cInfoATmega16,
+        arraylen(McuI2cInfoATmega16),
     },
     {
         "Atmel AVR ATmega644 40-PDIP",
@@ -1884,12 +1887,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo40_,
         arraylen(AvrPwmPinInfo40_),
-		nullptr,
-		0,
-		McuSpiInfoATmega16,
-		arraylen(McuSpiInfoATmega16),
-		McuI2cInfoATmega16,
-		arraylen(McuI2cInfoATmega16),
+        nullptr,
+        0,
+        McuSpiInfoATmega16,
+        arraylen(McuSpiInfoATmega16),
+        McuI2cInfoATmega16,
+        arraylen(McuI2cInfoATmega16),
     },
     {
         "Atmel AVR ATmega1284 40-PDIP",
@@ -1916,12 +1919,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo40_,
         arraylen(AvrPwmPinInfo40_),
-		nullptr,
-		0,
-		McuSpiInfoATmega16,
-		arraylen(McuSpiInfoATmega16),
-		McuI2cInfoATmega16,
-		arraylen(McuI2cInfoATmega16),
+        nullptr,
+        0,
+        McuSpiInfoATmega16,
+        arraylen(McuSpiInfoATmega16),
+        McuI2cInfoATmega16,
+        arraylen(McuI2cInfoATmega16),
     },
     {
         "Atmel AVR ATmega8 32-Pin packages", //char            *mcuName;
@@ -1979,12 +1982,12 @@ McuIoInfo SupportedMcus_[] = {
         0,
         AvrPwmPinInfo28_,
         arraylen(AvrPwmPinInfo28_),
-		nullptr,
-		0,
-		McuSpiInfoATmega8,
-		arraylen(McuSpiInfoATmega8),
-		McuI2cInfoATmega8,
-		arraylen(McuI2cInfoATmega8),
+        nullptr,
+        0,
+        McuSpiInfoATmega8,
+        arraylen(McuSpiInfoATmega8),
+        McuI2cInfoATmega8,
+        arraylen(McuI2cInfoATmega8),
     },
 //===========================================================================
     {
@@ -2073,10 +2076,10 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(PicPwmPinInfo18),
         PicExtIntPinInfo18,
         arraylen(PicExtIntPinInfo18),
-		McuSpiInfoPic16F88,
-		arraylen(McuSpiInfoPic16F88),
-		McuI2cInfoPic16F88,
-		arraylen(McuI2cInfoPic16F88)
+        McuSpiInfoPic16F88,
+        arraylen(McuSpiInfoPic16F88),
+        McuI2cInfoPic16F88,
+        arraylen(McuI2cInfoPic16F88)
     },
     {
         "Microchip PIC16F819 18-PDIP or 18-SOIC",
@@ -2116,10 +2119,10 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(PicPwmPinInfo18),
         PicExtIntPinInfo18,
         arraylen(PicExtIntPinInfo18),
-		McuSpiInfoPic16F88,
-		arraylen(McuSpiInfoPic16F88),
-		McuI2cInfoPic16F88,
-		arraylen(McuI2cInfoPic16F88)
+        McuSpiInfoPic16F88,
+        arraylen(McuSpiInfoPic16F88),
+        McuI2cInfoPic16F88,
+        arraylen(McuI2cInfoPic16F88)
     },
     {
         "Microchip PIC16F877 40-PDIP",
@@ -2151,10 +2154,10 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(PicPwmPinInfo40),
         PicExtIntPinInfo40,
         arraylen(PicExtIntPinInfo40),
-		McuSpiInfoPic16F877,
-		arraylen(McuSpiInfoPic16F877),
-		McuI2cInfoPic16F877,
-		arraylen(McuI2cInfoPic16F877)
+        McuSpiInfoPic16F877,
+        arraylen(McuSpiInfoPic16F877),
+        McuI2cInfoPic16F877,
+        arraylen(McuI2cInfoPic16F877)
     },
     {
         "Microchip PIC16F876 28-PDIP or 28-SOIC",
@@ -2186,10 +2189,10 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(PicPwmPinInfo28_2),
         PicExtIntPinInfo28,
         arraylen(PicExtIntPinInfo28),
-		McuSpiInfoPic16F876,
-		arraylen(McuSpiInfoPic16F876),
-		McuI2cInfoPic16F876,
-		arraylen(McuI2cInfoPic16F876)
+        McuSpiInfoPic16F876,
+        arraylen(McuSpiInfoPic16F876),
+        McuI2cInfoPic16F876,
+        arraylen(McuI2cInfoPic16F876)
     },
     {
         "Microchip PIC16F887 40-PDIP",
@@ -2230,10 +2233,10 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(PicPwmPinInfo40),
         PicExtIntPinInfo40,
         arraylen(PicExtIntPinInfo40),
-		McuSpiInfoPic16F877,
-		arraylen(McuSpiInfoPic16F877),
-		McuI2cInfoPic16F877,
-		arraylen(McuI2cInfoPic16F877)
+        McuSpiInfoPic16F877,
+        arraylen(McuSpiInfoPic16F877),
+        McuI2cInfoPic16F877,
+        arraylen(McuI2cInfoPic16F877)
     },
     {
         "Microchip PIC16F886 28-PDIP or 28-SOIC",
@@ -2276,10 +2279,10 @@ McuIoInfo SupportedMcus_[] = {
         arraylen(PicPwmPinInfo28_2),
         PicExtIntPinInfo28,
         arraylen(PicExtIntPinInfo28),
-		McuSpiInfoPic16F876,
-		arraylen(McuSpiInfoPic16F876),
-		McuI2cInfoPic16F876,
-		arraylen(McuI2cInfoPic16F876)
+        McuSpiInfoPic16F876,
+        arraylen(McuSpiInfoPic16F876),
+        McuI2cInfoPic16F876,
+        arraylen(McuI2cInfoPic16F876)
     },
     {
         "Microchip PIC10F200 6-SOT",
@@ -2314,45 +2317,45 @@ McuIoInfo SupportedMcus_[] = {
         0
     },
 
-//===========================================================================		
-	{	///// Added by JG				// A Completer
-		#define BASE_A 0x40020000
-		#define BASE_B 0x40020400
-		#define BASE_C 0x40020800
-		#define BASE_D 0x40020C00
-		#define BASE_E 0x40021000
-		#define BASE_F 0x40021400
-		#define BASE_G 0x40021800
-		"St ARM STM32F40X 144-LQFP",					// Nom
-		"STM32F40X",									// Liste d'alias
+//===========================================================================
+    {   ///// Added by JG               // A Completer
+        #define BASE_A 0x40020000
+        #define BASE_B 0x40020400
+        #define BASE_C 0x40020800
+        #define BASE_D 0x40020C00
+        #define BASE_E 0x40021000
+        #define BASE_F 0x40021400
+        #define BASE_G 0x40021800
+        "St ARM STM32F40X 144-LQFP",                    // Nom
+        "STM32F40X",                                    // Liste d'alias
         "",
         "",
         "",
-        'P',										// Prefixe ports
-		{ BASE_A+0x14, BASE_B+0x14, BASE_C+0x14, BASE_D+0x14, BASE_E+0x14, BASE_F+0x14, BASE_G+0x18, 0, 0, 0, 0},	// Adresses registres In
-		{ BASE_A+0x18, BASE_B+0x18, BASE_C+0x18, BASE_D+0x18, BASE_E+0x18, BASE_F+0x18, BASE_G+0x18, 0, 0, 0, 0},	// Adresses registres Out
-		{ BASE_A, BASE_B, BASE_C, BASE_D, BASE_E, BASE_F, BASE_G, 0, 0, 0, 0},										// Adresses registres Dir
-        512 * 1024,									// 1 MO Flash
-        { { 0x0800000, 0x100000 } },				// debut + taille
-        ArmSTM32F40X_144LQFPIoPinInfo,				// Pin info
-        arraylen(ArmSTM32F40X_144LQFPIoPinInfo),	// Nb broches (declarees)
-        ArmSTM32F40X_144LQFPAdcPinInfo,				// Adc info
-        9,											// Nb Adc
-        4095,										// Adc valeur Maxi							// 12 bits
-        {97, 96},									// Uart RX + TX	(UART 6)					// RXn + TXn in I/O definition
-        0,											// PWM default Pin
-        ISA_ARM,									// Type
-        NOTHING,									// Core 
-        144,										// Nb de broches
-        0,											// For PIC but may be used for ARM
-        ArmSTM32F40X_144LQFPPwmPinInfo,				// Pwm info
-        arraylen(ArmSTM32F40X_144LQFPPwmPinInfo),	// Pwm info size
-		nullptr,									// ExtInt info
-		0,											// ExtInt info size
-		ArmSTM32F40X_144LQFPMcuSpiInfo,				// Spi info
-		arraylen(ArmSTM32F40X_144LQFPMcuSpiInfo),	// Spi info size
-		ArmSTM32F40X_144LQFPMcuI2cInfo,				// I2c info
-		arraylen(ArmSTM32F40X_144LQFPMcuI2cInfo),	// I2c info size
+        'P',                                        // Prefixe ports
+        { BASE_A+0x14, BASE_B+0x14, BASE_C+0x14, BASE_D+0x14, BASE_E+0x14, BASE_F+0x14, BASE_G+0x18, 0, 0, 0, 0},   // Adresses registres In
+        { BASE_A+0x18, BASE_B+0x18, BASE_C+0x18, BASE_D+0x18, BASE_E+0x18, BASE_F+0x18, BASE_G+0x18, 0, 0, 0, 0},   // Adresses registres Out
+        { BASE_A, BASE_B, BASE_C, BASE_D, BASE_E, BASE_F, BASE_G, 0, 0, 0, 0},                                      // Adresses registres Dir
+        512 * 1024,                                 // 1 MO Flash
+        { { 0x0800000, 0x100000 } },                // debut + taille
+        ArmSTM32F40X_144LQFPIoPinInfo,              // Pin info
+        arraylen(ArmSTM32F40X_144LQFPIoPinInfo),    // Nb broches (declarees)
+        ArmSTM32F40X_144LQFPAdcPinInfo,             // Adc info
+        9,                                          // Nb Adc
+        4095,                                       // Adc valeur Maxi                          // 12 bits
+        {97, 96},                                   // UART RX + TX (UART 6)                    // RXn + TXn in I/O definition
+        0,                                          // PWM default Pin
+        ISA_ARM,                                    // Type
+        NOTHING,                                    // Core
+        144,                                        // Nb de broches
+        0,                                          // For PIC but may be used for ARM
+        ArmSTM32F40X_144LQFPPwmPinInfo,             // Pwm info
+        arraylen(ArmSTM32F40X_144LQFPPwmPinInfo),   // Pwm info size
+        nullptr,                                    // ExtInt info
+        0,                                          // ExtInt info size
+        ArmSTM32F40X_144LQFPMcuSpiInfo,             // SPI info
+        arraylen(ArmSTM32F40X_144LQFPMcuSpiInfo),   // SPI info size
+        ArmSTM32F40X_144LQFPMcuI2cInfo,             // I2C info
+        arraylen(ArmSTM32F40X_144LQFPMcuI2cInfo),   // I2C info size
 
     },
 

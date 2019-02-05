@@ -17,11 +17,11 @@ goto NOT_SUPPORTED
 
 :PICX
 if "%3" == "2" goto HTC
-goto PIC16)
+goto PIC16
 
 :AVRX
 if "%3" == "2" goto AVRGCC
-goto AVRC
+goto AVR
 
 
 @rem =======================================================================

@@ -1623,11 +1623,12 @@ static void ProcessMenu(int code)
 
         case MNU_SELECT_RUNG: {
             int i = RungContainingSelected();
-            if(i >= 0)
+            if(i >= 0){
                 if(Prog.rungSelected[i] == ' ')
                     Prog.rungSelected[i] = '*';
                 else
                     Prog.rungSelected[i] = ' ';
+            }
             break;
         }
         case MNU_CUT_RUNG:
@@ -1954,7 +1955,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             char buf[1024];
             sprintf(buf,
-                    _("File '%s' modified by another application.\r\nIts disk timestamp is newer than the editor one.\nReload from disk?"),
+                    _("File '%s' modified by another application.\r\n"
+                      "Its disk timestamp is newer than the editor one.\n"
+                      "Reload from disk?"),
                     CurrentSaveFile);
             int r = MessageBox(MainWindow, buf, "LDmicro", MB_YESNO | MB_ICONWARNING);
             switch(r) {

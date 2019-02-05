@@ -254,10 +254,11 @@ using namespace std;            // added by JG
 #define MNU_COMPILE_CODEVISIONAVR   0x7220          // AVR Codevision
 #define MNU_COMPILE_IMAGECRAFT      0x7230          // AVR IccAvr
 #define MNU_COMPILE_IAR             0x7240          // AVR IAR
+
 #define MNU_COMPILE_ARMGCC          0x7300          // Added by JG
 #define MNU_COMPILE_lastC           0x7399          // End of C compiling menus     !!!
 
-#define MNU_COMPILE_ARDUINO         0x7400          // AVR Arduino
+#define MNU_COMPILE_ARDUINO         0x7400          // Arduino
 
 #define MNU_COMPILE_IHEX            0x7500
 #define MNU_COMPILE_IHEXDONE        0x7510
@@ -400,9 +401,9 @@ using namespace std;            // added by JG
 #define ELEM_LOCK               0x2c03
 #define ELEM_DELAY              0x2c04
 #define ELEM_TIME2DELAY         0x2c05
-#define ELEM_LABEL              0x2c20
-#define ELEM_GOTO               0x2c21
-#define ELEM_SUBPROG            0x2c22
+#define ELEM_LABEL              0x2c20 // rung label // operate with rung only
+#define ELEM_GOTO               0x2c21 // goto rung  // operate with rung only
+#define ELEM_SUBPROG            0x2c22 // call rung  // operate with rung only
 #define ELEM_RETURN             0x2c23
 #define ELEM_ENDSUB             0x2c24
 #define ELEM_GOSUB              0x2c25
@@ -1689,7 +1690,7 @@ void SaveVarListToFile(FILE *f);
 bool LoadVarListFromFile(FILE *f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
 void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput);                     ///// Added by JG
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError);    ///// Modified by JG BYTE -> WORD
+void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool raiseError);    ///// Modified by JG BYTE -> WORD
 void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow();
 double SIprefix(double val, char *prefix, int en_1_2);

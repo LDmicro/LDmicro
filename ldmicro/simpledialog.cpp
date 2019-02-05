@@ -224,7 +224,7 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
 {
     bool didCancel;
 
-	try {		//// try... catch added by JG
+    try {       //// try... catch added by JG
 
     if(labs > MAX_BOXES)
         oops();
@@ -254,11 +254,11 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
 
     int i;
     for(i = 0; i < boxes; i++) {
-        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);		///// fill boxes with current settings
-		///// added by JG to make some fields read-only (max= 32 boxes)
-		if ((i < 32) && (rdonly & (1 << i)))
-			SendMessage(Textboxes[i], EM_SETREADONLY, TRUE, 0);
-		/////
+        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);     ///// fill boxes with current settings
+        ///// added by JG to make some fields read-only (max= 32 boxes)
+        if ((i < 32) && (rdonly & (1 << i)))
+            SendMessage(Textboxes[i], EM_SETREADONLY, TRUE, 0);
+        /////
 
         if(numOnlyMask & (1 << i)) {
             PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, (LONG_PTR)MyNumOnlyProc);
@@ -302,7 +302,7 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
                 if(combos[i].n > MAX_COMBO_STRINGS)
                     oops();
                 int ItemIndex = SendMessage(ComboBox[i], CB_GETCURSEL, 0, 0);
-				SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)combos[i].str[ItemIndex]);
+                SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)combos[i].str[ItemIndex]);
             }
         }
         for(i = 0; i < boxes; i++) {
@@ -331,14 +331,14 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
     SetFocus(MainWindow);
     DestroyWindow(SimpleDialog);
 
-	} catch(...) {		///// Try... catch added by JG
+    } catch(...) {      ///// Try... catch added by JG
 
-		///// Added by JG to save work in case of big bug
-		srand(time(nullptr));
-		char fname[20];
-		sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
-		SaveProjectToFile(fname, MNU_SAVE_02);
-		/////
+        ///// Added by JG to save work in case of big bug
+        srand(time(nullptr));
+        char fname[20];
+        sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
+        SaveProjectToFile(fname, MNU_SAVE_02);
+        /////
 
         abortHandler(EXCEPTION_EXECUTE_HANDLER);
     };
@@ -437,7 +437,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
         case ELEM_TCY:        s = _("Cyclic On/Off"); break;
         case ELEM_TON:        s = _("Turn-On Delay"); break;
         case ELEM_TOF:        s = _("Turn-Off Delay"); break;
-        case ELEM_THI:        s = _("Hight Level Delay"); break;
+        case ELEM_THI:        s = _("High Level Delay"); break;
         case ELEM_TLO:        s = _("Low Level Delay"); break;
         case ELEM_RTO:        s = _("Retentive Turn-On Delay"); break;
         case ELEM_RTL:        s = _("Retentive Turn-On Delay If Low Input"); break;
@@ -1741,7 +1741,7 @@ void ShowCprintfDialog(int which, void *e)
     }
     // clang-format on
     char str[MAX_NAME_LEN];
-    sprintf(str, (_("Formatted String over %s")), s);
+    sprintf(str, _("Formatted String over %s"), s);
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;

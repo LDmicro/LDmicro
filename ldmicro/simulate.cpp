@@ -102,7 +102,7 @@ static int CyclesPerTimerTick;
 // Program counter as we evaluate the intermediate code.
 static uint32_t IntPc;
 
-static FILE *fUART;		
+static FILE *fUART;
 static FILE *fSPI;		///// Added by JG
 static FILE *fI2C;		///// Added by JG
 
@@ -2565,7 +2565,7 @@ void ShowSimulationWindow(int sim)			///// Modified by JG
 		wc.lpfnWndProc = (WNDPROC)I2cSimulationProc;
 	/////
     wc.hInstance = Instance;
-    wc.hbrBackground = (HBRUSH)COLOR_BTNSHADOW;	
+    wc.hbrBackground = (HBRUSH)COLOR_BTNSHADOW;
 	wc.lpszClassName = "LDmicroSimulationWindow";		///// Modified by JG
     wc.lpszMenuName = nullptr;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);

@@ -288,7 +288,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
 		l->d.spi.which = ELEM_SPI;
         *which = ELEM_SPI;
 
-    } 
+    }
 	///// Added by JG
 	  else if(sscanf(line,
                      "I2C_RD %s %s %s %s %s %s %s %s",
@@ -320,7 +320,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
 	}
 	/////
 	
-	  else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
+     else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
 
@@ -891,7 +891,8 @@ bool LoadProjectFromFile(const char *filename)
                         }
                 }
                 if(i == supportedMcus().size()) {
-                    Error(_("Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU."),
+                    Error(_("Microcontroller '%s' not supported.\r\n\r\n"
+                            "Defaulting to no selected MCU."),
                           line + 6);
                 }
             }
@@ -937,8 +938,10 @@ bool LoadProjectFromFile(const char *filename)
 
 failed:
     NewProgram();
-    Error(_("File format error; perhaps this program is for a newer version of LDmicro?"));
-    Error(_("Error in RUNG %d. See error below %s"), rung + 1, line);							///// _() added by JG
+    Error(
+        _("File format error; perhaps this program is for a newer version "
+          "of LDmicro?"));
+    Error(_("Error in RUNG %d. See error below %s"), rung + 1, line);
     return false;
 }
 
