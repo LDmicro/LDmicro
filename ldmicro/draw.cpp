@@ -125,6 +125,9 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_SWAP:
         case ELEM_OPPOSITE:
         case ELEM_SPI:
+		case ELEM_SPI_WR:		///// Added by JG
+		case ELEM_I2C_RD:		///// Added by JG
+		case ELEM_I2C_WR:		///// Added by JG
         case ELEM_BUS:
         case ELEM_7SEG:
         case ELEM_9SEG:

@@ -1082,6 +1082,7 @@ void CompileNetzer(const char *outFile)
     int                     opcodes;
 
     memset((void *)&meta, 0, sizeof(meta));
+	CompileFailure= 0;
 
     // Prepare projectname.
     {
@@ -1184,6 +1185,10 @@ void CompileNetzer(const char *outFile)
     meta.ImageCRC = calculateCRC(f, meta.ImageLength - offsetof(NetzerMetaInformation_t, ImageLength));
     fseek(f, offsetof(NetzerMetaInformation_t, ImageCRC), SEEK_SET);
     fwrite((const void *)&meta.ImageCRC, 1, sizeof(meta.ImageCRC), f);
+
+	///// Added by JG
+	if(CompileFailure) return;
+	/////
 
     // And ready.
     char str[MAX_PATH + 500];

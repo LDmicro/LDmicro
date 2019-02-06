@@ -507,6 +507,9 @@ McuIoPinInfo AvrAtmega8IoPinInfo[] = {
 };
 
 //-----------------------------------------------------------------------------
+// ATmega328 32-Pin packages TQFP/QFN/MLF
+
+//-----------------------------------------------------------------------------
 // ATmega328 PDIP-28
 
 McuIoPinInfo AvrAtmega328IoPinInfo[] = {
@@ -601,9 +604,6 @@ McuExtIntPinInfo AvrExtIntPinInfo32[] = {
     { 32 }, // PD2/INT0
     {  1 }, // PD3/INT1
 };
-
-//-----------------------------------------------------------------------------
-// ATmega328 32-Pin packages TQFP/QFN/MLF
 
 //-----------------------------------------------------------------------------
 // PIC's
@@ -2342,7 +2342,7 @@ McuIoInfo SupportedMcus_[] = {
         ArmSTM32F40X_144LQFPAdcPinInfo,             // Adc info
         9,                                          // Nb Adc
         4095,                                       // Adc valeur Maxi                          // 12 bits
-        {97, 96},                                   // Uart RX + TX (UART 6)                    // RXn + TXn in I/O definition
+        {97, 96},                                   // UART RX + TX (UART 6)                    // RXn + TXn in I/O definition
         0,                                          // PWM default Pin
         ISA_ARM,                                    // Type
         NOTHING,                                    // Core
