@@ -576,8 +576,13 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LUT, _("Insert Look-Up Table"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWL, _("Insert Piecewise Linear"));
 
-    ///// Submenu created by JG
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
+
+    FormatStrMenu = CreatePopupMenu();
+    AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formated string"));
+
+    ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART Send"));                   ///// Modified by JG &UART -> UART
@@ -602,7 +607,7 @@ HMENU MakeMainWindowMenus()
     /////
 
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM, _("Insert Set &PWM Output\tP"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC, _("Insert &A/D Converter Read"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC, _("Insert &A/D Converter Read\tA"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST, _("Insert Make Persistent"));
 
 /*                          ///// Comment by JG
