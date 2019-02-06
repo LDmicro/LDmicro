@@ -358,10 +358,10 @@
 "Insert &Contacts\tC"
 "Kontak Eekle\tC"
 
-"Insert &UART Receive"
+"Insert &UART RECEIVE"
 "&UART'dan Alma ekle"
 
-"Insert &UART Send"
+"Insert &UART SEND"
 "&UART'dan Gönderme ekle"
 
 "Insert -+        +- Open-Circuit"
@@ -598,7 +598,7 @@
 "No opcodes found."
 "No opcodes found."
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Seri iletiþim komutu kullanmadýnýz. Hýzý ayarlamadan önce komut kullanmalýsýnýz.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
@@ -751,17 +751,17 @@
 "Subtract"
 "Çýkar"
 
-"TODO: &Copy Rung's\tCtrl+C or Ctrl+Insert"
-"TODO: &Copy Rung's\tCtrl+C or Ctrl+Insert"
+"TODO: &Copy Rungs\tCtrl+C or Ctrl+Insert"
+"TODO: &Copy Rungs\tCtrl+C or Ctrl+Insert"
 
 "TODO: &Copy Selected Element\tInsert"
 "TODO: &Copy Selected Element\tInsert"
 
-"TODO: &Paste Rung's\tCtrl+V or Shift+Insert"
-"TODO: &Paste Rung's\tCtrl+V or Shift+Insert"
+"TODO: &Paste Rungs\tCtrl+V or Shift+Insert"
+"TODO: &Paste Rungs\tCtrl+V or Shift+Insert"
 
-"TODO: Cu&t Rung's\tCtrl+X or Shift+Del"
-"TODO: Cu&t Rung's\tCtrl+X or Shift+Del"
+"TODO: Cu&t Rungs\tCtrl+X or Shift+Del"
+"TODO: Cu&t Rungs\tCtrl+X or Shift+Del"
 
 "TODO: Call flash.bat\tF6"
 "TODO: Call flash.bat\tF6"
@@ -826,8 +826,8 @@
 "TODO: Insert ROR cyclic shift to the right"
 "TODO: Insert ROR cyclic shift to the right"
 
-"TODO: Insert SHL << arithmetic,logic shift to the left"
-"TODO: Insert SHL << arithmetic,logic shift to the left"
+"TODO: Insert SHL << arithmetic, logic shift to the left"
+"TODO: Insert SHL << arithmetic, logic shift to the left"
 
 "TODO: Insert SHR >> arithmetic shift to the right"
 "TODO: Insert SHR >> arithmetic shift to the right"
@@ -868,8 +868,8 @@
 "TODO: Insert char to 9 SEGMENT converter"
 "TODO: Insert char to 9 SEGMENT converter"
 
-"TODO: Paste Rung's &Into Rung\tAlt+Insert"
-"TODO: Paste Rung's &Into Rung\tAlt+Insert"
+"TODO: Paste Rungs &Into Rung\tAlt+Insert"
+"TODO: Paste Rungs &Into Rung\tAlt+Insert"
 
 "TODO: Roll End\tCtrl+End"
 "TODO: Roll End\tCtrl+End"

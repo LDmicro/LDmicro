@@ -2947,7 +2947,7 @@ static void WriteBin32BcdRoutine()
 
 #define ACb0 Scratch0   // Binary value is copied to ACb0 = Scratch0..Scratch3
 #define sovBin Scratch4 // Size of Binary in bytes is in Scratch4
-#define BCD0 Scratch5   // Addres of Bcd is in Scratch5
+#define BCD0 Scratch5   // Address of Bcd is in Scratch5
 #define digBcd Scratch6 // Number of digits Bcd is in Scratch6
 
 #define bitcnt Scratch7 // bitcnt = sovBin * 8

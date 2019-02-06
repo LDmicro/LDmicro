@@ -36,7 +36,7 @@ namespace {
 } // namespace
 
 static int mcu_ISA = -1;
-static int compiler_variant = -1;
+int compiler_variant = -1;              ///// no more static by JG
 //-----------------------------------------------------------------------------
 // Have we seen a variable before? If not then no need to generate code for
 // it, otherwise we will have to make a declaration, and mark it as seen.

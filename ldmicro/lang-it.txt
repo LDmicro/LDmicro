@@ -325,10 +325,10 @@
 "Insert &Contacts\tC"
 "Inserisci contatto\tC"
 
-"Insert &UART Receive"
+"Insert &UART RECEIVE"
 "Inserisci ricevitore UART"
 
-"Insert &UART Send"
+"Insert &UART SEND"
 "Inserisci trasmettitore UART"
 
 "Insert -+        +- Open-Circuit"
@@ -535,7 +535,7 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "Non è stato selezionato un microcontrollore. Prima di poter assegnare i pin I/O devi selezionare un microcontrollore.\r\n\r\nSeleziona un microcontrollore nel menu Impostazioni e riprova."
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Non sono in uso istruzioni seriali (UART invia/UART Ricevi), dopo aver impostato la velocità di trasmissione aggiungine una al programma.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
@@ -844,7 +844,7 @@
 "%s = %d: out of range for 8bits target"
 "%s = %d: fuori intervallo per obiettivo a 8 bit"
 
-"&Copy Rung's\tCtrl+C or Ctrl+Insert"
+"&Copy Rungs\tCtrl+C or Ctrl+Insert"
 "Copia Rami\t Ctrl + C o Ctrl + Inserisci"
 
 "&Halt Simulation\tCtrl+H or F9"
@@ -1090,7 +1090,7 @@
 "Counter:"
 "Contatore"
 
-"Cu&t Rung's\tCtrl+X or Shift+Del"
+"Cu&t Rungs\tCtrl+X or Shift+Del"
 "Taglia ramo\t Ctrl + X o Shift + Canc"
 
 "Cut Selected Element\tAlt+Del"
@@ -1195,7 +1195,7 @@
 "EDIT: Insert ROR cyclic shift to the right"
 "MODIFICA: Inserisci spostamento ciclico ROR a destra"
 
-"EDIT: Insert SHL << arithmetic,logic shift to the left"
+"EDIT: Insert SHL << arithmetic, logic shift to the left"
 "MODIFICA: Inserisce SHL << aritmetico, spostamento logico a sinistra"
 
 "EDIT: Insert SHR >> arithmetic shift to the right"
@@ -1240,7 +1240,7 @@
 "Explore ld directory"
 "Esplora directory ld"
 
-"File '%s' modified by another application.\r\nIts disk timestamp is newer then the editor one.\nReload from disk?"
+"File '%s' modified by another application.\r\nIts disk timestamp is newer than the editor one.\nReload from disk?"
 "File '%s' modificato da un'altra applicazione.\r\nLa marca temporale del disco è più recente di quella dell'editor.\nRileggere dal disco?"
 
 "Format string:"
@@ -1291,10 +1291,10 @@
 "Insert &Contacts: Input Pin\tC"
 "Inserisci contatti: piedini di ingresso\tC"
 
-"Insert &UART Receive Variable"
+"Insert &UART RECEIVE Variable"
 "Inserisci variabile di ricezione UART"
 
-"Insert &UART Receive: Is data available ?"
+"Insert &UART RECEIVE: Is data available ?"
 "Inserisci ricezione UART: i dati sono disponibili?"
 
 "Insert &UART SEND"
@@ -1303,7 +1303,7 @@
 "Insert &UART SENDn Variable"
 "Inserisci Variabile per trasmettitore UART"
 
-"Insert &UART Send: Is ready to send ?"
+"Insert &UART SEND: Is ready to send ?"
 "Inserisci trasmettitore UART: è pronto per l'invio?"
 
 "Insert -+        +- Open-Circuit\tShift+Enter"
@@ -1549,10 +1549,10 @@
 "PORT output"
 "PORTA Uscita"
 
-"Paste Rung's/Element &Into Rung\tAlt+Insert"
+"Paste Rungs or Element &Into Rung\tAlt+Insert"
 "Incolla Rami/Elementi nel ramo\tAlt + Insert"
 
-"Paste Rung's\tCtrl+V or Shift+Insert"
+"Paste Rungs\tCtrl+V or Shift+Insert"
 "Incolla Rami\tCtrl + V o Shift + Insert"
 
 "Pin '%s' not a PWM output!"
@@ -1681,8 +1681,8 @@
 "Segments:"
 "Segmenti"
 
-"Select Rung's\tShift+Up or Shift+Dn"
-"Seleziona Rami\tShift + Up o Shift + Dn"
+"Select Rungs\tShift+Up or Shift+Down"
+"Seleziona Rami\tShift + Up o Shift + Down"
 
 "Select the frequency from the possible values:"
 "Seleziona la frequenza dai possibili valori:"
@@ -1876,34 +1876,34 @@
 "Zero crystal frequency not valid; resetting to 16 MHz."
 "La frequenza del cristallo a zero non è valida, ripristino a 16 MHz."
 
-"Zero memory addres not allowed!\nAndMemory(0, %d) skiped!"
+"Zero memory address not allowed!\nAndMemory(0, %d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nAndMemory (0, %d) saltato!"
 
-"Zero memory addres not allowed!\nLOAD(%d, %d) skiped!"
+"Zero memory address not allowed!\nLOAD(%d, %d) skiped!"
 "Impossibile aggiungere memoria zero!\nLOAD (%d, %d) saltato!"
 
-"Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"
+"Zero memory address not allowed!\nLoadXAddr(%d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nLoadXAddr (% d) saltato!"
 
-"Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"
+"Zero memory address not allowed!\nLoadYAddr(%d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nLoadYAddr (% d) saltato!"
 
-"Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"
+"Zero memory address not allowed!\nLoadZAddr(%d) skiped!"
 "L'indirizzo di memoria zero non è permesso!\nLoadZAddr (% d) saltato!"
 
-"Zero memory addres not allowed!\nOrMemory(0, %d) skiped!"
+"Zero memory address not allowed!\nOrMemory(0, %d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nOrMemory (0,% d) saltato!"
 
-"Zero memory addres not allowed!\nReadIoToReg skiped."
+"Zero memory address not allowed!\nReadIoToReg skiped."
 "L'indirizzo di memoria zero non è consentito!\nReadIoToReg saltato"
 
-"Zero memory addres not allowed!\nSTORE(%d, %d) skiped!"
+"Zero memory address not allowed!\nSTORE(%d, %d) skiped!"
 "L'indirizzo di memoria zero non è consentito!\nSTORE (% d,% d) saltato!"
 
-"Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"
+"Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"
 "L'indirizzo di memoria zero non è permesso!\nWriteMemory (0,% d) saltato! %S %s"
 
-"Zero memory addres not allowed!\nWriteRegToIO skiped."
+"Zero memory address not allowed!\nWriteRegToIO skiped."
 "L'indirizzo di memoria zero non è consentito!\nWriteRegToIO saltato."
 
 "\nI/O ASSIGNMENT:\n"
@@ -2134,7 +2134,7 @@
 "Goto rung number or labe namel"
 "Vai a numero di ramo o nome etichetta"
 
-"Hight Level Delay"
+"High Level Delay"
 "Ritardo ad alto livello"
 
 "In fact TCycle = %.6g %ss, Fcycle = %.6g %sHz, PLC Cycle deviation = %.3f%%\n"
@@ -2179,7 +2179,7 @@
 "Insert SWAP"
 "Inserisci SWAP"
 
-"Insert THI (Hight Delay)"
+"Insert THI (High Delay)"
 "Inserisci THI (Ritardo elevato)"
 
 "Insert TIME to COUNTER converter"
@@ -2257,7 +2257,7 @@
 "RTL: variable can only be used for RES elsewhere"
 "RTL: la variabile può essere utilizzata solo per RESET altrove"
 
-"Recieve to variable:"
+"Receive to variable:"
 "Ricevi la variabile:"
 
 "Releases..."
@@ -2302,7 +2302,7 @@
 "SIMUL: Insert ROR cyclic shift to the right"
 "SIMULAZIONE: Inserisci spostamento ciclico ROR a destra"
 
-"SIMUL: Insert SHL << arithmetic,logic shift to the left"
+"SIMUL: Insert SHL << arithmetic, logic shift to the left"
 "SIMULAZIONE: Inserisci SHL << spostamento aritmetico logico a sinistra"
 
 "SIMUL: Insert SHR >> arithmetic shift to the right"
@@ -2353,7 +2353,7 @@
 "SUBPROG: ENDSUB '%s' not found!"
 "SUBPROGRAMMA: ENDSUB '%s' non trovato!"
 
-"Select Rung's\tCtrl+Left Mouse Buttton Click"
+"Select Rungs\tCtrl+Left Mouse Button Click"
 "Seleziona Rami\tCtrl + Clic Pulsante sinistro del mouse"
 
 "Select color for user scheme:"
@@ -2431,10 +2431,10 @@
 "When the MCU crystal frequency is %.3g %sHz."
 "Quando la frequenza del quarzo MCU è %.3g% sHz."
 
-"Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"
+"Zero memory address not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"
 "Impossibile aggiungere memoria zero!\nWriteMemoryStillAddr (0, %d) saltato!"
 
-"hight delay"
+"high delay"
 "ritardo alto"
 
 "low delay"

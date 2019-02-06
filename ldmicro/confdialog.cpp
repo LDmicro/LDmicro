@@ -363,7 +363,7 @@ static void MakeControls()
         }
     } else {
         strcat(explanation,
-               _("No serial instructions (UART Send/UART Receive) "
+               _("No serial instructions (UART SEND/UART RECEIVE) "
                  "are in use; add one to program before setting baud rate.\r\n\r\n"));
     }
 

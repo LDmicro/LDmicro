@@ -90,10 +90,10 @@
 #define INT_UART_SEND_READY                     1303
 #define INT_UART_SEND_BUSY                      1304
 #define INT_UART_RECV                           14
-#define INT_UART_RECV1                          1401
-#define INT_UART_RECVn                          1402
-#define INT_UART_RECVnn                         1403
-#define INT_UART_RECV_AVAIL                     1404
+#define INT_UART_RECV1                          1400
+#define INT_UART_RECVn                          1401
+#define INT_UART_RECVnn                         1402
+#define INT_UART_RECV_AVAIL                     1403
 #define INT_EEPROM_BUSY_CHECK                   15
 #ifdef NEW_FEATURE
 #define INT_EEPROM_INIT                         1601
@@ -110,6 +110,9 @@
 #define INT_SPI_BUSY                            1903
 #define INT_SPI_WRITE                           1904
 #define INT_SPI_READ                            1905
+
+#define INT_I2C_READ                            1951		///// Added by JG
+#define INT_I2C_WRITE                           1952
 
 #define INT_WRITE_STRING                        21 // netzer
 #define INT_SPRINTF_STRING                      22 // sprintf()

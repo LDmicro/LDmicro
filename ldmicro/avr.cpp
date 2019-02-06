@@ -84,7 +84,7 @@
 #define YH 29
 #define ZL 30
 #define ZH 31
-static DWORD REG_EIND = 0; // EIND:ZH:ZL indirect addres for EICALL, EIJMP
+static DWORD REG_EIND = 0; // EIND:ZH:ZL indirect address for EICALL, EIJMP
 
 std::vector<PicAvrInstruction> AvrProg;
 
@@ -1283,7 +1283,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
         default:
             sprintf(sAsm, "0x%X OP_%d %d %d", addrAt, op, arg1, arg2);
-            THROW_COMPILER_EXCEPTION_FMT("Invalid AVR OpCode %i", static_cast<int>(op));
+            THROW_COMPILER_EXCEPTION_FMT("Invalid AVR OpCode %i.", static_cast<int>(op));
             return 0;
     }
 }
@@ -1434,11 +1434,11 @@ static void LoadXAddr(DWORD addr, const char *comment)
 //used X; Opcodes: 2
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        Error(_("Zero memory address not allowed!\nLoadXAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        Error(_("Addres not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        Error(_("Address not allowed!\nLoadXAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, XL, (addr & 0xff), comment); // X-register Low Byte
@@ -1455,11 +1455,11 @@ static void LoadYAddr(DWORD addr, const char *comment)
 //used Y; Opcodes: 2
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        Error(_("Zero memory address not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        Error(_("Addres not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        Error(_("Address not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, YL, (addr & 0xff), comment); // Y-register Low Byte
@@ -1470,11 +1470,11 @@ static void LoadZAddr(DWORD addr, const char *comment)
 //used Z; Opcodes: 2
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        Error(_("Zero memory address not allowed!\nLoadZAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        Error(_("Addres not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        Error(_("Address not allowed!\nLoadZAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, ZL, (addr & 0xff), comment); // Z-register Low Byte
@@ -1686,7 +1686,7 @@ static DWORD SKBC(DWORD addr, int bit)
 static void STORE(DWORD addr, int reg)
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nSTORE(%d, %d) skiped!"), addr, reg);
+        Error(_("Zero memory address not allowed!\nSTORE(%d, %d) skiped!"), addr, reg);
         return;
     }
     if(reg < 0) {
@@ -1720,7 +1720,7 @@ static void STOREval(DWORD addr, BYTE val)
 static void LOAD(int reg, DWORD addr)
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nLOAD(%d, %d) skiped!"), reg, addr);
+        Error(_("Zero memory address not allowed!\nLOAD(%d, %d) skiped!"), reg, addr);
         return;
     }
     if(reg < 0) {
@@ -1752,7 +1752,7 @@ static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYT
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
+        Error(_("Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
         return;
     }
     char s[1024];
@@ -1798,7 +1798,7 @@ static void WriteMemoryStillAddr(DWORD addr, BYTE val)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
+        Error(_("Zero memory address not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1902,11 +1902,11 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
     if(sov > 4)
         THROW_COMPILER_EXCEPTION(name);
 
-    LoadZAddr(addr, name); // load direct addres
+    LoadZAddr(addr, name); // load direct address
     if(name && IsAddrInVar(name)) {
         int sovA = SizeOfVar(&name[1]);
         LdToReg(OP_LD_ZP, sovA, r4, 2, false); // as address
-        LoadZAddrFromReg(r4, 2);               // reload indirect addres
+        LoadZAddrFromReg(r4, 2);               // reload indirect address
     }
     DWORD lNow, lPrev;
     lNow = literal & 0xff;
@@ -1957,7 +1957,7 @@ static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nOrMemory(0, %d) skiped!"), val); //see TODO
+        Error(_("Zero memory address not allowed!\nOrMemory(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1976,7 +1976,7 @@ static void AndMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nAndMemory(0, %d) skiped!"), val); //see TODO
+        Error(_("Zero memory address not allowed!\nAndMemory(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1996,7 +1996,7 @@ static void WriteRegToIO(DWORD addr, BYTE reg)
 //or used   ; Opcodes: 1
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nWriteRegToIO skiped.")); //see TODO
+        Error(_("Zero memory address not allowed!\nWriteRegToIO skiped.")); //see TODO
         return;
     }
     if(reg < 0) {
@@ -2012,7 +2012,7 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 //or used   ; Opcodes: 1
 {
     if(addr <= 0) {
-        Error(_("Zero memory addres not allowed!\nReadIoToReg skiped.")); //see TODO
+        Error(_("Zero memory address not allowed!\nReadIoToReg skiped.")); //see TODO
         return;
     }
     if(reg < 0) {
@@ -2246,7 +2246,7 @@ static bool TstAddrBitReg(DWORD addr, int bit, int reg)
 {
     bool b = true;
     if((addr <= 0) || (addr > 0xFFFF)) {
-        Error(_("Only values 0-0xFFFF allowed for Addres parameter.\naddres=0x%4X"), addr);
+        Error(_("Only values 0-0xFFFF allowed for Address parameter.\naddres=0x%4X"), addr);
         b = false;
     }
     if((bit < 0) || (bit > 7)) {
@@ -2847,12 +2847,12 @@ static void CopyVarToReg(int reg, int sovReg, const char *var)
         dbp("reg=%d sovReg=%d <- var=%s sov=%d", reg, sovReg, var, sov);
 
     MemForVariable(var, &addr);
-    LoadXAddr(addr, var); // load direct addres
+    LoadXAddr(addr, var); // load direct address
 
     if(IsAddrInVar(var)) {
         int sovA = SizeOfVar(&var[1]);
         LdToReg(OP_LD_XP, sovA, r4, 2, false); // as address
-        LoadXAddrFromReg(r4, 2);               // reload indirect addres
+        LoadXAddrFromReg(r4, 2);               // reload indirect address
     }
     LdToReg(OP_LD_XP, sov, reg, sovReg, true); // as data
 }
@@ -2918,12 +2918,12 @@ static void _CopyRegToVar(int l, const char *f, const char *args, const char *va
         MemForVariable(var, &addr);
     }
     sov = SizeOfVar(var);
-    LoadXAddr(addr, var); // load direct addres
+    LoadXAddr(addr, var); // load direct address
 
     if(IsAddrInVar(var)) {
         int sovA = SizeOfVar(&var[1]);
         LdToReg(OP_LD_XP, sovA, r4, 2, false); // as address
-        LoadXAddrFromReg(r4, 2);               // reload indirect addres
+        LoadXAddrFromReg(r4, 2);               // reload indirect address
     }
     StFromReg(OP_ST_XP, sov, reg, sovReg, true); // as data
 }
@@ -4906,7 +4906,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_TST, r23, 0); //r23 still EepromHighBytesCounter-1
                 DWORD doOut = AllocFwdAddr();
                 Instruction(OP_BRNE, doOut, 0);
-                Instruction(OP_LD_XP, r16); //increment addres EepromHighByte in X register
+                Instruction(OP_LD_XP, r16); //increment address EepromHighByte in X register
                                             //skip middle byte
                 FwdAddrIsNow(doOut);
                 Instruction(OP_LD_X, r16); //EepromHighByte data to r16

@@ -218,10 +218,13 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
     NiceFont(CancelButton);
 }
 
+///// prototype modified by JG with extra default parameter rdonly
 static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
-                             DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos)
+                             DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos, long rdonly= 0)
 {
     bool didCancel;
+
+    try {       //// try... catch added by JG
 
     if(labs > MAX_BOXES)
         oops();
@@ -251,7 +254,11 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
 
     int i;
     for(i = 0; i < boxes; i++) {
-        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);
+        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);     ///// fill boxes with current settings
+        ///// added by JG to make some fields read-only (max= 32 boxes)
+        if ((i < 32) && (rdonly & (1 << i)))
+            SendMessage(Textboxes[i], EM_SETREADONLY, TRUE, 0);
+        /////
 
         if(numOnlyMask & (1 << i)) {
             PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, (LONG_PTR)MyNumOnlyProc);
@@ -323,6 +330,18 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
     EnableWindow(MainWindow, true);
     SetFocus(MainWindow);
     DestroyWindow(SimpleDialog);
+
+    } catch(...) {      ///// Try... catch added by JG
+
+        ///// Added by JG to save work in case of big bug
+        srand(time(nullptr));
+        char fname[20];
+        sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
+        SaveProjectToFile(fname, MNU_SAVE_02);
+        /////
+
+        abortHandler(EXCEPTION_EXECUTE_HANDLER);
+    };
 
     return !didCancel;
 }
@@ -417,7 +436,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
         case ELEM_TCY:        s = _("Cyclic On/Off"); break;
         case ELEM_TON:        s = _("Turn-On Delay"); break;
         case ELEM_TOF:        s = _("Turn-Off Delay"); break;
-        case ELEM_THI:        s = _("Hight Level Delay"); break;
+        case ELEM_THI:        s = _("High Level Delay"); break;
         case ELEM_TLO:        s = _("Low Level Delay"); break;
         case ELEM_RTO:        s = _("Retentive Turn-On Delay"); break;
         case ELEM_RTL:        s = _("Retentive Turn-On Delay If Low Input"); break;
@@ -921,9 +940,9 @@ void ShowSpiDialog(ElemLeaf *l)
     const char *labels[] = {_("SPI Name:"),
                             _("SPI Mode:"),
                             _("Send variable:"),
-                            _("Recieve to variable:"),
+                            _("Receive to variable:"),
                             _("Bit Rate (Hz):"),
-                            _("Data Modes (CPOL, CPHA): "),
+                            _("Data Modes (CPOL, CPHA):"),
                             _("Data Size:"),
                             _("Data Order:")};
 
@@ -1578,7 +1597,7 @@ void ShowCprintfDialog(int which, void *e)
     }
     // clang-format on
     char str[MAX_NAME_LEN];
-    sprintf(str, ("Formatted String over %s"), s);
+    sprintf(str, _("Formatted String over %s"), s);
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;

@@ -35,10 +35,13 @@
 
 #include "ldversion.h"
 #include <ldlog.hpp>
+#include <string.h>
 
 HINSTANCE Instance;
 HWND      MainWindow;
 HDC       Hdc;
+
+extern int  compiler_variant;       ///// Added by JG
 
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
@@ -325,6 +328,7 @@ char *GetIsaName(int ISA)
         case ISA_PC           : return (char *)stringer( ISA_PC           ) + 4;
       //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
+        case ISA_ARM          : return (char *)stringer( ISA_ARM          ) + 4;            ///// Added by JG
         default               : oops(); return nullptr;
             // clang-format on
     }
@@ -339,6 +343,8 @@ const char *GetMnuName(int MNU)
         case MNU_COMPILE_HI_TECH_C     : return (char *)stringer(MNU_COMPILE_HI_TECH_C) + 12;
         case MNU_COMPILE_CCS_PIC_C     : return (char *)stringer(MNU_COMPILE_CCS_PIC_C) + 12;
         case MNU_COMPILE_GNUC          : return (char *)stringer(MNU_COMPILE_GNUC) + 12;
+        case MNU_COMPILE_AVRGCC        : return (char *)stringer(MNU_COMPILE_AVRGCC) + 12;          ///// Added by JG
+        case MNU_COMPILE_ARMGCC        : return (char *)stringer(MNU_COMPILE_ARMGCC) + 12;          ///// Added by JG
         case MNU_COMPILE_CODEVISIONAVR : return (char *)stringer(MNU_COMPILE_CODEVISIONAVR) + 12;
         case MNU_COMPILE_IMAGECRAFT    : return (char *)stringer(MNU_COMPILE_IMAGECRAFT) + 12;
         case MNU_COMPILE_IAR           : return (char *)stringer(MNU_COMPILE_IAR) + 12;
@@ -358,8 +364,10 @@ int GetMnu(char *MNU_name)
     if(strstr("MNU_COMPILE_HI_TECH_C",     MNU_name)) return MNU_COMPILE_HI_TECH_C;
     if(strstr("MNU_COMPILE_CCS_PIC_C",     MNU_name)) return MNU_COMPILE_CCS_PIC_C;
     if(strstr("MNU_COMPILE_GNUC",          MNU_name)) return MNU_COMPILE_GNUC;
+    if(strstr("MNU_COMPILE_AVRGCC",        MNU_name)) return MNU_COMPILE_AVRGCC;            ///// Added by JG
     if(strstr("MNU_COMPILE_CODEVISIONAVR", MNU_name)) return MNU_COMPILE_CODEVISIONAVR;
     if(strstr("MNU_COMPILE_ARDUINO",       MNU_name)) return MNU_COMPILE_ARDUINO;
+    if(strstr("MNU_COMPILE_ARMGCC",        MNU_name)) return MNU_COMPILE_ARMGCC;            ///// Added by JG
     if(strstr("MNU_COMPILE_PASCAL",        MNU_name)) return MNU_COMPILE_PASCAL;
     // clang-format on
     return -1;
@@ -370,14 +378,27 @@ static void flashBat(char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
+    char mcualias[MAX_PATH];    ///// Added by JG
+    int variant= 1;             ///// Added by JG
+
+
     if(strlen(name) == 0) {
         Error(_(" Save ld before flash."));
         return;
     }
+    if (!Prog.mcu()) return;                  ///// Added by JG
+    strcpy(mcualias, Prog.mcu()->mcuList);    /////
 
     s[0] = '\0';
     SetExt(s, name, "");
-    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\"", ExePath, GetIsaName(ISA), s);
+    if (compiler_variant == MNU_COMPILE_AVRGCC) variant = 2;            ///// Added by JG
+    if (compiler_variant == MNU_COMPILE_HI_TECH_C)                      ///// Added by JG
+    {
+        variant = 2;
+        strcpy(mcualias, mcualias+3);       // remove "Pic" prefix in mcu name
+    }
+
+    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %d %s", ExePath, GetIsaName(ISA), s, variant, _strlwr(mcualias));       ///// 3rd & 4th param added by JG
 
     isErr(Execute(r), r);
 }
@@ -416,7 +437,7 @@ static void notepad(const char *path, const char *name, const char *ext)
     SetExt(s, r, ext);
 
     if(!ExistFile(s)) {
-        Error("File not exist: '%s'", s);
+        Error(_("File does not exist: '%s'"), s);
         return;
     }
     sprintf(r, "\"%snotepad.bat\" \"%s\"", ExePath, s);
@@ -525,6 +546,22 @@ static void CompileProgram(bool compileAs, int MNU)
                 return;
         }
     }
+
+    ///// Added by JG
+    if(MNU == MNU_COMPILE_AVRGCC ){
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR)) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to AVR GCC, but MCU core isn't AVR.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+    /////
+
     if(MNU == MNU_COMPILE_CODEVISIONAVR){
         if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR) {
             int msgboxID = MessageBox(
@@ -563,6 +600,21 @@ static void CompileProgram(bool compileAs, int MNU)
                 return;
         }
     }
+
+    ///// Added by JG
+    if(MNU == MNU_COMPILE_ARMGCC ){
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_ARM)) {
+            int msgboxID = MessageBox(
+                    NULL,
+                    _("You try to compile to Arm GCC, but MCU core isn't ARM.\nDo you want to continue?"),
+                    _("MCU type warning"),
+                    MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2
+                );
+            if(msgboxID != IDYES)
+                return;
+        }
+    }
+    /////
 
     if(MNU == MNU_COMPILE_ARDUINO) {
         if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR && Prog.mcu()->whichIsa != ISA_ESP8266) {
@@ -632,7 +684,7 @@ IsOpenAnable:
                 remove(CurrentCompileFile);
             } else {
                 compileAs = true;
-                Error(_("Couldn't OPEN file '%s'"), CurrentCompileFile);
+                Error(_("Couldn't open file '%s'"), CurrentCompileFile);
             }
         }
     }
@@ -718,6 +770,42 @@ IsOpenAnable:
         return;
     }
 
+    ///// Added by JG
+    if(SpiFunctionUsed()) {
+        if((MNU != MNU_COMPILE_ARMGCC ) && (MNU != MNU_COMPILE_AVRGCC) && (MNU != MNU_COMPILE_HI_TECH_C))
+        {
+            Error(_("SPI functions used but not supported for this micro or compile mode."));
+            return;
+        }
+
+        char mcualias[MAX_PATH]= "";
+        if (Prog.mcu()) strcpy(mcualias, Prog.mcu()->mcuList);
+
+        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(mcualias, "PIC16F628") == 0))      // no SPI on this PIC
+        {
+            Error(_("SPI functions used but not supported for this micro or compile mode."));
+            return;
+        }
+    }
+
+    if(I2cFunctionUsed()) {
+        if((MNU != MNU_COMPILE_ARMGCC ) && (MNU != MNU_COMPILE_AVRGCC) && (MNU != MNU_COMPILE_HI_TECH_C))
+        {
+            Error(_("I2C functions used but not supported for this micro or compile mode."));
+            return;
+        }
+
+        char mcualias[MAX_PATH]= "";
+        if (Prog.mcu()) strcpy(mcualias, Prog.mcu()->mcuList);
+
+        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(mcualias, "PIC16F628") == 0))      // no SPI on this PIC
+        {
+            Error(_("I2C functions used but not supported for this micro or compile mode."));
+            return;
+        }
+    }
+    /////
+
     try {
         if((PwmFunctionUsed() && (Prog.mcu()) && (Prog.mcu()->pwmCount == 0) && Prog.mcu()->pwmNeedsPin == 0)
            && (MNU != MNU_COMPILE_PASCAL) && (MNU != MNU_COMPILE_ANSIC) && (MNU != MNU_COMPILE_ARDUINO)
@@ -725,13 +813,15 @@ IsOpenAnable:
             Error(_("PWM function used but not supported for this micro."));
             return;
         }
+        CompileFailure= 0;
+
         if((MNU >= MNU_COMPILE_ANSIC) && (MNU <= MNU_COMPILE_lastC)) {
-            if(CompileAnsiC(CurrentCompileFile, MNU)) {
+            if(CompileAnsiC(CurrentCompileFile, MNU) && (!CompileFailure)) {            ///// CompileFailure added by JG
                 CompileSuccesfullAnsiCMessage(CurrentCompileFile);
                 postCompile("ANSIC");
             }
         } else if(MNU == MNU_COMPILE_ARDUINO) {
-            if(CompileAnsiC(CurrentCompileFile, MNU)) {
+            if(CompileAnsiC(CurrentCompileFile, MNU) && (!CompileFailure)) {            ///// CompileFailure added by JG
                 CompileSuccesfullAnsiCMessage(CurrentCompileFile);
                 postCompile("ARDUINO");
             }
@@ -767,6 +857,14 @@ IsOpenAnable:
             postCompile(GetIsaName(Prog.mcu()->whichIsa));
         } else
             oops();
+
+        ///// Added by JG
+        if (CompileFailure)
+        {
+            Error(_("Compile failure."));
+            return;
+        }
+        /////
     } catch(const std::exception &e) {
         Error(e.what());
     }
@@ -1233,6 +1331,20 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddSpi(ELEM_SPI));
             break;
 
+        ///// Added by JG
+        case MNU_INSERT_SPI_WRITE:
+            CHANGING_PROGRAM(AddSpi(ELEM_SPI_WR));
+            break;
+
+        case MNU_INSERT_I2C_READ:
+            CHANGING_PROGRAM(AddI2c(ELEM_I2C_RD));
+            break;
+
+        case MNU_INSERT_I2C_WRITE:
+            CHANGING_PROGRAM(AddI2c(ELEM_I2C_WR));
+            break;
+        /////
+
         case MNU_INSERT_7SEG:
             CHANGING_PROGRAM(AddSegments(ELEM_7SEG));
             break;
@@ -1579,9 +1691,11 @@ static void ProcessMenu(int code)
         case MNU_COMPILE_HI_TECH_C:
         case MNU_COMPILE_CCS_PIC_C:
         case MNU_COMPILE_GNUC:
+        case MNU_COMPILE_AVRGCC:            ///// added by JG
         case MNU_COMPILE_CODEVISIONAVR:
         case MNU_COMPILE_IMAGECRAFT:
         case MNU_COMPILE_IAR:
+        case MNU_COMPILE_ARMGCC:            ///// added by JG
         case MNU_COMPILE_IHEX:
         case MNU_COMPILE_PASCAL:
         case MNU_COMPILE_ARDUINO:
@@ -1622,7 +1736,7 @@ static void ProcessMenu(int code)
         case MNU_OPEN_SFR:
             ShellExecute(0,
                          "open",
-                         "https://github.com/LDmicro/LDmicro/wiki/Replase-the-obsolete-elements",
+                         "https://github.com/LDmicro/LDmicro/wiki/Replace-the-obsolete-elements",
                          nullptr,
                          nullptr,
                          SW_SHOWNORMAL);
@@ -1842,13 +1956,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     if(strlen(CurrentSaveFile)) {
         if((LastWriteTime & PrevWriteTime) && (LastWriteTime != PrevWriteTime)) {
-            tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime);
+            tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime, 0);
             PrevWriteTime = LastWriteTime;
 
             char buf[1024];
             sprintf(buf,
                     _("File '%s' modified by another application.\r\n"
-                      "Its disk timestamp is newer then the editor one.\n"
+                      "Its disk timestamp is newer than the editor one.\n"
                       "Reload from disk?"),
                     CurrentSaveFile);
             int r = MessageBox(MainWindow, buf, "LDmicro", MB_YESNO | MB_ICONWARNING);
