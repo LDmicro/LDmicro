@@ -4917,7 +4917,7 @@ bool SpiFunctionUsed()
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_SPI))
             return true;
-		if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI_WR))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_SPI_WR))
             return true;
     }
 
@@ -4932,9 +4932,9 @@ bool SpiFunctionUsed()
 bool I2cFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_RD))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_I2C_RD))
             return true;
-		if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_WR))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs(i), ELEM_I2C_WR))
             return true;
 
     }
