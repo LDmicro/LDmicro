@@ -580,12 +580,18 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWL, _("Insert Piecewise Linear"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
+
+    FormatStrMenu = CreatePopupMenu();
+    AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formated string"));
+
     ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable"));
+
     //  AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECVn,
     //      _("Insert &UART RECEIVE Variable"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND_READY, _("Insert &UART SEND: Is ready to send ?"));
