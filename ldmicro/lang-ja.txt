@@ -322,10 +322,10 @@
 "Insert &Contacts\tC"
 "--] [-- 接点\t&C"
 
-"Insert &UART Receive"
+"Insert &UART RECEIVE"
 "--{UART RECV}-- &UART受信"
 
-"Insert &UART Send"
+"Insert &UART SEND"
 "--{UART SEND}-- &UART送信"
 
 "Insert -+        +- Open-Circuit"
@@ -532,7 +532,7 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "IOピンを使うには[設定]メニューからマイコンの種類を設定して下さい。"
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
 "シリアル (UART送信/UART受信) を使うとボーレートを設定できるようになります。\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."

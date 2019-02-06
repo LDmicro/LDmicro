@@ -424,16 +424,16 @@
 "Insert Piecewise Linear"
 "Insertar Tabla de Interpolacion"
 
-"Uart functions"
-"Uart funciones"
+"UART functions"
+"UART funciones"
 
 "Insert Formatted String Over &UART"
 "Insertar String Formateado Final &UART"
 
-"Insert UART Send"
+"Insert UART SEND"
 "Insertar UART Emision"
 
-"Insert UART Receive"
+"Insert UART RECEIVE"
 "Insertar UART Reception"
 
 "Insert UART SENDn Variable"
@@ -526,8 +526,8 @@
 "Clear Bit In SFR"
 "Reinitializar Bit en SFR"
 
-"Spi functions"
-"Spi funciones"
+"SPI functions"
+"SPI funciones"
 
 "Insert SPI Send/Receive"
 "Insertar SPI Send/Receive"
@@ -535,7 +535,7 @@
 "Insert SPI Write"
 "Insertar SPI Write"
 
-"I2c functions"
+"I2C functions"
 "I2C funciones"
 
 "Insert I2C Read"
@@ -991,7 +991,7 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "No se ha seleccionado micro. Debes seleccionar un micro antes de asignar patas E/S.\r\n\r\nElije un micro en el menu de configuración y prueba otra vez."
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
 "No se han usado instrucciones (UART Enviar/UART Recibir) para el puerto serie aun; Añada una al programa antes de configurar los baudios.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
@@ -2568,6 +2568,6 @@
 
 "SPI & I2C can't be used together on PICs"
 "No se puede usar SPI & I2C al mismo tiempo con PICs"
- 
+
 "Compile failure."
 "Fallo de compilación."

@@ -331,10 +331,10 @@
 "Insert &Contacts\tC"
 "Kontakt &einfügen\tC"
 
-"Insert &UART Receive"
+"Insert &UART RECEIVE"
 "&UART Empfangen einfügen"
 
-"Insert &UART Send"
+"Insert &UART SEND"
 "&UART Senden einfügen"
 
 "Insert -+        +- Open-Circuit"
@@ -550,7 +550,7 @@
 "No opcodes found."
 "Keine Operationen gefunden."
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Keine UART-Anweisung Senden/Empfangen gefunden; die Baudrate festlegen, wenn diese Anweisung verwendet wird.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."

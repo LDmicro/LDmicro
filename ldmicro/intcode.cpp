@@ -463,15 +463,41 @@ void IntDumpListing(char *outFile)
                 break;
             case INT_SPI:
                 fprintf(f,
-                        "SPI '%s' send '%s', recieve '%s', done? into '%s'",
+                        "SPI '%s' send '%s', receive '%s', done? into '%s'",
                         l->d.spi.name,
                         l->d.spi.send,
                         l->d.spi.recv,
                         IntCode[i].name1.c_str());
                 break;
 
-            case INT_UART_SENDn:
+			///// Added by JG
+			case INT_SPI_WRITE:
+				fprintf(f,
+                        "SPI_WRITE '%s' send '%s', receive '%s', done? into '%s'",
+                        l->d.spi.name,
+						l->d.spi.send,
+                        l->d.spi.recv,
+                        IntCode[i].name1.c_str());
+				break;
+
+			case INT_I2C_READ:
+				fprintf(f,
+                        "I2C_READ '%s' receive '%s', done? into '%s'",
+                        l->d.i2c.name,
+                        l->d.i2c.recv,
+                        IntCode[i].name1.c_str());
+				break;
+			case INT_I2C_WRITE:
+				fprintf(f,
+                        "I2C_WRITE '%s' send '%s', done? into '%s'",
+                        l->d.i2c.name,
+						l->d.i2c.send,
+                        IntCode[i].name1.c_str());
+				break;
+			/////
+
             case INT_UART_SEND1:
+            case INT_UART_SENDn:
                 fprintf(f, "uart send from '%s[%s+%d]'", IntCode[i].name1.c_str(), IntCode[i].name2.c_str(), IntCode[i].literal);
                 break;
 
@@ -4885,16 +4911,36 @@ bool UartSendUsed()
     return false;
 }
 
-//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------		///// Modified by JG
 bool SpiFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI))
             return true;
+		if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI_WR))
+            return true;
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_SPI) || (IntCode[i].op == INT_SPI))
+        if((IntCode[i].op == INT_SPI) || (IntCode[i].op == INT_SPI_WRITE))		
+            return true;
+    }
+    return false;
+}
+
+//-----------------------------------------------------------------------------			///// Added by JG
+bool I2cFunctionUsed()
+{
+    for(int i = 0; i < Prog.numRungs; i++) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_RD))
+            return true;
+		if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_WR))
+            return true;
+
+    }
+
+    for(uint32_t i = 0; i < IntCode.size(); i++) {
+        if((IntCode[i].op == INT_I2C_READ) || (IntCode[i].op == INT_I2C_WRITE))		
             return true;
     }
     return false;

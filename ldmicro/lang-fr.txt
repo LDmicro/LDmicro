@@ -415,16 +415,16 @@
 "Insert Piecewise Linear"
 "Insérer tableau d'interpolation linéaire"
 
-"Uart functions"
+"UART functions"
 "Fonctions UART"
 
 "Insert Formatted String Over &UART"
 "Insérer chaîne formatée pour l'UART"
 
-"Insert UART Send"
+"Insert UART SEND"
 "Insérer émission UART"
 
-"Insert UART Receive"
+"Insert UART RECEIVE"
 "Insérer réception UART"
 
 "Insert Test if UART ready to send"
@@ -433,7 +433,7 @@
 "Insert Test if UART data available"
 "Insérer test donnée reçue sur UART ?"
 
-"Spi functions"
+"SPI functions"
 "Fonctions SPI"
 
 "Insert SPI Send/Receive"
@@ -442,7 +442,7 @@
 "Insert SPI Write"
 "Insérer écriture SPI"
 
-"I2c functions"
+"I2C functions"
 "Fonctions I2C"
 
 "Insert I2C Read"
@@ -1006,7 +1006,7 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "Aucun microcontrôleur sélectionné. Vous devez sélectionner un microcontrôleur avant de définir l'utilisation des broches.\r\n\r\nSélectionnez un micro dans le menu et essayez à nouveau."
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Aucune instruction (émission ou réception UART) n'est utilisée; ajouter une instruction avant de fixer les vitesses.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."

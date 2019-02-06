@@ -191,7 +191,7 @@ using namespace std;            // added by JG
 #define MNU_MAKE_TTRIGGER       0x4501
 #define MNU_INSERT_PWL          0x46
 
-//#define USE_SFR
+#define USE_SFR
 #ifdef USE_SFR
 #define MNU_OPEN_SFR            0x4700
 #define MNU_INSERT_SFR          0x47    // special function register read
@@ -250,7 +250,7 @@ using namespace std;            // added by JG
 #define MNU_COMPILE_HI_TECH_C       0x7110          // Pic Hi-Tech C
 #define MNU_COMPILE_CCS_PIC_C       0x7130          // Pic CCS
 
-#define MNU_COMPILE_GNUC            0x7200          // AVR-GCC // Atmel AVR Toolchain // WinAVR
+#define MNU_COMPILE_GNUC            0x7200          // AVR WinAVR
 #define MNU_COMPILE_AVRGCC          0x7210          // AVR Gcc / Avr Studio
 #define MNU_COMPILE_CODEVISIONAVR   0x7220          // AVR Codevision
 #define MNU_COMPILE_IMAGECRAFT      0x7230          // AVR IccAvr
@@ -987,7 +987,7 @@ int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
 void SaveVarListToFile(FILE *f);
 bool LoadVarListFromFile(FILE *f);
-//void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
 void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput);                     ///// Added by JG
 void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool raiseError);    ///// Modified by JG BYTE -> WORD
 void ComplainAboutBaudRateError(int divisor, double actual, double err);

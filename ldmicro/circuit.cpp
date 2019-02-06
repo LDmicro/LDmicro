@@ -763,6 +763,33 @@ void AddSpi(int which)
     AddLeaf(which, t);
 }
 
+///// Added by JG
+void AddI2c(int which)
+{
+    if(!CanInsertOther)
+        return;
+
+    if(Prog.mcu()) {
+        if(!McuI2C()) {
+            Error(_("No I2C or I2C not supported for this MCU."));
+            // return;
+        }
+    }
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.i2c.name, "I2C1");
+    /////
+    strcpy(t->d.i2c.mode, "Master");
+    strcpy(t->d.i2c.send, "send");
+    strcpy(t->d.i2c.recv, "recv");
+    strcpy(t->d.i2c.bitrate, "100000");
+    strcpy(t->d.i2c.address, "0");
+    strcpy(t->d.i2c.registr, "0");
+    strcpy(t->d.i2c.first, "MSB");
+    t->d.i2c.which= which;
+    AddLeaf(which, t);
+}
+/////
+
 void AddPersist()
 {
     if(!CanInsertEnd)

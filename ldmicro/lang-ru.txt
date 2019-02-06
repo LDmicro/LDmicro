@@ -349,10 +349,10 @@
 "Insert &Contacts\tC"
 "Вставить &Контакт\tC"
 
-"Insert &UART Receive"
+"Insert &UART RECEIVE"
 "Вставить Получить из &UART"
 
-"Insert &UART Send"
+"Insert &UART SEND"
 "Вставить Послать в &UART"
 
 "Insert -+        +- Open-Circuit"
@@ -568,8 +568,8 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "Микроконтроллер не выбран. Выберите микроконтроллер прежде чем назначать пины I/O.\r\n\r\nВыберите микроконтроллер в меню Установок и попробуйте снова."
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
-"Не используются инструкции последовательного порта (UART Send/UART Receive). Добавьте их в программу, перед установкой скорости порта.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
+"Не используются инструкции последовательного порта (UART SEND/UART RECEIVE). Добавьте их в программу, перед установкой скорости порта.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
 "Переменная не интерполируется в отформатированную строку, но указана. Включите в строку манипулятор наподобие: '\\-3', или оставьте имя переменной пустым."
