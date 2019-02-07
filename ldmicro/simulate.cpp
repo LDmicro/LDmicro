@@ -1032,8 +1032,7 @@ void CheckVariableNames()
                 Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."),
                       Variables[i].initedRung + 1,
                       Variables[i].name,
-                      _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\n"
-                        "You must assign a variable."));
+                      _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."));
     return;
 #ifdef _LOT_OF_EXPERIMENTS_ // Never define!
     for(i = 0; i < VariableCount; i++)
@@ -1391,10 +1390,10 @@ int bin2bcd(int val)
     int sign = 1;
     if(val < 0) {
         sign = -1;
-        Error(" Value 'val'=%d < 0", val);
+        Error(_(" Value 'val'=%d < 0"), val);
     }
     if(val >= TenToThe(sizeof(val)))
-        Error("Value 'val'=%d overflow output range %d.", val, sizeof(val) - 1);
+        Error(_("Value 'val'=%d overflow output range %d."), val, sizeof(val) - 1);
     int ret = val % 10;
     val /= 10;
     ret |= (val % 10) << 8;
@@ -1414,7 +1413,7 @@ int bcd2bin(int val)
     || ((val & 0x0000f00) >>  8) > 9
     || ((val & 0x00f0000) >> 16) > 9
     || ((val & 0xf000000) >> 24) > 9 )
-        Error("Value 'val'=0x%x not in unpacked BCD format.", val);
+        Error(_("Value 'val'=0x%x not in unpacked BCD format."), val);
     return (val & 0x000000f)
         + ((val & 0x0000f00) >>  8) * 10
         + ((val & 0x00f0000) >> 16) * 100
@@ -2061,14 +2060,14 @@ static void SimulateIntCode()
                 SDWORD *adata;
                 adata = (SDWORD *)GetSimulationVariable(a->name2);
                 if(adata == nullptr) {
-                    Error("TABLE %s is not initialized.", a->name2.c_str());
+                    Error(_("TABLE %s is not initialized."), a->name2.c_str());
                     StopSimulation();
                     ToggleSimulationMode(false);
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal < index)) {
-                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2.c_str(), a->literal-1);
+                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal-1);
                     index = a->literal;
                     StopSimulation();
                     ToggleSimulationMode(false);
@@ -2084,7 +2083,7 @@ static void SimulateIntCode()
             case INT_RAM_READ: {
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal <= index)) {
-                    Error("Index=%d out of range for string %s[%d]", index, a->name1.c_str(), a->literal);
+                    Error(_("Index=%d out of range for string %s[%d]"), index, a->name1.c_str(), a->literal);
                     index = a->literal;
                     StopSimulation();
                 }

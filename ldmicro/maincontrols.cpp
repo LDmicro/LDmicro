@@ -1083,6 +1083,15 @@ void MainWindowResized()
 //-----------------------------------------------------------------------------
 void ToggleSimulationMode(bool doSimulateOneRung)
 {
+/*
+    ///// Added by JG to avoid some bugs when clicking on non assigned contacts in simulation mode
+    if (!Prog.mcu())
+    {
+        Error(_("Must choose a target microcontroller before simulating."));
+        return;
+    }
+    /////
+*/
     InSimulationMode = !InSimulationMode;
 
     if(InSimulationMode) {

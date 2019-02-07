@@ -446,10 +446,10 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
 //for setiing interrupt vector
 {
     if(addr == 0) {
-        Error(_("Direct Addr error"));
+        THROW_COMPILER_EXCEPTION(_("Direct Addr error"));
     }
     if(addr >= AvrProg.size()) {
-        Error(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (MAX_PROGRAM_LEN)"));
     }
     //vvv  same
     AvrProg[addr].opAvr = op;
@@ -1434,11 +1434,11 @@ static void LoadXAddr(DWORD addr, const char *comment)
 //used X; Opcodes: 2
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nLoadXAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        Error(_("Address not allowed!\nLoadXAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Address not allowed!\nLoadXAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, XL, (addr & 0xff), comment); // X-register Low Byte
@@ -1455,11 +1455,11 @@ static void LoadYAddr(DWORD addr, const char *comment)
 //used Y; Opcodes: 2
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        Error(_("Address not allowed!\nLoadYAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Address not allowed!\nLoadYAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, YL, (addr & 0xff), comment); // Y-register Low Byte
@@ -1470,11 +1470,11 @@ static void LoadZAddr(DWORD addr, const char *comment)
 //used Z; Opcodes: 2
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nLoadZAddr(%d) skiped!"), addr);
         //return;
     }
     if(addr > 0xffff) {
-        Error(_("Address not allowed!\nLoadZAddr(%d) skiped!"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Address not allowed!\nLoadZAddr(%d) skiped!"), addr);
         //return;
     }
     Instruction(OP_LDI, ZL, (addr & 0xff), comment); // Z-register Low Byte
@@ -1500,7 +1500,7 @@ static void LoadZAddr(DWORD addr)
 static void SETB(DWORD addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1553,7 +1553,7 @@ static void SETB(DWORD addr, int bit)
 static void CLRB(DWORD addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1607,7 +1607,7 @@ static DWORD SKBS(DWORD addr, int bit, int reg)
 {
     DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"), 0);
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1957,7 +1957,7 @@ static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nOrMemory(0, %d) skiped!"), val); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nOrMemory(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1976,7 +1976,7 @@ static void AndMemory(DWORD addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nAndMemory(0, %d) skiped!"), val); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nAndMemory(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1996,11 +1996,11 @@ static void WriteRegToIO(DWORD addr, BYTE reg)
 //or used   ; Opcodes: 1
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nWriteRegToIO skiped.")); //see TODO
+        THROW_COMPILER_EXCEPTION(_("Zero memory address not allowed!\nWriteRegToIO skiped.")); //see TODO
         return;
     }
     if(reg < 0) {
-        Error(_("Registers less zero not allowed!\nWriteRegToIO skiped.")); //see TODO
+        THROW_COMPILER_EXCEPTION(_("Registers less zero not allowed!\nWriteRegToIO skiped.")); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -2012,11 +2012,11 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 //or used   ; Opcodes: 1
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nReadIoToReg skiped.")); //see TODO
+        THROW_COMPILER_EXCEPTION(_("Zero memory address not allowed!\nReadIoToReg skiped.")); //see TODO
         return;
     }
     if(reg < 0) {
-        Error(_("Registers less zero not allowed!\nReadIoToReg skiped.")); //see TODO
+        THROW_COMPILER_EXCEPTION(_("Registers less zero not allowed!\nReadIoToReg skiped.")); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -2121,7 +2121,7 @@ static void IfBitClear(DWORD addr, int bit, BYTE reg, const char *name)
     char b[10];
     sprintf(b, "BIT%d", bit);
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         LoadZAddr(addr);
@@ -2165,7 +2165,7 @@ static void IfBitSet(DWORD addr, int bit, BYTE reg, const char *name)
     char b[10];
     sprintf(b, "BIT%d", bit);
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
         LoadZAddr(addr);
@@ -2246,15 +2246,15 @@ static bool TstAddrBitReg(DWORD addr, int bit, int reg)
 {
     bool b = true;
     if((addr <= 0) || (addr > 0xFFFF)) {
-        Error(_("Only values 0-0xFFFF allowed for Address parameter.\naddres=0x%4X"), addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Only values 0-0xFFFF allowed for address parameter.\naddres=0x%4X"), addr);
         b = false;
     }
     if((bit < 0) || (bit > 7)) {
-        Error(_("Only values 0-7 allowed for Bit parameter.\nbit=%d"), bit);
+        THROW_COMPILER_EXCEPTION_FMT(_("Only values 0-7 allowed for Bit parameter.\nbit=%d"), bit);
         b = false;
     }
     if((reg < 0) || (reg > 0x1F)) {
-        Error(_("Only values 0-0x1F allowed for Register parameter.\nreg=0x%02X"), reg);
+        THROW_COMPILER_EXCEPTION_FMT(_("Only values 0-0x1F allowed for Register parameter.\nreg=0x%02X"), reg);
         b = false;
     }
     return b;
@@ -2529,11 +2529,11 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 
         // Okay, so many AVRs have a register called TIMSK, but the meaning of
         // the bits in that register varies from device to device...
-        if(strcmp(Prog.mcu->mcuName, "Atmel AVR AT90USB647 64-TQFP")==0) {
+        if(strcmp(Prog.mcu()->mcuName, "Atmel AVR AT90USB647 64-TQFP")==0) {
             WriteMemory(REG_TIMSK, (1 << 1));
         }
         else
-        if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega162 40-PDIP")==0) {
+        if(strcmp(Prog.mcu()->mcuName, "Atmel AVR ATmega162 40-PDIP")==0) {
             WriteMemory(REG_TIMSK, (1 << 6));
         } else {
             WriteMemory(REG_TIMSK, (1 << 4));
@@ -2721,7 +2721,7 @@ static void CompileIfBody(DWORD condFalse)
     }
 
     if(IntCode[IntPc].op != INT_END_IF)
-        THROW_COMPILER_EXCEPTION_FMT("Invalid intcode %d.", IntCode[IntPc].op);
+        THROW_COMPILER_EXCEPTION_FMT(_("Invalid intcode %d."), IntCode[IntPc].op);
 }
 
 //-----------------------------------------------------------------------------
@@ -3127,8 +3127,8 @@ static void  WriteRuntime()
     //WriteMemoryCurrAddr((1 << WDE)); // 16 ms
     //WriteMemoryCurrAddr((1 << WDE) | (1 << WDP2) | (1 << WDP1) | (1 << WDP0)); // 2s
     WriteMemoryCurrAddr((1<<WDE) | (1<<WDP3) | (1<<WDP0)); // 8s
-    ////STOREval(REG_WDTCR, (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s BAD, more then four cycles
-    ////WriteMemory(REG_WDTCR, (1<<WDE) | (1<<WDP3) | (1<<WDP0)); // BAD, more then four cycles
+    ////STOREval(REG_WDTCR, (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0)); // 2s BAD, more than four cycles
+    ////WriteMemory(REG_WDTCR, (1<<WDE) | (1<<WDP3) | (1<<WDP0)); // BAD, more than four cycles
     Instruction(OP_SEI);
 
     Comment("Set up the stack, which we use only when we jump to multiply/divide routine"); // 4
@@ -3169,7 +3169,7 @@ static void  WriteRuntime()
 
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
-            Error(_("Zero baud rate not possible."));
+            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."));
             return;
         }
 
@@ -3198,6 +3198,14 @@ static void  WriteRuntime()
         } else {
             WriteMemory(Prog.mcu()->dirRegs[i], isOutput[i]);
             // turn on the pull-ups, and drive the outputs low to start
+            ///// Modified by JG to manage AVR pull-ups via Configuration Word (Bits) in Control panel
+            if (i == 0)
+                WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 0) & 0xFF));  // PORTA
+            else if (i == 1)
+                WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 8) & 0xFF));  // PORTB
+            else if (i == 2)
+                WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 16) & 0xFF)); // PORTC
+            else
             WriteMemory(Prog.mcu()->outputRegs[i], isInput[i]);
         }
     }
@@ -3338,6 +3346,8 @@ static void CompileFromIntermediate()
     int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int   sov = -1, sov1 = -1, sov2 = -1, sov12 = -1, sov23 = -1;
 
+    CompileFailure= 0;
+
     for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
         IntOp *a = &IntCode[IntPc];
@@ -3376,7 +3386,7 @@ static void CompileFromIntermediate()
 
             case INT_SET_BCD2BIN:
                 Comment("INT_SET_BCD2BIN");
-                THROW_COMPILER_EXCEPTION_FMT("Invalid operation %i.", INT_SET_BCD2BIN);
+                THROW_COMPILER_EXCEPTION_FMT(_("Invalid operation %i."), INT_SET_BCD2BIN);
                 break;
 
             case INT_SET_BIN2BCD:
@@ -3521,7 +3531,7 @@ static void CompileFromIntermediate()
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         ClearBit(addr1 + 3, bit - 24, a->name1);
                     else
-                        THROW_COMPILER_EXCEPTION_FMT("Invalid bit number %i", bit);
+                        THROW_COMPILER_EXCEPTION_FMT(_("Invalid bit number %i."), bit);
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, -2); // 0xF..FE
@@ -3555,7 +3565,7 @@ static void CompileFromIntermediate()
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         SetBit(addr1 + 3, bit - 24, a->name1);
                     else
-                        THROW_COMPILER_EXCEPTION_FMT("Invalid bit number %i", bit);
+                        THROW_COMPILER_EXCEPTION_FMT(_("Invalid bit number %i."), bit);
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
@@ -3591,7 +3601,7 @@ static void CompileFromIntermediate()
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         IfBitClear(addr1 + 3, bit - 24);
                     else
-                        THROW_COMPILER_EXCEPTION_FMT("Invalid bit number %i", bit);
+                        THROW_COMPILER_EXCEPTION_FMT(_("Invalid bit number %i."), bit);
                     Instruction(OP_RJMP, endifAddr); // here bit is CLR
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
@@ -3658,7 +3668,7 @@ static void CompileFromIntermediate()
                     else if((24 <= bit) && (bit <= 32) && (sov1 >= 4))
                         IfBitSet(addr1 + 3, bit - 24);
                     else
-                        THROW_COMPILER_EXCEPTION_FMT("Invalid bit number %i", bit);
+                        THROW_COMPILER_EXCEPTION_FMT(_("Invalid bit number %i."), bit);
                     Instruction(OP_RJMP, endifAddr); // here bit is SET
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
@@ -3715,7 +3725,7 @@ static void CompileFromIntermediate()
             }
             case INT_SET_OPPOSITE:
                 Comment("INT_SET_OPPOSITE %s", a->name1.c_str());
-                THROW_COMPILER_EXCEPTION_FMT("Invalid AVR OpCode %i", INT_SET_OPPOSITE);
+                THROW_COMPILER_EXCEPTION_FMT(_("Invalid AVR OpCode %i."), INT_SET_OPPOSITE);
                 break;
 
             case INT_SET_SWAP:
@@ -3743,7 +3753,7 @@ static void CompileFromIntermediate()
                     Instruction(OP_MOV, r17, r18);
                     Instruction(OP_MOV, r18, r3);
                 } else
-                    Error(_("Invalid var size in swap."));
+                    THROW_COMPILER_EXCEPTION(_("Invalid var size in swap."));
 
                         CopyRegToVar(a->name1, r16, sov1);
                 break;
@@ -3900,7 +3910,7 @@ static void CompileFromIntermediate()
                         Instruction(OP_BRNE, notTrue, 0);
                         break;
                     default:
-                        THROW_COMPILER_EXCEPTION("Invalid compare.");
+                        THROW_COMPILER_EXCEPTION(_("Invalid compare."));
                 }
                 CompileIfBody(notTrue);
                 break;
@@ -4227,7 +4237,7 @@ static void CompileFromIntermediate()
                     CallSubroutine(DivideAddress24);
                     DivideUsed24 = true;
                 } else
-                    Error(_("Invalid variable size."));
+                    THROW_COMPILER_EXCEPTION(_("Invalid variable size."));
                 if(a->op == INT_SET_VARIABLE_DIVIDE)
                     CopyRegToVar(a->name1, r19, sov);
                 else
@@ -4251,7 +4261,7 @@ static void CompileFromIntermediate()
                     MultiplyUsed24 = true;
                     sov1 = std::min(6, SizeOfVar(a->name1));
                 } else
-                    Error(_("Invalid variable size."));
+                    THROW_COMPILER_EXCEPTION(_("Invalid variable size."));
                 CopyRegToVar(a->name1, r20, sov1);
                 break;
 
@@ -4354,7 +4364,7 @@ static void CompileFromIntermediate()
                             Instruction(OP_ROR, 21);
                             Instruction(OP_ROR, 20);
                         } else
-                            Error(_("Invalid variable size."));
+                            THROW_COMPILER_EXCEPTION(_("Invalid variable size."));
                     } else if(a->op == INT_SET_VARIABLE_SHR) {
                         if(sov == 1) {
                             Instruction(OP_ASR, 20);
@@ -4371,7 +4381,7 @@ static void CompileFromIntermediate()
                             Instruction(OP_ROR, 21);
                             Instruction(OP_ROR, 20);
                         } else
-                            Error(_("Invalid variable size."));
+                            THROW_COMPILER_EXCEPTION(_("Invalid variable size."));
                     } else if(a->op == INT_SET_VARIABLE_ROL) {
                         RolReg(r20, sov);
                     } else if(a->op == INT_SET_VARIABLE_ROR) {
@@ -4399,9 +4409,9 @@ static void CompileFromIntermediate()
                             IfBitSet(REG_SREG, SREG_C);
                             Instruction(OP_SBR, 23, 0x80);
                         } else
-                            Error(_("Invalid variable size."));
+                            THROW_COMPILER_EXCEPTION(_("Invalid variable size."));
                     } else
-                        THROW_COMPILER_EXCEPTION("Invalid instruction.");
+                        THROW_COMPILER_EXCEPTION(_("Invalid instruction."));
                     Instruction(OP_RJMP, Loop);
                     FwdAddrIsNow(Skip);
                 } else
@@ -4525,7 +4535,7 @@ static void CompileFromIntermediate()
             case INT_PWM_OFF: {
                 McuPwmPinInfo *iop = PwmPinInfoForName(a->name1.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name1.c_str());
+                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name1.c_str());
                 }
                 if(iop->maxCS == 0) {
                     if(REG_TCCR2B > 0) {
@@ -4551,8 +4561,7 @@ static void CompileFromIntermediate()
 
             case INT_SET_PWM: {
                 //Op(INT_SET_PWM, l->d.setPwm.duty_cycle, l->d.setPwm.targetFreq, l->d.setPwm.name, l->d.setPwm.resolution);
-                Comment(
-                    "INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
+                Comment("INT_SET_PWM %s %s %s %s", a->name1.c_str(), a->name2.c_str(), a->name3.c_str(), a->name4.c_str());
                 int resol = 7; // 0-100% (6.7 bit)
                 int TOP = 0xFF;
                 getResolution(a->name4.c_str(), &resol, &TOP);
@@ -4560,11 +4569,11 @@ static void CompileFromIntermediate()
                 McuPwmPinInfo *iop;
                 iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!iop) {
-                    Error(_("Pin '%s': PWM output not available!"), a->name3.c_str());
+                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name3.c_str());
                 } else {
                     iop = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer, std::max(resol, 8));
                     if(!iop) {
-                        Error(_("Pin '%s': PWM resolution not available!"), a->name3.c_str());
+                        THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM resolution not available!"), a->name3.c_str());
                     }
                 }
                 if(iop->maxCS == 0) {
@@ -4666,15 +4675,14 @@ static void CompileFromIntermediate()
                             break;
                         }
                     } else
-                        Error(_("Can't set prescale."));
+                        THROW_COMPILER_EXCEPTION(_("Can't set prescale."));
                 }
 
                 if(((double)bestError) / target > 0.05) {
                     char str1[1024];
                     char str2[1024];
                     sprintf(str1,
-                            _("Target PWM frequency %d Hz, closest achievable is "
-                              "%d Hz (warning, >5%% error)."),
+                            _("Target PWM frequency %d Hz, closest achievable is %d Hz (warning, >5%% error)."),
                             (int)target,
                             (int)bestFreq);
                     //need duble %
@@ -4724,7 +4732,7 @@ static void CompileFromIntermediate()
                             cs = 7;
                             break;
                         default:
-                            Error(_("Invalid prescale."));
+                            THROW_COMPILER_EXCEPTION(_("Invalid prescale."));
                     }
                 } else if(iop->maxCS == 5) {
                     switch(bestPrescale) {
@@ -4744,10 +4752,10 @@ static void CompileFromIntermediate()
                             cs = 5;
                             break;
                         default:
-                            Error(_("Invalid prescale."));
+                            THROW_COMPILER_EXCEPTION(_("Invalid prescale."));
                     }
                 } else
-                    Error(_("Can't set PWM."));
+                    THROW_COMPILER_EXCEPTION(_("Can't set PWM."));
 
                 if(resol == 7) {
                     DivideUsed = true;
@@ -5183,7 +5191,7 @@ static void CompileFromIntermediate()
                 return;
 
             case INT_WRITE_STRING:
-                Error(_("Unsupported operation 'INT_WRITE_STRING' for target, skipped."));
+                THROW_COMPILER_EXCEPTION(_("Unsupported operation 'INT_WRITE_STRING' for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
                 break;
 
@@ -5937,7 +5945,7 @@ void CompileAvr(const char *outFile)
     rungNow = -100;
     FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFile);
         return;
     }
 
@@ -5945,7 +5953,7 @@ void CompileAvr(const char *outFile)
     SetExt(outFileAsm, outFile, ".asm");
     FileTracker fAsm(outFileAsm, "w");
     if(!fAsm) {
-        Error(_("Couldn't open file '%s'"), outFileAsm);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFileAsm);
         return;
     }
 
@@ -6974,7 +6982,7 @@ void CompileAvr(const char *outFile)
 //      REG_UCSRC   = 0x9d;
     */
     } else
-        THROW_COMPILER_EXCEPTION_FMT("Don't know how to init %s.", Prog.mcu() ? Prog.mcu()->mcuName : "Invalid MCU");
+        THROW_COMPILER_EXCEPTION_FMT(_("Don't know how to init %s."), Prog.mcu() ? Prog.mcu()->mcuName : _("Invalid MCU"));
     //***********************************************************************
 
     rungNow = -90;

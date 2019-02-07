@@ -207,15 +207,15 @@ static void MakeFixedControls(bool forPwl)
 
     const char *txt1 = forPwl ? _("Points:") : _("Table size:");
     char        txt[1024];
-    sprintf(txt, "%s max %d", txt1, forPwl ? MAX_LOOK_UP_TABLE_LEN / 2 : MAX_LOOK_UP_TABLE_LEN);
+    sprintf(txt, "%s\n (max %d)", txt1, forPwl ? MAX_LOOK_UP_TABLE_LEN / 2 : MAX_LOOK_UP_TABLE_LEN);
     Labels[3] = CreateWindowEx(0,
                                WC_STATIC,
                                txt,
                                WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
                                0,
-                               70 + 30,
+                               70 + 22,				/////
                                78 + 20,
-                               21,
+							   42,					///// Modified by JG
                                LutDialog,
                                nullptr,
                                Instance,
@@ -242,7 +242,7 @@ static void MakeFixedControls(bool forPwl)
                                           _("Edit table of ASCII values like a string"),
                                           WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_AUTOCHECKBOX,
                                           10,
-                                          100 + 30,
+                                          100+30,		///// Modified by JG
                                           300,
                                           21,
                                           LutDialog,
@@ -378,9 +378,9 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
         int i;
         int base;
         if(forPwl) {
-            base = 100 + 30;
+            base = 100 + 40;		///// Modified by JG
         } else {
-            base = 140 + 20;
+            base = 140 + 25;		/////
         }
         for(i = 0; i < count; i++) {
             int x, y;
@@ -438,7 +438,7 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM) false, 0);
 
         MoveWindow(
-            LutDialog, 100, 30, 320 + 20 + std::min(count / 16, 2) * 150, base + 30 + std::min(count, 16) * 30, true);
+			LutDialog, 100, 30, 320 + 20 + std::min(count / 16, 2) * 150, base + 60 + std::min(count, 16) * 30, true);		///// Modified by JG
     }
 }
 
@@ -512,7 +512,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
                                    100,
                                    100,
                                    320,
-                                   375,
+                                   405,				//// Modified by JG
                                    nullptr,
                                    nullptr,
                                    Instance,

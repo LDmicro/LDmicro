@@ -102,7 +102,7 @@ static void CheckConstantInRange(SDWORD v)
 {
     /*
     if(v < -0x800000 || v > 0x7FffFF) {
-        Error(_("Constant %d out of range: %d to %d inclusive."), v, -0x800000, 0x7FffFF);
+        THROW_COMPILER_EXCEPTION_FMT(_("Constant %d out of range: %d to %d inclusive."), v, -0x800000, 0x7FffFF);
     }
     */
 }
@@ -114,7 +114,7 @@ void IntDumpListing(char *outFile)
 {
     FILE *f = fopen(outFile, "w");
     if(!f) {
-        Error(_("Couldn't dump intermediate code to '%s'."), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't dump intermediate code to '%s'."), outFile);
     }
 
     int indent = 0;
@@ -1262,7 +1262,7 @@ long hobatoi(const char *str)
         char dest[MAX_NAME_LEN];
         FrmStrToStr(dest, start_ptr);
         if((strlen(dest) > 3) || (dest[0] != '\'') || (dest[2] != '\'')) {
-            THROW_COMPILER_EXCEPTION_FMT("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!", str);
+            THROW_COMPILER_EXCEPTION_FMT(_("Expected single-character or one simple-escape-sequence in single-quotes: <%s>!"), str);
         }
         val = dest[1];
     } else {
@@ -1920,7 +1920,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_TIME2COUNT: {
             Comment(3, "ELEM_TIME2COUNT");
             if(!IsNumber(l->d.timer.delay))
-                Error("The TIME to COUNTER converter T2CNT '%S' delay must be a number in ms!", l->d.timer.name);
+                Error(_("The TIME to COUNTER converter T2CNT '%S' delay must be a number in ms!"), l->d.timer.name);
             SDWORD period = TimerPeriod(l);
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
@@ -2497,7 +2497,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_RSFR:
             Comment(3, "ELEM_RSFR");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("Read SFR instruction: '%s' not a valid destination."), l->d.move.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("Read SFR instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -2841,7 +2841,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         // clang-format on
 #ifdef TABLE_IN_FLASH
             if(IsNumber(l->d.segments.dest)) {
-                Error(_("Segments instruction: '%s' not a valid destination."), l->d.segments.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("Segments instruction: '%s' not a valid destination."), l->d.segments.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.segments.src)) {
@@ -3221,7 +3221,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_MOVE: {
             Comment(3, "ELEM_MOVE");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("Move instruction: '%s' not a valid destination."), l->d.move.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("Move instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -3243,7 +3243,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_BIN2BCD: {
             Comment(3, "ELEM_BIN2BCD");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("BIN2BCD instruction: '%s' not a valid destination."), l->d.move.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("BIN2BCD instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_BIN2BCD, l->d.move.dest, l->d.move.src);
@@ -3254,7 +3254,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_BCD2BIN: {
             Comment(3, "ELEM_BCD2BIN");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("BCD2BIN instruction: '%s' not a valid destination."), l->d.move.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("BCD2BIN instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_BCD2BIN, l->d.move.dest, l->d.move.src);
@@ -3265,7 +3265,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_OPPOSITE: {
             Comment(3, "ELEM_OPPOSITE");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("OPPOSITE instruction: '%s' not a valid destination."), l->d.move.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("OPPOSITE instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_SET_OPPOSITE, l->d.move.dest, l->d.move.src);
@@ -3276,7 +3276,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_SWAP: {
             Comment(3, "ELEM_SWAP");
             if(IsNumber(l->d.move.dest)) {
-                Error(_("SWAP instruction: '%s' not a valid destination."), l->d.move.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("SWAP instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_SET_SWAP, l->d.move.dest, l->d.move.src);
@@ -3306,7 +3306,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             SetSizeOfVar(name, 4);
 
             if(IsNumber(l->d.move.dest)) {
-                Error(_("SRAND instruction: '%s' not a valid destination."), l->d.move.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("SRAND instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
@@ -3619,7 +3619,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
           EepromAddrFree += SizeOfVar(l->d.persist.var);
           break;
         }
-        case ELEM_UART_SENDn: {
+        case ELEM_UART_SENDn: {                     ///// JG: this function is a huge mystery !
             Comment(3, "ELEM_UART_SENDn");
             char store[MAX_NAME_LEN];
             GenSymOneShot(store, "SENDn", l->d.uart.name);
@@ -3834,11 +3834,43 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_SPI: {
             Comment(3, "ELEM_SPI");
-
-                Comment(3, "ELEM_SPI_1");
-                Comment(3, "ELEM_SPI_2");
+            ///// Added by JG
+            Op(INT_IF_BIT_SET, stateInOut);                                 // if(Read_Ib_rung_top()) {
+              Op(INT_SPI, l->d.spi.name, l->d.spi.send, l->d.spi.recv);     //   SpiSendRecv[name1=name, name2=send, name3=recv]
+              Op(INT_SET_BIT, stateInOut);                                  //   activate output line
+            Op(INT_END_IF);                                                 // }
+            /////
             break;
         }
+
+        ///// Added by JG
+        case ELEM_SPI_WR: {
+            Comment(3, "ELEM_SPI_WR");
+            Op(INT_IF_BIT_SET, stateInOut);                                 // if(Read_Ib_rung_top()) {
+              Op(INT_SPI_WRITE, l->d.spi.name, l->d.spi.send);              //   SpiWrite[name1=name, name2=send]
+              Op(INT_SET_BIT, stateInOut);                                  //   activate output line
+            Op(INT_END_IF);                                                 // }
+            break;
+        }
+
+        case ELEM_I2C_RD: {
+            Comment(3, "ELEM_I2C_RD");
+            Op(INT_IF_BIT_SET, stateInOut);                                                     // if(Read_Ib_rung_top()) {
+            Op(INT_I2C_READ, l->d.i2c.name, l->d.i2c.recv, l->d.i2c.address, l->d.i2c.registr); //   I2cRead[name1=name, name2=recv, name3=addr, name4= reg]
+              Op(INT_SET_BIT, stateInOut);                                                      //   activate output line
+            Op(INT_END_IF);                                                                     // }
+            break;
+        }
+
+        case ELEM_I2C_WR: {
+            Comment(3, "ELEM_I2C_WR");
+            Op(INT_IF_BIT_SET, stateInOut);                                                         // if(Read_Ib_rung_top()) {
+              Op(INT_I2C_WRITE, l->d.i2c.name, l->d.i2c.send, l->d.i2c.address, l->d.i2c.registr);  //   I2cWrite[name1=name, name2=send, name3=addr, name4= reg]);
+              Op(INT_SET_BIT, stateInOut);                                                          //   activate output line
+            Op(INT_END_IF);                                                                         // }
+            break;
+        }
+        /////
 
         case ELEM_SET_BIT:
             Comment(3, "ELEM_SET_BIT");
@@ -3867,7 +3899,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_NOT: intOp = INT_SET_VARIABLE_NOT;      Comment(3, "ELEM_NOT"); goto mathBit;
           mathBit : {
             if(IsNumber(l->d.math.dest)) {
-                Error(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if((intOp == INT_SET_VARIABLE_NEG)
@@ -3881,7 +3913,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 ) {
                     if((hobatoi(l->d.math.op2) < 0)
                     || (SizeOfVar(l->d.math.op1) * 8 < hobatoi(l->d.math.op2))) {
-                        Error(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
+                        THROW_COMPILER_EXCEPTION_FMT(_("Shift constant %s=%d out of range of the '%s' variable: 0 to %d inclusive."), l->d.math.op2, hobatoi(l->d.math.op2), l->d.math.op1, SizeOfVar(l->d.math.op1) * 8);
                     }
                 }
                 Op(intOp, l->d.math.dest, l->d.math.op1, l->d.math.op2/*, stateInOut2*/);
@@ -3900,7 +3932,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_MOD: intOp = INT_SET_VARIABLE_MOD;      Comment(3, "ELEM_MOD"); goto math;
         math : {
             if(IsNumber(l->d.math.dest)) {
-                Error(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
+                THROW_COMPILER_EXCEPTION_FMT(_("Math instruction: '%s' not a valid destination."), l->d.math.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             const char *op1 = VarFromExpr(l->d.math.op1, "$scratch1");
@@ -4004,7 +4036,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             } else {
                 r = FindRung(ELEM_LABEL, l->d.doGoto.label);
                 if(r < 0) {
-                    Error(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.label);
+                    THROW_COMPILER_EXCEPTION_FMT(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.label);
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -4019,13 +4051,13 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             GetLabelName(ELEM_SUBPROG, name, l->d.doGoto.label);
             int r;
             if(IsNumber(l->d.doGoto.label)) {
-                Error(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.label);
+                THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.label);
                 r = hobatoi(l->d.doGoto.label);
                 r = std::min(r, Prog.numRungs + 1) - 1;
             } else {
                 r = FindRung(ELEM_SUBPROG, l->d.doGoto.label);
                 if(r < 0) {
-                    Error(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
+                    THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
@@ -4175,13 +4207,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             // point math.
             ElemPiecewiseLinear *t = &(l->d.piecewiseLinear);
             if(t->count == 0) {
-                Error(_("Piecewise linear lookup table with zero elements!"));
+                THROW_COMPILER_EXCEPTION(_("Piecewise linear lookup table with zero elements!"));
             }
             int xThis = t->vals[0];
             for(int i = 1; i < t->count; i++) {
                 if(t->vals[i * 2] <= xThis) {
-                    Error(_("x values in piecewise linear table must be "
-                        "strictly increasing."));
+                    THROW_COMPILER_EXCEPTION(_("x values in piecewise linear table must be strictly increasing."));
                 }
                 xThis = t->vals[i * 2];
             }
@@ -4222,7 +4253,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
                 // Check for numerical problems, and fail if we have them.
                 if((thisDx * thisDy) >= 32767 || (thisDx * thisDy) <= -32768) {
-                    Error(_("Numerical problem with piecewise linear lookup "
+                    THROW_COMPILER_EXCEPTION(_("Numerical problem with piecewise linear lookup "
                         "table. Either make the table entries smaller, "
                         "or space the points together more closely.\r\n\r\n"
                         "See the help file for details."));
@@ -4329,8 +4360,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             while(*p) {
                 if((*p == '\\') && (isdigit(p[1]) || p[1] == '-') && (p[1] != '0')) {
                     if(digits >= 0) {
-                        Error(_("Multiple escapes (\\0-9) present in format "
-                            "string, not allowed."));
+                        Error(_("Multiple escapes (\\0-9) present in format string, not allowed."));
                     }
                     p++;
                     if(*p == '-') {
@@ -4340,8 +4370,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         p++;
                     }
                     if(!isdigit(*p) || (*p - '0') > 5 || *p == '0') {
-                        Error(_("Bad escape sequence following \\; for a "
-                            "literal backslash, use \\\\"));
+                        Error(_("Bad escape sequence following \\; for a literal backslash, use \\\\"));
                     }
                     digits = (*p - '0');
                     for(int i = 0; i < digits; i++) {
@@ -4399,12 +4428,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             }
 
             if(digits >= 0 && (strlen(var) == 0)) {
-                Error(_("Variable is interpolated into formatted string, but "
-                    "none is specified."));
+                Error(_("Variable is interpolated into formatted string, but none is specified."));
             } else if(digits < 0 && (strlen(var) > 0)) {
-                Error(_("No variable is interpolated into formatted string, "
-                    "but a variable name is specified. Include a string like "
-                    "'\\-3', or leave variable name blank."));
+                Error(_("No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."));
             }
 
             // We want to respond to rising edges, so yes we need a one shot.
@@ -4573,7 +4599,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_PLACEHOLDER: {
             //Comment(3, "ELEM_PLACEHOLDER");
-            Error(_("Empty row; delete it or add instructions before compiling."));
+            THROW_COMPILER_EXCEPTION(_("Empty row; delete it or add instructions before compiling."));
             break;
         }
         case ELEM_COMMENT: {

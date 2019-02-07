@@ -421,9 +421,9 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     }
                 }
                 /*
-                if(QuadEncodFunctionUsed() && Prog.mcu) {
-                    if((Prog.mcu->IntNeeds.int0 == pin)
-                    || (Prog.mcu->IntNeeds.int1 == pin) )
+                if(QuadEncodFunctionUsed() && Prog.mcu()) {
+                    if((Prog.mcu()->IntNeeds.int0 == pin)
+                    || (Prog.mcu()->IntNeeds.int1 == pin) )
                     {
                         strcpy(portName, _("<INT needs!>"));
                         return;
@@ -450,9 +450,9 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     }
                 }
                 /*
-                if(QuadEncodFunctionUsed() && Prog.mcu) {
-                    if((Prog.mcu->IntNeeds.int0 == pin)
-                    || (Prog.mcu->IntNeeds.int1 == pin) )
+                if(QuadEncodFunctionUsed() && Prog.mcu()) {
+                    if((Prog.mcu()->IntNeeds.int0 == pin)
+                    || (Prog.mcu()->IntNeeds.int1 == pin) )
                     {
                         strcpy(pinName, _("<INT needs!>"));
                         return;
@@ -592,12 +592,12 @@ static int ComparePin(const void *av, const void *bv)
 /*
 void SetMcu(McuIoInfo *mcu)
 {
-    Prog.mcu = mcu;
+    Prog.mcu() = mcu;
     Prog.configurationWord = 0;     ///// Added by JG
 
     LoadWritePcPorts();
 
-    if(Prog.mcu && (Prog.mcu()->core != PC_LPT_COM))
+    if(Prog.mcu() && (Prog.mcu()->core != PC_LPT_COM))
         qsort(Prog.mcu()->pinInfo, Prog.mcu()->pinCount, sizeof(McuIoPinInfo), ComparePin);
 }
 */

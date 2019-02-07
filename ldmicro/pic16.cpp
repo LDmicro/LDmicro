@@ -600,7 +600,7 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
                         case OP_DECFSZ:
                         case OP_INCFSZ:
                         default:
-                            Error(_("Bank select error!"));
+                            THROW_COMPILER_EXCEPTION(_("Bank select error!"));
                     }
                 }
             }
@@ -927,7 +927,7 @@ doBankCorrection:
         goto doBankCorrection;
 
     if(PicProgWriteP >= Prog.mcu()->flashWords)
-        Error("Not enough memory for BANK and PAGE correction!");
+        Error(_("Not enough memory for BANK and PAGE correction!"));
 
     return bank;
 }
@@ -1318,7 +1318,7 @@ static void PageCorrection()
     static int PageSelLevel = 10;
 /*
     if(PicProgWriteP >= Prog.mcu()->flashWords) {
-        Error("Not enough memory for PAGE correction! %d %d", PicProgWriteP, Prog.mcu->flashWords);
+        Error("Not enough memory for PAGE correction! %d %d", PicProgWriteP, Prog.mcu()->flashWords);
         return;
     }
 */
@@ -1396,7 +1396,7 @@ doPageCorrection:
         goto doPageCorrection;
 
     if(PicProgWriteP >= Prog.mcu()->flashWords)
-        Error("Not enough memory for PAGE correction!");
+        Error(_("Not enough memory for PAGE correction!"));
 }
 
 //-----------------------------------------------------------------------------
@@ -1406,7 +1406,7 @@ static void PageCheckForErrorsPostCompile()
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
             if((PicProg[i].arg1 >> 11) != (PicProg[i].PCLATH >> 3)) {
                 //^target addr^              ^current PCLATH^
-                Error("Page Error.[%d:%s] 0x%X 0x%X", PicProg[i].l, PicProg[i].f, PicProg[i].arg1>>11, PicProg[i].PCLATH>>3);
+                Error(_("Page Error.[%d:%s] 0x%X 0x%X"), PicProg[i].l, PicProg[i].f, PicProg[i].arg1>>11, PicProg[i].PCLATH>>3);
             }
         }
     }
@@ -1418,7 +1418,7 @@ static void AddrCheckForErrorsPostCompile()
     for(DWORD i = 0; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE)
             if(IS_FWD(PicProg[i].arg1)) {
-                Error("Every AllocFwdAddr needs FwdAddrIsNow.");
+                Error(_("Every AllocFwdAddr needs FwdAddrIsNow."));
             }
     }
 }
@@ -5291,7 +5291,7 @@ otherwise the result was zero or greater.
                                                       // 1-1-0-50%-122kHz
                                                       // 0-0-2-50%-250kHz
 
-                //TODO: if(Prog.mcu->core == EnhancedMidrangeCore14bit)
+                //TODO: if(Prog.mcu()->core == EnhancedMidrangeCore14bit)
                 if(McuAs(" PIC16F72 ")) {
                     BYTE t2con = _BV(TMR2ON); // timer 2 on
                     if(prescale == 1)
@@ -7640,8 +7640,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
-            Error(_("Zero baud rate not possible."));
-            return false;
+            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."), false);
+            /////	return false;
         }
 
         Comment("UART setup");
@@ -7870,7 +7870,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         if(Prog.cycleTime) {
             double CycleDeviation = 1e2 * (1e6 * plcTmr.TCycle - Prog.cycleTime) / Prog.cycleTime;
             if(CycleDeviation > 1.0) {
-                Error(_("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
+                THROW_COMPILER_EXCEPTION_FMT(_("%sPLC cycle deviation is %.3f %%%% !"), (CycleDeviation > 5.0) ? "" : " ", CycleDeviation);
             }
         }
 
@@ -7919,8 +7919,8 @@ void CompilePic16(const char *outFile)
         McuAs(" PIC12F675 ")          //
     ) {
         if(Prog.cycleTimer > 0) {
-            Error(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
-            return;
+            THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
+            /////	return;
         }
     }
     bool b = _CompilePic16(outFile, 0); // 1) calc LD length approximately

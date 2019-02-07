@@ -554,7 +554,7 @@ void AddQuadEncod()
     if(Prog.mcu()) {
         n = QuadEncodFunctionUsed();
         if(n > Prog.mcu()->ExtIntCount) {
-            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
+            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu()->ExtIntCount);
             //return;
         }
     }
@@ -752,7 +752,9 @@ void AddSpi(int which)
         }
     }
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.spi.name, "SPIn");
+    /////   strcpy(t->d.spi.name, "SPIn");
+    strcpy(t->d.spi.name, "SPI1");              ///// Modified by JG
+    /////
     strcpy(t->d.spi.mode, "Master");
     strcpy(t->d.spi.send, "send");
     strcpy(t->d.spi.recv, "recv");
@@ -760,6 +762,7 @@ void AddSpi(int which)
     strcpy(t->d.spi.modes, "0");
     strcpy(t->d.spi.size, "8");
     strcpy(t->d.spi.first, "MSB");
+    t->d.spi.which= which;                      ///// Added by JG
     AddLeaf(which, t);
 }
 
@@ -1431,7 +1434,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int                 i;
             for(i = 0; i < p->count; i++) {
-                if((l = ContainsWhich(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3))) {
+                if(l = ContainsWhich(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3)) {
                     return l;
                 }
             }
@@ -1441,7 +1444,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int               i;
             for(i = 0; i < s->count; i++) {
-                if((l = ContainsWhich(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3))) {
+                if(l = ContainsWhich(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3)) {
                     return l;
                 }
             }
@@ -1730,7 +1733,7 @@ void CopyRungDown()
     rewind(f);
     fgets(line, sizeof(line), f);
     if(strstr(line, "RUNG"))
-        if((temp = LoadSeriesFromFile(f))) {
+        if(temp = LoadSeriesFromFile(f)) {
             InsertRung(true);
             Prog.rungs[i + 1] = temp;
         }
@@ -1866,7 +1869,7 @@ void PasteRung(int PasteInTo)
         if(!fgets(line, sizeof(line), f))
             break;
         if(strstr(line, "RUNG"))
-            if((temp = LoadSeriesFromFile(f))) {
+            if(temp = LoadSeriesFromFile(f)) {
                 if(SelectedWhich == ELEM_PLACEHOLDER) {
                     Prog.rungs[j] = temp;
                     rung = 1;
