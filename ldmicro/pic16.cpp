@@ -7641,7 +7641,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
             THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."), false);
-            /////	return false;
+            /////   return false;
         }
 
         Comment("UART setup");
@@ -7920,7 +7920,7 @@ void CompilePic16(const char *outFile)
     ) {
         if(Prog.cycleTimer > 0) {
             THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
-            /////	return;
+            /////   return;
         }
     }
     bool b = _CompilePic16(outFile, 0); // 1) calc LD length approximately

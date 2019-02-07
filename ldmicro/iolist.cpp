@@ -462,14 +462,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 // Need if you add only one MOV or get erroneously other src name
                 // then you can see l->d.move.src in IOlist
                 if (which != ELEM_SPI_WR)                   ///// Added by JG : no send var for SPI_WRITE (literal string instead)
-                AppendIo(l->d.spi.send, IO_TYPE_GENERAL);
+                    AppendIo(l->d.spi.send, IO_TYPE_GENERAL);
             }
             if(!CheckForNumber(l->d.spi.recv)) {
                 // Not need ???
                 // Need if you add only one MOV or get erroneously other src name
                 // then you can see l->d.move.src in IOlist
                 if (which != ELEM_SPI_WR)                   ///// Added by JG : no recv var for SPI_WRITE
-                AppendIo(l->d.spi.recv, IO_TYPE_GENERAL);
+                    AppendIo(l->d.spi.recv, IO_TYPE_GENERAL);
             }
             break;
         }
@@ -976,7 +976,7 @@ void SaveIoListToFile(FILE *f)
         }
     }
     if(j1 != j2) {
-        Error(" %s%s", _("Not all I/O pins are saved! Use menu:\n"), 
+        Error(" %s%s", _("Not all I/O pins are saved! Use menu:\n"),
             _("File->Save LDmicro0.2 file format"));
     }
 }

@@ -222,9 +222,9 @@ void CompileInterpreted(const char *outFile)
             case INT_READ_ADC:
             case INT_SET_PWM:
             case INT_SPI:
-			case INT_SPI_WRITE:			///// Added by JG
-			case INT_I2C_READ:			/////
-			case INT_I2C_WRITE:			/////
+            case INT_SPI_WRITE:         ///// Added by JG
+            case INT_I2C_READ:          /////
+            case INT_I2C_WRITE:         /////
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
@@ -266,9 +266,9 @@ void CompileInterpreted(const char *outFile)
 
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
 
-	///// Added by JG
-	if(CompileFailure) return;
-	/////
+    ///// Added by JG
+    if(CompileFailure) return;
+    /////
 
     char str[MAX_PATH + 500];
     sprintf(str,

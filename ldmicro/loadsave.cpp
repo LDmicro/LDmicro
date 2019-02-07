@@ -271,10 +271,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.spi.first,
                      l->d.spi.bitrate)
               == 8) {
-		l->d.spi.which = ELEM_SPI_WR;
+        l->d.spi.which = ELEM_SPI_WR;
         *which = ELEM_SPI_WR;
-	
-	} else if(sscanf(line,
+
+    } else if(sscanf(line,
                      "SPI %s %s %s %s %s %s %s %s",
                      l->d.spi.name,
                      l->d.spi.send,
@@ -285,12 +285,12 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.spi.first,
                      l->d.spi.bitrate)
               == 8) {
-		l->d.spi.which = ELEM_SPI;
+        l->d.spi.which = ELEM_SPI;
         *which = ELEM_SPI;
 
     }
-	///// Added by JG
-	  else if(sscanf(line,
+    ///// Added by JG
+      else if(sscanf(line,
                      "I2C_RD %s %s %s %s %s %s %s %s",
                      l->d.i2c.name,
                      l->d.i2c.send,
@@ -301,10 +301,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.i2c.first,
                      l->d.i2c.bitrate)
               == 8) {
-		l->d.i2c.which = ELEM_I2C_RD;
+        l->d.i2c.which = ELEM_I2C_RD;
         *which = ELEM_I2C_RD;
-    }	
-	  else if(sscanf(line,
+    }
+      else if(sscanf(line,
                      "I2C_WR %s %s %s %s %s %s %s %s",
                      l->d.i2c.name,
                      l->d.i2c.send,
@@ -315,11 +315,11 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.i2c.first,
                      l->d.i2c.bitrate)
               == 8) {
-		l->d.i2c.which = ELEM_I2C_WR;
+        l->d.i2c.which = ELEM_I2C_WR;
         *which = ELEM_I2C_WR;
-	}
-	/////
-	
+    }
+    /////
+
      else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
@@ -1161,8 +1161,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "SWAP %s %s\n", l->d.move.dest, l->d.move.src);
             break;
 
-		///// Added by JG
-		case ELEM_SPI_WR:			
+        ///// Added by JG
+        case ELEM_SPI_WR:
             fprintf(f,
                     "SPI_WR %s %s %s %s %s %s %s %s\n",
                     l->d.spi.name,
@@ -1174,7 +1174,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.spi.first,
                     l->d.spi.bitrate);
             break;
-			/////
+            /////
 
         case ELEM_SPI: {
             fprintf(f,
@@ -1190,8 +1190,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
         }
 
-		///// Added by JG
-		case ELEM_I2C_RD:
+        ///// Added by JG
+        case ELEM_I2C_RD:
             fprintf(f,
                     "I2C_RD %s %s %s %s %s %s %s %s\n",
                     l->d.i2c.name,
@@ -1204,7 +1204,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.i2c.bitrate);
             break;
 
-		case ELEM_I2C_WR:
+        case ELEM_I2C_WR:
             fprintf(f,
                     "I2C_WR %s %s %s %s %s %s %s %s\n",
                     l->d.i2c.name,
@@ -1217,7 +1217,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.i2c.bitrate);
             break;
 
-			/////
+            /////
 
         case ELEM_BUS: {
             fprintf(f, "BUS %s %s", l->d.bus.dest, l->d.bus.src);
