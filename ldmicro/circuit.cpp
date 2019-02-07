@@ -362,7 +362,7 @@ void AddGoto(int which)
         return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.doGoto.rung, "?");
+    strcpy(t->d.doGoto.label, "?");
     AddLeaf(which, t);
 }
 
@@ -551,10 +551,10 @@ void AddQuadEncod()
         return;
 
     uint32_t n = 0;
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         n = QuadEncodFunctionUsed();
-        if(n > Prog.mcu->ExtIntCount) {
-            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
+        if(n > Prog.mcu()->ExtIntCount) {
+            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu()->ExtIntCount);
             //return;
         }
     }
@@ -682,7 +682,7 @@ void AddReadAdc()
     if(!CanInsertEnd)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuADC()) {
             Error(_("No ADC or ADC not supported for selected micro."));
             // return;
@@ -702,7 +702,7 @@ void AddSetPwm()
     if(!CanInsertEnd)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuPWM()) {
             Error(_("No PWM or PWM not supported for this MCU."));
             // return;
@@ -724,7 +724,7 @@ void AddUart(int which)
     if(!CanInsertOther)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuUART()) {
             Error(_("No UART or UART not supported for this MCU."));
             // return;
@@ -743,16 +743,16 @@ void AddSpi(int which)
     if(!CanInsertOther)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuSPI()) {
             Error(_("No SPI or SPI not supported for this MCU."));
             // return;
         }
     }
     ElemLeaf *t = AllocLeaf();
-	/////	strcpy(t->d.spi.name, "SPIn");
-	strcpy(t->d.spi.name, "SPI1");				///// Modified by JG
-	/////
+    /////   strcpy(t->d.spi.name, "SPIn");
+    strcpy(t->d.spi.name, "SPI1");              ///// Modified by JG
+    /////
     strcpy(t->d.spi.mode, "Master");
     strcpy(t->d.spi.send, "send");
     strcpy(t->d.spi.recv, "recv");
@@ -760,25 +760,25 @@ void AddSpi(int which)
     strcpy(t->d.spi.modes, "0");
     strcpy(t->d.spi.size, "8");
     strcpy(t->d.spi.first, "MSB");
-	t->d.spi.which= which;						///// Added by JG
+    t->d.spi.which= which;                      ///// Added by JG
     AddLeaf(which, t);
 }
 
 ///// Added by JG
-void AddI2c(int which)						
+void AddI2c(int which)
 {
     if(!CanInsertOther)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuI2C()) {
             Error(_("No I2C or I2C not supported for this MCU."));
             // return;
         }
     }
-    ElemLeaf *t = AllocLeaf();    
-	strcpy(t->d.i2c.name, "I2C1");			
-	/////
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.i2c.name, "I2C1");
+    /////
     strcpy(t->d.i2c.mode, "Master");
     strcpy(t->d.i2c.send, "send");
     strcpy(t->d.i2c.recv, "recv");
@@ -786,7 +786,7 @@ void AddI2c(int which)
     strcpy(t->d.i2c.address, "0");
     strcpy(t->d.i2c.registr, "0");
     strcpy(t->d.i2c.first, "MSB");
-	t->d.i2c.which= which;					
+    t->d.i2c.which= which;
     AddLeaf(which, t);
 }
 /////
@@ -796,7 +796,7 @@ void AddPersist()
     if(!CanInsertEnd)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuROM()) {
             Error(_("No ROM or ROM not supported for this MCU."));
             // return;
@@ -1097,13 +1097,13 @@ void FreeEntireProgram()
     Prog.cycleTime = 10000;
     Prog.mcuClock = 16000000;
     Prog.baudRate = 9600;
-	Prog.spiRate = 100000;
-	Prog.i2cRate = 100000;
+    Prog.spiRate = 100000;
+    Prog.i2cRate = 100000;
     Prog.io.count = 0;
     Prog.cycleTimer = 1;
     Prog.cycleDuty = 0;
     Prog.configurationWord = 0;
-    SetMcu(nullptr);
+    Prog.setMcu(nullptr);
 
     WipeIntMemory();
 }
@@ -1526,7 +1526,7 @@ static bool _FindRung(int which, void *any, int seek, char *name)
             if(which == seek) {
                 ElemLeaf *leaf = (ElemLeaf *)any;
                 ElemGoto *e = &leaf->d.doGoto;
-                if(strcmp(e->rung, name) == 0)
+                if(strcmp(e->label, name) == 0)
                     return true;
             }
             break;

@@ -7,7 +7,7 @@
 
 #include "targetver.h"
 
-#include "gsl.hpp"						// path modified by JG <gsl.hpp>
+#include "gsl.hpp"					
 
 // #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 

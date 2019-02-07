@@ -325,10 +325,10 @@
 "Insert &Contacts\tC"
 "Inserisci contatto\tC"
 
-"Insert &UART Receive"
+"Insert &UART RECEIVE"
 "Inserisci ricevitore UART"
 
-"Insert &UART Send"
+"Insert &UART SEND"
 "Inserisci trasmettitore UART"
 
 "Insert -+        +- Open-Circuit"
@@ -535,7 +535,7 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "Non è stato selezionato un microcontrollore. Prima di poter assegnare i pin I/O devi selezionare un microcontrollore.\r\n\r\nSeleziona un microcontrollore nel menu Impostazioni e riprova."
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Non sono in uso istruzioni seriali (UART invia/UART Ricevi), dopo aver impostato la velocità di trasmissione aggiungine una al programma.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
@@ -1291,10 +1291,10 @@
 "Insert &Contacts: Input Pin\tC"
 "Inserisci contatti: piedini di ingresso\tC"
 
-"Insert &UART Receive Variable"
+"Insert &UART RECEIVE Variable"
 "Inserisci variabile di ricezione UART"
 
-"Insert &UART Receive: Is data available ?"
+"Insert &UART RECEIVE: Is data available ?"
 "Inserisci ricezione UART: i dati sono disponibili?"
 
 "Insert &UART SEND"
@@ -1303,7 +1303,7 @@
 "Insert &UART SENDn Variable"
 "Inserisci Variabile per trasmettitore UART"
 
-"Insert &UART Send: Is ready to send ?"
+"Insert &UART SEND: Is ready to send ?"
 "Inserisci trasmettitore UART: è pronto per l'invio?"
 
 "Insert -+        +- Open-Circuit\tShift+Enter"

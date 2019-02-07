@@ -783,12 +783,12 @@ void EditSelectedElement()
             break;
 
         case ELEM_SPI:
-		case ELEM_SPI_WR:					///// Added by JG
+        case ELEM_SPI_WR:                   ///// Added by JG
             ShowSpiDialog(Selected);
             break;
 
-		case ELEM_I2C_RD:					///// Added by JG
-		case ELEM_I2C_WR:
+        case ELEM_I2C_RD:                   ///// Added by JG
+        case ELEM_I2C_WR:
             ShowI2cDialog(Selected);
             break;
 
@@ -818,7 +818,7 @@ void EditSelectedElement()
         case ELEM_ENDSUB:
         case ELEM_GOTO:
         case ELEM_GOSUB:
-            ShowGotoDialog(SelectedWhich, Selected->d.doGoto.rung);
+            ShowGotoDialog(SelectedWhich, Selected->d.doGoto.label);
             break;
 
         case ELEM_RANDOM:
@@ -829,7 +829,7 @@ void EditSelectedElement()
         case ELEM_UART_SEND:
         case ELEM_UART_RECVn:
         case ELEM_UART_SENDn:
-            ShowUartDialog(SelectedWhich, Selected->d.uart.name);
+            ShowUartDialog(SelectedWhich, Selected);
             break;
 
         case ELEM_PERSIST:

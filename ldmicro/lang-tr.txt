@@ -358,10 +358,10 @@
 "Insert &Contacts\tC"
 "Kontak Eekle\tC"
 
-"Insert &UART Receive"
+"Insert &UART RECEIVE"
 "&UART'dan Alma ekle"
 
-"Insert &UART Send"
+"Insert &UART SEND"
 "&UART'dan Gönderme ekle"
 
 "Insert -+        +- Open-Circuit"
@@ -598,7 +598,7 @@
 "No opcodes found."
 "No opcodes found."
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Seri iletiþim komutu kullanmadýnýz. Hýzý ayarlamadan önce komut kullanmalýsýnýz.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."

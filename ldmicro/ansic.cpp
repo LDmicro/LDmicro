@@ -2263,8 +2263,8 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
 
 bool CompileAnsiC(const char *dest, int MNU)
 {
-    if(Prog.mcu)
-        mcu_ISA = Prog.mcu->whichIsa;
+    if(Prog.mcu())
+        mcu_ISA = Prog.mcu()->whichIsa;
     if(MNU > 0)
         compiler_variant = MNU;
     else
@@ -2283,7 +2283,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     countpwm= 0;
     CompileFailure= 0;
 
-    if ((Prog.mcu) && (Prog.mcu->whichIsa == ISA_ARM))      // ARM uses Timer 3
+    if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM))      // ARM uses Timer 3
         Prog.cycleTimer = 3;
     ////
 
@@ -2328,8 +2328,8 @@ bool CompileAnsiC(const char *dest, int MNU)
 
     ///// Added by JG
     char mcualias[MAX_PATH];    ///// Added by JG
-    strcpy(mcualias, Prog.mcu->mcuList);
-    if (Prog.mcu)
+    strcpy(mcualias, Prog.mcu()->mcuList);
+    if (Prog.mcu())
         fprintf(flh,
             "#define LDTARGET_%s\n\n"
             "#define F_CPU %luUL\n\n"
@@ -2738,7 +2738,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "    #include <avr/wdt.h>\n"
                 "    #endif\n"
                 "#endif\n",
-                Prog.mcu->mcuH);
+                Prog.mcu()->mcuH);
         /*
       fprintf(fh,
 "#ifdef __GNUC__\n"
@@ -2908,8 +2908,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#ifdef CCS_PIC_C\n"
                 "  #device %s\n"
                 "  #include <%s.h>\n",
-                Prog.mcu->mcuH2,
-                Prog.mcu->mcuH);
+                Prog.mcu()->mcuH2,
+                Prog.mcu()->mcuH);
         fprintf(f, "  #FUSES 1=0x%04X\n", (WORD)Prog.configurationWord & 0xFFFF);
         if(Prog.configurationWord & 0xFFFF0000)
         {
@@ -2932,7 +2932,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             fprintf(f, "  //TODO #USE PWM // http://www.ccsinfo.com/newsdesk_info.php?newsdesk_id=182 \n");
         }
         int i;
-        if(Prog.mcu)
+        if(Prog.mcu())
             for(i = 0; i < MAX_IO_PORTS; i++)
             {
                 if(IS_MCU_REG(i))
@@ -2954,7 +2954,7 @@ bool CompileAnsiC(const char *dest, int MNU)
 
         /*
     int i;
-    if(Prog.mcu)
+    if(Prog.mcu())
     for(i = 0; i < MAX_IO_PORTS; i++)
     {
         if(IS_MCU_REG(i))
@@ -3553,7 +3553,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         WORD isInput[MAX_IO_PORTS], isAnsel[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
         WORD mask= 0;
 
-        if(Prog.mcu) {
+        if(Prog.mcu()) {
             BuildDirectionRegisters(isInput, isAnsel, isOutput);
             int i;
             for(i = 0; i < MAX_IO_PORTS; i++)
@@ -3602,11 +3602,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                     /////
                     else
                     {
-                        //fprintf(f,"      pokeb(0x%X, 0x%X); // PORT%c\n",Prog.mcu->dirRegs[i], isOutput[i], Prog.mcu->pinInfo[i].port);
-                        //fprintf(f,"    pokeb(0x%X, 0x%X);\n",Prog.mcu->dirRegs[i], isOutput[i]);
+                        //fprintf(f,"      pokeb(0x%X, 0x%X); // PORT%c\n",Prog.mcu()->dirRegs[i], isOutput[i], Prog.mcu()->pinInfo[i].port);
+                        //fprintf(f,"    pokeb(0x%X, 0x%X);\n",Prog.mcu()->dirRegs[i], isOutput[i]);
                         fprintf(f, "    DDR%c = 0x%02X;\n", 'A' + i, isOutput[i]);
                         // turn on the pull-ups, and drive the outputs low to start
-                        //fprintf(f,"    pokeb(0x%X, 0x%X);\n",Prog.mcu->outputRegs[i], isInput[i]);
+                        //fprintf(f,"    pokeb(0x%X, 0x%X);\n",Prog.mcu()->outputRegs[i], isInput[i]);
                         ///// Added by JG
                         if (i == 0)
                             fprintf(f, "    PORT%c = 0x%02X;\n", 'A' + i, isInput[i] ^ ((Prog.configurationWord >> 0) & 0xFF));     // PORTA
@@ -3783,7 +3783,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             if(compiler_variant == MNU_COMPILE_ARMGCC)
             {
                 char pinName[MAX_NAME_LEN]= "";
-                GetPinName(Prog.mcu->uartNeeds.rxPin, pinName);     // search for RXn / TXn pins in MCU definnition
+                GetPinName(Prog.mcu()->uartNeeds.rxPin, pinName);     // search for RXn / TXn pins in MCU definnition
                 if (strlen(pinName))
                 {
                 const char * pos= strstr(pinName, "RX");

@@ -25,5 +25,8 @@
 #define MAX_PATH 260
 #endif
 
+#define MAX_RUNGS 9999
+#define MAX_IO    1024
+
 #endif //__LD_CONFIG_H__
 

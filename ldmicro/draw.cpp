@@ -125,9 +125,9 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_SWAP:
         case ELEM_OPPOSITE:
         case ELEM_SPI:
-		case ELEM_SPI_WR:		///// Added by JG
-		case ELEM_I2C_RD:		///// Added by JG
-		case ELEM_I2C_WR:		///// Added by JG
+        case ELEM_SPI_WR:       ///// Added by JG
+        case ELEM_I2C_RD:       ///// Added by JG
+        case ELEM_I2C_WR:       ///// Added by JG
         case ELEM_BUS:
         case ELEM_7SEG:
         case ELEM_9SEG:
@@ -722,13 +722,13 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
 
         case ELEM_GOTO:
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "{GOTO}", poweredBefore, poweredAfter);
             break;
 
         case ELEM_GOSUB:
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "{GOSUB}", poweredBefore, poweredAfter);
             break;
 
@@ -1425,7 +1425,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 
         case ELEM_LABEL: {
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "[LABEL]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
@@ -1433,7 +1433,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 
         case ELEM_SUBPROG: {
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "[SUBPROG]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
@@ -1441,7 +1441,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 
         case ELEM_ENDSUB: {
             CenterWithSpaces(
-                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.rung, "", ""), poweredAfter, true);
+                *cx, *cy, formatWidth(top, POS_WIDTH, "", "", leaf->d.doGoto.label, "", ""), poweredAfter, true);
             CenterWithWires(*cx, *cy, "[ENDSUB]", poweredBefore, poweredAfter);
             *cx += POS_WIDTH;
             break;
@@ -1575,8 +1575,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             break;
         }
 
-		///// Created by JG
-		case ELEM_SPI_WR: {
+        ///// Created by JG
+        case ELEM_SPI_WR: {
             ElemSpi *m = &leaf->d.spi;
             formatWidth(top,
                         POS_WIDTH,
@@ -1594,7 +1594,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             break;
         }
 
-		case ELEM_I2C_RD: {
+        case ELEM_I2C_RD: {
             ElemI2c *m = &leaf->d.i2c;
             formatWidth(top,
                         POS_WIDTH,
@@ -1604,7 +1604,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
                         "",
                         m->name,
                         "}");
-			formatWidth(bot, POS_WIDTH, "{->", m->recv, m->address, m->registr, "}");
+            formatWidth(bot, POS_WIDTH, "{->", m->recv, m->address, m->registr, "}");
 
             CenterWithSpaces(*cx, *cy, top, poweredAfter, false);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
@@ -1612,7 +1612,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             break;
         }
 
-		case ELEM_I2C_WR: {
+        case ELEM_I2C_WR: {
             ElemI2c *m = &leaf->d.i2c;
             formatWidth(top,
                         POS_WIDTH,
@@ -1629,7 +1629,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             *cx += POS_WIDTH;
             break;
         }
-		/////
+        /////
 
         case ELEM_BUS: {
             ElemBus *m = &leaf->d.bus;

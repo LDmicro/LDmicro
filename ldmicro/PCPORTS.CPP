@@ -313,18 +313,18 @@ bool ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
             break;
         };
     };
-    if(Prog.mcu && (pin)) {
-        for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
-            if(pin == Prog.mcu->pinInfo[i].pin) {
+    if(Prog.mcu() && (pin)) {
+        for(uint32_t i = 0; i < Prog.mcu()->pinCount; i++) {
+            if(pin == Prog.mcu()->pinInfo[i].pin) {
                 pinMcu = i;
                 break;
             };
         };
         if(pinMcu >= 0) {
-            *Addr = Prog.mcu->pinInfo[pinMcu].addr;
-            *portN = Prog.mcu->pinInfo[pinMcu].portN;
-            dbPin = Prog.mcu->pinInfo[pinMcu].dbPin;
-            port = Prog.mcu->pinInfo[pinMcu].port;
+            *Addr = Prog.mcu()->pinInfo[pinMcu].addr;
+            *portN = Prog.mcu()->pinInfo[pinMcu].portN;
+            dbPin = Prog.mcu()->pinInfo[pinMcu].dbPin;
+            port = Prog.mcu()->pinInfo[pinMcu].port;
             if(port == 'L') {
                 strcpy(prt, "Lpt");
                 LptDb25PinToRegMask(dbPin, Reg, Mask);

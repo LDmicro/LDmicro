@@ -325,10 +325,10 @@
 "Insert &Contacts\tC"
 "Inserir &Contatos\tC"
 
-"Insert &UART Receive"
+"Insert &UART RECEIVE"
 "Inserir &UART Receber"
 
-"Insert &UART Send"
+"Insert &UART SEND"
 "Inserir &UART Enviar"
 
 "Insert -+        +- Open-Circuit"
@@ -535,7 +535,7 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "Nenhum micro esta selecionado. Você deve selecionar um micro antes de  atribuir os pinos E/S.\r\n\r\nSelecione um micro no menu de configuração e tente novamente."
 
-"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Nenhuma instrução serial (UART Enviar/UART Recebe) está em uso; adicione uma ao programa antes de configurar a taxa de transmissão (baud rate).\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."

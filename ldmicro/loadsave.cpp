@@ -117,17 +117,17 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_CLRWDT;
     } else if(memcmp(line, "LOCK", 4) == 0) {
         *which = ELEM_LOCK;
-    } else if(sscanf(line, "GOTO %s", l->d.doGoto.rung) == 1) {
+    } else if(sscanf(line, "GOTO %s", l->d.doGoto.label) == 1) {
         *which = ELEM_GOTO;
-    } else if(sscanf(line, "GOSUB %s", l->d.doGoto.rung) == 1) {
+    } else if(sscanf(line, "GOSUB %s", l->d.doGoto.label) == 1) {
         *which = ELEM_GOSUB;
     } else if(memcmp(line, "RETURN", 6) == 0) {
         *which = ELEM_RETURN;
-    } else if(sscanf(line, "LABEL %s", l->d.doGoto.rung) == 1) {
+    } else if(sscanf(line, "LABEL %s", l->d.doGoto.label) == 1) {
         *which = ELEM_LABEL;
-    } else if(sscanf(line, "SUBPROG %s", l->d.doGoto.rung) == 1) {
+    } else if(sscanf(line, "SUBPROG %s", l->d.doGoto.label) == 1) {
         *which = ELEM_SUBPROG;
-    } else if(sscanf(line, "ENDSUB %s", l->d.doGoto.rung) == 1) {
+    } else if(sscanf(line, "ENDSUB %s", l->d.doGoto.label) == 1) {
         *which = ELEM_ENDSUB;
     } else if(sscanf(line, "SHIFT_REGISTER %s %d", l->d.shiftRegister.name, &(l->d.shiftRegister.stages)) == 2) {
         *which = ELEM_SHIFT_REGISTER;
@@ -163,19 +163,19 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
 
     } else if((sscanf(line, "TON %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TON;
-        if(strcmp(Prog.LDversion, "0.1") == 0)
+        if(Prog.LDversion == "0.1")
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
     } else if((sscanf(line, "TOF %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_TOF;
-        if(strcmp(Prog.LDversion, "0.1") == 0)
+        if(Prog.LDversion == "0.1")
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
     } else if((sscanf(line, "RTO %s %s", l->d.timer.name, l->d.timer.delay) == 2)) {
         *which = ELEM_RTO;
-        if(strcmp(Prog.LDversion, "0.1") == 0)
+        if(Prog.LDversion == "0.1")
             l->d.timer.adjust = -1;
         else
             l->d.timer.adjust = 0;
@@ -271,10 +271,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.spi.first,
                      l->d.spi.bitrate)
               == 8) {
-		l->d.spi.which = ELEM_SPI_WR;
+        l->d.spi.which = ELEM_SPI_WR;
         *which = ELEM_SPI_WR;
-	
-	} else if(sscanf(line,
+
+    } else if(sscanf(line,
                      "SPI %s %s %s %s %s %s %s %s",
                      l->d.spi.name,
                      l->d.spi.send,
@@ -285,12 +285,12 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.spi.first,
                      l->d.spi.bitrate)
               == 8) {
-		l->d.spi.which = ELEM_SPI;
+        l->d.spi.which = ELEM_SPI;
         *which = ELEM_SPI;
 
     }
-	///// Added by JG
-	  else if(sscanf(line,
+    ///// Added by JG
+      else if(sscanf(line,
                      "I2C_RD %s %s %s %s %s %s %s %s",
                      l->d.i2c.name,
                      l->d.i2c.send,
@@ -301,10 +301,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.i2c.first,
                      l->d.i2c.bitrate)
               == 8) {
-		l->d.i2c.which = ELEM_I2C_RD;
+        l->d.i2c.which = ELEM_I2C_RD;
         *which = ELEM_I2C_RD;
-    }	
-	  else if(sscanf(line,
+    }
+      else if(sscanf(line,
                      "I2C_WR %s %s %s %s %s %s %s %s",
                      l->d.i2c.name,
                      l->d.i2c.send,
@@ -315,11 +315,11 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.i2c.first,
                      l->d.i2c.bitrate)
               == 8) {
-		l->d.i2c.which = ELEM_I2C_WR;
+        l->d.i2c.which = ELEM_I2C_WR;
         *which = ELEM_I2C_WR;
-	}
-	/////
-	
+    }
+    /////
+
      else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
@@ -469,12 +469,22 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(memcmp(line, "UART_UDRE", 9) == 0) {
         *which = ELEM_UART_SEND_READY;
     } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
+        l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_RECVn;
+    } else if(sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+        *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name) == 1) {
+        l->d.uart.bytes = 1;
+        l->d.uart.wait = false;
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
+        l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_SENDn;
+    } else if(sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+        *which = ELEM_UART_SEND;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name) == 1) {
+        l->d.uart.bytes = 1;
+        l->d.uart.wait = false;
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "PERSIST %s", l->d.persist.var) == 1) {
         *which = ELEM_PERSIST;
@@ -756,7 +766,7 @@ ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
 //-----------------------------------------------------------------------------
 void LoadWritePcPorts()
 {
-    if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM)) {
+    if(Prog.mcu() && (Prog.mcu()->core == PC_LPT_COM)) {
         //RunningInBatchMode = true;
         char pc[MAX_PATH];
         strcpy(pc, CurrentLdPath);
@@ -794,9 +804,10 @@ bool LoadProjectFromFile(const char *filename)
     ExtractFileDir(CurrentLdPath);
 
     char          line[512];
+    char          version[512];
     long long int cycle;
     int           crystal, baud;
-	long		  rate, speed;							///// Added by JG
+    long          rate, speed;                          ///// Added by JG
     int           cycleTimer, cycleDuty, wdte;
     long long int configWord = 0;
     Prog.configurationWord = 0;
@@ -811,9 +822,10 @@ bool LoadProjectFromFile(const char *filename)
             if(!LoadVarListFromFile(f)) {
                 return false;
             }
-        } else if(sscanf(line, "LDmicro%s", &Prog.LDversion)) {
-            if(strcmp(Prog.LDversion, "0.1") != 0)
-                strcpy(Prog.LDversion, "0.2");
+        } else if(sscanf(line, "LDmicro%s", &version)) {
+            Prog.LDversion = version;
+            if((Prog.LDversion != "0.1") )
+                Prog.LDversion = "0.2";
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
         } else if(sscanf(line,
@@ -859,18 +871,18 @@ bool LoadProjectFromFile(const char *filename)
             Prog.cycleDuty = 0;
             if(Prog.cycleTime == 0)
                 Prog.cycleTimer = -1;
-        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz", &baud, &rate, &speed) == 3) {		///// RATE + SPEED created by JG for SPI & I2C
+        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz", &baud, &rate, &speed) == 3) {       ///// RATE + SPEED created by JG for SPI & I2C
             Prog.baudRate = baud;
-			Prog.spiRate = rate;
-			Prog.i2cRate = speed;
-        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz", &baud, &rate) == 2) {		///// RATE created by JG for SPI
+            Prog.spiRate = rate;
+            Prog.i2cRate = speed;
+        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz", &baud, &rate) == 2) {     ///// RATE created by JG for SPI
             Prog.baudRate = baud;
-			Prog.spiRate = rate;
-			Prog.i2cRate = 0;
-        } else if(sscanf(line, "BAUD=%d Hz", &baud) == 1) {		
+            Prog.spiRate = rate;
+            Prog.i2cRate = 0;
+        } else if(sscanf(line, "BAUD=%d Hz", &baud) == 1) {
             Prog.baudRate = baud;
-			Prog.spiRate = 0;
-			Prog.i2cRate = 0;
+            Prog.spiRate = 0;
+            Prog.i2cRate = 0;
         } else if(memcmp(line, "COMPILED=", 9) == 0) {
             strcpy(CurrentCompileFile, line + 9);
 
@@ -886,7 +898,7 @@ bool LoadProjectFromFile(const char *filename)
                 for(i = 0; i < supportedMcus().size(); i++) {
                     if(supportedMcus()[i].mcuName)
                         if(strcmp(supportedMcus()[i].mcuName, line + 6) == 0) {
-                            SetMcu(&supportedMcus()[i]);
+                            Prog.setMcu(&supportedMcus()[i]);
                             break;
                         }
                 }
@@ -1022,23 +1034,23 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_GOTO:
-            fprintf(f, "GOTO %s\n", l->d.doGoto.rung);
+            fprintf(f, "GOTO %s\n", l->d.doGoto.label);
             break;
 
         case ELEM_GOSUB:
-            fprintf(f, "GOSUB %s\n", l->d.doGoto.rung);
+            fprintf(f, "GOSUB %s\n", l->d.doGoto.label);
             break;
 
         case ELEM_LABEL:
-            fprintf(f, "LABEL %s\n", l->d.doGoto.rung);
+            fprintf(f, "LABEL %s\n", l->d.doGoto.label);
             break;
 
         case ELEM_SUBPROG:
-            fprintf(f, "SUBPROG %s\n", l->d.doGoto.rung);
+            fprintf(f, "SUBPROG %s\n", l->d.doGoto.label);
             break;
 
         case ELEM_ENDSUB:
-            fprintf(f, "ENDSUB %s\n", l->d.doGoto.rung);
+            fprintf(f, "ENDSUB %s\n", l->d.doGoto.label);
             break;
 
         case ELEM_SHIFT_REGISTER:
@@ -1149,8 +1161,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "SWAP %s %s\n", l->d.move.dest, l->d.move.src);
             break;
 
-		///// Added by JG
-		case ELEM_SPI_WR:			
+        ///// Added by JG
+        case ELEM_SPI_WR:
             fprintf(f,
                     "SPI_WR %s %s %s %s %s %s %s %s\n",
                     l->d.spi.name,
@@ -1162,7 +1174,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.spi.first,
                     l->d.spi.bitrate);
             break;
-			/////
+            /////
 
         case ELEM_SPI: {
             fprintf(f,
@@ -1178,8 +1190,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
         }
 
-		///// Added by JG
-		case ELEM_I2C_RD:
+        ///// Added by JG
+        case ELEM_I2C_RD:
             fprintf(f,
                     "I2C_RD %s %s %s %s %s %s %s %s\n",
                     l->d.i2c.name,
@@ -1192,7 +1204,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.i2c.bitrate);
             break;
 
-		case ELEM_I2C_WR:
+        case ELEM_I2C_WR:
             fprintf(f,
                     "I2C_WR %s %s %s %s %s %s %s %s\n",
                     l->d.i2c.name,
@@ -1205,7 +1217,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.i2c.bitrate);
             break;
 
-			/////
+            /////
 
         case ELEM_BUS: {
             fprintf(f, "BUS %s %s", l->d.bus.dest, l->d.bus.src);
@@ -1340,11 +1352,11 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
 
         case ELEM_UART_RECV:
-            fprintf(f, "UART_RECV %s\n", l->d.uart.name);
+            fprintf(f, "UART_RECV %s %d %d\n", l->d.uart.name, l->d.uart.bytes, l->d.uart.wait);
             break;
 
         case ELEM_UART_SEND:
-            fprintf(f, "UART_SEND %s\n", l->d.uart.name);
+            fprintf(f, "UART_SEND %s %d %d\n", l->d.uart.name, l->d.uart.bytes, l->d.uart.wait);
             break;
 
         case ELEM_UART_RECVn:
@@ -1470,7 +1482,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int               i;
             if(depth == 0) {
-                if(strcmp(Prog.LDversion, "0.1") == 0)
+                if(Prog.LDversion == "0.1")
                     fprintf(f, "RUNG\n");
                 else
                     fprintf(f, "RUNG %d\n", rung);
@@ -1511,17 +1523,17 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
 bool SaveProjectToFile(char *filename, int code)
 {
     if(code == MNU_SAVE_02)
-        strcpy(Prog.LDversion, "0.2");
+        Prog.LDversion = "0.2";
     else if(code == MNU_SAVE_01)
-        strcpy(Prog.LDversion, "0.1");
+        Prog.LDversion = "0.1";
 
     FileTracker f(filename, "w");
     if(!f)
         return false;
 
-    fprintf(f, "LDmicro%s\n", Prog.LDversion);
-    if(Prog.mcu) {
-        fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
+    fprintf(f, "LDmicro%s\n", Prog.LDversion.c_str());
+    if(Prog.mcu()) {
+        fprintf(f, "MICRO=%s\n", Prog.mcu()->mcuName);
     }
     fprintf(f,
             "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d, ConfigurationWord(s):0x%llX\n",
@@ -1534,7 +1546,7 @@ bool SaveProjectToFile(char *filename, int code)
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }
-    if(strcmp(Prog.LDversion, "0.1") != 0) {
+    if(Prog.LDversion != "0.1") {
         if(compile_MNU > 0)
             fprintf(f, "COMPILER=%s\n", GetMnuName(compile_MNU));
 
@@ -1575,7 +1587,7 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
 
     strcpy(dest, "");
     int i;
-    if((frmt == FRMT_01) && (strcmp(Prog.LDversion, "0.1") == 0)) {
+    if((frmt == FRMT_01) && (Prog.LDversion == "0.1")) {
         char str[1024];
         sprintf(str, " %d", strlen(src));
         strcat(dest, str);

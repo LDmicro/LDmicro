@@ -531,14 +531,14 @@ void SetSyntaxHighlightingColours()
         //oops();
     }
 
-	///// Added by JG for translation
-	strcpy(Schemes[0].sName, _("Original black color scheme\tJonathan"));
-	strcpy(Schemes[1].sName, _("Modified black color scheme\tIhor"));
-	strcpy(Schemes[2].sName, _("White color scheme\tIhor"));
-	strcpy(Schemes[3].sName, _("White color scheme\tMark"));
-	strcpy(Schemes[4].sName, _("System Colors GetSysColor() in color scheme\tWindows"));
-	strcpy(Schemes[5].sName, _("User redefined color scheme\tYou"));
-	/////
+    ///// Added by JG for translation
+    strcpy(Schemes[0].sName, _("Original black color scheme\tJonathan"));
+    strcpy(Schemes[1].sName, _("Modified black color scheme\tIhor"));
+    strcpy(Schemes[2].sName, _("White color scheme\tIhor"));
+    strcpy(Schemes[3].sName, _("White color scheme\tMark"));
+    strcpy(Schemes[4].sName, _("System Colors GetSysColor() in color scheme\tWindows"));
+    strcpy(Schemes[5].sName, _("User redefined color scheme\tYou"));
+    /////
     memcpy(&HighlightColours, &Schemes[scheme], sizeof(HighlightColours));
 }
 
@@ -624,20 +624,20 @@ static void DrawCharsToExportBuffer(int cx, int cy, const char *str)
 BOOL tGetLastWriteTime(const char *FileName, FILETIME *ftWrite, int mode)
 {
     FILETIME ftCreate, ftAccess;
-	char msg[MAX_NAME_LEN]= "";		///// Added by JG for language translation
+    char msg[MAX_NAME_LEN]= "";     ///// Added by JG for language translation
 
     HANDLE hFile =
         CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
     if(hFile == INVALID_HANDLE_VALUE) {
-		///// modified by JG 
-		///// beware because called by Paint() via BlinkCursor() => cannot display MsgBox ?
-		if (mode != 0)																			///// Param mode added by JG
-		{
-			sprintf(msg, "%s %s (error %d)\n", _("Could not open file"), FileName, GetLastError());		
-			Error(msg);
-			//	Error("Could not open file %s (error %d)\n", FileName, GetLastError());
-		}
+        ///// modified by JG
+        ///// beware because called by Paint() via BlinkCursor() => cannot display MsgBox ?
+        if (mode != 0)                                                                          ///// Param mode added by JG
+        {
+            sprintf(msg, "%s %s (error %d)\n", _("Could not open file"), FileName, GetLastError());
+            Error(msg);
+            //  Error("Could not open file %s (error %d)\n", FileName, GetLastError());
+        }
         return false;
     }
     BOOL b = GetFileTime(hFile, &ftCreate, &ftAccess, ftWrite);
@@ -680,15 +680,15 @@ bool GetLastWriteTime(HANDLE hFile, char *lpszString)
 bool sGetLastWriteTime(char *FileName, char *sFileTime)
 {
     sFileTime[0] = 0;
-	char msg[MAX_NAME_LEN]= "";		///// Added by JG for language translation
+    char msg[MAX_NAME_LEN]= "";     ///// Added by JG for language translation
 
     HANDLE hFile =
         CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
     if(hFile == INVALID_HANDLE_VALUE) {
-		sprintf(msg, "%s %s (error %d)\n", _("Could not open file"), FileName, GetLastError());		// modified by JG
-		Error(msg);
-        //	Error("Could not open file %s (error %d)\n", FileName, GetLastError());
+        sprintf(msg, "%s %s (error %d)\n", _("Could not open file"), FileName, GetLastError());     // modified by JG
+        Error(msg);
+        //  Error("Could not open file %s (error %d)\n", FileName, GetLastError());
         return false;
     }
     bool b = GetLastWriteTime(hFile, sFileTime);
@@ -784,12 +784,12 @@ void ExportDrawingAsText(char *file)
     fprintf(f, "LDmicro export text.\n");
     fprintf(f, "Source file: %s from %s\n", CurrentSaveFile, sFileTime);
 
-    if(Prog.mcu && (Prog.mcu->core == PC_LPT_COM))
-        fprintf(f, "for '%s', %.3f ms cycle time\n", Prog.mcu->mcuName, Prog.cycleTime / 1e3);
-    else if(Prog.mcu) {
+    if(Prog.mcu() && (Prog.mcu()->core == PC_LPT_COM))
+        fprintf(f, "for '%s', %.3f ms cycle time\n", Prog.mcu()->mcuName, Prog.cycleTime / 1e3);
+    else if(Prog.mcu()) {
         fprintf(f,
                 "for '%s', %.9g MHz crystal, %.3f ms cycle time\n",
-                Prog.mcu->mcuName,
+                Prog.mcu()->mcuName,
                 Prog.mcuClock / 1e6,
                 Prog.cycleTime / 1e3);
     } else {

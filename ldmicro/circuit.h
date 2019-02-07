@@ -163,6 +163,10 @@
 #define ELEM_QUAD_ENCOD         0x4009
 
 #define ELEM_SPI                0x6001
+#define ELEM_SPI_WR             0x6002
+
+#define ELEM_I2C_RD             0x6101      ///// Added by JG
+#define ELEM_I2C_WR             0x6102      /////
 
 #define ELEM_BUS                0x7001
 #define ELEM_7SEG               0x7007
@@ -172,6 +176,7 @@
 
 // clang-format on
 
+///// cases ELEM_SPI_WR, ELEM_I2C_RD, ELEM8I2C_WR added by JG
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
         case ELEM_COMMENT: \
@@ -201,6 +206,9 @@
         case ELEM_NPULSE_OFF: \
         case ELEM_PWM_OFF_SOFT: \
         case ELEM_SPI: \
+        case ELEM_SPI_WR: \
+        case ELEM_I2C_RD: \
+        case ELEM_I2C_WR: \
         case ELEM_BUS: \
         case ELEM_7SEG: \
         case ELEM_9SEG: \
@@ -351,7 +359,20 @@ typedef struct ElemSpiTag {
     char    modes[MAX_NAME_LEN];
     char    size[MAX_NAME_LEN];
     char    first[MAX_NAME_LEN];
+    int     which;                  ///// Added by JG
 } ElemSpi;
+
+typedef struct ElemI2cTag {         ///// Added by JG
+    char    name[MAX_NAME_LEN];         // nom I2Cn
+    char    send[MAX_NAME_LEN];         // to send
+    char    recv[MAX_NAME_LEN];         // to receive
+    char    mode[MAX_NAME_LEN];         // Master
+    char    bitrate[MAX_NAME_LEN];      // I2C speed
+    char    address[MAX_NAME_LEN];      // I2C slave address
+    char    registr[MAX_NAME_LEN];      // I2C slave register
+    char    first[MAX_NAME_LEN];        // MSB first
+    int     which;
+} ElemI2c;
 
 typedef struct ElemBusTag {
     char    dest[MAX_NAME_LEN];
@@ -527,6 +548,7 @@ struct ElemLeaf {
         ElemGoto            doGoto;
         ElemSfr             sfr;
         ElemSpi             spi;
+        ElemI2c             i2c;                ///// Added by JG
         ElemBus             bus;
         ElemSegments        segments;
         ElemStepper         stepper;
@@ -593,6 +615,7 @@ void AddRandom();
 void AddSeedRandom();
 void AddSetPwm();
 void AddSpi(int which);
+void AddI2c(int which);             ///// Added by JG
 void AddUart(int which);
 void AddPersist();
 void AddComment(const char *text);

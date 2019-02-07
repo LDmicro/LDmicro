@@ -92,8 +92,6 @@ DWORD AvrProgLdLen = 0;
 
 static int IntPcNow = -INT_MAX; //must be static
 
-RungAddr AddrOfRungN[MAX_RUNGS];
-
 #define OP_XOR OP_EOR
 
 // For yet unresolved references in jumps
@@ -1420,11 +1418,11 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
     // end of file record
     fprintf(f, ":00000001FF\n");
-    if((Prog.mcu->flashWords) && (AvrProg.size() >= Prog.mcu->flashWords)) {
+    if((Prog.mcu()->flashWords) && (AvrProg.size() >= Prog.mcu()->flashWords)) {
         Error(_(" Flash program memory size %d is exceed limit %d words\nfor %s."),
               AvrProg.size(),
-              Prog.mcu->flashWords,
-              Prog.mcu->mcuName);
+              Prog.mcu()->flashWords,
+              Prog.mcu()->mcuName);
     }
 }
 
@@ -2531,11 +2529,11 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 
         // Okay, so many AVRs have a register called TIMSK, but the meaning of
         // the bits in that register varies from device to device...
-        if(strcmp(Prog.mcu->mcuName, "Atmel AVR AT90USB647 64-TQFP")==0) {
+        if(strcmp(Prog.mcu()->mcuName, "Atmel AVR AT90USB647 64-TQFP")==0) {
             WriteMemory(REG_TIMSK, (1 << 1));
         }
         else
-        if(strcmp(Prog.mcu->mcuName, "Atmel AVR ATmega162 40-PDIP")==0) {
+        if(strcmp(Prog.mcu()->mcuName, "Atmel AVR ATmega162 40-PDIP")==0) {
             WriteMemory(REG_TIMSK, (1 << 6));
         } else {
             WriteMemory(REG_TIMSK, (1 << 4));
@@ -2623,7 +2621,7 @@ static void CallSubroutine(DWORD addr)
 //used ZL, r25
 {
     if(addr & FWD(0)) {
-        if(Prog.mcu->core >= EnhancedCore4M) {
+        if(Prog.mcu()->core >= EnhancedCore4M) {
             Instruction(OP_LDI, ZL, REG_EIND & 0xff);        // Z-register Low Byte
             Instruction(OP_LDI, ZH, (REG_EIND >> 8) & 0xff); // Z-register High Byte
             // load r25 with the data
@@ -2634,7 +2632,7 @@ static void CallSubroutine(DWORD addr)
             Instruction(OP_LDI, ZL, FWD_LO(addr)); // 2
             Instruction(OP_LDI, ZH, FWD_HI(addr));
             Instruction(OP_EICALL, FWD(addr)); // arg1 used for label
-        } else if(Prog.mcu->core >= ClassicCore8K) {
+        } else if(Prog.mcu()->core >= ClassicCore8K) {
             Instruction(OP_LDI, ZL, FWD_LO(addr));
             Instruction(OP_LDI, ZH, FWD_HI(addr));
             Instruction(OP_ICALL, FWD(addr)); // arg1 used for label
@@ -2644,11 +2642,11 @@ static void CallSubroutine(DWORD addr)
     } else {
         if((-2048 <= (addr - AvrProg.size() - 1)) && ((addr - AvrProg.size() - 1) <= 2047)) {
             Instruction(OP_RCALL, addr);
-        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
+        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu()->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_ICALL, addr); // arg1 used for label
-        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
+        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu()->core >= EnhancedCore4M)) {
             WriteMemory(REG_EIND, (BYTE)(addr >> 16) & 0xff); // 1
             Instruction(OP_LDI, ZL, addr & 0xff);             // 2
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
@@ -2663,7 +2661,7 @@ static void InstructionJMP(DWORD addr)
 //used ZL, r25
 {
     if(addr & FWD(0)) {
-        if(Prog.mcu->core >= EnhancedCore4M) {
+        if(Prog.mcu()->core >= EnhancedCore4M) {
             Instruction(OP_LDI, ZL, REG_EIND & 0xff);        // Z-register Low Byte
             Instruction(OP_LDI, ZH, (REG_EIND >> 8) & 0xff); // Z-register High Byte
             // load r25 with the data
@@ -2674,7 +2672,7 @@ static void InstructionJMP(DWORD addr)
             Instruction(OP_LDI, ZL, FWD_LO(addr)); // 2
             Instruction(OP_LDI, ZH, FWD_HI(addr));
             Instruction(OP_EIJMP, FWD(addr)); // arg1 used for label
-        } else if(Prog.mcu->core >= ClassicCore8K) {
+        } else if(Prog.mcu()->core >= ClassicCore8K) {
             Instruction(OP_LDI, ZL, FWD_LO(addr));
             Instruction(OP_LDI, ZH, FWD_HI(addr));
             Instruction(OP_IJMP, FWD(addr)); // arg1 used for label
@@ -2684,11 +2682,11 @@ static void InstructionJMP(DWORD addr)
     } else {
         if((-2048 <= (addr - AvrProg.size() - 1)) && ((addr - AvrProg.size() - 1) <= 2047)) {
             Instruction(OP_RJMP, addr);
-        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu->core >= ClassicCore8K)) {
+        } else if((0 <= addr) && (addr <= 0xFFFF) && (Prog.mcu()->core >= ClassicCore8K)) {
             Instruction(OP_LDI, ZL, addr & 0xff);
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_IJMP, addr); // arg1 used for label
-        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu->core >= EnhancedCore4M)) {
+        } else if((0 <= addr) && (addr <= 0x3fFFFF) && (Prog.mcu()->core >= EnhancedCore4M)) {
             WriteMemory(REG_EIND, (BYTE)(addr >> 16) & 0xff); // 1
             Instruction(OP_LDI, ZL, addr & 0xff);             // 2
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
@@ -3134,15 +3132,15 @@ static void  WriteRuntime()
     Instruction(OP_SEI);
 
     Comment("Set up the stack, which we use only when we jump to multiply/divide routine"); // 4
-    WORD topOfMemory = (WORD)(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len - 1);
+    WORD topOfMemory = (WORD)(Prog.mcu()->ram[0].start + Prog.mcu()->ram[0].len - 1);
     WriteMemory(REG_SPH, topOfMemory >> 8, topOfMemory);
     WriteMemory(REG_SPL, topOfMemory & 0xff, topOfMemory);
 
     Comment("Zero out the memory used for timers, internal relays, etc."); // 5
-    LoadXAddr(Prog.mcu->ram[0].start + Prog.mcu->ram[0].len);
+    LoadXAddr(Prog.mcu()->ram[0].start + Prog.mcu()->ram[0].len);
     Instruction(OP_LDI, 16, 0);
-    Instruction(OP_LDI, r24, (Prog.mcu->ram[0].len) & 0xff);
-    Instruction(OP_LDI, r25, (Prog.mcu->ram[0].len) >> 8);
+    Instruction(OP_LDI, r24, (Prog.mcu()->ram[0].len) & 0xff);
+    Instruction(OP_LDI, r25, (Prog.mcu()->ram[0].len) >> 8);
 
     DWORD loopZero = AvrProg.size();
     //  Instruction(OP_SUBI, 26, 1);
@@ -3198,17 +3196,17 @@ static void  WriteRuntime()
             // skip this one, dummy entry for MCUs with I/O ports not
             // starting from A
         } else {
-            WriteMemory(Prog.mcu->dirRegs[i], isOutput[i]);
+            WriteMemory(Prog.mcu()->dirRegs[i], isOutput[i]);
             // turn on the pull-ups, and drive the outputs low to start
-			///// Modified by JG to manage AVR pull-ups via Configuration Word (Bits) in Control panel
-			if (i == 0) 
-				WriteMemory(Prog.mcu->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 0) & 0xFF));	// PORTA
-			else if (i == 1) 
-				WriteMemory(Prog.mcu->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 8) & 0xFF));	// PORTB
-			else if (i == 2) 
-				WriteMemory(Prog.mcu->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 16) & 0xFF));	// PORTC
-			else
-            WriteMemory(Prog.mcu->outputRegs[i], isInput[i]);
+            ///// Modified by JG to manage AVR pull-ups via Configuration Word (Bits) in Control panel
+            if (i == 0)
+                WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 0) & 0xFF));  // PORTA
+            else if (i == 1)
+                WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 8) & 0xFF));  // PORTB
+            else if (i == 2)
+                WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 16) & 0xFF)); // PORTC
+            else
+            WriteMemory(Prog.mcu()->outputRegs[i], isInput[i]);
         }
     }
     //Comment("and now the generated PLC code will follow");
@@ -3348,7 +3346,7 @@ static void CompileFromIntermediate()
     int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int   sov = -1, sov1 = -1, sov2 = -1, sov12 = -1, sov23 = -1;
 
-	CompileFailure= 0;
+    CompileFailure= 0;
 
     for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
@@ -5064,59 +5062,50 @@ static void CompileFromIntermediate()
                 Comment("%s", a->name1.c_str());
                 break;
 
-            case INT_AllocKnownAddr:
-                //Comment("INT_AllocKnownAddr %d %08X", a->literal, AddrOfRungN[a->literal].KnownAddr);
-                AddrOfRungN[a->literal].KnownAddr = AvrProg.size();
+            case INT_AllocKnownAddr: {
+                Comment("INT_AllocKnownAddr %s", a->name1.c_str());
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                l->KnownAddr = AvrProg.size();
                 break;
-
-            case INT_AllocFwdAddr:
-                //Comment("INT_AllocFwdAddr %d %08X", a->literal, AddrOfRungN[a->literal].FwdAddr);
-                AddrOfRungN[a->literal].FwdAddr = AllocFwdAddr();
+            }
+            case INT_AllocFwdAddr: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                l->FwdAddr = AllocFwdAddr();
                 break;
-
-            case INT_FwdAddrIsNow:
-                //Comment("INT_FwdAddrIsNow %d %08x", a->literal, AddrOfRungN[a->literal].FwdAddr);
-                FwdAddrIsNow(AddrOfRungN[a->literal].FwdAddr);
+            }
+            case INT_FwdAddrIsNow: {
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                FwdAddrIsNow(l->FwdAddr);
                 break;
-
+            }
             case INT_RETURN:
                 Instruction(OP_RET);
                 break;
 
             case INT_GOTO: {
-                int rung = a->literal;
-                Comment("INT_GOTO %s %d 0x%08X 0x%08X",
+                Comment("INT_GOTO %s // %s %d",
                         a->name1.c_str(),
-                        rung,
-                        AddrOfRungN[rung].FwdAddr,
-                        AddrOfRungN[rung].KnownAddr);
-                DWORD addr;
-                if(rung < -1) {
-                    addr = 0;
-                } else if(rung == -1) {
-                    addr = BeginOfPLCCycle;
-                } else if(rung <= rungNow) {
-                    addr = AddrOfRungN[rung].KnownAddr;
+                        a->name2.c_str(),
+                        a->literal);
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                if(a->literal) {
+                    InstructionJMP(l->KnownAddr);
                 } else {
-                    addr = AddrOfRungN[rung].FwdAddr;
+                    InstructionJMP(l->FwdAddr);
                 }
-                InstructionJMP(addr);
                 break;
             }
             case INT_GOSUB: {
-                int rung = a->literal;
-                Comment("INT_GOSUB %s %d %d 0x%08X 0x%08X",
+                Comment("INT_GOSUB %s // %s %d",
                         a->name1.c_str(),
-                        rung + 1,
-                        rungNow + 1,
-                        AddrOfRungN[rung].FwdAddr,
-                        AddrOfRungN[rung].KnownAddr);
-                if(rung < rungNow) {
-                    CallSubroutine(AddrOfRungN[rung].KnownAddr);
-                } else if(rung > rungNow) {
-                    CallSubroutine(AddrOfRungN[rung].FwdAddr);
-                } else
-                    THROW_COMPILER_EXCEPTION("Can't instantiate GOSUB.");
+                        a->name2.c_str(),
+                        a->literal);
+                LabelAddr * l = GetLabelAddr(a->name1.c_str());
+                if(a->literal) {
+                    CallSubroutine(l->KnownAddr);
+                } else {
+                    CallSubroutine(l->FwdAddr);
+                }
                 break;
             }
 #ifdef TABLE_IN_FLASH
@@ -5180,6 +5169,9 @@ static void CompileFromIntermediate()
                 break;
             }
 #endif
+            case INT_SET_SEED_RANDOM:
+                break;
+
             case INT_SET_VARIABLE_RANDOM: {
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
@@ -5270,7 +5262,8 @@ static void CompileFromIntermediate()
                     if(clocks > 0x10000) {
                         clocks = 0x10000;
                         clocksSave = clocks * 4;
-                        Error(_(" The delay is too long!\nThe maximum possible delay is %lld us."),
+                        Error(_(" The delay is too long!\n"
+                                "The maximum possible delay is %lld us."),
                               (clocks * 4 + 1) * 1000000 / Prog.mcuClock);
                     }
                     if(clocks < 0)
@@ -5837,10 +5830,10 @@ void CompileAvr(const char *outFile)
             ".CSEG\n"
             ".ORG 0x0\n"
             ";TABSIZE = 8\n",
-            Prog.mcu->mcuName,
-            Prog.mcu->mcuList,
-            Prog.mcu->mcuList,
-            Prog.mcu->mcuInc);
+            Prog.mcu()->mcuName,
+            Prog.mcu()->mcuList,
+            Prog.mcu()->mcuList,
+            Prog.mcu()->mcuInc);
     Comment("GOTO, progStart");
 
     //***********************************************************************
@@ -6851,10 +6844,10 @@ void CompileAvr(const char *outFile)
         REG_UDR     = 0x2c;
 //      REG_UCSRC   = 0x9d;
     */
-    } 
+    }
 
-	 else
-        THROW_COMPILER_EXCEPTION_FMT(_("Don't know how to init %s."), Prog.mcu ? Prog.mcu->mcuName : _("Invalid MCU"));
+     else
+        THROW_COMPILER_EXCEPTION_FMT(_("Don't know how to init %s."), Prog.mcu() ? Prog.mcu()->mcuName : _("Invalid MCU"));
     //***********************************************************************
 
     rungNow = -90;
@@ -6909,7 +6902,7 @@ void CompileAvr(const char *outFile)
     rungNow = -30;
     Comment("GOTO next PLC cycle");
     /*
-    if(Prog.mcu->core >= ClassicCore8K) {
+    if(Prog.mcu()->core >= ClassicCore8K) {
         Instruction(OP_LDI, ZL, (BeginOfPLCCycle & 0xff));
         Instruction(OP_LDI, ZH, (BeginOfPLCCycle >> 8) & 0xff);
         Instruction(OP_IJMP, BeginOfPLCCycle, 0);
@@ -6953,21 +6946,23 @@ void CompileAvr(const char *outFile)
     fflush(fAsm);
     fclose(fAsm);
 
-	///// Added by JG
-	if(CompileFailure) return;
-	/////
+    ///// Added by JG
+    if(CompileFailure) return;
+    /////
 
     char str[MAX_PATH + 500];
     sprintf(str,
-            _("Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically."),
+            _("Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\n"
+              "Remember to set the processor configuration (fuses) correctly. "
+              "This does not happen automatically."),
             outFile);
 
     char str2[MAX_PATH + 500];
     sprintf(str2,
             _("Used %d/%d words of program flash (chip %d%% full)."),
             AvrProg.size(),
-            Prog.mcu->flashWords,
-            (100 * AvrProg.size()) / Prog.mcu->flashWords);
+            Prog.mcu()->flashWords,
+            (100 * AvrProg.size()) / Prog.mcu()->flashWords);
 
     char str3[MAX_PATH + 500];
     sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), McuRAM(), (100 * UsedRAM()) / McuRAM());
@@ -6975,7 +6970,7 @@ void CompileAvr(const char *outFile)
     char str4[MAX_PATH + 500];
     sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
 
-    if(AvrProg.size() > Prog.mcu->flashWords) {
+    if(AvrProg.size() > Prog.mcu()->flashWords) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);
         CompileSuccessfulMessage(str2, MB_ICONERROR);
     } else if(UsedRAM() > McuRAM()) {

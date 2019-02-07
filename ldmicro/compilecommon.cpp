@@ -62,22 +62,48 @@ DWORD        RamSection;
 int CompileFailure= 0;      ///// added by JG
 
 //-----------------------------------------------------------------------------
+static LabelAddr LabelAddrArr[MAX_RUNGS];
+static int LabelAddrCount = 0;
+
+LabelAddr * GetLabelAddr(const char *name)
+{
+    if(!name)
+        oops();
+    if(!strlen(name))
+        oops();
+    int i;
+    for(i = 0; i < LabelAddrCount; i++) {
+        if(strcmp(name, LabelAddrArr[i].name) == 0)
+            break;
+    }
+    if(i >= MAX_RUNGS) {
+        Error(_("Labels limit '%d' exceeded!"), MAX_RUNGS);
+    }
+    if(i == LabelAddrCount) {
+        LabelAddrCount++;
+        memset(&LabelAddrArr[i], 0, sizeof(LabelAddrArr[i]));
+        strcpy(LabelAddrArr[i].name, name);
+    }
+    return &(LabelAddrArr[i]);
+}
+
+//-----------------------------------------------------------------------------
 int McuPWM()
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
     int n = 0;
-    if(Prog.mcu->pwmCount) {
+    if(Prog.mcu()->pwmCount) {
         int prevPin = -1;
-        for(uint32_t i = 0; i < Prog.mcu->pwmCount; i++) {
-            if(Prog.mcu->pwmInfo[i].pin)
-                if(Prog.mcu->pwmInfo[i].pin != prevPin)
-                    if((Prog.mcu->whichIsa == ISA_PIC16) || (Prog.mcu->pwmInfo[i].timer != Prog.cycleTimer))
+        for(uint32_t i = 0; i < Prog.mcu()->pwmCount; i++) {
+            if(Prog.mcu()->pwmInfo[i].pin)
+                if(Prog.mcu()->pwmInfo[i].pin != prevPin)
+                    if((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->pwmInfo[i].timer != Prog.cycleTimer))
                         n++;
-            prevPin = Prog.mcu->pwmInfo[i].pin;
+            prevPin = Prog.mcu()->pwmInfo[i].pin;
         }
-    } else if(Prog.mcu->pwmNeedsPin) {
+    } else if(Prog.mcu()->pwmNeedsPin) {
         n = 1;
     }
     return n;
@@ -85,37 +111,37 @@ int McuPWM()
 
 int McuADC()
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
-    return Prog.mcu->adcCount;
+    return Prog.mcu()->adcCount;
 }
 
 int McuSPI()
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
-    return Prog.mcu->spiCount;
+    return Prog.mcu()->spiCount;
 }
 
 ///// Added by JG
 int McuI2C()
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
-    return Prog.mcu->i2cCount;
+    return Prog.mcu()->i2cCount;
 }
 /////
 
 int McuUART()
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
     int n = 0;
-    if(Prog.mcu->uartNeeds.rxPin && Prog.mcu->uartNeeds.txPin) {
+    if(Prog.mcu()->uartNeeds.rxPin && Prog.mcu()->uartNeeds.txPin) {
         n = 1;
     }
     return n;
@@ -125,52 +151,52 @@ int McuROM()
 {
     return 1000000; // TODO
 
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
     int   n = 0;
     DWORD i;
     for(i = 0; i < MAX_ROM_SECTIONS; i++) {
-        n += Prog.mcu->rom[i].len;
+        n += Prog.mcu()->rom[i].len;
     }
     return n;
 }
 
 int UsedROM()
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
     int   n = 0;
     DWORD i;
     for(i = 0; i < RomSection; i++) {
-        n += Prog.mcu->rom[i].len;
+        n += Prog.mcu()->rom[i].len;
     }
     return n + EepromAddrFree;
 }
 
 int McuRAM()
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
     int   n = 0;
     DWORD i;
     for(i = 0; i < MAX_RAM_SECTIONS; i++) {
-        n += Prog.mcu->ram[i].len;
+        n += Prog.mcu()->ram[i].len;
     }
     return n;
 }
 
 int UsedRAM()
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
     int   n = 0;
     DWORD i;
     for(i = 0; i < RamSection; i++) {
-        n += Prog.mcu->ram[i].len;
+        n += Prog.mcu()->ram[i].len;
     }
     return n + MemOffset;
 }
@@ -232,6 +258,7 @@ static void ClrInternalData()
     RamSection = 0;
     RomSection = 0;
     EepromAddrFree = 0;
+    LabelAddrCount = 0;
     //  VariableCount = 0;
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -257,25 +284,25 @@ void AllocStart()
 //-----------------------------------------------------------------------------
 DWORD AllocOctetRam(int bytes) // The desired number of bytes.
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         return 0;
 
-    if(Prog.mcu->whichIsa > ISA_HARDWARE)
+    if(Prog.mcu()->whichIsa > ISA_HARDWARE)
         return 0;
 
-    if((MemOffset + bytes) >= Prog.mcu->ram[RamSection].len) {
+    if((MemOffset + bytes) >= Prog.mcu()->ram[RamSection].len) {
         RamSection++;
         MemOffset = 0;
     }
 
-    if((RamSection >= MAX_RAM_SECTIONS) || ((MemOffset + bytes) >= Prog.mcu->ram[RamSection].len)) {
+    if((RamSection >= MAX_RAM_SECTIONS) || ((MemOffset + bytes) >= Prog.mcu()->ram[RamSection].len)) {
         THROW_COMPILER_EXCEPTION_FMT("%s %s",
                                      _("RAM:"),
                                      _("Out of memory; simplify program or choose microcontroller with more memory."));
     }
 
     MemOffset += bytes;
-    return Prog.mcu->ram[RamSection].start + MemOffset - bytes;
+    return Prog.mcu()->ram[RamSection].start + MemOffset - bytes;
 }
 
 DWORD AllocOctetRam()
@@ -289,7 +316,7 @@ int InputRegIndex(DWORD addr)
     if((addr == -1) || (addr == 0))
         THROW_COMPILER_EXCEPTION(_("Internal error."), -1);
     for(int i = 0; i < MAX_IO_PORTS; i++)
-        if(Prog.mcu->inputRegs[i] == addr)
+        if(Prog.mcu()->inputRegs[i] == addr)
             return i;
     return -1;
 }
@@ -300,7 +327,7 @@ int OutputRegIndex(DWORD addr)
     if((addr == -1) || (addr == 0))
         THROW_COMPILER_EXCEPTION(_("Internal error."), -1);
     for(int i = 0; i < MAX_IO_PORTS; i++)
-        if(Prog.mcu->outputRegs[i] == addr)
+        if(Prog.mcu()->outputRegs[i] == addr)
             return i;
     return -1;
 }
@@ -351,17 +378,17 @@ static void MemForPin(const char *name, DWORD *addr, int *bit, bool asInput)
 
     *addr = -1;
     *bit = -1;
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
         if(iop) {
-            if(Prog.mcu->core == PC_LPT_COM) {
+            if(Prog.mcu()->core == PC_LPT_COM) {
                 *addr = iop->addr;
                 *bit = iop->bit;
             } else {
                 if(asInput) {
-                    *addr = Prog.mcu->inputRegs[iop->port - 'A'];
+                    *addr = Prog.mcu()->inputRegs[iop->port - 'A'];
                 } else {
-                    *addr = Prog.mcu->outputRegs[iop->port - 'A'];
+                    *addr = Prog.mcu()->outputRegs[iop->port - 'A'];
                 }
                 *bit = iop->bit;
             }
@@ -375,13 +402,13 @@ void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput)
 {
     *addr = -1;
     *bit = -1;
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         McuIoPinInfo *iop = PinInfo(pin);
         if(iop) {
             if(asInput) {
-                *addr = Prog.mcu->inputRegs[iop->port - 'A'];
+                *addr = Prog.mcu()->inputRegs[iop->port - 'A'];
             } else {
-                *addr = Prog.mcu->outputRegs[iop->port - 'A'];
+                *addr = Prog.mcu()->outputRegs[iop->port - 'A'];
             }
             *bit = iop->bit;
         } else {
@@ -403,12 +430,12 @@ int SingleBitAssigned(const char *name)
     if(i >= Prog.io.count)
         THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         pin = Prog.io.assignment[i].pin;
-        auto pp = std::find_if(Prog.mcu->pinInfo,
-                               Prog.mcu->pinInfo + Prog.mcu->pinCount,
+        auto pp = std::find_if(Prog.mcu()->pinInfo,
+                               Prog.mcu()->pinInfo + Prog.mcu()->pinCount,
                                [pin](const McuIoPinInfo &info) { return pin == info.pin; });
-        if(pp == (Prog.mcu->pinInfo + Prog.mcu->pinCount))
+        if(pp == (Prog.mcu()->pinInfo + Prog.mcu()->pinCount))
             pin = 0;
     }
     return pin;
@@ -451,19 +478,19 @@ uint8_t MuxForAdcVariable(const char *name)
     if(i >= Prog.io.count)
         THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         uint32_t j;
-        for(j = 0; j < Prog.mcu->adcCount; j++) {
-            if(Prog.mcu->adcInfo[j].pin == Prog.io.assignment[i].pin) {
+        for(j = 0; j < Prog.mcu()->adcCount; j++) {
+            if(Prog.mcu()->adcInfo[j].pin == Prog.io.assignment[i].pin) {
                 break;
             }
         }
-        if(j == Prog.mcu->adcCount) {
-            /////	Error("i=%d pin=%d", i, Prog.io.assignment[i].pin);			///// Comment by JG
+        if(j == Prog.mcu()->adcCount) {
+            /////   Error("i=%d pin=%d", i, Prog.io.assignment[i].pin);         ///// Comment by JG
             THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all ADC inputs (name '%s')."), name);
-			return 0;
+            return 0;
         }
-        res = Prog.mcu->adcInfo[j].muxRegValue;
+        res = Prog.mcu()->adcInfo[j].muxRegValue;
     }
 
     return res;
@@ -484,66 +511,66 @@ int PinsForSpiVariable(const char *name, int n, char *spipins)
     int res = 0, port= 0;
     int i, j;
 
-	if(!Prog.mcu) return 0;
-	if(!spipins) return 0;
+    if(!Prog.mcu()) return 0;
+    if(!spipins) return 0;
 
-    for(i = 0; i < Prog.io.count; i++) 
-	{
+    for(i = 0; i < Prog.io.count; i++)
+    {
         if(strncmp(Prog.io.assignment[i].name, name, n) == 0)
-		{
+        {
             if (Prog.io.assignment[i].type == IO_TYPE_SPI_MOSI)
-			{
-				for(j = 0; j < Prog.mcu->spiCount; j++) 
-					if((strcmp(Prog.mcu->spiInfo[j].name, name) == 0) && 
-						(Prog.mcu->spiInfo[j].MOSI == Prog.io.assignment[i].pin)) 
-					{
-						McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-						port= iop->port;						// all SPI pins supposed on same port
-						spipins[0]= iop->bit;
-						res++; break;
-					}
-			}
+            {
+                for(j = 0; j < Prog.mcu()->spiCount; j++)
+                    if((strcmp(Prog.mcu()->spiInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->spiInfo[j].MOSI == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        port= iop->port;                        // all SPI pins supposed on same port
+                        spipins[0]= iop->bit;
+                        res++; break;
+                    }
+            }
             if (Prog.io.assignment[i].type == IO_TYPE_SPI_MISO)
-			{
-				for(j = 0; j < Prog.mcu->spiCount; j++) 
-					if((strcmp(Prog.mcu->spiInfo[j].name, name) == 0) && 
-						(Prog.mcu->spiInfo[j].MISO == Prog.io.assignment[i].pin)) 
-					{
-						McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-						spipins[1]= iop->bit;
-						res++; break;
-					}
-			}
+            {
+                for(j = 0; j < Prog.mcu()->spiCount; j++)
+                    if((strcmp(Prog.mcu()->spiInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->spiInfo[j].MISO == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        spipins[1]= iop->bit;
+                        res++; break;
+                    }
+            }
             if (Prog.io.assignment[i].type == IO_TYPE_SPI_SCK)
-			{
-				for(j = 0; j < Prog.mcu->spiCount; j++) 
-					if((strcmp(Prog.mcu->spiInfo[j].name, name) == 0) && 
-						(Prog.mcu->spiInfo[j].SCK == Prog.io.assignment[i].pin)) 
-					{
-						McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-						spipins[2]= iop->bit;
-						res++; break;
-					}
-			}
+            {
+                for(j = 0; j < Prog.mcu()->spiCount; j++)
+                    if((strcmp(Prog.mcu()->spiInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->spiInfo[j].SCK == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        spipins[2]= iop->bit;
+                        res++; break;
+                    }
+            }
             if (Prog.io.assignment[i].type == IO_TYPE_SPI__SS)
-			{
-				for(j = 0; j < Prog.mcu->spiCount; j++) 
-					if((strcmp(Prog.mcu->spiInfo[j].name, name) == 0) && 
-						(Prog.mcu->spiInfo[j]._SS == Prog.io.assignment[i].pin)) 
-					{
-						McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-						spipins[3]= iop->bit;
-						res++; break;
-					}
-			}
-		}
-	}
+            {
+                for(j = 0; j < Prog.mcu()->spiCount; j++)
+                    if((strcmp(Prog.mcu()->spiInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->spiInfo[j]._SS == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        spipins[3]= iop->bit;
+                        res++; break;
+                    }
+            }
+        }
+    }
 
-	if(res != 4) 
-	{
-		THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for SPI device (name '%s')."), name);
-    }       
-	return port;		// spi port
+    if(res != 4)
+    {
+        THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for SPI device (name '%s')."), name);
+    }
+    return port;        // spi port
 }
 
 
@@ -555,44 +582,44 @@ int PinsForI2cVariable(const char *name, int n, char *i2cpins)
     int res = 0, port= 0;
     int i, j;
 
-	if(!Prog.mcu) return 0;
-	if(!i2cpins) return 0;
+    if(!Prog.mcu()) return 0;
+    if(!i2cpins) return 0;
 
-    for(i = 0; i < Prog.io.count; i++) 
-	{
+    for(i = 0; i < Prog.io.count; i++)
+    {
         if(strncmp(Prog.io.assignment[i].name, name, n) == 0)
-		{
+        {
             if (Prog.io.assignment[i].type == IO_TYPE_I2C_SCL)
-			{
-				for(j = 0; j < Prog.mcu->i2cCount; j++) 
-					if((strcmp(Prog.mcu->i2cInfo[j].name, name) == 0) && 
-						(Prog.mcu->i2cInfo[j].SCL == Prog.io.assignment[i].pin)) 
-					{
-						McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-						port= iop->port;						// all I2C pins supposed on same port
-						i2cpins[0]= iop->bit;
-						res++; break;
-					}
-			}
+            {
+                for(j = 0; j < Prog.mcu()->i2cCount; j++)
+                    if((strcmp(Prog.mcu()->i2cInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->i2cInfo[j].SCL == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        port= iop->port;                        // all I2C pins supposed on same port
+                        i2cpins[0]= iop->bit;
+                        res++; break;
+                    }
+            }
             if (Prog.io.assignment[i].type == IO_TYPE_I2C_SDA)
-			{
-				for(j = 0; j < Prog.mcu->i2cCount; j++) 
-					if((strcmp(Prog.mcu->i2cInfo[j].name, name) == 0) && 
-						(Prog.mcu->i2cInfo[j].SDA == Prog.io.assignment[i].pin)) 
-					{
-						McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
-						i2cpins[1]= iop->bit;
-						res++; break;
-					}
-			}
-		}
-	}
+            {
+                for(j = 0; j < Prog.mcu()->i2cCount; j++)
+                    if((strcmp(Prog.mcu()->i2cInfo[j].name, name) == 0) &&
+                        (Prog.mcu()->i2cInfo[j].SDA == Prog.io.assignment[i].pin))
+                    {
+                        McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
+                        i2cpins[1]= iop->bit;
+                        res++; break;
+                    }
+            }
+        }
+    }
 
-	if(res != 2) 
-	{
-		THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for I2C device (name '%s')."), name);
-    }       
-	return port;		// i2c port
+    if(res != 2)
+    {
+        THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for I2C device (name '%s')."), name);
+    }
+    return port;        // i2c port
 }
 
 
@@ -695,17 +722,17 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
                 if((j >= 0) && (j < MAX_IO_PORTS)) {
                     if((strstr(name, "#PORT")) && (strlen(name) == 6)) { // #PORTx
                         if(IS_MCU_REG(j)) {
-                            addr = Prog.mcu->outputRegs[j];
+                            addr = Prog.mcu()->outputRegs[j];
                         }
                     }
                     if((strstr(name, "#PIN")) && (strlen(name) == 5)) { // #PINx
                         if(IS_MCU_REG(j)) {
-                            addr = Prog.mcu->inputRegs[j];
+                            addr = Prog.mcu()->inputRegs[j];
                         }
                     }
                     if((strstr(name, "#TRIS")) && (strlen(name) == 6)) { // #TRISx
                         if(IS_MCU_REG(j)) {
-                            addr = Prog.mcu->dirRegs[j];
+                            addr = Prog.mcu()->dirRegs[j];
                         }
                     }
                 }
@@ -1068,7 +1095,7 @@ void MemForSingleBit(const NameArray &name, bool forRead, DWORD *addr, int *bit)
 int isPinAssigned(const NameArray &name)
 {
     int res = 0;
-    if((Prog.mcu) && ((Prog.mcu->whichIsa == ISA_AVR) || (Prog.mcu->whichIsa == ISA_PIC16)))
+    if((Prog.mcu()) && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)))
         switch(name[0]) {
             case 'A':
             case 'I':
@@ -1082,16 +1109,16 @@ int isPinAssigned(const NameArray &name)
 
                 int pin = assign->pin;
                 if(name[0] == 'A') {
-                    auto info = std::find_if(Prog.mcu->adcInfo,
-                                             Prog.mcu->adcInfo + Prog.mcu->adcCount,
+                    auto info = std::find_if(Prog.mcu()->adcInfo,
+                                             Prog.mcu()->adcInfo + Prog.mcu()->adcCount,
                                              [pin](const McuAdcPinInfo &info) { return (info.pin == pin); });
-                    if(info != (Prog.mcu->adcInfo + Prog.mcu->adcCount))
+                    if(info != (Prog.mcu()->adcInfo + Prog.mcu()->adcCount))
                         res = 1;
                 } else {
-                    auto info = std::find_if(Prog.mcu->pinInfo,
-                                             Prog.mcu->pinInfo + Prog.mcu->pinCount,
+                    auto info = std::find_if(Prog.mcu()->pinInfo,
+                                             Prog.mcu()->pinInfo + Prog.mcu()->pinCount,
                                              [pin](const McuIoPinInfo &info) { return (info.pin == pin); });
-                    if(info != (Prog.mcu->pinInfo + Prog.mcu->pinCount))
+                    if(info != (Prog.mcu()->pinInfo + Prog.mcu()->pinCount))
                         res = 1;
                 }
                 break;
@@ -1149,16 +1176,16 @@ void MemCheckForErrorsPostCompile()
 // TRIS or DDR registers. ADC pins are neither inputs nor outputs.
 //-----------------------------------------------------------------------------
 ///// Prototype modified by JG to have 8 / 16 bit ports
-/////	void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError)
+/////   void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput, bool raiseError)
 void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool raiseError)
 {
-    if(!Prog.mcu)
+    if(!Prog.mcu())
         THROW_COMPILER_EXCEPTION(_("Invalid MCU"));
 
-	///// memset() modified by JG
-	memset(isOutput, 0x0000, 2*MAX_IO_PORTS);		
-    memset(isAnsel, 0x0000, 2*MAX_IO_PORTS);		
-    memset(isInput, 0x0000, 2*MAX_IO_PORTS);		
+    ///// memset() modified by JG
+    memset(isOutput, 0x0000, 2*MAX_IO_PORTS);
+    memset(isAnsel, 0x0000, 2*MAX_IO_PORTS);
+    memset(isInput, 0x0000, 2*MAX_IO_PORTS);
 
     bool usedUart = UartFunctionUsed();
     int  usedPwm = PwmFunctionUsed();
@@ -1169,10 +1196,10 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
         int type = Prog.io.assignment[i].type;
 
         if(type == IO_TYPE_READ_ADC) {
-            auto iop = std::find_if(Prog.mcu->pinInfo,
-                                    Prog.mcu->pinInfo + Prog.mcu->pinCount,
+            auto iop = std::find_if(Prog.mcu()->pinInfo,
+                                    Prog.mcu()->pinInfo + Prog.mcu()->pinCount,
                                     [pin](const McuIoPinInfo &pi) { return (pi.pin == pin); });
-            if(iop != (Prog.mcu->pinInfo + Prog.mcu->pinCount))
+            if(iop != (Prog.mcu()->pinInfo + Prog.mcu()->pinCount))
                 isAnsel[iop->port - 'A'] |= (1 << iop->bit);
         }
 
@@ -1181,10 +1208,10 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
            type == IO_TYPE_INT_INPUT ||  //
            type == IO_TYPE_DIG_INPUT) {
 
-            auto iop = std::find_if(Prog.mcu->pinInfo,
-                                    Prog.mcu->pinInfo + Prog.mcu->pinCount,
+            auto iop = std::find_if(Prog.mcu()->pinInfo,
+                                    Prog.mcu()->pinInfo + Prog.mcu()->pinCount,
                                     [pin](const McuIoPinInfo &pi) { return (pi.pin == pin); });
-            if(iop == (Prog.mcu->pinInfo + Prog.mcu->pinCount)) {
+            if(iop == (Prog.mcu()->pinInfo + Prog.mcu()->pinCount)) {
                 THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."),
                                              Prog.io.assignment[i].name);
             }
@@ -1195,23 +1222,23 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
             }
 
             if(raiseError) {
-                if(usedUart && (pin == Prog.mcu->uartNeeds.rxPin || pin == Prog.mcu->uartNeeds.txPin)) {
+                if(usedUart && (pin == Prog.mcu()->uartNeeds.rxPin || pin == Prog.mcu()->uartNeeds.txPin)) {
                     THROW_COMPILER_EXCEPTION_FMT(_("UART in use; pins %d and %d reserved for that."),
-                                                 Prog.mcu->uartNeeds.rxPin,
-                                                 Prog.mcu->uartNeeds.txPin);
+                                                 Prog.mcu()->uartNeeds.rxPin,
+                                                 Prog.mcu()->uartNeeds.txPin);
                 }
             }
         }
     }
     if(usedUart) {
         McuIoPinInfo *iop;
-        iop = PinInfo(Prog.mcu->uartNeeds.txPin);
+        iop = PinInfo(Prog.mcu()->uartNeeds.txPin);
         if(iop)
             isOutput[iop->port - 'A'] |= (1 << iop->bit);
         else
             THROW_COMPILER_EXCEPTION(_("Invalid TX pin."));
 
-        iop = PinInfo(Prog.mcu->uartNeeds.rxPin);
+        iop = PinInfo(Prog.mcu()->uartNeeds.rxPin);
         if(iop)
             isInput[iop->port - 'A'] |= (1 << iop->bit);
         else
@@ -1226,22 +1253,22 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
 }
 
 ///// Modified by JG to have 8 & 16 bit ports
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)		///// 8-bit ports
+void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)      ///// 8-bit ports
 {
-	WORD isInp[MAX_IO_PORTS], isAns[MAX_IO_PORTS], isOut[MAX_IO_PORTS];
+    WORD isInp[MAX_IO_PORTS], isAns[MAX_IO_PORTS], isOut[MAX_IO_PORTS];
 
     BuildDirectionRegisters(isInp, isAns, isOut, true);
-	
-	int i;
-	for (i= 0 ; i < MAX_IO_PORTS ; i++)
-	{
-		isInput[i]= (BYTE) isInp[i];
-		isAnsel[i]= (BYTE) isAns[i];
-		isOutput[i]= (BYTE) isOut[i];
-	}
+
+    int i;
+    for (i= 0 ; i < MAX_IO_PORTS ; i++)
+    {
+        isInput[i]= (BYTE) isInp[i];
+        isAnsel[i]= (BYTE) isAns[i];
+        isOutput[i]= (BYTE) isOut[i];
+    }
 }
 
-void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput)		///// 16-bit ports
+void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput)      ///// 16-bit ports
 {
     BuildDirectionRegisters(isInput, isAnsel, isOutput, true);
 }

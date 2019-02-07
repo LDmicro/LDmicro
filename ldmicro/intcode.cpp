@@ -469,31 +469,31 @@ void IntDumpListing(char *outFile)
                         l->d.spi.recv,
                         IntCode[i].name1.c_str());
                 break;
-			///// Added by JG
-			case INT_SPI_WRITE:
-				fprintf(f,
+            ///// Added by JG
+            case INT_SPI_WRITE:
+                fprintf(f,
                         "SPI_WRITE '%s' send '%s', receive '%s', done? into '%s'",
                         l->d.spi.name,
-						l->d.spi.send,
+                        l->d.spi.send,
                         l->d.spi.recv,
                         IntCode[i].name1.c_str());
-				break;
+                break;
 
-			case INT_I2C_READ:
-				fprintf(f,
+            case INT_I2C_READ:
+                fprintf(f,
                         "I2C_READ '%s' receive '%s', done? into '%s'",
                         l->d.i2c.name,
                         l->d.i2c.recv,
                         IntCode[i].name1.c_str());
-				break;
-			case INT_I2C_WRITE:
-				fprintf(f,
+                break;
+            case INT_I2C_WRITE:
+                fprintf(f,
                         "I2C_WRITE '%s' send '%s', done? into '%s'",
                         l->d.i2c.name,
-						l->d.i2c.send,
+                        l->d.i2c.send,
                         IntCode[i].name1.c_str());
-				break;
-			/////
+                break;
+            /////
 
             case INT_UART_SEND1:
             case INT_UART_SENDn:
@@ -1042,8 +1042,8 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
 {
     if(delay <= 0) {
-        Error("%s '%s': %s", _("Timer"), name, 
-			_("Delay cannot be zero or negative."));
+        Error("%s '%s': %s", _("Timer"), name,
+            _("Delay cannot be zero or negative."));
         return -1;
     }
     long long int period = 0, adjPeriod = 0, maxPeriod = 0;
@@ -1083,8 +1083,8 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
     }
 
     if(((period > maxPeriod) || (adjPeriod > maxPeriod)) //
-       && (Prog.mcu)                                     //
-       && (Prog.mcu->whichIsa != ISA_PC)                 //
+       && (Prog.mcu())                                     //
+       && (Prog.mcu()->whichIsa != ISA_PC)                 //
     ) {
         char s1[1024];
         sprintf(s1, "%s %s", _("Timer period too long; (use a slower cycle time)."), _("Or decrease timer period."));
@@ -1125,10 +1125,10 @@ SDWORD CalcDelayClock(long long clocks) // in us
 {
 #if 1 // 1
     clocks = clocks * Prog.mcuClock / 1000000;
-    if(Prog.mcu) {
-        if(Prog.mcu->whichIsa == ISA_AVR) {
+    if(Prog.mcu()) {
+        if(Prog.mcu()->whichIsa == ISA_AVR) {
             ;
-        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+        } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
             clocks = clocks / 4;
         } else
             Error(_("Internal error."));
@@ -3276,7 +3276,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
           EepromAddrFree += SizeOfVar(l->d.persist.var);
           break;
         }
-        case ELEM_UART_SENDn: {						///// JG: this function is a huge mystery !
+        case ELEM_UART_SENDn: {                     ///// JG: this function is a huge mystery !
             Comment(3, "ELEM_UART_SENDn");
             char store[MAX_NAME_LEN];
             GenSymOneShot(store, "SENDn", l->d.uart.name);
@@ -3355,43 +3355,43 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_SPI: {
             Comment(3, "ELEM_SPI");
-			///// Added by JG
-			Op(INT_IF_BIT_SET, stateInOut);									// if(Read_Ib_rung_top()) {
-			  Op(INT_SPI, l->d.spi.name, l->d.spi.send, l->d.spi.recv);		//   SpiSendRecv[name1=name, name2=send, name3=recv]
-			  Op(INT_SET_BIT, stateInOut);									//   activate output line
-			Op(INT_END_IF);													// }
-			/////
-			break;
+            ///// Added by JG
+            Op(INT_IF_BIT_SET, stateInOut);                                 // if(Read_Ib_rung_top()) {
+              Op(INT_SPI, l->d.spi.name, l->d.spi.send, l->d.spi.recv);     //   SpiSendRecv[name1=name, name2=send, name3=recv]
+              Op(INT_SET_BIT, stateInOut);                                  //   activate output line
+            Op(INT_END_IF);                                                 // }
+            /////
+            break;
         }
 
-		///// Added by JG
+        ///// Added by JG
         case ELEM_SPI_WR: {
             Comment(3, "ELEM_SPI_WR");
-			Op(INT_IF_BIT_SET, stateInOut);									// if(Read_Ib_rung_top()) {
-			  Op(INT_SPI_WRITE, l->d.spi.name, l->d.spi.send);				//   SpiWrite[name1=name, name2=send]
-			  Op(INT_SET_BIT, stateInOut);									//   activate output line
-			Op(INT_END_IF);													// }
-			break;
+            Op(INT_IF_BIT_SET, stateInOut);                                 // if(Read_Ib_rung_top()) {
+              Op(INT_SPI_WRITE, l->d.spi.name, l->d.spi.send);              //   SpiWrite[name1=name, name2=send]
+              Op(INT_SET_BIT, stateInOut);                                  //   activate output line
+            Op(INT_END_IF);                                                 // }
+            break;
         }
 
         case ELEM_I2C_RD: {
             Comment(3, "ELEM_I2C_RD");
-			Op(INT_IF_BIT_SET, stateInOut);														// if(Read_Ib_rung_top()) {
-			Op(INT_I2C_READ, l->d.i2c.name, l->d.i2c.recv, l->d.i2c.address, l->d.i2c.registr);	//   I2cRead[name1=name, name2=recv, name3=addr, name4= reg]
-			  Op(INT_SET_BIT, stateInOut);														//   activate output line
-			Op(INT_END_IF);																		// }
-			break;
+            Op(INT_IF_BIT_SET, stateInOut);                                                     // if(Read_Ib_rung_top()) {
+            Op(INT_I2C_READ, l->d.i2c.name, l->d.i2c.recv, l->d.i2c.address, l->d.i2c.registr); //   I2cRead[name1=name, name2=recv, name3=addr, name4= reg]
+              Op(INT_SET_BIT, stateInOut);                                                      //   activate output line
+            Op(INT_END_IF);                                                                     // }
+            break;
         }
 
-		case ELEM_I2C_WR: {
+        case ELEM_I2C_WR: {
             Comment(3, "ELEM_I2C_WR");
-			Op(INT_IF_BIT_SET, stateInOut);															// if(Read_Ib_rung_top()) {
-			  Op(INT_I2C_WRITE, l->d.i2c.name, l->d.i2c.send, l->d.i2c.address, l->d.i2c.registr);	//   I2cWrite[name1=name, name2=send, name3=addr, name4= reg]);
-			  Op(INT_SET_BIT, stateInOut);															//   activate output line
-			Op(INT_END_IF);																			// }
-			break;
+            Op(INT_IF_BIT_SET, stateInOut);                                                         // if(Read_Ib_rung_top()) {
+              Op(INT_I2C_WRITE, l->d.i2c.name, l->d.i2c.send, l->d.i2c.address, l->d.i2c.registr);  //   I2cWrite[name1=name, name2=send, name3=addr, name4= reg]);
+              Op(INT_SET_BIT, stateInOut);                                                          //   activate output line
+            Op(INT_END_IF);                                                                         // }
+            break;
         }
-		/////
+        /////
 
         case ELEM_SET_BIT:
             Comment(3, "ELEM_SET_BIT");
@@ -3527,12 +3527,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_TIME2DELAY: {
             Comment(3, "ELEM_TIME2DELAY");
             SDWORD clocks = CalcDelayClock(hobatoi(l->d.timer.delay));
-            if(Prog.mcu) {
-                if(Prog.mcu->whichIsa == ISA_AVR) {
+            if(Prog.mcu()) {
+                if(Prog.mcu()->whichIsa == ISA_AVR) {
                     clocks = (clocks - 1) / 4;
                     if(clocks > 0x10000)
                         clocks = 0x10000;
-                } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+                } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                     clocks = (clocks - 10) / 6;
                     if(clocks > 0xffff)
                         clocks = 0xffff;
@@ -3547,79 +3547,79 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
         }
         case ELEM_GOTO: {
-            Comment(3, "ELEM_GOTO %s", l->d.doGoto.rung);
+            Comment(3, "ELEM_GOTO %s", l->d.doGoto.label);
             int r;
-            if(IsNumber(l->d.doGoto.rung)) {
-                r = hobatoi(l->d.doGoto.rung);
+            if(IsNumber(l->d.doGoto.label)) {
+                r = hobatoi(l->d.doGoto.label);
                 r = std::min(r, Prog.numRungs + 1) - 1;
             } else {
-                r = FindRung(ELEM_LABEL, l->d.doGoto.rung);
+                r = FindRung(ELEM_LABEL, l->d.doGoto.label);
                 if(r < 0) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.rung);
+                    THROW_COMPILER_EXCEPTION_FMT(_("GOTO: LABEL '%s' not found!"), l->d.doGoto.label);
                 }
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_GOTO, l->d.doGoto.rung, r);
+                Op(INT_GOTO, l->d.doGoto.label, r);
                 //Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_END_IF);
             break;
         }
         case ELEM_GOSUB: {
-            Comment(3, "ELEM_GOSUB %s", l->d.doGoto.rung);
+            Comment(3, "ELEM_GOSUB %s", l->d.doGoto.label);
             int r;
-            if(IsNumber(l->d.doGoto.rung)) {
-                THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.rung);
-                r = hobatoi(l->d.doGoto.rung);
+            if(IsNumber(l->d.doGoto.label)) {
+                THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.label);
+                r = hobatoi(l->d.doGoto.label);
                 r = std::min(r, Prog.numRungs + 1);
             } else {
-                r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+                r = FindRung(ELEM_SUBPROG, l->d.doGoto.label);
                 if(r < 0) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                    THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
                 }
                 r++;
             }
             Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_GOSUB, l->d.doGoto.rung, r);
+                Op(INT_GOSUB, l->d.doGoto.label, r);
             Op(INT_END_IF);
             break;
         }
         case ELEM_LABEL:
-            Comment(3, "ELEM_LABEL %s", l->d.doGoto.rung);
+            Comment(3, "ELEM_LABEL %s", l->d.doGoto.label);
             break;
 
         case ELEM_SUBPROG: {
-            Comment(3, "ELEM_SUBPROG %s", l->d.doGoto.rung);
+            Comment(3, "ELEM_SUBPROG %s", l->d.doGoto.label);
             if((Prog.rungs[rungNow]->contents[0].which == ELEM_SUBPROG)
             && ((Prog.rungs[rungNow]->count == 1)
             ||  ((Prog.rungs[rungNow]->count == 2)
             &&   (Prog.rungs[rungNow]->contents[1].which == ELEM_COMMENT)))) {
                 ; //
             } else {
-                THROW_COMPILER_EXCEPTION_FMT(_("SUBPROG: '%s' declaration must be single inside a rung %d"), l->d.doGoto.rung, rungNow + 1);
+                THROW_COMPILER_EXCEPTION_FMT(_("SUBPROG: '%s' declaration must be single inside a rung %d"), l->d.doGoto.label, rungNow + 1);
             }
             int r = -1;
-            if(!IsNumber(l->d.doGoto.rung)) {
-                r = FindRungLast(ELEM_ENDSUB, l->d.doGoto.rung);
+            if(!IsNumber(l->d.doGoto.label)) {
+                r = FindRungLast(ELEM_ENDSUB, l->d.doGoto.label);
             }
             if(r >= 0) {
-                Op(INT_GOTO, l->d.doGoto.rung, "ENDSUB", r + 1);
-                Op(INT_AllocKnownAddr, l->d.doGoto.rung, "SUBPROG", rungNow);
+                Op(INT_GOTO, l->d.doGoto.label, "ENDSUB", r + 1);
+                Op(INT_AllocKnownAddr, l->d.doGoto.label, "SUBPROG", rungNow);
             } else {
-                THROW_COMPILER_EXCEPTION_FMT(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.rung);
+                THROW_COMPILER_EXCEPTION_FMT(_("SUBPROG: ENDSUB '%s' not found!"), l->d.doGoto.label);
             }
             break;
         }
         case ELEM_ENDSUB: {
-            Comment(3, "ELEM_ENDSUB %s rung %d", l->d.doGoto.rung, rungNow + 1);
+            Comment(3, "ELEM_ENDSUB %s rung %d", l->d.doGoto.label, rungNow + 1);
             int r = -1;
-            if(!IsNumber(l->d.doGoto.rung)) {
-                r = FindRung(ELEM_SUBPROG, l->d.doGoto.rung);
+            if(!IsNumber(l->d.doGoto.label)) {
+                r = FindRung(ELEM_SUBPROG, l->d.doGoto.label);
             }
             if(r >= 0) {
             } else {
-                THROW_COMPILER_EXCEPTION_FMT(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.rung);
+                THROW_COMPILER_EXCEPTION_FMT(_("ENDSUB: SUBPROG '%s' not found!"), l->d.doGoto.label);
             }
-            Op(INT_RETURN, l->d.doGoto.rung, r);
+            Op(INT_RETURN, l->d.doGoto.label, r);
             break;
         }
         case ELEM_RETURN:
@@ -4090,7 +4090,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_PLACEHOLDER: {
             //Comment(3, "ELEM_PLACEHOLDER");
-			THROW_COMPILER_EXCEPTION(_("Empty row; delete it or add instructions before compiling."));	
+            THROW_COMPILER_EXCEPTION(_("Empty row; delete it or add instructions before compiling."));
             break;
         }
         case ELEM_COMMENT: {
@@ -4425,36 +4425,36 @@ bool UartSendUsed()
     return false;
 }
 
-//-----------------------------------------------------------------------------		///// Modified by JG
+//-----------------------------------------------------------------------------     ///// Modified by JG
 bool SpiFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI))
             return true;
-		if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI_WR))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI_WR))
             return true;
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_SPI) || (IntCode[i].op == INT_SPI_WRITE))		
+        if((IntCode[i].op == INT_SPI) || (IntCode[i].op == INT_SPI_WRITE))
             return true;
     }
     return false;
 }
 
-//-----------------------------------------------------------------------------			///// Added by JG
+//-----------------------------------------------------------------------------         ///// Added by JG
 bool I2cFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_RD))
             return true;
-		if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_WR))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_WR))
             return true;
 
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_I2C_READ) || (IntCode[i].op == INT_I2C_WRITE))		
+        if((IntCode[i].op == INT_I2C_READ) || (IntCode[i].op == INT_I2C_WRITE))
             return true;
     }
     return false;

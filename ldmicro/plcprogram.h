@@ -6,9 +6,6 @@
 #include "circuit.h"
 #include "mcutable.hpp"
 
-#define MAX_IO 1024     //
-#define MAX_RUNGS 9999  //
-
 typedef struct McuIoInfoTag McuIoInfo;
 
 typedef struct ModbusAddr {
@@ -53,6 +50,8 @@ struct PlcProgramSingleIo {
 #define IO_TYPE_SPI_MISO        32
 #define IO_TYPE_SPI_SCK         33
 #define IO_TYPE_SPI__SS         34
+#define IO_TYPE_I2C_SCL         35  ///// Added by JG
+#define IO_TYPE_I2C_SDA         36  /////
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -82,6 +81,8 @@ public:
     int           cycleDuty; // if true, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
     int           mcuClock;  // Hz
     int           baudRate;  // Hz
+    long          spiRate;   // Hz          Added by JG
+    long          i2cRate;   // Hz          Added by JG
     std::string   LDversion;
 
     std::array<ElemSubcktSeries *, MAX_RUNGS> rungs;
