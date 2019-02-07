@@ -46,7 +46,7 @@ static bool SeenVariable(const char *name)
         }
     }
     if(i >= MAX_IO)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     strcpy(SeenVariables[i], name);
     SeenVariablesCount++;
     return false;
@@ -83,7 +83,7 @@ static const char *MapSym(const char *str, int how)
     } else if(how == ASINT) {
         bit_int = 'i';
     } else {
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), ret);
     }
 
     // User and internal symbols are distinguished.
@@ -1011,6 +1011,7 @@ static char *GetUnitName(char *unitn, char *dest)
 void CompilePascal(const char *dest)
 {
     SeenVariablesCount = 0;
+	CompileFailure= 0;
 
     char destn[MAX_PATH];
     char destu[MAX_PATH];
@@ -1300,7 +1301,7 @@ void CompilePascal(const char *dest)
     fprintf(fu,
             "\n"
             "begin\n"
-            "  {SetPcPortsDir;}\n"
+            "  SetPcPortsDir;\n"
             "end.\n");
     fprintf(fr,
             "end;\n"
@@ -1339,6 +1340,11 @@ void CompilePascal(const char *dest)
     TranslitFile(destv);
     TranslitFile(desti);
     */
+
+	///// Added by JG
+	if(CompileFailure) return;
+	/////
+
     char str[MAX_PATH + 500];
     sprintf(str,
             _("Compile successful; wrote PASCAL source code to '%s'.\r\n\r\n"

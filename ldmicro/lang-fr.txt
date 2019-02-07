@@ -2233,7 +2233,7 @@
 "SPI - Serial Peripheral Interface"
 "SPI - Serial Peripheral Interface"
 
-"Common: Cathode | Anode:"
+"Common:Cathode|Anode:"
 "Cathode | Anode commune:"
 
 "Convert char to %s Segments"

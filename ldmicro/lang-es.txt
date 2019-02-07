@@ -2236,7 +2236,7 @@
 "SPI - Serial Peripheral Interface"
 "SPI - Interfaz Periférica Serial"
 
-"Common: Cathode | Anode:"
+"Common:Cathode|Anode:"
 "Común: Cátodo | Ánodo:"
 
 "Convert char to %s Segments"

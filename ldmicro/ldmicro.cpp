@@ -535,7 +535,7 @@ static void CompileProgram(bool compileAs, int MNU)
         MNU = compile_MNU;
 
     if(MNU == MNU_COMPILE_GNUC ){
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to WinAvr C, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -563,7 +563,7 @@ static void CompileProgram(bool compileAs, int MNU)
     /////
 
     if(MNU == MNU_COMPILE_CODEVISIONAVR){
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to CodeVision C, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -576,7 +576,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_HI_TECH_C){
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_PIC16) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_PIC16)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to HI-TECH C, but MCU core isn't PIC.\nDo you want to continue?"),
@@ -589,7 +589,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_CCS_PIC_C){
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_PIC16) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_PIC16)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"),
@@ -617,7 +617,7 @@ static void CompileProgram(bool compileAs, int MNU)
     /////
 
     if(MNU == MNU_COMPILE_ARDUINO) {
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR && Prog.mcu()->whichIsa != ISA_ESP8266) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR) && (Prog.mcu()->whichIsa != ISA_ESP8266)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -2860,9 +2860,9 @@ void abortHandler(int signum)
     // make the most basic call possible to the lowest level, most
     // standard print function.
     if(name)
-        dbp("Caught signal %d (%s)\n", signum, name);
+        dbp(_("Caught signal %d (%s)\n"), signum, name);
     else
-        dbp("Caught signal %d\n", signum);
+        dbp(_("Caught signal %d\n"), signum);
 
     // Dump a stack trace.
     // This is the function we will be implementing next.
@@ -3012,7 +3012,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 *l = '\0';
             }
             if(!LoadProjectFromFile(source)) {
-                Error("Couldn't open '%s', running non-interactively.", source);
+                Error(_("Couldn't open '%s', running non-interactively."), source);
                 doexit(EXIT_FAILURE);
             }
             strcpy(CurrentCompileFile, dest);
@@ -3042,7 +3042,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             }
             *dest = '\0';
             if(!LoadProjectFromFile(source)) {
-                Error("Couldn't open '%s', running non-interactively.", source);
+                Error(_("Couldn't open '%s', running non-interactively."), source);
                 doexit(EXIT_FAILURE);
             }
             strcpy(CurrentSaveFile, source);
@@ -3130,6 +3130,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         return 0;
     } catch(...) {
+
+        ///// Added by JG to save work in case of big bug
+        Prog.setMcu(nullptr);
+        srand(time(nullptr));
+        char fname[20];
+        sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
+        SaveProjectToFile(fname, MNU_SAVE_02);
+        /////
+
         abortHandler(EXCEPTION_EXECUTE_HANDLER);
     };
 

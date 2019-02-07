@@ -807,6 +807,7 @@ bool LoadProjectFromFile(const char *filename)
     char          version[512];
     long long int cycle;
     int           crystal, baud;
+    long          rate, speed;                          ///// Added by JG
     int           cycleTimer, cycleDuty, wdte;
     long long int configWord = 0;
     Prog.configurationWord = 0;
@@ -870,8 +871,18 @@ bool LoadProjectFromFile(const char *filename)
             Prog.cycleDuty = 0;
             if(Prog.cycleTime == 0)
                 Prog.cycleTimer = -1;
-        } else if(sscanf(line, "BAUD=%d", &baud)) {
+        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz", &baud, &rate, &speed) == 3) {       ///// RATE + SPEED created by JG for SPI & I2C
             Prog.baudRate = baud;
+            Prog.spiRate = rate;
+            Prog.i2cRate = speed;
+        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz", &baud, &rate) == 2) {     ///// RATE created by JG for SPI
+            Prog.baudRate = baud;
+            Prog.spiRate = rate;
+            Prog.i2cRate = 0;
+        } else if(sscanf(line, "BAUD=%d Hz", &baud) == 1) {
+            Prog.baudRate = baud;
+            Prog.spiRate = 0;
+            Prog.i2cRate = 0;
         } else if(memcmp(line, "COMPILED=", 9) == 0) {
             strcpy(CurrentCompileFile, line + 9);
 
@@ -1531,7 +1542,7 @@ bool SaveProjectToFile(char *filename, int code)
             Prog.cycleDuty,
             Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
-    fprintf(f, "BAUD=%d Hz\n", Prog.baudRate);
+    fprintf(f, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }

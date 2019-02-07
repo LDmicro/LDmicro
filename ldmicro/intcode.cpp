@@ -423,7 +423,7 @@ void IntDumpListing(char *outFile)
                             IntCode[i].literal,
                             IntCode[i].name1.c_str());
                 else
-                    THROW_COMPILER_EXCEPTION("Internal error");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
                 break;
             }
             case INT_EEPROM_WRITE: {
@@ -452,7 +452,7 @@ void IntDumpListing(char *outFile)
                             IntCode[i].literal,
                             IntCode[i].literal);
                 else
-                    THROW_COMPILER_EXCEPTION("Internal error");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
                 break;
             }
             case INT_SPI_COMPLETE:
@@ -470,31 +470,31 @@ void IntDumpListing(char *outFile)
                         IntCode[i].name1.c_str());
                 break;
 
-			///// Added by JG
-			case INT_SPI_WRITE:
-				fprintf(f,
+            ///// Added by JG
+            case INT_SPI_WRITE:
+                fprintf(f,
                         "SPI_WRITE '%s' send '%s', receive '%s', done? into '%s'",
                         l->d.spi.name,
-						l->d.spi.send,
+                        l->d.spi.send,
                         l->d.spi.recv,
                         IntCode[i].name1.c_str());
-				break;
+                break;
 
-			case INT_I2C_READ:
-				fprintf(f,
+            case INT_I2C_READ:
+                fprintf(f,
                         "I2C_READ '%s' receive '%s', done? into '%s'",
                         l->d.i2c.name,
                         l->d.i2c.recv,
                         IntCode[i].name1.c_str());
-				break;
-			case INT_I2C_WRITE:
-				fprintf(f,
+                break;
+            case INT_I2C_WRITE:
+                fprintf(f,
                         "I2C_WRITE '%s' send '%s', done? into '%s'",
                         l->d.i2c.name,
-						l->d.i2c.send,
+                        l->d.i2c.send,
                         IntCode[i].name1.c_str());
-				break;
-			/////
+                break;
+            /////
 
             case INT_UART_SEND1:
             case INT_UART_SENDn:
@@ -1119,7 +1119,7 @@ static SDWORD TimerPeriod(ElemLeaf *l)
 
     SDWORD period = TestTimerPeriod(l->d.timer.name, hobatoi(l->d.timer.delay), l->d.timer.adjust);
     if(period < 1) {
-        Error("Internal error");
+        Error(_("Internal error."));
     }
     return period;
 }
@@ -1135,7 +1135,7 @@ SDWORD CalcDelayClock(long long clocks) // in us
         } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
             clocks = clocks / 4;
         } else
-            Error("Internal error");
+            Error(_("Internal error."));
     }
     if(clocks <= 0)
         clocks = 1;
@@ -2682,7 +2682,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               } else if(which == ELEM_NEQ) {
                   Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
               } else
-                  THROW_COMPILER_EXCEPTION("Internal error");
+                  THROW_COMPILER_EXCEPTION(_("Internal error."));
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
           break;
@@ -3984,7 +3984,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     if(clocks > 0xffff)
                         clocks = 0xffff;
                 } else
-                    THROW_COMPILER_EXCEPTION("Internal error");
+                    THROW_COMPILER_EXCEPTION(_("Internal error."));
             }
             if(clocks <= 0)
                 clocks = 1;
@@ -4394,7 +4394,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     p++;
 
                 if(steps >= sizeof(outputChars)) {
-                    Error("Internal error");
+                    Error(_("Internal error."));
                 }
             }
 
@@ -4534,7 +4534,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                       Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", outputChars[i]);
                     Op(INT_END_IF);
                 } else
-                    Error("Internal error");
+                    Error(_("Internal error."));
             }
 
             Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SDWORD)0);
@@ -4911,36 +4911,36 @@ bool UartSendUsed()
     return false;
 }
 
-//-----------------------------------------------------------------------------		///// Modified by JG
+//-----------------------------------------------------------------------------     ///// Modified by JG
 bool SpiFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI))
             return true;
-		if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI_WR))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SPI_WR))
             return true;
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_SPI) || (IntCode[i].op == INT_SPI_WRITE))		
+        if((IntCode[i].op == INT_SPI) || (IntCode[i].op == INT_SPI_WRITE))
             return true;
     }
     return false;
 }
 
-//-----------------------------------------------------------------------------			///// Added by JG
+//-----------------------------------------------------------------------------         ///// Added by JG
 bool I2cFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_RD))
             return true;
-		if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_WR))
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_I2C_WR))
             return true;
 
     }
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
-        if((IntCode[i].op == INT_I2C_READ) || (IntCode[i].op == INT_I2C_WRITE))		
+        if((IntCode[i].op == INT_I2C_READ) || (IntCode[i].op == INT_I2C_WRITE))
             return true;
     }
     return false;

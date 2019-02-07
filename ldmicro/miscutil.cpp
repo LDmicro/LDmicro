@@ -108,7 +108,7 @@ void Error(const char *str, ...)
 
         // Indicate that it's an error, plus the output filename
         char str[MAX_PATH + 100];
-        sprintf(str, "compile error ('%s'): ", CurrentCompileFile);
+        sprintf(str, _("Compile error ('%s'): "), CurrentCompileFile);
         WriteFile(h, str, strlen(str), &written, nullptr);
         // The error message itself
         WriteFile(h, buf, strlen(buf), &written, nullptr);
@@ -136,7 +136,7 @@ void CompileSuccessfulMessage(char *str, unsigned int uType)
 {
     if(RunningInBatchMode) {
         char str[MAX_PATH + 100];
-        sprintf(str, "compiled okay, wrote '%s'\n", CurrentCompileFile);
+        sprintf(str, _("Compiled okay, wrote '%s'\n"), CurrentCompileFile);
 
         AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
         HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -341,6 +341,8 @@ const char *IoTypeToString(int ioType)
         case IO_TYPE_SPI_MISO:          return _("SPI MISO");
         case IO_TYPE_SPI_SCK:           return _("SPI SCK");
         case IO_TYPE_SPI__SS:           return _("SPI _SS");
+        case IO_TYPE_I2C_SCL:           return _("I2C SCL");                ///// Added by JG
+        case IO_TYPE_I2C_SDA:           return _("I2C SDA");                /////
         case IO_TYPE_PWM_OUTPUT:        return _("PWM out");
         case IO_TYPE_TCY:               return _("cyclic on/off");
         case IO_TYPE_TON:               return _("turn-on delay");
@@ -397,6 +399,8 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
        || type == IO_TYPE_SPI_MISO   //
        || type == IO_TYPE_SPI_SCK    //
        || type == IO_TYPE_SPI__SS    //
+       || type == IO_TYPE_I2C_SCL    //         ///// Added by JG
+       || type == IO_TYPE_I2C_SDA    //         /////
        || type == IO_TYPE_READ_ADC)  //
     {
         if(pin == NO_PIN_ASSIGNED) {
@@ -585,7 +589,18 @@ static int ComparePin(const void *av, const void *bv)
     LongPinName(b, sb);
     return strcmp(sa, sb);
 }
+/*
+void SetMcu(McuIoInfo *mcu)
+{
+    Prog.mcu = mcu;
+    Prog.configurationWord = 0;     ///// Added by JG
 
+    LoadWritePcPorts();
+
+    if(Prog.mcu && (Prog.mcu()->core != PC_LPT_COM))
+        qsort(Prog.mcu()->pinInfo, Prog.mcu()->pinCount, sizeof(McuIoPinInfo), ComparePin);
+}
+*/
 //-----------------------------------------------------------------------------
 char *GetPinName(int pin, char *pinName)
 {
@@ -704,6 +719,16 @@ McuSpiInfo *GetMcuSpiInfo(char *name)
 }
 
 //-----------------------------------------------------------------------------
+McuI2cInfo *GetMcuI2cInfo(char *name)                       ///// Added by JG
+{
+    if(Prog.mcu())
+        for(uint32_t i = 0; i < Prog.mcu()->i2cCount; i++)
+            if(strcmp(Prog.mcu()->i2cInfo[i].name, name) == 0)
+                return &(Prog.mcu()->i2cInfo[i]);
+    return nullptr;
+}
+
+//-----------------------------------------------------------------------------
 McuPwmPinInfo *PwmPinInfoForName(char *name)
 {
     if(Prog.mcu())
@@ -734,6 +759,21 @@ McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer, int resolution) //
         }
     return nullptr;
 }
+
+///// Added by JG : to get max Pwm resolution
+McuPwmPinInfo *PwmMaxInfoForName(const char *name, int timer) // !=timer !!!
+{
+    McuPwmPinInfo *mppi= nullptr;
+
+    for(int r = 32; r >= 8; r--)
+    {
+        mppi= PwmPinInfoForName(name, timer, r);
+        if (mppi) return mppi;
+    }
+
+    return nullptr;
+}
+/////
 
 //-----------------------------------------------------------------------------
 McuAdcPinInfo *AdcPinInfo(int pin)

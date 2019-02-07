@@ -601,7 +601,7 @@ static void AddrCheckForErrorsPostCompile()
     for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE) {
             if(AvrProg[i].arg1 & FWD(0)) {
-                THROW_COMPILER_EXCEPTION_FMT("Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d",
+                THROW_COMPILER_EXCEPTION_FMT(_("Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"),
                       i,
                       AvrProg[i].opAvr,
                       AvrProg[i].arg1,
@@ -706,14 +706,14 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
         case OP_ADIW:
             if(!((arg1 == 24) || (arg1 == 26) || (arg1 == 28) || (arg1 == 30)))
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             CHECK2(arg2, 0, 64);
             sprintf(sAsm, "adiw \t r%d:r%d, %d", arg1 + 1, arg1, arg2);
             return 0x9600 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) | (arg2 & 0x0f);
 
         case OP_SBIW:
             if(!((arg1 == 24) || (arg1 == 26) || (arg1 == 28) || (arg1 == 30)))
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             CHECK2(arg2, 0, 64);
             sprintf(sAsm, "sbiw \t r%d:r%d, %d", arg1 + 1, arg1, arg2);
             return 0x9700 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) | (arg2 & 0x0f);
@@ -735,7 +735,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             CHECK(arg1, 5);
             CHECK(arg2, 0);
             if((arg1 < 16) || (31 < arg1))
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             sprintf(sAsm, "ser \t r%d \t", arg1);
             return 0xEF0F | (arg1 << 4);
 
@@ -860,7 +860,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             arg1 = arg1 - addrAt - 1;
             CHECK2(arg1, -2048, 2047); // $fff !!!
             if(((int)arg1) > 2047 || ((int)arg1) < -2048)
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             arg1 &= (4096 - 1); // $fff !!!
             return 0xC000 | arg1;
 
@@ -870,7 +870,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             arg1 = arg1 - addrAt - 1;
             CHECK2(arg1, -2048, 2047); //$fff !!!
             if(((int)arg1) > 2047 || ((int)arg1) < -2048)
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             arg1 &= (4096 - 1);
             return 0xD000 | arg1;
 
@@ -1162,9 +1162,9 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             CHECK2(arg1, 0, 30);
             CHECK2(arg2, 0, 30);
             if(arg1 & 1)
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             if(arg2 & 1)
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             sprintf(sAsm, "movw \t r%d:r%d, \t r%d:r%d", arg1 + 1, arg1, arg2 + 1, arg2);
             return (0x0100) | ((arg1 >> 1) << 4) | ((arg2 >> 1));
 
@@ -1526,7 +1526,7 @@ static void SETB(DWORD addr, int bit, int reg, const char *name)
         Instruction(OP_SBI, addr - __SFR_OFFSET, bit, name);
 #endif
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 static void SETB(DWORD addr, int bit, const char *name)
@@ -1579,7 +1579,7 @@ static void CLRB(DWORD addr, int bit, int reg, const char *name)
         Instruction(OP_CBI, addr - __SFR_OFFSET, bit, name);
 #endif
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 static void CLRB(DWORD addr, int bit, const char *name)
@@ -1627,7 +1627,7 @@ static DWORD SKBS(DWORD addr, int bit, int reg)
         Instruction(OP_SBIS, addr - __SFR_OFFSET, bit);
 #endif
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
     return AvrProg.size() - prevProgSz;
 }
 
@@ -1646,7 +1646,7 @@ static DWORD SKBC(DWORD addr, int bit, int reg)
 {
     DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        Error(_("Only values 0-7 allowed for Bit parameter"));
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"), 0);
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1666,7 +1666,7 @@ static DWORD SKBC(DWORD addr, int bit, int reg)
         Instruction(OP_SBIC, addr - __SFR_OFFSET, bit);
 #endif
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
     return AvrProg.size() - prevProgSz;
 }
@@ -1686,11 +1686,11 @@ static DWORD SKBC(DWORD addr, int bit)
 static void STORE(DWORD addr, int reg)
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nSTORE(%d, %d) skiped!"), addr, reg);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nSTORE(%d, %d) skiped!"), addr, reg);
         return;
     }
     if(reg < 0) {
-        Error(_("Registers less zero not allowed!\nSTORE(%d, %d) skiped."), addr, reg);
+        THROW_COMPILER_EXCEPTION_FMT(_("Registers less zero not allowed!\nSTORE(%d, %d) skiped."), addr, reg);
         return;
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
@@ -1705,7 +1705,7 @@ static void STORE(DWORD addr, int reg)
         Instruction(OP_OUT, addr - __SFR_OFFSET, reg);
 #endif
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 static void STOREval(DWORD addr, BYTE val)
@@ -1720,11 +1720,11 @@ static void STOREval(DWORD addr, BYTE val)
 static void LOAD(int reg, DWORD addr)
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nLOAD(%d, %d) skiped!"), reg, addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nLOAD(%d, %d) skiped!"), reg, addr);
         return;
     }
     if(reg < 0) {
-        Error(_("Registers less zero not allowed!\nLOAD(%d, %d) skiped."), reg, addr);
+        THROW_COMPILER_EXCEPTION_FMT(_("Registers less zero not allowed!\nLOAD(%d, %d) skiped."), reg, addr);
         return;
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
@@ -1739,7 +1739,7 @@ static void LOAD(int reg, DWORD addr)
         Instruction(OP_IN, reg, addr - __SFR_OFFSET);
 #endif
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 //AVR001 appnote macro
 
@@ -1752,7 +1752,7 @@ static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYT
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nWriteMemory(0, %d) skiped! %s %s"), val, name, literal); //see TODO
         return;
     }
     char s[1024];
@@ -1798,7 +1798,7 @@ static void WriteMemoryStillAddr(DWORD addr, BYTE val)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
-        Error(_("Zero memory address not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
+        THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nWriteMemoryStillAddr(0, %d) skiped!"), val); //see TODO
         return;
     }
     LoadZAddr(addr);
@@ -1823,9 +1823,9 @@ static void WriteMemoryCurrAddr(BYTE val)
 static void LoadXAddrFromReg(int reg, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 2)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_MOV, XL, reg);         // X-register Low Byte
     if(sov > 1)                           //
         Instruction(OP_MOV, XH, reg + 1); // X-register High Byte
@@ -1837,9 +1837,9 @@ static void LoadXAddrFromReg(int reg, int sov)
 static void LoadYAddrFromReg(int reg, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 2)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_MOV, YL, reg);         // Y-register Low Byte
     if(sov > 1)                           //
         Instruction(OP_MOV, YH, reg + 1); // Y-register High Byte
@@ -1851,9 +1851,9 @@ static void LoadYAddrFromReg(int reg, int sov)
 static void LoadZAddrFromReg(int reg, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 2)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_MOV, ZL, reg);         // Z-register Low Byte
     if(sov > 1)                           //
         Instruction(OP_MOV, ZH, reg + 1); // Z-register High Byte
@@ -1867,16 +1867,16 @@ static void LdToReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation
 // Address is preloaded to X,Y or Z.
 {
     if(sovReg < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sovReg > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     if((op != OP_LD_XP) && (op != OP_LD_YP) && (op != OP_LD_ZP))
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     for(int i = 0; i < sovReg; i++) {
         if(i < sov)
@@ -2028,7 +2028,7 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *name1, const char *name2)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc))
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     char s[10];
     char d[10];
     sprintf(s, "BIT%d", bitSrc);
@@ -2068,7 +2068,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
 static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *name1, const char *name2)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc))
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     char s[10];
     char d[10];
     sprintf(s, "BIT%d", bitSrc);
@@ -2137,7 +2137,7 @@ static void IfBitClear(DWORD addr, int bit, BYTE reg, const char *name)
         Instruction(OP_SBIS, addr - __SFR_OFFSET, bit, name);
 #endif
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 static void IfBitClear(DWORD addr, int bit, const char *name)
@@ -2181,7 +2181,7 @@ static void IfBitSet(DWORD addr, int bit, BYTE reg, const char *name)
         Instruction(OP_SBIC, addr - __SFR_OFFSET, bit, name);
 #endif
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 static void IfBitSet(DWORD addr, int bit, const char *name)
@@ -2298,7 +2298,7 @@ static void PulseBit(DWORD addr, int bit, int reg)
         Instruction(OP_CBI, addr - __SFR_OFFSET, bit);
 #endif
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 }
 
 static void PulseBit(DWORD addr, int bit)
@@ -2370,7 +2370,7 @@ static bool CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int 
             *cs = 5;
             break;
         default:
-            THROW_COMPILER_EXCEPTION("Internal error");
+            THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
             break;
     }
 
@@ -2436,7 +2436,7 @@ bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
             else if(plcTmr.prescaler == 1024)
                 plcTmr.prescaler = 256;
             else
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
         }
         if(plcTmr.softDivisor == max_softDivisor)
             break;
@@ -2470,10 +2470,10 @@ err0:
     }
 
     if(plcTmr.tmr > max_tmr) {
-        THROW_COMPILER_EXCEPTION_FMT("PLC cycle time more then %lld ms not valid.", plcTmr.cycleTimeMax / 1000);
+        THROW_COMPILER_EXCEPTION_FMT(_("PLC cycle time more than %lld ms not valid."), plcTmr.cycleTimeMax / 1000);
         return false;
     } else if((plcTmr.prescaler * plcTmr.tmr) < PLC_CLOCK_MIN) {
-        THROW_COMPILER_EXCEPTION_FMT("PLC cycle time less then %d us not valid.", plcTmr.cycleTimeMin);
+        THROW_COMPILER_EXCEPTION_FMT(_("PLC cycle time less than %d us not valid."), plcTmr.cycleTimeMin);
         return false;
     }
     return true;
@@ -2588,7 +2588,7 @@ static void InitTable(IntOp *a)
                 Instruction(OP_DW, (i + 1 < a->literal ? a->data[i + 1] : 0) >> 8);
             }
         } else
-            THROW_COMPILER_EXCEPTION("Internal error");
+            THROW_COMPILER_EXCEPTION(_("Internal error."));
         Comment("TABLE %s END", a->name1.c_str());
     }
 
@@ -2652,7 +2652,7 @@ static void CallSubroutine(DWORD addr)
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_EICALL, addr); // arg1 used for label
         } else
-            THROW_COMPILER_EXCEPTION("Internal error");
+            THROW_COMPILER_EXCEPTION(_("Internal error."));
     }
 }
 
@@ -2692,7 +2692,7 @@ static void InstructionJMP(DWORD addr)
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_EIJMP, addr); // arg1 used for label
         } else
-            THROW_COMPILER_EXCEPTION("Internal error");
+            THROW_COMPILER_EXCEPTION(_("Internal error."));
     }
 }
 
@@ -2728,9 +2728,9 @@ static void CompileIfBody(DWORD condFalse)
 static void ShlReg(int reg, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_LSL, reg);
     if(sov >= 2)
         Instruction(OP_ROL, reg + 1);
@@ -2743,9 +2743,9 @@ static void ShlReg(int reg, int sov)
 static void RolReg(int reg, int sov)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_CLC);
     Instruction(OP_LSL, reg);
     if(sov >= 2)
@@ -2762,9 +2762,9 @@ static void RolReg(int reg, int sov)
 static void CpseReg(int op1, int sov, int op2, DWORD condFalse)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_AND, op1, op2);
     Instruction(OP_CPSE, op1, op2);
     Instruction(OP_RJMP, condFalse);
@@ -2788,9 +2788,9 @@ static void CpseReg(int op1, int sov, int op2, DWORD condFalse)
 static void OrReg(int reg, int sov, int op2)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_OR, reg, op2);
     if(sov >= 2)
         Instruction(OP_OR, reg + 1, op2 + 1);
@@ -2804,9 +2804,9 @@ static void OrReg(int reg, int sov, int op2)
 static void AndReg(int reg, int sov, int op2)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     Instruction(OP_AND, reg, op2);
     if(sov >= 2)
         Instruction(OP_AND, reg + 1, op2 + 1);
@@ -2820,9 +2820,9 @@ static void AndReg(int reg, int sov, int op2)
 static void CopyLitToReg(int reg, int sov, SDWORD literal, const char *comment)
 {
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov >= 1)
         Instruction(OP_LDI, reg, literal & 0xff, comment);
     if(sov >= 2)
@@ -2882,16 +2882,16 @@ static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagati
 // Address is preloaded to X,Y or Z.
 {
     if(sovReg < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sovReg > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     if((op != OP_ST_XP) && (op != OP_ST_YP) && (op != OP_ST_ZP))
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     for(int i = 0; i < sov; i++) {
         if(i < sovReg)
@@ -3230,7 +3230,7 @@ static void  WriteRuntime()
     } else if(Prog.cycleTimer < 0) {
         ;
     } else
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     Comment("Watchdog reset");
     Instruction(OP_WDR);
@@ -7029,7 +7029,7 @@ void CompileAvr(const char *outFile)
     rungNow = -30;
     Comment("GOTO next PLC cycle");
     /*
-    if(Prog.mcu->core >= ClassicCore8K) {
+    if(Prog.mcu()->core >= ClassicCore8K) {
         Instruction(OP_LDI, ZL, (BeginOfPLCCycle & 0xff));
         Instruction(OP_LDI, ZH, (BeginOfPLCCycle >> 8) & 0xff);
         Instruction(OP_IJMP, BeginOfPLCCycle, 0);
@@ -7072,6 +7072,10 @@ void CompileAvr(const char *outFile)
     PrintVariables(fAsm);
     fflush(fAsm);
     fclose(fAsm);
+
+    ///// Added by JG
+    if(CompileFailure) return;
+    /////
 
     char str[MAX_PATH + 500];
     sprintf(str,

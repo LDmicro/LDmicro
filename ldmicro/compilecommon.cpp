@@ -315,7 +315,7 @@ DWORD AllocOctetRam()
 int InputRegIndex(DWORD addr)
 {
     if((addr == -1) || (addr == 0))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), -1);
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->inputRegs[i] == addr)
             return i;
@@ -326,7 +326,7 @@ int InputRegIndex(DWORD addr)
 int OutputRegIndex(DWORD addr)
 {
     if((addr == -1) || (addr == 0))
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), -1);
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->outputRegs[i] == addr)
             return i;
@@ -370,12 +370,12 @@ static void MemForPin(const char *name, DWORD *addr, int *bit, bool asInput)
             break;
     }
     if(i >= Prog.io.count)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     if(asInput && Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
     if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT && Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."));
 
     *addr = -1;
     *bit = -1;
@@ -431,7 +431,7 @@ int SingleBitAssigned(const char *name)
             break;
     }
     if(i >= Prog.io.count)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
     if(Prog.mcu()) {
         pin = Prog.io.assignment[i].pin;
@@ -455,7 +455,7 @@ int GetAssignedType(const char *name, const char *fullName)
             else if(fullName[1] == 'i')
                 return IO_TYPE_GENERAL;
             else
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
         }
     for(int i = 0; i < Prog.io.count; i++) {
         if(strcmp(Prog.io.assignment[i].name, name) == 0) {
@@ -479,7 +479,7 @@ uint8_t MuxForAdcVariable(const char *name)
             break;
     }
     if(i >= Prog.io.count)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
     if(Prog.mcu()) {
         uint32_t j;
@@ -635,7 +635,7 @@ int byteNeeded(long long int i)
         return 3;
     else if((-2147483648LL <= i) && (i <= 2147483647LL))
         return 4; // not FULLY implamanted for LDmicro
-    THROW_COMPILER_EXCEPTION("Internal error");
+    THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
     return 0;
 }
 
@@ -658,7 +658,7 @@ int TestByteNeeded(int count, SDWORD *vals)
 int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
 {
     if(!name)
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
     if(strlenalnum(name) == 0) {
         Error(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
     }
@@ -1062,7 +1062,7 @@ void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit)
         case 'I':
         case 'X':
             if(!forRead)
-                THROW_COMPILER_EXCEPTION("Internal error");
+                THROW_COMPILER_EXCEPTION(_("Internal error."));
             MemForPin(name, addr, bit, true);
             break;
 
@@ -1183,9 +1183,10 @@ void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool 
     if(!Prog.mcu())
         Error(_("Invalid MCU"));
 
-    memset(isOutput, 0x00, MAX_IO_PORTS);
-    memset(isAnsel, 0x00, MAX_IO_PORTS);
-    memset(isInput, 0x00, MAX_IO_PORTS);
+    ///// memset() modified by JG
+    memset(isOutput, 0x0000, 2*MAX_IO_PORTS);
+    memset(isAnsel, 0x0000, 2*MAX_IO_PORTS);
+    memset(isInput, 0x0000, 2*MAX_IO_PORTS);
 
     bool usedUart = UartFunctionUsed();
     int  usedPwm = PwmFunctionUsed();
@@ -1404,7 +1405,7 @@ double SIprefix(double val, char *prefix, int en_1_2)
         strcpy(prefix, "m"); //10 ms= 0.010 s
         return val * 1e3;
     } else {
-        THROW_COMPILER_EXCEPTION("Internal error");
+        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
         return 0;
     }
 }

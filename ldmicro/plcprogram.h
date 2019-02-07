@@ -81,6 +81,8 @@ public:
     int           cycleDuty; // if true, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
     int           mcuClock;  // Hz
     int           baudRate;  // Hz
+    long          spiRate;   // Hz          Added by JG
+    long          i2cRate;   // Hz          Added by JG
     std::string   LDversion;
 
     std::array<ElemSubcktSeries *, MAX_RUNGS> rungs;
