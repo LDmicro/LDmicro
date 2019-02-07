@@ -104,7 +104,7 @@ typedef struct McuI2cInfoTag {
     uint32_t REG_CTRL;
     uint32_t REG_STAT;
     uint32_t REG_DATA;
-	uint32_t REG_RATE;
+    uint32_t REG_RATE;
     int      SCL;
     int      SDA;
 //  bool    isUsed;
@@ -173,8 +173,8 @@ typedef struct McuIoInfoTag {
     McuSpiInfo       *spiInfo;
     uint32_t          spiCount;
 
-	McuI2cInfo       *i2cInfo;					///// Added by JG
-    uint32_t          i2cCount;					/////
+    McuI2cInfo       *i2cInfo;                  ///// Added by JG
+    uint32_t          i2cCount;                 /////
 
     struct {
         uint32_t start;

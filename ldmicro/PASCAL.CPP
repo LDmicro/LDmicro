@@ -1011,7 +1011,7 @@ static char *GetUnitName(char *unitn, char *dest)
 void CompilePascal(const char *dest)
 {
     SeenVariablesCount = 0;
-	CompileFailure= 0;
+    CompileFailure= 0;
 
     char destn[MAX_PATH];
     char destu[MAX_PATH];
@@ -1036,7 +1036,7 @@ void CompilePascal(const char *dest)
     SetExt(desti, dest, "U.inc");
 
     FileTracker f(dest, "w");
-	if(!f) {
+    if(!f) {
         Error(_("Couldn't open file '%s'"), dest);
         return;
     }
@@ -1341,9 +1341,9 @@ void CompilePascal(const char *dest)
     TranslitFile(desti);
     */
 
-	///// Added by JG
-	if(CompileFailure) return;
-	/////
+    ///// Added by JG
+    if(CompileFailure) return;
+    /////
 
     char str[MAX_PATH + 500];
     sprintf(str,

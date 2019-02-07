@@ -31,16 +31,16 @@
 
 typedef     double  fxFunc(double k, double x);
 /*
-    SDWORD  nSize,  // СЂР°Р·РјРµСЂ С‚Р°Р±Р»РёС†С‹ С‚РѕС‡РµРє СЂР°Р·РіРѕРЅР°/С‚РѕСЂРјРѕР¶РµРЅРёСЏ
-    SDWORD  n,      // РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕС‡РµРє СЂР°Р·РіРѕРЅР°/С‚РѕСЂРјРѕР¶РµРЅРёСЏ РіРґРµ dt РѕС‚Р»РёС‡РЅС‹С… РѕС‚ 1
-    double  dtMax,  // РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РїСЂРёСЂРѕСЃС‚Р° dt
-    SDWORD  mult,   // РјРЅРѕР¶РёС‚РµР»СЊ dtMax РґРѕ 128
+    SDWORD  nSize,  // размер таблицы точек разгона/торможения
+    SDWORD  n,      // количество точек разгона/торможения где dt отличных от 1
+    double  dtMax,  // максимальное значение прироста dt
+    SDWORD  mult,   // множитель dtMax до 128
     SDWORD  shrt;   // mult = 2 ^ shrt
 */
 
-//typedef  ElemAccel TableAccel[]; //РјР°СЃСЃРёРІ СЃС‚СЂСѓРєС‚СѓСЂ
+//typedef  ElemAccel TableAccel[]; //массив структур
 
-//typedef  ElemAccel (*TableAccelPointer)[]; //СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЃСЃРёРІ СЃС‚СЂСѓРєС‚СѓСЂ
+//typedef  ElemAccel (*TableAccelPointer)[]; //указатель на массив структур
 
 double Proportional(double k, double n);
 double eFv(double m, double v);
@@ -84,7 +84,7 @@ double ksS(int nSize);
 //===========================================================================
 void makeAccelTable(FILE *f, int max, int P, int nSize, ElemAccel **TT,
          char *name,
-         int nN, // (1-РґР»СЏ РЅРµСЃРёРјРјРµС‚СЂРёС‡РЅС‹С… РєСЂРёРІС‹С… СЂР°Р·РіРѕРЅРѕРІ, 2-РґР»СЏ cРёРјРјРµС‚СЂРёС‡РЅС‹С… S-РѕР±СЂР°Р·РЅС‹С… РєСЂРёРІС‹С… СЂР°Р·РіРѕРЅР°)
+         int nN, // (1-для несимметричных кривых разгонов, 2-для cимметричных S-образных кривых разгона)
          int sFt, // (1-sFt, 0-tFs)
          int *n,
          int *Psum,

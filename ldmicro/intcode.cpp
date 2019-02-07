@@ -1283,7 +1283,7 @@ long hobatoi(const char *str)
         if(radix == 16) {
             val = strtoul(str, &end_ptr, radix);
         } else {
-        val = strtol(str, &end_ptr, radix);
+            val = strtol(str, &end_ptr, radix);
         }
         if(*end_ptr) {
             //         val = 0;
@@ -3667,12 +3667,12 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 #else
             if(l->d.uart.bytes == 1) {
               // This is modified algorithm !!!
-            Op(INT_IF_BIT_SET, stateInOut);
-              Op(INT_UART_SEND1, l->d.uart.name);
-            Op(INT_END_IF);
+              Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_UART_SEND1, l->d.uart.name);
+              Op(INT_END_IF);
 
               if(!l->d.uart.wait) {
-            Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
+                Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
               } else {
                 char label[MAX_NAME_LEN];
                 GenSym(label, "_wait", "UART_SEND", l->d.uart.name);
@@ -3820,14 +3820,14 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         case ELEM_UART_RECV_AVAIL:
             Comment(3, "ELEM_UART_RECV_AVAIL");
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_UART_RECV_AVAIL, stateInOut);
+              Op(INT_UART_RECV_AVAIL, stateInOut);
             Op(INT_END_IF);
             break;
 
         case ELEM_UART_SEND_READY:
             Comment(3, "ELEM_UART_SEND_READY");
             Op(INT_IF_BIT_SET, stateInOut);
-            Op(INT_UART_SEND_READY, stateInOut);
+              Op(INT_UART_SEND_READY, stateInOut);
             Op(INT_END_IF);
             break;
         }

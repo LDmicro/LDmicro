@@ -4884,7 +4884,7 @@ otherwise the result was zero or greater.
                     Instruction(OP_MOVWF, REG_FSR);
                     Instruction(OP_MOVF, REG_INDF, DEST_W); // addr1 +=[a->name2]
                 } else {
-                Instruction(OP_MOVF, addr1, DEST_W);
+                    Instruction(OP_MOVF, addr1, DEST_W);
                 }
                 Instruction(OP_MOVWF, REG_TXREG);
                 break;
@@ -7641,7 +7641,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
             THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."), false);
-            /////	return false;
+            /////   return false;
         }
 
         Comment("UART setup");
@@ -7920,7 +7920,7 @@ void CompilePic16(const char *outFile)
     ) {
         if(Prog.cycleTimer > 0) {
             THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
-            /////	return;
+            /////   return;
         }
     }
     bool b = _CompilePic16(outFile, 0); // 1) calc LD length approximately

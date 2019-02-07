@@ -391,7 +391,7 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD
     if(op == OP_COMMENTINT) {
         if(comment) {
             if(strlen(instruction.commentInt))
-                strncatn(instruction.commentInt, "\n;", MAX_COMMENT_LEN);
+                strncatn(instruction.commentInt, "\n    ; ", MAX_COMMENT_LEN);
             strncatn(instruction.commentInt, comment, MAX_COMMENT_LEN);
         }
         return;
@@ -6981,7 +6981,7 @@ void CompileAvr(const char *outFile)
         REG_UDR     = 0x2c;
 //      REG_UCSRC   = 0x9d;
     */
-     } else
+    } else
         THROW_COMPILER_EXCEPTION_FMT(_("Don't know how to init %s."), Prog.mcu() ? Prog.mcu()->mcuName : _("Invalid MCU"));
     //***********************************************************************
 

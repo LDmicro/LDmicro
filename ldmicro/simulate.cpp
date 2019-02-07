@@ -1157,28 +1157,28 @@ static void IfConditionTrue()
     // now PC is on the first statement of the IF body
     SimulateIntCode();
     if(IntPc < IntCode.size()) {
-    // now PC is on the ELSE or the END IF
-    if(IntCode[IntPc].op == INT_ELSE) {
-        int nesting = 1;
+        // now PC is on the ELSE or the END IF
+        if(IntCode[IntPc].op == INT_ELSE) {
+            int nesting = 1;
             for(; IntPc < IntCode.size(); IntPc++) {
-            if(IntPc >= IntCode.size())
-                oops();
+                if(IntPc >= IntCode.size())
+                    oops();
 
-            if(IntCode[IntPc].op == INT_END_IF) {
-                nesting--;
-            } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
-                nesting++;
+                if(IntCode[IntPc].op == INT_END_IF) {
+                    nesting--;
+                } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
+                    nesting++;
+                }
+                if(nesting == 0)
+                    break;
             }
-            if(nesting == 0)
-                break;
+        } else if(IntCode[IntPc].op == INT_END_IF) {
+            return;
+        } else {
+            if(!GotoGosubUsed())
+                oops();
         }
-    } else if(IntCode[IntPc].op == INT_END_IF) {
-        return;
-    } else {
-        if(!GotoGosubUsed())
-            oops();
     }
-}
 }
 
 //-----------------------------------------------------------------------------
@@ -2067,7 +2067,7 @@ static void SimulateIntCode()
                 }
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal < index)) {
-                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal - 1);
+                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal-1);
                     index = a->literal;
                     StopSimulation();
                     ToggleSimulationMode(false);
@@ -2400,18 +2400,18 @@ void SimulationToggleContact(char *name)
         MemForSingleBit(name, true, &addr, &bit);
 
         if((addr != -1) && (bit != -1)) {
-        char s[MAX_NAME_LEN];
-        if(name[0] == 'X')
-            sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
-        else
-            sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
-        SDWORD v = GetSimulationVariable(s);
-        if(SingleBitOn(name))
-            v |= 1<<bit;
-        else
-            v &= ~(1<<bit);
-        SetSimulationVariable(s, v);
-    }
+            char s[MAX_NAME_LEN];
+            if(name[0] == 'X')
+                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
+            else
+                sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
+            SDWORD v = GetSimulationVariable(s);
+            if(SingleBitOn(name))
+                v |= 1<<bit;
+            else
+                v &= ~(1<<bit);
+            SetSimulationVariable(s, v);
+        }
       }
     }
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);

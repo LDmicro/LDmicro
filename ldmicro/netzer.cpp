@@ -1109,7 +1109,7 @@ void CompileNetzer(const char *outFile)
 
     // Generate interpretable code.
     opcodes = GenerateIntOpcodes();
-	if(opcodes == 0) {
+    if(opcodes == 0) {
         Error(_("No opcodes found."));
         return;
     } else if(opcodes == -1) {
@@ -1180,9 +1180,9 @@ void CompileNetzer(const char *outFile)
     fseek(f, offsetof(NetzerMetaInformation_t, ImageCRC), SEEK_SET);
     fwrite((const void *)&meta.ImageCRC, 1, sizeof(meta.ImageCRC), f);
 
-	///// Added by JG
-	if(CompileFailure) return;
-	/////
+    ///// Added by JG
+    if(CompileFailure) return;
+    /////
 
     // And ready.
     char str[MAX_PATH + 500];

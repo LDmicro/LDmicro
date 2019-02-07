@@ -1714,7 +1714,7 @@ bool SleepFunctionUsed()
 // save in the new rung temp
 //-----------------------------------------------------------------------------
 const char *CLP = "ldmicro.tmp";
-void        CopyRungDown()
+void CopyRungDown()
 {
     int               i = RungContainingSelected();
     char              line[512];

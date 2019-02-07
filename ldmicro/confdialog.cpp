@@ -315,8 +315,8 @@ static void MakeControls()
     /////
     // clang-format off
     if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_INTERPRETED ||
-                    Prog.mcu()->whichIsa == ISA_XINTERPRETED ||
-                    Prog.mcu()->whichIsa == ISA_NETZER))
+                      Prog.mcu()->whichIsa == ISA_XINTERPRETED ||
+                      Prog.mcu()->whichIsa == ISA_NETZER))
     {
         EnableWindow(CrystalTextbox, false);
         EnableWindow(textLabel2, false);
