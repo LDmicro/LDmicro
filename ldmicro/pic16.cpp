@@ -994,7 +994,7 @@ static DWORD BankPreSet(DWORD addr, DWORD bank, int is_call)
                 THROW_COMPILER_EXCEPTION_FMT("Internal error. [%d:%s]", a->fileLine, a->fileName.c_str());
             }
             if(PicProg[i].arg1 < 0)
-                THROW_COMPILER_EXCEPTION("Internal error.",0);
+                THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
 
             if(IS_NOTDEF(PicProg[PicProg[i].arg1].BANK)) {
                 PicProg[PicProg[i].arg1].BANK = PicProg[i].BANK;
@@ -2960,7 +2960,7 @@ static void WriteBin32BcdRoutine()
 
 #define ACb0 Scratch0   // Binary value is copied to ACb0 = Scratch0..Scratch3
 #define sovBin Scratch4 // Size of Binary in bytes is in Scratch4
-#define BCD0 Scratch5   // Addres of Bcd is in Scratch5
+#define BCD0 Scratch5   // Address of Bcd is in Scratch5
 #define digBcd Scratch6 // Number of digits Bcd is in Scratch6
 
 #define bitcnt Scratch7 // bitcnt = sovBin * 8
@@ -3132,10 +3132,13 @@ static void AllocBitsVars()
                 MemForSingleBit(a->name1, true, &addr, &bit);
                 break;
 
-            case INT_UART_SEND1:
             case INT_UART_SENDn:
             case INT_UART_SEND:
                 MemForSingleBit(a->name2, true, &addr, &bit);
+                break;
+
+            case INT_UART_SEND1:
+            case INT_UART_RECV1:
                 break;
 
             case INT_UART_RECV:
@@ -4864,17 +4867,26 @@ otherwise the result was zero or greater.
                 break;
             }
             case INT_UART_SEND1: {
+                // Attention! Busy flag is not checked!!!
+                // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
 
-                DWORD noSend = AllocFwdAddr();
+                DWORD isBusy = PicProgWriteP;
                 IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
-                Instruction(OP_GOTO, noSend);
+                Instruction(OP_GOTO, isBusy);
 
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    Instruction(OP_MOVLW, addr1); // Point to address
+                    Instruction(OP_ADDWF, addr2, DEST_W);
+                    Instruction(OP_MOVWF, REG_FSR);
+                    Instruction(OP_MOVF, REG_INDF, DEST_W); // addr1 +=[a->name2]
+                } else {
                 Instruction(OP_MOVF, addr1, DEST_W);
+                }
                 Instruction(OP_MOVWF, REG_TXREG);
-
-                FwdAddrIsNow(noSend);
                 break;
             }
             case INT_UART_SEND: {
@@ -4947,6 +4959,59 @@ otherwise the result was zero or greater.
                 FwdAddrIsNow(done);
                 break;
             }
+            case INT_UART_RECV1: {
+                //Receive one char/byte in a single PLC cycle.
+                //Skip if no char.
+                Comment("INT_UART_RECV1");
+                MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
+//              sov1 = SizeOfVar(a->name1);
+//              MemForSingleBit(a->name2, true, &addr2, &bit2);
+
+//              ClearBit(addr2, bit2);
+
+                // If RCIF is still clear, then there's nothing to do; in that
+                // case jump to the end, and leave the rung-out clear.
+                DWORD done = AllocFwdAddr();
+                IfBitClear(REG_PIR1, RCIF);
+                Instruction(OP_GOTO, done);
+
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    Instruction(OP_MOVLW, addr1); // Point to address
+                    Instruction(OP_ADDWF, addr2, DEST_W);
+                    Instruction(OP_MOVWF, REG_FSR);
+
+                    // RCIF is set, so we have a character. Read it now.
+                    Instruction(OP_MOVF, REG_RCREG, DEST_W);
+                    Instruction(OP_MOVWF, REG_INDF); // addr1 +=[a->name2]
+                } else {
+                    // RCIF is set, so we have a character. Read it now.
+                    Instruction(OP_MOVF, REG_RCREG, DEST_W);
+                    Instruction(OP_MOVWF, addr1);
+                }
+
+                // And check for errors; need to reset the UART if yes.
+                DWORD yesError = AllocFwdAddr();
+                IfBitSet(REG_RCSTA, OERR); // overrun error
+                Instruction(OP_GOTO, yesError);
+                IfBitSet(REG_RCSTA, FERR); // framing error
+                Instruction(OP_GOTO, yesError);
+
+                // Neither FERR nor OERR is set, so we're good.
+                Instruction(OP_GOTO, done);
+
+                FwdAddrIsNow(yesError);
+                // An error did occur, so flush the FIFO.
+                Instruction(OP_MOVF, REG_RCREG, DEST_W);
+                Instruction(OP_MOVF, REG_RCREG, DEST_W);
+                // And clear and then set CREN, to clear the error flags.
+                ClearBit(REG_RCSTA, CREN);
+                SetBit(REG_RCSTA, CREN);
+
+                FwdAddrIsNow(done);
+                break;
+            }
             case INT_SPI: {
                 break;
             }
@@ -4954,7 +5019,7 @@ otherwise the result was zero or greater.
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name1.c_str(), Prog.cycleTimer);
                 if(!ioPWM) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name1.c_str());
+                    Error(_("Pin '%s': PWM output not available!"), a->name1.c_str());
                 }
                 int timer = ioPWM->timer;
                 if(timer == 1)
@@ -4984,7 +5049,7 @@ otherwise the result was zero or greater.
                 McuPwmPinInfo *ioPWM;
                 ioPWM = PwmPinInfoForName(a->name3.c_str(), Prog.cycleTimer);
                 if(!ioPWM) {
-                    THROW_COMPILER_EXCEPTION_FMT(_("Pin '%s': PWM output not available!"), a->name3.c_str());
+                    Error(_("Pin '%s': PWM output not available!"), a->name3.c_str());
                 }
 
                 int timer = ioPWM->timer;
@@ -5361,6 +5426,9 @@ otherwise the result was zero or greater.
                 }
                 break;
             }
+            case INT_SET_SEED_RANDOM:
+                break;
+
             case INT_SET_VARIABLE_RANDOM: {
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
@@ -5475,6 +5543,19 @@ otherwise the result was zero or greater.
                     } else {                             // 0.5 MHz
                         adcs = 0;                        // Fosc/2
                     }
+                } else if(McuAs(" PIC16F88 ") //
+                ) {
+                    if(Prog.mcuClock > 10000000) {       // 20 MHz
+                        adcs = 6;                        // Fosc/64
+                    } else if(Prog.mcuClock > 5000000) { // 10 MHz
+                        adcs = 5;                        // Fosc/16
+                    } else if(Prog.mcuClock > 2500000) { // 5 MHz
+                        adcs = 1;                        // Fosc/8
+                    } else if(Prog.mcuClock > 1250000) { // 2.5 MHz
+                        adcs = 4;                        // Fosc/4
+                    } else {                             // 1.25 MHz
+                        adcs = 0;                        // Fosc/2
+                    }
                 } else {
                     if(Prog.mcuClock > 5000000) {        // 20 MHz
                         adcs = 2;                        // 32*Tosc
@@ -5534,8 +5615,7 @@ otherwise the result was zero or greater.
                                   (refs << 0)  //
 
                     );
-                } else if(McuAs(" PIC16F88 ")  || //
-                          McuAs(" PIC16F882 ") || //
+                } else if(McuAs(" PIC16F882 ") || //
                           McuAs(" PIC16F883 ") || //
                           McuAs(" PIC16F884 ") || //
                           McuAs(" PIC16F886 ") || //
@@ -5553,6 +5633,23 @@ otherwise the result was zero or greater.
                     WriteRegister(REG_ADCON1,  //
                                   (1 << 7) |   // right-justified
                                   //(0 << 0)   // for now, all analog inputs
+                                  ((refs & 3) << 4)  //
+
+                    );
+                } else if(McuAs(" PIC16F88 ") //
+                ) {
+                    adcsPos = 6;                                                // in REG_ADCON0
+                    WriteRegister(REG_ADCON0,                                   //
+                                  (adcs << adcsPos) |                           //
+                                  (MuxForAdcVariable(a->name1) << chsPos) | //
+                                  (0 << goPos) |                            // don't start yet
+                                                                            // bit 1 unimplemented
+                                  (1 << 0)                                  // A/D peripheral on
+                    );
+
+                    WriteRegister(REG_ADCON1,  //
+                                  (1 << 7) |   // right-justified
+                                  ((adcs & _BV(BIT2)) << 4) | // ADCS2 is BIT6
                                   ((refs & 3) << 4)  //
 
                     );
@@ -5634,7 +5731,7 @@ otherwise the result was zero or greater.
                 return;
 
             case INT_WRITE_STRING:
-                THROW_COMPILER_EXCEPTION(_("Unsupported operation for target, skipped."));
+                Error(_("Unsupported operation for target, skipped."));
             case INT_SIMULATE_NODE_STATE:
                 break;
 
@@ -5780,7 +5877,8 @@ otherwise the result was zero or greater.
                     if(clocks > 0xffff) {
                         clocks = 0xffff;
                         clocksSave = clocks * 6;
-                        Error(_(" The delay is too long!\nThe maximum possible delay is %lld us."),
+                        Error(_(" The delay is too long!\n"
+                                "The maximum possible delay is %lld us."),
                               (clocks * 6 + 10) * 4000000 / Prog.mcuClock);
                     }
                     if(clocks < 0)
@@ -7543,8 +7641,8 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
-            Error(_("Zero baud rate not possible."));
-            return false;
+            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."), false);
+            /////	return false;
         }
 
         Comment("UART setup");
@@ -7822,8 +7920,8 @@ void CompilePic16(const char *outFile)
         McuAs(" PIC12F675 ")          //
     ) {
         if(Prog.cycleTimer > 0) {
-            Error(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
-            return;
+            THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
+            /////	return;
         }
     }
     bool b = _CompilePic16(outFile, 0); // 1) calc LD length approximately

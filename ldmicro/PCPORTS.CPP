@@ -292,7 +292,7 @@ void ComDb25PinToRegMask(int Pin, int *Reg, int *Mask)
     };
 }
 //-----------------------------------------------------------------------------
-bool ParceVar(char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
+bool ParceVar(const char *s, char *prt, int *portN, int *Reg, int *Mask, int *Addr)
 {
     strcpy(prt, "???");
     *portN = 0;
@@ -431,7 +431,7 @@ bool LoadPcPorts(const char *filename)
 
     FileTracker fu(dest, "w");
     if(!fu) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), dest);
+        Error(_("Couldn't open file '%s'"), dest);
         return false;
     }
     fprintf(fu,
@@ -485,6 +485,7 @@ bool LoadPcPorts(const char *filename)
             if(n == 3) {
                 if(strstr(line2, "ADDR")) {
                     addr = hobatoi(line3);
+                    fprintf(fu, "  {LPT%d %s %s}\n", portN, line2, line3);
                     continue;
                 }
             }
@@ -595,11 +596,11 @@ bool LoadPcPorts(const char *filename)
                 }
             }
             if(Dtype)
-                fprintf(fu, "  SetALptDir(%d,0,%-7s,' %s DATA');\n", portN, IoTypeToPas(Dtype), pline4);
+                fprintf(fu, "  SetALptDir($%X,%d,0,%-7s,' %s DATA');\n", addr+0, portN, IoTypeToPas(Dtype), pline4);
             if(Stype)
-                fprintf(fu, "  SetALptDir(%d,1,%-7s,' %s STATUS');\n", portN, IoTypeToPas(Stype), pline4);
+                fprintf(fu, "  SetALptDir($%X,%d,1,%-7s,' %s STATUS');\n", addr+1, portN, IoTypeToPas(Stype), pline4);
             if(Ctype)
-                fprintf(fu, "  SetALptDir(%d,2,%-7s,' %s CONTROL');\n\n", portN, IoTypeToPas(Ctype), pline4);
+                fprintf(fu, "  SetALptDir($%X,%d,2,%-7s,' %s CONTROL');\n\n", addr+2, portN, IoTypeToPas(Ctype), pline4);
 
         } else if((n = sscanf(pline, "COM%d %s %s %s", &portN, &line2, &line3, &line4))) {
             if(strlen(line4))
@@ -607,6 +608,7 @@ bool LoadPcPorts(const char *filename)
             if(n == 3) {
                 if(strstr(line2, "ADDR")) {
                     addr = hobatoi(line3);
+                    fprintf(fu, "  {COM%d %s %s}\n", portN, line2, line3);
                     continue;
                 }
             }
@@ -667,11 +669,11 @@ bool LoadPcPorts(const char *filename)
                 }
             }
             if(Dtype) {
-                fprintf(fu, "  SetAComDir(%d,3,%-7s,' %s LCR');\n", portN, IoTypeToPas(Dtype), pline4);
-                fprintf(fu, "  SetAComDir(%d,4,%-7s,' %s MCR');\n", portN, IoTypeToPas(Dtype), pline4);
+                fprintf(fu, "  SetAComDir($%X,%d,3,%-7s,' %s LCR');\n", addr+3, portN, IoTypeToPas(Dtype), pline4);
+                fprintf(fu, "  SetAComDir($%X,%d,4,%-7s,' %s MCR');\n", addr+4, portN, IoTypeToPas(Dtype), pline4);
             }
             if(Stype)
-                fprintf(fu, "  SetAComDir(%d,6,%-7s,' %s MSR');\n\n", portN, IoTypeToPas(Stype), pline4);
+                fprintf(fu, "  SetAComDir($%X,%d,6,%-7s,' %s MSR');\n\n", addr+6, portN, IoTypeToPas(Stype), pline4);
         }
     }
     fprintf(fu, "end;\nend.");

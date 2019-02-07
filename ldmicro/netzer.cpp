@@ -1076,7 +1076,7 @@ void CompileNetzer(const char *outFile)
     int                     opcodes;
 
     memset((void *)&meta, 0, sizeof(meta));
-	CompileFailure= 0;
+    CompileFailure= 0;
 
     // Prepare projectname.
     {
@@ -1110,8 +1110,8 @@ void CompileNetzer(const char *outFile)
     // Generate interpretable code.
     opcodes = GenerateIntOpcodes();
 	if(opcodes == 0) {
-        THROW_COMPILER_EXCEPTION(_("No opcodes found."));
-        ///// return;
+        Error(_("No opcodes found."));
+        return;
     } else if(opcodes == -1) {
         // Errors found, better return without doing anything here.
         return;
@@ -1119,7 +1119,7 @@ void CompileNetzer(const char *outFile)
 
     FileTracker f(outFile, "w+b");
     if(!f) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't write to '%s'"), outFile);
+        Error(_("Couldn't write to '%s'"), outFile);
         return;
     }
 

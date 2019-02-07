@@ -504,7 +504,7 @@ static DWORD AllocFwdAddr()
 static void FwdAddrIsNow(DWORD addr)
 {
     if(!(addr & FWD(0)))
-        THROW_COMPILER_EXCEPTION(_("Internal error."));
+        THROW_COMPILER_EXCEPTION_FMT("Internal error. addr=0x%X", addr);
 
     WORD  seen = 0;
     uint32_t AvrProgWriteP = AvrProg.size();

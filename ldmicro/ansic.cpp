@@ -30,13 +30,12 @@
 #include "compilerexceptions.hpp"
 #include "filetracker.hpp"
 
-namespace
-{
+namespace {
     std::unordered_set<std::string> variables;
     bool                            all_arduino_pins_are_mapped;
 } // namespace
 
-static int  mcu_ISA = -1;
+static int mcu_ISA = -1;
 int compiler_variant = -1;              ///// no more static by JG
 
 ///// Added by JG
@@ -99,20 +98,13 @@ static const char *MapSym(const char *str, int how)
 
     // The namespace for bit and integer variables is distinct.
     char bit_int;
-    if(how == ASBIT)
-    {
+    if(how == ASBIT) {
         bit_int = 'b';
-    }
-    else if(how == ASINT)
-    {
+    } else if(how == ASINT) {
         bit_int = 'i';
-    }
-    else if(how == ASSTR)
-    {
+    } else if(how == ASSTR) {
         bit_int = 's';
-    }
-    else
-    {
+    } else {
         THROW_COMPILER_EXCEPTION(_("Can't assign prefix."), ret);       ///// _() by JG
     }
 
@@ -121,12 +113,9 @@ static const char *MapSym(const char *str, int how)
         sprintf(ret, "%s", str);
     else if(*str == '#')
         sprintf(ret, "Ad_%s", str + 1); // Memory access
-    else if(*str == '$')
-    {
+    else if(*str == '$') {
         sprintf(ret, "I%c_%s", bit_int, str + 1);
-    }
-    else
-    {
+    } else {
         sprintf(ret, "U%c_%s", bit_int, str);
     }
 
@@ -148,28 +137,20 @@ static const char *MapSym(const NameArray &name, int how)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
 {
-    if(*str == 'A')
-    {
-        if(IsNumber(&str[3]))
-        {
+    if(*str == 'A') {
+        if(IsNumber(&str[3])) {
           fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
-        }
-        else
-        {
+        } else {
           DWORD addr;
           char name[MAX_NAME_LEN];
           sprintf(name,"#%s", &str[3]);
           MemForVariable(name, &addr);
           fprintf(f, "#define %s SFR_ADDR(0x%X) // Memory access\n", str, addr);
         }
-    }
-    else if(sov == 1)
-    {
+    } else if(sov == 1) {
         fprintf(f, "STATIC SBYTE %s = 0;\n", str);
         fprintf(fh, "#ifdef EXTERN_EVERYTHING\n  extern SBYTE %s;\n#endif\n", str);
-    }
-    else if(sov == 2)
-    {
+    } else if(sov == 2) {
         ///// Added by JG to get SPI # / I2C #
         if (compiler_variant == MNU_COMPILE_HI_TECH_C)
         {
