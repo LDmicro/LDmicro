@@ -49,7 +49,6 @@ static HMENU TopMenu;
 static HMENU SpecialFunction;
 static HMENU DisplayMenu;
 static HMENU ConMenu;
-static HMENU CilMenu;
 static HMENU CmpMenu;
 static HMENU TmpMenu;
 static HMENU CntMenu;
@@ -418,31 +417,51 @@ HMENU MakeMainWindowMenus()
     InstructionMenu = CreatePopupMenu();
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COMMENT, _("Insert Co&mment\t;"));
 
-    ///// Submenu created by JG
-    ConMenu = CreatePopupMenu();
-    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_CONTACTS, _("Insert Contacts: Input Pin\tC"));
-    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_CONT_RELAY, _("Insert Contacts: Internal Relay\tShift+C"));
-    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_CONT_OUTPUT, _("Insert Contacts: Output Pin\tShift+L"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConMenu, _("Contacts"));
-
-    ///// Submenu created by JG
-    CilMenu = CreatePopupMenu();
-    AppendMenu(CilMenu, MF_STRING, MNU_INSERT_COIL, _("Insert Coil: Output Pin\tL"));
-    AppendMenu(CilMenu, MF_STRING, MNU_INSERT_COIL_RELAY, _("Insert Coil: Internal Relay\tAlt+L"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CilMenu, _("Coils / Relays"));
-
     CourseMenu = CreatePopupMenu();
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_OPEN, _("Insert -+        +- Open-Circuit\tShift+Enter"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SHORT, _("Insert -+------+- Short-Circuit\tCtrl+Enter"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_MASTER_RLY, _("Insert Master Control Relay"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_NORMAL, _("Make Norm&al\tA"));                              ///// Modified by JG N -> A
-    AppendMenu(InstructionMenu, MF_STRING, MNU_NEGATE, _("Make &Negated\tN"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_SET_ONLY, _("Make &Set-Only\tS"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_RESET_ONLY, _("Make &Reset-Only\tR"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_TTRIGGER, _("Make T-trigger"));
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LABEL, _("Insert LABEL declaration"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOTO, _("Insert GOTO Label or Rung"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SUBPROG, _("Insert SUBPROG declaration"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB declaration"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB call"));
 
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
+
+    AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
+    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_TIME2DELAY, _("Insert TIME to DELAY converter"));
+    AppendMenu(InstructionMenu,
+               MF_STRING | MF_POPUP,
+               (UINT_PTR)CourseMenu,
+               _("Operations that change the course of the program"));
+
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
+    ConMenu = CreatePopupMenu();
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_CONTACTS, _("Insert &Contacts: Input Pin\tC"));
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_CONT_RELAY, _("Insert Contacts: Internal Relay\tShift+C"));
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_CONT_OUTPUT, _("Insert Contacts: Output Pin\tShift+L"));
+
+    AppendMenu(ConMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_COIL, _("Insert Coi&l: Output Pin\tL"));
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_COIL_RELAY, _("Insert Coil: Internal Relay\tAlt+L"));
+
+    AppendMenu(ConMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_NORMAL, _("Make &Normal\tN"));
+    AppendMenu(ConMenu, MF_STRING, MNU_NEGATE, _("Make &Negated\tN"));
+    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_SET_ONLY, _("Make &Set-Only\tS"));
+    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_RESET_ONLY, _("Make &Reset-Only\tR"));
+    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_TTRIGGER, _("Make T-trigger"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConMenu, _("Contacts and Coils / Relays"));
+
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     ///// Submenu created by JG
     EdgMenu = CreatePopupMenu();
     /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
@@ -450,7 +469,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSF, _("Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "));
     AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSL, _("Insert \\_OSL\\/ (One Shot Low)"));
     AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSC, _("Insert _/OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
-
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)EdgMenu, _("Edge"));
 
     PulseMenu = CreatePopupMenu();
@@ -459,8 +477,8 @@ HMENU MakeMainWindowMenus()
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE, _("EDIT: Insert N PULSE"));
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("EDIT: Insert N PULSE OFF"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu, _("Pulse generators"));
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
 
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     ///// Submenu created by JG
     TmpMenu = CreatePopupMenu();
     /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
@@ -484,6 +502,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(CntMenu, MF_STRING, MNU_INSERT_RES, _("Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CntMenu, _("Counter"));
 
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     /*
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
@@ -552,24 +571,8 @@ HMENU MakeMainWindowMenus()
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OPPOSITE, _("Insert OPPOSITE"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SET_BIT, _("Insert Set Bit #"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_CLEAR_BIT, _("Insert Clear Bit #"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu, _("Bitwise variable operations (Unsigned)"));
-
-    ///// Moved by JG
-    AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LABEL, _("Insert LABEL declaration"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOTO, _("Insert GOTO Label or Rung"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SUBPROG, _("Insert SUBPROG declaration"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB declaration"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB call"));
-    AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
-    AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
-    AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_TIME2DELAY, _("Insert TIME to DELAY converter"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CourseMenu, _("Operations that change the course of the program"));
+    AppendMenu(
+        InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)BitwiseMenu, _("Bitwise variable operations (Unsigned)"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHIFT_REG, _("Insert Shift Register"));
@@ -585,13 +588,14 @@ HMENU MakeMainWindowMenus()
     ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
-    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART Send"));                   ///// Modified by JG &UART -> UART
-    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART Receive"));
-    //  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert UART SENDn Variable"));     ///// disabled by JG
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable"));
+
     //  AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECVn,
-    //      _("Insert UART Receive Variable"));
-    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND_READY, _("Insert Test if UART ready to send"));     ///// Les ? ne passent pas en multilingue
-    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL, _("Insert Test if UART data available"));    ///// Modified by JG
+    //      _("Insert &UART RECEIVE Variable"));
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND_READY, _("Insert &UART SEND: Is ready to send ?"));
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL, _("Insert &UART RECEIVE: Is data available ?"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)UrtMenu, _("UART functions"));
 
     ///// Submenus created by JG
@@ -610,16 +614,14 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC, _("Insert &A/D Converter Read\tA"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST, _("Insert Make Persistent"));
 
-/*                          ///// Comment by JG
     AppendMenu(
         InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM_SOFT, _("TODO: Insert Software &PWM (AVR136 AppNote)\tP"));
-*/
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_QUAD_ENCOD, _("Insert QUADRATURE ENCODER"));
     DisplayMenu = CreatePopupMenu();
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BIN2BCD, _("Insert BIN2BCD converter"));
-    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("Insert BCD2BIN converter"));
+    AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BCD2BIN, _("SIMUL: Insert BCD2BIN"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_BUS, _("SIMUL: Insert BUS tracer"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_7SEG, _("Insert 7-SEGMENT FONT converter"));
     AppendMenu(DisplayMenu, MF_STRING, MNU_INSERT_9SEG, _("SIMUL: Insert 9-SEGMENT FONT converter"));
@@ -658,7 +660,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(ProcessorMenu, MF_STRING, MNU_PROCESSOR_0 + supportedMcus().size(), _("(no microcontroller)"));
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu, _("&Microcontroller"));
 
-/*                                              ///// Comment by JG
     ProcessorMenu2 = CreatePopupMenu();
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu2, _("Microcontrollers: TODO and DONE"));
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Atmel AVR ATmega32U4 44-Pin packages");
@@ -686,7 +687,6 @@ HMENU MakeMainWindowMenus()
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F1516 28-Pin SPDIP, SOIC, SSOP");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F1527 64-Pin packages");
     AppendMenu(ProcessorMenu2, MF_STRING, MNU_PROCESSOR_NEW, "DONE: Microchip PIC16F1933 - PIC16F1947");
-*/
 
     // simulate popup menu
     SimulateMenu = CreatePopupMenu();
@@ -1083,6 +1083,7 @@ void MainWindowResized()
 //-----------------------------------------------------------------------------
 void ToggleSimulationMode(bool doSimulateOneRung)
 {
+/*
     ///// Added by JG to avoid some bugs when clicking on non assigned contacts in simulation mode
     if (!Prog.mcu())
     {
@@ -1090,7 +1091,7 @@ void ToggleSimulationMode(bool doSimulateOneRung)
         return;
     }
     /////
-
+*/
     InSimulationMode = !InSimulationMode;
 
     if(InSimulationMode) {

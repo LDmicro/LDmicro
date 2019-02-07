@@ -1,4 +1,3 @@
-
 PERL=perl
 LDLANG=LDLANG_EN
 
@@ -161,8 +160,6 @@ $(OBJDIR)\printf.cc.obj : $(OBJDIR)\..\ldlog\src\fmt\printf.cc
 
 ############################################################
 	
-	
-
 $(OBJDIR)/ldmicro.res: ldmicro.rc ldmicro.ico
     @rc ldmicro.rc
     @copy ldmicro.res $(OBJDIR)
@@ -184,5 +181,3 @@ $(LDLANGOBJ): $(@B).cpp
 
 $(HELPOBJ): $(OBJDIR)/helptext.cpp
     @$(CC) $(CFLAGS) @$(OBJDIR)/inc.rsp @$(OBJDIR)/defs.rsp -c -Fo$(OBJDIR)/helptext.obj $(OBJDIR)/helptext.cpp
-
-

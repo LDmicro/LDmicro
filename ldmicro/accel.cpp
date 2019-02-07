@@ -601,4 +601,3 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
 
     s->n = r->n;
 }
-

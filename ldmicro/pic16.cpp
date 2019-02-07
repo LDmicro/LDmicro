@@ -3440,11 +3440,11 @@ For example, for a 32-bit add:
     addwf    b+3,f
 */
 /*
-Для обнаружения переполнения разрядной сетки используют следующие способы:
+Для обн ружения переполнения р зрядной сетки используют следующие способы:
 
-1. Сравнивают знаки слагаемых со знаком суммы. Сигнал переполнения
-вырабатывается тогда, когда знаки слагаемых одинаковы и не совпадают со
-знаком суммы.
+1. Ср внив ют зн ки сл г емых со зн ком суммы. Сигн л переполнения
+выр б тыв ется тогд , когд  зн ки сл г емых один ковы и не совп д ют со
+зн ком суммы.
 */
 static void add(DWORD b, DWORD a, int sov, const char *overlap, const char *overflow)
 //                addrb    addra     sovb == sova
@@ -7274,8 +7274,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
               || McuAs(" PIC10F222 ") //
     ) {
         CONFIG_ADDR1 = 0x03ff;
-    }
-    else
+    } else
         THROW_COMPILER_EXCEPTION(_("Internal error."), false);
     //------------------------------------------------------------
     FileTracker f(outFile, "w");

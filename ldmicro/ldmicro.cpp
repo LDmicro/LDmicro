@@ -885,7 +885,8 @@ bool CheckSaveUserCancels()
     }
 
     int r = MessageBox(MainWindow,
-                       _("The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?"),
+                       _("The program has changed since it was last saved.\r\n\r\n"
+                         "Do you want to save the changes?"),
                        "LDmicro",
                        MB_YESNOCANCEL | MB_ICONWARNING);
     switch(r) {

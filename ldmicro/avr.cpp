@@ -2108,7 +2108,7 @@ static void GetUartSendReady(DWORD addr, int bit)
 //-----------------------------------------------------------------------------
 static void GetUartSendBusy(DWORD addr, int bit)
 {
-    //  CopyNotBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
+    ////CopyNotBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
     CopyNotBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty and ready
 }
 //-----------------------------------------------------------------------------
@@ -2652,7 +2652,7 @@ static void CallSubroutine(DWORD addr)
             Instruction(OP_LDI, ZH, (addr >> 8) & 0xff);
             Instruction(OP_EICALL, addr); // arg1 used for label
         } else
-            THROW_COMPILER_EXCEPTION("Internal error.");
+            THROW_COMPILER_EXCEPTION(_("Internal error."));
     }
 }
 
@@ -4424,8 +4424,112 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_SET_NPULSE: {
+                //Op(INT_SET_NPULSE, counter, l->d.Npulse.targetFreq, l->d.Npulse.coil, stateInOut);
+                sovNPulseTimerOverflowCounter = SizeOfVar(a->name1);
+                //dbp("sovNPulseTimerOverflowCounter=%d", sovNPulseTimerOverflowCounter);
+                MemForSingleBit(a->name2, false, &NPulseTimerOverflowRegAddr, &NPulseTimerOverflowBit);
+                double target = hobatof(a->name3.c_str());
+                MemForSingleBit(a->name4, true, &addr4, &bit4); // stateInOut
+                double bestTarget;
+                int    prescaler;
+                BYTE   cs;
+                int    error;
+                CalcAvrTimerNPulse(target, &prescaler, &cs, &tcntNPulse, &error, &bestTarget);
+
+                if((double)error / target > 0.05)
+                    //its warning
+                    //       v
+                    Error(_(" Target N PULSE frequency %d Hz,"
+                            " closest achievable with prescaler=%d and divider=%d"
+                            " is %d Hz (Warning, >5%% error)."),
+                          target,
+                          prescaler,
+                          tcntNPulse,
+                          bestTarget);
+
+                DWORD noPulse = AllocFwdAddr();
+                IfBitClear(addr4, bit4);
+                Instruction(OP_RJMP, noPulse);
+                /*
+                NPulseTimerOverflowCounter = AllocOctetRam(); //lo byte
+                if(sovNPulseTimerOverflowCounter>=2)
+                  AllocateNextByte = AllocOctetRam(); //middle byte
+                if(sovNPulseTimerOverflowCounter>=3)
+                  AllocateNextByte = AllocOctetRam(); //hi byte
+
+                CopyArgToReg(r20, a->name1);
+
+                LoadXAddr(NPulseTimerOverflowCounter); // set pulse counter for interrupt
+                Instruction(OP_ST_XP, r20);
+                if(sovNPulseTimerOverflowCounter>=2)
+                  Instruction(OP_ST_XP, r21);
+                if(sovNPulseTimerOverflowCounter>=3)
+                  Instruction(OP_ST_XP, r22);
+                */
+                //
+                MemForVariable(a->name1, &NPulseTimerOverflowCounter); // direct decrement PulseCounter
+                //
+                // Setup if in OFF state
+                if(Prog.cycleTimer == 0)
+                    IfBitSet(REG_TIMSK, OCIE1A);
+                else
+                    IfBitSet(REG_TIMSK, TOIE0);
+                Instruction(OP_RJMP, noPulse);
+
+                Instruction(OP_CLI);
+
+                if(Prog.cycleTimer == 0) {         // Timer1
+                    WriteMemory(REG_TCCR1A, 0x00); // WGM11=0, WGM10=0
+
+                    WriteMemory(REG_TCCR1B, ((1 << WGM12) | cs) & 0xff); // WGM13=0, WGM12=1
+
+                    int counter = tcntNPulse - 1 /* + CorrectorNPulse*/; //TODO
+                    if(tcntNPulse < 0)
+                        tcntNPulse = 0;
+                    if(tcntNPulse > 0xffff)
+                        tcntNPulse = 0xffff;
+                    //dbp("NPULSE divider=%d EQU counter=%d", tcntNPulse, counter);
+
+                    // the high byte must be written before the low byte
+                    WriteMemory(REG_OCR1AH, (counter >> 8) & 0xff);
+                    WriteMemory(REG_OCR1AL, counter & 0xff);
+
+                    SetBit(REG_TIFR1, OCF1A); // Clear OCF1A/ clear pending interrupts
+                    //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+                    SetBit(REG_TIMSK, OCIE1A);
+                } else {                                                  // Timer0
+                    tcntNPulse = 256 - tcntNPulse /* + CorrectorNPulse*/; //TODO
+                    if(tcntNPulse < 0)
+                        tcntNPulse = 0;
+                    if(tcntNPulse > 255)
+                        tcntNPulse = 255;
+
+                    Instruction(OP_LDI, r25, tcntNPulse);
+                    WriteRegToIO(REG_TCNT0, r25);
+
+                    WriteMemory(REG_TCCR0B, cs); // set prescaler
+
+                    SetBit(REG_TIFR1, TOV0); // Clear TOV0/ clear pending interrupts
+                    //To clean a bit in the register TIFR need write 1 in the corresponding bit!
+                    SetBit(REG_TIMSK, TOIE0); // Enable Timer/Counter0 Overflow Interrupt
+                }
+
+                Instruction(OP_SEI);
+
+                FwdAddrIsNow(noPulse);
+                if(Prog.cycleTimer == 0)
+                    CopyBit(addr4, bit4, REG_TIMSK, OCIE1A); // stateInOut as busy flag
+                else
+                    CopyBit(addr4, bit4, REG_TIMSK, TOIE0); // stateInOut as busy flag
+                break;
             }
             case INT_OFF_NPULSE: {
+                Instruction(OP_CLI);
+                if(Prog.cycleTimer == 0)
+                    ClearBit(REG_TIMSK, OCIE1A); // Disable Timer/Counter1 Output Compare A Match Interrupt
+                else
+                    ClearBit(REG_TIMSK, TOIE0); // Disable Timer/Counter0 Overflow Interrupt
+                Instruction(OP_SEI);
                 break;
             }
             case INT_PWM_OFF: {
@@ -4982,8 +5086,9 @@ static void CompileFromIntermediate()
                 CopyBit(addr1, bit1, REG_UCSRA, RXC);
                 break;
             }
-
             case INT_UART_SEND: {
+                // Attention! Busy flag is not checked!!!
+                // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND");
                 MemForVariable(a->name1, &addr1);
                 MemForSingleBit(a->name2, true, &addr2, &bit2);
@@ -4991,10 +5096,6 @@ static void CompileFromIntermediate()
                 DWORD noSend = AllocFwdAddr();
                 IfBitClear(addr2, bit2);
                 Instruction(OP_RJMP, noSend);
-
-                DWORD isBusy = AllocFwdAddr();
-                //IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-                //Instruction(OP_RJMP, isBusy);
 
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, r16);
@@ -5004,24 +5105,32 @@ static void CompileFromIntermediate()
                 FwdAddrIsNow(noSend);
 
                 CopyNotBit(addr2, bit2, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-
-                FwdAddrIsNow(isBusy);
                 break;
             }
             case INT_UART_SEND1: {
+                // Attention! Busy flag is not checked!!!
+                // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
 
-                DWORD isBusy = AllocFwdAddr();
+                DWORD isBusy = AvrProg.size();
                 IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
-                Instruction(OP_RJMP, isBusy);
+                Instruction(OP_RJMP, isBusy); // reinsurance
 
                 LoadXAddr(addr1);
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    LoadYAddr(addr2);
+                    Instruction(OP_LD_Y, r18);
+                    Instruction(OP_LDI, r19, 0);
+                    Instruction(OP_ADD, XL, r18); // addr1 +=[a->name2]
+                    Instruction(OP_ADC, XH, r19);
+                }
                 Instruction(OP_LD_X, r16);
+
                 LoadXAddr(REG_UDR);
                 Instruction(OP_ST_X, r16);
-
-                FwdAddrIsNow(isBusy);
                 break;
             }
             case INT_UART_RECV: {
@@ -5045,6 +5154,34 @@ static void CompileFromIntermediate()
                 Instruction(OP_LDI, r16, 0);
                 for(int i = 1; i < sov1; i++)
                     Instruction(OP_ST_XP, r16);
+
+                FwdAddrIsNow(noChar);
+                break;
+            }
+            case INT_UART_RECV1: {
+                //Receive one char/byte in a single PLC cycle.
+                //Skip if no char.
+                Comment("INT_UART_RECV1");
+                MemForVariable(a->name1, &addr1);
+                addr1 += a->literal;
+
+                DWORD noChar = AllocFwdAddr();
+                IfBitClear(REG_UCSRA, RXC);
+                Instruction(OP_RJMP, noChar);
+
+                LoadXAddr(REG_UDR);
+                Instruction(OP_LD_X, r16);
+
+                LoadXAddr(addr1);
+                if(strlen(a->name2.c_str())) {
+                    MemForVariable(a->name2, &addr2);
+                    LoadYAddr(addr2);
+                    Instruction(OP_LD_Y, r18);
+                    Instruction(OP_LDI, r19, 0);
+                    Instruction(OP_ADD, XL, r18); // addr1 +=[a->name2]
+                    Instruction(OP_ADC, XH, r19);
+                }
+                Instruction(OP_ST_X, r16);
 
                 FwdAddrIsNow(noChar);
                 break;
@@ -6844,9 +6981,7 @@ void CompileAvr(const char *outFile)
         REG_UDR     = 0x2c;
 //      REG_UCSRC   = 0x9d;
     */
-    }
-
-     else
+     } else
         THROW_COMPILER_EXCEPTION_FMT(_("Don't know how to init %s."), Prog.mcu() ? Prog.mcu()->mcuName : _("Invalid MCU"));
     //***********************************************************************
 

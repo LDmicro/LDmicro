@@ -496,7 +496,6 @@ uint8_t MuxForAdcVariable(const char *name)
     return res;
 }
 
-
 uint8_t MuxForAdcVariable(const NameArray &name)
 {
     return MuxForAdcVariable(name.c_str());
