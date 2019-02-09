@@ -27,6 +27,7 @@ extern int CompileFailure;      ///// added by JG
     sprintf(message, "%s\n[%s: %i]", MSG, __FILE__, __LINE__); \
     Error(message); \
     CompileFailure= 1; \
+    return __VA_ARGS__;
     }while(0)
 
 /*

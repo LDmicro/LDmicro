@@ -120,7 +120,6 @@ elseif(CMAKE_COMPILER_IS_GNUCXX)
     string(APPEND CMAKE_C_FLAGS "-Wall -Wextra ")
 endif()
 
-
 if(${LDLANG} STREQUAL "ALL")
     foreach(lang_id ${LDLANG_ALL})
         if(${lang_id} STREQUAL "EN")
