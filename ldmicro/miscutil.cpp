@@ -94,12 +94,10 @@ void doexit(int status)
 // For error messages to the user; printf-like, to a message box.
 // For warning messages use ' ' in *str[0], see avr.cpp INT_SET_NPULSE.
 //-----------------------------------------------------------------------------
-int LdMsg(UINT uType, const char *str, ...)
+int ld_msg(UINT uType, const char *str, va_list f)
 {
-    int ret = 0;
-    va_list f;
-    char    buf[1024];
-    va_start(f, str);
+    int  ret = 0;
+    char buf[1024];
     vsprintf(buf, str, f);
     dbp(buf);
     if(RunningInBatchMode) {
@@ -133,6 +131,56 @@ int LdMsg(UINT uType, const char *str, ...)
         sprintf(buf2, "%s (%s)", s, AboutText[42]);
         ret = MessageBox(h, buf, buf2, MB_OK | uType);
     }
+    return ret;
+}
+
+int LdMsg(UINT uType, const char *str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = ld_msg(uType, str, f);
+    va_end(f);
+    return ret;
+}
+
+int Error(const char* str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = ld_msg(MB_ICONERROR, str, f);
+    va_end(f);
+    return ret;
+}
+
+int Warning(const char* str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = ld_msg(MB_ICONWARNING, str, f);
+    va_end(f);
+    return ret;
+}
+
+int Info(const char* str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = ld_msg(MB_ICONINFORMATION, str, f);
+    va_end(f);
+    return ret;
+}
+
+int Question(const char* str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = ld_msg(MB_ICONQUESTION, str, f);
+    va_end(f);
     return ret;
 }
 
