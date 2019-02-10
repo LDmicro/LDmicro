@@ -24,7 +24,6 @@
 
 #include "ldmicro.h"
 #include "pcports.h"
-#include "filetracker.hpp"
 
 char *FrmStrToStr(char *dest);
 //void FrmStrToFile(FILE *f, char *str);
@@ -780,7 +779,7 @@ void LoadWritePcPorts()
                     supportedMcus()[i].pinCount = IoPcCount;
                 }
         } else
-            Error(_(" File '%s' not found!"), pc);
+            Warning(_("File '%s' not found!"), pc);
         //RunningInBatchMode = false;
     }
 }

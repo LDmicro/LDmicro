@@ -5,7 +5,7 @@
 " - (noch nicht gespeichert)"
 
 "!!!too long!!!"
-" !!!zu lang!!!"
+"!!!zu lang!!!"
 
 "&About..."
 "&Über LDmicro..."

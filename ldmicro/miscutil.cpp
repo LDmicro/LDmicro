@@ -94,8 +94,9 @@ void doexit(int status)
 // For error messages to the user; printf-like, to a message box.
 // For warning messages use ' ' in *str[0], see avr.cpp INT_SET_NPULSE.
 //-----------------------------------------------------------------------------
-void Error(const char *str, ...)
+int LdMsg(UINT uType, const char *str, ...)
 {
+    int ret = 0;
     va_list f;
     char    buf[1024];
     va_start(f, str);
@@ -118,14 +119,21 @@ void Error(const char *str, ...)
     } else {
         HWND h = GetForegroundWindow();
         char buf2[1024];
-        if(buf[0] == ' ') {
-            //sprintf(buf2, "%s (%s)", _("LDmicro Warning"), AboutText[38]);
-            MessageBox(h, &buf[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
-        } else {
-            sprintf(buf2, "%s (%s)", _("LDmicro Error"), AboutText[38]);
-            MessageBox(h, buf, buf2, MB_OK | MB_ICONERROR);
+        const char *s = "";
+        if((uType & MB_ICONINFORMATION) == MB_ICONINFORMATION) {
+            s = _("LDmicro Information");
+        } else if((uType & MB_ICONERROR) == MB_ICONERROR) {
+            s = _("LDmicro Error");
+        } else if((uType & MB_ICONWARNING) == MB_ICONWARNING) {
+            s = _("LDmicro Warning");
+        } else if((uType & MB_ICONQUESTION) == MB_ICONQUESTION) {
+            s = _("LDmicro Question");
         }
+
+        sprintf(buf2, "%s (%s)", s, AboutText[42]);
+        ret = MessageBox(h, buf, buf2, MB_OK | uType);
     }
+    return ret;
 }
 
 //-----------------------------------------------------------------------------

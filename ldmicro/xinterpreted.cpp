@@ -26,7 +26,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "filetracker.hpp"
 
 static std::vector<uint8_t> OutProg;
 

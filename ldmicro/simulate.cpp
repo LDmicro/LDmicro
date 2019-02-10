@@ -1390,7 +1390,7 @@ int bin2bcd(int val)
     int sign = 1;
     if(val < 0) {
         sign = -1;
-        Error(_(" Value 'val'=%d < 0"), val);
+        Warning(_("Value 'val'=%d < 0"), val);
     }
     if(val >= TenToThe(sizeof(val)))
         Error(_("Value 'val'=%d overflow output range %d."), val, sizeof(val) - 1);

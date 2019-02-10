@@ -50,7 +50,6 @@
 //-----------------------------------------------------------------------------
 #include "ldmicro.h"
 #include "intcode.h"
-#include "filetracker.hpp"
 
 #define DEST_F 1
 #define DEST_W 0
@@ -2727,10 +2726,10 @@ static DWORD CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const ch
 
      if(addr1 == addr2) {
         if(sov1 == sov2) {
-            // Error(_(" CopyRegToReg Warning 1"));
+            // Warning(_("CopyRegToReg Warning 1"));
             return addr1;
         } else {
-            Error(_(" CopyRegToReg Message 2"));
+            Warning(_("CopyRegToReg Message 2"));
             return addr1;
         }
     }
@@ -4740,7 +4739,7 @@ otherwise the result was zero or greater.
                 sov3 = SizeOfVar(a->name3);
                 sov = std::max(sov2, sov3);
                 if(sov1 < sov) {
-                    Error(" Size of result '%s' less than an argument(s) '%s' or '%s'",
+                    Warning("Size of result '%s' less than an argument(s) '%s' or '%s'",
                           a->name1.c_str(),
                           a->name2.c_str(),
                           a->name3.c_str());
@@ -5877,7 +5876,7 @@ otherwise the result was zero or greater.
                     if(clocks > 0xffff) {
                         clocks = 0xffff;
                         clocksSave = clocks * 6;
-                        Error(_(" The delay is too long!\n"
+                        Warning(_("The delay is too long!\n"
                                 "The maximum possible delay is %lld us."),
                               (clocks * 6 + 10) * 4000000 / Prog.mcuClock);
                     }

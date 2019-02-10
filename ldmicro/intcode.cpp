@@ -1113,7 +1113,7 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
 static SDWORD TimerPeriod(ElemLeaf *l)
 {
     if(Prog.cycleTime <= 0) {
-        Error(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!");
+        Warning("PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!");
         return 1;
     }
 
@@ -4749,6 +4749,7 @@ void WipeIntMemory()
 //-----------------------------------------------------------------------------
 bool GenerateIntermediateCode()
 {
+  try {
     Comment("GenerateIntermediateCode");
     GenSymCount = 0;
     GenSymCountParThis = 0;
@@ -4864,6 +4865,12 @@ bool GenerateIntermediateCode()
     if(strlen(CurrentSaveFile))
         SetExt(CurrentPlFile, CurrentSaveFile, ".pl");
     IntDumpListing(CurrentPlFile);
+  } catch (const std::exception &e) {
+      char    buf[1024];
+      sprintf(buf, "%s%s", _("Error when generate intermediate code:\n"), e.what());
+      Error(buf);
+      return false;
+  }
     return true;
 }
 

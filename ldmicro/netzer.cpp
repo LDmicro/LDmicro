@@ -26,7 +26,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "filetracker.hpp"
 
 #include "netzer.h"
 

@@ -22,7 +22,6 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
-#include "filetracker.hpp"
 
 #define LDLANG_RU // TODO
 //-----------------------------------------------------------------------------

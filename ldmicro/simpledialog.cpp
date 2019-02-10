@@ -468,7 +468,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
 
                 SDWORD period;
                 if(Prog.cycleTime <= 0) {
-                    Error(_(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
+                    Warning(_("PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
                     period = 1;
                 } else {
                     period = TestTimerPeriod(name, delay_us, *adjust);
@@ -643,24 +643,24 @@ void CheckVarInRange(char *name, char *str, SDWORD v)
     int sov = SizeOfVar(name);
     if(sov == 1) {
         if((v < -128 || v > 127) && (radix == 10))
-            Error(_(" Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
+            Warning(_("Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
         else if((v < 0 || v > 0xff) && (radix != 10))
-            Error(_(" Variable %s=0x%X out of range: 0 to 0xFF inclusive."), str, v, name);
+            Warning(_("Variable %s=0x%X out of range: 0 to 0xFF inclusive."), str, v, name);
     } else if((sov == 2) || (sov == 0)) {
         if((v < -32768 || v > 32767) && (radix == 10))
-            Error(_(" Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
+            Warning(_("Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
         else if((v < 0 || v > 0xffff) && (radix != 10))
-            Error(_(" Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."), str, v, name);
+            Warning(_("Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."), str, v, name);
     } else if(sov == 3) {
         if((v < -8388608 || v > 8388607) && (radix == 10))
-            Error(_(" Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
+            Warning(_("Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
         else if((v < 0 || v > 0xffffff) && (radix != 10))
-            Error(_(" Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."), str, v, name);
+            Warning(_("Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."), str, v, name);
     } else if(sov == 4) {
         if((v < -2147483648LL || v > 2147483647LL) && (radix == 10))
-            Error(_(" Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."), name, v);
+            Warning(_("Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."), name, v);
         else if((DWORD(v) < 0 || DWORD(v) > 0xffffFFFF) && (radix != 10))
-            Error(_(" Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."), str, v, name);
+            Warning(_("Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."), str, v, name);
     } else
         ooops("Variable '%s' size=%d value=%d", name, sov, v);
 }

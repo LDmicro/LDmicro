@@ -27,7 +27,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "filetracker.hpp"
 
 static char  SeenVariables[MAX_IO][MAX_NAME_LEN];
 static int   SeenVariablesCount;

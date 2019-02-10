@@ -635,7 +635,11 @@ extern bool DialogCancel;
 
 void doexit(int status);
 void dbp(const char *str, ...);
-void Error(const char *str, ...);
+int LdMsg(UINT uType, const char *str, ...);
+#define Error(str, ...) LdMsg(MB_ICONERROR, str, __VA_ARGS__)
+#define Warning(str, ...) LdMsg(MB_ICONWARNING, str, __VA_ARGS__)
+#define Info(str, ...) LdMsg(MB_ICONINFORMATION, str, __VA_ARGS__)
+#define Question(str, ...) LdMsg(MB_ICONQUESTION, str, __VA_ARGS__)
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 void StartIhex(FILE *f);

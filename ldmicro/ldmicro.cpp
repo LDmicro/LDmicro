@@ -383,7 +383,7 @@ static void flashBat(char *name, int ISA)
 
 
     if(strlen(name) == 0) {
-        Error(_(" Save ld before flash."));
+        Warning(_("Save ld before flash."));
         return;
     }
     if (!Prog.mcu()) return;                  ///// Added by JG
@@ -850,6 +850,9 @@ IsOpenAnable:
                     break;
                 case ISA_NETZER:
                     CompileNetzer(CurrentCompileFile);
+                    break;
+                case ISA_ARM:
+                    Info(_("Use menu: 'Compile->Compile ARM-GCC for 32-bit ARM'"));
                     break;
                 default:
                     ooops("0x%X", Prog.mcu()->whichIsa);

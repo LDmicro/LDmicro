@@ -24,7 +24,6 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include "filetracker.hpp"
 
 #define ASM_LABEL 1
 //                0 - no labels
@@ -1419,7 +1418,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     // end of file record
     fprintf(f, ":00000001FF\n");
     if((Prog.mcu()->flashWords) && (AvrProg.size() >= Prog.mcu()->flashWords)) {
-        Error(_(" Flash program memory size %d is exceed limit %d words\nfor %s."),
+        Warning(_("Flash program memory size %d is exceed limit %d words\nfor %s."),
               AvrProg.size(),
               Prog.mcu()->flashWords,
               Prog.mcu()->mcuName);
@@ -4439,7 +4438,7 @@ static void CompileFromIntermediate()
                 if((double)error / target > 0.05)
                     //its warning
                     //       v
-                    Error(_(" Target N PULSE frequency %d Hz,"
+                    Warning(_("Target N PULSE frequency %d Hz,"
                             " closest achievable with prescaler=%d and divider=%d"
                             " is %d Hz (Warning, >5%% error)."),
                           target,
@@ -5399,7 +5398,7 @@ static void CompileFromIntermediate()
                     if(clocks > 0x10000) {
                         clocks = 0x10000;
                         clocksSave = clocks * 4;
-                        Error(_(" The delay is too long!\n"
+                        Warning(_("The delay is too long!\n"
                                 "The maximum possible delay is %lld us."),
                               (clocks * 4 + 1) * 1000000 / Prog.mcuClock);
                     }
