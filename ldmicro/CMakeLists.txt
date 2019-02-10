@@ -94,7 +94,7 @@ if(WIN32)
     set(LDMICRO_SRC_LIST ${LDMICRO_SRC_LIST} ldmicro.rc)
 endif(WIN32)
 
-INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./" "../common/gsl-lite/include" "../common/stringarray")
+INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./" "../common/gsl-lite/include" "../common/stringarray" "../common/utils")
 add_definitions(
     "-DISOLATION_AWARE_ENABLED"
     "-DWIN32_LEAN_AND_MEAN"
