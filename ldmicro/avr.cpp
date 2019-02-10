@@ -89,8 +89,6 @@ std::vector<PicAvrInstruction> AvrProg;
 
 DWORD AvrProgLdLen = 0;
 
-static int IntPcNow = -INT_MAX; //must be static
-
 #define OP_XOR OP_EOR
 
 // For yet unresolved references in jumps
@@ -361,6 +359,7 @@ static DWORD NPulseTimerOverflowCounter;
 static int   sovNPulseTimerOverflowCounter;
 
 static uint32_t IntPc;
+static uint32_t IntPcNow = UINT_MAX; //must be static
 
 static void CompileFromIntermediate();
 
@@ -621,35 +620,37 @@ static void AddrCheckForErrorsPostCompile()
 static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm)
 {
     PicAvrInstruction *AvrInstr = &AvrProg[addrAt];
-    IntOp              intOp;
-    if(AvrInstr->IntPc > -1 && static_cast<uint32_t>(AvrInstr->IntPc) < IntCode.size())
-        intOp = IntCode[AvrInstr->IntPc];
+    IntOp             *intOp;
+    if((AvrInstr->IntPc >= 0) && (static_cast<uint32_t>(AvrInstr->IntPc) < IntCode.size()))
+        intOp = &IntCode[AvrInstr->IntPc];
     strcpy(sAsm, "");
 /*
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
 */
 #define CHECK(v, bits)                                            \
     if((v) != ((v) & ((1 << (bits)) - 1)))                        \
-    THROW_COMPILER_EXCEPTION_FMT("v=%d ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
+    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%d ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d::%s]", \
+          intOp->rung+1,                                          \
           v,                                                      \
           bits,                                                   \
           ((1 << (bits)) - 1),                                    \
           AvrInstr->l,                                            \
           AvrInstr->f,                                            \
-          intOp.name1.c_str(),                                    \
-          intOp.fileLine,                                         \
-          intOp.fileName.c_str())
+          intOp->name1.c_str(),                                   \
+          intOp->fileLine,                                        \
+          intOp->fileName.c_str())
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
-    THROW_COMPILER_EXCEPTION_FMT("v=%d [%d..%d]\nat %d in %s %s\nat %d in %s",                  \
+    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%d [%d..%d]\n[%d:::%s] %s\n[%d::::%s]", \
+          intOp->rung+1,                                                 \
           (int)v,                                                        \
           LowerRangeInclusive,                                           \
           UpperRangeInclusive,                                           \
           AvrInstr->l,                                                   \
           AvrInstr->f,                                                   \
-          intOp.name1.c_str(),                                           \
-          intOp.fileLine,                                                \
-          intOp.fileName.c_str())
+          intOp->name1.c_str(),                                          \
+          intOp->fileLine,                                               \
+          intOp->fileName.c_str())
 
     switch(op) {
         case OP_COMMENT:
@@ -831,7 +832,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
         case OP_IJMP:
             //CHECK(arg1, 0); // arg1 used for label
-            CHECK(arg2, 0);
+		    CHECK(arg2, 0);
             sprintf(sAsm, "ijmp \t \t");
             return 0x9409;
 
@@ -1231,7 +1232,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             return 0xFA00 | (arg1 << 4) | arg2;
 
         case OP_BLD:
-            CHECK2(arg1, 0, 31);
+			CHECK2(arg1, 0, 31);
             CHECK2(arg2, 0, 7);
             sprintf(sAsm, "bld \t r%d, \t %d", arg1, arg2);
             return 0xF800 | (arg1 << 4) | arg2;
@@ -1364,7 +1365,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             if(asm_comment_level >= 5) {
                 if((AvrProg[i].IntPc >= 0) && (AvrProg[i].IntPc < IntCode.size())) {
                     fprintf(fAsm, "\t");
-                    if(IntCode[AvrProg[i].IntPc].which != INT_MAX) {
+                    if(IntCode[AvrProg[i].IntPc].which != -INT_MAX) {
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[AvrProg[i].IntPc].which);
                     }
                     if(1 || (prevIntPcL != IntCode[AvrProg[i].IntPc].fileLine)) {

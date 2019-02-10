@@ -597,15 +597,15 @@ extern bool DialogCancel;
 
 #define ooops(...) { \
         dbp("rungNow=%d", rungNow); \
-        dbp("bad at %d %s\n", __LINE__, __FILE__); \
+        dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
+        Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         Error(__VA_ARGS__); \
-        Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
         doexit(EXIT_FAILURE); \
     }
 #define oops() { \
         dbp("rungNow=%d", rungNow); \
-        dbp("bad at %d %s\n", __LINE__, __FILE__); \
-        Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
+        dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
+        Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         doexit(EXIT_FAILURE); \
     }
 #define dodbp

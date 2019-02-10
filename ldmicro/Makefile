@@ -4,6 +4,7 @@ LDLANG=LDLANG_EN
 DEFINES = /D_WIN32_WINNT=0x500 /DISOLATION_AWARE_ENABLED /D_WIN32_IE=0x400 /DWIN32_LEAN_AND_MEAN /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /D$(LDLANG)
 
 INCLUDES = -I. -I..\common\win32 -I..\common\gsl-lite\include -I..\common\gsl-lite\include\gsl -I..\common\stringarray -I..\common\utils -I.\ldlog\include
+#CFLAGS  =  /P /Fi preprocessor output
 #CFLAGS  =  /MDd /Ob0 /Od /Zi /W3 /nologo /EHsc /J
 CFLAGS  =  /MD /O2 /Zi /W3 /nologo /EHsc /J
 

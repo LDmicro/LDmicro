@@ -10,8 +10,8 @@ extern int CompileFailure;      ///// added by JG
 #ifdef USE_JG
 #else
 #define THROW_COMPILER_EXCEPTION(MSG, ...) do{ \
-    char message[1024];\
-    sprintf(message, "%s [%s:%i]", MSG, __FILE__, __LINE__); \
+    char message[1024*3];\
+    sprintf(message, "%s\n[%i:%s]", MSG, __LINE__, __FILE__); \
     throw std::runtime_error(message);\
     }while(0)
 #endif
@@ -24,8 +24,8 @@ extern int CompileFailure;      ///// added by JG
 /////   return __VA_ARGS__; \
 
 #define THROW_COMPILER_EXCEPTION(MSG, ...) do{ \
-    char message[1024]; \
-    sprintf(message, "%s\n[%s: %i]", MSG, __FILE__, __LINE__); \
+    char message[1024*3]; \
+    sprintf(message, "%s\n[%i:%s]", MSG, __LINE__, __FILE__); \
     Error(message); \
     CompileFailure= 1; \
     return __VA_ARGS__; \
@@ -33,20 +33,20 @@ extern int CompileFailure;      ///// added by JG
 
 #else
 #define THROW_COMPILER_EXCEPTION_FMT(FMT,...) do{ \
-    char format[512];\
+    char format[1024];\
     sprintf(format, FMT, __VA_ARGS__); \
-    char message[1024];\
-    sprintf(message, "%s [%s:%i]", format, __FILE__, __LINE__); \
+    char message[1024*3];\
+    sprintf(message, "%s\n[%i:%s]", format, __LINE__, __FILE__); \
     throw std::runtime_error(message);\
     }while(0)
 #endif
 
 #ifdef USE_JG
 #define THROW_COMPILER_EXCEPTION_FMT(FMT,...) do{ \
-    char format[512]; \
+    char format[1024]; \
     sprintf(format, FMT, __VA_ARGS__); \
-    char message[1024];\
-    sprintf(message, "%s\n[%s: %i]", format, __FILE__, __LINE__); \
+    char message[1024*3];\
+    sprintf(message, "%s\n[%i:%s]", format, __LINE__, __FILE__); \
     Error(message); \
     CompileFailure= 1; \
     }while(0)

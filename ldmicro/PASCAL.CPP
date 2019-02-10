@@ -45,7 +45,7 @@ static bool SeenVariable(const char *name)
         }
     }
     if(i >= MAX_IO)
-        THROW_COMPILER_EXCEPTION(_("Internal error."), false);
+        oops();
     strcpy(SeenVariables[i], name);
     SeenVariablesCount++;
     return false;
@@ -82,7 +82,7 @@ static const char *MapSym(const char *str, int how)
     } else if(how == ASINT) {
         bit_int = 'i';
     } else {
-        THROW_COMPILER_EXCEPTION(_("Internal error."), ret);
+        oops();
     }
 
     // User and internal symbols are distinguished.
@@ -585,7 +585,7 @@ static void Generate_flash_eeprom(FILE *f)
                 } else if(sovElement == 4) {
                     sovs = "longint";
                 } else {
-                    THROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
+                    ooops("sovElement=%d", sovElement);
                 }
 
                 fprintf(
@@ -957,7 +957,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 #endif
 
             default:
-                THROW_COMPILER_EXCEPTION_FMT("INT_%d", IntCode[i].op);
+                ooops("INT_%d", IntCode[i].op);
         }
     }
     fprintf(f, "end;\n");

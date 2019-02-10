@@ -4846,6 +4846,7 @@ bool GenerateIntermediateCode()
         SimState(&(Prog.rungPowered[rung]), "$rung_top");
         IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[rung], "$rung_top", rung);
     }
+    // END of rung's
     rungNow++;
     sprintf(s1,"Rung%d", rung + 1);
     Op(INT_AllocKnownAddr, s1, (SDWORD)rung);

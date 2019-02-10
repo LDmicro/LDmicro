@@ -330,7 +330,7 @@ char *GetIsaName(int ISA)
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
         case ISA_ARM          : return (char *)stringer( ISA_ARM          ) + 4;            ///// Added by JG
         default               : oops(); return nullptr;
-            // clang-format on
+        // clang-format on
     }
 }
 
