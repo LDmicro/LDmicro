@@ -74,7 +74,7 @@ const char *AboutText[] = {
 "    Frederic Rible <frible@teaser.fr>",
 "",
 "ARM 32 bits support, SPI & I2C (C) 2019",
-"    José GILLES <UCP (France)>",
+"    Jose GILLES <UCP (France)>",
 "    Repository: https://github.com/joegil95",
 "",
 "LDmicro support:",
