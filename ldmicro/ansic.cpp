@@ -27,8 +27,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "compilerexceptions.hpp"
-#include "filetracker.hpp"
 
 namespace {
     std::unordered_set<std::string> variables;

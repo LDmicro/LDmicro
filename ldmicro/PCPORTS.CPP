@@ -22,7 +22,6 @@
 
 #include "ldmicro.h"
 #include "pcports.h"
-#include "filetracker.hpp"
 
 McuIoPinInfo IoPc[MAX_IO];
 int          IoPcCount;

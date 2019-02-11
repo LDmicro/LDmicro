@@ -660,7 +660,7 @@ void ShowConfDialog()
         }
 
         if(ProgCycleTime == 0) {
-            Error(_(" A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"));
+            Warning(_("A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"));
             Prog.cycleTime = ProgCycleTime;
             Prog.cycleTimer = -1;
         } else if(ProgCycleTime < 0) {

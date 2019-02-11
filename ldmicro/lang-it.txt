@@ -2,7 +2,7 @@
 "  Nome                       | Tipo               | Porta\n"
 
 " - (not yet saved)"
-"- (non ancora salvato)"
+" - (non ancora salvato)"
 
 "!!!too long!!!"
 "!!!troppo lungo!!!"
@@ -827,18 +827,18 @@
 "| / | Negato"
 
 "  Name                       | Type               | Pin | Port | Pin name\n"
-"Nome | Tipo | Pin | Porta | Nome pin\n"
+"  Nome | Tipo | Pin | Porta | Nome pin\n"
 
-" Flash program memory size %d is exceed limit %d words\nfor %s."
+"Flash program memory size %d is exceed limit %d words\nfor %s."
 "La dimensione della memoria del programma flash %d è superiore al limite di %d voci\nper %s."
 
-" Save ld before flash."
+"Save ld before flash."
 "Salva in ld prima del flash."
 
-" Target N PULSE frequency %d Hz, closest achievable with prescaler = %d and divider = %d is %d Hz (Warning, >5%% error)."
+"Target N PULSE frequency %d Hz, closest achievable with prescaler = %d and divider = %d is %d Hz (Warning, >5%% error)."
 "Frequenza N PULSE obiettivo %d Hz, più vicina ottenibile con prescaler = %d e divisore = %d è %d Hz (Avviso,> 5%% errore)."
 
-" You can decrease size of variable '%s' to %d bit in LD file."
+"You can decrease size of variable '%s' to %d bit in LD file."
 "Puoi ridurre la dimensione della variabile '%s' in %d bit nel file LD."
 
 "%s = %d: out of range for 8bits target"
@@ -1957,19 +1957,19 @@
 "value in flash"
 "valore in flash"
 
-" A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"
+"A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"
 "È disponibile un valore zero del tempo di ciclo, ma i timer (TON, TOF, ecc.) Non funzioneranno correttamente!"
 
-" Invalid size (%d) of variable '%s' set to 2!"
+"Invalid size (%d) of variable '%s' set to 2!"
 "Dimensione non valida (%d) della variabile '%s' impostata su 2!"
 
-" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"
+"PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"
 "Il tempo di ciclo del PLC è '0'. I timer TON, TOF, RTO, RTL, TCY non funzionano correttamente!"
 
-" The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"
+"The character '-' is replaced by the '_'.\nVariable      '%s'\nrenamed to '%s'"
 "Il carattere '-' è sostituito da '_'.\nVariable '%s'\nrenamed a '%s'"
 
-" The delay is too long!\nThe maximum possible delay is %lld us."
+"The delay is too long!\nThe maximum possible delay is %lld us."
 "Il ritardo è troppo lungo!\nT il massimo ritardo possibile è %lld us."
 
 "%sPLC cycle deviation is %.3f %%%% !"

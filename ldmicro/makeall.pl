@@ -27,7 +27,13 @@ SYS("copy postCompile.bat buildXXXX");
 SYS("mkdir buildXXXX\\LIBRARIES_FOR");
 SYS("mkdir buildXXXX\\LIBRARIES_FOR\\ARDUINO");
 SYS("mkdir buildXXXX\\LIBRARIES_FOR\\ARDUINO\\PwmFrequency");
-SYS("copy  LIBRARIES_FOR\\ARDUINO\\PwmFrequency\\PwmFrequency.h   buildXXXX\\LIBRARIES_FOR\\ARDUINO\\PwmFrequency");
-SYS("copy  LIBRARIES_FOR\\ARDUINO\\PwmFrequency\\PwmFrequency.cpp buildXXXX\\LIBRARIES_FOR\\ARDUINO\\PwmFrequency");
+#SYS("copy  LIBRARIES_FOR\\ARDUINO\\PwmFrequency\\PwmFrequency.h   buildXXXX\\LIBRARIES_FOR\\ARDUINO\\PwmFrequency");
+#SYS("copy  LIBRARIES_FOR\\ARDUINO\\PwmFrequency\\PwmFrequency.cpp buildXXXX\\LIBRARIES_FOR\\ARDUINO\\PwmFrequency");
+
+SYS("mkdir buildXXXX\\LIBRARIES_FOR\\ARM");
+SYS("mkdir buildXXXX\\LIBRARIES_FOR\\AVR");
+SYS("mkdir buildXXXX\\LIBRARIES_FOR\\PIC16");
+
+SYS("xcopy /s LIBRARIES_FOR\\*.* buildXXXX\\LIBRARIES_FOR");
 
 SYS("7zip.py");

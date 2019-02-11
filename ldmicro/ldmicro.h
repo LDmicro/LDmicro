@@ -21,8 +21,6 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 
-using namespace std;            // added by JG
-
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
@@ -285,7 +283,7 @@ using namespace std;            // added by JG
 
 #define MNU_SCHEME_BLACK        0x9000 // Must be a first
 #define NUM_SUPPORTED_SCHEMES   6      // ...
-#define MNU_SCHEME_USER         MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES-1 // This SCHEME number must be the largest !!!
+#define MNU_SCHEME_USER         (MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES-1) // This SCHEME number must be the largest !!!
 #define MNU_SELECT_COLOR        0x9100
 
 // Columns within the I/O etc. listview.
@@ -597,15 +595,15 @@ extern bool DialogCancel;
 
 #define ooops(...) { \
         dbp("rungNow=%d", rungNow); \
-        dbp("bad at %d %s\n", __LINE__, __FILE__); \
+        dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
+        Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         Error(__VA_ARGS__); \
-        Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
         doexit(EXIT_FAILURE); \
     }
 #define oops() { \
         dbp("rungNow=%d", rungNow); \
-        dbp("bad at %d %s\n", __LINE__, __FILE__); \
-        Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
+        dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
+        Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         doexit(EXIT_FAILURE); \
     }
 #define dodbp
@@ -635,7 +633,11 @@ extern bool DialogCancel;
 
 void doexit(int status);
 void dbp(const char *str, ...);
-void Error(const char *str, ...);
+int LdMsg(UINT uType, const char *str, ...);
+int Error(const char* str, ...);
+int Warning(const char* str, ...);
+int Info(const char* str, ...);
+int Question(const char* str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 void StartIhex(FILE *f);

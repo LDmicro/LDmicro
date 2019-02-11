@@ -50,7 +50,6 @@
 //-----------------------------------------------------------------------------
 #include "ldmicro.h"
 #include "intcode.h"
-#include "filetracker.hpp"
 
 #define DEST_F 1
 #define DEST_W 0
@@ -62,8 +61,6 @@ static DWORD             PicProgWriteP;
 static DWORD             BeginOfPLCCycle;
 
 SDWORD PicProgLdLen = 0;
-
-static int IntPcNow = -INT_MAX; //must be static
 
 // Scratch variables, for temporaries
 static DWORD ScratchI;
@@ -280,6 +277,7 @@ static DWORD CONFIG_ADDR2 = -1;
 //-----------------------------------------------------------------------------
 
 static uint32_t IntPc = 0;
+static uint32_t IntPcNow = UINT_MAX; //must be static
 
 static void CompileFromIntermediate(bool topLevel);
 
@@ -1488,14 +1486,15 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
     char               arg1comm[1024];
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
     IntOp              intOp;
-    if(PicInstr->IntPc > -1 && static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size())
+    if((PicInstr->IntPc >= 0)  && (static_cast<uint32_t>(PicInstr->IntPc) < IntCode.size()))
         intOp = IntCode[PicInstr->IntPc];
     strcpy(sAsm, "");
     sprintf(arg1s, "0x%X", arg1);
     arg1comm[0] = '\0';
 #define CHECK(v, bits)                                                 \
     if((v) != ((v) & ((1 << (bits)) - 1)))                             \
-    THROW_COMPILER_EXCEPTION_FMT("v=%d=0x%X ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
+    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%d=0x%X ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d:%s]", \
+          intOp.rung,                                                    \
           (v),                                                         \
           (v),                                                         \
           (bits),                                                      \
@@ -1507,7 +1506,8 @@ static DWORD Assemble(DWORD addrAt, PicOp op, DWORD arg1, DWORD arg2, char *sAsm
           intOp.fileName.c_str())
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
-    THROW_COMPILER_EXCEPTION_FMT("v=%d [%d..%d]\nat %d in %s %s\nat %d in %s",                  \
+    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%d [%d..%d]\n[%d:%s] %s\n[%d:%s]",                  \
+          intOp.rung,                                                    \
           (int)v,                                                        \
           LowerRangeInclusive,                                           \
           UpperRangeInclusive,                                           \
@@ -2302,7 +2302,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
             if(asm_comment_level >= 5) {
                 if((PicProg[i].IntPc >= 0) && (PicProg[i].IntPc < IntCode.size())) {
                     fprintf(fAsm, "\t");
-                    if(IntCode[PicProg[i].IntPc].which != INT_MAX) {
+                    if(IntCode[PicProg[i].IntPc].which != -INT_MAX) {
                         fprintf(fAsm, " ; ELEM_0x%X", IntCode[PicProg[i].IntPc].which);
                     }
                     if(1 || (prevIntPcL != IntCode[PicProg[i].IntPc].fileLine)) {
@@ -2727,10 +2727,10 @@ static DWORD CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const ch
 
      if(addr1 == addr2) {
         if(sov1 == sov2) {
-            // Error(_(" CopyRegToReg Warning 1"));
+            // Warning(_("CopyRegToReg Warning 1"));
             return addr1;
         } else {
-            Error(_(" CopyRegToReg Message 2"));
+            Warning(_("CopyRegToReg Message 2"));
             return addr1;
         }
     }
@@ -4740,7 +4740,7 @@ otherwise the result was zero or greater.
                 sov3 = SizeOfVar(a->name3);
                 sov = std::max(sov2, sov3);
                 if(sov1 < sov) {
-                    Error(" Size of result '%s' less than an argument(s) '%s' or '%s'",
+                    Warning("Size of result '%s' less than an argument(s) '%s' or '%s'",
                           a->name1.c_str(),
                           a->name2.c_str(),
                           a->name3.c_str());
@@ -5877,7 +5877,7 @@ otherwise the result was zero or greater.
                     if(clocks > 0xffff) {
                         clocks = 0xffff;
                         clocksSave = clocks * 6;
-                        Error(_(" The delay is too long!\n"
+                        Warning(_("The delay is too long!\n"
                                 "The maximum possible delay is %lld us."),
                               (clocks * 6 + 10) * 4000000 / Prog.mcuClock);
                     }

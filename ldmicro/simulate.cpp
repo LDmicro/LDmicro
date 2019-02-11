@@ -1390,7 +1390,7 @@ int bin2bcd(int val)
     int sign = 1;
     if(val < 0) {
         sign = -1;
-        Error(_(" Value 'val'=%d < 0"), val);
+        Warning(_("Value 'val'=%d < 0"), val);
     }
     if(val >= TenToThe(sizeof(val)))
         Error(_("Value 'val'=%d overflow output range %d."), val, sizeof(val) - 1);
@@ -1465,10 +1465,10 @@ int swap(int val, int sov)
 }
 //-----------------------------------------------------------------------------
 #define STACK_LEN 8 // hardware limit
-static int stack[STACK_LEN];
-static int stackCount = 0;
+static uint32_t stack[STACK_LEN];
+static int      stackCount = 0;
 //-----------------------------------------------------------------------------
-void PushStack(int IntPc)
+void PushStack(uint32_t IntPc)
 {
     if(stackCount < STACK_LEN) {
         stack[stackCount] = IntPc;

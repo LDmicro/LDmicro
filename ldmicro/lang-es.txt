@@ -1345,8 +1345,8 @@
 "ADC pin error"
 "Error de pin ADC (Analogica)"
 
-" SPI: Sending too many chars in one cycle may cause timing issues"
-" SPI: enviar demasiados caracteres en un ciclo puede causar problemas de tiempo"
+"SPI: Sending too many chars in one cycle may cause timing issues"
+"SPI: enviar demasiados caracteres en un ciclo puede causar problemas de tiempo"
 
 "Invalid SUBPROG '%s'"
 "Invalido SUBPROG '%s'"
@@ -1366,8 +1366,8 @@
 "Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"
 "Cada AllocFwdAddr necesita FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"
 
-" Flash program memory size %d exceeds limit by %d words\nfor %s."
-" El tamaño de la memoria del programa flas %d excede el límite en %d palabras\para %s."
+"Flash program memory size %d exceeds limit by %d words\nfor %s."
+"El tamaño de la memoria del programa flas %d excede el límite en %d palabras\para %s."
 
 "Zero memory address not allowed!\nLoadXAddr(%d) skiped!"
 "Dirección de memoria cero no permitida!\nLoadXAddr(%d) omitida!"
@@ -1486,8 +1486,8 @@
 "Unsupported operation 'INT_WRITE_STRING' for target, skipped."
 "Operación no compatible 'INT_WRITE_STRING' para el destino, omitido."
 
-" The delay is too long!\nThe maximum possible delay is %lld us."
-" ¡El retraso es demasiado largo!\El máximo retraso posible es %lld us."
+"The delay is too long!\nThe maximum possible delay is %lld us."
+"¡El retraso es demasiado largo!\El máximo retraso posible es %lld us."
 
 "Don't know how to init %s."
 "No sé cómo iniciar %s."
@@ -1624,7 +1624,7 @@
 "Var '%s' not allocated %d."
 "Var '%s' no asignado %d."
 
-" Invalid size (%d) of variable '%s' set to 2!"
+"Invalid size (%d) of variable '%s' set to 2!"
 "El tamaño no válido (%d) de la variable '%s' se estableció en 2!"
 
 " \tNow not used !!!"
@@ -1693,8 +1693,8 @@
 "Zero crystal frequency not valid; resetting to 16 MHz."
 "La frecuencia de cristal cero no es válida; se restablece a 16 MHz."
 
-" A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"
-" ¡Hay un valor de tiempo de ciclo cero disponible, pero los temporizadores (TON, TOF, etc.) no funcionarán correctamente!"
+"A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"
+"¡Hay un valor de tiempo de ciclo cero disponible, pero los temporizadores (TON, TOF, etc.) no funcionarán correctamente!"
 
 "Negative cycle time is not valid; Reset to 10 ms."
 "El tiempo de ciclo negativo no es válido; se restablecer a 10 ms."
@@ -1753,7 +1753,7 @@
 "Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."
 "El temporizador 'T%s'=%10.0Lf s puede usar los tiempos de ciclo de %15lld PLC como el MÁXIMO valor posible."
 
-" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"
+"PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"
 "El tiempo de ciclo del PLC si es '0'. ¡Los temporizadores TON, TOF, RTO, RTL, TCY no funcionan correctamente!"
 
 "Expected single-character or one simple-escape-sequence in single-quotes: <%s>!"
@@ -1858,8 +1858,8 @@
 "Modbus Address"
 "Dirección Modbus"
 
-" Save ld before flash."
-" Guardar ld antes de flash."
+"Save ld before flash."
+"Guardar ld antes de flash."
 
 "File does not exist: '%s'"
 "El archivo no existe: '%s'"
@@ -1912,8 +1912,8 @@
 "Couldn't open '%s', running non-interactively."
 "No se pudo abrir '%s', ejecutándose de forma no interactiva."
 
-" File '%s' not found!"
-" Archivo '%s' no encontrado!"
+"File '%s' not found!"
+"Archivo '%s' no encontrado!"
 
 "Too many rungs in input file!\nSame rungs not loaded!"
 "¡Demasiados peldaños en el archivo de entrada!\nLos mismos peldaños no están cargados!"
@@ -2014,7 +2014,7 @@
 "Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."
 "¡Compilación exitosa!\r\n Escribe el código de Netzer en '%s' (CRC: 0x%.4x)."
 
-" PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
+"PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
 "El destino PASCAL no admite periféricos (UART, PWM, ADC, EEPROM). Se omite esa instrucción."
 
 "Bank select error!"
@@ -2035,11 +2035,11 @@
 "Every AllocFwdAddr needs FwdAddrIsNow."
 "Cada AllocFwdAddr necesita FwdAddrIsNow."
 
-" CopyRegToReg Warning 1"
-" CopyRegToReg Advertencia 1"
+"CopyRegToReg Warning 1"
+"CopyRegToReg Advertencia 1"
 
-" CopyRegToReg Message 2"
-" CopyRegToReg Mensaje 2"
+"CopyRegToReg Message 2"
+"CopyRegToReg Mensaje 2"
 
 "When the MCU crystal frequency is %.3g %sHz."
 "Cuando la frecuencia del cristal MCU es %.3g% sHz."
@@ -2149,29 +2149,29 @@
 "Constant %s=%d out of variable '%s' range : 0 to 4294967295(0xFFFFffff) inclusive."
 "Constante %s=%d fuera del rango de la variable '%s': 0 a 4294967295 (0xFFFFffff) inclusive."
 
-" Variable %s=%d out of range: -128 to 127 inclusive."
-" Variable %s=%d fuera del rango: -128 a 127 inclusive."
+"Variable %s=%d out of range: -128 to 127 inclusive."
+"Variable %s=%d fuera del rango: -128 a 127 inclusive."
 
-" Variable %s=0x%X out of range: 0 to 0xFF inclusive."
-" Variable %s=0x%X fuera de rango: 0 a 0xFF inclusive."
+"Variable %s=0x%X out of range: 0 to 0xFF inclusive."
+"Variable %s=0x%X fuera de rango: 0 a 0xFF inclusive."
 
-" Variable %s=%d out of range: -32768 to 32767 inclusive."
-" Variable %s=%d fuera del rango: -32768 a 32767 inclusive."
+"Variable %s=%d out of range: -32768 to 32767 inclusive."
+"Variable %s=%d fuera del rango: -32768 a 32767 inclusive."
 
-" Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."
-" Variable %s=0x%X fuera de rango: 0 a 0xFFFF inclusive."
+"Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."
+"Variable %s=0x%X fuera de rango: 0 a 0xFFFF inclusive."
 
-" Variable %s=%d out of range: -8388608 to 8388607 inclusive."
-" Variable %s=%d fuera del rango: -8388608 a 8388607 inclusive."
+"Variable %s=%d out of range: -8388608 to 8388607 inclusive."
+"Variable %s=%d fuera del rango: -8388608 a 8388607 inclusive."
 
-" Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."
-" Variable %s=0x%X fuera de rango: 0 a 0xffFFFF inclusive."
+"Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."
+"Variable %s=0x%X fuera de rango: 0 a 0xffFFFF inclusive."
 
-" Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."
-" Variable %s=%d fuera del rango: -2147483648 a 2147483647 inclusive."
+"Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."
+"Variable %s=%d fuera del rango: -2147483648 a 2147483647 inclusive."
 
-" Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."
-" Variable %s=0x%X fuera de rango: 0 a 0xffffFFFF inclusive."
+"Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."
+"Variable %s=0x%X fuera de rango: 0 a 0xffffFFFF inclusive."
 
 "Circular Counter, incremental"
 "Contador circular, incremental"
@@ -2488,8 +2488,8 @@
 "RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."
 "RES: La variable no está asignada a COUNTER o TIMER para PWM.\r\nDebe asignar una variable."
 
-" Value 'val'=%d < 0"
-" Valor 'val'=%d < 0"
+"Value 'val'=%d < 0"
+"Valor 'val'=%d < 0"
 
 "Value 'val'=%d overflow output range %d."
 "Valor 'val'=%d rango de salida de desbordamiento %d."

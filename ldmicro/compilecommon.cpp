@@ -25,8 +25,6 @@
 #include "ldmicro.h"
 #include "intcode.h"
 #include "compilercommon.hpp"
-#include "compilerexceptions.hpp"
-
 
 // Assignment of the internal relays to memory, efficient, one bit per
 // relay.
@@ -791,7 +789,7 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
                     }
 
                 } else if(Variables[i].Allocated != sizeOfVar) {
-                    //Error(" Variable '%s' already allocated as signed %d bit", Variables[i].name, Variables[i].Allocated*8);
+                    //Warning(" Variable '%s' already allocated as signed %d bit", Variables[i].name, Variables[i].Allocated*8);
                     //CompileError();
                 }
             }
@@ -841,7 +839,7 @@ int SetSizeOfVar(const char *name, int sizeOfVar, bool showError)
 {
     if(showError)
         if((sizeOfVar < 1)/* || (4 < sizeOfVar)*/) {
-            Error(_(" Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
+            Warning(_("Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
             sizeOfVar = 2;
         }
 #ifndef NEW_CMP

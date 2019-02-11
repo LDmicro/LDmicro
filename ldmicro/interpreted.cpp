@@ -26,7 +26,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "filetracker.hpp"
 
 static char Variables[MAX_IO][MAX_NAME_LEN];
 static int  VariablesCount;

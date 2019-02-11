@@ -33,6 +33,8 @@ else()
 endif()
 message(STATUS "Lang : ${LDLANG}")
 
+add_subdirectory(ldmicro-xx)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -41,7 +43,6 @@ add_subdirectory(ldlanglib)
 add_subdirectory(ldcompilerlib)
 add_subdirectory(ldinterpret)
 add_subdirectory(ldlog)
-add_subdirectory(ldmicro-xx)
 
 find_package(Perl REQUIRED)
 
@@ -94,7 +95,7 @@ if(WIN32)
     set(LDMICRO_SRC_LIST ${LDMICRO_SRC_LIST} ldmicro.rc)
 endif(WIN32)
 
-INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./" "../common/gsl-lite/include" "../common/stringarray")
+INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./" "../common/gsl-lite/include" "../common/stringarray" "../common/utils")
 add_definitions(
     "-DISOLATION_AWARE_ENABLED"
     "-DWIN32_LEAN_AND_MEAN"
@@ -115,6 +116,9 @@ if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /J")
     string(APPEND CMAKE_C_FLAGS " /J")
     set(CMAKE_EXE_LINKER_FLAGS "/MANIFEST:NO")
+elseif(CMAKE_COMPILER_IS_GNUCXX)
+    string(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra ")
+    string(APPEND CMAKE_C_FLAGS "-Wall -Wextra ")
 endif()
 
 if(${LDLANG} STREQUAL "ALL")

@@ -976,7 +976,7 @@ void SaveIoListToFile(FILE *f)
         }
     }
     if(j1 != j2) {
-        Error(" %s%s", _("Not all I/O pins are saved! Use menu:\n"),
+        Warning("%s%s", _("Not all I/O pins are saved! Use menu:\n"),
             _("File->Save LDmicro0.2 file format"));
     }
 }
