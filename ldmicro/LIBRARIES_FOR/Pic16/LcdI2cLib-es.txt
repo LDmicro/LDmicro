@@ -1,0 +1,46 @@
+Cómo utilizar la biblioteca I2C para la pantalla LCD 16x2
+_________________________________________________________
+
+Esta biblioteca está diseñada para usar una pantalla LCD de 16x2 conectada a un I2-IO-Expander
+Módulo, como el de Arduino uno.
+
+Archivos: LcdI2cLib.c
+	  LcdI2cLib.h
+	  I2cLib.c
+	  I2cLib.h
+
+Copiar estos archivos nuevos en Avr "lib" carpeta de su espacio de trabajo ldmicro.
+
+Edite I2cLib.c con cualquier editor de texto y reemplace en línea:
+#define LCD_I2C_ADR		0x00
+el valor final 0x00 por la dirección I2C de su módulo I2C (quizás 0x27)
+segun su documentacion
+
+En LdMicro32, cree una escalera usando la función de escritura I2C y use esta dirección
+para acceder a la pantalla LCD, con el campo 'registro' = 255
+(este valor también se puede modificar en la biblioteca como se indica arriba si es necesario)
+
+En el campo 'enviar variable', puede poner una variable o un valor, sabiendo que
+hay 3 posibilidades:
+
+- Los valores entre 0 y 0x10 son comandos (descritos en bibliotecas):
+ 	0= Borrar pantalla
+	1= Inicio cursor
+	2= Pantalla parpadeante
+	3= Pantalla normal
+
+	Otros valores / funciones se pueden agregar en las bibliotecas.
+
+- los valores superiores a 0x80 son comandos de movimiento para mover el cursor a la línea y, col x:
+	bit  7= 1
+	bits 6-5= y-1	permite 4 lineas 1->4	
+	bits 4-0= x-1	permite 32 columnas 1->32
+
+	Ejemplo: 0xA5 = 1 01 00101 moverá el cursor a la línea 2, columna 6
+
+- otros valores entre 0x11 y 0x7F son caracteres estándar para mostrar en la posición del cursor.
+
+Normalmente no se evita usar otros dispositivos I2C en el mismo bus.
+
+JG
+
