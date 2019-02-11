@@ -33,6 +33,8 @@ else()
 endif()
 message(STATUS "Lang : ${LDLANG}")
 
+add_subdirectory(ldmicro-xx)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -41,7 +43,6 @@ add_subdirectory(ldlanglib)
 add_subdirectory(ldcompilerlib)
 add_subdirectory(ldinterpret)
 add_subdirectory(ldlog)
-add_subdirectory(ldmicro-xx)
 
 find_package(Perl REQUIRED)
 
