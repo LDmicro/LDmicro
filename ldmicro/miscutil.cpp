@@ -94,7 +94,7 @@ void doexit(int status)
 // For error messages to the user; printf-like, to a message box.
 // For warning messages use ' ' in *str[0], see avr.cpp INT_SET_NPULSE.
 //-----------------------------------------------------------------------------
-int ld_msg(UINT uType, const char *str, va_list f)
+int LdMsg(UINT uType, const char *str, va_list f)
 {
     int  ret = 0;
     char buf[1024];
@@ -139,7 +139,7 @@ int LdMsg(UINT uType, const char *str, ...)
     int ret = 0;
     va_list f;
     va_start(f, str);
-    ret = ld_msg(uType, str, f);
+    ret = LdMsg(uType, str, f);
     va_end(f);
     return ret;
 }
@@ -149,7 +149,7 @@ int Error(const char* str, ...)
     int ret = 0;
     va_list f;
     va_start(f, str);
-    ret = ld_msg(MB_ICONERROR, str, f);
+    ret = LdMsg(MB_ICONERROR, str, f);
     va_end(f);
     return ret;
 }
@@ -159,7 +159,7 @@ int Warning(const char* str, ...)
     int ret = 0;
     va_list f;
     va_start(f, str);
-    ret = ld_msg(MB_ICONWARNING, str, f);
+    ret = LdMsg(MB_ICONWARNING, str, f);
     va_end(f);
     return ret;
 }
@@ -169,7 +169,7 @@ int Info(const char* str, ...)
     int ret = 0;
     va_list f;
     va_start(f, str);
-    ret = ld_msg(MB_ICONINFORMATION, str, f);
+    ret = LdMsg(MB_ICONINFORMATION, str, f);
     va_end(f);
     return ret;
 }
@@ -179,7 +179,7 @@ int Question(const char* str, ...)
     int ret = 0;
     va_list f;
     va_start(f, str);
-    ret = ld_msg(MB_ICONQUESTION, str, f);
+    ret = LdMsg(MB_ICONQUESTION, str, f);
     va_end(f);
     return ret;
 }
