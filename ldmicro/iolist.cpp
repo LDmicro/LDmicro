@@ -454,7 +454,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 Error(_("Invalid SPI name in ladder."));
             }
 
-            ltoa(Prog.spiRate, l->d.spi.bitrate, 10);           // set frequency field
+            _ltoa(Prog.spiRate, l->d.spi.bitrate, 10);           // set frequency field
             /////
 
             if(!CheckForNumber(l->d.spi.send)) {
@@ -495,7 +495,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 Error(_("Invalid I2C name in ladder."));
             }
 
-            ltoa(Prog.i2cRate, l->d.i2c.bitrate, 10);           // set frequency field
+            _ltoa(Prog.i2cRate, l->d.i2c.bitrate, 10);           // set frequency field
 
             if(!CheckForNumber(l->d.i2c.recv)) {
                 // Not need ???
@@ -526,7 +526,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 Error(_("Invalid I2C name in ladder."));
             }
 
-            ltoa(Prog.i2cRate, l->d.i2c.bitrate, 10);           // set frequency field
+            _ltoa(Prog.i2cRate, l->d.i2c.bitrate, 10);           // set frequency field
 
             if(!CheckForNumber(l->d.i2c.send)) {
                 // Not need ???

@@ -1,3 +1,13 @@
+== Release 5.3.0.0
+
+    * Added Release 5.2.0.a by Jose GILLES
+
+    * LdMicro32 release 5.2
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=8128&tt=1549645797
+
+    * LdMicro32 on Github
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=7956&tt=1548617794
+
 == Release 4.4.4.0
 
     * Fixed: LDmicro closes unexpectedly #144

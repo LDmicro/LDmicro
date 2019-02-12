@@ -506,7 +506,8 @@ uint8_t MuxForAdcVariable(const NameArray &name)
 int PinsForSpiVariable(const char *name, int n, char *spipins)
 {
     int res = 0, port= 0;
-    int i, j;
+    int i;
+    uint32_t j;
 
     if(!Prog.mcu()) return 0;
     if(!spipins) return 0;
@@ -577,7 +578,8 @@ int PinsForSpiVariable(const char *name, int n, char *spipins)
 int PinsForI2cVariable(const char *name, int n, char *i2cpins)
 {
     int res = 0, port= 0;
-    int i, j;
+    int i;
+    uint32_t j;
 
     if(!Prog.mcu()) return 0;
     if(!i2cpins) return 0;
