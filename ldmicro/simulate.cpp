@@ -103,18 +103,43 @@ static int CyclesPerTimerTick;
 static uint32_t IntPc;
 
 static FILE *fUART;
+static FILE *fSPI;      ///// Added by JG
+static FILE *fI2C;      ///// Added by JG
 
 // A window to allow simulation with the UART stuff (insert keystrokes into
 // the program, view the output, like a terminal window).
-static HWND     UartSimulationWindow = nullptr;
+HWND     UartSimulationWindow = nullptr;            ///// Modified by JG
 static HWND     UartSimulationTextControl;
-static LONG_PTR PrevTextProc;
+static LONG_PTR PrevUartTextProc;                   ///// Modified by JG
+
+///// Added by JG
+// A window to allow simulation with the SPI stuff (insert keystrokes into
+// the program, view the output, like a terminal window).
+HWND     SpiSimulationWindow = nullptr;
+static HWND     SpiSimulationTextControl;
+static LONG_PTR PrevSpiTextProc;
+
+// A window to allow simulation with the I2C stuff (insert keystrokes into
+// the program, view the output, like a terminal window).
+HWND     I2cSimulationWindow = nullptr;
+static HWND     I2cSimulationTextControl;
+static LONG_PTR PrevI2cTextProc;
+/////
 
 static int QueuedUartCharacter = -1;
 static int SimulateUartTxCountdown = 0; // 0 if UART ready to send;
                                         // 1 if UART busy
+///// Added by JG
+static DWORD TerminalX1 = 200, TerminalY1 = 200, TerminalW1 = 300, TerminalH1 = 150;
+static DWORD TerminalX2 = 250, TerminalY2 = 250, TerminalW2 = 300, TerminalH2 = 150;
+static DWORD TerminalX3 = 300, TerminalY3 = 350, TerminalW3 = 300, TerminalH3 = 150;
 
-static void AppendToUartSimulationTextControl(BYTE b);
+static int QueuedSpiCharacter = -1;
+static int QueuedI2cCharacter = -1;
+/////
+
+/////   static void AppendToUartSimulationTextControl(BYTE b);
+static void AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl);              ///// Modified by JG
 
 static void        SimulateIntCode();
 static const char *MarkUsedVariable(const char *name, DWORD flag);
@@ -805,7 +830,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_LABEL:
         case ELEM_SUBPROG:
         case ELEM_ENDSUB:
-            MarkWithCheck(l->d.doGoto.rung, VAR_FLAG_ANY);
+            MarkWithCheck(l->d.doGoto.label, VAR_FLAG_ANY);
             break;
 
         case ELEM_RETURN:
@@ -836,6 +861,28 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_NPULSE:
         case ELEM_PULSER:
         case ELEM_STEPPER:
+            sprintf(str, "%s%s", l->d.stepper.name, ""); // "LutElement");
+            MarkWithCheck(str, VAR_FLAG_TABLE);
+            //MarkWithCheck(l->d.stepper.name, VAR_FLAG_TABLE);
+
+            //MarkWithCheck(l->d.stepper.coil, VAR_FLAG_TABLE);
+            //MarkWithCheck(l->d.stepper.name, VAR_FLAG_ANY);
+
+            //if(IsNumber(l->d.stepper.P)&&(CheckMakeNumber(l->d.stepper.P)>1)
+            //||(!IsNumber(l->d.stepper.P))){
+            sprintf(str, "C%s%s", l->d.stepper.name, "Dec");
+            MarkWithCheck(str, VAR_FLAG_ANY);
+
+            sprintf(str, "C%s%s", l->d.stepper.name, "Inc");
+            MarkWithCheck(str, VAR_FLAG_ANY);
+
+            sprintf(str, "C%s%s", l->d.stepper.name, "P");
+            MarkWithCheck(str, VAR_FLAG_ANY);
+
+            //}
+            //MarkWithCheck(l->d.stepper.counter, VAR_FLAG_ANY);
+            //MarkWithCheck(l->d.stepper.P, VAR_FLAG_ANY);
+            //MarkWithCheck(l->d.stepper.accel, VAR_FLAG_ANY);
             break;
 
         case ELEM_BIN2BCD:
@@ -933,6 +980,10 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_UART_SENDn:
         case ELEM_UART_SEND_READY:
         case ELEM_UART_RECV_AVAIL:
+        case ELEM_SPI:                  ///// Added by JG
+        case ELEM_SPI_WR:               ///// Added by JG
+        case ELEM_I2C_RD:               ///// Added by JG
+        case ELEM_I2C_WR:               ///// Added by JG
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_OPEN:
@@ -981,8 +1032,7 @@ void CheckVariableNames()
                 Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s."),
                       Variables[i].initedRung + 1,
                       Variables[i].name,
-                      _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\n"
-                        "You must assign a variable."));
+                      _("RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."));
     return;
 #ifdef _LOT_OF_EXPERIMENTS_ // Never define!
     for(i = 0; i < VariableCount; i++)
@@ -1106,26 +1156,28 @@ static void IfConditionTrue()
     IntPc++;
     // now PC is on the first statement of the IF body
     SimulateIntCode();
-    // now PC is on the ELSE or the END IF
-    if(IntCode[IntPc].op == INT_ELSE) {
-        int nesting = 1;
-        for(;; IntPc++) {
-            if(IntPc >= IntCode.size())
-                oops();
+    if(IntPc < IntCode.size()) {
+        // now PC is on the ELSE or the END IF
+        if(IntCode[IntPc].op == INT_ELSE) {
+            int nesting = 1;
+            for(; IntPc < IntCode.size(); IntPc++) {
+                if(IntPc >= IntCode.size())
+                    oops();
 
-            if(IntCode[IntPc].op == INT_END_IF) {
-                nesting--;
-            } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
-                nesting++;
+                if(IntCode[IntPc].op == INT_END_IF) {
+                    nesting--;
+                } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
+                    nesting++;
+                }
+                if(nesting == 0)
+                    break;
             }
-            if(nesting == 0)
-                break;
+        } else if(IntCode[IntPc].op == INT_END_IF) {
+            return;
+        } else {
+            if(!GotoGosubUsed())
+                oops();
         }
-    } else if(IntCode[IntPc].op == INT_END_IF) {
-        return;
-    } else {
-        if(!GotoGosubUsed())
-            oops();
     }
 }
 
@@ -1137,7 +1189,7 @@ static void IfConditionTrue()
 static void IfConditionFalse()
 {
     int nesting = 0;
-    for(;; IntPc++) {
+    for(; IntPc < IntCode.size(); IntPc++) {
         if(IntPc >= IntCode.size())
             oops();
 
@@ -1338,10 +1390,10 @@ int bin2bcd(int val)
     int sign = 1;
     if(val < 0) {
         sign = -1;
-        Error(" Value 'val'=%d < 0", val);
+        Warning(_("Value 'val'=%d < 0"), val);
     }
     if(val >= TenToThe(sizeof(val)))
-        Error("Value 'val'=%d overflow output range %d.", val, sizeof(val) - 1);
+        Error(_("Value 'val'=%d overflow output range %d."), val, sizeof(val) - 1);
     int ret = val % 10;
     val /= 10;
     ret |= (val % 10) << 8;
@@ -1361,7 +1413,7 @@ int bcd2bin(int val)
     || ((val & 0x0000f00) >>  8) > 9
     || ((val & 0x00f0000) >> 16) > 9
     || ((val & 0xf000000) >> 24) > 9 )
-        Error("Value 'val'=0x%x not in unpacked BCD format.", val);
+        Error(_("Value 'val'=0x%x not in unpacked BCD format."), val);
     return (val & 0x000000f)
         + ((val & 0x0000f00) >>  8) * 10
         + ((val & 0x00f0000) >> 16) * 100
@@ -1412,11 +1464,11 @@ int swap(int val, int sov)
     return ret;
 }
 //-----------------------------------------------------------------------------
-#define STACK_LEN 8
-static int stack[STACK_LEN];
-static int stackCount = 0;
+#define STACK_LEN 8 // hardware limit
+static uint32_t stack[STACK_LEN];
+static int      stackCount = 0;
 //-----------------------------------------------------------------------------
-void PushStack(int IntPc)
+void PushStack(uint32_t IntPc)
 {
     if(stackCount < STACK_LEN) {
         stack[stackCount] = IntPc;
@@ -1688,6 +1740,9 @@ static void SimulateIntCode()
             case INT_SET_VARIABLE_RANDOM:
                 v = GetRandom(a->name1);
                 goto math;
+            case INT_SET_SEED_RANDOM:
+                v = GetSimulationVariable(a->name1);
+                goto math;
             case INT_SET_VARIABLE_NEG:
                 v = -GetSimulationVariable(a->name2);
                 goto math;
@@ -1890,13 +1945,15 @@ static void SimulateIntCode()
             case INT_UART_SEND1:
                 if(SimulateUartTxCountdown == 0) {
                     SimulateUartTxCountdown = 2;
-                    AppendToUartSimulationTextControl((BYTE)GetSimulationVariable(a->name1));
+                    /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1);        ///// Modified by JG
+                    AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) {
                     SimulateUartTxCountdown = 2;
-                    AppendToUartSimulationTextControl((BYTE)GetSimulationVariable(a->name1));
+                    /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1));       ///// Modified by JG
+                    AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 if(SimulateUartTxCountdown > 0) {
                     SetSingleBit(a->name2, true); // busy
@@ -1953,7 +2010,11 @@ static void SimulateIntCode()
             case INT_GOTO:
                 if(a->poweredAfter) {
                     if(*(a->poweredAfter)) {
-                        IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal /*, a->name1*/);
+                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal);
+                        if(a->literal)
+                            IntPc = FindOpName(INT_AllocKnownAddr, a->name1);
+                        else
+                            IntPc = FindOpName(INT_FwdAddrIsNow, a->name1);
                     }
                 }
                 break;
@@ -1962,7 +2023,11 @@ static void SimulateIntCode()
                 if(a->poweredAfter) {
                     if(*(a->poweredAfter)) {
                         PushStack(IntPc + 1);
-                        IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal /*, a->name1*/);
+                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal);
+                        if(a->literal)
+                            IntPc = FindOpName(INT_AllocKnownAddr, a->name1);
+                        else
+                            IntPc = FindOpName(INT_FwdAddrIsNow, a->name1);
                     }
                 }
                 break;
@@ -1995,14 +2060,14 @@ static void SimulateIntCode()
                 SDWORD *adata;
                 adata = (SDWORD *)GetSimulationVariable(a->name2);
                 if(adata == nullptr) {
-                    Error("TABLE %s is not initialized.", a->name2.c_str());
+                    Error(_("TABLE %s is not initialized."), a->name2.c_str());
                     StopSimulation();
                     ToggleSimulationMode(false);
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
-                if((index < 0) || (a->literal <= index)) {
-                    Error("Index=%d out of range for TABLE %s[0..%d]", index, a->name2.c_str(), a->literal - 1);
+                if((index < 0) || (a->literal < index)) {
+                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal-1);
                     index = a->literal;
                     StopSimulation();
                     ToggleSimulationMode(false);
@@ -2018,7 +2083,7 @@ static void SimulateIntCode()
             case INT_RAM_READ: {
                 int index = GetSimulationVariable(a->name3);
                 if((index < 0) || (a->literal <= index)) {
-                    Error("Index=%d out of range for string %s[%d]", index, a->name1.c_str(), a->literal);
+                    Error(_("Index=%d out of range for string %s[%d]"), index, a->name1.c_str(), a->literal);
                     index = a->literal;
                     StopSimulation();
                 }
@@ -2038,12 +2103,41 @@ static void SimulateIntCode()
             case INT_PWM_OFF:
                 break;
 
+            ///// Added by JG
+            case INT_SPI:
+                AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name2), SpiSimulationTextControl);
+                if(QueuedSpiCharacter >= 0)
+                {
+                    SetSimulationVariable(a->name3, (SWORD)QueuedSpiCharacter);
+                    QueuedSpiCharacter = -1;
+                }
+                break;
+
+            case INT_SPI_WRITE:
+                for (unsigned int i= 0 ; i < a->name2.size() ; i++)              // send text to terminal window
+                    AppendToSimulationTextControl(a->name2[i], SpiSimulationTextControl);
+                break;
+
+            case INT_I2C_READ:
+                if(QueuedI2cCharacter >= 0)
+                {
+                    SetSimulationVariable(a->name2, (SWORD)QueuedI2cCharacter);
+                    QueuedI2cCharacter = -1;
+                }
+                break;
+
+            case INT_I2C_WRITE:
+                AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name2), I2cSimulationTextControl);
+
+                break;
+                /////
+
             default:
                 ooops("op=%d", a->op);
                 break;
         }
     }
-}
+} // SimulateIntCode()
 
 //-----------------------------------------------------------------------------
 // Called by the Windows timer that triggers cycles when we are running
@@ -2105,8 +2199,10 @@ void SimulateOneCycle(bool forceRefresh)
         }
     }
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(!Prog.rungSimulated[i])
+        if(!Prog.rungSimulated[i]) {
             Prog.rungPowered[i] = false;
+            NeedRedraw = true;
+        }
     }
 
     CyclesCount++;
@@ -2173,6 +2269,10 @@ bool ClearSimulationData()
     AdcShadowsCount = 0;
     QueuedUartCharacter = -1;
     SimulateUartTxCountdown = 0;
+    ///// Added by JG
+    QueuedSpiCharacter = -1;
+    QueuedI2cCharacter = -1;
+    /////
 
     VariableCount = 0;
     CheckVariableNames(); // ??? moved to GenerateIntermediateCode()
@@ -2211,6 +2311,8 @@ void DescribeForIoList(const char *name, int type, char *out)
         case IO_TYPE_SPI_MISO:
         case IO_TYPE_SPI_SCK:
         case IO_TYPE_SPI__SS:
+        case IO_TYPE_I2C_SCL:           ///// Added by JG
+        case IO_TYPE_I2C_SDA:           /////
             break;
 
         case IO_TYPE_PWM_OUTPUT:
@@ -2244,9 +2346,9 @@ void DescribeForIoList(const char *name, int type, char *out)
                 else if(sov == 2)
                     sprintf(out, "0x%04X = %d = %.6g ms", v & 0xffff, v, dtms);
                 else if(sov == 3)
-                    sprintf(out, "0x%06X = %d = %.6g ms", v & 0xFFffff, v, dtms);
+                    sprintf(out, "0x%06X = %ld = %.6g ms", v & 0xFFffff, v, dtms);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %d = %.6g ms", v & 0xFFFFffff, v, dtms);
+                    sprintf(out, "0x%08X = %ld = %.6g ms", v & 0xFFFFffff, v, dtms);
                 else
                     oops();
             } else {
@@ -2255,9 +2357,9 @@ void DescribeForIoList(const char *name, int type, char *out)
                 else if(sov == 2)
                     sprintf(out, "0x%04X = %d = %.6g s", v & 0xffff, v, dtms / 1000);
                 else if(sov == 3)
-                    sprintf(out, "0x%06X = %d = %.6g s", v & 0xFFffff, v, dtms / 1000);
+                    sprintf(out, "0x%06X = %ld = %.6g s", v & 0xFFffff, v, dtms / 1000);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %d = %.6g s", v & 0xFFFFffff, v, dtms / 1000);
+                    sprintf(out, "0x%08X = %ld = %.6g s", v & 0xFFFFffff, v, dtms / 1000);
                 else
                     oops();
             }
@@ -2272,9 +2374,9 @@ void DescribeForIoList(const char *name, int type, char *out)
             else if(sov == 2)
                 sprintf(out, "0x%04X = %d", v & 0xffff, v);
             else if(sov == 3)
-                sprintf(out, "0x%06X = %d", v & 0xFFffff, v);
+                sprintf(out, "0x%06X = %ld", v & 0xFFffff, v);
             else if(sov == 4)
-                sprintf(out, "0x%08X = %d", v & 0xFFFFffff, v);
+                sprintf(out, "0x%08X = %ld", v & 0xFFFFffff, v);
             else {
                 sprintf(out, "0x%X = %d", v, v);
             }
@@ -2291,21 +2393,26 @@ void SimulationToggleContact(char *name)
 {
     SetSingleBit(name, !SingleBitOn(name));
     if((name[0] == 'X') || (name[0] == 'Y')) {
+      McuIoPinInfo *iop = PinInfoForName(name);
+      if(iop) {
         DWORD addr = -1;
         int   bit = -1;
         MemForSingleBit(name, true, &addr, &bit);
 
-        char s[MAX_NAME_LEN];
-        if(name[0] == 'X')
-            sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
-        else
-            sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
-        SDWORD v = GetSimulationVariable(s);
-        if(SingleBitOn(name))
-            v |= 1<<bit;
-        else
-            v &= ~(1<<bit);
-        SetSimulationVariable(s, v);
+        if((addr != -1) && (bit != -1)) {
+            char s[MAX_NAME_LEN];
+            if(name[0] == 'X')
+                sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
+            else
+                sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
+            SDWORD v = GetSimulationVariable(s);
+            if(SingleBitOn(name))
+                v |= 1<<bit;
+            else
+                v &= ~(1<<bit);
+            SetSimulationVariable(s, v);
+        }
+      }
     }
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }
@@ -2317,7 +2424,7 @@ static LRESULT CALLBACK UartSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, L
 {
     switch(msg) {
         case WM_DESTROY:
-            DestroyUartSimulationWindow();
+            DestroySimulationWindow(UartSimulationWindow);      ///// Modified by JG
             break;
 
         case WM_CLOSE:
@@ -2340,10 +2447,68 @@ static LRESULT CALLBACK UartSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, L
 }
 
 //-----------------------------------------------------------------------------
+// Dialog proc for the popup that lets you interact with the SPI stuff.
+//-----------------------------------------------------------------------------
+static LRESULT CALLBACK SpiSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch(msg) {
+        case WM_DESTROY:
+            DestroySimulationWindow(SpiSimulationWindow);
+            break;
+
+        case WM_CLOSE:
+            break;
+
+        case WM_SIZE:
+            MoveWindow(SpiSimulationTextControl, 0, 0, LOWORD(lParam), HIWORD(lParam), true);
+            break;
+
+        case WM_ACTIVATE:
+            if(wParam != WA_INACTIVE) {
+                SetFocus(SpiSimulationTextControl);
+            }
+            break;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+// Dialog proc for the popup that lets you interact with the I2C stuff.
+//-----------------------------------------------------------------------------
+static LRESULT CALLBACK I2cSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch(msg) {
+        case WM_DESTROY:
+            DestroySimulationWindow(I2cSimulationWindow);
+            break;
+
+        case WM_CLOSE:
+            break;
+
+        case WM_SIZE:
+            MoveWindow(I2cSimulationTextControl, 0, 0, LOWORD(lParam), HIWORD(lParam), true);
+            break;
+
+        case WM_ACTIVATE:
+            if(wParam != WA_INACTIVE) {
+                SetFocus(I2cSimulationTextControl);
+            }
+            break;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
 // Intercept WM_CHAR messages that to the terminal simulation window so that
 // we can redirect them to the PLC program.
 //-----------------------------------------------------------------------------
-static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)       //// Modified by JG
 {
     switch(msg) {
         case WM_KEYDOWN:
@@ -2384,44 +2549,102 @@ static LRESULT CALLBACK UartSimulationTextProc(HWND hwnd, UINT msg, WPARAM wPara
     }
 
     if(msg == WM_CHAR) {
-        QueuedUartCharacter = (BYTE)wParam;
+        ///// Modified by JG
+        if (hwnd == UartSimulationTextControl)
+            QueuedUartCharacter = (BYTE)wParam;
+        if (hwnd == SpiSimulationTextControl)
+            QueuedSpiCharacter = (BYTE)wParam;
+        if (hwnd == I2cSimulationTextControl)
+            QueuedI2cCharacter = (BYTE)wParam;
+        /////
         return 0;
     }
 
-    return CallWindowProc((WNDPROC)PrevTextProc, hwnd, msg, wParam, lParam);
+    ///// Modified by JG
+    if (hwnd == UartSimulationTextControl)
+        return CallWindowProc((WNDPROC)PrevUartTextProc, hwnd, msg, wParam, lParam);
+    if (hwnd == SpiSimulationTextControl)
+        return CallWindowProc((WNDPROC)PrevSpiTextProc, hwnd, msg, wParam, lParam);
+    if (hwnd == I2cSimulationTextControl)
+        return CallWindowProc((WNDPROC)PrevI2cTextProc, hwnd, msg, wParam, lParam);
+    /////
+    return 0;
 }
 
 //-----------------------------------------------------------------------------
-// Pop up the UART simulation window; like a terminal window where the
-// characters that you type go into UART RECV instruction and whatever
-// the program puts into UART SEND shows up as text.
+// Pop up the UART / SPI / I2C simulation window; like a terminal window where
+// the characters that you type go into UART / SPI / I2C RECV instruction and whatever
+// the program puts into UART / SPI / I2C SEND shows up as text.
 //-----------------------------------------------------------------------------
 #define MAX_SCROLLBACK 0x10000 //256 // 0x10000
 static char buf[MAX_SCROLLBACK] = "";
-void        ShowUartSimulationWindow()
+
+void ShowSimulationWindow(int sim)          ///// Modified by JG
 {
-    if(UartSimulationWindow != nullptr)
+    HWND SimHwnd= nullptr;                  ///// Added by JG
+    HWND SimCtrl= nullptr;
+
+    ///// Modified by JG
+    if((sim == SIM_UART) && (UartSimulationWindow != nullptr))
         oops();
+    if((sim == SIM_SPI) && (SpiSimulationWindow != nullptr))
+        oops();
+    if((sim == SIM_I2C) && (I2cSimulationWindow != nullptr))
+        oops();
+    /////
+
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
 
     wc.style = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC | CS_DBLCLKS;
-    wc.lpfnWndProc = (WNDPROC)UartSimulationProc;
+    ///// Modified by JG
+    if (sim == SIM_UART)
+        wc.lpfnWndProc = (WNDPROC)UartSimulationProc;
+    if (sim == SIM_SPI)
+        wc.lpfnWndProc = (WNDPROC)SpiSimulationProc;
+    if (sim == SIM_I2C)
+        wc.lpfnWndProc = (WNDPROC)I2cSimulationProc;
+    /////
     wc.hInstance = Instance;
     wc.hbrBackground = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName = "LDmicroUartSimulationWindow";
+    wc.lpszClassName = "LDmicroSimulationWindow";       ///// Modified by JG
     wc.lpszMenuName = nullptr;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
     RegisterClassEx(&wc);
 
-    DWORD TerminalX = 200, TerminalY = 200, TerminalW = 300, TerminalH = 150;
+    ///// Modified by JG
+    DWORD TerminalX, TerminalY, TerminalW, TerminalH;
 
-    ThawDWORD(TerminalX);
-    ThawDWORD(TerminalY);
-    ThawDWORD(TerminalW);
-    ThawDWORD(TerminalH);
+    if (sim == SIM_UART)
+    {
+        ThawDWORD(TerminalX1);      // Restore window size from Windows Registry (if saved by Freeze)
+        ThawDWORD(TerminalY1);
+        ThawDWORD(TerminalW1);
+        ThawDWORD(TerminalH1);
+
+        TerminalX = TerminalX1, TerminalY = TerminalY1, TerminalW = TerminalW1, TerminalH = TerminalH1;
+    }
+    if (sim == SIM_SPI)
+    {
+        ThawDWORD(TerminalX2);      // Restore window size from Windows Registry (if saved by Freeze)
+        ThawDWORD(TerminalY2);
+        ThawDWORD(TerminalW2);
+        ThawDWORD(TerminalH2);
+
+        TerminalX = TerminalX2, TerminalY = TerminalY2, TerminalW = TerminalW2, TerminalH = TerminalH2;
+    }
+    if (sim == SIM_I2C)
+    {
+        ThawDWORD(TerminalX3);      // Restore window size from Windows Registry (if saved by Freeze)
+        ThawDWORD(TerminalY3);
+        ThawDWORD(TerminalW3);
+        ThawDWORD(TerminalH3);
+
+        TerminalX = TerminalX3, TerminalY = TerminalY3, TerminalW = TerminalW3, TerminalH = TerminalH3;
+    }
+    /////
 
     if(TerminalW > 800)
         TerminalW = 100;
@@ -2435,11 +2658,28 @@ void        ShowUartSimulationWindow()
     if(TerminalY >= (DWORD)(r.bottom - 10))
         TerminalY = 100;
 
-    fUART = fopen("uart.log", "w");
+    ///// Modified by JG
+    char WndName[100];
+    if (sim == SIM_UART)
+        {
+        fUART = fopen("uart.log", "w");
+        strcpy(WndName, _("UART Simulation (Terminal)"));
+        }
+    if (sim == SIM_SPI)
+        {
+        fSPI = fopen("spi.log", "w");
+        strcpy(WndName, _("SPI Simulation (Terminal)"));
+        }
+    if (sim == SIM_I2C)
+        {
+        fI2C = fopen("i2c.log", "w");
+        strcpy(WndName, _("I2C Simulation (Terminal)"));
+        }
+    /////
 
-    UartSimulationWindow = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
-                                              "LDmicroUartSimulationWindow",
-                                              "UART Simulation (Terminal)",
+    SimHwnd = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,            ///// Modified by JG
+                                              "LDmicroSimulationWindow",            ///// Common Class name
+                                              WndName,                              ///// Window name modified by JG
                                               WS_VISIBLE | WS_SIZEBOX | WS_MAXIMIZEBOX | WS_MINIMIZEBOX,
                                               TerminalX,
                                               TerminalY,
@@ -2450,7 +2690,16 @@ void        ShowUartSimulationWindow()
                                               Instance,
                                               nullptr);
 
-    UartSimulationTextControl =
+    ///// Modified by JG
+    if (sim == SIM_UART)
+        UartSimulationWindow = SimHwnd;
+    if (sim == SIM_SPI)
+        SpiSimulationWindow = SimHwnd;
+    if (sim == SIM_I2C)
+        I2cSimulationWindow = SimHwnd;
+    /////
+
+    SimCtrl =                           ///// Modified by JG
         CreateWindowEx(0,
                        WC_EDIT,
                        "",
@@ -2459,10 +2708,19 @@ void        ShowUartSimulationWindow()
                        0,
                        TerminalW,
                        TerminalH,
-                       UartSimulationWindow,
+                       SimHwnd,                 ///// Modified by JG
                        nullptr,
                        Instance,
                        nullptr);
+
+    ///// Modified by JG
+    if (sim == SIM_UART)
+        UartSimulationTextControl = SimCtrl;
+    if (sim == SIM_SPI)
+        SpiSimulationTextControl = SimCtrl;
+    if (sim == SIM_I2C)
+        I2cSimulationTextControl = SimCtrl;
+    /////
 
     HFONT fixedFont = CreateFont(14,
                                  0,
@@ -2481,58 +2739,124 @@ void        ShowUartSimulationWindow()
     if(!fixedFont)
         fixedFont = (HFONT)GetStockObject(SYSTEM_FONT);
 
-    SendMessage((HWND)UartSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
-
-    PrevTextProc = SetWindowLongPtr(UartSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)UartSimulationTextProc);
-
+    ///// Modified by JG
     strcpy(buf, "");
-    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
-    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+    if (sim == SIM_UART)
+        {
+        SendMessage((HWND)UartSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
+        PrevUartTextProc = SetWindowLongPtr(UartSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc); ///// Modified by JG
+        SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+        SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+        ShowWindow(UartSimulationWindow, true);
+        }
+    if (sim == SIM_SPI)
+        {
+        SendMessage((HWND)SpiSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
+        PrevSpiTextProc = SetWindowLongPtr(SpiSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc);   ///// Modified by JG
+        SendMessage(SpiSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+        SendMessage(SpiSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+        ShowWindow(SpiSimulationWindow, true);
+        }
+    if (sim == SIM_I2C)
+        {
+        SendMessage((HWND)I2cSimulationTextControl, WM_SETFONT, (WPARAM)fixedFont, true);
+        PrevI2cTextProc = SetWindowLongPtr(I2cSimulationTextControl, GWLP_WNDPROC, (LONG_PTR)SimulationTextProc);   ///// Modified by JG
+        SendMessage(I2cSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+        SendMessage(I2cSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+        ShowWindow(I2cSimulationWindow, true);
+        }
 
-    ShowWindow(UartSimulationWindow, true);
-    SetFocus(MainWindow);
+    /////
+
+    /////    SetFocus(MainWindow);          ///// Removed by JG to show simulation windows
 }
 
 //-----------------------------------------------------------------------------
-// Get rid of the UART simulation terminal-type window.
+// Get rid of the simulation terminal-type window.
 //-----------------------------------------------------------------------------
-void DestroyUartSimulationWindow()
+void DestroySimulationWindow(HWND SimulationWindow)         ///// Modified by JG
 {
     // Try not to destroy the window if it is already destroyed; that is
     // not for the sake of the window, but so that we don't trash the
     // stored position.
-    //if(UartSimulationWindow == nullptr) return;
-    if(UartSimulationWindow != nullptr) {
+    //if(SimulationWindow == nullptr) return;
+    if(SimulationWindow != nullptr) {
 
-        if(fUART)
+        if((SimulationWindow == UartSimulationWindow) && (fUART))   ///// Modified by JG
             fclose(fUART);
+        if((SimulationWindow == SpiSimulationWindow) && (fSPI))     ///// Added by JG
+            fclose(fSPI);
+        if((SimulationWindow == I2cSimulationWindow) && (fI2C))     ///// Added by JG
+            fclose(fI2C);
 
         DWORD TerminalX, TerminalY, TerminalW, TerminalH;
         RECT  r;
 
-        GetClientRect(UartSimulationWindow, &r);
+        GetClientRect(SimulationWindow, &r);
         TerminalW = r.right - r.left;
         TerminalH = r.bottom - r.top;
 
-        GetWindowRect(UartSimulationWindow, &r);
+        GetWindowRect(SimulationWindow, &r);
         TerminalX = r.left;
         TerminalY = r.top;
 
-        FreezeDWORD(TerminalX);
-        FreezeDWORD(TerminalY);
-        FreezeDWORD(TerminalW);
-        FreezeDWORD(TerminalH);
+        ///// Modified by JG
+        if(SimulationWindow == UartSimulationWindow)
+        {
+            TerminalX1 = TerminalX;
+            TerminalY1 = TerminalY;
+            TerminalW1 = TerminalW;
+            TerminalH1 = TerminalH;
+
+            FreezeDWORD(TerminalX1);                // Save window size to Windows Registry
+            FreezeDWORD(TerminalY1);
+            FreezeDWORD(TerminalW1);
+            FreezeDWORD(TerminalH1);
+        }
+        if(SimulationWindow == SpiSimulationWindow)
+        {
+            TerminalX2 = TerminalX;
+            TerminalY2 = TerminalY;
+            TerminalW2 = TerminalW;
+            TerminalH2 = TerminalH;
+
+            FreezeDWORD(TerminalX2);                // Save window size to Windows Registry
+            FreezeDWORD(TerminalY2);
+            FreezeDWORD(TerminalW2);
+            FreezeDWORD(TerminalH2);
+        }
+        if(SimulationWindow == I2cSimulationWindow)
+        {
+            TerminalX3 = TerminalX;
+            TerminalY3 = TerminalY;
+            TerminalW3 = TerminalW;
+            TerminalH3 = TerminalH;
+
+            FreezeDWORD(TerminalX3);                // Save window size to Windows Registry
+            FreezeDWORD(TerminalY3);
+            FreezeDWORD(TerminalW3);
+            FreezeDWORD(TerminalH3);
+        }
+
+        /////
     }
 
-    DestroyWindow(UartSimulationWindow);
-    UartSimulationWindow = nullptr;
+    ///// Modified by JG
+    if(SimulationWindow == UartSimulationWindow)
+        UartSimulationWindow = nullptr;
+    if(SimulationWindow == SpiSimulationWindow)
+        SpiSimulationWindow = nullptr;
+    if(SimulationWindow == I2cSimulationWindow)
+        I2cSimulationWindow = nullptr;
+    DestroyWindow(SimulationWindow);
+    /////
 }
 
 //-----------------------------------------------------------------------------
 // Append a received character to the terminal buffer.
 //-----------------------------------------------------------------------------
 static SDWORD bPrev = 0;
-static void   AppendToUartSimulationTextControl(BYTE b)
+static void   AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)     ///// Modifief by JG to fit UART / SPI / I2C
 {
     char append[50];
 
@@ -2545,10 +2869,16 @@ static void   AppendToUartSimulationTextControl(BYTE b)
         sprintf(append, "\\x%02x", b);
     }
 
-    if(fUART)
+    if((SimulationTextControl == UartSimulationTextControl) && (fUART))
         fprintf(fUART, "%s", append);
+    ///// Added by JG
+    if((SimulationTextControl == SpiSimulationTextControl) && (fSPI))
+        fprintf(fSPI, "%s", append);
+    if((SimulationTextControl == I2cSimulationTextControl) && (fI2C))
+        fprintf(fI2C, "%s", append);
+    /////
 
-    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)(sizeof(buf) - 1), (LPARAM)buf);
+    SendMessage(SimulationTextControl, WM_GETTEXT, (WPARAM)(sizeof(buf) - 1), (LPARAM)buf);
 
     // vvv // This patch only for simulation mode and for WC_EDIT control.
     // Compared with Windows HyperTerminal and Putty.
@@ -2605,6 +2935,6 @@ static void   AppendToUartSimulationTextControl(BYTE b)
     }
     strcat(buf, append);
 
-    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
-    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+    SendMessage(SimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessage(SimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 }

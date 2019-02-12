@@ -42,6 +42,9 @@ static struct {
 } IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
 static int IoSeenPreviouslyCount;
 
+static int SpiErrors= 0;        ///// Added by JG
+static int I2cErrors= 0;        ///// Added by JG
+
 // stuff for the dialog box that lets you choose pin assignments
 
 static HWND IoDialog;
@@ -71,6 +74,8 @@ int IsIoType(int type)
     || (type == IO_TYPE_SPI_MISO)
     || (type == IO_TYPE_SPI_SCK)
     || (type == IO_TYPE_SPI__SS)
+    || (type == IO_TYPE_I2C_SCL)                    ///// Added by JG
+    || (type == IO_TYPE_I2C_SDA)                    /////
 //  || (type == IO_TYPE_MODBUS_CONTACT) //???
 //  || (type == IO_TYPE_MODBUS_COIL)    //???
     || (type == IO_TYPE_UART_TX)
@@ -424,6 +429,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
         }
 
+        case ELEM_SPI_WR:       ///// Added by JG
         case ELEM_SPI: {
             sprintf(str, "%s_MOSI", l->d.spi.name);
             AppendIo(str, IO_TYPE_SPI_MOSI);
@@ -440,21 +446,98 @@ static void ExtractNamesFromCircuit(int which, void *any)
                     //     assign
                 }
             }
+            ///// Added by JG
+            else
+            {
+            SpiErrors++;
+            if (SpiErrors == 1)
+                Error(_("Invalid SPI name in ladder."));
+            }
+
+            _ltoa(Prog.spiRate, l->d.spi.bitrate, 10);           // set frequency field
+            /////
 
             if(!CheckForNumber(l->d.spi.send)) {
                 // Not need ???
                 // Need if you add only one MOV or get erroneously other src name
                 // then you can see l->d.move.src in IOlist
-                AppendIo(l->d.spi.send, IO_TYPE_GENERAL);
+                if (which != ELEM_SPI_WR)                   ///// Added by JG : no send var for SPI_WRITE (literal string instead)
+                    AppendIo(l->d.spi.send, IO_TYPE_GENERAL);
             }
             if(!CheckForNumber(l->d.spi.recv)) {
                 // Not need ???
                 // Need if you add only one MOV or get erroneously other src name
                 // then you can see l->d.move.src in IOlist
-                AppendIo(l->d.spi.recv, IO_TYPE_GENERAL);
+                if (which != ELEM_SPI_WR)                   ///// Added by JG : no recv var for SPI_WRITE
+                    AppendIo(l->d.spi.recv, IO_TYPE_GENERAL);
             }
             break;
         }
+
+        ///// Added by JG
+        case ELEM_I2C_RD: {
+            sprintf(str, "%s_SCL", l->d.i2c.name);
+            AppendIo(str, IO_TYPE_I2C_SCL);
+            sprintf(str, "%s_SDA", l->d.i2c.name);
+            AppendIo(str, IO_TYPE_I2C_SDA);
+
+            McuI2cInfo *i2cInfo = GetMcuI2cInfo(l->d.i2c.name);
+            if(i2cInfo) {
+                if(i2cInfo->SCL) {
+                    //     assign
+                }
+            }
+            ///// Added by JG
+            else
+            {
+            I2cErrors++;
+            if (I2cErrors == 1)
+                Error(_("Invalid I2C name in ladder."));
+            }
+
+            _ltoa(Prog.i2cRate, l->d.i2c.bitrate, 10);           // set frequency field
+
+            if(!CheckForNumber(l->d.i2c.recv)) {
+                // Not need ???
+                // Need if you add only one MOV or get erroneously other src name
+                // then you can see l->d.move.src in IOlist
+                AppendIo(l->d.i2c.recv, IO_TYPE_GENERAL);   // only recv var for I2C_READ
+            }
+            break;
+        }
+
+        case ELEM_I2C_WR: {
+            sprintf(str, "%s_SCL", l->d.i2c.name);
+            AppendIo(str, IO_TYPE_I2C_SCL);
+            sprintf(str, "%s_SDA", l->d.i2c.name);
+            AppendIo(str, IO_TYPE_I2C_SDA);
+
+            McuI2cInfo *i2cInfo = GetMcuI2cInfo(l->d.i2c.name);
+            if(i2cInfo) {
+                if(i2cInfo->SCL) {
+                    //     assign
+                }
+            }
+            ///// Added by JG
+            else
+            {
+            I2cErrors++;
+            if (I2cErrors == 1)
+                Error(_("Invalid I2C name in ladder."));
+            }
+
+            _ltoa(Prog.i2cRate, l->d.i2c.bitrate, 10);           // set frequency field
+
+            if(!CheckForNumber(l->d.i2c.send)) {
+                // Not need ???
+                // Need if you add only one MOV or get erroneously other src name
+                // then you can see l->d.move.src in IOlist
+                AppendIo(l->d.spi.send, IO_TYPE_GENERAL);   // only send var for I2C_WRITE
+            }
+            break;
+        }
+        /////
+
         case ELEM_OPPOSITE:
         case ELEM_SWAP:
         case ELEM_BUS:
@@ -689,6 +772,8 @@ static int CompareIo(const void *av, const void *bv)
 int GenerateIoList(int prevSel)
 {
     int i, j;
+    SpiErrors= 0;       ///// Added by JG
+    I2cErrors= 0;       ///// Added by JG
 
     char selName[MAX_NAME_LEN];
     if(prevSel >= 0) {
@@ -732,6 +817,8 @@ int GenerateIoList(int prevSel)
            Prog.io.assignment[i].type == IO_TYPE_SPI_MISO ||
            Prog.io.assignment[i].type == IO_TYPE_SPI_SCK  ||
            Prog.io.assignment[i].type == IO_TYPE_SPI__SS  ||
+           Prog.io.assignment[i].type == IO_TYPE_I2C_SCL  ||            ///// Added by JG
+           Prog.io.assignment[i].type == IO_TYPE_I2C_SDA  ||            /////
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
             // clang-format on
@@ -791,6 +878,10 @@ bool LoadIoListFromFile(FILE *f)
             type = IO_TYPE_SPI_SCK;
         } else if(strstr(line, "__SS")) {
             type = IO_TYPE_SPI__SS;
+        } else if(strstr(line, "_SCL")) {           ///// Added by JG
+            type = IO_TYPE_I2C_SCL;
+        } else if(strstr(line, "_SDA")) {
+            type = IO_TYPE_I2C_SDA;                 /////
         } else {
             switch(strspace(line)[0]) {
                     //case 'I': type = IO_TYPE_INT_INPUT; break;
@@ -823,7 +914,7 @@ bool LoadIoListFromFile(FILE *f)
             }
         }
         char *s = strstr(line, " at ");
-        if(isdigit(s[4])) {
+        if((s) && (isdigit(s[4]))) {
             // Don't internationalize this! It's the file format, not UI.
             if(sscanf(line, " %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address) >= 2) {
                 AppendIoSeenPreviously(name, type, pin, modbus);
@@ -860,18 +951,20 @@ void SaveIoListToFile(FILE *f)
            Prog.io.assignment[i].type == IO_TYPE_SPI_MISO ||
            Prog.io.assignment[i].type == IO_TYPE_SPI_SCK  ||
            Prog.io.assignment[i].type == IO_TYPE_SPI__SS  ||
+           Prog.io.assignment[i].type == IO_TYPE_I2C_SCL  ||            ///// Added by JG
+           Prog.io.assignment[i].type == IO_TYPE_I2C_SDA  ||            /////
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
             // clang-format on
             j1++;
-            if((strcmp(Prog.LDversion, "0.1") == 0)      //
+            if((Prog.LDversion == "0.1")      //
                && (Prog.io.assignment[i].name[0] != 'X') //
                && (Prog.io.assignment[i].name[0] != 'Y') //
                && (Prog.io.assignment[i].name[0] != 'A'))
                 continue;
             j2++;
             // Don't internationalize this! It's the file format, not UI.
-            if(Prog.mcu && (Prog.mcu->whichIsa == ISA_PC) && (Prog.io.assignment[i].pin))
+            if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_PC) && (Prog.io.assignment[i].pin))
                 fprintf(f, "    %s at %s\n", Prog.io.assignment[i].name, PinToName(Prog.io.assignment[i].pin));
             else
                 fprintf(f,
@@ -883,7 +976,8 @@ void SaveIoListToFile(FILE *f)
         }
     }
     if(j1 != j2) {
-        Error(" %s%s", "Not all I/O pins are saved! Use menu:\n", _("File->Save LDmicro0.2 file format"));
+        Warning("%s%s", _("Not all I/O pins are saved! Use menu:\n"),
+            _("File->Save LDmicro0.2 file format"));
     }
 }
 
@@ -931,8 +1025,8 @@ void ShowAnalogSliderPopup(char *name)
     SWORD currentVal = GetAdcShadow(name);
 
     SWORD maxVal;
-    if(Prog.mcu) {
-        maxVal = Prog.mcu->adcMax;
+    if(Prog.mcu()) {
+        maxVal = Prog.mcu()->adcMax;
     } else {
         maxVal = 1023;
     }
@@ -1092,7 +1186,7 @@ static void MakeControls()
     HWND textLabel =
         CreateWindowEx(0,
                        WC_STATIC,
-                       ((Prog.mcu) && (Prog.mcu->whichIsa == ISA_AVR))
+                       ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_AVR))
                            ? _("Pin#:   MCU pin name:                                       Arduino pin name:")
                            : _("Pin#:   MCU pin name:"),
                        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
@@ -1189,7 +1283,7 @@ void ShowIoDialog(int item)
             // nothing;
             return;
     }
-    if(!Prog.mcu) {
+    if(!Prog.mcu()) {
         MessageBox(MainWindow,
                    _("No microcontroller has been selected. You must select a "
                      "microcontroller before you can assign I/O pins.\r\n\r\n"
@@ -1200,7 +1294,7 @@ void ShowIoDialog(int item)
         return;
     }
 
-    if(Prog.mcu->core == NOTHING) {
+    if(Prog.mcu()->core == NOTHING) {
         if(Prog.io.assignment[item].pin) {
             int i;
             for(i = 0; i < IoSeenPreviouslyCount; i++) {
@@ -1213,20 +1307,19 @@ void ShowIoDialog(int item)
         }
     }
     /*
-    if(Prog.mcu->whichIsa == ISA_ANSIC) {
+    if(Prog.mcu()->whichIsa == ISA_ANSIC) {
         Error(_("Can't specify I/O assignment for ANSI C target; compile and "
             "see comments in generated source code."));
         return;
     }
     */
-    if(Prog.mcu->whichIsa == ISA_INTERPRETED) {
+    if(Prog.mcu()->whichIsa == ISA_INTERPRETED) {
         Error(
-            _("Can't specify I/O assignment for interpretable target; see "
-              "comments in reference implementation of interpreter."));
+            _("Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter."));
         return;
     }
 
-    if(Prog.mcu->whichIsa == ISA_NETZER) {
+    if(Prog.mcu()->whichIsa == ISA_NETZER) {
         Error(_("Can't specify I/O assignment for Netzer!"));
         return;
     }
@@ -1241,6 +1334,8 @@ void ShowIoDialog(int item)
         case IO_TYPE_SPI_MISO:
         case IO_TYPE_SPI_SCK:
         case IO_TYPE_SPI__SS:
+        case IO_TYPE_I2C_SCL:           //// Added by JG
+        case IO_TYPE_I2C_SDA:           /////
         case IO_TYPE_UART_TX:
         case IO_TYPE_UART_RX:
         case IO_TYPE_MODBUS_CONTACT:
@@ -1248,26 +1343,24 @@ void ShowIoDialog(int item)
             break;
         default: {
             Error(
-                _("Can only assign pin number to input/output pins (Xname or "
-                  "Yname or Aname or Pname)."));
+                _("Can only assign pin number to input/output pins (Xname or Yname or Aname or Pname)."));
             return;
         }
     }
 
-    if((Prog.io.assignment[item].type == IO_TYPE_READ_ADC) && (Prog.mcu->adcCount == 0)) {
+    if((Prog.io.assignment[item].type == IO_TYPE_READ_ADC) && (Prog.mcu()->adcCount == 0)) {
         Error(_("No ADC or ADC not supported for this micro."));
         return;
     }
 
-    if((Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) && (Prog.mcu->pwmCount == 0)
-       && (Prog.mcu->pwmNeedsPin == 0)) {
+    if((Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) && (Prog.mcu()->pwmCount == 0)
+       && (Prog.mcu()->pwmNeedsPin == 0)) {
         Error(_("No PWM or PWM not supported for this MCU."));
         return;
     }
 
     if(strcmp(Prog.io.assignment[item].name + 1, "new") == 0) {
-        Error(_("Rename I/O from default name ('%s') before assigning "
-                "MCU pin."),
+        Error(_("Rename I/O from default name ('%s') before assigning MCU pin."),
               Prog.io.assignment[item].name);
         return;
     }
@@ -1297,20 +1390,20 @@ void ShowIoDialog(int item)
     int  Index = 0;
     char buf[MAX_NAME_LEN];
     char pinName[MAX_NAME_LEN];
-    for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
+    for(uint32_t i = 0; i < Prog.mcu()->pinCount; i++) {
         for(int j = 0; j < Prog.io.count; j++) {
             if(j == item)
                 continue;
-            if(Prog.io.assignment[j].pin == Prog.mcu->pinInfo[i].pin) {
+            if(Prog.io.assignment[j].pin == Prog.mcu()->pinInfo[i].pin) {
                 goto cant_use_this_io;
             }
         }
 
-        if(Prog.mcu->pinInfo[i].ioType) {
-            if((type == IO_TYPE_DIG_INPUT) && (Prog.mcu->pinInfo[i].ioType != IO_TYPE_DIG_INPUT)) {
+        if(Prog.mcu()->pinInfo[i].ioType) {
+            if((type == IO_TYPE_DIG_INPUT) && (Prog.mcu()->pinInfo[i].ioType != IO_TYPE_DIG_INPUT)) {
                 goto cant_use_this_io;
             }
-            if((type == IO_TYPE_DIG_OUTPUT) && (Prog.mcu->pinInfo[i].ioType != IO_TYPE_DIG_OUTPUT)) {
+            if((type == IO_TYPE_DIG_OUTPUT) && (Prog.mcu()->pinInfo[i].ioType != IO_TYPE_DIG_OUTPUT)) {
                 goto cant_use_this_io;
             }
         }
@@ -1321,7 +1414,7 @@ void ShowIoDialog(int item)
                 *c = '\0';
             McuSpiInfo *iop = GetMcuSpiInfo(name);
             if(iop)
-                if(iop->MOSI == Prog.mcu->pinInfo[i].pin)
+                if(iop->MOSI == Prog.mcu()->pinInfo[i].pin)
                     ; // okay; we know how to connect it up to the SPI
                 else
                     goto cant_use_this_io;
@@ -1333,7 +1426,7 @@ void ShowIoDialog(int item)
                 *c = '\0';
             McuSpiInfo *iop = GetMcuSpiInfo(name);
             if(iop)
-                if(iop->MISO == Prog.mcu->pinInfo[i].pin)
+                if(iop->MISO == Prog.mcu()->pinInfo[i].pin)
                     ; // okay; we know how to connect it up to the SPI
                 else
                     goto cant_use_this_io;
@@ -1345,7 +1438,7 @@ void ShowIoDialog(int item)
                 *c = '\0';
             McuSpiInfo *iop = GetMcuSpiInfo(name);
             if(iop)
-                if(iop->SCK == Prog.mcu->pinInfo[i].pin)
+                if(iop->SCK == Prog.mcu()->pinInfo[i].pin)
                     ; // okay; we know how to connect it up to the SPI
                 else
                     goto cant_use_this_io;
@@ -1357,33 +1450,60 @@ void ShowIoDialog(int item)
                 *c = '\0';
             McuSpiInfo *iop = GetMcuSpiInfo(name);
             if(iop)
-                if(iop->_SS == Prog.mcu->pinInfo[i].pin)
+                if(iop->_SS == Prog.mcu()->pinInfo[i].pin)
                     ; // okay; we know how to connect it up to the SPI
                 else
                     goto cant_use_this_io;
             else
                 goto cant_use_this_io;
         }
+        ///// Added by JG
+          else if(type == IO_TYPE_I2C_SCL) {
+            char *c = strchr(name, '_');
+            if(c)
+                *c = '\0';
+            McuI2cInfo *iop = GetMcuI2cInfo(name);
+            if(iop)
+                if(iop->SCL == Prog.mcu()->pinInfo[i].pin)
+                    ; // okay; we know how to connect it up to the I2C
+                else
+                    goto cant_use_this_io;
+            else
+                goto cant_use_this_io;
+        } else if(type == IO_TYPE_I2C_SDA) {
+            char *c = strchr(name, '_');
+            if(c)
+                *c = '\0';
+            McuI2cInfo *iop = GetMcuI2cInfo(name);
+            if(iop)
+                if(iop->SDA == Prog.mcu()->pinInfo[i].pin)
+                    ; // okay; we know how to connect it up to the I2C
+                else
+                    goto cant_use_this_io;
+            else
+                goto cant_use_this_io;
+        }
+        /////
 
-        if(UartFunctionUsed() && Prog.mcu
-           && ((Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.rxPin)
-               || (Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.txPin))) {
+        if(UartFunctionUsed() && Prog.mcu()
+           && ((Prog.mcu()->pinInfo[i].pin == Prog.mcu()->uartNeeds.rxPin)
+               || (Prog.mcu()->pinInfo[i].pin == Prog.mcu()->uartNeeds.txPin))) {
             goto cant_use_this_io;
         }
 
 #if 0
         if(PwmFunctionUsed() &&
-            Prog.mcu->pinInfo[i].pin == Prog.mcu->pwmNeedsPin)
+            Prog.mcu()->pinInfo[i].pin == Prog.mcu()->pwmNeedsPin)
         {
             goto cant_use_this_io;
         }
 #endif
-        if((type == IO_TYPE_INT_INPUT) && (!IsExtIntPin(Prog.mcu->pinInfo[i].pin))) {
+        if((type == IO_TYPE_INT_INPUT) && (!IsExtIntPin(Prog.mcu()->pinInfo[i].pin))) {
             goto cant_use_this_io;
         }
 
         if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
-            McuAdcPinInfo *iop = AdcPinInfo(Prog.mcu->pinInfo[i].pin);
+            McuAdcPinInfo *iop = AdcPinInfo(Prog.mcu()->pinInfo[i].pin);
             if(iop)
                 ; // okay; we know how to connect it up to the ADC
             else {
@@ -1391,15 +1511,15 @@ void ShowIoDialog(int item)
             }
         }
         if(Prog.io.assignment[item].type == IO_TYPE_PWM_OUTPUT) {
-            if(Prog.mcu->pwmCount) {
-                McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu->pinInfo[i].pin, Prog.cycleTimer);
+            if(Prog.mcu()->pwmCount) {
+                McuPwmPinInfo *iop = PwmPinInfo(Prog.mcu()->pinInfo[i].pin, Prog.cycleTimer);
                 if(!iop)
                     goto cant_use_this_io;
-                if((Prog.mcu->whichIsa == ISA_AVR) && (iop->timer == Prog.cycleTimer))
+                if(/*(Prog.mcu()->whichIsa == ISA_AVR) && */(iop->timer == Prog.cycleTimer))
                     goto cant_use_this_io;
                 // okay; we know how to connect it up to the PWM
             } else {
-                if(Prog.mcu->pwmNeedsPin == Prog.mcu->pinInfo[i].pin)
+                if(Prog.mcu()->pwmNeedsPin == Prog.mcu()->pinInfo[i].pin)
                     ; // okay; we know how to connect it up to the PWM
                 else {
                     goto cant_use_this_io;
@@ -1407,32 +1527,32 @@ void ShowIoDialog(int item)
             }
         }
 
-        if(Prog.mcu->pinInfo[i].pin == Prog.io.assignment[item].pin) {
+        if(Prog.mcu()->pinInfo[i].pin == Prog.io.assignment[item].pin) {
             Index = SendMessage(PinList, LB_GETCOUNT, 0, 0);
             if(Index == LB_ERR)
                 Index = 0;
         };
 
-        GetPinName(Prog.mcu->pinInfo[i].pin, pinName);
-        sprintf(buf, "%3d  %-30s %s", Prog.mcu->pinInfo[i].pin, pinName, ArduinoPinName(Prog.mcu->pinInfo[i].pin));
+        GetPinName(Prog.mcu()->pinInfo[i].pin, pinName);
+        sprintf(buf, "%3d  %-30s %s", Prog.mcu()->pinInfo[i].pin, pinName, ArduinoPinName(Prog.mcu()->pinInfo[i].pin));
 
         SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
     cant_use_this_io:;
     }
 
-    for(uint32_t j = 0; j < Prog.mcu->adcCount; j++) {
+    for(uint32_t j = 0; j < Prog.mcu()->adcCount; j++) {
         if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
-            for(uint32_t i = 0; i < Prog.mcu->pinCount; i++) {
-                if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) {
+            for(uint32_t i = 0; i < Prog.mcu()->pinCount; i++) {
+                if(Prog.mcu()->adcInfo[j].pin == Prog.mcu()->pinInfo[i].pin) {
                     // okay; we know how to connect it up to the ADC
                     // break;
                     goto cant_use_this_io_adc;
                 }
             }
-            if(j == Prog.mcu->adcCount) {
+            if(j == Prog.mcu()->adcCount) {
                 goto cant_use_this_io_adc;
             } else {
-                sprintf(buf, "%3d  ADC%d", Prog.mcu->adcInfo[j].pin, Prog.mcu->adcInfo[j].muxRegValue);
+                sprintf(buf, "%3d  ADC%d", Prog.mcu()->adcInfo[j].pin, Prog.mcu()->adcInfo[j].muxRegValue);
             }
             SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
         }
@@ -1697,13 +1817,13 @@ void IoListProc(NMHDR *h)
                 case LV_IO_PIN:
                 case LV_IO_PORT:
                 case LV_IO_PINNAME: {
-                    if(!Prog.mcu)
+                    if(!Prog.mcu())
                         break;
                     // Don't confuse people by displaying bogus pin assignments
                     // for the target.
-                    if(Prog.mcu
-                       && (Prog.mcu->whichIsa == ISA_NETZER || Prog.mcu->whichIsa == ISA_XINTERPRETED
-                           || Prog.mcu->whichIsa == ISA_INTERPRETED)) {
+                    if(Prog.mcu()
+                       && (Prog.mcu()->whichIsa == ISA_NETZER || Prog.mcu()->whichIsa == ISA_XINTERPRETED
+                           || Prog.mcu()->whichIsa == ISA_INTERPRETED)) {
                         strcpy(i->item.pszText, "");
                         break;
                     }
@@ -1740,7 +1860,7 @@ void IoListProc(NMHDR *h)
                 }
 
                 case LV_IO_RAM_ADDRESS: {
-                    if(!Prog.mcu)
+                    if(!Prog.mcu())
                         break;
                     DWORD addr = 0;
                     int   bit = -1;
@@ -1780,19 +1900,19 @@ void IoListProc(NMHDR *h)
                         MemForVariable(name, &addr);
                         if(addr > 0)
                             sprintf(i->item.pszText, "0x%X", addr);
-                    } else if((type == IO_TYPE_INTERNAL_RELAY)) {
+                    } else if(type == IO_TYPE_INTERNAL_RELAY) {
                         MemForSingleBit(name, true, &addr, &bit);
                         if(addr > 0 && bit >= 0)
                             sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                     } else if(type == IO_TYPE_UART_TX) {
-                        if(Prog.mcu) {
-                            AddrBitForPin(Prog.mcu->uartNeeds.txPin, &addr, &bit, false);
+                        if(Prog.mcu()) {
+                            AddrBitForPin(Prog.mcu()->uartNeeds.txPin, &addr, &bit, false);
                             if(addr > 0 && bit >= 0)
                                 sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                         }
                     } else if(type == IO_TYPE_UART_RX) {
-                        if(Prog.mcu) {
-                            AddrBitForPin(Prog.mcu->uartNeeds.rxPin, &addr, &bit, true);
+                        if(Prog.mcu()) {
+                            AddrBitForPin(Prog.mcu()->uartNeeds.rxPin, &addr, &bit, true);
                             if(addr > 0 && bit >= 0)
                                 sprintf(i->item.pszText, "0x%02X (BIT%d)", addr, bit);
                         }
@@ -1802,7 +1922,7 @@ void IoListProc(NMHDR *h)
                               || (type == IO_TYPE_SPI_SCK)  //
                               || (type == IO_TYPE_SPI__SS)  //
                     ) {
-                        if(Prog.mcu) {
+                        if(Prog.mcu()) {
                             McuIoPinInfo *iop;
                             iop = PinInfoForName(name);
                             if(iop) {

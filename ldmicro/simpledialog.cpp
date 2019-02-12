@@ -218,10 +218,13 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
     NiceFont(CancelButton);
 }
 
+///// prototype modified by JG with extra default parameter rdonly
 static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
-                             DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos)
+                             DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos, long rdonly= 0)
 {
     bool didCancel;
+
+    try {       //// try... catch added by JG
 
     if(labs > MAX_BOXES)
         oops();
@@ -251,7 +254,11 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
 
     int i;
     for(i = 0; i < boxes; i++) {
-        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);
+        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);     ///// fill boxes with current settings
+        ///// added by JG to make some fields read-only (max= 32 boxes)
+        if ((i < 32) && (rdonly & (1 << i)))
+            SendMessage(Textboxes[i], EM_SETREADONLY, TRUE, 0);
+        /////
 
         if(numOnlyMask & (1 << i)) {
             PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, (LONG_PTR)MyNumOnlyProc);
@@ -324,6 +331,18 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
     SetFocus(MainWindow);
     DestroyWindow(SimpleDialog);
 
+    } catch(...) {      ///// Try... catch added by JG
+
+        ///// Added by JG to save work in case of big bug
+        srand((unsigned int)time(nullptr));
+        char fname[20];
+        sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
+        SaveProjectToFile(fname, MNU_SAVE_02);
+        /////
+
+        abortHandler(EXCEPTION_EXECUTE_HANDLER);
+    };
+
     return !didCancel;
 }
 
@@ -355,11 +374,11 @@ void ShowTimerDialog(int which, ElemLeaf *l)
         long long T = 0, T0 = 0;
         int       i, n = 0;
         for(i = 1;; i++) {
-            if(Prog.mcu) {
-                if(Prog.mcu->whichIsa == ISA_AVR) {
+            if(Prog.mcu()) {
+                if(Prog.mcu()->whichIsa == ISA_AVR) {
                     T = i; // to long long
                     T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
-                } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+                } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                     T = i; // to long long
                     T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
                 }
@@ -373,11 +392,11 @@ void ShowTimerDialog(int which, ElemLeaf *l)
                 }
             }
         }
-        if(Prog.mcu) {
-            if(Prog.mcu->whichIsa == ISA_AVR) {
+        if(Prog.mcu()) {
+            if(Prog.mcu()->whichIsa == ISA_AVR) {
                 T = 0x10000; // to long long
                 T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
-            } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+            } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                 T = 0xffff; // to long long
                 T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
             }
@@ -417,7 +436,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
         case ELEM_TCY:        s = _("Cyclic On/Off"); break;
         case ELEM_TON:        s = _("Turn-On Delay"); break;
         case ELEM_TOF:        s = _("Turn-Off Delay"); break;
-        case ELEM_THI:        s = _("Hight Level Delay"); break;
+        case ELEM_THI:        s = _("High Level Delay"); break;
         case ELEM_TLO:        s = _("Low Level Delay"); break;
         case ELEM_RTO:        s = _("Retentive Turn-On Delay"); break;
         case ELEM_RTL:        s = _("Retentive Turn-On Delay If Low Input"); break;
@@ -443,14 +462,13 @@ void ShowTimerDialog(int which, ElemLeaf *l)
                 delay_us = (SDWORD)round(delay_ms * 1000.0);
 
                 if(delay_us > LONG_MAX) {
-                    Error(_(
-                        "Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
+                    Error(_("Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
                     delay_us = LONG_MAX;
                 }
 
                 SDWORD period;
                 if(Prog.cycleTime <= 0) {
-                    Error(_(" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
+                    Warning(_("PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
                     period = 1;
                 } else {
                     period = TestTimerPeriod(name, delay_us, *adjust);
@@ -496,10 +514,9 @@ void ShowSleepDialog(int which, ElemLeaf *l)
             sprintf(s3, _("Minimum available timer period = PLC cycle time = %.3f ms."), 1.0 * Prog.cycleTime / 1000);
             const char *s4 = _("Not available");
             Error("%s\n\r%s %s\r\n%s", s1, s4, s2, s3);
-        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1)))) && (Prog.mcu->whichIsa != ISA_PC)) {
+        } else if((period >= ((int64_t)1 << ((int64_t)(SizeOfVar(name) * 8 - 1)))) && (Prog.mcu()->whichIsa != ISA_PC)) {
             const char *s1 =
-                _("Timer period too long (max 32767 times cycle time); use a "
-                  "slower cycle time.");
+                _("Timer period too long (max 32767 times cycle time); use a slower cycle time.");
             char s2[1024];
             sprintf(s2, _("Timer 'T%s'=%.3f ms needs %d PLC cycle times."), nameBuf, del / 1000, period);
             double maxDelay = 1.0 * ((1 << (SizeOfVar(name) * 8 - 1)) - 1) * Prog.cycleTime / 1000000; //s
@@ -522,11 +539,11 @@ void ShowDelayDialog(int which, ElemLeaf *l)
     strcpy(buf1, _("Achievable DELAY values (us): "));
     long long T = 0, T0 = 0;
     int       i, n = 0;
-    if(Prog.mcu && ((Prog.mcu->whichIsa == ISA_AVR) || (Prog.mcu->whichIsa == ISA_PIC16))) {
+    if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16))) {
         for(i = 0;; i++) {
-            if(Prog.mcu->whichIsa == ISA_AVR) {
+            if(Prog.mcu()->whichIsa == ISA_AVR) {
                 T = i * 1000000 / Prog.mcuClock;
-            } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+            } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
                 T = i * 4000000 / Prog.mcuClock;
             }
             if(T != T0) {
@@ -539,11 +556,11 @@ void ShowDelayDialog(int which, ElemLeaf *l)
             }
         }
     }
-    if(Prog.mcu) {
-        if(Prog.mcu->whichIsa == ISA_AVR) {
+    if(Prog.mcu()) {
+        if(Prog.mcu()->whichIsa == ISA_AVR) {
             T = 0x10000; // to long long
             T = (T * 4 + 1) * 1000000 / Prog.mcuClock;
-        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
+        } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
             T = 0xffff; // to long long
             T = (T * 6 + 10) * 4000000 / Prog.mcuClock;
         }
@@ -626,24 +643,24 @@ void CheckVarInRange(char *name, char *str, SDWORD v)
     int sov = SizeOfVar(name);
     if(sov == 1) {
         if((v < -128 || v > 127) && (radix == 10))
-            Error(_(" Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
+            Warning(_("Variable %s=%d out of range: -128 to 127 inclusive."), name, v);
         else if((v < 0 || v > 0xff) && (radix != 10))
-            Error(_(" Variable %s=0x%X out of range: 0 to 0xFF inclusive."), str, v, name);
+            Warning(_("Variable %s=0x%X out of range: 0 to 0xFF inclusive."), str, v, name);
     } else if((sov == 2) || (sov == 0)) {
         if((v < -32768 || v > 32767) && (radix == 10))
-            Error(_(" Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
+            Warning(_("Variable %s=%d out of range: -32768 to 32767 inclusive."), name, v);
         else if((v < 0 || v > 0xffff) && (radix != 10))
-            Error(_(" Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."), str, v, name);
+            Warning(_("Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."), str, v, name);
     } else if(sov == 3) {
         if((v < -8388608 || v > 8388607) && (radix == 10))
-            Error(_(" Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
+            Warning(_("Variable %s=%d out of range: -8388608 to 8388607 inclusive."), name, v);
         else if((v < 0 || v > 0xffffff) && (radix != 10))
-            Error(_(" Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."), str, v, name);
+            Warning(_("Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."), str, v, name);
     } else if(sov == 4) {
         if((v < -2147483648LL || v > 2147483647LL) && (radix == 10))
-            Error(_(" Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."), name, v);
+            Warning(_("Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."), name, v);
         else if((DWORD(v) < 0 || DWORD(v) > 0xffffFFFF) && (radix != 10))
-            Error(_(" Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."), str, v, name);
+            Warning(_("Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."), str, v, name);
     } else
         ooops("Variable '%s' size=%d value=%d", name, sov, v);
 }
@@ -682,8 +699,10 @@ void ShowCounterDialog(int which, ElemLeaf *l)
         _("Start value:"),
         (((which == ELEM_CTC)
               ? _("Max value:")
-              : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ? _("True if >= :") : _("True if > :")))),
-        _("Input kind:")};
+              : (which == ELEM_CTR) ? _("Min value:") : (which == ELEM_CTU ?
+                    _("True if >= :") :
+                    _("True if > :")))),
+                _("Input kind:")};
     char *dests[] = {name + 1, minV, maxV, inputKind};
     if(ShowSimpleDialog(title, 4, labels, 0, 0x7, 0x7, dests)) {
         if(IsNumber(minV)) {
@@ -697,7 +716,7 @@ void ShowCounterDialog(int which, ElemLeaf *l)
         if((inputKind[0] == '/') || (inputKind[0] == '\\') || (inputKind[0] == 'o') || (inputKind[0] == '-'))
             e->inputKind = inputKind[0];
         else
-            Error("Only the characters '-o/\\' are available!");
+            Error(_("Only the characters '-o/\\' are available!"));
     }
 }
 
@@ -919,11 +938,19 @@ void ShowSpiDialog(ElemLeaf *l)
     const char *labels[] = {_("SPI Name:"),
                             _("SPI Mode:"),
                             _("Send variable:"),
-                            _("Recieve to variable:"),
+                            _("Receive to variable:"),
                             _("Bit Rate (Hz):"),
-                            _("Data Modes (CPOL, CPHA): "),
+                            _("Data Modes (CPOL, CPHA):"),
                             _("Data Size:"),
                             _("Data Order:")};
+
+    ///// Added by JG
+    if (l->d.spi.which == ELEM_SPI_WR)
+    {
+        labels[2] = _("Send string:");
+        NoCheckingOnBox[2] = true;
+    }
+    /////
 
     char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->modes, s->size, s->first};
 
@@ -935,45 +962,139 @@ void ShowSpiDialog(ElemLeaf *l)
                               {4, {"0b00", "0b01", "0b10", "0b11"}},
                               {0, {nullptr}},
                               {2, {"MSB_FIRST", "LSB_FIRST"}}};
-    int         i;
-    if(Prog.mcu) {
-        if(Prog.mcu->spiCount) {
-            comboRec[0].n = Prog.mcu->spiCount;
+    int i;
+    if(Prog.mcu()) {
+        if(Prog.mcu()->spiCount) {
+            comboRec[0].n = Prog.mcu()->spiCount;
             for(i = 0; i < comboRec[0].n; i++) {
-                comboRec[0].str[i] = Prog.mcu->spiInfo[i].name;
+                comboRec[0].str[i] = Prog.mcu()->spiInfo[i].name;
             }
         }
-        // Bit Rate (Hz):
-        char buf[128];
-        int  m;
-        if(Prog.mcu->whichIsa == ISA_AVR) {
-            m = 2;
-            comboRec[4].n = 7;
-        } else if(Prog.mcu->whichIsa == ISA_PIC16) {
-            m = 4;
-            comboRec[4].n = 3;
-        } else
-            oops();
-        for(i = 0; i < comboRec[4].n; i++) {
-            double f = 1.0 * Prog.mcuClock / (m * xPowerY(m, i));
-            double t = 1.0 * 1000 * SizeOfVar(s->send) * 8 / f;
-            //sprintf(buf,"%15.3fHz,T_ss=%.3fms", f, t);
-            sprintf(buf, "%15.3f Hz, T_ss = %.3f ms", f, t);
-            comboRec[4].str[i] = (char *)CheckMalloc(strlen(buf) + 1);
-            strcpy(comboRec[4].str[i], buf);
+
+        ///// Added by JG
+        if(Prog.mcu()->whichIsa == ISA_ARM)
+        {
+
+        }
+
+        else
+        /////
+        {
+            // Bit Rate (Hz):
+            char buf[128];
+            int  m;
+            if(Prog.mcu()->whichIsa == ISA_AVR) {
+                m = 2;
+                comboRec[4].n = 7;
+            } else if(Prog.mcu()->whichIsa == ISA_PIC16) {
+                m = 4;
+                comboRec[4].n = 3;
+            } else
+                oops();
+            for(i = 0; i < comboRec[4].n; i++) {
+                double f = 1.0 * Prog.mcuClock / (m * xPowerY(m, i));
+                double t = 1.0 * 1000 * SizeOfVar(s->send) * 8 / f;
+                //sprintf(buf,"%15.3fHz,T_ss=%.3fms", f, t);
+                sprintf(buf, "%15.3f Hz, T_ss = %.3f ms", f, t);
+                comboRec[4].str[i] = (char *)CheckMalloc(strlen(buf) + 1);
+                strcpy(comboRec[4].str[i], buf);
+            }
         }
     }
     //  NoCheckingOnBox[3] = true;
-    if(ShowSimpleDialog(title, 8, labels, 0x4, 0x3, -1, 8, dests, 8, comboRec)) {
+
+    ///// Added by JG
+    if(Prog.mcu())
+    if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR))
+    {
+        if (l->d.spi.which == ELEM_SPI)
+            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00F2);
+        if (l->d.spi.which == ELEM_SPI_WR)
+        {
+            strcpy(dests[3], "-");
+            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00FA);
+        }
+    }
+    else
+    {
+    /////
+        if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
         /*
         //TODO: check the available range
 */
-    }
+        }
     //  NoCheckingOnBox[3] = false;
     for(i = 0; i < comboRec[4].n; i++) {
         CheckFree(comboRec[4].str[i]);
     }
+    }
 }
+
+///// Added by JG
+void ShowI2cDialog(ElemLeaf *l)
+{
+    ElemI2c *   s = &(l->d.i2c);
+    const char *title = _("I2C - Two Wire Interface");
+
+    const char *labels[] = {_("I2C Name:"),
+                            _("I2C Mode:"),
+                            _("Send variable:"),
+                            _("Receive to variable:"),
+                            _("Bit Rate (Hz):"),
+                            _("I2C Address:"),
+                            _("I2C Register:"),
+                            _("Data Order:")};
+
+    if (l->d.i2c.which == ELEM_I2C_RD)
+    {
+        NoCheckingOnBox[2] = true;              ///////////////////////// A VOIR
+    }
+
+    char *dests[] = {s->name, s->mode, s->send, s->recv, s->bitrate, s->address, s->registr, s->first};
+
+    comboRecord comboRec[] = {{0, {nullptr}},
+                             {2, {"Master", "Slave"}},
+                             {0, {nullptr}},
+                             {0, {nullptr}},
+                             {0, {nullptr}},
+                             {1, {"0"}},
+                             {1, {"0"}},
+                             {2, {"MSB_FIRST", "LSB_FIRST"}}};
+
+    int i;
+    if(Prog.mcu()) {
+        if(Prog.mcu()->i2cCount) {
+            comboRec[0].n = Prog.mcu()->i2cCount;
+            for(i = 0; i < comboRec[0].n; i++) {
+                comboRec[0].str[i] = Prog.mcu()->i2cInfo[i].name;
+            }
+        }
+    }
+
+    if(Prog.mcu())
+    if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR))
+    {
+        if (l->d.i2c.which == ELEM_I2C_RD)  // no send
+        {
+            strcpy(dests[2], "-");
+            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x0096);
+        }
+        if (l->d.i2c.which == ELEM_I2C_WR)  // no recv
+        {
+            strcpy(dests[3], "-");
+            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x009A);
+        }
+    }
+    else
+    {
+        if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
+        /*
+        //TODO: check the available range
+*/
+        }
+    }
+}
+/////
 
 void ShowSegmentsDialog(int which, ElemLeaf *l)
 {
@@ -1034,24 +1155,24 @@ void ShowGotoDialog(int which, char *name)
     const char *s;
     switch(which) {
         case ELEM_GOTO:
-            s = _("Goto rung number or labe namel");
-            labels[1] = _("Destination rung(label):");
+            s = _("Goto rung number or label");
+            labels[0] = _("Destination rung(label):");
             break;
         case ELEM_GOSUB:
-            s = _("Call SUBPROG rung number or label name");
-            labels[1] = _("Destination rung(label):");
+            s = _("Call SUBPROG rung number or label");
+            labels[0] = _("Destination rung(label):");
             break;
         case ELEM_LABEL:
             s = _("Define LABEL name");
-            labels[1] = _("LABEL name:");
+            labels[0] = _("LABEL name:");
             break;
         case ELEM_SUBPROG:
             s = _("Define SUBPROG name");
-            labels[1] = _("SUBPROG name:");
+            labels[0] = _("SUBPROG name:");
             break;
         case ELEM_ENDSUB:
             s = _("Define ENDSUB name");
-            labels[1] = _("ENDSUB name:");
+            labels[0] = _("ENDSUB name:");
             break;
         default:
             oops();
@@ -1105,14 +1226,22 @@ void ShowSetPwmDialog(void *e)
     NoCheckingOnBox[3] = false;
 }
 
-void ShowUartDialog(int which, char *name)
+void ShowUartDialog(int which, ElemLeaf *l)
 {
-    const char *labels[] = {(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:")};
-    char *      dests[] = {name};
+    ElemUart *   e = &(l->d.uart);
+    char bytes[MAX_NAME_LEN];
+    sprintf(bytes, "%d", e->bytes);
+    char wait[MAX_NAME_LEN];
+    sprintf(wait, "%d", e->wait);
+
+    const char *labels[] = {(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"), _("Number of bytes to transmit:"), _("Wait until all bytes are transmitted:")};
+    char *      dests[] = {e->name, bytes, wait};
 
     NoCheckingOnBox[0] = true;
-    ShowSimpleDialog(
-        (which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 1, labels, 0x0, 0x1, 0x1, dests);
+    if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"), 3, labels, 0x0, 0x1, 0x1, dests)) {
+        e->bytes = std::max(1, std::min(SizeOfVar(e->name), static_cast<int>(hobatoi(bytes))));
+        e->wait = hobatoi(wait) ? 1 : 0;
+    };
     NoCheckingOnBox[0] = false;
 }
 
@@ -1201,35 +1330,6 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
     }
 }
 
-void CalcSteps(ElemStepper *s, ResSteps *r)
-{
-    memset(&(*r), 0, sizeof(ResSteps));
-
-    FILE *f;
-
-    double massa = 1;
-    int    nSize = s->nSize;
-    int    graph = s->graph;
-
-    int P = 0;
-    if(IsNumber(s->P)) {
-        P = hobatoi(s->P);
-    };
-
-    int max = 0;
-    if(IsNumber(s->max)) {
-        max = hobatoi(s->max);
-    };
-
-    char fname[MAX_PATH];
-    sprintf(fname, "%s\\%s", CurrentLdPath, "acceleration_deceleration.txt");
-    f = fopen(fname, "w");
-
-    fclose(f);
-
-    s->n = r->n;
-}
-
 void ShowStepperDialog(int which, void *e)
 {
     ElemStepper *s = (ElemStepper *)e;
@@ -1240,7 +1340,11 @@ void ShowStepperDialog(int which, void *e)
 
     const char *title;
     title = _("Stepper");
-    const char *labels[] = {_("Name:"), _("Counter:"), "P:", _("Table size:"), _("graph:"), _("Pulse to:")};
+    const char *labels[] = {_("Name:"),
+        _("Counter:"), "P:",
+        _("Table size:"),
+        _("Graph:"),
+        _("Pulse to:")};
     char        sgraph[128];
     sprintf(sgraph, "%d", s->graph);
     char snSize[128];
@@ -1277,7 +1381,6 @@ void ShowStepperDialog(int which, void *e)
             int count = hobatoi(max);
 
             ResSteps r;
-            //memset(&r,0,sizeof(r));
             if(IsNumber(max) && (s->graph)) {
                 CalcSteps(s, &r);
 
@@ -1368,7 +1471,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
                     }
                     Ta = (double)Prog.cycleTime * Na / 1000.0;
                     //sprintf(str, "%s\n\nAcceleration time %d cycles=%.3f %s", str, Na, Ta, Punits);
-                    sprintf(str, "%s\n\nAcceleration time=%.3f %s", str, Ta, Punits);
+                    sprintf(str, _("%s\n\nAcceleration time=%.3f %s"), str, Ta, Punits);
                 }
             }
 
@@ -1395,7 +1498,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
 
 void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
 {
-    const char *labels[] = {_("Counter var:"), _("Frequency (Hz):"), "Pulse to:"};
+    const char *labels[] = {_("Counter var:"), _("Frequency (Hz):"), _("Pulse to:")};
     char *      dests[] = {counter, targetFreq, coil};
     if(ShowSimpleDialog(_("Set N Pulse Cycle"), 3, labels, 0x2, 0x1, 0x7, dests)) {
         //TODO: check the available range
@@ -1458,8 +1561,8 @@ void ShowQuadEncodDialog(int which, ElemLeaf *l)
         SDWORD val;
         /*
         val = hobatoi(_int01);
-        if(Prog.mcu)
-            if((val < 0) || (static_cast<SDWORD>(Prog.mcu->ExtIntCount) <= val))
+        if(Prog.mcu())
+            if((val < 0) || (static_cast<SDWORD>(Prog.mcu()->ExtIntCount) <= val))
                 Error(_("Can select only INTs pin."));
         */
         val = hobatoi(countPerRevol);
@@ -1468,7 +1571,7 @@ void ShowQuadEncodDialog(int which, ElemLeaf *l)
         if((inputKind[0] == '/') || (inputKind[0] == '\\') || (inputKind[0] == 'o') || (inputKind[0] == '-'))
             q->inputZKind = inputKind[0];
         else
-            Error("Only the characters '-o/\\' are available!");
+            Error(_("Only the characters '-o/\\' are available!"));
     }
     NoCheckingOnBox[3] = false;
     NoCheckingOnBox[6] = false;
@@ -1593,7 +1696,7 @@ void ShowCprintfDialog(int which, void *e)
     }
     // clang-format on
     char str[MAX_NAME_LEN];
-    sprintf(str, ("Formatted String over %s"), s);
+    sprintf(str, _("Formatted String over %s"), s);
     NoCheckingOnBox[0] = true;
     NoCheckingOnBox[1] = true;
     NoCheckingOnBox[2] = true;

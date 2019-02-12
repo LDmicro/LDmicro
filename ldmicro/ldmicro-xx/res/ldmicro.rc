@@ -1,0 +1,9 @@
+
+// we need a manifest if we want visual styles; put in numbers since somethings a bit screwy
+// with my SDK install (I don't think I've got *.rh right)
+
+#include "resource.h"
+
+1 RT_MANIFEST "ldmicro.exe.manifest"
+
+IDW_MAIN ICON "ldmicro.ico"

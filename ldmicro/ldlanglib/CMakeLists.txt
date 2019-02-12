@@ -35,6 +35,9 @@ execute_process(
 if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /J")
     string(APPEND CMAKE_C_FLAGS " /J")
+elseif(CMAKE_COMPILER_IS_GNUCXX)
+    string(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra ")
+    string(APPEND CMAKE_C_FLAGS "-Wall -Wextra ")
 endif()
 
 add_definitions(
@@ -44,7 +47,7 @@ add_definitions(
     "-D_CRT_SECURE_NO_DEPRECATE"
     "-DNOMINMAX"
     )
-INCLUDE_DIRECTORIES("../../common/win32" "../../common/gsl-lite/include" "../../common/stringarray")
+INCLUDE_DIRECTORIES("../../common/win32" "../../common/gsl-lite/include" "../../common/stringarray" "../../common/utils")
 
 if(${LDLANG} STREQUAL "ALL")
     foreach(lang_id ${LDLANG_ALL})

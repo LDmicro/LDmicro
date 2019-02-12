@@ -7,7 +7,7 @@
 
 #include "targetver.h"
 
-#include <gsl.hpp>
+#include "gsl.hpp"
 
 // #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
@@ -55,6 +55,7 @@ typedef int32_t SDWORD;
 #include "display.h"
 
 #include "compilerexceptions.hpp"
+#include "filetracker.hpp"
 
 // The library that I use to do registry stuff.
 #define FREEZE_SUBKEY "LDMicro"

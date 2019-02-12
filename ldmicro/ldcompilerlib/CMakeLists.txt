@@ -10,6 +10,7 @@ endif()
 message(STATUS "ldcompilerlib lang : ${LDLANG}")
 
 set(LD_COMPILER_SRC_LIST
+    ../accel.cpp
     ../ansic.cpp
     ../avr.cpp
     ../circuit.cpp
@@ -23,18 +24,21 @@ set(LD_COMPILER_SRC_LIST
     ../mcutable.cpp
     ../pascal.cpp
     ../pcports.cpp
+    ../plcprogram.cpp
     ../translit.cpp
     ../xinterpreted.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp
 
     ../accel.h
     ../bits.h
+    ../circuit.h
     ../display.h
     ../intcode.h
     ../netzer.h
     ../mcutable.h
     ../mcutable.hpp
     ../pcports.h
+    ../plcprogram.h
     ../compilerexceptions.hpp
     ../compilercommon.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h
@@ -43,6 +47,9 @@ set(LD_COMPILER_SRC_LIST
 if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /J")
     string(APPEND CMAKE_C_FLAGS " /J")
+elseif(CMAKE_COMPILER_IS_GNUCXX)
+    string(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra ")
+    string(APPEND CMAKE_C_FLAGS "-Wall -Wextra ")
 endif()
 
 INCLUDE_DIRECTORIES("../" "../../common/gsl-lite/include" "../../common/stringarray" "../../common/utils")

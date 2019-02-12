@@ -48,7 +48,14 @@ static HMENU SimulateMenu;
 static HMENU TopMenu;
 static HMENU SpecialFunction;
 static HMENU DisplayMenu;
+static HMENU ConMenu;
 static HMENU CmpMenu;
+static HMENU TmpMenu;
+static HMENU CntMenu;
+static HMENU EdgMenu;
+static HMENU UrtMenu;
+static HMENU SpiMenu;                   ///// JG
+static HMENU I2cMenu;                   ///// JG
 static HMENU SignedMenu;
 static HMENU BitwiseMenu;
 static HMENU PulseMenu;
@@ -65,6 +72,10 @@ int         IoListTop;
 
 // whether the simulation is running in real time
 static bool RealTimeSimulationRunning;
+
+extern HWND     UartSimulationWindow;       ///// Added by JG
+extern HWND     SpiSimulationWindow;        ///// Added by JG
+extern HWND     I2cSimulationWindow;        ///// Added by JG
 
 //-----------------------------------------------------------------------------
 // Create the standard Windows controls used in the main window: a Listview
@@ -310,6 +321,10 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
 #endif
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_SPI, t);
+    EnableMenuItem(InstructionMenu, MNU_INSERT_SPI_WRITE, t);       ///// Added by JG
+
+    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_READ, t);        ///// Added by JG
+    EnableMenuItem(InstructionMenu, MNU_INSERT_I2C_WRITE, t);       /////
 
     EnableMenuItem(InstructionMenu, MNU_INSERT_BUS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_7SEG, t);
@@ -372,13 +387,13 @@ HMENU MakeMainWindowMenus()
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG_DOWN, _("Dup&licate Selected Rung\tCtrl+D"));
-    AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG, _("Select Rung's\tShift+Up or Shift+Dn"));
-    AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG, _("Select Rung's\tCtrl+Left Mouse Buttton Click"));
-    AppendMenu(EditMenu, MF_STRING, MNU_CUT_RUNG, _("Cu&t Rung's\tCtrl+X or Shift+Del"));
-    AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG, _("&Copy Rung's\tCtrl+C or Ctrl+Insert"));
+    AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG, _("Select Rungs\tShift+Up or Shift+Down"));
+    AppendMenu(EditMenu, MF_STRING, MNU_SELECT_RUNG, _("Select Rungs\tCtrl+Left Mouse Button Click"));
+    AppendMenu(EditMenu, MF_STRING, MNU_CUT_RUNG, _("Cu&t Rungs\tCtrl+X or Shift+Del"));
+    AppendMenu(EditMenu, MF_STRING, MNU_COPY_RUNG, _("&Copy Rungs\tCtrl+C or Ctrl+Insert"));
     AppendMenu(EditMenu, MF_STRING, MNU_COPY_ELEM, _("Copy Selected Element\tInsert"));
-    AppendMenu(EditMenu, MF_STRING, MNU_PASTE_RUNG, _("Paste Rung's\tCtrl+V or Shift+Insert"));
-    AppendMenu(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG, _("Paste Rung's/Element &Into Rung\tAlt+Insert"));
+    AppendMenu(EditMenu, MF_STRING, MNU_PASTE_RUNG, _("Paste Rungs\tCtrl+V or Shift+Insert"));
+    AppendMenu(EditMenu, MF_STRING, MNU_PASTE_INTO_RUNG, _("Paste Rungs or Element &Into Rung\tAlt+Insert"));
 
     AppendMenu(EditMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(EditMenu, MF_STRING, MNU_CUT_ELEMENT, _("Cut Selected Element\tAlt+Del"));
@@ -414,10 +429,12 @@ HMENU MakeMainWindowMenus()
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_RETURN, _("Insert RETURN"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_ENDSUB, _("Insert ENDSUB declaration"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_GOSUB, _("Insert GOSUB call"));
+
     AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_SLEEP, _("Insert SLEEP"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_CLRWDT, _("Insert CLRWDT"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_LOCK, _("Insert LOCK"));
+
     AppendMenu(CourseMenu, MF_SEPARATOR, 0, nullptr);
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_DELAY, _("Insert DELAY(us)"));
     AppendMenu(CourseMenu, MF_STRING, MNU_INSERT_TIME2DELAY, _("Insert TIME to DELAY converter"));
@@ -427,46 +444,63 @@ HMENU MakeMainWindowMenus()
                _("Operations that change the course of the program"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONTACTS, _("Insert &Contacts: Input Pin\tC"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_RELAY, _("Insert Contacts: Internal Relay\tShift+C"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CONT_OUTPUT, _("Insert Contacts: Output Pin\tShift+L"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL, _("Insert Coi&l: Output Pin\tL"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL_RELAY, _("Insert Coil: Internal Relay\tAlt+L"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_NORMAL, _("Make &Normal\tN"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_NEGATE, _("Make &Negated\tN"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_SET_ONLY, _("Make &Set-Only\tS"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_RESET_ONLY, _("Make &Reset-Only\tR"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_TTRIGGER, _("Make T-trigger"));
+    ConMenu = CreatePopupMenu();
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_CONTACTS, _("Insert &Contacts: Input Pin\tC"));
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_CONT_RELAY, _("Insert Contacts: Internal Relay\tShift+C"));
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_CONT_OUTPUT, _("Insert Contacts: Output Pin\tShift+L"));
+
+    AppendMenu(ConMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_COIL, _("Insert Coi&l: Output Pin\tL"));
+    AppendMenu(ConMenu, MF_STRING, MNU_INSERT_COIL_RELAY, _("Insert Coil: Internal Relay\tAlt+L"));
+
+    AppendMenu(ConMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_NORMAL, _("Make &Normal\tN"));
+    AppendMenu(ConMenu, MF_STRING, MNU_NEGATE, _("Make &Negated\tN"));
+    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_SET_ONLY, _("Make &Set-Only\tS"));
+    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_RESET_ONLY, _("Make &Reset-Only\tR"));
+    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_TTRIGGER, _("Make T-trigger"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConMenu, _("Contacts and Coils / Relays"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSR, _("Insert _/OSR/\\_ (One Shot Rising)\t&/"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSF, _("Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSL, _("Insert \\_OSL\\/ (One Shot Low)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSC, _("Insert _/OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
+    ///// Submenu created by JG
+    EdgMenu = CreatePopupMenu();
+    /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSR, _("Insert _/OSR/\\_ (One Shot Rising)\t&/"));
+    AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSF, _("Insert \\_OSF/\\_ (One Shot Falling)\t&\\ "));
+    AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSL, _("Insert \\_OSL\\/ (One Shot Low)"));
+    AppendMenu(EdgMenu, MF_STRING, MNU_INSERT_OSC, _("Insert _/OSC/\\_/\\_ (Oscillator F=1/(2*Tcycle))"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)EdgMenu, _("Edge"));
 
     PulseMenu = CreatePopupMenu();
+    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_PULSER, _("Insert PULSER"));
+    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_STEPPER, _("Insert STEPPER"));
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE, _("EDIT: Insert N PULSE"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_PULSER, _("EDIT: Insert PULSER"));
-    AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_STEPPER, _("EDIT: Insert STEPPER"));
     AppendMenu(PulseMenu, MF_STRING, MNU_INSERT_NPULSE_OFF, _("EDIT: Insert N PULSE OFF"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)PulseMenu, _("Pulse generators"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TON, _("Insert T&ON (Delayed Turn On)\tO"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TOF, _("Insert TO&F (Delayed Turn Off)\tF"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTO, _("Insert R&TO (Retentive Delayed Turn On)\tT"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTL, _("Insert RTL (Retentive Delayed Turn On If Low Input)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TCY, _("Insert TCY (Cyclic On/Off)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_THI, _("Insert THI (Hight Delay)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TLO, _("Insert TLO (Low Delay)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TIME2COUNT, _("Insert TIME to COUNTER converter"));
+    ///// Submenu created by JG
+    TmpMenu = CreatePopupMenu();
+    /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_TON, _("Insert T&ON (Delayed Turn On)\tO"));
+    AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_TOF, _("Insert TO&F (Delayed Turn Off)\tF"));
+    AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_RTO, _("Insert R&TO (Retentive Delayed Turn On)\tT"));
+    AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_RTL, _("Insert RTL (Retentive Delayed Turn On If Low Input)"));
+    AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_TCY, _("Insert TCY (Cyclic On/Off)"));
+    AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_THI, _("Insert THI (High Delay)"));
+    AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_TLO, _("Insert TLO (Low Delay)"));
+    AppendMenu(TmpMenu, MF_STRING, MNU_INSERT_TIME2COUNT, _("Insert TIME to COUNTER converter"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)TmpMenu, _("Temporization"));
 
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU, _("Insert CT&U (Count Up)\tU"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTD, _("Insert CT&D (Count Down)\tI"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTC, _("Insert CT&C (Count Circular)\tJ"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTR, _("Insert CT&R (Count Circular Reversive)\tK"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RES, _("Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"));
+    ///// Submenu created by JG
+    CntMenu = CreatePopupMenu();
+    /////   AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(CntMenu, MF_STRING, MNU_INSERT_CTU, _("Insert CT&U (Count Up)\tU"));
+    AppendMenu(CntMenu, MF_STRING, MNU_INSERT_CTD, _("Insert CT&D (Count Down)\tI"));
+    AppendMenu(CntMenu, MF_STRING, MNU_INSERT_CTC, _("Insert CT&C (Count Circular)\tJ"));
+    AppendMenu(CntMenu, MF_STRING, MNU_INSERT_CTR, _("Insert CT&R (Count Circular Reversive)\tK"));
+    AppendMenu(CntMenu, MF_STRING, MNU_INSERT_RES, _("Insert R&ES (Counter/RTO/RTL/PWM Reset)\tE"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)CntMenu, _("Counter"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     /*
@@ -528,7 +562,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_OR, _("Insert bitwise OR     |"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_XOR, _("Insert bitwise XOR  ^"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_NOT, _("Insert bitwise NOT  ~"));
-    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL, _("Insert SHL << arithmetic,logic shift to the left"));
+    AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHL, _("Insert SHL << arithmetic, logic shift to the left"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SHR, _("Insert SHR >> arithmetic shift to the right"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_SR0, _("Insert SR0 >> logic shift to the right"));
     AppendMenu(BitwiseMenu, MF_STRING, MNU_INSERT_ROL, _("Insert ROL cyclic shift to the left"));
@@ -546,14 +580,36 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWL, _("Insert Piecewise Linear"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART Receive"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable"));
+
+    FormatStrMenu = CreatePopupMenu();
+    AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formated string"));
+
+    ///// Submenu created by JG
+    UrtMenu = CreatePopupMenu();
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable"));
+
     //  AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECVn,
-    //      _("Insert &UART Receive Variable"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND_READY, _("Insert &UART Send: Is ready to send ?"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL, _("Insert &UART Receive: Is data available ?"));
+    //      _("Insert &UART RECEIVE Variable"));
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND_READY, _("Insert &UART SEND: Is ready to send ?"));
+    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL, _("Insert &UART RECEIVE: Is data available ?"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)UrtMenu, _("UART functions"));
+
+    ///// Submenus created by JG
+    SpiMenu = CreatePopupMenu();
+    AppendMenu(SpiMenu, MF_STRING, MNU_INSERT_SPI, _("Insert SPI Send/Receive"));
+    AppendMenu(SpiMenu, MF_STRING, MNU_INSERT_SPI_WRITE, _("Insert SPI Write"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)SpiMenu, _("SPI functions"));
+
+    I2cMenu = CreatePopupMenu();
+    AppendMenu(I2cMenu, MF_STRING, MNU_INSERT_I2C_READ, _("Insert I2C Read"));
+    AppendMenu(I2cMenu, MF_STRING, MNU_INSERT_I2C_WRITE, _("Insert I2C Write"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)I2cMenu, _("I2C functions"));
+    /////
+
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM, _("Insert Set &PWM Output\tP"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC, _("Insert &A/D Converter Read\tA"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST, _("Insert Make Persistent"));
@@ -577,7 +633,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
     // Special function menu
     SpecialFunction = CreatePopupMenu();
-    AppendMenu(SpecialFunction, MF_STRING, MNU_OPEN_SFR, _("Replase the obsolete elements"));
+    AppendMenu(SpecialFunction, MF_STRING, MNU_OPEN_SFR, _("Replace the obsolete elements"));
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFR, _("Insert Read From SFR"));
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SFW, _("Insert Write To SFR"));
     AppendMenu(SpecialFunction, MF_STRING, MNU_INSERT_SSFB, _("Insert Set Bit In SFR"));
@@ -635,8 +691,7 @@ HMENU MakeMainWindowMenus()
     // simulate popup menu
     SimulateMenu = CreatePopupMenu();
     AppendMenu(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE, _("Si&mulation Mode\tCtrl+M or F7"));
-    AppendMenu(
-        SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION, _("Start &Real-Time Simulation\tCtrl+R or F8"));
+    AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION, _("Start &Real-Time Simulation\tCtrl+R or F8"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION, _("&Halt Simulation\tCtrl+H or F9"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_SINGLE_CYCLE, _("Single &Cycle\tSpace"));
 
@@ -651,10 +706,13 @@ HMENU MakeMainWindowMenus()
     AppendMenu(compile, MF_STRING, MNU_COMPILE_HI_TECH_C, _("Compile HI-TECH C for PIC"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_CCS_PIC_C, _("Compile CCS C for PIC"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(compile, MF_STRING, MNU_COMPILE_GNUC, _("Compile AVR-GCC, Atmel AVR Toolchain, WinAVR C"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_GNUC, _("Compile Atmel WinAVR C"));
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_AVRGCC, _("Compile Atmel AVR-GCC"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_CODEVISIONAVR, _("Compile CodeVisionAVR C"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_ARDUINO, _("Compile Sketch for ARDUINO"));
+    AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(compile, MF_STRING, MNU_COMPILE_ARMGCC, _("Compile ARM-GCC for 32-bit ARM"));            // Added by JG
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
     AppendMenu(compile, MF_STRING, MNU_COMPILE_PASCAL, _("Compile PASCAL"));
     AppendMenu(compile, MF_SEPARATOR, 0, nullptr);
@@ -668,6 +726,7 @@ HMENU MakeMainWindowMenus()
 
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();
+    SetSyntaxHighlightingColours();                     ///// Added by JG for translation
     for(i = 0; i < NUM_SUPPORTED_SCHEMES; i++) {
         AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK + i, Schemes[i].sName);
     }
@@ -842,8 +901,8 @@ void RefreshStatusBar()
 {
     SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_(ProgramChangedNotSaved ? _("modified") : "        "));
 
-    if(Prog.mcu) {
-        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)Prog.mcu->mcuName);
+    if(Prog.mcu()) {
+        SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)Prog.mcu()->mcuName);
     } else {
         SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)_("no MCU selected"));
     }
@@ -881,9 +940,9 @@ void RefreshStatusBar()
     }
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 
-    if(Prog.mcu
-       && (Prog.mcu->whichIsa == ISA_NETZER || Prog.mcu->whichIsa == ISA_INTERPRETED
-           || Prog.mcu->whichIsa == ISA_XINTERPRETED)) {
+    if(Prog.mcu()
+       && (Prog.mcu()->whichIsa == ISA_NETZER || Prog.mcu()->whichIsa == ISA_INTERPRETED
+           || Prog.mcu()->whichIsa == ISA_XINTERPRETED)) {
         strcpy(buf, "");
     } else {
         sprintf(buf, _("processor clock %.9g MHz"), (double)Prog.mcuClock / 1000000.0);
@@ -940,14 +999,14 @@ void RefreshControlsToSettings()
     RefreshStatusBar();
 
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
-        if(&(supportedMcus()[i]) == Prog.mcu) {
+        if(&(supportedMcus()[i]) == Prog.mcu()) {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_CHECKED);
         } else {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + i, MF_UNCHECKED);
         }
     }
     // `(no microcontroller)' setting
-    if(!Prog.mcu) {
+    if(!Prog.mcu()) {
         CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + supportedMcus().size(), MF_CHECKED);
     } else {
         CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0 + supportedMcus().size(), MF_UNCHECKED);
@@ -1024,6 +1083,15 @@ void MainWindowResized()
 //-----------------------------------------------------------------------------
 void ToggleSimulationMode(bool doSimulateOneRung)
 {
+/*
+    ///// Added by JG to avoid some bugs when clicking on non assigned contacts in simulation mode
+    if (!Prog.mcu())
+    {
+        Error(_("Must choose a target microcontroller before simulating."));
+        return;
+    }
+    /////
+*/
     InSimulationMode = !InSimulationMode;
 
     if(InSimulationMode) {
@@ -1048,11 +1116,16 @@ void ToggleSimulationMode(bool doSimulateOneRung)
         if(ClearSimulationData()) {
             // Recheck InSimulationMode, because there could have been a compile
             // error, which would have kicked us out of simulation mode.
-            if(UartFunctionUsed() && InSimulationMode) {
-                ShowUartSimulationWindow();
-            }
-            SimulateOneCycle(
-                true); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
+            ///// Modified by JG
+            if(UartFunctionUsed() && InSimulationMode)
+                ShowSimulationWindow(SIM_UART);
+            if(SpiFunctionUsed() && InSimulationMode)
+                ShowSimulationWindow(SIM_SPI);
+            if(I2cFunctionUsed() && InSimulationMode)
+                ShowSimulationWindow(SIM_I2C);
+            /////
+            /////   SimulateOneCycle(true); // If comment this line, then you can see initial state in ladder diagram. It is same interesting.
+            /////   Commented by JG
         }
     } else {
         RealTimeSimulationRunning = false;
@@ -1077,9 +1150,14 @@ void ToggleSimulationMode(bool doSimulateOneRung)
 
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_UNCHECKED);
 
-        if(UartFunctionUsed()) {
-            DestroyUartSimulationWindow();
-        }
+        ///// Modified by JG
+        if(UartFunctionUsed())
+            DestroySimulationWindow(UartSimulationWindow);
+        if(SpiFunctionUsed())
+            DestroySimulationWindow(SpiSimulationWindow);
+        if(I2cFunctionUsed())
+            DestroySimulationWindow(I2cSimulationWindow);
+        /////
     }
 
     UpdateMainWindowTitleBar();
@@ -1107,6 +1185,15 @@ void StartSimulation()
     StartSimulationTimer();
 
     UpdateMainWindowTitleBar();
+
+    ///// Added by JG
+    if(UartFunctionUsed())
+        ShowWindow(UartSimulationWindow, true);
+    if(SpiFunctionUsed())
+        ShowWindow(SpiSimulationWindow, true);
+    if(I2cFunctionUsed())
+        ShowWindow(I2cSimulationWindow, true);
+    /////
 }
 
 //-----------------------------------------------------------------------------

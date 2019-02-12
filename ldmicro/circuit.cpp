@@ -362,7 +362,7 @@ void AddGoto(int which)
         return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.doGoto.rung, "?");
+    strcpy(t->d.doGoto.label, "?");
     AddLeaf(which, t);
 }
 
@@ -551,10 +551,10 @@ void AddQuadEncod()
         return;
 
     uint32_t n = 0;
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         n = QuadEncodFunctionUsed();
-        if(n > Prog.mcu->ExtIntCount) {
-            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
+        if(n > Prog.mcu()->ExtIntCount) {
+            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu()->ExtIntCount);
             //return;
         }
     }
@@ -682,7 +682,7 @@ void AddReadAdc()
     if(!CanInsertEnd)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuADC()) {
             Error(_("No ADC or ADC not supported for selected micro."));
             // return;
@@ -702,7 +702,7 @@ void AddSetPwm()
     if(!CanInsertEnd)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuPWM()) {
             Error(_("No PWM or PWM not supported for this MCU."));
             // return;
@@ -724,7 +724,7 @@ void AddUart(int which)
     if(!CanInsertOther)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuUART()) {
             Error(_("No UART or UART not supported for this MCU."));
             // return;
@@ -735,6 +735,8 @@ void AddUart(int which)
         strcpy(t->d.uart.name, "char");
     else
         strcpy(t->d.uart.name, "var");
+    t->d.uart.bytes = 1;
+    t->d.uart.wait = false;
     AddLeaf(which, t);
 }
 
@@ -743,14 +745,16 @@ void AddSpi(int which)
     if(!CanInsertOther)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuSPI()) {
             Error(_("No SPI or SPI not supported for this MCU."));
             // return;
         }
     }
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.spi.name, "SPIn");
+    /////   strcpy(t->d.spi.name, "SPIn");
+    strcpy(t->d.spi.name, "SPI1");              ///// Modified by JG
+    /////
     strcpy(t->d.spi.mode, "Master");
     strcpy(t->d.spi.send, "send");
     strcpy(t->d.spi.recv, "recv");
@@ -758,15 +762,43 @@ void AddSpi(int which)
     strcpy(t->d.spi.modes, "0");
     strcpy(t->d.spi.size, "8");
     strcpy(t->d.spi.first, "MSB");
+    t->d.spi.which= which;                      ///// Added by JG
     AddLeaf(which, t);
 }
+
+///// Added by JG
+void AddI2c(int which)
+{
+    if(!CanInsertOther)
+        return;
+
+    if(Prog.mcu()) {
+        if(!McuI2C()) {
+            Error(_("No I2C or I2C not supported for this MCU."));
+            // return;
+        }
+    }
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.i2c.name, "I2C1");
+    /////
+    strcpy(t->d.i2c.mode, "Master");
+    strcpy(t->d.i2c.send, "send");
+    strcpy(t->d.i2c.recv, "recv");
+    strcpy(t->d.i2c.bitrate, "100000");
+    strcpy(t->d.i2c.address, "0");
+    strcpy(t->d.i2c.registr, "0");
+    strcpy(t->d.i2c.first, "MSB");
+    t->d.i2c.which= which;
+    AddLeaf(which, t);
+}
+/////
 
 void AddPersist()
 {
     if(!CanInsertEnd)
         return;
 
-    if(Prog.mcu) {
+    if(Prog.mcu()) {
         if(!McuROM()) {
             Error(_("No ROM or ROM not supported for this MCU."));
             // return;
@@ -1058,20 +1090,7 @@ void FreeEntireProgram()
 {
     ForgetEverything();
 
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-    }
-    memset(Prog.rungSelected, ' ', sizeof(Prog.rungSelected));
-    Prog.numRungs = 0;
-    Prog.cycleTime = 10000;
-    Prog.mcuClock = 16000000;
-    Prog.baudRate = 9600;
-    Prog.io.count = 0;
-    Prog.cycleTimer = 1;
-    Prog.cycleDuty = 0;
-    Prog.configurationWord = 0;
-    SetMcu(nullptr);
+    Prog.reset();
 
     WipeIntMemory();
 }
@@ -1172,22 +1191,6 @@ void DeleteSelectedRung()
 }
 
 //-----------------------------------------------------------------------------
-// Allocate a new `empty' rung, with only a single relay coil at the end. All
-// the UI code assumes that rungs always have a coil in them, so it would
-// add a lot of nasty special cases to create rungs totally empty.
-//-----------------------------------------------------------------------------
-static ElemSubcktSeries *AllocEmptyRung()
-{
-    ElemSubcktSeries *s = AllocSubcktSeries();
-    s->count = 1;
-    s->contents[0].which = ELEM_PLACEHOLDER;
-    ElemLeaf *l = AllocLeaf();
-    s->contents[0].data.leaf = l;
-
-    return s;
-}
-
-//-----------------------------------------------------------------------------
 static void NullDisplayMatrix(int from, int to)
 {
     return;
@@ -1224,8 +1227,7 @@ void InsertRungI(int i)
 
     memmove(&Prog.rungs[i + 1], &Prog.rungs[i], (Prog.numRungs - i) * sizeof(Prog.rungs[0]));
     memmove(&Prog.rungSelected[i + 1], &Prog.rungSelected[i], (Prog.numRungs - i) * sizeof(Prog.rungSelected[0]));
-    Prog.rungs[i] = AllocEmptyRung();
-    (Prog.numRungs)++;
+    Prog.appendEmptyRung();
     NullDisplayMatrix(i, i + 1 + 1);
 }
 
@@ -1313,8 +1315,7 @@ void NewProgram()
     UndoFlush();
     FreeEntireProgram();
 
-    Prog.numRungs = 1;
-    Prog.rungs[0] = AllocEmptyRung();
+    Prog.appendEmptyRung();
 }
 
 //-----------------------------------------------------------------------------
@@ -1469,7 +1470,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1)
 }
 
 //-----------------------------------------------------------------------------
-static bool _FindRung(int which, void *any, int seek, char *name)
+static bool _FindRung(int which, void *any, int seek, const char *name)
 {
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
@@ -1494,7 +1495,7 @@ static bool _FindRung(int which, void *any, int seek, char *name)
             if(which == seek) {
                 ElemLeaf *leaf = (ElemLeaf *)any;
                 ElemGoto *e = &leaf->d.doGoto;
-                if(strcmp(e->rung, name) == 0)
+                if(strcmp(e->label, name) == 0)
                     return true;
             }
             break;
@@ -1713,7 +1714,7 @@ bool SleepFunctionUsed()
 // save in the new rung temp
 //-----------------------------------------------------------------------------
 const char *CLP = "ldmicro.tmp";
-void        CopyRungDown()
+void CopyRungDown()
 {
     int               i = RungContainingSelected();
     char              line[512];
@@ -1745,23 +1746,21 @@ void        CopyRungDown()
 //-----------------------------------------------------------------------------
 void CutRung()
 {
-    int i;
-
     FILE *f = fopen(CLP, "w+");
     if(!f) {
         Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
     int SelN = 0;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] == '*')
             SelN++;
     if(!SelN) {
-        i = RungContainingSelected();
+        int i = RungContainingSelected();
         if(i >= 0)
             Prog.rungSelected[i] = '*';
     }
-    for(i = (Prog.numRungs - 1); i >= 0; i--)
+    for(int i = (Prog.numRungs - 1); i >= 0; i--)
         if(Prog.rungSelected[i] == '*') {
             SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
             DeleteRungI(i);
@@ -1769,8 +1768,7 @@ void CutRung()
     fclose(f);
 
     if(Prog.numRungs == 0) {
-        Prog.numRungs = 1;
-        Prog.rungs[0] = AllocEmptyRung();
+        Prog.appendEmptyRung();
     }
 
     WhatCanWeDoFromCursorAndTopology();
@@ -1785,17 +1783,16 @@ void CopyRung()
         Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
-    int i;
     int SelN = 0;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] == '*')
             SelN++;
     if(!SelN) {
-        i = RungContainingSelected();
+        int i = RungContainingSelected();
         if(i >= 0)
             Prog.rungSelected[i] = '*';
     }
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] > '*') {
             Prog.rungSelected[i] = ' ';
         } else if(Prog.rungSelected[i] == '*') {
@@ -1816,17 +1813,16 @@ void CopyElem()
         Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
-    int i;
     int SelN = 0;
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] == '*')
             SelN++;
     if(!SelN) {
-        i = RungContainingSelected();
+        int i = RungContainingSelected();
         if(i >= 0)
             Prog.rungSelected[i] = '*';
     }
-    for(i = 0; i < Prog.numRungs; i++)
+    for(int i = 0; i < Prog.numRungs; i++)
         if(Prog.rungSelected[i] > '*') {
             Prog.rungSelected[i] = ' ';
         } else if(Prog.rungSelected[i] == '*') {
@@ -1866,7 +1862,6 @@ void PasteRung(int PasteInTo)
         Error(_("You must Select rungs, then Copy or Cut, then Paste."));
         return;
     }
-    int  i;
     char line[512];
     int  rung;
 
@@ -1892,7 +1887,7 @@ void PasteRung(int PasteInTo)
                         if(!EndOfRungElem(SelectedWhich) || (Selected->selectedState == SELECTED_LEFT))
                             if(!ItemIsLastInCircuit(Selected) || (Selected->selectedState == SELECTED_LEFT)) {
                                 doCollapse = false;
-                                for(i = temp->count - 1; i >= 0; i--) {
+                                for(int i = temp->count - 1; i >= 0; i--) {
                                     if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
                                                            temp,
                                                            temp->contents[i].which,
@@ -1908,7 +1903,7 @@ void PasteRung(int PasteInTo)
                            && ((Selected->selectedState == SELECTED_BELOW)
                                || (Selected->selectedState == SELECTED_ABOVE))) {
                             doCollapse = false;
-                            for(i = temp->count - 1; i >= 0; i--) {
+                            for(int i = temp->count - 1; i >= 0; i--) {
                                 if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
                                                        temp,
                                                        temp->contents[i].which,
@@ -1932,7 +1927,7 @@ void PasteRung(int PasteInTo)
                     oops();
             }
     }
-    for(i = 0; i < Prog.numRungs; i++) {
+    for(int i = 0; i < Prog.numRungs; i++) {
         if(Prog.rungSelected[i] != ' ')
             Prog.rungSelected[i] = ' ';
     }
