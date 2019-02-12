@@ -3136,7 +3136,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         ///// Added by JG to save work in case of big bug
         Prog.setMcu(nullptr);
-        srand(time(nullptr));
+        srand((unsigned int)time(nullptr));
         char fname[20];
         sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
         SaveProjectToFile(fname, MNU_SAVE_02);

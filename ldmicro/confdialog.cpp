@@ -615,7 +615,7 @@ void ShowConfDialog()
         }
         SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         ///// Added by JG:  convert '.' to ',' for atof()
-        for (int i= 0 ; i < strlen(buf) ; i++)
+        for (size_t i= 0 ; i < strlen(buf) ; i++)
             if (buf[i] == '.') buf[i] = ',';
         /////
         Prog.mcuClock = (int)(1e6 * atof(buf) + 0.5);
