@@ -2208,7 +2208,7 @@ bool CompileAnsiC(const char *dest, int MNU)
 
     ///// Added by JG
     char mcualias[MAX_PATH];    ///// Added by JG
-    strcpy(mcualias, Prog.mcu()->mcuList);
+    strcpy(mcualias, Prog.mcu() ? Prog.mcu()->mcuList : "undefined_mcu");
     if (Prog.mcu())
         fprintf(flh,
             "#define LDTARGET_%s\n\n"
