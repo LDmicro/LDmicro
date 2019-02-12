@@ -2114,7 +2114,7 @@ static void SimulateIntCode()
                 break;
 
             case INT_SPI_WRITE:
-                for (int i= 0 ; i < a->name2.size() ; i++)              // send text to terminal window
+                for (unsigned int i= 0 ; i < a->name2.size() ; i++)              // send text to terminal window
                     AppendToSimulationTextControl(a->name2[i], SpiSimulationTextControl);
                 break;
 
@@ -2568,6 +2568,7 @@ static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, L
     if (hwnd == I2cSimulationTextControl)
         return CallWindowProc((WNDPROC)PrevI2cTextProc, hwnd, msg, wParam, lParam);
     /////
+    return 0;
 }
 
 //-----------------------------------------------------------------------------

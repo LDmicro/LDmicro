@@ -334,7 +334,7 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
     } catch(...) {      ///// Try... catch added by JG
 
         ///// Added by JG to save work in case of big bug
-        srand(time(nullptr));
+        srand((unsigned int)time(nullptr));
         char fname[20];
         sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
         SaveProjectToFile(fname, MNU_SAVE_02);

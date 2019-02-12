@@ -2214,7 +2214,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             "#define LDTARGET_%s\n\n"
             "#define F_CPU %luUL\n\n"
             "#define _XTAL_FREQ %luUL\n\n",
-            strlwr(mcualias), Prog.mcuClock, Prog.mcuClock);
+            _strlwr(mcualias), Prog.mcuClock, Prog.mcuClock);
 
         fprintf(flh,
                 "#define CFG_WORD 0x%X\n\n",
@@ -2308,19 +2308,19 @@ bool CompileAnsiC(const char *dest, int MNU)
     {
         fprintf(flh,
                 "\n"
-                "#include \"lib/UsrLib.h\"\n"
+                "#include \"UsrLib.h\"\n"
                 "\n");
 
         if(AdcFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/AdcLib.h\"\n"
+                "#include \"AdcLib.h\"\n"
                 "\n");
         }
         if(PwmFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/PwmLib.h\"\n"
+                "#include \"PwmLib.h\"\n"
                 "\n");
         }
         if(UartFunctionUsed())
@@ -2333,7 +2333,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"), false);
 
             fprintf(flh,
-                "#include \"lib/SpiLib.h\"\n"
+                "#include \"SpiLib.h\"\n"
                 "\n");
         }
         if(I2cFunctionUsed())
@@ -2342,7 +2342,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"), false);
 
             fprintf(flh,
-                "#include \"lib/I2cLib.h\"\n"
+                "#include \"I2cLib.h\"\n"
                 "\n");
         }
     }
@@ -2351,48 +2351,48 @@ bool CompileAnsiC(const char *dest, int MNU)
         fprintf(flh,
                 "\n"
                 "#include <stdio.h>\n"
-                "#include \"lib/stm32f4xx.h\"\n"
-                "#include \"lib/stm32f4xx_gpio.h\"\n"
-                "#include \"lib/stm32f4xx_rcc.h\"\n"
-                "#include \"lib/stm32f4xx_tim.h\"\n"
+                "#include \"stm32f4xx.h\"\n"
+                "#include \"stm32f4xx_gpio.h\"\n"
+                "#include \"stm32f4xx_rcc.h\"\n"
+                "#include \"stm32f4xx_tim.h\"\n"
                 "\n"
-                "#include \"lib/Lib_gpio.h\"\n"
-                "#include \"lib/Lib_timer.h\"\n"
-                "#include \"lib/Lib_usr.h\"\n"
+                "#include \"Lib_gpio.h\"\n"
+                "#include \"Lib_timer.h\"\n"
+                "#include \"Lib_usr.h\"\n"
                 "\n");
 
         if(AdcFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/stm32f4xx_adc.h\"\n"
-                "#include \"lib/Lib_adc.h\"\n"
+                "#include \"stm32f4xx_adc.h\"\n"
+                "#include \"Lib_adc.h\"\n"
                 "\n");
         }
         if(PwmFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/Lib_pwm.h\"\n"
+                "#include \"Lib_pwm.h\"\n"
                 "\n");
         }
         if(UartFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/stm32f4xx_usart.h\"\n"
-                "#include \"lib/Lib_uart.h\"\n"
+                "#include \"stm32f4xx_usart.h\"\n"
+                "#include \"Lib_uart.h\"\n"
                 "\n");
         }
         if(SpiFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/stm32f4xx_spi.h\"\n"
-                "#include \"lib/Lib_spi.h\"\n"
+                "#include \"stm32f4xx_spi.h\"\n"
+                "#include \"Lib_spi.h\"\n"
                 "\n");
         }
         if(I2cFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/stm32f4xx_i2c.h\"\n"
-                "#include \"lib/Lib_i2c.h\"\n"
+                "#include \"stm32f4xx_i2c.h\"\n"
+                "#include \"Lib_i2c.h\"\n"
                 "\n");
         }
     }
@@ -2402,19 +2402,19 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n"
                 "#include <stdio.h>\n"
                 "#include <avr/io.h>\n"
-                "#include \"lib/UsrLib.h\"\n"
+                "#include \"UsrLib.h\"\n"
                 "\n");
 
         if(AdcFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/AdcLib.h\"\n"
+                "#include \"AdcLib.h\"\n"
                 "\n");
         }
         if(PwmFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/PwmLib.h\"\n"
+                "#include \"PwmLib.h\"\n"
                 "\n");
         }
         if(UartFunctionUsed())
@@ -2424,13 +2424,13 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(SpiFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/SpiLib.h\"\n"
+                "#include \"SpiLib.h\"\n"
                 "\n");
         }
         if(I2cFunctionUsed())
         {
             fprintf(flh,
-                "#include \"lib/I2cLib.h\"\n"
+                "#include \"I2cLib.h\"\n"
                 "\n");
         }
     }
