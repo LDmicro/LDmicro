@@ -71,10 +71,24 @@ void PlcProgram::reset()
     setMcu(nullptr);
 }
 
-bool PlcProgram::appendEmptyRung()
+void PlcProgram::appendEmptyRung()
 {
     if(numRungs >= (MAX_RUNGS - 1))
-        return false;
+        THROW_COMPILER_EXCEPTION("Too many rungs.");
     rungs[numRungs++] = AllocEmptyRung();
-    return true;
+}
+
+void PlcProgram::insertEmptyRungBefore(uint32_t idx)
+{
+    if(idx >= rungs.size())
+        THROW_COMPILER_EXCEPTION_FMT("Invalid rung index %lu.", idx);
+    memmove(&rungs[idx + 1], &rungs[idx], (numRungs - idx) * sizeof(rungs[0]));
+    memmove(&rungSelected[idx + 1], &rungSelected[idx], (numRungs - idx) * sizeof(rungSelected[0]));
+    rungs[idx] = AllocEmptyRung();
+    numRungs++;
+}
+
+void PlcProgram::insertEmptyRungAfter(uint32_t idx)
+{
+    insertEmptyRungBefore(idx++);
 }
