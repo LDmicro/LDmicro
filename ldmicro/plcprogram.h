@@ -5,6 +5,7 @@
 #include <array>
 #include "circuit.h"
 #include "mcutable.hpp"
+#include "compilercommon.hpp"
 
 typedef struct McuIoInfoTag McuIoInfo;
 
@@ -85,7 +86,7 @@ public:
     int           baudRate;  // Hz
     long          spiRate;   // Hz          Added by JG
     long          i2cRate;   // Hz          Added by JG
-    std::string   LDversion;
+    NameArray     LDversion;
 
     std::array<ElemSubcktSeries *, MAX_RUNGS> rungs;
     int               numRungs;

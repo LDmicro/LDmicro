@@ -80,7 +80,7 @@ void PlcProgram::appendEmptyRung()
 
 void PlcProgram::insertEmptyRungBefore(uint32_t idx)
 {
-    if(idx >= rungs.size())
+    if(static_cast<int>(idx) >= numRungs)
         THROW_COMPILER_EXCEPTION_FMT(_("Invalid rung index %lu!"), idx);
     memmove(&rungs[idx + 1], &rungs[idx], (numRungs - idx) * sizeof(rungs[0]));
     memmove(&rungSelected[idx + 1], &rungSelected[idx], (numRungs - idx) * sizeof(rungSelected[0]));
