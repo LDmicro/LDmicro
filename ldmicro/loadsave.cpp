@@ -929,7 +929,7 @@ bool LoadProjectFromFile(const char *filename)
         if(!Prog.rungs[rung])
             goto failed;
         rung++;
-        if(rung >= MAX_RUNGS) {
+        if(rung > MAX_RUNGS) {
             Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
             break;
         }
