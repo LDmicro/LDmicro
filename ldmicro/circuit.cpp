@@ -1225,7 +1225,7 @@ void InsertRungI(int i)
         return;
     }
 
-    Prog.insertEmptyRungBefore(i);
+    Prog.insertEmptyRung(i);
     NullDisplayMatrix(i, i + 1 + 1);
 }
 
@@ -1240,9 +1240,9 @@ void InsertRung(bool afterCursor)
 
     try {
         if(afterCursor)
-            Prog.insertEmptyRungAfter(i);
+            Prog.insertEmptyRung(++i);
         else
-            Prog.insertEmptyRungBefore(i);
+            Prog.insertEmptyRung(i);
     }
     catch(std::exception& e) {
         Error("%s", e.what());

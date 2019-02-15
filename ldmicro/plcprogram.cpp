@@ -78,25 +78,10 @@ void PlcProgram::appendEmptyRung()
     rungs[numRungs++] = AllocEmptyRung();
 }
 
-void PlcProgram::insertEmptyRungBefore(uint32_t idx)
+void PlcProgram::insertEmptyRung(uint32_t idx)
 {
-    if(static_cast<int>(idx) >= numRungs)
-        THROW_COMPILER_EXCEPTION_FMT("Invalid rung index %u.", idx);
     if(numRungs > (MAX_RUNGS - 1))
         THROW_COMPILER_EXCEPTION("Too many rungs.");
-    memmove(&rungs[idx + 1], &rungs[idx], (numRungs - idx) * sizeof(rungs[0]));
-    memmove(&rungSelected[idx + 1], &rungSelected[idx], (numRungs - idx) * sizeof(rungSelected[0]));
-    rungs[idx] = AllocEmptyRung();
-    numRungs++;
-}
-
-void PlcProgram::insertEmptyRungAfter(uint32_t idx)
-{
-    if(static_cast<int>(idx) >= numRungs)
-        THROW_COMPILER_EXCEPTION_FMT("Invalid rung index %u.", idx);
-    if(numRungs > (MAX_RUNGS - 1))
-        THROW_COMPILER_EXCEPTION("Too many rungs.");
-    idx++;
     memmove(&rungs[idx + 1], &rungs[idx], (numRungs - idx) * sizeof(rungs[0]));
     memmove(&rungSelected[idx + 1], &rungSelected[idx], (numRungs - idx) * sizeof(rungSelected[0]));
     rungs[idx] = AllocEmptyRung();

@@ -67,8 +67,7 @@ public:
     const McuIoInfo* mcu() const {return mcu_;}
     void reset();
     void appendEmptyRung();
-    void insertEmptyRungBefore(uint32_t idx);
-    void insertEmptyRungAfter(uint32_t idx);
+    void insertEmptyRung(uint32_t idx);
 public:
     struct {
         PlcProgramSingleIo  assignment[MAX_IO];
