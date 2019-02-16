@@ -924,15 +924,16 @@ bool LoadProjectFromFile(const char *filename)
             continue;
         if(strstr(line, "RUNG") == 0)
             goto failed;
-
-        Prog.rungs[rung] = LoadSeriesFromFile(f);
-        if(!Prog.rungs[rung])
+                    
+        ElemSubcktSeries *s = LoadSeriesFromFile(f);
+        if(!s)
             goto failed;
-        rung++;
-        if(rung > MAX_RUNGS) {
+        if(rung >= MAX_RUNGS) {
             Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
             break;
         }
+        Prog.rungs[rung] = s;
+        rung++;
     }
     Prog.numRungs = rung;
 

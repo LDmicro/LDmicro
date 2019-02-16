@@ -1234,21 +1234,23 @@ void InsertRungI(int i)
 //-----------------------------------------------------------------------------
 void InsertRung(bool afterCursor)
 {
+    if(Prog.numRungs >= (MAX_RUNGS - 1)) {
+        Error(_("Too many rungs!"));
+        return;
+    }
+
     int i = RungContainingSelected();
     if(i < 0)
         return;
 
+    if(afterCursor)
+        i++;
     try {
-        if(afterCursor)
-            Prog.insertEmptyRung(++i);
-        else
-            Prog.insertEmptyRung(i);
+        Prog.insertEmptyRung(i);
     }
     catch(std::exception& e) {
         Error("%s", e.what());
     }
-
-    NullDisplayMatrix(i, i + 1 + 1);
 
     WhatCanWeDoFromCursorAndTopology();
 }
