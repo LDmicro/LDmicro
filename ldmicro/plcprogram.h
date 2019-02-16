@@ -89,11 +89,11 @@ public:
 
     std::array<ElemSubcktSeries *, MAX_RUNGS> rungs;
     int               numRungs;
-    bool              rungPowered[MAX_RUNGS];
-    bool              rungSimulated[MAX_RUNGS];
-    char              rungSelected[MAX_RUNGS];
-    uint32_t          OpsInRung[MAX_RUNGS];
-    uint32_t          HexInRung[MAX_RUNGS];
+    bool              rungPowered[MAX_RUNGS + 1]; // [MAX_RUNGS + 1] for Label after last rung
+    bool              rungSimulated[MAX_RUNGS + 1];
+    char              rungSelected[MAX_RUNGS + 1];
+    uint32_t          OpsInRung[MAX_RUNGS + 1];
+    uint32_t          HexInRung[MAX_RUNGS + 1];
 private:
     McuIoInfo    *mcu_;
 };

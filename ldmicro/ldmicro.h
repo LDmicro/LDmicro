@@ -477,7 +477,7 @@ bool FindSelected(int *gx, int *gy);
 bool MoveCursorNear(int *gx, int *gy);
 
 #define DISPLAY_MATRIX_X_SIZE 256
-#define DISPLAY_MATRIX_Y_SIZE (MAX_RUNGS*2) // 2048
+#define DISPLAY_MATRIX_Y_SIZE ((MAX_RUNGS + 1) * 2)
 extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
@@ -593,14 +593,14 @@ extern bool DialogCancel;
 // stringer(BIT0) // ==  "BIT0"
 // useless(BIT0)  // == "0"
 
-#define ooops(...) { \
+    #define ooops(...) { \
         dbp("rungNow=%d", rungNow); \
         dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         Error(__VA_ARGS__); \
         doexit(EXIT_FAILURE); \
     }
-#define oops() { \
+    #define oops() { \
         dbp("rungNow=%d", rungNow); \
         dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
