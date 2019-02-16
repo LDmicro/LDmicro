@@ -3106,9 +3106,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         RefreshScrollbars();
         UpdateMainWindowTitleBar();
 
-        for(int i = 0; i < 10; i++)
-            dbp("\n");
-
         MSG   msg;
         DWORD ret;
         while((ret = GetMessage(&msg, nullptr, 0, 0))) {

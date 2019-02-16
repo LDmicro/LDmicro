@@ -57,6 +57,8 @@ typedef int32_t SDWORD;
 #include "compilerexceptions.hpp"
 #include "filetracker.hpp"
 
+#include "lang.h"
+
 // The library that I use to do registry stuff.
 #define FREEZE_SUBKEY "LDMicro"
 //#include "freeze.h"
