@@ -4852,6 +4852,8 @@ bool GenerateIntermediateCode()
     Op(INT_AllocKnownAddr, s1, (SDWORD)rung);
     Op(INT_FwdAddrIsNow, s1, (SDWORD)Prog.numRungs);
     rungNow++;
+    Comment("Latest INT_OP here");
+
     //Calculate amount of intermediate codes in rungs
     for(int i = 0; i < MAX_RUNGS; i++)
         Prog.OpsInRung[i] = 0;

@@ -381,12 +381,12 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD
 {
     static PicAvrInstruction instruction;
     static AvrOp prevOp = OP_VACANT;
-    if(prevOp != OP_COMMENTINT)
+    if(prevOp != OP_COMMENT_INT)
         memset(&instruction, 0, sizeof(PicAvrInstruction));
 
     prevOp = op;
 
-    if(op == OP_COMMENTINT) {
+    if(op == OP_COMMENT_INT) {
         if(comment) {
             if(strlen(instruction.commentInt))
                 strncatn(instruction.commentInt, "\n    ; ", MAX_COMMENT_LEN);
@@ -411,7 +411,10 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD
         strncatn(instruction.commentAsm, comment, MAX_COMMENT_LEN);
     }
     instruction.rung = rungNow;
-    instruction.IntPc = IntPcNow;
+    if(rungNow < 0)
+        instruction.IntPc = UINT_MAX;
+    else
+        instruction.IntPc = IntPcNow;
     instruction.l = l;
     strcpy(instruction.f, f);
 
@@ -439,6 +442,7 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, const
 
 // And use macro for bugtracking
 #define Instruction(...) _Instruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+/*
 //-----------------------------------------------------------------------------
 static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DWORD arg1, DWORD arg2)
 //for setiing interrupt vector
@@ -462,14 +466,17 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
         strncatn(AvrProg[addr].commentAsm, ")", MAX_COMMENT_LEN);
     }
     AvrProg[addr].rung = rungNow;
-    AvrProg[addr].IntPc = IntPcNow;
+    if(rungNow < 0)
+        instruction.IntPc = UINT_MAX;
+    else
+        AvrProg[addr].IntPc = IntPcNow;
     AvrProg[addr].l = l;
     strcpy(AvrProg[addr].f, f);
     //^^^ same
 }
 
 #define SetInstruction(...) _SetInstruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
-
+*/
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
@@ -480,7 +487,7 @@ static void Comment(const char *str, ...)
         char    buf[MAX_COMMENT_LEN];
         va_start(f, str);
         vsnprintf(buf, MAX_COMMENT_LEN, str, f);
-        Instruction(OP_COMMENTINT, buf);
+        Instruction(OP_COMMENT_INT, buf);
     }
 }
 
@@ -535,42 +542,6 @@ static void FwdAddrIsNow(DWORD addr)
 static int IsOperation(AvrOp op)
 {
     switch(op) {
-            /*
-        case OP_BTFSC:
-        case OP_BTFSS:
-        case OP_DECFSZ:
-        case OP_INCFSZ:
-            return OP_SKIP; // can need to change bank
-        case OP_ADDWF:
-        case OP_ANDWF:
-        case OP_BSF:
-        case OP_BCF:
-        case OP_CLRF:
-        case OP_COMF:
-        case OP_DECF:
-        case OP_INCF:
-        case OP_IORWF:
-        case OP_MOVF:
-        case OP_MOVWF:
-        case OP_RLF:
-        case OP_RRF:
-        case OP_SUBWF:
-        case OP_XORWF:
-            return OP_BANK; // can need to change bank
-        case OP_CLRWDT:
-        case OP_MOVLW:
-        case OP_MOVLB:
-        case OP_MOVLP:
-        case OP_NOP_:
-        case OP_COMMENT_:
-        case OP_SUBLW:
-        case OP_IORLW:
-            return 0;       // not need to change bank
-        case OP_RETURN:
-        case OP_RETFIE:
-            return OP_RET;  // not need to change bank
-        case OP_GOTO:
-*/
         case OP_BREQ:
         case OP_BRNE:
         case OP_BRLO:
@@ -623,6 +594,8 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
     IntOp             *intOp;
     if((AvrInstr->IntPc >= 0) && (static_cast<uint32_t>(AvrInstr->IntPc) < IntCode.size()))
         intOp = &IntCode[AvrInstr->IntPc];
+    else
+        intOp = &IntCode[0]; // intOp is not actual
     strcpy(sAsm, "");
 /*
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
@@ -832,7 +805,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
 
         case OP_IJMP:
             //CHECK(arg1, 0); // arg1 used for label
-		    CHECK(arg2, 0);
+            CHECK(arg2, 0);
             sprintf(sAsm, "ijmp \t \t");
             return 0x9409;
 
@@ -1232,7 +1205,7 @@ static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm
             return 0xFA00 | (arg1 << 4) | arg2;
 
         case OP_BLD:
-			CHECK2(arg1, 0, 31);
+            CHECK2(arg1, 0, 31);
             CHECK2(arg2, 0, 7);
             sprintf(sAsm, "bld \t r%d, \t %d", arg1, arg2);
             return 0xF800 | (arg1 << 4) | arg2;
@@ -1310,21 +1283,21 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
     DWORD ExtendedSegmentAddress = 0;
     for(uint32_t i = 0; i < AvrProg.size(); i++) {
-        AvrProg[i].label = false;
+        AvrProg[i].isLabel = false;
     }
 
     for(uint32_t i = 0; i < AvrProg.size(); i++) {
         if(IsOperation(AvrProg[i].opAvr) <= IS_PAGE)
-            AvrProg[AvrProg[i].arg1].label = true;
+            AvrProg[AvrProg[i].arg1].isLabel = true;
     }
 
     for(uint32_t i = 1; i < AvrProg.size(); i++) {
         if((AvrProg[i].opAvr == OP_DB) && (AvrProg[i - 1].opAvr != OP_DB))
-            AvrProg[i].label = true;
+            AvrProg[i].isLabel = true;
         if((AvrProg[i].opAvr == OP_DB2) && (AvrProg[i - 1].opAvr != OP_DB2))
-            AvrProg[i].label = true;
+            AvrProg[i].isLabel = true;
         if((AvrProg[i].opAvr == OP_DW) && (AvrProg[i - 1].opAvr != OP_DW))
-            AvrProg[i].label = true;
+            AvrProg[i].isLabel = true;
     }
 
     for(uint32_t i = 0; i < AvrProg.size(); i++) {
@@ -1337,7 +1310,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         if(strlen(sAsm)) {
 
 #if ASM_LABEL > 0
-            if(AvrProg[i].label || (ASM_LABEL == 2))
+            if(AvrProg[i].isLabel || (ASM_LABEL == 2))
                 fprintf(fAsm, "l_%06x: %s", i, sAsm);
             else
                 fprintf(fAsm, "          %s", sAsm);
@@ -1379,6 +1352,8 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
                 if(strlen(AvrProg[i].commentAsm)) {
                     fprintf(fAsm, "\t ; %s", AvrProg[i].commentAsm);
                 }
+
+            //fprintf(fAsm, "\t ; rung=%d, IntPc=%d", AvrProg[i].rung, AvrProg[i].IntPc);
 
             fprintf(fAsm, "\n");
         } else
@@ -2470,10 +2445,10 @@ err0:
     }
 
     if(plcTmr.tmr > max_tmr) {
-        THROW_COMPILER_EXCEPTION_FMT(_("PLC cycle time more than %lld ms not valid."), plcTmr.cycleTimeMax / 1000);
+        Error(_("PLC cycle time more than %lld ms not valid."), plcTmr.cycleTimeMax / 1000);
         return false;
     } else if((plcTmr.prescaler * plcTmr.tmr) < PLC_CLOCK_MIN) {
-        THROW_COMPILER_EXCEPTION_FMT(_("PLC cycle time less than %d us not valid."), plcTmr.cycleTimeMin);
+        Error(_("PLC cycle time less than %d us not valid."), plcTmr.cycleTimeMin);
         return false;
     }
     return true;
@@ -3095,8 +3070,8 @@ static int   bitDuty;
 static void  WriteRuntime()
 {
     DWORD resetVector = AllocFwdAddr();
-
     int i;
+    Comment("WriteRuntime");
 #ifdef TABLE_IN_FLASH
     InstructionJMP(resetVector); // $0000, RESET
 #else
@@ -3105,9 +3080,11 @@ static void  WriteRuntime()
     for(i = 0; i < 34; i++)
         Instruction(OP_RETI);
     Comment("Interrupt table end.");
+
 #ifdef TABLE_IN_FLASH
     InitTables();
 #endif
+    rungNow = -40;
 
     FwdAddrIsNow(resetVector);
     Comment("This is Reset Vector"); // 1
@@ -5971,7 +5948,7 @@ void CompileAvr(const char *outFile)
             Prog.mcu()->mcuList,
             Prog.mcu()->mcuList,
             Prog.mcu()->mcuInc);
-    Comment("GOTO, progStart");
+    Comment("GOTO progStart");
 
     //***********************************************************************
     // Interrupt Vectors Table
@@ -7018,6 +6995,7 @@ void CompileAvr(const char *outFile)
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     WriteRuntime();
 
+    rungNow = -35;
     Comment("CompileFromIntermediate BEGIN");
     IntPc = 0; // Ok
     CompileFromIntermediate();

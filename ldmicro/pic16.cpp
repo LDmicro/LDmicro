@@ -500,7 +500,7 @@ static int IsOperation(PicOp op)
         case OP_MOVLP:
         case OP_NOP_:
         case OP_COMMENT_:
-        case OP_COMMENT_INT:
+        case OP_COMMENT_INT_:
             //      case OP_SUBLW:
         case OP_IORLW:
         case OP_OPTION:
@@ -566,7 +566,7 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, DWORD
     if(PicProg[PicProgWriteP].opPic != OP_VACANT_)
         THROW_COMPILER_EXCEPTION(_("Internal error."));
 
-    if(op == OP_COMMENT_INT) {
+    if(op == OP_COMMENT_INT_) {
         if(comment) {
             if(strlen(PicProg[PicProgWriteP].commentInt))
                 strncatn(PicProg[PicProgWriteP].commentInt, "\n    ; ", MAX_COMMENT_LEN);
@@ -701,7 +701,7 @@ static void Comment(const char *str, ...)
         char    buf[MAX_COMMENT_LEN];
         va_start(f, str);
         vsnprintf(buf, MAX_COMMENT_LEN, str, f);
-        Instruction(OP_COMMENT_INT, 0, 0, buf);
+        Instruction(OP_COMMENT_INT_, 0, 0, buf);
     }
 }
 
@@ -1069,36 +1069,36 @@ static void PagePreSet()
     // mark the PCLATH as not setted, not defined.
     for(DWORD i = 0; i < PicProgWriteP; i++) {
         PicProg[i].PCLATH = NOTDEF(0);
-        PicProg[i].label = 0;
+        PicProg[i].isLabel = 0;
     }
     // PCLATH is 0 after reset
     PicProg[0].PCLATH = 0;
-    PicProg[0].label |= I_LABEL;
+    PicProg[0].isLabel |= I_LABEL;
 
     // GOTO progStart
     PicProg[3].PCLATH = 0;
-    PicProg[3].label |= I_LABEL;
+    PicProg[3].isLabel |= I_LABEL;
 
     // Mark the interrupt vector operation as the multi entry point.
     if(Prog.mcu()->core != BaselineCore12bit) {
         PicProg[4].PCLATH = MULTYDEF(0);
-        PicProg[4].label |= I_LABEL;
+        PicProg[4].isLabel |= I_LABEL;
     }
     // Mark Labels for GOTO and CALL
     for(DWORD i = 1; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
-            PicProg[PicProg[i].arg1].label |= L_LABEL;
+            PicProg[PicProg[i].arg1].isLabel |= L_LABEL;
         }
         if(IsOperation(PicProg[i].opPic) == IS_GOTO) {
             if(IsOperation(PicProg[i - 1].opPic) != IS_SKIP) {
                 // ended goto
-                PicProg[i].label |= ENDS_GOTO;
+                PicProg[i].isLabel |= ENDS_GOTO;
             }
         }
         if(IsOperation(PicProg[i].opPic) == IS_RETS) {
             if(IsOperation(PicProg[i - 1].opPic) != IS_SKIP) {
                 // ended return
-                PicProg[i].label |= ENDS_RET;
+                PicProg[i].isLabel |= ENDS_RET;
             }
         }
     }
@@ -1109,42 +1109,42 @@ static void PagePreSet()
         } else {
             if((PicProg[i].opPic == OP_CLRF) && (PicProg[i].arg1 == REG_PCLATH)) {
                 PicProg[i].PCLATH = 0;
-                PicProg[i].label |= DIR_SET;
+                PicProg[i].isLabel |= DIR_SET;
             } else if(PicProg[i].opPic == OP_MOVLP) {
                 PicProg[i].PCLATH = PicProg[i].arg1;
-                PicProg[i].label |= DIR_SET;
+                PicProg[i].isLabel |= DIR_SET;
             } else if((PicProg[i].opPic == OP_BSF) && (PicProg[i].arg1 == REG_PCLATH)) {
                 PicProg[i].PCLATH &= ~NOTDEF(0);
                 PicProg[i].PCLATH |= 1 << PicProg[i].arg2;
-                PicProg[i].label |= DIR_SET;
+                PicProg[i].isLabel |= DIR_SET;
                 if(((PicProg[i - 1].opPic == OP_BCF) || (PicProg[i - 1].opPic == OP_BSF))
                    && (PicProg[i - 1].arg1 == REG_PCLATH)) {
                     PicProg[i - 1].PCLATH &= ~NOTDEF(0);
                     PicProg[i - 1].PCLATH |= 1 << PicProg[i].arg2;
                     PicProg[i].PCLATH |= PicProg[i - 1].PCLATH;
-                    PicProg[i - 1].label |= DIR_SET;
+                    PicProg[i - 1].isLabel |= DIR_SET;
                 }
             } else if((PicProg[i].opPic == OP_BCF) && (PicProg[i].arg1 == REG_PCLATH)) {
                 PicProg[i].PCLATH &= ~NOTDEF(0);
                 PicProg[i].PCLATH &= ~(1 << PicProg[i].arg2);
-                PicProg[i].label |= DIR_SET;
+                PicProg[i].isLabel |= DIR_SET;
                 if(((PicProg[i - 1].opPic == OP_BCF) || (PicProg[i - 1].opPic == OP_BSF))
                    && (PicProg[i - 1].arg1 == REG_PCLATH)) {
                     PicProg[i - 1].PCLATH &= ~NOTDEF(0);
                     PicProg[i - 1].PCLATH &= ~(1 << PicProg[i].arg2);
                     PicProg[i].PCLATH |= PicProg[i - 1].PCLATH;
-                    PicProg[i - 1].label |= DIR_SET;
+                    PicProg[i - 1].isLabel |= DIR_SET;
                 }
             } else if((PicProg[i].opPic == OP_MOVWF) && (PicProg[i].arg1 == REG_PCLATH)) {
                 if(PicProg[i - 1].opPic == OP_MOVLW) {
                     PicProg[i].PCLATH = PicProg[i - 1].arg1;
-                    PicProg[i].label |= DIR_SET;
+                    PicProg[i].isLabel |= DIR_SET;
                 } else if((PicProg[i - 1].opPic == OP_ADDWF) && (PicProg[i - 1].arg2 == DEST_W)
                           && (PicProg[i - 2].opPic == OP_MOVLW)) {
                     // calculated PCLATH
                     // used in table
                     PicProg[i].PCLATH = MULTYDEF(0);
-                    PicProg[i].label |= DIR_SET;
+                    PicProg[i].isLabel |= DIR_SET;
                 } else {
                     THROW_COMPILER_EXCEPTION_FMT(_("PagePreSet() error at addr 0x%X"), i);
                 }
@@ -1153,7 +1153,7 @@ static void PagePreSet()
                 // calculated PCLATH
                 // used in table
                 PicProg[i].PCLATH = MULTYDEF(0);
-                PicProg[i].label |= DIR_SET;
+                PicProg[i].isLabel |= DIR_SET;
             }
         }
     }
@@ -1165,8 +1165,8 @@ static void PagePreSet()
     }
     //
     for(DWORD i = 1; i < PicProgWriteP; i++) { // copy-paste v
-        if(PicProg[i].label & L_LABEL) {
-            if(PicProg[i - 1].label & ENDS_) {
+        if(PicProg[i].isLabel & L_LABEL) {
+            if(PicProg[i - 1].isLabel & ENDS_) {
                 //
             } else {
                 if(IS_MULTYDEF(PicProg[i - 1].PCLATH)) {
@@ -1182,7 +1182,7 @@ static void PagePreSet()
     // pass thru the PCLATH
     for(DWORD i = 1; i < PicProgWriteP; i++) {
         //if(IS_NOTDEF(PicProg[i].PCLATH)) {
-        if(PicProg[i - 1].label & ENDS_) {
+        if(PicProg[i - 1].isLabel & ENDS_) {
             //
         } else {
             /*
@@ -1194,7 +1194,7 @@ static void PagePreSet()
             if(IsOperation(PicProg[i - 1].opPic) == IS_CALL) {
                 PicProg[i].PCLATH = MULTYDEF(0);
             } else if(!IS_NOTDEF(PicProg[i - 1].PCLATH)) {
-                if(!(PicProg[i].label & DIR_SET))
+                if(!(PicProg[i].isLabel & DIR_SET))
                     PicProg[i].PCLATH = PicProg[i - 1].PCLATH;
             }
         }
@@ -1202,8 +1202,8 @@ static void PagePreSet()
     }
     // double enter to Label
     for(DWORD i = 1; i < PicProgWriteP; i++) { // copy-paste ^
-        if(PicProg[i].label & L_LABEL) {
-            if(PicProg[i - 1].label & ENDS_) {
+        if(PicProg[i].isLabel & L_LABEL) {
+            if(PicProg[i - 1].isLabel & ENDS_) {
                 //
             } else {
                 if(IS_MULTYDEF(PicProg[i - 1].PCLATH)) {
@@ -1218,9 +1218,9 @@ static void PagePreSet()
     }
     // pass thru the RET's PCLATH
     for(DWORD i = 1; i < PicProgWriteP; i++) {
-        if(PicProg[i].label & ENDS_RET) {
+        if(PicProg[i].isLabel & ENDS_RET) {
             if(!IS_NOTDEF(PicProg[i - 1].PCLATH)) {
-                if(!(PicProg[i].label & DIR_SET))
+                if(!(PicProg[i].isLabel & DIR_SET))
                     PicProg[i].PCLATH = PicProg[i - 1].PCLATH;
             }
         }
@@ -2271,8 +2271,8 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 #endif
 
 #if ASM_LABEL > 0
-            if(PicProg[i].label || (ASM_LABEL == 2))
-                if(PicProg[i].label & L_LABEL)
+            if(PicProg[i].isLabel || (ASM_LABEL == 2))
+                if(PicProg[i].isLabel & L_LABEL)
                     fprintf(fAsm, "l_%06x: %s", i, sAsm);
                 else
                     fprintf(fAsm, "i_%06x: %s", i, sAsm);
