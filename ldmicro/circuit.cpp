@@ -1225,9 +1225,7 @@ void InsertRungI(int i)
         return;
     }
 
-    memmove(&Prog.rungs[i + 1], &Prog.rungs[i], (Prog.numRungs - i) * sizeof(Prog.rungs[0]));
-    memmove(&Prog.rungSelected[i + 1], &Prog.rungSelected[i], (Prog.numRungs - i) * sizeof(Prog.rungSelected[0]));
-    Prog.appendEmptyRung();
+    Prog.insertEmptyRung(i);
     NullDisplayMatrix(i, i + 1 + 1);
 }
 
@@ -1236,18 +1234,21 @@ void InsertRungI(int i)
 //-----------------------------------------------------------------------------
 void InsertRung(bool afterCursor)
 {
-    if(Prog.numRungs >= (MAX_RUNGS - 1)) {
-        Error(_("Too many rungs!"));
-        return;
-    }
-
     int i = RungContainingSelected();
     if(i < 0)
         return;
 
-    if(afterCursor)
-        i++;
-    InsertRungI(i);
+    try {
+        if(afterCursor)
+            Prog.insertEmptyRung(++i);
+        else
+            Prog.insertEmptyRung(i);
+    }
+    catch(std::exception& e) {
+        Error("%s", e.what());
+    }
+
+    NullDisplayMatrix(i, i + 1 + 1);
 
     WhatCanWeDoFromCursorAndTopology();
 }
@@ -1733,7 +1734,7 @@ void CopyRungDown()
     rewind(f);
     fgets(line, sizeof(line), f);
     if(strstr(line, "RUNG"))
-        if(temp = LoadSeriesFromFile(f)) {
+        if((temp = LoadSeriesFromFile(f))) {
             InsertRung(true);
             Prog.rungs[i + 1] = temp;
         }
