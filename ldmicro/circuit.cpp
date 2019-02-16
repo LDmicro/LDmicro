@@ -1225,7 +1225,10 @@ void InsertRungI(int i)
         return;
     }
 
-    Prog.insertEmptyRung(i);
+    if(i < Prog.numRungs)
+        Prog.insertEmptyRung(i);
+    else
+        Prog.appendEmptyRung();
     NullDisplayMatrix(i, i + 1 + 1);
 }
 
@@ -1245,12 +1248,7 @@ void InsertRung(bool afterCursor)
 
     if(afterCursor)
         i++;
-    try {
-        Prog.insertEmptyRung(i);
-    }
-    catch(std::exception& e) {
-        Error("%s", e.what());
-    }
+    InsertRungI(i);
 
     WhatCanWeDoFromCursorAndTopology();
 }
