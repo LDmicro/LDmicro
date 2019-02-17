@@ -3,12 +3,14 @@
 #include <exception>
 #include <cstdio>
 
-#ifndef __LDLOG_LOG_FILE
+#define RM_SLASH(str) (strstr(str, "/") != NULL ? strrchr(str, '/') + 1 : \
+                       strstr(str, "\\") != NULL ? strrchr(str, '\\') + 1 : str)
 
-#define __LDLOG_LOG_FILE (strstr(__FILE__, "/") != NULL ? \
-    strrchr(__FILE__, '/') + 1 : strstr(__FILE__, "\\") != NULL ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+//#ifndef __LLFILE__
 
-#endif
+#define __LLFILE__ RM_SLASH(__FILE__)
+
+//#endif
 
 //#define USE_JG
 
@@ -18,7 +20,7 @@ extern int CompileFailure;      ///// added by JG
 #else
     #define THROW_COMPILER_EXCEPTION(MSG, ...) do{ \
         char message[1024*3];\
-        sprintf(message, "%s\n[%i:%s]", MSG, __LINE__, __LDLOG_LOG_FILE); \
+        sprintf(message, "%s\n[%i:%s]", MSG, __LINE__, __LLFILE__); \
         throw std::runtime_error(message);\
         }while(0)
 #endif
@@ -33,7 +35,7 @@ extern int CompileFailure;      ///// added by JG
 
     #define THROW_COMPILER_EXCEPTION(MSG, ...) do{ \
         char message[1024*3]; \
-        sprintf(message, "%s\n[%i:%s]", MSG, __LINE__, __LDLOG_LOG_FILE); \
+        sprintf(message, "%s\n[%i:%s]", MSG, __LINE__, __LLFILE__); \
         Error(message); \
         CompileFailure= 1; \
         return __VA_ARGS__; \
@@ -44,7 +46,7 @@ extern int CompileFailure;      ///// added by JG
         char format[1024];\
         sprintf(format, FMT, __VA_ARGS__); \
         char message[1024*3];\
-        sprintf(message, "%s\n[%i:%s]", format, __LINE__, __LDLOG_LOG_FILE); \
+        sprintf(message, "%s\n[%i:%s]", format, __LINE__, __LLFILE__); \
         throw std::runtime_error(message);\
         }while(0)
 #endif
@@ -54,7 +56,7 @@ extern int CompileFailure;      ///// added by JG
         char format[1024]; \
         sprintf(format, FMT, __VA_ARGS__); \
         char message[1024*3];\
-        sprintf(message, "%s\n[%i:%s]", format, __LINE__, __LDLOG_LOG_FILE); \
+        sprintf(message, "%s\n[%i:%s]", format, __LINE__, __LLFILE__); \
         Error(message); \
         CompileFailure= 1; \
         }while(0)

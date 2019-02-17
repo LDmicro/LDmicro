@@ -441,7 +441,7 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, const
 }
 
 // And use macro for bugtracking
-#define Instruction(...) _Instruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define Instruction(...) _Instruction(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 /*
 //-----------------------------------------------------------------------------
 static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DWORD arg1, DWORD arg2)
@@ -475,7 +475,7 @@ static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DW
     //^^^ same
 }
 
-#define SetInstruction(...) _SetInstruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define SetInstruction(...) _SetInstruction(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 */
 //-----------------------------------------------------------------------------
 // printf-like comment function
@@ -1721,7 +1721,7 @@ static void LOAD(int reg, DWORD addr)
 //-----------------------------------------------------------------------------
 // Generate code to write/read an 8-bit value to a particular register.
 //-----------------------------------------------------------------------------
-#define WriteMemory(...) _WriteMemory(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define WriteMemory(...) _WriteMemory(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 
 static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val, const char *name, SDWORD literal)
 //used ZL, r25; Opcodes: 4
@@ -2908,7 +2908,7 @@ static void _CopyRegToVar(int l, const char *f, const char *args, const NameArra
     _CopyRegToVar(l, f, args, var.c_str(), reg, sovReg);
 }
 
-#define CopyRegToVar(...) _CopyRegToVar(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define CopyRegToVar(...) _CopyRegToVar(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
 static void Decrement(DWORD addr, int sov)
 //used ZL, r25

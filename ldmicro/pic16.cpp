@@ -522,7 +522,7 @@ static int IsOperation(PicOp op)
 
 //-----------------------------------------------------------------------------
 // And use macro for bugtracking
-#define Instruction(...) _Instruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define Instruction(...) _Instruction(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 
 // Note that all of these are single instructions on the PIC; this is not the
 // case for their equivalents on the AVR!
@@ -689,7 +689,7 @@ static void _SetInstruction(int l, const char *f, const char *args, DWORD addr, 
     _SetInstruction(l, f, args, addr, op, arg1, 0, comment);
 }
 */
-#define SetInstruction(...) _SetInstruction(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define SetInstruction(...) _SetInstruction(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 // printf-like comment function
@@ -2414,7 +2414,7 @@ static void _WriteRegister(int l, const char *f, const char *args, DWORD reg, BY
     // }
 }
 // And use macro for bugtracking
-#define WriteRegister(...) _WriteRegister(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define WriteRegister(...) _WriteRegister(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
 // Call a subroutine, that might be in an arbitrary page, and then put
 // PCLATH back where we want it.
@@ -3181,7 +3181,7 @@ static void _CheckSovNames(int l, const char *f, const char *args, IntOp *a)
 {
     return;
 }
-#define CheckSovNames(...) _CheckSovNames(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define CheckSovNames(...) _CheckSovNames(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 /*

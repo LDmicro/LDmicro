@@ -978,7 +978,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
 }
 
 // And use macro for bugtracking
-#define Op(...) _Op(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define Op(...) _Op(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
 // Compile the instruction that the simulator uses to keep track of which
 // nodes are energized (so that it can display which branches of the circuit
@@ -1017,7 +1017,7 @@ static void _Comment1(int l, const char *f, const char *str)
         _Op(l, f, nullptr, INT_COMMENT, buf);
     }
 }
-#define Comment1(str) _Comment1(__LINE__, __FILE__, str)
+#define Comment1(str) _Comment1(__LINE__, __LLFILE__, str)
 
 static void _Comment(int l, const char *f, const char *str, ...)
 {
@@ -1041,7 +1041,7 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
     }
 }
 
-#define Comment(...) _Comment(__LINE__, __FILE__, __VA_ARGS__)
+#define Comment(...) _Comment(__LINE__, __LLFILE__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
