@@ -597,25 +597,25 @@ extern bool DialogCancel;
 
 #ifdef OOPS_AS_THROW
     #define ooops(...) { \
-        dbp("rungNow=%d", rungNow); \
+        dbp("rungNow=%d\n", rungNow); \
         dbp("Internal error at [%d:%s]%s\n", __LINE__, __FILE__, __VA_ARGS__); \
-        THROW_COMPILER_EXCEPTION("Internal error at [%d:%s]\n%s\n", __LINE__, __FILE__,__VA_ARGS__); \
+        THROW_COMPILER_EXCEPTION_FMT("Internal error at [%d:%s]\n%s\n", __LINE__, __FILE__, __VA_ARGS__); \
     }
     #define oops() { \
-        dbp("rungNow=%d", rungNow); \
+        dbp("rungNow=%d\n", rungNow); \
         dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
-        THROW_COMPILER_EXCEPTION("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
+		THROW_COMPILER_EXCEPTION_FMT("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
     }
 #else
     #define ooops(...) { \
-        dbp("rungNow=%d", rungNow); \
+        dbp("rungNow=%d\n", rungNow); \
         dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         Error(__VA_ARGS__); \
         doexit(EXIT_FAILURE); \
     }
     #define oops() { \
-        dbp("rungNow=%d", rungNow); \
+        dbp("rungNow=%d\n", rungNow); \
         dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
         doexit(EXIT_FAILURE); \

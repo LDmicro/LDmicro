@@ -423,7 +423,7 @@ void IntDumpListing(char *outFile)
                             IntCode[i].literal,
                             IntCode[i].name1.c_str());
                 else
-                    THROW_COMPILER_EXCEPTION(_("Internal error."));
+                    oops();
                 break;
             }
             case INT_EEPROM_WRITE: {
@@ -452,7 +452,7 @@ void IntDumpListing(char *outFile)
                             IntCode[i].literal,
                             IntCode[i].literal);
                 else
-                    THROW_COMPILER_EXCEPTION(_("Internal error."));
+                    oops();
                 break;
             }
             case INT_SPI_COMPLETE:
@@ -2682,7 +2682,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               } else if(which == ELEM_NEQ) {
                   Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
               } else
-                  THROW_COMPILER_EXCEPTION(_("Internal error."));
+                  oops();
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
           break;
@@ -4016,7 +4016,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     if(clocks > 0xffff)
                         clocks = 0xffff;
                 } else
-                    THROW_COMPILER_EXCEPTION(_("Internal error."));
+                    oops();
             }
             if(clocks <= 0)
                 clocks = 1;
