@@ -477,7 +477,7 @@ bool FindSelected(int *gx, int *gy);
 bool MoveCursorNear(int *gx, int *gy);
 
 #define DISPLAY_MATRIX_X_SIZE 256
-#define DISPLAY_MATRIX_Y_SIZE (MAX_RUNGS*2) // 2048
+#define DISPLAY_MATRIX_Y_SIZE ((MAX_RUNGS + 1) * 2)
 extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
@@ -593,19 +593,35 @@ extern bool DialogCancel;
 // stringer(BIT0) // ==  "BIT0"
 // useless(BIT0)  // == "0"
 
-#define ooops(...) { \
-        dbp("rungNow=%d", rungNow); \
-        dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
-        Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
+#define OOPS_AS_THROW
+
+#ifdef OOPS_AS_THROW
+    #define ooops(...) { \
+        dbp("rungNow=%d\n", rungNow); \
+        dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, __VA_ARGS__); \
+        THROW_COMPILER_EXCEPTION_FMT("Internal error at [%d:%s]\n%s\n", __LINE__, __LLFILE__, __VA_ARGS__); \
+    }
+    #define oops() { \
+        dbp("rungNow=%d\n", rungNow); \
+        dbp("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
+        THROW_COMPILER_EXCEPTION_FMT("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
+    }
+#else
+    #define ooops(...) { \
+        dbp("rungNow=%d\n", rungNow); \
+        dbp("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
+        Error("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
         Error(__VA_ARGS__); \
         doexit(EXIT_FAILURE); \
     }
-#define oops() { \
-        dbp("rungNow=%d", rungNow); \
-        dbp("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
-        Error("Internal error at [%d:%s]\n", __LINE__, __FILE__); \
+    #define oops() { \
+        dbp("rungNow=%d\n", rungNow); \
+        dbp("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
+        Error("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
         doexit(EXIT_FAILURE); \
     }
+#endif
+
 #define dodbp
 #ifdef dodbp
   #define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
@@ -753,7 +769,7 @@ typedef enum AvrOpTag {
     OP_VACANT, // 0
     OP_NOP,
     OP_COMMENT,
-    OP_COMMENTINT,
+    OP_COMMENT_INT,
     OP_ADC,
     OP_ADD,
     OP_ADIW,
@@ -864,7 +880,7 @@ typedef enum Pic16OpTag {
     OP_VACANT_, // 0
     OP_NOP_,
     OP_COMMENT_,
-    OP_COMMENT_INT,
+    OP_COMMENT_INT_,
 //  OP_ADDLW, // absent in PIC12
     OP_ADDWF,
 //  OP_ANDLW,
@@ -928,7 +944,7 @@ typedef struct PicAvrInstructionTag {
     DWORD       arg1orig;
     DWORD       BANK;   // this operation opPic will executed with this STATUS or BSR registers
     DWORD       PCLATH; // this operation opPic will executed with this PCLATH which now or previously selected
-    int         label;
+    int         isLabel;
     char        commentInt[MAX_COMMENT_LEN]; // before op
     char        commentAsm[MAX_COMMENT_LEN]; // after op
     char        arg1name[MAX_NAME_LEN];

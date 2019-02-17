@@ -423,7 +423,7 @@ void IntDumpListing(char *outFile)
                             IntCode[i].literal,
                             IntCode[i].name1.c_str());
                 else
-                    THROW_COMPILER_EXCEPTION(_("Internal error."));
+                    oops();
                 break;
             }
             case INT_EEPROM_WRITE: {
@@ -452,7 +452,7 @@ void IntDumpListing(char *outFile)
                             IntCode[i].literal,
                             IntCode[i].literal);
                 else
-                    THROW_COMPILER_EXCEPTION(_("Internal error."));
+                    oops();
                 break;
             }
             case INT_SPI_COMPLETE:
@@ -978,7 +978,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
 }
 
 // And use macro for bugtracking
-#define Op(...) _Op(__LINE__, __FILE__, #__VA_ARGS__, __VA_ARGS__)
+#define Op(...) _Op(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
 // Compile the instruction that the simulator uses to keep track of which
 // nodes are energized (so that it can display which branches of the circuit
@@ -1017,7 +1017,7 @@ static void _Comment1(int l, const char *f, const char *str)
         _Op(l, f, nullptr, INT_COMMENT, buf);
     }
 }
-#define Comment1(str) _Comment1(__LINE__, __FILE__, str)
+#define Comment1(str) _Comment1(__LINE__, __LLFILE__, str)
 
 static void _Comment(int l, const char *f, const char *str, ...)
 {
@@ -1041,7 +1041,7 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
     }
 }
 
-#define Comment(...) _Comment(__LINE__, __FILE__, __VA_ARGS__)
+#define Comment(...) _Comment(__LINE__, __LLFILE__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
@@ -2682,7 +2682,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               } else if(which == ELEM_NEQ) {
                   Op(INT_IF_VARIABLE_EQUALS_VARIABLE, op1, op2);
               } else
-                  THROW_COMPILER_EXCEPTION(_("Internal error."));
+                  oops();
                 Op(INT_CLEAR_BIT, stateInOut);
               Op(INT_END_IF);
           break;
@@ -4016,7 +4016,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     if(clocks > 0xffff)
                         clocks = 0xffff;
                 } else
-                    THROW_COMPILER_EXCEPTION(_("Internal error."));
+                    oops();
             }
             if(clocks <= 0)
                 clocks = 1;
@@ -4852,6 +4852,8 @@ bool GenerateIntermediateCode()
     Op(INT_AllocKnownAddr, s1, (SDWORD)rung);
     Op(INT_FwdAddrIsNow, s1, (SDWORD)Prog.numRungs);
     rungNow++;
+    Comment("Latest INT_OP here");
+
     //Calculate amount of intermediate codes in rungs
     for(int i = 0; i < MAX_RUNGS; i++)
         Prog.OpsInRung[i] = 0;
