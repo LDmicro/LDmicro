@@ -42,6 +42,8 @@ void PlcProgram::setMcu(McuIoInfo* m)
     if(!mcu_)
         return;
 
+	configurationWord = 0;     ///// Added by JG
+
     LoadWritePcPorts();
 
     auto comparePinInfo = [](const McuIoPinInfo& a, const McuIoPinInfo& b) -> bool {
@@ -71,21 +73,10 @@ void PlcProgram::reset()
     setMcu(nullptr);
 }
 
-void PlcProgram::appendEmptyRung()
+bool PlcProgram::appendEmptyRung()
 {
     if(numRungs >= (MAX_RUNGS - 1))
-        THROW_COMPILER_EXCEPTION_FMT(_("Exceeded the limit of %d rungs!"), MAX_RUNGS);
+        return false;
     rungs[numRungs++] = AllocEmptyRung();
-}
-
-void PlcProgram::insertEmptyRung(uint32_t idx)
-{
-    if(static_cast<int>(idx) >= numRungs)
-        THROW_COMPILER_EXCEPTION_FMT(_("Invalid rung index %lu!"), idx);
-    if(numRungs > (MAX_RUNGS - 1))
-        THROW_COMPILER_EXCEPTION_FMT(_("Exceeded the limit of %d rungs!"), MAX_RUNGS);
-    memmove(&rungs[idx + 1], &rungs[idx], (numRungs - idx) * sizeof(rungs[0]));
-    memmove(&rungSelected[idx + 1], &rungSelected[idx], (numRungs - idx) * sizeof(rungSelected[0]));
-    rungs[idx] = AllocEmptyRung();
-    numRungs++;
+    return true;
 }
