@@ -1225,9 +1225,10 @@ void InsertRungI(int i)
         return;
     }
 
-    memmove(&Prog.rungs[i + 1], &Prog.rungs[i], (Prog.numRungs - i) * sizeof(Prog.rungs[0]));
-    memmove(&Prog.rungSelected[i + 1], &Prog.rungSelected[i], (Prog.numRungs - i) * sizeof(Prog.rungSelected[0]));
-    Prog.appendEmptyRung();
+    if(i < Prog.numRungs)
+        Prog.insertEmptyRung(i);
+    else
+        Prog.appendEmptyRung();
     NullDisplayMatrix(i, i + 1 + 1);
 }
 
@@ -1733,7 +1734,7 @@ void CopyRungDown()
     rewind(f);
     fgets(line, sizeof(line), f);
     if(strstr(line, "RUNG"))
-        if(temp = LoadSeriesFromFile(f)) {
+        if((temp = LoadSeriesFromFile(f))) {
             InsertRung(true);
             Prog.rungs[i + 1] = temp;
         }

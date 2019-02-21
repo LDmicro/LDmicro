@@ -160,13 +160,13 @@ mkdir obj
 mkdir bin
 
 CD lib
-for %%F in (*.c) do  avr-gcc.exe -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF ..\obj\%%F.d -MT ..\obj\%%F.d -MT ..\obj\%%F.o %%F -o ..\obj\%%F.o 
+for %%F in (*.c) do  avr-gcc.exe -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF ..\obj\%%F.d -MT ..\obj\%%F.d -MT ..\obj\%%F.o %%F -o ..\obj\%%F.o
 CD ..
 
-avr-gcc.exe -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%4 -MF obj\%~nx2.d -MT obj\%~nx2.d -MT obj\%~nx2.o %~nx2.c -o obj\%~nx2.o 
+avr-gcc.exe -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%4 -MF obj\%~nx2.d -MT obj\%~nx2.d -MT obj\%~nx2.o %~nx2.c -o obj\%~nx2.o
 
 REM Linkage des objets
-avr-gcc.exe -o bin\%~nx2.elf obj\*.o -Wl,-Map=obj\%~nx2.map -Wl,--start-group -Wl,-lm -Wl,--end-group -mmcu=%4 
+avr-gcc.exe -o bin\%~nx2.elf obj\*.o -Wl,-Map=obj\%~nx2.map -Wl,--start-group -Wl,-lm -Wl,--end-group -mmcu=%4
 
 REM Conversion Elf en Hex
 avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature bin\%~nx2.elf bin\%~nx2.hex
@@ -234,6 +234,8 @@ goto exit
 ::**************************************************************************
 
 @rem *** Set up PIC flashing tool. ***
+@rem SET TOOL="C:\Program Files (x86)\Microchip\PICkit 2 v2\PICkit2V2.exe"
+@rem SET TOOL="C:\Program Files (x86)\Microchip\PICkit 3 v3\PICkit3.exe"
 @rem SET TOOL="d:\Program Files\Microchip\PICkit 3 v1\PICkit 3.exe"
      SET TOOL="d:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3\PK3CMD.exe"
 
@@ -290,7 +292,7 @@ REM Conversion Elf en Hex
 
 
 
-REM Transfert du programme 
+REM Transfert du programme
 
 
 

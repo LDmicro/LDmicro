@@ -2913,24 +2913,24 @@ void CheckPwmPins()
 //-----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
-    auto logg = ldlog::getLogger("default");
-    logg->add_sink(ldlog::newWindowsDebugStringSink());
-
-    LOG(ldlog::Info, logg, "Run LDmicro ver.: {}.", LDMICRO_VER_STR);
-
-    srand((int)time(0));
-
-    if(LEN7SEG != arraylen(char7seg))
-        oops();
-
-    if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
-        Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
-        oops();
-    }
-
-    CheckPwmPins();
-
     try {
+		auto logg = ldlog::getLogger("default");
+		logg->add_sink(ldlog::newWindowsDebugStringSink());
+
+		LOG(ldlog::Info, logg, "Run LDmicro ver.: {}.", LDMICRO_VER_STR);
+
+		srand((int)time(0));
+
+		if(LEN7SEG != arraylen(char7seg))
+			oops();
+
+		if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
+			Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
+			oops();
+		}
+
+		CheckPwmPins();
+
         GetModuleFileName(hInstance, ExePath, MAX_PATH);
         ExtractFilePath(ExePath);
 
@@ -3105,9 +3105,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         GenerateIoListDontLoseSelection();
         RefreshScrollbars();
         UpdateMainWindowTitleBar();
-
-        for(int i = 0; i < 10; i++)
-            dbp("\n");
 
         MSG   msg;
         DWORD ret;
