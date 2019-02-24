@@ -62,12 +62,17 @@ struct PlcProgramSingleIo {
 class PlcProgram {
 public:
     PlcProgram();
+    PlcProgram(const PlcProgram& other);
     ~PlcProgram();
     void setMcu(McuIoInfo *mcu);
     const McuIoInfo* mcu() const {return mcu_;}
     void reset();
     void appendEmptyRung();
     void insertEmptyRung(uint32_t idx);
+public:
+    PlcProgram& operator=(const PlcProgram &other);
+private:
+    void* deepCopy(int which, const void* any) const ;
 public:
     struct {
         PlcProgramSingleIo  assignment[MAX_IO];

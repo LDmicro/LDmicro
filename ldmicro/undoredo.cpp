@@ -84,7 +84,7 @@ static void *DeepCopy(int which, void *any)
         }
         default:
             oops();
-            return 0;
+            return nullptr;
     }
 }
 
@@ -101,10 +101,7 @@ static void EmptyProgramStack(ProgramStack *ps)
         ps->write = a;
         (ps->count)--;
 
-        int i;
-        for(i = 0; i < ps->prog[ps->write].numRungs; i++) {
-            FreeCircuit(ELEM_SERIES_SUBCKT, ps->prog[ps->write].rungs[i]);
-        }
+        ps->prog[ps->write].reset();
     }
 }
 
@@ -112,24 +109,15 @@ static void EmptyProgramStack(ProgramStack *ps)
 // Push the current program onto a program stack. Can either make a deep or
 // a shallow copy of the linked data structures.
 //-----------------------------------------------------------------------------
-static void PushProgramStack(ProgramStack *ps, bool deepCopy)
+static void PushProgramStack(ProgramStack *ps)
 {
     if(ps->count == MAX_LEVELS_UNDO) {
-        int i;
-        for(i = 0; i < ps->prog[ps->write].numRungs; i++) {
-            FreeCircuit(ELEM_SERIES_SUBCKT, ps->prog[ps->write].rungs[i]);
-        }
+        ps->prog[ps->write].reset();
     } else {
         (ps->count)++;
     }
 
-    memcpy(&(ps->prog[ps->write]), &Prog, sizeof(Prog));
-    if(deepCopy) {
-        int i;
-        for(i = 0; i < Prog.numRungs; i++) {
-            ps->prog[ps->write].rungs[i] = (ElemSubcktSeries *)DeepCopy(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-        }
-    }
+    ps->prog[ps->write] = Prog;
 
     int gx, gy;
     if(FindSelected(&gx, &gy)) {
@@ -158,7 +146,7 @@ static void PopProgramStack(ProgramStack *ps)
     ps->write = a;
     (ps->count)--;
 
-    memcpy(&Prog, &ps->prog[ps->write], sizeof(Prog));
+    Prog = ps->prog[ps->write];
 
     SelectedGxAfterNextPaint = ps->cursor[ps->write].gx;
     SelectedGyAfterNextPaint = ps->cursor[ps->write].gy;
@@ -172,7 +160,7 @@ void UndoRemember()
 {
     // can't redo after modifying the program
     EmptyProgramStack(&(Undo.redo));
-    PushProgramStack(&(Undo.undo), true);
+    PushProgramStack(&(Undo.undo));
 
     SetUndoEnabled(true, false);
 }
@@ -189,7 +177,7 @@ void UndoUndo()
 
     ForgetEverything();
 
-    PushProgramStack(&(Undo.redo), false);
+    PushProgramStack(&(Undo.redo));
     PopProgramStack(&(Undo.undo));
 
     if(Undo.undo.count > 0) {
@@ -213,7 +201,7 @@ void UndoRedo()
 
     ForgetEverything();
 
-    PushProgramStack(&(Undo.undo), false);
+    PushProgramStack(&(Undo.undo));
     PopProgramStack(&(Undo.redo));
 
     if(Undo.redo.count > 0) {
