@@ -1,3 +1,11 @@
+== Release 5.3.0.1
+
+    * Fixed: Shift + 6 problem (insert rung before) #155
+
+    * Fixed: Undoredo bug #160
+
+    * Fixed: Cannot set a value greater than 0x7FFFFFFF in a variable of 4 bytes. #146
+
 == Release 5.3.0.0
 
     * Added Release 5.2.0.a by Jose GILLES
