@@ -1234,7 +1234,9 @@ void ShowUartDialog(int which, ElemLeaf *l)
     char wait[MAX_NAME_LEN];
     sprintf(wait, "%d", e->wait);
 
-    const char *labels[] = {(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"), _("Number of bytes to transmit:"), _("Wait until all bytes are transmitted:")};
+	const char *labels[] =  { (which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"), 
+							  (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"), 
+							  (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sended:")};
     char *      dests[] = {e->name, bytes, wait};
 
     NoCheckingOnBox[0] = true;

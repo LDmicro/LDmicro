@@ -9,6 +9,7 @@ endif()
 project(ldmicro
     LANGUAGES CXX
     )
+set(CMAKE_CXX_STANDARD 11)
 
 # set all posible languages
 SET(LDLANG_ALL EN DE ES FR IT PT TR RU JA )
@@ -33,7 +34,10 @@ else()
 endif()
 message(STATUS "Lang : ${LDLANG}")
 
-add_subdirectory(ldmicro-xx)
+option(BUILD_LDMICROXX "enable/disable ldmicro-xx (default is disenabled)" OFF)
+if (BUILD_LDMICROXX)
+    add_subdirectory(ldmicro-xx)
+endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

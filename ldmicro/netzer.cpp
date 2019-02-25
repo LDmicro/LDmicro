@@ -707,7 +707,7 @@ static void ifBitCleared(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 static BYTE getInternalIntegerAddress(WORD Address)
 {
     if(Address * 2 >= 256) {
-        THROW_COMPILER_EXCEPTION(_("Internal error."), 0);
+        oops();
     }
 
     return (BYTE)(Address * 2);
@@ -1313,7 +1313,7 @@ static void generateNetzerOpcodes(BinOp *Program, int MaxLabel, OpcodeMeta *pOpc
                 break;
 
             default:
-                THROW_COMPILER_EXCEPTION(_("Internal error."));
+                oops();
         } // switch(Program[idx].op)
     }
 }

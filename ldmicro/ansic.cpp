@@ -2208,11 +2208,13 @@ bool CompileAnsiC(const char *dest, int MNU)
 
     ///// Added by JG
     char mcualias[MAX_PATH];    ///// Added by JG
-    strcpy(mcualias, Prog.mcu()->mcuList);
+    strcpy(mcualias, Prog.mcu() ? Prog.mcu()->mcuList : "undefined_mcu");
     if (Prog.mcu())
         fprintf(flh,
             "#define LDTARGET_%s\n\n"
-            "#define F_CPU %luUL\n\n"
+            "#ifndef F_CPU\n"
+            "  #define F_CPU %luUL\n"
+            "#endif\n\n"
             "#define _XTAL_FREQ %luUL\n\n",
             _strlwr(mcualias), Prog.mcuClock, Prog.mcuClock);
 

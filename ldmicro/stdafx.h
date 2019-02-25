@@ -3,7 +3,8 @@
 // are changed infrequently
 //
 
-#pragma once
+#ifndef STDAFX_LDMICRO_H
+#define STDAFX_LDMICRO_H
 
 #include "targetver.h"
 
@@ -57,6 +58,8 @@ typedef int32_t SDWORD;
 #include "compilerexceptions.hpp"
 #include "filetracker.hpp"
 
+#include "lang.h"
+
 // The library that I use to do registry stuff.
 #define FREEZE_SUBKEY "LDMicro"
 //#include "freeze.h"
@@ -71,3 +74,5 @@ typedef int32_t SDWORD;
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 #endif //NOMINMAX
+
+#endif // STDAFX_LDMICRO_H
