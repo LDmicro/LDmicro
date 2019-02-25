@@ -2212,7 +2212,9 @@ bool CompileAnsiC(const char *dest, int MNU)
     if (Prog.mcu())
         fprintf(flh,
             "#define LDTARGET_%s\n\n"
-            "#define F_CPU %luUL\n\n"
+            "#ifndef F_CPU\n"
+            "  #define F_CPU %luUL\n"
+            "#endif\n\n"
             "#define _XTAL_FREQ %luUL\n\n",
             _strlwr(mcualias), Prog.mcuClock, Prog.mcuClock);
 
