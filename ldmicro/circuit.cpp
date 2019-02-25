@@ -39,6 +39,7 @@ void *CheckMalloc(size_t n)
 void CheckFree(void *p)
 {
     free(p);
+    p = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -1072,7 +1073,7 @@ void FreeCircuit(int which, void *any)
             CheckFree(p);
             break;
         }
-            CASE_LEAF
+        CASE_LEAF
             ForgetFromGrid(any);
             CheckFree(any);
             break;

@@ -3,7 +3,8 @@
 // are changed infrequently
 //
 
-#pragma once
+#ifndef STDAFX_LDMICRO_H
+#define STDAFX_LDMICRO_H
 
 #include "targetver.h"
 
@@ -73,3 +74,5 @@ typedef int32_t SDWORD;
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 #endif //NOMINMAX
+
+#endif // STDAFX_LDMICRO_H
