@@ -19,6 +19,7 @@ static ElemSubcktSeries *AllocEmptyRung()
 PlcProgram::PlcProgram()
 {
     memset(rungSelected, ' ', sizeof(rungSelected));
+    rungs.fill(nullptr);
     numRungs = 0;
     cycleTime = 10000;
     mcuClock = 16000000;
@@ -28,6 +29,43 @@ PlcProgram::PlcProgram()
     cycleDuty = 0;
     configurationWord = 0;
     setMcu(nullptr);
+}
+
+PlcProgram::PlcProgram(const PlcProgram& other)
+{
+    *this = other;
+}
+
+PlcProgram& PlcProgram::operator=(const PlcProgram& other)
+{
+    this->reset();
+
+    cycleTime = other.cycleTime;
+    mcuClock = other.mcuClock;
+    baudRate = other.baudRate;
+    cycleTimer = other.cycleTimer;
+    cycleDuty = other.cycleDuty;
+    configurationWord = other.configurationWord;
+    WDTPSA = other.WDTPSA;
+    OPTION = other.OPTION;
+    spiRate = other.spiRate;
+    i2cRate = other.i2cRate;
+    LDversion = other.LDversion;
+
+    io.count = other.io.count;
+    std::copy(other.io.assignment, other.io.assignment + other.io.count, io.assignment);
+
+    numRungs = other.numRungs;
+    std::copy(other.rungPowered, other.rungPowered + numRungs, rungPowered);
+    std::copy(other.rungSimulated, other.rungSimulated + numRungs, rungSimulated);
+    std::copy(other.rungSelected, other.rungSelected + numRungs, rungSelected);
+    std::copy(other.OpsInRung, other.OpsInRung + numRungs, OpsInRung);
+    std::copy(other.HexInRung, other.HexInRung + numRungs, HexInRung);
+    for(int i = 0; i < numRungs; ++i) {
+        rungs[i] = static_cast<ElemSubcktSeries *>(deepCopy(ELEM_SERIES_SUBCKT, other.rungs[i]));
+    }
+    setMcu(other.mcu_);
+    return *this;
 }
 
 PlcProgram::~PlcProgram()
@@ -88,4 +126,41 @@ void PlcProgram::insertEmptyRung(uint32_t idx)
     memmove(&rungSelected[idx + 1], &rungSelected[idx], (numRungs - idx) * sizeof(rungSelected[0]));
     rungs[idx] = AllocEmptyRung();
     numRungs++;
+}
+
+void* PlcProgram::deepCopy(int which, const void* any) const
+{
+    switch(which) {
+        CASE_LEAF
+        {
+            ElemLeaf *leaf = AllocLeaf();
+            memcpy(leaf, any, sizeof(ElemLeaf));
+            leaf->selectedState = SELECTED_NONE;
+            return leaf;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *n = AllocSubcktSeries();
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            n->count = s->count;
+            for(int i = 0; i < s->count; i++) {
+                n->contents[i].which = s->contents[i].which;
+                n->contents[i].data.any = deepCopy(s->contents[i].which, s->contents[i].data.any);
+            }
+            return n;
+        }
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *n = AllocSubcktParallel();
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            n->count = p->count;
+            for(int i = 0; i < p->count; i++) {
+                n->contents[i].which = p->contents[i].which;
+                n->contents[i].data.any = deepCopy(p->contents[i].which, p->contents[i].data.any);
+            }
+            return n;
+        }
+        default:
+            THROW_COMPILER_EXCEPTION_FMT("Invalid series element, whitch = %i", which);
+    }
+
+    return nullptr;
 }
