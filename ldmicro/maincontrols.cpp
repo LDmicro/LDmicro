@@ -454,7 +454,7 @@ HMENU MakeMainWindowMenus()
     AppendMenu(ConMenu, MF_STRING, MNU_INSERT_COIL_RELAY, _("Insert Coil: Internal Relay\tAlt+L"));
 
     AppendMenu(ConMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_NORMAL, _("Make Norm&al\tA"));			///// Modified by JG
+    AppendMenu(ConMenu, MF_STRING, MNU_MAKE_NORMAL, _("Make &Normal\tN"));
     AppendMenu(ConMenu, MF_STRING, MNU_NEGATE, _("Make &Negated\tN"));
     AppendMenu(ConMenu, MF_STRING, MNU_MAKE_SET_ONLY, _("Make &Set-Only\tS"));
     AppendMenu(ConMenu, MF_STRING, MNU_MAKE_RESET_ONLY, _("Make &Reset-Only\tR"));
@@ -583,7 +583,7 @@ HMENU MakeMainWindowMenus()
 
     FormatStrMenu = CreatePopupMenu();
     AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formatted string"));		///// Modified by JG
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formatted string"));
 
     ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
