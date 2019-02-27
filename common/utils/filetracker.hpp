@@ -52,8 +52,12 @@ public:
     }
     long size() const
     {
+        return size(name_);
+    }
+    static long size(const std::string& name)
+    {
         FILE *fp = nullptr;
-        fp = fopen(name_.c_str(), "rb");
+        fp = fopen(name.c_str(), "rb");
         if(fp == nullptr) {
             return 0;
         }
