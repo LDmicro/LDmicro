@@ -1,0 +1,79 @@
+
+	LdMicro32 for ARM STM32 microcontrollers
+	_________________________________________
+
+
+	LdMicro32 is a fork project based on LdMicro version 4.4.3
+	It offers new functions like SPI or I2C via C programming
+
+	If everything is well configured, one can generate C files,
+	hex file, and upload it to the target without exiting LdMicro32
+
+
+
+How to test LdMicro32 on ARMs (STM32F40X) with ADC, PWM, SPI or I2C functions:
+______________________________________________________________________
+
+1)	Install EmIde (for instance) or install directly an arm-gcc for windows 
+	(not tested).
+
+2)	Copy LdMicro32 executable and flashMCU.bat in a same directory.
+
+3)	Edit FlashMCU.bat (right click + Modify) and in section ARMGCC,
+	modify GCCPATH to point to your arm-gcc path instead of mine
+
+	According to the emulator you intend to use, you must modify
+	instructions that will load the hex file into the target
+	It'll be possible anyway to generate hex file with script and
+	flash the target with it manually next.
+
+4)	Create a ladder with LdMicro32 in a directory, and copy C libraries
+	for ARMs in a subdirectory called "lib"
+
+5)	Compile the ladder with "Compile ARM-GCC" (new menu option)
+	and generate the C file in the same directory as the source (.ld) 
+	file, with the same name (.c)
+	
+	It also generates a (.h) file and a ladder.h header
+	With joined libraries, it makes a ready-made C project
+
+6)	Launch FlashMCU.bat from LdMicro32 to get the hex file and upload 
+	it to the target automatically or manually from "bin" subdirectory
+
+	Look at the command window ; there shouln't be compiling errors
+	Intermediate files are generated in "obj" subdirectory
+
+7)	Test generated hex file on target...
+
+
+	Of course it needs to be tested furthermore...
+	Please report problems (and successes) on ldmicro forum
+
+
+
+NB:	The libraries (derived from T. Merjeles') have been tested on STM32F407
+	The name of the target is defined in ladder.h as LDTARGET_stm32f40x
+
+	You can use several ADCs or PWMs, but only one Uart, one SPI and one I2C
+	(But with several peripherals with different software SS pins on SPI
+	or with diferent addresses on I2C Bus)
+
+NB:	SPI must be named "SPI1", "SPI2" or "SPI3" on ARMs
+	SPI new functions are:
+	SPI Send/Receive, which sends and/or receives a byte 
+	SPI Write, which send an alphanumerical string to SPI without reception
+
+	SPI frequency is defined as UART's one in the global settings
+	SPI works only in master mode with most standard config
+
+NB:	I2C must be called "I2C1", "I2C2" or "I2C3" on ARMs
+	I2C new functions are:
+	I2C Read to read one byte in a peripheral's register
+	I2C Write to write a byte to a peripheral's register
+
+	I2C frequency is also defined in global settings
+	I2C also works only in master mode
+
+NB:	ADC max available resolution is used
+	PWM max resolution is used and parameter is only % between 0 and 100
+

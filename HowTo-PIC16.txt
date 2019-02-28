@@ -1,0 +1,86 @@
+
+	LdMicro32 for PIC16F microcontrollers
+	_________________________________________
+
+
+	LdMicro32 is a fork project based on LdMicro version 4.4.3
+	It offers new functions like SPI or I2C via C programming
+
+	If everything is well configured, one can generate C files,
+	hex file, and upload it to the target without exiting LdMicro32
+
+
+
+How to test LdMicro32 on PICs (16F) with ADC, PWM, SPI or I2C functions:
+______________________________________________________________________
+
+1)	Install MPLAB (version 8 tested) with Hi-Tech C alias PicC compiler
+	
+2)	Copy LdMicro32 executable and flashMCU.bat in a same directory.
+
+3)	Edit FlashMCU.bat (right click + Modify) and in section HTC,
+	modify PCCPATH to point to your picc path instead of mine
+
+	If you intend to use a command line tool to flash the target, 
+	fill in the Transfer section with proper commands.
+
+	It'll be possible anyway to generate hex file with script and
+	flash the target with it manually next.
+
+4)	Create a ladder with LdMicro32 in a directory, and copy C libraries
+	for PICs in a subdirectory called "lib"
+
+5)	Compile the ladder with "Compile HI-TECH C for PIC" and generate 
+	the C file in the same directory as the source (.ld) file, 
+	with the same name (.c)
+	
+	It also generates a (.h) file and a ladder.h header
+	With joined libraries, it makes a ready-made C project
+
+6)	Launch FlashMCU.bat from LdMicro32 to get the hex file and upload 
+	it to the target automatically or manually from "bin" subdirectory
+
+	Look at the command window ; there shouln't be compiling errors
+	Intermediate files are generated in "obj" subdirectory
+
+7)	Test generated hex file on target...
+
+
+	Of course it needs to be tested furthermore...
+	Please report problems (and successes) on ldmicro forum
+
+
+
+NB:	The libraries have been tested on PIC16F876 in simulation, but should
+	work for all PIC16F declared in LdMicro.
+	It's possible (and easy) to adapt the code to other targets of the 
+	same family by using compiling directives.
+	The name of the target is defined in ladder.h as LDTARGET_pic16fxxx
+
+	You can use several ADCs or PWMs, but only one Uart, one SPI and one I2C
+	(But with several peripherals with different software SS pins on SPI
+	or with diferent addresses on I2C Bus)
+
+NB:	SPI must be named "SPI" on PICs
+	SPI new functions are:
+	SPI Send/Receive, which sends and/or receives a byte 
+	SPI Write, which send an alphanumerical string to SPI without reception
+
+	SPI frequency is defined as UART's one in the global settings
+	SPI works only in master mode with most standard config
+
+NB:	I2C must be called "I2C" on PICs
+	I2C new functions are:
+	I2C Read to read one byte in a peripheral's register
+	I2C Write to write a byte to a peripheral's register
+
+	I2C frequency is also defined in global settings
+	I2C also works only in master mode
+
+NB:	All the frequencies used by ADC, PWM or SPI are obtained from CPU clock
+	by a dividing factor. There are few choices for this factor, so frequencies
+	are very approximative. 
+
+NB:	ADC max available resolution is used
+	PWM max resolution is used and parameter is only % between 0 and 100
+
