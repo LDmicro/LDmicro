@@ -4,14 +4,14 @@ ___________________________________________
 This library is designed to use a 16x2 LCD Display connected to an I2C IO-Expander 
 module, like Arduino's one.
 
-Files: 	LcdI2cLib.c
-	LcdI2cLib.h
-	I2cLib.c
-	I2cLib.h
+Files: 	Lib_i2clcd.c
+	Lib_i2clcd.h
+	Lib_i2c.c
+	Lib_i2c.h
 
 Copy these new files in Avr "lib" folder of your ldmicro workspace.
 
-Edit I2cLib.c with any text editor and replace in line :
+Edit Lib_i2c.c with any text editor and replace in line :
 #define LCD_I2C_ADR		0x00
 the final value 0x00 by the I2C address of your I2C module (maybe 0x27)
 according to its documentation
@@ -41,7 +41,7 @@ there are 3 possibilities:
 - other values betwen 0x11 and 0x7F are standard chars to display at cursor position.
 
 It normally doesn't prevent to use other I2C devices on the same bus.
-It has been tested successfully on AtMega16.
+It has been tested successfully on STM32F407.
 
 JG
 

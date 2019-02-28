@@ -583,7 +583,7 @@ HMENU MakeMainWindowMenus()
 
     FormatStrMenu = CreatePopupMenu();
     AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
-    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formated string"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formatted string"));
 
     ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();

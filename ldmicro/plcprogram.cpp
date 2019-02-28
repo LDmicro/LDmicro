@@ -80,6 +80,8 @@ void PlcProgram::setMcu(McuIoInfo* m)
     if(!mcu_)
         return;
 
+    configurationWord = 0;
+
     LoadWritePcPorts();
 
     auto comparePinInfo = [](const McuIoPinInfo& a, const McuIoPinInfo& b) -> bool {
@@ -105,7 +107,6 @@ void PlcProgram::reset()
     io.count = 0;
     cycleTimer = 1;
     cycleDuty = 0;
-    configurationWord = 0;
     setMcu(nullptr);
 	LDversion.clear();
 }
