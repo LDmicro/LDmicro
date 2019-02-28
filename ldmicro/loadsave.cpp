@@ -31,10 +31,10 @@ char *DelNL(char *str);
 char *DelLastNL(char *str);
 
 typedef enum FRMTTag { FRMT_COMMENT, FRMT_01, FRMT_x20 } FRMT;
-char *StrToFrmStr(char *dest, char *str, FRMT frmt);
-char *StrToFrmStr(char *dest, char *src);
+char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
+char *StrToFrmStr(char *dest, const char *src);
 
-ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f);
 
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
@@ -670,7 +670,7 @@ char *strspacer(char *str)
 // LoadSeriesFromFile. Returns the parallel subcircuit built up, or nullptr if
 // something goes wrong.
 //-----------------------------------------------------------------------------
-static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
+static ElemSubcktParallel *LoadParallelFromFile(FileTracker& f)
 {
     char  line[512];
     void *any;
@@ -717,7 +717,7 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
 // Same as LoadParallelFromFile, but for a series subcircuit. Thus builds
 // a series circuit out of parallel circuits and leaf elements.
 //-----------------------------------------------------------------------------
-ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f)
 {
     char  line[512];
     void *any;
@@ -961,10 +961,9 @@ failed:
 // Helper routine for outputting hierarchical representation of the ladder
 // logic: indent on file f, by depth*4 spaces.
 //-----------------------------------------------------------------------------
-static void Indent(FILE *f, int depth)
+static void Indent(FileTracker& f, int depth)
 {
-    int i;
-    for(i = 0; i < depth; i++) {
+    for(int i = 0; i < depth; i++) {
         fprintf(f, "  ");
     }
 }
@@ -977,7 +976,7 @@ static void Indent(FILE *f, int depth)
 // output the SERIES/END delimiters. This is because the root is delimited
 // by RUNG/END markers output elsewhere.
 //-----------------------------------------------------------------------------
-void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
+void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
 {
     ElemLeaf *  l = (ElemLeaf *)any;
     const char *s;
@@ -1578,7 +1577,7 @@ bool SaveProjectToFile(char *filename, int code)
 }
 
 //---------------------------------------------------------------------------
-char *StrToFrmStr(char *dest, char *src, FRMT frmt)
+char *StrToFrmStr(char *dest, const char* src, FRMT frmt)
 {
     if((src == nullptr) || (strlen(src) == 0)) {
         strcpy(dest, "(none)");
@@ -1641,7 +1640,7 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
     }
     return dest;
 }
-char *StrToFrmStr(char *dest, char *src)
+char *StrToFrmStr(char *dest, const char *src)
 {
     return StrToFrmStr(dest, src, FRMT_x20);
 }

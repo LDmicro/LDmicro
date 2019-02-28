@@ -134,7 +134,7 @@ static void AppendIo(const char *name, int type)
             // already in there
             return;
         }
-        /**/
+        */
     }
     if(i < MAX_IO) {
         Prog.io.assignment[i].type = type;
@@ -854,7 +854,7 @@ int GenerateIoList(int prevSel)
 // put it into IoSeenPreviously so that it will get used on the next
 // extraction.
 //-----------------------------------------------------------------------------
-bool LoadIoListFromFile(FILE *f)
+bool LoadIoListFromFile(FileTracker& f)
 {
     char         line[MAX_NAME_LEN];
     char         name[MAX_NAME_LEN];
@@ -935,7 +935,7 @@ bool LoadIoListFromFile(FILE *f)
 // Write the I/O list to a file. Since everything except the pin assignment
 // can be extracted from the schematic, just write the Xs and Ys.
 //-----------------------------------------------------------------------------
-void SaveIoListToFile(FILE *f)
+void SaveIoListToFile(FileTracker& f)
 {
     int i, j1 = 0, j2 = 0;
     for(i = 0; i < Prog.io.count; i++) {
