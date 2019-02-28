@@ -38,7 +38,8 @@ void *CheckMalloc(size_t n)
 }
 void CheckFree(void *p)
 {
-    free(p);
+    if(p)
+        free(p);
     p = nullptr;
 }
 

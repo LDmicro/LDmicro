@@ -107,6 +107,7 @@ void PlcProgram::reset()
     cycleDuty = 0;
     configurationWord = 0;
     setMcu(nullptr);
+	LDversion.clear();
 }
 
 void PlcProgram::appendEmptyRung()
