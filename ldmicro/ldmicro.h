@@ -501,8 +501,8 @@ bool CanUndo();
 // loadsave.cpp
 bool LoadProjectFromFile(const char *filename);
 bool SaveProjectToFile(char *filename, int code);
-void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung);
-ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
+void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung);
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f);
 char *strspace(char *str);
 char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
@@ -511,8 +511,8 @@ void LoadWritePcPorts();
 // iolist.cpp
 int IsIoType(int type);
 int GenerateIoList(int prevSel);
-void SaveIoListToFile(FILE *f);
-bool LoadIoListFromFile(FILE *f);
+void SaveIoListToFile(FileTracker& f);
+bool LoadIoListFromFile(FileTracker& f);
 void ShowIoDialog(int item);
 void IoListProc(NMHDR *h);
 void ShowAnalogSliderPopup(char *name);
