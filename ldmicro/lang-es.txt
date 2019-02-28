@@ -490,7 +490,6 @@
 "SIMUL: Insert BCD2BIN"
 "Insertar BCD2BIN Conversor"
 
-
 "SIMUL: Insert BUS tracer"
 "Insertar BUS tracer (Simulacion)"
 
