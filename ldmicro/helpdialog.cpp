@@ -88,7 +88,6 @@ nullptr
 
 static const char **Text[] = {
 #if defined(LDLANG_EN) || \
-    defined(LDLANG_IT) || \
     defined(LDLANG_PT)
     HelpText,
 #elif defined(LDLANG_DE)

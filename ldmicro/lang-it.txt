@@ -1991,7 +1991,7 @@
 "ARDUINO: Punto '.' non consentito in '%s'\nNome file! "
 
 "ARDUINO: Space ' ' not allowed in '%s'\nRename file!"
-"ARDUINO: Spazio ' ' non consentito in "%s"\nNome file! "
+"ARDUINO: Spazio ' ' non consentito in '%s'\nNome file! "
 
 "ARDUINO: The leading digit '%c' not allowed at the beginning in '%s.ld'\nRename file!"
 "ARDUINO: la cifra iniziale '%c' non è consentita all'inizio in '%s.ld'\nNome file!"
