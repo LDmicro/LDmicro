@@ -2116,7 +2116,7 @@
 "Cyclic On/Off"
 "On/Off Cyclique"
 
-"Hight Level Delay"
+"High Level Delay"
 "Délai niveau haut"
 
 "Low Level Delay"

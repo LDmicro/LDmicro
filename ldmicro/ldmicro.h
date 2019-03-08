@@ -347,7 +347,7 @@ typedef struct SyntaxHighlightingColoursTag {
     COLORREF    simBg;          // background, simulation mode
     COLORREF    simRungNum;     // rung number, simulation mode
     COLORREF    simOff;         // de-energized element, simulation mode
-    COLORREF    simOn;          // energzied element, simulation mode
+    COLORREF    simOn;          // energized element, simulation mode
     COLORREF    simBusLeft;     // the `bus,' can be different colours for
     COLORREF    simBusRight;    // right and left of the screen
 } SyntaxHighlightingColours;

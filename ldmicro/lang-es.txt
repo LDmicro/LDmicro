@@ -2113,7 +2113,7 @@
 "Cyclic On/Off"
 "Cíclica de encendido/apagado"
 
-"Hight Level Delay"
+"High Level Delay"
 "Retraso de Alto Nivel"
 
 "Low Level Delay"
