@@ -398,7 +398,7 @@ static void flashBat(char *name, int ISA)
         strcpy(mcualias, mcualias+3);       // remove "Pic" prefix in mcu name
     }
 
-    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %d %s", ExePath, GetIsaName(ISA), s, variant, _strlwr(mcualias));       ///// 3rd & 4th param added by JG
+    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %d %s %s", ExePath, GetIsaName(ISA), s, variant, _strlwr(mcualias), ExePath);       ///// 3rd & 4th param added by JG
 
     isErr(Execute(r), r);
 }
@@ -2914,22 +2914,22 @@ void CheckPwmPins()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
     try {
-		auto logg = ldlog::getLogger("default");
-		logg->add_sink(ldlog::newWindowsDebugStringSink());
+        auto logg = ldlog::getLogger("default");
+        logg->add_sink(ldlog::newWindowsDebugStringSink());
 
-		LOG(ldlog::Info, logg, "Run LDmicro ver.: {}.", LDMICRO_VER_STR);
+        LOG(ldlog::Info, logg, "Run LDmicro ver.: {}.", LDMICRO_VER_STR);
 
-		srand((int)time(0));
+        srand((int)time(0));
 
-		if(LEN7SEG != arraylen(char7seg))
-			oops();
+        if(LEN7SEG != arraylen(char7seg))
+            oops();
 
-		if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
-			Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
-			oops();
-		}
+        if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
+            Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
+            oops();
+        }
 
-		CheckPwmPins();
+        CheckPwmPins();
 
         GetModuleFileName(hInstance, ExePath, MAX_PATH);
         ExtractFilePath(ExePath);
@@ -3128,8 +3128,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         FreezeWindowPos(MainWindow);
         FreezeDWORD(IoListHeight);
 
-		UndoFlush();
-		Prog.reset();
+        UndoFlush();
+        Prog.reset();
 
         return 0;
     } catch(...) {

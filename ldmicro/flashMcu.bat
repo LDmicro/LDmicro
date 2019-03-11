@@ -3,11 +3,14 @@
 cls
 
 REM %1 = ISA
-REM %2 = filename
+REM %2 = full filename.ld with the path
 REM %3 = variant (compiler)
 REM %4 = target name
+REM %5 = ExePath, from where ldmicro executes
 
 REM %~nx2 gives the file name in %2 without the path
+REM %~d2 gives the drive letter to LD
+REM %~p2 gives the path to LD
 
 if "%1" == "PIC16" goto PICX
 if "%1" == "ARM" goto ARM
@@ -143,17 +146,19 @@ goto exit
 :AVRGCC
 ::**************************************************************************
 @ECHO ON
-
 REM Compilation with avr-gcc
 
-SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
-SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
+@rem SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
+     SET GCC_PATH=D:\WinAVR
+@rem SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
+     SET AVRDUDE_PATH=D:\AVRDUDE
+SET LIB_PATH=%5LIBRARIES_FOR\AVR
 SET COMPORT=COM3
 
-path %path%;%GCC_PATH%\bin
-path %path%;%AVRDUDE_PATH%
+path %GCC_PATH%\BIN;%AVRDUDE_PATH%\BIN;%path%
 
-@REM %~nx2 gives the file name in %2 without the path
+%~d2
+CD %~p2
 
 REM Compilation of sources
 rmdir obj /s /q
@@ -161,11 +166,9 @@ rmdir bin /s /q
 mkdir obj
 mkdir bin
 
-CD lib
-for %%F in (*.c) do  avr-gcc.exe -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF ..\obj\%%F.d -MT ..\obj\%%F.d -MT ..\obj\%%F.o %%F -o ..\obj\%%F.o
-CD ..
+for %%F in (%LIB_PATH%\*.c) do avr-gcc.exe -I%~dp2 -I%LIB_PATH%\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF obj\%%~nF.d -MT obj\%%~nF.d -MT obj\%%~nF.o %%F -o obj\%%~nF.o
 
-avr-gcc.exe -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%4 -MF obj\%~nx2.d -MT obj\%~nx2.d -MT obj\%~nx2.o %~nx2.c -o obj\%~nx2.o
+avr-gcc.exe -I%LIB_PATH% -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%4 -MF obj\%~nx2.d -MT obj\%~nx2.d -MT obj\%~nx2.o %~f2.c -o obj\%~nx2.o
 
 REM Linkage of objects
 avr-gcc.exe -o bin\%~nx2.elf obj\*.o -Wl,-Map=obj\%~nx2.map -Wl,--start-group -Wl,-lm -Wl,--end-group -mmcu=%4
@@ -272,17 +275,15 @@ REM Compilation with HiTech-c (Picc)
 SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
 path %path%;%PCC_PATH%\bin
 
-@REM %~nx2 gives the file name in %2 without the path
-
 REM Compilation of sources
 rmdir obj /s /q
 rmdir bin /s /q
 mkdir obj
 mkdir bin
 
-CD lib
+::CD lib
 for %%F in (*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=../obj
-CD ..
+::CD ..
 
 picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default --opt=default  -g --asmlist --OBJDIR=obj
 
@@ -305,10 +306,9 @@ REM Compilation with arm-gcc
 
 SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
+SET LIB_PATH=%5\LIBRARIES_FOR\ARM
 
 path %path%;%GCC_PATH%\bin;%JLN_PATH%
-
-@REM %~nx2 gives the file name in %2 without the path
 
 REM Compilation of sources
 rmdir obj /s /q
@@ -318,9 +318,9 @@ mkdir bin
 
 arm-none-eabi-g++.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c lib\CortexM4.S -o obj\cortexM4.o
 
-CD lib
-for %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
-CD ..
+::CD lib
+for %%F in (%LIB_PATH%\*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o obj\%%F.o
+::CD ..
 
 arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %~n2.c -o obj\%~n2.o
 

@@ -3765,14 +3765,14 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_UART_RECV_AVAIL, stateInOut);
                 Op(INT_IF_BIT_SET, stateInOut);
                   Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
-                  Op(INT_UART_RECV1, l->d.uart.name);
+                  Op(INT_UART_RECV1, l->d.uart.name, stateInOut);
                 Op(INT_END_IF);
               } else {
                 if(l->d.uart.wait) {
                   Op(INT_UART_RECV_AVAIL, stateInOut);
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
-                    Op(INT_UART_RECV1, l->d.uart.name);
+                    Op(INT_UART_RECV1, l->d.uart.name, stateInOut);
 
                     char label[MAX_NAME_LEN];
                     for(int i = 1; i < l->d.uart.bytes; i++) {
@@ -3782,7 +3782,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                       Op(INT_IF_BIT_CLEAR, stateInOut);
                         Op(INT_GOTO, label, 1);
                       Op(INT_END_IF);
-                      Op(INT_UART_RECV1, l->d.uart.name, i);
+                      Op(INT_UART_RECV1, l->d.uart.name, stateInOut, i);
                     }
                   Op(INT_END_IF);
                 } else {

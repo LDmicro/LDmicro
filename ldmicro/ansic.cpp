@@ -961,6 +961,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1 = IntCode[i].name1.c_str();
                 break;
 
+            case INT_UART_RECV1:
             case INT_UART_RECV:
             case INT_UART_SEND:
                 intVar1 = IntCode[i].name1.c_str();
@@ -1158,7 +1159,8 @@ static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
     if((IntCode[i].op != INT_SIMULATE_NODE_STATE) && //
-       (IntCode[i].op != INT_AllocKnownAddr) &&      //
+//     (IntCode[i].op != INT_AllocKnownAddr) &&      //
+       (IntCode[i].op != INT_FwdAddrIsNow) &&      //
        (IntCode[i].op != INT_AllocFwdAddr))
         for(int j = 0; j < indent; j++)
             fprintf(f, "    ");
@@ -1613,6 +1615,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
             /////
 
+            case INT_UART_RECV1:
             case INT_UART_RECV:
                 fprintf(f,
                         "%s=0; if(UART_Receive_Avail()) {%s = UART_Receive(); %s=1;};\n",
@@ -1930,7 +1933,9 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case INT_AllocFwdAddr:
                 //fprintf(f, "#warning INT_%d\n", IntCode[i].op);
                 break;
+
             case INT_AllocKnownAddr:
+                fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 /*
                 if(IntCode[i].name1)
                     fprintf(f, "//KnownAddr Rung%d %s %s\n", IntCode[i].literal+1, IntCode[i].name2, IntCode[i].name1);
@@ -1945,7 +1950,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 break;
             case INT_FwdAddrIsNow:
-                fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
+                //fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 break;
             case INT_GOTO:
                 fprintf(f, "goto Label%s;\n", IntCode[i].name1.c_str());

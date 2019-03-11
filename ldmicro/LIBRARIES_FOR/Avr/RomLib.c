@@ -2,8 +2,8 @@
 
 // Librairie AtMega pour EEPROM
 
-#include "../ladder.h"
-#include "RomLib.h"			 // Fichier header librairie EEPROM
+#include "ladder.h"
+#include "RomLib.h"          // Fichier header librairie EEPROM
 
 
 // Fonction de lecture d'un octet
