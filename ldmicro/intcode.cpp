@@ -3644,7 +3644,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_DECREMENT_VARIABLE, store);
                //value = X[value[addr1] + sov - 1 - store[addr3]]
-                Op(INT_UART_SEND1, value, stateInOut, store);
+                Op(INT_UART_SEND1, value, store);
               Op(INT_END_IF);
             Op(INT_END_IF);
 
@@ -3684,7 +3684,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_END_IF);
               }
             } else {
-                if(l->d.uart.wait) {
+                if(l->d.uart.wait) { // all bytes in one PLC cycle
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_UART_SEND1, l->d.uart.name);
 
@@ -3702,28 +3702,30 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     }
                   Op(INT_END_IF);
                   Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                } else { // don't wait
+                } else { // don't wait, one byte per one cycle
                   char storeName[MAX_NAME_LEN];
                   GenSymOneShot(storeName, "UART_SEND", l->d.uart.name);
 
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_IF_BIT_CLEAR, storeName);
                       Op(INT_SET_BIT, storeName);
+
+                      char saved[MAX_NAME_LEN];
+                      GenVar(saved, "saved_UART_SEND", l->d.uart.name);
+                      SetSizeOfVar(saved, l->d.uart.bytes);
+                      Op(INT_SET_VARIABLE_TO_VARIABLE, saved, l->d.uart.name);
+
+                      char bytes[MAX_NAME_LEN];
+                      sprintf(bytes, "%d", l->d.uart.bytes);
+
+                      char numb[MAX_NAME_LEN];
+                      GenVar(numb, "numb_UART_SEND", l->d.uart.name);
+                      Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
+
                     Op(INT_END_IF);
                   Op(INT_END_IF);
 
                   Op(INT_IF_BIT_SET, storeName);
-                    char saved[MAX_NAME_LEN];
-                    GenVar(saved, "saved_UART_SEND", l->d.uart.name);
-                    SetSizeOfVar(saved, l->d.uart.bytes);
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, saved, l->d.uart.name);
-
-                    char bytes[MAX_NAME_LEN];
-                    sprintf(bytes, "%d", l->d.uart.bytes);
-
-                    char numb[MAX_NAME_LEN];
-                    GenVar(numb, "numb_UART_SEND", l->d.uart.name);
-
                     Op(INT_IF_LES, numb,  l->d.uart.bytes);
                       Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
                       Op(INT_IF_BIT_CLEAR, stateInOut);
@@ -3733,7 +3735,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Op(INT_END_IF);
 
                     Op(INT_IF_GEQ, numb, bytes);
-                      Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
                       Op(INT_CLEAR_BIT, storeName);
                     Op(INT_END_IF);
                   Op(INT_END_IF);
@@ -3765,14 +3766,14 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_UART_RECV_AVAIL, stateInOut);
                 Op(INT_IF_BIT_SET, stateInOut);
                   Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
-                  Op(INT_UART_RECV1, l->d.uart.name, stateInOut);
+                  Op(INT_UART_RECV1, l->d.uart.name);
                 Op(INT_END_IF);
               } else {
                 if(l->d.uart.wait) {
                   Op(INT_UART_RECV_AVAIL, stateInOut);
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_SET_VARIABLE_TO_LITERAL, l->d.uart.name, 0);
-                    Op(INT_UART_RECV1, l->d.uart.name, stateInOut);
+                    Op(INT_UART_RECV1, l->d.uart.name);
 
                     char label[MAX_NAME_LEN];
                     for(int i = 1; i < l->d.uart.bytes; i++) {
@@ -3782,7 +3783,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                       Op(INT_IF_BIT_CLEAR, stateInOut);
                         Op(INT_GOTO, label, 1);
                       Op(INT_END_IF);
-                      Op(INT_UART_RECV1, l->d.uart.name, stateInOut, i);
+                      Op(INT_UART_RECV1, l->d.uart.name, i);
                     }
                   Op(INT_END_IF);
                 } else {

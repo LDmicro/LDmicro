@@ -961,13 +961,6 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1 = IntCode[i].name1.c_str();
                 break;
 
-            case INT_UART_RECV1:
-            case INT_UART_RECV:
-            case INT_UART_SEND:
-                intVar1 = IntCode[i].name1.c_str();
-                bitVar1 = IntCode[i].name2.c_str();
-                break;
-
             case INT_SPI_WRITE:                             ///// Added by JG
                 intVar1 = IntCode[i].name1.c_str();         // create var name1= spi name
                 //  intVar2 = IntCode[i].name2.c_str();     // don't create var name2= spi send var
@@ -999,9 +992,19 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                     intVar4 = IntCode[i].name4.c_str();     // create var name4= i2c register if not a number
                 break;
 
+            case INT_UART_RECV:
+            case INT_UART_SEND:
+                intVar1 = IntCode[i].name1.c_str();
+                bitVar1 = IntCode[i].name2.c_str();
+                break;
+
+            case INT_UART_RECV1:
+            case INT_UART_RECVn:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
                 intVar1 = IntCode[i].name1.c_str();
+                if(IntCode[i].name2.length())
+                    intVar2 = IntCode[i].name2.c_str();
                 break;
 
             case INT_UART_RECV_AVAIL:
@@ -1158,12 +1161,14 @@ static void _Comment(FILE *f, const char *str, ...)
 static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
-    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) && //
-//     (IntCode[i].op != INT_AllocKnownAddr) &&      //
-       (IntCode[i].op != INT_FwdAddrIsNow) &&      //
-       (IntCode[i].op != INT_AllocFwdAddr))
+    if((IntCode[i].op != INT_SIMULATE_NODE_STATE)  //
+//    && (IntCode[i].op != INT_AllocKnownAddr)      //
+      && (IntCode[i].op != INT_FwdAddrIsNow)      //
+//    && (IntCode[i].op != INT_AllocFwdAddr)     //
+    ) {
         for(int j = 0; j < indent; j++)
             fprintf(f, "    ");
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1615,7 +1620,6 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
             /////
 
-            case INT_UART_RECV1:
             case INT_UART_RECV:
                 fprintf(f,
                         "%s=0; if(UART_Receive_Avail()) {%s = UART_Receive(); %s=1;};\n",
@@ -1624,26 +1628,36 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         MapSym(IntCode[i].name2, ASBIT));
                 break;
 
+            case INT_UART_RECV1:
+                if(IntCode[i].name2.length())
+                    fprintf(f, "CHAR_INDEX(%s, %s+%d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
+                else
+                    fprintf(f, "CHAR_INDEX(%s, %d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                break;
+
             case INT_UART_SEND1:
             case INT_UART_SENDn:
+                if(IntCode[i].name2.length())
+                    fprintf(f, "UART_Transmit(CHAR_INDEX(%s, %s+%d));\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
+                else
+                    fprintf(f, "UART_Transmit(CHAR_INDEX(%s, %d));\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                break;
+
             case INT_UART_SEND:
                 fprintf(
-                    f, "UART_Transmit(%s);\n", MapSym(IntCode[i].name1, ASINT) /*, MapSym(IntCode[i].name2, ASBIT)*/);
+                    f, "UART_Transmit(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 break;
 
             case INT_UART_RECV_AVAIL:
                 fprintf(f, "%s = UART_Receive_Avail();\n", MapSym(IntCode[i].name1, ASBIT));
-                indent++;
                 break;
 
             case INT_UART_SEND_READY:
                 fprintf(f, "%s = UART_Transmit_Ready();\n", MapSym(IntCode[i].name1, ASBIT));
-                indent++;
                 break;
 
             case INT_UART_SEND_BUSY:
                 fprintf(f, "%s = UART_Transmit_Busy();\n", MapSym(IntCode[i].name1, ASBIT));
-                indent++;
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
@@ -2309,6 +2323,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#endif\n");
     }
     fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
+    fprintf(flh, "#define CHAR_INDEX(var, index) (*(((unsigned char *)(&var))+(index)))\n");
 
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_HI_TECH_C)
