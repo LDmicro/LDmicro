@@ -184,7 +184,7 @@ typedef struct McuIoInfoTag {
 
 #ifndef arraylen
 
-#if _MSC_VER < 1900
+#if (_MSC_VER < 1900) || !defined(__GNUC__)
 #define arraylen(x) (sizeof(x) / sizeof((x)[0]))
 #else
 namespace {
