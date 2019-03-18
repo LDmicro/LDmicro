@@ -184,15 +184,12 @@ typedef struct McuIoInfoTag {
 
 #ifndef arraylen
 
-#if _MSC_VER < 1900
-#define arraylen(x) (sizeof(x) / sizeof((x)[0]))
-#else
+#if LD_WITH_CONSTEXPR
 namespace {
-    template <class T, uint32_t N> constexpr uint32_t arraylen(T (&)[N])
-    {
-        return N;
-    }
+    template <class T, uint32_t N> constexpr uint32_t arraylen(T (&)[N]) {return N;}
 } // namespace
+#else
+#define arraylen(x) (sizeof(x) / sizeof((x)[0]))
 #endif
 
 #endif

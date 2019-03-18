@@ -131,6 +131,7 @@ if(${LDLANG} STREQUAL "ALL")
             add_executable            (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
             target_compile_definitions(${PROJECT_NAME} PRIVATE -DLDLANG_${lang_id})
             target_link_libraries     (${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib ldlog)
+            target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
 
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                                COMMAND ${CMAKE_COMMAND} -D pattern="${PROJECT_NAME}.exe"
@@ -142,7 +143,7 @@ if(${LDLANG} STREQUAL "ALL")
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_executable            (${PROJECT_NAME}-${ldlang_lower} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
-            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id})
+            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
             target_link_libraries     (${PROJECT_NAME}-${ldlang_lower} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower} ldlog)
         endif()
     endforeach()
@@ -150,7 +151,6 @@ if(${LDLANG} STREQUAL "ALL")
 else()
 
     if(${LDLANG} STREQUAL "EN")
-        add_definitions(-DLDLANG_${LDLANG})
         add_executable       (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
         target_link_libraries(${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib ldlog)
 
@@ -164,7 +164,6 @@ else()
 
         add_precompiled_header(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp)
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
-        add_definitions(-DLDLANG_${LDLANG})
         string(TOLOWER ${LDLANG} ldlang_lower)
         set(_project_name ${PROJECT_NAME}-${ldlang_lower})
         add_executable       (${_project_name} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
