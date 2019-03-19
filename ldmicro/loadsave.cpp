@@ -893,15 +893,13 @@ bool LoadProjectFromFile(const char *filename)
                 compile_MNU = i;
         } else if(memcmp(line, "MICRO=", 6) == 0) {
             if(strlen(line) > 6) {
-                uint32_t i;
-                for(i = 0; i < supportedMcus().size(); i++) {
-                    if(supportedMcus()[i].mcuName)
-                        if(strcmp(supportedMcus()[i].mcuName, line + 6) == 0) {
-                            Prog.setMcu(&supportedMcus()[i]);
-                            break;
-                        }
-                }
-                if(i == supportedMcus().size()) {
+                auto& mcus = supportedMcus();
+                auto mcu = std::find_if(std::begin(mcus), std::end(mcus),
+                                         [&line](const McuIoInfo& info){ return (strcmp(info.mcuName, line + 6) == 0);});
+                if(mcu != std::end(mcus)) {
+                    Prog.setMcu(&(*mcu));
+                    LoadWritePcPorts();
+                } else {
                     Error(_("Microcontroller '%s' not supported.\r\n\r\n"
                             "Defaulting to no selected MCU."),
                           line + 6);

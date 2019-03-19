@@ -1010,6 +1010,7 @@ static void ProcessMenu(int code)
     if(code >= MNU_PROCESSOR_0 && code < static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
         strcpy(CurrentCompileFile, "");
         Prog.setMcu(&(supportedMcus()[code - MNU_PROCESSOR_0]));
+        LoadWritePcPorts();
         RefreshControlsToSettings();
         ProgramChangedNotSaved = true;
         return;
