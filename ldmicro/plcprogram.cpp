@@ -82,8 +82,6 @@ void PlcProgram::setMcu(McuIoInfo* m)
 
     configurationWord = 0;
 
-    LoadWritePcPorts();
-
     auto comparePinInfo = [](const McuIoPinInfo& a, const McuIoPinInfo& b) -> bool {
             const char* sa = strlen(a.pinName) > 0 ? a.pinName : "";
             const char* sb = strlen(b.pinName) > 0 ? b.pinName : "";
