@@ -41,7 +41,7 @@ HINSTANCE Instance;
 HWND      MainWindow;
 HDC       Hdc;
 
-extern int  compiler_variant;       ///// Added by JG
+//extern int  compiler_variant;       ///// Added by JG
 
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
@@ -335,7 +335,7 @@ char *GetIsaName(int ISA)
 }
 
 //-----------------------------------------------------------------------------
-const char *GetMnuName(int MNU)
+const char *GetMnuCompilerName(int MNU)
 {
     switch(MNU) {
         // clang-format off
@@ -379,8 +379,6 @@ static void flashBat(char *name, int ISA)
     char s[MAX_PATH];
     char r[MAX_PATH];
     char deviceName[MAX_PATH];  ///// Added by JG
-    int variant= 1;             ///// Added by JG
-
 
     if(strlen(name) == 0) {
         Warning(_("Save ld before flash."));
@@ -391,14 +389,11 @@ static void flashBat(char *name, int ISA)
 
     s[0] = '\0';
     SetExt(s, name, "");
-    if (compiler_variant == MNU_COMPILE_AVRGCC)
-       variant = 2;            ///// Added by JG
-    if (compiler_variant == MNU_COMPILE_HI_TECH_C) {                    ///// Added by JG
-        variant = 2;
+    if (compile_MNU == MNU_COMPILE_HI_TECH_C) {                    ///// Added by JG
         strcpy(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
     }
 
-    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %d %s %s", ExePath, GetIsaName(ISA), s, variant, _strlwr(deviceName));       ///// 3rd & 4th param added by JG
+    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %s %s", ExePath, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName));       ///// 3rd & 4th param added by JG
 
     isErr(Execute(r), r);
 }

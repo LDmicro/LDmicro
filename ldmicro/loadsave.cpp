@@ -1545,7 +1545,7 @@ bool SaveProjectToFile(char *filename, int code)
     }
     if(Prog.LDversion != "0.1") {
         if(compile_MNU > 0)
-            fprintf(f, "COMPILER=%s\n", GetMnuName(compile_MNU));
+            fprintf(f, "COMPILER=%s\n", GetMnuCompilerName(compile_MNU));
 
         fprintf(f, "\n");
         fprintf(f, "VAR LIST\n");

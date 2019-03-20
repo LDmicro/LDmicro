@@ -34,7 +34,7 @@ namespace {
 } // namespace
 
 static int mcu_ISA = -1;
-int compiler_variant = -1;              ///// no more static by JG
+static int compiler_variant = -1;
 
 ///// Added by JG
 static int  TIMER_Used = 0;             ///// for Cycle timer variable

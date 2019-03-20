@@ -396,7 +396,7 @@ char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
 long int fsize(char filename);
-const char *GetMnuName(int MNU);
+const char *GetMnuCompilerName(int MNU);
 int GetMnu(char *MNU_name);
 
 // maincontrols.cpp

@@ -1,35 +1,31 @@
 @echo OFF
 @rem This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 cls
-
-REM %1 = ISA
-REM %2 = full filename.ld with the path
-REM %3 = variant (compiler)
-REM %4 = target name
-
 REM EXE_PATH from where the ldmicro.exe and *.bat are executes
 SET EXE_PATH=%~dp0
+
+@echo %EXE_PATH% = EXE_PATH
+@echo %1 = ISA
+@echo %2 = full 'filename.ld' with the path
+@echo %3 = compiler
+@echo %4 = deviceName, target name
+pause
 
 REM %~nx2 gives the file name in %2 without the path
 REM %~d2 gives the drive letter to LD
 REM %~p2 gives the path to LD
 
-if "%1" == "PIC16" goto PICX
+if "%3" == "HI_TECH_C" goto HTC
+if "%1" == "PIC16" goto PIC
+
+if "%3" == "AVRGCC" goto AVRGCC
+if "%1" == "AVR" goto AVR
+
 if "%1" == "ARM" goto ARM
-if "%1" == "AVR" goto AVRX
 
 if "%1" == "" goto pauses
 
 goto NOT_SUPPORTED
-
-:PICX
-if "%3" == "2" goto HTC
-goto PIC16
-
-:AVRX
-if "%3" == "2" goto AVRGCC
-goto AVR
-
 
 @rem =======================================================================
 :AVR
