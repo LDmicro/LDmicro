@@ -2226,8 +2226,8 @@ bool CompileAnsiC(const char *dest, int MNU)
             "\n");
 
     ///// Added by JG
-    char mcualias[MAX_PATH];    ///// Added by JG
-    strcpy(mcualias, Prog.mcu() ? Prog.mcu()->mcuList : "undefined_mcu");
+    char deviceName[MAX_PATH];    ///// Added by JG
+    strcpy(deviceName, Prog.mcu() ? Prog.mcu()->deviceName : "undefined_mcu");
     if (Prog.mcu())
         fprintf(flh,
             "#define LDTARGET_%s\n\n"
@@ -2235,7 +2235,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             "  #define F_CPU %luUL\n"
             "#endif\n\n"
             "#define _XTAL_FREQ %luUL\n\n",
-            _strlwr(mcualias), Prog.mcuClock, Prog.mcuClock);
+            _strlwr(deviceName), Prog.mcuClock, Prog.mcuClock);
 
         fprintf(flh,
                 "#define CFG_WORD 0x%X\n\n",

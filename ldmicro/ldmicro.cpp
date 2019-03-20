@@ -378,7 +378,7 @@ static void flashBat(char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
-    char mcualias[MAX_PATH];    ///// Added by JG
+    char deviceName[MAX_PATH];  ///// Added by JG
     int variant= 1;             ///// Added by JG
 
 
@@ -387,18 +387,18 @@ static void flashBat(char *name, int ISA)
         return;
     }
     if (!Prog.mcu()) return;                  ///// Added by JG
-    strcpy(mcualias, Prog.mcu()->mcuList);    /////
+    strcpy(deviceName, Prog.mcu()->deviceName);    /////
 
     s[0] = '\0';
     SetExt(s, name, "");
-    if (compiler_variant == MNU_COMPILE_AVRGCC) variant = 2;            ///// Added by JG
-    if (compiler_variant == MNU_COMPILE_HI_TECH_C)                      ///// Added by JG
-    {
+    if (compiler_variant == MNU_COMPILE_AVRGCC) 
+       variant = 2;            ///// Added by JG
+    if (compiler_variant == MNU_COMPILE_HI_TECH_C) {                    ///// Added by JG
         variant = 2;
-        strcpy(mcualias, mcualias+3);       // remove "Pic" prefix in mcu name
+        strcpy(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
     }
 
-    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %d %s %s", ExePath, GetIsaName(ISA), s, variant, _strlwr(mcualias), ExePath);       ///// 3rd & 4th param added by JG
+    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %d %s %s", ExePath, GetIsaName(ISA), s, variant, _strlwr(deviceName));       ///// 3rd & 4th param added by JG
 
     isErr(Execute(r), r);
 }
@@ -778,11 +778,11 @@ IsOpenAnable:
             return;
         }
 
-        char mcualias[MAX_PATH]= "";
-        if (Prog.mcu()) strcpy(mcualias, Prog.mcu()->mcuList);
+        char deviceName[MAX_PATH]= "";
+        if(Prog.mcu()) 
+            strcpy(deviceName, Prog.mcu()->deviceName);
 
-        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(mcualias, "PIC16F628") == 0))      // no SPI on this PIC
-        {
+        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) {     // no SPI on this PIC
             Error(_("SPI functions used but not supported for this micro or compile mode."));
             return;
         }
@@ -795,11 +795,11 @@ IsOpenAnable:
             return;
         }
 
-        char mcualias[MAX_PATH]= "";
-        if (Prog.mcu()) strcpy(mcualias, Prog.mcu()->mcuList);
+        char deviceName[MAX_PATH]= "";
+        if(Prog.mcu()) 
+            strcpy(deviceName, Prog.mcu()->deviceName);
 
-        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(mcualias, "PIC16F628") == 0))      // no SPI on this PIC
-        {
+        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) { // no SPI on this PIC
             Error(_("I2C functions used but not supported for this micro or compile mode."));
             return;
         }

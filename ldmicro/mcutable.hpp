@@ -136,7 +136,7 @@ typedef struct McuExtIntPinInfoTag {
 
 typedef struct McuIoInfoTag {
     const char *mcuName;
-    const char *mcuList;
+    const char *deviceName; // DEVICE or PART_NAME or -chip or Alias list
     const char *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
     const char *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
     const char *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include

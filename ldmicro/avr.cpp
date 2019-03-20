@@ -5945,8 +5945,8 @@ void CompileAvr(const char *outFile)
             ".ORG 0x0\n"
             ";TABSIZE = 8\n",
             Prog.mcu()->mcuName,
-            Prog.mcu()->mcuList,
-            Prog.mcu()->mcuList,
+            Prog.mcu()->deviceName,
+            Prog.mcu()->deviceName,
             Prog.mcu()->mcuInc);
     Comment("GOTO progStart");
 
