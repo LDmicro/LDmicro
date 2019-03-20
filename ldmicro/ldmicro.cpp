@@ -391,7 +391,7 @@ static void flashBat(char *name, int ISA)
 
     s[0] = '\0';
     SetExt(s, name, "");
-    if (compiler_variant == MNU_COMPILE_AVRGCC) 
+    if (compiler_variant == MNU_COMPILE_AVRGCC)
        variant = 2;            ///// Added by JG
     if (compiler_variant == MNU_COMPILE_HI_TECH_C) {                    ///// Added by JG
         variant = 2;
@@ -533,6 +533,7 @@ static void CompileProgram(bool compileAs, int MNU)
 {
     if((MNU == MNU_COMPILE) && (compile_MNU > 0))
         MNU = compile_MNU;
+    compile_MNU = MNU;
 
     if(MNU == MNU_COMPILE_GNUC ){
         if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR)) {
@@ -779,7 +780,7 @@ IsOpenAnable:
         }
 
         char deviceName[MAX_PATH]= "";
-        if(Prog.mcu()) 
+        if(Prog.mcu())
             strcpy(deviceName, Prog.mcu()->deviceName);
 
         if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) {     // no SPI on this PIC
@@ -796,7 +797,7 @@ IsOpenAnable:
         }
 
         char deviceName[MAX_PATH]= "";
-        if(Prog.mcu()) 
+        if(Prog.mcu())
             strcpy(deviceName, Prog.mcu()->deviceName);
 
         if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) { // no SPI on this PIC

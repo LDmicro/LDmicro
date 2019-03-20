@@ -922,7 +922,7 @@ bool LoadProjectFromFile(const char *filename)
             continue;
         if(strstr(line, "RUNG") == 0)
             goto failed;
-                    
+
         ElemSubcktSeries *s = LoadSeriesFromFile(f);
         if(!s)
             goto failed;
