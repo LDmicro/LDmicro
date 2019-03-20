@@ -1630,17 +1630,17 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_UART_RECV1:
                 if(IntCode[i].name2.length())
-                    fprintf(f, "CHAR_INDEX(%s, %s+%d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
+                    fprintf(f, "BYTE_AT(%s, %s+%d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
                 else
-                    fprintf(f, "CHAR_INDEX(%s, %d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                    fprintf(f, "BYTE_AT(%s, %d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 break;
 
             case INT_UART_SEND1:
             case INT_UART_SENDn:
                 if(IntCode[i].name2.length())
-                    fprintf(f, "UART_Transmit(CHAR_INDEX(%s, %s+%d));\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
+                    fprintf(f, "UART_Transmit(BYTE_AT(%s, %s+%d));\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
                 else
-                    fprintf(f, "UART_Transmit(CHAR_INDEX(%s, %d));\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                    fprintf(f, "UART_Transmit(BYTE_AT(%s, %d));\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 break;
 
             case INT_UART_SEND:
@@ -2323,7 +2323,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#endif\n");
     }
     fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
-    fprintf(flh, "#define CHAR_INDEX(var, index) (*(((unsigned char *)(&var))+(index)))\n");
+    fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
+    fprintf(flh, "#define BYTE_AT(var, index) ( ( (unsigned char *)(&var) )[index] )\n");
 
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_HI_TECH_C)
