@@ -935,15 +935,8 @@ typedef struct PicAvrInstructionTag {
 } PicAvrInstruction;
 
 // compilecommon.cpp
-int McuRAM();
 int UsedRAM();
-int McuROM();
 int UsedROM();
-int McuPWM();
-int McuADC();
-int McuSPI();
-int McuI2C();           ///// Added by JG
-int McuUART();
 extern DWORD RamSection;
 extern DWORD RomSection;
 extern DWORD EepromAddrFree;

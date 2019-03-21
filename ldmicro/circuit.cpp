@@ -685,11 +685,11 @@ void AddReadAdc()
         return;
 
     if(Prog.mcu()) {
-        if(!McuADC()) {
+        if(!Prog.mcuADC()) {
             Error(_("No ADC or ADC not supported for selected micro."));
             // return;
         }
-        if(AdcFunctionUsed() >= McuADC()) {
+        if(AdcFunctionUsed() >= Prog.mcuADC()) {
             Error(_("No available ADC inputs."));
             // return;
         }
@@ -705,11 +705,11 @@ void AddSetPwm()
         return;
 
     if(Prog.mcu()) {
-        if(!McuPWM()) {
+        if(!Prog.mcuPWM()) {
             Error(_("No PWM or PWM not supported for this MCU."));
             // return;
         }
-        if(PwmFunctionUsed() >= McuPWM()) {
+        if(PwmFunctionUsed() >= Prog.mcuPWM()) {
             Error(_("No available PWM outputs."));
             // return;
         }
@@ -727,7 +727,7 @@ void AddUart(int which)
         return;
 
     if(Prog.mcu()) {
-        if(!McuUART()) {
+        if(!Prog.mcuUART()) {
             Error(_("No UART or UART not supported for this MCU."));
             // return;
         }
@@ -748,7 +748,7 @@ void AddSpi(int which)
         return;
 
     if(Prog.mcu()) {
-        if(!McuSPI()) {
+        if(!Prog.mcuSPI()) {
             Error(_("No SPI or SPI not supported for this MCU."));
             // return;
         }
@@ -775,7 +775,7 @@ void AddI2c(int which)
         return;
 
     if(Prog.mcu()) {
-        if(!McuI2C()) {
+        if(!Prog.mcuI2C()) {
             Error(_("No I2C or I2C not supported for this MCU."));
             // return;
         }
@@ -801,7 +801,7 @@ void AddPersist()
         return;
 
     if(Prog.mcu()) {
-        if(!McuROM()) {
+        if(!Prog.mcuROM()) {
             Error(_("No ROM or ROM not supported for this MCU."));
             // return;
         }

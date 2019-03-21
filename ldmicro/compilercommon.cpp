@@ -66,6 +66,7 @@ static DWORD NextBitwiseAllocAddr;
 static int   NextBitwiseAllocBit;
 static int   MemOffset;
 DWORD        RamSection;
+DWORD        RomSection;
 
 int CompileFailure= 0;      ///// added by JG
 
@@ -96,104 +97,17 @@ LabelAddr * GetLabelAddr(const char *name)
 }
 
 //-----------------------------------------------------------------------------
-int McuPWM()
-{
-    if(!Prog.mcu())
-        return 0;
-
-    int n = 0;
-    if(Prog.mcu()->pwmCount) {
-        int prevPin = -1;
-        for(uint32_t i = 0; i < Prog.mcu()->pwmCount; i++) {
-            if(Prog.mcu()->pwmInfo[i].pin)
-                if(Prog.mcu()->pwmInfo[i].pin != prevPin)
-                    if((Prog.mcu()->whichIsa == ISA_PIC16) || (Prog.mcu()->pwmInfo[i].timer != Prog.cycleTimer))
-                        n++;
-            prevPin = Prog.mcu()->pwmInfo[i].pin;
-        }
-    } else if(Prog.mcu()->pwmNeedsPin) {
-        n = 1;
-    }
-    return n;
-}
-
-int McuADC()
-{
-    if(!Prog.mcu())
-        return 0;
-
-    return Prog.mcu()->adcCount;
-}
-
-int McuSPI()
-{
-    if(!Prog.mcu())
-        return 0;
-
-    return Prog.mcu()->spiCount;
-}
-
-///// Added by JG
-int McuI2C()
-{
-    if(!Prog.mcu())
-        return 0;
-
-    return Prog.mcu()->i2cCount;
-}
-/////
-
-int McuUART()
-{
-    if(!Prog.mcu())
-        return 0;
-
-    int n = 0;
-    if(Prog.mcu()->uartNeeds.rxPin && Prog.mcu()->uartNeeds.txPin) {
-        n = 1;
-    }
-    return n;
-}
-
-int McuROM()
-{
-    return 1000000; // TODO
-
-    if(!Prog.mcu())
-        return 0;
-
-    int   n = 0;
-    DWORD i;
-    for(i = 0; i < MAX_ROM_SECTIONS; i++) {
-        n += Prog.mcu()->rom[i].len;
-    }
-    return n;
-}
 
 int UsedROM()
 {
     if(!Prog.mcu())
         return 0;
 
-    int   n = 0;
-    DWORD i;
-    for(i = 0; i < RomSection; i++) {
+    int n = 0;
+    for(uint32_t i = 0; i < RomSection; i++) {
         n += Prog.mcu()->rom[i].len;
     }
     return n + EepromAddrFree;
-}
-
-int McuRAM()
-{
-    if(!Prog.mcu())
-        return 0;
-
-    int   n = 0;
-    DWORD i;
-    for(i = 0; i < MAX_RAM_SECTIONS; i++) {
-        n += Prog.mcu()->ram[i].len;
-    }
-    return n;
 }
 
 int UsedRAM()
@@ -201,9 +115,8 @@ int UsedRAM()
     if(!Prog.mcu())
         return 0;
 
-    int   n = 0;
-    DWORD i;
-    for(i = 0; i < RamSection; i++) {
+    int n = 0;
+    for(uint32_t i = 0; i < RamSection; i++) {
         n += Prog.mcu()->ram[i].len;
     }
     return n + MemOffset;

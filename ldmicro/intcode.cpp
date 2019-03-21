@@ -89,7 +89,6 @@ static DWORD GenSymCountFormattedString;
 static DWORD GenSymCountStepper;
 
 DWORD EepromAddrFree;
-DWORD RomSection;
 
 namespace {
     std::unordered_set<std::string> persistVariables;

@@ -92,6 +92,62 @@ void PlcProgram::setMcu(McuIoInfo* m)
         std::sort(mcu_->pinInfo, mcu_->pinInfo + mcu_->pinCount, comparePinInfo);
 }
 
+int PlcProgram::mcuPWM() const
+{
+    if(mcu_)
+        return 0;
+
+    int n = 0;
+    if(mcu_->pwmCount) {
+        int prevPin = -1;
+        for(uint32_t i = 0; i < mcu_->pwmCount; i++) {
+            if(mcu_->pwmInfo[i].pin)
+                if(mcu_->pwmInfo[i].pin != prevPin)
+                    if((mcu_->whichIsa == ISA_PIC16) || (mcu_->pwmInfo[i].timer != cycleTimer))
+                        n++;
+            prevPin = mcu_->pwmInfo[i].pin;
+        }
+    } else if(mcu_->pwmNeedsPin) {
+        n = 1;
+    }
+    return n;
+}
+
+int PlcProgram::mcuROM() const
+{
+    return 1000000; //TODO: fix ROM hardcode
+
+    if(mcu_)
+        return 0;
+
+    int n = 0;
+    for(uint32_t i = 0; i < MAX_ROM_SECTIONS; i++) {
+        n += mcu_->rom[i].len;
+    }
+    return n;
+}
+
+int PlcProgram::mcuRAM() const
+{
+    if(!mcu_)
+        return 0;
+
+    int n = 0;
+    for(uint32_t i = 0; i < MAX_RAM_SECTIONS; i++) {
+        n += mcu_->ram[i].len;
+    }
+    return n;
+}
+
+int PlcProgram::mcuUART() const
+{
+    if(!mcu_)
+        return 0;
+    if(mcu_->uartNeeds.rxPin && mcu_->uartNeeds.txPin)
+        return 1;
+    return 0;
+}
+
 void PlcProgram::reset()
 {
     for(int i = 0; i < numRungs; i++) {

@@ -7078,7 +7078,7 @@ void CompileAvr(const char *outFile)
             (100 * AvrProg.size()) / Prog.mcu()->flashWords);
 
     char str3[MAX_PATH + 500];
-    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), McuRAM(), (100 * UsedRAM()) / McuRAM());
+    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), Prog.mcuRAM(), (100 * UsedRAM()) / Prog.mcuRAM());
 
     char str4[MAX_PATH + 500];
     sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
@@ -7086,7 +7086,7 @@ void CompileAvr(const char *outFile)
     if(AvrProg.size() > Prog.mcu()->flashWords) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);
         CompileSuccessfulMessage(str2, MB_ICONERROR);
-    } else if(UsedRAM() > McuRAM()) {
+    } else if(UsedRAM() > Prog.mcuRAM()) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);
         CompileSuccessfulMessage(str3, MB_ICONERROR);
     } else

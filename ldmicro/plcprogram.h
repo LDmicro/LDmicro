@@ -66,6 +66,13 @@ public:
     ~PlcProgram();
     void setMcu(McuIoInfo *mcu);
     const McuIoInfo* mcu() const {return mcu_;}
+    int mcuPWM() const ;
+    int mcuADC() const {return mcu_ ? mcu_->adcCount : 0 ;}
+    int mcuSPI() const {return mcu_ ? mcu_->spiCount : 0 ;}
+    int mcuI2C() const {return mcu_ ? mcu_->i2cCount : 0 ;}
+    int mcuUART() const;
+    int mcuROM() const;
+    int mcuRAM() const;
     void reset();
     void appendEmptyRung();
     void insertEmptyRung(uint32_t idx);
