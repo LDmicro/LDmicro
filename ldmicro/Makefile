@@ -35,7 +35,7 @@ LDOBJS   = $(OBJDIR)\ldmicro.obj \
            $(OBJDIR)\colorDialog.obj \
            $(OBJDIR)\iolist.obj \
            $(OBJDIR)\miscutil.obj \
-           $(OBJDIR)\compilecommon.obj \
+           $(OBJDIR)\compilercommon.obj \
            $(OBJDIR)\ansic.obj \
            $(OBJDIR)\netzer.obj \
            $(OBJDIR)\interpreted.obj \

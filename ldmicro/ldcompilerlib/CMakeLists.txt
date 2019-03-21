@@ -14,7 +14,7 @@ set(LD_COMPILER_SRC_LIST
     ../ansic.cpp
     ../avr.cpp
     ../circuit.cpp
-    ../compilecommon.cpp
+    ../compilercommon.cpp
     ../display.cpp
     ../intcode.cpp
     ../interpreted.cpp
