@@ -311,7 +311,7 @@ static void MemForPin(const NameArray& name, DWORD *addr, int *bit, bool asInput
                 *bit = iop->bit;
             }
         } else {
-            THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), name);
+            THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), name.c_str());
         }
     }
 }
@@ -405,7 +405,7 @@ uint8_t MuxForAdcVariable(const NameArray& name)
         }
         if(j == Prog.mcu()->adcCount) {
             /////   Error("i=%d pin=%d", i, Prog.io.assignment[i].pin);         ///// Comment by JG
-            THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all ADC inputs (name '%s')."), name);
+            THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all ADC inputs (name '%s')."), name.c_str());
             return 0;
         }
         res = Prog.mcu()->adcInfo[j].muxRegValue;
@@ -479,7 +479,7 @@ int PinsForSpiVariable(const NameArray& name, int n, char *spipins)
 
     if(res != 4)
     {
-        THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for SPI device (name '%s')."), name);
+        THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for SPI device (name '%s')."), name.c_str());
     }
     return port;        // spi port
 }
@@ -528,7 +528,7 @@ int PinsForI2cVariable(const NameArray& name, int n, char *i2cpins)
 
     if(res != 2)
     {
-        THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for I2C device (name '%s')."), name);
+        THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for I2C device (name '%s')."), name.c_str());
     }
     return port;        // i2c port
 }
@@ -568,7 +568,7 @@ int TestByteNeeded(int count, SDWORD *vals)
 int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
 {
     if(strlenalnum(name.c_str()) == 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
+        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name.c_str(), rungNow + 1);
     }
 
     int i;
@@ -668,10 +668,10 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
                 sizeOfVar = 2;
             }
             if(sizeOfVar < 1) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name, sizeOfVar);
+                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name.c_str(), sizeOfVar);
                 sizeOfVar = 1;
             } else if(sizeOfVar > 4) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name, sizeOfVar);
+                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name.c_str(), sizeOfVar);
                 sizeOfVar = 4;
             }
             if(Variables[i].SizeOfVar != sizeOfVar) {
@@ -692,7 +692,7 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
                     } else if(sizeOfVar == 4) {
                         Variables[i].addrl = AllocOctetRam(4);
                     } else {
-                        THROW_COMPILER_EXCEPTION_FMT(_("Var '%s' not allocated %d."), name, sizeOfVar);
+                        THROW_COMPILER_EXCEPTION_FMT(_("Var '%s' not allocated %d."), name.c_str(), sizeOfVar);
                     }
                     Variables[i].Allocated = sizeOfVar;
 
@@ -729,24 +729,19 @@ int MemOfVar(const NameArray &name, DWORD *addr)
     return MemOfVar(name.c_str(), addr);
 }
 
-int SetMemForVariable(const char *name, DWORD addr, int sizeOfVar)
+int SetMemForVariable(const NameArray &name, DWORD addr, int sizeOfVar)
 {
     MemForVariable(name, &addr, sizeOfVar); //allocate WORD memory for pointer to LPM
 
     return MemForVariable(name, nullptr, sizeOfVar); //and set size of element of table in flash memory
 }
 
-int SetMemForVariable(const NameArray &name, DWORD addr, int sizeOfVar)
-{
-    return SetMemForVariable(name.c_str(), addr, sizeOfVar);
-}
-
 //-----------------------------------------------------------------------------
-int SetSizeOfVar(const char *name, int sizeOfVar, bool showError)
+int SetSizeOfVar(const NameArray &name, int sizeOfVar, bool showError)
 {
     if(showError)
         if((sizeOfVar < 1)/* || (4 < sizeOfVar)*/) {
-            Warning(_("Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name);
+            Warning(_("Invalid size (%d) of variable '%s' set to 2!"), sizeOfVar, name.c_str());
             sizeOfVar = 2;
         }
 #ifndef NEW_CMP
@@ -755,34 +750,29 @@ int SetSizeOfVar(const char *name, int sizeOfVar, bool showError)
     return MemForVariable(name, nullptr, sizeOfVar);
 }
 
-int SetSizeOfVar(const char *name, int sizeOfVar)
+int SetSizeOfVar(const NameArray &name, int sizeOfVar)
 {
     return SetSizeOfVar(name, sizeOfVar, true);
 }
 
-int SizeOfVar(const char *name)
+int SizeOfVar(const NameArray &name)
 {
     if(IsNumber(name))
-        return byteNeeded(hobatoi(name));
+        return byteNeeded(hobatoi(name.c_str()));
     else
         return MemForVariable(name, nullptr, 0);
 }
 
-int SizeOfVar(const NameArray &name)
-{
-    return SizeOfVar(name.c_str());
-}
-
 //-----------------------------------------------------------------------------
-int GetVariableType(char *name)
+int GetVariableType(const NameArray &name)
 {
-    if(strlenalnum(name) == 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
+    if(strlenalnum(name.c_str()) == 0) {
+        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name.c_str(), rungNow + 1);
     }
 
     int i;
     for(i = 0; i < VariableCount; i++) {
-        if(strcmp(name, Variables[i].name) == 0)
+        if(name == Variables[i].name)
             break;
     }
     if(i >= MAX_IO) {
@@ -794,14 +784,14 @@ int GetVariableType(char *name)
     return IO_TYPE_PENDING;
 }
 
-int SetVariableType(const char *name, int type)
+int SetVariableType(const NameArray &name, int type)
 {
-    if(strlenalnum(name) == 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
+    if(strlenalnum(name.c_str()) == 0) {
+        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name.c_str(), rungNow + 1);
     }
     int i;
     for(i = 0; i < VariableCount; i++) {
-        if(strcmp(name, Variables[i].name) == 0)
+        if(name == Variables[i].name)
             break;
     }
     if(i >= MAX_IO) {
@@ -810,7 +800,7 @@ int SetVariableType(const char *name, int type)
     if(i == VariableCount) {
         VariableCount++;
         memset(&Variables[i], 0, sizeof(Variables[i]));
-        strcpy(Variables[i].name, name);
+        strcpy(Variables[i].name, name.c_str());
         if(name[0] == '#') {
             Variables[i].SizeOfVar = 1;
             Variables[i].Allocated = 0;
@@ -835,15 +825,15 @@ int SetVariableType(const char *name, int type)
 }
 //-----------------------------------------------------------------------------
 
-int AllocOfVar(char *name)
+int AllocOfVar(const NameArray &name)
 {
-    if(strlenalnum(name) == 0) {
-        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name, rungNow + 1);
+    if(strlenalnum(name.c_str()) == 0) {
+        THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name.c_str(), rungNow + 1);
     }
 
     int i;
     for(i = 0; i < VariableCount; i++) {
-        if(strcmp(name, Variables[i].name) == 0)
+        if(name == Variables[i].name)
             break;
     }
     if(i >= MAX_IO) {
@@ -861,8 +851,7 @@ void SaveVarListToFile(FileTracker& f)
     std::sort(std::begin(Variables), std::end(Variables),
               [](const VariablesList& a, const VariablesList& b) {return (strcmp(a.name, b.name) < 0);});
 
-    int i;
-    for(i = 0; i < VariableCount; i++)
+    for(int i = 0; i < VariableCount; i++) {
         if(!IsIoType(Variables[i].type) && (Variables[i].type != IO_TYPE_INTERNAL_RELAY)
            && (Variables[i].name[0] != '$')) {
             fprintf(f,
@@ -871,6 +860,7 @@ void SaveVarListToFile(FileTracker& f)
                     Variables[i].name,
                     Variables[i].Allocated ? "" : _(" \tNow not used !!!"));
         }
+    }
 }
 
 //-----------------------------------------------------------------------------
