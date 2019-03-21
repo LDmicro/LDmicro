@@ -9,7 +9,6 @@ SET EXE_PATH=%~dp0
 @echo %2 = full 'filename.ld' with the path
 @echo %3 = compiler
 @echo %4 = deviceName, target name
-pause
 
 REM %~nx2 gives the file name in %2 without the path
 REM %~d2 gives the drive letter to LD
