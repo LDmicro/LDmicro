@@ -740,27 +740,6 @@ int FindOpName(int op, const NameArray& name1);
 int FindOpName(int op, const NameArray& name1, const NameArray& name2);
 int FindOpNameLast(int op, const NameArray& name1);
 int FindOpNameLast(int op, const NameArray& name1, const NameArray& name2);
-// Assignment of the `variables,' used for timers, counters, arithmetic, and
-// other more general things. Allocate 2 octets (16 bits) per.
-// Allocate 1 octets for  8-bits variables.
-// Allocate 3 octets for  24-bits variables.
-typedef  struct VariablesListTag {
-    // vvv from compilecommon.cpp
-    char    name[MAX_NAME_LEN];
-    DWORD   addrl;
-    int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
-    int     SizeOfVar;  // SizeOfVar can be less than Allocated
-    // ^^^ from compilecommon.cpp
-    int     type;       // see PlcProgramSingleIo
-    // vvv from simulate.cpp
-//  SDWORD  val;        // value in simulation mode.
-//  char    valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
-//  DWORD   usedFlags;  // in simulation mode.
-//  int     initedRung; // Variable inited in rung.
-//  DWORD   initedOp;   // Variable inited in Op number.
-//  char    rungs[MAX_COMMENT_LEN]; // Rungs, where variable is used.
-    // ^^^ from simulate.cpp
-} VariablesList;
 
 #define USE_IO_REGISTERS 1 // 0-NO, 1-YES // USE IO REGISTERS in AVR
 // // #define USE_LDS_STS
@@ -969,7 +948,7 @@ extern DWORD RamSection;
 extern DWORD RomSection;
 extern DWORD EepromAddrFree;
 //extern int VariableCount;
-void PrintVariables(FILE *f);
+void PrintVariables(FileTracker& f);
 DWORD isVarUsed(const char *name);
 int isVarInited(const char *name);
 int isPinAssigned(const NameArray& name);
@@ -1003,8 +982,8 @@ int SizeOfVar(const NameArray& name);
 int AllocOfVar(char *name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
-void SaveVarListToFile(FILE *f);
-bool LoadVarListFromFile(FILE *f);
+void SaveVarListToFile(FileTracker& f);
+bool LoadVarListFromFile(FileTracker& f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
 void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput);                     ///// Added by JG
 void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool raiseError);    ///// Modified by JG BYTE -> WORD

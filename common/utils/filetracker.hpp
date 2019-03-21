@@ -46,7 +46,7 @@ public:
     {
         return file_ != nullptr;
     }
-    FILE* get()
+    FILE* get() const
     {
         return file_;
     }
@@ -75,7 +75,7 @@ public:
     {
         return file_ != other.file_;
     }
-    operator FILE* ()
+    operator FILE* () const
     {
         return get();
     }
@@ -95,6 +95,6 @@ public:
         return *this;
     }
 private:
-    FILE* file_;
+    mutable FILE* file_;
     std::string name_;
 };

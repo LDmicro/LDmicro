@@ -35,20 +35,30 @@ static struct {
     bool  assignedTo;
 } InternalRelays[MAX_IO];
 static int InternalRelayCount;
-/*
-vvv VariablesList moved to ldmicro.h
 
 // Assignment of the `variables,' used for timers, counters, arithmetic, and
 // other more general things. Allocate 2 octets (16 bits) per.
-static struct {
+// Allocate 1 octets for  8-bits variables.
+// Allocate 3 octets for  24-bits variables.
+struct VariablesList {
+    // vvv from compilecommon.cpp
     char    name[MAX_NAME_LEN];
     DWORD   addrl;
-    DWORD   addrh;
-} Variables[MAX_IO];
+    int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
+    int     SizeOfVar;  // SizeOfVar can be less than Allocated
+    // ^^^ from compilecommon.cpp
+    int     type;       // see PlcProgramSingleIo
+    // vvv from simulate.cpp
+    //  SDWORD  val;        // value in simulation mode.
+    //  char    valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
+    //  DWORD   usedFlags;  // in simulation mode.
+    //  int     initedRung; // Variable inited in rung.
+    //  DWORD   initedOp;   // Variable inited in Op number.
+    //  char    rungs[MAX_COMMENT_LEN]; // Rungs, where variable is used.
+    // ^^^ from simulate.cpp
+};
 
-^^^ VariablesList moved to ldmicro.h
-*/
-VariablesList Variables[MAX_IO];
+static std::array<VariablesList, MAX_IO> Variables;
 static int    VariableCount = 0;
 
 #define NO_MEMORY 0xffffffff
@@ -200,22 +210,22 @@ int UsedRAM()
 }
 
 //-----------------------------------------------------------------------------
-void PrintVariables(FILE *f)
+void PrintVariables(FileTracker& f)
 {
-    int i;
     fprintf(f, "\n");
     fprintf(f,
             ";|  # | Name                                                    | Size      | Address      | Bit # |\n");
 
     fprintf(f, ";|Variables: %d\n", VariableCount);
-    for(i = 0; i < VariableCount; i++) {
-        if(Variables[i].addrl)
+    for(int i = 0; i < VariableCount; i++) {
+        if(Variables[i].addrl) {
             fprintf(f,
                     ";|%3d | %-50s\t| %3d byte  | 0x%04X       |\n",
                     i,
                     Variables[i].name,
                     Variables[i].SizeOfVar,
                     Variables[i].addrl);
+        }
         /*
         else {
             DWORD addr;
@@ -238,7 +248,7 @@ void PrintVariables(FILE *f)
     fprintf(f, "\n");
 
     fprintf(f, ";|Internal Relays: %d\n", InternalRelayCount);
-    for(i = 0; i < InternalRelayCount; i++) {
+    for(int i = 0; i < InternalRelayCount; i++) {
         fprintf(f,
                 ";|%3d | %-50s\t| %3d bit   | 0x%04X       | %d     |\n",
                 i,
@@ -258,8 +268,7 @@ static void ClrInternalData()
     EepromAddrFree = 0;
     LabelAddrCount = 0;
     //  VariableCount = 0;
-    int i;
-    for(i = 0; i < VariableCount; i++) {
+    for(int i = 0; i < VariableCount; i++) {
         Variables[i].Allocated = 0;
         Variables[i].addrl = 0;
     }
@@ -951,20 +960,10 @@ int AllocOfVar(char *name)
 }
 
 //-----------------------------------------------------------------------------
-// Compare function to qsort() the I/O list.
-//-----------------------------------------------------------------------------
-static int CompareIo(const void *av, const void *bv)
+void SaveVarListToFile(FileTracker& f)
 {
-    VariablesList *a = (VariablesList *)av;
-    VariablesList *b = (VariablesList *)bv;
-
-    return strcmp(a->name, b->name);
-}
-
-//-----------------------------------------------------------------------------
-void SaveVarListToFile(FILE *f)
-{
-    qsort(Variables, VariableCount, sizeof(Variables[0]), CompareIo);
+    std::sort(std::begin(Variables), std::end(Variables),
+              [](const VariablesList& a, const VariablesList& b) {return (strcmp(a.name, b.name) < 0);});
 
     int i;
     for(i = 0; i < VariableCount; i++)
@@ -979,7 +978,7 @@ void SaveVarListToFile(FILE *f)
 }
 
 //-----------------------------------------------------------------------------
-bool LoadVarListFromFile(FILE *f)
+bool LoadVarListFromFile(FileTracker& f)
 {
     //ClrInternalData(); // VariableCount = 0;
     //ClrSimulationData();
@@ -1161,8 +1160,7 @@ void MemForCoil(char *name, DWORD *addr, int *bit)
 //-----------------------------------------------------------------------------
 void MemCheckForErrorsPostCompile()
 {
-    int i;
-    for(i = 0; i < InternalRelayCount; i++) {
+    for(int i = 0; i < InternalRelayCount; i++) {
         if(!InternalRelays[i].assignedTo) {
             THROW_COMPILER_EXCEPTION_FMT(_("Internal relay '%s' never assigned; add its coil somewhere."), InternalRelays[i].name);
         }
@@ -1258,8 +1256,7 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput)      
 
     BuildDirectionRegisters(isInp, isAns, isOut, true);
 
-    int i;
-    for (i= 0 ; i < MAX_IO_PORTS ; i++)
+    for (int i = 0 ; i < MAX_IO_PORTS ; i++)
     {
         isInput[i]= (BYTE) isInp[i];
         isAnsel[i]= (BYTE) isAns[i];
