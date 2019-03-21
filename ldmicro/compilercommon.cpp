@@ -41,12 +41,12 @@ static int InternalRelayCount;
 // Allocate 1 octets for  8-bits variables.
 // Allocate 3 octets for  24-bits variables.
 struct VariablesList {
-    // vvv from compilecommon.cpp
+    // vvv from compilercommon.cpp
     char    name[MAX_NAME_LEN];
     DWORD   addrl;
     int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
     int     SizeOfVar;  // SizeOfVar can be less than Allocated
-    // ^^^ from compilecommon.cpp
+    // ^^^ from compilercommon.cpp
     int     type;       // see PlcProgramSingleIo
     // vvv from simulate.cpp
     //  SDWORD  val;        // value in simulation mode.
