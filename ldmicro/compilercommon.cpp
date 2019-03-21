@@ -593,7 +593,7 @@ int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar)
             break;
     }
     if(i >= MAX_IO) {
-        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"), 0);
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i == VariableCount) {
         VariableCount++;
@@ -803,7 +803,7 @@ int GetVariableType(char *name)
             break;
     }
     if(i >= MAX_IO) {
-        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"), 0);
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i < VariableCount) {
         return Variables[i].type;
@@ -822,7 +822,7 @@ int SetVariableType(const char *name, int type)
             break;
     }
     if(i >= MAX_IO) {
-        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"), 0);
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i == VariableCount) {
         VariableCount++;
@@ -864,7 +864,7 @@ int AllocOfVar(char *name)
             break;
     }
     if(i >= MAX_IO) {
-        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"), 0);
+        THROW_COMPILER_EXCEPTION(_("Internal limit exceeded (number of vars)"));
     }
     if(i < VariableCount) {
         return Variables[i].Allocated;
@@ -1016,7 +1016,7 @@ int isPinAssigned(const NameArray &name)
                                            Prog.io.assignment + Prog.io.count,
                                            [name](const PlcProgramSingleIo &io) { return (name == io.name); });
                 if(assign == (Prog.io.assignment + Prog.io.count))
-                    THROW_COMPILER_EXCEPTION(_("Can't find right assign."), res);
+                    THROW_COMPILER_EXCEPTION(_("Can't find right assign."));
 
                 int pin = assign->pin;
                 if(name[0] == 'A') {

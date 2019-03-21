@@ -103,7 +103,7 @@ static const char *MapSym(const char *str, int how)
     } else if(how == ASSTR) {
         bit_int = 's';
     } else {
-        THROW_COMPILER_EXCEPTION(_("Can't assign prefix."), ret);       ///// _() by JG
+        THROW_COMPILER_EXCEPTION(_("Can't assign prefix."));       ///// _() by JG
     }
 
     // User and internal symbols are distinguished.
@@ -2353,7 +2353,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(SpiFunctionUsed())
         {
             if(I2cFunctionUsed())
-                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"), false);
+                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"));
 
             fprintf(flh,
                 "#include \"SpiLib.h\"\n"
@@ -2362,7 +2362,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(I2cFunctionUsed())
         {
             if(SpiFunctionUsed())
-                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"), false);
+                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"));
 
             fprintf(flh,
                 "#include \"I2cLib.h\"\n"
@@ -2704,7 +2704,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         ///// Added by JG
         if(compiler_variant == MNU_COMPILE_ARMGCC)
         {
-            THROW_COMPILER_EXCEPTION(_("EEPROM not supported by this target"), false);
+            THROW_COMPILER_EXCEPTION(_("EEPROM not supported by this target"));
         }
         else if(compiler_variant == MNU_COMPILE_AVRGCC)
             fprintf(fh,
@@ -3625,7 +3625,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         usedadc++;
                 }
                 if (usedadc == 0)
-                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"), false);               // error in ADC pin layout
+                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"));               // error in ADC pin layout
 
                 // Max resolution 10 bits used, prediv= 2^1
                 fprintf(f, "\n    ADC_Init();\n");
@@ -3645,7 +3645,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     }
                 }
                 if (usedadc == 0)               {
-                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"), false);               // error in ADC pin layout
+                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"));               // error in ADC pin layout
                 }
             }
             else if(compiler_variant == MNU_COMPILE_AVRGCC)
@@ -3658,7 +3658,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         usedadc++;
                 }
                 if (usedadc == 0)
-                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"), false);               // error in ADC pin layout
+                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"));               // error in ADC pin layout
 
                 // Max resolution 10 bits used, prediv= 2^1
                 fprintf(f, "\n    ADC_Init(1, 10);\n");
@@ -3681,7 +3681,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     {
                     // PWM 1 uses Timer 1 registers => use Timer 0
                     if ((p == 1) && (Prog.cycleTimer == 1))
-                        THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"), false);
+                        THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
 
                         fprintf(f, "    PWM_Init(0x%2.2X, %ld, %ld, %d);\n", p, Prog.mcuClock, PWM_Freq[p], PWM_Resol[p]);
                         usedpwm++;
@@ -3689,7 +3689,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 }
                 if (usedpwm == 0)
                 {
-                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"), false);               // error in PWM config
+                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"));               // error in PWM config
                 }
 
             }
@@ -3709,7 +3709,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 }
                 if (usedpwm == 0)
                 {
-                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"), false);               // error in PWM config
+                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"));               // error in PWM config
                 }
             }
             else if(compiler_variant == MNU_COMPILE_AVRGCC)
@@ -3727,7 +3727,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 }
                 if (usedpwm == 0)
                 {
-                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"), false);               // error in PWM config
+                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"));               // error in PWM config
                 }
             }
             else

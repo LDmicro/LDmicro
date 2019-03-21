@@ -1694,7 +1694,7 @@ void ShowCprintfDialog(int which, void *e)
         cprintf:
             break;
         }
-        default: ooops("ELEM_0x%X");
+        default: ooops("ELEM_0x%X", which);
     }
     // clang-format on
     char str[MAX_NAME_LEN];

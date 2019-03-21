@@ -308,7 +308,7 @@ static void Increment(const char *name, const char *overlap, const char *overflo
             return;
         }
     }
-    ooops(name);
+    ooops("%s", name);
 }
 
 static void Increment(const NameArray &name, const char *overlap, const char *overflow)
@@ -360,7 +360,7 @@ static void Decrement(const char *name, const char *overlap, const char *overflo
             return;
         }
     }
-    ooops(name);
+    ooops("%s", name);
 }
 
 static void Decrement(const NameArray &name, const NameArray &overlap, const char *overflow)

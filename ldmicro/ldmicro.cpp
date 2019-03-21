@@ -2910,8 +2910,8 @@ void CheckPwmPins()
 //-----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
+    auto logg = ldlog::getLogger("default");
     try {
-        auto logg = ldlog::getLogger("default");
         logg->add_sink(ldlog::newWindowsDebugStringSink());
 
         LOG(ldlog::Info, logg, "Run LDmicro ver.: {}.", LDMICRO_VER_STR);
@@ -3129,8 +3129,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         Prog.reset();
 
         return 0;
+    } catch (std::runtime_error& e) {
+        LOG_ERROR(logg, "Runtime error: \"{}\"", e.what());
+        Prog.setMcu(nullptr);
+        srand((unsigned int)time(nullptr));
+        char fname[20];
+        sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
+        SaveProjectToFile(fname, MNU_SAVE_02);
+        return EXIT_FAILURE;
     } catch(...) {
 
+        LOG_ERROR(logg, "{}" , "Receive unknown exception");
         ///// Added by JG to save work in case of big bug
         Prog.setMcu(nullptr);
         srand((unsigned int)time(nullptr));

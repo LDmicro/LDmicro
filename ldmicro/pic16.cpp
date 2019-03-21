@@ -2618,9 +2618,9 @@ static DWORD CopyLitToReg(DWORD addr, int sov, const char *name, SDWORD literal,
 {
     Comment("CopyLitToReg");
     if(sov < 1)
-        THROW_COMPILER_EXCEPTION(comment, 0);
+        THROW_COMPILER_EXCEPTION(comment);
     if(sov > 4)
-        THROW_COMPILER_EXCEPTION(comment, 0);
+        THROW_COMPILER_EXCEPTION(comment);
 
     DWORD lNow, lPrev;
     lNow = literal & 0xff;
@@ -2708,22 +2708,22 @@ static DWORD CopyRegToReg(DWORD addr1, int sov1, DWORD addr2, int sov2, const ch
 {
     Comment("CopyRegToReg");
     if(sov1 < 1)
-        THROW_COMPILER_EXCEPTION(name1, 0);
+        THROW_COMPILER_EXCEPTION(name1);
     if(sov1 > 4)
-        THROW_COMPILER_EXCEPTION(name1, 0);
+        THROW_COMPILER_EXCEPTION(name1);
     if(sov2 < 1)
-        THROW_COMPILER_EXCEPTION(name2, 0);
+        THROW_COMPILER_EXCEPTION(name2);
     if(sov2 > 4)
-        THROW_COMPILER_EXCEPTION(name2, 0);
+        THROW_COMPILER_EXCEPTION(name2);
 
     if(addr1 == 0)
-        THROW_COMPILER_EXCEPTION(name1, 0);
+        THROW_COMPILER_EXCEPTION(name1);
     if(addr1 == -1)
-        THROW_COMPILER_EXCEPTION(name1, 0);
+        THROW_COMPILER_EXCEPTION(name1);
     if(addr2 == 0)
-        THROW_COMPILER_EXCEPTION(name2, 0);
+        THROW_COMPILER_EXCEPTION(name2);
     if(addr2 == -1)
-        THROW_COMPILER_EXCEPTION(name2, 0);
+        THROW_COMPILER_EXCEPTION(name2);
 
      if(addr1 == addr2) {
         if(sov1 == sov2) {
@@ -7636,7 +7636,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     if(UartFunctionUsed()) {
         if(Prog.baudRate == 0) {
-            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."), false);
+            THROW_COMPILER_EXCEPTION(_("Zero baud rate not possible."));
             /////   return false;
         }
 
@@ -7709,7 +7709,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         }
     } else if(Prog.cycleTimer == 1) {
         if(Prog.mcu()->core == BaselineCore12bit) {
-            THROW_COMPILER_EXCEPTION(_("Select Timer0 in menu 'Settings -> MCU parameters'!"), false);      ///// _() by JG
+            THROW_COMPILER_EXCEPTION(_("Select Timer0 in menu 'Settings -> MCU parameters'!"));      ///// _() by JG
         }
         if(Prog.cycleDuty) {
             CopyBit(addrDuty, bitDuty, REG_PIR1, CCP1IF, YPlcCycleDuty);

@@ -52,7 +52,7 @@ static int CheckRange(int value, const char *name)
     if(value < 0 || value > 255) {
         char msg[80];
         sprintf(msg, _("%s=%d: out of range for 8bits target"), name, value);
-        THROW_COMPILER_EXCEPTION(msg, 0);
+        THROW_COMPILER_EXCEPTION(msg);
     }
 
     return value;

@@ -1582,7 +1582,7 @@ static DWORD SKBS(DWORD addr, int bit, int reg)
 {
     DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"), 0);
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1621,7 +1621,7 @@ static DWORD SKBC(DWORD addr, int bit, int reg)
 {
     DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"), 0);
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
