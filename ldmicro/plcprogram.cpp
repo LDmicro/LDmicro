@@ -113,6 +113,21 @@ int PlcProgram::mcuPWM() const
     return n;
 }
 
+int PlcProgram::mcuADC() const
+{
+    return mcu_ ? mcu_->adcCount : 0 ;
+}
+
+int PlcProgram::mcuSPI() const
+{
+    return mcu_ ? mcu_->spiCount : 0 ;
+}
+
+int PlcProgram::mcuI2C() const
+{
+    return mcu_ ? mcu_->i2cCount : 0 ;
+}
+
 int PlcProgram::mcuROM() const
 {
     return 1000000; //TODO: fix ROM hardcode
