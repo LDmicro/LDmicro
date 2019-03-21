@@ -233,7 +233,7 @@ DWORD AllocOctetRam()
 //-----------------------------------------------------------------------------
 int InputRegIndex(DWORD addr)
 {
-    if((addr == -1) || (addr == 0))
+    if(addr == 0)
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->inputRegs[i] == addr)
@@ -244,7 +244,7 @@ int InputRegIndex(DWORD addr)
 //-----------------------------------------------------------------------------
 int OutputRegIndex(DWORD addr)
 {
-    if((addr == -1) || (addr == 0))
+    if(addr == 0)
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->outputRegs[i] == addr)
