@@ -714,6 +714,7 @@ char *toupperstr(char *dest, const char *src);
 const char *_(const char *in);
 
 // simulate.cpp
+int isVarInited(const char *name);
 void MarkInitedVariable(const char *name);
 void SimulateOneCycle(bool forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
@@ -944,32 +945,26 @@ extern DWORD RomSection;
 extern DWORD EepromAddrFree;
 //extern int VariableCount;
 void PrintVariables(FileTracker& f);
-DWORD isVarUsed(const char *name);
-int isVarInited(const char *name);
 int isPinAssigned(const NameArray& name);
 void AllocStart();
 DWORD AllocOctetRam();
 DWORD AllocOctetRam(int bytes);
 void AllocBitRam(DWORD *addr, int *bit);
-int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar);
-int MemForVariable(const char *name, DWORD *addr);
+int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar);
 int MemForVariable(const NameArray& name, DWORD *addr);
 int SetMemForVariable(const char *name, DWORD addr, int sizeOfVar);
 int SetMemForVariable(const NameArray& name, DWORD addr, int sizeOfVar);
-int MemOfVar(const char *name, DWORD *addr);
 int MemOfVar(const NameArray& name, DWORD *addr);
-uint8_t MuxForAdcVariable(const char *name);
 uint8_t MuxForAdcVariable(const NameArray& name);
-int PinsForSpiVariable(const char *name, int n, char *spipins);             ///// Added by JG
-int PinsForI2cVariable(const char *name, int n, char *i2cpins);             ///// Added by JG
-int SingleBitAssigned(const char *name);
-int GetAssignedType(const char *name, const char *fullName);
+int PinsForSpiVariable(const NameArray& name, int n, char *spipins);             ///// Added by JG
+int PinsForI2cVariable(const NameArray& name, int n, char *i2cpins);             ///// Added by JG
+int SingleBitAssigned(const NameArray& name);
+int GetAssignedType(const NameArray& name, const NameArray& fullName);
 int InputRegIndex(DWORD addr);
 int OutputRegIndex(DWORD addr);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput);
-void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const NameArray& name, bool forRead, DWORD *addr, int *bit);
-void MemForSingleBit(const char *name, DWORD *addr, int *bit);
+void MemForSingleBit(const NameArray& name, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile();
 int SetSizeOfVar(const char *name, int sizeOfVar);
 int SizeOfVar(const char *name);
@@ -995,7 +990,7 @@ typedef struct LabelAddrTag {
     DWORD FwdAddr;   // Address to jump to the start of rung below the current in LD
     DWORD used;
 } LabelAddr;
-LabelAddr *GetLabelAddr(const char *name);
+LabelAddr *GetLabelAddr(const NameArray& name);
 
 // intcode.cpp
 extern int int_comment_level;
