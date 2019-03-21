@@ -3679,9 +3679,9 @@ bool CompileAnsiC(const char *dest, int MNU)
                 {
                     if (PWM_Used[p] == 1)
                     {
-                    // PWM 1 uses Timer 1 registers => use Timer 0
-                    if ((p == 1) && (Prog.cycleTimer == 1))
-                        THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
+                        // PWM 1 uses Timer 1 registers => use Timer 0
+                        if ((p == 1) && (Prog.cycleTimer == 1))
+                            THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
 
                         fprintf(f, "    PWM_Init(0x%2.2X, %ld, %ld, %d);\n", p, Prog.mcuClock, PWM_Freq[p], PWM_Resol[p]);
                         usedpwm++;
