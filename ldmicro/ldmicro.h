@@ -601,7 +601,7 @@ extern bool DialogCancel;
     char __message[1024];\
     sprintf(__message, (FMT),  __VA_ARGS__); \
     dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, __message); \
-    THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.", message, rungNow); \
+    THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.", __message, rungNow); \
 } while(0)
 #define oops() do { \
     dbp("rungNow=%d\n", rungNow); \
