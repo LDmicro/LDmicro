@@ -596,18 +596,18 @@ extern bool DialogCancel;
 #define OOPS_AS_THROW
 
 #ifdef OOPS_AS_THROW
-#define ooops(FMT, ...) { \
+#define ooops(FMT, ...) do { \
     dbp("rungNow=%d\n", rungNow); \
     char message[1024];\
     sprintf(message, (FMT),  __VA_ARGS__); \
     dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, message); \
     THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.", message, rungNow); \
-}
-#define oops() { \
+} while(0)
+#define oops() do { \
     dbp("rungNow=%d\n", rungNow); \
     dbp("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
     THROW_COMPILER_EXCEPTION_FMT("Internal error at rung #%d.", rungNow); \
-}
+} while(0)
 #else
     #define ooops(...) { \
         dbp("rungNow=%d\n", rungNow); \
