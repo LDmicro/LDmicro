@@ -937,7 +937,7 @@ typedef struct PicAvrInstructionTag {
     char        f[MAX_PATH]; // source file name
 } PicAvrInstruction;
 
-// compilecommon.cpp
+// compilercommon.cpp
 int UsedRAM();
 int UsedROM();
 extern DWORD RamSection;

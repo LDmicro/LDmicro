@@ -119,7 +119,7 @@ static void AppendIo(const char *name, int type)
             if((Prog.io.assignment[i].type == IO_TYPE_COUNTER) && (type == IO_TYPE_GENERAL)) {
                 return;
             } else if((Prog.io.assignment[i].type == IO_TYPE_GENERAL) && (type == IO_TYPE_COUNTER)) {
-                Prog.io.assignment[i].type = type; // replace // see compilecommon.cpp
+                Prog.io.assignment[i].type = type; // replace // see compilercommon.cpp
             }
         }
         if((strcmp(Prog.io.assignment[i].name, name) == 0) && (Prog.io.assignment[i].type == type))
