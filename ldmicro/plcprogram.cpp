@@ -94,7 +94,7 @@ void PlcProgram::setMcu(McuIoInfo* m)
 
 int PlcProgram::mcuPWM() const
 {
-    if(mcu_)
+    if(!mcu_)
         return 0;
 
     int n = 0;
@@ -132,7 +132,7 @@ int PlcProgram::mcuROM() const
 {
     return 1000000; //TODO: fix ROM hardcode
 
-    if(mcu_)
+    if(!mcu_)
         return 0;
 
     int n = 0;
@@ -177,7 +177,7 @@ void PlcProgram::reset()
     cycleTimer = 1;
     cycleDuty = 0;
     setMcu(nullptr);
-	LDversion.clear();
+    LDversion.clear();
 }
 
 void PlcProgram::appendEmptyRung()
