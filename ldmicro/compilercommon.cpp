@@ -231,22 +231,24 @@ DWORD AllocOctetRam()
 //-----------------------------------------------------------------------------
 int InputRegIndex(DWORD addr)
 {
-    if(addr == 0)
+    if((addr == std::numeric_limits<DWORD>::max()) || (addr == 0))
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->inputRegs[i] == addr)
             return i;
+    oops();
     return -1;
 }
 
 //-----------------------------------------------------------------------------
 int OutputRegIndex(DWORD addr)
 {
-    if(addr == 0)
+    if((addr == std::numeric_limits<DWORD>::max()) || (addr == 0))
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->outputRegs[i] == addr)
             return i;
+    oops();
     return -1;
 }
 
