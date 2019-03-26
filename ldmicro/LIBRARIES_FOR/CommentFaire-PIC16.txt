@@ -17,6 +17,7 @@ _____________________________________________________________________________
 	de microchip
 
 2)	Copier l'exécutable LdMicro et flashMCU.bat dans un même dossier.
+	Copier au même endroit le dossier LIBRARIES_FOR et son contenu.
 
 3)	Editer FlashMCU.bat (Clic droit + Modifier) et dans la section HTC,
 	modifier PCCPATH pour pointer sur le répertoire d'installation Hi-Tech C
@@ -27,8 +28,7 @@ _____________________________________________________________________________
 	Sinon, il est toujours possible de flasher la cible manuellement
 	à partir du fichier hex généré par LdMicro
 
-4)	Créer un ladder avec LdMicro dans un dossier, et copier les libraries C
-	pour PIC16 dans un sous-dossier de celui-ci nommé "lib"
+4)	Créer un ladder avec LdMicro dans un dossier.
 
 5)	Compiler le ladder avec "Compiler en HI-TECH C pour PIC" et générer 
 	le fichier C proposé dans le même dossier que le ladder (.ld) 

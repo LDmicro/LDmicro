@@ -17,6 +17,7 @@ _____________________________________________________________________________
 	arm-gcc pour windows 
 
 2)	Copier l'exécutable LdMicro et flashMCU.bat dans un même dossier.
+	Copier au même endroit le dossier LIBRARIES_FOR et son contenu.
 
 3)	Editer FlashMCU.bat (Clic droit + Modifier) et dans la section ARMGCC,
 	modifier GCCPATH pour pointer sur le répertoire d'installation d'arm-gcc
@@ -26,8 +27,7 @@ _____________________________________________________________________________
 	Sinon, il est toujours possible de flasher la cible manuellement
 	à partir du fichier hex généré par LdMicro
 
-4)	Créer un ladder avec LdMicro dans un dossier, et copier les libraries C
-	pour ARMs dans un sous-dossier de celui-ci nommé "lib"
+4)	Créer un ladder avec LdMicro dans un dossier.
 
 5)	Compiler le ladder avec "Compiler en ARM-GCC" (nouveau menu)
 	et générer le fichier C proposé dans le même dossier que le ladder (.ld) 

@@ -16,7 +16,8 @@ ______________________________________________________________________
 1)	Install AvrStudio 5, 6 or 7 (7 not tested) from Atmel site
 	or install directly an avr-gcc for windows
 
-2)	Copy LdMicro executable and flashMCU.bat in a same directory
+2)	Copy LdMicro executable and flashMCU.bat in a same directory.
+	Also copy LIBRARIES_FOR directory and its content at the same place.
 
 3)	Edit FlashMCU.bat (right click + Modify) and in section AVRGCC,
 	modify GCCPATH to point to your avr-gcc path instead of mine
@@ -28,8 +29,7 @@ ______________________________________________________________________
 	It'll be possible anyway to generate hex file with script and
 	flash the target with it manually next.
 
-4)	Create a ladder with LdMicro in a directory, and copy C libraries
-	for AVRs in a subdirectory called "lib"
+4)	Create a ladder with LdMicro in a directory.
 
 5)	Compile the ladder with "Compile ATMEL AVR-GCC" (not the same now
 	as Win-AVR) and generate the C file in the same directory as the

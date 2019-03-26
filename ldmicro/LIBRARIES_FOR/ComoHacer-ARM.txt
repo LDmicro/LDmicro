@@ -5,7 +5,8 @@ ______________________________________________________________________
 1) Instale EmIde for ARMs o instale directamente un arm-gcc para Windows 
 (no probado).
 
-2) Copie el ejecutable LdMicro y flashMCU.bat en un mismo directorio.
+2) Copie el ejecutable LdMicro y flashMCU.bat en un mismo directorio,
+y copie las bibliotecas de C LIBRARIES_FOR en el mismo dirctorio.
 
 3) Edite FlashMCU.bat (haga clic con el botón derecho + Modificar) y en la sección ARM,
 modifique GCCPATH para que apunte a su ruta arm-none-eabi-g++.exe en lugar de la mía
@@ -16,8 +17,7 @@ debe configurar las líneas de comandos y remplazar jlink.exe con otro.
 De todos modos, será posible generar un archivo hex con script y
 flashear el objetivo con él manualmente a continuación.
 
-4) Cree una escalera con LdMicro en un directorio y copie las bibliotecas de C
-por ARM en un subdirectorio llamado "lib"
+4) Cree una escalera con LdMicro en un directorio.
 
 5) Compile la escalera con "Compile ARM-GCC for 32 bit ARM" (nuevo)
 y genere el archivo C en el mismo directorio que el Archivo fuente (.ld), 

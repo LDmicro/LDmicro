@@ -15,7 +15,8 @@ ______________________________________________________________________
 
 1)	Install Hi-Tech C alias PicC compiler for PIC16
 	
-2)	Copy LdMicro executable and flashMCU.bat in a same directory
+2)	Copy LdMicro executable and flashMCU.bat in a same directory.
+	Also copy LIBRARIES_FOR directory and its content at the same place.
 
 3)	Edit FlashMCU.bat (right click + Modify) and in section HTC,
 	modify PCCPATH to point to your picc path instead of mine
@@ -26,8 +27,7 @@ ______________________________________________________________________
 	It'll be possible anyway to generate hex file with script and
 	flash the target with it manually next
 
-4)	Create a ladder with LdMicro in a directory, and copy C libraries
-	for PIC16 in a subdirectory called "lib"
+4)	Create a ladder with LdMicro in a directory.
 
 5)	Compile the ladder with "Compile HI-TECH C for PIC" and generate 
 	the C file in the same directory as the source (.ld) file, 
