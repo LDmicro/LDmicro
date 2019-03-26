@@ -20,7 +20,8 @@ if "%1" == "PIC16" goto PIC
 if "%3" == "AVRGCC" goto AVRGCC
 if "%1" == "AVR" goto AVR
 
-if "%1" == "ARM" goto ARM
+if "%3" == "ARMGCC" goto ARMGCC
+if "%1" == "ARM" goto ARMGCC
 
 if "%1" == "" goto pauses
 
@@ -145,10 +146,13 @@ goto exit
 @ECHO ON
 REM Compilation with avr-gcc
 
+SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
 @rem SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
-     SET GCC_PATH=D:\WinAVR
-@rem SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
-     SET AVRDUDE_PATH=D:\AVRDUDE
+@rem SET GCC_PATH=D:\WinAVR
+
+SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
+@rem SET AVRDUDE_PATH=D:\AVRDUDE
+
 SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\AVR
 SET COMPORT=COM3
 
@@ -162,10 +166,13 @@ rmdir AVRGCC\obj /s /q
 rmdir AVRGCC\bin /s /q
 mkdir AVRGCC\obj
 mkdir AVRGCC\bin
+mkdir AVRGCC\lib
 
-for %%F in (%LIB_PATH%\*.c) do avr-gcc.exe -I%~dp2 -I%LIB_PATH%\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.o %%F -o AVRGCC\obj\%%~nF.o
+if not exist AVRGCC\lib\UsrLib.c copy %LIB_PATH%\*.* AVRGCC\lib
 
-avr-gcc.exe -I%LIB_PATH% -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%~nx2.d -MT AVRGCC\obj\%~nx2.d -MT AVRGCC\obj\%~nx2.o %~f2.c -o AVRGCC\obj\%~nx2.o
+for %%F in (AVRGCC\lib\*.c) do avr-gcc.exe -I%~dp2 -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -Wall -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.d -MT AVRGCC\obj\%%~nF.o %%F -o AVRGCC\obj\%%~nF.o
+
+avr-gcc.exe -IAVRGCC\lib\ -funsigned-char -funsigned-bitfields -O1 -fpack-struct -fshort-enums -g2 -c -std=gnu99 -MD -MP -mmcu=%4 -MF AVRGCC\obj\%~nx2.d -MT AVRGCC\obj\%~nx2.d -MT AVRGCC\obj\%~nx2.o %~f2.c -o AVRGCC\obj\%~nx2.o
 
 REM Linkage of objects
 avr-gcc.exe -o AVRGCC\bin\%~nx2.elf AVRGCC\obj\*.o -Wl,-Map=AVRGCC\obj\%~nx2.map -Wl,--start-group -Wl,-lm -Wl,--end-group -mmcu=%4
@@ -270,6 +277,9 @@ goto exit
 REM Compilation with HiTech-c (Picc)
 
 SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
+
+SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\PIC16
+
 path %path%;%PCC_PATH%\bin
 
 %~d2
@@ -280,13 +290,16 @@ rmdir HTC\obj /s /q
 rmdir HTC\bin /s /q
 mkdir HTC\obj
 mkdir HTC\bin
+mkdir HTC\lib
 
-for %%F in (*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
+if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
 
-picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default --opt=default  -g --asmlist --OBJDIR=HTC\obj
+for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
+
+picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 
 REM Linkage of objects
-picc.exe -obin\%~nx2.cof -mbin\%~nx2.map --summary=default --output=default HTC\obj\*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
+picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=default HTC\obj\*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
 
 REM Convert Elf to Hex
 
@@ -297,13 +310,14 @@ goto exit
 
 
 @rem =======================================================================
-:ARM
+:ARMGCC
 ::**************************************************************************
 @ECHO ON
 REM Compilation with arm-gcc
 
 SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
+
 SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM
 
 path %path%;%GCC_PATH%\bin;%JLN_PATH%
@@ -312,36 +326,39 @@ path %path%;%GCC_PATH%\bin;%JLN_PATH%
 chdir %~p2
 
 REM Compilation of sources
-rmdir ARM\obj /s /q
-rmdir ARM\bin /s /q
-mkdir ARM\obj
-mkdir ARM\bin
+rmdir ARMGCC\obj /s /q
+rmdir ARMGCC\bin /s /q
+mkdir ARMGCC\obj
+mkdir ARMGCC\bin
+mkdir ARMGCC\lib
 
-arm-none-eabi-g++.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c lib\CortexM4.S -o ARM\obj\cortexM4.o
+if not exist ARMGCC\lib\Lib_usr.c copy %LIB_PATH%\*.* ARMGCC\lib
 
-::CD lib
-for %%F in (%LIB_PATH%\*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ARM\obj\%%F.o
-::CD ..
+arm-none-eabi-g++.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM4.S -o ARMGCC\obj\cortexM4.o
 
-arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %~n2.c -o ARM\obj\%~n2.o
+CD ARMGCC\lib
+for %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
+CD ..\..
+
+arm-none-eabi-gcc.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.o
 
 REM Linkage of objects
-arm-none-eabi-gcc.exe -o ARM\bin\%~nx2.elf ARM\obj\*.o -Wl,-Map -Wl,ARM\bin\%~nx2.elf.map -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m4 -mthumb -Tlib\CortexM4.ln
+arm-none-eabi-gcc.exe -o ARMGCC\bin\%~nx2.elf ARMGCC\obj\*.o -Wl,-Map -Wl,ARMGCC\bin\%~nx2.elf.map -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m4 -mthumb -TARMGCC\lib\CortexM4.ln
 
 REM Convert Elf to Hex
-arm-none-eabi-objcopy -O ihex ARM\bin\%~nx2.elf ARM\bin\%~nx2.hex
+arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
 
 REM Creation of the J-Link script
 
-@ECHO r > ARM\bin\cmdfile.jlink
-@ECHO loadfile ARM\bin\%~nx2.hex >> ARM\bin\cmdfile.jlink
-@ECHO go >> ARM\bin\cmdfile.jlink
-@ECHO exit >> ARM\bin\cmdfile.jlink
+@ECHO r > ARMGCC\bin\cmdfile.jlink
+@ECHO loadfile ARMGCC\bin\%~nx2.hex >> ARMGCC\bin\cmdfile.jlink
+@ECHO go >> ARMGCC\bin\cmdfile.jlink
+@ECHO exit >> ARMGCC\bin\cmdfile.jlink
 
 REM Transfer of the program with J-Link Commander
-JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARM\bin\cmdfile.jlink
+JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\cmdfile.jlink
 
-JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARM\bin\cmdfile.jlink
+JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\cmdfile.jlink
 PAUSE
 goto exit
 
