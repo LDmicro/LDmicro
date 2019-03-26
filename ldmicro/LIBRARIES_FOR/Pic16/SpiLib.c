@@ -1,6 +1,6 @@
 #include <htc.h>
 
-#include "../ladder.h"
+#include "../../ladder.h"
 #include "SpiLib.h"
 
 

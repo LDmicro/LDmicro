@@ -1,6 +1,6 @@
 #include <htc.h>
 
-#include "../ladder.h"
+#include "../../ladder.h"
 #include "PwmLib.h"
 
 int PWM_Prediv(long fmcu, long fpwm)
