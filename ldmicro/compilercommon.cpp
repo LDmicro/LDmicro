@@ -850,7 +850,7 @@ int AllocOfVar(const NameArray &name)
 //-----------------------------------------------------------------------------
 void SaveVarListToFile(FileTracker& f)
 {
-    std::sort(std::begin(Variables), std::end(Variables),
+    std::sort(std::begin(Variables), std::begin(Variables) + VariableCount,
               [](const VariablesList& a, const VariablesList& b) {return (strcmp(a.name, b.name) < 0);});
 
     for(int i = 0; i < VariableCount; i++) {
