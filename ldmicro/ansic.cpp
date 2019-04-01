@@ -34,7 +34,7 @@ namespace {
 } // namespace
 
 static int mcu_ISA = -1;
-int compiler_variant = -1;              ///// no more static by JG
+static int compiler_variant = -1;
 
 ///// Added by JG
 static int  TIMER_Used = 0;             ///// for Cycle timer variable
@@ -103,7 +103,7 @@ static const char *MapSym(const char *str, int how)
     } else if(how == ASSTR) {
         bit_int = 's';
     } else {
-        THROW_COMPILER_EXCEPTION(_("Can't assign prefix."), ret);       ///// _() by JG
+        THROW_COMPILER_EXCEPTION(_("Can't assign prefix."));       ///// _() by JG
     }
 
     // User and internal symbols are distinguished.
@@ -961,12 +961,6 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                 bitVar1 = IntCode[i].name1.c_str();
                 break;
 
-            case INT_UART_RECV:
-            case INT_UART_SEND:
-                intVar1 = IntCode[i].name1.c_str();
-                bitVar1 = IntCode[i].name2.c_str();
-                break;
-
             case INT_SPI_WRITE:                             ///// Added by JG
                 intVar1 = IntCode[i].name1.c_str();         // create var name1= spi name
                 //  intVar2 = IntCode[i].name2.c_str();     // don't create var name2= spi send var
@@ -998,9 +992,19 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
                     intVar4 = IntCode[i].name4.c_str();     // create var name4= i2c register if not a number
                 break;
 
+            case INT_UART_RECV:
+            case INT_UART_SEND:
+                intVar1 = IntCode[i].name1.c_str();
+                bitVar1 = IntCode[i].name2.c_str();
+                break;
+
+            case INT_UART_RECV1:
+            case INT_UART_RECVn:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
                 intVar1 = IntCode[i].name1.c_str();
+                if(IntCode[i].name2.length())
+                    intVar2 = IntCode[i].name2.c_str();
                 break;
 
             case INT_UART_RECV_AVAIL:
@@ -1157,11 +1161,14 @@ static void _Comment(FILE *f, const char *str, ...)
 static int  indent = 1;
 static void doIndent(FILE *f, int i)
 {
-    if((IntCode[i].op != INT_SIMULATE_NODE_STATE) && //
-       (IntCode[i].op != INT_AllocKnownAddr) &&      //
-       (IntCode[i].op != INT_AllocFwdAddr))
+    if((IntCode[i].op != INT_SIMULATE_NODE_STATE)  //
+//    && (IntCode[i].op != INT_AllocKnownAddr)      //
+      && (IntCode[i].op != INT_FwdAddrIsNow)      //
+//    && (IntCode[i].op != INT_AllocFwdAddr)     //
+    ) {
         for(int j = 0; j < indent; j++)
             fprintf(f, "    ");
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1621,26 +1628,36 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         MapSym(IntCode[i].name2, ASBIT));
                 break;
 
+            case INT_UART_RECV1:
+                if(IntCode[i].name2.length())
+                    fprintf(f, "BYTE_AT(%s, %s+%d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
+                else
+                    fprintf(f, "BYTE_AT(%s, %d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                break;
+
             case INT_UART_SEND1:
             case INT_UART_SENDn:
+                if(IntCode[i].name2.length())
+                    fprintf(f, "UART_Transmit(BYTE_AT(%s, %s+%d));\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
+                else
+                    fprintf(f, "UART_Transmit(BYTE_AT(%s, %d));\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                break;
+
             case INT_UART_SEND:
                 fprintf(
-                    f, "UART_Transmit(%s);\n", MapSym(IntCode[i].name1, ASINT) /*, MapSym(IntCode[i].name2, ASBIT)*/);
+                    f, "UART_Transmit(%s);\n", MapSym(IntCode[i].name1, ASINT));
                 break;
 
             case INT_UART_RECV_AVAIL:
                 fprintf(f, "%s = UART_Receive_Avail();\n", MapSym(IntCode[i].name1, ASBIT));
-                indent++;
                 break;
 
             case INT_UART_SEND_READY:
                 fprintf(f, "%s = UART_Transmit_Ready();\n", MapSym(IntCode[i].name1, ASBIT));
-                indent++;
                 break;
 
             case INT_UART_SEND_BUSY:
                 fprintf(f, "%s = UART_Transmit_Busy();\n", MapSym(IntCode[i].name1, ASBIT));
-                indent++;
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
@@ -1930,7 +1947,9 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case INT_AllocFwdAddr:
                 //fprintf(f, "#warning INT_%d\n", IntCode[i].op);
                 break;
+
             case INT_AllocKnownAddr:
+                fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 /*
                 if(IntCode[i].name1)
                     fprintf(f, "//KnownAddr Rung%d %s %s\n", IntCode[i].literal+1, IntCode[i].name2, IntCode[i].name1);
@@ -1945,7 +1964,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 break;
             case INT_FwdAddrIsNow:
-                fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
+                //fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 break;
             case INT_GOTO:
                 fprintf(f, "goto Label%s;\n", IntCode[i].name1.c_str());
@@ -2207,8 +2226,8 @@ bool CompileAnsiC(const char *dest, int MNU)
             "\n");
 
     ///// Added by JG
-    char mcualias[MAX_PATH];    ///// Added by JG
-    strcpy(mcualias, Prog.mcu() ? Prog.mcu()->mcuList : "undefined_mcu");
+    char deviceName[MAX_PATH];    ///// Added by JG
+    strcpy(deviceName, Prog.mcu() ? Prog.mcu()->deviceName : "undefined_mcu");
     if (Prog.mcu())
         fprintf(flh,
             "#define LDTARGET_%s\n\n"
@@ -2216,7 +2235,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             "  #define F_CPU %luUL\n"
             "#endif\n\n"
             "#define _XTAL_FREQ %luUL\n\n",
-            _strlwr(mcualias), Prog.mcuClock, Prog.mcuClock);
+            _strlwr(deviceName), Prog.mcuClock, Prog.mcuClock);
 
         fprintf(flh,
                 "#define CFG_WORD 0x%X\n\n",
@@ -2304,6 +2323,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#endif\n");
     }
     fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
+    fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
+    fprintf(flh, "#define BYTE_AT(var, index) ( ( (unsigned char *)(&var) )[index] )\n");
 
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_HI_TECH_C)
@@ -2332,7 +2353,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(SpiFunctionUsed())
         {
             if(I2cFunctionUsed())
-                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"), false);
+                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"));
 
             fprintf(flh,
                 "#include \"SpiLib.h\"\n"
@@ -2341,7 +2362,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         if(I2cFunctionUsed())
         {
             if(SpiFunctionUsed())
-                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"), false);
+                THROW_COMPILER_EXCEPTION(_("SPI & I2C can't be used together on PICs"));
 
             fprintf(flh,
                 "#include \"I2cLib.h\"\n"
@@ -2683,7 +2704,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         ///// Added by JG
         if(compiler_variant == MNU_COMPILE_ARMGCC)
         {
-            THROW_COMPILER_EXCEPTION(_("EEPROM not supported by this target"), false);
+            THROW_COMPILER_EXCEPTION(_("EEPROM not supported by this target"));
         }
         else if(compiler_variant == MNU_COMPILE_AVRGCC)
             fprintf(fh,
@@ -3604,7 +3625,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         usedadc++;
                 }
                 if (usedadc == 0)
-                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"), false);               // error in ADC pin layout
+                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"));               // error in ADC pin layout
 
                 // Max resolution 10 bits used, prediv= 2^1
                 fprintf(f, "\n    ADC_Init();\n");
@@ -3624,7 +3645,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                     }
                 }
                 if (usedadc == 0)               {
-                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"), false);               // error in ADC pin layout
+                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"));               // error in ADC pin layout
                 }
             }
             else if(compiler_variant == MNU_COMPILE_AVRGCC)
@@ -3637,7 +3658,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         usedadc++;
                 }
                 if (usedadc == 0)
-                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"), false);               // error in ADC pin layout
+                    THROW_COMPILER_EXCEPTION(_("ADC Internal error"));               // error in ADC pin layout
 
                 // Max resolution 10 bits used, prediv= 2^1
                 fprintf(f, "\n    ADC_Init(1, 10);\n");
@@ -3658,9 +3679,9 @@ bool CompileAnsiC(const char *dest, int MNU)
                 {
                     if (PWM_Used[p] == 1)
                     {
-                    // PWM 1 uses Timer 1 registers => use Timer 0
-                    if ((p == 1) && (Prog.cycleTimer == 1))
-                        THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"), false);
+                        // PWM 1 uses Timer 1 registers => use Timer 0
+                        if ((p == 1) && (Prog.cycleTimer == 1))
+                            THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
 
                         fprintf(f, "    PWM_Init(0x%2.2X, %ld, %ld, %d);\n", p, Prog.mcuClock, PWM_Freq[p], PWM_Resol[p]);
                         usedpwm++;
@@ -3668,7 +3689,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 }
                 if (usedpwm == 0)
                 {
-                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"), false);               // error in PWM config
+                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"));               // error in PWM config
                 }
 
             }
@@ -3688,7 +3709,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 }
                 if (usedpwm == 0)
                 {
-                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"), false);               // error in PWM config
+                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"));               // error in PWM config
                 }
             }
             else if(compiler_variant == MNU_COMPILE_AVRGCC)
@@ -3706,7 +3727,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 }
                 if (usedpwm == 0)
                 {
-                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"), false);               // error in PWM config
+                    THROW_COMPILER_EXCEPTION(_("PWM Internal error"));               // error in PWM config
                 }
             }
             else

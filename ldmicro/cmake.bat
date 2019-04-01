@@ -19,6 +19,7 @@
 @SET PROGECT=D:\LDs\SVARKA2\svarka.ld
 
 @SET PROGECT=d:\lds\tmp\TMP.ld
+@SET PROGECT=D:\LDs\uart\UART_M_ATmega2560_5.ld
 
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"

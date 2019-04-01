@@ -574,7 +574,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             }
         }
     } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu()) {
-        if(!McuPWM()) {
+        if(!Prog.mcuPWM()) {
             strcpy(dest, _("<no PWM!>"));
         } else {
             if(pin == 0) {

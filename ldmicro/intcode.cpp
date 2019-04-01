@@ -89,7 +89,6 @@ static DWORD GenSymCountFormattedString;
 static DWORD GenSymCountStepper;
 
 DWORD EepromAddrFree;
-DWORD RomSection;
 
 namespace {
     std::unordered_set<std::string> persistVariables;
@@ -3644,7 +3643,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_DECREMENT_VARIABLE, store);
                //value = X[value[addr1] + sov - 1 - store[addr3]]
-                Op(INT_UART_SEND1, value, stateInOut, store);
+                Op(INT_UART_SEND1, value, store);
               Op(INT_END_IF);
             Op(INT_END_IF);
 
@@ -3684,7 +3683,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_END_IF);
               }
             } else {
-                if(l->d.uart.wait) {
+                if(l->d.uart.wait) { // all bytes in one PLC cycle
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_UART_SEND1, l->d.uart.name);
 
@@ -3702,28 +3701,30 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     }
                   Op(INT_END_IF);
                   Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
-                } else { // don't wait
+                } else { // don't wait, one byte per one cycle
                   char storeName[MAX_NAME_LEN];
                   GenSymOneShot(storeName, "UART_SEND", l->d.uart.name);
 
                   Op(INT_IF_BIT_SET, stateInOut);
                     Op(INT_IF_BIT_CLEAR, storeName);
                       Op(INT_SET_BIT, storeName);
+
+                      char saved[MAX_NAME_LEN];
+                      GenVar(saved, "saved_UART_SEND", l->d.uart.name);
+                      SetSizeOfVar(saved, l->d.uart.bytes);
+                      Op(INT_SET_VARIABLE_TO_VARIABLE, saved, l->d.uart.name);
+
+                      char bytes[MAX_NAME_LEN];
+                      sprintf(bytes, "%d", l->d.uart.bytes);
+
+                      char numb[MAX_NAME_LEN];
+                      GenVar(numb, "numb_UART_SEND", l->d.uart.name);
+                      Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
+
                     Op(INT_END_IF);
                   Op(INT_END_IF);
 
                   Op(INT_IF_BIT_SET, storeName);
-                    char saved[MAX_NAME_LEN];
-                    GenVar(saved, "saved_UART_SEND", l->d.uart.name);
-                    SetSizeOfVar(saved, l->d.uart.bytes);
-                    Op(INT_SET_VARIABLE_TO_VARIABLE, saved, l->d.uart.name);
-
-                    char bytes[MAX_NAME_LEN];
-                    sprintf(bytes, "%d", l->d.uart.bytes);
-
-                    char numb[MAX_NAME_LEN];
-                    GenVar(numb, "numb_UART_SEND", l->d.uart.name);
-
                     Op(INT_IF_LES, numb,  l->d.uart.bytes);
                       Op(INT_UART_SEND_BUSY, stateInOut); // stateInOut returns BUSY flag
                       Op(INT_IF_BIT_CLEAR, stateInOut);
@@ -3733,7 +3734,6 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Op(INT_END_IF);
 
                     Op(INT_IF_GEQ, numb, bytes);
-                      Op(INT_SET_VARIABLE_TO_LITERAL, numb, 0);
                       Op(INT_CLEAR_BIT, storeName);
                     Op(INT_END_IF);
                   Op(INT_END_IF);

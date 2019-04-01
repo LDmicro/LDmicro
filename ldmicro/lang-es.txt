@@ -202,10 +202,10 @@
 "Insert TIME to DELAY converter"
 "Insertar convertir TIME a DELAY"
 
-"Contacts"
-"Contacto"
+"Contacts and Coils / Relays"
+"Contacts y Bobinas / Relés "
 
-"Insert Contacts: Input Pin\tC"
+"Insert &Contacts: Input Pin\tC"
 "Insertar Contacts: Pin Entrada\tC"
 
 "Insert Contacts: Internal Relay\tShift+C"
@@ -214,10 +214,7 @@
 "Insert Contacts: Output Pin\tShift+L"
 "Insertar Contactos: Pin Salida\tShift+L"
 
-"Coils / Relays"
-"Bobinas / Relés"
-
-"Insert Coil: Output Pin\tL"
+"Insert Coi&l: Output Pin\tL"
 "Insertar Bobina: Pin Salida\tL"
 
 "Insert Coil: Internal Relay\tAlt+L"
@@ -256,17 +253,29 @@
 "Pulse generators"
 "Generador pulsos"
 
-"EDIT: Insert N PULSE"
-"EDIT: Inserta N PULSE"
-
 "EDIT: Insert PULSER"
 "EDIT: Inserta PULSER"
 
 "EDIT: Insert STEPPER"
 "EDIT: Inserta STEPPER"
 
+"Insert PULSER"
+"Inserta PULSER"
+
+"Insert STEPPER"
+"Inserta STEPPER"
+
+"EDIT: Insert N PULSE"
+"EDIT: Inserta N PULSE"
+
 "EDIT: Insert N PULSE OFF"
 "EDIT: Inserta N PULSE OFF"
+
+"Insert N PULSE"
+"Inserta N PULSE"
+
+"Insert N PULSE OFF"
+"Inserta N PULSE OFF"
 
 "Temporization"
 "Retraso"
@@ -424,20 +433,23 @@
 "Insert Piecewise Linear"
 "Insertar Tabla de Interpolacion"
 
+"Formatted string"
+"String formateado"
+
+"Insert Formatted String"
+"Insertar String Formateado"
+
 "UART functions"
 "UART funciones"
 
 "Insert Formatted String Over &UART"
 "Insertar String Formateado Final &UART"
 
-"Insert UART SEND"
+"Insert &UART SEND"
 "Insertar UART Emision"
 
-"Insert UART RECEIVE"
+"Insert &UART RECEIVE"
 "Insertar UART Reception"
-
-"Insert UART SENDn Variable"
-"Insertar UART SENDn Variable"
 
 "Insert Test if UART ready to send"
 "Insertar Prueba de UART listo para enviar"
@@ -445,10 +457,19 @@
 "Insert Test if UART data available"
 "Insertar Prueba de UART listo para recibir"
 
+"Insert &UART SENDn Variable"
+"Insertar UART SENDn Variable"
+
+"Insert &UART SEND: Is ready to send ?"
+"Insertar Prueba de UART listo para enviar"
+
+"Insert &UART RECEIVE: Is data available ?"
+"Insertar Prueba de UART listo para recibir"
+
 "Insert Set &PWM Output\tP"
 "Insertar Salida PWM Activada\tP"
 
-"Insert A/D Converter Read"
+"Insert &A/D Converter Read\tA"
 "Insertar A/D Conversor Lectura"
 
 "Insert Make Persistent"
@@ -464,6 +485,9 @@
 "Insertar BIN2BCD Conversor"
 
 "Insert BCD2BIN converter"
+"Insertar BCD2BIN Conversor"
+
+"SIMUL: Insert BCD2BIN"
 "Insertar BCD2BIN Conversor"
 
 "SIMUL: Insert BUS tracer"
@@ -991,7 +1015,7 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "No se ha seleccionado micro. Debes seleccionar un micro antes de asignar patas E/S.\r\n\r\nElije un micro en el menu de configuración y prueba otra vez."
 
-"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
 "No se han usado instrucciones (UART Enviar/UART Recibir) para el puerto serie aun; Añada una al programa antes de configurar los baudios.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
@@ -2089,7 +2113,7 @@
 "Cyclic On/Off"
 "Cíclica de encendido/apagado"
 
-"Hight Level Delay"
+"High Level Delay"
 "Retraso de Alto Nivel"
 
 "Low Level Delay"
@@ -2571,3 +2595,4 @@
 
 "Compile failure."
 "Fallo de compilación."
+

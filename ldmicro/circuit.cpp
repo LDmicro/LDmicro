@@ -38,7 +38,8 @@ void *CheckMalloc(size_t n)
 }
 void CheckFree(void *p)
 {
-    free(p);
+    if(p)
+        free(p);
     p = nullptr;
 }
 
@@ -684,11 +685,11 @@ void AddReadAdc()
         return;
 
     if(Prog.mcu()) {
-        if(!McuADC()) {
+        if(!Prog.mcuADC()) {
             Error(_("No ADC or ADC not supported for selected micro."));
             // return;
         }
-        if(AdcFunctionUsed() >= McuADC()) {
+        if(AdcFunctionUsed() >= Prog.mcuADC()) {
             Error(_("No available ADC inputs."));
             // return;
         }
@@ -704,11 +705,11 @@ void AddSetPwm()
         return;
 
     if(Prog.mcu()) {
-        if(!McuPWM()) {
+        if(!Prog.mcuPWM()) {
             Error(_("No PWM or PWM not supported for this MCU."));
             // return;
         }
-        if(PwmFunctionUsed() >= McuPWM()) {
+        if(PwmFunctionUsed() >= Prog.mcuPWM()) {
             Error(_("No available PWM outputs."));
             // return;
         }
@@ -726,7 +727,7 @@ void AddUart(int which)
         return;
 
     if(Prog.mcu()) {
-        if(!McuUART()) {
+        if(!Prog.mcuUART()) {
             Error(_("No UART or UART not supported for this MCU."));
             // return;
         }
@@ -736,8 +737,8 @@ void AddUart(int which)
         strcpy(t->d.uart.name, "char");
     else
         strcpy(t->d.uart.name, "var");
-    t->d.uart.bytes = 1;
-    t->d.uart.wait = false;
+    t->d.uart.bytes = 1;    // Release 2.3 compatible
+    t->d.uart.wait = false; // Release 2.3 compatible
     AddLeaf(which, t);
 }
 
@@ -747,7 +748,7 @@ void AddSpi(int which)
         return;
 
     if(Prog.mcu()) {
-        if(!McuSPI()) {
+        if(!Prog.mcuSPI()) {
             Error(_("No SPI or SPI not supported for this MCU."));
             // return;
         }
@@ -774,7 +775,7 @@ void AddI2c(int which)
         return;
 
     if(Prog.mcu()) {
-        if(!McuI2C()) {
+        if(!Prog.mcuI2C()) {
             Error(_("No I2C or I2C not supported for this MCU."));
             // return;
         }
@@ -800,7 +801,7 @@ void AddPersist()
         return;
 
     if(Prog.mcu()) {
-        if(!McuROM()) {
+        if(!Prog.mcuROM()) {
             Error(_("No ROM or ROM not supported for this MCU."));
             // return;
         }
@@ -1434,9 +1435,8 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int                 i;
-            for(i = 0; i < p->count; i++) {
-                if(l = ContainsWhich(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3)) {
+            for(int i = 0; i < p->count; i++) {
+                if((l = ContainsWhich(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3))) {
                     return l;
                 }
             }
@@ -1444,9 +1444,8 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
         }
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int               i;
-            for(i = 0; i < s->count; i++) {
-                if(l = ContainsWhich(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3)) {
+            for(int i = 0; i < s->count; i++) {
+                if((l = ContainsWhich(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3))) {
                     return l;
                 }
             }
@@ -1650,7 +1649,7 @@ int PwmFunctionUsed()
     }
     return n;
 }
-/**/
+*/
 int PwmFunctionUsed()
 {
     return CountWhich(ELEM_SET_PWM);
@@ -1715,16 +1714,15 @@ bool SleepFunctionUsed()
 // copy the selected rung temporar, InsertRung and
 // save in the new rung temp
 //-----------------------------------------------------------------------------
-const char *CLP = "ldmicro.tmp";
+const char * const CLP = "ldmicro.tmp";
 void CopyRungDown()
 {
     int               i = RungContainingSelected();
     char              line[512];
     ElemSubcktSeries *temp = Prog.rungs[i];
 
-    //FILE *f = fopen(CLP, "w+TD");
-    FILE *f = fopen(CLP, "w+");
-    if(!f) {
+    FileTracker f = FileTracker(CLP, "w+");
+    if(!f.is_open()) {
         Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
@@ -1748,7 +1746,7 @@ void CopyRungDown()
 //-----------------------------------------------------------------------------
 void CutRung()
 {
-    FILE *f = fopen(CLP, "w+");
+    FileTracker f = FileTracker(CLP, "w+");
     if(!f) {
         Error(_("Couldn't open file '%s'"), CLP);
         return;
@@ -1767,7 +1765,7 @@ void CutRung()
             SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
             DeleteRungI(i);
         }
-    fclose(f);
+    f.close();
 
     if(Prog.numRungs == 0) {
         Prog.appendEmptyRung();
@@ -1780,7 +1778,7 @@ void CutRung()
 //-----------------------------------------------------------------------------
 void CopyRung()
 {
-    FILE *f = fopen(CLP, "w+");
+    FileTracker f = FileTracker(CLP, "w+");
     if(!f) {
         Error(_("Couldn't open file '%s'"), CLP);
         return;
@@ -1801,7 +1799,6 @@ void CopyRung()
             SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
             Prog.rungSelected[i] = 'R';
         }
-    fclose(f);
 }
 
 //-----------------------------------------------------------------------------
@@ -1810,7 +1807,7 @@ void CopyElem()
     if(!Selected)
         return;
 
-    FILE *f = fopen(CLP, "w+");
+    FileTracker f = FileTracker(CLP, "w+");
     if(!f) {
         Error(_("Couldn't open file '%s'"), CLP);
         return;
@@ -1836,8 +1833,6 @@ void CopyElem()
             else
                 Prog.rungSelected[i] = 'L';
         }
-
-    fclose(f);
 }
 
 //-----------------------------------------------------------------------------
@@ -1858,7 +1853,7 @@ void PasteRung(int PasteInTo)
 
     ElemSubcktSeries *temp;
 
-    FILE *f = fopen(CLP, "r");
+    FileTracker f = FileTracker(CLP, "r");
     if(!f) {
         Error(_("Couldn't open file '%s'"), CLP);
         Error(_("You must Select rungs, then Copy or Cut, then Paste."));
@@ -1871,7 +1866,7 @@ void PasteRung(int PasteInTo)
         if(!fgets(line, sizeof(line), f))
             break;
         if(strstr(line, "RUNG"))
-            if(temp = LoadSeriesFromFile(f)) {
+            if((temp = LoadSeriesFromFile(f))) {
                 if(SelectedWhich == ELEM_PLACEHOLDER) {
                     Prog.rungs[j] = temp;
                     rung = 1;
@@ -1933,7 +1928,7 @@ void PasteRung(int PasteInTo)
         if(Prog.rungSelected[i] != ' ')
             Prog.rungSelected[i] = ' ';
     }
-    fclose(f);
+    f.close();
 
     WhatCanWeDoFromCursorAndTopology();
 }

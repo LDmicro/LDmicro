@@ -141,8 +141,8 @@ double ksS(int nSize)
 }
 //===========================================================================
 
-void makeAccelTable(FILE *f, int max, int P, int nSize, ElemAccel **TT, char *name,
-                    int  nN,  // (1-¤«п ­ҐбЁ¬¬ҐваЁз­ле ЄаЁўле а §Ј®­®ў, 2-¤«п cЁ¬¬ҐваЁз­ле S-®Ўа §­ле ЄаЁўле а §Ј®­ )
+void makeAccelTable(FileTracker& f, int max, int P, int nSize, ElemAccel **TT, char *name,
+                    int  nN,  // (1-для несимметричных кривых разгонов, 2-для cимметричных S-образных кривых разгона)
                     int  sFt, // (1-sFt, 0-tFs)
                     int *n, int *Psum,
                     int *shrt, // mult = 2 ^ shrt
@@ -286,7 +286,7 @@ void makeAccelTable(FILE *f, int max, int P, int nSize, ElemAccel **TT, char *na
             dtMax = T[i].dt;
     }
 
-    int mult = 1; // ¬­®¦ЁвҐ«м dti ¤® 128
+    int mult = 1; // множитель dti до 128
     *shrt = 0;    // mult = 2 ^ shrt
     if(P < 1) {
         P = 1;
@@ -428,8 +428,6 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
 {
     memset(&(*r), 0, sizeof(ResSteps));
 
-    FILE *f;
-
     double massa = 1;
     int    nSize = s->nSize;
     int    graph = s->graph;
@@ -446,7 +444,7 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
 
     char fname[MAX_PATH];
     sprintf(fname, "%s\\%s", CurrentLdPath, "acceleration_deceleration.txt");
-    f = fopen(fname, "w");
+    FileTracker f = FileTracker(fname, "w");
 
     double k;
     if(graph == 1) {
@@ -597,7 +595,7 @@ void CalcSteps(ElemStepper *s, ResSteps *r)
         fprintf(f, "Generates %s steps without acceleration/deceleration.", s->max);
     }
 
-    fclose(f);
+    f.close();
 
     s->n = r->n;
 }

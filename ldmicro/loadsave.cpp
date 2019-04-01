@@ -31,10 +31,10 @@ char *DelNL(char *str);
 char *DelLastNL(char *str);
 
 typedef enum FRMTTag { FRMT_COMMENT, FRMT_01, FRMT_x20 } FRMT;
-char *StrToFrmStr(char *dest, char *str, FRMT frmt);
-char *StrToFrmStr(char *dest, char *src);
+char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
+char *StrToFrmStr(char *dest, const char *src);
 
-ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f);
 
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
@@ -670,7 +670,7 @@ char *strspacer(char *str)
 // LoadSeriesFromFile. Returns the parallel subcircuit built up, or nullptr if
 // something goes wrong.
 //-----------------------------------------------------------------------------
-static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
+static ElemSubcktParallel *LoadParallelFromFile(FileTracker& f)
 {
     char  line[512];
     void *any;
@@ -717,7 +717,7 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
 // Same as LoadParallelFromFile, but for a series subcircuit. Thus builds
 // a series circuit out of parallel circuits and leaf elements.
 //-----------------------------------------------------------------------------
-ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f)
 {
     char  line[512];
     void *any;
@@ -893,15 +893,13 @@ bool LoadProjectFromFile(const char *filename)
                 compile_MNU = i;
         } else if(memcmp(line, "MICRO=", 6) == 0) {
             if(strlen(line) > 6) {
-                uint32_t i;
-                for(i = 0; i < supportedMcus().size(); i++) {
-                    if(supportedMcus()[i].mcuName)
-                        if(strcmp(supportedMcus()[i].mcuName, line + 6) == 0) {
-                            Prog.setMcu(&supportedMcus()[i]);
-                            break;
-                        }
-                }
-                if(i == supportedMcus().size()) {
+                auto& mcus = supportedMcus();
+                auto mcu = std::find_if(std::begin(mcus), std::end(mcus),
+                                         [&line](const McuIoInfo& info){ return (strcmp(info.mcuName, line + 6) == 0);});
+                if(mcu != std::end(mcus)) {
+                    Prog.setMcu(&(*mcu));
+                    LoadWritePcPorts();
+                } else {
                     Error(_("Microcontroller '%s' not supported.\r\n\r\n"
                             "Defaulting to no selected MCU."),
                           line + 6);
@@ -924,7 +922,7 @@ bool LoadProjectFromFile(const char *filename)
             continue;
         if(strstr(line, "RUNG") == 0)
             goto failed;
-                    
+
         ElemSubcktSeries *s = LoadSeriesFromFile(f);
         if(!s)
             goto failed;
@@ -961,10 +959,9 @@ failed:
 // Helper routine for outputting hierarchical representation of the ladder
 // logic: indent on file f, by depth*4 spaces.
 //-----------------------------------------------------------------------------
-static void Indent(FILE *f, int depth)
+static void Indent(FileTracker& f, int depth)
 {
-    int i;
-    for(i = 0; i < depth; i++) {
+    for(int i = 0; i < depth; i++) {
         fprintf(f, "  ");
     }
 }
@@ -977,7 +974,7 @@ static void Indent(FILE *f, int depth)
 // output the SERIES/END delimiters. This is because the root is delimited
 // by RUNG/END markers output elsewhere.
 //-----------------------------------------------------------------------------
-void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
+void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
 {
     ElemLeaf *  l = (ElemLeaf *)any;
     const char *s;
@@ -1548,7 +1545,7 @@ bool SaveProjectToFile(char *filename, int code)
     }
     if(Prog.LDversion != "0.1") {
         if(compile_MNU > 0)
-            fprintf(f, "COMPILER=%s\n", GetMnuName(compile_MNU));
+            fprintf(f, "COMPILER=%s\n", GetMnuCompilerName(compile_MNU));
 
         fprintf(f, "\n");
         fprintf(f, "VAR LIST\n");
@@ -1578,7 +1575,7 @@ bool SaveProjectToFile(char *filename, int code)
 }
 
 //---------------------------------------------------------------------------
-char *StrToFrmStr(char *dest, char *src, FRMT frmt)
+char *StrToFrmStr(char *dest, const char* src, FRMT frmt)
 {
     if((src == nullptr) || (strlen(src) == 0)) {
         strcpy(dest, "(none)");
@@ -1641,7 +1638,7 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
     }
     return dest;
 }
-char *StrToFrmStr(char *dest, char *src)
+char *StrToFrmStr(char *dest, const char *src)
 {
     return StrToFrmStr(dest, src, FRMT_x20);
 }

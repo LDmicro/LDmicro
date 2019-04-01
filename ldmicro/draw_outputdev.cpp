@@ -452,7 +452,7 @@ SyntaxHighlightingColours Schemes[NUM_SUPPORTED_SCHEMES] = {
         RGB(255, 255, 255), // background, simulation mode
         RGB(128, 128, 128), // rung number, simulation mode
         RGB(48, 140, 48),   // de-energized element, simulation mode
-        RGB(255, 0, 192),   // energzied element, simulation mode
+        RGB(255, 0, 192),   // energized element, simulation mode
         RGB(255, 153, 153), // the 'bus,' can be different colours for
         RGB(153, 153, 255), // right and left of the screen
     },
@@ -492,7 +492,7 @@ SyntaxHighlightingColours Schemes[NUM_SUPPORTED_SCHEMES] = {
         GetSysColor(COLOR_WINDOW),          // background, simulation mode
         GetSysColor(COLOR_GRAYTEXT),        // rung number, simulation mode
         GetSysColor(COLOR_INACTIVECAPTION), // de-energized element, simulation mode
-        GetSysColor(COLOR_ACTIVECAPTION),   // energzied element, simulation mode COLOR_WINDOWFRAME
+        GetSysColor(COLOR_ACTIVECAPTION),   // energized element, simulation mode COLOR_WINDOWFRAME
         GetSysColor(COLOR_ACTIVECAPTION),   // the 'bus,' can be different colours for
         GetSysColor(COLOR_INACTIVECAPTION), // right and left of the screen
     },
@@ -773,9 +773,9 @@ void ExportDrawingAsText(char *file)
         strncpy(ExportBuffer[cy + 3], str, 4);
     }
 
-    FILE *f = fopen(file, "w");
+    FileTracker f(file, "w");
     if(!f) {
-        Error(_("Couldn't open '%s'\n"), f);
+        Error(_("Couldn't open '%s'\n"), file);
         return;
     }
 
@@ -831,8 +831,6 @@ void ExportDrawingAsText(char *file)
 
     fprintf(f, "\nVAR LIST:\n");
     SaveVarListToFile(f);
-
-    fclose(f);
 
     // we may have trashed the grid tables a bit; a repaint will fix that
     InvalidateRect(MainWindow, nullptr, false);

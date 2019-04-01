@@ -1582,7 +1582,7 @@ static DWORD SKBS(DWORD addr, int bit, int reg)
 {
     DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"), 0);
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -1621,7 +1621,7 @@ static DWORD SKBC(DWORD addr, int bit, int reg)
 {
     DWORD prevProgSz = AvrProg.size();
     if(bit > 7) {
-        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"), 0);
+        THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
 #ifdef USE_LDS_STS
@@ -5945,8 +5945,8 @@ void CompileAvr(const char *outFile)
             ".ORG 0x0\n"
             ";TABSIZE = 8\n",
             Prog.mcu()->mcuName,
-            Prog.mcu()->mcuList,
-            Prog.mcu()->mcuList,
+            Prog.mcu()->deviceName,
+            Prog.mcu()->deviceName,
             Prog.mcu()->mcuInc);
     Comment("GOTO progStart");
 
@@ -7078,7 +7078,7 @@ void CompileAvr(const char *outFile)
             (100 * AvrProg.size()) / Prog.mcu()->flashWords);
 
     char str3[MAX_PATH + 500];
-    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), McuRAM(), (100 * UsedRAM()) / McuRAM());
+    sprintf(str3, _("Used %d/%d byte of RAM (chip %d%% full)."), UsedRAM(), Prog.mcuRAM(), (100 * UsedRAM()) / Prog.mcuRAM());
 
     char str4[MAX_PATH + 500];
     sprintf(str4, "%s\r\n\r\n%s\r\n%s", str, str2, str3);
@@ -7086,7 +7086,7 @@ void CompileAvr(const char *outFile)
     if(AvrProg.size() > Prog.mcu()->flashWords) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);
         CompileSuccessfulMessage(str2, MB_ICONERROR);
-    } else if(UsedRAM() > McuRAM()) {
+    } else if(UsedRAM() > Prog.mcuRAM()) {
         CompileSuccessfulMessage(str4, MB_ICONWARNING);
         CompileSuccessfulMessage(str3, MB_ICONERROR);
     } else

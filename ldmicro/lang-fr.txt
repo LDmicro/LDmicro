@@ -196,10 +196,10 @@
 "Insert TIME to DELAY converter"
 "Insérer convertisseur TIME / DELAY"
 
-"Contacts"
-"Contacts "
+"Contacts and Coils / Relays"
+"Contacts et Bobines / Relais"
 
-"Insert Contacts: Input Pin\tC"
+"Insert &Contacts: Input Pin\tC"
 "Insérer &Contact : Broche d’entrée\tC"
 
 "Insert Contacts: Internal Relay\tShift+C"
@@ -211,7 +211,7 @@
 "Coils / Relays"
 "Bobines / Relais"
 
-"Insert Coil: Output Pin\tL"
+"Insert Coi&l: Output Pin\tL"
 "Insérer Bobine : Broche de sortie\tL"
 
 "Insert Coil: Internal Relay\tAlt+L"
@@ -250,16 +250,28 @@
 "Pulse generators"
 "Générateurs d’impulsions"
 
-"EDIT: Insert N PULSE"
-"Insérer N Pulse"
-
 "EDIT: Insert PULSER"
 "Insérer Pulser"
 
 "EDIT: Insert STEPPER"
 "Insérer Stepper"
 
+"Insert PULSER"
+"Insérer Pulser"
+
+"Insert STEPPER"
+"Insérer Stepper"
+
+"EDIT: Insert N PULSE"
+"Insérer N Pulse"
+
 "EDIT: Insert N PULSE OFF"
+"Insérer N Pulse Off"
+
+"Insert N PULSE"
+"Insérer N Pulse"
+
+"Insert N PULSE OFF"
 "Insérer N Pulse Off"
 
 "Temporization"
@@ -415,22 +427,37 @@
 "Insert Piecewise Linear"
 "Insérer tableau d'interpolation linéaire"
 
+"Formatted string"
+"Chaîne formatée"
+
+"Insert Formatted String"
+"Insérer chaîne formatée"
+
 "UART functions"
 "Fonctions UART"
 
 "Insert Formatted String Over &UART"
 "Insérer chaîne formatée pour l'UART"
 
-"Insert UART SEND"
+"Insert &UART SEND"
 "Insérer émission UART"
 
-"Insert UART RECEIVE"
+"Insert &UART RECEIVE"
 "Insérer réception UART"
 
 "Insert Test if UART ready to send"
 "Insérer test UART prête à émettre ?"
 
 "Insert Test if UART data available"
+"Insérer test donnée reçue sur UART ?"
+
+"Insert &UART SENDn Variable"
+"Insérer émission UART SENDn"
+
+"Insert &UART SEND: Is ready to send ?"
+"Insérer test UART prête à émettre ?"
+
+"Insert &UART RECEIVE: Is data available ?"
 "Insérer test donnée reçue sur UART ?"
 
 "SPI functions"
@@ -454,7 +481,7 @@
 "Insert Set &PWM Output\tP"
 "Insérer réglage sortie PWM\tP"
 
-"Insert A/D Converter Read"
+"Insert &A/D Converter Read\tA"
 "Insérer lecture convertisseur A/&D"
 
 "Insert Make Persistent"
@@ -470,6 +497,9 @@
 "Convertisseur BIN2BCD"
 
 "Insert BCD2BIN converter"
+"Convertisseur BCD2BIN"
+
+"SIMUL: Insert BCD2BIN"
 "Convertisseur BCD2BIN"
 
 "SIMUL: Insert BUS tracer"
@@ -1006,7 +1036,7 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "Aucun microcontrôleur sélectionné. Vous devez sélectionner un microcontrôleur avant de définir l'utilisation des broches.\r\n\r\nSélectionnez un micro dans le menu et essayez à nouveau."
 
-"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Aucune instruction (émission ou réception UART) n'est utilisée; ajouter une instruction avant de fixer les vitesses.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
@@ -2086,7 +2116,7 @@
 "Cyclic On/Off"
 "On/Off Cyclique"
 
-"Hight Level Delay"
+"High Level Delay"
 "Délai niveau haut"
 
 "Low Level Delay"
@@ -2509,3 +2539,4 @@
 
 "Compile failure."
 "Echec de la compilation."
+

@@ -1,6 +1,8 @@
 @echo on
 @echo This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 @echo This file executes after menu Compile - F5
+@SET  EXE_PATH=%~dp0
+@echo %EXE_PATH% - EXE_PATH
 @echo %1 - Compile target
 @echo %2 - Prog.mcu.whichIsa
 @echo %3 - LD path without the end backslash, double quoted
@@ -35,41 +37,41 @@ goto NOT_SUPPOTED
 @if "%2" == "PIC16"   goto CCS
 @rem -----------------------------------------------------------------------
 :AvrStudio
-@md  "%P3%\AvrStudio\%P4%"
+@mkdir  "%P3%\AvrStudio\%P4%"
 copy "%P3%\%P4%.asm"          "%P3%\AvrStudio\%P4%"
 copy "%P3%\%P4%.c"            "%P3%\AvrStudio\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\AvrStudio\%P4%"
 copy "%P3%\ladder.h"          "%P3%\AvrStudio\%P4%"
 @rem -----------------------------------------------------------------------
 :CodeVisionAVR
-@md  "%P3%\CvAvr\%P4%"
+@mkdir  "%P3%\CvAvr\%P4%"
 copy "%P3%\%P4%.c"            "%P3%\CvAvr\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\CvAvr\%P4%"
 copy "%P3%\ladder.h"          "%P3%\CvAvr\%P4%"
 goto PROTEUS
 @rem -----------------------------------------------------------------------
 :CCS
-@md  "%P3%\CCS\%P4%"
+@mkdir  "%P3%\CCS\%P4%"
 copy "%P3%\%P4%.c"            "%P3%\CCS\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\CCS\%P4%"
 copy "%P3%\ladder.h"          "%P3%\CCS\%P4%\ladder.h"
 @rem -----------------------------------------------------------------------
 :MPLAB
-@md  "%P3%\MPLAB\%P4%"
+@mkdir  "%P3%\MPLAB\%P4%"
 copy "%P3%\%P4%.c"            "%P3%\MPLAB\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\MPLAB\%P4%"
 copy "%P3%\ladder.h"          "%P3%\MPLAB\%P4%\ladder.h"
 goto PROTEUS
 @rem -----------------------------------------------------------------------
 :VMLAB
-@md  "%P3%\VMLAB\%P4%"
+@mkdir  "%P3%\VMLAB\%P4%"
 copy "%P3%\%P4%.asm"          "%P3%\VMLAB\%P4%"
 copy "%P3%\%P4%_prj.vmlab"    "%P3%\VMLAB\%P4%"
 copy "%P3%\%P4%.c"            "%P3%\VMLAB\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\VMLAB\%P4%"
 @rem -----------------------------------------------------------------------
 :WINAVR
-@md  "%P3%\WINAVR\%P4%"
+@mkdir  "%P3%\WINAVR\%P4%"
 copy "%P3%\%P4%.c"            "%P3%\WINAVR\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\WINAVR\%P4%"
 @rem -----------------------------------------------------------------------
@@ -79,7 +81,7 @@ goto PROTEUS
 :PIC16
 @rem -----------------------------------------------------------------------
 :MPLAB
-@md  "%P3%\MPLAB"
+@mkdir  "%P3%\MPLAB"
 copy "%P3%\%P4%.asm"          "%P3%\MPLAB"
 ;
 goto PROTEUS
@@ -97,15 +99,15 @@ goto PROTEUS
 ;
 @rem -----------------------------------------------------------------------
 :PROTEUS
-@md  "%P3%\PROTEUS"
+@mkdir  "%P3%\PROTEUS"
 copy "%P3%\%P4%.asm"          "%P3%\PROTEUS"
 copy "%P3%\%P4%.hex"          "%P3%\PROTEUS"
 goto exit
 ;
 @rem =======================================================================
 :ARDUINO
-md  "%P3%\ARDUINO"
-md  "%P3%\ARDUINO\%P4%"
+mkdir  "%P3%\ARDUINO"
+mkdir  "%P3%\ARDUINO\%P4%"
 @rem @del /S /Y "%P3%\ARDUINO\%P4%\BUILD\*.*"
 rm -r "%P3%\ARDUINO\%P4%\BUILD"
 @rem pause

@@ -14,7 +14,7 @@ set(LD_COMPILER_SRC_LIST
     ../ansic.cpp
     ../avr.cpp
     ../circuit.cpp
-    ../compilecommon.cpp
+    ../compilercommon.cpp
     ../display.cpp
     ../intcode.cpp
     ../interpreted.cpp
@@ -66,25 +66,29 @@ if(${LDLANG} STREQUAL "ALL")
     foreach(lang_id ${LDLANG_ALL})
         if(${lang_id} STREQUAL "EN")
             add_library               (${PROJECT_NAME} ${LD_COMPILER_SRC_LIST})
-            target_compile_definitions(${PROJECT_NAME} PRIVATE -DLDLANG_${lang_id})
+            target_compile_definitions(${PROJECT_NAME}
+                PUBLIC LDLANG_${lang_id} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_library               (${PROJECT_NAME}-${ldlang_lower} ${LD_COMPILER_SRC_LIST})
-            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id})
+            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower}
+                PUBLIC LDLANG_${lang_id} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
         endif()
     endforeach()
 
 else()
 
     if(${LDLANG} STREQUAL "EN")
-        add_definitions(-DLDLANG_${LDLANG})
         add_library          (${PROJECT_NAME} ${LD_COMPILER_SRC_LIST})
+        target_compile_definitions(${PROJECT_NAME}
+            PUBLIC LDLANG_${LDLANG} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
         add_precompiled_header(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp)
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         string(TOLOWER ${LDLANG} ldlang_lower)
         set(_project_name ${PROJECT_NAME}-${ldlang_lower})
         add_library               (${PROJECT_NAME}-${ldlang_lower} ${LD_COMPILER_SRC_LIST})
-        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${LDLANG})
+        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower}
+            PUBLIC LDLANG_${LDLANG} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
         add_precompiled_header(${_project_name} ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp)
     endif()
 

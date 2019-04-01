@@ -80,7 +80,7 @@ void PlcProgram::setMcu(McuIoInfo* m)
     if(!mcu_)
         return;
 
-    LoadWritePcPorts();
+    configurationWord = 0;
 
     auto comparePinInfo = [](const McuIoPinInfo& a, const McuIoPinInfo& b) -> bool {
             const char* sa = strlen(a.pinName) > 0 ? a.pinName : "";
@@ -90,6 +90,77 @@ void PlcProgram::setMcu(McuIoInfo* m)
 
     if(mcu_ && (mcu_->core != PC_LPT_COM))
         std::sort(mcu_->pinInfo, mcu_->pinInfo + mcu_->pinCount, comparePinInfo);
+}
+
+int PlcProgram::mcuPWM() const
+{
+    if(mcu_)
+        return 0;
+
+    int n = 0;
+    if(mcu_->pwmCount) {
+        int prevPin = -1;
+        for(uint32_t i = 0; i < mcu_->pwmCount; i++) {
+            if(mcu_->pwmInfo[i].pin)
+                if(mcu_->pwmInfo[i].pin != prevPin)
+                    if((mcu_->whichIsa == ISA_PIC16) || (mcu_->pwmInfo[i].timer != cycleTimer))
+                        n++;
+            prevPin = mcu_->pwmInfo[i].pin;
+        }
+    } else if(mcu_->pwmNeedsPin) {
+        n = 1;
+    }
+    return n;
+}
+
+int PlcProgram::mcuADC() const
+{
+    return mcu_ ? mcu_->adcCount : 0 ;
+}
+
+int PlcProgram::mcuSPI() const
+{
+    return mcu_ ? mcu_->spiCount : 0 ;
+}
+
+int PlcProgram::mcuI2C() const
+{
+    return mcu_ ? mcu_->i2cCount : 0 ;
+}
+
+int PlcProgram::mcuROM() const
+{
+    return 1000000; //TODO: fix ROM hardcode
+
+    if(mcu_)
+        return 0;
+
+    int n = 0;
+    for(uint32_t i = 0; i < MAX_ROM_SECTIONS; i++) {
+        n += mcu_->rom[i].len;
+    }
+    return n;
+}
+
+int PlcProgram::mcuRAM() const
+{
+    if(!mcu_)
+        return 0;
+
+    int n = 0;
+    for(uint32_t i = 0; i < MAX_RAM_SECTIONS; i++) {
+        n += mcu_->ram[i].len;
+    }
+    return n;
+}
+
+int PlcProgram::mcuUART() const
+{
+    if(!mcu_)
+        return 0;
+    if(mcu_->uartNeeds.rxPin && mcu_->uartNeeds.txPin)
+        return 1;
+    return 0;
 }
 
 void PlcProgram::reset()
@@ -105,8 +176,8 @@ void PlcProgram::reset()
     io.count = 0;
     cycleTimer = 1;
     cycleDuty = 0;
-    configurationWord = 0;
     setMcu(nullptr);
+	LDversion.clear();
 }
 
 void PlcProgram::appendEmptyRung()
