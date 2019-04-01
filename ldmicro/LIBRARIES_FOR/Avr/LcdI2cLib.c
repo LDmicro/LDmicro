@@ -59,18 +59,18 @@ void LCD_I2C_Send4msb(char donnee)
     PORT_LCD (&= ~((1 << BIT_LCD_D4) | (1 << BIT_LCD_D5) | (1 << BIT_LCD_D6) | (1 << BIT_LCD_D7)))
 
     // Ecriture des 4 MSB
-    if (donnee & (1 << 4))
+    if (donnee & (1 << 4)) {
         PORT_LCD (|= (1 << BIT_LCD_D4)) // Bit D4 à 1
-
-    if (donnee & (1 << 5))
+    }
+    if (donnee & (1 << 5)) {
         PORT_LCD (|= (1 << BIT_LCD_D5)) // Bit D5 à 1
-
-    if (donnee & (1 << 6))
+    }
+    if (donnee & (1 << 6)) {
         PORT_LCD (|= (1 << BIT_LCD_D6)) // Bit D6 à 1
-
-    if (donnee & (1 << 7))
+    }
+    if (donnee & (1 << 7)) {
         PORT_LCD (|= (1 << BIT_LCD_D7)) // Bit D7 à 1
-
+    }
     // Validation donnee par basculement de l'enable
     LCD_I2C_Enable();
     }

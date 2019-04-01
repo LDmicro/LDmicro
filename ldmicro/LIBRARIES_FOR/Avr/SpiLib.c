@@ -6,7 +6,7 @@
 #include "SpiLib.h"
 
 
-// Au cas ou SPI non utilise mais librairie compilee
+// au cas ou SPI non utilise mais librairie compilee
 #ifndef SPIPORT
     #define SPIPORT PORTB
     #define SPIDDR  DDRB

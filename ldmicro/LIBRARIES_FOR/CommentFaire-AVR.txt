@@ -43,6 +43,8 @@ _____________________________________________________________________________
 	à partir du sous-dossier "bin" qui a été créé si tout va bien
 
 	Observer la fenêtre de commande ; il ne devrait pas y avoir d'erreur
+	Les librairies sont automatiquement recopiées (la première fois)
+	dans le sous-dossier "lib" où elles peuvent ensuite être adaptées
 	Les fichiers intermédiaires sont générés dans le sous-dossier "obj"
 
 7)	Tester le fichier hex ainsi généré sur la cible...

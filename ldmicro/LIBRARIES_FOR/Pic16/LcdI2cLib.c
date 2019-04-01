@@ -2,7 +2,7 @@
 
 // Librairie AtMega pour afficheur LCD 16x2 + IO-Expander sur bus I2C
 
-#include "../../ladder.h"
+#include "ladder.h"
 #include "UsrLib.h"
 #include "I2cLib.h"
 #include "LcdI2clib.h"           // Fichier header librairie LCD

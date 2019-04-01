@@ -40,6 +40,8 @@ ______________________________________________________________________
 	it to the target automatically or manually from "bin" subdirectory
 
 	Look at the command window ; there shouln't be compiling errors
+	Librairies are automaticaly copied (first time only) in "lib" 
+	subdirectory where they can be adapted if need be
 	Intermediate files are generated in "obj" subdirectory
 
 7)	Test generated hex file on target...

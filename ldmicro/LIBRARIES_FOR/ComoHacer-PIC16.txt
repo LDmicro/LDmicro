@@ -28,6 +28,8 @@ Con bibliotecas unidas, realiza un proyecto de C ya confeccionado.
 al destino automáticamente o manualmente desde el subdirectorio "bin"
 
 Mira la ventana de comandos; no debe haber errores de compilación
+Las bibliotecas se copian automáticamente (la primera vez) en lel subdirectorio "lib" 
+donde pueden ser adaptadas
 Los archivos intermedios se generan en el subdirectorio "obj"
 
 7) Prueba de archivo hexadecimal generado en destino ...
