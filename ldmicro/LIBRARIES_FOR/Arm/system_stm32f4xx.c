@@ -18,9 +18,7 @@
   ******************************************************************************
   */
 
-
 #include "stm32f4xx.h"
-
 
 /** @addtogroup stm32f4xx_System_Private_Defines
   * @{
@@ -38,21 +36,20 @@
 
     */
 
-
 /* PLLVCO = (HSE_VALUE / PLL_M) * PLL_N */
-#define PLL_M   (HSE_VALUE / 1000000)   /* Possible value 0 and 63 */
+#define PLL_M (HSE_VALUE / 1000000) /* Possible value 0 and 63 */
 /// #define PLL_N   336                     /* Possible value 192 and 432 */
-#define PLL_N   200                     /* Possible value 192 and 432 */
+#define PLL_N 200 /* Possible value 192 and 432 */
 
 /* SYSCLK = PLLVCO / PLL_P !!!! DO NOT EXCEED 120MHz */
-#define PLL_P   2  /* Possible value 2, 4, 6, or 8 */
+#define PLL_P 2 /* Possible value 2, 4, 6, or 8 */
 
 /* OTGFS, SDIO and RNG Clock =  PLLVCO / PLL_Q */
 /// #define PLL_Q   7  /* Possible value between 4 and 15 */
-#define PLL_Q   4  /* Possible value between 4 and 15 */
+#define PLL_Q 4 /* Possible value between 4 and 15 */
 
 /* I2SCLK =  PLLVCO / PLL_R */
-#define PLL_R   2    /* Possible value between 2 and 7 */
+#define PLL_R 2 /* Possible value between 2 and 7 */
 
 /* ex. to have SYSCLK @  120 MHz
        SYSCLK = PLLVCO / PLL_P
@@ -63,9 +60,9 @@
 /*!< Uncomment the following line if you need to relocate your vector Table in
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
-#define VECT_TAB_OFFSET  0x0 /*!< Vector Table base offset field.
+#define VECT_TAB_OFFSET 0x0
+/*!< Vector Table base offset field.
                                   This value must be a multiple of 0x100. */
-
 
 /*******************************************************************************
 *  Clock Definitions
@@ -82,7 +79,6 @@ uint32_t SystemCoreClock = ((HSE_VALUE / PLL_M) * PLL_N) / PLL_P; /*!< System Cl
 
 static void SetSysClock(void);
 
-
 /** @addtogroup stm32f4xx_System_Private_Functions
   * @{
   */
@@ -94,32 +90,31 @@ static void SetSysClock(void);
   * @param  None
   * @retval None
   */
-void SystemInit (void)
+void SystemInit(void)
 {
-  /* Reset the RCC clock configuration to the default reset state(for debug purpose) */
-  /* Set HSION bit */
-  RCC->CR |= (uint32_t)0x00000001;
-  /* Reset CFGR register */
-  RCC->CFGR = 0x00000000;
-  /* Reset HSEON, CSSON and PLLON bits */
-  RCC->CR &= (uint32_t)0xFEF6FFFF;
-  /* Reset PLLCFGR register */
-  RCC->PLLCFGR = 0x00000000;
-  /* Reset HSEBYP bit */
-  RCC->CR &= (uint32_t)0xFFFBFFFF;
-  /* Disable all interrupts */
-  RCC->CIR = 0x00000000;
+    /* Reset the RCC clock configuration to the default reset state(for debug purpose) */
+    /* Set HSION bit */
+    RCC->CR |= (uint32_t)0x00000001;
+    /* Reset CFGR register */
+    RCC->CFGR = 0x00000000;
+    /* Reset HSEON, CSSON and PLLON bits */
+    RCC->CR &= (uint32_t)0xFEF6FFFF;
+    /* Reset PLLCFGR register */
+    RCC->PLLCFGR = 0x00000000;
+    /* Reset HSEBYP bit */
+    RCC->CR &= (uint32_t)0xFFFBFFFF;
+    /* Disable all interrupts */
+    RCC->CIR = 0x00000000;
 
-  /* Configure the System clock frequency, HCLK, PCLK2 and PCLK1 prescalers */
-  /* Configure the Flash Latency cycles and enable prefetch buffer */
-  SetSysClock();
+    /* Configure the System clock frequency, HCLK, PCLK2 and PCLK1 prescalers */
+    /* Configure the Flash Latency cycles and enable prefetch buffer */
+    SetSysClock();
 
 #ifdef VECT_TAB_SRAM
-  SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM. */
+    SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM. */
 #else
-  SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH. */
+    SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH. */
 #endif
-
 }
 
 /**
@@ -129,67 +124,58 @@ void SystemInit (void)
   */
 static void SetSysClock(void)
 {
-  __IO uint32_t StartUpCounter = 0, HSEStatus = 0;
+    __IO uint32_t StartUpCounter = 0, HSEStatus = 0;
 
-  /* Enable HSE */
-  RCC->CR |= ((uint32_t)RCC_CR_HSEON);
+    /* Enable HSE */
+    RCC->CR |= ((uint32_t)RCC_CR_HSEON);
 
-  /* Wait till HSE is ready and if Time out is reached exit */
-  do
-  {
-    HSEStatus = RCC->CR & RCC_CR_HSERDY;
-    StartUpCounter++;
-  } while((HSEStatus == 0) && (StartUpCounter != HSE_STARTUP_TIMEOUT));
+    /* Wait till HSE is ready and if Time out is reached exit */
+    do {
+        HSEStatus = RCC->CR & RCC_CR_HSERDY;
+        StartUpCounter++;
+    } while((HSEStatus == 0) && (StartUpCounter != HSE_STARTUP_TIMEOUT));
 
-  if ((RCC->CR & RCC_CR_HSERDY) != RESET)
-  {
-    HSEStatus = (uint32_t)0x01;
-  }
-  else
-  {
-    HSEStatus = (uint32_t)0x00;
-  }
-
-  if (HSEStatus == (uint32_t)0x01)
-  {
-    /* HCLK = SYSCLK */
-    RCC->CFGR |= (uint32_t)RCC_CFGR_HPRE_DIV1;
-
-    /* PCLK2 = HCLK / 2  */
-    RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE2_DIV2;
-
-    /* PCLK1 = HCLK / 4 */
-    RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE1_DIV4;
-
-    /* Select HSE as PLL source */
-    RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) -1) << 16) | (RCC_PLLCFGR_PLLSRC_HSE) |
-                 (PLL_Q << 24) | (PLL_R << 28);
-
-    /* Enable PLL */
-    RCC->CR |= ((uint32_t)RCC_CR_PLLON);
-
-    /* Wait till PLL is ready */
-    while((RCC->CR & RCC_CR_PLLRDY) == 0)
-    {
+    if((RCC->CR & RCC_CR_HSERDY) != RESET) {
+        HSEStatus = (uint32_t)0x01;
+    } else {
+        HSEStatus = (uint32_t)0x00;
     }
 
-    /*  Enable Flash prefetch, Instruction cache and Data cache for max performance
+    if(HSEStatus == (uint32_t)0x01) {
+        /* HCLK = SYSCLK */
+        RCC->CFGR |= (uint32_t)RCC_CFGR_HPRE_DIV1;
+
+        /* PCLK2 = HCLK / 2  */
+        RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE2_DIV2;
+
+        /* PCLK1 = HCLK / 4 */
+        RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE1_DIV4;
+
+        /* Select HSE as PLL source */
+        RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) - 1) << 16) | (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24)
+                       | (PLL_R << 28);
+
+        /* Enable PLL */
+        RCC->CR |= ((uint32_t)RCC_CR_PLLON);
+
+        /* Wait till PLL is ready */
+        while((RCC->CR & RCC_CR_PLLRDY) == 0) {
+        }
+
+        /*  Enable Flash prefetch, Instruction cache and Data cache for max performance
         and set Flash 3 wait state */
-    FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN | 0x03;
+        FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN | 0x03;
 
-    /* Select PLL as system clock source */
-    RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_SW));
-    RCC->CFGR |= ((uint32_t)RCC_CFGR_SW_PLL);
+        /* Select PLL as system clock source */
+        RCC->CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_SW));
+        RCC->CFGR |= ((uint32_t)RCC_CFGR_SW_PLL);
 
-    /* Wait till PLL is used as system clock source */
-    while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)RCC_CFGR_SWS_PLL)
-    {
-    }
-  }
-  else
-  { /* If HSE fails to start-up, the application will have wrong clock
+        /* Wait till PLL is used as system clock source */
+        while((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)RCC_CFGR_SWS_PLL) {
+        }
+    } else { /* If HSE fails to start-up, the application will have wrong clock
          configuration. User can add here some code to deal with this error */
-  }
+    }
 }
 
 /**
@@ -200,7 +186,7 @@ static void SetSysClock(void)
   */
 void SystemCoreClockUpdate(void)
 {
-  /* To be implemented in next version */
+    /* To be implemented in next version */
 }
 
 /**
@@ -220,9 +206,8 @@ void SystemCoreClockUpdate(void)
   */
 void SystemInit_ExtMemCtl(void)
 {
-  /* To be implemented in next version */
+    /* To be implemented in next version */
 }
 #endif /* DATA_IN_ExtSRAM */
-
 
 /******************* (C) COPYRIGHT 2010 STMicroelectronics *****END OF FILE****/
