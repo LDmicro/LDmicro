@@ -1,3 +1,9 @@
+== Release 5.3.0.2
+
+    * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES
+
+    * Fixed LDLANG_IT, Italian locale. Thanks, Claudio Birello.
+
 == Release 5.3.0.1
 
     * Fixed: Shift + 6 problem (insert rung before) #155

@@ -1,7 +1,7 @@
 import os
 
 vers = "XXXX"
-#define LDMICRO_VER_STR           "4.4.0.0"
+#define LDMICRO_VER_STR           "5.3.0.2"
 
 f = open('ldversion.h','r')
 for txt in f.readlines():
