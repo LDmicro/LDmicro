@@ -53,6 +53,7 @@ void dbp(const char *str, ...)
     char    buf[1024 * 8];
     va_start(f, str);
     vsprintf(buf, str, f);
+    va_end(f);
     OutputDebugString(buf);
     //  OutputDebugString("\n");
 }

@@ -120,6 +120,15 @@ if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /J")
     string(APPEND CMAKE_C_FLAGS " /J")
     set(CMAKE_EXE_LINKER_FLAGS "/MANIFEST:NO")
+
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4127")
+
 elseif(CMAKE_COMPILER_IS_GNUCXX)
     string(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra ")
     string(APPEND CMAKE_C_FLAGS "-Wall -Wextra ")

@@ -19,9 +19,9 @@ extern int CompileFailure;      ///// added by JG
 #ifdef USE_JG
 #else
     #define THROW_COMPILER_EXCEPTION(MSG) do{ \
-        char message[1024*3];\
-        sprintf(message, "%s[%i:%s]", MSG, __LINE__, __LLFILE__); \
-        throw std::runtime_error(message);\
+        char __message[1024*3];\
+        sprintf(__message, "%s[%i:%s]", MSG, __LINE__, __LLFILE__); \
+        throw std::runtime_error(__message);\
         }while(0)
 #endif
 
@@ -45,11 +45,11 @@ extern int CompileFailure;      ///// added by JG
 
 #else
     #define THROW_COMPILER_EXCEPTION_FMT(FMT,...) do{ \
-        char format[1024];\
-        sprintf(format, (FMT), __VA_ARGS__); \
-        char message[1024*3];\
-        sprintf(message, "%s[%i:%s]", format, __LINE__, __LLFILE__); \
-        throw std::runtime_error(message);\
+        char __format[1024];\
+        sprintf(__format, (FMT), __VA_ARGS__); \
+        char __message[1024*3];\
+        sprintf(__message, "%s[%i:%s]", __format, __LINE__, __LLFILE__); \
+        throw std::runtime_error(__message);\
         }while(0)
 #endif
 

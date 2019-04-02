@@ -3400,10 +3400,10 @@ static void CompileFromIntermediate()
                         CopyRegToVar(a->name1, r16, sov1);
                         //} else if(sov2==2){
                     } else
-                        oops()
+                        oops();
 
                 } else {
-                    oops()
+                    oops();
                 }
                 break;
 

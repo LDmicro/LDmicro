@@ -4845,7 +4845,7 @@ otherwise the result was zero or greater.
                     DivideNeeded = true;
                     CallWithPclath(DivideRoutineAddress);
                 } else
-                    oops()
+                    oops();
 
                 if(a->op == INT_SET_VARIABLE_DIVIDE) {
                     CopyRegToReg(addr1, sov1, Scratch0, sov2, a->name1, "Scratch0", true);
