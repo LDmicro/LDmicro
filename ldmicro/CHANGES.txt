@@ -1,3 +1,7 @@
+== Release 5.3.0.?
+
+    * Fixed LDLANG_IT, Italian locale. Thank you very much, Claudio Birello.
+
 == Release 5.3.0.2
 
     * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES
