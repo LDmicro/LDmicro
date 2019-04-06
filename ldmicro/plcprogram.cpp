@@ -177,7 +177,7 @@ void PlcProgram::reset()
     cycleTimer = 1;
     cycleDuty = 0;
     setMcu(nullptr);
-    LDversion.clear();
+    LDversion = "0.2";
 }
 
 void PlcProgram::appendEmptyRung()
