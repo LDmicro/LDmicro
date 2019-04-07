@@ -97,7 +97,7 @@ namespace {
 //-----------------------------------------------------------------------------
 // Report an error if a constant doesn't fit in 16 bits.
 //-----------------------------------------------------------------------------
-static void CheckConstantInRange(SDWORD v)
+static void CheckConstantInRange(SDWORD /*v*/)
 {
     /*
     if(v < -0x800000 || v > 0x7FffFF) {
@@ -831,13 +831,13 @@ int HexDigit(int c)
 // guaranteed not to conflict with any user symbols.
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-static void GenSym(char *dest, char *name, char *name1, char *name2)
+static void GenSym(char *dest, const char *name, const char *name1, const char *name2)
 {
     sprintf(dest, "%s_%01lx_%s_%s", name, GenSymCount, name1, name2);
     GenSymCount++;
 }
 
-static void GenVar(char *dest, char *name1, char *name2)
+static void GenVar(char *dest, const char *name1, const char *name2)
 {
     sprintf(dest, "$var_%01lx_%s_%s", GenSymCount, name1, name2);
     GenSymCount++;
@@ -874,7 +874,7 @@ static void GenSymFormattedString(char *dest)
 {
     GenSymFormattedString(dest, "");
 }
-static void GenSymStepper(char *dest, char *name)
+static void GenSymStepper(char *dest, const char *name)
 {
     sprintf(dest, "$step_%01lx_%s", GenSymCountStepper, name);
     GenSymCountStepper++;
@@ -2074,7 +2074,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               Op(INT_SET_BIT, antiGlitchName);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             Op(INT_END_IF);
-            /**/
+            //*/
             Op(INT_IF_BIT_CLEAR, stateInOut);
 
               if(IsNumber(l->d.timer.delay)) {
@@ -3187,7 +3187,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                           Op(INT_DECREMENT_VARIABLE, T0mul);
                         Op(INT_END_IF);
                         Op(INT_SET_VARIABLE_TO_VARIABLE, workT0, T0mul);
-                        /**/
+                        // */
                 //Op(INT_ELSE);
                 //    Op(INT_CLEAR_BIT, OneShot0);
                 Op(INT_END_IF);
@@ -4603,9 +4603,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             break;
         }
         case ELEM_COMMENT: {
-            char  s1[MAX_COMMENT_LEN];
+            char  s1[MAX_COMMENT_LEN] = {0};
             char *s2;
-            AnsiToOem(l->d.comment.str, s1);
+            CharToOem(l->d.comment.str, s1);
             s2 = s1;
             for(; *s2; s2++) {
                 if(*s2 == '\r') {
@@ -4617,7 +4617,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 }
             }
             if(int_comment_level >= 2) {
-                if(s1)
+                if(s1[0] != 0)
                     Comment1(s1); // bypass % in comments
                 if(s2)
                     Comment1(s2); // bypass % in comments
@@ -4646,7 +4646,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 }
 // clang-format on
 //-----------------------------------------------------------------------------
-static bool PersistVariable(char *name)
+static bool PersistVariable(const char *name)
 {
     if(persistVariables.count(name))
         return true;
