@@ -21,7 +21,7 @@
 #ifndef __DISPLAY_H
 #define __DISPLAY_H
 
-extern SDWORD char7seg[129];
+extern int32_t char7seg[129];
 #define LEN7SEG 129
 #define LEN9SEG 129
 #define LEN14SEG 129

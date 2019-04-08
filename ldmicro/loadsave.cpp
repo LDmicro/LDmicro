@@ -470,7 +470,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_RECVn;
-    } else if(sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+    } else if([&]()->int{int tmp_bool;auto res = sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);l->d.uart.wait = tmp_bool != 0;return res;}() == 3) {
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = 1;
@@ -479,7 +479,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_SENDn;
-    } else if(sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+    } else if([&]()->int{int tmp_bool;auto res = sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);l->d.uart.wait = tmp_bool != 0;return res;}() == 3) {
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = 1;
@@ -637,7 +637,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             l->d.setPwm.name[0] = 'P';
         }
         char *s;
-        if(s = strchr(l->d.setPwm.targetFreq, '.')) {
+        if((s = strchr(l->d.setPwm.targetFreq, '.'))) {
             *s = '\0';
         }
     }
@@ -821,7 +821,7 @@ bool LoadProjectFromFile(const char *filename)
             if(!LoadVarListFromFile(f)) {
                 return false;
             }
-        } else if(sscanf(line, "LDmicro%s", &version)) {
+        } else if(sscanf(line, "LDmicro%s", &version[0])) {
             Prog.LDversion = version;
             if((Prog.LDversion != "0.1") )
                 Prog.LDversion = "0.2";

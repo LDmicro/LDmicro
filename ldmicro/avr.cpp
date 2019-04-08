@@ -2020,7 +2020,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, cons
     Instruction(OP_SBRC, r3, bitSrc, s);
     Instruction(OP_SBR, r25, 1 << bitDest, d);
     Instruction(OP_ST_Z, r25, 0, name1);
-/**/
+// */
     //used ZL, r25; Opcodes: 9
     LoadZAddr(addrSrc);
     Instruction(OP_LD_Z, r25, 0, name2);
