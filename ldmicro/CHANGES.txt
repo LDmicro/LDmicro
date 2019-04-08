@@ -1,6 +1,7 @@
 == Release 5.3.0.?
 
     * Fixed LDLANG_IT, Italian locale. Thank you very much, Claudio Birello.
+      manual-it.txt updated.
 
 == Release 5.3.0.2
 
