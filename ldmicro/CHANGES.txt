@@ -1,4 +1,6 @@
-== Release 5.3.0.?
+== Release 5.3.0.3
+
+    * Fixed crash when save LD.
 
     * Fixed LDLANG_IT, Italian locale. Thank you very much, Claudio Birello.
       manual-it.txt updated.
