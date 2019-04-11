@@ -443,7 +443,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
         default: oops(); break;
     }
     // clang-format on
-    if(ShowSimpleDialog(s, labs, labels, (3 << 1), (1 << 0), (7 << 0), boxes, dests)) {
+    if(ShowSimpleDialog(s, labs, labels, (1 << 2), (3 << 0), (7 << 0), boxes, dests)) {
         *adjust = atoi(adjustBuf);
         double delay_ms;
         SDWORD delay_us;
@@ -1234,9 +1234,9 @@ void ShowUartDialog(int which, ElemLeaf *l)
     char wait[MAX_NAME_LEN];
     sprintf(wait, "%d", e->wait);
 
-	const char *labels[] =  { (which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"), 
-							  (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"), 
-							  (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sended:")};
+    const char *labels[] =  { (which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"),
+                              (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"),
+                              (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sended:")};
     char *      dests[] = {e->name, bytes, wait};
 
     NoCheckingOnBox[0] = true;

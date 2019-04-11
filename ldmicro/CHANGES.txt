@@ -1,3 +1,7 @@
+== Release 5.3.0.?
+
+    * Fixed: General variable name as Timer parameter, Issue #172
+
 == Release 5.3.0.3
 
     * Fixed crash when save LD.
