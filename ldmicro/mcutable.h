@@ -1284,8 +1284,59 @@ McuIoPinInfo Pic6Pin_SOT23[] = {
 // PIC12F675
 // PIC12F683
 // PIC12F752
+McuIoPinInfo Pic8Pin[] = {
+    { 'P', 0, 7, "GP0/AN0/CIN+/ICSPDAT" },
+    { 'P', 1, 6, "GP1/AN1/CIN-/VREF/ICSPCLK" },
+    { 'P', 2, 5, "GP2/AN2/T0CKI/INT/COUT" },
+    { 'P', 3, 4, "GP3/_MCLR/Vpp" },
+    { 'P', 4, 3, "GP4/AN3/_T1G/OSC2/CLKOUT" },
+    { 'P', 5, 2, "GP5/T1CKI/OSC1/CLKIN" },
+};
+
+McuAdcPinInfo Pic8PinAdcPinInfo[] = {
+    {  7, 0x00 },
+    {  6, 0x01 },
+    {  5, 0x02 },
+    {  3, 0x03 },
+};
 //-----------------------------------------------------------------------------
 // ESP8266
+McuIoPinInfo ESP8266IoPinInfo[] = {
+//   port bit pin pinName
+//  { ' ',  0,  1, "RST"},
+    { 'A',  0,  2, "ADC"},
+    { ' ',  0,  3, "EN"},
+    { 'O', 16,  4, "GPIO16/WAKE"},
+    { 'O', 14,  5, "GPIO14/SCL"},
+    { 'O', 12,  6, "GPIO12"},
+    { 'O', 13,  7, "GPIO13"},
+//  { ' ',  0,  8, "VCC"},
+    { ' ',  0,  9, "GPIO11/CS0"},
+    { ' ',  0, 10, "GPIO7/MISO"},
+    { ' ',  0, 11, "GPIO9"},
+    { ' ',  0, 12, "GPIO10"},
+    { ' ',  0, 13, "GPIO8/MOSI"},
+    { ' ',  0, 14, "GPIO6/SCLK"},
+//  { ' ',  0, 15, "GND"},
+    { 'O', 15, 16, "GPIO15"},
+    { 'O',  2, 17, "GPIO2/SDA"},
+    { 'O',  0, 18, "GPIO0"},
+    { 'O',  4, 19, "GPIO4"},
+    { 'O',  5, 20, "GPIO5"},
+    { 'O',  3, 21, "GPIO3/RXD0"},
+    { 'O',  1, 22, "GPIO1/TXD0"},
+};
+
+McuAdcPinInfo ESP8266AdcPinInfo[] = {
+    { 2, 0x00 },
+};
+/*
+McuPwmPinInfo ESP8266PwmPinInfo[] = {
+////     ti
+//// pin mer
+//  {  1, 0 },
+};
+*/
 //-----------------------------------------------------------------------------
 // Controllino Maxi
 McuIoPinInfo ControllinoMaxiIoPinInfo[] = {
@@ -2406,6 +2457,41 @@ McuIoInfo SupportedMcus_[] = {
         {{0,0}}
     },
     {
+        "Microchip PIC12F683 8-pin packages",
+        "PIC12F683",
+        "P12F683",
+        "P12F683",
+        "PIC12F683",
+        'G',
+//        A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x05}, // PORTx = GPIO
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x05}, // PORTx
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x85}, // TRISx
+        2*1024,
+        { { 0x20, 96 }, { 0xA0, 32 } },
+        Pic8Pin,
+        arraylen(Pic8Pin),
+        Pic8PinAdcPinInfo,
+        arraylen(Pic8PinAdcPinInfo),
+        1024,
+        { },
+        0,
+        ISA_PIC16,
+        MidrangeCore14bit,
+        8,
+        0x3FC4,
+        /*
+            ($7f <<7) |
+            (1 <<  6) |     // BOD enabled
+            (0 <<  5) |     // _MCLR disabled
+            (0 <<  4) |     // PWRT enabled
+            (0 <<  3) |     // WDTE disabled
+            (4 <<  0),      // 100 = INTOSC oscillator: I/O function on GP4/OSC2/CLKOUT pin, I/O function on GP5/OSC1/CLKIN
+        */
+        NULL,
+        0
+    },
+    {
         "Microchip PIC10F200 6-SOT",
         "PIC10F200",
         "P10F200",
@@ -2444,7 +2530,33 @@ McuIoInfo SupportedMcus_[] = {
         0,
         {{0,0}}
     },
-
+//===========================================================================
+    {
+        "ESP8266",
+        "",
+        "",
+        "",
+        "",
+        'I',
+        { 0x20 }, // PINx
+        { 0x22 }, // PORTx
+        { 0x21 }, // DDRx
+        128 * 1024,
+        { { 0x200, 8192 } },
+        ESP8266IoPinInfo,
+        arraylen(ESP8266IoPinInfo),
+        ESP8266AdcPinInfo,
+        arraylen(ESP8266AdcPinInfo),
+        1023,
+        { 21 , 22 },
+        0,
+        ISA_ESP8266,
+        ESP8266Core,
+        22,
+        0,
+        NULL, //ESP8266PwmPinInfo,
+        0, //arraylen(ESP8266PwmPinInfo),
+    },
 //===========================================================================
     {   ///// Added by JG               // A Completer
         #define BASE_A 0x40020000

@@ -1,5 +1,9 @@
 == Release 5.3.0.?
 
+    * Added: PIC12F683 8-pin.
+
+    * Added: ESP8266. ANSIC compiler only.
+
     * Fixed: General variable name as Timer parameter, Issue #172
 
 == Release 5.3.0.3
