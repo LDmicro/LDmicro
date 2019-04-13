@@ -1285,12 +1285,12 @@ McuIoPinInfo Pic6Pin_SOT23[] = {
 // PIC12F683
 // PIC12F752
 McuIoPinInfo Pic8Pin[] = {
-    { 'P', 0, 7, "GP0/AN0/CIN+/ICSPDAT" },
-    { 'P', 1, 6, "GP1/AN1/CIN-/VREF/ICSPCLK" },
-    { 'P', 2, 5, "GP2/AN2/T0CKI/INT/COUT" },
-    { 'P', 3, 4, "GP3/_MCLR/Vpp" },
-    { 'P', 4, 3, "GP4/AN3/_T1G/OSC2/CLKOUT" },
-    { 'P', 5, 2, "GP5/T1CKI/OSC1/CLKIN" },
+    { 'P', 0, 7, "GP0/AN0/CIN+/ICSPDAT"       , 0, "", 0, 0, 0, 0},
+    { 'P', 1, 6, "GP1/AN1/CIN-/VREF/ICSPCLK"  , 0, "", 0, 0, 0, 0},
+    { 'P', 2, 5, "GP2/AN2/T0CKI/INT/COUT"     , 0, "", 0, 0, 0, 0},
+    { 'P', 3, 4, "GP3/_MCLR/Vpp"              , 0, "", 0, 0, 0, 0},
+    { 'P', 4, 3, "GP4/AN3/_T1G/OSC2/CLKOUT"   , 0, "", 0, 0, 0, 0},
+    { 'P', 5, 2, "GP5/T1CKI/OSC1/CLKIN"       , 0, "", 0, 0, 0, 0},
 };
 
 McuAdcPinInfo Pic8PinAdcPinInfo[] = {
@@ -1304,27 +1304,27 @@ McuAdcPinInfo Pic8PinAdcPinInfo[] = {
 McuIoPinInfo ESP8266IoPinInfo[] = {
 //   port bit pin pinName
 //  { ' ',  0,  1, "RST"},
-    { 'A',  0,  2, "ADC"},
-    { ' ',  0,  3, "EN"},
-    { 'O', 16,  4, "GPIO16/WAKE"},
-    { 'O', 14,  5, "GPIO14/SCL"},
-    { 'O', 12,  6, "GPIO12"},
-    { 'O', 13,  7, "GPIO13"},
+    { 'A',  0,  2, "ADC"            , 0, "", 0, 0, 0, 0},
+    { ' ',  0,  3, "EN"             , 0, "", 0, 0, 0, 0},
+    { 'O', 16,  4, "GPIO16/WAKE"    , 0, "", 0, 0, 0, 0},
+    { 'O', 14,  5, "GPIO14/SCL"     , 0, "", 0, 0, 0, 0},
+    { 'O', 12,  6, "GPIO12"         , 0, "", 0, 0, 0, 0},
+    { 'O', 13,  7, "GPIO13"         , 0, "", 0, 0, 0, 0},
 //  { ' ',  0,  8, "VCC"},
-    { ' ',  0,  9, "GPIO11/CS0"},
-    { ' ',  0, 10, "GPIO7/MISO"},
-    { ' ',  0, 11, "GPIO9"},
-    { ' ',  0, 12, "GPIO10"},
-    { ' ',  0, 13, "GPIO8/MOSI"},
-    { ' ',  0, 14, "GPIO6/SCLK"},
+    { ' ',  0,  9, "GPIO11/CS0"     , 0, "", 0, 0, 0, 0},
+    { ' ',  0, 10, "GPIO7/MISO"     , 0, "", 0, 0, 0, 0},
+    { ' ',  0, 11, "GPIO9"          , 0, "", 0, 0, 0, 0},
+    { ' ',  0, 12, "GPIO10"         , 0, "", 0, 0, 0, 0},
+    { ' ',  0, 13, "GPIO8/MOSI"     , 0, "", 0, 0, 0, 0},
+    { ' ',  0, 14, "GPIO6/SCLK"     , 0, "", 0, 0, 0, 0},
 //  { ' ',  0, 15, "GND"},
-    { 'O', 15, 16, "GPIO15"},
-    { 'O',  2, 17, "GPIO2/SDA"},
-    { 'O',  0, 18, "GPIO0"},
-    { 'O',  4, 19, "GPIO4"},
-    { 'O',  5, 20, "GPIO5"},
-    { 'O',  3, 21, "GPIO3/RXD0"},
-    { 'O',  1, 22, "GPIO1/TXD0"},
+    { 'O', 15, 16, "GPIO15"         , 0, "", 0, 0, 0, 0},
+    { 'O',  2, 17, "GPIO2/SDA"      , 0, "", 0, 0, 0, 0},
+    { 'O',  0, 18, "GPIO0"          , 0, "", 0, 0, 0, 0},
+    { 'O',  4, 19, "GPIO4"          , 0, "", 0, 0, 0, 0},
+    { 'O',  5, 20, "GPIO5"          , 0, "", 0, 0, 0, 0},
+    { 'O',  3, 21, "GPIO3/RXD0"     , 0, "", 0, 0, 0, 0},
+    { 'O',  1, 22, "GPIO1/TXD0"     , 0, "", 0, 0, 0, 0},
 };
 
 McuAdcPinInfo ESP8266AdcPinInfo[] = {
@@ -2489,7 +2489,14 @@ McuIoInfo SupportedMcus_[] = {
             (4 <<  0),      // 100 = INTOSC oscillator: I/O function on GP4/OSC2/CLKOUT pin, I/O function on GP5/OSC1/CLKIN
         */
         NULL,
-        0
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
     {
         "Microchip PIC10F200 6-SOT",
@@ -2556,6 +2563,13 @@ McuIoInfo SupportedMcus_[] = {
         0,
         NULL, //ESP8266PwmPinInfo,
         0, //arraylen(ESP8266PwmPinInfo),
+        nullptr,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        {{0,0}}
     },
 //===========================================================================
     {   ///// Added by JG               // A Completer
