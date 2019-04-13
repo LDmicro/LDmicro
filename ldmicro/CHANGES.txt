@@ -4,6 +4,12 @@
 
     * Added: ESP8266. ANSIC compiler only.
 
+    * Fixed: Pins PB6 and PB7 are available for general I/O use when
+    the internal clock source is selected.
+    MCU list: ATmega8, ATmega48, ATmega88, ATmega168, ATmega328.
+    Note: LDmicro not provided any clock source manipulation.
+    Discussion here: http://cq.cx/ladder-forum.pl?action=viewthread&amp;parent=8416&amp;tt=1555027659
+
     * Fixed: General variable name as Timer parameter, Issue #172
 
 == Release 5.3.0.3
