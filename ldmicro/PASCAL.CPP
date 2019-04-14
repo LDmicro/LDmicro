@@ -27,7 +27,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "filetracker.hpp"
 
 static char  SeenVariables[MAX_IO][MAX_NAME_LEN];
 static int   SeenVariablesCount;
@@ -46,7 +45,7 @@ static bool SeenVariable(const char *name)
         }
     }
     if(i >= MAX_IO)
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        oops();
     strcpy(SeenVariables[i], name);
     SeenVariablesCount++;
     return false;
@@ -83,7 +82,7 @@ static const char *MapSym(const char *str, int how)
     } else if(how == ASINT) {
         bit_int = 'i';
     } else {
-        THROW_COMPILER_EXCEPTION("Internal error.");
+        oops();
     }
 
     // User and internal symbols are distinguished.
@@ -586,7 +585,7 @@ static void Generate_flash_eeprom(FILE *f)
                 } else if(sovElement == 4) {
                     sovs = "longint";
                 } else {
-                    THROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
+                    ooops("sovElement=%d", sovElement);
                 }
 
                 fprintf(
@@ -958,7 +957,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
 #endif
 
             default:
-                THROW_COMPILER_EXCEPTION_FMT("INT_%d", IntCode[i].op);
+                ooops("INT_%d", IntCode[i].op);
         }
     }
     fprintf(f, "end;\n");
@@ -1011,6 +1010,7 @@ static char *GetUnitName(char *unitn, char *dest)
 void CompilePascal(const char *dest)
 {
     SeenVariablesCount = 0;
+    CompileFailure= 0;
 
     char destn[MAX_PATH];
     char destu[MAX_PATH];
@@ -1300,7 +1300,7 @@ void CompilePascal(const char *dest)
     fprintf(fu,
             "\n"
             "begin\n"
-            "  {SetPcPortsDir;}\n"
+            "  SetPcPortsDir;\n"
             "end.\n");
     fprintf(fr,
             "end;\n"
@@ -1339,6 +1339,11 @@ void CompilePascal(const char *dest)
     TranslitFile(destv);
     TranslitFile(desti);
     */
+
+    ///// Added by JG
+    if(CompileFailure) return;
+    /////
+
     char str[MAX_PATH + 500];
     sprintf(str,
             _("Compile successful; wrote PASCAL source code to '%s'.\r\n\r\n"

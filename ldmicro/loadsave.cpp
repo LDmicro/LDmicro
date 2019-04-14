@@ -24,7 +24,6 @@
 
 #include "ldmicro.h"
 #include "pcports.h"
-#include "filetracker.hpp"
 
 char *FrmStrToStr(char *dest);
 //void FrmStrToFile(FILE *f, char *str);
@@ -32,10 +31,10 @@ char *DelNL(char *str);
 char *DelLastNL(char *str);
 
 typedef enum FRMTTag { FRMT_COMMENT, FRMT_01, FRMT_x20 } FRMT;
-char *StrToFrmStr(char *dest, char *str, FRMT frmt);
-char *StrToFrmStr(char *dest, char *src);
+char *StrToFrmStr(char *dest, const char *str, FRMT frmt);
+char *StrToFrmStr(char *dest, const char *src);
 
-ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f);
 
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
@@ -271,10 +270,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.spi.first,
                      l->d.spi.bitrate)
               == 8) {
-		l->d.spi.which = ELEM_SPI_WR;
+        l->d.spi.which = ELEM_SPI_WR;
         *which = ELEM_SPI_WR;
-	
-	} else if(sscanf(line,
+
+    } else if(sscanf(line,
                      "SPI %s %s %s %s %s %s %s %s",
                      l->d.spi.name,
                      l->d.spi.send,
@@ -285,12 +284,12 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.spi.first,
                      l->d.spi.bitrate)
               == 8) {
-		l->d.spi.which = ELEM_SPI;
+        l->d.spi.which = ELEM_SPI;
         *which = ELEM_SPI;
 
     }
-	///// Added by JG
-	  else if(sscanf(line,
+    ///// Added by JG
+      else if(sscanf(line,
                      "I2C_RD %s %s %s %s %s %s %s %s",
                      l->d.i2c.name,
                      l->d.i2c.send,
@@ -301,10 +300,10 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.i2c.first,
                      l->d.i2c.bitrate)
               == 8) {
-		l->d.i2c.which = ELEM_I2C_RD;
+        l->d.i2c.which = ELEM_I2C_RD;
         *which = ELEM_I2C_RD;
-    }	
-	  else if(sscanf(line,
+    }
+      else if(sscanf(line,
                      "I2C_WR %s %s %s %s %s %s %s %s",
                      l->d.i2c.name,
                      l->d.i2c.send,
@@ -315,11 +314,11 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                      l->d.i2c.first,
                      l->d.i2c.bitrate)
               == 8) {
-		l->d.i2c.which = ELEM_I2C_WR;
+        l->d.i2c.which = ELEM_I2C_WR;
         *which = ELEM_I2C_WR;
-	}
-	/////
-	
+    }
+    /////
+
      else if(sscanf(line, "7SEGMENTS %s %s %c", l->d.segments.dest, l->d.segments.src, &l->d.segments.common) == 3) {
         l->d.segments.which = ELEM_7SEG;
         *which = ELEM_7SEG;
@@ -471,7 +470,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_RECVn;
-    } else if(sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+    } else if([&]()->int{int tmp_bool;auto res = sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);l->d.uart.wait = tmp_bool != 0;return res;}() == 3) {
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = 1;
@@ -480,7 +479,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_SENDn;
-    } else if(sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+    } else if([&]()->int{int tmp_bool;auto res = sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);l->d.uart.wait = tmp_bool != 0;return res;}() == 3) {
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = 1;
@@ -638,7 +637,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             l->d.setPwm.name[0] = 'P';
         }
         char *s;
-        if(s = strchr(l->d.setPwm.targetFreq, '.')) {
+        if((s = strchr(l->d.setPwm.targetFreq, '.'))) {
             *s = '\0';
         }
     }
@@ -671,7 +670,7 @@ char *strspacer(char *str)
 // LoadSeriesFromFile. Returns the parallel subcircuit built up, or nullptr if
 // something goes wrong.
 //-----------------------------------------------------------------------------
-static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
+static ElemSubcktParallel *LoadParallelFromFile(FileTracker& f)
 {
     char  line[512];
     void *any;
@@ -718,7 +717,7 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
 // Same as LoadParallelFromFile, but for a series subcircuit. Thus builds
 // a series circuit out of parallel circuits and leaf elements.
 //-----------------------------------------------------------------------------
-ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f)
 {
     char  line[512];
     void *any;
@@ -780,14 +779,56 @@ void LoadWritePcPorts()
                     supportedMcus()[i].pinCount = IoPcCount;
                 }
         } else
-            Error(_(" File '%s' not found!"), pc);
+            Warning(_("File '%s' not found!"), pc);
         //RunningInBatchMode = false;
     }
 }
 
 //-----------------------------------------------------------------------------
+void SavePullUpListToFile(FileTracker& f)
+{
+    for(int i = 0; i < MAX_IO_PORTS; i++) {
+        if(IS_MCU_REG(i)) {
+            fprintf(f, "    %c%c: 0x%X \n", Prog.mcu()->portPrefix, 'A' + i, Prog.pullUpRegs[i]);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+bool LoadPullUpListFromFile(FileTracker& f)
+{
+    char line[MAX_NAME_LEN];
+    char portPrefix;
+    char port;
+    int i;
+    uint32_t pullUpRegs;
+    bool Ok;
+
+    while(fgets(line, sizeof(line), f)) {
+        if(!strlen(strspace(line)))
+            continue;
+        if(strcmp(line, "END") == 0) {
+            return true;
+        }
+        Ok = true;
+        // Don't internationalize this! It's the file format, not UI.
+        if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
+            i = port-'A';
+            if((portPrefix == Prog.mcu()->portPrefix) && (i >= 0) && (i < MAX_IO_PORTS)) {
+                Prog.pullUpRegs[i] = pullUpRegs;
+            } else {
+                Ok = false;
+            }
+        }
+        if(!Ok) {
+            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
+        }
+    }
+    return false;
+}
+//-----------------------------------------------------------------------------
 // Load a project from a saved project description files. This describes the
-// program, the target processor, plus certain configuration settings (cycle
+// program, the target processor, plus certain configuration settings (cycle 
 // time, processor clock, etc.). Return true for success, false if anything
 // went wrong.
 //-----------------------------------------------------------------------------
@@ -807,6 +848,7 @@ bool LoadProjectFromFile(const char *filename)
     char          version[512];
     long long int cycle;
     int           crystal, baud;
+    long          rate, speed;                          ///// Added by JG
     int           cycleTimer, cycleDuty, wdte;
     long long int configWord = 0;
     Prog.configurationWord = 0;
@@ -821,7 +863,11 @@ bool LoadProjectFromFile(const char *filename)
             if(!LoadVarListFromFile(f)) {
                 return false;
             }
-        } else if(sscanf(line, "LDmicro%s", &version)) {
+        } else if(strcmp(line, "PULL-UP LIST") == 0) {
+            if(!LoadPullUpListFromFile(f)) {
+                return false;
+            }
+        } else if(sscanf(line, "LDmicro%s", &version[0])) {
             Prog.LDversion = version;
             if((Prog.LDversion != "0.1") )
                 Prog.LDversion = "0.2";
@@ -870,8 +916,18 @@ bool LoadProjectFromFile(const char *filename)
             Prog.cycleDuty = 0;
             if(Prog.cycleTime == 0)
                 Prog.cycleTimer = -1;
-        } else if(sscanf(line, "BAUD=%d", &baud)) {
+        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz", &baud, &rate, &speed) == 3) {       ///// RATE + SPEED created by JG for SPI & I2C
             Prog.baudRate = baud;
+            Prog.spiRate = rate;
+            Prog.i2cRate = speed;
+        } else if(sscanf(line, "BAUD=%d Hz, RATE=%ld Hz", &baud, &rate) == 2) {     ///// RATE created by JG for SPI
+            Prog.baudRate = baud;
+            Prog.spiRate = rate;
+            Prog.i2cRate = 0;
+        } else if(sscanf(line, "BAUD=%d Hz", &baud) == 1) {
+            Prog.baudRate = baud;
+            Prog.spiRate = 0;
+            Prog.i2cRate = 0;
         } else if(memcmp(line, "COMPILED=", 9) == 0) {
             strcpy(CurrentCompileFile, line + 9);
 
@@ -883,15 +939,13 @@ bool LoadProjectFromFile(const char *filename)
                 compile_MNU = i;
         } else if(memcmp(line, "MICRO=", 6) == 0) {
             if(strlen(line) > 6) {
-                uint32_t i;
-                for(i = 0; i < supportedMcus().size(); i++) {
-                    if(supportedMcus()[i].mcuName)
-                        if(strcmp(supportedMcus()[i].mcuName, line + 6) == 0) {
-                            Prog.setMcu(&supportedMcus()[i]);
-                            break;
-                        }
-                }
-                if(i == supportedMcus().size()) {
+                auto& mcus = supportedMcus();
+                auto mcu = std::find_if(std::begin(mcus), std::end(mcus),
+                                         [&line](const McuIoInfo& info){ return (strcmp(info.mcuName, line + 6) == 0);});
+                if(mcu != std::end(mcus)) {
+                    Prog.setMcu(&(*mcu));
+                    LoadWritePcPorts();
+                } else {
                     Error(_("Microcontroller '%s' not supported.\r\n\r\n"
                             "Defaulting to no selected MCU."),
                           line + 6);
@@ -915,14 +969,15 @@ bool LoadProjectFromFile(const char *filename)
         if(strstr(line, "RUNG") == 0)
             goto failed;
 
-        Prog.rungs_[rung] = LoadSeriesFromFile(f);
-        if(!Prog.rungs_[rung])
+        ElemSubcktSeries *s = LoadSeriesFromFile(f);
+        if(!s)
             goto failed;
-        rung++;
         if(rung >= MAX_RUNGS) {
             Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
             break;
         }
+        Prog.rungs_[rung] = s;
+        rung++;
     }
     Prog.numRungs = rung;
 
@@ -950,10 +1005,9 @@ failed:
 // Helper routine for outputting hierarchical representation of the ladder
 // logic: indent on file f, by depth*4 spaces.
 //-----------------------------------------------------------------------------
-static void Indent(FILE *f, int depth)
+static void Indent(FileTracker& f, int depth)
 {
-    int i;
-    for(i = 0; i < depth; i++) {
+    for(int i = 0; i < depth; i++) {
         fprintf(f, "  ");
     }
 }
@@ -966,7 +1020,7 @@ static void Indent(FILE *f, int depth)
 // output the SERIES/END delimiters. This is because the root is delimited
 // by RUNG/END markers output elsewhere.
 //-----------------------------------------------------------------------------
-void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
+void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
 {
     ElemLeaf *  l = (ElemLeaf *)any;
     const char *s;
@@ -1150,8 +1204,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             fprintf(f, "SWAP %s %s\n", l->d.move.dest, l->d.move.src);
             break;
 
-		///// Added by JG
-		case ELEM_SPI_WR:			
+        ///// Added by JG
+        case ELEM_SPI_WR:
             fprintf(f,
                     "SPI_WR %s %s %s %s %s %s %s %s\n",
                     l->d.spi.name,
@@ -1163,7 +1217,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.spi.first,
                     l->d.spi.bitrate);
             break;
-			/////
+            /////
 
         case ELEM_SPI: {
             fprintf(f,
@@ -1179,8 +1233,8 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
             break;
         }
 
-		///// Added by JG
-		case ELEM_I2C_RD:
+        ///// Added by JG
+        case ELEM_I2C_RD:
             fprintf(f,
                     "I2C_RD %s %s %s %s %s %s %s %s\n",
                     l->d.i2c.name,
@@ -1193,7 +1247,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.i2c.bitrate);
             break;
 
-		case ELEM_I2C_WR:
+        case ELEM_I2C_WR:
             fprintf(f,
                     "I2C_WR %s %s %s %s %s %s %s %s\n",
                     l->d.i2c.name,
@@ -1206,7 +1260,7 @@ void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung)
                     l->d.i2c.bitrate);
             break;
 
-			/////
+            /////
 
         case ELEM_BUS: {
             fprintf(f, "BUS %s %s", l->d.bus.dest, l->d.bus.src);
@@ -1531,15 +1585,20 @@ bool SaveProjectToFile(char *filename, int code)
             Prog.cycleDuty,
             Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
-    fprintf(f, "BAUD=%d Hz\n", Prog.baudRate);
+    fprintf(f, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }
     if(Prog.LDversion != "0.1") {
         if(compile_MNU > 0)
-            fprintf(f, "COMPILER=%s\n", GetMnuName(compile_MNU));
+            fprintf(f, "COMPILER=%s\n", GetMnuCompilerName(compile_MNU));
 
         fprintf(f, "\n");
+        fprintf(f, "PULL-UP LIST\n");
+        SavePullUpListToFile(f);
+        fprintf(f, "END\n");
+
+		fprintf(f, "\n");
         fprintf(f, "VAR LIST\n");
         SaveVarListToFile(f);
         fprintf(f, "END\n");
@@ -1566,7 +1625,7 @@ bool SaveProjectToFile(char *filename, int code)
 }
 
 //---------------------------------------------------------------------------
-char *StrToFrmStr(char *dest, char *src, FRMT frmt)
+char *StrToFrmStr(char *dest, const char* src, FRMT frmt)
 {
     if((src == nullptr) || (strlen(src) == 0)) {
         strcpy(dest, "(none)");
@@ -1629,7 +1688,7 @@ char *StrToFrmStr(char *dest, char *src, FRMT frmt)
     }
     return dest;
 }
-char *StrToFrmStr(char *dest, char *src)
+char *StrToFrmStr(char *dest, const char *src)
 {
     return StrToFrmStr(dest, src, FRMT_x20);
 }

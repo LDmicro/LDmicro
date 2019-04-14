@@ -60,6 +60,7 @@ static HMENU SignedMenu;
 static HMENU BitwiseMenu;
 static HMENU PulseMenu;
 static HMENU SchemeMenu;
+static HMENU settings;
 
 // listview used to maintain the list of I/O pins with symbolic names, plus
 // the internal relay too
@@ -331,6 +332,9 @@ void SetMenusEnabled(bool canNegate, bool canNormal, bool canResetOnly, bool can
     EnableMenuItem(InstructionMenu, MNU_INSERT_9SEG, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_14SEG, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_16SEG, t);
+
+    t = Prog.mcu() ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(settings, MNU_PULL_UP_RESISTORS, t);
 }
 
 //-----------------------------------------------------------------------------
@@ -348,7 +352,7 @@ void SetUndoEnabled(bool undoEnabled, bool redoEnabled)
 //-----------------------------------------------------------------------------
 HMENU MakeMainWindowMenus()
 {
-    HMENU settings, compile, help;
+    HMENU compile, help;
     HMENU ConfigMenu;
     int   i;
     // file popup menu
@@ -580,14 +584,18 @@ HMENU MakeMainWindowMenus()
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWL, _("Insert Piecewise Linear"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, nullptr);
+
+    FormatStrMenu = CreatePopupMenu();
+    AppendMenu(FormatStrMenu, MF_STRING, MNU_INSERT_STRING, _("Insert Formatted String"));
+    AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)FormatStrMenu,_("Formatted string"));
+
     ///// Submenu created by JG
     UrtMenu = CreatePopupMenu();
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_FMTD_STRING, _("Insert Formatted String Over &UART"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND, _("Insert &UART SEND"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV, _("Insert &UART RECEIVE"));
-    AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable"));
-    //  AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECVn,
-    //      _("Insert &UART RECEIVE Variable"));
+//  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SENDn, _("Insert &UART SENDn Variable")); // obsolete
+//  AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECVn, _("Insert &UART RECEIVE Variable")); // obsolete
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_SEND_READY, _("Insert &UART SEND: Is ready to send ?"));
     AppendMenu(UrtMenu, MF_STRING, MNU_INSERT_UART_RECV_AVAIL, _("Insert &UART RECEIVE: Is data available ?"));
     AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)UrtMenu, _("UART functions"));
@@ -641,6 +649,7 @@ HMENU MakeMainWindowMenus()
 
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
+    AppendMenu(settings, MF_STRING, MNU_PULL_UP_RESISTORS, _("Set Pull-up input resistors"));
     ProcessorMenu = CreatePopupMenu();
     Core core = supportedMcus()[0].core;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
@@ -1077,6 +1086,15 @@ void MainWindowResized()
 //-----------------------------------------------------------------------------
 void ToggleSimulationMode(bool doSimulateOneRung)
 {
+/*
+    ///// Added by JG to avoid some bugs when clicking on non assigned contacts in simulation mode
+    if (!Prog.mcu())
+    {
+        Error(_("Must choose a target microcontroller before simulating."));
+        return;
+    }
+    /////
+*/
     InSimulationMode = !InSimulationMode;
 
     if(InSimulationMode) {

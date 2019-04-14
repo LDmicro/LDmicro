@@ -17,7 +17,7 @@ add_definitions(
     "-D_CRT_SECURE_NO_DEPRECATE"
     "-DNOMINMAX"
     )
-INCLUDE_DIRECTORIES("../" "../../common/gsl-lite/include" "../../common/stringarray")
+INCLUDE_DIRECTORIES("../" "../../common/gsl-lite/include" "../../common/stringarray" "../../common/utils")
 
 add_executable(ldinterpret  ${LDINTERPRET_SRC})
 add_executable(ldxinterpret ${LDXINTERPRET_SRC})

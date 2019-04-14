@@ -26,7 +26,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "filetracker.hpp"
 
 static char Variables[MAX_IO][MAX_NAME_LEN];
 static int  VariablesCount;
@@ -83,7 +82,7 @@ void CompileInterpreted(const char *outFile)
 {
     FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't write to '%s'"), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't write to '%s'"), outFile);
         return;
     }
 
@@ -222,6 +221,9 @@ void CompileInterpreted(const char *outFile)
             case INT_READ_ADC:
             case INT_SET_PWM:
             case INT_SPI:
+            case INT_SPI_WRITE:         ///// Added by JG
+            case INT_I2C_READ:          /////
+            case INT_I2C_WRITE:         /////
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
@@ -232,8 +234,7 @@ void CompileInterpreted(const char *outFile)
             case INT_WRITE_STRING:
             default:
                 THROW_COMPILER_EXCEPTION_FMT("%s INT_%d",
-                    _("Unsupported op (anything ADC, PWM, UART, EEPROM, SFR..) for "
-                      "interpretable target."), IntCode[ipc].op);
+                    _("Unsupported op (Peripheral) for interpretable target."), IntCode[ipc].op);
                 return;
         }
 
@@ -264,11 +265,13 @@ void CompileInterpreted(const char *outFile)
 
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
 
+    ///// Added by JG
+    if(CompileFailure) return;
+    /////
+
     char str[MAX_PATH + 500];
     sprintf(str,
-            _("Compile successful; wrote interpretable code to '%s'.\r\n\r\n"
-              "You probably have to adapt the interpreter to your application. See "
-              "the documentation."),
+            _("Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation."),
             outFile);
     CompileSuccessfulMessage(str);
 }

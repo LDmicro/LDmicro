@@ -111,7 +111,7 @@
 #define INT_SPI_WRITE                           1904
 #define INT_SPI_READ                            1905
 
-#define INT_I2C_READ                            1951		///// Added by JG
+#define INT_I2C_READ                            1951        ///// Added by JG
 #define INT_I2C_WRITE                           1952
 
 #define INT_WRITE_STRING                        21 // netzer

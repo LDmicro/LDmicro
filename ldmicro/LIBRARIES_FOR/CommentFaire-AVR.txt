@@ -1,0 +1,94 @@
+
+	LdMicro sur microcontrôleurs AVR ATMEGA 
+	_______________________________________
+
+
+	LdMicro 5 offre de nouvelles fonctions SPI et I2C via le langage C
+
+	Si tout est bien configuré, il est possible de générer des fichiers C,
+	puis un fichier hex et de le transférer dans la cible sans quitter ldmicro
+
+
+
+Comment tester ldmicro sur AVRs (AtMega) et utiliser ADC, PWM, SPI ou I2C:
+_____________________________________________________________________________
+
+1)	Installer AvrStudio 5, 6 ou 7 (7 non testé) depuis le site d'Atmel
+	ou installer directement un compilateur	avr-gcc pour windows 
+
+2)	Copier l'exécutable LdMicro et flashMCU.bat dans un même dossier.
+	Copier au même endroit le dossier LIBRARIES_FOR et son contenu.
+
+3)	Editer FlashMCU.bat (Clic droit + Modifier) et dans la section AVRGCC,
+	modifier GCCPATH pour pointer sur le répertoire d'installation d'avr-gcc
+
+	Si vous utilisez AvrDude pour flasher la cible, modifier également
+	la variable DUDPATH, et adapter la ligne de commande avrdude.exe selon
+	le programmateur utilisé
+
+	Sinon, il est toujours possible de flasher la cible manuellement
+	à partir du fichier hex généré par LdMicro
+
+4)	Créer un ladder avec LdMicro dans un dossier.
+
+5)	Compiler le ladder avec "Compiler en AVR-GCC" (différent maintenant de Win-AVR)
+	et générer le fichier C proposé dans le même dossier que le ladder (.ld) 
+	avec le même nom (.c)
+	
+	Cela génère aussi un fichier header (.h) et un autre header ladder.h
+	Avec les librairies fournies, ceci constitue un projet C prêt à l'emploi
+
+6)	Lancer FlashMCU.bat depuis LdMicro pour générer le fichier hex
+	et charger ce fichier dans la cible, automatiquement ou manuellement,
+	à partir du sous-dossier "bin" qui a été créé si tout va bien
+
+	Observer la fenêtre de commande ; il ne devrait pas y avoir d'erreur
+	Les librairies sont automatiquement recopiées (la première fois)
+	dans le sous-dossier "lib" où elles peuvent ensuite être adaptées
+	Les fichiers intermédiaires sont générés dans le sous-dossier "obj"
+
+7)	Tester le fichier hex ainsi généré sur la cible...
+
+	Bien sûr des tests complémentaires doivent être faits avec ces librairies
+	Rapporter les problèmes (et les succès) sur le forum ldmicro
+
+
+NB:	Les librairies ont été testées sur AtMega8, 16 et 328
+	Il est possible (et facile) d'adapter le code à d'autres cibles de la même
+	famille en utilisant des directives de compilation
+	Le nom de la cible est défini dans ladder.h comme LDTARGET_atmegaxxx
+
+	Il est possible d'utiliser plusieurs ADC ou PWM, mais seulement une UART,
+	un SPI, et un I2C
+	(Mais avec plusieurs périphériques utilisant différents pins SS pour le SPI
+	ou différentes adresses pour l'I2C)
+
+NB:	Le SPI doit être nommé "SPI"sur AVRs
+	Les nouvelles fonctions SPI sont:
+	Emission/Reception SPI, qui envoie et/ou reçoit un octet
+	Ecriture SPI, qui envoie une chaine alphanumerique sur le SPI sans réception
+
+	La fréquence du SPI est définie comme celle de l'UART dans le panneau de 
+	configuration de LdMicro
+	Le SPI le fonctionne qu'en mode master, avec la configuration standard
+
+NB:	L'I2C doit être nommé "I2C"sur AVRs
+	Les nouvelles fonctions I2C sont:
+	Réception I2C, pour lire un octet dans un registre du peripherique
+	Emission I2C, pour écrire un octet dans un registre du peripherique
+
+	La fréquence I2C est aussi définie dans le panneau de configuration de LdMicro
+	L'I2C ne fonctionne également qu'en mode master
+
+NB:	Toutes les fréquences utilisées par les ADC, PWM ou SPI sont obtenues par
+	division de la fréquence CPU. Il y a peu de choix pour le facteur de division,
+	et les fréquences obtenues sont donc très approximatives.
+	Pour obtenir des indications sur ces fréquences, compiler en Hex/Asm et voir
+	les informations données ou les calculer en étudiant les librairies ou
+	le datasheet de la cible
+	La fréquence I2C est plus précise en raison des possibilités offertes
+
+NB:	La résolution maximale est utilisée pour les ADC
+	La résolution maximale est utilisée pour les PWM et le paramétrage fonctionne
+	uniquement en % entre 0 and 100
+

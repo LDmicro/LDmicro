@@ -14,7 +14,7 @@ set(LD_COMPILER_SRC_LIST
     ../ansic.cpp
     ../avr.cpp
     ../circuit.cpp
-    ../compilecommon.cpp
+    ../compilercommon.cpp
     ../display.cpp
     ../intcode.cpp
     ../interpreted.cpp
@@ -47,6 +47,18 @@ set(LD_COMPILER_SRC_LIST
 if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /J")
     string(APPEND CMAKE_C_FLAGS " /J")
+
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4127")
+
+elseif(CMAKE_COMPILER_IS_GNUCXX)
+    string(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra ")
+    string(APPEND CMAKE_C_FLAGS "-Wall -Wextra ")
 endif()
 
 INCLUDE_DIRECTORIES("../" "../../common/gsl-lite/include" "../../common/stringarray" "../../common/utils")
@@ -63,25 +75,29 @@ if(${LDLANG} STREQUAL "ALL")
     foreach(lang_id ${LDLANG_ALL})
         if(${lang_id} STREQUAL "EN")
             add_library               (${PROJECT_NAME} ${LD_COMPILER_SRC_LIST})
-            target_compile_definitions(${PROJECT_NAME} PRIVATE -DLDLANG_${lang_id})
+            target_compile_definitions(${PROJECT_NAME}
+                PUBLIC LDLANG_${lang_id} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_library               (${PROJECT_NAME}-${ldlang_lower} ${LD_COMPILER_SRC_LIST})
-            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id})
+            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower}
+                PUBLIC LDLANG_${lang_id} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
         endif()
     endforeach()
 
 else()
 
     if(${LDLANG} STREQUAL "EN")
-        add_definitions(-DLDLANG_${LDLANG})
         add_library          (${PROJECT_NAME} ${LD_COMPILER_SRC_LIST})
+        target_compile_definitions(${PROJECT_NAME}
+            PUBLIC LDLANG_${LDLANG} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
         add_precompiled_header(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp)
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         string(TOLOWER ${LDLANG} ldlang_lower)
         set(_project_name ${PROJECT_NAME}-${ldlang_lower})
         add_library               (${PROJECT_NAME}-${ldlang_lower} ${LD_COMPILER_SRC_LIST})
-        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${LDLANG})
+        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower}
+            PUBLIC LDLANG_${LDLANG} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
         add_precompiled_header(${_project_name} ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp)
     endif()
 

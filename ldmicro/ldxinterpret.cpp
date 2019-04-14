@@ -361,7 +361,7 @@ void InterpretOneCycle()
                 break;
 
             case INT_IF_VARIABLE_LES_LITERAL:
-                if(!(READ_INT(Program[pc + 1]) < (Program[pc + 2] + (Program[pc + 3] << 8))))
+                if(!(READ_INT(Program[pc + 1]) < static_cast<int>(Program[pc + 2] + (Program[pc + 3] << 8))))
                     pc += Program[pc + 4];
                 pc += 5;
                 break;

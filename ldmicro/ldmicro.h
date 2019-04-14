@@ -21,8 +21,6 @@
 // Jonathan Westhues, Oct 2004
 //-----------------------------------------------------------------------------
 
-using namespace std;            // added by JG
-
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
@@ -221,7 +219,8 @@ using namespace std;            // added by JG
 #define MNU_INSERT_QUAD_ENCOD   0x4f09
 
 #define MNU_MCU_SETTINGS        0x50
-#define MNU_SPEC_FUNCTION       0x51
+#define MNU_PULL_UP_RESISTORS   0x51
+#define MNU_SPEC_FUNCTION       0x52
 #define MNU_PROCESSOR_0         0xa0
 #define MNU_PROCESSOR_NEW       0xa001
 #define MNU_PROCESSOR_NEW_PIC12 0xa002
@@ -285,7 +284,7 @@ using namespace std;            // added by JG
 
 #define MNU_SCHEME_BLACK        0x9000 // Must be a first
 #define NUM_SUPPORTED_SCHEMES   6      // ...
-#define MNU_SCHEME_USER         MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES-1 // This SCHEME number must be the largest !!!
+#define MNU_SCHEME_USER         (MNU_SCHEME_BLACK+NUM_SUPPORTED_SCHEMES-1) // This SCHEME number must be the largest !!!
 #define MNU_SELECT_COLOR        0x9100
 
 // Columns within the I/O etc. listview.
@@ -349,7 +348,7 @@ typedef struct SyntaxHighlightingColoursTag {
     COLORREF    simBg;          // background, simulation mode
     COLORREF    simRungNum;     // rung number, simulation mode
     COLORREF    simOff;         // de-energized element, simulation mode
-    COLORREF    simOn;          // energzied element, simulation mode
+    COLORREF    simOn;          // energized element, simulation mode
     COLORREF    simBusLeft;     // the `bus,' can be different colours for
     COLORREF    simBusRight;    // right and left of the screen
 } SyntaxHighlightingColours;
@@ -398,7 +397,7 @@ char *SetExt(char *dest, const char *src, const char *ext);
 extern char CurrentLdPath[MAX_PATH];
 long int fsize(FILE *fp);
 long int fsize(char filename);
-const char *GetMnuName(int MNU);
+const char *GetMnuCompilerName(int MNU);
 int GetMnu(char *MNU_name);
 
 // maincontrols.cpp
@@ -479,7 +478,7 @@ bool FindSelected(int *gx, int *gy);
 bool MoveCursorNear(int *gx, int *gy);
 
 #define DISPLAY_MATRIX_X_SIZE 256
-#define DISPLAY_MATRIX_Y_SIZE (MAX_RUNGS*2) // 2048
+#define DISPLAY_MATRIX_Y_SIZE ((MAX_RUNGS + 1) * 2) // 2048
 extern SeriesNode DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
 #define PADDING_IN_DISPLAY_MATRIX (&DisplayMatrixFiller)
@@ -501,8 +500,8 @@ bool CanUndo();
 // loadsave.cpp
 bool LoadProjectFromFile(const char *filename);
 bool SaveProjectToFile(char *filename, int code);
-void SaveElemToFile(FILE *f, int which, void *any, int depth, int rung);
-ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
+void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung);
+ElemSubcktSeries *LoadSeriesFromFile(FileTracker& f);
 char *strspace(char *str);
 char *strspacer(char *str);
 char *FrmStrToStr(char *dest, const char *src);
@@ -511,8 +510,8 @@ void LoadWritePcPorts();
 // iolist.cpp
 int IsIoType(int type);
 int GenerateIoList(int prevSel);
-void SaveIoListToFile(FILE *f);
-bool LoadIoListFromFile(FILE *f);
+void SaveIoListToFile(FileTracker& f);
+bool LoadIoListFromFile(FileTracker& f);
 void ShowIoDialog(int item);
 void IoListProc(NMHDR *h);
 void ShowAnalogSliderPopup(char *name);
@@ -538,6 +537,7 @@ void ShowGotoDialog(int which, char *name);
 void ShowRandomDialog(char *name);
 void ShowSetPwmDialog(void *e);
 void ShowPersistDialog(char *var);
+void ShowPullUpDialog();
 void ShowUartDialog(int which, ElemLeaf *l);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
@@ -593,19 +593,37 @@ extern bool DialogCancel;
 // stringer(BIT0) // ==  "BIT0"
 // useless(BIT0)  // == "0"
 
-#define ooops(...) { \
-        dbp("rungNow=%d", rungNow); \
-        dbp("bad at %d %s\n", __LINE__, __FILE__); \
+#define OOPS_AS_THROW
+
+#ifdef OOPS_AS_THROW
+#define ooops(FMT, ...) do { \
+    dbp("rungNow=%d\n", rungNow); \
+    char __message[1024];\
+    sprintf(__message, (FMT),  __VA_ARGS__); \
+    dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, __message); \
+    THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.", __message, rungNow); \
+} while(0)
+#define oops() do { \
+    dbp("rungNow=%d\n", rungNow); \
+    dbp("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
+    THROW_COMPILER_EXCEPTION_FMT("Internal error at rung #%d.", rungNow); \
+} while(0)
+#else
+    #define ooops(...) { \
+        dbp("rungNow=%d\n", rungNow); \
+        dbp("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
+        Error("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
         Error(__VA_ARGS__); \
-        Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
         doexit(EXIT_FAILURE); \
     }
-#define oops() { \
-        dbp("rungNow=%d", rungNow); \
-        dbp("bad at %d %s\n", __LINE__, __FILE__); \
-        Error("Internal error at line %d file '%s'\n", __LINE__, __FILE__); \
+    #define oops() { \
+        dbp("rungNow=%d\n", rungNow); \
+        dbp("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
+        Error("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
         doexit(EXIT_FAILURE); \
     }
+#endif
+
 #define dodbp
 #ifdef dodbp
   #define WARN_IF(EXP) if (EXP) dbp("Warning: " #EXP "");
@@ -633,7 +651,11 @@ extern bool DialogCancel;
 
 void doexit(int status);
 void dbp(const char *str, ...);
-void Error(const char *str, ...);
+int LdMsg(UINT uType, const char *str, ...);
+int Error(const char* str, ...);
+int Warning(const char* str, ...);
+int Info(const char* str, ...);
+int Question(const char* str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 void StartIhex(FILE *f);
@@ -692,6 +714,7 @@ char *toupperstr(char *dest, const char *src);
 const char *_(const char *in);
 
 // simulate.cpp
+int isVarInited(const char *name);
 void MarkInitedVariable(const char *name);
 void SimulateOneCycle(bool forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
@@ -720,27 +743,6 @@ int FindOpName(int op, const NameArray& name1);
 int FindOpName(int op, const NameArray& name1, const NameArray& name2);
 int FindOpNameLast(int op, const NameArray& name1);
 int FindOpNameLast(int op, const NameArray& name1, const NameArray& name2);
-// Assignment of the `variables,' used for timers, counters, arithmetic, and
-// other more general things. Allocate 2 octets (16 bits) per.
-// Allocate 1 octets for  8-bits variables.
-// Allocate 3 octets for  24-bits variables.
-typedef  struct VariablesListTag {
-    // vvv from compilecommon.cpp
-    char    name[MAX_NAME_LEN];
-    DWORD   addrl;
-    int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
-    int     SizeOfVar;  // SizeOfVar can be less than Allocated
-    // ^^^ from compilecommon.cpp
-    int     type;       // see PlcProgramSingleIo
-    // vvv from simulate.cpp
-//  SDWORD  val;        // value in simulation mode.
-//  char    valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
-//  DWORD   usedFlags;  // in simulation mode.
-//  int     initedRung; // Variable inited in rung.
-//  DWORD   initedOp;   // Variable inited in Op number.
-//  char    rungs[MAX_COMMENT_LEN]; // Rungs, where variable is used.
-    // ^^^ from simulate.cpp
-} VariablesList;
 
 #define USE_IO_REGISTERS 1 // 0-NO, 1-YES // USE IO REGISTERS in AVR
 // // #define USE_LDS_STS
@@ -749,7 +751,7 @@ typedef enum AvrOpTag {
     OP_VACANT, // 0
     OP_NOP,
     OP_COMMENT,
-    OP_COMMENTINT,
+    OP_COMMENT_INT,
     OP_ADC,
     OP_ADD,
     OP_ADIW,
@@ -860,7 +862,7 @@ typedef enum Pic16OpTag {
     OP_VACANT_, // 0
     OP_NOP_,
     OP_COMMENT_,
-    OP_COMMENT_INT,
+    OP_COMMENT_INT_,
 //  OP_ADDLW, // absent in PIC12
     OP_ADDWF,
 //  OP_ANDLW,
@@ -924,7 +926,7 @@ typedef struct PicAvrInstructionTag {
     DWORD       arg1orig;
     DWORD       BANK;   // this operation opPic will executed with this STATUS or BSR registers
     DWORD       PCLATH; // this operation opPic will executed with this PCLATH which now or previously selected
-    int         label;
+    int         isLabel;
     char        commentInt[MAX_COMMENT_LEN]; // before op
     char        commentAsm[MAX_COMMENT_LEN]; // after op
     char        arg1name[MAX_NAME_LEN];
@@ -935,56 +937,41 @@ typedef struct PicAvrInstructionTag {
     char        f[MAX_PATH]; // source file name
 } PicAvrInstruction;
 
-// compilecommon.cpp
-int McuRAM();
+// compilercommon.cpp
 int UsedRAM();
-int McuROM();
 int UsedROM();
-int McuPWM();
-int McuADC();
-int McuSPI();
-int McuI2C();           ///// Added by JG
-int McuUART();
 extern DWORD RamSection;
 extern DWORD RomSection;
 extern DWORD EepromAddrFree;
 //extern int VariableCount;
-void PrintVariables(FILE *f);
-DWORD isVarUsed(const char *name);
-int isVarInited(const char *name);
+void PrintVariables(FileTracker& f);
 int isPinAssigned(const NameArray& name);
 void AllocStart();
 DWORD AllocOctetRam();
 DWORD AllocOctetRam(int bytes);
 void AllocBitRam(DWORD *addr, int *bit);
-int MemForVariable(const char *name, DWORD *addrl, int sizeOfVar);
-int MemForVariable(const char *name, DWORD *addr);
+int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar);
 int MemForVariable(const NameArray& name, DWORD *addr);
-int SetMemForVariable(const char *name, DWORD addr, int sizeOfVar);
 int SetMemForVariable(const NameArray& name, DWORD addr, int sizeOfVar);
-int MemOfVar(const char *name, DWORD *addr);
 int MemOfVar(const NameArray& name, DWORD *addr);
-uint8_t MuxForAdcVariable(const char *name);
 uint8_t MuxForAdcVariable(const NameArray& name);
-int PinsForSpiVariable(const char *name, int n, char *spipins);             ///// Added by JG
-int PinsForI2cVariable(const char *name, int n, char *i2cpins);             ///// Added by JG
-int SingleBitAssigned(const char *name);
-int GetAssignedType(const char *name, const char *fullName);
+int PinsForSpiVariable(const NameArray& name, int n, char *spipins);             ///// Added by JG
+int PinsForI2cVariable(const NameArray& name, int n, char *i2cpins);             ///// Added by JG
+int SingleBitAssigned(const NameArray& name);
+int GetAssignedType(const NameArray& name, const NameArray& fullName);
 int InputRegIndex(DWORD addr);
 int OutputRegIndex(DWORD addr);
 void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput);
-void MemForSingleBit(const char *name, bool forRead, DWORD *addr, int *bit);
 void MemForSingleBit(const NameArray& name, bool forRead, DWORD *addr, int *bit);
-void MemForSingleBit(const char *name, DWORD *addr, int *bit);
+void MemForSingleBit(const NameArray& name, DWORD *addr, int *bit);
 void MemCheckForErrorsPostCompile();
-int SetSizeOfVar(const char *name, int sizeOfVar);
-int SizeOfVar(const char *name);
+int SetSizeOfVar(const NameArray& name, int sizeOfVar);
 int SizeOfVar(const NameArray& name);
-int AllocOfVar(char *name);
+int AllocOfVar(const NameArray& name);
 int TestByteNeeded(int count, SDWORD *vals);
 int byteNeeded(long long int i);
-void SaveVarListToFile(FILE *f);
-bool LoadVarListFromFile(FILE *f);
+void SaveVarListToFile(FileTracker& f);
+bool LoadVarListFromFile(FileTracker& f);
 void BuildDirectionRegisters(BYTE *isInput, BYTE *isAnsel, BYTE *isOutput);
 void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput);                     ///// Added by JG
 void BuildDirectionRegisters(WORD *isInput, WORD *isAnsel, WORD *isOutput, bool raiseError);    ///// Modified by JG BYTE -> WORD
@@ -992,8 +979,8 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow();
 double SIprefix(double val, char *prefix, int en_1_2);
 double SIprefix(double val, char *prefix);
-int GetVariableType(char *name);
-int SetVariableType(const char *name, int type);
+int GetVariableType(const NameArray& name);
+int SetVariableType(const NameArray& name, int type);
 
 typedef struct LabelAddrTag {
     char  name[MAX_NAME_LEN];
@@ -1001,7 +988,7 @@ typedef struct LabelAddrTag {
     DWORD FwdAddr;   // Address to jump to the start of rung below the current in LD
     DWORD used;
 } LabelAddr;
-LabelAddr *GetLabelAddr(const char *name);
+LabelAddr *GetLabelAddr(const NameArray& name);
 
 // intcode.cpp
 extern int int_comment_level;

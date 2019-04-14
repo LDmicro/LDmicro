@@ -189,7 +189,8 @@ void ShowResetDialog(char *name)
     } else if(name[0] == 'P') {
         SendMessage(TypePwmRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else
-        oops() SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
+        oops();
+    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
 
     EnableWindow(MainWindow, false);
     ShowWindow(ResetDialog, true);

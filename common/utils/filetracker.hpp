@@ -10,7 +10,7 @@
 class FileTracker
 {
     FileTracker(const FileTracker& ) {}
-    FileTracker& operator=(const FileTracker&) {}
+    FileTracker& operator=(const FileTracker&) {return *this;}
 public:
     FileTracker(const char* name = nullptr, const char* mode = nullptr) :
         file_(nullptr)
@@ -28,6 +28,10 @@ public:
         if(mode)
             mode_ = mode;
         file_ = std::fopen(name, mode_);
+        if(is_open())
+            name_ = name;
+        else
+            name_ = "";
         return is_open();
     }
     void close()
@@ -42,9 +46,25 @@ public:
     {
         return file_ != nullptr;
     }
-    FILE* get()
+    FILE* get() const
     {
         return file_;
+    }
+    long size() const
+    {
+        return size(name_);
+    }
+    static long size(const std::string& name)
+    {
+        FILE *fp = nullptr;
+        fp = fopen(name.c_str(), "rb");
+        if(fp == nullptr) {
+            return 0;
+        }
+        fseek(fp, 0L, SEEK_END);
+        long sz = ftell(fp);
+        fclose(fp);
+        return sz;
     }
 public:
     bool operator==(const FileTracker& other) const
@@ -55,12 +75,11 @@ public:
     {
         return file_ != other.file_;
     }
-    operator FILE* ()
+    operator FILE* () const
     {
         return get();
     }
-    FileTracker(FileTracker&& other) :
-        file_(nullptr)
+    FileTracker(FileTracker&& other) : file_(nullptr)
     {
         file_ = other.file_;
         other.file_ = nullptr;
@@ -76,5 +95,6 @@ public:
         return *this;
     }
 private:
-    FILE* file_;
+    mutable FILE* file_;
+    std::string name_;
 };

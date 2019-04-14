@@ -3,12 +3,12 @@
 // are changed infrequently
 //
 
-#ifndef __STDAFX_H__
-#define __STDAFX_H__
+#ifndef STDAFX_LDMICRO_H
+#define STDAFX_LDMICRO_H
 
 #include "targetver.h"
 
-#include <gsl.hpp>
+#include "gsl.hpp"
 
 // #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
@@ -56,6 +56,9 @@ typedef int32_t SDWORD;
 #include "display.h"
 
 #include "compilerexceptions.hpp"
+#include "filetracker.hpp"
+
+#include "lang.h"
 
 // The library that I use to do registry stuff.
 #define FREEZE_SUBKEY "LDMicro"
@@ -72,4 +75,4 @@ typedef int32_t SDWORD;
 #endif
 #endif //NOMINMAX
 
-#endif //__STDAFX_H__
+#endif // STDAFX_LDMICRO_H

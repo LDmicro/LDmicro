@@ -5,6 +5,7 @@
 #include <array>
 #include "circuit.h"
 #include "mcutable.hpp"
+#include "compilercommon.hpp"
 
 typedef struct McuIoInfoTag McuIoInfo;
 
@@ -61,12 +62,25 @@ struct PlcProgramSingleIo {
 class PlcProgram {
 public:
     PlcProgram();
+    PlcProgram(const PlcProgram& other);
     ~PlcProgram();
     void setMcu(McuIoInfo *mcu);
     const McuIoInfo* mcu() const {return mcu_;}
+    int mcuPWM() const ;
+    int mcuADC() const;
+    int mcuSPI() const;
+    int mcuI2C() const;
+    int mcuUART() const;
+    int mcuROM() const;
+    int mcuRAM() const;
     void reset();
-    bool appendEmptyRung();
     ElemSubcktSeries* rungs(uint32_t idx) {return rungs_[idx];}
+    void appendEmptyRung();
+    void insertEmptyRung(uint32_t idx);
+public:
+    PlcProgram& operator=(const PlcProgram &other);
+private:
+    void* deepCopy(int which, const void* any) const ;
 public:
     struct {
         PlcProgramSingleIo  assignment[MAX_IO];
@@ -74,6 +88,8 @@ public:
     }             io;
     long long int cycleTime;  // us
     int           cycleTimer; // 1 or 0
+    uint32_t      pullUpRegs[MAX_IO_PORTS]; // A is 0, J is 9 // PIC, AVR, ARM, ...
+//  uint32_t      pullDnRegs[MAX_IO_PORTS]; // A is 0, J is 9 // ARM
     long long int configurationWord; // only PIC
 //  BYTE          WDTE;       // only for PIC // Watchdog Timer Enable bit, 1 = WDT enabled
     uint8_t       WDTPSA;     // only for PIC
@@ -82,15 +98,17 @@ public:
     int           cycleDuty; // if true, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
     int           mcuClock;  // Hz
     int           baudRate;  // Hz
-    std::string   LDversion;
+    long          spiRate;   // Hz          Added by JG
+    long          i2cRate;   // Hz          Added by JG
+    NameArray     LDversion;
 
     std::array<ElemSubcktSeries *, MAX_RUNGS> rungs_;
     int               numRungs;
-    bool              rungPowered[MAX_RUNGS];
-    bool              rungSimulated[MAX_RUNGS];
-    char              rungSelected[MAX_RUNGS];
-    uint32_t          OpsInRung[MAX_RUNGS];
-    uint32_t          HexInRung[MAX_RUNGS];
+    bool              rungPowered[MAX_RUNGS + 1]; // [MAX_RUNGS + 1] for Label after last rung
+    bool              rungSimulated[MAX_RUNGS + 1];
+    char              rungSelected[MAX_RUNGS + 1];
+    uint32_t          OpsInRung[MAX_RUNGS + 1];
+    uint32_t          HexInRung[MAX_RUNGS + 1];
 private:
     McuIoInfo    *mcu_;
 };

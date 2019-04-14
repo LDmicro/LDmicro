@@ -113,6 +113,7 @@ target_include_directories(${PROJECT_NAME}
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../common/win32xx/include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../common/gsl-lite/include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../common/stringarray>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../common/utils>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../common/win32>
     )
 

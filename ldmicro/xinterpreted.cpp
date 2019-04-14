@@ -26,7 +26,6 @@
 
 #include "ldmicro.h"
 #include "intcode.h"
-#include "filetracker.hpp"
 
 static std::vector<uint8_t> OutProg;
 
@@ -83,7 +82,7 @@ void CompileXInterpreted(const char *outFile)
 {
     FileTracker f(outFile, "w");
     if(!f) {
-        Error(_("Couldn't write to '%s'"), outFile);
+        THROW_COMPILER_EXCEPTION_FMT(_("Couldn't write to '%s'"), outFile);
         return;
     }
 
@@ -228,6 +227,9 @@ void CompileXInterpreted(const char *outFile)
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
             case INT_SPI:
+            case INT_SPI_WRITE:         ///// Added by JG
+            case INT_I2C_READ:          /////
+            case INT_I2C_WRITE:         /////
             case INT_UART_SEND:
             case INT_UART_SEND1:
             case INT_UART_SENDn:
@@ -238,8 +240,7 @@ void CompileXInterpreted(const char *outFile)
             case INT_WRITE_STRING:
             default:
                 THROW_COMPILER_EXCEPTION_FMT(
-                    _("Unsupported op (anything UART, EEPROM, SFR..) for "
-                      "interpretable target.\nINT_%d"), IntCode[ipc].op);
+                    _("Unsupported op (Peripheral) for interpretable target.\nINT_%d"), IntCode[ipc].op);
                 return;
         }
     }
@@ -271,6 +272,10 @@ void CompileXInterpreted(const char *outFile)
     }
 
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
+
+    ///// Added by JG
+    if(CompileFailure) return;
+    /////
 
     char str[MAX_PATH + 500];
     sprintf(str,

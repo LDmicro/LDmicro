@@ -104,7 +104,7 @@ typedef struct McuI2cInfoTag {
     uint32_t REG_CTRL;
     uint32_t REG_STAT;
     uint32_t REG_DATA;
-	uint32_t REG_RATE;
+    uint32_t REG_RATE;
     int      SCL;
     int      SDA;
 //  bool    isUsed;
@@ -136,7 +136,7 @@ typedef struct McuExtIntPinInfoTag {
 
 typedef struct McuIoInfoTag {
     const char *mcuName;
-    const char *mcuList;
+    const char *deviceName; // DEVICE or PART_NAME or -chip or Alias list
     const char *mcuInc; // ASM*.INC // D:\WinAVR\avr\include\avr
     const char *mcuH;   // C*.H     // D:\cvavr2\inc   // C:\Program Files\PICC\Devices
     const char *mcuH2;  // C*.H     //                 // C:\Program Files\HI-TECH Software\PICC\9.83\include
@@ -173,8 +173,8 @@ typedef struct McuIoInfoTag {
     McuSpiInfo       *spiInfo;
     uint32_t          spiCount;
 
-	McuI2cInfo       *i2cInfo;					///// Added by JG
-    uint32_t          i2cCount;					/////
+    McuI2cInfo       *i2cInfo;                  ///// Added by JG
+    uint32_t          i2cCount;                 /////
 
     struct {
         uint32_t start;
@@ -184,15 +184,12 @@ typedef struct McuIoInfoTag {
 
 #ifndef arraylen
 
-#if _MSC_VER < 1900
-#define arraylen(x) (sizeof(x) / sizeof((x)[0]))
-#else
+#if LD_WITH_CONSTEXPR
 namespace {
-    template <class T, uint32_t N> constexpr uint32_t arraylen(T (&)[N])
-    {
-        return N;
-    }
+    template <class T, uint32_t N> constexpr uint32_t arraylen(T (&)[N]) {return N;}
 } // namespace
+#else
+#define arraylen(x) (sizeof(x) / sizeof((x)[0]))
 #endif
 
 #endif

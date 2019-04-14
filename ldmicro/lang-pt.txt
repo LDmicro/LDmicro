@@ -314,7 +314,7 @@
 "Se Menor Que"
 
 "If Not Equals"
-" Se Diferente"
+"Se Diferente"
 
 "Index:"
 "Índice:"

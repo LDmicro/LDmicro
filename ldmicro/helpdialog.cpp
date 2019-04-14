@@ -73,6 +73,10 @@ const char *AboutText[] = {
 "Controllino Maxi support 2016",
 "    Frederic Rible <frible@teaser.fr>",
 "",
+"ARM 32 bits support, SPI & I2C (C) 2019",
+"    Jose GILLES <UCP (France)>",
+"    Repository: https://github.com/joegil95",
+"",
 "LDmicro support:",
 "    Repository: https://github.com/LDmicro/LDmicro",
 "    Email:      LDmicro.GitHub@gmail.com",
@@ -304,7 +308,7 @@ void ShowHelpDialog(bool about)
 
     MakeClass();
 
-    const char *s = about ? "About LDmicro" : "LDmicro Help";
+    const char *s = about ? _("About LDmicro") : _("LDmicro Help");
     HelpDialog[a] =
         CreateWindowEx(0,
                        "LDmicroHelp",

@@ -778,7 +778,13 @@ void EditSelectedElement()
             break;
 
         case ELEM_SPI:
+        case ELEM_SPI_WR:                   ///// Added by JG
             ShowSpiDialog(Selected.leaf());
+            break;
+
+        case ELEM_I2C_RD:                   ///// Added by JG
+        case ELEM_I2C_WR:
+            ShowI2cDialog(Selected.leaf());
             break;
 
         case ELEM_RES:

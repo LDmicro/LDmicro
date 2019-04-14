@@ -35,6 +35,18 @@ execute_process(
 if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /J")
     string(APPEND CMAKE_C_FLAGS " /J")
+
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4127")
+
+elseif(CMAKE_COMPILER_IS_GNUCXX)
+    string(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra ")
+    string(APPEND CMAKE_C_FLAGS "-Wall -Wextra ")
 endif()
 
 add_definitions(
@@ -44,18 +56,18 @@ add_definitions(
     "-D_CRT_SECURE_NO_DEPRECATE"
     "-DNOMINMAX"
     )
-INCLUDE_DIRECTORIES("../../common/win32" "../../common/gsl-lite/include" "../../common/stringarray")
+INCLUDE_DIRECTORIES("../../common/win32" "../../common/gsl-lite/include" "../../common/stringarray" "../../common/utils")
 
 if(${LDLANG} STREQUAL "ALL")
     foreach(lang_id ${LDLANG_ALL})
         if(${lang_id} STREQUAL "EN")
             add_library               (${PROJECT_NAME} ${LDLANG_SRC_LIST})
-            target_compile_definitions(${PROJECT_NAME} PRIVATE -DLDLANG_${lang_id})
+            target_compile_definitions(${PROJECT_NAME} PUBLIC -DLDLANG_${lang_id})
             target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_library               (${PROJECT_NAME}-${ldlang_lower} ${LDLANG_SRC_LIST})
-            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id})
+            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PUBLIC -DLDLANG_${lang_id})
             target_include_directories(${PROJECT_NAME}-${ldlang_lower} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
         endif()
     endforeach()
@@ -63,13 +75,13 @@ if(${LDLANG} STREQUAL "ALL")
 else()
 
     if(${LDLANG} STREQUAL "EN")
-        add_definitions(-DLDLANG_${LDLANG})
         add_library          (${PROJECT_NAME} ${LDLANG_SRC_LIST})
+        target_compile_definitions(${PROJECT_NAME} PUBLIC -DLDLANG_${LDLANG})
         target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         string(TOLOWER ${LDLANG} ldlang_lower)
         add_library               (${PROJECT_NAME}-${ldlang_lower} ${LDLANG_SRC_LIST})
-        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${LDLANG})
+        target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PUBLIC -DLDLANG_${LDLANG})
         target_include_directories(${PROJECT_NAME}-${ldlang_lower} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 

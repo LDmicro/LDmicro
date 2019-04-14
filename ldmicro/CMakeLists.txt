@@ -9,6 +9,7 @@ endif()
 project(ldmicro
     LANGUAGES CXX
     )
+set(CMAKE_CXX_STANDARD 11)
 
 # set all posible languages
 SET(LDLANG_ALL EN DE ES FR IT PT TR RU JA )
@@ -33,6 +34,11 @@ else()
 endif()
 message(STATUS "Lang : ${LDLANG}")
 
+option(BUILD_LDMICROXX "enable/disable ldmicro-xx (default is disenabled)" OFF)
+if (BUILD_LDMICROXX)
+    add_subdirectory(ldmicro-xx)
+endif()
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -41,7 +47,6 @@ add_subdirectory(ldlanglib)
 add_subdirectory(ldcompilerlib)
 add_subdirectory(ldinterpret)
 add_subdirectory(ldlog)
-add_subdirectory(ldmicro-xx)
 
 find_package(Perl REQUIRED)
 
@@ -94,7 +99,7 @@ if(WIN32)
     set(LDMICRO_SRC_LIST ${LDMICRO_SRC_LIST} ldmicro.rc)
 endif(WIN32)
 
-INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./" "../common/gsl-lite/include" "../common/stringarray")
+INCLUDE_DIRECTORIES("../common/win32" "ldmicro" "./" "../common/gsl-lite/include" "../common/stringarray" "../common/utils")
 add_definitions(
     "-DISOLATION_AWARE_ENABLED"
     "-DWIN32_LEAN_AND_MEAN"
@@ -115,6 +120,18 @@ if(MSVC)
     string(APPEND CMAKE_CXX_FLAGS " /J")
     string(APPEND CMAKE_C_FLAGS " /J")
     set(CMAKE_EXE_LINKER_FLAGS "/MANIFEST:NO")
+
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4127")
+
+elseif(CMAKE_COMPILER_IS_GNUCXX)
+    string(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra ")
+    string(APPEND CMAKE_C_FLAGS "-Wall -Wextra ")
 endif()
 
 if(${LDLANG} STREQUAL "ALL")
@@ -123,6 +140,7 @@ if(${LDLANG} STREQUAL "ALL")
             add_executable            (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
             target_compile_definitions(${PROJECT_NAME} PRIVATE -DLDLANG_${lang_id})
             target_link_libraries     (${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib ldlog)
+            target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
 
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                                COMMAND ${CMAKE_COMMAND} -D pattern="${PROJECT_NAME}.exe"
@@ -134,7 +152,7 @@ if(${LDLANG} STREQUAL "ALL")
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_executable            (${PROJECT_NAME}-${ldlang_lower} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
-            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id})
+            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
             target_link_libraries     (${PROJECT_NAME}-${ldlang_lower} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower} ldlog)
         endif()
     endforeach()
@@ -142,7 +160,6 @@ if(${LDLANG} STREQUAL "ALL")
 else()
 
     if(${LDLANG} STREQUAL "EN")
-        add_definitions(-DLDLANG_${LDLANG})
         add_executable       (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
         target_link_libraries(${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib ldlog)
 
@@ -156,7 +173,6 @@ else()
 
         add_precompiled_header(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp)
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
-        add_definitions(-DLDLANG_${LDLANG})
         string(TOLOWER ${LDLANG} ldlang_lower)
         set(_project_name ${PROJECT_NAME}-${ldlang_lower})
         add_executable       (${_project_name} ${GUI_TYPE} ${LDMICRO_SRC_LIST})

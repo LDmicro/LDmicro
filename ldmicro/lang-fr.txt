@@ -196,10 +196,10 @@
 "Insert TIME to DELAY converter"
 "Insérer convertisseur TIME / DELAY"
 
-"Contacts"
-"Contacts "
+"Contacts and Coils / Relays"
+"Contacts et Bobines / Relais"
 
-"Insert Contacts: Input Pin\tC"
+"Insert &Contacts: Input Pin\tC"
 "Insérer &Contact : Broche d’entrée\tC"
 
 "Insert Contacts: Internal Relay\tShift+C"
@@ -211,7 +211,7 @@
 "Coils / Relays"
 "Bobines / Relais"
 
-"Insert Coil: Output Pin\tL"
+"Insert Coi&l: Output Pin\tL"
 "Insérer Bobine : Broche de sortie\tL"
 
 "Insert Coil: Internal Relay\tAlt+L"
@@ -250,16 +250,28 @@
 "Pulse generators"
 "Générateurs d’impulsions"
 
-"EDIT: Insert N PULSE"
-"Insérer N Pulse"
-
 "EDIT: Insert PULSER"
 "Insérer Pulser"
 
 "EDIT: Insert STEPPER"
 "Insérer Stepper"
 
+"Insert PULSER"
+"Insérer Pulser"
+
+"Insert STEPPER"
+"Insérer Stepper"
+
+"EDIT: Insert N PULSE"
+"Insérer N Pulse"
+
 "EDIT: Insert N PULSE OFF"
+"Insérer N Pulse Off"
+
+"Insert N PULSE"
+"Insérer N Pulse"
+
+"Insert N PULSE OFF"
 "Insérer N Pulse Off"
 
 "Temporization"
@@ -415,22 +427,37 @@
 "Insert Piecewise Linear"
 "Insérer tableau d'interpolation linéaire"
 
+"Formatted string"
+"Chaîne formatée"
+
+"Insert Formatted String"
+"Insérer chaîne formatée"
+
 "UART functions"
 "Fonctions UART"
 
 "Insert Formatted String Over &UART"
 "Insérer chaîne formatée pour l'UART"
 
-"Insert UART SEND"
+"Insert &UART SEND"
 "Insérer émission UART"
 
-"Insert UART RECEIVE"
+"Insert &UART RECEIVE"
 "Insérer réception UART"
 
 "Insert Test if UART ready to send"
 "Insérer test UART prête à émettre ?"
 
 "Insert Test if UART data available"
+"Insérer test donnée reçue sur UART ?"
+
+"Insert &UART SENDn Variable"
+"Insérer émission UART SENDn"
+
+"Insert &UART SEND: Is ready to send ?"
+"Insérer test UART prête à émettre ?"
+
+"Insert &UART RECEIVE: Is data available ?"
 "Insérer test donnée reçue sur UART ?"
 
 "SPI functions"
@@ -454,7 +481,7 @@
 "Insert Set &PWM Output\tP"
 "Insérer réglage sortie PWM\tP"
 
-"Insert A/D Converter Read"
+"Insert &A/D Converter Read\tA"
 "Insérer lecture convertisseur A/&D"
 
 "Insert Make Persistent"
@@ -470,6 +497,9 @@
 "Convertisseur BIN2BCD"
 
 "Insert BCD2BIN converter"
+"Convertisseur BCD2BIN"
+
+"SIMUL: Insert BCD2BIN"
 "Convertisseur BCD2BIN"
 
 "SIMUL: Insert BUS tracer"
@@ -1006,7 +1036,7 @@
 "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again."
 "Aucun microcontrôleur sélectionné. Vous devez sélectionner un microcontrôleur avant de définir l'utilisation des broches.\r\n\r\nSélectionnez un micro dans le menu et essayez à nouveau."
 
-"No serial instructions (UART SEND/UART RECEIVE) are in use; add one to program before setting baud rate.\r\n\r\n"
+"No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n"
 "Aucune instruction (émission ou réception UART) n'est utilisée; ajouter une instruction avant de fixer les vitesses.\r\n\r\n"
 
 "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank."
@@ -1342,8 +1372,8 @@
 "ADC pin error"
 "Erreur pin ADC"
 
-" SPI: Sending too many chars in one cycle may cause timing issues"
-" SPI: Envoyer trop de caractères en un seul cycle peut causer des problèmes de timing"
+"SPI: Sending too many chars in one cycle may cause timing issues"
+"SPI: Envoyer trop de caractères en un seul cycle peut causer des problèmes de timing"
 
 "Invalid SUBPROG '%s'"
 "SUBPROG non valide '%s'"
@@ -1363,8 +1393,8 @@
 "Every AllocFwdAddr needs FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"
 "Tout AllocFwdAddr nécessite FwdAddrIsNow.\ni=%d op=%d arg1=%d arg2=%d rung=%d"
 
-" Flash program memory size %d exceeds limit by %d words\nfor %s."
-" Taille du programme en flash %d dépasse la limite de %d words\npour %s."
+"Flash program memory size %d exceeds limit by %d words\nfor %s."
+"Taille du programme en flash %d dépasse la limite de %d words\npour %s."
 
 "Zero memory address not allowed!\nLoadXAddr(%d) skiped!"
 "Adresse mémoire nulle non autorisée!\nLoadXAddr(%d) skiped!"
@@ -1483,8 +1513,8 @@
 "Unsupported operation 'INT_WRITE_STRING' for target, skipped."
 "Opération 'INT_WRITE_STRING' non supportée par la cible, ignorée."
 
-" The delay is too long!\nThe maximum possible delay is %lld us."
-" Délai trop long!\nDélai maximum possible %lld us."
+"The delay is too long!\nThe maximum possible delay is %lld us."
+"Délai trop long!\nDélai maximum possible %lld us."
 
 "Don't know how to init %s."
 "Impossible d'initialiser %s."
@@ -1621,8 +1651,8 @@
 "Var '%s' not allocated %d."
 "Variable '%s' non allouée %d."
 
-" Invalid size (%d) of variable '%s' set to 2!"
-" Taille non valide (%d) de la variable '%s' fixée à 2!"
+"Invalid size (%d) of variable '%s' set to 2!"
+"Taille non valide (%d) de la variable '%s' fixée à 2!"
 
 " \tNow not used !!!"
 " \tInutilisé actuellement !!!"
@@ -1690,8 +1720,8 @@
 "Zero crystal frequency not valid; resetting to 16 MHz."
 "Frequency de quartz nulle non valide; fixée à 16 MHz."
 
-" A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"
-" Un temps de cycle nul est possible, mais les tempos (TON, TOF, etc) ne fonctionneront pas!"
+"A zero cycle time value is available, but timers (TON, TOF, etc) will not work correctly!"
+"Un temps de cycle nul est possible, mais les tempos (TON, TOF, etc) ne fonctionneront pas!"
 
 "Negative cycle time is not valid; Reset to 10 ms."
 "Temps de cycle négatif non valide; fixé à 10 ms."
@@ -1750,8 +1780,8 @@
 "Timer 'T%s'=%10.0Lf s can use %15lld PLC cycle times as the MAXIMUM possible value."
 "Timer 'T%s'=%10.0Lf s ne peut excéder %15lld cycles au MAXIMUM."
 
-" PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"
-" Temps de cycle nul. TON, TOF, RTO, RTL, TCY ne peuvent fonctionner correctement!"
+"PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"
+"Temps de cycle nul. TON, TOF, RTO, RTL, TCY ne peuvent fonctionner correctement!"
 
 "Expected single-character or one simple-escape-sequence in single-quotes: <%s>!"
 "Un seul caractère ou une seule séquence ESC attendus entre apostrophes: <%s>!"
@@ -1855,8 +1885,8 @@
 "Modbus Address"
 "Addresse Modbus"
 
-" Save ld before flash."
-" Enregistrer le ladder avant de flasher."
+"Save ld before flash."
+"Enregistrer le ladder avant de flasher."
 
 "File does not exist: '%s'"
 "Fichier inexistant: '%s'"
@@ -1909,8 +1939,8 @@
 "Couldn't open '%s', running non-interactively."
 "Impossible d'ouvrir '%s', exécution non interactive."
 
-" File '%s' not found!"
-" Fichier '%s' non trouvé!"
+"File '%s' not found!"
+"Fichier '%s' non trouvé!"
 
 "Too many rungs in input file!\nSame rungs not loaded!"
 "Trop de lignes dans le fichier!\nLignes identiques non chargées!"
@@ -2011,8 +2041,8 @@
 "Compile successful!\r\nWrote Netzer code to '%s' (CRC: 0x%.4x)."
 "Compilation OK!\r\nEcriture du code Netzer dans '%s' (CRC: 0x%.4x)."
 
-" PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
-" PASCAL ne supporte pas les periphériques (UART, PWM, ADC, EEPROM). Instruction ignorée."
+"PASCAL target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction."
+"PASCAL ne supporte pas les periphériques (UART, PWM, ADC, EEPROM). Instruction ignorée."
 
 "Bank select error!"
 "Erreur de sélection de Bank!"
@@ -2032,11 +2062,11 @@
 "Every AllocFwdAddr needs FwdAddrIsNow."
 "Tout AllocFwdAddr requiert FwdAddrIsNow."
 
-" CopyRegToReg Warning 1"
-" Warning CopyRegToReg 1"
+"CopyRegToReg Warning 1"
+"Warning CopyRegToReg 1"
 
-" CopyRegToReg Message 2"
-" Message CopyRegToReg 2"
+"CopyRegToReg Message 2"
+"Message CopyRegToReg 2"
 
 "When the MCU crystal frequency is %.3g %sHz."
 "Quand la fréquence du quartz est %.3g %sHz."
@@ -2086,7 +2116,7 @@
 "Cyclic On/Off"
 "On/Off Cyclique"
 
-"Hight Level Delay"
+"High Level Delay"
 "Délai niveau haut"
 
 "Low Level Delay"
@@ -2146,29 +2176,29 @@
 "Constant %s=%d out of variable '%s' range : 0 to 4294967295(0xFFFFffff) inclusive."
 "Constante %s=%d hors limites pour la variable '%s' : 0 à 4294967295(0xFFFFffff) inclus."
 
-" Variable %s=%d out of range: -128 to 127 inclusive."
-" Variable %s=%d hors limites: -128 à 127 inclus."
+"Variable %s=%d out of range: -128 to 127 inclusive."
+"Variable %s=%d hors limites: -128 à 127 inclus."
 
-" Variable %s=0x%X out of range: 0 to 0xFF inclusive."
-" Variable %s=0x%X hors limites: 0 à 0xFF inclus."
+"Variable %s=0x%X out of range: 0 to 0xFF inclusive."
+"Variable %s=0x%X hors limites: 0 à 0xFF inclus."
 
-" Variable %s=%d out of range: -32768 to 32767 inclusive."
-" Variable %s=%d hors limites: -32768 à 32767 inclus."
+"Variable %s=%d out of range: -32768 to 32767 inclusive."
+"Variable %s=%d hors limites: -32768 à 32767 inclus."
 
-" Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."
-" Variable %s=0x%X hors limites: 0 à 0xFFFF inclus."
+"Variable %s=0x%X out of range: 0 to 0xFFFF inclusive."
+"Variable %s=0x%X hors limites: 0 à 0xFFFF inclus."
 
-" Variable %s=%d out of range: -8388608 to 8388607 inclusive."
-" Variable %s=%d hors limites: -8388608 à 8388607 inclus."
+"Variable %s=%d out of range: -8388608 to 8388607 inclusive."
+"Variable %s=%d hors limites: -8388608 à 8388607 inclus."
 
-" Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."
-" Variable %s=0x%X hors limites: 0 à 0xffFFFF inclus."
+"Variable %s=0x%X out of range: 0 to 0xffFFFF inclusive."
+"Variable %s=0x%X hors limites: 0 à 0xffFFFF inclus."
 
-" Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."
-" Variable %s=%d hors limites: -2147483648 à 2147483647 inclus."
+"Variable %s=%d out of range: -2147483648 to 2147483647 inclusive."
+"Variable %s=%d hors limites: -2147483648 à 2147483647 inclus."
 
-" Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."
-" Variable %s=0x%X out of range: 0 à 0xffffFFFF inclus."
+"Variable %s=0x%X out of range: 0 to 0xffffFFFF inclusive."
+"Variable %s=0x%X out of range: 0 à 0xffffFFFF inclus."
 
 "Circular Counter, incremental"
 "Compteur cyclique normal"
@@ -2233,7 +2263,7 @@
 "SPI - Serial Peripheral Interface"
 "SPI - Serial Peripheral Interface"
 
-"Common: Cathode | Anode:"
+"Common:Cathode|Anode:"
 "Cathode | Anode commune:"
 
 "Convert char to %s Segments"
@@ -2420,8 +2450,8 @@
 "RES: Variable is not assigned to COUNTER or TIMER or PWM.\r\nYou must assign a variable."
 "RES: Aucune variable affectée au COUNTER ou TIMER ou PWM.\r\nVous devez affecter une variable."
 
-" Value 'val'=%d < 0"
-" Valeur 'val'=%d < 0"
+"Value 'val'=%d < 0"
+"Valeur 'val'=%d < 0"
 
 "Value 'val'=%d overflow output range %d."
 "Valeur 'val'=%d dépasse le format de sortie %d."
@@ -2509,3 +2539,6 @@
 
 "Compile failure."
 "Echec de la compilation."
+
+"Set pull-up input resistors"
+"Activer les pull-up sur les entrees"

@@ -1,3 +1,56 @@
+== Release 5.3.0.4
+
+    * Added: Menu Settings->Set Pull-up input resistors.
+    All input pins try to set Pull-up registers by default.
+    Attention: Not all ports have a pull-up resistor.
+    See datasheets of the controller for details.
+
+    * Added: PIC12F683 8-pin.
+
+    * Added: ESP8266. ANSIC compiler only.
+
+    * Fixed: Pins PB6 and PB7 are available for general I/O use when
+    the internal clock source is selected.
+    MCU list: ATmega8, ATmega48, ATmega88, ATmega168, ATmega328.
+    Note: LDmicro not provided any clock source manipulation.
+    Discussion here: http://cq.cx/ladder-forum.pl?action=viewthread&amp;parent=8416&amp;tt=1555027659
+
+    * Fixed: General variable name as Timer parameter, Issue #172
+
+    * Fixed: Quadrature Encoder, Issue  #175
+    Output Dir can be Y (pin) or R (internal relay).
+
+== Release 5.3.0.3
+
+    * Fixed crash when save LD.
+
+    * Fixed LDLANG_IT, Italian locale. Thank you very much, Claudio Birello.
+      manual-it.txt updated.
+
+== Release 5.3.0.2
+
+    * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES
+
+    * Fixed LDLANG_IT, Italian locale. Thanks, Claudio Birello.
+
+== Release 5.3.0.1
+
+    * Fixed: Shift + 6 problem (insert rung before) #155
+
+    * Fixed: Undoredo bug #160
+
+    * Fixed: Cannot set a value greater than 0x7FFFFFFF in a variable of 4 bytes. #146
+
+== Release 5.3.0.0
+
+    * Added Release 5.2.0.a by Jose GILLES
+
+    * LdMicro32 release 5.2
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=8128&tt=1549645797
+
+    * LdMicro32 on Github
+    http://cq.cx/ladder-forum.pl?action=viewthread&parent=7956&tt=1548617794
+
 == Release 4.4.4.0
 
     * Fixed: LDmicro closes unexpectedly #144

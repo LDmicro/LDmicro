@@ -41,7 +41,7 @@ HINSTANCE Instance;
 HWND      MainWindow;
 HDC       Hdc;
 
-extern int  compiler_variant;       ///// Added by JG
+//extern int  compiler_variant;       ///// Added by JG
 
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
@@ -330,12 +330,12 @@ char *GetIsaName(int ISA)
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
         case ISA_ARM          : return (char *)stringer( ISA_ARM          ) + 4;            ///// Added by JG
         default               : oops(); return nullptr;
-            // clang-format on
+        // clang-format on
     }
 }
 
 //-----------------------------------------------------------------------------
-const char *GetMnuName(int MNU)
+const char *GetMnuCompilerName(int MNU)
 {
     switch(MNU) {
         // clang-format off
@@ -378,27 +378,22 @@ static void flashBat(char *name, int ISA)
 {
     char s[MAX_PATH];
     char r[MAX_PATH];
-    char mcualias[MAX_PATH];    ///// Added by JG
-    int variant= 1;             ///// Added by JG
-
+    char deviceName[MAX_PATH];  ///// Added by JG
 
     if(strlen(name) == 0) {
-        Error(_(" Save ld before flash."));
+        Warning(_("Save ld before flash."));
         return;
     }
     if (!Prog.mcu()) return;                  ///// Added by JG
-    strcpy(mcualias, Prog.mcu()->mcuList);    /////
+    strcpy(deviceName, Prog.mcu()->deviceName);    /////
 
     s[0] = '\0';
     SetExt(s, name, "");
-    if (compiler_variant == MNU_COMPILE_AVRGCC) variant = 2;            ///// Added by JG
-    if (compiler_variant == MNU_COMPILE_HI_TECH_C)                      ///// Added by JG
-    {
-        variant = 2;
-        strcpy(mcualias, mcualias+3);       // remove "Pic" prefix in mcu name
+    if (compile_MNU == MNU_COMPILE_HI_TECH_C) {                    ///// Added by JG
+        strcpy(deviceName, deviceName+3);       // remove "Pic" prefix in mcu name
     }
 
-    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %d %s", ExePath, GetIsaName(ISA), s, variant, _strlwr(mcualias));       ///// 3rd & 4th param added by JG
+    sprintf(r, "\"%sflashMcu.bat\" %s \"%s\" %s %s", ExePath, GetIsaName(ISA), s, GetMnuCompilerName(compile_MNU), _strlwr(deviceName));       ///// 3rd & 4th param added by JG
 
     isErr(Execute(r), r);
 }
@@ -533,9 +528,10 @@ static void CompileProgram(bool compileAs, int MNU)
 {
     if((MNU == MNU_COMPILE) && (compile_MNU > 0))
         MNU = compile_MNU;
+    compile_MNU = MNU;
 
     if(MNU == MNU_COMPILE_GNUC ){
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to WinAvr C, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -563,7 +559,7 @@ static void CompileProgram(bool compileAs, int MNU)
     /////
 
     if(MNU == MNU_COMPILE_CODEVISIONAVR){
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to CodeVision C, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -576,7 +572,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_HI_TECH_C){
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_PIC16) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_PIC16)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to HI-TECH C, but MCU core isn't PIC.\nDo you want to continue?"),
@@ -589,7 +585,7 @@ static void CompileProgram(bool compileAs, int MNU)
     }
 
     if(MNU == MNU_COMPILE_CCS_PIC_C){
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_PIC16) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_PIC16)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to CSS-PIC C, but MCU core isn't PIC.\nDo you want to continue?"),
@@ -617,7 +613,7 @@ static void CompileProgram(bool compileAs, int MNU)
     /////
 
     if(MNU == MNU_COMPILE_ARDUINO) {
-        if(Prog.mcu() && Prog.mcu()->whichIsa != ISA_AVR && Prog.mcu()->whichIsa != ISA_ESP8266) {
+        if((Prog.mcu()) && (Prog.mcu()->whichIsa != ISA_AVR) && (Prog.mcu()->whichIsa != ISA_ESP8266)) {
             int msgboxID = MessageBox(
                     NULL,
                     _("You try to compile to Arduino sketch, but MCU core isn't AVR.\nDo you want to continue?"),
@@ -778,11 +774,11 @@ IsOpenAnable:
             return;
         }
 
-        char mcualias[MAX_PATH]= "";
-        if (Prog.mcu()) strcpy(mcualias, Prog.mcu()->mcuList);
+        char deviceName[MAX_PATH]= "";
+        if(Prog.mcu())
+            strcpy(deviceName, Prog.mcu()->deviceName);
 
-        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(mcualias, "PIC16F628") == 0))      // no SPI on this PIC
-        {
+        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) {     // no SPI on this PIC
             Error(_("SPI functions used but not supported for this micro or compile mode."));
             return;
         }
@@ -795,11 +791,11 @@ IsOpenAnable:
             return;
         }
 
-        char mcualias[MAX_PATH]= "";
-        if (Prog.mcu()) strcpy(mcualias, Prog.mcu()->mcuList);
+        char deviceName[MAX_PATH]= "";
+        if(Prog.mcu())
+            strcpy(deviceName, Prog.mcu()->deviceName);
 
-        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(mcualias, "PIC16F628") == 0))      // no SPI on this PIC
-        {
+        if((MNU == MNU_COMPILE_HI_TECH_C) && (strcmp(deviceName, "PIC16F628") == 0)) { // no SPI on this PIC
             Error(_("I2C functions used but not supported for this micro or compile mode."));
             return;
         }
@@ -850,6 +846,9 @@ IsOpenAnable:
                     break;
                 case ISA_NETZER:
                     CompileNetzer(CurrentCompileFile);
+                    break;
+                case ISA_ARM:
+                    Info(_("Use menu: 'Compile->Compile ARM-GCC for 32-bit ARM'"));
                     break;
                 default:
                     ooops("0x%X", Prog.mcu()->whichIsa);
@@ -1007,6 +1006,7 @@ static void ProcessMenu(int code)
     if(code >= MNU_PROCESSOR_0 && code < static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
         strcpy(CurrentCompileFile, "");
         Prog.setMcu(&(supportedMcus()[code - MNU_PROCESSOR_0]));
+        LoadWritePcPorts();
         RefreshControlsToSettings();
         ProgramChangedNotSaved = true;
         return;
@@ -1668,6 +1668,10 @@ static void ProcessMenu(int code)
 
         case MNU_MCU_SETTINGS:
             CHANGING_PROGRAM(ShowConfDialog());
+            break;
+
+        case MNU_PULL_UP_RESISTORS:
+            CHANGING_PROGRAM(ShowPullUpDialog());
             break;
 
         case MNU_SIMULATION_MODE:
@@ -2860,9 +2864,9 @@ void abortHandler(int signum)
     // make the most basic call possible to the lowest level, most
     // standard print function.
     if(name)
-        dbp("Caught signal %d (%s)\n", signum, name);
+        dbp(_("Caught signal %d (%s)\n"), signum, name);
     else
-        dbp("Caught signal %d\n", signum);
+        dbp(_("Caught signal %d\n"), signum);
 
     // Dump a stack trace.
     // This is the function we will be implementing next.
@@ -2893,14 +2897,14 @@ void CheckPwmPins()
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         for(j = 0; j < supportedMcus()[i].pwmCount; j++) {
             if(!supportedMcus()[i].pwmNeedsPin && supportedMcus()[i].pwmCount) {
-                ooops("1 %s", supportedMcus()[i].mcuName)
+                ooops("1 %s", supportedMcus()[i].mcuName);
             } else if(supportedMcus()[i].pwmNeedsPin)
                 if(supportedMcus()[i].pwmNeedsPin == supportedMcus()[i].pwmInfo[j].pin)
                     break;
         }
         if(supportedMcus()[i].pwmCount)
             if(j >= supportedMcus()[i].pwmCount)
-                ooops("2 %s", supportedMcus()[i].mcuName)
+                ooops("2 %s", supportedMcus()[i].mcuName);
     }
 }
 
@@ -2911,23 +2915,23 @@ void CheckPwmPins()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
     auto logg = ldlog::getLogger("default");
-    logg->add_sink(ldlog::newWindowsDebugStringSink());
-
-    LOG(ldlog::Info, logg, "Run LDmicro ver.: {}.", LDMICRO_VER_STR);
-
-    srand((int)time(0));
-
-    if(LEN7SEG != arraylen(char7seg))
-        oops();
-
-    if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
-        Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
-        oops();
-    }
-
-    CheckPwmPins();
-
     try {
+        logg->add_sink(ldlog::newWindowsDebugStringSink());
+
+        LOG(ldlog::Info, logg, "Run LDmicro ver.: {}.", LDMICRO_VER_STR);
+
+        srand((int)time(0));
+
+        if(LEN7SEG != arraylen(char7seg))
+            oops();
+
+        if(arraylen(Schemes) != NUM_SUPPORTED_SCHEMES) {
+            Error("arraylen(Schemes)=%d != NUM_SUPPORTED_SCHEMES=%d", arraylen(Schemes), NUM_SUPPORTED_SCHEMES);
+            oops();
+        }
+
+        CheckPwmPins();
+
         GetModuleFileName(hInstance, ExePath, MAX_PATH);
         ExtractFilePath(ExePath);
 
@@ -3012,7 +3016,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 *l = '\0';
             }
             if(!LoadProjectFromFile(source)) {
-                Error("Couldn't open '%s', running non-interactively.", source);
+                Error(_("Couldn't open '%s', running non-interactively."), source);
                 doexit(EXIT_FAILURE);
             }
             strcpy(CurrentCompileFile, dest);
@@ -3042,7 +3046,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             }
             *dest = '\0';
             if(!LoadProjectFromFile(source)) {
-                Error("Couldn't open '%s', running non-interactively.", source);
+                Error(_("Couldn't open '%s', running non-interactively."), source);
                 doexit(EXIT_FAILURE);
             }
             strcpy(CurrentSaveFile, source);
@@ -3103,9 +3107,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         RefreshScrollbars();
         UpdateMainWindowTitleBar();
 
-        for(int i = 0; i < 10; i++)
-            dbp("\n");
-
         MSG   msg;
         DWORD ret;
         while((ret = GetMessage(&msg, nullptr, 0, 0))) {
@@ -3128,8 +3129,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         FreezeWindowPos(MainWindow);
         FreezeDWORD(IoListHeight);
 
+        UndoFlush();
+        Prog.reset();
+
         return 0;
+    } catch (std::runtime_error& e) {
+        LOG_ERROR(logg, "Runtime error: \"{}\"", e.what());
+        Prog.setMcu(nullptr);
+        srand((unsigned int)time(nullptr));
+        char fname[20];
+        sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
+        SaveProjectToFile(fname, MNU_SAVE_02);
+        return EXIT_FAILURE;
     } catch(...) {
+
+        LOG_ERROR(logg, "{}" , "Receive unknown exception");
+        ///// Added by JG to save work in case of big bug
+        Prog.setMcu(nullptr);
+        srand((unsigned int)time(nullptr));
+        char fname[20];
+        sprintf(fname, "tmpfile_%4.4d.ld", rand() % 10000);
+        SaveProjectToFile(fname, MNU_SAVE_02);
+        /////
+
         abortHandler(EXCEPTION_EXECUTE_HANDLER);
     };
 

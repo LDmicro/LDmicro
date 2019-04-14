@@ -38,7 +38,9 @@ void *CheckMalloc(size_t n)
 }
 void CheckFree(void *p)
 {
-    free(p);
+    if(p)
+        free(p);
+    p = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -727,7 +729,7 @@ void AddQuadEncod()
     if(Prog.mcu()) {
         n = QuadEncodFunctionUsed();
         if(n > Prog.mcu()->ExtIntCount) {
-            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu->ExtIntCount);
+            //Error(_("Can use only %d INTs on this MCU."), Prog.mcu()->ExtIntCount);
             //return;
         }
     }
@@ -856,11 +858,11 @@ void AddReadAdc()
         return;
 
     if(Prog.mcu()) {
-        if(!McuADC()) {
+        if(!Prog.mcuADC()) {
             Error(_("No ADC or ADC not supported for selected micro."));
             // return;
         }
-        if(AdcFunctionUsed() >= McuADC()) {
+        if(AdcFunctionUsed() >= Prog.mcuADC()) {
             Error(_("No available ADC inputs."));
             // return;
         }
@@ -876,11 +878,11 @@ void AddSetPwm()
         return;
 
     if(Prog.mcu()) {
-        if(!McuPWM()) {
+        if(!Prog.mcuPWM()) {
             Error(_("No PWM or PWM not supported for this MCU."));
             // return;
         }
-        if(PwmFunctionUsed() >= McuPWM()) {
+        if(PwmFunctionUsed() >= Prog.mcuPWM()) {
             Error(_("No available PWM outputs."));
             // return;
         }
@@ -898,7 +900,7 @@ void AddUart(int which)
         return;
 
     if(Prog.mcu()) {
-        if(!McuUART()) {
+        if(!Prog.mcuUART()) {
             Error(_("No UART or UART not supported for this MCU."));
             // return;
         }
@@ -908,8 +910,8 @@ void AddUart(int which)
         strcpy(t->d.uart.name, "char");
     else
         strcpy(t->d.uart.name, "var");
-    t->d.uart.bytes = 1;
-    t->d.uart.wait = false;
+    t->d.uart.bytes = 1;    // Release 2.3 compatible
+    t->d.uart.wait = false; // Release 2.3 compatible
     AddLeaf(which, t);
 }
 
@@ -919,13 +921,15 @@ void AddSpi(int which)
         return;
 
     if(Prog.mcu()) {
-        if(!McuSPI()) {
+        if(!Prog.mcuSPI()) {
             Error(_("No SPI or SPI not supported for this MCU."));
             // return;
         }
     }
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.spi.name, "SPIn");
+    /////   strcpy(t->d.spi.name, "SPIn");
+    strcpy(t->d.spi.name, "SPI1");              ///// Modified by JG
+    /////
     strcpy(t->d.spi.mode, "Master");
     strcpy(t->d.spi.send, "send");
     strcpy(t->d.spi.recv, "recv");
@@ -933,6 +937,7 @@ void AddSpi(int which)
     strcpy(t->d.spi.modes, "0");
     strcpy(t->d.spi.size, "8");
     strcpy(t->d.spi.first, "MSB");
+    t->d.spi.which= which;                      ///// Added by JG
     AddLeaf(which, t);
 }
 
@@ -943,7 +948,7 @@ void AddI2c(int which)
         return;
 
     if(Prog.mcu()) {
-        if(!McuI2C()) {
+        if(!Prog.mcuI2C()) {
             Error(_("No I2C or I2C not supported for this MCU."));
             // return;
         }
@@ -969,7 +974,7 @@ void AddPersist()
         return;
 
     if(Prog.mcu()) {
-        if(!McuROM()) {
+        if(!Prog.mcuROM()) {
             Error(_("No ROM or ROM not supported for this MCU."));
             // return;
         }
@@ -1242,7 +1247,7 @@ void FreeCircuit(int which, void *any)
             CheckFree(p);
             break;
         }
-            CASE_LEAF
+        CASE_LEAF
             ForgetFromGrid(any);
             CheckFree(any);
             break;
@@ -1394,9 +1399,11 @@ void InsertRungI(int i)
         return;
     }
 
-    memmove(&Prog.rungs_[i + 1], &Prog.rungs_[i], (Prog.numRungs - i) * sizeof(Prog.rungs_[0]));
-    memmove(&Prog.rungSelected[i + 1], &Prog.rungSelected[i], (Prog.numRungs - i) * sizeof(Prog.rungSelected[0]));
-    Prog.appendEmptyRung();
+    if(i < Prog.numRungs)
+        Prog.insertEmptyRung(i);
+    else
+        Prog.appendEmptyRung();
+
     NullDisplayMatrix(i, i + 1 + 1);
 }
 
@@ -1601,8 +1608,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
     switch(which) {
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int                 i;
-            for(i = 0; i < p->count; i++) {
+            for(int i = 0; i < p->count; i++) {
                 if((l = ContainsWhich(p->contents[i].which, p->contents[i].data.any, seek1, seek2, seek3))) {
                     return l;
                 }
@@ -1611,8 +1617,7 @@ ElemLeaf *ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
         }
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int               i;
-            for(i = 0; i < s->count; i++) {
+            for(int i = 0; i < s->count; i++) {
                 if((l = ContainsWhich(s->contents[i].which, s->contents[i].data.any, seek1, seek2, seek3))) {
                     return l;
                 }
@@ -1828,10 +1833,8 @@ bool SleepFunctionUsed()
 // copy the selected rung temporar, InsertRung and
 // save in the new rung temp
 //-----------------------------------------------------------------------------
-static const char* clp()
-{
-    return "ldmicro.tmp";
-}
+
+const char * const CLP = "ldmicro.tmp";
 
 void CopyRungDown()
 {
@@ -1839,10 +1842,9 @@ void CopyRungDown()
     char              line[512];
     ElemSubcktSeries *temp = Prog.rungs_[i];
 
-    //FILE *f = fopen(CLP, "w+TD");
-    FILE *f = fopen(clp(), "w+");
-    if(!f) {
-        Error(_("Couldn't open file '%s'"), clp());
+    FileTracker f = FileTracker(CLP, "w+");
+    if(!f.is_open()) {
+        Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
     //fprintf(f, "RUNG\n");
@@ -1865,9 +1867,9 @@ void CopyRungDown()
 //-----------------------------------------------------------------------------
 void CutRung()
 {
-    FILE *f = fopen(clp(), "w+");
+    FileTracker f = FileTracker(CLP, "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), clp());
+        Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
     int SelN = 0;
@@ -1884,7 +1886,7 @@ void CutRung()
             SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs_[i], 0, i);
             DeleteRungI(i);
         }
-    fclose(f);
+    f.close();
 
     if(Prog.numRungs == 0) {
         Prog.appendEmptyRung();
@@ -1897,9 +1899,9 @@ void CutRung()
 //-----------------------------------------------------------------------------
 void CopyRung()
 {
-    FILE *f = fopen(clp(), "w+");
+    FileTracker f = FileTracker(CLP, "w+");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), clp());
+        Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
     int SelN = 0;
@@ -1918,7 +1920,6 @@ void CopyRung()
             SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs_[i], 0, i);
             Prog.rungSelected[i] = 'R';
         }
-    fclose(f);
 }
 
 //-----------------------------------------------------------------------------
@@ -1927,9 +1928,10 @@ void CopyElem()
     if(!Selected.data.leaf)
         return;
 
-    FILE *f = fopen(clp(), "w+");
+    FileTracker f = FileTracker(CLP, "w+");
+
     if(!f) {
-        Error(_("Couldn't open file '%s'"), clp());
+        Error(_("Couldn't open file '%s'"), CLP);
         return;
     }
     int SelN = 0;
@@ -1953,8 +1955,6 @@ void CopyElem()
             else
                 Prog.rungSelected[i] = 'L';
         }
-
-    fclose(f);
 }
 
 //-----------------------------------------------------------------------------
@@ -1976,9 +1976,9 @@ void PasteRung(int PasteInTo)
 
     ElemSubcktSeries *temp;
 
-    FILE *f = fopen(clp(), "r");
+    FileTracker f = FileTracker(CLP, "r");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), clp());
+        Error(_("Couldn't open file '%s'"), CLP);
         Error(_("You must Select rungs, then Copy or Cut, then Paste."));
         return;
     }
@@ -2051,7 +2051,7 @@ void PasteRung(int PasteInTo)
         if(Prog.rungSelected[i] != ' ')
             Prog.rungSelected[i] = ' ';
     }
-    fclose(f);
+    f.close();
 
     WhatCanWeDoFromCursorAndTopology();
 }

@@ -53,6 +53,7 @@ void dbp(const char *str, ...)
     char    buf[1024 * 8];
     va_start(f, str);
     vsprintf(buf, str, f);
+    va_end(f);
     OutputDebugString(buf);
     //  OutputDebugString("\n");
 }
@@ -94,11 +95,10 @@ void doexit(int status)
 // For error messages to the user; printf-like, to a message box.
 // For warning messages use ' ' in *str[0], see avr.cpp INT_SET_NPULSE.
 //-----------------------------------------------------------------------------
-void Error(const char *str, ...)
+int LdMsg(UINT uType, const char *str, va_list f)
 {
-    va_list f;
-    char    buf[1024];
-    va_start(f, str);
+    int  ret = 0;
+    char buf[1024];
     vsprintf(buf, str, f);
     dbp(buf);
     if(RunningInBatchMode) {
@@ -108,7 +108,7 @@ void Error(const char *str, ...)
 
         // Indicate that it's an error, plus the output filename
         char str[MAX_PATH + 100];
-        sprintf(str, "compile error ('%s'): ", CurrentCompileFile);
+        sprintf(str, _("Compile error ('%s'): "), CurrentCompileFile);
         WriteFile(h, str, strlen(str), &written, nullptr);
         // The error message itself
         WriteFile(h, buf, strlen(buf), &written, nullptr);
@@ -118,14 +118,71 @@ void Error(const char *str, ...)
     } else {
         HWND h = GetForegroundWindow();
         char buf2[1024];
-        if(buf[0] == ' ') {
-            //sprintf(buf2, "%s (%s)", _("LDmicro Warning"), AboutText[38]);
-            MessageBox(h, &buf[1], _("LDmicro Warning"), MB_OK | MB_ICONWARNING);
-        } else {
-            sprintf(buf2, "%s (%s)", _("LDmicro Error"), AboutText[38]);
-            MessageBox(h, buf, buf2, MB_OK | MB_ICONERROR);
+        const char *s = "";
+        if((uType & MB_ICONINFORMATION) == MB_ICONINFORMATION) {
+            s = _("LDmicro Information");
+        } else if((uType & MB_ICONERROR) == MB_ICONERROR) {
+            s = _("LDmicro Error");
+        } else if((uType & MB_ICONWARNING) == MB_ICONWARNING) {
+            s = _("LDmicro Warning");
+        } else if((uType & MB_ICONQUESTION) == MB_ICONQUESTION) {
+            s = _("LDmicro Question");
         }
+
+        sprintf(buf2, "%s (%s)", s, AboutText[42]);
+        ret = MessageBox(h, buf, buf2, MB_OK | uType);
     }
+    return ret;
+}
+
+int LdMsg(UINT uType, const char *str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = LdMsg(uType, str, f);
+    va_end(f);
+    return ret;
+}
+
+int Error(const char* str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = LdMsg(MB_ICONERROR, str, f);
+    va_end(f);
+    return ret;
+}
+
+int Warning(const char* str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = LdMsg(MB_ICONWARNING, str, f);
+    va_end(f);
+    return ret;
+}
+
+int Info(const char* str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = LdMsg(MB_ICONINFORMATION, str, f);
+    va_end(f);
+    return ret;
+}
+
+int Question(const char* str, ...)
+{
+    int ret = 0;
+    va_list f;
+    va_start(f, str);
+    ret = LdMsg(MB_ICONQUESTION, str, f);
+    va_end(f);
+    return ret;
 }
 
 //-----------------------------------------------------------------------------
@@ -136,7 +193,7 @@ void CompileSuccessfulMessage(char *str, unsigned int uType)
 {
     if(RunningInBatchMode) {
         char str[MAX_PATH + 100];
-        sprintf(str, "compiled okay, wrote '%s'\n", CurrentCompileFile);
+        sprintf(str, _("Compiled okay, wrote '%s'\n"), CurrentCompileFile);
 
         AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
         HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -341,6 +398,8 @@ const char *IoTypeToString(int ioType)
         case IO_TYPE_SPI_MISO:          return _("SPI MISO");
         case IO_TYPE_SPI_SCK:           return _("SPI SCK");
         case IO_TYPE_SPI__SS:           return _("SPI _SS");
+        case IO_TYPE_I2C_SCL:           return _("I2C SCL");                ///// Added by JG
+        case IO_TYPE_I2C_SDA:           return _("I2C SDA");                /////
         case IO_TYPE_PWM_OUTPUT:        return _("PWM out");
         case IO_TYPE_TCY:               return _("cyclic on/off");
         case IO_TYPE_TON:               return _("turn-on delay");
@@ -397,6 +456,8 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
        || type == IO_TYPE_SPI_MISO   //
        || type == IO_TYPE_SPI_SCK    //
        || type == IO_TYPE_SPI__SS    //
+       || type == IO_TYPE_I2C_SCL    //         ///// Added by JG
+       || type == IO_TYPE_I2C_SDA    //         /////
        || type == IO_TYPE_READ_ADC)  //
     {
         if(pin == NO_PIN_ASSIGNED) {
@@ -417,9 +478,9 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     }
                 }
                 /*
-                if(QuadEncodFunctionUsed() && Prog.mcu) {
-                    if((Prog.mcu->IntNeeds.int0 == pin)
-                    || (Prog.mcu->IntNeeds.int1 == pin) )
+                if(QuadEncodFunctionUsed() && Prog.mcu()) {
+                    if((Prog.mcu()->IntNeeds.int0 == pin)
+                    || (Prog.mcu()->IntNeeds.int1 == pin) )
                     {
                         strcpy(portName, _("<INT needs!>"));
                         return;
@@ -446,9 +507,9 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
                     }
                 }
                 /*
-                if(QuadEncodFunctionUsed() && Prog.mcu) {
-                    if((Prog.mcu->IntNeeds.int0 == pin)
-                    || (Prog.mcu->IntNeeds.int1 == pin) )
+                if(QuadEncodFunctionUsed() && Prog.mcu()) {
+                    if((Prog.mcu()->IntNeeds.int0 == pin)
+                    || (Prog.mcu()->IntNeeds.int1 == pin) )
                     {
                         strcpy(pinName, _("<INT needs!>"));
                         return;
@@ -514,7 +575,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io, char *portName, char *pi
             }
         }
     } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu()) {
-        if(!McuPWM()) {
+        if(!Prog.mcuPWM()) {
             strcpy(dest, _("<no PWM!>"));
         } else {
             if(pin == 0) {
@@ -704,6 +765,16 @@ McuSpiInfo *GetMcuSpiInfo(char *name)
 }
 
 //-----------------------------------------------------------------------------
+McuI2cInfo *GetMcuI2cInfo(char *name)                       ///// Added by JG
+{
+    if(Prog.mcu())
+        for(uint32_t i = 0; i < Prog.mcu()->i2cCount; i++)
+            if(strcmp(Prog.mcu()->i2cInfo[i].name, name) == 0)
+                return &(Prog.mcu()->i2cInfo[i]);
+    return nullptr;
+}
+
+//-----------------------------------------------------------------------------
 McuPwmPinInfo *PwmPinInfoForName(char *name)
 {
     if(Prog.mcu())
@@ -734,6 +805,21 @@ McuPwmPinInfo *PwmPinInfoForName(const char *name, int timer, int resolution) //
         }
     return nullptr;
 }
+
+///// Added by JG : to get max Pwm resolution
+McuPwmPinInfo *PwmMaxInfoForName(const char *name, int timer) // !=timer !!!
+{
+    McuPwmPinInfo *mppi= nullptr;
+
+    for(int r = 32; r >= 8; r--)
+    {
+        mppi= PwmPinInfoForName(name, timer, r);
+        if (mppi) return mppi;
+    }
+
+    return nullptr;
+}
+/////
 
 //-----------------------------------------------------------------------------
 McuAdcPinInfo *AdcPinInfo(int pin)

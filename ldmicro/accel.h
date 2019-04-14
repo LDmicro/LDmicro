@@ -81,19 +81,4 @@ double aS(double k, double t);
 double ktS(int nSize);
 double ksS(int nSize);
 
-//===========================================================================
-void makeAccelTable(FILE *f, int max, int P, int nSize, ElemAccel **TT,
-         const char *name,
-         int nN, // (1-для несимметричных кривых разгонов, 2-для cимметричных S-образных кривых разгона)
-         int sFt, // (1-sFt, 0-tFs)
-         int *n,
-         int *Psum,
-         int *shrt, // mult = 2 ^ shrt
-         int *sovElement,
-         fxFunc *fs, double ks,
-         fxFunc *ft, double kt,
-         fxFunc *fv, double kv,
-         fxFunc *fa, double ka,
-         fxFunc *eFv, double m);
-
 #endif //__ACCEL_H
