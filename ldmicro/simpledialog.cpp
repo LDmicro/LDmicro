@@ -1723,7 +1723,7 @@ void ShowPersistDialog(char *var)
 
 void ShowPullUpDialog()
 {
-    char *labels[MAX_IO_PORTS];
+    char *labels[MAX_IO_PORTS+2];
     char *dests[MAX_IO_PORTS];
     int n = 0;
     uint32_t mask = 0xFF;
@@ -1738,8 +1738,10 @@ void ShowPullUpDialog()
             n++;
         }
     }
+    labels[n] = (char *)_("*Attention: Not all ports have a pull-up resistor. See datasheets of the controller for details.");
+    labels[n+1] = (char *)_("*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable.");
 
-    if(ShowSimpleDialog(_("Set Pull-up input resistors"), n, (const char **)labels, 0xFFFF, 0, 0xFFFF, dests)) {
+    if(ShowSimpleDialog(_("Set Pull-up input resistors"), n+2, (const char **)labels, 0xFFFF, 0, 0xFFFF, n, dests)) {
         int n = 0;
         for(int i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i)) {

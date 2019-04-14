@@ -2069,7 +2069,7 @@ Counter|  0 |   | 1 |   | 2 |   | 3 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0
     For example, RBx and RBx, not RAx, RBx.
     Input Z is optional and can be empty.
     Output Dir is optional and can be empty.
-    Output Dir can be an Y (pin) or R (internal relay).
+    Output Dir can be Y (pin) or R (internal relay).
 
    ||                                                                    ||
    ||       R0        ~~[XqA0 XqB0            YqDir0]-         R1        ||

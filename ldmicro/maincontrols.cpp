@@ -649,7 +649,7 @@ HMENU MakeMainWindowMenus()
 
     settings = CreatePopupMenu();
     AppendMenu(settings, MF_STRING, MNU_MCU_SETTINGS, _("&MCU Parameters...\tCtrl+F5"));
-    AppendMenu(settings, MF_STRING, MNU_PULL_UP_RESISTORS, _("Set Pull-up input resistors..."));
+    AppendMenu(settings, MF_STRING, MNU_PULL_UP_RESISTORS, _("Set Pull-up input resistors"));
     ProcessorMenu = CreatePopupMenu();
     Core core = supportedMcus()[0].core;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {

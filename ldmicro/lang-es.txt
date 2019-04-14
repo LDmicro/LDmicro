@@ -2596,3 +2596,5 @@
 "Compile failure."
 "Fallo de compilación."
 
+"Set pull-up input resistors"
+"Activar pull-up por las entradas"
