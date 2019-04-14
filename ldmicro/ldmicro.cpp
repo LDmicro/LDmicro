@@ -1670,6 +1670,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(ShowConfDialog());
             break;
 
+        case MNU_PULL_UP_RESISTORS:
+            CHANGING_PROGRAM(ShowPullUpDialog());
+            break;
+
         case MNU_SIMULATION_MODE:
             ToggleSimulationMode();
             break;
@@ -2893,14 +2897,14 @@ void CheckPwmPins()
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         for(j = 0; j < supportedMcus()[i].pwmCount; j++) {
             if(!supportedMcus()[i].pwmNeedsPin && supportedMcus()[i].pwmCount) {
-                ooops("1 %s", supportedMcus()[i].mcuName)
+                ooops("1 %s", supportedMcus()[i].mcuName);
             } else if(supportedMcus()[i].pwmNeedsPin)
                 if(supportedMcus()[i].pwmNeedsPin == supportedMcus()[i].pwmInfo[j].pin)
                     break;
         }
         if(supportedMcus()[i].pwmCount)
             if(j >= supportedMcus()[i].pwmCount)
-                ooops("2 %s", supportedMcus()[i].mcuName)
+                ooops("2 %s", supportedMcus()[i].mcuName);
     }
 }
 

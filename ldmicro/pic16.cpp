@@ -4845,7 +4845,7 @@ otherwise the result was zero or greater.
                     DivideNeeded = true;
                     CallWithPclath(DivideRoutineAddress);
                 } else
-                    oops()
+                    oops();
 
                 if(a->op == INT_SET_VARIABLE_DIVIDE) {
                     CopyRegToReg(addr1, sov1, Scratch0, sov2, a->name1, "Scratch0", true);
@@ -7508,9 +7508,11 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
             }
         }
 
-        // Pull-ups are enabled after direction settings !
-        Comment("Clear Bit 6 - Enable Weak Pull-ups bit (GP0, GP1, GP3)");
-        Prog.OPTION &= ~(1 << _GPPU);
+        if(Prog.pullUpRegs[1] == 0) {
+            // Pull-ups are enabled after direction settings !
+            Comment("Clear Bit 6 - Enable Weak Pull-ups bit (GP0, GP1, GP3)");
+            Prog.OPTION &= ~(1 << _GPPU);
+        }
         Instruction(OP_MOVLW, Prog.OPTION);
         Instruction(OP_OPTION);
     }
@@ -7629,9 +7631,12 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
             }
         }
 
-        // Pull-ups are enabled after direction settings !
-        Comment("Clear Bit 7 - PORTs pull-ups are enabled by individual port latch values");
-        Instruction(OP_BCF, REG_OPTION, _RBPU);
+        // TODO: WPUA - WPUG bits for PIC16F1512 - PIC16F1947
+        if(Prog.pullUpRegs[1] == 0) {
+            // Pull-ups are enabled after direction settings !
+            Comment("Clear Bit 7 - PORTs pull-ups are enabled by individual port latch values");
+            Instruction(OP_BCF, REG_OPTION, _RBPU);
+        }
     }
 
     if(UartFunctionUsed()) {

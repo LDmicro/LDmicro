@@ -2020,7 +2020,7 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, cons
     Instruction(OP_SBRC, r3, bitSrc, s);
     Instruction(OP_SBR, r25, 1 << bitDest, d);
     Instruction(OP_ST_Z, r25, 0, name1);
-/**/
+// */
     //used ZL, r25; Opcodes: 9
     LoadZAddr(addrSrc);
     Instruction(OP_LD_Z, r25, 0, name2);
@@ -3175,6 +3175,7 @@ static void  WriteRuntime()
         } else {
             WriteMemory(Prog.mcu()->dirRegs[i], isOutput[i]);
             // turn on the pull-ups, and drive the outputs low to start
+            /*
             ///// Modified by JG to manage AVR pull-ups via Configuration Word (Bits) in Control panel
             if (i == 0)
                 WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 0) & 0xFF));  // PORTA
@@ -3183,7 +3184,8 @@ static void  WriteRuntime()
             else if (i == 2)
                 WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 16) & 0xFF)); // PORTC
             else
-            WriteMemory(Prog.mcu()->outputRegs[i], isInput[i]);
+            */
+            WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] & Prog.pullUpRegs[i]);
         }
     }
     //Comment("and now the generated PLC code will follow");
@@ -3400,10 +3402,10 @@ static void CompileFromIntermediate()
                         CopyRegToVar(a->name1, r16, sov1);
                         //} else if(sov2==2){
                     } else
-                        oops()
+                        oops();
 
                 } else {
-                    oops()
+                    oops();
                 }
                 break;
 

@@ -219,7 +219,8 @@
 #define MNU_INSERT_QUAD_ENCOD   0x4f09
 
 #define MNU_MCU_SETTINGS        0x50
-#define MNU_SPEC_FUNCTION       0x51
+#define MNU_PULL_UP_RESISTORS   0x51
+#define MNU_SPEC_FUNCTION       0x52
 #define MNU_PROCESSOR_0         0xa0
 #define MNU_PROCESSOR_NEW       0xa001
 #define MNU_PROCESSOR_NEW_PIC12 0xa002
@@ -538,6 +539,7 @@ void ShowGotoDialog(int which, char *name);
 void ShowRandomDialog(char *name);
 void ShowSetPwmDialog(void *e);
 void ShowPersistDialog(char *var);
+void ShowPullUpDialog();
 void ShowUartDialog(int which, ElemLeaf *l);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
@@ -596,18 +598,18 @@ extern bool DialogCancel;
 #define OOPS_AS_THROW
 
 #ifdef OOPS_AS_THROW
-#define ooops(FMT, ...) { \
+#define ooops(FMT, ...) do { \
     dbp("rungNow=%d\n", rungNow); \
-    char message[1024];\
-    sprintf(message, (FMT),  __VA_ARGS__); \
-    dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, message); \
-    THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.", message, rungNow); \
-}
-#define oops() { \
+    char __message[1024];\
+    sprintf(__message, (FMT),  __VA_ARGS__); \
+    dbp("Internal error at [%d:%s]%s\n", __LINE__, __LLFILE__, __message); \
+    THROW_COMPILER_EXCEPTION_FMT("Internal error %s. Rung %d.", __message, rungNow); \
+} while(0)
+#define oops() do { \
     dbp("rungNow=%d\n", rungNow); \
     dbp("Internal error at [%d:%s]\n", __LINE__, __LLFILE__); \
     THROW_COMPILER_EXCEPTION_FMT("Internal error at rung #%d.", rungNow); \
-}
+} while(0)
 #else
     #define ooops(...) { \
         dbp("rungNow=%d\n", rungNow); \

@@ -28,7 +28,7 @@
 
 static HWND SimpleDialog;
 
-#define MAX_BOXES 8
+#define MAX_BOXES MAX_IO_PORTS
 
 static HWND Textboxes[MAX_BOXES];
 static HWND Labels[MAX_BOXES];
@@ -443,7 +443,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
         default: oops(); break;
     }
     // clang-format on
-    if(ShowSimpleDialog(s, labs, labels, (3 << 1), (1 << 0), (7 << 0), boxes, dests)) {
+    if(ShowSimpleDialog(s, labs, labels, (1 << 2), (3 << 0), (7 << 0), boxes, dests)) {
         *adjust = atoi(adjustBuf);
         double delay_ms;
         SDWORD delay_us;
@@ -1234,9 +1234,9 @@ void ShowUartDialog(int which, ElemLeaf *l)
     char wait[MAX_NAME_LEN];
     sprintf(wait, "%d", e->wait);
 
-	const char *labels[] =  { (which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"), 
-							  (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"), 
-							  (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sended:")};
+    const char *labels[] =  { (which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"),
+                              (which == ELEM_UART_RECV) ? _("Number of bytes to receive:") : _("Number of bytes to send:"),
+                              (which == ELEM_UART_RECV) ? _("Wait until all bytes are received:") : _("Wait until all bytes are sended:")};
     char *      dests[] = {e->name, bytes, wait};
 
     NoCheckingOnBox[0] = true;
@@ -1541,7 +1541,7 @@ void ShowQuadEncodDialog(int which, ElemLeaf *l)
                             _("Input Z kind:"),
                             _("Count per revol:"),
                             _("Output Dir:")};
-    char *      dests[] = {counter, /*_int01, */&inputA[1], &inputB[1], &inputZ[1], inputKind, countPerRevol, &dir[1]};
+    char *      dests[] = {counter, /*_int01, */&inputA[1], &inputB[1], &inputZ[1], inputKind, countPerRevol, dir};
     NoCheckingOnBox[3] = true;
     NoCheckingOnBox[6] = true;
     if(strlen(inputZ) <= 1)
@@ -1555,10 +1555,12 @@ void ShowQuadEncodDialog(int which, ElemLeaf *l)
             inputZ[0] = 'X';
         else
             inputZ[0] = '\0';
-        if(strlen(&dir[1]))
-            dir[0] = 'Y';
-        else
+        if(strlen(dir)) {
+            if((dir[0] != 'Y') && (dir[0] != 'R') )
+                dir[0] = 'Y';
+        } else {
             dir[0] = '\0';
+        }
         //TODO: check the available range
         SDWORD val;
         /*
@@ -1717,4 +1719,40 @@ void ShowPersistDialog(char *var)
     const char *labels[] = {_("Variable:")};
     char *      dests[] = {var};
     ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, dests);
+}
+
+void ShowPullUpDialog()
+{
+    char *labels[MAX_IO_PORTS+2];
+    char *dests[MAX_IO_PORTS];
+    int n = 0;
+    uint32_t mask = 0xFF;
+    if(Prog.mcu()->whichIsa == ISA_ARM)
+        mask = 0xFFFF;
+    for(int i = 0; i < MAX_IO_PORTS; i++) {
+        if(IS_MCU_REG(i)) {
+            labels[n] = (char *)CheckMalloc(20);
+            sprintf(labels[n], "Port %C%C:", Prog.mcu()->portPrefix, 'A' + i);
+            dests[n] = (char *)CheckMalloc(20);
+            sprintf(dests[n], "0x%X", Prog.pullUpRegs[i] & mask);
+            n++;
+        }
+    }
+    labels[n] = (char *)_("*Attention: Not all ports have a pull-up resistor. See datasheets of the controller for details.");
+    labels[n+1] = (char *)_("*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable.");
+
+    if(ShowSimpleDialog(_("Set Pull-up input resistors"), n+2, (const char **)labels, 0xFFFF, 0, 0xFFFF, n, dests)) {
+        int n = 0;
+        for(int i = 0; i < MAX_IO_PORTS; i++) {
+            if(IS_MCU_REG(i)) {
+                Prog.pullUpRegs[i] = hobatoi(dests[n]);
+                n++;
+            }
+        }
+    }
+
+    for(int i = 0; i < n; i++) {
+        CheckFree(labels[i]);
+        CheckFree(dests[i]);
+    }
 }

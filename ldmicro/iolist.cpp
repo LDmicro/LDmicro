@@ -314,11 +314,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
                 }
             if(strlen(l->d.QuadEncod.dir) > 0)
                 switch(l->d.QuadEncod.dir[0]) {
+                    case 'R':
+                        AppendIo(l->d.QuadEncod.dir, IO_TYPE_INTERNAL_RELAY);
+                        break;
                     case 'Y':
                         AppendIo(l->d.QuadEncod.dir, IO_TYPE_DIG_OUTPUT);
                         break;
                     default:
-                        Error(_("Connect QUAD ENCOD dir flag to output pin YsomeName."));
+                        Error(_("Connect QUAD ENCOD dir flag to output pin YsomeName or internal relay RsomeName."));
                         break;
                 }
 /*

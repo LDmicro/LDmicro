@@ -162,7 +162,7 @@ typedef struct McuIoInfoTag {
     int      whichIsa;
     Core     core;
     int      pins;
-    uint32_t configurationWord; // only PIC // config for PIC or pull-up disable for AVR and ARM (JG)
+    uint32_t configurationWord; // only PIC
 
     McuPwmPinInfo    *pwmInfo;
     uint32_t          pwmCount;

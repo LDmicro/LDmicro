@@ -470,7 +470,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "UART_RECVn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_RECVn;
-    } else if(sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+    } else if([&]()->int{int tmp_bool;auto res = sscanf(line, "UART_RECV %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);l->d.uart.wait = tmp_bool != 0;return res;}() == 3) {
         *which = ELEM_UART_RECV;
     } else if(sscanf(line, "UART_RECV %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = 1;
@@ -479,7 +479,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
     } else if(sscanf(line, "UART_SENDn %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = SizeOfVar(l->d.uart.name);
         *which = ELEM_UART_SENDn;
-    } else if(sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &(l->d.uart.wait)) == 3) {
+    } else if([&]()->int{int tmp_bool;auto res = sscanf(line, "UART_SEND %s %d %d", l->d.uart.name, &(l->d.uart.bytes), &tmp_bool);l->d.uart.wait = tmp_bool != 0;return res;}() == 3) {
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "UART_SEND %s", l->d.uart.name) == 1) {
         l->d.uart.bytes = 1;
@@ -637,7 +637,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             l->d.setPwm.name[0] = 'P';
         }
         char *s;
-        if(s = strchr(l->d.setPwm.targetFreq, '.')) {
+        if((s = strchr(l->d.setPwm.targetFreq, '.'))) {
             *s = '\0';
         }
     }
@@ -785,8 +785,50 @@ void LoadWritePcPorts()
 }
 
 //-----------------------------------------------------------------------------
+void SavePullUpListToFile(FileTracker& f)
+{
+    for(int i = 0; i < MAX_IO_PORTS; i++) {
+        if(IS_MCU_REG(i)) {
+            fprintf(f, "    %c%c: 0x%X \n", Prog.mcu()->portPrefix, 'A' + i, Prog.pullUpRegs[i]);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+bool LoadPullUpListFromFile(FileTracker& f)
+{
+    char line[MAX_NAME_LEN];
+    char portPrefix;
+    char port;
+    int i;
+    uint32_t pullUpRegs;
+    bool Ok;
+
+    while(fgets(line, sizeof(line), f)) {
+        if(!strlen(strspace(line)))
+            continue;
+        if(strcmp(line, "END") == 0) {
+            return true;
+        }
+        Ok = true;
+        // Don't internationalize this! It's the file format, not UI.
+        if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
+            i = port-'A';
+            if((portPrefix == Prog.mcu()->portPrefix) && (i >= 0) && (i < MAX_IO_PORTS)) {
+                Prog.pullUpRegs[i] = pullUpRegs;
+            } else {
+                Ok = false;
+            }
+        }
+        if(!Ok) {
+            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
+        }
+    }
+    return false;
+}
+//-----------------------------------------------------------------------------
 // Load a project from a saved project description files. This describes the
-// program, the target processor, plus certain configuration settings (cycle
+// program, the target processor, plus certain configuration settings (cycle 
 // time, processor clock, etc.). Return true for success, false if anything
 // went wrong.
 //-----------------------------------------------------------------------------
@@ -821,7 +863,11 @@ bool LoadProjectFromFile(const char *filename)
             if(!LoadVarListFromFile(f)) {
                 return false;
             }
-        } else if(sscanf(line, "LDmicro%s", &version)) {
+        } else if(strcmp(line, "PULL-UP LIST") == 0) {
+            if(!LoadPullUpListFromFile(f)) {
+                return false;
+            }
+        } else if(sscanf(line, "LDmicro%s", &version[0])) {
             Prog.LDversion = version;
             if((Prog.LDversion != "0.1") )
                 Prog.LDversion = "0.2";
@@ -1548,6 +1594,11 @@ bool SaveProjectToFile(char *filename, int code)
             fprintf(f, "COMPILER=%s\n", GetMnuCompilerName(compile_MNU));
 
         fprintf(f, "\n");
+        fprintf(f, "PULL-UP LIST\n");
+        SavePullUpListToFile(f);
+        fprintf(f, "END\n");
+
+		fprintf(f, "\n");
         fprintf(f, "VAR LIST\n");
         SaveVarListToFile(f);
         fprintf(f, "END\n");

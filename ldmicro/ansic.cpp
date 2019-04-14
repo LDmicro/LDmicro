@@ -3400,23 +3400,19 @@ bool CompileAnsiC(const char *dest, int MNU)
                         fprintf(f, "    TRIS%c = 0x%02X;\n", 'A' + i, ~isOutput[i] & 0xff);
                     }
                     ///// Added by JG
-                    else if(compiler_variant == MNU_COMPILE_ARMGCC)
-                    {
+                    else if(compiler_variant == MNU_COMPILE_ARMGCC) {
                         // initialisation des ports utilisés en sortie et en entree (avec pull-up)
-                        if (isOutput[i])
-                        {
+                        if (isOutput[i]) {
                             fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_Speed_2MHz);\n", 'A' + i, isOutput[i]);
                             // mise à zéro des sorties
                             fprintf(f, "    GPIO_Write(GPIO%c, 0);\n", 'A' + i);
                         }
-                        if(isInput[i])
-                        {
-                            if (i == 3)         // Pull-ups on PORTD according to Config Bits
-                            {
-                                mask= (isInput[i] & Prog.configurationWord) ^ isInput[i];       // Pull-ups to enable
+                        if(isInput[i]) {
+                            if (i == 3) {       // Pull-ups on PORTD according to Config Bits
+                                mask= (isInput[i] & Prog.pullUpRegs[i]) ^ isInput[i];       // Pull-ups to enable
                                 if (mask)
                                     fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_IN, GPIO_PuPd_UP, GPIO_Speed_2MHz);\n", 'A' + i, mask);
-                                mask= (isInput[i] & ~Prog.configurationWord) ^ isInput[i];      // Pull-ups to disable
+                                mask= (isInput[i] & ~Prog.pullUpRegs[i]) ^ isInput[i];      // Pull-ups to disable
                                 if (mask)
                                     fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_IN, GPIO_PuPd_NOPULL, GPIO_Speed_2MHz);\n", 'A' + i, mask);
                             }
@@ -3430,6 +3426,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         fprintf(f, "    DDR%c = 0x%02X;\n", 'A' + i, isOutput[i]);
                         // turn on the pull-ups, and drive the outputs low to start
                         //fprintf(f,"    pokeb(0x%X, 0x%X);\n",Prog.mcu()->outputRegs[i], isInput[i]);
+                        /*
                         ///// Added by JG
                         if (i == 0)
                             fprintf(f, "    PORT%c = 0x%02X;\n", 'A' + i, isInput[i] ^ ((Prog.configurationWord >> 0) & 0xFF));     // PORTA
@@ -3439,7 +3436,8 @@ bool CompileAnsiC(const char *dest, int MNU)
                             fprintf(f, "    PORT%c = 0x%02X;\n", 'A' + i, isInput[i] ^ ((Prog.configurationWord >> 16) & 0xFF));    // PORTC
                         else
                         /////
-                        fprintf(f, "    PORT%c = 0x%02X;\n", 'A' + i, isInput[i]);
+                        */
+                        fprintf(f, "    PORT%c = 0x%02X;\n", 'A' + i, isInput[i] & Prog.pullUpRegs[i]);
                     }
                 }
             }
