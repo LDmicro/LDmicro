@@ -42,11 +42,11 @@ struct Lang {
 
 const char *_(const char *in)
 {
-    Lang *l;
-
 #if defined(LDLANG_EN)
     return in;
-#elif defined(LDLANG_DE)
+#else
+    Lang *l;
+#if defined(LDLANG_DE)
     l = &LangDe;
 #elif defined(LDLANG_FR)
     l = &LangFr;
@@ -73,4 +73,5 @@ const char *_(const char *in)
     }
 
     return in;
+#endif //defined(LDLANG_EN)
 }
