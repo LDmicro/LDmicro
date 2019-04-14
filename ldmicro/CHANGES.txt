@@ -17,6 +17,9 @@
 
     * Fixed: General variable name as Timer parameter, Issue #172
 
+    * Fixed: Quadrature Encoder, Issue  #175
+    Output Dir can be an Y (pin) or R (internal relay).
+
 == Release 5.3.0.3
 
     * Fixed crash when save LD.

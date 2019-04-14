@@ -1541,7 +1541,7 @@ void ShowQuadEncodDialog(int which, ElemLeaf *l)
                             _("Input Z kind:"),
                             _("Count per revol:"),
                             _("Output Dir:")};
-    char *      dests[] = {counter, /*_int01, */&inputA[1], &inputB[1], &inputZ[1], inputKind, countPerRevol, &dir[1]};
+    char *      dests[] = {counter, /*_int01, */&inputA[1], &inputB[1], &inputZ[1], inputKind, countPerRevol, dir};
     NoCheckingOnBox[3] = true;
     NoCheckingOnBox[6] = true;
     if(strlen(inputZ) <= 1)
@@ -1555,10 +1555,12 @@ void ShowQuadEncodDialog(int which, ElemLeaf *l)
             inputZ[0] = 'X';
         else
             inputZ[0] = '\0';
-        if(strlen(&dir[1]))
-            dir[0] = 'Y';
-        else
+        if(strlen(dir)) {
+            if((dir[0] != 'Y') && (dir[0] != 'R') )
+                dir[0] = 'Y';
+        } else {
             dir[0] = '\0';
+        }
         //TODO: check the available range
         SDWORD val;
         /*
