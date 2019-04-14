@@ -100,6 +100,7 @@ static void EmptyProgramStack(ProgramStack *ps)
             a += MAX_LEVELS_UNDO;
         ps->write = a;
         (ps->count)--;
+
         ps->prog[ps->write].reset();
     }
 }
