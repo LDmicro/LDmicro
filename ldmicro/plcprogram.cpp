@@ -65,6 +65,7 @@ PlcProgram& PlcProgram::operator=(const PlcProgram& other)
     std::copy(other.rungSelected, other.rungSelected + numRungs, rungSelected);
     std::copy(other.OpsInRung, other.OpsInRung + numRungs, OpsInRung);
     std::copy(other.HexInRung, other.HexInRung + numRungs, HexInRung);
+    std::copy(other.pullUpRegs, other.pullUpRegs + numRungs, pullUpRegs);
     for(int i = 0; i < numRungs; ++i) {
         rungs_[i] = static_cast<ElemSubcktSeries *>(deepCopy(ELEM_SERIES_SUBCKT, other.rungs_[i]));
     }
