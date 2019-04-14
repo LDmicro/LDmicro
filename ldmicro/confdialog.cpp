@@ -629,12 +629,13 @@ void ShowConfDialog()
                 Prog.configurationWord = Prog.mcu()->configurationWord;
             }
         }
+        /*
         ///// Added by JG
         if(Prog.mcu() && ((Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_ARM))) {
             Prog.configurationWord = hobatoi(buf);
         }
         /////
-
+        */
         SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         Prog.baudRate = atoi(buf);
 

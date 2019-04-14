@@ -87,6 +87,8 @@ public:
     }             io;
     long long int cycleTime;  // us
     int           cycleTimer; // 1 or 0
+    uint32_t      pullUpRegs[MAX_IO_PORTS]; // A is 0, J is 9 // PIC, AVR, ARM, ...
+//  uint32_t      pullDnRegs[MAX_IO_PORTS]; // A is 0, J is 9 // ARM
     long long int configurationWord; // only PIC
 //  BYTE          WDTE;       // only for PIC // Watchdog Timer Enable bit, 1 = WDT enabled
     uint8_t       WDTPSA;     // only for PIC

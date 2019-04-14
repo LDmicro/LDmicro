@@ -785,8 +785,50 @@ void LoadWritePcPorts()
 }
 
 //-----------------------------------------------------------------------------
+void SavePullUpListToFile(FileTracker& f)
+{
+    for(int i = 0; i < MAX_IO_PORTS; i++) {
+        if(IS_MCU_REG(i)) {
+            fprintf(f, "    %c%c: 0x%X \n", Prog.mcu()->portPrefix, 'A' + i, Prog.pullUpRegs[i]);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+bool LoadPullUpListFromFile(FileTracker& f)
+{
+    char line[MAX_NAME_LEN];
+    char portPrefix;
+    char port;
+    int i;
+    uint32_t pullUpRegs;
+    bool Ok;
+
+    while(fgets(line, sizeof(line), f)) {
+        if(!strlen(strspace(line)))
+            continue;
+        if(strcmp(line, "END") == 0) {
+            return true;
+        }
+        Ok = true;
+        // Don't internationalize this! It's the file format, not UI.
+        if(sscanf(line, "   %c%c: 0x%X", &portPrefix, &port, &pullUpRegs) == 3) {
+            i = port-'A';
+            if((portPrefix == Prog.mcu()->portPrefix) && (i >= 0) && (i < MAX_IO_PORTS)) {
+                Prog.pullUpRegs[i] = pullUpRegs;
+            } else {
+                Ok = false;
+            }
+        }
+        if(!Ok) {
+            THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'PULL-UP LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
+        }
+    }
+    return false;
+}
+//-----------------------------------------------------------------------------
 // Load a project from a saved project description files. This describes the
-// program, the target processor, plus certain configuration settings (cycle
+// program, the target processor, plus certain configuration settings (cycle 
 // time, processor clock, etc.). Return true for success, false if anything
 // went wrong.
 //-----------------------------------------------------------------------------
@@ -819,6 +861,10 @@ bool LoadProjectFromFile(const char *filename)
             }
         } else if(strcmp(line, "VAR LIST") == 0) {
             if(!LoadVarListFromFile(f)) {
+                return false;
+            }
+        } else if(strcmp(line, "PULL-UP LIST") == 0) {
+            if(!LoadPullUpListFromFile(f)) {
                 return false;
             }
         } else if(sscanf(line, "LDmicro%s", &version[0])) {
@@ -1548,6 +1594,11 @@ bool SaveProjectToFile(char *filename, int code)
             fprintf(f, "COMPILER=%s\n", GetMnuCompilerName(compile_MNU));
 
         fprintf(f, "\n");
+        fprintf(f, "PULL-UP LIST\n");
+        SavePullUpListToFile(f);
+        fprintf(f, "END\n");
+
+		fprintf(f, "\n");
         fprintf(f, "VAR LIST\n");
         SaveVarListToFile(f);
         fprintf(f, "END\n");

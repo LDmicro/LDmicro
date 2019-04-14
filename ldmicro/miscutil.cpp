@@ -646,18 +646,7 @@ static int ComparePin(const void *av, const void *bv)
     LongPinName(b, sb);
     return strcmp(sa, sb);
 }
-/*
-void SetMcu(McuIoInfo *mcu)
-{
-    Prog.mcu() = mcu;
-    Prog.configurationWord = 0;     ///// Added by JG
 
-    LoadWritePcPorts();
-
-    if(Prog.mcu() && (Prog.mcu()->core != PC_LPT_COM))
-        qsort(Prog.mcu()->pinInfo, Prog.mcu()->pinCount, sizeof(McuIoPinInfo), ComparePin);
-}
-*/
 //-----------------------------------------------------------------------------
 char *GetPinName(int pin, char *pinName)
 {

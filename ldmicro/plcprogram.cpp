@@ -29,6 +29,10 @@ PlcProgram::PlcProgram()
     cycleDuty = 0;
     configurationWord = 0;
     setMcu(nullptr);
+    LDversion = "0.2";
+    for(int i = 0; i < MAX_IO_PORTS; i++) {
+        pullUpRegs[i] = ~0; // All input pins try to set Pull-up registers by default.
+    }
 }
 
 PlcProgram::PlcProgram(const PlcProgram& other)
@@ -80,7 +84,7 @@ void PlcProgram::setMcu(McuIoInfo* m)
     if(!mcu_)
         return;
 
-    configurationWord = 0;
+    // configurationWord = 0; Don't resets configurationWord when select other MCU !!!
 
     auto comparePinInfo = [](const McuIoPinInfo& a, const McuIoPinInfo& b) -> bool {
             const char* sa = strlen(a.pinName) > 0 ? a.pinName : "";

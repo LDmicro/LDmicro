@@ -1670,6 +1670,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(ShowConfDialog());
             break;
 
+        case MNU_PULL_UP_RESISTORS:
+            CHANGING_PROGRAM(ShowPullUpDialog());
+            break;
+
         case MNU_SIMULATION_MODE:
             ToggleSimulationMode();
             break;

@@ -1,4 +1,9 @@
-== Release 5.3.0.?
+== Release 5.3.0.4
+
+    * Added: Menu Settings->Set Pull-up input resistors.
+    All input pins try to set Pull-up registers by default.
+    Attention: Not all ports have a pull-up resistor.
+    See datasheets of the controller for details.
 
     * Added: PIC12F683 8-pin.
 

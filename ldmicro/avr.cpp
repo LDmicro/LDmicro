@@ -3175,6 +3175,7 @@ static void  WriteRuntime()
         } else {
             WriteMemory(Prog.mcu()->dirRegs[i], isOutput[i]);
             // turn on the pull-ups, and drive the outputs low to start
+            /*
             ///// Modified by JG to manage AVR pull-ups via Configuration Word (Bits) in Control panel
             if (i == 0)
                 WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 0) & 0xFF));  // PORTA
@@ -3183,7 +3184,8 @@ static void  WriteRuntime()
             else if (i == 2)
                 WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] ^ ((Prog.configurationWord >> 16) & 0xFF)); // PORTC
             else
-            WriteMemory(Prog.mcu()->outputRegs[i], isInput[i]);
+            */
+            WriteMemory(Prog.mcu()->outputRegs[i], isInput[i] & Prog.pullUpRegs[i]);
         }
     }
     //Comment("and now the generated PLC code will follow");

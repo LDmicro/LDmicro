@@ -219,7 +219,8 @@
 #define MNU_INSERT_QUAD_ENCOD   0x4f09
 
 #define MNU_MCU_SETTINGS        0x50
-#define MNU_SPEC_FUNCTION       0x51
+#define MNU_PULL_UP_RESISTORS   0x51
+#define MNU_SPEC_FUNCTION       0x52
 #define MNU_PROCESSOR_0         0xa0
 #define MNU_PROCESSOR_NEW       0xa001
 #define MNU_PROCESSOR_NEW_PIC12 0xa002
@@ -538,6 +539,7 @@ void ShowGotoDialog(int which, char *name);
 void ShowRandomDialog(char *name);
 void ShowSetPwmDialog(void *e);
 void ShowPersistDialog(char *var);
+void ShowPullUpDialog();
 void ShowUartDialog(int which, ElemLeaf *l);
 void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);

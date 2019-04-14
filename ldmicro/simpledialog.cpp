@@ -28,7 +28,7 @@
 
 static HWND SimpleDialog;
 
-#define MAX_BOXES 8
+#define MAX_BOXES MAX_IO_PORTS
 
 static HWND Textboxes[MAX_BOXES];
 static HWND Labels[MAX_BOXES];
@@ -1717,4 +1717,38 @@ void ShowPersistDialog(char *var)
     const char *labels[] = {_("Variable:")};
     char *      dests[] = {var};
     ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, dests);
+}
+
+void ShowPullUpDialog()
+{
+    char *labels[MAX_IO_PORTS];
+    char *dests[MAX_IO_PORTS];
+    int n = 0;
+    uint32_t mask = 0xFF;
+    if(Prog.mcu()->whichIsa == ISA_ARM)
+        mask = 0xFFFF;
+    for(int i = 0; i < MAX_IO_PORTS; i++) {
+        if(IS_MCU_REG(i)) {
+            labels[n] = (char *)CheckMalloc(20);
+            sprintf(labels[n], "Port %C%C:", Prog.mcu()->portPrefix, 'A' + i);
+            dests[n] = (char *)CheckMalloc(20);
+            sprintf(dests[n], "0x%X", Prog.pullUpRegs[i] & mask);
+            n++;
+        }
+    }
+
+    if(ShowSimpleDialog(_("Set Pull-up input resistors"), n, (const char **)labels, 0xFFFF, 0, 0xFFFF, dests)) {
+        int n = 0;
+        for(int i = 0; i < MAX_IO_PORTS; i++) {
+            if(IS_MCU_REG(i)) {
+                Prog.pullUpRegs[i] = hobatoi(dests[n]);
+                n++;
+            }
+        }
+    }
+
+    for(int i = 0; i < n; i++) {
+        CheckFree(labels[i]);
+        CheckFree(dests[i]);
+    }
 }

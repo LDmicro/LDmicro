@@ -374,7 +374,10 @@ PULL UP RESISTORS
 Pull up resistors
 https://github.com/LDmicro/LDmicro/wiki/Pull-up-resistors
 
-Disable Pull up resistors
+All input pins try to set Pull-up registers by default.
+From Release 5.3.0.4 added menu Settings->Set Pull-up input resistors.
+
+Disable Pull up resistors (Obsolete but possible)
 https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
 
 Pull down resistors
