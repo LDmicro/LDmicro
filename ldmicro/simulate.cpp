@@ -1945,7 +1945,7 @@ static void SimulateIntCode()
             case INT_UART_SEND1:
                 if(SimulateUartTxCountdown == 0) {
                     SimulateUartTxCountdown = 2;
-                    /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1);        ///// Modified by JG
+            /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1);        ///// Modified by JG
                     AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
@@ -1977,6 +1977,7 @@ static void SimulateIntCode()
                 }
                 break;
 
+            case INT_UART_RECV1:
             case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
                     SetSingleBit(a->name2, true);
@@ -2509,7 +2510,7 @@ static LRESULT CALLBACK I2cSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 // we can redirect them to the PLC program.
 //-----------------------------------------------------------------------------
 static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)       //// Modified by JG
-{
+{                                    
     switch(msg) {
         case WM_KEYDOWN:
             // vvv copy-paste from ldmicro.cpp
@@ -2864,7 +2865,7 @@ static void   AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) 
         || b == '\t' || b == '\v' || b == '\a')
        && b != '\0') {
         append[0] = (char)b;
-        append[1] = '\0';
+        append[1] = '\0';               
     } else {
         sprintf(append, "\\x%02x", b);
     }
