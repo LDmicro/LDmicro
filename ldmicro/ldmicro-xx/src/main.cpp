@@ -12,6 +12,10 @@ INT WINAPI WinMain(HINSTANCE hInstance , HINSTANCE hPreviousInstace , LPSTR lpCm
     logg->add_sink(ldlog::newWindowsDebugStringSink());
 
     LOG(ldlog::Info, logg, "Run LDmicro-xx ver.: {}.", "0.0.0.0");
+    LOG(ldlog::Info, logg, "ElemLeaf sz: {}.", sizeof (ElemLeaf));
+    LOG(ldlog::Info, logg, "ElemSubcktSeries sz: {}.", sizeof (ElemSubcktSeries));
+    LOG(ldlog::Info, logg, "PlcProgram sz: {}.", sizeof (PlcProgram));
+    //PlcProgram
 
     GetModuleFileName(hInstance, ExePath, MAX_PATH);
     ExtractFilePath(ExePath);

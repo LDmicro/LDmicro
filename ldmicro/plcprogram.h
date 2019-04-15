@@ -10,8 +10,8 @@
 typedef struct McuIoInfoTag McuIoInfo;
 
 typedef struct ModbusAddr {
-    unsigned char Slave;
-    unsigned short Address;
+    uint8_t  Slave;
+    uint16_t Address;
 } ModbusAddr_t;
 
 struct PlcProgramSingleIo {
@@ -74,6 +74,7 @@ public:
     int mcuROM() const;
     int mcuRAM() const;
     void reset();
+    ElemSubcktSeries* rungs(uint32_t idx) {return rungs_[idx];}
     void appendEmptyRung();
     void insertEmptyRung(uint32_t idx);
 public:
@@ -101,7 +102,7 @@ public:
     long          i2cRate;   // Hz          Added by JG
     NameArray     LDversion;
 
-    std::array<ElemSubcktSeries *, MAX_RUNGS> rungs;
+    std::array<ElemSubcktSeries *, MAX_RUNGS> rungs_;
     int               numRungs;
     bool              rungPowered[MAX_RUNGS + 1]; // [MAX_RUNGS + 1] for Label after last rung
     bool              rungSimulated[MAX_RUNGS + 1];

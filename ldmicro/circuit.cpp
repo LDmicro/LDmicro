@@ -78,11 +78,11 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             for(i = 0; i < s->count; i++) {
-                if(s->contents[i].data.any == Selected) {
+                if(s->contents[i].any() == Selected.any()) {
                     break;
                 }
                 if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
-                    if(AddLeafWorker(ELEM_PARALLEL_SUBCKT, s->contents[i].data.any, newWhich, newElem)) {
+                    if(AddLeafWorker(ELEM_PARALLEL_SUBCKT, s->contents[i].any(), newWhich, newElem)) {
                         return true;
                     }
                 }
@@ -95,18 +95,18 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 // so there is no need to consider them anywhere but here.
                 // If we copy instead of replacing then the DisplayMatrix
                 // tables don't get all messed up.
-                memcpy(s->contents[i].data.leaf, newElem, sizeof(ElemLeaf));
-                s->contents[i].data.leaf->selectedState = EndOfRungElem(newWhich) ? SELECTED_LEFT : SELECTED_RIGHT;
+                memcpy(s->contents[i].leaf(), newElem, sizeof(ElemLeaf));
+                s->contents[i].leaf()->selectedState = EndOfRungElem(newWhich) ? SELECTED_LEFT : SELECTED_RIGHT;
                 CheckFree(newElem);
                 s->contents[i].which = newWhich;
-                SelectedWhich = newWhich;
+                Selected.which = newWhich;
                 return true;
             }
             if(s->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
                 Error(_("Too many elements in subcircuit!"));
                 return true;
             }
-            switch(Selected->selectedState) {
+            switch(Selected.leaf()->selectedState) {
                 case SELECTED_LEFT:
                     memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
                     s->contents[i].data.leaf = newElem;
@@ -127,10 +127,10 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     p->count = 2;
 
                     int t;
-                    t = (Selected->selectedState == SELECTED_ABOVE) ? 0 : 1;
+                    t = (Selected.leaf()->selectedState == SELECTED_ABOVE) ? 0 : 1;
                     p->contents[t].which = newWhich;
                     p->contents[t].data.leaf = newElem;
-                    t = (Selected->selectedState == SELECTED_ABOVE) ? 1 : 0;
+                    t = (Selected.leaf()->selectedState == SELECTED_ABOVE) ? 1 : 0;
                     p->contents[t].which = s->contents[i].which;
                     p->contents[t].data.any = s->contents[i].data.any;
 
@@ -139,7 +139,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     break;
                 }
                 default:
-                    oops();
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state %i.", Selected.leaf()->selectedState);
                     break;
             }
             return true;
@@ -148,7 +148,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             for(i = 0; i < p->count; i++) {
-                if(p->contents[i].data.any == Selected) {
+                if(p->contents[i].any() == Selected.any()) {
                     break;
                 }
                 if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
@@ -163,7 +163,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 Error(_("Too many elements in subcircuit!"));
                 return true;
             }
-            switch(Selected->selectedState) {
+            switch(Selected.leaf()->selectedState) {
                 case SELECTED_ABOVE:
                     memmove(&p->contents[i + 1], &p->contents[i], (p->count - i) * sizeof(p->contents[0]));
                     p->contents[i].data.leaf = newElem;
@@ -184,10 +184,10 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     s->count = 2;
 
                     int t;
-                    t = (Selected->selectedState == SELECTED_LEFT) ? 0 : 1;
+                    t = (Selected.leaf()->selectedState == SELECTED_LEFT) ? 0 : 1;
                     s->contents[t].which = newWhich;
                     s->contents[t].data.leaf = newElem;
-                    t = (Selected->selectedState == SELECTED_LEFT) ? 1 : 0;
+                    t = (Selected.leaf()->selectedState == SELECTED_LEFT) ? 1 : 0;
                     s->contents[t].which = p->contents[i].which;
                     s->contents[t].data.any = p->contents[i].data.any;
 
@@ -196,7 +196,7 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                     break;
                 }
                 default:
-                    oops();
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state %i.", Selected.leaf()->selectedState);
                     break;
             }
             return true;
@@ -204,6 +204,163 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
         }
     }
 
+    return false;
+}
+
+static bool AddLeafWorker(SeriesNode& any, SeriesNode& selected, SeriesNode newElem)
+{
+    int i;
+    switch(any.which) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *series = any.series();
+            for(i = 0; i < series->count; i++) {
+                if(series->contents[i].any() == selected.any()) {
+                    break;
+                }
+                if(series->contents[i].which == ELEM_PARALLEL_SUBCKT) {
+                    if(AddLeafWorker(series->contents[i], selected, newElem)) {
+                        return true;
+                    }
+                }
+            }
+            if(i == series->count)
+                break;
+            if(series->contents[i].which == ELEM_PLACEHOLDER) {
+                // Special case--placeholders are replaced. They only appear
+                // in the empty series subcircuit that I generate for them,
+                // so there is no need to consider them anywhere but here.
+                // If we copy instead of replacing then the DisplayMatrix
+                // tables don't get all messed up.
+                memcpy(series->contents[i].leaf(), newElem.leaf(), sizeof(ElemLeaf));
+                series->contents[i].leaf()->selectedState = EndOfRungElem(newElem.which) ? SELECTED_LEFT : SELECTED_RIGHT;
+                CheckFree(newElem.leaf());
+                series->contents[i].which = newElem.which;
+                selected.which = newElem.which;
+                return true;
+            }
+            if(series->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
+                Error(_("Too many elements in subcircuit!"));
+                return true;
+            }
+            switch(selected.leaf()->selectedState) {
+                case SELECTED_LEFT:
+                    memmove(&series->contents[i + 1], &series->contents[i], (series->count - i) * sizeof(series->contents[0]));
+                    series->contents[i] = newElem;
+                    (series->count)++;
+                    break;
+
+                case SELECTED_RIGHT:
+                    memmove(&series->contents[i + 2], &series->contents[i + 1], (series->count - i - 1) * sizeof(series->contents[0]));
+                    series->contents[i + 1] = newElem;
+                    (series->count)++;
+                    break;
+
+                case SELECTED_BELOW:
+                case SELECTED_ABOVE: {
+                    SeriesNode sp(ELEM_PARALLEL_SUBCKT, AllocSubcktParallel());
+                    sp.parallel()->count = 2;
+
+                    int t;
+                    t = (selected.leaf()->selectedState == SELECTED_ABOVE) ? 0 : 1;
+                    sp.parallel()->contents[t] = newElem;
+                    t = (selected.leaf()->selectedState == SELECTED_ABOVE) ? 1 : 0;
+                    sp.parallel()->contents[t] = series->contents[i];
+
+                    series->contents[i] = sp;
+                    break;
+                }
+                default:
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state %i.", selected.leaf()->selectedState);
+                    break;
+            }
+            return true;
+            break;
+        }
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *parallel = any.parallel();
+            for(i = 0; i < parallel->count; i++) {
+                if(parallel->contents[i].any() == selected.any()) {
+                    break;
+                }
+                if(parallel->contents[i].which == ELEM_SERIES_SUBCKT) {
+                    if(AddLeafWorker(parallel->contents[i], selected, newElem)) {
+                        return true;
+                    }
+                }
+            }
+            if(i == parallel->count)
+                break;
+            if(parallel->count >= (MAX_ELEMENTS_IN_SUBCKT - 1)) {
+                Error(_("Too many elements in subcircuit!"));
+                return true;
+            }
+            switch(selected.leaf()->selectedState) {
+                case SELECTED_ABOVE:
+                    memmove(&parallel->contents[i + 1], &parallel->contents[i], (parallel->count - i) * sizeof(parallel->contents[0]));
+                    parallel->contents[i] = newElem;
+                    (parallel->count)++;
+                    break;
+
+                case SELECTED_BELOW:
+                    memmove(&parallel->contents[i + 2], &parallel->contents[i + 1], (parallel->count - i - 1) * sizeof(parallel->contents[0]));
+                    parallel->contents[i + 1] = newElem;
+                    (parallel->count)++;
+                    break;
+
+                case SELECTED_LEFT:
+                case SELECTED_RIGHT: {
+                    SeriesNode ss(ELEM_SERIES_SUBCKT, AllocSubcktSeries());
+                    ss.series()->count = 2;
+
+                    int t;
+                    t = (selected.leaf()->selectedState == SELECTED_LEFT) ? 0 : 1;
+                    ss.series()->contents[t] = newElem;
+                    t = (selected.leaf()->selectedState == SELECTED_LEFT) ? 1 : 0;
+                    ss.series()->contents[t] = parallel->contents[i];
+
+                    parallel->contents[i] = ss;
+                    break;
+                }
+                default:
+                    THROW_COMPILER_EXCEPTION_FMT("Invalid selected state %i.", selected.leaf()->selectedState);
+                    break;
+            }
+            return true;
+            break;
+        }
+    }
+
+    return false;
+}
+
+
+bool AddLeafToParent(SeriesNode selected, SeriesNode newLeaf)
+{
+    if(selected.parent()->which == ELEM_SERIES_SUBCKT)
+        {
+            auto sn = std::find_if(selected.parent()->series()->contents,
+                                   selected.parent()->series()->contents + selected.parent()->series()->count,
+                                   [selected](SeriesNode a)->bool{return (a.any() == selected.any());});
+            auto pos = std::distance(selected.parent()->series()->contents, sn);
+            if(selected.leaf()->selectedState == SELECTED_LEFT){
+                    ElemSubcktSeries *s = const_cast<ElemSubcktSeries *>(selected.parent()->series());
+                    auto i = pos;
+                    memmove(&s->contents[i + 1], &s->contents[i], (s->count - i) * sizeof(s->contents[0]));
+                    s->contents[i] = newLeaf;
+                    s->contents[i].parent_ = const_cast<SeriesNode*>(selected.parent());
+                    (s->count)++;
+                }
+            else if(selected.leaf()->selectedState == SELECTED_RIGHT){
+
+                }
+            else if(selected.leaf()->selectedState == SELECTED_BELOW || selected.leaf()->selectedState == SELECTED_ABOVE){
+
+                }
+        }
+    else if(selected.parent()->which == ELEM_PARALLEL_SUBCKT)
+        {
+
+        }
     return false;
 }
 
@@ -215,12 +372,26 @@ static bool AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
 //-----------------------------------------------------------------------------
 static bool AddLeaf(int newWhich, ElemLeaf *newElem)
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE)
+    if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE)
         return false;
 
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if(AddLeafWorker(ELEM_SERIES_SUBCKT, Prog.rungs[i], newWhich, newElem)) {
+    for(int i = 0; i < Prog.numRungs; i++) {
+        if(AddLeafWorker(ELEM_SERIES_SUBCKT, Prog.rungs(i), newWhich, newElem)) {
+            WhatCanWeDoFromCursorAndTopology();
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool AddLeaf(SeriesNode newElem)
+{
+    if(!Selected.leaf() || Selected.leaf()->selectedState == SELECTED_NONE)
+        return false;
+
+    for(int i = 0; i < Prog.numRungs; i++) {
+        SeriesNode ss(ELEM_SERIES_SUBCKT, Prog.rungs(i));
+        if(AddLeafWorker(ss, Selected, newElem)) {
             WhatCanWeDoFromCursorAndTopology();
             return true;
         }
@@ -259,7 +430,9 @@ void AddContact(int what)
     }
     c->d.contacts.negated = false;
 
-    AddLeaf(ELEM_CONTACTS, c);
+    //AddLeaf(ELEM_CONTACTS, c);
+    SeriesNode contact(ELEM_CONTACTS, c);
+    AddLeaf(contact);
 }
 
 void AddCoil(int what)
@@ -935,7 +1108,7 @@ static bool DeleteSelectedFromSubckt(int which, void *any)
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int               i;
             for(i = 0; i < s->count; i++) {
-                if(s->contents[i].data.any == Selected) {
+                if(s->contents[i].data.any == Selected.data.any) {
                     ForgetFromGrid(s->contents[i].data.any);
                     CheckFree(s->contents[i].data.any);
                     memmove(&s->contents[i], &s->contents[i + 1], (s->count - i - 1) * sizeof(s->contents[0]));
@@ -954,7 +1127,7 @@ static bool DeleteSelectedFromSubckt(int which, void *any)
             ElemSubcktParallel *p = (ElemSubcktParallel *)any;
             int                 i;
             for(i = 0; i < p->count; i++) {
-                if(p->contents[i].data.any == Selected) {
+                if(p->contents[i].data.any == Selected.data.any) {
                     ForgetFromGrid(p->contents[i].data.any);
                     CheckFree(p->contents[i].data.any);
                     memmove(&p->contents[i], &p->contents[i + 1], (p->count - i - 1) * sizeof(p->contents[0]));
@@ -999,15 +1172,15 @@ static bool DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
         }
         default:
             if(EndOfRungElem(anyWhich) == static_cast<bool>(IsEnd))
-                if(Selected != anyToDelete) {
-                    ElemLeaf *saveSelected = Selected;
-                    Selected = (ElemLeaf *)anyToDelete; // HOOK
+                if(Selected.data.any != anyToDelete) {
+                    ElemLeaf *saveSelected = Selected.data.leaf;
+                    Selected.data.leaf = (ElemLeaf *)anyToDelete; // HOOK
                     if((res = DeleteSelectedFromSubckt(which, any))) {
                         while(CollapseUnnecessarySubckts(which, any))
                             ;
                         //dbp("DeleteAny %d", IsEnd);
                     }
-                    Selected = saveSelected; // RESTORE
+                    Selected.data.leaf = saveSelected; // RESTORE
                 }
             break;
     }
@@ -1020,16 +1193,16 @@ static bool DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
 //-----------------------------------------------------------------------------
 void DeleteSelectedFromProgram()
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE)
+    if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE)
         return;
     int i = RungContainingSelected();
     if(i < 0)
         return;
 
-    if(Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which != ELEM_PARALLEL_SUBCKT) {
-        Prog.rungs[i]->contents[0].which = ELEM_PLACEHOLDER;
-        SelectedWhich = ELEM_PLACEHOLDER;
-        Selected->selectedState = SELECTED_LEFT;
+    if(Prog.rungs_[i]->count == 1 && Prog.rungs_[i]->contents[0].which != ELEM_PARALLEL_SUBCKT) {
+        Prog.rungs_[i]->contents[0].which = ELEM_PLACEHOLDER;
+        Selected.which = ELEM_PLACEHOLDER;
+        Selected.data.leaf->selectedState = SELECTED_LEFT;
         WhatCanWeDoFromCursorAndTopology();
         return;
     }
@@ -1040,8 +1213,8 @@ void DeleteSelectedFromProgram()
         gy = 0;
     }
 
-    if(DeleteSelectedFromSubckt(ELEM_SERIES_SUBCKT, Prog.rungs[i])) {
-        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[i]))
+    if(DeleteSelectedFromSubckt(ELEM_SERIES_SUBCKT, Prog.rungs_[i])) {
+        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs_[i]))
             ;
         WhatCanWeDoFromCursorAndTopology();
         MoveCursorNear(&gx, &gy);
@@ -1142,9 +1315,8 @@ static bool ContainsElem(int which, void *any, ElemLeaf *seek)
 //-----------------------------------------------------------------------------
 int RungContainingSelected()
 {
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsElem(ELEM_SERIES_SUBCKT, Prog.rungs[i], Selected)) {
+    for(int i = 0; i < Prog.numRungs; i++) {
+        if(ContainsElem(ELEM_SERIES_SUBCKT, Prog.rungs_[i], Selected.leaf())) {
             return i;
         }
     }
@@ -1160,9 +1332,9 @@ void DeleteRungI(int i)
     if(i < 0)
         return;
 
-    FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+    FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs_[i]);
     (Prog.numRungs)--;
-    memmove(&Prog.rungs[i], &Prog.rungs[i + 1], (Prog.numRungs - i) * sizeof(Prog.rungs[0]));
+    memmove(&Prog.rungs_[i], &Prog.rungs_[i + 1], (Prog.numRungs - i) * sizeof(Prog.rungs_[0]));
     memmove(&Prog.rungSelected[i], &Prog.rungSelected[i + 1], (Prog.numRungs - i) * sizeof(Prog.rungSelected[0]));
 }
 
@@ -1199,17 +1371,17 @@ static void NullDisplayMatrix(int from, int to)
     int i, j;
     for(j = from; j < to; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-            if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
-                DisplayMatrix[i][j] = nullptr;
-                DisplayMatrixWhich[i][j] = ELEM_NULL;
+            if(DisplayMatrix[i][j].which == ELEM_COMMENT) {
+                DisplayMatrix[i][j].data.any = nullptr;
+                DisplayMatrix[i][j].which = ELEM_NULL;
             }
         }
     }
     for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-            if(DisplayMatrixWhich[i][j] == ELEM_COMMENT) {
-                DisplayMatrix[i][j] = nullptr;
-                DisplayMatrixWhich[i][j] = ELEM_NULL;
+            if(DisplayMatrix[i][j].which == ELEM_COMMENT) {
+                DisplayMatrix[i][j].data.any = nullptr;
+                DisplayMatrix[i][j].which = ELEM_NULL;
             }
         }
     }
@@ -1231,6 +1403,7 @@ void InsertRungI(int i)
         Prog.insertEmptyRung(i);
     else
         Prog.appendEmptyRung();
+
     NullDisplayMatrix(i, i + 1 + 1);
 }
 
@@ -1268,13 +1441,13 @@ void PushRungDown()
     int HeightBefore = 0;
     int j;
     for(j = 0; j < i; j++)
-        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[j]);
-    int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-    int HeightDown = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i + 1]);
+        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[j]);
+    int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i]);
+    int HeightDown = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i + 1]);
 
-    ElemSubcktSeries *temp = Prog.rungs[i];
-    Prog.rungs[i] = Prog.rungs[i + 1];
-    Prog.rungs[i + 1] = temp;
+    ElemSubcktSeries *temp = Prog.rungs_[i];
+    Prog.rungs_[i] = Prog.rungs_[i + 1];
+    Prog.rungs_[i + 1] = temp;
 
     NullDisplayMatrix(HeightBefore, HeightBefore + HeightNow + HeightDown);
 
@@ -1295,13 +1468,13 @@ void PushRungUp()
     int HeightBefore = 0;
     int j;
     for(j = 0; j < i - 1; j++)
-        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[j]);
-    int HeightUp = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i - 1]);
-    int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        HeightBefore += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[j]);
+    int HeightUp = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i - 1]);
+    int HeightNow = CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs_[i]);
 
-    ElemSubcktSeries *temp = Prog.rungs[i];
-    Prog.rungs[i] = Prog.rungs[i - 1];
-    Prog.rungs[i - 1] = temp;
+    ElemSubcktSeries *temp = Prog.rungs_[i];
+    Prog.rungs_[i] = Prog.rungs_[i - 1];
+    Prog.rungs_[i - 1] = temp;
 
     NullDisplayMatrix(HeightBefore, HeightBefore + HeightUp + HeightNow);
 
@@ -1371,7 +1544,7 @@ bool ItemIsLastInCircuit(ElemLeaf *item)
     bool found = false;
     bool andItemAfter = false;
 
-    LastInCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], item, &found, &andItemAfter);
+    LastInCircuit(ELEM_SERIES_SUBCKT, Prog.rungs_[i], item, &found, &andItemAfter);
 
     if(found)
         return !andItemAfter;
@@ -1513,7 +1686,7 @@ int FindRung(int seek, char *name)
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++)
-        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek, name))
+        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs_[i], seek, name))
             return i;
     return -1;
 }
@@ -1522,7 +1695,7 @@ int FindRungLast(int seek, char *name)
 {
     int i;
     for(i = Prog.numRungs - 1; i >= 0; i--)
-        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek, name))
+        if(_FindRung(ELEM_SERIES_SUBCKT, Prog.rungs_[i], seek, name))
             return i;
     return -1;
 }
@@ -1568,7 +1741,7 @@ int CountWhich(int seek1, int seek2, int seek3, char *name)
 {
     int n = 0;
     for(int i = 0; i < Prog.numRungs; i++)
-        n += CountWhich_(ELEM_SERIES_SUBCKT, Prog.rungs[i], seek1, seek2, seek3, name);
+        n += CountWhich_(ELEM_SERIES_SUBCKT, Prog.rungs_[i], seek1, seek2, seek3, name);
     return n;
 }
 
@@ -1591,7 +1764,7 @@ bool DelayUsed()
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_DELAY, -1, -1)) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_DELAY, -1, -1)) {
             return true;
         }
     }
@@ -1603,74 +1776,20 @@ bool TablesUsed()
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         if((ContainsWhich(
-               ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
-           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
+               ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_LOOK_UP_TABLE, ELEM_PIECEWISE_LINEAR, ELEM_SHIFT_REGISTER))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_FORMATTED_STRING, ELEM_7SEG, ELEM_9SEG))
+           || (ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_14SEG, ELEM_16SEG, ELEM_QUAD_ENCOD))) {
             return true;
         }
     }
     return false;
 }
-/* function moved to intcode.cpp
-//-----------------------------------------------------------------------------
-// Are either of the UART functions (send or recv) used? Need to know this
-// to know whether we must receive their pins.
-//-----------------------------------------------------------------------------
-bool UartFunctionUsed()
-{
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if((ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
-        ||(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_UART_SEND_READY, -1, -1)))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-*/
-//-----------------------------------------------------------------------------
-// Is the PWM function used? Need to know this to know whether we must reserve
-// the pin.
-//-----------------------------------------------------------------------------
-/*
-int PwmFunctionUsed()
-{
-    int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SET_PWM,
-            -1, -1))
-        {
-            n++;
-        }
-    }
-    return n;
-}
-*/
+
 int PwmFunctionUsed()
 {
     return CountWhich(ELEM_SET_PWM);
 }
-/**/
-//-----------------------------------------------------------------------------
-/*
-int _AdcFunctionUsed()
-{
-    int n = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_READ_ADC,
-            -1, -1))
-        {
-            n++;
-        }
-    }
-    return n;
-}
-*/
+
 int AdcFunctionUsed()
 {
     return CountWhich(ELEM_READ_ADC);
@@ -1684,7 +1803,7 @@ uint32_t QuadEncodFunctionUsed()
 bool NPulseFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_NPULSE, -1, -1)) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_NPULSE, -1, -1)) {
             return true;
         }
     }
@@ -1694,7 +1813,7 @@ bool NPulseFunctionUsed()
 bool EepromFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_PERSIST, -1, -1)) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_PERSIST, -1, -1)) {
             return true;
         }
     }
@@ -1704,7 +1823,7 @@ bool EepromFunctionUsed()
 bool SleepFunctionUsed()
 {
     for(int i = 0; i < Prog.numRungs; i++) {
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i], ELEM_SLEEP, -1, -1)) {
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs_[i], ELEM_SLEEP, -1, -1)) {
             return true;
         }
     }
@@ -1714,12 +1833,14 @@ bool SleepFunctionUsed()
 // copy the selected rung temporar, InsertRung and
 // save in the new rung temp
 //-----------------------------------------------------------------------------
+
 const char * const CLP = "ldmicro.tmp";
+
 void CopyRungDown()
 {
     int               i = RungContainingSelected();
     char              line[512];
-    ElemSubcktSeries *temp = Prog.rungs[i];
+    ElemSubcktSeries *temp = Prog.rungs_[i];
 
     FileTracker f = FileTracker(CLP, "w+");
     if(!f.is_open()) {
@@ -1735,7 +1856,7 @@ void CopyRungDown()
     if(strstr(line, "RUNG"))
         if((temp = LoadSeriesFromFile(f))) {
             InsertRung(true);
-            Prog.rungs[i + 1] = temp;
+            Prog.rungs_[i + 1] = temp;
         }
     fclose(f);
 
@@ -1762,7 +1883,7 @@ void CutRung()
     }
     for(int i = (Prog.numRungs - 1); i >= 0; i--)
         if(Prog.rungSelected[i] == '*') {
-            SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
+            SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs_[i], 0, i);
             DeleteRungI(i);
         }
     f.close();
@@ -1796,7 +1917,7 @@ void CopyRung()
         if(Prog.rungSelected[i] > '*') {
             Prog.rungSelected[i] = ' ';
         } else if(Prog.rungSelected[i] == '*') {
-            SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i);
+            SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs_[i], 0, i);
             Prog.rungSelected[i] = 'R';
         }
 }
@@ -1804,10 +1925,11 @@ void CopyRung()
 //-----------------------------------------------------------------------------
 void CopyElem()
 {
-    if(!Selected)
+    if(!Selected.data.leaf)
         return;
 
     FileTracker f = FileTracker(CLP, "w+");
+
     if(!f) {
         Error(_("Couldn't open file '%s'"), CLP);
         return;
@@ -1826,9 +1948,9 @@ void CopyElem()
             Prog.rungSelected[i] = ' ';
         } else if(Prog.rungSelected[i] == '*') {
             fprintf(f, "RUNG\n");
-            SaveElemToFile(f, SelectedWhich, Selected, 0, 0);
+            SaveElemToFile(f, Selected.which, Selected.data.any, 0, 0);
             fprintf(f, "END\n");
-            if(EndOfRungElem(SelectedWhich))
+            if(EndOfRungElem(Selected.which))
                 Prog.rungSelected[i] = 'E';
             else
                 Prog.rungSelected[i] = 'L';
@@ -1847,7 +1969,8 @@ void PasteRung(int PasteInTo)
         j = 0;
 
     if(PasteInTo == 0)
-        if(Selected && ((Selected->selectedState == SELECTED_BELOW) || (Selected->selectedState == SELECTED_RIGHT))) {
+        if(Selected.data.leaf && ((Selected.data.leaf->selectedState == SELECTED_BELOW) ||
+                                  (Selected.data.leaf->selectedState == SELECTED_RIGHT))) {
             j++;
         }
 
@@ -1867,22 +1990,22 @@ void PasteRung(int PasteInTo)
             break;
         if(strstr(line, "RUNG"))
             if((temp = LoadSeriesFromFile(f))) {
-                if(SelectedWhich == ELEM_PLACEHOLDER) {
-                    Prog.rungs[j] = temp;
+                if(Selected.which == ELEM_PLACEHOLDER) {
+                    Prog.rungs_[j] = temp;
                     rung = 1;
                 } else if(PasteInTo == 0) {
                     //insert rungs from file
                     InsertRungI(j);
-                    Prog.rungs[j] = temp;
+                    Prog.rungs_[j] = temp;
                     j++;
                 } else if(PasteInTo == 1) {
                     if(j >= Prog.numRungs)
                         j = Prog.numRungs - 1;
                     //insert rung INTO series
                     bool doCollapse = false;
-                    if(Selected && (Selected->selectedState != SELECTED_NONE)) {
-                        if(!EndOfRungElem(SelectedWhich) || (Selected->selectedState == SELECTED_LEFT))
-                            if(!ItemIsLastInCircuit(Selected) || (Selected->selectedState == SELECTED_LEFT)) {
+                    if(Selected.data.leaf && (Selected.data.leaf->selectedState != SELECTED_NONE)) {
+                        if(!EndOfRungElem(Selected.which) || (Selected.data.leaf->selectedState == SELECTED_LEFT))
+                            if(!ItemIsLastInCircuit(Selected.data.leaf) || (Selected.data.leaf->selectedState == SELECTED_LEFT)) {
                                 doCollapse = false;
                                 for(int i = temp->count - 1; i >= 0; i--) {
                                     if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
@@ -1896,9 +2019,9 @@ void PasteRung(int PasteInTo)
                                     while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, temp))
                                         ;
                             }
-                        if(EndOfRungElem(SelectedWhich) && CanInsertEnd
-                           && ((Selected->selectedState == SELECTED_BELOW)
-                               || (Selected->selectedState == SELECTED_ABOVE))) {
+                        if(EndOfRungElem(Selected.which) && CanInsertEnd
+                           && ((Selected.data.leaf->selectedState == SELECTED_BELOW)
+                               || (Selected.data.leaf->selectedState == SELECTED_ABOVE))) {
                             doCollapse = false;
                             for(int i = temp->count - 1; i >= 0; i--) {
                                 if(DeleteAnyFromSubckt(ELEM_SERIES_SUBCKT,
@@ -1914,7 +2037,7 @@ void PasteRung(int PasteInTo)
                         }
                         if(temp->count > 0) {
                             if(AddLeaf(ELEM_SERIES_SUBCKT, (ElemLeaf *)temp)) {
-                                while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[j])) {
+                                while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs_[j])) {
                                     ProgramChanged();
                                 }
                             }
@@ -1980,7 +2103,7 @@ static void RenameSet1_(int which, void *any, int which_elem, char *name, char *
 void RenameSet1(int which, char *name, char *new_name, bool set1)
 {
     for(int i = 0; i < Prog.numRungs; i++)
-        RenameSet1_(ELEM_SERIES_SUBCKT, Prog.rungs[i], which, name, new_name, set1);
+        RenameSet1_(ELEM_SERIES_SUBCKT, Prog.rungs_[i], which, name, new_name, set1);
 }
 
 //-----------------------------------------------------------------------------
@@ -2032,10 +2155,22 @@ void *FindElem(int which, char *name)
 {
     void *res;
     for(int i = 0; i < Prog.numRungs; i++) {
-        res = FindElem_(ELEM_SERIES_SUBCKT, Prog.rungs[i], which, name);
+        res = FindElem_(ELEM_SERIES_SUBCKT, Prog.rungs_[i], which, name);
         if(res)
             return res;
     }
     return nullptr;
 }
 
+//-----------------------------------------------------------------------------
+//-------------------------- class Circuit ------------------------------------
+//-----------------------------------------------------------------------------
+Circuit::Circuit()
+{
+
+}
+
+Circuit::~Circuit()
+{
+
+}

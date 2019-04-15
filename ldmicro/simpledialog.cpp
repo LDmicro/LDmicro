@@ -484,6 +484,7 @@ void ShowTimerDialog(int which, ElemLeaf *l)
 
 void ShowSleepDialog(int which, ElemLeaf *l)
 {
+    (void)which;
     ElemTimer *e = &(l->d.timer);
     char *name = e->name;
     char *delay = e->delay;
@@ -532,6 +533,7 @@ void ShowSleepDialog(int which, ElemLeaf *l)
 
 void ShowDelayDialog(int which, ElemLeaf *l)
 {
+    (void)which;
     ElemTimer *e = &(l->d.timer);
     char *name = e->name;
     char s[100] = "";
@@ -726,7 +728,7 @@ void ShowCounterDialog(int which, ElemLeaf *l)
 void ShowSFRDialog(int which, char *op1, char *op2)
 {
     const char *title;
-    char *      l2;
+    const char *l2 = nullptr;
     switch(which) {
         case ELEM_RSFR:
             title = _("Read From SFR");
@@ -778,7 +780,7 @@ void ShowSFRDialog(int which, char *op1, char *op2)
 void ShowCmpDialog(int which, char *op1, char *op2)
 {
     const char *title;
-    const char *l2;
+    const char *l2 = nullptr;
     switch(which) {
         case ELEM_EQU:
             title = _("If Equals");
@@ -1098,6 +1100,7 @@ void ShowI2cDialog(ElemLeaf *l)
 
 void ShowSegmentsDialog(int which, ElemLeaf *l)
 {
+    (void)which;
     ElemSegments *s = &(l->d.segments);
     char          common[10];
     sprintf(common, "%c", s->common);
@@ -1334,6 +1337,7 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
 
 void ShowStepperDialog(int which, void *e)
 {
+    (void)which;
     ElemStepper *s = (ElemStepper *)e;
     char *       name = s->name;
     char *       P = s->P;
@@ -1416,6 +1420,7 @@ void ShowStepperDialog(int which, void *e)
 
 void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy)
 {
+    (void)which;
     const char *title;
     title = _("Pulser");
 
@@ -1514,6 +1519,7 @@ void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
 
 void ShowQuadEncodDialog(int which, ElemLeaf *l)
 {
+    (void)which;
     ElemQuadEncod   *q = &(l->d.QuadEncod);
     char *counter      = q->counter;
     int  *int01        = &(q->int01);

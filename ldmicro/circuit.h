@@ -25,6 +25,7 @@
 #define __ELEMENTS_H__
 
 #include <cstdint>
+#include <vector>
 #include "ldconfig.h"
 
 #define USE_SFR
@@ -291,8 +292,8 @@
         case ELEM_TSFR: \
         case ELEM_T_C_SFR:
 
-typedef struct ElemSubcktParallelTag ElemSubcktParallel;
-typedef struct ElemSubcktSeriesTag ElemSubcktSeries;
+struct ElemSubcktParallel;
+struct ElemSubcktSeries;
 
 typedef struct ElemCommentTag {
     char    str[MAX_COMMENT_LEN];
@@ -567,30 +568,41 @@ struct ElemLeaf {
     } d;
 };
 
-typedef struct ElemSubcktSeriesTag {
-    struct {
-        int     which;
-        union {
-            void                   *any;
-            ElemSubcktParallel     *parallel;
-            ElemSubcktSeriesTag    *series; // used in the Copy-Paste command
-            ElemLeaf               *leaf;
-        } data;
-    } contents[MAX_ELEMENTS_IN_SUBCKT];
-    int count;
-} ElemSubcktSeries;
+struct SeriesNode
+{
+    SeriesNode() : which(0), parent_(nullptr) {data.any = nullptr;}
+    SeriesNode(int w, void* any, SeriesNode* parent = nullptr) : which(w), parent_(parent) {data.any = any;}
+    int     which;
+    union {
+        void               *any;
+        ElemSubcktParallel *parallel;
+        ElemSubcktSeries   *series; // used in the Copy-Paste command
+        ElemLeaf           *leaf;
+    } data;
+    SeriesNode* parent_;
 
-typedef struct ElemSubcktParallelTag {
-    struct {
-        int     which;
-        union {
-            void                   *any;
-            ElemSubcktSeries       *series;
-            ElemLeaf               *leaf;
-        } data;
-    } contents[MAX_ELEMENTS_IN_SUBCKT];
+    SeriesNode*       parent() {return parent_;}
+    const SeriesNode* parent() const {return parent_;}
+    ElemLeaf*         leaf  () {return data.leaf;}
+    const ElemLeaf*   leaf  () const {return data.leaf;}
+    void*             any   () {return data.any;}
+    const void*       any   () const {return data.any;}
+
+    ElemSubcktSeries*         series() {return data.series;}
+    const ElemSubcktSeries*   series() const {return data.series;}
+    ElemSubcktParallel*       parallel() {return data.parallel;}
+    const ElemSubcktParallel* parallel() const {return data.parallel;}
+};
+
+struct ElemSubcktSeries {
+    SeriesNode contents[MAX_ELEMENTS_IN_SUBCKT];
     int count;
-} ElemSubcktParallel;
+} ;
+
+struct ElemSubcktParallel {
+    SeriesNode contents[MAX_ELEMENTS_IN_SUBCKT];
+    int count;
+};
 
 void AddTimer(int which);
 void AddCoil(int what);
@@ -674,5 +686,16 @@ void *FindElem(int which, char *name);
 //bool ContainsWhich(int which, void *any, int seek1, int seek2);
 //bool ContainsWhich(int which, void *any, int seek1);
 
+class Circuit
+{
+public:
+    Circuit();
+    ~Circuit();
+
+public:
+
+private:
+    std::vector<SeriesNode> elements_;
+};
 
 #endif //__ELEMENTS_H__

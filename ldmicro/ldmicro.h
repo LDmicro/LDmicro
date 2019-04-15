@@ -478,14 +478,12 @@ bool FindSelected(int *gx, int *gy);
 bool MoveCursorNear(int *gx, int *gy);
 
 #define DISPLAY_MATRIX_X_SIZE 256
-#define DISPLAY_MATRIX_Y_SIZE ((MAX_RUNGS + 1) * 2)
-extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
-extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
+#define DISPLAY_MATRIX_Y_SIZE ((MAX_RUNGS + 1) * 2) // 2048
+extern SeriesNode DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
 #define PADDING_IN_DISPLAY_MATRIX (&DisplayMatrixFiller)
-#define VALID_LEAF(x) ((x) != nullptr && (x) != PADDING_IN_DISPLAY_MATRIX)
-extern ElemLeaf *Selected;
-extern int SelectedWhich;
+#define VALID_LEAF(x) ((x).any() != nullptr && (x).leaf() != PADDING_IN_DISPLAY_MATRIX)
+extern SeriesNode Selected;
 
 extern PlcCursor Cursor;
 extern bool CanInsertEnd;

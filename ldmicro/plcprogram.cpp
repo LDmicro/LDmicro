@@ -19,7 +19,7 @@ static ElemSubcktSeries *AllocEmptyRung()
 PlcProgram::PlcProgram()
 {
     memset(rungSelected, ' ', sizeof(rungSelected));
-    rungs.fill(nullptr);
+    rungs_.fill(nullptr);
     numRungs = 0;
     cycleTime = 10000;
     mcuClock = 16000000;
@@ -65,8 +65,9 @@ PlcProgram& PlcProgram::operator=(const PlcProgram& other)
     std::copy(other.rungSelected, other.rungSelected + numRungs, rungSelected);
     std::copy(other.OpsInRung, other.OpsInRung + numRungs, OpsInRung);
     std::copy(other.HexInRung, other.HexInRung + numRungs, HexInRung);
+    std::copy(other.pullUpRegs, other.pullUpRegs + numRungs, pullUpRegs);
     for(int i = 0; i < numRungs; ++i) {
-        rungs[i] = static_cast<ElemSubcktSeries *>(deepCopy(ELEM_SERIES_SUBCKT, other.rungs[i]));
+        rungs_[i] = static_cast<ElemSubcktSeries *>(deepCopy(ELEM_SERIES_SUBCKT, other.rungs_[i]));
     }
     setMcu(other.mcu_);
     return *this;
@@ -170,7 +171,7 @@ int PlcProgram::mcuUART() const
 void PlcProgram::reset()
 {
     for(int i = 0; i < numRungs; i++) {
-        FreeCircuit(ELEM_SERIES_SUBCKT, rungs[i]);
+        FreeCircuit(ELEM_SERIES_SUBCKT, rungs_[i]);
     }
     memset(rungSelected, ' ', sizeof(rungSelected));
     numRungs = 0;
@@ -188,7 +189,7 @@ void PlcProgram::appendEmptyRung()
 {
     if(numRungs >= (MAX_RUNGS - 1))
         THROW_COMPILER_EXCEPTION_FMT(_("Exceeded the limit of %d rungs!"), MAX_RUNGS);
-    rungs[numRungs++] = AllocEmptyRung();
+    rungs_[numRungs++] = AllocEmptyRung();
 }
 
 void PlcProgram::insertEmptyRung(uint32_t idx)
@@ -197,9 +198,9 @@ void PlcProgram::insertEmptyRung(uint32_t idx)
         THROW_COMPILER_EXCEPTION_FMT(_("Invalid rung index %lu!"), idx);
     if(numRungs > (MAX_RUNGS - 1))
         THROW_COMPILER_EXCEPTION_FMT(_("Exceeded the limit of %d rungs!"), MAX_RUNGS);
-    memmove(&rungs[idx + 1], &rungs[idx], (numRungs - idx) * sizeof(rungs[0]));
+    memmove(&rungs_[idx + 1], &rungs_[idx], (numRungs - idx) * sizeof(rungs_[0]));
     memmove(&rungSelected[idx + 1], &rungSelected[idx], (numRungs - idx) * sizeof(rungSelected[0]));
-    rungs[idx] = AllocEmptyRung();
+    rungs_[idx] = AllocEmptyRung();
     numRungs++;
 }
 

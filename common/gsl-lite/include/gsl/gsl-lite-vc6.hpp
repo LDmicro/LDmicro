@@ -1,5 +1,5 @@
 //
-// gsl-lite-vc6 is based on GSL: Guideline Support Library,
+// gsl-lite-vc6 is based on GSL: Guidelines Support Library,
 // For more information see https://github.com/martinmoene/gsl-lite
 //
 // Copyright (c) 2015 Martin Moene
@@ -33,20 +33,20 @@
 
 // Configuration:
 
-#ifndef  gsl_FEATURE_HAVE_IMPLICIT_MACRO
-# define gsl_FEATURE_HAVE_IMPLICIT_MACRO  1
+#ifndef  gsl_FEATURE_IMPLICIT_MACRO
+# define gsl_FEATURE_IMPLICIT_MACRO  1
 #endif
 
-#ifndef  gsl_FEATURE_HAVE_OWNER_MACRO
-# define gsl_FEATURE_HAVE_OWNER_MACRO  1
+#ifndef  gsl_FEATURE_OWNER_MACRO
+# define gsl_FEATURE_OWNER_MACRO  1
 #endif
 
-#ifndef  gsl_FEATURE_HAVE_SHARED_PTR
-# define gsl_FEATURE_HAVE_SHARED_PTR  0
+#ifndef  gsl_FEATURE_SHARED_PTR
+# define gsl_FEATURE_SHARED_PTR  0
 #endif
 
-#ifndef  gsl_FEATURE_HAVE_UNIQUE_PTR
-# define gsl_FEATURE_HAVE_UNIQUE_PTR  0
+#ifndef  gsl_FEATURE_UNIQUE_PTR
+# define gsl_FEATURE_UNIQUE_PTR  0
 #endif
 
 #ifndef  gsl_CONFIG_THROWS_FOR_TESTING
@@ -75,35 +75,37 @@
 
 // Compiler detection:
 
-#if defined(_MSC_VER)
-# define gsl_COMPILER_MSVC_VERSION   (_MSC_VER / 100 - 5 - (_MSC_VER < 1900))
+#if defined(_MSC_VER ) && !defined(__clang__)
+# define gsl_COMPILER_MSVC_VER      (_MSC_VER )
+# define gsl_COMPILER_MSVC_VERSION  (_MSC_VER / 10 - 10 * ( 5 + (_MSC_VER < 1900 ) ) )
 #else
+# define gsl_COMPILER_MSVC_VER       0
 # define gsl_COMPILER_MSVC_VERSION   0
 # define gsl_COMPILER_NON_MSVC       1
 #endif
 
-#if gsl_COMPILER_MSVC_VERSION != 6
+#if gsl_COMPILER_MSVC_VERSION != 60
 # error GSL Lite: this header is for Visual C++ 6
 #endif
 
 // half-open range [lo..hi):
-#define gsl_BETWEEN( v, lo, hi ) ( lo <= v && v < hi )
+#define gsl_BETWEEN( v, lo, hi ) ( (lo) <= (v) && (v) < (hi) )
 
 // Presence of C++ language features:
 
 // C++ feature usage:
 
-#if gsl_FEATURE_HAVE_IMPLICIT_MACRO
+#if gsl_FEATURE_IMPLICIT_MACRO
 # define implicit
 #endif
 
 #define gsl_DIMENSION_OF( a ) ( sizeof(a) / sizeof(0[a]) )
 
-#if gsl_FEATURE_HAVE_SHARED_PTR
+#if gsl_FEATURE_SHARED_PTR
 # include gsl_CONFIG_SHARED_PTR_INCLUDE
 #endif
 
-#if gsl_FEATURE_HAVE_UNIQUE_PTR
+#if gsl_FEATURE_UNIQUE_PTR
 # include gsl_CONFIG_UNIQUE_PTR_INCLUDE
 #endif
 
@@ -113,10 +115,10 @@ namespace gsl {
 // GSL.owner: ownership pointers
 //
 // ToDo:
-#if gsl_FEATURE_HAVE_SHARED_PTR
+#if gsl_FEATURE_SHARED_PTR
   using gsl_CONFIG_SHARED_PTR_DECL;
 #endif
-#if gsl_FEATURE_HAVE_UNIQUE_PTR
+#if gsl_FEATURE_UNIQUE_PTR
   using gsl_CONFIG_UNIQUE_PTR_DECL;
 #endif
 
@@ -124,7 +126,7 @@ template< class T > struct owner { typedef T type; };
 
 #define gsl_HAVE_OWNER_TEMPLATE  0
 
-#if gsl_FEATURE_HAVE_OWNER_MACRO
+#if gsl_FEATURE_OWNER_MACRO
 # define Owner(t)  ::gsl::owner<t>::type
 #endif
 
@@ -655,7 +657,7 @@ namespace detail {
 template<class T, class SizeType, const T Sentinel>
 struct ensure
 {
-    static span<T> sentinel( T * seq, SizeType max = std::numeric_limits<SizeType>::max() )
+    static span<T> sentinel( T * seq, SizeType max = (std::numeric_limits<SizeType>::max)() )
     {
         typedef T * pointer;
         typedef typename std::iterator_traits<pointer>::difference_type difference_type;
@@ -679,7 +681,7 @@ struct ensure
 //
 
 template< typename T >
-span<T> ensure_z( T * sz, size_t max = std::numeric_limits<size_t>::max() )
+span<T> ensure_z( T * sz, size_t max = (std::numeric_limits<size_t>::max)() )
 {
     return detail::ensure<T, size_t, 0>::sentinel( sz, max );
 }
