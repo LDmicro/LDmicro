@@ -102,7 +102,7 @@ public:
     long          i2cRate;   // Hz          Added by JG
     NameArray     LDversion;
 
-    std::array<ElemSubcktSeries *, MAX_RUNGS> rungs_;
+    std::array<ElemSubcktSeries *, MAX_RUNGS> rungs_; // TODO: move to private:
     int               numRungs;
     bool              rungPowered[MAX_RUNGS + 1]; // [MAX_RUNGS + 1] for Label after last rung
     bool              rungSimulated[MAX_RUNGS + 1];

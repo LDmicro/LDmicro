@@ -68,8 +68,6 @@ static int   MemOffset;
 DWORD        RamSection;
 DWORD        RomSection;
 
-int CompileFailure= 0;      ///// added by JG
-
 //-----------------------------------------------------------------------------
 static LabelAddr LabelAddrArr[MAX_RUNGS];
 static int LabelAddrCount = 0;

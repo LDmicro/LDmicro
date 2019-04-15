@@ -482,9 +482,8 @@ void ShowTimerDialog(int which, ElemLeaf *l)
     }
 }
 
-void ShowSleepDialog(int which, ElemLeaf *l)
+void ShowSleepDialog(ElemLeaf *l)
 {
-    (void)which;
     ElemTimer *e = &(l->d.timer);
     char *name = e->name;
     char *delay = e->delay;
@@ -531,9 +530,8 @@ void ShowSleepDialog(int which, ElemLeaf *l)
     }
 }
 
-void ShowDelayDialog(int which, ElemLeaf *l)
+void ShowDelayDialog(ElemLeaf *l)
 {
-    (void)which;
     ElemTimer *e = &(l->d.timer);
     char *name = e->name;
     char s[100] = "";
@@ -1098,9 +1096,8 @@ void ShowI2cDialog(ElemLeaf *l)
 }
 /////
 
-void ShowSegmentsDialog(int which, ElemLeaf *l)
+void ShowSegmentsDialog(ElemLeaf *l)
 {
-    (void)which;
     ElemSegments *s = &(l->d.segments);
     char          common[10];
     sprintf(common, "%c", s->common);
@@ -1335,9 +1332,8 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
     }
 }
 
-void ShowStepperDialog(int which, void *e)
+void ShowStepperDialog(void *e)
 {
-    (void)which;
     ElemStepper *s = (ElemStepper *)e;
     char *       name = s->name;
     char *       P = s->P;
@@ -1418,9 +1414,8 @@ void ShowStepperDialog(int which, void *e)
     };
 }
 
-void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy)
+void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy)
 {
-    (void)which;
     const char *title;
     title = _("Pulser");
 
@@ -1503,7 +1498,7 @@ void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter,
     };
 }
 
-void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
+void ShowNPulseDialog(char *counter, char *targetFreq, char *coil)
 {
     const char *labels[] = {_("Counter var:"), _("Frequency (Hz):"), _("Pulse to:")};
     char *      dests[] = {counter, targetFreq, coil};
@@ -1517,9 +1512,8 @@ void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil)
     }
 }
 
-void ShowQuadEncodDialog(int which, ElemLeaf *l)
+void ShowQuadEncodDialog(ElemLeaf *l)
 {
-    (void)which;
     ElemQuadEncod   *q = &(l->d.QuadEncod);
     char *counter      = q->counter;
     int  *int01        = &(q->int01);

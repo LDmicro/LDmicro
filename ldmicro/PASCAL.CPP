@@ -1010,7 +1010,6 @@ static char *GetUnitName(char *unitn, char *dest)
 void CompilePascal(const char *dest)
 {
     SeenVariablesCount = 0;
-    CompileFailure= 0;
 
     char destn[MAX_PATH];
     char destu[MAX_PATH];
@@ -1339,10 +1338,6 @@ void CompilePascal(const char *dest)
     TranslitFile(destv);
     TranslitFile(desti);
     */
-
-    ///// Added by JG
-    if(CompileFailure) return;
-    /////
 
     char str[MAX_PATH + 500];
     sprintf(str,

@@ -2181,7 +2181,6 @@ bool CompileAnsiC(const char *dest, int MNU)
         PWM_MaxCs[i]= 0;
     }
     countpwm= 0;
-    CompileFailure= 0;
 
     if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM))      // ARM uses Timer 3
         Prog.cycleTimer = 3;

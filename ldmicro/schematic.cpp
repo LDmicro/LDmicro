@@ -683,11 +683,11 @@ void EditSelectedElement()
             break;
 
         case ELEM_DELAY:
-            ShowDelayDialog(Selected.which, Selected.leaf());
+            ShowDelayDialog(Selected.leaf());
             break;
 
         case ELEM_SLEEP:
-            ShowSleepDialog(Selected.which, Selected.leaf());
+            ShowSleepDialog(Selected.leaf());
             break;
 
         case ELEM_CTR:
@@ -745,12 +745,11 @@ void EditSelectedElement()
             break;
 
         case ELEM_STEPPER:
-            ShowStepperDialog(Selected.which, &Selected.leaf()->d);
+            ShowStepperDialog(&Selected.leaf()->d);
             break;
 
         case ELEM_PULSER:
-            ShowPulserDialog(Selected.which,
-                             Selected.leaf()->d.pulser.P1,
+            ShowPulserDialog(Selected.leaf()->d.pulser.P1,
                              Selected.leaf()->d.pulser.P0,
                              Selected.leaf()->d.pulser.accel,
                              Selected.leaf()->d.pulser.counter,
@@ -759,18 +758,18 @@ void EditSelectedElement()
 
         case ELEM_NPULSE:
             ShowNPulseDialog(
-                Selected.which, Selected.leaf()->d.Npulse.counter, Selected.leaf()->d.Npulse.targetFreq, Selected.leaf()->d.Npulse.coil);
+                Selected.leaf()->d.Npulse.counter, Selected.leaf()->d.Npulse.targetFreq, Selected.leaf()->d.Npulse.coil);
             break;
 
         case ELEM_QUAD_ENCOD:
-            ShowQuadEncodDialog(Selected.which, Selected.leaf());
+            ShowQuadEncodDialog(Selected.leaf());
             break;
 
         case ELEM_7SEG:
         case ELEM_9SEG:
         case ELEM_14SEG:
         case ELEM_16SEG:
-            ShowSegmentsDialog(Selected.which, Selected.leaf());
+            ShowSegmentsDialog(Selected.leaf());
             break;
 
         case ELEM_BUS:

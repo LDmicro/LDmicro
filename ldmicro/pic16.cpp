@@ -7875,10 +7875,6 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
             }
         }
 
-        ///// Added by JG
-        if(CompileFailure) return false;
-        /////
-
         sprintf(str,
                 _("Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\n"
                   "Configuration word (fuses) has been set for crystal oscillator, BOD "

@@ -3325,8 +3325,6 @@ static void CompileFromIntermediate()
     int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int   sov = -1, sov1 = -1, sov2 = -1, sov12 = -1, sov23 = -1;
 
-    CompileFailure= 0;
-
     for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;
         IntOp *a = &IntCode[IntPc];
@@ -7060,10 +7058,6 @@ void CompileAvr(const char *outFile)
     PrintVariables(fAsm);
     fflush(fAsm);
     fclose(fAsm);
-
-    ///// Added by JG
-    if(CompileFailure) return;
-    /////
 
     char str[MAX_PATH + 500];
     sprintf(str,

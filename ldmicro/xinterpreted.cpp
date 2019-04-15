@@ -273,10 +273,6 @@ void CompileXInterpreted(const char *outFile)
 
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
 
-    ///// Added by JG
-    if(CompileFailure) return;
-    /////
-
     char str[MAX_PATH + 500];
     sprintf(str,
             _("Compile successful; wrote interpretable code to '%s'.\r\n\r\n"

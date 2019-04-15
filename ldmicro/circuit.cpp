@@ -372,7 +372,7 @@ bool AddLeafToParent(SeriesNode selected, SeriesNode newLeaf)
 //-----------------------------------------------------------------------------
 static bool AddLeaf(int newWhich, ElemLeaf *newElem)
 {
-    if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE)
+    if((!Selected.data.leaf) || (Selected.data.leaf->selectedState == SELECTED_NONE))
         return false;
 
     for(int i = 0; i < Prog.numRungs; i++) {
@@ -386,7 +386,7 @@ static bool AddLeaf(int newWhich, ElemLeaf *newElem)
 
 static bool AddLeaf(SeriesNode newElem)
 {
-    if(!Selected.leaf() || Selected.leaf()->selectedState == SELECTED_NONE)
+    if((!Selected.leaf()) || (Selected.leaf()->selectedState == SELECTED_NONE))
         return false;
 
     for(int i = 0; i < Prog.numRungs; i++) {
@@ -1193,13 +1193,13 @@ static bool DeleteAnyFromSubckt(int which, void *any, int anyWhich, void *anyToD
 //-----------------------------------------------------------------------------
 void DeleteSelectedFromProgram()
 {
-    if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE)
+    if((!Selected.data.leaf) || (Selected.data.leaf->selectedState == SELECTED_NONE))
         return;
     int i = RungContainingSelected();
     if(i < 0)
         return;
 
-    if(Prog.rungs_[i]->count == 1 && Prog.rungs_[i]->contents[0].which != ELEM_PARALLEL_SUBCKT) {
+    if((Prog.rungs_[i]->count == 1) && (Prog.rungs_[i]->contents[0].which != ELEM_PARALLEL_SUBCKT)) {
         Prog.rungs_[i]->contents[0].which = ELEM_PLACEHOLDER;
         Selected.which = ELEM_PLACEHOLDER;
         Selected.data.leaf->selectedState = SELECTED_LEFT;
@@ -1969,7 +1969,7 @@ void PasteRung(int PasteInTo)
         j = 0;
 
     if(PasteInTo == 0)
-        if(Selected.data.leaf && ((Selected.data.leaf->selectedState == SELECTED_BELOW) ||
+        if(Selected.data.leaf && ((Selected.data.leaf->selectedState == SELECTED_BELOW) || //
                                   (Selected.data.leaf->selectedState == SELECTED_RIGHT))) {
             j++;
         }

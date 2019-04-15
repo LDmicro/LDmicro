@@ -478,11 +478,11 @@ bool FindSelected(int *gx, int *gy);
 bool MoveCursorNear(int *gx, int *gy);
 
 #define DISPLAY_MATRIX_X_SIZE 256
-#define DISPLAY_MATRIX_Y_SIZE ((MAX_RUNGS + 1) * 2) // 2048
+#define DISPLAY_MATRIX_Y_SIZE ((MAX_RUNGS + 1) * 2)
 extern SeriesNode DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
 #define PADDING_IN_DISPLAY_MATRIX (&DisplayMatrixFiller)
-#define VALID_LEAF(x) ((x).any() != nullptr && (x).leaf() != PADDING_IN_DISPLAY_MATRIX)
+#define VALID_LEAF(x) (((x).any() != nullptr) && ((x).leaf() != PADDING_IN_DISPLAY_MATRIX))
 extern SeriesNode Selected;
 
 extern PlcCursor Cursor;
@@ -525,8 +525,8 @@ void ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, bool *ttrigge
 // simpledialog.cpp
 void CheckVarInRange(char *name, char *str, SDWORD v);
 void ShowTimerDialog(int which, ElemLeaf *l);
-void ShowSleepDialog(int which, ElemLeaf *l);
-void ShowDelayDialog(int which, ElemLeaf *l);
+void ShowSleepDialog(ElemLeaf *l);
+void ShowDelayDialog(ElemLeaf *l);
 void ShowSpiDialog(ElemLeaf *l);
 void ShowI2cDialog(ElemLeaf *l);
 void ShowCounterDialog(int which, ElemLeaf *l);
@@ -543,11 +543,11 @@ void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 void CalcSteps(ElemStepper *s, ResSteps *r);
-void ShowStepperDialog(int which, void *e);
-void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy);
-void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil);
-void ShowQuadEncodDialog(int which, ElemLeaf *l);
-void ShowSegmentsDialog(int which, ElemLeaf *l);
+void ShowStepperDialog(void *e);
+void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy);
+void ShowNPulseDialog(char *counter, char *targetFreq, char *coil);
+void ShowQuadEncodDialog(ElemLeaf *l);
+void ShowSegmentsDialog(ElemLeaf *l);
 void ShowBusDialog(ElemLeaf *l);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);

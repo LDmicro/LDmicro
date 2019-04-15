@@ -809,15 +809,14 @@ IsOpenAnable:
             Error(_("PWM function used but not supported for this micro."));
             return;
         }
-        CompileFailure= 0;
 
         if((MNU >= MNU_COMPILE_ANSIC) && (MNU <= MNU_COMPILE_lastC)) {
-            if(CompileAnsiC(CurrentCompileFile, MNU) && (!CompileFailure)) {            ///// CompileFailure added by JG
+            if(CompileAnsiC(CurrentCompileFile, MNU)) {
                 CompileSuccesfullAnsiCMessage(CurrentCompileFile);
                 postCompile("ANSIC");
             }
         } else if(MNU == MNU_COMPILE_ARDUINO) {
-            if(CompileAnsiC(CurrentCompileFile, MNU) && (!CompileFailure)) {            ///// CompileFailure added by JG
+            if(CompileAnsiC(CurrentCompileFile, MNU)) {
                 CompileSuccesfullAnsiCMessage(CurrentCompileFile);
                 postCompile("ARDUINO");
             }
@@ -857,13 +856,6 @@ IsOpenAnable:
         } else
             oops();
 
-        ///// Added by JG
-        if (CompileFailure)
-        {
-            Error(_("Compile failure."));
-            return;
-        }
-        /////
     } catch(const std::exception &e) {
         Error(e.what());
     }
