@@ -2510,7 +2510,7 @@ static LRESULT CALLBACK I2cSimulationProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 // we can redirect them to the PLC program.
 //-----------------------------------------------------------------------------
 static LRESULT CALLBACK SimulationTextProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)       //// Modified by JG
-{                                    
+{
     switch(msg) {
         case WM_KEYDOWN:
             // vvv copy-paste from ldmicro.cpp
@@ -2767,9 +2767,7 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
         ShowWindow(I2cSimulationWindow, true);
         }
 
-    /////
-
-    /////    SetFocus(MainWindow);          ///// Removed by JG to show simulation windows
+    SetFocus(MainWindow); // Removed by JG to show simulation windows // Restored: access to the F7, F8, F9 and Space keys after show the window.
 }
 
 //-----------------------------------------------------------------------------
@@ -2865,7 +2863,7 @@ static void   AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) 
         || b == '\t' || b == '\v' || b == '\a')
        && b != '\0') {
         append[0] = (char)b;
-        append[1] = '\0';               
+        append[1] = '\0';
     } else {
         sprintf(append, "\\x%02x", b);
     }
