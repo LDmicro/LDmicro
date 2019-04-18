@@ -1005,8 +1005,7 @@ void ShowSpiDialog(ElemLeaf *l)
 
     ///// Added by JG
     if(Prog.mcu())
-    if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR))
-    {
+    if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
         if (l->d.spi.which == ELEM_SPI)
             ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00F2);
         if (l->d.spi.which == ELEM_SPI_WR)
@@ -1014,19 +1013,15 @@ void ShowSpiDialog(ElemLeaf *l)
             strcpy(dests[3], "-");
             ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00FA);
         }
-    }
-    else
-    {
+    } else {
     /////
         if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
-        /*
         //TODO: check the available range
-*/
         }
     //  NoCheckingOnBox[3] = false;
-    for(i = 0; i < comboRec[4].n; i++) {
-        CheckFree(comboRec[4].str[i]);
-    }
+        for(i = 0; i < comboRec[4].n; i++) {
+            CheckFree(comboRec[4].str[i]);
+        }
     }
 }
 
@@ -1061,36 +1056,28 @@ void ShowI2cDialog(ElemLeaf *l)
                              {1, {"0"}},
                              {2, {"MSB_FIRST", "LSB_FIRST"}}};
 
-    int i;
     if(Prog.mcu()) {
         if(Prog.mcu()->i2cCount) {
             comboRec[0].n = Prog.mcu()->i2cCount;
-            for(i = 0; i < comboRec[0].n; i++) {
+            for(int i = 0; i < comboRec[0].n; i++) {
                 comboRec[0].str[i] = Prog.mcu()->i2cInfo[i].name;
             }
         }
     }
 
     if(Prog.mcu())
-    if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR))
-    {
-        if (l->d.i2c.which == ELEM_I2C_RD)  // no send
-        {
+    if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
+        if (l->d.i2c.which == ELEM_I2C_RD) { // no send
             strcpy(dests[2], "-");
             ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x0096);
         }
-        if (l->d.i2c.which == ELEM_I2C_WR)  // no recv
-        {
+        if (l->d.i2c.which == ELEM_I2C_WR) { // no recv
             strcpy(dests[3], "-");
             ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x009A);
         }
-    }
-    else
-    {
+    } else {
         if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
-        /*
         //TODO: check the available range
-*/
         }
     }
 }
