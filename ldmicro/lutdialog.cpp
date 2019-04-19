@@ -45,7 +45,7 @@ static HWND     ValuesTextbox[MAX_LOOK_UP_TABLE_LEN * 2];
 static LONG_PTR PrevValuesProc[MAX_LOOK_UP_TABLE_LEN * 2];
 static HWND     ValuesLabel[MAX_LOOK_UP_TABLE_LEN * 2];
 
-static SDWORD ValuesCache[MAX_LOOK_UP_TABLE_LEN * 2];
+static int32_t ValuesCache[MAX_LOOK_UP_TABLE_LEN * 2];
 
 static LONG_PTR PrevNameProc;
 static LONG_PTR PrevDestProc;

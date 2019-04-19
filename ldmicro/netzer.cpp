@@ -45,7 +45,7 @@ typedef struct {
     WORD   name1;
     WORD   name2;
     WORD   name3;
-    SDWORD literal;
+    int32_t literal;
 } BinOp;
 
 static BinOp         OutProg[MAX_INT_OPS];
@@ -1154,10 +1154,10 @@ void CompileNetzer(const char *outFile)
     } else {
         time_t rawtime;
         time(&rawtime);
-        meta.TimeStamp = (DWORD)(rawtime)-TIME_EPOCH;
+        meta.TimeStamp = (uint32_t)(rawtime)-TIME_EPOCH;
     }
 
-    meta.CycleTime = DWORD(Prog.cycleTime / 1000);
+    meta.CycleTime = uint32_t(Prog.cycleTime / 1000);
     meta.ProjectnameLength = strlen(projectname);
     meta.Flags.FormatVersion = CURRENT_FORMAT_VERSION;
     meta.Flags.IsCompiled = false;

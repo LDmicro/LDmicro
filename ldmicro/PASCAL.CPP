@@ -30,7 +30,7 @@
 
 static char  SeenVariables[MAX_IO][MAX_NAME_LEN];
 static int   SeenVariablesCount;
-static DWORD InCount, OutCount, TimerCount, RelayCount, VarCount;
+static uint32_t InCount, OutCount, TimerCount, RelayCount, VarCount;
 
 //-----------------------------------------------------------------------------
 // Have we seen a variable before? If not then no need to generate code for
