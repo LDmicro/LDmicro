@@ -17,6 +17,8 @@
 // along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
 //-----------------------------------------------------------------------------
 
+#include <stdint.h>
+
 #define CURRENT_FORMAT_VERSION   (1u)
 #define MAX_PROJECTNAME_LENGTH   (16u)
 
@@ -31,22 +33,22 @@
 
 typedef struct MetaFlagsTag
 {
-    BYTE FormatVersion : 4;
-    BYTE IsCompiled : 1;
-    BYTE Reserved;
+    uint8_t FormatVersion : 4;
+    uint8_t IsCompiled : 1;
+    uint8_t Reserved;
 } MetaFlags;
 
 typedef struct NetzerMetaInformationTag
 {
-    BYTE    StartTag[4];
-    WORD    ImageCRC;
-    WORD    ImageLength;
-    MetaFlags   Flags;
-    BYTE    ProjectID; /// Dedicated for given project.
-    WORD    Opcodes;
-    DWORD   CycleTime;
-    DWORD   TimeStamp;
-    BYTE    ProjectnameLength;
+    uint8_t    StartTag[4];
+    uint16_t   ImageCRC;
+    uint16_t   ImageLength;
+    MetaFlags  Flags;
+    uint8_t    ProjectID; /// Dedicated for given project.
+    uint16_t   Opcodes;
+    uint32_t   CycleTime;
+    uint32_t   TimeStamp;
+    uint8_t    ProjectnameLength;
 //  BYTE    Projectname[];
 } NetzerMetaInformation_t;
 
@@ -60,7 +62,7 @@ typedef enum
 typedef struct
 {
     MetaTagType_t Type;
-    BYTE Length;  // For header close tags (MTT_END_OF_HEADER) this one is omitted.
+    uint8_t Length;  // For header close tags (MTT_END_OF_HEADER) this one is omitted.
 //  BYTE TagData[];
 } ProcessMetaTag;
 

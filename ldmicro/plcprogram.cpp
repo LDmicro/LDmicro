@@ -31,7 +31,7 @@ PlcProgram::PlcProgram()
     setMcu(nullptr);
     LDversion = "0.2";
     for(int i = 0; i < MAX_IO_PORTS; i++) {
-        pullUpRegs[i] = ~0; // All input pins try to set Pull-up registers by default.
+        pullUpRegs[i] = ~0u; // All input pins try to set Pull-up registers by default.
     }
 }
 

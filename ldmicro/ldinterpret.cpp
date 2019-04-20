@@ -68,11 +68,11 @@ typedef struct {
     WORD  name1;
     WORD  name2;
     WORD  name3;
-    SWORD literal;
+    int32_t literal;
 } BinOp;
 
 BinOp Program[MAX_OPS];
-SWORD Integers[MAX_VARIABLES];
+int32_t Integers[MAX_VARIABLES];
 BYTE  Bits[MAX_INTERNAL_RELAYS];
 
 // This are addresses (indices into Integers[] or Bits[]) used so that your

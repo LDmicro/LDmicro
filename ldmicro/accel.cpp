@@ -315,7 +315,7 @@ void makeAccelTable(FileTracker& f, int max, int P, int nSize, ElemAccel **TT, c
 
     int dtMulMax = 0;
     for(i = 1; i <= nSize; i++) {
-        T[i].dtMul = (SDWORD)round(T[i].dt * mult * P);
+        T[i].dtMul = (int32_t)round(T[i].dt * mult * P);
         T[i].dtShr = T[i].dtMul >> (*shrt);
         if(dtMulMax < T[i].dtMul) {
             dtMulMax = T[i].dtMul;

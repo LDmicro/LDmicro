@@ -1025,9 +1025,9 @@ void ShowAnalogSliderPopup(char *name)
     POINT pt;
     GetCursorPos(&pt);
 
-    SWORD currentVal = GetAdcShadow(name);
+    int32_t currentVal = GetAdcShadow(name);
 
-    SWORD maxVal;
+    int32_t maxVal;
     if(Prog.mcu()) {
         maxVal = Prog.mcu()->adcMax;
     } else {
@@ -1094,10 +1094,10 @@ void ShowAnalogSliderPopup(char *name)
     AnalogSliderDone = false;
     AnalogSliderCancel = false;
 
-    SWORD orig = GetAdcShadow(name);
+    int32_t orig = GetAdcShadow(name);
 
     while(!AnalogSliderDone && (ret = GetMessage(&msg, nullptr, 0, 0))) {
-        SWORD v = (SWORD)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
+        int32_t v = (int32_t)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
 
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
@@ -1118,7 +1118,7 @@ void ShowAnalogSliderPopup(char *name)
     }
 
     if(!AnalogSliderCancel) {
-        SWORD v = (SWORD)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
+        int32_t v = (int32_t)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
         SetAdcShadow(name, v);
     }
 
@@ -1865,7 +1865,7 @@ void IoListProc(NMHDR *h)
                 case LV_IO_RAM_ADDRESS: {
                     if(!Prog.mcu())
                         break;
-                    DWORD addr = 0;
+                    uint32_t addr = 0;
                     int   bit = -1;
                     if((type == IO_TYPE_PORT_INPUT) || //
                        (type == IO_TYPE_PORT_OUTPUT)) {

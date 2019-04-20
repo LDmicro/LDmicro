@@ -69,26 +69,26 @@ int asm_discover_names = 0;
 //                       4- l_0009:     bcf  REG_PCLATH,     4 ; 0xa ; 10
 //-----------------------------------------------------------------------------
 
-DWORD addrRUartRecvErrorFlag;
+uint32_t addrRUartRecvErrorFlag;
 int   bitRUartRecvErrorFlag;
-DWORD addrRUartSendErrorFlag;
+uint32_t addrRUartSendErrorFlag;
 int   bitRUartSendErrorFlag;
 
 std::vector<IntOp> IntCode;
 int                ProgWriteP = 0;
-static SDWORD *    Tdata;
+static int32_t *    Tdata;
 int                rungNow = -INT_MAX;
 static int         whichNow = -INT_MAX;
 static ElemLeaf *  leafNow = nullptr;
 
-static DWORD GenSymCount;
-static DWORD GenSymCountParThis;
-static DWORD GenSymCountParOut;
-static DWORD GenSymCountOneShot;
-static DWORD GenSymCountFormattedString;
-static DWORD GenSymCountStepper;
+static uint32_t GenSymCount;
+static uint32_t GenSymCountParThis;
+static uint32_t GenSymCountParOut;
+static uint32_t GenSymCountOneShot;
+static uint32_t GenSymCountFormattedString;
+static uint32_t GenSymCountStepper;
 
-DWORD EepromAddrFree;
+uint32_t EepromAddrFree;
 
 namespace {
     std::unordered_set<std::string> persistVariables;
@@ -97,7 +97,7 @@ namespace {
 //-----------------------------------------------------------------------------
 // Report an error if a constant doesn't fit in 16 bits.
 //-----------------------------------------------------------------------------
-static void CheckConstantInRange(SDWORD /*v*/)
+static void CheckConstantInRange(int32_t /*v*/)
 {
     /*
     if(v < -0x800000 || v > 0x7FffFF) {
@@ -884,7 +884,7 @@ static void GenSymStepper(char *dest, const char *name)
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                const char *name4, const char *name5, const char *name6, SDWORD lit, SDWORD lit2, int32_t *data)
+                const char *name4, const char *name5, const char *name6, int32_t lit, int32_t lit2, int32_t *data)
 {
     IntOp intOp;
     intOp.op = op;
@@ -918,11 +918,11 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
     IntCode.emplace_back(intOp);
 }
 
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, int32_t lit)
 {
     _Op(l, f, args, op, name1, name2, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
-static void _Op(int l, const char *f, const char *args, int op, const char *name1, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, const char *name1, int32_t lit)
 {
     _Op(l, f, args, op, name1, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
@@ -934,7 +934,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
 {
     _Op(l, f, args, op, name1, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
-static void _Op(int l, const char *f, const char *args, int op, SDWORD lit)
+static void _Op(int l, const char *f, const char *args, int op, int32_t lit)
 {
     _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
@@ -943,7 +943,7 @@ static void _Op(int l, const char *f, const char *args, int op)
     _Op(l, f, args, op, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, nullptr);
 }
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                SDWORD lit)
+                int32_t lit)
 {
     _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, 0, nullptr);
 }
@@ -953,7 +953,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                SDWORD lit, SDWORD lit2)
+                int32_t lit, int32_t lit2)
 {
     _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, nullptr);
 }
@@ -971,7 +971,7 @@ static void _Op(int l, const char *f, const char *args, int op, const char *name
 }
 //
 static void _Op(int l, const char *f, const char *args, int op, const char *name1, const char *name2, const char *name3,
-                SDWORD lit, SDWORD lit2, int32_t *data)
+                int32_t lit, int32_t lit2, int32_t *data)
 {
     _Op(l, f, args, op, name1, name2, name3, nullptr, nullptr, nullptr, lit, lit2, data);
 }
@@ -1043,7 +1043,7 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
 #define Comment(...) _Comment(__LINE__, __LLFILE__, __VA_ARGS__)
 
 //-----------------------------------------------------------------------------
-SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
+int32_t TestTimerPeriod(char *name, int32_t delay, int adjust) // delay in us
 {
     if(delay <= 0) {
         Error("%s '%s': %s", _("Timer"), name, _("Delay cannot be zero or negative."));
@@ -1103,20 +1103,20 @@ SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust) // delay in us
         Error("%s\r\n%s\r\n%s", s1, s2, s3);
         period = -1;
     }
-    return (SDWORD)adjPeriod;
+    return (int32_t)adjPeriod;
 }
 //-----------------------------------------------------------------------------
 // Calculate the period in scan units from the period in microseconds, and
 // raise an error if the given period is unachievable.
 //-----------------------------------------------------------------------------
-static SDWORD TimerPeriod(ElemLeaf *l)
+static int32_t TimerPeriod(ElemLeaf *l)
 {
     if(Prog.cycleTime <= 0) {
         Warning("PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!");
         return 1;
     }
 
-    SDWORD period = TestTimerPeriod(l->d.timer.name, hobatoi(l->d.timer.delay), l->d.timer.adjust);
+    int32_t period = TestTimerPeriod(l->d.timer.name, hobatoi(l->d.timer.delay), l->d.timer.adjust);
     if(period < 1) {
         Error(_("Internal error."));
     }
@@ -1124,7 +1124,7 @@ static SDWORD TimerPeriod(ElemLeaf *l)
 }
 
 //-----------------------------------------------------------------------------
-SDWORD CalcDelayClock(long long clocks) // in us
+int32_t CalcDelayClock(long long clocks) // in us
 {
 #if 1 // 1
     clocks = clocks * Prog.mcuClock / 1000000;
@@ -1139,7 +1139,7 @@ SDWORD CalcDelayClock(long long clocks) // in us
     if(clocks <= 0)
         clocks = 1;
 #endif
-    return (SDWORD)clocks;
+    return (int32_t)clocks;
 }
 
 //-----------------------------------------------------------------------------
@@ -1300,14 +1300,14 @@ long hobatoi(const char *str)
 // Try to turn a string into a constant, and raise an error if
 // something bad happens when we do so (e.g. out of range).
 //-----------------------------------------------------------------------------
-SDWORD CheckMakeNumber(const char *str)
+int32_t CheckMakeNumber(const char *str)
 {
-    SDWORD val = hobatoi(str);
+    int32_t val = hobatoi(str);
     CheckConstantInRange(val);
     return val;
 }
 
-SDWORD CheckMakeNumber(const NameArray &str)
+int32_t CheckMakeNumber(const NameArray &str)
 {
     return CheckMakeNumber(str.c_str());
 }
@@ -1438,7 +1438,7 @@ char *GetLabelName(char *name, int r)
 void OpSetVar(char *op1, char *op2)
 {
     if(IsNumber(op2))
-        Op(INT_SET_VARIABLE_TO_LITERAL, op1, (SDWORD)CheckMakeNumber(op2));
+        Op(INT_SET_VARIABLE_TO_LITERAL, op1, (int32_t)CheckMakeNumber(op2));
     else
         Op(INT_SET_VARIABLE_TO_VARIABLE, op1, op2);
 }
@@ -1466,7 +1466,7 @@ static void InitVarsCircuit(int which, void *elem, int *n)
                 (*n)++; // counting the number of variables
                 return;
             }
-            SDWORD period = TimerPeriod(l);
+            int32_t period = TimerPeriod(l);
             Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             break;
         }
@@ -1846,7 +1846,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         //-------------------------------------------------------------------
         case ELEM_RTL: {
             Comment(3, "ELEM_RTL");
-            SDWORD period = TimerPeriod(l);
+            int32_t period = TimerPeriod(l);
 
             Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
 
@@ -1866,7 +1866,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
         }
         case ELEM_RTO: {
             Comment(3, "ELEM_RTO");
-            SDWORD period = TimerPeriod(l);
+            int32_t period = TimerPeriod(l);
 
             Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
 
@@ -1910,9 +1910,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                       else
                          Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.reset.name, c->init);
                   } else
-                      Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
+                      Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (int32_t)0);
               } else
-                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (SDWORD)0);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name, (int32_t)0);
             Op(INT_END_IF);
             break;
 
@@ -1920,7 +1920,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Comment(3, "ELEM_TIME2COUNT");
             if(!IsNumber(l->d.timer.delay))
                 Error(_("The TIME to COUNTER converter T2CNT '%S' delay must be a number in ms!"), l->d.timer.name);
-            SDWORD period = TimerPeriod(l);
+            int32_t period = TimerPeriod(l);
             Op(INT_IF_BIT_SET, stateInOut);
               Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, period);
             Op(INT_END_IF);
@@ -1949,14 +1949,14 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             #ifndef NEW_TON
             Op(INT_IF_BIT_SET, stateInOut);
               if(IsNumber(l->d.timer.delay)) {
-                SDWORD period = TimerPeriod(l);
+                int32_t period = TimerPeriod(l);
                 Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
               } else {
                 Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
               }
                   Op(INT_INCREMENT_VARIABLE, l->d.timer.name);
                 Op(INT_ELSE);
-                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (int32_t)0);
                   Op(INT_IF_BIT_CLEAR, store);
                     Op(INT_SET_BIT, store);
                   Op(INT_ELSE);
@@ -1967,7 +1967,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   Op(INT_CLEAR_BIT, stateInOut);
                 Op(INT_END_IF);
             Op(INT_ELSE);
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (int32_t)0);
             Op(INT_END_IF);
             #else
             Op(INT_IF_BIT_SET, stateInOut);
@@ -2011,7 +2011,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
 
               if(IsNumber(l->d.timer.delay)) {
-                SDWORD period = TimerPeriod(l);
+                int32_t period = TimerPeriod(l);
                 Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
               } else {
                 Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
@@ -2022,7 +2022,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             Op(INT_ELSE);
 
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (int32_t)0);
 
             Op(INT_END_IF);
             #else
@@ -2078,7 +2078,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_CLEAR, stateInOut);
 
               if(IsNumber(l->d.timer.delay)) {
-                SDWORD period = TimerPeriod(l);
+                int32_t period = TimerPeriod(l);
                 Op(INT_IF_VARIABLE_LES_LITERAL, l->d.timer.name, period);
               } else {
                 Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
@@ -2089,7 +2089,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             Op(INT_ELSE);
 
-              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+              Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (int32_t)0);
 
             Op(INT_END_IF);
             #else
@@ -2141,7 +2141,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             Op(INT_IF_BIT_SET, store);
               if(IsNumber(l->d.timer.delay)) {
-                SDWORD period = TimerPeriod(l);
+                int32_t period = TimerPeriod(l);
                 Op(INT_IF_LES, l->d.timer.name, period);
               } else {
                 Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
@@ -2150,7 +2150,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   Op(INT_SET_BIT, stateInOut);
                 Op(INT_ELSE);
                   Op(INT_IF_BIT_CLEAR, stateInOut);
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (int32_t)0);
                     Op(INT_CLEAR_BIT, store);
                   Op(INT_END_IF);
                   Op(INT_CLEAR_BIT, stateInOut);
@@ -2196,7 +2196,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
             Op(INT_IF_BIT_SET, store);
               if(IsNumber(l->d.timer.delay)) {
-                SDWORD period = TimerPeriod(l);
+                int32_t period = TimerPeriod(l);
                 Op(INT_IF_LES, l->d.timer.name, period);
               } else {
                 Op(INT_IF_LES, l->d.timer.name, l->d.timer.delay);
@@ -2205,7 +2205,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                   Op(INT_CLEAR_BIT, stateInOut);
                 Op(INT_ELSE);
                   Op(INT_IF_BIT_SET, stateInOut);
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (SDWORD)0);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.timer.name, (int32_t)0);
                     Op(INT_CLEAR_BIT, store);
                   Op(INT_END_IF);
                   Op(INT_SET_BIT, stateInOut);
@@ -2871,14 +2871,14 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 /**/
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", DEGREE_CHAR);
                 Op(INT_IF_VARIABLE_EQUALS_VARIABLE, Xseg, "$scratch");
-                  Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)deg);
+                  Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (int32_t)deg);
                   Op(INT_ELSE);
-                    Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, (SDWORD)0x00);
-                      Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)0x20); // ' '
+                    Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, (int32_t)0x00);
+                      Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (int32_t)0x20); // ' '
                     Op(INT_ELSE);
                       Op(INT_IF_VARIABLE_LES_LITERAL, Xseg, len);
                       Op(INT_ELSE);
-                        Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (SDWORD)0x20); // ' '
+                        Op(INT_SET_VARIABLE_TO_LITERAL, Xseg, (int32_t)0x20); // ' '
                       Op(INT_END_IF);
                     Op(INT_END_IF);
                 Op(INT_END_IF);
@@ -2943,7 +2943,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 SetSizeOfVar(nameTable, std::max(r.sovElement, 1));
                 r.sovElement = std::max(r.sovElement, SizeOfVar(nameTable));
                 SetSizeOfVar(Tmul, r.sovElement);
-                Tdata = (SDWORD *)CheckMalloc((l->d.stepper.n + 2) * sizeof(SDWORD)); //+2 Ok
+                Tdata = (int32_t *)CheckMalloc((l->d.stepper.n + 2) * sizeof(int32_t)); //+2 Ok
                 // CheckFree(Tdata) in WipeIntMemory();
 
                 for(int i = 0; i < l->d.stepper.n; i++) {
@@ -2965,15 +2965,15 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_SET_BIT, storeName);
                 // Этот фрагмент кода выполняется 1 раз при переключении 0->1.
                 // This code fragment is executed 1 time when switching 0->1.
-                Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1); // § ЇаҐв Ї®ўв®а­®© § Јаг§ЄЁ - Ї®ўв®а­®Ј® аҐбв ав
+                Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1); // запрет повторной загрузки - повторного рестарта
                   OpSetVar(decCounter, l->d.stepper.max);
 
                   if(speed == 2) {
-                    Op(INT_SET_VARIABLE_TO_LITERAL, workP, (SDWORD)1);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, workP, (int32_t)1);
 
                   } else if(speed >= 3) {
-                    Op(INT_SET_VARIABLE_TO_LITERAL, workP, (SDWORD)1);
-                    Op(INT_SET_VARIABLE_TO_LITERAL, incCounter, (SDWORD)(0));
+                    Op(INT_SET_VARIABLE_TO_LITERAL, workP, (int32_t)1);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, incCounter, (int32_t)(0));
                     //vvv
                     //Op(INT_SET_VARIABLE_TO_LITERAL, Tmul, l->d.stepper.n);
                     char strn[20];
@@ -2986,7 +2986,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               Op(INT_CLEAR_BIT, storeName);
             Op(INT_END_IF);
             //
-            Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1);
+            Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1);
               Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_ELSE);
               Op(INT_SET_BIT, stateInOut);
@@ -2998,7 +2998,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
                 } else if(speed == 2) {
                   Op(INT_DECREMENT_VARIABLE, workP);
-                  Op(INT_IF_VARIABLE_LES_LITERAL, workP, (SDWORD)1);
+                  Op(INT_IF_VARIABLE_LES_LITERAL, workP, (int32_t)1);
                     //PULSE
                     Op(INT_SET_BIT, l->d.stepper.coil);
                     Op(INT_DECREMENT_VARIABLE, decCounter);
@@ -3010,7 +3010,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
                 } else if(speed >= 3) {
                   Op(INT_DECREMENT_VARIABLE, workP);
-                  Op(INT_IF_VARIABLE_LES_LITERAL, workP, (SDWORD)1);
+                  Op(INT_IF_VARIABLE_LES_LITERAL, workP, (int32_t)1);
                     //PULSE
                     Op(INT_SET_BIT, l->d.stepper.coil);
                     //Op(INT_DECREMENT_VARIABLE, decCounter); //n downto 1
@@ -3024,10 +3024,10 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
               if(speed >= 3) {
                   Op(INT_IF_BIT_SET, l->d.stepper.coil);
                     Op(INT_CLEAR_BIT, l->d.stepper.coil);
-                    Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)l->d.stepper.n); // DEC is more then INC
+                    Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)l->d.stepper.n); // DEC is more then INC
                       Op(INT_FLASH_READ, workP, nameTable, decCounter, l->d.stepper.n, r.sovElement, Tdata);
                     Op(INT_ELSE);
-                      Op(INT_IF_VARIABLE_LES_LITERAL, incCounter, (SDWORD)l->d.stepper.n);
+                      Op(INT_IF_VARIABLE_LES_LITERAL, incCounter, (int32_t)l->d.stepper.n);
                         Op(INT_FLASH_READ, workP, nameTable, incCounter, l->d.stepper.n, r.sovElement, Tdata);
                       Op(INT_ELSE);
                         OpSetVar(workP, Tmul);
@@ -3122,7 +3122,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_END_IF);
             //Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
             //
-            Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (SDWORD)1);
+            Op(INT_IF_VARIABLE_LES_LITERAL, decCounter, (int32_t)1);
             Op(INT_IF_BIT_SET, stateInOut);
             Op(INT_SET_VARIABLE_TO_VARIABLE, decCounter, counter);
             Op(INT_ELSE);
@@ -3151,7 +3151,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_COPY_BIT_TO_BIT, stateInOut, Osc);
                 //
                 Op(INT_DECREMENT_VARIABLE, workT1);
-                Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (SDWORD)1);
+                Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (int32_t)1);
                 Op(INT_IF_BIT_SET, Osc);
                 Op(INT_CLEAR_BIT, Osc);
 
@@ -3169,11 +3169,11 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_END_IF);
             } else { // (Meander==0)
                 Op(INT_DECREMENT_VARIABLE, workT1);
-                Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (SDWORD)0);
+                Op(INT_IF_VARIABLE_LES_LITERAL, workT1, (int32_t)0);
                 Op(INT_CLEAR_BIT, stateInOut); // 1
                 Op(INT_DECREMENT_VARIABLE, workT0);
 
-                Op(INT_IF_VARIABLE_LES_LITERAL, workT0, (SDWORD)1);
+                Op(INT_IF_VARIABLE_LES_LITERAL, workT0, (int32_t)1);
                 Op(INT_DECREMENT_VARIABLE, decCounter);
                 //
                 Op(INT_SET_BIT, doSetT);
@@ -3398,7 +3398,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             sprintf(ticks, "$ticks_%s", l->d.QuadEncod.counter);
             SetSizeOfVar(ticks, byteNeeded(l->d.QuadEncod.countPerRevol));
 
-            DWORD addr1 = -1, addr2 = -1;
+            uint32_t addr1 = -1, addr2 = -1;
             int   bit1 = -1, bit2 = -1;
             MemForSingleBit(l->d.QuadEncod.inputA, true, &addr1, &bit1);
             MemForSingleBit(l->d.QuadEncod.inputB, true, &addr2, &bit2);
@@ -3559,7 +3559,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                 Op(INT_IF_BIT_SET, storeName);
                   Op(INT_SET_BIT, stateInOut); //
                   if(l->d.QuadEncod.countPerRevol == 0) {
-                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.QuadEncod.counter, (SDWORD)0x00);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, l->d.QuadEncod.counter, (int32_t)0x00);
                   } else if(l->d.QuadEncod.countPerRevol > 0) {
                     char s[MAX_NAME_LEN];
                     sprintf(s, "%d", l->d.QuadEncod.countPerRevol / 2);
@@ -3567,14 +3567,14 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                       Op(INT_INCREMENT_VARIABLE, revol);
                       sprintf(s, "%d", l->d.QuadEncod.countPerRevol);
                       Op(INT_SET_VARIABLE_MULTIPLY, l->d.QuadEncod.counter, revol, s);
-                      Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (SDWORD)0x00);
+                      Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (int32_t)0x00);
                     Op(INT_ELSE);
                       sprintf(s, "%d", -l->d.QuadEncod.countPerRevol / 2);
                       Op(INT_IF_LES, ticks, s);
                         Op(INT_DECREMENT_VARIABLE, revol);
                         sprintf(s, "%d", l->d.QuadEncod.countPerRevol);
                         Op(INT_SET_VARIABLE_MULTIPLY, l->d.QuadEncod.counter, revol, s);
-                        Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (SDWORD)0x00);
+                        Op(INT_SET_VARIABLE_TO_LITERAL, ticks, (int32_t)0x00);
                       Op(INT_END_IF);
                     Op(INT_END_IF);
                   }
@@ -4005,7 +4005,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_TIME2DELAY: {
             Comment(3, "ELEM_TIME2DELAY");
-            SDWORD clocks = CalcDelayClock(hobatoi(l->d.timer.delay));
+            int32_t clocks = CalcDelayClock(hobatoi(l->d.timer.delay));
             if(Prog.mcu()) {
                 if(Prog.mcu()->whichIsa == ISA_AVR) {
                     clocks = (clocks - 1) / 4;
@@ -4444,7 +4444,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_IF_BIT_CLEAR, oneShot);
                     Op(INT_SET_BIT, oneShot); //v2
-                    Op(INT_SET_VARIABLE_TO_LITERAL, seq, (SDWORD)0);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, seq, (int32_t)0);
                     Op(INT_SET_BIT, doSend);
                 Op(INT_END_IF);
             Op(INT_ELSE);                   //v2
@@ -4544,9 +4544,9 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         // Also do the `absolute value' calculation while
                         // we're at it.
                         Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", ' ');
-                        Op(INT_IF_VARIABLE_LES_LITERAL, var, (SDWORD)0);
+                        Op(INT_IF_VARIABLE_LES_LITERAL, var, (int32_t)0);
                             Op(INT_SET_VARIABLE_TO_LITERAL, "$charToUart", '-');
-                            Op(INT_SET_VARIABLE_TO_LITERAL, convertState, (SDWORD)0);
+                            Op(INT_SET_VARIABLE_TO_LITERAL, convertState, (int32_t)0);
                             Op(INT_SET_VARIABLE_SUBTRACT, convertState, convertState, var);
                         Op(INT_ELSE);
                             Op(INT_SET_VARIABLE_TO_VARIABLE, convertState, var);
@@ -4563,7 +4563,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                     Error(_("Internal error."));
             }
 
-            Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SDWORD)0);
+            Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (int32_t)0);
             Op(INT_ELSE);
               Op(INT_IF_BIT_SET, doSend);
                 /*
@@ -4797,7 +4797,7 @@ bool GenerateIntermediateCode()
         Prog.OpsInRung[rung] = 0;
         Prog.HexInRung[rung] = 0;
         sprintf(s1,"Rung%d", rung + 1);
-        Op(INT_AllocFwdAddr, s1, (SDWORD)rung);
+        Op(INT_AllocFwdAddr, s1, (int32_t)rung);
     }
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
@@ -4809,8 +4809,8 @@ bool GenerateIntermediateCode()
             Comment("======= START RUNG %d =======", rung + 1);
         }
         sprintf(s1,"Rung%d", rung + 1);
-        Op(INT_AllocKnownAddr, s1, (SDWORD)rung);
-        Op(INT_FwdAddrIsNow, s1, (SDWORD)rung);
+        Op(INT_AllocKnownAddr, s1, (int32_t)rung);
+        Op(INT_FwdAddrIsNow, s1, (int32_t)rung);
 
         if(Prog.rungs(rung)->count > 0 && Prog.rungs(rung)->contents[0].which == ELEM_COMMENT) {
             // nothing to do for this one
@@ -4849,8 +4849,8 @@ bool GenerateIntermediateCode()
     // END of rung's
     rungNow++;
     sprintf(s1,"Rung%d", rung + 1);
-    Op(INT_AllocKnownAddr, s1, (SDWORD)rung);
-    Op(INT_FwdAddrIsNow, s1, (SDWORD)Prog.numRungs);
+    Op(INT_AllocKnownAddr, s1, (int32_t)rung);
+    Op(INT_FwdAddrIsNow, s1, (int32_t)Prog.numRungs);
     rungNow++;
     Comment("Latest INT_OP here");
 

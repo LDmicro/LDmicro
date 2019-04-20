@@ -43,7 +43,7 @@ typedef unsigned short WORD;  // 16-bit unsigned
 
 uint32_t Program[MAX_OPS];
 
-SWORD Integers[MAX_VARIABLES];
+int32_t Integers[MAX_VARIABLES];
 BYTE  Bits[MAX_VARIABLES];
 
 #define READ_BIT(addr) Bits[addr]

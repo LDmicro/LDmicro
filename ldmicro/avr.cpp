@@ -83,16 +83,16 @@
 #define YH 29
 #define ZL 30
 #define ZH 31
-static DWORD REG_EIND = 0; // EIND:ZH:ZL indirect address for EICALL, EIJMP
+static uint32_t REG_EIND = 0; // EIND:ZH:ZL indirect address for EICALL, EIJMP
 
 std::vector<PicAvrInstruction> AvrProg;
 
-DWORD AvrProgLdLen = 0;
+uint32_t AvrProgLdLen = 0;
 
 #define OP_XOR OP_EOR
 
 // For yet unresolved references in jumps
-static DWORD FwdAddrCount;
+static uint32_t FwdAddrCount;
 
 // clang-format off
 
@@ -112,46 +112,46 @@ static DWORD FwdAddrCount;
 #define FWD_EIND(x) ((x) | 0x10000000)
 
 // Address to jump to when we finish one PLC cycle
-static DWORD BeginOfPLCCycle;
+static uint32_t BeginOfPLCCycle;
 
 // Address of the multiply subroutine, and whether we will have to include it
-static DWORD MultiplyAddress;
+static uint32_t MultiplyAddress;
 static bool  MultiplyUsed;
-static DWORD MultiplyAddress8;
+static uint32_t MultiplyAddress8;
 static bool  MultiplyUsed8;
-static DWORD MultiplyAddress24;
+static uint32_t MultiplyAddress24;
 static bool  MultiplyUsed24;
-static DWORD MultiplyAddress32;
+static uint32_t MultiplyAddress32;
 static bool  MultiplyUsed32;
 // and also divide
-static DWORD DivideAddress;
+static uint32_t DivideAddress;
 static bool  DivideUsed;
-static DWORD DivideAddress8;
+static uint32_t DivideAddress8;
 static bool  DivideUsed8;
-static DWORD DivideAddress24;
+static uint32_t DivideAddress24;
 static bool  DivideUsed24;
 
 // For EEPROM: we queue up characters to send in 16-bit words (corresponding
 // to the integer variables), but we can actually just program 8 bits at a
 // time, so we need to store the high byte somewhere while we wait.
-static DWORD EepromHighByte; // Allocate high bytes needed for 16-24-32 bit integers variables.
-//static DWORD AllocateNextByte; // Allocate 2 bytes needed for 24 bit integers variables.
-//static DWORD EepromHighByteWaitingAddr; // obsolete
+static uint32_t EepromHighByte; // Allocate high bytes needed for 16-24-32 bit integers variables.
+//static uint32_t AllocateNextByte; // Allocate 2 bytes needed for 24 bit integers variables.
+//static uint32_t EepromHighByteWaitingAddr; // obsolete
 //static int   EepromHighByteWaitingBit;  // obsolete
-static DWORD EepromHighBytesCounter;
+static uint32_t EepromHighBytesCounter;
 
 // Some useful registers, unfortunately many of which are in different places
 // on different AVRs! I consider this a terrible design choice by Atmel.
 // 0 means not defined.
-static DWORD REG_TIMSK  = 0;
+static uint32_t REG_TIMSK  = 0;
 static int       OCIE1A = -1; // Timer/Counter1, Output Compare A Match Interrupt Enable
 static int       TOIE1  = -1; // Timer/Counter1 Overflow Interrupt Enable
 static int       TOIE0  = -1; // Timer/Counter0 Overflow Interrupt Enable
 
-static DWORD REG_TIFR1  = 0;
+static uint32_t REG_TIFR1  = 0;
 static int       OCF1A  = -1; // Timer/Counter1, Output Compare A Match Flag
 static int       TOV1   = -1; // Timer/Counter1 Overflow Flag
-static DWORD REG_TIFR0  = 0;
+static uint32_t REG_TIFR0  = 0;
 static int       OCF0A  = -1; // Timer/Counter0, Output Compare A Match Flag
 static int       TOV0   = -1; // Timer/Counter0 Overflow Flag
 
@@ -167,28 +167,28 @@ static int       TOV0   = -1; // Timer/Counter0 Overflow Flag
 #define REG_SPH     0x5e
 #define REG_SPL     0x5d
 
-static DWORD REG_ADMUX  = 0;
-static DWORD REG_ADCSRA = 0;
+static uint32_t REG_ADMUX  = 0;
+static uint32_t REG_ADCSRA = 0;
 #define          ADEN     BIT7
 #define          ADSC     BIT6
 #define          ADFR     BIT5 // ADATE
 #define          ADIE     BIT3
-static DWORD REG_ADCSRB = 0;
+static uint32_t REG_ADCSRB = 0;
 #define          ACME     BIT6
 #define          MUX5     BIT3
-static DWORD REG_ADCH   = 0;
-static DWORD REG_ADCL   = 0;
+static uint32_t REG_ADCH   = 0;
+static uint32_t REG_ADCL   = 0;
 
 // USART
-static DWORD REG_UBRRH  = 0;
-static DWORD REG_UBRRL  = 0;
+static uint32_t REG_UBRRH  = 0;
+static uint32_t REG_UBRRL  = 0;
 #define          UCSZ0    1
 #define          UCSZ1    2
 #define          URSEL    7
-static DWORD REG_UCSRB  = 0;
+static uint32_t REG_UCSRB  = 0;
 #define          RXEN   BIT4
 #define          TXEN   BIT3
-static DWORD REG_UCSRA  = 0;
+static uint32_t REG_UCSRA  = 0;
 #define          RXC    BIT7 // USART Receive Complete
                         // This flag bit is set when there are unread data
                         //   in the receive buffer and
@@ -207,10 +207,10 @@ by writing a one to its bit location.
 #define          DOR    BIT3 // Data OverRun
 #define          PE     BIT2 // Parity Error
 
-static DWORD REG_UDR = 0;
+static uint32_t REG_UDR = 0;
 
 // WDT
-static DWORD REG_WDTCR  = 0; // 0x41 or 0x60
+static uint32_t REG_WDTCR  = 0; // 0x41 or 0x60
 #define          WDP3    BIT5
 #define          WDCE    BIT4 // Watchdog Change Enable
 #define          WDE     BIT3 // Watchdog System Reset Enable
@@ -218,33 +218,33 @@ static DWORD REG_WDTCR  = 0; // 0x41 or 0x60
 #define          WDP1    BIT1
 #define          WDP0    BIT0 // Watchdog Timer Prescaler 3, 2, 1 and 0
 
-static DWORD REG_MCUSR = 0; // MCU Status Register
+static uint32_t REG_MCUSR = 0; // MCU Status Register
 #define          WDRF    BIT3 // Watchdog Reset Flag
 
 // Timer1
-static DWORD REG_OCR1AH = 0; // 0x4b
-static DWORD REG_OCR1AL = 0; // 0x4a
-static DWORD REG_TCCR1A = 0; // 0x4f
-static DWORD REG_TCCR1B = 0; // 0x4e
+static uint32_t REG_OCR1AH = 0; // 0x4b
+static uint32_t REG_OCR1AL = 0; // 0x4a
+static uint32_t REG_TCCR1A = 0; // 0x4f
+static uint32_t REG_TCCR1B = 0; // 0x4e
 #define          WGM13    4
 #define          WGM12    3
 #define          WGM11    1
 #define          WGM10    0
 
 // Timer0
-static DWORD REG_TCCR0A = 0;    //
+static uint32_t REG_TCCR0A = 0;    //
 static int       WGM00  = -1;   // 0 or 6 or not
 static int       WGM01  = -1;   // 1 or 3 or not
-static DWORD REG_TCCR0B = 0;    // TCCR0 // cs
+static uint32_t REG_TCCR0B = 0;    // TCCR0 // cs
 //static int       WGM02  = -1; // 3 or not // always = 0
 //static int       WGM03  = -1; // not
-static DWORD REG_TCNT0  = 0;    //
-static DWORD REG_OCR0A  = 0;    //
+static uint32_t REG_TCNT0  = 0;    //
+static uint32_t REG_OCR0A  = 0;    //
 
 // Timer2
-static DWORD REG_OCR2   = 0;
-static DWORD REG_TCCR2  = 0; // TCCR2A
-static DWORD REG_TCCR2B = 0;
+static uint32_t REG_OCR2   = 0;
+static uint32_t REG_TCCR2  = 0; // TCCR2A
+static uint32_t REG_TCCR2B = 0;
 static int       WGM20  = -1;
 static int       WGM21  = -1;
 static int       WGM22  = -1;
@@ -253,10 +253,10 @@ static int       COM21  = BIT5;
 static int       COM20  = BIT4;
 
 //EEPROM
-static DWORD REG_EEARH     = 0;
-static DWORD REG_EEARL     = 0;
-static DWORD REG_EEDR      = 0;
-static DWORD REG_EECR      = 0;
+static uint32_t REG_EEARH     = 0;
+static uint32_t REG_EEARL     = 0;
+static uint32_t REG_EEDR      = 0;
+static uint32_t REG_EECR      = 0;
 #define          EERE   BIT0
 #define          EEWE   BIT1
 #define          EEMWE  BIT2
@@ -280,51 +280,51 @@ static DWORD REG_EECR      = 0;
 
 /*
 //SPI
-static DWORD REG_SPCR = 0; // SSPCON  // SPI Control Register
-static DWORD REG_SPSR = 0; // SSPSTAT // SPI Status Register
-static DWORD REG_SPDR = 0; // SSPBUF  // SPI Data Register
+static uint32_t REG_SPCR = 0; // SSPCON  // SPI Control Register
+static uint32_t REG_SPSR = 0; // SSPSTAT // SPI Status Register
+static uint32_t REG_SPDR = 0; // SSPBUF  // SPI Data Register
 */
 
 // Interrupt Vectors Table
-static DWORD Int0Addr         = 0;
-static DWORD Int1Addr         = 0;
-static DWORD Timer0OvfAddr    = 0;
-static DWORD Timer1OvfAddr    = 0;
-static DWORD Timer1CompAAddr  = 0;
+static uint32_t Int0Addr         = 0;
+static uint32_t Int1Addr         = 0;
+static uint32_t Timer0OvfAddr    = 0;
+static uint32_t Timer1OvfAddr    = 0;
+static uint32_t Timer1CompAAddr  = 0;
 
 // General Timer/Counter Control Register
-static DWORD REG_GTCCR = 0;
+static uint32_t REG_GTCCR = 0;
 #define          PSRASY  BIT1
 // Special Function IO Register
-static DWORD REG_SFIOR = 0;
+static uint32_t REG_SFIOR = 0;
 static int       PSR2  = -1;
 
 // Power Reduction Register
-static DWORD REG_PRR   = 0;
+static uint32_t REG_PRR   = 0;
 
 // Sleep Mode Control Register (redirected) =================================
-static DWORD REG_sleep = 0;  // maybe REG_SMCR or REG_MCUCR !!!
+static uint32_t REG_sleep = 0;  // maybe REG_SMCR or REG_MCUCR !!!
 static int       SE    = -1; // maybe in REG_SMCR or REG_MCUCR !!!
 static int       SM0   = -1; // maybe in REG_SMCR or REG_MCUCR or REG_EMCUCR!!!
 static int       SM1   = -1; // maybe in REG_SMCR or REG_MCUCR !!!
 static int       SM2   = -1; // maybe in REG_SMCR or REG_MCUCR or REG_MCUCSR!!!
 
 // Sleep Mode Control Register
-//static DWORD REG_SMCR  = 0; // 0x53;
+//static uint32_t REG_SMCR  = 0; // 0x53;
 
 // MCU Control Register
-//static DWORD REG_MCUCR  = 0; // 0x55;
-static DWORD REG_EMCUCR = 0;
-static DWORD REG_MCUCSR = 0;
+//static uint32_t REG_MCUCR  = 0; // 0x55;
+static uint32_t REG_EMCUCR = 0;
+static uint32_t REG_MCUCSR = 0;
 
 // clang-format on
 
 // External Interrupts support (redirected) =================================
-static DWORD REG_int_sup = 0; // maybe REG_EICRA or REG_MCUCR !!!
+static uint32_t REG_int_sup = 0; // maybe REG_EICRA or REG_MCUCR !!!
 
 // External Interrupt Control Registers
-//static DWORD REG_EICRB = 0;
-//static DWORD REG_EICRA = 0;
+//static uint32_t REG_EICRB = 0;
+//static uint32_t REG_EICRA = 0;
 
 //               Interrupt Sense Control
 static int ISC11 = BIT3;
@@ -333,29 +333,29 @@ static int ISC01 = BIT1;
 static int ISC00 = BIT0; //maybe in REG_EICRA or REG_MCUCR !!!
 
 // Interrupt Control Register
-static DWORD REG_int_en = 0; // maybe REG_GICR or REG_EIMSK !!!
-//static DWORD REG_GICR  = 0;
+static uint32_t REG_int_en = 0; // maybe REG_GICR or REG_EIMSK !!!
+//static uint32_t REG_GICR  = 0;
 // External Interrupt Mask Register
-//static DWORD REG_EIMSK = 0;
+//static uint32_t REG_EIMSK = 0;
 //               External Interrupt Request Enable
 static int INT1 = -1;
 static int INT0 = -1;
 
 // Interrupt Flag Register
-static DWORD REG_int_flag = 0; // maybe REG_GIFR or REG_EIFR !!!
-//static DWORD REG_GIFR  = 0;
+static uint32_t REG_int_flag = 0; // maybe REG_GIFR or REG_EIFR !!!
+//static uint32_t REG_GIFR  = 0;
 // External Interrupt Flag Register
-//static DWORD REG_EIFR  = 0;
+//static uint32_t REG_EIFR  = 0;
 //               External Interrupt Flag is cleared when the interrupt routine is executed.
 static int INTF1 = -1;
 static int INTF0 = -1;
 //===========================================================================
 //used in NPulseTimerOverflowInterrupt in ELEM_NPULSE
-static DWORD NPulseTimerOverflowVector;
+static uint32_t NPulseTimerOverflowVector;
 static int   tcntNPulse = 0;
-static DWORD NPulseTimerOverflowRegAddr;
+static uint32_t NPulseTimerOverflowRegAddr;
 static int   NPulseTimerOverflowBit;
-static DWORD NPulseTimerOverflowCounter;
+static uint32_t NPulseTimerOverflowCounter;
 static int   sovNPulseTimerOverflowCounter;
 
 static uint32_t IntPc;
@@ -377,7 +377,7 @@ static void WipeMemory()
 // if this spot is already filled. We don't actually assemble to binary yet;
 // there may be references to resolve.
 //-----------------------------------------------------------------------------
-static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2, const char *comment)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, uint32_t arg1, uint32_t arg2, const char *comment)
 {
     static PicAvrInstruction instruction;
     static AvrOp prevOp = OP_VACANT;
@@ -421,12 +421,12 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD
     AvrProg.push_back(instruction);
 }
 
-static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1, DWORD arg2)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, uint32_t arg1, uint32_t arg2)
 {
     _Instruction(l, f, args, op, arg1, arg2, nullptr);
 }
 
-static void _Instruction(int l, const char *f, const char *args, AvrOp op, DWORD arg1)
+static void _Instruction(int l, const char *f, const char *args, AvrOp op, uint32_t arg1)
 {
     _Instruction(l, f, args, op, arg1, 0, nullptr);
 }
@@ -444,7 +444,7 @@ static void _Instruction(int l, const char *f, const char *args, AvrOp op, const
 #define Instruction(...) _Instruction(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 /*
 //-----------------------------------------------------------------------------
-static void _SetInstruction(int l, char *f, char *args, DWORD addr, AvrOp op, DWORD arg1, DWORD arg2)
+static void _SetInstruction(int l, char *f, char *args, uint32_t addr, AvrOp op, uint32_t arg1, uint32_t arg2)
 //for setiing interrupt vector
 {
     if(addr == 0) {
@@ -496,7 +496,7 @@ static void Comment(const char *str, ...)
 // reference gets assigned to an absolute address, and we can go back and
 // fix up the reference.
 //-----------------------------------------------------------------------------
-static DWORD AllocFwdAddr()
+static uint32_t AllocFwdAddr()
 {
     FwdAddrCount++;
     return FWD(FwdAddrCount);
@@ -506,7 +506,7 @@ static DWORD AllocFwdAddr()
 // Go back and fix up the program given that the provided forward address
 // corresponds to the next instruction to be assembled.
 //-----------------------------------------------------------------------------
-static void FwdAddrIsNow(DWORD addr)
+static void FwdAddrIsNow(uint32_t addr)
 {
     if(!(addr & FWD(0)))
         ooops("addr=0x%X", addr);
@@ -588,7 +588,7 @@ static void AddrCheckForErrorsPostCompile()
 // being assembled to so that it generate relative jumps; internal error if
 // a relative jump goes out of range.
 //-----------------------------------------------------------------------------
-static DWORD Assemble(DWORD addrAt, AvrOp op, DWORD arg1, DWORD arg2, char *sAsm)
+static uint32_t Assemble(uint32_t addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, char *sAsm)
 {
     PicAvrInstruction *AvrInstr = &AvrProg[addrAt];
     IntOp             *intOp;
@@ -1275,13 +1275,13 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         // 2 - increases the length of the data string to be compatible with "avrdude.exe -U flash:r:saved_Intel_Hex.hex:i"
     BYTE  soFar[16 * n];
     int   soFarCount = 0;
-    DWORD soFarStart = 0;
+    uint32_t soFarStart = 0;
 
     // always start from address 0
     fprintf(f, ":020000020000FC\n");
     //fprintf(f, ":020000040000FA\n");
 
-    DWORD ExtendedSegmentAddress = 0;
+    uint32_t ExtendedSegmentAddress = 0;
     for(uint32_t i = 0; i < AvrProg.size(); i++) {
         AvrProg[i].isLabel = false;
     }
@@ -1301,7 +1301,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     }
 
     for(uint32_t i = 0; i < AvrProg.size(); i++) {
-        DWORD w = Assemble(i, AvrProg[i].opAvr, AvrProg[i].arg1, AvrProg[i].arg2, sAsm);
+        uint32_t w = Assemble(i, AvrProg[i].opAvr, AvrProg[i].arg1, AvrProg[i].arg2, sAsm);
 
         if(strlen(AvrProg[i].commentInt)) {
             fprintf(fAsm, "    ; %s\n", AvrProg[i].commentInt);
@@ -1405,7 +1405,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 // Make sure that the given address is loaded in the X register; might not
 // have to update all of it.
 //-----------------------------------------------------------------------------
-static void LoadXAddr(DWORD addr, const char *comment)
+static void LoadXAddr(uint32_t addr, const char *comment)
 //used X; Opcodes: 2
 {
     if(addr <= 0) {
@@ -1420,13 +1420,13 @@ static void LoadXAddr(DWORD addr, const char *comment)
     Instruction(OP_LDI, XH, (addr >> 8));            // X-register High Byte
 }
 
-static void LoadXAddr(DWORD addr)
+static void LoadXAddr(uint32_t addr)
 {
     LoadXAddr(addr, nullptr);
 }
 //----
-static void LoadYAddr(DWORD addr, const char *comment = nullptr);
-static void LoadYAddr(DWORD addr, const char *comment)
+static void LoadYAddr(uint32_t addr, const char *comment = nullptr);
+static void LoadYAddr(uint32_t addr, const char *comment)
 //used Y; Opcodes: 2
 {
     if(addr <= 0) {
@@ -1441,7 +1441,7 @@ static void LoadYAddr(DWORD addr, const char *comment)
     Instruction(OP_LDI, YH, (addr >> 8));            // Y-register High Byte
 }
 //----
-static void LoadZAddr(DWORD addr, const char *comment)
+static void LoadZAddr(uint32_t addr, const char *comment)
 //used Z; Opcodes: 2
 {
     if(addr <= 0) {
@@ -1456,7 +1456,7 @@ static void LoadZAddr(DWORD addr, const char *comment)
     Instruction(OP_LDI, ZH, (addr >> 8));            // Z-register High Byte
 }
 
-static void LoadZAddr(DWORD addr)
+static void LoadZAddr(uint32_t addr)
 {
     LoadZAddr(addr, nullptr);
 }
@@ -1472,7 +1472,7 @@ static void LoadZAddr(DWORD addr)
 ;*  SETB - SET Bit in IO of data space
 ;*********************************************************
 */
-static void SETB(DWORD addr, int bit, int reg, const char *name)
+static void SETB(uint32_t addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
         THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
@@ -1504,17 +1504,17 @@ static void SETB(DWORD addr, int bit, int reg, const char *name)
         oops();
 }
 
-static void SETB(DWORD addr, int bit, const char *name)
+static void SETB(uint32_t addr, int bit, const char *name)
 {
     SETB(addr, bit, r25, name);
 }
 
-static void SETB(DWORD addr, int bit, const NameArray &name)
+static void SETB(uint32_t addr, int bit, const NameArray &name)
 {
     SETB(addr, bit, r25, name.c_str());
 }
 
-static void SETB(DWORD addr, int bit)
+static void SETB(uint32_t addr, int bit)
 {
     SETB(addr, bit, r25, nullptr);
 }
@@ -1525,7 +1525,7 @@ static void SETB(DWORD addr, int bit)
 ;*  CLRB - CLeaR Bit in IO of data space
 ;*********************************************************
 */
-static void CLRB(DWORD addr, int bit, int reg, const char *name)
+static void CLRB(uint32_t addr, int bit, int reg, const char *name)
 {
     if(bit > 7) {
         THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
@@ -1557,17 +1557,17 @@ static void CLRB(DWORD addr, int bit, int reg, const char *name)
         oops();
 }
 
-static void CLRB(DWORD addr, int bit, const char *name)
+static void CLRB(uint32_t addr, int bit, const char *name)
 {
     CLRB(addr, bit, r25, name);
 }
 
-static void CLRB(DWORD addr, int bit, const NameArray &name)
+static void CLRB(uint32_t addr, int bit, const NameArray &name)
 {
     CLRB(addr, bit, r25, name.c_str());
 }
 
-static void CLRB(DWORD addr, int bit)
+static void CLRB(uint32_t addr, int bit)
 {
     CLRB(addr, bit, r25, nullptr);
 }
@@ -1578,9 +1578,9 @@ static void CLRB(DWORD addr, int bit)
 ;*  RETURN: Used Instruction Word
 ;*********************************************************
 */
-static DWORD SKBS(DWORD addr, int bit, int reg)
+static uint32_t SKBS(uint32_t addr, int bit, int reg)
 {
-    DWORD prevProgSz = AvrProg.size();
+    uint32_t prevProgSz = AvrProg.size();
     if(bit > 7) {
         THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
@@ -1606,7 +1606,7 @@ static DWORD SKBS(DWORD addr, int bit, int reg)
     return AvrProg.size() - prevProgSz;
 }
 
-static DWORD SKBS(DWORD addr, int bit)
+static uint32_t SKBS(uint32_t addr, int bit)
 {
     return SKBS(addr, bit, r25);
 }
@@ -1617,9 +1617,9 @@ static DWORD SKBS(DWORD addr, int bit)
 ;*  SKBC : SKip if Bit Cleared
 ;*********************************************************
 */
-static DWORD SKBC(DWORD addr, int bit, int reg)
+static uint32_t SKBC(uint32_t addr, int bit, int reg)
 {
-    DWORD prevProgSz = AvrProg.size();
+    uint32_t prevProgSz = AvrProg.size();
     if(bit > 7) {
         THROW_COMPILER_EXCEPTION(_("Only values 0-7 allowed for Bit parameter"));
     }
@@ -1646,7 +1646,7 @@ static DWORD SKBC(DWORD addr, int bit, int reg)
     return AvrProg.size() - prevProgSz;
 }
 
-static DWORD SKBC(DWORD addr, int bit)
+static uint32_t SKBC(uint32_t addr, int bit)
 {
     return SKBC(addr, bit, r25);
 }
@@ -1658,7 +1658,7 @@ static DWORD SKBC(DWORD addr, int bit)
 ;*  LOAD  - Load register from IO or data space
 ;*********************************************************
 */
-static void STORE(DWORD addr, int reg)
+static void STORE(uint32_t addr, int reg)
 {
     if(addr <= 0) {
         THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nSTORE(%d, %d) skiped!"), addr, reg);
@@ -1683,7 +1683,7 @@ static void STORE(DWORD addr, int reg)
         oops();
 }
 
-static void STOREval(DWORD addr, BYTE val)
+static void STOREval(uint32_t addr, BYTE val)
 //used ZL, r25; Opcodes: 2 or 4
 {
     // load r25 with the data
@@ -1692,7 +1692,7 @@ static void STOREval(DWORD addr, BYTE val)
     STORE(addr, r25); // not a OP_ST_ZP !
 }
 
-static void LOAD(int reg, DWORD addr)
+static void LOAD(int reg, uint32_t addr)
 {
     if(addr <= 0) {
         THROW_COMPILER_EXCEPTION_FMT(_("Zero memory address not allowed!\nLOAD(%d, %d) skiped!"), reg, addr);
@@ -1723,7 +1723,7 @@ static void LOAD(int reg, DWORD addr)
 //-----------------------------------------------------------------------------
 #define WriteMemory(...) _WriteMemory(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 
-static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val, const char *name, SDWORD literal)
+static void _WriteMemory(int l, const char *f, const char *args, uint32_t addr, BYTE val, const char *name, int32_t literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
@@ -1741,17 +1741,17 @@ static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYT
     Instruction(OP_ST_ZP, r25, 0, name); // only OP_.._ZP, need for WriteMemoryNextAddr
 }
 
-static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val, const char *name)
+static void _WriteMemory(int l, const char *f, const char *args, uint32_t addr, BYTE val, const char *name)
 {
     _WriteMemory(l, f, args, addr, val, name, 0);
 }
 
-static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val, SDWORD literal)
+static void _WriteMemory(int l, const char *f, const char *args, uint32_t addr, BYTE val, int32_t literal)
 {
     _WriteMemory(l, f, args, addr, val, nullptr, literal);
 }
 
-static void _WriteMemory(int l, const char *f, const char *args, DWORD addr, BYTE val)
+static void _WriteMemory(int l, const char *f, const char *args, uint32_t addr, BYTE val)
 {
     _WriteMemory(l, f, args, addr, val, nullptr, 0);
 }
@@ -1769,7 +1769,7 @@ static void WriteMemoryNextAddr(BYTE val)
 }
 
 //-----------------------------------------------------------------------------
-static void WriteMemoryStillAddr(DWORD addr, BYTE val)
+static void WriteMemoryStillAddr(uint32_t addr, BYTE val)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
@@ -1869,7 +1869,7 @@ static void LdToReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagation
     }
 }
 //-----------------------------------------------------------------------------
-static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char *name)
+static void WriteLiteralToMemory(uint32_t addr, int sov, int32_t literal, const char *name)
 // used r4, r5, r25
 {
     if(sov < 1)
@@ -1883,7 +1883,7 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
         LdToReg(OP_LD_ZP, sovA, r4, 2, false); // as address
         LoadZAddrFromReg(r4, 2);               // reload indirect address
     }
-    DWORD lNow, lPrev;
+    uint32_t lNow, lPrev;
     lNow = literal & 0xff;
     lPrev = ~lNow;
     for(int i = 0; i < sov; i++) {
@@ -1894,7 +1894,7 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
         lPrev = lNow;
     }
     /*
-    DWORD l1, l2;
+    uint32_t l1, l2;
     l1 = (literal & 0xff);
     Instruction(OP_LDI, r25, BYTE(l1), name);
     Instruction(OP_ST_ZP, r25, 0, name);
@@ -1922,13 +1922,13 @@ static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const char
     */
 }
 
-static void WriteLiteralToMemory(DWORD addr, int sov, SDWORD literal, const NameArray &name)
+static void WriteLiteralToMemory(uint32_t addr, int sov, int32_t literal, const NameArray &name)
 {
     WriteLiteralToMemory(addr, sov, literal, name.c_str());
 }
 
 //-----------------------------------------------------------------------------
-static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
+static void OrMemory(uint32_t addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
@@ -1942,12 +1942,12 @@ static void OrMemory(DWORD addr, BYTE val, char *name1, char *literal)
     Instruction(OP_ST_Z, r25, 0, name1); // not a OP_ST_ZP !
 }
 
-static void OrMemory(DWORD addr, BYTE val)
+static void OrMemory(uint32_t addr, BYTE val)
 {
     OrMemory(addr, val, nullptr, nullptr);
 }
 //-----------------------------------------------------------------------------
-static void AndMemory(DWORD addr, BYTE val, char *name1, char *literal)
+static void AndMemory(uint32_t addr, BYTE val, char *name1, char *literal)
 //used ZL, r25; Opcodes: 4
 {
     if(addr <= 0) {
@@ -1961,12 +1961,12 @@ static void AndMemory(DWORD addr, BYTE val, char *name1, char *literal)
     Instruction(OP_ST_Z, r25, 0, name1); // not a OP_ST_ZP !
 }
 
-static void AndMemory(DWORD addr, BYTE val)
+static void AndMemory(uint32_t addr, BYTE val)
 {
     AndMemory(addr, val, nullptr, nullptr);
 }
 //-----------------------------------------------------------------------------
-static void WriteRegToIO(DWORD addr, BYTE reg)
+static void WriteRegToIO(uint32_t addr, BYTE reg)
 //   used ZL; Opcodes: 3
 //or used   ; Opcodes: 1
 {
@@ -1982,7 +1982,7 @@ static void WriteRegToIO(DWORD addr, BYTE reg)
     Instruction(OP_ST_Z, reg);
 }
 //-----------------------------------------------------------------------------
-static void ReadIoToReg(BYTE reg, DWORD addr)
+static void ReadIoToReg(BYTE reg, uint32_t addr)
 //   used ZL; Opcodes: 3
 //or used   ; Opcodes: 1
 {
@@ -2000,7 +2000,7 @@ static void ReadIoToReg(BYTE reg, DWORD addr)
 //-----------------------------------------------------------------------------
 // Copy just one bit from one place to another.
 //-----------------------------------------------------------------------------
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *name1, const char *name2)
+static void CopyBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc, const char *name1, const char *name2)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc))
         oops();
@@ -2034,13 +2034,13 @@ static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, cons
     /**/
 }
 
-static void CopyBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+static void CopyBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, "", "");
 }
 
 //-----------------------------------------------------------------------------
-static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, const char *name1, const char *name2)
+static void CopyNotBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc, const char *name1, const char *name2)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc))
         oops();
@@ -2061,17 +2061,17 @@ static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc, c
     Instruction(OP_ST_Z, r25, 0, name1);
 }
 
-static void CopyNotBit(DWORD addrDest, int bitDest, DWORD addrSrc, int bitSrc)
+static void CopyNotBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc)
 {
     CopyNotBit(addrDest, bitDest, addrSrc, bitSrc, "", "");
 }
 
 //-----------------------------------------------------------------------------
-static void GetUartSendReady(DWORD addr, int bit)
+static void GetUartSendReady(uint32_t addr, int bit)
 {
     /*
     ClearBit(addr, bit); // UART ready
-    DWORD dontSet = AllocFwdAddr();
+    uint32_t dontSet = AllocFwdAddr();
     IfBitSet(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty
     Instruction(OP_RJMP, dontSet);
     SetBit(addr, bit); // Set UART busy
@@ -2081,7 +2081,7 @@ static void GetUartSendReady(DWORD addr, int bit)
     CopyBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty and ready
 }
 //-----------------------------------------------------------------------------
-static void GetUartSendBusy(DWORD addr, int bit)
+static void GetUartSendBusy(uint32_t addr, int bit)
 {
     ////CopyNotBit(addr, bit, REG_UCSRA, TXC); // TXC, is 1 when hift buffer is empty
     CopyNotBit(addr, bit, REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty and ready
@@ -2090,7 +2090,7 @@ static void GetUartSendBusy(DWORD addr, int bit)
 // Execute the next instruction only if the specified bit of the specified
 // memory location is clear (i.e. skip if set).
 //-----------------------------------------------------------------------------
-static void IfBitClear(DWORD addr, int bit, BYTE reg, const char *name)
+static void IfBitClear(uint32_t addr, int bit, BYTE reg, const char *name)
 //used ZL, r25 // bit in [0..7]
 {
     char b[10];
@@ -2115,17 +2115,17 @@ static void IfBitClear(DWORD addr, int bit, BYTE reg, const char *name)
         oops();
 }
 
-static void IfBitClear(DWORD addr, int bit, const char *name)
+static void IfBitClear(uint32_t addr, int bit, const char *name)
 {
     IfBitClear(addr, bit, r25, name);
 }
 
-static void IfBitClear(DWORD addr, int bit, const NameArray &name)
+static void IfBitClear(uint32_t addr, int bit, const NameArray &name)
 {
     IfBitClear(addr, bit, r25, name.c_str());
 }
 
-static void IfBitClear(DWORD addr, int bit)
+static void IfBitClear(uint32_t addr, int bit)
 {
     IfBitClear(addr, bit, r25, nullptr);
 }
@@ -2134,7 +2134,7 @@ static void IfBitClear(DWORD addr, int bit)
 // Execute the next instruction only if the specified bit of the specified
 // memory location is set (i.e. skip if clear).
 //-----------------------------------------------------------------------------
-static void IfBitSet(DWORD addr, int bit, BYTE reg, const char *name)
+static void IfBitSet(uint32_t addr, int bit, BYTE reg, const char *name)
 //used ZL, r25 // bit in [0..7]
 {
     char b[10];
@@ -2159,17 +2159,17 @@ static void IfBitSet(DWORD addr, int bit, BYTE reg, const char *name)
         oops();
 }
 
-static void IfBitSet(DWORD addr, int bit, const char *name)
+static void IfBitSet(uint32_t addr, int bit, const char *name)
 {
     IfBitSet(addr, bit, r25, name);
 }
 
-static void IfBitSet(DWORD addr, int bit, const NameArray &name)
+static void IfBitSet(uint32_t addr, int bit, const NameArray &name)
 {
     IfBitSet(addr, bit, r25, name.c_str());
 }
 
-static void IfBitSet(DWORD addr, int bit)
+static void IfBitSet(uint32_t addr, int bit)
 {
     IfBitSet(addr, bit, r25, nullptr);
 }
@@ -2179,7 +2179,7 @@ static void IfBitSet(DWORD addr, int bit)
 // memory.
 //-----------------------------------------------------------------------------
 /*
-static void SetBit(DWORD addr, int bit, char *name)
+static void SetBit(uint32_t addr, int bit, char *name)
 //used ZL, r25 // Opcodes: 5
 {
 
@@ -2190,7 +2190,7 @@ static void SetBit(DWORD addr, int bit, char *name)
 
     SETB(addr, bit, name);
 }
-static void SetBit(DWORD addr, int bit)
+static void SetBit(uint32_t addr, int bit)
 {
     SetBit(addr, bit, nullptr)
 }
@@ -2202,7 +2202,7 @@ static void SetBit(DWORD addr, int bit)
 // memory.
 //-----------------------------------------------------------------------------
 /*
-static void ClearBit(DWORD addr, int bit)
+static void ClearBit(uint32_t addr, int bit)
 //used ZL, r25; Opcodes: 5
 {
 
@@ -2217,7 +2217,7 @@ static void ClearBit(DWORD addr, int bit)
 #define ClearBit(...) CLRB(__VA_ARGS__)
 
 //-----------------------------------------------------------------------------
-static bool TstAddrBitReg(DWORD addr, int bit, int reg)
+static bool TstAddrBitReg(uint32_t addr, int bit, int reg)
 {
     bool b = true;
     if((addr <= 0) || (addr > 0xFFFF)) {
@@ -2244,7 +2244,7 @@ static void nops()
     //  Instruction(OP_NOP); // uncomment this string to increase pulse duration
 }
 
-static void PulseBit(DWORD addr, int bit, int reg)
+static void PulseBit(uint32_t addr, int bit, int reg)
 //used ZL, r25 // Opcodes: 7
 {
     if((addr - __SFR_OFFSET > 0x3F) || (USE_IO_REGISTERS == 0)) {
@@ -2276,7 +2276,7 @@ static void PulseBit(DWORD addr, int bit, int reg)
         oops();
 }
 
-static void PulseBit(DWORD addr, int bit)
+static void PulseBit(uint32_t addr, int bit)
 {
     PulseBit(addr, bit, r25);
 }
@@ -2356,7 +2356,7 @@ static bool CalcAvrTimerNPulse(double target, int *bestPrescaler, BYTE *cs, int 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // Calc AVR 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen)
+bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, uint32_t AvrProgLdLen)
 {
     //memset(plcTmr, 0, sizeof(plcTmr));
     plcTmr.softDivisor = 1;
@@ -2455,7 +2455,7 @@ err0:
 }
 //-----------------------------------------------------------------------------
 // Configure AVR 16-bit Timer1 or 8-bit Timer0  to do the timing of PLC cycle.
-//static DWORD  PlcCycleTimerOverflowVector;
+//static uint32_t  PlcCycleTimerOverflowVector;
 static long int tcnt0PlcCycle = 0;
 static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 {
@@ -2521,8 +2521,8 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
 //-----------------------------------------------------------------------------
 static void InitTable(IntOp *a)
 {
-    //  DWORD saveAvrProgWriteP = AvrProgWriteP;
-    DWORD addrOfTable = 0;
+    //  uint32_t saveAvrProgWriteP = AvrProgWriteP;
+    uint32_t addrOfTable = 0;
     MemOfVar(a->name1, &addrOfTable);
 
     if(addrOfTable == 0) {
@@ -2592,7 +2592,7 @@ static void InitTables()
 // Call a subroutine, using either an rcall or an icall depending on what
 // the processor supports or requires.
 //-----------------------------------------------------------------------------
-static void CallSubroutine(DWORD addr)
+static void CallSubroutine(uint32_t addr)
 //used ZL, r25
 {
     if(addr & FWD(0)) {
@@ -2632,7 +2632,7 @@ static void CallSubroutine(DWORD addr)
 }
 
 //-----------------------------------------------------------------------------
-static void InstructionJMP(DWORD addr)
+static void InstructionJMP(uint32_t addr)
 //used ZL, r25
 {
     if(addr & FWD(0)) {
@@ -2677,7 +2677,7 @@ static void InstructionJMP(DWORD addr)
 // address (which is an FwdAddress, so not yet assigned). Called with IntPc
 // on the IF statement, returns with IntPc on the END IF.
 //-----------------------------------------------------------------------------
-static void CompileIfBody(DWORD condFalse)
+static void CompileIfBody(uint32_t condFalse)
 {
     IntPc++;
     IntPcNow = IntPc;
@@ -2685,7 +2685,7 @@ static void CompileIfBody(DWORD condFalse)
     if(IntCode[IntPc].op == INT_ELSE) {
         IntPc++;
         IntPcNow = IntPc;
-        DWORD endBlock = AllocFwdAddr();
+        uint32_t endBlock = AllocFwdAddr();
         InstructionJMP(endBlock);
 
         FwdAddrIsNow(condFalse);
@@ -2734,7 +2734,7 @@ static void RolReg(int reg, int sov)
 }
 
 //-----------------------------------------------------------------------------
-static void CpseReg(int op1, int sov, int op2, DWORD condFalse)
+static void CpseReg(int op1, int sov, int op2, uint32_t condFalse)
 {
     if(sov < 1)
         oops();
@@ -2792,7 +2792,7 @@ static void AndReg(int reg, int sov, int op2)
 }
 
 //-----------------------------------------------------------------------------
-static void CopyLitToReg(int reg, int sov, SDWORD literal, const char *comment)
+static void CopyLitToReg(int reg, int sov, int32_t literal, const char *comment)
 {
     if(sov < 1)
         oops();
@@ -2808,7 +2808,7 @@ static void CopyLitToReg(int reg, int sov, SDWORD literal, const char *comment)
         Instruction(OP_LDI, reg + 3, (literal >> 24) & 0xff);
 }
 
-static void CopyLitToReg(int reg, int sov, SDWORD literal)
+static void CopyLitToReg(int reg, int sov, int32_t literal)
 {
     CopyLitToReg(reg, sov, literal, nullptr);
 }
@@ -2816,7 +2816,7 @@ static void CopyLitToReg(int reg, int sov, SDWORD literal)
 //-----------------------------------------------------------------------------
 static void CopyVarToReg(int reg, int sovReg, const char *var)
 {
-    DWORD addr;
+    uint32_t addr;
     int   sov = SizeOfVar(var);
     if(sov != sovReg)
         dbp("reg=%d sovReg=%d <- var=%s sov=%d", reg, sovReg, var, sov);
@@ -2884,7 +2884,7 @@ static void StFromReg(AvrOp op, int sov, int reg, int sovReg, bool signPropagati
 //-----------------------------------------------------------------------------
 static void _CopyRegToVar(int l, const char *f, const char *args, const char *var, int reg, int sovReg)
 {
-    DWORD addr;
+    uint32_t addr;
     int   sov;
 
     if(IsAddrInVar(var)) {
@@ -2910,7 +2910,7 @@ static void _CopyRegToVar(int l, const char *f, const char *args, const NameArra
 
 #define CopyRegToVar(...) _CopyRegToVar(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
 //-----------------------------------------------------------------------------
-static void Decrement(DWORD addr, int sov)
+static void Decrement(uint32_t addr, int sov)
 //used ZL, r25
 {
     LoadZAddr(addr);           //2  instructions
@@ -2918,7 +2918,7 @@ static void Decrement(DWORD addr, int sov)
     Instruction(OP_SUBI, r25, 1);
     Instruction(OP_ST_ZP, r25);
     if(sov >= 2) {
-        DWORD noCarry = AllocFwdAddr();
+        uint32_t noCarry = AllocFwdAddr();
         Instruction(OP_BRCC, noCarry);
         Instruction(OP_LD_Z, r25); // now Z is addr+1
         Instruction(OP_SUBI, r25, 1);
@@ -2942,7 +2942,7 @@ static void Decrement(DWORD addr, int sov)
     // 6 or 10 or 13 instructions for 24 bit var;
 }
 //-----------------------------------------------------------------------------
-static void Increment(DWORD addr, int sov, char *name)
+static void Increment(uint32_t addr, int sov, char *name)
 //used ZL, r25
 {
     LoadZAddr(addr);           //2  instructions
@@ -2951,7 +2951,7 @@ static void Increment(DWORD addr, int sov, char *name)
     //Instruction(OP_SUBI, r25, 0xFF); // r25 = r25 + 1
     Instruction(OP_ST_ZP, r25);
     if(sov >= 2) {
-        DWORD noCarry = AllocFwdAddr();
+        uint32_t noCarry = AllocFwdAddr();
         Instruction(OP_BRNE, noCarry);
         //Instruction(OP_BRCS, noCarry);
         Instruction(OP_LD_Z, r25); // now Z is addl+1
@@ -2982,7 +2982,7 @@ static void Increment(DWORD addr, int sov, char *name)
     // ? instructions for 32 bit var;
 }
 
-static void Increment(DWORD addr, int sov)
+static void Increment(uint32_t addr, int sov)
 {
     Increment(addr, sov, nullptr);
 }
@@ -2991,7 +2991,7 @@ static void IncrementReg(int reg, int sov)
 {
     Instruction(OP_INC, reg);
     if(sov >= 2) {
-        DWORD noCarry = AllocFwdAddr();
+        uint32_t noCarry = AllocFwdAddr();
         Instruction(OP_BRNE, noCarry);
         Instruction(OP_INC, reg + 1);
         if(sov >= 3) {
@@ -3010,7 +3010,7 @@ static void IncrementReg(int reg, int sov)
     // 2 or 3 or 5 or 7 instructions for 32 bit reg;
 }
 //-----------------------------------------------------------------------------
-static void IfNotZeroGoto(DWORD addrVar, int sov, DWORD addrGoto)
+static void IfNotZeroGoto(uint32_t addrVar, int sov, uint32_t addrGoto)
 //used ZL, r25
 //if value(addrVar) == 0 GOTO addrGoto
 {
@@ -3065,11 +3065,11 @@ int testAvrUsart(int divisor, double actual, double percentErr)
 // written after calling WriteRuntime should be first instruction of the
 // timer loop (i.e. the PLC logic cycle).
 //-----------------------------------------------------------------------------
-static DWORD addrDuty;
+static uint32_t addrDuty;
 static int   bitDuty;
 static void  WriteRuntime()
 {
-    DWORD resetVector = AllocFwdAddr();
+    uint32_t resetVector = AllocFwdAddr();
     int i;
     Comment("WriteRuntime");
 #ifdef TABLE_IN_FLASH
@@ -3119,7 +3119,7 @@ static void  WriteRuntime()
     Instruction(OP_LDI, r24, (Prog.mcu()->ram[0].len) & 0xff);
     Instruction(OP_LDI, r25, (Prog.mcu()->ram[0].len) >> 8);
 
-    DWORD loopZero = AvrProg.size();
+    uint32_t loopZero = AvrProg.size();
     //  Instruction(OP_SUBI, 26, 1);
     //  Instruction(OP_SBCI, 27, 0);
     //  Instruction(OP_ST_X, 16);
@@ -3194,23 +3194,23 @@ static void  WriteRuntime()
     // ConfigureTimerForPlcCycle
     if(Prog.cycleTimer == 0) {
         if((WGM01 == -1)) { // ATmega8
-            DWORD i = SKBS(REG_TIFR0, TOV0);
-            Instruction(OP_RJMP, AvrProg.size() - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
+            uint32_t i = SKBS(REG_TIFR0, TOV0);
+            Instruction(OP_RJMP, AvrProg.size() - std::min(i, uint32_t(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
 
             STOREval(REG_TCNT0, BYTE(tcnt0PlcCycle + 0)); // + 0 DONE // reload Counter0
         } else {
-            DWORD i = SKBS(REG_TIFR0, OCF0A);
-            Instruction(OP_RJMP, AvrProg.size() - std::min(i, DWORD(2))); // Ladder cycle timing on Timer0/Counter
+            uint32_t i = SKBS(REG_TIFR0, OCF0A);
+            Instruction(OP_RJMP, AvrProg.size() - std::min(i, uint32_t(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, OCF0A);
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
         }
     } else if(Prog.cycleTimer == 1) {
-        DWORD i = SKBS(REG_TIFR1, OCF1A);
-        Instruction(OP_RJMP, AvrProg.size() - std::min(i, DWORD(2))); // Ladder cycle timing on Timer1/Counter
+        uint32_t i = SKBS(REG_TIFR1, OCF1A);
+        Instruction(OP_RJMP, AvrProg.size() - std::min(i, uint32_t(2))); // Ladder cycle timing on Timer1/Counter
 
         SetBit(REG_TIFR1, OCF1A);
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!
@@ -3321,7 +3321,7 @@ http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate()
 {
-    DWORD addr = 0, addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
+    uint32_t addr = 0, addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
     int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int   sov = -1, sov1 = -1, sov2 = -1, sov12 = -1, sov23 = -1;
 
@@ -3378,8 +3378,8 @@ static void CompileFromIntermediate()
                         //bin2bcd8:
                         Instruction(OP_CLR, r17); //;clear result MSD
                                                   //bBCD8_1:
-                        DWORD bBCD8_1 = AvrProg.size();
-                        DWORD bBCD8_2 = AllocFwdAddr();
+                        uint32_t bBCD8_1 = AvrProg.size();
+                        uint32_t bBCD8_2 = AllocFwdAddr();
                         Instruction(OP_SUBI, r16, 10); //;input = input - 10
                         Instruction(OP_BRCS, bBCD8_2); //;abort if carry set
                         //                      Instruction(OP_INC,    r17);       //;inc MSD
@@ -3433,9 +3433,9 @@ static void CompileFromIntermediate()
             }
             case INT_IF_BIT_EQU_BIT: {
                 Comment("INT_IF_BIT_EQU_BIT %s %s", a->name1.c_str(), a->name2.c_str());
-                DWORD condFalse = AllocFwdAddr();
-                DWORD condTrue = AllocFwdAddr();
-                DWORD now1Set = AllocFwdAddr();
+                uint32_t condFalse = AllocFwdAddr();
+                uint32_t condTrue = AllocFwdAddr();
+                uint32_t now1Set = AllocFwdAddr();
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
                 MemForSingleBit(a->name2, true, &addr2, &bit2);
                 IfBitSet(addr1, bit1, a->name1);
@@ -3455,9 +3455,9 @@ static void CompileFromIntermediate()
             }
             case INT_IF_BIT_NEQ_BIT: {
                 Comment("INT_IF_BIT_NEQ_BIT %s %s", a->name1.c_str(), a->name2.c_str());
-                DWORD condFalse = AllocFwdAddr();
-                DWORD condTrue = AllocFwdAddr();
-                DWORD now1Set = AllocFwdAddr();
+                uint32_t condFalse = AllocFwdAddr();
+                uint32_t condTrue = AllocFwdAddr();
+                uint32_t now1Set = AllocFwdAddr();
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
                 MemForSingleBit(a->name2, true, &addr2, &bit2);
                 IfBitSet(addr1, bit1, a->name1);
@@ -3477,7 +3477,7 @@ static void CompileFromIntermediate()
             }
             case INT_IF_BIT_SET: {
                 Comment("INT_IF_BIT_SET %s", a->name1.c_str());
-                DWORD condFalse = AllocFwdAddr();
+                uint32_t condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
                 IfBitClear(addr1, bit1, a->name1);
                 Instruction(OP_RJMP, condFalse);
@@ -3486,7 +3486,7 @@ static void CompileFromIntermediate()
             }
             case INT_IF_BIT_CLEAR: {
                 Comment("INT_IF_BIT_CLEAR %s", a->name1.c_str());
-                DWORD condFalse = AllocFwdAddr();
+                uint32_t condFalse = AllocFwdAddr();
                 MemForSingleBit(a->name1, true, &addr1, &bit1);
                 IfBitSet(addr1, bit1, a->name1);
                 Instruction(OP_RJMP, condFalse);
@@ -3512,8 +3512,8 @@ static void CompileFromIntermediate()
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, -2); // 0xF..FE
-                    DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProg.size();
+                    uint32_t Skip = AllocFwdAddr();
+                    uint32_t Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3546,8 +3546,8 @@ static void CompileFromIntermediate()
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
-                    DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProg.size();
+                    uint32_t Skip = AllocFwdAddr();
+                    uint32_t Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3563,8 +3563,8 @@ static void CompileFromIntermediate()
             }
             case INT_IF_BIT_SET_IN_VAR: {
                 Comment("INT_IF_BIT_SET_IN_VAR %s %s", a->name1.c_str(), a->name2.c_str());
-                DWORD ifAddr = AllocFwdAddr();
-                DWORD endifAddr = AllocFwdAddr();
+                uint32_t ifAddr = AllocFwdAddr();
+                uint32_t endifAddr = AllocFwdAddr();
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
                     MemForVariable(a->name1, &addr1);
@@ -3583,8 +3583,8 @@ static void CompileFromIntermediate()
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
-                    DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProg.size();
+                    uint32_t Skip = AllocFwdAddr();
+                    uint32_t Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3630,8 +3630,8 @@ static void CompileFromIntermediate()
 */
             case INT_IF_BIT_CLEAR_IN_VAR: {
                 Comment("INT_IF_BIT_CLEAR_IN_VAR %s %s", a->name1.c_str(), a->name2.c_str());
-                DWORD ifAddr = AllocFwdAddr();
-                DWORD endifAddr = AllocFwdAddr();
+                uint32_t ifAddr = AllocFwdAddr();
+                uint32_t endifAddr = AllocFwdAddr();
                 sov1 = SizeOfVar(a->name1);
                 if(IsNumber(a->name2)) {
                     MemForVariable(a->name1, &addr1);
@@ -3650,8 +3650,8 @@ static void CompileFromIntermediate()
                 } else {
                     CopyVarToReg(r3, 1, a->name2);
                     CopyLitToReg(r16, sov1, 0x01);
-                    DWORD Skip = AllocFwdAddr();
-                    DWORD Loop = AvrProg.size();
+                    uint32_t Skip = AllocFwdAddr();
+                    uint32_t Loop = AvrProg.size();
                     Instruction(OP_TST, r3);
                     Instruction(OP_BREQ, Skip);
                     Instruction(OP_DEC, r3);
@@ -3738,12 +3738,12 @@ static void CompileFromIntermediate()
 #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL: {
                 Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
 
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
 
-                DWORD l1, l2;
+                uint32_t l1, l2;
                 l1 = a->literal & 0xff;
 
                 //Instruction(OP_LDI, 20, (a->literal & 0xff));
@@ -3790,7 +3790,7 @@ static void CompileFromIntermediate()
 
             case INT_IF_VARIABLE_GRT_VARIABLE:
             case INT_IF_VARIABLE_EQUALS_VARIABLE: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
 
                 sov = std::max(SizeOfVar(a->name1), SizeOfVar(a->name2));
                 if(a->op == INT_IF_VARIABLE_GRT_VARIABLE) {
@@ -3831,7 +3831,7 @@ static void CompileFromIntermediate()
             case INT_IF_NEQ: Comment("INT_IF_NEQ"); goto cmp;
             case INT_IF_EQU: Comment("INT_IF_EQU"); goto cmp;
             cmp: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
                 sov = std::max(SizeOfVar(a->name1), SizeOfVar(a->name2));
                 CopyArgToReg(r20, sov, a->name1);
                 CopyArgToReg(r16, sov, a->name2);
@@ -4054,7 +4054,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_TEST_SFR_LITERAL_L: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
@@ -4068,7 +4068,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_TEST_SFR_VARIABLE_L: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
@@ -4085,7 +4085,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_TEST_SFR_LITERAL: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
@@ -4100,7 +4100,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_TEST_SFR_VARIABLE: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 MemForVariable(a->name2, &addr2);
                 LoadXAddr(addr2);
@@ -4119,7 +4119,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_TEST_C_SFR_LITERAL_L: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
                 Instruction(OP_LDI, 26, (a->literal & 0xff));
@@ -4134,7 +4134,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_TEST_C_SFR_VARIABLE_L: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
                 Instruction(OP_LD_XP, 16, 0);
@@ -4152,7 +4152,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_TEST_C_SFR_LITERAL: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
@@ -4168,7 +4168,7 @@ static void CompileFromIntermediate()
                 break;
             }
             case INT_TEST_C_SFR_VARIABLE: {
-                DWORD notTrue = AllocFwdAddr();
+                uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 MemForVariable(a->name2, &addr2);
                 LoadXAddr(addr2);
@@ -4317,9 +4317,9 @@ static void CompileFromIntermediate()
                 } else if((a->op == INT_SET_VARIABLE_SHL) || (a->op == INT_SET_VARIABLE_SHR)
                           || (a->op == INT_SET_VARIABLE_SR0) || (a->op == INT_SET_VARIABLE_ROR)
                           || (a->op == INT_SET_VARIABLE_ROL)) {
-                    DWORD Loop = AvrProg.size();
+                    uint32_t Loop = AvrProg.size();
                     Instruction(OP_DEC, r16);
-                    DWORD Skip = AllocFwdAddr();
+                    uint32_t Skip = AllocFwdAddr();
                     Instruction(OP_BRMI, Skip, 0);
 
                     if(a->op == INT_SET_VARIABLE_SHL) {
@@ -4424,7 +4424,7 @@ static void CompileFromIntermediate()
                           tcntNPulse,
                           bestTarget);
 
-                DWORD noPulse = AllocFwdAddr();
+                uint32_t noPulse = AllocFwdAddr();
                 IfBitClear(addr4, bit4);
                 Instruction(OP_RJMP, noPulse);
                 /*
@@ -4760,11 +4760,11 @@ static void CompileFromIntermediate()
                 Comment("PWM init");
                 char storeName[MAX_NAME_LEN];
                 sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
-                DWORD addr;
+                uint32_t addr;
                 int   bit;
                 MemForSingleBit(storeName, false, &addr, &bit);
 
-                DWORD endInit = AllocFwdAddr();
+                uint32_t endInit = AllocFwdAddr();
                 IfBitSet(addr, bit);
                 Instruction(OP_RJMP, endInit, 0);
                 SetBit(addr, bit, storeName);
@@ -4809,8 +4809,8 @@ static void CompileFromIntermediate()
             case INT_EEPROM_BUSY_CHECK: {
                 MemForSingleBit(a->name1, false, &addr, &bit);
 
-                DWORD isBusy = AllocFwdAddr();
-                DWORD done = AllocFwdAddr();
+                uint32_t isBusy = AllocFwdAddr();
+                uint32_t done = AllocFwdAddr();
                 IfBitSet(REG_EECR, EEWE);
                 Instruction(OP_RJMP, isBusy, 0);
 
@@ -4830,7 +4830,7 @@ static void CompileFromIntermediate()
                 LoadXAddr(REG_EEARH);
                 Instruction(OP_LD_X, 17, 0);
                 Instruction(OP_INC, 16, 0);
-                DWORD noCarry = AllocFwdAddr();
+                uint32_t noCarry = AllocFwdAddr();
                 Instruction(OP_BRNE, noCarry, 0);
                 Instruction(OP_INC, 17, 0);
                 FwdAddrIsNow(noCarry);
@@ -4858,8 +4858,8 @@ static void CompileFromIntermediate()
             case INT_EEPROM_BUSY_CHECK: {
                 MemForSingleBit(a->name1, false, &addr, &bit);
 
-                DWORD isBusy = AllocFwdAddr();
-                DWORD done = AllocFwdAddr();
+                uint32_t isBusy = AllocFwdAddr();
+                uint32_t done = AllocFwdAddr();
                 IfBitSet(REG_EECR, EEWE);
                 Instruction(OP_RJMP, isBusy);
 
@@ -4875,7 +4875,7 @@ static void CompileFromIntermediate()
                 LoadXAddr(REG_EEARL);
                 Instruction(OP_LD_X, 16);
                 Instruction(OP_INC, 16);
-                DWORD noCarry = AllocFwdAddr();
+                uint32_t noCarry = AllocFwdAddr();
                 Instruction(OP_BRNE, noCarry, 0);
                 LoadYAddr(REG_EEARH);
                 Instruction(OP_LD_Y, 17);
@@ -4889,7 +4889,7 @@ static void CompileFromIntermediate()
                 LoadXAddr(EepromHighByte);
 
                 Instruction(OP_TST, r23, 0); //r23 still EepromHighBytesCounter-1
-                DWORD doOut = AllocFwdAddr();
+                uint32_t doOut = AllocFwdAddr();
                 Instruction(OP_BRNE, doOut, 0);
                 Instruction(OP_LD_XP, r16); //increment address EepromHighByte in X register
                                             //skip middle byte
@@ -5030,7 +5030,7 @@ static void CompileFromIntermediate()
                 WriteMemory(REG_ADCSRA, adcsra);
                 WriteMemory(REG_ADCSRA, (BYTE)(adcsra | (1 << ADSC)));
 
-                DWORD waitForFinsh = AvrProg.size();
+                uint32_t waitForFinsh = AvrProg.size();
                 IfBitSet(REG_ADCSRA, ADSC);
                 Instruction(OP_RJMP, waitForFinsh);
 
@@ -5070,7 +5070,7 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
                 MemForSingleBit(a->name2, true, &addr2, &bit2);
 
-                DWORD noSend = AllocFwdAddr();
+                uint32_t noSend = AllocFwdAddr();
                 IfBitClear(addr2, bit2);
                 Instruction(OP_RJMP, noSend);
 
@@ -5091,7 +5091,7 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
                 addr1 += a->literal;
 
-                DWORD isBusy = AvrProg.size();
+                uint32_t isBusy = AvrProg.size();
                 IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
                 Instruction(OP_RJMP, isBusy); // reinsurance
 
@@ -5118,7 +5118,7 @@ static void CompileFromIntermediate()
 
                 ClearBit(addr2, bit2);
 
-                DWORD noChar = AllocFwdAddr();
+                uint32_t noChar = AllocFwdAddr();
                 IfBitClear(REG_UCSRA, RXC);
                 Instruction(OP_RJMP, noChar);
 
@@ -5142,7 +5142,7 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
                 addr1 += a->literal;
 
-                DWORD noChar = AllocFwdAddr();
+                uint32_t noChar = AllocFwdAddr();
                 IfBitClear(REG_UCSRA, RXC);
                 Instruction(OP_RJMP, noChar);
 
@@ -5226,11 +5226,11 @@ static void CompileFromIntermediate()
             case INT_FLASH_INIT: {
                 // Inited by InitTables()
                 /*
-                DWORD addrOfTable = 0;
+                uint32_t addrOfTable = 0;
                 MemOfVar(a->name1, &addrOfTable);
 
                 if(addrOfTable == 0) {
-                    DWORD SkipData = AllocFwdAddr();
+                    uint32_t SkipData = AllocFwdAddr();
                     InstructionJMP(SkipData);
                     InitTable(a);
                     FwdAddrIsNow(SkipData);
@@ -5262,7 +5262,7 @@ static void CompileFromIntermediate()
                     Instruction(OP_ROL, r17); // Index := Index * 4
                 }
 
-                DWORD addrOfTable = 0;
+                uint32_t addrOfTable = 0;
                 MemOfVar(a->name2, &addrOfTable);
 
                 CopyLitToReg(ZL, 2, addrOfTable << 1, "addrOfTable"); // see LPM // data stored in flash
@@ -5295,7 +5295,7 @@ static void CompileFromIntermediate()
                 SetSizeOfVar(seedName, 4);
                 MemForVariable(seedName, &addr2);
                 /*
-                DWORD addr;
+                uint32_t addr;
                 int bit;
                 char storeName[MAX_NAME_LEN];
                 sprintf(storeName, "$seed_init_%s", a->name1.c_str());
@@ -5368,8 +5368,8 @@ static void CompileFromIntermediate()
                 ClearBit(0x25, 0); // 2 clocks
 #endif
                 if(IsNumber(a->name1)) {
-                    SDWORD clocks = CalcDelayClock(hobatoi(a->name1.c_str()));
-                    SDWORD clocksSave = clocks;
+                    int32_t clocks = CalcDelayClock(hobatoi(a->name1.c_str()));
+                    int32_t clocksSave = clocks;
                     Comment("INT_DELAY %s us = %lld clocks", a->name1.c_str(), clocks);
 
                     clocks = (clocks - 1) / 4;
@@ -5490,8 +5490,8 @@ static void MultiplyRoutine() //5.1 Algorithm Description
     Instruction(OP_SUB, r23, r23); //1.Clear result High word (Bytes 2&3) and carry.
     Instruction(OP_SUB, r22, r22); //1.Clear result High word (Bytes 2&3) and carry.
     Instruction(OP_LDI, r25, 16);  //2.Load Loop counter with 16.
-    DWORD m16s_1 = AvrProgWriteP;
-    DWORD m16s_2 = AllocFwdAddr();
+    uint32_t m16s_1 = AvrProgWriteP;
+    uint32_t m16s_2 = AllocFwdAddr();
     Instruction(OP_BRCC, m16s_2, 0); //3.If carry (previous bit 0 of multiplier Low byte) set,
     Instruction(OP_ADD, r22, r16);   //  add multiplicand to result High word.
     Instruction(OP_ADC, r23, r17);   //  add multiplicand to result High word.
@@ -5523,8 +5523,8 @@ static void MultiplyRoutine24() //5.1 Algorithm Description
     Instruction(OP_SUB, r24, r24); //1.Clear result High word (Bytes 3&4&5) and carry.
     Instruction(OP_SUB, r23, r23); //1.Clear result High word (Bytes 3&4&5) and carry.
     Instruction(OP_LDI, r19, 24);  //2.Load Loop counter with 24.
-    DWORD m16s_1 = AvrProgWriteP;
-    DWORD m16s_2 = AllocFwdAddr();
+    uint32_t m16s_1 = AvrProgWriteP;
+    uint32_t m16s_2 = AllocFwdAddr();
     Instruction(OP_BRCC, m16s_2, 0); //3.If carry (previous bit 0 of multiplier Low byte) set,
     Instruction(OP_ADD, r23, r16);   //  add multiplicand to result High word.
     Instruction(OP_ADC, r24, r17);   //  add multiplicand to result High word.
@@ -5558,8 +5558,8 @@ static void MultiplyRoutine8() //5.1 Algorithm Description
     FwdAddrIsNow(MultiplyAddress8);
     Instruction(OP_SUB, r21, r21); //1.Clear result High byte and carry.
     Instruction(OP_LDI, r25, 8);   //2.Load Loop counter with 8.
-    DWORD m8s_1 = AvrProgWriteP;
-    DWORD m8s_2 = AllocFwdAddr();
+    uint32_t m8s_1 = AvrProgWriteP;
+    uint32_t m8s_2 = AllocFwdAddr();
     Instruction(OP_BRCC, m8s_2, 0); //3.If carry (previous bit 0 of multiplier Low byte) set,
     Instruction(OP_ADD, r21, r16);  //  add multiplicand to result High word.
     FwdAddrIsNow(m8s_2);
@@ -5725,12 +5725,12 @@ static void DivideRoutine()
     Comment("DivideRoutine16");
     FwdAddrIsNow(DivideAddress);
 
-    DWORD d16s_1 = AllocFwdAddr();
-    DWORD d16s_2 = AllocFwdAddr();
-    DWORD d16s_3;
-    DWORD d16s_4 = AllocFwdAddr();
-    DWORD d16s_5 = AllocFwdAddr();
-    DWORD d16s_6 = AllocFwdAddr();
+    uint32_t d16s_1 = AllocFwdAddr();
+    uint32_t d16s_2 = AllocFwdAddr();
+    uint32_t d16s_3;
+    uint32_t d16s_4 = AllocFwdAddr();
+    uint32_t d16s_5 = AllocFwdAddr();
+    uint32_t d16s_6 = AllocFwdAddr();
 
     Instruction(OP_MOV, r7, r20);    //1.XOR dividend and divisor High bytes and store in a Sign Register. r7
     Instruction(OP_EOR, r7, r23);    //1.XOR dividend and divisor High bytes and store in a Sign Register. r7
@@ -5791,12 +5791,12 @@ static void DivideRoutine24()
     Comment("DivideRoutine24");
     FwdAddrIsNow(DivideAddress24);
 
-    DWORD d16s_1 = AllocFwdAddr();
-    DWORD d16s_2 = AllocFwdAddr();
-    DWORD d16s_3;
-    DWORD d16s_4 = AllocFwdAddr();
-    DWORD d16s_5 = AllocFwdAddr();
-    DWORD d16s_6 = AllocFwdAddr();
+    uint32_t d16s_1 = AllocFwdAddr();
+    uint32_t d16s_2 = AllocFwdAddr();
+    uint32_t d16s_3;
+    uint32_t d16s_4 = AllocFwdAddr();
+    uint32_t d16s_5 = AllocFwdAddr();
+    uint32_t d16s_6 = AllocFwdAddr();
 
     Instruction(OP_MOV, r7, r21);    //1.XOR dividend and divisor High bytes and store in a Sign Register. r7
     Instruction(OP_EOR, r7, r24);    //1.XOR dividend and divisor High bytes and store in a Sign Register. r7
@@ -5868,12 +5868,12 @@ static void DivideRoutine8()
     Comment("DivideRoutine8");
     FwdAddrIsNow(DivideAddress8);
 
-    DWORD d16s_1 = AllocFwdAddr();
-    DWORD d16s_2 = AllocFwdAddr();
-    DWORD d16s_3;
-    DWORD d16s_4 = AllocFwdAddr();
-    DWORD d16s_5 = AllocFwdAddr();
-    DWORD d16s_6 = AllocFwdAddr();
+    uint32_t d16s_1 = AllocFwdAddr();
+    uint32_t d16s_2 = AllocFwdAddr();
+    uint32_t d16s_3;
+    uint32_t d16s_4 = AllocFwdAddr();
+    uint32_t d16s_5 = AllocFwdAddr();
+    uint32_t d16s_6 = AllocFwdAddr();
 
     Instruction(OP_MOV, r7, r19);    //1.XOR dividend and divisor High bytes and store in a Sign Register. r7
     Instruction(OP_EOR, r7, r22);    //1.XOR dividend and divisor High bytes and store in a Sign Register. r7
