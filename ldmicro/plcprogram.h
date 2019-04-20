@@ -53,9 +53,9 @@ struct PlcProgramSingleIo {
 #define IO_TYPE_SPI__SS         34
 #define IO_TYPE_I2C_SCL         35  ///// Added by JG
 #define IO_TYPE_I2C_SDA         36  /////
-    int         type;
+    int32_t     type;
 #define NO_PIN_ASSIGNED         0
-    int         pin;
+    int32_t     pin;
     ModbusAddr  modbus;
 };
 
@@ -84,26 +84,26 @@ private:
 public:
     struct {
         PlcProgramSingleIo  assignment[MAX_IO];
-        int                 count;
+        int32_t             count;
     }             io;
-    long long int cycleTime;  // us
-    int           cycleTimer; // 1 or 0
+    int64_t cycleTime;  // us
+    int32_t           cycleTimer; // 1 or 0
     uint32_t      pullUpRegs[MAX_IO_PORTS]; // A is 0, J is 9 // PIC, AVR, ARM, ...
 //  uint32_t      pullDnRegs[MAX_IO_PORTS]; // A is 0, J is 9 // ARM
-    long long int configurationWord; // only PIC
+    int64_t configurationWord; // only PIC
 //  BYTE          WDTE;       // only for PIC // Watchdog Timer Enable bit, 1 = WDT enabled
     uint8_t       WDTPSA;     // only for PIC
     uint8_t       OPTION;     // only for PIC10Fxxx
 #define YPlcCycleDuty "YPlcCycleDuty"
-    int           cycleDuty; // if true, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
-    int           mcuClock;  // Hz
-    int           baudRate;  // Hz
-    long          spiRate;   // Hz          Added by JG
-    long          i2cRate;   // Hz          Added by JG
+    int32_t       cycleDuty; // if true, "YPlcCycleDuty" pin set to 1 at begin and to 0 at end of PLC cycle
+    int32_t       mcuClock;  // Hz
+    int32_t       baudRate;  // Hz
+    int32_t       spiRate;   // Hz          Added by JG
+    int32_t       i2cRate;   // Hz          Added by JG
     NameArray     LDversion;
 
     std::array<ElemSubcktSeries *, MAX_RUNGS> rungs_; // TODO: move to private:
-    int               numRungs;
+    int32_t           numRungs;
     bool              rungPowered[MAX_RUNGS + 1]; // [MAX_RUNGS + 1] for Label after last rung
     bool              rungSimulated[MAX_RUNGS + 1];
     char              rungSelected[MAX_RUNGS + 1];

@@ -446,9 +446,9 @@ void ShowTimerDialog(int which, ElemLeaf *l)
     if(ShowSimpleDialog(s, labs, labels, (1 << 2), (3 << 0), (7 << 0), boxes, dests)) {
         *adjust = atoi(adjustBuf);
         double delay_ms;
-        SDWORD delay_us;
+        int32_t delay_us;
         if(which == ELEM_TIME2DELAY) {
-            delay_us = (SDWORD)round(atof(delBuf));
+            delay_us = (int32_t)round(atof(delBuf));
             strcpy(name, nameBuf);
 
             if(delay_us > 0)
@@ -459,14 +459,14 @@ void ShowTimerDialog(int which, ElemLeaf *l)
             strcpy(name + 1, nameBuf);
             if(IsNumber(delBuf)) {
                 delay_ms = atof(delBuf);
-                delay_us = (SDWORD)round(delay_ms * 1000.0);
+                delay_us = (int32_t)round(delay_ms * 1000.0);
 
                 if(delay_us > LONG_MAX) {
                     Error(_("Timer period too long.\n\rMaximum possible value is: 2^31 us = 2147483647 us = 2147,48 s = 35.79 min"));
                     delay_us = LONG_MAX;
                 }
 
-                SDWORD period;
+                int32_t period;
                 if(Prog.cycleTime <= 0) {
                     Warning(_("PLC Cycle Time is '0'. TON, TOF, RTO, RTL, TCY timers does not work correctly!"));
                     period = 1;
@@ -523,9 +523,9 @@ void ShowSleepDialog(ElemLeaf *l)
             char   s3[1024];
             sprintf(s3, _("Maximum available timer period = %.3f s."), maxDelay);
             Error("%s\r\n%s\r\n%s", s1, s2, s3);
-            *delay = (SDWORD)(1000000 * del + 0.5);
+            *delay = (int32_t)(1000000 * del + 0.5);
         } else {
-            *delay = (SDWORD)(1000000 * del + 0.5);
+            *delay = (int32_t)(1000000 * del + 0.5);
         }
     }
 }
@@ -575,7 +575,7 @@ void ShowDelayDialog(ElemLeaf *l)
 
     if(ShowSimpleDialog(_("Delay, us"), 2, labels, (0 << 0), (1 << 0), (1 << 0), 1, dests)) {
         if(IsNumber(delBuf)) {
-            SDWORD del = hobatoi(delBuf);
+            int32_t del = hobatoi(delBuf);
             if(del <= 0) {
                 Error(_("Delay cannot be zero or negative."));
             } else {
@@ -590,9 +590,9 @@ void ShowDelayDialog(ElemLeaf *l)
 //-----------------------------------------------------------------------------
 // Report an error if a constant doesn't fit in 8-16-24 bits.
 //-----------------------------------------------------------------------------
-static void CheckConstantInRange(const char *name, const char *str, SDWORD v)
+static void CheckConstantInRange(const char *name, const char *str, int32_t v)
 {
-    SDWORD val = hobatoi(str);
+    int32_t val = hobatoi(str);
     if(val != v)
         oops();
     int radix = getradix(str);
@@ -633,9 +633,9 @@ static void CheckConstantInRange(const char *name, const char *str, SDWORD v)
 //-----------------------------------------------------------------------------
 // Report an error if a var doesn't fit in 8-16-24 bits.
 //-----------------------------------------------------------------------------
-void CheckVarInRange(char *name, char *str, SDWORD v)
+void CheckVarInRange(char *name, char *str, int32_t v)
 {
-    SDWORD val = hobatoi(str);
+    int32_t val = hobatoi(str);
     if(val != v)
         oops();
     int radix = getradix(str);
@@ -706,11 +706,11 @@ void ShowCounterDialog(int which, ElemLeaf *l)
     char *dests[] = {name + 1, minV, maxV, inputKind};
     if(ShowSimpleDialog(title, 4, labels, 0, 0x7, 0x7, dests)) {
         if(IsNumber(minV)) {
-            SDWORD _minV = hobatoi(minV);
+            int32_t _minV = hobatoi(minV);
             CheckVarInRange(name, minV, _minV);
         }
         if(IsNumber(maxV)) {
-            SDWORD _maxV = hobatoi(maxV);
+            int32_t _maxV = hobatoi(maxV);
             CheckVarInRange(name, maxV, _maxV);
         }
         if((inputKind[0] == '/') || (inputKind[0] == '\\') || (inputKind[0] == 'o') || (inputKind[0] == '-'))
@@ -1549,7 +1549,7 @@ void ShowQuadEncodDialog(ElemLeaf *l)
             dir[0] = '\0';
         }
         //TODO: check the available range
-        SDWORD val;
+        int32_t val;
         /*
         val = hobatoi(_int01);
         if(Prog.mcu())
@@ -1574,7 +1574,7 @@ void ShowSizeOfVarDialog(PlcProgramSingleIo *io)
     char sovStr[20];
     sprintf(sovStr, "%d", sov);
 
-    SDWORD val;
+    int32_t val;
     char   valStr[MAX_STRING_LEN];
     if(io->type == IO_TYPE_STRING) {
         strcpy(valStr, GetSimulationStr(io->name));

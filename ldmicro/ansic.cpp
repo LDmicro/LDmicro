@@ -139,7 +139,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         if(IsNumber(&str[3])) {
           fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
         } else {
-          DWORD addr;
+          uint32_t addr;
           char name[MAX_NAME_LEN];
           sprintf(name,"#%s", &str[3]);
           MemForVariable(name, &addr);
@@ -864,7 +864,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
 {
     all_arduino_pins_are_mapped = true;
 
-    DWORD addr, addr2;
+    uint32_t addr, addr2;
     int   bit, bit2;
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
@@ -1227,7 +1227,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     if(IsNumber(&IntCode[i].name1[1])) {
                       fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
                     } else {
-                      DWORD addr;
+                      uint32_t addr;
                       char name[MAX_NAME_LEN];
                       sprintf(name,"#%s", &IntCode[i].name1[1]);
                       MemForVariable(name, &addr);
@@ -1264,7 +1264,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                             MapSym(IntCode[i].name1.c_str(), ASINT),
                             &IntCode[i].name2[1]);
                     } else {
-                      DWORD addr;
+                      uint32_t addr;
                       char name[MAX_NAME_LEN];
                       sprintf(name,"#%s", &IntCode[i].name2[1]);
                       MemForVariable(name, &addr);
