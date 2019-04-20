@@ -274,9 +274,10 @@ goto exit
 :HTC
 ::**************************************************************************
 @ECHO ON
-REM Compilation with HiTech-c (Picc)
+REM Compilation with HI-TECH C
 
-SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
+@rem SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
+     SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
 
 SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\PIC16
 
@@ -292,9 +293,14 @@ mkdir HTC\obj
 mkdir HTC\bin
 mkdir HTC\lib
 
-if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
+:if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
+ if not exist         UsrLib.c copy %LIB_PATH%\*.* .
 
-for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
+:copy *.h PROTEUS
+:copy *.c PROTEUS
+
+:for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
+ for %%F in (*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2 --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
 picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 

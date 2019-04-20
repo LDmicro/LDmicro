@@ -2323,7 +2323,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     }
     fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
     fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
-    fprintf(flh, "#define BYTE_AT(var, index) ( ( (unsigned char *)(&var) )[index] )\n");
+    fprintf(flh, "#define BYTE_AT(var, index) (((unsigned char *)(&var))[index])\n");
 
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_HI_TECH_C)
@@ -2810,7 +2810,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
         fprintf(f,
                 "#include <htc.h>\n"
-                "#define _XTAL_FREQ %d\n"
+                "//#define _XTAL_FREQ %d\n"
                 "__CONFIG(0x%X);\n",
                 Prog.mcuClock,
                 (WORD)Prog.configurationWord & 0xFFFF);
