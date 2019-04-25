@@ -516,7 +516,7 @@ static void postCompile(const char *MNU)
     if(Prog.mcu())
         ISA = GetIsaName(Prog.mcu()->whichIsa);
 
-    sprintf(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentCompilePath, LdName);
+    sprintf(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\" %s", ExePath, MNU, ISA, CurrentCompilePath, LdName, GetMnuCompilerName(compile_MNU));
     isErr(Execute(r), r);
 }
 
