@@ -25,132 +25,8 @@
 #include "stdafx.h"
 
 #include "ldmicro.h"
+#include "undoredo.hpp"
 
-// Store a `deep copy' of the entire program before every change, in a
-// circular buffer so that the first one scrolls out as soon as the buffer
-// is full and we try to push another one.
-#define MAX_LEVELS_UNDO 32
-typedef struct ProgramStackTag {
-    PlcProgram prog[MAX_LEVELS_UNDO];
-    struct {
-        int gx;
-        int gy;
-    } cursor[MAX_LEVELS_UNDO];
-    int write;
-    int count;
-} ProgramStack;
-
-static struct {
-    ProgramStack undo;
-    ProgramStack redo;
-} Undo;
-
-//-----------------------------------------------------------------------------
-// Make a `deep copy' of a circuit. Used for making a copy of the program
-// whenever we change it, for undo purposes. Fast enough that we shouldn't
-// need to be smart.
-//-----------------------------------------------------------------------------
-static void *DeepCopy(int which, void *any)
-{
-    switch(which) {
-        CASE_LEAF
-        {
-            ElemLeaf *l = AllocLeaf();
-            memcpy(l, any, sizeof(*l));
-            l->selectedState = SELECTED_NONE;
-            return l;
-        }
-        case ELEM_SERIES_SUBCKT: {
-            int               i;
-            ElemSubcktSeries *n = AllocSubcktSeries();
-            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            n->count = s->count;
-            for(i = 0; i < s->count; i++) {
-                n->contents[i].which = s->contents[i].which;
-                n->contents[i].data.any = DeepCopy(s->contents[i].which, s->contents[i].data.any);
-            }
-            return n;
-        }
-        case ELEM_PARALLEL_SUBCKT: {
-            int                 i;
-            ElemSubcktParallel *n = AllocSubcktParallel();
-            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            n->count = p->count;
-            for(i = 0; i < p->count; i++) {
-                n->contents[i].which = p->contents[i].which;
-                n->contents[i].data.any = DeepCopy(p->contents[i].which, p->contents[i].data.any);
-            }
-            return n;
-        }
-        default:
-            oops();
-            return nullptr;
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Empty out a ProgramStack data structure, either .undo or .redo: set the
-// count to zero and free all the program copies in it.
-//-----------------------------------------------------------------------------
-static void EmptyProgramStack(ProgramStack *ps)
-{
-    while(ps->count > 0) {
-        int a = (ps->write - 1);
-        if(a < 0)
-            a += MAX_LEVELS_UNDO;
-        ps->write = a;
-        (ps->count)--;
-
-        ps->prog[ps->write].reset();
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Push the current program onto a program stack. Can either make a deep or
-// a shallow copy of the linked data structures.
-//-----------------------------------------------------------------------------
-static void PushProgramStack(ProgramStack *ps)
-{
-    if(ps->count == MAX_LEVELS_UNDO) {
-        ps->prog[ps->write].reset();
-    } else {
-        (ps->count)++;
-    }
-
-    ps->prog[ps->write] = Prog;
-
-    int gx, gy;
-    if(FindSelected(&gx, &gy)) {
-        ps->cursor[ps->write].gx = gx;
-        ps->cursor[ps->write].gy = gy;
-    } else {
-        ps->cursor[ps->write].gx = -1;
-        ps->cursor[ps->write].gy = -1;
-    }
-
-    int a = (ps->write + 1);
-    if(a >= MAX_LEVELS_UNDO)
-        a -= MAX_LEVELS_UNDO;
-    ps->write = a;
-}
-
-//-----------------------------------------------------------------------------
-// Pop a program stack onto the current program. Always does a shallow copy.
-// Internal error if the stack was empty.
-//-----------------------------------------------------------------------------
-static void PopProgramStack(ProgramStack *ps)
-{
-    int a = (ps->write - 1);
-    if(a < 0)
-        a += MAX_LEVELS_UNDO;
-    ps->write = a;
-    (ps->count)--;
-
-    Prog = ps->prog[ps->write];
-
-    SelectedGxAfterNextPaint = ps->cursor[ps->write].gx;
-    SelectedGyAfterNextPaint = ps->cursor[ps->write].gy;
-}
 
 //-----------------------------------------------------------------------------
 // Push a copy of the PLC program onto the undo history, replacing (and
@@ -159,8 +35,8 @@ static void PopProgramStack(ProgramStack *ps)
 void UndoRemember()
 {
     // can't redo after modifying the program
-    EmptyProgramStack(&(Undo.redo));
-    PushProgramStack(&(Undo.undo));
+    Undo::emptyRedo();
+    Undo::pushUndo();
 
     SetUndoEnabled(true, false);
 }
@@ -172,15 +48,15 @@ void UndoRemember()
 //-----------------------------------------------------------------------------
 void UndoUndo()
 {
-    if(Undo.undo.count <= 0)
+    if(Undo::undoSize() <= 0)
         return;
 
     ForgetEverything();
 
-    PushProgramStack(&(Undo.redo));
-    PopProgramStack(&(Undo.undo));
+    Undo::pushRedo();
+    Undo::popUndo();
 
-    if(Undo.undo.count > 0) {
+    if(Undo::undoSize() > 0) {
         SetUndoEnabled(true, true);
     } else {
         SetUndoEnabled(false, true);
@@ -196,15 +72,15 @@ void UndoUndo()
 //-----------------------------------------------------------------------------
 void UndoRedo()
 {
-    if(Undo.redo.count <= 0)
+    if(Undo::redoSize() <= 0)
         return;
 
     ForgetEverything();
 
-    PushProgramStack(&(Undo.undo));
-    PopProgramStack(&(Undo.redo));
+    Undo::pushUndo();
+    Undo::popRedo();
 
-    if(Undo.redo.count > 0) {
+    if(Undo::redoSize() > 0) {
         SetUndoEnabled(true, true);
     } else {
         SetUndoEnabled(true, false);
@@ -219,8 +95,8 @@ void UndoRedo()
 //-----------------------------------------------------------------------------
 void UndoFlush()
 {
-    EmptyProgramStack(&(Undo.undo));
-    EmptyProgramStack(&(Undo.redo));
+    Undo::emptyRedo();
+    Undo::emptyUndo();
     SetUndoEnabled(false, false);
 }
 
@@ -232,5 +108,132 @@ void UndoFlush()
 //-----------------------------------------------------------------------------
 bool CanUndo()
 {
-    return (Undo.undo.count > 0);
+    return (Undo::undoSize() > 0);
+}
+
+
+//-----------------------------------------------------------------------------
+// Push the current program onto a program stack. Can either make a deep or
+// a shallow copy of the linked data structures.
+//-----------------------------------------------------------------------------
+void ProgramStack::push()
+{
+    if(count == MAX_LEVELS_UNDO)
+        undo[write].reset() ;
+    else
+        count++;
+
+    undo[write].prog = new PlcProgram;
+    *(undo[write].prog) = Prog;
+    int gx, gy;
+    if(FindSelected(&gx, &gy)) {
+        undo[write].gx = gx;
+        undo[write].gy = gy;
+    } else {
+        undo[write].gx = -1;
+        undo[write].gy = -1;
+    }
+
+    int a = (write + 1);
+    if(a >= MAX_LEVELS_UNDO)
+        a -= MAX_LEVELS_UNDO;
+    write = a;
+}
+
+//-----------------------------------------------------------------------------
+// Pop a program stack onto the current program. Always does a shallow copy.
+// Internal error if the stack was empty.
+//-----------------------------------------------------------------------------
+void ProgramStack::pop()
+{
+    int a = (write - 1);
+    if(a < 0)
+        a += MAX_LEVELS_UNDO;
+    write = a;
+    count--;
+
+    Prog = *(undo[write].prog);
+    SelectedGxAfterNextPaint = undo[write].gx;
+    SelectedGyAfterNextPaint = undo[write].gy;
+
+    undo[write].reset();
+}
+
+
+//-----------------------------------------------------------------------------
+// Empty out a ProgramStack data structure, either .undo or .redo: set the
+// count to zero and free all the program copies in it.
+//-----------------------------------------------------------------------------
+void ProgramStack::empty()
+{
+    while( count > 0) {
+        int a = write - 1;
+        if(a < 0)
+            a += MAX_LEVELS_UNDO;
+        write = a;
+        count--;
+
+        undo[write].reset();
+    }
+}
+
+void UndoStruct::reset() {
+    if(prog){
+        delete prog;
+        prog = nullptr;
+    }
+    gx = -1; gy = -1;
+}
+
+Undo Undo::instance_;
+
+Undo::Undo()
+{
+
+}
+
+Undo::~Undo()
+{
+    undo.empty();
+    redo.empty();
+}
+
+void Undo::pushUndo()
+{
+    instance_.undo.push();
+}
+
+void Undo::popUndo()
+{
+    instance_.undo.pop();
+}
+
+void Undo::emptyUndo()
+{
+    instance_.undo.empty();
+}
+
+void Undo::pushRedo()
+{
+    instance_.redo.push();
+}
+
+void Undo::popRedo()
+{
+    instance_.redo.pop();
+}
+
+void Undo::emptyRedo()
+{
+    instance_.redo.empty();
+}
+
+int Undo::undoSize()
+{
+    return instance_.undo.size();
+}
+
+int Undo::redoSize()
+{
+    return instance_.redo.size();
 }

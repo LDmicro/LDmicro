@@ -42,6 +42,7 @@ set(LD_COMPILER_SRC_LIST
     ../compilerexceptions.hpp
     ../compilercommon.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../common/utils/filetracker.hpp
     )
 
 if(MSVC)
