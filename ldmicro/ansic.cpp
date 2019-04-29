@@ -153,7 +153,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         if (compiler_variant == MNU_COMPILE_HI_TECH_C)
         {
             char devname[MAX_NAME_LEN];     // spi name = "SPI"
-            char devpins[4];
+            int devpins[4];
             strcpy(devname, str);
             if (strcmp(devname, "Ui_SPI") == 0)
             {
@@ -176,7 +176,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         else if (compiler_variant == MNU_COMPILE_ARMGCC)
         {
             char devname[MAX_NAME_LEN];
-            char devpins[4];            // unused here
+            int devpins[4];            // unused here
             strcpy(devname, str);
             devname[6]= '0';            // to simplify comparison
             if (strcmp(devname, "Ui_SPI0") == 0)
@@ -205,7 +205,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         else if (compiler_variant == MNU_COMPILE_AVRGCC)
         {
             char devname[MAX_NAME_LEN];     // spi name = "SPI"
-            char devpins[4];
+            int devpins[4];
             strcpy(devname, str);
             if (strcmp(devname, "Ui_SPI") == 0)
             {
