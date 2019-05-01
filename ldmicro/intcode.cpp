@@ -1026,6 +1026,7 @@ static void _Comment(int l, const char *f, const char *str, ...)
         va_start(v, str);
         vsnprintf(buf, MAX_NAME_LEN, str, v);
         _Op(l, f, nullptr, INT_COMMENT, buf);
+        va_end(v);
     }
 }
 
@@ -1037,6 +1038,7 @@ static void _Comment(int l, const char *f, int level, const char *str, ...)
         va_start(v, str);
         vsnprintf(buf, MAX_NAME_LEN, str, v);
         _Op(l, f, nullptr, INT_COMMENT, buf);
+        va_end(v);
     }
 }
 

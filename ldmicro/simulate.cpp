@@ -2625,7 +2625,7 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
         ThawDWORD(TerminalW1);
         ThawDWORD(TerminalH1);
 
-        TerminalX = TerminalX1, TerminalY = TerminalY1, TerminalW = TerminalW1, TerminalH = TerminalH1;
+        TerminalX = TerminalX1; TerminalY = TerminalY1; TerminalW = TerminalW1; TerminalH = TerminalH1;
     }
     if (sim == SIM_SPI)
     {
@@ -2634,7 +2634,7 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
         ThawDWORD(TerminalW2);
         ThawDWORD(TerminalH2);
 
-        TerminalX = TerminalX2, TerminalY = TerminalY2, TerminalW = TerminalW2, TerminalH = TerminalH2;
+        TerminalX = TerminalX2; TerminalY = TerminalY2; TerminalW = TerminalW2; TerminalH = TerminalH2;
     }
     if (sim == SIM_I2C)
     {
@@ -2643,7 +2643,7 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
         ThawDWORD(TerminalW3);
         ThawDWORD(TerminalH3);
 
-        TerminalX = TerminalX3, TerminalY = TerminalY3, TerminalW = TerminalW3, TerminalH = TerminalH3;
+        TerminalX = TerminalX3; TerminalY = TerminalY3; TerminalW = TerminalW3; TerminalH = TerminalH3;
     }
     /////
 

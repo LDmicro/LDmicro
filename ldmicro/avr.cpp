@@ -488,6 +488,7 @@ static void Comment(const char *str, ...)
         va_start(f, str);
         vsnprintf(buf, MAX_COMMENT_LEN, str, f);
         Instruction(OP_COMMENT_INT, buf);
+        va_end(f);
     }
 }
 
@@ -4583,7 +4584,7 @@ static void CompileFromIntermediate()
                     freq = (1.0 * Prog.mcuClock) / (1.0 * TOP * prescale);
 
                     freqSI = SIprefix(freq, SI);
-                    sprintf(freqStr, "%s%.3f %sHz    ", freqStr, freqSI, SI);
+                    sprintf(freqStr, "%.3f %sHz    ", freqSI, SI);
 
                     long int err = (long int)fabs(freq - target);
                     if(err < bestError) {
@@ -5368,8 +5369,8 @@ static void CompileFromIntermediate()
                 ClearBit(0x25, 0); // 2 clocks
 #endif
                 if(IsNumber(a->name1)) {
-                    int32_t clocks = CalcDelayClock(hobatoi(a->name1.c_str()));
-                    int32_t clocksSave = clocks;
+                    int64_t clocks = CalcDelayClock(hobatoi(a->name1.c_str()));
+                    int64_t clocksSave = clocks;
                     Comment("INT_DELAY %s us = %lld clocks", a->name1.c_str(), clocks);
 
                     clocks = (clocks - 1) / 4;

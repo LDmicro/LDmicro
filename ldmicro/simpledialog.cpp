@@ -1370,6 +1370,7 @@ void ShowStepperDialog(void *e)
             int count = hobatoi(max);
 
             ResSteps r;
+            memset(&r, 0, sizeof(r));
             if(IsNumber(max) && (s->graph)) {
                 CalcSteps(s, &r);
 

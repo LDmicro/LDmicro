@@ -462,7 +462,7 @@ static void clearBat()
         return;
 
     sprintf(r,
-            "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"",
+            "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\"",
             ExePath,
             CurrentLdPath,
             LdName,

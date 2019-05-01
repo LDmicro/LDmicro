@@ -337,14 +337,17 @@ static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
 
     if((asm_discover_names == 1) || (asm_discover_names == 2)) {
         GetName(addrAt, s);
-        if(strcmp(arg1s, s) != 0)
-            sprintf(arg1comm, "%s ; %s", arg1comm, s);
+        if(strcmp(arg1s, s) != 0) {
+            strcat(arg1comm, " ; ");
+			strcat(arg1comm, s);
+		}	
     }
 
     if(asm_discover_names >= 3)
-        if(arg1s[0] != '0')
+        if(arg1s[0] != '0') {
             sprintf(arg1comm, "%s ; 0x%X", arg1comm, PicProg[addrAt].arg1);
-
+			
+		}
     if((asm_discover_names == 2) || (asm_discover_names == 4))
         sprintf(arg1comm, "%s ; %d", arg1comm, PicProg[addrAt].arg1);
 }
@@ -702,6 +705,7 @@ static void Comment(const char *str, ...)
         va_start(f, str);
         vsnprintf(buf, MAX_COMMENT_LEN, str, f);
         Instruction(OP_COMMENT_INT_, 0, 0, buf);
+        va_end(f);
     }
 }
 

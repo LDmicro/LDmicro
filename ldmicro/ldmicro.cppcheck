@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <builddir>ldmicro-cppcheck-build-dir</builddir>
+    <platform>win32A</platform>
+    <importproject>build/ldmicro.sln</importproject>
+    <analyze-all-vs-configs>true</analyze-all-vs-configs>
+</project>

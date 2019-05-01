@@ -1154,6 +1154,7 @@ static void _Comment(FILE *f, const char *str, ...)
     va_start(v, str);
     vsnprintf(buf, MAX_NAME_LEN, str, v);
     fprintf(f, "//%s\n", buf);
+    va_end(v);
 }
 #define Comment(...) _Comment(f, __VA_ARGS__)
 
@@ -1615,7 +1616,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     fprintf(f, "I2C_Send(%s, %s, %s);\n", IntCode[i].name3.c_str(), IntCode[i].name4.c_str(), MapSym(IntCode[i].name2, ASINT));
                 }
                 else
-                    fprintf(f, "%s= I2C_SEND(%s, %s, %s, %s);\n", IntCode[i].name1.c_str(), IntCode[i].name3.c_str(),
+                    fprintf(f, "%s = I2C_SEND(%s, %s, %s);\n", IntCode[i].name1.c_str(), IntCode[i].name3.c_str(),
                         IntCode[i].name4.c_str(), MapSym(IntCode[i].name2, ASINT));
                 break;
             /////
