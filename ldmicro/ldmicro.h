@@ -955,8 +955,8 @@ int MemForVariable(const NameArray& name, uint32_t* addr);
 int SetMemForVariable(const NameArray& name, uint32_t addr, int sizeOfVar);
 int MemOfVar(const NameArray& name, uint32_t* addr);
 uint8_t MuxForAdcVariable(const NameArray& name);
-int PinsForSpiVariable(const NameArray& name, int n, char *spipins);             ///// Added by JG
-int PinsForI2cVariable(const NameArray& name, int n, char *i2cpins);             ///// Added by JG
+int PinsForSpiVariable(const NameArray& name, int n, int *spipins);             ///// Added by JG
+int PinsForI2cVariable(const NameArray& name, int n, int *i2cpins);             ///// Added by JG
 int SingleBitAssigned(const NameArray& name);
 int GetAssignedType(const NameArray& name, const NameArray& fullName);
 int InputRegIndex(uint32_t addr);
