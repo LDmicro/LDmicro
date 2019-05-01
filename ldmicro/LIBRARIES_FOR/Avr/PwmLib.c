@@ -314,11 +314,10 @@ void PWM_Set(int canal, unsigned percent, int resol)
         PWM_Stop(canal);
         return;
     }
-    if(resol == 8) {
+    if(resol == 8)
         value = (255 * percent) / 100; // PWM 8 bit
-    } else {
+    else
         value = (1023 * percent) / 100; // PWM 10 bit
-    }
 
     if(canal == 0x0A)
         OCR0A = value;

@@ -1,6 +1,6 @@
 #include <avr/io.h>
 
-// Librairie AtMega pour afficheur LCD 16x2 + IO-Expander sur bus I2C
+// Librairie pour afficheur LCD 16x2 + IO-Expander sur bus I2C
 
 #include "ladder.h"
 #include "UsrLib.h"
@@ -47,7 +47,7 @@ void LCD_I2C_Send(char donnee, int type)
 void LCD_I2C_Enable(void)
 {
     PORT_LCD(|= (1 << BIT_LCD_E)) // E à 1
-                                  //      asm("NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;");
+                                  // asm("NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;");
     delay_us1(10);
     PORT_LCD(&= ~(1 << BIT_LCD_E)) // E à 0
 }

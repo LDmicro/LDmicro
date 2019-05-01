@@ -9,14 +9,12 @@ Files: 	LcdI2cLib.c
 	I2cLib.c
 	I2cLib.h
 
-Copy these new files in Avr "lib" folder of your ldmicro workspace.
-
-Edit I2cLib.c with any text editor and replace in line :
-#define LCD_I2C_ADR		0x00
-the final value 0x00 by the I2C address of your I2C module (maybe 0x27)
+Edit I2cLib.h with any text editor and replace in line :
+#define LCD_I2C_ADR	0
+the final value 0 by the I2C address of your I2C module (maybe 0x27)
 according to its documentation
 
-In LdMicro32, create a ladder using I2C Write function and use this address
+In LdMicro, create a ladder using I2C Write function and use this address
 to access LCD display, with 'register' field= 255
 (this value can also be modified in library as above if need be)
 
@@ -38,9 +36,10 @@ there are 3 possibilities:
 
 	Example: 0xA5 = 1 01 00101 will move cursor to line 2, column 6
 
-- other values betwen 0x11 and 0x7F are standard chars to display at cursor position.
+- other values between 0x11 and 0x7F are standard chars to display at cursor position.
 
 It normally doesn't prevent to use other I2C devices on the same bus.
+It has been tested successfully on PIC16F877.
 
 JG
 

@@ -4,12 +4,12 @@
 #include "stm32f4xx_gpio.h"
 
 
-#define BIT_LCD_RS   	4     // bit du port sur lequel est connectée la pin RS du LCD		// adapte pour IO-Expander facon Arduino
-#define BIT_LCD_E   	6     // bit du port sur lequel est connectée la pin E du LCD		//
-#define BIT_LCD_D4   	0     // bit du port sur lequel est connectée la pin D4 du LCD		//
-#define BIT_LCD_D5   	1     // bit du port sur lequel est connectée la pin D5 du LCD		//
-#define BIT_LCD_D6   	2     // bit du port sur lequel est connectée la pin D6 du LCD		//
-#define BIT_LCD_D7   	3     // bit du port sur lequel est connectée la pin D7 du LCD		//
+#define BIT_LCD_RS   	0     // bit du port sur lequel est connectée la pin RS du LCD		// adapte pour IO-Expander facon Arduino
+#define BIT_LCD_E   	2     // bit du port sur lequel est connectée la pin E du LCD		//
+#define BIT_LCD_D4   	4     // bit du port sur lequel est connectée la pin D4 du LCD		//
+#define BIT_LCD_D5   	5     // bit du port sur lequel est connectée la pin D5 du LCD		//
+#define BIT_LCD_D6   	6     // bit du port sur lequel est connectée la pin D6 du LCD		//
+#define BIT_LCD_D7   	7     // bit du port sur lequel est connectée la pin D7 du LCD		//
 
 #define PORT_LCD(x)		port x; I2C_Send(lcd_i2c_adr, 0, port);		// adaptation pour IO-Expander I2C
 
