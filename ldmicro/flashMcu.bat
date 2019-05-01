@@ -7,20 +7,24 @@ SET EXE_PATH=%~dp0
 @echo %EXE_PATH% = EXE_PATH
 @echo %1 = ISA
 @echo %2 = full 'filename.ld' with the path
-@echo %3 = compiler
+@SET  COMPILER=%3
+@echo %COMPILER% = COMPILER
 @echo %4 = deviceName, target name
+@echo .
+:@echo %2 - full ld file name wit the path
+@echo %~nx2 - gives the file name without the path
+@echo %~d2 - gives the drive letter to LD
+@echo %~p2 - gives the path to LD
 
-REM %~nx2 gives the file name in %2 without the path
-REM %~d2 gives the drive letter to LD
-REM %~p2 gives the path to LD
+:pause
 
-if "%3" == "HI_TECH_C" goto HTC
+if "%COMPILER%" == "HI_TECH_C" goto HTC
 if "%1" == "PIC16" goto PIC
 
-if "%3" == "AVRGCC" goto AVRGCC
+if "%COMPILER%" == "AVRGCC" goto AVRGCC
 if "%1" == "AVR" goto AVR
 
-if "%3" == "ARMGCC" goto ARMGCC
+if "%COMPILER%" == "ARMGCC" goto ARMGCC
 if "%1" == "ARM" goto ARMGCC
 
 if "%1" == "" goto pauses

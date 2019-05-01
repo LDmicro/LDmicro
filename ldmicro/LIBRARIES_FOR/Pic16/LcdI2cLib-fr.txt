@@ -1,0 +1,45 @@
+Comment utiliser la librarie I2C avec un afficheur LCD 16x2
+___________________________________________________________
+
+Cette librairie est destinée à utiliser un afficheur LCD 16x2 connecté
+à un IO-Expander I2C, comme sur le module Arduino
+
+Fichiers: 	LcdI2cLib.c
+		LcdI2cLib.h
+		I2cLib.c
+		I2cLib.h
+
+Editer I2cLib.h avec un editeur de texte quelconque et modifier la ligne:
+#define LCD_I2C_ADR	0
+en remplaçant la valeur 0 par l'adresse I2C de votre module I2C (par exemple 0x27)
+selon sa documentation
+
+Dans LdMicro, créer un ladder utilisant la fonction d'écriture I2C et utiliser cette adresse
+pour accéder à l'afficheur LCD, avec le champ 'register' = 255
+(cette valeur peut aussi être modifiée dans la librairie comme ci-dessus si nécessaire)
+
+Dans le champ 'send variable', vous pouvez placer une variable ou une valeur, sachant que
+vous avez 3 possibilités:
+
+- les valeurs entre 0 and 0x10 sont des commandes (voir dans les librairies):
+ 	0= Effacer l'afficheur
+	1= Replacer le curseur en haut à gauche
+	2= Affichage clignotant
+	3= Affichage normal
+
+	D'autres valeurs / fonctions peuvent être ajoutées dans les libraries
+
+- les valeurs supérieures à 0x80 sont des commande de déplacement du curseur en ligne y, col x:
+	bit  7= 1
+	bits 6-5= y-1	autorise 4 lignes 1->4	
+	bits 4-0= x-1	autorise 32 colonnes 1->32
+
+	Exemple: 0xA5 = 1 01 00101 place le curseur en ligne 2, colonne 6
+
+- les valeurs entre 0x11 and 0x7F affichent un caractère standard à la position du curseur
+
+Cela n'empêche normalement pas d'utiliser d'autres périphériques I2C sur le même bus
+Cela a été testé avec succes sur PIC16F877
+
+JG
+
