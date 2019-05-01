@@ -1,32 +1,13 @@
 #include <htc.h>
 
-// Librairie AtMega pour afficheur LCD 16x2 + IO-Expander sur bus I2C
+// Librairie pour afficheur LCD 16x2 + IO-Expander sur bus I2C
 
 #include "ladder.h"
 #include "UsrLib.h"
 #include "I2cLib.h"
 #include "LcdI2clib.h" // Fichier header librairie LCD
 
-static unsigned char port = 0;        // adaptation pour IO-Expander I2C
-static int           lcd_i2c_adr = 0; // adaptation pour IO-Expander I2C
-
-void LCD_I2C_SendCommand(char);
-void LCD_I2C_SendChar(char);
-void LCD_I2C_Send(char, int);
-void LCD_I2C_Send4msb(char);
-void LCD_I2C_Enable(void);
-
-// Envoi commande
-void LCD_I2C_SendCommand(char commande)
-{
-    LCD_I2C_Send(commande, 0);
-}
-
-// Envoi caractere
-void LCD_I2C_SendChar(char caractere)
-{
-    LCD_I2C_Send(caractere, 1);
-}
+unsigned char port = 0; // adaptation pour IO-Expander I2C
 
 // Gère l'écriture d'un octet vers le LCD
 void LCD_I2C_Send(char donnee, int type)
@@ -47,7 +28,7 @@ void LCD_I2C_Send(char donnee, int type)
 void LCD_I2C_Enable(void)
 {
     PORT_LCD(|= (1 << BIT_LCD_E)) // E à 1
-                                  //      asm("NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;");
+                                  // asm("NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;");
     delay_us(10);
     PORT_LCD(&= ~(1 << BIT_LCD_E)) // E à 0
 }
@@ -73,43 +54,6 @@ void LCD_I2C_Send4msb(char donnee)
     }
     // Validation donnee par basculement de l'enable
     LCD_I2C_Enable();
-}
-
-// Initialisation du LCD
-void LCD_I2C_Init(int i2c_adr)
-{
-    lcd_i2c_adr = i2c_adr;
-
-    // Attente de l'initialisation interne du circuit LCD
-    delay_ms(20);
-    PORT_LCD(&= ~((1 << BIT_LCD_D4) | (1 << BIT_LCD_D5) | (1 << BIT_LCD_D6) | (1 << BIT_LCD_D7)))
-
-    // RS à 0
-    PORT_LCD(&= ~(1 << BIT_LCD_RS))
-    delay_ms(10);
-
-    // Configuration initiale : etape 1
-    LCD_I2C_Send4msb(0x30);
-    delay_ms(5);
-
-    // Configuration initiale : etape 2
-    LCD_I2C_Send4msb(0x30);
-    delay_us(160);
-
-    // Configuration initiale : etape 3
-    LCD_I2C_Send4msb(0x30);
-    delay_us(160);
-
-    // Passage en mode 4 bits
-    LCD_I2C_Send4msb(0x20);
-    delay_ms(5);
-
-    // Envoi des commandes de paramètrage
-    LCD_I2C_SendCommand(0x28); // 4 bits - 2 lignes - Police 5x7
-    LCD_I2C_Config(0, 0, 0);   // Display off - Cursor off - Blinking off
-    LCD_I2C_Erase();
-    LCD_I2C_InsertMode(1, 0); // Cursor increase - Display not shifted
-    LCD_I2C_Config(1, 0, 0);  //  Display on - Cursor off - Blinking off
 }
 
 // Efface le contenu de l'ecran LCD

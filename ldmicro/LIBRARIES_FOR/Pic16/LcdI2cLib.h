@@ -2,14 +2,12 @@
 
 #include "UsrLib.h"
 
-#define BIT_LCD_RS   	4     // bit du port sur lequel est connectée la pin RS du LCD		// adapte pour IO-Expander facon Arduino
-#define BIT_LCD_E   	6     // bit du port sur lequel est connectée la pin E du LCD		//
-#define BIT_LCD_D4   	0     // bit du port sur lequel est connectée la pin D4 du LCD		//
-#define BIT_LCD_D5   	1     // bit du port sur lequel est connectée la pin D5 du LCD		//
-#define BIT_LCD_D6   	2     // bit du port sur lequel est connectée la pin D6 du LCD		//
-#define BIT_LCD_D7   	3     // bit du port sur lequel est connectée la pin D7 du LCD		//
-
-#define PORT_LCD(x)		port x; I2C_MasterSetReg(lcd_i2c_adr, 0, port);		// adaptation pour IO-Expander I2C
+#define BIT_LCD_RS   	0     // bit du port sur lequel est connectée la pin RS du LCD		// adapte pour IO-Expander facon Arduino
+#define BIT_LCD_E   	2     // bit du port sur lequel est connectée la pin E du LCD		//
+#define BIT_LCD_D4   	4     // bit du port sur lequel est connectée la pin D4 du LCD		//
+#define BIT_LCD_D5   	5     // bit du port sur lequel est connectée la pin D5 du LCD		//
+#define BIT_LCD_D6   	6     // bit du port sur lequel est connectée la pin D6 du LCD		//
+#define BIT_LCD_D7   	7     // bit du port sur lequel est connectée la pin D7 du LCD		//
 
 #define LCD_CMD_EFF        	  0x01   // Commande d'effacement LCD
 #define LCD_CMD_HOME      	  0x02   // Commande de renvoi du curseur à la position initiale
@@ -29,14 +27,11 @@
 #define LCD_LIGNE_2           0x40   // Adresse ligne 2
 #define LCD_CMD_SET_CGRAM     0x40   // Commande d'affectation de l'adresse CGRAM
 
-// Envoi au LCD du caractère passé en paramètre
-void LCD_I2C_SendChar(char caractere);
-   
-// Envoi au LCD de la commande passée en paramètre
-void LCD_I2C_SendCommand(char commande);
 
-// Initialisation du LCD
-void LCD_I2C_Init(int i2c_adr);
+void LCD_I2C_Send(char,int);
+void LCD_I2C_Enable(void);
+void LCD_I2C_Send4msb(char);
+
 
 // Effacement du LCD
 void LCD_I2C_Erase(void);
@@ -95,3 +90,24 @@ void LCD_I2C_ShowLong(long entier);
 void LCD_I2C_ShowDouble(double vdouble, int nb_decimales);
 
 
+// Ecriture d'une valeur dans registre (reg) sur peripherique (addr)
+// pour eviter les appels pseudo récursifs à I2C_LCDMasterReg()
+// que le compilateur ne supporte pas a cause des "compiled stacks" !
+// Defini comme macro pour reduire stack depth et eviter overflow
+#define I2C_MasterSetLcdReg(addr, reg, val)	\
+	{								\
+    I2C_MasterStart(addr, 0); 		\
+   	I2C_MasterWrite(reg);  			\
+   	I2C_MasterWrite(val);			\
+	I2C_MasterStop();				\
+    }
+
+#define PORT_LCD(x)		port x; I2C_MasterSetLcdReg(LCD_I2C_ADR, 0, port);		// adaptation pour IO-Expander I2C
+
+// Envoi commande
+// Defini comme macro pour reduire stack depth
+#define LCD_I2C_SendCommand(commande)	LCD_I2C_Send(commande,0)
+
+// Envoi caractere 
+// Defini comme macro pour reduire stack depth
+#define LCD_I2C_SendChar(caractere)		LCD_I2C_Send(caractere,1)

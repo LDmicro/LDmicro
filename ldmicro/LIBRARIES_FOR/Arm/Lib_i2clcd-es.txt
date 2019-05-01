@@ -1,5 +1,5 @@
 Cómo usar la biblioteca I2C para la pantalla LCD 16x2
-___________________________________________
+_____________________________________________________
 
 Esta biblioteca está diseñada para usar una pantalla LCD de 16x2 conectada a un I2-IO-Expander
 Módulo, como el de Arduino.
@@ -9,14 +9,12 @@ Lib_i2clcd.h
 Lib_i2c.c
 Lib_i2c.h
 
-Copie estos nuevos archivos en la carpeta "lib" de su espacio de trabajo ldmicro.
-
 Edite Lib_i2c.c con cualquier editor de texto y reemplace en línea:
-#define LCD_I2C_ADR 0x00
-el valor final 0x00 por la dirección I2C de su módulo I2C (quizás 0x27)
+#define LCD_I2C_ADR 0
+el valor final 0 por la dirección I2C de su módulo I2C (quizás 0x27)
 segun su documentacion
 
-En LdMicro32, cree una escalera usando la función de escritura I2C y use esta dirección
+En LdMicro, cree una escalera usando la función de escritura I2C y use esta dirección
 para acceder a la pantalla LCD, con el campo 'registro' = 255
 (este valor también se puede modificar en la biblioteca como se indica arriba si es necesario)
 

@@ -294,7 +294,7 @@ static void MemForPin(const NameArray& name, uint32_t *addr, int *bit, bool asIn
     if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT && Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT)
         oops();
 
-    *addr = -1;
+    *addr = std::numeric_limits<uint32_t>::max();
     *bit = -1;
     if(Prog.mcu()) {
         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
@@ -318,7 +318,7 @@ static void MemForPin(const NameArray& name, uint32_t *addr, int *bit, bool asIn
 
 void AddrBitForPin(int pin, uint32_t *addr, int *bit, bool asInput)
 {
-    *addr = -1;
+    *addr = std::numeric_limits<uint32_t>::max();
     *bit = -1;
     if(Prog.mcu()) {
         McuIoPinInfo *iop = PinInfo(pin);
@@ -386,7 +386,7 @@ int GetAssignedType(const NameArray& name, const NameArray& fullName)
 //-----------------------------------------------------------------------------
 uint8_t MuxForAdcVariable(const NameArray& name)
 {
-    int res = 0;
+    uint8_t res = 0;
     int i;
     for(i = 0; i < Prog.io.count; i++) {
         if((strcmp(Prog.io.assignment[i].name, name.str()) == 0) &&
@@ -417,7 +417,7 @@ uint8_t MuxForAdcVariable(const NameArray& name)
 //-----------------------------------------------------------------------------
 // Added by JG to force SPI pins assignment
 //-----------------------------------------------------------------------------
-int PinsForSpiVariable(const NameArray& name, int n, char *spipins)
+int PinsForSpiVariable(const NameArray& name, int n, int* spipins)
 {
     int res = 0, port= 0;
     int i;
@@ -488,7 +488,7 @@ int PinsForSpiVariable(const NameArray& name, int n, char *spipins)
 //-----------------------------------------------------------------------------
 // Added by JG to force I2C pins assignment
 //-----------------------------------------------------------------------------
-int PinsForI2cVariable(const NameArray& name, int n, char *i2cpins)
+int PinsForI2cVariable(const NameArray& name, int n, int* i2cpins)
 {
     int res = 0, port= 0;
     int i;
@@ -936,7 +936,7 @@ static void MemForBitInternal(const NameArray& name, uint32_t *addr, int *bit, b
 //-----------------------------------------------------------------------------
 void MemForSingleBit(const NameArray& name, bool forRead, uint32_t *addr, int *bit)
 {
-    *addr = -1;
+    *addr = std::numeric_limits<uint32_t>::max();
     *bit = -1;
     if(name.length() == 0) {
         return;

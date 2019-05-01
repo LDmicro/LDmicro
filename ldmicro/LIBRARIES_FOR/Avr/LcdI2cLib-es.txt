@@ -12,11 +12,11 @@ Archivos: LcdI2cLib.c
 Copiar estos archivos nuevos en Avr "lib" carpeta de su espacio de trabajo ldmicro.
 
 Edite I2cLib.c con cualquier editor de texto y reemplace en línea:
-#define LCD_I2C_ADR		0x00
-el valor final 0x00 por la dirección I2C de su módulo I2C (quizás 0x27)
+#define LCD_I2C_ADR	0
+el valor final 0 por la dirección I2C de su módulo I2C (quizás 0x27)
 segun su documentacion
 
-En LdMicro32, cree una escalera usando la función de escritura I2C y use esta dirección
+En LdMicro, cree una escalera usando la función de escritura I2C y use esta dirección
 para acceder a la pantalla LCD, con el campo 'registro' = 255
 (este valor también se puede modificar en la biblioteca como se indica arriba si es necesario)
 

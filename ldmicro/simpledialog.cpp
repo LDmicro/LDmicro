@@ -222,7 +222,7 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
 static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
                              DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos, long rdonly= 0)
 {
-    bool didCancel;
+    bool didCancel = false;
 
     try {       //// try... catch added by JG
 
@@ -945,8 +945,7 @@ void ShowSpiDialog(ElemLeaf *l)
                             _("Data Order:")};
 
     ///// Added by JG
-    if (l->d.spi.which == ELEM_SPI_WR)
-    {
+    if (l->d.spi.which == ELEM_SPI_WR) {
         labels[2] = _("Send string:");
         NoCheckingOnBox[2] = true;
     }
@@ -1004,23 +1003,24 @@ void ShowSpiDialog(ElemLeaf *l)
     //  NoCheckingOnBox[3] = true;
 
     ///// Added by JG
-    if(Prog.mcu())
-    if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
-        if (l->d.spi.which == ELEM_SPI)
-            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00F2);
-        if (l->d.spi.which == ELEM_SPI_WR)
-        {
-            strcpy(dests[3], "-");
-            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00FA);
-        }
-    } else {
-    /////
-        if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
-        //TODO: check the available range
-        }
-    //  NoCheckingOnBox[3] = false;
-        for(i = 0; i < comboRec[4].n; i++) {
-            CheckFree(comboRec[4].str[i]);
+    if(Prog.mcu()) {
+        if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
+            if (l->d.spi.which == ELEM_SPI)
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00F2);
+            if (l->d.spi.which == ELEM_SPI_WR)
+            {
+                strcpy(dests[3], "-");
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00FA);
+            }
+        } else {
+            /////
+            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
+                //TODO: check the available range
+            }
+            //  NoCheckingOnBox[3] = false;
+            for(i = 0; i < comboRec[4].n; i++) {
+                CheckFree(comboRec[4].str[i]);
+            }
         }
     }
 }
@@ -1065,19 +1065,20 @@ void ShowI2cDialog(ElemLeaf *l)
         }
     }
 
-    if(Prog.mcu())
-    if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
-        if (l->d.i2c.which == ELEM_I2C_RD) { // no send
-            strcpy(dests[2], "-");
-            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x0096);
-        }
-        if (l->d.i2c.which == ELEM_I2C_WR) { // no recv
-            strcpy(dests[3], "-");
-            ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x009A);
-        }
-    } else {
-        if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
-        //TODO: check the available range
+    if(Prog.mcu()) {
+        if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
+            if (l->d.i2c.which == ELEM_I2C_RD) { // no send
+                strcpy(dests[2], "-");
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x0096);
+            }
+            if (l->d.i2c.which == ELEM_I2C_WR) { // no recv
+                strcpy(dests[3], "-");
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x009A);
+            }
+        } else {
+            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
+                //TODO: check the available range
+            }
         }
     }
 }
@@ -1438,7 +1439,7 @@ void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy
             char str[1000];
             sprintf(str, "P1=%.3f %s, P0=%.3f %s, F=%.3f %s", P1t, Punits, P0t, Punits, F, Funits);
 
-            int count;
+            int count = -1;
             if(IsNumber(counter))
                 count = hobatoi(counter);
             double Ta = 0;
@@ -1516,7 +1517,7 @@ void ShowQuadEncodDialog(ElemLeaf *l)
     sprintf(countPerRevol, "%d", q->countPerRevol);
 
     char title[100];
-    sprintf(title, _("Quad Encoder")/*, *int01*/);
+    sprintf(title, "%s", _("Quad Encoder")/*, *int01*/);
 
     char _int01[100];
     sprintf(_int01, "%d", *int01);
@@ -1720,7 +1721,7 @@ void ShowPullUpDialog()
     for(int i = 0; i < MAX_IO_PORTS; i++) {
         if(IS_MCU_REG(i)) {
             labels[n] = (char *)CheckMalloc(20);
-            sprintf(labels[n], "Port %C%C:", Prog.mcu()->portPrefix, 'A' + i);
+            sprintf(labels[n], "Port %c%c:", Prog.mcu()->portPrefix, 'A' + i);
             dests[n] = (char *)CheckMalloc(20);
             sprintf(dests[n], "0x%X", Prog.pullUpRegs[i] & mask);
             n++;
@@ -1730,11 +1731,11 @@ void ShowPullUpDialog()
     labels[n+1] = (char *)_("*PIC only: _RBPU:'PORTB Pull-up Enable bit' and _GPPU:'Enable Weak Pull-ups bit' available through the 'Port PB' field. 0-is enable.");
 
     if(ShowSimpleDialog(_("Set Pull-up input resistors"), n+2, (const char **)labels, 0xFFFF, 0, 0xFFFF, n, dests)) {
-        int n = 0;
+        int port = 0;
         for(int i = 0; i < MAX_IO_PORTS; i++) {
             if(IS_MCU_REG(i)) {
-                Prog.pullUpRegs[i] = hobatoi(dests[n]);
-                n++;
+                Prog.pullUpRegs[i] = hobatoi(dests[port]);
+                port++;
             }
         }
     }

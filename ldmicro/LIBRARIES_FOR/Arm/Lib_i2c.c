@@ -18,8 +18,8 @@ void LCD_I2C_Config(int x, int y, int z){};
 void LCD_I2C_MoveCursor(int x, int y){};
 void LCD_I2C_SendChar(char x){};
 
-#define LCD_I2C_ADR 0x20 // a adapter selon afficheur
-#define LCD_I2C_REG 255  // a adapter selon preferences
+#define LCD_I2C_ADR 0   // a adapter selon afficheur
+#define LCD_I2C_REG 255 // a adapter selon preferences
 
 uint32_t LibI2C_Timeout;
 

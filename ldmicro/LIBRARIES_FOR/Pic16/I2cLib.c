@@ -6,20 +6,18 @@
 #include "I2cLib.h"
 #include "UsrLib.h"
 
-#ifndef LDTARGET_pic16f628
-
-#ifndef LCD_I2C_ADR
-#define LCD_I2C_ADR 0 // a adapter selon afficheur (si utile)
-#endif
-#define LCD_I2C_REG 255 // a adapter selon preferences
-
 #if LCD_I2C_ADR
+#include "LcdI2cLib.h"
+
+extern char port;
+
 void LCD_I2C_Init(int x);
 void LCD_I2C_Erase(void);
 void LCD_I2C_Home(void);
 void LCD_I2C_Config(int x, int y, int z);
 void LCD_I2C_MoveCursor(int x, int y);
-void LCD_I2C_SendChar(char x);
+void LCD_I2C_Send(char donnee, int type);
+#define LCD_I2C_SendChar(caractere) LCD_I2C_Send(caractere, 1)
 #endif
 
 static unsigned char Delay = 1;
@@ -30,7 +28,6 @@ void I2C_Init(long fcpu, long ftwi)
     char prescal = 0;
     long q = 0;
 
-#if defined(LDTARGET_pic16f87X) || defined(LDTARGET_pic16f88X)
     q = (fcpu / ftwi) / 4; // Should be between 2 and 256
 
     if(q > 256)
@@ -39,18 +36,52 @@ void I2C_Init(long fcpu, long ftwi)
         prescal = 1; // ftwi too fast
     else
         prescal = q - 1;
-#endif
 
-#if defined(LDTARGET_pic16f88) || defined(LDTARGET_pic16f819)
-    // Frequency can't be guaranteed because there's no clock !
-    q = 100000 / (ftwi + 1);
-    prescal = q;
-#endif
+    SSPCON = 0; // Reset SSPCON
+    SSPM3 = 1;  // I2C Master mode
 
-    I2C_MasterInit(prescal);
+    SSPCON2 = 0;      // Default settings
+    SSPADD = prescal; // I2C frequency f = F / (4 * (pscale+1))
+    SSPSTAT = 0;      // Default settings
+
+    TRISC3 = 1; // RC3 (SCL) and RC4 (SDA) as inputs
+    TRISC4 = 1; // Cf datasheet
+
+    SSPEN = 1; // Enable I2C
+
+    I2C_MasterWait();
 
 #if LCD_I2C_ADR
-    LCD_I2C_Init(LCD_I2C_ADR);
+    // Attente de l'initialisation interne du circuit LCD
+    delay_ms(20);
+    PORT_LCD(&= ~((1 << BIT_LCD_D4) | (1 << BIT_LCD_D5) | (1 << BIT_LCD_D6) | (1 << BIT_LCD_D7)))
+
+    // RS à 0
+    PORT_LCD(&= ~(1 << BIT_LCD_RS))
+    delay_ms(10);
+
+    // Configuration initiale : etape 1
+    LCD_I2C_Send4msb(0x30);
+    delay_ms(5);
+
+    // Configuration initiale : etape 2
+    LCD_I2C_Send4msb(0x30);
+    delay_us(160);
+
+    // Configuration initiale : etape 3
+    LCD_I2C_Send4msb(0x30);
+    delay_us(160);
+
+    // Passage en mode 4 bits
+    LCD_I2C_Send4msb(0x20);
+    delay_ms(5);
+
+    // Envoi des commandes de paramètrage
+    LCD_I2C_SendCommand(0x28); // 4 bits - 2 lignes - Police 5x7
+    LCD_I2C_Config(0, 0, 0);   // Display off - Cursor off - Blinking off
+    LCD_I2C_Erase();
+    LCD_I2C_InsertMode(1, 0); // Cursor increase - Display not shifted
+    LCD_I2C_Config(1, 0, 0);  //  Display on - Cursor off - Blinking off
 #endif
 }
 
@@ -99,33 +130,6 @@ void I2C_MasterSetReg(char addr, char reg, char val)
     I2C_MasterWrite(reg);     // positionne sur le registre
     I2C_MasterWrite(val);     // ecriture valeur
     I2C_MasterStop();         // fin
-}
-
-#if defined(LDTARGET_pic16f87X) || defined(LDTARGET_pic16f88X)
-
-// Initialisation I²C master
-void I2C_MasterInit(char prescaler)
-{
-    SSPCON = 0; // Reset SSPCON
-    SSPM3 = 1;  // I2C Master mode
-
-    SSPCON2 = 0;        // Default settings
-    SSPADD = prescaler; // I2C frequency f = F / (4 * (pscale+1))
-    SSPSTAT = 0;        // Default settings
-
-    TRISC3 = 1; // RC3 (SCL) and RC4 (SDA) as inputs
-    TRISC4 = 1; // Cf datasheet
-
-    SSPEN = 1; // Enable I2C
-
-    I2C_MasterWait();
-}
-
-// Attente I2C pret
-void I2C_MasterWait()
-{
-    while((SSPCON2 & 0x1F) || (SSPSTAT & 0x04))
-        ;
 }
 
 // Envoi de la séquence de start + adresse
@@ -215,236 +219,3 @@ char I2C_MasterReadLast()
 
     return SSPBUF;
 }
-
-#endif
-
-#if defined(LDTARGET_pic16f88) || defined(LDTARGET_pic16f819)
-
-// Initialisation I²C master
-void I2C_MasterInit(char prescaler)
-{
-    SSPCON = 0; // Reset SSPCON
-
-    SSPM3 = 1; // I2C Master software mode
-    SSPM1 = 1;
-    SSPM0 = 1;
-
-    // These PICs don't really implement Master I2C bus
-    // Must be managed by software
-
-    CLOCK = 0;
-    DATA = 0;
-
-    SCL = 1; // RB4 (SCL) and RB1 (SDA)
-    SDA = 1; // for clock and data
-
-    SSPEN = 1; // Enable I2C
-
-    Delay = prescaler;
-    I2C_SoftDelay(1);
-}
-
-// Attente I2C
-void I2C_MasterWait()
-{
-    I2C_SoftDelay(1);
-}
-
-// Envoi de la séquence de start + adresse
-// Renvoie 0 si Ok
-int I2C_MasterStart(char adresse, int mode)
-{
-    unsigned char a;
-
-    I2C_SoftStart();
-
-    if(mode)
-        a = (adresse << 1) | 1; // Read
-    else                        // Write
-        a = (adresse << 1);
-
-    I2C_SoftWrite(a); // 7-bit address of slave device plus mode
-    I2C_SoftGetAck();
-
-    return 0;
-}
-
-// Envoi de la séquence de restart + adresse
-// Renvoie 0 si Ok
-int I2C_MasterRestart(char adresse, int mode)
-{
-    unsigned char a;
-
-    I2C_SoftRestart();
-
-    if(mode)
-        a = (adresse << 1) | 1; // Read
-    else                        // Write
-        a = (adresse << 1);
-
-    I2C_SoftWrite(a); // 7-bit address of slave device plus mode
-    I2C_SoftGetAck();
-
-    return 0;
-}
-
-// Envoi de la séquence de stop
-void I2C_MasterStop()
-{
-    I2C_SoftStop(); // stop condition
-}
-
-// Ecriture d'un octet sur le bus I²C
-int I2C_MasterWrite(char c)
-{
-    I2C_SoftWrite(c); // data to be sent
-    I2C_SoftGetAck();
-}
-
-// Lecture d'un octet sur le bus avec acknowledge à la fin
-// pour indiquer au slave qu'on veut continuer de recevoir
-char I2C_MasterReadNext()
-{
-    char c = 0;
-
-    c = I2C_SoftRead();
-    I2C_SoftAck();
-
-    return c;
-}
-
-// Lecture d'un octet sur le bus sans acknowledge à la fin
-// Doit être suivi par un stop
-char I2C_MasterReadLast()
-{
-    char c = 0;
-
-    c = I2C_SoftRead();
-    I2C_SoftNack();
-
-    return c;
-}
-
-// SCL= 0 toggles SCL Line to Output, at level CLOCK= 0
-// SCL= 1 toggles SCL line to Input, so that
-// pull-up brings it high but lets Slave able to manage it too
-
-// SDA= 0 toggles SDA Line to Output, at level DATA= 0
-// SDA= 1 toggles SDA line to Input, so that
-// pull-up brings it high but lets Slave able to manage it too
-
-void I2C_SoftDelay(unsigned char d)
-{
-    while(d > 0) {
-        delay_us(1);
-        d--;
-    }
-}
-
-void I2C_SoftStart()
-{
-    SCL = 1;
-    SDA = 0;
-    I2C_SoftDelay(Delay);
-    SCL = 0;
-    I2C_SoftDelay(Delay);
-}
-
-void I2C_SoftRestart()
-{
-    SCL = 0;
-    SDA = 1;
-    I2C_SoftDelay(Delay);
-    SCL = 1;
-    I2C_SoftDelay(Delay);
-    SDA = 0;
-    I2C_SoftDelay(Delay);
-    SCL = 0;
-    I2C_SoftDelay(Delay);
-}
-
-void I2C_SoftStop(void)
-{
-    SDA = 0;
-    SCL = 1;
-    I2C_SoftDelay(Delay);
-    SDA = 1;
-    I2C_SoftDelay(Delay);
-}
-
-void I2C_SoftWrite(unsigned char dat)
-{
-    unsigned char i;
-
-    for(i = 0; i < 8; i++) // Loop 8 times to send 1-byte of data
-    {
-        if(dat & 0x80) // Send Bit by Bit on SDA line
-            SDA = 1;
-        else
-            SDA = 0;
-        SCL = 1;
-        I2C_SoftDelay(Delay);
-        SCL = 0;
-        I2C_SoftDelay(Delay);
-
-        dat = dat << 1;
-    }
-}
-
-unsigned char I2C_SoftRead(void)
-{
-    unsigned char i, dat = 0x00;
-
-    SDA = 1; // Input
-
-    for(i = 0; i < 8; i++) // Loop 8 times to read 1-byte of data
-    {
-        SCL = 1;
-        I2C_SoftDelay(2 * Delay);
-
-        dat = dat << 1;   // dat is Shifted each time and
-        dat = dat | DATA; // ORed with the received bit to pack into byte
-
-        SCL = 0;
-        I2C_SoftDelay(Delay);
-    }
-
-    return dat; // Finally return the received Byte
-}
-
-void I2C_SoftAck()
-{
-    SDA = 0; // ACK = 0
-    SCL = 1;
-    I2C_SoftDelay(Delay);
-    SCL = 0;
-    I2C_SoftDelay(Delay);
-}
-
-void I2C_SoftNack()
-{
-    SDA = 1; // NAK = 1
-    SCL = 1;
-    I2C_SoftDelay(Delay);
-    SCL = 0;
-    I2C_SoftDelay(Delay);
-}
-
-unsigned char I2C_SoftGetAck()
-{
-    unsigned char ack = 0;
-
-    SDA = 1; // Input
-    I2C_SoftDelay(Delay);
-    SCL = 1;
-    I2C_SoftDelay(Delay);
-    ack = DATA;
-    SCL = 0;
-    I2C_SoftDelay(Delay);
-
-    return ack; // ACK = 0 / NAK = 1
-}
-
-#endif
-
-#endif
