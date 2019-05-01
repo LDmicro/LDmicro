@@ -2616,35 +2616,32 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
     RegisterClassEx(&wc);
 
     ///// Modified by JG
-    DWORD TerminalX, TerminalY, TerminalW, TerminalH;
+    DWORD TerminalX = 100, TerminalY = 100, TerminalW = 800, TerminalH = 800;
 
-    if (sim == SIM_UART)
-    {
+    if (sim == SIM_UART) {
         ThawDWORD(TerminalX1);      // Restore window size from Windows Registry (if saved by Freeze)
         ThawDWORD(TerminalY1);
         ThawDWORD(TerminalW1);
         ThawDWORD(TerminalH1);
 
         TerminalX = TerminalX1; TerminalY = TerminalY1; TerminalW = TerminalW1; TerminalH = TerminalH1;
-    }
-    if (sim == SIM_SPI)
-    {
+    } else if (sim == SIM_SPI) {
         ThawDWORD(TerminalX2);      // Restore window size from Windows Registry (if saved by Freeze)
         ThawDWORD(TerminalY2);
         ThawDWORD(TerminalW2);
         ThawDWORD(TerminalH2);
 
         TerminalX = TerminalX2; TerminalY = TerminalY2; TerminalW = TerminalW2; TerminalH = TerminalH2;
-    }
-    if (sim == SIM_I2C)
-    {
+    } else if (sim == SIM_I2C) {
         ThawDWORD(TerminalX3);      // Restore window size from Windows Registry (if saved by Freeze)
         ThawDWORD(TerminalY3);
         ThawDWORD(TerminalW3);
         ThawDWORD(TerminalH3);
 
         TerminalX = TerminalX3; TerminalY = TerminalY3; TerminalW = TerminalW3; TerminalH = TerminalH3;
-    }
+    } else {
+		oops();
+	}	
     /////
 
     if(TerminalW > 800)

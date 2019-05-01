@@ -345,11 +345,13 @@ static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
 
     if(asm_discover_names >= 3)
         if(arg1s[0] != '0') {
-            sprintf(arg1comm, "%s ; 0x%X", arg1comm, PicProg[addrAt].arg1);
-			
+            sprintf(s, " ; 0x%X", PicProg[addrAt].arg1);
+			strcat(arg1comm, s);
 		}
-    if((asm_discover_names == 2) || (asm_discover_names == 4))
-        sprintf(arg1comm, "%s ; %d", arg1comm, PicProg[addrAt].arg1);
+    if((asm_discover_names == 2) || (asm_discover_names == 4)) {
+        sprintf(s, " ; %d", PicProg[addrAt].arg1);
+		strcat(arg1comm, s);
+	}	
 }
 
 //-----------------------------------------------------------------------------

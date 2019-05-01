@@ -1366,6 +1366,7 @@ void ShowStepperDialog(void *e)
             double _F = SIprefix(F, Funits);
 
             char str[1000];
+            char str2[1000];
             sprintf(str, "Pmin=%.3f %ss, Fmax=%.3f %sHz", _Pt, Punits, _F, Funits);
 
             int count = hobatoi(max);
@@ -1376,7 +1377,8 @@ void ShowStepperDialog(void *e)
                 CalcSteps(s, &r);
 
                 double _Psum = SIprefix(Pt * r.Psum, Punits);
-                sprintf(str, "%s\n\nAcceleration/Deceleration time=%.3f %ss", str, _Psum, Punits);
+                sprintf(str2, "\n\nAcceleration/Deceleration time=%.3f %ss", _Psum, Punits);
+				strcat(str, str2);
 
                 CheckFree(r.T);
             }
@@ -1392,10 +1394,12 @@ void ShowStepperDialog(void *e)
                         Tfull = Pt * r.Psum * 2.0;
 
                     _Tfull = SIprefix(Tfull, Tunits);
-                    sprintf(str, "%s\n\nWork time=%.3f %ss", str, _Tfull, Tunits);
+                    sprintf(str2 "\n\nWork time=%.3f %ss", _Tfull, Tunits);
+					strcat(str, str2);
                 }
                 _Tfull = SIprefix(Pt * count, Tunits);
-                sprintf(str, "%s\n\nTime without accel/decel=%.3f %ss", str, _Tfull, Tunits);
+                sprintf(str2, "\n\nTime without accel/decel=%.3f %ss", _Tfull, Tunits);
+				strcat(str, str2);
             }
 
             MessageBox(MainWindow, str, _("Stepper information"), MB_OK | MB_ICONINFORMATION);
@@ -1437,6 +1441,7 @@ void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy
                 Funits = _("kHz");
             }
             char str[1000];
+            char str2[1000];
             sprintf(str, "P1=%.3f %s, P0=%.3f %s, F=%.3f %s", P1t, Punits, P0t, Punits, F, Funits);
 
             int count = -1;
@@ -1461,8 +1466,8 @@ void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy
                             i--;
                     }
                     Ta = (double)Prog.cycleTime * Na / 1000.0;
-                    //sprintf(str, "%s\n\nAcceleration time %d cycles=%.3f %s", str, Na, Ta, Punits);
-                    sprintf(str, _("%s\n\nAcceleration time=%.3f %s"), str, Ta, Punits);
+                    sprintf(str2, _("\n\nAcceleration time=%.3f %s"), Ta, Punits);
+					strcat(str, str2);
                 }
             }
 
@@ -1480,7 +1485,8 @@ void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy
                     Tfull /= 1000.0;
                     Tunits = _("s");
                 }
-                sprintf(str, "%s\n\nWork time=%.3f %s", str, Tfull, Tunits);
+                sprintf(str2 "\n\nWork time=%.3f %s", Tfull, Tunits);
+        		strcat(str, str2);
             }
             MessageBox(MainWindow, str, _("Pulser information"), MB_OK | MB_ICONINFORMATION);
         }
