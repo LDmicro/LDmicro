@@ -9,7 +9,7 @@ endif()
 project(ldmicro
     LANGUAGES CXX
     )
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 # set all posible languages
 SET(LDLANG_ALL EN DE ES FR IT PT TR RU JA )
@@ -143,8 +143,6 @@ if(${LDLANG} STREQUAL "ALL")
             target_link_libraries     (${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib ldlog)
             target_compile_definitions(${PROJECT_NAME} PRIVATE
                 -DLDLANG_${lang_id}
-                $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>
-                $<$<COMPILE_FEATURES:cxx_noexcept>:LD_WITH_NOEXEPT>
                 )
 
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -159,8 +157,6 @@ if(${LDLANG} STREQUAL "ALL")
             add_executable            (${PROJECT_NAME}-${ldlang_lower} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
             target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE
                 -DLDLANG_${lang_id}
-                $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>
-                $<$<COMPILE_FEATURES:cxx_noexcept>:LD_WITH_NOEXEPT>
                 )
             target_link_libraries     (${PROJECT_NAME}-${ldlang_lower} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower} ldlog)
         endif()
@@ -173,8 +169,6 @@ else()
         target_link_libraries(${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib ldlog)
         target_compile_definitions(${PROJECT_NAME} PRIVATE
             -DLDLANG_${LDLANG}
-            $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>
-            $<$<COMPILE_FEATURES:cxx_noexcept>:LD_WITH_NOEXEPT>
             )
 
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -193,8 +187,6 @@ else()
         target_link_libraries(${_project_name} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower} ldlog)
         target_compile_definitions(${_project_name} PRIVATE
             -DLDLANG_${LDLANG}
-            $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>
-            $<$<COMPILE_FEATURES:cxx_noexcept>:LD_WITH_NOEXEPT>
             )
 
         add_custom_command(TARGET ${_project_name} POST_BUILD
