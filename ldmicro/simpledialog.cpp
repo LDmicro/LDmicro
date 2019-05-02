@@ -42,7 +42,7 @@ static bool NoCheckingOnBox[MAX_BOXES];
 #define MAX_COMBO_STRINGS 16
 typedef struct comboRecordTag {
     int   n;                      // 0 <= n < MAX_COMBO_STRINGS
-    char *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
+    const char *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
 } comboRecord;
 
 //-----------------------------------------------------------------------------
@@ -993,8 +993,8 @@ void ShowSpiDialog(ElemLeaf *l)
                 double t = 1.0 * 1000 * SizeOfVar(s->send) * 8 / f;
                 //sprintf(buf,"%15.3fHz,T_ss=%.3fms", f, t);
                 sprintf(buf, "%15.3f Hz, T_ss = %.3f ms", f, t);
-                comboRec[4].str[i] = (char *)CheckMalloc(strlen(buf) + 1);
-                strcpy(comboRec[4].str[i], buf);
+                comboRec[4].str[i] = (const char *)CheckMalloc(strlen(buf) + 1);
+                strcpy(const_cast<char*>(comboRec[4].str[i]), buf);
             }
         }
     }
@@ -1017,7 +1017,7 @@ void ShowSpiDialog(ElemLeaf *l)
             }
             //  NoCheckingOnBox[3] = false;
             for(int i = 0; i < comboRec[4].n; i++) {
-                CheckFree(comboRec[4].str[i]);
+                CheckFree(const_cast<char*>(comboRec[4].str[i]));
             }
         }
     }
