@@ -42,7 +42,7 @@ static bool NoCheckingOnBox[MAX_BOXES];
 #define MAX_COMBO_STRINGS 16
 typedef struct comboRecordTag {
     int   n;                      // 0 <= n < MAX_COMBO_STRINGS
-    char *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
+    const char *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
 } comboRecord;
 
 //-----------------------------------------------------------------------------
@@ -57,8 +57,7 @@ static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
         }
     }
 
-    int i;
-    for(i = 0; i < MAX_BOXES; i++) {
+    for(int i = 0; i < MAX_BOXES; i++) {
         if(hwnd == Textboxes[i]) {
             return CallWindowProc((WNDPROC)PrevAlnumOnlyProc[i], hwnd, msg, wParam, lParam);
         }
@@ -79,8 +78,7 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         }
     }
 
-    int i;
-    for(i = 0; i < MAX_BOXES; i++) {
+    for(int i = 0; i < MAX_BOXES; i++) {
         if(hwnd == Textboxes[i]) {
             return CallWindowProc((WNDPROC)PrevNumOnlyProc[i], hwnd, msg, wParam, lParam);
         }
@@ -961,11 +959,11 @@ void ShowSpiDialog(ElemLeaf *l)
                               {4, {"0b00", "0b01", "0b10", "0b11"}},
                               {0, {nullptr}},
                               {2, {"MSB_FIRST", "LSB_FIRST"}}};
-    int i;
+
     if(Prog.mcu()) {
         if(Prog.mcu()->spiCount) {
             comboRec[0].n = Prog.mcu()->spiCount;
-            for(i = 0; i < comboRec[0].n; i++) {
+            for(int i = 0; i < comboRec[0].n; i++) {
                 comboRec[0].str[i] = Prog.mcu()->spiInfo[i].name;
             }
         }
@@ -990,13 +988,13 @@ void ShowSpiDialog(ElemLeaf *l)
                 comboRec[4].n = 3;
             } else
                 oops();
-            for(i = 0; i < comboRec[4].n; i++) {
+            for(int i = 0; i < comboRec[4].n; i++) {
                 double f = 1.0 * Prog.mcuClock / (m * xPowerY(m, i));
                 double t = 1.0 * 1000 * SizeOfVar(s->send) * 8 / f;
                 //sprintf(buf,"%15.3fHz,T_ss=%.3fms", f, t);
                 sprintf(buf, "%15.3f Hz, T_ss = %.3f ms", f, t);
-                comboRec[4].str[i] = (char *)CheckMalloc(strlen(buf) + 1);
-                strcpy(comboRec[4].str[i], buf);
+                comboRec[4].str[i] = (const char *)CheckMalloc(strlen(buf) + 1);
+                strcpy(const_cast<char*>(comboRec[4].str[i]), buf);
             }
         }
     }
@@ -1006,20 +1004,20 @@ void ShowSpiDialog(ElemLeaf *l)
     if(Prog.mcu()) {
         if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
             if (l->d.spi.which == ELEM_SPI)
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00F2);
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00F2);
             if (l->d.spi.which == ELEM_SPI_WR)
             {
                 strcpy(dests[3], "-");
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00FA);
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00FA);
             }
         } else {
             /////
-            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
+            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, 0xFFFFFFFF, 8, dests, 8, comboRec)) {
                 //TODO: check the available range
             }
             //  NoCheckingOnBox[3] = false;
-            for(i = 0; i < comboRec[4].n; i++) {
-                CheckFree(comboRec[4].str[i]);
+            for(int i = 0; i < comboRec[4].n; i++) {
+                CheckFree(const_cast<char*>(comboRec[4].str[i]));
             }
         }
     }
@@ -1069,14 +1067,14 @@ void ShowI2cDialog(ElemLeaf *l)
         if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
             if (l->d.i2c.which == ELEM_I2C_RD) { // no send
                 strcpy(dests[2], "-");
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x0096);
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x0096);
             }
             if (l->d.i2c.which == ELEM_I2C_WR) { // no recv
                 strcpy(dests[3], "-");
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x009A);
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x009A);
             }
         } else {
-            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
+            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, 0xFFFFFFFF, 8, dests, 8, comboRec)) {
                 //TODO: check the available range
             }
         }
@@ -1344,14 +1342,14 @@ void ShowStepperDialog(void *e)
         s->graph = hobatoi(sgraph);
         s->nSize = hobatoi(snSize);
 
-        char str[MAX_NAME_LEN];
+        char nm[MAX_NAME_LEN];
         if(IsNumber(max)) {
-            sprintf(str, "C%s%s", s->name, "Dec");
-            CheckConstantInRange(str, max, hobatoi(max));
+            sprintf(nm, "C%s%s", s->name, "Dec");
+            CheckConstantInRange(nm, max, hobatoi(max));
         }
         if(IsNumber(P)) {
-            sprintf(str, "C%s%s", s->name, "P");
-            CheckConstantInRange(str, P, hobatoi(P));
+            sprintf(nm, "C%s%s", s->name, "P");
+            CheckConstantInRange(nm, P, hobatoi(P));
         }
         if(coil[0] != 'Y')
             Error(_("Pulse to: '%s' you must set to output pin 'Y%s' or to internal relay 'R%s'."), coil, coil, coil);
@@ -1378,7 +1376,7 @@ void ShowStepperDialog(void *e)
 
                 double _Psum = SIprefix(Pt * r.Psum, Punits);
                 sprintf(str2, "\n\nAcceleration/Deceleration time=%.3f %ss", _Psum, Punits);
-				strcat(str, str2);
+                strcat(str, str2);
 
                 CheckFree(r.T);
             }
@@ -1394,12 +1392,12 @@ void ShowStepperDialog(void *e)
                         Tfull = Pt * r.Psum * 2.0;
 
                     _Tfull = SIprefix(Tfull, Tunits);
-                    sprintf(str2 "\n\nWork time=%.3f %ss", _Tfull, Tunits);
-					strcat(str, str2);
+                    sprintf(str2, "\n\nWork time=%.3f %ss", _Tfull, Tunits);
+                    strcat(str, str2);
                 }
                 _Tfull = SIprefix(Pt * count, Tunits);
                 sprintf(str2, "\n\nTime without accel/decel=%.3f %ss", _Tfull, Tunits);
-				strcat(str, str2);
+                strcat(str, str2);
             }
 
             MessageBox(MainWindow, str, _("Stepper information"), MB_OK | MB_ICONINFORMATION);
@@ -1467,7 +1465,7 @@ void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy
                     }
                     Ta = (double)Prog.cycleTime * Na / 1000.0;
                     sprintf(str2, _("\n\nAcceleration time=%.3f %s"), Ta, Punits);
-					strcat(str, str2);
+                    strcat(str, str2);
                 }
             }
 
@@ -1485,8 +1483,8 @@ void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy
                     Tfull /= 1000.0;
                     Tunits = _("s");
                 }
-                sprintf(str2 "\n\nWork time=%.3f %s", Tfull, Tunits);
-        		strcat(str, str2);
+                sprintf(str2, "\n\nWork time=%.3f %s", Tfull, Tunits);
+                strcat(str, str2);
             }
             MessageBox(MainWindow, str, _("Pulser information"), MB_OK | MB_ICONINFORMATION);
         }

@@ -692,8 +692,7 @@ HWND CreateWindowClient(DWORD exStyle, const char *className, const char *window
 void MakeDialogBoxClass();
 void NiceFont(HWND h);
 void FixedFont(HWND h);
-void CompileSuccessfulMessage(char *str, unsigned int uType);
-void CompileSuccessfulMessage(char *str);
+void CompileSuccessfulMessage(const char* str, unsigned int uType = MB_ICONINFORMATION);
 void CompileSuccesfullAnsiCMessage(const char *dest);
 extern bool RunningInBatchMode;
 extern bool RunningInTestMode;

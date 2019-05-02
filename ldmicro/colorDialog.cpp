@@ -41,8 +41,8 @@ static DWORD                     rgbResult = 0;
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
 //-----------------------------------------------------------------------------
-static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
+//static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+//{
     /*
     if(msg == WM_CHAR) {
         if(hwnd == ConfigBitsTextbox) {
@@ -66,7 +66,7 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         oops();
 */
     //  return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
-}
+//}
 
 //-----------------------------------------------------------------------------
 bool ChooseClr(DWORD *rgbCurrent)
