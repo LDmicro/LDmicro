@@ -125,13 +125,13 @@ void IntDumpListing(char *outFile)
             indent--;
 
         if(int_comment_level == 1) {
-            fprintf(f, "%3d:", i);
+            fprintf(f, "%3u:", i);
         } else {
             if(indent < 0)
                 indent = 0;
             if((IntCode[i].op != INT_SIMULATE_NODE_STATE) // && (IntCode[i].op != INT_AllocKnownAddr)
                && (IntCode[i].op != INT_AllocFwdAddr))
-                fprintf(f, "%4d:", i);
+                fprintf(f, "%4u:", i);
         }
         int j;
         if((int_comment_level == 1) || (IntCode[i].op != INT_SIMULATE_NODE_STATE))

@@ -329,7 +329,7 @@ char *GetIsaName(int ISA)
       //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
         case ISA_ARM          : return (char *)stringer( ISA_ARM          ) + 4;            ///// Added by JG
-        default               : oops(); return nullptr;
+        default               : oops(); // return nullptr;
         // clang-format on
     }
 }
@@ -895,7 +895,7 @@ bool CheckSaveUserCancels()
 
         default:
             oops();
-            return false;
+            // return false;
     }
 }
 
@@ -2703,7 +2703,7 @@ static ATOM MakeWindowClass()
 }
 
 //-----------------------------------------------------------------------------
-
+/*
 static LPSTR _getNextCommandLineArgument(LPSTR lpBuffer)
 {
     bool argFound = false;
@@ -2783,7 +2783,7 @@ static char *_removeWhitespace(char *pBuffer)
 
     return pStart;
 }
-
+*/
 //-----------------------------------------------------------------------------
 /*
 static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
@@ -2885,6 +2885,7 @@ void KxStackTrace()
 void CheckPwmPins()
 {
     return;
+	/*
     uint32_t j;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         for(j = 0; j < supportedMcus()[i].pwmCount; j++) {
@@ -2898,6 +2899,7 @@ void CheckPwmPins()
             if(j >= supportedMcus()[i].pwmCount)
                 ooops("2 %s", supportedMcus()[i].mcuName);
     }
+	*/
 }
 
 #ifndef LDMICRO_GUI_XX

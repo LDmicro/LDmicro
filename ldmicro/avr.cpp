@@ -1258,7 +1258,7 @@ static uint32_t Assemble(uint32_t addrAt, AvrOp op, uint32_t arg1, uint32_t arg2
         default:
             sprintf(sAsm, "0x%X OP_%d %d %d", addrAt, op, arg1, arg2);
             THROW_COMPILER_EXCEPTION_FMT("Invalid AVR OpCode %i.", static_cast<int>(op));
-            return 0;
+            // return 0;
     }
 }
 
@@ -2381,7 +2381,7 @@ bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, uint32_t AvrProgLdLen)
     plcTmr.ticksPerCycle = (long long int)floor(1.0 * Prog.mcuClock * cycleTimeMicroseconds / 1000000 + 0.5);
     long int      bestTmr = LONG_MIN;
     long int      bestPrescaler = LONG_MAX;
-    long int      bestSoftDivisor;
+    long int      bestSoftDivisor = 0;
     long long int bestErr = LLONG_MAX;
     long long int err;
     while(plcTmr.softDivisor <= max_softDivisor) {
@@ -3159,7 +3159,7 @@ static void  WriteRuntime()
         calcAvrUsart(&divisor, &actual, &percentErr);
         testAvrUsart(divisor, actual, percentErr);
 
-        WriteMemory(REG_UBRRH, divisor >> 8);
+        WriteMemory(REG_UBRRH, (divisor >> 8) & 0xff);
         WriteMemory(REG_UBRRL, divisor & 0xff);
         WriteMemory(REG_UCSRB, (1 << RXEN) | (1 << TXEN));
 
@@ -3322,9 +3322,9 @@ http://www.parallax.com/dl/docs/cols/nv/vol1/col/nv8.pdf
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate()
 {
-    uint32_t addr = 0, addr1 = 0, addr2 = 0, addr3 = 0, addr4 = 0;
-    int   bit = -1, bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
-    int   sov = -1, sov1 = -1, sov2 = -1, sov12 = -1, sov23 = -1;
+    uint32_t addr = 0, addr1 = 0, addr2 = 0, /*addr3 = 0, */addr4 = 0;
+    int   bit = -1, bit1 = -1, bit2 = -1, /*bit3 = -1, */bit4 = -1;
+    int   sov = -1, sov1 = -1, sov2 = -1;//, sov12 = -1, sov23 = -1;
 
     for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;

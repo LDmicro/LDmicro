@@ -657,7 +657,7 @@ int CountWhich(int seek1, char *name);
 int CountWhich(int seek1);
 int AdcFunctionUsed();
 int PwmFunctionUsed();
-uint32_t QuadEncodFunctionUsed();
+int QuadEncodFunctionUsed();
 bool NPulseFunctionUsed();
 bool EepromFunctionUsed();
 bool SleepFunctionUsed();

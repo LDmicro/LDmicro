@@ -396,7 +396,7 @@ const char *IoTypeToString(int ioType)
         default:                        return _("<corrupt!>");
     }
     // clang-format on
-    return nullptr;
+    // return nullptr;
 }
 
 //-----------------------------------------------------------------------------

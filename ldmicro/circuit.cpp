@@ -40,7 +40,7 @@ void CheckFree(void *p)
 {
     if(p)
         free(p);
-    p = nullptr;
+    // p = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -725,7 +725,7 @@ void AddQuadEncod()
     if(!CanInsertOther)
         return;
 
-    uint32_t n = 0;
+    int n = 0;
     if(Prog.mcu()) {
         n = QuadEncodFunctionUsed();
         if(n > Prog.mcu()->ExtIntCount) {
@@ -1794,7 +1794,7 @@ int AdcFunctionUsed()
     return CountWhich(ELEM_READ_ADC);
 }
 //-----------------------------------------------------------------------------
-uint32_t QuadEncodFunctionUsed()
+int QuadEncodFunctionUsed()
 {
     return CountWhich(ELEM_QUAD_ENCOD);
 }

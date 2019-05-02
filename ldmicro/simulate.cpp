@@ -548,7 +548,7 @@ int32_t GetRandom(const NameArray &name)
         return (int32_t)(seed >> (8 * (4 - sov)));
     else {
         oops();
-        return 0;
+        // return 0;
     }
 }
 

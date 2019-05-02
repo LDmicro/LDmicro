@@ -1094,7 +1094,7 @@ void ShowAnalogSliderPopup(char *name)
     AnalogSliderDone = false;
     AnalogSliderCancel = false;
 
-    int32_t orig = GetAdcShadow(name);
+    //int32_t orig = GetAdcShadow(name);
 
     while(!AnalogSliderDone && (ret = GetMessage(&msg, nullptr, 0, 0))) {
         int32_t v = (int32_t)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);

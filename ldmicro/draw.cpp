@@ -251,7 +251,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
 
         default:
             ooops("ELEM_0x%X", which);
-            return 0;
+            //return 0;
     }
 }
 
@@ -294,7 +294,7 @@ int CountHeightOfElement(int which, void *elem)
 
         default:
             ooops("ELEM_0x%X", which);
-            return 0;
+            //return 0;
     }
 }
 
@@ -1780,7 +1780,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 //-----------------------------------------------------------------------------
 static bool HasEndOfRungElem(int which, void *elem)
 {
-    ElemLeaf *leaf = (ElemLeaf *)elem;
+    // ElemLeaf *leaf = (ElemLeaf *)elem;
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
@@ -1812,7 +1812,7 @@ static bool HasEndOfRungElem(int which, void *elem)
 // element, else false. This is needed to colour all the wires correctly,
 // since the colouring indicates whether a wire is energized.
 //-----------------------------------------------------------------------------
-bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, int cols)
+bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, int cols*/)
 {
     bool poweredAfter;
 
@@ -1834,9 +1834,10 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             poweredAfter = poweredBefore;
             for(int i = 0; i < s->count; i++) {
-                poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter, 0);
+                poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter/*, 0*/);
             }
             break;
+			/*
             if(cols) {
                 // Draw wire to the right bus
                 if((s->contents[s->count - 1].which == ELEM_COMMENT) || //
@@ -1849,6 +1850,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
                     DrawWire(cx, cy, '-');
             }
             break;
+			*/
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
@@ -1862,7 +1864,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
             for(int i = 0; i < p->count; i++) {
                 bool poweredThis;
 
-                poweredThis = DrawElement(p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore, 0);
+                poweredThis = DrawElement(p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore/*, 0*/);
 
                 if(InSimulationMode) {
                     if(poweredThis)

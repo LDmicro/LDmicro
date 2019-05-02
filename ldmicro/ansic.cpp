@@ -577,7 +577,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 fprintf(f, "void setPwmFrequency%X(SDWORD freq, SWORD percent, SWORD resol) {\n", pwm);
                 fprintf(f, "  static SDWORD oldfreq= 0;\n");
                 fprintf(f, "  if (freq != oldfreq)\n");
-                fprintf(f, "    PWM_Init(0x%2.2X, %ld, freq, resol);\n", pwm, Prog.mcuClock);
+                fprintf(f, "    PWM_Init(0x%2.2X, %d, freq, resol);\n", pwm, Prog.mcuClock); 
                 fprintf(f, "  PWM_Set(0x%2.2X, percent, resol);\n", pwm);
                 fprintf(f, "  oldfreq= freq;\n");
                 fprintf(f, "}\n\n");
@@ -659,7 +659,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(f, "void setPwmFrequency%X(SDWORD freq, SWORD percent, SWORD resol, SWORD maxcs) {\n", pwm);
             fprintf(f, "  static SDWORD oldfreq= 0;\n");
             fprintf(f, "  if (freq != oldfreq)\n");
-            fprintf(f, "    PWM_Init(0x%2.2X, %ld, freq, resol, maxcs);\n", pwm, Prog.mcuClock);
+            fprintf(f, "    PWM_Init(0x%2.2X, %d, freq, resol, maxcs);\n", pwm, Prog.mcuClock);
             fprintf(f, "  PWM_Set(0x%2.2X, percent, resol);\n", pwm);
             fprintf(f, "  oldfreq= freq;\n");
             fprintf(f, "}\n\n");
@@ -1560,7 +1560,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16))
                 {
-                    int u= atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_SPI"
+                    // int u = atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_SPI"
                     // send a literal string without reception care
                     fprintf(f, "SPI_Write((char *) \"%s\");\n", MapSym(IntCode[i].name2, ASINT)+3);     // remove "Ui_" prefix
 
@@ -1587,7 +1587,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16))
                 {
-                    int u= atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
+                    // int u = atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
 
                     // read one byte from I2Caddr:reg in recv variable
                     fprintf(f, "%s= I2C_Recv(%s, %s);\n", MapSym(IntCode[i].name2, ASINT), IntCode[i].name3.c_str(), IntCode[i].name4.c_str());
@@ -1610,7 +1610,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16))
                 {
-                    int u= atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
+                    // int u = atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
 
                     // write one byte from send variable or value
                     fprintf(f, "I2C_Send(%s, %s, %s);\n", IntCode[i].name3.c_str(), IntCode[i].name4.c_str(), MapSym(IntCode[i].name2, ASINT));

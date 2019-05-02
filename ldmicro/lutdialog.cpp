@@ -109,7 +109,7 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
         w = (WNDPROC)PrevNameProc;
     } else if(hwnd == IndexTextbox) {
         w = (WNDPROC)PrevIndexProc;
-    }
+    } else oops();
     return CallWindowProc(w, hwnd, msg, wParam, lParam);
 }
 

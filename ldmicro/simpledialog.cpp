@@ -63,7 +63,7 @@ static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
         }
     }
     oops();
-    return 0;
+    // return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         }
     }
     oops();
-    return 0;
+    // return 0;
 }
 
 static void MakeControls(int labs, const char **labels, int boxes, char **dests, DWORD fixedFontMask, int combo,
@@ -521,9 +521,11 @@ void ShowSleepDialog(ElemLeaf *l)
             char   s3[1024];
             sprintf(s3, _("Maximum available timer period = %.3f s."), maxDelay);
             Error("%s\r\n%s\r\n%s", s1, s2, s3);
-            *delay = (int32_t)(1000000 * del + 0.5);
+            //*delay = (int32_t)(1000000 * del + 0.5);
+            strcpy(delay, delBuf);
         } else {
-            *delay = (int32_t)(1000000 * del + 0.5);
+            //*delay = (int32_t)(1000000 * del + 0.5);
+            strcpy(delay, delBuf);
         }
     }
 }
