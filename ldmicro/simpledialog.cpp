@@ -57,8 +57,7 @@ static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
         }
     }
 
-    int i;
-    for(i = 0; i < MAX_BOXES; i++) {
+    for(int i = 0; i < MAX_BOXES; i++) {
         if(hwnd == Textboxes[i]) {
             return CallWindowProc((WNDPROC)PrevAlnumOnlyProc[i], hwnd, msg, wParam, lParam);
         }
@@ -79,8 +78,7 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         }
     }
 
-    int i;
-    for(i = 0; i < MAX_BOXES; i++) {
+    for(int i = 0; i < MAX_BOXES; i++) {
         if(hwnd == Textboxes[i]) {
             return CallWindowProc((WNDPROC)PrevNumOnlyProc[i], hwnd, msg, wParam, lParam);
         }
@@ -961,11 +959,11 @@ void ShowSpiDialog(ElemLeaf *l)
                               {4, {"0b00", "0b01", "0b10", "0b11"}},
                               {0, {nullptr}},
                               {2, {"MSB_FIRST", "LSB_FIRST"}}};
-    int i;
+
     if(Prog.mcu()) {
         if(Prog.mcu()->spiCount) {
             comboRec[0].n = Prog.mcu()->spiCount;
-            for(i = 0; i < comboRec[0].n; i++) {
+            for(int i = 0; i < comboRec[0].n; i++) {
                 comboRec[0].str[i] = Prog.mcu()->spiInfo[i].name;
             }
         }
@@ -990,7 +988,7 @@ void ShowSpiDialog(ElemLeaf *l)
                 comboRec[4].n = 3;
             } else
                 oops();
-            for(i = 0; i < comboRec[4].n; i++) {
+            for(int i = 0; i < comboRec[4].n; i++) {
                 double f = 1.0 * Prog.mcuClock / (m * xPowerY(m, i));
                 double t = 1.0 * 1000 * SizeOfVar(s->send) * 8 / f;
                 //sprintf(buf,"%15.3fHz,T_ss=%.3fms", f, t);
@@ -1006,19 +1004,19 @@ void ShowSpiDialog(ElemLeaf *l)
     if(Prog.mcu()) {
         if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
             if (l->d.spi.which == ELEM_SPI)
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00F2);
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00F2);
             if (l->d.spi.which == ELEM_SPI_WR)
             {
                 strcpy(dests[3], "-");
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x00FA);
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x00FA);
             }
         } else {
             /////
-            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
+            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, 0xFFFFFFFF, 8, dests, 8, comboRec)) {
                 //TODO: check the available range
             }
             //  NoCheckingOnBox[3] = false;
-            for(i = 0; i < comboRec[4].n; i++) {
+            for(int i = 0; i < comboRec[4].n; i++) {
                 CheckFree(comboRec[4].str[i]);
             }
         }
@@ -1069,14 +1067,14 @@ void ShowI2cDialog(ElemLeaf *l)
         if ((Prog.mcu()->whichIsa == ISA_ARM) || (Prog.mcu()->whichIsa == ISA_AVR) || (Prog.mcu()->whichIsa == ISA_PIC16)) {
             if (l->d.i2c.which == ELEM_I2C_RD) { // no send
                 strcpy(dests[2], "-");
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x0096);
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x0096);
             }
             if (l->d.i2c.which == ELEM_I2C_WR) { // no recv
                 strcpy(dests[3], "-");
-                ShowSimpleDialog(title, 8, labels, 0, 0x000F, -1, 8, dests, 0, nullptr, 0x009A);
+                ShowSimpleDialog(title, 8, labels, 0, 0x000F, 0xFFFFFFFF, 8, dests, 0, nullptr, 0x009A);
             }
         } else {
-            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, -1, 8, dests, 8, comboRec)) {
+            if(ShowSimpleDialog(title, 8, labels, 0x0004, 0x0003, 0xFFFFFFFF, 8, dests, 8, comboRec)) {
                 //TODO: check the available range
             }
         }
