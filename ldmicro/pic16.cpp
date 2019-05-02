@@ -88,20 +88,15 @@ static uint32_t EepromHighByte; // Allocate high bytes needed for 16-24-32 bit i
 static uint32_t EepromHighBytesCounter;
 
 // Subroutines to do multiply/divide
-static uint32_t MultiplyRoutineAddress8 = -1;
-static uint32_t MultiplyRoutineAddress = -1; // 16x16
-static uint32_t MultiplyRoutineAddress24x16 = -1;
-static uint32_t MultiplyRoutineAddress24 = -1;
-static uint32_t MultiplyRoutineAddress32 = -1;
-static uint32_t DivideRoutineAddress8 = -1;
-static uint32_t DivideRoutineAddress = -1; // 16x16
-static uint32_t DivideRoutineAddress24x16 = -1;
-static uint32_t DivideRoutineAddress32 = -1;
+static uint32_t MultiplyRoutineAddress8 = std::numeric_limits<uint32_t>::max();
+static uint32_t MultiplyRoutineAddress = std::numeric_limits<uint32_t>::max(); // 16x16
+static uint32_t MultiplyRoutineAddress24x16 = std::numeric_limits<uint32_t>::max();
+static uint32_t DivideRoutineAddress = std::numeric_limits<uint32_t>::max(); // 16x16
+static uint32_t DivideRoutineAddress24x16 = std::numeric_limits<uint32_t>::max();
 static bool  MultiplyNeeded; // 16x16
 static bool  MultiplyNeeded8;
 static bool  MultiplyNeeded24x16;
 static bool  DivideNeeded; // 16x16
-static bool  DivideNeeded8;
 static bool  DivideNeeded24x16;
 
 // Subroutine to do BIN2BCD
@@ -175,85 +170,85 @@ static uint32_t FwdAddrCount;
 // These move around from device to device.
 // 0 means not defined(error!) or not exist in MCU.
 // EEPROM Registers
-static uint32_t REG_EECON1  = -1;
+static uint32_t REG_EECON1  = std::numeric_limits<uint32_t>::max();
 #define          EEPGD     BIT7
 #define          WREN      BIT2
 #define          WR        BIT1
 #define          RD        BIT0
-static uint32_t REG_EECON2  = -1;
-static uint32_t REG_EEDATA  = -1;
-static uint32_t REG_EEADR   = -1;
-static uint32_t REG_EEADRH  = -1;
-static uint32_t REG_EEDATL  = -1;
-static uint32_t REG_EEDATH  = -1;
+static uint32_t REG_EECON2  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_EEDATA  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_EEADR   = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_EEADRH  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_EEDATL  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_EEDATH  = std::numeric_limits<uint32_t>::max();
 
 //Analog Select Register
-static uint32_t REG_ANSEL   = -1;
-static uint32_t REG_ANSELH  = -1;
+static uint32_t REG_ANSEL   = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_ANSELH  = std::numeric_limits<uint32_t>::max();
 
-static uint32_t REG_ANSELA  = -1;
-static uint32_t REG_ANSELB  = -1;
-static uint32_t REG_ANSELC  = -1;
-static uint32_t REG_ANSELD  = -1;
-static uint32_t REG_ANSELE  = -1;
-static uint32_t REG_ANSELF  = -1;
-static uint32_t REG_ANSELG  = -1;
+static uint32_t REG_ANSELA  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_ANSELB  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_ANSELC  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_ANSELD  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_ANSELE  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_ANSELF  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_ANSELG  = std::numeric_limits<uint32_t>::max();
 
 //
 static uint32_t REG_PIR1    = -1; // PERIPHERAL INTERRUPT REQUEST REGISTER 1
 #define          RCIF      BIT5
 #define          TXIF      BIT4
 static int       CCP1IF  = -1; // BIT2
-static uint32_t REG_PIE1    = -1; // 0x8c
+static uint32_t REG_PIE1    = std::numeric_limits<uint32_t>::max(); // 0x8c
 
 //
-static uint32_t REG_TMR1L   = -1; // 0x0e
-static uint32_t REG_TMR1H   = -1; // 0x0f
-static uint32_t REG_T1CON   = -1; // 0x10
+static uint32_t REG_TMR1L   = std::numeric_limits<uint32_t>::max(); // 0x0e
+static uint32_t REG_TMR1H   = std::numeric_limits<uint32_t>::max(); // 0x0f
+static uint32_t REG_T1CON   = std::numeric_limits<uint32_t>::max(); // 0x10
 #define          TMR1ON    BIT0
 #define          T1CKPS0   BIT4
 
-static uint32_t REG_T1GCON  = -1; //
+static uint32_t REG_T1GCON  = std::numeric_limits<uint32_t>::max(); //
 #define          TMR1GE    BIT7
-static uint32_t REG_CCPR1L  = -1; // 0x15
-static uint32_t REG_CCPR1H  = -1; // 0x16
-static uint32_t REG_CCP1CON = -1; // 0x17
-static uint32_t REG_CMCON   = -1; // 0x1f
-static uint32_t REG_VRCON   = -1; // 0x9f
+static uint32_t REG_CCPR1L  = std::numeric_limits<uint32_t>::max(); // 0x15
+static uint32_t REG_CCPR1H  = std::numeric_limits<uint32_t>::max(); // 0x16
+static uint32_t REG_CCP1CON = std::numeric_limits<uint32_t>::max(); // 0x17
+static uint32_t REG_CMCON   = std::numeric_limits<uint32_t>::max(); // 0x1f
+static uint32_t REG_VRCON   = std::numeric_limits<uint32_t>::max(); // 0x9f
 
 //USART
-static uint32_t REG_TXSTA   = -1; // 0x98
+static uint32_t REG_TXSTA   = std::numeric_limits<uint32_t>::max(); // 0x98
 #define          TXEN      BIT5
 #define          TRMT      BIT1// 1 is TSR empty, ready; 0 is TSR full, busy
-static uint32_t REG_RCSTA   = -1; // 0x18
+static uint32_t REG_RCSTA   = std::numeric_limits<uint32_t>::max(); // 0x18
 #define          SPEN      BIT7
 #define          CREN      BIT4
 #define          FERR      BIT2
 #define          OERR      BIT1
-static uint32_t REG_SPBRGH  = -1; // 0x99
-static uint32_t REG_SPBRG   = -1; // 0x99
-static uint32_t REG_TXREG   = -1; // 0x19
-static uint32_t REG_RCREG   = -1; // 0x1a
+static uint32_t REG_SPBRGH  = std::numeric_limits<uint32_t>::max(); // 0x99
+static uint32_t REG_SPBRG   = std::numeric_limits<uint32_t>::max(); // 0x99
+static uint32_t REG_TXREG   = std::numeric_limits<uint32_t>::max(); // 0x19
+static uint32_t REG_RCREG   = std::numeric_limits<uint32_t>::max(); // 0x1a
 //static uint32_t REG_BAUDCON = -1; // BAUD RATE CONTROL REGISTER
 
 //ADC
-static uint32_t REG_ADRESH  = -1; // 0x1e
-static uint32_t REG_ADRESL  = -1; // 0x9e
-static uint32_t REG_ADCON0  = -1; // 0x1f
-static uint32_t REG_ADCON1  = -1; // 0x9f
+static uint32_t REG_ADRESH  = std::numeric_limits<uint32_t>::max(); // 0x1e
+static uint32_t REG_ADRESL  = std::numeric_limits<uint32_t>::max(); // 0x9e
+static uint32_t REG_ADCON0  = std::numeric_limits<uint32_t>::max(); // 0x1f
+static uint32_t REG_ADCON1  = std::numeric_limits<uint32_t>::max(); // 0x9f
 
 //PWM Timer2
-static uint32_t REG_T2CON   = -1; // 0x12
+static uint32_t REG_T2CON   = std::numeric_limits<uint32_t>::max(); // 0x12
 #define          TMR2ON    BIT2
-static uint32_t REG_CCPR2L  = -1; // 0x1b // Pulse Width
-static uint32_t REG_CCP2CON = -1; // 0x1d
+static uint32_t REG_CCPR2L  = std::numeric_limits<uint32_t>::max(); // 0x1b // Pulse Width
+static uint32_t REG_CCP2CON = std::numeric_limits<uint32_t>::max(); // 0x1d
 #define          DC2B0     BIT4
 #define          DC2B1     BIT5
-static uint32_t REG_PR2     = -1; // 0x92 // Period
+static uint32_t REG_PR2     = std::numeric_limits<uint32_t>::max(); // 0x92 // Period
 
 //
-static uint32_t REG_TMR0    = -1; // 0x01
-static uint32_t REG_OPTION  = -1; // 0x81 or 0x181 //0x95
+static uint32_t REG_TMR0    = std::numeric_limits<uint32_t>::max(); // 0x01
+static uint32_t REG_OPTION  = std::numeric_limits<uint32_t>::max(); // 0x81 or 0x181 //0x95
 // PIC10F2xx
 #define          _GPWU        BIT7 // Enable Wake-up on Pin Change bit (GP0, GP1, GP3)
 #define          _GPPU        BIT6 // Enable Weak Pull-ups bit (GP0, GP1, GP3)
@@ -266,14 +261,14 @@ static uint32_t REG_OPTION  = -1; // 0x81 or 0x181 //0x95
 // static int       WDTE    = -1; //
 
 // OSCILLATOR CONTROL REGISTER
-static uint32_t REG_OSCON   = -1;
+static uint32_t REG_OSCON   = std::numeric_limits<uint32_t>::max();
 #define          SCS0         BIT0 //..BIT1
 #define          IRCF0        BIT3 //..BIt6
 #define          SPLLEN       BIT7
 // clang-format on
 
-static uint32_t CONFIG_ADDR1 = -1;
-static uint32_t CONFIG_ADDR2 = -1;
+static uint32_t CONFIG_ADDR1 = std::numeric_limits<uint32_t>::max();
+static uint32_t CONFIG_ADDR2 = std::numeric_limits<uint32_t>::max();
 //-----------------------------------------------------------------------------
 
 static uint32_t IntPc = 0;
@@ -339,19 +334,19 @@ static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
         GetName(addrAt, s);
         if(strcmp(arg1s, s) != 0) {
             strcat(arg1comm, " ; ");
-			strcat(arg1comm, s);
-		}	
+            strcat(arg1comm, s);
+        }
     }
 
     if(asm_discover_names >= 3)
         if(arg1s[0] != '0') {
             sprintf(s, " ; 0x%X", PicProg[addrAt].arg1);
-			strcat(arg1comm, s);
-		}
+            strcat(arg1comm, s);
+        }
     if((asm_discover_names == 2) || (asm_discover_names == 4)) {
         sprintf(s, " ; %d", PicProg[addrAt].arg1);
-		strcat(arg1comm, s);
-	}	
+        strcat(arg1comm, s);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -562,7 +557,7 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, uint3
 static void _Instruction(int l, const char *f, const char *args, PicOp op, uint32_t arg1, uint32_t arg2, const char *comment)
 {
     if(IsOperation(op) >= IS_BANK) {
-        if(arg1 == -1) {
+        if(arg1 == std::numeric_limits<uint32_t>::max()) {
             THROW_COMPILER_EXCEPTION_FMT("%d %s Not inited register!", l, f);
             return;         ///// Added by JG
         }
@@ -2363,7 +2358,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         FinishIhex(f);                                                     // CC->Checksum
     }
 
-    if((Prog.configurationWord & ~0xffff) && (CONFIG_ADDR2 == -1))
+    if((Prog.configurationWord & ~0xffff) && (CONFIG_ADDR2 == std::numeric_limits<uint32_t>::max()))
         oops();
 
     // Configuration words start at address 0x2007 in program memory; and the
@@ -2379,7 +2374,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     WriteIhex(f, (BYTE)(Prog.configurationWord >> 8) & 0xff);
     FinishIhex(f);
 
-    if(CONFIG_ADDR2 != -1) {
+    if(CONFIG_ADDR2 != std::numeric_limits<uint32_t>::max()) {
         StartIhex(f);       // ':'->Colon
         WriteIhex(f, 0x02); // RECLEN 2 bytes
         WriteIhex(f, (BYTE)((CONFIG_ADDR2 * 2) >> 8) & 0xff);
@@ -2433,7 +2428,7 @@ static void _CallWithPclath(uint32_t addr, const char *comment)
 
 static bool IsOutputReg(uint32_t addr)
 {
-    if((addr == -1) || (addr == 0))
+    if((addr == std::numeric_limits<uint32_t>::max()) || (addr == 0))
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->outputRegs[i] == addr)
@@ -2443,7 +2438,7 @@ static bool IsOutputReg(uint32_t addr)
 
 static bool IsInputReg(uint32_t addr)
 {
-    if((addr == -1) || (addr == 0))
+    if((addr == std::numeric_limits<uint32_t>::max()) || (addr == 0))
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->inputRegs[i] == addr)
@@ -2724,11 +2719,11 @@ static uint32_t CopyRegToReg(uint32_t addr1, int sov1, uint32_t addr2, int sov2,
 
     if(addr1 == 0)
         THROW_COMPILER_EXCEPTION(name1);
-    if(addr1 == -1)
+    if(addr1 == std::numeric_limits<uint32_t>::max())
         THROW_COMPILER_EXCEPTION(name1);
     if(addr2 == 0)
         THROW_COMPILER_EXCEPTION(name2);
-    if(addr2 == -1)
+    if(addr2 == std::numeric_limits<uint32_t>::max())
         THROW_COMPILER_EXCEPTION(name2);
 
      if(addr1 == addr2) {
@@ -3829,7 +3824,7 @@ static void InitTables()
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate(bool topLevel)
 {
-    uint32_t addr1 = -1, addr2 = -1, addr3 = -1, addr4 = -1;
+    uint32_t addr1 = std::numeric_limits<uint32_t>::max(), addr2 = std::numeric_limits<uint32_t>::max(), addr3 = std::numeric_limits<uint32_t>::max(), addr4 = std::numeric_limits<uint32_t>::max();
     int   bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int   bit = -1;
     int   sov = -1, sov1 = -1, sov2 = -1, sov3 = -1;
@@ -5702,7 +5697,7 @@ otherwise the result was zero or greater.
                 IfBitSet(REG_ADCON0, goPos);
                 Instruction(OP_GOTO, spin);
 
-                if(REG_ADRESH != -1) {
+                if(REG_ADRESH != std::numeric_limits<uint32_t>::max()) {
                     Instruction(OP_MOVF, REG_ADRESH, DEST_W);
                     Instruction(OP_MOVWF, addr1 + 1);
                 }
@@ -5712,7 +5707,7 @@ otherwise the result was zero or greater.
 
                 // hook those pins back up to the digital inputs in case
                 // some of them are used that way
-                if(REG_ADCON1 != -1)
+                if(REG_ADCON1 != std::numeric_limits<uint32_t>::max())
                     WriteRegister(REG_ADCON1, //
                                   (1 << 7) |  // right-justify A/D result
                                   // (6 << 0)    // all digital inputs
@@ -6149,7 +6144,7 @@ bool CalcPicPlcCycle(long long int cycleTimeMicroseconds, int32_t PicProgLdLen)
 
     long int      bestTmr = LONG_MIN / 4;
     long int      bestPrescaler = LONG_MAX / 4;
-    long int      bestSoftDivisor;
+    long int      bestSoftDivisor = 1;
     long long int bestErr = LLONG_MAX / 4;
     long long int err;
     while(plcTmr.softDivisor <= max_softDivisor) {
@@ -7307,7 +7302,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     if(!Prog.configurationWord)
         Prog.configurationWord = Prog.mcu()->configurationWord;
-    if(CONFIG_ADDR2 != -1) {
+    if(CONFIG_ADDR2 != std::numeric_limits<uint32_t>::max()) {
         fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR1, (WORD)Prog.configurationWord & 0xFFFF);
         fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR2, (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
     } else {
@@ -7341,7 +7336,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     }
     ScratchI = AllocOctetRam(); // tmp indirect addressing or Counter
 
-    if(REG_EEDATA != -1) {
+    if(REG_EEDATA != std::numeric_limits<uint32_t>::max()) {
         // Allocate the register used to hold the high byte of the EEPROM word
         // that's queued up to program, plus the bit to indicate that it is
         // valid.
@@ -7586,17 +7581,17 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     if(REG_ANSELH != -1)
         Instruction(OP_CLRF, REG_ANSELH);
     /**/
-    if(REG_ANSELA != -1) {
+    if(REG_ANSELA != std::numeric_limits<uint32_t>::max()) {
         Instruction(OP_CLRF, REG_ANSELA);
         if(isAnsel[0])
             WriteRegister(REG_ANSELA, isAnsel[0]);
     }
-    if(REG_ANSELB != -1) {
+    if(REG_ANSELB != std::numeric_limits<uint32_t>::max()) {
         Instruction(OP_CLRF, REG_ANSELB);
         if(isAnsel[1])
             WriteRegister(REG_ANSELB, isAnsel[1]);
     }
-    if(REG_ANSELC != -1) {
+    if(REG_ANSELC != std::numeric_limits<uint32_t>::max()) {
         Instruction(OP_CLRF, REG_ANSELC);
         if(isAnsel[2])
             WriteRegister(REG_ANSELC, isAnsel[2]);
@@ -7606,17 +7601,17 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         if(isAnsel[3])
             WriteRegister(REG_ANSELD, isAnsel[3]);
     }
-    if(REG_ANSELE != -1) {
+    if(REG_ANSELE != std::numeric_limits<uint32_t>::max()) {
         Instruction(OP_CLRF, REG_ANSELE);
         if(isAnsel[4])
             WriteRegister(REG_ANSELE, isAnsel[4]);
     }
-    if(REG_ANSELF != -1) {
+    if(REG_ANSELF != std::numeric_limits<uint32_t>::max()) {
         Instruction(OP_CLRF, REG_ANSELF);
         if(isAnsel[5])
             WriteRegister(REG_ANSELF, isAnsel[5]);
     }
-    if(REG_ANSELG != -1) {
+    if(REG_ANSELG != std::numeric_limits<uint32_t>::max()) {
         Instruction(OP_CLRF, REG_ANSELG);
         if(isAnsel[6])
             WriteRegister(REG_ANSELG, isAnsel[6]);
