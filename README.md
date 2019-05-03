@@ -8,6 +8,8 @@ Official [LDmicro Forum](http://cq.cx/ladder-forum.pl)
 Actual [manual.txt](https://github.com/LDmicro/LDmicro/blob/master/ldmicro/manual.txt)  
 
 Download executable binaries buildXXXX.zip from the [Latest release](https://github.com/LDmicro/LDmicro/releases/latest)  
+You probably need to install the Microsoft Visual C ++ Redistributable Package if Visual C ++ is not installed in your operating system. See [MSVCP100.dll is missing error](https://github.com/LDmicro/LDmicro/issues/174)  
+
 Read Ldmicro [Wiki](https://github.com/LDmicro/LDmicro/wiki) and [HOW TO:](https://github.com/LDmicro/LDmicro/wiki/HOW-TO)  
 
 ### Building LDmicro
