@@ -24,6 +24,8 @@ PlcProgram::PlcProgram()
     cycleTime = 10000;
     mcuClock = 16000000;
     baudRate = 9600;
+    spiRate = 1000000;
+    i2cRate = 100000;
     io.count = 0;
     cycleTimer = 1;
     cycleDuty = 0;
@@ -33,6 +35,15 @@ PlcProgram::PlcProgram()
     for(int i = 0; i < MAX_IO_PORTS; i++) {
         pullUpRegs[i] = ~0u; // All input pins try to set Pull-up registers by default.
     }
+    WDTPSA = 0;
+    OPTION = 0;
+    for(int i = 0; i <= MAX_RUNGS; i++) {
+		rungPowered[i] = 0; 
+		rungSimulated[i] = 0;
+		rungSelected[i] = 0;
+		OpsInRung[i] = 0;
+		HexInRung[i] = 0;
+	}
 }
 
 PlcProgram::PlcProgram(const PlcProgram& other)
@@ -136,7 +147,7 @@ int PlcProgram::mcuI2C() const
 int PlcProgram::mcuROM() const
 {
     return 1000000; //TODO: fix ROM hardcode
-
+/*
     if(!mcu_)
         return 0;
 
@@ -145,6 +156,7 @@ int PlcProgram::mcuROM() const
         n += mcu_->rom[i].len;
     }
     return n;
+*/
 }
 
 int PlcProgram::mcuRAM() const
@@ -178,6 +190,8 @@ void PlcProgram::reset()
     cycleTime = 10000;
     mcuClock = 16000000;
     baudRate = 9600;
+    spiRate = 1000000;
+    i2cRate = 100000;
     io.count = 0;
     cycleTimer = 1;
     cycleDuty = 0;
@@ -238,5 +252,5 @@ void* PlcProgram::deepCopy(int which, const void* any) const
             THROW_COMPILER_EXCEPTION_FMT("Invalid series element, whitch = %i", which);
     }
 
-    return nullptr;
+    //return nullptr;
 }

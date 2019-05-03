@@ -235,7 +235,7 @@ int InputRegIndex(uint32_t addr)
         if(Prog.mcu()->inputRegs[i] == addr)
             return i;
     oops();
-    return -1;
+    //return -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -247,7 +247,7 @@ int OutputRegIndex(uint32_t addr)
         if(Prog.mcu()->outputRegs[i] == addr)
             return i;
     oops();
-    return -1;
+    //return -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -406,7 +406,7 @@ uint8_t MuxForAdcVariable(const NameArray& name)
         if(j == Prog.mcu()->adcCount) {
             /////   Error("i=%d pin=%d", i, Prog.io.assignment[i].pin);         ///// Comment by JG
             THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all ADC inputs (name '%s')."), name.c_str());
-            return 0;
+            //return 0;
         }
         res = Prog.mcu()->adcInfo[j].muxRegValue;
     }
@@ -546,7 +546,7 @@ int byteNeeded(long long int i)
     else if((-2147483648LL <= i) && (i <= 2147483647LL))
         return 4; // not FULLY implemented for LDmicro
     oops();
-    return 0;
+    //return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -668,10 +668,10 @@ int MemForVariable(const NameArray& name, uint32_t* addrl, int sizeOfVar)
                 sizeOfVar = 2;
             }
             if(sizeOfVar < 1) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name.c_str(), sizeOfVar);
+                Error(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name.c_str(), sizeOfVar);
                 sizeOfVar = 1;
             } else if(sizeOfVar > 4) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name.c_str(), sizeOfVar);
+                Error(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name.c_str(), sizeOfVar);
                 sizeOfVar = 4;
             }
             if(Variables[i].SizeOfVar != sizeOfVar) {
@@ -896,7 +896,7 @@ bool LoadVarListFromFile(FileTracker& f)
         }
         if(!Ok) {
             THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
-            return false;
+            //return false;
         }
     }
     return false;
@@ -1276,7 +1276,7 @@ double SIprefix(double val, char *prefix, int en_1_2)
         return val * 1e3;
     } else {
         oops();
-        return 0;
+        //return 0;
     }
 }
 double SIprefix(double val, char *prefix)
