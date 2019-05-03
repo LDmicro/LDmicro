@@ -41,7 +41,7 @@ static bool NoCheckingOnBox[MAX_BOXES];
 
 #define MAX_COMBO_STRINGS 16
 typedef struct comboRecordTag {
-    int   n;                      // 0 <= n < MAX_COMBO_STRINGS
+    int   n;                            // 0 <= n < MAX_COMBO_STRINGS
     const char *str[MAX_COMBO_STRINGS]; // array MAX_COMBO_STRINGS of pointers of char
 } comboRecord;
 
@@ -218,7 +218,7 @@ static void MakeControls(int labs, const char **labels, int boxes, char **dests,
 
 ///// prototype modified by JG with extra default parameter rdonly
 static bool ShowSimpleDialog(const char *title, int labs, const char **labels, DWORD numOnlyMask, DWORD alnumOnlyMask,
-                             DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos, long rdonly= 0)
+                             DWORD fixedFontMask, int boxes, char **dests, int combo, comboRecord *combos, long rdOnly= 0)
 {
     bool didCancel = false;
 
@@ -254,7 +254,7 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
     for(i = 0; i < boxes; i++) {
         SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);     ///// fill boxes with current settings
         ///// added by JG to make some fields read-only (max= 32 boxes)
-        if ((i < 32) && (rdonly & (1 << i)))
+        if(rdOnly & (1 << i))
             SendMessage(Textboxes[i], EM_SETREADONLY, TRUE, 0);
         /////
 
@@ -275,7 +275,7 @@ static bool ShowSimpleDialog(const char *title, int labs, const char **labels, D
     DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
+    while(((ret = GetMessage(&msg, nullptr, 0, 0)) != 0) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;

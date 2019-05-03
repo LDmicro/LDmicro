@@ -1585,7 +1585,7 @@ bool SaveProjectToFile(char *filename, int code)
             Prog.cycleDuty,
             Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
-    fprintf(f, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
+    fprintf(f, "BAUD=%d Hz, RATE=%d Hz, SPEED=%d Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }

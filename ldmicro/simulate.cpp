@@ -261,8 +261,8 @@ long OverflowToVarSize(long val, int sov)
             val = convert_to_int24_t(val);
         else if(sov == 4)
             val = (int32_t)val;
-        else
-            val = val;
+        // else
+           // val = val;
     }
     return val;
 }
@@ -720,7 +720,7 @@ void MarkInitedVariable(const char *name)
 }
 
 //-----------------------------------------------------------------------------
-static void CheckMsg(const char *name, const char *s, int i)
+static void CheckMsg(const char *name, const char *s/*, int i*/)
 {
     if(s) {
         Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow + 1, name, s, rungsUsed);
@@ -735,13 +735,13 @@ static void CheckMsg(const char *name, const char *s, int i)
 static void MarkWithCheck(const char *name, int flag)
 {
     const char *s = MarkUsedVariable(name, flag);
-    CheckMsg(name, s, -1);
+    CheckMsg(name, s/*, -1*/);
 }
 //-----------------------------------------------------------------------------
 static void CheckVariableNamesCircuit(int which, void *elem)
 {
     ElemLeaf *l = (ElemLeaf *)elem;
-    char *    name = nullptr;
+//    char *    name = nullptr;
     DWORD     flag;
     char      str[MAX_NAME_LEN];
 
@@ -1108,7 +1108,7 @@ void CheckVariableNames()
 static void CheckSingleBitNegateCircuit(int which, void *elem)
 {
     ElemLeaf *l = (ElemLeaf *)elem;
-    char *    name = nullptr;
+//    char *    name = nullptr;
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -2337,7 +2337,7 @@ void DescribeForIoList(const char *name, int type, char *out)
         case IO_TYPE_TLO:
         case IO_TYPE_RTL:
         case IO_TYPE_RTO: {
-            int32_t v = GetSimulationVariable(name, true);
+            long v = GetSimulationVariable(name, true);
             double dtms = v * (Prog.cycleTime / 1000.0);
             int    sov = SizeOfVar(name);
             //v = OverflowToVarSize(v, sov);
@@ -2914,7 +2914,7 @@ static void   AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) 
                 strcpy(append, "\r\n");
                 b = '\0';
             } else {
-                if((s = strrchr(buf, '\n'))) {
+                if((s = strrchr(buf, '\n')) != '\0' ) {
                     s[1] = '\0';
                 } else {
                     buf[0] = '\0';
