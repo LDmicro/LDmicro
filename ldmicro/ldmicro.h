@@ -34,6 +34,18 @@
 #include "plcprogram.h"
 
 //-----------------------------------------------
+//typedef int32_t ADDR_T;
+typedef uint32_t ADDR_T;
+// ADDR_T is used to designate an address in address space in the target MCU(SRAM, EEPROM or FLASH address).
+// 0..(UINT32_MAX-1) are acceptable, valid addresses.
+//// Also, the variable may contain the difference between the addresses. For example:
+////   ADDR_T addr, addr1, addr2;
+////   addr = addr1 - addr2;
+//#define INVALID_ADDR -1 
+#define INVALID_ADDR 0xFFFFFFFF
+// The value INVALID_ADDR is used to indicate an indeterminate, unacceptable, invalid address.
+
+//-----------------------------------------------
 #define BYTES_OF_LD_VAR 2
 #define BITS_OF_LD_VAR (BYTES_OF_LD_VAR * 8)
 #define PLC_CLOCK_MIN 250 //500 //
@@ -908,7 +920,7 @@ typedef struct PlcTimerDataTag {
     int PS; // PIC
     int cs; // AVR
     long int softDivisor; // Overflow Count
-    uint32_t softDivisorAddr;
+    ADDR_T softDivisorAddr;
     double TCycle; // s,  actually
     double Fcycle; // Hz, actually
     int cycleTimeMin; //
@@ -946,23 +958,23 @@ extern uint32_t EepromAddrFree;
 void PrintVariables(FileTracker& f);
 int isPinAssigned(const NameArray& name);
 void AllocStart();
-uint32_t AllocOctetRam();
-uint32_t AllocOctetRam(int bytes);
-void AllocBitRam(uint32_t *addr, int *bit);
-int MemForVariable(const NameArray& name, uint32_t *addrl, int sizeOfVar);
-int MemForVariable(const NameArray& name, uint32_t* addr);
-int SetMemForVariable(const NameArray& name, uint32_t addr, int sizeOfVar);
-int MemOfVar(const NameArray& name, uint32_t* addr);
+ADDR_T AllocOctetRam();
+ADDR_T AllocOctetRam(int bytes);
+void AllocBitRam(ADDR_T *addr, int *bit);
+int MemForVariable(const NameArray& name, ADDR_T *addr, int sizeOfVar);
+int MemForVariable(const NameArray& name, ADDR_T *addr);
+int SetMemForVariable(const NameArray& name, ADDR_T addr, int sizeOfVar);
+int MemOfVar(const NameArray& name, ADDR_T *addr);
 uint8_t MuxForAdcVariable(const NameArray& name);
 int PinsForSpiVariable(const NameArray& name, int n, int *spipins);             ///// Added by JG
 int PinsForI2cVariable(const NameArray& name, int n, int *i2cpins);             ///// Added by JG
 int SingleBitAssigned(const NameArray& name);
 int GetAssignedType(const NameArray& name, const NameArray& fullName);
-int InputRegIndex(uint32_t addr);
-int OutputRegIndex(uint32_t addr);
-void AddrBitForPin(int pin, uint32_t* addr, int *bit, bool asInput);
-void MemForSingleBit(const NameArray& name, bool forRead, uint32_t* addr, int *bit);
-void MemForSingleBit(const NameArray& name, uint32_t *addr, int *bit);
+int InputRegIndex(ADDR_T addr);
+int OutputRegIndex(ADDR_T addr);
+void AddrBitForPin(int pin, ADDR_T *addr, int *bit, bool asInput);
+void MemForSingleBit(const NameArray& name, bool forRead, ADDR_T *addr, int *bit);
+void MemForSingleBit(const NameArray& name, ADDR_T *addr, int *bit);
 void MemCheckForErrorsPostCompile();
 int SetSizeOfVar(const NameArray& name, int sizeOfVar);
 int SizeOfVar(const NameArray& name);
@@ -998,9 +1010,9 @@ void IntDumpListing(char *outFile);
 int32_t TestTimerPeriod(char *name, int32_t delay, int adjust); // delay in us
 bool GenerateIntermediateCode();
 bool CheckLeafElem(int which, void *elem);
-extern uint32_t addrRUartRecvErrorFlag;
+extern ADDR_T addrRUartRecvErrorFlag;
 extern int    bitRUartRecvErrorFlag;
-extern uint32_t addrRUartSendErrorFlag;
+extern ADDR_T addrRUartSendErrorFlag;
 extern int    bitRUartSendErrorFlag;
 bool GotoGosubUsed();
 bool UartFunctionUsed();

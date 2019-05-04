@@ -57,8 +57,8 @@
 #define MAX_PROGRAM_LEN 128 * 1024
 //static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
 static std::vector<PicAvrInstruction> PicProg;
-static uint32_t             PicProgWriteP;
-static uint32_t             BeginOfPLCCycle;
+static ADDR_T             PicProgWriteP;
+static ADDR_T             BeginOfPLCCycle;
 
 int32_t PicProgLdLen = 0;
 
@@ -88,11 +88,11 @@ static uint32_t EepromHighByte; // Allocate high bytes needed for 16-24-32 bit i
 static uint32_t EepromHighBytesCounter;
 
 // Subroutines to do multiply/divide
-static uint32_t MultiplyRoutineAddress8 = std::numeric_limits<uint32_t>::max();
-static uint32_t MultiplyRoutineAddress = std::numeric_limits<uint32_t>::max(); // 16x16
-static uint32_t MultiplyRoutineAddress24x16 = std::numeric_limits<uint32_t>::max();
-static uint32_t DivideRoutineAddress = std::numeric_limits<uint32_t>::max(); // 16x16
-static uint32_t DivideRoutineAddress24x16 = std::numeric_limits<uint32_t>::max();
+static uint32_t MultiplyRoutineAddress8 = INVALID_ADDR;
+static uint32_t MultiplyRoutineAddress = INVALID_ADDR; // 16x16
+static uint32_t MultiplyRoutineAddress24x16 = INVALID_ADDR;
+static uint32_t DivideRoutineAddress = INVALID_ADDR; // 16x16
+static uint32_t DivideRoutineAddress24x16 = INVALID_ADDR;
 static bool  MultiplyNeeded; // 16x16
 static bool  MultiplyNeeded8;
 static bool  MultiplyNeeded24x16;
@@ -170,85 +170,85 @@ static uint32_t FwdAddrCount;
 // These move around from device to device.
 // 0 means not defined(error!) or not exist in MCU.
 // EEPROM Registers
-static uint32_t REG_EECON1  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_EECON1  = INVALID_ADDR;
 #define          EEPGD     BIT7
 #define          WREN      BIT2
 #define          WR        BIT1
 #define          RD        BIT0
-static uint32_t REG_EECON2  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_EEDATA  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_EEADR   = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_EEADRH  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_EEDATL  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_EEDATH  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_EECON2  = INVALID_ADDR;
+static uint32_t REG_EEDATA  = INVALID_ADDR;
+static uint32_t REG_EEADR   = INVALID_ADDR;
+static uint32_t REG_EEADRH  = INVALID_ADDR;
+static uint32_t REG_EEDATL  = INVALID_ADDR;
+static uint32_t REG_EEDATH  = INVALID_ADDR;
 
 //Analog Select Register
-static uint32_t REG_ANSEL   = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_ANSELH  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_ANSEL   = INVALID_ADDR;
+static uint32_t REG_ANSELH  = INVALID_ADDR;
 
-static uint32_t REG_ANSELA  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_ANSELB  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_ANSELC  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_ANSELD  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_ANSELE  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_ANSELF  = std::numeric_limits<uint32_t>::max();
-static uint32_t REG_ANSELG  = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_ANSELA  = INVALID_ADDR;
+static uint32_t REG_ANSELB  = INVALID_ADDR;
+static uint32_t REG_ANSELC  = INVALID_ADDR;
+static uint32_t REG_ANSELD  = INVALID_ADDR;
+static uint32_t REG_ANSELE  = INVALID_ADDR;
+static uint32_t REG_ANSELF  = INVALID_ADDR;
+static uint32_t REG_ANSELG  = INVALID_ADDR;
 
 //
-static uint32_t REG_PIR1    = -1; // PERIPHERAL INTERRUPT REQUEST REGISTER 1
+static uint32_t REG_PIR1    = INVALID_ADDR; // PERIPHERAL INTERRUPT REQUEST REGISTER 1
 #define          RCIF      BIT5
 #define          TXIF      BIT4
 static int       CCP1IF  = -1; // BIT2
-static uint32_t REG_PIE1    = std::numeric_limits<uint32_t>::max(); // 0x8c
+static uint32_t REG_PIE1    = INVALID_ADDR; // 0x8c
 
 //
-static uint32_t REG_TMR1L   = std::numeric_limits<uint32_t>::max(); // 0x0e
-static uint32_t REG_TMR1H   = std::numeric_limits<uint32_t>::max(); // 0x0f
-static uint32_t REG_T1CON   = std::numeric_limits<uint32_t>::max(); // 0x10
+static uint32_t REG_TMR1L   = INVALID_ADDR; // 0x0e
+static uint32_t REG_TMR1H   = INVALID_ADDR; // 0x0f
+static uint32_t REG_T1CON   = INVALID_ADDR; // 0x10
 #define          TMR1ON    BIT0
 #define          T1CKPS0   BIT4
 
-static uint32_t REG_T1GCON  = std::numeric_limits<uint32_t>::max(); //
+static uint32_t REG_T1GCON  = INVALID_ADDR; //
 #define          TMR1GE    BIT7
-static uint32_t REG_CCPR1L  = std::numeric_limits<uint32_t>::max(); // 0x15
-static uint32_t REG_CCPR1H  = std::numeric_limits<uint32_t>::max(); // 0x16
-static uint32_t REG_CCP1CON = std::numeric_limits<uint32_t>::max(); // 0x17
-static uint32_t REG_CMCON   = std::numeric_limits<uint32_t>::max(); // 0x1f
-static uint32_t REG_VRCON   = std::numeric_limits<uint32_t>::max(); // 0x9f
+static uint32_t REG_CCPR1L  = INVALID_ADDR; // 0x15
+static uint32_t REG_CCPR1H  = INVALID_ADDR; // 0x16
+static uint32_t REG_CCP1CON = INVALID_ADDR; // 0x17
+static uint32_t REG_CMCON   = INVALID_ADDR; // 0x1f
+static uint32_t REG_VRCON   = INVALID_ADDR; // 0x9f
 
 //USART
-static uint32_t REG_TXSTA   = std::numeric_limits<uint32_t>::max(); // 0x98
+static uint32_t REG_TXSTA   = INVALID_ADDR; // 0x98
 #define          TXEN      BIT5
 #define          TRMT      BIT1// 1 is TSR empty, ready; 0 is TSR full, busy
-static uint32_t REG_RCSTA   = std::numeric_limits<uint32_t>::max(); // 0x18
+static uint32_t REG_RCSTA   = INVALID_ADDR; // 0x18
 #define          SPEN      BIT7
 #define          CREN      BIT4
 #define          FERR      BIT2
 #define          OERR      BIT1
-static uint32_t REG_SPBRGH  = std::numeric_limits<uint32_t>::max(); // 0x99
-static uint32_t REG_SPBRG   = std::numeric_limits<uint32_t>::max(); // 0x99
-static uint32_t REG_TXREG   = std::numeric_limits<uint32_t>::max(); // 0x19
-static uint32_t REG_RCREG   = std::numeric_limits<uint32_t>::max(); // 0x1a
+static uint32_t REG_SPBRGH  = INVALID_ADDR; // 0x99
+static uint32_t REG_SPBRG   = INVALID_ADDR; // 0x99
+static uint32_t REG_TXREG   = INVALID_ADDR; // 0x19
+static uint32_t REG_RCREG   = INVALID_ADDR; // 0x1a
 //static uint32_t REG_BAUDCON = -1; // BAUD RATE CONTROL REGISTER
 
 //ADC
-static uint32_t REG_ADRESH  = std::numeric_limits<uint32_t>::max(); // 0x1e
-static uint32_t REG_ADRESL  = std::numeric_limits<uint32_t>::max(); // 0x9e
-static uint32_t REG_ADCON0  = std::numeric_limits<uint32_t>::max(); // 0x1f
-static uint32_t REG_ADCON1  = std::numeric_limits<uint32_t>::max(); // 0x9f
+static uint32_t REG_ADRESH  = INVALID_ADDR; // 0x1e
+static uint32_t REG_ADRESL  = INVALID_ADDR; // 0x9e
+static uint32_t REG_ADCON0  = INVALID_ADDR; // 0x1f
+static uint32_t REG_ADCON1  = INVALID_ADDR; // 0x9f
 
 //PWM Timer2
-static uint32_t REG_T2CON   = std::numeric_limits<uint32_t>::max(); // 0x12
+static uint32_t REG_T2CON   = INVALID_ADDR; // 0x12
 #define          TMR2ON    BIT2
-static uint32_t REG_CCPR2L  = std::numeric_limits<uint32_t>::max(); // 0x1b // Pulse Width
-static uint32_t REG_CCP2CON = std::numeric_limits<uint32_t>::max(); // 0x1d
+static uint32_t REG_CCPR2L  = INVALID_ADDR; // 0x1b // Pulse Width
+static uint32_t REG_CCP2CON = INVALID_ADDR; // 0x1d
 #define          DC2B0     BIT4
 #define          DC2B1     BIT5
-static uint32_t REG_PR2     = std::numeric_limits<uint32_t>::max(); // 0x92 // Period
+static uint32_t REG_PR2     = INVALID_ADDR; // 0x92 // Period
 
 //
-static uint32_t REG_TMR0    = std::numeric_limits<uint32_t>::max(); // 0x01
-static uint32_t REG_OPTION  = std::numeric_limits<uint32_t>::max(); // 0x81 or 0x181 //0x95
+static uint32_t REG_TMR0    = INVALID_ADDR; // 0x01
+static uint32_t REG_OPTION  = INVALID_ADDR; // 0x81 or 0x181 //0x95
 // PIC10F2xx
 #define          _GPWU        BIT7 // Enable Wake-up on Pin Change bit (GP0, GP1, GP3)
 #define          _GPPU        BIT6 // Enable Weak Pull-ups bit (GP0, GP1, GP3)
@@ -261,14 +261,14 @@ static uint32_t REG_OPTION  = std::numeric_limits<uint32_t>::max(); // 0x81 or 0
 // static int       WDTE    = -1; //
 
 // OSCILLATOR CONTROL REGISTER
-static uint32_t REG_OSCON   = std::numeric_limits<uint32_t>::max();
+static uint32_t REG_OSCON   = INVALID_ADDR;
 #define          SCS0         BIT0 //..BIT1
 #define          IRCF0        BIT3 //..BIt6
 #define          SPLLEN       BIT7
 // clang-format on
 
-static uint32_t CONFIG_ADDR1 = std::numeric_limits<uint32_t>::max();
-static uint32_t CONFIG_ADDR2 = std::numeric_limits<uint32_t>::max();
+static uint32_t CONFIG_ADDR1 = INVALID_ADDR;
+static uint32_t CONFIG_ADDR2 = INVALID_ADDR;
 //-----------------------------------------------------------------------------
 
 static uint32_t IntPc = 0;
@@ -344,7 +344,7 @@ static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
             strcat(arg1comm, s);
         }
     if((asm_discover_names == 2) || (asm_discover_names == 4)) {
-        sprintf(s, " ; %d", PicProg[addrAt].arg1);
+        sprintf(s, " ; %u", PicProg[addrAt].arg1); 
         strcat(arg1comm, s);
     }
 }
@@ -372,27 +372,27 @@ static uint32_t Bank(uint32_t reg)
         if(reg & ~0x0FFF)
         {
             THROW_COMPILER_EXCEPTION_FMT("0x%X", reg);
-            return 0;           ///// Added by JG
+            //return 0;           ///// Added by JG
         }
         reg &= 0x0F80;
     } else if(Prog.mcu()->core == MidrangeCore14bit) {
         if(reg & ~0x01FF)
         {
             THROW_COMPILER_EXCEPTION_FMT("0x%X", reg);
-            return 0;           ///// Added by JG
+            //return 0;           ///// Added by JG
         }
         reg &= 0x0180;
     } else if(Prog.mcu()->core == BaselineCore12bit) {
         if(reg & ~0x007F)
         {
             THROW_COMPILER_EXCEPTION_FMT("0x%X", reg);
-            return 0;           ///// Added by JG
+            //return 0;           ///// Added by JG
         }
         reg &= 0x0000;
     } else
         {
         oops();
-        return 0;           ///// Added by JG
+        //return 0;           ///// Added by JG
         }
     return reg;
 }
@@ -454,7 +454,7 @@ static int IsCoreRegister(uint32_t reg)
         }
     } else
         oops();
-    return 0;
+    //return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -516,7 +516,7 @@ static int IsOperation(PicOp op)
             return IS_CALL; // can need to change page
         default:
             THROW_COMPILER_EXCEPTION_FMT("OP_%d", op);
-            return 0;
+            //return 0;
     }
 }
 
@@ -557,7 +557,7 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op, uint3
 static void _Instruction(int l, const char *f, const char *args, PicOp op, uint32_t arg1, uint32_t arg2, const char *comment)
 {
     if(IsOperation(op) >= IS_BANK) {
-        if(arg1 == std::numeric_limits<uint32_t>::max()) {
+        if(arg1 == INVALID_ADDR) {
             THROW_COMPILER_EXCEPTION_FMT("%d %s Not inited register!", l, f);
             return;         ///// Added by JG
         }
@@ -653,9 +653,9 @@ static void _Instruction(int l, const char *f, const char *args, PicOp op)
 }
 */
 //-----------------------------------------------------------------------------
-static void _SetInstruction(int l, const char *f, const char *args, uint32_t addr, PicOp op, uint32_t arg1 = 0,
+static void _SetInstruction(int l, const char *f, const char *args, ADDR_T addr, PicOp op, uint32_t arg1 = 0,
                             uint32_t arg2 = 0, const char *comment = nullptr);
-static void _SetInstruction(int l, const char *f, const char *args, uint32_t addr, PicOp op, uint32_t arg1, uint32_t arg2,
+static void _SetInstruction(int l, const char *f, const char *args, ADDR_T addr, PicOp op, uint32_t arg1, uint32_t arg2,
                             const char *comment)
 //for setiing interrupt vector, page correcting, etc
 {
@@ -673,17 +673,17 @@ static void _SetInstruction(int l, const char *f, const char *args, uint32_t add
     PicProgWriteP = savePicProgWriteP;
 }
 /*
-static void _SetInstruction(int l, const char *f, const char *args, uint32_t addr, PicOp op, uint32_t arg1, uint32_t arg2)
+static void _SetInstruction(int l, const char *f, const char *args, ADDR_T addr, PicOp op, uint32_t arg1, uint32_t arg2)
 {
     _SetInstruction(l, f, args, addr, op, arg1, arg2, nullptr);
 }
 
-static void _SetInstruction(int l, const char *f, const char *args, uint32_t addr, PicOp op, uint32_t arg1)
+static void _SetInstruction(int l, const char *f, const char *args, ADDR_T addr, PicOp op, uint32_t arg1)
 {
     _SetInstruction(l, f, args, addr, op, arg1, 0, nullptr);
 }
 
-static void _SetInstruction(int l, const char *f, const char *args, uint32_t addr, PicOp op, uint32_t arg1,
+static void _SetInstruction(int l, const char *f, const char *args, ADDR_T addr, PicOp op, uint32_t arg1,
                             const char *comment)
 {
     _SetInstruction(l, f, args, addr, op, arg1, 0, comment);
@@ -721,7 +721,7 @@ static uint32_t AllocFwdAddr()
 // Go back and fix up the program given that the provided forward address
 // corresponds to the next instruction to be assembled.
 //-----------------------------------------------------------------------------
-static void FwdAddrIsNow(uint32_t addr)
+static void FwdAddrIsNow(ADDR_T addr)
 {
     if(!(addr & FWD(0)))
         oops();
@@ -741,9 +741,9 @@ static void FwdAddrIsNow(uint32_t addr)
 }
 
 //-----------------------------------------------------------------------------
-static void BankCorrect(uint32_t addr, int nAdd, int nSkip, uint32_t bankNew)
+static void BankCorrect(ADDR_T addr, int nAdd, int nSkip, uint32_t bankNew)
 {
-    uint32_t i;
+    ADDR_T i;
     for(i = addr - nSkip; i <= addr + nAdd; i++) {
         PicProg[i].BANK = bankNew;
     }
@@ -760,7 +760,7 @@ static void BankCorrect(uint32_t addr, int nAdd, int nSkip, uint32_t bankNew)
 }
 
 //-----------------------------------------------------------------------------
-static int BankSelect(uint32_t addr, int nAdd, int nSkip, uint32_t bankNow, uint32_t bankNew)
+static int BankSelect(ADDR_T addr, int nAdd, int nSkip, uint32_t bankNow, uint32_t bankNew)
 {
     uint32_t savePicProgWriteP = PicProgWriteP;
     PicProgWriteP = addr - nSkip;
@@ -841,7 +841,7 @@ static int BankSelectCheck(uint32_t bankNow, uint32_t bankNew)
 
 static uint32_t notRealocableAddr = 0; // upper range
 
-static uint32_t BankCorrection_(uint32_t addr, uint32_t bank, int is_call)
+static uint32_t BankCorrection_(ADDR_T addr, uint32_t bank/*, int is_call*/)
 {
 /*
     if(PicProgWriteP >= Prog.mcu()->flashWords) {
@@ -931,7 +931,7 @@ doBankCorrection:
     return bank;
 }
 
-static uint32_t BankPreSet(uint32_t addr, uint32_t bank, int is_call)
+static uint32_t BankPreSet(ADDR_T addr, uint32_t bank, int is_call)
 {
     uint32_t i;
     i = addr;
@@ -1048,7 +1048,7 @@ static void BankCorrection()
     if(Prog.mcu()->core != BaselineCore12bit) {
         PicProg[4].BANK = MULTYDEF(0);
     }
-    BankCorrection_(0, 0, 0);
+    BankCorrection_(0, 0/*, 0*/);
     for(uint32_t i = 0; i < PicProgWriteP; i++) {
         if(IsOperation(PicProg[i].opPic) >= IS_BANK)
             PicProg[i].arg1 &= ~Bank(PicProg[i].arg1);
@@ -1252,7 +1252,7 @@ static int PageSelectCheck(uint32_t PCLATH, uint32_t PCLATHnew)
 }
 
 //---------------------------------------------------------------------------
-static int PageSelect(uint32_t addr, uint32_t *PCLATH, uint32_t PCLATHnew)
+static int PageSelect(ADDR_T addr, uint32_t *PCLATH, uint32_t PCLATHnew)
 {
     if(IS_UNDEF(*PCLATH)) {
         PCLATHnew &= (1 << BIT3) | (1 << BIT4);
@@ -1302,7 +1302,7 @@ static int PageSelect(uint32_t addr, uint32_t *PCLATH, uint32_t PCLATHnew)
 }
 
 //---------------------------------------------------------------------------
-static void PageCorrect(uint32_t addr, int n, uint32_t PCLATHnew)
+static void PageCorrect(ADDR_T addr, int n, uint32_t PCLATHnew)
 {
     while(n >= 0) {
         PicProg[addr].PCLATH = PCLATHnew;
@@ -1331,7 +1331,7 @@ doPageCorrection:
         if(IsOperation(PicProg[i].opPic) <= IS_PAGE) {
             if(IS_UNDEF(PicProg[i].PCLATH) || ((PicProg[i].arg1 >> 11) != (PicProg[i].PCLATH >> 3))) {
                 //  ^target addr^              ^current PCLATH^
-                PicOp PicProgOpPic = PicProg[i].opPic;
+                //PicOp PicProgOpPic = PicProg[i].opPic;
                 uint32_t PicProgArg1 = PicProg[i].arg1;
                 uint32_t PCLATHnow = PicProg[i].PCLATH;
                 if(IS_UNDEF(PicProg[i].PCLATH)) {
@@ -1438,7 +1438,7 @@ static void BankCheckForErrorsPostCompile(FileTracker& fAsm)
                 fprintf(fAsm, "    ; Bank Error.\n");
                 fprintf(
                     fAsm,
-                    "    ; i=0x%04x op=%d arg1=%d arg2=%d bank=%x arg1orig=%d commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%d l=%d file=%s\n",
+                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%d l=%d file=%s\n",
                     i - 1,
                     PicProg[i - 1].opPic,
                     PicProg[i - 1].arg1,
@@ -1455,7 +1455,7 @@ static void BankCheckForErrorsPostCompile(FileTracker& fAsm)
                     PicProg[i - 1].f);
                 fprintf(
                     fAsm,
-                    "    ; i=0x%04x op=%d arg1=%d arg2=%d bank=%x arg1orig=%d commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%d l=%d file=%s\n",
+                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%d l=%d file=%s\n",
                     i,
                     PicProg[i].opPic,
                     PicProg[i].arg1,
@@ -1480,7 +1480,7 @@ static void BankCheckForErrorsPostCompile(FileTracker& fAsm)
 // PIC. Check that the operands do not have more bits set than is meaningful;
 // it is an internal error if they do.
 //-----------------------------------------------------------------------------
-static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2, char *sAsm)
+static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, char *sAsm)
 //14-Bit Opcode
 {
     char               arg1s[1024];
@@ -1494,7 +1494,7 @@ static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2
     arg1comm[0] = '\0';
 #define CHECK(v, bits)                                                 \
     if((v) != ((v) & ((1 << (bits)) - 1)))                             \
-    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%d=0x%X ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d:%s]", \
+    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u=0x%X ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d:%s]", \
           intOp.rung,                                                    \
           (v),                                                         \
           (v),                                                         \
@@ -1507,9 +1507,9 @@ static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2
           intOp.fileName.c_str())
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
-    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%d [%d..%d]\n[%d:%s] %s\n[%d:%s]",                  \
+    THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u [%d..%d]\n[%d:%s] %s\n[%d:%s]",                  \
           intOp.rung,                                                    \
-          (int)v,                                                        \
+          v,                                                             \
           LowerRangeInclusive,                                           \
           UpperRangeInclusive,                                           \
           PicInstr->l,                                                   \
@@ -1522,42 +1522,42 @@ static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "addwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "addwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0700 | (arg2 << 7) | arg1;
 
         case OP_ANDWF:
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "andwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "andwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0500 | (arg2 << 7) | arg1;
 
         case OP_BSF:
             CHECK(arg2, 3);
             CHECK(arg1, 7);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "bsf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "bsf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x1400 | (arg2 << 7) | arg1;
 
         case OP_BCF:
             CHECK(arg2, 3);
             CHECK(arg1, 7);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "bcf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "bcf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x1000 | (arg2 << 7) | arg1;
 
         case OP_BTFSC:
             CHECK(arg2, 3);
             CHECK(arg1, 7);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "btfsc\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "btfsc\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x1800 | (arg2 << 7) | arg1;
 
         case OP_BTFSS:
             CHECK(arg2, 3);
             CHECK(arg1, 7);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "btfss\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "btfss\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x1c00 | (arg2 << 7) | arg1;
 
         case OP_CLRF:
@@ -1577,21 +1577,21 @@ static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "comf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "comf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0900 | (arg2 << 7) | arg1;
 
         case OP_DECF:
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "decf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "decf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0300 | (arg2 << 7) | arg1;
 
         case OP_DECFSZ:
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "decfsz %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "decfsz %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0b00 | (arg2 << 7) | arg1;
 
         case OP_GOTO: {
@@ -1614,21 +1614,21 @@ static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "incf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "incf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0a00 | (arg2 << 7) | arg1;
 
         case OP_INCFSZ:
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "incfsz %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "incfsz %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0f00 | (arg2 << 7) | arg1;
 
         case OP_IORWF:
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "iorwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "iorwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0400 | (arg2 << 7) | arg1;
 
         case OP_MOVLW:
@@ -1656,7 +1656,7 @@ static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "movf\t %s, %d \t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "movf\t %s, %u \t %s", arg1s, arg2, arg1comm);
             return 0x0800 | (arg2 << 7) | arg1;
 
         case OP_MOVWF:
@@ -1704,14 +1704,14 @@ static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "rlf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "rlf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0d00 | (arg2 << 7) | arg1;
 
         case OP_RRF:
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "rrf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "rrf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0c00 | (arg2 << 7) | arg1;
 
         case OP_IORLW:
@@ -1724,21 +1724,21 @@ static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "subwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "subwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0200 | (arg2 << 7) | arg1;
 
         case OP_XORWF:
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "xorwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "xorwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0600 | (arg2 << 7) | arg1;
 
         case OP_SWAPF:
             CHECK(arg1, 7);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "swapf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "swapf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0E00 | (arg2 << 7) | arg1;
 
         case OP_SLEEP_:
@@ -1749,11 +1749,11 @@ static uint32_t Assemble(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2
 
         default:
             THROW_COMPILER_EXCEPTION_FMT("OP_%d", op);
-            return 0;
+            //return 0;
     }
 }
 
-static uint32_t Assemble12(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2, char *sAsm)
+static uint32_t Assemble12(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, char *sAsm)
 //12-Bit Opcode for PIC10, PIC12
 {
     char               arg1s[1024];
@@ -1767,7 +1767,7 @@ static uint32_t Assemble12(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t ar
     arg1comm[0] = '\0';
 #define CHECK(v, bits)                                                 \
     if((v) != ((v) & ((1 << (bits)) - 1)))                             \
-    THROW_COMPILER_EXCEPTION_FMT("v=%d=0x%X ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
+    THROW_COMPILER_EXCEPTION_FMT("v=%u=0x%X ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
           (v),                                                         \
           (v),                                                         \
           (bits),                                                      \
@@ -1782,42 +1782,42 @@ static uint32_t Assemble12(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t ar
             CHECK(arg2, 1);
             CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "addwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "addwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x1C0 | (arg2 << 5) | arg1;
 
         case OP_ANDWF:
             CHECK(arg2, 1);
             CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "andwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "andwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x140 | (arg2 << 5) | arg1;
 
         case OP_BCF:
             CHECK(arg2, 3);
             CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "bcf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "bcf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x400 | (arg2 << 5) | arg1;
 
         case OP_BSF:
             CHECK(arg2, 3);
             CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "bsf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "bsf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x500 | (arg2 << 5) | arg1;
 
         case OP_BTFSC:
             CHECK(arg2, 3);
             CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "btfsc\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "btfsc\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x600 | (arg2 << 5) | arg1;
 
         case OP_BTFSS:
             CHECK(arg2, 3);
             CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "btfss\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "btfss\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x700 | (arg2 << 5) | arg1;
 
         case OP_CLRF:
@@ -1837,21 +1837,21 @@ static uint32_t Assemble12(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t ar
             CHECK(arg2, 1);
             CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "comf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "comf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x240 | (arg2 << 5) | arg1;
 
         case OP_DECF:
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "decf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "decf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x0C0 | (arg2 << 5) | arg1;
 
         case OP_DECFSZ:
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "decfsz %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "decfsz %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x2C0 | (arg2 << 5) | arg1;
 
         case OP_GOTO: {
@@ -1874,21 +1874,21 @@ static uint32_t Assemble12(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t ar
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "incf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "incf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x280 | (arg2 << 5) | arg1;
 
         case OP_INCFSZ:
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "incfsz %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "incfsz %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x3C0 | (arg2 << 5) | arg1;
 
         case OP_IORWF:
             CHECK(arg2, 1);
             CHECK(arg1, 5);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "iorwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "iorwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x100 | (arg2 << 5) | arg1;
 
         case OP_MOVLW:
@@ -1902,7 +1902,7 @@ static uint32_t Assemble12(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t ar
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "movf\t %s, %d \t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "movf\t %s, %u \t %s", arg1s, arg2, arg1comm);
             return 0x200 | (arg2 << 5) | arg1;
 
         case OP_MOVWF:
@@ -1938,14 +1938,14 @@ static uint32_t Assemble12(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t ar
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "rlf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "rlf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x340 | (arg2 << 5) | arg1;
 
         case OP_RRF:
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "rrf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "rrf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x300 | (arg2 << 5) | arg1;
 
         case OP_IORLW:
@@ -1958,21 +1958,21 @@ static uint32_t Assemble12(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t ar
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "subwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "subwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x080 | (arg2 << 5) | arg1;
 
         case OP_XORWF:
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "xorwf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "xorwf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x180 | (arg2 << 5) | arg1;
 
         case OP_SWAPF:
             CHECK(arg1, 5);
             CHECK(arg2, 1);
             discoverArgs(addrAt, arg1s, arg1comm);
-            sprintf(sAsm, "swapf\t %s, %d\t %s", arg1s, arg2, arg1comm);
+            sprintf(sAsm, "swapf\t %s, %u\t %s", arg1s, arg2, arg1comm);
             return 0x380 | (arg2 << 5) | arg1;
 
         case OP_TRIS:
@@ -1998,11 +1998,11 @@ static uint32_t Assemble12(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t ar
 
         default:
             THROW_COMPILER_EXCEPTION_FMT("OP_%d", op);
-            return 0;
+            //return 0;
     }
 }
 
-static uint32_t Assemble16(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t arg2, uint32_t arg3, char *sAsm)
+static uint32_t Assemble16(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, uint32_t arg3, char *sAsm)
 //16-Bit Instruction Word for PIC18
 {
     PicAvrInstruction *PicInstr = &PicProg[addrAt];
@@ -2192,7 +2192,7 @@ static uint32_t Assemble16(uint32_t addrAt, PicOp op, uint32_t arg1, uint32_t ar
 
         default:
             THROW_COMPILER_EXCEPTION_FMT("OP_%d", op);
-            return 0;
+            //return 0;
     }
 }
 
@@ -2243,7 +2243,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
 
         if(soFarCount >= 0x10 || i == (PicProgWriteP - 1)) {
             StartIhex(f);
-            WriteIhex(f, soFarCount);
+            WriteIhex(f, (BYTE)soFarCount);
             WriteIhex(f, (BYTE)((soFarStart * 2) >> 8));
             WriteIhex(f, (BYTE)((soFarStart * 2) & 0xff));
             WriteIhex(f, 0x00); // RECTYP: '00' Data Record
@@ -2358,7 +2358,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         FinishIhex(f);                                                     // CC->Checksum
     }
 
-    if((Prog.configurationWord & ~0xffff) && (CONFIG_ADDR2 == std::numeric_limits<uint32_t>::max()))
+    if((Prog.configurationWord & ~0xffff) && (CONFIG_ADDR2 == INVALID_ADDR))
         oops();
 
     // Configuration words start at address 0x2007 in program memory; and the
@@ -2374,7 +2374,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     WriteIhex(f, (BYTE)(Prog.configurationWord >> 8) & 0xff);
     FinishIhex(f);
 
-    if(CONFIG_ADDR2 != std::numeric_limits<uint32_t>::max()) {
+    if(CONFIG_ADDR2 != INVALID_ADDR) {
         StartIhex(f);       // ':'->Colon
         WriteIhex(f, 0x02); // RECLEN 2 bytes
         WriteIhex(f, (BYTE)((CONFIG_ADDR2 * 2) >> 8) & 0xff);
@@ -2420,15 +2420,15 @@ static void _WriteRegister(int l, const char *f, const char *args, uint32_t reg,
 // Call a subroutine, that might be in an arbitrary page, and then put
 // PCLATH back where we want it.
 //-----------------------------------------------------------------------------
-static void _CallWithPclath(uint32_t addr, const char *comment)
+static void _CallWithPclath(ADDR_T addr, const char *comment)
 {
     Instruction(OP_CALL, addr, 0, comment);
 }
 #define CallWithPclath(addr) _CallWithPclath(addr, #addr)
 
-static bool IsOutputReg(uint32_t addr)
+static bool IsOutputReg(ADDR_T addr)
 {
-    if((addr == std::numeric_limits<uint32_t>::max()) || (addr == 0))
+    if((addr == INVALID_ADDR) || (addr == 0))
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->outputRegs[i] == addr)
@@ -2436,9 +2436,9 @@ static bool IsOutputReg(uint32_t addr)
     return false;
 }
 
-static bool IsInputReg(uint32_t addr)
+static bool IsInputReg(ADDR_T addr)
 {
-    if((addr == std::numeric_limits<uint32_t>::max()) || (addr == 0))
+    if((addr == INVALID_ADDR) || (addr == 0))
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->inputRegs[i] == addr)
@@ -2446,7 +2446,7 @@ static bool IsInputReg(uint32_t addr)
     return false;
 }
 
-static void CopyBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc, const char *nameDest, const char *nameSrc)
+static void CopyBit(ADDR_T addrDest, int bitDest, ADDR_T addrSrc, int bitSrc, const char *nameDest, const char *nameSrc)
 {
     if((addrDest == addrSrc) && (bitDest == bitSrc)) {
         return;
@@ -2485,23 +2485,23 @@ static void CopyBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc
     }
 }
 
-static void CopyBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc, const NameArray &nameDest,
+static void CopyBit(ADDR_T addrDest, int bitDest, ADDR_T addrSrc, int bitSrc, const NameArray &nameDest,
                     const char *nameSrc)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest.c_str(), nameSrc);
 }
 
-static void CopyBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc, const char *nameDest)
+static void CopyBit(ADDR_T addrDest, int bitDest, ADDR_T addrSrc, int bitSrc, const char *nameDest)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, nameDest, nullptr);
 }
 
-static void CopyBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc)
+static void CopyBit(ADDR_T addrDest, int bitDest, ADDR_T addrSrc, int bitSrc)
 {
     CopyBit(addrDest, bitDest, addrSrc, bitSrc, nullptr, nullptr);
 }
 
-static void CopyNotBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc, const char *nameDest,
+static void CopyNotBit(ADDR_T addrDest, int bitDest, ADDR_T addrSrc, int bitSrc, const char *nameDest,
                        const char *nameSrc)
 {
     Comment("CopyNotBit");
@@ -2523,26 +2523,26 @@ static void CopyNotBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bit
     }
 }
 
-static void CopyNotBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc)
+static void CopyNotBit(ADDR_T addrDest, int bitDest, ADDR_T addrSrc, int bitSrc)
 {
     CopyNotBit(addrDest, bitDest, addrSrc, bitSrc, nullptr, nullptr);
 }
 
-static void AndBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc)
+static void AndBit(ADDR_T addrDest, int bitDest, ADDR_T addrSrc, int bitSrc)
 {
     Comment("AndBit");
     IfBitClear(addrSrc, bitSrc);
     ClearBit(addrDest, bitDest);
 }
 
-static void OrBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc)
+static void OrBit(ADDR_T addrDest, int bitDest, ADDR_T addrSrc, int bitSrc)
 {
     Comment("OrBit");
     IfBitSet(addrSrc, bitSrc);
     SetBit(addrDest, bitDest);
 }
 
-static void XorBit(uint32_t addrDest, int bitDest, uint32_t addrSrc, int bitSrc)
+static void XorBit(ADDR_T addrDest, int bitDest, ADDR_T addrSrc, int bitSrc)
 {
     Comment("XorBit");
     uint32_t is0 = AllocFwdAddr();
@@ -2597,7 +2597,7 @@ static void CompileIfBody(uint32_t condFalse)
 }
 /*
 //-----------------------------------------------------------------------------
-static char *VarFromExpr(char *expr, char *tempName, uint32_t addr)
+static char *VarFromExpr(char *expr, char *tempName, ADDR_T addr)
 {
     if(IsNumber(expr)) {
         int val = hobatoi(expr);
@@ -2615,7 +2615,7 @@ static char *VarFromExpr(char *expr, char *tempName, uint32_t addr)
 */
 
 //-----------------------------------------------------------------------------
-static uint32_t CopyLitToReg(uint32_t addr, int sov, const char *name, int32_t literal, const char *comment)
+static uint32_t CopyLitToReg(ADDR_T addr, int sov, const char *name, int32_t literal, const char *comment)
 {
     Comment("CopyLitToReg");
     if(sov < 1)
@@ -2697,13 +2697,13 @@ static uint32_t CopyLitToReg(uint32_t addr, int sov, const char *name, int32_t l
 */
 }
 
-static uint32_t CopyLitToReg(uint32_t addr, int sov, const NameArray &name, int32_t literal, const NameArray &comment)
+static uint32_t CopyLitToReg(ADDR_T addr, int sov, const NameArray &name, int32_t literal, const NameArray &comment)
 {
     return CopyLitToReg(addr, sov, name.c_str(), literal, comment.c_str());
 }
 
 //-----------------------------------------------------------------------------
-static uint32_t CopyRegToReg(uint32_t addr1, int sov1, uint32_t addr2, int sov2, const char *name1, const char *name2,
+static uint32_t CopyRegToReg(ADDR_T addr1, int sov1, ADDR_T addr2, int sov2, const char *name1, const char *name2,
                          bool signPropagation)
 // addr1 - dest, addr2 - source
 {
@@ -2719,11 +2719,11 @@ static uint32_t CopyRegToReg(uint32_t addr1, int sov1, uint32_t addr2, int sov2,
 
     if(addr1 == 0)
         THROW_COMPILER_EXCEPTION(name1);
-    if(addr1 == std::numeric_limits<uint32_t>::max())
+    if(addr1 == INVALID_ADDR)
         THROW_COMPILER_EXCEPTION(name1);
     if(addr2 == 0)
         THROW_COMPILER_EXCEPTION(name2);
-    if(addr2 == std::numeric_limits<uint32_t>::max())
+    if(addr2 == INVALID_ADDR)
         THROW_COMPILER_EXCEPTION(name2);
 
      if(addr1 == addr2) {
@@ -2866,32 +2866,32 @@ static uint32_t CopyRegToReg(uint32_t addr1, int sov1, uint32_t addr2, int sov2,
     */
 }
 
-static uint32_t CopyRegToReg(uint32_t addr1, int sov1, uint32_t addr2, int sov2, const NameArray &name1, const NameArray &name2,
+static uint32_t CopyRegToReg(ADDR_T addr1, int sov1, ADDR_T addr2, int sov2, const NameArray &name1, const NameArray &name2,
                          bool Sign)
 {
     return CopyRegToReg(addr1, sov1, addr2, sov2, name1.c_str(), name2.c_str(), Sign);
 }
 
 //-----------------------------------------------------------------------------
-static uint32_t CopyVarToReg(uint32_t addr1, int sov1, const char *name2, bool Sign)
+static uint32_t CopyVarToReg(ADDR_T addr1, int sov1, const char *name2, bool Sign)
 {
-    uint32_t addr2;
+    ADDR_T addr2;
     MemForVariable(name2, &addr2);
     return CopyRegToReg(addr1, sov1, addr2, SizeOfVar(name2), "", name2, Sign);
 }
 
-static uint32_t CopyVarToReg(uint32_t addr1, int sov1, const char *name2)
+static uint32_t CopyVarToReg(ADDR_T addr1, int sov1, const char *name2)
 {
     return CopyVarToReg(addr1, sov1, name2, false);
 }
 
-static uint32_t CopyVarToReg(uint32_t addr1, int sov1, const NameArray &name2)
+static uint32_t CopyVarToReg(ADDR_T addr1, int sov1, const NameArray &name2)
 {
     return CopyVarToReg(addr1, sov1, name2.c_str());
 }
 
 //-----------------------------------------------------------------------------
-static uint32_t CopyArgToDest(bool isFlipFlopRisk, uint32_t destAddr, uint32_t tmpAddr, int destSov, const char *name, bool sign)
+static uint32_t CopyArgToDest(bool isFlipFlopRisk, ADDR_T destAddr, ADDR_T tmpAddr, int destSov, const char *name, bool sign)
 {
     if(IsNumber(name)) {
         if(isFlipFlopRisk/* || (IsOutputReg(destAddr))*/)
@@ -2900,7 +2900,7 @@ static uint32_t CopyArgToDest(bool isFlipFlopRisk, uint32_t destAddr, uint32_t t
             return CopyLitToReg(destAddr, destSov, name, hobatoi(name), name);
     } else {
         int   srcSov = SizeOfVar(name);
-        uint32_t srcAddr;
+        ADDR_T srcAddr;
         if(IsAddrInVar(name))
             MemForVariable(&name[1], &srcAddr);
         else
@@ -2927,7 +2927,7 @@ static uint32_t CopyArgToReg(bool isModificationRisk, uint32_t destAddr, int des
         return CopyLitToReg(destAddr, destSov, name, hobatoi(name), name);
     } else {
         int   sov = SizeOfVar(name);
-        uint32_t addr;
+        ADDR_T addr;
         MemForVariable(name, &addr);
         if(isModificationRisk || (sov < destSov))
             return CopyRegToReg(destAddr, destSov, addr, sov, "$CopyArgToReg", name, Sign);
@@ -3039,7 +3039,7 @@ static void CallBin32BcdRoutine(const char *nameBcd, const char *nameBin)
 {
     Bin32BcdNeeded = true;
 
-    uint32_t addrBin; // address is copied to ACb0
+    ADDR_T addrBin; // address is copied to ACb0
     MemForVariable(nameBin, &addrBin);
 
     int sizeBin; // value is copied to sovBin
@@ -3052,7 +3052,7 @@ static void CallBin32BcdRoutine(const char *nameBcd, const char *nameBin)
     }
     CopyLitToReg(sovBin, 1, "sovBin", sizeBin, "sizeBin");
 
-    uint32_t addrBcd; // address is copied to BCD0
+    ADDR_T addrBcd; // address is copied to BCD0
     MemForVariable(nameBcd, &addrBcd);
     CopyLitToReg(BCD0, 1, "BCD0", addrBcd, "addrBcd");
 
@@ -3095,7 +3095,7 @@ static void CallBin32BcdRoutine(const NameArray& nameBcd, const NameArray& nameB
 //-----------------------------------------------------------------------------
 static void AllocBitsVars()
 {
-    uint32_t addr;
+    ADDR_T addr;
     int   bit;
 
     for(IntPc = 0; IntPc < IntCode.size(); IntPc++) {
@@ -3178,11 +3178,14 @@ static void AllocBitsVars()
 }
 
 //-----------------------------------------------------------------------------
+/*
 static void _CheckSovNames(int l, const char *f, const char *args, IntOp *a)
 {
     return;
 }
 #define CheckSovNames(...) _CheckSovNames(__LINE__, __LLFILE__, #__VA_ARGS__, __VA_ARGS__)
+*/
+#define CheckSovNames(...)
 
 //-----------------------------------------------------------------------------
 /*
@@ -3208,7 +3211,7 @@ Increment
     ; w is now 1
     ; Status:Z and Status:C are 1 if and only if counter is now all zeros.
 */
-static void Increment(uint32_t addr, int sov, const char *name, const char *overlap, const char *overflow)
+static void Increment(ADDR_T addr, int sov, const char *name, const char *overlap, const char *overflow)
 // a := a + 1
 {
     if(overflow && strlen(overflow)) {
@@ -3230,7 +3233,7 @@ static void Increment(uint32_t addr, int sov, const char *name, const char *over
             }
         }
     }
-    uint32_t addrO;
+    ADDR_T addrO;
     int   bitO;
     if(overlap && strlen(overlap)) {
         MemForSingleBit(overlap, false, &addrO, &bitO);
@@ -3255,22 +3258,22 @@ static void Increment(uint32_t addr, int sov, const char *name, const char *over
     }
 }
 
-static void Increment(uint32_t addr, int sov, const NameArray &name, const NameArray &overlap, const NameArray &overflow)
+static void Increment(ADDR_T addr, int sov, const NameArray &name, const NameArray &overlap, const NameArray &overflow)
 {
     Increment(addr, sov, name.c_str(), overlap.c_str(), overflow.c_str());
 }
 
-static void Increment(uint32_t addr, int sov, const char *name)
+static void Increment(ADDR_T addr, int sov, const char *name)
 {
     Increment(addr, sov, name, nullptr, nullptr);
 }
 
-static void Increment(uint32_t addr, int sov)
+static void Increment(ADDR_T addr, int sov)
 {
     Increment(addr, sov, nullptr, nullptr, nullptr);
 }
 //-----------------------------------------------------------------------------
-static void UartSend(uint32_t addr, int sov) // , char *name
+static void UartSend(ADDR_T addr, int sov) // , char *name
 {
     for(int i = 0; i < sov; i++) {
         IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
@@ -3294,7 +3297,7 @@ Decrement
     ; Status:Z is set if the least significant byte of the counter is zero
     ; (not necessarily all bytes !) and in certain other cases.
 */
-static void Decrement(uint32_t addr, int sov, const char *name, const char *overlap, const char *overflow)
+static void Decrement(ADDR_T addr, int sov, const char *name, const char *overlap, const char *overflow)
 // a := a - 1
 {
     if(overflow && strlen(overflow)) {
@@ -3321,7 +3324,7 @@ static void Decrement(uint32_t addr, int sov, const char *name, const char *over
             }
         }
     }
-    uint32_t addrO;
+    ADDR_T addrO;
     int   bitO;
     if(overlap && strlen(overlap)) {
         MemForSingleBit(overlap, false, &addrO, &bitO);
@@ -3351,23 +3354,23 @@ static void Decrement(uint32_t addr, int sov, const char *name, const char *over
     }
 }
 
-static void Decrement(uint32_t addr, int sov, const NameArray &name, const NameArray &overlap, const NameArray &overflow)
+static void Decrement(ADDR_T addr, int sov, const NameArray &name, const NameArray &overlap, const NameArray &overflow)
 {
     Decrement(addr, sov, name.c_str(), overlap.c_str(), overflow.c_str());
 }
 
-static void Decrement(uint32_t addr, int sov, const char *name)
+static void Decrement(ADDR_T addr, int sov, const char *name)
 {
     Decrement(addr, sov, name, nullptr, nullptr);
 }
 
-static void Decrement(uint32_t addr, int sov)
+static void Decrement(ADDR_T addr, int sov)
 {
     Decrement(addr, sov, nullptr, nullptr, nullptr);
 }
 
 //-----------------------------------------------------------------------------
-static void Negate(uint32_t addr, int sov, const char *name)
+static void Negate(ADDR_T addr, int sov, const char *name)
 {
     for(int i = 0; i < sov; i++)
         Instruction(OP_COMF, addr + i, DEST_F, name);
@@ -3379,7 +3382,7 @@ static void Negate(uint32_t addr, int sov, const char *name)
 }
 
 //-----------------------------------------------------------------------------
-static void aplusw(uint32_t addr, int sov, char *name)
+static void aplusw(ADDR_T addr, int sov, char *name)
 // a := a + W
 {
     Instruction(OP_ADDWF, addr, DEST_F, name);
@@ -3397,13 +3400,13 @@ static void aplusw(uint32_t addr, int sov, char *name)
     }
 }
 
-static void aplusw(uint32_t addr, int sov)
+static void aplusw(ADDR_T addr, int sov)
 {
     aplusw(addr, sov, nullptr);
 }
 
 //-----------------------------------------------------------------------------
-static void VariableAdd(uint32_t addr1, uint32_t addr2, uint32_t addr3, int sov)
+static void VariableAdd(ADDR_T addr1, ADDR_T addr2, ADDR_T addr3, int sov)
 // addr1 = addr2 + addr3 // original
 // ScratchS used !!!
 {
@@ -3493,7 +3496,7 @@ static void add(uint32_t b, uint32_t a, int sov, const char *overlap, const char
         Instruction(OP_BTFSS, ScratchS, 7);
         Instruction(OP_GOTO, notOverflow); // BIT7 == 0 if signr == signa
                                            // BIT7 == 1 if signr != signa
-        uint32_t addr = 0;
+        ADDR_T addr = 0;
         int   bit = -1;
         MemForSingleBit(overflow, false, &addr, &bit);
         SetBit(addr, bit, "$overflow");
@@ -3587,7 +3590,7 @@ static void sub_(uint32_t b, uint32_t a, int sov, BYTE DEST_W_F, const char *ove
         Instruction(OP_BTFSC, ScratchS, 7);
         Instruction(OP_GOTO, notOverflow); // BIT7 == 1 if sign2 != sign3
                                            // BIT7 == 0 if sign2 == sign3
-        uint32_t addr = 0;
+        ADDR_T addr = 0;
         int   bit = -1;
         MemForSingleBit(overflow, false, &addr, &bit);
         SetBit(addr, bit, "$overflow");
@@ -3622,7 +3625,7 @@ static void cmp(uint32_t b, uint32_t a, int sov)
 }
 */
 //-----------------------------------------------------------------------------
-static void AndReg(uint32_t addr, int sov, uint32_t reg2)
+static void AndReg(ADDR_T addr, int sov, uint32_t reg2)
 {
     if(sov < 1)
         oops();
@@ -3634,7 +3637,7 @@ static void AndReg(uint32_t addr, int sov, uint32_t reg2)
     }
 }
 
-static void OrReg(uint32_t addr, int sov, uint32_t reg2)
+static void OrReg(ADDR_T addr, int sov, uint32_t reg2)
 {
     if(sov < 1)
         oops();
@@ -3646,7 +3649,7 @@ static void OrReg(uint32_t addr, int sov, uint32_t reg2)
     }
 }
 
-static void XorReg(uint32_t addr, int sov, uint32_t reg2)
+static void XorReg(ADDR_T addr, int sov, uint32_t reg2)
 {
     if(sov < 1)
         oops();
@@ -3659,7 +3662,7 @@ static void XorReg(uint32_t addr, int sov, uint32_t reg2)
 }
 
 //-----------------------------------------------------------------------------
-static void shl(uint32_t addr, int sov)
+static void shl(ADDR_T addr, int sov)
 {
     if(sov < 1)
         oops();
@@ -3670,7 +3673,7 @@ static void shl(uint32_t addr, int sov)
         Instruction(OP_RLF, addr + i, DEST_F);
 }
 
-static void rol(uint32_t addr, int sov)
+static void rol(ADDR_T addr, int sov)
 {
     if(sov < 1)
         oops();
@@ -3681,7 +3684,7 @@ static void rol(uint32_t addr, int sov)
         Instruction(OP_RLF, addr + i, DEST_F);
 }
 
-static void sr0(uint32_t addr, int sov)
+static void sr0(ADDR_T addr, int sov)
 {
     if(sov < 1)
         oops();
@@ -3692,7 +3695,7 @@ static void sr0(uint32_t addr, int sov)
         Instruction(OP_RRF, addr + i, DEST_F);
 }
 
-static void shr(uint32_t addr, int sov)
+static void shr(ADDR_T addr, int sov)
 {
     if(sov < 1)
         oops();
@@ -3703,7 +3706,7 @@ static void shr(uint32_t addr, int sov)
         Instruction(OP_RRF, addr + i, DEST_F);
 }
 
-static void ror(uint32_t addr, int sov)
+static void ror(ADDR_T addr, int sov)
 {
     if(sov < 1)
         oops();
@@ -3715,7 +3718,7 @@ static void ror(uint32_t addr, int sov)
 }
 
 //-----------------------------------------------------------------------------
-static void Delay(uint32_t addr, int sov)
+static void Delay(ADDR_T addr, int sov)
 {
     //; Status:C is now 0 if and only if counter rolled over and is now all ones
     Instruction(OP_MOVLW, 1);
@@ -3748,7 +3751,7 @@ static void Delay(uint32_t addr, int sov)
 static void InitTable(IntOp *a)
 {
     uint32_t savePicProgWriteP = PicProgWriteP;
-    uint32_t addrOfTableRoutine = 0;
+    ADDR_T addrOfTableRoutine = 0;
     MemOfVar(a->name1, &addrOfTableRoutine);
 
     if(addrOfTableRoutine == 0) {
@@ -3770,7 +3773,7 @@ static void InitTable(IntOp *a)
         Instruction(OP_MOVWF, REG_PCL); // jump
 
         if((addrOfTableRoutine + TABLE_CALC) != PicProgWriteP)
-            THROW_COMPILER_EXCEPTION_FMT("TABLE_CALC=%d", PicProgWriteP - addrOfTableRoutine);
+            THROW_COMPILER_EXCEPTION_FMT("TABLE_CALC=%u", PicProgWriteP - addrOfTableRoutine);
 
         int sovElement = a->literal2;
         Comment("DATA's size is %d", sovElement);
@@ -3824,7 +3827,7 @@ static void InitTables()
 //-----------------------------------------------------------------------------
 static void CompileFromIntermediate(bool topLevel)
 {
-    uint32_t addr1 = std::numeric_limits<uint32_t>::max(), addr2 = std::numeric_limits<uint32_t>::max(), addr3 = std::numeric_limits<uint32_t>::max(), addr4 = std::numeric_limits<uint32_t>::max();
+    ADDR_T addr1 = INVALID_ADDR, addr2 = INVALID_ADDR, addr3 = INVALID_ADDR, addr4 = INVALID_ADDR;
     int   bit1 = -1, bit2 = -1, bit3 = -1, bit4 = -1;
     int   bit = -1;
     int   sov = -1, sov1 = -1, sov2 = -1, sov3 = -1;
@@ -4195,8 +4198,8 @@ static void CompileFromIntermediate(bool topLevel)
                 sov2 = SizeOfVar(a->name2);
                 sov = std::max(sov1, sov2);
 
-                uint32_t addrA = CopyArgToReg(false, Scratch0, sov, a->name1, false);
-                uint32_t addrB = CopyArgToReg(false, Scratch4, sov, a->name2, false);
+                ADDR_T addrA = CopyArgToReg(false, Scratch0, sov, a->name1, false);
+                ADDR_T addrB = CopyArgToReg(false, Scratch4, sov, a->name2, false);
 
                 for(int i = 0; i < sov; i++) {
                     Instruction(OP_MOVF, addrA + i, DEST_W);
@@ -4251,8 +4254,8 @@ static void CompileFromIntermediate(bool topLevel)
                 sov2 = SizeOfVar(a->name2);
                 sov = std::max(sov1, sov2);
 
-                uint32_t addrA;
-                uint32_t addrB;
+                ADDR_T addrA;
+                ADDR_T addrB;
                 switch(a->op) {
                     case INT_IF_GEQ: // op1 - op2
                     case INT_IF_LES:
@@ -4270,7 +4273,7 @@ static void CompileFromIntermediate(bool topLevel)
                         oops();
                 }
 
-                uint32_t addrO;
+                ADDR_T addrO;
                 int   bitO;
                 MemForSingleBit("$overflow", &addrO, &bitO);
                 ClearBit(addrO, bitO, "$overflow");
@@ -4527,7 +4530,7 @@ otherwise the result was zero or greater.
                 // and then copy to dest
                 CopyArgToReg(true, Scratch0, sov2, a->name2, false);
 
-                uint32_t addrA = Scratch0;
+                ADDR_T addrA = Scratch0;
                 if((a->op == INT_SET_VARIABLE_SR0) || //
                    (a->op == INT_SET_VARIABLE_ROR) || //
                    (a->op == INT_SET_VARIABLE_SHR)) {
@@ -4604,8 +4607,8 @@ otherwise the result was zero or greater.
                 //   -1==0xff..ff
                 // 0xff==0xff
 
-                uint32_t addrA = CopyArgToReg(false, Scratch0, sov, a->name2, false);
-                uint32_t addrB = CopyArgToReg(false, Scratch4, sov, a->name3, false);
+                ADDR_T addrA = CopyArgToReg(false, Scratch0, sov, a->name2, false);
+                ADDR_T addrB = CopyArgToReg(false, Scratch4, sov, a->name3, false);
 
                 if((addr1 != addrB) && (addr1 == addrA)) {
                     uint32_t a = addrA;
@@ -4634,7 +4637,7 @@ otherwise the result was zero or greater.
                 sov1 = SizeOfVar(a->name1);
                 sov2 = SizeOfVar(a->name2);
 
-                uint32_t addrA = CopyArgToReg(false, Scratch0, sov1, a->name2, false);
+                ADDR_T addrA = CopyArgToReg(false, Scratch0, sov1, a->name2, false);
                 MemForVariable(a->name1, &addr1);
 
                 for(int i = 0; i < sov1; i++) {
@@ -4689,11 +4692,11 @@ otherwise the result was zero or greater.
                 // sov2 = SizeOfVar(a->name2);
                 // sov3 = SizeOfVar(a->name3);
 
-                // uint32_t addrB = CopyArgToReg(true, Scratch0, sov, a->name2, true); // v1
+                // ADDR_T addrB = CopyArgToReg(true, Scratch0, sov, a->name2, true); // v1
                 // isModificationRisk = addr1 != addr2;
-                // uint32_t addrB = CopyArgToReg(addr1 != addr2, Scratch0, sov1, a->name2, true); // v2
-                uint32_t addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1), addr1, Scratch0, sov1, a->name2, true);
-                uint32_t addrA = CopyArgToReg(false, Scratch4, sov1, a->name3, true);
+                // ADDR_T addrB = CopyArgToReg(addr1 != addr2, Scratch0, sov1, a->name2, true); // v2
+                ADDR_T addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1), addr1, Scratch0, sov1, a->name2, true);
+                ADDR_T addrA = CopyArgToReg(false, Scratch4, sov1, a->name3, true);
                 add(addrB, addrA, sov1, a->name4, a->name5); // b = b + a , b - is rewritten
                 CopyRegToReg(addr1, sov1, addrB, sov1, a->name1, "addrB", true);
                 break;
@@ -4747,11 +4750,11 @@ otherwise the result was zero or greater.
                           a->name3.c_str());
                 }
 
-                // uint32_t addrB = CopyArgToReg(true, Scratch0, sov, a->name2, true);  // v1
+                // ADDR_T addrB = CopyArgToReg(true, Scratch0, sov, a->name2, true);  // v1
                 // isModificationRisk = addr1 != addr2;
-                // uint32_t addrB = CopyArgToReg(addr1 != addr2, Scratch0, sov, a->name2, true); // v2
-                uint32_t addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1), addr1, Scratch0, sov1, a->name2, true);
-                uint32_t addrA = CopyArgToReg(false, Scratch4, sov, a->name3, true);
+                // ADDR_T addrB = CopyArgToReg(addr1 != addr2, Scratch0, sov, a->name2, true); // v2
+                ADDR_T addrB = CopyArgToDest(IsOutputReg(addr1) && (sov1 > 1), addr1, Scratch0, sov1, a->name2, true);
+                ADDR_T addrA = CopyArgToReg(false, Scratch4, sov, a->name3, true);
                 sub(addrB, addrA, sov, a->name4, a->name5); // b = b - a , b - is rewritten
                 CopyRegToReg(addr1, sov1, addrB, sov, a->name1, "addrB", true);
                 break;
@@ -5030,7 +5033,7 @@ otherwise the result was zero or greater.
                 else
                     oops();
 
-                uint32_t addr;
+                ADDR_T addr;
                 int   bit;
                 MemForSingleBit(a->name1, false, &addr, &bit);
                 ClearBit(addr, bit, a->name1);
@@ -5146,9 +5149,10 @@ otherwise the result was zero or greater.
                         break;
                     }
                 }
-                double targetFreq = 1.0 * Prog.mcuClock / (pr2plus1 * 4 * prescale);
                 /*
-                dbps(a->name1.c_str())
+                double targetFreq = 1.0 * Prog.mcuClock / (pr2plus1 * 4 * prescale);
+                
+				dbps(a->name1.c_str())
                 dbpd(timer)
                 dbpd(target)
                 dbpd(pr2plus1)
@@ -5166,8 +5170,8 @@ otherwise the result was zero or greater.
                     CopyRegToReg(Scratch0, 2, addr1, 2, "Scratch0:1", a->name1, false);
                 }
 
-                uint32_t REG_CCPRxL = -1;
-                uint32_t REG_CCPxCON = -1;
+                uint32_t REG_CCPRxL = INVALID_ADDR;
+                uint32_t REG_CCPxCON = INVALID_ADDR;
 
                 if((timer == 1) || McuAs(" PIC16F72 ")) {
                     REG_CCPRxL = REG_CCPR1L;
@@ -5273,7 +5277,7 @@ otherwise the result was zero or greater.
 
                 // Only need to do the setup stuff once
                 Comment("PWM init");
-                uint32_t addr;
+                ADDR_T addr;
                 int   bit;
                 char  storeName[MAX_NAME_LEN];
                 sprintf(storeName, "$pwm_init_%s", a->name3.c_str());
@@ -5697,7 +5701,7 @@ otherwise the result was zero or greater.
                 IfBitSet(REG_ADCON0, goPos);
                 Instruction(OP_GOTO, spin);
 
-                if(REG_ADRESH != std::numeric_limits<uint32_t>::max()) {
+                if(REG_ADRESH != INVALID_ADDR) {
                     Instruction(OP_MOVF, REG_ADRESH, DEST_W);
                     Instruction(OP_MOVWF, addr1 + 1);
                 }
@@ -5707,7 +5711,7 @@ otherwise the result was zero or greater.
 
                 // hook those pins back up to the digital inputs in case
                 // some of them are used that way
-                if(REG_ADCON1 != std::numeric_limits<uint32_t>::max())
+                if(REG_ADCON1 != INVALID_ADDR)
                     WriteRegister(REG_ADCON1, //
                                   (1 << 7) |  // right-justify A/D result
                                   // (6 << 0)    // all digital inputs
@@ -6099,7 +6103,7 @@ static void SetPrescaler(int tmr)
         else if(plcTmr.prescaler == 256)
             plcTmr.PS = 0x07;
         else
-            THROW_COMPILER_EXCEPTION_FMT("%d", plcTmr.prescaler);
+            THROW_COMPILER_EXCEPTION_FMT("%ld", plcTmr.prescaler);
     } else if(tmr == 1) {
         plcTmr.PS = 0x00;
         // set up prescaler
@@ -6112,7 +6116,7 @@ static void SetPrescaler(int tmr)
         else if(plcTmr.prescaler == 8)
             plcTmr.PS |= 0x30;
         else
-            THROW_COMPILER_EXCEPTION_FMT("%d", plcTmr.prescaler);
+            THROW_COMPILER_EXCEPTION_FMT("%ld", plcTmr.prescaler);
         // enable clock, internal source
         plcTmr.PS |= 0x01; // TMR1ON
     } else
@@ -6194,7 +6198,7 @@ err0:
 // Result may be a byte size addr3->mem[1].
 // http://www.piclist.com/techref/microchip/math/32bmath-ph.htm
 //-----------------------------------------------------------------------------
-static void WriteMultiplyRoutine8(uint32_t addr3, uint32_t addr1, uint32_t addr2, int sov3) // addr3 = addr1 * addr2;
+static void WriteMultiplyRoutine8(ADDR_T addr3, ADDR_T addr1, ADDR_T addr2, int sov3) // addr3 = addr1 * addr2;
 {
     Comment("MultiplyRoutine8");
     uint32_t savePicProgWriteP = PicProgWriteP;
@@ -7281,7 +7285,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     FileTracker f(outFile, "w");
     if(!f) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFile);
-        return false;
+        //return false;
     }
 
     char outFileAsm[MAX_PATH];
@@ -7289,7 +7293,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     FileTracker fAsm(outFileAsm, "w");
     if(!fAsm) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), outFileAsm);
-        return false;
+        //return false;
     }
 
     rungNow = -100;
@@ -7302,7 +7306,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     if(!Prog.configurationWord)
         Prog.configurationWord = Prog.mcu()->configurationWord;
-    if(CONFIG_ADDR2 != std::numeric_limits<uint32_t>::max()) {
+    if(CONFIG_ADDR2 != INVALID_ADDR) {
         fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR1, (WORD)Prog.configurationWord & 0xFFFF);
         fprintf(fAsm, "\t__CONFIG 0x%X, 0x%X\n", CONFIG_ADDR2, (WORD)(Prog.configurationWord >> 16) & 0xFFFF);
     } else {
@@ -7336,7 +7340,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     }
     ScratchI = AllocOctetRam(); // tmp indirect addressing or Counter
 
-    if(REG_EEDATA != std::numeric_limits<uint32_t>::max()) {
+    if(REG_EEDATA != INVALID_ADDR) {
         // Allocate the register used to hold the high byte of the EEPROM word
         // that's queued up to program, plus the bit to indicate that it is
         // valid.
@@ -7432,9 +7436,9 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     for(uint32_t i = 0; i <= RamSection; i++) {
         if(Prog.mcu()->ram[i].len) {
             if(Bank(Prog.mcu()->ram[i].start) != Bank(Prog.mcu()->ram[i].start + Prog.mcu()->ram[i].len - 1))
-                THROW_COMPILER_EXCEPTION_FMT("%d", i);
+                THROW_COMPILER_EXCEPTION_FMT("%u", i);
             if(Prog.mcu()->ram[i].len > 256)
-                THROW_COMPILER_EXCEPTION_FMT("%d", i);
+                THROW_COMPILER_EXCEPTION_FMT("%u", i);
 
             // Select bank N
             if(Prog.mcu()->core == EnhancedMidrangeCore14bit) {
@@ -7581,17 +7585,17 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
     if(REG_ANSELH != -1)
         Instruction(OP_CLRF, REG_ANSELH);
     /**/
-    if(REG_ANSELA != std::numeric_limits<uint32_t>::max()) {
+    if(REG_ANSELA != INVALID_ADDR) {
         Instruction(OP_CLRF, REG_ANSELA);
         if(isAnsel[0])
             WriteRegister(REG_ANSELA, isAnsel[0]);
     }
-    if(REG_ANSELB != std::numeric_limits<uint32_t>::max()) {
+    if(REG_ANSELB != INVALID_ADDR) {
         Instruction(OP_CLRF, REG_ANSELB);
         if(isAnsel[1])
             WriteRegister(REG_ANSELB, isAnsel[1]);
     }
-    if(REG_ANSELC != std::numeric_limits<uint32_t>::max()) {
+    if(REG_ANSELC != INVALID_ADDR) {
         Instruction(OP_CLRF, REG_ANSELC);
         if(isAnsel[2])
             WriteRegister(REG_ANSELC, isAnsel[2]);
@@ -7601,17 +7605,17 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         if(isAnsel[3])
             WriteRegister(REG_ANSELD, isAnsel[3]);
     }
-    if(REG_ANSELE != std::numeric_limits<uint32_t>::max()) {
+    if(REG_ANSELE != INVALID_ADDR) {
         Instruction(OP_CLRF, REG_ANSELE);
         if(isAnsel[4])
             WriteRegister(REG_ANSELE, isAnsel[4]);
     }
-    if(REG_ANSELF != std::numeric_limits<uint32_t>::max()) {
+    if(REG_ANSELF != INVALID_ADDR) {
         Instruction(OP_CLRF, REG_ANSELF);
         if(isAnsel[5])
             WriteRegister(REG_ANSELF, isAnsel[5]);
     }
-    if(REG_ANSELG != std::numeric_limits<uint32_t>::max()) {
+    if(REG_ANSELG != INVALID_ADDR) {
         Instruction(OP_CLRF, REG_ANSELG);
         if(isAnsel[6])
             WriteRegister(REG_ANSELG, isAnsel[6]);
@@ -7672,12 +7676,12 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
 
     //  Comment("Select Bank 0");
     //  BankSelect(0xFF, 0);
-    uint32_t addrDuty;
+    ADDR_T addrDuty;
     int   bitDuty;
     if(Prog.cycleDuty) {
         MemForSingleBit(YPlcCycleDuty, false, &addrDuty, &bitDuty);
     }
-    uint32_t addrINTCON_T0IF;
+    ADDR_T addrINTCON_T0IF;
     int   bitINTCON_T0IF;
     uint32_t BeginOfPLCCycle0;
 

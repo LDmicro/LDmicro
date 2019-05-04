@@ -553,10 +553,10 @@ void ShowConfDialog()
     SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     ///// Added by JG
-    sprintf(buf, "%ld", Prog.spiRate);
+    sprintf(buf, "%d", Prog.spiRate);
     SendMessage(RateTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    sprintf(buf, "%ld", Prog.i2cRate);
+    sprintf(buf, "%d", Prog.i2cRate);
     SendMessage(SpeedTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM))
