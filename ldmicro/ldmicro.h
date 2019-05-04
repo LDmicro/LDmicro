@@ -683,11 +683,11 @@ const char *PinToName(int pin);
 const char *ArduinoPinName(McuIoPinInfo *iop);
 const char *ArduinoPinName(int pin);
 //void SetMcu_(McuIoInfo *mcu);
-int NameToPin(char *pinName);
+int NameToPin(const char* pinName);
 McuIoPinInfo *PinInfo(int pin);
 McuIoPinInfo *PinInfoForName(const char *name);
-McuSpiInfo *GetMcuSpiInfo(char *name);
-McuI2cInfo *GetMcuI2cInfo(char *name);          ///// Added by JG
+McuSpiInfo *GetMcuSpiInfo(const char *name);
+McuI2cInfo *GetMcuI2cInfo(const char *name);          ///// Added by JG
 McuPwmPinInfo *PwmPinInfo(int pin);
 McuPwmPinInfo *PwmPinInfo(int pin, int timer);
 McuPwmPinInfo *PwmPinInfoForName(char *name);
@@ -743,7 +743,7 @@ void DestroySimulationWindow(HWND SimulationWindow);        ///// Prototype modi
 void ShowSimulationWindow(int sim);                         ///// Prototype modified by JG
 extern bool InSimulationMode;
 //extern bool SimulateRedrawAfterNextCycle;
-extern DWORD CyclesCount;
+extern uint32_t CyclesCount;
 void SetSimulationVariable(const char *name, int32_t val);
 int32_t GetSimulationVariable(const char *name, bool forIoList);
 int32_t GetSimulationVariable(const char *name);

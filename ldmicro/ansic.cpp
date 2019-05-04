@@ -3086,11 +3086,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "void UART_Init(void) {\n"
                         "  // UART baud rate setup\n");
                 if(compiler_variant != MNU_COMPILE_ANSIC) {
-                    int divisor = (Prog.mcuClock + Prog.baudRate * 32) / (Prog.baudRate * 64) - 1;
+                    int div = (Prog.mcuClock + Prog.baudRate * 32) / (Prog.baudRate * 64) - 1;
                     fprintf(f,
                             "  SPBRG = %d;\n"
                             "  TXEN = 1; SPEN = 1; CREN = 1;\n",
-                            divisor);
+                            div);
                 }
                 fprintf(f,
                         "}\n"

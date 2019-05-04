@@ -1089,14 +1089,13 @@ void ShowAnalogSliderPopup(char *name)
     ShowWindow(AnalogSliderMain, true);
     SetFocus(AnalogSliderTrackbar);
 
-    DWORD ret;
     MSG   msg;
     AnalogSliderDone = false;
     AnalogSliderCancel = false;
 
     //int32_t orig = GetAdcShadow(name);
 
-    while(!AnalogSliderDone && (ret = GetMessage(&msg, nullptr, 0, 0))) {
+    while(!AnalogSliderDone && (GetMessage(&msg, nullptr, 0, 0) > 0)) {
         int32_t v = (int32_t)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
 
         if(msg.message == WM_KEYDOWN) {
@@ -1569,10 +1568,9 @@ void ShowIoDialog(int item)
     SendMessage(PinList, LB_SETCURSEL, (WPARAM)Index, 0);
 
     MSG   msg;
-    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
+    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;
@@ -1743,10 +1741,9 @@ void ShowModbusDialog(int item)
     ShowWindow(IoDialog, true);
 
     MSG   msg;
-    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
+    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;
@@ -1767,8 +1764,8 @@ void ShowModbusDialog(int item)
     if(!DialogCancel) {
         SendMessage(ModbusSlave, WM_GETTEXT, (WPARAM)sizeof(txtModbusSlave), (LPARAM)txtModbusSlave);
         SendMessage(ModbusRegister, WM_GETTEXT, (WPARAM)sizeof(txtModbusRegister), (LPARAM)txtModbusRegister);
-        Prog.io.assignment[item].modbus.Slave = atoi(txtModbusSlave);
-        Prog.io.assignment[item].modbus.Address = atoi(txtModbusRegister);
+        Prog.io.assignment[item].modbus.Slave = static_cast<uint8_t>(atoi(txtModbusSlave));
+        Prog.io.assignment[item].modbus.Address = static_cast<uint8_t>(atoi(txtModbusRegister));
     }
 
     EnableWindow(MainWindow, true);

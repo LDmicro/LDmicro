@@ -63,15 +63,14 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         }
     }
 
-    WNDPROC w;
-    int     i;
-    for(i = 0; i < MAX_LOOK_UP_TABLE_LEN; i++) {
+    WNDPROC w = NULL;
+    for(int i = 0; i < MAX_LOOK_UP_TABLE_LEN; i++) {
         if(hwnd == ValuesTextbox[i]) {
             w = (WNDPROC)PrevValuesProc[i];
             break;
         }
     }
-    if(i == MAX_LOOK_UP_TABLE_LEN)
+    if(w == NULL)
         oops();
 
     return CallWindowProc(w, hwnd, msg, wParam, lParam);
@@ -498,8 +497,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     int  count = t->count;
     bool asString = t->editAsString;
     memset(ValuesCache, 0, sizeof(ValuesCache));
-    int i;
-    for(i = 0; i < count; i++) {
+    for(int i = 0; i < count; i++) {
         ValuesCache[i] = t->vals[i];
     }
 
@@ -524,9 +522,11 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(t->dest));
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(t->name));
     SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(t->index));
-    char buf[30];
-    sprintf(buf, "%d", t->count);
-    SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+    {
+        char buf[30];
+        sprintf(buf, "%d", t->count);
+        SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+    }
     if(asString) {
         SendMessage(AsStringCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
@@ -540,10 +540,9 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     char PrevTableAsString[1024] = "";
 
     MSG   msg;
-    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
+    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;
@@ -633,8 +632,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     // might cancel).
     int count = t->count;
     memset(ValuesCache, 0, sizeof(ValuesCache));
-    int i;
-    for(i = 0; i < count * 2; i++) {
+    for(int i = 0; i < count * 2; i++) {
         ValuesCache[i] = t->vals[i];
     }
 
@@ -659,9 +657,11 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(t->name));
     SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(t->dest));
     SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(t->index));
-    char buf[30];
-    sprintf(buf, "%d", t->count);
-    SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+    {
+        char buf[30];
+        sprintf(buf, "%d", t->count);
+        SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+    }
 
     // And show the window
     EnableWindow(MainWindow, false);
@@ -670,10 +670,9 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
     MSG   msg;
-    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
+    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;
@@ -720,8 +719,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
         DestroyLutControls();
         // The call to DestroyLutControls updated ValuesCache, so just read
         // them out of there.
-        int i;
-        for(i = 0; i < count * 2; i++) {
+        for(int i = 0; i < count * 2; i++) {
             t->vals[i] = ValuesCache[i];
         }
         t->count = count;

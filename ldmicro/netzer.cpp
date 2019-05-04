@@ -675,7 +675,7 @@ static void ifBitSet(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 
 static void ifBitCleared(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    uint16_t labelAddress;
+    uint16_t labelAddress = 0;
     if(f)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
@@ -1032,15 +1032,6 @@ static void elseOp(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static int normalizeString(char *pString, FILE *f = nullptr)
-{
-    int len = 0;
-
-    return len;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 static void writeStringOp(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
     uint8_t        address;
@@ -1078,7 +1069,6 @@ void CompileNetzer(const char *outFile)
 
     // Prepare projectname.
     {
-        int   i;
         const char *lastslash = strrchr(outFile, '/');
         const char *lastbslash = strrchr(outFile, '\\');
 
@@ -1090,6 +1080,7 @@ void CompileNetzer(const char *outFile)
             copy++;
         }
 
+        uint32_t i;
         for(i = 0; i < MAX_PROJECTNAME_LENGTH; i++) {
             if((copy[i] == '.') || (copy[i] == 0)) {
                 break;

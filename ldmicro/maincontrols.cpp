@@ -354,7 +354,6 @@ HMENU MakeMainWindowMenus()
 {
     HMENU compile, help;
     HMENU ConfigMenu;
-    int   i;
     // file popup menu
     FileMenu = CreatePopupMenu();
     AppendMenu(FileMenu, MF_STRING, MNU_NEW, _("&New\tCtrl+N"));
@@ -730,7 +729,7 @@ HMENU MakeMainWindowMenus()
     ConfigMenu = CreatePopupMenu();
     SchemeMenu = CreatePopupMenu();
     SetSyntaxHighlightingColours();                     ///// Added by JG for translation
-    for(i = 0; i < NUM_SUPPORTED_SCHEMES; i++) {
+    for(int i = 0; i < NUM_SUPPORTED_SCHEMES; i++) {
         AppendMenu(SchemeMenu, MF_STRING, MNU_SCHEME_BLACK + i, Schemes[i].sName);
     }
     AppendMenu(SchemeMenu, MF_SEPARATOR, 0, "");
@@ -928,7 +927,7 @@ void RefreshStatusBar()
 
     if(Prog.cycleTime > 0) {
         sprintf(buf,
-                "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%d T=%.6g %ss",
+                "Tcycle=%.6g %ss F=%.6g %sHz F/2=%.6g %sHz Ncycle=%lu T=%.6g %ss",
                 T,
                 Tunits,
                 F,
@@ -939,7 +938,7 @@ void RefreshStatusBar()
                 TN,
                 TNunits);
     } else {
-        sprintf(buf, "Tcycle=%.6g %ss Ncycle=%d T=%.6g %ss", T, Tunits, CyclesCount, TN, TNunits);
+        sprintf(buf, "Tcycle=%.6g %ss Ncycle=%lu T=%.6g %ss", T, Tunits, CyclesCount, TN, TNunits);
     }
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 

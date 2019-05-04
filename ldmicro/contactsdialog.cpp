@@ -284,10 +284,9 @@ void ShowContactsDialog(bool *negated, bool *set1, char *name)
     SendMessage(NameTextbox, EM_SETSEL, 0, -1);
 
     MSG   msg;
-    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
+    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;
