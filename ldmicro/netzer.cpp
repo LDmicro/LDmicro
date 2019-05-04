@@ -470,13 +470,13 @@ int GenerateIntOpcodes()
 
                 if(!(op.name1 & MAPPED_TO_IO)) {
                     THROW_COMPILER_EXCEPTION(_("Dest variable of write string instruction must be located at IO register."));
-                    return -1;
+                    //return -1;
                 }
 
                 // Check whether only one % sign is included!
                 if(GetPercentCharactersCount(IntCode[ipc].name3) > 1) {
                     THROW_COMPILER_EXCEPTION(_("Maximal one format placeholder is allowed in write string instruction."));
-                    return -1;
+                    //return -1;
                 }
 
                 break;
@@ -500,7 +500,7 @@ int GenerateIntOpcodes()
             case INT_UART_SEND_BUSY:
             default:
                 THROW_COMPILER_EXCEPTION(_("Unsupported op (anything ADC, PWM, UART, EEPROM) for Netzer target."));
-                return -1;
+                //return -1;
         }
 
         memcpy(&OutProg[outPc], &op, sizeof(op));

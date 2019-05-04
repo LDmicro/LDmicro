@@ -139,7 +139,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         if(IsNumber(&str[3])) {
           fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
         } else {
-          uint32_t addr;
+          ADDR_T addr;
           char name[MAX_NAME_LEN];
           sprintf(name,"#%s", &str[3]);
           MemForVariable(name, &addr);
@@ -577,7 +577,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 fprintf(f, "void setPwmFrequency%X(SDWORD freq, SWORD percent, SWORD resol) {\n", pwm);
                 fprintf(f, "  static SDWORD oldfreq= 0;\n");
                 fprintf(f, "  if (freq != oldfreq)\n");
-                fprintf(f, "    PWM_Init(0x%2.2X, %d, freq, resol);\n", pwm, Prog.mcuClock); 
+                fprintf(f, "    PWM_Init(0x%2.2X, %d, freq, resol);\n", pwm, Prog.mcuClock);
                 fprintf(f, "  PWM_Set(0x%2.2X, percent, resol);\n", pwm);
                 fprintf(f, "  oldfreq= freq;\n");
                 fprintf(f, "}\n\n");
@@ -864,7 +864,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
 {
     all_arduino_pins_are_mapped = true;
 
-    uint32_t addr, addr2;
+    ADDR_T addr, addr2;
     int   bit, bit2;
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
@@ -1228,7 +1228,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     if(IsNumber(&IntCode[i].name1[1])) {
                       fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
                     } else {
-                      uint32_t addr;
+                      ADDR_T addr;
                       char name[MAX_NAME_LEN];
                       sprintf(name,"#%s", &IntCode[i].name1[1]);
                       MemForVariable(name, &addr);
@@ -1265,7 +1265,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                             MapSym(IntCode[i].name1.c_str(), ASINT),
                             &IntCode[i].name2[1]);
                     } else {
-                      uint32_t addr;
+                      ADDR_T addr;
                       char name[MAX_NAME_LEN];
                       sprintf(name,"#%s", &IntCode[i].name2[1]);
                       MemForVariable(name, &addr);
@@ -2213,7 +2213,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     FileTracker flh(ladderhName, "w");
     if(!flh) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ladderhName);
-        return false;
+        //return false;
     }
     fprintf(flh,
             "/* This is example for ladder.h file!\n"
@@ -2263,7 +2263,6 @@ bool CompileAnsiC(const char *dest, int MNU)
             "\n",
             CurrentLdName,
             CurrentLdName,
-            CurrentLdName,
             CurrentLdName);
 
     ///// Modified by JG
@@ -2291,9 +2290,9 @@ bool CompileAnsiC(const char *dest, int MNU)
             "/* Comment out USE_MACRO in next line, if you want to use functions instead of macros. */\n"
             "#define USE_MACRO\n"
             "\n",
-            CurrentLdName,
-            CurrentLdName,
-            CurrentLdName,
+//            CurrentLdName,
+  //          CurrentLdName,
+    //        CurrentLdName,
             CurrentLdName);
     }
     /////
@@ -2997,11 +2996,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "  SWORD recv= 0;\n"
                         "  recv= I2C_MasterGetReg(address, registr);\n"
                         "  return recv;\n"
-                        "}\n\n", I2C_Used);
+                        "}\n\n"/*, I2C_Used*/);
                 fprintf(f,
                         "void I2C_Send(SBYTE address, SBYTE registr, SWORD send) {\n"
                         "  I2C_MasterSetReg(address, registr, send);\n"
-                        "}\n\n", I2C_Used);
+                        "}\n\n"/*, I2C_Used*/);
             }
         }
         /////
@@ -3188,11 +3187,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "  SWORD recv= 0;\n"
                         "  recv= I2C_MasterGetReg(address, registr);\n"
                         "  return recv;\n"
-                        "}\n\n", I2C_Used);
+                        "}\n\n"/*, I2C_Used*/);
                 fprintf(f,
                         "void I2C_Send(SBYTE address, SBYTE registr, SWORD send) {\n"
                         "  I2C_MasterSetReg(address, registr, send);\n"
-                        "}\n\n", I2C_Used);
+                        "}\n\n"/*, I2C_Used*/);
             }
         }
         /////
@@ -3222,7 +3221,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "}\n\n", 6);
                 fprintf(f,
                         "ldBOOL UART_Transmit_Busy(void) {\n"
-                        "  if (UART_Transmit_Ready()) return 0;\n"
+                        "  if (UART_Transmit_Ready(USART%d)) return 0;\n"
                         "  else return 1;\n"
                         "}\n\n", 6);
                 fprintf(f,

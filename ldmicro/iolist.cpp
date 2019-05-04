@@ -919,7 +919,7 @@ bool LoadIoListFromFile(FileTracker& f)
         char *s = strstr(line, " at ");
         if((s) && (isdigit(s[4]))) {
             // Don't internationalize this! It's the file format, not UI.
-            if(sscanf(line, " %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address) >= 2) {
+            if(sscanf(line, " %s at %d %hhu %hu", name, &pin, &modbus.Slave, &modbus.Address) >= 2) {
                 AppendIoSeenPreviously(name, type, pin, modbus);
             }
         } else {
@@ -1865,7 +1865,7 @@ void IoListProc(NMHDR *h)
                 case LV_IO_RAM_ADDRESS: {
                     if(!Prog.mcu())
                         break;
-                    uint32_t addr = 0;
+                    ADDR_T addr = INVALID_ADDR;
                     int   bit = -1;
                     if((type == IO_TYPE_PORT_INPUT) || //
                        (type == IO_TYPE_PORT_OUTPUT)) {

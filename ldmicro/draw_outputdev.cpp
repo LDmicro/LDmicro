@@ -124,6 +124,7 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
         return;
 
     COLORREF prev;
+    bool     is_prev = false;
     bool     firstTime = true;
     bool     inNumber = false;
     bool     inComment = false;
@@ -160,18 +161,22 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
             cx--;
             if(hiOk) {
                 prev = GetTextColor(Hdc);
+                is_prev = true;
                 SetTextColor(Hdc, HighlightColours.op);
             }
         } else if(*str == '\x02') {
             cx--;
             if(hiOk) {
-                SetTextColor(Hdc, prev);
+                if(is_prev)
+                    SetTextColor(Hdc, prev);
+                is_prev = false;
                 inComment = false;
             }
         } else if(*str == '\x03') {
             cx--;
             if(hiOk || InSimulationMode) {
                 prev = GetTextColor(Hdc);
+                is_prev = true;
                 SetTextColor(Hdc, HighlightColours.comment);
                 inComment = true;
             }
@@ -305,10 +310,10 @@ void PaintWindow()
 
             SetTextColor(Hdc, HighlightColours.rungNum);
 
-            sprintf(str, "%4d", Prog.OpsInRung[i]);
+            sprintf(str, "%4u", Prog.OpsInRung[i]);
             TextOut(Hdc, 8, yp + FONT_HEIGHT, str, 4);
 
-            sprintf(str, "%4d", Prog.HexInRung[i]);
+            sprintf(str, "%4u", Prog.HexInRung[i]);
             TextOut(Hdc, 8, yp + FONT_HEIGHT * 2, str, 4);
 
             SetTextColor(Hdc, HighlightColours.selected);
@@ -746,12 +751,12 @@ void ExportDrawingAsText(char *file)
         strncpy(ExportBuffer[cy + 1], str, 4);
 
         if(Prog.OpsInRung[i]) {
-            sprintf(str, "%4d", Prog.OpsInRung[i]);
+            sprintf(str, "%4u", Prog.OpsInRung[i]);
             strncpy(ExportBuffer[cy + 2], str, 4);
         }
 
         if(Prog.HexInRung[i]) {
-            sprintf(str, "%4d", Prog.HexInRung[i]);
+            sprintf(str, "%4u", Prog.HexInRung[i]);
             strncpy(ExportBuffer[cy + 3], str, 4);
         }
 

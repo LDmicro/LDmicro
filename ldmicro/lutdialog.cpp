@@ -338,7 +338,7 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
         for(i = 0; i < count; i++) {
             int c = ValuesCache[i];
             if(c >= 32 && c <= 127 && c != '\\') {
-                str[j++] = c;
+                str[j++] = (char)c;
             } else if(c == '\\') {
                 str[j++] = '\\';
                 str[j++] = '\\';

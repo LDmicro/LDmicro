@@ -2337,7 +2337,7 @@ void DescribeForIoList(const char *name, int type, char *out)
         case IO_TYPE_TLO:
         case IO_TYPE_RTL:
         case IO_TYPE_RTO: {
-            long v = GetSimulationVariable(name, true);
+            int32_t v = GetSimulationVariable(name, true);
             double dtms = v * (Prog.cycleTime / 1000.0);
             int    sov = SizeOfVar(name);
             //v = OverflowToVarSize(v, sov);
@@ -2347,9 +2347,9 @@ void DescribeForIoList(const char *name, int type, char *out)
                 else if(sov == 2)
                     sprintf(out, "0x%04X = %d = %.6g ms", v & 0xffff, v, dtms);
                 else if(sov == 3)
-                    sprintf(out, "0x%06X = %ld = %.6g ms", v & 0xFFffff, v, dtms);
+                    sprintf(out, "0x%06X = %d = %.6g ms", v & 0xFFffff, v, dtms);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %ld = %.6g ms", v & 0xFFFFffff, v, dtms);
+                    sprintf(out, "0x%08X = %d = %.6g ms", v & 0xFFFFffff, v, dtms);
                 else
                     oops();
             } else {
@@ -2358,16 +2358,16 @@ void DescribeForIoList(const char *name, int type, char *out)
                 else if(sov == 2)
                     sprintf(out, "0x%04X = %d = %.6g s", v & 0xffff, v, dtms / 1000);
                 else if(sov == 3)
-                    sprintf(out, "0x%06X = %ld = %.6g s", v & 0xFFffff, v, dtms / 1000);
+                    sprintf(out, "0x%06X = %d = %.6g s", v & 0xFFffff, v, dtms / 1000);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %ld = %.6g s", v & 0xFFFFffff, v, dtms / 1000);
+                    sprintf(out, "0x%08X = %d = %.6g s", v & 0xFFFFffff, v, dtms / 1000);
                 else
                     oops();
             }
             break;
         }
         default: {
-            long v = GetSimulationVariable(name, true);
+            int32_t v = GetSimulationVariable(name, true);
             int  sov = SizeOfVar(name);
             //v = OverflowToVarSize(v, sov);
             if(sov == 1)
@@ -2375,9 +2375,9 @@ void DescribeForIoList(const char *name, int type, char *out)
             else if(sov == 2)
                 sprintf(out, "0x%04X = %d", v & 0xffff, v);
             else if(sov == 3)
-                sprintf(out, "0x%06X = %ld", v & 0xFFffff, v);
+                sprintf(out, "0x%06X = %d", v & 0xFFffff, v);
             else if(sov == 4)
-                sprintf(out, "0x%08X = %ld", v & 0xFFFFffff, v);
+                sprintf(out, "0x%08X = %d", v & 0xFFFFffff, v);
             else {
                 sprintf(out, "0x%X = %d", v, v);
             }
@@ -2396,7 +2396,7 @@ void SimulationToggleContact(char *name)
     if((name[0] == 'X') || (name[0] == 'Y')) {
       McuIoPinInfo *iop = PinInfoForName(name);
       if(iop) {
-        uint32_t addr = -1;
+        ADDR_T addr = INVALID_ADDR;
         int   bit = -1;
         MemForSingleBit(name, true, &addr, &bit);
 
@@ -2640,8 +2640,8 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
 
         TerminalX = TerminalX3; TerminalY = TerminalY3; TerminalW = TerminalW3; TerminalH = TerminalH3;
     } else {
-		oops();
-	}	
+        oops();
+    }
     /////
 
     if(TerminalW > 800)
@@ -2914,7 +2914,7 @@ static void   AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) 
                 strcpy(append, "\r\n");
                 b = '\0';
             } else {
-                if((s = strrchr(buf, '\n')) != '\0' ) {
+                if((s = strrchr(buf, '\n')) != nullptr) {
                     s[1] = '\0';
                 } else {
                     buf[0] = '\0';

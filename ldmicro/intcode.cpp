@@ -69,10 +69,10 @@ int asm_discover_names = 0;
 //                       4- l_0009:     bcf  REG_PCLATH,     4 ; 0xa ; 10
 //-----------------------------------------------------------------------------
 
-uint32_t addrRUartRecvErrorFlag;
-int   bitRUartRecvErrorFlag;
-uint32_t addrRUartSendErrorFlag;
-int   bitRUartSendErrorFlag;
+ADDR_T addrRUartRecvErrorFlag;
+int    bitRUartRecvErrorFlag;
+ADDR_T addrRUartSendErrorFlag;
+int    bitRUartSendErrorFlag;
 
 std::vector<IntOp> IntCode;
 int                ProgWriteP = 0;
@@ -1359,7 +1359,7 @@ static bool CheckStaySameElem(int which, void *elem)
         default:
             return StaySameElem(which);
     }
-    return false;
+    //return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1381,7 +1381,7 @@ static bool CheckEndOfRungElem(int which, void *elem)
         default:
             return EndOfRungElem(which);
     }
-    return false;
+    //return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -3400,7 +3400,7 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             sprintf(ticks, "$ticks_%s", l->d.QuadEncod.counter);
             SetSizeOfVar(ticks, byteNeeded(l->d.QuadEncod.countPerRevol));
 
-            uint32_t addr1 = -1, addr2 = -1;
+            ADDR_T addr1 = INVALID_ADDR, addr2 = INVALID_ADDR;
             int   bit1 = -1, bit2 = -1;
             MemForSingleBit(l->d.QuadEncod.inputA, true, &addr1, &bit1);
             MemForSingleBit(l->d.QuadEncod.inputB, true, &addr2, &bit2);
@@ -4054,8 +4054,8 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
             int r;
             if(IsNumber(l->d.doGoto.label)) {
                 THROW_COMPILER_EXCEPTION_FMT(_("GOSUB: SUBPROG as number '%s' not allowed !"), l->d.doGoto.label);
-                r = hobatoi(l->d.doGoto.label);
-                r = std::min(r, Prog.numRungs + 1) - 1;
+                //r = hobatoi(l->d.doGoto.label);
+                //r = std::min(r, Prog.numRungs + 1) - 1;
             } else {
                 r = FindRung(ELEM_SUBPROG, l->d.doGoto.label);
                 if(r < 0) {

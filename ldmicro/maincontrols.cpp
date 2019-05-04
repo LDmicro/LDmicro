@@ -969,7 +969,7 @@ void RefreshControlsToSettings()
                 break;
             }
         }
-        IoListSelectionPoint = SendMessage(IoList, LVM_GETNEXTITEM, -1, LVNI_SELECTED);
+        IoListSelectionPoint = SendMessage(IoList, LVM_GETNEXTITEM, (WPARAM)-1, LVNI_SELECTED);
     }
 
     ListView_DeleteAllItems(IoList);

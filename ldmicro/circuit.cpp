@@ -457,11 +457,13 @@ void AddCoil(int what)
 void AddDelay()
 {
     oops();
-    if(!CanInsertOther)
+/*
+	if(!CanInsertOther)
         return;
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.timer.delay, "10"); // 10 us
     AddLeaf(ELEM_DELAY, t);
+*/
 }
 
 void AddTimer(int which)
@@ -1368,6 +1370,7 @@ void DeleteSelectedRung()
 static void NullDisplayMatrix(int from, int to)
 {
     return;
+	/*
     int i, j;
     for(j = from; j < to; j++) {
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
@@ -1385,6 +1388,7 @@ static void NullDisplayMatrix(int from, int to)
             }
         }
     }
+	*/
 }
 //-----------------------------------------------------------------------------
 // Insert a rung before rung i.
