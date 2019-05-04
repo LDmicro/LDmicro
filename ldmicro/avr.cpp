@@ -2463,7 +2463,7 @@ static void     ConfigureTimerForPlcCycle(long long int cycleTimeMicroseconds)
     CalcAvrPlcCycle(cycleTimeMicroseconds, AvrProgLdLen);
 
     if(Prog.cycleTimer == 0) {
-        if((WGM01 == -1)) {                       // ATmega8
+        if(WGM01 == -1) {                       // ATmega8
             tcnt0PlcCycle = 256 - plcTmr.tmr + 0; // + 0 DONE 1000Hz
             if(tcnt0PlcCycle < 0)
                 tcnt0PlcCycle = 0;
@@ -3194,24 +3194,24 @@ static void  WriteRuntime()
     BeginOfPLCCycle = AvrProg.size();
     // ConfigureTimerForPlcCycle
     if(Prog.cycleTimer == 0) {
-        if((WGM01 == -1)) { // ATmega8
-            uint32_t i = SKBS(REG_TIFR0, TOV0);
-            Instruction(OP_RJMP, AvrProg.size() - std::min(i, uint32_t(2))); // Ladder cycle timing on Timer0/Counter
+        if(WGM01 == -1) { // ATmega8
+            uint32_t skbs = SKBS(REG_TIFR0, TOV0);
+            Instruction(OP_RJMP, AvrProg.size() - std::min(skbs, uint32_t(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, TOV0); // Opcodes: 4+1+5 = 10
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
 
             STOREval(REG_TCNT0, BYTE(tcnt0PlcCycle + 0)); // + 0 DONE // reload Counter0
         } else {
-            uint32_t i = SKBS(REG_TIFR0, OCF0A);
-            Instruction(OP_RJMP, AvrProg.size() - std::min(i, uint32_t(2))); // Ladder cycle timing on Timer0/Counter
+            uint32_t skbs = SKBS(REG_TIFR0, OCF0A);
+            Instruction(OP_RJMP, AvrProg.size() - std::min(skbs, uint32_t(2))); // Ladder cycle timing on Timer0/Counter
 
             SetBit(REG_TIFR0, OCF0A);
             //To clean a bit in the register TIFR need write 1 in the corresponding bit!
         }
     } else if(Prog.cycleTimer == 1) {
-        uint32_t i = SKBS(REG_TIFR1, OCF1A);
-        Instruction(OP_RJMP, AvrProg.size() - std::min(i, uint32_t(2))); // Ladder cycle timing on Timer1/Counter
+        uint32_t skbs = SKBS(REG_TIFR1, OCF1A);
+        Instruction(OP_RJMP, AvrProg.size() - std::min(skbs, uint32_t(2))); // Ladder cycle timing on Timer1/Counter
 
         SetBit(REG_TIFR1, OCF1A);
         //To clean a bit in the register TIFR need write 1 in the corresponding bit!

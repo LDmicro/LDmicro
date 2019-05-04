@@ -109,6 +109,10 @@ void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
     if(strlen(CurrentSaveFile)) {
         tGetLastWriteTime(CurrentSaveFile, (PFILETIME)&LastWriteTime, 0);
     }
+    (void)hwnd;
+    (void)msg;
+    (void)id;
+    (void)time;
 }
 
 //-----------------------------------------------------------------------------
@@ -123,7 +127,7 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
     if(cy * FONT_HEIGHT + Y_PADDING > IoListTop)
         return;
 
-    COLORREF prev;
+    COLORREF prev = 0;
     bool     is_prev = false;
     bool     firstTime = true;
     bool     inNumber = false;
@@ -639,7 +643,7 @@ BOOL tGetLastWriteTime(const char *FileName, FILETIME *ftWrite, int mode)
         ///// beware because called by Paint() via BlinkCursor() => cannot display MsgBox ?
         if (mode != 0)                                                                          ///// Param mode added by JG
         {
-            sprintf(msg, "%s %s (error %d)\n", _("Could not open file"), FileName, GetLastError());
+            sprintf(msg, "%s %s (error %lu)\n", _("Could not open file"), FileName, GetLastError());
             Error(msg);
             //  Error("Could not open file %s (error %d)\n", FileName, GetLastError());
         }
@@ -691,7 +695,7 @@ bool sGetLastWriteTime(char *FileName, char *sFileTime)
         CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
     if(hFile == INVALID_HANDLE_VALUE) {
-        sprintf(msg, "%s %s (error %d)\n", _("Could not open file"), FileName, GetLastError());     // modified by JG
+        sprintf(msg, "%s %s (error %lu)\n", _("Could not open file"), FileName, GetLastError());     // modified by JG
         Error(msg);
         //  Error("Could not open file %s (error %d)\n", FileName, GetLastError());
         return false;
@@ -786,7 +790,7 @@ void ExportDrawingAsText(char *file)
 
     sGetLastWriteTime(CurrentSaveFile, sFileTime);
 
-    fprintf(f, "LDmicro export text.\n");
+    fprintf(f, "%s", "LDmicro export text.\n");
     fprintf(f, "Source file: %s from %s\n", CurrentSaveFile, sFileTime);
 
     if(Prog.mcu() && (Prog.mcu()->core == PC_LPT_COM))
@@ -802,7 +806,7 @@ void ExportDrawingAsText(char *file)
             f, "no MCU assigned, %.9g MHz crystal, %.3f ms cycle time\n", Prog.mcuClock / 1e6, Prog.cycleTime / 1e3);
     }
 
-    fprintf(f, "\nLADDER DIAGRAM:\n");
+    fprintf(f, "%s", "\nLADDER DIAGRAM:\n");
 
     for(i = 0; i < totalHeight; i++) {
         ExportBuffer[i][4] = '|';
@@ -812,10 +816,10 @@ void ExportDrawingAsText(char *file)
     CheckFree(ExportBuffer);
     ExportBuffer = nullptr;
 
-    fprintf(f, _("\nI/O ASSIGNMENT:\n"));
+    fprintf(f, "%s", _("\nI/O ASSIGNMENT:\n"));
 
-    fprintf(f, _("  Name                       | Type               | Pin | Port | Pin name\n"));
-    fprintf(f, " ----------------------------+--------------------+-----+------+-----------\n");
+    fprintf(f, "%s", _("  Name                       | Type               | Pin | Port | Pin name\n"));
+    fprintf(f, "%s", " ----------------------------+--------------------+-----+------+-----------\n");
     for(i = 0; i < Prog.io.count; i++) {
         char b[1024];
         memset(b, '\0', sizeof(b));

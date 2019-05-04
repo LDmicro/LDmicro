@@ -501,7 +501,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                 p++;
         }
         for(i = 0; i < x; i++) {
-            l->d.fmtdStr.string[i] = atoi(p);
+            l->d.fmtdStr.string[i] = static_cast<char>(atoi(p));
             if(l->d.fmtdStr.string[i] < 32) {
                 l->d.fmtdStr.string[i] = 'X';
             }
@@ -542,7 +542,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                 p++;
         }
         for(i = 0; i < x; i++) {
-            l->d.fmtdStr.string[i] = atoi(p);
+            l->d.fmtdStr.string[i] = static_cast<char>(atoi(p));
             if(l->d.fmtdStr.string[i] < 32) {
                 l->d.fmtdStr.string[i] = 'X';
             }
@@ -1522,8 +1522,7 @@ void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
         }
 
         case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int               i;
+            ElemSubcktSeries *series = (ElemSubcktSeries *)any;
             if(depth == 0) {
                 if(Prog.LDversion == "0.1")
                     fprintf(f, "RUNG\n");
@@ -1533,8 +1532,8 @@ void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
             } else {
                 fprintf(f, "SERIES\n");
             }
-            for(i = 0; i < s->count; i++) {
-                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any, depth + 1, rung);
+            for(int i = 0; i < series->count; i++) {
+                SaveElemToFile(f, series->contents[i].which, series->contents[i].data.any, depth + 1, rung);
             }
             Indent(f, depth);
             fprintf(f, "END\n");
@@ -1542,11 +1541,10 @@ void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
         }
 
         case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *s = (ElemSubcktParallel *)any;
-            int                 i;
+            ElemSubcktParallel *parallel = (ElemSubcktParallel *)any;
             fprintf(f, "PARALLEL\n");
-            for(i = 0; i < s->count; i++) {
-                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any, depth + 1, rung);
+            for(int i = 0; i < parallel->count; i++) {
+                SaveElemToFile(f, parallel->contents[i].which, parallel->contents[i].data.any, depth + 1, rung);
             }
             Indent(f, depth);
             fprintf(f, "END\n");

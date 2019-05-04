@@ -730,7 +730,7 @@ void AddQuadEncod()
     int n = 0;
     if(Prog.mcu()) {
         n = QuadEncodFunctionUsed();
-        if(n > Prog.mcu()->ExtIntCount) {
+        if(n > static_cast<decltype(n)>(Prog.mcu()->ExtIntCount)) {
             //Error(_("Can use only %d INTs on this MCU."), Prog.mcu()->ExtIntCount);
             //return;
         }
@@ -1370,6 +1370,8 @@ void DeleteSelectedRung()
 static void NullDisplayMatrix(int from, int to)
 {
     return;
+    (void)from;
+    (void)to;
 	/*
     int i, j;
     for(j = from; j < to; j++) {
