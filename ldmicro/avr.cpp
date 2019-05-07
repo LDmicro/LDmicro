@@ -682,14 +682,14 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
             if(!((arg1 == 24) || (arg1 == 26) || (arg1 == 28) || (arg1 == 30)))
                 oops();
             CHECK2(arg2, 0, 64);
-            sprintf(sAsm, "adiw \t r%d:r%d, %d", arg1 + 1, arg1, arg2);
+            sprintf(sAsm, "adiw \t r%u:r%u, %u", arg1 + 1, arg1, arg2);
             return 0x9600 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) | (arg2 & 0x0f);
 
         case OP_SBIW:
             if(!((arg1 == 24) || (arg1 == 26) || (arg1 == 28) || (arg1 == 30)))
                 oops();
             CHECK2(arg2, 0, 64);
-            sprintf(sAsm, "sbiw \t r%d:r%d, %d", arg1 + 1, arg1, arg2);
+            sprintf(sAsm, "sbiw \t r%u:r%u, %u", arg1 + 1, arg1, arg2);
             return 0x9700 | ((arg2 & 0x30) << 2) | ((arg1 & 0x06) << 3) | (arg2 & 0x0f);
 
         case OP_EOR:
@@ -949,43 +949,43 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
         case OP_LD_X:
             CHECK(arg1, 5);
             CHECK(arg2, 0);
-            sprintf(sAsm, "ld  \t r%d, \t X", arg1);
+            sprintf(sAsm, "ld  \t r%u, \t X", arg1);
             return 0x9000 | (arg1 << 4) | 12;
 
         case OP_LD_XP:
             CHECK(arg1, 5);
             CHECK(arg2, 0);
-            sprintf(sAsm, "ld  \t r%d, \t X+", arg1);
+            sprintf(sAsm, "ld  \t r%u, \t X+", arg1);
             return 0x9000 | (arg1 << 4) | 13;
 
         case OP_LD_XS:
             CHECK(arg1, 5);
             CHECK(arg2, 0);
-            sprintf(sAsm, "ld  \t r%d, \t -X", arg1);
+            sprintf(sAsm, "ld  \t r%u, \t -X", arg1);
             return 0x9000 | (arg1 << 4) | 14;
 
         case OP_LD_Y:
             CHECK(arg1, 5);
             CHECK(arg2, 0);
-            sprintf(sAsm, "ld  \t r%d, \t Y", arg1);
+            sprintf(sAsm, "ld  \t r%u, \t Y", arg1);
             return 0x8000 | (arg1 << 4) | 8;
 
         case OP_LD_YP:
             CHECK(arg1, 5);
             CHECK(arg2, 0);
-            sprintf(sAsm, "ld  \t r%d, \t Y+", arg1);
+            sprintf(sAsm, "ld  \t r%u, \t Y+", arg1);
             return 0x9000 | (arg1 << 4) | 9;
 
         case OP_LD_YS:
             CHECK(arg1, 5);
             CHECK(arg2, 0);
-            sprintf(sAsm, "ld  \t r%d, \t -Y", arg1);
+            sprintf(sAsm, "ld  \t r%u, \t -Y", arg1);
             return 0x9000 | (arg1 << 4) | 10;
 
         case OP_LDD_Y:
             CHECK(arg1, 5);
             CHECK(arg2, 6);
-            sprintf(sAsm, "ldd  \t r%d, \t Y+%d", arg1, arg2);
+            sprintf(sAsm, "ldd  \t r%u, \t Y+%u", arg1, arg2);
             return 0x8008 | (arg1 << 4) | ((arg2 & 0x20) << 8) | ((arg2 & 0x18) << 7) | (arg2 & 0x7);
 
         case OP_LD_Z:
@@ -1021,13 +1021,13 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
         case OP_LPM_Z:
             CHECK2(arg1, 0, 31);
             CHECK(arg2, 0);
-            sprintf(sAsm, "lpm \t r%d, \t Z", arg1);
+            sprintf(sAsm, "lpm \t r%u, \t Z", arg1);
             return (0x9004) | (arg1 << 4);
 
         case OP_LPM_ZP:
             CHECK2(arg1, 0, 31);
             CHECK(arg2, 0);
-            sprintf(sAsm, "lpm \t r%d, \t Z+", arg1);
+            sprintf(sAsm, "lpm \t r%u, \t Z+", arg1);
             return (0x9005) | (arg1 << 4);
 
         case OP_ST_X:
@@ -1166,37 +1166,37 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
         case OP_IN:
             CHECK2(arg1, 0, 31);
             CHECK2(arg2, 0, 63);
-            sprintf(sAsm, "in  \t r%d, \t 0x%02X", arg1, arg2);
+            sprintf(sAsm, "in  \t r%u, \t 0x%02X", arg1, arg2);
             return 0xB000 | ((arg2 & 0x30) << 5) | (arg1 << 4) | (arg2 & 0x0f);
 
         case OP_OUT:
             CHECK2(arg1, 0, 63);
             CHECK2(arg2, 0, 31);
-            sprintf(sAsm, "out \t 0x%02X, \t r%d", arg1, arg2);
+            sprintf(sAsm, "out \t 0x%02X, \t r%u", arg1, arg2);
             return 0xB800 | ((arg1 & 0x30) << 5) | (arg2 << 4) | (arg1 & 0x0f);
 
         case OP_SBI:
             CHECK2(arg1, 0, 31);
             CHECK2(arg2, 0, 7);
-            sprintf(sAsm, "sbi \t 0x%02X, \t %d", arg1, arg2);
+            sprintf(sAsm, "sbi \t 0x%02X, \t %u", arg1, arg2);
             return 0x9A00 | (arg1 << 3) | arg2;
 
         case OP_CBI:
             CHECK2(arg1, 0, 31);
             CHECK2(arg2, 0, 7);
-            sprintf(sAsm, "cbi \t 0x%02X, \t %d", arg1, arg2);
+            sprintf(sAsm, "cbi \t 0x%02X, \t %u", arg1, arg2);
             return 0x9800 | (arg1 << 3) | arg2;
 
         case OP_SBIC:
             CHECK2(arg1, 0, 31);
             CHECK2(arg2, 0, 7);
-            sprintf(sAsm, "sbic \t 0x%02X, \t %d", arg1, arg2);
+            sprintf(sAsm, "sbic \t 0x%02X, \t %u", arg1, arg2);
             return 0x9900 | (arg1 << 3) | arg2;
 
         case OP_SBIS:
             CHECK2(arg1, 0, 31);
             CHECK2(arg2, 0, 7);
-            sprintf(sAsm, "sbis \t 0x%02X, \t %d", arg1, arg2);
+            sprintf(sAsm, "sbis \t 0x%02X, \t %u", arg1, arg2);
             return 0x9b00 | (arg1 << 3) | arg2;
 #endif
         case OP_BST:
@@ -1236,7 +1236,7 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
             return 0x9478;
 
         case OP_DB:
-            CHECK2(BYTE(arg1), 0, 255);
+            CHECK2(BYTE(arg1), 0, 255); 
             CHECK(arg2, 0);
             //      CHECK2(arg1, -128, 127); CHECK(arg2, 0);
             sprintf(sAsm, ".db  \t 0x%02X \t", BYTE(arg1));

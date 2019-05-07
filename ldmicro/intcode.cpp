@@ -833,32 +833,32 @@ int HexDigit(int c)
 //-----------------------------------------------------------------------------
 static void GenSym(char *dest, const char *name, const char *name1, const char *name2)
 {
-    sprintf(dest, "%s_%01lx_%s_%s", name, GenSymCount, name1, name2);
+    sprintf(dest, "%s_%01x_%s_%s", name, GenSymCount, name1, name2);
     GenSymCount++;
 }
 
 static void GenVar(char *dest, const char *name1, const char *name2)
 {
-    sprintf(dest, "$var_%01lx_%s_%s", GenSymCount, name1, name2);
+    sprintf(dest, "$var_%01x_%s_%s", GenSymCount, name1, name2);
     GenSymCount++;
 }
 
 static void GenSymParThis(char *dest)
 {
-    sprintf(dest, "$parThis_%01lx", GenSymCountParThis);
+    sprintf(dest, "$parThis_%01x", GenSymCountParThis);
     GenSymCountParThis++;
 }
 static void GenSymParOut(char *dest)
 {
-    sprintf(dest, "$parOut_%01lx", GenSymCountParOut);
+    sprintf(dest, "$parOut_%01x", GenSymCountParOut);
     GenSymCountParOut++;
 }
 void GenSymOneShot(char *dest, const char *name1, const char *name2)
 {
     if(int_comment_level == 1)
-        sprintf(dest, "$once_%01lx", GenSymCountOneShot);
+        sprintf(dest, "$once_%01x", GenSymCountOneShot);
     else
-        sprintf(dest, "$once_%01lx_%s_%s", GenSymCountOneShot, name1, name2);
+        sprintf(dest, "$once_%01x_%s_%s", GenSymCountOneShot, name1, name2);
     GenSymCountOneShot++;
 }
 static void GenSymOneShot(char *dest)
@@ -867,7 +867,7 @@ static void GenSymOneShot(char *dest)
 }
 static void GenSymFormattedString(char *dest, const char *name)
 {
-    sprintf(dest, "$fmtd_%01lx_%s", GenSymCountFormattedString, name);
+    sprintf(dest, "$fmtd_%01x_%s", GenSymCountFormattedString, name);
     GenSymCountFormattedString++;
 }
 static void GenSymFormattedString(char *dest)
@@ -876,7 +876,7 @@ static void GenSymFormattedString(char *dest)
 }
 static void GenSymStepper(char *dest, const char *name)
 {
-    sprintf(dest, "$step_%01lx_%s", GenSymCountStepper, name);
+    sprintf(dest, "$step_%01x_%s", GenSymCountStepper, name);
     GenSymCountStepper++;
 }
 

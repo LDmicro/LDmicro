@@ -1438,7 +1438,7 @@ static void BankCheckForErrorsPostCompile(FileTracker& fAsm)
                 fprintf(fAsm, "    ; Bank Error.\n");
                 fprintf(
                     fAsm,
-                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%d l=%d file=%s\n",
+                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%u l=%d file=%s\n",
                     i - 1,
                     PicProg[i - 1].opPic,
                     PicProg[i - 1].arg1,
@@ -1455,7 +1455,7 @@ static void BankCheckForErrorsPostCompile(FileTracker& fAsm)
                     PicProg[i - 1].f);
                 fprintf(
                     fAsm,
-                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%d l=%d file=%s\n",
+                    "    ; i=0x%04x op=%d arg1=%u arg2=%u bank=%x arg1orig=%u commentInt=%s commentAsm=%s arg1name=%s arg2name=%s rung=%d IntPc=%u l=%d file=%s\n",
                     i,
                     PicProg[i].opPic,
                     PicProg[i].arg1,
@@ -1765,6 +1765,7 @@ static uint32_t Assemble12(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2
     strcpy(sAsm, "");
     sprintf(arg1s, "0x%X", arg1);
     arg1comm[0] = '\0';
+#undef CHECK
 #define CHECK(v, bits)                                                 \
     if((v) != ((v) & ((1 << (bits)) - 1)))                             \
     THROW_COMPILER_EXCEPTION_FMT("v=%u=0x%X ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
@@ -3835,7 +3836,7 @@ static void CompileFromIntermediate(bool topLevel)
 
     // Keep track of which 2k section we are using. When it looks like we
     // are about to run out, fill with nops and move on to the next one.
-    uint32_t section = 0;
+    // uint32_t section = 0;
 
     for(; IntPc < IntCode.size(); IntPc++) {
         IntPcNow = IntPc;

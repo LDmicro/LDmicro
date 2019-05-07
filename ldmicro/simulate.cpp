@@ -1160,8 +1160,8 @@ static void IfConditionTrue()
         if(IntCode[IntPc].op == INT_ELSE) {
             int nesting = 1;
             for(; IntPc < IntCode.size(); IntPc++) {
-                if(IntPc >= IntCode.size())
-                    oops();
+                //if(IntPc >= IntCode.size())
+                //    oops();
 
                 if(IntCode[IntPc].op == INT_END_IF) {
                     nesting--;
@@ -1189,8 +1189,8 @@ static void IfConditionFalse()
 {
     int nesting = 0;
     for(; IntPc < IntCode.size(); IntPc++) {
-        if(IntPc >= IntCode.size())
-            oops();
+        //if(IntPc >= IntCode.size())
+        //    oops();
 
         if(IntCode[IntPc].op == INT_END_IF) {
             nesting--;

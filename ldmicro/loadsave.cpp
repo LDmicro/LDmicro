@@ -637,7 +637,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             l->d.setPwm.name[0] = 'P';
         }
         char *s;
-        if((s = strchr(l->d.setPwm.targetFreq, '.'))) {
+        if((s = strchr(l->d.setPwm.targetFreq, '.')) != nullptr) {
             *s = '\0';
         }
     }
@@ -850,7 +850,7 @@ bool LoadProjectFromFile(const char *filename)
     int           crystal, baud;
     long          rate, speed;                          ///// Added by JG
     int           cycleTimer, cycleDuty, wdte;
-    long long int configWord = 0;
+    unsigned long long int configWord = 0;
     Prog.configurationWord = 0;
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line)))

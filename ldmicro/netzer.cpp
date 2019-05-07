@@ -644,7 +644,7 @@ static void copyBit(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 
 static void ifBitSet(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    uint16_t labelAddress;
+    uint16_t labelAddress = 0;
     if(f)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
@@ -799,7 +799,7 @@ static void decrementVariable(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 
 static void ifVariableLesLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    uint16_t labelAddress;
+    uint16_t labelAddress = 0;
     if(f)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {

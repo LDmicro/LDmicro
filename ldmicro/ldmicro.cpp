@@ -3102,8 +3102,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         UpdateMainWindowTitleBar();
 
         MSG   msg;
-        DWORD ret;
-        while((ret = GetMessage(&msg, nullptr, 0, 0))) {
+        while(GetMessage(&msg, nullptr, 0, 0) > 0) {
             if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
                 if(msg.wParam == VK_TAB) {
                     SetFocus(MainWindow);
