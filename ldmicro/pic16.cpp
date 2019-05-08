@@ -344,7 +344,7 @@ static void discoverArgs(int addrAt, char *arg1s, char *arg1comm)
             strcat(arg1comm, s);
         }
     if((asm_discover_names == 2) || (asm_discover_names == 4)) {
-        sprintf(s, " ; %u", PicProg[addrAt].arg1); 
+        sprintf(s, " ; %u", PicProg[addrAt].arg1);
         strcat(arg1comm, s);
     }
 }
@@ -3756,10 +3756,10 @@ static void InitTable(IntOp *a)
     MemOfVar(a->name1, &addrOfTableRoutine);
 
     if(addrOfTableRoutine == 0) {
-        Comment("TABLE %s[%d]", a->name1.c_str(), a->literal);
+        Comment("TABLE %s[%d]", a->name1.c_str(), a->literal1);
         addrOfTableRoutine = PicProgWriteP;
 
-        SetMemForVariable(a->name1, addrOfTableRoutine, a->literal);
+        SetMemForVariable(a->name1, addrOfTableRoutine, a->literal1);
 
 #define TABLE_CALC 8
         //This code is unrealocable.
@@ -3778,7 +3778,7 @@ static void InitTable(IntOp *a)
 
         int sovElement = a->literal2;
         Comment("DATA's size is %d", sovElement);
-        for(int i = 0; i < a->literal; i++) {
+        for(int i = 0; i < a->literal1; i++) {
             if(sovElement == 1) {
                 Instruction(OP_RETLW, a->data[i]);
             } else if(sovElement == 2) {
@@ -3814,7 +3814,7 @@ static void InitTables()
         rungNow = a->rung;
         switch(a->op) {
             case INT_FLASH_INIT:
-                //Comment("INT_FLASH_INIT %dbyte %s[%d]", a->literal2, a->name1, a->literal);
+                //Comment("INT_FLASH_INIT %dbyte %s[%d]", a->literal2, a->name1, a->literal1);
                 InitTable(a);
                 break;
             default:
@@ -4089,13 +4089,13 @@ static void CompileFromIntermediate(bool topLevel)
 */
             //
             case INT_SET_VARIABLE_TO_LITERAL:
-                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
+                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal1, a->literal1);
                 CheckSovNames(a);
                 MemForVariable(a->name1, &addr1);
-                sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1.c_str(), addr1, a->literal, a->literal);
+                sprintf(comment, "%s(0x%X):=%d(0x%X)", a->name1.c_str(), addr1, a->literal1, a->literal1);
                 sov1 = SizeOfVar(a->name1);
-                //sov2 = byteNeeded(a->literal);
-                CopyLitToReg(addr1, sov1, a->name1.c_str(), a->literal, comment);
+                //sov2 = byteNeeded(a->literal1);
+                CopyLitToReg(addr1, sov1, a->name1.c_str(), a->literal1, comment);
                 break;
 
             case INT_INCREMENT_VARIABLE: {
@@ -4309,7 +4309,7 @@ otherwise the result was zero or greater.
             }
 #else
             case INT_IF_VARIABLE_LES_LITERAL: {
-                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
+                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1.c_str(), a->literal1, a->literal1);
                 uint32_t notTrue = AllocFwdAddr();
                 uint32_t isTrue = AllocFwdAddr();
                 uint32_t lsbDecides = AllocFwdAddr();
@@ -4317,8 +4317,8 @@ otherwise the result was zero or greater.
                 // V = Rd7*(Rr7')*(R7') + (Rd7')*Rr7*R7 ; but only one of the
                 // product terms can be true, and we know which at compile
                 // time
-                BYTE litH = (BYTE)((a->literal >> 8) & 0xff);
-                BYTE litL = (BYTE)(a->literal & 0xff);
+                BYTE litH = (BYTE)((a->literal1 >> 8) & 0xff);
+                BYTE litL = (BYTE)(a->literal1 & 0xff);
 
                 MemForVariable(a->name1, &addr1);
 
@@ -4876,7 +4876,7 @@ otherwise the result was zero or greater.
                 // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
-                addr1 += a->literal;
+                addr1 += a->literal1;
 
                 uint32_t isBusy = PicProgWriteP;
                 IfBitClear(REG_TXSTA, TRMT); // TRMT=0 if TSR full
@@ -4969,7 +4969,7 @@ otherwise the result was zero or greater.
                 //Skip if no char.
                 Comment("INT_UART_RECV1");
                 MemForVariable(a->name1, &addr1);
-                addr1 += a->literal;
+                addr1 += a->literal1;
 //              sov1 = SizeOfVar(a->name1);
 //              MemForSingleBit(a->name2, true, &addr2, &bit2);
 
@@ -5152,8 +5152,8 @@ otherwise the result was zero or greater.
                 }
                 /*
                 double targetFreq = 1.0 * Prog.mcuClock / (pr2plus1 * 4 * prescale);
-                
-				dbps(a->name1.c_str())
+
+                dbps(a->name1.c_str())
                 dbpd(timer)
                 dbpd(target)
                 dbpd(pr2plus1)
@@ -5403,7 +5403,7 @@ otherwise the result was zero or greater.
                         }
                     }
                 }
-                Instruction(OP_MOVLW, a->literal);
+                Instruction(OP_MOVLW, a->literal1);
                 Instruction(OP_MOVWF, REG_EEADR);
                 Instruction(OP_MOVF, addr1, DEST_W);
 
@@ -5423,7 +5423,7 @@ otherwise the result was zero or greater.
                 MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
                 for(int i = 0; i < sov1; i++) {
-                    Instruction(OP_MOVLW, a->literal + i);
+                    Instruction(OP_MOVLW, a->literal1 + i);
                     Instruction(OP_MOVWF, REG_EEADR);
                     Instruction(OP_BCF, REG_EECON1, 7);
                     Instruction(OP_BSF, REG_EECON1, 0);
@@ -5494,7 +5494,7 @@ otherwise the result was zero or greater.
                 BYTE adcs;
 
                 MemForVariable(a->name1, &addr1);
-                BYTE refs = a->literal & 0xF;
+                BYTE refs = a->literal1 & 0xF;
                 //
                 int goPos, chsPos;
                 if(McuAs("Microchip PIC16F887 ") || //
@@ -5768,9 +5768,9 @@ otherwise the result was zero or greater.
                 Comment("INT_GOTO %s // %s %d",
                         a->name1.c_str(),
                         a->name2.c_str(),
-                        a->literal);
+                        a->literal1);
                 LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                if(a->literal) {
+                if(a->literal1) {
                     Instruction(OP_GOTO, l->KnownAddr);
                 } else {
                     Instruction(OP_GOTO, l->FwdAddr);
@@ -5781,9 +5781,9 @@ otherwise the result was zero or greater.
                 Comment("INT_GOSUB %s // %s %d",
                         a->name1.c_str(),
                         a->name2.c_str(),
-                        a->literal);
+                        a->literal1);
                 LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                if(a->literal) {
+                if(a->literal1) {
                     Instruction(OP_CALL, l->KnownAddr);
                 } else {
                     Instruction(OP_CALL, l->FwdAddr);

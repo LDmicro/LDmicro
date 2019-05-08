@@ -405,7 +405,7 @@ void Transliterate(char *dest, const char *str)
     strcpy(dest, str);
 }
 #endif
-
+/*
 //-----------------------------------------------------------------------------
 int TranslitFile(char *dest)
 {
@@ -445,3 +445,4 @@ int TranslitFile(char *dest)
 
     return 0;
 }
+*/

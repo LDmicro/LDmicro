@@ -1607,16 +1607,16 @@ static void SimulateIntCode()
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
                 if(GetSimulationVariable(a->name2) & (1 << a->literal2))
-                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) | (1 << a->literal));
+                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) | (1 << a->literal1));
                 else
-                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) & ~(1 << a->literal));
+                    SetSimulationVariable(a->name1, GetSimulationVariable(a->name1) & ~(1 << a->literal1));
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                if(GetSimulationVariable(a->name1) != a->literal && a->name1[0] != '$') {
+                if(GetSimulationVariable(a->name1) != a->literal1 && a->name1[0] != '$') {
                     NeedRedraw = a->op;
                 }
-                SetSimulationVariable(a->name1, a->literal);
+                SetSimulationVariable(a->name1, a->literal1);
                 break;
 
 #ifdef USE_SFR
@@ -1892,7 +1892,7 @@ static void SimulateIntCode()
 
 #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL:
-                if(GetSimulationVariable(a->name1) < a->literal)
+                if(GetSimulationVariable(a->name1) < a->literal1)
                     IF_BODY
                 break;
 
@@ -2010,8 +2010,8 @@ static void SimulateIntCode()
             case INT_GOTO:
                 if(a->poweredAfter) {
                     if(*(a->poweredAfter)) {
-                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal);
-                        if(a->literal)
+                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal1);
+                        if(a->literal1)
                             IntPc = FindOpName(INT_AllocKnownAddr, a->name1);
                         else
                             IntPc = FindOpName(INT_FwdAddrIsNow, a->name1);
@@ -2023,8 +2023,8 @@ static void SimulateIntCode()
                 if(a->poweredAfter) {
                     if(*(a->poweredAfter)) {
                         PushStack(IntPc + 1);
-                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal);
-                        if(a->literal)
+                        //IntPc = FindOpRung(INT_FwdAddrIsNow, a->literal1);
+                        if(a->literal1)
                             IntPc = FindOpName(INT_AllocKnownAddr, a->name1);
                         else
                             IntPc = FindOpName(INT_FwdAddrIsNow, a->name1);
@@ -2066,9 +2066,9 @@ static void SimulateIntCode()
                     break;
                 }
                 int index = GetSimulationVariable(a->name3);
-                if((index < 0) || (a->literal < index)) {
-                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal-1);
-                    index = a->literal;
+                if((index < 0) || (a->literal1 < index)) {
+                    Error(_("Index=%d out of range for TABLE %s[0..%d]"), index, a->name2.c_str(), a->literal1-1);
+                    index = a->literal1;
                     StopSimulation();
                     ToggleSimulationMode(false);
                     break;
@@ -2082,9 +2082,9 @@ static void SimulateIntCode()
 
             case INT_RAM_READ: {
                 int index = GetSimulationVariable(a->name3);
-                if((index < 0) || (a->literal <= index)) {
-                    Error(_("Index=%d out of range for string %s[%d]"), index, a->name1.c_str(), a->literal);
-                    index = a->literal;
+                if((index < 0) || (a->literal1 <= index)) {
+                    Error(_("Index=%d out of range for string %s[%d]"), index, a->name1.c_str(), a->literal1);
+                    index = a->literal1;
                     StopSimulation();
                 }
                 //dbps(GetSimulationStr(a->name1.c_str()))

@@ -427,7 +427,7 @@ void makeAccelTable(FileTracker& f, int max, int P, int nSize, ElemAccel **TT, c
 
 void CalcSteps(ElemStepper *s, ResSteps *r)
 {
-    memset(&(*r), 0, sizeof(ResSteps));
+    memset(r, 0, sizeof(ResSteps));
 
     double massa = 1;
     int    nSize = s->nSize;

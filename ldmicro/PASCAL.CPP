@@ -229,7 +229,7 @@ static void PortX(FILE *fi, FILE *fu, const char *str)
     fprintf(fu, "  {$endif}\n");
 
     fprintf(fu, "  {$ifdef HookIn}\n");
-    fprintf(fu, "  if InArr[%u].IskbrdHook then begin\n", InCount - 1); 
+    fprintf(fu, "  if InArr[%u].IskbrdHook then begin\n", InCount - 1);
     fprintf(fu, "    Read_%s:=InArr[%u].HookValue;\n", str, InCount - 1);
     fprintf(fu, "    exit;\n");
     fprintf(fu, "  end;\n");
@@ -589,12 +589,12 @@ static void Generate_flash_eeprom(FILE *f)
                 }
 
                 fprintf(
-                    f, "const %s: array [0..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal-1, sovs);
+                    f, "const %s: array [0..%d] of %s = (", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1-1, sovs);
                 int j;
-                for(j = 0; j < (IntCode[i].literal - 1); j++) {
+                for(j = 0; j < (IntCode[i].literal1 - 1); j++) {
                     fprintf(f, "%d, ", IntCode[i].data[j]);
                 }
-                fprintf(f, "%d);\n", IntCode[i].data[IntCode[i].literal - 1]);
+                fprintf(f, "%d);\n", IntCode[i].data[IntCode[i].literal1 - 1]);
                 break;
             }
                 //const Ui_stepZ:array [1..6] of byte = (0, 6, 3, 2, 2, 1);
@@ -640,7 +640,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
         switch(IntCode[i].op) {
             //case INT_AllocKnownAddr:
             case INT_AllocFwdAddr:
-                fprintf(f, "  label LabelRung%d;\n", IntCode[i].literal + 1);
+                fprintf(f, "  label LabelRung%d;\n", IntCode[i].literal1 + 1);
                 break;
             default:;
         }
@@ -689,7 +689,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                fprintf(f, "%s := %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                fprintf(f, "%s := %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
                 break;
 
             case INT_SET_VARIABLE_RANDOM:
@@ -816,7 +816,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 fprintf(f, "if %s < %s then begin\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].name2.c_str());
 #else
             case INT_IF_VARIABLE_LES_LITERAL:
-                fprintf(f, "if %s < %d then begin\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
+                fprintf(f, "if %s < %d then begin\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
 #endif
                 indent++;
                 break;
@@ -876,7 +876,7 @@ static void GenerateSourceCode(FILE *f, int begin, int end)
                 break;
 
             case INT_DELAY:
-                fprintf(f, "DelayUs(%d)//us;", IntCode[i].literal);
+                fprintf(f, "DelayUs(%d)//us;", IntCode[i].literal1);
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
@@ -973,7 +973,7 @@ static void GenerateSUBPROG(FILE *f)
                 fprintf(f,
                         "procedure Call_SUBPROG_%s() { // LabelRung%d\n",
                         IntCode[i].name1.c_str(),
-                        IntCode[i].literal + 1);
+                        IntCode[i].literal1 + 1);
                 int indentSave = indent;
                 indent = 1;
                 GenerateSourceCode(f,

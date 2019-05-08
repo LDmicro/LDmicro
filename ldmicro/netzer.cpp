@@ -45,7 +45,7 @@ typedef struct {
     uint16_t   name1;
     uint16_t   name2;
     uint16_t   name3;
-    int32_t literal;
+    int32_t literal1;
 } BinOp;
 
 static BinOp         OutProg[MAX_INT_OPS];
@@ -137,7 +137,7 @@ static uint16_t AddrForRelay(const NameArray &name)
     // Locater included?
     auto n = strchr(name.c_str(), '@');
     if(n) {
-        int bit = 0;
+        uint16_t bit = 0;
         n++; // Throw away the @ symbol.
 
         // No PAB mapping, maybe IO mapping.
@@ -188,7 +188,7 @@ template <size_t N> static uint16_t AddrForVariable(const StringArray<N> &name)
     // Locater included?
     auto n = strchr(name.c_str(), '@');
     if(n) {
-        int reg = 0;
+        uint16_t reg = 0;
         n++; // Throw away the @ symbol.
 
         // No PAB mapping, maybe IO mapping.
@@ -208,7 +208,7 @@ static uint16_t AddrForVariable(gsl::cstring_span name)
 
 static void MapNotLocatedElements()
 {
-    int address = 0;
+    uint16_t address = 0;
 
     // First we look for not already mapped relays.
     // The addressing scheme is linear, here are some examples:
@@ -385,7 +385,7 @@ int GenerateIntOpcodes()
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
-                op.literal = IntCode[ipc].literal;
+                op.literal1 = IntCode[ipc].literal1;
                 break;
 
             case INT_SET_BIN2BCD:
@@ -427,7 +427,7 @@ int GenerateIntOpcodes()
 
             case INT_IF_VARIABLE_LES_LITERAL:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
-                op.literal = IntCode[ipc].literal;
+                op.literal1 = IntCode[ipc].literal1;
                 goto finishIf;
 
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
@@ -730,7 +730,7 @@ static void setVariableToLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
 
     // Write register address and literal
     if(f)
-        fprintf(f, "%c%c%c%c", op, address, (uint8_t)Op->literal, (uint8_t)(Op->literal >> 8));
+        fprintf(f, "%c%c%c%c", op, address, (uint8_t)Op->literal1, (uint8_t)(Op->literal1 >> 8));
     pMeta->BytesConsumed += 4;
     pMeta->Opcodes += 1; // One opcode generated.
 }
@@ -808,8 +808,8 @@ static void ifVariableLesLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_IO_LES_LITERAL,
                     getIOAddress(Op->name1),
-                    (uint8_t)(Op->literal),
-                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(Op->literal1),
+                    (uint8_t)(Op->literal1 >> 8),
                     (uint8_t)(labelAddress),
                     (uint8_t)(labelAddress >> 8));
     } else {
@@ -818,8 +818,8 @@ static void ifVariableLesLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_LES_LITERAL,
                     getInternalIntegerAddress(Op->name1),
-                    (uint8_t)(Op->literal),
-                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(Op->literal1),
+                    (uint8_t)(Op->literal1 >> 8),
                     (uint8_t)(labelAddress),
                     (uint8_t)(labelAddress >> 8));
     }
@@ -841,8 +841,8 @@ static void ifVariableGeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_IO_GRT_LITERAL,
                     getIOAddress(Op->name1),
-                    (uint8_t)(Op->literal),
-                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(Op->literal1),
+                    (uint8_t)(Op->literal1 >> 8),
                     (uint8_t)(labelAddress),
                     (uint8_t)(labelAddress >> 8));
     } else {
@@ -851,8 +851,8 @@ static void ifVariableGeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_GRT_LITERAL,
                     getInternalIntegerAddress(Op->name1),
-                    (uint8_t)(Op->literal),
-                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(Op->literal1),
+                    (uint8_t)(Op->literal1 >> 8),
                     (uint8_t)(labelAddress),
                     (uint8_t)(labelAddress >> 8));
     }
@@ -874,8 +874,8 @@ static void ifVariableEquLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_IO_EQU_LITERAL,
                     getIOAddress(Op->name1),
-                    (uint8_t)(Op->literal),
-                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(Op->literal1),
+                    (uint8_t)(Op->literal1 >> 8),
                     (uint8_t)(labelAddress),
                     (uint8_t)(labelAddress >> 8));
     } else {
@@ -884,8 +884,8 @@ static void ifVariableEquLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_EQU_LITERAL,
                     getInternalIntegerAddress(Op->name1),
-                    (uint8_t)(Op->literal),
-                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(Op->literal1),
+                    (uint8_t)(Op->literal1 >> 8),
                     (uint8_t)(labelAddress),
                     (uint8_t)(labelAddress >> 8));
     }
@@ -907,8 +907,8 @@ static void ifVariableNeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_IO_NEQ_LITERAL,
                     getIOAddress(Op->name1),
-                    (uint8_t)(Op->literal),
-                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(Op->literal1),
+                    (uint8_t)(Op->literal1 >> 8),
                     (uint8_t)(labelAddress),
                     (uint8_t)(labelAddress >> 8));
     } else {
@@ -917,8 +917,8 @@ static void ifVariableNeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_NEQ_LITERAL,
                     getInternalIntegerAddress(Op->name1),
-                    (uint8_t)(Op->literal),
-                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(Op->literal1),
+                    (uint8_t)(Op->literal1 >> 8),
                     (uint8_t)(labelAddress),
                     (uint8_t)(labelAddress >> 8));
     }
@@ -931,7 +931,7 @@ static void ifVariableNeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
 
 static void math(NetzerIntCodes Opcode, BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    int dst = Op->name1;
+    uint16_t dst = Op->name1;
     int src1 = Op->name2;
     int src2 = Op->name3;
 

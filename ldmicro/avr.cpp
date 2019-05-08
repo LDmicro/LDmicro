@@ -1236,7 +1236,7 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
             return 0x9478;
 
         case OP_DB:
-            CHECK2(BYTE(arg1), 0, 255); 
+            CHECK2(BYTE(arg1), 0, 255);
             CHECK(arg2, 0);
             //      CHECK2(arg1, -128, 127); CHECK(arg2, 0);
             sprintf(sAsm, ".db  \t 0x%02X \t", BYTE(arg1));
@@ -2532,19 +2532,19 @@ static void InitTable(IntOp *a)
             Instruction(OP_NOP);
         addrOfTable = AvrProg.size(); // << 1; //see LPM // data stored in flash
 
-        SetMemForVariable(a->name1, addrOfTable, a->literal);
+        SetMemForVariable(a->name1, addrOfTable, a->literal1);
 
         int sovElement = a->literal2;
         //sovElement = 1;
         if(sovElement == 2) {
-            for(int i = 0; i < a->literal; i++) {
+            for(int i = 0; i < a->literal1; i++) {
                 //dbp("i=%d %d",i,a->data[i]);
                 Instruction(OP_DW, a->data[i]);
             }
         } else if(sovElement == 1) {
-            for(int i = 0; i < a->literal; i = i + 2) {
+            for(int i = 0; i < a->literal1; i = i + 2) {
                 //dbp("i=%d %d %d", i, a->data[i], a->data[i+1]);
-                Instruction(OP_DB2, a->data[i], i + 1 < a->literal ? a->data[i + 1] : 0);
+                Instruction(OP_DB2, a->data[i], i + 1 < a->literal1 ? a->data[i + 1] : 0);
             }
             /*
             for(i=0; i < a->literal; i++){
@@ -2553,15 +2553,15 @@ static void InitTable(IntOp *a)
             }
             */
         } else if(sovElement == 4) {
-            for(int i = 0; i < a->literal; i++) {
+            for(int i = 0; i < a->literal1; i++) {
                 Instruction(OP_DW, a->data[i]);
                 Instruction(OP_DW, a->data[i] >> 16);
             }
         } else if(sovElement == 3) {
-            for(int i = 0; i < a->literal; i = i + 2) {
+            for(int i = 0; i < a->literal1; i = i + 2) {
                 Instruction(OP_DW, a->data[i]);
-                Instruction(OP_DB2, a->data[i] >> 16, (i + 1 < a->literal ? a->data[i + 1] : 0) & 0xFF);
-                Instruction(OP_DW, (i + 1 < a->literal ? a->data[i + 1] : 0) >> 8);
+                Instruction(OP_DB2, a->data[i] >> 16, (i + 1 < a->literal1 ? a->data[i + 1] : 0) & 0xFF);
+                Instruction(OP_DW, (i + 1 < a->literal1 ? a->data[i + 1] : 0) >> 8);
             }
         } else
             oops();
@@ -3354,8 +3354,8 @@ static void CompileFromIntermediate()
                 Comment("INT_COPY_VAR_BIT_TO_VAR_BIT");
                 MemForVariable(a->name1, &addr1);
                 MemForVariable(a->name2, &addr2);
-                CopyBit(addr1 + a->literal / 8,
-                        a->literal % 8,
+                CopyBit(addr1 + a->literal1 / 8,
+                        a->literal1 % 8,
                         addr2 + a->literal2 / 8,
                         a->literal2 % 8,
                         a->name1.c_str(),
@@ -3409,13 +3409,13 @@ static void CompileFromIntermediate()
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
+                Comment("INT_SET_VARIABLE_TO_LITERAL %s:=0x%X(%d)", a->name1.c_str(), a->literal1, a->literal1);
                 if(IsAddrInVar(a->name1.c_str()))
                     MemForVariable(&a->name1[1], &addr1);
                 else
                     MemForVariable(a->name1, &addr1);
                 sov1 = SizeOfVar(a->name1);
-                WriteLiteralToMemory(addr1, sov1, a->literal, a->name1);
+                WriteLiteralToMemory(addr1, sov1, a->literal1, a->name1);
                 break;
 
             case INT_INCREMENT_VARIABLE: {
@@ -3738,40 +3738,40 @@ static void CompileFromIntermediate()
 
 #ifndef NEW_CMP
             case INT_IF_VARIABLE_LES_LITERAL: {
-                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1.c_str(), a->literal, a->literal);
+                Comment("INT_IF_VARIABLE_LES_LITERAL %s < 0x%X(%d)", a->name1.c_str(), a->literal, a->literal1);
                 uint32_t notTrue = AllocFwdAddr();
 
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
 
                 uint32_t l1, l2;
-                l1 = a->literal & 0xff;
+                l1 = a->literal1 & 0xff;
 
-                //Instruction(OP_LDI, 20, (a->literal & 0xff));
+                //Instruction(OP_LDI, 20, (a->literal1 & 0xff));
                 Instruction(OP_LDI, 20, l1);
                 Instruction(OP_LD_XP, 16);
                 Instruction(OP_CP, 16, 20);
 
                 sov1 = SizeOfVar(a->name1);
                 if(sov1 >= 2) {
-                    //Instruction(OP_LDI, 20, (a->literal >> 8) & 0xff);
-                    l2 = (a->literal >> 8) & 0xff;
+                    //Instruction(OP_LDI, 20, (a->literal1 >> 8) & 0xff);
+                    l2 = (a->literal1 >> 8) & 0xff;
                     if(l1 != l2)
                         Instruction(OP_LDI, r20, l2);
                     Instruction(OP_LD_XP, 17);
                     Instruction(OP_CPC, 17, 20);
 
                     if(sov1 >= 3) {
-                        //Instruction(OP_LDI, 20, (a->literal >> 16) & 0xff);
-                        l1 = (a->literal >> 16) & 0xff;
+                        //Instruction(OP_LDI, 20, (a->literal1 >> 16) & 0xff);
+                        l1 = (a->literal1 >> 16) & 0xff;
                         if(l1 != l2)
                             Instruction(OP_LDI, r20, l1);
                         Instruction(OP_LD_XP, 18);
                         Instruction(OP_CPC, 18, 20);
 
                         if(sov1 >= 4) {
-                            //Instruction(OP_LDI, 20, (a->literal >> 24) & 0xff);
-                            l2 = (a->literal >> 24) & 0xff;
+                            //Instruction(OP_LDI, 20, (a->literal1 >> 24) & 0xff);
+                            l2 = (a->literal1 >> 24) & 0xff;
                             if(l1 != l2)
                                 Instruction(OP_LDI, r20, l2);
                             Instruction(OP_LD_XP, 19);
@@ -3899,8 +3899,8 @@ static void CompileFromIntermediate()
             // Sepcial function
             case INT_READ_SFR_LITERAL: {
                 MemForVariable(a->name1, &addr1);
-                Instruction(OP_LDI, 26, (a->literal & 0xff));
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_LD_X, 16, 0);
                 LoadXAddr(addr1);
                 Instruction(OP_ST_X, 16, 0);
@@ -3921,15 +3921,15 @@ static void CompileFromIntermediate()
                 Comment("INT_WRITE_SFR_LITERAL_L");
                 //MemForVariable(a->name1, &addr1); // name not used
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff)); //op
-                Instruction(OP_LDI, 26, (a->literal & 0xff));  //sfr
-                Instruction(OP_LDI, 27, (a->literal >> 8));    //sfr
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));  //sfr
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));    //sfr
                 Instruction(OP_ST_X, 28, 0);
                 break;
             }
             case INT_WRITE_SFR_VARIABLE_L: {
                 Comment("INT_WRITE_SFR_VARIABLE_L");
                 CopyArgToReg(ZL, 2, a->name1);                //sfr
-                Instruction(OP_LDI, 28, (a->literal & 0xff)); //op
+                Instruction(OP_LDI, 28, (a->literal1 & 0xff)); //op
                 Instruction(OP_ST_Z, 28, 0);
                 break;
             }
@@ -3938,8 +3938,8 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1); //op
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 15, 0);
-                Instruction(OP_LDI, 26, (a->literal & 0xff)); //sfr
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff)); //sfr
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_ST_X, 15, 0);
                 break;
             }
@@ -3955,8 +3955,8 @@ static void CompileFromIntermediate()
             case INT_SET_SFR_LITERAL_L: {
                 MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
-                Instruction(OP_LDI, 26, (a->literal & 0xff));
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_OR, 1, 28);  // logic OR by R1,R0 result is in R1
                 Instruction(OP_ST_X, 1, 0);
@@ -3970,7 +3970,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_MOV, 26, 16);
                 Instruction(OP_MOV, 27, 17);
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
-                Instruction(OP_LDI, 28, (a->literal & 0xff));
+                Instruction(OP_LDI, 28, (a->literal1 & 0xff));
                 Instruction(OP_OR, 1, 28); // logic OR by R1,R0 result is in R1
                 Instruction(OP_ST_X, 1, 0);
                 break;
@@ -3979,8 +3979,8 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
-                Instruction(OP_LDI, 26, (a->literal & 0xff));
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_OR, 1, 0);   // logic OR by R1,R0 result is in R1
                 Instruction(OP_ST_X, 1, 0); // store R1 back to SFR
@@ -4004,8 +4004,8 @@ static void CompileFromIntermediate()
             case INT_CLEAR_SFR_LITERAL_L: {
                 MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
-                Instruction(OP_LDI, 26, (a->literal & 0xff));
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_COM, 0, 0);  //
                 Instruction(OP_AND, 1, 28); //
@@ -4020,7 +4020,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_MOV, 26, 16);
                 Instruction(OP_MOV, 27, 17);
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
-                Instruction(OP_LDI, 28, (a->literal & 0xff));
+                Instruction(OP_LDI, 28, (a->literal1 & 0xff));
                 Instruction(OP_COM, 0, 0);  //
                 Instruction(OP_AND, 1, 28); //
                 Instruction(OP_ST_X, 1, 0);
@@ -4030,8 +4030,8 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
-                Instruction(OP_LDI, 26, (a->literal & 0xff));
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_COM, 0, 0);  // logic OR by R1,R0 result is in R1
                 Instruction(OP_AND, 1, 0);  // logic OR by R1,R0 result is in R1
@@ -4058,8 +4058,8 @@ static void CompileFromIntermediate()
                 uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
-                Instruction(OP_LDI, 26, (a->literal & 0xff));
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_AND, 1, 28); // logic OR by R1,R0 result is in R1
                 Instruction(OP_EOR, 1, 28); // logic OR by R1,R0 result is in R1
@@ -4077,7 +4077,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_MOV, 26, 16);
                 Instruction(OP_MOV, 27, 17);
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
-                Instruction(OP_LDI, 28, (a->literal & 0xff));
+                Instruction(OP_LDI, 28, (a->literal1 & 0xff));
                 Instruction(OP_AND, 1, 28); // logic OR by R1,R0 result is in R1
                 Instruction(OP_EOR, 1, 28); // logic OR by R1,R0 result is in R1
                 Instruction(OP_TST, 1, 0);  // logic OR by R1,R0 result is in R1
@@ -4090,8 +4090,8 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
-                Instruction(OP_LDI, 26, (a->literal & 0xff));
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_AND, 1, 0);  // logic OR by R1,R0 result is in R1
                 Instruction(OP_EOR, 1, 0);  // logic OR by R1,R0 result is in R1
@@ -4123,8 +4123,8 @@ static void CompileFromIntermediate()
                 uint32_t notTrue = AllocFwdAddr();
                 MemForVariable(a->name1, &addr1);
                 Instruction(OP_LDI, 28, (a->literal2 & 0xff));
-                Instruction(OP_LDI, 26, (a->literal & 0xff));
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_COM, 1, 0);  // logic OR by R1,R0 result is in R1
                 Instruction(OP_AND, 1, 28); // logic OR by R1,R0 result is in R1
@@ -4143,7 +4143,7 @@ static void CompileFromIntermediate()
                 Instruction(OP_MOV, 26, 16);
                 Instruction(OP_MOV, 27, 17);
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
-                Instruction(OP_LDI, 28, (a->literal & 0xff));
+                Instruction(OP_LDI, 28, (a->literal1 & 0xff));
                 Instruction(OP_COM, 1, 0);  // logic OR by R1,R0 result is in R1
                 Instruction(OP_AND, 1, 28); // logic OR by R1,R0 result is in R1
                 Instruction(OP_EOR, 1, 28); // logic OR by R1,R0 result is in R1
@@ -4157,8 +4157,8 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 0, 0); // read byte from variable to r0
-                Instruction(OP_LDI, 26, (a->literal & 0xff));
-                Instruction(OP_LDI, 27, (a->literal >> 8));
+                Instruction(OP_LDI, 26, (a->literal1 & 0xff));
+                Instruction(OP_LDI, 27, (a->literal1 >> 8));
                 Instruction(OP_LD_X, 1, 0); // read byte from SFR
                 Instruction(OP_COM, 1, 0);  // logic OR by R1,R0 result is in R1
                 Instruction(OP_AND, 1, 0);  // logic OR by R1,R0 result is in R1
@@ -4937,8 +4937,8 @@ static void CompileFromIntermediate()
                 sov = SizeOfVar(a->name1);
                 int i;
                 for(i = 0; i < sov; i++) {
-                    WriteMemory(REG_EEARH, BYTE(((a->literal + i) >> 8) & 0xff));
-                    WriteMemory(REG_EEARL, BYTE((a->literal + i) & 0xff));
+                    WriteMemory(REG_EEARH, BYTE(((a->literal1 + i) >> 8) & 0xff));
+                    WriteMemory(REG_EEARL, BYTE((a->literal1 + i) & 0xff));
                     WriteMemory(REG_EECR, 0x01);
                     Instruction(OP_LD_Y, 16);
                     Instruction(OP_ST_XP, 16);
@@ -4955,8 +4955,8 @@ static void CompileFromIntermediate()
                 LoadXAddr(EepromHighByte);
                 Instruction(OP_ST_X, 16, 0);
 
-                WriteMemory(REG_EEARH, BYTE(a->literal >> 8) & 0xff);
-                WriteMemory(REG_EEARL, BYTE(a->literal & 0xff));
+                WriteMemory(REG_EEARH, BYTE(a->literal1 >> 8) & 0xff);
+                WriteMemory(REG_EEARL, BYTE(a->literal1 & 0xff));
                 LoadXAddr(addr1);
                 Instruction(OP_LD_X, 16, 0);
                 LoadXAddr(REG_EEDR);
@@ -4995,7 +4995,7 @@ static void CompileFromIntermediate()
                 MemForVariable(a->name1, &addr1);
 
                 BYTE mux = MuxForAdcVariable(a->name1);
-                BYTE refs = a->literal & 0x3;
+                BYTE refs = a->literal1 & 0x3;
                 if(mux > 0x0F)
                     THROW_COMPILER_EXCEPTION_FMT("mux=0x%x", mux);
                 WriteMemory(
@@ -5090,7 +5090,7 @@ static void CompileFromIntermediate()
                 // Caller should check the busy flag!!!
                 Comment("INT_UART_SEND1");
                 MemForVariable(a->name1, &addr1);
-                addr1 += a->literal;
+                addr1 += a->literal1;
 
                 uint32_t isBusy = AvrProg.size();
                 IfBitClear(REG_UCSRA, UDRE); // UDRE, is 1 when tx buffer is empty, if 0 is busy
@@ -5141,7 +5141,7 @@ static void CompileFromIntermediate()
                 //Skip if no char.
                 Comment("INT_UART_RECV1");
                 MemForVariable(a->name1, &addr1);
-                addr1 += a->literal;
+                addr1 += a->literal1;
 
                 uint32_t noChar = AllocFwdAddr();
                 IfBitClear(REG_UCSRA, RXC);
@@ -5201,9 +5201,9 @@ static void CompileFromIntermediate()
                 Comment("INT_GOTO %s // %s %d",
                         a->name1.c_str(),
                         a->name2.c_str(),
-                        a->literal);
+                        a->literal1);
                 LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                if(a->literal) {
+                if(a->literal1) {
                     InstructionJMP(l->KnownAddr);
                 } else {
                     InstructionJMP(l->FwdAddr);
@@ -5214,9 +5214,9 @@ static void CompileFromIntermediate()
                 Comment("INT_GOSUB %s // %s %d",
                         a->name1.c_str(),
                         a->name2.c_str(),
-                        a->literal);
+                        a->literal1);
                 LabelAddr * l = GetLabelAddr(a->name1.c_str());
-                if(a->literal) {
+                if(a->literal1) {
                     CallSubroutine(l->KnownAddr);
                 } else {
                     CallSubroutine(l->FwdAddr);
