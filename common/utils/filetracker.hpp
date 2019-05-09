@@ -82,6 +82,7 @@ public:
     FileTracker(FileTracker&& other) : file_(nullptr)
     {
         file_ = other.file_;
+        name_ = other.name_;
         other.file_ = nullptr;
     }
     FileTracker& operator=(FileTracker&& other)
@@ -90,6 +91,7 @@ public:
             {
                 close();
                 file_ = other.file_;
+                name_ = other.name_;
                 other.file_ = nullptr;
             }
         return *this;

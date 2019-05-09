@@ -932,8 +932,8 @@ static void ifVariableNeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
 static void math(NetzerIntCodes Opcode, BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
     uint16_t dst = Op->name1;
-    int src1 = Op->name2;
-    int src2 = Op->name3;
+    auto src1 = Op->name2;
+    auto src2 = Op->name3;
 
     if(src1 & MAPPED_TO_IO) {
         BinOp load;
@@ -983,8 +983,8 @@ static void math(NetzerIntCodes Opcode, BinOp *Op, OpcodeMeta *pMeta, FILE *f = 
 
 static void ifVariable_X_Variable(BinOp *Op, uint8_t NetzerOp, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    int src1 = Op->name1;
-    int src2 = Op->name2;
+    auto src1 = Op->name1;
+    auto src2 = Op->name2;
 
     if(src1 & MAPPED_TO_IO) {
         BinOp load;

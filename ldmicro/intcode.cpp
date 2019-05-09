@@ -133,9 +133,9 @@ void IntDumpListing(char *outFile)
                && (IntCode[i].op != INT_AllocFwdAddr))
                 fprintf(f, "%4u:", i);
         }
-        int j;
+
         if((int_comment_level == 1) || (IntCode[i].op != INT_SIMULATE_NODE_STATE))
-            for(j = 0; j < indent; j++)
+            for(int j = 0; j < indent; j++)
                 fprintf(f, "    ");
 
         ElemLeaf *l = IntCode[i].leaf;
@@ -3302,21 +3302,21 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
 
         case ELEM_SEED_RANDOM:
             Comment(3, "ELEM_SEED_RANDOM");
-            char name[MAX_NAME_LEN];
-            sprintf(name, "$seed_%s", l->d.readAdc.name);
-            SetSizeOfVar(name, 4);
+            char nameBuf[MAX_NAME_LEN];
+            sprintf(nameBuf, "$seed_%s", l->d.readAdc.name);
+            SetSizeOfVar(nameBuf, 4);
 
             if(IsNumber(l->d.move.dest)) {
                 THROW_COMPILER_EXCEPTION_FMT(_("SRAND instruction: '%s' not a valid destination."), l->d.move.dest);
             }
             Op(INT_IF_BIT_SET, stateInOut);
             if(IsNumber(l->d.move.src)) {
-                CheckVarInRange(name, l->d.move.src, CheckMakeNumber(l->d.move.src));
-                Op(INT_SET_VARIABLE_TO_LITERAL, name, hobatoi(l->d.move.src));
+                CheckVarInRange(nameBuf, l->d.move.src, CheckMakeNumber(l->d.move.src));
+                Op(INT_SET_VARIABLE_TO_LITERAL, nameBuf, hobatoi(l->d.move.src));
             } else {
-                Op(INT_SET_VARIABLE_TO_VARIABLE, name, l->d.move.src);
+                Op(INT_SET_VARIABLE_TO_VARIABLE, nameBuf, l->d.move.src);
             }
-            Op(INT_SET_SEED_RANDOM, name);
+            Op(INT_SET_SEED_RANDOM, nameBuf);
             Op(INT_END_IF);
             break;
 
@@ -4398,15 +4398,15 @@ static void IntCodeFromCircuit(int which, void *any, const char *stateInOut, int
                         case '0': goto L1; break;
                         case 'X':
                         case 'x': {
-                            int h, l;
+                            int h, ll;
                             p++;
                             h = HexDigit(*p);
                             if(h >= 0) {
                                 p++;
-                                l = HexDigit(*p);
-                                if(l >= 0) {
+                                ll = HexDigit(*p);
+                                if(ll >= 0) {
                                     outputWhich[steps] = OUTPUT_UCHAR;
-                                    outputChars[steps++] = (h << 4) | l;
+                                    outputChars[steps++] = static_cast<char>((h << 4) | ll);
                                     break;
                                 }
                             }
