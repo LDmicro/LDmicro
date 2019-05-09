@@ -4612,9 +4612,7 @@ otherwise the result was zero or greater.
                 ADDR_T addrB = CopyArgToReg(false, Scratch4, sov, a->name3, false);
 
                 if((addr1 != addrB) && (addr1 == addrA)) {
-                    uint32_t a = addrA;
-                    addrA = addrB;
-                    addrB = a;
+                    std::swap(addrA, addrB);
                 }
 
                 for(int i = 0; i < sov; i++) {
