@@ -93,6 +93,7 @@ public:
                 file_ = other.file_;
                 name_ = other.name_;
                 other.file_ = nullptr;
+                other.name_ = "";
             }
         return *this;
     }
