@@ -454,7 +454,7 @@ bool LoadPcPorts(const char *filename)
     int   portN, db;
     int   i, j, n, Dtype, Stype, Ctype;
 
-    DWORD addr = 0;
+    ADDR_T addr = 0;
     strcpy(line_, "");
     IoPcCount = 0;
     while(fgets(line, sizeof(line), f)) {

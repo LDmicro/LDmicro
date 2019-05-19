@@ -41,8 +41,6 @@ HINSTANCE Instance;
 HWND      MainWindow;
 HDC       Hdc;
 
-//extern int  compiler_variant;       ///// Added by JG
-
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
 static HHOOK MouseHookHandle;
@@ -329,7 +327,7 @@ char *GetIsaName(int ISA)
       //case ISA_ARDUINO      : return (char *)stringer( ISA_ARDUINO      ) + 4;
       //case ISA_CAVR         : return (char *)stringer( ISA_CAVR         ) + 4;
         case ISA_ARM          : return (char *)stringer( ISA_ARM          ) + 4;            ///// Added by JG
-        default               : oops(); return nullptr;
+        default               : oops(); // return nullptr;
         // clang-format on
     }
 }
@@ -462,7 +460,7 @@ static void clearBat()
         return;
 
     sprintf(r,
-            "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"",
+            "\"%sclear.bat\" \"%s\" \"%s\" \"%s\" \"%s\"",
             ExePath,
             CurrentLdPath,
             LdName,
@@ -516,7 +514,7 @@ static void postCompile(const char *MNU)
     if(Prog.mcu())
         ISA = GetIsaName(Prog.mcu()->whichIsa);
 
-    sprintf(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\"", ExePath, MNU, ISA, CurrentCompilePath, LdName);
+    sprintf(r, "\"%spostCompile.bat\" %s %s \"%s\" \"%s\" %s", ExePath, MNU, ISA, CurrentCompilePath, LdName, GetMnuCompilerName(compile_MNU));
     isErr(Execute(r), r);
 }
 
@@ -809,15 +807,14 @@ IsOpenAnable:
             Error(_("PWM function used but not supported for this micro."));
             return;
         }
-        CompileFailure= 0;
 
         if((MNU >= MNU_COMPILE_ANSIC) && (MNU <= MNU_COMPILE_lastC)) {
-            if(CompileAnsiC(CurrentCompileFile, MNU) && (!CompileFailure)) {            ///// CompileFailure added by JG
+            if(CompileAnsiC(CurrentCompileFile, MNU)) {
                 CompileSuccesfullAnsiCMessage(CurrentCompileFile);
                 postCompile("ANSIC");
             }
         } else if(MNU == MNU_COMPILE_ARDUINO) {
-            if(CompileAnsiC(CurrentCompileFile, MNU) && (!CompileFailure)) {            ///// CompileFailure added by JG
+            if(CompileAnsiC(CurrentCompileFile, MNU)) {
                 CompileSuccesfullAnsiCMessage(CurrentCompileFile);
                 postCompile("ARDUINO");
             }
@@ -857,13 +854,6 @@ IsOpenAnable:
         } else
             oops();
 
-        ///// Added by JG
-        if (CompileFailure)
-        {
-            Error(_("Compile failure."));
-            return;
-        }
-        /////
     } catch(const std::exception &e) {
         Error(e.what());
     }
@@ -903,7 +893,7 @@ bool CheckSaveUserCancels()
 
         default:
             oops();
-            return false;
+            // return false;
     }
 }
 
@@ -2711,7 +2701,7 @@ static ATOM MakeWindowClass()
 }
 
 //-----------------------------------------------------------------------------
-
+/*
 static LPSTR _getNextCommandLineArgument(LPSTR lpBuffer)
 {
     bool argFound = false;
@@ -2791,7 +2781,7 @@ static char *_removeWhitespace(char *pBuffer)
 
     return pStart;
 }
-
+*/
 //-----------------------------------------------------------------------------
 /*
 static void _parseArguments(LPSTR lpCmdLine, char ** pSource, char ** pDest)
@@ -2893,6 +2883,7 @@ void KxStackTrace()
 void CheckPwmPins()
 {
     return;
+	/*
     uint32_t j;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         for(j = 0; j < supportedMcus()[i].pwmCount; j++) {
@@ -2906,6 +2897,7 @@ void CheckPwmPins()
             if(j >= supportedMcus()[i].pwmCount)
                 ooops("2 %s", supportedMcus()[i].mcuName);
     }
+	*/
 }
 
 #ifndef LDMICRO_GUI_XX

@@ -34,18 +34,18 @@ static char InternalRelays[MAX_IO][MAX_NAME_LEN];
 static int  InternalRelaysCount;
 
 typedef struct {
-    WORD   op;
-    WORD   name1;
-    WORD   name2;
-    WORD   name3;
-    SDWORD literal;
+    int32_t   op;
+    int32_t   name1;
+    int32_t   name2;
+    int32_t   name3;
+    int32_t literal;
 } BinOp;
 
 static BinOp OutProg[MAX_INT_OPS];
 
-template <size_t N> static WORD AddrForInternalRelay(const StringArray<N> &name)
+template <size_t N> static int32_t AddrForInternalRelay(const StringArray<N> &name)
 {
-    int i;
+    int32_t i;
     for(i = 0; i < InternalRelaysCount; i++) {
         if(name == InternalRelays[i]) {
             return i;
@@ -56,9 +56,9 @@ template <size_t N> static WORD AddrForInternalRelay(const StringArray<N> &name)
     return i;
 }
 
-template <size_t N> static WORD AddrForVariable(const StringArray<N> &name)
+template <size_t N> static int32_t AddrForVariable(const StringArray<N> &name)
 {
-    int i;
+    int32_t i;
     for(i = 0; i < VariablesCount; i++) {
         if((name == Variables[i])) {
             return i;
@@ -69,10 +69,10 @@ template <size_t N> static WORD AddrForVariable(const StringArray<N> &name)
     return i;
 }
 
-static void Write(FILE *f, BinOp *op)
+static void Write(FileTracker& f, BinOp *op)
 {
-    BYTE *b = (BYTE *)op;
-    for(uint32_t i = 0; i < sizeof(*op); i++) {
+    uint8_t *b = (uint8_t *)op;
+    for(uint32_t i = 0; i < sizeof(BinOp); i++) {
         fprintf(f, "%02x", b[i]);
     }
     fprintf(f, "\n");
@@ -264,10 +264,6 @@ void CompileInterpreted(const char *outFile)
     }
 
     fprintf(f, "$$cycle %lld us\n", Prog.cycleTime);
-
-    ///// Added by JG
-    if(CompileFailure) return;
-    /////
 
     char str[MAX_PATH + 500];
     sprintf(str,

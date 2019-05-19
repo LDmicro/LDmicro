@@ -30,7 +30,7 @@
 // relay.
 static struct {
     char  name[MAX_NAME_LEN];
-    DWORD addr;
+    ADDR_T addr;
     int   bit;
     bool  assignedTo;
 } InternalRelays[MAX_IO];
@@ -43,7 +43,7 @@ static int InternalRelayCount;
 struct VariablesList {
     // vvv from compilercommon.cpp
     char    name[MAX_NAME_LEN];
-    DWORD   addrl;
+    uint32_t   addr;
     int     Allocated;  // the number of bytes allocated in the MCU SRAM for variable
     int     SizeOfVar;  // SizeOfVar can be less than Allocated
     // ^^^ from compilercommon.cpp
@@ -51,9 +51,9 @@ struct VariablesList {
     // vvv from simulate.cpp
     //  SDWORD  val;        // value in simulation mode.
     //  char    valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
-    //  DWORD   usedFlags;  // in simulation mode.
+    //  uint32_t   usedFlags;  // in simulation mode.
     //  int     initedRung; // Variable inited in rung.
-    //  DWORD   initedOp;   // Variable inited in Op number.
+    //  uint32_t   initedOp;   // Variable inited in Op number.
     //  char    rungs[MAX_COMMENT_LEN]; // Rungs, where variable is used.
     // ^^^ from simulate.cpp
 };
@@ -62,13 +62,11 @@ static std::array<VariablesList, MAX_IO> Variables;
 static int    VariableCount = 0;
 
 #define NO_MEMORY 0xffffffff
-static DWORD NextBitwiseAllocAddr;
+static uint32_t NextBitwiseAllocAddr;
 static int   NextBitwiseAllocBit;
 static int   MemOffset;
-DWORD        RamSection;
-DWORD        RomSection;
-
-int CompileFailure= 0;      ///// added by JG
+uint32_t        RamSection;
+uint32_t        RomSection;
 
 //-----------------------------------------------------------------------------
 static LabelAddr LabelAddrArr[MAX_RUNGS];
@@ -129,17 +127,17 @@ void PrintVariables(FileTracker& f)
 
     fprintf(f, ";|Variables: %d\n", VariableCount);
     for(int i = 0; i < VariableCount; i++) {
-        if(Variables[i].addrl) {
+        if(Variables[i].addr) {
             fprintf(f,
                     ";|%3d | %-50s\t| %3d byte  | 0x%04X       |\n",
                     i,
                     Variables[i].name,
                     Variables[i].SizeOfVar,
-                    Variables[i].addrl);
+                    Variables[i].addr);
         }
         /*
         else {
-            DWORD addr;
+            ADDR_T addr;
             int   bit;
             bool forRead;
             forRead = false;
@@ -181,7 +179,7 @@ static void ClrInternalData()
     //  VariableCount = 0;
     for(int i = 0; i < VariableCount; i++) {
         Variables[i].Allocated = 0;
-        Variables[i].addrl = 0;
+        Variables[i].addr = 0;
     }
 }
 //-----------------------------------------------------------------------------
@@ -200,7 +198,7 @@ void AllocStart()
 // Return the address of a previously unused octet of RAM on the target, or
 // signal an error if there is no more available.
 //-----------------------------------------------------------------------------
-DWORD AllocOctetRam(int bytes) // The desired number of bytes.
+ADDR_T AllocOctetRam(int bytes) // The desired number of bytes.
 {
     if(!Prog.mcu())
         return 0;
@@ -223,40 +221,40 @@ DWORD AllocOctetRam(int bytes) // The desired number of bytes.
     return Prog.mcu()->ram[RamSection].start + MemOffset - bytes;
 }
 
-DWORD AllocOctetRam()
+ADDR_T AllocOctetRam()
 {
     return AllocOctetRam(1);
 }
 
 //-----------------------------------------------------------------------------
-int InputRegIndex(DWORD addr)
+int InputRegIndex(ADDR_T addr)
 {
-    if((addr == std::numeric_limits<DWORD>::max()) || (addr == 0))
+    if((addr == INVALID_ADDR) || (addr == 0))
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->inputRegs[i] == addr)
             return i;
     oops();
-    return -1;
+    //return -1;
 }
 
 //-----------------------------------------------------------------------------
-int OutputRegIndex(DWORD addr)
+int OutputRegIndex(ADDR_T addr)
 {
-    if((addr == std::numeric_limits<DWORD>::max()) || (addr == 0))
+    if((addr == INVALID_ADDR) || (addr == 0))
         oops();
     for(int i = 0; i < MAX_IO_PORTS; i++)
         if(Prog.mcu()->outputRegs[i] == addr)
             return i;
     oops();
-    return -1;
+    //return -1;
 }
 
 //-----------------------------------------------------------------------------
 // Return the address (octet address) and bit of a previously unused bit of
 // RAM on the target.
 //-----------------------------------------------------------------------------
-void AllocBitRam(DWORD *addr, int *bit)
+void AllocBitRam(ADDR_T *addr, int *bit)
 {
     if(NextBitwiseAllocAddr != NO_MEMORY) {
         *addr = NextBitwiseAllocAddr;
@@ -281,7 +279,7 @@ void AllocBitRam(DWORD *addr, int *bit)
 // assigned to that I/O name. Will allocate if it no memory allocated for it
 // yet, else will return the previously allocated bit.
 //-----------------------------------------------------------------------------
-static void MemForPin(const NameArray& name, DWORD *addr, int *bit, bool asInput)
+static void MemForPin(const NameArray& name, ADDR_T *addr, int *bit, bool asInput)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -296,7 +294,7 @@ static void MemForPin(const NameArray& name, DWORD *addr, int *bit, bool asInput
     if(!asInput && Prog.io.assignment[i].type != IO_TYPE_DIG_OUTPUT && Prog.io.assignment[i].type != IO_TYPE_PWM_OUTPUT)
         oops();
 
-    *addr = -1;
+    *addr = INVALID_ADDR;
     *bit = -1;
     if(Prog.mcu()) {
         McuIoPinInfo *iop = PinInfo(Prog.io.assignment[i].pin);
@@ -318,9 +316,9 @@ static void MemForPin(const NameArray& name, DWORD *addr, int *bit, bool asInput
     }
 }
 
-void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput)
+void AddrBitForPin(int pin, ADDR_T *addr, int *bit, bool asInput)
 {
-    *addr = -1;
+    *addr = INVALID_ADDR;
     *bit = -1;
     if(Prog.mcu()) {
         McuIoPinInfo *iop = PinInfo(pin);
@@ -388,7 +386,7 @@ int GetAssignedType(const NameArray& name, const NameArray& fullName)
 //-----------------------------------------------------------------------------
 uint8_t MuxForAdcVariable(const NameArray& name)
 {
-    int res = 0;
+    uint8_t res = 0;
     int i;
     for(i = 0; i < Prog.io.count; i++) {
         if((strcmp(Prog.io.assignment[i].name, name.str()) == 0) &&
@@ -408,7 +406,7 @@ uint8_t MuxForAdcVariable(const NameArray& name)
         if(j == Prog.mcu()->adcCount) {
             /////   Error("i=%d pin=%d", i, Prog.io.assignment[i].pin);         ///// Comment by JG
             THROW_COMPILER_EXCEPTION_FMT(_("Must assign pins for all ADC inputs (name '%s')."), name.c_str());
-            return 0;
+            //return 0;
         }
         res = Prog.mcu()->adcInfo[j].muxRegValue;
     }
@@ -419,7 +417,7 @@ uint8_t MuxForAdcVariable(const NameArray& name)
 //-----------------------------------------------------------------------------
 // Added by JG to force SPI pins assignment
 //-----------------------------------------------------------------------------
-int PinsForSpiVariable(const NameArray& name, int n, char *spipins)
+int PinsForSpiVariable(const NameArray& name, int n, int* spipins)
 {
     int res = 0, port= 0;
     int i;
@@ -490,7 +488,7 @@ int PinsForSpiVariable(const NameArray& name, int n, char *spipins)
 //-----------------------------------------------------------------------------
 // Added by JG to force I2C pins assignment
 //-----------------------------------------------------------------------------
-int PinsForI2cVariable(const NameArray& name, int n, char *i2cpins)
+int PinsForI2cVariable(const NameArray& name, int n, int* i2cpins)
 {
     int res = 0, port= 0;
     int i;
@@ -548,11 +546,11 @@ int byteNeeded(long long int i)
     else if((-2147483648LL <= i) && (i <= 2147483647LL))
         return 4; // not FULLY implemented for LDmicro
     oops();
-    return 0;
+    //return 0;
 }
 
 //-----------------------------------------------------------------------------
-int TestByteNeeded(int count, SDWORD *vals)
+int TestByteNeeded(int count, int32_t* vals)
 {
     int res = -1;
     int r;
@@ -567,7 +565,7 @@ int TestByteNeeded(int count, SDWORD *vals)
 //-----------------------------------------------------------------------------
 // Allocate 1,2,3 or 4 byte for a variable, used for a variety of purposes.
 //-----------------------------------------------------------------------------
-int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
+int MemForVariable(const NameArray& name, ADDR_T *addr, int sizeOfVar)
 {
     if(strlenalnum(name.c_str()) == 0) {
         THROW_COMPILER_EXCEPTION_FMT(_("Empty variable name '%s'.\nrungNow=%d"), name.c_str(), rungNow + 1);
@@ -594,8 +592,8 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
         }
     }
     if(sizeOfVar < 0) { // get addr, get size
-        if(addrl)
-            *addrl = Variables[i].addrl;
+        if(addr)
+            *addr = Variables[i].addr;
 
     } else if(sizeOfVar > 0) { // set size, set addr
         if(Variables[i].SizeOfVar == sizeOfVar) {
@@ -610,12 +608,12 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
                 Variables[i].Allocated = 0; // Request to reallocate memory of var
             }
         }
-        if(addrl) {
-            Variables[i].addrl = *addrl;
+        if(addr) {
+            Variables[i].addr = *addr;
         }
-    } else { // if(sizeOfVar == 0) // if(addrl) { Allocate SRAM }
+    } else { // if(sizeOfVar == 0) // if(addr) { Allocate SRAM }
         if(name[0] == '#') {
-            DWORD addr = 0xff;
+            ADDR_T addr = 0xff;
             if(IsNumber(&name[1])) {
                 addr = hobatoi(&name[1]);
 
@@ -624,7 +622,7 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
                     //Error("Not a FSR");
                 } else {
                     if(Variables[i].Allocated == 0) {
-                        Variables[i].addrl = addr;
+                        Variables[i].addr = addr;
                     }
                     Variables[i].Allocated = 1;
                 }
@@ -649,7 +647,7 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
                 }
                 /*
                 if((addr == 0xff) || (addr == 0)) {
-                    return MemForVariable(&name[1], addrl);
+                    return MemForVariable(&name[1], addr);
                 }
                 */
                 if((addr == 0xff) || (addr == 0)) {
@@ -657,7 +655,7 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
                     //Error(_("Not a #PORT/#PIN/#TRIS/%s "), name);
                 } else {
                     if(Variables[i].Allocated == 0) {
-                        Variables[i].addrl = addr;
+                        Variables[i].addr = addr;
                     }
                     Variables[i].Allocated = 1;
                 }
@@ -670,10 +668,10 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
                 sizeOfVar = 2;
             }
             if(sizeOfVar < 1) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name.c_str(), sizeOfVar);
+                Error(_("Size of var '%s'(%d) reset as signed 8 bit variable."), name.c_str(), sizeOfVar);
                 sizeOfVar = 1;
             } else if(sizeOfVar > 4) {
-                THROW_COMPILER_EXCEPTION_FMT(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name.c_str(), sizeOfVar);
+                Error(_("Size of var '%s'(%d) reset as signed 32 bit variable."), name.c_str(), sizeOfVar);
                 sizeOfVar = 4;
             }
             if(Variables[i].SizeOfVar != sizeOfVar) {
@@ -683,16 +681,16 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
                     // Error("no Resize %s %d %d", name, Variables[i].SizeOfVar, sizeOfVar);
                 }
             }
-            if(addrl) {
+            if(addr) {
                 if(Variables[i].Allocated == 0) {
                     if(sizeOfVar == 1) {
-                        Variables[i].addrl = AllocOctetRam();
+                        Variables[i].addr = AllocOctetRam();
                     } else if(sizeOfVar == 2) {
-                        Variables[i].addrl = AllocOctetRam(2);
+                        Variables[i].addr = AllocOctetRam(2);
                     } else if(sizeOfVar == 3) {
-                        Variables[i].addrl = AllocOctetRam(3);
+                        Variables[i].addr = AllocOctetRam(3);
                     } else if(sizeOfVar == 4) {
-                        Variables[i].addrl = AllocOctetRam(4);
+                        Variables[i].addr = AllocOctetRam(4);
                     } else {
                         THROW_COMPILER_EXCEPTION_FMT(_("Var '%s' not allocated %d."), name.c_str(), sizeOfVar);
                     }
@@ -708,30 +706,30 @@ int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar)
                 }
             }
         }
-        if(addrl)
-            *addrl = Variables[i].addrl;
+        if(addr)
+            *addr = Variables[i].addr;
     }
     return Variables[i].SizeOfVar;
 }
 
-int MemForVariable(const NameArray& name, DWORD *addr)
+int MemForVariable(const NameArray& name, ADDR_T *addr)
 {
     return MemForVariable(name, addr, 0);
 }
 
 //-----------------------------------------------------------------------------
-static int MemOfVar(const char *name, DWORD *addr)
+static int MemOfVar(const char *name, ADDR_T *addr)
 {
     MemForVariable(name, addr, -1); //get WORD memory for pointer to LPM
     return SizeOfVar(name);         //and return size of element of table in flash memory
 }
 
-int MemOfVar(const NameArray &name, DWORD *addr)
+int MemOfVar(const NameArray &name, ADDR_T *addr)
 {
     return MemOfVar(name.c_str(), addr);
 }
 
-int SetMemForVariable(const NameArray &name, DWORD addr, int sizeOfVar)
+int SetMemForVariable(const NameArray &name, ADDR_T addr, int sizeOfVar)
 {
     MemForVariable(name, &addr, sizeOfVar); //allocate WORD memory for pointer to LPM
 
@@ -898,7 +896,7 @@ bool LoadVarListFromFile(FileTracker& f)
         }
         if(!Ok) {
             THROW_COMPILER_EXCEPTION_FMT(_("Error reading 'VAR LIST' section from .ld file!\nError in line:\n'%s'."), strspacer(line));
-            return false;
+            //return false;
         }
     }
     return false;
@@ -907,7 +905,7 @@ bool LoadVarListFromFile(FileTracker& f)
 // Allocate or retrieve the bit of memory assigned to an internal relay or
 // other thing that requires a single bit of storage.
 //-----------------------------------------------------------------------------
-static void MemForBitInternal(const NameArray& name, DWORD *addr, int *bit, bool writeTo)
+static void MemForBitInternal(const NameArray& name, ADDR_T *addr, int *bit, bool writeTo)
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
@@ -936,9 +934,9 @@ static void MemForBitInternal(const NameArray& name, DWORD *addr, int *bit, bool
 // or closed. Contacts could be internal relay, output pin, or input pin,
 // or one of the internal state variables ($xxx) from the int code generator.
 //-----------------------------------------------------------------------------
-void MemForSingleBit(const NameArray& name, bool forRead, DWORD *addr, int *bit)
+void MemForSingleBit(const NameArray& name, bool forRead, ADDR_T *addr, int *bit)
 {
-    *addr = -1;
+    *addr = INVALID_ADDR;
     *bit = -1;
     if(name.length() == 0) {
         return;
@@ -967,7 +965,7 @@ void MemForSingleBit(const NameArray& name, bool forRead, DWORD *addr, int *bit)
     }
 }
 
-void MemForSingleBit(const NameArray& name, DWORD *addr, int *bit)
+void MemForSingleBit(const NameArray& name, ADDR_T *addr, int *bit)
 {
     MemForSingleBit(name, false, addr, bit);
 }
@@ -1021,7 +1019,7 @@ int isPinAssigned(const NameArray &name)
 // Retrieve the bit to write to set the state of an output.
 //-----------------------------------------------------------------------------
 /*
-void MemForCoil(char *name, DWORD *addr, int *bit)
+void MemForCoil(char *name, ADDR_T *addr, int *bit)
 {
     switch(name[0]) {
         case 'Y':
@@ -1278,7 +1276,7 @@ double SIprefix(double val, char *prefix, int en_1_2)
         return val * 1e3;
     } else {
         oops();
-        return 0;
+        //return 0;
     }
 }
 double SIprefix(double val, char *prefix)

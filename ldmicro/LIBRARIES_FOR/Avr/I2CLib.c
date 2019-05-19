@@ -20,7 +20,7 @@ void LCD_I2C_MoveCursor(int x, int y){};
 void LCD_I2C_SendChar(char x){};
 
 #ifndef LCD_I2C_ADR
-#define LCD_I2C_ADR 0x20 // a adapter selon afficheur
+#define LCD_I2C_ADR 0 // a adapter selon afficheur
 #endif
 #define LCD_I2C_REG 255 // a adapter selon preferences
 
@@ -35,10 +35,10 @@ void I2C_Init(long fcpu, long ftwi)
 
     q = (fcpu / ftwi - 16) / 2; // devrait etre egal a rating * prescal
 
-    if(q <= 0) { // ftwi trop elevee
+    if(q <= 0) {
         rating = 0;
         prescal = 0;
-    } else if(q <= 255) {
+    } else if(q <= 255) { // ftwi trop elevee
         rating = q;
         prescal = 0;
     } else if(q <= 4 * 255) {

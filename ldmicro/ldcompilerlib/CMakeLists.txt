@@ -3,6 +3,10 @@ include(../cmake/PrecompiledHeader.cmake)
 
 project(ldcompilerlib LANGUAGES CXX)
 
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("constexpr int x = 0; int main(){return 0;}" LD_WITH_CONSTEXPR)
+check_cxx_source_compiles("void func() noexcept {} int main(){return 0;}" LD_WITH_NOEXEPT)
+
 if( NOT LDLANG )
     set(LDLANG "EN")
 endif()
@@ -42,6 +46,7 @@ set(LD_COMPILER_SRC_LIST
     ../compilerexceptions.hpp
     ../compilercommon.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../common/utils/filetracker.hpp
     )
 
 if(MSVC)
@@ -76,12 +81,18 @@ if(${LDLANG} STREQUAL "ALL")
         if(${lang_id} STREQUAL "EN")
             add_library               (${PROJECT_NAME} ${LD_COMPILER_SRC_LIST})
             target_compile_definitions(${PROJECT_NAME}
-                PUBLIC LDLANG_${lang_id} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
+                PUBLIC LDLANG_${lang_id}
+                $<$<BOOL:${LD_WITH_CONSTEXPR}>:LD_WITH_CONSTEXPR>
+                $<$<BOOL:${LD_WITH_NOEXEPT}>:LD_WITH_NOEXEPT>
+                )
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_library               (${PROJECT_NAME}-${ldlang_lower} ${LD_COMPILER_SRC_LIST})
             target_compile_definitions(${PROJECT_NAME}-${ldlang_lower}
-                PUBLIC LDLANG_${lang_id} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
+                PUBLIC LDLANG_${lang_id}
+                $<$<BOOL:${LD_WITH_CONSTEXPR}>:LD_WITH_CONSTEXPR>
+                $<$<BOOL:${LD_WITH_NOEXEPT}>:LD_WITH_NOEXEPT>
+                )
         endif()
     endforeach()
 
@@ -90,14 +101,20 @@ else()
     if(${LDLANG} STREQUAL "EN")
         add_library          (${PROJECT_NAME} ${LD_COMPILER_SRC_LIST})
         target_compile_definitions(${PROJECT_NAME}
-            PUBLIC LDLANG_${LDLANG} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
+            PUBLIC LDLANG_${LDLANG}
+            $<$<BOOL:${LD_WITH_CONSTEXPR}>:LD_WITH_CONSTEXPR>
+            $<$<BOOL:${LD_WITH_NOEXEPT}>:LD_WITH_NOEXEPT>
+            )
         add_precompiled_header(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp)
     elseif( NOT (${LDLANG} STREQUAL "ALL"))
         string(TOLOWER ${LDLANG} ldlang_lower)
         set(_project_name ${PROJECT_NAME}-${ldlang_lower})
         add_library               (${PROJECT_NAME}-${ldlang_lower} ${LD_COMPILER_SRC_LIST})
         target_compile_definitions(${PROJECT_NAME}-${ldlang_lower}
-            PUBLIC LDLANG_${LDLANG} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
+            PUBLIC LDLANG_${LDLANG}
+            $<$<BOOL:${LD_WITH_CONSTEXPR}>:LD_WITH_CONSTEXPR>
+            $<$<BOOL:${LD_WITH_NOEXEPT}>:LD_WITH_NOEXEPT>
+            )
         add_precompiled_header(${_project_name} ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.h FORCEINCLUDE SOURCE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/../stdafx.cpp)
     endif()
 

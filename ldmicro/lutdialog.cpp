@@ -45,7 +45,7 @@ static HWND     ValuesTextbox[MAX_LOOK_UP_TABLE_LEN * 2];
 static LONG_PTR PrevValuesProc[MAX_LOOK_UP_TABLE_LEN * 2];
 static HWND     ValuesLabel[MAX_LOOK_UP_TABLE_LEN * 2];
 
-static SDWORD ValuesCache[MAX_LOOK_UP_TABLE_LEN * 2];
+static int32_t ValuesCache[MAX_LOOK_UP_TABLE_LEN * 2];
 
 static LONG_PTR PrevNameProc;
 static LONG_PTR PrevDestProc;
@@ -109,7 +109,7 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
         w = (WNDPROC)PrevNameProc;
     } else if(hwnd == IndexTextbox) {
         w = (WNDPROC)PrevIndexProc;
-    }
+    } else oops();
     return CallWindowProc(w, hwnd, msg, wParam, lParam);
 }
 
@@ -338,7 +338,7 @@ static void MakeLutControls(bool asString, int count, bool forPwl)
         for(i = 0; i < count; i++) {
             int c = ValuesCache[i];
             if(c >= 32 && c <= 127 && c != '\\') {
-                str[j++] = c;
+                str[j++] = (char)c;
             } else if(c == '\\') {
                 str[j++] = '\\';
                 str[j++] = '\\';

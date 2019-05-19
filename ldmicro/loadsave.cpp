@@ -976,13 +976,13 @@ bool LoadProjectFromFile(const char *filename)
             Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
             break;
         }
-        Prog.rungs[rung] = s;
+        Prog.rungs_[rung] = s;
         rung++;
     }
     Prog.numRungs = rung;
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
-        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[rung]))
+        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs_[rung]))
             ProgramChanged();
     }
 
@@ -1585,7 +1585,7 @@ bool SaveProjectToFile(char *filename, int code)
             Prog.cycleDuty,
             Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
-    fprintf(f, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
+    fprintf(f, "BAUD=%d Hz, RATE=%d Hz, SPEED=%d Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }
@@ -1613,9 +1613,8 @@ bool SaveProjectToFile(char *filename, int code)
     fprintf(f, "\n");
     fprintf(f, "PROGRAM\n");
 
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i + 1);
+    for(int i = 0; i < Prog.numRungs; i++) {
+        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs(i), 0, i + 1);
     }
 
     fflush(f);

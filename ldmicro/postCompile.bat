@@ -1,12 +1,16 @@
 @echo on
 @echo This file is part of LDmicro project and must be located in same directory where LDmicro.exe located.
 @echo This file executes after menu Compile - F5
+@REM EXE_PATH from where the ldmicro.exe and *.bat are executes
 @SET  EXE_PATH=%~dp0
 @echo %EXE_PATH% - EXE_PATH
 @echo %1 - Compile target
 @echo %2 - Prog.mcu.whichIsa
 @echo %3 - LD path without the end backslash, double quoted
 @echo %4 - LD file name without extentions and path, double quoted
+@SET  COMPILER=%5
+@echo %COMPILER% = COMPILER
+@echo .
 @set P3=%~3
 @set P4=%~4
 @echo %P3% - LD path without the end backslash and without double quotes
@@ -20,21 +24,22 @@
 @if NOT EXIST "%P3%\ladder.h"    copy "%P3%\ladder.h_"   "%P3%\ladder.h"
 @if NOT EXIST "%P3%\%P4%.ino"    copy "%P3%\%P4%.ino_"   "%P3%\%P4%.ino"
 ;
-@rem pause
+:pause
 ;
-@if "%1" == "AVR"     goto AVR
-@if "%1" == "PIC16"   goto PIC16
-@if "%1" == "ANSIC"   goto ANSIC
-@if "%1" == "ARDUINO" goto ARDUINO
-@if "%1" == "PASCAL"  goto PASCAL
-@if "%1" == ""        goto pauses
+@if "%1" == "AVR"       goto AVR
+@if "%COMPILER%" == "CCS_PIC_C" goto CCS
+@if "%COMPILER%" == "HI_TECH_C" goto HTC
+@if "%1" == "PIC16"     goto PIC16
+@if "%1" == "ANSIC"     goto ANSIC
+@if "%1" == "ARDUINO"   goto ARDUINO
+@if "%1" == "PASCAL"    goto PASCAL
+@if "%1" == ""          goto pauses
 goto "%1"
 goto NOT_SUPPOTED
 ;
 @rem =======================================================================
 :AVR
 :ANSIC
-@if "%2" == "PIC16"   goto CCS
 @rem -----------------------------------------------------------------------
 :AvrStudio
 @mkdir  "%P3%\AvrStudio\%P4%"
@@ -49,6 +54,15 @@ copy "%P3%\%P4%.c"            "%P3%\CvAvr\%P4%"
 copy "%P3%\%P4%.h"            "%P3%\CvAvr\%P4%"
 copy "%P3%\ladder.h"          "%P3%\CvAvr\%P4%"
 goto PROTEUS
+@rem -----------------------------------------------------------------------
+:HTC
+:@mkdir  "%P3%\HTC"
+:copy "%EXE_PATH%\LIBRARIES_FOR\Pic16\*.c"         "%P3%\HTC"
+:copy "%EXE_PATH%\LIBRARIES_FOR\Pic16\*.h"         "%P3%\HTC"
+:copy "%P3%\%P4%.c"            "%P3%\HTC"
+:copy "%P3%\%P4%.h"            "%P3%\HTC"
+:copy "%P3%\ladder.h"          "%P3%\HTC"
+goto exit
 @rem -----------------------------------------------------------------------
 :CCS
 @mkdir  "%P3%\CCS\%P4%"

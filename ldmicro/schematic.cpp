@@ -36,10 +36,8 @@ bool CanInsertComment;
 // us which leaf element is in which box on the grid, which allows us
 // to determine what element has just been selected when the user clicks
 // on something, for example.
-ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
-int       DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
-ElemLeaf *Selected;
-int       SelectedWhich;
+SeriesNode DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
+SeriesNode Selected;
 
 ElemLeaf DisplayMatrixFiller;
 
@@ -55,14 +53,14 @@ PlcCursor Cursor;
 //-----------------------------------------------------------------------------
 bool FindSelected(int *gx, int *gy)
 {
-    if(!Selected)
+    if(!Selected.leaf())
         return false;
     int i, j;
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
-            if(DisplayMatrix[i][j] == Selected) {
-                if(SelectedWhich != ELEM_COMMENT)
-                    while(DisplayMatrix[i + 1][j] == Selected)
+            if(DisplayMatrix[i][j].leaf() == Selected.leaf()) {
+                if(Selected.which != ELEM_COMMENT)
+                    while(DisplayMatrix[i + 1][j].data.leaf == Selected.leaf())
                         i++;
                 *gx = i;
                 *gy = j;
@@ -87,13 +85,12 @@ void SelectElement(int gx, int gy, int state)
         }
     }
 
-    if(Selected)
-        Selected->selectedState = SELECTED_NONE;
+    if(Selected.data.leaf)
+        Selected.data.leaf->selectedState = SELECTED_NONE;
 
     Selected = DisplayMatrix[gx][gy];
-    SelectedWhich = DisplayMatrixWhich[gx][gy];
 
-    if(SelectedWhich == ELEM_PLACEHOLDER) {
+    if(Selected.which == ELEM_PLACEHOLDER) {
         state = SELECTED_LEFT;
     }
 
@@ -114,8 +111,8 @@ void SelectElement(int gx, int gy, int state)
         RefreshScrollbars();
     }
 
-    if(Selected)
-        Selected->selectedState = state;
+    if(Selected.data.leaf)
+        Selected.data.leaf->selectedState = state;
 
     WhatCanWeDoFromCursorAndTopology();
 }
@@ -251,7 +248,7 @@ void WhatCanWeDoFromCursorAndTopology()
         if(i == (Prog.numRungs - 1))
             canPushDown = false;
 
-        if(Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which == ELEM_PLACEHOLDER) {
+        if(Prog.rungs(i)->count == 1 && Prog.rungs(i)->contents[0].which == ELEM_PLACEHOLDER) {
             canDelete = false;
         }
     }
@@ -259,8 +256,8 @@ void WhatCanWeDoFromCursorAndTopology()
     CanInsertEnd = false;
     CanInsertOther = true;
 
-    if(Selected && EndOfRungElem(SelectedWhich)) {
-        if(SelectedWhich == ELEM_COIL) {
+    if(Selected.data.leaf && EndOfRungElem(Selected.which)) {
+        if(Selected.which == ELEM_COIL) {
             canNegate = true;
             canNormal = true;
             canResetOnly = true;
@@ -268,29 +265,29 @@ void WhatCanWeDoFromCursorAndTopology()
             canTtrigger = true;
         }
 
-        if(Selected->selectedState == SELECTED_ABOVE || Selected->selectedState == SELECTED_BELOW) {
+        if(Selected.data.leaf->selectedState == SELECTED_ABOVE || Selected.data.leaf->selectedState == SELECTED_BELOW) {
             CanInsertEnd = true;
             CanInsertOther = false;
-        } else if(Selected->selectedState == SELECTED_RIGHT) {
+        } else if(Selected.data.leaf->selectedState == SELECTED_RIGHT) {
             CanInsertEnd = false;
             CanInsertOther = false;
         }
-    } else if(Selected) {
-        if(Selected->selectedState == SELECTED_RIGHT || SelectedWhich == ELEM_PLACEHOLDER) {
-            CanInsertEnd = ItemIsLastInCircuit(Selected);
+    } else if(Selected.data.leaf) {
+        if(Selected.data.leaf->selectedState == SELECTED_RIGHT || Selected.which == ELEM_PLACEHOLDER) {
+            CanInsertEnd = ItemIsLastInCircuit(Selected.data.leaf);
         }
     }
-    if(SelectedWhich == ELEM_CONTACTS) {
+    if(Selected.which == ELEM_CONTACTS) {
         canNegate = true;
         canNormal = true;
     }
-    if(SelectedWhich == ELEM_COMMENT) {
+    if(Selected.which == ELEM_COMMENT) {
         // if there's a comment there already then don't let anything else
         // into the rung
         CanInsertEnd = false;
         CanInsertOther = false;
     }
-    if(SelectedWhich == ELEM_PLACEHOLDER) {
+    if(Selected.which == ELEM_PLACEHOLDER) {
         // a comment must be the only element in its rung, and it will fill
         // the rung entirely
         CanInsertComment = true;
@@ -323,14 +320,14 @@ void ForgetFromGrid(void *p)
     int i, j;
     for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
         for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
-            if(DisplayMatrix[i][j] == p) {
-                DisplayMatrix[i][j] = nullptr;
+            if(DisplayMatrix[i][j].any() == p) {
+                DisplayMatrix[i][j].data.any = nullptr;
                 //              DisplayMatrixWhich[i][j] = ELEM_NULL; // ???
             }
         }
     }
-    if(Selected == p) {
-        Selected = nullptr;
+    if(Selected.data.any == p) {
+        Selected.data.any = nullptr;
         //      SelectedWhich = ELEM_NULL; // ???
     }
 }
@@ -343,9 +340,8 @@ void ForgetFromGrid(void *p)
 void ForgetEverything()
 {
     memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
-    memset(DisplayMatrixWhich, 0, sizeof(DisplayMatrixWhich));
-    Selected = nullptr;
-    SelectedWhich = 0;
+    Selected.data.any = nullptr;
+    Selected.which = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -390,26 +386,26 @@ bool MoveCursorTopLeft()
 //-----------------------------------------------------------------------------
 void MoveCursorKeyboard(int keyCode)
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE) {
+    if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE) {
         MoveCursorTopLeft();
         return;
     }
 
     switch(keyCode) {
         case VK_LEFT: {
-            if(!Selected || Selected->selectedState == SELECTED_NONE) {
+            if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE) {
                 break;
             }
-            if(Selected->selectedState != SELECTED_LEFT) {
+            if(Selected.data.leaf->selectedState != SELECTED_LEFT) {
                 SelectElement(-1, -1, SELECTED_LEFT);
                 break;
             }
-            if(SelectedWhich == ELEM_COMMENT)
+            if(Selected.which == ELEM_COMMENT)
                 break; // can comment ???
             int i, j;
             if(FindSelected(&i, &j)) {
                 i--;
-                while(i >= 0 && (!VALID_LEAF(DisplayMatrix[i][j]) || (DisplayMatrix[i][j] == Selected))) {
+                while(i >= 0 && (!VALID_LEAF(DisplayMatrix[i][j]) || (DisplayMatrix[i][j].data.leaf == Selected.leaf()))) {
                     i--;
                 }
                 if(i >= 0) {
@@ -419,14 +415,14 @@ void MoveCursorKeyboard(int keyCode)
             break;
         }
         case VK_RIGHT: {
-            if(!Selected || Selected->selectedState == SELECTED_NONE) {
+            if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE) {
                 break;
             }
-            if(Selected->selectedState != SELECTED_RIGHT) {
+            if(Selected.data.leaf->selectedState != SELECTED_RIGHT) {
                 SelectElement(-1, -1, SELECTED_RIGHT);
                 break;
             }
-            if(SelectedWhich == ELEM_COMMENT)
+            if(Selected.which == ELEM_COMMENT)
                 break;
             int i, j;
             if(FindSelected(&i, &j)) {
@@ -441,10 +437,10 @@ void MoveCursorKeyboard(int keyCode)
             break;
         }
         case VK_UP: {
-            if(!Selected || Selected->selectedState == SELECTED_NONE) {
+            if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE) {
                 break;
             }
-            if(Selected->selectedState != SELECTED_ABOVE && SelectedWhich != ELEM_PLACEHOLDER) {
+            if(Selected.data.leaf->selectedState != SELECTED_ABOVE && Selected.which != ELEM_PLACEHOLDER) {
                 SelectElement(-1, -1, SELECTED_ABOVE);
                 break;
             }
@@ -460,10 +456,10 @@ void MoveCursorKeyboard(int keyCode)
             break;
         }
         case VK_DOWN: {
-            if(!Selected || Selected->selectedState == SELECTED_NONE) {
+            if(!Selected.data.leaf || Selected.data.leaf->selectedState == SELECTED_NONE) {
                 break;
             }
-            if(Selected->selectedState != SELECTED_BELOW && SelectedWhich != ELEM_PLACEHOLDER) {
+            if(Selected.data.leaf->selectedState != SELECTED_BELOW && Selected.which != ELEM_PLACEHOLDER) {
                 SelectElement(-1, -1, SELECTED_BELOW);
                 break;
             }
@@ -593,7 +589,7 @@ static bool doReplaceElem(int which, int whichWhere, void *where, int index)
             ElemSubcktParallel *p = (ElemSubcktParallel *)where;
             p->contents[index].which = newWhich;
         }
-        SelectedWhich = newWhich;
+        Selected.which = newWhich;
         return true;
     }
     return false;
@@ -638,12 +634,11 @@ static bool ReplaceElem(int which, void *any, ElemLeaf *seek, int whichWhere, vo
 //-----------------------------------------------------------------------------
 bool ReplaceSelectedElement()
 {
-    if(!Selected /* || Selected->selectedState == SELECTED_NONE*/)
+    if(!Selected.data.leaf /* || Selected->selectedState == SELECTED_NONE*/)
         return false;
 
-    int i;
-    for(i = 0; i < Prog.numRungs; i++)
-        if(ReplaceElem(ELEM_SERIES_SUBCKT, Prog.rungs[i], Selected, 0, 0, 0))
+    for(int i = 0; i < Prog.numRungs; i++)
+        if(ReplaceElem(ELEM_SERIES_SUBCKT, Prog.rungs(i), Selected.data.leaf, 0, 0, 0))
             return true;
     return false;
 }
@@ -654,25 +649,25 @@ bool ReplaceSelectedElement()
 //-----------------------------------------------------------------------------
 void EditSelectedElement()
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE)
+    if(!Selected.leaf() || Selected.leaf()->selectedState == SELECTED_NONE)
         return;
 
-    switch(SelectedWhich) {
+    switch(Selected.which) {
         case ELEM_COMMENT:
-            ShowCommentDialog(Selected->d.comment.str);
+            ShowCommentDialog(Selected.data.leaf->d.comment.str);
             break;
 
         case ELEM_CONTACTS:
             ShowContactsDialog(
-                &(Selected->d.contacts.negated), &(Selected->d.contacts.set1), Selected->d.contacts.name);
+                &(Selected.leaf()->d.contacts.negated), &(Selected.leaf()->d.contacts.set1), Selected.leaf()->d.contacts.name);
             break;
 
         case ELEM_COIL:
-            ShowCoilDialog(&(Selected->d.coil.negated),
-                           &(Selected->d.coil.setOnly),
-                           &(Selected->d.coil.resetOnly),
-                           &(Selected->d.coil.ttrigger),
-                           Selected->d.coil.name);
+            ShowCoilDialog(&(Selected.leaf()->d.coil.negated),
+                           &(Selected.leaf()->d.coil.setOnly),
+                           &(Selected.leaf()->d.coil.resetOnly),
+                           &(Selected.leaf()->d.coil.ttrigger),
+                           Selected.leaf()->d.coil.name);
             break;
 
         case ELEM_TIME2DELAY:
@@ -684,22 +679,22 @@ void EditSelectedElement()
         case ELEM_RTL:
         case ELEM_THI:
         case ELEM_TLO:
-            ShowTimerDialog(SelectedWhich, Selected);
+            ShowTimerDialog(Selected.which, Selected.leaf());
             break;
 
         case ELEM_DELAY:
-            ShowDelayDialog(SelectedWhich, Selected);
+            ShowDelayDialog(Selected.leaf());
             break;
 
         case ELEM_SLEEP:
-            ShowSleepDialog(SelectedWhich, Selected);
+            ShowSleepDialog(Selected.leaf());
             break;
 
         case ELEM_CTR:
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
-            ShowCounterDialog(SelectedWhich, Selected);
+            ShowCounterDialog(Selected.which, Selected.leaf());
             break;
 
 #ifdef USE_SFR
@@ -710,7 +705,7 @@ void EditSelectedElement()
         case ELEM_CSFR:
         case ELEM_TSFR:
         case ELEM_T_C_SFR:
-            ShowSFRDialog(SelectedWhich, Selected->d.sfr.sfr, Selected->d.sfr.op);
+            ShowSFRDialog(Selected.which, Selected.leaf()->d.sfr.sfr, Selected.leaf()->d.sfr.op);
             break;
 // Special function
 #endif
@@ -719,7 +714,7 @@ void EditSelectedElement()
         case ELEM_IF_BIT_CLEAR:
         case ELEM_SET_BIT:
         case ELEM_CLEAR_BIT:
-            ShowVarBitDialog(SelectedWhich, Selected->d.move.dest, Selected->d.move.src);
+            ShowVarBitDialog(Selected.which, Selected.leaf()->d.move.dest, Selected.leaf()->d.move.src);
             break;
 
         case ELEM_EQU:
@@ -728,7 +723,7 @@ void EditSelectedElement()
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
-            ShowCmpDialog(SelectedWhich, Selected->d.cmp.op1, Selected->d.cmp.op2);
+            ShowCmpDialog(Selected.which, Selected.leaf()->d.cmp.op1, Selected.leaf()->d.cmp.op2);
             break;
 
         case ELEM_ADD:
@@ -746,54 +741,53 @@ void EditSelectedElement()
         case ELEM_XOR:
         case ELEM_NOT:
         case ELEM_NEG:
-            ShowMathDialog(SelectedWhich, Selected->d.math.dest, Selected->d.math.op1, Selected->d.math.op2);
+            ShowMathDialog(Selected.which, Selected.leaf()->d.math.dest, Selected.leaf()->d.math.op1, Selected.leaf()->d.math.op2);
             break;
 
         case ELEM_STEPPER:
-            ShowStepperDialog(SelectedWhich, &Selected->d);
+            ShowStepperDialog(&Selected.leaf()->d);
             break;
 
         case ELEM_PULSER:
-            ShowPulserDialog(SelectedWhich,
-                             Selected->d.pulser.P1,
-                             Selected->d.pulser.P0,
-                             Selected->d.pulser.accel,
-                             Selected->d.pulser.counter,
-                             Selected->d.pulser.busy);
+            ShowPulserDialog(Selected.leaf()->d.pulser.P1,
+                             Selected.leaf()->d.pulser.P0,
+                             Selected.leaf()->d.pulser.accel,
+                             Selected.leaf()->d.pulser.counter,
+                             Selected.leaf()->d.pulser.busy);
             break;
 
         case ELEM_NPULSE:
             ShowNPulseDialog(
-                SelectedWhich, Selected->d.Npulse.counter, Selected->d.Npulse.targetFreq, Selected->d.Npulse.coil);
+                Selected.leaf()->d.Npulse.counter, Selected.leaf()->d.Npulse.targetFreq, Selected.leaf()->d.Npulse.coil);
             break;
 
         case ELEM_QUAD_ENCOD:
-            ShowQuadEncodDialog(SelectedWhich, Selected);
+            ShowQuadEncodDialog(Selected.leaf());
             break;
 
         case ELEM_7SEG:
         case ELEM_9SEG:
         case ELEM_14SEG:
         case ELEM_16SEG:
-            ShowSegmentsDialog(SelectedWhich, Selected);
+            ShowSegmentsDialog(Selected.leaf());
             break;
 
         case ELEM_BUS:
-            ShowBusDialog(Selected);
+            ShowBusDialog(Selected.leaf());
             break;
 
         case ELEM_SPI:
         case ELEM_SPI_WR:                   ///// Added by JG
-            ShowSpiDialog(Selected);
+            ShowSpiDialog(Selected.leaf());
             break;
 
         case ELEM_I2C_RD:                   ///// Added by JG
         case ELEM_I2C_WR:
-            ShowI2cDialog(Selected);
+            ShowI2cDialog(Selected.leaf());
             break;
 
         case ELEM_RES:
-            ShowResetDialog(Selected->d.reset.name);
+            ShowResetDialog(Selected.leaf()->d.reset.name);
             break;
 
         case ELEM_SEED_RANDOM:
@@ -802,15 +796,15 @@ void EditSelectedElement()
         case ELEM_SWAP:
         case ELEM_OPPOSITE:
         case ELEM_MOVE:
-            ShowMoveDialog(SelectedWhich, Selected->d.move.dest, Selected->d.move.src);
+            ShowMoveDialog(Selected.which, Selected.leaf()->d.move.dest, Selected.leaf()->d.move.src);
             break;
 
         case ELEM_SET_PWM:
-            ShowSetPwmDialog(&Selected->d);
+            ShowSetPwmDialog(&Selected.leaf()->d);
             break;
 
         case ELEM_READ_ADC:
-            ShowReadAdcDialog(Selected->d.readAdc.name + 1, &Selected->d.readAdc.refs);
+            ShowReadAdcDialog(Selected.leaf()->d.readAdc.name + 1, &Selected.leaf()->d.readAdc.refs);
             break;
 
         case ELEM_LABEL:
@@ -818,42 +812,42 @@ void EditSelectedElement()
         case ELEM_ENDSUB:
         case ELEM_GOTO:
         case ELEM_GOSUB:
-            ShowGotoDialog(SelectedWhich, Selected->d.doGoto.label);
+            ShowGotoDialog(Selected.which, Selected.leaf()->d.doGoto.label);
             break;
 
         case ELEM_RANDOM:
-            ShowRandomDialog(Selected->d.readAdc.name);
+            ShowRandomDialog(Selected.leaf()->d.readAdc.name);
             break;
 
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
         case ELEM_UART_RECVn:
         case ELEM_UART_SENDn:
-            ShowUartDialog(SelectedWhich, Selected);
+            ShowUartDialog(Selected.which, Selected.leaf());
             break;
 
         case ELEM_PERSIST:
-            ShowPersistDialog(Selected->d.persist.var);
+            ShowPersistDialog(Selected.leaf()->d.persist.var);
             break;
 
         case ELEM_SHIFT_REGISTER:
-            ShowShiftRegisterDialog(Selected->d.shiftRegister.name, &(Selected->d.shiftRegister.stages));
+            ShowShiftRegisterDialog(Selected.leaf()->d.shiftRegister.name, &(Selected.leaf()->d.shiftRegister.stages));
             break;
 
         case ELEM_STRING:
-            ShowStringDialog(Selected->d.fmtdStr.dest, Selected->d.fmtdStr.var, Selected->d.fmtdStr.string);
+            ShowStringDialog(Selected.leaf()->d.fmtdStr.dest, Selected.leaf()->d.fmtdStr.var, Selected.leaf()->d.fmtdStr.string);
             break;
 
         case ELEM_FORMATTED_STRING:
-            ShowFormattedStringDialog(Selected->d.fmtdStr.var, Selected->d.fmtdStr.string);
+            ShowFormattedStringDialog(Selected.leaf()->d.fmtdStr.var, Selected.leaf()->d.fmtdStr.string);
             break;
 
         case ELEM_PIECEWISE_LINEAR:
-            ShowPiecewiseLinearDialog(Selected);
+            ShowPiecewiseLinearDialog(Selected.leaf());
             break;
 
         case ELEM_LOOK_UP_TABLE:
-            ShowLookUpTableDialog(Selected);
+            ShowLookUpTableDialog(Selected.leaf());
             break;
     }
 }
@@ -877,17 +871,17 @@ void EditElementMouseDoubleclick(int x, int y)
     gy += ScrollYOffset;
 
     if(InSimulationMode) {
-        ElemLeaf *l = DisplayMatrix[gx][gy];
-        if(l && DisplayMatrixWhich[gx][gy] == ELEM_CONTACTS) {
+        ElemLeaf *l = DisplayMatrix[gx][gy].leaf();
+        if(l && DisplayMatrix[gx][gy].which == ELEM_CONTACTS) {
             char *name = l->d.contacts.name;
             if((name[0] != 'Y') && (name[0] != 'M')) {
                 SimulationToggleContact(name);
             }
-        } else if(l && DisplayMatrixWhich[gx][gy] == ELEM_READ_ADC) {
+        } else if(l && DisplayMatrix[gx][gy].which == ELEM_READ_ADC) {
             ShowAnalogSliderPopup(l->d.readAdc.name);
         }
     } else {
-        if(DisplayMatrix[gx][gy] == Selected) {
+        if(DisplayMatrix[gx][gy].leaf() == Selected.leaf()) {
             EditSelectedElement();
         }
     }
@@ -940,8 +934,8 @@ void MoveCursorMouseClick(int x, int y)
         int i, j;
         for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
             for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
-                if(DisplayMatrix[i][j])
-                    DisplayMatrix[i][j]->selectedState = SELECTED_NONE;
+                if(DisplayMatrix[i][j].any())
+                    DisplayMatrix[i][j].leaf()->selectedState = SELECTED_NONE;
             }
         }
         int dx = x - (gx0 * POS_WIDTH * FONT_WIDTH + X_PADDING);
@@ -953,16 +947,16 @@ void MoveCursorMouseClick(int x, int y)
         int dright = POS_WIDTH * FONT_WIDTH - dx;
 
         int extra = 1;
-        if(DisplayMatrixWhich[gx][gy] == ELEM_COMMENT) {
+        if(DisplayMatrix[gx][gy].which == ELEM_COMMENT) {
             dleft += gx * POS_WIDTH * FONT_WIDTH;
             dright += (ColsAvailable - gx - 1) * POS_WIDTH * FONT_WIDTH;
             extra = ColsAvailable;
         } else {
-            if((gx > 0) && (DisplayMatrix[gx - 1][gy] == DisplayMatrix[gx][gy])) {
+            if((gx > 0) && (DisplayMatrix[gx - 1][gy].leaf() == DisplayMatrix[gx][gy].leaf())) {
                 dleft += POS_WIDTH * FONT_WIDTH;
                 extra = 2;
             }
-            if((gx < (DISPLAY_MATRIX_X_SIZE - 1)) && (DisplayMatrix[gx + 1][gy] == DisplayMatrix[gx][gy])) {
+            if((gx < (DISPLAY_MATRIX_X_SIZE - 1)) && (DisplayMatrix[gx + 1][gy].leaf() == DisplayMatrix[gx][gy].leaf())) {
                 dright += POS_WIDTH * FONT_WIDTH;
                 extra = 2;
             }
@@ -1043,7 +1037,7 @@ bool MoveCursorNear(int *gx, int *gy)
                     SelectElement(*gx + across, *gy, SELECTED_LEFT);
                     return FindSelected(&*gx, &*gy);
                 }
-                if(!DisplayMatrix[*gx + across][*gy])
+                if(!DisplayMatrix[*gx + across][*gy].leaf())
                     break;
             }
         }
@@ -1060,17 +1054,17 @@ bool MoveCursorNear(int *gx, int *gy)
 //-----------------------------------------------------------------------------
 void NegateSelected()
 {
-    if(Selected->d.contacts.negated) {
+    if(Selected.data.leaf->d.contacts.negated) {
         MakeNormalSelected();
         return;
     }
-    switch(SelectedWhich) {
+    switch(Selected.which) {
         case ELEM_CONTACTS:
-            Selected->d.contacts.negated = true;
+            Selected.data.leaf->d.contacts.negated = true;
             break;
 
         case ELEM_COIL: {
-            ElemCoil *c = &Selected->d.coil;
+            ElemCoil *c = &Selected.leaf()->d.coil;
             c->negated = true;
             c->resetOnly = false;
             c->setOnly = false;
@@ -1087,17 +1081,17 @@ void NegateSelected()
 //-----------------------------------------------------------------------------
 void MakeNormalSelected()
 {
-    if(!Selected->d.contacts.negated) {
+    if(!Selected.leaf()->d.contacts.negated) {
         NegateSelected();
         return;
     }
-    switch(SelectedWhich) {
+    switch(Selected.which) {
         case ELEM_CONTACTS:
-            Selected->d.contacts.negated = false;
+            Selected.leaf()->d.contacts.negated = false;
             break;
 
         case ELEM_COIL: {
-            ElemCoil *c = &Selected->d.coil;
+            ElemCoil *c = &Selected.leaf()->d.coil;
             c->negated = false;
             c->setOnly = false;
             c->resetOnly = false;
@@ -1114,10 +1108,10 @@ void MakeNormalSelected()
 //-----------------------------------------------------------------------------
 void MakeSetOnlySelected()
 {
-    if(SelectedWhich != ELEM_COIL)
+    if(Selected.which != ELEM_COIL)
         return;
 
-    ElemCoil *c = &Selected->d.coil;
+    ElemCoil *c = &Selected.leaf()->d.coil;
     c->setOnly = true;
     c->resetOnly = false;
     c->negated = false;
@@ -1129,10 +1123,10 @@ void MakeSetOnlySelected()
 //-----------------------------------------------------------------------------
 void MakeResetOnlySelected()
 {
-    if(SelectedWhich != ELEM_COIL)
+    if(Selected.which != ELEM_COIL)
         return;
 
-    ElemCoil *c = &Selected->d.coil;
+    ElemCoil *c = &Selected.leaf()->d.coil;
     c->resetOnly = true;
     c->setOnly = false;
     c->negated = false;
@@ -1144,10 +1138,10 @@ void MakeResetOnlySelected()
 //-----------------------------------------------------------------------------
 void MakeTtriggerSelected()
 {
-    if(SelectedWhich != ELEM_COIL)
+    if(Selected.which != ELEM_COIL)
         return;
 
-    ElemCoil *c = &Selected->d.coil;
+    ElemCoil *c = &Selected.leaf()->d.coil;
     c->ttrigger = true;
     c->resetOnly = false;
     c->setOnly = false;

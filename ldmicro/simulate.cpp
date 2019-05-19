@@ -38,7 +38,7 @@ static int SingleBitItemsCount;
 
 static struct {
     char   name[MAX_NAME_LEN];
-    SDWORD val;
+    int32_t val;
     char   valstr[MAX_COMMENT_LEN]; // value in simulation mode for STRING types.
     DWORD  usedFlags;
     int    initedRung;                 // Variable inited in rung.
@@ -51,7 +51,7 @@ DWORD CyclesCount; // Simulated
 
 static struct {
     char  name[MAX_NAME_LEN];
-    SWORD val;
+    int32_t val;
 } AdcShadows[MAX_IO];
 static int AdcShadowsCount;
 
@@ -261,8 +261,8 @@ long OverflowToVarSize(long val, int sov)
             val = convert_to_int24_t(val);
         else if(sov == 4)
             val = (int32_t)val;
-        else
-            val = val;
+        // else
+           // val = val;
     }
     return val;
 }
@@ -369,44 +369,44 @@ static void Decrement(const NameArray &name, const NameArray &overlap, const cha
 }
 
 //-----------------------------------------------------------------------------
-static SDWORD AddVariable(const NameArray &name1, const NameArray &name2, const NameArray &name3, const char *overflow)
+static int32_t AddVariable(const NameArray &name1, const NameArray &name2, const NameArray &name3, const char *overflow)
 {
     long long int ret = (long long int)GetSimulationVariable(name2) + (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
-    SDWORD        signMask = 1 << (sov * 8 - 1);
-    SDWORD        sign2 = GetSimulationVariable(name2) & signMask;
-    SDWORD        sign3 = GetSimulationVariable(name3) & signMask;
-    SDWORD        signr = (SDWORD)(ret & signMask);
+    int32_t        signMask = 1 << (sov * 8 - 1);
+    int32_t        sign2 = GetSimulationVariable(name2) & signMask;
+    int32_t        sign3 = GetSimulationVariable(name3) & signMask;
+    int32_t        signr = (int32_t)(ret & signMask);
     if((sign2 == sign3) && (signr != sign3))
         SetSingleBit(overflow, true);
-    return (SDWORD)ret;
+    return (int32_t)ret;
 }
 
 //-----------------------------------------------------------------------------
-static SDWORD SubVariable(const NameArray &name1, const NameArray &name2, const NameArray &name3, const char *overflow)
+static int32_t SubVariable(const NameArray &name1, const NameArray &name2, const NameArray &name3, const char *overflow)
 {
     long long int ret = (long long int)GetSimulationVariable(name2) - (long long int)GetSimulationVariable(name3);
     int           sov = SizeOfVar(name1);
-    SDWORD        signMask = 1 << (sov * 8 - 1);
-    SDWORD        sign2 = GetSimulationVariable(name2) & signMask;
-    SDWORD        sign3 = GetSimulationVariable(name3) & signMask;
-    SDWORD        signr = (SDWORD)(ret & signMask);
+    int32_t        signMask = 1 << (sov * 8 - 1);
+    int32_t        sign2 = GetSimulationVariable(name2) & signMask;
+    int32_t        sign3 = GetSimulationVariable(name3) & signMask;
+    int32_t        signr = (int32_t)(ret & signMask);
     //  if((sign2 != sign3)
     //  && (signr != sign2))
     if((sign2 != sign3) && (signr == sign3))
         SetSingleBit(overflow, true);
-    return (SDWORD)ret;
+    return (int32_t)ret;
 }
 
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
-void SetSimulationVariable(const NameArray &name, SDWORD val)
+void SetSimulationVariable(const NameArray &name, int32_t val)
 {
     SetSimulationVariable(name.c_str(), val);
 }
 
-void SetSimulationVariable(const char *name, SDWORD val)
+void SetSimulationVariable(const char *name, int32_t val)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
@@ -422,7 +422,7 @@ void SetSimulationVariable(const char *name, SDWORD val)
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
-SDWORD GetSimulationVariable(const char *name, bool forIoList)
+int32_t GetSimulationVariable(const char *name, bool forIoList)
 {
     if(IsNumber(name)) {
         return CheckMakeNumber(name);
@@ -439,12 +439,12 @@ SDWORD GetSimulationVariable(const char *name, bool forIoList)
     return GetSimulationVariable(name);
 }
 
-SDWORD GetSimulationVariable(const char *name)
+int32_t GetSimulationVariable(const char *name)
 {
     return GetSimulationVariable(name, false);
 }
 
-SDWORD GetSimulationVariable(const NameArray &name)
+int32_t GetSimulationVariable(const NameArray &name)
 {
     return GetSimulationVariable(name.c_str());
 }
@@ -483,7 +483,7 @@ char *GetSimulationStr(const char *name)
 // will get committed to the real copy when the rung-in condition to the
 // READ ADC is true.
 //-----------------------------------------------------------------------------
-void SetAdcShadow(char *name, SWORD val)
+void SetAdcShadow(char *name, int32_t val)
 {
     int i;
     for(i = 0; i < AdcShadowsCount; i++) {
@@ -501,7 +501,7 @@ void SetAdcShadow(char *name, SWORD val)
 // Return the shadow value of a variable associated with a READ ADC. This is
 // what gets copied into the real variable when an ADC read is simulated.
 //-----------------------------------------------------------------------------
-SWORD GetAdcShadow(const char *name)
+int32_t GetAdcShadow(const char *name)
 {
     int i;
     for(i = 0; i < AdcShadowsCount; i++) {
@@ -512,7 +512,7 @@ SWORD GetAdcShadow(const char *name)
     return 0;
 }
 
-SWORD GetAdcShadow(const NameArray &name)
+int32_t GetAdcShadow(const NameArray &name)
 {
     return GetAdcShadow(name.c_str());
 }
@@ -526,29 +526,29 @@ SWORD GetAdcShadow(const NameArray &name)
 // m = 2 ** 32
 static unsigned long long seed = 1;
 //
-SDWORD MthRandom()
+int32_t MthRandom()
 {
     // seed = (seed * 69069 + 1) % 4294967296;
     seed = (seed * 69069 + 1) & 0xFFFFffff;
-    return (SDWORD)seed;
+    return (int32_t)seed;
 }
 
-SDWORD GetRandom(const NameArray &name)
+int32_t GetRandom(const NameArray &name)
 {
     int    sov = SizeOfVar(name);
-    SDWORD seed = MthRandom();
+    int32_t seed = MthRandom();
     char   seedName[MAX_NAME_LEN];
     sprintf(seedName, "$seed_%s", name.c_str());
     SetSimulationVariable(seedName, seed);
     if(sov == 1)
         return (signed char)(seed >> (8 * (4 - sov)));
     else if(sov == 2)
-        return (SWORD)(seed >> (8 * (4 - sov)));
+        return (int32_t)(seed >> (8 * (4 - sov)));
     else if(sov >= 3)
-        return (SDWORD)(seed >> (8 * (4 - sov)));
+        return (int32_t)(seed >> (8 * (4 - sov)));
     else {
         oops();
-        return 0;
+        // return 0;
     }
 }
 
@@ -720,7 +720,7 @@ void MarkInitedVariable(const char *name)
 }
 
 //-----------------------------------------------------------------------------
-static void CheckMsg(const char *name, const char *s, int i)
+static void CheckMsg(const char *name, const char *s/*, int i*/)
 {
     if(s) {
         Error(_("Rung %d: Variable '%s' incorrectly assigned.\n%s.\nSee rungs:%s"), rungNow + 1, name, s, rungsUsed);
@@ -735,13 +735,13 @@ static void CheckMsg(const char *name, const char *s, int i)
 static void MarkWithCheck(const char *name, int flag)
 {
     const char *s = MarkUsedVariable(name, flag);
-    CheckMsg(name, s, -1);
+    CheckMsg(name, s/*, -1*/);
 }
 //-----------------------------------------------------------------------------
 static void CheckVariableNamesCircuit(int which, void *elem)
 {
     ElemLeaf *l = (ElemLeaf *)elem;
-    char *    name = nullptr;
+//    char *    name = nullptr;
     DWORD     flag;
     char      str[MAX_NAME_LEN];
 
@@ -1020,7 +1020,7 @@ void CheckVariableNames()
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
-        CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
 
     // reCheck
@@ -1108,7 +1108,7 @@ void CheckVariableNames()
 static void CheckSingleBitNegateCircuit(int which, void *elem)
 {
     ElemLeaf *l = (ElemLeaf *)elem;
-    char *    name = nullptr;
+//    char *    name = nullptr;
 
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -1143,7 +1143,7 @@ static void CheckSingleBitNegate()
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         rungNow = i; // Ok
-        CheckSingleBitNegateCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        CheckSingleBitNegateCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
 }
 //-----------------------------------------------------------------------------
@@ -1217,7 +1217,7 @@ static void IfConditionFalse()
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-long rol(long val, SDWORD n, int size, bool *state)
+long rol(long val, int32_t n, int size, bool *state)
 {
     char        MSB = 0;
     signed char i;
@@ -1255,7 +1255,7 @@ long rol(long val, SDWORD n, int size, bool *state)
     return val;
 }
 //-----------------------------------------------------------------------------
-long ror(long val, SDWORD n, int size, bool *state)
+long ror(long val, int32_t n, int size, bool *state)
 {
     char        LSB = 0;
     signed char i;
@@ -1300,7 +1300,7 @@ long ror(long val, SDWORD n, int size, bool *state)
     return val;
 }
 //-----------------------------------------------------------------------------
-long sr0(long val, SDWORD n, int size, bool *state)
+long sr0(long val, int32_t n, int size, bool *state)
 {
     char        LSB = 0;
     signed char i;
@@ -1322,7 +1322,7 @@ long sr0(long val, SDWORD n, int size, bool *state)
     return val;
 }
 //-----------------------------------------------------------------------------
-long shr(signed long int val, SDWORD n, int size, bool *state)
+long shr(signed long int val, int32_t n, int size, bool *state)
 {
     signed long int MSB = 0;
     char            LSB = 0;
@@ -1347,7 +1347,7 @@ long shr(signed long int val, SDWORD n, int size, bool *state)
     return val;
 }
 //-----------------------------------------------------------------------------
-long shl(long val, SDWORD n, int size, bool *state)
+long shl(long val, int32_t n, int size, bool *state)
 {
     char        MSB = 0;
     signed char i;
@@ -1808,7 +1808,7 @@ static void SimulateIntCode()
 
             case INT_VARIABLE_SET_BIT:
             case INT_VARIABLE_CLEAR_BIT: {
-                SDWORD v1, v2;
+                int32_t v1, v2;
                 v1 = GetSimulationVariable(a->name1);
                 if(IsNumber(a->name2))
                     v2 = hobatoi(a->name2.c_str());
@@ -1828,7 +1828,7 @@ static void SimulateIntCode()
             }
 
             case INT_IF_BIT_SET_IN_VAR: {
-                SDWORD v1, v2;
+                int32_t v1, v2;
                 v1 = GetSimulationVariable(a->name1);
                 if(IsNumber(a->name2))
                     v2 = hobatoi(a->name2.c_str());
@@ -1839,7 +1839,7 @@ static void SimulateIntCode()
                 break;
             }
             case INT_IF_BIT_CLEAR_IN_VAR: {
-                SDWORD v1, v2;
+                int32_t v1, v2;
                 v1 = GetSimulationVariable(a->name1);
                 if(IsNumber(a->name2))
                     v2 = hobatoi(a->name2.c_str());
@@ -1935,7 +1935,7 @@ static void SimulateIntCode()
                 // the real device they will not be updated until an actual
                 // read is performed, which occurs only for a true rung-in
                 // condition there.
-                SDWORD tmp = GetSimulationVariable(a->name1);
+                int32_t tmp = GetSimulationVariable(a->name1);
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
                 if(tmp != GetSimulationVariable(a->name1)) {
                     NeedRedraw = a->op;
@@ -1945,7 +1945,7 @@ static void SimulateIntCode()
             case INT_UART_SEND1:
                 if(SimulateUartTxCountdown == 0) {
                     SimulateUartTxCountdown = 2;
-                    /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1);        ///// Modified by JG
+            /////   AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1);        ///// Modified by JG
                     AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name1), UartSimulationTextControl);
                 }
                 break;
@@ -1977,10 +1977,11 @@ static void SimulateIntCode()
                 }
                 break;
 
+            case INT_UART_RECV1:
             case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
                     SetSingleBit(a->name2, true);
-                    SetSimulationVariable(a->name1, (SWORD)QueuedUartCharacter);
+                    SetSimulationVariable(a->name1, (int32_t)QueuedUartCharacter);
                     QueuedUartCharacter = -1;
                 } else {
                     SetSingleBit(a->name2, false);
@@ -2052,13 +2053,13 @@ static void SimulateIntCode()
 #ifdef TABLE_IN_FLASH
             case INT_FLASH_INIT:
                 if(!GetSimulationVariable(a->name1)) {
-                    SetSimulationVariable(a->name1, (SDWORD) & (a->data[0]));
+                    SetSimulationVariable(a->name1, (int32_t) &(a->data[0]));
                 }
                 break;
 
             case INT_FLASH_READ: {
-                SDWORD *adata;
-                adata = (SDWORD *)GetSimulationVariable(a->name2);
+                int32_t *adata;
+                adata = (int32_t *)GetSimulationVariable(a->name2);
                 if(adata == nullptr) {
                     Error(_("TABLE %s is not initialized."), a->name2.c_str());
                     StopSimulation();
@@ -2073,7 +2074,7 @@ static void SimulateIntCode()
                     ToggleSimulationMode(false);
                     break;
                 }
-                SDWORD d = adata[index];
+                int32_t d = adata[index];
                 if(GetSimulationVariable(a->name1) != d) {
                     SetSimulationVariable(a->name1, d);
                     NeedRedraw = a->op;
@@ -2108,7 +2109,7 @@ static void SimulateIntCode()
                 AppendToSimulationTextControl((BYTE)GetSimulationVariable(a->name2), SpiSimulationTextControl);
                 if(QueuedSpiCharacter >= 0)
                 {
-                    SetSimulationVariable(a->name3, (SWORD)QueuedSpiCharacter);
+                    SetSimulationVariable(a->name3, (int32_t)QueuedSpiCharacter);
                     QueuedSpiCharacter = -1;
                 }
                 break;
@@ -2121,7 +2122,7 @@ static void SimulateIntCode()
             case INT_I2C_READ:
                 if(QueuedI2cCharacter >= 0)
                 {
-                    SetSimulationVariable(a->name2, (SWORD)QueuedI2cCharacter);
+                    SetSimulationVariable(a->name2, (int32_t)QueuedI2cCharacter);
                     QueuedI2cCharacter = -1;
                 }
                 break;
@@ -2336,7 +2337,7 @@ void DescribeForIoList(const char *name, int type, char *out)
         case IO_TYPE_TLO:
         case IO_TYPE_RTL:
         case IO_TYPE_RTO: {
-            SDWORD v = GetSimulationVariable(name, true);
+            int32_t v = GetSimulationVariable(name, true);
             double dtms = v * (Prog.cycleTime / 1000.0);
             int    sov = SizeOfVar(name);
             //v = OverflowToVarSize(v, sov);
@@ -2346,9 +2347,9 @@ void DescribeForIoList(const char *name, int type, char *out)
                 else if(sov == 2)
                     sprintf(out, "0x%04X = %d = %.6g ms", v & 0xffff, v, dtms);
                 else if(sov == 3)
-                    sprintf(out, "0x%06X = %ld = %.6g ms", v & 0xFFffff, v, dtms);
+                    sprintf(out, "0x%06X = %d = %.6g ms", v & 0xFFffff, v, dtms);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %ld = %.6g ms", v & 0xFFFFffff, v, dtms);
+                    sprintf(out, "0x%08X = %d = %.6g ms", v & 0xFFFFffff, v, dtms);
                 else
                     oops();
             } else {
@@ -2357,16 +2358,16 @@ void DescribeForIoList(const char *name, int type, char *out)
                 else if(sov == 2)
                     sprintf(out, "0x%04X = %d = %.6g s", v & 0xffff, v, dtms / 1000);
                 else if(sov == 3)
-                    sprintf(out, "0x%06X = %ld = %.6g s", v & 0xFFffff, v, dtms / 1000);
+                    sprintf(out, "0x%06X = %d = %.6g s", v & 0xFFffff, v, dtms / 1000);
                 else if(sov == 4)
-                    sprintf(out, "0x%08X = %ld = %.6g s", v & 0xFFFFffff, v, dtms / 1000);
+                    sprintf(out, "0x%08X = %d = %.6g s", v & 0xFFFFffff, v, dtms / 1000);
                 else
                     oops();
             }
             break;
         }
         default: {
-            long v = GetSimulationVariable(name, true);
+            int32_t v = GetSimulationVariable(name, true);
             int  sov = SizeOfVar(name);
             //v = OverflowToVarSize(v, sov);
             if(sov == 1)
@@ -2374,9 +2375,9 @@ void DescribeForIoList(const char *name, int type, char *out)
             else if(sov == 2)
                 sprintf(out, "0x%04X = %d", v & 0xffff, v);
             else if(sov == 3)
-                sprintf(out, "0x%06X = %ld", v & 0xFFffff, v);
+                sprintf(out, "0x%06X = %d", v & 0xFFffff, v);
             else if(sov == 4)
-                sprintf(out, "0x%08X = %ld", v & 0xFFFFffff, v);
+                sprintf(out, "0x%08X = %d", v & 0xFFFFffff, v);
             else {
                 sprintf(out, "0x%X = %d", v, v);
             }
@@ -2395,7 +2396,7 @@ void SimulationToggleContact(char *name)
     if((name[0] == 'X') || (name[0] == 'Y')) {
       McuIoPinInfo *iop = PinInfoForName(name);
       if(iop) {
-        DWORD addr = -1;
+        ADDR_T addr = INVALID_ADDR;
         int   bit = -1;
         MemForSingleBit(name, true, &addr, &bit);
 
@@ -2405,7 +2406,7 @@ void SimulationToggleContact(char *name)
                 sprintf(s, "#PIN%c", 'A' + InputRegIndex(addr));
             else
                 sprintf(s, "#PORT%c", 'A' + OutputRegIndex(addr));
-            SDWORD v = GetSimulationVariable(s);
+            int32_t v = GetSimulationVariable(s);
             if(SingleBitOn(name))
                 v |= 1<<bit;
             else
@@ -2615,34 +2616,31 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
     RegisterClassEx(&wc);
 
     ///// Modified by JG
-    DWORD TerminalX, TerminalY, TerminalW, TerminalH;
+    DWORD TerminalX = 100, TerminalY = 100, TerminalW = 800, TerminalH = 800;
 
-    if (sim == SIM_UART)
-    {
+    if (sim == SIM_UART) {
         ThawDWORD(TerminalX1);      // Restore window size from Windows Registry (if saved by Freeze)
         ThawDWORD(TerminalY1);
         ThawDWORD(TerminalW1);
         ThawDWORD(TerminalH1);
 
-        TerminalX = TerminalX1, TerminalY = TerminalY1, TerminalW = TerminalW1, TerminalH = TerminalH1;
-    }
-    if (sim == SIM_SPI)
-    {
+        TerminalX = TerminalX1; TerminalY = TerminalY1; TerminalW = TerminalW1; TerminalH = TerminalH1;
+    } else if (sim == SIM_SPI) {
         ThawDWORD(TerminalX2);      // Restore window size from Windows Registry (if saved by Freeze)
         ThawDWORD(TerminalY2);
         ThawDWORD(TerminalW2);
         ThawDWORD(TerminalH2);
 
-        TerminalX = TerminalX2, TerminalY = TerminalY2, TerminalW = TerminalW2, TerminalH = TerminalH2;
-    }
-    if (sim == SIM_I2C)
-    {
+        TerminalX = TerminalX2; TerminalY = TerminalY2; TerminalW = TerminalW2; TerminalH = TerminalH2;
+    } else if (sim == SIM_I2C) {
         ThawDWORD(TerminalX3);      // Restore window size from Windows Registry (if saved by Freeze)
         ThawDWORD(TerminalY3);
         ThawDWORD(TerminalW3);
         ThawDWORD(TerminalH3);
 
-        TerminalX = TerminalX3, TerminalY = TerminalY3, TerminalW = TerminalW3, TerminalH = TerminalH3;
+        TerminalX = TerminalX3; TerminalY = TerminalY3; TerminalW = TerminalW3; TerminalH = TerminalH3;
+    } else {
+        oops();
     }
     /////
 
@@ -2766,9 +2764,7 @@ void ShowSimulationWindow(int sim)          ///// Modified by JG
         ShowWindow(I2cSimulationWindow, true);
         }
 
-    /////
-
-    /////    SetFocus(MainWindow);          ///// Removed by JG to show simulation windows
+    SetFocus(MainWindow); // Removed by JG to show simulation windows // Restored: access to the F7, F8, F9 and Space keys after show the window.
 }
 
 //-----------------------------------------------------------------------------
@@ -2855,7 +2851,7 @@ void DestroySimulationWindow(HWND SimulationWindow)         ///// Modified by JG
 //-----------------------------------------------------------------------------
 // Append a received character to the terminal buffer.
 //-----------------------------------------------------------------------------
-static SDWORD bPrev = 0;
+static int32_t bPrev = 0;
 static void   AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl)     ///// Modifief by JG to fit UART / SPI / I2C
 {
     char append[50];
@@ -2918,7 +2914,7 @@ static void   AppendToSimulationTextControl(BYTE b, HWND SimulationTextControl) 
                 strcpy(append, "\r\n");
                 b = '\0';
             } else {
-                if(s = strrchr(buf, '\n')) {
+                if((s = strrchr(buf, '\n')) != nullptr) {
                     s[1] = '\0';
                 } else {
                     buf[0] = '\0';

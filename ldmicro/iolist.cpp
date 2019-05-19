@@ -800,7 +800,7 @@ int GenerateIoList(int prevSel)
     Prog.io.count = 0;
     // extract the new list so that it must be up to date
     for(i = 0; i < Prog.numRungs; i++) {
-        ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
     // AppendIo("ROverflowFlagV", IO_TYPE_INTERNAL_RELAY);
 
@@ -919,7 +919,7 @@ bool LoadIoListFromFile(FileTracker& f)
         char *s = strstr(line, " at ");
         if((s) && (isdigit(s[4]))) {
             // Don't internationalize this! It's the file format, not UI.
-            if(sscanf(line, " %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address) >= 2) {
+            if(sscanf(line, " %s at %d %hhu %hu", name, &pin, &modbus.Slave, &modbus.Address) >= 2) {
                 AppendIoSeenPreviously(name, type, pin, modbus);
             }
         } else {
@@ -1025,9 +1025,9 @@ void ShowAnalogSliderPopup(char *name)
     POINT pt;
     GetCursorPos(&pt);
 
-    SWORD currentVal = GetAdcShadow(name);
+    int32_t currentVal = GetAdcShadow(name);
 
-    SWORD maxVal;
+    int32_t maxVal;
     if(Prog.mcu()) {
         maxVal = Prog.mcu()->adcMax;
     } else {
@@ -1094,10 +1094,10 @@ void ShowAnalogSliderPopup(char *name)
     AnalogSliderDone = false;
     AnalogSliderCancel = false;
 
-    SWORD orig = GetAdcShadow(name);
+    //int32_t orig = GetAdcShadow(name);
 
     while(!AnalogSliderDone && (ret = GetMessage(&msg, nullptr, 0, 0))) {
-        SWORD v = (SWORD)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
+        int32_t v = (int32_t)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
 
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
@@ -1118,7 +1118,7 @@ void ShowAnalogSliderPopup(char *name)
     }
 
     if(!AnalogSliderCancel) {
-        SWORD v = (SWORD)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
+        int32_t v = (int32_t)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
         SetAdcShadow(name, v);
     }
 
@@ -1865,7 +1865,7 @@ void IoListProc(NMHDR *h)
                 case LV_IO_RAM_ADDRESS: {
                     if(!Prog.mcu())
                         break;
-                    DWORD addr = 0;
+                    ADDR_T addr = INVALID_ADDR;
                     int   bit = -1;
                     if((type == IO_TYPE_PORT_INPUT) || //
                        (type == IO_TYPE_PORT_OUTPUT)) {

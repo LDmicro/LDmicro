@@ -59,27 +59,6 @@ void dbp(const char *str, ...)
 }
 
 //-----------------------------------------------------------------------------
-// Wrapper for AttachConsole that does nothing running under <WinXP, so that
-// we still run (except for the console stuff) in earlier versions.
-//-----------------------------------------------------------------------------
-#define ATTACH_PARENT_PROCESS ((DWORD)-1) // defined in WinCon.h, but only if _WIN32_WINNT >= 0x500
-bool AttachConsoleDynamic(DWORD base)
-{
-    typedef bool WINAPI fptr_acd(DWORD base);
-    fptr_acd *          fp;
-
-    HMODULE hm = LoadLibrary("kernel32.dll");
-    if(!hm)
-        return false;
-
-    fp = (fptr_acd *)GetProcAddress(hm, "AttachConsole");
-    if(!fp)
-        return false;
-
-    return fp(base);
-}
-
-//-----------------------------------------------------------------------------
 void doexit(int status)
 {
     if(status != EXIT_SUCCESS) {
@@ -102,19 +81,19 @@ int LdMsg(UINT uType, const char *str, va_list f)
     vsprintf(buf, str, f);
     dbp(buf);
     if(RunningInBatchMode) {
-        AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
+        AttachConsole(ATTACH_PARENT_PROCESS);
         HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD  written;
 
         // Indicate that it's an error, plus the output filename
-        char str[MAX_PATH + 100];
-        sprintf(str, _("Compile error ('%s'): "), CurrentCompileFile);
-        WriteFile(h, str, strlen(str), &written, nullptr);
+        char msg[MAX_PATH + 100];
+        sprintf(msg, _("Compile error ('%s'): "), CurrentCompileFile);
+        WriteFile(h, msg, strlen(str), &written, nullptr);
         // The error message itself
         WriteFile(h, buf, strlen(buf), &written, nullptr);
         // And an extra newline to be safe.
-        strcpy(str, "\n");
-        WriteFile(h, str, strlen(str), &written, nullptr);
+        strcpy(msg, "\n");
+        WriteFile(h, msg, strlen(str), &written, nullptr);
     } else {
         HWND h = GetForegroundWindow();
         char buf2[1024];
@@ -189,26 +168,21 @@ int Question(const char* str, ...)
 // A standard format for showing a message that indicates that a compile
 // was successful.
 //-----------------------------------------------------------------------------
-void CompileSuccessfulMessage(char *str, unsigned int uType)
+void CompileSuccessfulMessage(const char *str, unsigned int uType)
 {
     if(RunningInBatchMode) {
-        char str[MAX_PATH + 100];
-        sprintf(str, _("Compiled okay, wrote '%s'\n"), CurrentCompileFile);
+        char msg[MAX_PATH + 100];
+        sprintf(msg, _("Compiled okay, wrote '%s'\n"), CurrentCompileFile);
 
-        AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
+        AttachConsole(ATTACH_PARENT_PROCESS);
         HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD  written;
-        WriteFile(h, str, strlen(str), &written, nullptr);
+        WriteFile(h, msg, strlen(msg), &written, nullptr);
     } else if(uType == MB_ICONINFORMATION) {
         MessageBox(MainWindow, str, _("Compile Successful"), MB_OK | uType);
     } else {
         MessageBox(MainWindow, str, _("Compile is successful but exceed the memory size !!!"), MB_OK | uType);
     }
-}
-
-void CompileSuccessfulMessage(char *str)
-{
-    CompileSuccessfulMessage(str, MB_ICONINFORMATION);
 }
 
 void CompileSuccesfullAnsiCMessage(const char *dest)
@@ -422,7 +396,7 @@ const char *IoTypeToString(int ioType)
         default:                        return _("<corrupt!>");
     }
     // clang-format on
-    return nullptr;
+    // return nullptr;
 }
 
 //-----------------------------------------------------------------------------

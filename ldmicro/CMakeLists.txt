@@ -9,7 +9,7 @@ endif()
 project(ldmicro
     LANGUAGES CXX
     )
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 # set all posible languages
 SET(LDLANG_ALL EN DE ES FR IT PT TR RU JA )
@@ -69,6 +69,7 @@ set(LDMICRO_SRC_LIST
     simpledialog.cpp
     simulate.cpp
     undoredo.cpp
+    undoredo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.cpp
     ldversion.h
 
@@ -140,7 +141,9 @@ if(${LDLANG} STREQUAL "ALL")
             add_executable            (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
             target_compile_definitions(${PROJECT_NAME} PRIVATE -DLDLANG_${lang_id})
             target_link_libraries     (${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib ldlog)
-            target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
+            target_compile_definitions(${PROJECT_NAME} PRIVATE
+                -DLDLANG_${lang_id}
+                )
 
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                                COMMAND ${CMAKE_COMMAND} -D pattern="${PROJECT_NAME}.exe"
@@ -152,7 +155,9 @@ if(${LDLANG} STREQUAL "ALL")
         else()
             string(TOLOWER ${lang_id} ldlang_lower)
             add_executable            (${PROJECT_NAME}-${ldlang_lower} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
-            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE -DLDLANG_${lang_id} $<$<COMPILE_FEATURES:cxx_constexpr>:LD_WITH_CONSTEXPR>)
+            target_compile_definitions(${PROJECT_NAME}-${ldlang_lower} PRIVATE
+                -DLDLANG_${lang_id}
+                )
             target_link_libraries     (${PROJECT_NAME}-${ldlang_lower} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower} ldlog)
         endif()
     endforeach()
@@ -162,6 +167,9 @@ else()
     if(${LDLANG} STREQUAL "EN")
         add_executable       (${PROJECT_NAME} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
         target_link_libraries(${PROJECT_NAME} ${LDMICRO_LIBS} ldlanglib ldcompilerlib ldlog)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE
+            -DLDLANG_${LDLANG}
+            )
 
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -D pattern="${PROJECT_NAME}.exe"
@@ -177,6 +185,9 @@ else()
         set(_project_name ${PROJECT_NAME}-${ldlang_lower})
         add_executable       (${_project_name} ${GUI_TYPE} ${LDMICRO_SRC_LIST})
         target_link_libraries(${_project_name} ${LDMICRO_LIBS} ldlanglib-${ldlang_lower} ldcompilerlib-${ldlang_lower} ldlog)
+        target_compile_definitions(${_project_name} PRIVATE
+            -DLDLANG_${LDLANG}
+            )
 
         add_custom_command(TARGET ${_project_name} POST_BUILD
                           COMMAND ${CMAKE_COMMAND} -D pattern="${_project_name}.exe"

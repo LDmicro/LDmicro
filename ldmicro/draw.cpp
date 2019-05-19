@@ -251,7 +251,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
 
         default:
             ooops("ELEM_0x%X", which);
-            return 0;
+            //return 0;
     }
 }
 
@@ -294,7 +294,7 @@ int CountHeightOfElement(int which, void *elem)
 
         default:
             ooops("ELEM_0x%X", which);
-            return 0;
+            //return 0;
     }
 }
 
@@ -308,7 +308,7 @@ int ProgCountWidestRow()
     int colsTemp = ColsAvailable;
     ColsAvailable = 0;
     for(int i = 0; i < Prog.numRungs; i++) {
-        int w = CountWidthOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], 0);
+        int w = CountWidthOfElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), 0);
         if(w > max) {
             max = w;
         }
@@ -321,7 +321,7 @@ int ProgCountRows()
 {
     int totalHeight = 0;
     for(int i = 0; i < Prog.numRungs; i++) {
-        totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs(i));
     }
     // // //totalHeight += 1; // without EndRung !
     return totalHeight;
@@ -611,14 +611,14 @@ static bool DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy, bool powe
         if(gx >= DISPLAY_MATRIX_X_SIZE)
             oops();
         DM_BOUNDS(gx, gy);
-        DisplayMatrix[gx][gy] = PADDING_IN_DISPLAY_MATRIX;
-        DisplayMatrixWhich[gx][gy] = ELEM_PADDING;
+        DisplayMatrix[gx][gy].data.leaf = PADDING_IN_DISPLAY_MATRIX;
+        DisplayMatrix[gx][gy].which = ELEM_PADDING;
 
         DrawWire(cx, cy, '-');
         cx0 += POS_WIDTH;
     }
 
-    if(leaf == Selected && !InSimulationMode) {
+    if((leaf == Selected.data.leaf) && (!InSimulationMode)) {
         EmphText();
         ThisHighlighted = true;
     } else {
@@ -1696,8 +1696,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         return false;
     DM_BOUNDS(gx, gy);
 
-    DisplayMatrix[gx][gy] = leaf;
-    DisplayMatrixWhich[gx][gy] = which;
+    DisplayMatrix[gx][gy].data.leaf = leaf;
+    DisplayMatrix[gx][gy].which = which;
 
     int xadj = 0;
     switch(which) {
@@ -1715,8 +1715,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
         case ELEM_UART_CPRINTF:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx - 1, gy);
-            DisplayMatrix[gx - 1][gy] = leaf;
-            DisplayMatrixWhich[gx - 1][gy] = which;
+            DisplayMatrix[gx - 1][gy].data.leaf = leaf;
+            DisplayMatrix[gx - 1][gy].which = which;
             xadj = POS_WIDTH * FONT_WIDTH;
             break;
     }
@@ -1724,10 +1724,10 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
     if(which == ELEM_COMMENT) {
         int len = 0;
         for(int i = 0; i < ColsAvailable; i++) {
-            if((DisplayMatrixWhich[i][gy] <= ELEM_PLACEHOLDER) || true // 2.3
-               || (DisplayMatrixWhich[i][gy] == ELEM_COMMENT)) {
-                DisplayMatrix[i][gy] = leaf;
-                DisplayMatrixWhich[i][gy] = ELEM_COMMENT;
+            if((DisplayMatrix[i][gy].which <= ELEM_PLACEHOLDER) || true // 2.3
+               || (DisplayMatrix[i][gy].which == ELEM_COMMENT)) {
+                DisplayMatrix[i][gy].data.leaf = leaf;
+                DisplayMatrix[i][gy].which = ELEM_COMMENT;
                 len++;
             }
         }
@@ -1738,7 +1738,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
     int x0 = X_PADDING + cx0 * FONT_WIDTH;
     int y0 = Y_PADDING + cy0 * FONT_HEIGHT;
 
-    if(leaf->selectedState != SELECTED_NONE && leaf == Selected) {
+    if((leaf->selectedState != SELECTED_NONE) && (leaf == Selected.data.leaf)) {
         SelectionActive = true;
     }
     switch(leaf->selectedState) {
@@ -1780,7 +1780,7 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
 //-----------------------------------------------------------------------------
 static bool HasEndOfRungElem(int which, void *elem)
 {
-    ElemLeaf *leaf = (ElemLeaf *)elem;
+    // ElemLeaf *leaf = (ElemLeaf *)elem;
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
@@ -1812,7 +1812,7 @@ static bool HasEndOfRungElem(int which, void *elem)
 // element, else false. This is needed to colour all the wires correctly,
 // since the colouring indicates whether a wire is energized.
 //-----------------------------------------------------------------------------
-bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, int cols)
+bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, int cols*/)
 {
     bool poweredAfter;
 
@@ -1822,7 +1822,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
     SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
     NormText();
 
-    if(leaf == Selected && !InSimulationMode) {
+    if((leaf == Selected.data.leaf) && (!InSimulationMode)) {
         EmphText();
         ThisHighlighted = true;
     } else {
@@ -1834,9 +1834,10 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
             ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
             poweredAfter = poweredBefore;
             for(int i = 0; i < s->count; i++) {
-                poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter, 0);
+                poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter/*, 0*/);
             }
             break;
+			/*
             if(cols) {
                 // Draw wire to the right bus
                 if((s->contents[s->count - 1].which == ELEM_COMMENT) || //
@@ -1849,6 +1850,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
                     DrawWire(cx, cy, '-');
             }
             break;
+			*/
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
@@ -1862,7 +1864,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
             for(int i = 0; i < p->count; i++) {
                 bool poweredThis;
 
-                poweredThis = DrawElement(p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore, 0);
+                poweredThis = DrawElement(p->contents[i].which, p->contents[i].data.any, cx, cy, poweredBefore/*, 0*/);
 
                 if(InSimulationMode) {
                     if(poweredThis)
@@ -1878,8 +1880,8 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
                         return false;
 
                     DM_BOUNDS(gx, gy);
-                    DisplayMatrix[gx][gy] = PADDING_IN_DISPLAY_MATRIX;
-                    DisplayMatrixWhich[gx][gy] = ELEM_PADDING;
+                    DisplayMatrix[gx][gy].data.leaf = PADDING_IN_DISPLAY_MATRIX;
+                    DisplayMatrix[gx][gy].which = ELEM_PADDING;
 
                     DrawWire(cx, cy, '-');
                 }
@@ -1903,7 +1905,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
                 for(int j = heightMax - 1; j >= 1; j--) {
                     if(j <= lowestPowered)
                         PoweredText(poweredAfter);
-                    if(DisplayMatrix[*cx / POS_WIDTH - 1][*cy / POS_HEIGHT + j]) {
+                    if(DisplayMatrix[*cx / POS_WIDTH - 1][*cy / POS_HEIGHT + j].any()) {
                         needWire = true;
                     }
                     if(needWire)
@@ -1919,7 +1921,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, in
             PoweredText(poweredBefore);
             needWire = false;
             for(int j = heightMax - 1; j >= 1; j--) {
-                if(DisplayMatrix[cx0 / POS_WIDTH][*cy / POS_HEIGHT + j]) {
+                if(DisplayMatrix[cx0 / POS_WIDTH][*cy / POS_HEIGHT + j].any()) {
                     needWire = true;
                 }
                 if(needWire)

@@ -43,7 +43,7 @@ typedef unsigned short WORD;  // 16-bit unsigned
 
 uint32_t Program[MAX_OPS];
 
-SWORD Integers[MAX_VARIABLES];
+int32_t Integers[MAX_VARIABLES];
 BYTE  Bits[MAX_VARIABLES];
 
 #define READ_BIT(addr) Bits[addr]
@@ -107,7 +107,7 @@ int LoadProgram(char *fileName)
 
     while(fgets(line, sizeof(line), f)) {
         int  addr;
-        char name[40];
+        char name[40+1];
         int  type;
         int  pin;
         int  modbus_slave;
@@ -117,7 +117,7 @@ int LoadProgram(char *fileName)
         if(line[0] == '$')
             break;
 
-        if(sscanf(line, "%d %s %d %d %d %d", &addr, name, &type, &pin, &modbus_slave, &modbus_offset) != 6)
+        if(sscanf(line, "%d %40s %d %d %d %d", &addr, name, &type, &pin, &modbus_slave, &modbus_offset) != 6)
             BadFormat();
         if(addr < 0 || addr >= MAX_VARIABLES)
             BadFormat();

@@ -37,15 +37,15 @@
 
 typedef struct RegisterEntryTag {
     char Name[MAX_NAME_LEN];
-    WORD Address;
+    uint16_t Address;
 } RegisterEntry;
 
 typedef struct {
-    WORD   op;
-    WORD   name1;
-    WORD   name2;
-    WORD   name3;
-    SDWORD literal;
+    uint16_t   op;
+    uint16_t   name1;
+    uint16_t   name2;
+    uint16_t   name3;
+    int32_t literal;
 } BinOp;
 
 static BinOp         OutProg[MAX_INT_OPS];
@@ -59,7 +59,7 @@ static char Strings[MAX_IO][MAX_NAME_LEN];
 static int  StringsCount;
 
 static void generateNetzerOpcodes(BinOp *Program, int MaxLabel, OpcodeMeta *pOpcodeMeta, FILE *f = nullptr);
-static BYTE getInternalIntegerAddress(WORD Address);
+static uint8_t getInternalIntegerAddress(uint16_t Address);
 
 static int GetLocalVariablesAsMetaTags(FILE *f = nullptr)
 {
@@ -104,10 +104,10 @@ static int GetLocalRelaysAsMetaTags(FILE *f = nullptr)
     return metas;
 }
 
-static WORD AddrForString(const NameArray &name)
+static uint16_t AddrForString(const NameArray &name)
 {
-    int i;
-    for(i = 0; i < StringsCount; i++) {
+    uint16_t i;
+    for( i = 0; i < StringsCount; i++) {
         if((name == Strings[i])) {
             return i;
         }
@@ -117,10 +117,10 @@ static WORD AddrForString(const NameArray &name)
     return i;
 }
 
-static WORD AddrForRelay(const NameArray &name)
+static uint16_t AddrForRelay(const NameArray &name)
 {
     // Look within the relays for an already known entry.
-    int i;
+    uint16_t i;
     for(i = 0; i < RelaysCount; i++) {
         if((name == Relays[i].Name)) {
             return Relays[i].Address;
@@ -168,10 +168,10 @@ static int GetPercentCharactersCount(const NameArray &name)
     return found;
 }
 
-template <size_t N> static WORD AddrForVariable(const StringArray<N> &name)
+template <size_t N> static uint16_t AddrForVariable(const StringArray<N> &name)
 {
     // Look within the variables for an already known entry.
-    int i;
+    uint16_t i;
     for(i = 0; i < VariablesCount; i++) {
         if((name == Variables[i].Name)) {
             return Variables[i].Address;
@@ -200,7 +200,7 @@ template <size_t N> static WORD AddrForVariable(const StringArray<N> &name)
     return Variables[i].Address;
 }
 
-static WORD AddrForVariable(gsl::cstring_span name)
+static uint16_t AddrForVariable(gsl::cstring_span name)
 {
     NameArray na(name.data());
     return AddrForVariable(na);
@@ -470,13 +470,13 @@ int GenerateIntOpcodes()
 
                 if(!(op.name1 & MAPPED_TO_IO)) {
                     THROW_COMPILER_EXCEPTION(_("Dest variable of write string instruction must be located at IO register."));
-                    return -1;
+                    //return -1;
                 }
 
                 // Check whether only one % sign is included!
                 if(GetPercentCharactersCount(IntCode[ipc].name3) > 1) {
                     THROW_COMPILER_EXCEPTION(_("Maximal one format placeholder is allowed in write string instruction."));
-                    return -1;
+                    //return -1;
                 }
 
                 break;
@@ -500,7 +500,7 @@ int GenerateIntOpcodes()
             case INT_UART_SEND_BUSY:
             default:
                 THROW_COMPILER_EXCEPTION(_("Unsupported op (anything ADC, PWM, UART, EEPROM) for Netzer target."));
-                return -1;
+                //return -1;
         }
 
         memcpy(&OutProg[outPc], &op, sizeof(op));
@@ -517,15 +517,15 @@ int GenerateIntOpcodes()
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-static WORD calculateCRC(FILE *f, WORD Size)
+static uint16_t calculateCRC(FILE *f, uint16_t Size)
 {
-    WORD crc = 0xffff;
+    uint16_t crc = 0xffff;
 
     while(Size--) {
-        BYTE tmp = (BYTE)fgetc(f);
-        crc = (BYTE)(crc >> 8) | (crc << 8);
+        uint8_t tmp = (uint8_t)fgetc(f);
+        crc = (uint8_t)(crc >> 8) | (crc << 8);
         crc ^= tmp;
-        crc ^= (BYTE)(crc & 0xff) >> 4;
+        crc ^= (uint8_t)(crc & 0xff) >> 4;
         crc ^= crc << 12;
         crc ^= (crc & 0xff) << 5;
     }
@@ -534,21 +534,21 @@ static WORD calculateCRC(FILE *f, WORD Size)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static WORD calculateJumpLabel(WORD DestinationLabel)
+static uint16_t calculateJumpLabel(int16_t DestinationLabel)
 {
     OpcodeMeta opcodeMeta;
     opcodeMeta.BytesConsumed = 0;
     opcodeMeta.Opcodes = 0;
 
     generateNetzerOpcodes(OutProg, DestinationLabel + 1, &opcodeMeta);
-    return (WORD)opcodeMeta.BytesConsumed;
+    return (uint16_t)opcodeMeta.BytesConsumed;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static BYTE getIOAddress(WORD Address)
+static uint8_t getIOAddress(int16_t Address)
 {
-    return (BYTE)(Address);
+    return (uint8_t)(Address);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -644,7 +644,7 @@ static void copyBit(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 
 static void ifBitSet(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    WORD labelAddress;
+    uint16_t labelAddress;
     if(f)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
@@ -653,8 +653,8 @@ static void ifBitSet(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
                     "%c%c%c%c",
                     OP_IF_BIT_SET_IO,
                     getIOAddress(Op->name1),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
         pMeta->BytesConsumed += 4;
     } else {
         if(f)
@@ -663,8 +663,8 @@ static void ifBitSet(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
                     OP_IF_BIT_SET,
                     Op->name1 / 8,        // Register (byte address)
                     1 << (Op->name1 % 8), // Mask
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
         pMeta->BytesConsumed += 5;
     }
 
@@ -675,7 +675,7 @@ static void ifBitSet(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 
 static void ifBitCleared(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    WORD labelAddress;
+    uint16_t labelAddress;
     if(f)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
@@ -684,8 +684,8 @@ static void ifBitCleared(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
                     "%c%c%c%c",
                     OP_IF_BIT_CLEARED_IO,
                     getIOAddress(Op->name1),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
         pMeta->BytesConsumed += 4;
     } else {
         if(f)
@@ -694,8 +694,8 @@ static void ifBitCleared(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
                     OP_IF_BIT_CLEARED,
                     Op->name1 / 8,        // Register (byte address)
                     1 << (Op->name1 % 8), // Mask
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
         pMeta->BytesConsumed += 5;
     }
 
@@ -704,20 +704,20 @@ static void ifBitCleared(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static BYTE getInternalIntegerAddress(WORD Address)
+static uint8_t getInternalIntegerAddress(uint16_t Address)
 {
     if(Address * 2 >= 256) {
         oops();
     }
 
-    return (BYTE)(Address * 2);
+    return (uint8_t)(Address * 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 static void setVariableToLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    BYTE           address;
+    uint8_t        address;
     NetzerIntCodes op;
 
     if(Op->name1 & MAPPED_TO_IO) {
@@ -730,7 +730,7 @@ static void setVariableToLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
 
     // Write register address and literal
     if(f)
-        fprintf(f, "%c%c%c%c", op, address, (BYTE)Op->literal, (BYTE)(Op->literal >> 8));
+        fprintf(f, "%c%c%c%c", op, address, (uint8_t)Op->literal, (uint8_t)(Op->literal >> 8));
     pMeta->BytesConsumed += 4;
     pMeta->Opcodes += 1; // One opcode generated.
 }
@@ -799,7 +799,7 @@ static void decrementVariable(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 
 static void ifVariableLesLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    WORD labelAddress;
+    uint16_t labelAddress;
     if(f)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
@@ -808,20 +808,20 @@ static void ifVariableLesLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_IO_LES_LITERAL,
                     getIOAddress(Op->name1),
-                    (BYTE)(Op->literal),
-                    (BYTE)(Op->literal >> 8),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(Op->literal),
+                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
     } else {
         if(f)
             fprintf(f,
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_LES_LITERAL,
                     getInternalIntegerAddress(Op->name1),
-                    (BYTE)(Op->literal),
-                    (BYTE)(Op->literal >> 8),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(Op->literal),
+                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 6;
@@ -832,7 +832,7 @@ static void ifVariableLesLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
 
 static void ifVariableGeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    WORD labelAddress;
+    uint16_t labelAddress;
     if(f)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
@@ -841,20 +841,20 @@ static void ifVariableGeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_IO_GRT_LITERAL,
                     getIOAddress(Op->name1),
-                    (BYTE)(Op->literal),
-                    (BYTE)(Op->literal >> 8),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(Op->literal),
+                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
     } else {
         if(f)
             fprintf(f,
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_GRT_LITERAL,
                     getInternalIntegerAddress(Op->name1),
-                    (BYTE)(Op->literal),
-                    (BYTE)(Op->literal >> 8),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(Op->literal),
+                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 6;
@@ -865,7 +865,7 @@ static void ifVariableGeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
 
 static void ifVariableEquLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    WORD labelAddress;
+    uint16_t labelAddress;
     if(f)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
@@ -874,20 +874,20 @@ static void ifVariableEquLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_IO_EQU_LITERAL,
                     getIOAddress(Op->name1),
-                    (BYTE)(Op->literal),
-                    (BYTE)(Op->literal >> 8),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(Op->literal),
+                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
     } else {
         if(f)
             fprintf(f,
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_EQU_LITERAL,
                     getInternalIntegerAddress(Op->name1),
-                    (BYTE)(Op->literal),
-                    (BYTE)(Op->literal >> 8),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(Op->literal),
+                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 6;
@@ -898,7 +898,7 @@ static void ifVariableEquLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
 
 static void ifVariableNeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    WORD labelAddress;
+    uint16_t labelAddress;
     if(f)
         labelAddress = calculateJumpLabel(Op->name3);
     if(Op->name1 & MAPPED_TO_IO) {
@@ -907,20 +907,20 @@ static void ifVariableNeqLiteral(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_IO_NEQ_LITERAL,
                     getIOAddress(Op->name1),
-                    (BYTE)(Op->literal),
-                    (BYTE)(Op->literal >> 8),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(Op->literal),
+                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
     } else {
         if(f)
             fprintf(f,
                     "%c%c%c%c%c%c",
                     OP_IF_VARIABLE_NEQ_LITERAL,
                     getInternalIntegerAddress(Op->name1),
-                    (BYTE)(Op->literal),
-                    (BYTE)(Op->literal >> 8),
-                    (BYTE)(labelAddress),
-                    (BYTE)(labelAddress >> 8));
+                    (uint8_t)(Op->literal),
+                    (uint8_t)(Op->literal >> 8),
+                    (uint8_t)(labelAddress),
+                    (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 6;
@@ -981,7 +981,7 @@ static void math(NetzerIntCodes Opcode, BinOp *Op, OpcodeMeta *pMeta, FILE *f = 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void ifVariable_X_Variable(BinOp *Op, BYTE NetzerOp, OpcodeMeta *pMeta, FILE *f = nullptr)
+static void ifVariable_X_Variable(BinOp *Op, uint8_t NetzerOp, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
     int src1 = Op->name1;
     int src2 = Op->name2;
@@ -1003,14 +1003,14 @@ static void ifVariable_X_Variable(BinOp *Op, BYTE NetzerOp, OpcodeMeta *pMeta, F
     }
 
     if(f) {
-        WORD labelAddress = calculateJumpLabel(Op->name3);
+        uint16_t labelAddress = calculateJumpLabel(Op->name3);
         fprintf(f,
                 "%c%c%c%c%c",
                 NetzerOp,
                 getInternalIntegerAddress(src1),
                 getInternalIntegerAddress(src2),
-                (BYTE)(labelAddress),
-                (BYTE)(labelAddress >> 8));
+                (uint8_t)(labelAddress),
+                (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 5;
@@ -1022,8 +1022,8 @@ static void ifVariable_X_Variable(BinOp *Op, BYTE NetzerOp, OpcodeMeta *pMeta, F
 static void elseOp(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
     if(f) {
-        WORD labelAddress = calculateJumpLabel(Op->name3);
-        fprintf(f, "%c%c%c", OP_ELSE, (BYTE)(labelAddress), (BYTE)(labelAddress >> 8));
+        uint16_t labelAddress = calculateJumpLabel(Op->name3);
+        fprintf(f, "%c%c%c", OP_ELSE, (uint8_t)(labelAddress), (uint8_t)(labelAddress >> 8));
     }
 
     pMeta->BytesConsumed += 3;
@@ -1043,7 +1043,7 @@ static int normalizeString(char *pString, FILE *f = nullptr)
 
 static void writeStringOp(BinOp *Op, OpcodeMeta *pMeta, FILE *f = nullptr)
 {
-    BYTE           address;
+    uint8_t        address;
     NetzerIntCodes op;
 
     if(Op->name2 & MAPPED_TO_IO) {
@@ -1075,7 +1075,6 @@ void CompileNetzer(const char *outFile)
     int                     opcodes;
 
     memset((void *)&meta, 0, sizeof(meta));
-    CompileFailure= 0;
 
     // Prepare projectname.
     {
@@ -1147,7 +1146,7 @@ void CompileNetzer(const char *outFile)
     meta.StartTag[2] = START_TAG_BYTE3;
     meta.StartTag[3] = START_TAG_BYTE4;
     meta.Opcodes = opcodeMeta.Opcodes;
-    meta.ImageLength = (WORD)(ftell(f));
+    meta.ImageLength = (int16_t)(ftell(f));
 
     if(RunningInTestMode) {
         // Do not generate a time stamp in test mode (for comparing with expected results).
@@ -1155,10 +1154,10 @@ void CompileNetzer(const char *outFile)
     } else {
         time_t rawtime;
         time(&rawtime);
-        meta.TimeStamp = (DWORD)(rawtime)-TIME_EPOCH;
+        meta.TimeStamp = (uint32_t)(rawtime)-TIME_EPOCH;
     }
 
-    meta.CycleTime = DWORD(Prog.cycleTime / 1000);
+    meta.CycleTime = uint32_t(Prog.cycleTime / 1000);
     meta.ProjectnameLength = strlen(projectname);
     meta.Flags.FormatVersion = CURRENT_FORMAT_VERSION;
     meta.Flags.IsCompiled = false;
@@ -1178,10 +1177,6 @@ void CompileNetzer(const char *outFile)
     meta.ImageCRC = calculateCRC(f, meta.ImageLength - offsetof(NetzerMetaInformation_t, ImageLength));
     fseek(f, offsetof(NetzerMetaInformation_t, ImageCRC), SEEK_SET);
     fwrite((const void *)&meta.ImageCRC, 1, sizeof(meta.ImageCRC), f);
-
-    ///// Added by JG
-    if(CompileFailure) return;
-    /////
 
     // And ready.
     char str[MAX_PATH + 500];

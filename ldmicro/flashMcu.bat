@@ -7,20 +7,24 @@ SET EXE_PATH=%~dp0
 @echo %EXE_PATH% = EXE_PATH
 @echo %1 = ISA
 @echo %2 = full 'filename.ld' with the path
-@echo %3 = compiler
+@SET  COMPILER=%3
+@echo %COMPILER% = COMPILER
 @echo %4 = deviceName, target name
+@echo .
+:@echo %2 - full ld file name wit the path
+@echo %~nx2 - gives the file name without the path
+@echo %~d2 - gives the drive letter to LD
+@echo %~p2 - gives the path to LD
 
-REM %~nx2 gives the file name in %2 without the path
-REM %~d2 gives the drive letter to LD
-REM %~p2 gives the path to LD
+:pause
 
-if "%3" == "HI_TECH_C" goto HTC
+if "%COMPILER%" == "HI_TECH_C" goto HTC
 if "%1" == "PIC16" goto PIC
 
-if "%3" == "AVRGCC" goto AVRGCC
+if "%COMPILER%" == "AVRGCC" goto AVRGCC
 if "%1" == "AVR" goto AVR
 
-if "%3" == "ARMGCC" goto ARMGCC
+if "%COMPILER%" == "ARMGCC" goto ARMGCC
 if "%1" == "ARM" goto ARMGCC
 
 if "%1" == "" goto pauses
@@ -274,13 +278,16 @@ goto exit
 :HTC
 ::**************************************************************************
 @ECHO ON
-REM Compilation with HiTech-c (Picc)
+REM Compilation with HI-TECH C (picc.exe)
 
+@rem SET PCC_PATH="C:\Program Files (x86)\HI-TECH Software\PICC\9.82"
 SET PCC_PATH=C:\Program Files\HI-TECH Software\PICC\9.81
+
+SET PICKIT_PATH=C:\Program Files\Microchip\MPLAB IDE\Programmer Utilities\PICkit3
 
 SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\PIC16
 
-path %path%;%PCC_PATH%\bin
+path %path%;%PCC_PATH%\bin;%PICKIT_PATH%
 
 %~d2
 chdir %~p2
@@ -293,17 +300,21 @@ mkdir HTC\bin
 mkdir HTC\lib
 
 if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
+:if not exist         UsrLib.c copy %LIB_PATH%\*.* .
+
+:copy *.h PROTEUS
+:copy *.c PROTEUS
 
 for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
+:for %%F in (*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2 --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 
 picc.exe --pass1 %~nx2.c -q --chip=%4 -P --runtime=default -IHTC\lib --opt=default -g --asmlist --OBJDIR=HTC\obj
 
 REM Linkage of objects
 picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=default HTC\obj\*.p1 --chip=%4 -P --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj --OUTDIR=HTC\bin
 
-REM Convert Elf to Hex
-
-REM Transfer of the program with ...
+REM Transfer of the program with Pickit3
+PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
 PAUSE
 goto exit

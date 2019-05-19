@@ -124,6 +124,7 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
         return;
 
     COLORREF prev;
+    bool     is_prev = false;
     bool     firstTime = true;
     bool     inNumber = false;
     bool     inComment = false;
@@ -160,18 +161,22 @@ static void DrawCharsToScreen(int cx, int cy, const char *str)
             cx--;
             if(hiOk) {
                 prev = GetTextColor(Hdc);
+                is_prev = true;
                 SetTextColor(Hdc, HighlightColours.op);
             }
         } else if(*str == '\x02') {
             cx--;
             if(hiOk) {
-                SetTextColor(Hdc, prev);
+                if(is_prev)
+                    SetTextColor(Hdc, prev);
+                is_prev = false;
                 inComment = false;
             }
         } else if(*str == '\x03') {
             cx--;
             if(hiOk || InSimulationMode) {
                 prev = GetTextColor(Hdc);
+                is_prev = true;
                 SetTextColor(Hdc, HighlightColours.comment);
                 inComment = true;
             }
@@ -282,7 +287,7 @@ void PaintWindow()
     int  cy = 0;
     int  rowsAvailable = ScreenRowsAvailable();
     for(i = 0; i < Prog.numRungs; i++) {
-        int thisHeight = POS_HEIGHT * CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        int thisHeight = POS_HEIGHT * CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs(i));
 
         // For speed, there is no need to draw everything all the time, but
         // we still must draw a bit above and below so that the DisplayMatrix
@@ -305,10 +310,10 @@ void PaintWindow()
 
             SetTextColor(Hdc, HighlightColours.rungNum);
 
-            sprintf(str, "%4d", Prog.OpsInRung[i]);
+            sprintf(str, "%4u", Prog.OpsInRung[i]);
             TextOut(Hdc, 8, yp + FONT_HEIGHT, str, 4);
 
-            sprintf(str, "%4d", Prog.HexInRung[i]);
+            sprintf(str, "%4u", Prog.HexInRung[i]);
             TextOut(Hdc, 8, yp + FONT_HEIGHT * 2, str, 4);
 
             SetTextColor(Hdc, HighlightColours.selected);
@@ -317,7 +322,7 @@ void PaintWindow()
             SetTextColor(Hdc, prev);
 
             cx = 0;
-            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i], ColsAvailable);
+            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), &cx, &cy, Prog.rungPowered[i]/*, ColsAvailable*/);
         }
 
         cy += thisHeight;
@@ -351,8 +356,8 @@ void PaintWindow()
         InvalidateRect(MainWindow, nullptr, false);
         SelectedGxAfterNextPaint = -1;
         SelectedGyAfterNextPaint = -1;
-    } else if(ScrollSelectedIntoViewAfterNextPaint && Selected) {
-        SelectElement(-1, -1, Selected->selectedState);
+    } else if(ScrollSelectedIntoViewAfterNextPaint && Selected.data.leaf) {
+        SelectElement(-1, -1, Selected.data.leaf->selectedState);
         ScrollSelectedIntoViewAfterNextPaint = false;
         InvalidateRect(MainWindow, nullptr, false);
     } else {
@@ -733,7 +738,7 @@ void ExportDrawingAsText(char *file)
     int  cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
         cx = 6;
-        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, Prog.rungPowered[i], 0);
+        DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs(i), &cx, &cy, Prog.rungPowered[i]/*, 0*/);
         /*
         if((i + 1) < 10) {
             ExportBuffer[cy+1][1] = '0' + (i + 1);
@@ -746,16 +751,16 @@ void ExportDrawingAsText(char *file)
         strncpy(ExportBuffer[cy + 1], str, 4);
 
         if(Prog.OpsInRung[i]) {
-            sprintf(str, "%4d", Prog.OpsInRung[i]);
+            sprintf(str, "%4u", Prog.OpsInRung[i]);
             strncpy(ExportBuffer[cy + 2], str, 4);
         }
 
         if(Prog.HexInRung[i]) {
-            sprintf(str, "%4d", Prog.HexInRung[i]);
+            sprintf(str, "%4u", Prog.HexInRung[i]);
             strncpy(ExportBuffer[cy + 3], str, 4);
         }
 
-        cy += POS_HEIGHT * CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        cy += POS_HEIGHT * CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs(i));
         cy += 1; //+1 for one empty line
     }
     DrawEndRung(6, cy);

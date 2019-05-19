@@ -32,6 +32,20 @@
 #include "accel.h"
 #include "circuit.h"
 #include "plcprogram.h"
+//#include "avr.h"
+//#include "pic.h"
+
+//-----------------------------------------------
+//typedef int32_t ADDR_T;
+typedef uint32_t ADDR_T;
+// ADDR_T is used to designate an address in address space in the target MCU(SRAM, EEPROM or FLASH address).
+// 0..(UINT32_MAX-1) are acceptable, valid addresses.
+//// Also, the variable may contain the difference between the addresses. For example:
+////   ADDR_T addr, addr1, addr2;
+////   addr = addr1 - addr2;
+//#define INVALID_ADDR -1 
+#define INVALID_ADDR 0xFFFFFFFF
+// The value INVALID_ADDR is used to indicate an indeterminate, unacceptable, invalid address.
 
 //-----------------------------------------------
 #define BYTES_OF_LD_VAR 2
@@ -427,7 +441,7 @@ int ProgCountWidestRow();
 int ProgCountRows();
 extern int totalHeightScrollbars;
 int CountHeightOfElement(int which, void *elem);
-bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore, int cols);
+bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, int cols*/);
 void DrawEndRung(int cx, int cy);
 extern int ColsAvailable;
 extern bool SelectionActive;
@@ -479,13 +493,11 @@ bool MoveCursorNear(int *gx, int *gy);
 
 #define DISPLAY_MATRIX_X_SIZE 256
 #define DISPLAY_MATRIX_Y_SIZE ((MAX_RUNGS + 1) * 2)
-extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
-extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
+extern SeriesNode DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
 #define PADDING_IN_DISPLAY_MATRIX (&DisplayMatrixFiller)
-#define VALID_LEAF(x) ((x) != nullptr && (x) != PADDING_IN_DISPLAY_MATRIX)
-extern ElemLeaf *Selected;
-extern int SelectedWhich;
+#define VALID_LEAF(x) (((x).any() != nullptr) && ((x).leaf() != PADDING_IN_DISPLAY_MATRIX))
+extern SeriesNode Selected;
 
 extern PlcCursor Cursor;
 extern bool CanInsertEnd;
@@ -525,10 +537,10 @@ void ShowContactsDialog(bool *negated, bool *set1, char *name);
 // coildialog.cpp
 void ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, bool *ttrigger, char *name);
 // simpledialog.cpp
-void CheckVarInRange(char *name, char *str, SDWORD v);
+void CheckVarInRange(char *name, char *str, int32_t v);
 void ShowTimerDialog(int which, ElemLeaf *l);
-void ShowSleepDialog(int which, ElemLeaf *l);
-void ShowDelayDialog(int which, ElemLeaf *l);
+void ShowSleepDialog(ElemLeaf *l);
+void ShowDelayDialog(ElemLeaf *l);
 void ShowSpiDialog(ElemLeaf *l);
 void ShowI2cDialog(ElemLeaf *l);
 void ShowCounterDialog(int which, ElemLeaf *l);
@@ -545,11 +557,11 @@ void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowSFRDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 void CalcSteps(ElemStepper *s, ResSteps *r);
-void ShowStepperDialog(int which, void *e);
-void ShowPulserDialog(int which, char *P1, char *P0, char *accel, char *counter, char *busy);
-void ShowNPulseDialog(int which, char *counter, char *targetFreq, char *coil);
-void ShowQuadEncodDialog(int which, ElemLeaf *l);
-void ShowSegmentsDialog(int which, ElemLeaf *l);
+void ShowStepperDialog(void *e);
+void ShowPulserDialog(char *P1, char *P0, char *accel, char *counter, char *busy);
+void ShowNPulseDialog(char *counter, char *targetFreq, char *coil);
+void ShowQuadEncodDialog(ElemLeaf *l);
+void ShowSegmentsDialog(ElemLeaf *l);
 void ShowBusDialog(ElemLeaf *l);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
@@ -694,8 +706,7 @@ HWND CreateWindowClient(DWORD exStyle, const char *className, const char *window
 void MakeDialogBoxClass();
 void NiceFont(HWND h);
 void FixedFont(HWND h);
-void CompileSuccessfulMessage(char *str, unsigned int uType);
-void CompileSuccessfulMessage(char *str);
+void CompileSuccessfulMessage(const char* str, unsigned int uType = MB_ICONINFORMATION);
 void CompileSuccesfullAnsiCMessage(const char *dest);
 extern bool RunningInBatchMode;
 extern bool RunningInTestMode;
@@ -727,18 +738,18 @@ void CheckVariableNames();
 void DescribeForIoList(const char *name, int type, char *out);
 void SimulationToggleContact(char *name);
 bool GetSingleBit(char *name);
-void SetAdcShadow(char *name, SWORD val);
-SWORD GetAdcShadow(const char *name);
-SWORD GetAdcShadow(const NameArray& name);
+void SetAdcShadow(char *name, int32_t val);
+int32_t GetAdcShadow(const char *name);
+int32_t GetAdcShadow(const NameArray& name);
 void DestroySimulationWindow(HWND SimulationWindow);        ///// Prototype modified by JG
 void ShowSimulationWindow(int sim);                         ///// Prototype modified by JG
 extern bool InSimulationMode;
 //extern bool SimulateRedrawAfterNextCycle;
 extern DWORD CyclesCount;
-void SetSimulationVariable(const char *name, SDWORD val);
-SDWORD GetSimulationVariable(const char *name, bool forIoList);
-SDWORD GetSimulationVariable(const char *name);
-SDWORD GetSimulationVariable(const NameArray& name);
+void SetSimulationVariable(const char *name, int32_t val);
+int32_t GetSimulationVariable(const char *name, bool forIoList);
+int32_t GetSimulationVariable(const char *name);
+int32_t GetSimulationVariable(const NameArray& name);
 void SetSimulationStr(const char *name, const char *val);
 char *GetSimulationStr(const char *name);
 int FindOpName(int op, const NameArray& name1);
@@ -911,7 +922,7 @@ typedef struct PlcTimerDataTag {
     int PS; // PIC
     int cs; // AVR
     long int softDivisor; // Overflow Count
-    DWORD softDivisorAddr;
+    ADDR_T softDivisorAddr;
     double TCycle; // s,  actually
     double Fcycle; // Hz, actually
     int cycleTimeMin; //
@@ -923,11 +934,11 @@ extern PlcTimerData plcTmr;
 typedef struct PicAvrInstructionTag {
     PicOp       opPic;
     AvrOp       opAvr;
-    DWORD       arg1;
-    DWORD       arg2;
-    DWORD       arg1orig;
-    DWORD       BANK;   // this operation opPic will executed with this STATUS or BSR registers
-    DWORD       PCLATH; // this operation opPic will executed with this PCLATH which now or previously selected
+    uint32_t       arg1;
+    uint32_t       arg2;
+    uint32_t       arg1orig;
+    uint32_t       BANK;   // this operation opPic will executed with this STATUS or BSR registers
+    uint32_t       PCLATH; // this operation opPic will executed with this PCLATH which now or previously selected
     int         isLabel;
     char        commentInt[MAX_COMMENT_LEN]; // before op
     char        commentAsm[MAX_COMMENT_LEN]; // after op
@@ -942,35 +953,35 @@ typedef struct PicAvrInstructionTag {
 // compilercommon.cpp
 int UsedRAM();
 int UsedROM();
-extern DWORD RamSection;
-extern DWORD RomSection;
-extern DWORD EepromAddrFree;
+extern uint32_t RamSection;
+extern uint32_t RomSection;
+extern uint32_t EepromAddrFree;
 //extern int VariableCount;
 void PrintVariables(FileTracker& f);
 int isPinAssigned(const NameArray& name);
 void AllocStart();
-DWORD AllocOctetRam();
-DWORD AllocOctetRam(int bytes);
-void AllocBitRam(DWORD *addr, int *bit);
-int MemForVariable(const NameArray& name, DWORD *addrl, int sizeOfVar);
-int MemForVariable(const NameArray& name, DWORD *addr);
-int SetMemForVariable(const NameArray& name, DWORD addr, int sizeOfVar);
-int MemOfVar(const NameArray& name, DWORD *addr);
+ADDR_T AllocOctetRam();
+ADDR_T AllocOctetRam(int bytes);
+void AllocBitRam(ADDR_T *addr, int *bit);
+int MemForVariable(const NameArray& name, ADDR_T *addr, int sizeOfVar);
+int MemForVariable(const NameArray& name, ADDR_T *addr);
+int SetMemForVariable(const NameArray& name, ADDR_T addr, int sizeOfVar);
+int MemOfVar(const NameArray& name, ADDR_T *addr);
 uint8_t MuxForAdcVariable(const NameArray& name);
-int PinsForSpiVariable(const NameArray& name, int n, char *spipins);             ///// Added by JG
-int PinsForI2cVariable(const NameArray& name, int n, char *i2cpins);             ///// Added by JG
+int PinsForSpiVariable(const NameArray& name, int n, int *spipins);             ///// Added by JG
+int PinsForI2cVariable(const NameArray& name, int n, int *i2cpins);             ///// Added by JG
 int SingleBitAssigned(const NameArray& name);
 int GetAssignedType(const NameArray& name, const NameArray& fullName);
-int InputRegIndex(DWORD addr);
-int OutputRegIndex(DWORD addr);
-void AddrBitForPin(int pin, DWORD *addr, int *bit, bool asInput);
-void MemForSingleBit(const NameArray& name, bool forRead, DWORD *addr, int *bit);
-void MemForSingleBit(const NameArray& name, DWORD *addr, int *bit);
+int InputRegIndex(ADDR_T addr);
+int OutputRegIndex(ADDR_T addr);
+void AddrBitForPin(int pin, ADDR_T *addr, int *bit, bool asInput);
+void MemForSingleBit(const NameArray& name, bool forRead, ADDR_T *addr, int *bit);
+void MemForSingleBit(const NameArray& name, ADDR_T *addr, int *bit);
 void MemCheckForErrorsPostCompile();
 int SetSizeOfVar(const NameArray& name, int sizeOfVar);
 int SizeOfVar(const NameArray& name);
 int AllocOfVar(const NameArray& name);
-int TestByteNeeded(int count, SDWORD *vals);
+int TestByteNeeded(int count, int32_t *vals);
 int byteNeeded(long long int i);
 void SaveVarListToFile(FileTracker& f);
 bool LoadVarListFromFile(FileTracker& f);
@@ -986,9 +997,9 @@ int SetVariableType(const NameArray& name, int type);
 
 typedef struct LabelAddrTag {
     char  name[MAX_NAME_LEN];
-    DWORD KnownAddr; // Address to jump to the start of rung abowe the current in LD
-    DWORD FwdAddr;   // Address to jump to the start of rung below the current in LD
-    DWORD used;
+    uint32_t KnownAddr; // Address to jump to the start of rung abowe the current in LD
+    uint32_t FwdAddr;   // Address to jump to the start of rung below the current in LD
+    uint32_t used;
 } LabelAddr;
 LabelAddr *GetLabelAddr(const NameArray& name);
 
@@ -998,12 +1009,12 @@ extern int asm_comment_level;
 extern int asm_discover_names;
 extern int rungNow;
 void IntDumpListing(char *outFile);
-SDWORD TestTimerPeriod(char *name, SDWORD delay, int adjust); // delay in us
+int32_t TestTimerPeriod(char *name, int32_t delay, int adjust); // delay in us
 bool GenerateIntermediateCode();
 bool CheckLeafElem(int which, void *elem);
-extern DWORD addrRUartRecvErrorFlag;
+extern ADDR_T addrRUartRecvErrorFlag;
 extern int    bitRUartRecvErrorFlag;
-extern DWORD addrRUartSendErrorFlag;
+extern ADDR_T addrRUartSendErrorFlag;
 extern int    bitRUartSendErrorFlag;
 bool GotoGosubUsed();
 bool UartFunctionUsed();
@@ -1012,8 +1023,8 @@ bool UartSendUsed();
 bool SpiFunctionUsed();
 bool I2cFunctionUsed();                 ///// Added by JG
 bool Bin32BcdRoutineUsed();
-SDWORD CheckMakeNumber(const char *str);
-SDWORD CheckMakeNumber(const NameArray& str);
+int32_t CheckMakeNumber(const char *str);
+int32_t CheckMakeNumber(const NameArray& str);
 void WipeIntMemory();
 bool CheckForNumber(const char *str);
 int TenToThe(int x);
@@ -1022,19 +1033,19 @@ bool MultiplyRoutineUsed();
 bool DivideRoutineUsed();
 void GenSymOneShot(char *dest, const char *name1, const char *name2);
 int getradix(const char *str);
-SDWORD CalcDelayClock(long long clocks); // in us
+int32_t CalcDelayClock(long long clocks); // in us
 bool IsAddrInVar(const char *name);
 
 // pic16.cpp
-extern SDWORD PicProgLdLen;
+extern int32_t PicProgLdLen;
 void CompilePic16(const char* outFile);
 bool McuAs(const char *str);
-bool CalcPicPlcCycle(long long int cycleTimeMicroseconds, SDWORD PicProgLdLen);
+bool CalcPicPlcCycle(long long int cycleTimeMicroseconds, int32_t PicProgLdLen);
 // avr.cpp
-extern DWORD AvrProgLdLen;
+extern uint32_t AvrProgLdLen;
 int calcAvrUsart(int *divisor, double  *actual, double  *percentErr);
 int testAvrUsart(int divisor, double  actual, double  percentErr);
-bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, DWORD AvrProgLdLen);
+bool CalcAvrPlcCycle(long long int cycleTimeMicroseconds, uint32_t AvrProgLdLen);
 void CompileAvr(const char* outFile);
 // ansic.cpp
 extern int compile_MNU;

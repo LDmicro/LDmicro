@@ -1,3 +1,13 @@
+== Release 5.3.0.5
+
+    * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES
+
+    * Added: Microchip PIC12F675 8-pin packages
+
+    * Added: Microchip PIC16F72 28-Pin PDIP, SOIC, SSOP
+
+    * Added: Atmel AVR ATtiny10 6-Pin packages
+
 == Release 5.3.0.4
 
     * Added: Menu Settings->Set Pull-up input resistors.

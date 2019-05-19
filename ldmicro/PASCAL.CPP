@@ -30,7 +30,7 @@
 
 static char  SeenVariables[MAX_IO][MAX_NAME_LEN];
 static int   SeenVariablesCount;
-static DWORD InCount, OutCount, TimerCount, RelayCount, VarCount;
+static uint32_t InCount, OutCount, TimerCount, RelayCount, VarCount;
 
 //-----------------------------------------------------------------------------
 // Have we seen a variable before? If not then no need to generate code for
@@ -229,8 +229,8 @@ static void PortX(FILE *fi, FILE *fu, const char *str)
     fprintf(fu, "  {$endif}\n");
 
     fprintf(fu, "  {$ifdef HookIn}\n");
-    fprintf(fu, "  if InArr[%d].IskbrdHook then begin\n", InCount - 1);
-    fprintf(fu, "    Read_%s:=InArr[%d].HookValue;\n", str, InCount - 1);
+    fprintf(fu, "  if InArr[%u].IskbrdHook then begin\n", InCount - 1); 
+    fprintf(fu, "    Read_%s:=InArr[%u].HookValue;\n", str, InCount - 1);
     fprintf(fu, "    exit;\n");
     fprintf(fu, "  end;\n");
     fprintf(fu, "  {$endif}\n");
@@ -1010,7 +1010,6 @@ static char *GetUnitName(char *unitn, char *dest)
 void CompilePascal(const char *dest)
 {
     SeenVariablesCount = 0;
-    CompileFailure= 0;
 
     char destn[MAX_PATH];
     char destu[MAX_PATH];
@@ -1182,7 +1181,7 @@ void CompilePascal(const char *dest)
     fprintf(f,
             "procedure PlcCycle;\n"
             "\n"
-            "const PlcCycleTimeUs:comp=%d; {us} {from %s.ld CYCLE=}\n"
+            "const PlcCycleTimeUs:comp=%lld; {us} {from %s.ld CYCLE=}\n"
             "\n"
             "implementation\n\n",
             Prog.cycleTime,
@@ -1316,11 +1315,11 @@ void CompilePascal(const char *dest)
             "end.\n");
     fprintf(fi,
             "const\n"
-            "  InCountConst    =%d;\n"
-            "  OutCountConst   =%d;\n"
-            "  TimerCountConst =%d;\n"
-            "  RelayCountConst =%d;\n"
-            "  VarCountConst   =%d;\n",
+            "  InCountConst    =%u;\n"
+            "  OutCountConst   =%u;\n"
+            "  TimerCountConst =%u;\n"
+            "  RelayCountConst =%u;\n"
+            "  VarCountConst   =%u;\n",
             InCount,
             OutCount,
             TimerCount,
@@ -1339,10 +1338,6 @@ void CompilePascal(const char *dest)
     TranslitFile(destv);
     TranslitFile(desti);
     */
-
-    ///// Added by JG
-    if(CompileFailure) return;
-    /////
 
     char str[MAX_PATH + 500];
     sprintf(str,
