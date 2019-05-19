@@ -38,7 +38,7 @@ typedef struct {
     int32_t   name1;
     int32_t   name2;
     int32_t   name3;
-    int32_t literal;
+    int32_t literal1;
 } BinOp;
 
 static BinOp OutProg[MAX_INT_OPS];
@@ -123,7 +123,7 @@ void CompileInterpreted(const char *outFile)
 
             case INT_SET_VARIABLE_TO_LITERAL:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
-                op.literal = IntCode[ipc].literal;
+                op.literal1 = IntCode[ipc].literal1;
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -165,7 +165,7 @@ void CompileInterpreted(const char *outFile)
 
             case INT_IF_VARIABLE_LES_LITERAL:
                 op.name1 = AddrForVariable(IntCode[ipc].name1);
-                op.literal = IntCode[ipc].literal;
+                op.literal1 = IntCode[ipc].literal1;
                 goto finishIf;
 
             case INT_IF_VARIABLE_EQUALS_VARIABLE:

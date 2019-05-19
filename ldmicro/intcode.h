@@ -239,7 +239,7 @@ struct IntOp {
     NameArray     name4;
     NameArray     name5;
     NameArray     name6;
-    int32_t       literal;
+    int32_t       literal1;
     int32_t       literal2;
     int32_t       literal3;    // side effect: internaly used in simulation of INT_FLASH_READ
     int32_t      *data;        // for INT_FLASH_INIT

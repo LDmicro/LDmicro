@@ -345,6 +345,10 @@ static void MakeControls()
 UINT_PTR CALLBACK CCHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
     return 0;
+    (void)hdlg;
+    (void)uiMsg;
+    (void)wParam;
+    (void)lParam;
 }
 
 void ShowColorDialog()
@@ -398,10 +402,9 @@ void ShowColorDialog()
     SendMessage(ColorList, LB_SETCURSEL, (WPARAM)Index, 0);
 
     MSG   msg;
-    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
+    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
         switch(msg.message) {
             case WM_KEYDOWN: {
                 if(msg.wParam == VK_RETURN) {

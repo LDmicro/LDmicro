@@ -122,8 +122,8 @@ void CompileXInterpreted(const char *outFile)
             case INT_SET_VARIABLE_TO_LITERAL:
                 OutProg.push_back(IntCode[ipc].op);
                 OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
-                OutProg.push_back((uint8_t)(IntCode[ipc].literal & 0xFF));
-                OutProg.push_back((uint8_t)((IntCode[ipc].literal >> 8) & 0xFF));
+                OutProg.push_back((uint8_t)(IntCode[ipc].literal1 & 0xFF));
+                OutProg.push_back((uint8_t)((IntCode[ipc].literal1 >> 8) & 0xFF));
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
@@ -152,8 +152,8 @@ void CompileXInterpreted(const char *outFile)
             case INT_SET_PWM:
                 OutProg.push_back(IntCode[ipc].op);
                 OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
-                OutProg.push_back((uint8_t)(IntCode[ipc].literal & 0xFF));
-                OutProg.push_back((uint8_t)((IntCode[ipc].literal >> 8) & 0xFF));
+                OutProg.push_back((uint8_t)(IntCode[ipc].literal1 & 0xFF));
+                OutProg.push_back((uint8_t)((IntCode[ipc].literal1 >> 8) & 0xFF));
                 break;
 
             case INT_READ_ADC:
@@ -169,8 +169,8 @@ void CompileXInterpreted(const char *outFile)
             case INT_IF_VARIABLE_LES_LITERAL:
                 OutProg.push_back(IntCode[ipc].op);
                 OutProg.push_back(AddrForVariable(IntCode[ipc].name1.c_str()));
-                OutProg.push_back((uint8_t)(IntCode[ipc].literal & 0xFF));
-                OutProg.push_back((uint8_t)((IntCode[ipc].literal >> 8) & 0xFF));
+                OutProg.push_back((uint8_t)(IntCode[ipc].literal1 & 0xFF));
+                OutProg.push_back((uint8_t)((IntCode[ipc].literal1 >> 8) & 0xFF));
                 goto finishIf;
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
             case INT_IF_VARIABLE_GRT_VARIABLE:
@@ -264,7 +264,7 @@ void CompileXInterpreted(const char *outFile)
     }
 
     // $$LDcode program_size
-    fprintf(f, "$$LDcode %d\n", OutProg.size());
+    fprintf(f, "$$LDcode %lu\n", OutProg.size());
     for(uint32_t i = 0; i < OutProg.size(); i++) {
         fprintf(f, "%02X", OutProg[i]);
         if((i % 16) == 15 || i == OutProg.size() - 1)

@@ -29,6 +29,7 @@ double vProp(double k, double t)
 double aProp(double k, double t)
 {
     return k;
+    (void)t;
 }
 
 double kProp(int nSize)
@@ -141,7 +142,7 @@ double ksS(int nSize)
 }
 //===========================================================================
 
-void makeAccelTable(FileTracker& f, int max, int P, int nSize, ElemAccel **TT, char *name,
+void makeAccelTable(FileTracker& f, int max, int P, int nSize, ElemAccel **TT, const char *name,
                     int  nN,  // (1-для несимметричных кривых разгонов, 2-для cимметричных S-образных кривых разгона)
                     int  sFt, // (1-sFt, 0-tFs)
                     int *n, int *Psum,
@@ -426,7 +427,7 @@ void makeAccelTable(FileTracker& f, int max, int P, int nSize, ElemAccel **TT, c
 
 void CalcSteps(ElemStepper *s, ResSteps *r)
 {
-    memset(&(*r), 0, sizeof(ResSteps));
+    memset(r, 0, sizeof(ResSteps));
 
     double massa = 1;
     int    nSize = s->nSize;

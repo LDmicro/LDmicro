@@ -1889,17 +1889,16 @@ void TestSelections(UINT msg, int rung1)
     else
         rung2 = RungContainingSelected();
 
-    int i;
     switch(msg) {
         case WM_LBUTTONDOWN: {
             if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                 if((rung1 >= 0) && (rung2 >= 0)) {
                     if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000))
-                        for(i = 0; i < Prog.numRungs; i++)
+                        for(int i = 0; i < Prog.numRungs; i++)
                             if(Prog.rungSelected[i] == '*')
                                 Prog.rungSelected[i] = ' ';
                     int d = (rung2 < rung1) ? -1 : +1;
-                    for(i = rung1;; i += d) {
+                    for(int i = rung1;; i += d) {
                         Prog.rungSelected[i] = '*';
                         if(i == rung2)
                             break;
@@ -1913,7 +1912,7 @@ void TestSelections(UINT msg, int rung1)
                         Prog.rungSelected[rung2] = ' ';
                 }
             } else {
-                for(i = 0; i < Prog.numRungs; i++)
+                for(int i = 0; i < Prog.numRungs; i++)
                     if(Prog.rungSelected[i] == '*')
                         Prog.rungSelected[i] = ' ';
             }
@@ -1924,16 +1923,15 @@ void TestSelections(UINT msg, int rung1)
             //}
             if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                 if((rung1 >= 0) && (rung2 >= 0)) {
-                    int i;
                     int d = (rung2 < rung1) ? -1 : +1;
-                    for(i = rung1;; i += d) {
+                    for(int i = rung1;; i += d) {
                         Prog.rungSelected[i] = '*';
                         if(i == rung2)
                             break;
                     }
                 }
             } else {
-                for(i = 0; i < Prog.numRungs; i++)
+                for(int i = 0; i < Prog.numRungs; i++)
                     if(Prog.rungSelected[i] == '*')
                         Prog.rungSelected[i] = ' ';
             }
@@ -2906,6 +2904,8 @@ void CheckPwmPins()
 //-----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
+    (void)hPrevInstance;
+    (void)nCmdShow;
     auto logg = ldlog::getLogger("default");
     try {
         logg->add_sink(ldlog::newWindowsDebugStringSink());
@@ -3100,8 +3100,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         UpdateMainWindowTitleBar();
 
         MSG   msg;
-        DWORD ret;
-        while((ret = GetMessage(&msg, nullptr, 0, 0))) {
+        while(GetMessage(&msg, nullptr, 0, 0) > 0) {
             if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
                 if(msg.wParam == VK_TAB) {
                     SetFocus(MainWindow);
