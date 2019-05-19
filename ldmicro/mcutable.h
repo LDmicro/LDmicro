@@ -557,6 +557,26 @@ McuAdcPinInfo AvrAtmega8AdcPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // ATtiny10 6-Pin packages
+McuIoPinInfo AvrATtiny10IoPinInfo6[] = {
+    { 'B',  0,  1, "PB0 (PCINT0/ADC0/OC0A/TPIDATA/AIN0)" }, // {char port;  int bit;  int pin;}
+    { 'B',  1,  3, "PB1 (PCINT1/ADC1/OC0B/CLKI/TPICLK/ICP0/AIN1)" },
+    { 'B',  2,  4, "PB2 (PCINT2/ADC2/INT0/CLKO/T0)" },
+    { 'B',  3,  6, "PB3 (PCINT3/ADC3/RESET)" },
+};
+
+McuAdcPinInfo AvrATtiny10AdcPinInfo6[] = {
+    {  1, 0x00 }, // ADC0 {int pin;   BYTE muxRegValue;}
+    {  3, 0x01 },
+    {  4, 0x02 },
+    {  6, 0x03 }  // ADC3
+};
+
+McuExtIntPinInfo AvrExtIntPinInfo6[] = {
+    { 1 }, // PCINT0
+    { 3 },
+    { 4 },
+    { 6 },
+};
 
 //-----------------------------------------------------------------------------
 // ATtiny85 8-Pin packages
@@ -704,10 +724,32 @@ McuSpiInfo McuSpiInfoATmega2560[] = {
 //     name     REG_CTRL REG_STAT REG_DATA MISO  MOSI SCK  _SS
 //                                         PB3   PB2  PB1  PB0
     { "SPI",       0x4C,    0x4D,    0x4E,  22,   21,  20,  19 },
+//  { "SPI_UART0", 0x2C,    0x2D,    0x2E,  22,   21,  20,  19 }, // TODO
+//  { "SPI_UART1", 0x2C,    0x2D,    0x2E,  22,   21,  20,  19 }, // TODO
+//  { "SPI_UART2", 0x2C,    0x2D,    0x2E,  22,   21,  20,  19 }, // TODO
+//  { "SPI_UART3", 0x2C,    0x2D,    0x2E,  22,   21,  20,  19 }, // TODO
 };
 
 //-----------------------------------------------------------------------------
 // AVR's PWM Info Tables
+
+//McuPwmPinInfo AvrPwmPinInfo6[] = { // ATtiny10
+////     ti  reso max REG_   REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer lutn CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+//  {  1, 0, 8,   5, 0   ,  0x52,  0x53,  0,     0,        0, 0   ,  0    }, // OC0A
+//  {  3, 0, 8,   5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 }, // OC0B
+//  {   , 1, 8,   5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 }, // OC1A
+//  {   , 1, 8,   7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    }, // OC1B
+//};
+
+McuPwmPinInfo AvrPwmPinInfo8[] = { // ATtiny85
+////     ti  reso max REG_   REG_   REG_   bit    bit    mask  REG_   mask
+//// pin mer lutn  CS OCRnxL OCRnxH TCCRnA COMnx1 COMnx0 WGMa  TCCRnB WGMb
+    {  5, 0, 8,    5, 0   ,  0x52,  0x53,  0,     0,        0, 0   ,  0    }, // OC0A
+    {  6, 0, 8,    5, 0x4A,  0x4B,  0x4F,  7,     6,        1, 0x4E,  0x08 }, // OC0B
+    {  6, 1, 8,    5, 0x48,  0x49,  0x4F,  5,     4,        1, 0x4E,  0x08 }, // OC1A
+    {  4, 1, 8,    7, 0x43,  0   ,  0x45,  5,     4,     0x48, 0   ,  0    }, // OC1B
+};
 
 McuPwmPinInfo AvrPwmPinInfo28_[] = { // ATmega8, etc.
 ////     ti  reso max REG_   REG_   REG_   bit    bit    mask  REG_   mask
@@ -1115,6 +1157,44 @@ McuAdcPinInfo Pic16F877AdcPinInfo[] = {
 
 //-----------------------------------------------------------------------------
 // PIC16F72 28-Pin PDIP, SOIC, SSOP
+McuIoPinInfo Pic16F72IoPinInfo[] = {
+//  {          1, "MCLR/Vpp"},
+    { 'A', 0,  2, "RA0/AN0"},
+    { 'A', 1,  3, "RA1/AN1"},
+    { 'A', 2,  4, "RA2/AN2"},
+    { 'A', 3,  5, "RA3/AN3/VREF"},
+    { 'A', 4,  6, "RA4/T0CKI"},
+    { 'A', 5,  7, "RA5/AN4/SS"},
+//  {          8, "Vss"},
+//  {          9, "OSC1/CLKI"},
+//  {         10, "OSC2/CLKO"},
+    { 'C', 0, 11, "RC0/T1OSO/T1CKI"},
+    { 'C', 1, 12, "RC1/T1OSI"},
+    { 'C', 2, 13, "RC2/CCP1"},
+    { 'C', 3, 14, "RC3/SCK/SCL"},
+    { 'C', 4, 15, "RC4/SDI/SDA"},
+    { 'C', 5, 16, "RC5/SDO"},
+    { 'C', 6, 17, "RC6"},
+    { 'C', 7, 18, "RC7"},
+//  {         19, "Vss"},
+//  {         20, "Vdd"},
+    { 'B', 0, 21, "RB0/INT"},
+    { 'B', 1, 22, "RB1"},
+    { 'B', 2, 23, "RB2"},
+    { 'B', 3, 24, "RB3"},
+    { 'B', 4, 25, "RB4"},
+    { 'B', 5, 26, "RB5"},
+    { 'B', 6, 27, "RB6"},
+    { 'B', 7, 28, "RB7"},
+};
+
+McuAdcPinInfo Pic16F72AdcPinInfo[] = {
+    {  2, 0x00 },
+    {  3, 0x01 },
+    {  4, 0x02 },
+    {  5, 0x03 },
+    {  7, 0x04 },
+};
 
 //-----------------------------------------------------------------------------
 // PIC16F876, PIC16F873 28-Pin PDIP, SOIC
@@ -2082,6 +2162,34 @@ McuIoInfo SupportedMcus_[] = {
         {{0,0}}
     },
     {
+        "Atmel AVR ATtiny10 6-Pin packages",
+        "ATtiny10",
+        "tn10def",
+        "tiny10",
+        "",
+        'P',
+        { 0, 0x00 }, // PINx
+        { 0, 0x02 }, // PORTx
+        { 0, 0x01 }, // DDRx
+        1*1024,
+        { { 0x40, 32 } },
+        AvrATtiny10IoPinInfo6,               //McuIoPinInfo    *pinInfo;
+        arraylen(AvrATtiny10IoPinInfo6),     //int              pinCount;
+        AvrATtiny10AdcPinInfo6,              //McuAdcPinInfo   *adcInfo;
+        arraylen(AvrATtiny10AdcPinInfo6),    //int              adcCount;
+        255,
+        { 0, 0 },
+        0, // OC2
+        ISA_AVR,
+        ReducedCore,
+        0,
+        6,
+        NULL, //AvrPwmPinInfo6,
+        0, //arraylen(AvrPwmPinInfo6),
+        AvrExtIntPinInfo6,
+        arraylen(AvrExtIntPinInfo6)
+    },
+    {
         "Atmel AVR ATmega8 32-Pin packages", //char            *mcuName;
         "ATmega8",
         "m8def", // "iom8"
@@ -2455,6 +2563,73 @@ McuIoInfo SupportedMcus_[] = {
         McuI2cInfoPic16F876,
         arraylen(McuI2cInfoPic16F876),
         {{0,0}}
+    },
+    {
+        "Microchip PIC16F72 28-Pin PDIP, SOIC, SSOP",
+        "PIC16F72",
+        "P16F72",
+        "P16F72",
+        "PIC16F72",
+        'R',
+        { 0x05, 0x06, 0x07 }, // PORTx = A B C
+        { 0x05, 0x06, 0x07 }, // PORTx
+        { 0x85, 0x86, 0x87 }, // TRISx
+        2*1024,
+        { { 0x20, 96 }, { 0xA0, 32 } },
+        Pic16F72IoPinInfo,
+        arraylen(Pic16F72IoPinInfo),
+        Pic16F72AdcPinInfo,
+        arraylen(Pic16F72AdcPinInfo),
+        255,
+        { 0, 0 },
+        13,
+        ISA_PIC16,
+        MidrangeCore14bit,
+        28,
+            (3 <<  6) |     // brown-out detect enabled
+            (1 <<  4) |     // code protection disabled
+            (0 <<  3) |     // PWRTE enabled
+            (0 <<  2) |     // WDTE disabled
+            (2 <<  0),      // HS oscillator
+        PicPwmPinInfo28_1,
+        arraylen(PicPwmPinInfo28_1),
+        PicExtIntPinInfo28,
+        arraylen(PicExtIntPinInfo28)
+    },
+    {
+        "Microchip PIC12F675 8-pin packages", // or PIC12F629
+        "PIC12F675",
+        "P12F675",
+        "P12F675",
+        "PIC12F675",
+        'G',
+//        A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x05}, // PORTx = GPIO
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x05}, // PORTx
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x85}, // TRISx
+        1024,
+        { { 0x20, 64 } },
+        Pic8Pin,
+        arraylen(Pic8Pin),
+        Pic8PinAdcPinInfo,
+        arraylen(Pic8PinAdcPinInfo),
+        1024,
+        { },
+        0,
+        ISA_PIC16,
+        MidrangeCore14bit,
+        8,
+        0x3FC4,
+        /*
+            ($7f <<7) |
+            (1 <<  6) |     // BOD enabled
+            (0 <<  5) |     // _MCLR disabled
+            (0 <<  4) |     // PWRT enabled
+            (0 <<  3) |     // WDTE disabled
+            (4 <<  0),      // 100 = INTOSC oscillator: I/O function on GP4/OSC2/CLKOUT pin, I/O function on GP5/OSC1/CLKIN
+        */
+        NULL,
+        0
     },
     {
         "Microchip PIC12F683 8-pin packages",

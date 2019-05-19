@@ -41,8 +41,6 @@ HINSTANCE Instance;
 HWND      MainWindow;
 HDC       Hdc;
 
-//extern int  compiler_variant;       ///// Added by JG
-
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
 static HHOOK MouseHookHandle;

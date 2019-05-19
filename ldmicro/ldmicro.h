@@ -32,6 +32,8 @@
 #include "accel.h"
 #include "circuit.h"
 #include "plcprogram.h"
+//#include "avr.h"
+//#include "pic.h"
 
 //-----------------------------------------------
 //typedef int32_t ADDR_T;
