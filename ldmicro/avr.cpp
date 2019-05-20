@@ -85,7 +85,8 @@
 #define ZH 31
 static uint32_t REG_EIND = 0; // EIND:ZH:ZL indirect address for EICALL, EIJMP
 
-std::vector<PicAvrInstruction> AvrProg;
+#define MAX_PROGRAM_LEN 128*1024
+std::vector<PicAvrInstruction> AvrProg(MAX_PROGRAM_LEN);
 
 uint32_t AvrProgLdLen = 0;
 
@@ -1271,7 +1272,7 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     static int prevRung = INT_MAX;
     static int prevL = INT_MAX;
     static int prevIntPcL = INT_MAX;
-    char       sAsm[1024];
+    char       sAsm[1024] = "";
     const int  n = 1; // 1 - VMLAB and (avrasm2.exe or avrasm32.exe)
         // 2 - increases the length of the data string to be compatible with "avrdude.exe -U flash:r:saved_Intel_Hex.hex:i"
     BYTE  soFar[16 * n];

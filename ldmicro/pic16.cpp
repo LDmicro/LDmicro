@@ -56,7 +56,7 @@
 
 #define MAX_PROGRAM_LEN 128 * 1024
 //static PicAvrInstruction PicProg[MAX_PROGRAM_LEN];
-static std::vector<PicAvrInstruction> PicProg;
+static std::vector<PicAvrInstruction> PicProg(MAX_PROGRAM_LEN);
 static ADDR_T             PicProgWriteP;
 static ADDR_T             BeginOfPLCCycle;
 

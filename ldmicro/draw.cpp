@@ -1172,8 +1172,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             } else
                 oops();
 
-            CenterWithSpaces(*cx, *cy, s1, poweredAfter, false);
-            CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, ss1, poweredAfter, false);
+            CenterWithWires(*cx, *cy, ss2, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
             break;
@@ -1184,8 +1184,8 @@ static bool DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy, bool poweredBe
             ss2 = "[_/ \x01"
                  "OSC\x02_/ \\_/ \\]";
 
-            CenterWithSpaces(*cx, *cy, s1, poweredAfter, false);
-            CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, ss1, poweredAfter, false);
+            CenterWithWires(*cx, *cy, ss2, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
             break;
@@ -1839,7 +1839,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, 
                 poweredAfter = DrawElement(s->contents[i].which, s->contents[i].data.any, cx, cy, poweredAfter/*, 0*/);
             }
             break;
-			/*
+            /*
             if(cols) {
                 // Draw wire to the right bus
                 if((s->contents[s->count - 1].which == ELEM_COMMENT) || //
@@ -1852,7 +1852,7 @@ bool DrawElement(int which, void *elem, int *cx, int *cy, bool poweredBefore/*, 
                     DrawWire(cx, cy, '-');
             }
             break;
-			*/
+            */
         }
         case ELEM_PARALLEL_SUBCKT: {
             ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
