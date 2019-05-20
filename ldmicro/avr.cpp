@@ -602,7 +602,7 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
 */
 #define CHECK(v, bits)                                            \
-    if((v) != ((v) & ((1 << (bits)) - 1)))                        \
+    do { if((v) != ((v) & ((1 << (bits)) - 1)))                        \
     THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d::%s]", \
           intOp->rung+1,                                          \
           v,                                                      \
@@ -612,9 +612,9 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
           AvrInstr->f,                                            \
           intOp->name1.c_str(),                                   \
           intOp->fileLine,                                        \
-          intOp->fileName.c_str())
+          intOp->fileName.c_str()); } while(0)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
-    if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
+    do { if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
     THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u [%d..%d]\n[%d:::%s] %s\n[%d::::%s]", \
           intOp->rung+1,                                                 \
           v,                                                             \
@@ -624,7 +624,7 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
           AvrInstr->f,                                                   \
           intOp->name1.c_str(),                                          \
           intOp->fileLine,                                               \
-          intOp->fileName.c_str())
+          intOp->fileName.c_str()); } while(0)
 
     switch(op) {
         case OP_COMMENT:
@@ -1271,10 +1271,10 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
     static int prevRung = INT_MAX;
     static int prevL = INT_MAX;
     static int prevIntPcL = INT_MAX;
-    char       sAsm[1024];
+    char       sAsm[1024] = "";
     const int  n = 1; // 1 - VMLAB and (avrasm2.exe or avrasm32.exe)
         // 2 - increases the length of the data string to be compatible with "avrdude.exe -U flash:r:saved_Intel_Hex.hex:i"
-    BYTE  soFar[16 * n];
+    uint8_t  soFar[16 * n];
     int   soFarCount = 0;
     uint32_t soFarStart = 0;
 
@@ -1375,8 +1375,8 @@ static void WriteHexFile(FILE *f, FILE *fAsm)
         }
         if(soFarCount == 0)
             soFarStart = i;
-        soFar[soFarCount++] = (BYTE)(w & 0xff);
-        soFar[soFarCount++] = (BYTE)(w >> 8);
+        soFar[soFarCount++] = (uint8_t)(w & 0xff);
+        soFar[soFarCount++] = (uint8_t)(w >> 8);
 
         if(soFarCount >= 0x10 * n || i == (AvrProg.size() - 1)) {
             StartIhex(f);                                  // ':'->Colon

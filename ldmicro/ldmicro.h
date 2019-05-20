@@ -673,7 +673,7 @@ int Question(const char* str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 void StartIhex(FILE *f);
-void WriteIhex(FILE *f, BYTE b);
+void WriteIhex(FILE *f, uint8_t b);
 void FinishIhex(FILE *f);
 const char *IoTypeToString(int ioType);
 void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
