@@ -1772,7 +1772,7 @@ static uint32_t Assemble12(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2
 #undef CHECK
 #define CHECK(v, bits)                                                 \
   do { \
-	if((v) != ((v) & ((1 << (bits)) - 1)))                             \
+    if((v) != ((v) & ((1 << (bits)) - 1)))                             \
     THROW_COMPILER_EXCEPTION_FMT("v=%u=0x%X ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
           (v),                                                         \
           (v),                                                         \
