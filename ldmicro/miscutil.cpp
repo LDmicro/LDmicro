@@ -209,7 +209,7 @@ void StartIhex(FILE *f)
 // Write an octet in hex format to the given stream, and update the checksum
 // for the IHEX file.
 //-----------------------------------------------------------------------------
-void WriteIhex(FILE *f, BYTE b)
+void WriteIhex(FILE *f, uint8_t b)
 {
     fprintf(f, "%02X", b);
     IhexChecksum += b;
