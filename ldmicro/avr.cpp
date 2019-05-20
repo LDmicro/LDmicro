@@ -603,7 +603,8 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
 #define CHECK(v, bits) if((v) != ((v) & ((1 << (bits))-1))) oops()
 */
 #define CHECK(v, bits)                                            \
-    do { if((v) != ((v) & ((1 << (bits)) - 1)))                        \
+  do { \
+    if((v) != ((v) & ((1 << (bits)) - 1)))                        \
     THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d::%s]", \
           intOp->rung+1,                                          \
           v,                                                      \
@@ -613,9 +614,11 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
           AvrInstr->f,                                            \
           intOp->name1.c_str(),                                   \
           intOp->fileLine,                                        \
-          intOp->fileName.c_str()); } while(0)
+          intOp->fileName.c_str()); \
+  } while(0)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
-    do { if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
+  do { \
+    if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
     THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u [%d..%d]\n[%d:::%s] %s\n[%d::::%s]", \
           intOp->rung+1,                                                 \
           v,                                                             \
@@ -625,7 +628,8 @@ static uint32_t Assemble(ADDR_T addrAt, AvrOp op, uint32_t arg1, uint32_t arg2, 
           AvrInstr->f,                                                   \
           intOp->name1.c_str(),                                          \
           intOp->fileLine,                                               \
-          intOp->fileName.c_str()); } while(0)
+          intOp->fileName.c_str()); \
+  } while(0)
 
     switch(op) {
         case OP_COMMENT:

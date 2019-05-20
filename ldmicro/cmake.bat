@@ -21,6 +21,8 @@
 @SET PROGECT=d:\lds\tmp\TMP.ld
 @SET PROGECT=D:\LDs\uart\UART_M_ATmega2560_5.ld
 
+@SET PROGECT=C:\LDs\ERR\TEST1.ld
+
 if "%1" == "" goto DO_BUILD
 @SET PROGECT="%1"
 :DO_BUILD

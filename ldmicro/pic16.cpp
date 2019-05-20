@@ -1493,6 +1493,7 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
     sprintf(arg1s, "0x%X", arg1);
     arg1comm[0] = '\0';
 #define CHECK(v, bits)                                                 \
+  do { \
     if((v) != ((v) & ((1 << (bits)) - 1)))                             \
     THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u=0x%X ((1 << (%d))-1)=%d\n[%d:%s] %s\n[%d:%s]", \
           intOp.rung,                                                    \
@@ -1504,8 +1505,10 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
           PicInstr->f,                                                 \
           intOp.name1.c_str(),                                         \
           intOp.fileLine,                                              \
-          intOp.fileName.c_str())
+          intOp.fileName.c_str()); \
+  } while(0)
 #define CHECK2(v, LowerRangeInclusive, UpperRangeInclusive)              \
+  do { \
     if(((int)v < LowerRangeInclusive) || ((int)v > UpperRangeInclusive)) \
     THROW_COMPILER_EXCEPTION_FMT("rung=%d v=%u [%d..%d]\n[%d:%s] %s\n[%d:%s]",                  \
           intOp.rung,                                                    \
@@ -1516,7 +1519,8 @@ static uint32_t Assemble(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2, 
           PicInstr->f,                                                   \
           intOp.name1.c_str(),                                           \
           intOp.fileLine,                                                \
-          intOp.fileName.c_str())
+          intOp.fileName.c_str()); \
+  } while(0)
     switch(op) {
         case OP_ADDWF:
             CHECK(arg1, 7);
@@ -1767,7 +1771,8 @@ static uint32_t Assemble12(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2
     arg1comm[0] = '\0';
 #undef CHECK
 #define CHECK(v, bits)                                                 \
-    if((v) != ((v) & ((1 << (bits)) - 1)))                             \
+  do { \
+	if((v) != ((v) & ((1 << (bits)) - 1)))                             \
     THROW_COMPILER_EXCEPTION_FMT("v=%u=0x%X ((1 << (%d))-1)=%d\nat %d in %s %s\nat %d in %s", \
           (v),                                                         \
           (v),                                                         \
@@ -1777,7 +1782,8 @@ static uint32_t Assemble12(ADDR_T addrAt, PicOp op, uint32_t arg1, uint32_t arg2
           PicInstr->f,                                                 \
           intOp.name1.c_str(),                                         \
           intOp.fileLine,                                              \
-          intOp.fileName.c_str())
+          intOp.fileName.c_str()); \
+  } while(0)
     switch(op) {
         case OP_ADDWF:
             CHECK(arg2, 1);
