@@ -4,12 +4,12 @@ ___________________________________________________________
 Cette librairie est destinée à utiliser un afficheur LCD 16x2 connecté
 à un IO-Expander I2C, comme sur le module Arduino
 
-Fichiers: 	LcdI2cLib.c
-		LcdI2cLib.h
-		I2cLib.c
-		I2cLib.h
+Fichiers: 	Lib_i2clcd.c
+     		Lib_i2clcd.h
+	    	Lib_i2c.c
+		    Lib_i2c.h
 
-Editer I2cLib.c avec un editeur de texte quelconque et modifier la ligne:
+Editer Lib_i2c.c avec un editeur de texte quelconque et modifier la ligne:
 #define LCD_I2C_ADR	0
 en remplaçant la valeur 0 par l'adresse I2C de votre module I2C (par exemple 0x27)
 selon sa documentation
