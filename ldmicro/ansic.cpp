@@ -139,7 +139,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         if(IsNumber(&str[3])) {
           fprintf(f, "#define %s SFR_ADDR(%s) // Memory access\n", str, &str[3]);
         } else {
-          ADDR_T addr;
+          DWORD addr;
           char name[MAX_NAME_LEN];
           sprintf(name,"#%s", &str[3]);
           MemForVariable(name, &addr);
@@ -153,7 +153,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         if (compiler_variant == MNU_COMPILE_HI_TECH_C)
         {
             char devname[MAX_NAME_LEN];     // spi name = "SPI"
-            int devpins[4];
+            char devpins[4];
             strcpy(devname, str);
             if (strcmp(devname, "Ui_SPI") == 0)
             {
@@ -176,7 +176,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         else if (compiler_variant == MNU_COMPILE_ARMGCC)
         {
             char devname[MAX_NAME_LEN];
-            int devpins[4];            // unused here
+            char devpins[4];            // unused here
             strcpy(devname, str);
             devname[6]= '0';            // to simplify comparison
             if (strcmp(devname, "Ui_SPI0") == 0)
@@ -205,7 +205,7 @@ static void DeclareInt(FILE *f, FILE *fh, const char *str, int sov)
         else if (compiler_variant == MNU_COMPILE_AVRGCC)
         {
             char devname[MAX_NAME_LEN];     // spi name = "SPI"
-            int devpins[4];
+            char devpins[4];
             strcpy(devname, str);
             if (strcmp(devname, "Ui_SPI") == 0)
             {
@@ -577,7 +577,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 fprintf(f, "void setPwmFrequency%X(SDWORD freq, SWORD percent, SWORD resol) {\n", pwm);
                 fprintf(f, "  static SDWORD oldfreq= 0;\n");
                 fprintf(f, "  if (freq != oldfreq)\n");
-                fprintf(f, "    PWM_Init(0x%2.2X, %d, freq, resol);\n", pwm, Prog.mcuClock);
+                fprintf(f, "    PWM_Init(0x%2.2X, %ld, freq, resol);\n", pwm, Prog.mcuClock);
                 fprintf(f, "  PWM_Set(0x%2.2X, percent, resol);\n", pwm);
                 fprintf(f, "  oldfreq= freq;\n");
                 fprintf(f, "}\n\n");
@@ -659,7 +659,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             fprintf(f, "void setPwmFrequency%X(SDWORD freq, SWORD percent, SWORD resol, SWORD maxcs) {\n", pwm);
             fprintf(f, "  static SDWORD oldfreq= 0;\n");
             fprintf(f, "  if (freq != oldfreq)\n");
-            fprintf(f, "    PWM_Init(0x%2.2X, %d, freq, resol, maxcs);\n", pwm, Prog.mcuClock);
+            fprintf(f, "    PWM_Init(0x%2.2X, %ld, freq, resol, maxcs);\n", pwm, Prog.mcuClock);
             fprintf(f, "  PWM_Set(0x%2.2X, percent, resol);\n", pwm);
             fprintf(f, "  oldfreq= freq;\n");
             fprintf(f, "}\n\n");
@@ -772,7 +772,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 fprintf(f, "/* You provide this function. */\n");
                 fprintf(f, "SWORD Read_%s(void) {\n", str);
                 fprintf(f, "  SWORD v= 0;\n");
-                fprintf(f, "  v = LibADC_Read(ADC%d, ADC_Channel_%ld);\n", adc, ADC_Chan[adc]);      // acquisition ADC n Channel c
+                fprintf(f, "  v = LibADC_Read(ADC%d, ADC_Channel_%d);\n", adc, ADC_Chan[adc]);      // acquisition ADC n Channel c
                 fprintf(f, "  return v;\n");
                 fprintf(f, "}\n");
             }
@@ -864,7 +864,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
 {
     all_arduino_pins_are_mapped = true;
 
-    ADDR_T addr, addr2;
+    DWORD addr, addr2;
     int   bit, bit2;
 
     for(uint32_t i = 0; i < IntCode.size(); i++) {
@@ -1017,7 +1017,7 @@ static void GenerateDeclarations(FILE *f, FILE *fh, FILE *flh)
             case INT_IF_BIT_CLEAR:
                 isPinAssigned(a->name1);
                 bitVar1 = IntCode[i].name1.c_str();
-                bitVar1set1 = IntCode[i].literal1;
+                bitVar1set1 = IntCode[i].literal;
                 break;
 
             case INT_VARIABLE_SET_BIT:
@@ -1154,7 +1154,6 @@ static void _Comment(FILE *f, const char *str, ...)
     va_start(v, str);
     vsnprintf(buf, MAX_NAME_LEN, str, v);
     fprintf(f, "//%s\n", buf);
-    va_end(v);
 }
 #define Comment(...) _Comment(f, __VA_ARGS__)
 
@@ -1226,26 +1225,26 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case INT_SET_VARIABLE_TO_LITERAL:
                 if(IntCode[i].name1[0] == '#') { // TODO: in many other places :(
                     if(IsNumber(&IntCode[i].name1[1])) {
-                      fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal1);
+                      fprintf(f, "//pokeb(%s, %d); // Variants 1 and 2\n", IntCode[i].name1.c_str() + 1, IntCode[i].literal);
                     } else {
-                      ADDR_T addr;
+                      DWORD addr;
                       char name[MAX_NAME_LEN];
                       sprintf(name,"#%s", &IntCode[i].name1[1]);
                       MemForVariable(name, &addr);
-                      fprintf(f, "//pokeb(0x%X, %d); // %s // Variants 1 and 2\n", addr, IntCode[i].literal1, IntCode[i].name1.c_str() + 1);
+                      fprintf(f, "//pokeb(0x%X, %d); // %s // Variants 1 and 2\n", addr, IntCode[i].literal, IntCode[i].name1.c_str() + 1);
                     }
                     doIndent(f, i);
                 }
-                fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
+                fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 break;
 
             case INT_COPY_VAR_BIT_TO_VAR_BIT:
                 fprintf(f, "if (%s & (1<<%d)) {\n", MapSym(IntCode[i].name2, ASINT), IntCode[i].literal2);
                 indent++;
                 doIndent(f, i);
-                fprintf(f, "%s |=  (1<<%d); } else {\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
+                fprintf(f, "%s |=  (1<<%d); } else {\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 doIndent(f, i);
-                fprintf(f, "%s &= ~(1<<%d); }\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
+                fprintf(f, "%s &= ~(1<<%d); }\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 indent--;
                 break;
 
@@ -1265,7 +1264,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                             MapSym(IntCode[i].name1.c_str(), ASINT),
                             &IntCode[i].name2[1]);
                     } else {
-                      ADDR_T addr;
+                      DWORD addr;
                       char name[MAX_NAME_LEN];
                       sprintf(name,"#%s", &IntCode[i].name2[1]);
                       MemForVariable(name, &addr);
@@ -1449,7 +1448,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 break;
 #else
             case INT_IF_VARIABLE_LES_LITERAL:
-                fprintf(f, "if(%s < %d) {\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
+                fprintf(f, "if(%s < %d) {\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 indent++;
                 break;
 
@@ -1560,7 +1559,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16))
                 {
-                    // int u = atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_SPI"
+                    int u= atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_SPI"
                     // send a literal string without reception care
                     fprintf(f, "SPI_Write((char *) \"%s\");\n", MapSym(IntCode[i].name2, ASINT)+3);     // remove "Ui_" prefix
 
@@ -1587,7 +1586,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16))
                 {
-                    // int u = atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
+                    int u= atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
 
                     // read one byte from I2Caddr:reg in recv variable
                     fprintf(f, "%s= I2C_Recv(%s, %s);\n", MapSym(IntCode[i].name2, ASINT), IntCode[i].name3.c_str(), IntCode[i].name4.c_str());
@@ -1610,13 +1609,13 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 }
                 else if((mcu_ISA == ISA_AVR) || (mcu_ISA == ISA_PIC16))
                 {
-                    // int u = atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
+                    int u= atoi(MapSym(IntCode[i].name1, ASINT)+6);         // name1= "Ui_I2C"
 
                     // write one byte from send variable or value
                     fprintf(f, "I2C_Send(%s, %s, %s);\n", IntCode[i].name3.c_str(), IntCode[i].name4.c_str(), MapSym(IntCode[i].name2, ASINT));
                 }
                 else
-                    fprintf(f, "%s = I2C_SEND(%s, %s, %s);\n", IntCode[i].name1.c_str(), IntCode[i].name3.c_str(),
+                    fprintf(f, "%s= I2C_SEND(%s, %s, %s, %s);\n", IntCode[i].name1.c_str(), IntCode[i].name3.c_str(),
                         IntCode[i].name4.c_str(), MapSym(IntCode[i].name2, ASINT));
                 break;
             /////
@@ -1631,17 +1630,17 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
 
             case INT_UART_RECV1:
                 if(IntCode[i].name2.length())
-                    fprintf(f, "BYTE_AT(%s, %s+%d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal1);
+                    fprintf(f, "BYTE_AT(%s, %s+%d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
                 else
-                    fprintf(f, "BYTE_AT(%s, %d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
+                    fprintf(f, "BYTE_AT(%s, %d) = UART_Receive();\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 break;
 
             case INT_UART_SEND1:
             case INT_UART_SENDn:
                 if(IntCode[i].name2.length())
-                    fprintf(f, "UART_Transmit(BYTE_AT(%s, %s+%d));\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal1);
+                    fprintf(f, "UART_Transmit(BYTE_AT(%s, %s+%d));\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name2, ASINT), IntCode[i].literal);
                 else
-                    fprintf(f, "UART_Transmit(BYTE_AT(%s, %d));\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal1);
+                    fprintf(f, "UART_Transmit(BYTE_AT(%s, %d));\n", MapSym(IntCode[i].name1, ASINT), IntCode[i].literal);
                 break;
 
             case INT_UART_SEND:
@@ -1673,46 +1672,46 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
             case INT_EEPROM_READ: {
                 int         sov = SizeOfVar(IntCode[i].name1);
                 fprintf(f,
-                        "%s = EEPROM_read(%d);\n",
+                        "%s = EEPROM_read(%ld);\n",
                         MapSym(IntCode[i].name1, ASINT),
-                        IntCode[i].literal1);
+                        IntCode[i].literal);
                 if(sov >= 2) {
                   doIndent(f, i);
                   fprintf(f,
-                        "%s += EEPROM_read(%d) << 8;\n",
+                        "%s += EEPROM_read(%ld) << 8;\n",
                         MapSym(IntCode[i].name1, ASINT),
-                        IntCode[i].literal1 + 1);
+                        IntCode[i].literal + 1);
                 }
                 if(sov >= 3) {
                   doIndent(f, i);
                   fprintf(f,
-                        "%s += EEPROM_read(%d) << 16;\n",
+                        "%s += EEPROM_read(%ld) << 16;\n",
                         MapSym(IntCode[i].name1, ASINT),
-                        IntCode[i].literal1 + 2);
+                        IntCode[i].literal + 2);
                 }
                 if(sov >= 4) {
                   doIndent(f, i);
                   fprintf(f,
-                        "%s += EEPROM_read(%d) << 24;\n",
+                        "%s += EEPROM_read(%ld) << 24;\n",
                         MapSym(IntCode[i].name1, ASINT),
-                        IntCode[i].literal1 + 3);
+                        IntCode[i].literal + 3);
                 }
                 break;
             }
             case INT_EEPROM_WRITE: {
                 int         sov = SizeOfVar(IntCode[i].name1);
-                fprintf(f, "EEPROM_write(%d, %s & 0xFF);\n", IntCode[i].literal1, MapSym(IntCode[i].name1, ASINT));
+                fprintf(f, "EEPROM_write(%d, %s & 0xFF);\n", IntCode[i].literal, MapSym(IntCode[i].name1, ASINT));
                 if(sov >= 2) {
                   doIndent(f, i);
-                  fprintf(f, "EEPROM_write(%d, (%s >> 8) & 0xFF);\n", IntCode[i].literal1 + 1, MapSym(IntCode[i].name1, ASINT));
+                  fprintf(f, "EEPROM_write(%d, (%s >> 8) & 0xFF);\n", IntCode[i].literal + 1, MapSym(IntCode[i].name1, ASINT));
                 }
                 if(sov >= 3) {
                   doIndent(f, i);
-                  fprintf(f, "EEPROM_write(%d, (%s >> 16) & 0xFF);\n", IntCode[i].literal1 + 2, MapSym(IntCode[i].name1, ASINT));
+                  fprintf(f, "EEPROM_write(%d, (%s >> 16) & 0xFF);\n", IntCode[i].literal + 2, MapSym(IntCode[i].name1, ASINT));
                 }
                 if(sov >= 4) {
                   doIndent(f, i);
-                  fprintf(f, "EEPROM_write(%d, (%s >> 24) & 0xFF);\n", IntCode[i].literal1 + 3, MapSym(IntCode[i].name1, ASINT));
+                  fprintf(f, "EEPROM_write(%d, (%s >> 24) & 0xFF);\n", IntCode[i].literal + 3, MapSym(IntCode[i].name1, ASINT));
                 }
                 break;
             }
@@ -1727,7 +1726,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                     if((s >= 0) && (s <= 7))
                     {
                         ADC_Used[s]= 1;                         // marked as used
-                        ADC_Chan[s]= IntCode[i].literal1;        // Chan used to store ADC Refs
+                        ADC_Chan[s]= IntCode[i].literal;        // Chan used to store ADC Refs
 
                         fprintf(f, "%s = Read_%s(0x%1.1X);\n", MapSym(IntCode[i].name1, ASINT), MapSym(IntCode[i].name1, ASBIT),
                             ADC_Chan[s]);
@@ -1793,7 +1792,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         else
                             THROW_COMPILER_EXCEPTION(_("PWM pin error"));               // error in pin layout
 
-                        fprintf(f, "  setPwmFrequency%X(%d, %s);\n", pwm, 0, "0");     // set freq= 0 => stop PWM
+                        fprintf(f, "  setPwmFrequency%X(%ld, %s);\n", pwm, 0, "0");     // set freq= 0 => stop PWM
                     }
                     else
                     {
@@ -1820,7 +1819,7 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                         else
                             THROW_COMPILER_EXCEPTION(_("PWM pin error"));               // error in pin layout
 
-                        fprintf(f, "  setPwmFrequency%X(%d, %s, %d, %d);\n",
+                        fprintf(f, "  setPwmFrequency%X(%ld, %s, %d, %d);\n",
                             pwm, 0, "0", 0, 0);                                         // set resol= 0 => stop PWM
                     }
                     else
@@ -1953,9 +1952,9 @@ static void GenerateAnsiC(FILE *f, int begin, int end)
                 fprintf(f, "Label%s:;\n", IntCode[i].name1.c_str());
                 /*
                 if(IntCode[i].name1)
-                    fprintf(f, "//KnownAddr Rung%d %s %s\n", IntCode[i].literal1+1, IntCode[i].name2, IntCode[i].name1);
+                    fprintf(f, "//KnownAddr Rung%d %s %s\n", IntCode[i].literal+1, IntCode[i].name2, IntCode[i].name1);
                 else
-                    fprintf(f, "//KnownAddr Rung%d\n", IntCode[i].literal1+1);
+                    fprintf(f, "//KnownAddr Rung%d\n", IntCode[i].literal+1);
                 */
                 if(IntCode[i].name2 == "SUBPROG") {
                     int skip = FindOpNameLast(INT_RETURN, IntCode[i].name1);
@@ -2065,7 +2064,7 @@ static void GenerateSUBPROG(FILE *f)
                 fprintf(f,
                         "void Call_SUBPROG_%s() { // LabelRung%d\n",
                         IntCode[i].name1.c_str(),
-                        (int)(IntCode[i].literal1 + 1));
+                        (int)(IntCode[i].literal + 1));
                 int indentSave = indent;
                 indent = 1;
                 GenerateAnsiC(f,
@@ -2111,11 +2110,11 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
                     THROW_COMPILER_EXCEPTION_FMT("sovElement=%d", sovElement);
                 }
                 fprintf(f, "#ifdef __CODEVISIONAVR__\n");
-                fprintf(f, "%s %s[%d] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal1);
-                for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
-                    fprintf(f, "%d, ", IntCode[i].data[j]);
+                fprintf(f, "%s %s[%ld] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
+                for(int j = 0; j < (IntCode[i].literal - 1); j++) {
+                    fprintf(f, "%ld, ", IntCode[i].data[j]);
                 }
-                fprintf(f, "%d};\n", IntCode[i].data[IntCode[i].literal1 - 1]);
+                fprintf(f, "%ld};\n", IntCode[i].data[IntCode[i].literal - 1]);
                 fprintf(f, "#endif\n");
                 /*
                 winavr avr gcc
@@ -2142,21 +2141,21 @@ static void GenerateAnsiC_flash_eeprom(FILE *f)
 
 				///// Added by JG for HI-TECH C
 				fprintf(f, "#ifdef __PICC__\n");
-				fprintf(f, "const %s %s[%ld] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal1);
-				for(int j = 0; j < (IntCode[i].literal1 - 1); j++) 
+				fprintf(f, "const %s %s[%ld] = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
+				for(int j = 0; j < (IntCode[i].literal - 1); j++) 
 				{
 					fprintf(f, "%ld, ", IntCode[i].data[j]);
 				}
-				fprintf(f, "%ld};\n", IntCode[i].data[IntCode[i].literal1 - 1]);
+				fprintf(f, "%ld};\n", IntCode[i].data[IntCode[i].literal - 1]);
 				fprintf(f, "#endif\n");
 				/////
 
                 fprintf(f, "#ifdef __GNUC__\n");
-                fprintf(f, "const %s %s[%d] PROGMEM = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal1);
-                for(int j = 0; j < (IntCode[i].literal1 - 1); j++) {
-                    fprintf(f, "%d, ", IntCode[i].data[j]);
+                fprintf(f, "const %s %s[%ld] PROGMEM = {", sovs, MapSym(IntCode[i].name1), IntCode[i].literal);
+                for(int j = 0; j < (IntCode[i].literal - 1); j++) {
+                    fprintf(f, "%ld, ", IntCode[i].data[j]);
                 }
-                fprintf(f, "%d};\n", IntCode[i].data[IntCode[i].literal1 - 1]);
+                fprintf(f, "%ld};\n", IntCode[i].data[IntCode[i].literal - 1]);
                 fprintf(f, "#endif\n\n");
                 break;
             }
@@ -2193,6 +2192,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         PWM_MaxCs[i]= 0;
     }
     countpwm= 0;
+    CompileFailure= 0;
 
     if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM))      // ARM uses Timer 3
         Prog.cycleTimer = 3;
@@ -2218,13 +2218,13 @@ bool CompileAnsiC(const char *dest, int MNU)
     if ((compiler_variant == MNU_COMPILE_ARMGCC) || (compiler_variant == MNU_COMPILE_AVRGCC) || (compiler_variant == MNU_COMPILE_HI_TECH_C))
         sprintf(ladderhName, "%s\\ladder.h", compilePath);
     else
-    sprintf(ladderhName, "%s\\ladder.h_", compilePath);
+		sprintf(ladderhName, "%s\\ladder.h_", compilePath);
     /////
 
     FileTracker flh(ladderhName, "w");
     if(!flh) {
         THROW_COMPILER_EXCEPTION_FMT(_("Couldn't open file '%s'"), ladderhName);
-        //return false;
+        return false;
     }
     fprintf(flh,
             "/* This is example for ladder.h file!\n"
@@ -2243,9 +2243,9 @@ bool CompileAnsiC(const char *dest, int MNU)
         fprintf(flh,
             "#define LDTARGET_%s\n\n"
             "#ifndef F_CPU\n"
-            "  #define F_CPU %dUL\n"
+            "  #define F_CPU %luUL\n"
             "#endif\n\n"
-            "#define _XTAL_FREQ %dUL\n\n",
+            "#define _XTAL_FREQ %luUL\n\n",
             _strlwr(deviceName), Prog.mcuClock, Prog.mcuClock);
 
         fprintf(flh,
@@ -2272,6 +2272,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             "  #define PROTO(x) x\n"
             "#endif\n"
             "\n",
+            CurrentLdName,
             CurrentLdName,
             CurrentLdName,
             CurrentLdName);
@@ -2301,9 +2302,9 @@ bool CompileAnsiC(const char *dest, int MNU)
             "/* Comment out USE_MACRO in next line, if you want to use functions instead of macros. */\n"
             "#define USE_MACRO\n"
             "\n",
-//            CurrentLdName,
-  //          CurrentLdName,
-    //        CurrentLdName,
+            CurrentLdName,
+            CurrentLdName,
+            CurrentLdName,
             CurrentLdName);
     }
     /////
@@ -2334,7 +2335,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     }
     fprintf(flh, "#define SFR_ADDR(addr) (*((volatile unsigned char *)(addr)))\n");
     fprintf(flh, "//#define BYTE_AT(var, index) (*(((unsigned char *)(&var)) + (index)))\n");
-    fprintf(flh, "#define BYTE_AT(var, index) (((unsigned char *)(&var))[index])\n");
+    fprintf(flh, "#define BYTE_AT(var, index) ( ( (unsigned char *)(&var) )[index] )\n");
 
     ///// Added by JG
     if(compiler_variant == MNU_COMPILE_HI_TECH_C)
@@ -2380,7 +2381,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         }
     }
     else if(compiler_variant == MNU_COMPILE_ARMGCC)
-    {
+    {	
 		///// Added by JG2 for CortexF1
 		if ((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
 			fprintf(flh,
@@ -2397,7 +2398,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "\n");
 		else	// CortexF4
 		/////
-        fprintf(flh,
+			fprintf(flh,
                 "\n"
                 "#include <stdio.h>\n"
                 "#include \"stm32f4xx.h\"\n"
@@ -2419,10 +2420,10 @@ bool CompileAnsiC(const char *dest, int MNU)
 					"#include \"Lib_adc.h\"\n"
 					"\n");
 			else
-            fprintf(flh,
-                "#include \"stm32f4xx_adc.h\"\n"
-                "#include \"Lib_adc.h\"\n"
-                "\n");
+				fprintf(flh,
+					"#include \"stm32f4xx_adc.h\"\n"
+					"#include \"Lib_adc.h\"\n"
+					"\n");
         }
         if(PwmFunctionUsed())
         {
@@ -2439,10 +2440,10 @@ bool CompileAnsiC(const char *dest, int MNU)
 					"#include \"Lib_uart.h\"\n"
 					"\n");
 			else
-            fprintf(flh,
-                "#include \"stm32f4xx_usart.h\"\n"
-                "#include \"Lib_uart.h\"\n"
-                "\n");
+				fprintf(flh,
+					"#include \"stm32f4xx_usart.h\"\n"
+					"#include \"Lib_uart.h\"\n"
+					"\n");
         }
         if(SpiFunctionUsed())
         {
@@ -2453,10 +2454,10 @@ bool CompileAnsiC(const char *dest, int MNU)
 					"#include \"Lib_spi.h\"\n"
 					"\n");
 			else
-            fprintf(flh,
-                "#include \"stm32f4xx_spi.h\"\n"
-                "#include \"Lib_spi.h\"\n"
-                "\n");
+				fprintf(flh,
+					"#include \"stm32f4xx_spi.h\"\n"
+					"#include \"Lib_spi.h\"\n"
+					"\n");
         }
         if(I2cFunctionUsed())
         {
@@ -2467,10 +2468,10 @@ bool CompileAnsiC(const char *dest, int MNU)
 					"#include \"Lib_i2c.h\"\n"
 					"\n");
 			else
-            fprintf(flh,
-                "#include \"stm32f4xx_i2c.h\"\n"
-                "#include \"Lib_i2c.h\"\n"
-                "\n");
+				fprintf(flh,
+					"#include \"stm32f4xx_i2c.h\"\n"
+					"#include \"Lib_i2c.h\"\n"
+					"\n");
         }
     }
     else if(compiler_variant == MNU_COMPILE_AVRGCC)
@@ -2865,7 +2866,7 @@ bool CompileAnsiC(const char *dest, int MNU)
     } else if(compiler_variant == MNU_COMPILE_HI_TECH_C) {
         fprintf(f,
                 "#include <htc.h>\n"
-                "//#define _XTAL_FREQ %d\n"
+                "#define _XTAL_FREQ %d\n"
                 "__CONFIG(0x%X);\n",
                 Prog.mcuClock,
                 (WORD)Prog.configurationWord & 0xFFFF);
@@ -3051,11 +3052,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "  SWORD recv= 0;\n"
                         "  recv= I2C_MasterGetReg(address, registr);\n"
                         "  return recv;\n"
-                        "}\n\n"/*, I2C_Used*/);
+                        "}\n\n", I2C_Used);
                 fprintf(f,
                         "void I2C_Send(SBYTE address, SBYTE registr, SWORD send) {\n"
                         "  I2C_MasterSetReg(address, registr, send);\n"
-                        "}\n\n"/*, I2C_Used*/);
+                        "}\n\n", I2C_Used);
             }
         }
         /////
@@ -3141,11 +3142,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "void UART_Init(void) {\n"
                         "  // UART baud rate setup\n");
                 if(compiler_variant != MNU_COMPILE_ANSIC) {
-                    int div = (Prog.mcuClock + Prog.baudRate * 32) / (Prog.baudRate * 64) - 1;
+                    int divisor = (Prog.mcuClock + Prog.baudRate * 32) / (Prog.baudRate * 64) - 1;
                     fprintf(f,
                             "  SPBRG = %d;\n"
                             "  TXEN = 1; SPEN = 1; CREN = 1;\n",
-                            div);
+                            divisor);
                 }
                 fprintf(f,
                         "}\n"
@@ -3242,11 +3243,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "  SWORD recv= 0;\n"
                         "  recv= I2C_MasterGetReg(address, registr);\n"
                         "  return recv;\n"
-                        "}\n\n"/*, I2C_Used*/);
+                        "}\n\n", I2C_Used);
                 fprintf(f,
                         "void I2C_Send(SBYTE address, SBYTE registr, SWORD send) {\n"
                         "  I2C_MasterSetReg(address, registr, send);\n"
-                        "}\n\n"/*, I2C_Used*/);
+                        "}\n\n", I2C_Used);
             }
         }
         /////
@@ -3474,7 +3475,7 @@ bool CompileAnsiC(const char *dest, int MNU)
 							if ((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
 								fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_Out_PP, GPIO_Speed_2MHz);\n", 'A' + i, isOutput[i]);
 							else	// CortexF4
-                            fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_Speed_2MHz);\n", 'A' + i, isOutput[i]);
+								fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_OUT, GPIO_OType_PP, GPIO_Speed_2MHz);\n", 'A' + i, isOutput[i]);
                             // mise à zéro des sorties
                             fprintf(f, "    GPIO_Write(GPIO%c, 0);\n", 'A' + i);
                         }
@@ -3484,15 +3485,15 @@ bool CompileAnsiC(const char *dest, int MNU)
 								if ((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
 								   fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_IPU, GPIO_Speed_2MHz);\n", 'A' + i, mask);
 								else	// CortexF4
-                                    fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_IN, GPIO_PuPd_UP, GPIO_Speed_2MHz);\n", 'A' + i, mask);
+									fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_IN, GPIO_PuPd_UP, GPIO_Speed_2MHz);\n", 'A' + i, mask);
 							}
                             mask= (isInput[i] & Prog.pullUpRegs[i]) ^ isInput[i];      // Pull-ups to disable
                             if (mask) {
 								if ((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
 									fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_IN_FLOATING, GPIO_Speed_2MHz);\n", 'A' + i, mask);
 								else	// CortexF4
-                                    fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_IN, GPIO_PuPd_NOPULL, GPIO_Speed_2MHz);\n", 'A' + i, mask);
-                            }
+									fprintf(f, "    LibGPIO_Conf(GPIO%c, 0x%4.4X, GPIO_Mode_IN, GPIO_PuPd_NOPULL, GPIO_Speed_2MHz);\n", 'A' + i, mask);
+							}
                         }
                     /////
                     } else {
@@ -3613,7 +3614,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 unsigned long period= (unsigned long) fperiod;
                 if(period == 0) period= 1;
                 if (period > 65535) period= 65535;      // securities
-                fprintf(f,
+				fprintf(f,
                         "\n"
                         "    // init Timer 3 and activate interrupts\n"
                         "    LibTimer_Init(TIM3, 1000, %lu);\n"         // f= (F/4)/[(prediv)*(period)]
@@ -3667,9 +3668,9 @@ bool CompileAnsiC(const char *dest, int MNU)
 
                 // Only 1 UART can be used in a same ladder
                 if ((UART_Used == 4) || (UART_Used == 5))       // UART != USART
-                    fprintf(f, "    LibUart_Init(UART%d, %d, USART_WordLength_8b, USART_Parity_No, USART_StopBits_1);", UART_Used, Prog.baudRate);
+                    fprintf(f, "    LibUart_Init(UART%d, %lu, USART_WordLength_8b, USART_Parity_No, USART_StopBits_1);", UART_Used, Prog.baudRate);
                 else
-                    fprintf(f, "    LibUart_Init(USART%d, %d, USART_WordLength_8b, USART_Parity_No, USART_StopBits_1);", UART_Used, Prog.baudRate);
+                    fprintf(f, "    LibUart_Init(USART%d, %lu, USART_WordLength_8b, USART_Parity_No, USART_StopBits_1);", UART_Used, Prog.baudRate);
             }
             else
             /////
@@ -3749,7 +3750,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         if ((p == 1) && (Prog.cycleTimer == 1))
                             THROW_COMPILER_EXCEPTION(_("Select Timer 0 in menu 'Settings -> MCU parameters'!"));
 
-                        fprintf(f, "    PWM_Init(0x%2.2X, %d, %ld, %d);\n", p, Prog.mcuClock, PWM_Freq[p], PWM_Resol[p]);
+                        fprintf(f, "    PWM_Init(0x%2.2X, %ld, %ld, %d);\n", p, Prog.mcuClock, PWM_Freq[p], PWM_Resol[p]);
                         usedpwm++;
                     }
                 }
@@ -3768,11 +3769,11 @@ bool CompileAnsiC(const char *dest, int MNU)
                 {
                     if (PWM_Used[p] == 1)
                     {
-                        fprintf(f, "    LibPWM_InitTimer(TIM%d, &TIM%d_Chan%d, %ld);\n", p/16, p/16, p%16, PWM_Freq[p]);
+                        fprintf(f, "    LibPWM_InitTimer(TIM%d, &TIM%d_Chan%d, %lu);\n", p/16, p/16, p%16, PWM_Freq[p]);
 						if ((Prog.mcu()) && (Prog.mcu()->core == CortexF1))		///// Modified by JG2
 	                        fprintf(f, "    LibPWM_InitChannel(&TIM%d_Chan%d, LibPWM_Channel_%d);\n", p/16, p%16, p%16);
 						else
-                        fprintf(f, "    LibPWM_InitChannel(&TIM%d_Chan%d, LibPWM_Channel_%d, LibPWM_PinsPack_2);\n", p/16, p%16, p%16);
+							fprintf(f, "    LibPWM_InitChannel(&TIM%d_Chan%d, LibPWM_Channel_%d, LibPWM_PinsPack_2);\n", p/16, p%16, p%16);
                         usedpwm++;
                     }
                 }
@@ -3790,7 +3791,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 {
                     if (PWM_Used[p] == 1)
                     {
-                        fprintf(f, "    PWM_Init(0x%2.2X, %d, %ld, %d, %d);\n", p, Prog.mcuClock, PWM_Freq[p], PWM_Resol[p], PWM_MaxCs[p]);
+                        fprintf(f, "    PWM_Init(0x%2.2X, %ld, %ld, %d, %d);\n", p, Prog.mcuClock, PWM_Freq[p], PWM_Resol[p], PWM_MaxCs[p]);
                         usedpwm++;
                     }
                 }
@@ -3810,7 +3811,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             if(compiler_variant == MNU_COMPILE_ARMGCC)
             {
                 // Only 1 SPI can be used in a same ladder
-                fprintf(f, "    #define SPI_RatePrescaler LibSPI_GetPrescaler(SPI%d, %d)\n", SPI_Used, Prog.spiRate);
+                fprintf(f, "    #define SPI_RatePrescaler LibSPI_GetPrescaler(SPI%d, %lu)\n", SPI_Used, Prog.spiRate);
                 fprintf(f, "    LibSPI_Init(SPI%d, LibSPI_DataSize_%db, SPI_RatePrescaler);\n", SPI_Used, 8);
             }
             else if(compiler_variant == MNU_COMPILE_AVRGCC)
@@ -3826,13 +3827,13 @@ bool CompileAnsiC(const char *dest, int MNU)
                     "\n", SPI_Used, SPI_Used, SPI_MOSI, SPI_MISO, SPI_SCK, SPI_SS);
 
                 fprintf(f, "\n");
-                fprintf(f, "    SPI_Init(SPI_GetPrescaler(%d, %d));\n", Prog.mcuClock, Prog.spiRate);
+                fprintf(f, "    SPI_Init(SPI_GetPrescaler(%lu, %lu));\n", Prog.mcuClock, Prog.spiRate);
             }
             else if(compiler_variant == MNU_COMPILE_HI_TECH_C)
             {
                 // Only 1 SPI can be used in a same ladder
                 fprintf(f, "\n");
-                fprintf(f, "    SPI_Init(SPI_GetPrescaler(%d, %d));\n", Prog.mcuClock, Prog.spiRate);
+                fprintf(f, "    SPI_Init(SPI_GetPrescaler(%lu, %lu));\n", Prog.mcuClock, Prog.spiRate);
             }
         }
 
@@ -3841,7 +3842,7 @@ bool CompileAnsiC(const char *dest, int MNU)
             if(compiler_variant == MNU_COMPILE_ARMGCC)
             {
                 // Only 1 I2C can be used in a same ladder
-                fprintf(f, "    LibI2C_MasterInit(I2C%d, %d);\n", I2C_Used, Prog.i2cRate);
+                fprintf(f, "    LibI2C_MasterInit(I2C%d, %lu);\n", I2C_Used, Prog.i2cRate);
             }
             else if((compiler_variant == MNU_COMPILE_AVRGCC) || (compiler_variant == MNU_COMPILE_HI_TECH_C))
             {
@@ -3914,7 +3915,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "          #define T0IF TMR0IF\n"
                         "        #endif\n"
                         "        while(T0IF == 0);\n"
-                        "        TMR0 += %ld;\n" // reprogram TMR0
+                        "        TMR0 += %d;\n" // reprogram TMR0
                         "        T0IF = 0;\n",
                         256 - plcTmr.tmr + 1);
             } else {

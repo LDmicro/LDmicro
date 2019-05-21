@@ -800,7 +800,7 @@ int GenerateIoList(int prevSel)
     Prog.io.count = 0;
     // extract the new list so that it must be up to date
     for(i = 0; i < Prog.numRungs; i++) {
-        ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs(i));
+        ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
     // AppendIo("ROverflowFlagV", IO_TYPE_INTERNAL_RELAY);
 
@@ -919,9 +919,8 @@ bool LoadIoListFromFile(FileTracker& f)
         char *s = strstr(line, " at ");
         if((s) && (isdigit(s[4]))) {
             // Don't internationalize this! It's the file format, not UI.
-            if(sscanf(line, " %s at %d %hhu %hu", name, &pin, &modbus.Slave, &modbus.Address) >= 2) {
+            if(sscanf(line, " %s at %d %hhd %hd", name, &pin, &modbus.Slave, &modbus.Address) >= 2)
                 AppendIoSeenPreviously(name, type, pin, modbus);
-            }
         } else {
             // Don't internationalize this! It's the file format, not UI.
             if(sscanf(line, " %s at %s", name, pinName) == 2) {
@@ -969,13 +968,14 @@ void SaveIoListToFile(FileTracker& f)
             // Don't internationalize this! It's the file format, not UI.
             if(Prog.mcu() && (Prog.mcu()->whichIsa == ISA_PC) && (Prog.io.assignment[i].pin))
                 fprintf(f, "    %s at %s\n", Prog.io.assignment[i].name, PinToName(Prog.io.assignment[i].pin));
-            else
+            else 
                 fprintf(f,
                         "    %s at %d %d %d\n",
                         Prog.io.assignment[i].name,
                         Prog.io.assignment[i].pin,
                         Prog.io.assignment[i].modbus.Slave,
-                        Prog.io.assignment[i].modbus.Address);
+                        Prog.io.assignment[i].modbus.Address
+						);
         }
     }
     if(j1 != j2) {
@@ -1025,9 +1025,9 @@ void ShowAnalogSliderPopup(char *name)
     POINT pt;
     GetCursorPos(&pt);
 
-    int32_t currentVal = GetAdcShadow(name);
+    SWORD currentVal = GetAdcShadow(name);
 
-    int32_t maxVal;
+    SWORD maxVal;
     if(Prog.mcu()) {
         maxVal = Prog.mcu()->adcMax;
     } else {
@@ -1089,14 +1089,15 @@ void ShowAnalogSliderPopup(char *name)
     ShowWindow(AnalogSliderMain, true);
     SetFocus(AnalogSliderTrackbar);
 
+    DWORD ret;
     MSG   msg;
     AnalogSliderDone = false;
     AnalogSliderCancel = false;
 
-    //int32_t orig = GetAdcShadow(name);
+    SWORD orig = GetAdcShadow(name);
 
-    while(!AnalogSliderDone && (GetMessage(&msg, nullptr, 0, 0) > 0)) {
-        int32_t v = (int32_t)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
+    while(!AnalogSliderDone && (ret = GetMessage(&msg, nullptr, 0, 0))) {
+        SWORD v = (SWORD)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
 
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
@@ -1117,7 +1118,7 @@ void ShowAnalogSliderPopup(char *name)
     }
 
     if(!AnalogSliderCancel) {
-        int32_t v = (int32_t)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
+        SWORD v = (SWORD)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
         SetAdcShadow(name, v);
     }
 
@@ -1568,9 +1569,10 @@ void ShowIoDialog(int item)
     SendMessage(PinList, LB_SETCURSEL, (WPARAM)Index, 0);
 
     MSG   msg;
+    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;
@@ -1741,9 +1743,10 @@ void ShowModbusDialog(int item)
     ShowWindow(IoDialog, true);
 
     MSG   msg;
+    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;
@@ -1764,8 +1767,8 @@ void ShowModbusDialog(int item)
     if(!DialogCancel) {
         SendMessage(ModbusSlave, WM_GETTEXT, (WPARAM)sizeof(txtModbusSlave), (LPARAM)txtModbusSlave);
         SendMessage(ModbusRegister, WM_GETTEXT, (WPARAM)sizeof(txtModbusRegister), (LPARAM)txtModbusRegister);
-        Prog.io.assignment[item].modbus.Slave = static_cast<uint8_t>(atoi(txtModbusSlave));
-        Prog.io.assignment[item].modbus.Address = static_cast<uint8_t>(atoi(txtModbusRegister));
+        Prog.io.assignment[item].modbus.Slave = atoi(txtModbusSlave);
+        Prog.io.assignment[item].modbus.Address = atoi(txtModbusRegister);
     }
 
     EnableWindow(MainWindow, true);
@@ -1862,7 +1865,7 @@ void IoListProc(NMHDR *h)
                 case LV_IO_RAM_ADDRESS: {
                     if(!Prog.mcu())
                         break;
-                    ADDR_T addr = INVALID_ADDR;
+                    DWORD addr = 0;
                     int   bit = -1;
                     if((type == IO_TYPE_PORT_INPUT) || //
                        (type == IO_TYPE_PORT_OUTPUT)) {

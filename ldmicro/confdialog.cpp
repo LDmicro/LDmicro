@@ -538,12 +538,13 @@ void ShowConfDialog()
         if(Prog.mcu())
             Prog.configurationWord = Prog.mcu()->configurationWord;
     }
+    sprintf(buf, "");
     if(Prog.configurationWord) {
         sprintf(buf, "0x%llX", Prog.configurationWord);
     }
     ///// Added by JG
     else {
-        sprintf(buf, "%i", 0);
+        sprintf(buf, "0");
     }
     /////
     SendMessage(ConfigBitsTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -552,13 +553,14 @@ void ShowConfDialog()
     SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     ///// Added by JG
-    sprintf(buf, "%d", Prog.spiRate);
+    sprintf(buf, "%ld", Prog.spiRate);
     SendMessage(RateTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    sprintf(buf, "%d", Prog.i2cRate);
+    sprintf(buf, "%ld", Prog.i2cRate);
     SendMessage(SpeedTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM)) {
+    if ((Prog.mcu()) && (Prog.mcu()->whichIsa == ISA_ARM))
+    {
         Prog.cycleTimer = 3;        //  ARM uses Timer 3
         sprintf(buf, "%d", 3);
         SendMessage(TimerTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -570,9 +572,10 @@ void ShowConfDialog()
     SetFocus(CycleTextbox);
 
     MSG   msg;
+    DWORD ret;
     DialogDone = false;
     DialogCancel = false;
-    while((GetMessage(&msg, nullptr, 0, 0) > 0) && !DialogDone) {
+    while((ret = GetMessage(&msg, nullptr, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_RETURN) {
                 DialogDone = true;
@@ -634,7 +637,7 @@ void ShowConfDialog()
             }
         }
 
-        SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		SendMessage(BaudTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
         Prog.baudRate = atoi(buf);
 
         ///// Added by JG

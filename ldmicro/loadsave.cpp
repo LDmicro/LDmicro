@@ -501,7 +501,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                 p++;
         }
         for(i = 0; i < x; i++) {
-            l->d.fmtdStr.string[i] = static_cast<char>(atoi(p));
+            l->d.fmtdStr.string[i] = atoi(p);
             if(l->d.fmtdStr.string[i] < 32) {
                 l->d.fmtdStr.string[i] = 'X';
             }
@@ -542,7 +542,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
                 p++;
         }
         for(i = 0; i < x; i++) {
-            l->d.fmtdStr.string[i] = static_cast<char>(atoi(p));
+            l->d.fmtdStr.string[i] = atoi(p);
             if(l->d.fmtdStr.string[i] < 32) {
                 l->d.fmtdStr.string[i] = 'X';
             }
@@ -637,7 +637,7 @@ static bool LoadLeafFromFile(char *line, void **any, int *which)
             l->d.setPwm.name[0] = 'P';
         }
         char *s;
-        if((s = strchr(l->d.setPwm.targetFreq, '.')) != nullptr) {
+        if((s = strchr(l->d.setPwm.targetFreq, '.'))) {
             *s = '\0';
         }
     }
@@ -850,7 +850,7 @@ bool LoadProjectFromFile(const char *filename)
     int           crystal, baud;
     long          rate, speed;                          ///// Added by JG
     int           cycleTimer, cycleDuty, wdte;
-    unsigned long long int configWord = 0;
+    long long int configWord = 0;
     Prog.configurationWord = 0;
     while(fgets(line, sizeof(line), f)) {
         if(!strlen(strspace(line)))
@@ -881,7 +881,7 @@ bool LoadProjectFromFile(const char *filename)
                          &configWord)
                   == 4) {
             Prog.cycleTime = cycle;
-            if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))
+            if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))		///// modified by JG2
                 cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
@@ -896,7 +896,7 @@ bool LoadProjectFromFile(const char *filename)
                          &wdte)
                   == 4) {
             Prog.cycleTime = cycle;
-            if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))
+            if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))		///// modified by JG2
                 cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
@@ -904,7 +904,7 @@ bool LoadProjectFromFile(const char *filename)
                 Prog.cycleTimer = -1;
         } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d", &cycle, &cycleTimer, &cycleDuty) == 3) {
             Prog.cycleTime = cycle;
-            if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))
+            if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))		///// modified by JG2
                 cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
@@ -976,13 +976,13 @@ bool LoadProjectFromFile(const char *filename)
             Error(_("Too many rungs in input file!\nSame rungs not loaded!"));
             break;
         }
-        Prog.rungs_[rung] = s;
+        Prog.rungs[rung] = s;
         rung++;
     }
     Prog.numRungs = rung;
 
     for(rung = 0; rung < Prog.numRungs; rung++) {
-        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs_[rung]))
+        while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[rung]))
             ProgramChanged();
     }
 
@@ -1522,7 +1522,8 @@ void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
         }
 
         case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *series = (ElemSubcktSeries *)any;
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int               i;
             if(depth == 0) {
                 if(Prog.LDversion == "0.1")
                     fprintf(f, "RUNG\n");
@@ -1532,8 +1533,8 @@ void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
             } else {
                 fprintf(f, "SERIES\n");
             }
-            for(int i = 0; i < series->count; i++) {
-                SaveElemToFile(f, series->contents[i].which, series->contents[i].data.any, depth + 1, rung);
+            for(i = 0; i < s->count; i++) {
+                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any, depth + 1, rung);
             }
             Indent(f, depth);
             fprintf(f, "END\n");
@@ -1541,10 +1542,11 @@ void SaveElemToFile(FileTracker& f, int which, void *any, int depth, int rung)
         }
 
         case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *parallel = (ElemSubcktParallel *)any;
+            ElemSubcktParallel *s = (ElemSubcktParallel *)any;
+            int                 i;
             fprintf(f, "PARALLEL\n");
-            for(int i = 0; i < parallel->count; i++) {
-                SaveElemToFile(f, parallel->contents[i].which, parallel->contents[i].data.any, depth + 1, rung);
+            for(i = 0; i < s->count; i++) {
+                SaveElemToFile(f, s->contents[i].which, s->contents[i].data.any, depth + 1, rung);
             }
             Indent(f, depth);
             fprintf(f, "END\n");
@@ -1583,7 +1585,7 @@ bool SaveProjectToFile(char *filename, int code)
             Prog.cycleDuty,
             Prog.configurationWord);
     fprintf(f, "CRYSTAL=%d Hz\n", Prog.mcuClock);
-    fprintf(f, "BAUD=%d Hz, RATE=%d Hz, SPEED=%d Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
+    fprintf(f, "BAUD=%d Hz, RATE=%ld Hz, SPEED=%ld Hz\n", Prog.baudRate, Prog.spiRate, Prog.i2cRate);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }
@@ -1611,8 +1613,9 @@ bool SaveProjectToFile(char *filename, int code)
     fprintf(f, "\n");
     fprintf(f, "PROGRAM\n");
 
-    for(int i = 0; i < Prog.numRungs; i++) {
-        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs(i), 0, i + 1);
+    int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+        SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0, i + 1);
     }
 
     fflush(f);
