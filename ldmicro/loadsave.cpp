@@ -881,7 +881,7 @@ bool LoadProjectFromFile(const char *filename)
                          &configWord)
                   == 4) {
             Prog.cycleTime = cycle;
-            if((cycleTimer != 0) && (cycleTimer != 1))
+            if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))
                 cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
@@ -896,7 +896,7 @@ bool LoadProjectFromFile(const char *filename)
                          &wdte)
                   == 4) {
             Prog.cycleTime = cycle;
-            if((cycleTimer != 0) && (cycleTimer != 1))
+            if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))
                 cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;
@@ -904,7 +904,7 @@ bool LoadProjectFromFile(const char *filename)
                 Prog.cycleTimer = -1;
         } else if(sscanf(line, "CYCLE=%lld us at Timer%d, YPlcCycleDuty:%d", &cycle, &cycleTimer, &cycleDuty) == 3) {
             Prog.cycleTime = cycle;
-            if((cycleTimer != 0) && (cycleTimer != 1))
+            if((cycleTimer != 0) && (cycleTimer != 1) && (cycleTimer != 3))
                 cycleTimer = 1;
             Prog.cycleTimer = cycleTimer;
             Prog.cycleDuty = cycleDuty;

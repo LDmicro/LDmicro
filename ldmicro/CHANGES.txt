@@ -1,6 +1,10 @@
-== Release 5.3.?.?
+== Release 5.3.1.0
 
     * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES
+
+    * Modified "St ARM STM32F40X 144-LQFP" by Jose GILLES
+
+    * Added "St ARM STM32F10X 48-LQFP / Bluepill" by Jose GILLES
 
     * Fixed OSR, OSF, OSL, OSC show error.
 

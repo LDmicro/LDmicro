@@ -1625,15 +1625,15 @@ McuAdcPinInfo ArmSTM32F40X_144LQFPAdcPinInfo[] = {
 McuPwmPinInfo ArmSTM32F40X_144LQFPPwmPinInfo[] = {
 //  ARM STM32F40X
 //  {pin, timer, resol}
-	{ 60, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},		// PWM1 on PE9-PE10 + PE13-14
+    { 60, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},       // PWM1 on PE9-PE10 + PE13-14
     { 63, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 66, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 67, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
-	{ 41, 1, 32 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},		// PWM2 on PA5-PB3 + PB10-PB11
+    { 41, 1, 32 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},       // PWM2 on PA5-PB3 + PB10-PB11
     { 133,2, 32 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 69, 2, 32 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 70, 2, 32 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
-    { 81, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},		// PWM4 on PD12 to PD15
+    { 81, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},       // PWM4 on PD12 to PD15
     { 82, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 85, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 86, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""}
@@ -1656,41 +1656,41 @@ McuI2cInfo ArmSTM32F40X_144LQFPMcuI2cInfo[] = {
 //  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
 
-McuIoPinInfo ArmSTM32F10X_48LQFPIoPinInfo[] = {					// Used by Bluepill ARM Board
+McuIoPinInfo ArmSTM32F10X_48LQFPIoPinInfo[] = {                 // Used by Bluepill ARM Board
 //  ARM STM32F10X
-    { 'A',  0, 10, "PA00 (ADC1.0) (ADC2.0) (PWM2.1)"			, 0, "", 0, 0, 0, 0},
-    { 'A',  1, 11, "PA01 (ADC1.1) (ADC2.1) (PWM2.2)"			, 0, "", 0, 0, 0, 0},
-    { 'A',  2, 12, "PA02 (ADC1.2) (ADC2.2) (PWM2.3) (TX2)"		, 0, "", 0, 0, 0, 0},
-    { 'A',  3, 13, "PA03 (ADC1.3) (ADC2.3) (PWM2.4) (RX2)"		, 0, "", 0, 0, 0, 0},
-    { 'A',  4, 14, "PA04 (ADC1.4) (ADC2.4) (CS1)"				, 0, "", 0, 0, 0, 0},
-    { 'A',  5, 15, "PA05 (ADC1.5) (ADC2.5) (SCK1)"				, 0, "", 0, 0, 0, 0},
-    { 'A',  6, 16, "PA06 (ADC1.6) (ADC2.6) (MISO1)"				, 0, "", 0, 0, 0, 0},
-    { 'A',  7, 17, "PA07 (ADC1.7) (ADC2.7) (MOSI1)"				, 0, "", 0, 0, 0, 0},
-    { 'A',  8, 29, "PA08 (PWM1.1)"								, 0, "", 0, 0, 0, 0},
-    { 'A',  9, 30, "PA09 (PWM1.2) (TX1)"						, 0, "", 0, 0, 0, 0},
-    { 'A',  10, 31, "PA10 (PWM1.3) (RX1)"						, 0, "", 0, 0, 0, 0},
-    { 'A',  11, 32, "PA11 (PWM1.4)"								, 0, "", 0, 0, 0, 0},
-    { 'A',  12, 33, "PA12"										, 0, "", 0, 0, 0, 0},
-    { 'A',  13, 34, "PA13 (JTAG)"								, 0, "", 0, 0, 0, 0},
-    { 'A',  14, 37, "PA14 (JTAG)"								, 0, "", 0, 0, 0, 0},
-    { 'A',  15, 38, "PA15 (JTAG)"								, 0, "", 0, 0, 0, 0},
-    { 'B',  0, 18, "PB00"										, 0, "", 0, 0, 0, 0},		// ADC Channel 8 not supported by libs
-    { 'B',  1, 19, "PB01"										, 0, "", 0, 0, 0, 0},		// ADC Channel 9 not supported by libs
-    { 'B',  2, 20, "PB02 (BOOT)"								, 0, "", 0, 0, 0, 0},
-    { 'B',  3, 39, "PB03 (JTAG)"								, 0, "", 0, 0, 0, 0},
-    { 'B',  4, 40, "PB04 (JTAG)"								, 0, "", 0, 0, 0, 0},
-    { 'B',  5, 41, "PB05"										, 0, "", 0, 0, 0, 0},
-    { 'B',  6, 42, "PB06 (PWM4.1) (SCL1)"						, 0, "", 0, 0, 0, 0},
-    { 'B',  7, 43, "PB07 (PWM4.2) (SDA1)"						, 0, "", 0, 0, 0, 0},
-    { 'B',  8, 45, "PB08 (PWM4.3)"								, 0, "", 0, 0, 0, 0},
-    { 'B',  9, 46, "PB09 (PWM4.4)"								, 0, "", 0, 0, 0, 0},
-    { 'B',  10, 21, "PB10 (TX3) (SCL2)"							, 0, "", 0, 0, 0, 0},
-    { 'B',  11, 22, "PB11 (RX3) (SDA2)"							, 0, "", 0, 0, 0, 0},
-    { 'B',  12, 25, "PB12 (CS2)"								, 0, "", 0, 0, 0, 0},
-    { 'B',  13, 26, "PB13 (SCK2)"								, 0, "", 0, 0, 0, 0},
-    { 'B',  14, 27, "PB14 (MISO2)"								, 0, "", 0, 0, 0, 0},
-    { 'B',  15, 28, "PB15 (MOSI2)"								, 0, "", 0, 0, 0, 0},
-	// PC13-15 not supported
+    { 'A',  0, 10, "PA00 (ADC1.0) (ADC2.0) (PWM2.1)"            , 0, "", 0, 0, 0, 0},
+    { 'A',  1, 11, "PA01 (ADC1.1) (ADC2.1) (PWM2.2)"            , 0, "", 0, 0, 0, 0},
+    { 'A',  2, 12, "PA02 (ADC1.2) (ADC2.2) (PWM2.3) (TX2)"      , 0, "", 0, 0, 0, 0},
+    { 'A',  3, 13, "PA03 (ADC1.3) (ADC2.3) (PWM2.4) (RX2)"      , 0, "", 0, 0, 0, 0},
+    { 'A',  4, 14, "PA04 (ADC1.4) (ADC2.4) (CS1)"               , 0, "", 0, 0, 0, 0},
+    { 'A',  5, 15, "PA05 (ADC1.5) (ADC2.5) (SCK1)"              , 0, "", 0, 0, 0, 0},
+    { 'A',  6, 16, "PA06 (ADC1.6) (ADC2.6) (MISO1)"             , 0, "", 0, 0, 0, 0},
+    { 'A',  7, 17, "PA07 (ADC1.7) (ADC2.7) (MOSI1)"             , 0, "", 0, 0, 0, 0},
+    { 'A',  8, 29, "PA08 (PWM1.1)"                              , 0, "", 0, 0, 0, 0},
+    { 'A',  9, 30, "PA09 (PWM1.2) (TX1)"                        , 0, "", 0, 0, 0, 0},
+    { 'A',  10, 31, "PA10 (PWM1.3) (RX1)"                       , 0, "", 0, 0, 0, 0},
+    { 'A',  11, 32, "PA11 (PWM1.4)"                             , 0, "", 0, 0, 0, 0},
+    { 'A',  12, 33, "PA12"                                      , 0, "", 0, 0, 0, 0},
+    { 'A',  13, 34, "PA13 (JTAG)"                               , 0, "", 0, 0, 0, 0},
+    { 'A',  14, 37, "PA14 (JTAG)"                               , 0, "", 0, 0, 0, 0},
+    { 'A',  15, 38, "PA15 (JTAG)"                               , 0, "", 0, 0, 0, 0},
+    { 'B',  0, 18, "PB00"                                       , 0, "", 0, 0, 0, 0},       // ADC Channel 8 not supported by libs
+    { 'B',  1, 19, "PB01"                                       , 0, "", 0, 0, 0, 0},       // ADC Channel 9 not supported by libs
+    { 'B',  2, 20, "PB02 (BOOT)"                                , 0, "", 0, 0, 0, 0},
+    { 'B',  3, 39, "PB03 (JTAG)"                                , 0, "", 0, 0, 0, 0},
+    { 'B',  4, 40, "PB04 (JTAG)"                                , 0, "", 0, 0, 0, 0},
+    { 'B',  5, 41, "PB05"                                       , 0, "", 0, 0, 0, 0},
+    { 'B',  6, 42, "PB06 (PWM4.1) (SCL1)"                       , 0, "", 0, 0, 0, 0},
+    { 'B',  7, 43, "PB07 (PWM4.2) (SDA1)"                       , 0, "", 0, 0, 0, 0},
+    { 'B',  8, 45, "PB08 (PWM4.3)"                              , 0, "", 0, 0, 0, 0},
+    { 'B',  9, 46, "PB09 (PWM4.4)"                              , 0, "", 0, 0, 0, 0},
+    { 'B',  10, 21, "PB10 (TX3) (SCL2)"                         , 0, "", 0, 0, 0, 0},
+    { 'B',  11, 22, "PB11 (RX3) (SDA2)"                         , 0, "", 0, 0, 0, 0},
+    { 'B',  12, 25, "PB12 (CS2)"                                , 0, "", 0, 0, 0, 0},
+    { 'B',  13, 26, "PB13 (SCK2)"                               , 0, "", 0, 0, 0, 0},
+    { 'B',  14, 27, "PB14 (MISO2)"                              , 0, "", 0, 0, 0, 0},
+    { 'B',  15, 28, "PB15 (MOSI2)"                              , 0, "", 0, 0, 0, 0},
+    // PC13-15 not supported
 };
 
 McuAdcPinInfo ArmSTM32F10X_48LQFPAdcPinInfo[] = {
@@ -1699,9 +1699,9 @@ McuAdcPinInfo ArmSTM32F10X_48LQFPAdcPinInfo[] = {
     { 10, 0x00 },       // ADC1 channel 0 on PA0
     { 11, 0x01 },       // ADC1 channel 1 on PA1
     { 12, 0x02 },       // ADC1 channel 2 on PA2
-    { 13, 0x03 },		// ADC1 channel 3 on PA3        
-    { 14, 0x04 },		// ADC1 channel 4 on PA4        
-    { 15, 0x05 },		// ADC1 channel 5 on PA5    
+    { 13, 0x03 },       // ADC1 channel 3 on PA3
+    { 14, 0x04 },       // ADC1 channel 4 on PA4
+    { 15, 0x05 },       // ADC1 channel 5 on PA5
     { 16, 0x06 },       // ADC1 channel 6 on PA6
     { 17, 0x07 },       // ADC1 channel 7 on PA7
 };
@@ -1709,15 +1709,15 @@ McuAdcPinInfo ArmSTM32F10X_48LQFPAdcPinInfo[] = {
 McuPwmPinInfo ArmSTM32F10X_48LQFPPwmPinInfo[] = {
 //  ARM STM32F10X
 //  {pin, timer, resol}
-    { 29, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},		// PWM1 on PA8 to PA11
+    { 29, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},       // PWM1 on PA8 to PA11
     { 30, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 31, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 32, 1, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
-    { 10, 2, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},		// PWM2 on PA0 to PA3
+    { 10, 2, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},       // PWM2 on PA0 to PA3
     { 11, 2, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 12, 2, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 13, 2, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
-	{ 42, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},		// PWM4 on PB6 to PB9
+    { 42, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},       // PWM4 on PB6 to PB9
     { 43, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 45, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""},
     { 46, 4, 16 , 0, 0, 0, 0, 0, 0, 0, 0, 0, ""}
@@ -1726,14 +1726,14 @@ McuPwmPinInfo ArmSTM32F10X_48LQFPPwmPinInfo[] = {
 McuSpiInfo ArmSTM32F10X_48LQFPMcuSpiInfo[] = {
 //  name, REG_CTRL, REG_STAT, REG_DATA, MISO, MOSI, SCK, CS
     { "SPI1", 0, 0, 0, 16, 17, 15, 14 },            // SPI1 = PA6 + PA7 + PA5 + PA4
-    { "SPI2", 0, 0, 0, 27, 28, 26, 25 },			// SPI2 = PB14 + PB15 + PB13 + PB12
+    { "SPI2", 0, 0, 0, 27, 28, 26, 25 },            // SPI2 = PB14 + PB15 + PB13 + PB12
 //  NB: CS is in fact user defined - if need be - (software CS) but a pin must be declared
 //  NB: All pins for a same SPI peripheral must be on the same port PX because of PinsForSpiVariable()
 };
 
 McuI2cInfo ArmSTM32F10X_48LQFPMcuI2cInfo[] = {
 //  name, REG_CTRL, REG_STAT, REG_DATA, REG_RATE, SCL, SDA
-    { "I2C1", 0, 0, 0, 0, 42, 43 },					// I2C1 = PB6 + PB7
+    { "I2C1", 0, 0, 0, 0, 42, 43 },                 // I2C1 = PB6 + PB7
     { "I2C2", 0, 0, 0, 0, 21, 22 },                 // I2C2 = PB10 + PB11
 //  NB: All pins for a same I2C peripheral must be on the same port PX because of PinsForI2cVariable()
 };
@@ -2860,7 +2860,7 @@ McuIoInfo SupportedMcus_[] = {
         {97, 96},                                   // UART RX + TX (UART 6)                    // RXn + TXn in I/O definition
         0,                                          // PWM default Pin
         ISA_ARM,                                    // Type
-        CortexF4,									// Core
+        CortexF4,                                   // Core
         144,                                        // Nb de broches
         0,                                          // For PIC but may be used for ARM
         ArmSTM32F40X_144LQFPPwmPinInfo,             // Pwm info
@@ -2874,39 +2874,39 @@ McuIoInfo SupportedMcus_[] = {
         {{0,0}}
     },
 
-	{
+    {
         #define BASE_A 0x40010800
         #define BASE_B 0x40010C00
-        "St ARM STM32F10X 48-LQFP / Bluepill",			// Nom
+        "St ARM STM32F10X 48-LQFP / Bluepill",          // Nom
         "STM32F10X",                                    // Liste d'alias
         "BLUEPILL",
         "",
         "",
         'P',                                        // Prefixe ports
-        { BASE_A+0x14, BASE_B+0x14, 0, 0, 0, 0, 0, 0, 0, 0, 0},		// Adresses registres In
-        { BASE_A+0x18, BASE_B+0x18, 0, 0, 0, 0, 0, 0, 0, 0, 0},		// Adresses registres Out
-        { BASE_A, BASE_B,  0, 0, 0, 0, 0, 0, 0, 0, 0},				// Adresses registres Dir
-        64 * 1024,									// 128 KO Flash 
-        { { 0x0800000, 0x20000 } },					// debut + taille
-        ArmSTM32F10X_48LQFPIoPinInfo,				// Pin info
-        arraylen(ArmSTM32F10X_48LQFPIoPinInfo),		// Nb broches (declarees)
-        ArmSTM32F10X_48LQFPAdcPinInfo,				// Adc info
+        { BASE_A+0x14, BASE_B+0x14, 0, 0, 0, 0, 0, 0, 0, 0, 0},     // Adresses registres In
+        { BASE_A+0x18, BASE_B+0x18, 0, 0, 0, 0, 0, 0, 0, 0, 0},     // Adresses registres Out
+        { BASE_A, BASE_B,  0, 0, 0, 0, 0, 0, 0, 0, 0},              // Adresses registres Dir
+        64 * 1024,                                  // 128 KO Flash
+        { { 0x0800000, 0x20000 } },                 // debut + taille
+        ArmSTM32F10X_48LQFPIoPinInfo,               // Pin info
+        arraylen(ArmSTM32F10X_48LQFPIoPinInfo),     // Nb broches (declarees)
+        ArmSTM32F10X_48LQFPAdcPinInfo,              // Adc info
         8,                                          // Nb Adc
         4095,                                       // Adc valeur Maxi                          // 12 bits
         {22, 21},                                   // UART RX + TX (UART 3)                    // RXn + TXn in I/O definition
         0,                                          // PWM default Pin
         ISA_ARM,                                    // Type
         CortexF1,                                   // Core
-        48,											// Nb de broches
+        48,                                         // Nb de broches
         0,                                          // For PIC but may be used for ARM
-        ArmSTM32F10X_48LQFPPwmPinInfo,				// Pwm info
-        arraylen(ArmSTM32F10X_48LQFPPwmPinInfo),	// Pwm info size
+        ArmSTM32F10X_48LQFPPwmPinInfo,              // Pwm info
+        arraylen(ArmSTM32F10X_48LQFPPwmPinInfo),    // Pwm info size
         nullptr,                                    // ExtInt info
         0,                                          // ExtInt info size
-        ArmSTM32F10X_48LQFPMcuSpiInfo,				// SPI info
-        arraylen(ArmSTM32F10X_48LQFPMcuSpiInfo),	// SPI info size
-        ArmSTM32F10X_48LQFPMcuI2cInfo,				// I2C info
-        arraylen(ArmSTM32F10X_48LQFPMcuI2cInfo),	// I2C info size
+        ArmSTM32F10X_48LQFPMcuSpiInfo,              // SPI info
+        arraylen(ArmSTM32F10X_48LQFPMcuSpiInfo),    // SPI info size
+        ArmSTM32F10X_48LQFPMcuI2cInfo,              // I2C info
+        arraylen(ArmSTM32F10X_48LQFPMcuI2cInfo),    // I2C info size
         {{0,0}}
     },
 
