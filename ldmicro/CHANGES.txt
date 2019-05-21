@@ -1,3 +1,11 @@
+== Release 5.3.?.?
+
+    * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES
+
+    * Fixed OSR, OSF, OSL, OSC show error.
+
+    * Fixed AVR compilation stack overflow error.
+
 == Release 5.3.0.5
 
     * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES

@@ -58,6 +58,12 @@ typedef enum CoreTag {
     ESPcores,
     ESP8266Core,
 
+    ARMcores,
+	CortexF1,
+	CortexF2,
+	CortexF3,
+	CortexF4,
+
     PCcores,
     PC_LPT_COM,
 } Core;

@@ -328,10 +328,12 @@ REM Compilation with arm-gcc
 
 SET GCC_PATH=C:\Program Files\EmIDE\emIDE V2.20\arm
 SET JLN_PATH=C:\Program Files\SEGGER\JLink_V502j
+SET STL_PATH=C:\Program Files\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility
 
-SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM
+if "%4" == "stm32f40x" SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM\STM32F4
+if "%4" == "stm32f10x" SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\ARM\STM32F1
 
-path %path%;%GCC_PATH%\bin;%JLN_PATH%
+path %path%;%GCC_PATH%\bin;%JLN_PATH%;%STL_PATH%
 
 %~d2
 chdir %~p2
@@ -344,6 +346,10 @@ mkdir ARMGCC\bin
 mkdir ARMGCC\lib
 
 if not exist ARMGCC\lib\Lib_usr.c copy %LIB_PATH%\*.* ARMGCC\lib
+
+if "%4" == "stm32f10x" goto STM32F1
+
+:STM32F4
 
 arm-none-eabi-g++.exe -mcpu=cortex-m4 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM4.S -o ARMGCC\obj\cortexM4.o
 
@@ -372,6 +378,30 @@ JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\c
 JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\cmdfile.jlink
 PAUSE
 goto exit
+
+:STM32F1
+
+arm-none-eabi-g++.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm-none-eabi\include" -c ARMGCC\lib\CortexM3.S -o ARMGCC\obj\cortexM3.o
+
+CD ARMGCC\lib
+for %%F in (*.c) do arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -c %%F -o ..\obj\%%F.o
+CD ..\..
+
+arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -g -IInc -I"%GCC_PATH%\arm\arm-none-eabi\include" -IARMGCC\lib\ -c %~n2.c -o ARMGCC\obj\%~n2.o
+
+REM Linkage of objects
+arm-none-eabi-gcc.exe -o ARMGCC\bin\%~nx2.elf ARMGCC\obj\*.o -Wl,-Map -Wl,ARMGCC\bin\%~nx2.elf.map -Wl,--gc-sections -n -Wl,-cref -mcpu=cortex-m3 -mthumb -TARMGCC\lib\CortexM3.ln
+
+REM Convert Elf to Hex
+arm-none-eabi-objcopy -O ihex ARMGCC\bin\%~nx2.elf ARMGCC\bin\%~nx2.hex
+
+REM Transfer of the program with ST-Link CLI
+
+ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
+
+PAUSE
+goto exit
+
 
 @rem =======================================================================
 :NOT_SUPPORTED
