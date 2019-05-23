@@ -7743,7 +7743,7 @@ static bool _CompilePic16(const char *outFile, int ShowMessage)
         Comment("Watchdog reset");
         Instruction(OP_CLRWDT);
     } else
-        oops();
+        THROW_COMPILER_EXCEPTION(_("Only timers 0 and 1 are possible as PLC cycle timer.\nSelect proper timer in menu 'Settings -> MCU Parameters'!"));
 
     if(Prog.cycleTimer >= 0) {
         Comment("Watchdog reset");

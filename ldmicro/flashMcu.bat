@@ -6,15 +6,16 @@ SET EXE_PATH=%~dp0
 
 @echo %EXE_PATH% = EXE_PATH
 @echo %1 = ISA
-@echo %2 = full 'filename.ld' with the path
+@echo %2 = full filename '.ld' with the path
 @SET  COMPILER=%3
 @echo %COMPILER% = COMPILER
 @echo %4 = deviceName, target name
-@echo .
+@echo . . .
 :@echo %2 - full ld file name wit the path
 @echo %~nx2 - gives the file name without the path
 @echo %~d2 - gives the drive letter to LD
 @echo %~p2 - gives the path to LD
+@echo . . .
 
 :pause
 
@@ -71,11 +72,11 @@ goto NOT_SUPPORTED
 @rem *** Set up avrdude.exe path. ***
 @rem     It may be:
 @rem SET AVRDUDE_PATH=D:\WinAVR\bin\
-     SET AVRDUDE_PATH=D:\Arduino\hardware\tools\avr\bin\
+@rem SET AVRDUDE_PATH=D:\Arduino\hardware\tools\avr\bin\
 @rem SET AVRDUDE_PATH=D:\Program\Electronique\Ldmicro\
 @rem SET AVRDUDE_PATH=D:\AVRDUDE\BIN\
 @rem SET AVRDUDE_PATH=C:\Users\nii\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\
-@rem SET AVRDUDE_PATH="%ProgramFiles%\Arduino\hardware\tools\avr\bin\"
+     SET AVRDUDE_PATH="%ProgramFiles%\Arduino\hardware\tools\avr\bin\"
 
 @rem *** Set up your avrdude config file. ***
 @rem SET AVRDUDE_CONF=
@@ -187,7 +188,7 @@ avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature AVRGCC\bin\%~
 REM Transfer of the program with AvrDude
 avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
 
-PAUSE
+pause
 goto exit
 
 @rem =======================================================================
@@ -316,7 +317,7 @@ picc.exe -oHTC\bin\%~nx2.cof -mHTC\bin\%~nx2.map --summary=default --output=defa
 REM Transfer of the program with Pickit3
 PK3CMD.exe -P%4A -FHTC\bin\%~nx2.hex -E -L -M -Y
 
-PAUSE
+pause
 goto exit
 
 
@@ -376,7 +377,7 @@ REM Transfer of the program with J-Link Commander
 JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\cmdfile.jlink
 
 JLink.exe -device stm32f407zg -if JTAG -speed 1000 -CommanderScript ARMGCC\bin\cmdfile.jlink
-PAUSE
+pause
 goto exit
 
 :STM32F1
@@ -399,7 +400,7 @@ REM Transfer of the program with ST-Link CLI
 
 ST-LINK_CLI.exe -c SWD -P ARMGCC\bin\%~nx2.hex -V "after_programming" -Run
 
-PAUSE
+pause
 goto exit
 
 
