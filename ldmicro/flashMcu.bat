@@ -76,13 +76,13 @@ goto NOT_SUPPORTED
 @rem SET AVRDUDE_PATH=D:\Program\Electronique\Ldmicro\
 @rem SET AVRDUDE_PATH=D:\AVRDUDE\BIN\
 @rem SET AVRDUDE_PATH=C:\Users\nii\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino9\bin\
-     SET AVRDUDE_PATH="%ProgramFiles%\Arduino\hardware\tools\avr\bin\"
+     SET AVRDUDE_PATH=%ProgramFiles%\Arduino\hardware\tools\avr\bin\
 
 @rem *** Set up your avrdude config file. ***
 @rem SET AVRDUDE_CONF=
-@rem SET AVRDUDE_CONF=-C %AVRDUDE_PATH%avrdude.conf
-     SET AVRDUDE_CONF=-C %AVRDUDE_PATH%..\etc\avrdude.conf
-@rem SET AVRDUDE_CONF=-C "%ProgramFiles%\Arduino\hardware\tools\avr\\etc\avrdude.conf"
+@rem SET AVRDUDE_CONF=%AVRDUDE_PATH%avrdude.conf
+     SET AVRDUDE_CONF=%AVRDUDE_PATH%..\etc\avrdude.conf
+@rem SET AVRDUDE_CONF=%ProgramFiles%\Arduino\hardware\tools\avr\\etc\avrdude.conf
 
 @rem *** Set up your hardware avrdude programmer. ***
 @rem     See avrdude.conf programmer id.
@@ -133,9 +133,9 @@ goto NOT_SUPPORTED
 rem %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U eeprom:r:eeprom_read1:r
 
 @rem *** Flashing the AVR. ***
-@rem %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
-@rem %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
-     %AVRDUDE_PATH%avrdude.exe %AVRDUDE_CONF% %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
+@rem "%AVRDUDE_PATH%avrdude.exe" -C "%AVRDUDE_CONF%" %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
+@rem "%AVRDUDE_PATH%avrdude.exe" -C "%AVRDUDE_CONF%" %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
+     "%AVRDUDE_PATH%avrdude.exe" -C "%AVRDUDE_CONF%" %AVRDUDE_OPTIONS% -c %AVRDUDE_PROGRAMMER_ID% -p %AVRDUDE_PART_ID% -U flash:w:"%2.hex":a
 
 @echo ERRORLEVEL=%ERRORLEVEL%
 if ERRORLEVEL==1 goto pauses
