@@ -1,5 +1,5 @@
 /**
- * Copyright (C) Tilen Majerle 2014, and JG 2016
+ * Copyright (C) Tilen Majerle 2014, and JG 2019
  */
 
 #include "lib_i2c.h"
@@ -10,6 +10,7 @@
 #pragma weak LCD_I2C_Config
 #pragma weak LCD_I2C_MoveCursor
 #pragma weak LCD_I2C_SendChar
+#pragma weak LCD_I2C_BackLight
 
 void LCD_I2C_Init(int x){};
 void LCD_I2C_Erase(void){};
@@ -17,9 +18,10 @@ void LCD_I2C_Home(void){};
 void LCD_I2C_Config(int x, int y, int z){};
 void LCD_I2C_MoveCursor(int x, int y){};
 void LCD_I2C_SendChar(char x){};
+void LCD_I2C_BackLight(char stat){};
 
-#define LCD_I2C_ADR 0   // a adapter selon afficheur
-#define LCD_I2C_REG 255 // a adapter selon preferences
+#define LCD_I2C_ADR		0		// a adapter selon afficheur
+#define LCD_I2C_REG		255		// a adapter selon preferences
 
 uint32_t LibI2C_Timeout;
 
@@ -372,14 +374,19 @@ void LibI2C_SetReg(I2C_TypeDef *I2Cx, uint8_t address, uint8_t reg, uint8_t data
     {
         if(data <= 0x10) // commandes diverses
         {
-            if(data == 0)
-                LCD_I2C_Erase(); // effacement ecran
-            if(data == 1)
-                LCD_I2C_Home(); // retour en haut a gauche
-            if(data == 2)
+            if(data == 0x00)
+                LCD_I2C_Erase();		// effacement ecran
+            if(data == 0x01)
+                LCD_I2C_Home();			// retour en haut a gauche
+            if(data == 0x02)
                 LCD_I2C_Config(1, 0, 1); // clignotement active
-            if(data == 3)
+            if(data == 0x03)
                 LCD_I2C_Config(1, 0, 0); // clignotement desactive
+			// ...
+			if(data == 0x0F)			
+				LCD_I2C_BackLight(0);	// backlight off (si disponible)
+			if(data == 0x10)			
+				LCD_I2C_BackLight(1);	// backlight on (si disponible)
         } else if(data >= 0x80) {        // commandes move(y,x)
             x = (data & 0x1F) + 1;       // x sur 5 bits => 0 < x < 33 colonnes
             y = ((data & 60) >> 5) + 1;  // y sur 2 bits => 0 < y < 5 lignes
