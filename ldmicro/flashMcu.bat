@@ -151,12 +151,14 @@ goto exit
 @ECHO ON
 REM Compilation with avr-gcc
 
-SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
+@rem SET GCC_PATH=C:\Program Files\Atmel\AVR-Gcc-8.2.0
 @rem SET GCC_PATH=C:\Program Files\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRGCC\3.4.0.65\AVRToolchain
 @rem SET GCC_PATH=D:\WinAVR
+     SET GCC_PATH=c:\WinAVR-20100110
 
-SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
+     SET AVRDUDE_PATH=D:\Programmation\Ladder\Programmes\Tests\Avr\AvrDude
 @rem SET AVRDUDE_PATH=D:\AVRDUDE
+@rem SET AVRDUDE_PATH=%ProgramFiles%\Arduino\hardware\tools\avr\bin\
 
 SET LIB_PATH=%EXE_PATH%LIBRARIES_FOR\AVR
 SET COMPORT=COM3
@@ -186,7 +188,7 @@ REM Convert Elf to Hex
 avr-objcopy.exe -O ihex -R .eeprom -R .fuse -R .lock -R .signature AVRGCC\bin\%~nx2.elf AVRGCC\bin\%~nx2.hex
 
 REM Transfer of the program with AvrDude
-avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
+:avrdude.exe -p %4 -c avr910 -P %COMPORT% -b 19200 -u -v -F -U flash:w:AVRGCC\bin\%~nx2.hex
 
 pause
 goto exit
