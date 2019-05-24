@@ -15,6 +15,7 @@ void LCD_I2C_SendChar(char);
 void LCD_I2C_Send(char, int);
 void LCD_I2C_Send4msb(char);
 void LCD_I2C_Enable(void);
+void LCD_I2C_BackLight(char stat);
 
 // Envoi commande
 void LCD_I2C_SendCommand(char commande)
@@ -117,6 +118,19 @@ void LCD_I2C_Erase(void)
 {
     LCD_I2C_SendCommand(LCD_CMD_EFF);
 }
+
+// Activation / desactivation du backlight (facultatif)
+void LCD_I2C_BackLight(char stat)
+    {
+    if (stat)
+        {
+        PORT_LCD (|= (1 << BIT_LCD_BL))
+        }
+    else
+        {
+        PORT_LCD (&= ~(1 << BIT_LCD_BL))
+        }
+    }
 
 // Renvoie le curseur à la position initiale
 void LCD_I2C_Home(void)
