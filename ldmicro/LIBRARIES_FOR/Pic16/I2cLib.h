@@ -4,7 +4,7 @@
 #ifndef LCD_I2C_ADR
 	#define LCD_I2C_ADR		0		// a adapter selon afficheur (si utile)
 #endif
-#define LCD_I2C_REG		255			// a adapter selon preferences
+#define LCD_I2C_REG			255		// a adapter selon preferences
 
 
 // Initialisation avec calcul des predivision I²C
@@ -54,4 +54,5 @@ char I2C_MasterGetReg(char addr, char reg);
 
 // Ecriture d'une valeur dans registre (reg) sur peripherique (addr)
 void I2C_MasterSetReg(char addr, char reg, char val);
+
 
