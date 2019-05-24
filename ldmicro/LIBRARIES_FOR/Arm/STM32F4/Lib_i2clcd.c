@@ -5,14 +5,16 @@
 #include "Lib_i2c.h"
 #include "Lib_i2clcd.h" // Fichier header librairie LCD
 
-static unsigned char port = 0;        // adaptation pour IO-Expander I2C
-static int           lcd_i2c_adr = 0; // adaptation pour IO-Expander I2C
+static unsigned char port = 0;			// adaptation 
+static int           lcd_i2c_adr = 0;	// adaptation 
 
 void LCD_I2C_SendCommand(char);
 void LCD_I2C_SendChar(char);
 void LCD_I2C_Send(char, int);
 void LCD_I2C_Send4msb(char);
 void LCD_I2C_Enable(void);
+void LCD_I2C_BackLight(char stat);
+
 
 // Envoi commande
 void LCD_I2C_SendCommand(char commande)
@@ -45,7 +47,7 @@ void LCD_I2C_Send(char donnee, int type)
 void LCD_I2C_Enable(void)
 {
     PORT_LCD(|= (1 << BIT_LCD_E)) // E à 1
-                                  /// asm("NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;");
+                                  ///     asm("NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;NOP;");
     delay_us(10);
     PORT_LCD(&= ~(1 << BIT_LCD_E)) // E à 0
 }
@@ -115,6 +117,19 @@ void LCD_I2C_Erase(void)
 {
     LCD_I2C_SendCommand(LCD_CMD_EFF);
 }
+
+// Activation / desactivation du backlight (facultatif)
+void LCD_I2C_BackLight(char stat)
+    {
+    if (stat)
+        {
+        PORT_LCD (|= (1 << BIT_LCD_BL))
+        }
+    else
+        {
+        PORT_LCD (&= ~(1 << BIT_LCD_BL))
+        }
+    }
 
 // Renvoie le curseur à la position initiale
 void LCD_I2C_Home(void)
