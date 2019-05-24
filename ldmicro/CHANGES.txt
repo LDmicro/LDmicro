@@ -12,6 +12,10 @@
 
     * Fixed flashMcu.bat for AVR
 
+    * Fixed LUT index range in simulation.
+
+    * Fixed PIC UART baud rate calculation.
+
 == Release 5.3.0.5
 
     * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES
