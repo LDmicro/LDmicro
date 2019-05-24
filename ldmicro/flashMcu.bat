@@ -307,6 +307,10 @@ if not exist HTC\lib\UsrLib.c copy %LIB_PATH%\*.* HTC\lib
 
 :copy *.h PROTEUS
 :copy *.c PROTEUS
+copy %LIB_PATH%\*.h HTC\bin
+copy %LIB_PATH%\*.c HTC\bin
+copy *.h HTC\bin
+copy *.c HTC\bin
 
 for %%F in (HTC\lib\*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2\HTC\lib --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj
 :for %%F in (*.c) do  picc.exe --pass1 %%F -q --chip=%4 -P -I%~p2 -I%~p2 --runtime=default --opt=default -g --asmlist --OBJDIR=HTC\obj

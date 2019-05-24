@@ -43,7 +43,7 @@ typedef uint32_t ADDR_T;
 //// Also, the variable may contain the difference between the addresses. For example:
 ////   ADDR_T addr, addr1, addr2;
 ////   addr = addr1 - addr2;
-//#define INVALID_ADDR -1 
+//#define INVALID_ADDR -1
 #define INVALID_ADDR 0xFFFFFFFF
 // The value INVALID_ADDR is used to indicate an indeterminate, unacceptable, invalid address.
 
@@ -1041,6 +1041,8 @@ extern int32_t PicProgLdLen;
 void CompilePic16(const char* outFile);
 bool McuAs(const char *str);
 bool CalcPicPlcCycle(long long int cycleTimeMicroseconds, int32_t PicProgLdLen);
+void CalcPicUartBaudRate(int32_t mcuClock, int32_t baudRate, int *divisor, int *brgh);
+
 // avr.cpp
 extern uint32_t AvrProgLdLen;
 int calcAvrUsart(int *divisor, double  *actual, double  *percentErr);

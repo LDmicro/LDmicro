@@ -3141,17 +3141,16 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "void UART_Init(void) {\n"
                         "  // UART baud rate setup\n");
                 if(compiler_variant != MNU_COMPILE_ANSIC) {
-					/*
-					BRGH = 0 --> Baud Rate = FOSC/(64(X+1))
-					BRGH = 1 --> Baud Rate = FOSC/(16(X+1))
-					*/
-                    int32_t div0 = (Prog.mcuClock + Prog.baudRate * 32) / (Prog.baudRate * 64) - 1;       
-                    int32_t div1 = (Prog.mcuClock + Prog.baudRate * 8) / (Prog.baudRate * 16) - 1;       
+					int32_t divisor, brgh;
+					CalcPicUartBaudRate(Prog.mcuClock, Prog.baudRate, &divisor, &brgh);
+					if(brgh)
+						fprintf(f,"  BRGH = 1;\n");
+					else
+						fprintf(f,"  BRGH = 0;\n");
                     fprintf(f,
-						    "  BRGH = 1;\n"
                             "  SPBRG = %d;\n"
                             "  TXEN = 1; CREN = 1; SPEN = 1;\n",
-                            div);
+                            divisor);
                 }
                 fprintf(f,
                         "}\n"
