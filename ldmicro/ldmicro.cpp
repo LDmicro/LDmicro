@@ -999,6 +999,7 @@ static void ProcessMenu(int code)
         LoadWritePcPorts();
         RefreshControlsToSettings();
         ProgramChangedNotSaved = true;
+        WhatCanWeDoFromCursorAndTopology();
         return;
     }
     if(code == static_cast<int>(MNU_PROCESSOR_0 + supportedMcus().size())) {
@@ -1006,6 +1007,7 @@ static void ProcessMenu(int code)
         strcpy(CurrentCompileFile, "");
         RefreshControlsToSettings();
         ProgramChangedNotSaved = true;
+        WhatCanWeDoFromCursorAndTopology();
         return;
     }
     if((code >= MNU_SCHEME_BLACK) && (code < MNU_SCHEME_BLACK + NUM_SUPPORTED_SCHEMES)) {
@@ -2881,7 +2883,7 @@ void KxStackTrace()
 void CheckPwmPins()
 {
     return;
-	/*
+    /*
     uint32_t j;
     for(uint32_t i = 0; i < supportedMcus().size(); i++) {
         for(j = 0; j < supportedMcus()[i].pwmCount; j++) {
@@ -2895,7 +2897,7 @@ void CheckPwmPins()
             if(j >= supportedMcus()[i].pwmCount)
                 ooops("2 %s", supportedMcus()[i].mcuName);
     }
-	*/
+    */
 }
 
 #ifndef LDMICRO_GUI_XX
