@@ -194,7 +194,8 @@ pause
 goto exit
 
 @rem =======================================================================
-:PIC16
+:PIC
+@ECHO ON
 ::**************************************************************************
 ::Here is a part of 'Readme for PK3CMD.txt' file:
 ::Release Notes for PICkit 3 Command Line Interface
