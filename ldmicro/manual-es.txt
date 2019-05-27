@@ -152,6 +152,22 @@ Utilice cualquier software de programación y hardware que tenga para cargar el a
 
 Para procesadores AVR debe configurar los bits de configuración manualmente.
 
+
+PULL UP RESISTANCIAS
+====================
+Pull up resistancias
+https://github.com/LDmicro/LDmicro/wiki/Pull-up-resistors
+
+Todas las patas de entrada intentan configurar las pull up resistencias por defecto.
+Desde la versión 5.3.0.4 Ldmicro tiene un menú Parametros->Activar pull-up donde
+se pueden activar o desactivar las pull up resistencias.
+
+Desactivar las Pull up resistencias Pull Up (Obsoleto pero posible)
+https://github.com/LDmicro/LDmicro/wiki/Disable-Pull-up-resistors
+
+Pull down resistancias
+https://github.com/LDmicro/LDmicro/wiki/Pull-down-resistors
+
 REFERENCIA DE INSTRUCCIONES
 ===========================
 

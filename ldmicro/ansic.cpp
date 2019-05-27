@@ -2344,7 +2344,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#include \"UsrLib.h\"\n"
                 "\n");
 
-        if(AdcFunctionUsed())
+        // if(AdcFunctionUsed())
         {
             fprintf(flh,
                 "#include \"AdcLib.h\"\n"
@@ -3141,12 +3141,12 @@ bool CompileAnsiC(const char *dest, int MNU)
                         "void UART_Init(void) {\n"
                         "  // UART baud rate setup\n");
                 if(compiler_variant != MNU_COMPILE_ANSIC) {
-					int32_t divisor, brgh;
-					CalcPicUartBaudRate(Prog.mcuClock, Prog.baudRate, &divisor, &brgh);
-					if(brgh)
-						fprintf(f,"  BRGH = 1;\n");
-					else
-						fprintf(f,"  BRGH = 0;\n");
+                    int32_t divisor, brgh;
+                    CalcPicUartBaudRate(Prog.mcuClock, Prog.baudRate, &divisor, &brgh);
+                    if(brgh)
+                        fprintf(f,"  BRGH = 1;\n");
+                    else
+                        fprintf(f,"  BRGH = 0;\n");
                     fprintf(f,
                             "  SPBRG = %d;\n"
                             "  TXEN = 1; CREN = 1; SPEN = 1;\n",
@@ -3450,6 +3450,7 @@ bool CompileAnsiC(const char *dest, int MNU)
         fprintf(f,
                 "\n"
                 "void setupPlc(void) {\n"
+                "    ADC_SetAsDigitalIO();\n"
                 "    // Set up I/O pins direction, and drive the outputs low to start.\n");
 
         ///// Modified by JG BYTE[] -> WORD[]

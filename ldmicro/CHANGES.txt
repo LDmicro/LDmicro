@@ -16,6 +16,9 @@
 
     * Fixed PIC UART baud rate calculation.
 
+    * Fixed PICs PORTA outputs still stay in analog mode in generated C source code.
+      Added ADC_SetAsDigitalIO()
+
 == Release 5.3.0.5
 
     * Fixed flashMcu.bat and LIBRARIES_FOR ARM,AVR, PIC by Jose GILLES
