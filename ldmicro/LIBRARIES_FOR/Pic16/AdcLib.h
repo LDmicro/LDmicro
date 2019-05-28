@@ -59,21 +59,5 @@ PCFG3:0: Analog pin configuration and voltage references (see datasheet)
 1110 = RA0 pin is analog pin
 */
 
-#if defined(LDTARGET_pic16f873) || \
-    defined(LDTARGET_pic16f874) || \
-    defined(LDTARGET_pic16f876) || \
-    defined(LDTARGET_pic16f877)
-    #define LDTARGET_pic16f87X
-#endif
-
-#if defined(LDTARGET_pic16f882) || \
-    defined(LDTARGET_pic16f883) || \
-    defined(LDTARGET_pic16f884) || \
-    defined(LDTARGET_pic16f886) || \
-    defined(LDTARGET_pic16f887)
-    #define LDTARGET_pic16f88X
-#endif
-
 void ADC_Init();
 int ADC_Read(int canal, int refs);
-void ADC_SetAsDigitalIO();

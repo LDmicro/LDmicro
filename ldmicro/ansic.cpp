@@ -754,13 +754,15 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
             const char *  s = iop->pinName;                     // full pin name supposed to be in format (ADCn.c) n= ADC#, c= Channel#
             if(strlen(s))
             {
-                int adc= 0;
+                int adc= 0; int chan= 0;
                 const char * pos= strstr(s, "ADC");
                 if (pos)
                 {
                     adc= atoi(pos+3);                       // ADC # from pin description
-                    ADC_Used[adc]= 1;
-                    ADC_Chan[adc]= MuxForAdcVariable(&str[3]);      // channel # from McuAdcPinInfo (could also be retrieved from s)
+                    ////////    ADC_Used[adc]= 1;
+                    chan= MuxForAdcVariable(&str[3]);       // channel # from McuAdcPinInfo (could also be retrieved from s)
+                    ADC_Used[16*adc+chan]= 1;               // 16*ADC# + Channel#
+                    ADC_Chan[16*adc+chan]= chan;
                 }
                 else
                 {
@@ -772,7 +774,7 @@ static void DeclareBit(FILE *f, FILE *fh, FILE *flh, const char *str, int set1)
                 fprintf(f, "/* You provide this function. */\n");
                 fprintf(f, "SWORD Read_%s(void) {\n", str);
                 fprintf(f, "  SWORD v= 0;\n");
-                fprintf(f, "  v = LibADC_Read(ADC%d, ADC_Channel_%ld);\n", adc, ADC_Chan[adc]);      // acquisition ADC n Channel c
+                fprintf(f, "  v = LibADC_Read(ADC%d, ADC_Channel_%ld);\n", adc, chan);      // acquisition ADC n Channel c
                 fprintf(f, "  return v;\n");
                 fprintf(f, "}\n");
             }
@@ -2185,8 +2187,12 @@ bool CompileAnsiC(const char *dest, int MNU)
     variables.clear();
 
     ///// Added by JG
-    for (int i= 0 ; i < MAX_PWM_C ; i++)
-    {
+    for (int i= 0 ; i < MAX_ADC_C ; i++) {
+        ADC_Used[i]= 0;
+        ADC_Chan[i]= 0;
+    }
+
+    for (int i= 0 ; i < MAX_PWM_C ; i++) {
         PWM_Used[i]= -1;
         PWM_Freq[i]= 0;
         PWM_Resol[i]= 0;
@@ -2344,7 +2350,7 @@ bool CompileAnsiC(const char *dest, int MNU)
                 "#include \"UsrLib.h\"\n"
                 "\n");
 
-        // if(AdcFunctionUsed())
+        if(AdcFunctionUsed())
         {
             fprintf(flh,
                 "#include \"AdcLib.h\"\n"
@@ -3449,8 +3455,14 @@ bool CompileAnsiC(const char *dest, int MNU)
     } else {
         fprintf(f,
                 "\n"
-                "void setupPlc(void) {\n"
-                "    ADC_SetAsDigitalIO();\n"
+                "void setupPlc(void) {\n");
+
+        if  (mcu_ISA == ISA_PIC16)
+            fprintf(f,
+                "    // Set ports as digital instead of analogical (default).\n"
+                "    setPortDigitalIO();\n");
+
+        fprintf(f,
                 "    // Set up I/O pins direction, and drive the outputs low to start.\n");
 
         ///// Modified by JG BYTE[] -> WORD[]
@@ -3710,9 +3722,9 @@ bool CompileAnsiC(const char *dest, int MNU)
                     // Max resolution 12 bits used
                     ///// Added by JG2 for CortexF1
                     if ((Prog.mcu()) && (Prog.mcu()->core == CortexF1))
-                        fprintf(f, "    LibADC_Init(ADC%d, ADC_Channel_%d);\n", a, ADC_Chan[a]);
+                        fprintf(f, "    LibADC_Init(ADC%d, ADC_Channel_%d);\n", a/16, ADC_Chan[a]);
                     else
-                        fprintf(f, "    LibADC_Init(ADC%d, ADC_Channel_%d, ADC_Resolution_12b);\n", a, ADC_Chan[a]);
+                        fprintf(f, "    LibADC_Init(ADC%d, ADC_Channel_%d, ADC_Resolution_12b);\n", a/16, ADC_Chan[a]);
                     usedadc++;
                     }
                 }
