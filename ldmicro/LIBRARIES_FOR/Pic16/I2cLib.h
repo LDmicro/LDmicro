@@ -2,19 +2,19 @@
 
 
 #ifndef LCD_I2C_ADR
-	#define LCD_I2C_ADR		0		// a adapter selon afficheur (si utile)
+    #define LCD_I2C_ADR     0       // a adapter selon afficheur (si utile)
 #endif
-#define LCD_I2C_REG			255		// a adapter selon preferences
+#define LCD_I2C_REG         255     // a adapter selon preferences
 
 
-// Initialisation avec calcul des predivision I²C
+// Initialisation avec calcul des predivision I2C
 // fcpu : frequence du microcontroleur
 // ftwi : frequence souhaitee pour le bus I2C
 void I2C_Init(long fcpu, long ftwi);
 
-// Initialisation I²C master
+// Initialisation I2C master
 // prescaler : valeur des bits du registre TWSR pour sélection du prescaler
-// ces paramètres déterminent la fréquence de l'horloge I²C
+// ces paramètres déterminent la fréquence de l'horloge I2C
 /////void I2C_MasterInit(char prescaler);
 
 // Envoi de la séquence de start + adresse de l'esclave
@@ -34,7 +34,7 @@ void I2C_MasterStop(void);
 // donnee : l'octet à écrire
 int I2C_MasterWrite(char c);
 
-// Lecture d'un octet sur le bus avec acknowledge à la fin 
+// Lecture d'un octet sur le bus avec acknowledge à la fin
 // pour indiquer à l'esclave que la lecture n'est pas terminée
 // Renvoie la donnée lue
 char I2C_MasterReadNext(void);
@@ -47,7 +47,7 @@ char I2C_MasterReadLast(void);
 
 // Fonction à usage interne
 // Definie comme macro pour reduire stack depth
-#define I2C_MasterWait()	while ((SSPCON2 & 0x1F) || (SSPSTAT & 0x04));
+#define I2C_MasterWait()    while ((SSPCON2 & 0x1F) || (SSPSTAT & 0x04));
 
 // Lecture d'une valeur dans registre (reg) sur peripherique (addr)
 char I2C_MasterGetReg(char addr, char reg);
